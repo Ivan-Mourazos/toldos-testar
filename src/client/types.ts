@@ -20,6 +20,7 @@ export type Awning = {
   units: number;
   width: number;
   projection: number;
+  valanceHeight: number;
   armCount: number;
   device: string;
   placement: string;

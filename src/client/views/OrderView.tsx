@@ -310,9 +310,11 @@ function renderAwningField({
     case 'units':
       return <NumberField key={field} label="Un." value={awning.units} min={1} onChange={(value) => updateAwning(awning.id, { units: value })} />;
     case 'width':
-      return <NumberField key={field} label="Frente" value={awning.width} min={0} max={600} onChange={(value) => updateAwning(awning.id, { width: value })} />;
+      return <NumberField key={field} label="Frente" value={awning.width} min={0} max={awning.model === 'ARZUA PRO' ? 600 : undefined} onChange={(value) => updateAwning(awning.id, { width: value })} />;
     case 'projection':
       return <NumberField key={field} label="Salida" value={awning.projection} onChange={(value) => updateAwning(awning.id, { projection: value })} />;
+    case 'valanceHeight':
+      return <NumberField key={field} label="Altura bambalina" value={awning.valanceHeight} min={0} onChange={(value) => updateAwning(awning.id, { valanceHeight: value })} />;
     case 'armCount':
       return <NumberField key={field} label="Brazos" value={awning.armCount} min={0} onChange={(value) => updateAwning(awning.id, { armCount: value })} />;
     case 'device':

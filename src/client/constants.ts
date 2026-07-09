@@ -81,6 +81,27 @@ export const modelProfiles: Record<string, ModelProfile> = {
       }
     ],
     printFamily: 'arms'
+  },
+  'CAMBIO TELA': {
+    model: 'CAMBIO TELA',
+    title: 'Cambio de tela',
+    summary: 'Sustitución de lona sobre estructura existente. Frente y salida son ya las medidas definitivas de la tela, sin descuentos.',
+    sections: [
+      {
+        id: 'identity',
+        title: 'Identificación',
+        className: 'identity-group',
+        fields: ['of', 'model', 'units']
+      },
+      {
+        id: 'measures',
+        title: 'Medidas de tela',
+        description: 'Altura de bambalina en cm (0 si no lleva).',
+        className: 'measures-group',
+        fields: ['width', 'projection', 'valanceHeight']
+      }
+    ],
+    printFamily: 'fabric-change'
   }
 };
 
@@ -117,6 +138,7 @@ export function createAwning(): Awning {
     units: 1,
     width: 400,
     projection: 250,
+    valanceHeight: 0,
     armCount: 2,
     device: 'MOTOR',
     placement: 'FRONTAL',
