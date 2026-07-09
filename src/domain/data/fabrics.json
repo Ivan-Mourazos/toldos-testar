@@ -1,0 +1,2270 @@
+[
+  {
+    "code": "ACRILI2427P120",
+    "description": "ACR ACQUAMARINA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ACQUAMARINA"
+  },
+  {
+    "code": "ACRILI2807P120",
+    "description": "ACR ACUARIO",
+    "width": 120,
+    "material": "ACR",
+    "color": "ACUARIO"
+  },
+  {
+    "code": "ACRILI2051P120",
+    "description": "ACR ADMIRAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "ADMIRAL"
+  },
+  {
+    "code": "ACRILI2051P153",
+    "description": "ACR ADMIRAL",
+    "width": 153,
+    "material": "ACR",
+    "color": "ADMIRAL"
+  },
+  {
+    "code": "ACRILI3012P120",
+    "description": "ACR AFRICA",
+    "width": 120,
+    "material": "ACR",
+    "color": "AFRICA"
+  },
+  {
+    "code": "ACRILI2562P120",
+    "description": "ACR ALABAMA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ALABAMA"
+  },
+  {
+    "code": "ACRILI8157P120",
+    "description": "ACR ALABASTRO",
+    "width": 120,
+    "material": "ACR",
+    "color": "ALABASTRO"
+  },
+  {
+    "code": "ACRILI1472P120",
+    "description": "ACR ALAMO",
+    "width": 120,
+    "material": "ACR",
+    "color": "ALAMO"
+  },
+  {
+    "code": "ACRILI2819P120",
+    "description": "ACR ALOE",
+    "width": 120,
+    "material": "ACR",
+    "color": "ALOE"
+  },
+  {
+    "code": "ACRILI2031P120",
+    "description": "ACR ALSACIA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ALSACIA"
+  },
+  {
+    "code": "ACRILI2013P120",
+    "description": "ACR AMARILLO",
+    "width": 120,
+    "material": "ACR",
+    "color": "AMARILLO"
+  },
+  {
+    "code": "ACRILI2015P120",
+    "description": "ACR AMARILLO N",
+    "width": 120,
+    "material": "ACR",
+    "color": "AMARILLO N"
+  },
+  {
+    "code": "ACRILI3606P120",
+    "description": "ACR AMBAR",
+    "width": 120,
+    "material": "ACR",
+    "color": "AMBAR"
+  },
+  {
+    "code": "ACRILI2640P120",
+    "description": "ACR ANAPURNA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ANAPURNA"
+  },
+  {
+    "code": "ACRILI2012P120",
+    "description": "ACR ANETO",
+    "width": 120,
+    "material": "ACR",
+    "color": "ANETO"
+  },
+  {
+    "code": "ACRILI2024P120",
+    "description": "ACR ANIS",
+    "width": 120,
+    "material": "ACR",
+    "color": "ANIS"
+  },
+  {
+    "code": "ACRILI8488P120",
+    "description": "ACR ANTRACITA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ANTRACITA"
+  },
+  {
+    "code": "ACRILI1480P120",
+    "description": "ACR APRICOT",
+    "width": 120,
+    "material": "ACR",
+    "color": "APRICOT"
+  },
+  {
+    "code": "ACRILI2274P120",
+    "description": "ACR ARENA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ARENA"
+  },
+  {
+    "code": "ACRILI2576P120",
+    "description": "ACR ARIES",
+    "width": 120,
+    "material": "ACR",
+    "color": "ARIES"
+  },
+  {
+    "code": "ACRILI2005P120",
+    "description": "ACR ARIZONA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ARIZONA"
+  },
+  {
+    "code": "ACRILI2296P120",
+    "description": "ACR AVENA",
+    "width": 120,
+    "material": "ACR",
+    "color": "AVENA"
+  },
+  {
+    "code": "ACRILI2825P120",
+    "description": "ACR AZAFRAN",
+    "width": 120,
+    "material": "ACR",
+    "color": "AZAFRAN"
+  },
+  {
+    "code": "ACRILI2018P120",
+    "description": "ACR AZUL",
+    "width": 120,
+    "material": "ACR",
+    "color": "AZUL"
+  },
+  {
+    "code": "ACRDOC063P120",
+    "description": "ACR AZUL DOCRIL",
+    "width": 120,
+    "material": "ACRILICO",
+    "color": "AZUL"
+  },
+  {
+    "code": "ACRILI2019P120",
+    "description": "ACR AZUL N",
+    "width": 120,
+    "material": "ACR",
+    "color": "AZUL N"
+  },
+  {
+    "code": "ACRILI2235P120",
+    "description": "ACR AZUL REAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "AZUL REAL"
+  },
+  {
+    "code": "ACRILI2020P120",
+    "description": "ACR AZUL X",
+    "width": 120,
+    "material": "ACR",
+    "color": "AZUL X"
+  },
+  {
+    "code": "ACRILI2700P120",
+    "description": "ACR BAHAMAS",
+    "width": 120,
+    "material": "ACR",
+    "color": "BAHAMAS"
+  },
+  {
+    "code": "ACRILI1075P120",
+    "description": "ACR BAMBU",
+    "width": 120,
+    "material": "ACR",
+    "color": "BAMBU"
+  },
+  {
+    "code": "ACRILI2327P120",
+    "description": "ACR BASALTO",
+    "width": 120,
+    "material": "ACR",
+    "color": "BASALTO"
+  },
+  {
+    "code": "ACRILI2038P120",
+    "description": "ACR BEIGE",
+    "width": 120,
+    "material": "ACR",
+    "color": "BEIGE"
+  },
+  {
+    "code": "ACRILI2275P120",
+    "description": "ACR BEIGE X",
+    "width": 120,
+    "material": "ACR",
+    "color": "BEIGE X"
+  },
+  {
+    "code": "ACRILI2572P120",
+    "description": "ACR BERLIN",
+    "width": 120,
+    "material": "ACR",
+    "color": "BERLIN"
+  },
+  {
+    "code": "ACRILI2041P120",
+    "description": "ACR BERNA",
+    "width": 120,
+    "material": "ACR",
+    "color": "BERNA"
+  },
+  {
+    "code": "ACRILI1488P120",
+    "description": "ACR BERRY",
+    "width": 120,
+    "material": "ACR",
+    "color": "BERRY"
+  },
+  {
+    "code": "ACRILI2042P120",
+    "description": "ACR BLANCO",
+    "width": 120,
+    "material": "ACR",
+    "color": "BLANCO"
+  },
+  {
+    "code": "ACRILI2042P240",
+    "description": "ACR BLANCO AN:240 CM",
+    "width": 240,
+    "material": "ACR",
+    "color": "BLANCO"
+  },
+  {
+    "code": "ACRILI2245P120",
+    "description": "ACR BOTELLA",
+    "width": 120,
+    "material": "ACR",
+    "color": "BOTELLA"
+  },
+  {
+    "code": "ACRILI2680P120",
+    "description": "ACR BOTELLA N 2680",
+    "width": 120,
+    "material": "ACR",
+    "color": "BOTELLA N 2680"
+  },
+  {
+    "code": "ACRILI2209P120",
+    "description": "ACR BRASSERIE",
+    "width": 120,
+    "material": "ACR",
+    "color": "BRASSERIE"
+  },
+  {
+    "code": "ACRILI2777P120",
+    "description": "ACR BRISA",
+    "width": 120,
+    "material": "ACR",
+    "color": "BRISA"
+  },
+  {
+    "code": "ACRILI2046P120",
+    "description": "ACR BRISTOL",
+    "width": 120,
+    "material": "ACR",
+    "color": "BRISTOL"
+  },
+  {
+    "code": "ACRILI2090P120",
+    "description": "ACR BRONCE",
+    "width": 120,
+    "material": "ACR",
+    "color": "BRONCE"
+  },
+  {
+    "code": "ACRILI1471P120",
+    "description": "ACR CACTUS",
+    "width": 120,
+    "material": "ACR",
+    "color": "CACTUS"
+  },
+  {
+    "code": "ACRILI2316P120",
+    "description": "ACR CAFÉ",
+    "width": 120,
+    "material": "ACR",
+    "color": "CAFE"
+  },
+  {
+    "code": "ACRILI2060P120",
+    "description": "ACR CALIFORNIA",
+    "width": 120,
+    "material": "ACR",
+    "color": "CALIFORNIA"
+  },
+  {
+    "code": "ACRILI2061P120",
+    "description": "ACR CANADA",
+    "width": 120,
+    "material": "ACR",
+    "color": "CANADA"
+  },
+  {
+    "code": "ACRILI2022P120",
+    "description": "ACR CARAMEL",
+    "width": 120,
+    "material": "ACR",
+    "color": "CARAMEL"
+  },
+  {
+    "code": "ACRILI1060P120",
+    "description": "ACR CARBON",
+    "width": 120,
+    "material": "ACR",
+    "color": "CARBON"
+  },
+  {
+    "code": "ACRILI2066P120",
+    "description": "ACR CELESTE",
+    "width": 120,
+    "material": "ACR",
+    "color": "CELESTE"
+  },
+  {
+    "code": "ACRILI1468P120",
+    "description": "ACR CEREAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "CEREAL"
+  },
+  {
+    "code": "ACRILI2826P120",
+    "description": "ACR CHAMPAGNE",
+    "width": 120,
+    "material": "ACR",
+    "color": "CHAMPAGNE"
+  },
+  {
+    "code": "ACRILI1065P120",
+    "description": "ACR CHERRY",
+    "width": 120,
+    "material": "ACR",
+    "color": "CHERRY"
+  },
+  {
+    "code": "ACRILI1481P120",
+    "description": "ACR CHOCOLAT",
+    "width": 120,
+    "material": "ACR",
+    "color": "CHOCOLAT"
+  },
+  {
+    "code": "ACRILI1068P120",
+    "description": "ACR COAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "COAL"
+  },
+  {
+    "code": "ACRILI3601P120",
+    "description": "ACR COCO",
+    "width": 120,
+    "material": "ACR",
+    "color": "COCO"
+  },
+  {
+    "code": "ACRILI2068P120",
+    "description": "ACR COLORADO",
+    "width": 120,
+    "material": "ACR",
+    "color": "COLORADO"
+  },
+  {
+    "code": "ACRILI1079P120",
+    "description": "ACR COMMODORE",
+    "width": 120,
+    "material": "ACR",
+    "color": "COMMODORE"
+  },
+  {
+    "code": "ACRILI2025P120",
+    "description": "ACR CONFETTI",
+    "width": 120,
+    "material": "ACR",
+    "color": "CONFETTI"
+  },
+  {
+    "code": "ACRILI2815P120",
+    "description": "ACR COPENHAGUE",
+    "width": 120,
+    "material": "ACR",
+    "color": "COPENHAGUE"
+  },
+  {
+    "code": "ACRILI3019P120",
+    "description": "ACR COSMOS",
+    "width": 120,
+    "material": "ACR",
+    "color": "COSMOS"
+  },
+  {
+    "code": "ACRILI2322P120",
+    "description": "ACR CREMA",
+    "width": 120,
+    "material": "ACR",
+    "color": "CREMA"
+  },
+  {
+    "code": "ACRILI2080P120",
+    "description": "ACR DAKAR",
+    "width": 120,
+    "material": "ACR",
+    "color": "DAKAR"
+  },
+  {
+    "code": "ACRILI2083P120",
+    "description": "ACR DALLAS",
+    "width": 120,
+    "material": "ACR",
+    "color": "DALLAS"
+  },
+  {
+    "code": "ACRILI2008P120",
+    "description": "ACR DERBY",
+    "width": 120,
+    "material": "ACR",
+    "color": "DERBY"
+  },
+  {
+    "code": "ACRDOC001P120",
+    "description": "ACR DOCRIL BLANCO 001",
+    "width": 120,
+    "material": "ACR",
+    "color": "DOCRIL BLANCO"
+  },
+  {
+    "code": "ACRILI2802P120",
+    "description": "ACR DUBAI",
+    "width": 120,
+    "material": "ACR",
+    "color": "DUBAI"
+  },
+  {
+    "code": "ACRILI3607P120",
+    "description": "ACR DUNA",
+    "width": 120,
+    "material": "ACR",
+    "color": "DUNA"
+  },
+  {
+    "code": "ACRILI2091P120",
+    "description": "ACR ESMERALDA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ESMERALDA"
+  },
+  {
+    "code": "ACRILI2816P120",
+    "description": "ACR ESTOCOLMO",
+    "width": 120,
+    "material": "ACR",
+    "color": "ESTOCOLMO"
+  },
+  {
+    "code": "ACRILI3000EP120",
+    "description": "ACR EUCALIPTO",
+    "width": 120,
+    "material": "ACR",
+    "color": "EUCALIPTO"
+  },
+  {
+    "code": "ACRILI2125P120",
+    "description": "ACR EVEREST",
+    "width": 120,
+    "material": "ACR",
+    "color": "EVEREST"
+  },
+  {
+    "code": "ACRILI2804P120",
+    "description": "ACR FLORIDA",
+    "width": 120,
+    "material": "ACR",
+    "color": "FLORIDA"
+  },
+  {
+    "code": "ACRILI2570P120",
+    "description": "ACR FRANKFURT",
+    "width": 120,
+    "material": "ACR",
+    "color": "FRANKFURT"
+  },
+  {
+    "code": "ACRILI2097P120",
+    "description": "ACR FRESH",
+    "width": 120,
+    "material": "ACR",
+    "color": "FRESH"
+  },
+  {
+    "code": "ACRILI1473P120",
+    "description": "ACR GENERAT.RED",
+    "width": 120,
+    "material": "ACR",
+    "color": "GENERAT.RED"
+  },
+  {
+    "code": "ACRILI2563P120",
+    "description": "ACR GEORGIA",
+    "width": 120,
+    "material": "ACR",
+    "color": "GEORGIA"
+  },
+  {
+    "code": "ACRILI3603120C",
+    "description": "ACR GOBI",
+    "width": 120,
+    "material": "ACR",
+    "color": "GOBI"
+  },
+  {
+    "code": "ACRILI3602P120",
+    "description": "ACR GRAFITO",
+    "width": 120,
+    "material": "ACR",
+    "color": "GRAFITO"
+  },
+  {
+    "code": "ACRILI2101P120",
+    "description": "ACR GRANATE",
+    "width": 120,
+    "material": "ACR",
+    "color": "GRANATE"
+  },
+  {
+    "code": "ACRILI1067P120",
+    "description": "ACR GRAPE",
+    "width": 120,
+    "material": "ACR",
+    "color": "GRAPE"
+  },
+  {
+    "code": "ACRILI2102P120",
+    "description": "ACR GRIS",
+    "width": 120,
+    "material": "ACR",
+    "color": "GRIS"
+  },
+  {
+    "code": "ACRILI2817P120",
+    "description": "ACR HELSINKI",
+    "width": 120,
+    "material": "ACR",
+    "color": "HELSINKI"
+  },
+  {
+    "code": "ACRILI1072P120",
+    "description": "ACR HORMIGON",
+    "width": 120,
+    "material": "ACR",
+    "color": "HORMIGON"
+  },
+  {
+    "code": "ACRILI2828P120",
+    "description": "ACR INDIGO",
+    "width": 120,
+    "material": "ACR",
+    "color": "INDIGO"
+  },
+  {
+    "code": "ACRILI2238P120",
+    "description": "ACR INTEGRAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "INTEGRAL"
+  },
+  {
+    "code": "ACRILI2581P120",
+    "description": "ACR ITACA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ITACA"
+  },
+  {
+    "code": "ACRILI2892P120",
+    "description": "ACR JADE",
+    "width": 120,
+    "material": "ACR",
+    "color": "JADE"
+  },
+  {
+    "code": "ACRILI2701P120",
+    "description": "ACR JAMAICA",
+    "width": 120,
+    "material": "ACR",
+    "color": "JAMAICA"
+  },
+  {
+    "code": "ACRILI2925P120",
+    "description": "ACR KANSAS",
+    "width": 120,
+    "material": "ACR",
+    "color": "KANSAS"
+  },
+  {
+    "code": "ACRILI2824P120",
+    "description": "ACR KARNAK",
+    "width": 120,
+    "material": "ACR",
+    "color": "KARNAK"
+  },
+  {
+    "code": "ACRILI1063P120",
+    "description": "ACR LAGOON",
+    "width": 120,
+    "material": "ACR",
+    "color": "LAGOON"
+  },
+  {
+    "code": "ACRILI1076P120",
+    "description": "ACR LAVA",
+    "width": 120,
+    "material": "ACR",
+    "color": "LAVA"
+  },
+  {
+    "code": "ACRILI8785P120",
+    "description": "ACR LAVANDA",
+    "width": 120,
+    "material": "ACR",
+    "color": "LAVANDA"
+  },
+  {
+    "code": "ACRILI2575P120",
+    "description": "ACR LEO",
+    "width": 120,
+    "material": "ACR",
+    "color": "LEO"
+  },
+  {
+    "code": "ACRILI2809P120",
+    "description": "ACR LIBRA",
+    "width": 120,
+    "material": "ACR",
+    "color": "LIBRA"
+  },
+  {
+    "code": "ACRILI1482P120",
+    "description": "ACR LIMA",
+    "width": 120,
+    "material": "ACR",
+    "color": "LIMA"
+  },
+  {
+    "code": "ACRILI2829P120",
+    "description": "ACR LIMON",
+    "width": 120,
+    "material": "ACR",
+    "color": "LIMON"
+  },
+  {
+    "code": "ACRILI1066P120",
+    "description": "ACR LOGO RED",
+    "width": 120,
+    "material": "ACR",
+    "color": "LOGO RED"
+  },
+  {
+    "code": "ACRILI2134P120",
+    "description": "ACR LUGANO",
+    "width": 120,
+    "material": "ACR",
+    "color": "LUGANO"
+  },
+  {
+    "code": "ACRILI3021P120",
+    "description": "ACR LUNA",
+    "width": 120,
+    "material": "ACR",
+    "color": "LUNA"
+  },
+  {
+    "code": "ACRILI2568P120",
+    "description": "ACR MADEIRA",
+    "width": 120,
+    "material": "ACR",
+    "color": "MADEIRA"
+  },
+  {
+    "code": "ACRILI2119P120",
+    "description": "ACR MALVA",
+    "width": 120,
+    "material": "ACR",
+    "color": "MALVA"
+  },
+  {
+    "code": "ACRILI2823P120",
+    "description": "ACR MANCHESTER",
+    "width": 120,
+    "material": "ACR",
+    "color": "MANCHESTER"
+  },
+  {
+    "code": "ACRILI2142P120",
+    "description": "ACR MANDARINA",
+    "width": 120,
+    "material": "ACR",
+    "color": "MANDARINA"
+  },
+  {
+    "code": "ACRILI3008P120",
+    "description": "ACR MANGO",
+    "width": 120,
+    "material": "ACR",
+    "color": "MANGO"
+  },
+  {
+    "code": "ACRILI2143P120",
+    "description": "ACR MARFIL",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ACRILI2145P120",
+    "description": "ACR MARINO",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARINO"
+  },
+  {
+    "code": "ACRILI1070P120",
+    "description": "ACR MARMOL",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARMOL"
+  },
+  {
+    "code": "ACRILI2146P120",
+    "description": "ACR MARRON",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARRON"
+  },
+  {
+    "code": "ACRILI2149P120",
+    "description": "ACR MARRON N",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARRON N"
+  },
+  {
+    "code": "ACRILI2165P120",
+    "description": "ACR MARRON X",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARRON X"
+  },
+  {
+    "code": "ACRILI2121P120",
+    "description": "ACR MARTE",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARTE"
+  },
+  {
+    "code": "ACRILI2160P120",
+    "description": "ACR MASTER",
+    "width": 120,
+    "material": "ACR",
+    "color": "MASTER"
+  },
+  {
+    "code": "ACRILI2830P120",
+    "description": "ACR MELOCOTON",
+    "width": 120,
+    "material": "ACR",
+    "color": "MELOCOTON"
+  },
+  {
+    "code": "ACRILI2577P120",
+    "description": "ACR MIKONOS",
+    "width": 120,
+    "material": "ACR",
+    "color": "MIKONOS"
+  },
+  {
+    "code": "ACRILI2831P120",
+    "description": "ACR MINERAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "MINERAL"
+  },
+  {
+    "code": "ACRILI2154P120",
+    "description": "ACR MONACO",
+    "width": 120,
+    "material": "ACR",
+    "color": "MONACO"
+  },
+  {
+    "code": "ACRILI2168P120",
+    "description": "ACR MONCAYO",
+    "width": 120,
+    "material": "ACR",
+    "color": "MONCAYO"
+  },
+  {
+    "code": "RECACRIL411P120",
+    "description": "ACR MONTORNES",
+    "width": 120,
+    "material": "ACR",
+    "color": "MONTORNES"
+  },
+  {
+    "code": "ACRILI2157P120",
+    "description": "ACR MOSCU",
+    "width": 120,
+    "material": "ACR",
+    "color": "MOSCU"
+  },
+  {
+    "code": "ACRILI2837P120",
+    "description": "ACR MOSTAZA",
+    "width": 120,
+    "material": "ACR",
+    "color": "MOSTAZA"
+  },
+  {
+    "code": "ACRILI2050P120",
+    "description": "ACR NARANJA",
+    "width": 120,
+    "material": "ACR",
+    "color": "NARANJA"
+  },
+  {
+    "code": "ACRILI2052P120",
+    "description": "ACR NARANJA N",
+    "width": 120,
+    "material": "ACR",
+    "color": "NARANJA N"
+  },
+  {
+    "code": "ACRILI2026P120",
+    "description": "ACR NATURAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "NATURAL"
+  },
+  {
+    "code": "ACRILI2561P120",
+    "description": "ACR NEBRASKA",
+    "width": 120,
+    "material": "ACR",
+    "color": "NEBRASKA"
+  },
+  {
+    "code": "ACRILI2820P120",
+    "description": "ACR NECTAR",
+    "width": 120,
+    "material": "ACR",
+    "color": "NECTAR"
+  },
+  {
+    "code": "ACRILI2170P120",
+    "description": "ACR NEGRO",
+    "width": 120,
+    "material": "ACR",
+    "color": "NEGRO"
+  },
+  {
+    "code": "ACRILI2171P120",
+    "description": "ACR NEGRO N",
+    "width": 120,
+    "material": "ACR",
+    "color": "NEGRO N"
+  },
+  {
+    "code": "RECACRIL103P120",
+    "description": "ACR NEGRO.",
+    "width": 120,
+    "material": "ACR",
+    "color": "NEGRO"
+  },
+  {
+    "code": "ACRILI2176P120",
+    "description": "ACR NEVADA",
+    "width": 120,
+    "material": "ACR",
+    "color": "NEVADA"
+  },
+  {
+    "code": "ACRILI2174P120",
+    "description": "ACR NEW YORK",
+    "width": 120,
+    "material": "ACR",
+    "color": "NEW YORK"
+  },
+  {
+    "code": "ACRILI3009P120",
+    "description": "ACR NUBE",
+    "width": 120,
+    "material": "ACR",
+    "color": "NUBE"
+  },
+  {
+    "code": "ACRILI1479P120",
+    "description": "ACR OCEAN",
+    "width": 120,
+    "material": "ACR",
+    "color": "OCEAN"
+  },
+  {
+    "code": "ACRILI2180P120",
+    "description": "ACR OCRE",
+    "width": 120,
+    "material": "ACR",
+    "color": "OCRE"
+  },
+  {
+    "code": "ACRILI2183P120",
+    "description": "ACR OCRE-MARRON",
+    "width": 120,
+    "material": "ACR",
+    "color": "OCRE-MARR"
+  },
+  {
+    "code": "ACRILI2832P120",
+    "description": "ACR OLIVA",
+    "width": 120,
+    "material": "ACR",
+    "color": "OLIVA"
+  },
+  {
+    "code": "ACRILI1069P120",
+    "description": "ACR OPTIK",
+    "width": 120,
+    "material": "ACR",
+    "color": "OPTIK"
+  },
+  {
+    "code": "ACRILI2927P120",
+    "description": "ACR ORLEANS",
+    "width": 120,
+    "material": "ACR",
+    "color": "ORLEANS"
+  },
+  {
+    "code": "ACRILI2688P120",
+    "description": "ACR ORO",
+    "width": 120,
+    "material": "ACR",
+    "color": "ORO"
+  },
+  {
+    "code": "ACRILI2818P120",
+    "description": "ACR OSLO",
+    "width": 120,
+    "material": "ACR",
+    "color": "OSLO"
+  },
+  {
+    "code": "ACRILI2200P120",
+    "description": "ACR PARIS",
+    "width": 120,
+    "material": "ACR",
+    "color": "PARIS"
+  },
+  {
+    "code": "ACRILI2207P120",
+    "description": "ACR PARMA",
+    "width": 120,
+    "material": "ACR",
+    "color": "PARMA"
+  },
+  {
+    "code": "ACRILI2979P120",
+    "description": "ACR PERLA",
+    "width": 120,
+    "material": "ACR",
+    "color": "PERLA"
+  },
+  {
+    "code": "ACRILI3605P120",
+    "description": "ACR PIEDRA",
+    "width": 120,
+    "material": "ACR",
+    "color": "PIEDRA"
+  },
+  {
+    "code": "ACRILI2682P120",
+    "description": "ACR PIEDRA X",
+    "width": 120,
+    "material": "ACR",
+    "color": "PIEDRA X"
+  },
+  {
+    "code": "ACRILI2835P120",
+    "description": "ACR PINK",
+    "width": 120,
+    "material": "ACR",
+    "color": "PINK"
+  },
+  {
+    "code": "ACRILI2790P120",
+    "description": "ACR PIRINEOS",
+    "width": 120,
+    "material": "ACR",
+    "color": "PIRINEOS"
+  },
+  {
+    "code": "ACRILI2179P120",
+    "description": "ACR PLUTON",
+    "width": 120,
+    "material": "ACR",
+    "color": "PLUTON"
+  },
+  {
+    "code": "ACRILI2205P120",
+    "description": "ACR PRAGA",
+    "width": 120,
+    "material": "ACR",
+    "color": "PRAGA"
+  },
+  {
+    "code": "ACRILI2704P120",
+    "description": "ACR PUERTO RICO",
+    "width": 120,
+    "material": "ACR",
+    "color": "PUERTO RICO"
+  },
+  {
+    "code": "ACRILI2801P120",
+    "description": "ACR QATAR",
+    "width": 120,
+    "material": "ACRILICO",
+    "color": "QATAR"
+  },
+  {
+    "code": "ACRILI2839P120",
+    "description": "ACR RACING",
+    "width": 120,
+    "material": "ACR",
+    "color": "RACING"
+  },
+  {
+    "code": "ACRILI1073P120",
+    "description": "ACR RAIN",
+    "width": 120,
+    "material": "ACR",
+    "color": "RAIN"
+  },
+  {
+    "code": "ACRILI3002P120",
+    "description": "ACR REGATA",
+    "width": 120,
+    "material": "ACR",
+    "color": "REGATA"
+  },
+  {
+    "code": "ACRILI2216P120",
+    "description": "ACR RENO",
+    "width": 120,
+    "material": "ACR",
+    "color": "RENO"
+  },
+  {
+    "code": "ACRRES2013P120",
+    "description": "ACR RESIN  AMARILLO",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "AMARILLO"
+  },
+  {
+    "code": "ACRRES8488P120",
+    "description": "ACR RESIN ANTRACITA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "ANTRACITA"
+  },
+  {
+    "code": "ACRRES2296P153",
+    "description": "ACR RESIN AVENA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "AVENA"
+  },
+  {
+    "code": "ACRRESAZULP120",
+    "description": "ACR RESIN AZUL",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "AZUL"
+  },
+  {
+    "code": "ACRRES2038P120",
+    "description": "ACR RESIN BEIGE",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "BEIGE"
+  },
+  {
+    "code": "ACRRESBLANP120",
+    "description": "ACR RESIN BLANCO",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "ACRRESGRANP120",
+    "description": "ACR RESIN GRANATE",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "GRANATE"
+  },
+  {
+    "code": "ACRRES2102P120",
+    "description": "ACR RESIN GRIS",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "GRIS"
+  },
+  {
+    "code": "ACRRES2143P120",
+    "description": "ACR RESIN MARFIL",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ACRRES2145P120",
+    "description": "ACR RESIN MARINO",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "MARINO"
+  },
+  {
+    "code": "ACRRESMRROP153",
+    "description": "ACR RESIN MARRON",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "MARRON"
+  },
+  {
+    "code": "ACRRES2050P153",
+    "description": "ACR RESIN NARANJA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "NARANJA"
+  },
+  {
+    "code": "ACRRESNEGROP120",
+    "description": "ACR RESIN NEGRO",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "ACRRES2979P153",
+    "description": "ACR RESIN PERLA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "PERLA"
+  },
+  {
+    "code": "ACRRESRIOJP153",
+    "description": "ACR RESIN RIOJA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "RIOJA"
+  },
+  {
+    "code": "ACRRESROJOP120",
+    "description": "ACR RESIN ROJO",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "ROJO"
+  },
+  {
+    "code": "ACRRES2596P120",
+    "description": "ACR RESIN SEDA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "SEDA"
+  },
+  {
+    "code": "ACRRES2821P153",
+    "description": "ACR RESIN SILVER",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "SILVER"
+  },
+  {
+    "code": "ACRRES2065P120",
+    "description": "ACR RESIN TEJA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "TEJA"
+  },
+  {
+    "code": "ACRRESVAINP153",
+    "description": "ACR RESIN VAINILLA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "VAINILLA"
+  },
+  {
+    "code": "ACRRESSR8280P120",
+    "description": "ACR RESIN VERDE",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "VERDE"
+  },
+  {
+    "code": "ACRRESVEBOP120",
+    "description": "ACR RESIN VERDE BOTELLA",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "VERDE BOTELLA"
+  },
+  {
+    "code": "ACRILI221OP120",
+    "description": "ACR RIOJA",
+    "width": 120,
+    "material": "ACR",
+    "color": "RIOJA"
+  },
+  {
+    "code": "RECACRIL127P120",
+    "description": "ACR ROCA",
+    "width": 120,
+    "material": "ACR",
+    "color": "ROCA"
+  },
+  {
+    "code": "ACRILI2578P120",
+    "description": "ACR RODAS",
+    "width": 120,
+    "material": "ACR",
+    "color": "RODAS"
+  },
+  {
+    "code": "ACRILI2211P120",
+    "description": "ACR ROJO",
+    "width": 120,
+    "material": "ACR",
+    "color": "ROJO"
+  },
+  {
+    "code": "ACRILI2212P120",
+    "description": "ACR ROJO N",
+    "width": 120,
+    "material": "ACR",
+    "color": "ROJO N"
+  },
+  {
+    "code": "ACRILI2215P120",
+    "description": "ACR ROSA N",
+    "width": 120,
+    "material": "ACR",
+    "color": "ROSA N"
+  },
+  {
+    "code": "ACRILI2806P120",
+    "description": "ACR SAN FRANCISCO",
+    "width": 120,
+    "material": "ACR",
+    "color": "SAN FRANCISCO"
+  },
+  {
+    "code": "ACRILI1071P120",
+    "description": "ACR SAND",
+    "width": 120,
+    "material": "ACR",
+    "color": "SAND"
+  },
+  {
+    "code": "ACRILI2579P120",
+    "description": "ACR SANTORINI",
+    "width": 120,
+    "material": "ACR",
+    "color": "SANTORINI"
+  },
+  {
+    "code": "ACRILI2596P120",
+    "description": "ACR SEDA",
+    "width": 120,
+    "material": "ACR",
+    "color": "SEDA"
+  },
+  {
+    "code": "ACRILI1469P120",
+    "description": "ACR SHELL",
+    "width": 120,
+    "material": "ACR",
+    "color": "SHELL"
+  },
+  {
+    "code": "ACRILI2821P120",
+    "description": "ACR SILVER",
+    "width": 120,
+    "material": "ACR",
+    "color": "SILVER"
+  },
+  {
+    "code": "ACRILI2226P120",
+    "description": "ACR SIROCO",
+    "width": 120,
+    "material": "ACR",
+    "color": "SIROCO"
+  },
+  {
+    "code": "ACRILI2126P120",
+    "description": "ACR SOL",
+    "width": 120,
+    "material": "ACR",
+    "color": "SOL"
+  },
+  {
+    "code": "ACRILI2924P120",
+    "description": "ACR ST ANDREWS",
+    "width": 120,
+    "material": "ACR",
+    "color": "ST.ANDREWS"
+  },
+  {
+    "code": "ACRILI2757P120",
+    "description": "ACR STILO AMARILLO",
+    "width": 120,
+    "material": "ACR",
+    "color": "STILO AMARILLO"
+  },
+  {
+    "code": "ACRILI2758P120",
+    "description": "ACR STILO BRISA",
+    "width": 120,
+    "material": "ACR",
+    "color": "STILO BRISA"
+  },
+  {
+    "code": "ACRILI1459P120",
+    "description": "ACR STIRLING",
+    "width": 120,
+    "material": "ACR",
+    "color": "STIRLING"
+  },
+  {
+    "code": "ACRILI2571P120",
+    "description": "ACR STUTTGART",
+    "width": 120,
+    "material": "ACR",
+    "color": "STUTTGART"
+  },
+  {
+    "code": "ACRILI2230P120",
+    "description": "ACR TAJO",
+    "width": 120,
+    "material": "ACR",
+    "color": "TAJO"
+  },
+  {
+    "code": "ACRILI2573P120",
+    "description": "ACR TAURO",
+    "width": 120,
+    "material": "ACR",
+    "color": "TAURO"
+  },
+  {
+    "code": "ACRILI2065P120",
+    "description": "ACR TEJA",
+    "width": 120,
+    "material": "ACR",
+    "color": "TEJA"
+  },
+  {
+    "code": "ACRILI2354P120",
+    "description": "ACR TENNERE",
+    "width": 120,
+    "material": "ACR",
+    "color": "TENNERE"
+  },
+  {
+    "code": "ACRILI8645P120",
+    "description": "ACR TERRACOTA",
+    "width": 120,
+    "material": "ACR",
+    "color": "TERRACOTA"
+  },
+  {
+    "code": "ACRILI2128P120",
+    "description": "ACR TIERRA",
+    "width": 120,
+    "material": "ACR",
+    "color": "TIERRA"
+  },
+  {
+    "code": "ACRILI2928P120",
+    "description": "ACR TIROL",
+    "width": 120,
+    "material": "ACR",
+    "color": "TIROL"
+  },
+  {
+    "code": "ACRILI1470P120",
+    "description": "ACR TOAST",
+    "width": 120,
+    "material": "ACR",
+    "color": "TOAST"
+  },
+  {
+    "code": "ACRILI2569P120",
+    "description": "ACR TOBAGO",
+    "width": 120,
+    "material": "ACR",
+    "color": "TOBAGO"
+  },
+  {
+    "code": "ACRILI2834P120",
+    "description": "ACR TOFFEE",
+    "width": 120,
+    "material": "ACR",
+    "color": "TOFFEE"
+  },
+  {
+    "code": "ACRILI2836P120",
+    "description": "ACR TOMATO",
+    "width": 120,
+    "material": "ACR",
+    "color": "TOMATO"
+  },
+  {
+    "code": "ACRILI1074P120",
+    "description": "ACR TRIGO",
+    "width": 120,
+    "material": "ACR",
+    "color": "TRIGO"
+  },
+  {
+    "code": "ACRILI1489P120",
+    "description": "ACR TROPIC",
+    "width": 120,
+    "material": "ACR",
+    "color": "TROPIC"
+  },
+  {
+    "code": "ACRILI3003P120",
+    "description": "ACR TRUFA",
+    "width": 120,
+    "material": "ACR",
+    "color": "TRUFA"
+  },
+  {
+    "code": "ACRILI3581120C",
+    "description": "ACR TWEED GRIS CLARO",
+    "width": 120,
+    "material": "ACR",
+    "color": "TWEED GRIS CLARO"
+  },
+  {
+    "code": "ACRILI3582P120",
+    "description": "ACR TWEED NEGRO",
+    "width": 120,
+    "material": "ACR",
+    "color": "TWEED NEGRO"
+  },
+  {
+    "code": "ACRILI1467P120",
+    "description": "ACR TWEED PERLA",
+    "width": 120,
+    "material": "ACR",
+    "color": "TWEED PERLA"
+  },
+  {
+    "code": "ACRILI3608P120",
+    "description": "ACR URBAN",
+    "width": 120,
+    "material": "ACR",
+    "color": "URBAN"
+  },
+  {
+    "code": "ACRILI2687P120",
+    "description": "ACR VAINILLA",
+    "width": 120,
+    "material": "ACR",
+    "color": "VAINILLA"
+  },
+  {
+    "code": "ACRILI2676P120",
+    "description": "ACR VELETA",
+    "width": 120,
+    "material": "ACR",
+    "color": "VELETA"
+  },
+  {
+    "code": "ACRILI2659P120",
+    "description": "ACR VENUS",
+    "width": 120,
+    "material": "ACR",
+    "color": "VENUS"
+  },
+  {
+    "code": "ACRILI2242P120",
+    "description": "ACR VERDE",
+    "width": 120,
+    "material": "ACR",
+    "color": "VERDE"
+  },
+  {
+    "code": "ACRILI2246P120",
+    "description": "ACR VERDE CLARO",
+    "width": 120,
+    "material": "ACR",
+    "color": "VERDE CLARO"
+  },
+  {
+    "code": "ACRILI2248P120",
+    "description": "ACR VERDE N",
+    "width": 120,
+    "material": "ACR",
+    "color": "VERDE N"
+  },
+  {
+    "code": "ACRILI2636P120",
+    "description": "ACR VESUBIO",
+    "width": 120,
+    "material": "ACR",
+    "color": "VESUBIO"
+  },
+  {
+    "code": "ACRILI2251P120",
+    "description": "ACR VIENA",
+    "width": 120,
+    "material": "ACR",
+    "color": "VIENA"
+  },
+  {
+    "code": "ACRILI2252P120",
+    "description": "ACR VIOLETA",
+    "width": 120,
+    "material": "ACR",
+    "color": "VIOLETA"
+  },
+  {
+    "code": "ACRILI2250P120",
+    "description": "ACR VISON",
+    "width": 120,
+    "material": "ACR",
+    "color": "VISON"
+  },
+  {
+    "code": "ACRILI3609P120",
+    "description": "ACR VOLCAN",
+    "width": 120,
+    "material": "ACR",
+    "color": "VOLCAN"
+  },
+  {
+    "code": "ACRILI2805P120",
+    "description": "ACR WASHINGTON",
+    "width": 120,
+    "material": "ACR",
+    "color": "WASHINGTON"
+  },
+  {
+    "code": "ACRILI2255P120",
+    "description": "ACR ZURICH",
+    "width": 120,
+    "material": "ACR",
+    "color": "ZURICH"
+  },
+  {
+    "code": "CRISTATP140650",
+    "description": "CRISTAL TRANSP 650 MICRAS",
+    "width": 140,
+    "material": "CRISTAL",
+    "color": "TRANSP"
+  },
+  {
+    "code": "PLASCHP200300",
+    "description": "PLASTICO CON HILO",
+    "width": 200,
+    "material": "CRISTAL",
+    "color": "CON HILO"
+  },
+  {
+    "code": "ALPHAAM03P250",
+    "description": "PVC 580 AMARILLO 1003",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "AMARILLO 1003"
+  },
+  {
+    "code": "ALPHAAM18P250",
+    "description": "PVC 580 AMARILLO 1018",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "AMARILLO 1018"
+  },
+  {
+    "code": "ALPHAARENP250",
+    "description": "PVC 580 ARENA",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "ARENA"
+  },
+  {
+    "code": "ALPHAAZ15P250",
+    "description": "PVC 580 AZUL 5015",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "AZUL 5015"
+  },
+  {
+    "code": "ALPHAAZEUP250",
+    "description": "PVC 580 AZUL EUROPA",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "STPLUSBL10P250",
+    "description": "PVC 580 BLANCO",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "BLANCO"
+  },
+  {
+    "code": "STPLUSBURDP250",
+    "description": "PVC 580 BURDEOS",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "BURDEOS"
+  },
+  {
+    "code": "STPLUSCR14P250",
+    "description": "PVC 580 CREMA",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "CREMA"
+  },
+  {
+    "code": "STPLUSGR37P250",
+    "description": "PVC 580 GRIS 7037",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "GRIS 096"
+  },
+  {
+    "code": "STPLUSGR38P250",
+    "description": "PVC 580 GRIS 7038",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "GRIS 095"
+  },
+  {
+    "code": "STPLUSMA13P250",
+    "description": "PVC 580 MARFIL",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ALPHAMR04P250",
+    "description": "PVC 580 MARRON",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "MARRON"
+  },
+  {
+    "code": "ALPHANA04P250",
+    "description": "PVC 580 NARANJA",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "NARANJA"
+  },
+  {
+    "code": "ALPHANEGRP250",
+    "description": "PVC 580 NEGRO",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "NEGRO"
+  },
+  {
+    "code": "STPLUSPLATP250",
+    "description": "PVC 580 PLATA",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "PLATA"
+  },
+  {
+    "code": "STPLUSRO02P250",
+    "description": "PVC 580 ROJO",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "ROJO"
+  },
+  {
+    "code": "ALPHAVE26P250",
+    "description": "PVC 580 VERDE 6026",
+    "width": 250,
+    "material": "PVC 580",
+    "color": "VERDE 6026"
+  },
+  {
+    "code": "G650AM03P250",
+    "description": "PVC 650 AMARILLO 1003",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "AMARILLO 1003"
+  },
+  {
+    "code": "B8000AM21P250",
+    "description": "PVC 650 AMARILLO 1021",
+    "width": 250,
+    "material": "",
+    "color": "AMARILLO 1021"
+  },
+  {
+    "code": "G650AZ15P250",
+    "description": "PVC 650 AZUL 5015",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "AZUL 5015"
+  },
+  {
+    "code": "B8000AZ0SP250",
+    "description": "PVC 650 AZUL 5032",
+    "width": 250,
+    "material": "",
+    "color": "AZUL 5032"
+  },
+  {
+    "code": "G650AZEUP250",
+    "description": "PVC 650 AZUL EUROPA",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "LAC640AZ15P300",
+    "description": "PVC 650 AZUL EUROPA",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "LAC640BL10P250",
+    "description": "PVC 650 BLANCO",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LAC650BLANP250",
+    "description": "PVC 650 BLANCO",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "BLANCO"
+  },
+  {
+    "code": "G650CR14P250",
+    "description": "PVC 650 CREMA",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "CREMA"
+  },
+  {
+    "code": "B8000GRCLP250",
+    "description": "PVC 650 GRIS  7001",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "GRIS  7001"
+  },
+  {
+    "code": "G650GR38P250",
+    "description": "PVC 650 GRIS  7038",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "GRIS  7038"
+  },
+  {
+    "code": "B8000GROSP250",
+    "description": "PVC 650 GRIS 7024",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "GRIS 7024"
+  },
+  {
+    "code": "G650GR30P250",
+    "description": "PVC 650 GRIS 7030",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "GRIS 7030"
+  },
+  {
+    "code": "G650GR37P250",
+    "description": "PVC 650 GRIS 7037",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "GRIS 7037"
+  },
+  {
+    "code": "B8000GRMEP250",
+    "description": "PVC 650 GRIS 7060",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "GRIS 7060"
+  },
+  {
+    "code": "B8000GRALP250",
+    "description": "PVC 650 GRIS ALUMINIO",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "GRIS ALUMINIO"
+  },
+  {
+    "code": "GAMAM2AM03P250",
+    "description": "PVC 650 IGN AMARILLO",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "AMARILLO"
+  },
+  {
+    "code": "GAMAM2AZ13P250",
+    "description": "PVC 650 IGN AZUL",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "AZUL"
+  },
+  {
+    "code": "GAMAM2AZ15P250",
+    "description": "PVC 650 IGN AZUL",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "AZUL"
+  },
+  {
+    "code": "GAMAM2AZEUP250",
+    "description": "PVC 650 IGN AZUL EUROPA",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "GAMAM2CR14P250",
+    "description": "PVC 650 IGN CREMA",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "CREMA"
+  },
+  {
+    "code": "GAMAM2GR30P250",
+    "description": "PVC 650 IGN GRIS",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "GRIS"
+  },
+  {
+    "code": "GAMAM2MA13P250",
+    "description": "PVC 650 IGN MARFIL",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "MARFIL"
+  },
+  {
+    "code": "GAMAM2NEGRP250",
+    "description": "PVC 650 IGN NEGRO",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "NEGRO"
+  },
+  {
+    "code": "GAMAM2RO02P250",
+    "description": "PVC 650 IGN ROJO",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "ROJO"
+  },
+  {
+    "code": "GAMMA2VAINP250",
+    "description": "PVC 650 IGN VAINILLA",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "VAINILLA"
+  },
+  {
+    "code": "GAMAM2VE26P250",
+    "description": "PVC 650 IGN VERDE",
+    "width": 250,
+    "material": "PVC 650 IGN",
+    "color": "VERDE"
+  },
+  {
+    "code": "B8000MARFP250",
+    "description": "PVC 650 MARFIL",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "MARFIL"
+  },
+  {
+    "code": "B8000MR17P250",
+    "description": "PVC 650 MARRON",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "MARRON"
+  },
+  {
+    "code": "B8000NARJP250",
+    "description": "PVC 650 NARANJA",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "NARANJA"
+  },
+  {
+    "code": "LAC640NA04P300",
+    "description": "PVC 650 NARANJA",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "NARANJA RAL"
+  },
+  {
+    "code": "G650NEGRP250",
+    "description": "PVC 650 NEGRO",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "NEGRO"
+  },
+  {
+    "code": "LAC640NE05P300",
+    "description": "PVC 650 NEGRO",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "NEGRO"
+  },
+  {
+    "code": "G650ROJOP250",
+    "description": "PVC 650 ROJO",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "ROJO"
+  },
+  {
+    "code": "G650VA23P250",
+    "description": "PVC 650 VAINILLA",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "VAINILLA"
+  },
+  {
+    "code": "G650VE26P300",
+    "description": "PVC 650 VERDE 6026",
+    "width": 250,
+    "material": "PVC 650",
+    "color": "VERDE 6026"
+  },
+  {
+    "code": "SEDOSOLMRROP300",
+    "description": "SEDOSOL 500 MARRON",
+    "width": 300,
+    "material": "SEDOSOL 500",
+    "color": "MARRON"
+  },
+  {
+    "code": "SOLTIS86BEIGP177",
+    "description": "SOLTIS 86 BEIGE",
+    "width": 267,
+    "material": "SOLTIS 86",
+    "color": "BEIGE"
+  },
+  {
+    "code": "SOLTIS86BLANP177",
+    "description": "SOLTIS 86 BLANCO",
+    "width": 267,
+    "material": "SOLTIS 86",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SOLTIS86NEGRP270",
+    "description": "SOLTIS 86 NEGRO",
+    "width": 267,
+    "material": "SOLTIS 86",
+    "color": "NEGRO"
+  },
+  {
+    "code": "SOLTIS86SALMP177",
+    "description": "SOLTIS 86 SALMON",
+    "width": 267,
+    "material": "SOLTIS 86",
+    "color": "SALMON"
+  },
+  {
+    "code": "SOLTIS92BEIGP267",
+    "description": "SOLTIS 92  BEIGE",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "BEIGE"
+  },
+  {
+    "code": "SOLTIS92AVENP267",
+    "description": "SOLTIS 92  BEIGE-ARENA",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "BEIGE-ARENA"
+  },
+  {
+    "code": "SOLTIS9250HAP177",
+    "description": "SOLTIS 92  HABANA",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "HABANA"
+  },
+  {
+    "code": "SOLTIS920268P177",
+    "description": "SOLTIS 92 50268",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS92AMCLP177",
+    "description": "SOLTIS 92 AMARILLO LIMON",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "AMARILLO LIMON"
+  },
+  {
+    "code": "SOLTIS92ARENP177",
+    "description": "SOLTIS 92 ARENA",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "ARENA"
+  },
+  {
+    "code": "SOLTIS92AZULP177",
+    "description": "SOLTIS 92 AZUL",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "AZUL"
+  },
+  {
+    "code": "SOLTIS92CAFEP177",
+    "description": "SOLTIS 92 CAFÉ",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "CAFE"
+  },
+  {
+    "code": "SOLTIS92GRMEP177",
+    "description": "SOLTIS 92 GRIS MEDIO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "GRIS MEDIO"
+  },
+  {
+    "code": "SOLTIS92GROSP177",
+    "description": "SOLTIS 92 GRIS OSCURO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "GRIS OSCURO"
+  },
+  {
+    "code": "SOLTIS92MRROP177",
+    "description": "SOLTIS 92 MARRON",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "MARRON"
+  },
+  {
+    "code": "SOLTIS92NEGRP177",
+    "description": "SOLTIS 92 NEGRO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "NEGRO"
+  },
+  {
+    "code": "SOLTIS92NUBP177",
+    "description": "SOLTIS 92 NUBE",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "NUBE"
+  },
+  {
+    "code": "SOLTIS92PL/BP267",
+    "description": "SOLTIS 92 PLATA/BLANCO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "PLATA/BLANCO"
+  },
+  {
+    "code": "SOLTIS92ROJOP177",
+    "description": "SOLTIS 92 ROJO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "ROJO"
+  },
+  {
+    "code": "SOLTIS922821P177",
+    "description": "SOLTIS 92 SILVER",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "SILVER"
+  },
+  {
+    "code": "SOLTIS92VECLP177",
+    "description": "SOLTIS 92 VERDE",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "VERDE"
+  },
+  {
+    "code": "SOLTIS92VEMAP177",
+    "description": "SOLTIS 92 VERDE MANZANA",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "VERDE MANZANA"
+  },
+  {
+    "code": "SOLTIS96VAINP267",
+    "description": "SOLTIS 96 ARENA 8861",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "ARENA"
+  },
+  {
+    "code": "SOLTIS96MARFP267",
+    "description": "SOLTIS 96 BEGE-ARENA 2135",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "BEIG-ARENA"
+  },
+  {
+    "code": "SOLTIS96BLANP267",
+    "description": "SOLTIS 96 BLANCO",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "BLANCO 8102"
+  },
+  {
+    "code": "SOLTIS96NATUP267",
+    "description": "SOLTIS 96 BLANCO-NATURAL 1103",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "BLANCO-NATURAL"
+  },
+  {
+    "code": "SOLTIS96KARIP267",
+    "description": "SOLTIS 96 KARITE",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "KARITE"
+  },
+  {
+    "code": "SOLTIS96NEGRP267",
+    "description": "SOLTIS 96 NEGRO 8450",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "NEGRO"
+  },
+  {
+    "code": "SOLTIS99ARENP267",
+    "description": "SOLTIS 99 ARENA",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "ARENA"
+  },
+  {
+    "code": "SOLTIS99AZREP177",
+    "description": "SOLTIS 99 AZUL REAL",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "AZUL REAL"
+  },
+  {
+    "code": "SOLTIS99BLANP177",
+    "description": "SOLTIS 99 BLANCO",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SOLTIS99BLANP267",
+    "description": "SOLTIS 99 BLANCO",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SOLTIS99CRCLP177",
+    "description": "SOLTIS 99 CREMA CLARO",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "CREMA CLARO"
+  },
+  {
+    "code": "SOLTIS99GRCLP270",
+    "description": "SOLTIS 99 GRIS CLARO",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "SOLTIS99GROSP177",
+    "description": "SOLTIS 99 GRIS OSCURO",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "GRIS OSCURO"
+  },
+  {
+    "code": "SOLTIS99NATUP177",
+    "description": "SOLTIS 99 NATURAL",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "NATURAL"
+  },
+  {
+    "code": "SOLTIS99SALMP177",
+    "description": "SOLTIS 99 SALMON",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "SALMON"
+  },
+  {
+    "code": "S2000EVE26P300",
+    "description": "REJILLA ESP. S2000 VERDE 6026",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "VERDE"
+  },
+  {
+    "code": "ACRILI1456P120",
+    "description": "ACR ANIMALES CARDINAL",
+    "width": 120,
+    "material": "ACR",
+    "color": "ROJO"
+  }
+]
