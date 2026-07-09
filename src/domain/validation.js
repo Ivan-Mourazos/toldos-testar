@@ -68,6 +68,7 @@ function normalizeAwning(awning, index) {
     sensor: cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
+    valanceHeight: numberOrDefault(awning?.valanceHeight, 0),
     calculationModelOverride: normalizeDefaultOverride(awning?.calculationModelOverride),
     supportSystemOverride: normalizeDefaultOverride(awning?.supportSystemOverride),
     minimumLineOverride: optionalNumber(awning?.minimumLineOverride),

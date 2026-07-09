@@ -42,3 +42,42 @@ describe('calculateOrder', () => {
     expect(result.ofs[0].materials).toEqual([]);
   });
 });
+
+describe('calculateOrder — CAMBIO TELA', () => {
+  it('calculates CAMBIO TELA materials end-to-end, including valanceHeight passthrough', () => {
+    const result = calculateOrder({
+      orderCode: 'P26TEST',
+      fabric: 'ACR GRANATE',
+      awnings: [{
+        of: '12345',
+        model: 'CAMBIO TELA',
+        units: 1,
+        width: 447.5,
+        projection: 250,
+        valanceHeight: 30
+      }]
+    });
+
+    expect(result.ofs[0].materials).toEqual([
+      { code: 'ACRILI2101P120', quantity: 13, description: 'ACR GRANATE' }
+    ]);
+  });
+
+  it('defaults valanceHeight to 0 when not provided', () => {
+    const result = calculateOrder({
+      orderCode: 'P26TEST',
+      fabric: 'PVC 580 NARANJA',
+      awnings: [{
+        of: '12345',
+        model: 'CAMBIO TELA',
+        units: 1,
+        width: 329,
+        projection: 300
+      }]
+    });
+
+    expect(result.ofs[0].materials).toEqual([
+      { code: 'ALPHANA04P250', quantity: 6.9, description: 'PVC 580 NARANJA' }
+    ]);
+  });
+});

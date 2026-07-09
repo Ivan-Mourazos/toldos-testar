@@ -1,9 +1,11 @@
 import { models } from './catalog.js';
 import { calculateArzuaPro } from './arzuaProRules.js';
+import { calculateCambioTela } from './cambioTelaRules.js';
 import { normalizeOrder } from './validation.js';
 
 const implementedRules = new Map([
-  ['ARZUA PRO', calculateArzuaPro]
+  ['ARZUA PRO', calculateArzuaPro],
+  ['CAMBIO TELA', calculateCambioTela]
 ]);
 
 export function calculateOrder(payload) {
