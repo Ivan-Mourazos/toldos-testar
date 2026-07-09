@@ -1,0 +1,5354 @@
+{
+  "master": {
+    "PRO.MIN": {
+      "ref": "B19:E28",
+      "rows": [
+        [
+          "BRAZO",
+          "MAQ. EXTERIOR",
+          "MAQ. INTERIOR",
+          "MOTOR"
+        ],
+        [
+          150,
+          200,
+          195,
+          195
+        ],
+        [
+          175,
+          225,
+          220,
+          220
+        ],
+        [
+          200,
+          250,
+          245,
+          245
+        ],
+        [
+          225,
+          275,
+          270,
+          270
+        ],
+        [
+          250,
+          300,
+          295,
+          295
+        ],
+        [
+          275,
+          325,
+          320,
+          320
+        ],
+        [
+          300,
+          345,
+          350,
+          350
+        ],
+        [
+          325,
+          375,
+          375,
+          375
+        ],
+        [
+          350,
+          395,
+          400,
+          400
+        ]
+      ]
+    },
+    "PRO.MON.01": {
+      "ref": "B12:G15",
+      "rows": [
+        [
+          "opcion ",
+          "MODELO DISPOSITIVO",
+          "ACCESORIO",
+          "ACCESORIO2",
+          "ACCESORIOS",
+          "CASQUILLO"
+        ],
+        [
+          "MAQ. INTERIOR",
+          "#N/A",
+          "#N/A",
+          "TACO NAYLON MAQUINA",
+          "KIT DE TORNILLOS MAQUINA",
+          "CASQUILLO MAQUINA EJE 50MM Ø78"
+        ],
+        [
+          "MAQ. EXTERIOR",
+          "#N/A",
+          "#N/A",
+          "TACO NAYLON MAQUINA",
+          "KIT DE TORNILLOS MAQUINA",
+          "CASQUILLO EJE 63MM Ø78"
+        ],
+        [
+          "MOTOR",
+          "RUEDA MOTRIZ Ø 78",
+          "MOTOR SOMFY SUNILUS 55/17 IO",
+          "CORONA LT 60 ADAPTADA Ø 78",
+          "SOPORTE UNIVERSAL HIPRO",
+          "…"
+        ]
+      ]
+    },
+    "PRO.DES": {
+      "ref": "B7:D10",
+      "rows": [
+        [
+          ",",
+          "TUBO DE CARGA EVO 803",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          10.2,
+          11.2
+        ],
+        [
+          "MAQ. EXTERIOR",
+          10.4,
+          11.4
+        ],
+        [
+          "MOTOR",
+          9.8,
+          9.8
+        ]
+      ]
+    },
+    "PRO.DES.TELA": {
+      "ref": "B2:D5",
+      "rows": [
+        [
+          " ",
+          "TUBO DE CARGA EVO 80",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          13,
+          13
+        ],
+        [
+          "MAQ. EXTERIOR",
+          13,
+          13
+        ],
+        [
+          "MOTOR",
+          11,
+          11
+        ]
+      ]
+    },
+    "A.ENROLLE": {
+      "ref": "F2:H5",
+      "rows": [
+        [
+          " ",
+          "TUBO DE CARGA EVO 80",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          11.2,
+          11.2
+        ],
+        [
+          "MAQ. EXTERIOR",
+          11.4,
+          11.4
+        ],
+        [
+          "MOTOR",
+          9.8,
+          9.8
+        ]
+      ]
+    },
+    "PRO.PIEZAS.01": {
+      "ref": "M8:M22",
+      "rows": [
+        [
+          "PIEZAS "
+        ],
+        [
+          "JUEGO SOPORTE AROND"
+        ],
+        [
+          "TUBO DE ENROLLE P801"
+        ],
+        [
+          "CASQUILLO PUNTA"
+        ],
+        [
+          "#N/A"
+        ],
+        [
+          0
+        ],
+        [
+          "KIT TAPONES UNIVERS 280"
+        ],
+        [
+          "JUEGO DE BRAZOS ONYX"
+        ],
+        [
+          "JUEGO DE TERMINALES"
+        ],
+        [
+          "#N/A"
+        ],
+        [
+          "#N/A"
+        ],
+        [
+          "#N/A"
+        ],
+        [
+          "#N/A"
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "PRO.UNIDADES.01": {
+      "ref": "N8:N22",
+      "rows": [
+        [
+          "UN."
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          0
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "POR.CALCULO": {
+      "ref": "O8:O22",
+      "rows": [
+        [
+          "CALCULO"
+        ],
+        [
+          null
+        ],
+        [
+          "#N/A"
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          "#N/A"
+        ],
+        [
+          null
+        ],
+        [
+          0
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          false
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "PRO_M_AJ_values": [
+      {
+        "row": 1,
+        "values": [
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 2,
+        "values": [
+          null,
+          "TOLDO 01",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 02",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 03",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 04",
+          null,
+          null
+        ]
+      },
+      {
+        "row": 3,
+        "values": [
+          "FRENTE",
+          0,
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 4,
+        "values": [
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD",
+          0,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD",
+          0,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD",
+          0,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD"
+        ]
+      },
+      {
+        "row": 5,
+        "values": [
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA",
+          0,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA",
+          0,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA",
+          0,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA"
+        ]
+      },
+      {
+        "row": 8,
+        "values": [
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO"
+        ]
+      },
+      {
+        "row": 9,
+        "values": [
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 10,
+        "values": [
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 11,
+        "values": [
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 12,
+        "values": [
+          4,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 13,
+        "values": [
+          5,
+          0,
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 14,
+        "values": [
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 15,
+        "values": [
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0
+        ]
+      },
+      {
+        "row": 16,
+        "values": [
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 17,
+        "values": [
+          9,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 18,
+        "values": [
+          10,
+          "#N/A",
+          0,
+          false,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false
+        ]
+      },
+      {
+        "row": 19,
+        "values": [
+          11,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 20,
+        "values": [
+          12,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 21,
+        "values": [
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 22,
+        "values": [
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 24,
+        "values": [
+          null,
+          "TELA FRENTE",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 25,
+        "values": [
+          null,
+          "TELA SALIDA",
+          null,
+          45,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45
+        ]
+      },
+      {
+        "row": 26,
+        "values": [
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 29,
+        "values": [
+          null,
+          "=",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "PRO_M_AJ_formulas": [
+      {
+        "row": 1,
+        "values": [
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 2,
+        "values": [
+          null,
+          "TOLDO 01",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 02",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 03",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 04",
+          null,
+          null
+        ]
+      },
+      {
+        "row": 3,
+        "values": [
+          "FRENTE",
+          "='DATOS '!C24",
+          null,
+          "=IF(AND(M3<=600,M3>=INDEX(PRO.MIN[#All],MATCH(M4,PRO.MIN[[#All],[BRAZO]]),MATCH(M5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!G24",
+          null,
+          "=IF(AND(T3<=600,T3>=INDEX(PRO.MIN[#All],MATCH(T4,PRO.MIN[[#All],[BRAZO]]),MATCH(T5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!K24",
+          null,
+          "=IF(AND(AA3<=600,AA3>=INDEX(PRO.MIN[#All],MATCH(AA4,PRO.MIN[[#All],[BRAZO]]),MATCH(AA5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!O24",
+          null,
+          "=IF(AND(AH3<=600,AH3>=INDEX(PRO.MIN[#All],MATCH(AH4,PRO.MIN[[#All],[BRAZO]]),MATCH(AH5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")"
+        ]
+      },
+      {
+        "row": 4,
+        "values": [
+          "SALIDA",
+          "='DATOS '!C25",
+          null,
+          "UNIDAD",
+          "='DATOS '!C23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!G25",
+          null,
+          "UNIDAD",
+          "='DATOS '!G23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!K25",
+          null,
+          "UNIDAD",
+          "='DATOS '!K23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!O25",
+          null,
+          "UNIDAD"
+        ]
+      },
+      {
+        "row": 5,
+        "values": [
+          "DISPOS.",
+          "='DATOS '!C28",
+          null,
+          "BAMBA",
+          "='DATOS '!C27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!G28",
+          null,
+          "BAMBA",
+          "='DATOS '!G27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!K28",
+          null,
+          "BAMBA",
+          "='DATOS '!K27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!O28",
+          null,
+          "BAMBA"
+        ]
+      },
+      {
+        "row": 8,
+        "values": [
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO"
+        ]
+      },
+      {
+        "row": 9,
+        "values": [
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 10,
+        "values": [
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*P4",
+          "=M3-INDEX(A.ENROLLE[#All],MATCH(M5,A.ENROLLE[[#All],[ ]],0),MATCH(M13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*W4",
+          "=T3-INDEX(A.ENROLLE[#All],MATCH(T5,A.ENROLLE[[#All],[ ]],0),MATCH(T13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*AD4",
+          "=AA3-INDEX(A.ENROLLE[#All],MATCH(AA5,A.ENROLLE[[#All],[ ]],0),MATCH(AA13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*AK4",
+          "=AH3-INDEX(A.ENROLLE[#All],MATCH(AH5,A.ENROLLE[[#All],[ ]],0),MATCH(AH13,A.ENROLLE[#Headers],0))"
+        ]
+      },
+      {
+        "row": 11,
+        "values": [
+          3,
+          "CASQUILLO PUNTA",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 12,
+        "values": [
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 13,
+        "values": [
+          5,
+          "='DATOS '!C21",
+          "=1*P4",
+          "=M3-INDEX(PRO.DES[#All],MATCH(M5,PRO.DES[[#All],[,]],0),MATCH(M13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!G21",
+          "=1*W4",
+          "=T3-INDEX(PRO.DES[#All],MATCH(T5,PRO.DES[[#All],[,]],0),MATCH(T13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!K21",
+          "=1*AD4",
+          "=AA3-INDEX(PRO.DES[#All],MATCH(AA5,PRO.DES[[#All],[,]],0),MATCH(AA13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!O21",
+          "=1*AK4",
+          "=AH3-INDEX(PRO.DES[#All],MATCH(AH5,PRO.DES[[#All],[,]],0),MATCH(AH13,A.ENROLLE[#Headers],0),1)"
+        ]
+      },
+      {
+        "row": 14,
+        "values": [
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(M13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(T13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(AA13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(AH13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 15,
+        "values": [
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*P4",
+          "=M4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*W4",
+          "=T4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*AD4",
+          "=AA4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*AK4",
+          "=AH4"
+        ]
+      },
+      {
+        "row": 16,
+        "values": [
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 17,
+        "values": [
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]]),2)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]],0),2)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]]),2)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]]),2)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 18,
+        "values": [
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]],0),3),\" \",POR.CALCULO[[#This Row],[CALCULO]])",
+          "=1*P4",
+          "=IF(M5=\"MAQ. EXTERIOR\",'DATOS '!C33,IF(M5=\"MAQ. INTERIOR\",'DATOS '!C33,IF(M5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.2[[#This Row],[CALCULO]])",
+          "=1*W4",
+          "=IF(T5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(T5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(T5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.3[[#This Row],[CALCULO]])",
+          "=1*AD4",
+          "=IF(AA5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(AA5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(AA5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.4[[#This Row],[CALCULO]])",
+          "=1*AK4",
+          "=IF(AH5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(AH5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(AH5=\"MOTOR\",\"0\")))"
+        ]
+      },
+      {
+        "row": 19,
+        "values": [
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(M5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(T5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(AA5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(AH5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 20,
+        "values": [
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(M5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(T5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(AA5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(AH5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 21,
+        "values": [
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 22,
+        "values": [
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 24,
+        "values": [
+          null,
+          "TELA FRENTE",
+          null,
+          "=M3-INDEX(PRO.DES.TELA[#All],MATCH(M5,PRO.DES.TELA[[#All],[ ]],0),MATCH(M13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=T3-INDEX(PRO.DES.TELA[#All],MATCH(T5,PRO.DES.TELA[[#All],[ ]],0),MATCH(T13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=AA3-INDEX(PRO.DES.TELA[#All],MATCH(AA5,PRO.DES.TELA[[#All],[ ]],0),MATCH(AA13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=AH3-INDEX(PRO.DES.TELA[#All],MATCH(AH5,PRO.DES.TELA[[#All],[ ]],0),MATCH(AH13,PRO.DES.TELA[#Headers],0))"
+        ]
+      },
+      {
+        "row": 25,
+        "values": [
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,M4+40+P5+5,M4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,T4+40+W5+5,T4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,AA4+40+AD5+5,AA4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,AH4+40+AK5+5,AH4+40)"
+        ]
+      },
+      {
+        "row": 26,
+        "values": [
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=O25*ROUNDUP(O24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=T4*ROUNDUP(V24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=AA4*ROUNDUP(AC24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=AH4*ROUNDUP(AJ24/120,0)/100"
+        ]
+      },
+      {
+        "row": 29,
+        "values": [
+          null,
+          "=",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "ESTR01_key": {
+      "model": 0,
+      "of": 0,
+      "width": 0,
+      "projection": 0,
+      "device": 0,
+      "color": 0,
+      "fabricWidth": 0,
+      "fabricDrop": 0,
+      "fabricMl": "#N/A"
+    }
+  },
+  "AR2603332": {
+    "PRO.MIN": {
+      "ref": "B19:E28",
+      "rows": [
+        [
+          "BRAZO",
+          "MAQ. EXTERIOR",
+          "MAQ. INTERIOR",
+          "MOTOR"
+        ],
+        [
+          150,
+          200,
+          195,
+          195
+        ],
+        [
+          175,
+          225,
+          220,
+          220
+        ],
+        [
+          200,
+          250,
+          245,
+          245
+        ],
+        [
+          225,
+          275,
+          270,
+          270
+        ],
+        [
+          250,
+          300,
+          295,
+          295
+        ],
+        [
+          275,
+          325,
+          320,
+          320
+        ],
+        [
+          300,
+          345,
+          350,
+          350
+        ],
+        [
+          325,
+          375,
+          375,
+          375
+        ],
+        [
+          350,
+          395,
+          400,
+          400
+        ]
+      ]
+    },
+    "PRO.MON.01": {
+      "ref": "B12:G15",
+      "rows": [
+        [
+          "opcion ",
+          "MODELO DISPOSITIVO",
+          "ACCESORIO",
+          "ACCESORIO2",
+          "ACCESORIOS",
+          "CASQUILLO"
+        ],
+        [
+          "MAQ. INTERIOR",
+          "MAQUINA ZNP 10 L170 BLANCA",
+          "MANIVELA LUXE BLANCA",
+          "TACO NAYLON MAQUINA",
+          "KIT DE TORNILLOS MAQUINA",
+          "CASQUILLO MAQUINA EJE 50MM Ø78"
+        ],
+        [
+          "MAQ. EXTERIOR",
+          "MAQUINA ZNP 10 L170 BLANCA",
+          "MANIVELA LUXE BLANCA",
+          "TACO NAYLON MAQUINA",
+          "KIT DE TORNILLOS MAQUINA",
+          "CASQUILLO EJE 63MM Ø78"
+        ],
+        [
+          "MOTOR",
+          "RUEDA MOTRIZ Ø 78",
+          "MOTOR SOMFY SUNILUS 55/17 IO",
+          "CORONA LT 60 ADAPTADA Ø 78",
+          "SOPORTE UNIVERSAL HIPRO",
+          "…"
+        ]
+      ]
+    },
+    "PRO.DES": {
+      "ref": "B7:D10",
+      "rows": [
+        [
+          ",",
+          "TUBO DE CARGA EVO 803",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          10.2,
+          11.2
+        ],
+        [
+          "MAQ. EXTERIOR",
+          10.4,
+          11.4
+        ],
+        [
+          "MOTOR",
+          9.8,
+          9.8
+        ]
+      ]
+    },
+    "PRO.DES.TELA": {
+      "ref": "B2:D5",
+      "rows": [
+        [
+          " ",
+          "TUBO DE CARGA EVO 80",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          13,
+          13
+        ],
+        [
+          "MAQ. EXTERIOR",
+          13,
+          13
+        ],
+        [
+          "MOTOR",
+          11,
+          11
+        ]
+      ]
+    },
+    "A.ENROLLE": {
+      "ref": "F2:H5",
+      "rows": [
+        [
+          " ",
+          "TUBO DE CARGA EVO 80",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          11.2,
+          11.2
+        ],
+        [
+          "MAQ. EXTERIOR",
+          11.4,
+          11.4
+        ],
+        [
+          "MOTOR",
+          9.8,
+          9.8
+        ]
+      ]
+    },
+    "PRO.PIEZAS.01": {
+      "ref": "M8:M22",
+      "rows": [
+        [
+          "PIEZAS "
+        ],
+        [
+          "JUEGO SOPORTE AROND"
+        ],
+        [
+          "TUBO DE ENROLLE P801"
+        ],
+        [
+          "CASQUILLO PUNTA"
+        ],
+        [
+          "…"
+        ],
+        [
+          "TUBO DE CARGA EVO 80"
+        ],
+        [
+          "KIT TAPONES EVO 80"
+        ],
+        [
+          "JUEGO DE BRAZOS ONYX"
+        ],
+        [
+          "JUEGO DE TERMINALES"
+        ],
+        [
+          "RUEDA MOTRIZ Ø 78"
+        ],
+        [
+          "MOTOR SOMFY SUNILUS 55/17 IO 0"
+        ],
+        [
+          "CORONA LT 60 ADAPTADA Ø 78"
+        ],
+        [
+          "SOPORTE UNIVERSAL HIPRO"
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "PRO.UNIDADES.01": {
+      "ref": "N8:N22",
+      "rows": [
+        [
+          "UN."
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "POR.CALCULO": {
+      "ref": "O8:O22",
+      "rows": [
+        [
+          "CALCULO"
+        ],
+        [
+          null
+        ],
+        [
+          327.2
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          327.2
+        ],
+        [
+          null
+        ],
+        [
+          225
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          "0"
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "PRO_M_AJ_values": [
+      {
+        "row": 1,
+        "values": [
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 2,
+        "values": [
+          null,
+          "TOLDO 01",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 02",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 03",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 04",
+          null,
+          null
+        ]
+      },
+      {
+        "row": 3,
+        "values": [
+          "FRENTE",
+          337,
+          null,
+          "VERDADERO",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 4,
+        "values": [
+          "SALIDA",
+          225,
+          null,
+          "UNIDAD",
+          1,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD",
+          0,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD",
+          0,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD"
+        ]
+      },
+      {
+        "row": 5,
+        "values": [
+          "DISPOS.",
+          "MOTOR",
+          null,
+          "BAMBA",
+          30,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA",
+          0,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA",
+          0,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA"
+        ]
+      },
+      {
+        "row": 8,
+        "values": [
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO"
+        ]
+      },
+      {
+        "row": 9,
+        "values": [
+          1,
+          "JUEGO SOPORTE AROND",
+          1,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 10,
+        "values": [
+          2,
+          "TUBO DE ENROLLE P801",
+          1,
+          327.2,
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 11,
+        "values": [
+          3,
+          "CASQUILLO PUNTA",
+          1,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 12,
+        "values": [
+          4,
+          "…",
+          1,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 13,
+        "values": [
+          5,
+          "TUBO DE CARGA EVO 80",
+          1,
+          327.2,
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 14,
+        "values": [
+          6,
+          "KIT TAPONES EVO 80",
+          1,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 15,
+        "values": [
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          1,
+          225,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0
+        ]
+      },
+      {
+        "row": 16,
+        "values": [
+          8,
+          "JUEGO DE TERMINALES",
+          1,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 17,
+        "values": [
+          9,
+          "RUEDA MOTRIZ Ø 78",
+          1,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 18,
+        "values": [
+          10,
+          "MOTOR SOMFY SUNILUS 55/17 IO 0",
+          1,
+          "0",
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false
+        ]
+      },
+      {
+        "row": 19,
+        "values": [
+          11,
+          "CORONA LT 60 ADAPTADA Ø 78",
+          1,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 20,
+        "values": [
+          12,
+          "SOPORTE UNIVERSAL HIPRO",
+          1,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 21,
+        "values": [
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 22,
+        "values": [
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 24,
+        "values": [
+          null,
+          "TELA FRENTE",
+          null,
+          326,
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 25,
+        "values": [
+          null,
+          "TELA SALIDA",
+          null,
+          300,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45
+        ]
+      },
+      {
+        "row": 26,
+        "values": [
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          9,
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 29,
+        "values": [
+          null,
+          "=",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "PRO_M_AJ_formulas": [
+      {
+        "row": 1,
+        "values": [
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 2,
+        "values": [
+          null,
+          "TOLDO 01",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 02",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 03",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 04",
+          null,
+          null
+        ]
+      },
+      {
+        "row": 3,
+        "values": [
+          "FRENTE",
+          "='DATOS '!C24",
+          null,
+          "=IF(AND(M3<=600,M3>=INDEX(PRO.MIN[#All],MATCH(M4,PRO.MIN[[#All],[BRAZO]]),MATCH(M5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!G24",
+          null,
+          "=IF(AND(T3<=600,T3>=INDEX(PRO.MIN[#All],MATCH(T4,PRO.MIN[[#All],[BRAZO]]),MATCH(T5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!K24",
+          null,
+          "=IF(AND(AA3<=600,AA3>=INDEX(PRO.MIN[#All],MATCH(AA4,PRO.MIN[[#All],[BRAZO]]),MATCH(AA5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!O24",
+          null,
+          "=IF(AND(AH3<=600,AH3>=INDEX(PRO.MIN[#All],MATCH(AH4,PRO.MIN[[#All],[BRAZO]]),MATCH(AH5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")"
+        ]
+      },
+      {
+        "row": 4,
+        "values": [
+          "SALIDA",
+          "='DATOS '!C25",
+          null,
+          "UNIDAD",
+          "='DATOS '!C23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!G25",
+          null,
+          "UNIDAD",
+          "='DATOS '!G23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!K25",
+          null,
+          "UNIDAD",
+          "='DATOS '!K23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!O25",
+          null,
+          "UNIDAD"
+        ]
+      },
+      {
+        "row": 5,
+        "values": [
+          "DISPOS.",
+          "='DATOS '!C28",
+          null,
+          "BAMBA",
+          "='DATOS '!C27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!G28",
+          null,
+          "BAMBA",
+          "='DATOS '!G27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!K28",
+          null,
+          "BAMBA",
+          "='DATOS '!K27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!O28",
+          null,
+          "BAMBA"
+        ]
+      },
+      {
+        "row": 8,
+        "values": [
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO"
+        ]
+      },
+      {
+        "row": 9,
+        "values": [
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 10,
+        "values": [
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*P4",
+          "=M3-INDEX(A.ENROLLE[#All],MATCH(M5,A.ENROLLE[[#All],[ ]],0),MATCH(M13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*W4",
+          "=T3-INDEX(A.ENROLLE[#All],MATCH(T5,A.ENROLLE[[#All],[ ]],0),MATCH(T13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*AD4",
+          "=AA3-INDEX(A.ENROLLE[#All],MATCH(AA5,A.ENROLLE[[#All],[ ]],0),MATCH(AA13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*AK4",
+          "=AH3-INDEX(A.ENROLLE[#All],MATCH(AH5,A.ENROLLE[[#All],[ ]],0),MATCH(AH13,A.ENROLLE[#Headers],0))"
+        ]
+      },
+      {
+        "row": 11,
+        "values": [
+          3,
+          "CASQUILLO PUNTA",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 12,
+        "values": [
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 13,
+        "values": [
+          5,
+          "='DATOS '!C21",
+          "=1*P4",
+          "=M3-INDEX(PRO.DES[#All],MATCH(M5,PRO.DES[[#All],[,]],0),MATCH(M13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!G21",
+          "=1*W4",
+          "=T3-INDEX(PRO.DES[#All],MATCH(T5,PRO.DES[[#All],[,]],0),MATCH(T13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!K21",
+          "=1*AD4",
+          "=AA3-INDEX(PRO.DES[#All],MATCH(AA5,PRO.DES[[#All],[,]],0),MATCH(AA13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!O21",
+          "=1*AK4",
+          "=AH3-INDEX(PRO.DES[#All],MATCH(AH5,PRO.DES[[#All],[,]],0),MATCH(AH13,A.ENROLLE[#Headers],0),1)"
+        ]
+      },
+      {
+        "row": 14,
+        "values": [
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(M13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(T13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(AA13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(AH13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 15,
+        "values": [
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*P4",
+          "=M4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*W4",
+          "=T4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*AD4",
+          "=AA4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*AK4",
+          "=AH4"
+        ]
+      },
+      {
+        "row": 16,
+        "values": [
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 17,
+        "values": [
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]]),2)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]],0),2)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]]),2)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]]),2)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 18,
+        "values": [
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]],0),3),\" \",POR.CALCULO[[#This Row],[CALCULO]])",
+          "=1*P4",
+          "=IF(M5=\"MAQ. EXTERIOR\",'DATOS '!C33,IF(M5=\"MAQ. INTERIOR\",'DATOS '!C33,IF(M5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.2[[#This Row],[CALCULO]])",
+          "=1*W4",
+          "=IF(T5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(T5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(T5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.3[[#This Row],[CALCULO]])",
+          "=1*AD4",
+          "=IF(AA5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(AA5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(AA5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.4[[#This Row],[CALCULO]])",
+          "=1*AK4",
+          "=IF(AH5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(AH5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(AH5=\"MOTOR\",\"0\")))"
+        ]
+      },
+      {
+        "row": 19,
+        "values": [
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(M5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(T5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(AA5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(AH5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 20,
+        "values": [
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(M5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(T5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(AA5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(AH5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 21,
+        "values": [
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 22,
+        "values": [
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 24,
+        "values": [
+          null,
+          "TELA FRENTE",
+          null,
+          "=M3-INDEX(PRO.DES.TELA[#All],MATCH(M5,PRO.DES.TELA[[#All],[ ]],0),MATCH(M13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=T3-INDEX(PRO.DES.TELA[#All],MATCH(T5,PRO.DES.TELA[[#All],[ ]],0),MATCH(T13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=AA3-INDEX(PRO.DES.TELA[#All],MATCH(AA5,PRO.DES.TELA[[#All],[ ]],0),MATCH(AA13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=AH3-INDEX(PRO.DES.TELA[#All],MATCH(AH5,PRO.DES.TELA[[#All],[ ]],0),MATCH(AH13,PRO.DES.TELA[#Headers],0))"
+        ]
+      },
+      {
+        "row": 25,
+        "values": [
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,M4+40+P5+5,M4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,T4+40+W5+5,T4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,AA4+40+AD5+5,AA4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,AH4+40+AK5+5,AH4+40)"
+        ]
+      },
+      {
+        "row": 26,
+        "values": [
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=O25*ROUNDUP(O24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=T4*ROUNDUP(V24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=AA4*ROUNDUP(AC24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=AH4*ROUNDUP(AJ24/120,0)/100"
+        ]
+      },
+      {
+        "row": 29,
+        "values": [
+          null,
+          "=",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "ESTR01_key": {
+      "model": "ARZUA PRO",
+      "of": 230194,
+      "width": 337,
+      "projection": 225,
+      "device": "MOTOR",
+      "color": "BLANCO",
+      "fabricWidth": 326,
+      "fabricDrop": 300,
+      "fabricMl": 9
+    }
+  },
+  "AR2603298-1": {
+    "PRO.MIN": {
+      "ref": "B19:E28",
+      "rows": [
+        [
+          "BRAZO",
+          "MAQ. EXTERIOR",
+          "MAQ. INTERIOR",
+          "MOTOR"
+        ],
+        [
+          150,
+          200,
+          195,
+          195
+        ],
+        [
+          175,
+          225,
+          220,
+          220
+        ],
+        [
+          200,
+          250,
+          245,
+          245
+        ],
+        [
+          225,
+          275,
+          270,
+          270
+        ],
+        [
+          250,
+          300,
+          295,
+          295
+        ],
+        [
+          275,
+          325,
+          320,
+          320
+        ],
+        [
+          300,
+          345,
+          350,
+          350
+        ],
+        [
+          325,
+          375,
+          375,
+          375
+        ],
+        [
+          350,
+          395,
+          400,
+          400
+        ]
+      ]
+    },
+    "PRO.MON.01": {
+      "ref": "B12:G15",
+      "rows": [
+        [
+          "opcion ",
+          "MODELO DISPOSITIVO",
+          "ACCESORIO",
+          "ACCESORIO2",
+          "ACCESORIOS",
+          "CASQUILLO"
+        ],
+        [
+          "MAQ. INTERIOR",
+          "MAQUINA ZNP 10 L170 BLANCA",
+          "MANIVELA LUXE BLANCA",
+          "TACO NAYLON MAQUINA",
+          "KIT DE TORNILLOS MAQUINA",
+          "CASQUILLO MAQUINA EJE 50MM Ø78"
+        ],
+        [
+          "MAQ. EXTERIOR",
+          "MAQUINA ZNP 10 L170 BLANCA",
+          "MANIVELA LUXE BLANCA",
+          "TACO NAYLON MAQUINA",
+          "KIT DE TORNILLOS MAQUINA",
+          "CASQUILLO EJE 63MM Ø78"
+        ],
+        [
+          "MOTOR",
+          "RUEDA MOTRIZ Ø 78",
+          "MOTOR SOMFY SUNILUS 55/17 IO",
+          "CORONA LT 60 ADAPTADA Ø 78",
+          "SOPORTE UNIVERSAL HIPRO",
+          "…"
+        ]
+      ]
+    },
+    "PRO.DES": {
+      "ref": "B7:D10",
+      "rows": [
+        [
+          ",",
+          "TUBO DE CARGA EVO 803",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          10.2,
+          11.2
+        ],
+        [
+          "MAQ. EXTERIOR",
+          10.4,
+          11.4
+        ],
+        [
+          "MOTOR",
+          9.8,
+          9.8
+        ]
+      ]
+    },
+    "PRO.DES.TELA": {
+      "ref": "B2:D5",
+      "rows": [
+        [
+          " ",
+          "TUBO DE CARGA EVO 80",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          13,
+          13
+        ],
+        [
+          "MAQ. EXTERIOR",
+          13,
+          13
+        ],
+        [
+          "MOTOR",
+          11,
+          11
+        ]
+      ]
+    },
+    "A.ENROLLE": {
+      "ref": "F2:H5",
+      "rows": [
+        [
+          " ",
+          "TUBO DE CARGA EVO 80",
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "MAQ. INTERIOR",
+          11.2,
+          11.2
+        ],
+        [
+          "MAQ. EXTERIOR",
+          11.4,
+          11.4
+        ],
+        [
+          "MOTOR",
+          9.8,
+          9.8
+        ]
+      ]
+    },
+    "PRO.PIEZAS.01": {
+      "ref": "M8:M22",
+      "rows": [
+        [
+          "PIEZAS "
+        ],
+        [
+          "JUEGO SOPORTE AROND"
+        ],
+        [
+          "TUBO DE ENROLLE P801"
+        ],
+        [
+          "CASQUILLO PUNTA"
+        ],
+        [
+          "CASQUILLO EJE 63MM Ø78"
+        ],
+        [
+          "TUBO DE CARGA UNIVERS 280"
+        ],
+        [
+          "KIT TAPONES UNIVERS 280"
+        ],
+        [
+          "JUEGO DE BRAZOS ONYX"
+        ],
+        [
+          "JUEGO DE TERMINALES"
+        ],
+        [
+          "MAQUINA ZNP 10 L170 BLANCA"
+        ],
+        [
+          "MANIVELA LUXE BLANCA 250"
+        ],
+        [
+          "TACO NAYLON MAQUINA"
+        ],
+        [
+          "KIT DE TORNILLOS MAQUINA"
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "PRO.UNIDADES.01": {
+      "ref": "N8:N22",
+      "rows": [
+        [
+          "UN."
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "POR.CALCULO": {
+      "ref": "O8:O22",
+      "rows": [
+        [
+          "CALCULO"
+        ],
+        [
+          null
+        ],
+        [
+          418.6
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          418.6
+        ],
+        [
+          null
+        ],
+        [
+          350
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          250
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    "PRO_M_AJ_values": [
+      {
+        "row": 1,
+        "values": [
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 2,
+        "values": [
+          null,
+          "TOLDO 01",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 02",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 03",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 04",
+          null,
+          null
+        ]
+      },
+      {
+        "row": 3,
+        "values": [
+          "FRENTE",
+          430,
+          null,
+          "VERDADERO",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          "FRENTE",
+          0,
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 4,
+        "values": [
+          "SALIDA",
+          350,
+          null,
+          "UNIDAD",
+          1,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD",
+          0,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD",
+          0,
+          null,
+          null,
+          "SALIDA",
+          0,
+          null,
+          "UNIDAD"
+        ]
+      },
+      {
+        "row": 5,
+        "values": [
+          "DISPOS.",
+          "MAQ. EXTERIOR",
+          null,
+          "BAMBA",
+          25,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA",
+          0,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA",
+          0,
+          null,
+          null,
+          "DISPOS.",
+          0,
+          null,
+          "BAMBA"
+        ]
+      },
+      {
+        "row": 8,
+        "values": [
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO"
+        ]
+      },
+      {
+        "row": 9,
+        "values": [
+          1,
+          "JUEGO SOPORTE AROND",
+          1,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 10,
+        "values": [
+          2,
+          "TUBO DE ENROLLE P801",
+          1,
+          418.6,
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          0,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 11,
+        "values": [
+          3,
+          "CASQUILLO PUNTA",
+          1,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 12,
+        "values": [
+          4,
+          "CASQUILLO EJE 63MM Ø78",
+          1,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          4,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 13,
+        "values": [
+          5,
+          "TUBO DE CARGA UNIVERS 280",
+          1,
+          418.6,
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A",
+          null,
+          null,
+          null,
+          5,
+          0,
+          0,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 14,
+        "values": [
+          6,
+          "KIT TAPONES UNIVERS 280",
+          1,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null,
+          null,
+          null,
+          null,
+          6,
+          "KIT TAPONES UNIVERS 280",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 15,
+        "values": [
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          1,
+          350,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0,
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          0,
+          0
+        ]
+      },
+      {
+        "row": 16,
+        "values": [
+          8,
+          "JUEGO DE TERMINALES",
+          1,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 17,
+        "values": [
+          9,
+          "MAQUINA ZNP 10 L170 BLANCA",
+          1,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          9,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 18,
+        "values": [
+          10,
+          "MANIVELA LUXE BLANCA 250",
+          1,
+          250,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false,
+          null,
+          null,
+          null,
+          10,
+          "#N/A",
+          0,
+          false
+        ]
+      },
+      {
+        "row": 19,
+        "values": [
+          11,
+          "TACO NAYLON MAQUINA",
+          1,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          11,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 20,
+        "values": [
+          12,
+          "KIT DE TORNILLOS MAQUINA",
+          1,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null,
+          null,
+          null,
+          null,
+          12,
+          "#N/A",
+          0,
+          null
+        ]
+      },
+      {
+        "row": 21,
+        "values": [
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 22,
+        "values": [
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 24,
+        "values": [
+          null,
+          "TELA FRENTE",
+          null,
+          417,
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 25,
+        "values": [
+          null,
+          "TELA SALIDA",
+          null,
+          420,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45,
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          45
+        ]
+      },
+      {
+        "row": 26,
+        "values": [
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          16.8,
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "#N/A"
+        ]
+      },
+      {
+        "row": 29,
+        "values": [
+          null,
+          "=",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "PRO_M_AJ_formulas": [
+      {
+        "row": 1,
+        "values": [
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "MONTAJE FINAL",
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 2,
+        "values": [
+          null,
+          "TOLDO 01",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 02",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 03",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "TOLDO 04",
+          null,
+          null
+        ]
+      },
+      {
+        "row": 3,
+        "values": [
+          "FRENTE",
+          "='DATOS '!C24",
+          null,
+          "=IF(AND(M3<=600,M3>=INDEX(PRO.MIN[#All],MATCH(M4,PRO.MIN[[#All],[BRAZO]]),MATCH(M5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!G24",
+          null,
+          "=IF(AND(T3<=600,T3>=INDEX(PRO.MIN[#All],MATCH(T4,PRO.MIN[[#All],[BRAZO]]),MATCH(T5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!K24",
+          null,
+          "=IF(AND(AA3<=600,AA3>=INDEX(PRO.MIN[#All],MATCH(AA4,PRO.MIN[[#All],[BRAZO]]),MATCH(AA5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")",
+          null,
+          null,
+          null,
+          "FRENTE",
+          "='DATOS '!O24",
+          null,
+          "=IF(AND(AH3<=600,AH3>=INDEX(PRO.MIN[#All],MATCH(AH4,PRO.MIN[[#All],[BRAZO]]),MATCH(AH5,PRO.MIN[#Headers]))),\"VERDADERO\",\"FALSO\")"
+        ]
+      },
+      {
+        "row": 4,
+        "values": [
+          "SALIDA",
+          "='DATOS '!C25",
+          null,
+          "UNIDAD",
+          "='DATOS '!C23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!G25",
+          null,
+          "UNIDAD",
+          "='DATOS '!G23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!K25",
+          null,
+          "UNIDAD",
+          "='DATOS '!K23",
+          null,
+          null,
+          "SALIDA",
+          "='DATOS '!O25",
+          null,
+          "UNIDAD"
+        ]
+      },
+      {
+        "row": 5,
+        "values": [
+          "DISPOS.",
+          "='DATOS '!C28",
+          null,
+          "BAMBA",
+          "='DATOS '!C27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!G28",
+          null,
+          "BAMBA",
+          "='DATOS '!G27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!K28",
+          null,
+          "BAMBA",
+          "='DATOS '!K27",
+          null,
+          null,
+          "DISPOS.",
+          "='DATOS '!O28",
+          null,
+          "BAMBA"
+        ]
+      },
+      {
+        "row": 8,
+        "values": [
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO",
+          null,
+          null,
+          null,
+          null,
+          "PIEZAS ",
+          "UN.",
+          "CALCULO"
+        ]
+      },
+      {
+        "row": 9,
+        "values": [
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          1,
+          "JUEGO SOPORTE AROND",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 10,
+        "values": [
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*P4",
+          "=M3-INDEX(A.ENROLLE[#All],MATCH(M5,A.ENROLLE[[#All],[ ]],0),MATCH(M13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*W4",
+          "=T3-INDEX(A.ENROLLE[#All],MATCH(T5,A.ENROLLE[[#All],[ ]],0),MATCH(T13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*AD4",
+          "=AA3-INDEX(A.ENROLLE[#All],MATCH(AA5,A.ENROLLE[[#All],[ ]],0),MATCH(AA13,A.ENROLLE[#Headers],0))",
+          null,
+          null,
+          null,
+          2,
+          "TUBO DE ENROLLE P801",
+          "=1*AK4",
+          "=AH3-INDEX(A.ENROLLE[#All],MATCH(AH5,A.ENROLLE[[#All],[ ]],0),MATCH(AH13,A.ENROLLE[#Headers],0))"
+        ]
+      },
+      {
+        "row": 11,
+        "values": [
+          3,
+          "CASQUILLO PUNTA",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          3,
+          "CASQUILLO PUNTA",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 12,
+        "values": [
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          4,
+          "=INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]]),6,1)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 13,
+        "values": [
+          5,
+          "='DATOS '!C21",
+          "=1*P4",
+          "=M3-INDEX(PRO.DES[#All],MATCH(M5,PRO.DES[[#All],[,]],0),MATCH(M13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!G21",
+          "=1*W4",
+          "=T3-INDEX(PRO.DES[#All],MATCH(T5,PRO.DES[[#All],[,]],0),MATCH(T13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!K21",
+          "=1*AD4",
+          "=AA3-INDEX(PRO.DES[#All],MATCH(AA5,PRO.DES[[#All],[,]],0),MATCH(AA13,A.ENROLLE[#Headers],0),1)",
+          null,
+          null,
+          null,
+          5,
+          "='DATOS '!O21",
+          "=1*AK4",
+          "=AH3-INDEX(PRO.DES[#All],MATCH(AH5,PRO.DES[[#All],[,]],0),MATCH(AH13,A.ENROLLE[#Headers],0),1)"
+        ]
+      },
+      {
+        "row": 14,
+        "values": [
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(M13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(T13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(AA13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          6,
+          "=CONCATENATE(\"KIT TAPONES \",IF(AH13=D.COM!R4,\"EVO 80\",\"UNIVERS 280\"))",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 15,
+        "values": [
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*P4",
+          "=M4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*W4",
+          "=T4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*AD4",
+          "=AA4",
+          null,
+          null,
+          null,
+          7,
+          "JUEGO DE BRAZOS ONYX",
+          "=1*AK4",
+          "=AH4"
+        ]
+      },
+      {
+        "row": 16,
+        "values": [
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          8,
+          "JUEGO DE TERMINALES",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 17,
+        "values": [
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]]),2)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]],0),2)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]]),2)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          9,
+          "=INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]]),2)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 18,
+        "values": [
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(M5,PRO.MON.01[[opcion ]],0),3),\" \",POR.CALCULO[[#This Row],[CALCULO]])",
+          "=1*P4",
+          "=IF(M5=\"MAQ. EXTERIOR\",'DATOS '!C33,IF(M5=\"MAQ. INTERIOR\",'DATOS '!C33,IF(M5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(T5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.2[[#This Row],[CALCULO]])",
+          "=1*W4",
+          "=IF(T5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(T5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(T5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(AA5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.3[[#This Row],[CALCULO]])",
+          "=1*AD4",
+          "=IF(AA5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(AA5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(AA5=\"MOTOR\",\"0\")))",
+          null,
+          null,
+          null,
+          10,
+          "=CONCATENATE(INDEX(PRO.MON.01[],MATCH(AH5,PRO.MON.01[[opcion ]],0),3),\" \",PRO.CALCULO.4[[#This Row],[CALCULO]])",
+          "=1*AK4",
+          "=IF(AH5=\"MAQ. EXTERIOR\",'DATOS '!G33,IF(AH5=\"MAQ. INTERIOR\",'DATOS '!G33,IF(AH5=\"MOTOR\",\"0\")))"
+        ]
+      },
+      {
+        "row": 19,
+        "values": [
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(M5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(T5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(AA5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          11,
+          "=INDEX(PRO.MON.01[#All],MATCH(AH5,PRO.MON.01[[#All],[opcion ]],0),4)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 20,
+        "values": [
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(M5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*P4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(T5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*W4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(AA5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*AD4",
+          null,
+          null,
+          null,
+          null,
+          12,
+          "=INDEX(PRO.MON.01[#All],MATCH(AH5,PRO.MON.01[[#All],[opcion ]],0),5)",
+          "=1*AK4",
+          null
+        ]
+      },
+      {
+        "row": 21,
+        "values": [
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 22,
+        "values": [
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          14,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "row": 24,
+        "values": [
+          null,
+          "TELA FRENTE",
+          null,
+          "=M3-INDEX(PRO.DES.TELA[#All],MATCH(M5,PRO.DES.TELA[[#All],[ ]],0),MATCH(M13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=T3-INDEX(PRO.DES.TELA[#All],MATCH(T5,PRO.DES.TELA[[#All],[ ]],0),MATCH(T13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=AA3-INDEX(PRO.DES.TELA[#All],MATCH(AA5,PRO.DES.TELA[[#All],[ ]],0),MATCH(AA13,PRO.DES.TELA[#Headers],0))",
+          null,
+          null,
+          null,
+          null,
+          "TELA",
+          null,
+          "=AH3-INDEX(PRO.DES.TELA[#All],MATCH(AH5,PRO.DES.TELA[[#All],[ ]],0),MATCH(AH13,PRO.DES.TELA[#Headers],0))"
+        ]
+      },
+      {
+        "row": 25,
+        "values": [
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,M4+40+P5+5,M4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,T4+40+W5+5,T4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,AA4+40+AD5+5,AA4+40)",
+          null,
+          null,
+          null,
+          null,
+          "TELA SALIDA",
+          null,
+          "=IF('DATOS '!C12=0,AH4+40+AK5+5,AH4+40)"
+        ]
+      },
+      {
+        "row": 26,
+        "values": [
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=O25*ROUNDUP(O24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=T4*ROUNDUP(V24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=AA4*ROUNDUP(AC24/120,0)/100",
+          null,
+          null,
+          null,
+          null,
+          "PAÑO LINEAL NECESARIO",
+          null,
+          "=AH4*ROUNDUP(AJ24/120,0)/100"
+        ]
+      },
+      {
+        "row": 29,
+        "values": [
+          null,
+          "=",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    ],
+    "ESTR01_key": {
+      "model": "GALICIA",
+      "of": 230134,
+      "width": 430,
+      "projection": 350,
+      "device": "MAQ. EXTERIOR",
+      "color": "BLANCO",
+      "fabricWidth": 417,
+      "fabricDrop": 420,
+      "fabricMl": 16.8
+    }
+  }
+}

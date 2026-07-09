@@ -1,0 +1,737 @@
+[
+  {
+    "file": "AR2603315.xlsm",
+    "visibleSheets": [
+      "DATOS ",
+      "ESTR.01",
+      "ESTR.02",
+      "ESTR.03",
+      "ESTR.04",
+      "TELA",
+      "RPS",
+      "M.TELA"
+    ],
+    "order": "AR2603315",
+    "of": 230126,
+    "customer": "HIJOS DE RIVERA -  AMORA CAFÉ - BRUNCH",
+    "modelShown": "GALICIA",
+    "device": "MAQ. EXTERIOR",
+    "isMotorFlag": false,
+    "valid": "VERDADERO",
+    "width": 598,
+    "projection": 225,
+    "units": 1,
+    "color": "NEGRO (R-09011)",
+    "machinePlacement": "M.F IZQ",
+    "awningPlacement": "TECHO",
+    "fabricWidth": 585,
+    "fabricDrop": 295,
+    "fabricMl": 17.7,
+    "observations": "LOS ANGULOS DE ALUMINIO PROPIOS DEL MODELO GALICIA | 26",
+    "pieces": [
+      {
+        "num": 1,
+        "piece": "JUEGO SOPORTE GALIZIA",
+        "ref": "SOPARTGLNE11",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 2,
+        "piece": "TUBO DE ENROLLE P801",
+        "ref": "TURA80HG600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 586.5
+      },
+      {
+        "num": 3,
+        "piece": "CASQUILLO PUNTA",
+        "ref": "CASPUNCE",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 4,
+        "piece": "CASQUILLO EJE 63MM Ø78",
+        "ref": "CASMAQEJE6378MM",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 5,
+        "piece": "TUBO DE CARGA UNIVERS 280",
+        "ref": "PUNI280NE11600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 586.5
+      },
+      {
+        "num": 6,
+        "piece": "KIT TAPONES UNIVERS 280",
+        "ref": "TAPOPLUN280NE11",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 7,
+        "piece": "BRAZO ONYX",
+        "ref": "BONYXNE11225C",
+        "units": 3,
+        "length": null,
+        "rawK": 225
+      },
+      {
+        "num": 8,
+        "piece": "JUEGO DE TERMINALES",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 9,
+        "piece": "MAQUINA ZNP 10 L170 NEGRA",
+        "ref": "MAQMB9L13NEGRNE11",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 10,
+        "piece": "MANIVELA LUXE NEGRA 0",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 11,
+        "piece": "TACO NAYLON MAQUINA",
+        "ref": "CASPLAS",
+        "units": 1,
+        "length": null,
+        "rawK": 200
+      },
+      {
+        "num": 12,
+        "piece": "KIT DE TORNILLOS MAQUINA",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      }
+    ],
+    "rps": [
+      {
+        "of": "0230126",
+        "article": "SOPARTGLNE11",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "TURA80HG600C",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "CASPUNCE",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "CASMAQEJE6378MM",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "PUNI280NE11600C",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "TAPOPLUN280NE11",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "BONYXNE11225C",
+        "qty": 3
+      },
+      {
+        "of": "0230126",
+        "article": "MAQMB9L13NEGRNE11",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "CASPLAS",
+        "qty": 1
+      },
+      {
+        "of": "0230126",
+        "article": "ACRILI2170P120",
+        "qty": 17.7
+      }
+    ]
+  },
+  {
+    "file": "AR2603332.xlsm",
+    "visibleSheets": [
+      "DATOS ",
+      "ESTR.01",
+      "ESTR.02",
+      "ESTR.03",
+      "ESTR.04",
+      "TELA",
+      "RPS",
+      "M.TELA"
+    ],
+    "order": "AR2603332",
+    "of": 230194,
+    "customer": "LECHE CELTA ",
+    "modelShown": "ARZUA PRO",
+    "device": "MOTOR",
+    "isMotorFlag": false,
+    "valid": "VERDADERO",
+    "width": 337,
+    "projection": 225,
+    "units": 1,
+    "color": "BLANCO",
+    "machinePlacement": "M.F.DER",
+    "awningPlacement": "FRONTAL",
+    "fabricWidth": 326,
+    "fabricDrop": 300,
+    "fabricMl": 9,
+    "observations": "26",
+    "pieces": [
+      {
+        "num": 1,
+        "piece": "JUEGO SOPORTE AROND",
+        "ref": "SOPAR350BL16",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 2,
+        "piece": "TUBO DE ENROLLE P801",
+        "ref": "TURA80HG600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 327.2
+      },
+      {
+        "num": 3,
+        "piece": "CASQUILLO PUNTA",
+        "ref": "CASPUNCE",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 4,
+        "piece": "…",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 5,
+        "piece": "TUBO DE CARGA EVO 80",
+        "ref": "PEVO80BL16600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 327.2
+      },
+      {
+        "num": 6,
+        "piece": "KIT TAPONES EVO 80",
+        "ref": 0,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 7,
+        "piece": "JUEGO DE BRAZOS ONYX",
+        "ref": "BONYXBL16225C",
+        "units": 1,
+        "length": null,
+        "rawK": 225
+      },
+      {
+        "num": 8,
+        "piece": "JUEGO DE TERMINALES",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 9,
+        "piece": "RUEDA MOTRIZ Ø 78",
+        "ref": "RUEDAMOT78",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 10,
+        "piece": "MOTOR SOMFY SUNILUS 55/17 IO 0",
+        "ref": "SUNILUSIO55//17",
+        "units": 1,
+        "length": null,
+        "rawK": "0"
+      },
+      {
+        "num": 11,
+        "piece": "CORONA LT 60 ADAPTADA Ø 78",
+        "ref": "CORONALT6078",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 12,
+        "piece": "SOPORTE UNIVERSAL HIPRO",
+        "ref": "SOPORTEUNVHIPRO",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      }
+    ],
+    "rps": [
+      {
+        "of": "0230194",
+        "article": "SOPAR350BL16",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "TURA80HG600C",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "CASPUNCE",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "PEVO80BL16600C",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "BONYXBL16225C",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "RUEDAMOT78",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "SUNILUSIO55//17",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "CORONALT6078",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "SOPORTEUNVHIPRO",
+        "qty": 1
+      },
+      {
+        "of": "0230194",
+        "article": "ACRILI2018P120",
+        "qty": 9
+      },
+      {
+        "of": "0230194",
+        "article": "SITUOIO1PURE",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "file": "AR2603298-2.xlsm",
+    "visibleSheets": [
+      "DATOS ",
+      "ESTR.01",
+      "ESTR.02",
+      "ESTR.03",
+      "ESTR.04",
+      "TELA",
+      "RPS",
+      "M.TELA"
+    ],
+    "order": "AR2603298",
+    "of": 230135,
+    "customer": "MAHOU - MESON O TOXO",
+    "modelShown": "CORTINA",
+    "device": "MAQ. INTERIOR",
+    "isMotorFlag": false,
+    "valid": true,
+    "width": 200,
+    "projection": 0,
+    "units": 1,
+    "color": "BLANCO",
+    "machinePlacement": "M.F.DER",
+    "awningPlacement": "FRONTAL",
+    "fabricWidth": 188,
+    "fabricDrop": 342,
+    "fabricMl": 6.84,
+    "observations": "26",
+    "pieces": [
+      {
+        "num": 1,
+        "piece": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+        "ref": "SOPUNI3AGUBL16",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 2,
+        "piece": "TUBO DE ENROLLE P801",
+        "ref": "TURA80HG600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 189
+      },
+      {
+        "num": 3,
+        "piece": "CASQUILLO PUNTA",
+        "ref": "CASPUNCE",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 4,
+        "piece": "CASQUILLO MAQUINA EJE 50MM Ø78",
+        "ref": "CASMAQEJE5078MM",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 5,
+        "piece": "TUBO DE CARGA UNIVERS 280",
+        "ref": "PUNI280BL16600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 189
+      },
+      {
+        "num": 6,
+        "piece": "KIT TAPONES UNIVERS 280",
+        "ref": "TAPOPLUN280BL16",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 8,
+        "piece": "MAQUINA ZNP 10 L170 BLANCA",
+        "ref": "MAQMB9L13BLANBL16",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 9,
+        "piece": "TACO NAYLON MAQUINA",
+        "ref": "CASPLAS",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 10,
+        "piece": "MANIVELA LUXE 200 BLANCA 200",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 200
+      },
+      {
+        "num": 11,
+        "piece": "CADENILLAS INOX",
+        "ref": null,
+        "units": 2,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 12,
+        "piece": "PUENTES ABATIBLES ",
+        "ref": null,
+        "units": 2,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 13,
+        "piece": "MOSQUETONES INOX 60",
+        "ref": "MOSQBOACIN60MM",
+        "units": 2,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 14,
+        "piece": "REGLETA ZAMACK",
+        "ref": 0,
+        "units": 2,
+        "length": null,
+        "rawK": 0
+      }
+    ],
+    "rps": [
+      {
+        "of": "0230135",
+        "article": "SOPUNI3AGUBL16",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "TURA80HG600C",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "CASPUNCE",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "CASMAQEJE5078MM",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "PUNI280BL16600C",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "TAPOPLUN280BL16",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "MAQMB9L13BLANBL16",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "CASPLAS",
+        "qty": 1
+      },
+      {
+        "of": "0230135",
+        "article": "MOSQBOACIN60MM",
+        "qty": 2
+      },
+      {
+        "of": "0230135",
+        "article": "ACRILI2170P120",
+        "qty": 6.84
+      }
+    ]
+  },
+  {
+    "file": "AR2603298-1.xlsm",
+    "visibleSheets": [
+      "DATOS ",
+      "GAL",
+      "M1",
+      "ESTR.01",
+      "ESTR.02",
+      "ESTR.03",
+      "ESTR.04",
+      "TELA",
+      "RPS",
+      "M.TELA"
+    ],
+    "order": "AR2603298",
+    "of": 230134,
+    "customer": "MAHOU - MESON O TOXO",
+    "modelShown": "GALICIA",
+    "device": "MAQ. EXTERIOR",
+    "isMotorFlag": false,
+    "valid": "VERDADERO",
+    "width": 430,
+    "projection": 350,
+    "units": 1,
+    "color": "BLANCO",
+    "machinePlacement": "M.F.DER",
+    "awningPlacement": "FRONTAL",
+    "fabricWidth": 417,
+    "fabricDrop": 420,
+    "fabricMl": 16.8,
+    "observations": "ES UN ARZUA CON SOPORTE GALICIA | 26",
+    "pieces": [
+      {
+        "num": 1,
+        "piece": "JUEGO SOPORTE GALIZIA",
+        "ref": "SOPARTGLBL16",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 2,
+        "piece": "TUBO DE ENROLLE P801",
+        "ref": "TURA80HG600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 418.5
+      },
+      {
+        "num": 3,
+        "piece": "CASQUILLO PUNTA",
+        "ref": "CASPUNCE",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 4,
+        "piece": "CASQUILLO EJE 63MM Ø78",
+        "ref": "CASMAQEJE6378MM",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 5,
+        "piece": "TUBO DE CARGA UNIVERS 280",
+        "ref": "PUNI280BL16600C",
+        "units": 1,
+        "length": 600,
+        "rawK": 418.5
+      },
+      {
+        "num": 6,
+        "piece": "KIT TAPONES UNIVERS 280",
+        "ref": "TAPOPLUN280BL16",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 7,
+        "piece": "BRAZO ONYX",
+        "ref": "BONYXBL16350C",
+        "units": 2,
+        "length": null,
+        "rawK": 350
+      },
+      {
+        "num": 8,
+        "piece": "JUEGO DE TERMINALES",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 9,
+        "piece": "MAQUINA ZNP 10 L170 BLANCA",
+        "ref": "MAQMB9L13BLANBL16",
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 10,
+        "piece": "MANIVELA LUXE BLANCA 0",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      },
+      {
+        "num": 11,
+        "piece": "TACO NAYLON MAQUINA",
+        "ref": "CASPLAS",
+        "units": 1,
+        "length": null,
+        "rawK": 250
+      },
+      {
+        "num": 12,
+        "piece": "KIT DE TORNILLOS MAQUINA",
+        "ref": null,
+        "units": 1,
+        "length": null,
+        "rawK": 0
+      }
+    ],
+    "rps": [
+      {
+        "of": "0230134",
+        "article": "SOPARTGLBL16",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "TURA80HG600C",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "CASPUNCE",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "CASMAQEJE6378MM",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "PUNI280BL16600C",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "TAPOPLUN280BL16",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "BONYXBL16350C",
+        "qty": 2
+      },
+      {
+        "of": "0230134",
+        "article": "MAQMB9L13BLANBL16",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "CASPLAS",
+        "qty": 1
+      },
+      {
+        "of": "0230134",
+        "article": "ACRILI2170P120",
+        "qty": 16.8
+      }
+    ]
+  }
+]
