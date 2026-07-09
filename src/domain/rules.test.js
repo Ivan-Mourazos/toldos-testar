@@ -82,6 +82,76 @@ describe('calculateOrder — CAMBIO TELA', () => {
   });
 });
 
+describe('calculateOrder — mixed models', () => {
+  it('resolves the same shared order-level fabric identically for an ARZUA PRO and a CAMBIO TELA awning in one order', () => {
+    const result = calculateOrder({
+      orderCode: 'P26TEST',
+      fabric: 'ACR ADMIRAL',
+      structureColor: 'BLANCO',
+      awnings: [
+        baseAwning(),
+        {
+          of: '229652',
+          model: 'CAMBIO TELA',
+          units: 1,
+          width: 447.5,
+          projection: 250,
+          valanceHeight: 30
+        }
+      ]
+    });
+
+    expect(result.ofs.length).toBe(2);
+
+    const arzuaOf = result.ofs.find((ofBlock) => ofBlock.of === '12345');
+    const cambioTelaOf = result.ofs.find((ofBlock) => ofBlock.of === '229652');
+
+    expect(arzuaOf.materials.length).toBeGreaterThan(0);
+    expect(cambioTelaOf.materials.length).toBeGreaterThan(0);
+
+    const arzuaFabricLine = arzuaOf.materials[arzuaOf.materials.length - 1];
+    const cambioTelaFabricLine = cambioTelaOf.materials[0];
+
+    expect(arzuaFabricLine.code).toBe('ACRILI2051P120');
+    expect(cambioTelaFabricLine.code).toBe('ACRILI2051P120');
+  });
+
+  it('fans out an unresolved-fabric diagnostic per awning while still calculating each awning independently', () => {
+    const result = calculateOrder({
+      orderCode: 'P26TEST',
+      fabric: 'TELA INVENTADA',
+      structureColor: 'BLANCO',
+      awnings: [
+        baseAwning(),
+        {
+          of: '229652',
+          model: 'CAMBIO TELA',
+          units: 1,
+          width: 447.5,
+          projection: 250,
+          valanceHeight: 30
+        }
+      ]
+    });
+
+    const fabricErrors = result.diagnostics.filter(
+      (d) => d.level === 'error' && d.message.includes('Tela no encontrada')
+    );
+    expect(fabricErrors.length).toBe(2);
+
+    const arzuaOf = result.ofs.find((ofBlock) => ofBlock.of === '12345');
+    const cambioTelaOf = result.ofs.find((ofBlock) => ofBlock.of === '229652');
+
+    // CAMBIO TELA has no material besides the fabric line, so an unresolved fabric empties it entirely.
+    expect(cambioTelaOf.materials).toEqual([]);
+
+    // ARZUA PRO still emits its hardware materials (arms, motor, tube, etc.) — it only omits the fabric line itself.
+    expect(arzuaOf.materials.length).toBeGreaterThan(0);
+    expect(arzuaOf.materials.some((line) => line.code === 'ACRILI2051P120')).toBe(false);
+    expect(arzuaOf.materials.some((line) => line.code === 'TELA INVENTADA')).toBe(false);
+  });
+});
+
 describe('calculateOrder — ARZUA PRO fabric resolution', () => {
   it('resolves the ARZUA PRO fabric material to a real catalog code, not the raw order fabric name', () => {
     const result = calculateOrder({
