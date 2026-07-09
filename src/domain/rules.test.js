@@ -81,3 +81,36 @@ describe('calculateOrder — CAMBIO TELA', () => {
     ]);
   });
 });
+
+describe('calculateOrder — ARZUA PRO fabric resolution', () => {
+  it('resolves the ARZUA PRO fabric material to a real catalog code, not the raw order fabric name', () => {
+    const result = calculateOrder({
+      orderCode: 'P26TEST',
+      fabric: 'ACR ADMIRAL',
+      structureColor: 'BLANCO',
+      awnings: [baseAwning()]
+    });
+
+    const materials = result.ofs[0].materials;
+    const fabricLine = materials[materials.length - 1];
+    expect(fabricLine.code).toBe('ACRILI2051P120');
+    expect(fabricLine.description).toBe('ACR ADMIRAL');
+  });
+
+  it('flags an error diagnostic when the ARZUA PRO fabric is not in the catalog, instead of inventing a code', () => {
+    const result = calculateOrder({
+      orderCode: 'P26TEST',
+      fabric: 'TELA INVENTADA',
+      structureColor: 'BLANCO',
+      awnings: [baseAwning()]
+    });
+
+    expect(result.diagnostics).toContainEqual({
+      level: 'error',
+      awningId: '',
+      message: 'Tela no encontrada en el catálogo: "TELA INVENTADA".'
+    });
+    expect(result.ofs[0].materials.some((line) => line.description === 'PAÑO LINEAL NECESARIO')).toBe(false);
+    expect(result.ofs[0].materials.some((line) => line.code === 'TELA INVENTADA')).toBe(false);
+  });
+});

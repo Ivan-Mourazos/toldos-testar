@@ -1,4 +1,5 @@
 import { roundQuantity, formatNumber } from './math.js';
+import { resolveFabric } from './fabricCatalog.js';
 
 const colorSuffixes = new Map([
   ['BLANCO', 'BL16'],
@@ -40,8 +41,17 @@ export function calculateArzuaPro({ order, awning }) {
   const fabricMl = roundQuantity(Math.ceil(fabricWidth / 120) * (fabricDrop / 100) * awning.units);
   const length = round1(awning.width - lookupWidthDiscount(tubeLoad, device));
   const stockLength = chooseStockLength(length);
+  const fabric = order.fabric ? resolveFabric(order.fabric) : null;
+  if (order.fabric && !fabric) {
+    diagnostics.push({
+      level: 'error',
+      awningId: awning.id,
+      message: `Tela no encontrada en el catálogo: "${order.fabric}".`
+    });
+  }
+
   const materials = valid
-    ? buildMaterials({ order, awning, colorSuffix, tubeLoad, device, stockLength, fabricMl })
+    ? buildMaterials({ order, awning, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric })
     : [];
 
   if (!valid) {
@@ -72,7 +82,7 @@ export function calculateArzuaPro({ order, awning }) {
   };
 }
 
-function buildMaterials({ order, awning, colorSuffix, tubeLoad, device, stockLength, fabricMl }) {
+function buildMaterials({ _order, awning, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric }) {
   const materials = [
     { code: `SOPAR350${colorSuffix}`, quantity: 1, description: 'JUEGO SOPORTE AROND' },
     { code: `TURA80HG${stockLength}C`, quantity: 1, description: 'TUBO DE ENROLLE P801' },
@@ -102,8 +112,8 @@ function buildMaterials({ order, awning, colorSuffix, tubeLoad, device, stockLen
     );
   }
 
-  if (order.fabric) {
-    materials.push({ code: order.fabric, quantity: fabricMl, description: 'PAÑO LINEAL NECESARIO' });
+  if (fabric) {
+    materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
   }
 
   return materials;
