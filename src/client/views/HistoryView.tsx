@@ -78,7 +78,7 @@ export function HistoryView({ entries, onReuse }: { entries: HistoryEntry[]; onR
                   <td>
                     {entry.diagnostics > 0 ? (
                       <span className="badge-warn">
-                        <AlertCircle aria-hidden="true" />
+                        <AlertCircle aria-hidden="true" size={14} />
                         {entry.diagnostics}
                       </span>
                     ) : '-'}
@@ -101,5 +101,7 @@ export function HistoryView({ entries, onReuse }: { entries: HistoryEntry[]; onR
 function formatDate(iso: string) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '-';
-  return date.toLocaleDateString('es-ES');
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}/${date.getFullYear()}`;
 }
