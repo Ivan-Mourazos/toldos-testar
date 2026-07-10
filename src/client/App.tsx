@@ -4,7 +4,6 @@ import {
   ClipboardList,
   Download,
   History,
-  Layers,
   Save
 } from 'lucide-react';
 import '@fontsource-variable/inter';
@@ -166,20 +165,23 @@ function App() {
     }
   }
 
+  const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : 'badge-ok';
+  const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : 'Planteamiento vivo';
+
   return (
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <div className="brand-mark"><Layers aria-hidden="true" /></div>
+          <div className="brand-mark">TgM</div>
           <div>
             <h1>Toldos Testar</h1>
             <span>{catalog ? `${catalog.models.length} modelos · ${catalog.fabricStats.total} telas · ${catalog.referenceStats.total} referencias` : 'Cargando catálogo'}</span>
           </div>
         </div>
+        <div className="topbar-status">
+          <span className={statusBadgeClass}>{statusLabel}</span>
+        </div>
         <div className="topbar-actions">
-          <span className={`live-status ${calculationState}`}>
-            {calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : 'Planteamiento vivo'}
-          </span>
           <button className="primary-button" type="button" disabled={saving} onClick={() => saveLegacyReservation()}>
             <Save aria-hidden="true" />
             {saving ? 'Guardando…' : 'Guardar RPS'}
