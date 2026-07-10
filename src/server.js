@@ -95,7 +95,7 @@ app.post('/api/export/save', async (req, res, next) => {
     if (config.orderArchiveRoot && reservation.orderCode) {
       archiveTarget = {
         savedPath: buildOrderArchivePath(reservation.orderCode),
-        workbook: await buildOrderArchiveWorkbook(reservation)
+        workbook: await buildOrderArchiveWorkbook(reservation, orderPayload)
       };
       archiveTarget.filename = path.basename(archiveTarget.savedPath);
     }

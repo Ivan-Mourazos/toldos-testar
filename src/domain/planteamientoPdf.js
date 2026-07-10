@@ -109,6 +109,8 @@ function drawStructureSummary(doc, { order, awning, ofBlock }) {
   drawKeyRows(doc, x, y + 25, w, [
     ['Cliente', order.customer],
     ['Tecnico', order.technician],
+    ['Revision', order.reviewer],
+    ['Fecha', formatDate(order.orderDate)],
     ['Frente', formatCm(awning.width)],
     ['Salida', formatCm(awning.projection)],
     ['Unidades', awning.units],
@@ -117,7 +119,7 @@ function drawStructureSummary(doc, { order, awning, ofBlock }) {
     ['Carga', awning.tubeLoad],
     ['Colocacion', awning.placement],
     ['Pared', awning.wallType]
-  ]);
+  ], 18);
 
   const valid = ofBlock?.calculation?.valid;
   doc.rect(x + w + 18, y, 132, 58).fillAndStroke(valid === false ? '#ffe8e3' : '#c8f0d2', graphite);
@@ -184,15 +186,19 @@ function drawFabricData(doc, { order, awnings, calculation }) {
   drawSectionTitle(doc, x, y, 188, 'Rotulacion');
   drawKeyRows(doc, x, y + 25, 188, [
     ['Tela', 'SI'],
-    ['Bamba', fabricLines.some((lineItem) => lineItem.awning.valance === 'SIN BAMBA') ? 'MIXTO' : 'SI']
+    ['Bamba', summarizeBamba(fabricLines)]
   ]);
+
+  const rotulacionParts = [`Tela ${order.rotTela || 'NO'}`, `Bamba ${order.rotBamba || 'NO'}`];
+  if (order.bambaDistinta) rotulacionParts.push(`Tela bamba ${order.telaBamba || '-'}`);
 
   drawSectionTitle(doc, x + 214, y, 270, 'Datos basicos');
   drawKeyRows(doc, x + 214, y + 25, 270, [
     ['Material', order.fabric],
-    ['Curva', 'RECTA'],
-    ['Remate', 'COMO TELA']
-  ]);
+    ['Curva', order.curvaBamba],
+    ['Remate', order.remate],
+    ['Rotulacion', rotulacionParts.join(' / ')]
+  ], 20);
 
   doc.rect(x + 514, y, w - 514, 72).fillAndStroke('#e5e8e7', graphite);
   doc.fillColor(graphite).font('Helvetica').fontSize(9)
@@ -202,7 +208,7 @@ function drawFabricData(doc, { order, awnings, calculation }) {
     .text(formatNumber(totalMl), x + 684, y + 23, { width: 70, align: 'center' });
   doc.font('Helvetica-Bold').fontSize(15).text('ML', x + 760, y + 28);
 
-  const tableY = y + 104;
+  const tableY = y + 108;
   drawSectionTitle(doc, x, tableY, w, 'OFs de tela');
   const headerY = tableY + 25;
   doc.rect(x, headerY, w, 22).fill(graphite);
@@ -260,13 +266,13 @@ function drawSectionTitle(doc, x, y, width, title) {
     .text(title.toUpperCase(), x + 8, y + 8, { width: width - 16 });
 }
 
-function drawKeyRows(doc, x, y, width, rows) {
+function drawKeyRows(doc, x, y, width, rows, rowHeight = 22) {
   rows.forEach(([label, rowValue], index) => {
-    const rowY = y + index * 22;
-    doc.rect(x, rowY, width, 22).fillAndStroke(index % 2 ? '#ffffff' : soft, line);
-    doc.rect(x, rowY, 112, 22).fillAndStroke('#e7eceb', line);
-    doc.fillColor(graphite).font('Helvetica-Bold').fontSize(8).text(label, x + 7, rowY + 7, { width: 98 });
-    doc.font('Helvetica').fontSize(8).text(value(rowValue), x + 120, rowY + 7, { width: width - 128, ellipsis: true });
+    const rowY = y + index * rowHeight;
+    doc.rect(x, rowY, width, rowHeight).fillAndStroke(index % 2 ? '#ffffff' : soft, line);
+    doc.rect(x, rowY, 112, rowHeight).fillAndStroke('#e7eceb', line);
+    doc.fillColor(graphite).font('Helvetica-Bold').fontSize(8).text(label, x + 7, rowY + (rowHeight - 8) / 2, { width: 98 });
+    doc.font('Helvetica').fontSize(8).text(value(rowValue), x + 120, rowY + (rowHeight - 8) / 2, { width: width - 128, ellipsis: true });
   });
 }
 
@@ -286,6 +292,14 @@ function chunk(items, size) {
   return groups.length ? groups : [[]];
 }
 
+function summarizeBamba(fabricLines) {
+  const heights = fabricLines.map((lineItem) => Number(lineItem.awning.valanceHeight) || 0);
+  const withBamba = heights.filter((height) => height > 0).length;
+  if (withBamba === 0) return 'SIN BAMBA';
+  if (withBamba === heights.length) return 'SI';
+  return 'MIXTO';
+}
+
 function summarizeOfs(awnings) {
   const ofs = awnings.map((awning) => value(awning.of)).filter((of) => of !== '-');
   if (ofs.length === 0) return 'OFs: -';
@@ -299,5 +313,14 @@ function value(input) {
 
 function formatCm(input) {
   return input || input === 0 ? `${formatNumber(input)} cm` : '-';
+}
+
+function formatDate(input) {
+  if (!input) return '-';
+  const date = new Date(input);
+  if (Number.isNaN(date.getTime())) return '-';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}/${date.getFullYear()}`;
 }
 

@@ -15,9 +15,17 @@ export function normalizeOrder(payload) {
   return {
     orderCode,
     customer: cleanText(payload.customer),
+    orderDate: cleanText(payload.orderDate),
     technician: cleanText(payload.technician),
+    reviewer: cleanText(payload.reviewer),
     fabric: cleanText(payload.fabric),
+    remate: cleanText(payload.remate),
+    curvaBamba: cleanText(payload.curvaBamba),
+    bambaDistinta: Boolean(payload.bambaDistinta),
+    telaBamba: cleanText(payload.telaBamba),
     structureColor: cleanText(payload.structureColor),
+    rotTela: cleanText(payload.rotTela).toUpperCase(),
+    rotBamba: cleanText(payload.rotBamba).toUpperCase(),
     awnings: awnings.map((awning, index) => normalizeAwning(awning, index))
   };
 }
@@ -63,7 +71,7 @@ function normalizeAwning(awning, index) {
     device,
     placement: cleanText(awning?.placement).toUpperCase(),
     wallType: cleanText(awning?.wallType).toUpperCase(),
-    valance: cleanText(awning?.valance).toUpperCase(),
+    submodel: cleanText(awning?.submodel).toUpperCase(),
     tubeLoad: cleanText(awning?.tubeLoad).toUpperCase(),
     sensor: cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),

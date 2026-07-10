@@ -34,7 +34,7 @@ export async function buildOfWorkbook(ofBlock) {
   return buildRpsImportBuffer(buildFinalRows([ofBlock]));
 }
 
-export async function buildOrderArchiveWorkbook(reservation) {
+export async function buildOrderArchiveWorkbook(reservation, order = null) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'materiales-ot';
   workbook.created = new Date();
@@ -56,7 +56,34 @@ export async function buildOrderArchiveWorkbook(reservation) {
   sheet.getCell('A2').font = { bold: true };
   applyBorder(sheet, 1, 1, 2, 2);
 
-  let rowIndex = 4;
+  let headerRowCount = 2;
+  if (order) {
+    const headerFields = [
+      ['CLIENTE', order.customer || ''],
+      ['TECNICO', order.technician || ''],
+      ['REVISION', order.reviewer || ''],
+      ['FECHA', order.orderDate || ''],
+      ['MATERIAL', order.fabric || ''],
+      ['REMATE', order.remate || ''],
+      ['CURVA BAMBA', order.curvaBamba || ''],
+      ['ROTULACION TELA', order.rotTela || ''],
+      ['ROTULACION BAMBA', order.rotBamba || '']
+    ];
+    if (order.bambaDistinta) {
+      headerFields.push(['TELA BAMBA', order.telaBamba || '']);
+    }
+
+    headerFields.forEach(([label, fieldValue], offset) => {
+      const rowNumber = 3 + offset;
+      sheet.getCell(rowNumber, 1).value = label;
+      sheet.getCell(rowNumber, 2).value = fieldValue;
+      sheet.getCell(rowNumber, 1).font = { bold: true };
+      applyBorder(sheet, rowNumber, 1, rowNumber, 2);
+    });
+    headerRowCount = 2 + headerFields.length;
+  }
+
+  let rowIndex = headerRowCount + 2;
   for (const ofBlock of reservation.ofs) {
     sheet.mergeCells(rowIndex, 1, rowIndex, 3);
     sheet.getCell(rowIndex, 1).value = ofBlock.description

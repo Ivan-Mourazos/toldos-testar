@@ -1,5 +1,6 @@
 import { describe, expect, it, test } from 'vitest';
 import { calculateOrder } from './rules.js';
+import { normalizeOrder } from './validation.js';
 
 function baseAwning(overrides = {}) {
   return {
@@ -240,6 +241,39 @@ describe('ARZUA PRO caída de tela con bamba real', () => {
     }));
     expect(result.ofs[0].calculation.fabricDrop).toBe(295);
     expect(result.ofs[0].description).not.toContain('bambalina');
+  });
+});
+
+describe('normalización de campos nuevos del pedido', () => {
+  test('los campos nuevos del pedido viajan por la normalización', () => {
+    const result = calculateOrder(basePayload({
+      reviewer: 'TAMARA', remate: 'COMO TELA', curvaBamba: 'RECTA',
+      bambaDistinta: false, telaBamba: '', rotTela: 'SI', rotBamba: 'NO',
+      orderDate: '2026-07-10',
+      awnings: [baseAwning({ of: '230001', model: 'CAMBIO TELA', width: 300, projection: 200, valanceHeight: 0 })]
+    }));
+    expect(result.orderCode).toBeDefined(); // el cálculo no revienta con los campos nuevos
+  });
+
+  test('normalizeOrder expone los campos nuevos del pedido y del toldo', () => {
+    const normalized = normalizeOrder(basePayload({
+      orderDate: '2026-07-10', reviewer: 'TAMARA', remate: 'COMO TELA',
+      curvaBamba: 'RECTA', bambaDistinta: true, telaBamba: 'PVC 580',
+      rotTela: 'si', rotBamba: 'no',
+      awnings: [baseAwning({ submodel: 'con caja' })]
+    }));
+
+    expect(normalized).toMatchObject({
+      orderDate: '2026-07-10',
+      reviewer: 'TAMARA',
+      remate: 'COMO TELA',
+      curvaBamba: 'RECTA',
+      bambaDistinta: true,
+      telaBamba: 'PVC 580',
+      rotTela: 'SI',
+      rotBamba: 'NO'
+    });
+    expect(normalized.awnings[0].submodel).toBe('CON CAJA');
   });
 });
 
