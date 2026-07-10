@@ -2,7 +2,6 @@ import React from 'react';
 import {
   AlertCircle,
   Copy,
-  FileSpreadsheet,
   Plus,
   Trash2
 } from 'lucide-react';
@@ -11,6 +10,7 @@ import { getModelProfile, formatDecimal } from '../constants';
 import { TextField } from '../components/TextField';
 import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
+import { OrderHeader } from '../components/OrderHeader';
 
 export function OrderView({
   catalog,
@@ -87,39 +87,47 @@ export function OrderView({
   removeAwning: (id: string) => void;
   updateAwning: (id: string, patch: Partial<Awning>) => void;
 }) {
+  const totalUnits = awnings.reduce((sum, awning) => sum + (awning.units || 0), 0);
+
+  function setOrderField(patch: Record<string, string | boolean>) {
+    if ('orderCode' in patch) setOrderCode(patch.orderCode as string);
+    if ('customer' in patch) setCustomer(patch.customer as string);
+    if ('orderDate' in patch) setOrderDate(patch.orderDate as string);
+    if ('technician' in patch) setTechnician(patch.technician as string);
+    if ('reviewer' in patch) setReviewer(patch.reviewer as string);
+    if ('fabric' in patch) setFabric(patch.fabric as string);
+    if ('remate' in patch) setRemate(patch.remate as string);
+    if ('curvaBamba' in patch) setCurvaBamba(patch.curvaBamba as string);
+    if ('bambaDistinta' in patch) setBambaDistinta(patch.bambaDistinta as boolean);
+    if ('telaBamba' in patch) setTelaBamba(patch.telaBamba as string);
+    if ('structureColor' in patch) setStructureColor(patch.structureColor as string);
+    if ('rotTela' in patch) setRotTela(patch.rotTela as string);
+    if ('rotBamba' in patch) setRotBamba(patch.rotBamba as string);
+    if ('notes' in patch) setNotes(patch.notes as string);
+  }
+
   return (
     <>
       <section className="workbench">
         <div className="order-strip">
-          <div className="panel-title">
-            <FileSpreadsheet aria-hidden="true" />
-            <h2>Pedido</h2>
-          </div>
-          <div className="fields-grid order-fields">
-            <TextField label="Pedido" value={orderCode} onChange={setOrderCode} />
-            <TextField label="Cliente" value={customer} onChange={setCustomer} />
-            <label>
-              <span>Fecha</span>
-              <input type="date" value={orderDate} onChange={(event) => setOrderDate(event.target.value)} />
-            </label>
-            <TextField label="Técnico" value={technician} onChange={setTechnician} />
-            <TextField label="Revisión" value={reviewer} onChange={setReviewer} />
-            <TextField label="Tela" value={fabric} onChange={setFabric} placeholder="ACR ADMIRAL" />
-            <TextField label="Lacado" value={structureColor} onChange={setStructureColor} />
-            <TextField label="Remate" value={remate} onChange={setRemate} placeholder="COMO TELA" />
-            <SelectField label="Curva bamba" value={curvaBamba} options={['RECTA', 'NORMAL', 'SUAVE', 'EXTRASUAVE']} onChange={setCurvaBamba} />
-            <label className="checkbox-field">
-              <input type="checkbox" checked={bambaDistinta} onChange={(event) => setBambaDistinta(event.target.checked)} />
-              <span>Bamba en tela distinta</span>
-            </label>
-            {bambaDistinta && <TextField label="Tela bamba" value={telaBamba} onChange={setTelaBamba} />}
-            <SelectField label="Rotulación tela" value={rotTela} options={['SI', 'NO']} onChange={setRotTela} />
-            <SelectField label="Rotulación bamba" value={rotBamba} options={['SI', 'NO']} onChange={setRotBamba} />
-          </div>
-          <label className="wide-field">
-            <span>Comentarios del pedido</span>
-            <textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
-          </label>
+          <OrderHeader
+            orderCode={orderCode}
+            customer={customer}
+            orderDate={orderDate}
+            technician={technician}
+            reviewer={reviewer}
+            fabric={fabric}
+            remate={remate}
+            curvaBamba={curvaBamba}
+            bambaDistinta={bambaDistinta}
+            telaBamba={telaBamba}
+            structureColor={structureColor}
+            rotTela={rotTela}
+            rotBamba={rotBamba}
+            notes={notes}
+            totalUnits={totalUnits}
+            set={setOrderField}
+          />
         </div>
 
         <aside className="side-panel run-panel">
