@@ -1,12 +1,9 @@
 import React from 'react';
-import {
-  AlertCircle,
-  Plus
-} from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
-import { formatDecimal } from '../constants';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
+import { LiveResults } from '../components/LiveResults';
 
 export function OrderView({
   orderCode,
@@ -123,18 +120,6 @@ export function OrderView({
             set={setOrderField}
           />
         </div>
-
-        <aside className="side-panel run-panel">
-          <span>Estado del planteamiento</span>
-          <strong>{calculation ? `${calculation.totals.awnings} toldos` : `${awnings.length} toldos`}</strong>
-          <em>{buildCalculationStatus(calculationState, calculation)}</em>
-          {calculation?.diagnostics.slice(0, 4).map((item, index) => (
-            <p className={`diagnostic ${item.level}`} key={`${item.message}-${index}`}>
-              <AlertCircle aria-hidden="true" />
-              {item.message}
-            </p>
-          ))}
-        </aside>
       </section>
 
       <section className="awnings-section">
@@ -171,74 +156,7 @@ export function OrderView({
         </div>
       </section>
 
-      <LiveResultView calculation={calculation} />
+      <LiveResults calculation={calculation} state={calculationState} />
     </>
-  );
-}
-
-function buildCalculationStatus(state: CalculationState, calculation: Calculation | null) {
-  if (state === 'validating') return 'Actualizando automáticamente';
-  if (state === 'error') return 'Hay datos pendientes de revisar';
-  if (calculation) return `${calculation.totals.materials} líneas preparadas`;
-  return 'Esperando datos';
-}
-
-function LiveResultView({ calculation }: { calculation: Calculation | null }) {
-  const materialRows = calculation?.ofs.flatMap((ofBlock) =>
-    ofBlock.materials.map((material) => ({
-      of: ofBlock.of,
-      description: material.description || '',
-      code: material.code,
-      quantity: material.quantity
-    }))
-  ) || [];
-
-  return (
-    <section className="live-results panel">
-      <div className="section-header">
-        <div>
-          <h2>Resultado en vivo</h2>
-          <span>Medidas y reserva se actualizan al cambiar el pedido</span>
-        </div>
-        <strong>{materialRows.length} líneas RPS</strong>
-      </div>
-
-      {calculation?.ofs.some((ofBlock) => ofBlock.calculation) && (
-        <div className="calculation-strip">
-          {calculation.ofs.filter((ofBlock) => ofBlock.calculation).map((ofBlock) => (
-            <article key={ofBlock.of}>
-              <span>OF {ofBlock.of}</span>
-              <strong>{ofBlock.calculation?.valid ? 'Válido' : 'Revisar'}</strong>
-              <em>Tela {formatDecimal(ofBlock.calculation?.fabricWidth)} x {formatDecimal(ofBlock.calculation?.fabricDrop)} · {formatDecimal(ofBlock.calculation?.fabricMl)} ml</em>
-            </article>
-          ))}
-        </div>
-      )}
-
-      <div className="result-table-wrap">
-        <table className="result-table">
-          <thead>
-            <tr>
-              <th>OF</th>
-              <th>Artículo</th>
-              <th>Descripción</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
-          <tbody>
-            {materialRows.length === 0 ? (
-              <tr><td colSpan={4}>Todavía no hay líneas de reserva preparadas.</td></tr>
-            ) : materialRows.map((row) => (
-              <tr key={`${row.of}-${row.code}`}>
-                <td>{row.of}</td>
-                <td><strong>{row.code}</strong></td>
-                <td>{row.description || '-'}</td>
-                <td>{formatDecimal(row.quantity)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
   );
 }

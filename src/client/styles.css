@@ -100,7 +100,7 @@ button:focus-visible {
 }
 
 button svg,
-.diagnostic svg {
+.diagnostics-list svg {
   flex-shrink: 0;
   height: 16px;
   width: 16px;
@@ -343,7 +343,7 @@ label span,
   box-shadow: var(--shadow);
   display: grid;
   gap: var(--sp-4);
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr);
   margin: var(--sp-6) auto 0;
   max-width: 1440px;
   padding: var(--sp-5);
@@ -422,50 +422,6 @@ label span,
 .field-notes {
   grid-column: 1 / -1;
   margin-top: 0;
-}
-
-.side-panel {
-  display: grid;
-  gap: var(--sp-2);
-}
-
-.run-panel {
-  background: var(--tgm-black);
-  border-radius: var(--radius);
-  color: #ffffff;
-  padding: var(--sp-4);
-}
-
-.side-panel strong {
-  color: var(--tgm-yellow);
-  font-size: 32px;
-  line-height: 1;
-}
-
-.side-panel > span,
-.side-panel em {
-  color: rgba(255, 255, 255, 0.72);
-  font-style: normal;
-}
-
-.diagnostic {
-  align-items: flex-start;
-  border-radius: var(--radius-sm);
-  display: flex;
-  gap: var(--sp-2);
-  margin: 0;
-  padding: var(--sp-2);
-}
-
-.diagnostic.pending,
-.diagnostic.warn {
-  background: var(--warn-bg);
-  color: var(--warn);
-}
-
-.diagnostic.error {
-  background: var(--danger-bg);
-  color: var(--danger);
 }
 
 .awnings-section {
@@ -601,7 +557,7 @@ label span,
   }
 }
 
-/* ---------- Resultado en vivo / historial ---------- */
+/* ---------- Resultado en vivo ---------- */
 
 .live-results {
   display: grid;
@@ -613,53 +569,116 @@ label span,
   margin-bottom: 0;
 }
 
-.calculation-strip {
+.diagnostics-list {
+  display: grid;
+  gap: var(--sp-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.diagnostics-list li {
+  align-items: flex-start;
+  border-radius: var(--radius-sm);
+  display: flex;
+  font-weight: 500;
+  min-height: 0;
+  padding: var(--sp-2) var(--sp-3);
+  white-space: normal;
+  width: 100%;
+}
+
+.of-card-row {
   display: grid;
   gap: var(--sp-3);
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-.calculation-strip article {
+.of-card {
   background: var(--surface-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   display: grid;
-  gap: 4px;
+  gap: var(--sp-2);
   padding: var(--sp-3);
 }
 
-.calculation-strip span,
-.calculation-strip em {
+.of-card-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.of-card-head > span {
   color: var(--text-muted);
-  font-size: 12px;
-  font-style: normal;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.calculation-strip strong {
-  font-size: 18px;
+.of-card > .num {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
-.result-table-wrap,
+.rps-empty {
+  color: var(--text-muted);
+  padding: var(--sp-6) 0;
+  text-align: center;
+}
+
+.rps-table-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 420px;
+  overflow: auto;
+}
+
+.rps-table {
+  border-collapse: collapse;
+  min-width: 760px;
+  width: 100%;
+}
+
+.rps-table th,
+.rps-table td {
+  border-bottom: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  vertical-align: top;
+}
+
+.rps-table th {
+  background: var(--surface-muted);
+  border-bottom: 2px solid var(--border-strong);
+  color: var(--text-muted);
+  font-size: 11px;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+}
+
+.rps-table th.num,
+.rps-table td.num {
+  text-align: right;
+}
+
+.rps-table tbody tr:hover {
+  background: var(--surface-muted);
+}
+
+/* ---------- Historial ---------- */
+
 .history-table-wrap {
   overflow-x: auto;
 }
 
-.result-table,
 .history-table {
   border-collapse: collapse;
+  min-width: 900px;
   width: 100%;
 }
 
-.result-table {
-  min-width: 760px;
-}
-
-.history-table {
-  min-width: 900px;
-}
-
-.result-table th,
-.result-table td,
 .history-table th,
 .history-table td {
   border-bottom: 1px solid var(--border);
@@ -668,7 +687,6 @@ label span,
   vertical-align: top;
 }
 
-.result-table th,
 .history-table th {
   background: var(--surface-muted);
   border-bottom: 2px solid var(--border-strong);
@@ -677,7 +695,6 @@ label span,
   text-transform: uppercase;
 }
 
-.result-table tbody tr:nth-child(even),
 .history-table tbody tr:nth-child(even) {
   background: var(--surface-muted);
 }
