@@ -83,6 +83,17 @@ export type HistoryEntry = {
   createdAt: string;
   orderCode: string;
   customer: string;
+  orderDate: string;
+  technician: string;
+  reviewer: string;
+  fabric: string;
+  remate: string;
+  curvaBamba: string;
+  bambaDistinta: boolean;
+  telaBamba: string;
+  structureColor: string;
+  rotTela: string;
+  rotBamba: string;
   ofs: string[];
   models: string[];
   awnings: Awning[];

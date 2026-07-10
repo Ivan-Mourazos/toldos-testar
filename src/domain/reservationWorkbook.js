@@ -62,7 +62,7 @@ export async function buildOrderArchiveWorkbook(reservation, order = null) {
       ['CLIENTE', order.customer || ''],
       ['TECNICO', order.technician || ''],
       ['REVISION', order.reviewer || ''],
-      ['FECHA', order.orderDate || ''],
+      ['FECHA', formatDateOnly(order.orderDate)],
       ['MATERIAL', order.fabric || ''],
       ['REMATE', order.remate || ''],
       ['CURVA BAMBA', order.curvaBamba || ''],
@@ -146,6 +146,18 @@ export function buildFinalRows(ofs) {
 function numericOf(value) {
   const numeric = Number(String(value).trim());
   return Number.isFinite(numeric) ? numeric : String(value).trim();
+}
+
+// Mirrors planteamientoPdf.js formatDate(): order.orderDate is a date-only ISO string
+// (e.g. "2026-07-10"), so UTC getters are used to read the intended calendar day
+// regardless of the local timezone the workbook is generated in.
+function formatDateOnly(input) {
+  if (!input) return '';
+  const date = new Date(input);
+  if (Number.isNaN(date.getTime())) return String(input);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  return `${day}/${month}/${date.getUTCFullYear()}`;
 }
 
 function buildRpsImportBuffer(rows) {

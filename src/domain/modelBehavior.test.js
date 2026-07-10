@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { getModelBehavior, getFieldVisibility, formOptions } from './modelBehavior.js';
+import { getModelBehavior, getFieldVisibility, formOptions, modelNames } from './modelBehavior.js';
+import { models as catalogModels } from './catalog.js';
 
 describe('modelBehavior', () => {
   test('ARZUA PRO: tubo de carga limitado a EVO 80 y UNIVERS 280', () => {
@@ -54,5 +55,10 @@ describe('modelBehavior', () => {
     expect(formOptions.lacados).toHaveLength(10);
     expect(formOptions.alturasManivela).toContain(170);
     expect(formOptions.sensores.map((s) => s.sensor)).toContain('SIN SENSOR');
+  });
+
+  test('los modelos de modelBehavior.json coinciden con los codigos de catalog.js (el form ofrece uno, rules.js valida contra el otro)', () => {
+    const catalogCodes = new Set(catalogModels.map((model) => model.code));
+    expect(new Set(modelNames)).toEqual(catalogCodes);
   });
 });

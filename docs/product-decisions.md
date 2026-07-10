@@ -24,6 +24,10 @@ Fecha: 2026-07-08.
 - Verificación completa (lint, tests, build, flujo de navegador AR2603380/AR2603399, cambio a MOTOR,
   persistencia de borrador v4 y migración v3→v4, guardado + historial + Resumen/planteamiento):
   ver `.superpowers/sdd/task-12-report.md`.
+- Fixes de la revisión final (2026-07-10): la columna de Historial pasó de Notas a Diagnósticos, y
+  cada `HistoryEntry` ahora guarda una foto de la cabecera del pedido (fecha, técnico, revisor, tela,
+  remate, curva/tela de bamba, lacado, rotulación) para que "Reutilizar" restaure esos campos en vez
+  de dejarlos con lo que hubiera en el formulario — ver `.superpowers/sdd/task-12-report.md`.
 
 ## Alcance funcional
 

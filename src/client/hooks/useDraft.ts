@@ -185,8 +185,20 @@ export function useDraft() {
   }
 
   function reuseHistory(entry: HistoryEntry) {
+    const fallback = defaultDraft();
     setOrderCode(entry.orderCode);
     setCustomer(entry.customer);
+    setOrderDate(entry.orderDate || fallback.orderDate);
+    setTechnician(entry.technician || '');
+    setReviewer(entry.reviewer || '');
+    setFabric(entry.fabric || '');
+    setRemate(entry.remate || fallback.remate);
+    setCurvaBamba(entry.curvaBamba || fallback.curvaBamba);
+    setBambaDistinta(typeof entry.bambaDistinta === 'boolean' ? entry.bambaDistinta : fallback.bambaDistinta);
+    setTelaBamba(entry.telaBamba || '');
+    setStructureColor(entry.structureColor || fallback.structureColor);
+    setRotTela(entry.rotTela || fallback.rotTela);
+    setRotBamba(entry.rotBamba || fallback.rotBamba);
     setAwnings(entry.awnings.length ? entry.awnings : [createAwning()]);
     setNotes(entry.notes || '');
   }

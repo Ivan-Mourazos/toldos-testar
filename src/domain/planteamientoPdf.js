@@ -158,12 +158,34 @@ function drawCalculation(doc, calc, y) {
   return { bottom: y + 25 + rows.length * rowHeight };
 }
 
+// Materials table max rows: 11 real rows fit without pushing the table bottom past
+// drawCalculation's bottom (486pt, see drawStructurePage math) when rowHeight is 16 -
+// 11 * 16 = 176 <= 180 available. Validated orders emit up to 11 lines (UNIVERS/MOTOR),
+// so this covers today's real cases without shrinking the block further. If some future
+// order needs more than 11 lines, resolveMaterialRows() below caps the visible rows at
+// maxRows - 1 and appends a "... y N lineas mas (ver RPS)" row instead of silently
+// dropping data - the full list is always in the exported RPS reservation regardless.
+const materialsRowHeight = 16;
+const materialsMaxRows = 11;
+
+export function resolveMaterialRows(materials, maxRows = materialsMaxRows) {
+  if (materials.length <= maxRows) {
+    return { rows: materials, overflowLabel: null };
+  }
+  const visibleCount = Math.max(maxRows - 1, 0);
+  const hiddenCount = materials.length - visibleCount;
+  return {
+    rows: materials.slice(0, visibleCount),
+    overflowLabel: `... y ${hiddenCount} lineas mas (ver RPS)`
+  };
+}
+
 function drawMaterials(doc, materials) {
   const x = 438;
   const y = 260;
   const w = pageWidth - margin - x;
   const headerHeight = 21;
-  const rowHeight = 20;
+  const rowHeight = materialsRowHeight;
   drawSectionTitle(doc, x, y, w, `Materiales reserva (${materials.length} lineas)`);
   const headerY = y + 25;
   doc.rect(x, headerY, w, headerHeight).fill(graphite);
@@ -173,17 +195,26 @@ function drawMaterials(doc, materials) {
   doc.text('CANT.', x + w - 45, headerY + 7, { width: 38, align: 'right' });
 
   let rowY = headerY + headerHeight;
-  const visibleRows = materials.slice(0, 9);
+  const { rows: visibleRows, overflowLabel } = resolveMaterialRows(materials);
   visibleRows.forEach((lineItem, rowIndex) => {
     doc.rect(x, rowY, w, rowHeight).fillAndStroke(rowIndex % 2 ? '#ffffff' : soft, line);
     doc.fillColor(graphite).font('Helvetica').fontSize(8);
-    doc.text(value(lineItem.code), x + 7, rowY + 6, { width: 112, ellipsis: true });
-    doc.text(value(lineItem.description), x + 126, rowY + 6, { width: 210, ellipsis: true });
-    doc.text(formatNumber(lineItem.quantity), x + w - 50, rowY + 6, { width: 43, align: 'right' });
+    doc.text(value(lineItem.code), x + 7, rowY + 4, { width: 112, ellipsis: true });
+    doc.text(value(lineItem.description), x + 126, rowY + 4, { width: 210, ellipsis: true });
+    doc.text(formatNumber(lineItem.quantity), x + w - 50, rowY + 4, { width: 43, align: 'right' });
     rowY += rowHeight;
   });
 
-  return { bottom: headerY + headerHeight + visibleRows.length * rowHeight };
+  let renderedRows = visibleRows.length;
+  if (overflowLabel) {
+    doc.rect(x, rowY, w, rowHeight).fillAndStroke(renderedRows % 2 ? '#ffffff' : soft, line);
+    doc.fillColor(muted).font('Helvetica-Oblique').fontSize(8)
+      .text(overflowLabel, x + 7, rowY + 4, { width: w - 14 });
+    rowY += rowHeight;
+    renderedRows += 1;
+  }
+
+  return { bottom: headerY + headerHeight + renderedRows * rowHeight };
 }
 
 function drawFabricData(doc, { order, awnings, calculation }) {
