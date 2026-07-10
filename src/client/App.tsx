@@ -1,24 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ClipboardList,
   Download,
   History,
   Layers,
-  Printer,
-  Save,
-  Settings2
+  Save
 } from 'lucide-react';
 import '@fontsource-variable/inter';
 import './styles.css';
-import type { ActiveTab, Catalog, Model, ModelParameters } from './types';
-import { createModelParameters, fileNameFromDisposition, uid } from './constants';
+import type { ActiveTab, Catalog } from './types';
+import { fileNameFromDisposition, uid } from './constants';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { OrderView } from './views/OrderView';
-import { TemplatesView } from './views/TemplatesView';
-import { ParametersView } from './views/ParametersView';
 import { HistoryView } from './views/HistoryView';
 
 function App() {
@@ -32,9 +28,17 @@ function App() {
     activeTab,
     orderCode: draft.orderCode,
     customer: draft.customer,
+    orderDate: draft.orderDate,
     technician: draft.technician,
+    reviewer: draft.reviewer,
     fabric: draft.fabric,
+    remate: draft.remate,
+    curvaBamba: draft.curvaBamba,
+    bambaDistinta: draft.bambaDistinta,
+    telaBamba: draft.telaBamba,
     structureColor: draft.structureColor,
+    rotTela: draft.rotTela,
+    rotBamba: draft.rotBamba,
     notes: draft.notes,
     awnings: draft.awnings
   });
@@ -52,35 +56,6 @@ function App() {
     const timer = window.setTimeout(() => setToast(''), 5000);
     return () => window.clearTimeout(timer);
   }, [toast]);
-
-  const hydratedParametersByModel = useMemo(() => {
-    if (!catalog) return draft.parametersByModel;
-
-    const next = { ...draft.parametersByModel };
-    let changed = false;
-    catalog.models.forEach((model) => {
-      if (!next[model.code]) {
-        next[model.code] = createModelParameters(model);
-        changed = true;
-      }
-    });
-
-    return changed ? next : draft.parametersByModel;
-  }, [catalog, draft.parametersByModel]);
-
-  function updateModelParameters(modelCode: string, updater: (current: ModelParameters) => ModelParameters) {
-    draft.setParametersByModel((current) => {
-      const model = catalog?.models.find((item) => item.code === modelCode) || {
-        code: modelCode,
-        family: '',
-        subtype: '',
-        ruleSheet: '',
-        supportsMultipleArms: false
-      } as Model;
-      const base = current[modelCode] || createModelParameters(model);
-      return { ...current, [modelCode]: updater(base) };
-    });
-  }
 
   function reuseHistory(entry: Parameters<typeof draft.reuseHistory>[0]) {
     draft.reuseHistory(entry);
@@ -136,9 +111,17 @@ function App() {
           order: {
             orderCode: draft.orderCode,
             customer: draft.customer,
+            orderDate: draft.orderDate,
             technician: draft.technician,
+            reviewer: draft.reviewer,
             fabric: draft.fabric,
+            remate: draft.remate,
+            curvaBamba: draft.curvaBamba,
+            bambaDistinta: draft.bambaDistinta,
+            telaBamba: draft.telaBamba,
             structureColor: draft.structureColor,
+            rotTela: draft.rotTela,
+            rotBamba: draft.rotBamba,
             notes: draft.notes,
             awnings: draft.awnings
           },
@@ -210,8 +193,6 @@ function App() {
 
       <nav className="app-tabs" aria-label="Vistas">
         <TabButton active={activeTab === 'order'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
-        <TabButton active={activeTab === 'templates'} icon={<Printer />} label="Plantillas" onClick={() => setActiveTab('templates')} />
-        <TabButton active={activeTab === 'parameters'} icon={<Settings2 />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
         <TabButton active={activeTab === 'history'} icon={<History />} label="Historial" onClick={() => setActiveTab('history')} />
       </nav>
 
@@ -220,18 +201,34 @@ function App() {
           catalog={catalog}
           orderCode={draft.orderCode}
           customer={draft.customer}
+          orderDate={draft.orderDate}
           technician={draft.technician}
+          reviewer={draft.reviewer}
           fabric={draft.fabric}
+          remate={draft.remate}
+          curvaBamba={draft.curvaBamba}
+          bambaDistinta={draft.bambaDistinta}
+          telaBamba={draft.telaBamba}
           structureColor={draft.structureColor}
+          rotTela={draft.rotTela}
+          rotBamba={draft.rotBamba}
           notes={draft.notes}
           awnings={draft.awnings}
           calculation={calculation}
           calculationState={calculationState}
           setOrderCode={draft.setOrderCode}
           setCustomer={draft.setCustomer}
+          setOrderDate={draft.setOrderDate}
           setTechnician={draft.setTechnician}
+          setReviewer={draft.setReviewer}
           setFabric={draft.setFabric}
+          setRemate={draft.setRemate}
+          setCurvaBamba={draft.setCurvaBamba}
+          setBambaDistinta={draft.setBambaDistinta}
+          setTelaBamba={draft.setTelaBamba}
           setStructureColor={draft.setStructureColor}
+          setRotTela={draft.setRotTela}
+          setRotBamba={draft.setRotBamba}
           setNotes={draft.setNotes}
           addAwning={draft.addAwning}
           duplicateAwning={draft.duplicateAwning}
@@ -240,25 +237,6 @@ function App() {
         />
       )}
 
-      {activeTab === 'templates' && (
-        <TemplatesView
-          awnings={draft.awnings}
-          orderCode={draft.orderCode}
-          customer={draft.customer}
-          technician={draft.technician}
-          fabric={draft.fabric}
-          structureColor={draft.structureColor}
-          notes={draft.notes}
-        />
-      )}
-
-      {activeTab === 'parameters' && (
-        <ParametersView
-          catalog={catalog}
-          parametersByModel={hydratedParametersByModel}
-          updateModelParameters={updateModelParameters}
-        />
-      )}
       {activeTab === 'history' && <HistoryView entries={draft.historyEntries} onReuse={reuseHistory} />}
       {toast && (
         <div className="toast">

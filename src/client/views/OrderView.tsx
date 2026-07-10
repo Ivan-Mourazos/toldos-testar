@@ -16,18 +16,34 @@ export function OrderView({
   catalog,
   orderCode,
   customer,
+  orderDate,
   technician,
+  reviewer,
   fabric,
+  remate,
+  curvaBamba,
+  bambaDistinta,
+  telaBamba,
   structureColor,
+  rotTela,
+  rotBamba,
   notes,
   awnings,
   calculation,
   calculationState,
   setOrderCode,
   setCustomer,
+  setOrderDate,
   setTechnician,
+  setReviewer,
   setFabric,
+  setRemate,
+  setCurvaBamba,
+  setBambaDistinta,
+  setTelaBamba,
   setStructureColor,
+  setRotTela,
+  setRotBamba,
   setNotes,
   addAwning,
   duplicateAwning,
@@ -37,18 +53,34 @@ export function OrderView({
   catalog: Catalog | null;
   orderCode: string;
   customer: string;
+  orderDate: string;
   technician: string;
+  reviewer: string;
   fabric: string;
+  remate: string;
+  curvaBamba: string;
+  bambaDistinta: boolean;
+  telaBamba: string;
   structureColor: string;
+  rotTela: string;
+  rotBamba: string;
   notes: string;
   awnings: Awning[];
   calculation: Calculation | null;
   calculationState: CalculationState;
   setOrderCode: (value: string) => void;
   setCustomer: (value: string) => void;
+  setOrderDate: (value: string) => void;
   setTechnician: (value: string) => void;
+  setReviewer: (value: string) => void;
   setFabric: (value: string) => void;
+  setRemate: (value: string) => void;
+  setCurvaBamba: (value: string) => void;
+  setBambaDistinta: (value: boolean) => void;
+  setTelaBamba: (value: string) => void;
   setStructureColor: (value: string) => void;
+  setRotTela: (value: string) => void;
+  setRotBamba: (value: string) => void;
   setNotes: (value: string) => void;
   addAwning: () => void;
   duplicateAwning: (id: string) => void;
@@ -66,9 +98,23 @@ export function OrderView({
           <div className="fields-grid order-fields">
             <TextField label="Pedido" value={orderCode} onChange={setOrderCode} />
             <TextField label="Cliente" value={customer} onChange={setCustomer} />
+            <label>
+              <span>Fecha</span>
+              <input type="date" value={orderDate} onChange={(event) => setOrderDate(event.target.value)} />
+            </label>
             <TextField label="Técnico" value={technician} onChange={setTechnician} />
+            <TextField label="Revisión" value={reviewer} onChange={setReviewer} />
             <TextField label="Tela" value={fabric} onChange={setFabric} placeholder="ACR ADMIRAL" />
             <TextField label="Lacado" value={structureColor} onChange={setStructureColor} />
+            <TextField label="Remate" value={remate} onChange={setRemate} placeholder="COMO TELA" />
+            <SelectField label="Curva bamba" value={curvaBamba} options={['RECTA', 'NORMAL', 'SUAVE', 'EXTRASUAVE']} onChange={setCurvaBamba} />
+            <label className="checkbox-field">
+              <input type="checkbox" checked={bambaDistinta} onChange={(event) => setBambaDistinta(event.target.checked)} />
+              <span>Bamba en tela distinta</span>
+            </label>
+            {bambaDistinta && <TextField label="Tela bamba" value={telaBamba} onChange={setTelaBamba} />}
+            <SelectField label="Rotulación tela" value={rotTela} options={['SI', 'NO']} onChange={setRotTela} />
+            <SelectField label="Rotulación bamba" value={rotBamba} options={['SI', 'NO']} onChange={setRotBamba} />
           </div>
           <label className="wide-field">
             <span>Comentarios del pedido</span>
@@ -321,14 +367,12 @@ function renderAwningField({
       return <SelectField key={field} label="Dispositivo" value={awning.device} options={['MOTOR', 'MAQ. INTERIOR', 'MAQ. EXTERIOR']} onChange={(value) => updateAwning(awning.id, normalizeDevicePatch(value))} />;
     case 'tubeLoad':
       return <SelectField key={field} label="Tubo carga" value={awning.tubeLoad} options={['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280']} onChange={(value) => updateAwning(awning.id, { tubeLoad: value })} />;
-    case 'valance':
-      return <SelectField key={field} label="Bamba" value={awning.valance} options={['BAMBA INCLUIDA', 'SIN BAMBA', 'MODO DE BAMBA']} onChange={(value) => updateAwning(awning.id, { valance: value })} />;
     case 'placement':
       return <SelectField key={field} label="Colocación" value={awning.placement} options={['FRONTAL', 'TECHO', 'ENTRE PAREDES']} onChange={(value) => updateAwning(awning.id, { placement: value })} />;
     case 'wallType':
       return <SelectField key={field} label="Pared" value={awning.wallType} options={['DIRECTA A PARED', 'DIRECTA A HORMIGO ARMADO', 'DIRECTA A MADERA', 'PARED CON SATE', 'PARED TRANSVENTILADA CON AISLANTE', 'CON SEPARADORES']} onChange={(value) => updateAwning(awning.id, { wallType: value })} />;
     case 'machineSide':
-      return <SelectField key={field} label="Lado máquina" value={awning.machineSide} options={['DERECHA', 'IZQUIERDA']} onChange={(value) => updateAwning(awning.id, { machineSide: value })} />;
+      return <SelectField key={field} label="Lado máquina" value={awning.machineSide} options={['M.F.DER', 'M.F IZQ']} onChange={(value) => updateAwning(awning.id, { machineSide: value })} />;
     case 'crankHeight':
       return <NumberField key={field} label="Altura manivela" value={awning.crankHeight} min={80} onChange={(value) => updateAwning(awning.id, { crankHeight: value })} />;
     case 'sensor':
@@ -345,11 +389,10 @@ function createModelSwitchPatch(model: string): Partial<Awning> {
       armCount: 2,
       device: 'MOTOR',
       tubeLoad: 'TUBO DE CARGA EVO 80',
-      valance: 'BAMBA INCLUIDA',
       placement: 'FRONTAL',
       wallType: 'DIRECTA A PARED',
       sensor: 'SIN SENSOR',
-      machineSide: 'DERECHA',
+      machineSide: 'M.F.DER',
       crankHeight: 170
     };
   }

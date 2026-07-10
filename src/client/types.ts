@@ -25,8 +25,8 @@ export type Awning = {
   device: string;
   placement: string;
   wallType: string;
-  valance: string;
   tubeLoad: string;
+  submodel: string;
   sensor: string;
   machineSide: string;
   crankHeight: number;
@@ -63,9 +63,17 @@ export type CalculationState = 'idle' | 'validating' | 'ready' | 'error';
 export type DraftState = {
   orderCode: string;
   customer: string;
+  orderDate: string;
   technician: string;
+  reviewer: string;
   fabric: string;
+  remate: string;
+  curvaBamba: string;
+  bambaDistinta: boolean;
+  telaBamba: string;
   structureColor: string;
+  rotTela: string;
+  rotBamba: string;
   notes: string;
   awnings: Awning[];
 };
@@ -82,55 +90,9 @@ export type HistoryEntry = {
   notes: string;
 };
 
-export type ActiveTab = 'order' | 'templates' | 'parameters' | 'history';
+export type ActiveTab = 'order' | 'history';
 
 export type FieldKey = keyof Awning;
-
-export type ParameterOptionGroup = {
-  id: string;
-  label: string;
-  values: string;
-};
-
-export type DimensionalRule = {
-  id: string;
-  label: string;
-  minWidth: number;
-  maxWidth: number;
-  minProjection: number;
-  maxProjection: number;
-  fabricWidthOffset: number;
-  fabricDropOffset: number;
-  note: string;
-};
-
-export type PartRule = {
-  id: string;
-  role: string;
-  reference: string;
-  quantity: string;
-  lengthFormula: string;
-};
-
-export type FabricRule = {
-  id: string;
-  label: string;
-  formula: string;
-  unit: string;
-  note: string;
-};
-
-export type ModelParameters = {
-  model: string;
-  sheet: string;
-  status: string;
-  updatedBy: string;
-  dimensionalRules: DimensionalRule[];
-  optionGroups: ParameterOptionGroup[];
-  partRules: PartRule[];
-  fabricRules: FabricRule[];
-  notes: string;
-};
 
 export type ModelProfile = {
   model: string;
@@ -146,11 +108,4 @@ export type FormSection = {
   description?: string;
   className?: string;
   fields: FieldKey[];
-};
-
-export type TechnicalMatrix = {
-  title: string;
-  subtitle: string;
-  columns: string[];
-  rows: Array<Array<string | number>>;
 };

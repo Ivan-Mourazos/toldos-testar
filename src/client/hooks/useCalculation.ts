@@ -5,18 +5,34 @@ export function useCalculation({
   activeTab,
   orderCode,
   customer,
+  orderDate,
   technician,
+  reviewer,
   fabric,
+  remate,
+  curvaBamba,
+  bambaDistinta,
+  telaBamba,
   structureColor,
+  rotTela,
+  rotBamba,
   notes,
   awnings
 }: {
   activeTab: ActiveTab;
   orderCode: string;
   customer: string;
+  orderDate: string;
   technician: string;
+  reviewer: string;
   fabric: string;
+  remate: string;
+  curvaBamba: string;
+  bambaDistinta: boolean;
+  telaBamba: string;
   structureColor: string;
+  rotTela: string;
+  rotBamba: string;
   notes: string;
   awnings: Awning[];
 }) {
@@ -33,7 +49,23 @@ export function useCalculation({
         const response = await fetch('/api/calculate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderCode, customer, technician, fabric, structureColor, notes, awnings }),
+          body: JSON.stringify({
+            orderCode,
+            customer,
+            orderDate,
+            technician,
+            reviewer,
+            fabric,
+            remate,
+            curvaBamba,
+            bambaDistinta,
+            telaBamba,
+            structureColor,
+            rotTela,
+            rotBamba,
+            notes,
+            awnings
+          }),
           signal: controller.signal
         });
         const data = await response.json();
@@ -51,7 +83,7 @@ export function useCalculation({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [activeTab, orderCode, customer, technician, fabric, structureColor, notes, awnings]);
+  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, remate, curvaBamba, bambaDistinta, telaBamba, structureColor, rotTela, rotBamba, notes, awnings]);
 
   const reservation = useMemo(() => ({
     orderCode,
