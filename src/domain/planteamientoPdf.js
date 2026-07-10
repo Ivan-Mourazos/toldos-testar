@@ -58,10 +58,12 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, total }) {
     title: 'PLANTEAMIENTO DE ESTRUCTURA',
     subtitle: `${value(awning.model)} - OF ${value(awning.of)}`
   });
-  drawStructureSummary(doc, { order, awning, ofBlock });
-  drawCalculation(doc, ofBlock?.calculation, 342);
-  drawMaterials(doc, ofBlock?.materials || []);
-  drawObservations(doc, { order, awning });
+  const blockGap = 12;
+  const summary = drawStructureSummary(doc, { order, awning, ofBlock });
+  const calculation = drawCalculation(doc, ofBlock?.calculation, summary.bottom + blockGap);
+  const materials = drawMaterials(doc, ofBlock?.materials || []);
+  const observationsY = Math.max(calculation.bottom, materials.bottom) + blockGap;
+  drawObservations(doc, { order, awning, y: observationsY });
   drawFooter(doc, 'Estructura');
 }
 
@@ -98,15 +100,15 @@ function drawHeader(doc, { order, awning, index, total, title, subtitle, ofLabel
   doc.rect(pageWidth - margin - 212, margin + 38, 212, 44).stroke(line);
   doc.fontSize(9)
     .text(ofLabel || `OF: ${value(awning?.of)}`, pageWidth - margin - 202, margin + 48, { width: 198, ellipsis: true })
-    .text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, pageWidth - margin - 202, margin + 64);
+    .text(`Fecha: ${formatDateLocal(new Date())}`, pageWidth - margin - 202, margin + 64);
 }
 
 function drawStructureSummary(doc, { order, awning, ofBlock }) {
   const x = margin;
   const y = 128;
   const w = 386;
-  drawSectionTitle(doc, x, y, w, 'Datos de partida');
-  drawKeyRows(doc, x, y + 25, w, [
+  const rowHeight = 18;
+  const rows = [
     ['Cliente', order.customer],
     ['Tecnico', order.technician],
     ['Revision', order.reviewer],
@@ -119,7 +121,9 @@ function drawStructureSummary(doc, { order, awning, ofBlock }) {
     ['Carga', awning.tubeLoad],
     ['Colocacion', awning.placement],
     ['Pared', awning.wallType]
-  ], 18);
+  ];
+  drawSectionTitle(doc, x, y, w, 'Datos de partida');
+  drawKeyRows(doc, x, y + 25, w, rows, rowHeight);
 
   const valid = ofBlock?.calculation?.valid;
   doc.rect(x + w + 18, y, 132, 58).fillAndStroke(valid === false ? '#ffe8e3' : '#c8f0d2', graphite);
@@ -133,44 +137,53 @@ function drawStructureSummary(doc, { order, awning, ofBlock }) {
     ['Linea min.', awning.minimumLineOverride || '-'],
     ['Motivo', awning.overrideReason || '-']
   ]);
+
+  return { bottom: y + 25 + rows.length * rowHeight };
 }
 
 function drawCalculation(doc, calc, y) {
   const x = margin;
   const w = 386;
-  drawSectionTitle(doc, x, y, w, 'Dimensiones calculadas');
-  drawKeyRows(doc, x, y + 25, w, [
+  const rowHeight = 16;
+  const rows = [
     ['Linea minima', calc ? formatCm(calc.minimumLine) : '-'],
     ['Tela', calc ? `${formatNumber(calc.fabricWidth)} x ${formatNumber(calc.fabricDrop)}` : '-'],
     ['Pano necesario', calc ? `${formatNumber(calc.fabricMl)} ML` : '-'],
     ['Estructura', calc ? formatCm(calc.structureLength) : '-'],
     ['Largo stock', calc ? formatCm(calc.stockLength) : '-']
-  ]);
+  ];
+  drawSectionTitle(doc, x, y, w, 'Dimensiones calculadas');
+  drawKeyRows(doc, x, y + 25, w, rows, rowHeight);
+
+  return { bottom: y + 25 + rows.length * rowHeight };
 }
 
 function drawMaterials(doc, materials) {
   const x = 438;
   const y = 260;
   const w = pageWidth - margin - x;
+  const headerHeight = 21;
+  const rowHeight = 20;
   drawSectionTitle(doc, x, y, w, `Materiales reserva (${materials.length} lineas)`);
   const headerY = y + 25;
-  doc.rect(x, headerY, w, 21).fill(graphite);
+  doc.rect(x, headerY, w, headerHeight).fill(graphite);
   doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(8);
   doc.text('ARTICULO', x + 7, headerY + 7, { width: 110 });
   doc.text('DESCRIPCION', x + 126, headerY + 7, { width: 210 });
   doc.text('CANT.', x + w - 45, headerY + 7, { width: 38, align: 'right' });
 
-  let rowY = headerY + 21;
+  let rowY = headerY + headerHeight;
   const visibleRows = materials.slice(0, 9);
   visibleRows.forEach((lineItem, rowIndex) => {
-    doc.rect(x, rowY, w, 20).fillAndStroke(rowIndex % 2 ? '#ffffff' : soft, line);
+    doc.rect(x, rowY, w, rowHeight).fillAndStroke(rowIndex % 2 ? '#ffffff' : soft, line);
     doc.fillColor(graphite).font('Helvetica').fontSize(8);
     doc.text(value(lineItem.code), x + 7, rowY + 6, { width: 112, ellipsis: true });
     doc.text(value(lineItem.description), x + 126, rowY + 6, { width: 210, ellipsis: true });
     doc.text(formatNumber(lineItem.quantity), x + w - 50, rowY + 6, { width: 43, align: 'right' });
-    rowY += 20;
+    rowY += rowHeight;
   });
 
+  return { bottom: headerY + headerHeight + visibleRows.length * rowHeight };
 }
 
 function drawFabricData(doc, { order, awnings, calculation }) {
@@ -185,19 +198,16 @@ function drawFabricData(doc, { order, awnings, calculation }) {
 
   drawSectionTitle(doc, x, y, 188, 'Rotulacion');
   drawKeyRows(doc, x, y + 25, 188, [
-    ['Tela', 'SI'],
-    ['Bamba', summarizeBamba(fabricLines)]
+    ['Tela', order.rotTela || '-'],
+    ['Bamba', order.rotBamba || '-']
   ]);
-
-  const rotulacionParts = [`Tela ${order.rotTela || 'NO'}`, `Bamba ${order.rotBamba || 'NO'}`];
-  if (order.bambaDistinta) rotulacionParts.push(`Tela bamba ${order.telaBamba || '-'}`);
 
   drawSectionTitle(doc, x + 214, y, 270, 'Datos basicos');
   drawKeyRows(doc, x + 214, y + 25, 270, [
     ['Material', order.fabric],
     ['Curva', order.curvaBamba],
     ['Remate', order.remate],
-    ['Rotulacion', rotulacionParts.join(' / ')]
+    ['Bamba', summarizeBamba(fabricLines)]
   ], 20);
 
   doc.rect(x + 514, y, w - 514, 72).fillAndStroke('#e5e8e7', graphite);
@@ -237,9 +247,8 @@ function drawFabricData(doc, { order, awnings, calculation }) {
   });
 }
 
-function drawObservations(doc, { order, awning }) {
+function drawObservations(doc, { order, awning, y }) {
   const x = margin;
-  const y = 500;
   const w = pageWidth - margin * 2;
   drawSectionTitle(doc, x, y, w, 'Observaciones');
   const text = [order.notes, awning.notes, awning.overrideReason ? `Ajuste tecnico: ${awning.overrideReason}` : '']
@@ -322,5 +331,15 @@ function formatDate(input) {
   const day = String(date.getUTCDate()).padStart(2, '0');
   const month = String(date.getUTCMonth() + 1).padStart(2, '0');
   return `${day}/${month}/${date.getUTCFullYear()}`;
+}
+
+// formatDate() reads UTC getters because it parses date-only ISO strings (order.orderDate)
+// where UTC midnight is the intended calendar day regardless of local timezone. The header
+// "generated on" timestamp below is a real instant (now), so it must use local getters instead,
+// otherwise it could roll to the wrong day near midnight in timezones ahead/behind UTC.
+function formatDateLocal(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}/${date.getFullYear()}`;
 }
 
