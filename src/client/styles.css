@@ -669,6 +669,27 @@ label span,
 
 /* ---------- Historial ---------- */
 
+.history-search {
+  margin: var(--sp-4) 0;
+  max-width: 360px;
+  position: relative;
+}
+
+.history-search svg {
+  color: var(--text-muted);
+  left: var(--sp-3);
+  height: 16px;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+}
+
+.history-search input {
+  padding-left: calc(var(--sp-3) * 2 + 16px);
+}
+
 .history-table-wrap {
   overflow-x: auto;
 }
@@ -697,6 +718,23 @@ label span,
 
 .history-table tbody tr:nth-child(even) {
   background: var(--surface-muted);
+}
+
+.history-table td.history-empty {
+  color: var(--text-muted);
+  padding: var(--sp-6) 0;
+  text-align: center;
+}
+
+.history-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.history-table .badge-warn {
+  min-height: 24px;
+  padding: 0 var(--sp-2);
 }
 
 .awnings-section,

@@ -1,13 +1,38 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { AlertCircle, Search } from 'lucide-react';
 import type { HistoryEntry } from '../types';
 
 export function HistoryView({ entries, onReuse }: { entries: HistoryEntry[]; onReuse: (entry: HistoryEntry) => void }) {
+  const [query, setQuery] = useState('');
+
+  const filtered = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return entries;
+    return entries.filter((entry) =>
+      entry.orderCode.toLowerCase().includes(term) || entry.customer.toLowerCase().includes(term)
+    );
+  }, [entries, query]);
+
   return (
     <section className="history-panel panel">
       <div className="section-header">
-        <h2>Historial</h2>
-        <span>{entries.length} pedidos guardados en este navegador</span>
+        <div>
+          <h2>Historial</h2>
+          <span>{entries.length} pedidos guardados en este navegador</span>
+        </div>
       </div>
+
+      <div className="history-search">
+        <Search aria-hidden="true" />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar por pedido o cliente…"
+          aria-label="Buscar en el historial"
+        />
+      </div>
+
       <div className="history-table-wrap">
         <table className="history-table">
           <thead>
@@ -17,27 +42,64 @@ export function HistoryView({ entries, onReuse }: { entries: HistoryEntry[]; onR
               <th>Cliente</th>
               <th>OFs</th>
               <th>Modelos</th>
-              <th>Notas</th>
+              <th>Diagnósticos</th>
               <th />
             </tr>
           </thead>
           <tbody>
             {entries.length === 0 ? (
-              <tr><td colSpan={7}>Todavía no hay cálculos en el historial.</td></tr>
-            ) : entries.map((entry) => (
-              <tr key={entry.id}>
-                <td>{new Date(entry.createdAt).toLocaleString('es-ES')}</td>
-                <td><strong>{entry.orderCode || '-'}</strong></td>
-                <td>{entry.customer || '-'}</td>
-                <td>{entry.ofs.join(', ') || '-'}</td>
-                <td>{entry.models.join(', ') || '-'}</td>
-                <td>{entry.notes || '-'}</td>
-                <td><button className="ghost-button compact" type="button" onClick={() => onReuse(entry)}>Abrir</button></td>
+              <tr>
+                <td className="history-empty" colSpan={7}>
+                  Aún no hay pedidos guardados. Se añaden al guardar RPS.
+                </td>
               </tr>
-            ))}
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td className="history-empty" colSpan={7}>
+                  Sin resultados para «{query}».
+                </td>
+              </tr>
+            ) : (
+              filtered.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{formatDate(entry.createdAt)}</td>
+                  <td><strong>{entry.orderCode || '-'}</strong></td>
+                  <td>{entry.customer || '-'}</td>
+                  <td>
+                    {entry.ofs.length > 0 ? (
+                      <div className="history-badges">
+                        {entry.ofs.map((of, index) => (
+                          <span className="code" key={`${of}-${index}`}>{of}</span>
+                        ))}
+                      </div>
+                    ) : '-'}
+                  </td>
+                  <td>{entry.models.join(', ') || '-'}</td>
+                  <td>
+                    {entry.diagnostics > 0 ? (
+                      <span className="badge-warn">
+                        <AlertCircle aria-hidden="true" />
+                        {entry.diagnostics}
+                      </span>
+                    ) : '-'}
+                  </td>
+                  <td>
+                    <button className="ghost-button compact" type="button" onClick={() => onReuse(entry)}>
+                      Reutilizar
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
     </section>
   );
+}
+
+function formatDate(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleDateString('es-ES');
 }
