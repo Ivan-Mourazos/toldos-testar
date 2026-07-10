@@ -242,3 +242,53 @@ describe('ARZUA PRO caída de tela con bamba real', () => {
     expect(result.ofs[0].description).not.toContain('bambalina');
   });
 });
+
+describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
+  const asLines = (materials) => materials.map((m) => `${m.code} x${m.quantity}`).sort();
+
+  test('AR2603380: EVO 80, MAQ. EXTERIOR, blanco', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR VISON',
+      awnings: [baseAwning({
+        of: '230335', model: 'ARZUA PRO', width: 596, projection: 300,
+        valanceHeight: 15, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 150
+      })]
+    }));
+    expect(asLines(result.ofs[0].materials)).toEqual([
+      'ACRILI2250P120 x18', 'BONYXBL16300C x1', 'CASMAQEJE6378MM x1', 'CASPLAS x1',
+      'CASPUNCE x1', 'MANIVEBL16150C x1', 'MAQMB9L13BLANBL16 x1',
+      'PEVO80BL16600C x1', 'SOPAR350BL16 x1', 'TURA80HG600C x1'
+    ].sort());
+  });
+
+  test('AR2603399: UNIVERS 280, MAQ. EXTERIOR, negro', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'NEGRO (R-09011)',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        of: '230330', model: 'ARZUA PRO', width: 500, projection: 225,
+        valanceHeight: 20, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA UNIVERS 280', crankHeight: 250
+      })]
+    }));
+    expect(asLines(result.ofs[0].materials)).toEqual([
+      'ACRILI2170P120 x14.5', 'BONYXNE11225C x1', 'CASMAQEJE6378MM x1', 'CASPLAS x1',
+      'CASPUNCE x1', 'MANIVENE11250C x1', 'MAQMB9L13NEGRNE11 x1',
+      'PUNI280NE11600C x1', 'SOPAR350NE11 x1', 'TAPOPLUN280NE11 x1', 'TURA80HG600C x1'
+    ].sort());
+  });
+
+  test('MAQ. INTERIOR usa casquillo de eje 50', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR VISON',
+      awnings: [baseAwning({
+        of: '230999', model: 'ARZUA PRO', width: 400, projection: 250,
+        valanceHeight: 20, device: 'MAQ. INTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 170
+      })]
+    }));
+    const codes = result.ofs[0].materials.map((m) => m.code);
+    expect(codes).toContain('CASMAQEJE5078MM');
+    expect(codes).not.toContain('CASMAQEJE6378MM');
+  });
+});

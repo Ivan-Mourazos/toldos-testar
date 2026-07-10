@@ -1,6 +1,6 @@
 import { roundQuantity, formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { resolveLacado } from './lacados.js';
+import { resolveLacado, crankSuffix, machineCode } from './lacados.js';
 
 const minimumLineByArm = [
   { arm: 150, values: { 'MAQ. EXTERIOR': 200, 'MAQ. INTERIOR': 195, MOTOR: 195 } },
@@ -96,6 +96,18 @@ function buildMaterials({ _order, awning, lacado, colorSuffix, tubeLoad, device,
       { code: `PUNI280${colorSuffix}${stockLength}C`, quantity: 1, description: 'TUBO DE CARGA UNIVERS 280' },
       { code: `TAPOPLUN280${colorSuffix}`, quantity: 1, description: 'KIT TAPONES UNIVERS 280' },
       { code: `BONYX${colorSuffix}${awning.projection}C`, quantity: 1, description: 'JUEGO DE BRAZOS ONYX' }
+    );
+  }
+
+  if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
+    const casquillo = device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM';
+    const casquilloDesc = device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78';
+    const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
+    materials.push(
+      { code: casquillo, quantity: 1, description: casquilloDesc },
+      { code: machineCode(lacado), quantity: 1, description: `MAQUINA ZNP 10 L170 ${lacado.crank}` },
+      { code: `MANIVE${crankSuffix(lacado)}${crankHeight}C`, quantity: 1, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
+      { code: 'CASPLAS', quantity: 1, description: 'CASQUILLO PLASTICO' }
     );
   }
 
