@@ -1,11 +1,6 @@
 import { roundQuantity, formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
-
-const colorSuffixes = new Map([
-  ['BLANCO', 'BL16'],
-  ['NEGRO', 'NE11'],
-  ['NEGRO (R-09011)', 'NE11']
-]);
+import { resolveLacado } from './lacados.js';
 
 const minimumLineByArm = [
   { arm: 150, values: { 'MAQ. EXTERIOR': 200, 'MAQ. INTERIOR': 195, MOTOR: 195 } },
@@ -30,7 +25,8 @@ const fabricWidthDiscounts = {
 };
 
 export function calculateArzuaPro({ order, awning }) {
-  const colorSuffix = resolveColorSuffix(order.structureColor);
+  const lacado = resolveLacado(order.structureColor);
+  const colorSuffix = lacado.suffix;
   const tubeLoad = normalizeTubeLoad(awning.tubeLoad);
   const device = normalizeDevice(awning.device);
   const diagnostics = [];
@@ -51,7 +47,7 @@ export function calculateArzuaPro({ order, awning }) {
   }
 
   const materials = valid
-    ? buildMaterials({ order, awning, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric })
+    ? buildMaterials({ order, awning, lacado, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric })
     : [];
 
   if (!valid) {
@@ -82,7 +78,7 @@ export function calculateArzuaPro({ order, awning }) {
   };
 }
 
-function buildMaterials({ _order, awning, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric }) {
+function buildMaterials({ _order, awning, lacado, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric }) {
   const materials = [
     { code: `SOPAR350${colorSuffix}`, quantity: 1, description: 'JUEGO SOPORTE AROND' },
     { code: `TURA80HG${stockLength}C`, quantity: 1, description: 'TUBO DE ENROLLE P801' },
@@ -147,11 +143,6 @@ function resolveValanceHeight(awning) {
 function chooseStockLength(length) {
   const stockLengths = [600, 650, 700];
   return stockLengths.find((item) => item >= length) || Math.ceil(length / 50) * 50;
-}
-
-function resolveColorSuffix(color) {
-  const cleanColor = String(color || '').trim().toUpperCase();
-  return colorSuffixes.get(cleanColor) || 'BL16';
 }
 
 function normalizeTubeLoad(value) {
