@@ -1,0 +1,58 @@
+import { describe, expect, test } from 'vitest';
+import { getModelBehavior, getFieldVisibility, formOptions } from './modelBehavior.js';
+
+describe('modelBehavior', () => {
+  test('ARZUA PRO: tubo de carga limitado a EVO 80 y UNIVERS 280', () => {
+    const behavior = getModelBehavior('ARZUA PRO');
+    expect(behavior.tipo02).toBe('TUBO DE CARGA');
+    expect(behavior.tubeOptions).toEqual(['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280']);
+    expect(behavior.implemented).toBe(true);
+  });
+
+  test('CAMBIO TELA no muestra dispositivo ni campos de instalación', () => {
+    const visibility = getFieldVisibility({ model: 'CAMBIO TELA', device: 'MOTOR' });
+    expect(visibility.device).toBe(false);
+    expect(visibility.sensor).toBe(false);
+    expect(visibility.machineLocation).toBe(false);
+    expect(visibility.crankHeight).toBe(false);
+    expect(visibility.placement).toBe(false);
+    expect(visibility.wallType).toBe(false);
+    expect(visibility.tubeLoad).toBe(false);
+  });
+
+  test('ARZUA PRO con MOTOR: sensor sí, máquina no', () => {
+    const visibility = getFieldVisibility({ model: 'ARZUA PRO', device: 'MOTOR' });
+    expect(visibility.tubeLoad).toBe(true);
+    expect(visibility.sensor).toBe(true);
+    expect(visibility.machineLocation).toBe(false);
+    expect(visibility.crankHeight).toBe(false);
+    expect(visibility.deviceOptions).toEqual(['MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR']);
+  });
+
+  test('ARZUA PRO con MAQ. EXTERIOR: máquina sí, sensor no', () => {
+    const visibility = getFieldVisibility({ model: 'ARZUA PRO', device: 'MAQ. EXTERIOR' });
+    expect(visibility.sensor).toBe(false);
+    expect(visibility.machineLocation).toBe(true);
+    expect(visibility.crankHeight).toBe(true);
+  });
+
+  test('MODUL400: cofre con submodelo, dispositivo de cofre y brazos', () => {
+    const visibility = getFieldVisibility({ model: 'MODUL400', device: 'MAQUINA' });
+    expect(visibility.submodel).toBe(true);
+    expect(visibility.deviceOptions).toEqual(['MAQUINA', 'MOTOR']);
+    expect(visibility.arms).toBe(true);
+    expect(visibility.machineLocation).toBe(true);
+  });
+
+  test('modelo desconocido se comporta como modelo sin tipo01', () => {
+    const visibility = getFieldVisibility({ model: 'NO EXISTE', device: 'MOTOR' });
+    expect(visibility.device).toBe(false);
+  });
+
+  test('opciones del formulario', () => {
+    expect(formOptions.tecnicos).toEqual(['ÁNGEL', 'JAIME', 'ALBERTO', 'ADRIÁN', 'TAMARA', 'IVÁN']);
+    expect(formOptions.lacados).toHaveLength(10);
+    expect(formOptions.alturasManivela).toContain(170);
+    expect(formOptions.sensores.map((s) => s.sensor)).toContain('SIN SENSOR');
+  });
+});

@@ -1,0 +1,46 @@
+{
+  "models": {
+    "ARZUA PRO":      { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280"], "multipleBrazos": false, "implemented": true },
+    "GALICIA":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 70", "TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280", "TUBO DE CARGA UNIVERS 290"], "multipleBrazos": true, "implemented": false },
+    "XACOBEO":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "CORTINA":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "MICROBOX":       { "tipo01": "COFRE", "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "MODUL400":       { "tipo01": "COFRE", "tipo02": "SUBMODELO", "submodelOptions": ["OPEN", "SEMI", "COFRE"], "multipleBrazos": true, "implemented": false },
+    "MAXISCREEM":     { "tipo01": "COFRE", "tipo02": "SUBMODELO", "submodelOptions": ["COFRE CON CABLE", "COFRE CON VARILLA", "COFRE", "CON CABLE", "CON VARILLA"], "multipleBrazos": false, "implemented": false },
+    "MONOBLOCK 350":  { "tipo01": "COFRE", "tipo02": null, "multipleBrazos": true, "implemented": false },
+    "PUNTO RECTO":    { "tipo01": "COFRE", "tipo02": null, "multipleBrazos": true, "implemented": false },
+    "STORBOX 250":    { "tipo01": "COFRE", "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "STORBOX 400":    { "tipo01": "COFRE", "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "CAMBIO TELA":    { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": true },
+    "CAMBIO CORTINA": { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "CAMBIO ANTICA":  { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "BAMBALINA":      { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": false },
+    "ENROLLABLE":     { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": false }
+  },
+  "options": {
+    "alturasManivela": [80, 100, 120, 150, 170, 200, 225, 250, 300],
+    "dispositivos": ["MAQ. INTERIOR", "MAQ. EXTERIOR", "MOTOR"],
+    "dispositivosCofre": ["MAQUINA", "MOTOR"],
+    "sensores": [
+      { "sensor": "SIN SENSOR", "mando": "MANDO SITUO 1 IO" },
+      { "sensor": "VIENTO -SOL", "mando": "MANDO SITUO 5 VARIATIO IO" },
+      { "sensor": "MOVIMIENTO", "mando": "MANDO SITUO 1 IO" },
+      { "sensor": "EOLIS IO", "mando": "MANDO SITUO 1 IO" },
+      { "sensor": "SOL", "mando": "MANDO SITUO 5 VARIATIO IO" }
+    ],
+    "tiposPared": [
+      { "pared": "DIRECTA A PARED", "tornilleria": "ANCLAJE QUÍMICO M12", "unidades": 4 },
+      { "pared": "DIRECTA A HORMIGO ARMADO", "tornilleria": "ANCLAJE MECANICO M12", "unidades": 4 },
+      { "pared": "DIRECTA A MADERA", "tornilleria": "BARRAQUEROS M12x120", "unidades": 4 },
+      { "pared": "PARED CON SATE", "tornilleria": "TORNILLOS THERMAX M16", "unidades": 4 },
+      { "pared": "PARED TRANSVENTILADA CON AISLANTE", "tornilleria": "TORNILLOS THERMAX M16", "unidades": 4 },
+      { "pared": "CON SEPARADORES", "tornilleria": "PIEZAS SEPARADOR", "unidades": 1 }
+    ],
+    "curvasBamba": ["RECTA", "NORMAL", "SUAVE", "EXTRASUAVE"],
+    "colocaciones": ["FRONTAL", "TECHO", "ENTRE PAREDES"],
+    "localizacionesMaquina": ["M.F.DER", "M.F IZQ"],
+    "tecnicos": ["ÁNGEL", "JAIME", "ALBERTO", "ADRIÁN", "TAMARA", "IVÁN"],
+    "rotulacion": ["NO", "SI"],
+    "brazos": [2, 3, 4]
+  }
+}
