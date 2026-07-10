@@ -33,7 +33,8 @@ export function calculateArzuaPro({ order, awning }) {
   const minimumLine = awning.minimumLineOverride ?? lookupMinimumLine(awning.projection, device);
   const valid = awning.width <= 600 && awning.width >= minimumLine;
   const fabricWidth = round1(awning.width - lookupFabricWidthDiscount(tubeLoad, device));
-  const fabricDrop = round1(awning.projection + resolveValanceHeight(awning) + 45);
+  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
+  const fabricDrop = round1(awning.projection + valance + 45);
   const fabricMl = roundQuantity(Math.ceil(fabricWidth / 120) * (fabricDrop / 100) * awning.units);
   const length = round1(awning.width - lookupWidthDiscount(tubeLoad, device));
   const stockLength = chooseStockLength(length);
@@ -116,7 +117,11 @@ function buildMaterials({ _order, awning, lacado, colorSuffix, tubeLoad, device,
 }
 
 function buildDescription(awning, calc) {
-  return `Toldo ARZUA PRO ${awning.width}x${awning.projection} · tela ${formatNumber(calc.fabricWidth)}x${formatNumber(calc.fabricDrop)} · paño ${formatNumber(calc.fabricMl)} ml`;
+  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
+  const bambaText = valance > 0
+    ? ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm`
+    : '';
+  return `Toldo ARZUA PRO ${awning.width}x${awning.projection} · tela ${formatNumber(calc.fabricWidth)}x${formatNumber(calc.fabricDrop)} · paño ${formatNumber(calc.fabricMl)} ml${bambaText}`;
 }
 
 function lookupMinimumLine(arm, device) {
@@ -133,11 +138,6 @@ function lookupWidthDiscount(tubeLoad, device) {
 
 function lookupFabricWidthDiscount(tubeLoad, device) {
   return fabricWidthDiscounts[tubeLoad]?.[device] ?? 11;
-}
-
-function resolveValanceHeight(awning) {
-  if (awning.projection >= 300) return 25;
-  return 30;
 }
 
 function chooseStockLength(length) {

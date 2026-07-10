@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, test } from 'vitest';
 import { calculateOrder } from './rules.js';
 
 function baseAwning(overrides = {}) {
@@ -8,11 +8,26 @@ function baseAwning(overrides = {}) {
     units: 1,
     width: 400,
     projection: 250,
+    valanceHeight: 20,
     device: 'MOTOR',
     tubeLoad: 'TUBO DE CARGA EVO 80',
     placement: 'FRONTAL',
     wallType: 'DIRECTA A PARED',
     sensor: 'SIN SENSOR',
+    crankHeight: 170,
+    machineSide: 'M.F.DER',
+    ...overrides
+  };
+}
+
+function basePayload(overrides = {}) {
+  return {
+    orderCode: 'AR-TEST',
+    customer: 'CLIENTE TEST',
+    technician: 'IVÁN',
+    fabric: 'ACR VISON',
+    structureColor: 'BLANCO',
+    awnings: [],
     ...overrides
   };
 }
@@ -182,5 +197,33 @@ describe('calculateOrder — ARZUA PRO fabric resolution', () => {
     });
     expect(result.ofs[0].materials.some((line) => line.description === 'PAÑO LINEAL NECESARIO')).toBe(false);
     expect(result.ofs[0].materials.some((line) => line.code === 'TELA INVENTADA')).toBe(false);
+  });
+});
+
+describe('ARZUA PRO caída de tela con bamba real', () => {
+  test('AR2603380: salida 300 + bamba 15 + 45 = 360', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR VISON',
+      awnings: [baseAwning({
+        of: '230335', model: 'ARZUA PRO', width: 596, projection: 300,
+        valanceHeight: 15, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 150
+      })]
+    }));
+    expect(result.ofs[0].calculation.fabricDrop).toBe(360);
+    expect(result.ofs[0].calculation.fabricMl).toBe(18);
+  });
+
+  test('AR2603399: salida 225 + bamba 20 + 45 = 290', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'NEGRO (R-09011)',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        of: '230330', model: 'ARZUA PRO', width: 500, projection: 225,
+        valanceHeight: 20, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA UNIVERS 280', crankHeight: 250
+      })]
+    }));
+    expect(result.ofs[0].calculation.fabricDrop).toBe(290);
+    expect(result.ofs[0].calculation.fabricMl).toBe(14.5);
   });
 });
