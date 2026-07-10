@@ -91,21 +91,3 @@ export type HistoryEntry = {
 };
 
 export type ActiveTab = 'order' | 'history';
-
-export type FieldKey = keyof Awning;
-
-export type ModelProfile = {
-  model: string;
-  title: string;
-  summary: string;
-  sections: FormSection[];
-  printFamily: 'arms' | 'fabric-change' | 'screen' | 'box';
-};
-
-export type FormSection = {
-  id: string;
-  title: string;
-  description?: string;
-  className?: string;
-  fields: FieldKey[];
-};

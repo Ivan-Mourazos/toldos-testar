@@ -155,7 +155,10 @@ export function useDraft() {
         const next = { ...awning, ...patch };
         if (patch.model && patch.model !== awning.model) {
           const fresh = createAwning();
-          return { ...fresh, id: awning.id, of: awning.of, model: patch.model, units: awning.units };
+          return {
+            ...fresh, id: awning.id, of: awning.of, model: patch.model, units: awning.units,
+            width: awning.width, projection: awning.projection, valanceHeight: awning.valanceHeight
+          };
         }
         return next;
       })

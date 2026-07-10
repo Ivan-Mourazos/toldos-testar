@@ -334,7 +334,7 @@ label span,
   color: #ffffff;
 }
 
-/* ---------- Vista de pedido (provisional, se rehace en tarea 8-9) ---------- */
+/* ---------- Vista de pedido ---------- */
 
 .workbench {
   background: var(--surface);
@@ -360,11 +360,6 @@ label span,
 
 .section-header svg {
   color: var(--tgm-black);
-}
-
-.wide-field {
-  grid-column: 1 / -1;
-  margin-top: var(--sp-3);
 }
 
 /* ---------- Banda de cabecera del pedido (Task 7) ---------- */
@@ -496,110 +491,114 @@ label span,
   margin-top: 2px;
 }
 
-.awning-list {
-  display: grid;
-  gap: var(--sp-4);
-}
-
-.awning-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
-.awning-card-header {
-  align-items: center;
-  background: var(--surface-muted);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  padding: var(--sp-3) var(--sp-4);
-}
-
-.awning-card-header span,
-.awning-card-header em {
-  color: var(--text-muted);
-  display: block;
-  font-size: 12px;
-  font-style: normal;
-}
-
-.awning-card-header strong {
-  display: block;
-  font-size: 18px;
-  margin: 2px 0;
-}
-
 .card-actions {
   display: flex;
   gap: var(--sp-2);
 }
 
-.model-form {
+/* ---------- Columnas de toldo (Task 8) ---------- */
+
+.awning-grid {
+  align-items: start;
   display: grid;
   gap: var(--sp-4);
-  grid-template-columns: 320px minmax(260px, 0.75fr) minmax(0, 1.5fr);
-  padding: var(--sp-4);
+  grid-template-columns: repeat(4, minmax(280px, 1fr));
 }
 
-.field-group {
-  background: var(--surface-muted);
+.awning-column {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.awning-column-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.awning-column-tag {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.awning-column > .field,
+.awning-column > label {
+  animation: field-in 0.15s ease;
+}
+
+.awning-pending {
+  background: var(--warn-bg);
+  border-radius: var(--radius-sm);
+  color: var(--warn);
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.awning-overrides {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   display: grid;
-  gap: var(--sp-3);
-  padding: var(--sp-3);
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
 }
 
-.model-context {
-  grid-column: 1 / -1;
+.awning-overrides summary {
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: var(--sp-1) 0;
 }
 
-.overrides-group {
-  grid-column: 1 / -1;
+.awning-overrides[open] summary {
+  margin-bottom: var(--sp-1);
 }
 
-.field-group h3 {
+.awning-status {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  display: flex;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  margin: 0;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  min-height: 32px;
   text-transform: uppercase;
 }
 
-.field-group p {
+.awning-status:not(.badge-ok):not(.badge-danger) {
+  background: var(--surface-muted);
   color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1.45;
-  margin: 0;
 }
 
-.group-grid,
-.compact-grid {
-  display: grid;
+.awning-add-ghost {
+  align-items: center;
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  display: flex;
   gap: var(--sp-2);
+  justify-content: center;
+  min-height: 160px;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
-.compact-grid {
-  grid-template-columns: 1fr;
+.awning-add-ghost:hover {
+  background: var(--surface-muted);
+  border-color: var(--tgm-yellow);
+  color: var(--text);
 }
 
-.group-grid.compact-grid {
-  grid-template-columns: 82px minmax(132px, 1fr) 76px;
-}
-
-.group-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.collapsed-technical {
-  opacity: 0.85;
-}
-
-.notes-field {
-  margin-top: 0;
+@keyframes field-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 /* ---------- Resultado en vivo / historial ---------- */

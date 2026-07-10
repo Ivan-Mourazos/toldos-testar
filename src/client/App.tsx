@@ -200,7 +200,6 @@ function App() {
 
       {activeTab === 'order' && (
         <OrderView
-          catalog={catalog}
           orderCode={draft.orderCode}
           customer={draft.customer}
           orderDate={draft.orderDate}
