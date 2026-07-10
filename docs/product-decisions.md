@@ -2,6 +2,29 @@
 
 Fecha: 2026-07-08.
 
+## Verificación final del rediseño (2026-07-10)
+
+- El formulario de toldo pasó a ser dinámico, dirigido por `src/domain/modelBehavior.json`: cada
+  modelo declara sus campos visibles (tubo de carga, submodelo, dispositivo, sensor, local. máquina,
+  altura manivela, colocación, tipo de pared, nº brazos) y el cliente (`useVisibleFields`) los
+  muestra/oculta según modelo + dispositivo, sin lógica de formulario hardcodeada por modelo.
+- La pestaña `Parámetros` (edición de reglas por modelo) y el apartado de `Plantillas` quedan
+  retirados temporalmente de la navegación de esta rama. La app solo expone `Pedido` e `Historial`.
+  El mantenimiento de reglas sigue viviendo en `modelBehavior.json` y los módulos de dominio
+  (`src/domain/*.js`), no en una UI editable todavía; se retomará cuando el cálculo esté validado
+  contra más casos reales (ver "Plan recomendado").
+- La regla de caída de tela `salida + bamba + 45` (mm) quedó validada end-to-end contra dos pedidos
+  reales del Excel maestro:
+  - `AR2603380` (ARZUA PRO, EVO 80, MAQ. EXTERIOR, salida 300 + bamba 15 + 45 = 360 mm de caída,
+    583×360 de tela, 18 ml, y las 10 líneas RPS exactas del Excel original).
+  - `AR2603399` (ARZUA PRO, UNIVERS 280, MAQ. EXTERIOR, negro, salida 225 + bamba 20 + 45 = 290 mm
+    de caída, 487×290 de tela, 14,5 ml, con las referencias en acabado NE11).
+  Ambos casos se reprodujeron en el formulario (badge VÁLIDO, sin diagnósticos) y en el Excel/PDF
+  generados por "Guardar RPS", cuadrando línea a línea con la referencia del Excel maestro.
+- Verificación completa (lint, tests, build, flujo de navegador AR2603380/AR2603399, cambio a MOTOR,
+  persistencia de borrador v4 y migración v3→v4, guardado + historial + Resumen/planteamiento):
+  ver `.superpowers/sdd/task-12-report.md`.
+
 ## Alcance funcional
 
 - Entrarán todos los modelos detectados en el Excel: ARZUA PRO, CAMBIO CORTINA, CAMBIO TELA, CORTINA, ENROLLABLE, GALICIA, MICROBOX, MODUL400, MAXISCREEM, MONOBLOCK 350, PUNTO RECTO, STORBOX 250, STORBOX 400, XACOBEO, BAMBALINA y CAMBIO ANTICA.
