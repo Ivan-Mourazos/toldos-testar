@@ -14,6 +14,8 @@ const minimumLineByArm = [
   { arm: 350, values: { 'MAQ. EXTERIOR': 395, 'MAQ. INTERIOR': 400, MOTOR: 400 } }
 ];
 
+export const arzuaProEstablishedProjections = minimumLineByArm.map((item) => item.arm);
+
 const widthDiscounts = {
   'TUBO DE CARGA EVO 80': { MOTOR: 9.8, 'MAQ. INTERIOR': 10.2, 'MAQ. EXTERIOR': 10.4 },
   'TUBO DE CARGA UNIVERS 280': { MOTOR: 9.8, 'MAQ. INTERIOR': 11.2, 'MAQ. EXTERIOR': 11.4 }

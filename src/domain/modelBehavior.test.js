@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getModelBehavior, getFieldVisibility, formOptions, modelNames } from './modelBehavior.js';
+import { getModelBehavior, getFieldVisibility, formOptions, modelNames, getEstablishedProjections } from './modelBehavior.js';
 import { models as catalogModels } from './catalog.js';
 
 describe('modelBehavior', () => {
@@ -60,5 +60,23 @@ describe('modelBehavior', () => {
   test('los modelos de modelBehavior.json coinciden con los codigos de catalog.js (el form ofrece uno, rules.js valida contra el otro)', () => {
     const catalogCodes = new Set(catalogModels.map((model) => model.code));
     expect(new Set(modelNames)).toEqual(catalogCodes);
+  });
+
+  test('ARZUA PRO expone las salidas establecidas de PRO.MIN', () => {
+    expect(getEstablishedProjections('ARZUA PRO')).toEqual([150, 175, 200, 225, 250, 275, 300, 325, 350]);
+  });
+
+  test('un modelo sin salidas establecidas devuelve null', () => {
+    expect(getEstablishedProjections('CAMBIO TELA')).toBeNull();
+    expect(getEstablishedProjections('')).toBeNull();
+  });
+
+  test('tiposPared trae la referencia real del Excel maestro (M REF) o null si no está confirmada', () => {
+    const directa = formOptions.tiposPared.find((item) => item.pared === 'DIRECTA A PARED');
+    expect(directa.referencia).toBe('ANCLHSTM12145');
+    const sate = formOptions.tiposPared.find((item) => item.pared === 'PARED CON SATE');
+    expect(sate.referencia).toBe('THERMAX');
+    const madera = formOptions.tiposPared.find((item) => item.pared === 'DIRECTA A MADERA');
+    expect(madera.referencia).toBeNull();
   });
 });

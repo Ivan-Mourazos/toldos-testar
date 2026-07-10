@@ -29,12 +29,12 @@
       { "sensor": "SOL", "mando": "MANDO SITUO 5 VARIATIO IO" }
     ],
     "tiposPared": [
-      { "pared": "DIRECTA A PARED", "tornilleria": "ANCLAJE QUÍMICO M12", "unidades": 4 },
-      { "pared": "DIRECTA A HORMIGO ARMADO", "tornilleria": "ANCLAJE MECANICO M12", "unidades": 4 },
-      { "pared": "DIRECTA A MADERA", "tornilleria": "BARRAQUEROS M12x120", "unidades": 4 },
-      { "pared": "PARED CON SATE", "tornilleria": "TORNILLOS THERMAX M16", "unidades": 4 },
-      { "pared": "PARED TRANSVENTILADA CON AISLANTE", "tornilleria": "TORNILLOS THERMAX M16", "unidades": 4 },
-      { "pared": "CON SEPARADORES", "tornilleria": "PIEZAS SEPARADOR", "unidades": 1 }
+      { "pared": "DIRECTA A PARED", "tornilleria": "ANCLAJE QUÍMICO M12", "referencia": "ANCLHSTM12145", "unidades": 4 },
+      { "pared": "DIRECTA A HORMIGO ARMADO", "tornilleria": "ANCLAJE MECANICO M12", "referencia": null, "unidades": 4 },
+      { "pared": "DIRECTA A MADERA", "tornilleria": "BARRAQUEROS M12x120", "referencia": null, "unidades": 4 },
+      { "pared": "PARED CON SATE", "tornilleria": "TORNILLOS THERMAX M16", "referencia": "THERMAX", "unidades": 4 },
+      { "pared": "PARED TRANSVENTILADA CON AISLANTE", "tornilleria": "TORNILLOS THERMAX M16", "referencia": "THERMAX", "unidades": 4 },
+      { "pared": "CON SEPARADORES", "tornilleria": "PIEZAS SEPARADOR", "referencia": null, "unidades": 1 }
     ],
     "curvasBamba": ["RECTA", "NORMAL", "SUAVE", "EXTRASUAVE"],
     "colocaciones": ["FRONTAL", "TECHO", "ENTRE PAREDES"],
