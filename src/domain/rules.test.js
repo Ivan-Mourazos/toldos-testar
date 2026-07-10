@@ -212,6 +212,7 @@ describe('ARZUA PRO caída de tela con bamba real', () => {
     }));
     expect(result.ofs[0].calculation.fabricDrop).toBe(360);
     expect(result.ofs[0].calculation.fabricMl).toBe(18);
+    expect(result.ofs[0].description).toContain('bambalina incluida de 20 cm, hecha de 15 cm');
   });
 
   test('AR2603399: salida 225 + bamba 20 + 45 = 290', () => {
@@ -225,5 +226,19 @@ describe('ARZUA PRO caída de tela con bamba real', () => {
     }));
     expect(result.ofs[0].calculation.fabricDrop).toBe(290);
     expect(result.ofs[0].calculation.fabricMl).toBe(14.5);
+    expect(result.ofs[0].description).toContain('bambalina incluida de 25 cm, hecha de 20 cm');
+  });
+
+  test('valanceHeight 0: no bambalina description', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR VISON',
+      awnings: [baseAwning({
+        of: '230001', model: 'ARZUA PRO', width: 400, projection: 250,
+        valanceHeight: 0, device: 'MOTOR', tubeLoad: 'TUBO DE CARGA EVO 80'
+      })]
+    }));
+    expect(result.ofs[0].calculation.fabricDrop).toBe(295);
+    expect(result.ofs[0].description).not.toContain('bambalina');
   });
 });
