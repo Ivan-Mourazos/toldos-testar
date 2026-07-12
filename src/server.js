@@ -227,7 +227,8 @@ server.on('error', (error) => {
 });
 
 function buildFilename(reservation) {
-  const stamp = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const suffix = reservation.orderCode || reservation.ofs.map((item) => item.of).join('-');
   return `reserva-toldos-${sanitize(suffix)}-${stamp}.xlsx`;
 }

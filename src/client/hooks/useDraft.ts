@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
+import { formOptions, getModelBehavior } from '../../domain/modelBehavior.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
+
+const sensorNames = formOptions.sensores.map((s) => s.sensor);
+const wallTypeNames = formOptions.tiposPared.map((p) => p.pared);
 
 function defaultDraft(): DraftState {
   return {
@@ -35,6 +39,19 @@ function sanitizeAwning(old: Record<string, unknown>): Awning {
   delete base.supportSystemOverride;
   delete base.minimumLineOverride;
   delete base.overrideReason;
+
+  // Un borrador viejo puede traer valores que ya no existen en las listas actuales
+  // (p.ej. sensor "VIENTO" o crankHeight 165): sin este saneo, el select queda en
+  // blanco pero el valor viejo se sigue enviando al cálculo, generando referencias
+  // inexistentes como MANIVE...165C.
+  if (!sensorNames.includes(base.sensor)) base.sensor = '';
+  if (!wallTypeNames.includes(base.wallType)) base.wallType = '';
+  if (!formOptions.colocaciones.includes(base.placement)) base.placement = '';
+  if (!formOptions.localizacionesMaquina.includes(base.machineSide)) base.machineSide = '';
+  if (base.crankHeight !== null && !formOptions.alturasManivela.includes(base.crankHeight)) base.crankHeight = null;
+  const tubeOptions = getModelBehavior(base.model).tubeOptions || [];
+  if (tubeOptions.length > 0 && !tubeOptions.includes(base.tubeLoad)) base.tubeLoad = '';
+
   return base as Awning;
 }
 

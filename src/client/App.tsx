@@ -193,11 +193,11 @@ function App() {
           <span className={statusBadgeClass}>{statusLabel}</span>
         </div>
         <div className="topbar-actions">
-          <button className="primary-button" type="button" disabled={saving} onClick={() => saveLegacyReservation()}>
+          <button className="primary-button" type="button" disabled={saving || calculationState === 'validating'} onClick={() => saveLegacyReservation()}>
             <Save aria-hidden="true" />
             {saving ? 'Guardando…' : 'Guardar RPS'}
           </button>
-          <button className="ghost-button" type="button" disabled={saving} onClick={exportReservation}>
+          <button className="ghost-button" type="button" disabled={saving || calculationState === 'validating'} onClick={exportReservation}>
             <Download aria-hidden="true" />
             Resumen
           </button>
