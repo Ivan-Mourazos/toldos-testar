@@ -80,6 +80,66 @@ describe('ARZUA PRO reglasModificadas', () => {
   });
 });
 
+describe('ARZUA PRO despiece', () => {
+  it('genera el despiece completo para MAQ. EXTERIOR con UNIVERS 280 (caso real verificado con el Excel)', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'NEGRO (R-09011)',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        of: '230999', model: 'ARZUA PRO', width: 350, projection: 275,
+        valanceHeight: 0, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA UNIVERS 280',
+        crankHeight: 200, wallType: 'DIRECTA A PARED'
+      })]
+    }));
+
+    const despiece = result.ofs[0].despiece;
+    expect(despiece.rows.map((row) => row.name)).toEqual([
+      'JUEGO SOPORTE AROND',
+      'TUBO DE ENROLLE P801',
+      'CASQUILLO PUNTA',
+      'CASQUILLO EJE 63MM Ø78',
+      'TUBO DE CARGA UNIVERS 280',
+      'KIT TAPONES UNIVERS 280',
+      'JUEGO DE BRAZOS ONYX',
+      'JUEGO DE TERMINALES',
+      'MAQUINA ZNP 10 L170 NEGRA',
+      'MANIVELA LUXE NEGRA 200',
+      'TACO NAYLON MAQUINA',
+      'KIT DE TORNILLOS MAQUINA'
+    ]);
+    expect(despiece.rows.find((row) => row.name === 'JUEGO DE TERMINALES').reference).toBeNull();
+    expect(despiece.rows.find((row) => row.name === 'KIT DE TORNILLOS MAQUINA').reference).toBeNull();
+    expect(despiece.rows.find((row) => row.name === 'TACO NAYLON MAQUINA').reference).toBe('CASPLAS');
+    expect(despiece.rows.find((row) => row.name === 'JUEGO DE BRAZOS ONYX')).toMatchObject({ reference: 'BONYXNE11275C', length: 275 });
+    expect(despiece.rows.find((row) => row.name === 'TUBO DE ENROLLE P801')).toMatchObject({ reference: 'TURA80HG600C', length: 338.6 });
+    expect(despiece.rows.find((row) => row.name === 'MANIVELA LUXE NEGRA 200')).toMatchObject({ reference: 'MANIVENE11200C', length: 200 });
+    expect(despiece.anchoring).toEqual({ name: 'ANCLAJE QUÍMICO M12', reference: 'ANCLHSTM12145', units: 4 });
+  });
+
+  it('no incluye referencia de anclaje cuando la pared no tiene una confirmada en el Excel maestro', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ wallType: 'DIRECTA A MADERA' })]
+    }));
+    expect(result.ofs[0].despiece.anchoring).toEqual({ name: 'BARRAQUEROS M12x120', reference: null, units: 4 });
+  });
+
+  it('con MOTOR el despiece no lleva casquillo/maquina/manivela y sí las piezas de motor', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ device: 'MOTOR' })]
+    }));
+    const names = result.ofs[0].despiece.rows.map((row) => row.name);
+    expect(names).not.toContain('MAQUINA ZNP 10 L170 BLANCA');
+    expect(names).toContain('MOTOR SOMFY SUNILUS 55/17 IO');
+  });
+
+  it('el despiece es null cuando el toldo no es valido', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ width: 9999 })]
+    }));
+    expect(result.ofs[0].despiece).toBeNull();
+  });
+});
+
 describe('calculateOrder — toldos incompletos', () => {
   it('un toldo vacio (sin of ni modelo) no genera OF ni diagnosticos ni excepcion', () => {
     const result = calculateOrder(basePayload({

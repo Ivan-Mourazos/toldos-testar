@@ -1,6 +1,7 @@
 import { roundQuantity, formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { resolveLacado, crankSuffix, machineCode } from './lacados.js';
+import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 
 const minimumLineByArm = [
   { arm: 150, values: { 'MAQ. EXTERIOR': 200, 'MAQ. INTERIOR': 195, MOTOR: 195 } },
@@ -56,6 +57,10 @@ export function calculateArzuaPro({ order, awning }) {
     ? buildMaterials({ order, awning, lacado, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric })
     : [];
 
+  const despiece = valid
+    ? buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, stockLength, length })
+    : null;
+
   if (belowMinimum) {
     diagnostics.push({
       level: 'error',
@@ -80,6 +85,7 @@ export function calculateArzuaPro({ order, awning }) {
     of: awning.of,
     description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl, minimumLine, valid }),
     materials,
+    despiece,
     diagnostics,
     calculation: {
       model: 'ARZUA PRO',
@@ -143,6 +149,56 @@ function buildMaterials({ _order, awning, lacado, colorSuffix, tubeLoad, device,
   }
 
   return materials;
+}
+
+function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, stockLength, length }) {
+  const rows = [];
+  let num = 1;
+  const push = (name, reference, units, rowLength = null) => {
+    rows.push({ num: num++, name, reference, units, length: rowLength });
+  };
+
+  push('JUEGO SOPORTE AROND', `SOPAR350${colorSuffix}`, 1);
+  push('TUBO DE ENROLLE P801', `TURA80HG${stockLength}C`, 1, length);
+  push('CASQUILLO PUNTA', 'CASPUNCE', 1);
+
+  if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
+    const casquillo = device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM';
+    push(device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78', casquillo, 1);
+  }
+
+  if (tubeLoad === 'TUBO DE CARGA EVO 80') {
+    push('TUBO DE CARGA EVO 80', `PEVO80${colorSuffix}${stockLength}C`, 1, length);
+  } else {
+    push('TUBO DE CARGA UNIVERS 280', `PUNI280${colorSuffix}${stockLength}C`, 1, length);
+    push('KIT TAPONES UNIVERS 280', `TAPOPLUN280${colorSuffix}`, 1);
+  }
+
+  push('JUEGO DE BRAZOS ONYX', `BONYX${colorSuffix}${awning.projection}C`, 1, awning.projection);
+  push('JUEGO DE TERMINALES', null, 1);
+
+  if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
+    const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
+    push(`MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), 1);
+    push(`MANIVELA LUXE ${lacado.crank} ${crankHeight}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, 1, crankHeight);
+    push('TACO NAYLON MAQUINA', 'CASPLAS', 1);
+    push('KIT DE TORNILLOS MAQUINA', null, 1);
+  }
+
+  if (device === 'MOTOR') {
+    push('RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', 1);
+    push('MOTOR SOMFY SUNILUS 55/17 IO', 'SUNILUSIO55//17', 1);
+    push('CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', 1);
+    push('SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', 1);
+    push('MANDO SITUO 1 IO PURE', 'SITUOIO1PURE', 1);
+  }
+
+  const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
+  const anchoring = wallEntry
+    ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades }
+    : null;
+
+  return { rows, anchoring };
 }
 
 function buildDescription(awning, calc) {

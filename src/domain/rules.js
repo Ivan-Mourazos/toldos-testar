@@ -49,6 +49,7 @@ export function calculateOrder(payload) {
       of: result.of,
       description: result.description || buildAwningDescription(awning),
       materials: result.materials || [],
+      despiece: result.despiece || null,
       calculation: result.calculation
     });
   }
