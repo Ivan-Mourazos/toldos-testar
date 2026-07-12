@@ -130,13 +130,13 @@ function drawStructureSummary(doc, { order, awning, ofBlock }) {
   doc.fillColor(valid === false ? danger : '#05651f').font('Helvetica-Bold').fontSize(16)
     .text(valid === false ? 'REVISAR' : 'VERDADERO', x + w + 22, y + 20, { width: 124, align: 'center' });
 
-  drawSectionTitle(doc, x + w + 168, y, 226, 'Ajustes tecnicos');
-  drawKeyRows(doc, x + w + 168, y + 25, 226, [
-    ['Reglas', awning.calculationModelOverride || 'Segun modelo'],
-    ['Soportes', awning.supportSystemOverride || 'Segun modelo'],
-    ['Linea min.', awning.minimumLineOverride || '-'],
-    ['Motivo', awning.overrideReason || '-']
-  ]);
+  if (awning.reglasModificadas) {
+    doc.rect(x + w + 168, y, 226, 58).fillAndStroke('#fff3cf', graphite);
+    doc.fillColor('#8a6100').font('Helvetica-Bold').fontSize(10)
+      .text('REGLAS MODIFICADAS', x + w + 178, y + 12, { width: 206 });
+    doc.font('Helvetica').fontSize(8)
+      .text('Limites del modelo relajados manualmente para este toldo.', x + w + 178, y + 30, { width: 206 });
+  }
 
   return { bottom: y + 25 + rows.length * rowHeight };
 }
@@ -274,7 +274,7 @@ function drawFabricData(doc, { order, awnings, calculation }) {
     drawText(doc, calc ? formatNumber(calc.fabricDrop) : '-', x + 300, rowY + 6, 78);
     drawText(doc, formatNumber(awning.units), x + 388, rowY + 6, 42);
     drawText(doc, calc ? formatNumber(calc.fabricMl) : '-', x + 438, rowY + 6, 54);
-    drawText(doc, [awning.notes, awning.overrideReason].filter(Boolean).join(' | ') || '-', x + 500, rowY + 6, w - 507);
+    drawText(doc, awning.notes || '-', x + 500, rowY + 6, w - 507);
   });
 }
 
@@ -282,9 +282,7 @@ function drawObservations(doc, { order, awning, y }) {
   const x = margin;
   const w = pageWidth - margin * 2;
   drawSectionTitle(doc, x, y, w, 'Observaciones');
-  const text = [order.notes, awning.notes, awning.overrideReason ? `Ajuste tecnico: ${awning.overrideReason}` : '']
-    .filter(Boolean)
-    .join(' | ') || 'Sin observaciones.';
+  const text = [order.notes, awning.notes].filter(Boolean).join(' | ') || 'Sin observaciones.';
   doc.rect(x, y + 25, w, 34).stroke(line);
   doc.fillColor(graphite).font('Helvetica').fontSize(9)
     .text(text, x + 8, y + 34, { width: w - 16, height: 18, ellipsis: true });
