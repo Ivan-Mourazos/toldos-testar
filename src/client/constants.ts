@@ -1,6 +1,6 @@
 import type { Awning } from './types';
 
-export const storageKey = 'toldos-testar-draft-v4';
+export const storageKey = 'toldos-testar-draft-v5';
 export const historyStorageKey = 'toldos-testar-history-v1';
 
 export function uid() {
@@ -11,24 +11,21 @@ export function createAwning(): Awning {
   return {
     id: uid(),
     of: '',
-    model: 'ARZUA PRO',
-    units: 1,
-    width: 400,
-    projection: 250,
-    valanceHeight: 20,
-    armCount: 2,
-    device: 'MOTOR',
-    placement: 'FRONTAL',
-    wallType: 'DIRECTA A PARED',
-    tubeLoad: 'TUBO DE CARGA EVO 80',
+    model: '',
+    units: null,
+    width: null,
+    projection: null,
+    valanceHeight: null,
+    armCount: null,
+    device: '',
+    placement: '',
+    wallType: '',
+    tubeLoad: '',
     submodel: '',
-    sensor: 'SIN SENSOR',
-    machineSide: 'M.F.DER',
-    crankHeight: 170,
-    calculationModelOverride: 'SEGÚN MODELO',
-    supportSystemOverride: 'SEGÚN MODELO',
-    minimumLineOverride: '',
-    overrideReason: '',
+    sensor: '',
+    machineSide: '',
+    crankHeight: null,
+    reglasModificadas: false,
     notes: ''
   };
 }

@@ -17,11 +17,11 @@ export type Awning = {
   id: string;
   of: string;
   model: string;
-  units: number;
-  width: number;
-  projection: number;
-  valanceHeight: number;
-  armCount: number;
+  units: number | null;
+  width: number | null;
+  projection: number | null;
+  valanceHeight: number | null;
+  armCount: number | null;
   device: string;
   placement: string;
   wallType: string;
@@ -29,11 +29,8 @@ export type Awning = {
   submodel: string;
   sensor: string;
   machineSide: string;
-  crankHeight: number;
-  calculationModelOverride: string;
-  supportSystemOverride: string;
-  minimumLineOverride: string;
-  overrideReason: string;
+  crankHeight: number | null;
+  reglasModificadas: boolean;
   notes: string;
 };
 
@@ -43,6 +40,10 @@ export type Calculation = {
     of: string;
     description: string;
     materials: { code: string; description?: string; quantity: number }[];
+    despiece?: {
+      rows: { num: number; name: string; reference: string | null; units: number; length: number | null }[];
+      anchoring: { name: string; reference: string | null; units: number } | null;
+    } | null;
     calculation?: {
       model: string;
       valid: boolean;

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
 
-const legacyStorageKey = 'toldos-testar-draft-v3';
+const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
+const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
 
 function defaultDraft(): DraftState {
   return {
@@ -24,37 +25,58 @@ function defaultDraft(): DraftState {
   };
 }
 
-function migrateAwning(old: Record<string, unknown>): Awning {
-  const base = { ...createAwning(), ...old } as Awning & { valance?: string };
+function sanitizeAwning(old: Record<string, unknown>): Awning {
+  const base = { ...createAwning(), ...old } as Awning & Record<string, unknown>;
   if (old.machineSide === 'DERECHA') base.machineSide = 'M.F.DER';
   if (old.machineSide === 'IZQUIERDA') base.machineSide = 'M.F IZQ';
-  delete (base as Record<string, unknown>).valance;
-  return base;
+  base.reglasModificadas = typeof old.reglasModificadas === 'boolean' ? old.reglasModificadas : false;
+  delete base.valance;
+  delete base.calculationModelOverride;
+  delete base.supportSystemOverride;
+  delete base.minimumLineOverride;
+  delete base.overrideReason;
+  return base as Awning;
 }
 
-function migrateFromV3(): DraftState | null {
+function migrateLegacyDraft(saved: Record<string, unknown> | null): DraftState | null {
+  if (!saved) return null;
+  const fallback = defaultDraft();
+  const awnings = Array.isArray(saved.awnings) ? (saved.awnings as Record<string, unknown>[]) : [];
+  return {
+    ...fallback,
+    orderCode: (saved.orderCode as string) || fallback.orderCode,
+    customer: (saved.customer as string) || fallback.customer,
+    orderDate: (saved.orderDate as string) || fallback.orderDate,
+    technician: (saved.technician as string) || fallback.technician,
+    reviewer: (saved.reviewer as string) || fallback.reviewer,
+    fabric: (saved.fabric as string) || fallback.fabric,
+    remate: (saved.remate as string) || fallback.remate,
+    curvaBamba: (saved.curvaBamba as string) || fallback.curvaBamba,
+    bambaDistinta: typeof saved.bambaDistinta === 'boolean' ? saved.bambaDistinta : fallback.bambaDistinta,
+    telaBamba: (saved.telaBamba as string) || fallback.telaBamba,
+    structureColor: (saved.structureColor as string) || fallback.structureColor,
+    rotTela: (saved.rotTela as string) || fallback.rotTela,
+    rotBamba: (saved.rotBamba as string) || fallback.rotBamba,
+    notes: (saved.notes as string) || fallback.notes,
+    awnings: awnings.length
+      ? awnings.map((awning) => ({ ...sanitizeAwning(awning), id: (awning.id as string) || uid() }))
+      : fallback.awnings
+  };
+}
+
+function migrateFromLegacyStorage(): DraftState | null {
   if (typeof localStorage === 'undefined') return null;
 
-  try {
-    const saved = JSON.parse(localStorage.getItem(legacyStorageKey) || 'null');
-    if (!saved) return null;
-
-    const fallback = defaultDraft();
-    return {
-      ...fallback,
-      orderCode: saved.orderCode || fallback.orderCode,
-      customer: saved.customer || fallback.customer,
-      technician: saved.technician || fallback.technician,
-      fabric: saved.fabric || fallback.fabric,
-      structureColor: saved.structureColor || fallback.structureColor,
-      notes: saved.notes || fallback.notes,
-      awnings: saved.awnings?.length
-        ? saved.awnings.map((awning: Record<string, unknown>) => ({ ...migrateAwning(awning), id: (awning.id as string) || uid() }))
-        : fallback.awnings
-    };
-  } catch {
-    return null;
+  for (const key of [legacyStorageKeyV4, legacyStorageKeyV3]) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || 'null');
+      const migrated = migrateLegacyDraft(saved);
+      if (migrated) return migrated;
+    } catch {
+      continue;
+    }
   }
+  return null;
 }
 
 function getInitialDraft(): DraftState {
@@ -63,30 +85,9 @@ function getInitialDraft(): DraftState {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
     if (!saved) {
-      const migrated = migrateFromV3();
-      return migrated || defaultDraft();
+      return migrateFromLegacyStorage() || defaultDraft();
     }
-
-    const fallback = defaultDraft();
-    return {
-      orderCode: saved.orderCode || '',
-      customer: saved.customer || '',
-      orderDate: saved.orderDate || fallback.orderDate,
-      technician: saved.technician || '',
-      reviewer: saved.reviewer || '',
-      fabric: saved.fabric || '',
-      remate: saved.remate || fallback.remate,
-      curvaBamba: saved.curvaBamba || fallback.curvaBamba,
-      bambaDistinta: typeof saved.bambaDistinta === 'boolean' ? saved.bambaDistinta : fallback.bambaDistinta,
-      telaBamba: saved.telaBamba || '',
-      structureColor: saved.structureColor || 'BLANCO',
-      rotTela: saved.rotTela || fallback.rotTela,
-      rotBamba: saved.rotBamba || fallback.rotBamba,
-      notes: saved.notes || '',
-      awnings: saved.awnings?.length
-        ? saved.awnings.map((awning: Partial<Awning>) => ({ ...createAwning(), ...awning, id: awning.id || uid() }))
-        : [createAwning()]
-    };
+    return migrateLegacyDraft(saved) || defaultDraft();
   } catch {
     localStorage.removeItem(storageKey);
     return defaultDraft();
@@ -199,7 +200,9 @@ export function useDraft() {
     setStructureColor(entry.structureColor || fallback.structureColor);
     setRotTela(entry.rotTela || fallback.rotTela);
     setRotBamba(entry.rotBamba || fallback.rotBamba);
-    setAwnings(entry.awnings.length ? entry.awnings : [createAwning()]);
+    setAwnings(entry.awnings.length
+      ? entry.awnings.map((awning) => ({ ...sanitizeAwning(awning as unknown as Record<string, unknown>), id: awning.id }))
+      : [createAwning()]);
     setNotes(entry.notes || '');
   }
 
