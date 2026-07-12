@@ -26,7 +26,13 @@ export function calculateArzuaPro({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const belowMinimum = awning.width < minimumLine;
   const overMaximum = awning.width > 600;
-  const valid = !belowMinimum && (!overMaximum || modified);
+  // El gate de incompletitud de calculateOrder solo cubre OF/modelo/frente/salida;
+  // sin estos campos el cálculo asumiría MOTOR/EVO 80 o emitiría MANIVE...0C en silencio.
+  const missingFields = [];
+  if (!awning.device) missingFields.push('dispositivo');
+  else if ((device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') && !awning.crankHeight) missingFields.push('altura de manivela');
+  if (!awning.tubeLoad) missingFields.push('tubo de carga');
+  const valid = missingFields.length === 0 && !belowMinimum && (!overMaximum || modified);
   const fabricWidth = round1(awning.width - lookupFabricWidthDiscount(tubeLoad, device));
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricDrop = round1(awning.projection + valance + 45);
@@ -50,7 +56,13 @@ export function calculateArzuaPro({ order, awning }) {
     ? buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, stockLength, length })
     : null;
 
-  if (belowMinimum) {
+  if (missingFields.length > 0) {
+    diagnostics.push({
+      level: 'error',
+      awningId: awning.id,
+      message: `ARZUA PRO incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.`
+    });
+  } else if (belowMinimum) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,

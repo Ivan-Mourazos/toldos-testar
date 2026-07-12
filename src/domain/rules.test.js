@@ -140,6 +140,42 @@ describe('ARZUA PRO despiece', () => {
   });
 });
 
+describe('ARZUA PRO — campos de mecanizado sin elegir (formulario vacio por defecto)', () => {
+  it('sin dispositivo el toldo queda REVISAR y sin materiales (no asume MOTOR en silencio)', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ device: '', tubeLoad: '', sensor: '', machineSide: '' })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.ofs[0].despiece).toBeNull();
+    expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('dispositivo'))).toBe(true);
+  });
+
+  it('sin tubo de carga el toldo queda REVISAR (no asume EVO 80 en silencio)', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ tubeLoad: '' })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('tubo de carga'))).toBe(true);
+  });
+
+  it('con maquina pero sin altura de manivela no genera la referencia fantasma MANIVE...0C', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ device: 'MAQ. EXTERIOR', crankHeight: null })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('manivela'))).toBe(true);
+  });
+
+  it('MOTOR no exige altura de manivela', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ device: 'MOTOR', crankHeight: null })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(true);
+  });
+});
+
 describe('calculateOrder — toldos incompletos', () => {
   it('un toldo vacio (sin of ni modelo) no genera OF ni diagnosticos ni excepcion', () => {
     const result = calculateOrder(basePayload({

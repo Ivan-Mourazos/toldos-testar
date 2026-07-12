@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Awning, Calculation } from '../types';
+import { formatDecimal } from '../constants';
 
 type Props = {
   calculation: Calculation | null;
@@ -58,7 +59,7 @@ export function DespieceView({ calculation, awnings }: Props) {
                         <td>{row.name}</td>
                         <td className={row.reference ? 'code' : 'despiece-no-ref'}>{row.reference || 'Sin referencia'}</td>
                         <td className="num">{row.units}</td>
-                        <td className="num">{row.length ?? '-'}</td>
+                        <td className="num">{row.length === null ? '-' : formatDecimal(row.length)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -73,8 +74,8 @@ export function DespieceView({ calculation, awnings }: Props) {
                   </div>
                   <div className="despiece-info-block">
                     <h4>Dimensiones tela</h4>
-                    <p>Tela {calc.fabricWidth} × {calc.fabricDrop}</p>
-                    <p>Paño {calc.fabricMl} ml</p>
+                    <p>Tela {formatDecimal(calc.fabricWidth)} × {formatDecimal(calc.fabricDrop)}</p>
+                    <p>Paño {formatDecimal(calc.fabricMl)} ml</p>
                   </div>
                   {ofBlock.despiece.anchoring && (
                     <div className="despiece-info-block despiece-anchoring">
