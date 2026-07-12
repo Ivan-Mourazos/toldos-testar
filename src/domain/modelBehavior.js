@@ -1,6 +1,6 @@
 import behavior from './data/modelBehavior.json' with { type: 'json' };
 import { lacadoNames } from './lacados.js';
-import { arzuaProEstablishedProjections } from './arzuaProRules.js';
+import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
 
 const fallbackModel = { tipo01: null, tipo02: null, multipleBrazos: false, implemented: false };
 
