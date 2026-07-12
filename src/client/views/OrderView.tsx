@@ -141,7 +141,7 @@ export function OrderView({
               key={awning.id}
               awning={awning}
               index={index}
-              ofCalculation={calculation?.ofs.find((o) => o.of === awning.of)?.calculation}
+              ofCalculation={calculation?.ofs.find((o) => o.of === awning.of.trim())?.calculation}
               onUpdate={updateAwning}
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}

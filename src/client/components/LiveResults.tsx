@@ -46,8 +46,8 @@ export function LiveResults({ calculation, state }: Props) {
 
       {ofCards.length > 0 && (
         <div className="of-card-row">
-          {ofCards.map((ofBlock) => (
-            <article className="of-card" key={ofBlock.of}>
+          {ofCards.map((ofBlock, index) => (
+            <article className="of-card" key={`${ofBlock.of}-${index}`}>
               <div className="of-card-head">
                 <span>OF {ofBlock.of} · {ofBlock.calculation?.model}</span>
                 <strong className={ofBlock.calculation?.valid ? 'badge-ok' : 'badge-danger'}>
@@ -76,8 +76,8 @@ export function LiveResults({ calculation, state }: Props) {
               </tr>
             </thead>
             <tbody>
-              {materialRows.map((row) => (
-                <tr key={`${row.of}-${row.code}`}>
+              {materialRows.map((row, index) => (
+                <tr key={`${row.of}-${row.code}-${index}`}>
                   <td>{row.of}</td>
                   <td className="code">{row.code}</td>
                   <td>{row.description || '-'}</td>

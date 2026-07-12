@@ -21,13 +21,13 @@ export function DespieceView({ calculation, awnings }: Props) {
       </div>
 
       <div className="despiece-grid">
-        {ofBlocks.map((ofBlock) => {
-          const awning = awnings.find((item) => item.of === ofBlock.of);
+        {ofBlocks.map((ofBlock, index) => {
+          const awning = awnings.find((item) => item.of.trim() === ofBlock.of);
           const calc = ofBlock.calculation!;
 
           if (!ofBlock.despiece) {
             return (
-              <article className="despiece-card despiece-card-empty" key={ofBlock.of}>
+              <article className="despiece-card despiece-card-empty" key={`${ofBlock.of}-${index}`}>
                 <header><strong>OF {ofBlock.of} · {calc.model}</strong></header>
                 <p>Despiece no disponible para {calc.model} todavía.</p>
               </article>
@@ -35,7 +35,7 @@ export function DespieceView({ calculation, awnings }: Props) {
           }
 
           return (
-            <article className="despiece-card" key={ofBlock.of}>
+            <article className="despiece-card" key={`${ofBlock.of}-${index}`}>
               <header className="despiece-card-header">
                 <strong>OF {ofBlock.of} · {calc.model}</strong>
                 <span className={calc.valid ? 'badge-ok' : 'badge-danger'}>{calc.valid ? 'VÁLIDO' : 'REVISAR'}</span>

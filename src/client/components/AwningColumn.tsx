@@ -54,7 +54,7 @@ export function AwningColumn({ awning, index, ofCalculation, onUpdate, onDuplica
           {fields.submodel && (
             <SelectField label="Submodelo" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir submodelo…" onChange={(submodel) => update({ submodel })} />
           )}
-          <TextField label="OF" value={awning.of} onChange={(of) => update({ of })} />
+          <TextField label="OF" value={awning.of} onChange={(of) => update({ of: of.trim() })} />
           <NumberField label="Unidades" value={awning.units} min={1} onChange={(units) => update({ units })} />
           <NumberField label="Frente" value={awning.width} min={0} onChange={(width) => update({ width })} />
           {useEstablishedProjection ? (
