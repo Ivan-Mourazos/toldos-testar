@@ -70,7 +70,7 @@ textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  height: 36px;
+  height: 32px;
   min-width: 0;
   padding: 0 var(--sp-3);
   width: 100%;
@@ -118,7 +118,7 @@ label,
 label span,
 .field > span {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -129,7 +129,7 @@ label span,
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: var(--sp-4);
+  padding: var(--sp-3);
 }
 
 /* ---------- Insignias de estado ---------- */
@@ -366,7 +366,7 @@ label span,
 
 .order-header {
   display: grid;
-  gap: var(--sp-5);
+  gap: var(--sp-4);
   grid-template-columns: 2fr 2fr 1fr;
 }
 
@@ -395,7 +395,7 @@ label span,
 .order-header-grid {
   align-content: start;
   display: grid;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -457,13 +457,13 @@ label span,
 .awning-grid {
   align-items: start;
   display: grid;
-  gap: var(--sp-4);
+  gap: var(--sp-3);
   grid-template-columns: repeat(4, minmax(280px, 1fr));
 }
 
 .awning-column {
   display: grid;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
 }
 
 .awning-column-header {
