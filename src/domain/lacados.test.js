@@ -45,4 +45,20 @@ describe('lacados', () => {
     expect(lacadoNames).toContain('BLANCO');
     expect(lacadoNames).toContain('LACADO ESPECIAL');
   });
+
+  test('GRIS sin código no cae en GRIS PLATA por coincidencia parcial', () => {
+    expect(resolveLacado('GRIS').suffix).toBe('GR22');
+    expect(resolveLacado('GRIS PLATA').suffix).toBe('PL27');
+    expect(resolveLacado('gris').suffix).toBe('GR22');
+  });
+
+  test('un prefijo corto o ambiguo no resuelve por accidente (cae a BLANCO)', () => {
+    expect(resolveLacado('GR').suffix).toBe('BL16');
+    expect(resolveLacado('B').suffix).toBe('BL16');
+  });
+
+  test('la tabla de lacados es inmutable', () => {
+    expect(Object.isFrozen(resolveLacado('BLANCO'))).toBe(true);
+    expect(() => { resolveLacado('BLANCO').suffix = 'HACKED'; }).toThrow();
+  });
 });
