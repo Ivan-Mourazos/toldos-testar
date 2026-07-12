@@ -103,34 +103,44 @@ export function calculateArzuaPro({ order, awning }) {
   };
 }
 
+// Referencias compartidas entre RPS (buildMaterials) y despiece (buildDespiece):
+// mismo cálculo de código, una sola vez, para que ambos no puedan divergir por error.
+const refSoporte = (colorSuffix) => `SOPAR350${colorSuffix}`;
+const refTuboEnrolle = (stockLength) => `TURA80HG${stockLength}C`;
+const refTuboCargaEvo = (colorSuffix, stockLength) => `PEVO80${colorSuffix}${stockLength}C`;
+const refTuboCargaUnivers = (colorSuffix, stockLength) => `PUNI280${colorSuffix}${stockLength}C`;
+const refTaponesUnivers = (colorSuffix) => `TAPOPLUN280${colorSuffix}`;
+const refBrazosOnyx = (colorSuffix, projection) => `BONYX${colorSuffix}${projection}C`;
+const refCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM');
+const descCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78');
+const refManivela = (lacado, crankHeight) => `MANIVE${crankSuffix(lacado)}${crankHeight}C`;
+
 function buildMaterials({ _order, awning, lacado, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric }) {
   const materials = [
-    { code: `SOPAR350${colorSuffix}`, quantity: 1, description: 'JUEGO SOPORTE AROND' },
-    { code: `TURA80HG${stockLength}C`, quantity: 1, description: 'TUBO DE ENROLLE P801' },
+    { code: refSoporte(colorSuffix), quantity: 1, description: 'JUEGO SOPORTE AROND' },
+    { code: refTuboEnrolle(stockLength), quantity: 1, description: 'TUBO DE ENROLLE P801' },
     { code: 'CASPUNCE', quantity: 1, description: 'CASQUILLO PUNTA' }
   ];
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
     materials.push(
-      { code: `PEVO80${colorSuffix}${stockLength}C`, quantity: 1, description: 'TUBO DE CARGA EVO 80' },
-      { code: `BONYX${colorSuffix}${awning.projection}C`, quantity: 1, description: 'JUEGO DE BRAZOS ONYX' }
+      { code: refTuboCargaEvo(colorSuffix, stockLength), quantity: 1, description: 'TUBO DE CARGA EVO 80' },
+      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: 1, description: 'JUEGO DE BRAZOS ONYX' }
     );
   } else {
     materials.push(
-      { code: `PUNI280${colorSuffix}${stockLength}C`, quantity: 1, description: 'TUBO DE CARGA UNIVERS 280' },
-      { code: `TAPOPLUN280${colorSuffix}`, quantity: 1, description: 'KIT TAPONES UNIVERS 280' },
-      { code: `BONYX${colorSuffix}${awning.projection}C`, quantity: 1, description: 'JUEGO DE BRAZOS ONYX' }
+      { code: refTuboCargaUnivers(colorSuffix, stockLength), quantity: 1, description: 'TUBO DE CARGA UNIVERS 280' },
+      { code: refTaponesUnivers(colorSuffix), quantity: 1, description: 'KIT TAPONES UNIVERS 280' },
+      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: 1, description: 'JUEGO DE BRAZOS ONYX' }
     );
   }
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
-    const casquillo = device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM';
-    const casquilloDesc = device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78';
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
-      { code: casquillo, quantity: 1, description: casquilloDesc },
+      { code: refCasquilloMaquina(device), quantity: 1, description: descCasquilloMaquina(device) },
       { code: machineCode(lacado), quantity: 1, description: `MAQUINA ZNP 10 L170 ${lacado.crank}` },
-      { code: `MANIVE${crankSuffix(lacado)}${crankHeight}C`, quantity: 1, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
+      { code: refManivela(lacado, crankHeight), quantity: 1, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
       { code: 'CASPLAS', quantity: 1, description: 'CASQUILLO PLASTICO' }
     );
   }
@@ -159,29 +169,28 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, stockLen
     rows.push({ num: num++, name, reference, units, length: rowLength });
   };
 
-  push('JUEGO SOPORTE AROND', `SOPAR350${colorSuffix}`, 1);
-  push('TUBO DE ENROLLE P801', `TURA80HG${stockLength}C`, 1, length);
+  push('JUEGO SOPORTE AROND', refSoporte(colorSuffix), 1);
+  push('TUBO DE ENROLLE P801', refTuboEnrolle(stockLength), 1, length);
   push('CASQUILLO PUNTA', 'CASPUNCE', 1);
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
-    const casquillo = device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM';
-    push(device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78', casquillo, 1);
+    push(descCasquilloMaquina(device), refCasquilloMaquina(device), 1);
   }
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
-    push('TUBO DE CARGA EVO 80', `PEVO80${colorSuffix}${stockLength}C`, 1, length);
+    push('TUBO DE CARGA EVO 80', refTuboCargaEvo(colorSuffix, stockLength), 1, length);
   } else {
-    push('TUBO DE CARGA UNIVERS 280', `PUNI280${colorSuffix}${stockLength}C`, 1, length);
-    push('KIT TAPONES UNIVERS 280', `TAPOPLUN280${colorSuffix}`, 1);
+    push('TUBO DE CARGA UNIVERS 280', refTuboCargaUnivers(colorSuffix, stockLength), 1, length);
+    push('KIT TAPONES UNIVERS 280', refTaponesUnivers(colorSuffix), 1);
   }
 
-  push('JUEGO DE BRAZOS ONYX', `BONYX${colorSuffix}${awning.projection}C`, 1, awning.projection);
+  push('JUEGO DE BRAZOS ONYX', refBrazosOnyx(colorSuffix, awning.projection), 1, awning.projection);
   push('JUEGO DE TERMINALES', null, 1);
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     push(`MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), 1);
-    push(`MANIVELA LUXE ${lacado.crank} ${crankHeight}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, 1, crankHeight);
+    push(`MANIVELA LUXE ${lacado.crank} ${crankHeight}`, refManivela(lacado, crankHeight), 1, crankHeight);
     push('TACO NAYLON MAQUINA', 'CASPLAS', 1);
     push('KIT DE TORNILLOS MAQUINA', null, 1);
   }

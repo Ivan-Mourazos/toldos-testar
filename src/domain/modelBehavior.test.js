@@ -62,6 +62,17 @@ describe('modelBehavior', () => {
     expect(new Set(modelNames)).toEqual(catalogCodes);
   });
 
+  test('multipleBrazos (modelBehavior.json) y supportsMultipleArms (catalog.js) no divergen por modelo', () => {
+    for (const catalogModel of catalogModels) {
+      const behavior = getModelBehavior(catalogModel.code);
+      expect(behavior.multipleBrazos, `${catalogModel.code}: multipleBrazos vs supportsMultipleArms`).toBe(catalogModel.supportsMultipleArms);
+    }
+  });
+
+  test('CAMBIO TELA está marcado como implementado (tiene reglas de cálculo reales)', () => {
+    expect(getModelBehavior('CAMBIO TELA').implemented).toBe(true);
+  });
+
   test('ARZUA PRO expone las salidas establecidas de PRO.MIN', () => {
     expect(getEstablishedProjections('ARZUA PRO')).toEqual([150, 175, 200, 225, 250, 275, 300, 325, 350]);
   });

@@ -29,7 +29,7 @@ function defaultDraft(): DraftState {
   };
 }
 
-function sanitizeAwning(old: Record<string, unknown>): Awning {
+export function sanitizeAwning(old: Record<string, unknown>): Awning {
   const base = { ...createAwning(), ...old } as Awning & Record<string, unknown>;
   if (old.machineSide === 'DERECHA') base.machineSide = 'M.F.DER';
   if (old.machineSide === 'IZQUIERDA') base.machineSide = 'M.F IZQ';
@@ -55,7 +55,7 @@ function sanitizeAwning(old: Record<string, unknown>): Awning {
   return base as Awning;
 }
 
-function migrateLegacyDraft(saved: Record<string, unknown> | null): DraftState | null {
+export function migrateLegacyDraft(saved: Record<string, unknown> | null): DraftState | null {
   if (!saved) return null;
   const fallback = defaultDraft();
   const awnings = Array.isArray(saved.awnings) ? (saved.awnings as Record<string, unknown>[]) : [];
