@@ -272,6 +272,10 @@ label span,
   gap: var(--sp-3);
 }
 
+.topbar-status {
+  margin-left: auto;
+}
+
 .app-tabs {
   background: var(--surface);
   border-bottom: 1px solid var(--border);

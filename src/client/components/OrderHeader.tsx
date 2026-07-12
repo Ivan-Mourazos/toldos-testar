@@ -48,7 +48,7 @@ export function OrderHeader(props: Props) {
         </div>
       </div>
 
-      <div className="order-header-group order-header-rot">
+      <div className="order-header-group">
         <h3>Rotulación</h3>
         <div className="order-header-grid">
           <SegmentedField label="Tela" value={props.rotTela} options={formOptions.rotulacion} onChange={(v) => props.set({ rotTela: v })} />

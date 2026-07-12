@@ -23,7 +23,11 @@ export function AwningColumn({ awning, index, ofCalculation, onUpdate, onDuplica
   const incomplete = !awning.model || !awning.of || !awning.width || !awning.projection;
   const status = incomplete ? 'SIN COMPLETAR' : ofCalculation ? (ofCalculation.valid ? 'VÁLIDO' : 'REVISAR') : 'SIN CALCULAR';
   const statusClass = status === 'VÁLIDO' ? 'badge-ok' : status === 'REVISAR' ? 'badge-danger' : '';
-  const useEstablishedProjection = Boolean(fields.establishedProjections) && !awning.reglasModificadas;
+  // Si el toldo trae una salida que no está en la lista establecida (p. ej. un
+  // borrador migrado con salida libre), mostramos el número real en vez de un
+  // select en blanco que ocultaría el valor que el cálculo sí está usando.
+  const projectionInList = awning.projection === null || (fields.establishedProjections || []).includes(awning.projection);
+  const useEstablishedProjection = Boolean(fields.establishedProjections) && !awning.reglasModificadas && projectionInList;
 
   return (
     <article className="awning-column panel">
@@ -37,10 +41,10 @@ export function AwningColumn({ awning, index, ofCalculation, onUpdate, onDuplica
             aria-label={awning.reglasModificadas ? 'Reglas modificadas: volver a reglas estándar' : 'Modificar reglas del modelo'}
             onClick={() => update({ reglasModificadas: !awning.reglasModificadas })}
           >
-            {awning.reglasModificadas ? <LockOpen /> : <Lock />}
+            {awning.reglasModificadas ? <LockOpen aria-hidden="true" /> : <Lock aria-hidden="true" />}
           </button>
-          <button type="button" className="icon-button" onClick={() => onDuplicate(awning.id)} aria-label="Duplicar"><Copy /></button>
-          <button type="button" className="icon-button" onClick={() => onRemove(awning.id)} aria-label="Eliminar"><Trash2 /></button>
+          <button type="button" className="icon-button" onClick={() => onDuplicate(awning.id)} aria-label="Duplicar"><Copy aria-hidden="true" /></button>
+          <button type="button" className="icon-button" onClick={() => onRemove(awning.id)} aria-label="Eliminar"><Trash2 aria-hidden="true" /></button>
         </div>
       </header>
 
