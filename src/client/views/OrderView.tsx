@@ -4,6 +4,7 @@ import type { Awning, Calculation, CalculationState } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
 import { LiveResults } from '../components/LiveResults';
+import { DespieceView } from '../components/DespieceView';
 
 export function OrderView({
   orderCode,
@@ -157,6 +158,7 @@ export function OrderView({
       </section>
 
       <LiveResults calculation={calculation} state={calculationState} />
+      <DespieceView calculation={calculation} awnings={awnings} />
     </>
   );
 }

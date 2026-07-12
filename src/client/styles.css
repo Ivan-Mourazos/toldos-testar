@@ -772,3 +772,91 @@ label span,
   margin-left: auto;
   margin-right: auto;
 }
+
+/* ---------- Despiece ---------- */
+
+.despiece {
+  display: grid;
+  gap: var(--sp-4);
+  margin: var(--sp-6) auto 0;
+  max-width: 1440px;
+}
+
+.despiece-grid {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.despiece-card {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.despiece-card-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.despiece-card-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.despiece-body {
+  display: grid;
+  gap: var(--sp-3);
+  grid-template-columns: minmax(0, 1fr) 220px;
+}
+
+.despiece-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.despiece-table th,
+.despiece-table td {
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  padding: var(--sp-1) var(--sp-2);
+  text-align: left;
+}
+
+.despiece-table th {
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.despiece-no-ref {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.despiece-side {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.despiece-info-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2);
+}
+
+.despiece-info-block h4 {
+  color: var(--text-muted);
+  font-size: 10px;
+  margin: 0 0 var(--sp-1);
+  text-transform: uppercase;
+}
+
+.despiece-info-block p {
+  font-size: 12px;
+  margin: 0;
+}
