@@ -2,6 +2,26 @@
 
 Fecha: 2026-07-08.
 
+## Despiece y formulario compacto (2026-07-10)
+
+- Cada toldo de ARZUA PRO calculado genera además un `despiece` (piezas con y sin referencia RPS,
+  más el sistema de anclaje según tipo de pared), visible en una nueva sección "Despiece" debajo del
+  resultado en vivo. El RPS (reserva de materiales) no cambia: se comprobó línea a línea contra los
+  procesados reales de `SUBIDA DE MATERIALES\procesados` que JUEGO DE TERMINALES, KIT DE TORNILLOS
+  MAQUINA y el anclaje nunca formaban parte de la reserva, solo del despiece.
+- Los 4 campos de "Ajustes técnicos" (reglas/soportes/línea mínima/motivo) se sustituyen por un único
+  interruptor "Modificar reglas" por toldo. Con él activado, ARZUA PRO permite superar el frente
+  máximo de 600cm con un aviso en vez de bloquear el cálculo — esto es exactamente el caso real
+  documentado más abajo en "Parámetros editables" (`AR2603298-1`, ARZUA fabricado con línea mínima
+  forzada a 350).
+- El formulario de cada toldo arranca completamente vacío (solo "Elegir modelo…"); al elegir modelo
+  aparece el resto de campos, también vacíos. `/api/calculate` ya no lanza error por toldos a medio
+  rellenar: simplemente los ignora hasta que tengan OF, modelo, frente y salida.
+- La Salida de ARZUA PRO es un select con las 9 medidas establecidas de la tabla `PRO.MIN`
+  (150 a 350 de 25 en 25) salvo que se active "Modificar reglas", que la convierte en un campo libre.
+- Selects cortos (tubo de carga, local. máquina, colocación, nº brazos, rotulación, curva bamba) pasan
+  a botones rápidos de un clic.
+
 ## Verificación final del rediseño (2026-07-10)
 
 - El formulario de toldo pasó a ser dinámico, dirigido por `src/domain/modelBehavior.json`: cada
