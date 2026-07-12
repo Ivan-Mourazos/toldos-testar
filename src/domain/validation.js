@@ -48,17 +48,13 @@ export function normalizeReservation(payload) {
   };
 }
 
-function normalizeAwning(awning, index) {
+function normalizeAwning(awning, _index) {
   const of = cleanText(awning?.of);
   const model = cleanText(awning?.model).toUpperCase();
-  const units = numberOrDefault(awning?.units, 1);
+  const units = numberOrDefault(awning?.units, 1) || 1;
   const width = numberOrDefault(awning?.width, 0);
   const projection = numberOrDefault(awning?.projection, 0);
   const device = cleanText(awning?.device).toUpperCase();
-
-  if (!of) throw new Error(`El toldo ${index + 1} no tiene OF.`);
-  if (!model) throw new Error(`El toldo ${index + 1} no tiene modelo.`);
-  if (units <= 0) throw new Error(`Las unidades del toldo ${index + 1} deben ser mayores que cero.`);
 
   return {
     id: cleanText(awning?.id),
@@ -77,10 +73,7 @@ function normalizeAwning(awning, index) {
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
     valanceHeight: numberOrDefault(awning?.valanceHeight, 0),
-    calculationModelOverride: normalizeDefaultOverride(awning?.calculationModelOverride),
-    supportSystemOverride: normalizeDefaultOverride(awning?.supportSystemOverride),
-    minimumLineOverride: optionalNumber(awning?.minimumLineOverride),
-    overrideReason: cleanText(awning?.overrideReason),
+    reglasModificadas: Boolean(awning?.reglasModificadas),
     notes: cleanText(awning?.notes)
   };
 }
@@ -123,16 +116,4 @@ function numberOrDefault(value, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
-
-function optionalNumber(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
-}
-
-function normalizeDefaultOverride(value) {
-  const text = cleanText(value).toUpperCase();
-  return text && text !== 'SEGÚN MODELO' && text !== 'SEGUN MODELO' ? text : '';
-}
-
 

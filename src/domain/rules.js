@@ -14,6 +14,8 @@ export function calculateOrder(payload) {
   const diagnostics = [];
 
   for (const awning of order.awnings) {
+    if (isIncompleteAwning(awning)) continue;
+
     const model = models.find((item) => item.code === awning.model);
     if (!model) {
       diagnostics.push({
@@ -22,15 +24,6 @@ export function calculateOrder(payload) {
         message: `Modelo no reconocido: ${awning.model}.`
       });
       continue;
-    }
-
-    const overrideSummary = describeOverrides(awning);
-    if (overrideSummary) {
-      diagnostics.push({
-        level: 'warn',
-        awningId: awning.id,
-        message: `Ajuste técnico en OF ${awning.of}: ${overrideSummary}`
-      });
     }
 
     const rule = implementedRules.get(model.code);
@@ -75,19 +68,9 @@ function buildAwningDescription(awning) {
   const dimensions = awning.width && awning.projection
     ? `${awning.width}x${awning.projection}`
     : [awning.width, awning.projection].filter(Boolean).join('x');
-
-  const overrides = describeOverrides(awning);
-  const base = dimensions ? `Toldo ${awning.model} ${dimensions}` : `Toldo ${awning.model}`;
-  return overrides ? `${base} (${overrides})` : base;
+  return dimensions ? `Toldo ${awning.model} ${dimensions}` : `Toldo ${awning.model}`;
 }
 
-function describeOverrides(awning) {
-  const items = [];
-  if (awning.calculationModelOverride) items.push(`reglas ${awning.calculationModelOverride}`);
-  if (awning.supportSystemOverride) items.push(`soportes ${awning.supportSystemOverride}`);
-  if (awning.minimumLineOverride !== null && awning.minimumLineOverride !== undefined) {
-    items.push(`línea mínima ${awning.minimumLineOverride}`);
-  }
-  if (awning.overrideReason) items.push(`motivo: ${awning.overrideReason}`);
-  return items.join(' · ');
+function isIncompleteAwning(awning) {
+  return !awning.of || !awning.model || !awning.width || !awning.projection;
 }

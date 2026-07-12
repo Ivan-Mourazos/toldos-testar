@@ -59,6 +59,53 @@ describe('calculateOrder', () => {
   });
 });
 
+describe('ARZUA PRO reglasModificadas', () => {
+  it('frente > 600 sin reglasModificadas queda invalido y sin materiales', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ width: 650, reglasModificadas: false })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('supera el máximo estándar de 600 cm'))).toBe(true);
+  });
+
+  it('frente > 600 con reglasModificadas genera materiales y un aviso, no un error', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ width: 650, reglasModificadas: true })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(true);
+    expect(result.ofs[0].materials.length).toBeGreaterThan(0);
+    expect(result.diagnostics.some((d) => d.level === 'warn' && d.message.includes('Reglas modificadas'))).toBe(true);
+    expect(result.diagnostics.some((d) => d.level === 'error')).toBe(false);
+  });
+});
+
+describe('calculateOrder — toldos incompletos', () => {
+  it('un toldo vacio (sin of ni modelo) no genera OF ni diagnosticos ni excepcion', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [{ of: '', model: '', units: null, width: null, projection: null }]
+    }));
+    expect(result.ofs).toEqual([]);
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  it('un toldo con OF y modelo pero sin medidas tampoco genera OF ni diagnosticos', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [{ of: '230999', model: 'ARZUA PRO', units: 1, width: null, projection: null }]
+    }));
+    expect(result.ofs).toEqual([]);
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  it('un toldo completo junto a uno vacio calcula solo el completo, sin lanzar', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning(), { of: '', model: '', units: null, width: null, projection: null }]
+    }));
+    expect(result.ofs.length).toBe(1);
+    expect(result.ofs[0].calculation.valid).toBe(true);
+  });
+});
+
 describe('calculateOrder — CAMBIO TELA', () => {
   it('calculates CAMBIO TELA materials end-to-end, including valanceHeight passthrough', () => {
     const result = calculateOrder({

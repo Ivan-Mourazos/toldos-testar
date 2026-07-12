@@ -32,8 +32,11 @@ export function calculateArzuaPro({ order, awning }) {
   const tubeLoad = normalizeTubeLoad(awning.tubeLoad);
   const device = normalizeDevice(awning.device);
   const diagnostics = [];
-  const minimumLine = awning.minimumLineOverride ?? lookupMinimumLine(awning.projection, device);
-  const valid = awning.width <= 600 && awning.width >= minimumLine;
+  const minimumLine = lookupMinimumLine(awning.projection, device);
+  const modified = Boolean(awning.reglasModificadas);
+  const belowMinimum = awning.width < minimumLine;
+  const overMaximum = awning.width > 600;
+  const valid = !belowMinimum && (!overMaximum || modified);
   const fabricWidth = round1(awning.width - lookupFabricWidthDiscount(tubeLoad, device));
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricDrop = round1(awning.projection + valance + 45);
@@ -53,11 +56,23 @@ export function calculateArzuaPro({ order, awning }) {
     ? buildMaterials({ order, awning, lacado, colorSuffix, tubeLoad, device, stockLength, fabricMl, fabric })
     : [];
 
-  if (!valid) {
+  if (belowMinimum) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
       message: `ARZUA PRO no válido: frente ${awning.width} cm, mínimo ${minimumLine} cm para salida ${awning.projection} y ${device}.`
+    });
+  } else if (overMaximum && !modified) {
+    diagnostics.push({
+      level: 'error',
+      awningId: awning.id,
+      message: `ARZUA PRO no válido: frente ${awning.width} cm supera el máximo estándar de 600 cm.`
+    });
+  } else if (overMaximum && modified) {
+    diagnostics.push({
+      level: 'warn',
+      awningId: awning.id,
+      message: `Reglas modificadas en OF ${awning.of}: frente ${awning.width} cm supera el máximo estándar de 600 cm.`
     });
   }
 
