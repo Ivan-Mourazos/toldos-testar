@@ -494,24 +494,53 @@ label span,
   padding: var(--sp-2) var(--sp-3);
 }
 
-.awning-overrides {
-  border: 1px solid var(--border);
+.icon-button.active {
+  background: var(--tgm-yellow);
+  border-color: var(--tgm-yellow);
+  color: var(--tgm-black);
+}
+
+.awning-modified-chip {
+  background: var(--warn-bg);
   border-radius: var(--radius-sm);
-  display: grid;
-  gap: var(--sp-2);
+  color: var(--warn);
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 0;
   padding: var(--sp-2) var(--sp-3);
 }
 
-.awning-overrides summary {
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  padding: var(--sp-1) 0;
+.segmented-field {
+  gap: var(--sp-1);
 }
 
-.awning-overrides[open] summary {
-  margin-bottom: var(--sp-1);
+.segmented-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.segmented-option {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  flex: 1 1 auto;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+}
+
+.segmented-option.active {
+  background: var(--tgm-yellow);
+  border-color: var(--tgm-yellow);
+  color: var(--tgm-black);
+}
+
+.segmented-option:hover:not(.active) {
+  border-color: var(--border-strong);
 }
 
 .awning-status {

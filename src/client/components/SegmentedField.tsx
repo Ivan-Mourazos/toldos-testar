@@ -1,0 +1,22 @@
+import React from 'react';
+
+export function SegmentedField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+  return (
+    <div className="field segmented-field">
+      <span>{label}</span>
+      <div className="segmented-control" role="group" aria-label={label}>
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={option === value ? 'segmented-option active' : 'segmented-option'}
+            aria-pressed={option === value}
+            onClick={() => onChange(option)}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

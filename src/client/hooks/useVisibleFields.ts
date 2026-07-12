@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getFieldVisibility, getModelBehavior } from '../../domain/modelBehavior.js';
+import { getFieldVisibility, getModelBehavior, getEstablishedProjections } from '../../domain/modelBehavior.js';
 import type { Awning } from '../types';
 
 export function useVisibleFields(awning: Awning) {
@@ -9,6 +9,7 @@ export function useVisibleFields(awning: Awning) {
       ...getFieldVisibility({ model: awning.model, device: awning.device }),
       tubeOptions: behavior.tubeOptions || [],
       submodelOptions: behavior.submodelOptions || [],
+      establishedProjections: getEstablishedProjections(awning.model),
       implemented: behavior.implemented
     };
   }, [awning.model, awning.device]);
