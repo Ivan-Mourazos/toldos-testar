@@ -418,6 +418,14 @@ describe('normalización de campos nuevos del pedido', () => {
     });
     expect(normalized.awnings[0].submodel).toBe('CON CAJA');
   });
+
+  test('normalizeOrder conserva order.notes (necesario para reutilizar el order normalizado en PDF/xlsx)', () => {
+    const normalized = normalizeOrder(basePayload({
+      notes: '  Observacion importante  ',
+      awnings: [baseAwning()]
+    }));
+    expect(normalized.notes).toBe('Observacion importante');
+  });
 });
 
 describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {

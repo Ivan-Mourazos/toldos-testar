@@ -26,6 +26,7 @@ export function normalizeOrder(payload) {
     structureColor: cleanText(payload.structureColor),
     rotTela: cleanText(payload.rotTela).toUpperCase(),
     rotBamba: cleanText(payload.rotBamba).toUpperCase(),
+    notes: cleanText(payload.notes),
     awnings: awnings.map((awning, index) => normalizeAwning(awning, index))
   };
 }

@@ -8,7 +8,7 @@ import { getCatalog } from './domain/catalog.js';
 import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
-import { normalizeReservation } from './domain/validation.js';
+import { normalizeOrder, normalizeReservation } from './domain/validation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,7 +67,7 @@ app.post('/api/export/save', async (req, res, next) => {
     }
 
     const reservation = normalizeReservation(req.body?.reservation || req.body);
-    const orderPayload = req.body?.order || null;
+    const orderPayload = req.body?.order ? normalizeOrder(req.body.order) : null;
     const confirmOverwrite = req.body?.confirmOverwrite === true;
     const targets = reservation.ofs.map((ofBlock) => {
       const filename = `${sanitizeOf(ofBlock.of)}.xls`;
