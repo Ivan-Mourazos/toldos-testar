@@ -2,6 +2,7 @@ import React from 'react';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { TextField } from './TextField';
 import { SelectField } from './SelectField';
+import { SegmentedField } from './SegmentedField';
 
 type Props = {
   orderCode: string; customer: string; orderDate: string; technician: string;
@@ -22,8 +23,8 @@ export function OrderHeader(props: Props) {
           <label className="field"><span>Fecha</span>
             <input type="date" value={props.orderDate} onChange={(e) => props.set({ orderDate: e.target.value })} />
           </label>
-          <SelectField label="Técnico" value={props.technician} options={['', ...formOptions.tecnicos]} onChange={(v) => props.set({ technician: v })} />
-          <SelectField label="Revisión" value={props.reviewer} options={['', ...formOptions.tecnicos]} onChange={(v) => props.set({ reviewer: v })} />
+          <SelectField label="Técnico" value={props.technician} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ technician: v })} />
+          <SelectField label="Revisión" value={props.reviewer} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ reviewer: v })} />
           <label className="field"><span>Unidades totales</span>
             <input value={props.totalUnits} readOnly className="num" />
           </label>
@@ -35,7 +36,7 @@ export function OrderHeader(props: Props) {
         <div className="order-header-grid">
           <TextField label="Tela" value={props.fabric} onChange={(v) => props.set({ fabric: v })} placeholder="ACR ADMIRAL" />
           <TextField label="Remate" value={props.remate} onChange={(v) => props.set({ remate: v })} placeholder="COMO TELA" />
-          <SelectField label="Curva bamba" value={props.curvaBamba} options={formOptions.curvasBamba} onChange={(v) => props.set({ curvaBamba: v })} />
+          <SegmentedField label="Curva bamba" value={props.curvaBamba} options={formOptions.curvasBamba} onChange={(v) => props.set({ curvaBamba: v })} />
           <SelectField label="Lacado (estruct)" value={props.structureColor} options={formOptions.lacados} onChange={(v) => props.set({ structureColor: v })} />
           <label className="field field-toggle"><span>Bamba en tela distinta</span>
             <input type="checkbox" checked={props.bambaDistinta}
@@ -50,8 +51,8 @@ export function OrderHeader(props: Props) {
       <div className="order-header-group order-header-rot">
         <h3>Rotulación</h3>
         <div className="order-header-grid">
-          <SelectField label="Tela" value={props.rotTela} options={formOptions.rotulacion} onChange={(v) => props.set({ rotTela: v })} />
-          <SelectField label="Bamba" value={props.rotBamba} options={formOptions.rotulacion} onChange={(v) => props.set({ rotBamba: v })} />
+          <SegmentedField label="Tela" value={props.rotTela} options={formOptions.rotulacion} onChange={(v) => props.set({ rotTela: v })} />
+          <SegmentedField label="Bamba" value={props.rotBamba} options={formOptions.rotulacion} onChange={(v) => props.set({ rotBamba: v })} />
         </div>
         <label className="field field-notes"><span>Comentarios</span>
           <textarea value={props.notes} onChange={(e) => props.set({ notes: e.target.value })} />
