@@ -1,10 +1,12 @@
 import { models } from './catalog.js';
 import { calculateArzuaPro } from './arzuaProRules.js';
+import { calculateGalicia } from './galiciaRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
 import { normalizeOrder } from './validation.js';
 
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
+  ['GALICIA', calculateGalicia],
   ['CAMBIO TELA', calculateCambioTela]
 ]);
 

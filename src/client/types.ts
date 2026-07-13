@@ -26,12 +26,45 @@ export type Awning = {
   placement: string;
   wallType: string;
   tubeLoad: string;
+  destination: string;
+  supportSystem: string;
+  motorPower: string;
   submodel: string;
   sensor: string;
   machineSide: string;
   crankHeight: number | null;
   reglasModificadas: boolean;
   notes: string;
+};
+
+export type Device = 'MOTOR' | 'MAQ. INTERIOR' | 'MAQ. EXTERIOR';
+type DiscountMatrix = Record<string, Record<Device, number>>;
+
+type SharedModelParameters = {
+  standardMaxWidth: number;
+  privateTube: string;
+  businessTube: string;
+  widthDiscounts: DiscountMatrix;
+  rollTubeDiscounts: DiscountMatrix;
+  fabricWidthDiscounts: DiscountMatrix;
+};
+
+export type ArzuaProParameters = SharedModelParameters & {
+  motor70WidthFrom: number;
+  minimumLineByArm: { arm: number; values: Record<Device, number> }[];
+};
+
+export type GaliciaParameters = SharedModelParameters & {
+  armSwitchWidth: number;
+  minimumLineByProjection: {
+    projection: number;
+    values: Record<2 | 3, Record<Device, number>>;
+  }[];
+};
+
+export type RuleParameters = {
+  arzuaPro: ArzuaProParameters;
+  galicia: GaliciaParameters;
 };
 
 export type Calculation = {
@@ -52,7 +85,13 @@ export type Calculation = {
       fabricDrop: number;
       fabricMl: number;
       structureLength: number;
+      rollTubeLength?: number;
       stockLength: number;
+      supportSystem?: string;
+      motorPower?: string;
+      armCount?: number;
+      requiredArmCount?: number;
+      tubeLoad?: string;
     };
   }[];
   diagnostics: { level: 'error' | 'pending' | 'warn'; awningId?: string; message: string }[];
@@ -102,4 +141,4 @@ export type HistoryEntry = {
   notes: string;
 };
 
-export type ActiveTab = 'order' | 'history';
+export type ActiveTab = 'order' | 'parameters' | 'history';

@@ -42,28 +42,30 @@ export function DespieceView({ calculation, awnings }: Props) {
               </header>
 
               <div className="despiece-body">
-                <table className="despiece-table">
-                  <thead>
-                    <tr>
-                      <th>Nº</th>
-                      <th>Nombre pieza</th>
-                      <th>Referencia</th>
-                      <th className="num">Un.</th>
-                      <th className="num">Longit.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ofBlock.despiece.rows.map((row) => (
-                      <tr key={row.num}>
-                        <td className="num">{row.num}</td>
-                        <td>{row.name}</td>
-                        <td className={row.reference ? 'code' : 'despiece-no-ref'}>{row.reference || 'Sin referencia'}</td>
-                        <td className="num">{row.units}</td>
-                        <td className="num">{row.length === null ? '-' : formatDecimal(row.length)}</td>
+                <div className="despiece-table-wrap">
+                  <table className="despiece-table">
+                    <thead>
+                      <tr>
+                        <th>Nº</th>
+                        <th>Nombre pieza</th>
+                        <th>Referencia</th>
+                        <th className="num">Un.</th>
+                        <th className="num">Longit.</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {ofBlock.despiece.rows.map((row) => (
+                        <tr key={row.num}>
+                          <td className="num">{row.num}</td>
+                          <td>{row.name}</td>
+                          <td className={row.reference ? 'code' : 'despiece-no-ref'}>{row.reference || 'Sin referencia'}</td>
+                          <td className="num">{row.units}</td>
+                          <td className="num">{row.length === null ? '-' : formatDecimal(row.length)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
                 <div className="despiece-side">
                   <div className="despiece-info-block">

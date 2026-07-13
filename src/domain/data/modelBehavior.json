@@ -1,7 +1,7 @@
 {
   "models": {
     "ARZUA PRO":      { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280"], "multipleBrazos": false, "implemented": true },
-    "GALICIA":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 70", "TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280", "TUBO DE CARGA UNIVERS 290"], "multipleBrazos": true, "implemented": false },
+    "GALICIA":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280"], "armOptions": [2, 3], "multipleBrazos": true, "implemented": true },
     "XACOBEO":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": null, "multipleBrazos": false, "implemented": false },
     "CORTINA":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": null, "multipleBrazos": false, "implemented": false },
     "MICROBOX":       { "tipo01": "COFRE", "tipo02": null, "multipleBrazos": false, "implemented": false },

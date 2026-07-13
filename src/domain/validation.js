@@ -1,4 +1,6 @@
 import { roundQuantity } from './math.js';
+import { normalizeArzuaProParameters } from './arzuaProParameters.js';
+import { normalizeGaliciaParameters } from './galiciaParameters.js';
 
 export function normalizeOrder(payload) {
   if (!payload || typeof payload !== 'object') {
@@ -27,6 +29,10 @@ export function normalizeOrder(payload) {
     rotTela: cleanText(payload.rotTela).toUpperCase(),
     rotBamba: cleanText(payload.rotBamba).toUpperCase(),
     notes: cleanText(payload.notes),
+    parameters: {
+      arzuaPro: normalizeArzuaProParameters(payload.parameters?.arzuaPro),
+      galicia: normalizeGaliciaParameters(payload.parameters?.galicia)
+    },
     awnings: awnings.map((awning, index) => normalizeAwning(awning, index))
   };
 }
@@ -70,6 +76,9 @@ function normalizeAwning(awning, _index) {
     wallType: cleanText(awning?.wallType).toUpperCase(),
     submodel: cleanText(awning?.submodel).toUpperCase(),
     tubeLoad: cleanText(awning?.tubeLoad).toUpperCase(),
+    destination: cleanText(awning?.destination).toUpperCase(),
+    supportSystem: cleanText(awning?.supportSystem || 'AUTOMÁTICO').toUpperCase(),
+    motorPower: cleanText(awning?.motorPower || 'AUTOMÁTICO').toUpperCase(),
     sensor: cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),

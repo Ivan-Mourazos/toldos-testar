@@ -4,7 +4,8 @@ import {
   ClipboardList,
   Download,
   History,
-  Save
+  Save,
+  SlidersHorizontal
 } from 'lucide-react';
 import '@fontsource-variable/inter';
 import './styles.css';
@@ -15,9 +16,12 @@ import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { OrderView } from './views/OrderView';
 import { HistoryView } from './views/HistoryView';
+import { ParametersView } from './views/ParametersView';
+import { useParameters } from './hooks/useParameters';
 
 function App() {
   const draft = useDraft();
+  const ruleSettings = useParameters();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
   const [toast, setToast] = useState('');
@@ -39,7 +43,8 @@ function App() {
     rotTela: draft.rotTela,
     rotBamba: draft.rotBamba,
     notes: draft.notes,
-    awnings: draft.awnings
+    awnings: draft.awnings,
+    parameters: ruleSettings.parameters
   });
 
   useEffect(() => {
@@ -122,7 +127,8 @@ function App() {
             rotTela: draft.rotTela,
             rotBamba: draft.rotBamba,
             notes: draft.notes,
-            awnings: draft.awnings
+            awnings: draft.awnings,
+            parameters: ruleSettings.parameters
           },
           confirmOverwrite
         })
@@ -206,6 +212,7 @@ function App() {
 
       <nav className="app-tabs" aria-label="Vistas">
         <TabButton active={activeTab === 'order'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
+        <TabButton active={activeTab === 'parameters'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
         <TabButton active={activeTab === 'history'} icon={<History />} label="Historial" onClick={() => setActiveTab('history')} />
       </nav>
 
@@ -228,6 +235,7 @@ function App() {
           awnings={draft.awnings}
           calculation={calculation}
           calculationState={calculationState}
+          parameters={ruleSettings.parameters}
           setOrderCode={draft.setOrderCode}
           setCustomer={draft.setCustomer}
           setOrderDate={draft.setOrderDate}
@@ -246,6 +254,16 @@ function App() {
           duplicateAwning={draft.duplicateAwning}
           removeAwning={draft.removeAwning}
           updateAwning={draft.updateAwning}
+        />
+      )}
+
+      {activeTab === 'parameters' && (
+        <ParametersView
+          parameters={ruleSettings.parameters}
+          onUpdateArzua={ruleSettings.updateArzua}
+          onUpdateGalicia={ruleSettings.updateGalicia}
+          onResetArzua={ruleSettings.resetArzua}
+          onResetGalicia={ruleSettings.resetGalicia}
         />
       )}
 

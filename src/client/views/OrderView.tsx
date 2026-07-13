@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
-import type { Awning, Calculation, CalculationState } from '../types';
+import type { Awning, Calculation, CalculationState, RuleParameters } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
 import { LiveResults } from '../components/LiveResults';
@@ -24,6 +24,7 @@ export function OrderView({
   awnings,
   calculation,
   calculationState,
+  parameters,
   setOrderCode,
   setCustomer,
   setOrderDate,
@@ -60,6 +61,7 @@ export function OrderView({
   awnings: Awning[];
   calculation: Calculation | null;
   calculationState: CalculationState;
+  parameters: RuleParameters;
   setOrderCode: (value: string) => void;
   setCustomer: (value: string) => void;
   setOrderDate: (value: string) => void;
@@ -142,18 +144,17 @@ export function OrderView({
               awning={awning}
               index={index}
               ofCalculation={calculation?.ofs.find((o) => o.of === awning.of.trim())?.calculation}
+              parameters={parameters}
               onUpdate={updateAwning}
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}
             />
           ))}
 
-          {awnings.length < 4 && (
-            <button type="button" className="awning-add-ghost" onClick={addAwning}>
-              <Plus aria-hidden="true" />
-              Añadir toldo
-            </button>
-          )}
+          <button type="button" className="awning-add-ghost" onClick={addAwning}>
+            <Plus aria-hidden="true" />
+            Añadir toldo
+          </button>
         </div>
       </section>
 

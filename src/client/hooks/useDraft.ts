@@ -5,6 +5,7 @@ import { formOptions, getModelBehavior } from '../../domain/modelBehavior.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
+const legacyStorageKeyV5 = 'toldos-testar-draft-v5';
 
 const sensorNames = formOptions.sensores.map((s) => s.sensor);
 const wallTypeNames = formOptions.tiposPared.map((p) => p.pared);
@@ -84,7 +85,7 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
 function migrateFromLegacyStorage(): DraftState | null {
   if (typeof localStorage === 'undefined') return null;
 
-  for (const key of [legacyStorageKeyV4, legacyStorageKeyV3]) {
+  for (const key of [legacyStorageKeyV5, legacyStorageKeyV4, legacyStorageKeyV3]) {
     try {
       const saved = JSON.parse(localStorage.getItem(key) || 'null');
       const migrated = migrateLegacyDraft(saved);
@@ -175,7 +176,8 @@ export function useDraft() {
           const fresh = createAwning();
           return {
             ...fresh, id: awning.id, of: awning.of, model: patch.model, units: awning.units,
-            width: awning.width, projection: awning.projection, valanceHeight: awning.valanceHeight
+            width: awning.width, projection: awning.projection, valanceHeight: awning.valanceHeight,
+            armCount: patch.armCount ?? (patch.model === 'ARZUA PRO' || patch.model === 'GALICIA' ? 2 : fresh.armCount)
           };
         }
         return next;

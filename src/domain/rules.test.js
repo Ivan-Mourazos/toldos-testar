@@ -442,8 +442,7 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     }));
     expect(asLines(result.ofs[0].materials)).toEqual([
       'ACRILI2250P120 x18', 'BONYXBL16300C x1', 'CASMAQEJE6378MM x1', 'CASPLAS x1',
-      'CASPUNCE x1', 'MANIVEBL16150C x1', 'MAQMB9L13BLANBL16 x1',
-      'PEVO80BL16600C x1', 'SOPAR350BL16 x1', 'TURA80HG600C x1'
+      'MANIVEBL16150C x1', 'PEVO80BL16600C x1', 'SOPAR350BL16 x1', 'TURA80HG600C x2'
     ].sort());
   });
 
@@ -458,8 +457,8 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     }));
     expect(asLines(result.ofs[0].materials)).toEqual([
       'ACRILI2170P120 x14.5', 'BONYXNE11225C x1', 'CASMAQEJE6378MM x1', 'CASPLAS x1',
-      'CASPUNCE x1', 'MANIVENE11250C x1', 'MAQMB9L13NEGRNE11 x1',
-      'PUNI280NE11600C x1', 'SOPAR350NE11 x1', 'TAPOPLUN280NE11 x1', 'TURA80HG600C x1'
+      'MANIVENE11250C x1', 'PUNI280NE11600C x1', 'SOPAR350NE11 x1',
+      'TAPOPLUN280NE11 x1', 'TURA80HG600C x2'
     ].sort());
   });
 
@@ -475,5 +474,171 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     const codes = result.ofs[0].materials.map((m) => m.code);
     expect(codes).toContain('CASMAQEJE5078MM');
     expect(codes).not.toContain('CASMAQEJE6378MM');
+  });
+});
+
+describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
+  test('particular propone EVO 80 y motor 55 sin exigir seleccionar tubo a mano', () => {
+    const result = calculateOrder(basePayload({
+      fabric: 'ACR BOTELLA',
+      awnings: [baseAwning({
+        of: '0230194', width: 337, projection: 225, destination: 'PARTICULAR',
+        tubeLoad: '', device: 'MOTOR'
+      })]
+    }));
+    const calculation = result.ofs[0].calculation;
+    const materials = result.ofs[0].materials;
+    expect(calculation.tubeLoad).toBe('TUBO DE CARGA EVO 80');
+    expect(calculation.motorPower).toBe('55/17');
+    expect(materials).toContainEqual(expect.objectContaining({ code: 'PEVO80BL16600C', quantity: 1 }));
+    expect(materials).toContainEqual(expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 1 }));
+    expect(materials).toContainEqual(expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }));
+    expect(materials.some((line) => line.code === 'CASPUNCE')).toBe(false);
+  });
+
+  test('hostelería o empresa propone UNIVERS 280', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ destination: 'HOSTELERÍA / EMPRESA', tubeLoad: '' })]
+    }));
+    expect(result.ofs[0].calculation.tubeLoad).toBe('TUBO DE CARGA UNIVERS 280');
+    expect(result.ofs[0].materials.some((line) => line.code === 'PUNI280BL16600C')).toBe(true);
+  });
+
+  test('motor 70 se selecciona desde el umbral configurable', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ width: 650, reglasModificadas: true, motorPower: 'AUTOMÁTICO' })]
+    }));
+    expect(result.ofs[0].calculation.motorPower).toBe('70/17');
+    expect(result.ofs[0].materials.some((line) => line.code === 'SUNILUSIO70//17')).toBe(true);
+  });
+
+  test('separa la longitud del tubo de enrollamiento y del tubo de carga EVO', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({
+        of: '0230415', width: 330, projection: 275, device: 'MAQ. EXTERIOR',
+        tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 170
+      })]
+    }));
+    expect(result.ofs[0].calculation.rollTubeLength).toBe(318.6);
+    expect(result.ofs[0].calculation.structureLength).toBe(319.6);
+    expect(result.ofs[0].despiece.rows.find((row) => row.name === 'TUBO DE ENROLLE P801').length).toBe(318.6);
+    expect(result.ofs[0].despiece.rows.find((row) => row.name === 'TUBO DE CARGA EVO 80').length).toBe(319.6);
+  });
+});
+
+describe('GALICIA contra planteamientos y RPSNext', () => {
+  test('AR2603298: 2 brazos, salida especial 350 y soporte GALICIA', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        of: '0230134', model: 'GALICIA', width: 430, projection: 350,
+        valanceHeight: 25, armCount: 2, device: 'MAQ. EXTERIOR',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', crankHeight: 250, wallType: ''
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, minimumLine: 375, armCount: 2, structureLength: 418.5,
+      rollTubeLength: 418.5, fabricWidth: 417, fabricDrop: 420, fabricMl: 16.8,
+      stockLength: 600, supportSystem: 'GALICIA'
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOPARTGLBL16', quantity: 1 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'PUNI280BL16600C', quantity: 1 }),
+      expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
+      expect.objectContaining({ code: 'ACRILI2170P120', quantity: 16.8 })
+    ]));
+  });
+
+  test('AR2603289: 3 brazos y motor 70 para frente 650', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR PIEDRA',
+      awnings: [baseAwning({
+        of: '0230045', model: 'GALICIA', width: 650, projection: 225,
+        valanceHeight: 25, armCount: 3, device: 'MOTOR',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', wallType: 'DIRECTA A PARED'
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, armCount: 3, requiredArmCount: 3, motorPower: '70/17',
+      structureLength: 640, rollTubeLength: 640, fabricWidth: 639,
+      fabricDrop: 295, fabricMl: 17.7, stockLength: 700
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'BONYXBL16225C', quantity: 3 }),
+      expect.objectContaining({ code: 'SUNILUSIO70//17', quantity: 1 }),
+      expect.objectContaining({ code: 'ANCLHSTM12145', quantity: 4 }),
+      expect.objectContaining({ code: 'ACRILI3605P120', quantity: 17.7 })
+    ]));
+  });
+
+  test('AR2603420: EVO separa largo de enrollamiento y carga', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR MARFIL',
+      awnings: [baseAwning({
+        of: '0230410', model: 'GALICIA', width: 650, projection: 300,
+        valanceHeight: 20, armCount: 3, device: 'MAQ. EXTERIOR',
+        tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 250, wallType: ''
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, structureLength: 638.5, rollTubeLength: 639.5,
+      fabricWidth: 637, fabricDrop: 365, fabricMl: 21.9, stockLength: 700
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'PEVO80BL16700C', quantity: 1 }),
+      expect.objectContaining({ code: 'BONYXBL16300C', quantity: 3 }),
+      expect.objectContaining({ code: 'ACRILI2143P120', quantity: 21.9 })
+    ]));
+  });
+
+  test('frente superior a 550 no permite quedarse con 2 brazos', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 2 })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics.some((item) => item.message.includes('necesita 3 brazos'))).toBe(true);
+  });
+
+  test('la potencia solo se puede forzar al activar una excepción técnica', () => {
+    const automatic = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '55/17' })]
+    }));
+    const overridden = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '55/17', reglasModificadas: true })]
+    }));
+    expect(automatic.ofs[0].calculation.motorPower).toBe('70/17');
+    expect(overridden.ofs[0].calculation.motorPower).toBe('55/17');
+  });
+
+  test('sol o viento-sol cambia automáticamente al mando SITUO 5', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({
+        model: 'GALICIA', width: 650, projection: 225, armCount: 3,
+        device: 'MOTOR', sensor: 'SOL'
+      })]
+    }));
+    expect(result.ofs[0].materials).toContainEqual(expect.objectContaining({
+      code: 'SITUOVARIOPURE', description: 'MANDO SITUO 5 VARIATIO IO'
+    }));
+    expect(result.ofs[0].materials.some((item) => item.code === 'SITUOIO1PURE')).toBe(false);
+  });
+
+  test('destino empresa propone UNIVERS 280 sin pedir tubo manualmente', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({
+        model: 'GALICIA', destination: 'HOSTELERÍA / EMPRESA', tubeLoad: '',
+        width: 430, projection: 250, armCount: 2
+      })]
+    }));
+    expect(result.ofs[0].calculation.tubeLoad).toBe('TUBO DE CARGA UNIVERS 280');
+    expect(result.ofs[0].materials.some((item) => item.code === 'PUNI280BL16600C')).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 import type { Awning } from './types';
 
-export const storageKey = 'toldos-testar-draft-v5';
+export const storageKey = 'toldos-testar-draft-v6';
 export const historyStorageKey = 'toldos-testar-history-v1';
 
 export function uid() {
@@ -21,6 +21,9 @@ export function createAwning(): Awning {
     placement: '',
     wallType: '',
     tubeLoad: '',
+    destination: '',
+    supportSystem: 'AUTOMÁTICO',
+    motorPower: 'AUTOMÁTICO',
     submodel: '',
     sensor: '',
     machineSide: '',

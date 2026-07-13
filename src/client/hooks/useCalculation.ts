@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ActiveTab, Awning, Calculation, CalculationState } from '../types';
+import type { ActiveTab, Awning, Calculation, CalculationState, RuleParameters } from '../types';
 
 export function useCalculation({
   activeTab,
@@ -17,7 +17,8 @@ export function useCalculation({
   rotTela,
   rotBamba,
   notes,
-  awnings
+  awnings,
+  parameters
 }: {
   activeTab: ActiveTab;
   orderCode: string;
@@ -35,6 +36,7 @@ export function useCalculation({
   rotBamba: string;
   notes: string;
   awnings: Awning[];
+  parameters: RuleParameters;
 }) {
   const [calculation, setCalculation] = useState<Calculation | null>(null);
   const [calculationState, setCalculationState] = useState<CalculationState>('idle');
@@ -64,7 +66,8 @@ export function useCalculation({
             rotTela,
             rotBamba,
             notes,
-            awnings
+            awnings,
+            parameters
           }),
           signal: controller.signal
         });
@@ -83,7 +86,7 @@ export function useCalculation({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, remate, curvaBamba, bambaDistinta, telaBamba, structureColor, rotTela, rotBamba, notes, awnings]);
+  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, remate, curvaBamba, bambaDistinta, telaBamba, structureColor, rotTela, rotBamba, notes, awnings, parameters]);
 
   const reservation = useMemo(() => ({
     orderCode,

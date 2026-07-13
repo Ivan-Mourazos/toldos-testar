@@ -7,10 +7,15 @@ export function useVisibleFields(awning: Awning) {
     const behavior = getModelBehavior(awning.model);
     return {
       ...getFieldVisibility({ model: awning.model, device: awning.device }),
+      arzua: awning.model === 'ARZUA PRO',
+      galicia: awning.model === 'GALICIA',
       tubeOptions: behavior.tubeOptions || [],
       submodelOptions: behavior.submodelOptions || [],
+      armOptions: behavior.armOptions || formArmOptions,
       establishedProjections: getEstablishedProjections(awning.model),
       implemented: behavior.implemented
     };
   }, [awning.model, awning.device]);
 }
+
+const formArmOptions = [2, 3, 4];
