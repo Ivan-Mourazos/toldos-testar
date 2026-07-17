@@ -1,6 +1,7 @@
 import { roundQuantity } from './math.js';
 import { normalizeArzuaProParameters } from './arzuaProParameters.js';
 import { normalizeGaliciaParameters } from './galiciaParameters.js';
+import { getModelWorkType } from './modelBehavior.js';
 
 export function normalizeOrder(payload) {
   if (!payload || typeof payload !== 'object') {
@@ -21,7 +22,9 @@ export function normalizeOrder(payload) {
     technician: cleanText(payload.technician),
     reviewer: cleanText(payload.reviewer),
     fabric: cleanText(payload.fabric),
+    sameFabric: payload.sameFabric !== false,
     remate: cleanText(payload.remate),
+    remateColor: cleanText(payload.remateColor),
     curvaBamba: cleanText(payload.curvaBamba),
     bambaDistinta: Boolean(payload.bambaDistinta),
     telaBamba: cleanText(payload.telaBamba),
@@ -49,10 +52,11 @@ export function normalizeReservation(payload) {
     throw new Error('Añade al menos una OF.');
   }
 
-  return {
+  const normalized = {
     orderCode,
     ofs: ofs.map((ofBlock, index) => normalizeOfBlock(ofBlock, index))
   };
+  return consolidateReservation(normalized);
 }
 
 function normalizeAwning(awning, _index) {
@@ -65,6 +69,7 @@ function normalizeAwning(awning, _index) {
 
   return {
     id: cleanText(awning?.id),
+    workType: getModelWorkType(model),
     of,
     model,
     units,
@@ -82,9 +87,48 @@ function normalizeAwning(awning, _index) {
     sensor: cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
+    curtainHasWindow: Boolean(awning?.curtainHasWindow),
+    curtainFinish: normalizeCurtainFinish(awning?.curtainFinish),
+    curtainWindowExit: numberOrDefault(awning?.curtainWindowExit, 0),
+    curtainWindowCorner: numberOrDefault(awning?.curtainWindowCorner, 0),
+    curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),
+    curtainWindowHeight: numberOrDefault(awning?.curtainWindowHeight, 0),
     valanceHeight: numberOrDefault(awning?.valanceHeight, 0),
     reglasModificadas: Boolean(awning?.reglasModificadas),
-    notes: cleanText(awning?.notes)
+    fabric: cleanText(awning?.fabric),
+    structureNotes: cleanText(awning?.structureNotes || awning?.notes),
+    fabricNotes: cleanText(awning?.fabricNotes)
+  };
+}
+
+export function consolidateReservation(reservation) {
+  const groupedOfs = new Map();
+
+  for (const ofBlock of reservation.ofs || []) {
+    const ofKey = cleanText(ofBlock.of).toUpperCase();
+    const target = groupedOfs.get(ofKey) || {
+      of: ofBlock.of,
+      description: ofBlock.description || '',
+      materials: new Map()
+    };
+    if (!target.description && ofBlock.description) target.description = ofBlock.description;
+
+    for (const material of ofBlock.materials || []) {
+      const code = cleanText(material.code).toUpperCase();
+      const current = target.materials.get(code) || { ...material, code, quantity: 0 };
+      current.quantity = roundQuantity(current.quantity + Number(material.quantity || 0));
+      target.materials.set(code, current);
+    }
+    groupedOfs.set(ofKey, target);
+  }
+
+  return {
+    orderCode: reservation.orderCode,
+    ofs: Array.from(groupedOfs.values()).map((ofBlock) => ({
+      of: ofBlock.of,
+      description: ofBlock.description,
+      materials: Array.from(ofBlock.materials.values())
+    }))
   };
 }
 
@@ -125,5 +169,10 @@ function cleanText(value) {
 function numberOrDefault(value, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+function normalizeCurtainFinish(value) {
+  const finish = cleanText(value).toUpperCase();
+  return ['NORMAL', 'VELCRO', 'TUBO'].includes(finish) ? finish : 'NORMAL';
 }
 

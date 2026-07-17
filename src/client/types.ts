@@ -15,6 +15,7 @@ export type Catalog = {
 
 export type Awning = {
   id: string;
+  workType: 'FULL_AWNING' | 'FABRIC_ONLY';
   of: string;
   model: string;
   units: number | null;
@@ -33,8 +34,16 @@ export type Awning = {
   sensor: string;
   machineSide: string;
   crankHeight: number | null;
+  curtainHasWindow: boolean;
+  curtainFinish: 'NORMAL' | 'VELCRO' | 'TUBO';
+  curtainWindowExit: number | null;
+  curtainWindowCorner: number | null;
+  curtainWindowFloorHeight: number | null;
+  curtainWindowHeight: number | null;
   reglasModificadas: boolean;
-  notes: string;
+  fabric: string;
+  structureNotes: string;
+  fabricNotes: string;
 };
 
 export type Device = 'MOTOR' | 'MAQ. INTERIOR' | 'MAQ. EXTERIOR';
@@ -51,6 +60,10 @@ type SharedModelParameters = {
 
 export type ArzuaProParameters = SharedModelParameters & {
   motor70WidthFrom: number;
+  fabricDropAllowanceCm: number;
+  seamAllowanceCm: number;
+  seamBaseCm: number;
+  stockLengths: number[];
   minimumLineByArm: { arm: number; values: Record<Device, number> }[];
 };
 
@@ -70,6 +83,8 @@ export type RuleParameters = {
 export type Calculation = {
   orderCode: string;
   ofs: {
+    awningId?: string;
+    awningIndex?: number;
     of: string;
     description: string;
     materials: { code: string; description?: string; quantity: number }[];
@@ -84,6 +99,10 @@ export type Calculation = {
       fabricWidth: number;
       fabricDrop: number;
       fabricMl: number;
+      fabricPanels?: number;
+      fabricCode?: string;
+      fabricDescription?: string;
+      fabricRollWidth?: number;
       structureLength: number;
       rollTubeLength?: number;
       stockLength: number;
@@ -107,7 +126,9 @@ export type DraftState = {
   technician: string;
   reviewer: string;
   fabric: string;
+  sameFabric: boolean;
   remate: string;
+  remateColor: string;
   curvaBamba: string;
   bambaDistinta: boolean;
   telaBamba: string;
@@ -127,7 +148,9 @@ export type HistoryEntry = {
   technician: string;
   reviewer: string;
   fabric: string;
+  sameFabric: boolean;
   remate: string;
+  remateColor: string;
   curvaBamba: string;
   bambaDistinta: boolean;
   telaBamba: string;

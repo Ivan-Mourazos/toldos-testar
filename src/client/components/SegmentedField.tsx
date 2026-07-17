@@ -1,4 +1,5 @@
 import React from 'react';
+import { controlLabel } from './controlLabels';
 
 export function SegmentedField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
   return (
@@ -13,7 +14,7 @@ export function SegmentedField({ label, value, options, onChange }: { label: str
             aria-pressed={option === value}
             onClick={() => onChange(option)}
           >
-            {option}
+            {controlLabel(option)}
           </button>
         ))}
       </div>

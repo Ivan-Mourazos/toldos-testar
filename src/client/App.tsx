@@ -2,22 +2,55 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ClipboardList,
-  Download,
+  Eraser,
+  Eye,
+  FileDown,
+  FileSpreadsheet,
+  FlaskConical,
   History,
-  Save,
-  SlidersHorizontal
+  SlidersHorizontal,
+  X
 } from 'lucide-react';
-import '@fontsource-variable/inter';
+import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
 import type { ActiveTab, Catalog } from './types';
-import { fileNameFromDisposition, uid } from './constants';
+import { fileNameFromDisposition } from './constants';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
+import { PdfPreviewPages } from './components/PdfPreviewPages';
 import { OrderView } from './views/OrderView';
 import { HistoryView } from './views/HistoryView';
 import { ParametersView } from './views/ParametersView';
 import { useParameters } from './hooks/useParameters';
+
+type WritableFileHandle = {
+  createWritable: () => Promise<{
+    write: (data: Blob) => Promise<void>;
+    close: () => Promise<void>;
+  }>;
+};
+
+type WindowWithFilePicker = Window & {
+  showSaveFilePicker?: (options: {
+    suggestedName: string;
+    types: Array<{ description: string; accept: Record<string, string[]> }>;
+  }) => Promise<WritableFileHandle>;
+};
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function suggestedPdfName(orderCode: string) {
+  const clean = orderCode.trim().toUpperCase().replace(/[^A-Z0-9_-]+/g, '').slice(0, 80);
+  return `${clean || 'PLANTEAMIENTO'}-1.pdf`;
+}
 
 function App() {
   const draft = useDraft();
@@ -25,7 +58,8 @@ function App() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
   const [toast, setToast] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [working, setWorking] = useState<'rps' | 'pdf' | 'preview' | null>(null);
+  const [previewUrl, setPreviewUrl] = useState('');
 
   const { calculation, calculationState, reservation } = useCalculation({
     activeTab,
@@ -35,14 +69,15 @@ function App() {
     technician: draft.technician,
     reviewer: draft.reviewer,
     fabric: draft.fabric,
+    sameFabric: draft.sameFabric,
     remate: draft.remate,
+    remateColor: draft.remateColor,
     curvaBamba: draft.curvaBamba,
     bambaDistinta: draft.bambaDistinta,
     telaBamba: draft.telaBamba,
     structureColor: draft.structureColor,
     rotTela: draft.rotTela,
     rotBamba: draft.rotBamba,
-    notes: draft.notes,
     awnings: draft.awnings,
     parameters: ruleSettings.parameters
   });
@@ -61,19 +96,45 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  useEffect(() => () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
   function reuseHistory(entry: Parameters<typeof draft.reuseHistory>[0]) {
     draft.reuseHistory(entry);
     setActiveTab('order');
     setToast(`Pedido ${entry.orderCode || 'sin número'} cargado desde historial.`);
   }
 
-  async function exportReservation() {
+  function currentOrderPayload() {
+    return {
+      orderCode: draft.orderCode,
+      customer: draft.customer,
+      orderDate: draft.orderDate,
+      technician: draft.technician,
+      reviewer: draft.reviewer,
+      fabric: draft.fabric,
+      sameFabric: draft.sameFabric,
+      remate: draft.remate,
+      remateColor: draft.remateColor,
+      curvaBamba: draft.curvaBamba,
+      bambaDistinta: draft.bambaDistinta,
+      telaBamba: draft.telaBamba,
+      structureColor: draft.structureColor,
+      rotTela: draft.rotTela,
+      rotBamba: draft.rotBamba,
+      awnings: draft.awnings,
+      parameters: ruleSettings.parameters
+    };
+  }
+
+  async function simulateReservation() {
     if (reservation.ofs.length === 0) {
-      setToast('Todavía no hay materiales calculados para exportar.');
+      setToast('Todavía no hay materiales calculados para simular.');
       return;
     }
 
-    setSaving(true);
+    setWorking('rps');
     try {
       const response = await fetch('/api/export', {
         method: 'POST',
@@ -83,155 +144,203 @@ function App() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setToast(data.error || 'No se pudo exportar.');
+        setToast(data.error || 'No se pudo generar la simulación RPS.');
         return;
       }
 
       const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileNameFromDisposition(response.headers.get('content-disposition')) || 'reserva-toldos.xlsx';
-      link.click();
-      URL.revokeObjectURL(url);
+      const filename = fileNameFromDisposition(response.headers.get('content-disposition')) || 'simulacion-rps-toldos.xls';
+      downloadBlob(blob, filename);
+      setToast('Simulación RPS descargada. No se ha guardado nada en las carpetas compartidas.');
+    } catch {
+      setToast('No se pudo generar la simulación RPS.');
     } finally {
-      setSaving(false);
+      setWorking(null);
     }
   }
 
-  async function saveLegacyReservation(confirmOverwrite = false) {
-    if (reservation.ofs.length === 0) {
-      setToast('Todavía no hay materiales calculados para guardar.');
+  async function savePlanteamientoPdf() {
+    if (!calculation || calculation.ofs.length === 0) {
+      setToast('Completa al menos un toldo para generar el planteamiento.');
       return;
     }
 
-    setSaving(true);
+    const picker = (window as WindowWithFilePicker).showSaveFilePicker;
+    let handle: WritableFileHandle | null = null;
+
+    if (picker) {
+      try {
+        handle = await picker({
+          suggestedName: suggestedPdfName(draft.orderCode),
+          types: [{ description: 'Documento PDF', accept: { 'application/pdf': ['.pdf'] } }]
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setToast('No se pudo abrir el selector de archivo.');
+        return;
+      }
+    }
+
+    setWorking('pdf');
     try {
-      const response = await fetch('/api/export/save', {
+      const response = await fetch('/api/planteamiento', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reservation,
-          order: {
-            orderCode: draft.orderCode,
-            customer: draft.customer,
-            orderDate: draft.orderDate,
-            technician: draft.technician,
-            reviewer: draft.reviewer,
-            fabric: draft.fabric,
-            remate: draft.remate,
-            curvaBamba: draft.curvaBamba,
-            bambaDistinta: draft.bambaDistinta,
-            telaBamba: draft.telaBamba,
-            structureColor: draft.structureColor,
-            rotTela: draft.rotTela,
-            rotBamba: draft.rotBamba,
-            notes: draft.notes,
-            awnings: draft.awnings,
-            parameters: ruleSettings.parameters
-          },
-          confirmOverwrite
-        })
+        body: JSON.stringify({ order: currentOrderPayload() })
       });
-      const data = await response.json().catch(() => ({}));
-
-      if (response.status === 409 && data.needsConfirmation) {
-        setSaving(false);
-        const overwrite = window.confirm(`Ya existen reservas: ${data.existing.join(', ')}. ¿Sobrescribir?`);
-        if (overwrite) await saveLegacyReservation(true);
-        return;
-      }
 
       if (!response.ok) {
-        setToast(data.error || 'No se pudo guardar la reserva antigua.');
+        const data = await response.json().catch(() => ({}));
+        setToast(data.error || 'No se pudo generar el planteamiento PDF.');
         return;
       }
 
-      const savedNames = (data.saved || []).map((item: { filename: string }) => item.filename).join(', ');
-      const archiveName = data.orderArchive?.filename ? ` Resumen: ${data.orderArchive.filename}.` : '';
-      const pdfName = data.planteamiento?.filename ? ` Planteamiento: ${data.planteamiento.filename}.` : '';
-      setToast(savedNames ? `Reserva antigua guardada: ${savedNames}.${archiveName}${pdfName}` : `Reserva antigua guardada.${archiveName}${pdfName}`);
-
-      draft.setHistoryEntries((current) => [
-        {
-          id: uid(),
-          createdAt: new Date().toISOString(),
-          orderCode: draft.orderCode,
-          customer: draft.customer,
-          orderDate: draft.orderDate,
-          technician: draft.technician,
-          reviewer: draft.reviewer,
-          fabric: draft.fabric,
-          remate: draft.remate,
-          curvaBamba: draft.curvaBamba,
-          bambaDistinta: draft.bambaDistinta,
-          telaBamba: draft.telaBamba,
-          structureColor: draft.structureColor,
-          rotTela: draft.rotTela,
-          rotBamba: draft.rotBamba,
-          ofs: draft.awnings.map((a) => a.of).filter(Boolean),
-          models: [...new Set(draft.awnings.map((a) => a.model))],
-          awnings: structuredClone(draft.awnings),
-          diagnostics: calculation?.diagnostics.length || 0,
-          notes: draft.notes
-        },
-        ...current
-      ].slice(0, 80));
+      const blob = await response.blob();
+      const filename = fileNameFromDisposition(response.headers.get('content-disposition')) || suggestedPdfName(draft.orderCode);
+      if (handle) {
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      } else {
+        downloadBlob(blob, filename);
+      }
+      setToast(handle ? `Planteamiento guardado como ${filename}.` : `Planteamiento ${filename} descargado.`);
+    } catch {
+      setToast('No se pudo generar o guardar el planteamiento PDF.');
     } finally {
-      setSaving(false);
+      setWorking(null);
     }
+  }
+
+  async function openPlanteamientoPreview() {
+    if (!calculation || calculation.ofs.length === 0) {
+      setToast('Completa al menos un toldo para ver el planteamiento.');
+      return;
+    }
+    setWorking('preview');
+    try {
+      const response = await fetch('/api/planteamiento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: currentOrderPayload() })
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setToast(data.error || 'No se pudo generar la vista previa.');
+        return;
+      }
+      const blob = await response.blob();
+      setPreviewUrl((current) => {
+        if (current) URL.revokeObjectURL(current);
+        return URL.createObjectURL(blob);
+      });
+    } catch {
+      setToast('No se pudo generar la vista previa.');
+    } finally {
+      setWorking(null);
+    }
+  }
+
+  function closePreview() {
+    setPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return '';
+    });
+  }
+
+  function clearForm() {
+    const hasData = Boolean(
+      draft.orderCode || draft.customer || draft.fabric
+      || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection)
+    );
+    if (hasData && !window.confirm('Se borrarán todos los datos del formulario actual. ¿Continuar?')) return;
+    draft.resetDraft();
+    setActiveTab('order');
+    setToast('Formulario limpio.');
   }
 
   const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : 'badge-ok';
   const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : 'Planteamiento vivo';
+  const viewTitle = activeTab === 'order'
+    ? 'Nuevo planteamiento'
+    : activeTab === 'parameters'
+      ? 'Parámetros de modelos'
+      : 'Historial de pedidos';
 
   return (
     <main className="app-shell">
-      <header className="topbar">
+      <aside className="app-sidebar">
         <div className="brand">
           <div className="brand-mark">TgM</div>
           <div>
-            <h1>Toldos Testar</h1>
-            <span>{catalog ? `${catalog.models.length} modelos · ${catalog.fabricStats.total} telas · ${catalog.referenceStats.total} referencias` : 'Cargando catálogo'}</span>
+            <h1>Toldos</h1>
+            <span>Planteamientos</span>
           </div>
         </div>
-        <div className="topbar-status">
+
+        <nav className="app-tabs" aria-label="Vistas">
+          <TabButton active={activeTab === 'order'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
+          <TabButton active={activeTab === 'parameters'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
+          <TabButton active={activeTab === 'history'} icon={<History />} label="Historial" onClick={() => setActiveTab('history')} />
+        </nav>
+
+        <div className="sidebar-meta">
+          <div className="simulation-mode">
+            <FlaskConical aria-hidden="true" />
+            <div><strong>Modo pruebas</strong><small>No guarda reservas</small></div>
+          </div>
           <span className={statusBadgeClass}>{statusLabel}</span>
+          <small>{catalog ? `${catalog.models.length} modelos · ${catalog.fabricStats.total} telas` : 'Cargando catálogo'}</small>
+          <small>{catalog ? `${catalog.referenceStats.total} referencias` : ''}</small>
         </div>
-        <div className="topbar-actions">
-          <button className="primary-button" type="button" disabled={saving || calculationState === 'validating'} onClick={() => saveLegacyReservation()}>
-            <Save aria-hidden="true" />
-            {saving ? 'Guardando…' : 'Guardar RPS'}
-          </button>
-          <button className="ghost-button" type="button" disabled={saving || calculationState === 'validating'} onClick={exportReservation}>
-            <Download aria-hidden="true" />
-            Resumen
-          </button>
-        </div>
-      </header>
+      </aside>
 
-      <nav className="app-tabs" aria-label="Vistas">
-        <TabButton active={activeTab === 'order'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
-        <TabButton active={activeTab === 'parameters'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
-        <TabButton active={activeTab === 'history'} icon={<History />} label="Historial" onClick={() => setActiveTab('history')} />
-      </nav>
+      <section className="app-workspace">
+        <header className="topbar">
+          <div className="workspace-heading">
+            <span>Oficina técnica</span>
+            <h2>{viewTitle}</h2>
+          </div>
+          {activeTab === 'order' && (
+            <div className="topbar-actions">
+              <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={clearForm}>
+                <Eraser aria-hidden="true" />
+                Limpiar
+              </button>
+              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating'} onClick={simulateReservation}>
+                <FileSpreadsheet aria-hidden="true" />
+                {working === 'rps' ? 'Generando…' : 'Simular RPS'}
+              </button>
+              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating'} onClick={openPlanteamientoPreview}>
+                <Eye aria-hidden="true" />
+                {working === 'preview' ? 'Preparando…' : 'Vista previa'}
+              </button>
+              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating'} onClick={savePlanteamientoPdf}>
+                <FileDown aria-hidden="true" />
+                {working === 'pdf' ? 'Generando…' : 'Guardar PDF'}
+              </button>
+            </div>
+          )}
+        </header>
 
-      {activeTab === 'order' && (
-        <OrderView
+        <div className="workspace-content">
+          {activeTab === 'order' && (
+            <OrderView
           orderCode={draft.orderCode}
           customer={draft.customer}
           orderDate={draft.orderDate}
           technician={draft.technician}
           reviewer={draft.reviewer}
           fabric={draft.fabric}
+          sameFabric={draft.sameFabric}
           remate={draft.remate}
+          remateColor={draft.remateColor}
           curvaBamba={draft.curvaBamba}
           bambaDistinta={draft.bambaDistinta}
           telaBamba={draft.telaBamba}
           structureColor={draft.structureColor}
           rotTela={draft.rotTela}
           rotBamba={draft.rotBamba}
-          notes={draft.notes}
           awnings={draft.awnings}
           calculation={calculation}
           calculationState={calculationState}
@@ -242,36 +351,54 @@ function App() {
           setTechnician={draft.setTechnician}
           setReviewer={draft.setReviewer}
           setFabric={draft.setFabric}
+          setSameFabric={draft.setSameFabric}
           setRemate={draft.setRemate}
+          setRemateColor={draft.setRemateColor}
           setCurvaBamba={draft.setCurvaBamba}
           setBambaDistinta={draft.setBambaDistinta}
           setTelaBamba={draft.setTelaBamba}
           setStructureColor={draft.setStructureColor}
           setRotTela={draft.setRotTela}
           setRotBamba={draft.setRotBamba}
-          setNotes={draft.setNotes}
           addAwning={draft.addAwning}
           duplicateAwning={draft.duplicateAwning}
           removeAwning={draft.removeAwning}
           updateAwning={draft.updateAwning}
-        />
-      )}
+            />
+          )}
 
-      {activeTab === 'parameters' && (
-        <ParametersView
-          parameters={ruleSettings.parameters}
-          onUpdateArzua={ruleSettings.updateArzua}
-          onUpdateGalicia={ruleSettings.updateGalicia}
-          onResetArzua={ruleSettings.resetArzua}
-          onResetGalicia={ruleSettings.resetGalicia}
-        />
-      )}
+          {activeTab === 'parameters' && (
+            <ParametersView
+              parameters={ruleSettings.parameters}
+              onUpdateArzua={ruleSettings.updateArzua}
+              onUpdateGalicia={ruleSettings.updateGalicia}
+              onResetArzua={ruleSettings.resetArzua}
+              onResetGalicia={ruleSettings.resetGalicia}
+            />
+          )}
 
-      {activeTab === 'history' && <HistoryView entries={draft.historyEntries} onReuse={reuseHistory} />}
+          {activeTab === 'history' && <HistoryView entries={draft.historyEntries} onReuse={reuseHistory} />}
+        </div>
+      </section>
       {toast && (
         <div className="toast">
           {toast}
           <button className="toast-close" type="button" onClick={() => setToast('')} aria-label="Cerrar">×</button>
+        </div>
+      )}
+      {previewUrl && (
+        <div className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
+          <div className="pdf-preview-window">
+            <header>
+              <div><strong>Vista previa del planteamiento</strong><span>Estructuras A5 y telas A4</span></div>
+              <div className="pdf-preview-actions">
+                <button className="ghost-button" type="button" onClick={openPlanteamientoPreview}><Eye aria-hidden="true" />Actualizar</button>
+                <button className="primary-button" type="button" onClick={savePlanteamientoPdf}><FileDown aria-hidden="true" />Guardar PDF</button>
+                <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+              </div>
+            </header>
+            <PdfPreviewPages key={previewUrl} url={previewUrl} />
+          </div>
         </div>
       )}
     </main>

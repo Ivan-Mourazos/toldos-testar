@@ -12,12 +12,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/plus-jakarta-sans": "5.2.8",
     "compression": "^1.8.1",
     "dotenv": "^17.2.3",
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "lucide-react": "^0.468.0",
+    "mssql": "12.1.0",
+    "pdfjs-dist": "^6.1.200",
     "pdfkit": "^0.19.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

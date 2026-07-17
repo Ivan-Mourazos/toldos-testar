@@ -10,14 +10,7 @@ type Props = {
 
 export function LiveResults({ calculation, state }: Props) {
   const ofCards = calculation?.ofs.filter((ofBlock) => ofBlock.calculation) || [];
-  const materialRows = calculation?.ofs.flatMap((ofBlock) =>
-    ofBlock.materials.map((material) => ({
-      of: ofBlock.of,
-      description: material.description || '',
-      code: material.code,
-      quantity: material.quantity
-    }))
-  ) || [];
+  const materialRows = groupMaterialRows(calculation?.ofs || []);
   const diagnostics = calculation?.diagnostics || [];
 
   return (
@@ -49,7 +42,7 @@ export function LiveResults({ calculation, state }: Props) {
           {ofCards.map((ofBlock, index) => (
             <article className="of-card" key={`${ofBlock.of}-${index}`}>
               <div className="of-card-head">
-                <span>OF {ofBlock.of} · {ofBlock.calculation?.model}</span>
+                <span>Toldo {awningLetter(ofBlock.awningIndex ?? index)} · OF {ofBlock.of} · {ofBlock.calculation?.model}</span>
                 <strong className={ofBlock.calculation?.valid ? 'badge-ok' : 'badge-danger'}>
                   {ofBlock.calculation?.valid ? 'VÁLIDO' : 'REVISAR'}
                 </strong>
@@ -90,6 +83,35 @@ export function LiveResults({ calculation, state }: Props) {
       )}
     </section>
   );
+}
+
+function groupMaterialRows(ofs: Calculation['ofs']) {
+  const rows = new Map<string, { of: string; description: string; code: string; quantity: number }>();
+  for (const ofBlock of ofs) {
+    for (const material of ofBlock.materials) {
+      const key = `${ofBlock.of.trim().toUpperCase()}||${material.code.trim().toUpperCase()}`;
+      const current = rows.get(key) || {
+        of: ofBlock.of,
+        description: material.description || '',
+        code: material.code,
+        quantity: 0
+      };
+      current.quantity = Math.round((current.quantity + material.quantity) * 1000) / 1000;
+      rows.set(key, current);
+    }
+  }
+  return Array.from(rows.values());
+}
+
+function awningLetter(index: number) {
+  let number = index + 1;
+  let label = '';
+  while (number > 0) {
+    number -= 1;
+    label = String.fromCharCode(65 + (number % 26)) + label;
+    number = Math.floor(number / 26);
+  }
+  return label;
 }
 
 function buildStatusText(state: CalculationState, calculation: Calculation | null) {

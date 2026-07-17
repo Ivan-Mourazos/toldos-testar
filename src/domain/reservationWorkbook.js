@@ -2,32 +2,7 @@ import ExcelJS from 'exceljs';
 import { roundQuantity } from './math.js';
 
 export async function buildReservationWorkbook(reservation) {
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'materiales-ot';
-  workbook.created = new Date();
-
-  const sheet = workbook.addWorksheet('RPS');
-  sheet.properties.showGridLines = true;
-
-  sheet.columns = [
-    { header: 'OF', key: 'of', width: 12 },
-    { header: 'ARTICULO', key: 'article', width: 18 },
-    { header: 'CANTIDAD', key: 'quantity', width: 12 }
-  ];
-
-  for (const row of buildFinalRows(reservation.ofs)) {
-    sheet.addRow({
-      of: numericOf(row.of),
-      article: row.code,
-      quantity: row.quantity
-    });
-  }
-
-  sheet.getColumn(1).numFmt = '0';
-  sheet.getColumn(3).numFmt = 'General';
-
-  const buffer = await workbook.xlsx.writeBuffer();
-  return Buffer.from(buffer);
+  return buildRpsImportBuffer(buildFinalRows(reservation.ofs));
 }
 
 export async function buildOfWorkbook(ofBlock) {

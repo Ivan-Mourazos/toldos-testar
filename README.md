@@ -20,9 +20,18 @@ La base actual contiene:
 
 La app mantiene dos salidas:
 
-- `POST /api/export`: descarga un `.xlsx` de revisión con hoja `RPS`.
-- `POST /api/export/save`: guarda un `.xls` antiguo por OF en `EXPORT_DIRECTORY`, con el mismo formato TSV `latin1` que usa `materiales-ot` para importación, y guarda el resumen de pedido en `ORDER_ARCHIVE_ROOT\AAAA\Reserva Materiales\M.PEDIDO.xlsx`.
-- Si se envía el pedido completo, `POST /api/export/save` también guarda el planteamiento en `ORDER_ARCHIVE_ROOT\AAAA\TOLDOS\PEDIDO-1.pdf`: una página de estructura por toldo y páginas de tela agrupando OFs en bloques A/B/C/D.
+- `POST /api/export`: descarga un `.xls` tabulado antiguo compatible con RPS; no escribe en carpetas compartidas.
+- `POST /api/planteamiento`: genera y devuelve `PEDIDO-1.pdf` para que el navegador muestre "Guardar como". Incluye una página de estructura por toldo y páginas de tela agrupando OFs.
+- `POST /api/export/save`: permanece bloqueado con `403` mientras `ENABLE_FILE_WRITES=false` (valor recomendado y predeterminado).
+
+## Modo de pruebas
+
+- La interfaz muestra permanentemente `Modo pruebas · No guarda reservas`.
+- `Simular RPS` solo descarga el Excel de revisión.
+- `Guardar PDF` permite elegir la carpeta y el nombre mediante el selector de archivos del navegador; si el navegador no soporta esa API, realiza una descarga normal.
+- El formulario empieza limpio en cada carga y no recupera borradores anteriores de `localStorage`.
+- `Limpiar` reinicia pedido, toldos y datos generales sin borrar el historial.
+- Para habilitar escrituras reales en una fase futura habrá que definir explícitamente `ENABLE_FILE_WRITES=true` y reiniciar el servidor.
 
 El `.env` local usa las mismas rutas que `materiales-ot`: subida de materiales para los `.xls` y carpeta anual de reservas para el resumen.
 

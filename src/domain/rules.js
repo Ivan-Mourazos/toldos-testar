@@ -2,12 +2,18 @@ import { models } from './catalog.js';
 import { calculateArzuaPro } from './arzuaProRules.js';
 import { calculateGalicia } from './galiciaRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
+import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
 import { normalizeOrder } from './validation.js';
+import { getRequiredDimensions } from './modelBehavior.js';
 
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
   ['GALICIA', calculateGalicia],
-  ['CAMBIO TELA', calculateCambioTela]
+  ['CAMBIO TELA', calculateCambioTela],
+  ['CAMBIO CORTINA', calculateCambioCortina],
+  ['CAMBIO ANTICA', calculateCambioAntica],
+  ['BAMBALINA', calculateBambalina],
+  ['ENROLLABLE', calculateEnrollable]
 ]);
 
 export function calculateOrder(payload) {
@@ -15,7 +21,7 @@ export function calculateOrder(payload) {
   const ofs = [];
   const diagnostics = [];
 
-  for (const awning of order.awnings) {
+  for (const [awningIndex, awning] of order.awnings.entries()) {
     if (isIncompleteAwning(awning)) continue;
 
     const model = models.find((item) => item.code === awning.model);
@@ -36,6 +42,8 @@ export function calculateOrder(payload) {
         message: `Reglas pendientes de migrar desde la hoja ${model.ruleSheet}.`
       });
       ofs.push({
+        awningId: awning.id,
+        awningIndex,
         of: awning.of,
         description: buildAwningDescription(awning),
         materials: []
@@ -48,6 +56,8 @@ export function calculateOrder(payload) {
       diagnostics.push(...result.diagnostics);
     }
     ofs.push({
+      awningId: awning.id,
+      awningIndex,
       of: result.of,
       description: result.description || buildAwningDescription(awning),
       materials: result.materials || [],
@@ -75,5 +85,6 @@ function buildAwningDescription(awning) {
 }
 
 function isIncompleteAwning(awning) {
-  return !awning.of || !awning.model || !awning.width || !awning.projection;
+  if (!awning.of || !awning.model) return true;
+  return getRequiredDimensions(awning.model).some((field) => !Number(awning[field]));
 }

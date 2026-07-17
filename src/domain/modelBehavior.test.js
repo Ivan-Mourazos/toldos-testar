@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getModelBehavior, getFieldVisibility, formOptions, modelNames, getEstablishedProjections } from './modelBehavior.js';
+import { getAwningDiagram, getModelBehavior, getFieldVisibility, formOptions, modelNames, getEstablishedProjections } from './modelBehavior.js';
 import { models as catalogModels } from './catalog.js';
 
 describe('modelBehavior', () => {
@@ -89,5 +89,16 @@ describe('modelBehavior', () => {
     expect(sate.referencia).toBe('THERMAX');
     const madera = formOptions.tiposPared.find((item) => item.pared === 'DIRECTA A MADERA');
     expect(madera.referencia).toBeNull();
+  });
+
+  test.each([
+    [{ model: 'CAMBIO CORTINA', curtainHasWindow: false, curtainFinish: 'NORMAL' }, 'CORTINA-SIN-VENTANA'],
+    [{ model: 'CAMBIO CORTINA', curtainHasWindow: true, curtainFinish: 'NORMAL' }, 'CORTINA-VENTANA'],
+    [{ model: 'CAMBIO CORTINA', curtainHasWindow: false, curtainFinish: 'VELCRO' }, 'CORTINA-VELCRO'],
+    [{ model: 'CAMBIO CORTINA', curtainHasWindow: true, curtainFinish: 'VELCRO' }, 'CORTINA-VENTANA-VELCRO'],
+    [{ model: 'CAMBIO CORTINA', curtainHasWindow: false, curtainFinish: 'TUBO' }, 'CORTINA-TUBO'],
+    [{ model: 'CAMBIO CORTINA', curtainHasWindow: true, curtainFinish: 'TUBO' }, 'CORTINA-TUBO-VENTANA']
+  ])('selecciona el dibujo de cortina correcto', (awning, expected) => {
+    expect(getAwningDiagram(awning)).toBe(expected);
   });
 });

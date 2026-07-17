@@ -9,14 +9,15 @@ export function useCalculation({
   technician,
   reviewer,
   fabric,
+  sameFabric,
   remate,
+  remateColor,
   curvaBamba,
   bambaDistinta,
   telaBamba,
   structureColor,
   rotTela,
   rotBamba,
-  notes,
   awnings,
   parameters
 }: {
@@ -27,14 +28,15 @@ export function useCalculation({
   technician: string;
   reviewer: string;
   fabric: string;
+  sameFabric: boolean;
   remate: string;
+  remateColor: string;
   curvaBamba: string;
   bambaDistinta: boolean;
   telaBamba: string;
   structureColor: string;
   rotTela: string;
   rotBamba: string;
-  notes: string;
   awnings: Awning[];
   parameters: RuleParameters;
 }) {
@@ -58,14 +60,15 @@ export function useCalculation({
             technician,
             reviewer,
             fabric,
+            sameFabric,
             remate,
+            remateColor,
             curvaBamba,
             bambaDistinta,
             telaBamba,
             structureColor,
             rotTela,
             rotBamba,
-            notes,
             awnings,
             parameters
           }),
@@ -86,12 +89,37 @@ export function useCalculation({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, remate, curvaBamba, bambaDistinta, telaBamba, structureColor, rotTela, rotBamba, notes, awnings, parameters]);
+  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, curvaBamba, bambaDistinta, telaBamba, structureColor, rotTela, rotBamba, awnings, parameters]);
 
   const reservation = useMemo(() => ({
     orderCode,
-    ofs: calculation?.ofs.filter((ofBlock) => ofBlock.materials.length > 0) || []
+    ofs: consolidateOfs(calculation?.ofs || [])
   }), [calculation, orderCode]);
 
   return { calculation, calculationState, reservation };
+}
+
+function consolidateOfs(ofs: Calculation['ofs']) {
+  const grouped = new Map<string, { of: string; description: string; materials: Map<string, { code: string; description?: string; quantity: number }> }>();
+  for (const ofBlock of ofs) {
+    if (ofBlock.materials.length === 0) continue;
+    const ofKey = ofBlock.of.trim().toUpperCase();
+    const target = grouped.get(ofKey) || {
+      of: ofBlock.of,
+      description: ofBlock.description,
+      materials: new Map()
+    };
+    for (const material of ofBlock.materials) {
+      const code = material.code.trim().toUpperCase();
+      const current = target.materials.get(code) || { ...material, code, quantity: 0 };
+      current.quantity = Math.round((current.quantity + material.quantity) * 1000) / 1000;
+      target.materials.set(code, current);
+    }
+    grouped.set(ofKey, target);
+  }
+  return Array.from(grouped.values()).map((ofBlock) => ({
+    of: ofBlock.of,
+    description: ofBlock.description,
+    materials: Array.from(ofBlock.materials.values())
+  }));
 }

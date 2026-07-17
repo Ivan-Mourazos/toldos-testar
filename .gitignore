@@ -3,4 +3,6 @@ dist
 .env
 exports
 output
+tmp
+.logs
 _analysis/*.tmp

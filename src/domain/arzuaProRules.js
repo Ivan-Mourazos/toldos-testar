@@ -1,5 +1,6 @@
-import { roundQuantity, formatNumber } from './math.js';
+import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
+import { calculateFabricUsage } from './fabricMath.js';
 import { resolveLacado, crankSuffix, machineCode } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
@@ -28,26 +29,50 @@ export function calculateArzuaPro({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const belowMinimum = awning.width < minimumLine;
   const overMaximum = supportSystem === 'ARZUA' && awning.width > parameters.standardMaxWidth;
+  const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
+  const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
   // El gate de incompletitud de calculateOrder solo cubre OF/modelo/frente/salida;
   // sin estos campos el cálculo asumiría MOTOR/EVO 80 o emitiría MANIVE...0C en silencio.
   const missingFields = [];
-  if (!awning.device) missingFields.push('dispositivo');
+  if (!order.structureColor) missingFields.push('lacado');
+  if (!fabricSelection) missingFields.push('tela');
+  if (!device) missingFields.push('dispositivo válido');
   else if ((device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') && !awning.crankHeight) missingFields.push('altura de manivela');
-  if (!selectedTube) missingFields.push('destino o tubo de carga');
-  const valid = missingFields.length === 0 && !belowMinimum && (!overMaximum || modified);
+  if (!tubeLoad) missingFields.push('tubo de carga válido');
   const fabricWidth = round1(awning.width - lookupDiscount(parameters.fabricWidthDiscounts, tubeLoad, device, 11));
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(awning.projection + valance + 45);
-  const fabricMl = roundQuantity(Math.ceil(fabricWidth / 120) * (fabricDrop / 100) * awning.units);
+  const fabricDrop = round1(awning.projection + valance + parameters.fabricDropAllowanceCm);
+  const fabricUsage = calculateFabricUsage({
+    width: fabricWidth,
+    drop: fabricDrop,
+    units: awning.units,
+    rollWidth: fabric?.width || 120,
+    seamAllowanceCm: parameters.seamAllowanceCm,
+    seamBaseCm: parameters.seamBaseCm
+  });
+  const fabricMl = fabricUsage.ml;
   const length = round1(awning.width - lookupDiscount(parameters.widthDiscounts, tubeLoad, device, 9.8));
   const rollTubeLength = round1(awning.width - lookupDiscount(parameters.rollTubeDiscounts, tubeLoad, device, 9.8));
-  const stockLength = chooseStockLength(length);
-  const fabric = order.fabric ? resolveFabric(order.fabric) : null;
-  if (order.fabric && !fabric) {
+  const stockLength = chooseStockLength(length, parameters.stockLengths);
+  const fabricInvalid = Boolean(fabricSelection && !fabric);
+  const stockUnavailable = stockLength === null;
+  const valid = missingFields.length === 0
+    && !fabricInvalid
+    && !stockUnavailable
+    && !belowMinimum
+    && (!overMaximum || modified);
+  if (fabricSelection && !fabric) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
-      message: `Tela no encontrada en el catálogo: "${order.fabric}".`
+      message: `Tela no encontrada en el catálogo: "${fabricSelection}".`
+    });
+  }
+  if (stockUnavailable) {
+    diagnostics.push({
+      level: 'error',
+      awningId: awning.id,
+      message: `ARZUA PRO no válido: ningún largo de stock configurado admite ${length} cm.`
     });
   }
 
@@ -100,6 +125,10 @@ export function calculateArzuaPro({ order, awning }) {
       fabricWidth,
       fabricDrop,
       fabricMl,
+      fabricPanels: fabricUsage.panels,
+      fabricCode: fabric?.code || '',
+      fabricDescription: fabric?.description || '',
+      fabricRollWidth: fabric?.width || 120,
       structureLength: length,
       rollTubeLength,
       stockLength,
@@ -124,30 +153,31 @@ const descCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASQUILL
 const refManivela = (lacado, crankHeight) => `MANIVE${crankSuffix(lacado)}${crankHeight}C`;
 
 function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, stockLength, fabricMl, fabric }) {
+  const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
-    { code: refSoporte(supportSystem, colorSuffix), quantity: 1, description: supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND' },
-    { code: refTuboEnrolle(stockLength), quantity: 2, description: 'TUBO DE ENROLLE P801' }
+    { code: refSoporte(supportSystem, colorSuffix), quantity: units, description: supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND' },
+    { code: refTuboEnrolle(stockLength), quantity: 2 * units, description: 'TUBO DE ENROLLE P801' }
   ];
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
     materials.push(
-      { code: refTuboCargaEvo(colorSuffix, stockLength), quantity: 1, description: 'TUBO DE CARGA EVO 80' },
-      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: armCount, description: supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX' }
+      { code: refTuboCargaEvo(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA EVO 80' },
+      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: armCount * units, description: supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX' }
     );
   } else {
     materials.push(
-      { code: refTuboCargaUnivers(colorSuffix, stockLength), quantity: 1, description: 'TUBO DE CARGA UNIVERS 280' },
-      { code: refTaponesUnivers(colorSuffix), quantity: 1, description: 'KIT TAPONES UNIVERS 280' },
-      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: armCount, description: supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX' }
+      { code: refTuboCargaUnivers(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA UNIVERS 280' },
+      { code: refTaponesUnivers(colorSuffix), quantity: units, description: 'KIT TAPONES UNIVERS 280' },
+      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: armCount * units, description: supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX' }
     );
   }
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
-      { code: refCasquilloMaquina(device), quantity: 1, description: descCasquilloMaquina(device) },
-      { code: refManivela(lacado, crankHeight), quantity: 1, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
-      { code: 'CASPLAS', quantity: 1, description: 'CASQUILLO PLASTICO' }
+      { code: refCasquilloMaquina(device), quantity: units, description: descCasquilloMaquina(device) },
+      { code: refManivela(lacado, crankHeight), quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
+      { code: 'CASPLAS', quantity: units, description: 'CASQUILLO PLASTICO' }
     );
   }
 
@@ -155,11 +185,11 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
     const motorCode = motorPower === '70/17' ? 'SUNILUSIO70//17' : 'SUNILUSIO55//17';
     const remote = resolveMotorRemote(awning.sensor);
     materials.push(
-      { code: 'RUEDAMOT78', quantity: 1, description: 'RUEDA MOTRIZ Ø 78' },
-      { code: motorCode, quantity: 1, description: `MOTOR SOMFY SUNILUS ${motorPower} IO` },
-      { code: 'CORONALT6078', quantity: 1, description: 'CORONA LT 60 ADAPTADA Ø 78' },
-      { code: 'SOPORTEUNVHIPRO', quantity: 1, description: 'SOPORTE UNIVERSAL HIPRO' },
-      { code: remote.code, quantity: 1, description: remote.description }
+      { code: 'RUEDAMOT78', quantity: units, description: 'RUEDA MOTRIZ Ø 78' },
+      { code: motorCode, quantity: units, description: `MOTOR SOMFY SUNILUS ${motorPower} IO` },
+      { code: 'CORONALT6078', quantity: units, description: 'CORONA LT 60 ADAPTADA Ø 78' },
+      { code: 'SOPORTEUNVHIPRO', quantity: units, description: 'SOPORTE UNIVERSAL HIPRO' },
+      { code: remote.code, quantity: units, description: remote.description }
     );
   }
 
@@ -172,50 +202,53 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
 
 function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, stockLength, length, rollTubeLength }) {
   const rows = [];
-  let num = 1;
-  const push = (name, reference, units, rowLength = null) => {
-    rows.push({ num: num++, name, reference, units, length: rowLength });
+  const awningUnits = Math.max(1, Number(awning.units) || 1);
+  const push = (num, name, reference, units, rowLength = null) => {
+    rows.push({ num, name, reference, units, length: rowLength });
   };
 
-  push(supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND', refSoporte(supportSystem, colorSuffix), 1);
-  push('TUBO DE ENROLLE P801', refTuboEnrolle(stockLength), 1, rollTubeLength);
-  push('CASQUILLO PUNTA', 'CASPUNCE', 1);
+  push(1, supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND', refSoporte(supportSystem, colorSuffix), awningUnits);
+  push(2, 'TUBO DE ENROLLE P801', refTuboEnrolle(stockLength), awningUnits, rollTubeLength);
+  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', awningUnits);
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
-    push(descCasquilloMaquina(device), refCasquilloMaquina(device), 1);
+    push(4, descCasquilloMaquina(device), refCasquilloMaquina(device), awningUnits);
+  } else {
+    push(4, '…', null, awningUnits);
   }
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
-    push('TUBO DE CARGA EVO 80', refTuboCargaEvo(colorSuffix, stockLength), 1, length);
+    push(5, 'TUBO DE CARGA EVO 80', refTuboCargaEvo(colorSuffix, stockLength), awningUnits, length);
+    push(6, 'KIT TAPONES EVO 80', null, awningUnits);
   } else {
-    push('TUBO DE CARGA UNIVERS 280', refTuboCargaUnivers(colorSuffix, stockLength), 1, length);
-    push('KIT TAPONES UNIVERS 280', refTaponesUnivers(colorSuffix), 1);
+    push(5, 'TUBO DE CARGA UNIVERS 280', refTuboCargaUnivers(colorSuffix, stockLength), awningUnits, length);
+    push(6, 'KIT TAPONES UNIVERS 280', refTaponesUnivers(colorSuffix), awningUnits);
   }
 
-  push(supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX', refBrazosOnyx(colorSuffix, awning.projection), armCount, awning.projection);
-  push('JUEGO DE TERMINALES', null, 1);
+  push(7, supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX', refBrazosOnyx(colorSuffix, awning.projection), armCount * awningUnits, awning.projection);
+  push(8, 'JUEGO DE TERMINALES', null, awningUnits);
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-    push(`MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), 1);
-    push(`MANIVELA LUXE ${lacado.crank} ${crankHeight}`, refManivela(lacado, crankHeight), 1, crankHeight);
-    push('TACO NAYLON MAQUINA', 'CASPLAS', 1);
-    push('KIT DE TORNILLOS MAQUINA', null, 1);
+    push(9, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), awningUnits);
+    push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, refManivela(lacado, crankHeight), awningUnits, crankHeight);
+    push(11, 'TACO NAYLON MAQUINA', 'CASPLAS', awningUnits);
+    push(12, 'KIT DE TORNILLOS MAQUINA', null, awningUnits);
   }
 
   if (device === 'MOTOR') {
     const motorCode = motorPower === '70/17' ? 'SUNILUSIO70//17' : 'SUNILUSIO55//17';
     const remote = resolveMotorRemote(awning.sensor);
-    push('RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', 1);
-    push(`MOTOR SOMFY SUNILUS ${motorPower} IO`, motorCode, 1);
-    push('CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', 1);
-    push('SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', 1);
-    push(remote.description, remote.code, 1);
+    push(9, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', awningUnits);
+    push(10, `MOTOR SOMFY SUNILUS ${motorPower} IO`, motorCode, awningUnits);
+    push(11, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', awningUnits);
+    push(12, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', awningUnits);
+    push(21, remote.description, remote.code, awningUnits);
   }
 
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry
-    ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades }
+    ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * awningUnits }
     : null;
 
   return { rows, anchoring };
@@ -241,21 +274,23 @@ function lookupDiscount(matrix, tubeLoad, device, fallback) {
   return matrix[tubeLoad]?.[device] ?? fallback;
 }
 
-function chooseStockLength(length) {
-  const stockLengths = [600, 650, 700];
-  return stockLengths.find((item) => item >= length) || Math.ceil(length / 50) * 50;
+function chooseStockLength(length, stockLengths) {
+  return stockLengths.find((item) => item >= length) || null;
 }
 
 function normalizeTubeLoad(value) {
   const cleanValue = String(value || '').trim().toUpperCase();
-  return cleanValue.includes('UNIVERS') ? 'TUBO DE CARGA UNIVERS 280' : 'TUBO DE CARGA EVO 80';
+  if (cleanValue.includes('UNIVERS')) return 'TUBO DE CARGA UNIVERS 280';
+  if (cleanValue.includes('EVO 80')) return 'TUBO DE CARGA EVO 80';
+  return '';
 }
 
 function normalizeDevice(value) {
   const cleanValue = String(value || '').trim().toUpperCase();
   if (cleanValue.includes('INTERIOR')) return 'MAQ. INTERIOR';
   if (cleanValue.includes('EXTERIOR')) return 'MAQ. EXTERIOR';
-  return 'MOTOR';
+  if (cleanValue === 'MOTOR') return 'MOTOR';
+  return '';
 }
 
 function round1(value) {

@@ -7,9 +7,10 @@ export function uid() {
   return crypto.randomUUID();
 }
 
-export function createAwning(): Awning {
+export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awning {
   return {
     id: uid(),
+    workType,
     of: '',
     model: '',
     units: null,
@@ -28,8 +29,16 @@ export function createAwning(): Awning {
     sensor: '',
     machineSide: '',
     crankHeight: null,
+    curtainHasWindow: false,
+    curtainFinish: 'NORMAL',
+    curtainWindowExit: null,
+    curtainWindowCorner: null,
+    curtainWindowFloorHeight: null,
+    curtainWindowHeight: null,
     reglasModificadas: false,
-    notes: ''
+    fabric: '',
+    structureNotes: '',
+    fabricNotes: ''
   };
 }
 

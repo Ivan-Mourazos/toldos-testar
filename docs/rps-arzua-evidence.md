@@ -1,6 +1,6 @@
 # Evidencia ARZUA en RPSNext
 
-Revisión: 2026-07-13.
+Revisión: 2026-07-17.
 
 ## Fuentes
 
@@ -31,3 +31,14 @@ El planteamiento y la reserva no son la misma lista. El PDF contiene piezas de f
 - Destino hostelería o empresa propone UNIVERS 280.
 - Motor ARZUA propone 55/17 por debajo del umbral y 70/17 desde el umbral configurable.
 - Las longitudes de tubo de enrollamiento y tubo de carga se calculan por separado.
+
+## Caso de aceptación AR2603332
+
+La validación de extremo a extremo usa el pedido `AR2603332`, OF `0230194`, cliente LECHE CELTA: Arzúa Pro 337x225, una unidad, bamba de 30 cm, motor, EVO 80, colocación frontal, lacado blanco y tela `ACRILI2018P120`.
+
+- Tela calculada: 326x300 cm, 3 paños, 9 ml.
+- Reserva: 10 líneas agrupadas por OF, con cabeceras exactas `OF`, `ARTICULO`, `CANTIDAD` en `.xls` antiguo.
+- Despiece: numeración del Excel anterior, incluidas piezas sin referencia reservable.
+- PDF: una estructura A5 horizontal y una hoja de telas A4 horizontal en un único documento.
+- Modo de pruebas: descarga local; no escribe en las carpetas compartidas.
+- Flujo PC comprobado en Chromium: vista previa, descarga RPS y limpieza total del formulario sin errores de consola.

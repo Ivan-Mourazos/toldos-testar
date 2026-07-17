@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
-import { formOptions, getModelBehavior } from '../../domain/modelBehavior.js';
+import { formOptions, getModelBehavior, getModelWorkType } from '../../domain/modelBehavior.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
 const legacyStorageKeyV5 = 'toldos-testar-draft-v5';
+const draftStorageKeys = [storageKey, legacyStorageKeyV5, legacyStorageKeyV4, legacyStorageKeyV3];
 
 const sensorNames = formOptions.sensores.map((s) => s.sensor);
 const wallTypeNames = formOptions.tiposPared.map((p) => p.pared);
@@ -18,11 +19,13 @@ function defaultDraft(): DraftState {
     technician: '',
     reviewer: '',
     fabric: '',
+    sameFabric: true,
     remate: 'COMO TELA',
+    remateColor: '',
     curvaBamba: 'RECTA',
     bambaDistinta: false,
     telaBamba: '',
-    structureColor: 'BLANCO',
+    structureColor: '',
     rotTela: 'NO',
     rotBamba: 'NO',
     notes: '',
@@ -32,14 +35,27 @@ function defaultDraft(): DraftState {
 
 export function sanitizeAwning(old: Record<string, unknown>): Awning {
   const base = { ...createAwning(), ...old } as Awning & Record<string, unknown>;
+  base.workType = old.workType === 'FABRIC_ONLY' || old.workType === 'FULL_AWNING'
+    ? old.workType
+    : getModelWorkType(base.model);
   if (old.machineSide === 'DERECHA') base.machineSide = 'M.F.DER';
   if (old.machineSide === 'IZQUIERDA') base.machineSide = 'M.F IZQ';
   base.reglasModificadas = typeof old.reglasModificadas === 'boolean' ? old.reglasModificadas : false;
+  base.fabric = typeof old.fabric === 'string' ? old.fabric : '';
+  base.curtainHasWindow = Boolean(old.curtainHasWindow);
+  base.curtainFinish = ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish))
+    ? old.curtainFinish as Awning['curtainFinish']
+    : 'NORMAL';
+  base.structureNotes = typeof old.structureNotes === 'string'
+    ? old.structureNotes
+    : typeof old.notes === 'string' ? old.notes : '';
+  base.fabricNotes = typeof old.fabricNotes === 'string' ? old.fabricNotes : '';
   delete base.valance;
   delete base.calculationModelOverride;
   delete base.supportSystemOverride;
   delete base.minimumLineOverride;
   delete base.overrideReason;
+  delete base.notes;
 
   // Un borrador viejo puede traer valores que ya no existen en las listas actuales
   // (p.ej. sensor "VIENTO" o crankHeight 165): sin este saneo, el select queda en
@@ -68,7 +84,9 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
     technician: (saved.technician as string) || fallback.technician,
     reviewer: (saved.reviewer as string) || fallback.reviewer,
     fabric: (saved.fabric as string) || fallback.fabric,
+    sameFabric: typeof saved.sameFabric === 'boolean' ? saved.sameFabric : fallback.sameFabric,
     remate: (saved.remate as string) || fallback.remate,
+    remateColor: (saved.remateColor as string) || fallback.remateColor,
     curvaBamba: (saved.curvaBamba as string) || fallback.curvaBamba,
     bambaDistinta: typeof saved.bambaDistinta === 'boolean' ? saved.bambaDistinta : fallback.bambaDistinta,
     telaBamba: (saved.telaBamba as string) || fallback.telaBamba,
@@ -82,34 +100,9 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
   };
 }
 
-function migrateFromLegacyStorage(): DraftState | null {
-  if (typeof localStorage === 'undefined') return null;
-
-  for (const key of [legacyStorageKeyV5, legacyStorageKeyV4, legacyStorageKeyV3]) {
-    try {
-      const saved = JSON.parse(localStorage.getItem(key) || 'null');
-      const migrated = migrateLegacyDraft(saved);
-      if (migrated) return migrated;
-    } catch {
-      continue;
-    }
-  }
-  return null;
-}
-
-function getInitialDraft(): DraftState {
-  if (typeof localStorage === 'undefined') return defaultDraft();
-
-  try {
-    const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-    if (!saved) {
-      return migrateFromLegacyStorage() || defaultDraft();
-    }
-    return migrateLegacyDraft(saved) || defaultDraft();
-  } catch {
-    localStorage.removeItem(storageKey);
-    return defaultDraft();
-  }
+function clearStoredDrafts() {
+  if (typeof localStorage === 'undefined') return;
+  draftStorageKeys.forEach((key) => localStorage.removeItem(key));
 }
 
 function getInitialHistory(): HistoryEntry[] {
@@ -125,43 +118,27 @@ function getInitialHistory(): HistoryEntry[] {
 }
 
 export function useDraft() {
-  const [initialDraft] = useState(() => getInitialDraft());
+  const [initialDraft] = useState(() => {
+    clearStoredDrafts();
+    return defaultDraft();
+  });
   const [orderCode, setOrderCode] = useState(initialDraft.orderCode);
   const [customer, setCustomer] = useState(initialDraft.customer);
   const [orderDate, setOrderDate] = useState(initialDraft.orderDate);
   const [technician, setTechnician] = useState(initialDraft.technician);
   const [reviewer, setReviewer] = useState(initialDraft.reviewer);
   const [fabric, setFabric] = useState(initialDraft.fabric);
+  const [sameFabric, setSameFabric] = useState(initialDraft.sameFabric);
   const [remate, setRemate] = useState(initialDraft.remate);
+  const [remateColor, setRemateColor] = useState(initialDraft.remateColor);
   const [curvaBamba, setCurvaBamba] = useState(initialDraft.curvaBamba);
   const [bambaDistinta, setBambaDistinta] = useState(initialDraft.bambaDistinta);
   const [telaBamba, setTelaBamba] = useState(initialDraft.telaBamba);
   const [structureColor, setStructureColor] = useState(initialDraft.structureColor);
   const [rotTela, setRotTela] = useState(initialDraft.rotTela);
   const [rotBamba, setRotBamba] = useState(initialDraft.rotBamba);
-  const [notes, setNotes] = useState(initialDraft.notes);
   const [awnings, setAwnings] = useState<Awning[]>(initialDraft.awnings);
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>(() => getInitialHistory());
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify({
-      orderCode,
-      customer,
-      orderDate,
-      technician,
-      reviewer,
-      fabric,
-      remate,
-      curvaBamba,
-      bambaDistinta,
-      telaBamba,
-      structureColor,
-      rotTela,
-      rotBamba,
-      notes,
-      awnings
-    }));
-  }, [orderCode, customer, orderDate, technician, reviewer, fabric, remate, curvaBamba, bambaDistinta, telaBamba, structureColor, rotTela, rotBamba, notes, awnings]);
 
   useEffect(() => {
     localStorage.setItem(historyStorageKey, JSON.stringify(historyEntries.slice(0, 80)));
@@ -173,11 +150,17 @@ export function useDraft() {
         if (awning.id !== id) return awning;
         const next = { ...awning, ...patch };
         if (patch.model && patch.model !== awning.model) {
-          const fresh = createAwning();
+          const fresh = createAwning(getModelWorkType(patch.model));
           return {
             ...fresh, id: awning.id, of: awning.of, model: patch.model, units: awning.units,
             width: awning.width, projection: awning.projection, valanceHeight: awning.valanceHeight,
-            armCount: patch.armCount ?? (patch.model === 'ARZUA PRO' || patch.model === 'GALICIA' ? 2 : fresh.armCount)
+            armCount: patch.armCount ?? (patch.model === 'ARZUA PRO' || patch.model === 'GALICIA' ? 2 : fresh.armCount),
+            curtainHasWindow: patch.model.includes('CORTINA') ? awning.curtainHasWindow : false,
+            curtainFinish: patch.model.includes('CORTINA') ? awning.curtainFinish : 'NORMAL',
+            curtainWindowExit: patch.model.includes('CORTINA') ? awning.curtainWindowExit : null,
+            curtainWindowCorner: patch.model.includes('CORTINA') ? awning.curtainWindowCorner : null,
+            curtainWindowFloorHeight: patch.model.includes('CORTINA') ? awning.curtainWindowFloorHeight : null,
+            curtainWindowHeight: patch.model.includes('CORTINA') ? awning.curtainWindowHeight : null
           };
         }
         return next;
@@ -185,22 +168,28 @@ export function useDraft() {
     );
   }
 
-  function addAwning() {
-    setAwnings((current) => [...current, createAwning()]);
+  function addAwning(workType: Awning['workType'] = 'FULL_AWNING') {
+    setAwnings((current) => {
+      if (current.length === 1 && isPristineAwning(current[0]) && current[0].workType !== workType) {
+        return [createAwning(workType)];
+      }
+      return [...current, createAwning(workType)];
+    });
   }
 
   function duplicateAwning(id: string) {
     setAwnings((current) => {
       const source = current.find((awning) => awning.id === id);
       if (!source) return current;
-      return [...current, { ...source, id: uid(), of: '', notes: '' }];
+      return [...current, { ...source, id: uid(), of: '', structureNotes: '', fabricNotes: '' }];
     });
   }
 
   function removeAwning(id: string) {
     setAwnings((current) => {
+      const removed = current.find((awning) => awning.id === id);
       const next = current.filter((awning) => awning.id !== id);
-      return next.length ? next : [createAwning()];
+      return next.length ? next : [createAwning(removed?.workType || 'FULL_AWNING')];
     });
   }
 
@@ -212,7 +201,9 @@ export function useDraft() {
     setTechnician(entry.technician || '');
     setReviewer(entry.reviewer || '');
     setFabric(entry.fabric || '');
+    setSameFabric(typeof entry.sameFabric === 'boolean' ? entry.sameFabric : true);
     setRemate(entry.remate || fallback.remate);
+    setRemateColor(entry.remateColor || '');
     setCurvaBamba(entry.curvaBamba || fallback.curvaBamba);
     setBambaDistinta(typeof entry.bambaDistinta === 'boolean' ? entry.bambaDistinta : fallback.bambaDistinta);
     setTelaBamba(entry.telaBamba || '');
@@ -222,7 +213,27 @@ export function useDraft() {
     setAwnings(entry.awnings.length
       ? entry.awnings.map((awning) => ({ ...sanitizeAwning(awning as unknown as Record<string, unknown>), id: awning.id }))
       : [createAwning()]);
-    setNotes(entry.notes || '');
+  }
+
+  function resetDraft() {
+    const clean = defaultDraft();
+    clearStoredDrafts();
+    setOrderCode(clean.orderCode);
+    setCustomer(clean.customer);
+    setOrderDate(clean.orderDate);
+    setTechnician(clean.technician);
+    setReviewer(clean.reviewer);
+    setFabric(clean.fabric);
+    setSameFabric(clean.sameFabric);
+    setRemate(clean.remate);
+    setRemateColor(clean.remateColor);
+    setCurvaBamba(clean.curvaBamba);
+    setBambaDistinta(clean.bambaDistinta);
+    setTelaBamba(clean.telaBamba);
+    setStructureColor(clean.structureColor);
+    setRotTela(clean.rotTela);
+    setRotBamba(clean.rotBamba);
+    setAwnings(clean.awnings);
   }
 
   return {
@@ -232,20 +243,26 @@ export function useDraft() {
     technician, setTechnician,
     reviewer, setReviewer,
     fabric, setFabric,
+    sameFabric, setSameFabric,
     remate, setRemate,
+    remateColor, setRemateColor,
     curvaBamba, setCurvaBamba,
     bambaDistinta, setBambaDistinta,
     telaBamba, setTelaBamba,
     structureColor, setStructureColor,
     rotTela, setRotTela,
     rotBamba, setRotBamba,
-    notes, setNotes,
     awnings,
     historyEntries, setHistoryEntries,
     updateAwning,
     addAwning,
     duplicateAwning,
     removeAwning,
-    reuseHistory
+    reuseHistory,
+    resetDraft
   };
+}
+
+function isPristineAwning(awning: Awning) {
+  return !awning.model && !awning.of && !awning.width && !awning.projection && !awning.valanceHeight;
 }

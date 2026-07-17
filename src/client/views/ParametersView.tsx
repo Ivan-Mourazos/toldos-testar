@@ -40,6 +40,15 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     });
   }
 
+  function updateArzuaStockLength(index: number, value: number | null) {
+    if (value === null) return;
+    onUpdateArzua({
+      stockLengths: parameters.arzuaPro.stockLengths.map((currentValue, currentIndex) => (
+        currentIndex === index ? value : currentValue
+      ))
+    });
+  }
+
   function updateGaliciaMinimum(projection: number, arms: 2 | 3, device: Device, value: number) {
     onUpdateGalicia({
       minimumLineByProjection: parameters.galicia.minimumLineByProjection.map((row) => row.projection === projection
@@ -84,8 +93,22 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
         {isGalicia && <p className="parameter-note">Motor automático: 2 brazos = 55/17 · 3 brazos = 70/17.</p>}
       </div>
 
+      {!isGalicia && (
+        <div className="parameter-band">
+          <div className="parameter-band-title"><span>02</span><div><h3>Tela y largos de stock</h3><p>Márgenes usados para calcular caída, paños y perfiles disponibles.</p></div></div>
+          <div className="parameter-grid parameter-grid-3">
+            <NumberField label="Margen de caída (cm)" value={parameters.arzuaPro.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && onUpdateArzua({ fabricDropAllowanceCm })} />
+            <NumberField label="Costura entre paños (cm)" value={parameters.arzuaPro.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && onUpdateArzua({ seamAllowanceCm })} />
+            <NumberField label="Margen base de paño (cm)" value={parameters.arzuaPro.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && onUpdateArzua({ seamBaseCm })} />
+            {parameters.arzuaPro.stockLengths.map((stockLength, index) => (
+              <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateArzuaStockLength(index, value)} />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente para cada pieza y para la tela.</p></div></div>
+        <div className="parameter-band-title"><span>{isGalicia ? '02' : '03'}</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente para cada pieza y para la tela.</p></div></div>
         <div className="discount-tables">
           {discountGroups.map((group) => (
             <div className="parameter-table-wrap" key={group}>
@@ -99,7 +122,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       </div>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Líneas mínimas</h3><p>Frente mínimo admisible para cada salida, dispositivo y número de brazos.</p></div></div>
+        <div className="parameter-band-title"><span>{isGalicia ? '03' : '04'}</span><div><h3>Líneas mínimas</h3><p>Frente mínimo admisible para cada salida, dispositivo y número de brazos.</p></div></div>
         <div className="parameter-table-wrap">
           {isGalicia ? (
             <table className="parameter-table parameter-table-lines galicia-lines">

@@ -304,10 +304,9 @@ describe('calculateOrder — mixed models', () => {
     // CAMBIO TELA has no material besides the fabric line, so an unresolved fabric empties it entirely.
     expect(cambioTelaOf.materials).toEqual([]);
 
-    // ARZUA PRO still emits its hardware materials (arms, motor, tube, etc.) — it only omits the fabric line itself.
-    expect(arzuaOf.materials.length).toBeGreaterThan(0);
-    expect(arzuaOf.materials.some((line) => line.code === 'ACRILI2051P120')).toBe(false);
-    expect(arzuaOf.materials.some((line) => line.code === 'TELA INVENTADA')).toBe(false);
+    // Ninguna OF con una tela sin resolver queda lista para reservar parcialmente.
+    expect(arzuaOf.calculation.valid).toBe(false);
+    expect(arzuaOf.materials).toEqual([]);
   });
 });
 
@@ -339,6 +338,8 @@ describe('calculateOrder — ARZUA PRO fabric resolution', () => {
       awningId: '',
       message: 'Tela no encontrada en el catálogo: "TELA INVENTADA".'
     });
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
     expect(result.ofs[0].materials.some((line) => line.description === 'PAÑO LINEAL NECESARIO')).toBe(false);
     expect(result.ofs[0].materials.some((line) => line.code === 'TELA INVENTADA')).toBe(false);
   });
@@ -431,6 +432,45 @@ describe('normalización de campos nuevos del pedido', () => {
 describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
   const asLines = (materials) => materials.map((m) => `${m.code} x${m.quantity}`).sort();
 
+  test('AR2603332: motor 55/17, EVO 80 y medidas exactas del planteamiento', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2603332',
+      fabric: 'ACR AZUL',
+      structureColor: 'BLANCO',
+      awnings: [baseAwning({
+        of: '0230194', width: 337, projection: 225, valanceHeight: 30,
+        destination: 'PARTICULAR', tubeLoad: 'TUBO DE CARGA EVO 80',
+        device: 'MOTOR', sensor: 'SITUO IO 1 PURE', crankHeight: null
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true,
+      minimumLine: 270,
+      fabricWidth: 326,
+      fabricDrop: 300,
+      fabricMl: 9,
+      structureLength: 327.2,
+      rollTubeLength: 327.2,
+      stockLength: 600,
+      motorPower: '55/17'
+    });
+    expect(asLines(ofBlock.materials)).toEqual([
+      'ACRILI2018P120 x9', 'BONYXBL16225C x1', 'CORONALT6078 x1',
+      'PEVO80BL16600C x1', 'RUEDAMOT78 x1', 'SITUOIO1PURE x1',
+      'SOPAR350BL16 x1', 'SOPORTEUNVHIPRO x1', 'SUNILUSIO55//17 x1',
+      'TURA80HG600C x2'
+    ].sort());
+    expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'TUBO DE ENROLLE P801', reference: 'TURA80HG600C', length: 327.2 }),
+      expect.objectContaining({ name: 'TUBO DE CARGA EVO 80', reference: 'PEVO80BL16600C', length: 327.2 }),
+      expect.objectContaining({ num: 6, name: 'KIT TAPONES EVO 80', reference: null, units: 1 }),
+      expect.objectContaining({ name: 'MANDO SITUO 1 IO PURE', reference: 'SITUOIO1PURE', units: 1 })
+    ]));
+    expect(ofBlock.despiece.rows.find((row) => row.name === 'MANDO SITUO 1 IO PURE').num).toBe(21);
+  });
+
   test('AR2603380: EVO 80, MAQ. EXTERIOR, blanco', () => {
     const result = calculateOrder(basePayload({
       structureColor: 'BLANCO',
@@ -474,6 +514,69 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     const codes = result.ofs[0].materials.map((m) => m.code);
     expect(codes).toContain('CASMAQEJE5078MM');
     expect(codes).not.toContain('CASMAQEJE6378MM');
+  });
+
+  test('los márgenes de tela y largos de stock editados alimentan el cálculo', () => {
+    const result = calculateOrder(basePayload({
+      parameters: {
+        arzuaPro: {
+          fabricDropAllowanceCm: 40,
+          seamAllowanceCm: 0,
+          seamBaseCm: 0,
+          stockLengths: [400, 500]
+        }
+      },
+      awnings: [baseAwning({
+        width: 450,
+        projection: 225,
+        valanceHeight: 20,
+        device: 'MOTOR'
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      fabricDrop: 285,
+      fabricPanels: 4,
+      fabricMl: 11.4,
+      stockLength: 500
+    });
+  });
+
+  test('unidades 2 multiplica toda la estructura, accesorios y tela', () => {
+    const result = calculateOrder(basePayload({
+      fabric: 'ACR AZUL',
+      awnings: [baseAwning({
+        units: 2,
+        width: 337,
+        projection: 225,
+        valanceHeight: 30,
+        device: 'MOTOR',
+        sensor: 'SITUO IO 1 PURE'
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOPAR350BL16', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 4 }),
+      expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 2 }),
+      expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 2 }),
+      expect.objectContaining({ code: 'ACRILI2018P120', quantity: 18 })
+    ]));
+    expect(ofBlock.despiece.rows.find((row) => row.reference === 'SOPAR350BL16').units).toBe(2);
+    expect(ofBlock.despiece.rows.find((row) => row.reference === 'SITUOIO1PURE').units).toBe(2);
+  });
+});
+
+describe('ARZUA PRO no inventa opciones desconocidas', () => {
+  test.each([
+    [{ device: 'DISPOSITIVO ANTIGUO' }, 'dispositivo válido'],
+    [{ tubeLoad: 'TUBO DESCONOCIDO' }, 'tubo de carga válido']
+  ])('deja la OF en revisión para %o', (patch, expectedMessage) => {
+    const result = calculateOrder(basePayload({ awnings: [baseAwning(patch)] }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics.some((diagnostic) => diagnostic.message.includes(expectedMessage))).toBe(true);
   });
 });
 
@@ -527,6 +630,47 @@ describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
 });
 
 describe('GALICIA contra planteamientos y RPSNext', () => {
+  test('AR2603315: aplica márgenes de costura y reserva 17,7 ml', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'NEGRO (R-09011)',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        of: '0230126', model: 'GALICIA', width: 598, projection: 225,
+        valanceHeight: 25, armCount: 3, device: 'MAQ. EXTERIOR',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', crankHeight: 200, wallType: ''
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, minimumLine: 405, structureLength: 586.5,
+      rollTubeLength: 586.5, fabricWidth: 585, fabricDrop: 295,
+      fabricMl: 17.7, armCount: 3
+    });
+    expect(ofBlock.materials).toContainEqual(expect.objectContaining({
+      code: 'ACRILI2170P120', quantity: 17.7
+    }));
+  });
+
+  test('GALICIA multiplica piezas y tela cuando una línea tiene varias unidades', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'NEGRO (R-09011)',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        of: '0230126', model: 'GALICIA', units: 2, width: 598, projection: 225,
+        valanceHeight: 25, armCount: 3, device: 'MAQ. EXTERIOR',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', crankHeight: 200, wallType: ''
+      })]
+    }));
+    const materials = result.ofs[0].materials;
+
+    expect(materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOPARTGLNE11', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 4 }),
+      expect.objectContaining({ code: 'BONYXNE11225C', quantity: 6 }),
+      expect.objectContaining({ code: 'ACRILI2170P120', quantity: 35.4 })
+    ]));
+  });
+
   test('AR2603298: 2 brazos, salida especial 350 y soporte GALICIA', () => {
     const result = calculateOrder(basePayload({
       structureColor: 'BLANCO',

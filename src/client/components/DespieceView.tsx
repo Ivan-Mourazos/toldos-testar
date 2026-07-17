@@ -22,7 +22,9 @@ export function DespieceView({ calculation, awnings }: Props) {
 
       <div className="despiece-grid">
         {ofBlocks.map((ofBlock, index) => {
-          const awning = awnings.find((item) => item.of.trim() === ofBlock.of);
+          const awning = awnings.find((item) => item.id === ofBlock.awningId)
+            || (ofBlock.awningIndex !== undefined ? awnings[ofBlock.awningIndex] : undefined)
+            || awnings.find((item) => item.of.trim() === ofBlock.of);
           const calc = ofBlock.calculation!;
 
           if (!ofBlock.despiece) {

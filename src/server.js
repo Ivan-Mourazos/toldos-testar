@@ -5,10 +5,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { getCatalog } from './domain/catalog.js';
+import { searchStaticFabrics } from './domain/fabricCatalog.js';
 import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
+import { searchRpsFabrics } from './rpsCatalog.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +28,8 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     app: 'toldos-testar',
+    simulationMode: !config.fileWritesEnabled,
+    fileWritesEnabled: config.fileWritesEnabled,
     exportDirectoryConfigured: Boolean(config.exportDirectory),
     orderArchiveRootConfigured: Boolean(config.orderArchiveRoot)
   });
@@ -33,6 +37,18 @@ app.get('/api/health', (_req, res) => {
 
 app.get('/api/catalog', (_req, res) => {
   res.json(getCatalog());
+});
+
+app.get('/api/catalog/fabrics', async (req, res) => {
+  const query = String(req.query.q || '').trim();
+  const limit = Number(req.query.limit) || 30;
+  try {
+    const items = await searchRpsFabrics({ query, limit });
+    res.json({ source: 'RPSNext', items });
+  } catch (error) {
+    console.error('RPSNext no disponible para telas:', error.message);
+    res.json({ source: 'Excel local', items: searchStaticFabrics(query, limit) });
+  }
 });
 
 app.post('/api/calculate', (req, res, next) => {
@@ -51,7 +67,7 @@ app.post('/api/export', async (req, res, next) => {
 
     res
       .status(200)
-      .setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      .setHeader('Content-Type', 'application/vnd.ms-excel; charset=windows-1252')
       .setHeader('Content-Disposition', `attachment; filename="${filename}"`)
       .send(workbook);
   } catch (error) {
@@ -59,8 +75,33 @@ app.post('/api/export', async (req, res, next) => {
   }
 });
 
+app.post('/api/planteamiento', async (req, res, next) => {
+  try {
+    const order = normalizeOrder(req.body?.order || req.body);
+    const calculation = calculateOrder(order);
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation });
+    const filename = `${order.orderCode ? sanitizeOrderCode(order.orderCode) : 'PLANTEAMIENTO'}-1.pdf`;
+
+    res
+      .status(200)
+      .setHeader('Cache-Control', 'no-store')
+      .setHeader('Content-Type', 'application/pdf')
+      .setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+      .send(pdf);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post('/api/export/save', async (req, res, next) => {
   try {
+    if (!config.fileWritesEnabled) {
+      res.status(403).json({
+        error: 'Modo de simulación activo: el guardado de reservas y archivos compartidos está deshabilitado.'
+      });
+      return;
+    }
+
     if (!config.exportDirectory) {
       res.status(400).json({
         error: 'No hay carpeta de guardado configurada. Define EXPORT_DIRECTORY en .env.'
@@ -232,7 +273,7 @@ function buildFilename(reservation) {
   const now = new Date();
   const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const suffix = reservation.orderCode || reservation.ofs.map((item) => item.of).join('-');
-  return `reserva-toldos-${sanitize(suffix)}-${stamp}.xlsx`;
+  return `reserva-toldos-${sanitize(suffix)}-${stamp}.xls`;
 }
 
 function sanitize(value) {

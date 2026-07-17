@@ -3,6 +3,10 @@ import { minimumLineByArm } from './arzuaProConstants.js';
 export const defaultArzuaProParameters = {
   standardMaxWidth: 600,
   motor70WidthFrom: 600,
+  fabricDropAllowanceCm: 45,
+  seamAllowanceCm: 2.5,
+  seamBaseCm: 6.5,
+  stockLengths: [600, 650, 700],
   privateTube: 'TUBO DE CARGA EVO 80',
   businessTube: 'TUBO DE CARGA UNIVERS 280',
   widthDiscounts: {
@@ -27,6 +31,10 @@ export function normalizeArzuaProParameters(input = {}) {
     ...input,
     standardMaxWidth: positiveNumber(input.standardMaxWidth, defaults.standardMaxWidth),
     motor70WidthFrom: positiveNumber(input.motor70WidthFrom, defaults.motor70WidthFrom),
+    fabricDropAllowanceCm: nonNegativeNumber(input.fabricDropAllowanceCm, defaults.fabricDropAllowanceCm),
+    seamAllowanceCm: nonNegativeNumber(input.seamAllowanceCm, defaults.seamAllowanceCm),
+    seamBaseCm: nonNegativeNumber(input.seamBaseCm, defaults.seamBaseCm),
+    stockLengths: normalizeStockLengths(input.stockLengths, defaults.stockLengths),
     privateTube: normalizeTube(input.privateTube, defaults.privateTube),
     businessTube: normalizeTube(input.businessTube, defaults.businessTube),
     widthDiscounts: normalizeDiscounts(input.widthDiscounts, defaults.widthDiscounts),
@@ -56,6 +64,20 @@ export function resolveArzuaMotorPower(awning, parameters = defaultArzuaProParam
 function positiveNumber(value, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function nonNegativeNumber(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function normalizeStockLengths(input, defaults) {
+  if (!Array.isArray(input)) return [...defaults];
+  const values = input
+    .map(Number)
+    .filter((value) => Number.isFinite(value) && value > 0)
+    .sort((a, b) => a - b);
+  return values.length > 0 ? [...new Set(values)] : [...defaults];
 }
 
 function normalizeTube(value, fallback) {
