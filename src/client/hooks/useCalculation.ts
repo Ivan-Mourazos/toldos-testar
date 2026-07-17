@@ -12,9 +12,6 @@ export function useCalculation({
   sameFabric,
   remate,
   remateColor,
-  curvaBamba,
-  bambaDistinta,
-  telaBamba,
   structureColor,
   rotTela,
   rotBamba,
@@ -31,9 +28,6 @@ export function useCalculation({
   sameFabric: boolean;
   remate: string;
   remateColor: string;
-  curvaBamba: string;
-  bambaDistinta: boolean;
-  telaBamba: string;
   structureColor: string;
   rotTela: string;
   rotBamba: string;
@@ -44,6 +38,10 @@ export function useCalculation({
   const [calculationState, setCalculationState] = useState<CalculationState>('idle');
 
   useEffect(() => {
+    if (awnings.length === 0) {
+      return undefined;
+    }
+
     const controller = new AbortController();
 
     const timer = window.setTimeout(async () => {
@@ -63,9 +61,6 @@ export function useCalculation({
             sameFabric,
             remate,
             remateColor,
-            curvaBamba,
-            bambaDistinta,
-            telaBamba,
             structureColor,
             rotTela,
             rotBamba,
@@ -89,14 +84,16 @@ export function useCalculation({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, curvaBamba, bambaDistinta, telaBamba, structureColor, rotTela, rotBamba, awnings, parameters]);
+  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, awnings, parameters]);
 
+  const effectiveCalculation = awnings.length === 0 ? null : calculation;
+  const effectiveState = awnings.length === 0 ? 'idle' : calculationState;
   const reservation = useMemo(() => ({
     orderCode,
-    ofs: consolidateOfs(calculation?.ofs || [])
-  }), [calculation, orderCode]);
+    ofs: consolidateOfs(effectiveCalculation?.ofs || [])
+  }), [effectiveCalculation, orderCode]);
 
-  return { calculation, calculationState, reservation };
+  return { calculation: effectiveCalculation, calculationState: effectiveState, reservation };
 }
 
 function consolidateOfs(ofs: Calculation['ofs']) {

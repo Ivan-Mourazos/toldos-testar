@@ -209,7 +209,7 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
     .text(valid ? 'VERDADERO' : 'REVISAR', x + 5, y + 84, { width: w - 10, align: 'center' });
 
   drawMiniTable(doc, x, y + 123, w, 'DETALLES', [
-    ['LACADO', order.structureColor],
+    ['LACADO', awning.structureColor || order.structureColor],
     ['DISPOSIT.', awning.device],
     ['COLOC. MAQ.', awning.machineSide],
     ['COLOC. TOLD.', awning.placement]
@@ -300,12 +300,12 @@ function drawFabricMeta(doc, x, y, w, order, lines) {
   const rotW = 150;
   const dataW = 242;
   drawMiniTable(doc, x, y, rotW, 'ROTULACIÓN', [
-    ['TELA', order.rotTela || 'NO'],
-    ['BAMBA', order.rotBamba || 'NO']
+    ['TELA', summarizeAwningValue(lines, 'rotFabric', order.rotTela)],
+    ['BAMBA', summarizeAwningValue(lines, 'rotValance', order.rotBamba)]
   ], 17);
   drawMiniTable(doc, x + rotW + 12, y, dataW, 'DATOS BÁSICOS', [
     ['MATERIAL', summarizeFabric(lines)],
-    ['CURVA', order.curvaBamba],
+    ['CURVA', summarizeValanceCurve(lines)],
     ['REMATE', order.remate === 'OTRO' ? order.remateColor : order.remate]
   ], 17);
 
@@ -342,6 +342,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
       value(awning.model),
       value(calc?.fabricCode),
       bambaLabel(awning),
+      valanceConfigLabel(awning),
       curtainWindowLabel(awning),
       awning.fabricNotes || remateLabel(order)
     ].filter(Boolean).join(' · ');
@@ -642,6 +643,30 @@ function summarizeFabric(lines) {
   return 'VARIAS TELAS';
 }
 
+function summarizeValanceCurve(lines) {
+  const curves = new Set(lines
+    .filter((line) => Number(line.awning?.valanceHeight) > 0 || line.awning?.model === 'BAMBALINA')
+    .map((line) => line.awning?.valanceCurve)
+    .filter(Boolean));
+  if (curves.size === 0) return 'SIN BAMBA';
+  if (curves.size === 1) return Array.from(curves)[0];
+  return 'SEGÚN TOLDO';
+}
+
+function summarizeAwningValue(lines, field, legacyValue = '') {
+  const values = new Set(lines.map((line) => line.awning?.[field] || legacyValue).filter(Boolean));
+  if (values.size === 0) return '-';
+  if (values.size === 1) return Array.from(values)[0];
+  return 'SEGÚN TOLDO';
+}
+
+function valanceConfigLabel(awning) {
+  if (!(Number(awning.valanceHeight) > 0 || awning.model === 'BAMBALINA')) return '';
+  const curve = awning.valanceCurve ? `CURVA ${awning.valanceCurve}` : '';
+  const fabric = awning.valanceFabric ? `BAMBA ${awning.valanceFabric}` : 'BAMBA MISMA TELA';
+  return [curve, fabric].filter(Boolean).join(' / ');
+}
+
 function bambaLabel(awning) {
   if (awning.model === 'ENROLLABLE') return '';
   const height = Number(awning.valanceHeight) || 0;
@@ -665,7 +690,9 @@ function curtainWindowLabel(awning) {
 }
 
 function remateLabel(order) {
-  return order.remate === 'OTRO' ? `REMATE: ${value(order.remateColor)}` : 'REMATE COMO TELA';
+  if (order.remate === 'OTRO') return `REMATE: ${value(order.remateColor)}`;
+  if (order.remate === 'COMO TELA') return 'REMATE COMO TELA';
+  return '';
 }
 
 function chunkItems(items, size) {

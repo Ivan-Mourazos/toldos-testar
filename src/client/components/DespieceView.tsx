@@ -74,7 +74,6 @@ export function DespieceView({ calculation, awnings }: Props) {
                     <h4>Datos de partida</h4>
                     <p>Frente {awning?.width ?? '-'} cm</p>
                     <p>Salida {awning?.projection ?? '-'} cm</p>
-                    <p>Unidades {awning?.units ?? '-'}</p>
                   </div>
                   <div className="despiece-info-block">
                     <h4>Dimensiones tela</h4>

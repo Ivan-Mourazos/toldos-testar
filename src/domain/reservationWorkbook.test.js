@@ -21,9 +21,17 @@ describe('contrato RPS antiguo', () => {
 
     expect(buffer.subarray(0, 2).toString('ascii')).not.toBe('PK');
     expect(lines[0]).toBe('OF\tARTICULO\tCANTIDAD');
-    expect(lines).toContain('0230134\tTURA80HG600C\t2');
-    expect(lines).toContain('0230134\tBONYXBL16350C\t2');
-    expect(lines).toContain('0230134\tACRILI2170P120\t16,8');
+    expect(lines).toEqual([
+      'OF\tARTICULO\tCANTIDAD',
+      '0230134\tSOPARTGLBL16\t1',
+      '0230134\tTURA80HG600C\t2',
+      '0230134\tPUNI280BL16600C\t1',
+      '0230134\tTAPOPLUN280BL16\t1',
+      '0230134\tBONYXBL16350C\t2',
+      '0230134\tCASMAQEJE6378MM\t1',
+      '0230134\tCASPLAS\t1',
+      '0230134\tACRILI2170P120\t16,8'
+    ]);
   });
 
   test('AR2603315 exporta los 17,7 ml reales tras aplicar costuras', async () => {
@@ -41,7 +49,17 @@ describe('contrato RPS antiguo', () => {
     const buffer = await buildOfWorkbook(calculation.ofs[0]);
     const lines = buffer.toString('latin1').trim().split('\r\n');
 
-    expect(lines).toContain('0230126\tACRILI2170P120\t17,7');
+    expect(lines).toEqual([
+      'OF\tARTICULO\tCANTIDAD',
+      '0230126\tSOPARTGLNE11\t1',
+      '0230126\tTURA80HG600C\t2',
+      '0230126\tPUNI280NE11600C\t1',
+      '0230126\tTAPOPLUN280NE11\t1',
+      '0230126\tBONYXNE11225C\t3',
+      '0230126\tCASMAQEJE6378MM\t1',
+      '0230126\tCASPLAS\t1',
+      '0230126\tACRILI2170P120\t17,7'
+    ]);
   });
 
   test('la simulación conjunta conserva el formato antiguo y suma por OF + artículo', async () => {

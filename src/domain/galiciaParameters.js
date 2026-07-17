@@ -5,6 +5,10 @@ export const defaultGaliciaParameters = {
   armSwitchWidth: 550,
   privateTube: 'TUBO DE CARGA EVO 80',
   businessTube: 'TUBO DE CARGA UNIVERS 280',
+  fabricDropAllowanceCm: 45,
+  seamAllowanceCm: 2.5,
+  seamBaseCm: 6.5,
+  stockLengths: [600, 700],
   widthDiscounts: {
     'TUBO DE CARGA EVO 80': { MOTOR: 10, 'MAQ. INTERIOR': 11.5, 'MAQ. EXTERIOR': 11.5 },
     'TUBO DE CARGA UNIVERS 280': { MOTOR: 10, 'MAQ. INTERIOR': 11.5, 'MAQ. EXTERIOR': 11.5 }
@@ -29,6 +33,10 @@ export function normalizeGaliciaParameters(input = {}) {
     armSwitchWidth: positiveNumber(input.armSwitchWidth, defaults.armSwitchWidth),
     privateTube: normalizeTube(input.privateTube, defaults.privateTube),
     businessTube: normalizeTube(input.businessTube, defaults.businessTube),
+    fabricDropAllowanceCm: nonNegativeNumber(input.fabricDropAllowanceCm, defaults.fabricDropAllowanceCm),
+    seamAllowanceCm: nonNegativeNumber(input.seamAllowanceCm, defaults.seamAllowanceCm),
+    seamBaseCm: nonNegativeNumber(input.seamBaseCm, defaults.seamBaseCm),
+    stockLengths: normalizeStockLengths(input.stockLengths, defaults.stockLengths),
     widthDiscounts: normalizeDiscounts(input.widthDiscounts, defaults.widthDiscounts),
     rollTubeDiscounts: normalizeDiscounts(input.rollTubeDiscounts, defaults.rollTubeDiscounts),
     fabricWidthDiscounts: normalizeDiscounts(input.fabricWidthDiscounts, defaults.fabricWidthDiscounts),
@@ -56,6 +64,17 @@ export function resolveGaliciaMotorPower(awning, parameters = defaultGaliciaPara
 function positiveNumber(value, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function nonNegativeNumber(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function normalizeStockLengths(input, defaults) {
+  if (!Array.isArray(input)) return [...defaults];
+  const values = [...new Set(input.map(Number).filter((value) => Number.isFinite(value) && value > 0))].sort((a, b) => a - b);
+  return values.length > 0 ? values : [...defaults];
 }
 
 function normalizeTube(value, fallback) {

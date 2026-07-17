@@ -9,7 +9,8 @@
     "build": "vite build",
     "start": "node src/server.js",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "validate:galicia": "node scripts/validate-galicia-production.mjs"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "5.2.8",

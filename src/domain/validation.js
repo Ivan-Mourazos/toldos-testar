@@ -25,9 +25,6 @@ export function normalizeOrder(payload) {
     sameFabric: payload.sameFabric !== false,
     remate: cleanText(payload.remate),
     remateColor: cleanText(payload.remateColor),
-    curvaBamba: cleanText(payload.curvaBamba),
-    bambaDistinta: Boolean(payload.bambaDistinta),
-    telaBamba: cleanText(payload.telaBamba),
     structureColor: cleanText(payload.structureColor),
     rotTela: cleanText(payload.rotTela).toUpperCase(),
     rotBamba: cleanText(payload.rotBamba).toUpperCase(),
@@ -36,7 +33,7 @@ export function normalizeOrder(payload) {
       arzuaPro: normalizeArzuaProParameters(payload.parameters?.arzuaPro),
       galicia: normalizeGaliciaParameters(payload.parameters?.galicia)
     },
-    awnings: awnings.map((awning, index) => normalizeAwning(awning, index))
+    awnings: awnings.map((awning, index) => normalizeAwning(awning, index, payload))
   };
 }
 
@@ -59,13 +56,16 @@ export function normalizeReservation(payload) {
   return consolidateReservation(normalized);
 }
 
-function normalizeAwning(awning, _index) {
+function normalizeAwning(awning, _index, legacyOrder = {}) {
   const of = cleanText(awning?.of);
   const model = cleanText(awning?.model).toUpperCase();
   const units = numberOrDefault(awning?.units, 1) || 1;
   const width = numberOrDefault(awning?.width, 0);
   const projection = numberOrDefault(awning?.projection, 0);
   const device = cleanText(awning?.device).toUpperCase();
+  const hasValance = typeof awning?.hasValance === 'boolean'
+    ? awning.hasValance
+    : numberOrDefault(awning?.valanceHeight, 0) > 0 ? true : null;
 
   return {
     id: cleanText(awning?.id),
@@ -75,6 +75,7 @@ function normalizeAwning(awning, _index) {
     units,
     width,
     projection,
+    hasValance,
     armCount: numberOrDefault(awning?.armCount, 0),
     device,
     placement: cleanText(awning?.placement).toUpperCase(),
@@ -87,13 +88,18 @@ function normalizeAwning(awning, _index) {
     sensor: cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
-    curtainHasWindow: Boolean(awning?.curtainHasWindow),
+    curtainHasWindow: typeof awning?.curtainHasWindow === 'boolean' ? awning.curtainHasWindow : null,
     curtainFinish: normalizeCurtainFinish(awning?.curtainFinish),
     curtainWindowExit: numberOrDefault(awning?.curtainWindowExit, 0),
     curtainWindowCorner: numberOrDefault(awning?.curtainWindowCorner, 0),
     curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),
     curtainWindowHeight: numberOrDefault(awning?.curtainWindowHeight, 0),
-    valanceHeight: numberOrDefault(awning?.valanceHeight, 0),
+    valanceHeight: hasValance === false ? 0 : numberOrDefault(awning?.valanceHeight, 0),
+    valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),
+    valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
+    structureColor: cleanText(awning?.structureColor || legacyOrder.structureColor).toUpperCase(),
+    rotFabric: cleanText(awning?.rotFabric || legacyOrder.rotTela).toUpperCase(),
+    rotValance: cleanText(awning?.rotValance || legacyOrder.rotBamba).toUpperCase(),
     reglasModificadas: Boolean(awning?.reglasModificadas),
     fabric: cleanText(awning?.fabric),
     structureNotes: cleanText(awning?.structureNotes || awning?.notes),
@@ -173,6 +179,6 @@ function numberOrDefault(value, fallback) {
 
 function normalizeCurtainFinish(value) {
   const finish = cleanText(value).toUpperCase();
-  return ['NORMAL', 'VELCRO', 'TUBO'].includes(finish) ? finish : 'NORMAL';
+  return ['NORMAL', 'VELCRO', 'TUBO'].includes(finish) ? finish : '';
 }
 

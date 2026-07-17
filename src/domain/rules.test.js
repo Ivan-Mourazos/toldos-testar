@@ -346,20 +346,6 @@ describe('calculateOrder — ARZUA PRO fabric resolution', () => {
 });
 
 describe('ARZUA PRO caída de tela con bamba real', () => {
-  test('AR2603380: salida 300 + bamba 15 + 45 = 360', () => {
-    const result = calculateOrder(basePayload({
-      structureColor: 'BLANCO',
-      fabric: 'ACR VISON',
-      awnings: [baseAwning({
-        of: '230335', model: 'ARZUA PRO', width: 596, projection: 300,
-        valanceHeight: 15, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 150
-      })]
-    }));
-    expect(result.ofs[0].calculation.fabricDrop).toBe(360);
-    expect(result.ofs[0].calculation.fabricMl).toBe(18);
-    expect(result.ofs[0].description).toContain('bambalina incluida de 20 cm, hecha de 15 cm');
-  });
-
   test('AR2603399: salida 225 + bamba 20 + 45 = 290', () => {
     const result = calculateOrder(basePayload({
       structureColor: 'NEGRO (R-09011)',
@@ -399,7 +385,7 @@ describe('normalización de campos nuevos del pedido', () => {
     expect(result.orderCode).toBeDefined(); // el cálculo no revienta con los campos nuevos
   });
 
-  test('normalizeOrder expone los campos nuevos del pedido y del toldo', () => {
+  test('normalizeOrder migra los antiguos campos globales de bamba al toldo', () => {
     const normalized = normalizeOrder(basePayload({
       orderDate: '2026-07-10', reviewer: 'TAMARA', remate: 'COMO TELA',
       curvaBamba: 'RECTA', bambaDistinta: true, telaBamba: 'PVC 580',
@@ -411,13 +397,16 @@ describe('normalización de campos nuevos del pedido', () => {
       orderDate: '2026-07-10',
       reviewer: 'TAMARA',
       remate: 'COMO TELA',
-      curvaBamba: 'RECTA',
-      bambaDistinta: true,
-      telaBamba: 'PVC 580',
       rotTela: 'SI',
       rotBamba: 'NO'
     });
-    expect(normalized.awnings[0].submodel).toBe('CON CAJA');
+    expect(normalized.awnings[0]).toMatchObject({
+      submodel: 'CON CAJA',
+      valanceCurve: 'RECTA',
+      valanceFabric: 'PVC 580',
+      rotFabric: 'SI',
+      rotValance: 'NO'
+    });
   });
 
   test('normalizeOrder conserva order.notes (necesario para reutilizar el order normalizado en PDF/xlsx)', () => {
@@ -471,19 +460,21 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     expect(ofBlock.despiece.rows.find((row) => row.name === 'MANDO SITUO 1 IO PURE').num).toBe(21);
   });
 
-  test('AR2603380: EVO 80, MAQ. EXTERIOR, blanco', () => {
-    const result = calculateOrder(basePayload({
-      structureColor: 'BLANCO',
-      fabric: 'ACR VISON',
+  test('normalizeOrder conserva lacado y rotulación propios de cada toldo', () => {
+    const normalized = normalizeOrder(basePayload({
+      structureColor: 'BLANCO', rotTela: 'NO', rotBamba: 'NO',
       awnings: [baseAwning({
-        of: '230335', model: 'ARZUA PRO', width: 596, projection: 300,
-        valanceHeight: 15, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 150
+        structureColor: 'NEGRO (R-09011)', rotFabric: 'si', rotValance: 'si',
+        valanceHeight: 25, valanceCurve: 'recta'
       })]
     }));
-    expect(asLines(result.ofs[0].materials)).toEqual([
-      'ACRILI2250P120 x18', 'BONYXBL16300C x1', 'CASMAQEJE6378MM x1', 'CASPLAS x1',
-      'MANIVEBL16150C x1', 'PEVO80BL16600C x1', 'SOPAR350BL16 x1', 'TURA80HG600C x2'
-    ].sort());
+
+    expect(normalized.awnings[0]).toMatchObject({
+      structureColor: 'NEGRO (R-09011)',
+      rotFabric: 'SI',
+      rotValance: 'SI',
+      valanceCurve: 'RECTA'
+    });
   });
 
   test('AR2603399: UNIVERS 280, MAQ. EXTERIOR, negro', () => {
@@ -630,6 +621,52 @@ describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
 });
 
 describe('GALICIA contra planteamientos y RPSNext', () => {
+  test('AR2603380: EVO 80, máquina exterior, blanco y 3 brazos', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2603380',
+      structureColor: 'BLANCO',
+      fabric: 'ACR VISON',
+      awnings: [baseAwning({
+        of: '0230335', model: 'GALICIA', width: 596, projection: 300,
+        valanceHeight: 15, armCount: 3, device: 'MAQ. EXTERIOR',
+        tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 150, wallType: ''
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, structureLength: 584.5, rollTubeLength: 585.5,
+      fabricWidth: 583, fabricDrop: 360, fabricMl: 18,
+      armCount: 3, stockLength: 600
+    });
+    expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
+      { code: 'SOPARTGLBL16', quantity: 1 },
+      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'PEVO80BL16600C', quantity: 1 },
+      { code: 'BONYXBL16300C', quantity: 3 },
+      { code: 'CASMAQEJE6378MM', quantity: 1 },
+      { code: 'CASPLAS', quantity: 1 },
+      { code: 'ACRILI2250P120', quantity: 18 }
+    ]);
+  });
+
+  test('AR2602119: PVC 580 de ancho 250 reserva 11,1 ml', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'PVC580NEGRO|||250|||PVC 580 NEGRO',
+      awnings: [baseAwning({
+        of: '0228065', model: 'GALICIA', width: 688, projection: 300,
+        valanceHeight: 25, armCount: 3, device: 'MAQ. EXTERIOR',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', crankHeight: 200, wallType: ''
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true, fabricWidth: 675, fabricDrop: 370,
+      fabricRollWidth: 250, fabricMl: 11.1
+    });
+  });
+
   test('AR2603315: aplica márgenes de costura y reserva 17,7 ml', () => {
     const result = calculateOrder(basePayload({
       structureColor: 'NEGRO (R-09011)',
@@ -649,6 +686,16 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(ofBlock.materials).toContainEqual(expect.objectContaining({
       code: 'ACRILI2170P120', quantity: 17.7
     }));
+    expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
+      { code: 'SOPARTGLNE11', quantity: 1 },
+      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'PUNI280NE11600C', quantity: 1 },
+      { code: 'TAPOPLUN280NE11', quantity: 1 },
+      { code: 'BONYXNE11225C', quantity: 3 },
+      { code: 'CASMAQEJE6378MM', quantity: 1 },
+      { code: 'CASPLAS', quantity: 1 },
+      { code: 'ACRILI2170P120', quantity: 17.7 }
+    ]);
   });
 
   test('GALICIA multiplica piezas y tela cuando una línea tiene varias unidades', () => {
@@ -694,6 +741,16 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2170P120', quantity: 16.8 })
     ]));
+    expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
+      { code: 'SOPARTGLBL16', quantity: 1 },
+      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'PUNI280BL16600C', quantity: 1 },
+      { code: 'TAPOPLUN280BL16', quantity: 1 },
+      { code: 'BONYXBL16350C', quantity: 2 },
+      { code: 'CASMAQEJE6378MM', quantity: 1 },
+      { code: 'CASPLAS', quantity: 1 },
+      { code: 'ACRILI2170P120', quantity: 16.8 }
+    ]);
   });
 
   test('AR2603289: 3 brazos y motor 70 para frente 650', () => {
@@ -718,6 +775,23 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       expect.objectContaining({ code: 'ANCLHSTM12145', quantity: 4 }),
       expect.objectContaining({ code: 'ACRILI3605P120', quantity: 17.7 })
     ]));
+    expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
+      { code: 'SOPARTGLBL16', quantity: 1 },
+      { code: 'TURA80HG700C', quantity: 2 },
+      { code: 'PUNI280BL16700C', quantity: 1 },
+      { code: 'TAPOPLUN280BL16', quantity: 1 },
+      { code: 'BONYXBL16225C', quantity: 3 },
+      { code: 'RUEDAMOT78', quantity: 1 },
+      { code: 'SUNILUSIO70//17', quantity: 1 },
+      { code: 'CORONALT6078', quantity: 1 },
+      { code: 'SOPORTEUNVHIPRO', quantity: 1 },
+      { code: 'SITUOIO1PURE', quantity: 1 },
+      { code: 'ANCLHSTM12145', quantity: 4 },
+      { code: 'ACRILI3605P120', quantity: 17.7 }
+    ]);
+    expect(ofBlock.despiece.rows.find((row) => row.num === 21)).toMatchObject({
+      reference: 'SITUOIO1PURE', units: 1
+    });
   });
 
   test('AR2603420: EVO separa largo de enrollamiento y carga', () => {
@@ -740,6 +814,26 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       expect.objectContaining({ code: 'BONYXBL16300C', quantity: 3 }),
       expect.objectContaining({ code: 'ACRILI2143P120', quantity: 21.9 })
     ]));
+    expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
+      { code: 'SOPARTGLBL16', quantity: 1 },
+      { code: 'TURA80HG700C', quantity: 2 },
+      { code: 'PEVO80BL16700C', quantity: 1 },
+      { code: 'BONYXBL16300C', quantity: 3 },
+      { code: 'CASMAQEJE6378MM', quantity: 1 },
+      { code: 'CASPLAS', quantity: 1 },
+      { code: 'ACRILI2143P120', quantity: 21.9 }
+    ]);
+  });
+
+  test('los parámetros de Galicia controlan tela y largos de stock', () => {
+    const result = calculateOrder(basePayload({
+      parameters: { galicia: { fabricDropAllowanceCm: 50, seamAllowanceCm: 0, seamBaseCm: 0, stockLengths: [650, 750] } },
+      awnings: [baseAwning({
+        model: 'GALICIA', width: 650, projection: 300, valanceHeight: 20,
+        armCount: 3, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80'
+      })]
+    }));
+    expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 370, fabricPanels: 6, fabricMl: 22.2, stockLength: 650 });
   });
 
   test('frente superior a 550 no permite quedarse con 2 brazos', () => {

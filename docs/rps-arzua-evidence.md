@@ -26,7 +26,7 @@ El planteamiento y la reserva no son la misma lista. El PDF contiene piezas de f
 
 - ARZUA muestra 2 brazos como configuración estándar.
 - Si se solicitan 3 brazos desde ARZUA, la interfaz propone cambiar el modelo a GALICIA y conserva OF, unidades y medidas.
-- GALICIA mantiene sus opciones de 2, 3 y 4 brazos; cambiar a GALICIA no significa siempre 3 brazos.
+- GALICIA mantiene sus opciones de 2 y 3 brazos; cambiar a GALICIA no significa siempre 3 brazos.
 - Destino particular propone EVO 80.
 - Destino hostelería o empresa propone UNIVERS 280.
 - Motor ARZUA propone 55/17 por debajo del umbral y 70/17 desde el umbral configurable.

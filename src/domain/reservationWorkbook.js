@@ -40,13 +40,12 @@ export async function buildOrderArchiveWorkbook(reservation, order = null) {
       ['FECHA', formatDateOnly(order.orderDate)],
       ['MATERIAL', order.fabric || ''],
       ['REMATE', order.remate || ''],
-      ['CURVA BAMBA', order.curvaBamba || ''],
-      ['ROTULACION TELA', order.rotTela || ''],
-      ['ROTULACION BAMBA', order.rotBamba || '']
+      ['CURVA BAMBA', summarizeAwningField(order.awnings, 'valanceCurve', 'SEGUN TOLDO')],
+      ['TELA BAMBA', summarizeValanceFabric(order.awnings)],
+      ['LACADO', summarizeAwningField(order.awnings, 'structureColor', 'SEGUN TOLDO') || order.structureColor || ''],
+      ['ROTULACION TELA', summarizeAwningField(order.awnings, 'rotFabric', 'SEGUN TOLDO') || order.rotTela || ''],
+      ['ROTULACION BAMBA', summarizeAwningField(order.awnings, 'rotValance', 'SEGUN TOLDO') || order.rotBamba || '']
     ];
-    if (order.bambaDistinta) {
-      headerFields.push(['TELA BAMBA', order.telaBamba || '']);
-    }
 
     headerFields.forEach(([label, fieldValue], offset) => {
       const rowNumber = 3 + offset;
@@ -96,6 +95,19 @@ export async function buildOrderArchiveWorkbook(reservation, order = null) {
 
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
+}
+
+function summarizeAwningField(awnings = [], field, multipleLabel) {
+  const values = new Set(awnings.map((awning) => awning?.[field]).filter(Boolean));
+  if (values.size === 0) return '';
+  return values.size === 1 ? Array.from(values)[0] : multipleLabel;
+}
+
+function summarizeValanceFabric(awnings = []) {
+  const valances = awnings.filter((awning) => Number(awning?.valanceHeight) > 0 || awning?.model === 'BAMBALINA');
+  if (valances.length === 0) return '';
+  const values = new Set(valances.map((awning) => awning.valanceFabric || 'MISMA TELA'));
+  return values.size === 1 ? Array.from(values)[0] : 'SEGUN TOLDO';
 }
 
 export function buildFinalRows(ofs) {

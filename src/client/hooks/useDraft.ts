@@ -11,7 +11,7 @@ const draftStorageKeys = [storageKey, legacyStorageKeyV5, legacyStorageKeyV4, le
 const sensorNames = formOptions.sensores.map((s) => s.sensor);
 const wallTypeNames = formOptions.tiposPared.map((p) => p.pared);
 
-function defaultDraft(): DraftState {
+export function defaultDraft(): DraftState {
   return {
     orderCode: '',
     customer: '',
@@ -20,16 +20,13 @@ function defaultDraft(): DraftState {
     reviewer: '',
     fabric: '',
     sameFabric: true,
-    remate: 'COMO TELA',
+    remate: '',
     remateColor: '',
-    curvaBamba: 'RECTA',
-    bambaDistinta: false,
-    telaBamba: '',
     structureColor: '',
-    rotTela: 'NO',
-    rotBamba: 'NO',
+    rotTela: '',
+    rotBamba: '',
     notes: '',
-    awnings: [createAwning()]
+    awnings: []
   };
 }
 
@@ -42,10 +39,19 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (old.machineSide === 'IZQUIERDA') base.machineSide = 'M.F IZQ';
   base.reglasModificadas = typeof old.reglasModificadas === 'boolean' ? old.reglasModificadas : false;
   base.fabric = typeof old.fabric === 'string' ? old.fabric : '';
-  base.curtainHasWindow = Boolean(old.curtainHasWindow);
+  base.hasValance = typeof old.hasValance === 'boolean'
+    ? old.hasValance
+    : Number(old.valanceHeight) > 0 ? true : null;
+  if (base.hasValance === false) base.valanceHeight = 0;
+  base.valanceCurve = typeof old.valanceCurve === 'string' ? old.valanceCurve : '';
+  base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
+  base.structureColor = typeof old.structureColor === 'string' ? old.structureColor : '';
+  base.rotFabric = typeof old.rotFabric === 'string' ? old.rotFabric : '';
+  base.rotValance = typeof old.rotValance === 'string' ? old.rotValance : '';
+  base.curtainHasWindow = typeof old.curtainHasWindow === 'boolean' ? old.curtainHasWindow : null;
   base.curtainFinish = ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish))
     ? old.curtainFinish as Awning['curtainFinish']
-    : 'NORMAL';
+    : '';
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
     : typeof old.notes === 'string' ? old.notes : '';
@@ -87,15 +93,23 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
     sameFabric: typeof saved.sameFabric === 'boolean' ? saved.sameFabric : fallback.sameFabric,
     remate: (saved.remate as string) || fallback.remate,
     remateColor: (saved.remateColor as string) || fallback.remateColor,
-    curvaBamba: (saved.curvaBamba as string) || fallback.curvaBamba,
-    bambaDistinta: typeof saved.bambaDistinta === 'boolean' ? saved.bambaDistinta : fallback.bambaDistinta,
-    telaBamba: (saved.telaBamba as string) || fallback.telaBamba,
     structureColor: (saved.structureColor as string) || fallback.structureColor,
     rotTela: (saved.rotTela as string) || fallback.rotTela,
     rotBamba: (saved.rotBamba as string) || fallback.rotBamba,
     notes: (saved.notes as string) || fallback.notes,
     awnings: awnings.length
-      ? awnings.map((awning) => ({ ...sanitizeAwning(awning), id: (awning.id as string) || uid() }))
+      ? awnings.map((awning) => {
+        const sanitized = sanitizeAwning(awning);
+        return {
+          ...sanitized,
+          id: (awning.id as string) || uid(),
+          valanceCurve: sanitized.valanceCurve || (saved.curvaBamba as string) || '',
+          valanceFabric: sanitized.valanceFabric || (saved.bambaDistinta ? (saved.telaBamba as string) || '' : ''),
+          structureColor: sanitized.structureColor || (saved.structureColor as string) || '',
+          rotFabric: sanitized.rotFabric || (saved.rotTela as string) || '',
+          rotValance: sanitized.rotValance || (saved.rotBamba as string) || ''
+        };
+      })
       : fallback.awnings
   };
 }
@@ -131,9 +145,6 @@ export function useDraft() {
   const [sameFabric, setSameFabric] = useState(initialDraft.sameFabric);
   const [remate, setRemate] = useState(initialDraft.remate);
   const [remateColor, setRemateColor] = useState(initialDraft.remateColor);
-  const [curvaBamba, setCurvaBamba] = useState(initialDraft.curvaBamba);
-  const [bambaDistinta, setBambaDistinta] = useState(initialDraft.bambaDistinta);
-  const [telaBamba, setTelaBamba] = useState(initialDraft.telaBamba);
   const [structureColor, setStructureColor] = useState(initialDraft.structureColor);
   const [rotTela, setRotTela] = useState(initialDraft.rotTela);
   const [rotBamba, setRotBamba] = useState(initialDraft.rotBamba);
@@ -150,30 +161,17 @@ export function useDraft() {
         if (awning.id !== id) return awning;
         const next = { ...awning, ...patch };
         if (patch.model && patch.model !== awning.model) {
-          const fresh = createAwning(getModelWorkType(patch.model));
-          return {
-            ...fresh, id: awning.id, of: awning.of, model: patch.model, units: awning.units,
-            width: awning.width, projection: awning.projection, valanceHeight: awning.valanceHeight,
-            armCount: patch.armCount ?? (patch.model === 'ARZUA PRO' || patch.model === 'GALICIA' ? 2 : fresh.armCount),
-            curtainHasWindow: patch.model.includes('CORTINA') ? awning.curtainHasWindow : false,
-            curtainFinish: patch.model.includes('CORTINA') ? awning.curtainFinish : 'NORMAL',
-            curtainWindowExit: patch.model.includes('CORTINA') ? awning.curtainWindowExit : null,
-            curtainWindowCorner: patch.model.includes('CORTINA') ? awning.curtainWindowCorner : null,
-            curtainWindowFloorHeight: patch.model.includes('CORTINA') ? awning.curtainWindowFloorHeight : null,
-            curtainWindowHeight: patch.model.includes('CORTINA') ? awning.curtainWindowHeight : null
-          };
+          return switchAwningModel(awning, patch.model, patch.armCount);
         }
         return next;
       })
     );
   }
 
-  function addAwning(workType: Awning['workType'] = 'FULL_AWNING') {
+  function addAwning(workType: Awning['workType'] = 'FULL_AWNING', model = '') {
     setAwnings((current) => {
-      if (current.length === 1 && isPristineAwning(current[0]) && current[0].workType !== workType) {
-        return [createAwning(workType)];
-      }
-      return [...current, createAwning(workType)];
+      const fresh = createAwning(workType);
+      return [...current, model ? switchAwningModel(fresh, model) : fresh];
     });
   }
 
@@ -186,11 +184,7 @@ export function useDraft() {
   }
 
   function removeAwning(id: string) {
-    setAwnings((current) => {
-      const removed = current.find((awning) => awning.id === id);
-      const next = current.filter((awning) => awning.id !== id);
-      return next.length ? next : [createAwning(removed?.workType || 'FULL_AWNING')];
-    });
+    setAwnings((current) => current.filter((awning) => awning.id !== id));
   }
 
   function reuseHistory(entry: HistoryEntry) {
@@ -201,18 +195,15 @@ export function useDraft() {
     setTechnician(entry.technician || '');
     setReviewer(entry.reviewer || '');
     setFabric(entry.fabric || '');
-    setSameFabric(typeof entry.sameFabric === 'boolean' ? entry.sameFabric : true);
+    setSameFabric(typeof entry.sameFabric === 'boolean' ? entry.sameFabric : fallback.sameFabric);
     setRemate(entry.remate || fallback.remate);
     setRemateColor(entry.remateColor || '');
-    setCurvaBamba(entry.curvaBamba || fallback.curvaBamba);
-    setBambaDistinta(typeof entry.bambaDistinta === 'boolean' ? entry.bambaDistinta : fallback.bambaDistinta);
-    setTelaBamba(entry.telaBamba || '');
     setStructureColor(entry.structureColor || fallback.structureColor);
     setRotTela(entry.rotTela || fallback.rotTela);
     setRotBamba(entry.rotBamba || fallback.rotBamba);
     setAwnings(entry.awnings.length
       ? entry.awnings.map((awning) => ({ ...sanitizeAwning(awning as unknown as Record<string, unknown>), id: awning.id }))
-      : [createAwning()]);
+      : []);
   }
 
   function resetDraft() {
@@ -227,9 +218,6 @@ export function useDraft() {
     setSameFabric(clean.sameFabric);
     setRemate(clean.remate);
     setRemateColor(clean.remateColor);
-    setCurvaBamba(clean.curvaBamba);
-    setBambaDistinta(clean.bambaDistinta);
-    setTelaBamba(clean.telaBamba);
     setStructureColor(clean.structureColor);
     setRotTela(clean.rotTela);
     setRotBamba(clean.rotBamba);
@@ -246,9 +234,6 @@ export function useDraft() {
     sameFabric, setSameFabric,
     remate, setRemate,
     remateColor, setRemateColor,
-    curvaBamba, setCurvaBamba,
-    bambaDistinta, setBambaDistinta,
-    telaBamba, setTelaBamba,
     structureColor, setStructureColor,
     rotTela, setRotTela,
     rotBamba, setRotBamba,
@@ -263,6 +248,32 @@ export function useDraft() {
   };
 }
 
-function isPristineAwning(awning: Awning) {
-  return !awning.model && !awning.of && !awning.width && !awning.projection && !awning.valanceHeight;
+export function switchAwningModel(awning: Awning, model: string, armCount?: number | null): Awning {
+  const fresh = createAwning(getModelWorkType(model));
+  const isCurtain = model.includes('CORTINA');
+  const supportsValance = (getModelBehavior(model).dimensions || []).includes('valanceHeight');
+  return {
+    ...fresh,
+    id: awning.id,
+    of: awning.of,
+    model,
+    units: awning.units,
+    width: awning.width,
+    projection: awning.projection,
+    hasValance: model === 'BAMBALINA' ? true : supportsValance ? awning.hasValance : null,
+    valanceHeight: supportsValance ? awning.valanceHeight : null,
+    valanceCurve: supportsValance ? awning.valanceCurve : '',
+    valanceFabric: supportsValance ? awning.valanceFabric : '',
+    structureColor: getModelWorkType(model) === 'FULL_AWNING' ? awning.structureColor : '',
+    rotFabric: awning.rotFabric,
+    rotValance: supportsValance ? awning.rotValance : '',
+    armCount: armCount ?? null,
+    placement: awning.placement,
+    curtainHasWindow: isCurtain ? awning.curtainHasWindow : null,
+    curtainFinish: isCurtain ? awning.curtainFinish : '',
+    curtainWindowExit: isCurtain ? awning.curtainWindowExit : null,
+    curtainWindowCorner: isCurtain ? awning.curtainWindowCorner : null,
+    curtainWindowFloorHeight: isCurtain ? awning.curtainWindowFloorHeight : null,
+    curtainWindowHeight: isCurtain ? awning.curtainWindowHeight : null
+  };
 }

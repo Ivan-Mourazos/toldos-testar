@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { sanitizeAwning, migrateLegacyDraft } from './useDraft';
+import { defaultDraft, sanitizeAwning, migrateLegacyDraft, switchAwningModel } from './useDraft';
+import { createAwning } from '../constants';
+import { modelNames } from '../../domain/modelBehavior.js';
 
 describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
   test('elimina los 4 campos de override y el valance obsoleto', () => {
@@ -61,6 +63,30 @@ describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
     expect(sanitized.placement).toBe('FRONTAL');
     expect(sanitized.machineSide).toBe('M.F.DER');
   });
+
+  test('infiere bamba en borradores antiguos solo cuando tienen altura', () => {
+    expect(sanitizeAwning({ valanceHeight: 25 }).hasValance).toBe(true);
+    expect(sanitizeAwning({ valanceHeight: null }).hasValance).toBeNull();
+  });
+
+  test('una bamba marcada como no elimina una altura antigua', () => {
+    const sanitized = sanitizeAwning({ hasValance: false, valanceHeight: 25 });
+    expect(sanitized.hasValance).toBe(false);
+    expect(sanitized.valanceHeight).toBe(0);
+  });
+});
+
+describe('defaultDraft', () => {
+  test('arranca sin decisiones de tela, remate ni rotulación', () => {
+    expect(defaultDraft()).toMatchObject({
+      sameFabric: true,
+      fabric: '',
+      remate: '',
+      rotTela: '',
+      rotBamba: '',
+      awnings: []
+    });
+  });
 });
 
 describe('migrateLegacyDraft (borrador v3/v4 completo -> DraftState v5)', () => {
@@ -92,14 +118,59 @@ describe('migrateLegacyDraft (borrador v3/v4 completo -> DraftState v5)', () => 
     expect(awning.of).toBe('999888');
   });
 
-  test('un borrador con un array de awnings vacío cae al toldo por defecto', () => {
+  test('un borrador vacío permanece sin elementos', () => {
     const migrated = migrateLegacyDraft({ orderCode: 'AR-VACIO', awnings: [] });
-    expect(migrated!.awnings).toHaveLength(1);
-    expect(migrated!.awnings[0].of).toBe('');
+    expect(migrated!.awnings).toEqual([]);
   });
 
   test('conserva order.notes al migrar', () => {
     const migrated = migrateLegacyDraft({ orderCode: 'AR-NOTES', notes: 'Observación del pedido', awnings: [{ of: '1' }] });
     expect(migrated!.notes).toBe('Observación del pedido');
+  });
+
+  test('migra curva y tela de bamba globales al toldo correspondiente', () => {
+    const migrated = migrateLegacyDraft({
+      curvaBamba: 'RECTA', bambaDistinta: true, telaBamba: 'PVC 580',
+      awnings: [{ of: '1', valanceHeight: 25 }]
+    });
+    expect(migrated!.awnings[0]).toMatchObject({ valanceCurve: 'RECTA', valanceFabric: 'PVC 580' });
+  });
+});
+
+describe('switchAwningModel', () => {
+  test.each(modelNames)('%s no preselecciona ningún valor del formulario', (model) => {
+    const result = switchAwningModel(createAwning(), model);
+
+    expect(result).toMatchObject({
+      units: 1,
+      placement: '',
+      armCount: null,
+      tubeLoad: '',
+      device: '',
+      wallType: '',
+      sensor: '',
+      machineSide: '',
+      crankHeight: null,
+      supportSystem: '',
+      motorPower: '',
+      hasValance: model === 'BAMBALINA' ? true : null,
+      valanceCurve: '',
+      valanceFabric: '',
+      curtainHasWindow: null,
+      curtainFinish: ''
+    });
+  });
+
+  test('al cambiar a Galicia conserva datos y permite forzar 3 brazos', () => {
+    const source = {
+      ...createAwning(), of: '0230335', units: 2, width: 596,
+      projection: 300, hasValance: true, valanceHeight: 15, placement: 'TECHO'
+    };
+    const result = switchAwningModel(source, 'GALICIA', 3);
+
+    expect(result).toMatchObject({
+      of: '0230335', units: 2, width: 596, projection: 300,
+      hasValance: true, valanceHeight: 15, placement: 'TECHO', armCount: 3
+    });
   });
 });

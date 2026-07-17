@@ -21,7 +21,13 @@ export type Awning = {
   units: number | null;
   width: number | null;
   projection: number | null;
+  hasValance: boolean | null;
   valanceHeight: number | null;
+  valanceCurve: string;
+  valanceFabric: string;
+  structureColor: string;
+  rotFabric: string;
+  rotValance: string;
   armCount: number | null;
   device: string;
   placement: string;
@@ -34,8 +40,8 @@ export type Awning = {
   sensor: string;
   machineSide: string;
   crankHeight: number | null;
-  curtainHasWindow: boolean;
-  curtainFinish: 'NORMAL' | 'VELCRO' | 'TUBO';
+  curtainHasWindow: boolean | null;
+  curtainFinish: '' | 'NORMAL' | 'VELCRO' | 'TUBO';
   curtainWindowExit: number | null;
   curtainWindowCorner: number | null;
   curtainWindowFloorHeight: number | null;
@@ -53,6 +59,10 @@ type SharedModelParameters = {
   standardMaxWidth: number;
   privateTube: string;
   businessTube: string;
+  fabricDropAllowanceCm: number;
+  seamAllowanceCm: number;
+  seamBaseCm: number;
+  stockLengths: number[];
   widthDiscounts: DiscountMatrix;
   rollTubeDiscounts: DiscountMatrix;
   fabricWidthDiscounts: DiscountMatrix;
@@ -60,10 +70,6 @@ type SharedModelParameters = {
 
 export type ArzuaProParameters = SharedModelParameters & {
   motor70WidthFrom: number;
-  fabricDropAllowanceCm: number;
-  seamAllowanceCm: number;
-  seamBaseCm: number;
-  stockLengths: number[];
   minimumLineByArm: { arm: number; values: Record<Device, number> }[];
 };
 
@@ -105,7 +111,7 @@ export type Calculation = {
       fabricRollWidth?: number;
       structureLength: number;
       rollTubeLength?: number;
-      stockLength: number;
+      stockLength: number | null;
       supportSystem?: string;
       motorPower?: string;
       armCount?: number;
@@ -129,9 +135,6 @@ export type DraftState = {
   sameFabric: boolean;
   remate: string;
   remateColor: string;
-  curvaBamba: string;
-  bambaDistinta: boolean;
-  telaBamba: string;
   structureColor: string;
   rotTela: string;
   rotBamba: string;
@@ -151,9 +154,6 @@ export type HistoryEntry = {
   sameFabric: boolean;
   remate: string;
   remateColor: string;
-  curvaBamba: string;
-  bambaDistinta: boolean;
-  telaBamba: string;
   structureColor: string;
   rotTela: string;
   rotBamba: string;

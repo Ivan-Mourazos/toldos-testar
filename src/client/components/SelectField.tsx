@@ -87,6 +87,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
         aria-controls={listboxId}
         aria-haspopup="listbox"
         aria-labelledby={labelId}
+        title={value ? controlLabel(value) : undefined}
         onClick={() => open ? setOpen(false) : showOptions()}
         onKeyDown={handleKeyDown}
       >
@@ -103,6 +104,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
               className={`select-option${option === value ? ' is-selected' : ''}${index === activeIndex ? ' is-active' : ''}`}
               role="option"
               aria-selected={option === value}
+              title={option ? controlLabel(option) : emptyLabel}
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => choose(option)}
             >

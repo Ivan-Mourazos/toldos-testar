@@ -72,9 +72,6 @@ function App() {
     sameFabric: draft.sameFabric,
     remate: draft.remate,
     remateColor: draft.remateColor,
-    curvaBamba: draft.curvaBamba,
-    bambaDistinta: draft.bambaDistinta,
-    telaBamba: draft.telaBamba,
     structureColor: draft.structureColor,
     rotTela: draft.rotTela,
     rotBamba: draft.rotBamba,
@@ -117,9 +114,6 @@ function App() {
       sameFabric: draft.sameFabric,
       remate: draft.remate,
       remateColor: draft.remateColor,
-      curvaBamba: draft.curvaBamba,
-      bambaDistinta: draft.bambaDistinta,
-      telaBamba: draft.telaBamba,
       structureColor: draft.structureColor,
       rotTela: draft.rotTela,
       rotBamba: draft.rotBamba,
@@ -259,8 +253,8 @@ function App() {
     setToast('Formulario limpio.');
   }
 
-  const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : 'badge-ok';
-  const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : 'Planteamiento vivo';
+  const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : calculationState === 'idle' ? 'badge-neutral' : 'badge-ok';
+  const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : calculationState === 'idle' ? 'Esperando pedido' : 'Planteamiento vivo';
   const viewTitle = activeTab === 'order'
     ? 'Nuevo planteamiento'
     : activeTab === 'parameters'
@@ -271,7 +265,7 @@ function App() {
     <main className="app-shell">
       <aside className="app-sidebar">
         <div className="brand">
-          <div className="brand-mark">TgM</div>
+          <div className="brand-mark"><img src="/logo-tgm-transparent.png" alt="TGM" /></div>
           <div>
             <h1>Toldos</h1>
             <span>Planteamientos</span>
@@ -307,15 +301,15 @@ function App() {
                 <Eraser aria-hidden="true" />
                 Limpiar
               </button>
-              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating'} onClick={simulateReservation}>
+              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={simulateReservation}>
                 <FileSpreadsheet aria-hidden="true" />
                 {working === 'rps' ? 'Generando…' : 'Simular RPS'}
               </button>
-              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating'} onClick={openPlanteamientoPreview}>
+              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={openPlanteamientoPreview}>
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
               </button>
-              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating'} onClick={savePlanteamientoPdf}>
+              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={savePlanteamientoPdf}>
                 <FileDown aria-hidden="true" />
                 {working === 'pdf' ? 'Generando…' : 'Guardar PDF'}
               </button>
@@ -335,12 +329,6 @@ function App() {
           sameFabric={draft.sameFabric}
           remate={draft.remate}
           remateColor={draft.remateColor}
-          curvaBamba={draft.curvaBamba}
-          bambaDistinta={draft.bambaDistinta}
-          telaBamba={draft.telaBamba}
-          structureColor={draft.structureColor}
-          rotTela={draft.rotTela}
-          rotBamba={draft.rotBamba}
           awnings={draft.awnings}
           calculation={calculation}
           calculationState={calculationState}
@@ -354,12 +342,6 @@ function App() {
           setSameFabric={draft.setSameFabric}
           setRemate={draft.setRemate}
           setRemateColor={draft.setRemateColor}
-          setCurvaBamba={draft.setCurvaBamba}
-          setBambaDistinta={draft.setBambaDistinta}
-          setTelaBamba={draft.setTelaBamba}
-          setStructureColor={draft.setStructureColor}
-          setRotTela={draft.setRotTela}
-          setRotBamba={draft.setRotBamba}
           addAwning={draft.addAwning}
           duplicateAwning={draft.duplicateAwning}
           removeAwning={draft.removeAwning}

@@ -16,7 +16,8 @@ export { arzuaProEstablishedProjections };
 
 export function calculateArzuaPro({ order, awning }) {
   const parameters = normalizeArzuaProParameters(order.parameters?.arzuaPro);
-  const lacado = resolveLacado(order.structureColor);
+  const structureColor = awning.structureColor || order.structureColor;
+  const lacado = resolveLacado(structureColor);
   const colorSuffix = lacado.suffix;
   const selectedTube = awning.tubeLoad || suggestedTubeForDestination(awning.destination, parameters);
   const tubeLoad = normalizeTubeLoad(selectedTube);
@@ -34,7 +35,7 @@ export function calculateArzuaPro({ order, awning }) {
   // El gate de incompletitud de calculateOrder solo cubre OF/modelo/frente/salida;
   // sin estos campos el cálculo asumiría MOTOR/EVO 80 o emitiría MANIVE...0C en silencio.
   const missingFields = [];
-  if (!order.structureColor) missingFields.push('lacado');
+  if (!structureColor) missingFields.push('lacado');
   if (!fabricSelection) missingFields.push('tela');
   if (!device) missingFields.push('dispositivo válido');
   else if ((device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') && !awning.crankHeight) missingFields.push('altura de manivela');

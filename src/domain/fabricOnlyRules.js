@@ -37,7 +37,9 @@ export function calculateFabricOnly({ order, awning }) {
     ? ['curtainWindowExit', 'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight']
       .filter((field) => !Number(awning[field]))
     : [];
-  const valid = Boolean(fabric) && missingWindowDimensions.length === 0;
+  const missingCurtainConfig = model === 'CAMBIO CORTINA'
+    && (awning.curtainHasWindow === null || !awning.curtainFinish);
+  const valid = Boolean(fabric) && !missingCurtainConfig && missingWindowDimensions.length === 0;
   const calculation = {
     model,
     valid,
@@ -60,12 +62,12 @@ export function calculateFabricOnly({ order, awning }) {
     description: buildDescription(awning, calculation),
     materials: valid ? [{ code: fabric.code, quantity: fabricUsage.ml, description: fabric.description }] : [],
     despiece: null,
-    diagnostics: buildDiagnostics({ awning, model, fabric, fabricSelection, missingWindowDimensions }),
+    diagnostics: buildDiagnostics({ awning, model, fabric, fabricSelection, missingCurtainConfig, missingWindowDimensions }),
     calculation
   };
 }
 
-function buildDiagnostics({ awning, model, fabric, fabricSelection, missingWindowDimensions }) {
+function buildDiagnostics({ awning, model, fabric, fabricSelection, missingCurtainConfig, missingWindowDimensions }) {
   const diagnostics = [];
   if (!fabric) {
     diagnostics.push({
@@ -74,6 +76,13 @@ function buildDiagnostics({ awning, model, fabric, fabricSelection, missingWindo
       message: fabricSelection
         ? `Tela no encontrada en el catálogo: "${fabricSelection}".`
         : `Falta indicar la tela en ${model}, OF ${awning.of}.`
+    });
+  }
+  if (missingCurtainConfig) {
+    diagnostics.push({
+      level: 'error',
+      awningId: awning.id,
+      message: `CAMBIO CORTINA incompleto en OF ${awning.of}: falta ventana y confección.`
     });
   }
   if (missingWindowDimensions.length > 0) {

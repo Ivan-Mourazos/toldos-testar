@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import type { ArzuaProParameters, Device, GaliciaParameters, RuleParameters } from '../types';
 import { NumberField } from '../components/NumberField';
-import { SelectField } from '../components/SelectField';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
 const devices: Device[] = ['MOTOR', 'MAQ. INTERIOR', 'MAQ. EXTERIOR'];
 const discountGroups = ['widthDiscounts', 'rollTubeDiscounts', 'fabricWidthDiscounts'] as const;
+const discountLabels = {
+  widthDiscounts: 'Tubo de carga',
+  rollTubeDiscounts: 'Tubo de enrollamiento',
+  fabricWidthDiscounts: 'Tela'
+} as const;
 type DiscountGroup = typeof discountGroups[number];
 type SelectedModel = 'ARZUA PRO' | 'GALICIA';
 
@@ -40,13 +44,13 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     });
   }
 
-  function updateArzuaStockLength(index: number, value: number | null) {
+  function updateStockLength(index: number, value: number | null) {
     if (value === null) return;
-    onUpdateArzua({
-      stockLengths: parameters.arzuaPro.stockLengths.map((currentValue, currentIndex) => (
+    const stockLengths = current.stockLengths.map((currentValue, currentIndex) => (
         currentIndex === index ? value : currentValue
-      ))
-    });
+    ));
+    if (isGalicia) onUpdateGalicia({ stockLengths });
+    else onUpdateArzua({ stockLengths });
   }
 
   function updateGaliciaMinimum(projection: number, arms: 2 | 3, device: Device, value: number) {
@@ -79,10 +83,8 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       </header>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Selección automática</h3><p>{isGalicia ? 'El frente propone 2 o 3 brazos; los brazos determinan el motor.' : 'El destino propone el tubo; el frente determina la potencia del motor.'}</p></div></div>
+        <div className="parameter-band-title"><span>01</span><div><h3>Selección automática</h3><p>{isGalicia ? 'El frente propone 2 o 3 brazos; los brazos determinan el motor.' : 'El frente determina la potencia del motor.'} El tubo se elige directamente en cada toldo.</p></div></div>
         <div className="parameter-grid parameter-grid-3">
-          <SelectField label="Particular" value={current.privateTube} options={tubes} onChange={(privateTube) => isGalicia ? onUpdateGalicia({ privateTube }) : onUpdateArzua({ privateTube })} />
-          <SelectField label="Hostelería / empresa" value={current.businessTube} options={tubes} onChange={(businessTube) => isGalicia ? onUpdateGalicia({ businessTube }) : onUpdateArzua({ businessTube })} />
           {isGalicia ? (
             <NumberField label="3 brazos desde frente (cm)" value={parameters.galicia.armSwitchWidth} min={1} onChange={(armSwitchWidth) => armSwitchWidth !== null && onUpdateGalicia({ armSwitchWidth })} />
           ) : (
@@ -93,36 +95,36 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
         {isGalicia && <p className="parameter-note">Motor automático: 2 brazos = 55/17 · 3 brazos = 70/17.</p>}
       </div>
 
-      {!isGalicia && (
-        <div className="parameter-band">
-          <div className="parameter-band-title"><span>02</span><div><h3>Tela y largos de stock</h3><p>Márgenes usados para calcular caída, paños y perfiles disponibles.</p></div></div>
-          <div className="parameter-grid parameter-grid-3">
-            <NumberField label="Margen de caída (cm)" value={parameters.arzuaPro.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && onUpdateArzua({ fabricDropAllowanceCm })} />
-            <NumberField label="Costura entre paños (cm)" value={parameters.arzuaPro.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && onUpdateArzua({ seamAllowanceCm })} />
-            <NumberField label="Margen base de paño (cm)" value={parameters.arzuaPro.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && onUpdateArzua({ seamBaseCm })} />
-            {parameters.arzuaPro.stockLengths.map((stockLength, index) => (
-              <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateArzuaStockLength(index, value)} />
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>{isGalicia ? '02' : '03'}</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente para cada pieza y para la tela.</p></div></div>
-        <div className="discount-tables">
-          {discountGroups.map((group) => (
-            <div className="parameter-table-wrap" key={group}>
-              <h4>{group === 'widthDiscounts' ? 'Tubo de carga' : group === 'rollTubeDiscounts' ? 'Tubo de enrollamiento' : 'Tela'}</h4>
-              <table className="parameter-table"><thead><tr><th>Tubo</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
-                <tbody>{tubes.map((tube) => <tr key={tube}><td>{tube.replace('TUBO DE CARGA ', '')}</td>{devices.map((device) => <td key={device}><input aria-label={`${selectedModel} ${group} ${tube} ${device}`} type="number" step="0.1" min="0" value={current[group][tube][device]} onChange={(event) => updateDiscount(group, tube, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
-              </table>
-            </div>
+        <div className="parameter-band-title"><span>02</span><div><h3>Tela y largos de stock</h3><p>Márgenes usados para calcular caída, paños y perfiles disponibles.</p></div></div>
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="Margen de caída (cm)" value={current.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && (isGalicia ? onUpdateGalicia({ fabricDropAllowanceCm }) : onUpdateArzua({ fabricDropAllowanceCm }))} />
+          <NumberField label="Costura entre paños (cm)" value={current.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && (isGalicia ? onUpdateGalicia({ seamAllowanceCm }) : onUpdateArzua({ seamAllowanceCm }))} />
+          <NumberField label="Margen base de paño (cm)" value={current.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && (isGalicia ? onUpdateGalicia({ seamBaseCm }) : onUpdateArzua({ seamBaseCm }))} />
+          {current.stockLengths.map((stockLength, index) => (
+            <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateStockLength(index, value)} />
           ))}
         </div>
       </div>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>{isGalicia ? '03' : '04'}</span><div><h3>Líneas mínimas</h3><p>Frente mínimo admisible para cada salida, dispositivo y número de brazos.</p></div></div>
+        <div className="parameter-band-title"><span>03</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente para cada pieza y para la tela.</p></div></div>
+        <div className="parameter-table-wrap discount-table-wrap">
+          <table className="parameter-table parameter-table-discounts">
+            <thead><tr><th>Pieza</th><th>Tubo</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+            <tbody>{discountGroups.flatMap((group) => tubes.map((tube, tubeIndex) => (
+              <tr key={`${group}-${tube}`}>
+                {tubeIndex === 0 && <td className="discount-part" rowSpan={tubes.length}>{discountLabels[group]}</td>}
+                <td>{tube.replace('TUBO DE CARGA ', '')}</td>
+                {devices.map((device) => <td key={device}><input aria-label={`${selectedModel} ${group} ${tube} ${device}`} type="number" step="0.1" min="0" value={current[group][tube][device]} onChange={(event) => updateDiscount(group, tube, device, Number(event.target.value))} /></td>)}
+              </tr>
+            )))}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>04</span><div><h3>Líneas mínimas</h3><p>Frente mínimo admisible para cada salida, dispositivo y número de brazos.</p></div></div>
         <div className="parameter-table-wrap">
           {isGalicia ? (
             <table className="parameter-table parameter-table-lines galicia-lines">
@@ -137,7 +139,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
         </div>
       </div>
 
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>{isGalicia ? 'AR2603298, AR2603289 y AR2603420: máquina/motor, 2/3 brazos, EVO 80/UNIVERS 280 y salida especial 350.' : '891 ARZUA revisados: 726 máquina, 165 motor, 395 EVO 80 y 406 UNIVERS 280.'}</span></aside>
+      <aside className="rps-evidence"><strong>Contraste real</strong><span>{isGalicia ? '49 estructuras Galicia de 2026 revisadas: 43 casos estándar coinciden en medidas y 6 quedan como excepción técnica por superar 700 cm.' : '891 ARZUA revisados: 726 máquina, 165 motor, 395 EVO 80 y 406 UNIVERS 280.'}</span></aside>
     </section>
   );
 }

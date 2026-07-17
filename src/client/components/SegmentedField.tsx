@@ -5,7 +5,7 @@ export function SegmentedField({ label, value, options, onChange }: { label: str
   return (
     <div className="field segmented-field">
       <span>{label}</span>
-      <div className="segmented-control" role="group" aria-label={label}>
+      <div className={`segmented-control${value ? '' : ' is-empty'}`} role="group" aria-label={label}>
         {options.map((option) => (
           <button
             key={option}

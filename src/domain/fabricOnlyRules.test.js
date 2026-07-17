@@ -44,12 +44,16 @@ describe('trabajos solo de tela', () => {
   });
 
   test('CAMBIO CORTINA con ventana exige las cuatro medidas del Excel', () => {
-    const incomplete = calculate('CAMBIO CORTINA', { curtainHasWindow: true });
+    const incomplete = calculate('CAMBIO CORTINA', {
+      curtainHasWindow: true,
+      curtainFinish: 'NORMAL'
+    });
     expect(incomplete.ofs[0].materials).toEqual([]);
     expect(incomplete.diagnostics[0].message).toContain('faltan medidas de ventana');
 
     const complete = calculate('CAMBIO CORTINA', {
       curtainHasWindow: true,
+      curtainFinish: 'NORMAL',
       curtainWindowExit: 240,
       curtainWindowCorner: 35,
       curtainWindowFloorHeight: 95,
@@ -57,5 +61,13 @@ describe('trabajos solo de tela', () => {
     });
     expect(complete.ofs[0].materials).toHaveLength(1);
     expect(complete.ofs[0].calculation.valid).toBe(true);
+  });
+
+  test('CAMBIO CORTINA exige elegir ventana y confección', () => {
+    const result = calculate('CAMBIO CORTINA');
+
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.diagnostics[0].message).toContain('falta ventana y confección');
   });
 });

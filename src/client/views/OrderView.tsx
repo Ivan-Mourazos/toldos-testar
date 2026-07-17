@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layers3, Plus, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState, RuleParameters } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
 import { LiveResults } from '../components/LiveResults';
 import { DespieceView } from '../components/DespieceView';
+import { ModelPickerDialog } from '../components/ModelPickerDialog';
+import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
 export function OrderView({
   orderCode,
@@ -16,12 +18,6 @@ export function OrderView({
   sameFabric,
   remate,
   remateColor,
-  curvaBamba,
-  bambaDistinta,
-  telaBamba,
-  structureColor,
-  rotTela,
-  rotBamba,
   awnings,
   calculation,
   calculationState,
@@ -35,12 +31,6 @@ export function OrderView({
   setSameFabric,
   setRemate,
   setRemateColor,
-  setCurvaBamba,
-  setBambaDistinta,
-  setTelaBamba,
-  setStructureColor,
-  setRotTela,
-  setRotBamba,
   addAwning,
   duplicateAwning,
   removeAwning,
@@ -55,12 +45,6 @@ export function OrderView({
   sameFabric: boolean;
   remate: string;
   remateColor: string;
-  curvaBamba: string;
-  bambaDistinta: boolean;
-  telaBamba: string;
-  structureColor: string;
-  rotTela: string;
-  rotBamba: string;
   awnings: Awning[];
   calculation: Calculation | null;
   calculationState: CalculationState;
@@ -74,36 +58,17 @@ export function OrderView({
   setSameFabric: (value: boolean) => void;
   setRemate: (value: string) => void;
   setRemateColor: (value: string) => void;
-  setCurvaBamba: (value: string) => void;
-  setBambaDistinta: (value: boolean) => void;
-  setTelaBamba: (value: string) => void;
-  setStructureColor: (value: string) => void;
-  setRotTela: (value: string) => void;
-  setRotBamba: (value: string) => void;
-  addAwning: (workType?: Awning['workType']) => void;
+  addAwning: (workType?: Awning['workType'], model?: string) => void;
   duplicateAwning: (id: string) => void;
   removeAwning: (id: string) => void;
   updateAwning: (id: string, patch: Partial<Awning>) => void;
 }) {
-  const totalUnits = awnings.reduce((sum, awning) => sum + (awning.units || 0), 0);
-  const indexedAwnings = awnings.map((awning, index) => ({ awning, index }));
-  const fullAwnings = indexedAwnings.filter(({ awning }) => awning.workType !== 'FABRIC_ONLY');
-  const fabricJobs = indexedAwnings.filter(({ awning }) => awning.workType === 'FABRIC_ONLY');
+  const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
 
-  function addFabricJob() {
-    const onlyAwning = awnings.length === 1 ? awnings[0] : null;
-    const isBlankStarter = onlyAwning
-      && onlyAwning.workType !== 'FABRIC_ONLY'
-      && !onlyAwning.model
-      && !onlyAwning.of
-      && !onlyAwning.width
-      && !onlyAwning.projection;
-
-    if (isBlankStarter) {
-      updateAwning(onlyAwning.id, { workType: 'FABRIC_ONLY' });
-      return;
-    }
-    addAwning('FABRIC_ONLY');
+  function chooseModel(model: string) {
+    if (!pickerType) return;
+    addAwning(pickerType, model);
+    setPickerType(null);
   }
 
   function setOrderField(patch: Record<string, string | boolean>) {
@@ -124,12 +89,6 @@ export function OrderView({
     }
     if ('remate' in patch) setRemate(patch.remate as string);
     if ('remateColor' in patch) setRemateColor(patch.remateColor as string);
-    if ('curvaBamba' in patch) setCurvaBamba(patch.curvaBamba as string);
-    if ('bambaDistinta' in patch) setBambaDistinta(patch.bambaDistinta as boolean);
-    if ('telaBamba' in patch) setTelaBamba(patch.telaBamba as string);
-    if ('structureColor' in patch) setStructureColor(patch.structureColor as string);
-    if ('rotTela' in patch) setRotTela(patch.rotTela as string);
-    if ('rotBamba' in patch) setRotBamba(patch.rotBamba as string);
   }
 
   return (
@@ -146,14 +105,6 @@ export function OrderView({
             sameFabric={sameFabric}
             remate={remate}
             remateColor={remateColor}
-            curvaBamba={curvaBamba}
-            bambaDistinta={bambaDistinta}
-            telaBamba={telaBamba}
-            structureColor={structureColor}
-            rotTela={rotTela}
-            rotBamba={rotBamba}
-            totalUnits={totalUnits}
-            showStructureColor={fullAwnings.some(({ awning }) => Boolean(awning.model))}
             set={setOrderField}
           />
         </div>
@@ -161,35 +112,31 @@ export function OrderView({
 
       <section className="work-type-launcher" aria-label="Añadir al pedido">
         <div className="work-type-launcher-title">
-          <strong>Añadir al pedido</strong>
-          <span>Elige el tipo de planteamiento</span>
+          <strong>Nuevo elemento</strong>
+          <span>Se añadirá como siguiente letra</span>
         </div>
-        <button type="button" className="work-type-option" onClick={() => addAwning('FULL_AWNING')}>
+        <button type="button" className="work-type-option" onClick={() => setPickerType('FULL_AWNING')}>
           <Layers3 aria-hidden="true" />
-          <span><strong>Toldo completo</strong><small>Estructura y tela</small></span>
+          <span><strong>Añadir toldo</strong><small>Primero elige el modelo</small></span>
           <Plus aria-hidden="true" />
         </button>
-        <button type="button" className="work-type-option work-type-option-fabric" onClick={addFabricJob}>
+        <button type="button" className="work-type-option work-type-option-fabric" onClick={() => setPickerType('FABRIC_ONLY')}>
           <Scissors aria-hidden="true" />
-          <span><strong>Cambio de tela</strong><small>Toldo, cortina, enrollable, bambalina o Antica</small></span>
+          <span><strong>Añadir trabajo de tela</strong><small>Cambio, cortina, enrollable, bambalina o Antica</small></span>
           <Plus aria-hidden="true" />
         </button>
       </section>
 
-      <section className="awnings-section">
+      {awnings.length > 0 && <section className="awnings-section order-elements-section">
         <div className="section-header">
           <div>
-            <h2>Toldos completos</h2>
-            <span>Estructura y tela</span>
+            <h2>Elementos del pedido</h2>
+            <span>{awnings.length} {awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…</span>
           </div>
-          <button className="icon-text-button" type="button" onClick={() => addAwning('FULL_AWNING')}>
-            <Plus aria-hidden="true" />
-            Añadir toldo
-          </button>
         </div>
 
         <div className="awning-grid">
-          {fullAwnings.map(({ awning, index }) => (
+          {awnings.map((awning, index) => (
             <AwningColumn
               key={awning.id}
               awning={awning}
@@ -202,42 +149,20 @@ export function OrderView({
               onRemove={removeAwning}
             />
           ))}
-          {fullAwnings.length === 0 && <div className="awning-section-empty">Sin toldos completos en este pedido.</div>}
         </div>
-      </section>
+      </section>}
 
-      <section className="awnings-section fabric-jobs-section">
-        <div className="section-header">
-          <div>
-            <h2>Trabajos de tela</h2>
-            <span>Sin estructura ni lacado</span>
-          </div>
-          <button className="icon-text-button" type="button" onClick={addFabricJob}>
-            <Plus aria-hidden="true" />
-            Añadir trabajo
-          </button>
-        </div>
+      {awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} />}
+      {awnings.length > 0 && <DespieceView calculation={calculation} awnings={awnings} />}
 
-        <div className="awning-grid">
-          {fabricJobs.map(({ awning, index }) => (
-            <AwningColumn
-              key={awning.id}
-              awning={awning}
-              index={index}
-              ofCalculation={calculation?.ofs.find((o) => o.awningId === awning.id)?.calculation}
-              sameFabric={sameFabric}
-              parameters={parameters}
-              onUpdate={updateAwning}
-              onDuplicate={duplicateAwning}
-              onRemove={removeAwning}
-            />
-          ))}
-          {fabricJobs.length === 0 && <div className="awning-section-empty">Añade aquí cambios de tela, cortina, enrollable, bambalina o Antica.</div>}
-        </div>
-      </section>
-
-      <LiveResults calculation={calculation} state={calculationState} />
-      <DespieceView calculation={calculation} awnings={awnings} />
+      {pickerType && (
+        <ModelPickerDialog
+          workType={pickerType}
+          models={pickerType === 'FABRIC_ONLY' ? fabricOnlyModelNames : fullAwningModelNames}
+          onSelect={chooseModel}
+          onClose={() => setPickerType(null)}
+        />
+      )}
     </>
   );
 }
