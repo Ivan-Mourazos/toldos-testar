@@ -45,6 +45,8 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (base.hasValance === false) base.valanceHeight = 0;
   base.valanceCurve = typeof old.valanceCurve === 'string' ? old.valanceCurve : '';
   base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
+  base.remate = typeof old.remate === 'string' ? old.remate : '';
+  base.remateColor = typeof old.remateColor === 'string' ? old.remateColor : '';
   base.structureColor = typeof old.structureColor === 'string' ? old.structureColor : '';
   base.rotFabric = typeof old.rotFabric === 'string' ? old.rotFabric : '';
   base.rotValance = typeof old.rotValance === 'string' ? old.rotValance : '';
@@ -52,6 +54,9 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.curtainFinish = ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish))
     ? old.curtainFinish as Awning['curtainFinish']
     : '';
+  base.curtainFabricDeductionCm = Number.isFinite(Number(old.curtainFabricDeductionCm))
+    ? Number(old.curtainFabricDeductionCm)
+    : null;
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
     : typeof old.notes === 'string' ? old.notes : '';
@@ -105,6 +110,8 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
           id: (awning.id as string) || uid(),
           valanceCurve: sanitized.valanceCurve || (saved.curvaBamba as string) || '',
           valanceFabric: sanitized.valanceFabric || (saved.bambaDistinta ? (saved.telaBamba as string) || '' : ''),
+          remate: sanitized.remate || (saved.remate as string) || '',
+          remateColor: sanitized.remateColor || (saved.remateColor as string) || '',
           structureColor: sanitized.structureColor || (saved.structureColor as string) || '',
           rotFabric: sanitized.rotFabric || (saved.rotTela as string) || '',
           rotValance: sanitized.rotValance || (saved.rotBamba as string) || ''
@@ -264,6 +271,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     valanceHeight: supportsValance ? awning.valanceHeight : null,
     valanceCurve: supportsValance ? awning.valanceCurve : '',
     valanceFabric: supportsValance ? awning.valanceFabric : '',
+    remate: supportsValance ? awning.remate : '',
+    remateColor: supportsValance ? awning.remateColor : '',
     structureColor: getModelWorkType(model) === 'FULL_AWNING' ? awning.structureColor : '',
     rotFabric: awning.rotFabric,
     rotValance: supportsValance ? awning.rotValance : '',
@@ -274,6 +283,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     curtainWindowExit: isCurtain ? awning.curtainWindowExit : null,
     curtainWindowCorner: isCurtain ? awning.curtainWindowCorner : null,
     curtainWindowFloorHeight: isCurtain ? awning.curtainWindowFloorHeight : null,
-    curtainWindowHeight: isCurtain ? awning.curtainWindowHeight : null
+    curtainWindowHeight: isCurtain ? awning.curtainWindowHeight : null,
+    curtainFabricDeductionCm: isCurtain ? awning.curtainFabricDeductionCm : null
   };
 }

@@ -37,7 +37,14 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
   const showOptions = () => {
     const rect = rootRef.current?.getBoundingClientRect();
     const estimatedHeight = Math.min(visibleOptions.length * 31 + 8, 236);
-    if (rect) setOpensUp(window.innerHeight - rect.bottom < estimatedHeight && rect.top > window.innerHeight - rect.bottom);
+    if (rect) {
+      const scrollLane = rootRef.current?.closest('.awning-grid')?.getBoundingClientRect();
+      const lowerBoundary = Math.min(window.innerHeight, scrollLane?.bottom ?? window.innerHeight);
+      const upperBoundary = Math.max(0, scrollLane?.top ?? 0);
+      const spaceBelow = lowerBoundary - rect.bottom;
+      const spaceAbove = rect.top - upperBoundary;
+      setOpensUp(spaceBelow < estimatedHeight && spaceAbove > spaceBelow);
+    }
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
     setOpen(true);
   };

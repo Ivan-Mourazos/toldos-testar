@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RotateCcw } from 'lucide-react';
-import type { ArzuaProParameters, Device, GaliciaParameters, RuleParameters } from '../types';
+import type { ArzuaProParameters, BoxDevice, BoxParameters, CortinaDevice, CortinaParameters, Device, GaliciaParameters, RuleParameters } from '../types';
 import { NumberField } from '../components/NumberField';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
@@ -12,7 +12,7 @@ const discountLabels = {
   fabricWidthDiscounts: 'Tela'
 } as const;
 type DiscountGroup = typeof discountGroups[number];
-type SelectedModel = 'ARZUA PRO' | 'GALICIA';
+type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'CORTINA' | 'PERLA BOX' | 'CORAL BOX';
 
 type Props = {
   parameters: RuleParameters;
@@ -20,12 +20,41 @@ type Props = {
   onUpdateGalicia: (patch: Partial<GaliciaParameters>) => void;
   onResetArzua: () => void;
   onResetGalicia: () => void;
+  onUpdatePerlaBox: (patch: Partial<BoxParameters>) => void;
+  onResetPerlaBox: () => void;
+  onUpdateCoralBox: (patch: Partial<BoxParameters>) => void;
+  onResetCoralBox: () => void;
+  onUpdateCortina: (patch: Partial<CortinaParameters>) => void;
+  onResetCortina: () => void;
 };
 
-export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia }: Props) {
+export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCortina, onResetCortina }: Props) {
   const [selectedModel, setSelectedModel] = useState<SelectedModel>('ARZUA PRO');
-  const current = selectedModel === 'ARZUA PRO' ? parameters.arzuaPro : parameters.galicia;
   const isGalicia = selectedModel === 'GALICIA';
+  const isBox = selectedModel === 'CORAL BOX' || selectedModel === 'PERLA BOX';
+
+  if (selectedModel === 'CORTINA') {
+    return <CortinaParametersView
+      parameters={parameters.cortina}
+      selectedModel={selectedModel}
+      onSelectModel={setSelectedModel}
+      onUpdate={onUpdateCortina}
+      onReset={onResetCortina}
+    />;
+  }
+
+  if (isBox) {
+    const isPerla = selectedModel === 'PERLA BOX';
+    return <BoxParametersView
+      parameters={isPerla ? parameters.perlaBox : parameters.coralBox}
+      selectedModel={selectedModel}
+      onSelectModel={setSelectedModel}
+      onUpdate={isPerla ? onUpdatePerlaBox : onUpdateCoralBox}
+      onReset={isPerla ? onResetPerlaBox : onResetCoralBox}
+    />;
+  }
+
+  const current = isGalicia ? parameters.galicia : parameters.arzuaPro;
 
   function updateDiscount(group: DiscountGroup, tube: string, device: Device, value: number) {
     const matrix = {
@@ -64,9 +93,9 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
   return (
     <section className="parameters-page">
       <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {(['ARZUA PRO', 'GALICIA'] as SelectedModel[]).map((model) => (
+        {parameterModels.map((model) => (
           <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => setSelectedModel(model)}>
-            <span>{model}</span><small>{model === 'ARZUA PRO' ? 'PRO' : 'GAL'}</small>
+            <span>{model}</span><small>{modelShortName(model)}</small>
           </button>
         ))}
       </nav>
@@ -140,6 +169,149 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       </div>
 
       <aside className="rps-evidence"><strong>Contraste real</strong><span>{isGalicia ? '49 estructuras Galicia de 2026 revisadas: 43 casos estándar coinciden en medidas y 6 quedan como excepción técnica por superar 700 cm.' : '891 ARZUA revisados: 726 máquina, 165 motor, 395 EVO 80 y 406 UNIVERS 280.'}</span></aside>
+    </section>
+  );
+}
+
+const parameterModels: SelectedModel[] = ['ARZUA PRO', 'GALICIA', 'CORTINA', 'PERLA BOX', 'CORAL BOX'];
+
+function modelShortName(model: SelectedModel) {
+  if (model === 'ARZUA PRO') return 'PRO';
+  if (model === 'GALICIA') return 'GAL';
+  if (model === 'CORTINA') return 'CORT';
+  if (model === 'PERLA BOX') return 'S300';
+  return 'COR';
+}
+
+type CortinaProps = {
+  parameters: CortinaParameters;
+  selectedModel: SelectedModel;
+  onSelectModel: (model: SelectedModel) => void;
+  onUpdate: (patch: Partial<CortinaParameters>) => void;
+  onReset: () => void;
+};
+
+function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: CortinaProps) {
+  const curtainDevices: CortinaDevice[] = ['MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR'];
+  const discountRows = [
+    ['fabricWidthDiscounts', 'Frente de tela'],
+    ['rollTubeDiscounts', 'Tubo de enrollamiento'],
+    ['loadProfileDiscounts', 'Univers 280']
+  ] as const;
+
+  function updateDiscount(field: typeof discountRows[number][0], device: CortinaDevice, value: number) {
+    onUpdate({ [field]: { ...parameters[field], [device]: value } });
+  }
+
+  return (
+    <section className="parameters-page">
+      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
+        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
+      </nav>
+
+      <header className="parameters-heading">
+        <div><span className="section-kicker">Modelo en producción</span><h2>CORTINA</h2><p>Reglas de estructura, confección de tela y reserva RPS.</p></div>
+        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
+      </header>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>01</span><div><h3>Límites y caída</h3><p>Medidas estándar y margen inferior aplicado a la tela.</p></div></div>
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
+          <NumberField label="Altura máxima (cm)" value={parameters.standardMaxDrop} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxDrop: value })} />
+          <NumberField label="Margen inferior tela (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
+          <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
+          <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
+          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
+        </div>
+      </div>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente según el accionamiento.</p></div></div>
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{curtainDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+          <tbody>{discountRows.map(([field, label]) => <tr key={field}><td>{label}</td>{curtainDevices.map((device) => <td key={device}><input aria-label={`CORTINA ${label} ${device}`} type="number" min="0" step="0.1" value={parameters[field][device]} onChange={(event) => updateDiscount(field, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
+        </table></div>
+      </div>
+
+      <aside className="rps-evidence"><strong>Contraste real</strong><span>110 estructuras y 68 PDF de 2026 revisados. La caída estándar suma 45 cm; el descuento histórico de 18 cm queda como excepción individual porque no depende del cliente, ventana ni bamba.</span></aside>
+    </section>
+  );
+}
+
+type BoxProps = {
+  parameters: BoxParameters;
+  selectedModel: SelectedModel;
+  onSelectModel: (model: SelectedModel) => void;
+  onUpdate: (patch: Partial<BoxParameters>) => void;
+  onReset: () => void;
+};
+
+function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: BoxProps) {
+  const boxDevices: BoxDevice[] = ['MAQUINA', 'MOTOR'];
+  const isPerla = selectedModel === 'PERLA BOX';
+
+  function updateMinimum(projection: number, device: BoxDevice, value: number) {
+    onUpdate({
+      minimumLineByProjection: parameters.minimumLineByProjection.map((row) => row.projection === projection
+        ? { ...row, values: { ...row.values, [device]: value } }
+        : row)
+    });
+  }
+
+  function updateDiscount(field: 'profileDiscountCm' | 'rollDiscountCm' | 'fabricWidthDiscountCm' | 'protectorDiscountCm', device: BoxDevice, value: number) {
+    onUpdate({ [field]: { ...parameters[field], [device]: value } });
+  }
+
+  function updatePower(projection: number, power: number) {
+    onUpdate({
+      motorPowerByProjection: parameters.motorPowerByProjection.map((row) => row.projection === projection
+        ? { ...row, power }
+        : row)
+    });
+  }
+
+  return (
+    <section className="parameters-page">
+      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
+        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
+      </nav>
+
+      <header className="parameters-heading">
+        <div><span className="section-kicker">Modelo en producción</span><h2>{selectedModel}</h2><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
+        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
+      </header>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>01</span><div><h3>Límites y tela</h3><p>Medidas generales, caída y cálculo de paños.</p></div></div>
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
+          <NumberField label="Margen de caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
+          <NumberField label="Margen base paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
+          <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
+          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
+        </div>
+      </div>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente según pieza y dispositivo.</p></div></div>
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{boxDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+          <tbody>{([
+            ['profileDiscountCm', 'Kit de perfiles'],
+            ['rollDiscountCm', 'Tubo de enrollamiento'],
+            ['fabricWidthDiscountCm', 'Frente de tela'],
+            ['protectorDiscountCm', 'Protector de lona']
+          ] as const).map(([field, label]) => <tr key={field}><td>{label}</td>{boxDevices.map((device) => <td key={device}><input aria-label={`${selectedModel} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters[field][device]} onChange={(event) => updateDiscount(field, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
+        </table></div>
+      </div>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>03</span><div><h3>Líneas mínimas y motor</h3><p>Frente mínimo y potencia SUNEA por salida.</p></div></div>
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{boxDevices.map((device) => <th key={device}>{device}</th>)}<th>Motor</th></tr></thead>
+          <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{boxDevices.map((device) => <td key={device}><input aria-label={`${selectedModel} salida ${row.projection} ${device}`} type="number" min="1" value={row.values[device]} onChange={(event) => updateMinimum(row.projection, device, Number(event.target.value))} /></td>)}<td><input aria-label={`${selectedModel} motor salida ${row.projection}`} type="number" min="1" value={parameters.motorPowerByProjection.find((item) => item.projection === row.projection)?.power || ''} onChange={(event) => updatePower(row.projection, Number(event.target.value))} /></td></tr>)}</tbody>
+        </table></div>
+      </div>
+
+      <aside className="rps-evidence"><strong>Contraste real</strong><span>{isPerla ? 'Excel S-300 verificado: salidas 150–300, referencias actuales Perla Box y descuentos específicos de cofre.' : 'Pedido AR2603009 contrastado con Excel ST400 y RPS: tres Coral Box, medidas, paños y referencias verificadas.'}</span></aside>
     </section>
   );
 }

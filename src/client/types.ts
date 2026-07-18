@@ -25,6 +25,8 @@ export type Awning = {
   valanceHeight: number | null;
   valanceCurve: string;
   valanceFabric: string;
+  remate: string;
+  remateColor: string;
   structureColor: string;
   rotFabric: string;
   rotValance: string;
@@ -46,6 +48,7 @@ export type Awning = {
   curtainWindowCorner: number | null;
   curtainWindowFloorHeight: number | null;
   curtainWindowHeight: number | null;
+  curtainFabricDeductionCm: number | null;
   reglasModificadas: boolean;
   fabric: string;
   structureNotes: string;
@@ -81,9 +84,45 @@ export type GaliciaParameters = SharedModelParameters & {
   }[];
 };
 
+export type BoxDevice = 'MAQUINA' | 'MOTOR';
+
+export type BoxParameters = {
+  standardMaxWidth: number;
+  fabricDropAllowanceCm: number;
+  seamAllowanceCm: number;
+  seamBaseCm: number;
+  stockLengths: number[];
+  profileDiscountCm: Record<BoxDevice, number>;
+  rollDiscountCm: Record<BoxDevice, number>;
+  fabricWidthDiscountCm: Record<BoxDevice, number>;
+  protectorDiscountCm: Record<BoxDevice, number>;
+  minimumLineByProjection: {
+    projection: number;
+    values: Record<BoxDevice, number>;
+  }[];
+  motorPowerByProjection: { projection: number; power: number }[];
+};
+
+export type CortinaDevice = 'MAQ. INTERIOR' | 'MAQ. EXTERIOR' | 'MOTOR';
+
+export type CortinaParameters = {
+  standardMaxWidth: number;
+  standardMaxDrop: number;
+  fabricDropAllowanceCm: number;
+  seamAllowanceCm: number;
+  seamBaseCm: number;
+  stockLengths: number[];
+  fabricWidthDiscounts: Record<CortinaDevice, number>;
+  rollTubeDiscounts: Record<CortinaDevice, number>;
+  loadProfileDiscounts: Record<CortinaDevice, number>;
+};
+
 export type RuleParameters = {
   arzuaPro: ArzuaProParameters;
   galicia: GaliciaParameters;
+  perlaBox: BoxParameters;
+  coralBox: BoxParameters;
+  cortina: CortinaParameters;
 };
 
 export type Calculation = {
@@ -117,6 +156,7 @@ export type Calculation = {
       armCount?: number;
       requiredArmCount?: number;
       tubeLoad?: string;
+      curtainFabricDeductionCm?: number;
     };
   }[];
   diagnostics: { level: 'error' | 'pending' | 'warn'; awningId?: string; message: string }[];

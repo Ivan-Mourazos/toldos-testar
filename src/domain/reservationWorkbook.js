@@ -39,7 +39,7 @@ export async function buildOrderArchiveWorkbook(reservation, order = null) {
       ['REVISION', order.reviewer || ''],
       ['FECHA', formatDateOnly(order.orderDate)],
       ['MATERIAL', order.fabric || ''],
-      ['REMATE', order.remate || ''],
+      ['REMATE', summarizeRemate(order.awnings) || order.remate || ''],
       ['CURVA BAMBA', summarizeAwningField(order.awnings, 'valanceCurve', 'SEGUN TOLDO')],
       ['TELA BAMBA', summarizeValanceFabric(order.awnings)],
       ['LACADO', summarizeAwningField(order.awnings, 'structureColor', 'SEGUN TOLDO') || order.structureColor || ''],
@@ -107,6 +107,16 @@ function summarizeValanceFabric(awnings = []) {
   const valances = awnings.filter((awning) => Number(awning?.valanceHeight) > 0 || awning?.model === 'BAMBALINA');
   if (valances.length === 0) return '';
   const values = new Set(valances.map((awning) => awning.valanceFabric || 'MISMA TELA'));
+  return values.size === 1 ? Array.from(values)[0] : 'SEGUN TOLDO';
+}
+
+function summarizeRemate(awnings = []) {
+  const valances = awnings.filter((awning) => Number(awning?.valanceHeight) > 0 || awning?.model === 'BAMBALINA');
+  const values = new Set(valances.map((awning) => {
+    if (awning.remate === 'OTRO') return awning.remateColor || 'OTRO';
+    return awning.remate;
+  }).filter(Boolean));
+  if (values.size === 0) return '';
   return values.size === 1 ? Array.from(values)[0] : 'SEGUN TOLDO';
 }
 

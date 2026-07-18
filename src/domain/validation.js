@@ -1,7 +1,10 @@
 import { roundQuantity } from './math.js';
 import { normalizeArzuaProParameters } from './arzuaProParameters.js';
 import { normalizeGaliciaParameters } from './galiciaParameters.js';
+import { normalizeCoralBoxParameters, normalizePerlaBoxParameters } from './storbox400Parameters.js';
+import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { getModelWorkType } from './modelBehavior.js';
+import { normalizeModelName } from './modelNames.js';
 
 export function normalizeOrder(payload) {
   if (!payload || typeof payload !== 'object') {
@@ -31,7 +34,10 @@ export function normalizeOrder(payload) {
     notes: cleanText(payload.notes),
     parameters: {
       arzuaPro: normalizeArzuaProParameters(payload.parameters?.arzuaPro),
-      galicia: normalizeGaliciaParameters(payload.parameters?.galicia)
+      galicia: normalizeGaliciaParameters(payload.parameters?.galicia),
+      perlaBox: normalizePerlaBoxParameters(payload.parameters?.perlaBox || payload.parameters?.storbox400),
+      coralBox: normalizeCoralBoxParameters(payload.parameters?.coralBox),
+      cortina: normalizeCortinaParameters(payload.parameters?.cortina)
     },
     awnings: awnings.map((awning, index) => normalizeAwning(awning, index, payload))
   };
@@ -58,7 +64,7 @@ export function normalizeReservation(payload) {
 
 function normalizeAwning(awning, _index, legacyOrder = {}) {
   const of = cleanText(awning?.of);
-  const model = cleanText(awning?.model).toUpperCase();
+  const model = normalizeModelName(awning?.model);
   const units = numberOrDefault(awning?.units, 1) || 1;
   const width = numberOrDefault(awning?.width, 0);
   const projection = numberOrDefault(awning?.projection, 0);
@@ -94,9 +100,12 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     curtainWindowCorner: numberOrDefault(awning?.curtainWindowCorner, 0),
     curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),
     curtainWindowHeight: numberOrDefault(awning?.curtainWindowHeight, 0),
+    curtainFabricDeductionCm: numberOrDefault(awning?.curtainFabricDeductionCm, 0),
     valanceHeight: hasValance === false ? 0 : numberOrDefault(awning?.valanceHeight, 0),
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
+    remate: cleanText(awning?.remate || legacyOrder.remate).toUpperCase(),
+    remateColor: cleanText(awning?.remateColor || legacyOrder.remateColor),
     structureColor: cleanText(awning?.structureColor || legacyOrder.structureColor).toUpperCase(),
     rotFabric: cleanText(awning?.rotFabric || legacyOrder.rotTela).toUpperCase(),
     rotValance: cleanText(awning?.rotValance || legacyOrder.rotBamba).toUpperCase(),

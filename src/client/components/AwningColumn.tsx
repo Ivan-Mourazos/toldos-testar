@@ -37,7 +37,11 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     && (awning.curtainHasWindow === null || !awning.curtainFinish);
   const supportsValance = fields.dimensions.includes('valanceHeight');
   const hasValance = awning.model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
-  const missingValanceConfig = hasValance && !awning.valanceCurve;
+  const missingValanceConfig = hasValance && (
+    !awning.valanceCurve
+    || !awning.remate
+    || (awning.remate === 'OTRO' && !awning.remateColor)
+  );
   const missingFinishConfig = !awning.rotFabric
     || (hasValance && !awning.rotValance)
     || (!fabricOnly && !awning.structureColor);
@@ -83,7 +87,9 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
       hasValance: nextHasValance,
       valanceHeight,
       valanceCurve: nextHasValance ? awning.valanceCurve : '',
-      valanceFabric: nextHasValance ? awning.valanceFabric : ''
+      valanceFabric: nextHasValance ? awning.valanceFabric : '',
+      remate: nextHasValance ? awning.remate : '',
+      remateColor: nextHasValance ? awning.remateColor : ''
     });
   }
 
@@ -129,6 +135,8 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             <div className="awning-valance-options awning-wide-field">
               <SelectField label="Curva bamba" value={awning.valanceCurve} options={formOptions.curvasBamba} placeholder="Elegir…" onChange={(valanceCurve) => update({ valanceCurve })} />
               <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" onChange={(valanceFabric) => update({ valanceFabric })} />
+              <SegmentedField label="Remate" value={awning.remate} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
+              {awning.remate === 'OTRO' && <TextField label="Color remate" value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
             </div>
           )}
           {(fields.arzua || fields.galicia) && (
@@ -204,6 +212,15 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {awning.reglasModificadas && (
             <div className="awning-overrides">
               <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>
+              {fields.curtain && !fabricOnly && (
+                <NumberField
+                  label="Descuento inferior tela (cm)"
+                  value={awning.curtainFabricDeductionCm}
+                  min={0}
+                  step={0.5}
+                  onChange={(curtainFabricDeductionCm) => update({ curtainFabricDeductionCm })}
+                />
+              )}
               {(fields.arzua || fields.galicia) && <>
                 {awning.device === 'MOTOR' && <SegmentedField label="Motor" value={awning.motorPower} options={['AUTOMÁTICO', '55/17', '70/17']} onChange={(motorPower) => update({ motorPower })} />}
               </>}

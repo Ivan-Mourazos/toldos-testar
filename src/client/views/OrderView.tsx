@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Layers3, Plus, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState, RuleParameters } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
@@ -16,8 +15,6 @@ export function OrderView({
   reviewer,
   fabric,
   sameFabric,
-  remate,
-  remateColor,
   awnings,
   calculation,
   calculationState,
@@ -103,28 +100,11 @@ export function OrderView({
             reviewer={reviewer}
             fabric={fabric}
             sameFabric={sameFabric}
-            remate={remate}
-            remateColor={remateColor}
+            onAddAwning={() => setPickerType('FULL_AWNING')}
+            onAddFabricWork={() => setPickerType('FABRIC_ONLY')}
             set={setOrderField}
           />
         </div>
-      </section>
-
-      <section className="work-type-launcher" aria-label="Añadir al pedido">
-        <div className="work-type-launcher-title">
-          <strong>Nuevo elemento</strong>
-          <span>Se añadirá como siguiente letra</span>
-        </div>
-        <button type="button" className="work-type-option" onClick={() => setPickerType('FULL_AWNING')}>
-          <Layers3 aria-hidden="true" />
-          <span><strong>Añadir toldo</strong><small>Primero elige el modelo</small></span>
-          <Plus aria-hidden="true" />
-        </button>
-        <button type="button" className="work-type-option work-type-option-fabric" onClick={() => setPickerType('FABRIC_ONLY')}>
-          <Scissors aria-hidden="true" />
-          <span><strong>Añadir trabajo de tela</strong><small>Cambio, cortina, enrollable, bambalina o Antica</small></span>
-          <Plus aria-hidden="true" />
-        </button>
       </section>
 
       {awnings.length > 0 && <section className="awnings-section order-elements-section">

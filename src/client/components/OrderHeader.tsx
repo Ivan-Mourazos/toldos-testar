@@ -1,14 +1,16 @@
 import React from 'react';
+import { Layers3, Plus, Scissors } from 'lucide-react';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { TextField } from './TextField';
 import { SelectField } from './SelectField';
-import { SegmentedField } from './SegmentedField';
 import { FabricCombobox } from './FabricCombobox';
 
 type Props = {
   orderCode: string; customer: string; orderDate: string; technician: string;
-  reviewer: string; fabric: string; sameFabric: boolean; remate: string; remateColor: string;
+  reviewer: string; fabric: string; sameFabric: boolean;
   set: (patch: Record<string, string | boolean>) => void;
+  onAddAwning: () => void;
+  onAddFabricWork: () => void;
 };
 
 export function OrderHeader(props: Props) {
@@ -28,27 +30,37 @@ export function OrderHeader(props: Props) {
       </div>
 
       <div className="order-header-group order-header-material">
-        <h3>Tela y acabados</h3>
+        <h3>Tela</h3>
         <div className="order-material-clusters">
           <section className="order-material-cluster order-fabric-cluster">
-            <span className="order-cluster-title">Tela</span>
-            <SegmentedField
-              label="Aplicación"
-              value={props.sameFabric ? 'COMÚN' : 'POR TOLDO'}
-              options={['COMÚN', 'POR TOLDO']}
-              onChange={(value) => props.set({ sameFabric: value === 'COMÚN' })}
-            />
-            {props.sameFabric && <FabricCombobox label="Referencia" value={props.fabric} onChange={(v) => props.set({ fabric: v })} />}
-          </section>
-
-          <section className="order-material-cluster order-finish-cluster">
-            <span className="order-cluster-title">Remate</span>
-            <div className="order-cluster-fields">
-              <div className="order-remate-choice"><SegmentedField label="Color" value={props.remate} options={['COMO TELA', 'OTRO']} onChange={(remate) => props.set({ remate, remateColor: remate === 'COMO TELA' ? '' : props.remateColor })} /></div>
-              {props.remate === 'OTRO' && <TextField label="Color remate" value={props.remateColor} onChange={(v) => props.set({ remateColor: v })} />}
+            <div className={`order-fabric-row${props.sameFabric ? '' : ' is-per-awning'}`}>
+              <FabricCombobox label="Referencia" value={props.fabric} disabled={!props.sameFabric} onChange={(v) => props.set({ fabric: v })} />
+              <label className="order-fabric-per-awning">
+                <input
+                  type="checkbox"
+                  checked={!props.sameFabric}
+                  onChange={(event) => props.set({ sameFabric: !event.target.checked })}
+                />
+                <span>Por toldo</span>
+              </label>
             </div>
           </section>
+        </div>
+      </div>
 
+      <div className="order-header-group order-header-actions">
+        <h3>Nuevo elemento</h3>
+        <div className="order-add-actions">
+          <button type="button" className="work-type-option" onClick={props.onAddAwning}>
+            <Layers3 aria-hidden="true" />
+            <span><strong>Añadir toldo</strong><small>Elegir modelo</small></span>
+            <Plus aria-hidden="true" />
+          </button>
+          <button type="button" className="work-type-option work-type-option-fabric" onClick={props.onAddFabricWork}>
+            <Scissors aria-hidden="true" />
+            <span><strong>Añadir trabajo de tela</strong><small>Cambio, cortina, enrollable, bamba o Antica</small></span>
+            <Plus aria-hidden="true" />
+          </button>
         </div>
       </div>
     </section>

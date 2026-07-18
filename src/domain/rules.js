@@ -1,6 +1,8 @@
 import { models } from './catalog.js';
 import { calculateArzuaPro } from './arzuaProRules.js';
 import { calculateGalicia } from './galiciaRules.js';
+import { calculateCoralBox, calculatePerlaBox } from './storbox400Rules.js';
+import { calculateCortina } from './cortinaRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
 import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
 import { normalizeOrder } from './validation.js';
@@ -9,6 +11,9 @@ import { getRequiredDimensions } from './modelBehavior.js';
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
   ['GALICIA', calculateGalicia],
+  ['CORAL BOX', calculateCoralBox],
+  ['PERLA BOX', calculatePerlaBox],
+  ['CORTINA', calculateCortina],
   ['CAMBIO TELA', calculateCambioTela],
   ['CAMBIO CORTINA', calculateCambioCortina],
   ['CAMBIO ANTICA', calculateCambioAntica],

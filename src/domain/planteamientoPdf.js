@@ -306,7 +306,7 @@ function drawFabricMeta(doc, x, y, w, order, lines) {
   drawMiniTable(doc, x + rotW + 12, y, dataW, 'DATOS BÁSICOS', [
     ['MATERIAL', summarizeFabric(lines)],
     ['CURVA', summarizeValanceCurve(lines)],
-    ['REMATE', order.remate === 'OTRO' ? order.remateColor : order.remate]
+    ['REMATE', summarizeRemate(lines, order)]
   ], 17);
 
   const summaryX = x + rotW + dataW + 24;
@@ -344,7 +344,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
       bambaLabel(awning),
       valanceConfigLabel(awning),
       curtainWindowLabel(awning),
-      awning.fabricNotes || remateLabel(order)
+      awning.fabricNotes || remateLabel(awning, order)
     ].filter(Boolean).join(' · ');
     doc.fillColor(colors.inkSoft).font(fonts.regular).fontSize(5.4)
       .text(detail, x + 46, rowY + 22, { width: w - 52, height: 8, ellipsis: true, lineBreak: false });
@@ -689,9 +689,26 @@ function curtainWindowLabel(awning) {
   ].join(' / ');
 }
 
-function remateLabel(order) {
-  if (order.remate === 'OTRO') return `REMATE: ${value(order.remateColor)}`;
-  if (order.remate === 'COMO TELA') return 'REMATE COMO TELA';
+function summarizeRemate(lines, order) {
+  const values = new Set(lines
+    .filter((line) => Number(line.awning?.valanceHeight) > 0 || line.awning?.model === 'BAMBALINA')
+    .map((line) => remateValue(line.awning, order))
+    .filter(Boolean));
+  if (values.size === 0) return '';
+  return values.size === 1 ? Array.from(values)[0] : 'SEGÚN TOLDO';
+}
+
+function remateValue(awning, order = {}) {
+  const remate = awning?.remate || order.remate;
+  const remateColor = awning?.remateColor || order.remateColor;
+  return remate === 'OTRO' ? value(remateColor) : remate;
+}
+
+function remateLabel(awning, order) {
+  const remate = awning?.remate || order.remate;
+  const remateColor = awning?.remateColor || order.remateColor;
+  if (remate === 'OTRO') return `REMATE: ${value(remateColor)}`;
+  if (remate === 'COMO TELA') return 'REMATE COMO TELA';
   return '';
 }
 

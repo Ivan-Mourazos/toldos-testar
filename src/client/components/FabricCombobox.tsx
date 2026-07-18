@@ -15,9 +15,10 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar código o color…' }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar código o color…', disabled = false }: Props) {
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
   const [options, setOptions] = useState<FabricOption[]>([]);
   const [open, setOpen] = useState(false);
@@ -62,7 +63,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
   }
 
   return (
-    <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}`}>
+    <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}`}>
       <span>{label}</span>
       <div className="fabric-input-wrap">
         <Search aria-hidden="true" />
@@ -71,9 +72,10 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
           aria-expanded={open}
           aria-controls={listId}
           autoComplete="off"
+          disabled={disabled}
           value={value ? query : ''}
           placeholder={placeholder}
-          onFocus={() => setOpen(true)}
+          onFocus={() => !disabled && setOpen(true)}
           onChange={(event) => {
             const next = event.target.value;
             setQuery(next);

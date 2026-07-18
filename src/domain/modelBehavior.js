@@ -2,6 +2,8 @@ import behavior from './data/modelBehavior.json' with { type: 'json' };
 import { lacadoNames } from './lacados.js';
 import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
 import { galiciaEstablishedProjections } from './galiciaConstants.js';
+import { coralBoxEstablishedProjections, perlaBoxEstablishedProjections } from './storbox400Constants.js';
+import { normalizeModelName } from './modelNames.js';
 
 const fallbackModel = {
   tipo01: null,
@@ -20,7 +22,8 @@ export const fabricOnlyModelNames = modelNames.filter((model) => behavior.models
 export const formOptions = { ...behavior.options, lacados: lacadoNames };
 
 export function getModelBehavior(modelCode) {
-  return behavior.models[String(modelCode || '').toUpperCase()] || fallbackModel;
+  const code = normalizeModelName(modelCode);
+  return behavior.models[code] || fallbackModel;
 }
 
 export function getModelWorkType(modelCode) {
@@ -71,7 +74,7 @@ export function getFieldVisibility({ model, device }) {
     submodel: modelBehavior.tipo02 === 'SUBMODELO',
     device: hasInstallation,
     deviceOptions: isCofre ? behavior.options.dispositivosCofre : behavior.options.dispositivos,
-    sensor: hasInstallation && isMotor,
+    sensor: hasInstallation && isMotor && modelBehavior.sensors !== false,
     machineLocation: hasInstallation && isMachine,
     crankHeight: hasInstallation && isMachine,
     placement: hasInstallation,
@@ -81,8 +84,10 @@ export function getFieldVisibility({ model, device }) {
 }
 
 export function getEstablishedProjections(modelCode) {
-  const code = String(modelCode || '').toUpperCase();
+  const code = normalizeModelName(modelCode);
   if (code === 'ARZUA PRO') return arzuaProEstablishedProjections;
   if (code === 'GALICIA') return galiciaEstablishedProjections;
+  if (code === 'CORAL BOX') return coralBoxEstablishedProjections;
+  if (code === 'PERLA BOX') return perlaBoxEstablishedProjections;
   return null;
 }

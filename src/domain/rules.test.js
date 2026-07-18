@@ -1,6 +1,6 @@
 import { describe, expect, it, test } from 'vitest';
 import { calculateOrder } from './rules.js';
-import { normalizeOrder } from './validation.js';
+import { consolidateReservation, normalizeOrder } from './validation.js';
 
 function baseAwning(overrides = {}) {
   return {
@@ -404,8 +404,26 @@ describe('normalización de campos nuevos del pedido', () => {
       submodel: 'CON CAJA',
       valanceCurve: 'RECTA',
       valanceFabric: 'PVC 580',
+      remate: 'COMO TELA',
       rotFabric: 'SI',
       rotValance: 'NO'
+    });
+  });
+
+  test('normalizeOrder conserva el remate propio de cada toldo', () => {
+    const normalized = normalizeOrder(basePayload({
+      remate: 'COMO TELA',
+      remateColor: '',
+      awnings: [baseAwning({
+        valanceHeight: 30,
+        remate: 'OTRO',
+        remateColor: 'RAL 3005'
+      })]
+    }));
+
+    expect(normalized.awnings[0]).toMatchObject({
+      remate: 'OTRO',
+      remateColor: 'RAL 3005'
     });
   });
 
@@ -878,5 +896,281 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     }));
     expect(result.ofs[0].calculation.tubeLoad).toBe('TUBO DE CARGA UNIVERS 280');
     expect(result.ofs[0].materials.some((item) => item.code === 'PUNI280BL16600C')).toBe(true);
+  });
+});
+
+describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
+  test('AR2603486: máquina, frente 295 y salida 200', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2603486',
+      structureColor: 'BLANCO',
+      fabric: 'ACRILI2038P120|||120|||LONA ACRILICA MASACRIL 300 BEIGE 2038',
+      awnings: [baseAwning({
+        of: '0230460', model: 'PERLA BOX', width: 295, projection: 200,
+        valanceHeight: 0, device: 'MAQUINA', crankHeight: 120,
+        wallType: '', sensor: ''
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, minimumLine: 240,
+      structureLength: 279.3, rollTubeLength: 281.9,
+      fabricWidth: 275.8, fabricDrop: 245, fabricMl: 7.35,
+      stockLength: 600, armCount: 1
+    });
+    expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
+      { code: 'SOSTORBS300BL16', quantity: 1 },
+      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'PRBOXS300BL16600C', quantity: 1 },
+      { code: 'TAPBS300BL16', quantity: 1 },
+      { code: 'BONYXBL16200C', quantity: 1 },
+      { code: 'CASTRAEX80', quantity: 1 },
+      { code: 'MAQMB9L13BLAN', quantity: 1 },
+      { code: 'MANIVEBL16120C', quantity: 1 },
+      { code: 'CASPLAS', quantity: 1 },
+      { code: 'PRPROMA13600C', quantity: 1 },
+      { code: 'ACRILI2038P120', quantity: 7.35 }
+    ]);
+  });
+
+  test('AR2603349: motor SUNEA 50/17, negro y salida 300', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2603349',
+      structureColor: 'NEGRO (R-09011)',
+      fabric: 'ACRILI1070P120|||120|||LONA ACRILICA',
+      awnings: [baseAwning({
+        of: '0230215', model: 'PERLA BOX', width: 552, projection: 300,
+        valanceHeight: 0, device: 'MOTOR', sensor: 'SIN SENSOR', wallType: ''
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, minimumLine: 340, motorPower: '50/17',
+      structureLength: 536.3, rollTubeLength: 538.5,
+      fabricWidth: 532.8, fabricDrop: 345, fabricMl: 17.25
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOSTORBS300NE11', quantity: 1 }),
+      expect.objectContaining({ code: 'PRBOXS300NE11600C', quantity: 1 }),
+      expect.objectContaining({ code: 'TAPBS300NE11', quantity: 1 }),
+      expect.objectContaining({ code: 'BONYXNE11300C', quantity: 1 }),
+      expect.objectContaining({ code: 'SUNEAIO50//17', quantity: 1 }),
+      expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 }),
+      expect.objectContaining({ code: 'ACRILI1070P120', quantity: 17.25 })
+    ]));
+  });
+
+  test('dos Storbox de la misma OF suman la reserva al consolidar', () => {
+    const calculated = calculateOrder(basePayload({
+      orderCode: 'AR2603486',
+      structureColor: 'BLANCO',
+      fabric: 'ACRILI2038P120|||120|||LONA ACRILICA',
+      awnings: [295, 303].map((width) => baseAwning({
+        of: '0230460', model: 'PERLA BOX', width, projection: 200,
+        valanceHeight: 0, device: 'MAQUINA', crankHeight: 120, wallType: ''
+      }))
+    }));
+    const reservation = consolidateReservation(calculated);
+
+    expect(calculated.ofs).toHaveLength(2);
+    expect(reservation.ofs).toHaveLength(1);
+    expect(reservation.ofs[0].materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 4 }),
+      expect.objectContaining({ code: 'ACRILI2038P120', quantity: 14.7 })
+    ]));
+  });
+
+  test('parámetros editables alteran descuento y línea mínima', () => {
+    const result = calculateOrder(basePayload({
+      fabric: 'ACR VISON',
+      parameters: {
+        perlaBox: {
+          fabricWidthDiscountCm: { MAQUINA: 20, MOTOR: 20 },
+          minimumLineByProjection: [{ projection: 200, values: { MAQUINA: 250, MOTOR: 260 } }]
+        }
+      },
+      awnings: [baseAwning({
+        model: 'PERLA BOX', width: 255, projection: 200,
+        valanceHeight: 0, device: 'MOTOR', wallType: ''
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({ valid: false, minimumLine: 260, fabricWidth: 235 });
+  });
+
+  test('AR2603009: tres Coralbox se agrupan en una OF y 49,35 ml', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2603009',
+      structureColor: 'BLANCO',
+      fabric: 'ACRILI2226P120|||120|||LONA ACRILICA MASACRIL 300 SIROCO 2226',
+      awnings: [
+        baseAwning({ of: '0229649', model: 'CORAL BOX', width: 400, projection: 350, valanceHeight: 0, device: 'MOTOR', sensor: 'MOVIMIENTO', wallType: '' }),
+        baseAwning({ of: '0229649', model: 'CORAL BOX', width: 500, projection: 350, valanceHeight: 0, device: 'MOTOR', sensor: 'MOVIMIENTO', wallType: '' }),
+        baseAwning({ of: '0229649', model: 'CORAL BOX', width: 400, projection: 300, valanceHeight: 0, device: 'MOTOR', sensor: 'MOVIMIENTO', wallType: '' })
+      ]
+    }));
+    const reservation = consolidateReservation(result);
+    const materials = reservation.ofs[0].materials;
+
+    expect(result.ofs.map((item) => item.calculation.fabricMl)).toEqual([15.8, 19.75, 13.8]);
+    expect(result.ofs.map((item) => ({
+      structureLength: item.calculation.structureLength,
+      rollTubeLength: item.calculation.rollTubeLength,
+      fabricWidth: item.calculation.fabricWidth,
+      minimumLine: item.calculation.minimumLine
+    }))).toEqual([
+      { structureLength: 388.4, rollTubeLength: 384, fabricWidth: 383, minimumLine: 396 },
+      { structureLength: 488.4, rollTubeLength: 484, fabricWidth: 483, minimumLine: 396 },
+      { structureLength: 388.4, rollTubeLength: 384, fabricWidth: 383, minimumLine: 346 }
+    ]);
+    expect(materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ACRILI2226P120', quantity: 49.35 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 6 }),
+      expect.objectContaining({ code: 'SOSTORB400BL16', quantity: 3 }),
+      expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
+      expect.objectContaining({ code: 'BONYXBL16300C', quantity: 1 }),
+      expect.objectContaining({ code: 'SUNEAIO50//17', quantity: 3 }),
+      expect.objectContaining({ code: 'EOLIS3DIO', quantity: 3 })
+    ]));
+  });
+
+  test('acepta STORBOX 400 como alias de borradores antiguos', () => {
+    const normalized = normalizeOrder(basePayload({
+      awnings: [baseAwning({ model: 'STORBOX 400' })]
+    }));
+    expect(normalized.awnings[0].model).toBe('CORAL BOX');
+  });
+
+  test('acepta PERLABOX y STORBOX S-300 como alias', () => {
+    const normalized = normalizeOrder(basePayload({
+      awnings: [baseAwning({ model: 'PERLABOX' }), baseAwning({ model: 'STORBOX S-300' })]
+    }));
+    expect(normalized.awnings.map((item) => item.model)).toEqual(['PERLA BOX', 'PERLA BOX']);
+  });
+});
+
+describe('CORTINA contra planteamientos y RPSNext', () => {
+  function cortina(overrides = {}) {
+    return baseAwning({
+      model: 'CORTINA',
+      width: 165,
+      projection: 310,
+      valanceHeight: 20,
+      device: 'MAQ. INTERIOR',
+      crankHeight: 200,
+      curtainHasWindow: true,
+      curtainFinish: 'NORMAL',
+      curtainWindowExit: 310,
+      curtainWindowCorner: 15,
+      curtainWindowFloorHeight: 70,
+      curtainWindowHeight: 140,
+      wallType: '',
+      ...overrides
+    });
+  }
+
+  test('AR2603413: máquina interior, ventana y bamba 20', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2603413',
+      structureColor: 'NEGRO (R-09011)',
+      fabric: 'ACR NEGRO',
+      awnings: [cortina({ of: '0230342' })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true,
+      fabricWidth: 153,
+      fabricDrop: 375,
+      fabricMl: 7.5,
+      structureLength: 154,
+      rollTubeLength: 154,
+      stockLength: 600,
+      curtainFabricDeductionCm: 0
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOPUNI3AGUNE11', quantity: 1 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280NE11600C', quantity: 1 }),
+      expect.objectContaining({ code: 'TAPOPLUN280NE11', quantity: 1 }),
+      expect.objectContaining({ code: 'CASMAQEJE5078MM', quantity: 1 }),
+      expect.objectContaining({ code: 'MANIVENE11200C', quantity: 1 }),
+      expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 2 }),
+      expect.objectContaining({ code: 'ACRILI2170P120', quantity: 7.5 })
+    ]));
+  });
+
+  test('AR2603387: máquina exterior y cortina sin ventana', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2603387',
+      structureColor: 'MARRON (R-08014)',
+      fabric: 'ACR NEGRO',
+      awnings: [cortina({
+        of: '0230271', width: 326.5, projection: 140, valanceHeight: 0,
+        device: 'MAQ. EXTERIOR', crankHeight: 120,
+        curtainHasWindow: false,
+        curtainWindowExit: null, curtainWindowCorner: null,
+        curtainWindowFloorHeight: null, curtainWindowHeight: null
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true, fabricWidth: 314, fabricDrop: 185,
+      fabricMl: 5.55, structureLength: 315.5, rollTubeLength: 315.5
+    });
+  });
+
+  test('motor usa SUNILUS 15/17 y dos Cortinas de una OF se consolidan', () => {
+    const calculated = calculateOrder(basePayload({
+      orderCode: 'AR2602972',
+      structureColor: 'BLANCO',
+      fabric: 'ACR NEGRO',
+      awnings: [1, 2].map(() => cortina({
+        of: '0229551', width: 321.5, projection: 150, valanceHeight: 0,
+        device: 'MOTOR', crankHeight: null, curtainHasWindow: false,
+        curtainWindowExit: null, curtainWindowCorner: null,
+        curtainWindowFloorHeight: null, curtainWindowHeight: null
+      }))
+    }));
+    const reservation = consolidateReservation(calculated);
+
+    expect(reservation.ofs).toHaveLength(1);
+    expect(reservation.ofs[0].materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 2 }),
+      expect.objectContaining({ code: 'SOPORTEUNVHIPRO', quantity: 2 }),
+      expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 4 }),
+      expect.objectContaining({ code: 'ACRILI2170P120', quantity: 11.7 })
+    ]));
+  });
+
+  test('el descuento inferior de 18 cm solo se aplica como excepción individual', () => {
+    const result = calculateOrder(basePayload({
+      fabric: 'ACR NEGRO',
+      structureColor: 'BLANCO',
+      awnings: [cortina({
+        width: 200, projection: 300, valanceHeight: 15,
+        reglasModificadas: true, curtainFabricDeductionCm: 18
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true, fabricWidth: 188, fabricDrop: 342,
+      fabricMl: 6.84, curtainFabricDeductionCm: 18
+    });
+    expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(true);
+  });
+
+  test('fuera de 500x400 exige activar una excepción técnica', () => {
+    const result = calculateOrder(basePayload({
+      fabric: 'ACR NEGRO',
+      structureColor: 'BLANCO',
+      awnings: [cortina({ width: 585 })]
+    }));
+
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics.some((item) => item.message.includes('máximo 500x400'))).toBe(true);
   });
 });

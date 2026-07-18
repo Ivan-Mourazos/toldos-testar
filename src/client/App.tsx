@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
 import {
   ClipboardList,
   Eraser,
@@ -52,7 +51,7 @@ function suggestedPdfName(orderCode: string) {
   return `${clean || 'PLANTEAMIENTO'}-1.pdf`;
 }
 
-function App() {
+export default function App() {
   const draft = useDraft();
   const ruleSettings = useParameters();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -356,6 +355,12 @@ function App() {
               onUpdateGalicia={ruleSettings.updateGalicia}
               onResetArzua={ruleSettings.resetArzua}
               onResetGalicia={ruleSettings.resetGalicia}
+              onUpdatePerlaBox={ruleSettings.updatePerlaBox}
+              onResetPerlaBox={ruleSettings.resetPerlaBox}
+              onUpdateCoralBox={ruleSettings.updateCoralBox}
+              onResetCoralBox={ruleSettings.resetCoralBox}
+              onUpdateCortina={ruleSettings.updateCortina}
+              onResetCortina={ruleSettings.resetCortina}
             />
           )}
 
@@ -386,5 +391,3 @@ function App() {
     </main>
   );
 }
-
-createRoot(document.getElementById('root')!).render(<App />);

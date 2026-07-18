@@ -1,5 +1,9 @@
 const preferredLabels: Record<string, string> = {
   'ARZUA PRO': 'Arzúa Pro',
+  'AMBAR BOX': 'Ambar Box',
+  'AGATA BOX': 'Agata Box',
+  'CUARZO BOX': 'Cuarzo Box',
+  'CORAL BOX': 'Coral Box',
   'HOSTELERÍA / EMPRESA': 'Hostelería / empresa',
   'TUBO DE CARGA EVO 80': 'Evo 80',
   'TUBO DE CARGA UNIVERS 280': 'Univers 280',
