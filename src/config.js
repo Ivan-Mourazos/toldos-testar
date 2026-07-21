@@ -8,7 +8,7 @@ function numberFromEnv(name, fallback) {
 }
 
 export const config = {
-  port: numberFromEnv('PORT', 4300),
+  port: numberFromEnv('PORT', 4400),
   fileWritesEnabled: String(process.env.ENABLE_FILE_WRITES || '').toLowerCase() === 'true',
   exportDirectory: process.env.EXPORT_DIRECTORY || '',
   orderArchiveRoot: process.env.ORDER_ARCHIVE_ROOT || '',
