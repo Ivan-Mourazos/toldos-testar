@@ -5,4 +5,5 @@ exports
 output
 tmp
 .logs
+.codex-dev*.log
 _analysis/*.tmp
