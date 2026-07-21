@@ -31,9 +31,12 @@ export function calculateCortina({ order, awning }) {
     : [];
   if (missingWindowDimensions.length) missingFields.push('medidas de ventana');
 
-  const fabricWidth = round1(awning.width - discount(parameters.fabricWidthDiscounts, device));
-  const rollTubeLength = round1(awning.width - discount(parameters.rollTubeDiscounts, device));
-  const structureLength = round1(awning.width - discount(parameters.loadProfileDiscounts, device));
+  const fabricWidthDiscount = effectiveDiscount(awning, 'curtainFabricWidthDiscountCm', parameters.fabricWidthDiscounts, device);
+  const rollTubeDiscount = effectiveDiscount(awning, 'curtainRollTubeDiscountCm', parameters.rollTubeDiscounts, device);
+  const loadProfileDiscount = effectiveDiscount(awning, 'curtainLoadProfileDiscountCm', parameters.loadProfileDiscounts, device);
+  const fabricWidth = round1(awning.width - fabricWidthDiscount);
+  const rollTubeLength = round1(awning.width - rollTubeDiscount);
+  const structureLength = round1(awning.width - loadProfileDiscount);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricDrop = round1(awning.projection + valance + parameters.fabricDropAllowanceCm - deduction);
   const fabricUsage = calculateFabricUsage({
@@ -62,7 +65,7 @@ export function calculateCortina({ order, awning }) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA no válida: ningún largo de stock admite ${Math.max(rollTubeLength, structureLength)} cm.` });
   } else if ((overWidth || overDrop) && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA fuera de estándar: máximo ${parameters.standardMaxWidth}x${parameters.standardMaxDrop} cm.` });
-  } else if (overWidth || overDrop || deduction > 0) {
+  } else if (overWidth || overDrop || deduction > 0 || hasDimensionalOverrides(awning)) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de Cortina modificadas.` });
   }
 
@@ -81,7 +84,10 @@ export function calculateCortina({ order, awning }) {
       fabricRollWidth: fabric?.width || 120,
       structureLength, rollTubeLength, stockLength,
       motorPower: device === 'MOTOR' ? '15/17' : '', armCount: 0,
-      curtainFabricDeductionCm: deduction
+      curtainFabricDeductionCm: deduction,
+      curtainFabricWidthDiscountCm: fabricWidthDiscount,
+      curtainRollTubeDiscountCm: rollTubeDiscount,
+      curtainLoadProfileDiscountCm: loadProfileDiscount
     }
   };
 }
@@ -167,6 +173,18 @@ function normalizeDevice(value) {
 
 function discount(table, device) {
   return Number(table[device || 'MOTOR']) || 0;
+}
+
+function effectiveDiscount(awning, field, table, device) {
+  const override = awning[field];
+  return awning.reglasModificadas && override !== null && override !== undefined && Number.isFinite(Number(override))
+    ? Math.max(0, Number(override))
+    : discount(table, device);
+}
+
+function hasDimensionalOverrides(awning) {
+  return Boolean(awning.reglasModificadas) && ['curtainFabricWidthDiscountCm', 'curtainRollTubeDiscountCm', 'curtainLoadProfileDiscountCm']
+    .some((field) => awning[field] !== null && awning[field] !== undefined);
 }
 
 function chooseStockLength(length, stockLengths) {

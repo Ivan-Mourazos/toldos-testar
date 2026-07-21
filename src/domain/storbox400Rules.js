@@ -14,13 +14,15 @@ const configs = {
   perla: {
     model: 'PERLA BOX', parameterKey: 'perlaBox', normalize: normalizePerlaBoxParameters,
     supportPrefix: 'SOSTORBS300', profilePrefix: 'PRBOXS300', capPrefix: 'TAPBS300',
-    pieceName: 'STORBOX S-300'
+    pieceName: 'STORBOX S-300', reserveKitParts: false, motorWheelUnits: 2,
+    sharedMotorAccessories: false, rollTubeUnits: 2, reserveTipBushing: false
   },
   coral: {
     model: 'CORAL BOX', parameterKey: 'coralBox', normalize: normalizeCoralBoxParameters,
     supportPrefix: 'SOSTORB400', profilePrefix: 'PRBOX400',
     capPrefix: { MOTOR: 'TAPAMOBOX400', MAQUINA: 'TAPAMAEBOX400' },
-    pieceName: 'STORBOX 400'
+    pieceName: 'STORBOX 400', reserveKitParts: true, motorWheelUnits: 1,
+    sharedMotorAccessories: true, rollTubeUnits: 1, reserveTipBushing: true
   }
 };
 
@@ -47,14 +49,19 @@ function calculateBox({ order, awning }, config) {
   if (!device) missingFields.push('dispositivo válido');
   if (device === 'MAQUINA' && !awning.crankHeight) missingFields.push('altura de manivela');
 
-  const minimumLine = lookupMinimumLine(parameters.minimumLineByProjection, awning.projection, device);
+  const standardMinimumLine = lookupMinimumLine(parameters.minimumLineByProjection, awning.projection, device);
+  const minimumLine = effectiveNumber(awning, 'boxMinimumLineCm', standardMinimumLine);
   const belowMinimum = Number(awning.width) < minimumLine;
   const overMaximum = Number(awning.width) > parameters.standardMaxWidth;
   const modified = Boolean(awning.reglasModificadas);
-  const structureLength = round1(awning.width - parameters.profileDiscountCm[device || 'MOTOR']);
-  const rollTubeLength = round1(awning.width - parameters.rollDiscountCm[device || 'MOTOR']);
-  const fabricWidth = round1(awning.width - parameters.fabricWidthDiscountCm[device || 'MOTOR']);
-  const protectorLength = round1(awning.width - parameters.protectorDiscountCm[device || 'MOTOR']);
+  const profileDiscount = effectiveNumber(awning, 'boxProfileDiscountCm', parameters.profileDiscountCm[device || 'MOTOR']);
+  const rollDiscount = effectiveNumber(awning, 'boxRollDiscountCm', parameters.rollDiscountCm[device || 'MOTOR']);
+  const fabricWidthDiscount = effectiveNumber(awning, 'boxFabricWidthDiscountCm', parameters.fabricWidthDiscountCm[device || 'MOTOR']);
+  const protectorDiscount = effectiveNumber(awning, 'boxProtectorDiscountCm', parameters.protectorDiscountCm[device || 'MOTOR']);
+  const structureLength = round1(awning.width - profileDiscount);
+  const rollTubeLength = round1(awning.width - rollDiscount);
+  const fabricWidth = round1(awning.width - fabricWidthDiscount);
+  const protectorLength = round1(awning.width - protectorDiscount);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricDrop = round1(awning.projection + parameters.fabricDropAllowanceCm + valance);
   const fabricUsage = calculateFabricUsage({
@@ -66,7 +73,8 @@ function calculateBox({ order, awning }, config) {
     seamBaseCm: parameters.seamBaseCm
   });
   const stockLength = chooseStockLength(Math.max(structureLength, rollTubeLength, protectorLength), parameters.stockLengths);
-  const motorPower = resolveBoxMotorPower(awning.projection, parameters);
+  const automaticMotorPower = resolveBoxMotorPower(awning.projection, parameters);
+  const motorPower = effectiveMotorPower(awning, automaticMotorPower);
   const valid = missingFields.length === 0
     && Boolean(fabric)
     && !belowMinimum
@@ -84,8 +92,8 @@ function calculateBox({ order, awning }, config) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `${config.model} no válido: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm.` });
   } else if (!stockLength) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `${config.model} no válido: ningún largo de stock configurado admite ${Math.max(structureLength, rollTubeLength, protectorLength)} cm.` });
-  } else if (overMaximum) {
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: frente ${awning.width} cm supera el máximo estándar.` });
+  } else if (modified) {
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de ${config.model} modificadas.` });
   }
 
   const context = {
@@ -105,7 +113,12 @@ function calculateBox({ order, awning }, config) {
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
       structureLength, rollTubeLength, stockLength,
-      motorPower: device === 'MOTOR' ? `${motorPower}/17` : '', armCount: 1
+      motorPower: device === 'MOTOR' ? `${motorPower}/17` : '', armCount: 1,
+      boxMinimumLineCm: minimumLine,
+      boxProfileDiscountCm: profileDiscount,
+      boxRollDiscountCm: rollDiscount,
+      boxFabricWidthDiscountCm: fabricWidthDiscount,
+      boxProtectorDiscountCm: protectorDiscount
     }
   };
 }
@@ -122,25 +135,30 @@ function buildMaterials(context) {
   const { awning, lacado, device, fabric, stockLength, motorPower, fabricMl, config } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
-  const materials = [
-    { code: refSupport(config, suffix), quantity: units, description: `JUEGO SOPORTE ${config.pieceName}` },
-    { code: refRollTube(stockLength), quantity: 2 * units, description: 'TUBO DE ENROLLE P801' },
-    { code: refProfiles(config, suffix, stockLength), quantity: units, description: `KIT PERFILES ${config.pieceName}` },
-    { code: refCaps(config, device, suffix), quantity: units, description: `KIT TAPAS ${device} ${config.pieceName}` },
-    { code: refArm(suffix, awning.projection), quantity: units, description: 'JUEGO DE BRAZOS ONYX' }
-  ];
+  const materials = [];
+  if (config.reserveKitParts) materials.push({ code: refSupport(config, suffix), quantity: units, description: `JUEGO SOPORTE ${config.pieceName}` });
+  materials.push({ code: refRollTube(stockLength), quantity: config.rollTubeUnits * units, description: 'TUBO DE ENROLLE P801' });
+  if (config.reserveTipBushing) materials.push({ code: 'CASPUNCE', quantity: units, description: 'CASQUILLO PUNTA' });
+  if (config.reserveKitParts) {
+    materials.push(
+      { code: refProfiles(config, suffix, stockLength), quantity: units, description: `KIT PERFILES ${config.pieceName}` },
+      { code: refCaps(config, device, suffix), quantity: units, description: `KIT TAPAS ${device} ${config.pieceName}` }
+    );
+  }
+  materials.push({ code: refArm(suffix, awning.projection), quantity: units, description: 'JUEGO DE BRAZOS ONYX' });
 
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
+    const sharedAccessory = config.sharedMotorAccessories ? { aggregation: 'max' } : {};
     materials.push(
-      { code: 'RUEDAMOT78', quantity: units, description: 'RUEDA MOTRIZ Ø 78' },
+      { code: 'RUEDAMOT78', quantity: config.motorWheelUnits * units, description: 'RUEDA MOTRIZ Ø 78' },
       { code: `SUNEAIO${motorPower}//17`, quantity: units, description: `MOTOR SOMFY SUNEA ${motorPower}/17 IO` },
       { code: 'CORONALT6078', quantity: units, description: 'CORONA LT 60 ADAPTADA Ø 78' },
       { code: 'SOPORTEUNVHIPRO', quantity: units, description: 'SOPORTE UNIVERSAL HIPRO' },
-      { code: remote.code, quantity: units, description: remote.description }
+      { code: remote.code, quantity: units, description: remote.description, ...sharedAccessory }
     );
     const sensor = sensorMaterial(awning.sensor);
-    if (sensor) materials.push({ ...sensor, quantity: units });
+    if (sensor) materials.push({ ...sensor, quantity: units, ...sharedAccessory });
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
@@ -218,6 +236,19 @@ function normalizeDevice(value) {
   if (clean === 'MOTOR') return 'MOTOR';
   if (clean.includes('MAQ')) return 'MAQUINA';
   return '';
+}
+
+function effectiveNumber(awning, field, fallback) {
+  const override = awning[field];
+  return awning.reglasModificadas && override !== null && override !== undefined && Number.isFinite(Number(override))
+    ? Math.max(0, Number(override))
+    : Number(fallback) || 0;
+}
+
+function effectiveMotorPower(awning, fallback) {
+  if (!awning.reglasModificadas) return fallback;
+  const parsed = Number.parseInt(String(awning.motorPower || ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function chooseStockLength(length, stockLengths) {

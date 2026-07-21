@@ -49,6 +49,7 @@ export function LiveResults({ calculation, state }: Props) {
               </div>
               <span className="num">
                 Tela {formatDecimal(ofBlock.calculation?.fabricWidth)} × {formatDecimal(ofBlock.calculation?.fabricDrop)} · {formatDecimal(ofBlock.calculation?.fabricMl)} ml
+                {ofBlock.calculation?.valanceFabricCode ? ` · Bamba ${ofBlock.calculation.valanceFabricCode}: ${formatDecimal(ofBlock.calculation.valanceFabricMl)} ml` : ''}
               </span>
             </article>
           ))}
@@ -86,7 +87,13 @@ export function LiveResults({ calculation, state }: Props) {
 }
 
 function groupMaterialRows(ofs: Calculation['ofs']) {
-  const rows = new Map<string, { of: string; description: string; code: string; quantity: number }>();
+  const rows = new Map<string, {
+    of: string;
+    description: string;
+    code: string;
+    quantity: number;
+    aggregation?: 'sum' | 'max';
+  }>();
   for (const ofBlock of ofs) {
     for (const material of ofBlock.materials) {
       const key = `${ofBlock.of.trim().toUpperCase()}||${material.code.trim().toUpperCase()}`;
@@ -96,7 +103,9 @@ function groupMaterialRows(ofs: Calculation['ofs']) {
         code: material.code,
         quantity: 0
       };
-      current.quantity = Math.round((current.quantity + material.quantity) * 1000) / 1000;
+      current.quantity = material.aggregation === 'max'
+        ? Math.round(Math.max(current.quantity, material.quantity) * 1000) / 1000
+        : Math.round((current.quantity + material.quantity) * 1000) / 1000;
       rows.set(key, current);
     }
   }

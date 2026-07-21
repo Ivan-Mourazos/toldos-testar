@@ -3,6 +3,12 @@ import { lacadoNames } from './lacados.js';
 import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
 import { galiciaEstablishedProjections } from './galiciaConstants.js';
 import { coralBoxEstablishedProjections, perlaBoxEstablishedProjections } from './storbox400Constants.js';
+import { cuarzoBoxEstablishedProjections } from './storbox250Parameters.js';
+import { xacobeoEstablishedProjections } from './xacobeoParameters.js';
+import { puntoRectoEstablishedProjections } from './puntoRectoParameters.js';
+import { monoblock350EstablishedProjections } from './monoblock350Parameters.js';
+import { ambarBoxEstablishedProjections } from './ambarBoxParameters.js';
+import { agataBoxEstablishedProjections } from './agataBoxParameters.js';
 import { normalizeModelName } from './modelNames.js';
 
 const fallbackModel = {
@@ -89,5 +95,11 @@ export function getEstablishedProjections(modelCode) {
   if (code === 'GALICIA') return galiciaEstablishedProjections;
   if (code === 'CORAL BOX') return coralBoxEstablishedProjections;
   if (code === 'PERLA BOX') return perlaBoxEstablishedProjections;
+  if (code === 'CUARZO BOX') return cuarzoBoxEstablishedProjections;
+  if (code === 'XACOBEO') return xacobeoEstablishedProjections;
+  if (code === 'PUNTO RECTO') return puntoRectoEstablishedProjections;
+  if (code === 'MONOBLOCK 350') return monoblock350EstablishedProjections;
+  if (code === 'AMBAR BOX') return ambarBoxEstablishedProjections;
+  if (code === 'AGATA BOX') return agataBoxEstablishedProjections;
   return null;
 }

@@ -32,6 +32,8 @@ export function calculateArzuaPro({ order, awning }) {
   const overMaximum = supportSystem === 'ARZUA' && awning.width > parameters.standardMaxWidth;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
+  const valanceFabricSelection = String(awning.valanceFabric || '').trim();
+  const valanceFabric = valanceFabricSelection ? resolveFabric(valanceFabricSelection) : null;
   // El gate de incompletitud de calculateOrder solo cubre OF/modelo/frente/salida;
   // sin estos campos el cálculo asumiría MOTOR/EVO 80 o emitiría MANIVE...0C en silencio.
   const missingFields = [];
@@ -42,7 +44,11 @@ export function calculateArzuaPro({ order, awning }) {
   if (!tubeLoad) missingFields.push('tubo de carga válido');
   const fabricWidth = round1(awning.width - lookupDiscount(parameters.fabricWidthDiscounts, tubeLoad, device, 11));
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(awning.projection + valance + parameters.fabricDropAllowanceCm);
+  const valanceExtraCm = 5;
+  const mainDropAllowance = valanceFabricSelection
+    ? Math.max(0, parameters.fabricDropAllowanceCm - valanceExtraCm)
+    : parameters.fabricDropAllowanceCm;
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (valanceFabricSelection ? 0 : valance));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
@@ -52,6 +58,14 @@ export function calculateArzuaPro({ order, awning }) {
     seamBaseCm: parameters.seamBaseCm
   });
   const fabricMl = fabricUsage.ml;
+  const valanceUsage = valanceFabric && valance > 0 ? calculateFabricUsage({
+    width: fabricWidth,
+    drop: valance + valanceExtraCm,
+    units: awning.units,
+    rollWidth: valanceFabric.width || 120,
+    seamAllowanceCm: parameters.seamAllowanceCm,
+    seamBaseCm: parameters.seamBaseCm
+  }) : null;
   const length = round1(awning.width - lookupDiscount(parameters.widthDiscounts, tubeLoad, device, 9.8));
   const rollTubeLength = round1(awning.width - lookupDiscount(parameters.rollTubeDiscounts, tubeLoad, device, 9.8));
   const stockLength = chooseStockLength(length, parameters.stockLengths);
@@ -59,6 +73,7 @@ export function calculateArzuaPro({ order, awning }) {
   const stockUnavailable = stockLength === null;
   const valid = missingFields.length === 0
     && !fabricInvalid
+    && (!valanceFabricSelection || valance === 0 || Boolean(valanceFabric))
     && !stockUnavailable
     && !belowMinimum
     && (!overMaximum || modified);
@@ -67,6 +82,13 @@ export function calculateArzuaPro({ order, awning }) {
       level: 'error',
       awningId: awning.id,
       message: `Tela no encontrada en el catálogo: "${fabricSelection}".`
+    });
+  }
+  if (valanceFabricSelection && valance > 0 && !valanceFabric) {
+    diagnostics.push({
+      level: 'error',
+      awningId: awning.id,
+      message: `Tela de bamba no encontrada en el catálogo: "${valanceFabricSelection}".`
     });
   }
   if (stockUnavailable) {
@@ -78,7 +100,10 @@ export function calculateArzuaPro({ order, awning }) {
   }
 
   const materials = valid
-    ? buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, stockLength, fabricMl, fabric })
+    ? buildMaterials({
+      awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount,
+      stockLength, fabricMl, fabric, valanceFabric, valanceFabricMl: valanceUsage?.ml || 0
+    })
     : [];
 
   const despiece = valid
@@ -127,9 +152,16 @@ export function calculateArzuaPro({ order, awning }) {
       fabricDrop,
       fabricMl,
       fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricMl,
+      mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '',
       fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      valanceFabricCode: valanceFabric?.code || '',
+      valanceFabricDescription: valanceFabric?.description || '',
+      valanceFabricMl: valanceUsage?.ml || 0,
+      valanceFabricPanels: valanceUsage?.panels || 0,
+      valanceDrop: valanceUsage ? valance + valanceExtraCm : 0,
       structureLength: length,
       rollTubeLength,
       stockLength,
@@ -153,7 +185,7 @@ const refCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASMAQEJE
 const descCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78');
 const refManivela = (lacado, crankHeight) => `MANIVE${crankSuffix(lacado)}${crankHeight}C`;
 
-function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, stockLength, fabricMl, fabric }) {
+function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, stockLength, fabricMl, fabric, valanceFabric, valanceFabricMl }) {
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     { code: refSoporte(supportSystem, colorSuffix), quantity: units, description: supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND' },
@@ -196,6 +228,9 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
 
   if (fabric) {
     materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
+  }
+  if (valanceFabric && valanceFabricMl > 0) {
+    materials.push({ code: valanceFabric.code, quantity: valanceFabricMl, description: `${valanceFabric.description} · BAMBA` });
   }
 
   return materials;

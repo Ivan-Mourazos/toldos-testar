@@ -1050,6 +1050,15 @@ label span,
   vertical-align: middle;
 }
 .parameter-table-lines { min-width: 620px; }
+.parameter-inline-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(64px, 1fr));
+  gap: 5px;
+}
+.parameter-inline-fields input {
+  min-width: 0;
+  width: 100%;
+}
 .parameter-table-lines.galicia-lines { min-width: 900px; table-layout: fixed; }
 .galicia-lines th { white-space: normal; }
 .galicia-lines th:first-child, .galicia-lines td:first-child { width: 50px; }

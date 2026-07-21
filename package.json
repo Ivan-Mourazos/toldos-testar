@@ -10,7 +10,10 @@
     "start": "node src/server.js",
     "lint": "eslint .",
     "test": "vitest run",
-    "validate:galicia": "node scripts/validate-galicia-production.mjs"
+    "validate:arzua": "node scripts/validate-arzua-production.mjs",
+    "validate:galicia": "node scripts/validate-galicia-production.mjs",
+    "validate:maxiscreem": "node scripts/validate-maxiscreem-production.mjs",
+    "validate:monoblock": "node scripts/validate-monoblock-350-production.mjs"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "5.2.8",

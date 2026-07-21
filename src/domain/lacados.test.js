@@ -41,9 +41,10 @@ describe('lacados', () => {
   });
 
   test('lista canónica para el desplegable', () => {
-    expect(lacadoNames).toHaveLength(10);
+    expect(lacadoNames).toHaveLength(16);
     expect(lacadoNames).toContain('BLANCO');
     expect(lacadoNames).toContain('LACADO ESPECIAL');
+    expect(lacadoNames).toContain('GRIS 7016');
   });
 
   test('GRIS sin código no cae en GRIS PLATA por coincidencia parcial', () => {

@@ -372,6 +372,32 @@ describe('ARZUA PRO caída de tela con bamba real', () => {
     expect(result.ofs[0].calculation.fabricDrop).toBe(295);
     expect(result.ofs[0].description).not.toContain('bambalina');
   });
+
+  test('AR2601535-1: bamba de otra tela separa el paño principal', () => {
+    const result = calculateOrder(basePayload({
+      sameFabric: false,
+      awnings: [baseAwning({
+        of: '0227008', model: 'ARZUA PRO', width: 450, projection: 250,
+        valanceHeight: 20, fabric: 'ACR NEGRO', valanceFabric: 'ACR BOTELLA',
+        device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80',
+        crankHeight: 250, structureColor: 'BLANCO'
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true,
+      fabricDrop: 290,
+      mainFabricMl: 11.6,
+      valanceFabricCode: 'ACRILI2245P120',
+      valanceFabricMl: 1,
+      valanceDrop: 25
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ACRILI2170P120', quantity: 11.6 }),
+      expect.objectContaining({ code: 'ACRILI2245P120', quantity: 1 })
+    ]));
+  });
 });
 
 describe('normalización de campos nuevos del pedido', () => {
@@ -920,10 +946,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       stockLength: 600, armCount: 1
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
-      { code: 'SOSTORBS300BL16', quantity: 1 },
       { code: 'TURA80HG600C', quantity: 2 },
-      { code: 'PRBOXS300BL16600C', quantity: 1 },
-      { code: 'TAPBS300BL16', quantity: 1 },
       { code: 'BONYXBL16200C', quantity: 1 },
       { code: 'CASTRAEX80', quantity: 1 },
       { code: 'MAQMB9L13BLAN', quantity: 1 },
@@ -952,10 +975,8 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       fabricWidth: 532.8, fabricDrop: 345, fabricMl: 17.25
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'SOSTORBS300NE11', quantity: 1 }),
-      expect.objectContaining({ code: 'PRBOXS300NE11600C', quantity: 1 }),
-      expect.objectContaining({ code: 'TAPBS300NE11', quantity: 1 }),
       expect.objectContaining({ code: 'BONYXNE11300C', quantity: 1 }),
+      expect.objectContaining({ code: 'RUEDAMOT78', quantity: 2 }),
       expect.objectContaining({ code: 'SUNEAIO50//17', quantity: 1 }),
       expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 }),
       expect.objectContaining({ code: 'ACRILI1070P120', quantity: 17.25 })
@@ -1000,6 +1021,66 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(result.ofs[0].calculation).toMatchObject({ valid: false, minimumLine: 260, fabricWidth: 235 });
   });
 
+  test('permite una excepción individual de línea, descuentos y potencia', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        model: 'PERLA BOX', width: 235, projection: 200,
+        valanceHeight: 0, device: 'MOTOR', sensor: 'SIN SENSOR',
+        reglasModificadas: true,
+        boxMinimumLineCm: 230,
+        boxProfileDiscountCm: 16,
+        boxRollDiscountCm: 14,
+        boxFabricWidthDiscountCm: 20,
+        boxProtectorDiscountCm: 16,
+        motorPower: '40/17'
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      minimumLine: 230,
+      structureLength: 219,
+      rollTubeLength: 221,
+      fabricWidth: 215,
+      motorPower: '40/17',
+      boxProtectorDiscountCm: 16
+    });
+    expect(result.ofs[0].materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SUNEAIO40//17', quantity: 1 })
+    ]));
+    expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(true);
+  });
+
+  test('ignora ajustes individuales de Perla Box con el candado cerrado', () => {
+    const result = calculateOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR NEGRO',
+      awnings: [baseAwning({
+        model: 'PERLA BOX', width: 295, projection: 200,
+        valanceHeight: 0, device: 'MOTOR', sensor: 'SIN SENSOR',
+        reglasModificadas: false,
+        boxMinimumLineCm: 100,
+        boxProfileDiscountCm: 30,
+        boxRollDiscountCm: 30,
+        boxFabricWidthDiscountCm: 30,
+        boxProtectorDiscountCm: 30,
+        motorPower: '50/17'
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      minimumLine: 240,
+      structureLength: 279.3,
+      rollTubeLength: 281.5,
+      fabricWidth: 275.8,
+      motorPower: '35/17'
+    });
+    expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(false);
+  });
+
   test('AR2603009: tres Coralbox se agrupan en una OF y 49,35 ml', () => {
     const result = calculateOrder(basePayload({
       orderCode: 'AR2603009',
@@ -1027,12 +1108,15 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     ]);
     expect(materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'ACRILI2226P120', quantity: 49.35 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 6 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 3 }),
+      expect.objectContaining({ code: 'CASPUNCE', quantity: 3 }),
       expect.objectContaining({ code: 'SOSTORB400BL16', quantity: 3 }),
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
       expect.objectContaining({ code: 'BONYXBL16300C', quantity: 1 }),
+      expect.objectContaining({ code: 'RUEDAMOT78', quantity: 3 }),
       expect.objectContaining({ code: 'SUNEAIO50//17', quantity: 3 }),
-      expect.objectContaining({ code: 'EOLIS3DIO', quantity: 3 })
+      expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 }),
+      expect.objectContaining({ code: 'EOLIS3DIO', quantity: 1 })
     ]));
   });
 
@@ -1122,6 +1206,25 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
     });
   });
 
+  test('respeta el margen de confección del Excel al cambiar de número de paños', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR26PAÑOS',
+      structureColor: 'BLANCO',
+      fabric: 'ACR NEGRO',
+      awnings: [cortina({
+        width: 126, projection: 100, valanceHeight: 0,
+        curtainHasWindow: false,
+        curtainWindowExit: null, curtainWindowCorner: null,
+        curtainWindowFloorHeight: null, curtainWindowHeight: null
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true, fabricWidth: 114, fabricDrop: 145,
+      fabricPanels: 2, fabricMl: 2.9
+    });
+  });
+
   test('motor usa SUNILUS 15/17 y dos Cortinas de una OF se consolidan', () => {
     const calculated = calculateOrder(basePayload({
       orderCode: 'AR2602972',
@@ -1160,6 +1263,53 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       fabricMl: 6.84, curtainFabricDeductionCm: 18
     });
     expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(true);
+  });
+
+  test('AR2602094: permite ajustar tela, tubo y perfil por separado', () => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2602094',
+      fabric: 'ACR NEGRO',
+      structureColor: 'BLANCO',
+      awnings: [cortina({
+        width: 317,
+        reglasModificadas: true,
+        curtainFabricWidthDiscountCm: 20,
+        curtainRollTubeDiscountCm: 11,
+        curtainLoadProfileDiscountCm: 19
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      fabricWidth: 297,
+      rollTubeLength: 306,
+      structureLength: 298,
+      curtainFabricWidthDiscountCm: 20,
+      curtainRollTubeDiscountCm: 11,
+      curtainLoadProfileDiscountCm: 19
+    });
+    expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(true);
+  });
+
+  test('ignora ajustes recordados cuando la excepción está desactivada', () => {
+    const result = calculateOrder(basePayload({
+      fabric: 'ACR NEGRO',
+      structureColor: 'BLANCO',
+      awnings: [cortina({
+        width: 317,
+        reglasModificadas: false,
+        curtainFabricWidthDiscountCm: 20,
+        curtainRollTubeDiscountCm: 11,
+        curtainLoadProfileDiscountCm: 19
+      })]
+    }));
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      fabricWidth: 305,
+      rollTubeLength: 306,
+      structureLength: 306
+    });
+    expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(false);
   });
 
   test('fuera de 500x400 exige activar una excepción técnica', () => {

@@ -341,6 +341,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
       `OF ${value(awning.of)}`,
       value(awning.model),
       value(calc?.fabricCode),
+      calc?.valanceFabricCode ? `BAMBA ${calc.valanceFabricCode}: ${formatNumber(calc.valanceFabricMl)} ML` : '',
       bambaLabel(awning),
       valanceConfigLabel(awning),
       curtainWindowLabel(awning),
@@ -355,7 +356,11 @@ function drawFabricTotals(doc, x, y, w, lines) {
   const totals = new Map();
   for (const line of lines) {
     const code = line.calc?.fabricCode || 'TELA SIN DEFINIR';
-    totals.set(code, (totals.get(code) || 0) + (Number(line.calc?.fabricMl) || 0));
+    const mainMl = line.calc?.mainFabricMl ?? line.calc?.fabricMl;
+    totals.set(code, (totals.get(code) || 0) + (Number(mainMl) || 0));
+    if (line.calc?.valanceFabricCode && Number(line.calc?.valanceFabricMl) > 0) {
+      totals.set(line.calc.valanceFabricCode, (totals.get(line.calc.valanceFabricCode) || 0) + Number(line.calc.valanceFabricMl));
+    }
   }
   roundedBox(doc, x, y, w, 34, 3, colors.gray, colors.line);
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6.5)
@@ -370,7 +375,155 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}) {
   if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h);
   if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h);
+  if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'MAXISCREEN') return drawMaxiscreenDiagram(doc, x, y, w, h, awning);
   return drawGeneralDiagram(doc, x, y, w, h);
+}
+
+function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
+  const variant = String(awning.submodel || '').toUpperCase();
+  const withBox = variant.startsWith('COFRE');
+  const guide = variant.includes('VARILLA') ? 'VARILLA' : variant.includes('CABLE') ? 'CABLE' : 'SIN GUÍA';
+  roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
+  doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+    .text('DIANA VERTICAL', x + 18, y + 13, { width: w - 36, align: 'center' });
+
+  const panelX = x + 49;
+  const panelY = y + 73;
+  const panelW = w - 98;
+  const panelH = h - 142;
+  if (withBox) {
+    doc.roundedRect(panelX - 13, panelY - 27, panelW + 26, 31, 6)
+      .fillAndStroke('#e7eeec', '#466e64');
+    doc.circle(panelX + panelW / 2, panelY - 12, 9).fillAndStroke(colors.paper, '#466e64');
+  } else {
+    doc.circle(panelX + panelW / 2, panelY - 11, 11).fillAndStroke('#e7eeec', '#466e64');
+  }
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#9db0ac');
+  doc.moveTo(panelX + 5, panelY + 4).lineTo(panelX + 5, panelY + panelH)
+    .moveTo(panelX + panelW - 5, panelY + 4).lineTo(panelX + panelW - 5, panelY + panelH)
+    .strokeColor(guide === 'CABLE' ? '#466e64' : guide === 'VARILLA' ? '#d2a116' : '#c9d5d2')
+    .lineWidth(guide === 'SIN GUÍA' ? 0.6 : 1.4).stroke();
+  doc.roundedRect(panelX - 4, panelY + panelH - 7, panelW + 8, 14, 3)
+    .fillAndStroke('#e7eeec', '#466e64');
+
+  drawDiagramText(doc, withBox ? 'COFRE' : 'TUBO VISTO', panelX, panelY - 48, panelW);
+  drawDiagramText(doc, guide, panelX, panelY + panelH + 18, panelW);
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
+    .text(`FRENTE ${formatNumber(awning.width)} CM`, panelX, panelY + 22, { width: panelW, align: 'center' })
+    .text(`CAÍDA ${formatNumber(awning.projection)} CM`, panelX + panelW + 8, panelY + 72, { width: 34, align: 'center' });
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
+    .text('P801 · PERFIL DE CARGA MAXISCREEN', x + 24, y + h - 25, { width: w - 48, align: 'center' });
+}
+
+function drawAgataDiagram(doc, x, y, w, h, awning) {
+  const variant = String(awning.submodel || 'OPEN').toUpperCase();
+  const arms = Math.max(2, Math.min(4, Number(awning.armCount) || 2));
+  const enclosed = variant !== 'OPEN';
+  const fullBox = variant === 'COFRE';
+  roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
+  doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+    .text(`ÁGATA BOX · ${variant}`, x + 18, y + 13, { width: w - 36, align: 'center' });
+
+  const wallX = x + 38;
+  const headY = y + 72;
+  const frontX = x + w - 38;
+  const frontY = y + 205;
+  doc.moveTo(wallX, y + 45).lineTo(wallX, y + h - 40)
+    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+
+  if (enclosed) {
+    const boxH = fullBox ? 38 : 30;
+    doc.roundedRect(wallX - 7, headY - 4, 48, boxH, fullBox ? 9 : 5)
+      .fillAndStroke('#e7eeec', '#466e64');
+    doc.circle(wallX + 16, headY + 13, 8).fillAndStroke(colors.paper, '#466e64');
+    if (!fullBox) {
+      doc.moveTo(wallX + 1, headY + boxH - 4).lineTo(wallX + 40, headY + boxH - 4)
+        .strokeColor('#d2a116').lineWidth(1.2).stroke();
+    }
+  } else {
+    doc.circle(wallX + 17, headY + 13, 11).fillAndStroke('#e7eeec', '#466e64');
+    doc.moveTo(wallX - 1, headY + 33).lineTo(wallX + 38, headY + 33)
+      .strokeColor('#466e64').lineWidth(2).stroke();
+  }
+
+  doc.moveTo(wallX + 35, headY + 18).lineTo(frontX, frontY)
+    .strokeColor('#d2a116').lineWidth(2).stroke();
+  for (let index = 0; index < arms; index += 1) {
+    const offset = (index - (arms - 1) / 2) * 5;
+    const jointX = wallX + 88 + (frontX - wallX) * 0.32 + offset;
+    const jointY = headY + 63 + offset * 0.35;
+    doc.moveTo(wallX + 30, headY + 28 + offset * 0.15).lineTo(jointX, jointY).lineTo(frontX - 10, frontY + 25 + offset * 0.18)
+      .strokeColor(index % 2 ? '#708e86' : '#466e64').lineWidth(1.15).stroke();
+  }
+
+  doc.roundedRect(frontX - 8, frontY - 8, 15, 43, 3)
+    .fillAndStroke('#e7eeec', '#466e64');
+  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
+  if (valance > 0) {
+    doc.moveTo(frontX - 1, frontY + 35).lineTo(frontX - 1, frontY + 85)
+      .strokeColor('#d2a116').lineWidth(1.4).stroke();
+    for (let wave = 0; wave < 3; wave += 1) {
+      const wy = frontY + 85 + wave * 8;
+      doc.moveTo(frontX - 9, wy).bezierCurveTo(frontX - 4, wy + 6, frontX + 3, wy - 4, frontX + 8, wy + 2);
+    }
+    doc.strokeColor('#d2a116').lineWidth(1).stroke();
+  }
+
+  drawDiagramText(doc, enclosed ? (fullBox ? 'COFRE COMPLETO' : 'CIERRE PARCIAL') : 'TUBO VISTO', wallX - 10, headY - 22, 62);
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
+    .text(`SALIDA ${formatNumber(awning.projection)} CM`, wallX + 35, frontY + 57, { width: frontX - wallX - 42, align: 'center' })
+    .text(`${arms} BRAZOS ONYX`, wallX + 45, frontY + 3, { width: frontX - wallX - 65, align: 'center' });
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
+    .text(`P801 · MODUL 400${valance > 0 ? ` · BAMBA ${formatNumber(valance)} CM` : ' · SIN BAMBA'}`, x + 24, y + h - 27, { width: w - 48, align: 'center' });
+}
+
+function drawAmbarDiagram(doc, x, y, w, h, awning) {
+  roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
+  doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+    .text('ÁMBAR BOX', x + 18, y + 13, { width: w - 36, align: 'center' });
+
+  const wallX = x + 42;
+  const boxY = y + 74;
+  const armEndX = x + w - 42;
+  const armEndY = y + 205;
+  doc.moveTo(wallX, y + 46).lineTo(wallX, y + h - 42)
+    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+
+  doc.roundedRect(wallX - 6, boxY, 42, 31, 7)
+    .fillAndStroke('#e7eeec', '#466e64');
+  doc.circle(wallX + 14, boxY + 16, 8)
+    .fillAndStroke(colors.paper, '#466e64');
+  drawDiagramText(doc, 'COFRE', wallX - 9, boxY - 16, 48);
+
+  doc.moveTo(wallX + 31, boxY + 20).lineTo(armEndX, armEndY)
+    .strokeColor('#d2a116').lineWidth(2).stroke();
+  doc.moveTo(wallX + 29, boxY + 25).lineTo(armEndX - 12, armEndY + 33)
+    .strokeColor('#5b7f76').lineWidth(1.4).stroke();
+  doc.moveTo(wallX + 29, boxY + 25).lineTo(armEndX - 67, armEndY - 5)
+    .strokeColor('#5b7f76').lineWidth(1.4).stroke();
+  doc.moveTo(armEndX - 67, armEndY - 5).lineTo(armEndX - 12, armEndY + 33)
+    .strokeColor('#5b7f76').lineWidth(1.4).stroke();
+
+  doc.roundedRect(armEndX - 8, armEndY - 8, 15, 45, 3)
+    .fillAndStroke('#e7eeec', '#466e64');
+  doc.moveTo(armEndX - 1, armEndY + 37).lineTo(armEndX - 1, armEndY + 88)
+    .strokeColor('#d2a116').lineWidth(1.4).stroke();
+  for (let wave = 0; wave < 3; wave += 1) {
+    const wy = armEndY + 88 + wave * 8;
+    doc.moveTo(armEndX - 9, wy).bezierCurveTo(armEndX - 4, wy + 6, armEndX + 3, wy - 4, armEndX + 8, wy + 2);
+  }
+  doc.strokeColor('#d2a116').lineWidth(1).stroke();
+
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
+    .text(`SALIDA ${formatNumber(awning.projection)} CM`, wallX + 35, armEndY + 58, { width: armEndX - wallX - 42, align: 'center' })
+    .text('BRAZOS PRT07', wallX + 47, armEndY + 4, { width: armEndX - wallX - 70, align: 'center' });
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
+    .text('TUBO P701 · KIT DE PERFILES MICROBOX 300', x + 24, y + h - 27, { width: w - 48, align: 'center' });
 }
 
 function drawGeneralDiagram(doc, x, y, w, h) {
@@ -637,7 +790,7 @@ function findAwningBlock(calculation, awning, index) {
 }
 
 function summarizeFabric(lines) {
-  const fabrics = new Set(lines.map((line) => line.calc?.fabricCode).filter(Boolean));
+  const fabrics = new Set(lines.flatMap((line) => [line.calc?.fabricCode, line.calc?.valanceFabricCode]).filter(Boolean));
   if (fabrics.size === 0) return 'SIN DEFINIR';
   if (fabrics.size === 1) return Array.from(fabrics)[0];
   return 'VARIAS TELAS';
@@ -663,7 +816,7 @@ function summarizeAwningValue(lines, field, legacyValue = '') {
 function valanceConfigLabel(awning) {
   if (!(Number(awning.valanceHeight) > 0 || awning.model === 'BAMBALINA')) return '';
   const curve = awning.valanceCurve ? `CURVA ${awning.valanceCurve}` : '';
-  const fabric = awning.valanceFabric ? `BAMBA ${awning.valanceFabric}` : 'BAMBA MISMA TELA';
+  const fabric = awning.valanceFabric ? `BAMBA ${String(awning.valanceFabric).split('|||')[0]}` : 'BAMBA MISMA TELA';
   return [curve, fabric].filter(Boolean).join(' / ');
 }
 

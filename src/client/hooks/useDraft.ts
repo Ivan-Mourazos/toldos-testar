@@ -57,6 +57,49 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.curtainFabricDeductionCm = Number.isFinite(Number(old.curtainFabricDeductionCm))
     ? Number(old.curtainFabricDeductionCm)
     : null;
+  base.curtainFabricWidthDiscountCm = nullableNumber(old.curtainFabricWidthDiscountCm);
+  base.curtainRollTubeDiscountCm = nullableNumber(old.curtainRollTubeDiscountCm);
+  base.curtainLoadProfileDiscountCm = nullableNumber(old.curtainLoadProfileDiscountCm);
+  base.boxMinimumLineCm = nullableNumber(old.boxMinimumLineCm);
+  base.boxProfileDiscountCm = nullableNumber(old.boxProfileDiscountCm);
+  base.boxRollDiscountCm = nullableNumber(old.boxRollDiscountCm);
+  base.boxFabricWidthDiscountCm = nullableNumber(old.boxFabricWidthDiscountCm);
+  base.boxProtectorDiscountCm = nullableNumber(old.boxProtectorDiscountCm);
+  base.xacMinimumLineCm = nullableNumber(old.xacMinimumLineCm);
+  base.xacFabricWidthDiscountCm = nullableNumber(old.xacFabricWidthDiscountCm);
+  base.xacRollDiscountCm = nullableNumber(old.xacRollDiscountCm);
+  base.xacLoadBarDiscountCm = nullableNumber(old.xacLoadBarDiscountCm);
+  base.pointFabricWidthDiscountCm = nullableNumber(old.pointFabricWidthDiscountCm);
+  base.pointRollDiscountCm = nullableNumber(old.pointRollDiscountCm);
+  base.pointLoadBarDiscountCm = nullableNumber(old.pointLoadBarDiscountCm);
+  base.pointFabricDropMultiplier = nullableNumber(old.pointFabricDropMultiplier);
+  base.pointFabricDropAllowanceCm = nullableNumber(old.pointFabricDropAllowanceCm);
+  base.monoblockMinimumLineCm = nullableNumber(old.monoblockMinimumLineCm);
+  base.monoblockMaximumLineCm = nullableNumber(old.monoblockMaximumLineCm);
+  base.monoblockSupportCount = nullableNumber(old.monoblockSupportCount);
+  base.monoblockFabricWidthDiscountCm = nullableNumber(old.monoblockFabricWidthDiscountCm);
+  base.monoblockRollDiscountCm = nullableNumber(old.monoblockRollDiscountCm);
+  base.monoblockLoadBarDiscountCm = nullableNumber(old.monoblockLoadBarDiscountCm);
+  base.monoblockSquareBarDiscountCm = nullableNumber(old.monoblockSquareBarDiscountCm);
+  base.monoblockFabricDropAllowanceCm = nullableNumber(old.monoblockFabricDropAllowanceCm);
+  base.maxisFabricWidthDiscountCm = nullableNumber(old.maxisFabricWidthDiscountCm);
+  base.maxisRollDiscountCm = nullableNumber(old.maxisRollDiscountCm);
+  base.maxisLoadBarDiscountCm = nullableNumber(old.maxisLoadBarDiscountCm);
+  base.maxisBoxProfileDiscountCm = nullableNumber(old.maxisBoxProfileDiscountCm);
+  base.maxisFabricDropAllowanceCm = nullableNumber(old.maxisFabricDropAllowanceCm);
+  base.ambarFabricWidthDiscountCm = nullableNumber(old.ambarFabricWidthDiscountCm);
+  base.ambarRollDiscountCm = nullableNumber(old.ambarRollDiscountCm);
+  base.ambarProfileDiscountCm = nullableNumber(old.ambarProfileDiscountCm);
+  base.ambarFabricDropMultiplier = nullableNumber(old.ambarFabricDropMultiplier);
+  base.ambarFabricDropAllowanceCm = nullableNumber(old.ambarFabricDropAllowanceCm);
+  base.agataMinimumLineCm = nullableNumber(old.agataMinimumLineCm);
+  base.agataSupportCount = nullableNumber(old.agataSupportCount);
+  base.agataFabricWidthDiscountCm = nullableNumber(old.agataFabricWidthDiscountCm);
+  base.agataRollDiscountCm = nullableNumber(old.agataRollDiscountCm);
+  base.agataFabricDropAllowanceCm = nullableNumber(old.agataFabricDropAllowanceCm);
+  base.fabricJobWidthAdjustmentCm = nullableNumber(old.fabricJobWidthAdjustmentCm);
+  base.fabricJobDropAllowanceCm = nullableNumber(old.fabricJobDropAllowanceCm);
+  base.fabricJobValanceExtraCm = nullableNumber(old.fabricJobValanceExtraCm);
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
     : typeof old.notes === 'string' ? old.notes : '';
@@ -258,6 +301,11 @@ export function useDraft() {
 export function switchAwningModel(awning: Awning, model: string, armCount?: number | null): Awning {
   const fresh = createAwning(getModelWorkType(model));
   const isCurtain = model.includes('CORTINA');
+  const isBox = model === 'PERLA BOX' || model === 'CORAL BOX' || model === 'CUARZO BOX';
+  const isXacobeo = model === 'XACOBEO';
+  const isPuntoRecto = model === 'PUNTO RECTO';
+  const isMonoblock350 = model === 'MONOBLOCK 350';
+  const isMaxiscreem = model === 'MAXISCREEM';
   const supportsValance = (getModelBehavior(model).dimensions || []).includes('valanceHeight');
   return {
     ...fresh,
@@ -284,6 +332,42 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     curtainWindowCorner: isCurtain ? awning.curtainWindowCorner : null,
     curtainWindowFloorHeight: isCurtain ? awning.curtainWindowFloorHeight : null,
     curtainWindowHeight: isCurtain ? awning.curtainWindowHeight : null,
-    curtainFabricDeductionCm: isCurtain ? awning.curtainFabricDeductionCm : null
+    curtainFabricDeductionCm: isCurtain ? awning.curtainFabricDeductionCm : null,
+    curtainFabricWidthDiscountCm: isCurtain ? awning.curtainFabricWidthDiscountCm : null,
+    curtainRollTubeDiscountCm: isCurtain ? awning.curtainRollTubeDiscountCm : null,
+    curtainLoadProfileDiscountCm: isCurtain ? awning.curtainLoadProfileDiscountCm : null,
+    boxMinimumLineCm: isBox ? awning.boxMinimumLineCm : null,
+    boxProfileDiscountCm: isBox ? awning.boxProfileDiscountCm : null,
+    boxRollDiscountCm: isBox ? awning.boxRollDiscountCm : null,
+    boxFabricWidthDiscountCm: isBox ? awning.boxFabricWidthDiscountCm : null,
+    boxProtectorDiscountCm: isBox ? awning.boxProtectorDiscountCm : null,
+    xacMinimumLineCm: isXacobeo ? awning.xacMinimumLineCm : null,
+    xacFabricWidthDiscountCm: isXacobeo ? awning.xacFabricWidthDiscountCm : null,
+    xacRollDiscountCm: isXacobeo ? awning.xacRollDiscountCm : null,
+    xacLoadBarDiscountCm: isXacobeo ? awning.xacLoadBarDiscountCm : null,
+    pointFabricWidthDiscountCm: isPuntoRecto ? awning.pointFabricWidthDiscountCm : null,
+    pointRollDiscountCm: isPuntoRecto ? awning.pointRollDiscountCm : null,
+    pointLoadBarDiscountCm: isPuntoRecto ? awning.pointLoadBarDiscountCm : null,
+    pointFabricDropMultiplier: isPuntoRecto ? awning.pointFabricDropMultiplier : null,
+    pointFabricDropAllowanceCm: isPuntoRecto ? awning.pointFabricDropAllowanceCm : null,
+    monoblockMinimumLineCm: isMonoblock350 ? awning.monoblockMinimumLineCm : null,
+    monoblockMaximumLineCm: isMonoblock350 ? awning.monoblockMaximumLineCm : null,
+    monoblockSupportCount: isMonoblock350 ? awning.monoblockSupportCount : null,
+    monoblockFabricWidthDiscountCm: isMonoblock350 ? awning.monoblockFabricWidthDiscountCm : null,
+    monoblockRollDiscountCm: isMonoblock350 ? awning.monoblockRollDiscountCm : null,
+    monoblockLoadBarDiscountCm: isMonoblock350 ? awning.monoblockLoadBarDiscountCm : null,
+    monoblockSquareBarDiscountCm: isMonoblock350 ? awning.monoblockSquareBarDiscountCm : null,
+    monoblockFabricDropAllowanceCm: isMonoblock350 ? awning.monoblockFabricDropAllowanceCm : null,
+    maxisFabricWidthDiscountCm: isMaxiscreem ? awning.maxisFabricWidthDiscountCm : null,
+    maxisRollDiscountCm: isMaxiscreem ? awning.maxisRollDiscountCm : null,
+    maxisLoadBarDiscountCm: isMaxiscreem ? awning.maxisLoadBarDiscountCm : null,
+    maxisBoxProfileDiscountCm: isMaxiscreem ? awning.maxisBoxProfileDiscountCm : null,
+    maxisFabricDropAllowanceCm: isMaxiscreem ? awning.maxisFabricDropAllowanceCm : null
   };
+}
+
+function nullableNumber(value: unknown) {
+  return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value))
+    ? Number(value)
+    : null;
 }

@@ -359,8 +359,26 @@ export default function App() {
               onResetPerlaBox={ruleSettings.resetPerlaBox}
               onUpdateCoralBox={ruleSettings.updateCoralBox}
               onResetCoralBox={ruleSettings.resetCoralBox}
+              onUpdateCuarzoBox={ruleSettings.updateCuarzoBox}
+              onResetCuarzoBox={ruleSettings.resetCuarzoBox}
               onUpdateCortina={ruleSettings.updateCortina}
               onResetCortina={ruleSettings.resetCortina}
+              onUpdateCambioCortina={ruleSettings.updateCambioCortina}
+              onResetCambioCortina={ruleSettings.resetCambioCortina}
+              onUpdateXacobeo={ruleSettings.updateXacobeo}
+              onResetXacobeo={ruleSettings.resetXacobeo}
+              onUpdatePuntoRecto={ruleSettings.updatePuntoRecto}
+              onResetPuntoRecto={ruleSettings.resetPuntoRecto}
+              onUpdateMonoblock350={ruleSettings.updateMonoblock350}
+              onResetMonoblock350={ruleSettings.resetMonoblock350}
+              onUpdateMaxiscreem={ruleSettings.updateMaxiscreem}
+              onResetMaxiscreem={ruleSettings.resetMaxiscreem}
+              onUpdateAmbarBox={ruleSettings.updateAmbarBox}
+              onResetAmbarBox={ruleSettings.resetAmbarBox}
+              onUpdateAgataBox={ruleSettings.updateAgataBox}
+              onResetAgataBox={ruleSettings.resetAgataBox}
+              onUpdateFabricJobs={ruleSettings.updateFabricJobs}
+              onResetFabricJobs={ruleSettings.resetFabricJobs}
             />
           )}
 

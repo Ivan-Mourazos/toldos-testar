@@ -4,6 +4,7 @@ const preferredLabels: Record<string, string> = {
   'AGATA BOX': 'Agata Box',
   'CUARZO BOX': 'Cuarzo Box',
   'CORAL BOX': 'Coral Box',
+  'MAXISCREEM': 'Diana vertical',
   'HOSTELERÍA / EMPRESA': 'Hostelería / empresa',
   'TUBO DE CARGA EVO 80': 'Evo 80',
   'TUBO DE CARGA UNIVERS 280': 'Univers 280',

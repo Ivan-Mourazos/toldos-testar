@@ -7,7 +7,10 @@ const aliases = new Map([
   ['STORBOX S-300', 'PERLA BOX'],
   ['STORBOX S300', 'PERLA BOX'],
   ['MODUL400', 'AGATA BOX'],
-  ['MODULBOX', 'AGATA BOX']
+  ['MODULBOX', 'AGATA BOX'],
+  ['MAXISCREEN', 'MAXISCREEM'],
+  ['DIANA', 'MAXISCREEM'],
+  ['DIANA VERTICAL', 'MAXISCREEM']
 ]);
 
 export function normalizeModelName(value) {

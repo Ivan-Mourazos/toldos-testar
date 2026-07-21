@@ -2,6 +2,13 @@ import { models } from './catalog.js';
 import { calculateArzuaPro } from './arzuaProRules.js';
 import { calculateGalicia } from './galiciaRules.js';
 import { calculateCoralBox, calculatePerlaBox } from './storbox400Rules.js';
+import { calculateCuarzoBox } from './storbox250Rules.js';
+import { calculateXacobeo } from './xacobeoRules.js';
+import { calculatePuntoRecto } from './puntoRectoRules.js';
+import { calculateMonoblock350 } from './monoblock350Rules.js';
+import { calculateMaxiscreem } from './maxiscreemRules.js';
+import { calculateAmbarBox } from './ambarBoxRules.js';
+import { calculateAgataBox } from './agataBoxRules.js';
 import { calculateCortina } from './cortinaRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
 import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
@@ -13,6 +20,13 @@ const implementedRules = new Map([
   ['GALICIA', calculateGalicia],
   ['CORAL BOX', calculateCoralBox],
   ['PERLA BOX', calculatePerlaBox],
+  ['CUARZO BOX', calculateCuarzoBox],
+  ['XACOBEO', calculateXacobeo],
+  ['PUNTO RECTO', calculatePuntoRecto],
+  ['MONOBLOCK 350', calculateMonoblock350],
+  ['MAXISCREEM', calculateMaxiscreem],
+  ['AMBAR BOX', calculateAmbarBox],
+  ['AGATA BOX', calculateAgataBox],
   ['CORTINA', calculateCortina],
   ['CAMBIO TELA', calculateCambioTela],
   ['CAMBIO CORTINA', calculateCambioCortina],

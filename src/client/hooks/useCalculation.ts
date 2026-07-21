@@ -97,7 +97,16 @@ export function useCalculation({
 }
 
 function consolidateOfs(ofs: Calculation['ofs']) {
-  const grouped = new Map<string, { of: string; description: string; materials: Map<string, { code: string; description?: string; quantity: number }> }>();
+  const grouped = new Map<string, {
+    of: string;
+    description: string;
+    materials: Map<string, {
+      code: string;
+      description?: string;
+      quantity: number;
+      aggregation?: 'sum' | 'max';
+    }>;
+  }>();
   for (const ofBlock of ofs) {
     if (ofBlock.materials.length === 0) continue;
     const ofKey = ofBlock.of.trim().toUpperCase();
@@ -109,7 +118,9 @@ function consolidateOfs(ofs: Calculation['ofs']) {
     for (const material of ofBlock.materials) {
       const code = material.code.trim().toUpperCase();
       const current = target.materials.get(code) || { ...material, code, quantity: 0 };
-      current.quantity = Math.round((current.quantity + material.quantity) * 1000) / 1000;
+      current.quantity = material.aggregation === 'max'
+        ? Math.round(Math.max(current.quantity, material.quantity) * 1000) / 1000
+        : Math.round((current.quantity + material.quantity) * 1000) / 1000;
       target.materials.set(code, current);
     }
     grouped.set(ofKey, target);
@@ -117,6 +128,6 @@ function consolidateOfs(ofs: Calculation['ofs']) {
   return Array.from(grouped.values()).map((ofBlock) => ({
     of: ofBlock.of,
     description: ofBlock.description,
-    materials: Array.from(ofBlock.materials.values())
+    materials: Array.from(ofBlock.materials.values()).map(({ aggregation: _aggregation, ...material }) => material)
   }));
 }

@@ -9,7 +9,13 @@ const table = Object.freeze([
   Object.freeze({ name: 'MARRON (R-08014)', suffix: 'MR14', crank: 'NEGRA' }),
   Object.freeze({ name: 'NEGRO (R-09011)', suffix: 'NE11', crank: 'NEGRA' }),
   Object.freeze({ name: 'VERDE (R-06005)', suffix: 'VE05', crank: 'NEGRA' }),
-  Object.freeze({ name: 'BURDEOS (R-03005)', suffix: 'BU05', crank: 'NEGRA' })
+  Object.freeze({ name: 'BURDEOS (R-03005)', suffix: 'BU05', crank: 'NEGRA' }),
+  Object.freeze({ name: 'GRIS 7012', suffix: 'GR12', crank: 'NEGRA' }),
+  Object.freeze({ name: 'GRIS 7016', suffix: 'GR16', crank: 'NEGRA' }),
+  Object.freeze({ name: 'GRIS 7016 MATE TEXT.', suffix: 'GT16', crank: 'NEGRA' }),
+  Object.freeze({ name: 'NEGRO MATE 9111', suffix: 'NEM1', crank: 'NEGRA' }),
+  Object.freeze({ name: 'NEGRO MATE 9005-9405', suffix: 'NM05', crank: 'NEGRA' }),
+  Object.freeze({ name: 'CORTEN OXIDO 516', suffix: 'O516', crank: 'NEGRA' })
 ]);
 
 const normalize = (value) => String(value || '').toUpperCase().replace(/\s+/g, '');

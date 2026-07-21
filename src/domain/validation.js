@@ -2,7 +2,16 @@ import { roundQuantity } from './math.js';
 import { normalizeArzuaProParameters } from './arzuaProParameters.js';
 import { normalizeGaliciaParameters } from './galiciaParameters.js';
 import { normalizeCoralBoxParameters, normalizePerlaBoxParameters } from './storbox400Parameters.js';
+import { normalizeCuarzoBoxParameters } from './storbox250Parameters.js';
+import { normalizeXacobeoParameters } from './xacobeoParameters.js';
+import { normalizePuntoRectoParameters } from './puntoRectoParameters.js';
+import { normalizeMonoblock350Parameters } from './monoblock350Parameters.js';
+import { normalizeMaxiscreemParameters } from './maxiscreemParameters.js';
+import { normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
+import { normalizeAgataBoxParameters } from './agataBoxParameters.js';
+import { normalizeFabricJobParameters } from './fabricJobParameters.js';
 import { normalizeCortinaParameters } from './cortinaParameters.js';
+import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { getModelWorkType } from './modelBehavior.js';
 import { normalizeModelName } from './modelNames.js';
 
@@ -37,7 +46,16 @@ export function normalizeOrder(payload) {
       galicia: normalizeGaliciaParameters(payload.parameters?.galicia),
       perlaBox: normalizePerlaBoxParameters(payload.parameters?.perlaBox || payload.parameters?.storbox400),
       coralBox: normalizeCoralBoxParameters(payload.parameters?.coralBox),
-      cortina: normalizeCortinaParameters(payload.parameters?.cortina)
+      cuarzoBox: normalizeCuarzoBoxParameters(payload.parameters?.cuarzoBox),
+      xacobeo: normalizeXacobeoParameters(payload.parameters?.xacobeo),
+      puntoRecto: normalizePuntoRectoParameters(payload.parameters?.puntoRecto),
+      monoblock350: normalizeMonoblock350Parameters(payload.parameters?.monoblock350),
+      maxiscreem: normalizeMaxiscreemParameters(payload.parameters?.maxiscreem),
+      ambarBox: normalizeAmbarBoxParameters(payload.parameters?.ambarBox),
+      agataBox: normalizeAgataBoxParameters(payload.parameters?.agataBox),
+      fabricJobs: normalizeFabricJobParameters(payload.parameters?.fabricJobs),
+      cortina: normalizeCortinaParameters(payload.parameters?.cortina),
+      cambioCortina: normalizeCambioCortinaParameters(payload.parameters?.cambioCortina)
     },
     awnings: awnings.map((awning, index) => normalizeAwning(awning, index, payload))
   };
@@ -101,6 +119,49 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),
     curtainWindowHeight: numberOrDefault(awning?.curtainWindowHeight, 0),
     curtainFabricDeductionCm: numberOrDefault(awning?.curtainFabricDeductionCm, 0),
+    curtainFabricWidthDiscountCm: nullableNumber(awning?.curtainFabricWidthDiscountCm),
+    curtainRollTubeDiscountCm: nullableNumber(awning?.curtainRollTubeDiscountCm),
+    curtainLoadProfileDiscountCm: nullableNumber(awning?.curtainLoadProfileDiscountCm),
+    boxMinimumLineCm: nullableNumber(awning?.boxMinimumLineCm),
+    boxProfileDiscountCm: nullableNumber(awning?.boxProfileDiscountCm),
+    boxRollDiscountCm: nullableNumber(awning?.boxRollDiscountCm),
+    boxFabricWidthDiscountCm: nullableNumber(awning?.boxFabricWidthDiscountCm),
+    boxProtectorDiscountCm: nullableNumber(awning?.boxProtectorDiscountCm),
+    xacMinimumLineCm: nullableNumber(awning?.xacMinimumLineCm),
+    xacFabricWidthDiscountCm: nullableNumber(awning?.xacFabricWidthDiscountCm),
+    xacRollDiscountCm: nullableNumber(awning?.xacRollDiscountCm),
+    xacLoadBarDiscountCm: nullableNumber(awning?.xacLoadBarDiscountCm),
+    pointFabricWidthDiscountCm: nullableNumber(awning?.pointFabricWidthDiscountCm),
+    pointRollDiscountCm: nullableNumber(awning?.pointRollDiscountCm),
+    pointLoadBarDiscountCm: nullableNumber(awning?.pointLoadBarDiscountCm),
+    pointFabricDropMultiplier: nullableNumber(awning?.pointFabricDropMultiplier),
+    pointFabricDropAllowanceCm: nullableNumber(awning?.pointFabricDropAllowanceCm),
+    monoblockMinimumLineCm: nullableNumber(awning?.monoblockMinimumLineCm),
+    monoblockMaximumLineCm: nullableNumber(awning?.monoblockMaximumLineCm),
+    monoblockSupportCount: nullableNumber(awning?.monoblockSupportCount),
+    monoblockFabricWidthDiscountCm: nullableNumber(awning?.monoblockFabricWidthDiscountCm),
+    monoblockRollDiscountCm: nullableNumber(awning?.monoblockRollDiscountCm),
+    monoblockLoadBarDiscountCm: nullableNumber(awning?.monoblockLoadBarDiscountCm),
+    monoblockSquareBarDiscountCm: nullableNumber(awning?.monoblockSquareBarDiscountCm),
+    monoblockFabricDropAllowanceCm: nullableNumber(awning?.monoblockFabricDropAllowanceCm),
+    maxisFabricWidthDiscountCm: nullableNumber(awning?.maxisFabricWidthDiscountCm),
+    maxisRollDiscountCm: nullableNumber(awning?.maxisRollDiscountCm),
+    maxisLoadBarDiscountCm: nullableNumber(awning?.maxisLoadBarDiscountCm),
+    maxisBoxProfileDiscountCm: nullableNumber(awning?.maxisBoxProfileDiscountCm),
+    maxisFabricDropAllowanceCm: nullableNumber(awning?.maxisFabricDropAllowanceCm),
+    ambarFabricWidthDiscountCm: nullableNumber(awning?.ambarFabricWidthDiscountCm),
+    ambarRollDiscountCm: nullableNumber(awning?.ambarRollDiscountCm),
+    ambarProfileDiscountCm: nullableNumber(awning?.ambarProfileDiscountCm),
+    ambarFabricDropMultiplier: nullableNumber(awning?.ambarFabricDropMultiplier),
+    ambarFabricDropAllowanceCm: nullableNumber(awning?.ambarFabricDropAllowanceCm),
+    agataMinimumLineCm: nullableNumber(awning?.agataMinimumLineCm),
+    agataSupportCount: nullableNumber(awning?.agataSupportCount),
+    agataFabricWidthDiscountCm: nullableNumber(awning?.agataFabricWidthDiscountCm),
+    agataRollDiscountCm: nullableNumber(awning?.agataRollDiscountCm),
+    agataFabricDropAllowanceCm: nullableNumber(awning?.agataFabricDropAllowanceCm),
+    fabricJobWidthAdjustmentCm: nullableNumber(awning?.fabricJobWidthAdjustmentCm),
+    fabricJobDropAllowanceCm: nullableNumber(awning?.fabricJobDropAllowanceCm),
+    fabricJobValanceExtraCm: nullableNumber(awning?.fabricJobValanceExtraCm),
     valanceHeight: hasValance === false ? 0 : numberOrDefault(awning?.valanceHeight, 0),
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
@@ -131,7 +192,9 @@ export function consolidateReservation(reservation) {
     for (const material of ofBlock.materials || []) {
       const code = cleanText(material.code).toUpperCase();
       const current = target.materials.get(code) || { ...material, code, quantity: 0 };
-      current.quantity = roundQuantity(current.quantity + Number(material.quantity || 0));
+      current.quantity = material.aggregation === 'max'
+        ? roundQuantity(Math.max(current.quantity, Number(material.quantity || 0)))
+        : roundQuantity(current.quantity + Number(material.quantity || 0));
       target.materials.set(code, current);
     }
     groupedOfs.set(ofKey, target);
@@ -142,7 +205,7 @@ export function consolidateReservation(reservation) {
     ofs: Array.from(groupedOfs.values()).map((ofBlock) => ({
       of: ofBlock.of,
       description: ofBlock.description,
-      materials: Array.from(ofBlock.materials.values())
+      materials: Array.from(ofBlock.materials.values()).map(({ aggregation: _aggregation, ...material }) => material)
     }))
   };
 }
@@ -184,6 +247,12 @@ function cleanText(value) {
 function numberOrDefault(value, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+function nullableNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function normalizeCurtainFinish(value) {

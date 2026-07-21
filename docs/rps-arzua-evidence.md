@@ -42,3 +42,15 @@ La validación de extremo a extremo usa el pedido `AR2603332`, OF `0230194`, cli
 - PDF: una estructura A5 horizontal y una hoja de telas A4 horizontal en un único documento.
 - Modo de pruebas: descarga local; no escribe en las carpetas compartidas.
 - Flujo PC comprobado en Chromium: vista previa, descarga RPS y limpieza total del formulario sin errores de consola.
+
+## Validación automatizada
+
+El comando `npm run validate:arzua` consulta RPSNext en modo lectura y contrasta los planteamientos de 2026 mediante sus etiquetas, por lo que admite las dos disposiciones de filas usadas durante el año.
+
+- 121 pedidos RPS localizados.
+- 79 libros y 99 estructuras Arzúa Pro comprobadas.
+- 396 comparaciones de tela, caída, P801 y tubo de carga.
+- 51 estructuras EVO 80 y 48 UNIVERS 280.
+- Tres frentes superiores a 600 cm quedan identificados como excepciones técnicas.
+
+El contraste detectó que `AR2601535-1` usa bamba en otro tejido. La web ahora calcula el paño principal con `salida + 40`, calcula la bamba aparte con `alto + 5` y reserva ambos tejidos. Los libros `AR2601860` y `AR2602181` conservan una caída antigua `salida + 40` sin una tela de bamba distinta identificable; no se usan para cambiar la regla estándar vigente.

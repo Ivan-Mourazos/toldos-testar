@@ -4,8 +4,8 @@ export const defaultCortinaParameters = {
   standardMaxWidth: 500,
   standardMaxDrop: 400,
   fabricDropAllowanceCm: 45,
-  seamAllowanceCm: 0,
-  seamBaseCm: 0,
+  seamAllowanceCm: 2.2,
+  seamBaseCm: 7,
   stockLengths: [600],
   fabricWidthDiscounts: {
     'MAQ. INTERIOR': 12,

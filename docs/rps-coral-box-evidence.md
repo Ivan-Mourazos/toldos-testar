@@ -43,7 +43,17 @@ Los valores proceden de la matriz `ST400` y pueden modificarse desde Parámetros
 - Tela Siroco `ACRILI2226P120`.
 - Paños: 15,8 + 19,75 + 13,8 = 49,35 ml.
 - Tubo `TURA80HG600C`: 6 unidades consolidadas.
+- Rueda `RUEDAMOT78`: 6 unidades, dos por motor.
 - Brazos: 2 juegos de 350 y 1 juego de 300.
 - Pedido original indica sensores de movimiento para los tres toldos.
+- Mando `SITUOIO1PURE` y sensor `EOLIS3DIO`: una unidad compartida por OF.
 
-RPS histórico omitió algunos motores/sensores por fórmulas rotas o agrupación incompleta. La web genera una unidad por cada Coral Box configurado y después consolida por OF y artículo.
+## Auditoría de producción 2026
+
+- 18 pedidos Coral Box localizados en RPSNext.
+- 16 Excel asociados y 21 estructuras completas contrastadas.
+- 19 estructuras a motor y 2 a máquina.
+- 84 comprobaciones dimensionales de tela, tubo, kit de perfiles y protector: 0 diferencias.
+- Las reservas de las 16 OF del Excel están presentes en RPS.
+
+La web suma por OF los materiales propios de cada toldo. En Coral Box, mando y sensor se consolidan como accesorios compartidos: una unidad de cada referencia por OF.
