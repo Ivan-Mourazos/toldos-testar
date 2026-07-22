@@ -129,6 +129,7 @@ describe('ARZUA PRO despiece', () => {
     }));
     const names = result.ofs[0].despiece.rows.map((row) => row.name);
     expect(names).not.toContain('MAQUINA ZNP 10 L170 BLANCA');
+    expect(names).not.toContain('…');
     expect(names).toContain('MOTOR SOMFY SUNILUS 55/17 IO');
   });
 
@@ -1132,6 +1133,13 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       awnings: [baseAwning({ model: 'PERLABOX' }), baseAwning({ model: 'STORBOX S-300' })]
     }));
     expect(normalized.awnings.map((item) => item.model)).toEqual(['PERLA BOX', 'PERLA BOX']);
+  });
+
+  test('normaliza y conserva la configuración de Cambio Antica', () => {
+    const normalized = normalizeOrder(basePayload({
+      awnings: [baseAwning({ model: 'CAMBIO ANTICA', anticaVariant: 'tubo 50x30 contrapeso' })]
+    }));
+    expect(normalized.awnings[0].anticaVariant).toBe('TUBO 50X30 CONTRAPESO');
   });
 });
 

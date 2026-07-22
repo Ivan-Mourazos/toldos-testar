@@ -3,8 +3,9 @@ const preferredLabels: Record<string, string> = {
   'AMBAR BOX': 'Ambar Box',
   'AGATA BOX': 'Agata Box',
   'CUARZO BOX': 'Cuarzo Box',
+  'PERLA BOX': 'Perla Box',
   'CORAL BOX': 'Coral Box',
-  'MAXISCREEM': 'Diana vertical',
+  'MAXISCREEM': 'Maxiscreem',
   'HOSTELERÍA / EMPRESA': 'Hostelería / empresa',
   'TUBO DE CARGA EVO 80': 'Evo 80',
   'TUBO DE CARGA UNIVERS 280': 'Univers 280',
@@ -20,6 +21,15 @@ const preferredLabels: Record<string, string> = {
   'NO': 'No'
 };
 
+const legacyModelNames: Record<string, string> = {
+  'AMBAR BOX': 'Microbox 300',
+  'AGATA BOX': 'Modul 400 / Modulbox',
+  'CUARZO BOX': 'Storbox 250',
+  'PERLA BOX': 'Storbox S-300',
+  'CORAL BOX': 'Storbox 400',
+  'MAXISCREEM': 'Diana vertical'
+};
+
 export function controlLabel(value: string) {
   if (preferredLabels[value]) return preferredLabels[value];
   if (!value || value !== value.toLocaleUpperCase('es-ES')) return value;
@@ -27,4 +37,8 @@ export function controlLabel(value: string) {
   const sentence = value.toLocaleLowerCase('es-ES');
   return `${sentence.charAt(0).toLocaleUpperCase('es-ES')}${sentence.slice(1)}`
     .replace(/\b(r|ral)-(?=\d)/g, (code) => code.toLocaleUpperCase('es-ES'));
+}
+
+export function legacyModelName(value: string) {
+  return legacyModelNames[String(value || '').toUpperCase()] || '';
 }

@@ -162,6 +162,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     fabricJobWidthAdjustmentCm: nullableNumber(awning?.fabricJobWidthAdjustmentCm),
     fabricJobDropAllowanceCm: nullableNumber(awning?.fabricJobDropAllowanceCm),
     fabricJobValanceExtraCm: nullableNumber(awning?.fabricJobValanceExtraCm),
+    anticaVariant: normalizeAnticaVariant(awning?.anticaVariant),
     valanceHeight: hasValance === false ? 0 : numberOrDefault(awning?.valanceHeight, 0),
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
@@ -175,6 +176,13 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     structureNotes: cleanText(awning?.structureNotes || awning?.notes),
     fabricNotes: cleanText(awning?.fabricNotes)
   };
+}
+
+function normalizeAnticaVariant(value) {
+  const normalized = cleanText(value).toUpperCase();
+  return ['SOPORTE FIJO 3 AGUJEROS', 'TUBO 30X10', 'TUBO 50X30 CONTRAPESO'].includes(normalized)
+    ? normalized
+    : '';
 }
 
 export function consolidateReservation(reservation) {

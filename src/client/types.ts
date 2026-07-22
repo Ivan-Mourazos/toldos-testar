@@ -92,6 +92,7 @@ export type Awning = {
   fabricJobWidthAdjustmentCm: number | null;
   fabricJobDropAllowanceCm: number | null;
   fabricJobValanceExtraCm: number | null;
+  anticaVariant: '' | 'SOPORTE FIJO 3 AGUJEROS' | 'TUBO 30X10' | 'TUBO 50X30 CONTRAPESO';
   reglasModificadas: boolean;
   fabric: string;
   structureNotes: string;

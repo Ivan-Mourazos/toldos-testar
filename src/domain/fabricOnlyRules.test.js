@@ -43,9 +43,10 @@ describe('trabajos solo de tela', () => {
     expect(result.ofs[0].despiece).toBeNull();
   });
 
-  test('CAMBIO ANTICA sin bamba mantiene el remate de 5 cm', () => {
-    const result = calculate('CAMBIO ANTICA', { valanceHeight: 0 });
+  test('CAMBIO ANTICA con tubo 30x10 puede ir sin bamba y mantiene el remate de 5 cm', () => {
+    const result = calculate('CAMBIO ANTICA', { anticaVariant: 'TUBO 30X10', valanceHeight: 0 });
     expect(result.ofs[0].calculation.fabricDrop).toBe(280);
+    expect(result.ofs[0].calculation.valanceFabricMl).toBe(0);
   });
 
   test('reserva la bamba por separado cuando lleva otra tela', () => {

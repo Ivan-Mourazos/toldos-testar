@@ -8,7 +8,7 @@ import { NumberField } from './NumberField';
 import { SelectField } from './SelectField';
 import { SegmentedField } from './SegmentedField';
 import { FabricCombobox } from './FabricCombobox';
-import { controlLabel } from './controlLabels';
+import { controlLabel, legacyModelName } from './controlLabels';
 import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
 import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.js';
 import { ambarPlacementGroup } from '../../domain/ambarBoxParameters.js';
@@ -52,6 +52,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isMaxiscreem = awning.model === 'MAXISCREEM';
   const isAmbarBox = awning.model === 'AMBAR BOX';
   const isAgataBox = awning.model === 'AGATA BOX';
+  const isAntica = awning.model === 'CAMBIO ANTICA';
   const boxDevice = normalizeBoxDevice(awning.device);
   const maxisGroup = maxiscreemVariantGroup(awning.submodel);
   const maxisDiscounts = parameters.maxiscreem.discounts[maxisGroup][boxDevice || 'MAQUINA'];
@@ -90,6 +91,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || getRequiredDimensions(awning.model).some((field: keyof Awning) => !Number(awning[field]))
     || missingWindowDimensions
     || missingCurtainConfig
+    || (isAntica && !awning.anticaVariant)
     || missingValanceConfig
     || missingFinishConfig;
   const pointRequiredArms = suggestedPuntoRectoArmCount(awning.width, parameters.puntoRecto);
@@ -165,7 +167,10 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     <article className={`awning-column panel${fabricOnly ? ' fabric-only-column' : ''}`}>
       <header className="awning-column-header">
         <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
-        <strong className="awning-model-title">{controlLabel(awning.model)}</strong>
+        <strong className="awning-model-title">
+          {controlLabel(awning.model)}
+          {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
+        </strong>
         <div className="card-actions">
           <button
             type="button"
@@ -316,6 +321,17 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           )}
           {fields.submodel && (
             <SelectField label="Variante" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, ...(isAgataBox && submodel === 'COFRE' && awning.device === 'MAQUINA' ? { device: '' } : {}) })} />
+          )}
+          {isAntica && (
+            <div className="awning-wide-field">
+              <SelectField
+                label="Configuración Antica"
+                value={awning.anticaVariant}
+                options={['SOPORTE FIJO 3 AGUJEROS', 'TUBO 30X10', 'TUBO 50X30 CONTRAPESO']}
+                placeholder="Elegir configuración…"
+                onChange={(anticaVariant) => update({ anticaVariant: anticaVariant as Awning['anticaVariant'] })}
+              />
+            </div>
           )}
           <div className="awning-finish-row awning-wide-field">
             {!fabricOnly && <SelectField label="Lacado" value={awning.structureColor} options={formOptions.lacados} placeholder="Elegir…" allowEmpty emptyLabel="Sin indicar" onChange={(structureColor) => update({ structureColor })} />}

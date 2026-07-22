@@ -249,8 +249,6 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
     push(4, descCasquilloMaquina(device), refCasquilloMaquina(device), awningUnits);
-  } else {
-    push(4, '…', null, awningUnits);
   }
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {

@@ -3,7 +3,6 @@ import type { Awning, Calculation, CalculationState, RuleParameters } from '../t
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
 import { LiveResults } from '../components/LiveResults';
-import { DespieceView } from '../components/DespieceView';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
@@ -132,8 +131,7 @@ export function OrderView({
         </div>
       </section>}
 
-      {awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} />}
-      {awnings.length > 0 && <DespieceView calculation={calculation} awnings={awnings} />}
+      {awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} />}
 
       {pickerType && (
         <ModelPickerDialog

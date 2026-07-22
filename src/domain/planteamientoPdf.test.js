@@ -57,8 +57,57 @@ describe('buildOrderPlanteamientoPdf', () => {
     const plan = buildPlanteamientoPlan(order, calculation);
 
     expect(plan.structureEntries.map(({ awning }) => awning.id)).toEqual(['a']);
-    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['GENERAL', 'ENROLLABLE']);
+    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['ARZUA', 'CAMBIO-TELA', 'ENROLLABLE']);
     expect(plan.fabricPages.flatMap(({ entries }) => entries.map(({ awning }) => awning.id))).toEqual(['a', 'b', 'c']);
+  });
+
+  test('Arzua con tubos de carga distintos no comparte un dibujo ambiguo', () => {
+    const awnings = [
+      { id: 'a', model: 'ARZUA PRO', tubeLoad: 'TUBO DE CARGA EVO 80' },
+      { id: 'b', model: 'ARZUA PRO', tubeLoad: 'TUBO DE CARGA UNIVERS 280' }
+    ];
+    const calculation = {
+      ofs: awnings.map((awning, awningIndex) => ({
+        awningId: awning.id,
+        awningIndex,
+        calculation: { tubeLoad: awning.tubeLoad }
+      }))
+    };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.fabricPages).toHaveLength(2);
+    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['ARZUA', 'ARZUA']);
+    expect(plan.fabricPages.map(({ diagramCalculation }) => diagramCalculation.tubeLoad))
+      .toEqual(['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280']);
+  });
+
+  test('el dibujo toma el tubo del despiece para no contradecir la estructura', () => {
+    const awning = { id: 'a', model: 'ARZUA PRO', tubeLoad: 'TUBO DE CARGA UNIVERS 280' };
+    const calculation = {
+      ofs: [{
+        awningId: 'a',
+        awningIndex: 0,
+        calculation: { tubeLoad: 'TUBO DE CARGA UNIVERS 280' },
+        despiece: { rows: [{ num: 5, name: 'TUBO DE CARGA EVO 80' }] }
+      }]
+    };
+    const plan = buildPlanteamientoPlan({ awnings: [awning] }, calculation);
+
+    expect(plan.fabricPages[0].diagramCalculation.tubeLoad).toBe('TUBO DE CARGA EVO 80');
+  });
+
+  test('Antica separa las configuraciones técnicas en páginas distintas', () => {
+    const awnings = [
+      { id: 'a', model: 'CAMBIO ANTICA', anticaVariant: 'SOPORTE FIJO 3 AGUJEROS' },
+      { id: 'b', model: 'CAMBIO ANTICA', anticaVariant: 'TUBO 30X10' },
+      { id: 'c', model: 'CAMBIO ANTICA', anticaVariant: 'TUBO 50X30 CONTRAPESO' }
+    ];
+    const calculation = { ofs: awnings.map((awning, awningIndex) => ({ awningId: awning.id, awningIndex })) };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.fabricPages).toHaveLength(3);
+    expect(plan.fabricPages.map(({ diagramAwning }) => diagramAwning.anticaVariant))
+      .toEqual(['SOPORTE FIJO 3 AGUJEROS', 'TUBO 30X10', 'TUBO 50X30 CONTRAPESO']);
   });
 
   test('cortinas con medidas de ventana distintas no comparten dibujo', () => {

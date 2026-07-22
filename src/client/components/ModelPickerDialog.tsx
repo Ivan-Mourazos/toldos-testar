@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Layers3, Scissors, X } from 'lucide-react';
 import type { Awning } from '../types';
-import { controlLabel } from './controlLabels';
+import { controlLabel, legacyModelName } from './controlLabels';
 import { getModelBehavior } from '../../domain/modelBehavior.js';
 
 type Props = {
@@ -42,7 +42,7 @@ export function ModelPickerDialog({ workType, models, onSelect, onClose }: Props
             return (
               <button key={model} type="button" className="model-picker-option" onClick={() => onSelect(model)}>
                 <strong>{controlLabel(model)}</strong>
-                <span>{fabricOnly ? 'Sin estructura' : implemented ? 'Estructura y tela' : 'Pendiente de reglas'}</span>
+                <span>{legacyModelName(model) ? `Antes ${legacyModelName(model)} · ` : ''}{fabricOnly ? 'Sin estructura' : implemented ? 'Estructura y tela' : 'Pendiente de reglas'}</span>
               </button>
             );
           })}

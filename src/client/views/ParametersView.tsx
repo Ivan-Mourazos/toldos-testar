@@ -203,7 +203,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       <header className="parameters-heading">
         <div>
           <span className="section-kicker">Modelo en producción</span>
-          <h2>{selectedModel}</h2>
+          <h2>{selectedModel}{modelLegacyTitle(selectedModel) && <small>antes {modelLegacyTitle(selectedModel)}</small>}</h2>
           <p>Reglas aplicadas en tiempo real al formulario, estructura, tela y reserva RPS.</p>
         </div>
         <button className="ghost-button" type="button" onClick={isGalicia ? onResetGalicia : onResetArzua}>
@@ -225,13 +225,13 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       </div>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Tela y largos de stock</h3><p>Márgenes usados para calcular caída, paños y perfiles disponibles.</p></div></div>
+        <div className="parameter-band-title"><span>02</span><div><h3>Tela y barras comerciales</h3><p>Márgenes de confección y longitudes disponibles en almacén. La web elige la barra automáticamente.</p></div></div>
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Margen de caída (cm)" value={current.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && (isGalicia ? onUpdateGalicia({ fabricDropAllowanceCm }) : onUpdateArzua({ fabricDropAllowanceCm }))} />
           <NumberField label="Costura entre paños (cm)" value={current.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && (isGalicia ? onUpdateGalicia({ seamAllowanceCm }) : onUpdateArzua({ seamAllowanceCm }))} />
           <NumberField label="Margen base de paño (cm)" value={current.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && (isGalicia ? onUpdateGalicia({ seamBaseCm }) : onUpdateArzua({ seamBaseCm }))} />
           {current.stockLengths.map((stockLength, index) => (
-            <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateStockLength(index, value)} />
+            <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateStockLength(index, value)} />
           ))}
         </div>
       </div>
@@ -292,6 +292,16 @@ function modelShortName(model: SelectedModel) {
   return 'COR';
 }
 
+function modelLegacyTitle(model: SelectedModel) {
+  if (model === 'MAXISCREEM') return 'Diana vertical';
+  if (model === 'AMBAR BOX') return 'Microbox 300';
+  if (model === 'AGATA BOX') return 'Modul 400 / Modulbox';
+  if (model === 'PERLA BOX') return 'Storbox S-300';
+  if (model === 'CUARZO BOX') return 'Storbox 250';
+  if (model === 'CORAL BOX') return 'Storbox 400';
+  return '';
+}
+
 type XacobeoProps = {
   parameters: XacobeoParameters;
   selectedModel: SelectedModel;
@@ -332,13 +342,13 @@ function XacobeoParametersView({ parameters, selectedModel, onSelectModel, onUpd
       </header>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites y tela</h3><p>Frente máximo, caída y márgenes de confección.</p></div></div>
+        <div className="parameter-band-title"><span>01</span><div><h3>Límites, tela y largos comerciales</h3><p>Los largos comerciales son las barras disponibles en almacén; la web elige automáticamente la menor que permita cortar la pieza.</p></div></div>
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="Margen de caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
-          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
       </div>
 
@@ -398,7 +408,7 @@ function MaxiscreemParametersView({ parameters, selectedModel, onSelectModel, on
       </nav>
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>DIANA VERTICAL</h2><p>Reglas históricas MAXISCREEM: con o sin cofre y guiado por cable o varilla.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><h2>MAXISCREEM <small>antes Diana vertical</small></h2><p>Con o sin cofre y guiado por cable o varilla.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -476,13 +486,13 @@ function Monoblock350ParametersView({ parameters, selectedModel, onSelectModel, 
       </header>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Tela y estructura</h3><p>Márgenes de confección, stock y reparto de soportes.</p></div></div>
+        <div className="parameter-band-title"><span>01</span><div><h3>Tela y estructura</h3><p>Márgenes de confección, barras comerciales disponibles y reparto de soportes.</p></div></div>
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Margen caída tela (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
           <NumberField label="Remate de bamba (cm)" value={parameters.valanceExtraCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ valanceExtraCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
-          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Stock P801 ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial P801 ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
           <NumberField label="Stock barra 40×40 (cm)" value={parameters.squareBarStockLength} min={1} step={50} onChange={(value) => value !== null && onUpdate({ squareBarStockLength: value })} />
           <NumberField label="Luz máxima entre apoyos (cm)" value={parameters.supportGapThresholdCm} min={1} onChange={(value) => value !== null && onUpdate({ supportGapThresholdCm: value })} />
           <NumberField label="Margen lateral soportes (cm)" value={parameters.supportEdgeOffsetCm} min={0} onChange={(value) => value !== null && onUpdate({ supportEdgeOffsetCm: value })} />
@@ -546,23 +556,24 @@ function PuntoRectoParametersView({ parameters, selectedModel, onSelectModel, on
       </header>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Estructura automática</h3><p>El frente selecciona P701 o P801 y exige el número mínimo de brazos.</p></div></div>
+        <div className="parameter-band-title"><span>01</span><div><h3>Estructura automática</h3><p>El frente selecciona P701 o P801 y exige el número mínimo de brazos. Los largos comerciales son las barras disponibles en almacén.</p></div></div>
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="P801 y 3 brazos desde (cm)" value={parameters.armSwitchWidth} min={1} onChange={(value) => value !== null && onUpdate({ armSwitchWidth: value })} />
-          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
-        <p className="parameter-note">Hasta {parameters.armSwitchWidth} cm: P701 y mínimo 2 brazos. Por encima: P801 y mínimo 3 brazos. Se pueden indicar hasta 4 brazos.</p>
+        <p className="parameter-note">Hasta {parameters.armSwitchWidth} cm: P701 y mínimo 2 brazos. Por encima: P801 y mínimo 3 brazos. La web escoge la barra comercial más corta que admita el corte; este dato no se cubre en el pedido.</p>
       </div>
 
       <div className="parameter-band">
         <div className="parameter-band-title"><span>02</span><div><h3>Geometría del paño</h3><p>La caída sigue la diagonal de los brazos y añade el margen fijo y la bambalina.</p></div></div>
         <div className="parameter-grid parameter-grid-3">
-          <NumberField label="Factor diagonal" value={parameters.fabricDropMultiplier} min={0.1} step={0.01} onChange={(value) => value !== null && onUpdate({ fabricDropMultiplier: value })} />
+          <NumberField label="Multiplicador de la salida" value={parameters.fabricDropMultiplier} min={0.1} step={0.01} onChange={(value) => value !== null && onUpdate({ fabricDropMultiplier: value })} />
           <NumberField label="Margen fijo de paño (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
+        <p className="parameter-note">Caída del paño = salida × multiplicador + margen fijo + bamba. El valor {parameters.fabricDropMultiplier.toFixed(3)} representa la diagonal aproximada del brazo.</p>
       </div>
 
       <div className="parameter-band">
@@ -702,7 +713,7 @@ function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpd
           <NumberField label="Margen inferior tela (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
-          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
       </div>
 
@@ -762,16 +773,16 @@ function AmbarBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
       </nav>
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>ÁMBAR BOX</h2><p>Reglas MICROBOX 300, nombre comercial actual TGM Box L300.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><h2>ÁMBAR BOX <small>antes Microbox 300</small></h2><p>Reglas de estructura, tela y reserva RPS.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites y stock</h3><p>Serie estándar con brazos PRT07 y tubo P701.</p></div></div>
+        <div className="parameter-band-title"><span>01</span><div><h3>Límites y barras comerciales</h3><p>Longitudes disponibles para los perfiles y tubos de la serie. La web selecciona la adecuada automáticamente.</p></div></div>
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
-          {parameters.profileStockLengths.map((length, index) => <NumberField key={`profile-${index}`} label={`Perfil stock ${index + 1} (cm)`} value={length} min={1} step={100} onChange={(value) => value !== null && onUpdate({ profileStockLengths: parameters.profileStockLengths.map((item, current) => current === index ? value : item) })} />)}
-          {parameters.rollStockLengths.map((length, index) => <NumberField key={`roll-${index}`} label={`Tubo stock ${index + 1} (cm)`} value={length} min={1} step={100} onChange={(value) => value !== null && onUpdate({ rollStockLengths: parameters.rollStockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.profileStockLengths.map((length, index) => <NumberField key={`profile-${index}`} label={`Perfil comercial ${index + 1} (cm)`} value={length} min={1} step={100} onChange={(value) => value !== null && onUpdate({ profileStockLengths: parameters.profileStockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.rollStockLengths.map((length, index) => <NumberField key={`roll-${index}`} label={`Tubo comercial ${index + 1} (cm)`} value={length} min={1} step={100} onChange={(value) => value !== null && onUpdate({ rollStockLengths: parameters.rollStockLengths.map((item, current) => current === index ? value : item) })} />)}
           <SelectField label="Motor" value={parameters.motorPower} options={['15/17', '35/17']} onChange={(motorPower) => onUpdate({ motorPower })} />
         </div>
       </div>
@@ -830,7 +841,7 @@ function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate,
       </nav>
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>{selectedModel}</h2><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><h2>{selectedModel} <small>antes {modelLegacyTitle(selectedModel)}</small></h2><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -841,7 +852,7 @@ function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate,
           <NumberField label="Margen de caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
           <NumberField label="Margen base paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
-          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Largo de stock ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
       </div>
 
@@ -925,7 +936,7 @@ function AgataBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
       </nav>
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>ÁGATA BOX</h2><p>Reglas MODUL para Open, Semiopen, Semiclose y Cofre.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><h2>ÁGATA BOX <small>antes Modul 400 / Modulbox</small></h2><p>Reglas para Open, Semiopen, Semiclose y Cofre.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 

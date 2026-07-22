@@ -69,6 +69,21 @@ describe('modelBehavior', () => {
     }
   });
 
+  test('ningún selector específico de modelo se publica sin opciones', () => {
+    for (const model of modelNames) {
+      const modelBehavior = getModelBehavior(model);
+      if (modelBehavior.tipo02 === 'TUBO DE CARGA') {
+        expect(modelBehavior.tubeOptions?.length, `${model}: opciones de tubo`).toBeGreaterThan(0);
+      }
+      if (modelBehavior.tipo02 === 'SUBMODELO') {
+        expect(modelBehavior.submodelOptions?.length, `${model}: opciones de submodelo`).toBeGreaterThan(0);
+      }
+      if (modelBehavior.multipleBrazos) {
+        expect(modelBehavior.armOptions?.length, `${model}: opciones de brazos`).toBeGreaterThan(0);
+      }
+    }
+  });
+
   test('CAMBIO TELA está marcado como implementado (tiene reglas de cálculo reales)', () => {
     expect(getModelBehavior('CAMBIO TELA').implemented).toBe(true);
   });
@@ -100,5 +115,22 @@ describe('modelBehavior', () => {
     [{ model: 'CAMBIO CORTINA', curtainHasWindow: true, curtainFinish: 'TUBO' }, 'CORTINA-TUBO-VENTANA']
   ])('selecciona el dibujo de cortina correcto', (awning, expected) => {
     expect(getAwningDiagram(awning)).toBe(expected);
+  });
+
+  test.each([
+    ['ARZUA PRO', 'ARZUA'],
+    ['GALICIA', 'GALICIA'],
+    ['XACOBEO', 'XACOBEO'],
+    ['MONOBLOCK 350', 'MONOBLOCK'],
+    ['PUNTO RECTO', 'PUNTO-RECTO'],
+    ['CUARZO BOX', 'CUARZO'],
+    ['PERLA BOX', 'PERLA'],
+    ['CORAL BOX', 'CORAL'],
+    ['CAMBIO TELA', 'CAMBIO-TELA'],
+    ['AMBAR BOX', 'AMBAR'],
+    ['AGATA BOX', 'AGATA'],
+    ['MAXISCREEM', 'MAXISCREEN']
+  ])('%s tiene dibujo técnico propio', (model, expected) => {
+    expect(getAwningDiagram({ model })).toBe(expected);
   });
 });

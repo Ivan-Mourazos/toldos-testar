@@ -60,9 +60,9 @@ export async function buildOrderPlanteamientoPdf({ order, calculation }) {
       });
     });
 
-    plan.fabricPages.forEach(({ entries, diagram, diagramAwning }) => {
+    plan.fabricPages.forEach(({ entries, diagram, diagramAwning, diagramCalculation }) => {
       doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-      drawFabricPage(doc, { order, entries, diagram, diagramAwning });
+      drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation });
     });
 
     doc.end();
@@ -77,7 +77,8 @@ export function buildPlanteamientoPlan(order, calculation) {
   const grouped = new Map();
   entries.forEach((entry) => {
     const diagram = getAwningDiagram(entry.awning);
-    const groupKey = fabricDiagramGroupKey(diagram, entry.awning);
+    const diagramCalculation = resolveDiagramCalculation(entry);
+    const groupKey = fabricDiagramGroupKey(diagram, entry.awning, diagramCalculation);
     const group = grouped.get(groupKey) || { diagram, diagramAwning: entry.awning, entries: [] };
     group.entries.push(entry);
     grouped.set(groupKey, group);
@@ -85,15 +86,24 @@ export function buildPlanteamientoPlan(order, calculation) {
   const fabricPages = Array.from(grouped.values(), (group) => (
     chunkItems(group.entries, 8).map((pageEntries) => ({
       diagram: group.diagram,
-      diagramAwning: group.diagramAwning,
+      diagramAwning: pageEntries[0].awning,
+      diagramCalculation: resolveDiagramCalculation(pageEntries[0]),
       entries: pageEntries
     }))
   )).flat();
   return { structureEntries, fabricPages };
 }
 
-function fabricDiagramGroupKey(diagram, awning) {
-  if (!diagram.includes('VENTANA') || diagram.includes('SIN-VENTANA')) return diagram;
+function fabricDiagramGroupKey(diagram, awning, calculation = {}) {
+  if (!diagram.includes('VENTANA') || diagram.includes('SIN-VENTANA')) {
+    return [
+      diagram,
+      calculation?.tubeLoad || awning?.tubeLoad || '',
+      calculation?.rollSystem || '',
+      calculation?.submodel || awning?.submodel || '',
+      awning?.anticaVariant || ''
+    ].join('|');
+  }
   return [
     diagram,
     awning.curtainWindowExit,
@@ -101,6 +111,15 @@ function fabricDiagramGroupKey(diagram, awning) {
     awning.curtainWindowFloorHeight,
     awning.curtainWindowHeight
   ].join('|');
+}
+
+function resolveDiagramCalculation(entry) {
+  const calculation = entry.ofBlock?.calculation || {};
+  const tubeRow = entry.ofBlock?.despiece?.rows?.find((row) => /^TUBO DE CARGA\b/i.test(row.name || ''));
+  return {
+    ...calculation,
+    tubeLoad: tubeRow?.name || calculation.tubeLoad || entry.awning?.tubeLoad || ''
+  };
 }
 
 function drawStructurePage(doc, { order, awning, ofBlock, index }) {
@@ -248,7 +267,7 @@ function drawStructureNotes(doc, x, y, w, bottom, notes) {
   doc.font(fonts.regular).fontSize(6.5).text(value(notes), x + 4, y + 16, { width: w - 8, height: bottom - y - 20, ellipsis: true });
 }
 
-function drawFabricPage(doc, { order, entries, diagram, diagramAwning }) {
+function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation }) {
   const pageW = doc.page.width;
   const pageH = doc.page.height;
   const margin = 24;
@@ -260,7 +279,7 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning }) {
     calc: ofBlock?.calculation
   }));
   const diagramW = 218;
-  drawAwningDiagram(doc, margin, 126, diagramW, 350, diagram, diagramAwning);
+  drawAwningDiagram(doc, margin, 126, diagramW, 350, diagram, diagramAwning, diagramCalculation);
 
   const contentX = margin + diagramW + 18;
   const contentW = pageW - margin - contentX;
@@ -341,6 +360,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
       `OF ${value(awning.of)}`,
       value(awning.model),
       value(calc?.fabricCode),
+      hardwareDetail(awning, calc),
       calc?.valanceFabricCode ? `BAMBA ${calc.valanceFabricCode}: ${formatNumber(calc.valanceFabricMl)} ML` : '',
       bambaLabel(awning),
       valanceConfigLabel(awning),
@@ -370,15 +390,153 @@ function drawFabricTotals(doc, x, y, w, lines) {
     .text(text || '-', x + 9, y + 16, { width: w - 18, align: 'right', ellipsis: true });
 }
 
-function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}) {
+function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
   if (diagram.startsWith('CORTINA')) return drawCurtainDiagram(doc, x, y, w, h, diagram, awning);
   if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h);
   if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h);
-  if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h);
+  if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
   if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h, awning);
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
   if (diagram === 'MAXISCREEN') return drawMaxiscreenDiagram(doc, x, y, w, h, awning);
+  if (['ARZUA', 'GALICIA', 'XACOBEO', 'MONOBLOCK', 'PUNTO-RECTO'].includes(diagram)) {
+    return drawArmSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation), awning);
+  }
+  if (['CUARZO', 'PERLA', 'CORAL'].includes(diagram)) {
+    return drawBoxSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation), awning);
+  }
+  if (diagram === 'CAMBIO-TELA') {
+    return drawGeneralDiagram(doc, x, y, w, h, {
+      title: 'CAMBIO DE TELA',
+      rollLabel: 'ENTRADA EN TUBO EXISTENTE',
+      loadLabel: 'ENTRADA EN BARRA EXISTENTE'
+    });
+  }
   return drawGeneralDiagram(doc, x, y, w, h);
+}
+
+function diagramSpec(diagram, awning, calculation) {
+  const arms = Number(awning.armCount) || Number(calculation?.armCount) || null;
+  const selectedTube = calculation?.tubeLoad || awning.tubeLoad;
+  const specs = {
+    ARZUA: {
+      title: 'ARZÚA PRO', roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: 'BRAZOS ONYX'
+    },
+    GALICIA: {
+      title: 'GALICIA', roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: `${arms || 2} BRAZOS ONYX`
+    },
+    XACOBEO: {
+      title: 'XACOBEO', roll: 'TUBO DE ENROLLE P701', load: 'TUBO DE CARGA EVO 70', arms: 'BRAZOS ART250'
+    },
+    MONOBLOCK: {
+      title: 'MONOBLOCK 350', roll: 'TUBO DE ENROLLE P801', load: 'TUBO DE CARGA EVO 80', arms: `${arms || 2} BRAZOS ONYX`, extra: 'BARRA CUADRADA 40x40'
+    },
+    'PUNTO-RECTO': {
+      title: 'PUNTO RECTO', roll: `TUBO DE ENROLLE ${calculation?.rollSystem || 'P701/P801'}`, load: 'TUBO DE CARGA UNIVERS 270', arms: `${arms || 2} BRAZOS PRT07`
+    },
+    CUARZO: {
+      title: 'CUARZO BOX', roll: 'TUBO DE ENROLLE P701', load: 'BARRA DE CARGA STORBOX 250', box: 'COFRE CUARZO BOX'
+    },
+    PERLA: {
+      title: 'PERLA BOX', roll: 'TUBO DE ENROLLE P801', load: 'BARRA DE CARGA PERLA BOX', box: 'COFRE STORBOX S-300'
+    },
+    CORAL: {
+      title: 'CORAL BOX', roll: 'TUBO DE ENROLLE P801', load: 'BARRA DE CARGA CORAL BOX', box: 'COFRE STORBOX 400'
+    }
+  };
+  return specs[diagram];
+}
+
+function drawArmSystemDiagram(doc, x, y, w, h, spec, awning) {
+  drawTechnicalDiagramShell(doc, x, y, w, h, spec.title);
+  const wallX = x + 35;
+  const rollX = wallX + 18;
+  const rollY = y + 79;
+  const frontX = x + w - 36;
+  const frontY = y + 209;
+
+  doc.moveTo(wallX, y + 47).lineTo(wallX, y + 275)
+    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+  doc.circle(rollX, rollY, 11).fillAndStroke('#e7eeec', '#466e64');
+  doc.circle(rollX, rollY, 4).fillAndStroke(colors.paper, '#466e64');
+  doc.moveTo(rollX + 10, rollY + 2).lineTo(frontX, frontY)
+    .strokeColor('#d2a116').lineWidth(2).stroke();
+
+  const armCount = Math.max(1, Math.min(4, Number(awning.armCount) || 2));
+  for (let index = 0; index < Math.min(armCount, 3); index += 1) {
+    const offset = (index - 1) * 5;
+    const jointX = wallX + 78 + offset;
+    const jointY = y + 157 + offset;
+    doc.moveTo(rollX + 4, rollY + 22 + offset / 2).lineTo(jointX, jointY).lineTo(frontX - 8, frontY + 29 + offset / 2)
+      .strokeColor(index % 2 ? '#708e86' : '#466e64').lineWidth(1.15).stroke();
+  }
+
+  doc.roundedRect(frontX - 7, frontY - 6, 14, 42, 3)
+    .fillAndStroke('#e7eeec', '#466e64');
+  drawOptionalValance(doc, frontX, frontY + 36, awning.valanceHeight);
+  drawDiagramText(doc, spec.roll, wallX - 8, rollY - 31, 86);
+  drawDiagramText(doc, spec.load, frontX - 55, frontY + 47, 110);
+  drawDiagramText(doc, spec.arms, wallX + 48, frontY + 5, frontX - wallX - 62);
+  drawDimensionSummary(doc, x, y, w, awning);
+  if (spec.extra) drawHardwareFooter(doc, x, y, w, h, [spec.extra]);
+}
+
+function drawBoxSystemDiagram(doc, x, y, w, h, spec, awning) {
+  drawTechnicalDiagramShell(doc, x, y, w, h, spec.title);
+  const wallX = x + 38;
+  const boxY = y + 68;
+  const frontX = x + w - 37;
+  const frontY = y + 208;
+
+  doc.moveTo(wallX, y + 46).lineTo(wallX, y + 278)
+    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+  doc.roundedRect(wallX - 8, boxY, 51, 38, 8).fillAndStroke('#e7eeec', '#466e64');
+  doc.circle(wallX + 17, boxY + 18, 9).fillAndStroke(colors.paper, '#466e64');
+  doc.circle(wallX + 17, boxY + 18, 3).fillAndStroke('#e7eeec', '#466e64');
+  doc.moveTo(wallX + 39, boxY + 24).lineTo(frontX, frontY)
+    .strokeColor('#d2a116').lineWidth(2).stroke();
+  doc.moveTo(wallX + 30, boxY + 35).lineTo(wallX + 94, y + 162).lineTo(frontX - 8, frontY + 29)
+    .strokeColor('#466e64').lineWidth(1.3).stroke();
+  doc.roundedRect(frontX - 8, frontY - 7, 16, 44, 4).fillAndStroke('#e7eeec', '#466e64');
+  drawOptionalValance(doc, frontX, frontY + 37, awning.valanceHeight);
+
+  drawDiagramText(doc, spec.box, wallX - 12, boxY - 18, 82);
+  drawDiagramText(doc, spec.roll, wallX - 10, boxY + 47, 98);
+  drawDiagramText(doc, spec.load, frontX - 62, frontY + 49, 124);
+  drawDimensionSummary(doc, x, y, w, awning);
+}
+
+function drawTechnicalDiagramShell(doc, x, y, w, h, title) {
+  roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
+  doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+    .text(title, x + 18, y + 13, { width: w - 36, align: 'center' });
+}
+
+function drawOptionalValance(doc, centerX, topY, height) {
+  if (!(Number(height) > 0)) return;
+  doc.moveTo(centerX, topY).lineTo(centerX, topY + 48)
+    .strokeColor('#d2a116').lineWidth(1.4).stroke();
+  for (let wave = 0; wave < 3; wave += 1) {
+    const wy = topY + 48 + wave * 7;
+    doc.moveTo(centerX - 8, wy).bezierCurveTo(centerX - 4, wy + 5, centerX + 3, wy - 4, centerX + 8, wy + 2);
+  }
+  doc.strokeColor('#d2a116').lineWidth(1).stroke();
+}
+
+function drawDimensionSummary(doc, x, y, w, awning) {
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.8)
+    .text(`FRENTE ${formatNumber(awning.width)} CM`, x + 34, y + 42, { width: w - 68, align: 'center' })
+    .text(`SALIDA ${formatNumber(awning.projection)} CM`, x + 70, y + 244, { width: w - 100, align: 'center' });
+}
+
+function drawHardwareFooter(doc, x, y, w, h, labels) {
+  const lineHeight = 10;
+  const startY = y + h - 14 - labels.length * lineHeight;
+  labels.forEach((label, index) => {
+    doc.fillColor(index === 0 ? colors.inkSoft : colors.grayDark)
+      .font(index === 0 ? fonts.semibold : fonts.regular).fontSize(5.4)
+      .text(label, x + 16, startY + index * lineHeight, { width: w - 32, align: 'center', ellipsis: true, lineBreak: false });
+  });
 }
 
 function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
@@ -388,7 +546,7 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
-    .text('DIANA VERTICAL', x + 18, y + 13, { width: w - 36, align: 'center' });
+    .text('MAXISCREEM', x + 18, y + 13, { width: w - 36, align: 'center' });
 
   const panelX = x + 49;
   const panelY = y + 73;
@@ -415,7 +573,7 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
     .text(`FRENTE ${formatNumber(awning.width)} CM`, panelX, panelY + 22, { width: panelW, align: 'center' })
     .text(`CAÍDA ${formatNumber(awning.projection)} CM`, panelX + panelW + 8, panelY + 72, { width: 34, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
-    .text('P801 · PERFIL DE CARGA MAXISCREEN', x + 24, y + h - 25, { width: w - 48, align: 'center' });
+    .text('P801 · PERFIL DE CARGA MAXISCREEM', x + 24, y + h - 25, { width: w - 48, align: 'center' });
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {
@@ -523,12 +681,15 @@ function drawAmbarDiagram(doc, x, y, w, h, awning) {
     .text(`SALIDA ${formatNumber(awning.projection)} CM`, wallX + 35, armEndY + 58, { width: armEndX - wallX - 42, align: 'center' })
     .text('BRAZOS PRT07', wallX + 47, armEndY + 4, { width: armEndX - wallX - 70, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
-    .text('TUBO P701 · KIT DE PERFILES MICROBOX 300', x + 24, y + h - 27, { width: w - 48, align: 'center' });
+    .text('TUBO P701 · KIT DE PERFILES ÁMBAR BOX', x + 24, y + h - 27, { width: w - 48, align: 'center' });
 }
 
-function drawGeneralDiagram(doc, x, y, w, h) {
+function drawGeneralDiagram(doc, x, y, w, h, options = {}) {
+  const title = options.title || 'GENERAL';
+  const rollLabel = options.rollLabel || 'PARA ENROLLAR EN TUBO';
+  const loadLabel = options.loadLabel || 'VARILLA BLANCA';
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(9).text('GENERAL', x + 8, y + 8, { width: w - 16, align: 'center' });
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(9).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
   doc.moveTo(x + 25, y + 30).lineTo(x + w - 25, y + 30).strokeColor('#74a887').lineWidth(1).stroke();
   doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.5).text('FRENTE TELA', x + 55, y + 23, { width: w - 110, align: 'center' });
 
@@ -539,7 +700,7 @@ function drawGeneralDiagram(doc, x, y, w, h) {
   doc.rect(frameX, frameY, frameW, frameH).strokeColor('#9ebbb0').lineWidth(1).stroke();
   doc.fillColor('#4f8b68').fontSize(5.4)
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
-    .text('PARA ENROLLAR EN TUBO', frameX, frameY + 12, { width: frameW, align: 'center' })
+    .text(rollLabel, frameX, frameY + 12, { width: frameW, align: 'center' })
     .text('BASTILLA\nCOSIDA O SOLDADA', frameX + 12, frameY + 112, { width: 55, align: 'center' })
     .text('BASTILLA\nCOSIDA O SOLDADA', frameX + frameW - 67, frameY + 112, { width: 55, align: 'center' });
   doc.moveTo(frameX + frameW / 2, frameY + 40).lineTo(frameX + frameW / 2, frameY + frameH - 10).dash(2, { space: 2 }).strokeColor('#c5d5cf').stroke().undash();
@@ -548,7 +709,7 @@ function drawGeneralDiagram(doc, x, y, w, h) {
   const valanceY = frameY + frameH + 25;
   doc.rect(frameX, valanceY, frameW, 38).strokeColor('#9ebbb0').stroke();
   doc.fillColor('#4f8b68').fontSize(5.3)
-    .text('VARILLA BLANCA', frameX, valanceY - 11, { width: frameW, align: 'center' })
+    .text(loadLabel, frameX, valanceY - 11, { width: frameW, align: 'center' })
     .text('ACRÍLICO', frameX, valanceY + 25, { width: frameW, align: 'center' });
   for (let wave = 0; wave < 6; wave += 1) {
     const wx = frameX + wave * (frameW / 6);
@@ -669,31 +830,56 @@ function drawValanceDiagram(doc, x, y, w, h) {
     .text('REMATE SEGÚN PEDIDO', stripX, stripY + stripH + 22, { width: stripW, align: 'center' });
 }
 
-function drawAnticaDiagram(doc, x, y, w, h) {
+function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
   drawDiagramShell(doc, x, y, w, h, 'CAMBIO ANTICA');
-  const canopyX = x + 30;
-  const canopyY = y + 92;
-  const canopyW = w - 60;
-  const canopyH = 138;
-  doc.moveTo(canopyX, canopyY + canopyH)
-    .lineTo(canopyX + 16, canopyY + 18)
-    .quadraticCurveTo(canopyX + canopyW / 2, canopyY - 12, canopyX + canopyW - 16, canopyY + 18)
-    .lineTo(canopyX + canopyW, canopyY + canopyH)
-    .closePath().fillAndStroke(colors.soft, '#7fa594');
-  for (let seam = 1; seam < 4; seam += 1) {
-    const sx = canopyX + seam * (canopyW / 4);
-    doc.moveTo(sx, canopyY + 4).lineTo(sx, canopyY + canopyH)
-      .dash(3, { space: 2 }).strokeColor('#bfd2ca').stroke().undash();
+  const variant = awning.anticaVariant || 'CONFIGURACIÓN SIN INDICAR';
+  const isCounterweight = variant === 'TUBO 50X30 CONTRAPESO';
+  const isFixed = variant === 'SOPORTE FIJO 3 AGUJEROS';
+  const tube = variant === 'TUBO 30X10' ? '30x10' : '50x30';
+  const wallX = x + 28;
+  const wallY = y + 80;
+  const endX = x + w - 34;
+  const endY = y + 188;
+
+  doc.strokeColor(colors.ink).lineWidth(1.2)
+    .moveTo(wallX, wallY - 16).lineTo(wallX, y + h - 42).stroke();
+  doc.strokeColor('#7fa594').lineWidth(2)
+    .moveTo(wallX, wallY).lineTo(endX, endY).stroke();
+  doc.strokeColor('#bfd2ca').lineWidth(0.8)
+    .moveTo(wallX + 6, wallY + 12).lineTo(endX - 5, endY + 12).stroke();
+
+  if (isFixed) {
+    doc.circle(wallX + 8, wallY + 5, 13).fillAndStroke(colors.paper, colors.ink);
+    doc.circle(wallX + 8, wallY + 5, 6).fillAndStroke(colors.soft, '#7fa594');
+    for (const offset of [-9, 0, 9]) doc.circle(wallX - 6, wallY + 5 + offset, 1.4).fill(colors.ink);
+    drawSideLabel(doc, 'SOPORTE FIJO · 3 AGUJEROS', wallX + 20, wallY - 10, 118);
+  } else {
+    doc.rect(endX - 8, endY - 3, 16, tube === '30x10' ? 8 : 13).fillAndStroke(colors.paper, colors.ink);
+    drawSideLabel(doc, `ENTRADA TUBO ${tube}`, endX - 115, endY - 28, 110);
   }
-  for (let wave = 0; wave < 6; wave += 1) {
-    const waveW = canopyW / 6;
-    const wx = canopyX + wave * waveW;
-    doc.moveTo(wx, canopyY + canopyH)
-      .bezierCurveTo(wx + waveW * 0.25, canopyY + canopyH + 13, wx + waveW * 0.75, canopyY + canopyH + 13, wx + waveW, canopyY + canopyH);
+
+  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
+  if (valance > 0) {
+    const valanceBottom = Math.min(y + h - 72, endY + 62);
+    doc.strokeColor('#7fa594').lineWidth(1.2)
+      .moveTo(endX, endY + 10).lineTo(endX, valanceBottom).stroke();
+    drawSideLabel(doc, `BAMBA ${formatNumber(valance)} CM`, endX - 82, valanceBottom + 7, 82);
   }
-  doc.strokeColor('#7fa594').stroke();
-  drawDiagramText(doc, 'AUMENTO ANTICA · 65 CM', canopyX, canopyY + canopyH + 26, canopyW);
-  drawDiagramText(doc, 'FRENTE TELA', canopyX, canopyY - 25, canopyW);
+
+  if (isCounterweight) {
+    const bottomY = y + h - 78;
+    doc.strokeColor(colors.ink).lineWidth(1)
+      .moveTo(endX, endY + 10).lineTo(endX, bottomY).stroke();
+    doc.rect(endX - 7, bottomY, 14, 28).fillAndStroke(colors.gray, colors.ink);
+    drawSideLabel(doc, 'CONTRAPESO', endX - 78, bottomY + 7, 66);
+  } else {
+    const plateY = y + h - 57;
+    doc.rect(wallX + 22, plateY, w - 82, 5).fillAndStroke(colors.gray, colors.ink);
+    drawDiagramText(doc, 'ENTRADA PLETINA 25x4', wallX + 18, plateY + 11, w - 72);
+  }
+
+  drawDiagramText(doc, variant, x + 18, y + 43, w - 36);
+  drawDiagramText(doc, 'FRENTE TELA', x + 28, y + 61, w - 56);
 }
 
 function drawDiagramShell(doc, x, y, w, h, title) {
@@ -811,6 +997,15 @@ function summarizeAwningValue(lines, field, legacyValue = '') {
   if (values.size === 0) return '-';
   if (values.size === 1) return Array.from(values)[0];
   return 'SEGÚN TOLDO';
+}
+
+function hardwareDetail(awning, calculation = {}) {
+  const values = [];
+  if (calculation.tubeLoad || awning.tubeLoad) values.push(calculation.tubeLoad || awning.tubeLoad);
+  if (calculation.rollSystem) values.push(`ENROLLE ${calculation.rollSystem}`);
+  if (calculation.submodel || awning.submodel) values.push(calculation.submodel || awning.submodel);
+  if (Number(awning.armCount) > 0) values.push(`${Number(awning.armCount)} BRAZOS`);
+  return values.join(' / ');
 }
 
 function valanceConfigLabel(awning) {

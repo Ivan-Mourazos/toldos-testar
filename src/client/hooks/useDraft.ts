@@ -100,6 +100,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.fabricJobWidthAdjustmentCm = nullableNumber(old.fabricJobWidthAdjustmentCm);
   base.fabricJobDropAllowanceCm = nullableNumber(old.fabricJobDropAllowanceCm);
   base.fabricJobValanceExtraCm = nullableNumber(old.fabricJobValanceExtraCm);
+  base.anticaVariant = normalizeAnticaVariant(old.anticaVariant);
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
     : typeof old.notes === 'string' ? old.notes : '';
@@ -167,6 +168,12 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
 function clearStoredDrafts() {
   if (typeof localStorage === 'undefined') return;
   draftStorageKeys.forEach((key) => localStorage.removeItem(key));
+}
+
+function normalizeAnticaVariant(value: unknown): Awning['anticaVariant'] {
+  return ['SOPORTE FIJO 3 AGUJEROS', 'TUBO 30X10', 'TUBO 50X30 CONTRAPESO'].includes(String(value))
+    ? value as Awning['anticaVariant']
+    : '';
 }
 
 function getInitialHistory(): HistoryEntry[] {
