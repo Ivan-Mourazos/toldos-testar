@@ -3,6 +3,8 @@ import path from 'node:path';
 import sql from 'mssql';
 import XLSX from 'xlsx';
 import { config } from '../src/config.js';
+import { calculateOrder } from '../src/domain/rules.js';
+import { withRpsDateWindow } from './lib/rps-validation-window.mjs';
 
 const excelRoot = process.env.TOLDOS_EXCEL_ROOT || String.raw`Y:\2026\TOLDOS`;
 const targetOrders = await loadTargetOrders();
@@ -11,6 +13,40 @@ const files = (await readdir(excelRoot))
   .filter((name) => targetOrders.some((code) => compact(name).startsWith(code)));
 const rows = files.flatMap(readCambioCortinaRows);
 const rpsRows = await loadRpsFabricRows([...new Set(rows.map((row) => row.of).filter(Boolean))]);
+const fabricCodeByOf = new Map(rpsRows.map((row) => [normalizeOf(row.of), clean(row.code)]));
+const dimensionalMismatches = rows.flatMap((row) => {
+  const fabricCode = fabricCodeByOf.get(row.of);
+  const result = calculateOrder({
+    orderCode: row.filename.replace(/\.xlsm$/i, ''),
+    sameFabric: false,
+    awnings: [{
+      id: `${row.filename}-${row.slot}`,
+      workType: 'FABRIC_ONLY',
+      of: row.of,
+      model: 'CAMBIO CORTINA',
+      units: row.units,
+      width: row.width,
+      projection: row.projection,
+      valanceHeight: row.valance,
+      fabric: fabricCode ? fabricSelection(fabricCode) : '',
+      reglasModificadas: false
+    }]
+  });
+  const calculation = result.ofs[0]?.calculation;
+  return [
+    ['fabricDrop', row.fabricDrop],
+    ['fabricMl', row.fabricMl]
+  ].flatMap(([field, expected]) => expected > 0 && !nearlyEqual(calculation?.[field], expected)
+    ? [{
+      file: row.filename,
+      slot: row.slot,
+      of: row.of,
+      field,
+      expected,
+      actual: calculation?.[field] ?? null
+    }]
+    : []);
+});
 const deltaCounts = countBy(rows, (row) => row.dropDelta);
 const excelByOf = sumBy(rows, (row) => row.of, (row) => row.fabricMl);
 const rpsByOf = currentRpsQuantityByOf(rpsRows);
@@ -23,6 +59,9 @@ console.log(JSON.stringify({
   rpsOrders: targetOrders.length,
   matchedExcelFiles: files.length,
   cambioCortinaRows: rows.length,
+  dimensionalChecks: rows.length * 2,
+  dimensionalMismatchCount: dimensionalMismatches.length,
+  dimensionalMismatches,
   dropDeltaCounts: Object.fromEntries(deltaCounts),
   standardDeduction18: rows.filter((row) => [22, 27].includes(row.dropDelta)).length,
   deductionDisabled: rows.filter((row) => row.dropDelta === 45).length,
@@ -52,6 +91,8 @@ function readCambioCortinaRows(filename) {
       filename,
       slot: index + 1,
       of: normalizeOf(cell(data, `${column}21`)),
+      units: Math.max(1, number(cell(data, `${column}22`)) || number(cell(structure, 'Q13')) || 1),
+      width: number(cell(data, `${column}23`)) || number(cell(structure, 'Q11')),
       projection,
       valance,
       fabricDrop,
@@ -64,9 +105,11 @@ function readCambioCortinaRows(filename) {
 async function loadTargetOrders() {
   const pool = await connect();
   try {
-    const result = await pool.request()
-      .input('company', sql.VarChar(10), config.db.company)
-      .query(`
+    const request = withRpsDateWindow(
+      pool.request().input('company', sql.VarChar(10), config.db.company),
+      sql
+    );
+    const result = await request.query(`
         SELECT DISTINCT o.CodOrder AS orderCode
         FROM dbo.FACOrderSL o
         JOIN dbo.FACOrderLineSL l
@@ -74,7 +117,8 @@ async function loadTargetOrders() {
         LEFT JOIN dbo.STKArticle a
           ON a.IDArticle = l.IDArticle AND a.CodCompany = l.CodCompany
         WHERE o.CodCompany = @company
-          AND o.OrderDate >= '2026-01-01'
+          AND o.OrderDate >= @dateFrom
+          AND o.OrderDate < @dateTo
           AND (a.CodArticle LIKE 'CAM%TEL%' OR l.Description LIKE '%CAMBIO%TELA%')
           AND (l.Comment LIKE '%CORTINA%' OR l.Description LIKE '%CORTINA%');
       `);
@@ -182,6 +226,10 @@ function number(value) {
 
 function round1(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function fabricSelection(code) {
+  return `${code}|||${Number(/P(\d+)$/i.exec(code)?.[1]) || 120}|||TELA VALIDACION`;
 }
 
 function nearlyEqual(left, right) {

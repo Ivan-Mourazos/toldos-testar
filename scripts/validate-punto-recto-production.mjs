@@ -5,8 +5,9 @@ import XLSX from 'xlsx';
 import { config } from '../src/config.js';
 import { calculateOrder } from '../src/domain/rules.js';
 import { normalizeReservation } from '../src/domain/validation.js';
+import { toldosRoots, withRpsDateWindow } from './lib/rps-validation-window.mjs';
 
-const root = String.raw`Y:\2026\TOLDOS`;
+const [root] = toldosRoots([String.raw`Y:\2026\TOLDOS`]);
 const targetOrders = await loadTargetOrders();
 const names = (await readdir(root)).filter((name) => /\.xlsm$/i.test(name)
   && [...targetOrders].some((code) => compact(name).startsWith(code)));
@@ -139,12 +140,16 @@ async function loadTargetOrders() {
     connectionTimeout: 8_000, requestTimeout: 30_000
   }).connect();
   try {
-    const result = await pool.request().input('company', sql.VarChar(10), config.db.company).query(`
+    const request = withRpsDateWindow(
+      pool.request().input('company', sql.VarChar(10), config.db.company),
+      sql
+    );
+    const result = await request.query(`
       SELECT DISTINCT o.CodOrder AS orderCode
       FROM dbo.FACOrderSL o
       JOIN dbo.FACOrderLineSL l ON l.IDOrder=o.IDOrder AND l.CodCompany=o.CodCompany
       LEFT JOIN dbo.STKArticle a ON a.IDArticle=l.IDArticle AND a.CodCompany=l.CodCompany
-      WHERE o.CodCompany=@company AND o.OrderDate>='2026-01-01'
+      WHERE o.CodCompany=@company AND o.OrderDate>=@dateFrom AND o.OrderDate<@dateTo
         AND (a.CodArticle='PUNREC' OR l.Description LIKE '%MODELO PUNTO RECTO%');
     `);
     return new Set(result.recordset.map((row) => compact(row.orderCode)));

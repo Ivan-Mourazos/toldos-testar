@@ -19,6 +19,11 @@
 
 ## Contraste de producción
 
-Se revisaron ocho planteamientos de 2025-2026: tres Open, dos Semi y tres Cofre. El validador `scripts/validate-agata-box-production.mjs` fija 40 comprobaciones de tela, caída, tubo, soportes y motor.
+El validador `scripts/validate-agata-box-production.mjs` descubre en RPS los
+pedidos del intervalo configurado con artículos `AGATABOX`, `AGATASCLOSE`,
+`AGATASOPEN` y `ASTORGA`. Después abre los libros disponibles, reconoce las
+estructuras históricas `MODUL400`/`MODULBOX` y contrasta tela, caída, tubo,
+soportes y reserva de materiales. Los pedidos todavía sin libro quedan
+identificados expresamente en `missingExcelOrders`.
 
 Las referencias de perfiles conservan los códigos históricos `MODUL`; el nombre comercial solo cambia en la interfaz y en los títulos del planteamiento.

@@ -4,6 +4,7 @@ import sql from 'mssql';
 import XLSX from 'xlsx';
 import { config } from '../src/config.js';
 import { calculateOrder } from '../src/domain/rules.js';
+import { withRpsDateWindow } from './lib/rps-validation-window.mjs';
 
 const root = process.env.TOLDOS_EXCEL_ROOT || String.raw`Y:\2026\TOLDOS`;
 const targetOrders = await loadTargetOrders();
@@ -123,12 +124,16 @@ function readFinalRps(sheet) {
 async function loadTargetOrders() {
   const pool = await connect();
   try {
-    const result = await pool.request().input('company', sql.VarChar(10), config.db.company).query(`
+    const request = withRpsDateWindow(
+      pool.request().input('company', sql.VarChar(10), config.db.company),
+      sql
+    );
+    const result = await request.query(`
       SELECT DISTINCT o.CodOrder AS orderCode
       FROM dbo.FACOrderSL o
       JOIN dbo.FACOrderLineSL l ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
       LEFT JOIN dbo.STKArticle a ON a.IDArticle = l.IDArticle AND a.CodCompany = l.CodCompany
-      WHERE o.CodCompany = @company AND o.OrderDate >= '2026-01-01'
+      WHERE o.CodCompany = @company AND o.OrderDate >= @dateFrom AND o.OrderDate < @dateTo
         AND (a.CodArticle = 'ARZUA' OR l.Description LIKE '%BRAZOS INVISIBLES%ART 325%');
     `);
     return new Set(result.recordset.map((row) => compact(row.orderCode).slice(0, 9)));

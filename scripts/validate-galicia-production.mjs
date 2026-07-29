@@ -7,34 +7,47 @@ import XLSX from 'xlsx';
 import { config } from '../src/config.js';
 import { consolidateReservation } from '../src/domain/validation.js';
 import { calculateOrder } from '../src/domain/rules.js';
+import { withRpsDateWindow } from './lib/rps-validation-window.mjs';
 
 const execFileAsync = promisify(execFile);
 const pdfRoot = process.env.RPS_PLANTEAMIENTOS_ROOT
   || String.raw`\\192.168.0.128\RPS\VENTAS\PLANTEAMIENTOS\2026`;
 const excelRoot = process.env.TOLDOS_EXCEL_ROOT || String.raw`Y:\2026\TOLDOS`;
 const pdfToText = process.env.PDFTOTEXT || 'pdftotext';
-const currentBaselineOrders = new Set([
+const validationYear = Number(process.env.RPS_VALIDATION_YEAR) || 2026;
+const shortYear = String(validationYear).slice(-2);
+const skipPdfScan = String(process.env.RPS_VALIDATION_SKIP_PDFS || '').toLowerCase() === 'true';
+const currentBaselineOrders = new Set(validationYear === 2026 ? [
   'AR2603289', 'AR2603298', 'AR2603315', 'AR2603380', 'AR2603420'
-]);
+] : []);
+const pdfFilenamePattern = new RegExp(`^AR\\.${shortYear}\\.\\d+-\\d+\\.pdf$`, 'i');
 
-const pdfFiles = (await readdir(pdfRoot, { withFileTypes: true }))
-  .filter((entry) => entry.isFile() && /^AR\.26\.\d+-\d+\.pdf$/i.test(entry.name))
+const pdfFiles = skipPdfScan ? [] : (await readdir(pdfRoot, { withFileTypes: true }))
+  .filter((entry) => entry.isFile() && pdfFilenamePattern.test(entry.name))
   .map((entry) => entry.name)
   .sort();
 
+const unreadablePdfs = [];
 const pdfMatches = await mapConcurrent(pdfFiles, 10, async (filename) => {
-  const { stdout } = await execFileAsync(pdfToText, [
-    '-f', '1', '-l', '1', '-layout', path.join(pdfRoot, filename), '-'
-  ], { encoding: 'utf8', maxBuffer: 2_000_000 });
-  if (!/JUEGO SOPORTE GALIZIA/i.test(stdout)) return null;
-  return compactOrderCode(filename);
+  try {
+    const { stdout } = await execFileAsync(pdfToText, [
+      '-f', '1', '-l', '1', '-layout', path.join(pdfRoot, filename), '-'
+    ], { encoding: 'utf8', maxBuffer: 2_000_000 });
+    if (!/JUEGO SOPORTE GALIZIA/i.test(stdout)) return null;
+    return compactOrderCode(filename);
+  } catch (error) {
+    unreadablePdfs.push({ filename, error: String(error.stderr || error.message).trim().slice(0, 500) });
+    return null;
+  }
 });
 const pdfOrderCodes = new Set(pdfMatches.filter(Boolean));
+const rpsOrderCodes = await loadRpsOrderCodes();
+const targetOrderCodes = new Set([...pdfOrderCodes, ...rpsOrderCodes]);
 
 const excelFiles = (await readdir(excelRoot, { withFileTypes: true }))
   .filter((entry) => entry.isFile() && /\.xlsm$/i.test(entry.name))
   .map((entry) => entry.name)
-  .filter((filename) => pdfOrderCodes.has(compactOrderCode(filename)))
+  .filter((filename) => targetOrderCodes.has(compactOrderCode(filename)))
   .sort();
 
 const structures = [];
@@ -54,7 +67,11 @@ const reservationResults = validateCurrentReservations(currentStructures, rowsBy
 
 console.log(JSON.stringify({
   scannedPdfs: pdfFiles.length,
+  pdfScanSkipped: skipPdfScan,
+  unreadablePdfs,
   galiciaOrdersFoundInPdfs: pdfOrderCodes.size,
+  galiciaOrdersFoundInRps: rpsOrderCodes.size,
+  galiciaOrdersInCombinedSource: targetOrderCodes.size,
   matchedExcelFiles: excelFiles.length,
   galiciaStructuresInExcel: structures.length,
   standardDimensionCases: dimensionStandard.length,
@@ -233,16 +250,7 @@ function isKnownRpsOmission(item) {
 async function loadRpsRows(ofs) {
   const uniqueOfs = [...new Set(ofs.filter(Boolean))];
   if (uniqueOfs.length === 0) return [];
-  const pool = await new sql.ConnectionPool({
-    server: config.db.server,
-    port: config.db.port,
-    user: config.db.user,
-    password: config.db.password,
-    database: config.db.database,
-    options: { encrypt: false, trustServerCertificate: true },
-    connectionTimeout: 8_000,
-    requestTimeout: 30_000
-  }).connect();
+  const pool = await connect();
 
   try {
     const request = pool.request();
@@ -277,6 +285,46 @@ async function loadRpsRows(ofs) {
   } finally {
     await pool.close();
   }
+}
+
+async function loadRpsOrderCodes() {
+  const pool = await connect();
+  try {
+    const request = withRpsDateWindow(
+      pool.request().input('company', sql.VarChar(10), config.db.company),
+      sql
+    );
+    const result = await request.query(`
+      SELECT DISTINCT o.CodOrder AS orderCode
+      FROM dbo.FACOrderSL o
+      JOIN dbo.FACOrderLineSL l
+        ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
+      JOIN dbo._MaterialesPrevistosOF m
+        ON m.IDManufacturingOrder = l.IDManufacturingOrder
+        AND m.CodCompany = l.CodCompany
+      JOIN dbo.STKArticle a
+        ON a.IDArticle = m.IDArticle AND a.CodCompany = m.CodCompany
+      WHERE o.CodCompany = @company
+        AND o.OrderDate >= @dateFrom AND o.OrderDate < @dateTo
+        AND a.CodArticle LIKE 'SOPARTGL%';
+    `);
+    return new Set(result.recordset.map((row) => compactOrderCode(row.orderCode)));
+  } finally {
+    await pool.close();
+  }
+}
+
+function connect() {
+  return new sql.ConnectionPool({
+    server: config.db.server,
+    port: config.db.port,
+    user: config.db.user,
+    password: config.db.password,
+    database: config.db.database,
+    options: { encrypt: false, trustServerCertificate: true },
+    connectionTimeout: 8_000,
+    requestTimeout: 30_000
+  }).connect();
 }
 
 function normalizeCurrentRpsRows(rows) {
@@ -329,7 +377,8 @@ function dimensionSkipReason({ of, width, projection, units, device, tubeLoad, s
 }
 
 function compactOrderCode(value) {
-  return (String(value).match(/AR(?:\.|)26(?:\.|)\d{5}/i)?.[0] || '')
+  const pattern = new RegExp(`AR(?:\\.|)${shortYear}(?:\\.|)\\d{5}`, 'i');
+  return (String(value).match(pattern)?.[0] || '')
     .replaceAll('.', '')
     .toUpperCase();
 }
@@ -379,7 +428,7 @@ function wallTypeFromReference(value) {
 }
 
 function cell(sheet, address) {
-  return sheet[address]?.v ?? '';
+  return sheet?.[address]?.v ?? '';
 }
 
 function compareNumber(target, field, web, excel) {

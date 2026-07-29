@@ -50,7 +50,7 @@ export function HistoryView({ entries, onReuse }: { entries: HistoryEntry[]; onR
             {entries.length === 0 ? (
               <tr>
                 <td className="history-empty" colSpan={7}>
-                  Aún no hay pedidos guardados. Se añaden al guardar RPS.
+                  Aún no hay pedidos guardados. Se añaden al simular RPS.
                 </td>
               </tr>
             ) : filtered.length === 0 ? (

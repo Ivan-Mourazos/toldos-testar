@@ -144,6 +144,31 @@ export default function App() {
       const blob = await response.blob();
       const filename = fileNameFromDisposition(response.headers.get('content-disposition')) || 'simulacion-rps-toldos.xls';
       downloadBlob(blob, filename);
+      const historyEntry = {
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        orderCode: draft.orderCode,
+        customer: draft.customer,
+        orderDate: draft.orderDate,
+        technician: draft.technician,
+        reviewer: draft.reviewer,
+        fabric: draft.fabric,
+        sameFabric: draft.sameFabric,
+        remate: draft.remate,
+        remateColor: draft.remateColor,
+        structureColor: draft.structureColor,
+        rotTela: draft.rotTela,
+        rotBamba: draft.rotBamba,
+        ofs: reservation.ofs.map((item) => item.of),
+        models: Array.from(new Set(draft.awnings.map((awning) => awning.model).filter(Boolean))),
+        awnings: draft.awnings.map((awning) => ({ ...awning })),
+        diagnostics: calculation?.diagnostics.length || 0,
+        notes: ''
+      };
+      draft.setHistoryEntries((current) => [
+        historyEntry,
+        ...current.filter((entry) => entry.orderCode !== historyEntry.orderCode)
+      ].slice(0, 80));
       setToast('Simulación RPS descargada. No se ha guardado nada en las carpetas compartidas.');
     } catch {
       setToast('No se pudo generar la simulación RPS.');

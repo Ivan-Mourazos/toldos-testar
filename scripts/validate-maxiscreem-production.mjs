@@ -5,8 +5,9 @@ import XLSX from 'xlsx';
 import { config } from '../src/config.js';
 import { calculateOrder } from '../src/domain/rules.js';
 import { normalizeReservation } from '../src/domain/validation.js';
+import { toldosRoots, withRpsDateWindow } from './lib/rps-validation-window.mjs';
 
-const roots = [String.raw`Y:\2026\TOLDOS`, String.raw`Y:\2025\TOLDOS`];
+const roots = toldosRoots([String.raw`Y:\2026\TOLDOS`, String.raw`Y:\2025\TOLDOS`]);
 const targetOrders = await loadTargetOrders();
 const files = [];
 
@@ -161,12 +162,16 @@ function readFinalRps(sheet) {
 async function loadTargetOrders() {
   const pool = await connect();
   try {
-    const result = await pool.request().input('company', sql.VarChar(10), config.db.company).query(`
+    const request = withRpsDateWindow(
+      pool.request().input('company', sql.VarChar(10), config.db.company),
+      sql
+    );
+    const result = await request.query(`
       SELECT DISTINCT o.CodOrder AS orderCode
       FROM dbo.FACOrderSL o
       JOIN dbo.FACOrderLineSL l ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
       LEFT JOIN dbo.STKArticle a ON a.IDArticle = l.IDArticle AND a.CodCompany = l.CodCompany
-      WHERE o.CodCompany = @company AND o.OrderDate >= '2025-01-01'
+      WHERE o.CodCompany = @company AND o.OrderDate >= @dateFrom AND o.OrderDate < @dateTo
         AND (a.CodArticle IN ('DIANAC/CO', 'DIANAS/CO') OR l.Description LIKE '%DIANA VERTICAL%');
     `);
     return new Set(result.recordset.map((row) => compact(row.orderCode).slice(0, 9)));
