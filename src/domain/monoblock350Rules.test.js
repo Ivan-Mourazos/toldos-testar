@@ -44,7 +44,7 @@ describe('MONOBLOCK 350 contra hoja MON.350 y RPS', () => {
   test('AR2602642: motor, dos brazos y P801 de 600', () => {
     const ofBlock = order({
       of: '0229011', width: 488, projection: 300, valanceHeight: 25,
-      device: 'MOTOR', armCount: 2, crankHeight: null,
+      device: 'MOTOR', armCount: 2, crankHeight: null, machineSide: 'M.F.DER',
       placement: 'FRONTAL', structureColor: 'NEGRO (R-09011)'
     }, { fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL NEGRO 2170' }).ofs[0];
     expect(ofBlock.calculation).toMatchObject({

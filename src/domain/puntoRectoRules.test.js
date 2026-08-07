@@ -44,7 +44,7 @@ describe('PUNTO RECTO contra hoja y reservas reales', () => {
   test('motor P801 usa tres brazos, motor 35/17 y accesorios Ø78', () => {
     const ofBlock = order({
       of: '0219000', width: 600, armCount: 3, device: 'MOTOR',
-      crankHeight: null, sensor: 'MOVIMIENTO', valanceHeight: 0
+      crankHeight: null, machineSide: 'M.F.DER', sensor: 'MOVIMIENTO', valanceHeight: 0
     }).ofs[0];
     expect(ofBlock.calculation).toMatchObject({
       valid: true, rollSystem: 'P801', armCount: 3, requiredArmCount: 3,

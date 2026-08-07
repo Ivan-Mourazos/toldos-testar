@@ -55,7 +55,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
   test('AR2501690: motor reproduce el despiece y accesorios RPS', () => {
     const result = order({
       of: '0215523', width: 266, projection: 125, valanceHeight: 12,
-      device: 'MOTOR', crankHeight: null, sensor: 'SIN SENSOR'
+      device: 'MOTOR', crankHeight: null, machineSide: 'M.F.DER', sensor: 'SIN SENSOR'
     }, {
       orderCode: 'AR2501690',
       fabric: 'ACRILI2013P120|||120|||LONA ACRILICA MASACRIL TOFFEE 2013'

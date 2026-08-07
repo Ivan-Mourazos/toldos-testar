@@ -13,7 +13,7 @@ import { calculateCortina } from './cortinaRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
 import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
 import { normalizeOrder } from './validation.js';
-import { getRequiredDimensions } from './modelBehavior.js';
+import { getFieldVisibility, getRequiredDimensions } from './modelBehavior.js';
 
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
@@ -70,9 +70,23 @@ export function calculateOrder(payload) {
       continue;
     }
 
-    const result = rule({ order, awning, model });
+    let result = rule({ order, awning, model });
     if (Array.isArray(result.diagnostics)) {
       diagnostics.push(...result.diagnostics);
+    }
+    const fields = getFieldVisibility({ model: awning.model, device: awning.device });
+    if (fields.motorLocation && !awning.machineSide) {
+      diagnostics.push({
+        level: 'error',
+        awningId: awning.id,
+        message: `${awning.model} incompleto en OF ${awning.of}: falta posición del motor.`
+      });
+      result = {
+        ...result,
+        materials: [],
+        despiece: null,
+        calculation: { ...result.calculation, valid: false }
+      };
     }
     ofs.push({
       awningId: awning.id,

@@ -57,6 +57,23 @@ describe('PDF provisional de revisión', () => {
     expect(entry.fields.some((field) => field.label === 'Lado máquina')).toBe(false);
   });
 
+  test('imprime dispositivo, sensor y posición del motor en el PDF de Punto Recto', async () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [{
+      ...base, model: 'PUNTO RECTO', device: 'MOTOR', sensor: 'MOVIMIENTO',
+      machineSide: 'M.F IZQ', armCount: 3, valanceHeight: 0
+    }] });
+    const buffer = await buildOrderReviewPdf({ order, calculation: calculateOrder(order) });
+    const pdf = await extractPdf(buffer);
+
+    expect(pdf.text).toContain('Dispositivo');
+    expect(pdf.text).toContain('Motor');
+    expect(pdf.text).toContain('Sensor');
+    expect(pdf.text).toContain('Movimiento');
+    expect(pdf.text).toContain('Posición motor');
+    expect(pdf.text).toContain('M.F. izquierda');
+  });
+
   test('coloca dos paneles normales en una página y pagina el tercero', async () => {
     const first = reviewOrder().awnings[0];
     const order = reviewOrder({ awnings: [

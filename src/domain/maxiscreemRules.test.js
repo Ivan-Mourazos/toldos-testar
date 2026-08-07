@@ -5,7 +5,7 @@ function awning(patch = {}) {
   return {
     id: 'maxis-test', of: '0229970', model: 'MAXISCREEM', units: 2,
     width: 323, projection: 272, valanceHeight: 0,
-    submodel: 'COFRE CON CABLE', device: 'MOTOR',
+    submodel: 'COFRE CON CABLE', device: 'MOTOR', machineSide: 'M.F.DER',
     placement: 'TECHO', structureColor: 'LACADO ESPECIAL',
     rotFabric: 'NO', rotValance: '', wallType: 'DIRECTA A PARED',
     sensor: 'SIN SENSOR', ...patch

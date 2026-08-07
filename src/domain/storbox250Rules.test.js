@@ -61,7 +61,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
   test('AR2602264: motor 261x200 reproduce descuentos y accesorios RPS', () => {
     const result = order({
       of: '0228312', width: 261, projection: 200,
-      device: 'MOTOR', crankHeight: null, sensor: 'SIN SENSOR'
+      device: 'MOTOR', crankHeight: null, machineSide: 'M.F.DER', sensor: 'SIN SENSOR'
     }, {
       orderCode: 'AR2602264',
       fabric: 'ACRILI2143P120|||120|||LONA ACRILICA MASACRIL 300 MARFIL 2143'

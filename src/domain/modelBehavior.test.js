@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getAwningDiagram, getModelBehavior, getFieldVisibility, formOptions, modelNames, getEstablishedProjections, needsValanceFinish, normalizeValanceFinish } from './modelBehavior.js';
+import { getAwningDiagram, getModelBehavior, getFieldVisibility, formOptions, modelNames, fullAwningModelNames, getEstablishedProjections, needsValanceFinish, normalizeValanceFinish } from './modelBehavior.js';
 import { models as catalogModels } from './catalog.js';
 
 describe('modelBehavior', () => {
@@ -37,6 +37,12 @@ describe('modelBehavior', () => {
     expect(visibility.motorLocation).toBe(false);
     expect(visibility.machineLocation).toBe(true);
     expect(visibility.crankHeight).toBe(true);
+  });
+
+  test('todos los modelos completos con MOTOR piden posición del motor', () => {
+    for (const model of fullAwningModelNames) {
+      expect(getFieldVisibility({ model, device: 'MOTOR' }).motorLocation, model).toBe(true);
+    }
   });
 
   test('MODUL400: cofre con submodelo, dispositivo de cofre y brazos', () => {

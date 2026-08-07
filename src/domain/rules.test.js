@@ -183,6 +183,18 @@ describe('ARZUA PRO — campos de mecanizado sin elegir (formulario vacio por de
     expect(result.ofs[0].calculation.valid).toBe(false);
     expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('posición del motor'))).toBe(true);
   });
+
+  it('PUNTO RECTO con MOTOR también exige indicar su posición', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({
+        model: 'PUNTO RECTO', width: 600, projection: 250, valanceHeight: 0,
+        armCount: 3, device: 'MOTOR', machineSide: ''
+      })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('posición del motor'))).toBe(true);
+  });
 });
 
 describe('calculateOrder — toldos incompletos', () => {
