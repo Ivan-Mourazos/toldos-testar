@@ -408,14 +408,14 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h);
   if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
-  if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h);
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
   if (diagram === 'MAXISCREEN') return drawMaxiscreenDiagram(doc, x, y, w, h, awning);
   if (['ARZUA', 'GALICIA', 'XACOBEO', 'MONOBLOCK', 'PUNTO-RECTO'].includes(diagram)) {
-    return drawArmSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation), awning);
+    return drawArmSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation));
   }
   if (['CUARZO', 'PERLA', 'CORAL'].includes(diagram)) {
-    return drawBoxSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation), awning);
+    return drawBoxSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation));
   }
   if (diagram === 'CAMBIO-TELA') {
     return drawGeneralDiagram(doc, x, y, w, h, {
@@ -428,23 +428,22 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
 }
 
 function diagramSpec(diagram, awning, calculation) {
-  const arms = Number(awning.armCount) || Number(calculation?.armCount) || null;
   const selectedTube = calculation?.tubeLoad || awning.tubeLoad;
   const specs = {
     ARZUA: {
       title: 'ARZÚA PRO', roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: 'BRAZOS ONYX'
     },
     GALICIA: {
-      title: 'GALICIA', roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: `${arms || 2} BRAZOS ONYX`
+      title: 'GALICIA', roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: 'BRAZOS ONYX'
     },
     XACOBEO: {
       title: 'XACOBEO', roll: 'TUBO DE ENROLLE P701', load: 'TUBO DE CARGA EVO 70', arms: 'BRAZOS ART250'
     },
     MONOBLOCK: {
-      title: 'MONOBLOCK 350', roll: 'TUBO DE ENROLLE P801', load: 'TUBO DE CARGA EVO 80', arms: `${arms || 2} BRAZOS ONYX`, extra: 'BARRA CUADRADA 40x40'
+      title: 'MONOBLOCK 350', roll: 'TUBO DE ENROLLE P801', load: 'TUBO DE CARGA EVO 80', arms: 'BRAZOS ONYX', extra: 'BARRA CUADRADA 40x40'
     },
     'PUNTO-RECTO': {
-      title: 'PUNTO RECTO', roll: `TUBO DE ENROLLE ${calculation?.rollSystem || 'P701/P801'}`, load: 'TUBO DE CARGA UNIVERS 270', arms: `${arms || 2} BRAZOS PRT07`
+      title: 'PUNTO RECTO', roll: `TUBO DE ENROLLE ${calculation?.rollSystem || 'P701/P801'}`, load: 'TUBO DE CARGA UNIVERS 270', arms: 'BRAZOS PRT07'
     },
     CUARZO: {
       title: 'CUARZO BOX', roll: 'TUBO DE ENROLLE P701', load: 'BARRA DE CARGA STORBOX 250', box: 'COFRE CUARZO BOX'
@@ -459,7 +458,7 @@ function diagramSpec(diagram, awning, calculation) {
   return specs[diagram];
 }
 
-function drawArmSystemDiagram(doc, x, y, w, h, spec, awning) {
+function drawArmSystemDiagram(doc, x, y, w, h, spec) {
   drawTechnicalDiagramShell(doc, x, y, w, h, spec.title);
   const wallX = x + 35;
   const rollX = wallX + 18;
@@ -474,8 +473,8 @@ function drawArmSystemDiagram(doc, x, y, w, h, spec, awning) {
   doc.moveTo(rollX + 10, rollY + 2).lineTo(frontX, frontY)
     .strokeColor('#d2a116').lineWidth(2).stroke();
 
-  const armCount = Math.max(1, Math.min(4, Number(awning.armCount) || 2));
-  for (let index = 0; index < Math.min(armCount, 3); index += 1) {
+  const schematicArms = 2;
+  for (let index = 0; index < schematicArms; index += 1) {
     const offset = (index - 1) * 5;
     const jointX = wallX + 78 + offset;
     const jointY = y + 157 + offset;
@@ -485,15 +484,14 @@ function drawArmSystemDiagram(doc, x, y, w, h, spec, awning) {
 
   doc.roundedRect(frontX - 7, frontY - 6, 14, 42, 3)
     .fillAndStroke('#e7eeec', '#466e64');
-  drawOptionalValance(doc, frontX, frontY + 36, awning.valanceHeight);
   drawDiagramText(doc, spec.roll, wallX - 8, rollY - 31, 86);
   drawDiagramText(doc, spec.load, frontX - 55, frontY + 47, 110);
-  drawDiagramText(doc, spec.arms, wallX + 48, frontY + 5, frontX - wallX - 62);
-  drawDimensionSummary(doc, x, y, w, awning);
+  drawDiagramText(doc, `${spec.arms} · SEGÚN TOLDO`, wallX + 48, frontY + 5, frontX - wallX - 62);
+  drawDimensionSummary(doc, x, y, w);
   if (spec.extra) drawHardwareFooter(doc, x, y, w, h, [spec.extra]);
 }
 
-function drawBoxSystemDiagram(doc, x, y, w, h, spec, awning) {
+function drawBoxSystemDiagram(doc, x, y, w, h, spec) {
   drawTechnicalDiagramShell(doc, x, y, w, h, spec.title);
   const wallX = x + 38;
   const boxY = y + 68;
@@ -510,12 +508,10 @@ function drawBoxSystemDiagram(doc, x, y, w, h, spec, awning) {
   doc.moveTo(wallX + 30, boxY + 35).lineTo(wallX + 94, y + 162).lineTo(frontX - 8, frontY + 29)
     .strokeColor('#466e64').lineWidth(1.3).stroke();
   doc.roundedRect(frontX - 8, frontY - 7, 16, 44, 4).fillAndStroke('#e7eeec', '#466e64');
-  drawOptionalValance(doc, frontX, frontY + 37, awning.valanceHeight);
-
   drawDiagramText(doc, spec.box, wallX - 12, boxY - 18, 82);
   drawDiagramText(doc, spec.roll, wallX - 10, boxY + 47, 98);
   drawDiagramText(doc, spec.load, frontX - 62, frontY + 49, 124);
-  drawDimensionSummary(doc, x, y, w, awning);
+  drawDimensionSummary(doc, x, y, w);
 }
 
 function drawTechnicalDiagramShell(doc, x, y, w, h, title) {
@@ -525,21 +521,10 @@ function drawTechnicalDiagramShell(doc, x, y, w, h, title) {
     .text(title, x + 18, y + 13, { width: w - 36, align: 'center' });
 }
 
-function drawOptionalValance(doc, centerX, topY, height) {
-  if (!(Number(height) > 0)) return;
-  doc.moveTo(centerX, topY).lineTo(centerX, topY + 48)
-    .strokeColor('#d2a116').lineWidth(1.4).stroke();
-  for (let wave = 0; wave < 3; wave += 1) {
-    const wy = topY + 48 + wave * 7;
-    doc.moveTo(centerX - 8, wy).bezierCurveTo(centerX - 4, wy + 5, centerX + 3, wy - 4, centerX + 8, wy + 2);
-  }
-  doc.strokeColor('#d2a116').lineWidth(1).stroke();
-}
-
-function drawDimensionSummary(doc, x, y, w, awning) {
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.8)
-    .text(`FRENTE ${formatNumber(awning.width)} CM`, x + 34, y + 42, { width: w - 68, align: 'center' })
-    .text(`SALIDA ${formatNumber(awning.projection)} CM`, x + 70, y + 244, { width: w - 100, align: 'center' });
+function drawDimensionSummary(doc, x, y, w) {
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+    .text('ESQUEMA ORIENTATIVO', x + 34, y + 42, { width: w - 68, align: 'center' })
+    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', x + 34, y + 244, { width: w - 68, align: 'center' });
 }
 
 function drawHardwareFooter(doc, x, y, w, h, labels) {
@@ -582,16 +567,15 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
 
   drawDiagramText(doc, withBox ? 'COFRE' : 'TUBO VISTO', panelX, panelY - 48, panelW);
   drawDiagramText(doc, guide, panelX, panelY + panelH + 18, panelW);
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
-    .text(`FRENTE ${formatNumber(awning.width)} CM`, panelX, panelY + 22, { width: panelW, align: 'center' })
-    .text(`CAÍDA ${formatNumber(awning.projection)} CM`, panelX + panelW + 8, panelY + 72, { width: 34, align: 'center' });
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', panelX + 8, panelY + 52, { width: panelW - 16, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
     .text('P801 · PERFIL DE CARGA MAXISCREEM', x + 24, y + h - 25, { width: w - 48, align: 'center' });
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {
   const variant = String(awning.submodel || 'OPEN').toUpperCase();
-  const arms = Math.max(2, Math.min(4, Number(awning.armCount) || 2));
+  const schematicArms = 2;
   const enclosed = variant !== 'OPEN';
   const fullBox = variant === 'COFRE';
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
@@ -623,8 +607,8 @@ function drawAgataDiagram(doc, x, y, w, h, awning) {
 
   doc.moveTo(wallX + 35, headY + 18).lineTo(frontX, frontY)
     .strokeColor('#d2a116').lineWidth(2).stroke();
-  for (let index = 0; index < arms; index += 1) {
-    const offset = (index - (arms - 1) / 2) * 5;
+  for (let index = 0; index < schematicArms; index += 1) {
+    const offset = (index - (schematicArms - 1) / 2) * 5;
     const jointX = wallX + 88 + (frontX - wallX) * 0.32 + offset;
     const jointY = headY + 63 + offset * 0.35;
     doc.moveTo(wallX + 30, headY + 28 + offset * 0.15).lineTo(jointX, jointY).lineTo(frontX - 10, frontY + 25 + offset * 0.18)
@@ -633,26 +617,15 @@ function drawAgataDiagram(doc, x, y, w, h, awning) {
 
   doc.roundedRect(frontX - 8, frontY - 8, 15, 43, 3)
     .fillAndStroke('#e7eeec', '#466e64');
-  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  if (valance > 0) {
-    doc.moveTo(frontX - 1, frontY + 35).lineTo(frontX - 1, frontY + 85)
-      .strokeColor('#d2a116').lineWidth(1.4).stroke();
-    for (let wave = 0; wave < 3; wave += 1) {
-      const wy = frontY + 85 + wave * 8;
-      doc.moveTo(frontX - 9, wy).bezierCurveTo(frontX - 4, wy + 6, frontX + 3, wy - 4, frontX + 8, wy + 2);
-    }
-    doc.strokeColor('#d2a116').lineWidth(1).stroke();
-  }
-
   drawDiagramText(doc, enclosed ? (fullBox ? 'COFRE COMPLETO' : 'CIERRE PARCIAL') : 'TUBO VISTO', wallX - 10, headY - 22, 62);
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
-    .text(`SALIDA ${formatNumber(awning.projection)} CM`, wallX + 35, frontY + 57, { width: frontX - wallX - 42, align: 'center' })
-    .text(`${arms} BRAZOS ONYX`, wallX + 45, frontY + 3, { width: frontX - wallX - 65, align: 'center' });
+    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', wallX + 35, frontY + 57, { width: frontX - wallX - 42, align: 'center' })
+    .text('BRAZOS ONYX SEGÚN TOLDO', wallX + 45, frontY + 3, { width: frontX - wallX - 65, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
-    .text(`P801 · MODUL 400${valance > 0 ? ` · BAMBA ${formatNumber(valance)} CM` : ' · SIN BAMBA'}`, x + 24, y + h - 27, { width: w - 48, align: 'center' });
+    .text('P801 · MODUL 400 · BAMBA SEGÚN TOLDO', x + 24, y + h - 27, { width: w - 48, align: 'center' });
 }
 
-function drawAmbarDiagram(doc, x, y, w, h, awning) {
+function drawAmbarDiagram(doc, x, y, w, h) {
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
@@ -682,16 +655,8 @@ function drawAmbarDiagram(doc, x, y, w, h, awning) {
 
   doc.roundedRect(armEndX - 8, armEndY - 8, 15, 45, 3)
     .fillAndStroke('#e7eeec', '#466e64');
-  doc.moveTo(armEndX - 1, armEndY + 37).lineTo(armEndX - 1, armEndY + 88)
-    .strokeColor('#d2a116').lineWidth(1.4).stroke();
-  for (let wave = 0; wave < 3; wave += 1) {
-    const wy = armEndY + 88 + wave * 8;
-    doc.moveTo(armEndX - 9, wy).bezierCurveTo(armEndX - 4, wy + 6, armEndX + 3, wy - 4, armEndX + 8, wy + 2);
-  }
-  doc.strokeColor('#d2a116').lineWidth(1).stroke();
-
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
-    .text(`SALIDA ${formatNumber(awning.projection)} CM`, wallX + 35, armEndY + 58, { width: armEndX - wallX - 42, align: 'center' })
+    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', wallX + 35, armEndY + 58, { width: armEndX - wallX - 42, align: 'center' })
     .text('BRAZOS PRT07', wallX + 47, armEndY + 4, { width: armEndX - wallX - 70, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
     .text('TUBO P701 · KIT DE PERFILES ÁMBAR BOX', x + 24, y + h - 27, { width: w - 48, align: 'center' });
@@ -811,7 +776,8 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
       drawCurtainDataRow(doc, x + 28, dataY + 68, w - 56, 'ALTURA VELCRO:', velcroHeight);
     }
   } else if (finish === 'VELCRO') {
-    drawCurtainDataRow(doc, x + 28, y + 329, w - 56, 'ALTURA VELCRO:', velcroHeight);
+    doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+      .text('ALTURA VELCRO SEGÚN EL BLOQUE DE CADA TOLDO', x + 28, y + 333, { width: w - 56, align: 'center' });
   }
 }
 
@@ -896,14 +862,6 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     drawSideLabel(doc, `ENTRADA TUBO ${tube}`, endX - 115, endY - 28, 110);
   }
 
-  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  if (valance > 0) {
-    const valanceBottom = Math.min(y + h - 72, endY + 62);
-    doc.strokeColor('#7fa594').lineWidth(1.2)
-      .moveTo(endX, endY + 10).lineTo(endX, valanceBottom).stroke();
-    drawSideLabel(doc, `BAMBA ${formatNumber(valance)} CM`, endX - 82, valanceBottom + 7, 82);
-  }
-
   if (isCounterweight) {
     const bottomY = y + h - 78;
     doc.strokeColor(colors.ink).lineWidth(1)
@@ -918,6 +876,8 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
 
   drawDiagramText(doc, variant, x + 18, y + 43, w - 36);
   drawDiagramText(doc, 'FRENTE TELA', x + 28, y + 61, w - 56);
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+    .text('MEDIDAS Y BAMBA SEGÚN EL BLOQUE DE CADA TOLDO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
 
 function drawDiagramShell(doc, x, y, w, h, title) {
@@ -1081,9 +1041,16 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
       instructionParts.push(
         `BAMBA NO INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM${valanceFabric ? ` - ${valanceFabric}` : ''}`
       );
-    } else if (model !== 'CAMBIO ANTICA') {
+    } else if (model === 'CAMBIO ANTICA') {
+      instructionParts.push(`BAMBA DE ${formatInstructionMeasure(height)}CM`);
+    } else {
       instructionParts.push(`BAMBALINA INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM`);
     }
+  }
+
+  if (model.includes('CORTINA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
+    const velcroHeight = resolveCurtainVelcroHeight(awning);
+    if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);
   }
 
   if (['XACOBEO', 'CUARZO BOX', 'STORBOX 250'].includes(model)) {
@@ -1215,7 +1182,7 @@ function chunkItems(items, size) {
   return groups;
 }
 
-function awningLetter(index) {
+export function awningLetter(index) {
   let number = index + 1;
   let label = '';
   while (number > 0) {

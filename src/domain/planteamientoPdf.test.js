@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+  awningLetter,
   buildFabricLineDetail,
   buildOrderPlanteamientoPdf,
   buildPlanteamientoPlan,
@@ -144,6 +145,20 @@ describe('datos del planteamiento de telas', () => {
     expect(resolveCurtainVelcroHeight({ projection: 300 })).toBe(290);
   });
 
+  test('la altura de velcro variable queda en el bloque individual', () => {
+    const detail = buildFabricLineDetail({
+      model: 'CORTINA', projection: 300, curtainFinish: 'VELCRO'
+    }, {});
+
+    expect(detail.instruction).toContain('ALTURA VELCRO 290CM');
+  });
+
+  test('la bamba de Antica conserva su altura en el bloque individual', () => {
+    const detail = buildFabricLineDetail({ model: 'CAMBIO ANTICA', valanceHeight: 25 }, {});
+
+    expect(detail.instruction).toContain('BAMBA DE 25CM');
+  });
+
   test('dos referencias con la misma descripción siguen siendo telas distintas', () => {
     expect(summarizeFabricMaterial([
       { calc: { fabricCode: 'ACRILI2051P120', fabricDescription: 'ACR ADMIRAL' } },
@@ -206,7 +221,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(plan.fabricPages[0].diagramCalculation.tubeLoad).toBe('TUBO DE CARGA EVO 80');
   });
 
-  test('cada pagina de tela contiene como maximo los cuatro bloques A/B/C/D del Excel', () => {
+  test('cada pagina admite cuatro toldos y la siguiente continúa con E, F y sucesivos', () => {
     const awnings = Array.from({ length: 5 }, (_, index) => ({
       id: `awning-${index}`,
       model: 'ARZUA PRO',
@@ -219,6 +234,8 @@ describe('buildOrderPlanteamientoPdf', () => {
 
     expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['ARZUA', 'ARZUA']);
     expect(plan.fabricPages.map(({ entries }) => entries.length)).toEqual([4, 1]);
+    expect(plan.fabricPages.map(({ entries }) => entries.map(({ index }) => awningLetter(index))))
+      .toEqual([['A', 'B', 'C', 'D'], ['E']]);
     expect(plan.fabricPages.flatMap(({ entries }) => entries.map(({ awning }) => awning.id)))
       .toEqual(awnings.map(({ id }) => id));
   });
