@@ -7,15 +7,39 @@ import { config } from './config.js';
 import { getCatalog } from './domain/catalog.js';
 import { searchStaticFabrics } from './domain/fabricCatalog.js';
 import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
+import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
 import { searchRpsFabrics } from './rpsCatalog.js';
+import {
+  createReviewPackage,
+  createWorkflowStore,
+  defaultWorkflowSettings,
+  fileExists,
+  getOrderYear,
+  markReviewChangesRequested,
+  markReviewProduced,
+  resolveDirectoryTemplate,
+  sanitizeOrderCode,
+  workflowReadiness,
+  writeFileAtomic
+} from './workflow.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distDir = path.join(__dirname, '..', 'dist');
 const isProduction = process.env.NODE_ENV === 'production';
+const workflowStore = createWorkflowStore({
+  settingsFile: config.workflowSettingsFile,
+  defaults: defaultWorkflowSettings({
+    fileWritesEnabled: config.fileWritesEnabled,
+    exportDirectory: config.exportDirectory,
+    orderArchiveRoot: config.orderArchiveRoot,
+    reviewDirectory: config.reviewDirectory,
+    planteamientosDirectory: config.planteamientosDirectory
+  })
+});
 
 const app = express();
 
@@ -24,15 +48,21 @@ app.use(express.json({ limit: '2mb' }));
 
 app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res, next) => {
+  try {
+    const settings = await workflowStore.getSettings();
+    const readiness = workflowReadiness(settings);
   res.json({
     ok: true,
     app: 'toldos-testar',
-    simulationMode: !config.fileWritesEnabled,
-    fileWritesEnabled: config.fileWritesEnabled,
-    exportDirectoryConfigured: Boolean(config.exportDirectory),
-    orderArchiveRootConfigured: Boolean(config.orderArchiveRoot)
+      simulationMode: !readiness.productionReady,
+      fileWritesEnabled: settings.productionEnabled,
+      reviewReady: readiness.reviewReady,
+      productionReady: readiness.productionReady
   });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get('/api/catalog', (_req, res) => {
@@ -89,6 +119,186 @@ app.post('/api/planteamiento', async (req, res, next) => {
       .setHeader('Content-Disposition', `attachment; filename="${filename}"`)
       .send(pdf);
   } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/review-pdf', async (req, res, next) => {
+  try {
+    const rawOrder = req.body?.order || req.body;
+    const normalizedOrder = normalizeOrder(rawOrder);
+    const orderCode = normalizedOrder.orderCode ? sanitizeOrderCode(normalizedOrder.orderCode) : 'PEDIDO';
+    const order = structuredClone({ ...rawOrder, orderCode });
+    const calculation = calculateOrder(order);
+    const review = createReviewPackage({ order, calculation });
+    const pdf = await buildOrderReviewPdf({ order, calculation, review });
+    const filename = `${orderCode}.pdf`;
+
+    res
+      .status(200)
+      .setHeader('Cache-Control', 'no-store')
+      .setHeader('Content-Type', 'application/pdf')
+      .setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+      .send(pdf);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/workflow/settings', async (_req, res, next) => {
+  try {
+    const settings = await workflowStore.getSettings();
+    res.json({ settings, readiness: workflowReadiness(settings) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/workflow/settings', async (req, res, next) => {
+  try {
+    const settings = await workflowStore.saveSettings(req.body);
+    res.json({ settings, readiness: workflowReadiness(settings) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/reviews', async (req, res, next) => {
+  try {
+    const year = Number(req.query.year) || new Date().getFullYear();
+    if (year < 2000 || year > 2100) throw new Error('El año de revisión no es válido.');
+    res.json({ year, reviews: await workflowStore.listReviews(year) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/reviews/:orderCode', async (req, res, next) => {
+  try {
+    res.json(await workflowStore.getReview(req.params.orderCode));
+  } catch (error) {
+    if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
+    next(error);
+  }
+});
+
+app.post('/api/reviews', async (req, res, next) => {
+  try {
+    const rawOrder = req.body?.order || req.body;
+    const normalizedOrder = normalizeOrder(rawOrder);
+    const orderCode = sanitizeOrderCode(normalizedOrder.orderCode);
+    const order = structuredClone({ ...rawOrder, orderCode });
+    const calculation = calculateOrder(order);
+    let existing = null;
+    try {
+      existing = await workflowStore.getReview(orderCode);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+
+    if (existing && req.body?.confirmOverwrite !== true) {
+      res.status(409).json({
+        needsConfirmation: true,
+        existing: [`${orderCode}.pdf`],
+        error: 'Este pedido ya existe en la bandeja de revisión.'
+      });
+      return;
+    }
+
+    const review = createReviewPackage({ order, calculation, existing });
+    const pdf = await buildOrderReviewPdf({ order, calculation, review });
+    const savedPath = await workflowStore.saveReview(review, pdf);
+    res.json({ ok: true, review, savedPath, overwritten: Boolean(existing) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/reviews/:orderCode/request-changes', async (req, res, next) => {
+  try {
+    const review = await workflowStore.getReview(req.params.orderCode);
+    const reviewer = String(req.body?.reviewer || '').trim();
+    const note = String(req.body?.note || '').trim();
+    if (!reviewer) throw new Error('Indica quién realiza la revisión.');
+    if (!note) throw new Error('Describe los cambios que hay que realizar.');
+    const updated = markReviewChangesRequested(review, { reviewer, note });
+    const calculation = calculateOrder(updated.order);
+    const pdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
+    await workflowStore.saveReview(updated, pdf);
+    res.json({ ok: true, review: updated });
+  } catch (error) {
+    if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
+    next(error);
+  }
+});
+
+app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
+  try {
+    const settings = await workflowStore.getSettings();
+    const readiness = workflowReadiness(settings);
+    if (!readiness.productionReady) {
+      throw httpError(403, readiness.missing.length
+        ? `Producción no configurada: ${readiness.missing.join(', ')}.`
+        : 'Activa el envío a producción en Configuración.');
+    }
+
+    const review = await workflowStore.getReview(req.params.orderCode);
+    const reviewer = String(req.body?.reviewer || '').trim();
+    if (!reviewer) throw new Error('Indica quién aprueba el pedido.');
+
+    const order = normalizeOrder(review.order);
+    const calculation = calculateOrder(order);
+    const blockingDiagnostics = calculation.diagnostics.filter((item) => item.level === 'error' || item.level === 'pending');
+    if (calculation.ofs.length !== order.awnings.length || blockingDiagnostics.length > 0) {
+      throw new Error('El pedido tiene toldos incompletos o diagnósticos bloqueantes. Ábrelo y corrígelo antes de aprobar.');
+    }
+    const reservation = normalizeReservation({ orderCode: order.orderCode, ofs: calculation.ofs });
+    const cleanOrder = sanitizeOrderCode(order.orderCode);
+    const rpsDirectory = resolveDirectoryTemplate(settings.rpsUploadDirectory, cleanOrder);
+    const pdfDirectory = resolveDirectoryTemplate(settings.planteamientosDirectory, cleanOrder);
+    const targets = reservation.ofs.map((ofBlock) => ({
+      type: 'rps',
+      of: ofBlock.of,
+      filename: `${sanitizeOf(ofBlock.of)}.xls`,
+      savedPath: path.join(rpsDirectory, `${sanitizeOf(ofBlock.of)}.xls`),
+      build: () => buildOfWorkbook(ofBlock)
+    }));
+    const duplicated = findDuplicatedFilenames(targets);
+    if (duplicated.length > 0) throw new Error(`Hay OFs duplicadas en la reserva: ${duplicated.join(', ')}.`);
+    targets.push({
+      type: 'pdf',
+      filename: `${cleanOrder}-1.pdf`,
+      savedPath: path.join(pdfDirectory, `${cleanOrder}-1.pdf`),
+      build: () => buildOrderPlanteamientoPdf({ order, calculation })
+    });
+
+    await Promise.all(targets.map(async (target) => {
+      target.contents = await target.build();
+      target.exists = await fileExists(target.savedPath);
+    }));
+    const existing = targets.filter((target) => target.exists).map((target) => target.filename);
+    if (existing.length > 0 && req.body?.confirmOverwrite !== true) {
+      res.status(409).json({ needsConfirmation: true, existing });
+      return;
+    }
+
+    await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
+    const saved = [];
+    for (const target of targets) {
+      await writeFileAtomic(target.savedPath, target.contents);
+      saved.push({ type: target.type, of: target.of, filename: target.filename, savedPath: target.savedPath, overwritten: target.exists });
+    }
+
+    const updated = markReviewProduced(review, {
+      reviewer,
+      note: req.body?.note,
+      files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath }))
+    });
+    const reviewPdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
+    await workflowStore.saveReview(updated, reviewPdf);
+    res.json({ ok: true, review: updated, saved });
+  } catch (error) {
+    if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
     next(error);
   }
 });
@@ -323,22 +533,6 @@ function buildPartialSaveMessage(failedFilename, saved) {
     : `No se pudo guardar ${failedFilename}. Revisa el acceso a la carpeta compartida.`;
 }
 
-async function fileExists(target) {
-  return fs.access(target).then(() => true, () => false);
-}
-
-async function writeFileAtomic(targetPath, buffer) {
-  const tmpPath = `${targetPath}.tmp-${process.pid}-${Date.now()}`;
-
-  await fs.writeFile(tmpPath, buffer);
-  try {
-    await fs.rename(tmpPath, targetPath);
-  } catch (error) {
-    await fs.unlink(tmpPath).catch(() => {});
-    throw error;
-  }
-}
-
 function buildOrderArchivePath(orderCode) {
   const cleanOrder = sanitizeOrderCode(orderCode);
   const year = getOrderYear(cleanOrder);
@@ -359,25 +553,6 @@ function buildPlanteamientoPath(orderCode) {
   }
 
   return path.join(config.orderArchiveRoot, String(year), 'TOLDOS', `${cleanOrder}-1.pdf`);
-}
-
-function sanitizeOrderCode(value) {
-  const clean = String(value || '')
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9_-]+/g, '');
-
-  if (!clean) {
-    throw new Error('El número de pedido no es válido.');
-  }
-
-  return clean.slice(0, 80);
-}
-
-function getOrderYear(orderCode) {
-  const match = /^[A-Z]+(\d{2})/.exec(orderCode);
-  if (!match) return null;
-  return 2000 + Number(match[1]);
 }
 
 function serveDistFolder() {

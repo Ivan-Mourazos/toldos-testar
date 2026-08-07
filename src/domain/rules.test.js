@@ -454,6 +454,23 @@ describe('normalización de campos nuevos del pedido', () => {
     });
   });
 
+  test('normalizeOrder aplica COMO TELA si hay bamba y el remate llega vacío', () => {
+    const normalized = normalizeOrder(basePayload({
+      remate: '',
+      awnings: [baseAwning({ model: 'PERLA BOX', valanceHeight: 30, remate: '' })]
+    }));
+    expect(normalized.awnings[0].remate).toBe('COMO TELA');
+  });
+
+  test('normalizeOrder no aplica remate si el toldo no lleva bamba', () => {
+    const normalized = normalizeOrder(basePayload({
+      remate: 'OTRO',
+      remateColor: 'RAL 3005',
+      awnings: [baseAwning({ model: 'PERLA BOX', valanceHeight: 0, remate: '' })]
+    }));
+    expect(normalized.awnings[0]).toMatchObject({ remate: '', remateColor: '' });
+  });
+
   test('normalizeOrder conserva order.notes (necesario para reutilizar el order normalizado en PDF/xlsx)', () => {
     const normalized = normalizeOrder(basePayload({
       notes: '  Observacion importante  ',

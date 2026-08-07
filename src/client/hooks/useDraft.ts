@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
-import { formOptions, getModelBehavior, getModelWorkType } from '../../domain/modelBehavior.js';
+import { formOptions, getModelBehavior, getModelWorkType, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
@@ -45,8 +45,8 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (base.hasValance === false) base.valanceHeight = 0;
   base.valanceCurve = typeof old.valanceCurve === 'string' ? old.valanceCurve : '';
   base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
-  base.remate = typeof old.remate === 'string' ? old.remate : '';
-  base.remateColor = typeof old.remateColor === 'string' ? old.remateColor : '';
+  base.remate = normalizeValanceFinish(base, typeof old.remate === 'string' ? old.remate : '');
+  base.remateColor = base.remate === 'OTRO' && typeof old.remateColor === 'string' ? old.remateColor : '';
   base.structureColor = typeof old.structureColor === 'string' ? old.structureColor : '';
   base.rotFabric = typeof old.rotFabric === 'string' ? old.rotFabric : '';
   base.rotValance = typeof old.rotValance === 'string' ? old.rotValance : '';
@@ -245,6 +245,10 @@ export function useDraft() {
   }
 
   function reuseHistory(entry: HistoryEntry) {
+    loadOrder(entry);
+  }
+
+  function loadOrder(entry: DraftState | HistoryEntry) {
     const fallback = defaultDraft();
     setOrderCode(entry.orderCode);
     setCustomer(entry.customer);
@@ -301,6 +305,7 @@ export function useDraft() {
     duplicateAwning,
     removeAwning,
     reuseHistory,
+    loadOrder,
     resetDraft
   };
 }
@@ -326,8 +331,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     valanceHeight: supportsValance ? awning.valanceHeight : null,
     valanceCurve: supportsValance ? awning.valanceCurve : '',
     valanceFabric: supportsValance ? awning.valanceFabric : '',
-    remate: supportsValance ? awning.remate : '',
-    remateColor: supportsValance ? awning.remateColor : '',
+    remate: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate),
+    remateColor: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate) === 'OTRO' ? awning.remateColor : '',
     structureColor: getModelWorkType(model) === 'FULL_AWNING' ? awning.structureColor : '',
     rotFabric: awning.rotFabric,
     rotValance: supportsValance ? awning.rotValance : '',

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
 import type { Awning, BoxDevice, Calculation, CortinaDevice, RuleParameters } from '../types';
-import { formOptions, getRequiredDimensions } from '../../domain/modelBehavior.js';
+import { formOptions, getRequiredDimensions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { useVisibleFields } from '../hooks/useVisibleFields';
 import { TextField } from './TextField';
 import { NumberField } from './NumberField';
@@ -77,10 +77,11 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     : null;
   const agataDiscounts = agataDevice ? parameters.agataBox.discounts[agataVariant][agataDevice] : null;
   const hasValance = awning.model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
+  const valanceFinish = normalizeValanceFinish(awning, awning.remate);
   const missingValanceConfig = hasValance && (
     !awning.valanceCurve
-    || !awning.remate
-    || (awning.remate === 'OTRO' && !awning.remateColor)
+    || !valanceFinish
+    || (valanceFinish === 'OTRO' && !awning.remateColor)
   );
   const missingFinishConfig = (!standaloneValance && !awning.rotFabric)
     || (hasValance && !awning.rotValance)
@@ -145,13 +146,14 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
 
   function updateValanceHeight(valanceHeight: number | null) {
     const nextHasValance = awning.model === 'BAMBALINA' || Number(valanceHeight) > 0;
+    const remate = normalizeValanceFinish({ model: awning.model, valanceHeight }, awning.remate);
     update({
       hasValance: nextHasValance,
       valanceHeight,
       valanceCurve: nextHasValance ? awning.valanceCurve : '',
       valanceFabric: nextHasValance ? awning.valanceFabric : '',
-      remate: nextHasValance ? awning.remate : '',
-      remateColor: nextHasValance ? awning.remateColor : ''
+      remate,
+      remateColor: remate === 'OTRO' ? awning.remateColor : ''
     });
   }
 
@@ -293,8 +295,8 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             <div className="awning-valance-options awning-wide-field">
               <SelectField label="Curva bamba" value={awning.valanceCurve} options={formOptions.curvasBamba} placeholder="Elegir…" onChange={(valanceCurve) => update({ valanceCurve })} />
               {!standaloneValance && <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" onChange={(valanceFabric) => update({ valanceFabric })} />}
-              <SegmentedField label="Remate" value={awning.remate} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
-              {awning.remate === 'OTRO' && <TextField label="Color remate" value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
+              <SegmentedField label="Remate" value={valanceFinish} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
+              {valanceFinish === 'OTRO' && <TextField label="Color remate" value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
             </div>
           )}
           {(fields.arzua || fields.galicia) && (

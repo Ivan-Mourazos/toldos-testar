@@ -460,4 +460,46 @@ export type HistoryEntry = {
   notes: string;
 };
 
-export type ActiveTab = 'order' | 'parameters' | 'history';
+export type WorkflowSettings = {
+  schemaVersion: number;
+  productionEnabled: boolean;
+  reviewDirectory: string;
+  planteamientosDirectory: string;
+  rpsUploadDirectory: string;
+};
+
+export type WorkflowReadiness = {
+  reviewReady: boolean;
+  productionReady: boolean;
+  missing: string[];
+};
+
+export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'PRODUCED';
+
+export type ReviewSummary = {
+  schemaVersion: number;
+  kind: 'toldos-testar-review';
+  orderCode: string;
+  status: ReviewStatus;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  reviewedAt: string | null;
+  reviewedBy: string;
+  reviewNote: string;
+  production: null | { createdAt: string; files: { type: string; of?: string; filename: string; savedPath: string }[] };
+  summary: {
+    customer: string;
+    orderDate: string;
+    technician: string;
+    reviewer: string;
+    awnings: number;
+    ofs: string[];
+    models: string[];
+    diagnostics: number;
+  };
+};
+
+export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters } };
+
+export type ActiveTab = 'order' | 'parameters' | 'reviews' | 'settings';

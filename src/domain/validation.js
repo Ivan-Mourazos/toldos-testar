@@ -12,7 +12,7 @@ import { normalizeAgataBoxParameters } from './agataBoxParameters.js';
 import { normalizeFabricJobParameters } from './fabricJobParameters.js';
 import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
-import { getModelWorkType } from './modelBehavior.js';
+import { getModelWorkType, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeModelName } from './modelNames.js';
 
 export function normalizeOrder(payload) {
@@ -90,6 +90,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
   const hasValance = typeof awning?.hasValance === 'boolean'
     ? awning.hasValance
     : numberOrDefault(awning?.valanceHeight, 0) > 0 ? true : null;
+  const valanceHeight = hasValance === false ? 0 : numberOrDefault(awning?.valanceHeight, 0);
+  const remate = normalizeValanceFinish({ model, valanceHeight }, awning?.remate || legacyOrder.remate);
 
   return {
     id: cleanText(awning?.id),
@@ -163,11 +165,11 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     fabricJobDropAllowanceCm: nullableNumber(awning?.fabricJobDropAllowanceCm),
     fabricJobValanceExtraCm: nullableNumber(awning?.fabricJobValanceExtraCm),
     anticaVariant: normalizeAnticaVariant(awning?.anticaVariant),
-    valanceHeight: hasValance === false ? 0 : numberOrDefault(awning?.valanceHeight, 0),
+    valanceHeight,
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
-    remate: cleanText(awning?.remate || legacyOrder.remate).toUpperCase(),
-    remateColor: cleanText(awning?.remateColor || legacyOrder.remateColor),
+    remate,
+    remateColor: remate === 'OTRO' ? cleanText(awning?.remateColor || legacyOrder.remateColor) : '',
     structureColor: cleanText(awning?.structureColor || legacyOrder.structureColor).toUpperCase(),
     rotFabric: cleanText(awning?.rotFabric || legacyOrder.rotTela).toUpperCase(),
     rotValance: cleanText(awning?.rotValance || legacyOrder.rotBamba).toUpperCase(),

@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import { roundQuantity } from './math.js';
+import { needsValanceFinish, normalizeValanceFinish } from './modelBehavior.js';
 
 export async function buildReservationWorkbook(reservation) {
   return buildRpsImportBuffer(buildFinalRows(reservation.ofs));
@@ -111,10 +112,10 @@ function summarizeValanceFabric(awnings = []) {
 }
 
 function summarizeRemate(awnings = []) {
-  const valances = awnings.filter((awning) => Number(awning?.valanceHeight) > 0 || awning?.model === 'BAMBALINA');
-  const values = new Set(valances.map((awning) => {
-    if (awning.remate === 'OTRO') return awning.remateColor || 'OTRO';
-    return awning.remate;
+  const values = new Set(awnings.filter(needsValanceFinish).map((awning) => {
+    const remate = normalizeValanceFinish(awning, awning.remate);
+    if (remate === 'OTRO') return awning.remateColor || 'OTRO';
+    return remate;
   }).filter(Boolean));
   if (values.size === 0) return '';
   return values.size === 1 ? Array.from(values)[0] : 'SEGUN TOLDO';

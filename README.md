@@ -16,25 +16,29 @@ La base actual contiene:
 - contrato de reserva compatible con `materiales-ot`;
 - motor de reglas preparado para migrar cálculos por modelo sin copiar el Excel celda a celda.
 
-## Reservas
+## Flujo de revisión y producción
 
-La app mantiene dos salidas:
+El pedido no se envía directamente a producción:
 
-- `POST /api/export`: descarga un `.xls` tabulado antiguo compatible con RPS; no escribe en carpetas compartidas.
-- `POST /api/planteamiento`: genera y devuelve `PEDIDO-1.pdf` para que el navegador muestre "Guardar como". Incluye una página de estructura por toldo y páginas de tela agrupando OFs.
-- `POST /api/export/save`: permanece bloqueado con `403` mientras `ENABLE_FILE_WRITES=false` (valor recomendado y predeterminado).
+- `Guardar para revisión` crea únicamente `PEDIDO.pdf` en la carpeta TOLDOS compartida. El PDF muestra los paneles del formulario e incorpora internamente los datos editables para que la bandeja pueda volver a abrir el pedido.
+- La pestaña `Revisión` muestra esa bandeja a todos los puestos. Permite abrir el pedido, pedir cambios o aprobarlo dejando nombre y observaciones.
+- `Aprobar y producir` genera `PEDIDO-1.pdf` en Planteamientos y un `.xls` por OF en Subida de material. Si un archivo ya existe, exige confirmación antes de sustituirlo.
+- Un pedido modificado y guardado de nuevo vuelve siempre a estado pendiente de revisión.
 
-## Modo de pruebas
+Mientras la aplicación todavía se use de forma local, `PDF revisión` descarga
+`PEDIDO.pdf`: paneles compactos que reproducen los datos visibles de
+cada toldo y su estado, sin cálculos ni materiales de producción. Lleva la
+marca `BORRADOR PARA REVISION - NO PRODUCCION` y no guarda ni envía archivos a RPS.
 
-- La interfaz muestra permanentemente `Modo pruebas · No guarda reservas`.
-- `Simular RPS` solo descarga el Excel de revisión.
-- Cada simulación correcta se guarda en el historial local del navegador para poder reutilizar el pedido sin escribir en RPS.
-- `Guardar PDF` permite elegir la carpeta y el nombre mediante el selector de archivos del navegador; si el navegador no soporta esa API, realiza una descarga normal.
-- El formulario empieza limpio en cada carga y no recupera borradores anteriores de `localStorage`.
-- `Limpiar` reinicia pedido, toldos y datos generales sin borrar el historial.
-- Para habilitar escrituras reales en una fase futura habrá que definir explícitamente `ENABLE_FILE_WRITES=true` y reiniciar el servidor.
+## Configuración de carpetas
 
-El `.env` local usa las mismas rutas que `materiales-ot`: subida de materiales para los `.xls` y carpeta anual de reservas para el resumen.
+Las tres rutas se administran desde la pestaña `Configuración` y se guardan en el servidor para todos los usuarios:
+
+- Pedidos para revisión (TOLDOS).
+- Planteamientos aprobados.
+- Subida de material (RPS).
+
+Se admite el marcador `{YYYY}`, que se sustituye por el año extraído del pedido. El interruptor `Envío a producción` es la barrera explícita para escribir PDF y RPS; aunque esté desactivado se pueden guardar pedidos para revisión. Los valores de `.env` sirven únicamente como configuración inicial.
 
 El mapa inicial del Excel está en `docs/excel-map.md`.
 Las decisiones de producto están en `docs/product-decisions.md`.
@@ -45,10 +49,10 @@ Las decisiones de producto están en `docs/product-decisions.md`.
 pnpm test:e2e:rps
 ```
 
-La prueba arranca una instancia aislada en modo simulación, consulta RPSNext en
+La prueba arranca una instancia aislada con rutas temporales, consulta RPSNext en
 solo lectura y contrasta cinco pedidos/OF reales. El caso `AR2603332` recorre la
-interfaz completa con Chromium, descarga el `.xls`, abre la vista previa,
-descarga el PDF, comprueba el historial y limpia el formulario. Los artefactos
+interfaz completa con Chromium, abre la vista previa, guarda el archivo de revisión,
+aprueba el pedido, verifica el PDF y RPS definitivos y limpia el formulario. Los artefactos
 y el informe JSON quedan en `output/playwright/rps-e2e/`.
 
 ## Validación masiva de pedidos guardados

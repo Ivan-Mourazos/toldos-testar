@@ -3,39 +3,26 @@ import {
   ClipboardList,
   Eraser,
   Eye,
-  FileDown,
-  FileSpreadsheet,
-  FlaskConical,
-  History,
+  FileText,
+  FolderCog,
+  Inbox,
+  Save,
+  ShieldCheck,
   SlidersHorizontal,
   X
 } from 'lucide-react';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
-import type { ActiveTab, Catalog } from './types';
-import { fileNameFromDisposition } from './constants';
+import type { ActiveTab, Catalog, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { PdfPreviewPages } from './components/PdfPreviewPages';
 import { OrderView } from './views/OrderView';
-import { HistoryView } from './views/HistoryView';
 import { ParametersView } from './views/ParametersView';
 import { useParameters } from './hooks/useParameters';
-
-type WritableFileHandle = {
-  createWritable: () => Promise<{
-    write: (data: Blob) => Promise<void>;
-    close: () => Promise<void>;
-  }>;
-};
-
-type WindowWithFilePicker = Window & {
-  showSaveFilePicker?: (options: {
-    suggestedName: string;
-    types: Array<{ description: string; accept: Record<string, string[]> }>;
-  }) => Promise<WritableFileHandle>;
-};
+import { ReviewsView } from './views/ReviewsView';
+import { SettingsView } from './views/SettingsView';
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -46,9 +33,9 @@ function downloadBlob(blob: Blob, filename: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function suggestedPdfName(orderCode: string) {
+function reviewPdfFilename(orderCode: string) {
   const clean = orderCode.trim().toUpperCase().replace(/[^A-Z0-9_-]+/g, '').slice(0, 80);
-  return `${clean || 'PLANTEAMIENTO'}-1.pdf`;
+  return `${clean || 'PEDIDO'}.pdf`;
 }
 
 export default function App() {
@@ -57,10 +44,13 @@ export default function App() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
   const [toast, setToast] = useState('');
-  const [working, setWorking] = useState<'rps' | 'pdf' | 'preview' | null>(null);
+  const [working, setWorking] = useState<'review' | 'reviewPdf' | 'preview' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings | null>(null);
+  const [workflowReadiness, setWorkflowReadiness] = useState<WorkflowReadiness | null>(null);
+  const [reviewRefresh, setReviewRefresh] = useState(0);
 
-  const { calculation, calculationState, reservation } = useCalculation({
+  const { calculation, calculationState } = useCalculation({
     activeTab,
     orderCode: draft.orderCode,
     customer: draft.customer,
@@ -85,6 +75,20 @@ export default function App() {
       .catch(() => setToast('No se pudo cargar el catálogo.'));
   }, []);
 
+  useEffect(() => {
+    fetch('/api/workflow/settings')
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        return data;
+      })
+      .then((data) => {
+        setWorkflowSettings(data.settings);
+        setWorkflowReadiness(data.readiness);
+      })
+      .catch(() => setToast('No se pudo cargar la configuración de carpetas.'));
+  }, []);
+
   // Auto-dismiss toast
   useEffect(() => {
     if (!toast) return;
@@ -96,10 +100,11 @@ export default function App() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
-  function reuseHistory(entry: Parameters<typeof draft.reuseHistory>[0]) {
-    draft.reuseHistory(entry);
+  function openReview(review: ReviewPackage) {
+    draft.loadOrder(review.order);
+    if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters);
     setActiveTab('order');
-    setToast(`Pedido ${entry.orderCode || 'sin número'} cargado desde historial.`);
+    setToast(`Pedido ${review.orderCode} abierto desde la bandeja de revisión.`);
   }
 
   function currentOrderPayload() {
@@ -121,110 +126,36 @@ export default function App() {
     };
   }
 
-  async function simulateReservation() {
-    if (reservation.ofs.length === 0) {
-      setToast('Todavía no hay materiales calculados para simular.');
-      return;
-    }
-
-    setWorking('rps');
-    try {
-      const response = await fetch('/api/export', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reservation)
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setToast(data.error || 'No se pudo generar la simulación RPS.');
-        return;
-      }
-
-      const blob = await response.blob();
-      const filename = fileNameFromDisposition(response.headers.get('content-disposition')) || 'simulacion-rps-toldos.xls';
-      downloadBlob(blob, filename);
-      const historyEntry = {
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        orderCode: draft.orderCode,
-        customer: draft.customer,
-        orderDate: draft.orderDate,
-        technician: draft.technician,
-        reviewer: draft.reviewer,
-        fabric: draft.fabric,
-        sameFabric: draft.sameFabric,
-        remate: draft.remate,
-        remateColor: draft.remateColor,
-        structureColor: draft.structureColor,
-        rotTela: draft.rotTela,
-        rotBamba: draft.rotBamba,
-        ofs: reservation.ofs.map((item) => item.of),
-        models: Array.from(new Set(draft.awnings.map((awning) => awning.model).filter(Boolean))),
-        awnings: draft.awnings.map((awning) => ({ ...awning })),
-        diagnostics: calculation?.diagnostics.length || 0,
-        notes: ''
-      };
-      draft.setHistoryEntries((current) => [
-        historyEntry,
-        ...current.filter((entry) => entry.orderCode !== historyEntry.orderCode)
-      ].slice(0, 80));
-      setToast('Simulación RPS descargada. No se ha guardado nada en las carpetas compartidas.');
-    } catch {
-      setToast('No se pudo generar la simulación RPS.');
-    } finally {
-      setWorking(null);
-    }
-  }
-
-  async function savePlanteamientoPdf() {
+  async function saveForReview(confirmOverwrite = false) {
     if (!calculation || calculation.ofs.length === 0) {
-      setToast('Completa al menos un toldo para generar el planteamiento.');
+      setToast('Completa al menos un toldo antes de guardarlo para revisión.');
       return;
     }
-
-    const picker = (window as WindowWithFilePicker).showSaveFilePicker;
-    let handle: WritableFileHandle | null = null;
-
-    if (picker) {
-      try {
-        handle = await picker({
-          suggestedName: suggestedPdfName(draft.orderCode),
-          types: [{ description: 'Documento PDF', accept: { 'application/pdf': ['.pdf'] } }]
-        });
-      } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-        setToast('No se pudo abrir el selector de archivo.');
-        return;
-      }
+    if (!draft.orderCode.trim()) {
+      setToast('Indica el número de pedido para crear el archivo de revisión.');
+      return;
     }
-
-    setWorking('pdf');
+    setWorking('review');
     try {
-      const response = await fetch('/api/planteamiento', {
+      const response = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: currentOrderPayload() })
+        body: JSON.stringify({ order: currentOrderPayload(), confirmOverwrite })
       });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setToast(data.error || 'No se pudo generar el planteamiento PDF.');
+      const data = await response.json();
+      if (response.status === 409 && data.needsConfirmation) {
+        const ok = window.confirm(`El pedido ${draft.orderCode} ya está en revisión. ¿Quieres actualizarlo con estos datos?`);
+        if (ok) await saveForReview(true);
         return;
       }
-
-      const blob = await response.blob();
-      const filename = fileNameFromDisposition(response.headers.get('content-disposition')) || suggestedPdfName(draft.orderCode);
-      if (handle) {
-        const writable = await handle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-      } else {
-        downloadBlob(blob, filename);
+      if (!response.ok) {
+        setToast(data.error || 'No se pudo guardar el pedido para revisión.');
+        return;
       }
-      setToast(handle ? `Planteamiento guardado como ${filename}.` : `Planteamiento ${filename} descargado.`);
+      setReviewRefresh((value) => value + 1);
+      setToast(`${data.review.orderCode}.pdf guardado en la carpeta TOLDOS para revisión.`);
     } catch {
-      setToast('No se pudo generar o guardar el planteamiento PDF.');
+      setToast('No se pudo guardar el pedido para revisión.');
     } finally {
       setWorking(null);
     }
@@ -259,6 +190,33 @@ export default function App() {
     }
   }
 
+  async function downloadReviewPdf() {
+    if (draft.awnings.length === 0) {
+      setToast('Añade al menos un toldo para generar la ficha de revisión.');
+      return;
+    }
+    setWorking('reviewPdf');
+    try {
+      const response = await fetch('/api/review-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: currentOrderPayload() })
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setToast(data.error || 'No se pudo generar la ficha de revisión.');
+        return;
+      }
+      const filename = reviewPdfFilename(draft.orderCode);
+      downloadBlob(await response.blob(), filename);
+      setToast(`Ficha ${filename} descargada. No se ha enviado a producción.`);
+    } catch {
+      setToast('No se pudo generar la ficha de revisión.');
+    } finally {
+      setWorking(null);
+    }
+  }
+
   function closePreview() {
     setPreviewUrl((current) => {
       if (current) URL.revokeObjectURL(current);
@@ -283,7 +241,9 @@ export default function App() {
     ? 'Nuevo planteamiento'
     : activeTab === 'parameters'
       ? 'Parámetros de modelos'
-      : 'Historial de pedidos';
+      : activeTab === 'reviews'
+        ? 'Revisión de pedidos'
+        : 'Configuración de producción';
 
   return (
     <main className="app-shell">
@@ -299,13 +259,14 @@ export default function App() {
         <nav className="app-tabs" aria-label="Vistas">
           <TabButton active={activeTab === 'order'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
           <TabButton active={activeTab === 'parameters'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
-          <TabButton active={activeTab === 'history'} icon={<History />} label="Historial" onClick={() => setActiveTab('history')} />
+          <TabButton active={activeTab === 'reviews'} icon={<Inbox />} label="Revisión" onClick={() => setActiveTab('reviews')} />
+          <TabButton active={activeTab === 'settings'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
         </nav>
 
         <div className="sidebar-meta">
-          <div className="simulation-mode">
-            <FlaskConical aria-hidden="true" />
-            <div><strong>Modo pruebas</strong><small>No guarda reservas</small></div>
+          <div className={`production-mode ${workflowReadiness?.productionReady ? 'is-ready' : ''}`}>
+            <ShieldCheck aria-hidden="true" />
+            <div><strong>{workflowReadiness?.productionReady ? 'Producción activa' : 'Revisión segura'}</strong><small>{workflowReadiness?.productionReady ? 'Aprobación obligatoria' : 'Configura las rutas finales'}</small></div>
           </div>
           <span className={statusBadgeClass}>{statusLabel}</span>
           <small>{catalog ? `${catalog.models.length} modelos · ${catalog.fabricStats.total} telas` : 'Cargando catálogo'}</small>
@@ -325,17 +286,17 @@ export default function App() {
                 <Eraser aria-hidden="true" />
                 Limpiar
               </button>
-              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={simulateReservation}>
-                <FileSpreadsheet aria-hidden="true" />
-                {working === 'rps' ? 'Generando…' : 'Simular RPS'}
-              </button>
               <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={openPlanteamientoPreview}>
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
               </button>
-              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={savePlanteamientoPdf}>
-                <FileDown aria-hidden="true" />
-                {working === 'pdf' ? 'Generando…' : 'Guardar PDF'}
+              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={downloadReviewPdf}>
+                <FileText aria-hidden="true" />
+                {working === 'reviewPdf' ? 'Generando…' : 'PDF revisión'}
+              </button>
+              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={() => void saveForReview()}>
+                <Save aria-hidden="true" />
+                {working === 'review' ? 'Guardando…' : 'Guardar para revisión'}
               </button>
             </div>
           )}
@@ -407,7 +368,17 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'history' && <HistoryView entries={draft.historyEntries} onReuse={reuseHistory} />}
+          {activeTab === 'reviews' && <ReviewsView refreshKey={reviewRefresh} onOpen={openReview} onToast={setToast} />}
+          {activeTab === 'settings' && (
+            workflowSettings && workflowReadiness
+              ? <SettingsView
+                  settings={workflowSettings}
+                  readiness={workflowReadiness}
+                  onSaved={(settings, readiness) => { setWorkflowSettings(settings); setWorkflowReadiness(readiness); }}
+                  onToast={setToast}
+                />
+              : <section className="settings-panel panel">Cargando configuración…</section>
+          )}
         </div>
       </section>
       {toast && (
@@ -423,7 +394,6 @@ export default function App() {
               <div><strong>Vista previa del planteamiento</strong><span>Estructuras A5 y telas A4</span></div>
               <div className="pdf-preview-actions">
                 <button className="ghost-button" type="button" onClick={openPlanteamientoPreview}><Eye aria-hidden="true" />Actualizar</button>
-                <button className="primary-button" type="button" onClick={savePlanteamientoPdf}><FileDown aria-hidden="true" />Guardar PDF</button>
                 <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
               </div>
             </header>

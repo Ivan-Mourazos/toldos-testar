@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getAwningDiagram, getModelBehavior, getFieldVisibility, formOptions, modelNames, getEstablishedProjections } from './modelBehavior.js';
+import { getAwningDiagram, getModelBehavior, getFieldVisibility, formOptions, modelNames, getEstablishedProjections, needsValanceFinish, normalizeValanceFinish } from './modelBehavior.js';
 import { models as catalogModels } from './catalog.js';
 
 describe('modelBehavior', () => {
@@ -95,6 +95,18 @@ describe('modelBehavior', () => {
   test('un modelo sin salidas establecidas devuelve null', () => {
     expect(getEstablishedProjections('CAMBIO TELA')).toBeNull();
     expect(getEstablishedProjections('')).toBeNull();
+  });
+
+  test('el remate solo aplica con bambalina y vacío equivale a COMO TELA', () => {
+    expect(needsValanceFinish({ model: 'PERLA BOX', valanceHeight: 25 })).toBe(true);
+    expect(normalizeValanceFinish({ model: 'PERLA BOX', valanceHeight: 25 }, '')).toBe('COMO TELA');
+    expect(normalizeValanceFinish({ model: 'PERLA BOX', valanceHeight: 25 }, 'OTRO')).toBe('OTRO');
+    expect(needsValanceFinish({ model: 'PERLA BOX', valanceHeight: 0 })).toBe(false);
+    expect(normalizeValanceFinish({ model: 'PERLA BOX', valanceHeight: 0 }, 'OTRO')).toBe('');
+  });
+
+  test('el trabajo BAMBALINA también recibe remate COMO TELA por defecto', () => {
+    expect(normalizeValanceFinish({ model: 'BAMBALINA', valanceHeight: 30 }, '')).toBe('COMO TELA');
   });
 
   test('tiposPared trae la referencia real del Excel maestro (M REF) o null si no está confirmada', () => {

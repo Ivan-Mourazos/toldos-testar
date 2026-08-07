@@ -11,11 +11,12 @@ import { config } from '../src/config.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const artifactDirectory = path.join(root, 'output', 'playwright', 'rps-e2e');
+const workflowDirectory = path.join(artifactDirectory, `workflow-${Date.now()}`);
 const reportPath = path.join(artifactDirectory, 'report.json');
 const startedAt = new Date().toISOString();
 const report = {
   startedAt,
-  mode: 'simulation',
+  mode: 'review-production',
   rps: {},
   apiCases: [],
   browserCase: null,
@@ -34,6 +35,7 @@ const server = spawn(process.execPath, ['src/server.js'], {
     ...process.env,
     PORT: String(port),
     ENABLE_FILE_WRITES: 'false',
+    WORKFLOW_SETTINGS_FILE: path.join(workflowDirectory, 'settings.json'),
     NODE_ENV: 'production'
   },
   stdio: ['ignore', 'pipe', 'pipe']
@@ -50,6 +52,19 @@ try {
   assert.equal(health.ok, true);
   assert.equal(health.simulationMode, true);
   assert.equal(health.fileWritesEnabled, false);
+
+  const settingsResponse = await fetch(`${baseUrl}/api/workflow/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productionEnabled: true,
+      reviewDirectory: path.join(workflowDirectory, '{YYYY}', 'TOLDOS'),
+      planteamientosDirectory: path.join(workflowDirectory, 'PLANTEAMIENTOS', '{YYYY}'),
+      rpsUploadDirectory: path.join(workflowDirectory, 'RPS')
+    })
+  });
+  assert.equal(settingsResponse.status, 200);
+  assert.equal((await settingsResponse.json()).readiness.productionReady, true);
 
   rpsPool = await connectRps();
   report.rps = await verifyOrdersInRps(rpsPool);
@@ -114,8 +129,8 @@ async function verifyBrowserCase(browserInstance, url) {
   });
 
   await page.goto(url, { waitUntil: 'networkidle' });
-  await page.getByText('Modo pruebas', { exact: true }).waitFor();
-  await page.getByText('No guarda reservas', { exact: true }).waitFor();
+  await page.getByText('Producción activa', { exact: true }).waitFor();
+  await page.getByText('Aprobación obligatoria', { exact: true }).waitFor();
 
   await page.getByRole('textbox', { name: 'Pedido' }).fill('AR2603332');
   await page.getByRole('textbox', { name: 'Cliente' }).fill('LECHE CELTA');
@@ -151,12 +166,25 @@ async function verifyBrowserCase(browserInstance, url) {
   await page.getByText('326 × 300 cm', { exact: true }).waitFor();
   await page.getByText('9 ml', { exact: true }).waitFor();
 
-  const rpsDownloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Simular RPS' }).click();
-  const rpsDownload = await rpsDownloadPromise;
-  const rpsPath = path.join(artifactDirectory, rpsDownload.suggestedFilename());
-  await rpsDownload.saveAs(rpsPath);
-  assert.match(rpsDownload.suggestedFilename(), /^reserva-toldos-AR2603332-\d{4}-\d{2}-\d{2}\.xls$/);
+  await page.getByRole('button', { name: 'Vista previa' }).click();
+  const preview = page.getByRole('dialog', { name: 'Vista previa del planteamiento' });
+  await preview.waitFor({ timeout: 20_000 });
+  await preview.locator('.pdf-preview-page').nth(1).waitFor({ timeout: 20_000 });
+  assert.equal(await preview.locator('.pdf-preview-page').count(), 2);
+
+  await preview.getByRole('button', { name: 'Cerrar vista previa' }).click();
+  await page.getByRole('button', { name: 'Guardar para revisión' }).click();
+  await page.getByText(/guardado en la bandeja compartida/).waitFor();
+
+  await page.getByRole('button', { name: 'Revisión', exact: true }).click();
+  const reviewItem = page.getByRole('button').filter({ hasText: 'AR2603332' });
+  await reviewItem.waitFor();
+  await page.getByRole('textbox', { name: 'Revisado por' }).fill('E2E Oficina técnica');
+  await page.getByRole('button', { name: 'Aprobar y producir' }).click();
+  await page.getByText(/PDF y RPS guardados/).waitFor({ timeout: 20_000 });
+
+  const rpsPath = path.join(workflowDirectory, 'RPS', '0230194.xls');
+  const pdfPath = path.join(workflowDirectory, 'PLANTEAMIENTOS', '2026', 'AR2603332-1.pdf');
   const rpsContent = (await readFile(rpsPath)).toString('latin1');
   assert.deepEqual(parseRpsWorkbook(rpsContent), [
     ['OF', 'ARTICULO', 'CANTIDAD'],
@@ -171,40 +199,18 @@ async function verifyBrowserCase(browserInstance, url) {
     ['0230194', 'SITUOIO1PURE', '1'],
     ['0230194', 'ACRILI2018P120', '9']
   ]);
-  await page.getByText(/Simulación RPS descargada/).waitFor();
-
-  await page.getByRole('button', { name: 'Historial' }).click();
-  const historyRow = page.getByRole('row').filter({ hasText: 'AR2603332' });
-  await historyRow.waitFor();
-  assert.match(await historyRow.innerText(), /LECHE CELTA/);
-  assert.match(await historyRow.innerText(), /0230194/);
-  await historyRow.getByRole('button', { name: 'Reutilizar' }).click();
-  await page.getByText(/cargado desde historial/).waitFor();
-  assert.equal(await page.getByRole('textbox', { name: 'Pedido' }).inputValue(), 'AR2603332');
-
-  await page.getByRole('button', { name: 'Vista previa' }).click();
-  const preview = page.getByRole('dialog', { name: 'Vista previa del planteamiento' });
-  await preview.waitFor({ timeout: 20_000 });
-  await preview.locator('.pdf-preview-page').nth(1).waitFor({ timeout: 20_000 });
-  assert.equal(await preview.locator('.pdf-preview-page').count(), 2);
-
-  const pdfDownloadPromise = page.waitForEvent('download');
-  await preview.getByRole('button', { name: 'Guardar PDF' }).click();
-  const pdfDownload = await pdfDownloadPromise;
-  assert.equal(pdfDownload.suggestedFilename(), 'AR2603332-1.pdf');
-  const pdfPath = path.join(artifactDirectory, pdfDownload.suggestedFilename());
-  await pdfDownload.saveAs(pdfPath);
   const pdf = await inspectPdf(await readFile(pdfPath));
   assert.equal(pdf.pages, 2);
   assert.match(pdf.text, /AR2603332/);
   assert.match(pdf.text, /0230194/);
 
-  await preview.getByRole('button', { name: 'Cerrar vista previa' }).click();
+  await page.getByRole('button', { name: 'Abrir pedido y comprobar' }).click();
+  await page.getByText(/abierto desde la bandeja/).waitFor();
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Limpiar' }).click();
   assert.equal(await page.getByRole('textbox', { name: 'Pedido' }).inputValue(), '');
   assert.equal(await page.locator('article.awning-column').count(), 0);
-  assert.equal(await page.getByRole('button', { name: 'Simular RPS' }).isDisabled(), true);
+  assert.equal(await page.getByRole('button', { name: 'Guardar para revisión' }).isDisabled(), true);
 
   const screenshotPath = path.join(artifactDirectory, 'AR2603332-final.png');
   await page.screenshot({ path: screenshotPath, fullPage: true });
@@ -217,7 +223,8 @@ async function verifyBrowserCase(browserInstance, url) {
     rpsFile: path.basename(rpsPath),
     pdfFile: path.basename(pdfPath),
     pdfPages: pdf.pages,
-    historyVerified: true,
+    reviewVerified: true,
+    productionVerified: true,
     clearVerified: true,
     screenshot: path.basename(screenshotPath)
   };

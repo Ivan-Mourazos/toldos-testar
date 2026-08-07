@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
+import { resolveFabric } from './fabricCatalog.js';
 import { getAwningDiagram, isFabricOnlyModel } from './modelBehavior.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
@@ -10,7 +11,6 @@ const colors = {
   ink: '#10282d',
   inkSoft: '#29474d',
   yellow: '#f7bd19',
-  yellowSoft: '#fff5d8',
   gray: '#dce4e2',
   grayDark: '#80908d',
   line: '#9aaba8',
@@ -60,9 +60,10 @@ export async function buildOrderPlanteamientoPdf({ order, calculation }) {
       });
     });
 
+    const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
     plan.fabricPages.forEach(({ entries, diagram, diagramAwning, diagramCalculation }) => {
       doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-      drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation });
+      drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
     });
 
     doc.end();
@@ -84,7 +85,7 @@ export function buildPlanteamientoPlan(order, calculation) {
     grouped.set(groupKey, group);
   });
   const fabricPages = Array.from(grouped.values(), (group) => (
-    chunkItems(group.entries, 8).map((pageEntries) => ({
+    chunkItems(group.entries, 4).map((pageEntries) => ({
       diagram: group.diagram,
       diagramAwning: pageEntries[0].awning,
       diagramCalculation: resolveDiagramCalculation(pageEntries[0]),
@@ -267,25 +268,21 @@ function drawStructureNotes(doc, x, y, w, bottom, notes) {
   doc.font(fonts.regular).fontSize(6.5).text(value(notes), x + 4, y + 16, { width: w - 8, height: bottom - y - 20, ellipsis: true });
 }
 
-function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation }) {
+function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals }) {
   const pageW = doc.page.width;
   const pageH = doc.page.height;
   const margin = 24;
   drawFabricHeader(doc, { order, margin, pageW });
 
-  const lines = entries.map(({ awning, index, ofBlock }) => ({
-    awning,
-    index,
-    calc: ofBlock?.calculation
-  }));
+  const lines = entries.map(toFabricLine);
   const diagramW = 218;
   drawAwningDiagram(doc, margin, 126, diagramW, 350, diagram, diagramAwning, diagramCalculation);
 
   const contentX = margin + diagramW + 18;
   const contentW = pageW - margin - contentX;
   drawFabricMeta(doc, contentX, 126, contentW, order, lines);
-  drawFabricRows(doc, contentX, 216, contentW, lines, order);
-  drawFabricTotals(doc, contentX, 530, contentW, lines);
+  drawFabricRows(doc, contentX, 205, contentW, lines, order);
+  drawFabricTotals(doc, contentX, 515, contentW, fabricTotals, lines);
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
 }
 
@@ -307,7 +304,7 @@ function drawFabricHeader(doc, { order, margin, pageW }) {
   drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 7 });
   drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 7 });
   drawCell(doc, orderX, 50, 76, 18, 'FECHA FABRIC.', { size: 7, align: 'right' });
-  drawCell(doc, orderX + 76, 50, orderW - 76, 18, '-', { size: 7, align: 'center' });
+  drawCell(doc, orderX + 76, 50, orderW - 76, 18, '', { size: 7, align: 'center', preserveBlank: true });
   drawCell(doc, orderX, 68, 76, 19, 'REVISIÓN', { size: 7, align: 'right' });
   drawCell(doc, orderX + 76, 68, orderW - 76, 19, value(order.reviewer), { size: 7, align: 'center' });
   doc.rect(bodyX, 87, pageW - margin - bodyX, 19).fill(colors.ink);
@@ -316,78 +313,94 @@ function drawFabricHeader(doc, { order, margin, pageW }) {
 }
 
 function drawFabricMeta(doc, x, y, w, order, lines) {
-  const rotW = 150;
-  const dataW = 242;
+  const gap = 12;
+  const rotW = Math.round(w * 0.36);
+  const dataW = w - rotW - gap;
   drawMiniTable(doc, x, y, rotW, 'ROTULACIÓN', [
     ['TELA', summarizeAwningValue(lines, 'rotFabric', order.rotTela)],
     ['BAMBA', summarizeAwningValue(lines, 'rotValance', order.rotBamba)]
-  ], 17);
-  drawMiniTable(doc, x + rotW + 12, y, dataW, 'DATOS BÁSICOS', [
-    ['MATERIAL', summarizeFabric(lines)],
+  ], 17, { preserveBlank: true });
+  drawMiniTable(doc, x + rotW + gap, y, dataW, 'DATOS BÁSICOS', [
+    ['MATERIAL', summarizeFabricMaterial(lines)],
     ['CURVA', summarizeValanceCurve(lines)],
     ['REMATE', summarizeRemate(lines, order)]
-  ], 17);
-
-  const summaryX = x + rotW + dataW + 24;
-  roundedBox(doc, summaryX, y, w - (summaryX - x), 68, 3, colors.yellowSoft, colors.yellow);
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(7)
-    .text('DESGLOSE DE PAÑOS', summaryX + 8, y + 10, { width: w - (summaryX - x) - 16, align: 'center' });
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(13)
-    .text(`${lines.reduce((sum, line) => sum + (line.calc?.fabricPanels || 0), 0)} PAÑOS`, summaryX + 8, y + 28, { width: w - (summaryX - x) - 16, align: 'center' });
-  doc.font(fonts.regular).fontSize(7)
-    .text(`${formatNumber(lines.reduce((sum, line) => sum + (line.calc?.fabricMl || 0), 0))} ML en esta página`, summaryX + 8, y + 48, { width: w - (summaryX - x) - 16, align: 'center' });
+  ], 17, { preserveBlank: true });
 }
 
 function drawFabricRows(doc, x, y, w, lines, order) {
-  const rowH = 35;
+  const rowH = 64;
+  const rowGap = 6;
+  const mixedCurve = summarizeValanceCurve(lines) === 'SEGÚN TOLDO';
+  const mixedRemate = summarizeRemate(lines, order) === 'SEGÚN TOLDO';
+  const mixedRotFabric = summarizeAwningValue(lines, 'rotFabric', order.rotTela) === 'SEGÚN TOLDO';
+  const mixedRotValance = summarizeAwningValue(lines, 'rotValance', order.rotBamba) === 'SEGÚN TOLDO';
+  const mixedFabric = summarizeFabricMaterial(lines) === 'VARIAS TELAS';
   lines.forEach((line, localIndex) => {
-    const rowY = y + localIndex * (rowH + 3);
-    const calc = line.calc;
-    const awning = line.awning;
+    const rowY = y + localIndex * (rowH + rowGap);
+    const detail = buildFabricLineDetail(line.awning, line.calc, order);
+    const instructionParts = [];
+    if (mixedFabric) {
+      const description = fabricDescription(line.calc?.fabricCode, line.calc?.fabricDescription) || 'SIN DEFINIR';
+      const code = String(line.calc?.fabricCode || '').trim();
+      instructionParts.push(`TELA ${description}${code ? ` · ${code}` : ''}`);
+    }
+    instructionParts.push(detail.instruction);
+    if (mixedCurve && line.awning.valanceCurve) instructionParts.push(`CURVA ${line.awning.valanceCurve}`);
+    if (mixedRemate && remateValue(line.awning, order)) instructionParts.push(`REMATE ${remateValue(line.awning, order)}`);
+    if (mixedRotFabric) instructionParts.push(`ROT. TELA ${line.awning.rotFabric || order.rotTela || '-'}`);
+    if (mixedRotValance) instructionParts.push(`ROT. BAMBA ${line.awning.rotValance || order.rotBamba || '-'}`);
+    const instruction = instructionParts.filter(Boolean).join(' · ');
     roundedBox(doc, x, rowY, w, rowH, 3, localIndex % 2 ? colors.paper : colors.soft, colors.line);
-    roundedBox(doc, x, rowY, 38, rowH, 3, colors.yellow, colors.ink);
+    roundedBox(doc, x, rowY, 40, rowH, 3, colors.yellow, colors.ink);
     doc.fillColor(colors.ink).font(fonts.bold).fontSize(15)
-      .text(awningLetter(line.index), x + 4, rowY + 8, { width: 30, align: 'center' });
+      .text(awningLetter(line.index), x + 5, rowY + 21, { width: 30, align: 'center' });
 
-    const topY = rowY + 3;
-    drawFabricMetric(doc, x + 46, topY, 112, 'TELA', calc ? formatNumber(calc.fabricWidth) : '-');
-    drawFabricMetric(doc, x + 164, topY, 112, 'SALIDA', calc ? formatNumber(calc.fabricDrop) : '-');
-    drawFabricMetric(doc, x + 282, topY, 55, 'UN.', formatNumber(awning.units));
-    drawFabricMetric(doc, x + 343, topY, 65, 'PAÑOS', calc?.fabricPanels || '-');
-    drawFabricMetric(doc, x + 414, topY, 72, 'ML', calc ? formatNumber(calc.fabricMl) : '-');
+    const metricX = x + 48;
+    const metricGap = 6;
+    const metricW = w - (metricX - x) - 8;
+    const unitsW = 90;
+    const dropW = 166;
+    const fabricW = metricW - unitsW - dropW - metricGap * 2;
+    drawFabricMetric(doc, metricX, rowY + 4, fabricW, 'TELA', detail.fabricWidth, 20);
+    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, 'SALIDA', detail.fabricDrop, 20);
+    drawFabricMetric(doc, metricX + fabricW + dropW + metricGap * 2, rowY + 4, unitsW, 'UN.', detail.units, 20);
 
-    const detail = [
-      `OF ${value(awning.of)}`,
-      value(awning.model),
-      value(calc?.fabricCode),
-      hardwareDetail(awning, calc),
-      calc?.valanceFabricCode ? `BAMBA ${calc.valanceFabricCode}: ${formatNumber(calc.valanceFabricMl)} ML` : '',
-      bambaLabel(awning),
-      valanceConfigLabel(awning),
-      curtainWindowLabel(awning),
-      awning.fabricNotes || remateLabel(awning, order)
-    ].filter(Boolean).join(' · ');
-    doc.fillColor(colors.inkSoft).font(fonts.regular).fontSize(5.4)
-      .text(detail, x + 46, rowY + 22, { width: w - 52, height: 8, ellipsis: true, lineBreak: false });
+    drawCell(doc, metricX, rowY + 29, fabricW, 27, detail.workLabel, {
+      bold: true, size: 8.5, align: 'center', fill: colors.paper
+    });
+    drawFittedText(doc, instruction, metricX + fabricW + 10, rowY + 29, metricW - fabricW - 10, 28, {
+      font: fonts.semibold,
+      maxSize: 6.8,
+      minSize: 4.2,
+      overflowLabel: '[NOTA COMPLETA EN EL PEDIDO]'
+    });
   });
 }
 
-function drawFabricTotals(doc, x, y, w, lines) {
-  const totals = new Map();
-  for (const line of lines) {
-    const code = line.calc?.fabricCode || 'TELA SIN DEFINIR';
-    const mainMl = line.calc?.mainFabricMl ?? line.calc?.fabricMl;
-    totals.set(code, (totals.get(code) || 0) + (Number(mainMl) || 0));
-    if (line.calc?.valanceFabricCode && Number(line.calc?.valanceFabricMl) > 0) {
-      totals.set(line.calc.valanceFabricCode, (totals.get(line.calc.valanceFabricCode) || 0) + Number(line.calc.valanceFabricMl));
-    }
-  }
-  roundedBox(doc, x, y, w, 34, 3, colors.gray, colors.line);
+function drawFabricTotals(doc, x, y, w, totals, lines) {
+  const pageCodes = new Set(lines.flatMap(({ calc }) => [calc?.fabricCode, calc?.valanceFabricCode]).filter(Boolean));
+  const visibleTotals = totals.filter(({ code }) => pageCodes.has(code));
+  const displayTotals = visibleTotals.length > 0 ? visibleTotals : totals;
+  roundedBox(doc, x, y, w, 48, 3, colors.gray, colors.line);
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6.5)
-    .text('PAÑO TOTAL NECESARIO', x + 9, y + 6);
-  const text = Array.from(totals, ([code, amount]) => `${code}: ${formatNumber(amount)} ML`).join('   ·   ');
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(12)
-    .text(text || '-', x + 9, y + 16, { width: w - 18, align: 'right', ellipsis: true });
+    .text('PAÑO TOTAL NECESARIO', x + 10, y + 8, { width: 134 });
+  const contentX = x + 151;
+  const contentW = w - 161;
+  const rowsPerColumn = 4;
+  const columnCount = Math.max(1, Math.ceil(displayTotals.length / rowsPerColumn));
+  const columnGap = 10;
+  const columnW = (contentW - (columnCount - 1) * columnGap) / columnCount;
+  (displayTotals.length > 0 ? displayTotals : [{ code: 'TELA SIN DEFINIR', amount: 0 }]).forEach((total, index) => {
+    const column = Math.floor(index / rowsPerColumn);
+    const row = index % rowsPerColumn;
+    drawFittedText(doc, `${total.code}: ${formatFabricMeasure(total.amount)} ML`, contentX + column * (columnW + columnGap), y + 6 + row * 9, columnW, 9, {
+      font: fonts.bold,
+      maxSize: displayTotals.length > 2 ? 7.2 : 10.5,
+      minSize: 5.2,
+      align: 'right',
+      overflowLabel: '[REF. LARGA]'
+    });
+  });
 }
 
 function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
@@ -698,13 +711,20 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}) {
   const frameW = w - 76;
   const frameH = 190;
   doc.rect(frameX, frameY, frameW, frameH).strokeColor('#9ebbb0').lineWidth(1).stroke();
+  const topFoldY = frameY + 40;
+  doc.moveTo(frameX, topFoldY).lineTo(frameX + 48, topFoldY)
+    .moveTo(frameX + frameW - 48, topFoldY).lineTo(frameX + frameW, topFoldY)
+    .strokeColor('#c5d5cf').lineWidth(0.7).stroke();
   doc.fillColor('#4f8b68').fontSize(5.4)
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
     .text(rollLabel, frameX, frameY + 12, { width: frameW, align: 'center' })
     .text('BASTILLA\nCOSIDA O SOLDADA', frameX + 12, frameY + 112, { width: 55, align: 'center' })
     .text('BASTILLA\nCOSIDA O SOLDADA', frameX + frameW - 67, frameY + 112, { width: 55, align: 'center' });
-  doc.moveTo(frameX + frameW / 2, frameY + 40).lineTo(frameX + frameW / 2, frameY + frameH - 10).dash(2, { space: 2 }).strokeColor('#c5d5cf').stroke().undash();
   doc.fillColor('#4f8b68').fontSize(5.2).text('CAÍDA', frameX + frameW + 8, frameY + 78, { width: 30, align: 'center' });
+  drawFabricDimension(doc, frameX - 10, frameY, frameY + 14, '2,5', 'left');
+  drawFabricDimension(doc, frameX + frameW + 10, frameY, topFoldY, '33,5', 'right');
+  drawFabricDimension(doc, frameX - 10, frameY + frameH - 13, frameY + frameH, '3,3', 'left');
+  drawFabricDimension(doc, frameX + frameW + 10, frameY + frameH - 14, frameY + frameH, '4', 'right');
 
   const valanceY = frameY + frameH + 25;
   doc.rect(frameX, valanceY, frameW, 38).strokeColor('#9ebbb0').stroke();
@@ -716,11 +736,24 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}) {
     doc.moveTo(wx, valanceY + 24).bezierCurveTo(wx + 5, valanceY + 31, wx + 13, valanceY + 17, wx + frameW / 6, valanceY + 24);
   }
   doc.strokeColor('#b7c9c2').stroke();
+  drawFabricDimension(doc, frameX + frameW + 10, valanceY, valanceY + 13, '4', 'right');
+  drawFabricDimension(doc, frameX + frameW + 10, valanceY + 25, valanceY + 38, '4', 'right');
+}
+
+function drawFabricDimension(doc, x, startY, endY, label, side) {
+  doc.moveTo(x, startY).lineTo(x, endY)
+    .moveTo(x - 3, startY).lineTo(x + 3, startY)
+    .moveTo(x - 3, endY).lineTo(x + 3, endY)
+    .strokeColor('#74a887').lineWidth(0.55).stroke();
+  const textX = side === 'left' ? x - 21 : x + 4;
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(4.8)
+    .text(label, textX, (startY + endY) / 2 - 3, { width: 17, align: 'center' });
 }
 
 function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const hasWindow = diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
   const finish = diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
+  const velcroHeight = resolveCurtainVelcroHeight(awning) ?? 0;
   const title = hasWindow
     ? `CORTINA-VENTANA${finish === 'NORMAL' ? '' : `-${finish}`}`
     : `CORTINA${finish === 'NORMAL' ? '' : `-${finish}`}`;
@@ -774,6 +807,11 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     drawCurtainDataRow(doc, x + 28, dataY + 17, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
     drawCurtainDataRow(doc, x + 28, dataY + 34, w - 56, 'H. SUELO-VENT.:', awning.curtainWindowFloorHeight);
     drawCurtainDataRow(doc, x + 28, dataY + 51, w - 56, 'H. VENTANA:', awning.curtainWindowHeight);
+    if (finish === 'VELCRO') {
+      drawCurtainDataRow(doc, x + 28, dataY + 68, w - 56, 'ALTURA VELCRO:', velcroHeight);
+    }
+  } else if (finish === 'VELCRO') {
+    drawCurtainDataRow(doc, x + 28, y + 329, w - 56, 'ALTURA VELCRO:', velcroHeight);
   }
 }
 
@@ -897,20 +935,68 @@ function drawSideLabel(doc, text, x, y, w) {
   doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.2).text(text, x, y, { width: w, align: 'center' });
 }
 
-function drawMiniTable(doc, x, y, w, title, rows, rowH = 13) {
+function drawMiniTable(doc, x, y, w, title, rows, rowH = 13, options = {}) {
   drawBar(doc, x, y, w, 13, title);
   rows.forEach(([label, rowValue], index) => {
     const rowY = y + 13 + index * rowH;
     const labelW = Math.min(70, w * 0.43);
     drawCell(doc, x, rowY, labelW, rowH, label, { fill: colors.gray, bold: true, size: 6.2, align: 'center' });
-    drawCell(doc, x + labelW, rowY, w - labelW, rowH, value(rowValue), { semibold: true, size: 6.2, align: 'center' });
+    drawCell(doc, x + labelW, rowY, w - labelW, rowH, rowValue, {
+      semibold: true, size: 6.2, align: 'center', preserveBlank: options.preserveBlank
+    });
   });
 }
 
-function drawFabricMetric(doc, x, y, w, label, metricValue) {
+function drawFabricMetric(doc, x, y, w, label, metricValue, h = 14) {
   const labelW = Math.round(w * 0.48);
-  drawCell(doc, x, y, labelW, 14, label, { fill: colors.gray, size: 6.3, align: 'center' });
-  drawCell(doc, x + labelW, y, w - labelW, 14, metricValue, { bold: true, size: 9.5, align: 'center' });
+  drawCell(doc, x, y, labelW, h, label, { fill: colors.gray, size: 6.3, align: 'center' });
+  drawCell(doc, x + labelW, y, w - labelW, h, metricValue, {
+    bold: true, size: h > 14 ? 10.5 : 9.5, align: 'center', preserveBlank: true
+  });
+}
+
+function drawFittedText(doc, text, x, y, w, h, options = {}) {
+  const cleanText = String(text || '').trim();
+  if (!cleanText) return;
+  const font = options.font || fonts.regular;
+  const maxSize = Number(options.maxSize) || 7;
+  const minSize = Number(options.minSize) || 5;
+  let size = maxSize;
+  let fits = false;
+  doc.font(font);
+  while (true) {
+    doc.fontSize(size);
+    if (doc.heightOfString(cleanText, { width: w, lineGap: 0 }) <= h) {
+      fits = true;
+      break;
+    }
+    if (size <= minSize) break;
+    size = Math.max(minSize, size - 0.25);
+  }
+  const displayText = fits
+    ? cleanText
+    : fitTextWithOverflowLabel(doc, cleanText, options.overflowLabel || '[TEXTO ADICIONAL EN EL PEDIDO]', w, h, size);
+  doc.fillColor(options.color || colors.ink).font(font).fontSize(size)
+    .text(displayText, x, y, {
+      width: w,
+      height: h,
+      align: options.align || 'left',
+      lineGap: 0
+    });
+}
+
+function fitTextWithOverflowLabel(doc, text, overflowLabel, width, height, size) {
+  const suffix = ` ${overflowLabel}`;
+  let low = 0;
+  let high = text.length;
+  doc.fontSize(size);
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    const candidate = `${text.slice(0, middle).trimEnd()}${suffix}`;
+    if (doc.heightOfString(candidate, { width, lineGap: 0 }) <= height) low = middle;
+    else high = middle - 1;
+  }
+  return `${text.slice(0, low).trimEnd()}${suffix}`.trim();
 }
 
 function drawBar(doc, x, y, w, h, text) {
@@ -923,8 +1009,9 @@ function drawCell(doc, x, y, w, h, text, options = {}) {
   doc.rect(x, y, w, h).fillAndStroke(options.fill || colors.paper, colors.line);
   const font = options.bold ? fonts.bold : options.semibold ? fonts.semibold : options.italic ? fonts.italic : fonts.regular;
   const size = options.size || 7;
+  const cellText = options.preserveBlank ? String(text ?? '').trim() : value(text);
   doc.fillColor(options.color || colors.ink).font(font).fontSize(size)
-    .text(value(text), x + 3, y + Math.max(2, (h - size) / 2 - 0.6), {
+    .text(cellText, x + 3, y + Math.max(2, (h - size) / 2 - 0.6), {
       width: Math.max(0, w - 6),
       height: Math.max(size + 1, h - 3),
       align: options.align || 'left',
@@ -975,11 +1062,117 @@ function findAwningBlock(calculation, awning, index) {
     || null;
 }
 
-function summarizeFabric(lines) {
-  const fabrics = new Set(lines.flatMap((line) => [line.calc?.fabricCode, line.calc?.valanceFabricCode]).filter(Boolean));
+function toFabricLine({ awning, index, ofBlock }) {
+  return { awning, index, calc: ofBlock?.calculation || {} };
+}
+
+export function buildFabricLineDetail(awning = {}, calculation = {}) {
+  const model = String(awning.model || '').trim().toUpperCase();
+  const height = Math.max(0, Number(awning.valanceHeight) || 0);
+  const separateValance = Boolean(calculation.valanceFabricCode || awning.valanceFabric);
+  const instructionParts = [];
+
+  if (height > 0 && !['ENROLLABLE', 'BAMBALINA'].includes(model)) {
+    if (separateValance) {
+      const valanceFabric = fabricDescription(
+        calculation.valanceFabricCode || awning.valanceFabric,
+        calculation.valanceFabricDescription
+      );
+      instructionParts.push(
+        `BAMBA NO INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM${valanceFabric ? ` - ${valanceFabric}` : ''}`
+      );
+    } else if (model !== 'CAMBIO ANTICA') {
+      instructionParts.push(`BAMBALINA INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM`);
+    }
+  }
+
+  if (['XACOBEO', 'CUARZO BOX', 'STORBOX 250'].includes(model)) {
+    instructionParts.push('VARILLA BLANCA ATRÁS');
+  }
+
+  if (String(awning.fabricNotes || '').trim()) instructionParts.push(String(awning.fabricNotes).trim());
+
+  return {
+    workLabel: fabricWorkLabel(model),
+    fabricWidth: formatFabricMeasure(calculation.fabricWidth),
+    fabricDrop: formatFabricMeasure(calculation.fabricDrop),
+    units: formatFabricUnits(awning.units),
+    instruction: instructionParts.join(' · ')
+  };
+}
+
+export function summarizeFabricPage(lines = []) {
+  const totals = new Map();
+  const add = (code, amount) => {
+    const cleanCode = String(code || '').trim() || 'TELA SIN DEFINIR';
+    totals.set(cleanCode, (totals.get(cleanCode) || 0) + (Number(amount) || 0));
+  };
+
+  lines.forEach((line) => {
+    const calculation = line?.calc || line?.calculation || {};
+    add(calculation.fabricCode, calculation.mainFabricMl ?? calculation.fabricMl);
+    if (calculation.valanceFabricCode && Number(calculation.valanceFabricMl) > 0) {
+      add(calculation.valanceFabricCode, calculation.valanceFabricMl);
+    }
+  });
+
+  return Array.from(totals, ([code, amount]) => ({
+    code,
+    amount: Math.round((amount + Number.EPSILON) * 100) / 100
+  }));
+}
+
+export function resolveCurtainVelcroHeight(awning = {}) {
+  const curtainExit = Number(awning.curtainWindowExit);
+  const projection = Number(awning.projection);
+  const base = Number.isFinite(curtainExit) && curtainExit > 0 ? curtainExit : projection;
+  return Number.isFinite(base) ? Math.max(0, base - 10) : null;
+}
+
+export function summarizeFabricMaterial(lines = []) {
+  const codes = new Set(lines
+    .map((line) => String(line.calc?.fabricCode || line.calculation?.fabricCode || '').trim().toUpperCase())
+    .filter(Boolean));
+  if (codes.size > 1) return 'VARIAS TELAS';
+  const fabrics = new Set(lines
+    .map((line) => {
+      const calculation = line.calc || line.calculation || {};
+      return fabricDescription(calculation.fabricCode, calculation.fabricDescription);
+    })
+    .filter(Boolean));
   if (fabrics.size === 0) return 'SIN DEFINIR';
   if (fabrics.size === 1) return Array.from(fabrics)[0];
   return 'VARIAS TELAS';
+}
+
+function fabricDescription(selection, fallback = '') {
+  return resolveFabric(selection)?.description || String(fallback || '').trim() || String(selection || '').split('|||').at(-1).trim();
+}
+
+function fabricWorkLabel(model) {
+  if (model === 'CAMBIO CORTINA') return 'CAMB. CORT';
+  if (model === 'CORTINA') return 'CORTINA';
+  if (model === 'CAMBIO TELA') return 'CAMB. TELA';
+  if (model === 'ENROLLABLE') return 'ENROLLABLE';
+  if (model === 'BAMBALINA') return 'CAMB. BAMBA';
+  if (model === 'CAMBIO ANTICA') return 'CAMB. ANTICA';
+  return 'TOLDO';
+}
+
+function formatFabricMeasure(input) {
+  const number = Number(input);
+  return Number.isFinite(number) ? number.toFixed(1).replace('.', ',') : '';
+}
+
+function formatFabricUnits(input) {
+  const number = Number(input);
+  return Number.isFinite(number) ? formatNumber(number) : '';
+}
+
+function formatInstructionMeasure(input) {
+  const number = Number(input);
+  if (!Number.isFinite(number)) return '';
+  return Number.isInteger(number) ? String(number) : formatNumber(number);
 }
 
 function summarizeValanceCurve(lines) {
@@ -999,44 +1192,6 @@ function summarizeAwningValue(lines, field, legacyValue = '') {
   return 'SEGÚN TOLDO';
 }
 
-function hardwareDetail(awning, calculation = {}) {
-  const values = [];
-  if (calculation.tubeLoad || awning.tubeLoad) values.push(calculation.tubeLoad || awning.tubeLoad);
-  if (calculation.rollSystem) values.push(`ENROLLE ${calculation.rollSystem}`);
-  if (calculation.submodel || awning.submodel) values.push(calculation.submodel || awning.submodel);
-  if (Number(awning.armCount) > 0) values.push(`${Number(awning.armCount)} BRAZOS`);
-  return values.join(' / ');
-}
-
-function valanceConfigLabel(awning) {
-  if (!(Number(awning.valanceHeight) > 0 || awning.model === 'BAMBALINA')) return '';
-  const curve = awning.valanceCurve ? `CURVA ${awning.valanceCurve}` : '';
-  const fabric = awning.valanceFabric ? `BAMBA ${String(awning.valanceFabric).split('|||')[0]}` : 'BAMBA MISMA TELA';
-  return [curve, fabric].filter(Boolean).join(' / ');
-}
-
-function bambaLabel(awning) {
-  if (awning.model === 'ENROLLABLE') return '';
-  const height = Number(awning.valanceHeight) || 0;
-  if (awning.model === 'BAMBALINA') return height > 0 ? `BAMBALINA DE ${formatNumber(height)} CM` : '';
-  return height > 0
-    ? `BAMBALINA INCLUIDA DE ${formatNumber(height + 5)} CM, HECHA DE ${formatNumber(height)} CM`
-    : 'SIN BAMBALINA';
-}
-
-function curtainWindowLabel(awning) {
-  if (!String(awning.model || '').includes('CORTINA')) return '';
-  const finish = awning.curtainFinish || 'NORMAL';
-  if (!awning.curtainHasWindow) return `SIN VENTANA · ${finish}`;
-  return [
-    `VENTANA ${finish}`,
-    `SAL. ${formatNumber(awning.curtainWindowExit)}`,
-    `ESQ. ${formatNumber(awning.curtainWindowCorner)}`,
-    `SUELO ${formatNumber(awning.curtainWindowFloorHeight)} / AJ. ${formatNumber(Number(awning.curtainWindowFloorHeight) - 18)}`,
-    `H. ${formatNumber(awning.curtainWindowHeight)}`
-  ].join(' / ');
-}
-
 function summarizeRemate(lines, order) {
   const values = new Set(lines
     .filter((line) => Number(line.awning?.valanceHeight) > 0 || line.awning?.model === 'BAMBALINA')
@@ -1050,14 +1205,6 @@ function remateValue(awning, order = {}) {
   const remate = awning?.remate || order.remate;
   const remateColor = awning?.remateColor || order.remateColor;
   return remate === 'OTRO' ? value(remateColor) : remate;
-}
-
-function remateLabel(awning, order) {
-  const remate = awning?.remate || order.remate;
-  const remateColor = awning?.remateColor || order.remateColor;
-  if (remate === 'OTRO') return `REMATE: ${value(remateColor)}`;
-  if (remate === 'COMO TELA') return 'REMATE COMO TELA';
-  return '';
 }
 
 function chunkItems(items, size) {

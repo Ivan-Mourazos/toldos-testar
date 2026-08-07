@@ -74,6 +74,20 @@ describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
     expect(sanitized.hasValance).toBe(false);
     expect(sanitized.valanceHeight).toBe(0);
   });
+
+  test('un Perla Box con bamba y remate vacío usa COMO TELA por defecto', () => {
+    expect(sanitizeAwning({ model: 'PERLA BOX', valanceHeight: 25, remate: '' })).toMatchObject({
+      remate: 'COMO TELA',
+      remateColor: ''
+    });
+  });
+
+  test('sin bamba no conserva un remate antiguo', () => {
+    expect(sanitizeAwning({ model: 'PERLA BOX', valanceHeight: 0, remate: 'OTRO', remateColor: 'RAL 3005' })).toMatchObject({
+      remate: '',
+      remateColor: ''
+    });
+  });
 });
 
 describe('defaultDraft', () => {
@@ -172,5 +186,12 @@ describe('switchAwningModel', () => {
       of: '0230335', units: 2, width: 596, projection: 300,
       hasValance: true, valanceHeight: 15, placement: 'TECHO', armCount: 3
     });
+  });
+
+  test('al elegir Perla con bamba precarga COMO TELA, pero sin bamba no muestra remate', () => {
+    const withValance = switchAwningModel({ ...createAwning(), valanceHeight: 25, hasValance: true }, 'PERLA BOX');
+    const withoutValance = switchAwningModel(createAwning(), 'PERLA BOX');
+    expect(withValance.remate).toBe('COMO TELA');
+    expect(withoutValance.remate).toBe('');
   });
 });

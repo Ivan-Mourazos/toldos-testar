@@ -221,6 +221,25 @@ export function useParameters() {
     setParameters((current) => ({ ...current, fabricJobs: structuredClone(defaultFabricJobParameters) }) as RuleParameters);
   }
 
+  function loadParameters(saved: RuleParameters) {
+    setParameters({
+      arzuaPro: normalizeArzuaProParameters(saved?.arzuaPro),
+      galicia: normalizeGaliciaParameters(saved?.galicia),
+      perlaBox: normalizePerlaBoxParameters(saved?.perlaBox),
+      coralBox: normalizeCoralBoxParameters(saved?.coralBox),
+      cuarzoBox: normalizeCuarzoBoxParameters(saved?.cuarzoBox),
+      cortina: normalizeCortinaParameters(saved?.cortina),
+      cambioCortina: normalizeCambioCortinaParameters(saved?.cambioCortina),
+      xacobeo: normalizeXacobeoParameters(saved?.xacobeo),
+      puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto),
+      monoblock350: normalizeMonoblock350Parameters(saved?.monoblock350),
+      maxiscreem: normalizeMaxiscreemParameters(saved?.maxiscreem),
+      ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox),
+      agataBox: normalizeAgataBoxParameters(saved?.agataBox),
+      fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs)
+    } as RuleParameters);
+  }
+
   return {
     parameters,
     updateArzua, resetArzua,
@@ -236,6 +255,7 @@ export function useParameters() {
     updateMaxiscreem, resetMaxiscreem,
     updateAmbarBox, resetAmbarBox,
     updateAgataBox, resetAgataBox,
-    updateFabricJobs, resetFabricJobs
+    updateFabricJobs, resetFabricJobs,
+    loadParameters
   };
 }

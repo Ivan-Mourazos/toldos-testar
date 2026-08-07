@@ -40,6 +40,20 @@ export function isFabricOnlyModel(modelCode) {
   return getModelWorkType(modelCode) === 'FABRIC_ONLY';
 }
 
+export function needsValanceFinish(awningOrModel, valanceHeight) {
+  const awning = typeof awningOrModel === 'object' && awningOrModel !== null
+    ? awningOrModel
+    : { model: awningOrModel, valanceHeight };
+  const model = normalizeModelName(awning.model);
+  return model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
+}
+
+export function normalizeValanceFinish(awningOrModel, currentFinish = '') {
+  if (!needsValanceFinish(awningOrModel)) return '';
+  const finish = String(currentFinish || '').trim().toUpperCase();
+  return finish || 'COMO TELA';
+}
+
 export function getModelDiagram(modelCode) {
   return getModelBehavior(modelCode).diagram || 'GENERAL';
 }
