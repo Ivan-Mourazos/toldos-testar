@@ -25,9 +25,9 @@ El pedido no se envía directamente a producción:
 - `Aprobar y producir` genera `PEDIDO-1.pdf` en Planteamientos y un `.xls` por OF en Subida de material. Si un archivo ya existe, exige confirmación antes de sustituirlo.
 - Un pedido modificado y guardado de nuevo vuelve siempre a estado pendiente de revisión.
 
-Mientras la aplicación todavía se use de forma local, `PDF revisión` descarga
-`PEDIDO.pdf`: paneles compactos que reproducen los datos visibles de
-cada toldo y su estado, sin cálculos ni materiales de producción. Lleva la
+Mientras la aplicación todavía se use de forma local, `Guardar para revisión`
+guarda `PEDIDO.pdf` en TOLDOS: paneles compactos que reproducen los datos
+visibles de cada toldo y su estado, sin cálculos ni materiales de producción. Lleva la
 marca `BORRADOR PARA REVISION - NO PRODUCCION` y no guarda ni envía archivos a RPS.
 
 ## Configuración de carpetas

@@ -3,7 +3,6 @@ import {
   ClipboardList,
   Eraser,
   Eye,
-  FileText,
   FolderCog,
   Inbox,
   Save,
@@ -24,27 +23,13 @@ import { useParameters } from './hooks/useParameters';
 import { ReviewsView } from './views/ReviewsView';
 import { SettingsView } from './views/SettingsView';
 
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 0);
-}
-
-function reviewPdfFilename(orderCode: string) {
-  const clean = orderCode.trim().toUpperCase().replace(/[^A-Z0-9_-]+/g, '').slice(0, 80);
-  return `${clean || 'PEDIDO'}.pdf`;
-}
-
 export default function App() {
   const draft = useDraft();
   const ruleSettings = useParameters();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
   const [toast, setToast] = useState('');
-  const [working, setWorking] = useState<'review' | 'reviewPdf' | 'preview' | null>(null);
+  const [working, setWorking] = useState<'review' | 'preview' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings | null>(null);
   const [workflowReadiness, setWorkflowReadiness] = useState<WorkflowReadiness | null>(null);
@@ -190,33 +175,6 @@ export default function App() {
     }
   }
 
-  async function downloadReviewPdf() {
-    if (draft.awnings.length === 0) {
-      setToast('Añade al menos un toldo para generar la ficha de revisión.');
-      return;
-    }
-    setWorking('reviewPdf');
-    try {
-      const response = await fetch('/api/review-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: currentOrderPayload() })
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setToast(data.error || 'No se pudo generar la ficha de revisión.');
-        return;
-      }
-      const filename = reviewPdfFilename(draft.orderCode);
-      downloadBlob(await response.blob(), filename);
-      setToast(`Ficha ${filename} descargada. No se ha enviado a producción.`);
-    } catch {
-      setToast('No se pudo generar la ficha de revisión.');
-    } finally {
-      setWorking(null);
-    }
-  }
-
   function closePreview() {
     setPreviewUrl((current) => {
       if (current) URL.revokeObjectURL(current);
@@ -289,10 +247,6 @@ export default function App() {
               <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={openPlanteamientoPreview}>
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
-              </button>
-              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={downloadReviewPdf}>
-                <FileText aria-hidden="true" />
-                {working === 'reviewPdf' ? 'Generando…' : 'PDF revisión'}
               </button>
               <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={() => void saveForReview()}>
                 <Save aria-hidden="true" />

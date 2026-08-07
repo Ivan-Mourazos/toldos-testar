@@ -61,6 +61,19 @@ describe('PDF provisional de revisión', () => {
     expect(pdf.text).toContain('BORRADOR · NO PRODUCCIÓN');
     expect(pdf.text).not.toContain('MATERIALES CALCULADOS');
     expect(pdf.text).not.toContain('RESULTADO CALCULADO');
+    expect(pdf.text).not.toContain('EXCEPCIÓN TÉCNICA ACTIVA');
+  });
+
+  test('amplía y continúa las observaciones largas sin perder el final', async () => {
+    const longNote = `${Array.from({ length: 750 }, (_, index) => `comprobación-${index + 1}`).join(' ')} MARCADOR FINAL DE OBSERVACIONES`;
+    const order = reviewOrder({
+      awnings: [{ ...reviewOrder().awnings[0], structureNotes: longNote, fabricNotes: 'Observación corta' }]
+    });
+    const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation: calculateOrder(order) }));
+
+    expect(pdf.pages).toBeGreaterThan(1);
+    expect(pdf.text).toContain('continuación');
+    expect(pdf.text).toContain('MARCADOR FINAL DE OBSERVACIONES');
   });
 
   test('permite revisar un toldo incompleto y lo marca claramente', () => {

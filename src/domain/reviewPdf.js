@@ -14,8 +14,10 @@ const PAGE_BOTTOM = 810;
 const CARD_GAP = 12;
 const CARD_HEADER_HEIGHT = 46;
 const FIELD_ROW_HEIGHT = 38;
-const NOTES_HEIGHT = 49;
+const NOTE_MIN_BOX_HEIGHT = 35;
+const NOTE_BLOCK_SPACING = 14;
 const STATUS_HEIGHT = 23;
+const CARD_BOTTOM_PADDING = 16;
 
 const colors = {
   ink: '#123238', muted: '#607572', line: '#cbd8d5', field: '#f9fbfa', panel: '#ffffff',
@@ -40,7 +42,7 @@ export async function buildOrderReviewPdf({ order, calculation, review = null })
     const doc = new PDFDocument({
       autoFirstPage: false, bufferPages: true, size: 'A4', margin: 0,
       info: {
-        Title: `${order.orderCode || 'PEDIDO'}-REVISION`,
+        Title: order.orderCode || 'PEDIDO',
         Subject: 'Paneles provisionales para revisión del pedido', Creator: 'toldos-testar'
       }
     });
@@ -53,10 +55,12 @@ export async function buildOrderReviewPdf({ order, calculation, review = null })
     if (entries.length === 0) drawEmptyOrder(doc, y);
     else {
       for (const entry of entries) {
-        const cardHeight = reviewCardHeight(entry);
-        if (y + cardHeight > PAGE_BOTTOM && y > 112) y = startPage(doc, order);
-        drawReviewCard(doc, entry, y, cardHeight);
-        y += cardHeight + CARD_GAP;
+        const segments = buildReviewCardSegments(doc, entry);
+        for (const segment of segments) {
+          if (y + segment.height > PAGE_BOTTOM && y > 112) y = startPage(doc, order);
+          drawReviewCard(doc, entry, segment, y);
+          y += segment.height + CARD_GAP;
+        }
       }
     }
     addPageNumbers(doc);
@@ -151,27 +155,77 @@ function startPage(doc, order) {
   return 101;
 }
 
-function reviewCardHeight(entry) {
-  const rows = Math.max(1, Math.ceil(entry.fields.length / 3));
-  return CARD_HEADER_HEIGHT + rows * FIELD_ROW_HEIGHT + NOTES_HEIGHT + STATUS_HEIGHT + (entry.modified ? 18 : 0) + 16;
+function buildReviewCardSegments(doc, entry) {
+  const maximumHeight = PAGE_BOTTOM - 101;
+  const natural = createCardSegment(doc, entry, entry.fields, entry.notes, entry.modified, false);
+  if (natural.height <= maximumHeight) return [natural];
+
+  const segments = [];
+  let remaining = entry.notes.map((note) => ({ ...note }));
+  let first = true;
+  while (remaining.some((note) => note.value)) {
+    const fields = first ? entry.fields : [];
+    const showModifiedMessage = first && entry.modified;
+    const baseHeight = cardBaseHeight(fields, showModifiedMessage);
+    const notesWidth = CONTENT_WIDTH - 20;
+    const activeIndexes = first
+      ? remaining.map((_, index) => index)
+      : remaining.flatMap((note, index) => note.value ? [index] : []);
+    const noteWidth = activeIndexes.length > 1 ? (notesWidth - 8) / 2 : notesWidth;
+    const maximumTextHeight = Math.max(12, maximumHeight - baseHeight - NOTE_BLOCK_SPACING - 12);
+    const chunks = activeIndexes.map((index) => splitTextForHeight(doc, remaining[index].value, noteWidth - 14, maximumTextHeight));
+    const notes = chunks.map((chunk, chunkIndex) => ({
+      label: first ? remaining[activeIndexes[chunkIndex]].label : `${remaining[activeIndexes[chunkIndex]].label} (continuación)`,
+      value: chunk.head || '—'
+    }));
+    const segment = createCardSegment(doc, entry, fields, notes, showModifiedMessage, !first);
+    segments.push(segment);
+    remaining = remaining.map((note, index) => {
+      const chunkIndex = activeIndexes.indexOf(index);
+      return chunkIndex === -1 ? note : { ...note, value: chunks[chunkIndex].tail };
+    });
+    first = false;
+  }
+  return segments;
 }
 
-function drawReviewCard(doc, entry, y, height) {
+function createCardSegment(doc, entry, fields, notes, showModifiedMessage, continuation) {
+  const notesHeight = measureNotesHeight(doc, notes, CONTENT_WIDTH - 20);
+  return {
+    fields,
+    notes,
+    notesHeight,
+    showModifiedMessage,
+    continuation,
+    height: cardBaseHeight(fields, showModifiedMessage) + notesHeight
+  };
+}
+
+function cardBaseHeight(fields, showModifiedMessage) {
+  const rows = fields.length > 0 ? Math.ceil(fields.length / 3) : 0;
+  return CARD_HEADER_HEIGHT + rows * FIELD_ROW_HEIGHT + STATUS_HEIGHT
+    + (showModifiedMessage ? 18 : 0) + CARD_BOTTOM_PADDING;
+}
+
+function drawReviewCard(doc, entry, segment, y) {
   const x = MARGIN;
   const width = CONTENT_WIDTH;
-  doc.roundedRect(x, y, width, height, 7).fillAndStroke(colors.panel, colors.line);
+  doc.roundedRect(x, y, width, segment.height, 7).fillAndStroke(colors.panel, colors.line);
   doc.roundedRect(x, y, width, 5, 3).fill(colors.yellow);
   doc.fillColor(colors.muted).font('Helvetica-Bold').fontSize(7.5).text(entry.tag, x + 11, y + 17, { width: 110 });
-  doc.fillColor(colors.ink).font('Helvetica-Bold').fontSize(10.5).text(entry.title, x + 128, y + 12, { width: width - 256, align: 'center', ellipsis: true });
-  if (entry.legacyTitle) doc.fillColor(colors.muted).font('Helvetica').fontSize(6.5).text(`antes ${entry.legacyTitle}`, x + 128, y + 27, { width: width - 256, align: 'center', ellipsis: true });
+  const title = segment.continuation ? `${entry.title} · continuación` : entry.title;
+  doc.fillColor(colors.ink).font('Helvetica-Bold').fontSize(10.5).text(title, x + 128, y + 12, { width: width - 256, align: 'center', ellipsis: true });
+  if (entry.legacyTitle && !segment.continuation) doc.fillColor(colors.muted).font('Helvetica').fontSize(6.5).text(`antes ${entry.legacyTitle}`, x + 128, y + 27, { width: width - 256, align: 'center', ellipsis: true });
   if (entry.modified) drawModifiedBadge(doc, x + width - 113, y + 13);
 
   let contentY = y + CARD_HEADER_HEIGHT;
-  drawFields(doc, entry.fields, x + 10, contentY, width - 20);
-  contentY += Math.max(1, Math.ceil(entry.fields.length / 3)) * FIELD_ROW_HEIGHT;
-  drawNotes(doc, entry.notes, x + 10, contentY, width - 20);
-  contentY += NOTES_HEIGHT;
-  if (entry.modified) {
+  if (segment.fields.length > 0) {
+    drawFields(doc, segment.fields, x + 10, contentY, width - 20);
+    contentY += Math.ceil(segment.fields.length / 3) * FIELD_ROW_HEIGHT;
+  }
+  drawNotes(doc, segment.notes, x + 10, contentY, width - 20, segment.notesHeight);
+  contentY += segment.notesHeight;
+  if (segment.showModifiedMessage) {
     doc.fillColor(colors.amber).font('Helvetica-Bold').fontSize(7).text('EXCEPCIÓN TÉCNICA ACTIVA · revisar las reglas modificadas en la web', x + 10, contentY + 4, { width: width - 20, align: 'center' });
     contentY += 18;
   }
@@ -195,15 +249,48 @@ function drawFormField(doc, field, x, y, width) {
   doc.fillColor(colors.ink).text(value, x + 7, y + 17, { width: width - 14, height: 11, ellipsis: true });
 }
 
-function drawNotes(doc, notes, x, y, width) {
+function measureNotesHeight(doc, notes, width) {
   const gap = notes.length > 1 ? 8 : 0;
   const noteWidth = notes.length > 1 ? (width - gap) / 2 : width;
+  doc.font('Helvetica').fontSize(7.5);
+  const boxHeight = Math.max(NOTE_MIN_BOX_HEIGHT, ...notes.map((note) =>
+    doc.heightOfString(note.value, { width: noteWidth - 14 }) + 12
+  ));
+  return NOTE_BLOCK_SPACING + boxHeight;
+}
+
+function drawNotes(doc, notes, x, y, width, height) {
+  const gap = notes.length > 1 ? 8 : 0;
+  const noteWidth = notes.length > 1 ? (width - gap) / 2 : width;
+  const boxHeight = height - NOTE_BLOCK_SPACING;
   notes.forEach((note, index) => {
     const noteX = x + index * (noteWidth + gap);
     doc.fillColor(colors.muted).font('Helvetica-Bold').fontSize(6.5).text(note.label, noteX, y, { width: noteWidth });
-    doc.roundedRect(noteX, y + 10, noteWidth, 35, 4).fillAndStroke(colors.field, colors.line);
-    doc.fillColor(colors.ink).font('Helvetica').fontSize(7.5).text(note.value, noteX + 7, y + 16, { width: noteWidth - 14, height: 23, ellipsis: true });
+    doc.roundedRect(noteX, y + 10, noteWidth, boxHeight, 4).fillAndStroke(colors.field, colors.line);
+    doc.fillColor(colors.ink).font('Helvetica').fontSize(7.5).text(note.value, noteX + 7, y + 16, { width: noteWidth - 14 });
   });
+}
+
+function splitTextForHeight(doc, value, width, maximumHeight) {
+  const text = String(value || '');
+  doc.font('Helvetica').fontSize(7.5);
+  if (!text || doc.heightOfString(text, { width }) <= maximumHeight) return { head: text, tail: '' };
+
+  let low = 1;
+  let high = text.length;
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (doc.heightOfString(text.slice(0, middle), { width }) <= maximumHeight) low = middle;
+    else high = middle - 1;
+  }
+  let splitAt = low;
+  for (let index = low; index > Math.floor(low * 0.65); index -= 1) {
+    if (/\s/.test(text[index])) { splitAt = index; break; }
+  }
+  return {
+    head: text.slice(0, splitAt).trimEnd(),
+    tail: text.slice(splitAt).trimStart()
+  };
 }
 
 function drawStatusStrip(doc, status, x, y, width) {
