@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import { roundQuantity } from './math.js';
 import { needsValanceFinish, normalizeValanceFinish } from './modelBehavior.js';
+import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
 
 export async function buildReservationWorkbook(reservation) {
   return buildRpsImportBuffer(buildFinalRows(reservation.ofs));
@@ -123,10 +124,11 @@ function summarizeRemate(awnings = []) {
 
 export function buildFinalRows(ofs) {
   const grouped = new Map();
+  const fabricKeys = collectFabricMaterialKeys(ofs);
 
   for (const ofBlock of ofs) {
     for (const line of ofBlock.materials) {
-      const key = `${ofBlock.of}||${line.code}`;
+      const key = reservationKey(ofBlock.of, line.code);
       const current = grouped.get(key) || {
         of: ofBlock.of,
         code: line.code,
@@ -138,7 +140,13 @@ export function buildFinalRows(ofs) {
     }
   }
 
-  return Array.from(grouped.values());
+  return Array.from(grouped.entries()).map(([key, row]) => fabricKeys.has(key)
+    ? { ...row, quantity: roundFabricMeters(row.quantity) }
+    : row);
+}
+
+function reservationKey(of, code) {
+  return `${String(of || '').trim().toUpperCase()}||${String(code || '').trim().toUpperCase()}`;
 }
 
 function numericOf(value) {

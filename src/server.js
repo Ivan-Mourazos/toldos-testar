@@ -10,6 +10,7 @@ import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
+import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
 import { searchRpsFabrics } from './rpsCatalog.js';
 import {
@@ -252,7 +253,23 @@ app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
     if (calculation.ofs.length !== order.awnings.length || blockingDiagnostics.length > 0) {
       throw new Error('El pedido tiene toldos incompletos o diagnósticos bloqueantes. Ábrelo y corrígelo antes de aprobar.');
     }
-    const reservation = normalizeReservation({ orderCode: order.orderCode, ofs: calculation.ofs });
+    const nonAcrylicFabrics = findNonAcrylicReservationFabrics(order, calculation);
+    const hasNonAcrylicDecision = typeof req.body?.includeNonAcrylicFabrics === 'boolean';
+    if (nonAcrylicFabrics.length > 0 && !hasNonAcrylicDecision) {
+      res.status(409).json({
+        needsFabricConfirmation: true,
+        fabrics: nonAcrylicFabrics
+      });
+      return;
+    }
+
+    let reservation = normalizeReservation({ orderCode: order.orderCode, ofs: calculation.ofs });
+    const excludedNonAcrylicFabrics = nonAcrylicFabrics.length > 0 && req.body.includeNonAcrylicFabrics === false
+      ? nonAcrylicFabrics
+      : [];
+    if (excludedNonAcrylicFabrics.length > 0) {
+      reservation = excludeFabricCodes(reservation, excludedNonAcrylicFabrics);
+    }
     const cleanOrder = sanitizeOrderCode(order.orderCode);
     const rpsDirectory = resolveDirectoryTemplate(settings.rpsUploadDirectory, cleanOrder);
     const pdfDirectory = resolveDirectoryTemplate(settings.planteamientosDirectory, cleanOrder);
@@ -296,7 +313,7 @@ app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
     });
     const reviewPdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
     await workflowStore.saveReview(updated, reviewPdf);
-    res.json({ ok: true, review: updated, saved });
+    res.json({ ok: true, review: updated, saved, excludedNonAcrylicFabrics });
   } catch (error) {
     if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
     next(error);

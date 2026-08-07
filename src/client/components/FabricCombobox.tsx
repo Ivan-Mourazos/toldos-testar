@@ -8,6 +8,7 @@ type FabricOption = {
   code: string;
   description: string;
   width: number;
+  material?: string;
   family?: string;
   subfamily?: string;
 };

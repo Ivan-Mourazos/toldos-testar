@@ -14,6 +14,7 @@ import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { getModelWorkType, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeModelName } from './modelNames.js';
+import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
 
 export function normalizeOrder(payload) {
   if (!payload || typeof payload !== 'object') {
@@ -73,11 +74,25 @@ export function normalizeReservation(payload) {
     throw new Error('Añade al menos una OF.');
   }
 
+  const fabricKeys = collectFabricMaterialKeys(ofs);
   const normalized = {
     orderCode,
     ofs: ofs.map((ofBlock, index) => normalizeOfBlock(ofBlock, index))
   };
-  return consolidateReservation(normalized);
+  const consolidated = consolidateReservation(normalized);
+  return {
+    ...consolidated,
+    ofs: consolidated.ofs.map((ofBlock) => ({
+      ...ofBlock,
+      materials: ofBlock.materials.map((material) => fabricKeys.has(materialKey(ofBlock.of, material.code))
+        ? { ...material, quantity: roundFabricMeters(material.quantity) }
+        : material)
+    }))
+  };
+}
+
+function materialKey(of, code) {
+  return `${cleanText(of).toUpperCase()}||${cleanText(code).toUpperCase()}`;
 }
 
 function normalizeAwning(awning, _index, legacyOrder = {}) {

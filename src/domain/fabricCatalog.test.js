@@ -1,6 +1,6 @@
 // src/domain/fabricCatalog.test.js
 import { describe, expect, it } from 'vitest';
-import { resolveFabric } from './fabricCatalog.js';
+import { parseFabricSelection, resolveFabric, serializeFabricSelection } from './fabricCatalog.js';
 
 describe('resolveFabric', () => {
   it('resolves a known fabric by exact name', () => {
@@ -30,5 +30,14 @@ describe('resolveFabric', () => {
   it('picks the first table match when a fabric name has more than one roll width on record', () => {
     const fabric = resolveFabric('ACR ADMIRAL');
     expect(fabric).toMatchObject({ code: 'ACRILI2051P120', width: 120 });
+  });
+
+  it('conserva la categoría de RPSNext y sigue leyendo el formato anterior', () => {
+    const encoded = serializeFabricSelection({
+      code: 'ALPHAAM03P250', description: 'LONA PVC', width: 250, subfamily: 'PLASTICA (LONA)'
+    });
+    expect(parseFabricSelection(encoded)).toMatchObject({ material: 'PLASTICA (LONA)' });
+    expect(parseFabricSelection('ACRILI2170P120|||120|||ACR NEGRO')).toMatchObject({ material: '' });
+    expect(resolveFabric('ACRILI2170P120|||120|||ACR NEGRO')).toMatchObject({ material: 'ACR' });
   });
 });

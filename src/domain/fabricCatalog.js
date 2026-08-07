@@ -10,7 +10,12 @@ for (const fabric of fabrics) {
 
 export function resolveFabric(selection) {
   const encoded = parseFabricSelection(selection);
-  if (encoded) return encoded;
+  if (encoded) {
+    const catalogFabric = fabricsByCode.get(normalize(encoded.code));
+    return catalogFabric
+      ? { ...catalogFabric, ...encoded, material: encoded.material || catalogFabric.material || '' }
+      : encoded;
+  }
 
   const key = normalize(selection);
   if (!key) return null;
@@ -19,17 +24,22 @@ export function resolveFabric(selection) {
 
 export function serializeFabricSelection(fabric) {
   if (!fabric?.code) return '';
-  return [fabric.code, Number(fabric.width) || inferRollWidth(fabric.code), fabric.description || fabric.code].join('|||');
+  return [
+    fabric.code,
+    Number(fabric.width) || inferRollWidth(fabric.code),
+    fabric.description || fabric.code,
+    fabric.material || fabric.subfamily || ''
+  ].join('|||');
 }
 
 export function parseFabricSelection(value) {
   const parts = String(value || '').split('|||');
-  if (parts.length !== 3 || !parts[0]) return null;
+  if (parts.length < 3 || !parts[0]) return null;
   return {
     code: parts[0].trim().toUpperCase(),
     width: Number(parts[1]) || inferRollWidth(parts[0]),
     description: parts[2].trim() || parts[0].trim().toUpperCase(),
-    material: '',
+    material: parts[3]?.trim() || '',
     color: ''
   };
 }

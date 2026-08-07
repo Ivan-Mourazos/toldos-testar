@@ -88,12 +88,12 @@ export function ReviewsView({ refreshKey, onOpen, onToast }: {
     await decide('request-changes', false);
   }
 
-  async function approve(confirmOverwrite = false) {
+  async function approve(confirmOverwrite = false, includeNonAcrylicFabrics: boolean | null = null) {
     if (!selected) return;
-    await decide('approve', confirmOverwrite);
+    await decide('approve', confirmOverwrite, includeNonAcrylicFabrics);
   }
 
-  async function decide(action: 'request-changes' | 'approve', confirmOverwrite: boolean) {
+  async function decide(action: 'request-changes' | 'approve', confirmOverwrite: boolean, includeNonAcrylicFabrics: boolean | null = null) {
     if (!reviewer.trim()) {
       onToast('Indica quién realiza la revisión.');
       return;
@@ -107,17 +107,29 @@ export function ReviewsView({ refreshKey, onOpen, onToast }: {
       const response = await fetch(`/api/reviews/${encodeURIComponent(selected!.orderCode)}/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reviewer, note, confirmOverwrite })
+        body: JSON.stringify({ reviewer, note, confirmOverwrite, includeNonAcrylicFabrics })
       });
       const data = await response.json();
+      if (response.status === 409 && data.needsFabricConfirmation) {
+        const fabricItems = (data.fabrics || []) as { code: string; description: string; ofs: string[] }[];
+        const fabrics = fabricItems.map((fabric) =>
+          `${fabric.code} · ${fabric.description}${fabric.ofs?.length ? ` (OF ${fabric.ofs.join(', ')})` : ''}`
+        ).join('\n');
+        const plural = fabricItems.length > 1;
+        const include = window.confirm(
+          `${plural ? 'Las siguientes telas no son acrílicas' : 'La siguiente tela no es acrílica'}:\n\n${fabrics}\n\n¿Quieres incluir${plural ? 'las' : 'la'} en la reserva de material?\n\nACEPTAR = incluir · CANCELAR = no incluir`
+        );
+        await approve(confirmOverwrite, include);
+        return;
+      }
       if (response.status === 409 && data.needsConfirmation) {
         const ok = window.confirm(`Ya existen estos archivos:\n\n${data.existing.join('\n')}\n\n¿Quieres sustituirlos?`);
-        if (ok) await approve(true);
+        if (ok) await approve(true, includeNonAcrylicFabrics);
         return;
       }
       if (!response.ok) throw new Error(data.error || 'No se pudo completar la revisión.');
       onToast(action === 'approve'
-        ? `Pedido ${selected!.orderCode} aprobado: PDF y RPS guardados.`
+        ? buildApprovalMessage(selected!.orderCode, data)
         : `Cambios solicitados para ${selected!.orderCode}.`);
       setNote('');
       await load();
@@ -188,6 +200,15 @@ export function ReviewsView({ refreshKey, onOpen, onToast }: {
       </aside>
     </section>
   );
+}
+
+function buildApprovalMessage(orderCode: string, data: { saved?: { type: string }[]; excludedNonAcrylicFabrics?: unknown[] }) {
+  const rpsCount = data.saved?.filter((file) => file.type === 'rps').length || 0;
+  const excludedCount = data.excludedNonAcrylicFabrics?.length || 0;
+  const excludedLabel = excludedCount > 1 ? 'las telas no acrílicas' : 'la tela no acrílica';
+  if (!rpsCount && excludedCount) return `Pedido ${orderCode} aprobado: PDF guardado; ${excludedLabel} no se ${excludedCount > 1 ? 'incluyeron' : 'incluyó'} y no fue necesario crear RPS.`;
+  if (excludedCount) return `Pedido ${orderCode} aprobado: PDF y RPS guardados sin incluir ${excludedLabel}.`;
+  return `Pedido ${orderCode} aprobado: PDF y RPS guardados.`;
 }
 
 function StatusBadge({ status }: { status: ReviewStatus }) {

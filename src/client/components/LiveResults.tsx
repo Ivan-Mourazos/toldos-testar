@@ -3,6 +3,7 @@ import { AlertCircle, FileSpreadsheet, Layers3, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
 import { formatDecimal } from '../constants';
 import { controlLabel, legacyModelName } from './controlLabels';
+import { collectFabricMaterialKeys, roundFabricMeters } from '../../domain/reservationFabrics.js';
 
 type Props = {
   calculation: Calculation | null;
@@ -174,6 +175,7 @@ function blockKey(block: Calculation['ofs'][number]) {
 
 function groupMaterialRows(ofs: Calculation['ofs']) {
   const rows = new Map<string, { of: string; description: string; code: string; quantity: number }>();
+  const fabricKeys = collectFabricMaterialKeys(ofs);
   for (const ofBlock of ofs) {
     for (const material of ofBlock.materials) {
       const key = `${ofBlock.of.trim().toUpperCase()}||${material.code.trim().toUpperCase()}`;
@@ -184,7 +186,9 @@ function groupMaterialRows(ofs: Calculation['ofs']) {
       rows.set(key, current);
     }
   }
-  return Array.from(rows.values());
+  return Array.from(rows.entries()).map(([key, row]) => fabricKeys.has(key)
+    ? { ...row, quantity: roundFabricMeters(row.quantity) }
+    : row);
 }
 
 function awningLetter(index: number) {

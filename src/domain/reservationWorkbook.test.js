@@ -30,11 +30,11 @@ describe('contrato RPS antiguo', () => {
       '0230134\tBONYXBL16350C\t2',
       '0230134\tCASMAQEJE6378MM\t1',
       '0230134\tCASPLAS\t1',
-      '0230134\tACRILI2170P120\t16,8'
+      '0230134\tACRILI2170P120\t17'
     ]);
   });
 
-  test('AR2603315 exporta los 17,7 ml reales tras aplicar costuras', async () => {
+  test('AR2603315 eleva los 17,7 ml calculados a 18 ml para la reserva', async () => {
     const calculation = calculateOrder({
       orderCode: 'AR2603315',
       fabric: 'ACR NEGRO',
@@ -58,7 +58,7 @@ describe('contrato RPS antiguo', () => {
       '0230126\tBONYXNE11225C\t3',
       '0230126\tCASMAQEJE6378MM\t1',
       '0230126\tCASPLAS\t1',
-      '0230126\tACRILI2170P120\t17,7'
+      '0230126\tACRILI2170P120\t18'
     ]);
   });
 
@@ -75,6 +75,25 @@ describe('contrato RPS antiguo', () => {
     expect(lines).toEqual([
       'OF\tARTICULO\tCANTIDAD',
       '3303333\tACRILI2170P120\t27'
+    ]);
+  });
+
+  test('redondea solo la tela al siguiente medio metro', async () => {
+    const buffer = await buildReservationWorkbook({
+      orderCode: 'AR2600001',
+      ofs: [{
+        of: '3303334',
+        calculation: { fabricCode: 'TELA-RPS-NUEVA' },
+        materials: [
+          { code: 'TELA-RPS-NUEVA', quantity: 6.32222 },
+          { code: 'ARTICULO-DECIMAL', quantity: 6.32222 }
+        ]
+      }]
+    });
+    expect(buffer.toString('latin1').trim().split('\r\n')).toEqual([
+      'OF\tARTICULO\tCANTIDAD',
+      '3303334\tTELA-RPS-NUEVA\t6,5',
+      '3303334\tARTICULO-DECIMAL\t6,32222'
     ]);
   });
 });

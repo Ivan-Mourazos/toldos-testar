@@ -23,4 +23,24 @@ describe('reservas por OF', () => {
       { code: 'CASPUNCE', description: '', quantity: 2 }
     ]);
   });
+
+  test('redondea la suma final de tela por OF y artículo, no cada toldo por separado', () => {
+    const reservation = normalizeReservation({
+      orderCode: 'AR2600001',
+      ofs: [
+        {
+          of: '3303334', calculation: { fabricCode: 'TELA-RPS-NUEVA' },
+          materials: [{ code: 'TELA-RPS-NUEVA', quantity: 6.1 }]
+        },
+        {
+          of: '3303334', calculation: { fabricCode: 'TELA-RPS-NUEVA' },
+          materials: [{ code: 'TELA-RPS-NUEVA', quantity: 6.1 }]
+        }
+      ]
+    });
+
+    expect(reservation.ofs[0].materials).toEqual([
+      { code: 'TELA-RPS-NUEVA', description: '', quantity: 12.5 }
+    ]);
+  });
 });
