@@ -1,0 +1,70 @@
+- main [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - img "TGM" [ref=e7]
+      - generic [ref=e8]:
+        - heading "Toldos" [level=1] [ref=e9]
+        - generic [ref=e10]: Planteamientos
+    - navigation "Vistas" [ref=e11]:
+      - button "Pedido" [ref=e12] [cursor=pointer]
+      - button "Parámetros" [ref=e16] [cursor=pointer]
+      - button "Revisión" [ref=e18] [cursor=pointer]
+      - button "Configuración" [ref=e22] [cursor=pointer]
+    - generic [ref=e34]:
+      - generic [ref=e39]:
+        - strong [ref=e40]: Revisión segura
+        - generic [ref=e41]: Configura las rutas finales
+      - generic [ref=e42]: Esperando pedido
+      - generic [ref=e43]: Cargando catálogo
+  - generic [ref=e44]:
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e47]: Oficina técnica
+        - heading "Nuevo planteamiento" [level=2] [ref=e48]
+      - generic [ref=e49]:
+        - button "Limpiar" [ref=e50] [cursor=pointer]
+        - button "Vista previa" [disabled] [ref=e54]
+        - button "Guardar para revisión" [disabled] [ref=e58]
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - heading "Datos del pedido" [level=3] [ref=e68]
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71]: Pedido
+            - textbox "Pedido" [ref=e72]:
+              - /placeholder: AR26xxxxx
+          - generic [ref=e73]:
+            - generic [ref=e74]: Cliente
+            - textbox "Cliente" [ref=e75]:
+              - /placeholder: ""
+          - generic [ref=e76]:
+            - generic [ref=e77]: Fecha
+            - textbox "Fecha" [ref=e78]: 2026-08-07
+          - generic [ref=e79]:
+            - generic [ref=e80]: Técnico
+            - combobox "Técnico" [ref=e81] [cursor=pointer]:
+              - generic [ref=e82]: Sin asignar
+          - generic [ref=e85]:
+            - generic [ref=e86]: Revisión
+            - combobox "Revisión" [ref=e87] [cursor=pointer]:
+              - generic [ref=e88]: Sin asignar
+      - generic [ref=e91]:
+        - heading "Tela" [level=3] [ref=e92]
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e97]: Referencia
+            - combobox "Buscar código o color…" [ref=e99]
+          - generic [ref=e100] [cursor=pointer]:
+            - checkbox "Por toldo" [ref=e101]
+            - generic [ref=e102]: Por toldo
+      - generic [ref=e103]:
+        - heading "Nuevo elemento" [level=3] [ref=e104]
+        - generic [ref=e105]:
+          - button "Añadir toldo Elegir modelo" [ref=e106] [cursor=pointer]:
+            - generic [ref=e111]:
+              - strong [ref=e112]: Añadir toldo
+              - generic [ref=e113]: Elegir modelo
+          - button "Añadir trabajo de tela Cambio, cortina, enrollable, bamba o Antica" [ref=e115] [cursor=pointer]:
+            - generic [ref=e122]:
+              - strong [ref=e123]: Añadir trabajo de tela
+              - generic [ref=e124]: Cambio, cortina, enrollable, bamba o Antica

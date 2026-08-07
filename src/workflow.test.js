@@ -24,6 +24,11 @@ describe('flujo de revisión y producción', () => {
     expect(resolveDirectoryTemplate('C:\\Pedidos\\{YYYY}\\TOLDOS', 'AR2601234')).toBe('C:\\Pedidos\\2026\\TOLDOS');
   });
 
+  it('corrige una carpeta cuyo año se escribió entre llaves', () => {
+    const settings = normalizeWorkflowSettings({ reviewDirectory: 'C:\\Pedidos\\{2026}\\TOLDOS' });
+    expect(settings.reviewDirectory).toBe('C:\\Pedidos\\2026\\TOLDOS');
+  });
+
   it('solo declara producción lista con rutas completas y activación explícita', () => {
     const settings = normalizeWorkflowSettings({
       productionEnabled: true,

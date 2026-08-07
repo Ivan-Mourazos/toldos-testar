@@ -269,7 +269,7 @@ function buildLegacyReviewPath(template, orderCode) {
 }
 
 function cleanPath(value) {
-  const clean = String(value || '').trim();
+  const clean = String(value || '').trim().replace(/\{(\d{4})\}/g, '$1');
   if (!clean) return '';
   const root = path.win32.parse(clean.replaceAll('{YYYY}', '2026')).root;
   if (root && clean.length <= root.length) return clean;

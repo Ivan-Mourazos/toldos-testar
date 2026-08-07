@@ -1,0 +1,71 @@
+- main [ref=f2e3]:
+  - complementary [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - img "TGM" [ref=f2e7]
+      - generic [ref=f2e8]:
+        - heading "Toldos" [level=1] [ref=f2e9]
+        - generic [ref=f2e10]: Planteamientos
+    - navigation "Vistas" [ref=f2e11]:
+      - button "Pedido" [active] [ref=f2e12] [cursor=pointer]
+      - button "Parámetros" [ref=f2e16] [cursor=pointer]
+      - button "Revisión" [ref=f2e18] [cursor=pointer]
+      - button "Configuración" [ref=f2e22] [cursor=pointer]
+    - generic [ref=f2e34]:
+      - generic [ref=f2e39]:
+        - strong [ref=f2e40]: Revisión segura
+        - generic [ref=f2e41]: Configura las rutas finales
+      - generic [ref=f2e42]: Esperando pedido
+      - generic [ref=f2e43]: 17 modelos · 326 telas
+      - generic [ref=f2e126]: 1215 referencias
+  - generic [ref=f2e44]:
+    - generic [ref=f2e45]:
+      - generic [ref=f2e46]:
+        - generic [ref=f2e47]: Oficina técnica
+        - heading "Nuevo planteamiento" [level=2] [ref=f2e184]
+      - generic [ref=f2e185]:
+        - button "Limpiar" [ref=f2e186] [cursor=pointer]
+        - button "Vista previa" [disabled] [ref=f2e190]
+        - button "Guardar para revisión" [disabled] [ref=f2e194]
+    - generic [ref=f2e201]:
+      - generic [ref=f2e202]:
+        - heading "Datos del pedido" [level=3] [ref=f2e203]
+        - generic [ref=f2e204]:
+          - generic [ref=f2e205]:
+            - generic [ref=f2e206]: Pedido
+            - textbox "Pedido" [ref=f2e207]:
+              - /placeholder: AR26xxxxx
+          - generic [ref=f2e208]:
+            - generic [ref=f2e209]: Cliente
+            - textbox "Cliente" [ref=f2e210]:
+              - /placeholder: ""
+          - generic [ref=f2e211]:
+            - generic [ref=f2e212]: Fecha
+            - textbox "Fecha" [ref=f2e213]: 2026-08-07
+          - generic [ref=f2e214]:
+            - generic [ref=f2e215]: Técnico
+            - combobox "Técnico" [ref=f2e216] [cursor=pointer]:
+              - generic [ref=f2e217]: Sin asignar
+          - generic [ref=f2e220]:
+            - generic [ref=f2e221]: Revisión
+            - combobox "Revisión" [ref=f2e222] [cursor=pointer]:
+              - generic [ref=f2e223]: Sin asignar
+      - generic [ref=f2e226]:
+        - heading "Tela" [level=3] [ref=f2e227]
+        - generic [ref=f2e230]:
+          - generic [ref=f2e231]:
+            - generic [ref=f2e232]: Referencia
+            - combobox "Buscar código o color…" [ref=f2e234]
+          - generic [ref=f2e235] [cursor=pointer]:
+            - checkbox "Por toldo" [ref=f2e236]
+            - generic [ref=f2e237]: Por toldo
+      - generic [ref=f2e238]:
+        - heading "Nuevo elemento" [level=3] [ref=f2e239]
+        - generic [ref=f2e240]:
+          - button "Añadir toldo Elegir modelo" [ref=f2e241] [cursor=pointer]:
+            - generic [ref=f2e246]:
+              - strong [ref=f2e247]: Añadir toldo
+              - generic [ref=f2e248]: Elegir modelo
+          - button "Añadir trabajo de tela Cambio, cortina, enrollable, bamba o Antica" [ref=f2e250] [cursor=pointer]:
+            - generic [ref=f2e257]:
+              - strong [ref=f2e258]: Añadir trabajo de tela
+              - generic [ref=f2e259]: Cambio, cortina, enrollable, bamba o Antica

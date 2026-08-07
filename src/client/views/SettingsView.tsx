@@ -92,11 +92,12 @@ export function SettingsView({
       </div>
 
       <div className="workflow-settings-footer">
-        <div className={readiness.productionReady ? 'workflow-ready is-ready' : 'workflow-ready'}>
-          <CheckCircle2 aria-hidden="true" />
-          <span>{readiness.productionReady ? 'Listo para producción' : 'Pendiente de completar y activar'}</span>
-        </div>
-        <p><code>{'{YYYY}'}</code> se sustituye automáticamente por el año del pedido.</p>
+        {readiness.productionReady && (
+          <div className="workflow-ready is-ready">
+            <CheckCircle2 aria-hidden="true" />
+            <span>Listo para producción</span>
+          </div>
+        )}
         <button className="primary-button" type="button" disabled={saving} onClick={save}>
           {saving ? 'Guardando…' : 'Guardar configuración'}
         </button>

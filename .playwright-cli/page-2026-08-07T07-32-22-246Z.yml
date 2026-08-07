@@ -1,0 +1,151 @@
+- main [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - img "TGM" [ref=e7]
+      - generic [ref=e8]:
+        - heading "Toldos" [level=1] [ref=e9]
+        - generic [ref=e10]: Planteamientos
+    - navigation "Vistas" [ref=e11]:
+      - button "Pedido" [ref=e12] [cursor=pointer]
+      - button "Parámetros" [ref=e16] [cursor=pointer]
+      - button "Revisión" [ref=e18] [cursor=pointer]
+      - button "Configuración" [ref=e22] [cursor=pointer]
+    - generic [ref=e34]:
+      - generic [ref=e39]:
+        - strong [ref=e40]: Revisión segura
+        - generic [ref=e41]: Configura las rutas finales
+      - generic [ref=e42]: Planteamiento vivo
+      - generic [ref=e43]: 17 modelos · 326 telas
+      - generic [ref=e126]: 1215 referencias
+  - generic [ref=e44]:
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e47]: Oficina técnica
+        - heading "Nuevo planteamiento" [level=2] [ref=e48]
+      - generic [ref=e49]:
+        - button "Limpiar" [ref=e50] [cursor=pointer]
+        - button "Vista previa" [ref=e54] [cursor=pointer]
+        - button "Guardar para revisión" [ref=e58] [cursor=pointer]
+    - generic [ref=e63]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - heading "Datos del pedido" [level=3] [ref=e68]
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - generic [ref=e71]: Pedido
+              - textbox "Pedido" [ref=e72]:
+                - /placeholder: AR26xxxxx
+            - generic [ref=e73]:
+              - generic [ref=e74]: Cliente
+              - textbox "Cliente" [ref=e75]:
+                - /placeholder: ""
+            - generic [ref=e76]:
+              - generic [ref=e77]: Fecha
+              - textbox "Fecha" [ref=e78]: 2026-08-07
+            - generic [ref=e79]:
+              - generic [ref=e80]: Técnico
+              - combobox "Técnico" [ref=e81] [cursor=pointer]:
+                - generic [ref=e82]: Sin asignar
+            - generic [ref=e85]:
+              - generic [ref=e86]: Revisión
+              - combobox "Revisión" [ref=e87] [cursor=pointer]:
+                - generic [ref=e88]: Sin asignar
+        - generic [ref=e91]:
+          - heading "Tela" [level=3] [ref=e92]
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]: Referencia
+              - combobox "Buscar código o color…" [ref=e99]
+            - generic [ref=e100] [cursor=pointer]:
+              - checkbox "Por toldo" [ref=e101]
+              - generic [ref=e102]: Por toldo
+        - generic [ref=e103]:
+          - heading "Nuevo elemento" [level=3] [ref=e104]
+          - generic [ref=e105]:
+            - button "Añadir toldo Elegir modelo" [ref=e106] [cursor=pointer]:
+              - generic [ref=e111]:
+                - strong [ref=e112]: Añadir toldo
+                - generic [ref=e113]: Elegir modelo
+            - button "Añadir trabajo de tela Cambio, cortina, enrollable, bamba o Antica" [ref=e115] [cursor=pointer]:
+              - generic [ref=e122]:
+                - strong [ref=e123]: Añadir trabajo de tela
+                - generic [ref=e124]: Cambio, cortina, enrollable, bamba o Antica
+      - generic [ref=e179]:
+        - generic [ref=e181]:
+          - heading "Elementos del pedido" [level=2] [ref=e182]
+          - generic [ref=e183]: 1 elemento · orden A, B, C…
+        - article [ref=e185]:
+          - generic [ref=e186]:
+            - generic [ref=e187]: TOLDO A
+            - strong [ref=e188]:
+              - text: Perla Box
+              - generic [ref=e189]: antes Storbox S-300
+            - generic [ref=e190]:
+              - button "Modificar reglas del modelo" [ref=e191] [cursor=pointer]
+              - button "Duplicar" [ref=e195] [cursor=pointer]
+              - button "Eliminar" [ref=e199] [cursor=pointer]
+          - generic [ref=e203]:
+            - generic [ref=e204]: OF
+            - textbox "OF" [ref=e205]:
+              - /placeholder: ""
+          - generic [ref=e206]:
+            - generic [ref=e207]: Frente
+            - spinbutton "Frente" [ref=e208]
+          - generic [ref=e209]:
+            - generic [ref=e210]: Salida
+            - combobox "Salida" [ref=e211] [cursor=pointer]:
+              - generic [ref=e212]: Elegir…
+          - generic [ref=e215]:
+            - generic [ref=e216]: Bamba (cm)
+            - spinbutton "Bamba (cm)" [ref=e217]
+          - generic [ref=e218]:
+            - generic [ref=e219]:
+              - generic [ref=e220]: Lacado
+              - combobox "Lacado" [ref=e221] [cursor=pointer]:
+                - generic [ref=e222]: Elegir…
+            - generic [ref=e225]:
+              - generic [ref=e226]: Rotulación tela
+              - group "Rotulación tela" [ref=e227]:
+                - button "No" [ref=e228] [cursor=pointer]
+                - button "Sí" [ref=e229] [cursor=pointer]
+          - generic [ref=e230]:
+            - generic [ref=e231]:
+              - generic [ref=e232]: Dispositivo
+              - combobox "Dispositivo" [ref=e233] [cursor=pointer]:
+                - generic [ref=e234]: Elegir…
+            - generic [ref=e237]:
+              - generic [ref=e238]: Colocación
+              - combobox "Colocación" [ref=e239] [cursor=pointer]:
+                - generic [ref=e240]: Elegir…
+            - generic [ref=e243]:
+              - generic [ref=e244]: Tipo de pared
+              - combobox "Tipo de pared" [ref=e245] [cursor=pointer]:
+                - generic [ref=e246]: No indicada
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - generic [ref=e251]: Obs. estructura
+              - textbox "Obs. estructura" [ref=e252]
+            - generic [ref=e253]:
+              - generic [ref=e254]: Obs. tela
+              - textbox "Obs. tela" [ref=e255]
+          - generic [ref=e256]: SIN COMPLETAR
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - generic [ref=e259]:
+            - heading "Planteamientos" [level=2] [ref=e260]
+            - generic [ref=e261]: Estructura, tela y reserva se actualizan al cambiar el pedido
+          - generic [ref=e262]:
+            - generic [ref=e263]: 0 estructuras
+            - generic [ref=e264]: 0 telas
+            - generic [ref=e265]: 0 líneas RPS
+        - tablist "Vistas del planteamiento" [ref=e266]:
+          - tab "Estructuras 0" [selected] [ref=e267] [cursor=pointer]:
+            - generic [ref=e272]: Estructuras
+            - strong [ref=e273]: "0"
+          - tab "Telas 0" [ref=e274] [cursor=pointer]:
+            - generic [ref=e281]: Telas
+            - strong [ref=e282]: "0"
+          - tab "Reserva RPS 0" [ref=e283] [cursor=pointer]:
+            - generic [ref=e287]: Reserva RPS
+            - strong [ref=e288]: "0"
+        - paragraph [ref=e289]: Los trabajos de tela no generan planteamiento de estructura.

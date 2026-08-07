@@ -1,6 +1,8 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, Search } from 'lucide-react';
 import { fabricSelectionLabel, serializeFabricSelection } from '../../domain/fabricCatalog.js';
+import { useFloatingMenu } from '../hooks/useFloatingMenu';
 
 type FabricOption = {
   code: string;
@@ -24,7 +26,9 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const listId = useId();
+  const menuStyle = useFloatingMenu(open, rootRef, { maxHeight: 290, preferredWidth: 520 });
 
   useEffect(() => {
     if (!open) return undefined;
@@ -50,7 +54,8 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
   useEffect(() => {
     if (!open) return undefined;
     const closeOutside = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) setOpen(false);
     };
     document.addEventListener('pointerdown', closeOutside);
     return () => document.removeEventListener('pointerdown', closeOutside);
@@ -91,8 +96,8 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
           }}
         />
       </div>
-      {open && (
-        <div id={listId} className="fabric-options" role="listbox">
+      {open && createPortal(
+        <div ref={menuRef} id={listId} className="fabric-options fabric-options-portal" style={menuStyle} role="listbox">
           {loading && <div className="fabric-option-state">Buscando en RPSNext…</div>}
           {!loading && options.length === 0 && <div className="fabric-option-state">Sin coincidencias</div>}
           {!loading && options.map((option) => (
@@ -101,7 +106,8 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
               <span className="fabric-option-meta">{option.width} cm<Check aria-hidden="true" /></span>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

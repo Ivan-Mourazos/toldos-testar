@@ -1,6 +1,8 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
 import { controlLabel } from './controlLabels';
+import { useFloatingMenu } from '../hooks/useFloatingMenu';
 
 type Props = {
   label: string;
@@ -15,19 +17,21 @@ type Props = {
 export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado' }: Props) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [opensUp, setOpensUp] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const labelId = useId();
   const listboxId = useId();
   const visibleOptions = allowEmpty ? ['', ...options.filter(Boolean)] : options;
   const selectedIndex = visibleOptions.indexOf(value);
+  const menuStyle = useFloatingMenu(open, triggerRef, { maxHeight: 236 });
 
   useEffect(() => {
     if (!open) return undefined;
 
     const closeOutside = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) setOpen(false);
     };
 
     document.addEventListener('pointerdown', closeOutside);
@@ -35,16 +39,6 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
   }, [open]);
 
   const showOptions = () => {
-    const rect = rootRef.current?.getBoundingClientRect();
-    const estimatedHeight = Math.min(visibleOptions.length * 31 + 8, 236);
-    if (rect) {
-      const scrollLane = rootRef.current?.closest('.awning-grid')?.getBoundingClientRect();
-      const lowerBoundary = Math.min(window.innerHeight, scrollLane?.bottom ?? window.innerHeight);
-      const upperBoundary = Math.max(0, scrollLane?.top ?? 0);
-      const spaceBelow = lowerBoundary - rect.bottom;
-      const spaceAbove = rect.top - upperBoundary;
-      setOpensUp(spaceBelow < estimatedHeight && spaceAbove > spaceBelow);
-    }
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
     setOpen(true);
   };
@@ -102,8 +96,8 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
         <ChevronDown aria-hidden="true" />
       </button>
 
-      {open && (
-        <div id={listboxId} className={`select-options${opensUp ? ' opens-up' : ''}`} role="listbox" aria-labelledby={labelId}>
+      {open && createPortal(
+        <div ref={menuRef} id={listboxId} className="select-options select-options-portal" style={menuStyle} role="listbox" aria-labelledby={labelId}>
           {visibleOptions.map((option, index) => (
             <button
               key={option || '__empty'}
@@ -119,7 +113,8 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
               {option === value && <Check aria-hidden="true" />}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

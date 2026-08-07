@@ -138,7 +138,7 @@ export default function App() {
         return;
       }
       setReviewRefresh((value) => value + 1);
-      setToast(`${data.review.orderCode}.pdf guardado en la carpeta TOLDOS para revisión.`);
+      setToast(`${data.review.orderCode}.pdf guardado en ${data.savedPath}`);
     } catch {
       setToast('No se pudo guardar el pedido para revisión.');
     } finally {
