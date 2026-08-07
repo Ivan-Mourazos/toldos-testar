@@ -1630,6 +1630,7 @@ label span,
   grid-column: 1 / -1;
 }
 
+.awning-actuation-row,
 .awning-installation-row {
   display: grid;
   gap: 6px;
@@ -1645,17 +1646,20 @@ label span,
   min-width: 0;
 }
 
+.awning-actuation-row .select-options,
 .awning-installation-row .select-options,
 .awning-machine-controls .select-options {
   min-width: max(100%, 220px);
 }
 
+.awning-actuation-row > :last-child .select-options,
 .awning-installation-row > :last-child .select-options,
 .awning-machine-controls > :last-child .select-options {
   left: auto;
   right: 0;
 }
 
+.awning-actuation-row .select-option > span,
 .awning-installation-row .select-option > span,
 .awning-machine-controls .select-option > span {
   line-height: 1.25;
