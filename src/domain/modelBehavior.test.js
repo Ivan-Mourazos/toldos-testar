@@ -21,10 +21,11 @@ describe('modelBehavior', () => {
     expect(visibility.tubeLoad).toBe(false);
   });
 
-  test('ARZUA PRO con MOTOR: sensor sí, máquina no', () => {
+  test('ARZUA PRO con MOTOR: muestra sensor y posición del motor, no manivela', () => {
     const visibility = getFieldVisibility({ model: 'ARZUA PRO', device: 'MOTOR' });
     expect(visibility.tubeLoad).toBe(true);
     expect(visibility.sensor).toBe(true);
+    expect(visibility.motorLocation).toBe(true);
     expect(visibility.machineLocation).toBe(false);
     expect(visibility.crankHeight).toBe(false);
     expect(visibility.deviceOptions).toEqual(['MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR']);
@@ -33,6 +34,7 @@ describe('modelBehavior', () => {
   test('ARZUA PRO con MAQ. EXTERIOR: máquina sí, sensor no', () => {
     const visibility = getFieldVisibility({ model: 'ARZUA PRO', device: 'MAQ. EXTERIOR' });
     expect(visibility.sensor).toBe(false);
+    expect(visibility.motorLocation).toBe(false);
     expect(visibility.machineLocation).toBe(true);
     expect(visibility.crankHeight).toBe(true);
   });

@@ -40,6 +40,7 @@ export function calculateArzuaPro({ order, awning }) {
   if (!structureColor) missingFields.push('lacado');
   if (!fabricSelection) missingFields.push('tela');
   if (!device) missingFields.push('dispositivo válido');
+  else if (device === 'MOTOR' && !awning.machineSide) missingFields.push('posición del motor');
   else if ((device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') && !awning.crankHeight) missingFields.push('altura de manivela');
   if (!tubeLoad) missingFields.push('tubo de carga válido');
   const fabricWidth = round1(awning.width - lookupDiscount(parameters.fabricWidthDiscounts, tubeLoad, device, 11));

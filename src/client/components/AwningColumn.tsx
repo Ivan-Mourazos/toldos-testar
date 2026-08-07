@@ -92,6 +92,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || getRequiredDimensions(awning.model).some((field: keyof Awning) => !Number(awning[field]))
     || missingWindowDimensions
     || missingCurtainConfig
+    || (fields.motorLocation && !awning.machineSide)
     || (isAntica && !awning.anticaVariant)
     || missingValanceConfig
     || missingFinishConfig;
@@ -358,14 +359,24 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             </div>
           )}
           {!sameFabric && <div className="awning-wide-field"><FabricCombobox label="Tela" value={awning.fabric} onChange={(fabric) => update({ fabric })} /></div>}
-          {(fields.device || fields.placement || fields.wallType) && (
+          {fields.motorLocation ? <>
+            <div className="awning-installation-row awning-wide-field">
+              <SelectField label="Dispositivo" value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={(device) => update({ device })} />
+              <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />
+              <SelectField label="Posición motor" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />
+            </div>
+            <div className="awning-installation-row awning-wide-field">
+              <SelectField label="Colocación" value={awning.placement} options={formOptions.colocaciones} placeholder="Elegir…" onChange={(placement) => update({ placement })} />
+              <SelectField label="Tipo de pared" value={awning.wallType} options={formOptions.tiposPared.map((p) => p.pared)} placeholder="No indicada" allowEmpty emptyLabel="No indicada" onChange={(wallType) => update({ wallType })} />
+            </div>
+          </> : (fields.device || fields.placement || fields.wallType) && (
             <div className="awning-installation-row awning-wide-field">
               {fields.device && <SelectField label="Dispositivo" value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={(device) => update({ device })} />}
               {fields.placement && <SelectField label="Colocación" value={awning.placement} options={formOptions.colocaciones} placeholder="Elegir…" onChange={(placement) => update({ placement })} />}
               {fields.wallType && <SelectField label="Tipo de pared" value={awning.wallType} options={formOptions.tiposPared.map((p) => p.pared)} placeholder="No indicada" allowEmpty emptyLabel="No indicada" onChange={(wallType) => update({ wallType })} />}
             </div>
           )}
-          {(fields.sensor || fields.machineLocation || fields.crankHeight) && (
+          {!fields.motorLocation && (fields.sensor || fields.machineLocation || fields.crankHeight) && (
             <div className="machine-controls awning-machine-controls">
               {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}

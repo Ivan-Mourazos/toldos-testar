@@ -45,6 +45,18 @@ describe('PDF provisional de revisión', () => {
     expect(entries[1].fields).toContainEqual({ label: 'Color remate', value: 'Azul' });
   });
 
+  test('muestra la posición del motor en un Arzúa', () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [{
+      ...base, model: 'ARZUA PRO', device: 'MOTOR', sensor: 'SIN SENSOR',
+      tubeLoad: 'TUBO DE CARGA EVO 80', machineSide: 'M.F IZQ'
+    }] });
+    const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
+
+    expect(entry.fields).toContainEqual({ label: 'Posición motor', value: 'M.F. izquierda' });
+    expect(entry.fields.some((field) => field.label === 'Lado máquina')).toBe(false);
+  });
+
   test('coloca dos paneles normales en una página y pagina el tercero', async () => {
     const first = reviewOrder().awnings[0];
     const order = reviewOrder({ awnings: [

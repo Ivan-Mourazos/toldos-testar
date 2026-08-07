@@ -175,6 +175,14 @@ describe('ARZUA PRO — campos de mecanizado sin elegir (formulario vacio por de
     }));
     expect(result.ofs[0].calculation.valid).toBe(true);
   });
+
+  it('MOTOR exige indicar su posición', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ device: 'MOTOR', machineSide: '' })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('posición del motor'))).toBe(true);
+  });
 });
 
 describe('calculateOrder — toldos incompletos', () => {

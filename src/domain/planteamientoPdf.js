@@ -231,7 +231,7 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   drawMiniTable(doc, x, y + 123, w, 'DETALLES', [
     ['LACADO', awning.structureColor || order.structureColor],
     ['DISPOSIT.', awning.device],
-    ['COLOC. MAQ.', awning.machineSide],
+    [String(awning.device || '').toUpperCase() === 'MOTOR' ? 'POS. MOTOR' : 'COLOC. MAQ.', awning.machineSide],
     ['COLOC. TOLD.', awning.placement]
   ], 11);
 

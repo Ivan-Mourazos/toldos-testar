@@ -122,6 +122,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.placement) addField(cardFields, 'Colocación', awning.placement, true);
     if (fields.wallType) addField(cardFields, 'Tipo de pared', awning.wallType || 'NO INDICADA', true);
     if (fields.sensor) addField(cardFields, 'Sensor', awning.sensor, true);
+    if (fields.motorLocation) addField(cardFields, 'Posición motor', awning.machineSide, true);
     if (fields.machineLocation) addField(cardFields, 'Lado máquina', awning.machineSide, true);
     if (fields.crankHeight) addField(cardFields, 'Altura manivela', measure(awning.crankHeight), true);
     if (fields.arms) addField(cardFields, 'Nº de brazos', awning.armCount, true);

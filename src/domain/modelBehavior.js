@@ -80,6 +80,7 @@ export function getRequiredDimensions(modelCode) {
 
 export function getFieldVisibility({ model, device }) {
   const modelBehavior = getModelBehavior(model);
+  const modelCode = normalizeModelName(model);
   const hasInstallation = modelBehavior.tipo01 !== null;
   const isCofre = modelBehavior.tipo01 === 'COFRE';
   const cleanDevice = String(device || '').toUpperCase();
@@ -95,6 +96,7 @@ export function getFieldVisibility({ model, device }) {
     device: hasInstallation,
     deviceOptions: isCofre ? behavior.options.dispositivosCofre : behavior.options.dispositivos,
     sensor: hasInstallation && isMotor && modelBehavior.sensors !== false,
+    motorLocation: modelCode === 'ARZUA PRO' && isMotor,
     machineLocation: hasInstallation && isMachine,
     crankHeight: hasInstallation && isMachine,
     placement: hasInstallation,
