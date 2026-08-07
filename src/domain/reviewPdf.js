@@ -99,7 +99,10 @@ export function buildReviewSheetEntries(order, calculation) {
     }
     if (fields.tubeLoad) addField(cardFields, 'Tubo de carga', awning.tubeLoad, true);
     if (fields.submodel) addField(cardFields, 'Variante', awning.submodel, true);
-    if (awning.model === 'ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);
+    if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);
+    if (awning.model === 'ANTICA' && awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS') {
+      addField(cardFields, 'Altura soporte-brazo', measure(awning.anticaSupportHeight), true);
+    }
     if (!fabricOnly) addField(cardFields, 'Lacado', awning.structureColor || order.structureColor || 'SIN INDICAR', true);
     if (!standaloneValance) addField(cardFields, 'Rotulación tela', yesNo(awning.rotFabric), true);
     if (hasValance) addField(cardFields, 'Rotulación bamba', yesNo(awning.rotValance), true);

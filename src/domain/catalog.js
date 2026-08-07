@@ -10,6 +10,7 @@ export const models = [
   { code: 'MAXISCREEM', family: 'COFRE', subtype: 'SUBMODELO', ruleSheet: 'MAXISCREEM', supportsMultipleArms: false },
   { code: 'MONOBLOCK 350', family: 'COFRE', subtype: '', ruleSheet: 'MON.350', supportsMultipleArms: true },
   { code: 'PUNTO RECTO', family: 'COFRE', subtype: '', ruleSheet: 'PUNTO RECTO', supportsMultipleArms: true },
+  { code: 'ANTICA', family: 'TOLDO FACHADA', subtype: 'CONFIGURACIÓN', ruleSheet: 'ANTICA (libros históricos)', supportsMultipleArms: false },
   { code: 'CUARZO BOX', family: 'COFRE', subtype: '', ruleSheet: 'ST250 (legado STORBOX 250)', supportsMultipleArms: false },
   { code: 'PERLA BOX', family: 'COFRE', subtype: '', ruleSheet: 'S300 (legado STORBOX S-300)', supportsMultipleArms: false },
   { code: 'CORAL BOX', family: 'COFRE', subtype: '', ruleSheet: 'ST400 (legado STORBOX 400)', supportsMultipleArms: false },
@@ -33,7 +34,7 @@ export function getCatalog() {
   return {
     source: {
       workbook: 'Y:\\PROGRAMAS CALCULO\\TOLDOS TESTAR 10-4.xlsm',
-      lastReviewed: '2026-07-08'
+      lastReviewed: '2026-08-07'
     },
     models,
     fabricStats,

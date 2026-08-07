@@ -1178,6 +1178,13 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     }));
     expect(normalized.awnings[0].anticaVariant).toBe('TUBO 50X30 CONTRAPESO');
   });
+
+  test('migra el nombre histórico TUBO 30X10 a la variante completa', () => {
+    const normalized = normalizeOrder(basePayload({
+      awnings: [baseAwning({ model: 'CAMBIO ANTICA', anticaVariant: 'tubo 30x10' })]
+    }));
+    expect(normalized.awnings[0].anticaVariant).toBe('TUBO 30X10 CON BAMBA');
+  });
 });
 
 describe('CORTINA contra planteamientos y RPSNext', () => {

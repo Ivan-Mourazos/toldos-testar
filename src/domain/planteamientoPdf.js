@@ -835,11 +835,11 @@ function drawValanceDiagram(doc, x, y, w, h) {
 }
 
 function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
-  drawDiagramShell(doc, x, y, w, h, 'CAMBIO ANTICA');
+  drawDiagramShell(doc, x, y, w, h, awning.model === 'ANTICA' ? 'ANTICA' : 'CAMBIO ANTICA');
   const variant = awning.anticaVariant || 'CONFIGURACIÓN SIN INDICAR';
   const isCounterweight = variant === 'TUBO 50X30 CONTRAPESO';
   const isFixed = variant === 'SOPORTE FIJO 3 AGUJEROS';
-  const tube = variant === 'TUBO 30X10' ? '30x10' : '50x30';
+  const tube = variant.includes('30X10') ? '30x10' : '50x30';
   const wallX = x + 28;
   const wallY = y + 80;
   const endX = x + w - 34;
@@ -857,6 +857,9 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     doc.circle(wallX + 8, wallY + 5, 6).fillAndStroke(colors.soft, '#7fa594');
     for (const offset of [-9, 0, 9]) doc.circle(wallX - 6, wallY + 5 + offset, 1.4).fill(colors.ink);
     drawSideLabel(doc, 'SOPORTE FIJO · 3 AGUJEROS', wallX + 20, wallY - 10, 118);
+    if (Number(awning.anticaSupportHeight) > 0) {
+      drawSideLabel(doc, `ALTURA SOPORTE-BRAZO ${formatInstructionMeasure(awning.anticaSupportHeight)} CM`, wallX + 20, wallY + 12, 132);
+    }
   } else {
     doc.rect(endX - 8, endY - 3, 16, tube === '30x10' ? 8 : 13).fillAndStroke(colors.paper, colors.ink);
     drawSideLabel(doc, `ENTRADA TUBO ${tube}`, endX - 115, endY - 28, 110);
@@ -868,7 +871,7 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
       .moveTo(endX, endY + 10).lineTo(endX, bottomY).stroke();
     doc.rect(endX - 7, bottomY, 14, 28).fillAndStroke(colors.gray, colors.ink);
     drawSideLabel(doc, 'CONTRAPESO', endX - 78, bottomY + 7, 66);
-  } else {
+  } else if (isFixed) {
     const plateY = y + h - 57;
     doc.rect(wallX + 22, plateY, w - 82, 5).fillAndStroke(colors.gray, colors.ink);
     drawDiagramText(doc, 'ENTRADA PLETINA 25x4', wallX + 18, plateY + 11, w - 72);
@@ -1041,7 +1044,7 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
       instructionParts.push(
         `BAMBA NO INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM${valanceFabric ? ` - ${valanceFabric}` : ''}`
       );
-    } else if (model === 'CAMBIO ANTICA') {
+    } else if (model === 'CAMBIO ANTICA' || model === 'ANTICA') {
       instructionParts.push(`BAMBA DE ${formatInstructionMeasure(height)}CM`);
     } else {
       instructionParts.push(`BAMBALINA INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM`);
@@ -1123,6 +1126,7 @@ function fabricWorkLabel(model) {
   if (model === 'ENROLLABLE') return 'ENROLLABLE';
   if (model === 'BAMBALINA') return 'CAMB. BAMBA';
   if (model === 'CAMBIO ANTICA') return 'CAMB. ANTICA';
+  if (model === 'ANTICA') return 'ANTICA';
   return 'TOLDO';
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
 import { formOptions, getModelBehavior, getModelWorkType, normalizeValanceFinish } from '../../domain/modelBehavior.js';
+import { normalizeAnticaVariant } from '../../domain/anticaRules.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
@@ -104,6 +105,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.fabricJobDropAllowanceCm = nullableNumber(old.fabricJobDropAllowanceCm);
   base.fabricJobValanceExtraCm = nullableNumber(old.fabricJobValanceExtraCm);
   base.anticaVariant = normalizeAnticaVariant(old.anticaVariant);
+  base.anticaSupportHeight = nullableNumber(old.anticaSupportHeight);
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
     : typeof old.notes === 'string' ? old.notes : '';
@@ -171,12 +173,6 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
 function clearStoredDrafts() {
   if (typeof localStorage === 'undefined') return;
   draftStorageKeys.forEach((key) => localStorage.removeItem(key));
-}
-
-function normalizeAnticaVariant(value: unknown): Awning['anticaVariant'] {
-  return ['SOPORTE FIJO 3 AGUJEROS', 'TUBO 30X10', 'TUBO 50X30 CONTRAPESO'].includes(String(value))
-    ? value as Awning['anticaVariant']
-    : '';
 }
 
 function getInitialHistory(): HistoryEntry[] {
@@ -321,6 +317,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
   const isPuntoRecto = model === 'PUNTO RECTO';
   const isMonoblock350 = model === 'MONOBLOCK 350';
   const isMaxiscreem = model === 'MAXISCREEM';
+  const isAntica = model === 'ANTICA' || model === 'CAMBIO ANTICA';
   const supportsValance = (getModelBehavior(model).dimensions || []).includes('valanceHeight');
   return {
     ...fresh,
@@ -378,7 +375,9 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     maxisRollDiscountCm: isMaxiscreem ? awning.maxisRollDiscountCm : null,
     maxisLoadBarDiscountCm: isMaxiscreem ? awning.maxisLoadBarDiscountCm : null,
     maxisBoxProfileDiscountCm: isMaxiscreem ? awning.maxisBoxProfileDiscountCm : null,
-    maxisFabricDropAllowanceCm: isMaxiscreem ? awning.maxisFabricDropAllowanceCm : null
+    maxisFabricDropAllowanceCm: isMaxiscreem ? awning.maxisFabricDropAllowanceCm : null,
+    anticaVariant: isAntica ? awning.anticaVariant : '',
+    anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null
   };
 }
 

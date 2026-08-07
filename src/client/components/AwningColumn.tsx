@@ -16,6 +16,7 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
+import { anticaVariants } from '../../domain/anticaRules.js';
 
 type Props = {
   awning: Awning;
@@ -52,7 +53,8 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isMaxiscreem = awning.model === 'MAXISCREEM';
   const isAmbarBox = awning.model === 'AMBAR BOX';
   const isAgataBox = awning.model === 'AGATA BOX';
-  const isAntica = awning.model === 'CAMBIO ANTICA';
+  const isAntica = awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA';
+  const isFullAntica = awning.model === 'ANTICA';
   const boxDevice = normalizeBoxDevice(awning.device);
   const maxisGroup = maxiscreemVariantGroup(awning.submodel);
   const maxisDiscounts = parameters.maxiscreem.discounts[maxisGroup][boxDevice || 'MAQUINA'];
@@ -94,6 +96,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || missingCurtainConfig
     || (fields.motorLocation && !awning.machineSide)
     || (isAntica && !awning.anticaVariant)
+    || (isFullAntica && awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' && !Number(awning.anticaSupportHeight))
     || missingValanceConfig
     || missingFinishConfig;
   const pointRequiredArms = suggestedPuntoRectoArmCount(awning.width, parameters.puntoRecto);
@@ -330,10 +333,19 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               <SelectField
                 label="Configuración Antica"
                 value={awning.anticaVariant}
-                options={['SOPORTE FIJO 3 AGUJEROS', 'TUBO 30X10', 'TUBO 50X30 CONTRAPESO']}
+                options={[...anticaVariants]}
                 placeholder="Elegir configuración…"
-                onChange={(anticaVariant) => update({ anticaVariant: anticaVariant as Awning['anticaVariant'] })}
+                onChange={(anticaVariant) => update({
+                  anticaVariant: anticaVariant as Awning['anticaVariant'],
+                  ...(isFullAntica && anticaVariant === 'TUBO 50X30 SIN BAMBA'
+                    ? { hasValance: false, valanceHeight: 0, valanceCurve: '', valanceFabric: '', remate: '', remateColor: '', rotValance: '' }
+                    : {}),
+                  ...(anticaVariant !== 'SOPORTE FIJO 3 AGUJEROS' ? { anticaSupportHeight: null } : {})
+                })}
               />
+              {isFullAntica && awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' && (
+                <NumberField label="Altura soporte-brazo (cm)" value={awning.anticaSupportHeight} min={0} step={0.1} onChange={(anticaSupportHeight) => update({ anticaSupportHeight })} />
+              )}
             </div>
           )}
           <div className="awning-finish-row awning-wide-field">

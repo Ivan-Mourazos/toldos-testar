@@ -68,6 +68,18 @@ describe('PDF provisional de revisión', () => {
     expect(entry.fields).toContainEqual({ label: 'Soporte', value: 'Maxiscreem' });
   });
 
+  test('muestra variante y altura del soporte fijo en un Antica', () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [{
+      ...base, model: 'ANTICA', anticaVariant: 'SOPORTE FIJO 3 AGUJEROS',
+      anticaSupportHeight: 237, projection: 50, device: 'MAQUINA'
+    }] });
+    const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
+
+    expect(entry.fields).toContainEqual({ label: 'Configuración Antica', value: 'Soporte fijo 3 agujeros' });
+    expect(entry.fields).toContainEqual({ label: 'Altura soporte-brazo', value: '237' });
+  });
+
   test('imprime dispositivo, sensor y posición del motor en el PDF de Punto Recto', async () => {
     const base = reviewOrder().awnings[0];
     const order = reviewOrder({ awnings: [{
