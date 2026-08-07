@@ -105,6 +105,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (hasValance) addField(cardFields, 'Rotulación bamba', yesNo(awning.rotValance), true);
 
     if (String(awning.model || '').includes('CORTINA')) {
+      if (awning.model === 'CORTINA') addField(cardFields, 'Soporte', awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS', true);
       const windowValue = awning.curtainHasWindow === null || awning.curtainHasWindow === undefined
         ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA';
       addField(cardFields, 'Ventana', windowValue, true);

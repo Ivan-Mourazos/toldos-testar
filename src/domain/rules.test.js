@@ -1251,6 +1251,49 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
     });
   });
 
+  test.each([
+    ['MAQ. EXTERIOR', 326.5, 314, 315.5, 315.5],
+    ['MOTOR', 321.5, 310.5, 311.5, 311.5]
+  ])('soporte Maxiscreem cambia solo la referencia con %s', (device, width, fabricWidth, rollTubeLength, structureLength) => {
+    const result = calculateOrder(basePayload({
+      orderCode: 'AR2403108',
+      structureColor: 'BLANCO',
+      fabric: 'ACR NEGRO',
+      awnings: [cortina({
+        of: '0205518', width, projection: 250, valanceHeight: 15,
+        device, crankHeight: device === 'MOTOR' ? null : 150,
+        curtainSupport: 'MAXISCREEM', curtainHasWindow: false
+      })]
+    }));
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true, curtainSupport: 'MAXISCREEM', fabricWidth, rollTubeLength, structureLength
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOPMAXSCRBL16', quantity: 1 })
+    ]));
+    expect(ofBlock.materials.some((item) => item.code === 'SOPUNI3AGUBL16')).toBe(false);
+    expect(ofBlock.despiece.rows[0]).toMatchObject({
+      name: 'JGO. SOPORTE MAXISCREEM', reference: 'SOPMAXSCRBL16', units: 1
+    });
+    expect(ofBlock.description).toContain('soporte Maxiscreem');
+  });
+
+  test('los pedidos anteriores de Cortina conservan el soporte universal por defecto', () => {
+    const normalized = normalizeOrder(basePayload({
+      structureColor: 'BLANCO',
+      fabric: 'ACR NEGRO',
+      awnings: [cortina({ curtainSupport: undefined })]
+    }));
+    const result = calculateOrder(normalized);
+
+    expect(normalized.awnings[0].curtainSupport).toBe('UNIVERSAL 3 AGUJEROS');
+    expect(result.ofs[0].materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOPUNI3AGUBL16', quantity: 1 })
+    ]));
+  });
+
   test('respeta el margen de confección del Excel al cambiar de número de paños', () => {
     const result = calculateOrder(basePayload({
       orderCode: 'AR26PAÑOS',

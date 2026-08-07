@@ -724,7 +724,7 @@ function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpd
         </table></div>
       </div>
 
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>110 estructuras y 68 PDF de 2026 revisados. La caída estándar suma 45 cm; el descuento histórico de 18 cm queda como excepción individual porque no depende del cliente, ventana ni bamba.</span></aside>
+      <aside className="rps-evidence"><strong>Contraste real</strong><span>110 estructuras y 68 PDF de 2026 revisados. La variante Maxiscreem cambia únicamente el soporte y comparte estos descuentos con la Cortina normal; la caída estándar suma 45 cm.</span></aside>
     </section>
   );
 }

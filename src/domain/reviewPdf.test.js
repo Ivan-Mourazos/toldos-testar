@@ -57,6 +57,17 @@ describe('PDF provisional de revisión', () => {
     expect(entry.fields.some((field) => field.label === 'Lado máquina')).toBe(false);
   });
 
+  test('muestra el soporte Maxiscreem en una Cortina', () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [{
+      ...base, model: 'CORTINA', device: 'MAQ. INTERIOR', curtainSupport: 'MAXISCREEM',
+      curtainHasWindow: false, curtainFinish: 'NORMAL'
+    }] });
+    const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
+
+    expect(entry.fields).toContainEqual({ label: 'Soporte', value: 'Maxiscreem' });
+  });
+
   test('imprime dispositivo, sensor y posición del motor en el PDF de Punto Recto', async () => {
     const base = reviewOrder().awnings[0];
     const order = reviewOrder({ awnings: [{

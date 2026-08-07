@@ -171,7 +171,8 @@ describe('switchAwningModel', () => {
       valanceCurve: '',
       valanceFabric: '',
       curtainHasWindow: null,
-      curtainFinish: ''
+      curtainFinish: '',
+      curtainSupport: model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : ''
     });
   });
 

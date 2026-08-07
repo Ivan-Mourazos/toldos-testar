@@ -54,6 +54,9 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.curtainFinish = ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish))
     ? old.curtainFinish as Awning['curtainFinish']
     : '';
+  base.curtainSupport = old.curtainSupport === 'MAXISCREEM'
+    ? 'MAXISCREEM'
+    : base.model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '';
   base.curtainFabricDeductionCm = Number.isFinite(Number(old.curtainFabricDeductionCm))
     ? Number(old.curtainFabricDeductionCm)
     : null;
@@ -340,6 +343,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     placement: awning.placement,
     curtainHasWindow: isCurtain ? awning.curtainHasWindow : null,
     curtainFinish: isCurtain ? awning.curtainFinish : '',
+    curtainSupport: model === 'CORTINA' ? (awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS') : '',
     curtainWindowExit: isCurtain ? awning.curtainWindowExit : null,
     curtainWindowCorner: isCurtain ? awning.curtainWindowCorner : null,
     curtainWindowFloorHeight: isCurtain ? awning.curtainWindowFloorHeight : null,

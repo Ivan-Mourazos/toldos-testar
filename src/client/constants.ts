@@ -39,6 +39,7 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     crankHeight: null,
     curtainHasWindow: null,
     curtainFinish: '',
+    curtainSupport: '',
     curtainWindowExit: null,
     curtainWindowCorner: null,
     curtainWindowFloorHeight: null,

@@ -44,6 +44,7 @@ export type Awning = {
   crankHeight: number | null;
   curtainHasWindow: boolean | null;
   curtainFinish: '' | 'NORMAL' | 'VELCRO' | 'TUBO';
+  curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM';
   curtainWindowExit: number | null;
   curtainWindowCorner: number | null;
   curtainWindowFloorHeight: number | null;
@@ -354,6 +355,7 @@ export type Calculation = {
       curronCount?: number;
       tubeLoad?: string;
       curtainFabricDeductionCm?: number;
+      curtainSupport?: string;
       curtainFabricWidthDiscountCm?: number;
       curtainRollTubeDiscountCm?: number;
       curtainLoadProfileDiscountCm?: number;

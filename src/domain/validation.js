@@ -131,6 +131,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
     curtainHasWindow: typeof awning?.curtainHasWindow === 'boolean' ? awning.curtainHasWindow : null,
     curtainFinish: normalizeCurtainFinish(awning?.curtainFinish),
+    curtainSupport: normalizeCurtainSupport(model, awning?.curtainSupport),
     curtainWindowExit: numberOrDefault(awning?.curtainWindowExit, 0),
     curtainWindowCorner: numberOrDefault(awning?.curtainWindowCorner, 0),
     curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),
@@ -283,5 +284,12 @@ function nullableNumber(value) {
 function normalizeCurtainFinish(value) {
   const finish = cleanText(value).toUpperCase();
   return ['NORMAL', 'VELCRO', 'TUBO'].includes(finish) ? finish : '';
+}
+
+function normalizeCurtainSupport(model, value) {
+  if (model !== 'CORTINA') return '';
+  return cleanText(value).toUpperCase() === 'MAXISCREEM'
+    ? 'MAXISCREEM'
+    : 'UNIVERSAL 3 AGUJEROS';
 }
 

@@ -344,6 +344,14 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {fields.curtain && (
             <div className="awning-form-section curtain-config">
               <span className="awning-form-section-title">Configuración de cortina</span>
+              {awning.model === 'CORTINA' && <div className="curtain-option">
+                <SelectField
+                  label="Soporte"
+                  value={awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS'}
+                  options={['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM']}
+                  onChange={(curtainSupport) => update({ curtainSupport: curtainSupport as Awning['curtainSupport'] })}
+                />
+              </div>}
               <div className="curtain-option">
                 <SegmentedField label="Ventana" value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'} options={['SIN VENTANA', 'CON VENTANA']} onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })} />
               </div>

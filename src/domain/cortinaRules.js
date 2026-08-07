@@ -10,6 +10,7 @@ export function calculateCortina({ order, awning }) {
   const structureColor = awning.structureColor || order.structureColor;
   const lacado = resolveLacado(structureColor);
   const device = normalizeDevice(awning.device);
+  const curtainSupport = normalizeCurtainSupport(awning.curtainSupport);
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
   const deduction = awning.reglasModificadas
@@ -69,7 +70,7 @@ export function calculateCortina({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de Cortina modificadas.` });
   }
 
-  const context = { awning, lacado, device, fabric, stockLength, structureLength, rollTubeLength, fabricMl: fabricUsage.ml };
+  const context = { awning, lacado, device, curtainSupport, fabric, stockLength, structureLength, rollTubeLength, fabricMl: fabricUsage.ml };
   return {
     of: awning.of,
     description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl: fabricUsage.ml }),
@@ -84,6 +85,7 @@ export function calculateCortina({ order, awning }) {
       fabricRollWidth: fabric?.width || 120,
       structureLength, rollTubeLength, stockLength,
       motorPower: device === 'MOTOR' ? '15/17' : '', armCount: 0,
+      curtainSupport,
       curtainFabricDeductionCm: deduction,
       curtainFabricWidthDiscountCm: fabricWidthDiscount,
       curtainRollTubeDiscountCm: rollTubeDiscount,
@@ -93,11 +95,11 @@ export function calculateCortina({ order, awning }) {
 }
 
 function buildMaterials(context) {
-  const { awning, lacado, device, fabric, stockLength, fabricMl } = context;
+  const { awning, lacado, device, curtainSupport, fabric, stockLength, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [
-    material(`SOPUNI3AGU${suffix}`, units, 'JGO. SOPORTE UNIVERSAL 3 AGUJEROS'),
+    supportMaterial(curtainSupport, suffix, units),
     material(`TURA80HG${stockLength}C`, units, 'TUBO DE ENROLLE P801'),
     material(`PUNI280${suffix}${stockLength}C`, units, 'TUBO DE CARGA UNIVERS 280'),
     material(`TAPOPLUN280${suffix}`, units, 'KIT TAPONES UNIVERS 280')
@@ -127,13 +129,14 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, lacado, device, stockLength, structureLength, rollTubeLength } = context;
+  const { awning, lacado, device, curtainSupport, stockLength, structureLength, rollTubeLength } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference, units: rowUnits, length });
 
-  push(1, 'JGO.SOPORTE UNIVERSAL 3 FUROS', `SOPUNI3AGU${suffix}`, units);
+  const support = supportMaterial(curtainSupport, suffix, units);
+  push(1, support.description, support.code, units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${stockLength}C`, units, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
   push(4, device === 'MOTOR' ? 'SOPORTE UNIVERSAL HIPRO' : 'CASQUILLO MAQUINA EJE 50MM Ø78', device === 'MOTOR' ? 'SOPORTEUNVHIPRO' : 'CASMAQEJE5078MM', units);
@@ -163,6 +166,12 @@ function material(code, quantity, description) {
   return { code, quantity, description };
 }
 
+function supportMaterial(curtainSupport, suffix, units) {
+  return curtainSupport === 'MAXISCREEM'
+    ? material(`SOPMAXSCR${suffix}`, units, 'JGO. SOPORTE MAXISCREEM')
+    : material(`SOPUNI3AGU${suffix}`, units, 'JGO. SOPORTE UNIVERSAL 3 AGUJEROS');
+}
+
 function normalizeDevice(value) {
   const clean = String(value || '').trim().toUpperCase();
   if (clean === 'MOTOR') return 'MOTOR';
@@ -173,6 +182,12 @@ function normalizeDevice(value) {
 
 function discount(table, device) {
   return Number(table[device || 'MOTOR']) || 0;
+}
+
+function normalizeCurtainSupport(value) {
+  return String(value || '').trim().toUpperCase() === 'MAXISCREEM'
+    ? 'MAXISCREEM'
+    : 'UNIVERSAL 3 AGUJEROS';
 }
 
 function effectiveDiscount(awning, field, table, device) {
@@ -193,7 +208,8 @@ function chooseStockLength(length, stockLengths) {
 
 function buildDescription(awning, calculation) {
   const window = awning.curtainHasWindow ? 'con ventana' : 'sin ventana';
-  return `Toldo CORTINA ${formatNumber(awning.width)}x${formatNumber(awning.projection)} · ${window} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · ${formatNumber(calculation.fabricMl)} ml`;
+  const support = normalizeCurtainSupport(awning.curtainSupport) === 'MAXISCREEM' ? ' · soporte Maxiscreem' : '';
+  return `Toldo CORTINA ${formatNumber(awning.width)}x${formatNumber(awning.projection)} · ${window}${support} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · ${formatNumber(calculation.fabricMl)} ml`;
 }
 
 function round1(value) {
