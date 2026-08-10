@@ -1,4 +1,5 @@
 import fabrics from './data/fabrics.json' with { type: 'json' };
+import { rankFabricMatches } from './fabricSearch.js';
 
 const fabricsByName = new Map();
 const fabricsByCode = new Map();
@@ -50,13 +51,7 @@ export function fabricSelectionLabel(value) {
 }
 
 export function searchStaticFabrics(query = '', limit = 25) {
-  const tokens = normalize(query).split(' ').filter(Boolean);
-  return fabrics
-    .filter((fabric) => {
-      const text = normalize(`${fabric.code} ${fabric.description}`);
-      return tokens.every((token) => text.includes(token));
-    })
-    .slice(0, Math.max(1, Math.min(Number(limit) || 25, 100)));
+  return rankFabricMatches(fabrics, query, limit);
 }
 
 function inferRollWidth(code) {

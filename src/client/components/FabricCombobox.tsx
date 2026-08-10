@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Search } from 'lucide-react';
+import { Check, Search, X } from 'lucide-react';
 import { fabricSelectionLabel, serializeFabricSelection } from '../../domain/fabricCatalog.js';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
 
@@ -21,12 +21,13 @@ type Props = {
   disabled?: boolean;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar código o color…', disabled = false }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre aproximado…', disabled = false }: Props) {
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
   const [options, setOptions] = useState<FabricOption[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const menuStyle = useFloatingMenu(open, rootRef, { maxHeight: 290, preferredWidth: 520 });
@@ -68,12 +69,21 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
     setOpen(false);
   }
 
+  function clear() {
+    setQuery('');
+    setOptions([]);
+    onChange('');
+    setOpen(true);
+    inputRef.current?.focus();
+  }
+
   return (
     <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}`}>
       <span>{label}</span>
       <div className="fabric-input-wrap">
         <Search aria-hidden="true" />
         <input
+          ref={inputRef}
           role="combobox"
           aria-expanded={open}
           aria-controls={listId}
@@ -96,6 +106,18 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Buscar c
             }
           }}
         />
+        {!disabled && query && (
+          <button
+            type="button"
+            className="fabric-clear-button"
+            aria-label={`Borrar ${label.toLocaleLowerCase('es-ES')}`}
+            title="Borrar tela"
+            onPointerDown={(event) => event.preventDefault()}
+            onClick={clear}
+          >
+            <X aria-hidden="true" />
+          </button>
+        )}
       </div>
       {open && createPortal(
         <div ref={menuRef} id={listId} className="fabric-options fabric-options-portal" style={menuStyle} role="listbox">

@@ -2610,7 +2610,34 @@ textarea:focus {
 
 .fabric-input-wrap input {
   padding-left: 29px;
+  padding-right: 34px;
   width: 100%;
+}
+
+.fabric-clear-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: #617773;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 4px;
+  width: 24px;
+}
+
+.fabric-clear-button:hover,
+.fabric-clear-button:focus-visible {
+  background: #e4ece9;
+  color: #173b40;
+}
+
+.fabric-clear-button svg {
+  height: 14px;
+  width: 14px;
 }
 
 .fabric-options {

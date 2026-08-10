@@ -1,6 +1,6 @@
 // src/domain/fabricCatalog.test.js
 import { describe, expect, it } from 'vitest';
-import { parseFabricSelection, resolveFabric, serializeFabricSelection } from './fabricCatalog.js';
+import { parseFabricSelection, resolveFabric, searchStaticFabrics, serializeFabricSelection } from './fabricCatalog.js';
 
 describe('resolveFabric', () => {
   it('resolves a known fabric by exact name', () => {
@@ -39,5 +39,15 @@ describe('resolveFabric', () => {
     expect(parseFabricSelection(encoded)).toMatchObject({ material: 'PLASTICA (LONA)' });
     expect(parseFabricSelection('ACRILI2170P120|||120|||ACR NEGRO')).toMatchObject({ material: '' });
     expect(resolveFabric('ACRILI2170P120|||120|||ACR NEGRO')).toMatchObject({ material: 'ACR' });
+  });
+});
+
+describe('searchStaticFabrics', () => {
+  it('encuentra una tela con palabras parciales y desordenadas', () => {
+    expect(searchStaticFabrics('neg acr')[0]).toMatchObject({ code: 'ACRILI2170P120', description: 'ACR NEGRO' });
+  });
+
+  it('acepta el nombre natural del material y errores pequeños', () => {
+    expect(searchStaticFabrics('acrílico grante')[0]).toMatchObject({ code: 'ACRILI2101P120', description: 'ACR GRANATE' });
   });
 });

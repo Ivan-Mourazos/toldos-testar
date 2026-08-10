@@ -1,7 +1,11 @@
 import sql from 'mssql';
 import { config } from './config.js';
+import { rankFabricMatches } from './domain/fabricSearch.js';
 
 let poolPromise;
+let fabricCache = null;
+let fabricCachePromise = null;
+const fabricCacheTtlMs = 5 * 60 * 1000;
 
 function getPool() {
   if (!poolPromise) {
@@ -24,17 +28,22 @@ function getPool() {
 }
 
 export async function searchRpsFabrics({ query = '', limit = 30 } = {}) {
-  const pool = await getPool();
   const safeLimit = Math.max(1, Math.min(Number(limit) || 30, 80));
-  const clean = String(query || '').trim();
-  const request = pool.request();
-  request.input('limit', sql.Int, safeLimit);
-  request.input('company', sql.VarChar(10), config.db.company);
-  request.input('query', sql.NVarChar(160), `%${escapeLike(clean)}%`);
-  request.input('prefix', sql.NVarChar(160), `${escapeLike(clean)}%`);
+  const items = await loadRpsFabrics();
+  return rankFabricMatches(items, query, safeLimit);
+}
 
-  const result = await request.query(`
-    SELECT TOP (@limit)
+async function loadRpsFabrics() {
+  if (fabricCache && fabricCache.expiresAt > Date.now()) return fabricCache.items;
+  if (fabricCachePromise) return fabricCachePromise;
+
+  fabricCachePromise = (async () => {
+    const pool = await getPool();
+    const request = pool.request();
+    request.input('company', sql.VarChar(10), config.db.company);
+
+    const result = await request.query(`
+    SELECT
       a.CodArticle AS code,
       a.Description AS description,
       mu.CodMeasureUnit AS unitCode,
@@ -53,26 +62,28 @@ export async function searchRpsFabrics({ query = '', limit = 30 } = {}) {
     WHERE a.CodCompany = @company
       AND (a.InactiveDate IS NULL OR a.InactiveDate > GETDATE())
       AND pf.Description = 'LONA'
-      AND (
-        @query = '%%'
-        OR a.CodArticle COLLATE Latin1_General_CI_AI LIKE @query ESCAPE '\\'
-        OR a.Description COLLATE Latin1_General_CI_AI LIKE @query ESCAPE '\\'
-      )
-    ORDER BY
-      CASE WHEN a.CodArticle COLLATE Latin1_General_CI_AI LIKE @prefix ESCAPE '\\' THEN 0 ELSE 1 END,
-      a.CodArticle;
+    ORDER BY a.CodArticle;
   `);
 
-  return result.recordset.map((row) => ({
-    code: String(row.code || '').trim(),
-    description: String(row.description || '').trim(),
-    width: inferRollWidth(row.code, row.unitCode),
-    family: String(row.family || '').trim(),
-    subfamily: String(row.subfamily || '').trim()
-  }));
+    const items = result.recordset.map((row) => ({
+      code: String(row.code || '').trim(),
+      description: String(row.description || '').trim(),
+      width: inferRollWidth(row.code, row.unitCode),
+      family: String(row.family || '').trim(),
+      subfamily: String(row.subfamily || '').trim()
+    }));
+    fabricCache = { items, expiresAt: Date.now() + fabricCacheTtlMs };
+    return items;
+  })().finally(() => {
+    fabricCachePromise = null;
+  });
+
+  return fabricCachePromise;
 }
 
 export async function closeRpsCatalog() {
+  fabricCache = null;
+  fabricCachePromise = null;
   if (!poolPromise) return;
   const pool = await poolPromise.catch(() => null);
   poolPromise = null;
@@ -84,12 +95,4 @@ function inferRollWidth(code, unitCode) {
   if (codeMatch) return Number(codeMatch[1]);
   const unitMatch = /ML(\d{2,3})/i.exec(String(unitCode || '').trim());
   return unitMatch ? Number(unitMatch[1]) : 120;
-}
-
-function escapeLike(value) {
-  return String(value || '')
-    .replaceAll('\\', '\\\\')
-    .replaceAll('%', '\\%')
-    .replaceAll('_', '\\_')
-    .replaceAll('[', '\\[');
 }
