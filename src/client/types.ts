@@ -93,7 +93,8 @@ export type Awning = {
   fabricJobWidthAdjustmentCm: number | null;
   fabricJobDropAllowanceCm: number | null;
   fabricJobValanceExtraCm: number | null;
-  anticaVariant: '' | 'SOPORTE FIJO 3 AGUJEROS' | 'TUBO 30X10' | 'TUBO 30X10 CON BAMBA' | 'TUBO 50X30 CONTRAPESO' | 'TUBO 50X30 SIN BAMBA';
+  anticaVariant: '' | 'SOPORTE FIJO 3 AGUJEROS' | 'TUBO 30X10' | 'TUBO 30X10 CON BAMBA' | 'TUBO 50X30 CONTRAPESO' | 'TUBO 50X30 SIN BAMBA' | 'ENTRADA TUBO Ø33 MM' | 'ENTRADA TUBO Ø42 MM';
+  anticaMeasurementMode: '' | 'BASE' | 'FINISHED';
   anticaSupportHeight: number | null;
   reglasModificadas: boolean;
   fabric: string;

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
 import { formOptions, getModelBehavior, getModelWorkType, normalizeValanceFinish } from '../../domain/modelBehavior.js';
-import { normalizeAnticaVariant } from '../../domain/anticaRules.js';
+import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
@@ -105,6 +105,9 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.fabricJobDropAllowanceCm = nullableNumber(old.fabricJobDropAllowanceCm);
   base.fabricJobValanceExtraCm = nullableNumber(old.fabricJobValanceExtraCm);
   base.anticaVariant = normalizeAnticaVariant(old.anticaVariant);
+  base.anticaMeasurementMode = base.model === 'CAMBIO ANTICA' && resolveAnticaRoundEntry(base.anticaVariant)
+    ? normalizeAnticaMeasurementMode(old.anticaMeasurementMode, base.anticaVariant) as Awning['anticaMeasurementMode']
+    : '';
   base.anticaSupportHeight = nullableNumber(old.anticaSupportHeight);
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
@@ -377,6 +380,11 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     maxisBoxProfileDiscountCm: isMaxiscreem ? awning.maxisBoxProfileDiscountCm : null,
     maxisFabricDropAllowanceCm: isMaxiscreem ? awning.maxisFabricDropAllowanceCm : null,
     anticaVariant: isAntica ? awning.anticaVariant : '',
+    anticaMeasurementMode: model === 'CAMBIO ANTICA' && resolveAnticaRoundEntry(awning.anticaVariant)
+      ? awning.model === 'CAMBIO ANTICA'
+        ? normalizeAnticaMeasurementMode(awning.anticaMeasurementMode, awning.anticaVariant) as Awning['anticaMeasurementMode']
+        : 'BASE'
+      : '',
     anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null
   };
 }

@@ -17,6 +17,10 @@ const preferredLabels: Record<string, string> = {
   'SIN SENSOR': 'Sin sensor',
   'VIENTO -SOL': 'Viento y sol',
   'ENTRE PAREDES': 'Entre paredes',
+  'ENTRADA TUBO Ø33 MM': 'Entrada tubo Ø33 mm',
+  'ENTRADA TUBO Ø42 MM': 'Entrada tubo Ø42 mm',
+  'BASE': 'Salida base',
+  'FINISHED': 'Tela terminada',
   'SI': 'Sí',
   'NO': 'No'
 };

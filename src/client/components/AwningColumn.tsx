@@ -16,7 +16,13 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
-import { anticaVariants } from '../../domain/anticaRules.js';
+import {
+  anticaVariants,
+  cambioAnticaVariants,
+  normalizeAnticaMeasurementMode,
+  normalizeAnticaVariant,
+  resolveAnticaRoundEntry
+} from '../../domain/anticaRules.js';
 
 type Props = {
   awning: Awning;
@@ -55,6 +61,18 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isAgataBox = awning.model === 'AGATA BOX';
   const isAntica = awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA';
   const isFullAntica = awning.model === 'ANTICA';
+  const normalizedAnticaVariant = normalizeAnticaVariant(awning.anticaVariant);
+  const roundAnticaEntry = resolveAnticaRoundEntry(normalizedAnticaVariant);
+  const isCambioAnticaRound = awning.model === 'CAMBIO ANTICA' && Boolean(roundAnticaEntry);
+  const anticaMeasurementMode = isCambioAnticaRound
+    ? normalizeAnticaMeasurementMode(awning.anticaMeasurementMode, normalizedAnticaVariant)
+    : '';
+  const isFinishedAnticaRound = isCambioAnticaRound && anticaMeasurementMode === 'FINISHED';
+  const isFullAnticaRound = isFullAntica && Boolean(roundAnticaEntry);
+  const widthLabel = isCambioAnticaRound ? 'Frente tela terminada' : 'Frente';
+  const projectionLabel = isCambioAnticaRound
+    ? isFinishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
+    : isFullAnticaRound ? 'Salida brazo' : 'Salida';
   const boxDevice = normalizeBoxDevice(awning.device);
   const maxisGroup = maxiscreemVariantGroup(awning.submodel);
   const maxisDiscounts = parameters.maxiscreem.discounts[maxisGroup][boxDevice || 'MAQUINA'];
@@ -79,6 +97,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     : null;
   const agataDiscounts = agataDevice ? parameters.agataBox.discounts[agataVariant][agataDevice] : null;
   const hasValance = awning.model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
+  const hasSeparateValance = hasValance && Boolean(awning.valanceFabric);
+  const roundAnticaDefaultAllowance = roundAnticaEntry
+    ? hasSeparateValance
+      ? roundAnticaEntry.cambioSeparateValanceAllowanceCm
+      : roundAnticaEntry.cambioDropAllowanceCm
+    : null;
   const valanceFinish = normalizeValanceFinish(awning, awning.remate);
   const missingValanceConfig = hasValance && (
     !awning.valanceCurve
@@ -96,7 +120,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || missingCurtainConfig
     || (fields.motorLocation && !awning.machineSide)
     || (isAntica && !awning.anticaVariant)
-    || (isFullAntica && awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' && !Number(awning.anticaSupportHeight))
+    || (isFullAntica && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || isFullAnticaRound) && !Number(awning.anticaSupportHeight))
     || missingValanceConfig
     || missingFinishConfig;
   const pointRequiredArms = suggestedPuntoRectoArmCount(awning.width, parameters.puntoRecto);
@@ -264,7 +288,11 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               ...(simpleFabricJob && !awning.reglasModificadas
                 ? {
                     fabricJobWidthAdjustmentCm: awning.fabricJobWidthAdjustmentCm ?? 0,
-                    fabricJobDropAllowanceCm: awning.fabricJobDropAllowanceCm ?? resolveFabricJobAllowance(awning.model, hasValance, parameters.fabricJobs),
+                    fabricJobDropAllowanceCm: isFinishedAnticaRound
+                      ? 0
+                      : roundAnticaDefaultAllowance
+                        ?? awning.fabricJobDropAllowanceCm
+                        ?? resolveFabricJobAllowance(awning.model, hasValance, parameters.fabricJobs),
                     fabricJobValanceExtraCm: awning.fabricJobValanceExtraCm ?? parameters.fabricJobs.valanceExtraCm
                   }
                 : {})
@@ -280,17 +308,17 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
       {awning.model && (
         <>
           <TextField label="OF" value={awning.of} onChange={(of) => update({ of: of.trim() })} />
-          {fields.dimensions.includes('width') && <NumberField label="Frente" value={awning.width} min={0} onChange={updateWidth} />}
+          {fields.dimensions.includes('width') && <NumberField label={widthLabel} value={awning.width} min={0} onChange={updateWidth} />}
           {fields.dimensions.includes('projection') && (useEstablishedProjection ? (
             <SelectField
-              label="Salida"
+              label={projectionLabel}
               value={awning.projection === null ? '' : String(awning.projection)}
               options={(fields.establishedProjections || []).map(String)}
               placeholder="Elegir…"
               onChange={(v) => updateProjection(v === '' ? null : Number(v))}
             />
           ) : (
-            <NumberField label="Salida" value={awning.projection} min={0} onChange={updateProjection} />
+            <NumberField label={projectionLabel} value={awning.projection} min={0} onChange={updateProjection} />
           ))}
           {supportsValance && (
             <NumberField label={awning.model === 'BAMBALINA' ? 'Alto' : 'Bamba (cm)'} value={awning.valanceHeight} min={0} onChange={updateValanceHeight} />
@@ -333,17 +361,34 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               <SelectField
                 label="Configuración Antica"
                 value={awning.anticaVariant}
-                options={[...anticaVariants]}
+                options={[...(isFullAntica ? anticaVariants : cambioAnticaVariants)]}
                 placeholder="Elegir configuración…"
                 onChange={(anticaVariant) => update({
                   anticaVariant: anticaVariant as Awning['anticaVariant'],
-                  ...(isFullAntica && anticaVariant === 'TUBO 50X30 SIN BAMBA'
+                  anticaMeasurementMode: !isFullAntica && resolveAnticaRoundEntry(anticaVariant) ? 'BASE' : '',
+                  ...(!isFullAntica ? { fabricJobDropAllowanceCm: null } : {}),
+                  ...(anticaVariant === 'TUBO 50X30 SIN BAMBA'
                     ? { hasValance: false, valanceHeight: 0, valanceCurve: '', valanceFabric: '', remate: '', remateColor: '', rotValance: '' }
                     : {}),
-                  ...(anticaVariant !== 'SOPORTE FIJO 3 AGUJEROS' ? { anticaSupportHeight: null } : {})
+                  ...(anticaVariant !== 'SOPORTE FIJO 3 AGUJEROS' && !resolveAnticaRoundEntry(anticaVariant)
+                    ? { anticaSupportHeight: null }
+                    : {})
                 })}
               />
-              {isFullAntica && awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' && (
+              {isCambioAnticaRound && (
+                <SegmentedField
+                  label="Medida de caída"
+                  value={anticaMeasurementMode}
+                  options={['BASE', 'FINISHED']}
+                  onChange={(anticaMeasurementMode) => update({
+                    anticaMeasurementMode: anticaMeasurementMode as Awning['anticaMeasurementMode'],
+                    fabricJobDropAllowanceCm: anticaMeasurementMode === 'FINISHED'
+                      ? 0
+                      : roundAnticaDefaultAllowance
+                  })}
+                />
+              )}
+              {isFullAntica && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || isFullAnticaRound) && (
                 <NumberField label="Altura soporte-brazo (cm)" value={awning.anticaSupportHeight} min={0} step={0.1} onChange={(anticaSupportHeight) => update({ anticaSupportHeight })} />
               )}
             </div>

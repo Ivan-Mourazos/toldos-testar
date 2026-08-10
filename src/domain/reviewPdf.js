@@ -1,9 +1,9 @@
 import PDFDocument from 'pdfkit';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { formatNumber } from './math.js';
-import { resolveFabric } from './fabricCatalog.js';
-import { getFieldVisibility, isFabricOnlyModel, normalizeValanceFinish } from './modelBehavior.js';
+import { buildReviewSheetEntries, fabricLabel, reviewDisplayValue } from './reviewSheetEntries.js';
+
+export { buildReviewSheetEntries };
 
 const logoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
 const PAGE_WIDTH = 595.28;
@@ -23,17 +23,6 @@ const colors = {
   ink: '#123238', muted: '#607572', line: '#cbd8d5', field: '#f9fbfa', panel: '#ffffff',
   yellow: '#d29c18', green: '#18834f', greenSoft: '#e1f3e8', amber: '#986a05',
   amberSoft: '#fff3cf', red: '#a53d33', redSoft: '#fde9e6'
-};
-
-const legacyModelNames = {
-  'AMBAR BOX': 'Microbox 300', 'AGATA BOX': 'Modul 400 / Modulbox', 'CUARZO BOX': 'Storbox 250',
-  'PERLA BOX': 'Storbox S-300', 'CORAL BOX': 'Storbox 400', MAXISCREEM: 'Diana vertical'
-};
-
-const preferredLabels = {
-  MAQUINA: 'Máquina', 'MAQ. INTERIOR': 'Máq. interior', 'MAQ. EXTERIOR': 'Máq. exterior',
-  'M.F.DER': 'M.F. derecha', 'M.F IZQ': 'M.F. izquierda', 'ENTRE PAREDES': 'Entre paredes',
-  'DIRECTA A PARED': 'Directa a pared', TECHO: 'Techo', FRONTAL: 'Frontal', SI: 'Sí', NO: 'No'
 };
 
 export async function buildOrderReviewPdf({ order, calculation, review = null }) {
@@ -73,74 +62,6 @@ export async function buildOrderReviewPdf({ order, calculation, review = null })
       });
     }
     doc.end();
-  });
-}
-
-export function buildReviewSheetEntries(order, calculation) {
-  return (order.awnings || []).map((awning, index) => {
-    const fields = getFieldVisibility({ model: awning.model, device: awning.device });
-    const ofBlock = findOfBlock(calculation, awning, index);
-    const diagnostics = (calculation.diagnostics || []).filter((item) => !item.awningId || item.awningId === awning.id);
-    const fabricOnly = isFabricOnlyModel(awning.model);
-    const hasValance = awning.model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
-    const standaloneValance = awning.model === 'BAMBALINA';
-    const valanceFinish = normalizeValanceFinish(awning, awning.remate || order.remate);
-    const cardFields = [];
-
-    addField(cardFields, 'OF', awning.of, true);
-    if (fields.dimensions.includes('width')) addField(cardFields, 'Frente', measure(awning.width), true);
-    if (fields.dimensions.includes('projection')) addField(cardFields, 'Salida', measure(awning.projection), true);
-    if (fields.dimensions.includes('valanceHeight')) addField(cardFields, standaloneValance ? 'Alto' : 'Bamba (cm)', measure(awning.valanceHeight), true);
-    if (hasValance) {
-      addField(cardFields, 'Curva bamba', awning.valanceCurve, true);
-      if (!standaloneValance) addField(cardFields, 'Tela bamba', fabricLabel(awning.valanceFabric) || 'IGUAL QUE LA TELA', true);
-      addField(cardFields, 'Remate', valanceFinish, true);
-      if (valanceFinish === 'OTRO') addField(cardFields, 'Color remate', awning.remateColor, true);
-    }
-    if (fields.tubeLoad) addField(cardFields, 'Tubo de carga', awning.tubeLoad, true);
-    if (fields.submodel) addField(cardFields, 'Variante', awning.submodel, true);
-    if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);
-    if (awning.model === 'ANTICA' && awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS') {
-      addField(cardFields, 'Altura soporte-brazo', measure(awning.anticaSupportHeight), true);
-    }
-    if (!fabricOnly) addField(cardFields, 'Lacado', awning.structureColor || order.structureColor || 'SIN INDICAR', true);
-    if (!standaloneValance) addField(cardFields, 'Rotulación tela', yesNo(awning.rotFabric), true);
-    if (hasValance) addField(cardFields, 'Rotulación bamba', yesNo(awning.rotValance), true);
-
-    if (String(awning.model || '').includes('CORTINA')) {
-      if (awning.model === 'CORTINA') addField(cardFields, 'Soporte', awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS', true);
-      const windowValue = awning.curtainHasWindow === null || awning.curtainHasWindow === undefined
-        ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA';
-      addField(cardFields, 'Ventana', windowValue, true);
-      if (windowValue) addField(cardFields, 'Confección', awning.curtainFinish, true);
-      if (awning.curtainHasWindow) {
-        addField(cardFields, 'Salida ventana', measure(awning.curtainWindowExit), true);
-        addField(cardFields, 'Esquina', measure(awning.curtainWindowCorner), true);
-        addField(cardFields, 'Suelo-ventana', measure(awning.curtainWindowFloorHeight), true);
-        addField(cardFields, 'H. ventana', measure(awning.curtainWindowHeight), true);
-      }
-    }
-
-    if (order.sameFabric === false) addField(cardFields, 'Tela', fabricLabel(awning.fabric), true);
-    if (fields.device) addField(cardFields, 'Dispositivo', awning.device, true);
-    if (fields.sensor) addField(cardFields, 'Sensor', awning.sensor, true);
-    if (fields.motorLocation) addField(cardFields, 'Posición motor', awning.machineSide, true);
-    if (fields.machineLocation) addField(cardFields, 'Lado máquina', awning.machineSide, true);
-    if (fields.crankHeight) addField(cardFields, 'Altura manivela', measure(awning.crankHeight), true);
-    if (fields.placement) addField(cardFields, 'Colocación', awning.placement, true);
-    if (fields.wallType) addField(cardFields, 'Tipo de pared', awning.wallType || 'NO INDICADA', true);
-    if (fields.arms) addField(cardFields, 'Nº de brazos', awning.armCount, true);
-
-    return {
-      awning, letter: awningLetter(index), tag: `${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`,
-      title: displayLabel(awning.model || 'MODELO SIN INDICAR'),
-      legacyTitle: legacyModelNames[String(awning.model || '').toUpperCase()] || '',
-      status: reviewStatus(awning, ofBlock, diagnostics), fields: cardFields,
-      notes: fabricOnly
-        ? [{ label: 'Obs. tela', value: displayValue(awning.fabricNotes) }]
-        : [{ label: 'Obs. estructura', value: displayValue(awning.structureNotes) }, { label: 'Obs. tela', value: displayValue(awning.fabricNotes) }],
-      modified: Boolean(awning.reglasModificadas)
-    };
   });
 }
 
@@ -247,7 +168,7 @@ function drawFields(doc, fields, x, y, width) {
 function drawFormField(doc, field, x, y, width) {
   doc.fillColor(colors.muted).font('Helvetica-Bold').fontSize(6.5).text(field.label, x, y, { width, ellipsis: true });
   doc.roundedRect(x, y + 10, width, 24, 4).fillAndStroke(colors.field, colors.line);
-  const value = displayValue(field.value);
+  const value = reviewDisplayValue(field.value);
   let size = 8.5;
   doc.font('Helvetica').fontSize(size);
   while (size > 6.5 && doc.widthOfString(value) > width - 14) { size -= 0.5; doc.fontSize(size); }
@@ -324,61 +245,10 @@ function addPageNumbers(doc) {
   }
 }
 
-function addField(fields, label, value, preserveBlank = false) {
-  if (!preserveBlank && (value === '' || value === null || value === undefined)) return;
-  fields.push({ label, value: displayValue(value) });
-}
-
-function findOfBlock(calculation, awning, index) {
-  return (calculation.ofs || []).find((item) => item.awningId && item.awningId === awning.id)
-    || (calculation.ofs || []).find((item) => item.awningIndex === index) || calculation.ofs?.[index] || null;
-}
-
-function reviewStatus(awning, ofBlock, diagnostics) {
-  if (!awning.model || !awning.of || !ofBlock) return 'INCOMPLETO';
-  if (diagnostics.some((item) => item.level === 'error' || item.level === 'pending')) return 'REVISAR';
-  return ofBlock.calculation?.valid ? 'VÁLIDO' : 'REVISAR';
-}
-
-function displayValue(value) {
-  if (value === '' || value === null || value === undefined) return '—';
-  return displayLabel(String(value));
-}
-
-function displayLabel(value) {
-  const text = String(value || '');
-  if (preferredLabels[text]) return preferredLabels[text];
-  if (!text || text !== text.toLocaleUpperCase('es-ES')) return text;
-  const sentence = text.toLocaleLowerCase('es-ES');
-  return `${sentence.charAt(0).toLocaleUpperCase('es-ES')}${sentence.slice(1)}`
-    .replace(/\b(r|ral)-(?=\d)/g, (code) => code.toLocaleUpperCase('es-ES'));
-}
-
-function measure(input) {
-  const number = Number(input);
-  if (!Number.isFinite(number) || number === 0) return '';
-  return formatNumber(number);
-}
-
-function yesNo(value) {
-  if (String(value || '').toUpperCase() === 'SI') return 'Sí';
-  if (String(value || '').toUpperCase() === 'NO') return 'No';
-  return value;
-}
-
 function formatDate(value) {
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat('es-ES').format(date);
 }
-
-function fabricLabel(selection) {
-  if (!selection) return '';
-  const fabric = resolveFabric(selection);
-  if (!fabric) return String(selection);
-  return `${fabric.description || 'TELA'} · ${fabric.code}`;
-}
-
-function awningLetter(index) { return String.fromCharCode(65 + (index % 26)); }
 
 function cleanOrderCode(value) {
   return String(value || 'PEDIDO').trim().toUpperCase().replace(/[^A-Z0-9_-]+/g, '').slice(0, 80) || 'PEDIDO';

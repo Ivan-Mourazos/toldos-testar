@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, FolderCog, ShieldCheck } from 'lucide-react';
 import type { WorkflowReadiness, WorkflowSettings } from '../types';
+import type { Notify } from '../components/NotificationCenter';
 
 export function SettingsView({
   settings,
@@ -11,7 +12,7 @@ export function SettingsView({
   settings: WorkflowSettings;
   readiness: WorkflowReadiness;
   onSaved: (settings: WorkflowSettings, readiness: WorkflowReadiness) => void;
-  onToast: (message: string) => void;
+  onToast: Notify;
 }) {
   const [form, setForm] = useState<WorkflowSettings>(settings);
   const [saving, setSaving] = useState(false);
@@ -30,9 +31,12 @@ export function SettingsView({
       onSaved(data.settings, data.readiness);
       onToast(data.readiness.productionReady
         ? 'Rutas guardadas. El flujo de producción está activo.'
-        : 'Rutas guardadas. La producción sigue desactivada.');
+        : 'Rutas guardadas. La producción sigue desactivada.', {
+        tone: 'success',
+        title: 'Configuración guardada'
+      });
     } catch (error) {
-      onToast(error instanceof Error ? error.message : 'No se pudo guardar la configuración.');
+      onToast(error instanceof Error ? error.message : 'No se pudo guardar la configuración.', { tone: 'error' });
     } finally {
       setSaving(false);
     }

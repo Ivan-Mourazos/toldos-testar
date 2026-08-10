@@ -1372,6 +1372,13 @@
     "color": "STILO BRISA"
   },
   {
+    "code": "ACRILI2759P120",
+    "description": "ACR STILOFRAGOLA",
+    "width": 120,
+    "material": "ACR",
+    "color": "STILOFRAGOLA"
+  },
+  {
     "code": "ACRILI1459P120",
     "description": "ACR STIRLING",
     "width": 120,

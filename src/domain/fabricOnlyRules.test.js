@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
+import { ANTICA_TUBE_33_VARIANT, ANTICA_TUBE_42_VARIANT } from './anticaRules.js';
 
 const base = {
   orderCode: 'AR26TEXTIL',
@@ -49,6 +50,161 @@ describe('trabajos solo de tela', () => {
     expect(result.ofs[0].calculation.valanceFabricMl).toBe(0);
   });
 
+  test('CAMBIO ANTICA 50x30 SIN BAMBA rechaza una bamba heredada', () => {
+    const result = calculate('CAMBIO ANTICA', {
+      anticaVariant: 'TUBO 50X30 SIN BAMBA', valanceHeight: 25
+    });
+
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics.some((item) => item.message.includes('no admite bambalina'))).toBe(true);
+  });
+
+  test.each([
+    [ANTICA_TUBE_33_VARIANT, 45, 230],
+    [ANTICA_TUBE_42_VARIANT, 60, 245]
+  ])('CAMBIO ANTICA %s en modo BASE aplica su aumento propio', (anticaVariant, allowance, fabricDrop) => {
+    const result = calculate('CAMBIO ANTICA', {
+      width: 273.5,
+      projection: 180,
+      valanceHeight: 0,
+      anticaVariant,
+      anticaMeasurementMode: 'BASE'
+    });
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      fabricWidth: 273.5,
+      fabricDrop,
+      fabricJobDropAllowanceCm: allowance,
+      anticaMeasurementMode: 'BASE'
+    });
+  });
+
+  test.each([
+    [ANTICA_TUBE_33_VARIANT, 45, 255],
+    [ANTICA_TUBE_42_VARIANT, 60, 270]
+  ])('CAMBIO ANTICA %s suma una sola vez el remate de la bamba integrada', (anticaVariant, allowance, fabricDrop) => {
+    const result = calculate('CAMBIO ANTICA', {
+      width: 273.5,
+      projection: 180,
+      valanceHeight: 25,
+      anticaVariant,
+      anticaMeasurementMode: 'BASE'
+    });
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      fabricDrop,
+      fabricJobDropAllowanceCm: allowance,
+      valanceFabricMl: 0
+    });
+  });
+
+  test.each([
+    [ANTICA_TUBE_33_VARIANT, 40, 220],
+    [ANTICA_TUBE_42_VARIANT, 55, 235]
+  ])('CAMBIO ANTICA %s conserva la diferencia de diámetro con la bamba en otra tela', (anticaVariant, allowance, fabricDrop) => {
+    const result = calculate('CAMBIO ANTICA', {
+      width: 273.5,
+      projection: 180,
+      valanceHeight: 25,
+      valanceFabric: 'ACR GRANATE',
+      anticaVariant,
+      anticaMeasurementMode: 'BASE'
+    });
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      fabricDrop,
+      fabricJobDropAllowanceCm: allowance,
+      valanceDrop: 30,
+      valanceFabricCode: 'ACRILI2101P120'
+    });
+    expect(result.ofs[0].materials).toHaveLength(2);
+  });
+
+  test.each([ANTICA_TUBE_33_VARIANT, ANTICA_TUBE_42_VARIANT])(
+    'CAMBIO ANTICA %s en modo FINISHED conserva la caída de tela exacta',
+    (anticaVariant) => {
+      const result = calculate('CAMBIO ANTICA', {
+        width: 273.5,
+        projection: 180,
+        valanceHeight: 0,
+        anticaVariant,
+        anticaMeasurementMode: 'FINISHED'
+      });
+
+      expect(result.ofs[0].calculation).toMatchObject({
+        valid: true,
+        fabricWidth: 273.5,
+        fabricDrop: 180,
+        fabricJobWidthAdjustmentCm: 0,
+        fabricJobDropAllowanceCm: 0,
+        anticaMeasurementMode: 'FINISHED'
+      });
+    }
+  );
+
+  test('CAMBIO ANTICA Ø42 antiguo sin modo conserva las medidas terminadas', () => {
+    const result = calculate('CAMBIO ANTICA', {
+      width: 273.5,
+      projection: 180,
+      valanceHeight: 0,
+      anticaVariant: ANTICA_TUBE_42_VARIANT
+    });
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      fabricWidth: 273.5,
+      fabricDrop: 180,
+      fabricJobWidthAdjustmentCm: 0,
+      fabricJobDropAllowanceCm: 0,
+      anticaMeasurementMode: 'FINISHED'
+    });
+  });
+
+  test('CAMBIO ANTICA FINISHED ignora un margen BASE antiguo aunque las reglas estén modificadas', () => {
+    const result = calculate('CAMBIO ANTICA', {
+      width: 273.5,
+      projection: 180,
+      valanceHeight: 0,
+      anticaVariant: ANTICA_TUBE_42_VARIANT,
+      anticaMeasurementMode: 'FINISHED',
+      reglasModificadas: true,
+      fabricJobDropAllowanceCm: 65
+    });
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      fabricDrop: 180,
+      fabricJobDropAllowanceCm: 0,
+      anticaMeasurementMode: 'FINISHED'
+    });
+  });
+
+  test('CAMBIO ANTICA FINISHED no vuelve a sumar la bamba a una caída ya terminada', () => {
+    const included = calculate('CAMBIO ANTICA', {
+      width: 273.5, projection: 180, valanceHeight: 25,
+      anticaVariant: ANTICA_TUBE_42_VARIANT,
+      anticaMeasurementMode: 'FINISHED'
+    });
+    const separate = calculate('CAMBIO ANTICA', {
+      width: 273.5, projection: 180, valanceHeight: 25, valanceFabric: 'ACR GRANATE',
+      anticaVariant: ANTICA_TUBE_42_VARIANT,
+      anticaMeasurementMode: 'FINISHED'
+    });
+
+    expect(included.ofs[0].calculation).toMatchObject({
+      fabricDrop: 180,
+      valanceFabricMl: 0
+    });
+    expect(separate.ofs[0].calculation).toMatchObject({
+      fabricDrop: 180,
+      valanceDrop: 30,
+      valanceFabricCode: 'ACRILI2101P120'
+    });
+  });
+
   test('reserva la bamba por separado cuando lleva otra tela', () => {
     const result = calculate('CAMBIO TELA', { valanceFabric: 'ACR GRANATE' });
     expect(result.ofs[0].calculation).toMatchObject({
@@ -65,7 +221,9 @@ describe('trabajos solo de tela', () => {
   });
 
   test('CAMBIO ANTICA usa +40 en el cuerpo si la bamba lleva otra tela', () => {
-    const result = calculate('CAMBIO ANTICA', { valanceFabric: 'ACR GRANATE' });
+    const result = calculate('CAMBIO ANTICA', {
+      anticaVariant: 'TUBO 30X10 CON BAMBA', valanceFabric: 'ACR GRANATE'
+    });
     expect(result.ofs[0].calculation).toMatchObject({
       fabricDrop: 290,
       valanceFabricCode: 'ACRILI2101P120',

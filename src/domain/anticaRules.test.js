@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
+import {
+  ANTICA_TUBE_33_VARIANT,
+  ANTICA_TUBE_42_VARIANT,
+  anticaVariants,
+  cambioAnticaVariants,
+  normalizeAnticaVariant
+} from './anticaRules.js';
 
 function payload(awning, overrides = {}) {
   return {
@@ -18,6 +25,73 @@ function payload(awning, overrides = {}) {
 }
 
 describe('ANTICA contra los cuatro libros históricos', () => {
+  test('normaliza las entradas redondas Ø33 y Ø42 y las ofrece en Antica y Cambio Antica', () => {
+    expect(normalizeAnticaVariant('tubo 33')).toBe(ANTICA_TUBE_33_VARIANT);
+    expect(normalizeAnticaVariant('entrada tubo Ø33mm')).toBe(ANTICA_TUBE_33_VARIANT);
+    expect(normalizeAnticaVariant('entrada de tubo de Ø32 cm')).toBe(ANTICA_TUBE_33_VARIANT);
+    expect(normalizeAnticaVariant('tubo 42')).toBe(ANTICA_TUBE_42_VARIANT);
+    expect(normalizeAnticaVariant('entrada tubo Ø42mm')).toBe(ANTICA_TUBE_42_VARIANT);
+    expect(normalizeAnticaVariant('entrada de tubo de Ø42 mm')).toBe(ANTICA_TUBE_42_VARIANT);
+    expect(anticaVariants).toContain(ANTICA_TUBE_33_VARIANT);
+    expect(anticaVariants).toContain(ANTICA_TUBE_42_VARIANT);
+    expect(cambioAnticaVariants).toContain(ANTICA_TUBE_33_VARIANT);
+    expect(cambioAnticaVariants).toContain(ANTICA_TUBE_42_VARIANT);
+  });
+
+  test.each([
+    [ANTICA_TUBE_33_VARIANT, 276.8, 158],
+    [ANTICA_TUBE_42_VARIANT, 273.5, 180]
+  ])('%s calcula el frente y la caída con la holgura propia del diámetro', (anticaVariant, fabricWidth, fabricDrop) => {
+    const ofBlock = calculateOrder(payload({
+      width: 284,
+      projection: 80,
+      valanceHeight: 20,
+      anticaVariant,
+      anticaSupportHeight: 60
+    })).ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true,
+      variant: anticaVariant,
+      fabricWidth,
+      fabricDrop,
+      supportHeight: 60
+    });
+  });
+
+  test.each([ANTICA_TUBE_33_VARIANT, ANTICA_TUBE_42_VARIANT])(
+    '%s exige la altura entre soporte y brazo',
+    (anticaVariant) => {
+      const result = calculateOrder(payload({ anticaVariant, anticaSupportHeight: 0 }));
+
+      expect(result.ofs[0].calculation.valid).toBe(false);
+      expect(result.diagnostics.some((item) => item.message.includes('altura soporte-brazo'))).toBe(true);
+    }
+  );
+
+  test('el Antica completo AR.22.01476 reproduce 284x90 como tela 273,5x180', () => {
+    const supportHeight = Math.sqrt((180 - 60) ** 2 - 90 ** 2);
+    const ofBlock = calculateOrder(payload({
+      width: 284, projection: 90, valanceHeight: 0,
+      anticaVariant: ANTICA_TUBE_42_VARIANT, anticaSupportHeight: supportHeight
+    })).ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({ valid: true, fabricWidth: 273.5, fabricDrop: 180 });
+  });
+
+  test.each([
+    [ANTICA_TUBE_33_VARIANT, 277.8, 276.8, 'TUBO ENTRADA Ø33 MM'],
+    [ANTICA_TUBE_42_VARIANT, 273, 272.5, 'TUBO ENTRADA Ø42 MM']
+  ])('%s conserva los descuentos y el nombre de tubo del caso real', (anticaVariant, rollTubeLength, structureLength, loadName) => {
+    const ofBlock = calculateOrder(payload({
+      width: 284, projection: 80, valanceHeight: 0,
+      anticaVariant, anticaSupportHeight: 60
+    })).ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({ rollTubeLength, structureLength });
+    expect(ofBlock.despiece.rows).toContainEqual(expect.objectContaining({ name: loadName, length: structureLength }));
+  });
+
   test('50x30 contrapeso reproduce el ejemplo 190x80 con bamba 20', () => {
     const ofBlock = calculateOrder(payload({})).ofs[0];
 

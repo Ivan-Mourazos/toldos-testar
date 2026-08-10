@@ -5,17 +5,64 @@ import { machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 
+export const ANTICA_TUBE_33_VARIANT = 'ENTRADA TUBO Ø33 MM';
+export const ANTICA_TUBE_42_VARIANT = 'ENTRADA TUBO Ø42 MM';
+
+export const anticaRoundEntrySpecs = Object.freeze({
+  [ANTICA_TUBE_33_VARIANT]: Object.freeze({
+    diameterMm: 33,
+    cambioDropAllowanceCm: 45,
+    cambioSeparateValanceAllowanceCm: 40,
+    fullDropAllowanceCm: 38,
+    fullFabricWidthDiscountCm: 7.2,
+    fullRollTubeDiscountCm: 6.2,
+    fullLoadBarDiscountCm: 7.2
+  }),
+  [ANTICA_TUBE_42_VARIANT]: Object.freeze({
+    diameterMm: 42,
+    cambioDropAllowanceCm: 60,
+    cambioSeparateValanceAllowanceCm: 55,
+    fullDropAllowanceCm: 60,
+    fullFabricWidthDiscountCm: 10.5,
+    fullRollTubeDiscountCm: 11,
+    fullLoadBarDiscountCm: 11.5
+  })
+});
+
 export const anticaVariants = Object.freeze([
   'TUBO 50X30 CONTRAPESO',
   'TUBO 50X30 SIN BAMBA',
   'TUBO 30X10 CON BAMBA',
+  ANTICA_TUBE_33_VARIANT,
+  ANTICA_TUBE_42_VARIANT,
   'SOPORTE FIJO 3 AGUJEROS'
 ]);
 
+export const cambioAnticaVariants = anticaVariants;
+
 export function normalizeAnticaVariant(value) {
-  const clean = String(value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+  const clean = String(value || '').trim().toUpperCase().replace(/\s+/g, ' ')
+    .replace(/^ENTRADA(?: DE)? TUBO(?: DE)? /, 'ENTRADA TUBO ');
   if (clean === 'TUBO 30X10') return 'TUBO 30X10 CON BAMBA';
-  return anticaVariants.includes(clean) ? clean : '';
+  const roundMatch = clean.match(/^(?:ENTRADA TUBO |TUBO )Ø?(30|32|33|40|42)\s*(?:MM|CM)?$/);
+  if (roundMatch && ['30', '32', '33'].includes(roundMatch[1])) return ANTICA_TUBE_33_VARIANT;
+  if (roundMatch && ['40', '42'].includes(roundMatch[1])) return ANTICA_TUBE_42_VARIANT;
+  return cambioAnticaVariants.includes(clean) ? clean : '';
+}
+
+export function resolveAnticaRoundEntry(value) {
+  return anticaRoundEntrySpecs[normalizeAnticaVariant(value)] || null;
+}
+
+export function normalizeAnticaMeasurementMode(value, variant) {
+  const normalizedVariant = normalizeAnticaVariant(variant);
+  if (!anticaRoundEntrySpecs[normalizedVariant]) return '';
+  const clean = String(value || '').trim().toUpperCase();
+  if (clean === 'BASE') return 'BASE';
+  if (clean === 'FINISHED' || clean === 'TERMINADA' || clean === 'TELA TERMINADA') return 'FINISHED';
+  // La variante Ø42 ya se guardaba antes como medida terminada. Conservamos
+  // esa lectura para los pedidos antiguos; los nuevos formularios fijan BASE.
+  return normalizedVariant === ANTICA_TUBE_42_VARIANT ? 'FINISHED' : 'BASE';
 }
 
 export function calculateAntica({ order, awning }) {
@@ -33,9 +80,13 @@ export function calculateAntica({ order, awning }) {
   const armCount = Number(awning.width) > 400 ? 3 : 2;
   const rollSystem = Number(awning.width) > 400 ? 'P801' : 'P701';
   const stockLengths = [600, 700];
-  const fabricDiscount = device === 'MOTOR' ? 11 : 12;
-  const rollDiscount = device === 'MOTOR' ? 10 : 11;
-  const loadDiscount = isFixedVariant(variant) ? (device === 'MOTOR' ? 10 : 11) : (device === 'MOTOR' ? 11 : 12);
+  const roundEntry = resolveAnticaRoundEntry(variant);
+  const roundMachine = roundEntry && device === 'MAQUINA';
+  const fabricDiscount = roundMachine ? roundEntry.fullFabricWidthDiscountCm : device === 'MOTOR' ? 11 : 12;
+  const rollDiscount = roundMachine ? roundEntry.fullRollTubeDiscountCm : device === 'MOTOR' ? 10 : 11;
+  const loadDiscount = roundMachine
+    ? roundEntry.fullLoadBarDiscountCm
+    : isFixedVariant(variant) ? (device === 'MOTOR' ? 10 : 11) : (device === 'MOTOR' ? 11 : 12);
   const fabricWidth = round1(Number(awning.width) - fabricDiscount);
   const rollTubeLength = round1(Number(awning.width) - rollDiscount);
   const loadBarLength = round1(Number(awning.width) - loadDiscount);
@@ -66,7 +117,7 @@ export function calculateAntica({ order, awning }) {
   if (!fabricSelection) missingFields.push('tela');
   if (!device) missingFields.push('dispositivo válido');
   if (device === 'MAQUINA' && !awning.crankHeight) missingFields.push('altura de manivela');
-  if (isFixedVariant(variant) && !supportHeight) missingFields.push('altura soporte-brazo');
+  if ((isFixedVariant(variant) || roundEntry) && !supportHeight) missingFields.push('altura soporte-brazo');
 
   const invalidValance = variant === 'TUBO 50X30 SIN BAMBA' && valanceHeight > 0;
   const valid = missingFields.length === 0
@@ -115,6 +166,12 @@ export function calculateAntica({ order, awning }) {
 
 function calculateAnticaBodyDrop({ awning, variant, supportHeight, valanceHeight, separateValance }) {
   const projection = Math.max(0, Number(awning.projection) || 0);
+  const roundEntry = resolveAnticaRoundEntry(variant);
+  if (roundEntry) {
+    return Math.hypot(projection, supportHeight)
+      + roundEntry.fullDropAllowanceCm
+      + (separateValance ? 0 : valanceHeight);
+  }
   if (separateValance) return projection + 40;
   if (variant === 'SOPORTE FIJO 3 AGUJEROS') {
     return Math.hypot(projection, supportHeight) + 75 + valanceHeight;
@@ -191,6 +248,8 @@ function buildDespiece(context) {
 }
 
 function loadPieceName(variant) {
+  const roundEntry = resolveAnticaRoundEntry(variant);
+  if (roundEntry) return `TUBO ENTRADA Ø${roundEntry.diameterMm} MM`;
   if (variant === 'TUBO 50X30 SIN BAMBA') return 'TUBO CARGA 50 X 30';
   if (variant === 'SOPORTE FIJO 3 AGUJEROS') return 'TUBO DE CARGA P701';
   return 'TUBO CARGA 30 X 10';

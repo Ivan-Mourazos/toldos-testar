@@ -5,7 +5,7 @@ import { normalizeCoralBoxParameters, normalizePerlaBoxParameters } from './stor
 import { normalizeCuarzoBoxParameters } from './storbox250Parameters.js';
 import { normalizeXacobeoParameters } from './xacobeoParameters.js';
 import { normalizePuntoRectoParameters } from './puntoRectoParameters.js';
-import { normalizeAnticaVariant } from './anticaRules.js';
+import { normalizeAnticaMeasurementMode, normalizeAnticaVariant } from './anticaRules.js';
 import { normalizeMonoblock350Parameters } from './monoblock350Parameters.js';
 import { normalizeMaxiscreemParameters } from './maxiscreemParameters.js';
 import { normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
@@ -182,6 +182,9 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     fabricJobDropAllowanceCm: nullableNumber(awning?.fabricJobDropAllowanceCm),
     fabricJobValanceExtraCm: nullableNumber(awning?.fabricJobValanceExtraCm),
     anticaVariant: normalizeAnticaVariant(awning?.anticaVariant),
+    anticaMeasurementMode: model === 'CAMBIO ANTICA'
+      ? normalizeAnticaMeasurementMode(awning?.anticaMeasurementMode, awning?.anticaVariant)
+      : '',
     anticaSupportHeight: numberOrDefault(awning?.anticaSupportHeight, 0),
     valanceHeight,
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),

@@ -22,18 +22,19 @@ import { ParametersView } from './views/ParametersView';
 import { useParameters } from './hooks/useParameters';
 import { ReviewsView } from './views/ReviewsView';
 import { SettingsView } from './views/SettingsView';
+import { NotificationCenter, useNotifications } from './components/NotificationCenter';
 
 export default function App() {
   const draft = useDraft();
   const ruleSettings = useParameters();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
-  const [toast, setToast] = useState('');
   const [working, setWorking] = useState<'review' | 'preview' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings | null>(null);
   const [workflowReadiness, setWorkflowReadiness] = useState<WorkflowReadiness | null>(null);
   const [reviewRefresh, setReviewRefresh] = useState(0);
+  const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
 
   const { calculation, calculationState } = useCalculation({
     activeTab,
@@ -57,8 +58,8 @@ export default function App() {
     fetch('/api/catalog')
       .then((response) => response.json())
       .then(setCatalog)
-      .catch(() => setToast('No se pudo cargar el catálogo.'));
-  }, []);
+      .catch(() => notify('No se pudo cargar el catálogo.', { tone: 'error' }));
+  }, [notify]);
 
   useEffect(() => {
     fetch('/api/workflow/settings')
@@ -71,25 +72,32 @@ export default function App() {
         setWorkflowSettings(data.settings);
         setWorkflowReadiness(data.readiness);
       })
-      .catch(() => setToast('No se pudo cargar la configuración de carpetas.'));
-  }, []);
-
-  // Auto-dismiss toast
-  useEffect(() => {
-    if (!toast) return;
-    const timer = window.setTimeout(() => setToast(''), 5000);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
+      .catch(() => notify('No se pudo cargar la configuración de carpetas.', { tone: 'error' }));
+  }, [notify]);
 
   useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
-  function openReview(review: ReviewPackage) {
+  async function editReview(review: ReviewPackage) {
+    const hasDraftData = Boolean(
+      draft.orderCode || draft.customer || draft.fabric
+      || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection)
+    );
+    if (hasDraftData) {
+      const choice = await askForConfirmation({
+        title: `Corregir ${review.orderCode}`,
+        message: 'Los datos que haya ahora en Pedido se sustituirán por esta revisión. Los archivos ya guardados no se modificarán hasta que vuelvas a guardar.',
+        confirmLabel: 'Abrir para corregir',
+        cancelLabel: 'Conservar formulario',
+        tone: 'warning'
+      });
+      if (choice !== 'confirm') return;
+    }
     draft.loadOrder(review.order);
     if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters);
     setActiveTab('order');
-    setToast(`Pedido ${review.orderCode} abierto desde la bandeja de revisión.`);
+    notify(`Pedido ${review.orderCode} cargado en el formulario para corregirlo.`, { tone: 'info', title: 'Modo de corrección' });
   }
 
   function currentOrderPayload() {
@@ -113,11 +121,11 @@ export default function App() {
 
   async function saveForReview(confirmOverwrite = false) {
     if (!calculation || calculation.ofs.length === 0) {
-      setToast('Completa al menos un toldo antes de guardarlo para revisión.');
+      notify('Completa al menos un toldo antes de guardarlo para revisión.', { tone: 'warning' });
       return;
     }
     if (!draft.orderCode.trim()) {
-      setToast('Indica el número de pedido para crear el archivo de revisión.');
+      notify('Indica el número de pedido para crear el archivo de revisión.', { tone: 'warning' });
       return;
     }
     setWorking('review');
@@ -129,18 +137,25 @@ export default function App() {
       });
       const data = await response.json();
       if (response.status === 409 && data.needsConfirmation) {
-        const ok = window.confirm(`El pedido ${draft.orderCode} ya está en revisión. ¿Quieres actualizarlo con estos datos?`);
-        if (ok) await saveForReview(true);
+        const choice = await askForConfirmation({
+          title: `Actualizar ${draft.orderCode}`,
+          message: 'Este pedido ya está en la bandeja de revisión. Si continúas, el PDF actual se sustituirá por los datos del formulario.',
+          confirmLabel: 'Actualizar pedido',
+          cancelLabel: 'Conservar el actual',
+          tone: 'warning',
+          details: data.existing
+        });
+        if (choice === 'confirm') await saveForReview(true);
         return;
       }
       if (!response.ok) {
-        setToast(data.error || 'No se pudo guardar el pedido para revisión.');
+        notify(data.error || 'No se pudo guardar el pedido para revisión.', { tone: 'error' });
         return;
       }
       setReviewRefresh((value) => value + 1);
-      setToast(`${data.review.orderCode}.pdf guardado en ${data.savedPath}`);
+      notify(`${data.review.orderCode}.pdf guardado en ${data.savedPath}`, { tone: 'success', title: 'Guardado para revisión' });
     } catch {
-      setToast('No se pudo guardar el pedido para revisión.');
+      notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
     } finally {
       setWorking(null);
     }
@@ -148,7 +163,7 @@ export default function App() {
 
   async function openPlanteamientoPreview() {
     if (!calculation || calculation.ofs.length === 0) {
-      setToast('Completa al menos un toldo para ver el planteamiento.');
+      notify('Completa al menos un toldo para ver el planteamiento.', { tone: 'warning' });
       return;
     }
     setWorking('preview');
@@ -160,7 +175,7 @@ export default function App() {
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setToast(data.error || 'No se pudo generar la vista previa.');
+        notify(data.error || 'No se pudo generar la vista previa.', { tone: 'error' });
         return;
       }
       const blob = await response.blob();
@@ -169,7 +184,7 @@ export default function App() {
         return URL.createObjectURL(blob);
       });
     } catch {
-      setToast('No se pudo generar la vista previa.');
+      notify('No se pudo generar la vista previa.', { tone: 'error' });
     } finally {
       setWorking(null);
     }
@@ -182,15 +197,24 @@ export default function App() {
     });
   }
 
-  function clearForm() {
+  async function clearForm() {
     const hasData = Boolean(
       draft.orderCode || draft.customer || draft.fabric
       || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection)
     );
-    if (hasData && !window.confirm('Se borrarán todos los datos del formulario actual. ¿Continuar?')) return;
+    if (hasData) {
+      const choice = await askForConfirmation({
+        title: 'Limpiar el formulario',
+        message: 'Se borrarán todos los datos del pedido actual. Esta acción no elimina los archivos que ya estén guardados.',
+        confirmLabel: 'Limpiar formulario',
+        cancelLabel: 'Volver al pedido',
+        tone: 'danger'
+      });
+      if (choice !== 'confirm') return;
+    }
     draft.resetDraft();
     setActiveTab('order');
-    setToast('Formulario limpio.');
+    notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
 
   const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : calculationState === 'idle' ? 'badge-neutral' : 'badge-ok';
@@ -240,7 +264,7 @@ export default function App() {
           </div>
           {activeTab === 'order' && (
             <div className="topbar-actions">
-              <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={clearForm}>
+              <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={() => void clearForm()}>
                 <Eraser aria-hidden="true" />
                 Limpiar
               </button>
@@ -322,25 +346,32 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'reviews' && <ReviewsView refreshKey={reviewRefresh} onOpen={openReview} onToast={setToast} />}
+          {activeTab === 'reviews' && (
+            <ReviewsView
+              refreshKey={reviewRefresh}
+              onOpen={editReview}
+              onToast={notify}
+              onConfirm={askForConfirmation}
+            />
+          )}
           {activeTab === 'settings' && (
             workflowSettings && workflowReadiness
               ? <SettingsView
                   settings={workflowSettings}
                   readiness={workflowReadiness}
                   onSaved={(settings, readiness) => { setWorkflowSettings(settings); setWorkflowReadiness(readiness); }}
-                  onToast={setToast}
+                  onToast={notify}
                 />
               : <section className="settings-panel panel">Cargando configuración…</section>
           )}
         </div>
       </section>
-      {toast && (
-        <div className="toast">
-          {toast}
-          <button className="toast-close" type="button" onClick={() => setToast('')} aria-label="Cerrar">×</button>
-        </div>
-      )}
+      <NotificationCenter
+        toasts={toasts}
+        dialog={dialog}
+        onDismissToast={dismissToast}
+        onResolveDialog={resolveDialog}
+      />
       {previewUrl && (
         <div className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
           <div className="pdf-preview-window">

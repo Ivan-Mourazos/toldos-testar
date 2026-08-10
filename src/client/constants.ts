@@ -89,6 +89,7 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     fabricJobDropAllowanceCm: null,
     fabricJobValanceExtraCm: null,
     anticaVariant: '',
+    anticaMeasurementMode: '',
     anticaSupportHeight: null,
     reglasModificadas: false,
     fabric: '',

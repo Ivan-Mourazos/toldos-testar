@@ -80,6 +80,50 @@ describe('PDF provisional de revisión', () => {
     expect(entry.fields).toContainEqual({ label: 'Altura soporte-brazo', value: '237' });
   });
 
+  test.each([
+    {
+      diameter: 33, mode: 'BASE', projection: 105,
+      measureType: 'Salida base', dimensionLabel: 'Salida base'
+    },
+    {
+      diameter: 42, mode: 'FINISHED', projection: 180,
+      measureType: 'Tela terminada', dimensionLabel: 'Caída tela terminada'
+    }
+  ])('aclara el tipo de medida de Cambio Antica Ø$diameter', ({ diameter, mode, projection, measureType, dimensionLabel }) => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [{
+      ...base, model: 'CAMBIO ANTICA', width: 273.5, projection, valanceHeight: 0,
+      anticaVariant: `ENTRADA TUBO Ø${diameter} MM`, anticaMeasurementMode: mode
+    }] });
+    const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
+
+    expect(entry.fields).toContainEqual({ label: 'Medida de caída', value: measureType });
+    expect(entry.fields).toContainEqual({ label: dimensionLabel, value: String(projection).replace('.', ',') });
+    expect(entry.fields).toContainEqual({ label: 'Configuración Antica', value: `Entrada tubo Ø${diameter} mm` });
+  });
+
+  test('imprime el tipo y la etiqueta de medida Antica en el PDF de revisión', async () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [
+      {
+        ...base, id: 'antica-base', of: '3300033', model: 'CAMBIO ANTICA',
+        projection: 105, valanceHeight: 0, anticaVariant: 'ENTRADA TUBO Ø33 MM',
+        anticaMeasurementMode: 'BASE'
+      },
+      {
+        ...base, id: 'antica-finished', of: '4200042', model: 'CAMBIO ANTICA',
+        projection: 180, valanceHeight: 0, anticaVariant: 'ENTRADA TUBO Ø42 MM',
+        anticaMeasurementMode: 'FINISHED'
+      }
+    ] });
+    const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation: calculateOrder(order) }));
+
+    expect(pdf.text).toContain('Medida de caída');
+    expect(pdf.text).toContain('Salida base');
+    expect(pdf.text).toContain('Caída tela terminada');
+    expect(pdf.text).toContain('Tela terminada');
+  });
+
   test('imprime dispositivo, sensor y posición del motor en el PDF de Punto Recto', async () => {
     const base = reviewOrder().awnings[0];
     const order = reviewOrder({ awnings: [{

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {
   awningLetter,
   buildFabricLineDetail,
@@ -244,14 +245,93 @@ describe('buildOrderPlanteamientoPdf', () => {
     const awnings = [
       { id: 'a', model: 'CAMBIO ANTICA', anticaVariant: 'SOPORTE FIJO 3 AGUJEROS' },
       { id: 'b', model: 'CAMBIO ANTICA', anticaVariant: 'TUBO 30X10' },
-      { id: 'c', model: 'CAMBIO ANTICA', anticaVariant: 'TUBO 50X30 CONTRAPESO' }
+      { id: 'c', model: 'CAMBIO ANTICA', anticaVariant: 'TUBO 50X30 CONTRAPESO' },
+      { id: 'd', model: 'CAMBIO ANTICA', anticaVariant: 'ENTRADA TUBO Ø33 MM' },
+      { id: 'e', model: 'CAMBIO ANTICA', anticaVariant: 'ENTRADA TUBO Ø42 MM' }
     ];
     const calculation = { ofs: awnings.map((awning, awningIndex) => ({ awningId: awning.id, awningIndex })) };
     const plan = buildPlanteamientoPlan({ awnings }, calculation);
 
-    expect(plan.fabricPages).toHaveLength(3);
+    expect(plan.fabricPages).toHaveLength(5);
     expect(plan.fabricPages.map(({ diagramAwning }) => diagramAwning.anticaVariant))
-      .toEqual(['SOPORTE FIJO 3 AGUJEROS', 'TUBO 30X10', 'TUBO 50X30 CONTRAPESO']);
+      .toEqual([
+        'SOPORTE FIJO 3 AGUJEROS',
+        'TUBO 30X10',
+        'TUBO 50X30 CONTRAPESO',
+        'ENTRADA TUBO Ø33 MM',
+        'ENTRADA TUBO Ø42 MM'
+      ]);
+  });
+
+  test('Antica separa el dibujo con bamba del dibujo sin bamba aunque el tubo coincida', () => {
+    const awnings = [
+      {
+        id: 'without-valance', model: 'CAMBIO ANTICA', valanceHeight: 0,
+        anticaVariant: 'ENTRADA TUBO Ø33 MM', anticaMeasurementMode: 'BASE'
+      },
+      {
+        id: 'with-valance', model: 'CAMBIO ANTICA', valanceHeight: 25,
+        anticaVariant: 'ENTRADA TUBO Ø33 MM', anticaMeasurementMode: 'BASE'
+      }
+    ];
+    const calculation = { ofs: awnings.map((awning, awningIndex) => ({ awningId: awning.id, awningIndex })) };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.fabricPages).toHaveLength(2);
+    expect(plan.fabricPages.map(({ entries }) => entries.map(({ awning }) => awning.id)))
+      .toEqual([['without-valance'], ['with-valance']]);
+  });
+
+  test('el planteamiento Ø42 conserva 273,5 × 180 y rotula el tubo redondo', async () => {
+    const order = {
+      orderCode: 'AR2201476', fabric: 'ACR NEGRO', sameFabric: true,
+      awnings: [{
+        id: 'antica-42', of: '0178935', model: 'CAMBIO ANTICA', units: 1,
+        width: 273.5, projection: 180, valanceHeight: 0,
+        anticaVariant: 'ENTRADA TUBO Ø42 MM', anticaMeasurementMode: 'FINISHED', rotFabric: 'NO'
+      }]
+    };
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    const content = await page.getTextContent();
+    const text = content.items.map((item) => item.str).join(' ');
+
+    expect(calculation.ofs[0].calculation).toMatchObject({ fabricWidth: 273.5, fabricDrop: 180 });
+    expect(text).toContain('ENTRADA TUBO Ø42 MM');
+  });
+
+  test('los dibujos redondos rotulan exactamente el diámetro de cada tubo', async () => {
+    const order = {
+      orderCode: 'AR26-DIAMETROS', fabric: 'ACR NEGRO', sameFabric: true,
+      awnings: [
+        {
+          id: 'antica-33', of: '3300033', model: 'CAMBIO ANTICA', units: 1,
+          width: 291.5, projection: 105, valanceHeight: 0,
+          anticaVariant: 'ENTRADA TUBO Ø33 MM', anticaMeasurementMode: 'BASE', rotFabric: 'NO'
+        },
+        {
+          id: 'antica-42', of: '4200042', model: 'CAMBIO ANTICA', units: 1,
+          width: 291.5, projection: 115, valanceHeight: 0,
+          anticaVariant: 'ENTRADA TUBO Ø42 MM', anticaMeasurementMode: 'BASE', rotFabric: 'NO'
+        }
+      ]
+    };
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+
+    expect(document.numPages).toBe(2);
+    const pageTexts = [];
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pageTexts.push(content.items.map((item) => item.str).join(' '));
+    }
+    expect(pageTexts[0]).toContain('ENTRADA TUBO Ø33 MM');
+    expect(pageTexts[0]).not.toContain('ENTRADA TUBO Ø42 MM');
+    expect(pageTexts[1]).toContain('ENTRADA TUBO Ø42 MM');
+    expect(pageTexts[1]).not.toContain('ENTRADA TUBO Ø33 MM');
   });
 
   test('cortinas con medidas de ventana distintas no comparten dibujo', () => {

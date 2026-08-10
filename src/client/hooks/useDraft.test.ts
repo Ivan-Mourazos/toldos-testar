@@ -88,6 +88,12 @@ describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
       remateColor: ''
     });
   });
+
+  test('un Cambio Antica Ø42 antiguo sin modo conserva la lectura de tela terminada', () => {
+    expect(sanitizeAwning({
+      model: 'CAMBIO ANTICA', anticaVariant: 'ENTRADA TUBO Ø42 MM'
+    }).anticaMeasurementMode).toBe('FINISHED');
+  });
 });
 
 describe('defaultDraft', () => {
@@ -194,5 +200,16 @@ describe('switchAwningModel', () => {
     const withoutValance = switchAwningModel(createAwning(), 'PERLA BOX');
     expect(withValance.remate).toBe('COMO TELA');
     expect(withoutValance.remate).toBe('');
+  });
+
+  test('al pasar un Antica completo redondo a Cambio Antica interpreta las medidas como base', () => {
+    const source = {
+      ...createAwning(), model: 'ANTICA', anticaVariant: 'ENTRADA TUBO Ø42 MM' as const,
+      width: 284, projection: 90, anticaSupportHeight: 79.4
+    };
+
+    expect(switchAwningModel(source, 'CAMBIO ANTICA')).toMatchObject({
+      anticaVariant: 'ENTRADA TUBO Ø42 MM', anticaMeasurementMode: 'BASE', anticaSupportHeight: null
+    });
   });
 });

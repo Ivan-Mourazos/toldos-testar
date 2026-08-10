@@ -43,6 +43,14 @@ describe('resolveFabric', () => {
 });
 
 describe('searchStaticFabrics', () => {
+  it('mantiene STILOFRAGOLA disponible cuando RPS no responde', () => {
+    expect(searchStaticFabrics('stilofragola')[0]).toMatchObject({
+      code: 'ACRILI2759P120',
+      description: 'ACR STILOFRAGOLA',
+      width: 120
+    });
+  });
+
   it('encuentra una tela con palabras parciales y desordenadas', () => {
     expect(searchStaticFabrics('neg acr')[0]).toMatchObject({ code: 'ACRILI2170P120', description: 'ACR NEGRO' });
   });

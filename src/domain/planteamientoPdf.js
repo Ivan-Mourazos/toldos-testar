@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { getAwningDiagram, isFabricOnlyModel } from './modelBehavior.js';
+import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
 
@@ -97,12 +98,19 @@ export function buildPlanteamientoPlan(order, calculation) {
 
 function fabricDiagramGroupKey(diagram, awning, calculation = {}) {
   if (!diagram.includes('VENTANA') || diagram.includes('SIN-VENTANA')) {
+    const anticaVariant = diagram === 'ANTICA' ? normalizeAnticaVariant(awning?.anticaVariant) : '';
+    const anticaValance = diagram === 'ANTICA'
+      ? Number(awning?.valanceHeight) > 0
+        ? awning?.valanceFabric ? 'BAMBA_SEPARADA' : 'BAMBA_INTEGRADA'
+        : 'SIN_BAMBA'
+      : '';
     return [
       diagram,
       calculation?.tubeLoad || awning?.tubeLoad || '',
       calculation?.rollSystem || '',
       calculation?.submodel || awning?.submodel || '',
-      awning?.anticaVariant || ''
+      anticaVariant,
+      anticaValance
     ].join('|');
   }
   return [
@@ -836,9 +844,10 @@ function drawValanceDiagram(doc, x, y, w, h) {
 
 function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
   drawDiagramShell(doc, x, y, w, h, awning.model === 'ANTICA' ? 'ANTICA' : 'CAMBIO ANTICA');
-  const variant = awning.anticaVariant || 'CONFIGURACIÓN SIN INDICAR';
+  const variant = normalizeAnticaVariant(awning.anticaVariant) || awning.anticaVariant || 'CONFIGURACIÓN SIN INDICAR';
   const isCounterweight = variant === 'TUBO 50X30 CONTRAPESO';
   const isFixed = variant === 'SOPORTE FIJO 3 AGUJEROS';
+  const roundEntry = resolveAnticaRoundEntry(variant);
   const tube = variant.includes('30X10') ? '30x10' : '50x30';
   const wallX = x + 28;
   const wallY = y + 80;
@@ -860,6 +869,23 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     if (Number(awning.anticaSupportHeight) > 0) {
       drawSideLabel(doc, `ALTURA SOPORTE-BRAZO ${formatInstructionMeasure(awning.anticaSupportHeight)} CM`, wallX + 20, wallY + 12, 132);
     }
+  } else if (roundEntry) {
+    const radius = roundEntry.diameterMm === 42 ? 11 : 9;
+    const tubeX = endX;
+    const tubeY = endY + 3;
+    const fabricBottomY = y + h - 65;
+    doc.strokeColor('#7fa594').lineWidth(2)
+      .moveTo(wallX, wallY).lineTo(tubeX - radius + 1, tubeY - radius + 2)
+      .bezierCurveTo(tubeX - radius - 5, tubeY + 5, tubeX - 4, tubeY + radius + 7, tubeX + 5, tubeY + radius + 4)
+      .bezierCurveTo(tubeX + radius + 4, tubeY + radius, tubeX + radius + 3, tubeY + 3, tubeX + radius + 3, tubeY + 1)
+      .lineTo(tubeX + radius + 3, fabricBottomY)
+      .stroke();
+    doc.circle(tubeX, tubeY, radius - 2).fillAndStroke(colors.paper, colors.ink);
+    drawSideLabel(doc, `ENTRADA TUBO Ø${roundEntry.diameterMm} MM`, endX - 136, endY + 27, 130);
+    if (Number(awning.valanceHeight) > 0) {
+      const valanceText = awning.valanceFabric ? 'BAMBA SEPARADA' : 'BAMBA INTEGRADA';
+      drawSideLabel(doc, valanceText, endX - 138, fabricBottomY + 5, 132);
+    }
   } else {
     doc.rect(endX - 8, endY - 3, 16, tube === '30x10' ? 8 : 13).fillAndStroke(colors.paper, colors.ink);
     drawSideLabel(doc, `ENTRADA TUBO ${tube}`, endX - 115, endY - 28, 110);
@@ -877,8 +903,7 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     drawDiagramText(doc, 'ENTRADA PLETINA 25x4', wallX + 18, plateY + 11, w - 72);
   }
 
-  drawDiagramText(doc, variant, x + 18, y + 43, w - 36);
-  drawDiagramText(doc, 'FRENTE TELA', x + 28, y + 61, w - 56);
+  drawDiagramText(doc, 'FRENTE TELA', x + 28, y + 47, w - 56);
   doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
     .text('MEDIDAS Y BAMBA SEGÚN EL BLOQUE DE CADA TOLDO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
