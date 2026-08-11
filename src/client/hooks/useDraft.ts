@@ -3,6 +3,8 @@ import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
 import { formOptions, getModelBehavior, getModelWorkType, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
+import { inferHeraVariant, normalizeHeraJoin } from '../../domain/heraParameters.js';
+import { normalizeModelName } from '../../domain/modelNames.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
@@ -33,6 +35,8 @@ export function defaultDraft(): DraftState {
 
 export function sanitizeAwning(old: Record<string, unknown>): Awning {
   const base = { ...createAwning(), ...old } as Awning & Record<string, unknown>;
+  const rawModel = String(old.model || base.model || '');
+  base.model = normalizeModelName(rawModel);
   base.workType = old.workType === 'FABRIC_ONLY' || old.workType === 'FULL_AWNING'
     ? old.workType
     : getModelWorkType(base.model);
@@ -40,6 +44,13 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (old.machineSide === 'IZQUIERDA') base.machineSide = 'M.F IZQ';
   base.reglasModificadas = typeof old.reglasModificadas === 'boolean' ? old.reglasModificadas : false;
   base.fabric = typeof old.fabric === 'string' ? old.fabric : '';
+  base.height = base.model === 'HERA' ? nullableNumber(old.height) : null;
+  base.submodel = base.model === 'HERA'
+    ? inferHeraVariant({ model: rawModel, submodel: old.submodel, device: old.device })
+    : typeof old.submodel === 'string' ? old.submodel.toUpperCase() : '';
+  base.heraJoin = base.model === 'HERA'
+    ? normalizeHeraJoin(old.heraJoin) as Awning['heraJoin']
+    : '';
   base.hasValance = typeof old.hasValance === 'boolean'
     ? old.hasValance
     : Number(old.valanceHeight) > 0 ? true : null;
@@ -336,6 +347,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
   const isMonoblock350 = model === 'MONOBLOCK 350';
   const isMaxiscreem = model === 'MAXISCREEM';
   const isAntica = model === 'ANTICA' || model === 'CAMBIO ANTICA';
+  const isHera = model === 'HERA';
   const supportsValance = (getModelBehavior(model).dimensions || []).includes('valanceHeight');
   return {
     ...fresh,
@@ -345,6 +357,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     units: awning.units,
     width: awning.width,
     projection: awning.projection,
+    height: isHera ? awning.height : null,
+    heraJoin: isHera ? awning.heraJoin : '',
     hasValance: model === 'BAMBALINA' ? true : supportsValance ? awning.hasValance : null,
     valanceHeight: supportsValance ? awning.valanceHeight : null,
     valanceCurve: supportsValance ? awning.valanceCurve : '',

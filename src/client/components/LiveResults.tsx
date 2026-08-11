@@ -123,22 +123,53 @@ function FabricPreview({ blocks, awnings }: { blocks: Calculation['ofs']; awning
   return (
     <div className="fabric-preview-table-wrap">
       <table className="fabric-preview-table">
-        <thead><tr><th>Elemento</th><th>Modelo</th><th>OF</th><th>Tela</th><th className="num">Frente tela</th><th className="num">Salida paño</th><th className="num">Paños</th><th className="num">Total</th><th>Bamba</th></tr></thead>
+        <thead><tr><th>Elemento</th><th>Modelo</th><th>OF</th><th>Tela</th><th className="num">Frente tela</th><th className="num">Salida paño</th><th className="num">Paños</th><th className="num">Total</th><th>Indicaciones</th></tr></thead>
         <tbody>{blocks.map((block, index) => {
           const awning = findAwning(block, awnings);
           const calc = block.calculation!;
+          const heraVariant = calc.model === 'HERA' ? calc.heraVariant || awning?.submodel : '';
           return (
             <tr key={blockKey(block)}>
               <td><strong className="result-letter">{awningLetter(block.awningIndex ?? index)}</strong></td>
-              <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}</td>
+              <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
               <td>{block.of || '-'}</td><td className="code">{calc.fabricCode || '-'}</td>
               <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{calc.fabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.fabricMl)} ml</strong></td>
-              <td>{Number(awning?.valanceHeight) > 0 ? `${formatDecimal(awning?.valanceHeight)} cm${calc.valanceFabricCode ? ` · ${calc.valanceFabricCode}` : ''}` : 'Sin bamba'}</td>
+              <td><FabricIndication awning={awning} calculation={calc} /></td>
             </tr>
           );
         })}</tbody>
       </table>
     </div>
+  );
+}
+
+type OfCalculation = NonNullable<Calculation['ofs'][number]['calculation']>;
+
+function FabricIndication({ awning, calculation }: { awning?: Awning; calculation: OfCalculation }) {
+  if (calculation.model !== 'HERA' && awning?.model !== 'HERA') {
+    return Number(awning?.valanceHeight) > 0
+      ? `${formatDecimal(awning?.valanceHeight)} cm${calculation.valanceFabricCode ? ` · ${calculation.valanceFabricCode}` : ''}`
+      : 'Sin bamba';
+  }
+
+  const variant = calculation.heraVariant || awning?.submodel || '';
+  const join = calculation.heraJoin || awning?.heraJoin || '';
+  const tube = variant && Number.isFinite(Number(calculation.rollTubeLength))
+    ? `Tubo: ${formatDecimal(calculation.rollTubeLength)} cm`
+    : 'Tubo: pendiente';
+  const chain = variant.includes('MOTOR')
+    ? 'Cadena: no lleva'
+    : Number.isFinite(Number(calculation.chainLength)) && calculation.chainLength !== null
+      ? `Cadena: ${formatDecimal(calculation.chainLength)} cm`
+      : 'Cadena: pendiente';
+
+  return (
+    <>
+      <strong>CAD manual</strong>
+      <small>{tube} · {chain}</small>
+      <small>Empate: {join ? controlLabel(join) : 'Sin indicar'}</small>
+      {calculation.specialTubeRequired && <small>Tubo especial · cambiar presupuesto</small>}
+    </>
   );
 }
 

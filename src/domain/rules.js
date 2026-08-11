@@ -11,6 +11,7 @@ import { calculateMaxiscreem } from './maxiscreemRules.js';
 import { calculateAmbarBox } from './ambarBoxRules.js';
 import { calculateAgataBox } from './agataBoxRules.js';
 import { calculateCortina } from './cortinaRules.js';
+import { calculateHera } from './heraRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
 import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
 import { normalizeOrder } from './validation.js';
@@ -30,6 +31,7 @@ const implementedRules = new Map([
   ['AMBAR BOX', calculateAmbarBox],
   ['AGATA BOX', calculateAgataBox],
   ['CORTINA', calculateCortina],
+  ['HERA', calculateHera],
   ['CAMBIO TELA', calculateCambioTela],
   ['CAMBIO CORTINA', calculateCambioCortina],
   ['CAMBIO ANTICA', calculateCambioAntica],

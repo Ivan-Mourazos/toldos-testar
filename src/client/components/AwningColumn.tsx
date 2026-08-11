@@ -59,6 +59,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isMaxiscreem = awning.model === 'MAXISCREEM';
   const isAmbarBox = awning.model === 'AMBAR BOX';
   const isAgataBox = awning.model === 'AGATA BOX';
+  const isHera = awning.model === 'HERA';
   const isAntica = awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA';
   const isFullAntica = awning.model === 'ANTICA';
   const normalizedAnticaVariant = normalizeAnticaVariant(awning.anticaVariant);
@@ -109,12 +110,14 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || !valanceFinish
     || (valanceFinish === 'OTRO' && !awning.remateColor)
   );
-  const missingFinishConfig = (!standaloneValance && !awning.rotFabric)
+  const missingFinishConfig = (fields.requiresRotFabric && !standaloneValance && !awning.rotFabric)
     || (hasValance && !awning.rotValance)
-    || (!fabricOnly && !awning.structureColor);
+    || (fields.requiresStructureColor && !awning.structureColor);
   const incomplete = !awning.model
     || !awning.of
     || (fields.submodel && !awning.submodel)
+    || (isHera && !awning.heraJoin)
+    || (isHera && awning.submodel !== 'HERA 56 MOTOR' && !Number(awning.height))
     || getRequiredDimensions(awning.model).some((field: keyof Awning) => !Number(awning[field]))
     || missingWindowDimensions
     || missingCurtainConfig
@@ -202,7 +205,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
         </strong>
         <div className="card-actions">
-          <button
+          {!isHera && <button
             type="button"
             className={awning.reglasModificadas ? 'icon-button active' : 'icon-button'}
             aria-pressed={awning.reglasModificadas}
@@ -299,7 +302,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             })}
           >
             {awning.reglasModificadas ? <LockOpen aria-hidden="true" /> : <Lock aria-hidden="true" />}
-          </button>
+          </button>}
           <button type="button" className="icon-button" onClick={() => onDuplicate(awning.id)} aria-label="Duplicar"><Copy aria-hidden="true" /></button>
           <button type="button" className="icon-button" onClick={() => onRemove(awning.id)} aria-label="Eliminar"><Trash2 aria-hidden="true" /></button>
         </div>
@@ -308,6 +311,9 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
       {awning.model && (
         <>
           <TextField label="OF" value={awning.of} onChange={(of) => update({ of: of.trim() })} />
+          {isHera && fields.submodel && (
+            <SelectField label="Variante" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, height: submodel === 'HERA 56 MOTOR' ? null : awning.height })} />
+          )}
           {fields.dimensions.includes('width') && <NumberField label={widthLabel} value={awning.width} min={0} onChange={updateWidth} />}
           {fields.dimensions.includes('projection') && (useEstablishedProjection ? (
             <SelectField
@@ -320,6 +326,14 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           ) : (
             <NumberField label={projectionLabel} value={awning.projection} min={0} onChange={updateProjection} />
           ))}
+          {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
+            <NumberField label="Altura instalación" value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
+          )}
+          {isHera && (
+            <div className="awning-wide-field">
+              <SegmentedField label="Empate indicado por cliente" value={awning.heraJoin} options={['NINGUNO', 'VERTICAL', 'HORIZONTAL']} onChange={(heraJoin) => update({ heraJoin: heraJoin as Awning['heraJoin'] })} />
+            </div>
+          )}
           {supportsValance && (
             <NumberField label={awning.model === 'BAMBALINA' ? 'Alto' : 'Bamba (cm)'} value={awning.valanceHeight} min={0} onChange={updateValanceHeight} />
           )}
@@ -353,7 +367,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {fields.tubeLoad && !fields.arzua && !fields.galicia && (
             <div className="awning-wide-field"><SegmentedField label="Tubo de carga" value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} /></div>
           )}
-          {fields.submodel && (
+          {fields.submodel && !isHera && (
             <SelectField label="Variante" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, ...(isAgataBox && submodel === 'COFRE' && awning.device === 'MAQUINA' ? { device: '' } : {}) })} />
           )}
           {isAntica && (
@@ -393,11 +407,11 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               )}
             </div>
           )}
-          <div className="awning-finish-row awning-wide-field">
-            {!fabricOnly && <SelectField label="Lacado" value={awning.structureColor} options={formOptions.lacados} placeholder="Elegir…" allowEmpty emptyLabel="Sin indicar" onChange={(structureColor) => update({ structureColor })} />}
-            {!standaloneValance && <SegmentedField label="Rotulación tela" value={awning.rotFabric} options={formOptions.rotulacion} onChange={(rotFabric) => update({ rotFabric })} />}
+          {(fields.requiresStructureColor || fields.requiresRotFabric || hasValance) && <div className="awning-finish-row awning-wide-field">
+            {fields.requiresStructureColor && <SelectField label="Lacado" value={awning.structureColor} options={formOptions.lacados} placeholder="Elegir…" allowEmpty emptyLabel="Sin indicar" onChange={(structureColor) => update({ structureColor })} />}
+            {fields.requiresRotFabric && !standaloneValance && <SegmentedField label="Rotulación tela" value={awning.rotFabric} options={formOptions.rotulacion} onChange={(rotFabric) => update({ rotFabric })} />}
             {hasValance && <SegmentedField label="Rotulación bamba" value={awning.rotValance} options={formOptions.rotulacion} onChange={(rotValance) => update({ rotValance })} />}
-          </div>
+          </div>}
           {fields.curtain && (
             <div className="awning-form-section curtain-config">
               <span className="awning-form-section-title">Configuración de cortina</span>
@@ -445,6 +459,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
 
           {!fields.implemented && (
             <p className="awning-pending">Sin reglas de cálculo todavía. Se guarda pero no genera materiales.</p>
+          )}
+
+          {isHera && (
+            <p className="awning-pending">
+              Requiere planteamiento CAD manual.{Number(awning.width) > 300 ? ' Pedir tubo especial y cambiar el presupuesto.' : ''}
+            </p>
           )}
 
           {awning.reglasModificadas && (

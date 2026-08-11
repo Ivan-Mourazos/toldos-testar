@@ -94,6 +94,20 @@ describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
       model: 'CAMBIO ANTICA', anticaVariant: 'ENTRADA TUBO Ø42 MM'
     }).anticaMeasurementMode).toBe('FINISHED');
   });
+
+  test('conserva y normaliza los campos HERA al reutilizar una revisión', () => {
+    expect(sanitizeAwning({
+      model: 'HERA56', device: 'MOTOR', height: 245, heraJoin: 'horizontal'
+    })).toMatchObject({
+      model: 'HERA', submodel: 'HERA 56 MOTOR', height: 245, heraJoin: 'HORIZONTAL'
+    });
+  });
+
+  test('descarta altura y empate HERA en otros modelos', () => {
+    expect(sanitizeAwning({
+      model: 'ARZUA PRO', height: 245, heraJoin: 'VERTICAL'
+    })).toMatchObject({ height: null, heraJoin: '' });
+  });
 });
 
 describe('defaultDraft', () => {
@@ -211,6 +225,8 @@ describe('switchAwningModel', () => {
       sensor: '',
       machineSide: '',
       crankHeight: null,
+      height: null,
+      heraJoin: '',
       supportSystem: '',
       motorPower: '',
       hasValance: model === 'BAMBALINA' ? true : null,

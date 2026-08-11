@@ -18,6 +18,31 @@ function reviewOrder(overrides = {}) {
   };
 }
 
+const acrylic120 = 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR';
+const soltis267 = 'SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96';
+
+function heraReviewOrder(awningOverrides = {}, orderOverrides = {}) {
+  const base = reviewOrder().awnings[0];
+  return reviewOrder({
+    fabric: acrylic120,
+    awnings: [{
+      ...base,
+      id: 'hera-a',
+      model: 'HERA',
+      submodel: 'HERA 43 MAQUINA',
+      heraJoin: 'VERTICAL',
+      units: 1,
+      width: 205,
+      projection: 140,
+      height: 240,
+      valanceHeight: 0,
+      device: '',
+      ...awningOverrides
+    }],
+    ...orderOverrides
+  });
+}
+
 describe('PDF provisional de revisión', () => {
   test('reproduce en una tarjeta los campos visibles del formulario', () => {
     const order = reviewOrder();
@@ -100,6 +125,61 @@ describe('PDF provisional de revisión', () => {
 
     expect(entry.fields).toContainEqual({ label: 'Configuración Antica', value: 'Soporte fijo 3 agujeros' });
     expect(entry.fields).toContainEqual({ label: 'Altura soporte-brazo', value: '237' });
+  });
+
+  test('resume el planteamiento HERA de máquina sin campos de lacado ni rotulación', () => {
+    const order = heraReviewOrder();
+    const calculation = calculateOrder(order);
+    const [entry] = buildReviewSheetEntries(order, calculation);
+
+    expect(entry.status).toBe('VÁLIDO');
+    expect(entry.title).toBe('HERA');
+    expect(entry.fields).toEqual(expect.arrayContaining([
+      { label: 'Variante', value: 'HERA 43 máquina' },
+      { label: 'Frente tela', value: '201' },
+      { label: 'Salida tela', value: '160' },
+      { label: 'Frente de corte', value: '209' },
+      { label: 'Salida de corte', value: '170' },
+      { label: 'Altura instalación', value: '240' },
+      { label: 'Tubo calculado', value: '201,7' },
+      { label: 'Cadena', value: '340' },
+      { label: 'Empate cliente', value: 'Vertical' },
+      { label: 'Paños', value: '2' },
+      { label: 'Metros tela', value: '3,4 ml' },
+      { label: 'Proceso', value: 'Planteamiento CAD manual' }
+    ]));
+    expect(entry.fields.some(({ label }) => ['Lacado', 'Rotulación tela', 'Rotulación bamba'].includes(label))).toBe(false);
+  });
+
+  test('avisa del tubo especial en HERA motor y lleva el mini planteamiento al PDF', async () => {
+    const order = heraReviewOrder({
+      submodel: 'HERA 56 MOTOR',
+      width: 320,
+      projection: 140,
+      height: 0
+    }, { fabric: soltis267 });
+    const calculation = calculateOrder(order);
+    const [entry] = buildReviewSheetEntries(order, calculation);
+
+    expect(entry.fields).toEqual(expect.arrayContaining([
+      { label: 'Variante', value: 'HERA 56 motor' },
+      { label: 'Frente tela', value: '315' },
+      { label: 'Salida tela', value: '165' },
+      { label: 'Frente de corte', value: '317' },
+      { label: 'Salida de corte', value: '175' },
+      { label: 'Tubo calculado', value: '315,5' },
+      { label: 'Cadena', value: 'No lleva' },
+      { label: 'Empate cliente', value: 'Vertical' },
+      { label: 'Paños', value: '2' },
+      { label: 'Metros tela', value: '3,5 ml' },
+      { label: 'Proceso', value: 'Planteamiento CAD manual' },
+      { label: 'Aviso', value: 'Tubo especial · cambiar presupuesto' }
+    ]));
+    expect(entry.fields.some(({ label }) => label === 'Altura instalación')).toBe(false);
+
+    const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation }));
+    expect(pdf.text).toContain('Planteamiento CAD manual');
+    expect(pdf.text).toContain('Tubo especial · cambiar presupuesto');
   });
 
   test.each([

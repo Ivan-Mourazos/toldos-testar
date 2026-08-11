@@ -10,7 +10,13 @@ const aliases = new Map([
   ['MODULBOX', 'AGATA BOX'],
   ['MAXISCREEN', 'MAXISCREEM'],
   ['DIANA', 'MAXISCREEM'],
-  ['DIANA VERTICAL', 'MAXISCREEM']
+  ['DIANA VERTICAL', 'MAXISCREEM'],
+  ['HERA43', 'HERA'],
+  ['HERA 43', 'HERA'],
+  ['HERA56', 'HERA'],
+  ['HERA 56', 'HERA'],
+  ['ROLLSYS', 'HERA'],
+  ['ROLL-SYSTEM', 'HERA']
 ]);
 
 export function normalizeModelName(value) {

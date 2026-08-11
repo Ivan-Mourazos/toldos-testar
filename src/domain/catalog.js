@@ -5,6 +5,7 @@ export const models = [
   { code: 'CORTINA', family: 'BRAZOS INVISIBLES', subtype: '', ruleSheet: 'CORT', supportsMultipleArms: false },
   { code: 'ENROLLABLE', family: '', subtype: '', ruleSheet: 'ENROL.', supportsMultipleArms: false },
   { code: 'GALICIA', family: 'BRAZOS INVISIBLES', subtype: 'TUBO DE CARGA', ruleSheet: 'GAL', supportsMultipleArms: true },
+  { code: 'HERA', family: 'SCREEN ROLL-SYSTEM', subtype: 'SUBMODELO', ruleSheet: 'PLANTEAMIENTOS GUÍA HERAS', supportsMultipleArms: false },
   { code: 'AMBAR BOX', family: 'COFRE', subtype: '', ruleSheet: 'MICRO (legado MICROBOX)', supportsMultipleArms: false },
   { code: 'AGATA BOX', family: 'COFRE', subtype: 'SUBMODELO', ruleSheet: 'MODUL (legado MODULBOX)', supportsMultipleArms: true },
   { code: 'MAXISCREEM', family: 'COFRE', subtype: 'SUBMODELO', ruleSheet: 'MAXISCREEM', supportsMultipleArms: false },

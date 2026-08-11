@@ -64,7 +64,11 @@ export async function buildOrderPlanteamientoPdf({ order, calculation }) {
     const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
     plan.fabricPages.forEach(({ entries, diagram, diagramAwning, diagramCalculation }) => {
       doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-      drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
+      if (diagram === 'HERA') {
+        drawHeraFabricPage(doc, { order, entry: entries[0] });
+      } else {
+        drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
+      }
     });
 
     doc.end();
@@ -75,10 +79,12 @@ export function buildPlanteamientoPlan(order, calculation) {
   const entries = order.awnings
     .map((awning, index) => ({ awning, index, ofBlock: findAwningBlock(calculation, awning, index) }))
     .filter((entry) => entry.ofBlock);
-  const structureEntries = entries.filter(({ awning }) => !isFabricOnlyModel(awning.model));
+  const structureEntries = entries.filter(({ awning }) => (
+    !isFabricOnlyModel(awning.model) && !isHeraAwning(awning)
+  ));
   const grouped = new Map();
   entries.forEach((entry) => {
-    const diagram = getAwningDiagram(entry.awning);
+    const diagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
     const diagramCalculation = resolveDiagramCalculation(entry);
     const groupKey = fabricDiagramGroupKey(diagram, entry.awning, diagramCalculation);
     const group = grouped.get(groupKey) || { diagram, diagramAwning: entry.awning, entries: [] };
@@ -86,7 +92,7 @@ export function buildPlanteamientoPlan(order, calculation) {
     grouped.set(groupKey, group);
   });
   const fabricPages = Array.from(grouped.values(), (group) => (
-    chunkItems(group.entries, 4).map((pageEntries) => ({
+    chunkItems(group.entries, group.diagram === 'HERA' ? 1 : 4).map((pageEntries) => ({
       diagram: group.diagram,
       diagramAwning: pageEntries[0].awning,
       diagramCalculation: resolveDiagramCalculation(pageEntries[0]),
@@ -294,7 +300,174 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
 }
 
-function drawFabricHeader(doc, { order, margin, pageW }) {
+function drawHeraFabricPage(doc, { order, entry }) {
+  const pageW = doc.page.width;
+  const pageH = doc.page.height;
+  const margin = 24;
+  const line = toFabricLine(entry);
+  const detail = buildHeraMiniPlanDetail(line.awning, line.calc);
+
+  drawFabricHeader(doc, {
+    order,
+    margin,
+    pageW,
+    title: 'MINI PLANTEAMIENTO HERA - TELA'
+  });
+
+  const top = 126;
+  const gap = 14;
+  const sketchW = 250;
+  const dataX = margin + sketchW + gap;
+  const dataW = pageW - margin - dataX;
+  drawHeraSketch(doc, margin, top, sketchW, 388, detail);
+
+  let nextY = drawHeraTable(doc, dataX, top, dataW, 'IDENTIFICACIÓN', [
+    ['TOLDO / OF', `${awningLetter(line.index)} / ${value(line.awning.of)}`],
+    ['VARIANTE', detail.variant],
+    ['ACCIONAMIENTO', detail.drive]
+  ], 18);
+
+  const measureRows = [
+    ['FRENTE TOLDO', detail.width],
+    ['SALIDA TOLDO', detail.projection]
+  ];
+  if (detail.manual) measureRows.push(['ALTURA INSTALACIÓN', detail.height]);
+  measureRows.push(['TUBO', detail.rollTube]);
+  measureRows.push(['TELA BASE', detail.fabricBase]);
+  if (detail.fabricCut) measureRows.push(['TELA DE CORTE', detail.fabricCut]);
+  nextY = drawHeraTable(doc, dataX, nextY + 8, dataW, 'MEDIDAS DE FABRICACIÓN', measureRows, 19);
+
+  nextY = drawHeraTable(doc, dataX, nextY + 8, dataW, 'PRODUCCIÓN DE TELA', [
+    ['CADENA', detail.chain],
+    ['EMPATE', detail.join],
+    ['PAÑOS / UNIONES', `${detail.panels} / ${detail.seams}`],
+    ['ML CALCULADOS', detail.fabricMl]
+  ], 19);
+
+  nextY = drawHeraNotice(doc, dataX, nextY + 8, dataW, {
+    title: 'CAD MANUAL OBLIGATORIO',
+    text: 'Completar y comprobar el planteamiento en CAD antes de fabricar.',
+    fill: colors.yellow,
+    color: colors.ink
+  });
+  if (detail.specialTubeRequired) {
+    nextY = drawHeraNotice(doc, dataX, nextY + 6, dataW, {
+      title: 'TUBO ESPECIAL - CAMBIAR PRESUPUESTO',
+      text: 'Frente superior a 300 cm. No sustituye la revisión comercial.',
+      fill: '#fae0dc',
+      color: colors.red
+    });
+  }
+  if (detail.notes) drawHeraNotes(doc, dataX, nextY + 6, dataW, detail.notes);
+
+  drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(line.index)} · Mini planteamiento HERA / tela`);
+}
+
+function drawHeraSketch(doc, x, y, w, h, detail) {
+  roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
+  doc.rect(x, y, w, 28).fill(colors.ink);
+  drawFittedText(doc, detail.variant, x + 8, y + 8, w - 16, 13, {
+    font: fonts.bold,
+    maxSize: 9,
+    minSize: 6,
+    align: 'center',
+    color: colors.paper
+  });
+
+  const tubeY = y + 78;
+  const fabricX = x + 42;
+  const fabricY = tubeY + 18;
+  const fabricW = w - 84;
+  const fabricH = 154;
+  doc.moveTo(fabricX - 8, tubeY).lineTo(fabricX + fabricW + 8, tubeY)
+    .strokeColor('#4f8b68').lineWidth(3).stroke();
+  doc.circle(fabricX - 8, tubeY, 6).fillAndStroke(colors.paper, '#4f8b68');
+  doc.circle(fabricX + fabricW + 8, tubeY, 6).fillAndStroke(colors.paper, '#4f8b68');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6.3)
+    .text(`TUBO ${detail.rollTube}`, x + 20, tubeY - 24, { width: w - 40, align: 'center' });
+
+  doc.rect(fabricX, fabricY, fabricW, fabricH)
+    .fillAndStroke('#f5f1df', '#7fa594');
+  for (let offset = 24; offset < fabricH; offset += 28) {
+    doc.moveTo(fabricX, fabricY + offset).lineTo(fabricX + fabricW, fabricY + offset)
+      .strokeColor('#d8d1b1').lineWidth(0.4).stroke();
+  }
+  doc.fillColor('#4f8b68').font(fonts.bold).fontSize(7)
+    .text('TELA BASE', fabricX + 8, fabricY + 55, { width: fabricW - 16, align: 'center' });
+  drawFittedText(doc, detail.fabricBase, fabricX + 8, fabricY + 76, fabricW - 16, 20, {
+    font: fonts.bold,
+    maxSize: 12,
+    minSize: 7,
+    align: 'center'
+  });
+  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.5)
+    .text(`FRENTE ${detail.width}`, fabricX, fabricY - 13, { width: fabricW, align: 'center' })
+    .text(`SALIDA ${detail.projection}`, fabricX + fabricW + 8, fabricY + 47, {
+      width: 46,
+      align: 'center'
+    });
+
+  const material = detail.fabricMaterial || 'TELA SIN DEFINIR';
+  drawBar(doc, x + 14, y + h - 92, w - 28, 14, 'MATERIAL');
+  drawFittedText(doc, material, x + 20, y + h - 71, w - 40, 30, {
+    font: fonts.semibold,
+    maxSize: 7,
+    minSize: 5,
+    align: 'center'
+  });
+  doc.fillColor(colors.red).font(fonts.bold).fontSize(7.2)
+    .text('MEDIDAS A VALIDAR EN CAD', x + 18, y + h - 28, { width: w - 36, align: 'center' });
+}
+
+function drawHeraTable(doc, x, y, w, title, rows, rowH = 19) {
+  const labelW = Math.min(126, Math.round(w * 0.34));
+  drawBar(doc, x, y, w, 13, title);
+  rows.forEach(([label, rowValue], index) => {
+    const rowY = y + 13 + index * rowH;
+    drawCell(doc, x, rowY, labelW, rowH, label, {
+      fill: colors.gray,
+      bold: true,
+      size: 6.4,
+      align: 'center'
+    });
+    drawCell(doc, x + labelW, rowY, w - labelW, rowH, rowValue, {
+      semibold: true,
+      size: 8,
+      align: 'center'
+    });
+  });
+  return y + 13 + rows.length * rowH;
+}
+
+function drawHeraNotice(doc, x, y, w, { title, text, fill, color }) {
+  const h = 38;
+  roundedBox(doc, x, y, w, h, 3, fill, colors.ink);
+  doc.fillColor(color).font(fonts.bold).fontSize(9)
+    .text(title, x + 8, y + 6, { width: w - 16, align: 'center' });
+  doc.font(fonts.semibold).fontSize(6.2)
+    .text(text, x + 8, y + 21, { width: w - 16, align: 'center' });
+  return y + h;
+}
+
+function drawHeraNotes(doc, x, y, w, notes) {
+  const h = 32;
+  const labelW = 132;
+  drawCell(doc, x, y, labelW, h, 'ANOTACIONES TELA / CAD', {
+    fill: colors.gray,
+    bold: true,
+    size: 6.4,
+    align: 'center'
+  });
+  doc.rect(x + labelW, y, w - labelW, h).fillAndStroke(colors.paper, colors.line);
+  drawFittedText(doc, notes, x + labelW + 5, y + 5, w - labelW - 10, h - 10, {
+    font: fonts.semibold,
+    maxSize: 6.5,
+    minSize: 5,
+    overflowLabel: '[VER PEDIDO]'
+  });
+}
+
+function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE TELAS' }) {
   const logoW = 96;
   const orderW = 166;
   const bodyX = margin + logoW;
@@ -317,7 +490,7 @@ function drawFabricHeader(doc, { order, margin, pageW }) {
   drawCell(doc, orderX + 76, 68, orderW - 76, 19, value(order.reviewer), { size: 7, align: 'center' });
   doc.rect(bodyX, 87, pageW - margin - bodyX, 19).fill(colors.ink);
   doc.fillColor(colors.paper).font(fonts.bold).fontSize(11)
-    .text('PLANTEAMIENTO DE TELAS', bodyX + 4, 92, { width: pageW - margin - bodyX - 8, align: 'center' });
+    .text(title, bodyX + 4, 92, { width: pageW - margin - bodyX - 8, align: 'center' });
 }
 
 function drawFabricMeta(doc, x, y, w, order, lines) {
@@ -1050,6 +1223,10 @@ function findAwningBlock(calculation, awning, index) {
     || null;
 }
 
+function isHeraAwning(awning = {}) {
+  return String(awning.model || '').trim().toUpperCase().startsWith('HERA');
+}
+
 function toFabricLine({ awning, index, ofBlock }) {
   return { awning, index, calc: ofBlock?.calculation || {} };
 }
@@ -1094,6 +1271,93 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
     units: formatFabricUnits(awning.units),
     instruction: instructionParts.join(' · ')
   };
+}
+
+export function buildHeraMiniPlanDetail(awning = {}, calculation = {}) {
+  const variant = String(
+    calculation.heraVariant
+    || calculation.submodel
+    || awning.submodel
+    || awning.model
+    || 'HERA'
+  ).trim().toUpperCase();
+  const device = String(awning.device || '').trim().toUpperCase();
+  const height = firstFiniteNumber(calculation.height, awning.height);
+  const chainLength = firstFiniteNumber(calculation.chainLength);
+  const motor = variant.includes('MOTOR') || device.includes('MOTOR');
+  const manual = !motor && (
+    variant.includes('MAQUINA')
+    || device.includes('MAQ')
+    || chainLength !== null
+    || (height !== null && height > 0)
+  );
+  const width = firstFiniteNumber(calculation.width, awning.width);
+  const projection = firstFiniteNumber(calculation.projection, awning.projection);
+  const fabricWidth = firstFiniteNumber(calculation.fabricWidth);
+  const fabricDrop = firstFiniteNumber(calculation.fabricDrop);
+  const fabricCutWidth = firstFiniteNumber(calculation.fabricCutWidth, fabricWidth);
+  const fabricCutDrop = firstFiniteNumber(calculation.fabricCutDrop, fabricDrop);
+  const hasDifferentCut = fabricCutWidth !== null
+    && fabricCutDrop !== null
+    && (
+      fabricWidth === null
+      || fabricDrop === null
+      || Math.abs(fabricCutWidth - fabricWidth) > 1e-9
+      || Math.abs(fabricCutDrop - fabricDrop) > 1e-9
+    );
+  const join = String(calculation.heraJoin || awning.heraJoin || '').trim().toUpperCase();
+
+  return {
+    variant: value(variant),
+    drive: motor ? 'MOTOR' : manual ? 'MÁQUINA' : value(device),
+    manual,
+    width: formatHeraMeasure(width),
+    projection: formatHeraMeasure(projection),
+    height: formatHeraMeasure(height),
+    rollTube: formatHeraMeasure(firstFiniteNumber(calculation.rollTubeLength)),
+    fabricBase: formatHeraDimensions(fabricWidth, fabricDrop),
+    fabricCut: hasDifferentCut ? formatHeraDimensions(fabricCutWidth, fabricCutDrop) : '',
+    chain: motor
+      ? 'NO LLEVA'
+      : chainLength !== null
+        ? formatHeraMeasure(chainLength)
+        : 'PENDIENTE',
+    join: join === 'NINGUNO' ? 'SIN EMPATE' : value(join),
+    panels: formatHeraCount(calculation.fabricPanels),
+    seams: formatHeraCount(calculation.seamCount),
+    fabricMl: formatHeraMl(calculation.fabricMl),
+    fabricMaterial: fabricDescription(calculation.fabricCode, calculation.fabricDescription),
+    notes: String(awning.fabricNotes || '').trim(),
+    specialTubeRequired: Boolean(calculation.specialTubeRequired) || (width !== null && width > 300)
+  };
+}
+
+function firstFiniteNumber(...values) {
+  for (const input of values) {
+    if (input === null || input === undefined || input === '') continue;
+    const number = Number(input);
+    if (Number.isFinite(number)) return number;
+  }
+  return null;
+}
+
+function formatHeraMeasure(input) {
+  return input === null ? '-' : `${formatNumber(input)} CM`;
+}
+
+function formatHeraDimensions(width, drop) {
+  if (width === null || drop === null) return '-';
+  return `${formatNumber(width)} x ${formatNumber(drop)} CM`;
+}
+
+function formatHeraCount(input) {
+  const number = firstFiniteNumber(input);
+  return number === null ? '-' : formatNumber(number);
+}
+
+function formatHeraMl(input) {
+  const number = firstFiniteNumber(input);
+  return number === null ? '-' : `${formatNumber(number)} ML`;
 }
 
 export function summarizeFabricPage(lines = []) {
@@ -1145,6 +1409,7 @@ function fabricDescription(selection, fallback = '') {
 }
 
 function fabricWorkLabel(model) {
+  if (model.startsWith('HERA')) return 'HERA';
   if (model === 'CAMBIO CORTINA') return 'CAMB. CORT';
   if (model === 'CORTINA') return 'CORTINA';
   if (model === 'CAMBIO TELA') return 'CAMB. TELA';

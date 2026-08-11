@@ -31,6 +31,11 @@ visibles de cada toldo, su estado y las medidas calculadas de frente/salida de t
 sin desglose de materiales ni archivos de producción. Lleva la
 marca `BORRADOR PARA REVISION - NO PRODUCCION` y no guarda ni envía archivos a RPS.
 
+El modelo HERA sigue un circuito especial: la web genera el mini planteamiento
+dimensional, señala que debe completarse en CAD y reserva exclusivamente la
+tela. Las fórmulas y decisiones de corte están documentadas en
+`docs/rps-hera-evidence.md`.
+
 ## Configuración de carpetas
 
 Las tres rutas se administran desde la pestaña `Configuración` y se guardan en el servidor para todos los usuarios:

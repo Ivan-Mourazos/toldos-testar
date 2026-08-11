@@ -90,6 +90,8 @@ export function getFieldVisibility({ model, device }) {
     workType: modelBehavior.workType,
     fabricOnly: modelBehavior.workType === 'FABRIC_ONLY',
     dimensions: modelBehavior.dimensions || fallbackModel.dimensions,
+    requiresStructureColor: modelBehavior.workType === 'FULL_AWNING' && modelBehavior.requiresStructureColor !== false,
+    requiresRotFabric: modelBehavior.requiresRotFabric !== false,
     tubeLoad: modelBehavior.tipo02 === 'TUBO DE CARGA',
     submodel: modelBehavior.tipo02 === 'SUBMODELO',
     device: hasInstallation,

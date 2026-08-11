@@ -39,10 +39,35 @@ describe('modelBehavior', () => {
     expect(visibility.crankHeight).toBe(true);
   });
 
-  test('todos los modelos completos con MOTOR piden posición del motor', () => {
-    for (const model of fullAwningModelNames) {
+  test('los modelos completos con selector de dispositivo y MOTOR piden posición del motor', () => {
+    for (const model of fullAwningModelNames.filter((code) => getModelBehavior(code).tipo01 !== null)) {
       expect(getFieldVisibility({ model, device: 'MOTOR' }).motorLocation, model).toBe(true);
     }
+  });
+
+  test('HERA es un toldo completo de tres variantes, sin campos de instalación estructural', () => {
+    const behavior = getModelBehavior('HERA');
+    const visibility = getFieldVisibility({ model: 'HERA', device: 'MOTOR' });
+
+    expect(behavior).toMatchObject({
+      implemented: true,
+      workType: 'FULL_AWNING',
+      diagram: 'HERA',
+      submodelOptions: ['HERA 43 MAQUINA', 'HERA 56 MAQUINA', 'HERA 56 MOTOR']
+    });
+    expect(visibility).toMatchObject({
+      submodel: true,
+      device: false,
+      sensor: false,
+      motorLocation: false,
+      machineLocation: false,
+      crankHeight: false,
+      placement: false,
+      wallType: false,
+      requiresStructureColor: false,
+      requiresRotFabric: false
+    });
+    expect(fullAwningModelNames).toContain('HERA');
   });
 
   test('MODUL400: cofre con submodelo, dispositivo de cofre y brazos', () => {
@@ -149,7 +174,8 @@ describe('modelBehavior', () => {
     ['CAMBIO TELA', 'CAMBIO-TELA'],
     ['AMBAR BOX', 'AMBAR'],
     ['AGATA BOX', 'AGATA'],
-    ['MAXISCREEM', 'MAXISCREEN']
+    ['MAXISCREEM', 'MAXISCREEN'],
+    ['HERA', 'HERA']
   ])('%s tiene dibujo técnico propio', (model, expected) => {
     expect(getAwningDiagram({ model })).toBe(expected);
   });

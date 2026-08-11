@@ -3,6 +3,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {
   awningLetter,
   buildFabricLineDetail,
+  buildHeraMiniPlanDetail,
   buildOrderPlanteamientoPdf,
   buildPlanteamientoPlan,
   resolveCurtainVelcroHeight,
@@ -11,6 +12,9 @@ import {
   summarizeFabricPage
 } from './planteamientoPdf.js';
 import { calculateOrder } from './rules.js';
+
+const heraSoltis267 = 'SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96';
+const heraAcrylic120 = 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR';
 
 function materialsOf(count) {
   return Array.from({ length: count }, (_, index) => ({
@@ -166,9 +170,155 @@ describe('datos del planteamiento de telas', () => {
       { calc: { fabricCode: 'acrili2051p153', fabricDescription: 'ACR ADMIRAL' } }
     ])).toBe('VARIAS TELAS');
   });
+
+  test('el mini planteamiento HERA muestra medidas base y de corte, y usa los ML calculados sin redondear la reserva', () => {
+    const detail = buildHeraMiniPlanDetail(
+      {
+        model: 'HERA', submodel: 'HERA 43 MAQUINA', device: 'MAQUINA',
+        width: 200, projection: 250, height: 240, heraJoin: 'HORIZONTAL'
+      },
+      {
+        heraVariant: 'HERA 43 MAQUINA', width: 200, projection: 250, height: 240,
+        rollTubeLength: 196.7, fabricWidth: 196, fabricDrop: 270,
+        fabricCutWidth: 212, fabricCutDrop: 274, chainLength: 340,
+        heraJoin: 'HORIZONTAL', fabricPanels: 3, seamCount: 2,
+        fabricMl: 6.345, reservedFabricMl: 6.5, specialTubeRequired: false
+      }
+    );
+
+    expect(detail).toMatchObject({
+      variant: 'HERA 43 MAQUINA',
+      drive: 'MÁQUINA',
+      manual: true,
+      width: '200 CM',
+      projection: '250 CM',
+      height: '240 CM',
+      rollTube: '196,7 CM',
+      fabricBase: '196 x 270 CM',
+      fabricCut: '212 x 274 CM',
+      chain: '340 CM',
+      join: 'HORIZONTAL',
+      panels: '3',
+      seams: '2',
+      fabricMl: '6,35 ML',
+      specialTubeRequired: false
+    });
+    expect(detail.fabricMl).not.toBe('6,5 ML');
+  });
+
+  test('el mini planteamiento HERA motor omite altura y corte redundante, y marca que no lleva cadena', () => {
+    const detail = buildHeraMiniPlanDetail(
+      { model: 'HERA', submodel: 'HERA 56 MOTOR', width: 250, projection: 160, height: 0 },
+      {
+        heraVariant: 'HERA 56 MOTOR', width: 250, projection: 160, height: 0,
+        rollTubeLength: 245.5, fabricWidth: 245, fabricDrop: 185,
+        fabricCutWidth: 245, fabricCutDrop: 185, chainLength: null,
+        heraJoin: 'NINGUNO', fabricPanels: 1, seamCount: 0, fabricMl: 1.85
+      }
+    );
+
+    expect(detail).toMatchObject({
+      drive: 'MOTOR',
+      manual: false,
+      fabricCut: '',
+      chain: 'NO LLEVA',
+      join: 'SIN EMPATE',
+      fabricMl: '1,85 ML'
+    });
+  });
 });
 
 describe('buildOrderPlanteamientoPdf', () => {
+  test('HERA no genera estructura vacía y cada toldo conserva su propio mini planteamiento de tela', () => {
+    const awnings = [
+      { id: 'hera-a', model: 'HERA', submodel: 'HERA 43 MAQUINA' },
+      { id: 'hera-b', model: 'HERA', submodel: 'HERA 56 MOTOR' }
+    ];
+    const calculation = {
+      ofs: awnings.map((awning, awningIndex) => ({
+        awningId: awning.id,
+        awningIndex,
+        calculation: { heraVariant: awning.submodel }
+      }))
+    };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.structureEntries).toEqual([]);
+    expect(plan.fabricPages).toHaveLength(2);
+    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['HERA', 'HERA']);
+    expect(plan.fabricPages.map(({ entries }) => entries.map(({ awning }) => awning.id)))
+      .toEqual([['hera-a'], ['hera-b']]);
+  });
+
+  test('el PDF HERA incluye el mini planteamiento manual y motor sin usar los ML redondeados de reserva', async () => {
+    const order = {
+      orderCode: 'AR26-HERA-PDF',
+      customer: 'CLIENTE HERA',
+      technician: 'TECNICO',
+      reviewer: 'REVISOR',
+      sameFabric: false,
+      awnings: [
+        {
+          id: 'hera-manual', of: '0231001', model: 'HERA', submodel: 'HERA 43 MAQUINA',
+          units: 1, width: 320, projection: 140, height: 240, heraJoin: 'VERTICAL',
+          fabric: heraAcrylic120, fabricNotes: 'Confirmar sentido del empate en CAD.'
+        },
+        {
+          id: 'hera-motor', of: '0231002', model: 'HERA', submodel: 'HERA 56 MOTOR',
+          units: 1, width: 250, projection: 160, height: 0, heraJoin: 'NINGUNO',
+          fabric: heraSoltis267
+        }
+      ]
+    };
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+
+    expect(document.numPages).toBe(2);
+    const pageTexts = [];
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pageTexts.push(content.items.map((item) => item.str).join(' '));
+    }
+
+    expect(calculation.ofs[0].calculation).toMatchObject({ fabricMl: 5.1, reservedFabricMl: 5.5 });
+    expect(pageTexts[0]).toContain('MINI PLANTEAMIENTO HERA - TELA');
+    expect(pageTexts[0]).toContain('HERA 43 MAQUINA');
+    expect(pageTexts[0]).toContain('FRENTE TOLDO');
+    expect(pageTexts[0]).toContain('320 CM');
+    expect(pageTexts[0]).toContain('SALIDA TOLDO');
+    expect(pageTexts[0]).toContain('140 CM');
+    expect(pageTexts[0]).toContain('ALTURA INSTALACIÓN');
+    expect(pageTexts[0]).toContain('240 CM');
+    expect(pageTexts[0]).toContain('316,7 CM');
+    expect(pageTexts[0]).toContain('TELA BASE');
+    expect(pageTexts[0]).toContain('316 x 160 CM');
+    expect(pageTexts[0]).toContain('TELA DE CORTE');
+    expect(pageTexts[0]).toContain('326 x 170 CM');
+    expect(pageTexts[0]).toContain('CADENA');
+    expect(pageTexts[0]).toContain('340 CM');
+    expect(pageTexts[0]).toContain('EMPATE');
+    expect(pageTexts[0]).toContain('VERTICAL');
+    expect(pageTexts[0]).toContain('PAÑOS / UNIONES');
+    expect(pageTexts[0]).toContain('3 / 2');
+    expect(pageTexts[0]).toContain('ML CALCULADOS');
+    expect(pageTexts[0]).toContain('5,1 ML');
+    expect(pageTexts[0]).not.toContain('5,5 ML');
+    expect(pageTexts[0]).toContain('CAD MANUAL OBLIGATORIO');
+    expect(pageTexts[0]).toContain('TUBO ESPECIAL - CAMBIAR PRESUPUESTO');
+    expect(pageTexts[0]).toContain('Confirmar sentido del empate en CAD.');
+
+    expect(pageTexts[1]).toContain('HERA 56 MOTOR');
+    expect(pageTexts[1]).toContain('CADENA');
+    expect(pageTexts[1]).toContain('NO LLEVA');
+    expect(pageTexts[1]).toContain('1,85 ML');
+    expect(pageTexts[1]).not.toContain('ALTURA INSTALACIÓN');
+    expect(pageTexts[1]).not.toContain('TELA DE CORTE');
+    expect(pageTexts[1]).not.toContain('TUBO ESPECIAL - CAMBIAR PRESUPUESTO');
+    expect(pageTexts[1]).toContain('CAD MANUAL OBLIGATORIO');
+  });
+
   test('los trabajos textiles no generan estructura y separan dibujos distintos', () => {
     const order = {
       awnings: [

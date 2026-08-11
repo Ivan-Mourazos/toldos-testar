@@ -15,6 +15,7 @@ import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { getModelWorkType, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeModelName } from './modelNames.js';
+import { inferHeraVariant, normalizeHeraJoin } from './heraParameters.js';
 import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
 
 export function normalizeOrder(payload) {
@@ -98,7 +99,8 @@ function materialKey(of, code) {
 
 function normalizeAwning(awning, _index, legacyOrder = {}) {
   const of = cleanText(awning?.of);
-  const model = normalizeModelName(awning?.model);
+  const rawModel = cleanText(awning?.model).toUpperCase();
+  const model = normalizeModelName(rawModel);
   const units = numberOrDefault(awning?.units, 1) || 1;
   const width = numberOrDefault(awning?.width, 0);
   const projection = numberOrDefault(awning?.projection, 0);
@@ -117,12 +119,16 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     units,
     width,
     projection,
+    height: numberOrDefault(awning?.height, 0),
     hasValance,
     armCount: numberOrDefault(awning?.armCount, 0),
     device,
     placement: cleanText(awning?.placement).toUpperCase(),
     wallType: cleanText(awning?.wallType).toUpperCase(),
-    submodel: cleanText(awning?.submodel).toUpperCase(),
+    submodel: model === 'HERA'
+      ? inferHeraVariant({ model: rawModel, submodel: awning?.submodel, device })
+      : cleanText(awning?.submodel).toUpperCase(),
+    heraJoin: model === 'HERA' ? normalizeHeraJoin(awning?.heraJoin) : '',
     tubeLoad: cleanText(awning?.tubeLoad).toUpperCase(),
     destination: cleanText(awning?.destination).toUpperCase(),
     supportSystem: cleanText(awning?.supportSystem || 'AUTOMÁTICO').toUpperCase(),

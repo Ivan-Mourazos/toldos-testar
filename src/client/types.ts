@@ -21,6 +21,8 @@ export type Awning = {
   units: number | null;
   width: number | null;
   projection: number | null;
+  height: number | null;
+  heraJoin: '' | 'NINGUNO' | 'VERTICAL' | 'HORIZONTAL';
   hasValance: boolean | null;
   valanceHeight: number | null;
   valanceCurve: string;
@@ -342,6 +344,7 @@ export type Calculation = {
       fabricWidth: number;
       fabricDrop: number;
       fabricMl: number;
+      reservedFabricMl?: number;
       fabricPanels?: number;
       fabricCode?: string;
       fabricDescription?: string;
@@ -417,6 +420,19 @@ export type Calculation = {
       maxisLoadBarDiscountCm?: number;
       maxisBoxProfileDiscountCm?: number;
       maxisFabricDropAllowanceCm?: number;
+      height?: number;
+      chainLength?: number | null;
+      heraVariant?: string;
+      heraJoin?: Awning['heraJoin'];
+      fabricCutWidth?: number;
+      fabricCutDrop?: number;
+      fabricPanelLength?: number;
+      seamCount?: number;
+      seamAllowanceCm?: number;
+      squaringAllowanceCm?: number;
+      acrylicHemAllowanceCm?: number;
+      specialTubeRequired?: boolean;
+      requiresCad?: boolean;
     };
   }[];
   diagnostics: { level: 'error' | 'pending' | 'warn'; awningId?: string; message: string }[];

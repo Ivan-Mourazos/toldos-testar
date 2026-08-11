@@ -16,8 +16,13 @@ const preferredLabels = {
   MAQUINA: 'Máquina', 'MAQ. INTERIOR': 'Máq. interior', 'MAQ. EXTERIOR': 'Máq. exterior',
   'M.F.DER': 'M.F. derecha', 'M.F IZQ': 'M.F. izquierda', 'ENTRE PAREDES': 'Entre paredes',
   'DIRECTA A PARED': 'Directa a pared', TECHO: 'Techo', FRONTAL: 'Frontal', SI: 'Sí', NO: 'No',
+  HERA: 'HERA',
   'ENTRADA TUBO Ø33 MM': 'Entrada tubo Ø33 mm',
   'ENTRADA TUBO Ø42 MM': 'Entrada tubo Ø42 mm',
+  'HERA 43 MAQUINA': 'HERA 43 máquina',
+  'HERA 56 MAQUINA': 'HERA 56 máquina',
+  'HERA 56 MOTOR': 'HERA 56 motor',
+  'PLANTEAMIENTO CAD MANUAL': 'Planteamiento CAD manual',
   BASE: 'Salida base', FINISHED: 'Tela terminada'
 };
 
@@ -27,6 +32,7 @@ export function buildReviewSheetEntries(order, calculation) {
     const ofBlock = findOfBlock(calculation, awning, index);
     const diagnostics = (calculation.diagnostics || []).filter((item) => !item.awningId || item.awningId === awning.id);
     const fabricOnly = isFabricOnlyModel(awning.model);
+    const isHera = awning.model === 'HERA';
     const hasValance = awning.model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
     const standaloneValance = awning.model === 'BAMBALINA';
     const anticaVariant = normalizeAnticaVariant(awning.anticaVariant);
@@ -47,9 +53,23 @@ export function buildReviewSheetEntries(order, calculation) {
         : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
     }
+    if (isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (!fabricOnly && ofBlock?.calculation) {
       addField(cardFields, 'Frente tela', measure(ofBlock.calculation.fabricWidth), true);
       addField(cardFields, 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
+    }
+    if (isHera && ofBlock?.calculation) {
+      const calc = ofBlock.calculation;
+      if (Number(calc.fabricCutWidth) !== Number(calc.fabricWidth)) addField(cardFields, 'Frente de corte', measure(calc.fabricCutWidth), true);
+      if (Number(calc.fabricCutDrop) !== Number(calc.fabricDrop)) addField(cardFields, 'Salida de corte', measure(calc.fabricCutDrop), true);
+      if (awning.submodel !== 'HERA 56 MOTOR') addField(cardFields, 'Altura instalación', measure(awning.height), true);
+      addField(cardFields, 'Tubo calculado', measure(calc.rollTubeLength), true);
+      addField(cardFields, 'Cadena', calc.chainLength === null ? 'NO LLEVA' : measure(calc.chainLength), true);
+      addField(cardFields, 'Empate cliente', awning.heraJoin, true);
+      addField(cardFields, 'Paños', calc.fabricPanels, true);
+      addField(cardFields, 'Metros tela', `${formatNumber(calc.fabricMl)} ml`, true);
+      addField(cardFields, 'Proceso', 'PLANTEAMIENTO CAD MANUAL', true);
+      if (calc.specialTubeRequired) addField(cardFields, 'Aviso', 'TUBO ESPECIAL · CAMBIAR PRESUPUESTO', true);
     }
     if (fields.dimensions.includes('valanceHeight')) addField(cardFields, standaloneValance ? 'Alto' : 'Bamba (cm)', measure(awning.valanceHeight), true);
     if (hasValance) {
@@ -59,14 +79,14 @@ export function buildReviewSheetEntries(order, calculation) {
       if (valanceFinish === 'OTRO') addField(cardFields, 'Color remate', awning.remateColor, true);
     }
     if (fields.tubeLoad) addField(cardFields, 'Tubo de carga', awning.tubeLoad, true);
-    if (fields.submodel) addField(cardFields, 'Variante', awning.submodel, true);
+    if (fields.submodel && !isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);
     if (cambioAnticaRound) addField(cardFields, 'Medida de caída', anticaMeasurementMode, true);
     if (awning.model === 'ANTICA' && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || roundAnticaEntry)) {
       addField(cardFields, 'Altura soporte-brazo', measure(awning.anticaSupportHeight), true);
     }
-    if (!fabricOnly) addField(cardFields, 'Lacado', awning.structureColor || order.structureColor || 'SIN INDICAR', true);
-    if (!standaloneValance) addField(cardFields, 'Rotulación tela', yesNo(awning.rotFabric), true);
+    if (fields.requiresStructureColor) addField(cardFields, 'Lacado', awning.structureColor || order.structureColor || 'SIN INDICAR', true);
+    if (fields.requiresRotFabric && !standaloneValance) addField(cardFields, 'Rotulación tela', yesNo(awning.rotFabric), true);
     if (hasValance) addField(cardFields, 'Rotulación bamba', yesNo(awning.rotValance), true);
 
     if (String(awning.model || '').includes('CORTINA')) {
