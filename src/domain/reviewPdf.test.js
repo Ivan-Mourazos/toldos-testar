@@ -25,11 +25,33 @@ describe('PDF provisional de revisión', () => {
 
     expect(entry).toMatchObject({ tag: 'TOLDO A', title: 'Perla box', legacyTitle: 'Storbox S-300' });
     expect(entry.fields).toContainEqual({ label: 'OF', value: '3300001' });
+    expect(entry.fields).toContainEqual({ label: 'Frente tela', value: '280,8' });
+    expect(entry.fields).toContainEqual({ label: 'Salida tela', value: '320' });
     expect(entry.fields).toContainEqual({ label: 'Remate', value: 'Como tela' });
     expect(entry.fields).toContainEqual({ label: 'Lado máquina', value: 'M.F. derecha' });
     expect(entry.notes).toContainEqual({ label: 'Obs. estructura', value: 'Comprobar medidas en obra' });
     expect(entry).not.toHaveProperty('materials');
     expect(entry).not.toHaveProperty('sections');
+  });
+
+  test('incluye frente y salida de tela calculados en un toldo con tejido no acrílico', async () => {
+    const order = reviewOrder({ fabric: 'ALPHAAM03P250' });
+    const calculation = calculateOrder(order);
+    const [entry] = buildReviewSheetEntries(order, calculation);
+
+    expect(entry.fields.slice(0, 5)).toEqual([
+      { label: 'OF', value: '3300001' },
+      { label: 'Frente', value: '300' },
+      { label: 'Salida', value: '250' },
+      { label: 'Frente tela', value: '280,8' },
+      { label: 'Salida tela', value: '320' }
+    ]);
+
+    const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation }));
+    expect(pdf.text).toContain('Frente tela');
+    expect(pdf.text).toContain('Salida tela');
+    expect(pdf.text).toContain('280,8');
+    expect(pdf.text).toContain('320');
   });
 
   test('oculta el remate sin bambalina y conserva uno alternativo cuando existe', () => {
@@ -100,6 +122,8 @@ describe('PDF provisional de revisión', () => {
     expect(entry.fields).toContainEqual({ label: 'Medida de caída', value: measureType });
     expect(entry.fields).toContainEqual({ label: dimensionLabel, value: String(projection).replace('.', ',') });
     expect(entry.fields).toContainEqual({ label: 'Configuración Antica', value: `Entrada tubo Ø${diameter} mm` });
+    expect(entry.fields.some((field) => field.label === 'Frente tela')).toBe(false);
+    expect(entry.fields.some((field) => field.label === 'Salida tela')).toBe(false);
   });
 
   test('imprime el tipo y la etiqueta de medida Antica en el PDF de revisión', async () => {

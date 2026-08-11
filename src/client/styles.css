@@ -1142,6 +1142,11 @@ label span,
   color: #10272b;
 }
 
+.app-tabs button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .sidebar-meta {
   align-items: flex-start;
   display: grid;
@@ -1233,6 +1238,13 @@ label span,
 .workspace-content {
   min-width: 0;
   padding: 0 16px 20px;
+}
+
+.order-form-fieldset {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
 }
 
 .topbar-actions {

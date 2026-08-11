@@ -247,7 +247,11 @@ export function useDraft() {
   }
 
   function reuseHistory(entry: HistoryEntry) {
-    loadOrder(entry);
+    loadOrder(buildReusableDraft(entry));
+  }
+
+  function reuseOrder(entry: DraftState) {
+    loadOrder(buildReusableDraft(entry));
   }
 
   function loadOrder(entry: DraftState | HistoryEntry) {
@@ -307,8 +311,19 @@ export function useDraft() {
     duplicateAwning,
     removeAwning,
     reuseHistory,
+    reuseOrder,
     loadOrder,
     resetDraft
+  };
+}
+
+export function buildReusableDraft(entry: DraftState): DraftState {
+  return {
+    ...entry,
+    awnings: entry.awnings.map((awning) => ({
+      ...sanitizeAwning(awning as unknown as Record<string, unknown>),
+      id: awning.id || uid()
+    }))
   };
 }
 

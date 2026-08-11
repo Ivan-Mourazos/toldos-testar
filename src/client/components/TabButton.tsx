@@ -1,8 +1,14 @@
 import React from 'react';
 
-export function TabButton({ active, icon, label, onClick }: { active: boolean; icon: React.ReactNode; label: string; onClick: () => void }) {
+export function TabButton({ active, disabled = false, icon, label, onClick }: {
+  active: boolean;
+  disabled?: boolean;
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
   return (
-    <button className={active ? 'active' : ''} type="button" onClick={onClick}>
+    <button className={active ? 'active' : ''} type="button" disabled={disabled} onClick={onClick}>
       {icon}
       {label}
     </button>

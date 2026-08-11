@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createReviewPackage,
   createWorkflowStore,
@@ -17,6 +17,7 @@ const temporaryDirectories = [];
 
 afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map((directory) => fs.rm(directory, { recursive: true, force: true })));
+  vi.restoreAllMocks();
 });
 
 describe('flujo de revisión y producción', () => {
@@ -81,6 +82,37 @@ describe('flujo de revisión y producción', () => {
     expect(listing[0].orderCode).toBe('AR2601234');
     expect(listing[0]).not.toHaveProperty('order');
     expect((await store.getReview('AR2601234')).order.customer).toBe('Cliente');
+  });
+
+  it('ignora sin mostrar error el PDF definitivo AR2601234-1.PDF de la misma carpeta', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-workflow-'));
+    temporaryDirectories.push(root);
+    const reviews = path.join(root, '{YYYY}', 'TOLDOS');
+    const store = createWorkflowStore({
+      settingsFile: path.join(root, 'settings.json'),
+      defaults: defaultWorkflowSettings({ reviewDirectory: reviews })
+    });
+    await store.saveSettings({
+      productionEnabled: false,
+      reviewDirectory: reviews,
+      planteamientosDirectory: reviews,
+      rpsUploadDirectory: ''
+    });
+    const review = createReviewPackage({
+      order: { orderCode: 'AR2601234', customer: 'Cliente', technician: 'Ana', awnings: [{ model: 'ARZUA PRO' }] },
+      calculation: { ofs: [{ of: '260001' }], diagnostics: [] }
+    });
+    const editablePdf = await buildOrderReviewPdf({ order: review.order, calculation: { ofs: [], diagnostics: [] }, review });
+    await store.saveReview(review, editablePdf);
+    const finalPdf = await buildOrderReviewPdf({ order: review.order, calculation: { ofs: [], diagnostics: [] } });
+    const savedDirectory = path.join(root, '2026', 'TOLDOS');
+    await fs.writeFile(path.join(savedDirectory, 'AR2601234-1.PDF'), finalPdf);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const listing = await store.listReviews(2026);
+
+    expect(listing.map((item) => item.orderCode)).toEqual(['AR2601234']);
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 
   it('registra quién aprobó y los archivos realmente producidos', () => {

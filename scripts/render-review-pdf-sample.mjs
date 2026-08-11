@@ -10,7 +10,7 @@ const order = {
   orderDate: '2026-08-07',
   technician: 'IVAN',
   reviewer: 'TAMARA',
-  fabric: 'ACRILI2038P120|||120|||LONA ACRILICA MASACRIL 300 BEIGE 2038',
+  fabric: 'ALPHAAM03P250|||250|||PVC 580 AMARILLO 1003',
   sameFabric: true,
   notes: 'Documento generado para comprobar el circuito provisional de revision.',
   awnings: [{
@@ -34,15 +34,25 @@ const order = {
     structureNotes: 'Confirmar altura de colocacion antes de fabricar.',
     fabricNotes: 'Bambalina recta y remate como tela.'
   }, {
-    id: 'enrollable-b',
-    of: '3300002',
-    model: 'ENROLLABLE',
-    units: 2,
-    width: 180,
-    projection: 230,
-    valanceHeight: 0,
+    id: 'perla-b',
+    of: '0230461',
+    model: 'PERLA BOX',
+    units: 1,
+    width: 310,
+    projection: 250,
+    valanceHeight: 25,
+    valanceCurve: 'RECTA',
+    remate: '',
+    structureColor: 'BLANCO',
     rotFabric: 'NO',
-    fabricNotes: 'Dos unidades iguales.'
+    rotValance: 'NO',
+    device: 'MAQUINA',
+    machineSide: 'M.F IZQ',
+    crankHeight: 120,
+    placement: 'TECHO',
+    wallType: 'ENTRE PAREDES',
+    structureNotes: 'Segundo toldo completo para comprobar la paginacion.',
+    fabricNotes: 'Tejido PVC no acrilico.'
   }]
 };
 

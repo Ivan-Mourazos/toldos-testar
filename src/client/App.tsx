@@ -100,6 +100,20 @@ export default function App() {
     notify(`Pedido ${review.orderCode} cargado en el formulario para corregirlo.`, { tone: 'info', title: 'Modo de corrección' });
   }
 
+  async function reuseReview(review: ReviewPackage) {
+    const choice = await askForConfirmation({
+      title: `Reutilizar ${review.orderCode}`,
+      message: 'Se sustituirá el formulario por los datos históricos, incluidos el número de pedido y las OF, y se recalculará con los parámetros actuales. Cámbialos antes de guardar si vas a crear un pedido nuevo.',
+      confirmLabel: 'Reutilizar datos',
+      cancelLabel: 'Conservar formulario',
+      tone: 'warning'
+    });
+    if (choice !== 'confirm') return;
+    draft.reuseOrder(review.order);
+    setActiveTab('order');
+    notify(`Datos de ${review.orderCode} cargados en el formulario.`, { tone: 'success', title: 'Datos reutilizados' });
+  }
+
   function currentOrderPayload() {
     return {
       orderCode: draft.orderCode,
@@ -153,7 +167,8 @@ export default function App() {
         return;
       }
       setReviewRefresh((value) => value + 1);
-      notify(`${data.review.orderCode}.pdf guardado en ${data.savedPath}`, { tone: 'success', title: 'Guardado para revisión' });
+      draft.resetDraft();
+      notify(`${data.review.orderCode}.pdf guardado en ${data.savedPath}. El formulario se ha limpiado.`, { tone: 'success', title: 'Guardado para revisión' });
     } catch {
       notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
     } finally {
@@ -239,10 +254,10 @@ export default function App() {
         </div>
 
         <nav className="app-tabs" aria-label="Vistas">
-          <TabButton active={activeTab === 'order'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
-          <TabButton active={activeTab === 'parameters'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
-          <TabButton active={activeTab === 'reviews'} icon={<Inbox />} label="Revisión" onClick={() => setActiveTab('reviews')} />
-          <TabButton active={activeTab === 'settings'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
+          <TabButton active={activeTab === 'order'} disabled={working === 'review'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
+          <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
+          <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} icon={<Inbox />} label="Revisión" onClick={() => setActiveTab('reviews')} />
+          <TabButton active={activeTab === 'settings'} disabled={working === 'review'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
         </nav>
 
         <div className="sidebar-meta">
@@ -282,34 +297,36 @@ export default function App() {
 
         <div className="workspace-content">
           {activeTab === 'order' && (
-            <OrderView
-          orderCode={draft.orderCode}
-          customer={draft.customer}
-          orderDate={draft.orderDate}
-          technician={draft.technician}
-          reviewer={draft.reviewer}
-          fabric={draft.fabric}
-          sameFabric={draft.sameFabric}
-          remate={draft.remate}
-          remateColor={draft.remateColor}
-          awnings={draft.awnings}
-          calculation={calculation}
-          calculationState={calculationState}
-          parameters={ruleSettings.parameters}
-          setOrderCode={draft.setOrderCode}
-          setCustomer={draft.setCustomer}
-          setOrderDate={draft.setOrderDate}
-          setTechnician={draft.setTechnician}
-          setReviewer={draft.setReviewer}
-          setFabric={draft.setFabric}
-          setSameFabric={draft.setSameFabric}
-          setRemate={draft.setRemate}
-          setRemateColor={draft.setRemateColor}
-          addAwning={draft.addAwning}
-          duplicateAwning={draft.duplicateAwning}
-          removeAwning={draft.removeAwning}
-          updateAwning={draft.updateAwning}
-            />
+            <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
+              <OrderView
+                orderCode={draft.orderCode}
+                customer={draft.customer}
+                orderDate={draft.orderDate}
+                technician={draft.technician}
+                reviewer={draft.reviewer}
+                fabric={draft.fabric}
+                sameFabric={draft.sameFabric}
+                remate={draft.remate}
+                remateColor={draft.remateColor}
+                awnings={draft.awnings}
+                calculation={calculation}
+                calculationState={calculationState}
+                parameters={ruleSettings.parameters}
+                setOrderCode={draft.setOrderCode}
+                setCustomer={draft.setCustomer}
+                setOrderDate={draft.setOrderDate}
+                setTechnician={draft.setTechnician}
+                setReviewer={draft.setReviewer}
+                setFabric={draft.setFabric}
+                setSameFabric={draft.setSameFabric}
+                setRemate={draft.setRemate}
+                setRemateColor={draft.setRemateColor}
+                addAwning={draft.addAwning}
+                duplicateAwning={draft.duplicateAwning}
+                removeAwning={draft.removeAwning}
+                updateAwning={draft.updateAwning}
+              />
+            </fieldset>
           )}
 
           {activeTab === 'parameters' && (
@@ -350,6 +367,7 @@ export default function App() {
             <ReviewsView
               refreshKey={reviewRefresh}
               onOpen={editReview}
+              onReuse={reuseReview}
               onToast={notify}
               onConfirm={askForConfirmation}
             />

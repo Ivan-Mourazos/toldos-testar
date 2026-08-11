@@ -47,6 +47,10 @@ export function buildReviewSheetEntries(order, calculation) {
         : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
     }
+    if (!fabricOnly && ofBlock?.calculation) {
+      addField(cardFields, 'Frente tela', measure(ofBlock.calculation.fabricWidth), true);
+      addField(cardFields, 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
+    }
     if (fields.dimensions.includes('valanceHeight')) addField(cardFields, standaloneValance ? 'Alto' : 'Bamba (cm)', measure(awning.valanceHeight), true);
     if (hasValance) {
       addField(cardFields, 'Curva bamba', awning.valanceCurve, true);

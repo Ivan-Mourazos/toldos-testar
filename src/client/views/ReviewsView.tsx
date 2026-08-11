@@ -4,9 +4,10 @@ import type { Calculation, ReviewPackage, ReviewSummary } from '../types';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail, ReviewStatusBadge } from '../components/ReviewOrderDetail';
 
-export function ReviewsView({ refreshKey, onOpen, onToast, onConfirm }: {
+export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }: {
   refreshKey: number;
   onOpen: (review: ReviewPackage) => void | Promise<void>;
+  onReuse: (review: ReviewPackage) => void | Promise<void>;
   onToast: Notify;
   onConfirm: AskForConfirmation;
 }) {
@@ -113,6 +114,19 @@ export function ReviewsView({ refreshKey, onOpen, onToast, onConfirm }: {
       await onOpen(review);
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo abrir el pedido.', { tone: 'error' });
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  async function reuseSelected() {
+    if (!selected) return;
+    setWorking(true);
+    try {
+      const review = selectedReview || (await fetchReviewDetails(selected.orderCode)).review;
+      await onReuse(review);
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudieron reutilizar los datos del pedido.', { tone: 'error' });
     } finally {
       setWorking(false);
     }
@@ -226,7 +240,10 @@ export function ReviewsView({ refreshKey, onOpen, onToast, onConfirm }: {
         calculation={selectedCalculation}
         loading={detailLoading}
         canEdit={Boolean(selected && selected.status !== 'PRODUCED')}
+        canReuse={Boolean(selected && selected.status === 'PRODUCED')}
+        disabled={working}
         onEdit={() => void openSelected()}
+        onReuse={() => void reuseSelected()}
       />
 
       <aside className="review-desk panel">

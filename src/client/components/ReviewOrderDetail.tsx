@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle, FileSearch, PencilLine } from 'lucide-react';
+import { AlertTriangle, CopyPlus, FileSearch, PencilLine } from 'lucide-react';
 import { buildReviewSheetEntries, fabricLabel } from '../../domain/reviewSheetEntries.js';
 import type { Calculation, ReviewPackage, ReviewStatus } from '../types';
 
@@ -8,13 +8,19 @@ export function ReviewOrderDetail({
   calculation,
   loading,
   canEdit,
-  onEdit
+  canReuse,
+  disabled,
+  onEdit,
+  onReuse
 }: {
   review: ReviewPackage | null;
   calculation: Calculation | null;
   loading: boolean;
   canEdit: boolean;
+  canReuse: boolean;
+  disabled: boolean;
   onEdit: () => void;
+  onReuse: () => void;
 }) {
   const entries = useMemo(
     () => review && calculation ? buildReviewSheetEntries(review.order, calculation) : [],
@@ -42,7 +48,8 @@ export function ReviewOrderDetail({
         </div>
         <div className="review-reader-actions">
           <ReviewStatusBadge status={review.status} />
-          {canEdit && <button className="ghost-button" type="button" onClick={onEdit}><PencilLine aria-hidden="true" />Corregir en Pedido</button>}
+          {canEdit && <button className="ghost-button" type="button" disabled={disabled} onClick={onEdit}><PencilLine aria-hidden="true" />Corregir en Pedido</button>}
+          {canReuse && <button className="ghost-button" type="button" disabled={disabled} onClick={onReuse}><CopyPlus aria-hidden="true" />Reutilizar datos</button>}
         </div>
       </header>
 

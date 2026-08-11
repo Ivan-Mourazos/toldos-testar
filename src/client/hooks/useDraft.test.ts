@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { defaultDraft, sanitizeAwning, migrateLegacyDraft, switchAwningModel } from './useDraft';
+import { buildReusableDraft, defaultDraft, sanitizeAwning, migrateLegacyDraft, switchAwningModel } from './useDraft';
 import { createAwning } from '../constants';
 import { modelNames } from '../../domain/modelBehavior.js';
 
@@ -105,6 +105,46 @@ describe('defaultDraft', () => {
       rotTela: '',
       rotBamba: '',
       awnings: []
+    });
+  });
+});
+
+describe('buildReusableDraft', () => {
+  test('restaura la foto completa del pedido histórico y sanea los toldos', () => {
+    const source = {
+      ...defaultDraft(),
+      orderCode: 'AR2601234',
+      customer: 'Cliente habitual',
+      orderDate: '2026-01-15',
+      technician: 'Ana',
+      fabric: 'ACR ADMIRAL',
+      awnings: [{
+        ...createAwning(),
+        id: 'toldo-historico',
+        of: '260001',
+        model: 'ARZUA PRO',
+        width: 400,
+        projection: 250,
+        structureNotes: 'Conservar esta configuración'
+      }]
+    };
+
+    const reusable = buildReusableDraft(source);
+
+    expect(reusable).toMatchObject({
+      orderCode: 'AR2601234',
+      customer: 'Cliente habitual',
+      orderDate: '2026-01-15',
+      technician: 'Ana',
+      fabric: 'ACR ADMIRAL'
+    });
+    expect(reusable.awnings[0]).toMatchObject({
+      id: 'toldo-historico',
+      of: '260001',
+      model: 'ARZUA PRO',
+      width: 400,
+      projection: 250,
+      structureNotes: 'Conservar esta configuración'
     });
   });
 });

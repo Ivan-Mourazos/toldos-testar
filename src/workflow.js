@@ -4,6 +4,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 export const REVIEW_FILE_SUFFIX = '.pdf';
 const LEGACY_REVIEW_FILE_SUFFIX = '.toldos.json';
+const NOT_EDITABLE_REVIEW_PDF = 'NOT_EDITABLE_REVIEW_PDF';
 
 export function defaultWorkflowSettings(seed = {}) {
   const archiveTemplate = seed.orderArchiveRoot
@@ -212,7 +213,9 @@ export function createWorkflowStore({ settingsFile, defaults }) {
             : JSON.parse(await fs.readFile(filePath, 'utf8'));
           return reviewSummary(review);
         } catch (error) {
-          console.error(`No se pudo leer ${name}:`, error.message);
+          if (error.code !== NOT_EDITABLE_REVIEW_PDF) {
+            console.error(`No se pudo leer ${name}:`, error.message);
+          }
           return null;
         }
       }));
@@ -234,7 +237,11 @@ export async function extractReviewPackageFromPdf(buffer) {
     const entries = attachments instanceof Map ? [...attachments.entries()] : Object.entries(attachments || {});
     const match = entries.find(([, item]) => String(item.filename || '').toLowerCase().endsWith(LEGACY_REVIEW_FILE_SUFFIX));
     const content = match ? (match[1].content || await document.getAttachmentContent(match[0])) : null;
-    if (!content) throw new Error('El PDF no contiene los datos editables del pedido.');
+    if (!content) {
+      const error = new Error('El PDF no contiene los datos editables del pedido.');
+      error.code = NOT_EDITABLE_REVIEW_PDF;
+      throw error;
+    }
     const review = JSON.parse(Buffer.from(content).toString('utf8'));
     if (review?.kind !== 'toldos-testar-review' || !review?.orderCode || !review?.order) {
       throw new Error('Los datos editables incrustados en el PDF no son válidos.');

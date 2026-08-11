@@ -27,7 +27,8 @@ El pedido no se envía directamente a producción:
 
 Mientras la aplicación todavía se use de forma local, `Guardar para revisión`
 guarda `PEDIDO.pdf` en TOLDOS: paneles compactos que reproducen los datos
-visibles de cada toldo y su estado, sin cálculos ni materiales de producción. Lleva la
+visibles de cada toldo, su estado y las medidas calculadas de frente/salida de tela,
+sin desglose de materiales ni archivos de producción. Lleva la
 marca `BORRADOR PARA REVISION - NO PRODUCCION` y no guarda ni envía archivos a RPS.
 
 ## Configuración de carpetas
