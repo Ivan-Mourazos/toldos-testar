@@ -299,6 +299,7 @@ export default function App() {
           {activeTab === 'order' && (
             <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
               <OrderView
+                availableModelNames={catalog?.models.map((model) => model.code) ?? []}
                 orderCode={draft.orderCode}
                 customer={draft.customer}
                 orderDate={draft.orderDate}

@@ -7,6 +7,7 @@ import {
   createWorkflowStore,
   defaultWorkflowSettings,
   markReviewProduced,
+  isAbsolutePathTemplate,
   normalizeWorkflowSettings,
   resolveDirectoryTemplate,
   workflowReadiness
@@ -22,23 +23,32 @@ afterEach(async () => {
 
 describe('flujo de revisión y producción', () => {
   it('resuelve el año del pedido en las tres rutas configurables', () => {
-    expect(resolveDirectoryTemplate('C:\\Pedidos\\{YYYY}\\TOLDOS', 'AR2601234')).toBe('C:\\Pedidos\\2026\\TOLDOS');
+    const template = path.join(os.tmpdir(), 'Pedidos', '{YYYY}', 'TOLDOS');
+    expect(resolveDirectoryTemplate(template, 'AR2601234')).toBe(path.join(os.tmpdir(), 'Pedidos', '2026', 'TOLDOS'));
   });
 
   it('corrige una carpeta cuyo año se escribió entre llaves', () => {
-    const settings = normalizeWorkflowSettings({ reviewDirectory: 'C:\\Pedidos\\{2026}\\TOLDOS' });
-    expect(settings.reviewDirectory).toBe('C:\\Pedidos\\2026\\TOLDOS');
+    const settings = normalizeWorkflowSettings({ reviewDirectory: path.join(os.tmpdir(), 'Pedidos', '{2026}', 'TOLDOS') });
+    expect(settings.reviewDirectory).toBe(path.join(os.tmpdir(), 'Pedidos', '2026', 'TOLDOS'));
   });
 
   it('solo declara producción lista con rutas completas y activación explícita', () => {
     const settings = normalizeWorkflowSettings({
       productionEnabled: true,
-      reviewDirectory: 'C:\\Pedidos\\{YYYY}\\TOLDOS',
-      planteamientosDirectory: 'C:\\Planteamientos',
-      rpsUploadDirectory: '\\\\rps\\SUBIDA'
+      reviewDirectory: path.join(os.tmpdir(), 'Pedidos', '{YYYY}', 'TOLDOS'),
+      planteamientosDirectory: path.join(os.tmpdir(), 'Planteamientos'),
+      rpsUploadDirectory: path.join(os.tmpdir(), 'RPS')
     });
     expect(workflowReadiness(settings)).toEqual({ reviewReady: true, productionReady: true, missing: [] });
     expect(workflowReadiness({ ...settings, productionEnabled: false }).productionReady).toBe(false);
+  });
+
+  it('en Linux exige rutas POSIX montadas y rechaza rutas de Windows o UNC', () => {
+    expect(isAbsolutePathTemplate('/mnt/toldos/{YYYY}/TOLDOS', 'linux')).toBe(true);
+    expect(isAbsolutePathTemplate('C:\\Pedidos\\{YYYY}', 'linux')).toBe(false);
+    expect(isAbsolutePathTemplate('\\\\servidor\\Pedidos\\{YYYY}', 'linux')).toBe(false);
+    expect(isAbsolutePathTemplate('//servidor/Pedidos/{YYYY}', 'linux')).toBe(false);
+    expect(isAbsolutePathTemplate('\\\\servidor\\Pedidos\\{YYYY}', 'win32')).toBe(true);
   });
 
   it('al actualizar un pedido vuelve a revisión y conserva su fecha de creación', () => {

@@ -3,11 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "packageManager": "pnpm@11.3.0",
   "description": "Web app para configurar toldos Testar, calcular materiales y generar reservas.",
   "scripts": {
     "dev": "node src/server.js",
     "build": "vite build",
     "start": "node src/server.js",
+    "deploy:check": "node scripts/check-deployment.mjs",
+    "deploy:smoke": "node scripts/smoke-production.mjs",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:reload": "pm2 reload ecosystem.config.cjs --update-env",
+    "pm2:status": "pm2 status toldos-testar",
+    "pm2:logs": "pm2 logs toldos-testar",
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e:rps": "pnpm build && node scripts/test-rps-e2e.mjs",

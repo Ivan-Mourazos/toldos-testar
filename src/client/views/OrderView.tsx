@@ -7,6 +7,7 @@ import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
 export function OrderView({
+  availableModelNames,
   orderCode,
   customer,
   orderDate,
@@ -32,6 +33,7 @@ export function OrderView({
   removeAwning,
   updateAwning
 }: {
+  availableModelNames: string[];
   orderCode: string;
   customer: string;
   orderDate: string;
@@ -60,6 +62,7 @@ export function OrderView({
   updateAwning: (id: string, patch: Partial<Awning>) => void;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
+  const enabledModels = new Set(availableModelNames);
 
   function chooseModel(model: string) {
     if (!pickerType) return;
@@ -136,7 +139,8 @@ export function OrderView({
       {pickerType && (
         <ModelPickerDialog
           workType={pickerType}
-          models={pickerType === 'FABRIC_ONLY' ? fabricOnlyModelNames : fullAwningModelNames}
+          models={(pickerType === 'FABRIC_ONLY' ? fabricOnlyModelNames : fullAwningModelNames)
+            .filter((model) => enabledModels.has(model))}
           onSelect={chooseModel}
           onClose={() => setPickerType(null)}
         />

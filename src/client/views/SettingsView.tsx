@@ -49,7 +49,7 @@ export function SettingsView({
         <div>
           <span>Administración del flujo</span>
           <h2>Rutas de trabajo</h2>
-          <p>Estas rutas se guardan en el servidor y son comunes para todos los puestos.</p>
+          <p>Estas rutas se guardan en el servidor y son comunes para todos los puestos. En Linux usa los puntos de montaje /mnt; en desarrollo Windows se admiten rutas UNC.</p>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export function SettingsView({
           description="Aquí se guarda PEDIDO.pdf para revisar. El propio PDF contiene los datos editables que abre la bandeja compartida."
           value={form.reviewDirectory}
           onChange={(reviewDirectory) => setForm({ ...form, reviewDirectory })}
-          placeholder="\\servidor\Oficina Técnica\{YYYY}\TOLDOS"
+          placeholder="/mnt/toldos/oficina-tecnica/{YYYY}/TOLDOS"
         />
         <RouteField
           step="02"
@@ -68,7 +68,7 @@ export function SettingsView({
           description="Destino del PDF definitivo, nombrado PEDIDO-1.pdf."
           value={form.planteamientosDirectory}
           onChange={(planteamientosDirectory) => setForm({ ...form, planteamientosDirectory })}
-          placeholder="\\servidor\PLANTEAMIENTOS\{YYYY}"
+          placeholder="/mnt/toldos/planteamientos/{YYYY}"
         />
         <RouteField
           step="03"
@@ -76,7 +76,7 @@ export function SettingsView({
           description="Destino de los archivos RPS individuales, uno por cada OF."
           value={form.rpsUploadDirectory}
           onChange={(rpsUploadDirectory) => setForm({ ...form, rpsUploadDirectory })}
-          placeholder="\\servidor\SUBIDA DE MATERIALES"
+          placeholder="/mnt/toldos/rps"
         />
       </div>
 

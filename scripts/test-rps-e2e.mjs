@@ -35,6 +35,7 @@ const server = spawn(process.execPath, ['src/server.js'], {
     ...process.env,
     PORT: String(port),
     ENABLE_FILE_WRITES: 'false',
+    ENABLE_LEGACY_EXPORTS: 'true',
     WORKFLOW_SETTINGS_FILE: path.join(workflowDirectory, 'settings.json'),
     NODE_ENV: 'production'
   },

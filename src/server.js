@@ -12,7 +12,12 @@ import { calculateOrder } from './domain/rules.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
-import { searchRpsFabrics } from './rpsCatalog.js';
+import {
+  applyDeploymentFeaturesToCatalog,
+  assertDeploymentModelsEnabled,
+  assertLegacyExportsEnabled
+} from './deploymentFeatures.js';
+import { closeRpsCatalog, searchRpsFabrics } from './rpsCatalog.js';
 import {
   createReviewPackage,
   createWorkflowStore,
@@ -38,14 +43,28 @@ const workflowStore = createWorkflowStore({
     exportDirectory: config.exportDirectory,
     orderArchiveRoot: config.orderArchiveRoot,
     reviewDirectory: config.reviewDirectory,
-    planteamientosDirectory: config.planteamientosDirectory
+    planteamientosDirectory: config.planteamientosDirectory,
+    rpsUploadDirectory: config.rpsUploadDirectory
   })
 });
+const deploymentFeatures = {
+  heraEnabled: config.heraEnabled,
+  legacyExportsEnabled: config.legacyExportsEnabled
+};
 
 const app = express();
 
 app.use(compression());
 app.use(express.json({ limit: '2mb' }));
+
+app.use('/api', (req, _res, next) => {
+  try {
+    assertDeploymentModelsEnabled(req.body, deploymentFeatures);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
@@ -67,7 +86,7 @@ app.get('/api/health', async (_req, res, next) => {
 });
 
 app.get('/api/catalog', (_req, res) => {
-  res.json(getCatalog());
+  res.json(applyDeploymentFeaturesToCatalog(getCatalog(), deploymentFeatures));
 });
 
 app.get('/api/catalog/fabrics', async (req, res) => {
@@ -92,6 +111,7 @@ app.post('/api/calculate', (req, res, next) => {
 
 app.post('/api/export', async (req, res, next) => {
   try {
+    assertLegacyExportsEnabled(deploymentFeatures);
     const reservation = normalizeReservation(req.body);
     const workbook = await buildReservationWorkbook(reservation);
     const filename = buildFilename(reservation);
@@ -248,6 +268,7 @@ app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
     if (!reviewer) throw new Error('Indica quién aprueba el pedido.');
 
     const order = normalizeOrder(review.order);
+    assertDeploymentModelsEnabled(order, deploymentFeatures);
     const calculation = calculateOrder(order);
     const blockingDiagnostics = calculation.diagnostics.filter((item) => item.level === 'error' || item.level === 'pending');
     if (calculation.ofs.length !== order.awnings.length || blockingDiagnostics.length > 0) {
@@ -322,6 +343,7 @@ app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
 
 app.post('/api/export/save', async (req, res, next) => {
   try {
+    assertLegacyExportsEnabled(deploymentFeatures);
     if (!config.fileWritesEnabled) {
       res.status(403).json({
         error: 'Modo de simulación activo: el guardado de reservas y archivos compartidos está deshabilitado.'
@@ -483,8 +505,9 @@ app.use((error, _req, res, _next) => {
   res.status(status).json({ error: error.message || 'No se pudo completar la operación.' });
 });
 
-const server = app.listen(config.port, () => {
-  console.log(`Toldos Testar disponible en http://localhost:${config.port}`);
+const server = app.listen(config.port, config.host, () => {
+  console.log(`Toldos Testar disponible en http://${config.host}:${config.port}`);
+  process.send?.('ready');
 });
 
 server.on('error', (error) => {
@@ -495,6 +518,52 @@ server.on('error', (error) => {
   }
   process.exit(1);
 });
+
+let shutdownStarted = false;
+
+async function shutdown(signal) {
+  if (shutdownStarted) return;
+  shutdownStarted = true;
+  console.log(`${signal} recibido: cerrando Toldos Testar…`);
+
+  const forceTimer = setTimeout(() => {
+    console.error('El cierre ordenado superó 12 segundos; se fuerza la salida.');
+    server.closeAllConnections?.();
+    process.exit(1);
+  }, 12_000);
+  forceTimer.unref();
+
+  let exitCode = 0;
+  const closeErrors = [];
+  try {
+    await new Promise((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+  } catch (error) {
+    closeErrors.push(error);
+  }
+
+  try {
+    await closeRpsCatalog();
+  } catch (error) {
+    closeErrors.push(error);
+  }
+
+  try {
+    if (closeErrors.length > 0) throw new AggregateError(closeErrors, 'Falló el cierre de uno o más recursos.');
+    console.log('Servidor HTTP y conexión RPS cerrados correctamente.');
+  } catch (error) {
+    exitCode = 1;
+    console.error('No se pudo completar el cierre ordenado:', error.message);
+  } finally {
+    if (exitCode === 0) clearTimeout(forceTimer);
+    else server.closeAllConnections?.();
+    process.exitCode = exitCode;
+  }
+}
+
+process.once('SIGTERM', () => void shutdown('SIGTERM'));
+process.once('SIGINT', () => void shutdown('SIGINT'));
 
 function buildFilename(reservation) {
   const now = new Date();
@@ -586,6 +655,11 @@ function serveDistFolder() {
 
 async function configureFrontend() {
   if (isProduction) {
+    try {
+      await fs.access(path.join(distDir, 'index.html'));
+    } catch {
+      throw new Error('Falta dist/index.html. Ejecuta `pnpm build` antes de iniciar la aplicación en producción.');
+    }
     serveDistFolder();
     return;
   }

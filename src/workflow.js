@@ -34,7 +34,7 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     ['carpeta de subida de material', settings.rpsUploadDirectory]
   ]) {
     if (value && !isAbsolutePathTemplate(value)) {
-      throw new Error(`La ${label} debe ser una ruta absoluta o de red.`);
+      throw new Error(`La ${label} debe ser una ruta absoluta válida en el sistema del servidor.`);
     }
   }
 
@@ -278,7 +278,7 @@ function buildLegacyReviewPath(template, orderCode) {
 function cleanPath(value) {
   const clean = String(value || '').trim().replace(/\{(\d{4})\}/g, '$1');
   if (!clean) return '';
-  const root = path.win32.parse(clean.replaceAll('{YYYY}', '2026')).root;
+  const root = path.parse(clean.replaceAll('{YYYY}', '2026')).root;
   if (root && clean.length <= root.length) return clean;
   return clean.replace(/[\\/]+$/, '');
 }
@@ -287,7 +287,12 @@ function cleanText(value) {
   return String(value || '').trim();
 }
 
-function isAbsolutePathTemplate(value) {
-  const sample = value.replaceAll('{YYYY}', '2026');
-  return path.isAbsolute(sample) || path.win32.isAbsolute(sample);
+export function isAbsolutePathTemplate(value, platform = process.platform) {
+  const sample = String(value || '').replaceAll('{YYYY}', '2026');
+  if (platform !== 'win32') {
+    const looksLikeWindowsPath = /^[a-z]:[\\/]/i.test(sample) || sample.startsWith('\\\\') || sample.startsWith('//');
+    if (looksLikeWindowsPath) return false;
+    return path.posix.isAbsolute(sample);
+  }
+  return path.win32.isAbsolute(sample);
 }
