@@ -129,6 +129,11 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
       ? inferHeraVariant({ model: rawModel, submodel: awning?.submodel, device })
       : cleanText(awning?.submodel).toUpperCase(),
     heraJoin: model === 'HERA' ? normalizeHeraJoin(awning?.heraJoin) : '',
+    heraTopFinish: model === 'HERA' ? cleanText(awning?.heraTopFinish || 'VARILLA PLANA').toUpperCase() : '',
+    heraBottomFinish: model === 'HERA' ? cleanText(awning?.heraBottomFinish).toUpperCase() : '',
+    heraInteriorFace: model === 'HERA' && ['DERECHO', 'REVES', 'REVÉS'].includes(cleanText(awning?.heraInteriorFace).toUpperCase())
+      ? cleanText(awning?.heraInteriorFace).toUpperCase().replace('REVES', 'REVÉS')
+      : '',
     tubeLoad: cleanText(awning?.tubeLoad).toUpperCase(),
     destination: cleanText(awning?.destination).toUpperCase(),
     supportSystem: cleanText(awning?.supportSystem || 'AUTOMÁTICO').toUpperCase(),

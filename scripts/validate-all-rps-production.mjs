@@ -20,6 +20,7 @@ const validators = [
   validator('GALICIA', 'validate-galicia-production.mjs', 'galiciaStructuresInExcel'),
   validator('XACOBEO', 'validate-xacobeo-production.mjs', 'xacobeoStructures'),
   validator('CORTINA', 'validate-cortina-production.mjs', 'cortinaStructures'),
+  validator('HERA', 'validate-hera-production.mjs', 'heraRows'),
   validator('AMBAR BOX', 'validate-ambar-box-production.mjs', 'ambarStructures'),
   validator('AGATA BOX', 'validate-agata-box-production.mjs', 'agataStructures'),
   validator('MAXISCREEM', 'validate-maxiscreem-production.mjs', 'maxiscreemStructures'),

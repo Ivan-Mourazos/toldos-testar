@@ -118,6 +118,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || (fields.submodel && !awning.submodel)
     || (isHera && !awning.heraJoin)
     || (isHera && awning.submodel !== 'HERA 56 MOTOR' && !Number(awning.height))
+    || (isHera && (!awning.heraTopFinish || !awning.heraBottomFinish || !awning.heraInteriorFace))
     || getRequiredDimensions(awning.model).some((field: keyof Awning) => !Number(awning[field]))
     || missingWindowDimensions
     || missingCurtainConfig
@@ -332,6 +333,17 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {isHera && (
             <div className="awning-wide-field">
               <SegmentedField label="Empate indicado por cliente" value={awning.heraJoin} options={['NINGUNO', 'VERTICAL', 'HORIZONTAL']} onChange={(heraJoin) => update({ heraJoin: heraJoin as Awning['heraJoin'] })} />
+            </div>
+          )}
+          {isHera && (
+            <div className="awning-installation-row awning-wide-field">
+              <SelectField label="Arriba" value={awning.heraTopFinish} options={['VARILLA PLANA']} placeholder="Elegir remate…" onChange={(heraTopFinish) => update({ heraTopFinish })} />
+              <SelectField label="Abajo" value={awning.heraBottomFinish} options={['VARILLA BLANCA', 'PLETINA', 'ENTRADA DE PLETINA', 'E.T. PLATANERO']} placeholder="Elegir remate…" onChange={(heraBottomFinish) => update({ heraBottomFinish })} />
+            </div>
+          )}
+          {isHera && (
+            <div className="awning-wide-field">
+              <SegmentedField label="Cara hacia el interior (ventana)" value={awning.heraInteriorFace} options={['DERECHO', 'REVÉS']} onChange={(heraInteriorFace) => update({ heraInteriorFace: heraInteriorFace as Awning['heraInteriorFace'] })} />
             </div>
           )}
           {supportsValance && (

@@ -51,6 +51,16 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.heraJoin = base.model === 'HERA'
     ? normalizeHeraJoin(old.heraJoin) as Awning['heraJoin']
     : '';
+  base.heraTopFinish = base.model === 'HERA'
+    ? String(old.heraTopFinish || 'VARILLA PLANA').trim().toUpperCase()
+    : '';
+  base.heraBottomFinish = base.model === 'HERA'
+    ? String(old.heraBottomFinish || '').trim().toUpperCase()
+    : '';
+  const heraInteriorFace = String(old.heraInteriorFace || '').trim().toUpperCase();
+  base.heraInteriorFace = base.model === 'HERA' && ['DERECHO', 'REVES', 'REVÉS'].includes(heraInteriorFace)
+    ? (heraInteriorFace === 'REVES' ? 'REVÉS' : heraInteriorFace) as Awning['heraInteriorFace']
+    : '';
   base.hasValance = typeof old.hasValance === 'boolean'
     ? old.hasValance
     : Number(old.valanceHeight) > 0 ? true : null;
@@ -359,6 +369,9 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     projection: awning.projection,
     height: isHera ? awning.height : null,
     heraJoin: isHera ? awning.heraJoin : '',
+    heraTopFinish: isHera ? (awning.heraTopFinish || 'VARILLA PLANA') : '',
+    heraBottomFinish: isHera ? awning.heraBottomFinish : '',
+    heraInteriorFace: isHera ? awning.heraInteriorFace : '',
     hasValance: model === 'BAMBALINA' ? true : supportsValance ? awning.hasValance : null,
     valanceHeight: supportsValance ? awning.valanceHeight : null,
     valanceCurve: supportsValance ? awning.valanceCurve : '',

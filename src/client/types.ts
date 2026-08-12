@@ -24,6 +24,9 @@ export type Awning = {
   projection: number | null;
   height: number | null;
   heraJoin: '' | 'NINGUNO' | 'VERTICAL' | 'HORIZONTAL';
+  heraTopFinish: string;
+  heraBottomFinish: string;
+  heraInteriorFace: '' | 'DERECHO' | 'REVÉS';
   hasValance: boolean | null;
   valanceHeight: number | null;
   valanceCurve: string;
@@ -479,6 +482,14 @@ export type HistoryEntry = {
   awnings: Awning[];
   diagnostics: number;
   notes: string;
+};
+
+export type OrderAutofill = {
+  source: string;
+  order: DraftState;
+  recovered: string[];
+  pending: string[];
+  warnings: string[];
 };
 
 export type WorkflowSettings = {

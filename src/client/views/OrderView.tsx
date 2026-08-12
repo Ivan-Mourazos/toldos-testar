@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Awning, Calculation, CalculationState, RuleParameters } from '../types';
+import type { Awning, Calculation, CalculationState, OrderAutofill, RuleParameters } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
 import { LiveResults } from '../components/LiveResults';
@@ -31,7 +31,10 @@ export function OrderView({
   addAwning,
   duplicateAwning,
   removeAwning,
-  updateAwning
+  updateAwning,
+  onAutofill,
+  autofillLoading,
+  autofill
 }: {
   availableModelNames: string[];
   orderCode: string;
@@ -60,6 +63,9 @@ export function OrderView({
   duplicateAwning: (id: string) => void;
   removeAwning: (id: string) => void;
   updateAwning: (id: string, patch: Partial<Awning>) => void;
+  onAutofill: () => void;
+  autofillLoading: boolean;
+  autofill: OrderAutofill | null;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
   const enabledModels = new Set(availableModelNames);
@@ -104,6 +110,9 @@ export function OrderView({
             sameFabric={sameFabric}
             onAddAwning={() => setPickerType('FULL_AWNING')}
             onAddFabricWork={() => setPickerType('FABRIC_ONLY')}
+            onAutofill={onAutofill}
+            autofillLoading={autofillLoading}
+            autofill={autofill}
             set={setOrderField}
           />
         </div>

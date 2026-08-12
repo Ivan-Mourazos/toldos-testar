@@ -9,6 +9,7 @@ import { searchStaticFabrics } from './domain/fabricCatalog.js';
 import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
+import { buildOrderAutofill } from './domain/orderAutofill.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
@@ -17,7 +18,7 @@ import {
   assertDeploymentModelsEnabled,
   assertLegacyExportsEnabled
 } from './deploymentFeatures.js';
-import { closeRpsCatalog, searchRpsFabrics } from './rpsCatalog.js';
+import { closeRpsCatalog, getRpsOrder, searchRpsFabrics } from './rpsCatalog.js';
 import {
   createReviewPackage,
   createWorkflowStore,
@@ -98,6 +99,18 @@ app.get('/api/catalog/fabrics', async (req, res) => {
   } catch (error) {
     console.error('RPSNext no disponible para telas:', error.message);
     res.json({ source: 'Excel local', items: searchStaticFabrics(query, limit) });
+  }
+});
+
+app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
+  try {
+    const orderCode = String(req.params.orderCode || '').trim();
+    if (!orderCode) return res.status(400).json({ error: 'Indica un número de pedido.' });
+    const source = await getRpsOrder(orderCode);
+    if (!source) return res.status(404).json({ error: `El pedido ${orderCode} no existe en RPSNext.` });
+    return res.json(buildOrderAutofill(source));
+  } catch (error) {
+    return next(error);
   }
 });
 

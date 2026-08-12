@@ -89,9 +89,13 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           aria-controls={listId}
           autoComplete="off"
           disabled={disabled}
-          value={value ? query : ''}
+          value={value ? (open ? query : fabricSelectionLabel(value)) : ''}
           placeholder={placeholder}
-          onFocus={() => !disabled && setOpen(true)}
+          onFocus={() => {
+            if (disabled) return;
+            setQuery(fabricSelectionLabel(value));
+            setOpen(true);
+          }}
           onChange={(event) => {
             const next = event.target.value;
             setQuery(next);

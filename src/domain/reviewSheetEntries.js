@@ -66,6 +66,9 @@ export function buildReviewSheetEntries(order, calculation) {
       addField(cardFields, 'Tubo calculado', measure(calc.rollTubeLength), true);
       addField(cardFields, 'Cadena', calc.chainLength === null ? 'NO LLEVA' : measure(calc.chainLength), true);
       addField(cardFields, 'Empate cliente', awning.heraJoin, true);
+      addField(cardFields, 'Arriba', awning.heraTopFinish || 'VARILLA PLANA', true);
+      addField(cardFields, 'Abajo', awning.heraBottomFinish, true);
+      addField(cardFields, 'Cara interior', awning.heraInteriorFace ? `${awning.heraInteriorFace} DENTRO` : '', true);
       addField(cardFields, 'Paños', calc.fabricPanels, true);
       addField(cardFields, 'Metros tela', `${formatNumber(calc.fabricMl)} ml`, true);
       addField(cardFields, 'Proceso', 'PLANTEAMIENTO CAD MANUAL', true);

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
-import type { ActiveTab, Catalog, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
+import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
@@ -23,6 +23,7 @@ import { useParameters } from './hooks/useParameters';
 import { ReviewsView } from './views/ReviewsView';
 import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
+import { todayIso } from './constants';
 
 export default function App() {
   const draft = useDraft();
@@ -34,6 +35,8 @@ export default function App() {
   const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings | null>(null);
   const [workflowReadiness, setWorkflowReadiness] = useState<WorkflowReadiness | null>(null);
   const [reviewRefresh, setReviewRefresh] = useState(0);
+  const [autofillLoading, setAutofillLoading] = useState(false);
+  const [autofill, setAutofill] = useState<OrderAutofill | null>(null);
   const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
 
   const { calculation, calculationState } = useCalculation({
@@ -79,6 +82,50 @@ export default function App() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
+  async function autofillOrder() {
+    const orderCode = draft.orderCode.trim();
+    if (!orderCode) {
+      notify('Indica primero el número de pedido.', { tone: 'warning' });
+      return;
+    }
+    const hasFormData = Boolean(draft.customer || draft.fabric || draft.awnings.length > 0);
+    if (hasFormData) {
+      const choice = await askForConfirmation({
+        title: `Obtener datos de ${orderCode}`,
+        message: 'Los datos actuales del formulario se sustituirán por lo disponible en RPS. Después podrás editar libremente todos los campos.',
+        confirmLabel: 'Obtener y rellenar',
+        cancelLabel: 'Conservar formulario',
+        tone: 'warning'
+      });
+      if (choice !== 'confirm') return;
+    }
+
+    setAutofillLoading(true);
+    try {
+      const response = await fetch(`/api/orders/${encodeURIComponent(orderCode)}/autofill`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudieron obtener los datos del pedido.');
+      const result = data as OrderAutofill;
+      const currentResult = { ...result, order: { ...result.order, orderDate: todayIso() } };
+      draft.loadOrder(currentResult.order);
+      setAutofill(currentResult);
+      const elements = result.order.awnings.length;
+      notify(
+        `${result.recovered.length} campos y ${elements} ${elements === 1 ? 'elemento recuperado' : 'elementos recuperados'}. ${result.pending.length === 1 ? 'Queda 1 dato' : `Quedan ${result.pending.length} datos`} por revisar.`,
+        { tone: result.pending.length > 0 ? 'info' : 'success', title: 'Pedido autocompletado' }
+      );
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudieron obtener los datos del pedido.', { tone: 'error' });
+    } finally {
+      setAutofillLoading(false);
+    }
+  }
+
+  function updateOrderCode(value: string) {
+    draft.setOrderCode(value);
+    if (autofill && value !== autofill.order.orderCode) setAutofill(null);
+  }
+
   async function editReview(review: ReviewPackage) {
     const hasDraftData = Boolean(
       draft.orderCode || draft.customer || draft.fabric
@@ -95,6 +142,7 @@ export default function App() {
       if (choice !== 'confirm') return;
     }
     draft.loadOrder(review.order);
+    setAutofill(null);
     if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters);
     setActiveTab('order');
     notify(`Pedido ${review.orderCode} cargado en el formulario para corregirlo.`, { tone: 'info', title: 'Modo de corrección' });
@@ -110,6 +158,7 @@ export default function App() {
     });
     if (choice !== 'confirm') return;
     draft.reuseOrder(review.order);
+    setAutofill(null);
     setActiveTab('order');
     notify(`Datos de ${review.orderCode} cargados en el formulario.`, { tone: 'success', title: 'Datos reutilizados' });
   }
@@ -228,6 +277,7 @@ export default function App() {
       if (choice !== 'confirm') return;
     }
     draft.resetDraft();
+    setAutofill(null);
     setActiveTab('order');
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
@@ -313,7 +363,7 @@ export default function App() {
                 calculation={calculation}
                 calculationState={calculationState}
                 parameters={ruleSettings.parameters}
-                setOrderCode={draft.setOrderCode}
+                setOrderCode={updateOrderCode}
                 setCustomer={draft.setCustomer}
                 setOrderDate={draft.setOrderDate}
                 setTechnician={draft.setTechnician}
@@ -326,6 +376,9 @@ export default function App() {
                 duplicateAwning={draft.duplicateAwning}
                 removeAwning={draft.removeAwning}
                 updateAwning={draft.updateAwning}
+                onAutofill={() => void autofillOrder()}
+                autofillLoading={autofillLoading}
+                autofill={autofill}
               />
             </fieldset>
           )}

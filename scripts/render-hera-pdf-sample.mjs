@@ -27,8 +27,13 @@ const order = {
     width: 163.5,
     projection: 165,
     height: 230,
+    machineSide: 'M.F.DER',
+    placement: 'FRONTAL',
+    heraTopFinish: 'VARILLA PLANA',
+    heraBottomFinish: 'VARILLA BLANCA',
+    heraInteriorFace: 'DERECHO',
     fabric: soltis,
-    fabricNotes: 'Caso dimensional equivalente a AR.24.00727.'
+    fabricNotes: ''
   }, {
     id: 'hera-43-machine',
     of: '0231001',
@@ -39,8 +44,13 @@ const order = {
     width: 205,
     projection: 140,
     height: 240,
+    machineSide: 'M.F IZQ',
+    placement: 'FRONTAL',
+    heraTopFinish: 'VARILLA PLANA',
+    heraBottomFinish: 'PLETINA',
+    heraInteriorFace: 'REVÉS',
     fabric: acrylic,
-    fabricNotes: 'Acrílico: bastillas laterales y empate indicados en el corte.'
+    fabricNotes: ''
   }, {
     id: 'hera-56-motor-special',
     of: '0231002',
@@ -51,8 +61,13 @@ const order = {
     width: 320,
     projection: 160,
     height: null,
+    machineSide: 'M.F.DER',
+    placement: 'FRONTAL',
+    heraTopFinish: 'VARILLA PLANA',
+    heraBottomFinish: 'ENTRADA DE PLETINA',
+    heraInteriorFace: 'DERECHO',
     fabric: soltis,
-    fabricNotes: 'Frente superior a 300 cm: tubo especial y revisión de presupuesto.'
+    fabricNotes: ''
   }]
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layers3, Plus, Scissors } from 'lucide-react';
+import { DatabaseZap, Layers3, LoaderCircle, Plus, Scissors } from 'lucide-react';
+import type { OrderAutofill } from '../types';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { TextField } from './TextField';
 import { SelectField } from './SelectField';
@@ -11,6 +12,9 @@ type Props = {
   set: (patch: Record<string, string | boolean>) => void;
   onAddAwning: () => void;
   onAddFabricWork: () => void;
+  onAutofill: () => void;
+  autofillLoading: boolean;
+  autofill: OrderAutofill | null;
 };
 
 export function OrderHeader(props: Props) {
@@ -26,6 +30,13 @@ export function OrderHeader(props: Props) {
           </label>
           <SelectField label="Técnico" value={props.technician} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ technician: v })} />
           <SelectField label="Revisión" value={props.reviewer} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ reviewer: v })} />
+        </div>
+        <div className="order-autofill-action">
+          <button type="button" className="order-autofill-button" disabled={props.autofillLoading || !props.orderCode.trim()} onClick={props.onAutofill}>
+            {props.autofillLoading ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <DatabaseZap aria-hidden="true" />}
+            {props.autofillLoading ? 'Consultando RPS…' : 'Obtener datos del pedido'}
+          </button>
+          <span>Rellena lo disponible; después todo se puede editar.</span>
         </div>
       </div>
 
@@ -63,6 +74,27 @@ export function OrderHeader(props: Props) {
           </button>
         </div>
       </div>
+
+      {props.autofill && (
+        <aside className="order-autofill-summary" aria-live="polite">
+          <div>
+            <strong>Datos obtenidos de {props.autofill.source}</strong>
+            <span>{props.autofill.recovered.length} campos recuperados · {props.autofill.pending.length} {props.autofill.pending.length === 1 ? 'pendiente' : 'pendientes'} · todos editables</span>
+          </div>
+          {props.autofill.pending.length > 0 && (
+            <details>
+              <summary>Ver pendientes</summary>
+              <ul>{props.autofill.pending.map((item) => <li key={item}>{item}</li>)}</ul>
+            </details>
+          )}
+          {props.autofill.warnings.length > 0 && (
+            <details>
+              <summary>Ver avisos</summary>
+              <ul>{props.autofill.warnings.map((item) => <li key={item}>{item}</li>)}</ul>
+            </details>
+          )}
+        </aside>
+      )}
     </section>
   );
 }
