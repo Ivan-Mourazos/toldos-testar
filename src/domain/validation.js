@@ -101,7 +101,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
   const of = cleanText(awning?.of);
   const rawModel = cleanText(awning?.model).toUpperCase();
   const model = normalizeModelName(rawModel);
-  const units = numberOrDefault(awning?.units, 1) || 1;
+  const units = normalizeUnits(awning?.units);
   const width = numberOrDefault(awning?.width, 0);
   const projection = numberOrDefault(awning?.projection, 0);
   const device = cleanText(awning?.device).toUpperCase();
@@ -282,6 +282,13 @@ function cleanText(value) {
 function numberOrDefault(value, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+function normalizeUnits(value) {
+  if (value === null || value === undefined || value === '') return 1;
+  if (typeof value === 'boolean') return Number.NaN;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : Number.NaN;
 }
 
 function nullableNumber(value) {

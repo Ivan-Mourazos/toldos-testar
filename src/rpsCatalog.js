@@ -87,6 +87,7 @@ export async function getRpsOrder(orderCode) {
       a.Description AS description,
       mu.CodMeasureUnit AS unitCode,
       psf.Description AS subfamily,
+      m.Quantity AS quantity,
       m.CreationTimestamp AS createdAt
     FROM dbo.FACOrderSL o
     JOIN dbo.FACOrderLineSL l

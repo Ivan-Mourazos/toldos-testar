@@ -103,7 +103,7 @@ export function calculateAntica({ order, awning }) {
   });
   const valanceDrop = separateValance ? round1(valanceHeight + 5) : 0;
   const valanceUsage = separateValance ? calculateFabricUsage({
-    width: fabricWidth,
+    width: Number(awning.width),
     drop: valanceDrop,
     units,
     rollWidth: valanceFabric?.width || 120,
@@ -141,22 +141,25 @@ export function calculateAntica({ order, awning }) {
     armCount, motorPower, rollTubeLength, loadBarLength, supportHeight,
     mainFabricMl: mainUsage.ml, valanceFabricMl: valanceUsage.ml
   };
+  const mainMl = round2(mainUsage.ml);
   const totalMl = round2(mainUsage.ml + valanceUsage.ml);
 
   return {
     of: awning.of,
-    description: buildDescription(awning, { variant, fabricWidth, fabricDrop, fabricMl: totalMl }),
+    description: buildDescription(awning, { variant, fabricWidth, fabricDrop, fabricMl: mainMl }),
     materials: valid ? buildMaterials(context) : [],
     despiece: valid ? buildDespiece(context) : null,
     diagnostics,
     calculation: {
       model: 'ANTICA', valid, minimumLine: 0, variant,
       width: awning.width, projection: awning.projection,
-      fabricWidth, fabricDrop, fabricMl: totalMl,
-      fabricPanels: mainUsage.panels + valanceUsage.panels,
+      fabricWidth, fabricDrop, fabricMl: mainMl,
+      fabricPanels: mainUsage.panels,
+      totalFabricMl: totalMl,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '', fabricRollWidth: fabric?.width || 120,
       mainFabricMl: mainUsage.ml, mainFabricPanels: mainUsage.panels,
       valanceFabricCode: valanceFabric?.code || '', valanceFabricDescription: valanceFabric?.description || '',
+      valanceFabricWidth: separateValance ? Number(awning.width) : 0,
       valanceFabricMl: valanceUsage.ml, valanceFabricPanels: valanceUsage.panels, valanceDrop,
       structureLength: loadBarLength, rollTubeLength, stockLength, rollSystem,
       armCount, motorPower: device === 'MOTOR' ? motorPower : '', supportHeight

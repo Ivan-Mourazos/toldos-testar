@@ -75,6 +75,63 @@ describe('autocompletado de pedidos RPS', () => {
     expect(result.pending).not.toContain('A · CAMBIO TELA: frente');
   });
 
+  test('con dos telas usa las cantidades RPS, no el orden de creación, para proponer cuerpo y bamba', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.09999' },
+      lines: [{
+        lineId: 'line-two-fabrics', articleCode: 'CAMTELTOL', description: 'CAMBIO DE TELA A TOLDO',
+        comment: 'DE MEDIDAS 300 CM X 250 CM, CON BAMBALINA DE 25 CM',
+        manufacturingOrder: '0239999', quantity: 1
+      }],
+      materials: [
+        { of: '0239999', code: 'ACRILI2101P120', description: 'GRANATE', unitCode: 'ML120', quantity: 1.5 },
+        { of: '0239999', code: 'ALPHANA04P250', description: 'NARANJA', unitCode: 'ML250', quantity: 8.7 }
+      ]
+    });
+
+    expect(result.order.awnings[0].fabric).toContain('ALPHANA04P250|||250');
+    expect(result.order.awnings[0].valanceFabric).toContain('ACRILI2101P120|||120');
+    expect(result.warnings[0]).toContain('mayor cantidad prevista');
+  });
+
+  test('avisa si RPS contiene una segunda tela pero no se puede confirmar la bambalina', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.09998' },
+      lines: [{
+        lineId: 'line-two-fabrics-no-valance', articleCode: 'CAMTELTOL', description: 'CAMBIO DE TELA A TOLDO',
+        comment: 'DE MEDIDAS 300 CM X 250 CM', manufacturingOrder: '0239998', quantity: 1
+      }],
+      materials: [
+        { of: '0239998', code: 'ACRILI2101P120', description: 'GRANATE', unitCode: 'ML120', quantity: 1.5 },
+        { of: '0239998', code: 'ALPHANA04P250', description: 'NARANJA', unitCode: 'ML250', quantity: 8.7 }
+      ]
+    });
+
+    expect(result.order.awnings[0].fabric).toContain('ALPHANA04P250|||250');
+    expect(result.order.awnings[0].valanceFabric).toBe('');
+    expect(result.warnings).toEqual(expect.arrayContaining([
+      expect.stringContaining('falta confirmar la bambalina')
+    ]));
+  });
+
+  test('una BAMBALINA autónoma no confunde la segunda referencia con otra bambalina', () => {
+    const result = buildOrderAutofill({
+      lines: [{
+        articleCode: 'BAMBA', description: 'BAMBALINA NUEVA',
+        comment: 'DE MEDIDAS 300 CM X 25 CM', manufacturingOrder: '0239997', quantity: 1
+      }],
+      materials: [
+        { of: '0239997', code: 'ACRILI2101P120', description: 'GRANATE', unitCode: 'ML120', quantity: 1.5 },
+        { of: '0239997', code: 'ALPHANA04P250', description: 'NARANJA', unitCode: 'ML250', quantity: 0.5 }
+      ]
+    });
+
+    expect(result.order.awnings[0]).toMatchObject({ model: 'BAMBALINA', valanceFabric: '' });
+    expect(result.warnings).toEqual(expect.arrayContaining([
+      expect.stringContaining('solo se ha propuesto la principal')
+    ]));
+  });
+
   test('no inventa medidas cuando el texto sólo dice que son diferentes', () => {
     const result = buildOrderAutofill({
       header: { orderCode: 'AR.26.03991' },

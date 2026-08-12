@@ -4,6 +4,12 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { normalizeCortinaParameters } from './cortinaParameters.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 export function calculateCortina({ order, awning }) {
   const parameters = normalizeCortinaParameters(order.parameters?.cortina);
@@ -39,7 +45,11 @@ export function calculateCortina({ order, awning }) {
   const rollTubeLength = round1(awning.width - rollTubeDiscount);
   const structureLength = round1(awning.width - loadProfileDiscount);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(awning.projection + valance + parameters.fabricDropAllowanceCm - deduction);
+  const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
+  const mainDropAllowance = separateValance.requested
+    ? Math.max(0, parameters.fabricDropAllowanceCm - 5)
+    : parameters.fabricDropAllowanceCm;
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance) - deduction);
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
@@ -54,12 +64,14 @@ export function calculateCortina({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const valid = missingFields.length === 0
     && Boolean(fabric)
+    && separateValance.valid
     && Boolean(stockLength)
     && (!(overWidth || overDrop) || modified);
 
   if (fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   }
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA incompleta en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (!stockLength) {
@@ -70,7 +82,7 @@ export function calculateCortina({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de Cortina modificadas.` });
   }
 
-  const context = { awning, lacado, device, curtainSupport, fabric, stockLength, structureLength, rollTubeLength, fabricMl: fabricUsage.ml };
+  const context = { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, structureLength, rollTubeLength, fabricMl: fabricUsage.ml };
   return {
     of: awning.of,
     description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl: fabricUsage.ml }),
@@ -81,8 +93,10 @@ export function calculateCortina({ order, awning }) {
       model: 'CORTINA', valid, minimumLine: 0,
       width: awning.width, projection: awning.projection,
       fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength, rollTubeLength, stockLength,
       motorPower: device === 'MOTOR' ? '15/17' : '', armCount: 0,
       curtainSupport,
@@ -95,7 +109,7 @@ export function calculateCortina({ order, awning }) {
 }
 
 function buildMaterials(context) {
-  const { awning, lacado, device, curtainSupport, fabric, stockLength, fabricMl } = context;
+  const { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [
@@ -122,6 +136,7 @@ function buildMaterials(context) {
   }
   materials.push(material('MOSQBOACIN60MM', 2 * units, 'MOSQUETONES INOX 60'));
   if (fabric) materials.push(material(fabric.code, fabricMl, fabric.description));
+  appendSeparateValanceMaterial(materials, separateValance);
 
   const wall = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   if (wall?.referencia) materials.push(material(wall.referencia, wall.unidades * units, wall.tornilleria));

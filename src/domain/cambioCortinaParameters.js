@@ -1,8 +1,8 @@
 export const defaultCambioCortinaParameters = {
   fabricDropAllowanceCm: 45,
   bottomDeductionCm: 18,
-  seamAllowanceCm: 0,
-  seamBaseCm: 0
+  seamAllowanceCm: 2.2,
+  seamBaseCm: 7
 };
 
 export function normalizeCambioCortinaParameters(input = {}) {

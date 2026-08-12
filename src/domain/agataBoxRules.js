@@ -12,6 +12,12 @@ import {
   resolveAgataMotorPower,
   suggestedAgataArmCount
 } from './agataBoxParameters.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 export function calculateAgataBox({ order, awning }) {
   const parameters = normalizeAgataBoxParameters(order.parameters?.agataBox);
@@ -49,7 +55,9 @@ export function calculateAgataBox({ order, awning }) {
   const dropAllowance = effectiveNumber(awning, 'agataFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(Number(awning.width) - discounts.fabric);
-  const fabricDropRaw = Number(awning.projection) + dropAllowance + valance;
+  const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
+  const mainDropAllowance = separateValance.requested ? Math.max(0, dropAllowance - 5) : dropAllowance;
+  const fabricDropRaw = Number(awning.projection) + mainDropAllowance + (separateValance.requested ? 0 : valance);
   const fabricDrop = round1(fabricDropRaw);
   const rollTubeLength = round1(Number(awning.width) - discounts.roll);
   const squareBarLength = round1(Number(awning.width) - discounts.squareBar);
@@ -78,6 +86,7 @@ export function calculateAgataBox({ order, awning }) {
   const unsupportedMachineCofre = submodel === 'COFRE' && device === 'MAQUINA';
   const valid = missingFields.length === 0
     && Boolean(fabric)
+    && separateValance.valid
     && Boolean(rollStockLength)
     && Boolean(motorPower || device === 'MAQUINA')
     && !belowMinimum
@@ -87,6 +96,7 @@ export function calculateAgataBox({ order, awning }) {
     && (!unsupportedProjection || modified);
 
   if (fabricSelection && !fabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `ÁGATA BOX incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (unsupportedMachineCofre) {
@@ -106,7 +116,7 @@ export function calculateAgataBox({ order, awning }) {
   }
 
   const context = {
-    awning, device, placement, submodel, lacado, fabric, armCount, supportCount, profileSupportCount,
+    awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount,
     rollStockLength, profileStockLength, motorPower, fabricMl: fabricUsage.ml,
     lengths: { rollTubeLength, squareBarLength, loadBarLength, diffuserLength, liraLength, protectorLength, enclosureLength }
   };
@@ -119,8 +129,10 @@ export function calculateAgataBox({ order, awning }) {
     calculation: {
       model: 'AGATA BOX', valid, minimumLine,
       width: awning.width, projection: awning.projection,
-      fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      fabricWidth, fabricDrop, fabricUsageDrop: fabricDropRaw, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '', fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength: loadBarLength, rollTubeLength, stockLength: profileStockLength,
       profileStockLength, rollStockLength, motorPower: device === 'MOTOR' ? `${motorPower}/17` : '',
       armCount, requiredArmCount, supportCount, profileSupportCount, submodel,
@@ -150,7 +162,7 @@ export function calculateAgataSupportCount({ width, minimumLine, armCount, param
 }
 
 function buildMaterials(context) {
-  const { awning, device, placement, submodel, lacado, fabric, armCount, supportCount, profileSupportCount, rollStockLength, profileStockLength, motorPower, fabricMl } = context;
+  const { awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount, rollStockLength, profileStockLength, motorPower, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [
@@ -199,6 +211,7 @@ function buildMaterials(context) {
     );
   }
   if (fabric) materials.push(line(fabric.code, fabricMl, fabric.description));
+  appendSeparateValanceMaterial(materials, separateValance);
   const wall = wallMaterial(awning.wallType, units);
   if (wall) materials.push(wall);
   return materials.filter(Boolean);

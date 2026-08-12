@@ -9,6 +9,12 @@ import {
   normalizePerlaBoxParameters,
   resolveBoxMotorPower
 } from './storbox400Parameters.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 const configs = {
   perla: {
@@ -63,7 +69,9 @@ function calculateBox({ order, awning }, config) {
   const fabricWidth = round1(awning.width - fabricWidthDiscount);
   const protectorLength = round1(awning.width - protectorDiscount);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(awning.projection + parameters.fabricDropAllowanceCm + valance);
+  const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
+  // STORBOX 400 conserva los 45 cm de margen del cuerpo aunque la bamba vaya aparte.
+  const fabricDrop = round1(awning.projection + parameters.fabricDropAllowanceCm + (separateValance.requested ? 0 : valance));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
@@ -77,6 +85,7 @@ function calculateBox({ order, awning }, config) {
   const motorPower = effectiveMotorPower(awning, automaticMotorPower);
   const valid = missingFields.length === 0
     && Boolean(fabric)
+    && separateValance.valid
     && !belowMinimum
     && Boolean(stockLength)
     && (!overMaximum || modified);
@@ -84,6 +93,7 @@ function calculateBox({ order, awning }, config) {
   if (fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   }
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `${config.model} incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (belowMinimum) {
@@ -97,7 +107,7 @@ function calculateBox({ order, awning }, config) {
   }
 
   const context = {
-    awning, lacado, device, fabric, stockLength, structureLength, rollTubeLength, protectorLength, config,
+    awning, lacado, device, fabric, separateValance, stockLength, structureLength, rollTubeLength, protectorLength, config,
     motorPower, fabricMl: fabricUsage.ml
   };
   return {
@@ -110,8 +120,10 @@ function calculateBox({ order, awning }, config) {
       model: config.model, valid, minimumLine,
       width: awning.width, projection: awning.projection,
       fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength, rollTubeLength, stockLength,
       motorPower: device === 'MOTOR' ? `${motorPower}/17` : '', armCount: 1,
       boxMinimumLineCm: minimumLine,
@@ -132,7 +144,7 @@ const refCrank = (lacado, height) => `MANIVE${crankSuffix(lacado)}${height}C`;
 const machineCode = (lacado) => lacado.crank === 'BLANCA' ? 'MAQMB9L13BLAN' : 'MAQMB9L13NEGR';
 
 function buildMaterials(context) {
-  const { awning, lacado, device, fabric, stockLength, motorPower, fabricMl, config } = context;
+  const { awning, lacado, device, fabric, separateValance, stockLength, motorPower, fabricMl, config } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [];
@@ -170,6 +182,7 @@ function buildMaterials(context) {
   }
   materials.push({ code: 'PRPROMA13600C', quantity: units, description: 'PERFIL PROTECTOR LONA' });
   if (fabric) materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
+  appendSeparateValanceMaterial(materials, separateValance);
 
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   if (wallEntry?.referencia) materials.push({ code: wallEntry.referencia, quantity: wallEntry.unidades * units, description: wallEntry.tornilleria });

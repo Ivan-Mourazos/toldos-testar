@@ -5,6 +5,12 @@ import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { ambarPlacementGroup, normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 export function calculateAmbarBox({ order, awning }) {
   const parameters = normalizeAmbarBoxParameters(order.parameters?.ambarBox);
@@ -34,7 +40,9 @@ export function calculateAmbarBox({ order, awning }) {
   const dropAllowance = effectiveNumber(awning, 'ambarFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(Number(awning.width) - discounts.fabric);
-  const fabricDropRaw = Number(awning.projection) * dropMultiplier + dropAllowance + valance;
+  const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
+  const mainDropAllowance = separateValance.requested ? Math.max(0, dropAllowance - 5) : dropAllowance;
+  const fabricDropRaw = Number(awning.projection) * dropMultiplier + mainDropAllowance + (separateValance.requested ? 0 : valance);
   const fabricDrop = round1(fabricDropRaw);
   const rollTubeLength = round1(Number(awning.width) - discounts.roll);
   const structureLength = round1(Number(awning.width) - discounts.profile);
@@ -52,12 +60,14 @@ export function calculateAmbarBox({ order, awning }) {
   const unsupportedProjection = ![80, 90, 100, 110, 120, 130, 140].includes(Number(awning.projection));
   const valid = missingFields.length === 0
     && Boolean(fabric)
+    && separateValance.valid
     && Boolean(profileStockLength)
     && Boolean(rollStockLength)
     && (!overMaximum || modified)
     && (!unsupportedProjection || modified);
 
   if (fabricSelection && !fabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `ÁMBAR BOX incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (overMaximum && !modified) {
@@ -71,7 +81,7 @@ export function calculateAmbarBox({ order, awning }) {
   }
 
   const context = {
-    awning, device, placement, lacado, fabric, profileStockLength, rollStockLength,
+    awning, device, placement, lacado, fabric, separateValance, profileStockLength, rollStockLength,
     structureLength, rollTubeLength, fabricMl: fabricUsage.ml, motorPower: parameters.motorPower
   };
   return {
@@ -83,9 +93,11 @@ export function calculateAmbarBox({ order, awning }) {
     calculation: {
       model: 'AMBAR BOX', valid, minimumLine: 0,
       width: awning.width, projection: awning.projection,
-      fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      fabricWidth, fabricDrop, fabricUsageDrop: fabricDropRaw, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength, rollTubeLength, stockLength: profileStockLength,
       profileStockLength, rollStockLength, placementGroup,
       motorPower: device === 'MOTOR' ? parameters.motorPower : '', armCount: 2,
@@ -99,7 +111,7 @@ export function calculateAmbarBox({ order, awning }) {
 }
 
 function buildMaterials(context) {
-  const { awning, device, placement, lacado, fabric, profileStockLength, rollStockLength, fabricMl, motorPower } = context;
+  const { awning, device, placement, lacado, fabric, separateValance, profileStockLength, rollStockLength, fabricMl, motorPower } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [
@@ -132,6 +144,7 @@ function buildMaterials(context) {
     );
   }
   if (fabric) materials.push(line(fabric.code, fabricMl, fabric.description));
+  appendSeparateValanceMaterial(materials, separateValance);
   const wall = wallMaterial(awning.wallType, units);
   if (wall) materials.push(wall);
   return materials;

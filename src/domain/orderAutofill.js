@@ -25,11 +25,20 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
   const awnings = editableLines.map(({ line, model }, index) => {
     const awning = buildAwningSuggestion(line, model, index);
     const fabricRows = materialsByOf.get(cleanOf(awning.of)) || [];
-    const fabricSelections = distinctFabricSelections(fabricRows);
-    if (fabricSelections[0]) awning.fabric = fabricSelections[0];
-    if (fabricSelections[1] && Number(awning.valanceHeight) > 0) {
-      awning.valanceFabric = fabricSelections[1];
-      warnings.push(`OF ${awning.of}: RPS contiene más de una tela; se ha propuesto la segunda para la bambalina.`);
+    const fabricCandidates = rankFabricSelections(fabricRows);
+    if (fabricCandidates[0]) awning.fabric = fabricCandidates[0].selection;
+    const canAssignSeparateValance = !['BAMBALINA', 'ENROLLABLE'].includes(awning.model)
+      && Number(awning.valanceHeight) > 0;
+    if (fabricCandidates[1] && canAssignSeparateValance) {
+      awning.valanceFabric = fabricCandidates[1].selection;
+      const rankedByQuantity = fabricCandidates[0].hasQuantity
+        && fabricCandidates[1].hasQuantity
+        && fabricCandidates[0].quantity !== fabricCandidates[1].quantity;
+      warnings.push(rankedByQuantity
+        ? `OF ${awning.of}: RPS contiene más de una tela; se ha propuesto como principal la de mayor cantidad prevista y la otra para la bambalina.`
+        : `OF ${awning.of}: RPS contiene más de una tela pero no permite distinguir con seguridad principal y bambalina; revisa la propuesta.`);
+    } else if (fabricCandidates[1]) {
+      warnings.push(`OF ${awning.of}: RPS contiene más de una tela, pero falta confirmar la bambalina; solo se ha propuesto la principal y debes revisar la otra referencia.`);
     }
     recovered.push(...describeRecoveredAwning(awning, index));
     return awning;
@@ -334,14 +343,30 @@ function groupMaterialsByOf(materials) {
   return grouped;
 }
 
-function distinctFabricSelections(rows) {
-  const selections = rows.map((row) => serializeFabricSelection({
-    code: clean(row.code),
-    description: clean(row.description) || clean(row.code),
-    width: positiveNumber(row.width) || inferRollWidth(row.code, row.unitCode),
-    subfamily: clean(row.subfamily)
-  })).filter(Boolean);
-  return [...new Set(selections)];
+function rankFabricSelections(rows) {
+  const grouped = new Map();
+  rows.forEach((row, index) => {
+    const selection = serializeFabricSelection({
+      code: clean(row.code),
+      description: clean(row.description) || clean(row.code),
+      width: positiveNumber(row.width) || inferRollWidth(row.code, row.unitCode),
+      subfamily: clean(row.subfamily)
+    });
+    if (!selection) return;
+    const quantity = positiveNumber(row.quantity);
+    const current = grouped.get(selection) || { selection, quantity: 0, hasQuantity: false, index };
+    if (quantity !== null) {
+      current.quantity += quantity;
+      current.hasQuantity = true;
+    }
+    grouped.set(selection, current);
+  });
+
+  const candidates = [...grouped.values()];
+  const quantitiesComparable = candidates.length > 1 && candidates.every((item) => item.hasQuantity);
+  return candidates.sort((left, right) => quantitiesComparable
+    ? right.quantity - left.quantity || left.index - right.index
+    : left.index - right.index);
 }
 
 function inferRollWidth(code, unitCode) {

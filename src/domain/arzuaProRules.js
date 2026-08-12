@@ -32,7 +32,8 @@ export function calculateArzuaPro({ order, awning }) {
   const overMaximum = supportSystem === 'ARZUA' && awning.width > parameters.standardMaxWidth;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
-  const valanceFabricSelection = String(awning.valanceFabric || '').trim();
+  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
+  const valanceFabricSelection = valance > 0 ? String(awning.valanceFabric || '').trim() : '';
   const valanceFabric = valanceFabricSelection ? resolveFabric(valanceFabricSelection) : null;
   // El gate de incompletitud de calculateOrder solo cubre OF/modelo/frente/salida;
   // sin estos campos el cálculo asumiría MOTOR/EVO 80 o emitiría MANIVE...0C en silencio.
@@ -43,7 +44,6 @@ export function calculateArzuaPro({ order, awning }) {
   else if ((device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') && !awning.crankHeight) missingFields.push('altura de manivela');
   if (!tubeLoad) missingFields.push('tubo de carga válido');
   const fabricWidth = round1(awning.width - lookupDiscount(parameters.fabricWidthDiscounts, tubeLoad, device, 11));
-  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const valanceExtraCm = 5;
   const mainDropAllowance = valanceFabricSelection
     ? Math.max(0, parameters.fabricDropAllowanceCm - valanceExtraCm)
@@ -59,7 +59,7 @@ export function calculateArzuaPro({ order, awning }) {
   });
   const fabricMl = fabricUsage.ml;
   const valanceUsage = valanceFabric && valance > 0 ? calculateFabricUsage({
-    width: fabricWidth,
+    width: Number(awning.width),
     drop: valance + valanceExtraCm,
     units: awning.units,
     rollWidth: valanceFabric.width || 120,
@@ -159,6 +159,7 @@ export function calculateArzuaPro({ order, awning }) {
       fabricRollWidth: fabric?.width || 120,
       valanceFabricCode: valanceFabric?.code || '',
       valanceFabricDescription: valanceFabric?.description || '',
+      valanceFabricWidth: valanceUsage ? Number(awning.width) : 0,
       valanceFabricMl: valanceUsage?.ml || 0,
       valanceFabricPanels: valanceUsage?.panels || 0,
       valanceDrop: valanceUsage ? valance + valanceExtraCm : 0,

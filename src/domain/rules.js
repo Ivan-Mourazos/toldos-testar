@@ -16,6 +16,7 @@ import { calculateCambioTela } from './cambioTelaRules.js';
 import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
 import { normalizeOrder } from './validation.js';
 import { getFieldVisibility, getRequiredDimensions } from './modelBehavior.js';
+import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
@@ -74,9 +75,24 @@ export function calculateOrder(payload) {
       continue;
     }
 
-    let result = rule({ order, awning, model });
+    const invalidUnits = !Number.isInteger(Number(awning.units)) || Number(awning.units) < 1;
+    const calculationAwning = invalidUnits ? { ...awning, units: 1 } : awning;
+    let result = rule({ order, awning: calculationAwning, model });
     if (Array.isArray(result.diagnostics)) {
       diagnostics.push(...result.diagnostics);
+    }
+    if (invalidUnits) {
+      diagnostics.push({
+        level: 'error',
+        awningId: awning.id,
+        message: `${awning.model} en OF ${awning.of}: la cantidad debe ser un número entero mayor que cero.`
+      });
+      result = {
+        ...result,
+        materials: [],
+        despiece: null,
+        calculation: { ...result.calculation, valid: false }
+      };
     }
     const fields = getFieldVisibility({ model: awning.model, device: awning.device });
     if (fields.motorLocation && !awning.machineSide) {
@@ -92,6 +108,7 @@ export function calculateOrder(payload) {
         calculation: { ...result.calculation, valid: false }
       };
     }
+    result = applyLegacyRpsFabricReservation({ awning, result });
     ofs.push({
       awningId: awning.id,
       awningIndex,

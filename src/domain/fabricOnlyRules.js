@@ -20,7 +20,7 @@ export function calculateFabricOnly({ order, awning }) {
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = resolveFabric(fabricSelection);
   const valanceHeight = Math.max(0, Number(awning.valanceHeight) || 0);
-  const supportsValance = ['CAMBIO TELA', 'CAMBIO ANTICA', 'BAMBALINA'].includes(model);
+  const supportsValance = ['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA'].includes(model);
   const hasValance = model === 'BAMBALINA' || (supportsValance && valanceHeight > 0);
   const separateValance = hasValance && model !== 'BAMBALINA' && Boolean(awning.valanceFabric);
   const valanceFabric = separateValance ? resolveFabric(awning.valanceFabric) : null;
@@ -69,7 +69,8 @@ export function calculateFabricOnly({ order, awning }) {
   });
   const valanceDrop = separateValance ? round1(valanceHeight + valanceExtra) : 0;
   const valanceUsage = separateValance ? calculateFabricUsage({
-    width: fabricWidth,
+    // La hoja BAMBALINA del libro antiguo usa siempre el frente bruto.
+    width: Math.max(0, Number(awning.width) || 0),
     drop: valanceDrop,
     units: awning.units,
     rollWidth: valanceFabric?.width || 120,
@@ -91,11 +92,13 @@ export function calculateFabricOnly({ order, awning }) {
   const calculation = {
     model, valid, minimumLine: 0,
     width: awning.width, projection: awning.projection,
-    fabricWidth, fabricDrop, fabricMl: totalMl,
-    fabricPanels: mainUsage.panels + valanceUsage.panels,
+    fabricWidth, fabricDrop, fabricMl: mainUsage.ml,
+    fabricPanels: mainUsage.panels,
+    totalFabricMl: totalMl,
     fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '', fabricRollWidth: fabric?.width || 120,
     mainFabricMl: mainUsage.ml, mainFabricPanels: mainUsage.panels,
     valanceFabricCode: valanceFabric?.code || '', valanceFabricDescription: valanceFabric?.description || '',
+    valanceFabricWidth: separateValance ? Math.max(0, Number(awning.width) || 0) : 0,
     valanceFabricMl: valanceUsage.ml, valanceFabricPanels: valanceUsage.panels, valanceDrop,
     structureLength: 0, stockLength: 0,
     curtainFabricDeductionCm: model === 'CAMBIO CORTINA' ? curtainDeduction : undefined,
@@ -122,7 +125,11 @@ export function calculateFabricOnly({ order, awning }) {
 function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance, parameters, curtainParameters, curtainDeduction, finishedAnticaRoundEntry, roundAnticaEntry }) {
   if (model === 'BAMBALINA') return valanceHeight + valanceExtra;
   if (model === 'CAMBIO CORTINA') {
-    return Number(awning.projection) + valanceHeight + curtainParameters.fabricDropAllowanceCm - curtainDeduction;
+    const curtainAllowance = curtainParameters.fabricDropAllowanceCm - (separateValance ? valanceExtra : 0);
+    return Number(awning.projection)
+      + (separateValance ? 0 : valanceHeight)
+      + Math.max(0, curtainAllowance)
+      - curtainDeduction;
   }
   if (model === 'CAMBIO ANTICA') {
     // Los pedidos históricos mezclan salida base y caída ya confeccionada.

@@ -9,6 +9,12 @@ import {
   resolvePuntoRectoMotorPower,
   suggestedPuntoRectoArmCount
 } from './puntoRectoParameters.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 export function calculatePuntoRecto({ order, awning }) {
   const parameters = normalizePuntoRectoParameters(order.parameters?.puntoRecto);
@@ -36,7 +42,11 @@ export function calculatePuntoRecto({ order, awning }) {
   const dropAllowance = effectiveNumber(awning, 'pointFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(awning.width - fabricDiscount);
-  const rawFabricDrop = awning.projection * dropMultiplier + dropAllowance + valance;
+  const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
+  // La hoja PUNTO RECTO del libro antiguo usa salida + 40 cuando la bamba va en otra tela.
+  const rawFabricDrop = separateValance.requested
+    ? Number(awning.projection) + 40
+    : Number(awning.projection) * dropMultiplier + dropAllowance + valance;
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(awning.width - rollDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);
@@ -55,11 +65,13 @@ export function calculatePuntoRecto({ order, awning }) {
   const overMaximum = Number(awning.width) > parameters.standardMaxWidth;
   const valid = missingFields.length === 0
     && Boolean(fabric)
+    && separateValance.valid
     && !invalidArms
     && Boolean(stockLength)
     && (!overMaximum || modified);
 
   if (fabricSelection && !fabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `PUNTO RECTO incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (invalidArms) {
@@ -72,7 +84,7 @@ export function calculatePuntoRecto({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de PUNTO RECTO modificadas.` });
   }
 
-  const context = { awning, device, lacado, fabric, stockLength, rollSystem, armCount, motorPower, rollTubeLength, loadBarLength, fabricMl: fabricUsage.ml };
+  const context = { awning, device, lacado, fabric, separateValance, stockLength, rollSystem, armCount, motorPower, rollTubeLength, loadBarLength, fabricMl: fabricUsage.ml };
   return {
     of: awning.of,
     description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl: fabricUsage.ml }),
@@ -82,9 +94,11 @@ export function calculatePuntoRecto({ order, awning }) {
     calculation: {
       model: 'PUNTO RECTO', valid, minimumLine: 0,
       width: awning.width, projection: awning.projection,
-      fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      fabricWidth, fabricDrop, fabricUsageDrop: rawFabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength: loadBarLength, rollTubeLength, stockLength,
       armCount, requiredArmCount, rollSystem,
       motorPower: device === 'MOTOR' ? motorPower : '',
@@ -98,7 +112,7 @@ export function calculatePuntoRecto({ order, awning }) {
 }
 
 function buildMaterials(context) {
-  const { awning, device, lacado, fabric, stockLength, rollSystem, armCount, motorPower, fabricMl } = context;
+  const { awning, device, lacado, fabric, separateValance, stockLength, rollSystem, armCount, motorPower, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     line(`SOPUNI3AGU${lacado.suffix}`, units, 'JGO.SOPORTE UNIVERSAL 3 FUROS'),
@@ -126,6 +140,7 @@ function buildMaterials(context) {
     );
   }
   if (fabric) materials.push(line(fabric.code, fabricMl, fabric.description));
+  appendSeparateValanceMaterial(materials, separateValance);
   const wall = wallMaterial(awning.wallType, units);
   if (wall) materials.push(wall);
   return materials;

@@ -11,6 +11,12 @@ import {
   suggestedGaliciaTube
 } from './galiciaParameters.js';
 import { resolveMotorRemote } from './motorAccessories.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 export { galiciaEstablishedProjections };
 
@@ -45,7 +51,15 @@ export function calculateGalicia({ order, awning }) {
 
   const fabricWidth = round1(awning.width - lookupDiscount(parameters.fabricWidthDiscounts, tubeLoad, device, 11));
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(awning.projection + valance + parameters.fabricDropAllowanceCm);
+  const separateValance = calculateSeparateValance({
+    awning,
+    seamAllowanceCm: parameters.seamAllowanceCm,
+    seamBaseCm: parameters.seamBaseCm
+  });
+  const mainDropAllowance = separateValance.requested
+    ? Math.max(0, parameters.fabricDropAllowanceCm - 5)
+    : parameters.fabricDropAllowanceCm;
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
@@ -62,6 +76,7 @@ export function calculateGalicia({ order, awning }) {
   const fabricInvalid = Boolean(fabricSelection && !fabric);
   const valid = missingFields.length === 0
     && !fabricInvalid
+    && separateValance.valid
     && !invalidArmCount
     && !belowMinimum
     && !belowRequiredArms
@@ -75,10 +90,11 @@ export function calculateGalicia({ order, awning }) {
       message: `Tela no encontrada en el catálogo: "${fabricSelection}".`
     });
   }
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
 
   const context = {
     awning, lacado, colorSuffix, tubeLoad, device, armCount, motorPower,
-    stockLength, structureLength, rollTubeLength, fabricMl, fabric
+    stockLength, structureLength, rollTubeLength, fabricMl, fabric, separateValance
   };
   const materials = valid ? buildMaterials(context) : [];
   const despiece = valid ? buildDespiece(context) : null;
@@ -136,9 +152,12 @@ export function calculateGalicia({ order, awning }) {
       fabricDrop,
       fabricMl,
       fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricMl,
+      mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '',
       fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength,
       rollTubeLength,
       stockLength,
@@ -161,7 +180,7 @@ const refMachineBush = (device) => device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM
 const descMachineBush = (device) => device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78';
 const refCrank = (lacado, height) => `MANIVE${crankSuffix(lacado)}${height}C`;
 
-function buildMaterials({ awning, colorSuffix, tubeLoad, device, armCount, motorPower, stockLength, fabricMl, fabric }) {
+function buildMaterials({ awning, colorSuffix, tubeLoad, device, armCount, motorPower, stockLength, fabricMl, fabric, separateValance }) {
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     { code: refSupport(colorSuffix), quantity: units, description: 'JUEGO SOPORTE GALICIA' },
@@ -200,6 +219,7 @@ function buildMaterials({ awning, colorSuffix, tubeLoad, device, armCount, motor
     materials.push({ code: wallEntry.referencia, quantity: wallEntry.unidades * units, description: wallEntry.tornilleria });
   }
   if (fabric) materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
+  appendSeparateValanceMaterial(materials, separateValance);
   return materials;
 }
 

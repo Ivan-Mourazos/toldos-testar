@@ -29,7 +29,7 @@ describe('trabajos solo de tela', () => {
     ['CAMBIO TELA', 325],
     ['CAMBIO CORTINA', 307],
     ['ENROLLABLE', 275],
-    ['CAMBIO ANTICA', 310]
+    ['CAMBIO ANTICA', 350]
   ])('%s aplica su fórmula del Excel y no genera estructura', (model, expectedDrop) => {
     const result = calculate(model);
     expect(result.ofs[0].calculation.fabricDrop).toBe(expectedDrop);
@@ -46,7 +46,7 @@ describe('trabajos solo de tela', () => {
 
   test('CAMBIO ANTICA con tubo 30x10 puede ir sin bamba y mantiene el remate de 5 cm', () => {
     const result = calculate('CAMBIO ANTICA', { anticaVariant: 'TUBO 30X10', valanceHeight: 0 });
-    expect(result.ofs[0].calculation.fabricDrop).toBe(280);
+    expect(result.ofs[0].calculation.fabricDrop).toBe(320);
     expect(result.ofs[0].calculation.valanceFabricMl).toBe(0);
   });
 
@@ -212,7 +212,8 @@ describe('trabajos solo de tela', () => {
       mainFabricMl: 8.7,
       valanceFabricCode: 'ACRILI2101P120',
       valanceFabricMl: 1.05,
-      fabricMl: 9.75
+      fabricMl: 8.7,
+      totalFabricMl: 9.75
     });
     expect(result.ofs[0].materials).toEqual([
       { code: 'ACRILI2170P120', quantity: 8.7, description: 'ACR NEGRO' },
@@ -316,6 +317,23 @@ describe('trabajos solo de tela', () => {
       valid: true,
       fabricDrop: 357,
       curtainFabricDeductionCm: 18
+    });
+  });
+
+  test('CAMBIO CORTINA reproduce el histórico 238,5 × 297 con tres paños', () => {
+    const result = calculate('CAMBIO CORTINA', {
+      width: 238.5,
+      projection: 270,
+      valanceHeight: 0,
+      curtainHasWindow: false,
+      curtainFinish: 'NORMAL'
+    });
+
+    expect(result.ofs[0].calculation).toMatchObject({
+      valid: true,
+      fabricDrop: 297,
+      fabricPanels: 3,
+      fabricMl: 8.91
     });
   });
 

@@ -2,7 +2,8 @@ const defaultAllowances = Object.freeze({
   'CAMBIO TELA': 40,
   ENROLLABLE: 25,
   BAMBALINA: 0,
-  'CAMBIO ANTICA': 25
+  // CAM. ANTICA!I5 del libro antiguo: aumento del cuerpo con bamba integrada.
+  'CAMBIO ANTICA': 65
 });
 
 export const defaultFabricJobParameters = Object.freeze({

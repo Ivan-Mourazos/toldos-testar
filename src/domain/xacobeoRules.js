@@ -5,6 +5,12 @@ import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { normalizeXacobeoParameters } from './xacobeoParameters.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 export function calculateXacobeo({ order, awning }) {
   const parameters = normalizeXacobeoParameters(order.parameters?.xacobeo);
@@ -29,7 +35,11 @@ export function calculateXacobeo({ order, awning }) {
   const rollTubeLength = round1(awning.width - rollDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(awning.projection + valance + parameters.fabricDropAllowanceCm);
+  const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
+  const mainDropAllowance = separateValance.requested
+    ? Math.max(0, parameters.fabricDropAllowanceCm - 5)
+    : parameters.fabricDropAllowanceCm;
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
@@ -44,11 +54,13 @@ export function calculateXacobeo({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const valid = missingFields.length === 0
     && Boolean(fabric)
+    && separateValance.valid
     && !belowMinimum
     && Boolean(stockLength)
     && (!overMaximum || modified);
 
   if (fabricSelection && !fabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `XACOBEO incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (belowMinimum) {
@@ -61,7 +73,7 @@ export function calculateXacobeo({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de XACOBEO modificadas.` });
   }
 
-  const context = { awning, device, lacado, fabric, stockLength, rollTubeLength, loadBarLength, fabricMl: fabricUsage.ml };
+  const context = { awning, device, lacado, fabric, separateValance, stockLength, rollTubeLength, loadBarLength, fabricMl: fabricUsage.ml };
   return {
     of: awning.of,
     description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl: fabricUsage.ml }),
@@ -72,8 +84,10 @@ export function calculateXacobeo({ order, awning }) {
       model: 'XACOBEO', valid, minimumLine,
       width: awning.width, projection: awning.projection,
       fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength: loadBarLength, rollTubeLength, stockLength,
       motorPower: device === 'MOTOR' ? '35/17' : '', armCount: 1,
       xacMinimumLineCm: minimumLine,
@@ -84,7 +98,7 @@ export function calculateXacobeo({ order, awning }) {
   };
 }
 
-function buildMaterials({ awning, device, lacado, fabric, stockLength, fabricMl }) {
+function buildMaterials({ awning, device, lacado, fabric, separateValance, stockLength, fabricMl }) {
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     { code: `SOPART250${lacado.suffix}`, quantity: units, description: 'JUEGO SOPORTE ART250' },
@@ -113,6 +127,7 @@ function buildMaterials({ awning, device, lacado, fabric, stockLength, fabricMl 
     );
   }
   if (fabric) materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
+  appendSeparateValanceMaterial(materials, separateValance);
 
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   if (wallEntry?.referencia) materials.push({ code: wallEntry.referencia, quantity: wallEntry.unidades * units, description: wallEntry.tornilleria });

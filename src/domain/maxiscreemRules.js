@@ -21,7 +21,8 @@ export function calculateMaxiscreem({ order, awning }) {
   const guide = maxiscreemGuide(variant);
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
-  const valanceFabricSelection = String(awning.valanceFabric || '').trim();
+  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
+  const valanceFabricSelection = valance > 0 ? String(awning.valanceFabric || '').trim() : '';
   const valanceFabric = valanceFabricSelection ? resolveFabric(valanceFabricSelection) : null;
   const modified = Boolean(awning.reglasModificadas);
   const diagnostics = [];
@@ -40,7 +41,6 @@ export function calculateMaxiscreem({ order, awning }) {
   const loadBarDiscount = effectiveNumber(awning, 'maxisLoadBarDiscountCm', discounts.loadBar);
   const boxProfileDiscount = effectiveNumber(awning, 'maxisBoxProfileDiscountCm', discounts.boxProfile);
   const dropAllowance = effectiveNumber(awning, 'maxisFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
-  const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(Number(awning.width) - fabricDiscount);
   const rawFabricDrop = Number(awning.projection) + dropAllowance
     + (valanceFabricSelection ? 0 : valance + parameters.valanceExtraCm);
@@ -62,7 +62,7 @@ export function calculateMaxiscreem({ order, awning }) {
     seamBaseCm: parameters.seamBaseCm
   });
   const valanceUsage = valanceFabric && valance > 0 ? calculateFabricUsage({
-    width: fabricWidth,
+    width: Number(awning.width),
     drop: valance + parameters.valanceExtraCm,
     units: awning.units,
     rollWidth: valanceFabric.width || 120,
@@ -106,12 +106,13 @@ export function calculateMaxiscreem({ order, awning }) {
     calculation: {
       model: 'MAXISCREEM', valid, minimumLine: 0,
       width: awning.width, projection: awning.projection,
-      fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      fabricWidth, fabricDrop, fabricUsageDrop: rawFabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
       mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
       valanceFabricCode: valanceFabric?.code || '',
       valanceFabricDescription: valanceFabric?.description || '',
+      valanceFabricWidth: valanceUsage ? Number(awning.width) : 0,
       valanceFabricMl: valanceUsage?.ml || 0,
       valanceFabricPanels: valanceUsage?.panels || 0,
       valanceDrop: valanceUsage ? valance + parameters.valanceExtraCm : 0,

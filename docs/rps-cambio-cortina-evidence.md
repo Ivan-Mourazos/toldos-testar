@@ -11,7 +11,8 @@
 - Ancho de tela: frente medido.
 - Caída estándar: alto medido + bamba + 45 cm - 18 cm.
 - Descuento inferior estándar: 18 cm.
-- Costuras adicionales para contar paños: 0 cm, igual que la fórmula histórica `REDONDEAR.MAS(frente/ancho de rollo)`.
+- El planteamiento cuenta paños con 7 cm de margen base y 2,2 cm por unión real.
+- La reserva usa por separado la fórmula fija vigente de `ESTR.01!Q28`: `REDONDEAR.MAS((frente + 7 + ENTERO((frente + 7) / ancho rollo) * 2,2) / ancho rollo)`.
 - No genera estructura, lacado ni piezas: únicamente reserva la lona por OF.
 
 ## Excepciones históricas
@@ -21,6 +22,10 @@ De los 34 paños revisados, 26 aplican el descuento de 18 cm y 8 lo anulan, deja
 La web aplica 18 cm por defecto. El candado de la tarjeta permite activar una excepción individual y cambiar el descuento a 0 cm u otro valor decidido por Oficina Técnica.
 
 Una fórmula antigua calculaba 22 cm netos cuando no había bamba. Otros casos equivalentes usan 27 cm. La web elimina esa inconsistencia y aplica siempre `45 - 18 = 27 cm`, haya o no bamba.
+
+Algunas copias antiguas de pedidos cuentan los paños con `REDONDEAR.MAS(frente/ancho de rollo)`, sin las costuras de 7/2,2 cm. La web toma como autoridad el Excel maestro actual para la reserva; las excepciones heredadas siguen pudiendo ajustarse por elemento.
+
+El propio libro discrepa justo en ciertos límites de rollo: la hoja visible `TELA` cuenta únicamente las uniones reales, mientras `ESTR.01!Q28` puede reservar un paño adicional. La web conserva ambos resultados por separado: planteamiento visible y reserva RPS.
 
 ## Verificación reproducible
 

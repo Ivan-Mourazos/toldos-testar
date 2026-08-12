@@ -347,8 +347,14 @@ export type Calculation = {
       minimumLine: number;
       fabricWidth: number;
       fabricDrop: number;
+      fabricUsageDrop?: number;
       fabricMl: number;
+      totalFabricMl?: number;
       reservedFabricMl?: number;
+      reservedFabricPanels?: number;
+      reservedValanceFabricMl?: number;
+      reservedValanceFabricPanels?: number;
+      totalReservedFabricMl?: number;
       fabricPanels?: number;
       fabricCode?: string;
       fabricDescription?: string;
@@ -400,6 +406,7 @@ export type Calculation = {
       mainFabricPanels?: number;
       valanceFabricCode?: string;
       valanceFabricDescription?: string;
+      valanceFabricWidth?: number;
       valanceFabricMl?: number;
       valanceFabricPanels?: number;
       valanceDrop?: number;

@@ -5,6 +5,12 @@ import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { normalizeCuarzoBoxParameters } from './storbox250Parameters.js';
+import {
+  appendSeparateValanceDiagnostic,
+  appendSeparateValanceMaterial,
+  calculateSeparateValance,
+  separateValanceCalculation
+} from './separateValance.js';
 
 export function calculateCuarzoBox({ order, awning }) {
   const parameters = normalizeCuarzoBoxParameters(order.parameters?.cuarzoBox);
@@ -35,7 +41,11 @@ export function calculateCuarzoBox({ order, awning }) {
   const fabricWidth = round1(awning.width - fabricWidthDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(awning.projection + parameters.fabricDropAllowanceCm + valance);
+  const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
+  const mainDropAllowance = separateValance.requested
+    ? Math.max(0, parameters.fabricDropAllowanceCm - 5)
+    : parameters.fabricDropAllowanceCm;
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
@@ -50,6 +60,7 @@ export function calculateCuarzoBox({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const valid = missingFields.length === 0
     && Boolean(fabric)
+    && separateValance.valid
     && !belowMinimum
     && Boolean(stockLength)
     && (!overMaximum || modified);
@@ -57,6 +68,7 @@ export function calculateCuarzoBox({ order, awning }) {
   if (fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   }
+  appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CUARZO BOX incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (belowMinimum) {
@@ -71,7 +83,7 @@ export function calculateCuarzoBox({ order, awning }) {
 
   const motorPower = effectiveMotorPower(awning, 35);
   const context = {
-    awning, lacado, device, fabric, stockLength, structureLength, rollTubeLength,
+    awning, lacado, device, fabric, separateValance, stockLength, structureLength, rollTubeLength,
     loadBarLength, motorPower, fabricMl: fabricUsage.ml
   };
   return {
@@ -84,8 +96,10 @@ export function calculateCuarzoBox({ order, awning }) {
       model: 'CUARZO BOX', valid, minimumLine,
       width: awning.width, projection: awning.projection,
       fabricWidth, fabricDrop, fabricMl: fabricUsage.ml, fabricPanels: fabricUsage.panels,
+      mainFabricMl: fabricUsage.ml, mainFabricPanels: fabricUsage.panels,
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
+      ...separateValanceCalculation(separateValance),
       structureLength, rollTubeLength, stockLength,
       motorPower: device === 'MOTOR' ? `${motorPower}/17` : '', armCount: 1,
       boxMinimumLineCm: minimumLine,
@@ -98,7 +112,7 @@ export function calculateCuarzoBox({ order, awning }) {
 }
 
 function buildMaterials(context) {
-  const { awning, lacado, device, fabric, stockLength, fabricMl } = context;
+  const { awning, lacado, device, fabric, separateValance, stockLength, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     { code: 'TURA70HG600C', quantity: units, description: 'TUBO DE ENROLLE P701' },
@@ -125,6 +139,7 @@ function buildMaterials(context) {
     );
   }
   if (fabric) materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
+  appendSeparateValanceMaterial(materials, separateValance);
 
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   if (wallEntry?.referencia) materials.push({ code: wallEntry.referencia, quantity: wallEntry.unidades * units, description: wallEntry.tornilleria });

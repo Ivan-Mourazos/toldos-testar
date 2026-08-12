@@ -151,7 +151,7 @@ describe('ANTICA contra los cuatro libros históricos', () => {
   test('la bamba con otra tela se calcula y reserva por separado', () => {
     const ofBlock = calculateOrder(payload({ valanceFabric: 'ACR GRANATE' })).ofs[0];
 
-    expect(ofBlock.calculation).toMatchObject({ fabricDrop: 120, valanceDrop: 25, mainFabricMl: 2.4, valanceFabricMl: 0.5, fabricMl: 2.9 });
+    expect(ofBlock.calculation).toMatchObject({ fabricDrop: 120, valanceDrop: 25, mainFabricMl: 2.4, valanceFabricMl: 0.5, fabricMl: 2.4, totalFabricMl: 2.9 });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'ACRILI2170P120', quantity: 2.4 }),
       expect.objectContaining({ code: 'ACRILI2101P120', quantity: 0.5 })

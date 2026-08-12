@@ -145,7 +145,7 @@ function FabricPreview({ blocks, awnings }: { blocks: Calculation['ofs']; awning
                   <td><small>{awningLetter(block.awningIndex ?? index)} · bamba</small></td>
                   <td><strong>Bambalina</strong><small>tejido independiente</small></td>
                   <td>{block.of || '-'}</td><td className="code">{calc.valanceFabricCode}</td>
-                  <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.valanceDrop)} cm</td><td className="num">{calc.valanceFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.valanceFabricMl)} ml</strong></td>
+                  <td className="num">{formatDecimal(calc.valanceFabricWidth ?? calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.valanceDrop)} cm</td><td className="num">{calc.valanceFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.valanceFabricMl)} ml</strong></td>
                   <td>Bamba separada de {formatDecimal(awning?.valanceHeight)} cm</td>
                 </tr>
               )}
