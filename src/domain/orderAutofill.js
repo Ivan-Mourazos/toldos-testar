@@ -21,7 +21,8 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
   record(recovered, customer, 'Cliente');
 
   const materialsByOf = groupMaterialsByOf(materials);
-  const awnings = mappedLines.map(({ line, model }, index) => {
+  const editableLines = mappedLines.flatMap(({ line, model }) => expandEditableLine(line, model));
+  const awnings = editableLines.map(({ line, model }, index) => {
     const awning = buildAwningSuggestion(line, model, index);
     const fabricRows = materialsByOf.get(cleanOf(awning.of)) || [];
     const fabricSelections = distinctFabricSelections(fabricRows);
@@ -72,6 +73,27 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
     pending: unique(pending),
     warnings: unique(warnings)
   };
+}
+
+function expandEditableLine(line, model) {
+  const quantity = positiveNumber(line.quantity) || 1;
+  const wholeUnits = Number.isInteger(quantity) ? quantity : 1;
+  if (!fabricOnlyModels.has(model) || wholeUnits <= 1 || wholeUnits > 50) {
+    return [{ line, model }];
+  }
+
+  const detailText = [line.comment, line.manufacturingNotes].filter(Boolean).join('\n');
+  const dimensions = extractOrderTextData(detailText, model);
+  const needsIndividualMeasures = !positiveNumber(dimensions.width)
+    || (model === 'BAMBALINA'
+      ? !positiveNumber(dimensions.valanceHeight)
+      : !positiveNumber(dimensions.projection));
+  if (!needsIndividualMeasures) return [{ line, model }];
+
+  return Array.from({ length: wholeUnits }, () => ({
+    model,
+    line: { ...line, quantity: 1 }
+  }));
 }
 
 function composeCustomerName(customerValue, businessValue) {
@@ -146,7 +168,7 @@ function buildAwningSuggestion(line, model, index) {
   const extracted = extractOrderTextData(detailText, model);
   const fabricOnly = fabricOnlyModels.has(model);
   return {
-    id: `rps-${clean(line.lineId) || index + 1}`,
+    id: `rps-${clean(line.lineId) || 'line'}-${index + 1}`,
     workType: fabricOnly ? 'FABRIC_ONLY' : 'FULL_AWNING',
     of: cleanOf(line.manufacturingOrder),
     model,

@@ -260,7 +260,20 @@ export function useDraft() {
     setAwnings((current) => {
       const source = current.find((awning) => awning.id === id);
       if (!source) return current;
-      return [...current, { ...source, id: uid(), of: '', structureNotes: '', fabricNotes: '' }];
+      const sourceUnits = Math.max(1, Number(source.units) || 1);
+      const clone = {
+        ...source,
+        id: uid(),
+        units: 1,
+        of: sourceUnits > 1 ? source.of : '',
+        structureNotes: '',
+        fabricNotes: ''
+      };
+      if (sourceUnits === 1) return [...current, clone];
+      return [
+        ...current.map((awning) => awning.id === id ? { ...awning, units: sourceUnits - 1 } : awning),
+        clone
+      ];
     });
   }
 

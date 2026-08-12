@@ -83,11 +83,15 @@ describe('autocompletado de pedidos RPS', () => {
         comment: 'CAMBIOS DE TELA PARA TOLDOS DE DIFERENTES MEDIDAS', manufacturingOrder: '0231299', quantity: 5
       }]
     });
-    expect(result.order.awnings[0]).toMatchObject({ units: 5, width: null, projection: null });
+    expect(result.order.awnings).toHaveLength(5);
+    expect(result.order.awnings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ units: 1, width: null, projection: null })
+    ]));
     expect(result.pending).toEqual(expect.arrayContaining([
       'A · CAMBIO TELA: frente',
       'A · CAMBIO TELA: salida',
-      'A · CAMBIO TELA: tela'
+      'A · CAMBIO TELA: tela',
+      'E · CAMBIO TELA: frente'
     ]));
   });
 

@@ -220,6 +220,33 @@ describe('trabajos solo de tela', () => {
     ]);
   });
 
+  test('AR2603991 calcula cada cambio como una unidad y separa cuerpo y bambalina', () => {
+    const widths = [509.5, 585, 399, 587.5, 381.5];
+    const results = widths.map((width, index) => calculateOrder({
+      ...base,
+      fabric: 'ACRRESNEGROP120',
+      awnings: [{
+        ...base.awnings[0], id: `ar2603991-${index}`, of: '0231299', model: 'CAMBIO TELA',
+        units: 1, width, projection: 300, valanceHeight: 25, valanceFabric: 'ACRILI2170P120'
+      }]
+    }).ofs[0]);
+
+    expect(results.map(({ calculation }) => ({
+      panels: calculation.mainFabricPanels,
+      mainMl: calculation.mainFabricMl,
+      valancePanels: calculation.valanceFabricPanels,
+      valanceMl: calculation.valanceFabricMl
+    }))).toEqual([
+      { panels: 5, mainMl: 17, valancePanels: 5, valanceMl: 1.5 },
+      { panels: 6, mainMl: 20.4, valancePanels: 6, valanceMl: 1.8 },
+      { panels: 4, mainMl: 13.6, valancePanels: 4, valanceMl: 1.2 },
+      { panels: 6, mainMl: 20.4, valancePanels: 6, valanceMl: 1.8 },
+      { panels: 4, mainMl: 13.6, valancePanels: 4, valanceMl: 1.2 }
+    ]);
+    expect(results.reduce((total, item) => total + item.calculation.mainFabricMl, 0)).toBe(85);
+    expect(results.reduce((total, item) => total + item.calculation.valanceFabricMl, 0)).toBe(7.5);
+  });
+
   test('CAMBIO ANTICA usa +40 en el cuerpo si la bamba lleva otra tela', () => {
     const result = calculate('CAMBIO ANTICA', {
       anticaVariant: 'TUBO 30X10 CON BAMBA', valanceFabric: 'ACR GRANATE'

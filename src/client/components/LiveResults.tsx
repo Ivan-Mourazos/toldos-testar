@@ -128,14 +128,28 @@ function FabricPreview({ blocks, awnings }: { blocks: Calculation['ofs']; awning
           const awning = findAwning(block, awnings);
           const calc = block.calculation!;
           const heraVariant = calc.model === 'HERA' ? calc.heraVariant || awning?.submodel : '';
+          const mainFabricMl = calc.mainFabricMl ?? calc.fabricMl;
+          const mainFabricPanels = calc.mainFabricPanels ?? calc.fabricPanels;
+          const hasSeparateValance = Boolean(calc.valanceFabricCode) && Number(calc.valanceFabricMl) > 0;
           return (
-            <tr key={blockKey(block)}>
-              <td><strong className="result-letter">{awningLetter(block.awningIndex ?? index)}</strong></td>
-              <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
-              <td>{block.of || '-'}</td><td className="code">{calc.fabricCode || '-'}</td>
-              <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{calc.fabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.fabricMl)} ml</strong></td>
-              <td><FabricIndication awning={awning} calculation={calc} /></td>
-            </tr>
+            <React.Fragment key={blockKey(block)}>
+              <tr>
+                <td><strong className="result-letter">{awningLetter(block.awningIndex ?? index)}</strong></td>
+                <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
+                <td>{block.of || '-'}</td><td className="code">{calc.fabricCode || '-'}</td>
+                <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{mainFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(mainFabricMl)} ml</strong></td>
+                <td><FabricIndication awning={awning} calculation={calc} /></td>
+              </tr>
+              {hasSeparateValance && (
+                <tr className="fabric-valance-row">
+                  <td><small>{awningLetter(block.awningIndex ?? index)} · bamba</small></td>
+                  <td><strong>Bambalina</strong><small>tejido independiente</small></td>
+                  <td>{block.of || '-'}</td><td className="code">{calc.valanceFabricCode}</td>
+                  <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.valanceDrop)} cm</td><td className="num">{calc.valanceFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.valanceFabricMl)} ml</strong></td>
+                  <td>Bamba separada de {formatDecimal(awning?.valanceHeight)} cm</td>
+                </tr>
+              )}
+            </React.Fragment>
           );
         })}</tbody>
       </table>
