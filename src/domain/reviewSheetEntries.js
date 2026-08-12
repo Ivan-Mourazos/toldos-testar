@@ -121,9 +121,7 @@ export function buildReviewSheetEntries(order, calculation) {
       title: reviewDisplayLabel(awning.model || 'MODELO SIN INDICAR'),
       legacyTitle: legacyModelNames[String(awning.model || '').toUpperCase()] || '',
       status: reviewStatus(awning, ofBlock, diagnostics), fields: cardFields,
-      notes: fabricOnly
-        ? [{ label: 'Obs. tela', value: reviewDisplayValue(awning.fabricNotes) }]
-        : [{ label: 'Obs. estructura', value: reviewDisplayValue(awning.structureNotes) }, { label: 'Obs. tela', value: reviewDisplayValue(awning.fabricNotes) }],
+      notes: fabricOnly ? [] : [{ label: 'Obs. estructura', value: reviewDisplayValue(awning.structureNotes) }],
       modified: Boolean(awning.reglasModificadas)
     };
   });

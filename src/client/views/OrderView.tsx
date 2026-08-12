@@ -4,6 +4,7 @@ import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
+import { ObservationLines } from '../components/ObservationLines';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
 export function OrderView({
@@ -15,6 +16,7 @@ export function OrderView({
   reviewer,
   fabric,
   sameFabric,
+  notes,
   awnings,
   calculation,
   calculationState,
@@ -26,6 +28,7 @@ export function OrderView({
   setReviewer,
   setFabric,
   setSameFabric,
+  setNotes,
   setRemate,
   setRemateColor,
   addAwning,
@@ -44,6 +47,7 @@ export function OrderView({
   reviewer: string;
   fabric: string;
   sameFabric: boolean;
+  notes: string;
   remate: string;
   remateColor: string;
   awnings: Awning[];
@@ -57,6 +61,7 @@ export function OrderView({
   setReviewer: (value: string) => void;
   setFabric: (value: string) => void;
   setSameFabric: (value: boolean) => void;
+  setNotes: (value: string) => void;
   setRemate: (value: string) => void;
   setRemateColor: (value: string) => void;
   addAwning: (workType?: Awning['workType'], model?: string) => void;
@@ -140,6 +145,10 @@ export function OrderView({
               onRemove={removeAwning}
             />
           ))}
+        </div>
+
+        <div className="order-observations">
+          <ObservationLines label="Observaciones de tela del pedido" value={notes} onChange={setNotes} />
         </div>
       </section>}
 

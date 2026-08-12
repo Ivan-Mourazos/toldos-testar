@@ -41,6 +41,7 @@ export async function buildOrderReviewPdf({ order, calculation, review = null })
 
     const entries = buildReviewSheetEntries(order, calculation);
     let y = startPage(doc, order);
+    y = drawOrderNotes(doc, order, order.notes, y);
     if (entries.length === 0) drawEmptyOrder(doc, y);
     else {
       for (const entry of entries) {
@@ -115,6 +116,36 @@ function buildReviewCardSegments(doc, entry) {
   return segments;
 }
 
+function drawOrderNotes(doc, order, notes, y) {
+  let remaining = String(notes || '').trim();
+  if (!remaining) return y;
+  let currentY = y;
+  let continuation = false;
+  while (remaining) {
+    const maximumTextHeight = Math.min(120, PAGE_BOTTOM - currentY - 34);
+    if (maximumTextHeight < 24) currentY = startPage(doc, order);
+    const availableTextHeight = Math.min(120, PAGE_BOTTOM - currentY - 34);
+    const chunk = splitTextForHeight(doc, remaining, CONTENT_WIDTH - 18, availableTextHeight);
+    doc.font('Helvetica').fontSize(7.5);
+    const textHeight = doc.heightOfString(chunk.head, { width: CONTENT_WIDTH - 18 });
+    const height = Math.max(38, textHeight + 24);
+    const label = continuation ? 'OBSERVACIONES DE TELA DEL PEDIDO (CONTINUACIÓN)' : 'OBSERVACIONES DE TELA DEL PEDIDO';
+    doc.fillColor(colors.muted).font('Helvetica-Bold').fontSize(6.5).text(label, MARGIN, currentY, { width: CONTENT_WIDTH });
+    doc.roundedRect(MARGIN, currentY + 10, CONTENT_WIDTH, height - 10, 4).fillAndStroke(colors.field, colors.line);
+    doc.fillColor(colors.ink).font('Helvetica').fontSize(7.5).text(chunk.head, MARGIN + 9, currentY + 16, {
+      width: CONTENT_WIDTH - 18,
+      height: height - 22
+    });
+    currentY += height + CARD_GAP;
+    remaining = chunk.tail;
+    if (remaining) {
+      currentY = startPage(doc, order);
+      continuation = true;
+    }
+  }
+  return currentY;
+}
+
 function createCardSegment(doc, entry, fields, notes, showModifiedMessage, continuation) {
   const notesHeight = measureNotesHeight(doc, notes, CONTENT_WIDTH - 20);
   return {
@@ -176,6 +207,7 @@ function drawFormField(doc, field, x, y, width) {
 }
 
 function measureNotesHeight(doc, notes, width) {
+  if (notes.length === 0) return 0;
   const gap = notes.length > 1 ? 8 : 0;
   const noteWidth = notes.length > 1 ? (width - gap) / 2 : width;
   doc.font('Helvetica').fontSize(7.5);
@@ -186,6 +218,7 @@ function measureNotesHeight(doc, notes, width) {
 }
 
 function drawNotes(doc, notes, x, y, width, height) {
+  if (notes.length === 0) return;
   const gap = notes.length > 1 ? 8 : 0;
   const noteWidth = notes.length > 1 ? (width - gap) / 2 : width;
   const boxHeight = height - NOTE_BLOCK_SPACING;

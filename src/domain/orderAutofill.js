@@ -65,7 +65,7 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
       structureColor: '',
       rotTela: '',
       rotBamba: '',
-      notes: clean(header.orderComment),
+      notes: '',
       awnings
     },
     recovered: unique(recovered),
@@ -143,7 +143,6 @@ export function extractOrderTextData(value, model = '') {
 
 function buildAwningSuggestion(line, model, index) {
   const detailText = [line.comment, line.manufacturingNotes].filter(Boolean).join('\n');
-  const sourceText = [line.comment, line.manufacturingNotes, line.description].filter(Boolean).join('\n');
   const extracted = extractOrderTextData(detailText, model);
   const fabricOnly = fabricOnlyModels.has(model);
   return {
@@ -172,8 +171,8 @@ function buildAwningSuggestion(line, model, index) {
     curtainSupport: model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '',
     fabric: '',
     valanceFabric: '',
-    structureNotes: fabricOnly ? '' : clean(sourceText),
-    fabricNotes: fabricOnly ? clean(sourceText) : ''
+    structureNotes: '',
+    fabricNotes: ''
   };
 }
 

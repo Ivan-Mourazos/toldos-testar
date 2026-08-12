@@ -299,6 +299,7 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   drawFabricMeta(doc, contentX, 126, contentW, order, lines);
   drawFabricRows(doc, contentX, 205, contentW, lines, order);
   drawFabricTotals(doc, contentX, 515, contentW, fabricTotals, lines);
+  drawStructureNotes(doc, margin, 488, diagramW, pageH - 48, order.notes);
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
 }
 
@@ -310,7 +311,7 @@ function drawHeraFabricPage(doc, { order, entries }) {
   const top = 78;
   entries.forEach((entry) => {
     const line = toFabricLine(entry);
-    const detail = buildHeraMiniPlanDetail(line.awning, line.calc);
+    const detail = buildHeraMiniPlanDetail(line.awning, line.calc, order);
     drawHeraLegacyBlock(doc, margin, top, tableW, 250, {
       order,
       detail,
@@ -339,7 +340,8 @@ function drawHeraLegacyBlock(doc, x, y, w, h, { order, detail, letter }) {
     ...(detail.manual ? [['CADENA', legacyHeraValue(detail.chain)]] : []),
     ['ARRIBA', detail.topFinish],
     ['ABAJO', detail.bottomFinish],
-    ['ACLARACIONES', detail.notes || '-']
+    ['ACLARACIONES', detail.notes || '-'],
+    ...(detail.fabricNotes ? [['OBS. TELA', detail.fabricNotes]] : [])
   ];
   const totalH = titleH + orderH + rowH * 3 + gapH + rows.length * rowH;
 
@@ -1216,8 +1218,6 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
     instructionParts.push('VARILLA BLANCA ATRÁS');
   }
 
-  if (String(awning.fabricNotes || '').trim()) instructionParts.push(String(awning.fabricNotes).trim());
-
   return {
     workLabel: fabricWorkLabel(model),
     fabricWidth: formatFabricMeasure(calculation.fabricWidth),
@@ -1227,7 +1227,7 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
   };
 }
 
-export function buildHeraMiniPlanDetail(awning = {}, calculation = {}) {
+export function buildHeraMiniPlanDetail(awning = {}, calculation = {}, order = {}) {
   const variant = String(
     calculation.heraVariant
     || calculation.submodel
@@ -1295,8 +1295,8 @@ export function buildHeraMiniPlanDetail(awning = {}, calculation = {}) {
     fabricMl: formatHeraMl(calculation.fabricMl),
     fabricMaterial: fabricDescription(calculation.fabricCode, calculation.fabricDescription),
     interiorFace: ['DERECHO', 'REVES', 'REVÉS'].includes(interiorFace) ? interiorFace.replace('REVES', 'REVÉS') : '',
-    notes: [String(awning.structureNotes || '').trim(), String(awning.fabricNotes || '').trim()]
-      .filter(Boolean).join(' · '),
+    notes: String(awning.structureNotes || '').trim(),
+    fabricNotes: String(order.notes || '').trim(),
     specialTubeRequired: Boolean(calculation.specialTubeRequired) || (width !== null && width > 300)
   };
 }

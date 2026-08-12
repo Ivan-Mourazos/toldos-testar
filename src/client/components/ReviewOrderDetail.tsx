@@ -62,6 +62,13 @@ export function ReviewOrderDetail({
         <SummaryFact label="Elementos" value={String(review.order.awnings.length)} />
       </dl>
 
+      {review.order.notes && (
+        <div className="review-order-notes">
+          <strong>Observaciones de tela del pedido</strong>
+          <p>{review.order.notes}</p>
+        </div>
+      )}
+
       {globalDiagnostics.length > 0 && (
         <div className="review-reader-diagnostics">
           <AlertTriangle aria-hidden="true" />
@@ -90,11 +97,13 @@ export function ReviewOrderDetail({
                 ))}
               </dl>
 
-              <div className={`review-card-notes ${entry.notes.length === 1 ? 'is-single' : ''}`}>
-                {entry.notes.map((note: { label: string; value: string }) => (
-                  <div key={note.label}><strong>{note.label}</strong><p>{note.value}</p></div>
-                ))}
-              </div>
+              {entry.notes.length > 0 && (
+                <div className="review-card-notes is-single">
+                  {entry.notes.map((note: { label: string; value: string }) => (
+                    <div key={note.label}><strong>{note.label}</strong><p>{note.value}</p></div>
+                  ))}
+                </div>
+              )}
 
               {diagnostics.length > 0 && (
                 <ul className="review-card-diagnostics">

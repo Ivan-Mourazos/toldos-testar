@@ -8,6 +8,7 @@ import { NumberField } from './NumberField';
 import { SelectField } from './SelectField';
 import { SegmentedField } from './SegmentedField';
 import { FabricCombobox } from './FabricCombobox';
+import { ObservationLines } from './ObservationLines';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
 import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.js';
@@ -562,14 +563,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             </div>
           )}
 
-          <div className={`awning-notes awning-wide-field${fabricOnly ? ' fabric-only-notes' : ''}`}>
-            {!fabricOnly && <label className="field"><span>Obs. estructura</span>
-              <textarea value={awning.structureNotes} onChange={(e) => update({ structureNotes: e.target.value })} />
-            </label>}
-            <label className="field"><span>Obs. tela</span>
-              <textarea value={awning.fabricNotes} onChange={(e) => update({ fabricNotes: e.target.value })} />
-            </label>
-          </div>
+          {!fabricOnly && (
+            <div className="awning-structure-notes awning-wide-field">
+              <ObservationLines label="Obs. estructura" value={awning.structureNotes} onChange={(structureNotes) => update({ structureNotes })} />
+            </div>
+          )}
+
         </>
       )}
 

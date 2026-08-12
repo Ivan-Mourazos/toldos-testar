@@ -179,7 +179,7 @@ describe('datos del planteamiento de telas', () => {
         machineSide: 'M.F IZQ', placement: 'FRONTAL',
         heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'PLETINA',
         heraInteriorFace: 'REVÉS', fabric: heraAcrylic120,
-        fabricNotes: 'ACLARACIÓN DEL PEDIDO'
+        structureNotes: 'ACLARACIÓN DEL PEDIDO'
       },
       {
         heraVariant: 'HERA 43 MAQUINA', width: 200, projection: 250, height: 240,
@@ -187,7 +187,8 @@ describe('datos del planteamiento de telas', () => {
         fabricCutWidth: 212, fabricCutDrop: 274, chainLength: 340,
         heraJoin: 'HORIZONTAL', fabricPanels: 3, seamCount: 2,
         fabricMl: 6.345, reservedFabricMl: 6.5, specialTubeRequired: false
-      }
+      },
+      { notes: 'OBSERVACIÓN GENERAL DE TELA' }
     );
 
     expect(detail).toMatchObject({
@@ -213,6 +214,7 @@ describe('datos del planteamiento de telas', () => {
       fabricDrop: '270 CM',
       interiorFace: 'REVÉS',
       notes: 'ACLARACIÓN DEL PEDIDO',
+      fabricNotes: 'OBSERVACIÓN GENERAL DE TELA',
       specialTubeRequired: false
     });
     expect(detail.fabricMl).not.toBe('6,5 ML');
@@ -280,7 +282,7 @@ describe('buildOrderPlanteamientoPdf', () => {
           machineSide: 'M.F IZQ', placement: 'FRONTAL',
           heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'PLETINA',
           heraInteriorFace: 'REVÉS',
-          fabric: heraAcrylic120, fabricNotes: 'Confirmar sentido del empate en CAD.'
+          fabric: heraAcrylic120, structureNotes: 'Confirmar sentido del empate en CAD.'
         },
         {
           id: 'hera-motor', of: '0231002', model: 'HERA', submodel: 'HERA 56 MOTOR',

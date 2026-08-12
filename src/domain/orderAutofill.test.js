@@ -49,6 +49,7 @@ describe('autocompletado de pedidos RPS', () => {
         orderCode: 'AR.26.03955',
         customer: 'MAHOU, S.A.',
         business: 'BAR LEMBRANZA',
+        orderComment: 'COMENTARIO INTERNO DEL PEDIDO',
         orderDate: '2026-07-01'
       },
       lines: [{
@@ -67,8 +68,10 @@ describe('autocompletado de pedidos RPS', () => {
     });
     expect(result.order.fabric).toContain('ACRILI2018P120|||120|||AZUL');
     expect(result.order.awnings[0]).toMatchObject({
-      model: 'CAMBIO TELA', of: '0231201', width: 804, projection: 420, valanceHeight: 25
+      model: 'CAMBIO TELA', of: '0231201', width: 804, projection: 420, valanceHeight: 25,
+      structureNotes: '', fabricNotes: ''
     });
+    expect(result.order.notes).toBe('');
     expect(result.pending).not.toContain('A · CAMBIO TELA: frente');
   });
 

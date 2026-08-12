@@ -139,7 +139,8 @@ describe('buildReusableDraft', () => {
         model: 'ARZUA PRO',
         width: 400,
         projection: 250,
-        structureNotes: 'Conservar esta configuración'
+        structureNotes: 'Conservar esta configuración',
+        fabricNotes: 'Aplicar a toda la tela'
       }]
     };
 
@@ -150,7 +151,8 @@ describe('buildReusableDraft', () => {
       customer: 'Cliente habitual',
       orderDate: '2026-01-15',
       technician: 'Ana',
-      fabric: 'ACR ADMIRAL'
+      fabric: 'ACR ADMIRAL',
+      notes: 'Aplicar a toda la tela'
     });
     expect(reusable.awnings[0]).toMatchObject({
       id: 'toldo-historico',

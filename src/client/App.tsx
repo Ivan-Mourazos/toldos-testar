@@ -88,7 +88,7 @@ export default function App() {
       notify('Indica primero el número de pedido.', { tone: 'warning' });
       return;
     }
-    const hasFormData = Boolean(draft.customer || draft.fabric || draft.awnings.length > 0);
+    const hasFormData = Boolean(draft.customer || draft.fabric || draft.notes || draft.awnings.length > 0);
     if (hasFormData) {
       const choice = await askForConfirmation({
         title: `Obtener datos de ${orderCode}`,
@@ -128,7 +128,7 @@ export default function App() {
 
   async function editReview(review: ReviewPackage) {
     const hasDraftData = Boolean(
-      draft.orderCode || draft.customer || draft.fabric
+      draft.orderCode || draft.customer || draft.fabric || draft.notes
       || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection)
     );
     if (hasDraftData) {
@@ -177,6 +177,7 @@ export default function App() {
       structureColor: draft.structureColor,
       rotTela: draft.rotTela,
       rotBamba: draft.rotBamba,
+      notes: draft.notes,
       awnings: draft.awnings,
       parameters: ruleSettings.parameters
     };
@@ -357,6 +358,7 @@ export default function App() {
                 reviewer={draft.reviewer}
                 fabric={draft.fabric}
                 sameFabric={draft.sameFabric}
+                notes={draft.notes}
                 remate={draft.remate}
                 remateColor={draft.remateColor}
                 awnings={draft.awnings}
@@ -370,6 +372,7 @@ export default function App() {
                 setReviewer={draft.setReviewer}
                 setFabric={draft.setFabric}
                 setSameFabric={draft.setSameFabric}
+                setNotes={draft.setNotes}
                 setRemate={draft.setRemate}
                 setRemateColor={draft.setRemateColor}
                 addAwning={draft.addAwning}

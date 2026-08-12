@@ -7,12 +7,12 @@ function reviewOrder(overrides = {}) {
   return {
     orderCode: 'AR26REVISION', customer: 'CLIENTE DE PRUEBA', orderDate: '2026-08-07',
     technician: 'IVAN', reviewer: 'TAMARA', fabric: 'ACR NEGRO', sameFabric: true,
+    notes: '',
     awnings: [{
       id: 'awning-a', of: '3300001', model: 'PERLA BOX', units: 1, width: 300, projection: 250,
       valanceHeight: 25, valanceCurve: 'RECTA', remate: '', rotFabric: 'NO', rotValance: 'NO',
       structureColor: 'BLANCO', device: 'MAQUINA', placement: 'TECHO', wallType: 'ENTRE PAREDES',
-      machineSide: 'M.F.DER', crankHeight: 100, structureNotes: 'Comprobar medidas en obra',
-      fabricNotes: 'Sin rotulación'
+      machineSide: 'M.F.DER', crankHeight: 100, structureNotes: 'Comprobar medidas en obra'
     }],
     ...overrides
   };
@@ -266,13 +266,11 @@ describe('PDF provisional de revisión', () => {
 
   test('amplía y continúa las observaciones largas sin perder el final', async () => {
     const longNote = `${Array.from({ length: 750 }, (_, index) => `comprobación-${index + 1}`).join(' ')} MARCADOR FINAL DE OBSERVACIONES`;
-    const order = reviewOrder({
-      awnings: [{ ...reviewOrder().awnings[0], structureNotes: longNote, fabricNotes: 'Observación corta' }]
-    });
+    const order = reviewOrder({ notes: longNote });
     const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation: calculateOrder(order) }));
 
     expect(pdf.pages).toBeGreaterThan(1);
-    expect(pdf.text).toContain('continuación');
+    expect(pdf.text).toContain('CONTINUACIÓN');
     expect(pdf.text).toContain('MARCADOR FINAL DE OBSERVACIONES');
   });
 

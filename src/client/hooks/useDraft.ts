@@ -174,7 +174,7 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
     structureColor: (saved.structureColor as string) || fallback.structureColor,
     rotTela: (saved.rotTela as string) || fallback.rotTela,
     rotBamba: (saved.rotBamba as string) || fallback.rotBamba,
-    notes: (saved.notes as string) || fallback.notes,
+    notes: collectFabricOrderNotes(saved.notes, awnings),
     awnings: awnings.length
       ? awnings.map((awning) => {
         const sanitized = sanitizeAwning(awning);
@@ -228,6 +228,7 @@ export function useDraft() {
   const [structureColor, setStructureColor] = useState(initialDraft.structureColor);
   const [rotTela, setRotTela] = useState(initialDraft.rotTela);
   const [rotBamba, setRotBamba] = useState(initialDraft.rotBamba);
+  const [notes, setNotes] = useState(initialDraft.notes);
   const [awnings, setAwnings] = useState<Awning[]>(initialDraft.awnings);
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>(() => getInitialHistory());
 
@@ -289,6 +290,7 @@ export function useDraft() {
     setStructureColor(entry.structureColor || fallback.structureColor);
     setRotTela(entry.rotTela || fallback.rotTela);
     setRotBamba(entry.rotBamba || fallback.rotBamba);
+    setNotes(collectFabricOrderNotes(entry.notes, entry.awnings));
     setAwnings(entry.awnings.length
       ? entry.awnings.map((awning) => ({ ...sanitizeAwning(awning as unknown as Record<string, unknown>), id: awning.id }))
       : []);
@@ -309,6 +311,7 @@ export function useDraft() {
     setStructureColor(clean.structureColor);
     setRotTela(clean.rotTela);
     setRotBamba(clean.rotBamba);
+    setNotes(clean.notes);
     setAwnings(clean.awnings);
   }
 
@@ -325,6 +328,7 @@ export function useDraft() {
     structureColor, setStructureColor,
     rotTela, setRotTela,
     rotBamba, setRotBamba,
+    notes, setNotes,
     awnings,
     historyEntries, setHistoryEntries,
     updateAwning,
@@ -341,11 +345,20 @@ export function useDraft() {
 export function buildReusableDraft(entry: DraftState): DraftState {
   return {
     ...entry,
+    notes: collectFabricOrderNotes(entry.notes, entry.awnings),
     awnings: entry.awnings.map((awning) => ({
       ...sanitizeAwning(awning as unknown as Record<string, unknown>),
       id: awning.id || uid()
     }))
   };
+}
+
+function collectFabricOrderNotes(orderNotes: unknown, awnings: Array<Record<string, unknown> | Awning> = []) {
+  const values = [orderNotes, ...awnings.map((awning) => awning.fabricNotes)]
+    .flatMap((value) => String(value || '').replace(/\r\n?/g, '\n').split('\n'))
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return [...new Set(values)].join('\n');
 }
 
 export function switchAwningModel(awning: Awning, model: string, armCount?: number | null): Awning {
