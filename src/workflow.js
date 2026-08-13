@@ -16,7 +16,8 @@ export function defaultWorkflowSettings(seed = {}) {
     productionEnabled: Boolean(seed.fileWritesEnabled),
     reviewDirectory: seed.reviewDirectory || archiveTemplate,
     planteamientosDirectory: seed.planteamientosDirectory || archiveTemplate,
-    rpsUploadDirectory: seed.rpsUploadDirectory || seed.exportDirectory || ''
+    rpsUploadDirectory: seed.rpsUploadDirectory || seed.exportDirectory || '',
+    rpsPlanteamientosDirectory: seed.rpsPlanteamientosDirectory || inferRpsPlanteamientosDirectory(seed.rpsUploadDirectory)
   };
 }
 
@@ -26,13 +27,15 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     productionEnabled: input?.productionEnabled === true,
     reviewDirectory: cleanPath(input?.reviewDirectory ?? current.reviewDirectory),
     planteamientosDirectory: cleanPath(input?.planteamientosDirectory ?? current.planteamientosDirectory),
-    rpsUploadDirectory: cleanPath(input?.rpsUploadDirectory ?? current.rpsUploadDirectory)
+    rpsUploadDirectory: cleanPath(input?.rpsUploadDirectory ?? current.rpsUploadDirectory),
+    rpsPlanteamientosDirectory: cleanPath(input?.rpsPlanteamientosDirectory ?? current.rpsPlanteamientosDirectory)
   };
 
   for (const [label, value] of [
     ['carpeta de revisión', settings.reviewDirectory],
     ['carpeta de planteamientos', settings.planteamientosDirectory],
-    ['carpeta de subida de material', settings.rpsUploadDirectory]
+    ['carpeta de subida de material', settings.rpsUploadDirectory],
+    ['archivo histórico de planteamientos de RPS', settings.rpsPlanteamientosDirectory]
   ]) {
     if (value && !isAbsolutePathTemplate(value)) {
       throw new Error(`La ${label} debe ser una ruta absoluta válida en el sistema del servidor.`);
@@ -57,11 +60,14 @@ export function workflowReadiness(settings) {
 export async function checkWorkflowDirectories(input, { year = new Date().getFullYear() } = {}) {
   const settings = normalizeWorkflowSettings(input);
   const definitions = [
-    ['reviewDirectory', 'Pedidos para revisión', settings.reviewDirectory],
-    ['planteamientosDirectory', 'Planteamientos generados', settings.planteamientosDirectory],
-    ['rpsUploadDirectory', 'Subida de material', settings.rpsUploadDirectory]
+    ['reviewDirectory', 'Pedidos para revisión', settings.reviewDirectory, 'write'],
+    ['planteamientosDirectory', 'Planteamientos generados', settings.planteamientosDirectory, 'write'],
+    ['rpsUploadDirectory', 'Subida de material', settings.rpsUploadDirectory, 'write']
   ];
-  const directories = await Promise.all(definitions.map(async ([key, label, template]) => {
+  if (settings.rpsPlanteamientosDirectory) {
+    definitions.push(['rpsPlanteamientosDirectory', 'Histórico de planteamientos RPS', settings.rpsPlanteamientosDirectory, 'read']);
+  }
+  const directories = await Promise.all(definitions.map(async ([key, label, template, accessMode]) => {
     if (!template) return { key, label, path: '', ok: false, error: 'Falta indicar la ruta.' };
     const directory = resolveDirectoryTemplate(template, year);
     const probePath = path.join(directory, `.toldos-write-check-${randomUUID()}.tmp`);
@@ -69,6 +75,10 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
     try {
       const stat = await fs.stat(directory);
       if (!stat.isDirectory()) throw new Error('La ruta no es una carpeta.');
+      if (accessMode === 'read') {
+        await fs.access(directory, 4);
+        return { key, label, path: directory, ok: true, error: '' };
+      }
       await fs.writeFile(probePath, '', { flag: 'wx' });
       probeCreated = true;
       await fs.unlink(probePath);
@@ -195,6 +205,65 @@ export function markReviewFilesGenerated(review, { generatedBy = '', files, excl
 }
 
 export const markReviewProduced = markReviewFilesGenerated;
+
+export function resolveGeneratedReviewFiles(review, settings, fileIndex) {
+  const index = Number(fileIndex);
+  if (review?.status !== 'PRODUCED' || !Number.isInteger(index) || index < 0) {
+    throw new Error('El archivo generado solicitado no es válido.');
+  }
+
+  const file = review.production?.files?.[index];
+  const filename = cleanText(file?.filename);
+  if (!file || !filename || path.basename(filename) !== filename) {
+    throw new Error('El archivo generado solicitado no es válido.');
+  }
+
+  const directoryTemplate = file.type === 'pdf'
+    ? settings?.planteamientosDirectory
+    : file.type === 'rps'
+      ? settings?.rpsUploadDirectory
+      : '';
+  if (!directoryTemplate) throw new Error('La carpeta del archivo generado no está configurada.');
+
+  const original = {
+    ...file,
+    filename,
+    source: 'original',
+    savedPath: path.join(resolveDirectoryTemplate(directoryTemplate, review.orderCode), filename)
+  };
+  if (file.type === 'rps') {
+    return [
+      original,
+      { ...original, source: 'processed', savedPath: path.join(resolveDirectoryTemplate(directoryTemplate, review.orderCode), 'procesados', filename) }
+    ];
+  }
+
+  const historicalTemplate = settings?.rpsPlanteamientosDirectory;
+  return historicalTemplate
+    ? [original, {
+      ...original,
+      source: 'rps-archive',
+      savedPath: path.join(
+        resolveDirectoryTemplate(historicalTemplate, review.orderCode),
+        rpsPlanteamientoFilename(review.orderCode, filename)
+      )
+    }]
+    : [original];
+}
+
+export function resolveGeneratedReviewFile(review, settings, fileIndex) {
+  return resolveGeneratedReviewFiles(review, settings, fileIndex)[0];
+}
+
+export function rpsPlanteamientoFilename(orderCode, filename) {
+  const compact = sanitizeOrderCode(orderCode);
+  const match = /^([A-Z]+)(\d{2})(\d+)$/.exec(compact);
+  if (!match) return filename;
+  const suffix = filename.toUpperCase().startsWith(compact)
+    ? filename.slice(compact.length)
+    : '-1.pdf';
+  return `${match[1]}.${match[2]}.${match[3].padStart(5, '0')}${suffix}`;
+}
 
 export function createWorkflowStore({ settingsFile, defaults }) {
   let cached = null;
@@ -337,6 +406,11 @@ function cleanPath(value) {
   const root = path.parse(clean.replaceAll('{YYYY}', '2026')).root;
   if (root && clean.length <= root.length) return clean;
   return clean.replace(/[\\/]+$/, '');
+}
+
+function inferRpsPlanteamientosDirectory(rpsUploadDirectory) {
+  const match = /^(\\\\[^\\]+)\\/.exec(String(rpsUploadDirectory || '').trim());
+  return match ? path.join(match[1], 'RPS', 'VENTAS', 'PLANTEAMIENTOS', '{YYYY}') : '';
 }
 
 function cleanText(value) {

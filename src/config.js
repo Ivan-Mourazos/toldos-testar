@@ -27,6 +27,7 @@ export const config = {
   reviewDirectory: process.env.REVIEW_DIRECTORY || '',
   planteamientosDirectory: process.env.PLANTEAMIENTOS_DIRECTORY || '',
   rpsUploadDirectory: process.env.RPS_UPLOAD_DIRECTORY || process.env.EXPORT_DIRECTORY || '',
+  rpsPlanteamientosDirectory: process.env.RPS_PLANTEAMIENTOS_DIRECTORY || '',
   workflowSettingsFile: process.env.WORKFLOW_SETTINGS_FILE || path.resolve('.toldos-testar-settings.json'),
   db: {
     server: process.env.DB_SERVER || '192.168.0.124',

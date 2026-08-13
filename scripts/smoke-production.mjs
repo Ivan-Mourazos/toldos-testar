@@ -21,6 +21,7 @@ const child = spawn(process.execPath, ['src/server.js'], {
     REVIEW_DIRECTORY: path.join(temporaryRoot, '{YYYY}', 'reviews'),
     PLANTEAMIENTOS_DIRECTORY: path.join(temporaryRoot, '{YYYY}', 'planteamientos'),
     RPS_UPLOAD_DIRECTORY: path.join(temporaryRoot, 'rps'),
+    RPS_PLANTEAMIENTOS_DIRECTORY: path.join(temporaryRoot, '{YYYY}', 'rps-planteamientos'),
     EXPORT_DIRECTORY: path.join(temporaryRoot, 'rps'),
     ORDER_ARCHIVE_ROOT: path.join(temporaryRoot, 'pedidos'),
     WORKFLOW_SETTINGS_FILE: path.join(temporaryRoot, 'workflow-settings.json')

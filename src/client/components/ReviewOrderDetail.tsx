@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CheckCircle2, CopyPlus, Factory, FileSearch, PencilLine } from 'lucide-react';
+import { CheckCircle2, CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
 import type { ReviewPackage, ReviewStatus, RuleParameters } from '../types';
 import { OrderView } from '../views/OrderView';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
@@ -52,6 +52,7 @@ export function ReviewOrderDetail({
 
   const reviewParameters = review.order.parameters || parameters;
   const approved = review.status === 'APPROVED';
+  const produced = review.status === 'PRODUCED' && Boolean(review.production);
 
   return (
     <section className="review-reader review-reader-form panel" aria-label={`Datos de revisión de ${review.orderCode}`}>
@@ -59,7 +60,7 @@ export function ReviewOrderDetail({
         <div>
           <span>Revisión visual del pedido</span>
           <h2>{review.orderCode}</h2>
-          <small>Formulario bloqueado en solo lectura · vista previa completa debajo.</small>
+          <small>Formulario bloqueado en solo lectura · vista previa paginada con flechas.</small>
         </div>
         <div className="review-reader-actions">
           <ReviewStatusBadge status={review.status} />
@@ -85,15 +86,24 @@ export function ReviewOrderDetail({
         </div>
       )}
 
-      {review.status === 'PRODUCED' && review.production && (
-        <div className="review-production-summary" role="status">
-          <Factory aria-hidden="true" />
-          <span>
-            <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${review.order.technician || review.production.createdBy}, autor del pedido` : ''} · {formatDateTime(review.production.createdAt)}</strong>
-            {review.production.files.map((file) => <small key={`${file.type}-${file.of || ''}-${file.filename}`}>{file.filename} · {file.savedPath}</small>)}
-          </span>
+      {produced && review.production && (
+        <div className="review-production-block" role="status">
+          <div className="review-production-summary">
+            <Factory aria-hidden="true" />
+            <span>
+              <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${review.order.technician || review.production.createdBy}, autor del pedido` : ''}</strong>
+              <small>{formatDateTime(review.production.createdAt)} · abre el PDF o descarga cada reserva directamente.</small>
+            </span>
+          </div>
+          <div className="review-generated-files">
+            {review.production.files.map((file, index) => (
+              <GeneratedFileLink key={`${file.type}-${file.of || ''}-${file.filename}`} review={review} file={file} index={index} />
+            ))}
+          </div>
         </div>
       )}
+
+      {produced && <ReviewPlanteamientoPreview review={review} parameters={reviewParameters} />}
 
       <fieldset className="review-readonly-order" disabled aria-label="Formulario del pedido en solo lectura">
         <OrderView
@@ -133,8 +143,31 @@ export function ReviewOrderDetail({
         />
       </fieldset>
 
-      <ReviewPlanteamientoPreview order={review.order} parameters={reviewParameters} />
+      {!produced && <ReviewPlanteamientoPreview review={review} parameters={reviewParameters} />}
     </section>
+  );
+}
+
+function GeneratedFileLink({ review, file, index }: {
+  review: ReviewPackage;
+  file: NonNullable<ReviewPackage['production']>['files'][number];
+  index: number;
+}) {
+  const isPdf = file.type === 'pdf';
+  const href = `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${index}`;
+  return (
+    <a
+      className={`review-generated-file ${isPdf ? 'is-pdf' : 'is-rps'}`}
+      href={href}
+      target={isPdf ? '_blank' : undefined}
+      rel={isPdf ? 'noreferrer' : undefined}
+      download={isPdf ? undefined : file.filename}
+      title={file.savedPath}
+    >
+      <span className="review-generated-file-icon">{isPdf ? <FileText aria-hidden="true" /> : <FileSpreadsheet aria-hidden="true" />}</span>
+      <span><strong>{file.filename}</strong><small>{isPdf ? 'Planteamiento PDF' : `Reserva de material${file.of ? ` · OF ${file.of}` : ''}`}</small></span>
+      {isPdf ? <ExternalLink aria-hidden="true" /> : <Download aria-hidden="true" />}
+    </a>
   );
 }
 

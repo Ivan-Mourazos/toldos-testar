@@ -22,7 +22,8 @@ export function SettingsView({
   const formMatchesSaved = form.productionEnabled === settings.productionEnabled
     && form.reviewDirectory === settings.reviewDirectory
     && form.planteamientosDirectory === settings.planteamientosDirectory
-    && form.rpsUploadDirectory === settings.rpsUploadDirectory;
+    && form.rpsUploadDirectory === settings.rpsUploadDirectory
+    && form.rpsPlanteamientosDirectory === settings.rpsPlanteamientosDirectory;
 
   function updateForm(patch: Partial<WorkflowSettings>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -67,7 +68,7 @@ export function SettingsView({
       if (!response.ok) throw new Error(data.error || 'No se pudieron comprobar las carpetas.');
       setDirectoryCheck(data);
       onToast(data.ok
-        ? 'Las tres carpetas existen y permiten guardar archivos.'
+        ? 'Las carpetas configuradas están disponibles desde el servidor.'
         : 'Hay carpetas que no están accesibles. Revisa el detalle antes de generar archivos.', {
         tone: data.ok ? 'success' : 'warning',
         title: data.ok ? 'Carpetas comprobadas' : 'Revisión de carpetas'
@@ -115,6 +116,14 @@ export function SettingsView({
           onChange={(rpsUploadDirectory) => updateForm({ rpsUploadDirectory })}
           placeholder="/mnt/toldos/rps"
         />
+        <RouteField
+          step="04"
+          title="Histórico de planteamientos RPS"
+          description="RPS mueve aquí los PDF procesados. Permite seguir viéndolos en Generados después de desaparecer de la carpeta de entrada."
+          value={form.rpsPlanteamientosDirectory}
+          onChange={(rpsPlanteamientosDirectory) => updateForm({ rpsPlanteamientosDirectory })}
+          placeholder="/mnt/rps/ventas/planteamientos/{YYYY}"
+        />
       </div>
 
       <div className="workflow-production-switch">
@@ -136,7 +145,7 @@ export function SettingsView({
         <div className={`workflow-directory-results ${directoryCheck.ok ? 'is-ok' : 'has-errors'}`}>
           <header>
             {directoryCheck.ok ? <CheckCircle2 aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />}
-            <div><strong>{directoryCheck.ok ? 'Acceso de escritura confirmado' : 'Hay carpetas que necesitan atención'}</strong><small>Comprobación realizada desde el servidor.</small></div>
+            <div><strong>{directoryCheck.ok ? 'Acceso a las carpetas confirmado' : 'Hay carpetas que necesitan atención'}</strong><small>Se comprueba escritura en las entradas y lectura en el histórico RPS.</small></div>
           </header>
           <div className="workflow-directory-list">
             {directoryCheck.directories.map((directory) => (

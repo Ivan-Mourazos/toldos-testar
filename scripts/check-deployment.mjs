@@ -23,6 +23,7 @@ const EFFECTIVE_ENV_KEYS = [
   'REVIEW_DIRECTORY',
   'PLANTEAMIENTOS_DIRECTORY',
   'RPS_UPLOAD_DIRECTORY',
+  'RPS_PLANTEAMIENTOS_DIRECTORY',
   'WORKFLOW_SETTINGS_FILE',
   ...DATABASE_KEYS
 ];
@@ -279,7 +280,8 @@ async function checkWorkflowEnvironment(values) {
     productionEnabled: writes === 'true',
     reviewDirectory: unquote(values.get('REVIEW_DIRECTORY')),
     planteamientosDirectory: unquote(values.get('PLANTEAMIENTOS_DIRECTORY')),
-    rpsUploadDirectory: unquote(values.get('RPS_UPLOAD_DIRECTORY'))
+    rpsUploadDirectory: unquote(values.get('RPS_UPLOAD_DIRECTORY')),
+    rpsPlanteamientosDirectory: unquote(values.get('RPS_PLANTEAMIENTOS_DIRECTORY'))
   };
   let persistedSettings = null;
 
@@ -304,7 +306,8 @@ async function checkWorkflowEnvironment(values) {
         productionEnabled: persistedSettings.productionEnabled === true,
         reviewDirectory: stringOrFallback(persistedSettings.reviewDirectory, seedSettings.reviewDirectory),
         planteamientosDirectory: stringOrFallback(persistedSettings.planteamientosDirectory, seedSettings.planteamientosDirectory),
-        rpsUploadDirectory: stringOrFallback(persistedSettings.rpsUploadDirectory, seedSettings.rpsUploadDirectory)
+        rpsUploadDirectory: stringOrFallback(persistedSettings.rpsUploadDirectory, seedSettings.rpsUploadDirectory),
+        rpsPlanteamientosDirectory: stringOrFallback(persistedSettings.rpsPlanteamientosDirectory, seedSettings.rpsPlanteamientosDirectory)
       }
     : seedSettings;
 
@@ -312,7 +315,8 @@ async function checkWorkflowEnvironment(values) {
     for (const [key, persistedKey] of [
       ['REVIEW_DIRECTORY', 'reviewDirectory'],
       ['PLANTEAMIENTOS_DIRECTORY', 'planteamientosDirectory'],
-      ['RPS_UPLOAD_DIRECTORY', 'rpsUploadDirectory']
+      ['RPS_UPLOAD_DIRECTORY', 'rpsUploadDirectory'],
+      ['RPS_PLANTEAMIENTOS_DIRECTORY', 'rpsPlanteamientosDirectory']
     ]) {
       if (seedSettings[persistedKey] && effectiveSettings[persistedKey] !== seedSettings[persistedKey]) {
         warn(`${key} difiere del JSON persistente; se ha validado el valor persistido, que es el efectivo.`);
@@ -324,17 +328,18 @@ async function checkWorkflowEnvironment(values) {
   }
 
   const strictDeployment = envIsProduction || effectiveSettings.productionEnabled;
-  for (const [key, persistedKey] of [
-    ['REVIEW_DIRECTORY', 'reviewDirectory'],
-    ['PLANTEAMIENTOS_DIRECTORY', 'planteamientosDirectory'],
-    ['RPS_UPLOAD_DIRECTORY', 'rpsUploadDirectory']
+  for (const [key, persistedKey, writable] of [
+    ['REVIEW_DIRECTORY', 'reviewDirectory', true],
+    ['PLANTEAMIENTOS_DIRECTORY', 'planteamientosDirectory', true],
+    ['RPS_UPLOAD_DIRECTORY', 'rpsUploadDirectory', true],
+    ['RPS_PLANTEAMIENTOS_DIRECTORY', 'rpsPlanteamientosDirectory', false]
   ]) {
     const configuredPath = effectiveSettings[persistedKey];
     if (!configuredPath) {
       reportPathProblem(`${key} no está definido en la configuración efectiva.`, strictDeployment);
       continue;
     }
-    await inspectLinuxPath(key, configuredPath, { template: true, required: strictDeployment });
+    await inspectLinuxPath(key, configuredPath, { template: true, required: strictDeployment, writable });
   }
 
   if (effectiveSettings.productionEnabled) pass('El interruptor persistido permite el flujo completo de producción.');
@@ -357,8 +362,9 @@ async function inspectLinuxPath(key, configuredPath, options = {}) {
     : configuredPath;
 
   try {
-    await access(pathToCheck, fsConstants.R_OK | fsConstants.W_OK);
-    pass(`${key} apunta a una ubicación accesible para lectura y escritura.`);
+    const mode = options.writable === false ? fsConstants.R_OK : fsConstants.R_OK | fsConstants.W_OK;
+    await access(pathToCheck, mode);
+    pass(`${key} apunta a una ubicación accesible para ${options.writable === false ? 'lectura' : 'lectura y escritura'}.`);
   } catch {
     reportPathProblem(`${key} apunta a una ubicación inexistente o sin permisos de lectura/escritura.`, options.required);
   }

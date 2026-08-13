@@ -39,9 +39,10 @@ La base actual contiene:
 El pedido no se envía directamente a producción:
 
 - `Guardar para revisión` crea únicamente `PEDIDO.pdf` en la carpeta TOLDOS compartida. El PDF muestra los paneles del formulario e incorpora internamente los datos editables para que la bandeja pueda volver a abrir el pedido.
-- La pestaña `Revisión` muestra esa bandeja a todos los puestos. Reproduce el mismo formulario de Pedido en solo lectura y, debajo, la vista previa completa del planteamiento.
+- La pestaña `Revisión` muestra esa bandeja a todos los puestos. Reproduce el mismo formulario de Pedido en solo lectura y una vista previa paginada del planteamiento.
 - `Aprobar` guarda el estado `APPROVED` dentro del mismo `PEDIDO.pdf` y lo mueve a la lista `Aprobados`. No genera reservas, archivos RPS ni `PEDIDO-1.pdf`.
 - En un pedido `APPROVED`, `Generar archivos` crea `PEDIDO-1.pdf` en Planteamientos y un `.xls` de reserva por cada OF en Subida de material. Si algún archivo existe, pide confirmación antes de sustituirlo y después conserva en la ficha la fecha, el autor y las rutas generadas.
+- Cuando RPS procesa los archivos, la web recupera las reservas desde `procesados` y los PDF desde el histórico anual de RPS. La ficha permite alternar entre el PDF y una tabla de cada reserva sin duplicar los archivos.
 - `Corregir en Pedido` carga los datos en el formulario editable. Los pedidos aprobados también se pueden reutilizar como base sin modificar el PDF histórico.
 - Un pedido modificado y guardado de nuevo vuelve siempre a estado pendiente de revisión.
 
@@ -59,11 +60,12 @@ su configuración y validación.
 
 ## Configuración de carpetas
 
-Las tres rutas se administran desde la pestaña `Configuración` y se guardan en el servidor para todos los usuarios:
+Las cuatro rutas se administran desde la pestaña `Configuración` y se guardan en el servidor para todos los usuarios:
 
 - Pedidos para revisión (TOLDOS).
 - Planteamientos generados (`PEDIDO-1.pdf`).
 - Subida de material (un `.xls` por OF).
+- Histórico de planteamientos RPS (solo lectura, después del procesado).
 
 Se admite el marcador `{YYYY}`, que se sustituye por el año extraído del pedido. El interruptor de generación no afecta a la aprobación web: aunque esté desactivado se pueden guardar y aprobar pedidos, pero no generar el PDF definitivo ni los Excel. Los valores de `.env` sirven únicamente como configuración inicial.
 
@@ -90,10 +92,12 @@ Usar rutas Linux montadas; no configurar unidades Windows ni rutas UNC:
 
 - `/mnt/toldos/oficina-tecnica`
 - `/mnt/toldos/rps`
+- `/mnt/rps/ventas/planteamientos` para el histórico de PDF de RPS
 - `/var/lib/toldos-testar` para la configuración persistente
 
 El usuario que ejecuta PM2 debe poder leer, crear y renombrar archivos en los
-dos montajes. PM2 debe arrancar después de que estén disponibles.
+dos montajes de entrada. En el histórico de planteamientos basta con permiso de
+lectura. PM2 debe arrancar después de que estén disponibles.
 
 ### 2. Configurar `.env`
 
@@ -118,6 +122,7 @@ ENABLE_FILE_WRITES=true
 REVIEW_DIRECTORY=/mnt/toldos/oficina-tecnica/{YYYY}/TOLDOS
 PLANTEAMIENTOS_DIRECTORY=/mnt/toldos/oficina-tecnica/{YYYY}/TOLDOS
 RPS_UPLOAD_DIRECTORY=/mnt/toldos/rps
+RPS_PLANTEAMIENTOS_DIRECTORY=/mnt/rps/ventas/planteamientos/{YYYY}
 WORKFLOW_SETTINGS_FILE=/var/lib/toldos-testar/workflow-settings.json
 
 DB_SERVER=<SERVIDOR_SQL>

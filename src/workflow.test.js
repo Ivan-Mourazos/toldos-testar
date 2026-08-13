@@ -11,7 +11,10 @@ import {
   markReviewFilesGenerated,
   isAbsolutePathTemplate,
   normalizeWorkflowSettings,
+  resolveGeneratedReviewFile,
+  resolveGeneratedReviewFiles,
   resolveDirectoryTemplate,
+  rpsPlanteamientoFilename,
   workflowReadiness
 } from './workflow.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
@@ -27,6 +30,57 @@ describe('flujo de revisión y producción', () => {
   it('resuelve el año del pedido en las tres rutas configurables', () => {
     const template = path.join(os.tmpdir(), 'Pedidos', '{YYYY}', 'TOLDOS');
     expect(resolveDirectoryTemplate(template, 'AR2601234')).toBe(path.join(os.tmpdir(), 'Pedidos', '2026', 'TOLDOS'));
+  });
+
+  it('resuelve un archivo generado desde la carpeta configurada y no desde la ruta persistida', () => {
+    const planteamientosDirectory = path.join(os.tmpdir(), 'Planteamientos', '{YYYY}');
+    const review = {
+      status: 'PRODUCED',
+      orderCode: 'AR2601234',
+      production: { files: [{ type: 'pdf', filename: 'AR2601234-1.pdf', savedPath: 'C:\\ruta-antigua\\archivo.pdf' }] }
+    };
+
+    expect(resolveGeneratedReviewFile(review, { planteamientosDirectory }, 0)).toMatchObject({
+      filename: 'AR2601234-1.pdf',
+      savedPath: path.join(os.tmpdir(), 'Planteamientos', '2026', 'AR2601234-1.pdf')
+    });
+  });
+
+  it('rechaza nombres que intentan salir de la carpeta de archivos generados', () => {
+    const review = {
+      status: 'PRODUCED',
+      orderCode: 'AR2601234',
+      production: { files: [{ type: 'pdf', filename: '..\\secreto.pdf', savedPath: '' }] }
+    };
+
+    expect(() => resolveGeneratedReviewFile(review, { planteamientosDirectory: os.tmpdir() }, 0)).toThrow('no es válido');
+  });
+
+  it('busca las reservas importadas dentro de procesados', () => {
+    const review = {
+      status: 'PRODUCED', orderCode: 'AR2601234',
+      production: { files: [{ type: 'rps', filename: '0230001.xls', savedPath: '' }] }
+    };
+    const root = path.join(os.tmpdir(), 'Subida');
+    const candidates = resolveGeneratedReviewFiles(review, { rpsUploadDirectory: root }, 0);
+    expect(candidates.map((file) => file.savedPath)).toEqual([
+      path.join(root, '0230001.xls'),
+      path.join(root, 'procesados', '0230001.xls')
+    ]);
+  });
+
+  it('convierte el nombre compacto al formato del histórico de planteamientos RPS', () => {
+    expect(rpsPlanteamientoFilename('AR2604014', 'AR2604014-1.pdf')).toBe('AR.26.04014-1.pdf');
+    const review = {
+      status: 'PRODUCED', orderCode: 'AR2604014',
+      production: { files: [{ type: 'pdf', filename: 'AR2604014-1.pdf', savedPath: '' }] }
+    };
+    const archive = path.join(os.tmpdir(), 'RPS', '{YYYY}');
+    const candidates = resolveGeneratedReviewFiles(review, {
+      planteamientosDirectory: path.join(os.tmpdir(), 'Entrada'),
+      rpsPlanteamientosDirectory: archive
+    }, 0);
+    expect(candidates[1].savedPath).toBe(path.join(os.tmpdir(), 'RPS', '2026', 'AR.26.04014-1.pdf'));
   });
 
   it('corrige una carpeta cuyo año se escribió entre llaves', () => {

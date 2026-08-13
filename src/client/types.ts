@@ -506,6 +506,7 @@ export type WorkflowSettings = {
   reviewDirectory: string;
   planteamientosDirectory: string;
   rpsUploadDirectory: string;
+  rpsPlanteamientosDirectory: string;
 };
 
 export type WorkflowReadiness = {

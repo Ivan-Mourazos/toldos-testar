@@ -29,6 +29,7 @@ import {
   markReviewApproved,
   markReviewChangesRequested,
   markReviewFilesGenerated,
+  resolveGeneratedReviewFiles,
   resolveDirectoryTemplate,
   sanitizeOrderCode,
   workflowReadiness,
@@ -47,7 +48,8 @@ const workflowStore = createWorkflowStore({
     orderArchiveRoot: config.orderArchiveRoot,
     reviewDirectory: config.reviewDirectory,
     planteamientosDirectory: config.planteamientosDirectory,
-    rpsUploadDirectory: config.rpsUploadDirectory
+    rpsUploadDirectory: config.rpsUploadDirectory,
+    rpsPlanteamientosDirectory: config.rpsPlanteamientosDirectory
   })
 });
 const deploymentFeatures = {
@@ -223,6 +225,41 @@ app.get('/api/reviews/:orderCode', async (req, res, next) => {
     res.json(await workflowStore.getReview(req.params.orderCode));
   } catch (error) {
     if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
+    next(error);
+  }
+});
+
+app.get('/api/reviews/:orderCode/generated-files/:fileIndex', async (req, res, next) => {
+  try {
+    const [review, settings] = await Promise.all([
+      workflowStore.getReview(req.params.orderCode),
+      workflowStore.getSettings()
+    ]);
+    const candidates = resolveGeneratedReviewFiles(review, settings, req.params.fileIndex);
+    let file = null;
+    let contents = null;
+    for (const candidate of candidates) {
+      try {
+        contents = await fs.readFile(candidate.savedPath);
+        file = candidate;
+        break;
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+    }
+    if (!file || !contents) {
+      const error = new Error('El archivo generado ya no está disponible en sus carpetas de destino o procesados.');
+      error.code = 'ENOENT';
+      throw error;
+    }
+    const disposition = file.type === 'pdf' ? 'inline' : 'attachment';
+    const contentType = file.type === 'pdf' ? 'application/pdf' : 'application/vnd.ms-excel';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `${disposition}; filename="${file.filename.replace(/["\\\r\n]/g, '_')}"`);
+    res.setHeader('X-Toldos-File-Source', file.source);
+    res.send(contents);
+  } catch (error) {
+    if (error.code === 'ENOENT') return next(httpError(404, 'El archivo generado ya no está disponible en su carpeta de destino.'));
     next(error);
   }
 });
