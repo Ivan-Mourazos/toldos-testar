@@ -1,11 +1,16 @@
 const preferredLabels: Record<string, string> = {
   'ARZUA PRO': 'Arzúa Pro',
-  'AMBAR BOX': 'Ambar Box',
-  'AGATA BOX': 'Agata Box',
+  'PUNTO RECTO': 'Punto Recto',
+  'MONOBLOCK 350': 'Monoblock 350',
+  'AMBAR BOX': 'Ámbar Box',
+  'AGATA BOX': 'Ágata Box',
   'CUARZO BOX': 'Cuarzo Box',
   'PERLA BOX': 'Perla Box',
   'CORAL BOX': 'Coral Box',
-  'MAXISCREEM': 'Maxiscreem',
+  'MAXISCREEM': 'Diana vertical',
+  'CAMBIO CORTINA': 'Cambio de cortina',
+  'CAMBIO TELA': 'Cambio de tela',
+  'CAMBIO ANTICA': 'Cambio Antica',
   'HERA': 'HERA',
   'HERA 43 MAQUINA': 'HERA 43 máquina',
   'HERA 56 MAQUINA': 'HERA 56 máquina',
@@ -33,12 +38,25 @@ const preferredLabels: Record<string, string> = {
 };
 
 const legacyModelNames: Record<string, string> = {
-  'AMBAR BOX': 'Microbox 300',
-  'AGATA BOX': 'Modul 400 / Modulbox',
-  'CUARZO BOX': 'Storbox 250',
-  'PERLA BOX': 'Storbox S-300',
-  'CORAL BOX': 'Storbox 400',
-  'MAXISCREEM': 'Diana vertical'
+  'ARZUA PRO': 'ART 325 / ARZUA',
+  GALICIA: 'MODELO GALICIA',
+  XACOBEO: 'ART 250 / XACOBEO',
+  'PUNTO RECTO': 'PUNTO RECTO',
+  'MONOBLOCK 350': 'ARZUA MONOBLOC',
+  MAXISCREEM: 'MAXISCREEN',
+  CORTINA: 'CORTINA UNIVERSAL',
+  'CAMBIO CORTINA': 'CAMBIO DE TELA A TOLDO CORTINA',
+  'CAMBIO TELA': 'CAMBIO DE TELA A TOLDO DE FACHADA',
+  ENROLLABLE: 'LONA PARA PUERTA ENROLLABLE',
+  BAMBALINA: 'BAMBALINA NUEVA',
+  'CAMBIO ANTICA': 'CAMBIO DE TELA A TOLDO ANTICA',
+  HERA: 'ROLL-SYSTEM',
+  ANTICA: 'ANTICA',
+  'AMBAR BOX': 'MICROBOX',
+  'AGATA BOX': 'MODULBOX',
+  'CUARZO BOX': 'STORBOX 250',
+  'PERLA BOX': 'STORBOX S-300',
+  'CORAL BOX': 'STORBOX 400'
 };
 
 export function controlLabel(value: string) {

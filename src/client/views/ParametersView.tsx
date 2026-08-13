@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { RotateCcw } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Check, ChevronDown, Layers3, RotateCcw } from 'lucide-react';
 import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
 import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
+import { controlLabel, legacyModelName } from '../components/controlLabels';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
 const devices: Device[] = ['MOTOR', 'MAQ. INTERIOR', 'MAQ. EXTERIOR'];
@@ -13,7 +14,7 @@ const discountLabels = {
   fabricWidthDiscounts: 'Tela'
 } as const;
 type DiscountGroup = typeof discountGroups[number];
-type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'XACOBEO' | 'PUNTO RECTO' | 'MONOBLOCK 350' | 'MAXISCREEM' | 'CORTINA' | 'CAMBIO CORTINA' | 'OTROS TELA' | 'AMBAR BOX' | 'AGATA BOX' | 'PERLA BOX' | 'CORAL BOX' | 'CUARZO BOX';
+type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'XACOBEO' | 'PUNTO RECTO' | 'MONOBLOCK 350' | 'MAXISCREEM' | 'CORTINA' | 'CAMBIO CORTINA' | FabricJobModel | 'HERA' | 'ANTICA' | 'AMBAR BOX' | 'AGATA BOX' | 'PERLA BOX' | 'CORAL BOX' | 'CUARZO BOX';
 
 type Props = {
   parameters: RuleParameters;
@@ -51,6 +52,10 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
   const [selectedModel, setSelectedModel] = useState<SelectedModel>('ARZUA PRO');
   const isGalicia = selectedModel === 'GALICIA';
   const isBox = selectedModel === 'CORAL BOX' || selectedModel === 'PERLA BOX' || selectedModel === 'CUARZO BOX';
+
+  if (selectedModel === 'HERA' || selectedModel === 'ANTICA') {
+    return <OrderConfiguredModelView selectedModel={selectedModel} onSelectModel={setSelectedModel} />;
+  }
 
   if (selectedModel === 'XACOBEO') {
     return <XacobeoParametersView
@@ -132,7 +137,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     />;
   }
 
-  if (selectedModel === 'OTROS TELA') {
+  if (fabricParameterModels.has(selectedModel as FabricJobModel)) {
     return <FabricJobsParametersView
       parameters={parameters.fabricJobs}
       selectedModel={selectedModel}
@@ -197,7 +202,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       <header className="parameters-heading">
         <div>
           <span className="section-kicker">Modelo en producción</span>
-          <h2>{selectedModel}{modelLegacyTitle(selectedModel) && <small>antes {modelLegacyTitle(selectedModel)}</small>}</h2>
+          <ParameterModelTitle model={selectedModel} />
           <p>Reglas aplicadas en tiempo real al formulario, estructura, tela y reserva RPS.</p>
         </div>
         <button className="ghost-button" type="button" onClick={isGalicia ? onResetGalicia : onResetArzua}>
@@ -267,56 +272,119 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
   );
 }
 
-const parameterModels: SelectedModel[] = ['ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'MAXISCREEM', 'CORTINA', 'CAMBIO CORTINA', 'OTROS TELA', 'AMBAR BOX', 'AGATA BOX', 'PERLA BOX', 'CORAL BOX', 'CUARZO BOX'];
+const fabricParameterModels = new Set<FabricJobModel>(['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
 
-function modelShortName(model: SelectedModel) {
-  if (model === 'ARZUA PRO') return 'PRO';
-  if (model === 'GALICIA') return 'GAL';
-  if (model === 'XACOBEO') return 'XAC';
-  if (model === 'PUNTO RECTO') return 'P.RECTO';
-  if (model === 'MONOBLOCK 350') return 'MON.350';
-  if (model === 'MAXISCREEM') return 'DIANA';
-  if (model === 'CORTINA') return 'CORT';
-  if (model === 'CAMBIO CORTINA') return 'C.CORT';
-  if (model === 'OTROS TELA') return 'TELA';
-  if (model === 'AMBAR BOX') return 'MICRO';
-  if (model === 'AGATA BOX') return 'MODUL';
-  if (model === 'PERLA BOX') return 'S300';
-  if (model === 'CUARZO BOX') return 'ST250';
-  return 'COR';
+const parameterModels: SelectedModel[] = [
+  'ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'MAXISCREEM', 'HERA', 'ANTICA',
+  'CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA',
+  'AMBAR BOX', 'AGATA BOX', 'PERLA BOX', 'CORAL BOX', 'CUARZO BOX'
+];
+
+function parameterModelName(model: SelectedModel) {
+  return { current: controlLabel(model), legacy: legacyModelName(model) || controlLabel(model) };
 }
 
-function modelLegacyTitle(model: SelectedModel) {
-  if (model === 'MAXISCREEM') return 'Diana vertical';
-  if (model === 'AMBAR BOX') return 'Microbox 300';
-  if (model === 'AGATA BOX') return 'Modul 400 / Modulbox';
-  if (model === 'PERLA BOX') return 'Storbox S-300';
-  if (model === 'CUARZO BOX') return 'Storbox 250';
-  if (model === 'CORAL BOX') return 'Storbox 400';
-  return '';
+function ParameterModelTitle({ model }: { model: SelectedModel }) {
+  const names = parameterModelName(model);
+  return <h2>{names.current}<small>RPS · {names.legacy}</small></h2>;
+}
+
+function OrderConfiguredModelView({ selectedModel, onSelectModel }: {
+  selectedModel: 'HERA' | 'ANTICA';
+  onSelectModel: (model: SelectedModel) => void;
+}) {
+  const hera = selectedModel === 'HERA';
+  return (
+    <section className="parameters-page">
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
+      <header className="parameters-heading">
+        <div>
+          <span className="section-kicker">Modelo en producción</span>
+          <ParameterModelTitle model={selectedModel} />
+          <p>{hera ? 'HERA 43 y HERA 56, con máquina o motor según variante.' : 'Configuraciones de soporte, tubo y contrapeso según el pedido.'}</p>
+        </div>
+      </header>
+      <div className="parameter-band parameter-band-message">
+        <div className="parameter-band-title"><span>01</span><div><h3>Configuración por pedido</h3><p>Este modelo no tiene valores globales que deban modificarse aquí.</p></div></div>
+        <div className="parameter-model-information">
+          <strong>{hera ? 'Variante, lado y acabados' : 'Soporte, medida y terminación'}</strong>
+          <p>La web muestra y valida sus opciones directamente al añadir el toldo. Así cada unidad conserva la configuración que realmente corresponde, sin aplicar un ajuste general a otros pedidos.</p>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function ParameterModelSelector({ selectedModel, onSelectModel }: {
   selectedModel: SelectedModel;
   onSelectModel: (model: SelectedModel) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const selectedNames = parameterModelName(selectedModel);
+
+  useEffect(() => {
+    if (!open) return;
+    function closeOnOutsideClick(event: PointerEvent) {
+      if (!pickerRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('pointerdown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [open]);
+
   return (
     <div className="parameter-model-selector">
-      <label>
-        <span>Modelo que se va a parametrizar</span>
-        <select value={selectedModel} onChange={(event) => onSelectModel(event.target.value as SelectedModel)}>
-          {parameterModels.map((model) => (
-            <option key={model} value={model}>{parameterModelOptionLabel(model)}</option>
-          ))}
-        </select>
-      </label>
-      <small>{parameterModels.length} modelos configurables · los nombres del Excel aparecen como referencia</small>
+      <div className="parameter-model-picker" ref={pickerRef}>
+        <span className="parameter-model-picker-label">Modelo del catálogo</span>
+        <button
+          className="parameter-model-trigger"
+          type="button"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          onClick={() => setOpen((value) => !value)}
+        >
+          <span className="parameter-model-trigger-icon"><Layers3 aria-hidden="true" /></span>
+          <span className="parameter-model-trigger-copy">
+            <strong>{selectedNames.current}</strong>
+            <small><span>RPS</span>{selectedNames.legacy}</small>
+          </span>
+          <ChevronDown className={open ? 'is-open' : ''} aria-hidden="true" />
+        </button>
+        {open && (
+          <div className="parameter-model-menu" role="listbox" aria-label="Modelos configurables">
+            <header><span>Modelos actuales</span><small>Debajo aparece su denominación anterior en RPS</small></header>
+            <div className="parameter-model-options">
+              {parameterModels.map((model) => {
+                const names = parameterModelName(model);
+                const active = model === selectedModel;
+                return (
+                  <button
+                    key={model}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={active ? 'is-active' : ''}
+                    onClick={() => { onSelectModel(model); setOpen(false); }}
+                  >
+                    <span><strong>{names.current}</strong><small><span>RPS</span>{names.legacy}</small></span>
+                    {active && <Check aria-hidden="true" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+      <small>{parameterModels.length} modelos · nombre actual y denominación de RPS siempre visibles</small>
     </div>
   );
-}
-
-function parameterModelOptionLabel(model: SelectedModel) {
-  return `${model} — Excel: ${modelLegacyTitle(model) || modelShortName(model)}`;
 }
 
 type XacobeoProps = {
@@ -352,7 +420,7 @@ function XacobeoParametersView({ parameters, selectedModel, onSelectModel, onUpd
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>XACOBEO</h2><p>Reglas XAC, despiece ART250 y reserva RPS.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas XAC, despiece ART250 y reserva RPS.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -421,7 +489,7 @@ function MaxiscreemParametersView({ parameters, selectedModel, onSelectModel, on
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>MAXISCREEM <small>antes Diana vertical</small></h2><p>Con o sin cofre y guiado por cable o varilla.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Con o sin cofre y guiado por cable o varilla.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -492,7 +560,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onSelectModel, 
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>MONOBLOCK 350</h2><p>Hoja MON.350, estructura Arzúa Monobloc y reserva RPS.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Hoja MON.350, estructura Arzúa Monobloc y reserva RPS.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -560,7 +628,7 @@ function PuntoRectoParametersView({ parameters, selectedModel, onSelectModel, on
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>PUNTO RECTO</h2><p>Reglas de la hoja PUNTO RECTO, despiece PRT07 y reserva RPS.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de la hoja PUNTO RECTO, despiece PRT07 y reserva RPS.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -631,7 +699,7 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
     <section className="parameters-page">
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
       <header className="parameters-heading">
-        <div><span className="section-kicker">Trabajos sin estructura</span><h2>OTROS TRABAJOS DE TELA</h2><p>Cambio de tela, Enrollable, Bambalina y Cambio Antica.</p></div>
+        <div><span className="section-kicker">Trabajo sin estructura</span><ParameterModelTitle model={selectedModel} /><p>Comparte los márgenes comunes de confección; cada modelo conserva su caída propia.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
       <div className="parameter-band">
@@ -660,7 +728,7 @@ function CambioCortinaParametersView({ parameters, selectedModel, onSelectModel,
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Trabajo de tela</span><h2>CAMBIO CORTINA</h2><p>Confección de tela sin estructura ni lacado.</p></div>
+        <div><span className="section-kicker">Trabajo de tela</span><ParameterModelTitle model={selectedModel} /><p>Confección de tela sin estructura ni lacado.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -704,7 +772,7 @@ function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpd
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>CORTINA</h2><p>Reglas de estructura, confección de tela y reserva RPS.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de estructura, confección de tela y reserva RPS.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -774,7 +842,7 @@ function AmbarBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>ÁMBAR BOX <small>antes Microbox 300</small></h2><p>Reglas de estructura, tela y reserva RPS.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de estructura, tela y reserva RPS.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -840,7 +908,7 @@ function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate,
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>{selectedModel} <small>antes {modelLegacyTitle(selectedModel)}</small></h2><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
@@ -933,7 +1001,7 @@ function AgataBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
       <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><h2>ÁGATA BOX <small>antes Modul 400 / Modulbox</small></h2><p>Reglas para Open, Semiopen, Semiclose y Cofre.</p></div>
+        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas para Open, Semiopen, Semiclose y Cofre.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
 
