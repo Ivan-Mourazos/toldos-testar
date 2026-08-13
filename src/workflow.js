@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 export const REVIEW_FILE_SUFFIX = '.pdf';
@@ -51,6 +52,45 @@ export function workflowReadiness(settings) {
     productionReady: settings.productionEnabled && missing.length === 0,
     missing
   };
+}
+
+export async function checkWorkflowDirectories(input, { year = new Date().getFullYear() } = {}) {
+  const settings = normalizeWorkflowSettings(input);
+  const definitions = [
+    ['reviewDirectory', 'Pedidos para revisión', settings.reviewDirectory],
+    ['planteamientosDirectory', 'Planteamientos generados', settings.planteamientosDirectory],
+    ['rpsUploadDirectory', 'Subida de material', settings.rpsUploadDirectory]
+  ];
+  const directories = await Promise.all(definitions.map(async ([key, label, template]) => {
+    if (!template) return { key, label, path: '', ok: false, error: 'Falta indicar la ruta.' };
+    const directory = resolveDirectoryTemplate(template, year);
+    const probePath = path.join(directory, `.toldos-write-check-${randomUUID()}.tmp`);
+    let probeCreated = false;
+    try {
+      const stat = await fs.stat(directory);
+      if (!stat.isDirectory()) throw new Error('La ruta no es una carpeta.');
+      await fs.writeFile(probePath, '', { flag: 'wx' });
+      probeCreated = true;
+      await fs.unlink(probePath);
+      probeCreated = false;
+      return { key, label, path: directory, ok: true, error: '' };
+    } catch (error) {
+      return { key, label, path: directory, ok: false, error: directoryCheckError(error) };
+    } finally {
+      if (probeCreated) await fs.unlink(probePath).catch(() => {});
+    }
+  }));
+  return {
+    checkedAt: new Date().toISOString(),
+    ok: directories.every((item) => item.ok),
+    directories
+  };
+}
+
+function directoryCheckError(error) {
+  if (error?.code === 'ENOENT') return 'La carpeta no existe o no está accesible.';
+  if (error?.code === 'EACCES' || error?.code === 'EPERM') return 'El servidor no tiene permiso de escritura.';
+  return error instanceof Error ? error.message : 'No se pudo comprobar la carpeta.';
 }
 
 export function resolveDirectoryTemplate(template, orderCodeOrYear) {

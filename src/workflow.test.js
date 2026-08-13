@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  checkWorkflowDirectories,
   createReviewPackage,
   createWorkflowStore,
   defaultWorkflowSettings,
@@ -42,6 +43,50 @@ describe('flujo de revisión y producción', () => {
     });
     expect(workflowReadiness(settings)).toEqual({ reviewReady: true, productionReady: true, missing: [] });
     expect(workflowReadiness({ ...settings, productionEnabled: false }).productionReady).toBe(false);
+  });
+
+  it('comprueba que las tres carpetas existen, permiten escribir y no deja archivos de prueba', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-directory-check-'));
+    temporaryDirectories.push(root);
+    const reviewDirectory = path.join(root, 'Pedidos', '2026', 'TOLDOS');
+    const planteamientosDirectory = path.join(root, 'Planteamientos');
+    const rpsUploadDirectory = path.join(root, 'RPS');
+    await Promise.all([reviewDirectory, planteamientosDirectory, rpsUploadDirectory].map((directory) => fs.mkdir(directory, { recursive: true })));
+
+    const result = await checkWorkflowDirectories({
+      productionEnabled: true,
+      reviewDirectory: path.join(root, 'Pedidos', '{YYYY}', 'TOLDOS'),
+      planteamientosDirectory,
+      rpsUploadDirectory
+    }, { year: 2026 });
+
+    expect(result.ok).toBe(true);
+    expect(result.directories.every((directory) => directory.ok)).toBe(true);
+    await expect(fs.readdir(reviewDirectory)).resolves.toEqual([]);
+    await expect(fs.readdir(planteamientosDirectory)).resolves.toEqual([]);
+    await expect(fs.readdir(rpsUploadDirectory)).resolves.toEqual([]);
+  });
+
+  it('indica qué carpeta no existe sin ocultar las que sí están disponibles', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-directory-check-'));
+    temporaryDirectories.push(root);
+    const available = path.join(root, 'Disponible');
+    await fs.mkdir(available, { recursive: true });
+
+    const result = await checkWorkflowDirectories({
+      productionEnabled: true,
+      reviewDirectory: available,
+      planteamientosDirectory: path.join(root, 'No-existe'),
+      rpsUploadDirectory: available
+    }, { year: 2026 });
+
+    expect(result.ok).toBe(false);
+    expect(result.directories.map(({ label, ok }) => ({ label, ok }))).toEqual([
+      { label: 'Pedidos para revisión', ok: true },
+      { label: 'Planteamientos generados', ok: false },
+      { label: 'Subida de material', ok: true }
+    ]);
+    expect(result.directories[1].error).toContain('no existe');
   });
 
   it('en Linux exige rutas POSIX montadas y rechaza rutas de Windows o UNC', () => {

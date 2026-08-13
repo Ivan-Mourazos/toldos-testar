@@ -514,6 +514,18 @@ export type WorkflowReadiness = {
   missing: string[];
 };
 
+export type WorkflowDirectoryCheck = {
+  checkedAt: string;
+  ok: boolean;
+  directories: {
+    key: string;
+    label: string;
+    path: string;
+    ok: boolean;
+    error: string;
+  }[];
+};
+
 export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' | 'PRODUCED';
 
 export type ReviewSummary = {

@@ -14,7 +14,7 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [query, setQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'queue' | 'history'>('queue');
+  const [viewMode, setViewMode] = useState<'queue' | 'approved' | 'produced'>('queue');
   const [reviews, setReviews] = useState<ReviewSummary[]>([]);
   const [selectedCode, setSelectedCode] = useState('');
   const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
@@ -67,10 +67,16 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
     return () => { cancelled = true; };
   }, [year, refreshKey, onToast]);
 
-  const scopedReviews = useMemo(
-    () => reviews.filter((review) => viewMode === 'history' ? isReviewed(review) : isPending(review)),
-    [reviews, viewMode]
-  );
+  const reviewCounts = useMemo(() => ({
+    queue: reviews.filter(isPending).length,
+    approved: reviews.filter(isApproved).length,
+    produced: reviews.filter(isProduced).length
+  }), [reviews]);
+  const scopedReviews = useMemo(() => reviews.filter((review) => {
+    if (viewMode === 'queue') return isPending(review);
+    if (viewMode === 'approved') return isApproved(review);
+    return isProduced(review);
+  }), [reviews, viewMode]);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -153,7 +159,7 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudo aprobar el pedido.');
       updateLocalReview(data.review as ReviewPackage);
-      setViewMode('history');
+      setViewMode('approved');
       onToast(`Pedido ${selected.orderCode} marcado como aprobado.`, { tone: 'success', title: 'Revisión aprobada' });
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo aprobar el pedido.', { tone: 'error' });
@@ -223,6 +229,7 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
 
         if (!response.ok) throw new Error(data.error || 'No se pudieron generar los archivos.');
         updateLocalReview(data.review as ReviewPackage);
+        setViewMode('produced');
         const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
         onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} ${rpsCount === 1 ? 'Excel de reserva' : 'Excel de reserva'}.`, {
           tone: 'success',
@@ -248,12 +255,13 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
     <section className="reviews-layout">
       <div className="review-inbox panel">
         <div className="section-header review-toolbar">
-          <div><h2>{viewMode === 'queue' ? 'Bandeja compartida' : 'Pedidos aprobados'}</h2><span>{scopedReviews.length} pedidos en {year}</span></div>
+          <div><h2>{viewMode === 'queue' ? 'Por revisar' : viewMode === 'approved' ? 'Aprobados' : 'Archivos generados'}</h2><span>{scopedReviews.length} pedidos en {year}</span></div>
           <button className="icon-button" type="button" disabled={generating} onClick={() => void load()} aria-label="Actualizar"><RefreshCw aria-hidden="true" /></button>
         </div>
         <div className="review-view-switch" role="group" aria-label="Vista de revisión">
-          <button type="button" disabled={generating} aria-pressed={viewMode === 'queue'} className={viewMode === 'queue' ? 'is-active' : ''} onClick={() => setViewMode('queue')}>Por revisar <span>{reviews.filter(isPending).length}</span></button>
-          <button type="button" disabled={generating} aria-pressed={viewMode === 'history'} className={viewMode === 'history' ? 'is-active' : ''} onClick={() => setViewMode('history')}>Aprobados <span>{reviews.filter(isReviewed).length}</span></button>
+          <button type="button" disabled={generating} aria-pressed={viewMode === 'queue'} className={viewMode === 'queue' ? 'is-active' : ''} onClick={() => setViewMode('queue')}>Por revisar <span>{reviewCounts.queue}</span></button>
+          <button type="button" disabled={generating} aria-pressed={viewMode === 'approved'} className={viewMode === 'approved' ? 'is-active' : ''} onClick={() => setViewMode('approved')}>Aprobados <span>{reviewCounts.approved}</span></button>
+          <button type="button" disabled={generating} aria-pressed={viewMode === 'produced'} className={viewMode === 'produced' ? 'is-active' : ''} onClick={() => setViewMode('produced')}>Generados <span>{reviewCounts.produced}</span></button>
         </div>
         <div className="review-filters">
           <label><Search aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente o modelo…" aria-label="Buscar pedidos" /></label>
@@ -314,6 +322,14 @@ function isPending(review: Pick<ReviewSummary, 'status'>) {
 
 function isReviewed(review: Pick<ReviewSummary, 'status'>) {
   return review.status === 'APPROVED' || review.status === 'PRODUCED';
+}
+
+function isApproved(review: Pick<ReviewSummary, 'status'>) {
+  return review.status === 'APPROVED';
+}
+
+function isProduced(review: Pick<ReviewSummary, 'status'>) {
+  return review.status === 'PRODUCED';
 }
 
 async function fetchReviewDetails(orderCode: string) {

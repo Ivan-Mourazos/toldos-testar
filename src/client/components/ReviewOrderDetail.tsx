@@ -89,7 +89,7 @@ export function ReviewOrderDetail({
         <div className="review-production-summary" role="status">
           <Factory aria-hidden="true" />
           <span>
-            <strong>Archivos generados{review.production.createdBy ? ` por ${review.production.createdBy}, autor del pedido` : ''} · {formatDateTime(review.production.createdAt)}</strong>
+            <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${review.order.technician || review.production.createdBy}, autor del pedido` : ''} · {formatDateTime(review.production.createdAt)}</strong>
             {review.production.files.map((file) => <small key={`${file.type}-${file.of || ''}-${file.filename}`}>{file.filename} · {file.savedPath}</small>)}
           </span>
         </div>

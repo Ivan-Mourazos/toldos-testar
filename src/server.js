@@ -20,6 +20,7 @@ import {
 } from './deploymentFeatures.js';
 import { closeRpsCatalog, getRpsOrder, searchRpsFabrics } from './rpsCatalog.js';
 import {
+  checkWorkflowDirectories,
   createReviewPackage,
   createWorkflowStore,
   defaultWorkflowSettings,
@@ -69,7 +70,7 @@ app.use('/api', (req, _res, next) => {
   }
 });
 
-app.get('/favicon.ico', (_req, res) => res.status(204).end());
+app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.svg'));
 
 app.get('/api/health', async (_req, res, next) => {
   try {
@@ -194,6 +195,14 @@ app.put('/api/workflow/settings', async (req, res, next) => {
   try {
     const settings = await workflowStore.saveSettings(req.body);
     res.json({ settings, readiness: workflowReadiness(settings) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/workflow/check-directories', async (req, res, next) => {
+  try {
+    res.json(await checkWorkflowDirectories(req.body?.settings || req.body));
   } catch (error) {
     next(error);
   }
@@ -379,7 +388,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     }
 
     const updated = markReviewFilesGenerated(review, {
-      generatedBy: review.createdBy || review.order?.technician,
+      generatedBy: review.order?.technician || review.createdBy,
       files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath })),
       excludedNonAcrylicFabrics
     });

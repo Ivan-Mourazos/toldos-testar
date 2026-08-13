@@ -192,13 +192,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => (
-          <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => setSelectedModel(model)}>
-            <span>{model}</span><small>{modelShortName(model)}</small>
-          </button>
-        ))}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
 
       <header className="parameters-heading">
         <div>
@@ -302,6 +296,29 @@ function modelLegacyTitle(model: SelectedModel) {
   return '';
 }
 
+function ParameterModelSelector({ selectedModel, onSelectModel }: {
+  selectedModel: SelectedModel;
+  onSelectModel: (model: SelectedModel) => void;
+}) {
+  return (
+    <div className="parameter-model-selector">
+      <label>
+        <span>Modelo que se va a parametrizar</span>
+        <select value={selectedModel} onChange={(event) => onSelectModel(event.target.value as SelectedModel)}>
+          {parameterModels.map((model) => (
+            <option key={model} value={model}>{parameterModelOptionLabel(model)}</option>
+          ))}
+        </select>
+      </label>
+      <small>{parameterModels.length} modelos configurables · los nombres del Excel aparecen como referencia</small>
+    </div>
+  );
+}
+
+function parameterModelOptionLabel(model: SelectedModel) {
+  return `${model} — Excel: ${modelLegacyTitle(model) || modelShortName(model)}`;
+}
+
 type XacobeoProps = {
   parameters: XacobeoParameters;
   selectedModel: SelectedModel;
@@ -332,9 +349,7 @@ function XacobeoParametersView({ parameters, selectedModel, onSelectModel, onUpd
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>XACOBEO</h2><p>Reglas XAC, despiece ART250 y reserva RPS.</p></div>
@@ -403,9 +418,7 @@ function MaxiscreemParametersView({ parameters, selectedModel, onSelectModel, on
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>MAXISCREEM <small>antes Diana vertical</small></h2><p>Con o sin cofre y guiado por cable o varilla.</p></div>
@@ -476,9 +489,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onSelectModel, 
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>MONOBLOCK 350</h2><p>Hoja MON.350, estructura Arzúa Monobloc y reserva RPS.</p></div>
@@ -546,9 +557,7 @@ function PuntoRectoParametersView({ parameters, selectedModel, onSelectModel, on
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>PUNTO RECTO</h2><p>Reglas de la hoja PUNTO RECTO, despiece PRT07 y reserva RPS.</p></div>
@@ -620,9 +629,7 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
       <header className="parameters-heading">
         <div><span className="section-kicker">Trabajos sin estructura</span><h2>OTROS TRABAJOS DE TELA</h2><p>Cambio de tela, Enrollable, Bambalina y Cambio Antica.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
@@ -650,9 +657,7 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
 function CambioCortinaParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: CambioCortinaProps) {
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Trabajo de tela</span><h2>CAMBIO CORTINA</h2><p>Confección de tela sin estructura ni lacado.</p></div>
@@ -696,9 +701,7 @@ function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpd
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>CORTINA</h2><p>Reglas de estructura, confección de tela y reserva RPS.</p></div>
@@ -768,9 +771,7 @@ function AmbarBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>ÁMBAR BOX <small>antes Microbox 300</small></h2><p>Reglas de estructura, tela y reserva RPS.</p></div>
@@ -836,9 +837,7 @@ function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate,
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>{selectedModel} <small>antes {modelLegacyTitle(selectedModel)}</small></h2><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
@@ -931,9 +930,7 @@ function AgataBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
 
   return (
     <section className="parameters-page">
-      <nav className="parameter-model-switch" aria-label="Modelo que se va a parametrizar">
-        {parameterModels.map((model) => <button key={model} type="button" className={selectedModel === model ? 'active' : ''} onClick={() => onSelectModel(model)}><span>{model}</span><small>{modelShortName(model)}</small></button>)}
-      </nav>
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><h2>ÁGATA BOX <small>antes Modul 400 / Modulbox</small></h2><p>Reglas para Open, Semiopen, Semiclose y Cofre.</p></div>
