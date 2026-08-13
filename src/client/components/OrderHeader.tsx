@@ -15,11 +15,12 @@ type Props = {
   onAutofill: () => void;
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
+  readOnly?: boolean;
 };
 
 export function OrderHeader(props: Props) {
   return (
-    <section className="order-header panel">
+    <section className={`order-header panel${props.readOnly ? ' is-readonly' : ''}`} aria-readonly={props.readOnly || undefined}>
       <div className="order-header-group order-header-general">
         <h3>Datos del pedido</h3>
         <div className="order-header-grid">
@@ -31,13 +32,13 @@ export function OrderHeader(props: Props) {
           <SelectField label="Técnico" value={props.technician} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ technician: v })} />
           <SelectField label="Revisión" value={props.reviewer} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ reviewer: v })} />
         </div>
-        <div className="order-autofill-action">
+        {!props.readOnly && <div className="order-autofill-action">
           <button type="button" className="order-autofill-button" disabled={props.autofillLoading || !props.orderCode.trim()} onClick={props.onAutofill}>
             {props.autofillLoading ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <DatabaseZap aria-hidden="true" />}
             {props.autofillLoading ? 'Consultando RPS…' : 'Obtener datos del pedido'}
           </button>
           <span>Rellena lo disponible; después todo se puede editar.</span>
-        </div>
+        </div>}
       </div>
 
       <div className="order-header-group order-header-material">
@@ -45,7 +46,7 @@ export function OrderHeader(props: Props) {
         <div className="order-material-clusters">
           <section className="order-material-cluster order-fabric-cluster">
             <div className={`order-fabric-row${props.sameFabric ? '' : ' is-per-awning'}`}>
-              <FabricCombobox label="Referencia" value={props.fabric} disabled={!props.sameFabric} onChange={(v) => props.set({ fabric: v })} />
+              <FabricCombobox label="Referencia" value={props.fabric} disabled={props.readOnly || !props.sameFabric} onChange={(v) => props.set({ fabric: v })} />
               <label className="order-fabric-per-awning">
                 <input
                   type="checkbox"
@@ -59,7 +60,7 @@ export function OrderHeader(props: Props) {
         </div>
       </div>
 
-      <div className="order-header-group order-header-actions">
+      {!props.readOnly && <div className="order-header-group order-header-actions">
         <h3>Nuevo elemento</h3>
         <div className="order-add-actions">
           <button type="button" className="work-type-option" onClick={props.onAddAwning}>
@@ -73,7 +74,7 @@ export function OrderHeader(props: Props) {
             <Plus aria-hidden="true" />
           </button>
         </div>
-      </div>
+      </div>}
 
       {props.autofill && (
         <aside className="order-autofill-summary" aria-live="polite">

@@ -5,9 +5,10 @@ type Props = {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  readOnly?: boolean;
 };
 
-export function ObservationLines({ label, value, onChange }: Props) {
+export function ObservationLines({ label, value, onChange, readOnly = false }: Props) {
   const lines = observationLines(value);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -38,9 +39,9 @@ export function ObservationLines({ label, value, onChange }: Props) {
     <section className="observation-lines" aria-label={label}>
       <header className="observation-lines-header">
         <span>{label}</span>
-        <button type="button" onClick={() => addLine()}>
+        {!readOnly && <button type="button" onClick={() => addLine()}>
           <Plus aria-hidden="true" />Añadir línea
-        </button>
+        </button>}
       </header>
       <div className="observation-lines-list" ref={listRef}>
         {lines.map((line, index) => (
@@ -52,14 +53,16 @@ export function ObservationLines({ label, value, onChange }: Props) {
               value={line}
               aria-label={`${label}, línea ${index + 1}`}
               placeholder="Escribe una observación"
+              readOnly={readOnly}
               onChange={(event) => updateLine(index, event.target.value)}
               onKeyDown={(event) => {
+                if (readOnly) return;
                 if (event.key !== 'Enter') return;
                 event.preventDefault();
                 addLine(index);
               }}
             />
-            <button
+            {!readOnly && <button
               type="button"
               className="observation-line-remove"
               aria-label={`Eliminar ${label.toLowerCase()}, línea ${index + 1}`}
@@ -67,7 +70,7 @@ export function ObservationLines({ label, value, onChange }: Props) {
               disabled={lines.length === 1 && !line}
             >
               <Trash2 aria-hidden="true" />
-            </button>
+            </button>}
           </div>
         ))}
       </div>

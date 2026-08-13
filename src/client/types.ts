@@ -31,6 +31,7 @@ export type Awning = {
   valanceHeight: number | null;
   valanceCurve: string;
   valanceFabric: string;
+  fabricDiagramOverride: '' | 'TOLDO-VELCRO' | 'CAMBIO ENROLLABLE' | 'SUPLEMENTO';
   remate: string;
   remateColor: string;
   structureColor: string;
@@ -513,7 +514,7 @@ export type WorkflowReadiness = {
   missing: string[];
 };
 
-export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'PRODUCED';
+export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' | 'PRODUCED';
 
 export type ReviewSummary = {
   schemaVersion: number;
@@ -526,7 +527,12 @@ export type ReviewSummary = {
   reviewedAt: string | null;
   reviewedBy: string;
   reviewNote: string;
-  production: null | { createdAt: string; files: { type: string; of?: string; filename: string; savedPath: string }[] };
+  production: null | {
+    createdAt: string;
+    createdBy?: string;
+    files: { type: string; of?: string; filename: string; savedPath: string }[];
+    excludedNonAcrylicFabrics?: { code: string; description: string; ofs?: string[] }[];
+  };
   summary: {
     customer: string;
     orderDate: string;

@@ -25,8 +25,9 @@ import {
   defaultWorkflowSettings,
   fileExists,
   getOrderYear,
+  markReviewApproved,
   markReviewChangesRequested,
-  markReviewProduced,
+  markReviewFilesGenerated,
   resolveDirectoryTemplate,
   sanitizeOrderCode,
   workflowReadiness,
@@ -54,6 +55,7 @@ const deploymentFeatures = {
 };
 
 const app = express();
+const generationLocks = new Set();
 
 app.use(compression());
 app.use(express.json({ limit: '2mb' }));
@@ -251,6 +253,9 @@ app.post('/api/reviews', async (req, res, next) => {
 app.post('/api/reviews/:orderCode/request-changes', async (req, res, next) => {
   try {
     const review = await workflowStore.getReview(req.params.orderCode);
+    if (review.status === 'APPROVED' || review.status === 'PRODUCED') {
+      throw httpError(409, 'La revisión ya está cerrada y no se puede devolver sin guardar antes una nueva versión del pedido.');
+    }
     const reviewer = String(req.body?.reviewer || '').trim();
     const note = String(req.body?.note || '').trim();
     if (!reviewer) throw new Error('Indica quién realiza la revisión.');
@@ -266,34 +271,66 @@ app.post('/api/reviews/:orderCode/request-changes', async (req, res, next) => {
   }
 });
 
-app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
+app.post(['/api/reviews/:orderCode/mark-approved', '/api/reviews/:orderCode/approve'], async (req, res, next) => {
+  try {
+    const review = await workflowStore.getReview(req.params.orderCode);
+    if (review.status === 'PRODUCED') {
+      throw httpError(409, 'Este pedido ya pertenece al histórico de producción y no se puede cambiar desde la revisión web.');
+    }
+    if (review.status === 'APPROVED') {
+      res.json({ ok: true, review, unchanged: true });
+      return;
+    }
+    const reviewer = String(req.body?.reviewer || review.order?.reviewer || review.order?.technician || '').trim();
+    if (!reviewer) throw new Error('El pedido necesita un técnico o revisor asignado para aprobarlo.');
+    const updated = markReviewApproved(review, { reviewer, note: req.body?.note });
+    const calculation = calculateOrder(updated.order);
+    const pdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
+    await workflowStore.saveReview(updated, pdf);
+    res.json({ ok: true, review: updated });
+  } catch (error) {
+    if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
+    next(error);
+  }
+});
+
+app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
+  const lockKey = sanitizeOrderCode(req.params.orderCode);
+  if (generationLocks.has(lockKey)) {
+    res.status(409).json({ error: 'Ya se están generando los archivos de este pedido.' });
+    return;
+  }
+  generationLocks.add(lockKey);
   try {
     const settings = await workflowStore.getSettings();
     const readiness = workflowReadiness(settings);
     if (!readiness.productionReady) {
       throw httpError(403, readiness.missing.length
-        ? `Producción no configurada: ${readiness.missing.join(', ')}.`
-        : 'Activa el envío a producción en Configuración.');
+        ? `Las carpetas de salida no están configuradas: ${readiness.missing.join(', ')}.`
+        : 'Activa las salidas manuales en Configuración.');
     }
 
     const review = await workflowStore.getReview(req.params.orderCode);
-    const reviewer = String(req.body?.reviewer || '').trim();
-    if (!reviewer) throw new Error('Indica quién aprueba el pedido.');
+    if (review.status === 'PRODUCED') {
+      res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
+      return;
+    }
+    if (review.status !== 'APPROVED') {
+      throw httpError(409, 'Aprueba el pedido antes de generar sus archivos.');
+    }
 
     const order = normalizeOrder(review.order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
     const calculation = calculateOrder(order);
     const blockingDiagnostics = calculation.diagnostics.filter((item) => item.level === 'error' || item.level === 'pending');
     if (calculation.ofs.length !== order.awnings.length || blockingDiagnostics.length > 0) {
-      throw new Error('El pedido tiene toldos incompletos o diagnósticos bloqueantes. Ábrelo y corrígelo antes de aprobar.');
+      throw new Error('El pedido tiene toldos incompletos o diagnósticos bloqueantes. Guarda una nueva revisión corregida antes de generar archivos.');
     }
+
     const nonAcrylicFabrics = findNonAcrylicReservationFabrics(order, calculation);
     const hasNonAcrylicDecision = typeof req.body?.includeNonAcrylicFabrics === 'boolean';
     if (nonAcrylicFabrics.length > 0 && !hasNonAcrylicDecision) {
-      res.status(409).json({
-        needsFabricConfirmation: true,
-        fabrics: nonAcrylicFabrics
-      });
+      res.status(409).json({ needsFabricConfirmation: true, fabrics: nonAcrylicFabrics });
       return;
     }
 
@@ -304,6 +341,7 @@ app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
     if (excludedNonAcrylicFabrics.length > 0) {
       reservation = excludeFabricCodes(reservation, excludedNonAcrylicFabrics);
     }
+
     const cleanOrder = sanitizeOrderCode(order.orderCode);
     const rpsDirectory = resolveDirectoryTemplate(settings.rpsUploadDirectory, cleanOrder);
     const pdfDirectory = resolveDirectoryTemplate(settings.planteamientosDirectory, cleanOrder);
@@ -340,10 +378,10 @@ app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
       saved.push({ type: target.type, of: target.of, filename: target.filename, savedPath: target.savedPath, overwritten: target.exists });
     }
 
-    const updated = markReviewProduced(review, {
-      reviewer,
-      note: req.body?.note,
-      files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath }))
+    const updated = markReviewFilesGenerated(review, {
+      generatedBy: review.createdBy || review.order?.technician,
+      files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath })),
+      excludedNonAcrylicFabrics
     });
     const reviewPdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
     await workflowStore.saveReview(updated, reviewPdf);
@@ -351,6 +389,8 @@ app.post('/api/reviews/:orderCode/approve', async (req, res, next) => {
   } catch (error) {
     if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
     next(error);
+  } finally {
+    generationLocks.delete(lockKey);
   }
 });
 

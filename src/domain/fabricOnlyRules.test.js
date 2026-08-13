@@ -370,4 +370,16 @@ describe('trabajos solo de tela', () => {
 
     expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 310, curtainFabricDeductionCm: 10 });
   });
+
+  test.each([
+    ['ENROLLABLE', 'CAMBIO ENROLLABLE'],
+    ['BAMBALINA', 'SUPLEMENTO']
+  ])('cambiar el dibujo de %s no altera cálculo, metros ni materiales', (model, fabricDiagramOverride) => {
+    const overrides = model === 'BAMBALINA' ? { projection: 0, valanceCurve: 'NORMAL' } : { valanceHeight: 0 };
+    const automatic = calculate(model, overrides).ofs[0];
+    const selected = calculate(model, { ...overrides, fabricDiagramOverride }).ofs[0];
+
+    expect(selected.calculation).toEqual(automatic.calculation);
+    expect(selected.materials).toEqual(automatic.materials);
+  });
 });

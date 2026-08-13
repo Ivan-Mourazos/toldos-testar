@@ -24,8 +24,8 @@ reserva para pruebas controladas arrancadas fuera de PM2; la instalación PM2
 fuerza `ENABLE_HERA=false` hasta que termine la configuración del modelo.
 
 Las rutas antiguas `/api/export` y `/api/export/save` se conservan para pruebas
-de desarrollo, pero PM2 las desactiva. La producción usa exclusivamente el flujo
-de revisión y aprobación, que recalcula el pedido completo en el servidor.
+de desarrollo, pero PM2 las desactiva. La aprobación de una revisión no genera
+archivos: la generación se ejecuta después, mediante un botón separado.
 
 La base actual contiene:
 
@@ -34,13 +34,15 @@ La base actual contiene:
 - contrato de reserva compatible con `materiales-ot`;
 - motor de reglas preparado para migrar cálculos por modelo sin copiar el Excel celda a celda.
 
-## Flujo de revisión y producción
+## Flujo de revisión
 
 El pedido no se envía directamente a producción:
 
 - `Guardar para revisión` crea únicamente `PEDIDO.pdf` en la carpeta TOLDOS compartida. El PDF muestra los paneles del formulario e incorpora internamente los datos editables para que la bandeja pueda volver a abrir el pedido.
-- La pestaña `Revisión` muestra esa bandeja a todos los puestos. Permite abrir el pedido, pedir cambios o aprobarlo dejando nombre y observaciones.
-- `Aprobar y producir` genera `PEDIDO-1.pdf` en Planteamientos y un `.xls` por OF en Subida de material. Si un archivo ya existe, exige confirmación antes de sustituirlo.
+- La pestaña `Revisión` muestra esa bandeja a todos los puestos. Reproduce el mismo formulario de Pedido en solo lectura y, debajo, la vista previa completa del planteamiento.
+- `Aprobar` guarda el estado `APPROVED` dentro del mismo `PEDIDO.pdf` y lo mueve a la lista `Aprobados`. No genera reservas, archivos RPS ni `PEDIDO-1.pdf`.
+- En un pedido `APPROVED`, `Generar archivos` crea `PEDIDO-1.pdf` en Planteamientos y un `.xls` de reserva por cada OF en Subida de material. Si algún archivo existe, pide confirmación antes de sustituirlo y después conserva en la ficha la fecha, el autor y las rutas generadas.
+- `Corregir en Pedido` carga los datos en el formulario editable. Los pedidos aprobados también se pueden reutilizar como base sin modificar el PDF histórico.
 - Un pedido modificado y guardado de nuevo vuelve siempre a estado pendiente de revisión.
 
 Mientras la aplicación todavía se use de forma local, `Guardar para revisión`
@@ -60,10 +62,10 @@ su configuración y validación.
 Las tres rutas se administran desde la pestaña `Configuración` y se guardan en el servidor para todos los usuarios:
 
 - Pedidos para revisión (TOLDOS).
-- Planteamientos aprobados.
-- Subida de material (RPS).
+- Planteamientos generados (`PEDIDO-1.pdf`).
+- Subida de material (un `.xls` por OF).
 
-Se admite el marcador `{YYYY}`, que se sustituye por el año extraído del pedido. El interruptor `Envío a producción` es la barrera explícita para escribir PDF y RPS; aunque esté desactivado se pueden guardar pedidos para revisión. Los valores de `.env` sirven únicamente como configuración inicial.
+Se admite el marcador `{YYYY}`, que se sustituye por el año extraído del pedido. El interruptor de generación no afecta a la aprobación web: aunque esté desactivado se pueden guardar y aprobar pedidos, pero no generar el PDF definitivo ni los Excel. Los valores de `.env` sirven únicamente como configuración inicial.
 
 La configuración guardada por la pestaña `Configuración` se conserva en el
 archivo indicado por `WORKFLOW_SETTINGS_FILE` y prevalece sobre las semillas de
@@ -150,8 +152,8 @@ pm2 save
 `ecosystem.config.cjs` ejecuta una sola instancia `fork`. No debe cambiarse a
 cluster porque la configuración persistente y los archivos son compartidos.
 
-Tras el primer arranque, revisar las tres rutas en `Configuración` y activar
-`Envío a producción` cuando los permisos estén comprobados.
+Tras el primer arranque, revisar las tres rutas en `Configuración`. La generación
+de archivos solo debe activarse cuando sus permisos estén comprobados.
 
 ### 4. Comprobar
 
@@ -161,9 +163,10 @@ curl -fsS http://127.0.0.1:4400/api/catalog | jq -e '.features.heraEnabled == fa
 curl -fsS -H 'Accept: text/html' http://127.0.0.1:4400/ -o /dev/null
 ```
 
-Para producción activa, `/api/health` debe devolver `productionReady: true`,
-`simulationMode: false` y `fileWritesEnabled: true`. Este endpoint no sustituye
-la prueba de permisos sobre los montajes ni la comprobación del acceso a SQL.
+Si se habilita la generación de archivos, `/api/health` debe devolver
+`productionReady: true`, `simulationMode: false` y `fileWritesEnabled: true`.
+Esto no es necesario para guardar o aprobar revisiones y no sustituye la prueba
+de permisos sobre los montajes ni la comprobación del acceso a SQL.
 
 ### 5. Actualizar
 

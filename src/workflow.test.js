@@ -6,7 +6,8 @@ import {
   createReviewPackage,
   createWorkflowStore,
   defaultWorkflowSettings,
-  markReviewProduced,
+  markReviewApproved,
+  markReviewFilesGenerated,
   isAbsolutePathTemplate,
   normalizeWorkflowSettings,
   resolveDirectoryTemplate,
@@ -92,6 +93,21 @@ describe('flujo de revisión y producción', () => {
     expect(listing[0].orderCode).toBe('AR2601234');
     expect(listing[0]).not.toHaveProperty('order');
     expect((await store.getReview('AR2601234')).order.customer).toBe('Cliente');
+
+    const approved = markReviewApproved(review, {
+      reviewer: 'Ana',
+      now: '2026-08-13T09:30:00.000Z'
+    });
+    const approvedPdf = await buildOrderReviewPdf({
+      order: approved.order,
+      calculation: { ofs: [], diagnostics: [] },
+      review: approved
+    });
+    await store.saveReview(approved, approvedPdf);
+
+    expect(await fs.readdir(savedDirectory)).toEqual(['AR2601234.pdf']);
+    expect((await store.listReviews(2026))[0].status).toBe('APPROVED');
+    expect((await store.getReview('AR2601234')).order).toEqual(review.order);
   });
 
   it('ignora sin mostrar error el PDF definitivo AR2601234-1.PDF de la misma carpeta', async () => {
@@ -125,15 +141,40 @@ describe('flujo de revisión y producción', () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 
-  it('registra quién aprobó y los archivos realmente producidos', () => {
-    const updated = markReviewProduced({ orderCode: 'AR2601234' }, {
-      reviewer: 'Luis',
-      note: 'OK',
+  it('conserva quién aprobó y registra al autor que genera los archivos', () => {
+    const updated = markReviewFilesGenerated({
+      orderCode: 'AR2601234',
+      reviewedBy: 'Luis',
+      reviewedAt: '2026-08-07T11:30:00.000Z',
+      reviewNote: 'OK'
+    }, {
+      generatedBy: 'Ana',
       files: [{ type: 'pdf', filename: 'AR2601234-1.pdf' }],
       now: '2026-08-07T12:00:00.000Z'
     });
     expect(updated.status).toBe('PRODUCED');
     expect(updated.reviewedBy).toBe('Luis');
+    expect(updated.reviewedAt).toBe('2026-08-07T11:30:00.000Z');
+    expect(updated.reviewNote).toBe('OK');
+    expect(updated.production.createdBy).toBe('Ana');
     expect(updated.production.files[0].filename).toBe('AR2601234-1.pdf');
+  });
+
+  it('marca la revisión como aprobada sin generar producción ni alterar el pedido', () => {
+    const order = { orderCode: 'AR2601234', customer: 'Cliente', awnings: [{ id: 'a', model: 'CORTINA' }] };
+    const approved = markReviewApproved({ orderCode: 'AR2601234', order, production: null }, {
+      reviewer: ' Adrián ',
+      now: '2026-08-13T09:30:00.000Z'
+    });
+
+    expect(approved).toMatchObject({
+      status: 'APPROVED',
+      reviewedBy: 'Adrián',
+      reviewedAt: '2026-08-13T09:30:00.000Z',
+      updatedAt: '2026-08-13T09:30:00.000Z',
+      reviewNote: '',
+      production: null
+    });
+    expect(approved.order).toBe(order);
   });
 });

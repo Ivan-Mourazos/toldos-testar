@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
 import type { Awning, BoxDevice, Calculation, CortinaDevice, RuleParameters } from '../types';
-import { formOptions, getRequiredDimensions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
+import { formOptions, getFabricDiagramOptions, getRequiredDimensions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { useVisibleFields } from '../hooks/useVisibleFields';
 import { TextField } from './TextField';
 import { NumberField } from './NumberField';
@@ -31,16 +31,18 @@ type Props = {
   ofCalculation?: Calculation['ofs'][number]['calculation'];
   sameFabric: boolean;
   parameters: RuleParameters;
+  readOnly?: boolean;
   onUpdate: (id: string, patch: Partial<Awning>) => void;
   onDuplicate: (id: string) => void;
   onRemove: (id: string) => void;
 };
 
-export function AwningColumn({ awning, index, ofCalculation, parameters, sameFabric, onUpdate, onDuplicate, onRemove }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, parameters, sameFabric, readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   const standaloneValance = awning.model === 'BAMBALINA';
   const simpleFabricJob = ['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA'].includes(awning.model);
+  const fabricDiagramOptions = getFabricDiagramOptions(awning.model);
   const [showGaliciaPrompt, setShowGaliciaPrompt] = useState(false);
   const update = (patch: Partial<Awning>) => onUpdate(awning.id, patch);
   const missingWindowDimensions = fields.curtain && awning.curtainHasWindow && [
@@ -199,14 +201,19 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   }
 
   return (
-    <article className={`awning-column panel${fabricOnly ? ' fabric-only-column' : ''}`}>
+    <fieldset
+      className={`awning-column panel${fabricOnly ? ' fabric-only-column' : ''}${readOnly ? ' is-readonly' : ''}`}
+      disabled={readOnly}
+      aria-label={`${fabricOnly ? 'Trabajo de tela' : 'Toldo'} ${String.fromCharCode(65 + index)} · ${controlLabel(awning.model)}`}
+      aria-readonly={readOnly || undefined}
+    >
       <header className="awning-column-header">
         <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
         <strong className="awning-model-title">
           {controlLabel(awning.model)}
           {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
         </strong>
-        <div className="card-actions">
+        {!readOnly && <div className="card-actions">
           {!isHera && <button
             type="button"
             className={awning.reglasModificadas ? 'icon-button active' : 'icon-button'}
@@ -307,7 +314,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           </button>}
           <button type="button" className="icon-button" onClick={() => onDuplicate(awning.id)} aria-label="Duplicar"><Copy aria-hidden="true" /></button>
           <button type="button" className="icon-button" onClick={() => onRemove(awning.id)} aria-label="Eliminar"><Trash2 aria-hidden="true" /></button>
-        </div>
+        </div>}
       </header>
 
       {awning.model && (
@@ -353,9 +360,22 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {hasValance && (
             <div className="awning-valance-options awning-wide-field">
               <SelectField label="Curva bamba" value={awning.valanceCurve} options={formOptions.curvasBamba} placeholder="Elegir…" onChange={(valanceCurve) => update({ valanceCurve })} />
-              {!standaloneValance && <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" onChange={(valanceFabric) => update({ valanceFabric })} />}
+              {!standaloneValance && <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" disabled={readOnly} onChange={(valanceFabric) => update({ valanceFabric })} />}
               <SegmentedField label="Remate" value={valanceFinish} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
               {valanceFinish === 'OTRO' && <TextField label="Color remate" value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
+            </div>
+          )}
+          {fabricDiagramOptions.length > 1 && (
+            <div className="awning-wide-field">
+              <SelectField
+                label="Dibujo de confección"
+                value={awning.fabricDiagramOverride}
+                options={fabricDiagramOptions.filter(({ value }) => value).map(({ value }) => value)}
+                placeholder="Automático"
+                allowEmpty
+                emptyLabel="Automático"
+                onChange={(fabricDiagramOverride) => update({ fabricDiagramOverride: fabricDiagramOverride as Awning['fabricDiagramOverride'] })}
+              />
             </div>
           )}
           {(fields.arzua || fields.galicia) && (
@@ -450,7 +470,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               </>}
             </div>
           )}
-          {!sameFabric && <div className="awning-wide-field"><FabricCombobox label="Tela" value={awning.fabric} onChange={(fabric) => update({ fabric })} /></div>}
+          {!sameFabric && <div className="awning-wide-field"><FabricCombobox label="Tela" value={awning.fabric} disabled={readOnly} onChange={(fabric) => update({ fabric })} /></div>}
           {(fields.device || fields.sensor || fields.motorLocation || fields.machineLocation || fields.crankHeight) && (
             <div className="awning-actuation-row awning-wide-field">
               {fields.device && <SelectField label="Dispositivo" value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={(device) => update({ device })} />}
@@ -565,15 +585,15 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
 
           {!fabricOnly && (
             <div className="awning-structure-notes awning-wide-field">
-              <ObservationLines label="Obs. estructura" value={awning.structureNotes} onChange={(structureNotes) => update({ structureNotes })} />
+              <ObservationLines readOnly={readOnly} label="Obs. estructura" value={awning.structureNotes} onChange={(structureNotes) => update({ structureNotes })} />
             </div>
           )}
 
         </>
       )}
 
-      <footer className={`awning-status ${statusClass}`}>{status}</footer>
-    </article>
+      {!readOnly && <footer className={`awning-status ${statusClass}`}>{status}</footer>}
+    </fieldset>
   );
 }
 

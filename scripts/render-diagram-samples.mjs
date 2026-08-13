@@ -16,6 +16,28 @@ const samples = [
   sample('agata', 'AGATA BOX', { submodel: 'COFRE', armCount: 3 }),
   sample('maxis', 'MAXISCREEM', { submodel: 'COFRE CON VARILLA' }),
   sample('cambio', 'CAMBIO TELA'),
+  sample('cambio-sin-bamba', 'CAMBIO TELA', { valanceHeight: 0 }),
+  sample('cambio-bamba-distinta', 'CAMBIO TELA', { valanceFabric: 'ACRILI2051P120|||120|||ACR AZUL' }),
+  sample('toldo-velcro', 'CAMBIO TELA', { fabricDiagramOverride: 'TOLDO-VELCRO', valanceHeight: 0 }),
+  sample('enrollable', 'ENROLLABLE', { valanceHeight: 0 }),
+  sample('cambio-enrollable', 'ENROLLABLE', { fabricDiagramOverride: 'CAMBIO ENROLLABLE', valanceHeight: 0 }),
+  sample('bamba-recta', 'BAMBALINA', { valanceCurve: 'RECTA' }),
+  sample('bamba-normal', 'BAMBALINA', { valanceCurve: 'NORMAL' }),
+  sample('bamba-suave', 'BAMBALINA', { valanceCurve: 'SUAVE' }),
+  sample('bamba-extrasuave', 'BAMBALINA', { valanceCurve: 'EXTRASUAVE' }),
+  sample('suplemento', 'BAMBALINA', { valanceCurve: 'NORMAL', fabricDiagramOverride: 'SUPLEMENTO' }),
+  sample('cortina-normal', 'CORTINA', curtain({ curtainFinish: 'NORMAL', curtainHasWindow: false, valanceHeight: 0 })),
+  sample('cortina-normal-bamba', 'CORTINA', curtain({ curtainFinish: 'NORMAL', curtainHasWindow: false })),
+  sample('cortina-ventana', 'CORTINA', curtain({ curtainFinish: 'NORMAL', curtainHasWindow: true, valanceHeight: 0 })),
+  sample('cortina-ventana-bamba', 'CORTINA', curtain({ curtainFinish: 'NORMAL', curtainHasWindow: true })),
+  sample('cortina-velcro', 'CORTINA', curtain({ curtainFinish: 'VELCRO', curtainHasWindow: false, valanceHeight: 0 })),
+  sample('cortina-velcro-bamba', 'CORTINA', curtain({ curtainFinish: 'VELCRO', curtainHasWindow: false })),
+  sample('cortina-velcro-ventana', 'CORTINA', curtain({ curtainFinish: 'VELCRO', curtainHasWindow: true, valanceHeight: 0 })),
+  sample('cortina-velcro-ventana-bamba', 'CORTINA', curtain({ curtainFinish: 'VELCRO', curtainHasWindow: true })),
+  sample('cortina-tubo', 'CORTINA', curtain({ curtainFinish: 'TUBO', curtainHasWindow: false, valanceHeight: 0 })),
+  sample('cortina-tubo-bamba', 'CORTINA', curtain({ curtainFinish: 'TUBO', curtainHasWindow: false })),
+  sample('cortina-tubo-ventana', 'CORTINA', curtain({ curtainFinish: 'TUBO', curtainHasWindow: true, valanceHeight: 0 })),
+  sample('cortina-tubo-ventana-bamba', 'CORTINA', curtain({ curtainFinish: 'TUBO', curtainHasWindow: true, valanceFabric: 'ACRILI2051P120|||120|||ACR AZUL' })),
   sample('antica-fijo', 'CAMBIO ANTICA', { anticaVariant: 'SOPORTE FIJO 3 AGUJEROS' }),
   sample('antica-30', 'CAMBIO ANTICA', { anticaVariant: 'TUBO 30X10' }),
   sample('antica-contrapeso', 'CAMBIO ANTICA', { anticaVariant: 'TUBO 50X30 CONTRAPESO' })
@@ -79,5 +101,19 @@ function sample(id, model, overrides = {}) {
       rollSystem: overrides.rollSystem,
       submodel: overrides.submodel
     }
+  };
+}
+
+function curtain(overrides = {}) {
+  return {
+    curtainHasWindow: false,
+    curtainFinish: 'NORMAL',
+    curtainWindowExit: 300,
+    curtainWindowCorner: 20,
+    curtainWindowFloorHeight: 70,
+    curtainWindowHeight: 140,
+    valanceHeight: 25,
+    valanceCurve: 'RECTA',
+    ...overrides
   };
 }

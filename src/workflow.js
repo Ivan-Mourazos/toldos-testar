@@ -128,17 +128,33 @@ export function markReviewChangesRequested(review, { reviewer, note, now = new D
   };
 }
 
-export function markReviewProduced(review, { reviewer, note, files, now = new Date().toISOString() }) {
+export function markReviewApproved(review, { reviewer, note = '', now = new Date().toISOString() }) {
   return {
     ...review,
-    status: 'PRODUCED',
+    status: 'APPROVED',
     updatedAt: now,
     reviewedAt: now,
     reviewedBy: cleanText(reviewer),
     reviewNote: cleanText(note),
-    production: { createdAt: now, files }
+    production: null
   };
 }
+
+export function markReviewFilesGenerated(review, { generatedBy = '', files, excludedNonAcrylicFabrics = [], now = new Date().toISOString() }) {
+  return {
+    ...review,
+    status: 'PRODUCED',
+    updatedAt: now,
+    production: {
+      createdAt: now,
+      createdBy: cleanText(generatedBy),
+      files,
+      excludedNonAcrylicFabrics: structuredClone(excludedNonAcrylicFabrics)
+    }
+  };
+}
+
+export const markReviewProduced = markReviewFilesGenerated;
 
 export function createWorkflowStore({ settingsFile, defaults }) {
   let cached = null;

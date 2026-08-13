@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,7 @@ import sql from 'mssql';
 import { chromium } from 'playwright';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { config } from '../src/config.js';
+import { normalizeReservation } from '../src/domain/validation.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const artifactDirectory = path.join(root, 'output', 'playwright', 'rps-e2e');
@@ -16,7 +17,7 @@ const reportPath = path.join(artifactDirectory, 'report.json');
 const startedAt = new Date().toISOString();
 const report = {
   startedAt,
-  mode: 'review-production',
+  mode: 'review-approval-generation',
   rps: {},
   apiCases: [],
   browserCase: null,
@@ -130,13 +131,15 @@ async function verifyBrowserCase(browserInstance, url) {
   });
 
   await page.goto(url, { waitUntil: 'networkidle' });
-  await page.getByText('Producción activa', { exact: true }).waitFor();
-  await page.getByText('Aprobación obligatoria', { exact: true }).waitFor();
+  await page.getByText('Generación disponible', { exact: true }).waitFor();
+  await page.getByText('Aprobar y generar son pasos separados', { exact: true }).waitFor();
 
   await page.getByRole('textbox', { name: 'Pedido' }).fill('AR2603332');
   await page.getByRole('textbox', { name: 'Cliente' }).fill('LECHE CELTA');
+  await chooseSelect(page, 'Técnico', 'Iván');
+  await chooseSelect(page, 'Revisión', 'Jaime');
 
-  const fabric = page.getByRole('combobox', { name: 'Buscar código o color…' });
+  const fabric = page.getByRole('combobox', { name: 'Código, color o nombre aproximado…' });
   await fabric.fill('ACRILI2018P120');
   const fabricOption = page.getByRole('option').filter({ hasText: 'ACRILI2018P120' }).first();
   await fabricOption.waitFor();
@@ -147,7 +150,7 @@ async function verifyBrowserCase(browserInstance, url) {
     .getByRole('button', { name: /Arzúa Pro/ })
     .click();
 
-  const awning = page.locator('article.awning-column').last();
+  const awning = page.locator('.awning-column').last();
   await awning.getByLabel('OF', { exact: true }).fill('0230194');
   await awning.getByLabel('Frente', { exact: true }).fill('337');
   await chooseSelect(awning, 'Salida', '225');
@@ -160,6 +163,7 @@ async function verifyBrowserCase(browserInstance, url) {
   await chooseSegment(awning, 'Rotulación tela', 'No');
   await chooseSegment(awning, 'Rotulación bamba', 'No');
   await chooseSelect(awning, 'Dispositivo', 'Motor');
+  await chooseSelect(awning, 'Posición motor', 'M.F. derecha');
   await chooseSelect(awning, 'Colocación', 'Frontal');
   await chooseSelect(awning, 'Sensor', 'Sin sensor');
 
@@ -175,17 +179,39 @@ async function verifyBrowserCase(browserInstance, url) {
 
   await preview.getByRole('button', { name: 'Cerrar vista previa' }).click();
   await page.getByRole('button', { name: 'Guardar para revisión' }).click();
-  await page.getByText(/guardado en la bandeja compartida/).waitFor();
+  await page.getByText(/AR2603332\.pdf guardado en/).waitFor();
 
   await page.getByRole('button', { name: 'Revisión', exact: true }).click();
   const reviewItem = page.getByRole('button').filter({ hasText: 'AR2603332' });
   await reviewItem.waitFor();
-  await page.getByRole('textbox', { name: 'Revisado por' }).fill('E2E Oficina técnica');
-  await page.getByRole('button', { name: 'Aprobar y producir' }).click();
-  await page.getByText(/PDF y RPS guardados/).waitFor({ timeout: 20_000 });
+  const reviewReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
+  const readonlyAwning = reviewReader.locator('.awning-column');
+  await readonlyAwning.waitFor();
+  assert.notEqual(await readonlyAwning.getAttribute('disabled'), null);
+  assert.equal(await readonlyAwning.getByLabel('OF', { exact: true }).isDisabled(), true);
+  const inlinePreview = reviewReader.getByRole('region', { name: 'Vista previa del planteamiento' });
+  await inlinePreview.locator('.pdf-preview-page').nth(1).waitFor({ timeout: 20_000 });
+  assert.equal(await inlinePreview.locator('.pdf-preview-page').count(), 2);
+  const previewScroll = await inlinePreview.locator('.pdf-preview-scroll').evaluate((element) => ({
+    horizontal: element.scrollWidth > element.clientWidth,
+    vertical: element.scrollHeight > element.clientHeight
+  }));
+  assert.deepEqual(previewScroll, { horizontal: true, vertical: true });
+  await page.getByRole('button', { name: 'Aprobar', exact: true }).click();
+  await page.getByRole('button', { name: 'Aprobar pedido', exact: true }).click();
+  await page.getByText(/marcado como aprobado/).waitFor({ timeout: 20_000 });
 
+  const reviewPath = path.join(workflowDirectory, '2026', 'TOLDOS', 'AR2603332.pdf');
   const rpsPath = path.join(workflowDirectory, 'RPS', '0230194.xls');
   const pdfPath = path.join(workflowDirectory, 'PLANTEAMIENTOS', '2026', 'AR2603332-1.pdf');
+  await access(reviewPath);
+  await assert.rejects(access(rpsPath));
+  await assert.rejects(access(pdfPath));
+
+  await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
+  await page.getByRole('button', { name: 'Generar archivos', exact: true }).last().click();
+  await page.getByText(/Guardado AR2603332-1\.pdf/).waitFor({ timeout: 30_000 });
+
   const rpsContent = (await readFile(rpsPath)).toString('latin1');
   assert.deepEqual(parseRpsWorkbook(rpsContent), [
     ['OF', 'ARTICULO', 'CANTIDAD'],
@@ -200,17 +226,20 @@ async function verifyBrowserCase(browserInstance, url) {
     ['0230194', 'SITUOIO1PURE', '1'],
     ['0230194', 'ACRILI2018P120', '9']
   ]);
-  const pdf = await inspectPdf(await readFile(pdfPath));
-  assert.equal(pdf.pages, 2);
-  assert.match(pdf.text, /AR2603332/);
-  assert.match(pdf.text, /0230194/);
+  const generatedPdf = await inspectPdf(await readFile(pdfPath));
+  assert.equal(generatedPdf.pages, 2);
+  assert.match(generatedPdf.text, /AR2603332/);
+  assert.match(generatedPdf.text, /0230194/);
+  await page.getByText('Archivos generados', { exact: true }).first().waitFor();
+  await page.getByText(/generados por IVÁN, autor del pedido/i).waitFor();
 
-  await page.getByRole('button', { name: 'Abrir pedido y comprobar' }).click();
-  await page.getByText(/abierto desde la bandeja/).waitFor();
-  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Reutilizar datos' }).click();
+  await page.getByRole('button', { name: 'Reutilizar datos', exact: true }).last().click();
+  await page.getByText(/cargados en el formulario/).waitFor();
   await page.getByRole('button', { name: 'Limpiar' }).click();
+  await page.getByRole('button', { name: 'Limpiar formulario', exact: true }).click();
   assert.equal(await page.getByRole('textbox', { name: 'Pedido' }).inputValue(), '');
-  assert.equal(await page.locator('article.awning-column').count(), 0);
+  assert.equal(await page.locator('.awning-column').count(), 0);
   assert.equal(await page.getByRole('button', { name: 'Guardar para revisión' }).isDisabled(), true);
 
   const screenshotPath = path.join(artifactDirectory, 'AR2603332-final.png');
@@ -221,11 +250,13 @@ async function verifyBrowserCase(browserInstance, url) {
     orderCode: 'AR2603332',
     of: '0230194',
     model: 'ARZUA PRO',
+    reviewFile: path.basename(reviewPath),
     rpsFile: path.basename(rpsPath),
     pdfFile: path.basename(pdfPath),
-    pdfPages: pdf.pages,
+    pdfPages: generatedPdf.pages,
     reviewVerified: true,
-    productionVerified: true,
+    approvalVerified: true,
+    separatedGenerationVerified: true,
     clearVerified: true,
     screenshot: path.basename(screenshotPath)
   };
@@ -261,7 +292,10 @@ async function verifyApiCase(baseUrl, testCase) {
   assert.match(exportResponse.headers.get('content-type') || '', /application\/vnd\.ms-excel/);
   const exportedRows = parseRpsWorkbook(Buffer.from(await exportResponse.arrayBuffer()).toString('latin1'));
   assert.deepEqual(exportedRows[0], ['OF', 'ARTICULO', 'CANTIDAD']);
-  for (const [code, quantity] of Object.entries(testCase.materials)) {
+  const normalizedOf = normalizeReservation({ orderCode: calculation.orderCode, ofs: calculation.ofs })
+    .ofs.find((item) => item.of === testCase.of);
+  assert.ok(normalizedOf, `${testCase.orderCode}: la reserva normalizada no contiene ${testCase.of}.`);
+  for (const { code, quantity } of normalizedOf.materials) {
     assert.ok(
       exportedRows.some((row) => row[0] === testCase.of && row[1] === code && decimal(row[2]) === quantity),
       `${testCase.orderCode}: el XLS no contiene ${code} x${quantity}.`
@@ -453,7 +487,7 @@ function order(orderCode, fabric, awningPatch) {
       motorPower: '',
       submodel: '',
       sensor: 'SIN SENSOR',
-      machineSide: '',
+      machineSide: 'M.F.DER',
       crankHeight: null,
       curtainHasWindow: null,
       curtainFinish: '',
@@ -468,7 +502,8 @@ function order(orderCode, fabric, awningPatch) {
 
 async function chooseSelect(scope, label, option) {
   await scope.getByRole('combobox', { name: label, exact: true }).click();
-  await scope.getByRole('option', { name: option, exact: true }).click();
+  const ownerPage = typeof scope.page === 'function' ? scope.page() : scope;
+  await ownerPage.getByRole('option', { name: option, exact: true }).click();
 }
 
 async function chooseSegment(scope, label, option) {

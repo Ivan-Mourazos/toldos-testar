@@ -59,6 +59,15 @@ describe('PDF provisional de revisión', () => {
     expect(entry).not.toHaveProperty('sections');
   });
 
+  test('muestra el dibujo de confección elegido para poder revisarlo sin abrir el archivo', () => {
+    const order = reviewOrder({
+      awnings: [{ ...reviewOrder().awnings[0], fabricDiagramOverride: 'TOLDO-VELCRO' }]
+    });
+    const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
+
+    expect(entry.fields).toContainEqual({ label: 'Dibujo de confección', value: 'Toldo con velcro' });
+  });
+
   test('incluye frente y salida de tela calculados en un toldo con tejido no acrílico', async () => {
     const order = reviewOrder({ fabric: 'ALPHAAM03P250' });
     const calculation = calculateOrder(order);

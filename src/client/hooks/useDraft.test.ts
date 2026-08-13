@@ -64,6 +64,17 @@ describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
     expect(sanitized.machineSide).toBe('M.F.DER');
   });
 
+  test('conserva solo dibujos de confección compatibles con el modelo', () => {
+    expect(sanitizeAwning({ model: 'ARZUA PRO', fabricDiagramOverride: 'toldo con velcro' }).fabricDiagramOverride)
+      .toBe('TOLDO-VELCRO');
+    expect(sanitizeAwning({ model: 'ENROLLABLE', fabricDiagramOverride: 'CAMBIO ENROLLABLE' }).fabricDiagramOverride)
+      .toBe('CAMBIO ENROLLABLE');
+    expect(sanitizeAwning({ model: 'BAMBALINA', fabricDiagramOverride: 'SUPLEMENTO' }).fabricDiagramOverride)
+      .toBe('SUPLEMENTO');
+    expect(sanitizeAwning({ model: 'CORTINA', fabricDiagramOverride: 'TOLDO-VELCRO' }).fabricDiagramOverride)
+      .toBe('');
+  });
+
   test('infiere bamba en borradores antiguos solo cuando tienen altura', () => {
     expect(sanitizeAwning({ valanceHeight: 25 }).hasValance).toBe(true);
     expect(sanitizeAwning({ valanceHeight: null }).hasValance).toBeNull();
@@ -251,6 +262,12 @@ describe('switchAwningModel', () => {
       of: '0230335', units: 2, width: 596, projection: 300,
       hasValance: true, valanceHeight: 15, placement: 'TECHO', armCount: 3
     });
+  });
+
+  test('al cambiar de modelo conserva el dibujo compatible y limpia el incompatible', () => {
+    const general = { ...createAwning(), model: 'ARZUA PRO', fabricDiagramOverride: 'TOLDO-VELCRO' as const };
+    expect(switchAwningModel(general, 'GALICIA').fabricDiagramOverride).toBe('TOLDO-VELCRO');
+    expect(switchAwningModel(general, 'ENROLLABLE').fabricDiagramOverride).toBe('');
   });
 
   test('al elegir Perla con bamba precarga COMO TELA, pero sin bamba no muestra remate', () => {

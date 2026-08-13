@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { getAwningDiagram, isFabricOnlyModel } from './modelBehavior.js';
+import { getAwningDiagram, isFabricOnlyModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
@@ -85,9 +85,9 @@ export function buildPlanteamientoPlan(order, calculation) {
   ));
   const grouped = new Map();
   entries.forEach((entry) => {
-    const diagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
-    const diagramCalculation = resolveDiagramCalculation(entry);
-    const groupKey = fabricDiagramGroupKey(diagram, entry.awning, diagramCalculation);
+    const cadDiagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
+    const diagram = getFabricPatternDiagram(entry.awning, cadDiagram);
+    const groupKey = fabricDiagramGroupKey(diagram, entry.awning);
     const group = grouped.get(groupKey) || { diagram, diagramAwning: entry.awning, entries: [] };
     group.entries.push(entry);
     grouped.set(groupKey, group);
@@ -103,22 +103,32 @@ export function buildPlanteamientoPlan(order, calculation) {
   return { structureEntries, fabricPages };
 }
 
-function fabricDiagramGroupKey(diagram, awning, calculation = {}) {
+export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagram(awning)) {
+  const model = String(awning.model || '').trim().toUpperCase();
+  const override = normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride);
+  if (override) return override;
+  if (model.startsWith('HERA')) return 'HERA';
+  if (model.includes('CORTINA')) return cadDiagram;
+  if (model === 'ENROLLABLE') return 'ENROLLABLE';
+  if (model === 'BAMBALINA') return 'BAMBALINA';
+  if (model.includes('ANTICA')) return 'ANTICA';
+  return 'GENERAL';
+}
+
+function fabricDiagramGroupKey(diagram, awning) {
   if (diagram === 'HERA') return 'HERA';
-  if (!diagram.includes('VENTANA') || diagram.includes('SIN-VENTANA')) {
-    const anticaVariant = diagram === 'ANTICA' ? normalizeAnticaVariant(awning?.anticaVariant) : '';
-    const anticaValance = diagram === 'ANTICA'
-      ? Number(awning?.valanceHeight) > 0
-        ? awning?.valanceFabric ? 'BAMBA_SEPARADA' : 'BAMBA_INTEGRADA'
-        : 'SIN_BAMBA'
-      : '';
+  const isCurtain = diagram.startsWith('CORTINA');
+  const hasWindow = isCurtain && diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
+  const isAntica = diagram === 'ANTICA';
+  const valance = fabricValanceGroupKey(awning);
+  const valanceState = fabricValanceState(awning);
+  if (!hasWindow) {
     return [
       diagram,
-      calculation?.tubeLoad || awning?.tubeLoad || '',
-      calculation?.rollSystem || '',
-      calculation?.submodel || awning?.submodel || '',
-      anticaVariant,
-      anticaValance
+      isCurtain || ['GENERAL', 'TOLDO-VELCRO', 'BAMBALINA', 'SUPLEMENTO'].includes(diagram) ? valance : '',
+      diagram === 'CORTINA-VELCRO' ? resolveCurtainVelcroHeight(awning) ?? '' : '',
+      isAntica ? normalizeAnticaVariant(awning?.anticaVariant) : '',
+      isAntica ? valanceState : ''
     ].join('|');
   }
   return [
@@ -126,8 +136,22 @@ function fabricDiagramGroupKey(diagram, awning, calculation = {}) {
     awning.curtainWindowExit,
     awning.curtainWindowCorner,
     awning.curtainWindowFloorHeight,
-    awning.curtainWindowHeight
+    awning.curtainWindowHeight,
+    valance
   ].join('|');
+}
+
+function fabricValanceState(awning = {}) {
+  if (!(Number(awning.valanceHeight) > 0) && awning.model !== 'BAMBALINA') return 'SIN_BAMBA';
+  return String(awning.valanceFabric || '').trim() ? 'BAMBA_SEPARADA' : 'BAMBALINA_INCLUIDA';
+}
+
+function fabricValanceGroupKey(awning = {}) {
+  const state = fabricValanceState(awning);
+  if (state === 'SIN_BAMBA') return state;
+  const height = Math.max(0, Number(awning.valanceHeight) || 0);
+  const curve = String(awning.valanceCurve || 'RECTA').trim().toUpperCase();
+  return `${state}|${height}|${curve}`;
 }
 
 function resolveDiagramCalculation(entry) {
@@ -542,8 +566,11 @@ function drawFabricTotals(doc, x, y, w, totals, lines) {
 
 function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
   if (diagram.startsWith('CORTINA')) return drawCurtainDiagram(doc, x, y, w, h, diagram, awning);
+  if (diagram === 'TOLDO-VELCRO') return drawToldoVelcroDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
+  if (diagram === 'SUPLEMENTO') return drawSupplementDiagram(doc, x, y, w, h, awning);
   if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h);
-  if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h);
+  if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
   if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h);
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
@@ -559,9 +586,9 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
       title: 'CAMBIO DE TELA',
       rollLabel: 'ENTRADA EN TUBO EXISTENTE',
       loadLabel: 'ENTRADA EN BARRA EXISTENTE'
-    });
+    }, awning);
   }
-  return drawGeneralDiagram(doc, x, y, w, h);
+  return drawGeneralDiagram(doc, x, y, w, h, {}, awning);
 }
 
 function diagramSpec(diagram, awning, calculation) {
@@ -799,19 +826,28 @@ function drawAmbarDiagram(doc, x, y, w, h) {
     .text('TUBO P701 · KIT DE PERFILES ÁMBAR BOX', x + 24, y + h - 27, { width: w - 48, align: 'center' });
 }
 
-function drawGeneralDiagram(doc, x, y, w, h, options = {}) {
-  const title = options.title || 'GENERAL';
+function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
+  const title = options.title || 'PATRÓN GENERAL';
   const rollLabel = options.rollLabel || 'PARA ENROLLAR EN TUBO';
   const loadLabel = options.loadLabel || 'VARILLA BLANCA';
+  const valance = buildValanceDiagramSpec(awning);
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(9).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
   doc.moveTo(x + 25, y + 30).lineTo(x + w - 25, y + 30).strokeColor('#74a887').lineWidth(1).stroke();
   doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.5).text('FRENTE TELA', x + 55, y + 23, { width: w - 110, align: 'center' });
 
+  const badge = valance.hasValance
+    ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
+    : 'SIN BAMBA';
+  doc.roundedRect(x + 38, y + 38, w - 76, 14, 4)
+    .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
+    .text(badge, x + 42, y + 42, { width: w - 84, align: 'center' });
+
   const frameX = x + 38;
-  const frameY = y + 70;
+  const frameY = y + 72;
   const frameW = w - 76;
-  const frameH = 190;
+  const frameH = valance.hasValance ? 178 : 232;
   doc.rect(frameX, frameY, frameW, frameH).strokeColor('#9ebbb0').lineWidth(1).stroke();
   const topFoldY = frameY + 40;
   doc.moveTo(frameX, topFoldY).lineTo(frameX + 48, topFoldY)
@@ -828,18 +864,19 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}) {
   drawFabricDimension(doc, frameX - 10, frameY + frameH - 13, frameY + frameH, '3,3', 'left');
   drawFabricDimension(doc, frameX + frameW + 10, frameY + frameH - 14, frameY + frameH, '4', 'right');
 
-  const valanceY = frameY + frameH + 25;
-  doc.rect(frameX, valanceY, frameW, 38).strokeColor('#9ebbb0').stroke();
-  doc.fillColor('#4f8b68').fontSize(5.3)
-    .text(loadLabel, frameX, valanceY - 11, { width: frameW, align: 'center' })
-    .text('ACRÍLICO', frameX, valanceY + 25, { width: frameW, align: 'center' });
-  for (let wave = 0; wave < 6; wave += 1) {
-    const wx = frameX + wave * (frameW / 6);
-    doc.moveTo(wx, valanceY + 24).bezierCurveTo(wx + 5, valanceY + 31, wx + 13, valanceY + 17, wx + frameW / 6, valanceY + 24);
+  if (valance.hasValance) {
+    const gap = valance.separate ? 23 : 8;
+    const valanceY = frameY + frameH + gap;
+    if (!valance.separate) {
+      doc.moveTo(frameX, frameY + frameH).lineTo(frameX, valanceY)
+        .moveTo(frameX + frameW, frameY + frameH).lineTo(frameX + frameW, valanceY)
+        .strokeColor('#7fa594').lineWidth(0.7).stroke();
+    }
+    drawValancePanel(doc, frameX, valanceY, frameW, 42, valance, {
+      topLabel: loadLabel,
+      bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
+    });
   }
-  doc.strokeColor('#b7c9c2').stroke();
-  drawFabricDimension(doc, frameX + frameW + 10, valanceY, valanceY + 13, '4', 'right');
-  drawFabricDimension(doc, frameX + frameW + 10, valanceY + 25, valanceY + 38, '4', 'right');
 }
 
 function drawFabricDimension(doc, x, startY, endY, label, side) {
@@ -853,69 +890,211 @@ function drawFabricDimension(doc, x, startY, endY, label, side) {
 }
 
 function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
-  const hasWindow = diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
-  const finish = diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
+  const spec = buildCurtainDiagramSpec(diagram, awning);
   const velcroHeight = resolveCurtainVelcroHeight(awning) ?? 0;
-  const title = hasWindow
-    ? `CORTINA-VENTANA${finish === 'NORMAL' ? '' : `-${finish}`}`
-    : `CORTINA${finish === 'NORMAL' ? '' : `-${finish}`}`;
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
-    .text(title, x + 18, y + 13, { width: w - 36, align: 'center' });
-  doc.rect(x + 14, y + 36, w - 28, hasWindow ? 211 : 292).strokeColor('#c3d0cc').lineWidth(0.7).stroke();
+    .text(spec.title, x + 18, y + 13, { width: w - 36, align: 'center' });
 
-  const frameX = x + 38;
+  const badge = spec.hasValance
+    ? `${spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(spec.valanceHeight)} CM`
+    : 'SIN BAMBA';
+  doc.roundedRect(x + 28, y + 32, w - 56, 14, 4)
+    .fillAndStroke(spec.hasValance ? '#fff4cc' : '#edf2f1', spec.hasValance ? '#d2a116' : '#9db0ac');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.2)
+    .text(badge, x + 32, y + 36, { width: w - 64, align: 'center' });
+
+  const frameX = x + 43;
   const frameY = y + 68;
-  const frameW = w - 76;
-  const frameH = hasWindow ? 137 : 220;
-  doc.rect(frameX, frameY, frameW, frameH).strokeColor('#7fa594').lineWidth(1.2).stroke();
-  if (finish === 'VELCRO') {
-    doc.rect(frameX, frameY, frameW, 10).fillAndStroke('#edf3f0', '#7fa594');
-    drawDiagramText(doc, 'VELCRO', frameX, frameY + 2, frameW);
+  const frameW = w - 86;
+  const frameH = spec.hasWindow ? 125 : spec.hasValance ? 194 : 226;
+  doc.rect(frameX, frameY, frameW, frameH).fillAndStroke('#fbfcfc', '#7fa594');
+
+  drawDiagramText(
+    doc,
+    spec.finish === 'NORMAL' && !spec.hasWindow ? 'VARILLA NEGRA O BLANCA' : 'VARILLA NEGRA (5,09) EN PVC',
+    frameX - 8,
+    frameY - 13,
+    frameW + 16
+  );
+  doc.rect(frameX, frameY, frameW, 6).fillAndStroke('#edf3f0', '#7fa594');
+  if (spec.finish === 'NORMAL' && !spec.hasWindow) {
+    drawDiagramText(doc, 'PARA ENROLLAR EN TUBO', frameX + 8, frameY + 17, frameW - 16);
   }
-  if (finish === 'TUBO') {
-    doc.rect(frameX, frameY, 10, frameH).fillAndStroke('#d9e5e0', '#7fa594');
-    drawSideLabel(doc, 'TUBO', frameX - 28, frameY + 104, 26);
-  }
-  if (hasWindow) {
-    const windowX = frameX + 19;
-    const windowY = frameY + 49;
-    const windowW = frameW - 38;
-    const windowH = 67;
-    doc.rect(windowX, windowY, windowW, windowH)
-      .strokeColor('#e3a5a0').lineWidth(0.8).stroke();
+  drawCurtainSideFinishes(doc, frameX, frameY, frameW, frameH, spec);
+
+  if (spec.hasWindow) {
+    const windowX = frameX + 17;
+    const windowY = frameY + 39;
+    const windowW = Math.max(54, frameW - 60);
+    const windowH = 58;
+    const measureX = frameX + frameW - 30;
+    drawCurtainWindow(doc, windowX, windowY, windowW, windowH);
     drawSmallMeasure(doc, windowX - 1, windowY - 20, 25, awning.curtainWindowCorner);
     drawSmallMeasure(doc, windowX + windowW - 24, windowY - 20, 25, awning.curtainWindowCorner);
-    drawSmallMeasure(doc, frameX + frameW + 6, windowY + 19, 27, awning.curtainWindowHeight);
-    drawSmallMeasure(doc, frameX + frameW + 6, windowY + windowH + 6, 27, Number(awning.curtainWindowFloorHeight) - 18);
-    doc.moveTo(frameX + frameW + 3, windowY).lineTo(frameX + frameW + 3, windowY + windowH)
+    drawSmallMeasure(doc, measureX, windowY + 14, 27, awning.curtainWindowHeight);
+    drawSmallMeasure(doc, measureX, windowY + windowH, 27, Number(awning.curtainWindowFloorHeight) - 18);
+    doc.moveTo(measureX - 4, windowY).lineTo(measureX - 4, windowY + windowH)
       .strokeColor('#879f98').lineWidth(0.6).stroke();
-  } else {
-    drawDiagramText(doc, 'PAÑO COMPLETO', frameX + 18, frameY + 116, frameW - 36);
   }
-  doc.moveTo(frameX, frameY + 28).lineTo(frameX + frameW, frameY + 28).strokeColor('#bfd2ca').stroke();
-  drawDiagramText(doc, 'VARILLA NEGRA (5,09) EN PVC', frameX, frameY - 14, frameW);
-  const rodY = frameY + frameH + 18;
-  doc.rect(frameX, rodY, frameW, 9).strokeColor('#7fa594').lineWidth(0.8).stroke();
-  drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, rodY - 14, frameW);
-  drawDiagramText(doc, 'B.N(3)', frameX, rodY + 12, frameW);
-  drawSideLabel(doc, 'BASTILLA', frameX - 27, frameY + 100, 25);
-  drawSideLabel(doc, 'BASTILLA', frameX + frameW + 2, frameY + 100, 25);
 
-  if (hasWindow) {
-    const dataY = y + 257;
+  const bottomY = frameY + frameH;
+  if (spec.finish === 'TUBO') {
+    doc.rect(frameX, bottomY - 13, frameW, 13).fillAndStroke('#d9e5e0', '#7fa594');
+    doc.moveTo(frameX + 8, bottomY - 9).lineTo(frameX + frameW - 8, bottomY - 9)
+      .moveTo(frameX + 8, bottomY - 4).lineTo(frameX + frameW - 8, bottomY - 4)
+      .strokeColor('#91aba2').lineWidth(0.75).stroke();
+    drawDiagramText(doc, 'E.T. Ø40', frameX, bottomY + 3, frameW);
+  } else {
+    doc.rect(frameX, bottomY - 6, frameW, 6).fillAndStroke('#edf3f0', '#7fa594');
+    drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, bottomY + 3, frameW);
+  }
+
+  if (spec.hasValance) {
+    const valanceY = bottomY + 17;
+    if (!spec.separateValance) {
+      doc.moveTo(frameX + 9, bottomY).lineTo(frameX + 9, valanceY)
+        .moveTo(frameX + frameW - 9, bottomY).lineTo(frameX + frameW - 9, valanceY)
+        .strokeColor('#7fa594').lineWidth(0.65).stroke();
+    }
+    drawCurtainValancePiece(doc, frameX, valanceY, frameW, spec);
+  }
+
+  if (spec.hasWindow) {
+    const dataY = y + 247;
     drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'SALIDA:', awning.curtainWindowExit);
     drawCurtainDataRow(doc, x + 28, dataY + 17, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
     drawCurtainDataRow(doc, x + 28, dataY + 34, w - 56, 'H. SUELO-VENT.:', awning.curtainWindowFloorHeight);
     drawCurtainDataRow(doc, x + 28, dataY + 51, w - 56, 'H. VENTANA:', awning.curtainWindowHeight);
-    if (finish === 'VELCRO') {
+    if (spec.finish === 'VELCRO') {
       drawCurtainDataRow(doc, x + 28, dataY + 68, w - 56, 'ALTURA VELCRO:', velcroHeight);
     }
-  } else if (finish === 'VELCRO') {
+  } else if (spec.finish === 'VELCRO') {
     doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
-      .text('ALTURA VELCRO SEGÚN EL BLOQUE DE CADA TOLDO', x + 28, y + 333, { width: w - 56, align: 'center' });
+      .text(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)} CM`, x + 28, y + 331, { width: w - 56, align: 'center' });
   }
+}
+
+export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
+  const hasWindow = diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
+  const finish = diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
+  const valance = buildValanceDiagramSpec(awning);
+  const titleParts = ['CORTINA'];
+  if (hasWindow) titleParts.push('VENTANA');
+  if (finish !== 'NORMAL') titleParts.push(finish);
+  return {
+    finish,
+    hasWindow,
+    hasValance: valance.hasValance,
+    separateValance: valance.separate,
+    title: titleParts.join(' · '),
+    valance,
+    valanceCurve: valance.curve,
+    valanceHeight: valance.height
+  };
+}
+
+function drawCurtainSideFinishes(doc, x, y, w, h, spec) {
+  const bandW = 7;
+  if (spec.finish === 'VELCRO') {
+    for (const bandX of [x, x + w - bandW]) {
+      doc.rect(bandX, y + 6, bandW, h - 12).fillAndStroke('#f7eeee', '#b8837d');
+      for (let offset = 2; offset < h - 12; offset += 8) {
+        doc.moveTo(bandX + 1, y + 6 + offset).lineTo(bandX + bandW - 1, y + 10 + offset)
+          .strokeColor('#d5aaa5').lineWidth(0.45).stroke();
+      }
+    }
+  } else {
+    doc.moveTo(x + 6, y + 7).lineTo(x + 6, y + h - 7)
+      .moveTo(x + w - 6, y + 7).lineTo(x + w - 6, y + h - 7)
+      .strokeColor('#c6d5d0').lineWidth(0.65).stroke();
+  }
+  const label = spec.finish === 'VELCRO'
+    ? 'B.N(4)'
+    : spec.finish === 'NORMAL' && !spec.hasWindow ? 'BASTILLA' : 'B.N(4)';
+  drawRotatedDiagramText(doc, label, x - 11, y + h / 2, Math.max(48, h - 36));
+  drawRotatedDiagramText(doc, label, x + w + 11, y + h / 2, Math.max(48, h - 36));
+}
+
+function drawRotatedDiagramText(doc, text, centerX, centerY, width) {
+  doc.save();
+  doc.rotate(-90, { origin: [centerX, centerY] });
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.1)
+    .text(text, centerX - width / 2, centerY - 3, { width, align: 'center', lineBreak: false });
+  doc.restore();
+}
+
+function drawCurtainWindow(doc, x, y, w, h) {
+  const corner = Math.min(15, w / 4, h / 4);
+  doc.strokeColor('#e3a5a0').lineWidth(0.85)
+    .moveTo(x, y + corner).lineTo(x, y).lineTo(x + corner, y)
+    .moveTo(x + w - corner, y).lineTo(x + w, y).lineTo(x + w, y + corner)
+    .moveTo(x + w, y + h - corner).lineTo(x + w, y + h).lineTo(x + w - corner, y + h)
+    .moveTo(x + corner, y + h).lineTo(x, y + h).lineTo(x, y + h - corner)
+    .stroke();
+}
+
+function drawCurtainValancePiece(doc, x, y, w, spec) {
+  drawValancePanel(doc, x, y, w, 25, spec.valance, {
+    bodyLabel: spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
+  });
+}
+
+export function buildValanceDiagramSpec(awning = {}) {
+  const height = Math.max(0, Number(awning.valanceHeight) || 0);
+  const standalone = String(awning.model || '').trim().toUpperCase() === 'BAMBALINA';
+  const hasValance = standalone || height > 0;
+  return {
+    curve: String(awning.valanceCurve || 'RECTA').trim().toUpperCase(),
+    hasValance,
+    height,
+    separate: hasValance && !standalone && Boolean(String(awning.valanceFabric || '').trim()),
+    standalone
+  };
+}
+
+function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
+  const curve = String(spec?.curve || 'RECTA').trim().toUpperCase();
+  const isStraight = curve === 'RECTA';
+  const bottomInset = isStraight ? 0 : curve === 'NORMAL' ? 8 : curve === 'SUAVE' ? 6 : 4;
+  const baselineY = y + h - bottomInset;
+  const waves = curve === 'NORMAL' ? 6 : curve === 'SUAVE' ? 5 : 4;
+
+  doc.rect(x, y, w, h).fill('#fbfcfc');
+  doc.strokeColor('#7fa594').lineWidth(0.8)
+    .moveTo(x, baselineY).lineTo(x, y).lineTo(x + w, y).lineTo(x + w, baselineY);
+  if (isStraight) {
+    doc.lineTo(x, y + h);
+  } else {
+    const waveW = w / waves;
+    for (let index = waves - 1; index >= 0; index -= 1) {
+      const rightX = x + (index + 1) * waveW;
+      const leftX = x + index * waveW;
+      doc.bezierCurveTo(
+        rightX - waveW * 0.22,
+        y + h - 1,
+        leftX + waveW * 0.22,
+        y + h - 1,
+        leftX,
+        baselineY
+      );
+    }
+  }
+  doc.stroke();
+  doc.rect(x, y, w, Math.min(5, h / 4)).fillAndStroke('#edf3f0', '#7fa594');
+
+  if (options.topLabel) {
+    drawDiagramText(doc, options.topLabel, x, y - 11, w);
+  }
+  const measurement = options.measurement !== undefined
+    ? options.measurement
+    : spec?.height > 0 ? ` · ${formatInstructionMeasure(spec.height)} CM` : '';
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(h <= 26 ? 4.8 : 5.2)
+    .text(`${options.bodyLabel || 'BAMBALINA'}${measurement}`, x + 4, y + Math.max(9, h * 0.36), {
+      width: w - 8,
+      align: 'center'
+    });
 }
 
 function drawSmallMeasure(doc, x, y, w, measure) {
@@ -931,6 +1110,125 @@ function drawCurtainDataRow(doc, x, y, w, label, measure) {
   doc.moveTo(x + labelW + 8, y + 13).lineTo(x + w, y + 13).strokeColor(colors.ink).lineWidth(0.7).stroke();
   doc.font(fonts.semibold).fontSize(6.5)
     .text(formatNumber(measure), x + labelW + 8, y + 3, { width: w - labelW - 8, align: 'center' });
+}
+
+function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
+  const valance = buildValanceDiagramSpec(awning);
+  drawDiagramShell(doc, x, y, w, h, 'TOLDO · VELCRO');
+  const badge = valance.hasValance
+    ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
+    : 'SIN BAMBA';
+  doc.roundedRect(x + 36, y + 37, w - 72, 15, 4)
+    .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
+    .text(badge, x + 40, y + 41, { width: w - 80, align: 'center' });
+
+  const panelX = x + 64;
+  const panelY = y + 78;
+  const panelW = w - 88;
+  const panelH = 190;
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
+  drawHatchedBand(doc, panelX + 5, panelY + 6, panelW - 13, 7);
+  drawHatchedBand(doc, panelX + 5, panelY + panelH - 13, panelW - 13, 7);
+  doc.rect(panelX + panelW - 8, panelY, 8, panelH).fillAndStroke('#edf3f0', '#7fa594');
+  drawDiagramText(doc, 'B.N(4)', panelX, panelY - 12, panelW);
+  drawDiagramText(doc, 'B.N(4)', panelX, panelY + panelH + 3, panelW);
+  drawRotatedDiagramText(doc, 'VARILLA NEGRA (5,09) EN PVC', panelX + panelW + 10, panelY + panelH / 2, panelH - 20);
+
+  const pieceX = x + 22;
+  const pieceW = 24;
+  doc.rect(pieceX, panelY, pieceW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
+  doc.rect(pieceX + pieceW - 6, panelY, 6, panelH).fillAndStroke('#edf3f0', '#7fa594');
+  drawRotatedDiagramText(doc, 'A', pieceX + pieceW / 2 - 2, panelY + panelH / 2, 34);
+  drawRotatedDiagramText(doc, 'B.N(3)', pieceX - 9, panelY + panelH / 2, 54);
+  drawRotatedDiagramText(doc, 'VARILLA BLANCA (5,5)', pieceX + pieceW + 9, panelY + panelH / 2, panelH - 22);
+
+  if (valance.hasValance) {
+    const valanceY = y + 294;
+    if (!valance.separate) {
+      doc.moveTo(panelX + 8, panelY + panelH).lineTo(panelX + 8, valanceY)
+        .moveTo(panelX + panelW - 8, panelY + panelH).lineTo(panelX + panelW - 8, valanceY)
+        .strokeColor('#7fa594').lineWidth(0.65).stroke();
+    }
+    drawValancePanel(doc, panelX, valanceY, panelW, 28, valance, {
+      bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
+    });
+  }
+}
+
+function drawHatchedBand(doc, x, y, w, h) {
+  doc.rect(x, y, w, h).fillAndStroke('#f8eeee', '#b8837d');
+  for (let offset = 1; offset < w - 3; offset += 8) {
+    doc.moveTo(x + offset, y + 1).lineTo(x + Math.min(w - 1, offset + 5), y + h - 1);
+  }
+  doc.strokeColor('#d5aaa5').lineWidth(0.45).stroke();
+}
+
+function drawChangeRollerDiagram(doc, x, y, w, h) {
+  drawDiagramShell(doc, x, y, w, h, 'CAMBIO ENROLLABLE');
+  const panelX = x + 42;
+  const panelY = y + 72;
+  const panelW = w - 84;
+  const panelH = 218;
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
+  doc.rect(panelX, panelY, 10, panelH).fillAndStroke('#d9e5e0', '#7fa594');
+  doc.rect(panelX + panelW - 10, panelY, 10, panelH).fillAndStroke('#edf3f0', '#7fa594');
+  doc.circle(panelX + panelW - 5, panelY + 14, 3).fillAndStroke(colors.paper, '#7fa594');
+  drawDiagramText(doc, 'AL CORTE', panelX, panelY - 15, panelW);
+  drawDiagramText(doc, 'AL CORTE', panelX, panelY + panelH + 6, panelW);
+  drawRotatedDiagramText(doc, 'E. PLETINA 30 × 6 · REFUERZO PVC INTERIOR', panelX - 12, panelY + panelH / 2, panelH - 14);
+  drawRotatedDiagramText(doc, 'VARILLA PLANA POR REVÉS · CONT. SCREEN REDONDA', panelX + panelW + 12, panelY + panelH / 2, panelH - 14);
+  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(6)
+    .text('CONFECCIÓN SOBRE TELA EXISTENTE', panelX + 14, panelY + panelH / 2 - 4, { width: panelW - 28, align: 'center' });
+}
+
+function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
+  const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
+  drawDiagramShell(doc, x, y, w, h, 'SUPLEMENTO CON BROCHES');
+  doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
+    .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
+
+  const stripX = x + 25;
+  const stripY = y + 91;
+  const stripW = w - 50;
+  const stripH = 153;
+  const broochY = stripY + 29;
+  const joinY = broochY + 20;
+  doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#7fa594');
+  doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
+  for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
+    doc.circle(broochX, broochY, 1.25).fill('#c75d55');
+  }
+  drawDiagramText(doc, 'CON BROCHES', stripX, broochY - 14, stripW);
+  drawSupplementJoin(doc, stripX, joinY, stripW, valance.curve);
+  doc.fillColor('#c75d55').font(fonts.bold).fontSize(6.2)
+    .text('3 CM', stripX - 25, broochY + 3, { width: 22, align: 'right' });
+  doc.moveTo(stripX - 5, broochY).lineTo(stripX - 5, joinY)
+    .moveTo(stripX - 8, broochY).lineTo(stripX - 2, broochY)
+    .moveTo(stripX - 8, joinY).lineTo(stripX - 2, joinY)
+    .strokeColor('#c75d55').lineWidth(0.65).stroke();
+  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(9)
+    .text('SUPLEMENTO', stripX + 8, joinY + 36, { width: stripW - 16, align: 'center' });
+  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.8)
+    .text('EL SUPLEMENTO SUBE 3 CM POR ENCIMA DE LA ONDA', x + 20, y + 278, { width: w - 40, align: 'center' });
+}
+
+function drawSupplementJoin(doc, x, y, w, curve) {
+  const normalized = String(curve || 'RECTA').toUpperCase();
+  if (normalized === 'RECTA') {
+    doc.moveTo(x, y).lineTo(x + w, y).strokeColor('#c75d55').lineWidth(0.8).stroke();
+    return;
+  }
+  const amplitude = normalized === 'NORMAL' ? 8 : normalized === 'SUAVE' ? 5 : 3;
+  const waves = normalized === 'NORMAL' ? 7 : normalized === 'SUAVE' ? 6 : 5;
+  const waveW = w / waves;
+  doc.moveTo(x, y);
+  for (let index = 0; index < waves; index += 1) {
+    const waveX = x + index * waveW;
+    doc.bezierCurveTo(waveX + waveW * 0.25, y + amplitude, waveX + waveW * 0.75, y + amplitude, waveX + waveW, y);
+  }
+  doc.strokeColor('#c75d55').lineWidth(0.8).stroke();
 }
 
 function drawRollerDiagram(doc, x, y, w, h) {
@@ -950,25 +1248,25 @@ function drawRollerDiagram(doc, x, y, w, h) {
     .text('REFUERZO PVC POR DENTRO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
 
-function drawValanceDiagram(doc, x, y, w, h) {
-  drawDiagramShell(doc, x, y, w, h, 'BAMBALINA');
+function drawValanceDiagram(doc, x, y, w, h, awning = {}) {
+  const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
+  drawDiagramShell(doc, x, y, w, h, `BAMBALINA · ${valance.curve}`);
+  doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.2)
+    .text(`ALTO TERMINADO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
   const stripX = x + 28;
   const stripY = y + 118;
   const stripW = w - 56;
   const stripH = 92;
-  doc.rect(stripX, stripY, stripW, stripH).fillAndStroke(colors.soft, '#7fa594');
-  doc.rect(stripX, stripY, stripW, 9).fillAndStroke('#d9e5e0', '#7fa594');
-  for (let wave = 0; wave < 7; wave += 1) {
-    const waveW = stripW / 7;
-    const wx = stripX + wave * waveW;
-    doc.moveTo(wx, stripY + stripH - 8)
-      .bezierCurveTo(wx + waveW * 0.25, stripY + stripH + 5, wx + waveW * 0.75, stripY + stripH + 5, wx + waveW, stripY + stripH - 8);
-  }
-  doc.strokeColor('#7fa594').lineWidth(1).stroke();
-  drawDiagramText(doc, 'VARILLA BLANCA', stripX, stripY - 17, stripW);
-  drawDiagramText(doc, 'ACRÍLICO · ALTO + 5 CM', stripX, stripY + 38, stripW);
+  drawValancePanel(doc, stripX, stripY, stripW, stripH, valance, {
+    topLabel: 'VARILLA BLANCA',
+    bodyLabel: `ACRÍLICO · CORTE ${formatInstructionMeasure(valance.height + 5)} CM`,
+    measurement: ''
+  });
+  drawRotatedDiagramText(doc, 'BASTILLA', stripX - 10, stripY + stripH / 2, stripH - 18);
+  drawRotatedDiagramText(doc, 'BASTILLA', stripX + stripW + 10, stripY + stripH / 2, stripH - 18);
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(6)
-    .text('REMATE SEGÚN PEDIDO', stripX, stripY + stripH + 22, { width: stripW, align: 'center' });
+    .text(`REMATE ${valance.curve}`, stripX, stripY + stripH + 22, { width: stripW, align: 'center' });
 }
 
 function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
@@ -1386,7 +1684,7 @@ function fabricWorkLabel(model) {
   if (model === 'BAMBALINA') return 'CAMB. BAMBA';
   if (model === 'CAMBIO ANTICA') return 'CAMB. ANTICA';
   if (model === 'ANTICA') return 'ANTICA';
-  return 'TOLDO';
+  return model || 'TOLDO';
 }
 
 function formatFabricMeasure(input) {

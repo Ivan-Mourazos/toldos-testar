@@ -6,6 +6,9 @@ import {
   buildHeraMiniPlanDetail,
   buildOrderPlanteamientoPdf,
   buildPlanteamientoPlan,
+  buildCurtainDiagramSpec,
+  buildValanceDiagramSpec,
+  getFabricPatternDiagram,
   resolveCurtainVelcroHeight,
   resolveMaterialRows,
   summarizeFabricMaterial,
@@ -57,6 +60,56 @@ describe('resolveMaterialRows', () => {
 });
 
 describe('datos del planteamiento de telas', () => {
+  test.each([
+    ['CORTINA-SIN-VENTANA', {}, { finish: 'NORMAL', hasWindow: false }],
+    ['CORTINA-VENTANA', {}, { finish: 'NORMAL', hasWindow: true }],
+    ['CORTINA-VELCRO', {}, { finish: 'VELCRO', hasWindow: false }],
+    ['CORTINA-VENTANA-VELCRO', {}, { finish: 'VELCRO', hasWindow: true }],
+    ['CORTINA-TUBO', {}, { finish: 'TUBO', hasWindow: false }],
+    ['CORTINA-TUBO-VENTANA', {}, { finish: 'TUBO', hasWindow: true }]
+  ])('resuelve la geometría %s sin mezclar acabados', (diagram, awning, expected) => {
+    expect(buildCurtainDiagramSpec(diagram, awning)).toMatchObject(expected);
+  });
+
+  test('el dibujo de Cortina distingue sin bamba, bambalina incluida y bamba de otra tela', () => {
+    expect(buildCurtainDiagramSpec('CORTINA-TUBO', { valanceHeight: 0 }))
+      .toMatchObject({ hasValance: false, separateValance: false });
+    expect(buildCurtainDiagramSpec('CORTINA-TUBO', { valanceHeight: 25 }))
+      .toMatchObject({ hasValance: true, separateValance: false, valanceHeight: 25 });
+    expect(buildCurtainDiagramSpec('CORTINA-TUBO', { valanceHeight: 25, valanceFabric: 'TELA-B' }))
+      .toMatchObject({ hasValance: true, separateValance: true, valanceHeight: 25 });
+  });
+
+  test.each([
+    ['RECTA', 'RECTA'],
+    ['NORMAL', 'NORMAL'],
+    ['SUAVE', 'SUAVE'],
+    ['EXTRASUAVE', 'EXTRASUAVE']
+  ])('la bambalina autónoma conserva la forma %s', (curve, expected) => {
+    expect(buildValanceDiagramSpec({ model: 'BAMBALINA', valanceHeight: 25, valanceCurve: curve }))
+      .toMatchObject({ standalone: true, hasValance: true, height: 25, curve: expected });
+  });
+
+  test.each([
+    ['ARZUA PRO', 'ARZUA', 'GENERAL'],
+    ['CAMBIO TELA', 'CAMBIO-TELA', 'GENERAL'],
+    ['ENROLLABLE', 'ENROLLABLE', 'ENROLLABLE'],
+    ['BAMBALINA', 'BAMBALINA', 'BAMBALINA'],
+    ['CAMBIO ANTICA', 'ANTICA', 'ANTICA'],
+    ['CORTINA', 'CORTINA-TUBO', 'CORTINA-TUBO']
+  ])('separa el patrón de confección de %s de su CAD', (model, cad, expected) => {
+    expect(getFabricPatternDiagram({ model }, cad)).toBe(expected);
+  });
+
+  test.each([
+    ['ARZUA PRO', 'TOLDO-VELCRO', 'TOLDO-VELCRO'],
+    ['ENROLLABLE', 'CAMBIO ENROLLABLE', 'CAMBIO ENROLLABLE'],
+    ['BAMBALINA', 'SUPLEMENTO', 'SUPLEMENTO'],
+    ['CORTINA', 'TOLDO-VELCRO', 'CORTINA-TUBO']
+  ])('aplica el dibujo manual compatible de %s sin cambiar su CAD automático', (model, fabricDiagramOverride, expected) => {
+    expect(getFabricPatternDiagram({ model, fabricDiagramOverride }, 'CORTINA-TUBO')).toBe(expected);
+  });
+
   test('mantiene las etiquetas del Excel y formatea las medidas con un decimal', () => {
     const detail = buildFabricLineDetail(
       { model: 'CAMBIO CORTINA', units: 2 },
@@ -343,7 +396,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(pageTexts[1]).not.toContain('CADENA');
   });
 
-  test('los trabajos textiles no generan estructura y separan dibujos distintos', () => {
+  test('los trabajos textiles no generan estructura y comparten el patrón general cuando corresponde', () => {
     const order = {
       awnings: [
         { id: 'a', model: 'ARZUA PRO' },
@@ -357,11 +410,11 @@ describe('buildOrderPlanteamientoPdf', () => {
     const plan = buildPlanteamientoPlan(order, calculation);
 
     expect(plan.structureEntries.map(({ awning }) => awning.id)).toEqual(['a']);
-    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['ARZUA', 'CAMBIO-TELA', 'ENROLLABLE']);
+    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['GENERAL', 'ENROLLABLE']);
     expect(plan.fabricPages.flatMap(({ entries }) => entries.map(({ awning }) => awning.id))).toEqual(['a', 'b', 'c']);
   });
 
-  test('Arzua con tubos de carga distintos no comparte un dibujo ambiguo', () => {
+  test('el patrón textil de Arzua no se divide por el tubo de carga de la estructura', () => {
     const awnings = [
       { id: 'a', model: 'ARZUA PRO', tubeLoad: 'TUBO DE CARGA EVO 80' },
       { id: 'b', model: 'ARZUA PRO', tubeLoad: 'TUBO DE CARGA UNIVERS 280' }
@@ -375,10 +428,9 @@ describe('buildOrderPlanteamientoPdf', () => {
     };
     const plan = buildPlanteamientoPlan({ awnings }, calculation);
 
-    expect(plan.fabricPages).toHaveLength(2);
-    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['ARZUA', 'ARZUA']);
-    expect(plan.fabricPages.map(({ diagramCalculation }) => diagramCalculation.tubeLoad))
-      .toEqual(['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280']);
+    expect(plan.fabricPages).toHaveLength(1);
+    expect(plan.fabricPages[0].diagram).toBe('GENERAL');
+    expect(plan.fabricPages[0].entries.map(({ awning }) => awning.id)).toEqual(['a', 'b']);
   });
 
   test('el dibujo toma el tubo del despiece para no contradecir la estructura', () => {
@@ -407,7 +459,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     };
     const plan = buildPlanteamientoPlan({ awnings }, calculation);
 
-    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['ARZUA', 'ARZUA']);
+    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['GENERAL', 'GENERAL']);
     expect(plan.fabricPages.map(({ entries }) => entries.length)).toEqual([4, 1]);
     expect(plan.fabricPages.map(({ entries }) => entries.map(({ index }) => awningLetter(index))))
       .toEqual([['A', 'B', 'C', 'D'], ['E']]);
@@ -518,6 +570,119 @@ describe('buildOrderPlanteamientoPdf', () => {
 
     expect(plan.fabricPages).toHaveLength(2);
     expect(plan.fabricPages.every(({ diagram }) => diagram === 'CORTINA-VENTANA')).toBe(true);
+  });
+
+  test('Cortina no mezcla páginas sin bamba, incluida y de otra tela', () => {
+    const awnings = [
+      { id: 'none', model: 'CORTINA', curtainHasWindow: false, curtainFinish: 'TUBO', valanceHeight: 0 },
+      { id: 'same', model: 'CORTINA', curtainHasWindow: false, curtainFinish: 'TUBO', valanceHeight: 25 },
+      { id: 'other', model: 'CORTINA', curtainHasWindow: false, curtainFinish: 'TUBO', valanceHeight: 25, valanceFabric: 'TELA-B' }
+    ];
+    const calculation = { ofs: awnings.map((awning, awningIndex) => ({ awningId: awning.id, awningIndex })) };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.fabricPages).toHaveLength(3);
+    expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['CORTINA-TUBO', 'CORTINA-TUBO', 'CORTINA-TUBO']);
+    expect(plan.fabricPages.map(({ entries }) => entries.map(({ awning }) => awning.id)))
+      .toEqual([['none'], ['same'], ['other']]);
+  });
+
+  test('Cortina no mezcla alturas ni curvas de bambalina en un dibujo compartido', () => {
+    const awnings = [
+      { id: '20-recta', model: 'CORTINA', curtainHasWindow: false, curtainFinish: 'NORMAL', valanceHeight: 20, valanceCurve: 'RECTA' },
+      { id: '30-recta', model: 'CORTINA', curtainHasWindow: false, curtainFinish: 'NORMAL', valanceHeight: 30, valanceCurve: 'RECTA' },
+      { id: '20-suave', model: 'CORTINA', curtainHasWindow: false, curtainFinish: 'NORMAL', valanceHeight: 20, valanceCurve: 'SUAVE' }
+    ];
+    const calculation = { ofs: awnings.map((awning, awningIndex) => ({ awningId: awning.id, awningIndex })) };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.fabricPages).toHaveLength(3);
+    expect(plan.fabricPages.map(({ entries }) => entries[0].awning.id))
+      .toEqual(['20-recta', '30-recta', '20-suave']);
+  });
+
+  test('Cortina Velcro no comparte un dibujo cuando cambia la altura calculada', () => {
+    const awnings = [
+      { id: 'velcro-250', model: 'CORTINA', projection: 250, curtainHasWindow: false, curtainFinish: 'VELCRO', valanceHeight: 0 },
+      { id: 'velcro-300', model: 'CORTINA', projection: 300, curtainHasWindow: false, curtainFinish: 'VELCRO', valanceHeight: 0 }
+    ];
+    const calculation = { ofs: awnings.map((awning, awningIndex) => ({ awningId: awning.id, awningIndex })) };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.fabricPages).toHaveLength(2);
+    expect(plan.fabricPages.map(({ entries }) => entries[0].awning.id))
+      .toEqual(['velcro-250', 'velcro-300']);
+  });
+
+  test('los dibujos manuales forman páginas propias sin cambiar el modelo de cálculo', () => {
+    const awnings = [
+      { id: 'general', model: 'CAMBIO TELA' },
+      { id: 'velcro', model: 'CAMBIO TELA', fabricDiagramOverride: 'TOLDO-VELCRO' },
+      { id: 'roller', model: 'ENROLLABLE', fabricDiagramOverride: 'CAMBIO ENROLLABLE' },
+      { id: 'supplement', model: 'BAMBALINA', valanceHeight: 25, valanceCurve: 'NORMAL', fabricDiagramOverride: 'SUPLEMENTO' }
+    ];
+    const calculation = { ofs: awnings.map((awning, awningIndex) => ({ awningId: awning.id, awningIndex })) };
+    const plan = buildPlanteamientoPlan({ awnings }, calculation);
+
+    expect(plan.fabricPages.map(({ diagram }) => diagram))
+      .toEqual(['GENERAL', 'TOLDO-VELCRO', 'CAMBIO ENROLLABLE', 'SUPLEMENTO']);
+  });
+
+  test('el PDF renderiza las tres plantillas manuales del Excel', async () => {
+    const order = {
+      orderCode: 'AR-DIBUJOS-MANUALES', customer: 'CLIENTE', fabric: 'ACR NEGRO', sameFabric: true,
+      awnings: [
+        {
+          id: 'velcro', of: '3300001', model: 'CAMBIO TELA', units: 1,
+          width: 300, projection: 250, valanceHeight: 0, fabricDiagramOverride: 'TOLDO-VELCRO'
+        },
+        {
+          id: 'roller', of: '3300002', model: 'ENROLLABLE', units: 1,
+          width: 300, projection: 250, valanceHeight: 0, fabricDiagramOverride: 'CAMBIO ENROLLABLE'
+        },
+        {
+          id: 'supplement', of: '3300003', model: 'BAMBALINA', units: 1,
+          width: 300, projection: 0, valanceHeight: 25, valanceCurve: 'NORMAL', fabricDiagramOverride: 'SUPLEMENTO'
+        }
+      ]
+    };
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const pageTexts = [];
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pageTexts.push(content.items.map((item) => item.str).join(' '));
+    }
+
+    expect(pageTexts).toHaveLength(3);
+    expect(pageTexts[0]).toContain('TOLDO · VELCRO');
+    expect(pageTexts[0]).toContain('B.N(4)');
+    expect(pageTexts[1]).toContain('CAMBIO ENROLLABLE');
+    expect(pageTexts[1]).toContain('PLETINA 30 × 6');
+    expect(pageTexts[2]).toContain('SUPLEMENTO CON BROCHES');
+    expect(pageTexts[2]).toContain('3 CM POR ENCIMA DE LA ONDA');
+  });
+
+  test('el PDF de CORTINA Tubo rotula E.T. Ø40 y omite la varilla inferior normal', async () => {
+    const order = {
+      orderCode: 'AR-CORTINA-TUBO', customer: 'CLIENTE', fabric: 'ACR NEGRO', sameFabric: true,
+      awnings: [{
+        id: 'tube', of: '0239999', model: 'CORTINA', units: 1,
+        width: 250, projection: 300, valanceHeight: 0,
+        curtainHasWindow: false, curtainFinish: 'TUBO', rotFabric: 'NO',
+        device: 'MOTOR', placement: 'FRONTAL', structureColor: 'BLANCO'
+      }]
+    };
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(document.numPages);
+    const content = await page.getTextContent();
+    const text = content.items.map((item) => item.str).join(' ');
+
+    expect(text).toContain('E.T. Ø40');
+    expect(text).toContain('SIN BAMBA');
+    expect(text).not.toContain('VARILLA BLANCA (5,5)');
   });
 
   test.runIf(process.platform === 'win32')('incrusta las fuentes para que el PDF sea estable entre visores de PC', async () => {

@@ -23,6 +23,9 @@ const preferredLabels = {
   'HERA 56 MAQUINA': 'HERA 56 máquina',
   'HERA 56 MOTOR': 'HERA 56 motor',
   'PLANTEAMIENTO CAD MANUAL': 'Planteamiento CAD manual',
+  'TOLDO-VELCRO': 'Toldo con velcro',
+  'CAMBIO ENROLLABLE': 'Cambio de enrollable',
+  SUPLEMENTO: 'Suplemento con broches',
   BASE: 'Salida base', FINISHED: 'Tela terminada'
 };
 
@@ -81,6 +84,7 @@ export function buildReviewSheetEntries(order, calculation) {
       addField(cardFields, 'Remate', valanceFinish, true);
       if (valanceFinish === 'OTRO') addField(cardFields, 'Color remate', awning.remateColor, true);
     }
+    if (awning.fabricDiagramOverride) addField(cardFields, 'Dibujo de confección', awning.fabricDiagramOverride, true);
     if (fields.tubeLoad) addField(cardFields, 'Tubo de carga', awning.tubeLoad, true);
     if (fields.submodel && !isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);

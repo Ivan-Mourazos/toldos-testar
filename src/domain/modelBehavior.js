@@ -27,6 +27,25 @@ export const fabricOnlyModelNames = modelNames.filter((model) => behavior.models
 
 export const formOptions = { ...behavior.options, lacados: lacadoNames };
 
+export const fabricDiagramOptions = Object.freeze({
+  AUTO: Object.freeze({ value: '', label: 'AUTOMÁTICO' }),
+  TOLDO_VELCRO: Object.freeze({ value: 'TOLDO-VELCRO', label: 'TOLDO CON VELCRO' }),
+  CAMBIO_ENROLLABLE: Object.freeze({ value: 'CAMBIO ENROLLABLE', label: 'CAMBIO ENROLLABLE' }),
+  SUPLEMENTO: Object.freeze({ value: 'SUPLEMENTO', label: 'SUPLEMENTO' })
+});
+
+const normalizedFabricDiagramValues = new Map([
+  ['', ''],
+  ['AUTO', ''],
+  ['AUTOMATICO', ''],
+  ['TOLDO-VELCRO', 'TOLDO-VELCRO'],
+  ['TOLDO VELCRO', 'TOLDO-VELCRO'],
+  ['TOLDO CON VELCRO', 'TOLDO-VELCRO'],
+  ['CAMBIO ENROLLABLE', 'CAMBIO ENROLLABLE'],
+  ['CAMBIO-ENROLLABLE', 'CAMBIO ENROLLABLE'],
+  ['SUPLEMENTO', 'SUPLEMENTO']
+]);
+
 export function getModelBehavior(modelCode) {
   const code = normalizeModelName(modelCode);
   return behavior.models[code] || fallbackModel;
@@ -56,6 +75,33 @@ export function normalizeValanceFinish(awningOrModel, currentFinish = '') {
 
 export function getModelDiagram(modelCode) {
   return getModelBehavior(modelCode).diagram || 'GENERAL';
+}
+
+export function getFabricDiagramOptions(modelCode) {
+  const code = normalizeModelName(modelCode);
+  const modelBehavior = behavior.models[code];
+  const options = [fabricDiagramOptions.AUTO];
+  if (!modelBehavior) return options;
+
+  const diagram = modelBehavior.diagram || 'GENERAL';
+  if (diagram === 'ENROLLABLE') return [...options, fabricDiagramOptions.CAMBIO_ENROLLABLE];
+  if (diagram === 'BAMBALINA') return [...options, fabricDiagramOptions.SUPLEMENTO];
+  if (diagram === 'HERA' || diagram === 'ANTICA' || diagram.startsWith('CORTINA')) return options;
+  return [...options, fabricDiagramOptions.TOLDO_VELCRO];
+}
+
+export function normalizeFabricDiagramOverride(modelCode, value) {
+  const cleanValue = String(value || '')
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ');
+  const normalizedValue = normalizedFabricDiagramValues.get(cleanValue);
+  if (!normalizedValue) return '';
+  const validValues = getFabricDiagramOptions(modelCode).map((option) => option.value);
+  return validValues.includes(normalizedValue) ? normalizedValue : '';
 }
 
 export function getAwningDiagram(awning) {

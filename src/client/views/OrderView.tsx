@@ -37,7 +37,8 @@ export function OrderView({
   updateAwning,
   onAutofill,
   autofillLoading,
-  autofill
+  autofill,
+  readOnly = false
 }: {
   availableModelNames: string[];
   orderCode: string;
@@ -71,6 +72,7 @@ export function OrderView({
   onAutofill: () => void;
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
+  readOnly?: boolean;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
   const enabledModels = new Set(availableModelNames);
@@ -118,6 +120,7 @@ export function OrderView({
             onAutofill={onAutofill}
             autofillLoading={autofillLoading}
             autofill={autofill}
+            readOnly={readOnly}
             set={setOrderField}
           />
         </div>
@@ -140,6 +143,7 @@ export function OrderView({
               ofCalculation={calculation?.ofs.find((o) => o.awningId === awning.id)?.calculation}
               sameFabric={sameFabric}
               parameters={parameters}
+              readOnly={readOnly}
               onUpdate={updateAwning}
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}
@@ -148,13 +152,13 @@ export function OrderView({
         </div>
 
         <div className="order-observations">
-          <ObservationLines label="Observaciones de tela del pedido" value={notes} onChange={setNotes} />
+          <ObservationLines readOnly={readOnly} label="Observaciones de tela del pedido" value={notes} onChange={setNotes} />
         </div>
       </section>}
 
-      {awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} />}
+      {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} />}
 
-      {pickerType && (
+      {!readOnly && pickerType && (
         <ModelPickerDialog
           workType={pickerType}
           models={(pickerType === 'FABRIC_ONLY' ? fabricOnlyModelNames : fullAwningModelNames)

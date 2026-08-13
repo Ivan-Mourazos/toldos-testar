@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
-import { formOptions, getModelBehavior, getModelWorkType, normalizeValanceFinish } from '../../domain/modelBehavior.js';
+import { formOptions, getModelBehavior, getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
 import { inferHeraVariant, normalizeHeraJoin } from '../../domain/heraParameters.js';
 import { normalizeModelName } from '../../domain/modelNames.js';
@@ -67,6 +67,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (base.hasValance === false) base.valanceHeight = 0;
   base.valanceCurve = typeof old.valanceCurve === 'string' ? old.valanceCurve : '';
   base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
+  base.fabricDiagramOverride = normalizeFabricDiagramOverride(base.model, old.fabricDiagramOverride) as Awning['fabricDiagramOverride'];
   base.remate = normalizeValanceFinish(base, typeof old.remate === 'string' ? old.remate : '');
   base.remateColor = base.remate === 'OTRO' && typeof old.remateColor === 'string' ? old.remateColor : '';
   base.structureColor = typeof old.structureColor === 'string' ? old.structureColor : '';
@@ -402,6 +403,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     valanceHeight: supportsValance ? awning.valanceHeight : null,
     valanceCurve: supportsValance ? awning.valanceCurve : '',
     valanceFabric: supportsValance ? awning.valanceFabric : '',
+    fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) as Awning['fabricDiagramOverride'],
     remate: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate),
     remateColor: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate) === 'OTRO' ? awning.remateColor : '',
     structureColor: getModelWorkType(model) === 'FULL_AWNING' ? awning.structureColor : '',

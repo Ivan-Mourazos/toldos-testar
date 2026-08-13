@@ -291,7 +291,7 @@ export default function App() {
       ? 'Parámetros de modelos'
       : activeTab === 'reviews'
         ? 'Revisión de pedidos'
-        : 'Configuración de producción';
+        : 'Configuración de carpetas';
 
   return (
     <main className="app-shell">
@@ -314,7 +314,7 @@ export default function App() {
         <div className="sidebar-meta">
           <div className={`production-mode ${workflowReadiness?.productionReady ? 'is-ready' : ''}`}>
             <ShieldCheck aria-hidden="true" />
-            <div><strong>{workflowReadiness?.productionReady ? 'Producción activa' : 'Revisión segura'}</strong><small>{workflowReadiness?.productionReady ? 'Aprobación obligatoria' : 'Configura las rutas finales'}</small></div>
+            <div><strong>{workflowReadiness?.productionReady ? 'Generación disponible' : workflowReadiness?.reviewReady ? 'Revisión disponible' : 'Configura la revisión'}</strong><small>Aprobar y generar son pasos separados</small></div>
           </div>
           <span className={statusBadgeClass}>{statusLabel}</span>
           <small>{catalog ? `${catalog.models.length} modelos · ${catalog.fabricStats.total} telas` : 'Cargando catálogo'}</small>
@@ -423,6 +423,7 @@ export default function App() {
           {activeTab === 'reviews' && (
             <ReviewsView
               refreshKey={reviewRefresh}
+              parameters={ruleSettings.parameters}
               onOpen={editReview}
               onReuse={reuseReview}
               onToast={notify}

@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronRight, CircleAlert, Factory, FileSearch, RefreshCw, Search, Undo2 } from 'lucide-react';
-import type { Calculation, ReviewPackage, ReviewSummary } from '../types';
+import { ChevronRight, FileSearch, RefreshCw, Search } from 'lucide-react';
+import type { ReviewPackage, ReviewSummary, RuleParameters } from '../types';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail, ReviewStatusBadge } from '../components/ReviewOrderDetail';
 
-export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }: {
+export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, onConfirm }: {
   refreshKey: number;
+  parameters: RuleParameters;
   onOpen: (review: ReviewPackage) => void | Promise<void>;
   onReuse: (review: ReviewPackage) => void | Promise<void>;
   onToast: Notify;
@@ -16,11 +17,11 @@ export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }:
   const [viewMode, setViewMode] = useState<'queue' | 'history'>('queue');
   const [reviews, setReviews] = useState<ReviewSummary[]>([]);
   const [selectedCode, setSelectedCode] = useState('');
-  const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null; calculation: Calculation | null } | null>(null);
-  const [reviewer, setReviewer] = useState('');
-  const [note, setNote] = useState('');
+  const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [detailRefresh, setDetailRefresh] = useState(0);
   const listRequestId = useRef(0);
 
@@ -67,7 +68,7 @@ export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }:
   }, [year, refreshKey, onToast]);
 
   const scopedReviews = useMemo(
-    () => reviews.filter((review) => viewMode === 'history' ? review.status === 'PRODUCED' : review.status !== 'PRODUCED'),
+    () => reviews.filter((review) => viewMode === 'history' ? isReviewed(review) : isPending(review)),
     [reviews, viewMode]
   );
 
@@ -87,20 +88,19 @@ export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }:
   const selected = reviews.find((review) => review.orderCode === effectiveSelectedCode) || null;
   const detailIsCurrent = detail?.orderCode === effectiveSelectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;
-  const selectedCalculation = detailIsCurrent ? detail.calculation : null;
   const detailLoading = Boolean(effectiveSelectedCode && !detailIsCurrent);
 
   useEffect(() => {
     if (!effectiveSelectedCode) return;
     let cancelled = false;
     fetchReviewDetails(effectiveSelectedCode)
-      .then(({ review, calculation }) => {
+      .then((review) => {
         if (cancelled) return;
-        setDetail({ orderCode: effectiveSelectedCode, review, calculation });
+        setDetail({ orderCode: effectiveSelectedCode, review });
       })
       .catch((error) => {
         if (cancelled) return;
-        setDetail({ orderCode: effectiveSelectedCode, review: null, calculation: null });
+        setDetail({ orderCode: effectiveSelectedCode, review: null });
         onToast(error instanceof Error ? error.message : 'No se pudieron cargar los datos del pedido.', { tone: 'error' });
       });
     return () => { cancelled = true; };
@@ -110,7 +110,7 @@ export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }:
     if (!selected) return;
     setWorking(true);
     try {
-      const review = selectedReview || (await fetchReviewDetails(selected.orderCode)).review;
+      const review = selectedReview || await fetchReviewDetails(selected.orderCode);
       await onOpen(review);
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo abrir el pedido.', { tone: 'error' });
@@ -123,7 +123,7 @@ export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }:
     if (!selected) return;
     setWorking(true);
     try {
-      const review = selectedReview || (await fetchReviewDetails(selected.orderCode)).review;
+      const review = selectedReview || await fetchReviewDetails(selected.orderCode);
       await onReuse(review);
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudieron reutilizar los datos del pedido.', { tone: 'error' });
@@ -132,100 +132,138 @@ export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }:
     }
   }
 
-  async function requestChanges() {
-    if (!selected) return;
-    await decide('request-changes', false);
-  }
+  async function approveSelected() {
+    if (!selected || !selectedReview) return;
+    const choice = await onConfirm({
+      title: `Aprobar ${selected.orderCode}`,
+      message: 'El pedido quedará marcado como Aprobado en la lista de revisión. Esta acción no genera reservas ni envía archivos a producción.',
+      confirmLabel: 'Aprobar pedido',
+      cancelLabel: 'Seguir revisando',
+      tone: 'warning'
+    });
+    if (choice !== 'confirm') return;
 
-  async function approve(confirmOverwrite = false, includeNonAcrylicFabrics: boolean | null = null) {
-    if (!selected) return;
-    await decide('approve', confirmOverwrite, includeNonAcrylicFabrics);
-  }
-
-  async function decide(action: 'request-changes' | 'approve', confirmOverwrite: boolean, includeNonAcrylicFabrics: boolean | null = null) {
-    if (!reviewer.trim()) {
-      onToast('Indica quién realiza la revisión.', { tone: 'warning' });
-      return;
-    }
-    if (action === 'request-changes' && !note.trim()) {
-      onToast('Describe los cambios que hay que realizar.', { tone: 'warning' });
-      return;
-    }
-    setWorking(true);
+    setApproving(true);
     try {
-      const response = await fetch(`/api/reviews/${encodeURIComponent(selected!.orderCode)}/${action}`, {
+      const response = await fetch(`/api/reviews/${encodeURIComponent(selected.orderCode)}/mark-approved`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reviewer, note, confirmOverwrite, includeNonAcrylicFabrics })
+        body: JSON.stringify({ reviewer: selectedReview.order.reviewer || selectedReview.order.technician })
       });
       const data = await response.json();
-      if (response.status === 409 && data.needsFabricConfirmation) {
-        const fabricItems = (data.fabrics || []) as { code: string; description: string; ofs: string[] }[];
-        const fabrics = fabricItems.map((fabric) =>
-          `${fabric.code} · ${fabric.description}${fabric.ofs?.length ? ` (OF ${fabric.ofs.join(', ')})` : ''}`
-        );
-        const plural = fabricItems.length > 1;
-        const choice = await onConfirm({
-          title: plural ? 'Telas no acrílicas' : 'Tela no acrílica',
-          message: `Decide si quieres incluir${plural ? 'las' : 'la'} en la reserva de material. Cerrar este aviso no tomará ninguna decisión.`,
-          details: fabrics,
-          confirmLabel: 'Incluir en la reserva',
-          cancelLabel: 'No incluir',
-          tone: 'warning'
-        });
-        if (choice === 'dismiss') return;
-        await approve(confirmOverwrite, choice === 'confirm');
-        return;
-      }
-      if (response.status === 409 && data.needsConfirmation) {
-        const choice = await onConfirm({
-          title: 'Sustituir archivos existentes',
-          message: 'Los siguientes archivos ya existen en las carpetas de producción. Comprueba la lista antes de sustituirlos.',
-          details: data.existing,
-          confirmLabel: 'Sustituir archivos',
-          cancelLabel: 'Conservar archivos',
-          tone: 'danger'
-        });
-        if (choice === 'confirm') await approve(true, includeNonAcrylicFabrics);
-        return;
-      }
-      if (!response.ok) throw new Error(data.error || 'No se pudo completar la revisión.');
-      if (data.review) setDetail({ orderCode: selected!.orderCode, review: data.review as ReviewPackage, calculation: selectedCalculation });
-      onToast(action === 'approve'
-        ? buildApprovalMessage(selected!.orderCode, data)
-        : `Cambios solicitados para ${selected!.orderCode}.`, {
-        tone: 'success',
-        title: action === 'approve' ? 'Pedido enviado a producción' : 'Cambios solicitados'
-      });
-      setNote('');
-      await load();
+      if (!response.ok) throw new Error(data.error || 'No se pudo aprobar el pedido.');
+      updateLocalReview(data.review as ReviewPackage);
+      setViewMode('history');
+      onToast(`Pedido ${selected.orderCode} marcado como aprobado.`, { tone: 'success', title: 'Revisión aprobada' });
     } catch (error) {
-      onToast(error instanceof Error ? error.message : 'No se pudo completar la revisión.', { tone: 'error' });
+      onToast(error instanceof Error ? error.message : 'No se pudo aprobar el pedido.', { tone: 'error' });
     } finally {
-      setWorking(false);
+      setApproving(false);
     }
+  }
+
+  async function generateSelected() {
+    if (!selected || !selectedReview || selected.status !== 'APPROVED') return;
+    const targetCode = selected.orderCode;
+    const initialChoice = await onConfirm({
+      title: `Generar archivos de ${targetCode}`,
+      message: 'Se guardará el planteamiento PDF en Planteamientos y un Excel de reserva por cada OF en Subida de material.',
+      details: [`${targetCode}-1.pdf`, ...selectedReview.summary.ofs.map((of) => `${of}.xls`)],
+      confirmLabel: 'Generar archivos',
+      cancelLabel: 'Ahora no',
+      tone: 'warning'
+    });
+    if (initialChoice !== 'confirm') return;
+
+    setGenerating(true);
+    let includeNonAcrylicFabrics: boolean | null = null;
+    let confirmOverwrite = false;
+    try {
+      while (true) {
+        const response = await fetch(`/api/reviews/${encodeURIComponent(targetCode)}/generate-files`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            includeNonAcrylicFabrics,
+            confirmOverwrite
+          })
+        });
+        const data = await response.json();
+
+        if (response.status === 409 && data.needsFabricConfirmation) {
+          const fabrics = (data.fabrics || []).map((fabric: { code: string; description: string; ofs?: string[] }) =>
+            `${fabric.code} · ${fabric.description}${fabric.ofs?.length ? ` (OF ${fabric.ofs.join(', ')})` : ''}`
+          );
+          const choice = await onConfirm({
+            title: fabrics.length > 1 ? 'Telas no acrílicas' : 'Tela no acrílica',
+            message: 'Decide si debe incluirse en la reserva de material.',
+            details: fabrics,
+            confirmLabel: 'Incluir en la reserva',
+            cancelLabel: 'No incluir',
+            tone: 'warning'
+          });
+          if (choice === 'dismiss') return;
+          includeNonAcrylicFabrics = choice === 'confirm';
+          continue;
+        }
+
+        if (response.status === 409 && data.needsConfirmation) {
+          const choice = await onConfirm({
+            title: 'Sustituir archivos existentes',
+            message: 'Estos archivos ya existen. Comprueba la lista antes de sustituirlos.',
+            details: data.existing,
+            confirmLabel: 'Sustituir archivos',
+            cancelLabel: 'Conservar archivos',
+            tone: 'danger'
+          });
+          if (choice !== 'confirm') return;
+          confirmOverwrite = true;
+          continue;
+        }
+
+        if (!response.ok) throw new Error(data.error || 'No se pudieron generar los archivos.');
+        updateLocalReview(data.review as ReviewPackage);
+        const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
+        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} ${rpsCount === 1 ? 'Excel de reserva' : 'Excel de reserva'}.`, {
+          tone: 'success',
+          title: 'Archivos generados'
+        });
+        return;
+      }
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudieron generar los archivos.', { tone: 'error' });
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function updateLocalReview(review: ReviewPackage) {
+    setDetail((current) => current?.orderCode === review.orderCode
+      ? { orderCode: review.orderCode, review: { ...review, order: current.review?.order || review.order } }
+      : current);
+    setReviews((current) => current.map((item) => item.orderCode === review.orderCode ? reviewSummary(review) : item));
   }
 
   return (
     <section className="reviews-layout">
       <div className="review-inbox panel">
         <div className="section-header review-toolbar">
-          <div><h2>{viewMode === 'queue' ? 'Bandeja compartida' : 'Historial'}</h2><span>{scopedReviews.length} pedidos en {year}</span></div>
-          <button className="icon-button" type="button" onClick={() => void load()} aria-label="Actualizar"><RefreshCw aria-hidden="true" /></button>
+          <div><h2>{viewMode === 'queue' ? 'Bandeja compartida' : 'Pedidos aprobados'}</h2><span>{scopedReviews.length} pedidos en {year}</span></div>
+          <button className="icon-button" type="button" disabled={generating} onClick={() => void load()} aria-label="Actualizar"><RefreshCw aria-hidden="true" /></button>
         </div>
         <div className="review-view-switch" role="group" aria-label="Vista de revisión">
-          <button type="button" aria-pressed={viewMode === 'queue'} className={viewMode === 'queue' ? 'is-active' : ''} onClick={() => { setViewMode('queue'); setNote(''); }}>Por revisar <span>{reviews.filter((item) => item.status !== 'PRODUCED').length}</span></button>
-          <button type="button" aria-pressed={viewMode === 'history'} className={viewMode === 'history' ? 'is-active' : ''} onClick={() => { setViewMode('history'); setNote(''); }}>Historial <span>{reviews.filter((item) => item.status === 'PRODUCED').length}</span></button>
+          <button type="button" disabled={generating} aria-pressed={viewMode === 'queue'} className={viewMode === 'queue' ? 'is-active' : ''} onClick={() => setViewMode('queue')}>Por revisar <span>{reviews.filter(isPending).length}</span></button>
+          <button type="button" disabled={generating} aria-pressed={viewMode === 'history'} className={viewMode === 'history' ? 'is-active' : ''} onClick={() => setViewMode('history')}>Aprobados <span>{reviews.filter(isReviewed).length}</span></button>
         </div>
         <div className="review-filters">
           <label><Search aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente o modelo…" aria-label="Buscar pedidos" /></label>
-          <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => { setLoading(true); setYear(Number(event.target.value)); setNote(''); }} aria-label="Año" />
+          <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => { setLoading(true); setYear(Number(event.target.value)); }} aria-label="Año" />
         </div>
         <div className="review-list">
           {loading ? <div className="review-empty">Cargando pedidos…</div>
             : filtered.length === 0 ? <div className="review-empty"><FileSearch aria-hidden="true" />No hay pedidos para esta búsqueda.</div>
               : filtered.map((review) => (
-                <button className={`review-list-item ${effectiveSelectedCode === review.orderCode ? 'is-selected' : ''}`} type="button" key={review.orderCode} onClick={() => { setSelectedCode(review.orderCode); setNote(''); }}>
+                <button className={`review-list-item ${effectiveSelectedCode === review.orderCode ? 'is-selected' : ''}`} disabled={generating} type="button" key={review.orderCode} onClick={() => setSelectedCode(review.orderCode)}>
                   <span className="review-list-main"><strong>{review.orderCode}</strong><small>{review.summary.customer || 'Sin cliente'}</small></span>
                   <ReviewStatusBadge status={review.status} />
                   <span className="review-list-meta">{formatAwningCount(review.summary.awnings)} · {formatDate(review.updatedAt)}</span>
@@ -237,58 +275,28 @@ export function ReviewsView({ refreshKey, onOpen, onReuse, onToast, onConfirm }:
 
       <ReviewOrderDetail
         review={selectedReview}
-        calculation={selectedCalculation}
+        parameters={parameters}
         loading={detailLoading}
-        canEdit={Boolean(selected && selected.status !== 'PRODUCED')}
-        canReuse={Boolean(selected && selected.status === 'PRODUCED')}
-        disabled={working}
+        canEdit={Boolean(selected && isPending(selected))}
+        canReuse={Boolean(selected && isReviewed(selected))}
+        canApprove={Boolean(selected && isPending(selected))}
+        canGenerate={Boolean(selected && selected.status === 'APPROVED')}
+        disabled={working || approving || generating}
+        approving={approving}
+        generating={generating}
         onEdit={() => void openSelected()}
         onReuse={() => void reuseSelected()}
+        onApprove={() => void approveSelected()}
+        onGenerate={() => void generateSelected()}
       />
-
-      <aside className="review-desk panel">
-        {!selected ? <div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisar.</div> : (
-          <>
-            <div className="review-desk-head">
-              <div><span>Mesa de revisión</span><h2>{selected.orderCode}</h2></div>
-              <ReviewStatusBadge status={selected.status} />
-            </div>
-            <dl className="review-facts">
-              <div><dt>Cliente</dt><dd>{selected.summary.customer || '-'}</dd></div>
-              <div><dt>Técnico</dt><dd>{selected.summary.technician || '-'}</dd></div>
-              <div><dt>OF</dt><dd>{selected.summary.ofs.join(', ') || '-'}</dd></div>
-              <div><dt>Modelos</dt><dd>{selected.summary.models.join(', ') || '-'}</dd></div>
-            </dl>
-            {selected.status === 'CHANGES_REQUESTED' && selected.reviewNote && (
-              <div className="review-note"><CircleAlert aria-hidden="true" /><span><strong>Cambios solicitados por {selected.reviewedBy}</strong>{selected.reviewNote}</span></div>
-            )}
-            {selected.status === 'PRODUCED' && selected.production && (
-              <div className="review-production-files"><Factory aria-hidden="true" /><span><strong>Enviado a producción</strong>{selected.production.files.map((file) => file.filename).join(' · ')}</span></div>
-            )}
-            {selected.status !== 'PRODUCED' && (
-              <div className="review-decision">
-                <label>Revisado por<input value={reviewer} onChange={(event) => setReviewer(event.target.value)} placeholder="Nombre del técnico" /></label>
-                <label>Observaciones<textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Opcional al aprobar; obligatorio al pedir cambios" /></label>
-                <div>
-                  <button className="ghost-button request-changes-button" type="button" disabled={working} onClick={requestChanges}><Undo2 aria-hidden="true" />Pedir cambios</button>
-                  <button className="primary-button" type="button" disabled={working} onClick={() => void approve()}><Check aria-hidden="true" />Aprobar y producir</button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </aside>
     </section>
   );
 }
 
-function buildApprovalMessage(orderCode: string, data: { saved?: { type: string }[]; excludedNonAcrylicFabrics?: unknown[] }) {
-  const rpsCount = data.saved?.filter((file) => file.type === 'rps').length || 0;
-  const excludedCount = data.excludedNonAcrylicFabrics?.length || 0;
-  const excludedLabel = excludedCount > 1 ? 'las telas no acrílicas' : 'la tela no acrílica';
-  if (!rpsCount && excludedCount) return `Pedido ${orderCode} aprobado: PDF guardado; ${excludedLabel} no se ${excludedCount > 1 ? 'incluyeron' : 'incluyó'} y no fue necesario crear RPS.`;
-  if (excludedCount) return `Pedido ${orderCode} aprobado: PDF y RPS guardados sin incluir ${excludedLabel}.`;
-  return `Pedido ${orderCode} aprobado: PDF y RPS guardados.`;
+function reviewSummary(review: ReviewPackage): ReviewSummary {
+  const summary = { ...review } as ReviewPackage & { order?: ReviewPackage['order'] };
+  delete summary.order;
+  return summary as ReviewSummary;
 }
 
 function formatDate(iso: string) {
@@ -300,18 +308,17 @@ function formatAwningCount(count: number) {
   return `${count} ${count === 1 ? 'toldo' : 'toldos'}`;
 }
 
+function isPending(review: Pick<ReviewSummary, 'status'>) {
+  return review.status === 'PENDING_REVIEW' || review.status === 'CHANGES_REQUESTED';
+}
+
+function isReviewed(review: Pick<ReviewSummary, 'status'>) {
+  return review.status === 'APPROVED' || review.status === 'PRODUCED';
+}
+
 async function fetchReviewDetails(orderCode: string) {
   const reviewResponse = await fetch(`/api/reviews/${encodeURIComponent(orderCode)}`);
   const reviewData = await reviewResponse.json();
   if (!reviewResponse.ok) throw new Error(reviewData.error || 'No se pudo abrir el pedido.');
-  const review = reviewData as ReviewPackage;
-
-  const calculationResponse = await fetch('/api/calculate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(review.order)
-  });
-  const calculationData = await calculationResponse.json();
-  if (!calculationResponse.ok) throw new Error(calculationData.error || 'No se pudieron comprobar los datos del pedido.');
-  return { review, calculation: calculationData as Calculation };
+  return reviewData as ReviewPackage;
 }

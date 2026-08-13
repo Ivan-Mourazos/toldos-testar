@@ -491,6 +491,17 @@ describe('normalización de campos nuevos del pedido', () => {
     expect(normalized.awnings[0]).toMatchObject({ remate: '', remateColor: '' });
   });
 
+  test('normalizeOrder conserva solo un dibujo de confección compatible', () => {
+    const compatible = normalizeOrder(basePayload({
+      awnings: [baseAwning({ model: 'ENROLLABLE', fabricDiagramOverride: 'cambio-enrollable' })]
+    }));
+    const incompatible = normalizeOrder(basePayload({
+      awnings: [baseAwning({ model: 'ENROLLABLE', fabricDiagramOverride: 'SUPLEMENTO' })]
+    }));
+    expect(compatible.awnings[0].fabricDiagramOverride).toBe('CAMBIO ENROLLABLE');
+    expect(incompatible.awnings[0].fabricDiagramOverride).toBe('');
+  });
+
   test('normalizeOrder conserva order.notes (necesario para reutilizar el order normalizado en PDF/xlsx)', () => {
     const normalized = normalizeOrder(basePayload({
       notes: '  Observacion importante  ',

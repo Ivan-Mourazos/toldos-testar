@@ -13,7 +13,7 @@ import { normalizeAgataBoxParameters } from './agataBoxParameters.js';
 import { normalizeFabricJobParameters } from './fabricJobParameters.js';
 import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
-import { getModelWorkType, normalizeValanceFinish } from './modelBehavior.js';
+import { getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeModelName } from './modelNames.js';
 import { inferHeraVariant, normalizeHeraJoin } from './heraParameters.js';
 import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
@@ -200,6 +200,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     valanceHeight,
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
+    fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning?.fabricDiagramOverride),
     remate,
     remateColor: remate === 'OTRO' ? cleanText(awning?.remateColor || legacyOrder.remateColor) : '',
     structureColor: cleanText(awning?.structureColor || legacyOrder.structureColor).toUpperCase(),

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getAwningDiagram, getModelBehavior, getFieldVisibility, formOptions, modelNames, fullAwningModelNames, getEstablishedProjections, needsValanceFinish, normalizeValanceFinish } from './modelBehavior.js';
+import { fabricDiagramOptions, getAwningDiagram, getFabricDiagramOptions, getModelBehavior, getFieldVisibility, formOptions, modelNames, fullAwningModelNames, getEstablishedProjections, needsValanceFinish, normalizeFabricDiagramOverride, normalizeValanceFinish } from './modelBehavior.js';
 import { models as catalogModels } from './catalog.js';
 
 describe('modelBehavior', () => {
@@ -178,5 +178,59 @@ describe('modelBehavior', () => {
     ['HERA', 'HERA']
   ])('%s tiene dibujo técnico propio', (model, expected) => {
     expect(getAwningDiagram({ model })).toBe(expected);
+  });
+
+  test.each([
+    ['ARZUA PRO', fabricDiagramOptions.TOLDO_VELCRO],
+    ['GALICIA', fabricDiagramOptions.TOLDO_VELCRO],
+    ['XACOBEO', fabricDiagramOptions.TOLDO_VELCRO],
+    ['AMBAR BOX', fabricDiagramOptions.TOLDO_VELCRO],
+    ['AGATA BOX', fabricDiagramOptions.TOLDO_VELCRO],
+    ['MAXISCREEM', fabricDiagramOptions.TOLDO_VELCRO],
+    ['MONOBLOCK 350', fabricDiagramOptions.TOLDO_VELCRO],
+    ['PUNTO RECTO', fabricDiagramOptions.TOLDO_VELCRO],
+    ['CUARZO BOX', fabricDiagramOptions.TOLDO_VELCRO],
+    ['PERLA BOX', fabricDiagramOptions.TOLDO_VELCRO],
+    ['CORAL BOX', fabricDiagramOptions.TOLDO_VELCRO],
+    ['CAMBIO TELA', fabricDiagramOptions.TOLDO_VELCRO],
+    ['MAXISCREEN', fabricDiagramOptions.TOLDO_VELCRO],
+    ['ENROLLABLE', fabricDiagramOptions.CAMBIO_ENROLLABLE],
+    ['BAMBALINA', fabricDiagramOptions.SUPLEMENTO]
+  ])('%s ofrece solo el dibujo alternativo compatible', (model, expectedOverride) => {
+    expect(getFabricDiagramOptions(model)).toEqual([fabricDiagramOptions.AUTO, expectedOverride]);
+  });
+
+  test.each(['CORTINA', 'CAMBIO CORTINA', 'ANTICA', 'CAMBIO ANTICA', 'HERA', 'ROLLSYS', 'NO EXISTE', ''])(
+    '%s no permite forzar otro dibujo de tela',
+    (model) => {
+      expect(getFabricDiagramOptions(model)).toEqual([fabricDiagramOptions.AUTO]);
+    }
+  );
+
+  test.each([
+    ['ARZUA PRO', '', ''],
+    ['ARZUA PRO', ' AUTO ', ''],
+    ['ARZUA PRO', 'automático', ''],
+    ['ARZUA PRO', 'toldo con velcro', 'TOLDO-VELCRO'],
+    ['CAMBIO TELA', 'toldo_velcro', 'TOLDO-VELCRO'],
+    ['ENROLLABLE', 'cambio-enrollable', 'CAMBIO ENROLLABLE'],
+    ['BAMBALINA', ' suplemento ', 'SUPLEMENTO']
+  ])('normaliza %s / %s como %s', (model, value, expected) => {
+    expect(normalizeFabricDiagramOverride(model, value)).toBe(expected);
+  });
+
+  test.each([
+    ['ARZUA PRO', 'SUPLEMENTO'],
+    ['ARZUA PRO', 'CAMBIO ENROLLABLE'],
+    ['ENROLLABLE', 'TOLDO-VELCRO'],
+    ['ENROLLABLE', 'SUPLEMENTO'],
+    ['BAMBALINA', 'TOLDO-VELCRO'],
+    ['BAMBALINA', 'CAMBIO ENROLLABLE'],
+    ['CORTINA', 'TOLDO-VELCRO'],
+    ['ANTICA', 'SUPLEMENTO'],
+    ['HERA', 'CAMBIO ENROLLABLE'],
+    ['NO EXISTE', 'TOLDO-VELCRO']
+  ])('rechaza el cruce incompatible %s / %s', (model, value) => {
+    expect(normalizeFabricDiagramOverride(model, value)).toBe('');
   });
 });

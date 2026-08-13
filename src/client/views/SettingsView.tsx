@@ -30,8 +30,8 @@ export function SettingsView({
       setForm(data.settings);
       onSaved(data.settings, data.readiness);
       onToast(data.readiness.productionReady
-        ? 'Rutas guardadas. El flujo de producción está activo.'
-        : 'Rutas guardadas. La producción sigue desactivada.', {
+        ? 'Rutas guardadas. Ya se pueden generar los archivos de pedidos aprobados.'
+        : 'Rutas guardadas. La generación de archivos sigue deshabilitada.', {
         tone: 'success',
         title: 'Configuración guardada'
       });
@@ -64,8 +64,8 @@ export function SettingsView({
         />
         <RouteField
           step="02"
-          title="Planteamientos aprobados"
-          description="Destino del PDF definitivo, nombrado PEDIDO-1.pdf."
+          title="Planteamientos generados"
+          description="Aquí guarda Generar archivos el PDF definitivo PEDIDO-1.pdf. Aprobar por sí solo no escribe aquí."
           value={form.planteamientosDirectory}
           onChange={(planteamientosDirectory) => setForm({ ...form, planteamientosDirectory })}
           placeholder="/mnt/toldos/planteamientos/{YYYY}"
@@ -73,7 +73,7 @@ export function SettingsView({
         <RouteField
           step="03"
           title="Subida de material"
-          description="Destino de los archivos RPS individuales, uno por cada OF."
+          description="Aquí guarda Generar archivos un Excel de reserva por cada OF. Aprobar por sí solo no escribe aquí."
           value={form.rpsUploadDirectory}
           onChange={(rpsUploadDirectory) => setForm({ ...form, rpsUploadDirectory })}
           placeholder="/mnt/toldos/rps"
@@ -83,7 +83,7 @@ export function SettingsView({
       <div className="workflow-production-switch">
         <div>
           <ShieldCheck aria-hidden="true" />
-          <span><strong>Envío a producción</strong><small>La aprobación escribirá el PDF y los RPS en las rutas definitivas.</small></span>
+          <span><strong>Generación de archivos</strong><small>Habilita el segundo paso: PDF definitivo y Excel de reserva para pedidos ya aprobados.</small></span>
         </div>
         <label className="workflow-toggle">
           <input
@@ -99,7 +99,7 @@ export function SettingsView({
         {readiness.productionReady && (
           <div className="workflow-ready is-ready">
             <CheckCircle2 aria-hidden="true" />
-            <span>Listo para producción</span>
+            <span>Generación de archivos preparada</span>
           </div>
         )}
         <button className="primary-button" type="button" disabled={saving} onClick={save}>
