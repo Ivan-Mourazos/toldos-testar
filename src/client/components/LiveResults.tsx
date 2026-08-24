@@ -188,9 +188,15 @@ function FabricIndication({ awning, calculation }: { awning?: Awning; calculatio
 }
 
 function ReservationPreview({ rows }: { rows: ReturnType<typeof groupMaterialRows> }) {
+  const ofCount = new Set(rows.map((row) => row.of).filter(Boolean)).size;
   return (
-    <div className="reservation-preview">
-      <p className="result-explanation"><FileSpreadsheet aria-hidden="true" /><span><strong>Material que se reservará.</strong> Se agrupa por OF y artículo. Es normal que algunas piezas también aparezcan en Estructuras: allí se explica cómo fabricar el toldo; aquí se indica qué reservar en RPS.</span></p>
+    <div className="rps-result-preview">
+      <header className="rps-result-summary">
+        <span className="rps-result-icon"><FileSpreadsheet aria-hidden="true" /></span>
+        <span><strong>Material para reservar</strong><small>{rows.length} {rows.length === 1 ? 'línea agrupada' : 'líneas agrupadas'} por OF y artículo</small></span>
+        <strong className="rps-result-of-count">{ofCount} {ofCount === 1 ? 'OF' : 'OFs'}</strong>
+      </header>
+      <p className="rps-result-note">Las piezas que también aparecen en Estructuras explican cómo fabricar el toldo; esta tabla recoge únicamente qué reservar en RPS.</p>
       {rows.length === 0 ? <EmptyResult text="Todavía no hay líneas de reserva preparadas." /> : (
         <div className="rps-table-wrap"><table className="rps-table"><thead><tr><th>OF</th><th>Artículo</th><th>Descripción</th><th className="num">Cantidad total</th></tr></thead><tbody>
           {rows.map((row, index) => <tr key={`${row.of}-${row.code}-${index}`}><td>{row.of}</td><td className="code">{row.code}</td><td>{row.description || '-'}</td><td className="num">{formatDecimal(row.quantity)}</td></tr>)}

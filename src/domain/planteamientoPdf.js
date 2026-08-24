@@ -229,8 +229,13 @@ function drawDespieceTable(doc, x, y, w, rows) {
   const labels = ['NUM', 'NOMBRE PIEZA', 'REFERENCIA', 'UNID.', 'LONGIT.'];
 
   roundedBox(doc, x, y + headerH, verticalW, rowH * 20, 2, colors.grayDark, colors.ink);
+  const labelCenterX = x + verticalW / 2;
+  const labelCenterY = y + headerH + rowH * 10;
+  doc.save();
+  doc.rotate(-90, { origin: [labelCenterX, labelCenterY] });
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(10)
-    .text('D\nE\nS\nP\nI\nE\nC\nE', x + 7, y + 52, { width: verticalW - 14, align: 'center', lineGap: 1.4 });
+    .text('DESPIECE', labelCenterX - 55, labelCenterY - 5, { width: 110, align: 'center', lineBreak: false });
+  doc.restore();
 
   let cellX = tableX;
   labels.forEach((label, columnIndex) => {
@@ -312,9 +317,8 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   const pageW = doc.page.width;
   const pageH = doc.page.height;
   const margin = 24;
-  drawFabricHeader(doc, { order, margin, pageW });
-
   const lines = entries.map(toFabricLine);
+  drawFabricHeader(doc, { order, margin, pageW });
   const diagramW = 218;
   drawAwningDiagram(doc, margin, 126, diagramW, 350, diagram, diagramAwning, diagramCalculation);
 
@@ -464,8 +468,16 @@ function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE
   drawCell(doc, bodyX + 76, 53, orderX - bodyX - 76, 17, value(order.technician), { semibold: true, size: 7 });
   drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 7 });
   drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 7 });
-  drawCell(doc, orderX, 50, 76, 18, 'FECHA FABRIC.', { size: 7, align: 'right' });
-  drawCell(doc, orderX + 76, 50, orderW - 76, 18, '', { size: 7, align: 'center', preserveBlank: true });
+  const orderOfs = distinctOrderOfs(order);
+  const headerOfText = orderOfs.length === 1
+    ? orderOfs[0]
+    : orderOfs.length > 1 ? 'VER EN CADA TOLDO' : '';
+  drawCell(doc, orderX, 50, 32, 18, headerOfText ? 'OF' : '', {
+    bold: true, size: 7, align: 'right', preserveBlank: true
+  });
+  drawCell(doc, orderX + 32, 50, orderW - 32, 18, headerOfText, {
+    bold: true, size: 7, align: 'center', preserveBlank: true
+  });
   drawCell(doc, orderX, 68, 76, 19, 'REVISIÓN', { size: 7, align: 'right' });
   drawCell(doc, orderX + 76, 68, orderW - 76, 19, value(order.reviewer), { size: 7, align: 'center' });
   doc.rect(bodyX, 87, pageW - margin - bodyX, 19).fill(colors.ink);
@@ -489,8 +501,9 @@ function drawFabricMeta(doc, x, y, w, order, lines) {
 }
 
 function drawFabricRows(doc, x, y, w, lines, order) {
-  const rowH = 64;
-  const rowGap = 6;
+  const rowH = 70;
+  const rowGap = 4;
+  const showOfInRows = distinctOrderOfs(order).length > 1;
   const mixedCurve = summarizeValanceCurve(lines) === 'SEGÚN TOLDO';
   const mixedRemate = summarizeRemate(lines, order) === 'SEGÚN TOLDO';
   const mixedRotFabric = summarizeAwningValue(lines, 'rotFabric', order.rotTela) === 'SEGÚN TOLDO';
@@ -514,7 +527,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
     roundedBox(doc, x, rowY, w, rowH, 3, localIndex % 2 ? colors.paper : colors.soft, colors.line);
     roundedBox(doc, x, rowY, 40, rowH, 3, colors.yellow, colors.ink);
     doc.fillColor(colors.ink).font(fonts.bold).fontSize(15)
-      .text(awningLetter(line.index), x + 5, rowY + 21, { width: 30, align: 'center' });
+      .text(awningLetter(line.index), x + 5, rowY + 24, { width: 30, align: 'center' });
 
     const metricX = x + 48;
     const metricGap = 6;
@@ -529,12 +542,23 @@ function drawFabricRows(doc, x, y, w, lines, order) {
     drawCell(doc, metricX, rowY + 29, fabricW, 27, detail.workLabel, {
       bold: true, size: 8.5, align: 'center', fill: colors.paper
     });
-    drawFittedText(doc, instruction, metricX + fabricW + 10, rowY + 29, metricW - fabricW - 10, 28, {
+    const detailTextX = metricX + fabricW + 10;
+    const detailTextW = metricW - fabricW - 10;
+    drawFittedText(doc, instruction, detailTextX, rowY + 29, detailTextW, showOfInRows ? 23 : 34, {
       font: fonts.semibold,
       maxSize: 6.8,
       minSize: 4.2,
       overflowLabel: '[NOTA COMPLETA EN EL PEDIDO]'
     });
+    if (showOfInRows) {
+      drawFittedText(doc, `OF ${value(line.awning.of)}`, detailTextX, rowY + 54, detailTextW, 10, {
+        font: fonts.bold,
+        maxSize: 8,
+        minSize: 6,
+        color: colors.ink,
+        align: 'left'
+      });
+    }
   });
 }
 
@@ -1483,6 +1507,12 @@ function isHeraAwning(awning = {}) {
 
 function toFabricLine({ awning, index, ofBlock }) {
   return { awning, index, calc: ofBlock?.calculation || {} };
+}
+
+function distinctOrderOfs(order = {}) {
+  return [...new Set((order.awnings || [])
+    .map((awning) => String(awning?.of || '').trim())
+    .filter(Boolean))];
 }
 
 export function buildFabricLineDetail(awning = {}, calculation = {}) {

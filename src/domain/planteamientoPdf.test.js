@@ -685,6 +685,84 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(text).not.toContain('VARILLA BLANCA (5,5)');
   });
 
+  test('una OF va en el encabezado y varias se señalan arriba y aparecen dentro de cada bloque', async () => {
+    const order = {
+      orderCode: 'AR26-OF-TELAS', fabric: 'ACR NEGRO', sameFabric: true,
+      awnings: [
+        { id: 'fabric-a', of: '0231001', model: 'CAMBIO TELA', units: 1, width: 300, projection: 250, valanceHeight: 0 },
+        { id: 'fabric-b', of: '0231002', model: 'CAMBIO TELA', units: 1, width: 280, projection: 220, valanceHeight: 25 }
+      ]
+    };
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const pageTexts = [];
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pageTexts.push(content.items.map((item) => item.str).join(' '));
+    }
+
+    expect(pageTexts).toHaveLength(2);
+    expect(pageTexts[0]).toContain('VER EN CADA TOLDO');
+    expect(pageTexts[1]).toContain('VER EN CADA TOLDO');
+    expect(pageTexts[0]).toContain('OF 0231001');
+    expect(pageTexts[1]).toContain('OF 0231002');
+    expect(pageTexts.join(' ')).not.toContain('0231001 · 0231002');
+    expect(pageTexts.join(' ')).not.toContain('FECHA FABRIC.');
+
+    const singleOrder = { ...order, awnings: [order.awnings[0]] };
+    const singleBuffer = await buildOrderPlanteamientoPdf({
+      order: singleOrder,
+      calculation: calculateOrder(singleOrder)
+    });
+    const singleDocument = await getDocument({ data: new Uint8Array(singleBuffer) }).promise;
+    const singlePage = await singleDocument.getPage(1);
+    const singleContent = await singlePage.getTextContent();
+    const singleText = singleContent.items.map((item) => item.str).join(' ');
+
+    expect(singleText).toMatch(/OF\s+0231001/);
+    expect(singleText.match(/OF\s+0231001/g)).toHaveLength(1);
+
+    const sharedOfOrder = {
+      ...order,
+      awnings: order.awnings.map((awning) => ({ ...awning, of: '0231001' }))
+    };
+    const sharedOfBuffer = await buildOrderPlanteamientoPdf({
+      order: sharedOfOrder,
+      calculation: calculateOrder(sharedOfOrder)
+    });
+    const sharedOfDocument = await getDocument({ data: new Uint8Array(sharedOfBuffer) }).promise;
+    const sharedOfTexts = [];
+    for (let pageNumber = 1; pageNumber <= sharedOfDocument.numPages; pageNumber += 1) {
+      const page = await sharedOfDocument.getPage(pageNumber);
+      const content = await page.getTextContent();
+      sharedOfTexts.push(content.items.map((item) => item.str).join(' '));
+    }
+
+    expect(sharedOfTexts).toHaveLength(2);
+    expect(sharedOfTexts.every((text) => /OF\s+0231001/.test(text))).toBe(true);
+    expect(sharedOfTexts.join(' ')).not.toContain('VER EN CADA TOLDO');
+  });
+
+  test('la palabra DESPIECE se dibuja completa y recta en vertical', async () => {
+    const order = {
+      orderCode: 'AR26-DESPIECE', fabric: 'ACR AZUL', structureColor: 'BLANCO',
+      awnings: [{
+        id: 'structure', of: '0230194', model: 'ARZUA PRO', units: 1, width: 337, projection: 225,
+        valanceHeight: 30, device: 'MOTOR', sensor: 'SIN SENSOR', motorPower: '40',
+        tubeLoad: 'TUBO DE CARGA EVO 80', placement: 'FRONTAL', machineSide: 'M.F.DER'
+      }]
+    };
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    const content = await page.getTextContent();
+    const label = content.items.find((item) => item.str === 'DESPIECE');
+
+    expect(label).toBeDefined();
+    expect(Math.abs(label.transform[1])).toBeGreaterThan(0);
+  });
+
   test.runIf(process.platform === 'win32')('incrusta las fuentes para que el PDF sea estable entre visores de PC', async () => {
     const order = {
       orderCode: 'AR-PDF-TEST',
