@@ -26,6 +26,8 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     units: 1,
     width: null,
     projection: null,
+    dropArmMode: 'STANDARD',
+    dropArmVerticalAllowanceCm: null,
     height: null,
     heraJoin: '',
     heraTopFinish: '',

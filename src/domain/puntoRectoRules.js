@@ -10,6 +10,11 @@ import {
   suggestedPuntoRectoArmCount
 } from './puntoRectoParameters.js';
 import {
+  calculateVerticalDropArmFabricDrop,
+  isVerticalDropArmMode,
+  normalizeDropArmMode
+} from './dropArmMode.js';
+import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
   calculateSeparateValance,
@@ -26,6 +31,8 @@ export function calculatePuntoRecto({ order, awning }) {
   const requiredArmCount = suggestedPuntoRectoArmCount(awning.width, parameters);
   const armCount = Number(awning.armCount) || requiredArmCount;
   const modified = Boolean(awning.reglasModificadas);
+  const dropArmMode = normalizeDropArmMode(awning.dropArmMode);
+  const verticalDrop = isVerticalDropArmMode(dropArmMode);
   const diagnostics = [];
   const missingFields = [];
 
@@ -40,13 +47,21 @@ export function calculatePuntoRecto({ order, awning }) {
   const loadBarDiscount = effectiveNumber(awning, 'pointLoadBarDiscountCm', parameters.loadBarDiscounts[device || 'MAQUINA']);
   const dropMultiplier = effectiveNumber(awning, 'pointFabricDropMultiplier', parameters.fabricDropMultiplier);
   const dropAllowance = effectiveNumber(awning, 'pointFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
+  const verticalDropAllowance = effectiveNumber(awning, 'dropArmVerticalAllowanceCm', parameters.verticalFabricDropAllowanceCm);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(awning.width - fabricDiscount);
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
   // La hoja PUNTO RECTO del libro antiguo usa salida + 40 cuando la bamba va en otra tela.
-  const rawFabricDrop = separateValance.requested
-    ? Number(awning.projection) + 40
-    : Number(awning.projection) * dropMultiplier + dropAllowance + valance;
+  const rawFabricDrop = verticalDrop
+    ? calculateVerticalDropArmFabricDrop({
+        projection: awning.projection,
+        allowanceCm: verticalDropAllowance,
+        valanceHeight: valance,
+        separateValance: separateValance.requested
+      })
+    : separateValance.requested
+      ? Number(awning.projection) + 40
+      : Number(awning.projection) * dropMultiplier + dropAllowance + valance;
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(awning.width - rollDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);
@@ -83,11 +98,24 @@ export function calculatePuntoRecto({ order, awning }) {
   } else if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de PUNTO RECTO modificadas.` });
   }
+  if (verticalDrop) {
+    diagnostics.push({
+      level: 'warn',
+      awningId: awning.id,
+      message: `Bajada vertical 170° en OF ${awning.of}: corte de paño ${formatNumber(fabricDrop)} cm. Confirmar el límite de giro y el montaje antes de fabricar.`
+    });
+  }
 
   const context = { awning, device, lacado, fabric, separateValance, stockLength, rollSystem, armCount, motorPower, rollTubeLength, loadBarLength, fabricMl: fabricUsage.ml };
   return {
     of: awning.of,
-    description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl: fabricUsage.ml }),
+    description: buildDescription(awning, {
+      fabricWidth,
+      fabricDrop,
+      fabricMl: fabricUsage.ml,
+      dropArmMode,
+      separateValance: separateValance.requested
+    }),
     materials: valid ? buildMaterials(context) : [],
     despiece: valid ? buildDespiece(context) : null,
     diagnostics,
@@ -105,8 +133,11 @@ export function calculatePuntoRecto({ order, awning }) {
       pointFabricWidthDiscountCm: fabricDiscount,
       pointRollDiscountCm: rollDiscount,
       pointLoadBarDiscountCm: loadBarDiscount,
-      pointFabricDropMultiplier: dropMultiplier,
-      pointFabricDropAllowanceCm: dropAllowance
+      pointFabricDropMultiplier: verticalDrop ? 2 : dropMultiplier,
+      pointFabricDropAllowanceCm: verticalDrop ? verticalDropAllowance : dropAllowance,
+      dropArmMode,
+      dropArmAngle: verticalDrop ? 170 : null,
+      dropArmVerticalAllowanceCm: verticalDropAllowance
     }
   };
 }
@@ -212,8 +243,15 @@ function effectiveNumber(awning, field, fallback) {
 
 function buildDescription(awning, calculation) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const valanceText = valance > 0 ? ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm` : '';
-  return `Toldo PUNTO RECTO ${awning.width}x${awning.projection} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · paño ${formatNumber(calculation.fabricMl)} ml${valanceText}`;
+  const valanceText = valance > 0
+    ? calculation.separateValance
+      ? ` · bambalina separada de ${valance + 5} cm, hecha de ${valance} cm`
+      : ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm`
+    : '';
+  const verticalText = isVerticalDropArmMode(calculation.dropArmMode)
+    ? ` · BAJADA VERTICAL 170° · corte ${formatNumber(calculation.fabricDrop)} cm`
+    : '';
+  return `Toldo PUNTO RECTO ${awning.width}x${awning.projection} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · paño ${formatNumber(calculation.fabricMl)} ml${verticalText}${valanceText}`;
 }
 
 function round1(value) {

@@ -119,6 +119,27 @@ describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
       model: 'ARZUA PRO', height: 245, heraJoin: 'VERTICAL'
     })).toMatchObject({ height: null, heraJoin: '' });
   });
+
+  test('conserva el modo vertical solo cuando se seleccionó explícitamente en un modelo PRT', () => {
+    expect(sanitizeAwning({
+      model: 'AMBAR BOX', dropArmMode: 'VERTICAL_170', dropArmVerticalAllowanceCm: 55
+    })).toMatchObject({ dropArmMode: 'VERTICAL_170', dropArmVerticalAllowanceCm: 55 });
+
+    expect(sanitizeAwning({
+      model: 'ARZUA PRO', dropArmMode: 'VERTICAL_170', dropArmVerticalAllowanceCm: 55
+    })).toMatchObject({ dropArmMode: 'STANDARD', dropArmVerticalAllowanceCm: null });
+  });
+
+  test('no infiere vertical desde una excepción histórica con multiplicador 2', () => {
+    expect(sanitizeAwning({
+      model: 'AMBAR BOX', reglasModificadas: true,
+      ambarFabricDropMultiplier: 2, ambarFabricDropAllowanceCm: 55
+    })).toMatchObject({
+      dropArmMode: 'STANDARD',
+      ambarFabricDropMultiplier: 2,
+      ambarFabricDropAllowanceCm: 55
+    });
+  });
 });
 
 describe('defaultDraft', () => {
@@ -261,6 +282,19 @@ describe('switchAwningModel', () => {
     expect(result).toMatchObject({
       of: '0230335', units: 2, width: 596, projection: 300,
       hasValance: true, valanceHeight: 15, placement: 'TECHO', armCount: 3
+    });
+  });
+
+  test('conserva el modo vertical al pasar entre Ámbar y Punto Recto sin arrastrar excepciones ocultas', () => {
+    const ambar = {
+      ...createAwning(), model: 'AMBAR BOX',
+      dropArmMode: 'VERTICAL_170' as const, dropArmVerticalAllowanceCm: 55
+    };
+    const point = switchAwningModel(ambar, 'PUNTO RECTO');
+
+    expect(point).toMatchObject({ dropArmMode: 'VERTICAL_170', dropArmVerticalAllowanceCm: null });
+    expect(switchAwningModel(point, 'ARZUA PRO')).toMatchObject({
+      dropArmMode: 'STANDARD', dropArmVerticalAllowanceCm: null
     });
   });
 

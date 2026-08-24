@@ -15,6 +15,7 @@ import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeModelName } from './modelNames.js';
+import { normalizeDropArmModeForModel, supportsVerticalDropArm } from './dropArmMode.js';
 import { inferHeraVariant, normalizeHeraJoin } from './heraParameters.js';
 import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
 
@@ -119,6 +120,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     units,
     width,
     projection,
+    dropArmMode: normalizeDropArmModeForModel(model, awning?.dropArmMode),
+    dropArmVerticalAllowanceCm: supportsVerticalDropArm(model) ? nullableNumber(awning?.dropArmVerticalAllowanceCm) : null,
     height: numberOrDefault(awning?.height, 0),
     hasValance,
     armCount: numberOrDefault(awning?.armCount, 0),

@@ -56,9 +56,121 @@ describe('Ámbar Box', () => {
     expect(result.diagnostics[0].level).toBe('warn');
   });
 
+  it('calcula la bajada vertical 170° con el antecedente real de salida 140', () => {
+    const result = calculateAmbarBox({
+      order: baseOrder,
+      awning: {
+        ...baseAwning,
+        projection: 140,
+        dropArmMode: 'VERTICAL_170'
+      }
+    });
+
+    expect(result.calculation).toMatchObject({
+      valid: true,
+      fabricDrop: 320,
+      fabricUsageDrop: 320,
+      fabricPanels: 3,
+      fabricMl: 9.6,
+      dropArmMode: 'VERTICAL_170',
+      dropArmAngle: 170,
+      dropArmVerticalAllowanceCm: 40,
+      ambarFabricDropMultiplier: 2,
+      ambarFabricDropAllowanceCm: 40
+    });
+    expect(result.description).toContain('BAJADA VERTICAL 170°');
+    expect(result.materials).toContainEqual(expect.objectContaining({ code: 'ACRILI2143P120', quantity: 9.6 }));
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({
+      level: 'warn',
+      message: expect.stringContaining('corte de paño 320 cm')
+    }));
+  });
+
+  it('aplica el margen vertical configurado en parámetros', () => {
+    const result = calculateAmbarBox({
+      order: {
+        ...baseOrder,
+        parameters: {
+          ambarBox: {
+            ...defaultAmbarBoxParameters,
+            verticalFabricDropAllowanceCm: 45
+          }
+        }
+      },
+      awning: {
+        ...baseAwning,
+        projection: 140,
+        dropArmMode: 'VERTICAL_170'
+      }
+    });
+
+    expect(result.calculation).toMatchObject({
+      fabricDrop: 325,
+      dropArmVerticalAllowanceCm: 45
+    });
+  });
+
+  it('en vertical corta la bambalina de otro tejido por separado', () => {
+    const result = calculateAmbarBox({
+      order: baseOrder,
+      awning: {
+        ...baseAwning,
+        projection: 140,
+        valanceHeight: 20,
+        valanceFabric: 'ACRILI2143P120',
+        dropArmMode: 'VERTICAL_170'
+      }
+    });
+
+    expect(result.calculation).toMatchObject({
+      fabricDrop: 320,
+      fabricMl: 9.6,
+      valanceDrop: 25,
+      valanceFabricMl: 0.75
+    });
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ACRILI2143P120', quantity: 9.6 }),
+      expect.objectContaining({ code: 'ACRILI2143P120', quantity: 0.75, description: expect.stringContaining('BAMBA') })
+    ]));
+    expect(result.description).toContain('bambalina separada de 25 cm');
+    expect(result.description).not.toContain('bambalina incluida');
+  });
+
+  it('permite ajustar solo el margen vertical mediante excepción técnica', () => {
+    const result = calculateAmbarBox({
+      order: baseOrder,
+      awning: {
+        ...baseAwning,
+        projection: 140,
+        dropArmMode: 'VERTICAL_170',
+        reglasModificadas: true,
+        dropArmVerticalAllowanceCm: 55
+      }
+    });
+
+    expect(result.calculation).toMatchObject({
+      fabricDrop: 335,
+      dropArmVerticalAllowanceCm: 55
+    });
+  });
+
   it('bloquea el frente superior a 500 sin excepción', () => {
     const result = calculateAmbarBox({ order: baseOrder, awning: { ...baseAwning, width: 571 } });
     expect(result.calculation.valid).toBe(false);
     expect(result.diagnostics[0].message).toContain('máximo estándar');
+  });
+
+  it('la bajada vertical no relaja los límites estándar', () => {
+    const result = calculateAmbarBox({
+      order: baseOrder,
+      awning: { ...baseAwning, width: 571, dropArmMode: 'VERTICAL_170' }
+    });
+
+    expect(result.calculation.valid).toBe(false);
+    expect(result.materials).toEqual([]);
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({
+      level: 'error',
+      message: expect.stringContaining('máximo estándar')
+    }));
   });
 });

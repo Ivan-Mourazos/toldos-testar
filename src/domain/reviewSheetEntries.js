@@ -6,6 +6,7 @@ import {
   normalizeAnticaVariant,
   resolveAnticaRoundEntry
 } from './anticaRules.js';
+import { normalizeDropArmMode, supportsVerticalDropArm } from './dropArmMode.js';
 
 const legacyModelNames = {
   'AMBAR BOX': 'Microbox 300', 'AGATA BOX': 'Modul 400 / Modulbox', 'CUARZO BOX': 'Storbox 250',
@@ -26,7 +27,8 @@ const preferredLabels = {
   'TOLDO-VELCRO': 'Toldo con velcro',
   'CAMBIO ENROLLABLE': 'Cambio de enrollable',
   SUPLEMENTO: 'Suplemento con broches',
-  BASE: 'Salida base', FINISHED: 'Tela terminada'
+  BASE: 'Salida base', FINISHED: 'Tela terminada',
+  STANDARD: 'Estándar', VERTICAL_170: 'Bajada vertical 170°'
 };
 
 export function buildReviewSheetEntries(order, calculation) {
@@ -56,10 +58,16 @@ export function buildReviewSheetEntries(order, calculation) {
         : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
     }
+    if (supportsVerticalDropArm(awning.model)) {
+      addField(cardFields, 'Posición de trabajo', normalizeDropArmMode(awning.dropArmMode), true);
+    }
     if (isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (!fabricOnly && ofBlock?.calculation) {
       addField(cardFields, 'Frente tela', measure(ofBlock.calculation.fabricWidth), true);
       addField(cardFields, 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
+      if (normalizeDropArmMode(ofBlock.calculation.dropArmMode) === 'VERTICAL_170') {
+        addField(cardFields, 'Margen vertical', measure(ofBlock.calculation.dropArmVerticalAllowanceCm), true);
+      }
     }
     if (isHera && ofBlock?.calculation) {
       const calc = ofBlock.calculation;

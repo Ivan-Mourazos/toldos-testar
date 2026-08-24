@@ -277,7 +277,8 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
     ['LACADO', awning.structureColor || order.structureColor],
     ['DISPOSIT.', awning.device],
     [String(awning.device || '').toUpperCase() === 'MOTOR' ? 'POS. MOTOR' : 'COLOC. MAQ.', awning.machineSide],
-    ['COLOC. TOLD.', awning.placement]
+    ['COLOC. TOLD.', awning.placement],
+    ...(calc?.dropArmMode === 'VERTICAL_170' ? [['TRABAJO', 'BAJADA VERTICAL 170°']] : [])
   ], 11);
 
   drawMiniTable(doc, x, y + 197, w, 'DIMENSIONES TELA', [
@@ -1520,6 +1521,12 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
   const height = Math.max(0, Number(awning.valanceHeight) || 0);
   const separateValance = Boolean(calculation.valanceFabricCode || awning.valanceFabric);
   const instructionParts = [];
+
+  if (calculation.dropArmMode === 'VERTICAL_170') {
+    instructionParts.push(
+      `BAJADA VERTICAL 170° - CORTE ${formatInstructionMeasure(calculation.fabricDrop)}CM - MARGEN ${formatInstructionMeasure(calculation.dropArmVerticalAllowanceCm)}CM`
+    );
+  }
 
   if (height > 0 && !['ENROLLABLE', 'BAMBALINA'].includes(model)) {
     if (separateValance) {

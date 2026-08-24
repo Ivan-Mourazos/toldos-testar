@@ -6,6 +6,11 @@ import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { ambarPlacementGroup, normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
 import {
+  calculateVerticalDropArmFabricDrop,
+  isVerticalDropArmMode,
+  normalizeDropArmMode
+} from './dropArmMode.js';
+import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
   calculateSeparateValance,
@@ -22,6 +27,8 @@ export function calculateAmbarBox({ order, awning }) {
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
   const modified = Boolean(awning.reglasModificadas);
+  const dropArmMode = normalizeDropArmMode(awning.dropArmMode);
+  const verticalDrop = isVerticalDropArmMode(dropArmMode);
   const diagnostics = [];
   const missingFields = [];
 
@@ -38,11 +45,19 @@ export function calculateAmbarBox({ order, awning }) {
   };
   const dropMultiplier = effectiveNumber(awning, 'ambarFabricDropMultiplier', parameters.fabricDropMultiplier);
   const dropAllowance = effectiveNumber(awning, 'ambarFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
+  const verticalDropAllowance = effectiveNumber(awning, 'dropArmVerticalAllowanceCm', parameters.verticalFabricDropAllowanceCm);
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(Number(awning.width) - discounts.fabric);
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
   const mainDropAllowance = separateValance.requested ? Math.max(0, dropAllowance - 5) : dropAllowance;
-  const fabricDropRaw = Number(awning.projection) * dropMultiplier + mainDropAllowance + (separateValance.requested ? 0 : valance);
+  const fabricDropRaw = verticalDrop
+    ? calculateVerticalDropArmFabricDrop({
+        projection: awning.projection,
+        allowanceCm: verticalDropAllowance,
+        valanceHeight: valance,
+        separateValance: separateValance.requested
+      })
+    : Number(awning.projection) * dropMultiplier + mainDropAllowance + (separateValance.requested ? 0 : valance);
   const fabricDrop = round1(fabricDropRaw);
   const rollTubeLength = round1(Number(awning.width) - discounts.roll);
   const structureLength = round1(Number(awning.width) - discounts.profile);
@@ -79,6 +94,13 @@ export function calculateAmbarBox({ order, awning }) {
   } else if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de ÁMBAR BOX modificadas.` });
   }
+  if (verticalDrop) {
+    diagnostics.push({
+      level: 'warn',
+      awningId: awning.id,
+      message: `Bajada vertical 170° en OF ${awning.of}: corte de paño ${formatNumber(fabricDrop)} cm. Verificar la capacidad de enrolle según frente, tubo y tejido antes de fabricar.`
+    });
+  }
 
   const context = {
     awning, device, placement, lacado, fabric, separateValance, profileStockLength, rollStockLength,
@@ -86,7 +108,13 @@ export function calculateAmbarBox({ order, awning }) {
   };
   return {
     of: awning.of,
-    description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl: fabricUsage.ml }),
+    description: buildDescription(awning, {
+      fabricWidth,
+      fabricDrop,
+      fabricMl: fabricUsage.ml,
+      dropArmMode,
+      separateValance: separateValance.requested
+    }),
     materials: valid ? buildMaterials(context) : [],
     despiece: valid ? buildDespiece(context) : null,
     diagnostics,
@@ -104,8 +132,11 @@ export function calculateAmbarBox({ order, awning }) {
       ambarFabricWidthDiscountCm: discounts.fabric,
       ambarRollDiscountCm: discounts.roll,
       ambarProfileDiscountCm: discounts.profile,
-      ambarFabricDropMultiplier: dropMultiplier,
-      ambarFabricDropAllowanceCm: dropAllowance
+      ambarFabricDropMultiplier: verticalDrop ? 2 : dropMultiplier,
+      ambarFabricDropAllowanceCm: verticalDrop ? verticalDropAllowance : dropAllowance,
+      dropArmMode,
+      dropArmAngle: verticalDrop ? 170 : null,
+      dropArmVerticalAllowanceCm: verticalDropAllowance
     }
   };
 }
@@ -240,8 +271,15 @@ function chooseStock(length, stockLengths) {
 
 function buildDescription(awning, calculation) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
-  const valanceText = valance > 0 ? ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm` : '';
-  return `Toldo ÁMBAR BOX ${awning.width}x${awning.projection} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · paño ${formatNumber(calculation.fabricMl)} ml${valanceText}`;
+  const valanceText = valance > 0
+    ? calculation.separateValance
+      ? ` · bambalina separada de ${valance + 5} cm, hecha de ${valance} cm`
+      : ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm`
+    : '';
+  const verticalText = isVerticalDropArmMode(calculation.dropArmMode)
+    ? ` · BAJADA VERTICAL 170° · corte ${formatNumber(calculation.fabricDrop)} cm`
+    : '';
+  return `Toldo ÁMBAR BOX ${awning.width}x${awning.projection} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · paño ${formatNumber(calculation.fabricMl)} ml${verticalText}${valanceText}`;
 }
 
 function round1(value) {

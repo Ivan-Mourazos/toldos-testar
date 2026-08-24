@@ -81,4 +81,100 @@ describe('PUNTO RECTO contra hoja y reservas reales', () => {
     expect(ofBlock.calculation).toMatchObject({ valid: true, fabricWidth: 280.3, fabricDrop: 280, fabricMl: 8.4 });
     expect(result.diagnostics[0]).toMatchObject({ level: 'warn' });
   });
+
+  test('calcula la bajada vertical 170° con salida por dos y margen 40', () => {
+    const result = order({
+      projection: 120,
+      valanceHeight: 0,
+      dropArmMode: 'VERTICAL_170'
+    });
+    const ofBlock = result.ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      valid: true,
+      fabricDrop: 280,
+      fabricUsageDrop: 280,
+      dropArmMode: 'VERTICAL_170',
+      dropArmAngle: 170,
+      dropArmVerticalAllowanceCm: 40,
+      pointFabricDropMultiplier: 2,
+      pointFabricDropAllowanceCm: 40
+    });
+    expect(ofBlock.description).toContain('BAJADA VERTICAL 170°');
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({
+      level: 'warn',
+      message: expect.stringContaining('corte de paño 280 cm')
+    }));
+  });
+
+  test('aplica el margen vertical configurado en parámetros', () => {
+    const ofBlock = order(
+      { projection: 120, valanceHeight: 0, dropArmMode: 'VERTICAL_170' },
+      { parameters: { puntoRecto: { verticalFabricDropAllowanceCm: 45 } } }
+    ).ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      fabricDrop: 285,
+      dropArmVerticalAllowanceCm: 45
+    });
+  });
+
+  test('en vertical suma la bambalina integrada', () => {
+    const ofBlock = order({
+      projection: 120,
+      valanceHeight: 25,
+      dropArmMode: 'VERTICAL_170'
+    }).ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      fabricDrop: 305,
+      fabricPanels: 3,
+      fabricMl: 9.15,
+      reservedFabricMl: 9.15
+    });
+    expect(ofBlock.materials).toContainEqual(expect.objectContaining({
+      code: 'ACRILI1533P120', quantity: 9.15
+    }));
+  });
+
+  test('en vertical no suma la bambalina cuando se corta en otro tejido', () => {
+    const ofBlock = order({
+      projection: 120,
+      valanceHeight: 25,
+      valanceFabric: 'ACRILI2143P120',
+      dropArmMode: 'VERTICAL_170'
+    }).ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({
+      fabricDrop: 280,
+      fabricMl: 8.4,
+      reservedFabricMl: 8.4,
+      valanceDrop: 30,
+      valanceFabricMl: 0.9,
+      reservedValanceFabricMl: 0.9,
+      totalReservedFabricMl: 9.3
+    });
+    expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ACRILI1533P120', quantity: 8.4 }),
+      expect.objectContaining({ code: 'ACRILI2143P120', quantity: 0.9, description: expect.stringContaining('BAMBA') })
+    ]));
+    expect(ofBlock.description).toContain('bambalina separada de 30 cm');
+    expect(ofBlock.description).not.toContain('bambalina incluida');
+  });
+
+  test('la bajada vertical no permite omitir el tercer brazo', () => {
+    const result = order({
+      width: 524,
+      projection: 120,
+      armCount: 2,
+      dropArmMode: 'VERTICAL_170'
+    });
+
+    expect(result.ofs[0].calculation).toMatchObject({ valid: false, requiredArmCount: 3 });
+    expect(result.ofs[0].materials).toEqual([]);
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({
+      level: 'error',
+      message: expect.stringContaining('al menos 3 brazos')
+    }));
+  });
 });

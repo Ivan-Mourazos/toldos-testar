@@ -124,6 +124,22 @@ describe('datos del planteamiento de telas', () => {
     });
   });
 
+  test('rotula la bajada vertical, el corte y el margen en cada toldo', () => {
+    const detail = buildFabricLineDetail(
+      { model: 'AMBAR BOX', units: 1, dropArmMode: 'VERTICAL_170' },
+      {
+        fabricWidth: 353,
+        fabricDrop: 320,
+        dropArmMode: 'VERTICAL_170',
+        dropArmVerticalAllowanceCm: 40
+      }
+    );
+
+    expect(detail.instruction).toContain('BAJADA VERTICAL 170°');
+    expect(detail.instruction).toContain('CORTE 320CM');
+    expect(detail.instruction).toContain('MARGEN 40CM');
+  });
+
   test('una bamba de tejido distinto se marca como NO INCLUIDA y muestra su tejido', () => {
     const detail = buildFabricLineDetail(
       {

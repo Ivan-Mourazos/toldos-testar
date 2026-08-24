@@ -68,6 +68,26 @@ describe('PDF provisional de revisión', () => {
     expect(entry.fields).toContainEqual({ label: 'Dibujo de confección', value: 'Toldo con velcro' });
   });
 
+  test('muestra el modo vertical y su margen en la revisión provisional', () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [{
+      ...base,
+      model: 'AMBAR BOX',
+      width: 364,
+      projection: 140,
+      valanceHeight: 0,
+      placement: 'FRONTAL',
+      device: 'MAQUINA',
+      crankHeight: 150,
+      dropArmMode: 'VERTICAL_170'
+    }] });
+    const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
+
+    expect(entry.fields).toContainEqual({ label: 'Posición de trabajo', value: 'Bajada vertical 170°' });
+    expect(entry.fields).toContainEqual({ label: 'Salida tela', value: '320' });
+    expect(entry.fields).toContainEqual({ label: 'Margen vertical', value: '40' });
+  });
+
   test('incluye frente y salida de tela calculados en un toldo con tejido no acrílico', async () => {
     const order = reviewOrder({ fabric: 'ALPHAAM03P250' });
     const calculation = calculateOrder(order);

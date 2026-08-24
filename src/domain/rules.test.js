@@ -474,6 +474,25 @@ describe('normalización de campos nuevos del pedido', () => {
     });
   });
 
+  test('normalizeOrder acepta la bajada vertical solo en modelos de punto recto', () => {
+    const normalized = normalizeOrder(basePayload({
+      awnings: [
+        baseAwning({ model: 'AMBAR BOX', dropArmMode: 'VERTICAL_170', dropArmVerticalAllowanceCm: 55 }),
+        baseAwning({ model: 'PUNTO RECTO', dropArmMode: 'MODO INVENTADO', dropArmVerticalAllowanceCm: 60 }),
+        baseAwning({ model: 'ARZUA PRO', dropArmMode: 'VERTICAL_170', dropArmVerticalAllowanceCm: 65 })
+      ]
+    }));
+
+    expect(normalized.awnings.map(({ dropArmMode, dropArmVerticalAllowanceCm }) => ({
+      dropArmMode,
+      dropArmVerticalAllowanceCm
+    }))).toEqual([
+      { dropArmMode: 'VERTICAL_170', dropArmVerticalAllowanceCm: 55 },
+      { dropArmMode: 'STANDARD', dropArmVerticalAllowanceCm: 60 },
+      { dropArmMode: 'STANDARD', dropArmVerticalAllowanceCm: null }
+    ]);
+  });
+
   test('normalizeOrder aplica COMO TELA si hay bamba y el remate llega vacío', () => {
     const normalized = normalizeOrder(basePayload({
       remate: '',

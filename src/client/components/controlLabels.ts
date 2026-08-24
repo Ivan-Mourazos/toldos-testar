@@ -33,6 +33,8 @@ const preferredLabels: Record<string, string> = {
   'SUPLEMENTO': 'Suplemento con broches',
   'BASE': 'Salida base',
   'FINISHED': 'Tela terminada',
+  'STANDARD': 'Estándar',
+  'VERTICAL_170': 'Bajada vertical 170°',
   'SI': 'Sí',
   'NO': 'No'
 };

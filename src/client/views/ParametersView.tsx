@@ -647,10 +647,11 @@ function PuntoRectoParametersView({ parameters, selectedModel, onSelectModel, on
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Multiplicador de la salida" value={parameters.fabricDropMultiplier} min={0.1} step={0.01} onChange={(value) => value !== null && onUpdate({ fabricDropMultiplier: value })} />
           <NumberField label="Margen fijo de paño (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
+          <NumberField label="Margen bajada vertical (cm)" value={parameters.verticalFabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ verticalFabricDropAllowanceCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-        <p className="parameter-note">Caída del paño = salida × multiplicador + margen fijo + bamba. El valor {parameters.fabricDropMultiplier.toFixed(3)} representa la diagonal aproximada del brazo.</p>
+        <p className="parameter-note">Estándar: salida × multiplicador + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</p>
       </div>
 
       <div className="parameter-band">
@@ -861,9 +862,11 @@ function AmbarBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Factor diagonal" value={parameters.fabricDropMultiplier} min={0.1} step={0.01} onChange={(value) => value !== null && onUpdate({ fabricDropMultiplier: value })} />
           <NumberField label="Margen fijo de paño (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
+          <NumberField label="Margen bajada vertical (cm)" value={parameters.verticalFabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ verticalFabricDropAllowanceCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
+        <p className="parameter-note">Estándar: salida × factor diagonal + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</p>
       </div>
 
       <div className="parameter-band">

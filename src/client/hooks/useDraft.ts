@@ -5,6 +5,12 @@ import { formOptions, getModelBehavior, getModelWorkType, normalizeFabricDiagram
 import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
 import { inferHeraVariant, normalizeHeraJoin } from '../../domain/heraParameters.js';
 import { normalizeModelName } from '../../domain/modelNames.js';
+import {
+  DROP_ARM_MODE_STANDARD,
+  normalizeDropArmMode,
+  normalizeDropArmModeForModel,
+  supportsVerticalDropArm
+} from '../../domain/dropArmMode.js';
 
 const legacyStorageKeyV4 = 'toldos-testar-draft-v4';
 const legacyStorageKeyV3 = 'toldos-testar-draft-v3';
@@ -43,6 +49,13 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (old.machineSide === 'DERECHA') base.machineSide = 'M.F.DER';
   if (old.machineSide === 'IZQUIERDA') base.machineSide = 'M.F IZQ';
   base.reglasModificadas = typeof old.reglasModificadas === 'boolean' ? old.reglasModificadas : false;
+  base.dropArmMode = normalizeDropArmModeForModel(
+    base.model,
+    old.dropArmMode
+  ) as Awning['dropArmMode'];
+  base.dropArmVerticalAllowanceCm = supportsVerticalDropArm(base.model)
+    ? nullableNumber(old.dropArmVerticalAllowanceCm)
+    : null;
   base.fabric = typeof old.fabric === 'string' ? old.fabric : '';
   base.height = base.model === 'HERA' ? nullableNumber(old.height) : null;
   base.submodel = base.model === 'HERA'
@@ -385,6 +398,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
   const isMaxiscreem = model === 'MAXISCREEM';
   const isAntica = model === 'ANTICA' || model === 'CAMBIO ANTICA';
   const isHera = model === 'HERA';
+  const isDropArmModel = supportsVerticalDropArm(model);
+  const keepDropArmMode = isDropArmModel && supportsVerticalDropArm(awning.model);
   const supportsValance = (getModelBehavior(model).dimensions || []).includes('valanceHeight');
   return {
     ...fresh,
@@ -394,6 +409,10 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     units: awning.units,
     width: awning.width,
     projection: awning.projection,
+    dropArmMode: isDropArmModel
+      ? keepDropArmMode ? normalizeDropArmMode(awning.dropArmMode) as Awning['dropArmMode'] : DROP_ARM_MODE_STANDARD
+      : DROP_ARM_MODE_STANDARD,
+    dropArmVerticalAllowanceCm: null,
     height: isHera ? awning.height : null,
     heraJoin: isHera ? awning.heraJoin : '',
     heraTopFinish: isHera ? (awning.heraTopFinish || 'VARILLA PLANA') : '',

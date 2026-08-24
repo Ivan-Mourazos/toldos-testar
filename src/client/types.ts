@@ -22,6 +22,8 @@ export type Awning = {
   units: number | null;
   width: number | null;
   projection: number | null;
+  dropArmMode: 'STANDARD' | 'VERTICAL_170';
+  dropArmVerticalAllowanceCm: number | null;
   height: number | null;
   heraJoin: '' | 'NINGUNO' | 'VERTICAL' | 'HORIZONTAL';
   heraTopFinish: string;
@@ -198,6 +200,7 @@ export type PuntoRectoParameters = {
   armSwitchWidth: number;
   fabricDropMultiplier: number;
   fabricDropAllowanceCm: number;
+  verticalFabricDropAllowanceCm: number;
   seamAllowanceCm: number;
   seamBaseCm: number;
   stockLengths: number[];
@@ -260,6 +263,7 @@ export type AmbarBoxParameters = {
   standardMaxWidth: number;
   fabricDropMultiplier: number;
   fabricDropAllowanceCm: number;
+  verticalFabricDropAllowanceCm: number;
   seamAllowanceCm: number;
   seamBaseCm: number;
   profileStockLengths: number[];
@@ -348,6 +352,9 @@ export type Calculation = {
       minimumLine: number;
       fabricWidth: number;
       fabricDrop: number;
+      dropArmMode?: Awning['dropArmMode'];
+      dropArmAngle?: number | null;
+      dropArmVerticalAllowanceCm?: number;
       fabricUsageDrop?: number;
       fabricMl: number;
       totalFabricMl?: number;

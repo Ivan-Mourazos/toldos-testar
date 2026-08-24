@@ -24,6 +24,12 @@ import {
   normalizeAnticaVariant,
   resolveAnticaRoundEntry
 } from '../../domain/anticaRules.js';
+import {
+  calculateVerticalDropArmFabricDrop,
+  dropArmModeOptions,
+  isVerticalDropArmMode,
+  normalizeDropArmMode
+} from '../../domain/dropArmMode.js';
 
 type Props = {
   awning: Awning;
@@ -101,7 +107,22 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     : null;
   const agataDiscounts = agataDevice ? parameters.agataBox.discounts[agataVariant][agataDevice] : null;
   const hasValance = awning.model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
-  const hasSeparateValance = hasValance && Boolean(awning.valanceFabric);
+  const hasSeparateValance = hasValance && Boolean(awning.valanceFabric.trim());
+  const isDropArmModel = isAmbarBox || isPuntoRecto;
+  const dropArmMode = normalizeDropArmMode(awning.dropArmMode);
+  const verticalDrop = isVerticalDropArmMode(dropArmMode);
+  const defaultVerticalAllowance = isAmbarBox
+    ? parameters.ambarBox.verticalFabricDropAllowanceCm
+    : parameters.puntoRecto.verticalFabricDropAllowanceCm;
+  const verticalDropAllowance = awning.reglasModificadas && awning.dropArmVerticalAllowanceCm != null
+    ? Math.max(0, Number(awning.dropArmVerticalAllowanceCm) || 0)
+    : defaultVerticalAllowance;
+  const verticalFabricDrop = calculateVerticalDropArmFabricDrop({
+    projection: awning.projection,
+    allowanceCm: verticalDropAllowance,
+    valanceHeight: awning.valanceHeight ?? 0,
+    separateValance: hasSeparateValance
+  });
   const roundAnticaDefaultAllowance = roundAnticaEntry
     ? hasSeparateValance
       ? roundAnticaEntry.cambioSeparateValanceAllowanceCm
@@ -255,7 +276,8 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                     pointRollDiscountCm: awning.pointRollDiscountCm ?? parameters.puntoRecto.rollTubeDiscounts[boxDevice || 'MAQUINA'],
                     pointLoadBarDiscountCm: awning.pointLoadBarDiscountCm ?? parameters.puntoRecto.loadBarDiscounts[boxDevice || 'MAQUINA'],
                     pointFabricDropMultiplier: awning.pointFabricDropMultiplier ?? parameters.puntoRecto.fabricDropMultiplier,
-                    pointFabricDropAllowanceCm: awning.pointFabricDropAllowanceCm ?? parameters.puntoRecto.fabricDropAllowanceCm
+                    pointFabricDropAllowanceCm: awning.pointFabricDropAllowanceCm ?? parameters.puntoRecto.fabricDropAllowanceCm,
+                    dropArmVerticalAllowanceCm: awning.dropArmVerticalAllowanceCm ?? parameters.puntoRecto.verticalFabricDropAllowanceCm
                   }
                 : {}),
               ...(isMonoblock350 && !awning.reglasModificadas
@@ -285,7 +307,8 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                     ambarRollDiscountCm: awning.ambarRollDiscountCm ?? parameters.ambarBox.rollTubeDiscounts[ambarGroup][boxDevice],
                     ambarProfileDiscountCm: awning.ambarProfileDiscountCm ?? parameters.ambarBox.profileDiscounts[ambarGroup][boxDevice],
                     ambarFabricDropMultiplier: awning.ambarFabricDropMultiplier ?? parameters.ambarBox.fabricDropMultiplier,
-                    ambarFabricDropAllowanceCm: awning.ambarFabricDropAllowanceCm ?? parameters.ambarBox.fabricDropAllowanceCm
+                    ambarFabricDropAllowanceCm: awning.ambarFabricDropAllowanceCm ?? parameters.ambarBox.fabricDropAllowanceCm,
+                    dropArmVerticalAllowanceCm: awning.dropArmVerticalAllowanceCm ?? parameters.ambarBox.verticalFabricDropAllowanceCm
                   }
                 : {}),
               ...(isAgataBox && !awning.reglasModificadas && agataDevice && agataDiscounts
@@ -335,6 +358,27 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           ) : (
             <NumberField label={projectionLabel} value={awning.projection} min={0} onChange={updateProjection} />
           ))}
+          {isDropArmModel && (
+            <div className={`awning-form-section drop-arm-mode${verticalDrop ? ' is-vertical' : ''}`}>
+              <span className="awning-form-section-title">Recorrido de los brazos PRT</span>
+              <SegmentedField
+                label="Posición de trabajo"
+                value={dropArmMode}
+                options={[...dropArmModeOptions]}
+                onChange={(dropArmMode) => update({ dropArmMode: dropArmMode as Awning['dropArmMode'] })}
+              />
+              {verticalDrop && (
+                <div className="drop-arm-mode-summary" role="note">
+                  <strong>Corte vertical previsto: {formatDropArmMeasure(verticalFabricDrop)} cm</strong>
+                  <span>
+                    2 × salida + {formatDropArmMeasure(verticalDropAllowance)} cm
+                    {hasSeparateValance ? '; la bambalina se corta aparte.' : Number(awning.valanceHeight) > 0 ? ' + bambalina incluida.' : '.'}
+                    {isAmbarBox ? ' Verificar la capacidad de enrolle según frente, tubo y tejido.' : ' Confirmar montaje con un máximo de trabajo de 170°.'}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
           {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
             <NumberField label="Altura instalación" value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
           )}
@@ -536,8 +580,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                 <NumberField label="Descuento frente tela (cm)" value={awning.pointFabricWidthDiscountCm} min={0} step={0.1} onChange={(pointFabricWidthDiscountCm) => update({ pointFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.pointRollDiscountCm} min={0} step={0.1} onChange={(pointRollDiscountCm) => update({ pointRollDiscountCm })} />
                 <NumberField label="Descuento Univers 270 (cm)" value={awning.pointLoadBarDiscountCm} min={0} step={0.1} onChange={(pointLoadBarDiscountCm) => update({ pointLoadBarDiscountCm })} />
-                <NumberField label="Factor diagonal de paño" value={awning.pointFabricDropMultiplier} min={0} step={0.01} onChange={(pointFabricDropMultiplier) => update({ pointFabricDropMultiplier })} />
-                <NumberField label="Margen fijo de paño (cm)" value={awning.pointFabricDropAllowanceCm} min={0} step={0.5} onChange={(pointFabricDropAllowanceCm) => update({ pointFabricDropAllowanceCm })} />
+                {verticalDrop ? (
+                  <NumberField label="Margen bajada vertical (cm)" value={awning.dropArmVerticalAllowanceCm} min={0} step={0.5} onChange={(dropArmVerticalAllowanceCm) => update({ dropArmVerticalAllowanceCm })} />
+                ) : <>
+                  <NumberField label="Factor diagonal de paño" value={awning.pointFabricDropMultiplier} min={0} step={0.01} onChange={(pointFabricDropMultiplier) => update({ pointFabricDropMultiplier })} />
+                  <NumberField label="Margen fijo de paño (cm)" value={awning.pointFabricDropAllowanceCm} min={0} step={0.5} onChange={(pointFabricDropAllowanceCm) => update({ pointFabricDropAllowanceCm })} />
+                </>}
               </>}
               {isMonoblock350 && <>
                 <NumberField label="Frente mínimo (cm)" value={awning.monoblockMinimumLineCm} min={0} step={0.1} onChange={(monoblockMinimumLineCm) => update({ monoblockMinimumLineCm })} />
@@ -561,8 +609,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                 <NumberField label="Descuento frente tela (cm)" value={awning.ambarFabricWidthDiscountCm} min={0} step={0.1} onChange={(ambarFabricWidthDiscountCm) => update({ ambarFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.ambarRollDiscountCm} min={0} step={0.1} onChange={(ambarRollDiscountCm) => update({ ambarRollDiscountCm })} />
                 <NumberField label="Descuento kit perfiles (cm)" value={awning.ambarProfileDiscountCm} min={0} step={0.1} onChange={(ambarProfileDiscountCm) => update({ ambarProfileDiscountCm })} />
-                <NumberField label="Factor diagonal de paño" value={awning.ambarFabricDropMultiplier} min={0} step={0.01} onChange={(ambarFabricDropMultiplier) => update({ ambarFabricDropMultiplier })} />
-                <NumberField label="Margen fijo de paño (cm)" value={awning.ambarFabricDropAllowanceCm} min={0} step={0.5} onChange={(ambarFabricDropAllowanceCm) => update({ ambarFabricDropAllowanceCm })} />
+                {verticalDrop ? (
+                  <NumberField label="Margen bajada vertical (cm)" value={awning.dropArmVerticalAllowanceCm} min={0} step={0.5} onChange={(dropArmVerticalAllowanceCm) => update({ dropArmVerticalAllowanceCm })} />
+                ) : <>
+                  <NumberField label="Factor diagonal de paño" value={awning.ambarFabricDropMultiplier} min={0} step={0.01} onChange={(ambarFabricDropMultiplier) => update({ ambarFabricDropMultiplier })} />
+                  <NumberField label="Margen fijo de paño (cm)" value={awning.ambarFabricDropAllowanceCm} min={0} step={0.5} onChange={(ambarFabricDropAllowanceCm) => update({ ambarFabricDropAllowanceCm })} />
+                </>}
               </>}
               {isAgataBox && <>
                 <NumberField label="Frente mínimo (cm)" value={awning.agataMinimumLineCm} min={0} step={0.1} onChange={(agataMinimumLineCm) => update({ agataMinimumLineCm })} />
@@ -606,6 +658,10 @@ function awningLetter(index: number) {
     value = Math.floor(value / 26);
   }
   return label;
+}
+
+function formatDropArmMeasure(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
 }
 
 function normalizeCortinaDevice(value: string): CortinaDevice | null {
