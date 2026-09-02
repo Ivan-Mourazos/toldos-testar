@@ -549,13 +549,14 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     expect(ofBlock.calculation).toMatchObject({
       valid: true,
       minimumLine: 270,
-      fabricWidth: 326,
+      fabricWidth: 326.2,
       fabricDrop: 300,
       fabricMl: 9,
       structureLength: 327.2,
       rollTubeLength: 327.2,
       stockLength: 600,
-      motorPower: '55/17'
+      motorPower: '55/17',
+      requiredMotorTorqueNm: 40
     });
     expect(asLines(ofBlock.materials)).toEqual([
       'ACRILI2018P120 x9', 'BONYXBL16225C x1', 'CORONALT6078 x1',

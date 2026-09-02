@@ -11,6 +11,7 @@ export function useVisibleFields(awning: Awning) {
       galicia: awning.model === 'GALICIA',
       hera: awning.model === 'HERA',
       curtain: awning.model.includes('CORTINA'),
+      selena: awning.model === 'SELENA',
       tubeOptions: behavior.tubeOptions || [],
       submodelOptions: behavior.submodelOptions || [],
       armOptions: behavior.armOptions || formArmOptions,

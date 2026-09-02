@@ -9,6 +9,18 @@ Revisión: 2026-07-17.
 - Planteamientos PDF: `GENEntityDocument`, con `EntityType = 'OrderSL'` y `EntityID = FACOrderSL.IDOrder`.
 - Ruta habitual: `\\192.168.0.128\RPS\VENTAS\PLANTEAMIENTOS\2026\AR.26.xxxxx-n.pdf`.
 
+## Contraste con el manual Llaza
+
+Revisión: 2026-09-02. Se leyeron completos el manual de fabricación (ref. `45098059001`) y el manual de instalación (ref. `45098059000`) de `LLAZA COMPLET-PRO 350`, ambos rev. 2.1 del 31/01/2019, guardados en `DIBUJOS\TOLDOS\MK MANUALES TECNICOS LLAZA TECHNICAL MANUAL\2.1_COMPLET_PRO350_CLASSIC_TECH`.
+
+- Límites de fabricante: frente máximo 600 cm, salida máxima 350 cm, inclinación 0-85° y capacidad de enrolle 350 cm con tubo Ø80.
+- Los descuentos de tubo de enrollamiento del Excel coinciden con Llaza: motor 9,8 cm, máquina interior 11,2 cm y máquina exterior 11,4 cm.
+- La web usa literalmente los descuentos Llaza de tela: motor 10,8 cm, máquina interior 12,2 cm y máquina exterior 12,4 cm. Se retiró el redondeo antiguo del Excel de Testar (11 / 13 / 13 cm).
+- La barra delantera usa literalmente 9,8 / 10,2 / 10,4 cm para motor / máquina interior / máquina exterior, tanto con EVO 80 como con UNIVERS 280. Se retiró el centímetro extra antiguo de UNIVERS 280.
+- La tabla Llaza del tubo Ø80 exige entre 30 y 50 Nm. El motor 55/17 cubre todo el rango estándar hasta 600 cm; el 70/17 queda para excepciones fuera del manual.
+- `PRO.MIN` tenía mal copiadas las filas de salida 300, 325 y 350. La web usa los valores Llaza correctos: `345/345/350`, `370/370/375` y `395/395/400` para motor / máquina interior / máquina exterior.
+- Al cargar parámetros guardados, la web migra los valores antiguos de Excel a los valores Llaza. Cualquier ajuste manual realmente distinto se respeta.
+
 El planteamiento y la reserva no son la misma lista. El PDF contiene piezas de fabricación sin referencia reservable o que no aparecen en `_MaterialesPrevistosOF`; por ejemplo, casquillo punta, máquina y tornillos. La app debe mantener separados `despiece` y `materials`.
 
 ## Casos contrastados

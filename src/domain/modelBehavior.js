@@ -141,7 +141,7 @@ export function getFieldVisibility({ model, device }) {
     tubeLoad: modelBehavior.tipo02 === 'TUBO DE CARGA',
     submodel: modelBehavior.tipo02 === 'SUBMODELO',
     device: hasInstallation,
-    deviceOptions: isCofre ? behavior.options.dispositivosCofre : behavior.options.dispositivos,
+    deviceOptions: modelBehavior.deviceOptions || (isCofre ? behavior.options.dispositivosCofre : behavior.options.dispositivos),
     sensor: hasInstallation && isMotor && modelBehavior.sensors !== false,
     motorLocation: hasInstallation && isMotor,
     machineLocation: hasInstallation && isMachine,

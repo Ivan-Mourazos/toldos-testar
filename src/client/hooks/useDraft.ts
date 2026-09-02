@@ -391,6 +391,7 @@ function collectFabricOrderNotes(orderNotes: unknown, awnings: Array<Record<stri
 export function switchAwningModel(awning: Awning, model: string, armCount?: number | null): Awning {
   const fresh = createAwning(getModelWorkType(model));
   const isCurtain = model.includes('CORTINA');
+  const isCurtainStructure = isCurtain || model === 'SELENA';
   const isBox = model === 'PERLA BOX' || model === 'CORAL BOX' || model === 'CUARZO BOX';
   const isXacobeo = model === 'XACOBEO';
   const isPuntoRecto = model === 'PUNTO RECTO';
@@ -437,10 +438,10 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     curtainWindowCorner: isCurtain ? awning.curtainWindowCorner : null,
     curtainWindowFloorHeight: isCurtain ? awning.curtainWindowFloorHeight : null,
     curtainWindowHeight: isCurtain ? awning.curtainWindowHeight : null,
-    curtainFabricDeductionCm: isCurtain ? awning.curtainFabricDeductionCm : null,
-    curtainFabricWidthDiscountCm: isCurtain ? awning.curtainFabricWidthDiscountCm : null,
-    curtainRollTubeDiscountCm: isCurtain ? awning.curtainRollTubeDiscountCm : null,
-    curtainLoadProfileDiscountCm: isCurtain ? awning.curtainLoadProfileDiscountCm : null,
+    curtainFabricDeductionCm: isCurtainStructure ? awning.curtainFabricDeductionCm : null,
+    curtainFabricWidthDiscountCm: isCurtainStructure ? awning.curtainFabricWidthDiscountCm : null,
+    curtainRollTubeDiscountCm: isCurtainStructure ? awning.curtainRollTubeDiscountCm : null,
+    curtainLoadProfileDiscountCm: isCurtainStructure ? awning.curtainLoadProfileDiscountCm : null,
     boxMinimumLineCm: isBox ? awning.boxMinimumLineCm : null,
     boxProfileDiscountCm: isBox ? awning.boxProfileDiscountCm : null,
     boxRollDiscountCm: isBox ? awning.boxRollDiscountCm : null,
@@ -474,7 +475,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
         ? normalizeAnticaMeasurementMode(awning.anticaMeasurementMode, awning.anticaVariant) as Awning['anticaMeasurementMode']
         : 'BASE'
       : '',
-    anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null
+    anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null,
+    structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : ''
   };
 }
 

@@ -108,7 +108,7 @@ export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagr
   const override = normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride);
   if (override) return override;
   if (model.startsWith('HERA')) return 'HERA';
-  if (model.includes('CORTINA')) return cadDiagram;
+  if (model.includes('CORTINA') || cadDiagram.startsWith('CORTINA')) return cadDiagram;
   if (model === 'ENROLLABLE') return 'ENROLLABLE';
   if (model === 'BAMBALINA') return 'BAMBALINA';
   if (model.includes('ANTICA')) return 'ANTICA';
@@ -125,6 +125,7 @@ function fabricDiagramGroupKey(diagram, awning) {
   if (!hasWindow) {
     return [
       diagram,
+      awning.model === 'SELENA' ? 'SELENA' : '',
       isCurtain || ['GENERAL', 'TOLDO-VELCRO', 'BAMBALINA', 'SUPLEMENTO'].includes(diagram) ? valance : '',
       diagram === 'CORTINA-VELCRO' ? resolveCurtainVelcroHeight(awning) ?? '' : '',
       isAntica ? normalizeAnticaVariant(awning?.anticaVariant) : '',
@@ -264,7 +265,7 @@ function drawDespieceTable(doc, x, y, w, rows) {
 function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   drawMiniTable(doc, x, y, w, 'DATOS DE PARTIDA', [
     ['FRENTE', formatNumber(awning.width)],
-    ['SALIDA TOLDO', formatNumber(awning.projection)],
+    [awning.model === 'SELENA' ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(awning.projection)],
     ['UNIDADES', formatNumber(awning.units)]
   ]);
 
@@ -283,7 +284,7 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
 
   drawMiniTable(doc, x, y + 197, w, 'DIMENSIONES TELA', [
     ['TELA', calc ? formatNumber(calc.fabricWidth) : '-'],
-    ['SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
+    [awning.model === 'SELENA' ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
     ['PAÑO', calc ? `${formatNumber(calc.fabricMl)} ML` : '-']
   ]);
 }
@@ -537,7 +538,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
     const dropW = 166;
     const fabricW = metricW - unitsW - dropW - metricGap * 2;
     drawFabricMetric(doc, metricX, rowY + 4, fabricW, 'TELA', detail.fabricWidth, 20);
-    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, 'SALIDA', detail.fabricDrop, 20);
+    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, line.awning.model === 'SELENA' ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 20);
     drawFabricMetric(doc, metricX + fabricW + dropW + metricGap * 2, rowY + 4, unitsW, 'UN.', detail.units, 20);
 
     drawCell(doc, metricX, rowY + 29, fabricW, 27, detail.workLabel, {
@@ -1005,7 +1006,7 @@ export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
   const hasWindow = diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
   const finish = diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
   const valance = buildValanceDiagramSpec(awning);
-  const titleParts = ['CORTINA'];
+  const titleParts = [String(awning.model || '').trim().toUpperCase() === 'SELENA' ? 'SELENA' : 'CORTINA'];
   if (hasWindow) titleParts.push('VENTANA');
   if (finish !== 'NORMAL') titleParts.push(finish);
   return {
@@ -1716,6 +1717,7 @@ function fabricWorkLabel(model) {
   if (model.startsWith('HERA')) return 'HERA';
   if (model === 'CAMBIO CORTINA') return 'CAMB. CORT';
   if (model === 'CORTINA') return 'CORTINA';
+  if (model === 'SELENA') return 'SELENA';
   if (model === 'CAMBIO TELA') return 'CAMB. TELA';
   if (model === 'ENROLLABLE') return 'ENROLLABLE';
   if (model === 'BAMBALINA') return 'CAMB. BAMBA';

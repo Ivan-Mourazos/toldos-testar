@@ -324,6 +324,7 @@ export type RuleParameters = {
   coralBox: BoxParameters;
   cuarzoBox: BoxParameters;
   cortina: CortinaParameters;
+  selena: CortinaParameters;
   cambioCortina: CambioCortinaParameters;
   xacobeo: XacobeoParameters;
   puntoRecto: PuntoRectoParameters;

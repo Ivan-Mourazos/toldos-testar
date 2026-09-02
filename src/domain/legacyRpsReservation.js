@@ -8,6 +8,7 @@ const legacyRpsModels = new Set([
   'GALICIA',
   'XACOBEO',
   'CORTINA',
+  'SELENA',
   'CUARZO BOX',
   'PERLA BOX',
   'CORAL BOX',

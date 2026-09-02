@@ -139,6 +139,7 @@ export function inferOrderModel(line = {}) {
   if (code === 'GALICIA' || text.includes('MODELO GALICIA')) return 'GALICIA';
   if (code.includes('HERA') || text.includes('MODELO HERA') || text.includes('ROLL-SYSTEM') || text.includes('ROLLSYS')) return 'HERA';
   if (code === 'ANTICA' || text.includes('MODELO ANTICA')) return 'ANTICA';
+  if (code === 'SELENA' || text.includes('MODELO SELENA') || text.includes('TOLDO SELENA')) return 'SELENA';
   if (code === 'CORTINA' || code === 'CORTINAUNI' || description.startsWith('TOLDO CORTINA') || text.includes('MODELO CORTINA')) return 'CORTINA';
   if (code === 'ARZUA' || text.includes('MODELO ARZUA') || text.includes('ART 325')) return 'ARZUA PRO';
   return '';
@@ -193,7 +194,7 @@ function buildAwningSuggestion(line, model, index) {
     rotFabric: extracted.rotFabric,
     rotValance: model === 'BAMBALINA' ? extracted.rotValance || extracted.rotFabric : extracted.rotValance,
     armCount: extracted.armCount,
-    device: extracted.device,
+    device: extracted.device || (model === 'SELENA' ? 'MAQ. INTERIOR' : ''),
     placement: extracted.placement,
     tubeLoad: extracted.tubeLoad,
     submodel: extracted.submodel,
@@ -202,7 +203,7 @@ function buildAwningSuggestion(line, model, index) {
     curtainSupport: model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '',
     fabric: '',
     valanceFabric: '',
-    structureNotes: '',
+    structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : '',
     fabricNotes: ''
   };
 }
@@ -233,7 +234,7 @@ function describeRecoveredAwning(awning, index) {
   const prefix = `${letter(index)} · ${awning.model}`;
   const fields = [
     [awning.of, 'OF'], [awning.units, 'unidades'], [awning.width, 'frente'],
-    [awning.projection, awning.model.includes('CORTINA') ? 'caída' : 'salida'],
+    [awning.projection, usesDropDimension(awning.model) ? 'caída' : 'salida'],
     [awning.height, 'alto'], [awning.valanceHeight, 'bambalina'], [awning.valanceCurve, 'curva'],
     [awning.structureColor, 'lacado'], [awning.device, 'accionamiento'], [awning.armCount, 'brazos'],
     [awning.rotFabric, 'rotulación'], [awning.curtainHasWindow === true, 'ventana'], [awning.fabric, 'tela']
@@ -247,7 +248,7 @@ function describePendingAwning(awning, index) {
   const pending = [];
   if (!awning.of) pending.push('OF');
   if (fields.includes('width') && !positiveNumber(awning.width)) pending.push('frente');
-  if (fields.includes('projection') && !positiveNumber(awning.projection)) pending.push(awning.model.includes('CORTINA') ? 'caída' : 'salida');
+  if (fields.includes('projection') && !positiveNumber(awning.projection)) pending.push(usesDropDimension(awning.model) ? 'caída' : 'salida');
   if (awning.model === 'HERA' && !positiveNumber(awning.height) && awning.submodel !== 'HERA 56 MOTOR') pending.push('alto');
   if (visibility.requiresStructureColor && !awning.structureColor) pending.push('lacado');
   if (visibility.requiresRotFabric && awning.model !== 'BAMBALINA' && !awning.rotFabric) pending.push('rotulación tela sí/no');
@@ -289,7 +290,12 @@ function isAuxiliaryLine(line) {
 function inferDevice(text, model) {
   if (/\bMOTOR(?:IZADO|IZADA)?\b/.test(text) || /ACCIONAMIENTO\s+(?:POR\s+)?MOTOR/.test(text)) return 'MOTOR';
   if (!/ACCIONAMIENTO\s+MANUAL|ACCIONAD[OA]\s+MANUAL|\bMANUALMENTE\b/.test(text)) return '';
+  if (model === 'SELENA') return 'MAQ. INTERIOR';
   return boxDeviceModels.has(model) ? 'MAQUINA' : '';
+}
+
+function usesDropDimension(model) {
+  return String(model || '').includes('CORTINA') || model === 'SELENA';
 }
 
 function inferSubmodel(text, model) {

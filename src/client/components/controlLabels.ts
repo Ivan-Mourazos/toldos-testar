@@ -8,6 +8,7 @@ const preferredLabels: Record<string, string> = {
   'PERLA BOX': 'Perla Box',
   'CORAL BOX': 'Coral Box',
   'MAXISCREEM': 'Diana vertical',
+  'SELENA': 'Selena',
   'CAMBIO CORTINA': 'Cambio de cortina',
   'CAMBIO TELA': 'Cambio de tela',
   'CAMBIO ANTICA': 'Cambio Antica',

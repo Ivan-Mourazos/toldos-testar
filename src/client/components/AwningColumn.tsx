@@ -69,6 +69,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isAmbarBox = awning.model === 'AMBAR BOX';
   const isAgataBox = awning.model === 'AGATA BOX';
   const isHera = awning.model === 'HERA';
+  const isSelena = awning.model === 'SELENA';
   const isAntica = awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA';
   const isFullAntica = awning.model === 'ANTICA';
   const normalizedAnticaVariant = normalizeAnticaVariant(awning.anticaVariant);
@@ -80,10 +81,11 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isFinishedAnticaRound = isCambioAnticaRound && anticaMeasurementMode === 'FINISHED';
   const isFullAnticaRound = isFullAntica && Boolean(roundAnticaEntry);
   const widthLabel = isCambioAnticaRound ? 'Frente tela terminada' : 'Frente';
-  const projectionLabel = isCambioAnticaRound
+  const projectionLabel = isSelena ? 'Caída' : isCambioAnticaRound
     ? isFinishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
     : isFullAnticaRound ? 'Salida brazo' : 'Salida';
   const boxDevice = normalizeBoxDevice(awning.device);
+  const curtainLikeParameters = isSelena ? parameters.selena : parameters.cortina;
   const maxisGroup = maxiscreemVariantGroup(awning.submodel);
   const maxisDiscounts = parameters.maxiscreem.discounts[maxisGroup][boxDevice || 'MAQUINA'];
   const monoblockArmCount = Number(awning.armCount) || suggestedMonoblockArmCount(awning.width, awning.projection, parameters.monoblock350);
@@ -147,6 +149,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || missingWindowDimensions
     || missingCurtainConfig
     || (fields.motorLocation && !awning.machineSide)
+    || (isSelena && fields.machineLocation && !awning.machineSide)
     || (isAntica && !awning.anticaVariant)
     || (isFullAntica && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || isFullAnticaRound) && !Number(awning.anticaSupportHeight))
     || missingValanceConfig
@@ -245,12 +248,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               ...(awning.model === 'CAMBIO CORTINA' && !awning.reglasModificadas && awning.curtainFabricDeductionCm === null
                 ? { curtainFabricDeductionCm: parameters.cambioCortina.bottomDeductionCm }
                 : {}),
-              ...(awning.model === 'CORTINA' && !awning.reglasModificadas && cortinaDevice
+              ...((awning.model === 'CORTINA' || isSelena) && !awning.reglasModificadas && cortinaDevice
                 ? {
                     curtainFabricDeductionCm: awning.curtainFabricDeductionCm ?? 0,
-                    curtainFabricWidthDiscountCm: awning.curtainFabricWidthDiscountCm ?? parameters.cortina.fabricWidthDiscounts[cortinaDevice],
-                    curtainRollTubeDiscountCm: awning.curtainRollTubeDiscountCm ?? parameters.cortina.rollTubeDiscounts[cortinaDevice],
-                    curtainLoadProfileDiscountCm: awning.curtainLoadProfileDiscountCm ?? parameters.cortina.loadProfileDiscounts[cortinaDevice]
+                    curtainFabricWidthDiscountCm: awning.curtainFabricWidthDiscountCm ?? curtainLikeParameters.fabricWidthDiscounts[cortinaDevice],
+                    curtainRollTubeDiscountCm: awning.curtainRollTubeDiscountCm ?? curtainLikeParameters.rollTubeDiscounts[cortinaDevice],
+                    curtainLoadProfileDiscountCm: awning.curtainLoadProfileDiscountCm ?? curtainLikeParameters.loadProfileDiscounts[cortinaDevice]
                   }
                 : {}),
               ...(isBox && !awning.reglasModificadas && boxDevice
@@ -386,6 +389,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             <div className="awning-wide-field">
               <SegmentedField label="Empate indicado por cliente" value={awning.heraJoin} options={['NINGUNO', 'VERTICAL', 'HORIZONTAL']} onChange={(heraJoin) => update({ heraJoin: heraJoin as Awning['heraJoin'] })} />
             </div>
+          )}
+
+          {isSelena && (
+            <p className="awning-pending">
+              Sistema vertical con dos brazos Stor. Confirma siempre el lado de la máquina antes de generar el planteamiento.
+            </p>
           )}
           {isHera && (
             <div className="awning-installation-row awning-wide-field">
@@ -547,7 +556,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {awning.reglasModificadas && (
             <div className="awning-overrides">
               <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>
-              {fields.curtain && (
+              {(fields.curtain || isSelena) && (
                 <NumberField
                   label="Descuento inferior tela (cm)"
                   value={awning.curtainFabricDeductionCm}
@@ -556,7 +565,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                   onChange={(curtainFabricDeductionCm) => update({ curtainFabricDeductionCm })}
                 />
               )}
-              {awning.model === 'CORTINA' && <>
+              {(awning.model === 'CORTINA' || isSelena) && <>
                 <NumberField label="Descuento frente tela (cm)" value={awning.curtainFabricWidthDiscountCm} min={0} step={0.5} onChange={(curtainFabricWidthDiscountCm) => update({ curtainFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.curtainRollTubeDiscountCm} min={0} step={0.5} onChange={(curtainRollTubeDiscountCm) => update({ curtainRollTubeDiscountCm })} />
                 <NumberField label="Descuento Univers 280 (cm)" value={awning.curtainLoadProfileDiscountCm} min={0} step={0.5} onChange={(curtainLoadProfileDiscountCm) => update({ curtainLoadProfileDiscountCm })} />

@@ -55,7 +55,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.dimensions.includes('projection')) {
       const projectionLabel = cambioAnticaRound
         ? finishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
-        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : 'Salida';
+        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : awning.model === 'SELENA' ? 'Caída' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
     }
     if (supportsVerticalDropArm(awning.model)) {
@@ -64,7 +64,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (!fabricOnly && ofBlock?.calculation) {
       addField(cardFields, 'Frente tela', measure(ofBlock.calculation.fabricWidth), true);
-      addField(cardFields, 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
+      addField(cardFields, awning.model === 'SELENA' ? 'Caída tela' : 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
       if (normalizeDropArmMode(ofBlock.calculation.dropArmMode) === 'VERTICAL_170') {
         addField(cardFields, 'Margen vertical', measure(ofBlock.calculation.dropArmVerticalAllowanceCm), true);
       }
@@ -117,6 +117,7 @@ export function buildReviewSheetEntries(order, calculation) {
         addField(cardFields, 'H. ventana', measure(awning.curtainWindowHeight), true);
       }
     }
+    if (awning.model === 'SELENA') addField(cardFields, 'Sistema', 'BRAZOS STOR · 2 UDS.', true);
 
     if (order.sameFabric === false) addField(cardFields, 'Tela', fabricLabel(awning.fabric), true);
     if (fields.device) addField(cardFields, 'Dispositivo', awning.device, true);

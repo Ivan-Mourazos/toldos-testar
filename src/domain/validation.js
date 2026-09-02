@@ -12,6 +12,7 @@ import { normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
 import { normalizeAgataBoxParameters } from './agataBoxParameters.js';
 import { normalizeFabricJobParameters } from './fabricJobParameters.js';
 import { normalizeCortinaParameters } from './cortinaParameters.js';
+import { normalizeSelenaParameters } from './selenaParameters.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeModelName } from './modelNames.js';
@@ -59,6 +60,7 @@ export function normalizeOrder(payload) {
       agataBox: normalizeAgataBoxParameters(payload.parameters?.agataBox),
       fabricJobs: normalizeFabricJobParameters(payload.parameters?.fabricJobs),
       cortina: normalizeCortinaParameters(payload.parameters?.cortina),
+      selena: normalizeSelenaParameters(payload.parameters?.selena),
       cambioCortina: normalizeCambioCortinaParameters(payload.parameters?.cambioCortina)
     },
     awnings: awnings.map((awning, index) => normalizeAwning(awning, index, payload))

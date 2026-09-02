@@ -9,6 +9,7 @@ import {
   normalizePerlaBoxParameters
 } from '../../domain/storbox400Parameters.js';
 import { defaultCortinaParameters, normalizeCortinaParameters } from '../../domain/cortinaParameters.js';
+import { defaultSelenaParameters, normalizeSelenaParameters } from '../../domain/selenaParameters.js';
 import { defaultCambioCortinaParameters, normalizeCambioCortinaParameters } from '../../domain/cambioCortinaParameters.js';
 import { defaultCuarzoBoxParameters, normalizeCuarzoBoxParameters } from '../../domain/storbox250Parameters.js';
 import { defaultXacobeoParameters, normalizeXacobeoParameters } from '../../domain/xacobeoParameters.js';
@@ -31,6 +32,7 @@ function initialParameters(): RuleParameters {
       coralBox: normalizeCoralBoxParameters(saved?.coralBox || defaultCoralBoxParameters),
       cuarzoBox: normalizeCuarzoBoxParameters(saved?.cuarzoBox || defaultCuarzoBoxParameters),
       cortina: normalizeCortinaParameters(saved?.cortina || defaultCortinaParameters),
+      selena: normalizeSelenaParameters(saved?.selena || defaultSelenaParameters),
       cambioCortina: normalizeCambioCortinaParameters(saved?.cambioCortina || defaultCambioCortinaParameters),
       xacobeo: normalizeXacobeoParameters(saved?.xacobeo || defaultXacobeoParameters),
       puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto || defaultPuntoRectoParameters),
@@ -48,6 +50,7 @@ function initialParameters(): RuleParameters {
       coralBox: structuredClone(defaultCoralBoxParameters),
       cuarzoBox: structuredClone(defaultCuarzoBoxParameters),
       cortina: structuredClone(defaultCortinaParameters),
+      selena: structuredClone(defaultSelenaParameters),
       cambioCortina: structuredClone(defaultCambioCortinaParameters),
       xacobeo: structuredClone(defaultXacobeoParameters),
       puntoRecto: structuredClone(defaultPuntoRectoParameters),
@@ -131,6 +134,17 @@ export function useParameters() {
 
   function resetCortina() {
     setParameters((current) => ({ ...current, cortina: structuredClone(defaultCortinaParameters) }) as RuleParameters);
+  }
+
+  function updateSelena(patch: Partial<RuleParameters['selena']>) {
+    setParameters((current) => ({
+      ...current,
+      selena: normalizeSelenaParameters({ ...current.selena, ...patch })
+    }) as RuleParameters);
+  }
+
+  function resetSelena() {
+    setParameters((current) => ({ ...current, selena: structuredClone(defaultSelenaParameters) }) as RuleParameters);
   }
 
   function updateCambioCortina(patch: Partial<RuleParameters['cambioCortina']>) {
@@ -229,6 +243,7 @@ export function useParameters() {
       coralBox: normalizeCoralBoxParameters(saved?.coralBox),
       cuarzoBox: normalizeCuarzoBoxParameters(saved?.cuarzoBox),
       cortina: normalizeCortinaParameters(saved?.cortina),
+      selena: normalizeSelenaParameters(saved?.selena),
       cambioCortina: normalizeCambioCortinaParameters(saved?.cambioCortina),
       xacobeo: normalizeXacobeoParameters(saved?.xacobeo),
       puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto),
@@ -248,6 +263,7 @@ export function useParameters() {
     updateCoralBox, resetCoralBox,
     updateCuarzoBox, resetCuarzoBox,
     updateCortina, resetCortina,
+    updateSelena, resetSelena,
     updateCambioCortina, resetCambioCortina,
     updateXacobeo, resetXacobeo,
     updatePuntoRecto, resetPuntoRecto,

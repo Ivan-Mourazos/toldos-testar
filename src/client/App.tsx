@@ -401,6 +401,8 @@ export default function App() {
               onResetCuarzoBox={ruleSettings.resetCuarzoBox}
               onUpdateCortina={ruleSettings.updateCortina}
               onResetCortina={ruleSettings.resetCortina}
+              onUpdateSelena={ruleSettings.updateSelena}
+              onResetSelena={ruleSettings.resetSelena}
               onUpdateCambioCortina={ruleSettings.updateCambioCortina}
               onResetCambioCortina={ruleSettings.resetCambioCortina}
               onUpdateXacobeo={ruleSettings.updateXacobeo}

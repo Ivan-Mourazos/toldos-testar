@@ -7,6 +7,7 @@ import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
 import {
   normalizeArzuaProParameters,
   resolveArzuaMotorPower,
+  resolveArzuaRequiredTorque,
   resolveArzuaSupport,
   suggestedTubeForDestination
 } from './arzuaProParameters.js';
@@ -24,6 +25,9 @@ export function calculateArzuaPro({ order, awning }) {
   const device = normalizeDevice(awning.device);
   const supportSystem = resolveArzuaSupport(awning, parameters);
   const motorPower = resolveArzuaMotorPower(awning, parameters);
+  const requiredMotorTorqueNm = device === 'MOTOR'
+    ? resolveArzuaRequiredTorque(awning.width, awning.projection)
+    : null;
   const armCount = supportSystem === 'GALICIA' ? 3 : 1;
   const diagnostics = [];
   const minimumLine = lookupMinimumLine(parameters.minimumLineByArm, awning.projection, device);
@@ -169,6 +173,7 @@ export function calculateArzuaPro({ order, awning }) {
       tubeLoad,
       supportSystem,
       motorPower: device === 'MOTOR' ? motorPower : '',
+      requiredMotorTorqueNm,
       armCount
     }
   };
