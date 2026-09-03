@@ -59,6 +59,14 @@ export function isFabricOnlyModel(modelCode) {
   return getModelWorkType(modelCode) === 'FABRIC_ONLY';
 }
 
+// Los toldos verticales (SELENA, ELECTRA, IRIS) llaman "caída" a la medida
+// que en los demás modelos es la "salida": la tela baja en vertical en vez
+// de proyectarse hacia fuera. Se decide por tipo01, no por una lista de
+// nombres, para que un alta futura de vertical no se quede fuera.
+export function isVerticalAwningModel(modelCode) {
+  return getModelBehavior(modelCode).tipo01 === 'TOLDO VERTICAL';
+}
+
 export function needsValanceFinish(awningOrModel, valanceHeight) {
   const awning = typeof awningOrModel === 'object' && awningOrModel !== null
     ? awningOrModel

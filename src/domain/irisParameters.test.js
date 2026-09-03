@@ -6,6 +6,7 @@ import {
   getIrisLimits,
   irisConfigCode,
   irisHasBox,
+  irisHasCassette,
   irisSeriesOf,
   normalizeIrisDevice,
   normalizeIrisGuideFixing,
@@ -30,6 +31,10 @@ describe('parámetros IRIS', () => {
     expect(irisConfigCode(config({ submodel: 'IRIS 130 CON COFRE', device: 'MOTOR', windBlock: true }))).toBe('10011');
     expect(irisConfigCode(config({ submodel: 'IRIS 150 CON COFRE', device: 'MOTOR' }))).toBe('20010');
     expect(irisConfigCode(config({ guideType: '' }))).toBe('');
+    // La compensadora es un producto con cofre en el catálogo de BAT (SCREENY 110
+    // GPZ C se describe como toldo con cofre), así que el 'SIN COFRE' de los
+    // títulos antiguos es laxo: el AR2501385 es un IRIS110S/CO y corta cofre.
+    expect(irisConfigCode(config({ submodel: 'IRIS 110 SIN COFRE', guideType: 'COMPENSADORA' }))).toBe('00200');
   });
 
   test('conserva literalmente la tabla de corte de BAT', () => {
@@ -72,6 +77,11 @@ describe('parámetros IRIS', () => {
     expect(getIrisDiscounts(p, config({ submodel: 'IRIS 130 SIN COFRE', device: 'MOTOR' }))).toBeNull();
   });
 
+  test('el 110 sin cofre con compensadora usa la tabla GPZ C, como el AR2501385', () => {
+    expect(getIrisDiscounts(defaultIrisParameters, config({ submodel: 'IRIS 110 SIN COFRE', guideType: 'COMPENSADORA' })))
+      .toMatchObject({ fabric: 9.7, box: 1.4, roll: 15.5, loadBar: 14.6, ballast: 27.6, compensatorWall: 11.2 });
+  });
+
   test('el 130 sin cofre a máquina usa el 15,5 de los dos pedidos conservados', () => {
     expect(getIrisDiscounts(defaultIrisParameters, config({ submodel: 'IRIS 130 SIN COFRE' })))
       .toMatchObject({ fabric: 9, roll: 15.8, loadBar: 13.2, ballast: 26.2, guideWall: 15.5, guideCeiling: 15.5, unverified: true });
@@ -92,6 +102,16 @@ describe('parámetros IRIS', () => {
     expect(irisSeriesOf('IRIS 130 CON COFRE')).toBe('130');
     expect(irisHasBox('IRIS 110 SIN COFRE')).toBe(false);
     expect(irisHasBox('IRIS 110 CON COFRE')).toBe(true);
+  });
+
+  test('la compensadora lleva cofre aunque el submodelo diga que no', () => {
+    expect(irisHasCassette('IRIS 110 CON COFRE', 'ESTÁNDAR')).toBe(true);
+    expect(irisHasCassette('IRIS 110 SIN COFRE', 'ESTÁNDAR')).toBe(false);
+    expect(irisHasCassette('IRIS 110 SIN COFRE', 'COMPENSADORA')).toBe(true);
+    // Tolera lo que escriba quien rellene: es el mismo criterio que consumen
+    // el despiece y el croquis, y divergir dibujaría un toldo distinto del que se corta.
+    expect(irisHasCassette('IRIS 110 SIN COFRE', ' guía compensadora ')).toBe(true);
+    expect(irisHasCassette('IRIS 130 SIN COFRE', 'PEQUEÑA')).toBe(false);
   });
 
   test('límites de fabricación de los manuales de ensamblaje', () => {

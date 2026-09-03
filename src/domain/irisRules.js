@@ -7,7 +7,7 @@ import {
   getIrisFabricDropAllowance,
   getIrisLimits,
   irisConfigCode,
-  irisHasBox,
+  irisHasCassette,
   irisSeriesOf,
   normalizeIrisDevice,
   normalizeIrisGuideFixing,
@@ -25,8 +25,8 @@ export function calculateIris({ order, awning }) {
   const device = normalizeIrisDevice(awning.device);
   const windBlock = awning.irisWindBlock === true;
   const series = irisSeriesOf(submodel);
-  const hasBox = irisHasBox(submodel);
   const hasCompensator = guideType === 'COMPENSADORA';
+  const hasBox = irisHasCassette(submodel, guideType);
   const modified = Boolean(awning.reglasModificadas);
   const structureColor = awning.structureColor || order.structureColor;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;

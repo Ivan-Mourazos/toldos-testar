@@ -3,8 +3,9 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { getAwningDiagram, isFabricOnlyModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
+import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
+import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
 
@@ -112,6 +113,7 @@ export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagr
   if (model === 'ENROLLABLE') return 'ENROLLABLE';
   if (model === 'BAMBALINA') return 'BAMBALINA';
   if (model.includes('ANTICA')) return 'ANTICA';
+  if (model === 'IRIS') return 'IRIS';
   return 'GENERAL';
 }
 
@@ -271,9 +273,15 @@ function drawDespieceTable(doc, x, y, w, rows) {
 }
 
 function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
+  // IRIS no recibe width/projection: los deriva del escuadrado del hueco y
+  // los deja en calc.width/calc.projection. Para el resto de modelos
+  // calculation.width/projection son una copia literal de awning.width/
+  // projection, así que el fallback no cambia nada fuera de IRIS.
+  const partingWidth = awning.width ?? calc?.width;
+  const partingProjection = awning.projection ?? calc?.projection;
   drawMiniTable(doc, x, y, w, 'DATOS DE PARTIDA', [
-    ['FRENTE', formatNumber(awning.width)],
-    [awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(awning.projection)],
+    ['FRENTE', formatNumber(partingWidth)],
+    [isVerticalAwningModel(awning.model) ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(partingProjection)],
     ['UNIDADES', formatNumber(awning.units)]
   ]);
 
@@ -294,7 +302,7 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
 
   drawMiniTable(doc, x, y + 197, w, 'DIMENSIONES TELA', [
     ['TELA', calc ? formatNumber(calc.fabricWidth) : '-'],
-    [awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
+    [isVerticalAwningModel(awning.model) ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
     ['PAÑO', calc ? `${formatNumber(calc.fabricMl)} ML` : '-']
   ]);
 }
@@ -548,7 +556,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
     const dropW = 166;
     const fabricW = metricW - unitsW - dropW - metricGap * 2;
     drawFabricMetric(doc, metricX, rowY + 4, fabricW, 'TELA', detail.fabricWidth, 20);
-    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, line.awning.model === 'SELENA' ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 20);
+    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 20);
     drawFabricMetric(doc, metricX + fabricW + dropW + metricGap * 2, rowY + 4, unitsW, 'UN.', detail.units, 20);
 
     drawCell(doc, metricX, rowY + 29, fabricW, 27, detail.workLabel, {
@@ -611,6 +619,7 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h);
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
   if (diagram === 'MAXISCREEN') return drawMaxiscreenDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'IRIS') return drawIrisDiagram(doc, x, y, w, h, awning, calculation);
   if (['ARZUA', 'GALICIA', 'XACOBEO', 'MONOBLOCK', 'PUNTO-RECTO'].includes(diagram)) {
     return drawArmSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation));
   }
@@ -771,6 +780,50 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
     .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', panelX + 8, panelY + 52, { width: panelW - 16, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
     .text('P801 · PERFIL DE CARGA MAXISCREEM', x + 24, y + h - 25, { width: w - 48, align: 'center' });
+}
+
+function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
+  // El mismo criterio que usa el despiece, importado y no reescrito aquí: si
+  // los dos divergen, el croquis dibuja un toldo sin cofre al lado de una lista
+  // de piezas que sí corta el cofre.
+  const hasCompensator = normalizeIrisGuideType(awning.irisGuideType) === 'COMPENSADORA';
+  const hasBox = irisHasCassette(awning.submodel, awning.irisGuideType);
+  drawDiagramShell(doc, x, y, w, h, String(awning.submodel || 'IRIS').toUpperCase());
+
+  const panelX = x + 52;
+  const panelY = y + 74;
+  const panelW = w - 104;
+  const panelH = h - 150;
+
+  if (hasBox) {
+    doc.roundedRect(panelX - 12, panelY - 26, panelW + 24, 30, 5).fillAndStroke('#e7eeec', '#466e64');
+  } else {
+    doc.circle(panelX + panelW / 2, panelY - 11, 11).fillAndStroke('#e7eeec', '#466e64');
+  }
+
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#9db0ac');
+  doc.moveTo(panelX + 5, panelY).lineTo(panelX + 5, panelY + panelH)
+    .moveTo(panelX + panelW - 5, panelY).lineTo(panelX + panelW - 5, panelY + panelH)
+    .strokeColor('#466e64').lineWidth(1.4).stroke();
+  if (hasCompensator) {
+    doc.moveTo(panelX + 9, panelY).lineTo(panelX + 9, panelY + panelH)
+      .moveTo(panelX + panelW - 9, panelY).lineTo(panelX + panelW - 9, panelY + panelH)
+      .strokeColor('#d2a116').lineWidth(1).stroke();
+  }
+  // Diagonales: el IRIS se plantea escuadrado y el pedido debe traerlas.
+  doc.moveTo(panelX, panelY).lineTo(panelX + panelW, panelY + panelH)
+    .moveTo(panelX + panelW, panelY).lineTo(panelX, panelY + panelH)
+    .strokeColor('#c9d5d2').lineWidth(0.5).dash(2, { space: 2 }).stroke().undash();
+  doc.roundedRect(panelX - 4, panelY + panelH - 7, panelW + 8, 14, 3).fillAndStroke('#e7eeec', '#466e64');
+
+  // drawDiagramShell traza la línea divisoria del título en y+32: bajamos el
+  // texto lo justo (y+38) para que no quede tachado por encima de ella.
+  drawDiagramText(doc, `FRENTE ${formatNumber(calculation.width ?? awning.irisFrontTop ?? 0)}`, panelX, panelY - 36, panelW);
+  drawSideLabel(doc, `MFI ${formatNumber(calculation.guideLeftLength ?? 0)}`, x + 6, panelY + panelH / 2, 44);
+  drawSideLabel(doc, `MFD ${formatNumber(calculation.guideRightLength ?? 0)}`, x + w - 50, panelY + panelH / 2, 44);
+  drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', panelX, panelY + panelH + 18, panelW);
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + 24, y + h - 26, { width: w - 48, align: 'center' });
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {

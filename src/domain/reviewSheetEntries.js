@@ -1,6 +1,6 @@
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { getFieldVisibility, isFabricOnlyModel, normalizeValanceFinish } from './modelBehavior.js';
+import { getFieldVisibility, isFabricOnlyModel, isVerticalAwningModel, normalizeValanceFinish } from './modelBehavior.js';
 import {
   normalizeAnticaMeasurementMode,
   normalizeAnticaVariant,
@@ -56,8 +56,27 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.dimensions.includes('projection')) {
       const projectionLabel = cambioAnticaRound
         ? finishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
-        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'Caída' : 'Salida';
+        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : isVerticalAwningModel(awning.model) ? 'Caída' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
+    }
+    // IRIS no tiene width/projection entre sus dimensions, así que las dos
+    // tarjetas de arriba no se emiten. Sin esto, la hoja de revisión enseñaría
+    // solo medidas ya descontadas y el revisor no tendría contra qué comparar.
+    if (awning.model === 'IRIS') {
+      addField(cardFields, 'Frente superior', measure(awning.irisFrontTop), true);
+      addField(cardFields, 'Salida izquierda', measure(awning.irisExitLeft), true);
+      if (!awning.irisAssumeSquare) {
+        addField(cardFields, 'Frente inferior', measure(awning.irisFrontBottom), true);
+        addField(cardFields, 'Salida derecha', measure(awning.irisExitRight), true);
+        addField(cardFields, 'Diagonal 1', measure(awning.irisDiagonal1), true);
+        addField(cardFields, 'Diagonal 2', measure(awning.irisDiagonal2), true);
+      }
+      if (ofBlock?.calculation) {
+        addField(cardFields, 'Frente escuadrado', measure(ofBlock.calculation.width), true);
+        addField(cardFields, 'Caída escuadrada', measure(ofBlock.calculation.projection), true);
+      }
+      addField(cardFields, 'Tipo de guía', awning.irisGuideType, true);
+      addField(cardFields, 'Fijación de guía', awning.irisGuideFixing, true);
     }
     if (supportsVerticalDropArm(awning.model)) {
       addField(cardFields, 'Posición de trabajo', normalizeDropArmMode(awning.dropArmMode), true);
@@ -65,7 +84,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (!fabricOnly && ofBlock?.calculation) {
       addField(cardFields, 'Frente tela', measure(ofBlock.calculation.fabricWidth), true);
-      addField(cardFields, awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'Caída tela' : 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
+      addField(cardFields, isVerticalAwningModel(awning.model) ? 'Caída tela' : 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
       if (normalizeDropArmMode(ofBlock.calculation.dropArmMode) === 'VERTICAL_170') {
         addField(cardFields, 'Margen vertical', measure(ofBlock.calculation.dropArmVerticalAllowanceCm), true);
       }

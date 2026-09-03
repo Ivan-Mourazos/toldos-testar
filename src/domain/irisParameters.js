@@ -42,6 +42,10 @@ const discountTable = {
   '00110': { fabric: 5.2, box: 1.4, roll: 14.6, loadBar: 9.4, ballast: 22.4, guideWall: 12, guideCeiling: 12.2 },
   // 110 con guía compensadora. Misma tabla lleve cofre o no: lo confirma AR2501385,
   // que en RPS es un IRIS110S/CO y cuadra pieza a pieza con SCREENY 110 GPZ C.
+  // PUNTO ABIERTO: la captura de la tabla 110 GPZ C lleva escrito a mano
+  // "NON DESCONTAR" sobre la fila del telón con molinete 9:1. El AR2501385 sí
+  // aplicó ese 9,7, y el propio libro maestro de la oficina recoge la misma duda
+  // sin resolver. No cambies este valor sin confirmarlo con oficina técnica.
   '00200': {
     fabric: 9.7, box: 1.4, roll: 15.5, loadBar: 14.6, ballast: 27.6,
     guideWall: 12, guideCeiling: 12.2, zipWall: 12, zipCeiling: 12.2,
@@ -113,6 +117,16 @@ export function irisHasBox(submodel) {
   return normalizeIrisSubmodel(submodel).includes('CON COFRE');
 }
 
+/**
+ * Si el toldo lleva pieza de cofre. No basta con mirar el submodelo: la guía
+ * compensadora solo existe en el catálogo de BAT como producto con cofre, así
+ * que un "SIN COFRE" con compensadora lo lleva igualmente. Vive aquí y no en
+ * cada consumidor para que el croquis y el despiece no puedan discrepar.
+ */
+export function irisHasCassette(submodel, guideType) {
+  return irisHasBox(submodel) || normalizeIrisGuideType(guideType) === 'COMPENSADORA';
+}
+
 export function normalizeIrisSubmodel(value) {
   const clean = normalizeText(value);
   return irisSubmodels.includes(clean) ? clean : '';
@@ -148,7 +162,12 @@ export function irisConfigCode({ submodel, guideType, device, windBlock } = {}) 
   if (!series || !guide || !cleanDevice) return '';
 
   const seriesDigit = { 110: '0', 130: '1', 150: '2' }[series];
-  const boxDigit = irisHasBox(submodel) ? '0' : '1';
+  // La guía compensadora solo existe en el catálogo de BAT como producto con
+  // cofre: el SCREENY 110 GPZ C se describe como "toldo con cofre de 110mm
+  // dotado de dos perfiles compensadores". El "SIN COFRE" de algunos títulos
+  // antiguos es laxo — el AR2501385 es un IRIS110S/CO en RPS y su hoja corta
+  // igualmente la pieza de cofre con 1,4 — así que aquí cuenta como con cofre.
+  const boxDigit = irisHasBox(submodel) || normalizeIrisGuideType(guideType) === 'COMPENSADORA' ? '0' : '1';
   const guideDigit = { 'ESTÁNDAR': '0', 'PEQUEÑA': '1', 'COMPENSADORA': '2' }[guide];
   const deviceDigit = cleanDevice === 'MOTOR' ? '1' : '0';
   const windDigit = windBlock ? '1' : '0';

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertCircle, FileSpreadsheet, Layers3, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
 import { formatDecimal } from '../constants';
+import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { collectFabricMaterialKeys, roundFabricMeters } from '../../domain/reservationFabrics.js';
 
@@ -108,7 +109,7 @@ function StructurePreview({ blocks, awnings, selectedBlock, onSelect }: {
             </table>
           </div>
           <aside className="structure-sheet-side">
-            <InfoBlock title="Datos de partida" lines={[`Frente ${awning?.width ?? '-'} cm`, `Salida ${awning?.projection ?? '-'} cm`]} />
+            <InfoBlock title="Datos de partida" lines={[`Frente ${awning?.width ?? calc.width ?? '-'} cm`, `${isVerticalAwningModel(awning?.model) ? 'Caída' : 'Salida'} ${awning?.projection ?? calc.projection ?? '-'} cm`]} />
             <InfoBlock title="Tela calculada" lines={[`${formatDecimal(calc.fabricWidth)} × ${formatDecimal(calc.fabricDrop)} cm`, `${formatDecimal(calc.fabricMl)} ml`]} />
             {selectedBlock.despiece?.anchoring && <InfoBlock title="Anclaje" lines={[selectedBlock.despiece.anchoring.name, `${selectedBlock.despiece.anchoring.reference || 'Sin referencia'} × ${selectedBlock.despiece.anchoring.units}`]} />}
           </aside>

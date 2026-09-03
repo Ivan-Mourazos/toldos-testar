@@ -96,6 +96,17 @@ export type Awning = {
   electraBoxProfileDiscountCm: number | null;
   electraGuideDiscountCm: number | null;
   electraFabricDropAllowanceCm: number | null;
+  irisGuideType: '' | 'ESTÁNDAR' | 'PEQUEÑA' | 'COMPENSADORA';
+  irisGuideFixing: '' | 'PARED' | 'TECHO';
+  irisWindBlock: boolean;
+  irisAssumeSquare: boolean;
+  irisFrontTop: number | null;
+  irisFrontBottom: number | null;
+  irisExitLeft: number | null;
+  irisExitRight: number | null;
+  irisDiagonal1: number | null;
+  irisDiagonal2: number | null;
+  irisFabricDropAllowanceCm: number | null;
   ambarFabricWidthDiscountCm: number | null;
   ambarRollDiscountCm: number | null;
   ambarProfileDiscountCm: number | null;
@@ -384,6 +395,10 @@ export type Calculation = {
       model: string;
       valid: boolean;
       minimumLine: number;
+      // Todos los modelos los devuelven. En IRIS no son copia de lo que
+      // escribió el técnico: salen del escuadrado del hueco.
+      width?: number | null;
+      projection?: number | null;
       fabricWidth: number;
       fabricDrop: number;
       dropArmMode?: Awning['dropArmMode'];
