@@ -10,7 +10,8 @@ export const electraVariants = [
 export const electraMatrixSupports = [
   'SOPORTE ELIT VERTICAL',
   'SOPORTES ALMAGRO',
-  'UNIVERSAL 3 AGUJEROS'
+  'UNIVERSAL 3 AGUJEROS',
+  'SOPORTE MAXISCREEN'
 ];
 
 export const electraCofreSupport = 'SOPORTE MAXISCREEM BOX';
@@ -49,6 +50,11 @@ export const defaultElectraParameters = {
       MOTOR: { fabric: 9.5, roll: 8.5, loadBar: 9, guide: 14.5 }
     },
     'UNIVERSAL 3 AGUJEROS': {
+      'MAQ. INTERIOR': { fabric: 12, roll: 11, loadBar: 11, guide: 14 },
+      'MAQ. EXTERIOR': { fabric: 12.5, roll: 11, loadBar: 11, guide: 14 },
+      MOTOR: { fabric: 11, roll: 10, loadBar: 10, guide: 14 }
+    },
+    'SOPORTE MAXISCREEN': {
       'MAQ. INTERIOR': { fabric: 12, roll: 11, loadBar: 11, guide: 14 },
       'MAQ. EXTERIOR': { fabric: 12.5, roll: 11, loadBar: 11, guide: 14 },
       MOTOR: { fabric: 11, roll: 10, loadBar: 10, guide: 14 }
@@ -101,7 +107,8 @@ export function normalizeElectraVariant(value) {
 
 export function normalizeElectraSupport(value) {
   const clean = normalizeText(value);
-  if (clean.includes('MAXIS') || clean.includes('BOX')) return electraCofreSupport;
+  if (clean.includes('BOX')) return electraCofreSupport;
+  if (clean.includes('MAXIS')) return 'SOPORTE MAXISCREEN';
   if (clean.includes('ALMAGRO')) return 'SOPORTES ALMAGRO';
   if (clean.includes('UNIVERSAL') || clean.includes('3 AGUJEROS')) return 'UNIVERSAL 3 AGUJEROS';
   if (clean.includes('ELIT')) return 'SOPORTE ELIT VERTICAL';

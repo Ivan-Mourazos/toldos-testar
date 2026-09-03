@@ -12,7 +12,7 @@ import {
 } from './electraParameters.js';
 
 describe('parámetros ELECTRA / Elit Vertical', () => {
-  test('conserva literalmente la matriz de descuentos de la guía de fabricación', () => {
+  test('combina la matriz de la guía con los descuentos Cortina para Maxiscreen', () => {
     expect(defaultElectraParameters.supportDiscounts).toEqual({
       'SOPORTE ELIT VERTICAL': {
         'MAQ. INTERIOR': { fabric: 10, roll: 8, loadBar: 9.5, guide: 14 },
@@ -28,6 +28,11 @@ describe('parámetros ELECTRA / Elit Vertical', () => {
         'MAQ. INTERIOR': { fabric: 12, roll: 11, loadBar: 11, guide: 14 },
         'MAQ. EXTERIOR': { fabric: 12.5, roll: 11, loadBar: 11, guide: 14 },
         MOTOR: { fabric: 11, roll: 10, loadBar: 10, guide: 14 }
+      },
+      'SOPORTE MAXISCREEN': {
+        'MAQ. INTERIOR': { fabric: 12, roll: 11, loadBar: 11, guide: 14 },
+        'MAQ. EXTERIOR': { fabric: 12.5, roll: 11, loadBar: 11, guide: 14 },
+        MOTOR: { fabric: 11, roll: 10, loadBar: 10, guide: 14 }
       }
     });
   });
@@ -36,6 +41,7 @@ describe('parámetros ELECTRA / Elit Vertical', () => {
     expect(normalizeElectraSupport('soporte elit vertical')).toBe('SOPORTE ELIT VERTICAL');
     expect(normalizeElectraSupport('Almagro')).toBe('SOPORTES ALMAGRO');
     expect(normalizeElectraSupport('universal de 3 agujeros')).toBe('UNIVERSAL 3 AGUJEROS');
+    expect(normalizeElectraSupport('soporte Maxiscreen')).toBe('SOPORTE MAXISCREEN');
     expect(normalizeElectraSupport('soporte Maxiscreem Box')).toBe('SOPORTE MAXISCREEM BOX');
     expect(normalizeElectraDevice('máquina exterior')).toBe('MAQ. EXTERIOR');
     expect(normalizeElectraVariant('sin cofre con guia')).toBe('SIN COFRE / CON GUÍA');

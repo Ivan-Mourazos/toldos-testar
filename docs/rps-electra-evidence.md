@@ -52,6 +52,9 @@ Valores documentados:
 - Soporte Elit Vertical.
 - Soportes Almagro.
 - Soporte Universal de 3 agujeros.
+- Soporte Maxiscreen sin cofre. Usa los mismos descuentos que Cortina con
+  Maxiscreen y reserva la familia `SOPMAXSCR`; no debe confundirse con el
+  soporte Maxiscreem Box de las variantes con cofre.
 
 El accionamiento también es obligatorio. Para el soporte Universal hay que distinguir máquina interior, máquina exterior y motor; para Almagro, máquina o motor.
 
@@ -161,7 +164,7 @@ Salidas mínimas:
 La web incorpora Electra como modelo propio, pero evita convertir en reglas firmes los datos que siguen sin contraste suficiente:
 
 - el tipo de soporte queda siempre vacío y es obligatorio en cada pedido;
-- las variantes con cofre exigen expresamente `Soporte Maxiscreem Box`, mientras que las variantes sin cofre ofrecen los tres soportes de la matriz interna;
+- las variantes con cofre exigen expresamente `Soporte Maxiscreem Box`, mientras que las variantes sin cofre ofrecen Elit Vertical, Almagro, Universal de 3 agujeros y Maxiscreen;
 - solo `con cofre + sin guía` y `sin cofre + con guía` generan automáticamente; las otras dos variantes requieren una excepción técnica;
 - el motor no se presupone: debe confirmarse `Meteor 20/17`, única referencia localizada de forma inequívoca en hojas auxiliares Electra;
 - las combinaciones de perfil, lacado y largo se contrastan contra referencias activas; cuando no existe una referencia terminada confirmada se utiliza la referencia base y se muestra un aviso, sin inventar códigos;

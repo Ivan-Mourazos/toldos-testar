@@ -264,7 +264,7 @@ export type MaxiscreemParameters = {
   }>>;
 };
 
-export type ElectraMatrixSupport = 'SOPORTE ELIT VERTICAL' | 'SOPORTES ALMAGRO' | 'UNIVERSAL 3 AGUJEROS';
+export type ElectraMatrixSupport = 'SOPORTE ELIT VERTICAL' | 'SOPORTES ALMAGRO' | 'UNIVERSAL 3 AGUJEROS' | 'SOPORTE MAXISCREEN';
 export type ElectraSupport = ElectraMatrixSupport | 'SOPORTE MAXISCREEM BOX';
 export type ElectraParameters = {
   standardMaxWidth: number;

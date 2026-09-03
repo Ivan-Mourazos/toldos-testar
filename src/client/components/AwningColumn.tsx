@@ -45,7 +45,7 @@ type Props = {
 };
 
 const electraCofreSupports: ElectraSupport[] = ['SOPORTE MAXISCREEM BOX'];
-const electraOpenSupports: ElectraSupport[] = ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS'];
+const electraOpenSupports: ElectraSupport[] = ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS', 'SOPORTE MAXISCREEN'];
 
 export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
   return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;

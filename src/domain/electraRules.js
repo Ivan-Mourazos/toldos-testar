@@ -320,6 +320,9 @@ function supportMaterial(support, suffix, units) {
   if (support === 'UNIVERSAL 3 AGUJEROS') {
     return line(`SOPUNI3AGU${suffix}`, units, 'JGO. SOPORTE UNIVERSAL 3 AGUJEROS');
   }
+  if (support === 'SOPORTE MAXISCREEN') {
+    return line(`SOPMAXSCR${suffix}`, units, 'JGO. SOPORTE MAXISCREEN SIN COFRE');
+  }
   const code = suffix === 'BL16' ? 'ELITSOSTBL16' : suffix === 'NE11' ? 'ELITSOSTNE11' : 'ELITSOST';
   return line(code, units, 'JGO. SOPORTE ELIT VERTICAL');
 }

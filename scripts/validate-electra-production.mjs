@@ -280,6 +280,7 @@ function variantFromArticle(value) {
 function inferSupport(pieces) {
   const codes = pieces.map((piece) => piece.code);
   if (codes.some((code) => code.startsWith('SOPMAXSCRBOX'))) return 'SOPORTE MAXISCREEM BOX';
+  if (codes.some((code) => code.startsWith('SOPMAXSCR'))) return 'SOPORTE MAXISCREEN';
   if (codes.some((code) => code.startsWith('SOPUNI3AGU'))) return 'UNIVERSAL 3 AGUJEROS';
   if (codes.some((code) => code.startsWith('SOPALMAGR'))) return 'SOPORTES ALMAGRO';
   if (codes.some((code) => /^ELITSO(ST|VER)/.test(code))) return 'SOPORTE ELIT VERTICAL';
@@ -317,7 +318,7 @@ function historicalDiscount(width, expected) {
 }
 
 function isCoreElectraCode(code) {
-  return /^(SOPMAXSCRBOX|SOPUNI3AGU|SOPALMAGR|ELITSO(?:ST|VER)|TURA80HG|CASPUNCE|CASMAQEJE|PECARMAX|PUNI280|PERPRLON|TAPOPLUN280|MOSQBOACIN60MM|MAQMB|MANIVE|RUEDAMOT78|CORONALT6078|SOPORTEUNVHIPRO)/.test(code);
+  return /^(SOPMAXSCR|SOPUNI3AGU|SOPALMAGR|ELITSO(?:ST|VER)|TURA80HG|CASPUNCE|CASMAQEJE|PECARMAX|PUNI280|PERPRLON|TAPOPLUN280|MOSQBOACIN60MM|MAQMB|MANIVE|RUEDAMOT78|CORONALT6078|SOPORTEUNVHIPRO)/.test(code);
 }
 
 function valueByLabel(sheet, labelColumn, valueColumn, label) {

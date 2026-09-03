@@ -88,7 +88,8 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
   test.each([
     ['SOPORTE ELIT VERTICAL', 'ELITSOSTBL16'],
     ['SOPORTES ALMAGRO', 'SOPALMAGRBLAN'],
-    ['UNIVERSAL 3 AGUJEROS', 'SOPUNI3AGUBL16']
+    ['UNIVERSAL 3 AGUJEROS', 'SOPUNI3AGUBL16'],
+    ['SOPORTE MAXISCREEN', 'SOPMAXSCRBL16']
   ])('%s reserva su referencia propia', (electraSupport, supportCode) => {
     const result = calculate({ electraSupport });
 
@@ -105,6 +106,21 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
       expect.objectContaining({ code: 'PUNI280BL16600C', quantity: 1 }),
       expect.objectContaining({ code: 'TAPOPLUN280BL16', quantity: 1 }),
       expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 2 })
+    ]));
+  });
+
+  test('el soporte Maxiscreen usa los mismos descuentos que Cortina con Maxiscreen', () => {
+    const result = calculate({ electraSupport: 'SOPORTE MAXISCREEN' });
+
+    expect(result.calculation).toMatchObject({
+      valid: true,
+      fabricWidth: 288,
+      rollTubeLength: 289,
+      loadBarLength: 289,
+      guideLength: 236
+    });
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOPMAXSCRBL16', quantity: 1 })
     ]));
   });
 });

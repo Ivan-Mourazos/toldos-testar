@@ -857,7 +857,7 @@ function ElectraParametersView({ parameters, selectedModel, onSelectModel, onUpd
       </div>
 
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos según soporte</h3><p>Tabla del archivo “Descontos toldos Electra según soportes”. Todos los valores se descuentan en centímetros.</p></div></div>
+        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos según soporte</h3><p>Tabla interna de Electra y descuentos de Cortina para el soporte Maxiscreen. Todos los valores se descuentan en centímetros.</p></div></div>
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Soporte</th><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
           <tbody>{supports.flatMap((support) => supportPieces.map(([field, label], index) => <tr key={`${support}-${field}`}><td>{index === 0 ? support : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA ${support} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.supportDiscounts[support][device][field]} onChange={(event) => updateSupportDiscount(support, device, field, Number(event.target.value))} /></td>)}</tr>))}</tbody>
         </table></div>
@@ -870,7 +870,7 @@ function ElectraParametersView({ parameters, selectedModel, onSelectModel, onUpd
         </table></div>
       </div>
 
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>Archivo de descuentos por soporte y 37 líneas ELECTR de 2024–2026 revisadas. RPS usa ELECTRA; en documentación también aparece como ELIT VERTICAL.</span></aside>
+      <aside className="rps-evidence"><strong>Contraste real</strong><span>Archivo de descuentos, reglas de Cortina con Maxiscreen y 37 líneas ELECTR de 2024–2026 revisadas. RPS usa ELECTRA; en documentación también aparece como ELIT VERTICAL.</span></aside>
     </section>
   );
 }
