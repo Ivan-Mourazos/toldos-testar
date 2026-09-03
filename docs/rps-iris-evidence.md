@@ -220,6 +220,32 @@ Los pedidos reales confirman los tres techos: el AR2501809 lleva toldos de 756,8
 
 **Variantes sin guía.** RPS vende `IRIS110C/COS/GU` e `IRIS130C/COS/GU`, con cinco unidades entre 2025 y 2026. No hay tabla ni ejemplo conservado.
 
+## Preguntas pendientes para Oficina Técnica
+
+Dos puntos que ninguna fuente resuelve y que cambian medidas de corte.
+
+### La altura de la banda de cristal
+
+Cuando un IRIS lleva ventana, el libro maestro calcula el metraje restando **1,4 m por paño**, que son los 140 cm de ancho del rollo de cristal (`CRISESTP140xxxC`, «CRISTAL ESTABILIZADO :140 AN»). Da por hecho que la banda ocupa el rollo entero.
+
+El alto máximo es 140 y puede empatarse para ventanas mayores, pero también puede ser menor: el AR2501385 se planteó con una banda de **96 cm**. Ahí la fórmula falla hacia el lado peligroso, porque resta de más y pide menos lona de la necesaria. Para ese mismo toldo —frente 319,5, tres paños, hueco de 216 más 40 de margen— da 3,5 ml cuando la banda real de 96 exige 4,8. Faltan 1,3 metros. Es la explicación de que esa hoja lleve la caída metida a mano en vez de calculada.
+
+De los 24 libros revisados solo dos llevan cristal, y no se hicieron igual entre sí: el AR2501075 tiene la caída y las guías cuadradas, como cualquier toldo sin ventana; el AR2501385 no.
+
+**Qué preguntar:** si la banda se pone siempre con el ancho completo del rollo o se recorta a la altura que haga falta; y, cuando la ventana pasa de 140 y hay que empatar, cuántas piezas de cristal se reservan.
+
+**Qué hacer con la respuesta:** si se recorta, la altura de la ventana pasa a ser un dato del pedido y el metraje debe restar esa altura en vez de un 1,4 fijo. Si siempre son 140, el modelo actual es correcto y el AR2501385 fue un caso puntual.
+
+Hasta que se confirme, la aplicación replica el libro maestro.
+
+### La anotación `NON DESCONTAR`
+
+Escrita a mano en rojo sobre la tabla `SCREENY 110 GPZ C`, en la fila del telón con molinete 9:1, cuyo valor es `A-97`. No puede significar que ese descuento no se aplique: el AR2501385 y el AR2503932 son los dos pedidos de esa configuración y ambos aplicaron los 9,7. Debe referirse a otra cosa, o estar obsoleta.
+
+El propio libro maestro recoge la misma duda en una celda que pregunta literalmente *«Hai unha anotación na captura de "non descontar"?»*.
+
+Hasta que se aclare, la aplicación aplica los 9,7, que es lo que hacen los pedidos reales.
+
 ## Reserva en RPS
 
 Sobre todas las OF de Iris del histórico, lo único que se reserva con regularidad es:
