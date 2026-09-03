@@ -3,6 +3,8 @@ export const models = [
   { code: 'CAMBIO CORTINA', family: '', subtype: '', ruleSheet: 'CAM.CORT.', supportsMultipleArms: false },
   { code: 'CAMBIO TELA', family: '', subtype: '', ruleSheet: 'CAM. TELA', supportsMultipleArms: false },
   { code: 'CORTINA', family: 'BRAZOS INVISIBLES', subtype: '', ruleSheet: 'CORT', supportsMultipleArms: false },
+  { code: 'ELECTRA', family: 'TOLDO VERTICAL', subtype: 'SUBMODELO', ruleSheet: 'DESCONTOS TOLDOS ELECTRA SEGÚN SOPORTES', supportsMultipleArms: false },
+  { code: 'IRIS', family: 'TOLDO VERTICAL', subtype: 'SUBMODELO', ruleSheet: 'IRIS.xlsx (PROGRAMAS CALCULO)', supportsMultipleArms: false },
   { code: 'SELENA', family: 'TOLDO VERTICAL', subtype: 'BRAZOS STOR', ruleSheet: 'CORT / SELENA', supportsMultipleArms: false },
   { code: 'ENROLLABLE', family: '', subtype: '', ruleSheet: 'ENROL.', supportsMultipleArms: false },
   { code: 'GALICIA', family: 'BRAZOS INVISIBLES', subtype: 'TUBO DE CARGA', ruleSheet: 'GAL', supportsMultipleArms: true },

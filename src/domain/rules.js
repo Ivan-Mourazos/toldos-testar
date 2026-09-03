@@ -11,6 +11,8 @@ import { calculateMaxiscreem } from './maxiscreemRules.js';
 import { calculateAmbarBox } from './ambarBoxRules.js';
 import { calculateAgataBox } from './agataBoxRules.js';
 import { calculateCortina } from './cortinaRules.js';
+import { calculateElectra } from './electraRules.js';
+import { calculateIris } from './irisRules.js';
 import { calculateSelena } from './selenaRules.js';
 import { calculateHera } from './heraRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
@@ -33,6 +35,8 @@ const implementedRules = new Map([
   ['AMBAR BOX', calculateAmbarBox],
   ['AGATA BOX', calculateAgataBox],
   ['CORTINA', calculateCortina],
+  ['ELECTRA', calculateElectra],
+  ['IRIS', calculateIris],
   ['SELENA', calculateSelena],
   ['HERA', calculateHera],
   ['CAMBIO TELA', calculateCambioTela],

@@ -12,6 +12,12 @@ import { normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
 import { normalizeAgataBoxParameters } from './agataBoxParameters.js';
 import { normalizeFabricJobParameters } from './fabricJobParameters.js';
 import { normalizeCortinaParameters } from './cortinaParameters.js';
+import { normalizeElectraMotor, normalizeElectraParameters, normalizeElectraSupport, normalizeElectraVariant } from './electraParameters.js';
+import {
+  normalizeIrisGuideFixing,
+  normalizeIrisGuideType,
+  normalizeIrisSubmodel
+} from './irisParameters.js';
 import { normalizeSelenaParameters } from './selenaParameters.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from './modelBehavior.js';
@@ -60,6 +66,7 @@ export function normalizeOrder(payload) {
       agataBox: normalizeAgataBoxParameters(payload.parameters?.agataBox),
       fabricJobs: normalizeFabricJobParameters(payload.parameters?.fabricJobs),
       cortina: normalizeCortinaParameters(payload.parameters?.cortina),
+      electra: normalizeElectraParameters(payload.parameters?.electra),
       selena: normalizeSelenaParameters(payload.parameters?.selena),
       cambioCortina: normalizeCambioCortinaParameters(payload.parameters?.cambioCortina)
     },
@@ -113,6 +120,13 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     : numberOrDefault(awning?.valanceHeight, 0) > 0 ? true : null;
   const valanceHeight = hasValance === false ? 0 : numberOrDefault(awning?.valanceHeight, 0);
   const remate = normalizeValanceFinish({ model, valanceHeight }, awning?.remate || legacyOrder.remate);
+  const submodel = model === 'HERA'
+    ? inferHeraVariant({ model: rawModel, submodel: awning?.submodel, device })
+    : model === 'ELECTRA'
+      ? normalizeElectraVariant(awning?.submodel)
+      : model === 'IRIS'
+        ? normalizeIrisSubmodel(awning?.submodel)
+        : cleanText(awning?.submodel).toUpperCase();
 
   return {
     id: cleanText(awning?.id),
@@ -130,9 +144,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     device,
     placement: cleanText(awning?.placement).toUpperCase(),
     wallType: cleanText(awning?.wallType).toUpperCase(),
-    submodel: model === 'HERA'
-      ? inferHeraVariant({ model: rawModel, submodel: awning?.submodel, device })
-      : cleanText(awning?.submodel).toUpperCase(),
+    submodel,
     heraJoin: model === 'HERA' ? normalizeHeraJoin(awning?.heraJoin) : '',
     heraTopFinish: model === 'HERA' ? cleanText(awning?.heraTopFinish || 'VARILLA PLANA').toUpperCase() : '',
     heraBottomFinish: model === 'HERA' ? cleanText(awning?.heraBottomFinish).toUpperCase() : '',
@@ -142,13 +154,16 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     tubeLoad: cleanText(awning?.tubeLoad).toUpperCase(),
     destination: cleanText(awning?.destination).toUpperCase(),
     supportSystem: cleanText(awning?.supportSystem || 'AUTOMÁTICO').toUpperCase(),
-    motorPower: cleanText(awning?.motorPower || 'AUTOMÁTICO').toUpperCase(),
+    motorPower: model === 'ELECTRA'
+      ? normalizeElectraMotorPower(device, awning?.motorPower)
+      : cleanText(awning?.motorPower || 'AUTOMÁTICO').toUpperCase(),
     sensor: cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
     curtainHasWindow: typeof awning?.curtainHasWindow === 'boolean' ? awning.curtainHasWindow : null,
     curtainFinish: normalizeCurtainFinish(awning?.curtainFinish),
     curtainSupport: normalizeCurtainSupport(model, awning?.curtainSupport),
+    electraSupport: model === 'ELECTRA' ? normalizeElectraFormSupport(awning?.electraSupport, submodel) : '',
     curtainWindowExit: numberOrDefault(awning?.curtainWindowExit, 0),
     curtainWindowCorner: numberOrDefault(awning?.curtainWindowCorner, 0),
     curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),
@@ -184,6 +199,23 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     maxisLoadBarDiscountCm: nullableNumber(awning?.maxisLoadBarDiscountCm),
     maxisBoxProfileDiscountCm: nullableNumber(awning?.maxisBoxProfileDiscountCm),
     maxisFabricDropAllowanceCm: nullableNumber(awning?.maxisFabricDropAllowanceCm),
+    electraFabricWidthDiscountCm: nullableNumber(awning?.electraFabricWidthDiscountCm),
+    electraRollDiscountCm: nullableNumber(awning?.electraRollDiscountCm),
+    electraLoadBarDiscountCm: nullableNumber(awning?.electraLoadBarDiscountCm),
+    electraBoxProfileDiscountCm: nullableNumber(awning?.electraBoxProfileDiscountCm),
+    electraGuideDiscountCm: nullableNumber(awning?.electraGuideDiscountCm),
+    electraFabricDropAllowanceCm: nullableNumber(awning?.electraFabricDropAllowanceCm),
+    irisGuideType: model === 'IRIS' ? normalizeIrisGuideType(awning?.irisGuideType) : '',
+    irisGuideFixing: model === 'IRIS' ? normalizeIrisGuideFixing(awning?.irisGuideFixing) : '',
+    irisWindBlock: model === 'IRIS' && awning?.irisWindBlock === true,
+    irisAssumeSquare: model === 'IRIS' && awning?.irisAssumeSquare === true,
+    irisFrontTop: numberOrDefault(awning?.irisFrontTop, 0),
+    irisFrontBottom: numberOrDefault(awning?.irisFrontBottom, 0),
+    irisExitLeft: numberOrDefault(awning?.irisExitLeft, 0),
+    irisExitRight: numberOrDefault(awning?.irisExitRight, 0),
+    irisDiagonal1: numberOrDefault(awning?.irisDiagonal1, 0),
+    irisDiagonal2: numberOrDefault(awning?.irisDiagonal2, 0),
+    irisFabricDropAllowanceCm: nullableNumber(awning?.irisFabricDropAllowanceCm),
     ambarFabricWidthDiscountCm: nullableNumber(awning?.ambarFabricWidthDiscountCm),
     ambarRollDiscountCm: nullableNumber(awning?.ambarRollDiscountCm),
     ambarProfileDiscountCm: nullableNumber(awning?.ambarProfileDiscountCm),
@@ -313,5 +345,20 @@ function normalizeCurtainSupport(model, value) {
   return cleanText(value).toUpperCase() === 'MAXISCREEM'
     ? 'MAXISCREEM'
     : 'UNIVERSAL 3 AGUJEROS';
+}
+
+function normalizeElectraFormSupport(value, variant) {
+  const clean = cleanText(value).toUpperCase();
+  if (String(variant || '').startsWith('CON COFRE')) {
+    return clean === 'SOPORTE MAXISCREEM BOX' || clean === 'MAXISCREEM BOX'
+      ? 'SOPORTE MAXISCREEM BOX'
+      : '';
+  }
+  return normalizeElectraSupport(value);
+}
+
+function normalizeElectraMotorPower(device, value) {
+  if (device !== 'MOTOR') return '';
+  return normalizeElectraMotor(value);
 }
 

@@ -1,8 +1,30 @@
 import { describe, expect, test } from 'vitest';
-import { fabricDiagramOptions, getAwningDiagram, getFabricDiagramOptions, getModelBehavior, getFieldVisibility, formOptions, modelNames, fullAwningModelNames, getEstablishedProjections, needsValanceFinish, normalizeFabricDiagramOverride, normalizeValanceFinish } from './modelBehavior.js';
+import { fabricDiagramOptions, getAwningDiagram, getFabricDiagramOptions, getModelBehavior, getFieldVisibility, formOptions, modelNames, fullAwningModelNames, getEstablishedProjections, getRequiredDimensions, needsValanceFinish, normalizeFabricDiagramOverride, normalizeValanceFinish } from './modelBehavior.js';
 import { models as catalogModels } from './catalog.js';
 
 describe('modelBehavior', () => {
+  test('ELECTRA es un modelo vertical completo con bamba y cuatro variantes', () => {
+    expect(getModelBehavior('ELECTRA')).toMatchObject({
+      implemented: true,
+      workType: 'FULL_AWNING',
+      dimensions: ['width', 'projection', 'valanceHeight'],
+      submodelOptions: [
+        'CON COFRE / CON GUÍA',
+        'CON COFRE / SIN GUÍA',
+        'SIN COFRE / CON GUÍA',
+        'SIN COFRE / SIN GUÍA'
+      ]
+    });
+  });
+
+  test('IRIS está implementado y pide sus propias medidas', () => {
+    const behavior = getModelBehavior('IRIS');
+    expect(behavior.implemented).toBe(true);
+    expect(behavior.submodelOptions).toContain('IRIS 110 CON COFRE');
+    expect(getRequiredDimensions('IRIS')).toEqual(['irisFrontTop', 'irisExitLeft']);
+    expect(getModelBehavior('SCREENY').implemented).toBe(true);
+  });
+
   test('ARZUA PRO: tubo de carga limitado a EVO 80 y UNIVERS 280', () => {
     const behavior = getModelBehavior('ARZUA PRO');
     expect(behavior.tipo02).toBe('TUBO DE CARGA');
@@ -157,7 +179,8 @@ describe('modelBehavior', () => {
     [{ model: 'CAMBIO CORTINA', curtainHasWindow: false, curtainFinish: 'VELCRO' }, 'CORTINA-VELCRO'],
     [{ model: 'CAMBIO CORTINA', curtainHasWindow: true, curtainFinish: 'VELCRO' }, 'CORTINA-VENTANA-VELCRO'],
     [{ model: 'CAMBIO CORTINA', curtainHasWindow: false, curtainFinish: 'TUBO' }, 'CORTINA-TUBO'],
-    [{ model: 'CAMBIO CORTINA', curtainHasWindow: true, curtainFinish: 'TUBO' }, 'CORTINA-TUBO-VENTANA']
+    [{ model: 'CAMBIO CORTINA', curtainHasWindow: true, curtainFinish: 'TUBO' }, 'CORTINA-TUBO-VENTANA'],
+    [{ model: 'ELECTRA', curtainHasWindow: true, curtainFinish: 'VELCRO' }, 'CORTINA-VENTANA-VELCRO']
   ])('selecciona el dibujo de cortina correcto', (awning, expected) => {
     expect(getAwningDiagram(awning)).toBe(expected);
   });
