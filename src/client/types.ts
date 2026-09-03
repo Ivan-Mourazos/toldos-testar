@@ -395,6 +395,10 @@ export type Calculation = {
       model: string;
       valid: boolean;
       minimumLine: number;
+      // Todos los modelos los devuelven. En IRIS no son copia de lo que
+      // escribió el técnico: salen del escuadrado del hueco.
+      width?: number | null;
+      projection?: number | null;
       fabricWidth: number;
       fabricDrop: number;
       dropArmMode?: Awning['dropArmMode'];

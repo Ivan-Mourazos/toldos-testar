@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Awning, Calculation } from '../types';
 import { formatDecimal } from '../constants';
+import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
 
 type Props = {
   calculation: Calculation | null;
@@ -72,8 +73,8 @@ export function DespieceView({ calculation, awnings }: Props) {
                 <div className="despiece-side">
                   <div className="despiece-info-block">
                     <h4>Datos de partida</h4>
-                    <p>Frente {awning?.width ?? '-'} cm</p>
-                    <p>Salida {awning?.projection ?? '-'} cm</p>
+                    <p>Frente {awning?.width ?? calc.width ?? '-'} cm</p>
+                    <p>{isVerticalAwningModel(awning?.model) ? 'Caída' : 'Salida'} {awning?.projection ?? calc.projection ?? '-'} cm</p>
                   </div>
                   <div className="despiece-info-block">
                     <h4>Dimensiones tela</h4>
