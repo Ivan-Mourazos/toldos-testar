@@ -59,6 +59,47 @@ describe('PDF provisional de revisión', () => {
     expect(entry).not.toHaveProperty('sections');
   });
 
+test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contra lo que se puede revisar', () => {
+    const iris = (overrides = {}) => ({
+      orderCode: 'AR2609999', sameFabric: true, fabric: 'ACRILI2170P120|||120|||ACR NEGRO',
+      structureColor: 'BLANCO',
+      awnings: [{
+        id: 'iris-a', of: '0239001', model: 'IRIS', units: 1, submodel: 'IRIS 110 CON COFRE',
+        irisGuideType: 'ESTÁNDAR', irisGuideFixing: 'PARED', irisWindBlock: false,
+        irisAssumeSquare: true, irisFrontTop: 300, irisExitLeft: 250,
+        device: 'MAQUINA', machineSide: 'M.F.DER', crankHeight: 150, placement: 'FRONTAL',
+        structureColor: 'BLANCO', wallType: '', curtainHasWindow: false, reglasModificadas: false,
+        ...overrides
+      }]
+    });
+
+    const [cuadrado] = buildReviewSheetEntries(iris(), calculateOrder(iris()));
+    expect(cuadrado.fields).toContainEqual({ label: 'Frente superior', value: '300' });
+    expect(cuadrado.fields).toContainEqual({ label: 'Salida izquierda', value: '250' });
+    expect(cuadrado.fields).toContainEqual({ label: 'Frente escuadrado', value: '300' });
+    expect(cuadrado.fields).toContainEqual({ label: 'Caída escuadrada', value: '250' });
+    // Con el hueco declarado escuadrado el resto se deriva: enseñarlas como si
+    // las hubiera escrito el técnico invitaría a revisar un dato inventado.
+    expect(cuadrado.fields.map((item) => item.label)).not.toContain('Diagonal 1');
+
+    const torcido = iris({
+      irisAssumeSquare: false, irisFrontTop: 355, irisFrontBottom: 350,
+      irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537,
+      reglasModificadas: true
+    });
+    const [descuadrado] = buildReviewSheetEntries(torcido, calculateOrder(torcido));
+    expect(descuadrado.fields).toContainEqual({ label: 'Diagonal 1', value: '533,1' });
+    expect(descuadrado.fields).toContainEqual({ label: 'Frente inferior', value: '350' });
+    // El escuadrado no es un eco del frente medido: sale de resolver los triángulos.
+    expect(descuadrado.fields).toContainEqual({ label: 'Frente escuadrado', value: '350,1' });
+  });
+
+  test('los campos de IRIS no se cuelan en otros modelos', () => {
+    const order = reviewOrder();
+    const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
+    expect(entry.fields.map((item) => item.label)).not.toContain('Frente superior');
+  });
+
   test('muestra el dibujo de confección elegido para poder revisarlo sin abrir el archivo', () => {
     const order = reviewOrder({
       awnings: [{ ...reviewOrder().awnings[0], fabricDiagramOverride: 'TOLDO-VELCRO' }]

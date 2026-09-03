@@ -5,6 +5,7 @@ import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
+import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
 
@@ -774,11 +775,11 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
 }
 
 function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
-  const hasCompensator = String(awning.irisGuideType || '').toUpperCase() === 'COMPENSADORA';
-  // Mismo criterio que irisRules.js: la compensadora es un producto con cofre
-  // aunque el submodelo diga lo contrario. Si esto diverge, el croquis dibuja
-  // un toldo sin cofre al lado de un despiece que corta la pieza de cofre.
-  const hasBox = String(awning.submodel || '').toUpperCase().includes('CON COFRE') || hasCompensator;
+  // El mismo criterio que usa el despiece, importado y no reescrito aquí: si
+  // los dos divergen, el croquis dibuja un toldo sin cofre al lado de una lista
+  // de piezas que sí corta el cofre.
+  const hasCompensator = normalizeIrisGuideType(awning.irisGuideType) === 'COMPENSADORA';
+  const hasBox = irisHasCassette(awning.submodel, awning.irisGuideType);
   drawDiagramShell(doc, x, y, w, h, String(awning.submodel || 'IRIS').toUpperCase());
 
   const panelX = x + 52;

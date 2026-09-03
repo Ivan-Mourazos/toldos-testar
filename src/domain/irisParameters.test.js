@@ -6,6 +6,7 @@ import {
   getIrisLimits,
   irisConfigCode,
   irisHasBox,
+  irisHasCassette,
   irisSeriesOf,
   normalizeIrisDevice,
   normalizeIrisGuideFixing,
@@ -101,6 +102,16 @@ describe('parámetros IRIS', () => {
     expect(irisSeriesOf('IRIS 130 CON COFRE')).toBe('130');
     expect(irisHasBox('IRIS 110 SIN COFRE')).toBe(false);
     expect(irisHasBox('IRIS 110 CON COFRE')).toBe(true);
+  });
+
+  test('la compensadora lleva cofre aunque el submodelo diga que no', () => {
+    expect(irisHasCassette('IRIS 110 CON COFRE', 'ESTÁNDAR')).toBe(true);
+    expect(irisHasCassette('IRIS 110 SIN COFRE', 'ESTÁNDAR')).toBe(false);
+    expect(irisHasCassette('IRIS 110 SIN COFRE', 'COMPENSADORA')).toBe(true);
+    // Tolera lo que escriba quien rellene: es el mismo criterio que consumen
+    // el despiece y el croquis, y divergir dibujaría un toldo distinto del que se corta.
+    expect(irisHasCassette('IRIS 110 SIN COFRE', ' guía compensadora ')).toBe(true);
+    expect(irisHasCassette('IRIS 130 SIN COFRE', 'PEQUEÑA')).toBe(false);
   });
 
   test('límites de fabricación de los manuales de ensamblaje', () => {

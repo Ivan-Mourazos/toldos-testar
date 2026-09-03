@@ -117,6 +117,16 @@ export function irisHasBox(submodel) {
   return normalizeIrisSubmodel(submodel).includes('CON COFRE');
 }
 
+/**
+ * Si el toldo lleva pieza de cofre. No basta con mirar el submodelo: la guía
+ * compensadora solo existe en el catálogo de BAT como producto con cofre, así
+ * que un "SIN COFRE" con compensadora lo lleva igualmente. Vive aquí y no en
+ * cada consumidor para que el croquis y el despiece no puedan discrepar.
+ */
+export function irisHasCassette(submodel, guideType) {
+  return irisHasBox(submodel) || normalizeIrisGuideType(guideType) === 'COMPENSADORA';
+}
+
 export function normalizeIrisSubmodel(value) {
   const clean = normalizeText(value);
   return irisSubmodels.includes(clean) ? clean : '';
