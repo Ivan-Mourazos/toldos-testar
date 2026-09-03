@@ -112,6 +112,30 @@ export function calculateIris({ order, awning }) {
   const compensatorOverMax = hasCompensator && slack > parameters.compensatorMaxCm;
   const frontDifference = Math.abs(opening.frontTop - opening.frontBottom);
 
+  // Solo comprobamos piezas cuando la geometría y la configuración ya son
+  // válidas: si el hueco está roto o la combinación no existe, ese error ya
+  // se ha emitido arriba y no hace falta apilar uno más que diga lo mismo.
+  const hasBasicConfig = opening.valid && Boolean(discounts);
+  const cutPieces = [
+    { name: 'fabricWidth', length: fabricWidth },
+    { name: 'rollTubeLength', length: rollTubeLength },
+    { name: 'loadBarLength', length: loadBarLength },
+    { name: 'ballastLength', length: ballastLength },
+    ...(hasBox ? [{ name: 'boxProfileLength', length: boxProfileLength }] : []),
+    ...(guideDiscount !== undefined && guideDiscount !== null
+      ? [{ name: 'guideLeftLength', length: guideLeftLength }, { name: 'guideRightLength', length: guideRightLength }]
+      : []),
+    ...(zipDiscount !== undefined && zipDiscount !== null
+      ? [{ name: 'zipLeftLength', length: zipLeftLength }, { name: 'zipRightLength', length: zipRightLength }]
+      : []),
+    ...(hasCompensator
+      ? [{ name: 'compensatorLeftLength', length: compensatorLeftLength }, { name: 'compensatorRightLength', length: compensatorRightLength }]
+      : []),
+    ...(windBlock ? [{ name: 'windBlockTerminalLength', length: windBlockTerminalLength }] : [])
+  ];
+  const negativePieces = hasBasicConfig ? cutPieces.filter((item) => item.length < 0) : [];
+  const glassOutOfCatalog = hasBasicConfig && hasGlass && glassSize === 0;
+
   if (fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   }
@@ -133,6 +157,12 @@ export function calculateIris({ order, awning }) {
   if (compensatorOverMax && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con compensadora: hay que absorber ${formatNumber(round1(slack))} cm por guía y el máximo tolerado son ${formatNumber(parameters.compensatorMaxCm)} cm. Revisa las medidas del hueco.` });
   }
+  if (negativePieces.length) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS en OF ${awning.of}: las medidas del hueco no dan para los descuentos de fabricación (quedaría en negativo: ${negativePieces.map((item) => item.name).join(', ')}).` });
+  }
+  if (glassOutOfCatalog) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con ventana en OF ${awning.of}: el frente de tela (${formatNumber(fabricWidth)} cm) supera los 700 cm del catálogo de cristal y no hay medida que sirva. Activa una excepción técnica para continuar sin cristal.` });
+  }
   if (hasCompensator && slack > parameters.compensatorWarnCm && !compensatorOverMax) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS con compensadora: hay que absorber ${formatNumber(round1(slack))} cm por guía y BAT da 2,5 cm como máximo del perfil. Comprueba el ajuste antes de fabricar.` });
   }
@@ -145,7 +175,7 @@ export function calculateIris({ order, awning }) {
   if (cuts.unverified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS ${submodel}: configuración sin tabla del fabricante, respaldada solo por dos pedidos conservados. Comprueba las medidas de guía.` });
   }
-  if (hasGlass) {
+  if (hasGlass && glassSize) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: 'IRIS con ventana: el cristal estabilizado tarda alrededor de un mes. Pídelo en cuanto entre el pedido.' });
   }
   if (modified) {
@@ -158,7 +188,9 @@ export function calculateIris({ order, awning }) {
     && Boolean(fabric)
     && !(motorOnly && device === 'MAQUINA')
     && (!outOfRange || modified)
-    && (!compensatorOverMax || modified);
+    && (!compensatorOverMax || modified)
+    && negativePieces.length === 0
+    && (!glassOutOfCatalog || modified);
 
   const materials = [];
   if (valid && fabric) materials.push({ code: fabric.code, quantity: fabricUsage.ml, description: fabric.description });

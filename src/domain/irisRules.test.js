@@ -214,6 +214,39 @@ describe('IRIS · diagnósticos', () => {
     expect(result.calculation.valid).toBe(true);
     expect(result.diagnostics.some((item) => item.level === 'warn' && item.message.includes('sin tabla'))).toBe(true);
   });
+
+  test('bloquea un hueco tan pequeño que los descuentos dejan piezas en negativo, aunque haya excepción técnica', () => {
+    const result = calculate({
+      reglasModificadas: true,
+      irisFrontTop: 20,
+      irisExitLeft: 20
+    });
+    expect(result.calculation.valid).toBe(false);
+    expect(result.calculation.ballastLength).toBeLessThan(0);
+    expect(result.diagnostics.some((item) => item.level === 'error'
+      && item.message.includes('no dan para los descuentos de fabricación'))).toBe(true);
+  });
+
+  test('bloquea la ventana cuando el frente de tela supera el mayor cristal del catálogo, y no avisa del plazo', () => {
+    const result = calculate({
+      submodel: 'IRIS 150 CON COFRE',
+      device: 'MOTOR',
+      crankHeight: null,
+      irisFrontTop: 780,
+      curtainHasWindow: true
+    });
+    expect(result.calculation.valid).toBe(false);
+    expect(result.calculation.glassSize).toBe(0);
+    expect(result.diagnostics.some((item) => item.level === 'error'
+      && item.message.includes('catálogo de cristal'))).toBe(true);
+    expect(result.diagnostics.some((item) => item.message.includes('un mes'))).toBe(false);
+  });
+
+  test('materials queda vacío cuando el toldo no es válido', () => {
+    const result = calculate({ irisGuideType: 'PEQUEÑA' });
+    expect(result.calculation.valid).toBe(false);
+    expect(result.materials).toEqual([]);
+  });
 });
 
 describe('IRIS · despiece', () => {
