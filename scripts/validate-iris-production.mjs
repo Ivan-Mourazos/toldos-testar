@@ -194,22 +194,19 @@ function readWorkbook({ root, name }) {
     file: name,
     title,
     deviceText,
-    submodel: inferSubmodel(title, guideHaystack),
+    submodel: inferSubmodel(title),
     guideType: inferGuideType(guideHaystack),
     device: inferDevice(deviceText),
     blocks: [...blocks.values()]
   };
 }
 
-function inferSubmodel(title, guideHaystack) {
+function inferSubmodel(title) {
   const series = /\b(110|130|150)\b/.exec(title)?.[1];
   if (!series) return '';
-  // La guía compensadora es su propia configuración en la matriz del fabricante
-  // (siempre código de cofre "0"): las hojas antiguas la titulan a veces como
-  // "SIN COFRE Y GUIA COMPENSADORA" (p.ej. AR2501385), pero el descuento de
-  // COFRE (1,4) se sigue cortando igual. Forzar CON COFRE aquí es lo único que
-  // reproduce esa tabla; ver el comentario de '00200' en irisParameters.js.
-  if (/COMPENSADORA/.test(guideHaystack)) return `IRIS ${series} CON COFRE`;
+  // El submodelo se lee tal cual del título, también cuando dice "SIN COFRE Y
+  // GUIA COMPENSADORA" (p. ej. AR2501385): de que la compensadora sea siempre
+  // un producto con cofre ya se encarga irisConfigCode, no este script.
   const withoutBox = /SIN\s+COFRE/.test(title);
   return `IRIS ${series} ${withoutBox ? 'SIN' : 'CON'} COFRE`;
 }

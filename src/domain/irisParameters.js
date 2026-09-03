@@ -148,7 +148,12 @@ export function irisConfigCode({ submodel, guideType, device, windBlock } = {}) 
   if (!series || !guide || !cleanDevice) return '';
 
   const seriesDigit = { 110: '0', 130: '1', 150: '2' }[series];
-  const boxDigit = irisHasBox(submodel) ? '0' : '1';
+  // La guía compensadora solo existe en el catálogo de BAT como producto con
+  // cofre: el SCREENY 110 GPZ C se describe como "toldo con cofre de 110mm
+  // dotado de dos perfiles compensadores". El "SIN COFRE" de algunos títulos
+  // antiguos es laxo — el AR2501385 es un IRIS110S/CO en RPS y su hoja corta
+  // igualmente la pieza de cofre con 1,4 — así que aquí cuenta como con cofre.
+  const boxDigit = irisHasBox(submodel) || normalizeIrisGuideType(guideType) === 'COMPENSADORA' ? '0' : '1';
   const guideDigit = { 'ESTÁNDAR': '0', 'PEQUEÑA': '1', 'COMPENSADORA': '2' }[guide];
   const deviceDigit = cleanDevice === 'MOTOR' ? '1' : '0';
   const windDigit = windBlock ? '1' : '0';

@@ -30,6 +30,10 @@ describe('parámetros IRIS', () => {
     expect(irisConfigCode(config({ submodel: 'IRIS 130 CON COFRE', device: 'MOTOR', windBlock: true }))).toBe('10011');
     expect(irisConfigCode(config({ submodel: 'IRIS 150 CON COFRE', device: 'MOTOR' }))).toBe('20010');
     expect(irisConfigCode(config({ guideType: '' }))).toBe('');
+    // La compensadora es un producto con cofre en el catálogo de BAT (SCREENY 110
+    // GPZ C se describe como toldo con cofre), así que el 'SIN COFRE' de los
+    // títulos antiguos es laxo: el AR2501385 es un IRIS110S/CO y corta cofre.
+    expect(irisConfigCode(config({ submodel: 'IRIS 110 SIN COFRE', guideType: 'COMPENSADORA' }))).toBe('00200');
   });
 
   test('conserva literalmente la tabla de corte de BAT', () => {
@@ -70,6 +74,11 @@ describe('parámetros IRIS', () => {
     expect(getIrisDiscounts(p, config({ submodel: 'IRIS 130 CON COFRE', guideType: 'COMPENSADORA', device: 'MOTOR' }))).toBeNull();
     // 130 sin cofre a motor: no hay ni un pedido conservado.
     expect(getIrisDiscounts(p, config({ submodel: 'IRIS 130 SIN COFRE', device: 'MOTOR' }))).toBeNull();
+  });
+
+  test('el 110 sin cofre con compensadora usa la tabla GPZ C, como el AR2501385', () => {
+    expect(getIrisDiscounts(defaultIrisParameters, config({ submodel: 'IRIS 110 SIN COFRE', guideType: 'COMPENSADORA' })))
+      .toMatchObject({ fabric: 9.7, box: 1.4, roll: 15.5, loadBar: 14.6, ballast: 27.6, compensatorWall: 11.2 });
   });
 
   test('el 130 sin cofre a máquina usa el 15,5 de los dos pedidos conservados', () => {

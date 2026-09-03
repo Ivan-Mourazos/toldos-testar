@@ -25,8 +25,11 @@ export function calculateIris({ order, awning }) {
   const device = normalizeIrisDevice(awning.device);
   const windBlock = awning.irisWindBlock === true;
   const series = irisSeriesOf(submodel);
-  const hasBox = irisHasBox(submodel);
   const hasCompensator = guideType === 'COMPENSADORA';
+  // La compensadora lleva cofre aunque el submodelo diga lo contrario: es un
+  // producto con cofre en el catálogo de BAT, y el AR2501385, que en RPS es un
+  // IRIS110S/CO, corta la pieza de cofre. Ver irisConfigCode.
+  const hasBox = irisHasBox(submodel) || hasCompensator;
   const modified = Boolean(awning.reglasModificadas);
   const structureColor = awning.structureColor || order.structureColor;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
