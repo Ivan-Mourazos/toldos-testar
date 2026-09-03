@@ -84,7 +84,8 @@ for (const item of cases) {
         of: item.awning.of,
         field,
         expected,
-        actual: replay.calculation[field] ?? null
+        actual: replay.calculation[field] ?? null,
+        knownHistoricalVariation: isKnownExactReplayVariation(item, field, expected, replay.calculation[field])
       });
     }
   }
@@ -166,6 +167,8 @@ const report = {
   dimensionalMismatches,
   exactReplayChecks,
   exactReplayMismatchCount: exactReplayMismatches.length,
+  knownHistoricalExactReplayCount: exactReplayMismatches.filter((item) => item.knownHistoricalVariation).length,
+  unexpectedExactReplayMismatchCount: exactReplayMismatches.filter((item) => !item.knownHistoricalVariation).length,
   exactReplayMismatches,
   historicalDropAllowances,
   valanceComparisons: cases
@@ -209,6 +212,8 @@ const output = process.argv.includes('--valances')
       dimensionalMismatchCount: report.dimensionalMismatchCount,
       exactReplayChecks: report.exactReplayChecks,
       exactReplayMismatchCount: report.exactReplayMismatchCount,
+      knownHistoricalExactReplayCount: report.knownHistoricalExactReplayCount,
+      unexpectedExactReplayMismatchCount: report.unexpectedExactReplayMismatchCount,
       reservationChecks: report.reservationChecks,
       reservationMismatchCount: report.reservationMismatchCount,
       valanceComparisonCount: report.valanceComparisons.length,
@@ -296,6 +301,7 @@ function readWorkbook(filename) {
       expectedDimensions: {
         fabricWidth: number(cell(structure, 'Q26')),
         fabricDrop: number(cell(structure, 'Q27')),
+        fabricMl: number(cell(structure, 'Q28')),
         rollTubeLength: pieceMeasure(pieces, /^TURA80HG/),
         loadBarLength: pieceMeasure(pieces, /^(PECARMAX|PUNI280)/),
         boxProfileLength: target.variant.startsWith('CON COFRE') ? pieceMeasure(pieces, /^PERPRLON/) : 0
@@ -482,6 +488,13 @@ function despieceDifference(item, code, expected, actual) {
 function isKnownHistoricalVariation(code, expected, actual) {
   if (/^PECARMAX/.test(code) && nearlyEqual(expected.measure - actual.measure, 2.1)) return true;
   return code === 'SUNILUSIO15//17' && expected.quantity === 2 && actual.quantity === 1;
+}
+
+function isKnownExactReplayVariation(item, field, expected, actual) {
+  return item.orderCode === 'AR2601519'
+    && field === 'fabricMl'
+    && nearlyEqual(expected, 6.34)
+    && nearlyEqual(actual, 9.51);
 }
 
 function normalizedPieceName(value) {

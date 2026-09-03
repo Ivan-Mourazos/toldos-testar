@@ -56,8 +56,7 @@ export function calculateElectra({ order, awning }) {
   const supportIsCompatible = !variant || !support || (hasCofre
     ? support === electraCofreSupport
     : support !== electraCofreSupport);
-  const specialTextile = awning.curtainHasWindow === true
-    || ['VELCRO', 'TUBO'].includes(awning.curtainFinish)
+  const unvalidatedTextile = ['VELCRO', 'TUBO'].includes(awning.curtainFinish)
     || Number(awning.valanceHeight) > 0;
   const diagnostics = [];
   const missingFields = [];
@@ -134,7 +133,7 @@ export function calculateElectra({ order, awning }) {
     && Boolean(fabric)
     && supportIsCompatible
     && (variantIsValidated || modified)
-    && (!specialTextile || modified)
+    && (!unvalidatedTextile || modified)
     && Boolean(rollStockLength)
     && Boolean(profileStockLength)
     && (!hasGuide || Boolean(guideStockLength))
@@ -151,8 +150,8 @@ export function calculateElectra({ order, awning }) {
       : `ELECTRA ${variant}: ${electraCofreSupport} solo corresponde a variantes con cofre.` });
   } else if (!variantIsValidated && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `ELECTRA ${variant}: no hay fabricación reciente validada. Activa una excepción técnica y confirma las reglas para continuar.` });
-  } else if (specialTextile && !modified) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: 'ELECTRA con ventana, bamba o confección especial: requiere excepción técnica para confirmar medidas y metraje.' });
+  } else if (unvalidatedTextile && !modified) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: 'ELECTRA con bamba o confección especial: requiere excepción técnica para confirmar medidas y metraje.' });
   } else if ((overWidth || overDrop) && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `ELECTRA fuera de estándar: máximo ${parameters.standardMaxWidth}x${parameters.standardMaxDrop} cm. Activa una excepción técnica para continuar.` });
   } else if (!rollStockLength || !profileStockLength || (hasGuide && !guideStockLength)) {
@@ -164,7 +163,7 @@ export function calculateElectra({ order, awning }) {
   if (hasGuide && lacado.suffix !== 'BL16') {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `ELECTRA con guía en ${structureColor}: RPS solo mantiene referencias activas de guía terminada en blanco; revisar referencia/lacado antes de producir.` });
   }
-  if (specialTextile && modified) {
+  if (unvalidatedTextile && modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ELECTRA con confección especial: revisar medidas de ventana/bamba y metraje antes de producir.' });
   }
   if (profileStockLength && loadProfileReference?.generic) {

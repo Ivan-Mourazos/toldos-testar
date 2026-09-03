@@ -244,6 +244,36 @@ describe('autocompletado de pedidos RPS', () => {
     ]));
   });
 
+  test('AR2602162 expande las siete Electra agrupadas sin medidas en RPS', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR2602162', customer: 'TABERNA MARIÑEIRA ESPJ' },
+      lines: [{
+        lineId: '2162-electra',
+        articleCode: 'ELECTRSCCG',
+        description: 'ELECTRA / ELIT VERTICAL',
+        manufacturingOrder: '0228116',
+        quantity: 7,
+        comment: 'CON VENTANA. ESTRUCTURA LACADA EN BLANCO'
+      }]
+    });
+
+    expect(result.order.awnings).toHaveLength(7);
+    expect(result.order.awnings).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        model: 'ELECTRA', units: 1, of: '0228116', width: null, projection: null,
+        submodel: 'SIN COFRE / CON GUÍA', curtainHasWindow: true
+      })
+    ]));
+    expect(new Set(result.order.awnings.map((awning) => awning.id)).size).toBe(7);
+    expect(result.pending).toEqual(expect.arrayContaining([
+      'A · ELECTRA: frente',
+      'A · ELECTRA: caída',
+      'G · ELECTRA: frente',
+      'G · ELECTRA: caída'
+    ]));
+    expect(result.warnings).toContain('ELECTRA: RPS agrupa 7 unidades sin medidas; se han creado elementos individuales para completar cada estructura.');
+  });
+
   test('utiliza el cliente que figura en RPS', () => {
     const result = buildOrderAutofill({
       header: {

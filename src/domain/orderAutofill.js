@@ -25,6 +25,11 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
 
   const materialsByOf = groupMaterialsByOf(materials);
   const editableLines = mappedLines.flatMap(({ line, model }) => expandEditableLine(line, model));
+  for (const editableLine of editableLines) {
+    if (editableLine.expandedFromQuantity) {
+      warnings.push(`${editableLine.model}: RPS agrupa ${editableLine.expandedFromQuantity} unidades sin medidas; se han creado elementos individuales para completar cada estructura.`);
+    }
+  }
   const awnings = editableLines.map(({ line, model }, index) => {
     const awning = buildAwningSuggestion(line, model, index);
     const fabricRows = materialsByOf.get(cleanOf(awning.of)) || [];
@@ -90,7 +95,7 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
 function expandEditableLine(line, model) {
   const quantity = positiveNumber(line.quantity) || 1;
   const wholeUnits = Number.isInteger(quantity) ? quantity : 1;
-  if (!fabricOnlyModels.has(model) || wholeUnits <= 1 || wholeUnits > 50) {
+  if (wholeUnits <= 1 || wholeUnits > 50) {
     return [{ line, model }];
   }
 
@@ -104,7 +109,8 @@ function expandEditableLine(line, model) {
 
   return Array.from({ length: wholeUnits }, () => ({
     model,
-    line: { ...line, quantity: 1 }
+    line: { ...line, quantity: 1 },
+    expandedFromQuantity: wholeUnits
   }));
 }
 

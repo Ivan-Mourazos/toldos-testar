@@ -358,10 +358,12 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     ]));
   });
 
-  test('ventana, bamba o confección especial requieren excepción técnica', () => {
-    const blocked = calculate({ curtainHasWindow: true, curtainWindowExit: 20, curtainWindowCorner: 20, curtainWindowFloorHeight: 40, curtainWindowHeight: 80 });
+  test('una ventana completa es estándar; bamba o confección especial requieren excepción técnica', () => {
+    const withWindow = calculate({ curtainHasWindow: true, curtainWindowExit: 20, curtainWindowCorner: 20, curtainWindowFloorHeight: 40, curtainWindowHeight: 80 });
+    const blocked = calculate({ curtainFinish: 'VELCRO' });
     const authorized = calculate({ curtainFinish: 'VELCRO', reglasModificadas: true });
 
+    expect(withWindow.calculation.valid).toBe(true);
     expect(blocked.calculation.valid).toBe(false);
     expect(blocked.diagnostics).toEqual(expect.arrayContaining([
       expect.objectContaining({ message: expect.stringContaining('confección especial') })
