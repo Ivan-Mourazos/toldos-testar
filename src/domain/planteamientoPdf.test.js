@@ -104,7 +104,8 @@ describe('datos del planteamiento de telas', () => {
     ['ENROLLABLE', 'ENROLLABLE', 'ENROLLABLE'],
     ['BAMBALINA', 'BAMBALINA', 'BAMBALINA'],
     ['CAMBIO ANTICA', 'ANTICA', 'ANTICA'],
-    ['CORTINA', 'CORTINA-TUBO', 'CORTINA-TUBO']
+    ['CORTINA', 'CORTINA-TUBO', 'CORTINA-TUBO'],
+    ['IRIS', 'IRIS', 'IRIS']
   ])('separa el patrón de confección de %s de su CAD', (model, cad, expected) => {
     expect(getFabricPatternDiagram({ model }, cad)).toBe(expected);
   });
@@ -808,5 +809,82 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(buffer.subarray(0, 4).toString('ascii')).toBe('%PDF');
     expect(pdfSource).toContain('/FontFile2');
     expect(pdfSource).toContain('SegoeUI');
+  });
+});
+
+describe('planteamiento IRIS', () => {
+  const irisAwning = {
+    id: 'iris-a',
+    of: '0239999',
+    model: 'IRIS',
+    units: 1,
+    submodel: 'IRIS 110 CON COFRE',
+    irisGuideType: 'ESTÁNDAR',
+    irisGuideFixing: 'PARED',
+    irisWindBlock: false,
+    irisAssumeSquare: true,
+    irisFrontTop: 300,
+    irisExitLeft: 250,
+    device: 'MAQUINA',
+    machineSide: 'M.F.DER',
+    crankHeight: 150,
+    placement: 'FRONTAL',
+    structureColor: 'BLANCO',
+    wallType: '',
+    curtainHasWindow: false,
+    reglasModificadas: false
+  };
+
+  test('el IRIS usa su propio croquis', () => {
+    const calculation = {
+      ofs: [{ awningId: 'iris-a', awningIndex: 0, calculation: { model: 'IRIS' } }]
+    };
+    const plan = buildPlanteamientoPlan({ awnings: [irisAwning] }, calculation);
+    expect(plan.fabricPages.map(({ diagram }) => diagram)).toContain('IRIS');
+  });
+
+  test('el croquis IRIS marca la comprobación de diagonales y no el patrón general', async () => {
+    const order = {
+      orderCode: 'AR26-IRIS-PDF',
+      customer: 'CLIENTE IRIS',
+      sameFabric: true,
+      fabric: heraAcrylic120,
+      structureColor: 'BLANCO',
+      awnings: [irisAwning]
+    };
+    const calculation = calculateOrder(order);
+    expect(calculation.ofs[0].calculation.valid).toBe(true);
+
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const pageTexts = [];
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pageTexts.push(content.items.map((item) => item.str).join(' '));
+    }
+    const fullText = pageTexts.join(' ');
+
+    // Texto exclusivo de drawIrisDiagram: drawGeneralDiagram (el croquis genérico al
+    // que caía IRIS antes de tener croquis propio) nunca lo escribe.
+    expect(fullText).toContain('COMPROBAR DIAGONALES · CREMALLERA XL');
+    expect(fullText).not.toContain('PATRÓN GENERAL');
+  });
+
+  test('el PDF de un pedido IRIS se genera sin errores', async () => {
+    const order = {
+      orderCode: 'AR26-IRIS-PDF-2',
+      customer: 'CLIENTE IRIS',
+      sameFabric: true,
+      fabric: heraAcrylic120,
+      structureColor: 'BLANCO',
+      awnings: [irisAwning]
+    };
+    const calculation = calculateOrder(order);
+    expect(calculation.ofs[0].calculation.valid).toBe(true);
+
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    expect(document.numPages).toBeGreaterThanOrEqual(1);
   });
 });

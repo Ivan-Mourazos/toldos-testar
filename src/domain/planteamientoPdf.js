@@ -112,6 +112,7 @@ export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagr
   if (model === 'ENROLLABLE') return 'ENROLLABLE';
   if (model === 'BAMBALINA') return 'BAMBALINA';
   if (model.includes('ANTICA')) return 'ANTICA';
+  if (model === 'IRIS') return 'IRIS';
   return 'GENERAL';
 }
 
@@ -603,6 +604,7 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h);
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
   if (diagram === 'MAXISCREEN') return drawMaxiscreenDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'IRIS') return drawIrisDiagram(doc, x, y, w, h, awning, calculation);
   if (['ARZUA', 'GALICIA', 'XACOBEO', 'MONOBLOCK', 'PUNTO-RECTO'].includes(diagram)) {
     return drawArmSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation));
   }
@@ -763,6 +765,45 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
     .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', panelX + 8, panelY + 52, { width: panelW - 16, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
     .text('P801 · PERFIL DE CARGA MAXISCREEM', x + 24, y + h - 25, { width: w - 48, align: 'center' });
+}
+
+function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
+  const hasBox = String(awning.submodel || '').toUpperCase().includes('CON COFRE');
+  const hasCompensator = String(awning.irisGuideType || '').toUpperCase() === 'COMPENSADORA';
+  drawDiagramShell(doc, x, y, w, h, String(awning.submodel || 'IRIS').toUpperCase());
+
+  const panelX = x + 52;
+  const panelY = y + 74;
+  const panelW = w - 104;
+  const panelH = h - 150;
+
+  if (hasBox) {
+    doc.roundedRect(panelX - 12, panelY - 26, panelW + 24, 30, 5).fillAndStroke('#e7eeec', '#466e64');
+  } else {
+    doc.circle(panelX + panelW / 2, panelY - 11, 11).fillAndStroke('#e7eeec', '#466e64');
+  }
+
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#9db0ac');
+  doc.moveTo(panelX + 5, panelY).lineTo(panelX + 5, panelY + panelH)
+    .moveTo(panelX + panelW - 5, panelY).lineTo(panelX + panelW - 5, panelY + panelH)
+    .strokeColor('#466e64').lineWidth(1.4).stroke();
+  if (hasCompensator) {
+    doc.moveTo(panelX + 9, panelY).lineTo(panelX + 9, panelY + panelH)
+      .moveTo(panelX + panelW - 9, panelY).lineTo(panelX + panelW - 9, panelY + panelH)
+      .strokeColor('#d2a116').lineWidth(1).stroke();
+  }
+  // Diagonales: el IRIS se plantea escuadrado y el pedido debe traerlas.
+  doc.moveTo(panelX, panelY).lineTo(panelX + panelW, panelY + panelH)
+    .moveTo(panelX + panelW, panelY).lineTo(panelX, panelY + panelH)
+    .strokeColor('#c9d5d2').lineWidth(0.5).dash(2, { space: 2 }).stroke().undash();
+  doc.roundedRect(panelX - 4, panelY + panelH - 7, panelW + 8, 14, 3).fillAndStroke('#e7eeec', '#466e64');
+
+  drawDiagramText(doc, `FRENTE ${formatNumber(calculation.width ?? awning.irisFrontTop ?? 0)}`, panelX, panelY - 46, panelW);
+  drawSideLabel(doc, `MFI ${formatNumber(calculation.guideLeftLength ?? 0)}`, x + 6, panelY + panelH / 2, 44);
+  drawSideLabel(doc, `MFD ${formatNumber(calculation.guideRightLength ?? 0)}`, x + w - 50, panelY + panelH / 2, 44);
+  drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', panelX, panelY + panelH + 18, panelW);
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + 24, y + h - 26, { width: w - 48, align: 'center' });
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {
