@@ -122,7 +122,7 @@ export function normalizeIrisGuideType(value) {
   const clean = normalizeText(value);
   if (!clean) return '';
   if (clean.includes('COMPENSA')) return 'COMPENSADORA';
-  if (clean.includes('PEQUEN') || clean.includes('PEQUEÑ')) return 'PEQUEÑA';
+  if (clean.includes('PEQUEN')) return 'PEQUEÑA';
   if (clean.includes('ESTANDAR') || clean.includes('ESTÁNDAR') || clean === 'NORMAL') return 'ESTÁNDAR';
   return '';
 }
@@ -194,12 +194,14 @@ export function resolveIrisGlassSize(fabricWidth) {
   return irisGlassSizes.find((size) => size > width) || 0;
 }
 
+// Quita los diacríticos para que "MÁQUINA", "maquina" y "Máquina" normalicen igual:
+// los técnicos escriben el pedido a mano y los libros de la oficina usan tilde.
 function normalizeText(value) {
   return String(value || '')
     .trim()
     .toUpperCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ');
 }
 

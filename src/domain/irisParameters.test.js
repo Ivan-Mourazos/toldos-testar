@@ -83,6 +83,8 @@ describe('parámetros IRIS', () => {
     expect(normalizeIrisGuideType('estandar')).toBe('ESTÁNDAR');
     expect(normalizeIrisGuideType('guia compensadora')).toBe('COMPENSADORA');
     expect(normalizeIrisGuideType('pequena')).toBe('PEQUEÑA');
+    expect(normalizeIrisGuideType('pequeña')).toBe('PEQUEÑA');
+    expect(normalizeIrisGuideType('ESTÁNDAR')).toBe('ESTÁNDAR');
     expect(normalizeIrisGuideFixing('nicho')).toBe('PARED');
     expect(normalizeIrisGuideFixing('TECHO')).toBe('TECHO');
     expect(normalizeIrisDevice('máquina')).toBe('MAQUINA');
