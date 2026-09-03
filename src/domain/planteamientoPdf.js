@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { getAwningDiagram, isFabricOnlyModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
+import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
@@ -264,9 +264,15 @@ function drawDespieceTable(doc, x, y, w, rows) {
 }
 
 function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
+  // IRIS no recibe width/projection: los deriva del escuadrado del hueco y
+  // los deja en calc.width/calc.projection. Para el resto de modelos
+  // calculation.width/projection son una copia literal de awning.width/
+  // projection, así que el fallback no cambia nada fuera de IRIS.
+  const partingWidth = awning.width ?? calc?.width;
+  const partingProjection = awning.projection ?? calc?.projection;
   drawMiniTable(doc, x, y, w, 'DATOS DE PARTIDA', [
-    ['FRENTE', formatNumber(awning.width)],
-    [awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(awning.projection)],
+    ['FRENTE', formatNumber(partingWidth)],
+    [isVerticalAwningModel(awning.model) ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(partingProjection)],
     ['UNIDADES', formatNumber(awning.units)]
   ]);
 
@@ -287,7 +293,7 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
 
   drawMiniTable(doc, x, y + 197, w, 'DIMENSIONES TELA', [
     ['TELA', calc ? formatNumber(calc.fabricWidth) : '-'],
-    [awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
+    [isVerticalAwningModel(awning.model) ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
     ['PAÑO', calc ? `${formatNumber(calc.fabricMl)} ML` : '-']
   ]);
 }
@@ -541,7 +547,7 @@ function drawFabricRows(doc, x, y, w, lines, order) {
     const dropW = 166;
     const fabricW = metricW - unitsW - dropW - metricGap * 2;
     drawFabricMetric(doc, metricX, rowY + 4, fabricW, 'TELA', detail.fabricWidth, 20);
-    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, line.awning.model === 'SELENA' ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 20);
+    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 20);
     drawFabricMetric(doc, metricX + fabricW + dropW + metricGap * 2, rowY + 4, unitsW, 'UN.', detail.units, 20);
 
     drawCell(doc, metricX, rowY + 29, fabricW, 27, detail.workLabel, {
@@ -798,7 +804,9 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
     .strokeColor('#c9d5d2').lineWidth(0.5).dash(2, { space: 2 }).stroke().undash();
   doc.roundedRect(panelX - 4, panelY + panelH - 7, panelW + 8, 14, 3).fillAndStroke('#e7eeec', '#466e64');
 
-  drawDiagramText(doc, `FRENTE ${formatNumber(calculation.width ?? awning.irisFrontTop ?? 0)}`, panelX, panelY - 46, panelW);
+  // drawDiagramShell traza la línea divisoria del título en y+32: bajamos el
+  // texto lo justo (y+38) para que no quede tachado por encima de ella.
+  drawDiagramText(doc, `FRENTE ${formatNumber(calculation.width ?? awning.irisFrontTop ?? 0)}`, panelX, panelY - 36, panelW);
   drawSideLabel(doc, `MFI ${formatNumber(calculation.guideLeftLength ?? 0)}`, x + 6, panelY + panelH / 2, 44);
   drawSideLabel(doc, `MFD ${formatNumber(calculation.guideRightLength ?? 0)}`, x + w - 50, panelY + panelH / 2, 44);
   drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', panelX, panelY + panelH + 18, panelW);

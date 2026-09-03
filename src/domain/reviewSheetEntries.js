@@ -1,6 +1,6 @@
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { getFieldVisibility, isFabricOnlyModel, normalizeValanceFinish } from './modelBehavior.js';
+import { getFieldVisibility, isFabricOnlyModel, isVerticalAwningModel, normalizeValanceFinish } from './modelBehavior.js';
 import {
   normalizeAnticaMeasurementMode,
   normalizeAnticaVariant,
@@ -56,7 +56,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.dimensions.includes('projection')) {
       const projectionLabel = cambioAnticaRound
         ? finishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
-        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'Caída' : 'Salida';
+        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : isVerticalAwningModel(awning.model) ? 'Caída' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
     }
     if (supportsVerticalDropArm(awning.model)) {
@@ -65,7 +65,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (!fabricOnly && ofBlock?.calculation) {
       addField(cardFields, 'Frente tela', measure(ofBlock.calculation.fabricWidth), true);
-      addField(cardFields, awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'Caída tela' : 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
+      addField(cardFields, isVerticalAwningModel(awning.model) ? 'Caída tela' : 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
       if (normalizeDropArmMode(ofBlock.calculation.dropArmMode) === 'VERTICAL_170') {
         addField(cardFields, 'Margen vertical', measure(ofBlock.calculation.dropArmVerticalAllowanceCm), true);
       }
