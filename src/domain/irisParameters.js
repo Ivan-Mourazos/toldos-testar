@@ -42,6 +42,10 @@ const discountTable = {
   '00110': { fabric: 5.2, box: 1.4, roll: 14.6, loadBar: 9.4, ballast: 22.4, guideWall: 12, guideCeiling: 12.2 },
   // 110 con guía compensadora. Misma tabla lleve cofre o no: lo confirma AR2501385,
   // que en RPS es un IRIS110S/CO y cuadra pieza a pieza con SCREENY 110 GPZ C.
+  // PUNTO ABIERTO: la captura de la tabla 110 GPZ C lleva escrito a mano
+  // "NON DESCONTAR" sobre la fila del telón con molinete 9:1. El AR2501385 sí
+  // aplicó ese 9,7, y el propio libro maestro de la oficina recoge la misma duda
+  // sin resolver. No cambies este valor sin confirmarlo con oficina técnica.
   '00200': {
     fabric: 9.7, box: 1.4, roll: 15.5, loadBar: 14.6, ballast: 27.6,
     guideWall: 12, guideCeiling: 12.2, zipWall: 12, zipCeiling: 12.2,

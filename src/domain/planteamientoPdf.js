@@ -774,8 +774,11 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
 }
 
 function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
-  const hasBox = String(awning.submodel || '').toUpperCase().includes('CON COFRE');
   const hasCompensator = String(awning.irisGuideType || '').toUpperCase() === 'COMPENSADORA';
+  // Mismo criterio que irisRules.js: la compensadora es un producto con cofre
+  // aunque el submodelo diga lo contrario. Si esto diverge, el croquis dibuja
+  // un toldo sin cofre al lado de un despiece que corta la pieza de cofre.
+  const hasBox = String(awning.submodel || '').toUpperCase().includes('CON COFRE') || hasCompensator;
   drawDiagramShell(doc, x, y, w, h, String(awning.submodel || 'IRIS').toUpperCase());
 
   const panelX = x + 52;
