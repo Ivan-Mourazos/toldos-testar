@@ -2,6 +2,7 @@ import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
+import { resolveMotorRemote } from './motorAccessories.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import {
   electraCofreSupport,
@@ -101,7 +102,8 @@ export function calculateElectra({ order, awning }) {
   );
 
   const fabricWidth = round1(Number(awning.width) - fabricDiscount);
-  const fabricDrop = round1(Number(awning.projection) + dropAllowance);
+  const valanceHeight = Math.max(0, Number(awning.valanceHeight) || 0);
+  const fabricDrop = round1(Number(awning.projection) + dropAllowance + valanceHeight);
   const rollTubeLength = round1(Number(awning.width) - rollDiscount);
   const loadBarLength = round1(Number(awning.width) - loadBarDiscount);
   const boxProfileLength = hasCofre ? round1(Number(awning.width) - boxProfileDiscount) : 0;
@@ -236,11 +238,13 @@ function buildMaterials(context) {
     );
   }
   if (device === 'MOTOR') {
+    const remote = resolveMotorRemote(awning.sensor);
     materials.push(
       line(motor.code, units, motor.description),
       line('RUEDAMOT78', units, 'RUEDA MOTRIZ Ø 78'),
       line('CORONALT6078', units, 'CORONA LT 60 ADAPTADA Ø 78'),
-      line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO')
+      line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
+      { ...line(remote.code, units, remote.description), aggregation: 'max' }
     );
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
@@ -274,31 +278,69 @@ function buildDespiece(context) {
   push(1, supportLine.description, supportLine.code, units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${rollStockLength}C`, units, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
-  push(4, loadProfileDescription(loadProfileBase), loadProfileReference.code, units, loadBarLength);
-  if (support === 'UNIVERSAL 3 AGUJEROS') {
-    const [caps, hooks] = universalAccessories(lacado.suffix, units);
-    push(5, caps.description, caps.code, caps.quantity);
-    push(6, hooks.description, hooks.code, hooks.quantity);
-  } else {
-    push(5, 'JUEGO DE TAPAS BARRA DE CARGA', null, units);
+  if (!hasCofre) {
+    if (device === 'MOTOR') {
+      push(4, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
+    } else {
+      push(4, 'CASQUILLO MÁQUINA EJE 50 MM Ø78', 'CASMAQEJE5078MM', units);
+    }
+    push(5, loadProfileDescription(loadProfileBase), loadProfileReference.code, units, loadBarLength);
+    if (support === 'UNIVERSAL 3 AGUJEROS') {
+      const [caps] = universalAccessories(lacado.suffix, units);
+      push(6, caps.description, caps.code, caps.quantity);
+    } else {
+      push(6, 'JUEGO DE TAPAS BARRA DE CARGA', null, units);
+    }
+    if (device === 'MOTOR') {
+      push(8, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
+      push(9, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);
+      push(10, motor.description, motor.code, units);
+    } else {
+      const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
+      push(8, `MÁQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+      push(9, 'TACO NYLON MÁQUINA', 'CASPLAS', units);
+      push(10, `MANIVELA LUXE ${crankHeight} ${lacado.crank}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, crankHeight);
+    }
+    push(11, 'CADENILLAS INOX', null, 2 * units);
+    push(12, 'PUENTES ABATIBLES', null, 2 * units);
+    push(13, 'MOSQUETONES INOX 60', 'MOSQBOACIN60MM', 2 * units);
+    push(14, 'REGLETA ZAMACK', null, 2 * units);
+    if (hasGuide) {
+      push(15, 'PERFIL GUÍA ELIT VERTICAL 120', guideCode(lacado.suffix, guideStockLength), 2 * units, guideLength);
+      push(16, 'KIT RETENEDOR ELIT VERTICAL', retainerCode(lacado.suffix), units);
+    }
+    if (device === 'MOTOR') {
+      const remote = resolveMotorRemote(awning.sensor);
+      push(21, remote.description, remote.code, units);
+    }
+    const wall = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
+    const anchoring = wall ? { name: wall.tornilleria, reference: wall.referencia || null, units: wall.unidades * units } : null;
+    return { rows, anchoring };
   }
-  let number = support === 'UNIVERSAL 3 AGUJEROS' ? 7 : 6;
-  if (hasCofre) push(number++, 'PERFIL COFRE ELECTRA', boxProfileReference.code, units, boxProfileLength);
-  if (hasGuide) {
-    push(number++, 'PERFIL GUÍA ELIT VERTICAL 120', guideCode(lacado.suffix, guideStockLength), 2 * units, guideLength);
-    push(number++, 'KIT RETENEDOR ELIT VERTICAL', retainerCode(lacado.suffix), units);
-  }
+
+  push(4, device === 'MOTOR' ? 'SOPORTE UNIVERSAL HIPRO' : 'CASQUILLO MÁQUINA EJE 63 MM Ø78', device === 'MOTOR' ? 'SOPORTEUNVHIPRO' : 'CASMAQEJE6378MM', units);
+  push(5, loadProfileDescription(loadProfileBase), loadProfileReference.code, units, loadBarLength);
+  push(6, 'JUEGO DE TAPAS BARRA DE CARGA', null, units);
+  push(8, 'PERFIL COFRE ELECTRA', boxProfileReference.code, units, boxProfileLength);
+  push(9, 'JUEGO DE TERMINALES', null, units);
   if (device === 'MOTOR') {
-    push(number++, motor.description, motor.code, units);
-    push(number++, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);
-    push(number++, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
-    push(number++, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
+    push(10, motor.description, motor.code, units);
+    push(11, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);
+    push(12, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-    push(number++, hasCofre ? 'CASQUILLO MÁQUINA EJE 63 MM Ø78' : 'CASQUILLO MÁQUINA EJE 50 MM Ø78', hasCofre ? 'CASMAQEJE6378MM' : 'CASMAQEJE5078MM', units);
-    push(number++, `MÁQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
-    push(number++, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, crankHeight);
-    push(number++, 'TACO NYLON MÁQUINA', 'CASPLAS', units);
+    push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, crankHeight);
+    push(11, `MÁQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(12, 'TACO NYLON MÁQUINA', 'CASPLAS', units);
+    push(13, 'KIT DE TORNILLOS MÁQUINA', null, units);
+  }
+  if (hasGuide) {
+    push(14, 'PERFIL GUÍA ELIT VERTICAL 120', guideCode(lacado.suffix, guideStockLength), 2 * units, guideLength);
+    push(15, 'KIT RETENEDOR ELIT VERTICAL', retainerCode(lacado.suffix), units);
+  }
+  if (device === 'MOTOR') {
+    const remote = resolveMotorRemote(awning.sensor);
+    push(21, remote.description, remote.code, units);
   }
   const wall = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wall ? { name: wall.tornilleria, reference: wall.referencia || null, units: wall.unidades * units } : null;

@@ -281,7 +281,7 @@ function describePendingAwning(awning, index) {
   if (visibility.tubeLoad && !awning.tubeLoad) pending.push('tubo de carga');
   if (visibility.submodel && !awning.submodel) pending.push('variante');
   if (awning.model === 'ELECTRA' && !awning.electraSupport) pending.push('tipo de soporte');
-  if (awning.model === 'ELECTRA' && awning.device === 'MOTOR' && awning.motorPower !== 'METEOR 20/17') pending.push('motor Electra');
+  if (awning.model === 'ELECTRA' && awning.device === 'MOTOR' && !awning.motorPower) pending.push('motor Electra');
   if (visibility.arms && !positiveNumber(awning.armCount)) pending.push('nº de brazos');
   if (visibility.sensor && !awning.sensor) pending.push('sensor');
   if ((visibility.motorLocation || visibility.machineLocation) && !awning.machineSide) pending.push(visibility.motorLocation ? 'posición motor' : 'lado máquina');
@@ -344,6 +344,7 @@ function inferElectraVariant(articleCode, textValue) {
 function inferElectraSupport(value) {
   const text = normalize(value);
   if (/SOPORTE\s+MAXISCREEM\s+BOX|MAXISCREEM\s+BOX/.test(text)) return 'SOPORTE MAXISCREEM BOX';
+  if (/SOPORTE\s+MAXISCR(?:EEM|EEN)|SOPORTES?\s+MAXISCR(?:EEM|EEN)/.test(text)) return 'SOPORTE MAXISCREEN';
   if (/SOPORTES?\s+ALMAGRO|SOPORTE\s+ALMAGRO/.test(text)) return 'SOPORTES ALMAGRO';
   if (/UNIVERSAL(?:\s+DE)?\s+3\s+AGUJEROS|SOPORTE\s+UNIVERSAL/.test(text)) return 'UNIVERSAL 3 AGUJEROS';
   if (/SOPORTE\s+ELIT(?:\s+VERTICAL)?/.test(text)) return 'SOPORTE ELIT VERTICAL';

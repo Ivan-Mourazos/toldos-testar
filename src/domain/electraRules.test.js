@@ -129,7 +129,7 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
   test.each([
     ['CON COFRE / SIN GUÍA', 'SOPORTE MAXISCREEM BOX', true, false],
     ['SIN COFRE / CON GUÍA', 'SOPORTE ELIT VERTICAL', false, true]
-  ])('%s genera solo los perfiles históricamente contrastados', (submodel, electraSupport, hasCofre, hasGuide) => {
+  ])('%s genera los perfiles históricos y las guías del modelo nuevo', (submodel, electraSupport, hasCofre, hasGuide) => {
     const result = calculate({ submodel, electraSupport });
     const codes = result.materials.map(({ code }) => code);
 
@@ -139,6 +139,44 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     expect(codes.some((code) => code.startsWith('PERPRLON'))).toBe(hasCofre);
     expect(codes.some((code) => code.startsWith('ELITGU12'))).toBe(hasGuide);
     expect(codes.some((code) => code.startsWith('KITRETENEDOR'))).toBe(hasGuide);
+  });
+
+  test('con guía incluye perfiles y retenedor, además de conservar su medida para observaciones', () => {
+    const result = calculate({ projection: 260, electraSupport: 'UNIVERSAL 3 AGUJEROS' });
+
+    expect(result.calculation.guideLength).toBe(246);
+    expect(result.materials.map(({ code }) => code)).toEqual(expect.arrayContaining([
+      expect.stringMatching(/^ELITGU/),
+      expect.stringMatching(/^KITRET/)
+    ]));
+  });
+
+  test('la bamba integrada aumenta la caída de tela y el metraje', () => {
+    const result = calculate({
+      width: 345,
+      projection: 260,
+      valanceHeight: 12,
+      electraSupport: 'UNIVERSAL 3 AGUJEROS',
+      structureColor: 'LACADO ESPECIAL',
+      reglasModificadas: true
+    }, { structureColor: '' });
+
+    expect(result.calculation).toMatchObject({
+      valid: true,
+      fabricWidth: 333,
+      fabricDrop: 317
+    });
+  });
+
+  test('sin cofre reproduce las filas auxiliares del planteamiento Cortina', () => {
+    const names = calculate({ electraSupport: 'UNIVERSAL 3 AGUJEROS' }).despiece.rows.map(({ name }) => name);
+
+    expect(names).toEqual(expect.arrayContaining([
+      'CADENILLAS INOX',
+      'PUENTES ABATIBLES',
+      'MOSQUETONES INOX 60',
+      'REGLETA ZAMACK'
+    ]));
   });
 
   test.each(['CON COFRE / CON GUÍA', 'SIN COFRE / SIN GUÍA'])(
@@ -253,7 +291,25 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
       motorPower: 'METEOR 20/17'
     });
     expect(result.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'METEOR20//17', quantity: 1 })
+      expect.objectContaining({ code: 'METEOR20//17', quantity: 1 }),
+      expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 })
+    ]));
+  });
+
+  test('permite el Sunilus histórico cuando se indica expresamente', () => {
+    const result = calculate({
+      device: 'MOTOR',
+      motorPower: 'SUNILUS 15/17 IO',
+      crankHeight: null
+    });
+
+    expect(result.calculation).toMatchObject({ valid: true, motorPower: 'SUNILUS 15/17 IO' });
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 1 }),
+      expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 })
+    ]));
+    expect(result.despiece.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ num: 21, reference: 'SITUOIO1PURE', units: 1 })
     ]));
   });
 

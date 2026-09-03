@@ -324,6 +324,32 @@ describe('datos del planteamiento de telas', () => {
 });
 
 describe('buildOrderPlanteamientoPdf', () => {
+  test('el PDF Electra incluye guías, retenedor y medida de guías en el despiece', async () => {
+    const order = {
+      orderCode: 'AR2601519', customer: 'CLIENTE ELECTRA', fabric: 'ACR NEGRO',
+      structureColor: 'BLANCO', sameFabric: true,
+      awnings: [{
+        id: 'electra-a', of: '0227009', model: 'ELECTRA', units: 1,
+        width: 345, projection: 260, valanceHeight: 0,
+        submodel: 'SIN COFRE / CON GUÍA', electraSupport: 'UNIVERSAL 3 AGUJEROS',
+        device: 'MAQ. INTERIOR', machineSide: 'M.F.DER', crankHeight: 150,
+        placement: 'FRONTAL', structureColor: 'BLANCO',
+        curtainHasWindow: false, curtainFinish: 'NORMAL', rotFabric: 'NO', rotValance: 'NO'
+      }]
+    };
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    const content = await page.getTextContent();
+    const text = content.items.map((item) => item.str).join(' ');
+
+    expect(calculation.ofs[0].calculation).toMatchObject({ guideLength: 246, valid: true });
+    expect(text).toContain('ELITGU12BL16500C');
+    expect(text).toContain('KITRETENEDORBL16');
+    expect(text).toContain('MEDIDA GUÍAS 246');
+  });
+
   test('HERA no genera estructura vacía y cada toldo conserva su propio mini planteamiento de tela', () => {
     const awnings = [
       { id: 'hera-a', model: 'HERA', submodel: 'HERA 43 MAQUINA' },

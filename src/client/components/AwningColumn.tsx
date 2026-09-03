@@ -17,7 +17,7 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
-import { electraHasCofre, electraHasGuide, getElectraDiscounts } from '../../domain/electraParameters.js';
+import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
 import {
   anticaVariants,
   cambioAnticaVariants,
@@ -163,7 +163,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || getRequiredDimensions(awning.model).some((field: keyof Awning) => !Number(awning[field]))
     || missingWindowDimensions
     || missingCurtainConfig
-    || (isElectra && electraDevice === 'MOTOR' && awning.motorPower !== 'METEOR 20/17')
+    || (isElectra && electraDevice === 'MOTOR' && !electraMotors.some(({ value }) => value === awning.motorPower))
     || (fields.motorLocation && !awning.machineSide)
     || (isElectra && fields.machineLocation && !awning.machineSide)
     || (isSelena && fields.machineLocation && !awning.machineSide)
@@ -255,7 +255,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     update({
       device,
       ...(isElectra
-        ? { motorPower: device === 'MOTOR' && awning.motorPower === 'METEOR 20/17' ? awning.motorPower : '' }
+        ? { motorPower: device === 'MOTOR' && electraMotors.some(({ value }) => value === awning.motorPower) ? awning.motorPower : '' }
         : {})
     });
   }
@@ -582,7 +582,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {(fields.device || fields.sensor || fields.motorLocation || fields.machineLocation || fields.crankHeight) && (
             <div className="awning-actuation-row awning-wide-field">
               {fields.device && <SelectField label="Dispositivo" value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={updateDevice} />}
-              {isElectra && electraDevice === 'MOTOR' && <SelectField label="Motor Electra" value={awning.motorPower} options={['METEOR 20/17']} placeholder="Obligatorio · elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
+              {isElectra && electraDevice === 'MOTOR' && <SelectField label="Motor Electra" value={awning.motorPower} options={electraMotors.map(({ value }) => value)} placeholder="Obligatorio · elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
               {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.motorLocation && <SelectField label="Posición motor" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}

@@ -48,7 +48,9 @@ describe('parámetros ELECTRA / Elit Vertical', () => {
     expect(electraHasCofre('con cofre sin guía')).toBe(true);
     expect(electraHasGuide('sin cofre con guía')).toBe(true);
     expect(normalizeElectraMotor('METEOR20//17')).toBe('METEOR 20/17');
+    expect(normalizeElectraMotor('MOTOR SOMFY SUNILUS 15/17 IO')).toBe('SUNILUS 15/17 IO');
     expect(getElectraMotor('Meteor 20/17')).toMatchObject({ code: 'METEOR20//17' });
+    expect(getElectraMotor('Sunilus 15/17 IO')).toMatchObject({ code: 'SUNILUSIO15//17' });
   });
 
   test('rellena parámetros parciales sin perder ajustes válidos', () => {

@@ -60,6 +60,64 @@ describe('autocompletado de pedidos RPS', () => {
     });
   });
 
+  test('recupera los datos verificables del pedido real AR2601519 sin inventar soporte ni accionamiento', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.01519' },
+      lines: [{
+        lineId: 'ar2601519',
+        articleCode: 'ELECTRSCCG',
+        description: 'TOLDO VERTICAL ELECTRA (ELIT DE LLAZA):SIN COFRE:CON GUIA',
+        manufacturingOrder: '0227009',
+        quantity: 1,
+        comment: 'POR CONFECCION DE TOLDO VERTICAL MODELO ELECTRA CON GUIAS SIN COFRE, DE MEDIDAS 345 CM X 260 CM, CON BAMBALINA DE 15 CM DE ANCHO, TERMINACION RECTA, CON ACCIONAMIENTO MANUAL, ESTRUCTURA DE ALUMINIO LACADO EN COLOR GRIS 9006. INCLUYE VENTANA EN PVC TRANSPARENTE.'
+      }]
+    });
+
+    expect(result.order.awnings[0]).toMatchObject({
+      model: 'ELECTRA',
+      of: '0227009',
+      width: 345,
+      projection: 260,
+      valanceHeight: 15,
+      submodel: 'SIN COFRE / CON GUÍA',
+      electraSupport: '',
+      device: '',
+      structureColor: 'LACADO ESPECIAL',
+      curtainHasWindow: true
+    });
+  });
+
+  test('recupera el motor Sunilus documentado en pedidos Electra históricos', () => {
+    const result = buildOrderAutofill({
+      lines: [{
+        lineId: 'electra-sunilus',
+        articleCode: 'ELECTRSCCG',
+        manufacturingOrder: '0221631',
+        quantity: 1,
+        comment: 'SIN COFRE CON GUIA. ACCIONAMIENTO POR MOTOR SOMFY SUNILUS 15/17 IO. SIN VENTANA. CONFECCION NORMAL.'
+      }]
+    });
+
+    expect(result.order.awnings[0]).toMatchObject({
+      device: 'MOTOR',
+      motorPower: 'SUNILUS 15/17 IO'
+    });
+  });
+
+  test('reconoce el soporte Maxiscreen de un pedido Electra sin cofre', () => {
+    const result = buildOrderAutofill({
+      lines: [{
+        lineId: 'electra-maxiscreen',
+        articleCode: 'ELECTRSCCG',
+        manufacturingOrder: '0239998',
+        quantity: 1,
+        comment: 'MEDIDAS 300 CM X 250 CM. SIN COFRE CON GUIA. SOPORTE MAXISCREEN. SIN VENTANA. CONFECCION NORMAL.'
+      }]
+    });
+
+    expect(result.order.awnings[0].electraSupport).toBe('SOPORTE MAXISCREEN');
+  });
+
   test('extrae medidas decimales, bamba, curva, lacado, motor y rotulación', () => {
     const data = extractOrderTextData(
       'TOLDO DE MEDIDAS 444,5 CM DE FRENTE X 200 CM DE SALIDA, CON BAMBALINA DE 25 CM DE ANCHO, TERMINACION RECTA, ESTRUCTURA DE ALUMINIO LACADO EN COLOR NEGRO, ACCIONAMIENTO POR MOTOR. INCLUYE ROTULACION EN BAMBALINA.',

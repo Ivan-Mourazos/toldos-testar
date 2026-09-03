@@ -181,8 +181,16 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
   drawAccessories(doc, margin + 28, 294, leftW - 28, split.accessories);
   drawAnchoring(doc, margin + 28, 346, leftW - 28, ofBlock?.despiece?.anchoring);
-  drawStructureNotes(doc, rightX, 336, rightW, pageH - 48, awning.structureNotes);
+  drawStructureNotes(doc, rightX, 336, rightW, pageH - 48, structureNotes(awning, ofBlock?.calculation));
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura`);
+}
+
+function structureNotes(awning, calculation) {
+  const notes = String(awning.structureNotes || '').trim();
+  const guideMeasure = awning.model === 'ELECTRA' && Number(calculation?.guideLength) > 0
+    ? `MEDIDA GUÍAS ${formatNumber(calculation.guideLength)}`
+    : '';
+  return [notes, guideMeasure].filter(Boolean).join('\n');
 }
 
 function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {

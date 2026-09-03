@@ -22,7 +22,8 @@ export const electraSupports = [
 ];
 
 export const electraMotors = [
-  { value: 'METEOR 20/17', code: 'METEOR20//17', description: 'MOTOR METEOR 20/17' }
+  { value: 'METEOR 20/17', code: 'METEOR20//17', description: 'MOTOR METEOR 20/17' },
+  { value: 'SUNILUS 15/17 IO', code: 'SUNILUSIO15//17', description: 'MOTOR SOMFY SUNILUS 15/17 IO' }
 ];
 
 export const defaultElectraParameters = {
@@ -118,6 +119,7 @@ export function normalizeElectraSupport(value) {
 export function normalizeElectraMotor(value) {
   const clean = normalizeText(value);
   if (/METEOR.*20\s*\/+[\s:]*17/.test(clean)) return 'METEOR 20/17';
+  if (/SUNILUS.*15\s*\/+[\s:]*17/.test(clean)) return 'SUNILUS 15/17 IO';
   return '';
 }
 

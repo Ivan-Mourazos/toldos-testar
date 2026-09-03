@@ -16,7 +16,9 @@ Por tanto, Electra debe convertirse en un modelo propio. No conviene conservar e
 
 - Documento interno `Y:\PLANTEAMIENTOS GUÍA\DESCONTOS TOLDOS ELECTRA SEGÚN SOPORTES.odt`, fechado el 17/11/2025.
 - Excel maestro `Y:\PROGRAMAS CALCULO\TOLDOS TESTAR 10-4.xlsm`.
-- 37 líneas de producto Electra en 36 pedidos de RPSNext, entre 2024 y 2026: 72 unidades y 37 OF de producto.
+- Manuales técnicos internos `Instrucciones ELIT VERTICAL v3.pdf` e `Instrucciones ELIT VERTICAL con TEXPRO v7.pdf`, conservados en `Y:\DIBUJOS\TOLDOS\MK MANUALES TECNICOS LLAZA TECHNICAL MANUAL\NUEVOS MODELOS\TODOS\5.3_ELIT`.
+- 463 líneas de producto y 348 pedidos Electra/Elit localizados en RPSNext entre 2008 y 2026, incluidas las denominaciones históricas y las cuatro referencias actuales.
+- 37 líneas de producto Electra en 36 pedidos de RPSNext entre 2024 y 2026, usadas como muestra reciente.
 - 26 libros Excel de pedidos de 2025 y 2026 y 75 archivos PDF relacionados localizados entre las carpetas de trabajo y el histórico de RPS.
 - Casos representativos: AR2501270, AR2505172, AR2505545, AR2600642, AR2602162, AR2602583, AR2603192, AR2603926 y AR2604230.
 - Ficha oficial [Elit Vertical de Llaza](https://www.llaza.com/toldos/elit-vertical/) y [manual comercial de Llaza](https://www.llaza.com/wp-content/uploads/2015/10/LLAZA_ELIT_1415_ESP.pdf).
@@ -114,7 +116,7 @@ No existe un formato único: conviven el despiece tabular de Maxiscreem, el desp
 
 ## Materiales observados
 
-Núcleo común localizado en Excel, PDF o reservas de RPS:
+Núcleo común localizado en Excel, PDF, manuales o catálogo de RPS:
 
 - tubo de enrollamiento P801 `TURA80HG600C`;
 - casquillo punta `CASPUNCE`;
@@ -122,10 +124,12 @@ Núcleo común localizado en Excel, PDF o reservas de RPS:
 - perfil o tubo de carga;
 - soporte correspondiente a Elit Vertical, Almagro o Universal;
 - máquina y manivela, o conjunto de motor, rueda y corona;
-- dos guías y sus retenedores cuando la variante las incluye;
+- dos guías y sus retenedores cuando la variante las incluye (`ELITGU12...` y `KITRETENEDOR...`);
 - tela y elementos textiles específicos.
 
-En los libros de Cortina aparecen además piezas genéricas como `TAPOPLUN280`, `CASPLAS` y `MOSQBOACIN60MM`. No deben heredarse automáticamente en todos los Electra: hay que relacionarlas con la variante, el soporte y el accionamiento.
+En los libros de Cortina aparecen además piezas genéricas como `TAPOPLUN280`, `CASPLAS` y `MOSQBOACIN60MM`. La configuración las conserva donde corresponde al soporte Universal y al accionamiento, sin trasladarlas indiscriminadamente a las demás construcciones.
+
+Los manuales muestran además felpa en ambos lados de cada guía, soportes/tope superior de guía, tornillería de accionamiento y un refuerzo horizontal opcional. RPS contiene, entre otras, la referencia activa `FELPAELIT`, pero no existe histórico de reservas que permita deducir con seguridad su unidad o cantidad. Estas piezas quedan identificadas como siguiente ampliación; no se les asigna una cantidad inventada.
 
 Las reservas históricas no siempre están en la misma OF que la línea de producto. En pedidos con varias estructuras, los PDF pueden compartir otra OF del pedido y algunas OF contienen solo la tela o no tienen materiales. La validación de una futura lista de materiales debe hacerse por pedido y por todas sus OF relacionadas, no solo por la OF del artículo Electra.
 
@@ -166,7 +170,8 @@ La web incorpora Electra como modelo propio, pero evita convertir en reglas firm
 - el tipo de soporte queda siempre vacío y es obligatorio en cada pedido;
 - las variantes con cofre exigen expresamente `Soporte Maxiscreem Box`, mientras que las variantes sin cofre ofrecen Elit Vertical, Almagro, Universal de 3 agujeros y Maxiscreen;
 - solo `con cofre + sin guía` y `sin cofre + con guía` generan automáticamente; las otras dos variantes requieren una excepción técnica;
-- el motor no se presupone: debe confirmarse `Meteor 20/17`, única referencia localizada de forma inequívoca en hojas auxiliares Electra;
+- el motor no se presupone: debe confirmarse `Meteor 20/17` o `Somfy Sunilus 15/17 IO`, ambos documentados en planteamientos Electra reales;
+- al elegir motor se incorpora también el mando `SITUOIO1PURE`, como en el planteamiento histórico motorizado contrastado;
 - las combinaciones de perfil, lacado y largo se contrastan contra referencias activas; cuando no existe una referencia terminada confirmada se utiliza la referencia base y se muestra un aviso, sin inventar códigos;
 - ventanas, bamba, velcro y tubo pueden consignarse, pero obligan a una excepción técnica para revisar las medidas y el metraje;
 - los casos fuera de 500 × 300 cm también quedan bloqueados hasta que se autorice una excepción.
@@ -185,26 +190,39 @@ La web incorpora Electra como modelo propio, pero evita convertir en reglas firm
 El repositorio incorpora `scripts/validate-electra-production.mjs`, ejecutable con
 `pnpm validate:electra` e integrado en `pnpm validate:rps:all`. El validador
 consulta RPSNext en solo lectura, localiza los libros anuales correspondientes y
-reconstruye cada estructura Electra con las reglas de la web.
+reconstruye cada estructura Electra con las reglas de la web. La comparación es
+bidireccional: detecta tanto piezas históricas que falten en la web como piezas
+nuevas, cambios de cantidad y cambios de longitud.
 
 Contraste ejecutado el 03/09/2026 sobre los libros de 2025 y 2026:
 
 - 25 pedidos y 26 líneas Electra localizadas en RPS;
-- 23 libros coincidentes y 22 estructuras reconstruibles;
-- 89 comprobaciones dimensionales;
-- 172 comprobaciones de referencias esenciales del despiece;
+- 25 libros coincidentes y 22 estructuras reconstruibles;
+- 96 comprobaciones dimensionales;
+- 179 comprobaciones de referencias esenciales del despiece;
 - los descuentos de frente y P801 coinciden en todos los casos;
 - cuatro estructuras de 2025 conservan el descuento antiguo de 13 cm en el
   perfil de carga del cofre; los libros posteriores usan 15,1 cm;
-- 0 diferencias en las referencias esenciales después de asociar el perfil
+- 0 referencias históricas esenciales ausentes después de asociar el perfil
   Universal 280 y sus accesorios al soporte Universal y conservar la referencia
   negra de Maxiscreem Box;
-- las demás diferencias automáticas se concentran exclusivamente en la caída de
-  tela histórica.
+- 0 regresiones inesperadas en el despiece estricto;
+- 39 referencias adicionales intencionadas: guías, retenedores, mando, perfil de
+  cofre y referencias que el Excel anterior dejaba vacías;
+- cinco variaciones históricas conocidas: cuatro perfiles de carga de 2025 con
+  el descuento anterior de 13 cm y una estructura cuyo Excel pide dos motores
+  aunque el toldo y el resto de componentes tienen una unidad.
 
 Las caídas históricas no siguen una constante única: en la misma combinación de
 soporte y máquina aparecen márgenes distintos por confección. El formulario ya
 permite indicar los descuentos y el `Margen caída tela` dentro de la excepción
 técnica. Al reproducir cada libro con sus valores documentados, el validador
-obtiene 89 de 89 medidas idénticas. Por seguridad, las diferencias históricas no
+obtiene 96 de 96 medidas idénticas. Por seguridad, las diferencias históricas no
 se han convertido en valores automáticos inventados.
+
+AR2601519 confirma por qué esta revisión debe seguir siendo explícita: el pedido
+comercial indica una bambalina de 15 cm, mientras el libro de fabricación usa 12
+cm y obtiene una caída de tela de 317 cm. Es el único caso reciente localizado
+con una diferencia de este tipo; la importación conserva los 15 cm del pedido y
+obliga a revisión técnica, en lugar de aplicar automáticamente una resta de 3 cm
+a todos los Electra.
