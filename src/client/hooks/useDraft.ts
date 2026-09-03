@@ -4,6 +4,7 @@ import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../c
 import { formOptions, getModelBehavior, getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
 import { inferHeraVariant, normalizeHeraJoin } from '../../domain/heraParameters.js';
+import { electraHasCofre, normalizeElectraMotor, normalizeElectraSupport, normalizeElectraVariant } from '../../domain/electraParameters.js';
 import { normalizeModelName } from '../../domain/modelNames.js';
 import {
   DROP_ARM_MODE_STANDARD,
@@ -43,6 +44,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   const base = { ...createAwning(), ...old } as Awning & Record<string, unknown>;
   const rawModel = String(old.model || base.model || '');
   base.model = normalizeModelName(rawModel);
+  const isCurtainLike = base.model.includes('CORTINA') || base.model === 'ELECTRA';
   base.workType = old.workType === 'FABRIC_ONLY' || old.workType === 'FULL_AWNING'
     ? old.workType
     : getModelWorkType(base.model);
@@ -60,7 +62,9 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.height = base.model === 'HERA' ? nullableNumber(old.height) : null;
   base.submodel = base.model === 'HERA'
     ? inferHeraVariant({ model: rawModel, submodel: old.submodel, device: old.device })
-    : typeof old.submodel === 'string' ? old.submodel.toUpperCase() : '';
+    : base.model === 'ELECTRA'
+      ? normalizeElectraVariant(old.submodel)
+      : typeof old.submodel === 'string' ? old.submodel.toUpperCase() : '';
   base.heraJoin = base.model === 'HERA'
     ? normalizeHeraJoin(old.heraJoin) as Awning['heraJoin']
     : '';
@@ -86,13 +90,23 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.structureColor = typeof old.structureColor === 'string' ? old.structureColor : '';
   base.rotFabric = typeof old.rotFabric === 'string' ? old.rotFabric : '';
   base.rotValance = typeof old.rotValance === 'string' ? old.rotValance : '';
-  base.curtainHasWindow = typeof old.curtainHasWindow === 'boolean' ? old.curtainHasWindow : null;
-  base.curtainFinish = ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish))
+  base.curtainHasWindow = isCurtainLike && typeof old.curtainHasWindow === 'boolean' ? old.curtainHasWindow : null;
+  base.curtainFinish = isCurtainLike && ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish).toUpperCase())
     ? old.curtainFinish as Awning['curtainFinish']
     : '';
   base.curtainSupport = old.curtainSupport === 'MAXISCREEM'
     ? 'MAXISCREEM'
     : base.model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '';
+  base.electraSupport = base.model === 'ELECTRA'
+    ? normalizeElectraFormSupport(old.electraSupport, base.submodel)
+    : '';
+  base.motorPower = base.model === 'ELECTRA'
+    ? normalizeElectraMotorPower(base.device, old.motorPower)
+    : typeof old.motorPower === 'string' ? old.motorPower : '';
+  base.curtainWindowExit = isCurtainLike ? nullableNumber(old.curtainWindowExit) : null;
+  base.curtainWindowCorner = isCurtainLike ? nullableNumber(old.curtainWindowCorner) : null;
+  base.curtainWindowFloorHeight = isCurtainLike ? nullableNumber(old.curtainWindowFloorHeight) : null;
+  base.curtainWindowHeight = isCurtainLike ? nullableNumber(old.curtainWindowHeight) : null;
   base.curtainFabricDeductionCm = Number.isFinite(Number(old.curtainFabricDeductionCm))
     ? Number(old.curtainFabricDeductionCm)
     : null;
@@ -126,6 +140,12 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.maxisLoadBarDiscountCm = nullableNumber(old.maxisLoadBarDiscountCm);
   base.maxisBoxProfileDiscountCm = nullableNumber(old.maxisBoxProfileDiscountCm);
   base.maxisFabricDropAllowanceCm = nullableNumber(old.maxisFabricDropAllowanceCm);
+  base.electraFabricWidthDiscountCm = nullableNumber(old.electraFabricWidthDiscountCm);
+  base.electraRollDiscountCm = nullableNumber(old.electraRollDiscountCm);
+  base.electraLoadBarDiscountCm = nullableNumber(old.electraLoadBarDiscountCm);
+  base.electraBoxProfileDiscountCm = nullableNumber(old.electraBoxProfileDiscountCm);
+  base.electraGuideDiscountCm = nullableNumber(old.electraGuideDiscountCm);
+  base.electraFabricDropAllowanceCm = nullableNumber(old.electraFabricDropAllowanceCm);
   base.ambarFabricWidthDiscountCm = nullableNumber(old.ambarFabricWidthDiscountCm);
   base.ambarRollDiscountCm = nullableNumber(old.ambarRollDiscountCm);
   base.ambarProfileDiscountCm = nullableNumber(old.ambarProfileDiscountCm);
@@ -390,8 +410,9 @@ function collectFabricOrderNotes(orderNotes: unknown, awnings: Array<Record<stri
 
 export function switchAwningModel(awning: Awning, model: string, armCount?: number | null): Awning {
   const fresh = createAwning(getModelWorkType(model));
-  const isCurtain = model.includes('CORTINA');
-  const isCurtainStructure = isCurtain || model === 'SELENA';
+  const isElectra = model === 'ELECTRA';
+  const isCurtain = model.includes('CORTINA') || isElectra;
+  const isCurtainStructure = model.includes('CORTINA') || model === 'SELENA';
   const isBox = model === 'PERLA BOX' || model === 'CORAL BOX' || model === 'CUARZO BOX';
   const isXacobeo = model === 'XACOBEO';
   const isPuntoRecto = model === 'PUNTO RECTO';
@@ -434,6 +455,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     curtainHasWindow: isCurtain ? awning.curtainHasWindow : null,
     curtainFinish: isCurtain ? awning.curtainFinish : '',
     curtainSupport: model === 'CORTINA' ? (awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS') : '',
+    electraSupport: '',
     curtainWindowExit: isCurtain ? awning.curtainWindowExit : null,
     curtainWindowCorner: isCurtain ? awning.curtainWindowCorner : null,
     curtainWindowFloorHeight: isCurtain ? awning.curtainWindowFloorHeight : null,
@@ -469,6 +491,12 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     maxisLoadBarDiscountCm: isMaxiscreem ? awning.maxisLoadBarDiscountCm : null,
     maxisBoxProfileDiscountCm: isMaxiscreem ? awning.maxisBoxProfileDiscountCm : null,
     maxisFabricDropAllowanceCm: isMaxiscreem ? awning.maxisFabricDropAllowanceCm : null,
+    electraFabricWidthDiscountCm: isElectra ? awning.electraFabricWidthDiscountCm : null,
+    electraRollDiscountCm: isElectra ? awning.electraRollDiscountCm : null,
+    electraLoadBarDiscountCm: isElectra ? awning.electraLoadBarDiscountCm : null,
+    electraBoxProfileDiscountCm: isElectra ? awning.electraBoxProfileDiscountCm : null,
+    electraGuideDiscountCm: isElectra ? awning.electraGuideDiscountCm : null,
+    electraFabricDropAllowanceCm: isElectra ? awning.electraFabricDropAllowanceCm : null,
     anticaVariant: isAntica ? awning.anticaVariant : '',
     anticaMeasurementMode: model === 'CAMBIO ANTICA' && resolveAnticaRoundEntry(awning.anticaVariant)
       ? awning.model === 'CAMBIO ANTICA'
@@ -484,4 +512,19 @@ function nullableNumber(value: unknown) {
   return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value))
     ? Number(value)
     : null;
+}
+
+function normalizeElectraFormSupport(value: unknown, variant: unknown): Awning['electraSupport'] {
+  const clean = String(value || '').trim().toUpperCase();
+  if (electraHasCofre(variant)) {
+    return clean === 'SOPORTE MAXISCREEM BOX' || clean === 'MAXISCREEM BOX'
+      ? 'SOPORTE MAXISCREEM BOX'
+      : '';
+  }
+  return normalizeElectraSupport(value) as Awning['electraSupport'];
+}
+
+function normalizeElectraMotorPower(device: unknown, value: unknown) {
+  if (String(device || '').trim().toUpperCase() !== 'MOTOR') return '';
+  return normalizeElectraMotor(value);
 }

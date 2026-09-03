@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
-import type { Awning, BoxDevice, Calculation, CortinaDevice, RuleParameters } from '../types';
+import type { Awning, BoxDevice, Calculation, CortinaDevice, ElectraSupport, RuleParameters } from '../types';
 import { formOptions, getFabricDiagramOptions, getRequiredDimensions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { useVisibleFields } from '../hooks/useVisibleFields';
 import { TextField } from './TextField';
@@ -17,6 +17,7 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
+import { electraHasCofre, electraHasGuide, getElectraDiscounts } from '../../domain/electraParameters.js';
 import {
   anticaVariants,
   cambioAnticaVariants,
@@ -43,6 +44,13 @@ type Props = {
   onRemove: (id: string) => void;
 };
 
+const electraCofreSupports: ElectraSupport[] = ['SOPORTE MAXISCREEM BOX'];
+const electraOpenSupports: ElectraSupport[] = ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS'];
+
+export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
+  return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;
+}
+
 export function AwningColumn({ awning, index, ofCalculation, parameters, sameFabric, readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
@@ -66,6 +74,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isPuntoRecto = awning.model === 'PUNTO RECTO';
   const isMonoblock350 = awning.model === 'MONOBLOCK 350';
   const isMaxiscreem = awning.model === 'MAXISCREEM';
+  const isElectra = awning.model === 'ELECTRA';
   const isAmbarBox = awning.model === 'AMBAR BOX';
   const isAgataBox = awning.model === 'AGATA BOX';
   const isHera = awning.model === 'HERA';
@@ -81,13 +90,18 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const isFinishedAnticaRound = isCambioAnticaRound && anticaMeasurementMode === 'FINISHED';
   const isFullAnticaRound = isFullAntica && Boolean(roundAnticaEntry);
   const widthLabel = isCambioAnticaRound ? 'Frente tela terminada' : 'Frente';
-  const projectionLabel = isSelena ? 'Caída' : isCambioAnticaRound
+  const projectionLabel = isSelena || isElectra ? 'Caída' : isCambioAnticaRound
     ? isFinishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
     : isFullAnticaRound ? 'Salida brazo' : 'Salida';
   const boxDevice = normalizeBoxDevice(awning.device);
   const curtainLikeParameters = isSelena ? parameters.selena : parameters.cortina;
   const maxisGroup = maxiscreemVariantGroup(awning.submodel);
   const maxisDiscounts = parameters.maxiscreem.discounts[maxisGroup][boxDevice || 'MAQUINA'];
+  const electraDevice = normalizeCortinaDevice(awning.device);
+  const electraDiscounts = getElectraDiscounts(parameters.electra, awning.submodel, awning.electraSupport, electraDevice || 'MAQ. INTERIOR');
+  const electraWithCofre = electraHasCofre(awning.submodel);
+  const electraWithGuide = electraHasGuide(awning.submodel);
+  const electraSupportOptions = getElectraSupportOptions(awning.submodel);
   const monoblockArmCount = Number(awning.armCount) || suggestedMonoblockArmCount(awning.width, awning.projection, parameters.monoblock350);
   const monoblockRule = resolveMonoblockRule(awning.projection, monoblockArmCount, parameters.monoblock350);
   const monoblockDiscounts = parameters.monoblock350.discounts[boxDevice || 'MAQUINA'];
@@ -142,13 +156,16 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
   const incomplete = !awning.model
     || !awning.of
     || (fields.submodel && !awning.submodel)
+    || (isElectra && !awning.electraSupport)
     || (isHera && !awning.heraJoin)
     || (isHera && awning.submodel !== 'HERA 56 MOTOR' && !Number(awning.height))
     || (isHera && (!awning.heraTopFinish || !awning.heraBottomFinish || !awning.heraInteriorFace))
     || getRequiredDimensions(awning.model).some((field: keyof Awning) => !Number(awning[field]))
     || missingWindowDimensions
     || missingCurtainConfig
+    || (isElectra && electraDevice === 'MOTOR' && awning.motorPower !== 'METEOR 20/17')
     || (fields.motorLocation && !awning.machineSide)
+    || (isElectra && fields.machineLocation && !awning.machineSide)
     || (isSelena && fields.machineLocation && !awning.machineSide)
     || (isAntica && !awning.anticaVariant)
     || (isFullAntica && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || isFullAnticaRound) && !Number(awning.anticaSupportHeight))
@@ -222,6 +239,25 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
       return;
     }
     update({ projection });
+  }
+
+  function updateSubmodel(submodel: string) {
+    const patch: Partial<Awning> = { submodel };
+    if (isAgataBox && submodel === 'COFRE' && awning.device === 'MAQUINA') patch.device = '';
+    if (isElectra) {
+      const compatibleSupports = getElectraSupportOptions(submodel);
+      if (!compatibleSupports.includes(awning.electraSupport as ElectraSupport)) patch.electraSupport = '';
+    }
+    update(patch);
+  }
+
+  function updateDevice(device: string) {
+    update({
+      device,
+      ...(isElectra
+        ? { motorPower: device === 'MOTOR' && awning.motorPower === 'METEOR 20/17' ? awning.motorPower : '' }
+        : {})
+    });
   }
 
   return (
@@ -302,6 +338,16 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                     maxisLoadBarDiscountCm: awning.maxisLoadBarDiscountCm ?? maxisDiscounts.loadBar,
                     maxisBoxProfileDiscountCm: awning.maxisBoxProfileDiscountCm ?? maxisDiscounts.boxProfile,
                     maxisFabricDropAllowanceCm: awning.maxisFabricDropAllowanceCm ?? parameters.maxiscreem.fabricDropAllowanceCm
+                  }
+                : {}),
+              ...(isElectra && !awning.reglasModificadas && electraDevice && awning.submodel && awning.electraSupport
+                ? {
+                    electraFabricWidthDiscountCm: awning.electraFabricWidthDiscountCm ?? electraDiscounts.fabric,
+                    electraRollDiscountCm: awning.electraRollDiscountCm ?? electraDiscounts.roll,
+                    electraLoadBarDiscountCm: awning.electraLoadBarDiscountCm ?? electraDiscounts.loadBar,
+                    electraBoxProfileDiscountCm: awning.electraBoxProfileDiscountCm ?? (electraWithCofre ? electraDiscounts.boxProfile ?? 0 : 0),
+                    electraGuideDiscountCm: awning.electraGuideDiscountCm ?? (electraWithGuide ? (electraWithCofre ? null : electraDiscounts.guide) : 0),
+                    electraFabricDropAllowanceCm: awning.electraFabricDropAllowanceCm ?? parameters.electra.fabricDropAllowanceCm[electraDevice]
                   }
                 : {}),
               ...(isAmbarBox && !awning.reglasModificadas && boxDevice
@@ -454,7 +500,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             <div className="awning-wide-field"><SegmentedField label="Tubo de carga" value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} /></div>
           )}
           {fields.submodel && !isHera && (
-            <SelectField label="Variante" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, ...(isAgataBox && submodel === 'COFRE' && awning.device === 'MAQUINA' ? { device: '' } : {}) })} />
+            <SelectField label="Variante" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={updateSubmodel} />
           )}
           {isAntica && (
             <div className="awning-wide-field">
@@ -498,9 +544,9 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             {fields.requiresRotFabric && !standaloneValance && <SegmentedField label="Rotulación tela" value={awning.rotFabric} options={formOptions.rotulacion} onChange={(rotFabric) => update({ rotFabric })} />}
             {hasValance && <SegmentedField label="Rotulación bamba" value={awning.rotValance} options={formOptions.rotulacion} onChange={(rotValance) => update({ rotValance })} />}
           </div>}
-          {fields.curtain && (
+          {(fields.curtain || isElectra) && (
             <div className="awning-form-section curtain-config">
-              <span className="awning-form-section-title">Configuración de cortina</span>
+              <span className="awning-form-section-title">{isElectra ? 'Configuración textil Electra / Elit Vertical' : 'Configuración de cortina'}</span>
               {awning.model === 'CORTINA' && <div className="curtain-option">
                 <SelectField
                   label="Soporte"
@@ -509,13 +555,22 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                   onChange={(curtainSupport) => update({ curtainSupport: curtainSupport as Awning['curtainSupport'] })}
                 />
               </div>}
-              <div className="curtain-option">
+              {isElectra && <div className="curtain-option">
+                <SelectField
+                  label="Tipo de soporte"
+                  value={awning.electraSupport}
+                  options={electraSupportOptions}
+                  placeholder="Obligatorio · elegir soporte…"
+                  onChange={(electraSupport) => update({ electraSupport: electraSupport as Awning['electraSupport'] })}
+                />
+              </div>}
+              {fields.curtain && <div className="curtain-option">
                 <SegmentedField label="Ventana" value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'} options={['SIN VENTANA', 'CON VENTANA']} onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })} />
-              </div>
-              {awning.curtainHasWindow !== null && <div className="curtain-option">
+              </div>}
+              {fields.curtain && awning.curtainHasWindow !== null && <div className="curtain-option">
                 <SegmentedField label="Confección" value={awning.curtainFinish} options={['NORMAL', 'VELCRO', 'TUBO']} onChange={(curtainFinish) => update({ curtainFinish: curtainFinish as Awning['curtainFinish'] })} />
               </div>}
-              {awning.curtainHasWindow && <>
+              {fields.curtain && awning.curtainHasWindow && <>
                 <NumberField label="Salida ventana" value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
                 <NumberField label="Esquina" value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
                 <NumberField label="Suelo-ventana" value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
@@ -526,7 +581,8 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {!sameFabric && <div className="awning-wide-field"><FabricCombobox label="Tela" value={awning.fabric} disabled={readOnly} onChange={(fabric) => update({ fabric })} /></div>}
           {(fields.device || fields.sensor || fields.motorLocation || fields.machineLocation || fields.crankHeight) && (
             <div className="awning-actuation-row awning-wide-field">
-              {fields.device && <SelectField label="Dispositivo" value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={(device) => update({ device })} />}
+              {fields.device && <SelectField label="Dispositivo" value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={updateDevice} />}
+              {isElectra && electraDevice === 'MOTOR' && <SelectField label="Motor Electra" value={awning.motorPower} options={['METEOR 20/17']} placeholder="Obligatorio · elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
               {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.motorLocation && <SelectField label="Posición motor" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
@@ -556,7 +612,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           {awning.reglasModificadas && (
             <div className="awning-overrides">
               <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>
-              {(fields.curtain || isSelena) && (
+              {(awning.model === 'CORTINA' || isSelena) && (
                 <NumberField
                   label="Descuento inferior tela (cm)"
                   value={awning.curtainFabricDeductionCm}
@@ -613,6 +669,14 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                 <NumberField label="Descuento perfil de carga (cm)" value={awning.maxisLoadBarDiscountCm} min={0} step={0.1} onChange={(maxisLoadBarDiscountCm) => update({ maxisLoadBarDiscountCm })} />
                 {maxisGroup === 'COFRE' && <NumberField label="Descuento perfil de cofre (cm)" value={awning.maxisBoxProfileDiscountCm} min={0} step={0.1} onChange={(maxisBoxProfileDiscountCm) => update({ maxisBoxProfileDiscountCm })} />}
                 <NumberField label="Margen caída tela (cm)" value={awning.maxisFabricDropAllowanceCm} min={0} step={0.5} onChange={(maxisFabricDropAllowanceCm) => update({ maxisFabricDropAllowanceCm })} />
+              </>}
+              {isElectra && <>
+                <NumberField label="Descuento frente tela (cm)" value={awning.electraFabricWidthDiscountCm} min={0} step={0.1} onChange={(electraFabricWidthDiscountCm) => update({ electraFabricWidthDiscountCm })} />
+                <NumberField label="Descuento tubo P801 (cm)" value={awning.electraRollDiscountCm} min={0} step={0.1} onChange={(electraRollDiscountCm) => update({ electraRollDiscountCm })} />
+                <NumberField label="Descuento perfil de carga (cm)" value={awning.electraLoadBarDiscountCm} min={0} step={0.1} onChange={(electraLoadBarDiscountCm) => update({ electraLoadBarDiscountCm })} />
+                {electraWithCofre && <NumberField label="Descuento perfil de cofre (cm)" value={awning.electraBoxProfileDiscountCm} min={0} step={0.1} onChange={(electraBoxProfileDiscountCm) => update({ electraBoxProfileDiscountCm })} />}
+                {electraWithGuide && <NumberField label="Descuento guía sobre caída (cm)" value={awning.electraGuideDiscountCm} min={0} step={0.1} onChange={(electraGuideDiscountCm) => update({ electraGuideDiscountCm })} />}
+                <NumberField label="Margen caída tela (cm)" value={awning.electraFabricDropAllowanceCm} min={0} step={0.5} onChange={(electraFabricDropAllowanceCm) => update({ electraFabricDropAllowanceCm })} />
               </>}
               {isAmbarBox && <>
                 <NumberField label="Descuento frente tela (cm)" value={awning.ambarFabricWidthDiscountCm} min={0} step={0.1} onChange={(ambarFabricWidthDiscountCm) => update({ ambarFabricWidthDiscountCm })} />

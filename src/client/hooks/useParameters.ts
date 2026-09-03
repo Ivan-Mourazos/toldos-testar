@@ -16,6 +16,7 @@ import { defaultXacobeoParameters, normalizeXacobeoParameters } from '../../doma
 import { defaultPuntoRectoParameters, normalizePuntoRectoParameters } from '../../domain/puntoRectoParameters.js';
 import { defaultMonoblock350Parameters, normalizeMonoblock350Parameters } from '../../domain/monoblock350Parameters.js';
 import { defaultMaxiscreemParameters, normalizeMaxiscreemParameters } from '../../domain/maxiscreemParameters.js';
+import { defaultElectraParameters, normalizeElectraParameters } from '../../domain/electraParameters.js';
 import { defaultAmbarBoxParameters, normalizeAmbarBoxParameters } from '../../domain/ambarBoxParameters.js';
 import { defaultAgataBoxParameters, normalizeAgataBoxParameters } from '../../domain/agataBoxParameters.js';
 import { defaultFabricJobParameters, normalizeFabricJobParameters } from '../../domain/fabricJobParameters.js';
@@ -38,6 +39,7 @@ function initialParameters(): RuleParameters {
       puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto || defaultPuntoRectoParameters),
       monoblock350: normalizeMonoblock350Parameters(saved?.monoblock350 || defaultMonoblock350Parameters),
       maxiscreem: normalizeMaxiscreemParameters(saved?.maxiscreem || defaultMaxiscreemParameters),
+      electra: normalizeElectraParameters(saved?.electra || defaultElectraParameters),
       ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox || defaultAmbarBoxParameters),
       agataBox: normalizeAgataBoxParameters(saved?.agataBox || defaultAgataBoxParameters),
       fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs || defaultFabricJobParameters)
@@ -56,6 +58,7 @@ function initialParameters(): RuleParameters {
       puntoRecto: structuredClone(defaultPuntoRectoParameters),
       monoblock350: structuredClone(defaultMonoblock350Parameters),
       maxiscreem: structuredClone(defaultMaxiscreemParameters),
+      electra: structuredClone(defaultElectraParameters),
       ambarBox: structuredClone(defaultAmbarBoxParameters),
       agataBox: structuredClone(defaultAgataBoxParameters),
       fabricJobs: structuredClone(defaultFabricJobParameters)
@@ -202,6 +205,17 @@ export function useParameters() {
     setParameters((current) => ({ ...current, maxiscreem: structuredClone(defaultMaxiscreemParameters) }) as RuleParameters);
   }
 
+  function updateElectra(patch: Partial<RuleParameters['electra']>) {
+    setParameters((current) => ({
+      ...current,
+      electra: normalizeElectraParameters({ ...current.electra, ...patch })
+    }) as RuleParameters);
+  }
+
+  function resetElectra() {
+    setParameters((current) => ({ ...current, electra: structuredClone(defaultElectraParameters) }) as RuleParameters);
+  }
+
   function updateAmbarBox(patch: Partial<RuleParameters['ambarBox']>) {
     setParameters((current) => ({
       ...current,
@@ -249,6 +263,7 @@ export function useParameters() {
       puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto),
       monoblock350: normalizeMonoblock350Parameters(saved?.monoblock350),
       maxiscreem: normalizeMaxiscreemParameters(saved?.maxiscreem),
+      electra: normalizeElectraParameters(saved?.electra),
       ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox),
       agataBox: normalizeAgataBoxParameters(saved?.agataBox),
       fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs)
@@ -269,6 +284,7 @@ export function useParameters() {
     updatePuntoRecto, resetPuntoRecto,
     updateMonoblock350, resetMonoblock350,
     updateMaxiscreem, resetMaxiscreem,
+    updateElectra, resetElectra,
     updateAmbarBox, resetAmbarBox,
     updateAgataBox, resetAgataBox,
     updateFabricJobs, resetFabricJobs,

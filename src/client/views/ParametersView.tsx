@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BookOpen, Calculator, Check, ChevronDown, Layers3, Package, RotateCcw, Ruler, Scissors } from 'lucide-react';
-import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
+import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, ElectraMatrixSupport, ElectraParameters, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
 import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
 import { controlLabel, legacyModelName } from '../components/controlLabels';
@@ -15,7 +15,7 @@ const discountLabels = {
   fabricWidthDiscounts: 'Tela'
 } as const;
 type DiscountGroup = typeof discountGroups[number];
-type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'XACOBEO' | 'PUNTO RECTO' | 'MONOBLOCK 350' | 'MAXISCREEM' | 'CORTINA' | 'SELENA' | 'CAMBIO CORTINA' | FabricJobModel | 'HERA' | 'ANTICA' | 'AMBAR BOX' | 'AGATA BOX' | 'PERLA BOX' | 'CORAL BOX' | 'CUARZO BOX';
+type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'XACOBEO' | 'PUNTO RECTO' | 'MONOBLOCK 350' | 'MAXISCREEM' | 'ELECTRA' | 'CORTINA' | 'SELENA' | 'CAMBIO CORTINA' | FabricJobModel | 'HERA' | 'ANTICA' | 'AMBAR BOX' | 'AGATA BOX' | 'PERLA BOX' | 'CORAL BOX' | 'CUARZO BOX';
 
 type Props = {
   parameters: RuleParameters;
@@ -43,6 +43,8 @@ type Props = {
   onResetMonoblock350: () => void;
   onUpdateMaxiscreem: (patch: Partial<MaxiscreemParameters>) => void;
   onResetMaxiscreem: () => void;
+  onUpdateElectra: (patch: Partial<ElectraParameters>) => void;
+  onResetElectra: () => void;
   onUpdateAmbarBox: (patch: Partial<AmbarBoxParameters>) => void;
   onResetAmbarBox: () => void;
   onUpdateAgataBox: (patch: Partial<AgataBoxParameters>) => void;
@@ -51,7 +53,7 @@ type Props = {
   onResetFabricJobs: () => void;
 };
 
-export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs }: Props) {
+export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateElectra, onResetElectra, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs }: Props) {
   const [selectedModel, setSelectedModel] = useState<SelectedModel>('ARZUA PRO');
   const isGalicia = selectedModel === 'GALICIA';
   const isBox = selectedModel === 'CORAL BOX' || selectedModel === 'PERLA BOX' || selectedModel === 'CUARZO BOX';
@@ -97,6 +99,16 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateMaxiscreem}
       onReset={onResetMaxiscreem}
+    />;
+  }
+
+  if (selectedModel === 'ELECTRA') {
+    return <ElectraParametersView
+      parameters={parameters.electra}
+      selectedModel={selectedModel}
+      onSelectModel={setSelectedModel}
+      onUpdate={onUpdateElectra}
+      onReset={onResetElectra}
     />;
   }
 
@@ -298,7 +310,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
 const fabricParameterModels = new Set<FabricJobModel>(['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
 
 const parameterModels: SelectedModel[] = [
-  'ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'MAXISCREEM', 'HERA', 'ANTICA',
+  'ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'MAXISCREEM', 'ELECTRA', 'HERA', 'ANTICA',
   'CORTINA', 'SELENA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA',
   'AMBAR BOX', 'AGATA BOX', 'PERLA BOX', 'CORAL BOX', 'CUARZO BOX'
 ];
@@ -768,6 +780,97 @@ function MaxiscreemParametersView({ parameters, selectedModel, onSelectModel, on
       </div>
 
       <aside className="rps-evidence"><strong>Contraste real</strong><span>Casos Diana/Maxiscreen de 2025 y 2026 revisados: cofre y sin cofre, máquina y motor. Tela, P801, perfiles, soportes y guías coinciden con los planteamientos disponibles.</span></aside>
+    </section>
+  );
+}
+
+type ElectraProps = {
+  parameters: ElectraParameters;
+  selectedModel: 'ELECTRA';
+  onSelectModel: (model: SelectedModel) => void;
+  onUpdate: (patch: Partial<ElectraParameters>) => void;
+  onReset: () => void;
+};
+
+function ElectraParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: ElectraProps) {
+  const supports: ElectraMatrixSupport[] = ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS'];
+  const devices: CortinaDevice[] = ['MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR'];
+  const supportPieces = [
+    ['fabric', 'Frente de tela'],
+    ['roll', 'Tubo de enrollamiento P801'],
+    ['loadBar', 'Perfil de carga'],
+    ['guide', 'Guía sobre caída']
+  ] as const;
+  const cofrePieces = [
+    ['fabric', 'Frente de tela'],
+    ['roll', 'Tubo de enrollamiento P801'],
+    ['loadBar', 'Perfil de carga'],
+    ['boxProfile', 'Perfil de cofre']
+  ] as const;
+
+  function updateSupportDiscount(support: ElectraMatrixSupport, device: CortinaDevice, field: typeof supportPieces[number][0], value: number) {
+    onUpdate({
+      supportDiscounts: {
+        ...parameters.supportDiscounts,
+        [support]: {
+          ...parameters.supportDiscounts[support],
+          [device]: { ...parameters.supportDiscounts[support][device], [field]: value }
+        }
+      }
+    });
+  }
+
+  function updateCofreDiscount(device: CortinaDevice, field: typeof cofrePieces[number][0], value: number) {
+    onUpdate({
+      cofreDiscounts: {
+        ...parameters.cofreDiscounts,
+        [device]: { ...parameters.cofreDiscounts[device], [field]: value }
+      }
+    });
+  }
+
+  function updateAllowance(device: CortinaDevice, value: number) {
+    onUpdate({ fabricDropAllowanceCm: { ...parameters.fabricDropAllowanceCm, [device]: value } });
+  }
+
+  return (
+    <section className="parameters-page">
+      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
+
+      <header className="parameters-heading">
+        <div><span className="section-kicker">Nuevo modelo · Elit Vertical</span><ParameterModelTitle model={selectedModel} /><p>Reglas por soporte, con o sin cofre y con o sin guía.</p></div>
+        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar fuentes</button>
+      </header>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>01</span><div><h3>Límites, confección y almacén</h3><p>El soporte es obligatorio en cada pedido. Las medidas superiores a 500 × 300 cm requieren excepción técnica.</p></div></div>
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
+          <NumberField label="Caída máxima estándar (cm)" value={parameters.standardMaxDrop} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxDrop: value })} />
+          {devices.map((device) => <NumberField key={device} label={`Margen de caída · ${device} (cm)`} value={parameters.fabricDropAllowanceCm[device]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(device, value)} />)}
+          <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
+          <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
+          {parameters.rollStockLengths.map((length, index) => <NumberField key={`roll-${index}`} label={`Stock P801 ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ rollStockLengths: parameters.rollStockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.profileStockLengths.map((length, index) => <NumberField key={`profile-${index}`} label={`Stock perfiles ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ profileStockLengths: parameters.profileStockLengths.map((item, current) => current === index ? value : item) })} />)}
+          {parameters.guideStockLengths.map((length, index) => <NumberField key={`guide-${index}`} label={`Stock guías ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ guideStockLengths: parameters.guideStockLengths.map((item, current) => current === index ? value : item) })} />)}
+        </div>
+      </div>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos según soporte</h3><p>Tabla del archivo “Descontos toldos Electra según soportes”. Todos los valores se descuentan en centímetros.</p></div></div>
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Soporte</th><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+          <tbody>{supports.flatMap((support) => supportPieces.map(([field, label], index) => <tr key={`${support}-${field}`}><td>{index === 0 ? support : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA ${support} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.supportDiscounts[support][device][field]} onChange={(event) => updateSupportDiscount(support, device, field, Number(event.target.value))} /></td>)}</tr>))}</tbody>
+        </table></div>
+      </div>
+
+      <div className="parameter-band">
+        <div className="parameter-band-title"><span>03</span><div><h3>Configuración con cofre</h3><p>Descuentos recuperados de los planteamientos Electra con cofre que reutilizan la estructura MAXISCREEM.</p></div></div>
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+          <tbody>{cofrePieces.map(([field, label]) => <tr key={field}><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA cofre ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.cofreDiscounts[device][field]} onChange={(event) => updateCofreDiscount(device, field, Number(event.target.value))} /></td>)}</tr>)}</tbody>
+        </table></div>
+      </div>
+
+      <aside className="rps-evidence"><strong>Contraste real</strong><span>Archivo de descuentos por soporte y 37 líneas ELECTR de 2024–2026 revisadas. RPS usa ELECTRA; en documentación también aparece como ELIT VERTICAL.</span></aside>
     </section>
   );
 }

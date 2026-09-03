@@ -21,9 +21,43 @@ describe('autocompletado de pedidos RPS', () => {
     ['PERLABOX', '', 'PERLA BOX'],
     ['CORALBOX', '', 'CORAL BOX'],
     ['CUARZOBOX', '', 'CUARZO BOX'],
+    ['ELECTR', '', 'ELECTRA'],
+    ['ELECTRSCCG', '', 'ELECTRA'],
+    ['ELITV', '', 'ELECTRA'],
     ['CAMTELTOL', 'CAMBIO DE TELA PARA TOLDO ANTICA', 'CAMBIO ANTICA']
   ])('%s se reconoce como %s', (articleCode, description, expected) => {
     expect(inferOrderModel({ articleCode, description })).toBe(expected);
+  });
+
+  test.each(['ELECTRA', 'ELECTRAZIP', 'ELECTRS/COS/GU'])(
+    'no importa el artículo Electra histórico marcado NO USAR: %s',
+    (articleCode) => {
+      expect(inferOrderModel({ articleCode, description: 'TOLDO MODELO ELECTRA' })).toBe('');
+    }
+  );
+
+  test('recupera variante, soporte, motor y confección de un pedido Electra', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.09999' },
+      lines: [{
+        lineId: 'electra-1',
+        articleCode: 'ELECTRSCCG',
+        description: 'TOLDO VERTICAL ELECTRA',
+        manufacturingOrder: '0239999',
+        quantity: 1,
+        comment: 'MEDIDAS 300 CM DE FRENTE X 250 CM DE CAIDA. SIN COFRE CON GUIA. SOPORTE ELIT VERTICAL. MOTOR METEOR 20/17. SIN VENTANA. CONFECCION NORMAL.'
+      }]
+    });
+
+    expect(result.order.awnings[0]).toMatchObject({
+      model: 'ELECTRA',
+      submodel: 'SIN COFRE / CON GUÍA',
+      electraSupport: 'SOPORTE ELIT VERTICAL',
+      device: 'MOTOR',
+      motorPower: 'METEOR 20/17',
+      curtainHasWindow: false,
+      curtainFinish: 'NORMAL'
+    });
   });
 
   test('extrae medidas decimales, bamba, curva, lacado, motor y rotulación', () => {

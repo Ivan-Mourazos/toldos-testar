@@ -413,6 +413,8 @@ export default function App() {
               onResetMonoblock350={ruleSettings.resetMonoblock350}
               onUpdateMaxiscreem={ruleSettings.updateMaxiscreem}
               onResetMaxiscreem={ruleSettings.resetMaxiscreem}
+              onUpdateElectra={ruleSettings.updateElectra}
+              onResetElectra={ruleSettings.resetElectra}
               onUpdateAmbarBox={ruleSettings.updateAmbarBox}
               onResetAmbarBox={ruleSettings.resetAmbarBox}
               onUpdateAgataBox={ruleSettings.updateAgataBox}

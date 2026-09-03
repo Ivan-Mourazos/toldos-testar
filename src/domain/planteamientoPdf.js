@@ -125,7 +125,7 @@ function fabricDiagramGroupKey(diagram, awning) {
   if (!hasWindow) {
     return [
       diagram,
-      awning.model === 'SELENA' ? 'SELENA' : '',
+      ['SELENA', 'ELECTRA'].includes(awning.model) ? awning.model : '',
       isCurtain || ['GENERAL', 'TOLDO-VELCRO', 'BAMBALINA', 'SUPLEMENTO'].includes(diagram) ? valance : '',
       diagram === 'CORTINA-VELCRO' ? resolveCurtainVelcroHeight(awning) ?? '' : '',
       isAntica ? normalizeAnticaVariant(awning?.anticaVariant) : '',
@@ -214,7 +214,7 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
 
   doc.rect(bodyX, 67, bodyW, 13).fill(colors.ink);
   doc.fillColor(colors.paper).font(fonts.bold).fontSize(9)
-    .text(value(awning.model), bodyX + 52, 69, { width: bodyW - orderW - 52, align: 'center' });
+    .text(value(awning.model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : awning.model), bodyX + 52, 69, { width: bodyW - orderW - 52, align: 'center' });
   doc.fontSize(8).text(value(awning.device), orderX, 69, { width: orderW, align: 'center' });
   doc.fillColor(colors.yellow).font(fonts.bold).fontSize(6.5)
     .text(`TOLDO ${awningLetter(index)}`, bodyX + 7, 69.5, { width: 50 });
@@ -265,7 +265,7 @@ function drawDespieceTable(doc, x, y, w, rows) {
 function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   drawMiniTable(doc, x, y, w, 'DATOS DE PARTIDA', [
     ['FRENTE', formatNumber(awning.width)],
-    [awning.model === 'SELENA' ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(awning.projection)],
+    [awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(awning.projection)],
     ['UNIDADES', formatNumber(awning.units)]
   ]);
 
@@ -279,12 +279,14 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
     ['DISPOSIT.', awning.device],
     [String(awning.device || '').toUpperCase() === 'MOTOR' ? 'POS. MOTOR' : 'COLOC. MAQ.', awning.machineSide],
     ['COLOC. TOLD.', awning.placement],
+    ...(awning.model === 'ELECTRA' ? [['VARIANTE', awning.submodel]] : []),
+    ...(awning.model === 'ELECTRA' ? [['SOPORTE', awning.electraSupport]] : []),
     ...(calc?.dropArmMode === 'VERTICAL_170' ? [['TRABAJO', 'BAJADA VERTICAL 170°']] : [])
-  ], 11);
+  ], awning.model === 'ELECTRA' ? 9.5 : 11);
 
   drawMiniTable(doc, x, y + 197, w, 'DIMENSIONES TELA', [
     ['TELA', calc ? formatNumber(calc.fabricWidth) : '-'],
-    [awning.model === 'SELENA' ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
+    [awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
     ['PAÑO', calc ? `${formatNumber(calc.fabricMl)} ML` : '-']
   ]);
 }
@@ -1006,7 +1008,8 @@ export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
   const hasWindow = diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
   const finish = diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
   const valance = buildValanceDiagramSpec(awning);
-  const titleParts = [String(awning.model || '').trim().toUpperCase() === 'SELENA' ? 'SELENA' : 'CORTINA'];
+  const model = String(awning.model || '').trim().toUpperCase();
+  const titleParts = [model === 'SELENA' ? 'SELENA' : model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : 'CORTINA'];
   if (hasWindow) titleParts.push('VENTANA');
   if (finish !== 'NORMAL') titleParts.push(finish);
   return {
@@ -1545,7 +1548,7 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
     }
   }
 
-  if (model.includes('CORTINA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
+  if ((model.includes('CORTINA') || model === 'ELECTRA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
     const velcroHeight = resolveCurtainVelcroHeight(awning);
     if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);
   }
@@ -1717,6 +1720,7 @@ function fabricWorkLabel(model) {
   if (model.startsWith('HERA')) return 'HERA';
   if (model === 'CAMBIO CORTINA') return 'CAMB. CORT';
   if (model === 'CORTINA') return 'CORTINA';
+  if (model === 'ELECTRA') return 'ELECTRA';
   if (model === 'SELENA') return 'SELENA';
   if (model === 'CAMBIO TELA') return 'CAMB. TELA';
   if (model === 'ENROLLABLE') return 'ENROLLABLE';

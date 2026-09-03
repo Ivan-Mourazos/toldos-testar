@@ -215,6 +215,13 @@ y el informe JSON quedan en `output/playwright/rps-e2e/`.
 pnpm validate:rps:all
 ```
 
+La validación específica de Electra / Elit Vertical se puede ejecutar con
+`pnpm validate:electra`. Contrasta pedidos y libros reales en solo lectura,
+incluidos los descuentos por soporte, las medidas de corte y las referencias
+esenciales del despiece. Las caídas de tela históricas variables se reproducen
+mediante la excepción técnica y quedan visibles en el informe en lugar de
+asumirse como una constante.
+
 Por defecto recorre los libros de pedidos de 2025 y 2026, consulta RPSNext en
 solo lectura y ejecuta los validadores de los 17 modelos implementados. Cada
 estructura se reconstruye con las reglas de la web y se contrasta con las

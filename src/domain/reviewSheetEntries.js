@@ -10,7 +10,8 @@ import { normalizeDropArmMode, supportsVerticalDropArm } from './dropArmMode.js'
 
 const legacyModelNames = {
   'AMBAR BOX': 'Microbox 300', 'AGATA BOX': 'Modul 400 / Modulbox', 'CUARZO BOX': 'Storbox 250',
-  'PERLA BOX': 'Storbox S-300', 'CORAL BOX': 'Storbox 400', MAXISCREEM: 'Diana vertical'
+  'PERLA BOX': 'Storbox S-300', 'CORAL BOX': 'Storbox 400', MAXISCREEM: 'Diana vertical',
+  ELECTRA: 'Elit Vertical'
 };
 
 const preferredLabels = {
@@ -55,7 +56,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.dimensions.includes('projection')) {
       const projectionLabel = cambioAnticaRound
         ? finishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
-        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : awning.model === 'SELENA' ? 'Caída' : 'Salida';
+        : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'Caída' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
     }
     if (supportsVerticalDropArm(awning.model)) {
@@ -64,7 +65,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (!fabricOnly && ofBlock?.calculation) {
       addField(cardFields, 'Frente tela', measure(ofBlock.calculation.fabricWidth), true);
-      addField(cardFields, awning.model === 'SELENA' ? 'Caída tela' : 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
+      addField(cardFields, awning.model === 'SELENA' || awning.model === 'ELECTRA' ? 'Caída tela' : 'Salida tela', measure(ofBlock.calculation.fabricDrop), true);
       if (normalizeDropArmMode(ofBlock.calculation.dropArmMode) === 'VERTICAL_170') {
         addField(cardFields, 'Margen vertical', measure(ofBlock.calculation.dropArmVerticalAllowanceCm), true);
       }
@@ -104,7 +105,8 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.requiresRotFabric && !standaloneValance) addField(cardFields, 'Rotulación tela', yesNo(awning.rotFabric), true);
     if (hasValance) addField(cardFields, 'Rotulación bamba', yesNo(awning.rotValance), true);
 
-    if (String(awning.model || '').includes('CORTINA')) {
+    if (awning.model === 'ELECTRA') addField(cardFields, 'Soporte', awning.electraSupport, true);
+    if (String(awning.model || '').includes('CORTINA') || awning.model === 'ELECTRA') {
       if (awning.model === 'CORTINA') addField(cardFields, 'Soporte', awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS', true);
       const windowValue = awning.curtainHasWindow === null || awning.curtainHasWindow === undefined
         ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA';
@@ -121,6 +123,7 @@ export function buildReviewSheetEntries(order, calculation) {
 
     if (order.sameFabric === false) addField(cardFields, 'Tela', fabricLabel(awning.fabric), true);
     if (fields.device) addField(cardFields, 'Dispositivo', awning.device, true);
+    if (awning.model === 'ELECTRA' && awning.device === 'MOTOR') addField(cardFields, 'Motor Electra', awning.motorPower, true);
     if (fields.sensor) addField(cardFields, 'Sensor', awning.sensor, true);
     if (fields.motorLocation) addField(cardFields, 'Posición motor', awning.machineSide, true);
     if (fields.machineLocation) addField(cardFields, 'Lado máquina', awning.machineSide, true);

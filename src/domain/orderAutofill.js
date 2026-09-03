@@ -1,8 +1,11 @@
 import { serializeFabricSelection } from './fabricCatalog.js';
 import { getFieldVisibility, getModelBehavior } from './modelBehavior.js';
+import { normalizeElectraMotor } from './electraParameters.js';
 
 const fabricOnlyModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE']);
 const boxDeviceModels = new Set(['AMBAR BOX', 'AGATA BOX', 'MAXISCREEM', 'MONOBLOCK 350', 'PUNTO RECTO', 'ANTICA', 'CUARZO BOX', 'PERLA BOX', 'CORAL BOX']);
+const electraArticleCodes = new Set(['ELECTR', 'ELECTRCCCG', 'ELECTRCCSG', 'ELECTRSCCG', 'ELECTRSCSG', 'ELITV']);
+const blockedElectraArticleCodes = new Set(['ELECTRA', 'ELECTRAZIP', 'ELECTRS/COS/GU']);
 
 export function buildOrderAutofill({ header = {}, lines = [], materials = [] } = {}) {
   const recovered = [];
@@ -132,6 +135,8 @@ export function inferOrderModel(line = {}) {
   if (code === 'PERLABOX' || text.includes('PERLA BOX') || text.includes('STORBOX S-300') || text.includes('STORBOX S300')) return 'PERLA BOX';
   if (code === 'CORALBOX' || text.includes('CORAL BOX') || text.includes('STORBOX 400')) return 'CORAL BOX';
   if (code === 'CUARZOBOX' || text.includes('CUARZO BOX') || text.includes('STORBOX 250')) return 'CUARZO BOX';
+  if (blockedElectraArticleCodes.has(code)) return '';
+  if (electraArticleCodes.has(code) || (!code && (text.includes('MODELO ELECTRA') || text.includes('ELIT VERTICAL')))) return 'ELECTRA';
   if (['DIANAC/CO', 'DIANAS/CO'].includes(code) || text.includes('DIANA VERTICAL') || text.includes('MAXISCREEN') || text.includes('MAXISCREEM')) return 'MAXISCREEM';
   if (code === 'MONOB' || text.includes('MONOBLOC') || text.includes('MONOBLOCK')) return 'MONOBLOCK 350';
   if (code === 'PUNREC' || text.includes('PUNTO RECTO')) return 'PUNTO RECTO';
@@ -153,22 +158,28 @@ export function extractOrderTextData(value, model = '') {
     : matchNumber(text, /BAMBALINA\s+DE\s+(\d{1,3}(?:[.,]\d+)?)\s*CM/);
   const structureColor = inferStructureColor(text);
   const hasWindow = /\bCON\s+(?:UNA\s+)?VENTANA(?:S)?\b/.test(text) || /VENTANA(?:S)?\s+(?:EN|DE)\s+PVC/.test(text);
+  const withoutWindow = /\bSIN\s+VENTANA(?:S)?\b/.test(text);
+  const curtainLike = model.includes('CORTINA') || model === 'ELECTRA';
+  const withoutValance = /\bSIN\s+BAMBALINA\b/.test(text);
   return {
     ...dimensions,
     valanceHeight: valanceHeight ?? null,
-    hasValance: valanceHeight !== null ? valanceHeight > 0 : null,
+    hasValance: valanceHeight !== null ? valanceHeight > 0 : withoutValance ? false : null,
     valanceCurve: inferValanceCurve(text),
     structureColor,
     rotFabric: /ROTULACI[OÓ]N/.test(text) ? 'SI' : '',
     rotValance: /ROTULACI[OÓ]N\s+EN\s+(?:LA\s+)?BAMBALINA/.test(text) ? 'SI' : '',
     device: inferDevice(text, model),
+    motorPower: model === 'ELECTRA' ? normalizeElectraMotor(text) : '',
     placement: /ENTRE\s+PAREDES/.test(text) ? 'ENTRE PAREDES' : /COLOCACI[OÓ]N\s+(?:A\s+)?TECHO|INSTALACI[OÓ]N\s+(?:A\s+)?TECHO/.test(text) ? 'TECHO' : '',
     armCount: matchNumber(text, /(?:CON|DE)\s+([234])\s+BRAZOS?\b/),
     tubeLoad: /EVO\s*80/.test(text) ? 'TUBO DE CARGA EVO 80' : /UNIVERS\s*280/.test(text) ? 'TUBO DE CARGA UNIVERS 280' : '',
-    curtainHasWindow: model.includes('CORTINA') ? (hasWindow ? true : null) : null,
-    curtainFinish: model.includes('CORTINA')
-      ? /TERMINACI[OÓ]N\s+(?:CON\s+)?VELCRO/.test(text) ? 'VELCRO' : /TERMINACI[OÓ]N\s+(?:CON\s+)?TUBO/.test(text) ? 'TUBO' : ''
-      : '',
+    curtainHasWindow: curtainLike ? (hasWindow ? true : withoutWindow ? false : null) : null,
+    curtainFinish: curtainLike ? inferCurtainFinish(text) : '',
+    curtainWindowExit: curtainLike ? matchNumber(text, /SALIDA(?:\s+DE\s+LA)?\s+VENTANA\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
+    curtainWindowCorner: curtainLike ? matchNumber(text, /(?:ESQ(?:UINA)?\.?)\s+(?:DE\s+LA\s+)?VENTANA\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
+    curtainWindowFloorHeight: curtainLike ? matchNumber(text, /(?:H(?:\.|ALTURA)?\s*)?SUELO\s*-\s*VENT(?:ANA)?\.?\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
+    curtainWindowHeight: curtainLike ? matchNumber(text, /H(?:\.|ALTURA)?\s*(?:DE\s+)?VENTANA\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
     submodel: inferSubmodel(text, model)
   };
 }
@@ -177,6 +188,10 @@ function buildAwningSuggestion(line, model, index) {
   const detailText = [line.comment, line.manufacturingNotes].filter(Boolean).join('\n');
   const extracted = extractOrderTextData(detailText, model);
   const fabricOnly = fabricOnlyModels.has(model);
+  const submodel = model === 'ELECTRA' ? inferElectraVariant(line.articleCode, detailText) : extracted.submodel;
+  const electraSupport = model === 'ELECTRA'
+    ? normalizeElectraSuggestionSupport(inferElectraSupport(detailText), submodel)
+    : '';
   return {
     id: `rps-${clean(line.lineId) || 'line'}-${index + 1}`,
     workType: fabricOnly ? 'FABRIC_ONLY' : 'FULL_AWNING',
@@ -195,12 +210,18 @@ function buildAwningSuggestion(line, model, index) {
     rotValance: model === 'BAMBALINA' ? extracted.rotValance || extracted.rotFabric : extracted.rotValance,
     armCount: extracted.armCount,
     device: extracted.device || (model === 'SELENA' ? 'MAQ. INTERIOR' : ''),
+    motorPower: extracted.motorPower,
     placement: extracted.placement,
     tubeLoad: extracted.tubeLoad,
-    submodel: extracted.submodel,
+    submodel,
     curtainHasWindow: extracted.curtainHasWindow,
     curtainFinish: extracted.curtainFinish,
     curtainSupport: model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '',
+    electraSupport,
+    curtainWindowExit: extracted.curtainWindowExit,
+    curtainWindowCorner: extracted.curtainWindowCorner,
+    curtainWindowFloorHeight: extracted.curtainWindowFloorHeight,
+    curtainWindowHeight: extracted.curtainWindowHeight,
     fabric: '',
     valanceFabric: '',
     structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : '',
@@ -237,6 +258,7 @@ function describeRecoveredAwning(awning, index) {
     [awning.projection, usesDropDimension(awning.model) ? 'caída' : 'salida'],
     [awning.height, 'alto'], [awning.valanceHeight, 'bambalina'], [awning.valanceCurve, 'curva'],
     [awning.structureColor, 'lacado'], [awning.device, 'accionamiento'], [awning.armCount, 'brazos'],
+    [awning.electraSupport, 'soporte'], [awning.submodel, 'variante'],
     [awning.rotFabric, 'rotulación'], [awning.curtainHasWindow === true, 'ventana'], [awning.fabric, 'tela']
   ];
   return [`${prefix} (${inferOrderModelDescription(awning.model)})`, ...fields.filter(([value]) => hasValue(value)).map(([, label]) => `${prefix}: ${label}`)];
@@ -258,19 +280,22 @@ function describePendingAwning(awning, index) {
   if (visibility.device && !awning.device) pending.push('accionamiento');
   if (visibility.tubeLoad && !awning.tubeLoad) pending.push('tubo de carga');
   if (visibility.submodel && !awning.submodel) pending.push('variante');
+  if (awning.model === 'ELECTRA' && !awning.electraSupport) pending.push('tipo de soporte');
+  if (awning.model === 'ELECTRA' && awning.device === 'MOTOR' && awning.motorPower !== 'METEOR 20/17') pending.push('motor Electra');
   if (visibility.arms && !positiveNumber(awning.armCount)) pending.push('nº de brazos');
   if (visibility.sensor && !awning.sensor) pending.push('sensor');
   if ((visibility.motorLocation || visibility.machineLocation) && !awning.machineSide) pending.push(visibility.motorLocation ? 'posición motor' : 'lado máquina');
   if (visibility.crankHeight && !positiveNumber(awning.crankHeight)) pending.push('altura manivela');
   if (visibility.placement && !awning.placement) pending.push('colocación');
-  if (awning.model.includes('CORTINA') && awning.curtainHasWindow === null) pending.push('ventana sí/no');
-  if (awning.model.includes('CORTINA') && awning.curtainHasWindow === true) {
+  const curtainLike = awning.model.includes('CORTINA') || awning.model === 'ELECTRA';
+  if (curtainLike && awning.curtainHasWindow === null) pending.push('ventana sí/no');
+  if (curtainLike && awning.curtainHasWindow === true) {
     if (!positiveNumber(awning.curtainWindowExit)) pending.push('salida ventana');
     if (!positiveNumber(awning.curtainWindowCorner)) pending.push('esquina ventana');
     if (!positiveNumber(awning.curtainWindowFloorHeight)) pending.push('suelo-ventana');
     if (!positiveNumber(awning.curtainWindowHeight)) pending.push('alto ventana');
   }
-  if (awning.model === 'CAMBIO CORTINA' && !awning.curtainFinish) pending.push('confección inferior');
+  if (curtainLike && !awning.curtainFinish) pending.push('confección inferior');
   if (awning.model === 'HERA') pending.push('lado respecto a ventana');
   if (!awning.fabric) pending.push('tela');
   return pending.map((field) => `${letter(index)} · ${awning.model}: ${field}`);
@@ -289,13 +314,54 @@ function isAuxiliaryLine(line) {
 
 function inferDevice(text, model) {
   if (/\bMOTOR(?:IZADO|IZADA)?\b/.test(text) || /ACCIONAMIENTO\s+(?:POR\s+)?MOTOR/.test(text)) return 'MOTOR';
+  if (/MAQ(?:UINA)?\.?\s+EXTERIOR|MAQUINA\s+FUERA/.test(text)) return 'MAQ. EXTERIOR';
+  if (/MAQ(?:UINA)?\.?\s+INTERIOR|MAQUINA\s+DENTRO/.test(text)) return 'MAQ. INTERIOR';
   if (!/ACCIONAMIENTO\s+MANUAL|ACCIONAD[OA]\s+MANUAL|\bMANUALMENTE\b/.test(text)) return '';
   if (model === 'SELENA') return 'MAQ. INTERIOR';
+  if (model === 'ELECTRA') return '';
   return boxDeviceModels.has(model) ? 'MAQUINA' : '';
 }
 
 function usesDropDimension(model) {
-  return String(model || '').includes('CORTINA') || model === 'SELENA';
+  return String(model || '').includes('CORTINA') || model === 'SELENA' || model === 'ELECTRA';
+}
+
+function inferElectraVariant(articleCode, textValue) {
+  const code = normalize(articleCode).replace(/\s+/g, '');
+  const text = normalize(textValue);
+  if (code === 'ELECTRCCCG') return 'CON COFRE / CON GUÍA';
+  if (code === 'ELECTRCCSG') return 'CON COFRE / SIN GUÍA';
+  if (code === 'ELECTRSCCG') return 'SIN COFRE / CON GUÍA';
+  if (code === 'ELECTRSCSG') return 'SIN COFRE / SIN GUÍA';
+  const withCofre = /\bCON\s+COFRE\b/.test(text);
+  const withoutCofre = /\bSIN\s+COFRE\b/.test(text);
+  const withGuide = /\bCON\s+GUIA\b/.test(text);
+  const withoutGuide = /\bSIN\s+GUIA\b/.test(text);
+  if (!(withCofre || withoutCofre) || !(withGuide || withoutGuide)) return '';
+  return `${withCofre ? 'CON' : 'SIN'} COFRE / ${withGuide ? 'CON' : 'SIN'} GUÍA`;
+}
+
+function inferElectraSupport(value) {
+  const text = normalize(value);
+  if (/SOPORTE\s+MAXISCREEM\s+BOX|MAXISCREEM\s+BOX/.test(text)) return 'SOPORTE MAXISCREEM BOX';
+  if (/SOPORTES?\s+ALMAGRO|SOPORTE\s+ALMAGRO/.test(text)) return 'SOPORTES ALMAGRO';
+  if (/UNIVERSAL(?:\s+DE)?\s+3\s+AGUJEROS|SOPORTE\s+UNIVERSAL/.test(text)) return 'UNIVERSAL 3 AGUJEROS';
+  if (/SOPORTE\s+ELIT(?:\s+VERTICAL)?/.test(text)) return 'SOPORTE ELIT VERTICAL';
+  return '';
+}
+
+function normalizeElectraSuggestionSupport(support, variant) {
+  const withCofre = String(variant || '').startsWith('CON COFRE');
+  if (withCofre) return support === 'SOPORTE MAXISCREEM BOX' ? support : '';
+  return support === 'SOPORTE MAXISCREEM BOX' ? '' : support;
+}
+
+function inferCurtainFinish(text) {
+  const prefix = '(?:TERMINACION|CONFECCION)(?:\\s+INFERIOR)?\\s+(?:CON\\s+)?';
+  if (new RegExp(`${prefix}VELCRO`).test(text)) return 'VELCRO';
+  if (new RegExp(`${prefix}TUBO`).test(text)) return 'TUBO';
+  if (new RegExp(`${prefix}NORMAL`).test(text)) return 'NORMAL';
+  return '';
 }
 
 function inferSubmodel(text, model) {

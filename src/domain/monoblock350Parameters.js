@@ -1,8 +1,15 @@
+import {
+  monoblock350EstablishedProjections,
+  monoblock350ManualRules,
+  monoblock350ManualSpec
+} from './monoblock350Constants.js';
+
 export const monoblock350Devices = ['MAQUINA', 'MOTOR'];
+export { monoblock350EstablishedProjections };
 
-export const monoblock350EstablishedProjections = [150, 175, 200, 225, 250, 275, 300, 325, 350];
-
-const rows = [
+// Valores que guardaban las versiones anteriores. Solo se conservan para
+// reconocer una configuración antigua y migrarla a la revisión 2 del manual.
+const legacyRows = [
   [150, [215, 307, 404], [600, 900, 1200], ['40/17', '55/17', '85/17']],
   [175, [237, 345, 454], [600, 900, 1200], ['40/17', '55/17', '85/17']],
   [200, [262, 382, 504], [600, 900, 1200], ['40/17', '55/17', '85/17']],
@@ -13,6 +20,17 @@ const rows = [
   [325, [387, 570, 754], [550, 750, 1100], ['50/12', '85/17', '100/12']],
   [350, [412, 607, 804], [550, 750, 1100], ['50/12', '85/17', '100/12']]
 ];
+
+const legacyRules = legacyRows.map(([projection, minimums, maximums, motors]) => ({
+  projection,
+  values: Object.fromEntries([2, 3, 4].map((arms, index) => [arms, {
+    minimum: minimums[index],
+    maximum: maximums[index],
+    motorPower: motors[index]
+  }]))
+}));
+
+const manualCuts = monoblock350ManualSpec.cuttingDiscountsCm;
 
 export const defaultMonoblock350Parameters = {
   fabricDropAllowanceCm: 40,
@@ -26,24 +44,15 @@ export const defaultMonoblock350Parameters = {
   curronStartWidthCm: 650,
   curronSecondWidthCm: 850,
   discounts: {
-    MAQUINA: { fabric: 14.2, roll: 13.2, loadBar: 12.2, squareBar: 1 },
-    MOTOR: { fabric: 13, roll: 12, loadBar: 11.5, squareBar: 1 }
+    MAQUINA: { ...manualCuts.internalGearbox },
+    MOTOR: { ...manualCuts.somfy60Tube80 }
   },
-  dimensionalRules: rows.map(([projection, minimums, maximums, motors]) => ({
-    projection,
-    values: Object.fromEntries([2, 3, 4].map((arms, index) => [arms, {
-      minimum: minimums[index],
-      maximum: maximums[index],
-      motorPower: motors[index]
-    }]))
-  }))
+  dimensionalRules: cloneManualRules()
 };
 
 export function normalizeMonoblock350Parameters(input = {}) {
   const defaults = defaultMonoblock350Parameters;
   return {
-    ...defaults,
-    ...input,
     fabricDropAllowanceCm: nonNegative(input.fabricDropAllowanceCm, defaults.fabricDropAllowanceCm),
     valanceExtraCm: nonNegative(input.valanceExtraCm, defaults.valanceExtraCm),
     seamAllowanceCm: nonNegative(input.seamAllowanceCm, defaults.seamAllowanceCm),
@@ -97,15 +106,47 @@ function normalizeDiscounts(input, defaults) {
 function normalizeRules(input, defaults) {
   return defaults.map((defaultRow) => {
     const row = Array.isArray(input) ? input.find((item) => Number(item?.projection) === defaultRow.projection) : null;
+    const legacyRow = legacyRules.find((item) => item.projection === defaultRow.projection);
     return {
       projection: defaultRow.projection,
       values: Object.fromEntries([2, 3, 4].map((arms) => [arms, {
-        minimum: positive(row?.values?.[arms]?.minimum, defaultRow.values[arms].minimum),
-        maximum: positive(row?.values?.[arms]?.maximum, defaultRow.values[arms].maximum),
-        motorPower: normalizeMotor(row?.values?.[arms]?.motorPower, defaultRow.values[arms].motorPower)
+        minimum: migrateLegacyNumber(
+          row?.values?.[arms]?.minimum,
+          legacyRow.values[arms].minimum,
+          defaultRow.values[arms].minimum
+        ),
+        maximum: migrateLegacyNumber(
+          row?.values?.[arms]?.maximum,
+          legacyRow.values[arms].maximum,
+          defaultRow.values[arms].maximum
+        ),
+        motorTorqueNm: positive(row?.values?.[arms]?.motorTorqueNm, defaultRow.values[arms].motorTorqueNm),
+        motorPower: migrateLegacyMotor(
+          row?.values?.[arms]?.motorPower,
+          legacyRow.values[arms].motorPower,
+          defaultRow.values[arms].motorPower
+        )
       }]))
     };
   });
+}
+
+function cloneManualRules() {
+  return monoblock350ManualRules.map((row) => ({
+    projection: row.projection,
+    values: Object.fromEntries([2, 3, 4].map((arms) => [arms, { ...row.values[arms] }]))
+  }));
+}
+
+function migrateLegacyNumber(value, legacyValue, manualValue) {
+  const parsed = Number(value);
+  if (Number.isFinite(parsed) && parsed === Number(legacyValue) && parsed !== Number(manualValue)) return manualValue;
+  return positive(value, manualValue);
+}
+
+function migrateLegacyMotor(value, legacyValue, manualValue) {
+  const clean = normalizeMotor(value, manualValue);
+  return clean === legacyValue && clean !== manualValue ? manualValue : clean;
 }
 
 function normalizeMotor(value, fallback) {

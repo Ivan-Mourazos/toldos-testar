@@ -80,6 +80,14 @@ describe('datos del planteamiento de telas', () => {
       .toMatchObject({ hasValance: true, separateValance: true, valanceHeight: 25 });
   });
 
+  test('el dibujo de Electra conserva nombre completo, ventana y confección', () => {
+    expect(buildCurtainDiagramSpec('CORTINA-VENTANA-VELCRO', { model: 'ELECTRA' })).toMatchObject({
+      title: 'ELECTRA / ELIT VERTICAL · VENTANA · VELCRO',
+      hasWindow: true,
+      finish: 'VELCRO'
+    });
+  });
+
   test.each([
     ['RECTA', 'RECTA'],
     ['NORMAL', 'NORMAL'],

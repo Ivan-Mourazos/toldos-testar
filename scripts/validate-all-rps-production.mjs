@@ -24,6 +24,7 @@ const validators = [
   validator('AMBAR BOX', 'validate-ambar-box-production.mjs', 'ambarStructures'),
   validator('AGATA BOX', 'validate-agata-box-production.mjs', 'agataStructures'),
   validator('MAXISCREEM', 'validate-maxiscreem-production.mjs', 'maxiscreemStructures'),
+  validator('ELECTRA', 'validate-electra-production.mjs', 'electraStructures'),
   validator('MONOBLOCK 350', 'validate-monoblock-350-production.mjs', 'monoblockStructures'),
   validator('PUNTO RECTO', 'validate-punto-recto-production.mjs', 'puntoRectoStructures'),
   validator('CUARZO BOX', 'validate-cuarzo-box-production.mjs', 'cuarzoStructures'),

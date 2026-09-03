@@ -54,6 +54,7 @@ export type Awning = {
   curtainHasWindow: boolean | null;
   curtainFinish: '' | 'NORMAL' | 'VELCRO' | 'TUBO';
   curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM';
+  electraSupport: '' | ElectraSupport;
   curtainWindowExit: number | null;
   curtainWindowCorner: number | null;
   curtainWindowFloorHeight: number | null;
@@ -89,6 +90,12 @@ export type Awning = {
   maxisLoadBarDiscountCm: number | null;
   maxisBoxProfileDiscountCm: number | null;
   maxisFabricDropAllowanceCm: number | null;
+  electraFabricWidthDiscountCm: number | null;
+  electraRollDiscountCm: number | null;
+  electraLoadBarDiscountCm: number | null;
+  electraBoxProfileDiscountCm: number | null;
+  electraGuideDiscountCm: number | null;
+  electraFabricDropAllowanceCm: number | null;
   ambarFabricWidthDiscountCm: number | null;
   ambarRollDiscountCm: number | null;
   ambarProfileDiscountCm: number | null;
@@ -257,6 +264,31 @@ export type MaxiscreemParameters = {
   }>>;
 };
 
+export type ElectraMatrixSupport = 'SOPORTE ELIT VERTICAL' | 'SOPORTES ALMAGRO' | 'UNIVERSAL 3 AGUJEROS';
+export type ElectraSupport = ElectraMatrixSupport | 'SOPORTE MAXISCREEM BOX';
+export type ElectraParameters = {
+  standardMaxWidth: number;
+  standardMaxDrop: number;
+  fabricDropAllowanceCm: Record<CortinaDevice, number>;
+  seamAllowanceCm: number;
+  seamBaseCm: number;
+  rollStockLengths: number[];
+  profileStockLengths: number[];
+  guideStockLengths: number[];
+  supportDiscounts: Record<ElectraMatrixSupport, Record<CortinaDevice, {
+    fabric: number;
+    roll: number;
+    loadBar: number;
+    guide: number;
+  }>>;
+  cofreDiscounts: Record<CortinaDevice, {
+    fabric: number;
+    roll: number;
+    loadBar: number;
+    boxProfile: number;
+  }>;
+};
+
 export type AmbarPlacementGroup = 'FRONTAL_TECHO' | 'ENTRE_PAREDES';
 
 export type AmbarBoxParameters = {
@@ -330,6 +362,7 @@ export type RuleParameters = {
   puntoRecto: PuntoRectoParameters;
   monoblock350: Monoblock350Parameters;
   maxiscreem: MaxiscreemParameters;
+  electra: ElectraParameters;
   ambarBox: AmbarBoxParameters;
   agataBox: AgataBoxParameters;
   fabricJobs: FabricJobParameters;
@@ -440,6 +473,14 @@ export type Calculation = {
       maxisLoadBarDiscountCm?: number;
       maxisBoxProfileDiscountCm?: number;
       maxisFabricDropAllowanceCm?: number;
+      electraSupport?: string;
+      electraFabricWidthDiscountCm?: number;
+      electraRollDiscountCm?: number;
+      electraLoadBarDiscountCm?: number;
+      electraBoxProfileDiscountCm?: number;
+      electraGuideDiscountCm?: number;
+      electraFabricDropAllowanceCm?: number;
+      guideStockLength?: number | null;
       height?: number;
       chainLength?: number | null;
       heraVariant?: string;

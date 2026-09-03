@@ -1,0 +1,344 @@
+import { readdir } from 'node:fs/promises';
+import path from 'node:path';
+import sql from 'mssql';
+import XLSX from 'xlsx';
+import { config } from '../src/config.js';
+import { calculateElectra } from '../src/domain/electraRules.js';
+import { withRpsDateWindow } from './lib/rps-validation-window.mjs';
+
+const cliYear = process.argv.slice(2).map(Number).find((value) => Number.isInteger(value) && value >= 2000 && value <= 2100);
+const excelRoot = process.env.TOLDOS_EXCEL_ROOT || (cliYear ? `Y:\\${cliYear}\\TOLDOS` : String.raw`Y:\2026\TOLDOS`);
+const orderLines = await loadElectraOrderLines();
+const targetByOf = new Map(orderLines.filter((row) => row.of).map((row) => [row.of, row]));
+const targetOrders = new Set(orderLines.map((row) => row.orderCode));
+const files = (await readdir(excelRoot))
+  .filter((name) => /\.xlsm$/i.test(name))
+  .filter((name) => targetOrders.has(compact(name).slice(0, 9)));
+const cases = files.flatMap(readWorkbook);
+const dimensionalMismatches = [];
+const reservationMismatches = [];
+const exactReplayMismatches = [];
+const historicalDropAllowances = [];
+let dimensionalChecks = 0;
+let reservationChecks = 0;
+let exactReplayChecks = 0;
+
+for (const item of cases) {
+  const result = calculateElectra({ order: item.order, awning: item.awning });
+  const calculation = result.calculation;
+  const historicalDropAllowance = item.expectedDimensions.fabricDrop > 0
+    ? item.expectedDimensions.fabricDrop - item.awning.projection
+    : null;
+  const replay = historicalDropAllowance === null
+    ? result
+    : calculateElectra({
+        order: item.order,
+        awning: {
+          ...item.awning,
+          reglasModificadas: true,
+          electraFabricWidthDiscountCm: historicalDiscount(item.awning.width, item.expectedDimensions.fabricWidth),
+          electraRollDiscountCm: historicalDiscount(item.awning.width, item.expectedDimensions.rollTubeLength),
+          electraLoadBarDiscountCm: historicalDiscount(item.awning.width, item.expectedDimensions.loadBarLength),
+          electraBoxProfileDiscountCm: historicalDiscount(item.awning.width, item.expectedDimensions.boxProfileLength),
+          electraFabricDropAllowanceCm: historicalDropAllowance
+        }
+      });
+  if (historicalDropAllowance !== null) {
+    historicalDropAllowances.push({
+      orderCode: item.orderCode,
+      of: item.awning.of,
+      support: item.awning.electraSupport,
+      device: item.awning.device,
+      allowance: historicalDropAllowance
+    });
+  }
+  for (const [field, expected] of Object.entries(item.expectedDimensions)) {
+    if (!(expected > 0)) continue;
+    dimensionalChecks += 1;
+    if (!nearlyEqual(calculation[field], expected)) {
+      dimensionalMismatches.push({
+        file: item.file,
+        sheet: item.sheet,
+        orderCode: item.orderCode,
+        of: item.awning.of,
+        variant: item.awning.submodel,
+        support: item.awning.electraSupport,
+        device: item.awning.device,
+        inputWidth: item.awning.width,
+        inputProjection: item.awning.projection,
+        field,
+        expected,
+        actual: calculation[field] ?? null
+      });
+    }
+    exactReplayChecks += 1;
+    if (!nearlyEqual(replay.calculation[field], expected)) {
+      exactReplayMismatches.push({
+        file: item.file,
+        sheet: item.sheet,
+        orderCode: item.orderCode,
+        of: item.awning.of,
+        field,
+        expected,
+        actual: replay.calculation[field] ?? null
+      });
+    }
+  }
+
+  const generatedCodes = new Set(result.materials.map((line) => cleanCode(line.code)));
+  for (const code of item.expectedCoreCodes) {
+    reservationChecks += 1;
+    if (!generatedCodes.has(code)) {
+      reservationMismatches.push({
+        file: item.file,
+        sheet: item.sheet,
+        orderCode: item.orderCode,
+        of: item.awning.of,
+        variant: item.awning.submodel,
+        support: item.awning.electraSupport,
+        device: item.awning.device,
+        expectedCode: code,
+        generatedCodes: [...generatedCodes].sort()
+      });
+    }
+  }
+}
+
+const report = {
+  rpsOrders: new Set(orderLines.map((row) => row.orderCode)).size,
+  rpsOrderLines: orderLines.length,
+  matchedExcelFiles: files.length,
+  electraStructures: cases.length,
+  variants: Object.fromEntries(countBy(cases, (item) => item.awning.submodel)),
+  supports: Object.fromEntries(countBy(cases, (item) => item.awning.electraSupport)),
+  devices: Object.fromEntries(countBy(cases, (item) => item.awning.device)),
+  dimensionalChecks,
+  dimensionalMismatchCount: dimensionalMismatches.length,
+  dimensionalMismatches,
+  exactReplayChecks,
+  exactReplayMismatchCount: exactReplayMismatches.length,
+  exactReplayMismatches,
+  historicalDropAllowances,
+  reservationChecks,
+  reservationMismatchCount: reservationMismatches.length,
+  reservationMismatches
+};
+const output = process.argv.includes('--summary')
+  ? {
+      rpsOrders: report.rpsOrders,
+      rpsOrderLines: report.rpsOrderLines,
+      matchedExcelFiles: report.matchedExcelFiles,
+      electraStructures: report.electraStructures,
+      dimensionalChecks: report.dimensionalChecks,
+      dimensionalMismatchCount: report.dimensionalMismatchCount,
+      exactReplayChecks: report.exactReplayChecks,
+      exactReplayMismatchCount: report.exactReplayMismatchCount,
+      reservationChecks: report.reservationChecks,
+      reservationMismatchCount: report.reservationMismatchCount
+    }
+  : report;
+console.log(JSON.stringify(output, null, 2));
+
+function readWorkbook(filename) {
+  const workbook = XLSX.readFile(path.join(excelRoot, filename), {
+    cellFormula: false,
+    cellStyles: false,
+    cellHTML: false
+  });
+  const data = workbook.Sheets['DATOS '];
+  const dataColumns = ['C', 'G', 'K', 'O'];
+  const labelColumns = ['B', 'F', 'J', 'N'];
+
+  return ['ESTR.01', 'ESTR.02', 'ESTR.03', 'ESTR.04'].flatMap((sheet, index) => {
+    const structure = workbook.Sheets[sheet];
+    if (!structure) return [];
+    const of = normalizeOf(cell(structure, 'E2') || cell(structure, 'O3'));
+    const target = targetByOf.get(of);
+    if (!target) return [];
+    const model = clean(cell(structure, 'D6'));
+    if (target.variant.startsWith('CON COFRE') && !model.includes('MAXISCREEM')) return [];
+    if (target.variant.startsWith('SIN COFRE') && model !== 'CORTINA') return [];
+
+    const pieces = readPieces(structure);
+    const support = inferSupport(pieces);
+    const device = normalizeDevice(cell(structure, 'L6') || cell(structure, 'Q21'));
+    if (!support || !device) return [];
+    const dataValue = (label) => valueByLabel(data, labelColumns[index], dataColumns[index], label);
+    const width = number(cell(structure, 'Q11'));
+    const projection = number(dataValue('SALIDA')) || inferredProjection(structure, device);
+    if (!(width > 0) || !(projection > 0)) return [];
+    const crankHeight = inferCrankHeight(pieces) || number(dataValue('ALTURA MANIVELA')) || 150;
+    const structureColor = clean(cell(structure, 'Q20')) || 'BLANCO';
+    const units = positiveNumber(cell(structure, 'Q13'));
+    const technicalException = width > 500 || projection > 300;
+    const awning = {
+      id: `${filename}-${sheet}`,
+      of,
+      model: 'ELECTRA',
+      units,
+      width,
+      projection,
+      submodel: target.variant,
+      electraSupport: support,
+      device,
+      motorPower: device === 'MOTOR' ? 'METEOR 20/17' : '',
+      machineSide: 'DERECHA',
+      crankHeight: device === 'MOTOR' ? null : crankHeight,
+      placement: 'FRONTAL',
+      structureColor,
+      curtainHasWindow: false,
+      curtainFinish: 'NORMAL',
+      valanceHeight: null,
+      rotFabric: 'NO',
+      rotValance: 'NO',
+      wallType: '',
+      fabric: 'ACRILI2143P120|||120|||TELA VALIDACION ELECTRA',
+      reglasModificadas: technicalException
+    };
+    return [{
+      file: filename,
+      sheet,
+      orderCode: target.orderCode,
+      order: { orderCode: target.orderCode, sameFabric: false, structureColor, parameters: {} },
+      awning,
+      expectedDimensions: {
+        fabricWidth: number(cell(structure, 'Q26')),
+        fabricDrop: number(cell(structure, 'Q27')),
+        rollTubeLength: pieceMeasure(pieces, /^TURA80HG/),
+        loadBarLength: pieceMeasure(pieces, /^(PECARMAX|PUNI280)/),
+        boxProfileLength: target.variant.startsWith('CON COFRE') ? pieceMeasure(pieces, /^PERPRLON/) : 0
+      },
+      expectedCoreCodes: pieces
+        .map((piece) => piece.code)
+        .filter(isCoreElectraCode)
+    }];
+  });
+}
+
+function readPieces(sheet) {
+  return [...Array(27)].flatMap((_, offset) => {
+    const row = offset + 9;
+    const code = cleanCode(cell(sheet, `I${row}`));
+    const quantity = number(cell(sheet, `J${row}`));
+    const measure = number(cell(sheet, `K${row}`));
+    return code && quantity > 0 && code !== 'REFERENCIA' && code !== '42'
+      ? [{ code, quantity, measure }]
+      : [];
+  });
+}
+
+async function loadElectraOrderLines() {
+  const pool = await connect();
+  try {
+    const request = withRpsDateWindow(
+      pool.request().input('company', sql.VarChar(10), config.db.company),
+      sql,
+      cliYear ? { defaultFrom: `${cliYear}-01-01`, defaultTo: `${cliYear + 1}-01-01` } : undefined
+    );
+    const result = await request.query(`
+      SELECT o.CodOrder AS orderCode, a.CodArticle AS articleCode,
+        mo.CodManufacturingOrder AS [of]
+      FROM dbo.FACOrderSL o
+      JOIN dbo.FACOrderLineSL l
+        ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
+      JOIN dbo.STKArticle a
+        ON a.IDArticle = l.IDArticle AND a.CodCompany = l.CodCompany
+      LEFT JOIN dbo.CPRManufacturingOrder mo
+        ON mo.IDManufacturingOrder = l.IDManufacturingOrder AND mo.CodCompany = l.CodCompany
+      WHERE o.CodCompany = @company
+        AND o.OrderDate >= @dateFrom AND o.OrderDate < @dateTo
+        AND UPPER(a.CodArticle) IN ('ELECTRCCSG', 'ELECTRSCCG')
+      ORDER BY o.CodOrder, l.IDOrderLine;
+    `);
+    return result.recordset.map((row) => ({
+      orderCode: compact(row.orderCode).slice(0, 9),
+      of: normalizeOf(row.of),
+      variant: variantFromArticle(row.articleCode)
+    }));
+  } finally {
+    await pool.close();
+  }
+}
+
+function connect() {
+  return new sql.ConnectionPool({
+    server: config.db.server,
+    port: config.db.port,
+    user: config.db.user,
+    password: config.db.password,
+    database: config.db.database,
+    options: { encrypt: false, trustServerCertificate: true },
+    connectionTimeout: 8_000,
+    requestTimeout: 30_000
+  }).connect();
+}
+
+function variantFromArticle(value) {
+  return clean(value) === 'ELECTRCCSG' ? 'CON COFRE / SIN GUÍA' : 'SIN COFRE / CON GUÍA';
+}
+
+function inferSupport(pieces) {
+  const codes = pieces.map((piece) => piece.code);
+  if (codes.some((code) => code.startsWith('SOPMAXSCRBOX'))) return 'SOPORTE MAXISCREEM BOX';
+  if (codes.some((code) => code.startsWith('SOPUNI3AGU'))) return 'UNIVERSAL 3 AGUJEROS';
+  if (codes.some((code) => code.startsWith('SOPALMAGR'))) return 'SOPORTES ALMAGRO';
+  if (codes.some((code) => /^ELITSO(ST|VER)/.test(code))) return 'SOPORTE ELIT VERTICAL';
+  return '';
+}
+
+function normalizeDevice(value) {
+  const normalized = clean(value);
+  if (normalized === 'MOTOR') return 'MOTOR';
+  if (normalized.includes('EXTERIOR')) return 'MAQ. EXTERIOR';
+  if (normalized.includes('MAQ')) return 'MAQ. INTERIOR';
+  return '';
+}
+
+function inferredProjection(sheet, device) {
+  const fabricDrop = number(cell(sheet, 'Q27'));
+  const allowance = device === 'MOTOR' ? 40 : 45;
+  return Math.max(1, fabricDrop - allowance);
+}
+
+function inferCrankHeight(pieces) {
+  for (const piece of pieces) {
+    const match = /^MANIVE.*?(\d{2,3})C$/.exec(piece.code);
+    if (match) return Number(match[1]);
+  }
+  return 0;
+}
+
+function pieceMeasure(pieces, pattern) {
+  return pieces.find((piece) => pattern.test(piece.code))?.measure || 0;
+}
+
+function historicalDiscount(width, expected) {
+  return expected > 0 ? number(width) - number(expected) : null;
+}
+
+function isCoreElectraCode(code) {
+  return /^(SOPMAXSCRBOX|SOPUNI3AGU|SOPALMAGR|ELITSO(?:ST|VER)|TURA80HG|CASPUNCE|CASMAQEJE|PECARMAX|PUNI280|PERPRLON|TAPOPLUN280|MOSQBOACIN60MM|MAQMB|MANIVE|RUEDAMOT78|CORONALT6078|SOPORTEUNVHIPRO)/.test(code);
+}
+
+function valueByLabel(sheet, labelColumn, valueColumn, label) {
+  const wanted = compact(label);
+  for (let row = 18; row <= 36; row += 1) {
+    if (compact(cell(sheet, `${labelColumn}${row}`)) === wanted) return cell(sheet, `${valueColumn}${row}`);
+  }
+  return '';
+}
+
+function countBy(items, keyOf) {
+  const result = new Map();
+  for (const item of items) result.set(keyOf(item), (result.get(keyOf(item)) || 0) + 1);
+  return [...result.entries()].sort(([left], [right]) => String(left).localeCompare(String(right)));
+}
+
+function cell(sheet, address) { return sheet?.[address]?.v ?? ''; }
+function clean(value) { return String(value ?? '').trim().toUpperCase(); }
+function cleanCode(value) { return clean(value); }
+function compact(value) { return clean(value).replace(/[^A-Z0-9]/g, ''); }
+function normalizeOf(value) { const digits = String(value ?? '').replace(/\D/g, ''); return digits ? digits.padStart(7, '0') : ''; }
+function number(value) { const parsed = Number(value); return Number.isFinite(parsed) ? parsed : 0; }
+function positiveNumber(value) { return Math.max(1, number(value) || 1); }
+function nearlyEqual(left, right) { return Math.abs(number(left) - number(right)) < 0.011; }
