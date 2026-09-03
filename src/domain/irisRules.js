@@ -117,21 +117,23 @@ export function calculateIris({ order, awning }) {
   // se ha emitido arriba y no hace falta apilar uno más que diga lo mismo.
   const hasBasicConfig = opening.valid && Boolean(discounts);
   const cutPieces = [
-    { name: 'fabricWidth', length: fabricWidth },
-    { name: 'rollTubeLength', length: rollTubeLength },
-    { name: 'loadBarLength', length: loadBarLength },
-    { name: 'ballastLength', length: ballastLength },
-    ...(hasBox ? [{ name: 'boxProfileLength', length: boxProfileLength }] : []),
+    // Los nombres son los de la hoja de taller, no los del cálculo: este
+    // diagnóstico lo lee un técnico de oficina, no quien mantiene el código.
+    { name: 'TELÓN', length: fabricWidth },
+    { name: 'TUBO DE ENROLLE', length: rollTubeLength },
+    { name: 'TUBO DE CARGA', length: loadBarLength },
+    { name: 'LASTRE', length: ballastLength },
+    ...(hasBox ? [{ name: 'PERFIL COFRE', length: boxProfileLength }] : []),
     ...(guideDiscount !== undefined && guideDiscount !== null
-      ? [{ name: 'guideLeftLength', length: guideLeftLength }, { name: 'guideRightLength', length: guideRightLength }]
+      ? [{ name: 'PERFIL GUÍA MFI', length: guideLeftLength }, { name: 'PERFIL GUÍA MFD', length: guideRightLength }]
       : []),
     ...(zipDiscount !== undefined && zipDiscount !== null
-      ? [{ name: 'zipLeftLength', length: zipLeftLength }, { name: 'zipRightLength', length: zipRightLength }]
+      ? [{ name: 'PERFIL GUÍA INTERIOR ZIP MFI', length: zipLeftLength }, { name: 'PERFIL GUÍA INTERIOR ZIP MFD', length: zipRightLength }]
       : []),
     ...(hasCompensator
-      ? [{ name: 'compensatorLeftLength', length: compensatorLeftLength }, { name: 'compensatorRightLength', length: compensatorRightLength }]
+      ? [{ name: 'GUÍA DE COMPENSACIÓN MFI', length: compensatorLeftLength }, { name: 'GUÍA DE COMPENSACIÓN MFD', length: compensatorRightLength }]
       : []),
-    ...(windBlock ? [{ name: 'windBlockTerminalLength', length: windBlockTerminalLength }] : [])
+    ...(windBlock ? [{ name: 'TERMINAL COMPENSADOR SWBS', length: windBlockTerminalLength }] : [])
   ];
   const negativePieces = hasBasicConfig ? cutPieces.filter((item) => item.length < 0) : [];
   const glassOutOfCatalog = hasBasicConfig && hasGlass && glassSize === 0;
@@ -160,7 +162,7 @@ export function calculateIris({ order, awning }) {
   if (negativePieces.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS en OF ${awning.of}: las medidas del hueco no dan para los descuentos de fabricación (quedaría en negativo: ${negativePieces.map((item) => item.name).join(', ')}).` });
   }
-  if (glassOutOfCatalog) {
+  if (glassOutOfCatalog && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con ventana en OF ${awning.of}: el frente de tela (${formatNumber(fabricWidth)} cm) supera los 700 cm del catálogo de cristal y no hay medida que sirva. Activa una excepción técnica para continuar sin cristal.` });
   }
   if (hasCompensator && slack > parameters.compensatorWarnCm && !compensatorOverMax) {
