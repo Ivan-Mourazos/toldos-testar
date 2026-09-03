@@ -100,12 +100,12 @@ export type Awning = {
   irisGuideFixing: '' | 'PARED' | 'TECHO';
   irisWindBlock: boolean;
   irisAssumeSquare: boolean;
-  irisFrontTop: number;
-  irisFrontBottom: number;
-  irisExitLeft: number;
-  irisExitRight: number;
-  irisDiagonal1: number;
-  irisDiagonal2: number;
+  irisFrontTop: number | null;
+  irisFrontBottom: number | null;
+  irisExitLeft: number | null;
+  irisExitRight: number | null;
+  irisDiagonal1: number | null;
+  irisDiagonal2: number | null;
   irisFabricDropAllowanceCm: number | null;
   ambarFabricWidthDiscountCm: number | null;
   ambarRollDiscountCm: number | null;
