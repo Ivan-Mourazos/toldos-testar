@@ -96,6 +96,17 @@ export type Awning = {
   electraBoxProfileDiscountCm: number | null;
   electraGuideDiscountCm: number | null;
   electraFabricDropAllowanceCm: number | null;
+  irisGuideType: '' | 'ESTÁNDAR' | 'PEQUEÑA' | 'COMPENSADORA';
+  irisGuideFixing: '' | 'PARED' | 'TECHO';
+  irisWindBlock: boolean;
+  irisAssumeSquare: boolean;
+  irisFrontTop: number;
+  irisFrontBottom: number;
+  irisExitLeft: number;
+  irisExitRight: number;
+  irisDiagonal1: number;
+  irisDiagonal2: number;
+  irisFabricDropAllowanceCm: number | null;
   ambarFabricWidthDiscountCm: number | null;
   ambarRollDiscountCm: number | null;
   ambarProfileDiscountCm: number | null;

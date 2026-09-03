@@ -18,6 +18,7 @@ import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { electraHasCofre, electraHasGuide, getElectraDiscounts } from '../../domain/electraParameters.js';
+import { irisGuideFixings, irisGuideTypes } from '../../domain/irisParameters.js';
 import {
   anticaVariants,
   cambioAnticaVariants,
@@ -407,6 +408,44 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           ) : (
             <NumberField label={projectionLabel} value={awning.projection} min={0} onChange={updateProjection} />
           ))}
+          {fields.iris && (
+            <>
+              <SegmentedField
+                label="Hueco escuadrado"
+                value={awning.irisAssumeSquare ? 'SÍ' : 'NO'}
+                options={['SÍ', 'NO']}
+                onChange={(value) => update({ irisAssumeSquare: value === 'SÍ' })}
+              />
+              <NumberField label="Frente superior" value={awning.irisFrontTop} min={0} onChange={(value) => update({ irisFrontTop: value ?? 0 })} />
+              <NumberField label="Salida izquierda" value={awning.irisExitLeft} min={0} onChange={(value) => update({ irisExitLeft: value ?? 0 })} />
+              {!awning.irisAssumeSquare && (
+                <>
+                  <NumberField label="Frente inferior" value={awning.irisFrontBottom} min={0} onChange={(value) => update({ irisFrontBottom: value ?? 0 })} />
+                  <NumberField label="Salida derecha" value={awning.irisExitRight} min={0} onChange={(value) => update({ irisExitRight: value ?? 0 })} />
+                  <NumberField label="Diagonal 1 (a salida izq.)" value={awning.irisDiagonal1} min={0} onChange={(value) => update({ irisDiagonal1: value ?? 0 })} />
+                  <NumberField label="Diagonal 2 (a salida der.)" value={awning.irisDiagonal2} min={0} onChange={(value) => update({ irisDiagonal2: value ?? 0 })} />
+                </>
+              )}
+              <SelectField
+                label="Tipo de guía"
+                value={awning.irisGuideType}
+                options={irisGuideTypes}
+                onChange={(value) => update({ irisGuideType: value as Awning['irisGuideType'] })}
+              />
+              <SelectField
+                label="Fijación de la guía"
+                value={awning.irisGuideFixing}
+                options={irisGuideFixings}
+                onChange={(value) => update({ irisGuideFixing: value as Awning['irisGuideFixing'] })}
+              />
+              <SegmentedField
+                label="Secur Wind Block"
+                value={awning.irisWindBlock ? 'SÍ' : 'NO'}
+                options={['SÍ', 'NO']}
+                onChange={(value) => update({ irisWindBlock: value === 'SÍ' })}
+              />
+            </>
+          )}
           {isDropArmModel && (
             <div className={`awning-form-section drop-arm-mode${verticalDrop ? ' is-vertical' : ''}`}>
               <span className="awning-form-section-title">Recorrido de los brazos PRT</span>
