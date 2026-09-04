@@ -2,7 +2,7 @@ export const models = [
   { code: 'ARZUA PRO', family: 'BRAZOS INVISIBLES', subtype: 'TUBO DE CARGA', ruleSheet: 'PRO', supportsMultipleArms: false },
   { code: 'CAMBIO CORTINA', family: '', subtype: '', ruleSheet: 'CAM.CORT.', supportsMultipleArms: false },
   { code: 'CAMBIO TELA', family: '', subtype: '', ruleSheet: 'CAM. TELA', supportsMultipleArms: false },
-  { code: 'CORTINA', family: 'BRAZOS INVISIBLES', subtype: '', ruleSheet: 'CORT', supportsMultipleArms: false },
+  { code: 'CORTINA', family: 'VERTICAL', subtype: '', ruleSheet: 'CORT', supportsMultipleArms: false },
   { code: 'ELECTRA', family: 'VERTICAL', subtype: 'SUBMODELO', ruleSheet: 'DESCONTOS TOLDOS ELECTRA SEGÚN SOPORTES', supportsMultipleArms: false },
   { code: 'IRIS', family: 'VERTICAL', subtype: 'SUBMODELO', ruleSheet: 'IRIS.xlsx (PROGRAMAS CALCULO)', supportsMultipleArms: false },
   { code: 'SELENA', family: 'VERTICAL', subtype: 'BRAZOS STOR', ruleSheet: 'CORT / SELENA', supportsMultipleArms: false },

@@ -13,7 +13,7 @@ describe('agrupación de modelos por familia', () => {
       groupModelsByFamily(fullAwningModelNames).map((group) => [group.family, group.models])
     );
     // Dentro de cada familia se respeta el orden en que llegan los modelos.
-    expect(porFamilia.VERTICAL).toEqual(['ELECTRA', 'IRIS', 'SELENA', 'HERA', 'MAXISCREEM']);
+    expect(porFamilia.VERTICAL).toEqual(['CORTINA', 'ELECTRA', 'IRIS', 'SELENA', 'HERA', 'MAXISCREEM']);
     // Monoblock es el "Arzúa monobloc" de la oficina, no un cofre, y Punto
     // recto es un clásico. Las dos cosas estaban mal en el catálogo.
     expect(porFamilia['BRAZOS INVISIBLES']).toContain('MONOBLOCK 350');
