@@ -207,7 +207,7 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
     expect(entry.fields).toEqual(expect.arrayContaining([
       { label: 'Variante', value: 'HERA 43 máquina' },
       { label: 'Frente tela', value: '201' },
-      { label: 'Salida tela', value: '160' },
+      { label: 'Caída tela', value: '160' },
       { label: 'Frente de corte', value: '209' },
       { label: 'Salida de corte', value: '170' },
       { label: 'Altura instalación', value: '240' },
@@ -234,7 +234,7 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
     expect(entry.fields).toEqual(expect.arrayContaining([
       { label: 'Variante', value: 'HERA 56 motor' },
       { label: 'Frente tela', value: '315' },
-      { label: 'Salida tela', value: '165' },
+      { label: 'Caída tela', value: '165' },
       { label: 'Frente de corte', value: '317' },
       { label: 'Salida de corte', value: '175' },
       { label: 'Tubo calculado', value: '315,5' },

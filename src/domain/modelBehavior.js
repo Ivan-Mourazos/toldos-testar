@@ -10,6 +10,7 @@ import { monoblock350EstablishedProjections } from './monoblock350Parameters.js'
 import { ambarBoxEstablishedProjections } from './ambarBoxParameters.js';
 import { agataBoxEstablishedProjections } from './agataBoxParameters.js';
 import { normalizeModelName } from './modelNames.js';
+import { models } from './catalog.js';
 
 const fallbackModel = {
   tipo01: null,
@@ -59,12 +60,21 @@ export function isFabricOnlyModel(modelCode) {
   return getModelWorkType(modelCode) === 'FABRIC_ONLY';
 }
 
-// Los toldos verticales (SELENA, ELECTRA, IRIS) llaman "caída" a la medida
-// que en los demás modelos es la "salida": la tela baja en vertical en vez
-// de proyectarse hacia fuera. Se decide por tipo01, no por una lista de
-// nombres, para que un alta futura de vertical no se quede fuera.
+// Los toldos verticales llaman "caída" a la medida que en los demás es la
+// "salida": la tela baja en vertical en vez de proyectarse hacia fuera.
+//
+// Lo decide la familia del catálogo y no el `tipo01`, aunque `tipo01` sea el
+// que suena a comportamiento. El motivo es que `tipo01` gobierna además qué
+// dispositivos ofrece el formulario y qué campos se muestran: MAXISCREEM es un
+// vertical que por dentro se rellena como un cofre, y HERA no declara tipo01
+// para no pedir colocación ni tipo de pared. Colgar el rótulo de ahí obligaría
+// a cambiarles el comportamiento para corregir una palabra.
+const verticalAwningModels = new Set(
+  models.filter((model) => model.family === 'VERTICAL').map((model) => model.code)
+);
+
 export function isVerticalAwningModel(modelCode) {
-  return getModelBehavior(modelCode).tipo01 === 'TOLDO VERTICAL';
+  return verticalAwningModels.has(normalizeModelName(modelCode));
 }
 
 export function needsValanceFinish(awningOrModel, valanceHeight) {
