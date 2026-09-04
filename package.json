@@ -30,7 +30,8 @@
     "validate:maxiscreem": "node scripts/validate-maxiscreem-production.mjs",
     "validate:electra": "node scripts/validate-electra-production.mjs",
     "validate:monoblock": "node scripts/validate-monoblock-350-production.mjs",
-    "validate:iris": "node scripts/validate-iris-production.mjs"
+    "validate:iris": "node scripts/validate-iris-production.mjs",
+    "validate:reserva": "node scripts/validate-reservation-gap.mjs"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "5.2.8",
