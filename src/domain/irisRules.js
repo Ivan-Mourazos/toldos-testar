@@ -1,4 +1,5 @@
 import { formatNumber } from './math.js';
+import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { squareIrisOpening } from './irisGeometry.js';
@@ -135,7 +136,7 @@ export function calculateIris({ order, awning }) {
       : []),
     ...(windBlock ? [{ name: 'TERMINAL COMPENSADOR SWBS', length: windBlockTerminalLength }] : [])
   ];
-  const negativePieces = hasBasicConfig ? cutPieces.filter((item) => item.length < 0) : [];
+  const negativePieces = hasBasicConfig ? findNegativeCuts(cutPieces) : [];
   const glassOutOfCatalog = hasBasicConfig && hasGlass && glassSize === 0;
 
   if (fabricSelection && !fabric) {
@@ -160,7 +161,7 @@ export function calculateIris({ order, awning }) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con compensadora: hay que absorber ${formatNumber(round1(slack))} cm por guía y el máximo tolerado son ${formatNumber(parameters.compensatorMaxCm)} cm. Revisa las medidas del hueco.` });
   }
   if (negativePieces.length) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS en OF ${awning.of}: las medidas del hueco no dan para los descuentos de fabricación (quedaría en negativo: ${negativePieces.map((item) => item.name).join(', ')}).` });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: negativeCutMessage('IRIS', awning.of, negativePieces) });
   }
   if (glassOutOfCatalog && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con ventana en OF ${awning.of}: el frente de tela (${formatNumber(fabricWidth)} cm) supera los 700 cm del catálogo de cristal y no hay medida que sirva. Activa una excepción técnica para continuar sin cristal.` });

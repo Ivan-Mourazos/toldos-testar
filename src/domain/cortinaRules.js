@@ -1,4 +1,5 @@
 import { formatNumber } from './math.js';
+import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
@@ -62,11 +63,23 @@ export function calculateCortina({ order, awning }) {
   const overWidth = Number(awning.width) > parameters.standardMaxWidth;
   const overDrop = Number(awning.projection) > parameters.standardMaxDrop;
   const modified = Boolean(awning.reglasModificadas);
+  const negativeCuts = missingFields.length === 0
+    ? findNegativeCuts([
+      { name: 'TELÓN', length: fabricWidth },
+      { name: 'TUBO DE ENROLLE', length: rollTubeLength },
+      { name: 'PERFIL DE CARGA', length: structureLength }
+    ])
+    : [];
   const valid = missingFields.length === 0
     && Boolean(fabric)
     && separateValance.valid
     && Boolean(stockLength)
+    && negativeCuts.length === 0
     && (!(overWidth || overDrop) || modified);
+
+  if (negativeCuts.length) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: negativeCutMessage('CORTINA', awning.of, negativeCuts) });
+  }
 
   if (fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });

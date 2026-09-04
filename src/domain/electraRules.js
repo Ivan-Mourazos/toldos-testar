@@ -1,4 +1,5 @@
 import { formatNumber } from './math.js';
+import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
@@ -129,7 +130,17 @@ export function calculateElectra({ order, awning }) {
   });
   const overWidth = Number(awning.width) > parameters.standardMaxWidth;
   const overDrop = Number(awning.projection) > parameters.standardMaxDrop;
+  const negativeCuts = missingFields.length === 0
+    ? findNegativeCuts([
+      { name: 'TELÓN', length: fabricWidth },
+      { name: 'TUBO DE ENROLLE', length: rollTubeLength },
+      { name: 'PERFIL DE CARGA', length: loadBarLength },
+      ...(hasCofre ? [{ name: 'PERFIL DE COFRE', length: boxProfileLength }] : []),
+      ...(hasGuide ? [{ name: 'PERFIL DE GUÍA', length: guideLength }] : [])
+    ])
+    : [];
   const valid = missingFields.length === 0
+    && negativeCuts.length === 0
     && Boolean(fabric)
     && supportIsCompatible
     && (variantIsValidated || modified)
@@ -139,6 +150,9 @@ export function calculateElectra({ order, awning }) {
     && (!hasGuide || Boolean(guideStockLength))
     && (!(overWidth || overDrop) || modified);
 
+  if (negativeCuts.length) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: negativeCutMessage('ELECTRA', awning.of, negativeCuts) });
+  }
   if (fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   }

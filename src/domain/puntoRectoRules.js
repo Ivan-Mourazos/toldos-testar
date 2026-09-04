@@ -1,4 +1,5 @@
 import { formatNumber } from './math.js';
+import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { machineCode, resolveLacado } from './lacados.js';
@@ -78,12 +79,24 @@ export function calculatePuntoRecto({ order, awning }) {
   });
   const invalidArms = ![1, 2, 3, 4].includes(armCount) || (armCount < requiredArmCount && !modified);
   const overMaximum = Number(awning.width) > parameters.standardMaxWidth;
+  const negativeCuts = missingFields.length === 0
+    ? findNegativeCuts([
+      { name: 'TELÓN', length: fabricWidth },
+      { name: 'TUBO DE ENROLLE', length: rollTubeLength },
+      { name: 'BARRA DE CARGA', length: loadBarLength }
+    ])
+    : [];
   const valid = missingFields.length === 0
     && Boolean(fabric)
     && separateValance.valid
     && !invalidArms
     && Boolean(stockLength)
+    && negativeCuts.length === 0
     && (!overMaximum || modified);
+
+  if (negativeCuts.length) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: negativeCutMessage('PUNTO RECTO', awning.of, negativeCuts) });
+  }
 
   if (fabricSelection && !fabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
