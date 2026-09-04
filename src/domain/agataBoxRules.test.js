@@ -43,7 +43,7 @@ describe('Ágata Box', () => {
       diffuserLength: 560.8, liraLength: 562.5, motorPower: ''
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
-      'TURA80HG600C', 'MAQMB9L13BLANBL16', 'MANIVEBL16200C'
+      'TURA80HG600C', 'MAQMB9L13BLAN', 'MANIVEBL16200C'
     ]));
   });
 

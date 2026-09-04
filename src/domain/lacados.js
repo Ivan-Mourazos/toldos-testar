@@ -52,6 +52,9 @@ export function crankSuffix(lacado) {
   return lacado.crank === 'BLANCA' ? 'BL16' : 'NE11';
 }
 
+// La referencia ya lleva el color en la base: añadirle además el sufijo de
+// lacado componía MAQMB9L13BLANBL16, que no existe en RPS. Las reservas reales
+// usan MAQMB9L13BLAN y MAQMB9L13NEGR.
 export function machineCode(lacado) {
-  return lacado.crank === 'BLANCA' ? 'MAQMB9L13BLANBL16' : 'MAQMB9L13NEGRNE11';
+  return lacado.crank === 'BLANCA' ? 'MAQMB9L13BLAN' : 'MAQMB9L13NEGR';
 }

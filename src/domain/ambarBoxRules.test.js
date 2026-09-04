@@ -29,7 +29,7 @@ describe('Ámbar Box', () => {
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
       'SOPMICROBF/TNE11', 'TURA70HG600C', 'CASPUNCE', 'PMICRB30NE11500C',
-      'TAPMICB300NE11', 'BPRT07NE11120C', 'MAQMB9L13NEGRNE11', 'ACRILI2143P120'
+      'TAPMICB300NE11', 'BPRT07NE11120C', 'MAQMB9L13NEGR', 'ACRILI2143P120'
     ]));
   });
 

@@ -35,7 +35,7 @@ describe('PUNTO RECTO contra hoja y reservas reales', () => {
       { code: 'PUNI270BL16600C', quantity: 1 },
       { code: 'BPRT07BL16100C', quantity: 2 },
       { code: 'CASMAQEJE6370MM', quantity: 1 },
-      { code: 'MAQMB9L13BLANBL16', quantity: 1 },
+      { code: 'MAQMB9L13BLAN', quantity: 1 },
       { code: 'ACRILI1533P120', quantity: 6.792641 }
     ]);
     expect(ofBlock.despiece.rows).toContainEqual(expect.objectContaining({ num: 10, name: 'MANIVELA LUXE BLANCA 150', reference: null }));

@@ -46,7 +46,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
       { code: 'PEVO702RBL16600C', quantity: 1 },
       { code: 'BART25BL16250C', quantity: 1 },
       { code: 'CASMAQEJE6370MM', quantity: 1 },
-      { code: 'MAQMB9L13BLANBL16', quantity: 1 },
+      { code: 'MAQMB9L13BLAN', quantity: 1 },
       { code: 'MANIVEBL16170C', quantity: 1 },
       { code: 'ACRILI2925P120', quantity: 13 }
     ]);

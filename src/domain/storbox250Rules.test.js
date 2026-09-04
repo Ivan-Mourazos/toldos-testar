@@ -46,7 +46,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
       { code: 'PSBOX250BL16450C', quantity: 1 },
       { code: 'BART25BL16125C', quantity: 1 },
       { code: 'MANIVEBL16100C', quantity: 1 },
-      { code: 'MAQMB9L13BLANBL16', quantity: 1 },
+      { code: 'MAQMB9L13BLAN', quantity: 1 },
       { code: 'CASPLAS', quantity: 1 },
       { code: 'ACRILI2817P120', quantity: 5.1 },
       { code: 'ANCLHSTM12145', quantity: 4 }
