@@ -2,7 +2,7 @@ import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
+import { crankSuffix, machineCode, resolveLacado, universProfileSuffix } from './lacados.js';
 import { resolveMotorRemote } from './motorAccessories.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import {
@@ -36,7 +36,7 @@ const activeProfileReferences = Object.freeze({
     'PERPRLONO516500C', 'PERPRLONO516700C', 'PERPRLONPL27500C'
   ]),
   PUNI280: new Set([
-    'PUNI280BL16600C', 'PUNI280MR14600C', 'PUNI280NE11700C'
+    'PUNI280BL10600C', 'PUNI280MR14600C', 'PUNI280NE05700C'
   ])
 });
 
@@ -110,13 +110,15 @@ export function calculateElectra({ order, awning }) {
   const guideLength = hasGuide ? round1(Number(awning.projection) - guideDiscount) : 0;
   const rollStockLength = chooseStock(rollTubeLength, parameters.rollStockLengths);
   const universalLoadProfile = support === 'UNIVERSAL 3 AGUJEROS';
+  // El UNIVERS-280 tiene sus propias referencias en blanco y negro; ver lacados.js.
+  const loadProfileSuffix = universalLoadProfile ? universProfileSuffix(lacado.suffix) : lacado.suffix;
   const profileStockLengths = universalLoadProfile
-    ? universalProfileStockLengths(lacado.suffix)
+    ? universalProfileStockLengths(loadProfileSuffix)
     : parameters.profileStockLengths;
   const profileStockLength = chooseStock(Math.max(loadBarLength, boxProfileLength), profileStockLengths);
   const guideStockLength = hasGuide ? chooseStock(guideLength, parameters.guideStockLengths) : null;
   const loadProfileBase = universalLoadProfile ? 'PUNI280' : 'PECARMAX';
-  const loadProfileReference = resolveProfileReference(loadProfileBase, lacado.suffix, profileStockLength);
+  const loadProfileReference = resolveProfileReference(loadProfileBase, loadProfileSuffix, profileStockLength);
   const boxProfileReference = hasCofre
     ? resolveProfileReference('PERPRLON', lacado.suffix, profileStockLength)
     : null;
@@ -400,7 +402,7 @@ function resolveProfileReference(base, suffix, stockLength) {
 }
 
 function universalProfileStockLengths(suffix) {
-  return suffix === 'NE11' ? [700] : [600];
+  return suffix === 'NE05' ? [700] : [600];
 }
 
 function loadProfileDescription(base) {

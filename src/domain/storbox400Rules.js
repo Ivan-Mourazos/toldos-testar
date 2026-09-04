@@ -180,7 +180,7 @@ function buildMaterials(context) {
       { code: 'CASPLAS', quantity: units, description: 'TACO NAYLON MAQUINA' }
     );
   }
-  materials.push({ code: 'PRPROMA13600C', quantity: units, description: 'PERFIL PROTECTOR LONA' });
+  materials.push({ code: 'PRPRO4600C', quantity: units, description: 'PERFIL PROTECTOR LONA' });
   if (fabric) materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
   appendSeparateValanceMaterial(materials, separateValance);
 
@@ -220,7 +220,7 @@ function buildDespiece(context) {
     push(11, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
     push(12, 'KIT DE TORNILLOS MAQUINA', null, units);
   }
-  push(13, 'PERFIL PROTECTOR LONA', 'PRPROMA13600C', units, protectorLength);
+  push(13, 'PERFIL PROTECTOR LONA', 'PRPRO4600C', units, protectorLength);
 
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry

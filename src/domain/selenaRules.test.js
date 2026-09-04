@@ -64,7 +64,7 @@ describe('SELENA · configuración inicial', () => {
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPUNI3AGUBL16', quantity: 1 }),
       expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }),
-      expect.objectContaining({ code: 'PUNI280BL16600C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280BL10600C', quantity: 1 }),
       expect.objectContaining({ code: 'TAPOPLUN280BL16', quantity: 1 }),
       expect.objectContaining({ code: 'CASMAQEJE5078MM', quantity: 1 }),
       expect.objectContaining({ code: 'CASPLAS', quantity: 1 }),

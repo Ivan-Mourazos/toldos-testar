@@ -35,6 +35,19 @@ export function resolveLacado(name) {
   return partial || table[0];
 }
 
+// El perfil UNIVERS-280 no sigue la tabla general en blanco ni en negro. Sus
+// referencias vivas en RPS son BL10 y NE05; las que da la tabla, BL16 y NE11,
+// están de baja desde 2021 y no se consumen desde entonces. Comprobado contra
+// el maestro de artículos y contra las imputaciones reales de fabricación:
+// PUNI280BL10 suma 110 imputaciones en 2026 y PUNI280BL16, ninguna desde 2021.
+// El resto de colores sí coinciden con la tabla.
+const universSuffixOverrides = Object.freeze({ BL16: 'BL10', NE11: 'NE05' });
+
+export function universProfileSuffix(suffix) {
+  const clean = String(suffix || '');
+  return universSuffixOverrides[clean] || clean;
+}
+
 export function crankSuffix(lacado) {
   return lacado.crank === 'BLANCA' ? 'BL16' : 'NE11';
 }

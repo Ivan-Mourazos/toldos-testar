@@ -103,7 +103,7 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
 
     expect(result.calculation.profileStockLength).toBe(600);
     expect(result.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'PUNI280BL16600C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280BL10600C', quantity: 1 }),
       expect.objectContaining({ code: 'TAPOPLUN280BL16', quantity: 1 }),
       expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 2 })
     ]));

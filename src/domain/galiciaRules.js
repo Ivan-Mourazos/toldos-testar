@@ -1,7 +1,7 @@
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { resolveLacado, crankSuffix, machineCode } from './lacados.js';
+import { resolveLacado, crankSuffix, machineCode, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { galiciaEstablishedProjections } from './galiciaConstants.js';
 import {
@@ -173,7 +173,7 @@ export function calculateGalicia({ order, awning }) {
 const refSupport = (suffix) => `SOPARTGL${suffix}`;
 const refRollTube = (stockLength) => `TURA80HG${stockLength}C`;
 const refEvoTube = (suffix, stockLength) => `PEVO80${suffix}${stockLength}C`;
-const refUniversTube = (suffix, stockLength) => `PUNI280${suffix}${stockLength}C`;
+const refUniversTube = (suffix, stockLength) => `PUNI280${universProfileSuffix(suffix)}${stockLength}C`;
 const refUniversCaps = (suffix) => `TAPOPLUN280${suffix}`;
 const refArm = (suffix, projection) => `BONYX${suffix}${projection}C`;
 const refMachineBush = (device) => device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM';

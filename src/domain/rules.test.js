@@ -601,7 +601,7 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     }));
     expect(asLines(result.ofs[0].materials)).toEqual([
       'ACRILI2170P120 x14.5', 'BONYXNE11225C x1', 'CASMAQEJE6378MM x1', 'CASPLAS x1',
-      'MANIVENE11250C x1', 'PUNI280NE11600C x1', 'SOPAR350NE11 x1',
+      'MANIVENE11250C x1', 'PUNI280NE05600C x1', 'SOPAR350NE11 x1',
       'TAPOPLUN280NE11 x1', 'TURA80HG600C x2'
     ].sort());
   });
@@ -708,7 +708,7 @@ describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
       awnings: [baseAwning({ destination: 'HOSTELERÍA / EMPRESA', tubeLoad: '' })]
     }));
     expect(result.ofs[0].calculation.tubeLoad).toBe('TUBO DE CARGA UNIVERS 280');
-    expect(result.ofs[0].materials.some((line) => line.code === 'PUNI280BL16600C')).toBe(true);
+    expect(result.ofs[0].materials.some((line) => line.code === 'PUNI280BL10600C')).toBe(true);
   });
 
   test('motor 70 se selecciona desde el umbral configurable', () => {
@@ -802,7 +802,7 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLNE11', quantity: 1 },
       { code: 'TURA80HG600C', quantity: 2 },
-      { code: 'PUNI280NE11600C', quantity: 1 },
+      { code: 'PUNI280NE05600C', quantity: 1 },
       { code: 'TAPOPLUN280NE11', quantity: 1 },
       { code: 'BONYXNE11225C', quantity: 3 },
       { code: 'CASMAQEJE6378MM', quantity: 1 },
@@ -850,14 +850,14 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPARTGLBL16', quantity: 1 }),
       expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
-      expect.objectContaining({ code: 'PUNI280BL16600C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280BL10600C', quantity: 1 }),
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2170P120', quantity: 16.8 })
     ]));
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
       { code: 'TURA80HG600C', quantity: 2 },
-      { code: 'PUNI280BL16600C', quantity: 1 },
+      { code: 'PUNI280BL10600C', quantity: 1 },
       { code: 'TAPOPLUN280BL16', quantity: 1 },
       { code: 'BONYXBL16350C', quantity: 2 },
       { code: 'CASMAQEJE6378MM', quantity: 1 },
@@ -891,7 +891,7 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
       { code: 'TURA80HG700C', quantity: 2 },
-      { code: 'PUNI280BL16700C', quantity: 1 },
+      { code: 'PUNI280BL10700C', quantity: 1 },
       { code: 'TAPOPLUN280BL16', quantity: 1 },
       { code: 'BONYXBL16225C', quantity: 3 },
       { code: 'RUEDAMOT78', quantity: 1 },
@@ -990,7 +990,7 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       })]
     }));
     expect(result.ofs[0].calculation.tubeLoad).toBe('TUBO DE CARGA UNIVERS 280');
-    expect(result.ofs[0].materials.some((item) => item.code === 'PUNI280BL16600C')).toBe(true);
+    expect(result.ofs[0].materials.some((item) => item.code === 'PUNI280BL10600C')).toBe(true);
   });
 });
 
@@ -1021,7 +1021,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       { code: 'MAQMB9L13BLAN', quantity: 1 },
       { code: 'MANIVEBL16120C', quantity: 1 },
       { code: 'CASPLAS', quantity: 1 },
-      { code: 'PRPROMA13600C', quantity: 1 },
+      { code: 'PRPRO4600C', quantity: 1 },
       { code: 'ACRILI2038P120', quantity: 7.35 }
     ]);
   });
@@ -1260,7 +1260,7 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPUNI3AGUNE11', quantity: 1 }),
       expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }),
-      expect.objectContaining({ code: 'PUNI280NE11600C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280NE05600C', quantity: 1 }),
       expect.objectContaining({ code: 'TAPOPLUN280NE11', quantity: 1 }),
       expect.objectContaining({ code: 'CASMAQEJE5078MM', quantity: 1 }),
       expect.objectContaining({ code: 'MANIVENE11200C', quantity: 1 }),

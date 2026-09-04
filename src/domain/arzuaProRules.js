@@ -1,7 +1,7 @@
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { resolveLacado, crankSuffix, machineCode } from './lacados.js';
+import { resolveLacado, crankSuffix, machineCode, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
 import {
@@ -184,7 +184,7 @@ export function calculateArzuaPro({ order, awning }) {
 const refSoporte = (supportSystem, colorSuffix) => supportSystem === 'GALICIA' ? `SOPARTGL${colorSuffix}` : `SOPAR350${colorSuffix}`;
 const refTuboEnrolle = (stockLength) => `TURA80HG${stockLength}C`;
 const refTuboCargaEvo = (colorSuffix, stockLength) => `PEVO80${colorSuffix}${stockLength}C`;
-const refTuboCargaUnivers = (colorSuffix, stockLength) => `PUNI280${colorSuffix}${stockLength}C`;
+const refTuboCargaUnivers = (colorSuffix, stockLength) => `PUNI280${universProfileSuffix(colorSuffix)}${stockLength}C`;
 const refTaponesUnivers = (colorSuffix) => `TAPOPLUN280${colorSuffix}`;
 const refBrazosOnyx = (colorSuffix, projection) => `BONYX${colorSuffix}${projection}C`;
 const refCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM');
