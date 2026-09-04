@@ -66,3 +66,42 @@ El comando `npm run validate:arzua` consulta RPSNext en modo lectura y contrasta
 - Tres frentes superiores a 600 cm quedan identificados como excepciones técnicas.
 
 El contraste detectó que `AR2601535-1` usa bamba en otro tejido. La web ahora calcula el paño principal con `salida + 40`, calcula la bamba aparte con `alto + 5` y reserva ambos tejidos. Los libros `AR2601860` y `AR2602181` conservan una caída antigua `salida + 40` sin una tela de bamba distinta identificable; no se usan para cambiar la regla estándar vigente.
+
+## Reserva contrastada con el consumo real (2026-09-04)
+
+El histórico de `_MaterialesPrevistosOF` no sirve para juzgar una reserva: es lo
+que se está corrigiendo. El contraste bueno es `CPRImputationMaterialMO`, lo que
+salió del almacén. Sobre 307 OF de Arzúa con imputación desde 2025:
+
+| Pieza | OF | Qué se hizo |
+| --- | --- | --- |
+| `CASPUNCEJE78MM` | 307 | Se reserva. El despiece decía `CASPUNCE`, que no existe. |
+| `TERMINEVO{lacado}` | ~todas | Se reserva. El despiece la listaba sin referencia. |
+| `MAQMB11L12{color}` | todas las de máquina | Se reserva. Estaba solo en el despiece. |
+| `RUEDAMOT801MEC` | 45 de 50 motores | Sustituye a `RUEDAMOT78`. |
+| `CORONALT60` | 39 de 50 motores | Sustituye a `CORONALT6078`. |
+| `TAPONEVO8{blanco/negro}` | 188 | Se reserva con el tubo EVO 80, que no la llevaba. |
+
+Los tapones de plástico solo existen en blanco y negro, así que siguen la columna
+BLANCA/NEGRA de la tabla de lacados y no el color del perfil. El consumo lo
+confirma: hay más tapones negros que toldos lacados en negro.
+
+### Preguntas pendientes para Oficina Técnica
+
+1. **Varilla de vaina.** Se consumen dos en casi todas las OF, la rígida blanca
+   de 5,5 (294 OF, 12,5 m de media) y la negra de 4,5 (282 OF, 5,8 m). No se
+   reserva ninguna porque no sabemos la fórmula: ¿de qué medida salen y cuántas
+   lleva cada toldo?
+2. **Soportes Galicia en un Arzúa.** `SOPARTGLBL16` aparece en 65 OF, pero
+   `resolveArzuaSupport()` devuelve siempre `ARZUA`, así que la web no puede
+   pedirlos. ¿Cuándo se monta un Arzúa con soportes Galicia?
+3. **Vinilo de rotulación.** `V504AMPRP123` en 81 OF, cantidad variable. ¿Va
+   ligado al campo de rotulación y en qué cantidad?
+4. **Tubo transparente.** `TUBOTRAN32` (142 OF) y `TUBOTRA41` (42) parecen
+   embalaje. ¿Se reservan o van por almacén?
+5. **`CASPLAS`.** Se reserva en toda OF con máquina y no aparece consumido en
+   ninguna. ¿Sigue montándose?
+6. **Bronce y gris 7022.** No existe ninguna pieza del Arzúa en esos dos
+   lacados, ni soporte, ni perfil, ni terminal. ¿Se siguen ofreciendo?
+
+Se comprueba con `pnpm validate:reserva "ARZUA PRO"`.

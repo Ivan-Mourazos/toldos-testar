@@ -55,17 +55,22 @@ const base = {
 
 function loQueReservamos(model) {
   const codes = new Set();
-  for (const device of ['MAQUINA', 'MAQ. INTERIOR', 'MOTOR']) {
+  // Hay que barrer todas las variantes: una pieza reservada solo con el tubo
+  // EVO o solo con la maquina exterior aparecería como "falta" si no se calcula
+  // ese caso, y el informe se llenaría de ruido.
+  for (const device of ['MAQUINA', 'MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR']) {
+    for (const tubeLoad of ['TUBO DE CARGA UNIVERS 280', 'TUBO DE CARGA EVO 80']) {
     for (const lacado of ['BLANCO', 'NEGRO (R-09011)']) {
       let result;
       try {
         result = calculateOrder({
           orderCode: 'GAP', sameFabric: true, fabric: 'ACRILI2170P120|||120|||ACR NEGRO',
           structureColor: lacado,
-          awnings: [{ ...base, model, device, structureColor: lacado, submodel: submodelos[model] || '' }]
+          awnings: [{ ...base, model, device, tubeLoad, structureColor: lacado, submodel: submodelos[model] || '' }]
         });
       } catch { continue; }
       for (const line of result.ofs[0]?.materials || []) codes.add(String(line.code).toUpperCase());
+    }
     }
   }
   return codes;
