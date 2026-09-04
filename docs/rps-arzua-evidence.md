@@ -102,19 +102,21 @@ confirma: hay más tapones negros que toldos lacados en negro.
 - **`CASPLAS`.** Retirado del Arzúa, reserva y despiece. No aparece consumido en
   ninguna de las 307 OF.
 
-### Preguntas pendientes para Oficina Técnica
+### Fuera del planteamiento por decisión de la oficina
 
-1. **Vinilo de rotulación.** `V504AMPRP123` en 81 OF, entre 0,1 y 9 unidades. Va
-   con los toldos rotulados, pero falta la cantidad: ¿depende del tamaño del
-   texto o del frente del toldo?
-2. **Tubo transparente.** `TUBOTRAN32` (142 OF, 6,4 de media) y `TUBOTRA41` (42
-   OF). Parece embalaje. ¿Se reserva en el planteamiento o va por almacén?
-3. **Bronce y gris 7022.** No existe ninguna pieza del Arzúa en esos dos lacados
-   —ni soporte, ni perfil, ni terminal—, aunque los colores siguen vivos en
-   otros modelos: bronce se consumió por última vez en julio de 2025 y el gris
-   7016 mate texturado, el 1 de septiembre de 2026. Hoy la web deja pedir un
-   Arzúa en bronce y compone referencias que no existen. ¿Se retira el color de
-   este modelo o hay que dar de alta las piezas?
+- **Vinilo de rotulación** (`V504AMPRP123`, 81 OF). Va con los toldos rotulados,
+  pero la cantidad no depende del toldo, así que no se reserva.
+- **Tubo transparente** (`TUBOTRAN32`, 142 OF, y `TUBOTRA41`, 42). Embalaje: lo
+  lleva almacén, no el planteamiento.
 
-Se comprueba con `pnpm validate:reserva "ARZUA PRO"`, que a día de hoy deja solo
-el vinilo y el tubo transparente.
+Los dos siguen apareciendo en `pnpm validate:reserva`, que informa de lo que se
+consume sin reservar y no juzga: son consumo real que a propósito queda fuera.
+
+### Pendiente para Oficina Técnica
+
+**Bronce y gris 7022 en el Arzúa.** No existe ninguna pieza del modelo en esos
+dos lacados —ni soporte, ni perfil, ni terminal—, aunque los colores siguen
+vivos en otros modelos: bronce se consumió por última vez en julio de 2025 y el
+gris 7016 mate texturado, el 1 de septiembre de 2026. Hoy la web deja pedir un
+Arzúa en bronce y compone referencias que no existen. ¿Se retira el color de
+este modelo o hay que dar de alta las piezas?
