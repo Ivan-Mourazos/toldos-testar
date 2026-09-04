@@ -3,6 +3,7 @@ import { Layers3, Scissors, X } from 'lucide-react';
 import type { Awning } from '../types';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { getModelBehavior } from '../../domain/modelBehavior.js';
+import { groupModelsByFamily } from '../../domain/catalog.js';
 
 type Props = {
   workType: Awning['workType'];
@@ -36,17 +37,22 @@ export function ModelPickerDialog({ workType, models, onSelect, onClose }: Props
           <button className="icon-button" type="button" onClick={onClose} aria-label="Cerrar selector"><X aria-hidden="true" /></button>
         </header>
 
-        <div className="model-picker-grid">
-          {models.map((model) => {
-            const implemented = getModelBehavior(model).implemented;
-            return (
-              <button key={model} type="button" className="model-picker-option" onClick={() => onSelect(model)}>
-                <strong>{controlLabel(model)}</strong>
-                <span>{legacyModelName(model) ? `Antes ${legacyModelName(model)} · ` : ''}{fabricOnly ? 'Sin estructura' : implemented ? 'Estructura y tela' : 'Pendiente de reglas'}</span>
-              </button>
-            );
-          })}
-        </div>
+        {groupModelsByFamily(models).map(({ family, models: group }) => (
+          <section className="model-picker-family" key={family || 'sin-familia'}>
+            {family && <h3 className="model-picker-family-title">{family}</h3>}
+            <div className="model-picker-grid">
+              {group.map((model: string) => {
+                const implemented = getModelBehavior(model).implemented;
+                return (
+                  <button key={model} type="button" className="model-picker-option" onClick={() => onSelect(model)}>
+                    <strong>{controlLabel(model)}</strong>
+                    <span>{legacyModelName(model) ? `Antes ${legacyModelName(model)} · ` : ''}{fabricOnly ? 'Sin estructura' : implemented ? 'Estructura y tela' : 'Pendiente de reglas'}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </section>
     </div>
   );
