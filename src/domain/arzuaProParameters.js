@@ -57,8 +57,12 @@ export function suggestedTubeForDestination(destination, parameters = defaultArz
   return '';
 }
 
-export function resolveArzuaSupport() {
-  return 'ARZUA';
+// Hay Arzúas que se montan con los soportes del Galicia, por el tipo de pared o
+// por el sitio donde va colocado: 65 de las OF con imputación desde 2025 llevaron
+// SOPARTGL. Lo elige la oficina en el planteamiento, porque no hay ninguna regla
+// escrita que lo deduzca de las medidas.
+export function resolveArzuaSupport(awning) {
+  return String(awning?.supportSystem || '').toUpperCase() === 'GALICIA' ? 'GALICIA' : 'ARZUA';
 }
 
 export function resolveArzuaMotorPower(awning, parameters = defaultArzuaProParameters) {

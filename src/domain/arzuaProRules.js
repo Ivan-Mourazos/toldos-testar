@@ -106,7 +106,7 @@ export function calculateArzuaPro({ order, awning }) {
   const materials = valid
     ? buildMaterials({
       awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount,
-      stockLength, fabricMl, fabric, valanceFabric, valanceFabricMl: valanceUsage?.ml || 0
+      stockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl: valanceUsage?.ml || 0
     })
     : [];
 
@@ -194,13 +194,20 @@ const refCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASMAQEJE
 const descCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78');
 const refManivela = (lacado, crankHeight) => `MANIVE${crankSuffix(lacado)}${crankHeight}C`;
 
-function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, stockLength, fabricMl, fabric, valanceFabric, valanceFabricMl }) {
+function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, stockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl }) {
   const units = Math.max(1, Number(awning.units) || 1);
+  // Las dos varillas de vaina se cortan al largo de la barra de carga, y de la
+  // rígida blanca entra el doble que de la negra: se cumple exacto en 243 de las
+  // 282 OF con imputación desde 2025. Contrastado al centímetro en las OF
+  // 0230194 (barra 327,2 · varilla 3,29 m) y 0230330 (489,6 · 4,90 m).
+  const varillaMl = Math.ceil(Number(length) || 0) / 100;
   const materials = [
     { code: refSoporte(supportSystem, colorSuffix), quantity: units, description: supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND' },
     { code: refTuboEnrolle(stockLength), quantity: 2 * units, description: 'TUBO DE ENROLLE P801' },
     { code: refCasquilloPunta, quantity: units, description: 'CASQUILLO PUNTA CON EJE Ø78' },
-    { code: refTerminales(colorSuffix), quantity: units, description: 'JGO TERMINAL INFERIOR EVO 70-80' }
+    { code: refTerminales(colorSuffix), quantity: units, description: 'JGO TERMINAL INFERIOR EVO 70-80' },
+    { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM' },
+    { code: 'VARILLAVAINARBLA', quantity: round1(2 * varillaMl * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA' }
   ];
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
@@ -222,8 +229,7 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
     materials.push(
       { code: machineCode(lacado), quantity: units, description: `MAQUINA MB-11 L-120 ${lacado.crank}` },
       { code: refCasquilloMaquina(device), quantity: units, description: descCasquilloMaquina(device) },
-      { code: refManivela(lacado, crankHeight), quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
-      { code: 'CASPLAS', quantity: units, description: 'CASQUILLO PLASTICO' }
+      { code: refManivela(lacado, crankHeight), quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` }
     );
   }
 
@@ -279,7 +285,6 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), awningUnits);
     push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, refManivela(lacado, crankHeight), awningUnits, crankHeight);
-    push(11, 'TACO NAYLON MAQUINA', 'CASPLAS', awningUnits);
     push(12, 'KIT DE TORNILLOS MAQUINA', null, awningUnits);
   }
 

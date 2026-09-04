@@ -528,6 +528,9 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               {fields.tubeLoad && (
                 <SegmentedField label="Tubo de carga" value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} />
               )}
+              {fields.supportOptions.length > 0 && (
+                <SegmentedField label="Soporte" value={awning.supportSystem} options={fields.supportOptions} onChange={(supportSystem) => update({ supportSystem })} />
+              )}
               {fields.arzua && showGaliciaPrompt && (
                 <div className="model-switch-prompt" role="alert">
                   <div><strong>3 brazos corresponde a GALICIA</strong><span>Se conservarán la OF y las medidas.</span></div>

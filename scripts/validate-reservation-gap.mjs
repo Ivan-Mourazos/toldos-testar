@@ -17,6 +17,7 @@
 import sql from 'mssql';
 import { config } from '../src/config.js';
 import { calculateOrder } from '../src/domain/rules.js';
+import { getModelBehavior } from '../src/domain/modelBehavior.js';
 
 // Artículo de venta de RPS con el que se identifican las OF de cada modelo.
 const articuloDeVenta = {
@@ -60,16 +61,18 @@ function loQueReservamos(model) {
   // ese caso, y el informe se llenaría de ruido.
   for (const device of ['MAQUINA', 'MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR']) {
     for (const tubeLoad of ['TUBO DE CARGA UNIVERS 280', 'TUBO DE CARGA EVO 80']) {
+    for (const supportSystem of getModelBehavior(model).supportOptions || ['']) {
     for (const lacado of ['BLANCO', 'NEGRO (R-09011)']) {
       let result;
       try {
         result = calculateOrder({
           orderCode: 'GAP', sameFabric: true, fabric: 'ACRILI2170P120|||120|||ACR NEGRO',
           structureColor: lacado,
-          awnings: [{ ...base, model, device, tubeLoad, structureColor: lacado, submodel: submodelos[model] || '' }]
+          awnings: [{ ...base, model, device, tubeLoad, supportSystem, structureColor: lacado, submodel: submodelos[model] || '' }]
         });
       } catch { continue; }
       for (const line of result.ofs[0]?.materials || []) codes.add(String(line.code).toUpperCase());
+    }
     }
     }
   }

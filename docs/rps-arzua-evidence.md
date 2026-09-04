@@ -86,22 +86,35 @@ Los tapones de plástico solo existen en blanco y negro, así que siguen la colu
 BLANCA/NEGRA de la tabla de lacados y no el color del perfil. El consumo lo
 confirma: hay más tapones negros que toldos lacados en negro.
 
+### Resuelto con la oficina (2026-09-04)
+
+- **Varilla de vaina.** Se corta al largo de la barra de carga, y de la rígida
+  blanca entra el doble que de la negra. La proporción sale exacta en 243 de las
+  282 OF, y las cantidades cuadran al centímetro con las OF 0230194 (barra 327,2
+  · 3,29 m) y 0230330 (489,6 · 4,90 m). Se reserva redondeando el largo al
+  centímetro por arriba; si el taller aplica otro margen de corte, es aquí donde
+  se ajusta.
+- **Soportes Galicia.** Se montan en algunos Arzúa por el tipo de pared o por el
+  sitio, sin regla que lo deduzca de las medidas, así que se eligen en el
+  planteamiento. `supportSystem` ya existía en el modelo de datos y estaba
+  normalizado, pero `resolveArzuaSupport()` devolvía siempre `ARZUA` y no había
+  casilla: ninguna de las 65 OF con `SOPARTGL` podía reservarse.
+- **`CASPLAS`.** Retirado del Arzúa, reserva y despiece. No aparece consumido en
+  ninguna de las 307 OF.
+
 ### Preguntas pendientes para Oficina Técnica
 
-1. **Varilla de vaina.** Se consumen dos en casi todas las OF, la rígida blanca
-   de 5,5 (294 OF, 12,5 m de media) y la negra de 4,5 (282 OF, 5,8 m). No se
-   reserva ninguna porque no sabemos la fórmula: ¿de qué medida salen y cuántas
-   lleva cada toldo?
-2. **Soportes Galicia en un Arzúa.** `SOPARTGLBL16` aparece en 65 OF, pero
-   `resolveArzuaSupport()` devuelve siempre `ARZUA`, así que la web no puede
-   pedirlos. ¿Cuándo se monta un Arzúa con soportes Galicia?
-3. **Vinilo de rotulación.** `V504AMPRP123` en 81 OF, cantidad variable. ¿Va
-   ligado al campo de rotulación y en qué cantidad?
-4. **Tubo transparente.** `TUBOTRAN32` (142 OF) y `TUBOTRA41` (42) parecen
-   embalaje. ¿Se reservan o van por almacén?
-5. **`CASPLAS`.** Se reserva en toda OF con máquina y no aparece consumido en
-   ninguna. ¿Sigue montándose?
-6. **Bronce y gris 7022.** No existe ninguna pieza del Arzúa en esos dos
-   lacados, ni soporte, ni perfil, ni terminal. ¿Se siguen ofreciendo?
+1. **Vinilo de rotulación.** `V504AMPRP123` en 81 OF, entre 0,1 y 9 unidades. Va
+   con los toldos rotulados, pero falta la cantidad: ¿depende del tamaño del
+   texto o del frente del toldo?
+2. **Tubo transparente.** `TUBOTRAN32` (142 OF, 6,4 de media) y `TUBOTRA41` (42
+   OF). Parece embalaje. ¿Se reserva en el planteamiento o va por almacén?
+3. **Bronce y gris 7022.** No existe ninguna pieza del Arzúa en esos dos lacados
+   —ni soporte, ni perfil, ni terminal—, aunque los colores siguen vivos en
+   otros modelos: bronce se consumió por última vez en julio de 2025 y el gris
+   7016 mate texturado, el 1 de septiembre de 2026. Hoy la web deja pedir un
+   Arzúa en bronce y compone referencias que no existen. ¿Se retira el color de
+   este modelo o hay que dar de alta las piezas?
 
-Se comprueba con `pnpm validate:reserva "ARZUA PRO"`.
+Se comprueba con `pnpm validate:reserva "ARZUA PRO"`, que a día de hoy deja solo
+el vinilo y el tubo transparente.

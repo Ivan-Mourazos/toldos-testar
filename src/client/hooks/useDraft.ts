@@ -186,6 +186,8 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (base.crankHeight !== null && !formOptions.alturasManivela.includes(base.crankHeight)) base.crankHeight = null;
   const tubeOptions = getModelBehavior(base.model).tubeOptions || [];
   if (tubeOptions.length > 0 && !tubeOptions.includes(base.tubeLoad)) base.tubeLoad = '';
+  const supportOptions = getModelBehavior(base.model).supportOptions || [];
+  if (!supportOptions.includes(base.supportSystem)) base.supportSystem = supportOptions[0] || '';
 
   return base as Awning;
 }

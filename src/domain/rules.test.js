@@ -104,12 +104,10 @@ describe('ARZUA PRO despiece', () => {
       'JUEGO DE TERMINALES',
       'MÁQUINA MB-11 L-120 NEGRA',
       'MANIVELA LUXE NEGRA 200',
-      'TACO NAYLON MAQUINA',
       'KIT DE TORNILLOS MAQUINA'
     ]);
     expect(despiece.rows.find((row) => row.name === 'JUEGO DE TERMINALES').reference).toBe('TERMINEVONE11');
     expect(despiece.rows.find((row) => row.name === 'KIT DE TORNILLOS MAQUINA').reference).toBeNull();
-    expect(despiece.rows.find((row) => row.name === 'TACO NAYLON MAQUINA').reference).toBe('CASPLAS');
     expect(despiece.rows.find((row) => row.name === 'JUEGO DE BRAZOS ONYX')).toMatchObject({ reference: 'BONYXNE11275C', length: 275 });
     expect(despiece.rows.find((row) => row.name === 'TUBO DE ENROLLE P801')).toMatchObject({ reference: 'TURA80HG600C', length: 338.6 });
     expect(despiece.rows.find((row) => row.name === 'MANIVELA LUXE NEGRA 200')).toMatchObject({ reference: 'MANIVENE11200C', length: 200 });
@@ -564,7 +562,8 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
       'ACRILI2018P120 x9', 'BONYXBL16225C x1', 'CASPUNCEJE78MM x1', 'CORONALT60 x1',
       'PEVO80BL16600C x1', 'RUEDAMOT801MEC x1', 'SITUOIO1PURE x1',
       'SOPAR350BL16 x1', 'SOPORTEUNVHIPRO x1', 'SUNILUSIO55//17 x1',
-      'TAPONEVO8BL16 x1', 'TERMINEVOBL16 x1', 'TURA80HG600C x2'
+      'TAPONEVO8BL16 x1', 'TERMINEVOBL16 x1', 'TURA80HG600C x2',
+      'VARILLAVAINANEG5 x3.3', 'VARILLAVAINARBLA x6.6'
     ].sort());
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({ name: 'TUBO DE ENROLLE P801', reference: 'TURA80HG600C', length: 327.2 }),
@@ -602,12 +601,14 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
       })]
     }));
     // Contrastado contra las imputaciones reales de la OF 0230330, que consumió
-    // casquillo punta, terminal y máquina MB-11 negra. CASPLAS no lo consumió.
+    // casquillo punta, terminal, máquina MB-11 negra y las dos varillas de vaina
+    // con estas mismas cantidades. CASPLAS no lo consumió.
     expect(asLines(result.ofs[0].materials)).toEqual([
-      'ACRILI2170P120 x14.5', 'BONYXNE11225C x1', 'CASMAQEJE6378MM x1', 'CASPLAS x1',
+      'ACRILI2170P120 x14.5', 'BONYXNE11225C x1', 'CASMAQEJE6378MM x1',
       'CASPUNCEJE78MM x1', 'MANIVENE11250C x1', 'MAQMB11L12NEGRO x1',
       'PUNI280NE05600C x1', 'SOPAR350NE11 x1', 'TAPOPLUN280NE11 x1',
-      'TERMINEVONE11 x1', 'TURA80HG600C x2'
+      'TERMINEVONE11 x1', 'TURA80HG600C x2',
+      'VARILLAVAINANEG5 x4.9', 'VARILLAVAINARBLA x9.8'
     ].sort());
   });
 

@@ -1,6 +1,6 @@
 {
   "models": {
-    "ARZUA PRO":      { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280"], "multipleBrazos": false, "implemented": true, "workType": "FULL_AWNING", "diagram": "ARZUA", "dimensions": ["width", "projection", "valanceHeight"] },
+    "ARZUA PRO":      { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280"], "supportOptions": ["ARZUA", "GALICIA"], "multipleBrazos": false, "implemented": true, "workType": "FULL_AWNING", "diagram": "ARZUA", "dimensions": ["width", "projection", "valanceHeight"] },
     "GALICIA":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": "TUBO DE CARGA", "tubeOptions": ["TUBO DE CARGA EVO 80", "TUBO DE CARGA UNIVERS 280"], "armOptions": [2, 3], "multipleBrazos": true, "implemented": true, "workType": "FULL_AWNING", "diagram": "GALICIA", "dimensions": ["width", "projection", "valanceHeight"] },
     "XACOBEO":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": null, "multipleBrazos": false, "implemented": true, "workType": "FULL_AWNING", "diagram": "XACOBEO", "dimensions": ["width", "projection", "valanceHeight"] },
     "CORTINA":        { "tipo01": "BRAZOS INVISIBLES", "tipo02": null, "multipleBrazos": false, "implemented": true, "sensors": false, "workType": "FULL_AWNING", "diagram": "CORTINA-VENTANA", "dimensions": ["width", "projection", "valanceHeight"] },

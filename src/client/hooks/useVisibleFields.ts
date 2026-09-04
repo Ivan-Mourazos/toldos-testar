@@ -15,6 +15,7 @@ export function useVisibleFields(awning: Awning) {
       iris: awning.model === 'IRIS',
       selena: awning.model === 'SELENA',
       tubeOptions: behavior.tubeOptions || [],
+      supportOptions: behavior.supportOptions || [],
       submodelOptions: behavior.submodelOptions || [],
       armOptions: behavior.armOptions || formArmOptions,
       establishedProjections: getEstablishedProjections(awning.model),
