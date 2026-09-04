@@ -1,7 +1,7 @@
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { resolveLacado, crankSuffix, machineCode, universProfileSuffix } from './lacados.js';
+import { resolveLacado, crankSuffix, machineCode, plasticCapSuffix, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { galiciaEstablishedProjections } from './galiciaConstants.js';
 import {
@@ -174,13 +174,13 @@ const refSupport = (suffix) => `SOPARTGL${suffix}`;
 const refRollTube = (stockLength) => `TURA80HG${stockLength}C`;
 const refEvoTube = (suffix, stockLength) => `PEVO80${suffix}${stockLength}C`;
 const refUniversTube = (suffix, stockLength) => `PUNI280${universProfileSuffix(suffix)}${stockLength}C`;
-const refUniversCaps = (suffix) => `TAPOPLUN280${suffix}`;
+const refUniversCaps = (lacado) => `TAPOPLUN280${plasticCapSuffix(lacado)}`;
 const refArm = (suffix, projection) => `BONYX${suffix}${projection}C`;
 const refMachineBush = (device) => device === 'MAQ. INTERIOR' ? 'CASMAQEJE5078MM' : 'CASMAQEJE6378MM';
 const descMachineBush = (device) => device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78';
 const refCrank = (lacado, height) => `MANIVE${crankSuffix(lacado)}${height}C`;
 
-function buildMaterials({ awning, colorSuffix, tubeLoad, device, armCount, motorPower, stockLength, fabricMl, fabric, separateValance }) {
+function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, armCount, motorPower, stockLength, fabricMl, fabric, separateValance }) {
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     { code: refSupport(colorSuffix), quantity: units, description: 'JUEGO SOPORTE GALICIA' },
@@ -192,7 +192,7 @@ function buildMaterials({ awning, colorSuffix, tubeLoad, device, armCount, motor
   } else {
     materials.push(
       { code: refUniversTube(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA UNIVERS 280' },
-      { code: refUniversCaps(colorSuffix), quantity: units, description: 'KIT TAPONES UNIVERS 280' }
+      { code: refUniversCaps(lacado), quantity: units, description: 'KIT TAPONES UNIVERS 280' }
     );
   }
   materials.push({ code: refArm(colorSuffix, awning.projection), quantity: armCount * units, description: 'BRAZO ONYX' });
@@ -239,7 +239,7 @@ function buildDespiece({ awning, lacado, colorSuffix, tubeLoad, device, armCount
     push(6, 'KIT TAPONES EVO 80', null, awningUnits);
   } else {
     push(5, 'TUBO DE CARGA UNIVERS 280', refUniversTube(colorSuffix, stockLength), awningUnits, structureLength);
-    push(6, 'KIT TAPONES UNIVERS 280', refUniversCaps(colorSuffix), awningUnits);
+    push(6, 'KIT TAPONES UNIVERS 280', refUniversCaps(lacado), awningUnits);
   }
   push(7, 'BRAZO ONYX', refArm(colorSuffix, awning.projection), armCount * awningUnits, awning.projection);
   push(8, 'JUEGO DE TERMINALES', null, awningUnits);

@@ -52,6 +52,16 @@ export function crankSuffix(lacado) {
   return lacado.crank === 'BLANCA' ? 'BL16' : 'NE11';
 }
 
+// Los tapones de plástico de los perfiles solo se fabrican en blanco y negro, y
+// se eligen por el mismo criterio que la manivela: la columna BLANCA/NEGRA de la
+// tabla de lacados. Componerlos con el sufijo del lacado emitía TAPOPLUN280MA15
+// y otras doce referencias que no existen en el maestro. Las imputaciones reales
+// confirman la regla: se consumen más tapones negros que toldos lacados en
+// negro, porque los lacados oscuros los llevan negros.
+export function plasticCapSuffix(lacado) {
+  return crankSuffix(lacado);
+}
+
 // La MB-9 está descatalogada en RPS y no se consume desde hace años: lo que
 // monta el taller es la MB-11, con 777 imputaciones desde 2025 frente a cero.
 // La referencia ya lleva el color, así que no se le añade el sufijo de lacado.

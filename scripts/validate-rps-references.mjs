@@ -24,7 +24,9 @@ import { fullAwningModelNames } from '../src/domain/modelBehavior.js';
 // con el motivo. Cualquier otra que aparezca es un fallo.
 const aceptadas = new Map([
   ['VARILLAMAXSCR8MM', 'Maxiscreem con guía de varilla: de baja en RPS y sin relevo localizado. Pendiente de que compras diga qué se monta hoy.'],
-  ['CURRONMOPLBLAN', 'Currón Monobloc Plus blanco: de baja en RPS. El negro sigue activo, el blanco no tiene relevo con consumo.']
+  ['CURRONMOPLBLAN', 'Currón Monobloc Plus blanco: de baja en RPS. El negro sigue activo, el blanco no tiene relevo con consumo.'],
+  ['TERMINEVOBR28', 'Arzúa en bronce: el lacado entero está muerto. Tampoco existen SOPAR350BR28 ni PUNI280BR28. Pendiente de que la oficina diga si se sigue ofreciendo el color.'],
+  ['TERMINEVOGR22', 'Arzúa en gris 7022: igual que el bronce, no existe ninguna pieza del modelo en ese lacado.']
 ]);
 
 const palabras = new Set([

@@ -2,7 +2,7 @@ import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { crankSuffix, machineCode, resolveLacado, universProfileSuffix } from './lacados.js';
+import { crankSuffix, machineCode, plasticCapSuffix, resolveLacado, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { normalizeCortinaParameters } from './cortinaParameters.js';
 import {
@@ -129,7 +129,7 @@ function buildMaterials(context) {
     supportMaterial(curtainSupport, suffix, units),
     material(`TURA80HG${stockLength}C`, units, 'TUBO DE ENROLLE P801'),
     material(`PUNI280${universProfileSuffix(suffix)}${stockLength}C`, units, 'TUBO DE CARGA UNIVERS 280'),
-    material(`TAPOPLUN280${suffix}`, units, 'KIT TAPONES UNIVERS 280')
+    material(`TAPOPLUN280${plasticCapSuffix(lacado)}`, units, 'KIT TAPONES UNIVERS 280')
   ];
 
   if (device === 'MOTOR') {
@@ -169,7 +169,7 @@ function buildDespiece(context) {
   push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
   push(4, device === 'MOTOR' ? 'SOPORTE UNIVERSAL HIPRO' : 'CASQUILLO MAQUINA EJE 50MM Ø78', device === 'MOTOR' ? 'SOPORTEUNVHIPRO' : 'CASMAQEJE5078MM', units);
   push(5, 'TUBO DE CARGA UNIVERS 280', `PUNI280${universProfileSuffix(suffix)}${stockLength}C`, units, structureLength);
-  push(6, 'KIT TAPONES UNIVERS 280', `TAPOPLUN280${suffix}`, units);
+  push(6, 'KIT TAPONES UNIVERS 280', `TAPOPLUN280${plasticCapSuffix(lacado)}`, units);
   if (device === 'MOTOR') {
     push(8, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
     push(9, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);

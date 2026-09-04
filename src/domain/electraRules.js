@@ -2,7 +2,7 @@ import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { crankSuffix, machineCode, resolveLacado, universProfileSuffix } from './lacados.js';
+import { crankSuffix, machineCode, plasticCapSuffix, resolveLacado, universProfileSuffix } from './lacados.js';
 import { resolveMotorRemote } from './motorAccessories.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import {
@@ -243,7 +243,7 @@ function buildMaterials(context) {
     line(loadProfileReference.code, units, loadProfileDescription(loadProfileBase))
   ];
   if (support === 'UNIVERSAL 3 AGUJEROS') {
-    materials.push(...universalAccessories(lacado.suffix, units));
+    materials.push(...universalAccessories(lacado, units));
   }
   if (hasCofre) materials.push(line(boxProfileReference.code, units, 'PERFIL COFRE ELECTRA'));
   if (hasGuide) {
@@ -301,7 +301,7 @@ function buildDespiece(context) {
     }
     push(5, loadProfileDescription(loadProfileBase), loadProfileReference.code, units, loadBarLength);
     if (support === 'UNIVERSAL 3 AGUJEROS') {
-      const [caps] = universalAccessories(lacado.suffix, units);
+      const [caps] = universalAccessories(lacado, units);
       push(6, caps.description, caps.code, caps.quantity);
     } else {
       push(6, 'JUEGO DE TAPAS BARRA DE CARGA', null, units);
@@ -411,10 +411,9 @@ function loadProfileDescription(base) {
     : 'PERFIL CARGA MAXISCREEN-ELIT VERTICAL';
 }
 
-function universalAccessories(suffix, units) {
-  const capsSuffix = ['BL16', 'MR14', 'NE11'].includes(suffix) ? suffix : '';
+function universalAccessories(lacado, units) {
   return [
-    line(`TAPOPLUN280${capsSuffix}`, units, 'KIT TAPONES PLÁSTICO UNIVERS 280'),
+    line(`TAPOPLUN280${plasticCapSuffix(lacado)}`, units, 'KIT TAPONES PLÁSTICO UNIVERS 280'),
     line('MOSQBOACIN60MM', 2 * units, 'MOSQUETÓN BOMBERO ACERO INOX 60 MM')
   ];
 }
