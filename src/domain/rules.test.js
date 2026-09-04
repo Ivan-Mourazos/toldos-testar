@@ -102,7 +102,7 @@ describe('ARZUA PRO despiece', () => {
       'KIT TAPONES UNIVERS 280',
       'JUEGO DE BRAZOS ONYX',
       'JUEGO DE TERMINALES',
-      'MAQUINA ZNP 10 L170 NEGRA',
+      'MÁQUINA MB-11 L-120 NEGRA',
       'MANIVELA LUXE NEGRA 200',
       'TACO NAYLON MAQUINA',
       'KIT DE TORNILLOS MAQUINA'
@@ -128,7 +128,7 @@ describe('ARZUA PRO despiece', () => {
       awnings: [baseAwning({ device: 'MOTOR' })]
     }));
     const names = result.ofs[0].despiece.rows.map((row) => row.name);
-    expect(names).not.toContain('MAQUINA ZNP 10 L170 BLANCA');
+    expect(names).not.toContain('MÁQUINA MB-11 L-120 BLANCA');
     expect(names).not.toContain('…');
     expect(names).toContain('MOTOR SOMFY SUNILUS 55/17 IO');
   });
@@ -1018,7 +1018,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       { code: 'TURA80HG600C', quantity: 2 },
       { code: 'BONYXBL16200C', quantity: 1 },
       { code: 'CASTRAEX80', quantity: 1 },
-      { code: 'MAQMB9L13BLAN', quantity: 1 },
+      { code: 'MAQMB11L12BLAN', quantity: 1 },
       { code: 'MANIVEBL16120C', quantity: 1 },
       { code: 'CASPLAS', quantity: 1 },
       { code: 'PRPRO4600C', quantity: 1 },

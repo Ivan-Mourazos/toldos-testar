@@ -122,7 +122,7 @@ function buildMaterials({ awning, device, lacado, fabric, separateValance, stock
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
       { code: device === 'MAQ. INTERIOR' ? 'CASMAQEJE5070MM' : 'CASMAQEJE6370MM', quantity: units, description: device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø70' : 'CASQUILLO EJE 63MM Ø70' },
-      { code: machineCode(lacado), quantity: units, description: `MAQUINA ZNP 10 L170 ${lacado.crank}` },
+      { code: machineCode(lacado), quantity: units, description: `MÁQUINA MB-11 L-120 ${lacado.crank}` },
       { code: `MANIVE${crankSuffix(lacado)}${crankHeight}C`, quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` }
     );
   }
@@ -157,7 +157,7 @@ function buildDespiece({ awning, device, lacado, stockLength, rollTubeLength, lo
     if (sensor) push(22, sensor.description, sensor.code, units);
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-    push(9, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, crankHeight);
     push(11, 'TACO NAYLON MAQUINA', null, units);
     push(12, 'KIT DE TORNILLOS MAQUINA', null, units);

@@ -253,7 +253,7 @@ function buildDespiece({ awning, lacado, colorSuffix, tubeLoad, device, armCount
     push(21, remote.description, remote.code, awningUnits);
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-    push(9, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), awningUnits);
+    push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), awningUnits);
     push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, refCrank(lacado, crankHeight), awningUnits, crankHeight);
     push(11, 'TACO NAYLON MAQUINA', 'CASPLAS', awningUnits);
     push(12, 'KIT DE TORNILLOS MAQUINA', null, awningUnits);

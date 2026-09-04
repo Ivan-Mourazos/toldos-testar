@@ -1,7 +1,7 @@
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { crankSuffix, resolveLacado } from './lacados.js';
+import { crankSuffix, resolveLacado, machineCode } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import {
@@ -141,7 +141,6 @@ const refProfiles = (config, suffix, stockLength) => `${config.profilePrefix}${s
 const refCaps = (config, device, suffix) => `${typeof config.capPrefix === 'string' ? config.capPrefix : config.capPrefix[device]}${suffix}`;
 const refArm = (suffix, projection) => `BONYX${suffix}${projection}C`;
 const refCrank = (lacado, height) => `MANIVE${crankSuffix(lacado)}${height}C`;
-const machineCode = (lacado) => lacado.crank === 'BLANCA' ? 'MAQMB9L13BLAN' : 'MAQMB9L13NEGR';
 
 function buildMaterials(context) {
   const { awning, lacado, device, fabric, separateValance, stockLength, motorPower, fabricMl, config } = context;
@@ -175,7 +174,7 @@ function buildMaterials(context) {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
       { code: 'CASTRAEX80', quantity: units, description: 'CASQUILLO EJE 81MM' },
-      { code: machineCode(lacado), quantity: units, description: `MAQUINA MB-99L130 ${lacado.crank}` },
+      { code: machineCode(lacado), quantity: units, description: `MÁQUINA MB-11 L-120 ${lacado.crank}` },
       { code: refCrank(lacado, crankHeight), quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
       { code: 'CASPLAS', quantity: units, description: 'TACO NAYLON MAQUINA' }
     );
@@ -215,7 +214,7 @@ function buildDespiece(context) {
     if (sensor) push(22, sensor.description, sensor.code, units);
   } else {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
-    push(9, `MAQUINA MB-99L130 ${lacado.crank}`, machineCode(lacado), units);
+    push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(10, `MANIVELA LUXE ${lacado.crank} ${height}`, refCrank(lacado, height), units, height);
     push(11, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
     push(12, 'KIT DE TORNILLOS MAQUINA', null, units);

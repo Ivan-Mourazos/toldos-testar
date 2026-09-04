@@ -169,7 +169,7 @@ function buildMaterials(context) {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
       line(`MANIVE${crankSuffix(lacado)}${height}C`, units, `MANIVELA LUXE ${lacado.crank} ${height}`),
-      line(machineCode(lacado), units, `MAQUINA ZNP 10 L170 ${lacado.crank}`),
+      line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
       line('CASPLAS', units, 'TACO NAYLON MAQUINA'),
       line('CASMAQEJE6378MM', units, 'CASQUILLO EJE 63MM Ø78')
     );
@@ -207,7 +207,7 @@ function buildDespiece(context) {
   } else {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
     push(10, `MANIVELA LUXE ${lacado.crank} ${height}`, `MANIVE${crankSuffix(lacado)}${height}C`, units, height);
-    push(11, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(12, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
     push(13, 'CASQUILLO EJE 63MM Ø78', 'CASMAQEJE6378MM', units);
   }

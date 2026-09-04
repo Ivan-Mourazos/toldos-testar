@@ -268,7 +268,7 @@ function buildMaterials(context) {
       : { code: 'CASMAQEJE5078MM', description: 'CASQUILLO MÁQUINA EJE 50 MM Ø78' };
     materials.push(
       line(machineBushing.code, units, machineBushing.description),
-      line(machineCode(lacado), units, `MÁQUINA ZNP 10 L170 ${lacado.crank}`),
+      line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
       line(`MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`),
       line('CASPLAS', units, 'TACO NYLON MÁQUINA')
     );
@@ -312,7 +312,7 @@ function buildDespiece(context) {
       push(10, motor.description, motor.code, units);
     } else {
       const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-      push(8, `MÁQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+      push(8, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
       push(9, 'TACO NYLON MÁQUINA', 'CASPLAS', units);
       push(10, `MANIVELA LUXE ${crankHeight} ${lacado.crank}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, crankHeight);
     }
@@ -345,7 +345,7 @@ function buildDespiece(context) {
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, crankHeight);
-    push(11, `MÁQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(12, 'TACO NYLON MÁQUINA', 'CASPLAS', units);
     push(13, 'KIT DE TORNILLOS MÁQUINA', null, units);
   }

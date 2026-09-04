@@ -36,8 +36,8 @@ describe('lacados', () => {
   test('las piezas de manivela/máquina van por color de manivela, no por lacado', () => {
     expect(crankSuffix(resolveLacado('GRIS PLATA (R-00027)'))).toBe('NE11');
     expect(crankSuffix(resolveLacado('BLANCO'))).toBe('BL16');
-    expect(machineCode(resolveLacado('BLANCO'))).toBe('MAQMB9L13BLAN');
-    expect(machineCode(resolveLacado('MARRON (R-08014)'))).toBe('MAQMB9L13NEGR');
+    expect(machineCode(resolveLacado('BLANCO'))).toBe('MAQMB11L12BLAN');
+    expect(machineCode(resolveLacado('MARRON (R-08014)'))).toBe('MAQMB11L12NEGRO');
   });
 
   test('lista canónica para el desplegable', () => {

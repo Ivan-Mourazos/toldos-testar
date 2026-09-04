@@ -119,7 +119,10 @@ console.log(JSON.stringify({
   sinAltaEnRps: { total: sinAlta.length, referencias: sinAlta }
 }, null, 2));
 
-if (inesperados.length) {
-  console.error(`\n${inesperados.length} referencias que RPS no puede aceptar. La reserva saldría con códigos muertos.`);
+if (deBaja.length) {
+  console.error(`\n${deBaja.length} referencias dadas de baja en RPS. La reserva saldría con códigos muertos.`);
   process.exitCode = 1;
+}
+if (sinAlta.length) {
+  console.error(`${sinAlta.length} referencias sin alta en el maestro. Algunas serán lacados que nadie ha pedido; otras, piezas que nunca se reservaron y hay que dar de alta.`);
 }

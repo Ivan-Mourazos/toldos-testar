@@ -157,7 +157,7 @@ function buildMaterials(context) {
   } else {
     materials.push(
       line('CASMAQEJE6378MM', units, 'CASQUILLO MAQUINA EJE 63 MM Ø78'),
-      line(machineCode(lacado), units, `MAQUINA ZNP 10 L170 ${lacado.crank}`),
+      line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
       line(`MANIVE${crankSuffix(lacado)}${awning.crankHeight}C`, units, `MANIVELA LUXE ${lacado.crank} ${awning.crankHeight}`),
       line('CASPLAS', units, 'TACO NYLON MAQUINA')
     );
@@ -190,7 +190,7 @@ function buildDespiece(context) {
     push(13, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
   } else {
     push(10, `MANIVELA LUXE ${lacado.crank} ${awning.crankHeight}`, `MANIVE${crankSuffix(lacado)}${awning.crankHeight}C`, units, awning.crankHeight);
-    push(11, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(12, 'TACO NYLON MAQUINA', 'CASPLAS', units);
   }
   if (guide === 'CABLE') push(14, 'CABLE DE ACERO 3 MM MAXISCREEM', 'CABLEMAXIS3MM25M', units, guideLength);

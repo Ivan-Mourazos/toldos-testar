@@ -206,7 +206,7 @@ function buildMaterials(context) {
   } else {
     materials.push(
       line(rollSystem === 'P801' ? 'CASMAQEJE6378MM' : 'CASMAQEJE6370MM', units, rollSystem === 'P801' ? 'CASQUILLO EJE 63MM Ø78' : 'CASQUILLO EJE 63MM Ø70'),
-      line(machineCode(lacado), units, `MAQUINA ZNP 10 L170 ${lacado.crank}`)
+      line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`)
     );
   }
   materials.push(line(fabric.code, mainFabricMl, fabric.description));
@@ -242,7 +242,7 @@ function buildDespiece(context) {
     push(8, rollSystem === 'P801' ? 'CASQUILLO EJE 63MM Ø78' : 'CASQUILLO EJE 63MM Ø70', rollSystem === 'P801' ? 'CASMAQEJE6378MM' : 'CASMAQEJE6370MM', units);
     push(9, 'TACO NAYLON MAQ.', null, units);
     push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, null, units, crankHeight);
-    push(11, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
   }
   if (variant === 'SOPORTE FIJO 3 AGUJEROS') push(12, 'PLETINA DE 25 X 4', null, units, supportHeight);
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);

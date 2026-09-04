@@ -167,7 +167,7 @@ function buildMaterials(context) {
   } else {
     materials.push(
       line('CASMAQEJE5078MM', units, 'CASQUILLO MAQUINA EJE 50MM Ø78'),
-      line(machineCode(lacado), units, `MAQUINA ZNP 10 L170 ${lacado.crank}`),
+      line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
       line(`MANIVE${crankSuffix(lacado)}${awning.crankHeight}C`, units, `MANIVELA LUXE ${lacado.crank} ${awning.crankHeight}`)
     );
   }
@@ -199,7 +199,7 @@ function buildDespiece(context) {
     push(10, `MOTOR SOMFY SUNILUS ${motorPower} IO`, `SUNILUSIO${motorPower.replace('/', '//')}`, units);
     push(11, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
   } else {
-    push(9, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(10, `MANIVELA LUXE ${lacado.crank} ${awning.crankHeight}`, `MANIVE${crankSuffix(lacado)}${awning.crankHeight}C`, units, awning.crankHeight);
     push(11, 'TACO NAYLON MAQ.', null, units);
   }

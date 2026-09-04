@@ -176,7 +176,7 @@ function buildDespiece(context) {
     push(10, 'MOTOR SOMFY SUNILUS 15/17 IO', 'SUNILUSIO15//17', units);
   } else {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
-    push(8, `MAQUINA ZNP 10 L170 ${lacado.crank}`, machineCode(lacado), units);
+    push(8, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(9, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
     push(10, `MANIVELA LUXE ${height} ${lacado.crank}`, `MANIVE${crankSuffix(lacado)}${height}C`, units, height);
   }

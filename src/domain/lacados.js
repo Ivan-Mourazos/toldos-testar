@@ -52,9 +52,9 @@ export function crankSuffix(lacado) {
   return lacado.crank === 'BLANCA' ? 'BL16' : 'NE11';
 }
 
-// La referencia ya lleva el color en la base: añadirle además el sufijo de
-// lacado componía MAQMB9L13BLANBL16, que no existe en RPS. Las reservas reales
-// usan MAQMB9L13BLAN y MAQMB9L13NEGR.
+// La MB-9 está descatalogada en RPS y no se consume desde hace años: lo que
+// monta el taller es la MB-11, con 777 imputaciones desde 2025 frente a cero.
+// La referencia ya lleva el color, así que no se le añade el sufijo de lacado.
 export function machineCode(lacado) {
-  return lacado.crank === 'BLANCA' ? 'MAQMB9L13BLAN' : 'MAQMB9L13NEGR';
+  return lacado.crank === 'BLANCA' ? 'MAQMB11L12BLAN' : 'MAQMB11L12NEGRO';
 }
