@@ -183,6 +183,8 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
 
   const accessoriesY = despieceBottom;
+  // 43 = alto del bloque de accesorios (barra de 13 + 3 filas de 10); 24 = alto
+  // del bloque de anclaje; 9 = margen que ya existía entre ambos bloques.
   const anchoringY = accessoriesY + 43 + 9;
   drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
   drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
