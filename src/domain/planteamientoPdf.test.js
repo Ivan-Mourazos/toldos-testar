@@ -1013,6 +1013,110 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(label).toBeDefined();
     expect(label.transform[4]).toBeGreaterThan(300);
   });
+
+  async function paginaUno(order, calculation) {
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    return (await page.getTextContent()).items;
+  }
+
+  function buildAgataBoxTechoOrder() {
+    const order = buildAgataBoxTwentyRowOrder();
+    order.awnings[0].placement = 'TECHO';
+    return order;
+  }
+
+  test('ÁGATA BOX COFRE/MOTOR con colocación TECHO imprime las veintiuna filas reales (antes se perdía la 21ª)', async () => {
+    const order = buildAgataBoxTechoOrder();
+    const calculation = calculateOrder(order);
+    const despieceRows = calculation.ofs[0].despiece.rows;
+
+    // TECHO añade el soporte de techo como fila 21: el máximo real ya no son
+    // veinte filas (la vieja tabla fija), sino veintiuna, y ninguna puede faltar.
+    expect(despieceRows).toHaveLength(21);
+
+    const items = await paginaUno(order, calculation);
+    const text = items.map((item) => item.str).join(' ');
+    for (const referencia of despieceRows.map((row) => row.reference).filter(Boolean)) {
+      expect(text).toContain(referencia);
+    }
+    // Ésta es justo la fila que el bucle fijo de veinte descartaba en silencio.
+    expect(text).toContain('SOTEMODULBL16');
+  });
+
+  test('el ELECTRA con quince filas de despiece (banda ajustada) conserva la medida de guías al recortar', async () => {
+    // Mismo pedido que "el PDF Electra incluye guías...": SIN COFRE / CON GUÍA +
+    // MAQ. INTERIOR da quince filas de despiece, la banda de observaciones más
+    // ajustada que produce ELECTRA. Con dos observaciones largas la caja no
+    // tiene sitio para las tres líneas (medida de guías + dos observaciones), así
+    // que algo se recorta: tiene que ser el final de las observaciones, nunca la
+    // medida de guías.
+    const dosObservaciones = [
+      'PONER REFUERZO EN EL LATERAL DERECHO PORQUE EL MURO ESTÁ FLOJO Y NO AGUANTA BIEN',
+      'CLIENTE AVISA ANTES DE IR AL DOMICILIO EL DÍA DE LA INSTALACIÓN, LLAMAR SIEMPRE ANTES'
+    ].join('\n');
+    const order = {
+      orderCode: 'AR2601520', customer: 'CLIENTE ELECTRA OBS', fabric: 'ACR NEGRO',
+      structureColor: 'BLANCO', sameFabric: true,
+      awnings: [{
+        id: 'electra-b', of: '0227010', model: 'ELECTRA', units: 1,
+        width: 345, projection: 260, valanceHeight: 0,
+        submodel: 'SIN COFRE / CON GUÍA', electraSupport: 'UNIVERSAL 3 AGUJEROS',
+        device: 'MAQ. INTERIOR', machineSide: 'M.F.DER', crankHeight: 150,
+        placement: 'FRONTAL', structureColor: 'BLANCO',
+        curtainHasWindow: false, curtainFinish: 'NORMAL', rotFabric: 'NO', rotValance: 'NO',
+        structureNotes: dosObservaciones
+      }]
+    };
+    const calculation = calculateOrder(order);
+    expect(calculation.ofs[0].despiece.rows).toHaveLength(15);
+    expect(calculation.ofs[0].calculation).toMatchObject({ guideLength: 246, valid: true });
+
+    const items = await paginaUno(order, calculation);
+    const text = items.map((item) => item.str).join(' ');
+    expect(text).toContain('MEDIDA GUÍAS 246');
+  });
+
+  function primerNumeroTrasEtiqueta(items, etiqueta) {
+    const index = items.findIndex((item) => item.str === etiqueta);
+    if (index === -1) return null;
+    // pdfjs intercala items vacíos o de un solo espacio entre trozos de texto;
+    // el primer valor real tras la etiqueta es el primero que no está en blanco.
+    const siguiente = items.slice(index + 1).find((item) => item.str.trim() !== '');
+    return siguiente ? Number(siguiente.str) : null;
+  }
+
+  test('los accesorios no repiten un número de fila ya usado por el despiece real', async () => {
+    // ÁGATA BOX COFRE/MOTOR con TECHO llega a la fila 21 del despiece: los
+    // accesorios, que antes arrancaban siempre en el 21 fijo, tienen que
+    // empezar en el 22 para no repetir número en la misma hoja.
+    const techoOrder = buildAgataBoxTechoOrder();
+    const techoCalculation = calculateOrder(techoOrder);
+    expect(techoCalculation.ofs[0].despiece.rows).toHaveLength(21);
+    const techoItems = await paginaUno(techoOrder, techoCalculation);
+    expect(primerNumeroTrasEtiqueta(techoItems, 'ELEMENTOS ACCESORIOS')).toBe(22);
+
+    // Cualquier otro modelo con menos de veintiuna filas de despiece real (aquí,
+    // el ARZÚA PRO de once) sigue arrancando en el 21 de siempre.
+    const arzuaOrder = {
+      orderCode: 'AR2699001', customer: 'PRUEBA DESPIECE', orderDate: '2026-09-06',
+      technician: 'Iván', reviewer: 'Adrián', sameFabric: true,
+      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN',
+      structureColor: 'BLANCO', notes: '',
+      awnings: [{
+        id: 'a', of: '0299001', model: 'ARZUA PRO', units: 1, width: 400, projection: 250,
+        valanceHeight: 0, device: 'MAQ. INTERIOR', armCount: 2, machineSide: 'M.F.DER',
+        crankHeight: 150, placement: 'FRONTAL', structureColor: 'BLANCO', wallType: '',
+        sensor: 'SIN SENSOR', rotFabric: 'NO', rotValance: 'NO',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', supportSystem: 'ARZUA',
+        structureNotes: '', reglasModificadas: false
+      }]
+    };
+    const arzuaCalculation = calculateOrder(arzuaOrder);
+    const arzuaItems = await paginaUno(arzuaOrder, arzuaCalculation);
+    expect(primerNumeroTrasEtiqueta(arzuaItems, 'ELEMENTOS ACCESORIOS')).toBe(21);
+  });
 });
 
 describe('planteamiento IRIS', () => {

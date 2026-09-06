@@ -57,10 +57,15 @@ export function parseFabricSelection(value) {
 // se corta justo donde va el color. Material y color son lo que se quiere leer de
 // un vistazo, y entran enteros. Sin catálogo detrás no hay más remedio que la
 // descripción.
+// El nombre corto sale SIEMPRE del catálogo, nunca del objeto ya fusionado por
+// resolveFabric: ese objeto puede traer en `material` la subfamilia de RPS (que
+// no distingue material de color), y dejarla competir con el material real del
+// catálogo puede acabar mostrando la subfamilia sola y perdiendo el color.
 export function fabricSelectionLabel(value) {
   const fabric = resolveFabric(value);
   if (!fabric) return String(value || '');
-  const shortName = [fabric.material, fabric.color].filter(Boolean).join(' ');
+  const catalogFabric = fabricsByCode.get(normalize(fabric.code));
+  const shortName = catalogFabric ? [catalogFabric.material, catalogFabric.color].filter(Boolean).join(' ') : '';
   return `${fabric.code} · ${shortName || fabric.description}`;
 }
 

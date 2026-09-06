@@ -186,7 +186,7 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   // 43 = alto del bloque de accesorios (barra de 13 + 3 filas de 10); 24 = alto
   // del bloque de anclaje; 9 = margen que ya existía entre ambos bloques.
   const anchoringY = accessoriesY + 43 + 9;
-  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
+  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories, accessoriesStartNumber(split.main));
   drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
 
   // La columna derecha acaba siempre en 335, así que una banda a todo el ancho se
@@ -205,7 +205,11 @@ function structureNotes(awning, calculation) {
   const guideMeasure = awning.model === 'ELECTRA' && Number(calculation?.guideLength) > 0
     ? `MEDIDA GUÍAS ${formatNumber(calculation.guideLength)}`
     : '';
-  return [notes, guideMeasure].filter(Boolean).join('\n');
+  // La medida de guías va primero: es una cota que el taller corta a partir de
+  // ella, así que tiene que sobrevivir al recorte. Cuando el hueco no llega para
+  // todo, drawStructureNotes recorta por el final del texto, y lo último en la
+  // lista es justo lo primero que se pierde.
+  return [guideMeasure, notes].filter(Boolean).join('\n');
 }
 
 function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
@@ -253,6 +257,9 @@ function drawDespieceTable(doc, x, y, w, rows) {
   // Ese relleno no lo lee nadie y es el hueco que necesitan las observaciones, así
   // que se dibujan las piezas que hay. El mínimo evita una tabla ridícula cuando
   // un modelo trae muy pocas.
+  // El máximo real hoy son 21 filas (ÁGATA BOX COFRE/MOTOR con colocación TECHO).
+  // El bloque de anclaje deja hueco hasta unas 23 filas antes de que el ancla
+  // llegue al texto del pie de página: hay margen, pero no mucho.
   const rowCount = Math.max(6, rows.length);
   const columns = [24, tableW - 24 - 91 - 34 - 38, 91, 34, 38];
   const labels = ['NUM', 'NOMBRE PIEZA', 'REFERENCIA', 'UNID.', 'LONGIT.'];
@@ -327,12 +334,21 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   ]);
 }
 
-function drawAccessories(doc, x, y, w, rows) {
+// Antes de ÁGATA BOX con TECHO el despiece nunca pasaba de veinte filas, así que
+// arrancar los accesorios en el 21 fijo nunca chocaba. Con la fila 21 real ya
+// impresa (ver drawDespieceTable), fijar el arranque en el despiece de verdad
+// evita que dos filas distintas compartan número en la misma hoja.
+function accessoriesStartNumber(despieceRows) {
+  const highestNum = despieceRows.reduce((max, row, index) => Math.max(max, Number(row?.num) || index + 1), 0);
+  return Math.max(21, highestNum + 1);
+}
+
+function drawAccessories(doc, x, y, w, rows, startNumber = 21) {
   drawBar(doc, x, y, w, 13, 'ELEMENTOS ACCESORIOS');
   for (let index = 0; index < 3; index += 1) {
     const row = rows[index];
     const rowY = y + 13 + index * 10;
-    drawCell(doc, x, rowY, 24, 10, 21 + index, { size: 6, align: 'center' });
+    drawCell(doc, x, rowY, 24, 10, startNumber + index, { size: 6, align: 'center' });
     drawCell(doc, x + 24, rowY, w - 24 - 91 - 34, 10, row?.name || '', { size: 5.8, align: 'center' });
     drawCell(doc, x + w - 125, rowY, 91, 10, row?.reference || '', { size: 5.6 });
     drawCell(doc, x + w - 34, rowY, 34, 10, row?.units || '', { size: 6, align: 'center' });
@@ -372,9 +388,14 @@ function drawStructureNotes(doc, x, y, w, bottom, notes) {
   doc.font(fonts.bold);
   const avisoH = doc.heightOfString(aviso, { width: textW });
   doc.font(fonts.regular);
+  // El suelo tiene que ser una línea real del cuerpo de observaciones, no un
+  // número inventado: con la fuente y el tamaño (6,5 pt) ya activos,
+  // currentLineHeight() da la altura real de una línea (8,6455 pt aquí). Un
+  // suelo más bajo que eso podía recortar la única línea que cabía.
+  const minLineHeight = doc.currentLineHeight();
   doc.fillColor(colors.ink).text(texto, x + 4, y + 16, {
     width: textW,
-    height: Math.max(6.01, textH - avisoH),
+    height: Math.max(minLineHeight, textH - avisoH),
     ellipsis: true
   });
   doc.fillColor(colors.red).font(fonts.bold).text(aviso, x + 4, bottom - avisoH - 4, { width: textW });

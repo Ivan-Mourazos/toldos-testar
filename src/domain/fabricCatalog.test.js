@@ -98,3 +98,24 @@ describe('fabricSelectionLabel', () => {
     expect(fabricSelectionLabel('')).toBe('');
   });
 });
+
+// serializeFabricSelection escribe SIEMPRE las cuatro partes (código, ancho,
+// descripción, material||subfamilia). La RPS real no manda `material`, así que
+// esta cuarta parte suele ser la subfamilia. El label no debe dejar que esa
+// subfamilia sustituya al material del catálogo.
+describe('fabricSelectionLabel con la selección de cuatro partes que produce serializeFabricSelection', () => {
+  it('lee material y color del catálogo aunque la cuarta parte traiga la subfamilia de RPS', () => {
+    expect(fabricSelectionLabel('ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 NEGRO 2170|||ACRILICA (LONA)'))
+      .toBe('ACRILI2170P120 · ACR NEGRO');
+  });
+
+  it('no deja que la subfamilia de RPS gane al material real del catálogo', () => {
+    expect(fabricSelectionLabel('ALPHANA04P250|||250|||PVC 580 NARANJA|||PLASTICA (LONA)'))
+      .toBe('ALPHANA04P250 · PVC 580 NARANJA');
+  });
+
+  it('cae en la descripción completa, no en la subfamilia sola, cuando el código no está en el catálogo', () => {
+    expect(fabricSelectionLabel('SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96'))
+      .toBe('SOLTIS96NUBP267 · SOLTIS 96 NUBE');
+  });
+});
