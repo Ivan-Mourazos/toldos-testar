@@ -433,9 +433,9 @@ Expected: FAIL. La de estructura sólo encuentra la primera cadena; la del aviso
 En `src/domain/planteamientoPdf.js`, sustituir la función:
 
 ```js
-// Devuelve `true` cuando el texto entra entero. La elipsis de PDFKit es muda y el
-// taller no distingue unos puntos suspensivos de un texto que acaba en puntos, así
-// que cuando algo se queda fuera se dice con todas las letras.
+// La elipsis de PDFKit es muda y el taller no distingue unos puntos suspensivos de
+// un texto que acaba en puntos, así que cuando algo se queda fuera se dice con
+// todas las letras.
 function drawStructureNotes(doc, x, y, w, bottom, notes) {
   roundedBox(doc, x, y, w, bottom - y, 2, colors.paper, colors.ink);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5).text('Observaciones:', x + 4, y + 4);
@@ -448,7 +448,7 @@ function drawStructureNotes(doc, x, y, w, bottom, notes) {
 
   if (cabe) {
     doc.fillColor(colors.ink).text(texto, x + 4, y + 16, { width: textW, height: textH });
-    return true;
+    return;
   }
 
   const aviso = '(sigue en el pedido)';
@@ -459,7 +459,6 @@ function drawStructureNotes(doc, x, y, w, bottom, notes) {
     ellipsis: true
   });
   doc.fillColor(colors.red).font(fonts.bold).text(aviso, x + 4, bottom - avisoH - 4, { width: textW });
-  return false;
 }
 ```
 
