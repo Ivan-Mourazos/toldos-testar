@@ -325,6 +325,25 @@ describe('datos del planteamiento de telas', () => {
 });
 
 describe('buildOrderPlanteamientoPdf', () => {
+  // ÁGATA BOX COFRE/MOTOR 250x150 es el caso real con más filas de despiece (20):
+  // sirve de tope superior para probar que la tabla ya no está limitada a veinte
+  // filas fijas, sino que se ajusta a las que tenga cada modelo.
+  function buildAgataBoxTwentyRowOrder() {
+    return {
+      orderCode: 'AR2699002', customer: 'PRUEBA AGATA', orderDate: '2026-09-06',
+      technician: 'Iván', reviewer: 'Adrián', sameFabric: true,
+      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN',
+      structureColor: 'BLANCO', notes: '',
+      awnings: [{
+        id: 'a', of: '0299002', model: 'AGATA BOX', units: 1, width: 250, projection: 150,
+        valanceHeight: 0, submodel: 'COFRE', device: 'MOTOR', armCount: 2,
+        machineSide: 'M.F.DER', crankHeight: 150, placement: 'FRONTAL',
+        structureColor: 'BLANCO', wallType: '', sensor: 'SIN SENSOR',
+        reglasModificadas: false
+      }]
+    };
+  }
+
   test('el PDF Electra incluye guías, retenedor y medida de guías en el despiece', async () => {
     const order = {
       orderCode: 'AR2601519', customer: 'CLIENTE ELECTRA', fabric: 'ACR NEGRO',
@@ -836,6 +855,229 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(pdfSource).toContain('/FontFile2');
     expect(pdfSource).toContain('SegoeUI');
   });
+
+  test('imprime todas las piezas del despiece y sube los bloques de abajo', async () => {
+    const order = {
+      orderCode: 'AR2699001', customer: 'PRUEBA DESPIECE', orderDate: '2026-09-06',
+      technician: 'Iván', reviewer: 'Adrián', sameFabric: true,
+      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN',
+      structureColor: 'BLANCO', notes: '',
+      awnings: [{
+        id: 'a', of: '0299001', model: 'ARZUA PRO', units: 1, width: 400, projection: 250,
+        valanceHeight: 0, device: 'MAQ. INTERIOR', armCount: 2, machineSide: 'M.F.DER',
+        crankHeight: 150, placement: 'FRONTAL', structureColor: 'BLANCO', wallType: '',
+        sensor: 'SIN SENSOR', rotFabric: 'NO', rotValance: 'NO',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', supportSystem: 'ARZUA',
+        structureNotes: '', reglasModificadas: false
+      }]
+    };
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    const items = (await page.getTextContent()).items;
+    const text = items.map((item) => item.str).join(' ');
+
+    // Las once piezas del Arzúa siguen ahí.
+    for (const referencia of calculation.ofs[0].despiece.rows.map((row) => row.reference).filter(Boolean)) {
+      expect(text).toContain(referencia);
+    }
+    // Y la tabla ya no imprime numeración hasta 20 cuando sólo hay once piezas.
+    expect(text).not.toContain(' 20 ');
+
+    // El bloque de abajo (ELEMENTOS ACCESORIOS) tiene que subir de verdad cuando el
+    // despiece encoge: se compara contra Ágata Box, que con sus veinte filas usa
+    // toda la tabla y por tanto empuja ese bloque más abajo en la página. En el
+    // espacio de coordenadas de pdfjs, el eje Y de transform crece hacia arriba
+    // (comprobado empíricamente), así que "más arriba en la página" es un
+    // transform[5] MAYOR.
+    const agataOrder = buildAgataBoxTwentyRowOrder();
+    const agataCalculation = calculateOrder(agataOrder);
+    expect(agataCalculation.ofs[0].despiece.rows).toHaveLength(20);
+    const agataBuffer = await buildOrderPlanteamientoPdf({ order: agataOrder, calculation: agataCalculation });
+    const agataDocument = await getDocument({ data: new Uint8Array(agataBuffer) }).promise;
+    const agataPage = await agataDocument.getPage(1);
+    const agataItems = (await agataPage.getTextContent()).items;
+
+    const arzuaAccessoriesLabel = items.find((item) => item.str === 'ELEMENTOS ACCESORIOS');
+    const agataAccessoriesLabel = agataItems.find((item) => item.str === 'ELEMENTOS ACCESORIOS');
+    expect(arzuaAccessoriesLabel).toBeDefined();
+    expect(agataAccessoriesLabel).toBeDefined();
+    expect(arzuaAccessoriesLabel.transform[5]).toBeGreaterThan(agataAccessoriesLabel.transform[5]);
+  });
+
+  test('Ágata Box con sus veinte filas de despiece (el máximo real) las imprime todas', async () => {
+    const order = buildAgataBoxTwentyRowOrder();
+    const calculation = calculateOrder(order);
+    const despieceRows = calculation.ofs[0].despiece.rows;
+
+    // Esta es justo la invariante que generaliza drawDespieceTable: con las veinte
+    // filas que antes venían fijas, la tabla debe seguir imprimiéndolas todas y el
+    // resto del layout (bloques de abajo) no debe perder ni recortar ninguna.
+    expect(despieceRows).toHaveLength(20);
+
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    const text = (await page.getTextContent()).items.map((item) => item.str).join(' ');
+
+    for (const referencia of despieceRows.map((row) => row.reference).filter(Boolean)) {
+      expect(text).toContain(referencia);
+    }
+  });
+
+  const CUATRO_OBSERVACIONES = [
+    'PONER REFUERZO EN EL LATERAL DERECHO',
+    'CLIENTE AVISA ANTES DE IR AL DOMICILIO',
+    'OJO CON EL CANALON, VA MUY JUSTO POR ARRIBA',
+    'LLEVAR ANCLAJE QUIMICO DE REPUESTO'
+  ].join('\n');
+
+  async function textoDeLaHoja(order) {
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const paginas = [];
+    for (let numero = 1; numero <= document.numPages; numero += 1) {
+      const page = await document.getPage(numero);
+      paginas.push((await page.getTextContent()).items.map((item) => item.str).join(' '));
+    }
+    return paginas;
+  }
+
+  function pedidoArzua(observaciones) {
+    return {
+      orderCode: 'AR2699002', customer: 'PRUEBA OBSERVACIONES', orderDate: '2026-09-06',
+      technician: 'Iván', reviewer: 'Adrián', sameFabric: true,
+      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN',
+      structureColor: 'BLANCO', notes: observaciones,
+      awnings: [{
+        id: 'a', of: '0299002', model: 'ARZUA PRO', units: 1, width: 400, projection: 250,
+        valanceHeight: 0, device: 'MAQ. INTERIOR', armCount: 2, machineSide: 'M.F.DER',
+        crankHeight: 150, placement: 'FRONTAL', structureColor: 'BLANCO', wallType: '',
+        sensor: 'SIN SENSOR', rotFabric: 'NO', rotValance: 'NO',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', supportSystem: 'ARZUA',
+        structureNotes: observaciones, reglasModificadas: false
+      }]
+    };
+  }
+
+  test('imprime las cuatro observaciones de estructura', async () => {
+    const [estructura] = await textoDeLaHoja(pedidoArzua(CUATRO_OBSERVACIONES));
+    expect(estructura).toContain('PONER REFUERZO EN EL LATERAL DERECHO');
+    expect(estructura).toContain('CLIENTE AVISA ANTES DE IR AL DOMICILIO');
+    expect(estructura).toContain('OJO CON EL CANALON, VA MUY JUSTO POR ARRIBA');
+    expect(estructura).toContain('LLEVAR ANCLAJE QUIMICO DE REPUESTO');
+  });
+
+  test('imprime las cuatro observaciones de tela', async () => {
+    const paginas = await textoDeLaHoja(pedidoArzua(CUATRO_OBSERVACIONES));
+    const telas = paginas[paginas.length - 1];
+    expect(telas).toContain('PONER REFUERZO EN EL LATERAL DERECHO');
+    expect(telas).toContain('LLEVAR ANCLAJE QUIMICO DE REPUESTO');
+  });
+
+  test('avisa cuando el texto no cabe en lugar de cortarlo en silencio', async () => {
+    const largo = Array.from({ length: 40 }, (_, i) => `OBSERVACION NUMERO ${i + 1} CON TEXTO SUFICIENTE PARA NO CABER`).join('\n');
+    const [estructura] = await textoDeLaHoja(pedidoArzua(largo));
+    expect(estructura).toContain('(sigue en el pedido)');
+  });
+
+  test('sin hueco bajo el anclaje, las observaciones vuelven a la caja estrecha de la derecha y avisan del corte', async () => {
+    // ÁGATA BOX COFRE/MOTOR 250x150 es el mismo pedido de veinte filas de despiece
+    // que usa buildAgataBoxTwentyRowOrder mas arriba: llena la tabla y deja el
+    // hueco de las observaciones en 0 pt, forzando la rama del else en
+    // drawStructurePage (la caja de 164x35,53 en rightX/336, no la banda ancha).
+    const order = buildAgataBoxTwentyRowOrder();
+    order.notes = CUATRO_OBSERVACIONES;
+    order.awnings[0].structureNotes = CUATRO_OBSERVACIONES;
+    const calculation = calculateOrder(order);
+    expect(calculation.ofs[0].despiece.rows).toHaveLength(20);
+
+    const [estructura, items] = await (async () => {
+      const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+      const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+      const page = await document.getPage(1);
+      const content = await page.getTextContent();
+      return [content.items.map((item) => item.str).join(' '), content.items];
+    })();
+
+    // La caja pequeña sólo tiene ~35,53 pt de alto: ni la primera observación
+    // completa cabe entera, así que el aviso de corte tiene que aparecer.
+    expect(estructura).toContain('(sigue en el pedido)');
+
+    // Y el rótulo "Observaciones:" tiene que estar en la columna derecha
+    // (rightX = 417.28 + 4 de relleno interior = 421.28 medido), no en la banda
+    // ancha de la izquierda (margin = 14).
+    const label = items.find((item) => item.str === 'Observaciones:');
+    expect(label).toBeDefined();
+    expect(label.transform[4]).toBeGreaterThan(300);
+  });
+
+  async function paginaUno(order, calculation) {
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    return (await page.getTextContent()).items;
+  }
+
+  function buildAgataBoxTechoOrder() {
+    const order = buildAgataBoxTwentyRowOrder();
+    order.awnings[0].placement = 'TECHO';
+    return order;
+  }
+
+  test('ÁGATA BOX COFRE/MOTOR con colocación TECHO imprime las veintiuna filas reales (antes se perdía la 21ª)', async () => {
+    const order = buildAgataBoxTechoOrder();
+    const calculation = calculateOrder(order);
+    const despieceRows = calculation.ofs[0].despiece.rows;
+
+    // TECHO añade el soporte de techo como fila 21: el máximo real ya no son
+    // veinte filas (la vieja tabla fija), sino veintiuna, y ninguna puede faltar.
+    expect(despieceRows).toHaveLength(21);
+
+    const items = await paginaUno(order, calculation);
+    const text = items.map((item) => item.str).join(' ');
+    for (const referencia of despieceRows.map((row) => row.reference).filter(Boolean)) {
+      expect(text).toContain(referencia);
+    }
+    // Ésta es justo la fila que el bucle fijo de veinte descartaba en silencio.
+    expect(text).toContain('SOTEMODULBL16');
+  });
+
+  test('el ELECTRA con quince filas de despiece (banda ajustada) conserva la medida de guías al recortar', async () => {
+    // Mismo pedido que "el PDF Electra incluye guías...": SIN COFRE / CON GUÍA +
+    // MAQ. INTERIOR da quince filas de despiece, la banda de observaciones más
+    // ajustada que produce ELECTRA. Con dos observaciones largas la caja no
+    // tiene sitio para las tres líneas (medida de guías + dos observaciones), así
+    // que algo se recorta: tiene que ser el final de las observaciones, nunca la
+    // medida de guías.
+    const dosObservaciones = [
+      'PONER REFUERZO EN EL LATERAL DERECHO PORQUE EL MURO ESTÁ FLOJO Y NO AGUANTA BIEN',
+      'CLIENTE AVISA ANTES DE IR AL DOMICILIO EL DÍA DE LA INSTALACIÓN, LLAMAR SIEMPRE ANTES'
+    ].join('\n');
+    const order = {
+      orderCode: 'AR2601520', customer: 'CLIENTE ELECTRA OBS', fabric: 'ACR NEGRO',
+      structureColor: 'BLANCO', sameFabric: true,
+      awnings: [{
+        id: 'electra-b', of: '0227010', model: 'ELECTRA', units: 1,
+        width: 345, projection: 260, valanceHeight: 0,
+        submodel: 'SIN COFRE / CON GUÍA', electraSupport: 'UNIVERSAL 3 AGUJEROS',
+        device: 'MAQ. INTERIOR', machineSide: 'M.F.DER', crankHeight: 150,
+        placement: 'FRONTAL', structureColor: 'BLANCO',
+        curtainHasWindow: false, curtainFinish: 'NORMAL', rotFabric: 'NO', rotValance: 'NO',
+        structureNotes: dosObservaciones
+      }]
+    };
+    const calculation = calculateOrder(order);
+    expect(calculation.ofs[0].despiece.rows).toHaveLength(15);
+    expect(calculation.ofs[0].calculation).toMatchObject({ guideLength: 246, valid: true });
+
+    const items = await paginaUno(order, calculation);
+    const text = items.map((item) => item.str).join(' ');
+    expect(text).toContain('MEDIDA GUÍAS 246');
+  });
+
 });
 
 describe('planteamiento IRIS', () => {

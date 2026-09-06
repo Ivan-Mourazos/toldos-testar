@@ -13,8 +13,16 @@ export function resolveFabric(selection) {
   const encoded = parseFabricSelection(selection);
   if (encoded) {
     const catalogFabric = fabricsByCode.get(normalize(encoded.code));
+    // La selección codificada no lleva color y trae `material` sólo a veces, así
+    // que sus vacíos no deben pisar lo que sí sabe el catálogo. `description`
+    // sigue viniendo de la selección: es la que viaja a RPS en la reserva.
     return catalogFabric
-      ? { ...catalogFabric, ...encoded, material: encoded.material || catalogFabric.material || '' }
+      ? {
+        ...catalogFabric,
+        ...encoded,
+        material: encoded.material || catalogFabric.material || '',
+        color: encoded.color || catalogFabric.color || ''
+      }
       : encoded;
   }
 
@@ -45,9 +53,20 @@ export function parseFabricSelection(value) {
   };
 }
 
+// El campo del formulario no parte el texto, así que la descripción larga de RPS
+// se corta justo donde va el color. Material y color son lo que se quiere leer de
+// un vistazo, y entran enteros. Sin catálogo detrás no hay más remedio que la
+// descripción.
+// El nombre corto sale SIEMPRE del catálogo, nunca del objeto ya fusionado por
+// resolveFabric: ese objeto puede traer en `material` la subfamilia de RPS (que
+// no distingue material de color), y dejarla competir con el material real del
+// catálogo puede acabar mostrando la subfamilia sola y perdiendo el color.
 export function fabricSelectionLabel(value) {
   const fabric = resolveFabric(value);
-  return fabric ? `${fabric.code} · ${fabric.description}` : String(value || '');
+  if (!fabric) return String(value || '');
+  const catalogFabric = fabricsByCode.get(normalize(fabric.code));
+  const shortName = catalogFabric ? [catalogFabric.material, catalogFabric.color].filter(Boolean).join(' ') : '';
+  return `${fabric.code} · ${shortName || fabric.description}`;
 }
 
 export function searchStaticFabrics(query = '', limit = 25) {

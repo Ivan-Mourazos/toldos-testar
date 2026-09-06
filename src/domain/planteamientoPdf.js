@@ -179,11 +179,24 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   const rightX = margin + leftW + gap;
   const split = splitDespiece(ofBlock?.despiece?.rows || []);
 
-  drawDespieceTable(doc, margin, top, leftW, split.main);
+  const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main);
   drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
-  drawAccessories(doc, margin + 28, 294, leftW - 28, split.accessories);
-  drawAnchoring(doc, margin + 28, 346, leftW - 28, ofBlock?.despiece?.anchoring);
-  drawStructureNotes(doc, rightX, 336, rightW, pageH - 48, structureNotes(awning, ofBlock?.calculation));
+
+  const accessoriesY = despieceBottom;
+  // 43 = alto del bloque de accesorios (barra de 13 + 3 filas de 10); 24 = alto
+  // del bloque de anclaje; 9 = margen que ya existía entre ambos bloques.
+  const anchoringY = accessoriesY + 43 + 9;
+  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
+  drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
+
+  // La columna derecha acaba siempre en 335, así que una banda a todo el ancho se
+  // quedaría en 30 pt de alto. Con el ancho de la izquierda caben 101 caracteres
+  // por línea y el alto lo da lo que haya soltado la tabla de despiece.
+  const notesTop = anchoringY + 24 + 6;
+  const notesBottom = pageH - 48;
+  const notas = structureNotes(awning, ofBlock?.calculation);
+  if (notesBottom - notesTop >= 32) drawStructureNotes(doc, margin, notesTop, leftW, notesBottom, notas);
+  else drawStructureNotes(doc, rightX, 336, rightW, notesBottom, notas);
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura`);
 }
 
@@ -192,7 +205,11 @@ function structureNotes(awning, calculation) {
   const guideMeasure = awning.model === 'ELECTRA' && Number(calculation?.guideLength) > 0
     ? `MEDIDA GUÍAS ${formatNumber(calculation.guideLength)}`
     : '';
-  return [notes, guideMeasure].filter(Boolean).join('\n');
+  // La medida de guías va primero: es una cota que el taller corta a partir de
+  // ella, así que tiene que sobrevivir al recorte. Cuando el hueco no llega para
+  // todo, drawStructureNotes recorta por el final del texto, y lo último en la
+  // lista es justo lo primero que se pierde.
+  return [guideMeasure, notes].filter(Boolean).join('\n');
 }
 
 function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
@@ -236,12 +253,20 @@ function drawDespieceTable(doc, x, y, w, rows) {
   const tableW = w - verticalW;
   const headerH = 14;
   const rowH = 9.7;
+  // La tabla imprimía siempre veinte filas y rellenaba de rayas las que sobraban.
+  // Ese relleno no lo lee nadie y es el hueco que necesitan las observaciones, así
+  // que se dibujan las piezas que hay. El mínimo evita una tabla ridícula cuando
+  // un modelo trae muy pocas.
+  // El máximo real hoy son 21 filas (ÁGATA BOX COFRE/MOTOR con colocación TECHO).
+  // El bloque de anclaje deja hueco hasta unas 23 filas antes de que el ancla
+  // llegue al texto del pie de página: hay margen, pero no mucho.
+  const rowCount = Math.max(6, rows.length);
   const columns = [24, tableW - 24 - 91 - 34 - 38, 91, 34, 38];
   const labels = ['NUM', 'NOMBRE PIEZA', 'REFERENCIA', 'UNID.', 'LONGIT.'];
 
-  roundedBox(doc, x, y + headerH, verticalW, rowH * 20, 2, colors.grayDark, colors.ink);
+  roundedBox(doc, x, y + headerH, verticalW, rowH * rowCount, 2, colors.grayDark, colors.ink);
   const labelCenterX = x + verticalW / 2;
-  const labelCenterY = y + headerH + rowH * 10;
+  const labelCenterY = y + headerH + (rowH * rowCount) / 2;
   doc.save();
   doc.rotate(-90, { origin: [labelCenterX, labelCenterY] });
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(10)
@@ -254,7 +279,7 @@ function drawDespieceTable(doc, x, y, w, rows) {
     cellX += columns[columnIndex];
   });
 
-  for (let index = 0; index < 20; index += 1) {
+  for (let index = 0; index < rowCount; index += 1) {
     const row = rows[index];
     const rowY = y + headerH + index * rowH;
     const fill = index % 2 ? colors.paper : colors.soft;
@@ -270,6 +295,8 @@ function drawDespieceTable(doc, x, y, w, rows) {
       cellX += columns[columnIndex];
     });
   }
+
+  return y + headerH + rowCount * rowH;
 }
 
 function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
@@ -307,6 +334,19 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   ]);
 }
 
+// Los números de este bloque son huecos fijos del formulario (21 el mando, 22
+// el sensor, 23 el currón), no posiciones correlativas: no se pueden derivar de
+// cuántas filas trajo el despiece. Cuando el despiece de un modelo ya imprime
+// una fila numerada 21 o más (ÁGATA BOX COFRE/MOTOR con colocación TECHO,
+// que llega a 21), esa hoja repite un número entre la tabla de despiece y este
+// bloque; es un defecto conocido y no lo arregla esta función.
+//
+// Arreglarlo bien no es tocar este número de arranque: es que splitDespiece
+// (más abajo) reparta las filas por su `num` de formulario en vez de por el
+// regex /MANDO|SENSOR|RECEPTOR/i sobre el nombre, que ya no reconoce las
+// descripciones reales de Somfy (EOLIS 3D WIREFREE IO, SUNIS II IO, CURRON
+// MONOBLOCK 350) y deja esas filas con hueco de accesorio dentro de
+// split.main. Eso cambia qué imprime el despiece y queda fuera de esta tarea.
 function drawAccessories(doc, x, y, w, rows) {
   drawBar(doc, x, y, w, 13, 'ELEMENTOS ACCESORIOS');
   for (let index = 0; index < 3; index += 1) {
@@ -327,10 +367,42 @@ function drawAnchoring(doc, x, y, w, anchoring) {
   drawCell(doc, x + w - 34, y + 13, 34, 11, anchoring?.units || '', { size: 6, align: 'center' });
 }
 
+// La elipsis de PDFKit es muda y el taller no distingue unos puntos suspensivos de
+// un texto que acaba en puntos, así que cuando algo se queda fuera se dice con
+// todas las letras.
 function drawStructureNotes(doc, x, y, w, bottom, notes) {
   roundedBox(doc, x, y, w, bottom - y, 2, colors.paper, colors.ink);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5).text('Observaciones:', x + 4, y + 4);
-  doc.font(fonts.regular).fontSize(6.5).text(value(notes), x + 4, y + 16, { width: w - 8, height: bottom - y - 20, ellipsis: true });
+
+  const textW = w - 8;
+  const textH = bottom - y - 20;
+  const texto = value(notes);
+  doc.font(fonts.regular).fontSize(6.5);
+  const cabe = doc.heightOfString(texto, { width: textW }) <= textH;
+
+  if (cabe) {
+    doc.fillColor(colors.ink).text(texto, x + 4, y + 16, { width: textW, height: textH });
+    return;
+  }
+
+  const aviso = '(sigue en el pedido)';
+  // Se mide con fonts.bold, la misma fuente con la que se dibuja mas abajo: si se
+  // midiera con la fuente regular (mas estrecha) y el aviso llegase a ocupar dos
+  // lineas, la altura medida se quedaria corta frente a la altura real dibujada.
+  doc.font(fonts.bold);
+  const avisoH = doc.heightOfString(aviso, { width: textW });
+  doc.font(fonts.regular);
+  // El suelo tiene que ser una línea real del cuerpo de observaciones, no un
+  // número inventado: con la fuente y el tamaño (6,5 pt) ya activos,
+  // currentLineHeight() da la altura real de una línea (8,6455 pt aquí). Un
+  // suelo más bajo que eso podía recortar la única línea que cabía.
+  const minLineHeight = doc.currentLineHeight();
+  doc.fillColor(colors.ink).text(texto, x + 4, y + 16, {
+    width: textW,
+    height: Math.max(minLineHeight, textH - avisoH),
+    ellipsis: true
+  });
+  doc.fillColor(colors.red).font(fonts.bold).text(aviso, x + 4, bottom - avisoH - 4, { width: textW });
 }
 
 function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals }) {
