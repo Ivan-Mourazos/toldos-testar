@@ -982,6 +982,37 @@ describe('buildOrderPlanteamientoPdf', () => {
     const [estructura] = await textoDeLaHoja(pedidoArzua(largo));
     expect(estructura).toContain('(sigue en el pedido)');
   });
+
+  test('sin hueco bajo el anclaje, las observaciones vuelven a la caja estrecha de la derecha y avisan del corte', async () => {
+    // ÁGATA BOX COFRE/MOTOR 250x150 es el mismo pedido de veinte filas de despiece
+    // que usa buildAgataBoxTwentyRowOrder mas arriba: llena la tabla y deja el
+    // hueco de las observaciones en 0 pt, forzando la rama del else en
+    // drawStructurePage (la caja de 164x35,53 en rightX/336, no la banda ancha).
+    const order = buildAgataBoxTwentyRowOrder();
+    order.notes = CUATRO_OBSERVACIONES;
+    order.awnings[0].structureNotes = CUATRO_OBSERVACIONES;
+    const calculation = calculateOrder(order);
+    expect(calculation.ofs[0].despiece.rows).toHaveLength(20);
+
+    const [estructura, items] = await (async () => {
+      const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+      const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+      const page = await document.getPage(1);
+      const content = await page.getTextContent();
+      return [content.items.map((item) => item.str).join(' '), content.items];
+    })();
+
+    // La caja pequeña sólo tiene ~35,53 pt de alto: ni la primera observación
+    // completa cabe entera, así que el aviso de corte tiene que aparecer.
+    expect(estructura).toContain('(sigue en el pedido)');
+
+    // Y el rótulo "Observaciones:" tiene que estar en la columna derecha
+    // (rightX = 417.28 + 4 de relleno interior = 421.28 medido), no en la banda
+    // ancha de la izquierda (margin = 14).
+    const label = items.find((item) => item.str === 'Observaciones:');
+    expect(label).toBeDefined();
+    expect(label.transform[4]).toBeGreaterThan(300);
+  });
 });
 
 describe('planteamiento IRIS', () => {

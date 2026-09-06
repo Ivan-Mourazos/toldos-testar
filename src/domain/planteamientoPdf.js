@@ -366,7 +366,12 @@ function drawStructureNotes(doc, x, y, w, bottom, notes) {
   }
 
   const aviso = '(sigue en el pedido)';
+  // Se mide con fonts.bold, la misma fuente con la que se dibuja mas abajo: si se
+  // midiera con la fuente regular (mas estrecha) y el aviso llegase a ocupar dos
+  // lineas, la altura medida se quedaria corta frente a la altura real dibujada.
+  doc.font(fonts.bold);
   const avisoH = doc.heightOfString(aviso, { width: textW });
+  doc.font(fonts.regular);
   doc.fillColor(colors.ink).text(texto, x + 4, y + 16, {
     width: textW,
     height: Math.max(6.01, textH - avisoH),
