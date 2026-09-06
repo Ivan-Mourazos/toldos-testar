@@ -836,6 +836,35 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(pdfSource).toContain('/FontFile2');
     expect(pdfSource).toContain('SegoeUI');
   });
+
+  test('imprime todas las piezas del despiece y sube los bloques de abajo', async () => {
+    const order = {
+      orderCode: 'AR2699001', customer: 'PRUEBA DESPIECE', orderDate: '2026-09-06',
+      technician: 'Iván', reviewer: 'Adrián', sameFabric: true,
+      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN',
+      structureColor: 'BLANCO', notes: '',
+      awnings: [{
+        id: 'a', of: '0299001', model: 'ARZUA PRO', units: 1, width: 400, projection: 250,
+        valanceHeight: 0, device: 'MAQ. INTERIOR', armCount: 2, machineSide: 'M.F.DER',
+        crankHeight: 150, placement: 'FRONTAL', structureColor: 'BLANCO', wallType: '',
+        sensor: 'SIN SENSOR', rotFabric: 'NO', rotValance: 'NO',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', supportSystem: 'ARZUA',
+        structureNotes: '', reglasModificadas: false
+      }]
+    };
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    const text = (await page.getTextContent()).items.map((item) => item.str).join(' ');
+
+    // Las once piezas del Arzúa siguen ahí.
+    for (const referencia of calculation.ofs[0].despiece.rows.map((row) => row.reference).filter(Boolean)) {
+      expect(text).toContain(referencia);
+    }
+    // Y la tabla ya no imprime numeración hasta 20 cuando sólo hay once piezas.
+    expect(text).not.toContain(' 20 ');
+  });
 });
 
 describe('planteamiento IRIS', () => {

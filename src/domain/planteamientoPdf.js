@@ -179,10 +179,13 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   const rightX = margin + leftW + gap;
   const split = splitDespiece(ofBlock?.despiece?.rows || []);
 
-  drawDespieceTable(doc, margin, top, leftW, split.main);
+  const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main);
   drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
-  drawAccessories(doc, margin + 28, 294, leftW - 28, split.accessories);
-  drawAnchoring(doc, margin + 28, 346, leftW - 28, ofBlock?.despiece?.anchoring);
+
+  const accessoriesY = despieceBottom;
+  const anchoringY = accessoriesY + 43 + 9;
+  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
+  drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
   drawStructureNotes(doc, rightX, 336, rightW, pageH - 48, structureNotes(awning, ofBlock?.calculation));
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura`);
 }
@@ -236,12 +239,17 @@ function drawDespieceTable(doc, x, y, w, rows) {
   const tableW = w - verticalW;
   const headerH = 14;
   const rowH = 9.7;
+  // La tabla imprimía siempre veinte filas y rellenaba de rayas las que sobraban.
+  // Ese relleno no lo lee nadie y es el hueco que necesitan las observaciones, así
+  // que se dibujan las piezas que hay. El mínimo evita una tabla ridícula cuando
+  // un modelo trae muy pocas.
+  const rowCount = Math.max(6, rows.length);
   const columns = [24, tableW - 24 - 91 - 34 - 38, 91, 34, 38];
   const labels = ['NUM', 'NOMBRE PIEZA', 'REFERENCIA', 'UNID.', 'LONGIT.'];
 
-  roundedBox(doc, x, y + headerH, verticalW, rowH * 20, 2, colors.grayDark, colors.ink);
+  roundedBox(doc, x, y + headerH, verticalW, rowH * rowCount, 2, colors.grayDark, colors.ink);
   const labelCenterX = x + verticalW / 2;
-  const labelCenterY = y + headerH + rowH * 10;
+  const labelCenterY = y + headerH + (rowH * rowCount) / 2;
   doc.save();
   doc.rotate(-90, { origin: [labelCenterX, labelCenterY] });
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(10)
@@ -254,7 +262,7 @@ function drawDespieceTable(doc, x, y, w, rows) {
     cellX += columns[columnIndex];
   });
 
-  for (let index = 0; index < 20; index += 1) {
+  for (let index = 0; index < rowCount; index += 1) {
     const row = rows[index];
     const rowY = y + headerH + index * rowH;
     const fill = index % 2 ? colors.paper : colors.soft;
@@ -270,6 +278,8 @@ function drawDespieceTable(doc, x, y, w, rows) {
       cellX += columns[columnIndex];
     });
   }
+
+  return y + headerH + rowCount * rowH;
 }
 
 function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
