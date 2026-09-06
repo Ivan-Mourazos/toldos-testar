@@ -36,7 +36,21 @@ línea 6,01 pt):
 | --- | --- | --- | --- |
 | Obs. estructura | 164 × 35,5 pt | 40 | **1 de 4** |
 | Obs. tela | 218 × 59 pt | 56 | 5 |
-| Banda a todo el ancho | 567 × 54 pt | 127 | 4 |
+| Banda en la columna izquierda | 395 pt de ancho | 101 | según el modelo |
+
+La tabla de despiece imprime hoy **20 filas fijas** y cada modelo usa las suyas:
+
+| Filas | Modelos |
+| --- | --- |
+| 20 | AGATA BOX |
+| 15 | ELECTRA |
+| 13 | CORTINA, SELENA, MONOBLOCK 350, PERLA BOX, CORAL BOX |
+| 12 | GALICIA, XACOBEO, AMBAR BOX, CUARZO BOX |
+| 11 | ARZUA PRO, PUNTO RECTO |
+| 7 | IRIS |
+
+Medido sobre 14 de los 17 modelos. HERA, MAXISCREEM y ANTICA no devuelven
+despiece en ninguna combinación probada, y eso se mira aparte.
 
 La hoja de telas **ya imprime las cuatro** observaciones. Comprobado, no
 deducido.
@@ -75,17 +89,32 @@ de pedido y a la pantalla de revisión, y a ningún otro sitio.
 
 ## Decisión 3 · Las observaciones de estructura pasan al pie
 
-El bloque deja la columna estrecha de la derecha y se convierte en una banda a
-todo el ancho en el pie de la hoja: 567 pt en lugar de 164, con alto para cuatro
-líneas. De 40 caracteres por línea a 127.
+La tabla de despiece deja de imprimir veinte filas fijas y pasa a imprimir las
+que el modelo usa. Accesorios y anclaje suben con ella, conservando su aspecto y
+su orden, y las observaciones ocupan lo que quede hasta el pie, con el ancho de
+la columna izquierda: 395 pt en lugar de 164, y 101 caracteres por línea en vez
+de 40.
 
-Los 54 pt salen de arriba. La tabla de despiece imprime veinte filas y el caso
-contrastado usa once, así que cede cuatro de las que hoy salen en blanco; los
-bloques de accesorios y anclaje suben con ella. Despiece, accesorios y anclaje
-conservan su aspecto y su orden: nadie tiene que reaprender la hoja.
+Recortar a un número fijo menor no vale: AGATA BOX usa las veinte y perdería
+seis piezas. Perder una pieza del despiece es peor que perder una observación.
 
-Cuatro líneas es el máximo que la oficina escribe en la práctica, así que la
-banda se dimensiona para cuatro y no se contemplan páginas de continuación.
+Lo que da el alto de la banda, con el final de la columna izquierda en
+`176 + 9,7 × filas` y el pie en 371,5 pt:
+
+| Filas | Alto de la banda | Líneas |
+| --- | --- | --- |
+| 7 | 122 pt | 17 |
+| 11 | 83 pt | 11 |
+| 13 | 63 pt | 7 |
+| 15 | 44 pt | 4 |
+| 20 | 0 pt | fallback |
+
+Trece de los catorce modelos medidos imprimen sus cuatro observaciones. AGATA
+BOX, que llena la tabla, conserva la caja de hoy en la columna derecha y la
+marca de la decisión 5.
+
+Cuatro líneas es el máximo que la oficina escribe en la práctica, así que no se
+contemplan páginas de continuación.
 
 ## Decisión 4 · La hoja de telas solo cambia cuando hoy perdería texto
 
@@ -93,9 +122,11 @@ Es la hoja de los repuntantes y en el caso normal tiene que seguir siendo la de
 siempre. No se toca mientras el texto quepa, que es lo que ocurre con cuatro
 observaciones de largo corriente.
 
-Cuando una observación sea tan larga que se parta y desborde las cinco líneas, el
-bloque se ensancha hacia la derecha ocupando el sitio que dejan las filas de
-toldo vacías. Con cuatro toldos no hay hueco, y entonces entra la marca de la decisión 5.
+Lo único que se añade es la marca de la decisión 5, para el caso raro de una
+observación tan larga que se parta y desborde las cinco líneas. Ensanchar el
+bloque hacia las filas de toldo vacías se descarta: con dos a cuatro líneas de
+largo corriente no llega a hacer falta, y sería complejidad a cuenta de un caso
+que nadie ha visto.
 
 ## Decisión 5 · Cortar deja de ser silencioso
 
@@ -128,6 +159,8 @@ sobre la geometría.
    texto de la hoja. Hoy esta prueba falla: solo aparece la primera.
 2. Con cuatro observaciones de tela, las cuatro siguen apareciendo. Es la
    prueba de que la hoja de los repuntantes no ha empeorado.
+7. Ningún modelo pierde filas de despiece. Con AGATA BOX, que usa veinte, las
+   veinte siguen en la hoja.
 3. Con texto que no cabe de ninguna manera, aparece `(sigue en el pedido)` y
    no una elipsis.
 4. El color sobrevive a `resolveFabric` desde una selección codificada.
