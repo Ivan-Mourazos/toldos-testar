@@ -224,20 +224,23 @@ Los pedidos reales confirman los tres techos: el AR2501809 lleva toldos de 756,8
 
 Dos puntos que ninguna fuente resuelve y que cambian medidas de corte.
 
-### La altura de la banda de cristal
+### La altura de la banda de cristal · RESUELTO 2026-09-07
 
-Cuando un IRIS lleva ventana, el libro maestro calcula el metraje restando **1,4 m por paño**, que son los 140 cm de ancho del rollo de cristal (`CRISESTP140xxxC`, «CRISTAL ESTABILIZADO :140 AN»). Da por hecho que la banda ocupa el rollo entero.
+**La banda va siempre con el ancho completo del rollo, 140 cm.** Cuando el
+pedido pide más altura se empatan dos bandas solapando 1 cm.
 
-El alto máximo es 140 y puede empatarse para ventanas mayores, pero también puede ser menor: el AR2501385 se planteó con una banda de **96 cm**. Ahí la fórmula falla hacia el lado peligroso, porque resta de más y pide menos lona de la necesaria. Para ese mismo toldo —frente 319,5, tres paños, hueco de 216 más 40 de margen— da 3,5 ml cuando la banda real de 96 exige 4,8. Faltan 1,3 metros. Es la explicación de que esa hoja lleve la caída metida a mano en vez de calculada.
+Así que el libro maestro tiene razón y la aplicación también: restar 1,4 m por
+paño es correcto. El AR2501385, planteado con una banda de 96, fue un caso
+puntual y no la regla.
 
-De los 24 libros revisados solo dos llevan cristal, y no se hicieron igual entre sí: el AR2501075 tiene la caída y las guías cuadradas, como cualquier toldo sin ventana; el AR2501385 no.
+Queda un hueco conocido, no un error: **el empate no se puede expresar**. La
+aplicación no tiene campo para la altura de la ventana, y `resolveIrisGlassSize`
+elige el largo del rollo por el frente del toldo, así que siempre reserva una
+sola pieza y siempre descuenta 1,4 m. Con dos bandas empatadas —279 cm de altura
+útil— haría falta reservar dos piezas y descontar el doble.
 
-**Qué preguntar:** si la banda se pone siempre con el ancho completo del rollo o se recorta a la altura que haga falta; y, cuando la ventana pasa de 140 y hay que empatar, cuántas piezas de cristal se reservan.
-
-**Qué hacer con la respuesta:** si se recorta, la altura de la ventana pasa a ser un dato del pedido y el metraje debe restar esa altura en vez de un 1,4 fijo. Si siempre son 140, el modelo actual es correcto y el AR2501385 fue un caso puntual.
-
-Hasta que se confirme, la aplicación replica el libro maestro.
-
+Mientras no exista ese campo, un IRIS con ventana empatada hay que plantearlo a
+mano, como se hizo con el AR2501385.
 ### La anotación `NON DESCONTAR`
 
 Escrita a mano en rojo sobre la tabla `SCREENY 110 GPZ C`, en la fila del telón con molinete 9:1, cuyo valor es `A-97`. No puede significar que ese descuento no se aplique: el AR2501385 y el AR2503932 son los dos pedidos de esa configuración y ambos aplicaron los 9,7. Debe referirse a otra cosa, o estar obsoleta.
