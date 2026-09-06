@@ -1,6 +1,6 @@
 // src/domain/fabricCatalog.test.js
 import { describe, expect, it } from 'vitest';
-import { parseFabricSelection, resolveFabric, searchStaticFabrics, serializeFabricSelection } from './fabricCatalog.js';
+import { fabricSelectionLabel, parseFabricSelection, resolveFabric, searchStaticFabrics, serializeFabricSelection } from './fabricCatalog.js';
 
 describe('resolveFabric', () => {
   it('resolves a known fabric by exact name', () => {
@@ -57,5 +57,44 @@ describe('searchStaticFabrics', () => {
 
   it('acepta el nombre natural del material y errores pequeños', () => {
     expect(searchStaticFabrics('acrílico grante')[0]).toMatchObject({ code: 'ACRILI2101P120', description: 'ACR GRANATE' });
+  });
+});
+
+// Selección tal como la guarda el formulario: la descripción larga viene de RPS.
+const seleccionRps = 'ACRILI2250P120|||120|||LONA ACRILICA MASACRIL 300 :VISON 2250 :120 AN';
+
+describe('resolveFabric with encoded selections', () => {
+  it('conserva el color del catálogo aunque la selección no lo traiga', () => {
+    expect(resolveFabric(seleccionRps)).toMatchObject({
+      code: 'ACRILI2250P120',
+      material: 'ACR',
+      color: 'VISON'
+    });
+  });
+
+  it('no toca la descripción, que es la que viaja a RPS', () => {
+    expect(resolveFabric(seleccionRps).description)
+      .toBe('LONA ACRILICA MASACRIL 300 :VISON 2250 :120 AN');
+  });
+
+  it('deja el color vacío cuando el código no está en el catálogo', () => {
+    const fuera = resolveFabric('NOEXISTE999|||120|||TELA INVENTADA');
+    expect(fuera.code).toBe('NOEXISTE999');
+    expect(fuera.color).toBe('');
+  });
+});
+
+describe('fabricSelectionLabel', () => {
+  it('muestra material y color cuando el catálogo conoce el código', () => {
+    expect(fabricSelectionLabel(seleccionRps)).toBe('ACRILI2250P120 · ACR VISON');
+  });
+
+  it('cae en la descripción larga cuando no lo conoce', () => {
+    expect(fabricSelectionLabel('NOEXISTE999|||120|||TELA INVENTADA'))
+      .toBe('NOEXISTE999 · TELA INVENTADA');
+  });
+
+  it('devuelve la cadena original cuando no hay tela', () => {
+    expect(fabricSelectionLabel('')).toBe('');
   });
 });

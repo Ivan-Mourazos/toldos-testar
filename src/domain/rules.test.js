@@ -1456,3 +1456,14 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
     expect(result.diagnostics.some((item) => item.message.includes('máximo 500x400'))).toBe(true);
   });
 });
+
+describe('la tela reservada conserva su descripción de RPS', () => {
+  it('reserva la descripción larga, no la etiqueta corta de pantalla', () => {
+    const result = calculateOrder(basePayload({
+      fabric: 'ACRILI2250P120|||120|||LONA ACRILICA MASACRIL 300 :VISON 2250 :120 AN',
+      awnings: [baseAwning({ model: 'ARZUA PRO', width: 400, projection: 250 })]
+    }));
+    const tela = result.ofs[0].materials.find((line) => line.code === 'ACRILI2250P120');
+    expect(tela.description).toBe('LONA ACRILICA MASACRIL 300 :VISON 2250 :120 AN');
+  });
+});
