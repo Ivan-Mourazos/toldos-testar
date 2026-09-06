@@ -1078,45 +1078,6 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(text).toContain('MEDIDA GUÍAS 246');
   });
 
-  function primerNumeroTrasEtiqueta(items, etiqueta) {
-    const index = items.findIndex((item) => item.str === etiqueta);
-    if (index === -1) return null;
-    // pdfjs intercala items vacíos o de un solo espacio entre trozos de texto;
-    // el primer valor real tras la etiqueta es el primero que no está en blanco.
-    const siguiente = items.slice(index + 1).find((item) => item.str.trim() !== '');
-    return siguiente ? Number(siguiente.str) : null;
-  }
-
-  test('los accesorios no repiten un número de fila ya usado por el despiece real', async () => {
-    // ÁGATA BOX COFRE/MOTOR con TECHO llega a la fila 21 del despiece: los
-    // accesorios, que antes arrancaban siempre en el 21 fijo, tienen que
-    // empezar en el 22 para no repetir número en la misma hoja.
-    const techoOrder = buildAgataBoxTechoOrder();
-    const techoCalculation = calculateOrder(techoOrder);
-    expect(techoCalculation.ofs[0].despiece.rows).toHaveLength(21);
-    const techoItems = await paginaUno(techoOrder, techoCalculation);
-    expect(primerNumeroTrasEtiqueta(techoItems, 'ELEMENTOS ACCESORIOS')).toBe(22);
-
-    // Cualquier otro modelo con menos de veintiuna filas de despiece real (aquí,
-    // el ARZÚA PRO de once) sigue arrancando en el 21 de siempre.
-    const arzuaOrder = {
-      orderCode: 'AR2699001', customer: 'PRUEBA DESPIECE', orderDate: '2026-09-06',
-      technician: 'Iván', reviewer: 'Adrián', sameFabric: true,
-      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN',
-      structureColor: 'BLANCO', notes: '',
-      awnings: [{
-        id: 'a', of: '0299001', model: 'ARZUA PRO', units: 1, width: 400, projection: 250,
-        valanceHeight: 0, device: 'MAQ. INTERIOR', armCount: 2, machineSide: 'M.F.DER',
-        crankHeight: 150, placement: 'FRONTAL', structureColor: 'BLANCO', wallType: '',
-        sensor: 'SIN SENSOR', rotFabric: 'NO', rotValance: 'NO',
-        tubeLoad: 'TUBO DE CARGA UNIVERS 280', supportSystem: 'ARZUA',
-        structureNotes: '', reglasModificadas: false
-      }]
-    };
-    const arzuaCalculation = calculateOrder(arzuaOrder);
-    const arzuaItems = await paginaUno(arzuaOrder, arzuaCalculation);
-    expect(primerNumeroTrasEtiqueta(arzuaItems, 'ELEMENTOS ACCESORIOS')).toBe(21);
-  });
 });
 
 describe('planteamiento IRIS', () => {

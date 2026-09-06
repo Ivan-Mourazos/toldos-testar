@@ -186,7 +186,7 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   // 43 = alto del bloque de accesorios (barra de 13 + 3 filas de 10); 24 = alto
   // del bloque de anclaje; 9 = margen que ya existía entre ambos bloques.
   const anchoringY = accessoriesY + 43 + 9;
-  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories, accessoriesStartNumber(split.main));
+  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
   drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
 
   // La columna derecha acaba siempre en 335, así que una banda a todo el ancho se
@@ -334,21 +334,25 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   ]);
 }
 
-// Antes de ÁGATA BOX con TECHO el despiece nunca pasaba de veinte filas, así que
-// arrancar los accesorios en el 21 fijo nunca chocaba. Con la fila 21 real ya
-// impresa (ver drawDespieceTable), fijar el arranque en el despiece de verdad
-// evita que dos filas distintas compartan número en la misma hoja.
-function accessoriesStartNumber(despieceRows) {
-  const highestNum = despieceRows.reduce((max, row, index) => Math.max(max, Number(row?.num) || index + 1), 0);
-  return Math.max(21, highestNum + 1);
-}
-
-function drawAccessories(doc, x, y, w, rows, startNumber = 21) {
+// Los números de este bloque son huecos fijos del formulario (21 el mando, 22
+// el sensor, 23 el currón), no posiciones correlativas: no se pueden derivar de
+// cuántas filas trajo el despiece. Cuando el despiece de un modelo ya imprime
+// una fila numerada 21 o más (ÁGATA BOX COFRE/MOTOR con colocación TECHO,
+// que llega a 21), esa hoja repite un número entre la tabla de despiece y este
+// bloque; es un defecto conocido y no lo arregla esta función.
+//
+// Arreglarlo bien no es tocar este número de arranque: es que splitDespiece
+// (más abajo) reparta las filas por su `num` de formulario en vez de por el
+// regex /MANDO|SENSOR|RECEPTOR/i sobre el nombre, que ya no reconoce las
+// descripciones reales de Somfy (EOLIS 3D WIREFREE IO, SUNIS II IO, CURRON
+// MONOBLOCK 350) y deja esas filas con hueco de accesorio dentro de
+// split.main. Eso cambia qué imprime el despiece y queda fuera de esta tarea.
+function drawAccessories(doc, x, y, w, rows) {
   drawBar(doc, x, y, w, 13, 'ELEMENTOS ACCESORIOS');
   for (let index = 0; index < 3; index += 1) {
     const row = rows[index];
     const rowY = y + 13 + index * 10;
-    drawCell(doc, x, rowY, 24, 10, startNumber + index, { size: 6, align: 'center' });
+    drawCell(doc, x, rowY, 24, 10, 21 + index, { size: 6, align: 'center' });
     drawCell(doc, x + 24, rowY, w - 24 - 91 - 34, 10, row?.name || '', { size: 5.8, align: 'center' });
     drawCell(doc, x + w - 125, rowY, 91, 10, row?.reference || '', { size: 5.6 });
     drawCell(doc, x + w - 34, rowY, 34, 10, row?.units || '', { size: 6, align: 'center' });
