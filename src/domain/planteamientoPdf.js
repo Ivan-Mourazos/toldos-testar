@@ -188,7 +188,15 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   const anchoringY = accessoriesY + 43 + 9;
   drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
   drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
-  drawStructureNotes(doc, rightX, 336, rightW, pageH - 48, structureNotes(awning, ofBlock?.calculation));
+
+  // La columna derecha acaba siempre en 335, así que una banda a todo el ancho se
+  // quedaría en 30 pt de alto. Con el ancho de la izquierda caben 101 caracteres
+  // por línea y el alto lo da lo que haya soltado la tabla de despiece.
+  const notesTop = anchoringY + 24 + 6;
+  const notesBottom = pageH - 48;
+  const notas = structureNotes(awning, ofBlock?.calculation);
+  if (notesBottom - notesTop >= 32) drawStructureNotes(doc, margin, notesTop, leftW, notesBottom, notas);
+  else drawStructureNotes(doc, rightX, 336, rightW, notesBottom, notas);
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura`);
 }
 
@@ -339,10 +347,32 @@ function drawAnchoring(doc, x, y, w, anchoring) {
   drawCell(doc, x + w - 34, y + 13, 34, 11, anchoring?.units || '', { size: 6, align: 'center' });
 }
 
+// La elipsis de PDFKit es muda y el taller no distingue unos puntos suspensivos de
+// un texto que acaba en puntos, así que cuando algo se queda fuera se dice con
+// todas las letras.
 function drawStructureNotes(doc, x, y, w, bottom, notes) {
   roundedBox(doc, x, y, w, bottom - y, 2, colors.paper, colors.ink);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5).text('Observaciones:', x + 4, y + 4);
-  doc.font(fonts.regular).fontSize(6.5).text(value(notes), x + 4, y + 16, { width: w - 8, height: bottom - y - 20, ellipsis: true });
+
+  const textW = w - 8;
+  const textH = bottom - y - 20;
+  const texto = value(notes);
+  doc.font(fonts.regular).fontSize(6.5);
+  const cabe = doc.heightOfString(texto, { width: textW }) <= textH;
+
+  if (cabe) {
+    doc.fillColor(colors.ink).text(texto, x + 4, y + 16, { width: textW, height: textH });
+    return;
+  }
+
+  const aviso = '(sigue en el pedido)';
+  const avisoH = doc.heightOfString(aviso, { width: textW });
+  doc.fillColor(colors.ink).text(texto, x + 4, y + 16, {
+    width: textW,
+    height: Math.max(6.01, textH - avisoH),
+    ellipsis: true
+  });
+  doc.fillColor(colors.red).font(fonts.bold).text(aviso, x + 4, bottom - avisoH - 4, { width: textW });
 }
 
 function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals }) {

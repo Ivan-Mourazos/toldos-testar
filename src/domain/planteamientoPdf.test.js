@@ -925,6 +925,63 @@ describe('buildOrderPlanteamientoPdf', () => {
       expect(text).toContain(referencia);
     }
   });
+
+  const CUATRO_OBSERVACIONES = [
+    'PONER REFUERZO EN EL LATERAL DERECHO',
+    'CLIENTE AVISA ANTES DE IR AL DOMICILIO',
+    'OJO CON EL CANALON, VA MUY JUSTO POR ARRIBA',
+    'LLEVAR ANCLAJE QUIMICO DE REPUESTO'
+  ].join('\n');
+
+  async function textoDeLaHoja(order) {
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const paginas = [];
+    for (let numero = 1; numero <= document.numPages; numero += 1) {
+      const page = await document.getPage(numero);
+      paginas.push((await page.getTextContent()).items.map((item) => item.str).join(' '));
+    }
+    return paginas;
+  }
+
+  function pedidoArzua(observaciones) {
+    return {
+      orderCode: 'AR2699002', customer: 'PRUEBA OBSERVACIONES', orderDate: '2026-09-06',
+      technician: 'Iván', reviewer: 'Adrián', sameFabric: true,
+      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN',
+      structureColor: 'BLANCO', notes: observaciones,
+      awnings: [{
+        id: 'a', of: '0299002', model: 'ARZUA PRO', units: 1, width: 400, projection: 250,
+        valanceHeight: 0, device: 'MAQ. INTERIOR', armCount: 2, machineSide: 'M.F.DER',
+        crankHeight: 150, placement: 'FRONTAL', structureColor: 'BLANCO', wallType: '',
+        sensor: 'SIN SENSOR', rotFabric: 'NO', rotValance: 'NO',
+        tubeLoad: 'TUBO DE CARGA UNIVERS 280', supportSystem: 'ARZUA',
+        structureNotes: observaciones, reglasModificadas: false
+      }]
+    };
+  }
+
+  test('imprime las cuatro observaciones de estructura', async () => {
+    const [estructura] = await textoDeLaHoja(pedidoArzua(CUATRO_OBSERVACIONES));
+    expect(estructura).toContain('PONER REFUERZO EN EL LATERAL DERECHO');
+    expect(estructura).toContain('CLIENTE AVISA ANTES DE IR AL DOMICILIO');
+    expect(estructura).toContain('OJO CON EL CANALON, VA MUY JUSTO POR ARRIBA');
+    expect(estructura).toContain('LLEVAR ANCLAJE QUIMICO DE REPUESTO');
+  });
+
+  test('imprime las cuatro observaciones de tela', async () => {
+    const paginas = await textoDeLaHoja(pedidoArzua(CUATRO_OBSERVACIONES));
+    const telas = paginas[paginas.length - 1];
+    expect(telas).toContain('PONER REFUERZO EN EL LATERAL DERECHO');
+    expect(telas).toContain('LLEVAR ANCLAJE QUIMICO DE REPUESTO');
+  });
+
+  test('avisa cuando el texto no cabe en lugar de cortarlo en silencio', async () => {
+    const largo = Array.from({ length: 40 }, (_, i) => `OBSERVACION NUMERO ${i + 1} CON TEXTO SUFICIENTE PARA NO CABER`).join('\n');
+    const [estructura] = await textoDeLaHoja(pedidoArzua(largo));
+    expect(estructura).toContain('(sigue en el pedido)');
+  });
 });
 
 describe('planteamiento IRIS', () => {
