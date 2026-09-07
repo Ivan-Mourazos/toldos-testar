@@ -26,7 +26,13 @@ export const irisSubmodels = [
 export const irisGuideTypes = ['ESTÁNDAR', 'PEQUEÑA', 'COMPENSADORA'];
 export const irisGuideFixings = ['PARED', 'TECHO'];
 export const irisDevices = ['MAQUINA', 'MOTOR'];
-export const irisGlassSizes = [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700];
+// Largos de rollo que se compran de verdad. RPS no tiene alta ninguno por encima
+// de 450 y en nueve años no se ha consumido ninguno: el histórico llega justo
+// hasta ahí. Como el empate de bandas es horizontal —añade altura, no largo—, un
+// frente mayor que el rollo más largo no se resuelve empatando, así que por
+// encima de 450 hay que consultarlo con compras en vez de componer una
+// referencia que no existe.
+export const irisGlassSizes = [200, 250, 300, 350, 400, 450];
 
 export const irisLimits = {
   110: { maxWidth: 400, maxDrop: 300, minWidth: 82.5, minDrop: 60 },

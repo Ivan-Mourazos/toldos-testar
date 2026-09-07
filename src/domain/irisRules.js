@@ -164,7 +164,7 @@ export function calculateIris({ order, awning }) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: negativeCutMessage('IRIS', awning.of, negativePieces) });
   }
   if (glassOutOfCatalog && !modified) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con ventana en OF ${awning.of}: el frente de tela (${formatNumber(fabricWidth)} cm) supera los 700 cm del catálogo de cristal y no hay medida que sirva. Activa una excepción técnica para continuar sin cristal.` });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con ventana en OF ${awning.of}: el frente de tela (${formatNumber(fabricWidth)} cm) supera los 450 cm, que es el rollo de cristal más largo que se compra. Consúltalo con compras, o activa una excepción técnica para continuar sin cristal.` });
   }
   if (hasCompensator && slack > parameters.compensatorWarnCm && !compensatorOverMax) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS con compensadora: hay que absorber ${formatNumber(round1(slack))} cm por guía y BAT da 2,5 cm como máximo del perfil. Comprueba el ajuste antes de fabricar.` });

@@ -238,8 +238,10 @@ describe('IRIS · diagnósticos', () => {
     expect(result.calculation.valid).toBe(false);
     expect(result.calculation.glassSize).toBe(0);
     expect(result.diagnostics.some((item) => item.level === 'error'
-      && item.message.includes('catálogo de cristal'))).toBe(true);
+      && item.message.includes('450'))).toBe(true);
     expect(result.diagnostics.some((item) => item.message.includes('un mes'))).toBe(false);
+    // Ni cristal ni lona: antes componia CRISESTP140500C, que no existe en RPS.
+    expect(result.materials).toEqual([]);
   });
 
   test('materials queda vacío cuando el toldo no es válido', () => {
