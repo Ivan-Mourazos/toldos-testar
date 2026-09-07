@@ -76,16 +76,28 @@ const submodelos = {
   ELECTRA: 'SIN COFRE / CON GUÍA', IRIS: 'IRIS 110 CON COFRE', HERA: 'HERA 43 MAQUINA',
   MAXISCREEM: 'COFRE / VARILLA', 'AGATA BOX': 'SEMI BOX'
 };
+// Muchas referencias solo se componen con ciertas medidas: los perfiles llevan el
+// largo de stock y el cristal del IRIS se elige por el frente. Barrer con un solo
+// tamaño deja fuera justo esas, y así se coló CRISESTP140500C, que no existe.
+// La ventana va en el caso grande porque es donde el cristal se pasa de catálogo.
+const medidas = [
+  { width: 200, projection: 150, curtainHasWindow: false },
+  { width: 400, projection: 250, curtainHasWindow: false },
+  { width: 650, projection: 400, curtainHasWindow: true }
+];
+
 const compuestas = new Map();
 for (const model of fullAwningModelNames) {
   for (const lacado of lacadoNames) {
     for (const device of ['MAQUINA', 'MAQ. INTERIOR', 'MOTOR']) {
+    for (const medida of medidas) {
       let result;
       try {
         result = calculateOrder({
           orderCode: 'AUDIT', sameFabric: true, fabric: 'ACRILI2170P120|||120|||ACR NEGRO',
           structureColor: lacado,
-          awnings: [{ ...base, model, device, structureColor: lacado,
+          awnings: [{ ...base, ...medida, model, device, structureColor: lacado,
+            irisFrontTop: medida.width, irisExitLeft: medida.projection,
             submodel: submodelos[model] || '', electraSupport: 'SOPORTE ELIT VERTICAL' }]
         });
       } catch { continue; }
@@ -95,6 +107,7 @@ for (const model of fullAwningModelNames) {
         if (!compuestas.has(code)) compuestas.set(code, new Set());
         compuestas.get(code).add(`${model}/${lacado}`);
       }
+    }
     }
   }
 }
