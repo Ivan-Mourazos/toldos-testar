@@ -224,23 +224,34 @@ Los pedidos reales confirman los tres techos: el AR2501809 lleva toldos de 756,8
 
 Dos puntos que ninguna fuente resuelve y que cambian medidas de corte.
 
-### La altura de la banda de cristal · RESUELTO 2026-09-07
+### La altura de la banda de cristal · CERRADO 2026-09-07
 
 **La banda va siempre con el ancho completo del rollo, 140 cm.** Cuando el
-pedido pide más altura se empatan dos bandas solapando 1 cm.
+pedido pide más altura se empatan dos bandas solapando 1 cm, y el empate es
+siempre horizontal: añade altura, nunca largo.
 
-Así que el libro maestro tiene razón y la aplicación también: restar 1,4 m por
-paño es correcto. El AR2501385, planteado con una banda de 96, fue un caso
-puntual y no la regla.
+El histórico lo confirma sin margen de duda. **97 OF de IRIS consumieron
+cristal**, y el patrón es un rollo por toldo con el largo elegido por el frente:
+3 toldos y 3 rollos del 200, 5 y 5 del 250, 9 y 9 del 200, 4 y 4 del 350. Las OF
+que mezclan largos son pedidos de varios toldos con frentes distintos, uno cada
+uno, no bandas empatadas.
 
-Queda un hueco conocido, no un error: **el empate no se puede expresar**. La
-aplicación no tiene campo para la altura de la ventana, y `resolveIrisGlassSize`
-elige el largo del rollo por el frente del toldo, así que siempre reserva una
-sola pieza y siempre descuenta 1,4 m. Con dos bandas empatadas —279 cm de altura
-útil— haría falta reservar dos piezas y descontar el doble.
+El AR2501385, que motivó la duda, consumió **un `CRISESTP140350C`** para un
+frente de 319,5: justo el largo que la aplicación elige hoy. Restar 1,4 m por
+paño es correcto, y el planteamiento con banda de 96 fue una anotación del
+croquis, no una compra distinta.
 
-Mientras no exista ese campo, un IRIS con ventana empatada hay que plantearlo a
-mano, como se hizo con el AR2501385.
+Queda un hueco conocido, no un error: **el empate no se puede expresar**. No hay
+campo para la altura de la ventana, así que se reserva siempre una pieza y se
+descuenta siempre 1,4 m. Con dos bandas empatadas harían falta dos piezas y el
+doble de descuento. Ese caso hay que plantearlo a mano.
+
+**Techo de largo:** en nueve años no se ha consumido cristal por encima de 450,
+y RPS solo tiene alta hasta ese largo. La aplicación conoce hasta 700 y por
+encima de 450 emite referencias que no existen. Como el empate es horizontal, un
+frente mayor que el rollo más largo no se resuelve empatando: pendiente de
+confirmar con la oficina si existe cristal más largo o si 450 es el límite real
+para un toldo con ventana.
 ### La anotación `NON DESCONTAR`
 
 Escrita a mano en rojo sobre la tabla `SCREENY 110 GPZ C`, en la fila del telón con molinete 9:1, cuyo valor es `A-97`. No puede significar que ese descuento no se aplique: el AR2501385 y el AR2503932 son los dos pedidos de esa configuración y ambos aplicaron los 9,7. Debe referirse a otra cosa, o estar obsoleta.
