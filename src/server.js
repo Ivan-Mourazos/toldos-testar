@@ -72,7 +72,7 @@ app.use('/api', (req, _res, next) => {
   }
 });
 
-app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.svg'));
+app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 
 app.get('/api/health', async (_req, res, next) => {
   try {
