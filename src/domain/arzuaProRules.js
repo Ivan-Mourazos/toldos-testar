@@ -285,7 +285,7 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), awningUnits);
     push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, refManivela(lacado, crankHeight), awningUnits, crankHeight);
-    push(12, 'KIT DE TORNILLOS MAQUINA', null, awningUnits);
+    push(11, 'KIT DE TORNILLOS MAQUINA', null, awningUnits);
   }
 
   if (device === 'MOTOR') {

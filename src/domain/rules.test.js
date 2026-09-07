@@ -107,6 +107,9 @@ describe('ARZUA PRO despiece', () => {
       'KIT DE TORNILLOS MAQUINA'
     ]);
     expect(despiece.rows.find((row) => row.name === 'JUEGO DE TERMINALES').reference).toBe('TERMINEVONE11');
+    // La numeracion baja al taller: un salto se lee como una linea que falta.
+    // El hueco del 11 lo dejo el CASPLAS al retirarse.
+    expect(despiece.rows.map((row) => row.num)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
     expect(despiece.rows.find((row) => row.name === 'KIT DE TORNILLOS MAQUINA').reference).toBeNull();
     expect(despiece.rows.find((row) => row.name === 'JUEGO DE BRAZOS ONYX')).toMatchObject({ reference: 'BONYXNE11275C', length: 275 });
     expect(despiece.rows.find((row) => row.name === 'TUBO DE ENROLLE P801')).toMatchObject({ reference: 'TURA80HG600C', length: 338.6 });
