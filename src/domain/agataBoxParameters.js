@@ -28,6 +28,7 @@ const semiMachine = { squareBar: 3.8, loadBar: 7.9, diffuser: 7.9, lira: 12.5, p
 const semiMotor = { squareBar: 3.8, loadBar: 7.9, diffuser: 7.9, lira: 12.5, protector: 7.9, enclosure: 7.9, roll: 13.2, fabric: 13 };
 const cofreMotor = { squareBar: 3.8, loadBar: 7.9, diffuser: 7.9, lira: 7.9, protector: 7.9, enclosure: 7.9, roll: 12, fabric: 13 };
 
+/** @type {import('../client/types').AgataBoxParameters} */
 export const defaultAgataBoxParameters = Object.freeze({
   standardMaxWidth: 1200,
   maxWidthByArms: { 2: 600, 3: 900, 4: 1200 },

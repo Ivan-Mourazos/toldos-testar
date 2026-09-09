@@ -252,6 +252,7 @@ export type Monoblock350Parameters = {
     values: Record<2 | 3 | 4, {
       minimum: number;
       maximum: number;
+      motorTorqueNm: number;
       motorPower: string;
     }>;
   }[];

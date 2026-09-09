@@ -32,6 +32,7 @@ const legacyRules = legacyRows.map(([projection, minimums, maximums, motors]) =>
 
 const manualCuts = monoblock350ManualSpec.cuttingDiscountsCm;
 
+/** @type {import('../client/types').Monoblock350Parameters} */
 export const defaultMonoblock350Parameters = {
   fabricDropAllowanceCm: 40,
   valanceExtraCm: 5,
@@ -50,6 +51,7 @@ export const defaultMonoblock350Parameters = {
   dimensionalRules: cloneManualRules()
 };
 
+/** @returns {import('../client/types').Monoblock350Parameters} */
 export function normalizeMonoblock350Parameters(input = {}) {
   const defaults = defaultMonoblock350Parameters;
   return {

@@ -51,6 +51,7 @@ export function suggestedGaliciaTube(destination, parameters = defaultGaliciaPar
   return '';
 }
 
+/** @param {Pick<import('../client/types').GaliciaParameters, 'armSwitchWidth'>} parameters */
 export function suggestedGaliciaArmCount(width, parameters = defaultGaliciaParameters) {
   return Number(width) > parameters.armSwitchWidth ? 3 : 2;
 }

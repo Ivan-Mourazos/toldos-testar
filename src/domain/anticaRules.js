@@ -29,6 +29,7 @@ export const anticaRoundEntrySpecs = Object.freeze({
   })
 });
 
+/** @type {readonly import('../client/types').Awning['anticaVariant'][]} */
 export const anticaVariants = Object.freeze([
   'TUBO 50X30 CONTRAPESO',
   'TUBO 50X30 SIN BAMBA',
@@ -47,7 +48,7 @@ export function normalizeAnticaVariant(value) {
   const roundMatch = clean.match(/^(?:ENTRADA TUBO |TUBO )Ø?(30|32|33|40|42)\s*(?:MM|CM)?$/);
   if (roundMatch && ['30', '32', '33'].includes(roundMatch[1])) return ANTICA_TUBE_33_VARIANT;
   if (roundMatch && ['40', '42'].includes(roundMatch[1])) return ANTICA_TUBE_42_VARIANT;
-  return cambioAnticaVariants.includes(clean) ? clean : '';
+  return cambioAnticaVariants.find((variant) => variant === clean) ?? '';
 }
 
 export function resolveAnticaRoundEntry(value) {

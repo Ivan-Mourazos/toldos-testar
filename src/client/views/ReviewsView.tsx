@@ -302,9 +302,9 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
 }
 
 function reviewSummary(review: ReviewPackage): ReviewSummary {
-  const summary = { ...review } as ReviewPackage & { order?: ReviewPackage['order'] };
-  delete summary.order;
-  return summary as ReviewSummary;
+  const { order, ...summary } = review;
+  void order;
+  return summary;
 }
 
 function formatDate(iso: string) {

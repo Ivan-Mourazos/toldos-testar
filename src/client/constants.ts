@@ -142,7 +142,7 @@ export function todayIso() {
   return `${year}-${month}-${day}`;
 }
 
-export function formatDecimal(value: number | undefined) {
+export function formatDecimal(value: number | null | undefined) {
   return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(value || 0);
 }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
+import type { PDFDocumentProxy, PDFDocumentLoadingTask } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 type PagePreview = {
@@ -25,8 +25,7 @@ export function PdfPreviewCarousel({ url, ariaLabel = 'Vista previa del PDF' }: 
 
   useEffect(() => {
     let active = true;
-    let loadingTask: { destroy: () => Promise<void> } | null = null;
-    let loadedPdf: PDFDocumentProxy | null = null;
+    let loadingTask: PDFDocumentLoadingTask | null = null;
     pdfRef.current = null;
 
     async function loadDocument() {
@@ -35,7 +34,7 @@ export function PdfPreviewCarousel({ url, ariaLabel = 'Vista previa del PDF' }: 
         if (!active) return;
         GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
         loadingTask = getDocument({ url });
-        loadedPdf = await loadingTask.promise;
+        const loadedPdf = await loadingTask.promise;
         if (!active) return;
         pdfRef.current = loadedPdf;
         setPageCount(loadedPdf.numPages);

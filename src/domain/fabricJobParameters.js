@@ -6,6 +6,7 @@ const defaultAllowances = Object.freeze({
   'CAMBIO ANTICA': 65
 });
 
+/** @type {import('../client/types').FabricJobParameters} */
 export const defaultFabricJobParameters = Object.freeze({
   dropAllowanceByModel: defaultAllowances,
   anticaSeparateValanceAllowanceCm: 40,

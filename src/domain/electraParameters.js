@@ -156,6 +156,7 @@ export function getElectraDiscounts(parameters, variant, support, device) {
 }
 
 function normalizeDiscountSet(value, defaults, withBoxProfile) {
+  /** @type {{ fabric: number, roll: number, loadBar: number, boxProfile?: number, guide?: number }} */
   const result = {
     fabric: nonNegative(value?.fabric, defaults.fabric),
     roll: nonNegative(value?.roll, defaults.roll),
