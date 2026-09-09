@@ -126,6 +126,7 @@ export type Awning = {
   reglasModificadas: boolean;
   fabric: string;
   structureNotes: string;
+  structureNotesEdited?: boolean;
   fabricNotes: string;
 };
 

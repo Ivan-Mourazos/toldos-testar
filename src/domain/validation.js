@@ -245,7 +245,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     rotValance: cleanText(awning?.rotValance || legacyOrder.rotBamba).toUpperCase(),
     reglasModificadas: Boolean(awning?.reglasModificadas),
     fabric: cleanText(awning?.fabric),
-    structureNotes: cleanText(awning?.structureNotes || awning?.notes),
+    structureNotes: cleanText(awning?.structureNotes ?? awning?.notes),
+    structureNotesEdited: awning?.structureNotesEdited === true,
     fabricNotes: cleanText(awning?.fabricNotes)
   };
 }

@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
+import { structureNotes } from './structureNotes.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
@@ -198,18 +199,6 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   if (notesBottom - notesTop >= 32) drawStructureNotes(doc, margin, notesTop, leftW, notesBottom, notas);
   else drawStructureNotes(doc, rightX, 336, rightW, notesBottom, notas);
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura`);
-}
-
-function structureNotes(awning, calculation) {
-  const notes = String(awning.structureNotes || '').trim();
-  const guideMeasure = awning.model === 'ELECTRA' && Number(calculation?.guideLength) > 0
-    ? `MEDIDA GUÍAS ${formatNumber(calculation.guideLength)}`
-    : '';
-  // La medida de guías va primero: es una cota que el taller corta a partir de
-  // ella, así que tiene que sobrevivir al recorte. Cuando el hueco no llega para
-  // todo, drawStructureNotes recorta por el final del texto, y lo último en la
-  // lista es justo lo primero que se pierde.
-  return [guideMeasure, notes].filter(Boolean).join('\n');
 }
 
 function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {

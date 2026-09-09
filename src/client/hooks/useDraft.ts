@@ -164,6 +164,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
     ? normalizeAnticaMeasurementMode(old.anticaMeasurementMode, base.anticaVariant) as Awning['anticaMeasurementMode']
     : '';
   base.anticaSupportHeight = nullableNumber(old.anticaSupportHeight);
+  base.structureNotesEdited = old.structureNotesEdited === true;
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
     : typeof old.notes === 'string' ? old.notes : '';
@@ -303,6 +304,7 @@ export function useDraft() {
         units: 1,
         of: sourceUnits > 1 ? source.of : '',
         structureNotes: '',
+        structureNotesEdited: false,
         fabricNotes: ''
       };
       if (sourceUnits === 1) return [...current, clone];
@@ -506,6 +508,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
         : 'BASE'
       : '',
     anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null,
+    structureNotesEdited: false,
     structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : ''
   };
 }

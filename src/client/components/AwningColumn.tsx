@@ -9,6 +9,7 @@ import { SelectField } from './SelectField';
 import { SegmentedField } from './SegmentedField';
 import { FabricCombobox } from './FabricCombobox';
 import { ObservationLines } from './ObservationLines';
+import { structureNotes as getStructureNotes } from '../../domain/structureNotes.js';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
 import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.js';
@@ -753,7 +754,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
 
           {!fabricOnly && (
             <div className="awning-structure-notes awning-wide-field">
-              <ObservationLines readOnly={readOnly} label="Obs. estructura" value={awning.structureNotes} onChange={(structureNotes) => update({ structureNotes })} />
+              <ObservationLines readOnly={readOnly} label="Obs. estructura" value={getStructureNotes(awning, ofCalculation)} onChange={(structureNotes) => update({ structureNotes, ...(isElectra ? { structureNotesEdited: true } : {}) })} />
             </div>
           )}
 

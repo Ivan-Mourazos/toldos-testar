@@ -344,12 +344,17 @@ describe('buildOrderPlanteamientoPdf', () => {
     };
   }
 
-  test('el PDF Electra incluye guías, retenedor y medida de guías en el despiece', async () => {
+  test.each([
+    [undefined, undefined, 'MEDIDA GUÍAS 246'],
+    [true, '', ''],
+    [true, 'GUÍAS SEGÚN REVISIÓN', 'GUÍAS SEGÚN REVISIÓN']
+  ])('el PDF Electra respeta las observaciones editadas (%s, %s)', async (structureNotesEdited, structureNotes, expectedNote) => {
     const order = {
       orderCode: 'AR2601519', customer: 'CLIENTE ELECTRA', fabric: 'ACR NEGRO',
       structureColor: 'BLANCO', sameFabric: true,
       awnings: [{
         id: 'electra-a', of: '0227009', model: 'ELECTRA', units: 1,
+        structureNotesEdited, structureNotes,
         width: 345, projection: 260, valanceHeight: 0,
         submodel: 'SIN COFRE / CON GUÍA', electraSupport: 'UNIVERSAL 3 AGUJEROS',
         device: 'MAQ. INTERIOR', machineSide: 'M.F.DER', crankHeight: 150,
@@ -367,7 +372,8 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(calculation.ofs[0].calculation).toMatchObject({ guideLength: 246, valid: true });
     expect(text).toContain('ELITGU12BL16500C');
     expect(text).toContain('KITRETENEDORBL16');
-    expect(text).toContain('MEDIDA GUÍAS 246');
+    if (expectedNote) expect(text).toContain(expectedNote);
+    if (structureNotesEdited) expect(text).not.toContain('MEDIDA GUÍAS 246');
   });
 
   test('HERA no genera estructura vacía y cada toldo conserva su propio mini planteamiento de tela', () => {
