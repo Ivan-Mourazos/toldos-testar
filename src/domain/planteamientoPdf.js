@@ -1,3 +1,4 @@
+import { normalizeFabricImage } from './fabricImage.js';
 import PDFDocument from 'pdfkit';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -54,13 +55,16 @@ export async function buildOrderPlanteamientoPdf({ order, calculation }) {
 
     const plan = buildPlanteamientoPlan(order, calculation);
     plan.structureEntries.forEach(({ awning, index, ofBlock }) => {
-      doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
-      drawStructurePage(doc, {
-        order,
-        awning,
-        ofBlock,
-        index
-      });
+      const split = splitDespiece(ofBlock?.despiece?.rows || []);
+      const pages = Math.max(1, Math.ceil(split.main.length / 21), Math.ceil(split.accessories.length / 3));
+      for (let page = 0; page < pages; page += 1) {
+        doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
+        const pageBlock = pages === 1 ? ofBlock : {
+          ...ofBlock,
+          despiece: { ...ofBlock.despiece, rows: [...split.main.slice(page * 21, (page + 1) * 21), ...split.accessories.slice(page * 3, (page + 1) * 3)] }
+        };
+        drawStructurePage(doc, { order, awning, ofBlock: pageBlock, index, continuation: pages > 1 ? ' · ' + (page + 1) + '/' + pages : '' });
+      }
     });
 
     const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
@@ -89,7 +93,7 @@ export function buildPlanteamientoPlan(order, calculation) {
   entries.forEach((entry) => {
     const cadDiagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
     const diagram = getFabricPatternDiagram(entry.awning, cadDiagram);
-    const groupKey = fabricDiagramGroupKey(diagram, entry.awning);
+    const groupKey = JSON.stringify([fabricDiagramGroupKey(diagram, entry.awning), normalizeFabricImage(entry.awning.fabricImage)]);
     const group = grouped.get(groupKey) || { diagram, diagramAwning: entry.awning, entries: [] };
     group.entries.push(entry);
     grouped.set(groupKey, group);
@@ -167,7 +171,7 @@ function resolveDiagramCalculation(entry) {
   };
 }
 
-function drawStructurePage(doc, { order, awning, ofBlock, index }) {
+function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = '' }) {
   const pageW = doc.page.width;
   const pageH = doc.page.height;
   const margin = 14;
@@ -198,7 +202,7 @@ function drawStructurePage(doc, { order, awning, ofBlock, index }) {
   const notas = structureNotes(awning, ofBlock?.calculation);
   if (notesBottom - notesTop >= 32) drawStructureNotes(doc, margin, notesTop, leftW, notesBottom, notas);
   else drawStructureNotes(doc, rightX, 336, rightW, notesBottom, notas);
-  drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura`);
+  drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura${continuation}`);
 }
 
 function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
@@ -221,10 +225,8 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
   drawCell(doc, bodyX, 32, 64, 12, 'CLIENTE:', { italic: true, size: 6.5 });
   drawCell(doc, valueX, 32, orderX - valueX, 12, value(order.customer), { semibold: true, size: 6.5 });
   drawCell(doc, orderX, 32, 58, 24, 'OF', { bold: true, size: 11, align: 'center' });
-  drawCell(doc, orderX + 58, 32, orderW - 58, 12, value(awning.of), { bold: true, size: 7.5, align: 'center' });
-  drawCell(doc, orderX + 58, 44, orderW - 58, 12, value(order.reviewer), { size: 6.5, align: 'center' });
-  drawCell(doc, bodyX, 44, 64, 12, 'TÉCNICO:', { italic: true, size: 6.5 });
-  drawCell(doc, valueX, 44, orderX - valueX, 12, value(order.technician), { semibold: true, size: 6.5 });
+  drawCell(doc, orderX + 58, 32, orderW - 58, 24, value(awning.of), { bold: true, size: 7.5, align: 'center' });
+  drawAuthorReviewerRow(doc, bodyX, 44, orderX - bodyX, 12, order, 64, 6.5);
   drawCell(doc, bodyX, 56, 64, 11, 'FECHA:', { italic: true, size: 6.2 });
   drawCell(doc, valueX, 56, orderX - valueX, 11, formatDate(order.orderDate), { semibold: true, size: 6.2, align: 'right' });
 
@@ -424,13 +426,14 @@ function drawHeraFabricPage(doc, { order, entries }) {
     drawHeraLegacyBlock(doc, margin, top, tableW, 250, {
       order,
       detail,
+      fabricImage: line.awning.fabricImage,
       letter: awningLetter(line.index)
     });
   });
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento HERA');
 }
 
-function drawHeraLegacyBlock(doc, x, y, w, h, { order, detail, letter }) {
+function drawHeraLegacyBlock(doc, x, y, w, h, { order, detail, letter, fabricImage }) {
   const drawingW = 150;
   const tableW = w - drawingW;
   const sectionW = 86;
@@ -499,7 +502,8 @@ function drawHeraLegacyBlock(doc, x, y, w, h, { order, detail, letter }) {
     });
   });
 
-  drawHeraWindowOrientation(
+  if (fabricImage) drawCustomFabricImage(doc, x + tableW + 8, y, drawingW - 8, totalH, fabricImage);
+  else drawHeraWindowOrientation(
     doc,
     x + tableW + 8,
     planY + 4,
@@ -545,22 +549,19 @@ function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE
   drawCell(doc, orderX, 18, orderW, 32, value(order.orderCode), { fill: colors.yellow, bold: true, size: 14, align: 'center' });
   drawCell(doc, bodyX, 36, 76, 17, 'CLIENTE:', { italic: true, size: 7 });
   drawCell(doc, bodyX + 76, 36, orderX - bodyX - 76, 17, value(order.customer), { semibold: true, size: 7 });
-  drawCell(doc, bodyX, 53, 76, 17, 'TÉCNICO:', { italic: true, size: 7 });
-  drawCell(doc, bodyX + 76, 53, orderX - bodyX - 76, 17, value(order.technician), { semibold: true, size: 7 });
+  drawAuthorReviewerRow(doc, bodyX, 53, orderX - bodyX, 17, order, 76, 7);
   drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 7 });
   drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 7 });
   const orderOfs = distinctOrderOfs(order);
   const headerOfText = orderOfs.length === 1
     ? orderOfs[0]
     : orderOfs.length > 1 ? 'VER EN CADA TOLDO' : '';
-  drawCell(doc, orderX, 50, 32, 18, headerOfText ? 'OF' : '', {
+  drawCell(doc, orderX, 50, 32, 37, headerOfText ? 'OF' : '', {
     bold: true, size: 7, align: 'right', preserveBlank: true
   });
-  drawCell(doc, orderX + 32, 50, orderW - 32, 18, headerOfText, {
+  drawCell(doc, orderX + 32, 50, orderW - 32, 37, headerOfText, {
     bold: true, size: 7, align: 'center', preserveBlank: true
   });
-  drawCell(doc, orderX, 68, 76, 19, 'REVISIÓN', { size: 7, align: 'right' });
-  drawCell(doc, orderX + 76, 68, orderW - 76, 19, value(order.reviewer), { size: 7, align: 'center' });
   doc.rect(bodyX, 87, pageW - margin - bodyX, 19).fill(colors.ink);
   doc.fillColor(colors.paper).font(fonts.bold).fontSize(11)
     .text(title, bodyX + 4, 92, { width: pageW - margin - bodyX - 8, align: 'center' });
@@ -670,6 +671,7 @@ function drawFabricTotals(doc, x, y, w, totals, lines) {
 }
 
 function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
+  if (awning.fabricImage) return drawCustomFabricImage(doc, x, y, w, h, awning.fabricImage);
   if (diagram.startsWith('CORTINA')) return drawCurtainDiagram(doc, x, y, w, h, diagram, awning);
   if (diagram === 'TOLDO-VELCRO') return drawToldoVelcroDiagram(doc, x, y, w, h, awning);
   if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
@@ -1571,6 +1573,14 @@ function drawBar(doc, x, y, w, h, text) {
     .text(text, x + 3, y + 3.2, { width: w - 6, align: 'center', ellipsis: true });
 }
 
+function drawAuthorReviewerRow(doc, x, y, w, h, order, labelW, size) {
+  const halfW = w / 2;
+  drawCell(doc, x, y, labelW, h, 'TÉCNICO:', { italic: true, size });
+  drawCell(doc, x + labelW, y, halfW - labelW, h, value(order.technician), { semibold: true, size });
+  drawCell(doc, x + halfW, y, labelW, h, 'REVISOR:', { italic: true, size });
+  drawCell(doc, x + halfW + labelW, y, halfW - labelW, h, value(order.reviewer), { semibold: true, size });
+}
+
 function drawCell(doc, x, y, w, h, text, options = {}) {
   doc.rect(x, y, w, h).fillAndStroke(options.fill || colors.paper, colors.line);
   const font = options.bold ? fonts.bold : options.semibold ? fonts.semibold : options.italic ? fonts.italic : fonts.regular;
@@ -1933,4 +1943,13 @@ function formatDate(input) {
 
 function value(input) {
   return String(input ?? '').trim() || '-';
+}
+
+function drawCustomFabricImage(doc, x, y, w, h, input) {
+  const image = normalizeFabricImage(input);
+  try {
+    doc.image(Buffer.from(image.split(',')[1], 'base64'), x + 4, y + 4, { fit: [w - 8, h - 8], align: 'center', valign: 'center' });
+  } catch {
+    throw new Error('No se pudo incluir la imagen del planteamiento. Importa una imagen PNG o JPG válida.');
+  }
 }

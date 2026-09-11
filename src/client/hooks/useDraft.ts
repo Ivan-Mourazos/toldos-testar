@@ -1,3 +1,5 @@
+import { normalizeFabricImage } from '../../domain/fabricImage.js';
+import { normalizeStructureEdit } from '../../domain/structureEdits.js';
 import { useEffect, useState } from 'react';
 import type { Awning, DraftState, HistoryEntry } from '../types';
 import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
@@ -84,6 +86,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (base.hasValance === false) base.valanceHeight = 0;
   base.valanceCurve = typeof old.valanceCurve === 'string' ? old.valanceCurve : '';
   base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
+  base.fabricImage = normalizeFabricImage(old.fabricImage);
   base.fabricDiagramOverride = normalizeFabricDiagramOverride(base.model, old.fabricDiagramOverride) as Awning['fabricDiagramOverride'];
   base.remate = normalizeValanceFinish(base, typeof old.remate === 'string' ? old.remate : '');
   base.remateColor = base.remate === 'OTRO' && typeof old.remateColor === 'string' ? old.remateColor : '';
@@ -164,6 +167,8 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
     ? normalizeAnticaMeasurementMode(old.anticaMeasurementMode, base.anticaVariant) as Awning['anticaMeasurementMode']
     : '';
   base.anticaSupportHeight = nullableNumber(old.anticaSupportHeight);
+  base.structureEdit = normalizeStructureEdit(old.structureEdit) as Awning['structureEdit'];
+  base.structureArmCount = nullableNumber(old.structureArmCount);
   base.structureNotesEdited = old.structureNotesEdited === true;
   base.structureNotes = typeof old.structureNotes === 'string'
     ? old.structureNotes
@@ -429,6 +434,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
   const supportsValance = (getModelBehavior(model).dimensions || []).includes('valanceHeight');
   return {
     ...fresh,
+    structureEdit: awning.structureEdit,
+    structureArmCount: null,
     id: awning.id,
     of: awning.of,
     model,

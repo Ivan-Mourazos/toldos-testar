@@ -1,3 +1,5 @@
+import { normalizeFabricImage } from './fabricImage.js';
+import { normalizeStructureEdit } from './structureEdits.js';
 import { roundQuantity } from './math.js';
 import { normalizeArzuaProParameters } from './arzuaProParameters.js';
 import { normalizeGaliciaParameters } from './galiciaParameters.js';
@@ -237,6 +239,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     valanceHeight,
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
+    fabricImage: normalizeFabricImage(awning?.fabricImage),
     fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning?.fabricDiagramOverride),
     remate,
     remateColor: remate === 'OTRO' ? cleanText(awning?.remateColor || legacyOrder.remateColor) : '',
@@ -245,6 +248,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     rotValance: cleanText(awning?.rotValance || legacyOrder.rotBamba).toUpperCase(),
     reglasModificadas: Boolean(awning?.reglasModificadas),
     fabric: cleanText(awning?.fabric),
+    structureEdit: normalizeStructureEdit(awning?.structureEdit),
+    structureArmCount: nullableNumber(awning?.structureArmCount),
     structureNotes: cleanText(awning?.structureNotes ?? awning?.notes),
     structureNotesEdited: awning?.structureNotesEdited === true,
     fabricNotes: cleanText(awning?.fabricNotes)

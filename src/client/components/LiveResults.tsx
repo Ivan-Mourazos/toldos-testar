@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { AlertCircle, FileSpreadsheet, Layers3, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
+import { FabricImageEditor } from './FabricImageEditor';
+import { StructureEditor } from './StructureEditor';
 import { formatDecimal } from '../constants';
 import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
 import { controlLabel, legacyModelName } from './controlLabels';
@@ -10,11 +12,12 @@ type Props = {
   calculation: Calculation | null;
   state: CalculationState;
   awnings: Awning[];
+  onUpdate?: (id: string, patch: Partial<Awning>) => void;
 };
 
 type ResultTab = 'structure' | 'fabric' | 'rps';
 
-export function LiveResults({ calculation, state, awnings }: Props) {
+export function LiveResults({ calculation, state, awnings, onUpdate }: Props) {
   const [activeTab, setActiveTab] = useState<ResultTab>('structure');
   const [selectedStructure, setSelectedStructure] = useState('');
   const ofCards = calculation?.ofs.filter((ofBlock) => ofBlock.calculation) || [];
@@ -53,8 +56,8 @@ export function LiveResults({ calculation, state, awnings }: Props) {
         <ResultTabButton active={activeTab === 'rps'} icon={<FileSpreadsheet />} label="Reserva RPS" count={materialRows.length} onClick={() => setActiveTab('rps')} />
       </div>
 
-      {activeTab === 'structure' && <StructurePreview blocks={structureBlocks} awnings={awnings} selectedBlock={selectedBlock} onSelect={setSelectedStructure} />}
-      {activeTab === 'fabric' && <FabricPreview blocks={ofCards} awnings={awnings} />}
+      {activeTab === 'structure' && <StructurePreview blocks={structureBlocks} awnings={awnings} selectedBlock={selectedBlock} onSelect={setSelectedStructure} onUpdate={onUpdate} />}
+      {activeTab === 'fabric' && <FabricPreview blocks={ofCards} awnings={awnings} onUpdate={onUpdate} />}
       {activeTab === 'rps' && <ReservationPreview rows={materialRows} />}
     </section>
   );
@@ -68,11 +71,12 @@ function ResultTabButton({ active, icon, label, count, onClick }: { active: bool
   );
 }
 
-function StructurePreview({ blocks, awnings, selectedBlock, onSelect }: {
+function StructurePreview({ blocks, awnings, selectedBlock, onSelect, onUpdate }: {
   blocks: Calculation['ofs'];
   awnings: Awning[];
   selectedBlock?: Calculation['ofs'][number];
   onSelect: (key: string) => void;
+  onUpdate?: (id: string, patch: Partial<Awning>) => void;
 }) {
   if (!selectedBlock) return <EmptyResult text="Los trabajos de tela no generan planteamiento de estructura." />;
   const awning = findAwning(selectedBlock, awnings);
@@ -99,6 +103,7 @@ function StructurePreview({ blocks, awnings, selectedBlock, onSelect }: {
           <div><span>Estructura {awningLetter(selectedBlock.awningIndex ?? 0)}</span><h3>{controlLabel(awning?.model || calc.model)} {legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}</h3></div>
           <div className="structure-sheet-meta"><span>OF</span><strong>{selectedBlock.of || '-'}</strong><span>Estado</span><strong className={calc.valid ? 'text-ok' : 'text-danger'}>{calc.valid ? 'Válido' : 'Revisar'}</strong></div>
         </header>
+        {awning && selectedBlock.structureEditor && onUpdate && <StructureEditor key={awning.id} awning={awning} editor={selectedBlock.structureEditor} armCount={calc.armCount} onUpdate={onUpdate} />}
         <div className="structure-sheet-body">
           <div className="despiece-table-wrap">
             <table className="despiece-table">
@@ -119,7 +124,7 @@ function StructurePreview({ blocks, awnings, selectedBlock, onSelect }: {
   );
 }
 
-function FabricPreview({ blocks, awnings }: { blocks: Calculation['ofs']; awnings: Awning[] }) {
+function FabricPreview({ blocks, awnings, onUpdate }: { blocks: Calculation['ofs']; awnings: Awning[]; onUpdate?: Props['onUpdate'] }) {
   if (blocks.length === 0) return <EmptyResult text="Completa un elemento para preparar el planteamiento de telas." />;
   return (
     <div className="fabric-preview-table-wrap">
@@ -141,6 +146,7 @@ function FabricPreview({ blocks, awnings }: { blocks: Calculation['ofs']; awning
                 <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{mainFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(mainFabricMl)} ml</strong></td>
                 <td><FabricIndication awning={awning} calculation={calc} /></td>
               </tr>
+              {awning && <tr><td colSpan={9}>{onUpdate ? <FabricImageEditor awning={awning} onUpdate={onUpdate} /> : awning.fabricImage ? <img className="fabric-custom-image" src={awning.fabricImage} alt="Imagen personalizada del planteamiento de tela" /> : null}</td></tr>}
               {hasSeparateValance && (
                 <tr className="fabric-valance-row">
                   <td><small>{awningLetter(block.awningIndex ?? index)} · bamba</small></td>

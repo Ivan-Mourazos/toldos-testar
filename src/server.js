@@ -9,6 +9,7 @@ import { searchStaticFabrics } from './domain/fabricCatalog.js';
 import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
+import { verifyStructureArticles } from './domain/structureEdits.js';
 import { buildOrderAutofill } from './domain/orderAutofill.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
@@ -18,7 +19,7 @@ import {
   assertDeploymentModelsEnabled,
   assertLegacyExportsEnabled
 } from './deploymentFeatures.js';
-import { closeRpsCatalog, getRpsOrder, searchRpsFabrics } from './rpsCatalog.js';
+import { closeRpsCatalog, getRpsOrder, searchRpsFabrics, searchRpsArticles, getRpsArticle } from './rpsCatalog.js';
 import {
   checkWorkflowDirectories,
   createReviewPackage,
@@ -61,7 +62,7 @@ const app = express();
 const generationLocks = new Set();
 
 app.use(compression());
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '20mb' }));
 
 app.use('/api', (req, _res, next) => {
   try {
@@ -107,6 +108,15 @@ app.get('/api/catalog/fabrics', async (req, res) => {
   }
 });
 
+app.get('/api/catalog/articles', async (req, res) => {
+  try {
+    res.json({ source: 'RPSNext', items: await searchRpsArticles({ query: req.query.q, limit: req.query.limit }) });
+  } catch (error) {
+    console.error('RPSNext no disponible para artículos:', error.message);
+    res.status(503).json({ error: 'No se pudo consultar RPS. Reintenta la búsqueda.' });
+  }
+});
+
 app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
   try {
     const orderCode = String(req.params.orderCode || '').trim();
@@ -119,9 +129,9 @@ app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
   }
 });
 
-app.post('/api/calculate', (req, res, next) => {
+app.post('/api/calculate', async (req, res, next) => {
   try {
-    res.json(calculateOrder(req.body));
+    res.json(await calculateConfiguredOrder(req.body));
   } catch (error) {
     next(error);
   }
@@ -147,7 +157,7 @@ app.post('/api/export', async (req, res, next) => {
 app.post('/api/planteamiento', async (req, res, next) => {
   try {
     const order = normalizeOrder(req.body?.order || req.body);
-    const calculation = calculateOrder(order);
+    const calculation = await calculateConfiguredOrder(order);
     const pdf = await buildOrderPlanteamientoPdf({ order, calculation });
     const filename = `${order.orderCode ? sanitizeOrderCode(order.orderCode) : 'PLANTEAMIENTO'}-1.pdf`;
 
@@ -168,7 +178,7 @@ app.post('/api/review-pdf', async (req, res, next) => {
     const normalizedOrder = normalizeOrder(rawOrder);
     const orderCode = normalizedOrder.orderCode ? sanitizeOrderCode(normalizedOrder.orderCode) : 'PEDIDO';
     const order = structuredClone({ ...rawOrder, orderCode });
-    const calculation = calculateOrder(order);
+    const calculation = await calculateConfiguredOrder(order);
     const review = createReviewPackage({ order, calculation });
     const pdf = await buildOrderReviewPdf({ order, calculation, review });
     const filename = `${orderCode}.pdf`;
@@ -270,7 +280,7 @@ app.post('/api/reviews', async (req, res, next) => {
     const normalizedOrder = normalizeOrder(rawOrder);
     const orderCode = sanitizeOrderCode(normalizedOrder.orderCode);
     const order = structuredClone({ ...rawOrder, orderCode });
-    const calculation = calculateOrder(order);
+    const calculation = await calculateConfiguredOrder(order);
     let existing = null;
     try {
       existing = await workflowStore.getReview(orderCode);
@@ -307,7 +317,7 @@ app.post('/api/reviews/:orderCode/request-changes', async (req, res, next) => {
     if (!reviewer) throw new Error('Indica quién realiza la revisión.');
     if (!note) throw new Error('Describe los cambios que hay que realizar.');
     const updated = markReviewChangesRequested(review, { reviewer, note });
-    const calculation = calculateOrder(updated.order);
+    const calculation = await calculateConfiguredOrder(updated.order);
     const pdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
     await workflowStore.saveReview(updated, pdf);
     res.json({ ok: true, review: updated });
@@ -330,7 +340,7 @@ app.post(['/api/reviews/:orderCode/mark-approved', '/api/reviews/:orderCode/appr
     const reviewer = String(req.body?.reviewer || review.order?.reviewer || review.order?.technician || '').trim();
     if (!reviewer) throw new Error('El pedido necesita un técnico o revisor asignado para aprobarlo.');
     const updated = markReviewApproved(review, { reviewer, note: req.body?.note });
-    const calculation = calculateOrder(updated.order);
+    const calculation = await calculateConfiguredOrder(updated.order);
     const pdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
     await workflowStore.saveReview(updated, pdf);
     res.json({ ok: true, review: updated });
@@ -367,7 +377,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
 
     const order = normalizeOrder(review.order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
-    const calculation = calculateOrder(order);
+    const calculation = await calculateConfiguredOrder(order);
     const blockingDiagnostics = calculation.diagnostics.filter((item) => item.level === 'error' || item.level === 'pending');
     if (calculation.ofs.length !== order.awnings.length || blockingDiagnostics.length > 0) {
       throw new Error('El pedido tiene toldos incompletos o diagnósticos bloqueantes. Guarda una nueva revisión corregida antes de generar archivos.');
@@ -500,7 +510,7 @@ app.post('/api/export/save', async (req, res, next) => {
         return;
       }
 
-      const calculation = calculateOrder(orderPayload);
+      const calculation = await calculateConfiguredOrder(orderPayload);
       planteamientoTarget = {
         savedPath: buildPlanteamientoPath(reservation.orderCode),
         workbook: await buildOrderPlanteamientoPdf({ order: orderPayload, calculation })
@@ -769,4 +779,8 @@ async function configureFrontend() {
     appType: 'spa'
   });
   app.use(vite.middlewares);
+}
+
+async function calculateConfiguredOrder(order) {
+  return verifyStructureArticles(calculateOrder(order), getRpsArticle);
 }

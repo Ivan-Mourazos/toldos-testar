@@ -78,7 +78,8 @@ export function calculateAntica({ order, awning }) {
   const valanceFabric = separateValance ? resolveFabric(awning.valanceFabric) : null;
   const supportHeight = Math.max(0, Number(awning.anticaSupportHeight) || 0);
   const units = Math.max(1, Number(awning.units) || 1);
-  const armCount = Number(awning.width) > 400 ? 3 : 2;
+  const requestedArms = Number(awning.structureArmCount);
+  const armCount = Number.isInteger(requestedArms) && requestedArms >= 2 && requestedArms <= 4 ? requestedArms : Number(awning.width) > 400 ? 3 : 2;
   const rollSystem = Number(awning.width) > 400 ? 'P801' : 'P701';
   const stockLengths = [600, 700];
   const roundEntry = resolveAnticaRoundEntry(variant);
@@ -136,7 +137,7 @@ export function calculateAntica({ order, awning }) {
   if (invalidValance) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA ${variant} no admite bambalina.` });
   if (!stockLength) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA no válido: ningún largo de stock admite ${Math.max(rollTubeLength, loadBarLength)} cm.` });
 
-  const motorPower = armCount === 3 ? '35/17' : '15/17';
+  const motorPower = armCount >= 3 ? '35/17' : '15/17';
   const context = {
     awning, variant, device, lacado, fabric, valanceFabric, stockLength, rollSystem,
     armCount, motorPower, rollTubeLength, loadBarLength, supportHeight,

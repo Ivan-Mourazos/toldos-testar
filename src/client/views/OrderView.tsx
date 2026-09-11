@@ -156,7 +156,7 @@ export function OrderView({
         </div>
       </section>}
 
-      {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} />}
+      {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} onUpdate={updateAwning} />}
 
       {!readOnly && pickerType && (
         <ModelPickerDialog

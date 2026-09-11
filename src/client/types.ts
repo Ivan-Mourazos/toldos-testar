@@ -33,6 +33,7 @@ export type Awning = {
   valanceHeight: number | null;
   valanceCurve: string;
   valanceFabric: string;
+  fabricImage?: string | null;
   fabricDiagramOverride: '' | 'TOLDO-VELCRO' | 'CAMBIO ENROLLABLE' | 'SUPLEMENTO';
   remate: string;
   remateColor: string;
@@ -125,6 +126,8 @@ export type Awning = {
   anticaSupportHeight: number | null;
   reglasModificadas: boolean;
   fabric: string;
+  structureEdit?: StructureEdit | null;
+  structureArmCount?: number | null;
   structureNotes: string;
   structureNotesEdited?: boolean;
   fabricNotes: string;
@@ -381,6 +384,16 @@ export type RuleParameters = {
   fabricJobs: FabricJobParameters;
 };
 
+export type StructureRow = {
+  id: string; num: number; name: string; reference: string | null;
+  units: number; length: number | null; reservationQuantity: number;
+  unitCode: string; kind: 'piece' | 'anchoring';
+};
+export type StructureEdit = { signature: string; rows: StructureRow[] };
+export type StructureEditorState = StructureEdit & {
+  baseRows: StructureRow[]; modified: boolean; stale: boolean; referencesToCheck: string[];
+};
+
 export type Calculation = {
   orderCode: string;
   ofs: {
@@ -389,6 +402,7 @@ export type Calculation = {
     of: string;
     description: string;
     materials: { code: string; description?: string; quantity: number; aggregation?: 'sum' | 'max' }[];
+    structureEditor?: StructureEditorState;
     despiece?: {
       rows: { num: number; name: string; reference: string | null; units: number; length: number | null }[];
       anchoring: { name: string; reference: string | null; units: number } | null;

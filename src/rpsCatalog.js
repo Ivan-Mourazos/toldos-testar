@@ -200,3 +200,33 @@ function inferRollWidth(code, unitCode) {
 function normalizeOrderCode(value) {
   return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
+
+// Read-only catalogue lookup; all search values remain SQL parameters.
+export async function searchRpsArticles({ query = '', limit = 30, exact = false } = {}) {
+  const term = String(query).trim().slice(0, 160);
+  if (!term) return [];
+  const pool = await getPool();
+  const request = pool.request()
+    .input('company', sql.VarChar(10), config.db.company)
+    .input('limit', sql.Int, Math.max(1, Math.min(Number(limit) || 30, 60)))
+    .input('exactCode', sql.VarChar(160), term);
+  const tokens = term.split(/\s+/).slice(0, 8);
+  const conditions = tokens.map((token, index) => {
+    request.input('term' + index, sql.NVarChar(200), '%' + token.replace(/[[\]%_]/g, (char) => '[' + char + ']') + '%');
+    return '(a.CodArticle LIKE @term' + index + ' OR a.Description LIKE @term' + index + ')';
+  });
+  const result = await request.query(`
+    SELECT TOP (@limit) a.CodArticle AS code, a.Description AS description, mu.CodMeasureUnit AS unitCode
+    FROM dbo.STKArticle a
+    LEFT JOIN dbo.GENMeasureUnit mu ON mu.IDMeasureUnit = a.IDUnitQuantityWarehouse AND mu.CodCompany = a.CodCompany
+    WHERE a.CodCompany = @company
+      AND (a.InactiveDate IS NULL OR a.InactiveDate > GETDATE())
+      AND ${exact ? 'a.CodArticle = @exactCode' : conditions.join(' AND ')}
+    ORDER BY CASE WHEN a.CodArticle = @exactCode THEN 0 ELSE 1 END, a.CodArticle
+  `);
+  return result.recordset.map((row) => ({ code: String(row.code).trim(), description: String(row.description || '').trim(), unitCode: String(row.unitCode || '').trim() }));
+}
+
+export async function getRpsArticle(reference) {
+  return (await searchRpsArticles({ query: reference, limit: 1, exact: true }))[0] || null;
+}

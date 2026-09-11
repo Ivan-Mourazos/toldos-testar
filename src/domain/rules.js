@@ -1,3 +1,4 @@
+import { applyStructureEdit } from './structureEdits.js';
 import { models } from './catalog.js';
 import { calculateArzuaPro } from './arzuaProRules.js';
 import { calculateGalicia } from './galiciaRules.js';
@@ -84,6 +85,7 @@ export function calculateOrder(payload) {
     const invalidUnits = !Number.isInteger(Number(awning.units)) || Number(awning.units) < 1;
     const calculationAwning = invalidUnits ? { ...awning, units: 1 } : awning;
     let result = rule({ order, awning: calculationAwning, model });
+    result = applyStructureEdit(awning, result);
     if (Array.isArray(result.diagnostics)) {
       diagnostics.push(...result.diagnostics);
     }
@@ -122,6 +124,7 @@ export function calculateOrder(payload) {
       description: result.description || buildAwningDescription(awning),
       materials: result.materials || [],
       despiece: result.despiece || null,
+      structureEditor: result.structureEditor,
       calculation: result.calculation
     });
   }

@@ -4980,3 +4980,34 @@ textarea,
   .confirmation-actions { display: grid; grid-template-columns: 1fr; }
   .confirmation-actions button { width: 100%; }
 }
+
+.structure-editor { padding: 14px; border-bottom: 1px solid #ccd9d4; }
+.structure-editor-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.structure-editor-toolbar label { display: flex; align-items: center; gap: 8px; }
+.structure-editor button { padding: 7px 11px; border: 1px solid #a8bcb4; border-radius: 6px; background: #f4f8f6; color: #173d32; cursor: pointer; }
+.structure-editor button:disabled { opacity: .5; cursor: default; }
+.structure-editor input, .structure-editor select { padding: 7px; border: 1px solid #a8bcb4; border-radius: 4px; min-width: 0; }
+.structure-editor p { font-size: 13px; line-height: 1.5; }
+.structure-editor-warning { padding: 10px; background: #fff3d2; color: #704a00; border-left: 3px solid #c99627; }
+.structure-edited-badge { color: #80580b; font-size: 12px; }
+.structure-edit-scroll { overflow-x: auto; margin: 12px 0; }
+.structure-edit-table { min-width: 800px; width: 100%; }
+.structure-edit-table td:nth-child(2) { min-width: 260px; }
+.structure-edit-table input { width: 100%; box-sizing: border-box; }
+.structure-edit-table input[type=number] { width: 85px; }
+.structure-edit-table small { display: block; margin: 4px 0; }
+.structure-row-modified { background: #fff8e6; }
+.structure-article-search { margin-top: 14px; padding: 14px; border: 2px solid #476e5d; border-radius: 8px; background: white; }
+.structure-article-search header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.structure-article-search > input { width: 100%; box-sizing: border-box; }
+.structure-article-search ul { padding: 0; list-style: none; max-height: 330px; overflow: auto; }
+.structure-article-search li button { display: grid; gap: 4px; text-align: left; width: 100%; margin-bottom: 6px; }
+
+.fabric-image-editor { padding: 14px; border: 1px dashed var(--border, #c6d3d0); border-radius: 8px; white-space: normal; }
+.fabric-image-editor:focus { outline: 2px solid #28746b; outline-offset: 2px; }
+.fabric-image-editor img, .fabric-custom-image { display: block; max-width: 100%; width: auto; max-height: 260px; object-fit: contain; margin: 12px 0; }
+.fabric-image-editor p { margin: 8px 0; }
+
+.fabric-image-editor button { border: 1px solid #b9ccc8; border-radius: 7px; padding: 8px 12px; background: #fff; color: #173b35; font: inherit; font-weight: 600; cursor: pointer; }
+.fabric-image-editor button:hover { background: #edf5f2; }
+.fabric-image-editor button:disabled { opacity: .55; cursor: wait; }
