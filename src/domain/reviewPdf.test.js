@@ -30,6 +30,8 @@ function heraReviewOrder(awningOverrides = {}, orderOverrides = {}) {
       id: 'hera-a',
       model: 'HERA',
       submodel: 'HERA 43 MAQUINA',
+      heraBottomFinish: 'VARILLA BLANCA',
+      heraInteriorFace: 'DERECHO',
       heraJoin: 'VERTICAL',
       units: 1,
       width: 205,

@@ -2,6 +2,14 @@
 
 Nueva app web para sustituir el Excel de planteamientos de toldos.
 
+## Revisión y mejora de modelos
+
+La [guía de trabajo para agentes](./docs/guia-revision-modelos.md) define cómo
+contrastar manuales, configuraciones, despieces y referencias RPS, y mejorar
+formularios, parámetros y dibujos con Oficina Técnica. Incluye una
+[plantilla de expediente](./docs/modelos/PLANTILLA.md) y el
+[seguimiento de todos los modelos](./docs/modelos/README.md).
+
 ## Desarrollo
 
 Requisitos:

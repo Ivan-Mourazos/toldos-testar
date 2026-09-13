@@ -38,6 +38,8 @@ export function calculateHera({ order, awning }) {
   if (!variant) missing.push('variante');
   if (!fabricSelection) missing.push('tela');
   if (!join) missing.push('empate');
+  if (!String(awning.heraBottomFinish || '').trim()) missing.push('remate inferior');
+  if (!['DERECHO', 'REVÉS', 'REVES'].includes(String(awning.heraInteriorFace || '').trim().toUpperCase())) missing.push('cara interior');
   if (rule && !rule.motor && height <= 0) missing.push('altura');
 
   if (fabricSelection && !fabric) {
@@ -71,7 +73,8 @@ export function calculateHera({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `HERA en OF ${awning.of}: pedir tubo especial y cambiar el presupuesto.` });
   }
 
-  const valid = Boolean(rule)
+  const valid = missing.length === 0
+    && Boolean(rule)
     && Boolean(fabric)
     && Boolean(join)
     && dimensionsValid

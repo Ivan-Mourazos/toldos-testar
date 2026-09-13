@@ -6,8 +6,9 @@ import { calculateOrder } from '../src/domain/rules.js';
 const excelRoot = process.env.TOLDOS_EXCEL_ROOT || String.raw`Y:\2025\TOLDOS`;
 const validationYear = Number(process.env.RPS_VALIDATION_YEAR);
 const orderPrefix = Number.isInteger(validationYear) ? `AR${String(validationYear).slice(-2)}` : '';
+const selectedOrder = compact(process.env.RPS_VALIDATION_ORDER_CODE || '');
 const filenames = (await readdir(excelRoot))
-  .filter((name) => /hera/i.test(name) && /\.xlsx$/i.test(name))
+  .filter((name) => /\.xlsx$/i.test(name) && (selectedOrder ? compact(name).startsWith(selectedOrder) : /hera/i.test(name)))
   .filter((name) => !name.startsWith('~$'))
   .filter((name) => !/NON COLLER COMO\s+REFERENCIA/i.test(name))
   .filter((name) => !orderPrefix || compact(name).startsWith(orderPrefix));

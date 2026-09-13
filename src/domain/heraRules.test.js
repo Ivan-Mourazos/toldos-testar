@@ -16,6 +16,8 @@ function hera(overrides = {}, orderOverrides = {}) {
       model: 'HERA',
       submodel: 'HERA 56 MAQUINA',
       heraJoin: 'NINGUNO',
+      heraBottomFinish: 'VARILLA BLANCA',
+      heraInteriorFace: 'DERECHO',
       units: 1,
       width: 163.5,
       projection: 165,
@@ -182,6 +184,7 @@ describe('reglas HERA', () => {
       orderCode: 'AR26HERA', fabric: soltis267,
       awnings: [1, 2].map((index) => ({
         id: `hera-${index}`, of: '0231000', model: 'HERA', submodel: 'HERA 56 MOTOR',
+        heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO',
         heraJoin: 'NINGUNO', units: 1, width: 200, projection: 101, height: 0
       }))
     });
@@ -192,4 +195,11 @@ describe('reglas HERA', () => {
       code: 'SOLTIS96NUBP267', description: 'SOLTIS 96 NUBE', quantity: 3
     }]);
   });
+});
+
+test.each([{ heraBottomFinish: '' }, { heraInteriorFace: '' }, { heraInteriorFace: 'OTRO' }])('bloquea reserva si falta remate o cara interior: %j', (patch) => {
+  const result = hera(patch);
+  expect(result.ofs[0].calculation.valid).toBe(false);
+  expect(result.ofs[0].materials).toEqual([]);
+  expect(result.diagnostics.some((item) => item.level === 'error')).toBe(true);
 });

@@ -27,6 +27,7 @@
     "test:rps:full": "pnpm validate:rps:all && pnpm test:e2e:rps",
     "validate:arzua": "node scripts/validate-arzua-production.mjs",
     "validate:galicia": "node scripts/validate-galicia-production.mjs",
+    "test:e2e:hera": "pnpm build && node scripts/test-hera-workflow.mjs",
     "validate:hera": "node scripts/validate-hera-production.mjs",
     "validate:maxiscreem": "node scripts/validate-maxiscreem-production.mjs",
     "validate:electra": "node scripts/validate-electra-production.mjs",

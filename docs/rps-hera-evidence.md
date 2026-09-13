@@ -72,3 +72,22 @@ un margen general adicional.
 `pnpm validate:hera` valida el directorio indicado por `TOLDOS_EXCEL_ROOT`.
 El validador general `pnpm validate:rps:all` lo ejecuta para 2025 y 2026 y deja
 el detalle en `output/rps-validation/details/`.
+
+## Comprobación del flujo web (12/09/2026)
+
+- El servidor bloquea la generación si faltan el remate inferior o la cara interior.
+- La ficha final imprime el corte cuando difiere de la medida base, el sentido del empate y la cara interior. Esta última se conserva como texto incluso con una imagen personalizada.
+- `pnpm test:e2e:hera` compila y prueba las tres variantes mediante guardar, reabrir, aprobar y generar; comprueba el bloqueo de un pedido incompleto y el selector de parámetros en Chromium. Arranca una instancia aislada con HERA habilitado y escribe únicamente en `output/hera-workflow/`. No conecta a RPS ni sustituye el contraste con pedidos históricos.
+- PM2 sigue manteniendo HERA deshabilitado. La validación histórica requiere que `TOLDOS_EXCEL_ROOT` apunte a los libros reales accesibles.
+
+## Contraste directo del 3981 (13/09/2026)
+
+Se releyeron los históricos por la ruta UNC de Oficina Técnica: 2025 mantiene 136 comprobaciones estándar y 2026, por nombre HERA, 4; ninguna diferencia dimensional. Las dos excepciones de AR2503220 permanecen separadas.
+
+AR2603981 tiene cinco libros AR2603981-1.xlsx a -5.xlsx que el filtro por nombre HERA omitía. Ahora RPS_VALIDATION_ORDER_CODE permite seleccionar el pedido. Las veinte medidas de tubo, frente de tela, salida y cadena coinciden. RPS identifica cinco HERA en OF 0231249, artículo RECSCR3BLSAP300, reserva 15 ml. La OF 0231250 es una lona adicional con reserva propia de 5 ml y no forma parte de esta comparación.
+
+La web calcula 2,88 + 2,8 + 2,8 + 2,8 + 2,8 = 14,08 ml, redondeados por OF a 14,5 ml suponiendo sin empate. Faltan confirmar la confección real y el motivo de 0,5 ml adicionales en RPS. No se modifica la regla general basándose en una reserva manual.
+
+El toldo A indica tela 6 cm más corta en el lado izquierdo mirando desde dentro. Se conserva como instrucción de CAD/taller; no se deduce de ella derecho/revés interior. La ficha ya imprime completas las aclaraciones y el material, continuando en otra página si hace falta.
+
+Reproducir con TOLDOS_EXCEL_ROOT apuntando al directorio real de 2026 y node scripts/compare-hera-3981.mjs. Consulta RPS en solo lectura y crea fichas y contraste en output/hera-real/. La revisión de taller y la activación siguen pendientes.

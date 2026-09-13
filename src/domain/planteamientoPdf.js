@@ -419,7 +419,7 @@ function drawHeraFabricPage(doc, { order, entries }) {
   const pageH = doc.page.height;
   const margin = 14;
   const tableW = pageW - margin * 2;
-  const top = 78;
+  const top = 24;
   entries.forEach((entry) => {
     const line = toFabricLine(entry);
     const detail = buildHeraMiniPlanDetail(line.awning, line.calc, order);
@@ -433,7 +433,7 @@ function drawHeraFabricPage(doc, { order, entries }) {
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento HERA');
 }
 
-function drawHeraLegacyBlock(doc, x, y, w, h, { order, detail, letter, fabricImage }) {
+function drawHeraLegacyBlock(doc, x, y, w, _h, { order, detail, letter, fabricImage }) {
   const drawingW = 150;
   const tableW = w - drawingW;
   const sectionW = 86;
@@ -442,19 +442,31 @@ function drawHeraLegacyBlock(doc, x, y, w, h, { order, detail, letter, fabricIma
   const valueW = tableW - sectionW - labelW;
   const titleH = 25;
   const orderH = 22;
-  const rowH = 15;
+  const rowH = 13;
   const gapH = 6;
   const rows = [
     ['MATERIAL', detail.fabricMaterial],
     ['TUBO DE ENROLLE', legacyHeraValue(detail.rollTube)],
     ['TELA', legacyHeraValue(detail.fabricWidth)],
     ['SALIDA DE TELA', legacyHeraValue(detail.fabricDrop)],
+    ...(detail.fabricCut ? [['CORTE TELA (FRENTE × SALIDA)', detail.fabricCut]] : []),
+    ['EMPATE', detail.join],
+    ['CARA INTERIOR', detail.interiorFace ? detail.interiorFace + ' DENTRO' : 'POR DEFINIR'],
     ...(detail.manual ? [['CADENA', legacyHeraValue(detail.chain)]] : []),
     ['ARRIBA', detail.topFinish],
     ['ABAJO', detail.bottomFinish],
-    ['ACLARACIONES', detail.notes || '-'],
-    ...(detail.fabricNotes ? [['OBS. TELA', detail.fabricNotes]] : [])
+
   ];
+  const overflowNotes = [];
+  for (const row of rows) {
+    doc.font(fonts.semibold).fontSize(7.2);
+    if (['MATERIAL', 'ACLARACIONES', 'OBS. TELA'].includes(row[0]) && (doc.widthOfString(row[1]) > valueW - 6 || /[\r\n]/.test(row[1]))) {
+      overflowNotes.push(row[0] + ': ' + row[1]);
+      row[1] = 'VER NOTAS COMPLETAS';
+    }
+  }
+  if (detail.notes && detail.notes !== '-') overflowNotes.push('ACLARACIONES: ' + detail.notes);
+  if (detail.fabricNotes) overflowNotes.push('OBS. TELA: ' + detail.fabricNotes);
   const totalH = titleH + orderH + rowH * 3 + gapH + rows.length * rowH;
 
   roundedBox(doc, x, y, tableW, totalH, 5, colors.paper, colors.line);
@@ -512,7 +524,8 @@ function drawHeraLegacyBlock(doc, x, y, w, h, { order, detail, letter, fabricIma
     detail.interiorFace || 'POR DEFINIR',
     letter
   );
-  doc.roundedRect(x, y, tableW, Math.min(h, totalH), 5).strokeColor(colors.ink).lineWidth(0.9).stroke();
+  doc.roundedRect(x, y, tableW, totalH, 5).strokeColor(colors.ink).lineWidth(0.9).stroke();
+  drawHeraCompleteNotes(doc, x, y + totalH + 10, w, overflowNotes, order.orderCode, letter);
 }
 
 function legacyHeraValue(input) {
@@ -1951,5 +1964,58 @@ function drawCustomFabricImage(doc, x, y, w, h, input) {
     doc.image(Buffer.from(image.split(',')[1], 'base64'), x + 4, y + 4, { fit: [w - 8, h - 8], align: 'center', valign: 'center' });
   } catch {
     throw new Error('No se pudo incluir la imagen del planteamiento. Importa una imagen PNG o JPG válida.');
+  }
+}
+
+function drawHeraCompleteNotes(doc, x, startY, width, notes, orderCode, letter) {
+  let cursor = startY;
+  const lineHeight = 12;
+  const headerHeight = 15;
+  const padding = 6;
+  const textWidth = width - padding * 2 - 4;
+  const nextPage = () => {
+    drawPageFooter(doc, x, doc.page.width, doc.page.height, 'Planteamiento HERA · continúa');
+    doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
+    doc.fillColor(colors.ink).font(fonts.bold).fontSize(11).text('HERA · ' + orderCode + ' · Toldo ' + letter + ' · Notas', x, 18);
+    cursor = 42;
+  };
+  for (const note of notes) {
+    const separator = note.indexOf(':');
+    const label = separator >= 0 ? note.slice(0, separator) : 'ACLARACIONES';
+    const content = separator >= 0 ? note.slice(separator + 1).trim() : note;
+    const workshop = label === 'ACLARACIONES';
+    const title = workshop ? 'ACLARACIONES PARA TALLER' : label === 'OBS. TELA' ? 'OBSERVACIONES DE TELA' : label;
+    const font = workshop ? fonts.semibold : fonts.regular;
+    doc.font(font).fontSize(9);
+    const lines = [];
+    for (const paragraph of content.split(/\r?\n/)) {
+      let current = '';
+      for (const word of paragraph.split(/\s+/)) {
+        if (current && doc.widthOfString(current + ' ' + word) > textWidth) { lines.push(current); current = ''; }
+        for (const char of (current ? ' ' : '') + word) {
+          if (doc.widthOfString(current + char) > textWidth) { lines.push(current); current = ''; }
+          current += char;
+        }
+      }
+      if (current) lines.push(current);
+    }
+    let offset = 0;
+    while (offset < lines.length) {
+      const fullHeight = headerHeight + padding * 2 + (lines.length - offset) * lineHeight;
+      const available = doc.page.height - 28 - cursor;
+      // Keep normal cards together; split only notes longer than an entire page.
+      if (fullHeight > available && fullHeight <= doc.page.height - 70) nextPage();
+      let count = Math.floor((doc.page.height - 28 - cursor - headerHeight - padding * 2) / lineHeight);
+      if (count < 1) { nextPage(); count = Math.floor((doc.page.height - 28 - cursor - headerHeight - padding * 2) / lineHeight); }
+      const chunk = lines.slice(offset, offset + count);
+      const height = headerHeight + padding * 2 + chunk.length * lineHeight;
+      doc.rect(x, cursor, width, height).fillAndStroke(workshop ? '#fff9e7' : '#f3f7f6', workshop ? '#b88920' : colors.line);
+      doc.rect(x, cursor, 3, height).fill(workshop ? colors.yellow : colors.inkSoft);
+      doc.rect(x + 3, cursor, width - 3, headerHeight).fill(workshop ? '#f9e5a8' : '#dce8e4');
+      doc.fillColor(colors.ink).font(fonts.bold).fontSize(8).text(title + (offset ? ' · CONTINUACIÓN' : ''), x + padding + 3, cursor + 3, { width: textWidth, lineBreak: false });
+      chunk.forEach((line, index) => doc.fillColor(colors.ink).font(font).fontSize(9).text(line, x + padding + 3, cursor + headerHeight + padding + index * lineHeight, { width: textWidth, lineBreak: false }));
+      cursor += height + 7;
+      offset += chunk.length;
+    }
   }
 }

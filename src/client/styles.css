@@ -1080,6 +1080,8 @@ label span,
   overflow: hidden;
 }
 
+.parameters-page:has(.parameter-model-menu) { overflow: visible; }
+
 .parameter-model-switch {
   background: #111;
   border-bottom: 1px solid #3a3a3a;
