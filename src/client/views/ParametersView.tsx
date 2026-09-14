@@ -4,6 +4,7 @@ import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVar
 import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
 import { controlLabel, legacyModelName } from '../components/controlLabels';
+import { AnticaRuleReference, HeraRuleReference, IrisRuleReference, CambioAnticaRuleReference } from './RuleReferencePanels';
 import { arzuaProManualSpec } from '../../domain/arzuaProConstants.js';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
@@ -15,7 +16,7 @@ const discountLabels = {
   fabricWidthDiscounts: 'Tela'
 } as const;
 type DiscountGroup = typeof discountGroups[number];
-type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'XACOBEO' | 'PUNTO RECTO' | 'MONOBLOCK 350' | 'MAXISCREEM' | 'ELECTRA' | 'CORTINA' | 'SELENA' | 'CAMBIO CORTINA' | FabricJobModel | 'HERA' | 'ANTICA' | 'AMBAR BOX' | 'AGATA BOX' | 'PERLA BOX' | 'CORAL BOX' | 'CUARZO BOX';
+type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'XACOBEO' | 'PUNTO RECTO' | 'MONOBLOCK 350' | 'MAXISCREEM' | 'ELECTRA' | 'CORTINA' | 'SELENA' | 'CAMBIO CORTINA' | FabricJobModel | 'HERA' | 'ANTICA' | 'IRIS' | 'AMBAR BOX' | 'AGATA BOX' | 'PERLA BOX' | 'CORAL BOX' | 'CUARZO BOX';
 
 type Props = {
   parameters: RuleParameters;
@@ -58,7 +59,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
   const isGalicia = selectedModel === 'GALICIA';
   const isBox = selectedModel === 'CORAL BOX' || selectedModel === 'PERLA BOX' || selectedModel === 'CUARZO BOX';
 
-  if (selectedModel === 'HERA' || selectedModel === 'ANTICA') {
+  if (selectedModel === 'HERA' || selectedModel === 'ANTICA' || selectedModel === 'IRIS') {
     return <OrderConfiguredModelView selectedModel={selectedModel} onSelectModel={setSelectedModel} />;
   }
 
@@ -310,7 +311,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
 const fabricParameterModels = new Set<FabricJobModel>(['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
 
 const parameterModels: SelectedModel[] = [
-  'ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'MAXISCREEM', 'ELECTRA', 'HERA', 'ANTICA',
+  'ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'MAXISCREEM', 'ELECTRA', 'IRIS', 'HERA', 'ANTICA',
   'CORTINA', 'SELENA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA',
   'AMBAR BOX', 'AGATA BOX', 'PERLA BOX', 'CORAL BOX', 'CUARZO BOX'
 ];
@@ -548,29 +549,14 @@ function ArzuaParametersView({ parameters, selectedModel, onSelectModel, onUpdat
 }
 
 function OrderConfiguredModelView({ selectedModel, onSelectModel }: {
-  selectedModel: 'HERA' | 'ANTICA';
+  selectedModel: 'HERA' | 'ANTICA' | 'IRIS';
   onSelectModel: (model: SelectedModel) => void;
 }) {
-  const hera = selectedModel === 'HERA';
-  return (
-    <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
-      <header className="parameters-heading">
-        <div>
-          <span className="section-kicker">Modelo en producción</span>
-          <ParameterModelTitle model={selectedModel} />
-          <p>{hera ? 'HERA 43 y HERA 56, con máquina o motor según variante.' : 'Configuraciones de soporte, tubo y contrapeso según el pedido.'}</p>
-        </div>
-      </header>
-      <div className="parameter-band parameter-band-message">
-        <div className="parameter-band-title"><span>01</span><div><h3>Configuración por pedido</h3><p>Este modelo no tiene valores globales que deban modificarse aquí.</p></div></div>
-        <div className="parameter-model-information">
-          <strong>{hera ? 'Variante, lado y acabados' : 'Soporte, medida y terminación'}</strong>
-          <p>La web muestra y valida sus opciones directamente al añadir el toldo. Así cada unidad conserva la configuración que realmente corresponde, sin aplicar un ajuste general a otros pedidos.</p>
-        </div>
-      </div>
-    </section>
-  );
+  return <section className="parameters-page">
+    <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
+    <header className="parameters-heading"><div><span className="section-kicker">Consulta de reglas actuales</span><ParameterModelTitle model={selectedModel} /><p>Aumentos, descuentos y condiciones que aplica la web. Consulta sin modificar pedidos ni valores generales.</p></div></header>
+    {selectedModel === 'ANTICA' ? <AnticaRuleReference /> : selectedModel === 'HERA' ? <HeraRuleReference /> : <IrisRuleReference />}
+  </section>;
 }
 
 function ParameterModelSelector({ selectedModel, onSelectModel }: {
@@ -1066,6 +1052,7 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
       </div>
+      {selectedModel === 'CAMBIO ANTICA' && <CambioAnticaRuleReference parameters={parameters} />}
       <aside className="rps-evidence"><strong>Origen Excel</strong><span>CAM. TELA +40 cm, ENROL. +25 cm, BAMBALINA +5 cm y CAM. ANTICA +65 cm; Antica usa +40 cm cuando la bamba va en otra tela. Esa bamba se reserva por separado.</span></aside>
     </section>
   );

@@ -5,29 +5,8 @@ import { machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 
-export const ANTICA_TUBE_33_VARIANT = 'ENTRADA TUBO Ø33 MM';
-export const ANTICA_TUBE_42_VARIANT = 'ENTRADA TUBO Ø42 MM';
-
-export const anticaRoundEntrySpecs = Object.freeze({
-  [ANTICA_TUBE_33_VARIANT]: Object.freeze({
-    diameterMm: 33,
-    cambioDropAllowanceCm: 45,
-    cambioSeparateValanceAllowanceCm: 40,
-    fullDropAllowanceCm: 38,
-    fullFabricWidthDiscountCm: 7.2,
-    fullRollTubeDiscountCm: 6.2,
-    fullLoadBarDiscountCm: 7.2
-  }),
-  [ANTICA_TUBE_42_VARIANT]: Object.freeze({
-    diameterMm: 42,
-    cambioDropAllowanceCm: 60,
-    cambioSeparateValanceAllowanceCm: 55,
-    fullDropAllowanceCm: 60,
-    fullFabricWidthDiscountCm: 10.5,
-    fullRollTubeDiscountCm: 11,
-    fullLoadBarDiscountCm: 11.5
-  })
-});
+import { ANTICA_TUBE_33_VARIANT, ANTICA_TUBE_42_VARIANT, anticaRoundEntrySpecs, ANTICA_RULES, getAnticaDropRule, getAnticaDiscounts } from './anticaParameters.js';
+export { ANTICA_TUBE_33_VARIANT, ANTICA_TUBE_42_VARIANT, anticaRoundEntrySpecs } from './anticaParameters.js';
 
 /** @type {readonly import('../client/types').Awning['anticaVariant'][]} */
 export const anticaVariants = Object.freeze([
@@ -79,16 +58,11 @@ export function calculateAntica({ order, awning }) {
   const supportHeight = Math.max(0, Number(awning.anticaSupportHeight) || 0);
   const units = Math.max(1, Number(awning.units) || 1);
   const requestedArms = Number(awning.structureArmCount);
-  const armCount = Number.isInteger(requestedArms) && requestedArms >= 2 && requestedArms <= 4 ? requestedArms : Number(awning.width) > 400 ? 3 : 2;
-  const rollSystem = Number(awning.width) > 400 ? 'P801' : 'P701';
-  const stockLengths = [600, 700];
+  const armCount = Number.isInteger(requestedArms) && requestedArms >= 2 && requestedArms <= 4 ? requestedArms : Number(awning.width) > ANTICA_RULES.armSwitchWidth ? 3 : 2;
+  const rollSystem = Number(awning.width) > ANTICA_RULES.armSwitchWidth ? 'P801' : 'P701';
+  const stockLengths = ANTICA_RULES.stockLengths;
   const roundEntry = resolveAnticaRoundEntry(variant);
-  const roundMachine = roundEntry && device === 'MAQUINA';
-  const fabricDiscount = roundMachine ? roundEntry.fullFabricWidthDiscountCm : device === 'MOTOR' ? 11 : 12;
-  const rollDiscount = roundMachine ? roundEntry.fullRollTubeDiscountCm : device === 'MOTOR' ? 10 : 11;
-  const loadDiscount = roundMachine
-    ? roundEntry.fullLoadBarDiscountCm
-    : isFixedVariant(variant) ? (device === 'MOTOR' ? 10 : 11) : (device === 'MOTOR' ? 11 : 12);
+  const { fabric: fabricDiscount, roll: rollDiscount, load: loadDiscount } = getAnticaDiscounts(variant, device);
   const fabricWidth = round1(Number(awning.width) - fabricDiscount);
   const rollTubeLength = round1(Number(awning.width) - rollDiscount);
   const loadBarLength = round1(Number(awning.width) - loadDiscount);
@@ -100,17 +74,17 @@ export function calculateAntica({ order, awning }) {
     drop: bodyDrop,
     units,
     rollWidth: fabric?.width || 120,
-    seamAllowanceCm: 2.5,
-    seamBaseCm: 6.5
+    seamAllowanceCm: ANTICA_RULES.seamAllowanceCm,
+    seamBaseCm: ANTICA_RULES.seamBaseCm
   });
-  const valanceDrop = separateValance ? round1(valanceHeight + 5) : 0;
+  const valanceDrop = separateValance ? round1(valanceHeight + ANTICA_RULES.valanceExtraCm) : 0;
   const valanceUsage = separateValance ? calculateFabricUsage({
     width: Number(awning.width),
     drop: valanceDrop,
     units,
     rollWidth: valanceFabric?.width || 120,
-    seamAllowanceCm: 2.5,
-    seamBaseCm: 6.5
+    seamAllowanceCm: ANTICA_RULES.seamAllowanceCm,
+    seamBaseCm: ANTICA_RULES.seamBaseCm
   }) : { panels: 0, ml: 0 };
   const missingFields = [];
 
@@ -169,20 +143,12 @@ export function calculateAntica({ order, awning }) {
   };
 }
 
-function calculateAnticaBodyDrop({ awning, variant, supportHeight, valanceHeight, separateValance }) {
+export function calculateAnticaBodyDrop({ awning, variant, supportHeight, valanceHeight, separateValance }) {
   const projection = Math.max(0, Number(awning.projection) || 0);
-  const roundEntry = resolveAnticaRoundEntry(variant);
-  if (roundEntry) {
-    return Math.hypot(projection, supportHeight)
-      + roundEntry.fullDropAllowanceCm
-      + (separateValance ? 0 : valanceHeight);
-  }
-  if (separateValance) return projection + 40;
-  if (variant === 'SOPORTE FIJO 3 AGUJEROS') {
-    return Math.hypot(projection, supportHeight) + 75 + valanceHeight;
-  }
-  if (variant === 'TUBO 50X30 SIN BAMBA') return projection * Math.SQRT2 + 70;
-  return projection * Math.SQRT2 + 76 + valanceHeight;
+  const rule = getAnticaDropRule(variant, separateValance);
+  const base = rule.base === 'diagonal' ? Math.hypot(projection, supportHeight)
+    : rule.base === 'squareDiagonal' ? projection * Math.SQRT2 : projection;
+  return base + rule.allowance + (rule.includeValance ? valanceHeight : 0);
 }
 
 function buildMaterials(context) {
