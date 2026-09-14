@@ -93,7 +93,11 @@ export function buildPlanteamientoPlan(order, calculation) {
   entries.forEach((entry) => {
     const cadDiagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
     const diagram = getFabricPatternDiagram(entry.awning, cadDiagram);
-    const groupKey = JSON.stringify([fabricDiagramGroupKey(diagram, entry.awning), normalizeFabricImage(entry.awning.fabricImage), diagram === 'BAMBALINA' ? entry.ofBlock?.calculation?.fabricDrop : null]);
+    const groupKey = JSON.stringify([
+      fabricDiagramGroupKey(diagram, entry.awning),
+      normalizeFabricImage(entry.awning.fabricImage),
+      measuredDiagramKey(diagram, entry.ofBlock?.calculation)
+    ]);
     const group = grouped.get(groupKey) || { diagram, diagramAwning: entry.awning, entries: [] };
     group.entries.push(entry);
     grouped.set(groupKey, group);
@@ -120,6 +124,19 @@ export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagr
   if (model.includes('ANTICA')) return 'ANTICA';
   if (model === 'IRIS') return 'IRIS';
   return 'GENERAL';
+}
+
+// Los dibujos que rotulan medidas no pueden agrupar entradas de distinto corte:
+// el rótulo sería correcto solo para la primera. Cada uno declara aquí qué medidas
+// muestra, así que añadir un dibujo con cotas obliga a decidirlo.
+const measuredDiagrams = {
+  BAMBALINA: (calculation) => [calculation?.fabricDrop ?? null],
+  ENROLLABLE: (calculation) => [calculation?.fabricWidth ?? null, calculation?.fabricDrop ?? null]
+};
+
+function measuredDiagramKey(diagram, calculation) {
+  const measures = measuredDiagrams[diagram];
+  return measures ? measures(calculation) : null;
 }
 
 function fabricDiagramGroupKey(diagram, awning) {
@@ -689,7 +706,7 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'TOLDO-VELCRO') return drawToldoVelcroDiagram(doc, x, y, w, h, awning);
   if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
   if (diagram === 'SUPLEMENTO') return drawSupplementDiagram(doc, x, y, w, h, awning);
-  if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h);
+  if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h, calculation);
   if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning, calculation);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
   if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h);
@@ -1469,12 +1486,25 @@ function drawValanceOverSupplement(doc, x, top, w, bottom, curve) {
   doc.fillAndStroke('#e3ece7', '#c75d55');
 }
 
-function drawRollerDiagram(doc, x, y, w, h) {
+// Iván confirma el 14/09/2026 que la varilla plana, la pletina 30 × 6 y el refuerzo
+// de PVC son siempre iguales y que un enrollable no tiene más variantes. Lo que
+// faltaba era el corte, que hasta ahora no aparecía en ninguna parte del dibujo.
+function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
   drawDiagramShell(doc, x, y, w, h, 'ENROLLABLE');
+  const medidas = [
+    calculation.fabricWidth ? `FRENTE ${formatInstructionMeasure(calculation.fabricWidth)} CM` : '',
+    calculation.fabricDrop ? `CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM` : ''
+  ].filter(Boolean).join(' · ');
+  if (medidas) {
+    doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
+    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
+      .text(medidas, x + 40, y + 41, { width: w - 80, align: 'center' });
+  }
   const panelW = Math.min(112, w - 76);
   const panelX = x + (w - panelW) / 2;
-  const panelY = y + 65;
-  const panelH = 225;
+  // El panel baja para dejar sitio a la chapa de medidas sobre la varilla plana.
+  const panelY = y + 76;
+  const panelH = 218;
   doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#7fa594');
   doc.rect(panelX, panelY, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
   doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');

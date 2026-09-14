@@ -1,4 +1,5 @@
 import { roundQuantity } from './math.js';
+import { countFabricRows } from './fabricMath.js';
 
 /**
  * Fórmula fija que usa ESTR.01-04!Q28 para enviar lona a RPS.
@@ -29,9 +30,12 @@ export function calculateLegacyRpsFabricUsage({
   seamBaseCm
 }) {
   const panels = countLegacyRpsFabricPanels(width, rollWidth, { seamAllowanceCm, seamBaseCm });
+  // El anidado de piezas estrechas también vale aquí: esta es la cantidad que se
+  // pide de verdad, no solo la que se muestra en el planteamiento.
+  const rows = countFabricRows(width, units, rollWidth);
   return {
     panels,
-    ml: roundQuantity((Number(units) || 0) * (Number(drop) || 0) * panels / 100)
+    ml: roundQuantity(rows * (Number(drop) || 0) * panels / 100)
   };
 }
 
