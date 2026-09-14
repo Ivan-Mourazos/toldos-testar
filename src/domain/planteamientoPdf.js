@@ -1417,7 +1417,11 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   drawValanceOverSupplement(doc, stripX, stripY, stripW, joinY, valance.curve);
   doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(6.4)
     .text('BAMBALINA', stripX + 8, stripY + 6, { width: stripW - 16, align: 'center' });
-  doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
+  // La línea de sujeción solo existe si hay sujeción: sin ella marcaría un canto
+  // sin decir cuál, que es lo que se quiere evitar.
+  if (supplement.fastening) {
+    doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
+  }
   if (supplement.fastening && supplement.withStuds) {
     for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
       doc.circle(broochX, broochY, 1.25).fill('#c75d55');

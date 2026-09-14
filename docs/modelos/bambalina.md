@@ -148,3 +148,9 @@ Límites: las bastillas 1, 3 y 4 y el paso 34 salen del plano del 4220, un únic
 - El solape sobre la onda era un rótulo en duro desde cea6a32, sin respaldo en Excel, RPS ni en el plano del 4220, y sin efecto en el cálculo. Pasa a campo opcional. El plano de Adrián no cota ningún solape: su «3» es la bastilla de unión, que es otra cosa.
 - El paso pertenece a los broches. Con velcro o con una sujeción escrita a mano no se ofrece, no se guarda y no se dibuja, y tampoco se pintan los puntos de broche.
 - El dibujo muestra la bambalina por delante del suplemento, con su canto ondulado recortándolo y el rótulo «suplemento por detrás». Bastilla, sujeción y paso van en un solo rótulo, como el «BN(3) + BROCHES» del plano.
+
+### Cierre del 14/09/2026
+
+- La línea de sujeción del suplemento solo se traza si hay sujeción. Antes se dibujaba siempre y marcaba un canto sin decir cuál, el mismo defecto que los rótulos fijos pero en forma de trazo. Se detectó revisando el catálogo de dibujos, no con un test: la ausencia de una línea vectorial no se puede afirmar extrayendo texto del PDF.
+- Recorrido completo superado con pnpm test:e2e:bambalina: parámetros persistidos, cuatro curvas, corte, guardar, reabrir, aprobar, generar, imagen, notas, PDF y reserva.
+- Catálogo de dibujos revisado a tamaño de impresión con pnpm render:diagramas: cuatro curvas, suplemento sin configurar y enrollable.
