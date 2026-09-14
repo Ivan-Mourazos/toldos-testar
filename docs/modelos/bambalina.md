@@ -4,6 +4,8 @@
 
 [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md)
 
+Rama `bambalina`, partiendo de 6420950 en main. Cuatro commits: el piloto iniciado por Codex, el saneado de lint y test, este expediente con el barrido de 2026 y el anidado de rollo. Siguiente acción ejecutable: abrir el 4111 con Iván para cerrar Q-B06.
+
 ## Alcance y decisiones de OT
 
 Bambalina independiente (BAMBALINA, trabajo FABRIC_ONLY). Iván confirma que la varilla blanca superior y las bastillas laterales se hacen siempre igual. Confirma también mantener el redondeo de la reserva a múltiplos de 0,5 ml: en el 4031, 1,2 ml calculados se exportan como 1,5 ml.
