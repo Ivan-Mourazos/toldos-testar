@@ -51,7 +51,8 @@ test('Antica admite cuatro brazos y permite reservar brazos y manivela de otro c
   const order = fixture(); order.awnings[0].structureArmCount = 4;
   const pending = calculateOrder(order);
   expect(pending.ofs[0].calculation.armCount).toBe(4);
-  expect(pending.diagnostics.some((item) => item.message.includes('referencia de RPS'))).toBe(true);
+  expect(pending.ofs[0].calculation.valid).toBe(true);
+  expect(pending.diagnostics.some((item) => item.message.includes('fabricación TGM'))).toBe(true);
   const calc = edit(order, (rows) => {
     Object.assign(rows.find((row) => row.name === 'BRAZO ANTICA'), { reference: 'BRAZO-RPS', reservationQuantity: 4 });
     Object.assign(rows.find((row) => row.name.startsWith('MANIVELA')), { reference: 'MANIVELA-NEGRA', name: 'MANIVELA NEGRA', reservationQuantity: 1 });

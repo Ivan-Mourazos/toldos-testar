@@ -1,3 +1,4 @@
+import { resolveAnticaCrank, anticaPointCode } from './anticaComponents.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -50,6 +51,7 @@ export function calculateAntica({ order, awning }) {
   const structureColor = awning.structureColor || order.structureColor;
   const lacado = resolveLacado(structureColor);
   const device = normalizeDevice(awning.device);
+  const crank = resolveAnticaCrank(awning, lacado);
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
   const valanceHeight = Math.max(0, Number(awning.valanceHeight) || 0);
@@ -111,9 +113,12 @@ export function calculateAntica({ order, awning }) {
   if (invalidValance) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA ${variant} no admite bambalina.` });
   if (!stockLength) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA no válido: ningún largo de stock admite ${Math.max(rollTubeLength, loadBarLength)} cm.` });
 
+  if (valid) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA · fabricación TGM: brazos, carga y otros componentes sin referencia deben completarse con taller. La reserva automática de estructura es parcial.' });
+  if (valid && device === 'MAQUINA' && !crank.code) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA: manivela sin correspondencia automática para ese color y largo. Selecciona el artículo en Editar despiece para incluirla en la reserva.' });
+
   const motorPower = armCount >= 3 ? '35/17' : '15/17';
   const context = {
-    awning, variant, device, lacado, fabric, valanceFabric, stockLength, rollSystem,
+    awning, variant, device, lacado, crank, fabric, valanceFabric, stockLength, rollSystem,
     armCount, motorPower, rollTubeLength, loadBarLength, supportHeight,
     mainFabricMl: mainUsage.ml, valanceFabricMl: valanceUsage.ml
   };
@@ -152,12 +157,12 @@ export function calculateAnticaBodyDrop({ awning, variant, supportHeight, valanc
 }
 
 function buildMaterials(context) {
-  const { awning, device, lacado, fabric, valanceFabric, stockLength, rollSystem, motorPower, mainFabricMl, valanceFabricMl } = context;
+  const { awning, device, lacado, crank, fabric, valanceFabric, stockLength, rollSystem, motorPower, mainFabricMl, valanceFabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     line(`SOPUNI3AGU${lacado.suffix}`, units, 'JGO.SOPORTE UNIVERSAL 3 FUROS'),
     line(`${rollSystem === 'P801' ? 'TURA80HG' : 'TURA70HG'}${stockLength}C`, units, `TUBO DE ENROLLE ${rollSystem}`),
-    line('CASPUNCE', units, 'CASQUILLO PUNTA')
+    line(anticaPointCode(rollSystem), units, 'CASQUILLO PUNTA')
   ];
 
   if (device === 'MOTOR') {
@@ -174,6 +179,7 @@ function buildMaterials(context) {
   } else {
     materials.push(
       line(rollSystem === 'P801' ? 'CASMAQEJE6378MM' : 'CASMAQEJE6370MM', units, rollSystem === 'P801' ? 'CASQUILLO EJE 63MM Ø78' : 'CASQUILLO EJE 63MM Ø70'),
+      line(crank.code, units, crank.name),
       line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`)
     );
   }
@@ -185,13 +191,13 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, variant, device, lacado, stockLength, rollSystem, armCount, motorPower, rollTubeLength, loadBarLength, supportHeight } = context;
+  const { awning, variant, device, lacado, crank, stockLength, rollSystem, armCount, motorPower, rollTubeLength, loadBarLength, supportHeight } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const rows = [];
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
   push(1, 'JGO.SOPORTE UNIVERSAL 3 FUROS', `SOPUNI3AGU${lacado.suffix}`, units);
   push(2, `TUBO DE ENROLLE ${rollSystem}`, `${rollSystem === 'P801' ? 'TURA80HG' : 'TURA70HG'}${stockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', anticaPointCode(rollSystem), units);
   if (device === 'MAQUINA') push(4, 'KIT DE TORNILLOS MAQUINA', null, units);
   push(5, loadPieceName(variant), null, units, loadBarLength);
   push(6, 'KIT DE TAPONES', null, units);
@@ -206,10 +212,10 @@ function buildDespiece(context) {
     const sensor = sensorMaterial(awning.sensor);
     if (sensor) push(22, sensor.description, sensor.code, units);
   } else {
-    const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
+    const crankHeight = crank.height;
     push(8, rollSystem === 'P801' ? 'CASQUILLO EJE 63MM Ø78' : 'CASQUILLO EJE 63MM Ø70', rollSystem === 'P801' ? 'CASMAQEJE6378MM' : 'CASMAQEJE6370MM', units);
     push(9, 'TACO NAYLON MAQ.', null, units);
-    push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, null, units, crankHeight);
+    push(10, crank.name, crank.code, units, crankHeight);
     push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
   }
   if (variant === 'SOPORTE FIJO 3 AGUJEROS') push(12, 'PLETINA DE 25 X 4', null, units, supportHeight);

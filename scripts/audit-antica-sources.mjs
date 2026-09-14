@@ -30,8 +30,18 @@ try {
     GROUP BY a.CodArticle, a.Description, mu.CodMeasureUnit ORDER BY ofs DESC
   `)).recordset;
   const schema = (await pool.request().query(`SELECT TABLE_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME IN ('CPRImputationMaterialMO','STKArticle','PURSupplierArticle') AND (COLUMN_NAME LIKE '%Quantity%' OR COLUMN_NAME LIKE '%Supplier%' OR COLUMN_NAME LIKE '%Reference%')`)).recordset;
+  const selectedConsumption = (await pool.request().input('company', sql.VarChar(10), config.db.company).query(`
+    SELECT mo.CodManufacturingOrder AS [of], a.CodArticle AS code, a.Description, mu.CodMeasureUnit AS unitCode, SUM(i.Quantity) AS quantity
+    FROM dbo.CPRManufacturingOrder mo
+    JOIN dbo.CPRImputationMaterialMO i ON i.IDManufacturingOrder=mo.IDManufacturingOrder AND i.CodCompany=mo.CodCompany
+    JOIN dbo.STKArticle a ON a.IDArticle=i.IDArticle AND a.CodCompany=i.CodCompany
+    LEFT JOIN dbo.GENMeasureUnit mu ON mu.IDMeasureUnit=a.IDUnitQuantityWarehouse AND mu.CodCompany=a.CodCompany
+    WHERE mo.CodCompany=@company AND mo.CodManufacturingOrder IN ('0232070','0230273','0230193','0225203','0229419')
+    GROUP BY mo.CodManufacturingOrder,a.CodArticle,a.Description,mu.CodMeasureUnit
+    ORDER BY mo.CodManufacturingOrder,a.CodArticle
+  `)).recordset;
   const articles = {};
-  for (const query of ['ANTICA','30 X 10','50 X 30','PLETINA 25','MANIVELA LUXE','TAPON ANTICA']) articles[query] = await searchRpsArticles({ query, limit: 80 });
-  await writeFile(destination+'/rps-sources.json', JSON.stringify({ date: new Date().toISOString(), recent, consumed, schema, articles }, null, 2));
-  console.log(JSON.stringify({ recent: recent.map(x=>({order:x.orderCode,of:x.of,quantity:x.Quantity,description:x.Description,comment:x.Comment})), consumed, schema, articles }, null, 2));
+  for (const query of ['ANTICA','30 X 10','50 X 30','PLETINA 25','MANIVELA LUXE','TAPON ANTICA','CASPUNCE','CASPUNCEJE70MM','CASPUNCEJE78MM']) articles[query] = await searchRpsArticles({ query, limit: 80 });
+  await writeFile(destination+'/rps-sources.json', JSON.stringify({ date: new Date().toISOString(), recent, consumed, selectedConsumption, schema, articles }, null, 2));
+  console.log(JSON.stringify({ output: destination + '/rps-sources.json', orders: recent.length, consumedArticles: consumed.length, selectedConsumptionRows: selectedConsumption.length }));
 } finally { await pool.close(); await closeRpsCatalog(); }

@@ -162,6 +162,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     sensor: cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
+    anticaCrankColor: model === 'ANTICA' ? cleanText(awning?.anticaCrankColor || 'AUTOMÁTICO').toUpperCase() : '',
     curtainHasWindow: typeof awning?.curtainHasWindow === 'boolean' ? awning.curtainHasWindow : null,
     curtainFinish: normalizeCurtainFinish(awning?.curtainFinish),
     curtainSupport: normalizeCurtainSupport(model, awning?.curtainSupport),

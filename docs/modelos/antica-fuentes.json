@@ -1,0 +1,643 @@
+{
+  "date": "2026-09-14",
+  "files": [
+    {
+      "file": "ANTICA 50 X 30 CONTRAPESO.xlsm",
+      "sha256": "d5776b413146c1383ba39c6abf6990edb07c088e3339dae2ac6b5cd376ee3702",
+      "bytes": 1228763,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\PROGRAMAS CALCULO\\ANTICA 50 X 30 CONTRAPESO.xlsm"
+    },
+    {
+      "file": "ANTICA 50 X 30 SIN BAMBA.xlsm",
+      "sha256": "7da88b325b054ff25d626b0a8f883181858d37750381ad6589c2bd096e2a9d37",
+      "bytes": 1185007,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\PROGRAMAS CALCULO\\ANTICA 50 X 30 SIN BAMBA.xlsm"
+    },
+    {
+      "file": "ANTICA CON BAMBA.xlsm",
+      "sha256": "86983c70848b171c6270dd7e5403cf3c5e0f7b469bef5b78ec6f10c9a04b65f4",
+      "bytes": 1235081,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\PROGRAMAS CALCULO\\ANTICA CON BAMBA.xlsm"
+    },
+    {
+      "file": "ANTICA FIJO SOPORTES 3 AGUJEROS.xlsm",
+      "sha256": "0b73c9ec5700d1bb6c91ef0f03f5325a2bcb4554898378c404ca0bb401d8bfae",
+      "bytes": 1233491,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\PROGRAMAS CALCULO\\ANTICA FIJO SOPORTES 3 AGUJEROS.xlsm"
+    },
+    {
+      "file": "AR2600591.xlsm",
+      "sha256": "b8e6db175204c2252d13ae550f4273491845e68a665d6cf566a80fe127c08588",
+      "bytes": 1227456,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\2026\\TOLDOS\\AR2600591.xlsm"
+    },
+    {
+      "file": "AR2603341.xlsm",
+      "sha256": "38ee3c9f522e9a02940bdbf0a7503cb1317c329af36aa1a32ee75b889329f213",
+      "bytes": 1226662,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\2026\\TOLDOS\\AR2603341.xlsm"
+    },
+    {
+      "file": "AR2603374-1.xlsm",
+      "sha256": "6208b9722cf57a6f307df36408d477c861d2b34d6abf2adc62b641a8020e8303",
+      "bytes": 1234129,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\2026\\TOLDOS\\AR2603374-1.xlsm"
+    },
+    {
+      "file": "AR2604488.pdf",
+      "sha256": "ca7fc5468f105616d6ca101a2648c1273e6953555d7b5660a5de5de9da31fa51",
+      "bytes": 32036,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\2026\\TOLDOS\\AR2604488.pdf"
+    },
+    {
+      "file": "CAMBIO TELA ANTICA.xlsm",
+      "sha256": "ca143c56d0c941121577ed42d660eaeb158a8d28dc86d159a76e20fe3c2740d0",
+      "bytes": 1222867,
+      "source": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\PROGRAMAS CALCULO\\CAMBIO TELA ANTICA.xlsm"
+    },
+    {
+      "file": "tgm_ficha_toldo_antica.pdf",
+      "sha256": "44ba188a06ad90e98dfecf47ba07d037e5a51060453663e2f23a7d0d844d9d94",
+      "bytes": 1551349,
+      "source": "https://www.toldosgomez.com/archivos/upload/descargas/tgm_ficha_toldo_antica.pdf"
+    }
+  ],
+  "formulas": [
+    {
+      "file": "ANTICA 50 X 30 CONTRAPESO.xlsm",
+      "matches": [
+        {
+          "cell": "L24",
+          "v": 209.1370849898476,
+          "f": "IF('DATOS '!C12=0,SQRT(J5^2+J5^2)+55+15+M6+6,J5+40)"
+        },
+        {
+          "cell": "R24",
+          "v": 193.1370849898476,
+          "f": "IF('DATOS '!C12=0,SQRT(P5^2+P5^2)+55+S6+5,P5+40)"
+        },
+        {
+          "cell": "X24",
+          "v": 60,
+          "f": "IF('DATOS '!C12=0,SQRT(V5^2+V5^2)+55+Y6+5,V5+40)"
+        },
+        {
+          "cell": "AD24",
+          "v": 60,
+          "f": "IF('DATOS '!C12=0,SQRT(AB5^2+AB5^2)+55+AE6+5,AB5+40)"
+        }
+      ]
+    },
+    {
+      "file": "ANTICA 50 X 30 SIN BAMBA.xlsm",
+      "matches": [
+        {
+          "cell": "L24",
+          "v": 211.4213562373095,
+          "f": "IF('DATOS '!C12=0,SQRT(J5^2+J5^2)+55+15,J5+40)"
+        },
+        {
+          "cell": "R24",
+          "v": 211.4213562373095,
+          "f": "IF('DATOS '!C12=0,SQRT(P5^2+P5^2)+55+15,P5+40)"
+        },
+        {
+          "cell": "X24",
+          "v": 211.4213562373095,
+          "f": "IF('DATOS '!C12=0,SQRT(V5^2+V5^2)+55+15,V5+40)"
+        },
+        {
+          "cell": "AD24",
+          "v": 60,
+          "f": "IF('DATOS '!C12=0,SQRT(AB5^2+AB5^2)+55+AE6+5,AB5+40)"
+        }
+      ]
+    },
+    {
+      "file": "ANTICA CON BAMBA.xlsm",
+      "matches": [
+        {
+          "cell": "L24",
+          "v": 237.4213562373095,
+          "f": "IF('DATOS '!C12=0,SQRT(J5^2+J5^2)+55+15+M6+6,J5+40)"
+        },
+        {
+          "cell": "R24",
+          "v": 237.4213562373095,
+          "f": "IF('DATOS '!C12=0,SQRT(P5^2+P5^2)+55+15+S6+6,P5+40)"
+        },
+        {
+          "cell": "X24",
+          "v": 76,
+          "f": "IF('DATOS '!C12=0,SQRT(V5^2+V5^2)+55+15+Y6+6,V5+40)"
+        },
+        {
+          "cell": "AD24",
+          "v": 76,
+          "f": "IF('DATOS '!C12=0,SQRT(AB5^2+AB5^2)+55+15+AE6+6,AB5+40)"
+        }
+      ]
+    },
+    {
+      "file": "ANTICA FIJO SOPORTES 3 AGUJEROS.xlsm",
+      "matches": [
+        {
+          "cell": "L24",
+          "v": 342.2168449963792,
+          "f": "IF('DATOS '!C12=0,SQRT(J5^2+J7^2)+40+15+15+M6+5,V5+40)"
+        },
+        {
+          "cell": "R24",
+          "v": 342.2168449963792,
+          "f": "IF('DATOS '!C12=0,SQRT(P5^2+P7^2)+40+15+15+S6+5,P5+40)"
+        },
+        {
+          "cell": "X24",
+          "v": 342.2168449963792,
+          "f": "IF('DATOS '!C12=0,SQRT(V5^2+V7^2)+40+15+15+Y6+5,V5+40)"
+        },
+        {
+          "cell": "AD24",
+          "v": 342.2168449963792,
+          "f": "IF('DATOS '!C12=0,SQRT(AB5^2+AB7^2)+40+15+15+AE6+5,AB5+40)"
+        }
+      ]
+    },
+    {
+      "file": "AR2600591.xlsm",
+      "matches": [
+        {
+          "cell": "L24",
+          "v": 206.65856099730655,
+          "f": "IF('DATOS '!C12=0,SQRT(salida11^2+J5^2)+40+15+15+M6+7,J5+40)"
+        },
+        {
+          "cell": "R24",
+          "v": 60,
+          "f": "IF('DATOS '!C12=0,SQRT(P5^2+P5^2)+55+S6+5,P5+40)"
+        },
+        {
+          "cell": "X24",
+          "v": 60,
+          "f": "IF('DATOS '!C12=0,SQRT(V5^2+V5^2)+55+Y6+5,V5+40)"
+        },
+        {
+          "cell": "AD24",
+          "v": 60,
+          "f": "IF('DATOS '!C12=0,SQRT(AB5^2+AB5^2)+55+AE6+5,AB5+40)"
+        }
+      ]
+    },
+    {
+      "file": "AR2603341.xlsm",
+      "matches": [
+        {
+          "cell": "L24",
+          "v": 154.8528137423857,
+          "f": "IF('DATOS '!C12=0,SQRT(J5^2+J5^2)+55+15,J5+40)"
+        },
+        {
+          "cell": "R24",
+          "v": 154.8528137423857,
+          "f": "IF('DATOS '!C12=0,SQRT(P5^2+P5^2)+55+15,P5+40)"
+        },
+        {
+          "cell": "X24",
+          "v": 70,
+          "f": "IF('DATOS '!C12=0,SQRT(V5^2+V5^2)+55+15,V5+40)"
+        },
+        {
+          "cell": "AD24",
+          "v": 60,
+          "f": "IF('DATOS '!C12=0,SQRT(AB5^2+AB5^2)+55+AE6+5,AB5+40)"
+        }
+      ]
+    },
+    {
+      "file": "AR2603374-1.xlsm",
+      "matches": [
+        {
+          "cell": "L24",
+          "v": 342.2168449963792,
+          "f": "IF('DATOS '!C12=0,SQRT(J5^2+J7^2)+40+15+15+M6+5,V5+40)"
+        },
+        {
+          "cell": "R24",
+          "v": 342.2168449963792,
+          "f": "IF('DATOS '!C12=0,SQRT(P5^2+P7^2)+40+15+15+S6+5,P5+40)"
+        },
+        {
+          "cell": "X24",
+          "v": 75,
+          "f": "IF('DATOS '!C12=0,SQRT(V5^2+V7^2)+40+15+15+Y6+5,V5+40)"
+        },
+        {
+          "cell": "AD24",
+          "v": 75,
+          "f": "IF('DATOS '!C12=0,SQRT(AB5^2+AB7^2)+40+15+15+AE6+5,AB5+40)"
+        }
+      ]
+    }
+  ],
+  "consumption": [
+    {
+      "of": "0225203",
+      "code": "CASMAQEJE6378MM",
+      "Description": "CASQUILLO MAQUINA EJE 63MM Ø :78MM",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "CASPUNCEJE78MM",
+      "Description": "CASQUILLO PUNTA CON EJE Ø :78MM",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0225203",
+      "code": "EXT_LACAR",
+      "Description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0225203",
+      "code": "MAQMB11L12NEGRO",
+      "Description": "MAQUINA MB-11 GANCHO PLASTICO L-120:NEGRO",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "PLEAC30MM10",
+      "Description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "RECACRIL103P120",
+      "Description": "LONA RECACRIL :NEGRO 103 :120 AN",
+      "unitCode": "ML120",
+      "quantity": 10.5
+    },
+    {
+      "of": "0225203",
+      "code": "RESTOMASCARA",
+      "Description": "RESTOS DE MASCARA",
+      "unitCode": "M²",
+      "quantity": 0.18
+    },
+    {
+      "of": "0225203",
+      "code": "SOPUNI3AGUNE11",
+      "Description": "JGO SOPORTES UNIVERSAL MIXTO 3 AGUJEROS :NEGRO 9011",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "TUBGA50MM30MM2MM",
+      "Description": "TUBO 6M GALVANIZADO :50MM :30MM :2MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "TURA80HG600C",
+      "Description": "TUBO C/RANURA Ø 80MM P801 :HI. GALVANIZADO :600CM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "VARILLAVAINANEG5",
+      "Description": "VARILLA VAINA NEGRA 4,5MM (Puertas plegables)",
+      "unitCode": "METROS",
+      "quantity": 5.01
+    },
+    {
+      "of": "0229419",
+      "code": "ANCIN40MM40",
+      "Description": "ANGULO 6M CINCADO DE:40 MM:40MM",
+      "unitCode": "BARRA",
+      "quantity": 0.05
+    },
+    {
+      "of": "0229419",
+      "code": "CASMAQEJE5070MM",
+      "Description": "CASQUILLO MAQUINA EJE 50MM Ø:70MM",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0229419",
+      "code": "CASPUNCEJE70MM",
+      "Description": "CASQUILLO PUNTA CON EJE Ø :70MM",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0229419",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0229419",
+      "code": "EXT_LACAR",
+      "Description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0229419",
+      "code": "MANIVENE11170C",
+      "Description": "MANIVELA LUXE INOX :NEGRO 9011 :170CM",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0229419",
+      "code": "MAQMB11L12NEGRO",
+      "Description": "MAQUINA MB-11 GANCHO PLASTICO L-120:NEGRO",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0229419",
+      "code": "PLEAC30MM10",
+      "Description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 0.3
+    },
+    {
+      "of": "0229419",
+      "code": "RECACRIL103P120",
+      "Description": "LONA RECACRIL :NEGRO 103 :120 AN",
+      "unitCode": "ML120",
+      "quantity": 6.3
+    },
+    {
+      "of": "0229419",
+      "code": "SOPUNI3AGUNE11",
+      "Description": "JGO SOPORTES UNIVERSAL MIXTO 3 AGUJEROS :NEGRO 9011",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0229419",
+      "code": "TUBGA50MM30MM2MM",
+      "Description": "TUBO 6M GALVANIZADO :50MM :30MM :2MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0229419",
+      "code": "VARILLAVAINANEG5",
+      "Description": "VARILLA VAINA NEGRA 4,5MM (Puertas plegables)",
+      "unitCode": "METROS",
+      "quantity": 3.17
+    },
+    {
+      "of": "0230193",
+      "code": "ACRILI2101P120",
+      "Description": "LONA ACRILICA MASACRIL 300 :GRANATE 2101 :120 AN",
+      "unitCode": "ML120",
+      "quantity": 11.48
+    },
+    {
+      "of": "0230193",
+      "code": "CASMAQEJE5070MM",
+      "Description": "CASQUILLO MAQUINA EJE 50MM Ø:70MM",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230193",
+      "code": "CASPUNCEJE70MM",
+      "Description": "CASQUILLO PUNTA CON EJE Ø :70MM",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230193",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 6
+    },
+    {
+      "of": "0230193",
+      "code": "EXT_LACAR",
+      "Description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 3
+    },
+    {
+      "of": "0230193",
+      "code": "MANIVENE11200C",
+      "Description": "MANIVELA LUXE INOX :NEGRO 9011 :200CM",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0230193",
+      "code": "MAQMB11L12NEGRO",
+      "Description": "MAQUINA MB-11 GANCHO PLASTICO L-120:NEGRO",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230193",
+      "code": "PLA4NEGR25MM635C",
+      "Description": "PLETINA ALUMINIO 4MM :NEGRO 9005 :25MM :635CM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0230193",
+      "code": "PLEAC30MM10",
+      "Description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 0.4
+    },
+    {
+      "of": "0230193",
+      "code": "SOPUNI3AGUNE11",
+      "Description": "JGO SOPORTES UNIVERSAL MIXTO 3 AGUJEROS :NEGRO 9011",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230193",
+      "code": "TURA70HG700C",
+      "Description": "TUBO C/RANURA Ø 70MM P701 :HI. GALVANIZADO :700CM ",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0230193",
+      "code": "V504AMPRP123",
+      "Description": "VINILO AVERY  504 EG BRILLO (MASCARA):AMARILLO PRIMAVERA:123 AN",
+      "unitCode": "ML123",
+      "quantity": 1.1
+    },
+    {
+      "of": "0230193",
+      "code": "VARILLAVAINANEG5",
+      "Description": "VARILLA VAINA NEGRA 4,5MM (Puertas plegables)",
+      "unitCode": "METROS",
+      "quantity": 6.4
+    },
+    {
+      "of": "0230273",
+      "code": "CASMAQEJE6370MM",
+      "Description": "CASQUILLO MAQUINA EJE 63MM Ø :70MM",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230273",
+      "code": "CASPUNCEJE70MM",
+      "Description": "CASQUILLO PUNTA CON EJE Ø :70MM",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230273",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 6
+    },
+    {
+      "of": "0230273",
+      "code": "EXT_LACAR",
+      "Description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0230273",
+      "code": "MAQMB11L12NEGRO",
+      "Description": "MAQUINA MB-11 GANCHO PLASTICO L-120:NEGRO",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230273",
+      "code": "PLEAC30MM10",
+      "Description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0230273",
+      "code": "RECACRIL103P120",
+      "Description": "LONA RECACRIL :NEGRO 103 :120 AN",
+      "unitCode": "ML120",
+      "quantity": 14
+    },
+    {
+      "of": "0230273",
+      "code": "SOPUNI3AGUNE11",
+      "Description": "JGO SOPORTES UNIVERSAL MIXTO 3 AGUJEROS :NEGRO 9011",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0230273",
+      "code": "TURA70HG700C",
+      "Description": "TUBO C/RANURA Ø 70MM P701 :HI. GALVANIZADO :700CM ",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0230273",
+      "code": "VARILLAVAINANEG5",
+      "Description": "VARILLA VAINA NEGRA 4,5MM (Puertas plegables)",
+      "unitCode": "METROS",
+      "quantity": 4.21
+    },
+    {
+      "of": "0232070",
+      "code": "ACRILI2026P120",
+      "Description": "LONA ACRILICA MASACRIL 300 :NATURAL 2926 :120 AN",
+      "unitCode": "ML120",
+      "quantity": 15.1
+    },
+    {
+      "of": "0232070",
+      "code": "CASMAQEJE6378MM",
+      "Description": "CASQUILLO MAQUINA EJE 63MM Ø :78MM",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0232070",
+      "code": "CASPUNCEJE78MM",
+      "Description": "CASQUILLO PUNTA CON EJE Ø :78MM",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0232070",
+      "code": "K/GUIANEGRO",
+      "Description": "K/GUIAS PUNTA MAQUINA :NEGRO",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0232070",
+      "code": "MANIVEBL16200C",
+      "Description": "MANIVELA LUXE INOX :BLANCO 9016 :200CM",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0232070",
+      "code": "MAQMB11L12NEGRO",
+      "Description": "MAQUINA MB-11 GANCHO PLASTICO L-120:NEGRO",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0232070",
+      "code": "SOPUNI3AGUNE11",
+      "Description": "JGO SOPORTES UNIVERSAL MIXTO 3 AGUJEROS :NEGRO 9011",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0232070",
+      "code": "TURA80HG500C",
+      "Description": "TUBO C/RANURA Ø 80MM P801 :HI. GALVANIZADO :500CM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0232070",
+      "code": "TURA80HG700C",
+      "Description": "TUBO C/RANURA Ø 80MM P801 :HI. GALVANIZADO :700CM ",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0232070",
+      "code": "VARILLAVAINANEG5",
+      "Description": "VARILLA VAINA NEGRA 4,5MM (Puertas plegables)",
+      "unitCode": "METROS",
+      "quantity": 10.08
+    }
+  ]
+}

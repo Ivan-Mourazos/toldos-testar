@@ -174,3 +174,37 @@ describe('ANTICA contra los cuatro libros históricos', () => {
     expect(invalidValance.diagnostics.some((item) => item.message.includes('no admite bambalina'))).toBe(true);
   });
 });
+
+// Correspondencias verificadas en los consumos de OF 0232070 y 0230273 (RPS).
+describe('Antica TGM: piezas compradas y fabricación propia', () => {
+  test('máquina negra con dos manivelas blancas independientes, como el 4488', () => {
+    const order = payload({ width: 645, projection: 50, units: 2, valanceHeight: 0,
+      anticaVariant: 'TUBO 50X30 SIN BAMBA', structureArmCount: 4,
+      anticaCrankColor: 'BLANCA' }, { structureColor: 'NEGRO (R-09011)' });
+    const result = calculateOrder(JSON.parse(JSON.stringify(order)));
+    const block = result.ofs[0];
+    expect(block.calculation).toMatchObject({ valid: true, armCount: 4, fabricWidth: 633, fabricDrop: 140.7 });
+    expect(block.despiece.rows).toContainEqual(expect.objectContaining({ name: 'BRAZO ANTICA', units: 8, reference: null }));
+    expect(block.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'MANIVEBL16200C', quantity: 2 }),
+      expect.objectContaining({ code: 'MAQMB11L12NEGRO', quantity: 2 }),
+      expect.objectContaining({ code: 'CASPUNCEJE78MM', quantity: 2 })
+    ]));
+    expect(block.materials.some(m => m.code === 'CASPUNCE' || m.code.startsWith('BANTICA'))).toBe(false);
+    expect(result.diagnostics.some(d => d.level === 'warning' && d.message.includes('reserva automática de estructura es parcial'))).toBe(true);
+  });
+  test('conserva el color automático en pedidos antiguos y selecciona casquillo P701', () => {
+    const block = calculateOrder(payload({})).ofs[0];
+    expect(block.materials).toContainEqual(expect.objectContaining({ code: 'MANIVEBL16200C', quantity: 1 }));
+    expect(block.materials).toContainEqual(expect.objectContaining({ code: 'CASPUNCEJE70MM', quantity: 1 }));
+  });
+  test('un largo no homologado se puede revisar sin inventar referencia', () => {
+    const result = calculateOrder(payload({ crankHeight: 300 }));
+    expect(result.ofs[0].despiece.rows.find(r => r.num === 10).reference).toBeNull();
+    expect(result.diagnostics.some(d => d.message.includes('manivela sin correspondencia'))).toBe(true);
+  });
+  test('el motor no reserva manivela aunque conserve el campo de color', () => {
+    const block = calculateOrder(payload({ device: 'MOTOR', anticaCrankColor: 'NEGRA' })).ofs[0];
+    expect(block.materials.some(m => m.code.startsWith('MANIVE'))).toBe(false);
+  });
+});

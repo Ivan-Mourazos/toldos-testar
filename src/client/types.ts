@@ -61,6 +61,7 @@ export type Awning = {
   sensor: string;
   machineSide: string;
   crankHeight: number | null;
+  anticaCrankColor?: 'AUTOMÁTICO' | 'BLANCA' | 'NEGRA';
   curtainHasWindow: boolean | null;
   curtainFinish: '' | 'NORMAL' | 'VELCRO' | 'TUBO';
   curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM';

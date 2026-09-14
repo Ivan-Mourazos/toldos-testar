@@ -32,6 +32,16 @@ export function AnticaRuleReference() {
   const complete = projection !== null && projection > 0 && (rule.base !== 'diagonal' || (supportHeight !== null && supportHeight > 0)) && (noValance || (valanceHeight !== null && valanceHeight >= 0));
   const result = complete ? calculateAnticaBodyDrop({ awning: { projection }, variant, supportHeight: supportHeight || 0, valanceHeight: noValance ? 0 : valanceHeight || 0, separateValance: actualSeparate }) : null;
   return <>
+    <Band id="TGM" title="Fabricación propia · estado de revisión" description="Soporte habitual de Cortina de tres agujeros y brazos fabricados en taller. Confirmado por OT el 14/09/2026.">
+      <p className="rule-reference-warning">Reserva de estructura parcial: faltan correspondencias y cantidades de fabricación de brazos, carga, tapones y otros auxiliares. Los artículos de brazos especiales encontrados en RPS no equivalen al brazo habitual.</p>
+      <Table label="Contraste Antica con taller" columns={['Comprobación', 'Resultado']} rows={[
+        ['Excel y aumentos', 'Las tablas inferiores muestran lo que calcula la web. Los históricos contienen ajustes particulares: 0591 cambia la diagonal y el aumento; 3341 omite la bamba en la caída. No se aplican esos ajustes a todos los pedidos.'],
+        ['Brazos y límites', 'La selección automática cambia a 3 al superar 400 cm; el Excel 0591 indica 2 para 510 cm. La ficha TGM publica 575 cm con 2 brazos y 800 cm con 3, ambos con salida 160 cm. Requiere confirmar la configuración con OT.'],
+        ['Manivela independiente', 'Color automático, blanco o negro por toldo. La máquina conserva su acabado. El 4488 confirma manivelas blancas y máquinas negras.'],
+        ['Materiales de fabricación', 'RPS registra pletina de acero 30×10, tubo galvanizado 50×30×2 y operaciones de cincado/lacado. La cantidad de barras y su reparto entre piezas sigue pendiente de definir.']
+      ]} />
+      <p><a href="https://www.toldosgomez.com/archivos/upload/descargas/tgm_ficha_toldo_antica.pdf" target="_blank" rel="noreferrer">Consultar ficha oficial TGM</a> · Es una ficha comercial, no un despiece de fabricación. Las opciones especiales y las medidas mayores que el stock de 700 cm requieren revisión de OT.</p>
+    </Band>
     <Band id="01" title="Aumentos de tela" description="Antica completo. S = salida; H = altura soporte-brazo; B = alto de bamba. Todas las medidas en cm.">
       <Table label="Aumentos de Antica" columns={['Configuración', 'Bamba en la misma tela / sin bamba', 'Bamba en otra tela']} rows={anticaVariants.map(v => [v, anticaFormula(v, false), v === 'TUBO 50X30 SIN BAMBA' ? 'No admite bamba' : anticaFormula(v, true)])} />
       <p>Con bamba en otra tela, la pieza separada mide el frente indicado × (B + {number(ANTICA_RULES.valanceExtraCm)} cm). Con B = 0 se aplica la columna de la misma tela. El corte se redondea a una décima de cm.</p>

@@ -32,12 +32,9 @@ export function applyStructureEdit(awning, result) {
   const edit = normalizeStructureEdit(awning.structureEdit);
   const editor = { signature, baseRows, rows: edit?.rows ?? baseRows, modified: Boolean(edit), stale: Boolean(edit && edit.signature !== signature), referencesToCheck: [] };
   const errors = [];
-  const changedAnticaArms = awning.model === 'ANTICA' && awning.structureArmCount != null && Number(awning.structureArmCount) !== (Number(awning.width) > 400 ? 3 : 2);
-  if (changedAnticaArms && !(editor.rows.find((row) => row.name === 'BRAZO ANTICA' || row.id === baseRows.find((base) => base.name === 'BRAZO ANTICA')?.id)?.reference)) errors.push('Has cambiado el número de brazos. En Editar despiece, selecciona su referencia de RPS e indica la cantidad a reservar.');
-  if (!edit) return errors.length ? {
-    ...result, structureEditor: editor, materials: [], calculation: { ...result.calculation, valid: false },
-    diagnostics: [...(result.diagnostics || []), ...errors.map((message) => ({ level: 'error', awningId: awning.id, message }))]
-  } : { ...result, structureEditor: editor };
+  // Antica: los brazos se fabrican en TGM. Cambiar su número no exige
+  // inventar un artículo de brazo terminado; anticaRules avisa de la reserva parcial.
+  if (!edit) return { ...result, structureEditor: editor };
   if (editor.stale) errors.push('Han cambiado los datos del toldo. Revisa y confirma el despiece editado o restaura el cálculo automático.');
   const ids = new Set();
   const numbers = new Set();
