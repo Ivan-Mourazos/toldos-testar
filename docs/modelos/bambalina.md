@@ -1,10 +1,10 @@
 # Bambalina — piloto de confección
 
-14/09/2026 · En curso · Sin despliegue
+14/09/2026 · Cerrado para su alcance · Sin despliegue
 
 [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md)
 
-Rama `bambalina`, partiendo de 6420950 en main. Siete commits: el piloto iniciado por Codex, el saneado de lint y test, este expediente con el barrido de 2026, el anidado de rollo, la anotación de reanudación, la especificación del suplemento y su implementación. Siguiente acción ejecutable: abrir el 4111 con Iván para cerrar Q-B06.
+Rama `bambalina`, partiendo de 6420950 en main. Recorre el piloto de Codex, el saneado de lint y test, el barrido de 2026, el anidado de rollo, el suplemento configurable y la resolución del 4111. Siguiente acción ejecutable: revisar la muestra en taller y avisar a OT de las dos infrarreservas históricas (Q-B06 y Q-B08).
 
 ## Alcance y decisiones de OT
 
@@ -45,6 +45,7 @@ Ruta base de OT: \\192.168.0.128\Oftecnica\Oficina Tecnica.
 | F-B10 | 2026 / AR2604220.dwg | El pedido del suplemento existe como plano de AutoCAD en la raíz de 2026, no como Excel en 2026/TOLDOS. Se resolvió fuera del flujo de cálculo habitual |
 | F-B11 | Plano AR2604220, técnico Adrián, revisión Jaime, 28/08/2026 | Aportado por Iván. A: bambalina 480, dos unidades, OF 0231679, varilla blanca 5,5, BN(3)+broches arriba, BN(1) en laterales. B: suplemento 480 × 130, OF 0231658, BN(3)+broches arriba, BN(1) laterales, BN(4)+ollaos abajo. Paso de broches C/34 y condición «los broches de A y B deben coincidir». Despiece conjunto de 482 × 163 con empates de 2 cm en vertical |
 | F-B12 | Consulta RPS del 14/09/2026 a las OF 0231658 y 0231679, sin filtro de familia | Cada OF tiene una sola línea, ambas de LONA: 9,5 y 1,5 ml de ACRILI2143P120. Ni broches ni ollaos reservados. Artículos de cabecera SUPLEBAMBA y BAMBA |
+| F-B13 | Consulta RPS del 14/09/2026 a las OF del 4111 y al rango 0234180-0234195 | 0231486 existe con dos unidades y 1 ml; 0234186 no existe y su rango de numeración está vacío. Cabecera y materiales leídos sin filtro de familia |
 
 Fuentes oficiales localizadas: [Masacril Marfil](https://sauleda.com/fr/tejido/sauleda-masacril-marfil/), [catálogo Pocket](https://sauleda.com/wp-content/uploads/2024/02/Pocket-2-1.pdf), [catálogo Plains](https://sauleda.com/wp-content/uploads/2024/05/PLAINS_digital_.pdf). En esta consulta, la página no pudo abrirse, Pocket devolvió 404 y Plains una verificación de acceso. No se dan por descargados ni analizados. La identidad del tejido no demuestra cómo se confecciona la bambalina.
 
@@ -62,7 +63,7 @@ Medidas en cm, consumo en ml. Cada fila de Excel tiene una unidad.
 
 4031: RPS tiene ACRILI2018P120, ML120, 1,2 ml. La diferencia de 0,3 ml en la exportación web es intencionada por el redondeo confirmado, no un error de corte.
 
-4111: Excel contiene OF 0231486 y 0234186; RPS concentra BAMBA (dos unidades) en 0231486 y reserva 1 ml de ACRILI2238P120. La web reproduce el consumo de cada entrada del Excel. No se ha aclarado la segunda OF ni la diferencia agregada de reserva; no alterar datos ni declarar coincidencia completa.
+4111: el Excel contiene dos entradas de una unidad cada una, 419,5 y 422,5 de frente, con OF 0231486 y 0234186. En RPS solo existe 0231486, con artículo BAMBA, dos unidades, creada el 20/08/2026 y una sola línea de 1 ml de ACRILI2238P120. La 0234186 no existe, ni ninguna orden entre 0234180 y 0234195 (F-B13): es 0231486 con dos dígitos transpuestos. La hoja RPS del libro solo exportó ESTR.01, de modo que las dos bambalinas subieron con 1 ml en lugar de 2. La web reproduce el consumo de cada entrada y habría pedido los 2 ml. No alterar históricos.
 
 4220: RPS muestra BAMBA, dos unidades de 480 × 15 con broches, OF 0231679 y 1,5 ml de ACRILI2143P120; SUPLEBAMBA, una unidad de 480 × 130, OF 0231658 y 9,5 ml. Su Excel no existe: el pedido está en 2026 como AR2604220.dwg (F-B10), resuelto en AutoCAD fuera del flujo de cálculo. Es una variante especial y no se equipara automáticamente a la bambalina ordinaria.
 
@@ -94,7 +95,7 @@ Cambio de tela arranca con 53 divergencias dimensionales sobre 1296 y 43 de rese
 | Q-B03 | Corregido | No ofrecer margen BAMBALINA sin efecto. Mostrar parámetros del modelo seleccionado y aclarar cuáles son compartidos. Texto Antica +65 alineado con regla existente |
 | Q-B04 | Resuelto por Iván el 14/09/2026 | Suplemento y bambalina se dan de alta como dos entradas separadas, cada una con su OF y sus medidas; la app no deriva la una de la otra. Cada entrada calcula su tela por su cuenta: el aprovechamiento del corte conjunto lo decide el taller y no se reparte en la reserva. Broches y ollaos no se inventarían: se indican en el plano y no generan línea. Queda como mejora de dibujo representar BN por canto, el paso C/34 y el aviso de que los broches de A y B deben coincidir |
 | Q-B05 | Resuelto por Iván | Mantener redondeo a 0,5 ml; conservar consumo bruto en cálculo |
-| Q-B06 | Pendiente | Aclarar OF y reserva del 4111; no asumir que la OF diferente sea una errata |
+| Q-B06 | Resuelto el 14/09/2026 | La segunda OF del 4111 no existe. RPS no tiene 0234186 ni ninguna orden entre 0234180 y 0234195: es una transposición de dígitos de 0231486, la real, que ya está dada de alta con dos unidades y cubre las dos bambalinas. La hoja RPS del propio Excel solo exportó ESTR.01 —su cabecera lo dice— así que esa OF subió con 1 ml en vez de los 2 que necesitaban las dos entradas. Misma infrarreserva que Q-B08 y por la misma causa: varias entradas en un libro. Informar a OT; no corregir históricos |
 | Q-B07 | Pendiente | Mejorar notas largas dentro del formato conocido: actualmente el espacio de fila es limitado y remite al pedido si no caben |
 | Q-B08 | Resuelto por evidencia; avisar a OT | Única divergencia dimensional del barrido. AR2600228-2, OF 0224453: cuatro entradas de la misma OF, tres coinciden exactamente. La cuarta tiene UNIDADES 2 y el Excel reservó la tela de una sola bambalina (0,84 ml en vez de 1,68), por lo que la OF subió a RPS con 3,57 ml en lugar de 4,41. No es una duda sobre el significado de UNIDADES: de las ocho bambalinas de 2026 con varias unidades, siete coinciden exactamente con la web, incluidos los saltos de paños de 588 → 6 y 511,5 → 5. La convención está confirmada y ese libro es un caso defectuoso aislado. Informar a OT de la infrarreserva histórica; no corregir históricos ni cambiar la regla |
 | Q-B09 | Corregido | El Excel anidaba piezas estrechas en el ancho de rollo y la web no: cobraba un ancho de rollo por unidad. `countFabricRows` reparte ahora las unidades que caben juntas. AR2602302-2, tres enrollables de 60 cm en rollo de 120, pasa de 11,25 a 7,5 ml, que es lo que reservaron Excel y RPS. Contrastado contra los 567 trabajos de tela de 2026 con sus anchos de rollo reales (120, 153 y 250): corrige ese caso y no altera ningún otro. Solo interviene con un paño; una pieza que necesita varios ya ocupa el rollo entero |
