@@ -37,6 +37,8 @@ export default function App() {
   const [reviewRefresh, setReviewRefresh] = useState(0);
   const [autofillLoading, setAutofillLoading] = useState(false);
   const [autofill, setAutofill] = useState<OrderAutofill | null>(null);
+  // null = no se conocen las OF del pedido. En ese estado no se avisa de nada.
+  const [knownOfs, setKnownOfs] = useState<string[] | null>(null);
   const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
 
   const { calculation, calculationState } = useCalculation({
@@ -124,6 +126,22 @@ export default function App() {
   function updateOrderCode(value: string) {
     draft.setOrderCode(value);
     if (autofill && value !== autofill.order.orderCode) setAutofill(null);
+    setKnownOfs(null);
+  }
+
+  // Se consulta al salir del campo de pedido. Cualquier fallo deja el estado en
+  // desconocido y en silencio: se puede plantear un pedido sin RPS y eso no cambia.
+  async function loadKnownOfs() {
+    const orderCode = draft.orderCode.trim();
+    if (!orderCode) return setKnownOfs(null);
+    try {
+      const response = await fetch(`/api/orders/${encodeURIComponent(orderCode)}/ofs`);
+      if (!response.ok) return setKnownOfs(null);
+      const data = await response.json() as { ofs?: string[] };
+      setKnownOfs(Array.isArray(data.ofs) ? data.ofs : null);
+    } catch {
+      setKnownOfs(null);
+    }
   }
 
   async function editReview(review: ReviewPackage) {
@@ -382,6 +400,8 @@ export default function App() {
                 onAutofill={() => void autofillOrder()}
                 autofillLoading={autofillLoading}
                 autofill={autofill}
+                knownOfs={knownOfs}
+                onOrderCodeBlur={() => void loadKnownOfs()}
               />
             </fieldset>
           )}

@@ -18,6 +18,7 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
+import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
 import { irisGuideFixings, irisGuideTypes } from '../../domain/irisParameters.js';
 import {
@@ -39,6 +40,7 @@ type Props = {
   index: number;
   ofCalculation?: Calculation['ofs'][number]['calculation'];
   sameFabric: boolean;
+  knownOfs?: string[] | null;
   parameters: RuleParameters;
   readOnly?: boolean;
   onUpdate: (id: string, patch: Partial<Awning>) => void;
@@ -53,7 +55,7 @@ export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
   return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;
 }
 
-export function AwningColumn({ awning, index, ofCalculation, parameters, sameFabric, readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, parameters, sameFabric, knownOfs = null, readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   const standaloneValance = awning.model === 'BAMBALINA';
@@ -393,7 +395,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
 
       {awning.model && (
         <>
-          <TextField label="OF" value={awning.of} onChange={(of) => update({ of: of.trim() })} />
+          <TextField label="OF" value={awning.of} onChange={(of) => update({ of: of.trim() })} hint={isOfOutsideOrder(awning.of, knownOfs) ? `Esta OF no pertenece al pedido en RPS.` : undefined} />
           {isHera && fields.submodel && (
             <SelectField label="Variante" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, height: submodel === 'HERA 56 MOTOR' ? null : awning.height })} />
           )}

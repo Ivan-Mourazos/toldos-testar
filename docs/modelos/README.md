@@ -67,6 +67,7 @@ La investigación previa de HERA sigue disponible y las incidencias urgentes de 
 | 3D | Propuesta de piloto pendiente; no hay validación de geometría 3D en este seguimiento |
 | Parámetros | Auditar qué modelos tienen ficha operativa. useParameters conserva datos en localStorage; falta diseñar persistencia compartida/versionada cuando se aborde ese alcance |
 | Reservas completas | Verificar tratamiento de todas las piezas y kits por variante; HERA sigue limitado a tela |
+| OF del pedido | Aviso junto al campo cuando la OF no pertenece al pedido en RPS, sin bloquear. Nacido del 4111. [Especificación](../superpowers/specs/2026-09-14-aviso-of-inexistente-design.md) |
 | Validación | Ampliar matriz visual y casos de reglas de forma coordinada; añadir regresiones de código común |
 
 ## Registro de avance

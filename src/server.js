@@ -129,6 +129,23 @@ app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
   }
 });
 
+// Las OF que pertenecen al pedido, para avisar de una tecleada por error. Solo
+// lectura y sin SQL propio: reutiliza la consulta del autorrelleno.
+app.get('/api/orders/:orderCode/ofs', async (req, res, next) => {
+  try {
+    const orderCode = String(req.params.orderCode || '').trim();
+    if (!orderCode) return res.status(400).json({ error: 'Indica un número de pedido.' });
+    const source = await getRpsOrder(orderCode);
+    if (!source) return res.status(404).json({ error: `El pedido ${orderCode} no existe en RPSNext.` });
+    const ofs = [...new Set((source.lines || [])
+      .map((line) => String(line.manufacturingOrder || '').trim())
+      .filter(Boolean))];
+    return res.json({ orderCode: source.header?.orderCode || orderCode, ofs });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 app.post('/api/calculate', async (req, res, next) => {
   try {
     res.json(await calculateConfiguredOrder(req.body));
