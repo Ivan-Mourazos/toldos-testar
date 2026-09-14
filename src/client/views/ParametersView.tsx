@@ -1038,7 +1038,6 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
   const jobs: { model: FabricJobModel; label: string; note: string }[] = [
     { model: 'CAMBIO TELA', label: 'Cambio de tela', note: 'Margen del cuerpo' },
     { model: 'ENROLLABLE', label: 'Enrollable', note: 'Entrada de confección' },
-    { model: 'BAMBALINA', label: 'Bambalina', note: 'La caída es alto + remate' },
     { model: 'CAMBIO ANTICA', label: 'Cambio Antica', note: 'Aumento con bamba' }
   ];
   function updateAllowance(model: FabricJobModel, value: number) {
@@ -1053,11 +1052,11 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
       </header>
       <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Márgenes de confección</h3><p>Centímetros añadidos a la salida o altura indicada.</p></div></div>
+        <div className="parameter-band-title"><span>01</span><div><h3>Márgenes de confección</h3><p>{selectedModel === 'BAMBALINA' ? 'Corte de bambalina: alto terminado + remate. El remate también se comparte con las bambas de los demás trabajos de tela.' : 'Centímetros añadidos a las medidas indicadas. El remate de bambalina se comparte con los demás trabajos de tela.'}</p></div></div>
         <div className="parameter-grid parameter-grid-3">
-          {jobs.map((job) => <NumberField key={job.model} label={`${job.label} · ${job.note} (cm)`} value={parameters.dropAllowanceByModel[job.model]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(job.model, value)} />)}
-          <NumberField label="Antica con bamba en otra tela (cm)" value={parameters.anticaSeparateValanceAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ anticaSeparateValanceAllowanceCm: value })} />
-          <NumberField label="Remate de bambalina (cm)" value={parameters.valanceExtraCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ valanceExtraCm: value })} />
+          {jobs.filter((job) => job.model === selectedModel).map((job) => <NumberField key={job.model} label={`${job.label} · ${job.note} (cm)`} value={parameters.dropAllowanceByModel[job.model]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(job.model, value)} />)}
+          {selectedModel === 'CAMBIO ANTICA' && <NumberField label="Antica con bamba en otra tela (cm)" value={parameters.anticaSeparateValanceAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ anticaSeparateValanceAllowanceCm: value })} />}
+          {selectedModel !== 'ENROLLABLE' && <NumberField label="Remate de bambalina (cm)" value={parameters.valanceExtraCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ valanceExtraCm: value })} />}
         </div>
       </div>
       <div className="parameter-band">
@@ -1067,7 +1066,7 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
       </div>
-      <aside className="rps-evidence"><strong>Origen Excel</strong><span>CAM. TELA +40 cm, ENROL. +25 cm, BAMBALINA +5 cm y CAM. ANTICA +25 cm; Antica usa +40 cm cuando la bamba va en otra tela. Esa bamba se reserva por separado.</span></aside>
+      <aside className="rps-evidence"><strong>Origen Excel</strong><span>CAM. TELA +40 cm, ENROL. +25 cm, BAMBALINA +5 cm y CAM. ANTICA +65 cm; Antica usa +40 cm cuando la bamba va en otra tela. Esa bamba se reserva por separado.</span></aside>
     </section>
   );
 }

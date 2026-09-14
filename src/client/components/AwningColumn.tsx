@@ -495,7 +495,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             </div>
           )}
           {supportsValance && (
-            <NumberField label={awning.model === 'BAMBALINA' ? 'Alto' : 'Bamba (cm)'} value={awning.valanceHeight} min={0} onChange={updateValanceHeight} />
+            <NumberField label={awning.model === 'BAMBALINA' ? 'Alto terminado (cm)' : 'Bamba (cm)'} value={awning.valanceHeight} min={0} onChange={updateValanceHeight} />
           )}
           {hasValance && (
             <div className="awning-valance-options awning-wide-field">
@@ -743,7 +743,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               </>}
               {simpleFabricJob && <>
                 <NumberField label="Ajuste de frente (cm)" value={awning.fabricJobWidthAdjustmentCm} step={0.1} onChange={(fabricJobWidthAdjustmentCm) => update({ fabricJobWidthAdjustmentCm })} />
-                <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />
+                {!standaloneValance && <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />}
                 {hasValance && <NumberField label="Remate de bamba (cm)" value={awning.fabricJobValanceExtraCm} min={0} step={0.5} onChange={(fabricJobValanceExtraCm) => update({ fabricJobValanceExtraCm })} />}
               </>}
               {(fields.arzua || fields.galicia) && <>

@@ -93,7 +93,7 @@ export function buildPlanteamientoPlan(order, calculation) {
   entries.forEach((entry) => {
     const cadDiagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
     const diagram = getFabricPatternDiagram(entry.awning, cadDiagram);
-    const groupKey = JSON.stringify([fabricDiagramGroupKey(diagram, entry.awning), normalizeFabricImage(entry.awning.fabricImage)]);
+    const groupKey = JSON.stringify([fabricDiagramGroupKey(diagram, entry.awning), normalizeFabricImage(entry.awning.fabricImage), diagram === 'BAMBALINA' ? entry.ofBlock?.calculation?.fabricDrop : null]);
     const group = grouped.get(groupKey) || { diagram, diagramAwning: entry.awning, entries: [] };
     group.entries.push(entry);
     grouped.set(groupKey, group);
@@ -690,7 +690,7 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
   if (diagram === 'SUPLEMENTO') return drawSupplementDiagram(doc, x, y, w, h, awning);
   if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h);
-  if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning, calculation);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
   if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h);
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
@@ -1414,7 +1414,7 @@ function drawRollerDiagram(doc, x, y, w, h) {
     .text('REFUERZO PVC POR DENTRO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
 
-function drawValanceDiagram(doc, x, y, w, h, awning = {}) {
+function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   drawDiagramShell(doc, x, y, w, h, `BAMBALINA · ${valance.curve}`);
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
@@ -1426,7 +1426,7 @@ function drawValanceDiagram(doc, x, y, w, h, awning = {}) {
   const stripH = 92;
   drawValancePanel(doc, stripX, stripY, stripW, stripH, valance, {
     topLabel: 'VARILLA BLANCA',
-    bodyLabel: `ACRÍLICO · CORTE ${formatInstructionMeasure(valance.height + 5)} CM`,
+    bodyLabel: `TELA · CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM`,
     measurement: ''
   });
   drawRotatedDiagramText(doc, 'BASTILLA', stripX - 10, stripY + stripH / 2, stripH - 18);
@@ -1696,6 +1696,12 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
   if ((model.includes('CORTINA') || model === 'ELECTRA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
     const velcroHeight = resolveCurtainVelcroHeight(awning);
     if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);
+  }
+
+  if (model === 'BAMBALINA' && normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) !== 'SUPLEMENTO') {
+    instructionParts.push('VARILLA BLANCA · BASTILLAS LATERALES');
+    if (awning.fabricNotes) instructionParts.push('OBS. TELA: ' + awning.fabricNotes);
+    if (awning.structureNotes) instructionParts.push('ACLARACIONES: ' + awning.structureNotes);
   }
 
   if (['XACOBEO', 'CUARZO BOX', 'STORBOX 250'].includes(model)) {
