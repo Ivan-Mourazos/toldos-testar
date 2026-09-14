@@ -4,7 +4,7 @@
 
 [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md)
 
-Rama `bambalina`, partiendo de 6420950 en main. Cuatro commits: el piloto iniciado por Codex, el saneado de lint y test, este expediente con el barrido de 2026 y el anidado de rollo. Siguiente acción ejecutable: abrir el 4111 con Iván para cerrar Q-B06.
+Rama `bambalina`, partiendo de 6420950 en main. Siete commits: el piloto iniciado por Codex, el saneado de lint y test, este expediente con el barrido de 2026, el anidado de rollo, la anotación de reanudación, la especificación del suplemento y su implementación. Siguiente acción ejecutable: abrir el 4111 con Iván para cerrar Q-B06.
 
 ## Alcance y decisiones de OT
 
