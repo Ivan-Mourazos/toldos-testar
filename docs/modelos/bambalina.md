@@ -22,7 +22,7 @@ Conservar el formato de planteamiento habitual de taller: dibujo a la izquierda,
 | Dibujo | Formato anterior conservado; corte calculado sustituye el +5 fijo; etiqueta TELA sustituye ACRÍLICO fijo |
 | Notas | Se incluyen notas de tela y aclaraciones en la fila habitual de Bambalina; se conserva el límite de espacio y el aviso de nota completa en el pedido |
 | Imagen | Sustitución existente conservada; imagen y notas sobreviven guardar/reabrir y generación del PDF |
-| Reserva completa | Tejido contrastado parcialmente; accesorios pendientes de confirmar. No declarar completa |
+| Reserva completa | Tejido contrastado contra los Excel de 2026 y RPS. Broches y ollaos quedan clasificados como no inventariables por decisión de Iván (F-B11, F-B12), no omitidos |
 | Revisión taller | Muestra actualizada disponible; revisión práctica pendiente |
 
 ## Fuentes y trazabilidad
@@ -41,6 +41,8 @@ Ruta base de OT: \\192.168.0.128\Oftecnica\Oficina Tecnica.
 | F-B08 | Búsqueda oficial Sauleda del 14/09/2026 | Localizadas páginas/catálogos, pero no obtenida lectura verificable de un manual completo; no valida confección ni accesorios |
 | F-B09 | `pnpm validate:fabric-jobs` sobre 2026 completo, 14/09/2026 | 947 libros leídos, 435 con trabajos de tela, 567 trabajos. Solo lectura: SELECT sobre RPS y Excel abierto sin fórmulas ni macros. Resultado en output/modelos/bambalina/fabric-jobs-2026.json |
 | F-B10 | 2026 / AR2604220.dwg | El pedido del suplemento existe como plano de AutoCAD en la raíz de 2026, no como Excel en 2026/TOLDOS. Se resolvió fuera del flujo de cálculo habitual |
+| F-B11 | Plano AR2604220, técnico Adrián, revisión Jaime, 28/08/2026 | Aportado por Iván. A: bambalina 480, dos unidades, OF 0231679, varilla blanca 5,5, BN(3)+broches arriba, BN(1) en laterales. B: suplemento 480 × 130, OF 0231658, BN(3)+broches arriba, BN(1) laterales, BN(4)+ollaos abajo. Paso de broches C/34 y condición «los broches de A y B deben coincidir». Despiece conjunto de 482 × 163 con empates de 2 cm en vertical |
+| F-B12 | Consulta RPS del 14/09/2026 a las OF 0231658 y 0231679, sin filtro de familia | Cada OF tiene una sola línea, ambas de LONA: 9,5 y 1,5 ml de ACRILI2143P120. Ni broches ni ollaos reservados. Artículos de cabecera SUPLEBAMBA y BAMBA |
 
 Fuentes oficiales localizadas: [Masacril Marfil](https://sauleda.com/fr/tejido/sauleda-masacril-marfil/), [catálogo Pocket](https://sauleda.com/wp-content/uploads/2024/02/Pocket-2-1.pdf), [catálogo Plains](https://sauleda.com/wp-content/uploads/2024/05/PLAINS_digital_.pdf). En esta consulta, la página no pudo abrirse, Pocket devolvió 404 y Plains una verificación de acceso. No se dan por descargados ni analizados. La identidad del tejido no demuestra cómo se confecciona la bambalina.
 
@@ -88,12 +90,12 @@ Cambio de tela arranca con 53 divergencias dimensionales sobre 1296 y 43 de rese
 | Q-B01 | Corregido | El dibujo usa fabricDrop calculado, también con remate global 0/5/8 e individual 12. Entradas con distinto corte se separan para no compartir un rótulo incorrecto |
 | Q-B02 | Corregido para alcance ordinario | Tejido real en tabla; dibujo genérico TELA. Varilla blanca y bastillas confirmadas por Iván |
 | Q-B03 | Corregido | No ofrecer margen BAMBALINA sin efecto. Mostrar parámetros del modelo seleccionado y aclarar cuáles son compartidos. Texto Antica +65 alineado con regla existente |
-| Q-B04 | Pendiente | Suplemento/broches: confirmar fórmula, cantidad, posición y artículos. Comprobado que la opción SUPLEMENTO solo cambia la ilustración: con y sin ella, el mismo pedido produce materiales idénticos. El 4220 reservó además SUPLEBAMBA en una OF propia con 9,5 ml que la web no genera |
+| Q-B04 | Resuelto por Iván el 14/09/2026 | Suplemento y bambalina se dan de alta como dos entradas separadas, cada una con su OF y sus medidas; la app no deriva la una de la otra. Cada entrada calcula su tela por su cuenta: el aprovechamiento del corte conjunto lo decide el taller y no se reparte en la reserva. Broches y ollaos no se inventarían: se indican en el plano y no generan línea. Queda como mejora de dibujo representar BN por canto, el paso C/34 y el aviso de que los broches de A y B deben coincidir |
 | Q-B05 | Resuelto por Iván | Mantener redondeo a 0,5 ml; conservar consumo bruto en cálculo |
 | Q-B06 | Pendiente | Aclarar OF y reserva del 4111; no asumir que la OF diferente sea una errata |
 | Q-B07 | Pendiente | Mejorar notas largas dentro del formato conocido: actualmente el espacio de fila es limitado y remite al pedido si no caben |
 | Q-B08 | Resuelto por evidencia; avisar a OT | Única divergencia dimensional del barrido. AR2600228-2, OF 0224453: cuatro entradas de la misma OF, tres coinciden exactamente. La cuarta tiene UNIDADES 2 y el Excel reservó la tela de una sola bambalina (0,84 ml en vez de 1,68), por lo que la OF subió a RPS con 3,57 ml en lugar de 4,41. No es una duda sobre el significado de UNIDADES: de las ocho bambalinas de 2026 con varias unidades, siete coinciden exactamente con la web, incluidos los saltos de paños de 588 → 6 y 511,5 → 5. La convención está confirmada y ese libro es un caso defectuoso aislado. Informar a OT de la infrarreserva histórica; no corregir históricos ni cambiar la regla |
-| Q-B09 | Pendiente, afecta sobre todo a Enrollable | El Excel anida piezas estrechas en el ancho de rollo y la web no. `calculateFabricUsage` cobra un ancho de rollo completo por unidad, porque `countFabricPanels` nunca baja de 1. AR2602302-2: tres enrollables de 60 cm en rollo de 120 consumen 2 pasadas en el Excel (7,5 ml) y 3 en la web (11,25 ml). Sobrerreserva, no infrarreserva. En Bambalina no se ha observado porque sus piezas ya ocupan el ancho del rollo. Tratarlo en el alcance de Enrollable |
+| Q-B09 | Corregido | El Excel anidaba piezas estrechas en el ancho de rollo y la web no: cobraba un ancho de rollo por unidad. `countFabricRows` reparte ahora las unidades que caben juntas. AR2602302-2, tres enrollables de 60 cm en rollo de 120, pasa de 11,25 a 7,5 ml, que es lo que reservaron Excel y RPS. Contrastado contra los 567 trabajos de tela de 2026 con sus anchos de rollo reales (120, 153 y 250): corrige ese caso y no altera ningún otro. Solo interviene con un paño; una pieza que necesita varios ya ocupa el rollo entero |
 
 Curvas RECTA, NORMAL, SUAVE y EXTRASUAVE comprobadas en el recorrido de software. No extrapolar aprobación técnica a todas las telas, anchos de rollo, ondas o suplementos. El renderizado de prueba PVC comprueba la identificación del material, no valida su confección.
 
@@ -119,4 +121,4 @@ Las referencias candidatas no se incorporan automáticamente a la reserva sin ve
 - Comando reproducible: pnpm test:e2e:bambalina (incluye build).
 - Muestra local: output/pdf/bambalina-muestras.pdf. Cuatro curvas, formato habitual. No sustituye un pedido de fabricación.
 
-Próximo paso: llevar a Iván/OT la muestra y las dos preguntas que solo ellos pueden cerrar: qué artículos y cantidades lleva el suplemento con broches (Q-B04) y la segunda OF del 4111 (Q-B06). Avisar además de la infrarreserva del 0224453 (Q-B08), que no requiere decisión. Después, Enrollable, que arranca con el anidado del rollo ya identificado (Q-B09). No desplegado.
+Próximo paso: revisar la muestra con Iván y abrir el 4111 para cerrar Q-B06, la única duda que queda. Avisar de la infrarreserva del 0224453 (Q-B08), que no requiere decisión. Pendiente de dibujo: representar en el plano del suplemento los BN por canto, el paso C/34 y el aviso de coincidencia de broches, siguiendo F-B11. Después, Enrollable. No desplegado.
