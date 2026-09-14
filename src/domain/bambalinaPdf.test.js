@@ -84,3 +84,74 @@ describe('Bambalina: históricos y redondeo confirmado por OT', () => {
     expect(rows[0].quantity).toBe(rounded);
   });
 });
+
+// Sujeción y bastillas del suplemento, según docs/superpowers/specs/2026-09-14-suplemento-bambalina-design.md.
+// Medidas del plano AR2604220 (F-B11): sirven para probar el mecanismo, no acreditan un estándar.
+describe('Suplemento: sujeción, paso y bastillas configurables', () => {
+  const suplemento = { ...baseAwning, fabricDiagramOverride: 'SUPLEMENTO' };
+  const conSuplemento = (extra) => pages({ ...baseOrder, awnings: [{ ...suplemento, ...extra }] });
+
+  test('sin rellenar nada no inventa sujeción, paso ni bastillas', async () => {
+    const [text] = await conSuplemento({});
+    expect(text).toContain('SUPLEMENTO');
+    expect(text).not.toContain('BROCHES');
+    expect(text).not.toContain('VELCRO');
+    expect(text).not.toContain('C/');
+    expect(text).not.toContain('BN(');
+    expect(text).not.toContain('DEBEN COINCIDIR');
+  });
+
+  test('reproduce el plano del 4220: broches cada 34 con bastillas 3, 1 y 4', async () => {
+    const [text] = await conSuplemento({
+      supplementFastening: 'BROCHES',
+      supplementFasteningPitchCm: 34,
+      supplementJoinHemCm: 3,
+      supplementSideHemCm: 1,
+      supplementBottomHemCm: 4,
+      supplementBottomFinish: 'OLLAOS'
+    });
+    expect(text).toContain('BROCHES');
+    expect(text).toContain('C/34');
+    expect(text).toContain('BN(3)');
+    expect(text).toContain('BN(1)');
+    expect(text).toContain('BN(4)');
+    expect(text).toContain('OLLAOS');
+    expect(text).toContain('DEBEN COINCIDIR');
+  });
+
+  test('el velcro sustituye a los broches y no reserva material', async () => {
+    const order = { ...baseOrder, awnings: [{ ...suplemento, supplementFastening: 'VELCRO' }] };
+    const [text] = await pages(order);
+    expect(text).toContain('VELCRO');
+    expect(text).not.toContain('BROCHES');
+    // Velcro, broches y ollaos no se inventarían: la OF solo lleva tejido.
+    const materials = calculateOrder(order).ofs[0].materials;
+    expect(materials).toHaveLength(1);
+    expect(materials[0].description).toBe('ACR NEGRO');
+  });
+
+  test('una forma de sujeción que no está en la lista se rotula tal cual', async () => {
+    const [text] = await conSuplemento({
+      supplementFastening: 'OTRO', supplementFasteningOther: 'CREMALLERA',
+      supplementBottomFinish: 'OTRO', supplementBottomFinishOther: 'CADENILLA DE BOLAS'
+    });
+    expect(text).toContain('CREMALLERA');
+    expect(text).toContain('CADENILLA DE BOLAS');
+    expect(text).not.toContain('OTRO');
+  });
+
+  test('el paso solo aparece si se ha indicado', async () => {
+    const [conPaso] = await conSuplemento({ supplementFastening: 'BROCHES', supplementFasteningPitchCm: 25 });
+    expect(conPaso).toContain('C/25');
+    const [sinPaso] = await conSuplemento({ supplementFastening: 'BROCHES' });
+    expect(sinPaso).toContain('BROCHES');
+    expect(sinPaso).not.toContain('C/');
+  });
+
+  test('una bambalina sin suplemento no muestra ninguno de estos datos', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, supplementFastening: 'BROCHES', supplementJoinHemCm: 3 }] });
+    expect(text).toContain('VARILLA BLANCA');
+    expect(text).not.toContain('BN(');
+    expect(text).not.toContain('DEBEN COINCIDIR');
+  });
+});

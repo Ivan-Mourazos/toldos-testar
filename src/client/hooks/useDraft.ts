@@ -88,6 +88,8 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
   base.fabricImage = normalizeFabricImage(old.fabricImage);
   base.fabricDiagramOverride = normalizeFabricDiagramOverride(base.model, old.fabricDiagramOverride) as Awning['fabricDiagramOverride'];
+  // Los pedidos anteriores al suplemento configurable no traen estos campos.
+  Object.assign(base, sanitizeSupplement(base.fabricDiagramOverride === 'SUPLEMENTO' ? old : {}));
   base.remate = normalizeValanceFinish(base, typeof old.remate === 'string' ? old.remate : '');
   base.remateColor = base.remate === 'OTRO' && typeof old.remateColor === 'string' ? old.remateColor : '';
   base.structureColor = typeof old.structureColor === 'string' ? old.structureColor : '';
@@ -233,6 +235,28 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
         };
       })
       : fallback.awnings
+  };
+}
+
+// Sujeción y bastillas del suplemento. Fuera de ese diagrama no aplican, así que
+// se devuelven vacías en vez de arrastrar valores de otra configuración.
+function sanitizeSupplement(source: Record<string, unknown>) {
+  const text = (value: unknown) => typeof value === 'string' ? value : '';
+  const measure = (value: unknown) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+  const fastening = text(source.supplementFastening).toUpperCase();
+  const bottomFinish = text(source.supplementBottomFinish).toUpperCase();
+  return {
+    supplementFastening: fastening,
+    supplementFasteningOther: fastening === 'OTRO' ? text(source.supplementFasteningOther) : '',
+    supplementFasteningPitchCm: measure(source.supplementFasteningPitchCm),
+    supplementJoinHemCm: measure(source.supplementJoinHemCm),
+    supplementSideHemCm: measure(source.supplementSideHemCm),
+    supplementBottomHemCm: measure(source.supplementBottomHemCm),
+    supplementBottomFinish: bottomFinish,
+    supplementBottomFinishOther: bottomFinish === 'OTRO' ? text(source.supplementBottomFinishOther) : ''
   };
 }
 
@@ -456,6 +480,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     valanceCurve: supportsValance ? awning.valanceCurve : '',
     valanceFabric: supportsValance ? awning.valanceFabric : '',
     fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) as Awning['fabricDiagramOverride'],
+    ...sanitizeSupplement(normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) === 'SUPLEMENTO' ? awning : {}),
     remate: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate),
     remateColor: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate) === 'OTRO' ? awning.remateColor : '',
     structureColor: getModelWorkType(model) === 'FULL_AWNING' ? awning.structureColor : '',

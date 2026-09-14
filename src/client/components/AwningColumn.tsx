@@ -518,6 +518,18 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               />
             </div>
           )}
+          {awning.fabricDiagramOverride === 'SUPLEMENTO' && (
+            <div className="awning-form-section awning-wide-field">
+              <SelectField label="Sujeción del suplemento" value={awning.supplementFastening} options={['BROCHES', 'VELCRO', 'OTRO']} placeholder="Sin indicar" allowEmpty emptyLabel="Sin indicar" onChange={(supplementFastening) => update({ supplementFastening, supplementFasteningOther: supplementFastening === 'OTRO' ? awning.supplementFasteningOther : '' })} />
+              {awning.supplementFastening === 'OTRO' && <TextField label="Indicar sujeción" value={awning.supplementFasteningOther} onChange={(supplementFasteningOther) => update({ supplementFasteningOther })} />}
+              <NumberField label="Paso de la sujeción (cm)" value={awning.supplementFasteningPitchCm} min={0} step={0.5} onChange={(supplementFasteningPitchCm) => update({ supplementFasteningPitchCm })} />
+              <SelectField label="Remate inferior" value={awning.supplementBottomFinish} options={['OLLAOS', 'CADENILLA', 'OTRO']} placeholder="Sin indicar" allowEmpty emptyLabel="Sin indicar" onChange={(supplementBottomFinish) => update({ supplementBottomFinish, supplementBottomFinishOther: supplementBottomFinish === 'OTRO' ? awning.supplementBottomFinishOther : '' })} />
+              {awning.supplementBottomFinish === 'OTRO' && <TextField label="Indicar remate" value={awning.supplementBottomFinishOther} onChange={(supplementBottomFinishOther) => update({ supplementBottomFinishOther })} />}
+              <NumberField label="Bastilla de unión (cm)" value={awning.supplementJoinHemCm} min={0} step={0.5} onChange={(supplementJoinHemCm) => update({ supplementJoinHemCm })} />
+              <NumberField label="Bastilla lateral (cm)" value={awning.supplementSideHemCm} min={0} step={0.5} onChange={(supplementSideHemCm) => update({ supplementSideHemCm })} />
+              <NumberField label="Bastilla inferior (cm)" value={awning.supplementBottomHemCm} min={0} step={0.5} onChange={(supplementBottomHemCm) => update({ supplementBottomHemCm })} />
+            </div>
+          )}
           {(fields.arzua || fields.galicia) && (
             <div className="awning-form-section awning-core-config">
               <SegmentedField

@@ -124,3 +124,20 @@ Las referencias candidatas no se incorporan automáticamente a la reserva sin ve
 - Muestra local: output/pdf/bambalina-muestras.pdf. Cuatro curvas, formato habitual. No sustituye un pedido de fabricación.
 
 Próximo paso: revisar la muestra con Iván y abrir el 4111 para cerrar Q-B06, la única duda que queda. Avisar de la infrarreserva del 0224453 (Q-B08), que no requiere decisión. Pendiente de dibujo: representar en el plano del suplemento los BN por canto, el paso C/34 y el aviso de coincidencia de broches, siguiendo F-B11. Después, Enrollable. No desplegado.
+
+## Suplemento configurable (14/09/2026)
+
+Implementado según [la especificación](../superpowers/specs/2026-09-14-suplemento-bambalina-design.md). La opción SUPLEMENTO deja de dar por hecha la sujeción: ni el título del dibujo ni el canto de unión escriben «broches» por su cuenta.
+
+| Campo | Valores | Efecto |
+| --- | --- | --- |
+| Sujeción del suplemento | Broches, Velcro, otro con texto | Rotula el canto de unión y activa el aviso de coincidencia |
+| Paso de la sujeción | cm | Se rotula como C/n junto a la sujeción |
+| Bastilla de unión, lateral e inferior | cm | Se rotulan como BN(n) en su canto |
+| Remate inferior | Ollaos, Cadenilla, otro con texto | Rotula el canto inferior |
+
+Todos opcionales y vacíos por defecto. Un campo sin valor no se dibuja. Ninguno toca el cálculo, los paños ni la reserva: la OF de un suplemento sigue llevando solo tejido, como confirmó Iván para broches, ollaos y velcro.
+
+Muestra: output/modelos/bambalina/muestra-suplemento.pdf, con el caso del 4220, uno de velcro y cadenilla, y uno sin rellenar.
+
+Límites: las bastillas 1, 3 y 4 y el paso 34 salen del plano del 4220, un único pedido. El «sube 3 cm por encima de la onda» sigue fijo en el dibujo y no se ha revisado en este alcance.

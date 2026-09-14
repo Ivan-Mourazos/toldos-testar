@@ -35,6 +35,14 @@ export type Awning = {
   valanceFabric: string;
   fabricImage?: string | null;
   fabricDiagramOverride: '' | 'TOLDO-VELCRO' | 'CAMBIO ENROLLABLE' | 'SUPLEMENTO';
+  supplementFastening: string;
+  supplementFasteningOther: string;
+  supplementFasteningPitchCm: number | null;
+  supplementJoinHemCm: number | null;
+  supplementSideHemCm: number | null;
+  supplementBottomHemCm: number | null;
+  supplementBottomFinish: string;
+  supplementBottomFinishOther: string;
   remate: string;
   remateColor: string;
   structureColor: string;

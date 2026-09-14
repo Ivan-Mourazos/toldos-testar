@@ -1348,9 +1348,36 @@ function drawChangeRollerDiagram(doc, x, y, w, h) {
     .text('CONFECCIÓN SOBRE TELA EXISTENTE', panelX + 14, panelY + panelH / 2 - 4, { width: panelW - 28, align: 'center' });
 }
 
+// La sujeción y las bastillas del suplemento se configuran por pedido: un campo
+// vacío no se dibuja y no se sustituye por un valor supuesto.
+export function buildSupplementSpec(awning = {}) {
+  const choice = (value, other) => {
+    const selected = String(value || '').trim().toUpperCase();
+    if (selected === 'OTRO') return String(other || '').trim().toUpperCase();
+    return selected;
+  };
+  const measure = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+  return {
+    fastening: choice(awning.supplementFastening, awning.supplementFasteningOther),
+    pitchCm: measure(awning.supplementFasteningPitchCm),
+    joinHemCm: measure(awning.supplementJoinHemCm),
+    sideHemCm: measure(awning.supplementSideHemCm),
+    bottomHemCm: measure(awning.supplementBottomHemCm),
+    bottomFinish: choice(awning.supplementBottomFinish, awning.supplementBottomFinishOther)
+  };
+}
+
+function hemLabel(value) {
+  return value === null ? '' : `BN(${formatInstructionMeasure(value)})`;
+}
+
 function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
-  drawDiagramShell(doc, x, y, w, h, 'SUPLEMENTO CON BROCHES');
+  const supplement = buildSupplementSpec(awning);
+  drawDiagramShell(doc, x, y, w, h, 'SUPLEMENTO');
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
     .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
@@ -1363,10 +1390,25 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const joinY = broochY + 20;
   doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#7fa594');
   doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
-  for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
-    doc.circle(broochX, broochY, 1.25).fill('#c75d55');
+  if (supplement.fastening) {
+    for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
+      doc.circle(broochX, broochY, 1.25).fill('#c75d55');
+    }
+    const pitch = supplement.pitchCm === null ? '' : ` · C/${formatInstructionMeasure(supplement.pitchCm)}`;
+    drawDiagramText(doc, `${supplement.fastening}${pitch}`, stripX, broochY - 14, stripW);
   }
-  drawDiagramText(doc, 'CON BROCHES', stripX, broochY - 14, stripW);
+  if (supplement.joinHemCm !== null) {
+    drawDiagramText(doc, hemLabel(supplement.joinHemCm), stripX, broochY - 22, stripW);
+  }
+  if (supplement.sideHemCm !== null) {
+    const sides = hemLabel(supplement.sideHemCm);
+    drawRotatedDiagramText(doc, sides, stripX - 10, stripY + stripH / 2, stripH - 18);
+    drawRotatedDiagramText(doc, sides, stripX + stripW + 10, stripY + stripH / 2, stripH - 18);
+  }
+  if (supplement.bottomHemCm || supplement.bottomFinish) {
+    const bottom = [hemLabel(supplement.bottomHemCm), supplement.bottomFinish].filter(Boolean).join(' · ');
+    drawDiagramText(doc, bottom, stripX, stripY + stripH + 4, stripW);
+  }
   drawSupplementJoin(doc, stripX, joinY, stripW, valance.curve);
   doc.fillColor('#c75d55').font(fonts.bold).fontSize(6.2)
     .text('3 CM', stripX - 25, broochY + 3, { width: 22, align: 'right' });
@@ -1376,8 +1418,10 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
     .strokeColor('#c75d55').lineWidth(0.65).stroke();
   doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(9)
     .text('SUPLEMENTO', stripX + 8, joinY + 36, { width: stripW - 16, align: 'center' });
+  const notes = ['EL SUPLEMENTO SUBE 3 CM POR ENCIMA DE LA ONDA'];
+  if (supplement.fastening) notes.push('LOS PUNTOS DE BAMBALINA Y SUPLEMENTO DEBEN COINCIDIR');
   doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.8)
-    .text('EL SUPLEMENTO SUBE 3 CM POR ENCIMA DE LA ONDA', x + 20, y + 278, { width: w - 40, align: 'center' });
+    .text(notes.join(' · '), x + 20, y + 272, { width: w - 40, align: 'center' });
 }
 
 function drawSupplementJoin(doc, x, y, w, curve) {

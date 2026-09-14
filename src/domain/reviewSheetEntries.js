@@ -27,7 +27,7 @@ const preferredLabels = {
   'PLANTEAMIENTO CAD MANUAL': 'Planteamiento CAD manual',
   'TOLDO-VELCRO': 'Toldo con velcro',
   'CAMBIO ENROLLABLE': 'Cambio de enrollable',
-  SUPLEMENTO: 'Suplemento con broches',
+  SUPLEMENTO: 'Suplemento',
   BASE: 'Salida base', FINISHED: 'Tela terminada',
   STANDARD: 'Estándar', VERTICAL_170: 'Bajada vertical 170°'
 };

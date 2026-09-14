@@ -32,7 +32,7 @@ const preferredLabels: Record<string, string> = {
   'ENTRADA TUBO Ø42 MM': 'Entrada tubo Ø42 mm',
   'TOLDO-VELCRO': 'Toldo con velcro',
   'CAMBIO ENROLLABLE': 'Cambio de enrollable',
-  'SUPLEMENTO': 'Suplemento con broches',
+  'SUPLEMENTO': 'Suplemento',
   'BASE': 'Salida base',
   'FINISHED': 'Tela terminada',
   'STANDARD': 'Estándar',
