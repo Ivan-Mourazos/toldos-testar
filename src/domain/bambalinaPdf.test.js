@@ -155,3 +155,46 @@ describe('Suplemento: sujeción, paso y bastillas configurables', () => {
     expect(text).not.toContain('DEBEN COINCIDIR');
   });
 });
+
+// El solape sobre la onda estaba en duro desde cea6a32 sin respaldo en ninguna
+// fuente y sin efecto en el cálculo. Iván decide el 14/09/2026 configurarlo.
+describe('Suplemento: solape sobre la onda', () => {
+  const suplemento = { ...baseAwning, fabricDiagramOverride: 'SUPLEMENTO' };
+
+  test('sin indicarlo no aparece ninguna cota de solape', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [suplemento] });
+    expect(text).toContain('SUPLEMENTO');
+    expect(text).not.toContain('POR ENCIMA DE LA ONDA');
+  });
+
+  test.each([[3], [5.5]])('con %s cm indicados se rotula la cota y el aviso', async (overlap) => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...suplemento, supplementWaveOverlapCm: overlap }] });
+    const expected = String(overlap).replace('.', ',');
+    expect(text).toContain(`${expected} CM POR ENCIMA DE LA ONDA`);
+  });
+
+  test('el solape no altera el corte ni la reserva', async () => {
+    const sin = calculateOrder({ ...baseOrder, awnings: [suplemento] }).ofs[0];
+    const con = calculateOrder({ ...baseOrder, awnings: [{ ...suplemento, supplementWaveOverlapCm: 8 }] }).ofs[0];
+    expect(con.calculation.fabricDrop).toBe(sin.calculation.fabricDrop);
+    expect(con.materials).toEqual(sin.materials);
+  });
+});
+
+// Iván, 14/09/2026: el paso es la separación entre broches; con velcro no aplica.
+describe('Suplemento: el paso solo tiene sentido con broches', () => {
+  const suplemento = { ...baseAwning, fabricDiagramOverride: 'SUPLEMENTO' };
+
+  test('con velcro no se rotula paso aunque venga un valor guardado', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...suplemento, supplementFastening: 'VELCRO', supplementFasteningPitchCm: 34 }] });
+    expect(text).toContain('VELCRO');
+    expect(text).not.toContain('C/');
+    expect(text).not.toContain('34');
+  });
+
+  test('una sujeción escrita a mano tampoco arrastra el paso', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...suplemento, supplementFastening: 'OTRO', supplementFasteningOther: 'CREMALLERA', supplementFasteningPitchCm: 34 }] });
+    expect(text).toContain('CREMALLERA');
+    expect(text).not.toContain('C/');
+  });
+});

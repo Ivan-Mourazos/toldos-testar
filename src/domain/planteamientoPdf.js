@@ -1360,9 +1360,14 @@ export function buildSupplementSpec(awning = {}) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   };
+  const fastening = choice(awning.supplementFastening, awning.supplementFasteningOther);
+  const withStuds = String(awning.supplementFastening || '').trim().toUpperCase() === 'BROCHES';
   return {
-    fastening: choice(awning.supplementFastening, awning.supplementFasteningOther),
-    pitchCm: measure(awning.supplementFasteningPitchCm),
+    fastening,
+    withStuds,
+    // El paso es la separación entre broches. Con velcro no hay nada que espaciar.
+    pitchCm: withStuds ? measure(awning.supplementFasteningPitchCm) : null,
+    waveOverlapCm: measure(awning.supplementWaveOverlapCm),
     joinHemCm: measure(awning.supplementJoinHemCm),
     sideHemCm: measure(awning.supplementSideHemCm),
     bottomHemCm: measure(awning.supplementBottomHemCm),
@@ -1386,19 +1391,26 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const stripY = y + 91;
   const stripW = w - 50;
   const stripH = 153;
-  const broochY = stripY + 29;
-  const joinY = broochY + 20;
+  const broochY = stripY + 34;
+  const joinY = broochY + 22;
+  // El suplemento va detrás, así que se dibuja primero y la bambalina lo tapa.
   doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#7fa594');
+  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.4)
+    .text('SUPLEMENTO POR DETRÁS', stripX + 8, stripY + stripH - 16, { width: stripW - 16, align: 'center' });
+  drawValanceOverSupplement(doc, stripX, stripY, stripW, joinY, valance.curve);
+  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(6.4)
+    .text('BAMBALINA', stripX + 8, stripY + 6, { width: stripW - 16, align: 'center' });
   doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
-  if (supplement.fastening) {
+  if (supplement.fastening && supplement.withStuds) {
     for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
       doc.circle(broochX, broochY, 1.25).fill('#c75d55');
     }
-    const pitch = supplement.pitchCm === null ? '' : ` · C/${formatInstructionMeasure(supplement.pitchCm)}`;
-    drawDiagramText(doc, `${supplement.fastening}${pitch}`, stripX, broochY - 14, stripW);
   }
-  if (supplement.joinHemCm !== null) {
-    drawDiagramText(doc, hemLabel(supplement.joinHemCm), stripX, broochY - 22, stripW);
+  // Bastilla, sujeción y paso van en un solo rótulo, como «BN(3) + BROCHES» del plano.
+  const joinParts = [hemLabel(supplement.joinHemCm), supplement.fastening].filter(Boolean);
+  if (supplement.pitchCm !== null) joinParts.push(`C/${formatInstructionMeasure(supplement.pitchCm)}`);
+  if (joinParts.length > 0) {
+    drawDiagramText(doc, joinParts.join(' · '), stripX, broochY - 12, stripW);
   }
   if (supplement.sideHemCm !== null) {
     const sides = hemLabel(supplement.sideHemCm);
@@ -1409,25 +1421,34 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
     const bottom = [hemLabel(supplement.bottomHemCm), supplement.bottomFinish].filter(Boolean).join(' · ');
     drawDiagramText(doc, bottom, stripX, stripY + stripH + 4, stripW);
   }
-  drawSupplementJoin(doc, stripX, joinY, stripW, valance.curve);
-  doc.fillColor('#c75d55').font(fonts.bold).fontSize(6.2)
-    .text('3 CM', stripX - 25, broochY + 3, { width: 22, align: 'right' });
-  doc.moveTo(stripX - 5, broochY).lineTo(stripX - 5, joinY)
-    .moveTo(stripX - 8, broochY).lineTo(stripX - 2, broochY)
-    .moveTo(stripX - 8, joinY).lineTo(stripX - 2, joinY)
-    .strokeColor('#c75d55').lineWidth(0.65).stroke();
+
+  if (supplement.waveOverlapCm !== null) {
+    doc.fillColor('#c75d55').font(fonts.bold).fontSize(6.2)
+      .text(`${formatInstructionMeasure(supplement.waveOverlapCm)} CM`, stripX - 27, broochY + 3, { width: 24, align: 'right' });
+    doc.moveTo(stripX - 5, broochY).lineTo(stripX - 5, joinY)
+      .moveTo(stripX - 8, broochY).lineTo(stripX - 2, broochY)
+      .moveTo(stripX - 8, joinY).lineTo(stripX - 2, joinY)
+      .strokeColor('#c75d55').lineWidth(0.65).stroke();
+  }
   doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(9)
     .text('SUPLEMENTO', stripX + 8, joinY + 36, { width: stripW - 16, align: 'center' });
-  const notes = ['EL SUPLEMENTO SUBE 3 CM POR ENCIMA DE LA ONDA'];
+  const notes = [];
+  if (supplement.waveOverlapCm !== null) {
+    notes.push(`EL SUPLEMENTO SUBE ${formatInstructionMeasure(supplement.waveOverlapCm)} CM POR ENCIMA DE LA ONDA`);
+  }
   if (supplement.fastening) notes.push('LOS PUNTOS DE BAMBALINA Y SUPLEMENTO DEBEN COINCIDIR');
-  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.8)
-    .text(notes.join(' · '), x + 20, y + 272, { width: w - 40, align: 'center' });
+  if (notes.length > 0) {
+    doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.8)
+      .text(notes.join(' · '), x + 20, y + 272, { width: w - 40, align: 'center' });
+  }
 }
 
-function drawSupplementJoin(doc, x, y, w, curve) {
+// Traza el canto inferior ondulado de la bambalina, sin pintarlo: quien llama
+// decide si lo usa como línea o como borde de una figura rellena.
+function traceValanceEdge(doc, x, y, w, curve) {
   const normalized = String(curve || 'RECTA').toUpperCase();
   if (normalized === 'RECTA') {
-    doc.moveTo(x, y).lineTo(x + w, y).strokeColor('#c75d55').lineWidth(0.8).stroke();
+    doc.moveTo(x, y).lineTo(x + w, y);
     return;
   }
   const amplitude = normalized === 'NORMAL' ? 8 : normalized === 'SUAVE' ? 5 : 3;
@@ -1438,7 +1459,14 @@ function drawSupplementJoin(doc, x, y, w, curve) {
     const waveX = x + index * waveW;
     doc.bezierCurveTo(waveX + waveW * 0.25, y + amplitude, waveX + waveW * 0.75, y + amplitude, waveX + waveW, y);
   }
-  doc.strokeColor('#c75d55').lineWidth(0.8).stroke();
+}
+
+// La bambalina tapa al suplemento, que es como quedan montados. Se rellena
+// opaca y se dibuja después para que se vea cuál va por delante.
+function drawValanceOverSupplement(doc, x, top, w, bottom, curve) {
+  traceValanceEdge(doc, x, bottom, w, curve);
+  doc.lineTo(x + w, top).lineTo(x, top).closePath();
+  doc.fillAndStroke('#e3ece7', '#c75d55');
 }
 
 function drawRollerDiagram(doc, x, y, w, h) {

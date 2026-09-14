@@ -38,6 +38,7 @@ export type Awning = {
   supplementFastening: string;
   supplementFasteningOther: string;
   supplementFasteningPitchCm: number | null;
+  supplementWaveOverlapCm: number | null;
   supplementJoinHemCm: number | null;
   supplementSideHemCm: number | null;
   supplementBottomHemCm: number | null;

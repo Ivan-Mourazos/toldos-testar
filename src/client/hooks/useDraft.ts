@@ -251,7 +251,9 @@ function sanitizeSupplement(source: Record<string, unknown>) {
   return {
     supplementFastening: fastening,
     supplementFasteningOther: fastening === 'OTRO' ? text(source.supplementFasteningOther) : '',
-    supplementFasteningPitchCm: measure(source.supplementFasteningPitchCm),
+    // El paso separa broches. Con velcro o con otra sujeción no aplica.
+    supplementFasteningPitchCm: fastening === 'BROCHES' ? measure(source.supplementFasteningPitchCm) : null,
+    supplementWaveOverlapCm: measure(source.supplementWaveOverlapCm),
     supplementJoinHemCm: measure(source.supplementJoinHemCm),
     supplementSideHemCm: measure(source.supplementSideHemCm),
     supplementBottomHemCm: measure(source.supplementBottomHemCm),

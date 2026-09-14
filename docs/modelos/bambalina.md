@@ -141,3 +141,9 @@ Todos opcionales y vacíos por defecto. Un campo sin valor no se dibuja. Ninguno
 Muestra: output/modelos/bambalina/muestra-suplemento.pdf, con el caso del 4220, uno de velcro y cadenilla, y uno sin rellenar.
 
 Límites: las bastillas 1, 3 y 4 y el paso 34 salen del plano del 4220, un único pedido. El «sube 3 cm por encima de la onda» sigue fijo en el dibujo y no se ha revisado en este alcance.
+
+### Ajustes del 14/09/2026 tras revisar la muestra con Iván
+
+- El solape sobre la onda era un rótulo en duro desde cea6a32, sin respaldo en Excel, RPS ni en el plano del 4220, y sin efecto en el cálculo. Pasa a campo opcional. El plano de Adrián no cota ningún solape: su «3» es la bastilla de unión, que es otra cosa.
+- El paso pertenece a los broches. Con velcro o con una sujeción escrita a mano no se ofrece, no se guarda y no se dibuja, y tampoco se pintan los puntos de broche.
+- El dibujo muestra la bambalina por delante del suplemento, con su canto ondulado recortándolo y el rótulo «suplemento por detrás». Bastilla, sujeción y paso van en un solo rótulo, como el «BN(3) + BROCHES» del plano.

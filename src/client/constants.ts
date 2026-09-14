@@ -41,6 +41,7 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     supplementFastening: '',
     supplementFasteningOther: '',
     supplementFasteningPitchCm: null,
+    supplementWaveOverlapCm: null,
     supplementJoinHemCm: null,
     supplementSideHemCm: null,
     supplementBottomHemCm: null,
