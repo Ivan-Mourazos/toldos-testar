@@ -10,46 +10,49 @@ Antes de trabajar un modelo, crear su expediente desde la plantilla y enlazarlo 
 
 Los nombres de la segunda columna recogen etiquetas o aliases del código actual. No acreditan por sí solos una relación con un fabricante. Fabricante, proveedor y denominación técnica oficial están pendientes de verificar en este programa de revisión, salvo evidencia explícita que se incorpore al expediente.
 
-Estados de la revisión: pendiente / en curso / con dudas / verificado para un alcance definido. No confundir este estado con disponibilidad actual de la aplicación. El orden de las filas agrupa el trabajo propuesto, no modifica el selector del producto.
+Estados de la revisión: pendiente / en curso / con dudas / verificado para un alcance definido. No confundir este estado con disponibilidad actual de la aplicación. El orden de las filas prioriza los alcances más sencillos desde el 14/09/2026, según la preferencia de Iván; no modifica el selector del producto.
 
 ## Catálogo de trabajo
 
 | Código interno | Nombre visible / denominación antigua o alias | Evidencia de partida | Estado de esta revisión / próximo paso |
 | --- | --- | --- | --- |
-| HERA | HERA / ROLL-SYSTEM | [Evidencia](../rps-hera-evidence.md) · [Expediente iniciado](./hera.md) | En curso: manual/proveedor y despiece; dudas del 3981 pendientes |
-| ANTICA | Antica / ANTICA | [Reglas actuales](../../src/domain/anticaRules.js) | Pendiente: confirmar variantes, cuatro brazos, colores y despiece |
-| ELECTRA | Electra / ELIT VERTICAL | [Evidencia](../rps-electra-evidence.md) | Pendiente: matriz cofre/guía y dibujos de cada combinación |
+| BAMBALINA | Bambalina / BAMBALINA NUEVA | [Evidencia](../excel-fabric-jobs-evidence.md) · [Expediente](./bambalina.md) | En curso: cálculo validado contra los 947 Excel de 2026 (356/357); pendientes dos decisiones de OT (suplemento y OF del 4111) |
+| ENROLLABLE | Enrollable / LONA PARA PUERTA ENROLLABLE | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: variantes de confección y dibujo. Arranca con el anidado del rollo ya medido (Q-B09 del expediente de Bambalina) |
+| CAMBIO TELA | Cambio de tela / CAMBIO DE TELA A TOLDO DE FACHADA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: diagramas y remates por sistema existente |
+| CAMBIO CORTINA | Cambio de cortina / CAMBIO DE TELA A TOLDO CORTINA | [Evidencia](../rps-cambio-cortina-evidence.md) | Pendiente: confección y opciones del sistema existente |
 | CORTINA | Cortina / CORTINA UNIVERSAL | [Evidencia](../rps-cortina-evidence.md) | Pendiente: configuraciones, remates y confección |
 | SELENA | Selena / sin etiqueta antigua específica | [Reglas actuales](../../src/domain/selenaRules.js) | Pendiente: identidad, manual, brazos stor y diferencias con Cortina |
-| MAXISCREEM | Diana vertical / MAXISSCREEN | [Evidencia](../rps-maxiscreem-evidence.md) | Pendiente: submodelos, cable/varilla y correspondencias |
-| IRIS | Iris / aliases SCREENY 110, 130, 150 | [Evidencia](../rps-iris-evidence.md) | Pendiente: documentación por tamaño/cofre y geometría |
+| PUNTO RECTO | Punto Recto / PUNTO RECTO | [Evidencia](../rps-punto-recto-evidence.md) | Pendiente: sistemas, posiciones y cantidades de brazos |
+| XACOBEO | Xacobeo / ART 250, XACOBEO | [Evidencia](../rps-xacobeo-evidence.md) | Pendiente: manual aplicable, cálculo y dibujo |
 | ARZUA PRO | Arzúa Pro / ART 325, ARZUA | [Evidencia](../rps-arzua-evidence.md) | Pendiente: variantes de tubo/soporte y piezas completas |
 | GALICIA | Galicia / MODELO GALICIA | [Evidencia](../rps-galicia-evidence.md) | Pendiente: brazos, tramos y representación |
-| XACOBEO | Xacobeo / ART 250, XACOBEO | [Evidencia](../rps-xacobeo-evidence.md) | Pendiente: manual aplicable, cálculo y dibujo |
 | MONOBLOCK 350 | Monoblock 350 / ARZUA MONOBLOC | [Evidencia](../rps-monoblock-350-evidence.md) | Pendiente: configuraciones de brazos y soportes |
-| PUNTO RECTO | Punto Recto / PUNTO RECTO | [Evidencia](../rps-punto-recto-evidence.md) | Pendiente: sistemas, posiciones y cantidades de brazos |
 | AMBAR BOX | Ámbar Box / MICROBOX | [Evidencia](../rps-ambar-box-evidence.md) | Pendiente: cofre, límites y despiece documentado |
 | AGATA BOX | Ágata Box / MODULBOX, alias MODUL400 | [Evidencia](../rps-agata-box-evidence.md) | Pendiente: OPEN/SEMIOPEN/SEMICLOSE/COFRE y brazos |
 | CUARZO BOX | Cuarzo Box / STORBOX 250 | [Evidencia](../rps-cuarzo-box-evidence.md) | Pendiente: generación aplicable, despiece y vistas |
 | PERLA BOX | Perla Box / STORBOX S-300 | [Evidencia](../rps-perla-box-evidence.md) | Pendiente: diferenciar reglas y piezas de Coral |
 | CORAL BOX | Coral Box / STORBOX 400 | [Evidencia](../rps-coral-box-evidence.md) | Pendiente: generación aplicable, límites y vistas |
-| CAMBIO CORTINA | Cambio de cortina / CAMBIO DE TELA A TOLDO CORTINA | [Evidencia](../rps-cambio-cortina-evidence.md) | Pendiente: confección y opciones del sistema existente |
-| CAMBIO TELA | Cambio de tela / CAMBIO DE TELA A TOLDO DE FACHADA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: diagramas y remates por sistema existente |
+| ELECTRA | Electra / ELIT VERTICAL | [Evidencia](../rps-electra-evidence.md) | Pendiente: matriz cofre/guía y dibujos de cada combinación |
+| MAXISCREEM | Diana vertical / MAXISSCREEN | [Evidencia](../rps-maxiscreem-evidence.md) | Pendiente: submodelos, cable/varilla y correspondencias |
+| IRIS | Iris / aliases SCREENY 110, 130, 150 | [Evidencia](../rps-iris-evidence.md) | Pendiente: documentación por tamaño/cofre y geometría |
+| HERA | HERA / ROLL-SYSTEM | [Evidencia](../rps-hera-evidence.md) · [Expediente iniciado](./hera.md) | En curso: manual/proveedor y despiece; dudas del 3981 pendientes |
+| ANTICA | Antica / ANTICA | [Reglas actuales](../../src/domain/anticaRules.js) | Pendiente: confirmar variantes, cuatro brazos, colores y despiece |
 | CAMBIO ANTICA | Cambio antica / CAMBIO DE TELA A TOLDO ANTICA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: geometría y confección, sin reservar estructura nueva |
-| ENROLLABLE | Enrollable / LONA PARA PUERTA ENROLLABLE | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: variantes de confección y dibujo |
-| BAMBALINA | Bambalina / BAMBALINA NUEVA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: curvas, suplemento, tejido y reservas |
 
-## Lotes propuestos
+## Lotes propuestos, de menor a mayor alcance
 
 | Lote | Modelos | Objetivo y evidencia de salida |
 | --- | --- | --- |
-| Pilotos | HERA y Antica | Expediente técnico reproducible; estilo de notas; vínculo entre cambios de piezas, dibujo y reserva |
-| Verticales | Electra, Cortina, Selena, Diana vertical e Iris | Vistas coherentes de cofre, guías y confección; diferencias documentadas, formulario y Parámetros alineados |
-| Brazos y clásicos | Arzúa Pro, Galicia, Xacobeo, Monoblock 350 y Punto Recto | Cantidad/lado de brazos, soportes, accionamiento, geometría y despiece |
-| Cofres | Ámbar, Ágata, Cuarzo, Perla y Coral | Componentes compartidos verificados y variantes visualmente distinguibles |
-| Trabajos de tela | Cambio de cortina, Cambio de tela, Cambio antica, Enrollable y Bambalina | Confección y reserva de su alcance, reutilizando los dibujos de familias ya comprobadas |
+| 1. Piloto de confección | Bambalina | Dibujo con alto terminado y corte coherentes, curvas y remates, reserva de tejido y expediente revisable |
+| 2. Tela sencilla | Enrollable | Validar entrada de confección y dibujos; aprovechar el estilo del piloto |
+| 3. Cambios de tela | Cambio de tela y Cambio de cortina | Cerrar primero variantes básicas; después bamba separada, ventanas y remates especiales |
+| 4. Estructura base | Cortina, Selena, Punto Recto y Xacobeo | Primer despiece completo con piezas RPS; ordenar por evidencia disponible y dudas técnicas |
+| 5. Ampliación por familias | Arzúa Pro, Galicia, Monoblock 350; Ámbar, Ágata, Cuarzo, Perla y Coral; Electra, Diana vertical e Iris | Incorporar brazos, cofres, guías, accionamientos y límites por variante; no equiparar complejidad entre todos ellos |
+| 6. Casos especiales | HERA, Antica y Cambio Antica | Retomar los contrastes ya iniciados, geometrías y ediciones técnicas sin perder pendientes |
 
-No hace falta esperar al cierre completo de un lote para investigar el siguiente. La adopción del estilo común puede avanzar con las muestras ya revisadas; las fórmulas y compatibilidades pendientes se mantienen identificadas.
+Cada fila define una prioridad de arranque, no una estimación cerrada de dificultad. Dividir variantes complejas en un alcance propio. Revisar una muestra del primer modelo con Iván/OT antes de extender su diseño. Reservar el piloto 3D para una estructura donde ayude a comprender el montaje.
+
+La investigación previa de HERA sigue disponible y las incidencias urgentes de cualquier modelo conservan prioridad operativa. Cambiar este orden no modifica reglas ni habilita producción.
 
 ## Mejoras comunes que seguir junto a los modelos
 
@@ -72,3 +75,8 @@ No hace falta esperar al cierre completo de un lote para investigar el siguiente
 | --- | --- | --- | --- |
 | 13/09/2026 | Programa de revisión | Guía, plantilla e inventario creados; no se han verificado nuevos manuales ni proveedores en esta entrega | Aplicar el encargo de la guía a un modelo |
 | 13/09/2026 | HERA | Evidencia previa enlazada; veinte medidas del 3981 coincidentes y reserva con diferencia pendiente | Completar fuentes/despiece y resolver Q-H01/Q-H02 del expediente |
+| 14/09/2026 | Prioridades y Bambalina | Orden ajustado para empezar por lo sencillo; expediente inicial y 105 tests existentes superados | Contrastar confección y resolver las incoherencias de dibujo/parámetros de Bambalina |
+| 14/09/2026 | Bambalina | Maestro y 4031/4111 contrastados, 4220 consultado en RPS; corte corregido, redondeo 0,5 confirmado y formato habitual conservado; 866 tests, TypeScript y recorrido Playwright superados | Revisar muestra con OT; aclarar accesorios y 4111, después Enrollable |
+| 14/09/2026 | Herramientas de verificación | `pnpm lint` fallaba en main y `pnpm test` contaba tests de otra rama: ESLint y vitest alineados con .gitignore, 847/47 reales. Cableados 11 scripts que existían sin acceso por pnpm, entre ellos validate:fabric-jobs | Usar validate:fabric-jobs como barrido de partida de cada trabajo de tela |
+| 14/09/2026 | Bambalina | Barrido de los 947 Excel de 2026 contra RPS en vivo: 119 bambalinas, 356 de 357 comprobaciones dimensionales coincidentes; las 8 de varias unidades verificadas una a una (7 exactas). Q-B08 cerrado como libro defectuoso aislado, Q-B09 (anidado del rollo) abierto para Enrollable, 4220 localizado como .dwg sin Excel | Llevar Q-B04 y Q-B06 a OT con la muestra; después Enrollable |
+| 14/09/2026 | Guía v1.2 | Añadida la regla de estado del repositorio al cerrar sesión y actualizado el apartado de comandos con los validadores reales | Aplicarla en el traspaso de cada modelo |

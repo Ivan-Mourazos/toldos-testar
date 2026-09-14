@@ -1,6 +1,6 @@
 # Guía de revisión y mejora de modelos de toldo
 
-Versión 1 · 13/09/2026 · Oficina Técnica · Toldos Testar
+Versión 1.2 · 14/09/2026 · Oficina Técnica · Toldos Testar
 
 ## Para qué sirve
 
@@ -37,6 +37,15 @@ Documentación y RPS pueden avanzar a la vez sobre un mismo inventario. Implemen
 Antes de repartir, asignar por escrito qué archivos puede editar cada agente. Archivos compartidos como planteamientoPdf.js, rules.js, modelBehavior.json, AwningColumn.tsx y ParametersView.tsx deben tener un único responsable de integración durante el lote. Los demás entregan propuestas o datos sin pisar cambios.
 
 Cada entrega debe contener: modelo y variantes; fuentes; hechos comprobados frente a hipótesis; archivos modificados; pruebas ejecutadas y resultados; decisiones pendientes y trabajo que puede continuar. Al retomar una tarea, leer esa entrega, el expediente y el diff actual. No repetir investigación ya documentada salvo que falte evidencia o haya cambiado su vigencia.
+
+### Estado del repositorio al cerrar una sesión
+
+Una sesión puede terminar antes de lo previsto por cuota, error o cambio de prioridad. Dejar el trabajo recuperable sin reconstruirlo desde un diff suelto:
+
+- Commitear en una rama con nombre del modelo, no dejar el trabajo sin commit sobre main. Un árbol modificado sin commit no indica quién lo hizo, cuándo ni con qué alcance.
+- Anotar en el expediente la rama, el último commit y el siguiente paso ejecutable. El campo existe en la sección 1 de la plantilla.
+- Separar lo terminado de lo tentativo. Si una corrección queda a medias, decirlo en el expediente en vez de dejar que el siguiente agente lo deduzca.
+- Los worktrees de .claude/ pertenecen a otras ramas. No tomar sus archivos como código de main ni sus tests como evidencia.
 
 ## 2. Inventario del estado real
 
@@ -166,6 +175,8 @@ Separar valores mantenibles por OT de fórmulas que requieren cambiar código. N
 
 ## 7. Lenguaje visual común y dibujos fieles
 
+Criterio confirmado por Iván el 14/09/2026: conservar el formato de planteamiento que utiliza taller. Mejorar dibujos, exactitud y legibilidad dentro de la distribución existente. El formato específico de HERA no es una plantilla para trasladar a los demás modelos. Preparar y revisar con Iván/OT una muestra de cualquier redistribución antes de aplicarla.
+
 Mejorar la comprensión del producto real, manteniendo sus diferencias. Reutilizar composición, cotas, etiquetas, colores y elementos técnicos; no convertir todos los modelos en el mismo dibujo genérico.
 
 ### Tres representaciones complementarias
@@ -237,10 +248,13 @@ Herramientas existentes, tras leer sus rutas y alcance:
 
 - pnpm validate:rps-refs: contraste de referencias.
 - pnpm validate:rps:all: validadores históricos disponibles; revisar estados REVIEW y cobertura, no solo el código de salida.
-- pnpm validate:hera / pnpm validate:electra y scripts específicos para otros modelos.
+- pnpm validate:[modelo]: casi todos los modelos tienen su validador. Ejecutar `node -e "console.log(Object.keys(require('./package.json').scripts).join('\n'))"` antes de suponer que falta uno.
+- pnpm validate:fabric-jobs: contrasta los cuatro trabajos de tela —Cambio de tela, Enrollable, Bambalina y Cambio Antica— de todos los Excel del año contra el cálculo de la web y contra RPS en vivo. Es el barrido sistemático de los modelos prioritarios; tres pedidos revisados a mano no lo sustituyen.
 - pnpm test:e2e:rps: lectura de RPS y flujo con archivos de prueba aislados.
-- pnpm test:e2e:hera: tres variantes en instancia aislada; no sustituye la validación de materiales contra RPS.
-- node scripts/render-diagram-samples.mjs: muestras visuales actuales en tmp/pdfs; revisar y ampliar su matriz para las nuevas variantes. No es una prueba de todos los modelos/configuraciones.
+- pnpm test:e2e:hera / pnpm test:e2e:bambalina: recorrido completo en instancia aislada; no sustituye la validación de materiales contra RPS.
+- pnpm render:diagramas: muestras visuales actuales en tmp/pdfs; revisar y ampliar su matriz para las nuevas variantes. No es una prueba de todos los modelos/configuraciones.
+
+pnpm test y pnpm lint deben estar en verde sobre un árbol limpio antes de dar por cerrado un alcance. Reportar el número de tests solo si procede del repositorio: un recuento que cambia según los worktrees o los borradores de tmp/ que tenga cada puesto no es evidencia.
 
 Configurar TOLDOS_EXCEL_ROOT con la ruta real cuando el validador lo requiera. HERA admite RPS_VALIDATION_ORDER_CODE para incluir archivos de un pedido sin HERA en su nombre. Si falta red o un manual, registrar qué no pudo comprobarse y continuar las verificaciones locales.
 
@@ -262,11 +276,19 @@ Un modelo se puede dar por cerrado para el alcance definido cuando:
 
 Si solo se ha terminado una parte, cerrar esa parte y dejar claro lo que falta. No usar “modelo listo” para un cambio únicamente visual. Entregar al final enlaces al expediente y muestras, qué cambió, cómo se comprobó y la siguiente acción concreta.
 
-## 10. Primeros lotes propuestos
+## 10. Orden de trabajo: empezar por lo sencillo
 
-1. HERA como piloto documental: aprovechar el 3981, resolver las diferencias pendientes y completar manual/proveedor, despiece y correspondencias. Consolidar el estilo de aclaraciones y la orientación de tela.
-2. Antica como piloto de edición de estructura: cuatro brazos, color independiente y correspondencia entre piezas, dibujo y reserva. Revisar la solución técnica con OT antes de generalizar una configuración excepcional.
-3. Electra y las demás familias según el [seguimiento](./modelos/README.md): extender el lenguaje visual y cerrar cada conjunto de configuraciones con su ficha de Parámetros.
-4. Probar una representación 3D de una variante documentada con Iván/OT. Escalar por familias cuando ayude a leer el montaje y mantenga una salida imprimible clara.
+Actualizado el 14/09/2026 siguiendo la preferencia de Iván. Empezar por un alcance pequeño que permita recorrer toda la guía y obtener muestras útiles; después ampliar las combinaciones y trasladar el estilo común.
 
-El orden es una propuesta de trabajo, no una declaración de modelos validados. Una duda pendiente del piloto no impide avanzar la documentación o los dibujos de otro modelo.
+1. **Bambalina** como primer piloto: frente/alto, curvas, remate, cálculo y reserva de tejido, dibujo, notas e imagen sustituta. Auditar también la variante de suplemento con broches sin suponer que su dibujo acredita la reserva de accesorios. [Expediente inicial](./modelos/bambalina.md).
+2. **Enrollable**: confección básica, entrada de tela y coherencia entre cálculo, parámetros y dibujo.
+3. **Cambio de tela y Cambio de cortina**: comenzar por confecciones básicas; ampliar después a bamba separada, velcro, ventana y las demás variantes documentadas.
+4. **Primeros toldos completos**: estudiar las configuraciones base de Cortina, Selena, Punto Recto y Xacobeo; elegir el siguiente según disponibilidad de manual/despiece y cantidad de dudas, además del número de campos.
+5. **Ampliación por familias**: brazos, cofres y verticales con más opciones, según el [seguimiento](./modelos/README.md). Revisar cada variante con su ficha de Parámetros y sus piezas RPS.
+6. **Casos de geometría o configuración especial**: retomar HERA, Antica y Cambio Antica con la evidencia conservada. El 3981 y los cuatro brazos siguen siendo casos de referencia; no se consideran cerrados por cambiar el orden.
+
+Dentro de cada modelo: inventario y fuentes → matriz y reglas → piezas/reserva → formulario/parámetros/dibujo → pruebas y muestra para Iván/OT. No esperar al final de todos los modelos para revisar las muestras del primero.
+
+Priorizar 2D de confección en los trabajos de tela. El piloto 3D se hará en un toldo completo documentado cuando permita entender mejor su montaje. Una familia aparentemente sencilla puede contener variantes complejas; dividir su alcance y registrar las pendientes sin esconderlas.
+
+Esta prioridad organiza la revisión general. Las incidencias de fabricación urgentes se atienden cuando aparezcan, aunque correspondan a otro modelo. No cambia el estado de validación ni de despliegue.
