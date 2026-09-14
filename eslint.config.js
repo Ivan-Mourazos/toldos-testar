@@ -5,7 +5,8 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  // Alineado con .gitignore: tmp/ y output/ son borradores locales y .claude/worktrees otras ramas.
+  { ignores: ['dist', 'tmp', 'output', 'exports', '.claude'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

@@ -33,7 +33,19 @@
     "validate:electra": "node scripts/validate-electra-production.mjs",
     "validate:monoblock": "node scripts/validate-monoblock-350-production.mjs",
     "validate:iris": "node scripts/validate-iris-production.mjs",
-    "validate:reserva": "node scripts/validate-reservation-gap.mjs"
+    "validate:reserva": "node scripts/validate-reservation-gap.mjs",
+    "test:e2e:bambalina": "pnpm build && node scripts/test-bambalina-workflow.mjs",
+    "validate:fabric-jobs": "node scripts/validate-fabric-jobs-production.mjs",
+    "validate:cortina": "node scripts/validate-cortina-production.mjs",
+    "validate:cambio-cortina": "node scripts/validate-cambio-cortina-production.mjs",
+    "validate:punto-recto": "node scripts/validate-punto-recto-production.mjs",
+    "validate:xacobeo": "node scripts/validate-xacobeo-production.mjs",
+    "validate:ambar-box": "node scripts/validate-ambar-box-production.mjs",
+    "validate:agata-box": "node scripts/validate-agata-box-production.mjs",
+    "validate:cuarzo-box": "node scripts/validate-cuarzo-box-production.mjs",
+    "validate:perla-box": "node scripts/validate-perla-box-production.mjs",
+    "validate:coral-box": "node scripts/validate-coral-box-production.mjs",
+    "render:diagramas": "node scripts/render-diagram-samples.mjs"
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "5.2.8",
