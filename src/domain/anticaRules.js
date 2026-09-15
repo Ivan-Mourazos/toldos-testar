@@ -1,3 +1,4 @@
+import { anticaSteelParts, ANTICA_STEEL } from './anticaMaterials.js';
 import { resolveAnticaCrank, anticaPointCode } from './anticaComponents.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -97,6 +98,7 @@ export function calculateAntica({ order, awning }) {
   if (device === 'MAQUINA' && !awning.crankHeight) missingFields.push('altura de manivela');
   if ((isFixedVariant(variant) || roundEntry) && !supportHeight) missingFields.push('altura soporte-brazo');
 
+  const steelParts = anticaSteelParts({ variant, units, armCount, projection: awning.projection, loadBarLength });
   const invalidValance = variant === 'TUBO 50X30 SIN BAMBA' && valanceHeight > 0;
   const valid = missingFields.length === 0
     && Boolean(fabric)
@@ -113,14 +115,17 @@ export function calculateAntica({ order, awning }) {
   if (invalidValance) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA ${variant} no admite bambalina.` });
   if (!stockLength) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA no válido: ningún largo de stock admite ${Math.max(rollTubeLength, loadBarLength)} cm.` });
 
-  if (valid) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA · fabricación TGM: brazos, carga y otros componentes sin referencia deben completarse con taller. La reserva automática de estructura es parcial.' });
+  if (valid) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA · fabricación TGM: faltan escuadras, kits y otros componentes por concretar con taller. La reserva automática de estructura es parcial.' });
   if (valid && device === 'MAQUINA' && !crank.code) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA: manivela sin correspondencia automática para ese color y largo. Selecciona el artículo en Editar despiece para incluirla en la reserva.' });
+
+  if (valid) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA · acero: reserva nominal de cortes / 600 cm por barra. No incluye merma ni resuelve aprovechamiento de retales. Revisar los cortes y cantidades con taller.' });
+  if (valid && steelParts.some(part => part.length > ANTICA_STEEL.flat.stockLengthCm)) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA: hay cortes de acero mayores que la barra comercial de 600 cm. Taller debe definir el suministro o empalme y ajustar la reserva antes de fabricar.' });
 
   const motorPower = armCount >= 3 ? '35/17' : '15/17';
   const context = {
     awning, variant, device, lacado, crank, fabric, valanceFabric, stockLength, rollSystem,
     armCount, motorPower, rollTubeLength, loadBarLength, supportHeight,
-    mainFabricMl: mainUsage.ml, valanceFabricMl: valanceUsage.ml
+    mainFabricMl: mainUsage.ml, valanceFabricMl: valanceUsage.ml, steelParts
   };
   const mainMl = round2(mainUsage.ml);
   const totalMl = round2(mainUsage.ml + valanceUsage.ml);
@@ -183,6 +188,9 @@ function buildMaterials(context) {
       line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`)
     );
   }
+  for (const part of context.steelParts) {
+    materials.push({ ...line(part.reference, part.reservationQuantity, part.name), unitCode: part.unitCode });
+  }
   materials.push(line(fabric.code, mainFabricMl, fabric.description));
   if (valanceFabric && valanceFabricMl > 0) materials.push(line(valanceFabric.code, valanceFabricMl, `${valanceFabric.description} · BAMBA`));
   const wall = wallMaterial(awning.wallType, units);
@@ -191,7 +199,7 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, variant, device, lacado, crank, stockLength, rollSystem, armCount, motorPower, rollTubeLength, loadBarLength, supportHeight } = context;
+  const { awning, variant, device, lacado, crank, stockLength, rollSystem, motorPower, rollTubeLength, loadBarLength, supportHeight } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const rows = [];
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
@@ -199,9 +207,11 @@ function buildDespiece(context) {
   push(2, `TUBO DE ENROLLE ${rollSystem}`, `${rollSystem === 'P801' ? 'TURA80HG' : 'TURA70HG'}${stockLength}C`, units, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', anticaPointCode(rollSystem), units);
   if (device === 'MAQUINA') push(4, 'KIT DE TORNILLOS MAQUINA', null, units);
-  push(5, loadPieceName(variant), null, units, loadBarLength);
+  const steelLoad = context.steelParts.find(part => part.num === 5);
+  if (steelLoad) rows.push(steelLoad);
+  else push(5, loadPieceName(variant), null, units, loadBarLength);
   push(6, 'KIT DE TAPONES', null, units);
-  push(7, 'BRAZO ANTICA', null, armCount * units, awning.projection);
+  rows.push(...context.steelParts.filter(part => part.num !== 5));
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
     push(8, rollSystem === 'P801' ? 'RUEDA MOTRIZ Ø 78' : 'RUEDA MOTRIZ LT50', rollSystem === 'P801' ? 'RUEDAMOT78' : 'ADAPTADORESTUBO70', units);
@@ -219,6 +229,8 @@ function buildDespiece(context) {
     push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
   }
   if (variant === 'SOPORTE FIJO 3 AGUJEROS') push(12, 'PLETINA DE 25 X 4', null, units, supportHeight);
+  push(13, 'ESCUADRA BRAZO · DEFINIR SECCIÓN Y CORTE', null, context.armCount * units);
+  rows.sort((a, b) => a.num - b.num);
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * units } : null;
   return { rows, anchoring };

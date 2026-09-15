@@ -1,12 +1,14 @@
 # Antica — expediente del modelo
 
-[Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Evidencia estructurada y huellas](./antica-fuentes.json)
+[Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Evidencia inicial](./antica-fuentes.json) · [Materiales y cantidades](./antica-materiales.md) · [Preguntas para taller](./antica-preguntas-taller.md)
 
 ## 1. Alcance y reanudación
 
 Revisión iniciada el 14/09/2026 sobre 3905714, rama codex/antica. Responsable: Codex, sin delegación. Encargo: revisión completa del modelo y ficha de Parámetros; despliegue aplazado por Iván. Bambalina y Enrollable corresponden a Claude.
 
-Resultado de esta entrega: inventario, contraste de cinco maestros y cuatro históricos recientes, consulta de consumos RPS, correcciones demostrables de casquillos y manivelas, cuatro brazos de fabricación propia y consulta de aumentos. **La revisión detecta pendientes; no acredita despiece ni reserva completos.** Siguiente trabajo: reconstruir materiales de fabricación por pieza y comprobar las excepciones Q01–Q08 antes de cambiar reglas globales.
+**Actualización 15/09/2026:** revisados 41 históricos y ampliado RPS a 118 OF y 79 líneas de compra. Se incorporan acero de brazos, tubo 50×30, contrapeso y carga de pletina con consumo nominal; escuadras visibles pendientes de detalle. Ver antica-materiales.md. Iván solicita una lista completa para su encargado, sin más preguntas técnicas sueltas: antica-preguntas-taller.md reúne 30 dudas. Ha solicitado actualizar el servidor; pendiente de conocer dirección/usuario SSH. Modelo abierto.
+
+Resultado de la primera entrega del 14/09: inventario, contraste de cinco maestros y cuatro históricos recientes, consulta de consumos RPS, correcciones demostrables de casquillos y manivelas, cuatro brazos de fabricación propia y consulta de aumentos. **La revisión detecta pendientes; no acredita despiece ni reserva completos.** Siguiente trabajo: responder el cuestionario con encargado/OT y resolver Q01–Q08 más los casos de compras documentados en antica-materiales.md.
 
 Evidencia copiada a output/modelos/antica/fuentes; originales en la unidad Y:, compartida como \\192.168.0.128\Oftecnica\Oficina Tecnica. Las copias y pruebas están ignoradas por Git. El JSON enlazado conserva rutas originales, SHA-256, fórmulas y consumos seleccionados para reanudar sin depender de la conversación.
 
@@ -25,7 +27,7 @@ Evidencia copiada a output/modelos/antica/fuentes; originales en la unidad Y:, c
 
 | Área | Estado / alcance |
 | --- | --- |
-| Identidad | Verificada con Iván; proveedores de materias primas no determinados |
+| Identidad | Verificada con Iván; pletina y tubo suministrados por Torres y Sáez según RPS |
 | Manuales | Ficha comercial TGM localizada, descargada e inspeccionada en sus dos páginas; no hay manual de fabricación completo localizado |
 | Variantes/límites | Seis variantes inventariadas; límites y especiales con dudas |
 | Cálculos/parámetros | Consulta conectada a las reglas reales; regresión de maestros; excepciones de históricos registradas |
@@ -53,7 +55,7 @@ Evidencia copiada a output/modelos/antica/fuentes; originales en la unidad Y:, c
 | F10 | 2026/TOLDOS / AR2604488.pdf, p.1 | PDF de revisión generado por la web, marcado borrador: no prueba independiente de las fórmulas. Sí conserva indicación de 4/3 brazos y manivelas blancas |
 | F11 | Iván, 14/09/2026 | Partir de los Excel y contrastar referencias compradas/descontadas en RPS |
 
-Reproducción de consultas: node scripts/audit-antica-sources.mjs. Solo SELECT y escritura de evidencia local; no actualiza reservas ni pedidos en RPS. Se consultaron 30 líneas recientes y 115 referencias consumidas desde 2025, más 57 filas agrupadas por artículo/unidad en cinco OF concretas. No se han consultado compras porque las imputaciones reales ya aportan códigos/unidades de los pedidos solicitados. Los brazos especiales de 44 cm/RAL9003 dominan parte de la muestra agregada: no representan automáticamente el estándar TGM.
+Reproducción de consultas: node scripts/audit-antica-sources.mjs. Solo SELECT y escritura de evidencia local; no actualiza reservas ni pedidos en RPS. Se consultaron 30 líneas recientes y 115 referencias consumidas desde 2025, más 57 filas agrupadas por artículo/unidad en cinco OF concretas. En aquella primera consulta no se leyeron compras; la ampliación del 15/09 sí consulta 79 líneas directamente vinculadas a OF y conserva sus notas técnicas. Los brazos especiales de 44 cm/RAL9003 dominan parte de la muestra agregada: no representan automáticamente el estándar TGM.
 
 ## 5. Inventario de implementación
 
@@ -106,9 +108,9 @@ Cantidades por toldo, multiplicadas por unidades salvo accesorios con consolidac
 | P02/2 | Enrollamiento,1; frente menos descuento | TURA70HG600C/700C o TURA80HG600C/700C; BARRA. Existen500 en históricos, no seleccionados automáticamente |
 | P03/3 | Punta,1 | CASPUNCEJE70MM / CASPUNCEJE78MM; UNI. Sustituye CASPUNCE sin coincidencia exacta en búsqueda activa |
 | P04/4 | Kit tornillos máquina,1 | Sin referencia; contenido y tratamiento pendientes |
-| P05/5 | Carga,1; frente menos descuento de variante | Sin referencia. Excel alterna nombres 30×10/50×30/P701; no asignar código terminado por similitud |
+| P05/5 | Carga,1; frente menos descuento de variante | 50×30: TUBGA50MM30MM2MM; carga maciza 30×10: PLEAC30MM10. Contrapeso añadido en posición12. Redondos/fijo pendientes; ver desglose actualizado |
 | P06/6 | Kit tapones,1 | Sin referencia; contenido/material pendiente |
-| P07/7 | Brazo Antica,2–4; salida | Fabricación TGM; sin artículo terminado estándar confirmado. Cantidad y corte visibles, materia prima pendiente |
+| P07/7 | Brazo Antica,2–4; salida | Fabricación TGM; materia prima PLEAC30MM10. Cantidad N×U, corte nominal S y consumo N×U×S/600; cortes físicos pendientes de ratificar |
 | P08/8 máquina | Casquillo máquina,1 | CASMAQEJE6370MM/6378MM; UNI. Hay consumos de eje50: Q07 |
 | P09/9 máquina | Taco nylon,1 | Sin referencia; comprobar inclusión en kit y variante |
 | P10/10 máquina | Manivela,1; altura | MANIVEBL16{80,100,120,150,170,200,225,250}C o MANIVENE11{mismos}C; UNI. 350: MANIVEBLAN350C/MANIVENEGRO350C;325negra: MANIVENEGRO325C. Otros largos: sin asociación automática |
@@ -119,9 +121,9 @@ Cantidades por toldo, multiplicadas por unidades salvo accesorios con consolidac
 | P15/anclaje | Tornillería según pared | Tabla compartida existente; pared vacía no inventa anclaje |
 | P16 | Tela principal y bamba distinta | Código de catálogo y ML según ancho; cálculo/reserva existentes |
 
-Materias primas **candidatas**, no mapeadas automáticamente a una posición: PLEAC30MM10 (pletina acero30×10, barra6m), TUBGA50MM30MM2MM (tubo galvanizado50×30×2, barra6m), TUBLI1-1/4 pulgada (tubo42,4), pletinas25×4, ángulos y operaciones EXT_CINCAR/EXT_LACAR. La suma de longitudes /6m no garantiza la cantidad descontada: hay barras completas, fracciones, retales y reparto entre dos toldos.
+Materias primas contrastadas (actualización y mapeos actuales en antica-materiales.md): PLEAC30MM10 (pletina acero30×10, barra6m), TUBGA50MM30MM2MM (tubo galvanizado50×30×2, barra6m), TUBLI1-1/4 pulgada (tubo42,4), pletinas25×4, ángulos y operaciones EXT_CINCAR/EXT_LACAR. La suma de longitudes /6m no garantiza la cantidad descontada: hay barras completas, fracciones, retales y reparto entre dos toldos.
 
-No se conoce contenido completo de kits ni todas las materias primas por brazo. **No se declara un porcentaje de despiece resuelto ni reserva completa.** Las líneas sin código siguen visibles; se avisa de reserva parcial. Seleccionar cuatro brazos ya no obliga a inventar un artículo de brazo comprado; añadir una referencia manual sigue comprobándose en RPS. Las cantidades añadidas sin referencia siguen protegidas por el editor general.
+No se conoce contenido completo de kits ni todas las piezas de unión por brazo. **No se declara un porcentaje de despiece resuelto ni reserva completa.** Las líneas sin código siguen visibles; se avisa de reserva parcial. Seleccionar cuatro brazos ya no obliga a inventar un artículo de brazo comprado; añadir una referencia manual sigue comprobándose en RPS. Las cantidades añadidas sin referencia siguen protegidas por el editor general.
 
 ## 9. Contraste con consumos reales
 
@@ -133,7 +135,7 @@ No se conoce contenido completo de kits ni todas las materias primas por brazo. 
 | 3374 /0230273 | Soportes2; puntas70=2; máquinas2; P701700=1 barra; pletina30×10=1 barra; tela14 ml | Excel tiene dos cortes200/215×342,2168 y exporta6,8443 ml por entrada. Faltan materiales/operaciones por clasificar |
 | 4488 /0232070 | Puntas78=2; soportesnegros2; máquinasnegras2; manivelasblancas200=2; P801500=1 barra; P801700=1 barra; tela15,1 ml | PDF645×50 con4 brazos y381,4×50 con3; envío sin lacar. No constan todos los materiales en esta consulta |
 
-Consulta agrupada por OF/artículo/unidad, sin unir las imputaciones a múltiples líneas de venta al sumar cantidades. No incluye compras ni reservas previstas. Ausencia de imputación no prueba que la pieza no se utilice; posibles trabajos de fabricación propios/cliente/otros documentos pendientes.
+Consulta agrupada por OF/artículo/unidad, sin unir las imputaciones a múltiples líneas de venta al sumar cantidades. Esta tabla inicial no incluye compras ni reservas previstas; el anexo del 15/09 incorpora ambas y materiales de tareas RPS. Ausencia de imputación no prueba que la pieza no se utilice; posibles trabajos de fabricación propios/cliente/otros documentos pendientes.
 
 ## 10. Formulario y Parámetros
 
@@ -174,6 +176,6 @@ Decisiones cerradas: TGM propio, soportehabitual3agujeros y brazoscaseros(F01); 
 
 ## 14. Entrega
 
-Rama codex/antica. Correcciones limitadas a evidencias verificadas; resto registrado para revisión de OT. Mantener abierto el alcance de reserva completa, ajustes históricos y dibujos técnicos. No desplegado. El siguiente agente debe consultar primero Q01–Q08 y antica-fuentes.json, completar correspondencias de fabricación por OF y presentar propuestas concretas de parámetros/cortes antes de generalizarlas.
+Rama codex/antica. Correcciones limitadas a evidencias verificadas; resto registrado para revisión de OT. Mantener abierto el alcance de reserva completa, ajustes históricos y dibujos técnicos. No desplegado todavía; el 15/09 Iván ha solicitado actualizar el servidor. Falta dirección/usuario de acceso, ya consultados. El siguiente agente debe consultar primero Q01–Q08 y antica-fuentes.json, completar correspondencias de fabricación por OF y presentar propuestas concretas de parámetros/cortes antes de generalizarlas.
 
 Comprobación visual: ficha oficial completa, formulario y Parámetros; muestras provisionales C01/C06 y ambas páginas de producción C01 renderizadas e inspeccionadas. El resto de variantes tiene generación y extracción textual verificadas, sin homologación visual individual de taller.

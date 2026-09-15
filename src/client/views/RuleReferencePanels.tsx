@@ -3,6 +3,7 @@ import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
 import type { FabricJobParameters } from '../types';
 import { anticaVariants, calculateAnticaBodyDrop } from '../../domain/anticaRules.js';
+import { ANTICA_STEEL } from '../../domain/anticaMaterials.js';
 import { ANTICA_RULES, anticaRoundEntrySpecs, getAnticaDiscounts, getAnticaDropRule } from '../../domain/anticaParameters.js';
 import { HERA_RULES, HERA_FABRIC_ALLOWANCES, HERA_SPECIAL_TUBE_FROM_CM } from '../../domain/heraParameters.js';
 import { defaultIrisParameters, getIrisDiscounts, getIrisFabricDropAllowance, getIrisLimits, irisSubmodels, irisGuideTypes, irisDevices, irisSeriesOf, irisHasCassette } from '../../domain/irisParameters.js';
@@ -33,14 +34,24 @@ export function AnticaRuleReference() {
   const result = complete ? calculateAnticaBodyDrop({ awning: { projection }, variant, supportHeight: supportHeight || 0, valanceHeight: noValance ? 0 : valanceHeight || 0, separateValance: actualSeparate }) : null;
   return <>
     <Band id="TGM" title="Fabricación propia · estado de revisión" description="Soporte habitual de Cortina de tres agujeros y brazos fabricados en taller. Confirmado por OT el 14/09/2026.">
-      <p className="rule-reference-warning">Reserva de estructura parcial: faltan correspondencias y cantidades de fabricación de brazos, carga, tapones y otros auxiliares. Los artículos de brazos especiales encontrados en RPS no equivalen al brazo habitual.</p>
+      <p className="rule-reference-warning">Reserva de estructura parcial: faltan escuadras, kits, perfiles de variantes pendientes y otros auxiliares. Los artículos de brazos especiales encontrados en RPS no equivalen al brazo habitual.</p>
       <Table label="Contraste Antica con taller" columns={['Comprobación', 'Resultado']} rows={[
         ['Excel y aumentos', 'Las tablas inferiores muestran lo que calcula la web. Los históricos contienen ajustes particulares: 0591 cambia la diagonal y el aumento; 3341 omite la bamba en la caída. No se aplican esos ajustes a todos los pedidos.'],
         ['Brazos y límites', 'La selección automática cambia a 3 al superar 400 cm; el Excel 0591 indica 2 para 510 cm. La ficha TGM publica 575 cm con 2 brazos y 800 cm con 3, ambos con salida 160 cm. Requiere confirmar la configuración con OT.'],
         ['Manivela independiente', 'Color automático, blanco o negro por toldo. La máquina conserva su acabado. El 4488 confirma manivelas blancas y máquinas negras.'],
-        ['Materiales de fabricación', 'RPS registra pletina de acero 30×10, tubo galvanizado 50×30×2 y operaciones de cincado/lacado. La cantidad de barras y su reparto entre piezas sigue pendiente de definir.']
+        ['Materiales de fabricación', 'OT confirma tubo 50×30 y pletina 30×10. RPS confirma las referencias y barras de 6 m. Se conservan los cortes nominales del Excel; las escuadras, tornillería y tapones requieren completar su detalle.']
       ]} />
       <p><a href="https://www.toldosgomez.com/archivos/upload/descargas/tgm_ficha_toldo_antica.pdf" target="_blank" rel="noreferrer">Consultar ficha oficial TGM</a> · Es una ficha comercial, no un despiece de fabricación. Las opciones especiales y las medidas mayores que el stock de 700 cm requieren revisión de OT.</p>
+    </Band>
+    <Band id="MAT" title="Materiales de fabricación" description="Referencias contrastadas con RPS y compras. Medidas nominales del Excel, confirmadas como punto de partida por OT el 15/09/2026.">
+      <Table label="Materias primas Antica" columns={['Pieza', 'Artículo RPS', 'Unidad de almacén', 'Corte nominal']} rows={[
+        ['Brazos de fabricación propia', ANTICA_STEEL.flat.code, 'Barra de 6 m · acero 30×10 mm', 'Una pletina por brazo, con el largo indicado en el despiece.'],
+        ['Tubo 50×30', ANTICA_STEEL.tube.code, 'Barra de 6 m · tubo 50×30×2 mm', 'Un tubo por toldo, con el descuento de carga de su configuración.'],
+        ['Contrapeso del 50×30', ANTICA_STEEL.flat.code, 'Barra de 6 m · acero 30×10 mm', 'Una pletina por toldo, con el mismo corte nominal que el tubo.'],
+        ['Escuadras de brazos', 'Pendiente de sección y corte', 'No confundir con los soportes del enrollamiento', 'Compras documenta una por brazo; aparecen 40×40, 45×45 y piezas especiales.'],
+        ['Tornillería y tapones', 'Pendiente de contenido de cada kit', 'Unidades', 'Los consumos por OF varían; no se convierten en una cantidad fija por toldo.']
+      ]} />
+      <p>Reserva nominal de acero = unidades × corte (cm) / 600. No incluye merma ni aprovechamiento de retales. Las barras de acero de 600 cm son distintas del stock de enrollamiento P701/P801. Cincado y lacado son operaciones: la cantidad facturada no siempre coincide con el número de piezas.</p>
     </Band>
     <Band id="01" title="Aumentos de tela" description="Antica completo. S = salida; H = altura soporte-brazo; B = alto de bamba. Todas las medidas en cm.">
       <Table label="Aumentos de Antica" columns={['Configuración', 'Bamba en la misma tela / sin bamba', 'Bamba en otra tela']} rows={anticaVariants.map(v => [v, anticaFormula(v, false), v === 'TUBO 50X30 SIN BAMBA' ? 'No admite bamba' : anticaFormula(v, true)])} />

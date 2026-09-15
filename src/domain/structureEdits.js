@@ -26,7 +26,11 @@ export function applyStructureEdit(awning, result) {
     const matches = materials.filter((item) => code(item.code) === code(row.reference) && row.reference);
     const totalQuantity = matches.reduce((sum, item) => sum + Number(item.quantity), 0);
     const totalUnits = rawRows.filter((item) => item.reference && code(item.reference) === code(row.reference)).reduce((sum, item) => sum + Number(item.units), 0);
-    return { ...row, reservationQuantity: totalUnits ? round(totalQuantity * row.units / totalUnits) : 0, unitCode: '' };
+    // Algunas piezas comparten materia prima, pero tienen cortes distintos.
+    // Su consumo explícito evita repartir una pletina larga como si fuese un brazo corto.
+    const reservationQuantity = Number.isFinite(row.reservationQuantity) && row.reservationQuantity >= 0
+      ? row.reservationQuantity : totalUnits ? round(totalQuantity * row.units / totalUnits) : 0;
+    return { ...row, reservationQuantity, unitCode: row.unitCode || '' };
   });
   const signature = JSON.stringify({ model: awning.model, width: awning.width, projection: awning.projection, units: awning.units, rows: baseRows, materials });
   const edit = normalizeStructureEdit(awning.structureEdit);

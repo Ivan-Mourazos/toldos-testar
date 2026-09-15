@@ -1,3 +1,4 @@
+import { buildFinalRows } from './reservationWorkbook.js';
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
 import {
@@ -101,8 +102,8 @@ describe('ANTICA contra los cuatro libros históricos', () => {
       rollTubeLength: 179, structureLength: 178, rollSystem: 'P701', armCount: 2
     });
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ name: 'TUBO CARGA 30 X 10', reference: null, length: 178 }),
-      expect.objectContaining({ name: 'BRAZO ANTICA', reference: null, units: 2, length: 80 })
+      expect.objectContaining({ name: 'TUBO CARGA 50 X 30', reference: 'TUBGA50MM30MM2MM', length: 178 }),
+      expect.objectContaining({ name: 'BRAZO ANTICA', reference: 'PLEAC30MM10', units: 2, length: 80 })
     ]));
   });
 
@@ -158,7 +159,7 @@ describe('ANTICA contra los cuatro libros históricos', () => {
     ]));
   });
 
-  test('no inventa reservas para brazos y perfiles que los Excel dejan sin referencia', () => {
+  test('no inventa referencias de brazos o perfiles terminados', () => {
     const codes = calculateOrder(payload({})).ofs[0].materials.map((material) => material.code);
     expect(codes).not.toContain('BANTICA');
     expect(codes).not.toContain('PRANTICA');
@@ -184,7 +185,7 @@ describe('Antica TGM: piezas compradas y fabricación propia', () => {
     const result = calculateOrder(JSON.parse(JSON.stringify(order)));
     const block = result.ofs[0];
     expect(block.calculation).toMatchObject({ valid: true, armCount: 4, fabricWidth: 633, fabricDrop: 140.7 });
-    expect(block.despiece.rows).toContainEqual(expect.objectContaining({ name: 'BRAZO ANTICA', units: 8, reference: null }));
+    expect(block.despiece.rows).toContainEqual(expect.objectContaining({ name: 'BRAZO ANTICA', units: 8, reference: 'PLEAC30MM10' }));
     expect(block.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'MANIVEBL16200C', quantity: 2 }),
       expect.objectContaining({ code: 'MAQMB11L12NEGRO', quantity: 2 }),
@@ -206,5 +207,44 @@ describe('Antica TGM: piezas compradas y fabricación propia', () => {
   test('el motor no reserva manivela aunque conserve el campo de color', () => {
     const block = calculateOrder(payload({ device: 'MOTOR', anticaCrankColor: 'NEGRA' })).ofs[0];
     expect(block.materials.some(m => m.code.startsWith('MANIVE'))).toBe(false);
+  });
+});
+
+
+describe('Antica: materia prima con cortes nominales de OT', () => {
+  test('dos toldos de 312x60 y cuatro brazos separan tubo, contrapeso y pletinas de brazos', () => {
+    const block = calculateOrder(payload({ width: 312, projection: 60, units: 2, structureArmCount: 4 })).ofs[0];
+    const rows = block.structureEditor.rows;
+    expect(rows.find(r => r.num === 5)).toMatchObject({ reference: 'TUBGA50MM30MM2MM', units: 2, length: 300, reservationQuantity: 1, unitCode: 'BARRA' });
+    expect(rows.find(r => r.num === 7)).toMatchObject({ reference: 'PLEAC30MM10', units: 8, length: 60, reservationQuantity: 0.8 });
+    expect(rows.find(r => r.num === 12)).toMatchObject({ reference: 'PLEAC30MM10', units: 2, length: 300, reservationQuantity: 1 });
+    expect(rows.find(r => r.num === 13)).toMatchObject({ units: 8, reference: null, reservationQuantity: 0 });
+    expect(buildFinalRows([block]).find(r => r.code === 'PLEAC30MM10').quantity).toBe(1.8);
+    expect(buildFinalRows([block]).find(r => r.code === 'TUBGA50MM30MM2MM').quantity).toBe(1);
+  });
+  test.each(anticaVariants)('%s reserva la pletina de los brazos sin inventar un brazo comprado', anticaVariant => {
+    const block = calculateOrder(payload({ width: 312, projection: 60, anticaVariant, anticaSupportHeight: 100, valanceHeight: 0, structureArmCount: 4 })).ofs[0];
+    expect(block.structureEditor.rows.find(r => r.num === 7)).toMatchObject({ units: 4, length: 60, reservationQuantity: 0.4, reference: 'PLEAC30MM10' });
+    expect(block.materials.some(m => /^BANTICA/.test(m.code))).toBe(false);
+  });
+  test('sin bamba no añade contrapeso y 30x10 usa pletina, sin añadir tubo 50x30', () => {
+    const noValance = calculateOrder(payload({ anticaVariant: 'TUBO 50X30 SIN BAMBA', valanceHeight: 0 })).ofs[0];
+    expect(noValance.despiece.rows.some(r => r.num === 12)).toBe(false);
+    const flat = calculateOrder(payload({ anticaVariant: 'TUBO 30X10 CON BAMBA', width: 312, projection: 60 })).ofs[0];
+    expect(flat.structureEditor.rows.find(r => r.num === 5)).toMatchObject({ reference: 'PLEAC30MM10', reservationQuantity: 0.5 });
+    expect(buildFinalRows([flat]).find(r => r.code === 'PLEAC30MM10').quantity).toBe(0.7);
+    expect(flat.materials.some(m => m.code === 'TUBGA50MM30MM2MM')).toBe(false);
+  });
+  test('eliminar contrapeso conserva el consumo de brazos y llega a la reserva consolidada', () => {
+    const order = payload({ width: 312, projection: 60 });
+    const before = calculateOrder(order).ofs[0];
+    order.awnings[0].structureEdit = { signature: before.structureEditor.signature, rows: before.structureEditor.rows.filter(r => r.num !== 12) };
+    const block = calculateOrder(JSON.parse(JSON.stringify(order))).ofs[0];
+    expect(block.calculation.valid).toBe(true);
+    expect(buildFinalRows([block]).find(r => r.code === 'PLEAC30MM10').quantity).toBe(0.2);
+  });
+  test('un corte mayor de 6m no se presenta como resuelto por dividir el consumo', () => {
+    const result = calculateOrder(payload({ width: 645 }));
+    expect(result.diagnostics.some(d => d.message.includes('mayores que la barra comercial de 600'))).toBe(true);
   });
 });

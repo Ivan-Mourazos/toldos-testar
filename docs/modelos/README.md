@@ -36,7 +36,7 @@ Estados de la revisión: pendiente / en curso / con dudas / verificado para un a
 | MAXISCREEM | Diana vertical / MAXISSCREEN | [Evidencia](../rps-maxiscreem-evidence.md) | Pendiente: submodelos, cable/varilla y correspondencias |
 | IRIS | Iris / aliases SCREENY 110, 130, 150 | [Evidencia](../rps-iris-evidence.md) | Pendiente: documentación por tamaño/cofre y geometría |
 | HERA | HERA / ROLL-SYSTEM | [Evidencia](../rps-hera-evidence.md) · [Expediente iniciado](./hera.md) | En curso: manual/proveedor y despiece; dudas del 3981 pendientes |
-| ANTICA | Antica / ANTICA · fabricación TGM | [Expediente](./antica.md) · [Fuentes y consumos](./antica-fuentes.json) | En curso: parámetros consultables, cuatro brazos y manivela independiente probados; puntas RPS corregidas. Reserva completa y excepciones históricas Q01–Q08 pendientes |
+| ANTICA | Antica / ANTICA · fabricación TGM | [Expediente](./antica.md) · [Fuentes y consumos](./antica-fuentes.json) | En curso: parámetros, manivela y acero nominal incorporados; 118 OF y compras contrastadas. [30 preguntas para encargado](./antica-preguntas-taller.md); kits, escuadras y variantes aún pendientes. No cerrar modelo |
 | CAMBIO ANTICA | Cambio antica / CAMBIO DE TELA A TOLDO ANTICA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: geometría y confección, sin reservar estructura nueva |
 
 ## Lotes propuestos, de menor a mayor alcance

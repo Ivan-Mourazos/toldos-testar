@@ -55,6 +55,11 @@ try {
   await color.click(); await page.getByRole('option', { name: 'Blanca', exact: true }).click(); await whiteCalc;
   await page.getByText('Editar despiece', {exact:true}).waitFor();
   await page.screenshot({ path: path.join(directory, 'formulario-antica.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Editar despiece', exact: true }).click();
+  assert.equal(await page.getByLabel('Reserva fila 7', { exact: true }).inputValue(), '0.533333');
+  assert.equal(await page.getByLabel('Reserva fila 12', { exact: true }).inputValue(), '0.73');
+  await page.screenshot({ path: path.join(directory, 'materiales-antica.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
   const image = 'data:image/png;base64,' + (await readFile('src/domain/assets/tgm-logo.png')).toString('base64');
   for (const [i, variant] of anticaVariants.entries()) {
     const sample = structuredClone(order); sample.orderCode = 'AR269970' + i;
@@ -63,6 +68,11 @@ try {
     assert.equal(calc.ofs[0].calculation.valid, true);
     assert.equal(calc.ofs[0].calculation.armCount, 4);
     assert.equal(calc.ofs[0].materials.find(m => m.code === 'MANIVEBL16200C').quantity, 1);
+    assert.equal(calc.ofs[0].structureEditor.rows.find(r => r.num === 7).reservationQuantity, 0.533333);
+    if (i === 0) {
+      assert.equal(calc.ofs[0].structureEditor.rows.find(r => r.num === 5).reservationQuantity, 0.73);
+      assert.equal(calc.ofs[0].structureEditor.rows.find(r => r.num === 12).reservationQuantity, 0.73);
+    }
     await request('/api/reviews', { order: sample, confirmOverwrite: true });
     const reopened = await request('/api/reviews/' + sample.orderCode, null, 'GET');
     const restored = (reopened.review || reopened).order;
@@ -77,9 +87,12 @@ try {
     const task = getDocument({ data: new Uint8Array(await readFile(pdfPath)) }); const doc = await task.promise;
     let text = ''; for (let p = 1; p <= doc.numPages; p++) text += (await (await doc.getPage(p)).getTextContent()).items.map(item => item.str).join(' ');
     assert.ok(text.includes('MANIVEBL16200C')); assert.ok(text.includes('BRAZO ANTICA')); assert.ok(text.includes('FABRICACIÓN TGM'));
+    assert.ok(text.includes('PLEAC30MM10'));
+    if (i === 0) { assert.ok(text.includes('PLETINA CONTRAPESO')); assert.ok(text.includes('TUBGA50MM30MM2MM')); }
     await task.destroy();
     const workbook = await readFile(generated.saved.find(f => f.type === 'rps').savedPath, 'latin1');
-    assert.ok(workbook.includes('MANIVEBL16200C')); assert.ok(workbook.includes('CASPUNCEJE78MM'));
+    assert.ok(workbook.includes('MANIVEBL16200C')); assert.ok(workbook.includes('CASPUNCEJE78MM')); assert.ok(workbook.includes('PLEAC30MM10'));
+    if (i === 0) { assert.ok(workbook.includes('TUBGA50MM30MM2MM')); assert.ok(workbook.includes('1,263333')); }
   }
   assert.deepEqual(errors, []);
   console.log('OK: seis variantes, cuatro brazos, selector y persistencia de color, guardar/reabrir/aprobar/generar local, imagen, notas vacías, PDF y reserva. ' + directory);

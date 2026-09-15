@@ -101,3 +101,20 @@ test('conserva cantidades compartidas, anclajes y agregación max', () => {
   expect(edited.materials.find((row) => row.code === 'KIT').quantity).toBe(2);
   expect(edited.materials.find((row) => row.code === 'MANDO').aggregation).toBe('max');
 });
+
+
+test('mantiene el consumo individual cuando brazo y contrapeso usan la misma pletina', () => {
+  const awning = { id: 'a', model: 'ANTICA', units: 1 };
+  const result = {
+    calculation: { valid: true }, materials: [{ code: 'PLEAC30MM10', quantity: 0.7 }],
+    despiece: { rows: [
+      { num: 7, name: 'BRAZO ANTICA', reference: 'PLEAC30MM10', units: 2, length: 60, reservationQuantity: 0.2, unitCode: 'BARRA' },
+      { num: 12, name: 'CONTRAPESO', reference: 'PLEAC30MM10', units: 1, length: 300, reservationQuantity: 0.5, unitCode: 'BARRA' }
+    ], anchoring: null }
+  };
+  const base = applyStructureEdit(awning, result);
+  expect(base.structureEditor.rows.map(row => row.reservationQuantity)).toEqual([0.2, 0.5]);
+  expect(base.structureEditor.rows.every(row => row.unitCode === 'BARRA')).toBe(true);
+  const edited = applyStructureEdit({ ...awning, structureEdit: { signature: base.structureEditor.signature, rows: base.structureEditor.rows.slice(1) } }, result);
+  expect(edited.materials).toContainEqual(expect.objectContaining({ code: 'PLEAC30MM10', quantity: 0.5 }));
+});

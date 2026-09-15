@@ -1,0 +1,4408 @@
+{
+  "consultedAt": "2026-09-15T05:19:17.471Z",
+  "scope": {
+    "salesLines": 167,
+    "manufacturingOrders": 118,
+    "consumptionRows": 1392,
+    "purchaseRows": 79,
+    "plannedRows": 152,
+    "bomRows": 157,
+    "templateRows": 0,
+    "excelFiles": 41,
+    "excelCases": 66,
+    "excelOrders": 34
+  },
+  "sourcesRoot": "\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica",
+  "articles": [
+    {
+      "code": "ANCIN40MM40",
+      "description": "ANGULO 6M CINCADO DE:40 MM:40MM",
+      "unitCode": "BARRA",
+      "CodSupplier": "400000501",
+      "supplier": "TORRES Y SAEZ, S.A.U. (hierro y ferreteria)",
+      "ReferenceSupplier": "23631",
+      "DescriptionSupplier": "ANGULO S-275-JR CINCADO L-6 40 X 40 X 4 ",
+      "Blocked": false
+    },
+    {
+      "code": "ANCIN45MM45",
+      "description": "ANGULO 6M CINCADO DE:45 MM:45MM",
+      "unitCode": "BARRA",
+      "CodSupplier": "400000501",
+      "supplier": "TORRES Y SAEZ, S.A.U. (hierro y ferreteria)",
+      "ReferenceSupplier": "29815",
+      "DescriptionSupplier": "ANGULO S-275-JR CINCADO 45 X 45 X 5 ",
+      "Blocked": false
+    },
+    {
+      "code": "EMBEBRON60MM40",
+      "description": "EMBELLECEDOR REMATE  :BRONCE MATERIAL :60 MM :40MM",
+      "unitCode": "UNI",
+      "CodSupplier": "400000082",
+      "supplier": "TOYCOSUR, S. L.",
+      "ReferenceSupplier": "REF. 1081",
+      "DescriptionSupplier": "EMBELLECEDOR REMATE  :BRONCE :60 MM :40MM",
+      "Blocked": false
+    },
+    {
+      "code": "PLA4BLAN25MM635C",
+      "description": "PLETINA ALUMINIO 4MM :BLANCO :25MM :635CM",
+      "unitCode": "BARRA",
+      "CodSupplier": "400000298",
+      "supplier": "EXLABESA BUILDING SYSTEMS S.AU. - ALUMINIOS PADRON",
+      "ReferenceSupplier": "(RF)01538-0001",
+      "DescriptionSupplier": "PLETINA ALUMINIO 4 MM  :BLANCO  :25 MM :635 C",
+      "Blocked": false
+    },
+    {
+      "code": "PLA4NEGR25MM635C",
+      "description": "PLETINA ALUMINIO 4MM :NEGRO 9005 :25MM :635CM",
+      "unitCode": "BARRA",
+      "CodSupplier": "400000298",
+      "supplier": "EXLABESA BUILDING SYSTEMS S.AU. - ALUMINIOS PADRON",
+      "ReferenceSupplier": "(RF)01538-9005",
+      "DescriptionSupplier": "PLETINA ALUMINIO 4 MM  :NEGRO :25 MM :635 C",
+      "Blocked": false
+    },
+    {
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "CodSupplier": "400000501",
+      "supplier": "TORRES Y SAEZ, S.A.U. (hierro y ferreteria)",
+      "ReferenceSupplier": "146",
+      "DescriptionSupplier": "PLETINA S-275-JR 30 X 10 ",
+      "Blocked": false
+    },
+    {
+      "code": "TAPONTOR13MMNEGRO",
+      "description": "TAPON PLASTICO PARA LLAVE Ø:13MM:NEGRO (COFRES)",
+      "unitCode": "UNI",
+      "CodSupplier": "400000450",
+      "supplier": "TORNILLERIA Y SUMINISTROS GALLEGOS, S. L.- TOSUGA ",
+      "ReferenceSupplier": "TAPTUE8N",
+      "DescriptionSupplier": "TAPA TUERCA M8 NEGRO ",
+      "Blocked": false
+    },
+    {
+      "code": "TAPONTOR17MMNEGRO",
+      "description": "TAPON PLASTICO PARA LLAVE Ø:17MM :NEGRO",
+      "unitCode": "UNI",
+      "CodSupplier": "400000654",
+      "supplier": "HIJOS DE C.V. OTERO S.L.",
+      "ReferenceSupplier": null,
+      "DescriptionSupplier": "TAPON NEGRO M.10 (CAJA 250 UNIDADES) ",
+      "Blocked": false
+    },
+    {
+      "code": "TUBGA50MM30MM2MM",
+      "description": "TUBO 6M GALVANIZADO :50MM :30MM :2MM",
+      "unitCode": "BARRA",
+      "CodSupplier": "400000501",
+      "supplier": "TORRES Y SAEZ, S.A.U. (hierro y ferreteria)",
+      "ReferenceSupplier": "16548",
+      "DescriptionSupplier": "TUBO GALVANIZADO L-6 ML 50 X 30 X 2 ",
+      "Blocked": false
+    },
+    {
+      "code": "TUBLI1-1/4\"",
+      "description": "TUBO 6M LISO GALVANIZADO :1-1/4\" (42,4X2,65mm)   ",
+      "unitCode": "BARRA",
+      "CodSupplier": "400000501",
+      "supplier": "TORRES Y SAEZ, S.A.U. (hierro y ferreteria)",
+      "ReferenceSupplier": "1409",
+      "DescriptionSupplier": "TUBO GALV ISO LISO L/C  1\"1/4  R 42,4X2,6",
+      "Blocked": false
+    }
+  ],
+  "excelSources": [
+    {
+      "file": "AR2400204.xlsm",
+      "sha256": "e558a7b191a6e94d4c8cbff1026337d260961479ce7657ff774b1b6ff28ae772",
+      "relativePath": "2024/TOLDOS 2024/AR2400204.xlsm"
+    },
+    {
+      "file": "AR2400345.xlsm",
+      "sha256": "b617ec501c265c228ee9e9f2faa0663dd05fdd2d7ee62c50a70e027842c1fdb5",
+      "relativePath": "2024/TOLDOS 2024/AR2400345.xlsm"
+    },
+    {
+      "file": "AR2400828-1.xlsm",
+      "sha256": "a08dc3866191e11b2ff7e2e6e60f86551bff9a40ccceb3dd8b3cb294d71087cb",
+      "relativePath": "2024/TOLDOS 2024/AR2400828-1.xlsm"
+    },
+    {
+      "file": "AR2400828-2.xlsm",
+      "sha256": "27a88aecd7b3c45afd55461fa5a5ba67ebea17f0cf1bb0d1f131d607a6b15d9d",
+      "relativePath": "2024/TOLDOS 2024/AR2400828-2.xlsm"
+    },
+    {
+      "file": "AR2400966.xlsm",
+      "sha256": "58850308ca945c81e672999aaca3717a51b146a0671634666c45ca9611c50c71",
+      "relativePath": "2024/TOLDOS 2024/AR2400966.xlsm"
+    },
+    {
+      "file": "AR2401310.xlsm",
+      "sha256": "b3c606d47c1deb73330518732b02b4fb60f83cf11f8cffd5619b907358262875",
+      "relativePath": "2024/TOLDOS 2024/AR2401310.xlsm"
+    },
+    {
+      "file": "AR2401807.xlsm",
+      "sha256": "b47724fd7ed2b35dabd2e0e038e155dae5553c5f06be4518993d9631cc85e8b6",
+      "relativePath": "2024/TOLDOS 2024/AR2401807.xlsm"
+    },
+    {
+      "file": "AR2403089.xlsm",
+      "sha256": "ec79714eb8cf22bb45ad37fe60de912cfeb9fcd3d3d7aaf662ad26a68578c1f0",
+      "relativePath": "2024/TOLDOS 2024/AR2403089.xlsm"
+    },
+    {
+      "file": "AR2403122.xlsm",
+      "sha256": "c77afca7c0092b45a23b459132850f5247dd88553c5874ee825dbf05cc408b50",
+      "relativePath": "2024/TOLDOS 2024/AR2403122.xlsm"
+    },
+    {
+      "file": "AR2403246.xlsm",
+      "sha256": "1713e01f5104b5cdaf1d17561268a1243c6423e8cf6e5d4e089f416e285e4727",
+      "relativePath": "2024/TOLDOS 2024/AR2403246.xlsm"
+    },
+    {
+      "file": "AR2404007-1.xlsm",
+      "sha256": "56bc3673b958ad76d2b92c75067aaff67f83ba145a410563c6b593ae97d46115",
+      "relativePath": "2024/TOLDOS 2024/AR2404007-1.xlsm"
+    },
+    {
+      "file": "AR2404664.xlsm",
+      "sha256": "cfc45ffc1d17478f4f109c9960693e792838b5784197fc47ff5650db04257d9e",
+      "relativePath": "2024/TOLDOS 2024/AR2404664.xlsm"
+    },
+    {
+      "file": "AR2405111.xlsm",
+      "sha256": "98729d0971e650cc7cb43a349f702912e8c4176f4757806fd5bc9616ef39a0df",
+      "relativePath": "2024/TOLDOS 2024/AR2405111.xlsm"
+    },
+    {
+      "file": "AR2405306.xlsm",
+      "sha256": "3f02ae9de8589afdf1395eca7ac19af934d45c1a117c096d5461de51cb805ffa",
+      "relativePath": "2024/TOLDOS 2024/AR2405306.xlsm"
+    },
+    {
+      "file": "AR2405526-1.xlsm",
+      "sha256": "2341f47164ff87d8af907d5cc0b08101f5f2781bddea82070a16ba078eadc1d4",
+      "relativePath": "2024/TOLDOS 2024/AR2405526-1.xlsm"
+    },
+    {
+      "file": "AR2405526-2.xlsm",
+      "sha256": "1a2f9bc23c9c68e6aaed8de92e2e5eec1e57d2c43cff0647cbc56092c38ca1a3",
+      "relativePath": "2024/TOLDOS 2024/AR2405526-2.xlsm"
+    },
+    {
+      "file": "AR2406244.xlsm",
+      "sha256": "a5d0647eb93682b8a2b3920587b8174c1d6eba15baed8cdc43df3a09abcd37dc",
+      "relativePath": "2024/TOLDOS 2024/AR2406244.xlsm"
+    },
+    {
+      "file": "AR2406783.xlsm",
+      "sha256": "8513a8d720d65ae594d0a710b2c4980c7c93cfff3d726611b83951cf7f837725",
+      "relativePath": "2024/TOLDOS 2024/AR2406783.xlsm"
+    },
+    {
+      "file": "AR2500456.xlsm",
+      "sha256": "ad150afd6029b4119163dff09de8741a2145f01e0532b5619e8735ce108511e1",
+      "relativePath": "2025/TOLDOS/AR2500456.xlsm"
+    },
+    {
+      "file": "AR2502359.xlsm",
+      "sha256": "e61235279f3e75342003aaf3e621348db742fba118988a77fc6922ba648d91f1",
+      "relativePath": "2025/TOLDOS/AR2502359.xlsm"
+    },
+    {
+      "file": "AR2502464-1.xlsm",
+      "sha256": "e58b7e293d3beceacfcca28ddf603c43b39eb8a8024d389783488b525658c62f",
+      "relativePath": "2025/TOLDOS/AR2502464-1.xlsm"
+    },
+    {
+      "file": "AR2502464-2.xlsm",
+      "sha256": "8e3175067066b02e50cfadaefa896d121acbdf80078c7ef0b3c38706b63c6e04",
+      "relativePath": "2025/TOLDOS/AR2502464-2.xlsm"
+    },
+    {
+      "file": "AR2502794.xlsm",
+      "sha256": "cce1814bf19bc4f5f48e957ec987049766e3e793b4e49b560bebda39f2be9b74",
+      "relativePath": "2025/TOLDOS/AR2502794.xlsm"
+    },
+    {
+      "file": "AR2503398.xlsm",
+      "sha256": "9a208e52b58e7a497564ef0acf5546429b7346a014a23783f7a56e798dc68f9f",
+      "relativePath": "2025/TOLDOS/AR2503398.xlsm"
+    },
+    {
+      "file": "AR2503683-2.xlsm",
+      "sha256": "42cbefdca919ca9e8b36bebfd908dba9f2331b14b634a376f96a5b87e145dc22",
+      "relativePath": "2025/TOLDOS/AR2503683-2.xlsm"
+    },
+    {
+      "file": "AR2504268.xlsm",
+      "sha256": "e02f4bb98960a3a419ef528e74b34b8a93782125e10434b457112fd97fa4e881",
+      "relativePath": "2025/TOLDOS/AR2504268.xlsm"
+    },
+    {
+      "file": "AR2504860-2.xlsm",
+      "sha256": "a221072c57219754a33ab0cecf296ac574c0654dbcde819b33a301669d523af0",
+      "relativePath": "2025/TOLDOS/AR2504860-2.xlsm"
+    },
+    {
+      "file": "AR2504860.xlsm",
+      "sha256": "8f5ff2734627aa1bf133cd7ed8228ef4c3be60cbca2ddf7a4756b68cd6d4d226",
+      "relativePath": "2025/TOLDOS/AR2504860.xlsm"
+    },
+    {
+      "file": "AR2504870.xlsm",
+      "sha256": "fafc2e9e052e3f4f19b5a83bd13c9dba5653774f1d356bc8748105cbf57d4b51",
+      "relativePath": "2025/TOLDOS/AR2504870.xlsm"
+    },
+    {
+      "file": "AR2505591_1.xlsm",
+      "sha256": "c56b66ad16f07476f2467a2aa8dbfc151ec1a65bd8d0ba478be6960968f434f5",
+      "relativePath": "2025/TOLDOS/AR2505591_1.xlsm"
+    },
+    {
+      "file": "AR2505591_2.xlsm",
+      "sha256": "895c03a3c2e3e3f6b026bd6e3e307b59760a7a87502e9554564e7c752a33400e",
+      "relativePath": "2025/TOLDOS/AR2505591_2.xlsm"
+    },
+    {
+      "file": "AR2505686-1.xlsm",
+      "sha256": "c02a905d53efa233b2ff46456a800a60e5952f5150505d348cd352c55cf5453d",
+      "relativePath": "2025/TOLDOS/AR2505686-1.xlsm"
+    },
+    {
+      "file": "AR2505686_2.xlsm",
+      "sha256": "0c8a148f76de6a407cff59ea07cef08973a0980449f1b2d3a9c61619c4dacf3c",
+      "relativePath": "2025/TOLDOS/AR2505686_2.xlsm"
+    },
+    {
+      "file": "AR2505961.xlsm",
+      "sha256": "ead49623237f32bd2b509e1c57a4bde3c7baaf168141ea05fb12208d5d62b3b3",
+      "relativePath": "2025/TOLDOS/AR2505961.xlsm"
+    },
+    {
+      "file": "AR2600591.xlsm",
+      "sha256": "b8e6db175204c2252d13ae550f4273491845e68a665d6cf566a80fe127c08588",
+      "relativePath": "2026/TOLDOS/AR2600591.xlsm"
+    },
+    {
+      "file": "AR2602031.xlsm",
+      "sha256": "88555e4f6d3190c4b51dcd1f01f2d28a715106821c7a207216535730faf05306",
+      "relativePath": "2026/TOLDOS/AR2602031.xlsm"
+    },
+    {
+      "file": "AR2602180.xlsm",
+      "sha256": "b68291cd8bd6533ca3acad8ab3ae27640bf4e3ccead181452e3e461a9038b5d1",
+      "relativePath": "2026/TOLDOS/AR2602180.xlsm"
+    },
+    {
+      "file": "AR2602673.xlsm",
+      "sha256": "31dba090ef4fe57a62417aa943e9fbb3f456f4ac3e044e0017bed814dc15edb8",
+      "relativePath": "2026/TOLDOS/AR2602673.xlsm"
+    },
+    {
+      "file": "AR2602898.xlsm",
+      "sha256": "f75cc73f6cf10496ff8c4a16dcb434aa74044c4a5404902bfaacb7b67a1e1394",
+      "relativePath": "2026/TOLDOS/AR2602898.xlsm"
+    },
+    {
+      "file": "AR2603341.xlsm",
+      "sha256": "38ee3c9f522e9a02940bdbf0a7503cb1317c329af36aa1a32ee75b889329f213",
+      "relativePath": "2026/TOLDOS/AR2603341.xlsm"
+    },
+    {
+      "file": "AR2603374-1.xlsm",
+      "sha256": "6208b9722cf57a6f307df36408d477c861d2b34d6abf2adc62b641a8020e8303",
+      "relativePath": "2026/TOLDOS/AR2603374-1.xlsm"
+    }
+  ],
+  "selectedCases": [
+    {
+      "file": "AR2400204.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0200387",
+      "input": {
+        "Q11": 246,
+        "Q12": 55,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 234,
+        "Q27": 163.78174593052023,
+        "Q28": 4.913452377915607,
+        "L33": "Observaciones:\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 235,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 234,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 55,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 150",
+          "ref": "",
+          "qty": 1,
+          "cut": 150,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2400345.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0200587",
+      "input": {
+        "Q11": 190,
+        "Q12": 80,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 178,
+        "Q27": 209.1370849898476,
+        "Q28": 4.182741699796952,
+        "L33": "Observaciones:\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 179,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 178,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 80,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 200",
+          "ref": "",
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2400345.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0200587",
+      "input": {
+        "Q11": 185,
+        "Q12": 80,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 173,
+        "Q27": 209.1370849898476,
+        "Q28": 4.182741699796952,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 174,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X1 0",
+          "ref": 0,
+          "qty": 1,
+          "cut": 173,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 80,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 200",
+          "ref": "",
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2405526-1.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0209500",
+      "input": {
+        "Q11": 131.1,
+        "Q12": 34,
+        "Q13": 1,
+        "Q20": "BLANCO",
+        "Q21": "SIN DSIPOSITIVO",
+        "Q26": 124.5,
+        "Q27": 146.08326112068522,
+        "Q28": 2.9216652224137043,
+        "L33": "Observaciones:\r\nTOLDO FIJO SIN DISPOSITIVO\r\nSOPORTE HACE CALDERERIA\r\nTOMA ELECTRICA DERECHA\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 124.89999999999999,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "CASQUILLO EJE ADAPTADO",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 124.5,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES TUBO",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 34,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2405526-2.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0209500",
+      "input": {
+        "Q11": 121.9,
+        "Q12": 38,
+        "Q13": 1,
+        "Q20": "BLANCO",
+        "Q21": "SIN DSIPOSITIVO",
+        "Q26": 115.30000000000001,
+        "Q27": 151.74011537017762,
+        "Q28": 3.0348023074035524,
+        "L33": "Observaciones:\r\nTOLDO FIJO SIN DISPOSITIVO\r\nSOPORTE HACE CALDERERIA\r\nTOMA ELECTRICA IZQ\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 115.7,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "CASQUILLO EJE ADAPTADO",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 115.30000000000001,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES TUBO",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 34,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2405526-2.xlsm",
+      "sheet": "ESTR.04",
+      "of": "0209500",
+      "input": {
+        "Q11": 122.2,
+        "Q12": 38,
+        "Q13": 1,
+        "Q20": "BLANCO",
+        "Q21": "MAQUINA",
+        "Q26": 115.60000000000001,
+        "Q27": 151.74011537017762,
+        "Q28": 3.0348023074035524,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],1,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],1,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],3,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],3,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "CASQUILLO EJE ADAPTADO",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],4,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],4,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 115.60000000000001,
+          "quantityFormula": "INDEX(UNIDADES.04[],5,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],5,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES TUBO",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],6,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],6,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 1,
+          "cut": 38,
+          "quantityFormula": "INDEX(UNIDADES.04[],7,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],7,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2502359.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0216661",
+      "input": {
+        "Q11": 237,
+        "Q12": 110,
+        "Q13": 1,
+        "Q20": "LACADO ESPECIAL",
+        "Q21": "MAQUINA",
+        "Q26": 225,
+        "Q27": 255.56349186104046,
+        "Q28": 5.111269837220809,
+        "L33": "Observaciones:\r\nRAL 5003 MARINO\r\nMAQUINA EXTERIOR\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGU",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 226,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA PLETINA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 225,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZOS ANTICA RECOGER",
+          "ref": " ",
+          "qty": 2,
+          "cut": 110,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 200",
+          "ref": "",
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E22",
+          "name": "PLETINA DE 25 X 4 PARA BAMBA",
+          "ref": "",
+          "qty": 0,
+          "cut": 225,
+          "quantityFormula": "INDEX(UNIDADES.01[],12,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "K15"
+        }
+      ]
+    },
+    {
+      "file": "AR2502359.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0216661",
+      "input": {
+        "Q11": 218,
+        "Q12": 110,
+        "Q13": 1,
+        "Q20": "LACADO ESPECIAL",
+        "Q21": "MAQUINA",
+        "Q26": 206,
+        "Q27": 255.56349186104046,
+        "Q28": 5.111269837220809,
+        "L33": "MAQUINA EXTERIOR   RAL5003 MARINO",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGU",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 207,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA PLETINA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 206,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZOS ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 110,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 200",
+          "ref": "",
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2502359.xlsm",
+      "sheet": "ESTR.03",
+      "of": "0216661",
+      "input": {
+        "Q11": 237,
+        "Q12": 110,
+        "Q13": 1,
+        "Q20": "LACADO ESPECIAL",
+        "Q21": "MAQUINA",
+        "Q26": 225,
+        "Q27": 255.56349186104046,
+        "Q28": 5.111269837220809,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGU",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],1,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],1,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 226,
+          "quantityFormula": "INDEX(UNIDADES.03[],2,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],2,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],3,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],3,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],4,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],4,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA PLETINA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 225,
+          "quantityFormula": "INDEX(UNIDADES.03[],5,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],5,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZOS ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 110,
+          "quantityFormula": "INDEX(UNIDADES.03[],7,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],7,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],8,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],8,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],9,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],9,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 200",
+          "ref": "",
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.03[],10,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],10,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],11,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],11,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2504860-2.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0221101",
+      "input": {
+        "Q11": 358,
+        "Q12": 120,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 346,
+        "Q27": 264.7056274847714,
+        "Q28": 7.941168824543142,
+        "L33": "Observaciones:\r\n\r\nBOLAS DECORATIVAS EN TUBO DE CARGA\r\nMANIVELA PARA ALTURA 522 CM\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 347,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA Ø42",
+          "ref": 0,
+          "qty": 1,
+          "cut": 346,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "BOLAS DORADAS DECORATIVAS",
+          "ref": 0,
+          "qty": 2,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 120,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2504860-2.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0221101",
+      "input": {
+        "Q11": 346.4,
+        "Q12": 120,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 334.4,
+        "Q27": 264.7056274847714,
+        "Q28": 7.941168824543142,
+        "L33": "\r\nBOLAS DECORATIVAS EN TUBO DE CARGA\r\nMANIVELA PARA ALTURA 498 CM",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 335.4,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA Ø42",
+          "ref": 0,
+          "qty": 1,
+          "cut": 334.4,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "BOLAS DORADAS DECORATIVAS",
+          "ref": 0,
+          "qty": 2,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 120,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2504860-2.xlsm",
+      "sheet": "ESTR.03",
+      "of": "0221101",
+      "input": {
+        "Q11": 323.6,
+        "Q12": 120,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 311.6,
+        "Q27": 264.7056274847714,
+        "Q28": 7.941168824543142,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],1,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],1,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 312.6,
+          "quantityFormula": "INDEX(UNIDADES.03[],2,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],2,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],3,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],3,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],4,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],4,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA Ø42",
+          "ref": 0,
+          "qty": 1,
+          "cut": 311.6,
+          "quantityFormula": "INDEX(UNIDADES.03[],5,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],5,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "BOLAS DORADAS DECORATIVAS",
+          "ref": 0,
+          "qty": 2,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],6,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],6,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO PRT07",
+          "ref": "BPRT07NE11120C",
+          "qty": 2,
+          "cut": 120,
+          "quantityFormula": "INDEX(UNIDADES.03[],7,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],7,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],8,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],8,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],9,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],9,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],10,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],10,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],11,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],11,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2504860-2.xlsm",
+      "sheet": "ESTR.04",
+      "of": "0221101",
+      "input": {
+        "Q11": 337.6,
+        "Q12": 120,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 325.6,
+        "Q27": 264.7056274847714,
+        "Q28": 7.941168824543142,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],1,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],1,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 326.6,
+          "quantityFormula": "INDEX(UNIDADES.04[],2,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],2,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],3,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],3,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],4,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],4,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA Ø42",
+          "ref": 0,
+          "qty": 1,
+          "cut": 325.6,
+          "quantityFormula": "INDEX(UNIDADES.04[],5,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],5,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "BOLAS DORADAS DECORATIVAS",
+          "ref": 0,
+          "qty": 2,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],6,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],6,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO PRT07",
+          "ref": "BPRT07NE11120C",
+          "qty": 1,
+          "cut": 120,
+          "quantityFormula": "INDEX(UNIDADES.04[],7,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],7,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],8,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],8,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],9,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],9,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],10,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],10,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],11,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],11,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2504860.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0221102",
+      "input": {
+        "Q11": 347,
+        "Q12": 120,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 335,
+        "Q27": 224.7056274847714,
+        "Q28": 6.741168824543142,
+        "L33": "Observaciones:\r\nBOLAS DECORATIVAS EN TUBO DE CARGA\r\nMANIVELA PARA ALTURA 556 CM\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 336,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA Ø42",
+          "ref": 0,
+          "qty": 1,
+          "cut": 335,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "BOLAS DORADAS DECORATIVAS",
+          "ref": 0,
+          "qty": 2,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 120,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2504860.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0221102",
+      "input": {
+        "Q11": 330,
+        "Q12": 120,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 318,
+        "Q27": 224.7056274847714,
+        "Q28": 6.741168824543142,
+        "L33": "BOLAS DECORATIVAS EN TUBO DE CARGA\r\nMANIVELA PARA ALTURA 472 CM",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 319,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA Ø42",
+          "ref": 0,
+          "qty": 1,
+          "cut": 318,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "BOLAS DORADAS DECORATIVAS",
+          "ref": 0,
+          "qty": 2,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 120,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2504860.xlsm",
+      "sheet": "ESTR.03",
+      "of": "0221102",
+      "input": {
+        "Q11": 358.8,
+        "Q12": 120,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 346.8,
+        "Q27": 224.7056274847714,
+        "Q28": 6.741168824543142,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],1,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],1,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 347.8,
+          "quantityFormula": "INDEX(UNIDADES.03[],2,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],2,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],3,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],3,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],4,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],4,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA Ø42",
+          "ref": 0,
+          "qty": 1,
+          "cut": 346.8,
+          "quantityFormula": "INDEX(UNIDADES.03[],5,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],5,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "BOLAS DORADAS DECORATIVAS",
+          "ref": 0,
+          "qty": 2,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],6,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],6,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO PRT07",
+          "ref": "BPRT07NE11120C",
+          "qty": 2,
+          "cut": 120,
+          "quantityFormula": "INDEX(UNIDADES.03[],7,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],7,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],8,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],8,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],9,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],9,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],10,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],10,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],11,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],11,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2505961.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0223086",
+      "input": {
+        "Q11": 177,
+        "Q12": 145,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MOTOR",
+        "Q26": 166,
+        "Q27": 275.0609665440988,
+        "Q28": 2.750609665440988,
+        "L33": "Observaciones:\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 167,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30X10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 166,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 145,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "RUEDA MOTRIZ LT50",
+          "ref": "ADAPTADORESTUBO70",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "CORONA LT50 ADAPTA Ø70",
+          "ref": "CORONA LT5070",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MOTOR SOMFY SUNILUS 15/17 IO 0",
+          "ref": "SUNILUSIO15//17",
+          "qty": 1,
+          "cut": "0",
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "SOPORTE UNIVERSAL HIPRO",
+          "ref": "SOPORTEUNVHIPRO",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2505961.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0223086",
+      "input": {
+        "Q11": 155,
+        "Q12": 145,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MOTOR",
+        "Q26": 144,
+        "Q27": 275.0609665440988,
+        "Q28": 2.750609665440988,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 145,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30X10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 144,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 145,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "RUEDA MOTRIZ LT50",
+          "ref": "ADAPTADORESTUBO70",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "CORONA LT50 ADAPTA Ø70",
+          "ref": "CORONA LT5070",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MOTOR SOMFY SUNILUS 15/17 IO 0",
+          "ref": "SUNILUSIO15//17",
+          "qty": 1,
+          "cut": "0",
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "SOPORTE UNIVERSAL HIPRO",
+          "ref": "SOPORTEUNVHIPRO",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2505961.xlsm",
+      "sheet": "ESTR.03",
+      "of": "0223086",
+      "input": {
+        "Q11": 157,
+        "Q12": 145,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MOTOR",
+        "Q26": 146,
+        "Q27": 275.0609665440988,
+        "Q28": 2.750609665440988,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],1,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],1,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 147,
+          "quantityFormula": "INDEX(UNIDADES.03[],2,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],2,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],3,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],3,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30X10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 146,
+          "quantityFormula": "INDEX(UNIDADES.03[],5,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],5,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],6,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],6,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 145,
+          "quantityFormula": "INDEX(UNIDADES.03[],7,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],7,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "RUEDA MOTRIZ LT50",
+          "ref": "ADAPTADORESTUBO70",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],8,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],8,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "CORONA LT50 ADAPTA Ø70",
+          "ref": "CORONA LT5070",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],9,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],9,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MOTOR SOMFY SUNILUS 15/17 IO 0",
+          "ref": "SUNILUSIO15//17",
+          "qty": 1,
+          "cut": "0",
+          "quantityFormula": "INDEX(UNIDADES.03[],10,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],10,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "SOPORTE UNIVERSAL HIPRO",
+          "ref": "SOPORTEUNVHIPRO",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.03[],11,MATCH(D6,UNIDADES.03[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.03[],11,MATCH(D6,MEDIDAS.03[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2505961.xlsm",
+      "sheet": "ESTR.04",
+      "of": "0223086",
+      "input": {
+        "Q11": 157,
+        "Q12": 145,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MOTOR",
+        "Q26": 146,
+        "Q27": 275.0609665440988,
+        "Q28": 2.750609665440988,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],1,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],1,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO ENROLLE P701",
+          "ref": "",
+          "qty": 1,
+          "cut": 147,
+          "quantityFormula": "INDEX(UNIDADES.04[],2,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],2,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],3,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],3,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30X10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 146,
+          "quantityFormula": "INDEX(UNIDADES.04[],5,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],5,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],6,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],6,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 1,
+          "cut": 145,
+          "quantityFormula": "INDEX(UNIDADES.04[],7,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],7,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "RUEDA MOTRIZ LT50",
+          "ref": "ADAPTADORESTUBO70",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],8,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],8,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "CORONA LT50 ADAPTA Ø70",
+          "ref": "CORONA LT5070",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],9,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],9,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MOTOR SOMFY SUNILUS 15/17 IO 0",
+          "ref": "SUNILUSIO15//17",
+          "qty": 1,
+          "cut": "0",
+          "quantityFormula": "INDEX(UNIDADES.04[],10,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],10,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "SOPORTE UNIVERSAL HIPRO",
+          "ref": "SOPORTEUNVHIPRO",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.04[],11,MATCH(D6,UNIDADES.04[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.04[],11,MATCH(D6,MEDIDAS.04[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2600591.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0225203",
+      "input": {
+        "Q11": 510,
+        "Q12": 80,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 498,
+        "Q27": 206.65856099730655,
+        "Q28": 10.332928049865327,
+        "L33": "Observaciones:\r\nMAQUINA EXTERIOR\r\n\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P801",
+          "ref": "TURA80HG600C",
+          "qty": 1,
+          "cut": 499,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 50 X 30",
+          "ref": 0,
+          "qty": 1,
+          "cut": 498,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))-1"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 80,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø78",
+          "ref": "CASMAQEJE6378MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E22",
+          "name": "PLETINA 25X4",
+          "ref": "",
+          "qty": 1,
+          "cut": 498,
+          "quantityFormula": null,
+          "cutFormula": null
+        }
+      ]
+    },
+    {
+      "file": "AR2602180.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0228171",
+      "input": {
+        "Q11": 207,
+        "Q12": 70,
+        "Q13": 1,
+        "Q20": "BLANCO",
+        "Q21": "MAQUINA",
+        "Q26": 195,
+        "Q27": 184.99494936611666,
+        "Q28": 3.6998989873223334,
+        "L33": "Observaciones:\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 196,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 195,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 70,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  BLANCA 170",
+          "ref": "",
+          "qty": 1,
+          "cut": 170,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 BLANCA",
+          "ref": "MAQMB9L13BLANBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2602180.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0228171",
+      "input": {
+        "Q11": 207,
+        "Q12": 70,
+        "Q13": 1,
+        "Q20": "BLANCO",
+        "Q21": "MAQUINA",
+        "Q26": 195,
+        "Q27": 184.99494936611666,
+        "Q28": 3.6998989873223334,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 196,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X1 0",
+          "ref": 0,
+          "qty": 1,
+          "cut": 195,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 70,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  BLANCA 170",
+          "ref": "",
+          "qty": 1,
+          "cut": 170,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 BLANCA",
+          "ref": "MAQMB9L13BLANBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2602673.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0229044",
+      "input": {
+        "Q11": 244.5,
+        "Q12": 110,
+        "Q13": 1,
+        "Q20": "BLANCO",
+        "Q21": "MAQUINA",
+        "Q26": 232.5,
+        "Q27": 225.56349186104046,
+        "Q28": 6.766904755831214,
+        "L33": "Observaciones:\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 233.5,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 50 X 30",
+          "ref": 0,
+          "qty": 1,
+          "cut": 232.5,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 110,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  BLANCA 250",
+          "ref": "",
+          "qty": 1,
+          "cut": 250,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 BLANCA",
+          "ref": "MAQMB9L13BLANBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2602673.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0229044",
+      "input": {
+        "Q11": 242.5,
+        "Q12": 110,
+        "Q13": 1,
+        "Q20": "BLANCO",
+        "Q21": "MAQUINA",
+        "Q26": 230.5,
+        "Q27": 225.56349186104046,
+        "Q28": 4.5112698372208095,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 231.5,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 50 X 30",
+          "ref": 0,
+          "qty": 1,
+          "cut": 230.5,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 110,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  BLANCA 250",
+          "ref": "",
+          "qty": 1,
+          "cut": 250,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 BLANCA",
+          "ref": "MAQMB9L13BLANBL16",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2602898.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0229419",
+      "input": {
+        "Q11": 326,
+        "Q12": 80,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 314,
+        "Q27": 199.1370849898476,
+        "Q28": 5.974112549695429,
+        "L33": "Observaciones:\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 315,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 30 X 10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 314,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 80,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2603341.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0230193",
+      "input": {
+        "Q11": 376,
+        "Q12": 60,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 364,
+        "Q27": 154.8528137423857,
+        "Q28": 6.194112549695428,
+        "L33": "Observaciones:\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 365,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 50 X 30",
+          "ref": 0,
+          "qty": 1,
+          "cut": 364,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],5,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 60,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": null
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 200",
+          "ref": "",
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2603341.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0230193",
+      "input": {
+        "Q11": 281,
+        "Q12": 60,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 269,
+        "Q27": 154.8528137423857,
+        "Q28": 4.645584412271571,
+        "L33": "BRAZO FRENTE DER SUJECCION LATERAL RESTO DE BRAZOS SUJECCION FRONTAL",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 270,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO CARGA 50 X 30",
+          "ref": 0,
+          "qty": 1,
+          "cut": 269,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],5,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 60,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": null
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 200",
+          "ref": "",
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2603374-1.xlsm",
+      "sheet": "ESTR.01",
+      "of": "0230273",
+      "input": {
+        "Q11": 212,
+        "Q12": 50,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 200,
+        "Q27": 342.2168449963792,
+        "Q28": 6.844336899927584,
+        "L33": "Observaciones:\r\n\r\n\r\n",
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],1,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],1,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 201,
+          "quantityFormula": "INDEX(UNIDADES.01[],2,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],2,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],3,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],3,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],4,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO 30X10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 200,
+          "quantityFormula": "INDEX(UNIDADES.01[],5,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": null
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],6,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],6,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO ANTICA",
+          "ref": " ",
+          "qty": 2,
+          "cut": 50,
+          "quantityFormula": "INDEX(UNIDADES.01[],7,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],7,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],8,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],8,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],9,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],9,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],10,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],10,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.01[],11,MATCH(D6,UNIDADES.01[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],11,MATCH(D6,MEDIDAS.01[#Headers],0))"
+        }
+      ]
+    },
+    {
+      "file": "AR2603374-1.xlsm",
+      "sheet": "ESTR.02",
+      "of": "0230273",
+      "input": {
+        "Q11": 227,
+        "Q12": 50,
+        "Q13": 1,
+        "Q20": "NEGRO (R-09011)",
+        "Q21": "MAQUINA",
+        "Q26": 215,
+        "Q27": 342.2168449963792,
+        "Q28": 6.844336899927584,
+        "L33": null,
+        "D6": "PUNTO RECTO"
+      },
+      "rows": [
+        {
+          "cell": "E11",
+          "name": "JGO.SOPORTE UNIVERSAL 3 FUROS",
+          "ref": "SOPUNI3AGUNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],D11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],1,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E12",
+          "name": "TUBO DE ENROLLE P701",
+          "ref": "TURA70HG600C",
+          "qty": 1,
+          "cut": 216,
+          "quantityFormula": "INDEX(UNIDADES.02[],2,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],2,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E13",
+          "name": "CASQUILLO PUNTA",
+          "ref": "CASPUNCE",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],3,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],3,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E14",
+          "name": "KIT DE TORNILLOS MAQUINA",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],4,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.01[],4,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E15",
+          "name": "TUBO 30X10",
+          "ref": 0,
+          "qty": 1,
+          "cut": 215,
+          "quantityFormula": "INDEX(UNIDADES.02[],5,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": null
+        },
+        {
+          "cell": "E16",
+          "name": "KIT DE TAPONES",
+          "ref": 0,
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],6,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],6,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E17",
+          "name": "BRAZO PRT07",
+          "ref": " ",
+          "qty": 2,
+          "cut": 50,
+          "quantityFormula": "INDEX(UNIDADES.02[],7,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],7,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E18",
+          "name": "CASQUILLO EJE 63MM Ø70",
+          "ref": "CASMAQEJE6370MM",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],8,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],8,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E19",
+          "name": "TACO NAYLON MAQ.",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],9,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],9,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E20",
+          "name": "MANIVELA LUXE  NEGRA 0",
+          "ref": "",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],10,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],10,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        },
+        {
+          "cell": "E21",
+          "name": "MAQUINA ZNP 10 L170 NEGRA",
+          "ref": "MAQMB9L13NEGRNE11",
+          "qty": 1,
+          "cut": 0,
+          "quantityFormula": "INDEX(UNIDADES.02[],11,MATCH(D6,UNIDADES.02[#Headers],0))",
+          "cutFormula": "INDEX(MEDIDAS.02[],11,MATCH(D6,MEDIDAS.02[#Headers],0))"
+        }
+      ]
+    }
+  ],
+  "purchases": [
+    {
+      "of": "0200387",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR CINGALSA ",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.24.00204 - OF 0200387\r\n\r\nCINCAR PLATA \r\n\r\n2 BRAZOS PLETINA 30X10 DE 55CM\r\n1 PLETINA 30X10 DE 234CM\r\n2 SOPORTES BRAZOS ANGULOS 45X45X100CM"
+    },
+    {
+      "of": "0200587",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR - CINGALSA ",
+      "Quantity": 10,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.24.00345 - OF 0200587\r\n\r\nCINCAR PLATA\r\n\r\n4 BRAZOS PLETINA 30X10 DE 80CM\r\n1 PLETINA 30X10 DE 178CM\r\n1 PLETINA 30X10 DE 173CM\r\n4 SOPORTES BRAZOS ANGULOS 45X45X100CM"
+    },
+    {
+      "of": "0209500",
+      "code": "BAMBALUZ",
+      "Description": "FALDON LUMINOSO",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": null
+    },
+    {
+      "of": "0209500",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.24.05526 - OF 0209500\r\n\r\nCINCAR+LACAR BLANCO\r\n\r\n10 UD PIEZA DE 40 CM LARGO\r\n1 UD PIEZA DE 124.5 CM LARGO\r\n1 UD PIEZA DE 125.5 CM LARGO\r\n2 UD PIEZA DE 115.5 CM LARGO\r\n1 UD PIEZA DE 116.5 CM LARGO"
+    },
+    {
+      "of": "0209500",
+      "code": "EXT_LACAR",
+      "Description": "25/10. LACAR",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.24.05526 - OF 0209500\r\n\r\nCINCAR+LACAR BLANCO\r\n\r\n10 UD PIEZA DE 40 CM LARGO\r\n1 UD PIEZA DE 124.5 CM LARGO\r\n1 UD PIEZA DE 125.5 CM LARGO\r\n2 UD PIEZA DE 115.5 CM LARGO\r\n1 UD PIEZA DE 116.5 CM LARGO\r\n"
+    },
+    {
+      "of": "0209500",
+      "code": "TUBGA30MM10MM1,5",
+      "Description": "TUBO 6M GALVANIZADO:30 MM:10 MM:1,5 MM",
+      "Quantity": 12,
+      "unitCode": "METROS",
+      "ReferenceSupplier": null,
+      "Comment": null
+    },
+    {
+      "of": "0216661",
+      "code": "EXT_CINCAR",
+      "Description": "19/05. LACAR CALDERERIA",
+      "Quantity": 3,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.02359 - OF 0216661\r\n\r\nCINCAR RAL 5003 MATE\r\n\r\n6 UNIDADES PIEZA 110 CM LARGO\r\n6 UNIDADES ESCUADRA 4X12 CM\r\n1 UNIDAD TUBO 225 CM LARGO\r\n1 UNIDAD TUBO 206 CM LARGO\r\n1 UNIDAD TUBO 225 CM LARGO"
+    },
+    {
+      "of": "0216661",
+      "code": "EXT_LACAR",
+      "Description": "14/05. LACAR",
+      "Quantity": 1,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.02359 - OF 0216661\r\n\r\n5011 MATE\r\n\r\n2 JUEGO SOPORTE UNIVERSAL 3 AGUJEROS NEGRO 9011 (4 UNID)\r\n1 JUEGO SOPORTE UNIVERSAL 3 AGUJEROS MARRON 8014 (2 UNID)"
+    },
+    {
+      "of": "0216661",
+      "code": "EXT_LACAR",
+      "Description": "19/05. LACAR CALDERERIA",
+      "Quantity": 3,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.02359 - OF 0216661\r\n\r\nLACAR RAL 5003 MATE\r\n\r\n6 UNIDADES PIEZA 110 CM LARGO\r\n6 UNIDADES ESCUADRA 4X12 CM\r\n1 UNIDAD TUBO 225 CM LARGO\r\n1 UNIDAD TUBO 206 CM LARGO\r\n1 UNIDAD TUBO 225 CM LARGO"
+    },
+    {
+      "of": "0221101",
+      "code": "EMBEBRON60MM40",
+      "Description": "remate bola 1081 60x40 mm T-P193",
+      "Quantity": 14,
+      "unitCode": "UNI",
+      "ReferenceSupplier": "REF. 1081",
+      "Comment": null
+    },
+    {
+      "of": "0221101",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 20,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.04860 - OF 0221101\r\n\r\nCINCAR NEGRO\r\n\r\nTUBO DE 363\r\nTUBO DE 351.5\r\nTUBO DE 328.6\r\nTUBO DE 342.6\r\n8 PLETINAS DE 120 \r\n8 ESCUADRAS"
+    },
+    {
+      "of": "0221101",
+      "code": "EXT_LACAR",
+      "Description": "LACAR ",
+      "Quantity": 20,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.04860 - OF 0221101\r\n\r\nLACAR NEGRO\r\n\r\nTUBO DE 363\r\nTUBO DE 351.5\r\nTUBO DE 328.6\r\nTUBO DE 342.6\r\n8 PLETINAS DE 120 \r\n8 ESCUADRAS\r\n\r\n"
+    },
+    {
+      "of": "0221102",
+      "code": "BAMBALUZ",
+      "Description": "FALDON LUMINOSO",
+      "Quantity": 3,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": null
+    },
+    {
+      "of": "0221102",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 15,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.04860 - OF 0221102\r\n\r\nCINCAR NEGRO\r\n\r\nTUBO DE 352\r\nTUBO DE 327\r\nTUBO DE 363.5\r\n6 PLETINAS DE 120\r\n6 ESCUADRAS"
+    },
+    {
+      "of": "0221102",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 15,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.04860 - OF 0221102\r\n\r\nLACAR NEGRO\r\n\r\nTUBO DE 352\r\nTUBO DE 327\r\nTUBO DE 363.5\r\n6 PLETINAS DE 120\r\n6 ESCUADRAS"
+    },
+    {
+      "of": "0223086",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 4,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.05961 - OF 0223086\r\n\r\nCINCAR\r\n\r\n8 PIEZAS DE 145 CM LARGO\r\n2 PIEZAS DE 146 CM LARGO\r\n1 PIEZA DE 144 CM LARGO\r\n1 PEZA DE 166 CM LARGO\r\n5 PIEZAS DE 10 CM X 4 CM\r\n3 PIEZAS DE 10 CM X 13 CM "
+    },
+    {
+      "of": "0223086",
+      "code": "EXT_LACAR",
+      "Description": "VOLVER LACAR",
+      "Quantity": 4,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.05961 - OF 0223086\r\n\r\nLACAR 9011 NEGRO MATE\r\n\r\n2 JUEGOS SOPORTE 3 AGUJEROS"
+    },
+    {
+      "of": "0223086",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 20,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.05961 - OF 0223086\r\n\r\nLACAR NEGRO MATE 9005\r\n\r\n8 PIEZAS DE 145 CM LARGO\r\n2 PIEZAS DE 146 CM LARGO\r\n1 PIEZA DE 144 CM LARGO\r\n1 PEZA DE 166 CM LARGO\r\n5 PIEZAS DE 10 CM X 4 CM\r\n3 PIEZAS DE 10 CM X 13 CM "
+    },
+    {
+      "of": "0225203",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR ",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.00591 - OF 0225203\r\n\r\nCINCAR NEGRO brillo\r\n\r\n1 PIEZA DE 498 CM LARGO\r\n2 PIEZAS DE 85 CM LARGO\r\n2 PIEZAS DE 9X11 CM\r\n\r\n"
+    },
+    {
+      "of": "0225203",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.25.00591 - OF 0225203\r\n\r\nLACAR NEGRO brillo\r\n\r\n1 PIEZA DE 498 CM LARGO\r\n2 PIEZAS DE 85 CM LARGO\r\n2 PIEZAS DE 9X11 CM\r\n"
+    },
+    {
+      "of": "0228171",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 12,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.02180 - OF 0228171\r\n\r\nCINCAR BLANCO\r\n\r\n4 ESCUADRAS DE 4X10 CM\r\n4 PIEZAS DE 70 CM LARGO\r\n4 PIEZAS DE 195 CM LARGO"
+    },
+    {
+      "of": "0229044",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 10,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.02673 - OF 0229044\r\n\r\nCINCAR BLANCO \r\n\r\n2 PIEZAS 244.5 CM LARGO\r\n4 UD PIEZAS 10 CM X 4 CM\r\n4 PIEZAS 110 CM LARGO"
+    },
+    {
+      "of": "0229044",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 10,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.02673 - OF 0229044\r\n\r\nLACAR BLANCO \r\n\r\n2 PIEZAS 244.5 CM LARGO\r\n4 UD PIEZAS 10 CM X 4 CM\r\n4 PIEZAS 110 CM LARGO"
+    },
+    {
+      "of": "0229419",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.02898 - OF 0229419\r\n\r\nCINCAR NEGRO MATE\r\n\r\n1 PIEZA 326 CM LARGO\r\n2 PIEZAS 80 CM LARGO\r\n2 PIEZAS 10X4 CM "
+    },
+    {
+      "of": "0229419",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 5,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.02898 - OF 0229419\r\n\r\nLACAR NEGRO MATE\r\n\r\n1 PIEZA 326 CM LARGO\r\n2 PIEZAS 80 CM LARGO\r\n2 PIEZAS 10X4 CM "
+    },
+    {
+      "of": "0230193",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 6,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.03341 - OF 0230193\r\n\r\nLACADO NEGRO MATE\r\n\r\n1 PIEZA DE 364X5X3CM\r\n1 PIEZA DE 269X5X3CM\r\n4 PIEZAS DE 50X4X10CM\r\n"
+    },
+    {
+      "of": "0230193",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 2,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.03341 - OF0230193\r\nLACAR NEGRO MATE 9011\r\n2 JUEGOS SOPORTE UNIVERSAL 3 AGUJ. BLANCO 4 UNIDADES"
+    },
+    {
+      "of": "0230193",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 1,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": null
+    },
+    {
+      "of": "0230273",
+      "code": "EXT_CINCAR",
+      "Description": "CINCAR",
+      "Quantity": 6,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": "AR.26.03374 - OF.0230273\r\nLACADO NEGRO BRILLO\r\n\r\n1 PIEZA DE 200X3X1CM\r\n1 PIEZA DE 215X3X1CM\r\n4 PIEZAS DE 50CM 10X4 CM"
+    },
+    {
+      "of": "0230273",
+      "code": "EXT_LACAR",
+      "Description": "LACAR",
+      "Quantity": 1,
+      "unitCode": "UNI",
+      "ReferenceSupplier": null,
+      "Comment": null
+    }
+  ],
+  "consumed": [
+    {
+      "of": "0200387",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0200387",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0200587",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 10
+    },
+    {
+      "of": "0200587",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0209500",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0209500",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0209500",
+      "code": "TUBGA30MM10MM1,5",
+      "description": "TUBO 6M GALVANIZADO:30 MM:10 MM:1,5 MM",
+      "unitCode": "BARRA",
+      "quantity": 2
+    },
+    {
+      "of": "0216661",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 3
+    },
+    {
+      "of": "0216661",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 4
+    },
+    {
+      "of": "0221101",
+      "code": "ANCIN45MM45",
+      "description": "ANGULO 6M CINCADO DE:45 MM:45MM",
+      "unitCode": "BARRA",
+      "quantity": 0.6
+    },
+    {
+      "of": "0221101",
+      "code": "EMBEBRON60MM40",
+      "description": "EMBELLECEDOR REMATE  :BRONCE MATERIAL :60 MM :40MM",
+      "unitCode": "UNI",
+      "quantity": 8
+    },
+    {
+      "of": "0221101",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 20
+    },
+    {
+      "of": "0221101",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 20
+    },
+    {
+      "of": "0221101",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 3
+    },
+    {
+      "of": "0221101",
+      "code": "TUBLI1-1/4\"",
+      "description": "TUBO 6M LISO GALVANIZADO :1-1/4\" (42,4X2,65mm)   ",
+      "unitCode": "BARRA",
+      "quantity": 4
+    },
+    {
+      "of": "0221102",
+      "code": "ANCIN45MM45",
+      "description": "ANGULO 6M CINCADO DE:45 MM:45MM",
+      "unitCode": "BARRA",
+      "quantity": 0.4
+    },
+    {
+      "of": "0221102",
+      "code": "EMBEBRON60MM40",
+      "description": "EMBELLECEDOR REMATE  :BRONCE MATERIAL :60 MM :40MM",
+      "unitCode": "UNI",
+      "quantity": 6
+    },
+    {
+      "of": "0221102",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 15
+    },
+    {
+      "of": "0221102",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 15
+    },
+    {
+      "of": "0221102",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 2
+    },
+    {
+      "of": "0221102",
+      "code": "TUBLI1-1/4\"",
+      "description": "TUBO 6M LISO GALVANIZADO :1-1/4\" (42,4X2,65mm)   ",
+      "unitCode": "BARRA",
+      "quantity": 3
+    },
+    {
+      "of": "0223086",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 4
+    },
+    {
+      "of": "0223086",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 24
+    },
+    {
+      "of": "0223086",
+      "code": "PLEAC100MM6MM",
+      "description": "PLETINA 6M ACERO CARBONO :100MM :6MM",
+      "unitCode": "BARRA",
+      "quantity": 0.2
+    },
+    {
+      "of": "0223086",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 8
+    },
+    {
+      "of": "0223086",
+      "code": "TAPONTOR13MMNEGRO",
+      "description": "TAPON PLASTICO PARA LLAVE Ø:13MM:NEGRO (COFRES)",
+      "unitCode": "UNI",
+      "quantity": 24
+    },
+    {
+      "of": "0223086",
+      "code": "TAPONTOR17MMNEGRO",
+      "description": "TAPON PLASTICO PARA LLAVE Ø:17MM :NEGRO",
+      "unitCode": "UNI",
+      "quantity": 8
+    },
+    {
+      "of": "0225203",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0225203",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0225203",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0225203",
+      "code": "TUBGA50MM30MM2MM",
+      "description": "TUBO 6M GALVANIZADO :50MM :30MM :2MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0228171",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 12
+    },
+    {
+      "of": "0229044",
+      "code": "ANCIN40MM40",
+      "description": "ANGULO 6M CINCADO DE:40 MM:40MM",
+      "unitCode": "BARRA",
+      "quantity": 0.1
+    },
+    {
+      "of": "0229044",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 10
+    },
+    {
+      "of": "0229044",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 10
+    },
+    {
+      "of": "0229044",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0229044",
+      "code": "TUBGA50MM0MM1,5",
+      "description": "TUBO 6M GALVANIZADO :50MM :0MM :1,5MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0229044",
+      "code": "TUBGA50MM30MM2MM",
+      "description": "TUBO 6M GALVANIZADO :50MM :30MM :2MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0229044",
+      "code": "TUBOTRAN32",
+      "description": "TUBO TRANSPARENTE G/250  32MM ANCHO  IMPRESO TGM (700M)",
+      "unitCode": "ML32",
+      "quantity": 3
+    },
+    {
+      "of": "0229419",
+      "code": "ANCIN40MM40",
+      "description": "ANGULO 6M CINCADO DE:40 MM:40MM",
+      "unitCode": "BARRA",
+      "quantity": 0.05
+    },
+    {
+      "of": "0229419",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0229419",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 5
+    },
+    {
+      "of": "0229419",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 0.3
+    },
+    {
+      "of": "0229419",
+      "code": "TUBGA50MM30MM2MM",
+      "description": "TUBO 6M GALVANIZADO :50MM :30MM :2MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0230193",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 6
+    },
+    {
+      "of": "0230193",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 3
+    },
+    {
+      "of": "0230193",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 0.4
+    },
+    {
+      "of": "0230273",
+      "code": "EXT_CINCAR",
+      "description": "CINCAR",
+      "unitCode": "UNI",
+      "quantity": 6
+    },
+    {
+      "of": "0230273",
+      "code": "EXT_LACAR",
+      "description": "EXT_LACADO DE METALES (HIERRO, ALUMINIO, ETC)",
+      "unitCode": "UNI",
+      "quantity": 1
+    },
+    {
+      "of": "0230273",
+      "code": "PLEAC30MM10",
+      "description": "PLETINA 6M ACERO CARBONO :30MM :10MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    }
+  ],
+  "specialProject": {
+    "path": "2024/AR2403464_anticas madrid",
+    "files": [
+      {
+        "file": "030125_DESPIECE MATERIALES.xlsx",
+        "sha256": "86a42cfb62df2e3e565aded960e9b55f26de1d8249b4f70bd05b93235ce0229d"
+      },
+      {
+        "file": "191124_DESPIECE PIEZAS TOLDOS.xlsx",
+        "sha256": "7d785c5deb9f0edf0125b672ae0c4161520cd9b94e518df6a4b20cc01a1475d3"
+      },
+      {
+        "file": "PIEZAS Y SOPORTES_V16_2.pdf",
+        "sha256": "1a59631e3cc0ca7ebb9c27121c707672ace97a954acf7adc4d098d61f8e252e3"
+      }
+    ],
+    "status": "Proyecto especial. No usar como despiece del Antica habitual.",
+    "discrepancies": [
+      "Excel 030125: 651 toldos; plano V16_2: 805 toldos.",
+      "Excel general: 2 prisioneros M4 por toldo; plano p.13: 4.",
+      "Brazos del plano p.8: 43,9 cm, geometría propia."
+    ]
+  },
+  "confirmations": [
+    {
+      "date": "2026-09-15",
+      "source": "Iván",
+      "scope": "Tubo 50×30 y pletina 30×10; partir de cortes del Excel sin asegurar que el descuento físico sea exacto."
+    },
+    {
+      "date": "2026-09-15",
+      "source": "Criterio provisional comunicado",
+      "scope": "Reserva nominal cortes/600; pendiente de ratificación por encargado en pregunta21."
+    }
+  ],
+  "selectedExtraCase": [
+    {
+      "of": "0202417",
+      "code": "ACRILI2042P240",
+      "description": "LONA ACRILICA MASACRIL 300 :BLANCO :240 AN",
+      "unitCode": "ML240",
+      "quantity": 2.4
+    },
+    {
+      "of": "0202417",
+      "code": "ELYTUBOHG600C",
+      "description": "TUBO DE ENROLLE  Ø60 MM ELY :600CM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0202417",
+      "code": "FAS400AMARP100",
+      "description": "VINILO FASCAL 400 :AMARILLO 402 :100 AN",
+      "unitCode": "M²",
+      "quantity": 0.6
+    },
+    {
+      "of": "0202417",
+      "code": "MAQ13CBLAN",
+      "description": "MAQUINA (GEIGER) 1.13 M. CORTO L -140 :BLANCO ",
+      "unitCode": "UNI",
+      "quantity": 2
+    },
+    {
+      "of": "0202417",
+      "code": "PLE30425MM6MM",
+      "description": "PLETINA MATE 6M A.INOX 304 (A2) :25MM :6MM",
+      "unitCode": "BARRA",
+      "quantity": 1
+    },
+    {
+      "of": "0202417",
+      "code": "VARILLAVAINANEG5",
+      "description": "VARILLA VAINA NEGRA 4,5MM (Puertas plegables)",
+      "unitCode": "METROS",
+      "quantity": 2.82
+    }
+  ]
+}
