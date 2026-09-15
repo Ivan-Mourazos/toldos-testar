@@ -27,7 +27,7 @@ const preferredLabels = {
   'PLANTEAMIENTO CAD MANUAL': 'Planteamiento CAD manual',
   'TOLDO-VELCRO': 'Toldo con velcro',
   'CAMBIO ENROLLABLE': 'Cambio de enrollable',
-  SUPLEMENTO: 'Suplemento con broches',
+  SUPLEMENTO: 'Suplemento',
   BASE: 'Salida base', FINISHED: 'Tela terminada',
   STANDARD: 'Estándar', VERTICAL_170: 'Bajada vertical 170°'
 };
@@ -147,6 +147,10 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.motorLocation) addField(cardFields, 'Posición motor', awning.machineSide, true);
     if (fields.machineLocation) addField(cardFields, 'Lado máquina', awning.machineSide, true);
     if (fields.crankHeight) addField(cardFields, 'Altura manivela', measure(awning.crankHeight), true);
+    if (awning.model === 'ANTICA') {
+      addField(cardFields, 'Brazos por toldo', String(ofBlock?.calculation?.armCount || awning.structureArmCount || ''), true);
+      if (fields.crankHeight) addField(cardFields, 'Color manivela', awning.anticaCrankColor || 'AUTOMÁTICO', true);
+    }
     if (fields.placement) addField(cardFields, 'Colocación', awning.placement, true);
     if (fields.wallType) addField(cardFields, 'Tipo de pared', awning.wallType || 'NO INDICADA', true);
     if (fields.arms) addField(cardFields, 'Nº de brazos', awning.armCount, true);

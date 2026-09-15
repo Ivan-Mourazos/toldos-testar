@@ -736,8 +736,13 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(pageTexts[0]).toContain('B.N(4)');
     expect(pageTexts[1]).toContain('CAMBIO ENROLLABLE');
     expect(pageTexts[1]).toContain('PLETINA 30 × 6');
-    expect(pageTexts[2]).toContain('SUPLEMENTO CON BROCHES');
-    expect(pageTexts[2]).toContain('3 CM POR ENCIMA DE LA ONDA');
+    // El título ya no da por hecha la sujeción: se configura por pedido.
+    expect(pageTexts[2]).toContain('SUPLEMENTO');
+    expect(pageTexts[2]).not.toContain('CON BROCHES');
+    // El solape sobre la onda tampoco se da por hecho, y el dibujo dice cuál va delante.
+    expect(pageTexts[2]).not.toContain('POR ENCIMA DE LA ONDA');
+    expect(pageTexts[2]).toContain('BAMBALINA');
+    expect(pageTexts[2]).toContain('SUPLEMENTO POR DETRÁS');
   });
 
   test('el PDF de CORTINA Tubo rotula E.T. Ø40 y omite la varilla inferior normal', async () => {

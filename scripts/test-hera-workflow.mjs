@@ -22,7 +22,7 @@ async function request(route, body, method = 'POST', expected = 200) {
   const data = await response.json(); assert.equal(response.status, expected, JSON.stringify(data)); return data;
 }
 try {
-  for (let i = 0; i < 100; i++) { try { if ((await fetch(base + '/api/health')).ok) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
+  for (let i = 0; i < 100; i++) { try { if ((await fetch(base + '/api/health')).ok) break; } catch { /* El servidor todavía puede estar arrancando. */ } await new Promise(r => setTimeout(r, 100)); }
   await request('/api/workflow/settings', { productionEnabled: true, reviewDirectory: path.join(directory, 'reviews'), planteamientosDirectory: path.join(directory, 'plans'), rpsUploadDirectory: path.join(directory, 'rps'), rpsPlanteamientosDirectory: path.join(directory, 'archive') }, 'PUT');
   const image = 'data:image/png;base64,' + (await readFile('src/domain/assets/tgm-logo.png')).toString('base64');
   for (const [index, variant] of ['HERA 43 MAQUINA', 'HERA 56 MAQUINA', 'HERA 56 MOTOR'].entries()) {

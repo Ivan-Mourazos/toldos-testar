@@ -35,6 +35,15 @@ export type Awning = {
   valanceFabric: string;
   fabricImage?: string | null;
   fabricDiagramOverride: '' | 'TOLDO-VELCRO' | 'CAMBIO ENROLLABLE' | 'SUPLEMENTO';
+  supplementFastening: string;
+  supplementFasteningOther: string;
+  supplementFasteningPitchCm: number | null;
+  supplementWaveOverlapCm: number | null;
+  supplementJoinHemCm: number | null;
+  supplementSideHemCm: number | null;
+  supplementBottomHemCm: number | null;
+  supplementBottomFinish: string;
+  supplementBottomFinishOther: string;
   remate: string;
   remateColor: string;
   structureColor: string;
@@ -52,6 +61,7 @@ export type Awning = {
   sensor: string;
   machineSide: string;
   crankHeight: number | null;
+  anticaCrankColor?: 'AUTOMÁTICO' | 'BLANCA' | 'NEGRA';
   curtainHasWindow: boolean | null;
   curtainFinish: '' | 'NORMAL' | 'VELCRO' | 'TUBO';
   curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM';

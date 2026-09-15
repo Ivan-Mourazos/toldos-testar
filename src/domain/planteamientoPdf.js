@@ -93,7 +93,11 @@ export function buildPlanteamientoPlan(order, calculation) {
   entries.forEach((entry) => {
     const cadDiagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
     const diagram = getFabricPatternDiagram(entry.awning, cadDiagram);
-    const groupKey = JSON.stringify([fabricDiagramGroupKey(diagram, entry.awning), normalizeFabricImage(entry.awning.fabricImage)]);
+    const groupKey = JSON.stringify([
+      fabricDiagramGroupKey(diagram, entry.awning),
+      normalizeFabricImage(entry.awning.fabricImage),
+      measuredDiagramKey(diagram, entry.ofBlock?.calculation)
+    ]);
     const group = grouped.get(groupKey) || { diagram, diagramAwning: entry.awning, entries: [] };
     group.entries.push(entry);
     grouped.set(groupKey, group);
@@ -120,6 +124,19 @@ export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagr
   if (model.includes('ANTICA')) return 'ANTICA';
   if (model === 'IRIS') return 'IRIS';
   return 'GENERAL';
+}
+
+// Los dibujos que rotulan medidas no pueden agrupar entradas de distinto corte:
+// el rótulo sería correcto solo para la primera. Cada uno declara aquí qué medidas
+// muestra, así que añadir un dibujo con cotas obliga a decidirlo.
+const measuredDiagrams = {
+  BAMBALINA: (calculation) => [calculation?.fabricDrop ?? null],
+  ENROLLABLE: (calculation) => [calculation?.fabricWidth ?? null, calculation?.fabricDrop ?? null]
+};
+
+function measuredDiagramKey(diagram, calculation) {
+  const measures = measuredDiagrams[diagram];
+  return measures ? measures(calculation) : null;
 }
 
 function fabricDiagramGroupKey(diagram, awning) {
@@ -689,8 +706,8 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'TOLDO-VELCRO') return drawToldoVelcroDiagram(doc, x, y, w, h, awning);
   if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
   if (diagram === 'SUPLEMENTO') return drawSupplementDiagram(doc, x, y, w, h, awning);
-  if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h);
-  if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h, calculation);
+  if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning, calculation);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
   if (diagram === 'AMBAR') return drawAmbarDiagram(doc, x, y, w, h);
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
@@ -1348,9 +1365,41 @@ function drawChangeRollerDiagram(doc, x, y, w, h) {
     .text('CONFECCIÓN SOBRE TELA EXISTENTE', panelX + 14, panelY + panelH / 2 - 4, { width: panelW - 28, align: 'center' });
 }
 
+// La sujeción y las bastillas del suplemento se configuran por pedido: un campo
+// vacío no se dibuja y no se sustituye por un valor supuesto.
+export function buildSupplementSpec(awning = {}) {
+  const choice = (value, other) => {
+    const selected = String(value || '').trim().toUpperCase();
+    if (selected === 'OTRO') return String(other || '').trim().toUpperCase();
+    return selected;
+  };
+  const measure = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+  const fastening = choice(awning.supplementFastening, awning.supplementFasteningOther);
+  const withStuds = String(awning.supplementFastening || '').trim().toUpperCase() === 'BROCHES';
+  return {
+    fastening,
+    withStuds,
+    // El paso es la separación entre broches. Con velcro no hay nada que espaciar.
+    pitchCm: withStuds ? measure(awning.supplementFasteningPitchCm) : null,
+    waveOverlapCm: measure(awning.supplementWaveOverlapCm),
+    joinHemCm: measure(awning.supplementJoinHemCm),
+    sideHemCm: measure(awning.supplementSideHemCm),
+    bottomHemCm: measure(awning.supplementBottomHemCm),
+    bottomFinish: choice(awning.supplementBottomFinish, awning.supplementBottomFinishOther)
+  };
+}
+
+function hemLabel(value) {
+  return value === null ? '' : `BN(${formatInstructionMeasure(value)})`;
+}
+
 function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
-  drawDiagramShell(doc, x, y, w, h, 'SUPLEMENTO CON BROCHES');
+  const supplement = buildSupplementSpec(awning);
+  drawDiagramShell(doc, x, y, w, h, 'SUPLEMENTO');
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
     .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
@@ -1359,31 +1408,68 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const stripY = y + 91;
   const stripW = w - 50;
   const stripH = 153;
-  const broochY = stripY + 29;
-  const joinY = broochY + 20;
+  const broochY = stripY + 34;
+  const joinY = broochY + 22;
+  // El suplemento va detrás, así que se dibuja primero y la bambalina lo tapa.
   doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#7fa594');
-  doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
-  for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
-    doc.circle(broochX, broochY, 1.25).fill('#c75d55');
+  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.4)
+    .text('SUPLEMENTO POR DETRÁS', stripX + 8, stripY + stripH - 16, { width: stripW - 16, align: 'center' });
+  drawValanceOverSupplement(doc, stripX, stripY, stripW, joinY, valance.curve);
+  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(6.4)
+    .text('BAMBALINA', stripX + 8, stripY + 6, { width: stripW - 16, align: 'center' });
+  // La línea de sujeción solo existe si hay sujeción: sin ella marcaría un canto
+  // sin decir cuál, que es lo que se quiere evitar.
+  if (supplement.fastening) {
+    doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
   }
-  drawDiagramText(doc, 'CON BROCHES', stripX, broochY - 14, stripW);
-  drawSupplementJoin(doc, stripX, joinY, stripW, valance.curve);
-  doc.fillColor('#c75d55').font(fonts.bold).fontSize(6.2)
-    .text('3 CM', stripX - 25, broochY + 3, { width: 22, align: 'right' });
-  doc.moveTo(stripX - 5, broochY).lineTo(stripX - 5, joinY)
-    .moveTo(stripX - 8, broochY).lineTo(stripX - 2, broochY)
-    .moveTo(stripX - 8, joinY).lineTo(stripX - 2, joinY)
-    .strokeColor('#c75d55').lineWidth(0.65).stroke();
+  if (supplement.fastening && supplement.withStuds) {
+    for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
+      doc.circle(broochX, broochY, 1.25).fill('#c75d55');
+    }
+  }
+  // Bastilla, sujeción y paso van en un solo rótulo, como «BN(3) + BROCHES» del plano.
+  const joinParts = [hemLabel(supplement.joinHemCm), supplement.fastening].filter(Boolean);
+  if (supplement.pitchCm !== null) joinParts.push(`C/${formatInstructionMeasure(supplement.pitchCm)}`);
+  if (joinParts.length > 0) {
+    drawDiagramText(doc, joinParts.join(' · '), stripX, broochY - 12, stripW);
+  }
+  if (supplement.sideHemCm !== null) {
+    const sides = hemLabel(supplement.sideHemCm);
+    drawRotatedDiagramText(doc, sides, stripX - 10, stripY + stripH / 2, stripH - 18);
+    drawRotatedDiagramText(doc, sides, stripX + stripW + 10, stripY + stripH / 2, stripH - 18);
+  }
+  if (supplement.bottomHemCm || supplement.bottomFinish) {
+    const bottom = [hemLabel(supplement.bottomHemCm), supplement.bottomFinish].filter(Boolean).join(' · ');
+    drawDiagramText(doc, bottom, stripX, stripY + stripH + 4, stripW);
+  }
+
+  if (supplement.waveOverlapCm !== null) {
+    doc.fillColor('#c75d55').font(fonts.bold).fontSize(6.2)
+      .text(`${formatInstructionMeasure(supplement.waveOverlapCm)} CM`, stripX - 27, broochY + 3, { width: 24, align: 'right' });
+    doc.moveTo(stripX - 5, broochY).lineTo(stripX - 5, joinY)
+      .moveTo(stripX - 8, broochY).lineTo(stripX - 2, broochY)
+      .moveTo(stripX - 8, joinY).lineTo(stripX - 2, joinY)
+      .strokeColor('#c75d55').lineWidth(0.65).stroke();
+  }
   doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(9)
     .text('SUPLEMENTO', stripX + 8, joinY + 36, { width: stripW - 16, align: 'center' });
-  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.8)
-    .text('EL SUPLEMENTO SUBE 3 CM POR ENCIMA DE LA ONDA', x + 20, y + 278, { width: w - 40, align: 'center' });
+  const notes = [];
+  if (supplement.waveOverlapCm !== null) {
+    notes.push(`EL SUPLEMENTO SUBE ${formatInstructionMeasure(supplement.waveOverlapCm)} CM POR ENCIMA DE LA ONDA`);
+  }
+  if (supplement.fastening) notes.push('LOS PUNTOS DE BAMBALINA Y SUPLEMENTO DEBEN COINCIDIR');
+  if (notes.length > 0) {
+    doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.8)
+      .text(notes.join(' · '), x + 20, y + 272, { width: w - 40, align: 'center' });
+  }
 }
 
-function drawSupplementJoin(doc, x, y, w, curve) {
+// Traza el canto inferior ondulado de la bambalina, sin pintarlo: quien llama
+// decide si lo usa como línea o como borde de una figura rellena.
+function traceValanceEdge(doc, x, y, w, curve) {
   const normalized = String(curve || 'RECTA').toUpperCase();
   if (normalized === 'RECTA') {
-    doc.moveTo(x, y).lineTo(x + w, y).strokeColor('#c75d55').lineWidth(0.8).stroke();
+    doc.moveTo(x, y).lineTo(x + w, y);
     return;
   }
   const amplitude = normalized === 'NORMAL' ? 8 : normalized === 'SUAVE' ? 5 : 3;
@@ -1394,15 +1480,35 @@ function drawSupplementJoin(doc, x, y, w, curve) {
     const waveX = x + index * waveW;
     doc.bezierCurveTo(waveX + waveW * 0.25, y + amplitude, waveX + waveW * 0.75, y + amplitude, waveX + waveW, y);
   }
-  doc.strokeColor('#c75d55').lineWidth(0.8).stroke();
 }
 
-function drawRollerDiagram(doc, x, y, w, h) {
+// La bambalina tapa al suplemento, que es como quedan montados. Se rellena
+// opaca y se dibuja después para que se vea cuál va por delante.
+function drawValanceOverSupplement(doc, x, top, w, bottom, curve) {
+  traceValanceEdge(doc, x, bottom, w, curve);
+  doc.lineTo(x + w, top).lineTo(x, top).closePath();
+  doc.fillAndStroke('#e3ece7', '#c75d55');
+}
+
+// Iván confirma el 14/09/2026 que la varilla plana, la pletina 30 × 6 y el refuerzo
+// de PVC son siempre iguales y que un enrollable no tiene más variantes. Lo que
+// faltaba era el corte, que hasta ahora no aparecía en ninguna parte del dibujo.
+function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
   drawDiagramShell(doc, x, y, w, h, 'ENROLLABLE');
+  const medidas = [
+    calculation.fabricWidth ? `FRENTE ${formatInstructionMeasure(calculation.fabricWidth)} CM` : '',
+    calculation.fabricDrop ? `CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM` : ''
+  ].filter(Boolean).join(' · ');
+  if (medidas) {
+    doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
+    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
+      .text(medidas, x + 40, y + 41, { width: w - 80, align: 'center' });
+  }
   const panelW = Math.min(112, w - 76);
   const panelX = x + (w - panelW) / 2;
-  const panelY = y + 65;
-  const panelH = 225;
+  // El panel baja para dejar sitio a la chapa de medidas sobre la varilla plana.
+  const panelY = y + 76;
+  const panelH = 218;
   doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#7fa594');
   doc.rect(panelX, panelY, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
   doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
@@ -1414,7 +1520,7 @@ function drawRollerDiagram(doc, x, y, w, h) {
     .text('REFUERZO PVC POR DENTRO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
 
-function drawValanceDiagram(doc, x, y, w, h, awning = {}) {
+function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   drawDiagramShell(doc, x, y, w, h, `BAMBALINA · ${valance.curve}`);
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
@@ -1426,7 +1532,7 @@ function drawValanceDiagram(doc, x, y, w, h, awning = {}) {
   const stripH = 92;
   drawValancePanel(doc, stripX, stripY, stripW, stripH, valance, {
     topLabel: 'VARILLA BLANCA',
-    bodyLabel: `ACRÍLICO · CORTE ${formatInstructionMeasure(valance.height + 5)} CM`,
+    bodyLabel: `TELA · CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM`,
     measurement: ''
   });
   drawRotatedDiagramText(doc, 'BASTILLA', stripX - 10, stripY + stripH / 2, stripH - 18);
@@ -1696,6 +1802,12 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
   if ((model.includes('CORTINA') || model === 'ELECTRA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
     const velcroHeight = resolveCurtainVelcroHeight(awning);
     if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);
+  }
+
+  if (model === 'BAMBALINA' && normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) !== 'SUPLEMENTO') {
+    instructionParts.push('VARILLA BLANCA · BASTILLAS LATERALES');
+    if (awning.fabricNotes) instructionParts.push('OBS. TELA: ' + awning.fabricNotes);
+    if (awning.structureNotes) instructionParts.push('ACLARACIONES: ' + awning.structureNotes);
   }
 
   if (['XACOBEO', 'CUARZO BOX', 'STORBOX 250'].includes(model)) {

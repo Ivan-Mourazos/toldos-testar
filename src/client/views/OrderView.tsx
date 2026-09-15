@@ -10,6 +10,8 @@ import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBe
 export function OrderView({
   availableModelNames,
   orderCode,
+  knownOfs = null,
+  onOrderCodeBlur,
   customer,
   orderDate,
   technician,
@@ -42,6 +44,8 @@ export function OrderView({
 }: {
   availableModelNames: string[];
   orderCode: string;
+  knownOfs?: string[] | null;
+  onOrderCodeBlur?: () => void;
   customer: string;
   orderDate: string;
   technician: string;
@@ -109,6 +113,7 @@ export function OrderView({
         <div className="order-strip">
           <OrderHeader
             orderCode={orderCode}
+            onOrderCodeBlur={onOrderCodeBlur}
             customer={customer}
             orderDate={orderDate}
             technician={technician}
@@ -142,6 +147,7 @@ export function OrderView({
               index={index}
               ofCalculation={calculation?.ofs.find((o) => o.awningId === awning.id)?.calculation}
               sameFabric={sameFabric}
+              knownOfs={knownOfs}
               parameters={parameters}
               readOnly={readOnly}
               onUpdate={updateAwning}

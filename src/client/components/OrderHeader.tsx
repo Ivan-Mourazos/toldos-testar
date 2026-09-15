@@ -7,7 +7,7 @@ import { SelectField } from './SelectField';
 import { FabricCombobox } from './FabricCombobox';
 
 type Props = {
-  orderCode: string; customer: string; orderDate: string; technician: string;
+  orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string; technician: string;
   reviewer: string; fabric: string; sameFabric: boolean;
   set: (patch: Record<string, string | boolean>) => void;
   onAddAwning: () => void;
@@ -24,7 +24,7 @@ export function OrderHeader(props: Props) {
       <div className="order-header-group order-header-general">
         <h3>Datos del pedido</h3>
         <div className="order-header-grid">
-          <TextField label="Pedido" value={props.orderCode} onChange={(v) => props.set({ orderCode: v })} placeholder="AR26xxxxx" />
+          <TextField label="Pedido" value={props.orderCode} onChange={(v) => props.set({ orderCode: v })} onBlur={props.onOrderCodeBlur} placeholder="AR26xxxxx" />
           <TextField label="Cliente" value={props.customer} onChange={(v) => props.set({ customer: v })} />
           <label className="field"><span>Fecha</span>
             <input type="date" value={props.orderDate} onChange={(e) => props.set({ orderDate: e.target.value })} />

@@ -26,18 +26,19 @@ export function applyStructureEdit(awning, result) {
     const matches = materials.filter((item) => code(item.code) === code(row.reference) && row.reference);
     const totalQuantity = matches.reduce((sum, item) => sum + Number(item.quantity), 0);
     const totalUnits = rawRows.filter((item) => item.reference && code(item.reference) === code(row.reference)).reduce((sum, item) => sum + Number(item.units), 0);
-    return { ...row, reservationQuantity: totalUnits ? round(totalQuantity * row.units / totalUnits) : 0, unitCode: '' };
+    // Algunas piezas comparten materia prima, pero tienen cortes distintos.
+    // Su consumo explícito evita repartir una pletina larga como si fuese un brazo corto.
+    const reservationQuantity = Number.isFinite(row.reservationQuantity) && row.reservationQuantity >= 0
+      ? row.reservationQuantity : totalUnits ? round(totalQuantity * row.units / totalUnits) : 0;
+    return { ...row, reservationQuantity, unitCode: row.unitCode || '' };
   });
   const signature = JSON.stringify({ model: awning.model, width: awning.width, projection: awning.projection, units: awning.units, rows: baseRows, materials });
   const edit = normalizeStructureEdit(awning.structureEdit);
   const editor = { signature, baseRows, rows: edit?.rows ?? baseRows, modified: Boolean(edit), stale: Boolean(edit && edit.signature !== signature), referencesToCheck: [] };
   const errors = [];
-  const changedAnticaArms = awning.model === 'ANTICA' && awning.structureArmCount != null && Number(awning.structureArmCount) !== (Number(awning.width) > 400 ? 3 : 2);
-  if (changedAnticaArms && !(editor.rows.find((row) => row.name === 'BRAZO ANTICA' || row.id === baseRows.find((base) => base.name === 'BRAZO ANTICA')?.id)?.reference)) errors.push('Has cambiado el número de brazos. En Editar despiece, selecciona su referencia de RPS e indica la cantidad a reservar.');
-  if (!edit) return errors.length ? {
-    ...result, structureEditor: editor, materials: [], calculation: { ...result.calculation, valid: false },
-    diagnostics: [...(result.diagnostics || []), ...errors.map((message) => ({ level: 'error', awningId: awning.id, message }))]
-  } : { ...result, structureEditor: editor };
+  // Antica: los brazos se fabrican en TGM. Cambiar su número no exige
+  // inventar un artículo de brazo terminado; anticaRules avisa de la reserva parcial.
+  if (!edit) return { ...result, structureEditor: editor };
   if (editor.stale) errors.push('Han cambiado los datos del toldo. Revisa y confirma el despiece editado o restaura el cálculo automático.');
   const ids = new Set();
   const numbers = new Set();

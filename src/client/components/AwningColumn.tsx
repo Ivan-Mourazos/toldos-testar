@@ -18,6 +18,7 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
+import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
 import { irisGuideFixings, irisGuideTypes } from '../../domain/irisParameters.js';
 import {
@@ -39,6 +40,7 @@ type Props = {
   index: number;
   ofCalculation?: Calculation['ofs'][number]['calculation'];
   sameFabric: boolean;
+  knownOfs?: string[] | null;
   parameters: RuleParameters;
   readOnly?: boolean;
   onUpdate: (id: string, patch: Partial<Awning>) => void;
@@ -53,7 +55,7 @@ export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
   return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;
 }
 
-export function AwningColumn({ awning, index, ofCalculation, parameters, sameFabric, readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, parameters, sameFabric, knownOfs = null, readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   const standaloneValance = awning.model === 'BAMBALINA';
@@ -393,7 +395,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
 
       {awning.model && (
         <>
-          <TextField label="OF" value={awning.of} onChange={(of) => update({ of: of.trim() })} />
+          <TextField label="OF" value={awning.of} onChange={(of) => update({ of: of.trim() })} hint={isOfOutsideOrder(awning.of, knownOfs) ? `Esta OF no pertenece al pedido en RPS.` : undefined} />
           {isHera && fields.submodel && (
             <SelectField label="Variante" value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, height: submodel === 'HERA 56 MOTOR' ? null : awning.height })} />
           )}
@@ -495,7 +497,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
             </div>
           )}
           {supportsValance && (
-            <NumberField label={awning.model === 'BAMBALINA' ? 'Alto' : 'Bamba (cm)'} value={awning.valanceHeight} min={0} onChange={updateValanceHeight} />
+            <NumberField label={awning.model === 'BAMBALINA' ? 'Alto terminado (cm)' : 'Bamba (cm)'} value={awning.valanceHeight} min={0} onChange={updateValanceHeight} />
           )}
           {hasValance && (
             <div className="awning-valance-options awning-wide-field">
@@ -516,6 +518,19 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                 emptyLabel="Automático"
                 onChange={(fabricDiagramOverride) => update({ fabricDiagramOverride: fabricDiagramOverride as Awning['fabricDiagramOverride'] })}
               />
+            </div>
+          )}
+          {awning.fabricDiagramOverride === 'SUPLEMENTO' && (
+            <div className="awning-form-section awning-wide-field">
+              <SelectField label="Sujeción del suplemento" value={awning.supplementFastening} options={['BROCHES', 'VELCRO', 'OTRO']} placeholder="Sin indicar" allowEmpty emptyLabel="Sin indicar" onChange={(supplementFastening) => update({ supplementFastening, supplementFasteningOther: supplementFastening === 'OTRO' ? awning.supplementFasteningOther : '', supplementFasteningPitchCm: supplementFastening === 'BROCHES' ? awning.supplementFasteningPitchCm : null })} />
+              {awning.supplementFastening === 'OTRO' && <TextField label="Indicar sujeción" value={awning.supplementFasteningOther} onChange={(supplementFasteningOther) => update({ supplementFasteningOther })} />}
+              {awning.supplementFastening === 'BROCHES' && <NumberField label="Distancia entre broches (cm)" value={awning.supplementFasteningPitchCm} min={0} step={0.5} onChange={(supplementFasteningPitchCm) => update({ supplementFasteningPitchCm })} />}
+              <NumberField label="Solape sobre la onda (cm)" value={awning.supplementWaveOverlapCm} min={0} step={0.5} onChange={(supplementWaveOverlapCm) => update({ supplementWaveOverlapCm })} />
+              <SelectField label="Remate inferior" value={awning.supplementBottomFinish} options={['OLLAOS', 'CADENILLA', 'OTRO']} placeholder="Sin indicar" allowEmpty emptyLabel="Sin indicar" onChange={(supplementBottomFinish) => update({ supplementBottomFinish, supplementBottomFinishOther: supplementBottomFinish === 'OTRO' ? awning.supplementBottomFinishOther : '' })} />
+              {awning.supplementBottomFinish === 'OTRO' && <TextField label="Indicar remate" value={awning.supplementBottomFinishOther} onChange={(supplementBottomFinishOther) => update({ supplementBottomFinishOther })} />}
+              <NumberField label="Bastilla de unión (cm)" value={awning.supplementJoinHemCm} min={0} step={0.5} onChange={(supplementJoinHemCm) => update({ supplementJoinHemCm })} />
+              <NumberField label="Bastilla lateral (cm)" value={awning.supplementSideHemCm} min={0} step={0.5} onChange={(supplementSideHemCm) => update({ supplementSideHemCm })} />
+              <NumberField label="Bastilla inferior (cm)" value={awning.supplementBottomHemCm} min={0} step={0.5} onChange={(supplementBottomHemCm) => update({ supplementBottomHemCm })} />
             </div>
           )}
           {(fields.arzua || fields.galicia) && (
@@ -630,6 +645,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.motorLocation && <SelectField label="Posición motor" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
+              {isFullAntica && fields.crankHeight && <SelectField label="Color manivela" value={awning.anticaCrankColor || 'AUTOMÁTICO'} options={['AUTOMÁTICO', 'BLANCA', 'NEGRA']} onChange={(v) => update({ anticaCrankColor: v as Awning['anticaCrankColor'] })} />}
               {fields.crankHeight && <SelectField label="Altura manivela" value={awning.crankHeight === null ? '' : String(awning.crankHeight)} options={formOptions.alturasManivela.map(String)} placeholder="Elegir…" onChange={(v) => update({ crankHeight: v === '' ? null : Number(v) })} />}
             </div>
           )}
@@ -743,7 +759,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
               </>}
               {simpleFabricJob && <>
                 <NumberField label="Ajuste de frente (cm)" value={awning.fabricJobWidthAdjustmentCm} step={0.1} onChange={(fabricJobWidthAdjustmentCm) => update({ fabricJobWidthAdjustmentCm })} />
-                <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />
+                {!standaloneValance && <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />}
                 {hasValance && <NumberField label="Remate de bamba (cm)" value={awning.fabricJobValanceExtraCm} min={0} step={0.5} onChange={(fabricJobValanceExtraCm) => update({ fabricJobValanceExtraCm })} />}
               </>}
               {(fields.arzua || fields.galicia) && <>

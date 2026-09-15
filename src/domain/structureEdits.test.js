@@ -51,7 +51,8 @@ test('Antica admite cuatro brazos y permite reservar brazos y manivela de otro c
   const order = fixture(); order.awnings[0].structureArmCount = 4;
   const pending = calculateOrder(order);
   expect(pending.ofs[0].calculation.armCount).toBe(4);
-  expect(pending.diagnostics.some((item) => item.message.includes('referencia de RPS'))).toBe(true);
+  expect(pending.ofs[0].calculation.valid).toBe(true);
+  expect(pending.diagnostics.some((item) => item.message.includes('fabricación TGM'))).toBe(true);
   const calc = edit(order, (rows) => {
     Object.assign(rows.find((row) => row.name === 'BRAZO ANTICA'), { reference: 'BRAZO-RPS', reservationQuantity: 4 });
     Object.assign(rows.find((row) => row.name.startsWith('MANIVELA')), { reference: 'MANIVELA-NEGRA', name: 'MANIVELA NEGRA', reservationQuantity: 1 });
@@ -99,4 +100,21 @@ test('conserva cantidades compartidas, anclajes y agregación max', () => {
   const edited = applyStructureEdit({ ...awning, structureEdit: { signature: base.structureEditor.signature, rows } }, result);
   expect(edited.materials.find((row) => row.code === 'KIT').quantity).toBe(2);
   expect(edited.materials.find((row) => row.code === 'MANDO').aggregation).toBe('max');
+});
+
+
+test('mantiene el consumo individual cuando brazo y contrapeso usan la misma pletina', () => {
+  const awning = { id: 'a', model: 'ANTICA', units: 1 };
+  const result = {
+    calculation: { valid: true }, materials: [{ code: 'PLEAC30MM10', quantity: 0.7 }],
+    despiece: { rows: [
+      { num: 7, name: 'BRAZO ANTICA', reference: 'PLEAC30MM10', units: 2, length: 60, reservationQuantity: 0.2, unitCode: 'BARRA' },
+      { num: 12, name: 'CONTRAPESO', reference: 'PLEAC30MM10', units: 1, length: 300, reservationQuantity: 0.5, unitCode: 'BARRA' }
+    ], anchoring: null }
+  };
+  const base = applyStructureEdit(awning, result);
+  expect(base.structureEditor.rows.map(row => row.reservationQuantity)).toEqual([0.2, 0.5]);
+  expect(base.structureEditor.rows.every(row => row.unitCode === 'BARRA')).toBe(true);
+  const edited = applyStructureEdit({ ...awning, structureEdit: { signature: base.structureEditor.signature, rows: base.structureEditor.rows.slice(1) } }, result);
+  expect(edited.materials).toContainEqual(expect.objectContaining({ code: 'PLEAC30MM10', quantity: 0.5 }));
 });

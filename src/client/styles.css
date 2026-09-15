@@ -5013,3 +5013,23 @@ textarea,
 .fabric-image-editor button { border: 1px solid #b9ccc8; border-radius: 7px; padding: 8px 12px; background: #fff; color: #173b35; font: inherit; font-weight: 600; cursor: pointer; }
 .fabric-image-editor button:hover { background: #edf5f2; }
 .fabric-image-editor button:disabled { opacity: .55; cursor: wait; }
+
+/* Aviso junto a un campo: informa sin bloquear, así que no usa el rojo de error. */
+.field-hint-warn {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--warn);
+}
+
+/* Consulta de reglas: tablas legibles dentro de la página de parámetros existente. */
+.rule-reference-content { min-width: 0; display: grid; gap: 12px; }
+.rule-reference-content > p { margin: 0; font-size: 12px; line-height: 1.6; }
+.rule-reference-table th, .rule-reference-table td { padding: 9px 10px; text-align: left; font-size: 12px; white-space: normal; }
+.rule-reference-table tbody th { font-weight: 600; color: var(--text); }
+.rule-reference-toggle { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+.rule-reference-toggle input { width: 16px; height: 16px; accent-color: #b5820c; }
+.rule-reference-result { display: block; padding: 14px 16px; border: 1px solid #e1c674; border-radius: 6px; background: #fff7df; color: #173c41; font-size: 20px; font-weight: 700; }
+.rule-reference-result small { display: block; margin-top: 5px; font-size: 12px; font-weight: 400; }
+.rule-reference-warning { padding: 12px; border-left: 3px solid #c99211; background: #fff7df; }
