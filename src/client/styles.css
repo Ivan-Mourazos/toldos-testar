@@ -5033,3 +5033,26 @@ textarea,
 .rule-reference-result { display: block; padding: 14px 16px; border: 1px solid #e1c674; border-radius: 6px; background: #fff7df; color: #173c41; font-size: 20px; font-weight: 700; }
 .rule-reference-result small { display: block; margin-top: 5px; font-size: 12px; font-weight: 400; }
 .rule-reference-warning { padding: 12px; border-left: 3px solid #c99211; background: #fff7df; }
+/* Preserve the document and page when expanding the review viewer. */
+dialog.review-inline-preview { position: relative; inset: auto; width: 100%; max-width: none; max-height: none; padding: 0; color: inherit; }
+.review-preview-actions { flex-wrap: wrap; justify-content: flex-end; }
+.review-preview-actions button[hidden] { display: none; }
+.review-preview-actions kbd { font: inherit; opacity: .65; }
+.review-inline-preview .pdf-carousel-stage { height: clamp(420px, 68vh, 800px); padding: 12px 48px; }
+dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; border: 0; border-radius: 0; display: flex; flex-direction: column; }
+.review-inline-preview:modal > header,
+.review-inline-preview:modal .generated-preview-selector,
+.review-inline-preview:modal .pdf-carousel-footer { flex-shrink: 0; }
+.review-inline-preview:modal .pdf-carousel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.review-inline-preview:modal .pdf-carousel-stage,
+.review-inline-preview:modal .reservation-preview,
+.review-inline-preview:modal .review-preview-placeholder { flex: 1; min-height: 0; height: auto; }
+.review-inline-preview:modal .pdf-carousel-page { width: 100%; height: 100%; background: transparent; box-shadow: none; }
+.review-inline-preview:modal .reservation-preview { padding: 12px; }
+.review-inline-preview:modal .reservation-preview-sheet { max-width: 1400px; }
+.review-inline-preview:modal .reservation-preview table { font-size: 13px; }
+@media (max-width: 640px) {
+  .review-inline-preview > header { flex-wrap: wrap; }
+  .review-inline-preview .review-preview-actions { width: 100%; justify-content: flex-end; }
+  .review-inline-preview .pdf-carousel-stage { padding: 8px 40px; }
+}
