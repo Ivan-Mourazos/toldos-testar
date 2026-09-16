@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Eye, RefreshCw } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Eye, Maximize2, RefreshCw, X } from 'lucide-react';
 import type { ReviewPackage, RuleParameters } from '../types';
 import { PdfPreviewCarousel } from './PdfPreviewCarousel';
 
@@ -191,18 +191,53 @@ function PreviewShell({ title, subtitle, refreshing, retry = false, onRefresh, c
   onRefresh: () => void;
   children: React.ReactNode;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const expandRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!expanded) {
+      dialog.open = true;
+      return;
+    }
+    const previousOverflow = document.body.style.overflow;
+    const expandButton = expandRef.current;
+    dialog.open = false;
+    dialog.showModal();
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+    return () => {
+      dialog.close();
+      dialog.open = true;
+      document.body.style.overflow = previousOverflow;
+      expandButton?.focus({ preventScroll: true });
+    };
+  }, [expanded]);
+
   return (
-    <section className="review-inline-preview" aria-label={title} aria-busy={refreshing}>
+    <dialog ref={dialogRef} className="review-inline-preview" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
+      onCancel={(event) => { event.preventDefault(); setExpanded(false); }}>
       <header>
         <div>
           <span className="review-preview-icon"><Eye aria-hidden="true" /></span>
           <div><strong>{title}</strong><small>{subtitle}</small></div>
         </div>
+        <div className="review-preview-actions">
         <button className="ghost-button" type="button" disabled={refreshing} onClick={onRefresh}>
           <RefreshCw aria-hidden="true" />{retry ? 'Reintentar' : 'Actualizar'}
         </button>
+        <button ref={expandRef} className="ghost-button" type="button" hidden={expanded} onClick={() => setExpanded(true)}>
+          <Maximize2 aria-hidden="true" />Pantalla completa
+        </button>
+        <button ref={closeRef} className="ghost-button" type="button" hidden={!expanded} onClick={() => setExpanded(false)} aria-label="Cerrar pantalla completa">
+          <X aria-hidden="true" />Cerrar <kbd>Esc</kbd>
+        </button>
+        </div>
       </header>
       {children}
-    </section>
+    </dialog>
   );
 }
