@@ -375,6 +375,17 @@ export type FabricJobParameters = {
   seamBaseCm: number;
 };
 
+export type DrawingConditionField = 'device' | 'placement' | 'submodel' | 'machineSide' | 'supportSystem' | 'tubeLoad' | 'hasValance' | 'valanceCurve' | 'curtainHasWindow' | 'curtainFinish' | 'curtainSupport' | 'electraSupport' | 'irisGuideType' | 'irisGuideFixing' | 'irisWindBlock' | 'anticaVariant' | 'anticaMeasurementMode' | 'fabricDiagramOverride';
+export type DrawingCondition = { field: DrawingConditionField; value: string };
+export type DrawingVariant = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  image: string | null;
+  conditions: DrawingCondition[];
+};
+export type DrawingParameters = { byModel: Record<string, DrawingVariant[]> };
+
 export type RuleParameters = {
   arzuaPro: ArzuaProParameters;
   galicia: GaliciaParameters;
@@ -392,6 +403,7 @@ export type RuleParameters = {
   ambarBox: AmbarBoxParameters;
   agataBox: AgataBoxParameters;
   fabricJobs: FabricJobParameters;
+  drawings: DrawingParameters;
 };
 
 export type StructureRow = {

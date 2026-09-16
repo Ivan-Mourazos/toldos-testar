@@ -20,6 +20,7 @@ import { defaultElectraParameters, normalizeElectraParameters } from '../../doma
 import { defaultAmbarBoxParameters, normalizeAmbarBoxParameters } from '../../domain/ambarBoxParameters.js';
 import { defaultAgataBoxParameters, normalizeAgataBoxParameters } from '../../domain/agataBoxParameters.js';
 import { defaultFabricJobParameters, normalizeFabricJobParameters } from '../../domain/fabricJobParameters.js';
+import { defaultDrawingParameters, normalizeDrawingParameters } from '../../domain/drawingParameters.js';
 
 const parametersStorageKey = 'toldos-testar-parameters-v2';
 
@@ -42,7 +43,8 @@ function initialParameters(): RuleParameters {
       electra: normalizeElectraParameters(saved?.electra || defaultElectraParameters),
       ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox || defaultAmbarBoxParameters),
       agataBox: normalizeAgataBoxParameters(saved?.agataBox || defaultAgataBoxParameters),
-      fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs || defaultFabricJobParameters)
+      fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs || defaultFabricJobParameters),
+      drawings: normalizeDrawingParameters(saved?.drawings || defaultDrawingParameters)
     } as RuleParameters;
   } catch {
     return {
@@ -61,7 +63,8 @@ function initialParameters(): RuleParameters {
       electra: structuredClone(defaultElectraParameters),
       ambarBox: structuredClone(defaultAmbarBoxParameters),
       agataBox: structuredClone(defaultAgataBoxParameters),
-      fabricJobs: structuredClone(defaultFabricJobParameters)
+      fabricJobs: structuredClone(defaultFabricJobParameters),
+      drawings: structuredClone(defaultDrawingParameters)
     } as RuleParameters;
   }
 }
@@ -249,6 +252,10 @@ export function useParameters() {
     setParameters((current) => ({ ...current, fabricJobs: structuredClone(defaultFabricJobParameters) }) as RuleParameters);
   }
 
+  function updateDrawings(drawings: RuleParameters['drawings']) {
+    setParameters((current) => ({ ...current, drawings }) as RuleParameters);
+  }
+
   function loadParameters(saved: RuleParameters) {
     setParameters({
       arzuaPro: normalizeArzuaProParameters(saved?.arzuaPro),
@@ -266,7 +273,8 @@ export function useParameters() {
       electra: normalizeElectraParameters(saved?.electra),
       ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox),
       agataBox: normalizeAgataBoxParameters(saved?.agataBox),
-      fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs)
+      fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs),
+      drawings: normalizeDrawingParameters(saved?.drawings)
     } as RuleParameters);
   }
 
@@ -288,6 +296,7 @@ export function useParameters() {
     updateAmbarBox, resetAmbarBox,
     updateAgataBox, resetAgataBox,
     updateFabricJobs, resetFabricJobs,
+    updateDrawings,
     loadParameters
   };
 }

@@ -441,6 +441,7 @@ export default function App() {
               onResetAgataBox={ruleSettings.resetAgataBox}
               onUpdateFabricJobs={ruleSettings.updateFabricJobs}
               onResetFabricJobs={ruleSettings.resetFabricJobs}
+              onUpdateDrawings={ruleSettings.updateDrawings}
             />
           )}
 

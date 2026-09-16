@@ -6,6 +6,7 @@ import { SelectField } from '../components/SelectField';
 import { controlLabel, legacyModelName } from '../components/controlLabels';
 import { AnticaRuleReference, HeraRuleReference, IrisRuleReference, CambioAnticaRuleReference } from './RuleReferencePanels';
 import { arzuaProManualSpec } from '../../domain/arzuaProConstants.js';
+import { DrawingParametersPanel } from '../components/DrawingParametersPanel';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
 const devices: Device[] = ['MOTOR', 'MAQ. INTERIOR', 'MAQ. EXTERIOR'];
@@ -52,147 +53,154 @@ type Props = {
   onResetAgataBox: () => void;
   onUpdateFabricJobs: (patch: Partial<FabricJobParameters>) => void;
   onResetFabricJobs: () => void;
+  onUpdateDrawings: (drawings: RuleParameters['drawings']) => void;
 };
 
-export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateElectra, onResetElectra, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs }: Props) {
+export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateElectra, onResetElectra, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs, onUpdateDrawings }: Props) {
   const [selectedModel, setSelectedModel] = useState<SelectedModel>('ARZUA PRO');
   const isGalicia = selectedModel === 'GALICIA';
   const isBox = selectedModel === 'CORAL BOX' || selectedModel === 'PERLA BOX' || selectedModel === 'CUARZO BOX';
+  const clearSelectedDrawings = () => {
+    const byModel = { ...parameters.drawings.byModel };
+    delete byModel[selectedModel];
+    onUpdateDrawings({ byModel });
+  };
+  const withDrawings = (content: React.ReactNode) => <>{content}<DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} /></>;
 
   if (selectedModel === 'HERA' || selectedModel === 'ANTICA' || selectedModel === 'IRIS') {
-    return <OrderConfiguredModelView selectedModel={selectedModel} onSelectModel={setSelectedModel} />;
+    return withDrawings(<OrderConfiguredModelView selectedModel={selectedModel} onSelectModel={setSelectedModel} />);
   }
 
   if (selectedModel === 'XACOBEO') {
-    return <XacobeoParametersView
+    return withDrawings(<XacobeoParametersView
       parameters={parameters.xacobeo}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateXacobeo}
       onReset={onResetXacobeo}
-    />;
+    />);
   }
 
   if (selectedModel === 'PUNTO RECTO') {
-    return <PuntoRectoParametersView
+    return withDrawings(<PuntoRectoParametersView
       parameters={parameters.puntoRecto}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdatePuntoRecto}
       onReset={onResetPuntoRecto}
-    />;
+    />);
   }
 
   if (selectedModel === 'MONOBLOCK 350') {
-    return <Monoblock350ParametersView
+    return withDrawings(<Monoblock350ParametersView
       parameters={parameters.monoblock350}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateMonoblock350}
       onReset={onResetMonoblock350}
-    />;
+    />);
   }
 
   if (selectedModel === 'MAXISCREEM') {
-    return <MaxiscreemParametersView
+    return withDrawings(<MaxiscreemParametersView
       parameters={parameters.maxiscreem}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateMaxiscreem}
       onReset={onResetMaxiscreem}
-    />;
+    />);
   }
 
   if (selectedModel === 'ELECTRA') {
-    return <ElectraParametersView
+    return withDrawings(<ElectraParametersView
       parameters={parameters.electra}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateElectra}
       onReset={onResetElectra}
-    />;
+    />);
   }
 
   if (selectedModel === 'AMBAR BOX') {
-    return <AmbarBoxParametersView
+    return withDrawings(<AmbarBoxParametersView
       parameters={parameters.ambarBox}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateAmbarBox}
       onReset={onResetAmbarBox}
-    />;
+    />);
   }
 
   if (selectedModel === 'AGATA BOX') {
-    return <AgataBoxParametersView
+    return withDrawings(<AgataBoxParametersView
       parameters={parameters.agataBox}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateAgataBox}
       onReset={onResetAgataBox}
-    />;
+    />);
   }
 
   if (selectedModel === 'CORTINA') {
-    return <CortinaParametersView
+    return withDrawings(<CortinaParametersView
       parameters={parameters.cortina}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateCortina}
       onReset={onResetCortina}
-    />;
+    />);
   }
 
   if (selectedModel === 'SELENA') {
-    return <CortinaParametersView
+    return withDrawings(<CortinaParametersView
       parameters={parameters.selena}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateSelena}
       onReset={onResetSelena}
-    />;
+    />);
   }
 
   if (selectedModel === 'CAMBIO CORTINA') {
-    return <CambioCortinaParametersView
+    return withDrawings(<CambioCortinaParametersView
       parameters={parameters.cambioCortina}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateCambioCortina}
       onReset={onResetCambioCortina}
-    />;
+    />);
   }
 
   if (fabricParameterModels.has(selectedModel as FabricJobModel)) {
-    return <FabricJobsParametersView
+    return withDrawings(<FabricJobsParametersView
       parameters={parameters.fabricJobs}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateFabricJobs}
       onReset={onResetFabricJobs}
-    />;
+    />);
   }
 
   if (isBox) {
     const isPerla = selectedModel === 'PERLA BOX';
     const isCuarzo = selectedModel === 'CUARZO BOX';
-    return <BoxParametersView
+    return withDrawings(<BoxParametersView
       parameters={isPerla ? parameters.perlaBox : isCuarzo ? parameters.cuarzoBox : parameters.coralBox}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={isPerla ? onUpdatePerlaBox : isCuarzo ? onUpdateCuarzoBox : onUpdateCoralBox}
       onReset={isPerla ? onResetPerlaBox : isCuarzo ? onResetCuarzoBox : onResetCoralBox}
-    />;
+    />);
   }
 
   if (selectedModel === 'ARZUA PRO') {
-    return <ArzuaParametersView
+    return withDrawings(<ArzuaParametersView
       parameters={parameters.arzuaPro}
       selectedModel={selectedModel}
       onSelectModel={setSelectedModel}
       onUpdate={onUpdateArzua}
       onReset={onResetArzua}
-    />;
+    />);
   }
 
   const current = isGalicia ? parameters.galicia : parameters.arzuaPro;
@@ -304,6 +312,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
       </div>
 
       <aside className="rps-evidence"><strong>Contraste real</strong><span>{isGalicia ? '49 estructuras Galicia de 2026 revisadas: 43 casos estándar coinciden en medidas y 6 quedan como excepción técnica por superar 700 cm.' : '891 ARZUA revisados: 726 máquina, 165 motor, 395 EVO 80 y 406 UNIVERS 280.'}</span></aside>
+      <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />
     </section>
   );
 }

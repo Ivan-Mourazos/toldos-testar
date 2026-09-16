@@ -8,6 +8,7 @@ import { resolveFabric } from './fabricCatalog.js';
 import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
+import { resolveConfiguredDrawing } from './drawingParameters.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
 
@@ -103,7 +104,11 @@ export function buildPlanteamientoPlan(order, calculation) {
     !isFabricOnlyModel(awning.model) && !isHeraAwning(awning)
   ));
   const grouped = new Map();
-  entries.forEach((entry) => {
+  entries.forEach((originalEntry) => {
+    const configuredDrawing = resolveConfiguredDrawing(originalEntry.awning, order.parameters?.drawings);
+    const entry = configuredDrawing
+      ? { ...originalEntry, awning: { ...originalEntry.awning, fabricImage: configuredDrawing.image } }
+      : originalEntry;
     const cadDiagram = isHeraAwning(entry.awning) ? 'HERA' : getAwningDiagram(entry.awning);
     const diagram = getFabricPatternDiagram(entry.awning, cadDiagram);
     const groupKey = JSON.stringify([
