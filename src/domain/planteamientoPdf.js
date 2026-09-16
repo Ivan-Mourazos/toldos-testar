@@ -36,7 +36,7 @@ const fonts = hasEmbeddedFonts
   ? { regular: 'ToldosRegular', semibold: 'ToldosSemibold', bold: 'ToldosBold', italic: 'ToldosItalic' }
   : { regular: 'Helvetica', semibold: 'Helvetica-Bold', bold: 'Helvetica-Bold', italic: 'Helvetica-Oblique' };
 
-export async function buildOrderPlanteamientoPdf({ order, calculation }) {
+export async function buildOrderPlanteamientoPdf({ order, calculation, review = null }) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     const doc = new PDFDocument({
@@ -77,6 +77,19 @@ export async function buildOrderPlanteamientoPdf({ order, calculation }) {
         drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
       }
     });
+
+    // Tras producir el pedido, este mismo documento se guarda también en la
+    // carpeta anual. El adjunto mantiene la revisión reabrible desde la web.
+    if (review) {
+      const code = String(review.orderCode || order.orderCode || 'PEDIDO')
+        .replace(/[^A-Z0-9_-]+/gi, '') || 'PEDIDO';
+      doc.file(Buffer.from(`${JSON.stringify(review, null, 2)}\n`, 'utf8'), {
+        name: `${code}.toldos.json`,
+        type: 'application/json',
+        relationship: 'Data',
+        description: 'Datos editables del pedido para toldos-testar'
+      });
+    }
 
     doc.end();
   });
@@ -239,13 +252,12 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
   drawCell(doc, valueX + 92, 12, orderX - valueX - 92, 20, 'Nº PEDIDO:', { bold: true, size: 7, align: 'right', fill: colors.paper });
   drawCell(doc, orderX, 12, orderW, 20, value(order.orderCode), { bold: true, size: 13, align: 'center', fill: colors.yellow });
 
-  drawCell(doc, bodyX, 32, 64, 12, 'CLIENTE:', { italic: true, size: 6.5 });
-  drawCell(doc, valueX, 32, orderX - valueX, 12, value(order.customer), { semibold: true, size: 6.5 });
-  drawCell(doc, orderX, 32, 58, 24, 'OF', { bold: true, size: 11, align: 'center' });
-  drawCell(doc, orderX + 58, 32, orderW - 58, 24, value(awning.of), { bold: true, size: 7.5, align: 'center' });
-  drawAuthorReviewerRow(doc, bodyX, 44, orderX - bodyX, 12, order, 64, 6.5);
-  drawCell(doc, bodyX, 56, 64, 11, 'FECHA:', { italic: true, size: 6.2 });
-  drawCell(doc, valueX, 56, orderX - valueX, 11, formatDate(order.orderDate), { semibold: true, size: 6.2, align: 'right' });
+  const detailW = pageW - margin - bodyX;
+  drawCell(doc, bodyX, 32, 64, 12, 'CLIENTE:', { italic: true, size: 7.2 });
+  drawCell(doc, valueX, 32, pageW - margin - valueX, 12, value(order.customer), { semibold: true, size: 7.2 });
+  drawAuthorReviewerRow(doc, bodyX, 44, detailW, 12, order, 64, 7.2);
+  drawCell(doc, bodyX, 56, 64, 11, 'FECHA:', { italic: true, size: 7 });
+  drawCell(doc, valueX, 56, pageW - margin - valueX, 11, formatDate(order.orderDate), { semibold: true, size: 7 });
 
   doc.rect(bodyX, 67, bodyW, 13).fill(colors.ink);
   doc.fillColor(colors.paper).font(fonts.bold).fontSize(9)
@@ -283,7 +295,7 @@ function drawDespieceTable(doc, x, y, w, rows) {
 
   let cellX = tableX;
   labels.forEach((label, columnIndex) => {
-    drawCell(doc, cellX, y, columns[columnIndex], headerH, label, { fill: colors.inkSoft, color: colors.paper, bold: true, size: 6.5, align: 'center' });
+    drawCell(doc, cellX, y, columns[columnIndex], headerH, label, { fill: colors.inkSoft, color: colors.paper, bold: true, size: 7.2, align: 'center' });
     cellX += columns[columnIndex];
   });
 
@@ -296,7 +308,7 @@ function drawDespieceTable(doc, x, y, w, rows) {
     values.forEach((cellValue, columnIndex) => {
       drawCell(doc, cellX, rowY, columns[columnIndex], rowH, cellValue, {
         fill,
-        size: columnIndex === 1 ? 5.8 : 5.6,
+        size: columnIndex === 1 ? 6.6 : 6.3,
         align: columnIndex === 1 ? 'center' : columnIndex === 0 || columnIndex > 2 ? 'center' : 'left',
         bold: columnIndex === 1 && /TUBO|BRAZO|MOTOR|MAQUINA/.test(String(cellValue).toUpperCase())
       });
@@ -419,6 +431,11 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   const margin = 24;
   const lines = entries.map(toFabricLine);
   drawFabricHeader(doc, { order, margin, pageW });
+  if (diagram === 'GENERAL' && !diagramAwning?.fabricImage) {
+    drawLegacyGeneralFabricBody(doc, { order, lines, diagramAwning, fabricTotals, margin, pageW, pageH });
+    drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
+    return;
+  }
   const diagramW = 218;
   drawAwningDiagram(doc, margin, 126, diagramW, 350, diagram, diagramAwning, diagramCalculation);
 
@@ -429,6 +446,86 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   drawFabricTotals(doc, contentX, 515, contentW, fabricTotals, lines);
   drawStructureNotes(doc, margin, 488, diagramW, pageH - 48, order.notes);
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
+}
+
+// El patrón general recupera la lectura del Excel histórico: cajas rectas,
+// pocos rellenos, cotas arriba y el total de metros lineales grande al pie.
+// Los patrones técnicos específicos continúan usando sus composiciones propias.
+function drawLegacyGeneralFabricBody(doc, { order, lines, diagramAwning, fabricTotals, margin, pageW, pageH }) {
+  const outerY = 114;
+  const outerBottom = pageH - 32;
+  doc.rect(margin, outerY, pageW - margin * 2, outerBottom - outerY)
+    .fillAndStroke(colors.paper, '#202020');
+
+  const diagramX = margin + 12;
+  const diagramW = 242;
+  drawCell(doc, diagramX, 123, 206, 21, 'GENERAL', {
+    bold: true, size: 10, align: 'center', fill: colors.paper
+  });
+  drawGeneralDiagram(doc, diagramX, 149, diagramW, 332, { title: '', legacy: true }, diagramAwning);
+  if (String(order.notes || '').trim()) {
+    drawStructureNotes(doc, diagramX, 488, diagramW, outerBottom - 10, order.notes);
+  }
+
+  const contentX = margin + 270;
+  const contentW = pageW - margin - 12 - contentX;
+  const gap = 14;
+  const rotW = 188;
+  drawMiniTable(doc, contentX + 64, 123, rotW, 'ROTULACIÓN', [
+    ['TELA', summarizeAwningValue(lines, 'rotFabric', order.rotTela)],
+    ['BAMBA', summarizeAwningValue(lines, 'rotValance', order.rotBamba)]
+  ], 17, { preserveBlank: true, neutral: true });
+  drawMiniTable(doc, contentX + 64 + rotW + gap, 123, contentW - 64 - rotW - gap, 'DATOS BÁSICOS', [
+    ['MATERIAL', summarizeFabricMaterial(lines)],
+    ['CURVA', summarizeValanceCurve(lines)],
+    ['REMATE', summarizeRemate(lines, order)]
+  ], 17, { preserveBlank: true, neutral: true });
+
+  const rowY = 217;
+  const rowH = 62;
+  const rowGap = 9;
+  const letterW = 54;
+  const showOfInRows = distinctOrderOfs(order).length > 1;
+  lines.forEach((line, localIndex) => {
+    const y = rowY + localIndex * (rowH + rowGap);
+    const detail = buildFabricLineDetail(line.awning, line.calc, order);
+    drawCell(doc, contentX, y, letterW, rowH, awningLetter(line.index), {
+      bold: true, size: 18, align: 'center', fill: colors.yellow
+    });
+
+    const metricsX = contentX + letterW + 10;
+    const available = contentW - letterW - 10;
+    const unitsW = 66;
+    const metricGap = 13;
+    const metricW = (available - unitsW - metricGap * 2) / 2;
+    drawFabricMetric(doc, metricsX, y, metricW, 'TELA', detail.fabricWidth, 29, { neutral: true });
+    drawFabricMetric(doc, metricsX + metricW + metricGap, y, metricW, isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 29, { neutral: true });
+    drawFabricMetric(doc, metricsX + metricW * 2 + metricGap * 2, y, unitsW, 'UN.', detail.units, 29, { neutral: true });
+    drawCell(doc, metricsX, y + 29, metricW, 29, detail.workLabel, {
+      size: 9.5, align: 'center', fill: colors.paper
+    });
+    const instruction = [showOfInRows ? `OF ${value(line.awning.of)}` : '', detail.instruction]
+      .filter(Boolean).join(' · ');
+    drawFittedText(doc, instruction, metricsX + metricW + 12, y + 36, available - metricW - 12, 20, {
+      font: fonts.semibold, maxSize: 7.5, minSize: 5.8, align: 'center'
+    });
+  });
+
+  const pageCodes = new Set(lines.flatMap(({ calc }) => [calc?.fabricCode, calc?.valanceFabricCode]).filter(Boolean));
+  const visibleTotals = fabricTotals.filter(({ code }) => pageCodes.has(code));
+  const totals = visibleTotals.length > 0 ? visibleTotals : fabricTotals;
+  const totalY = outerBottom - 51;
+  const labelW = 250;
+  doc.rect(contentX, totalY, labelW, 42).fillAndStroke(colors.paper, '#202020');
+  drawFittedText(doc, totals.map(({ code }) => code).join(' · ') || 'TELA SIN DEFINIR', contentX + 8, totalY + 6, labelW - 16, 13, {
+    font: fonts.semibold, maxSize: 8.5, minSize: 6.5, align: 'center', color: '#202020'
+  });
+  doc.fillColor('#202020').font(fonts.bold).fontSize(9)
+    .text('PAÑO TOTAL NECESARIO', contentX + 8, totalY + 23, { width: labelW - 16, align: 'center' });
+  drawCell(doc, contentX + labelW, totalY, contentW - labelW, 42,
+    `${totals.map(({ amount }) => formatFabricMeasure(amount)).join(' + ') || '0'} ML`, {
+      bold: true, size: 17, align: 'right', fill: '#dedede'
+    });
 }
 
 function drawHeraFabricPage(doc, { order, entries }) {
@@ -476,7 +573,7 @@ function drawHeraLegacyBlock(doc, x, y, w, _h, { order, detail, letter, fabricIm
   ];
   const overflowNotes = [];
   for (const row of rows) {
-    doc.font(fonts.semibold).fontSize(7.2);
+    doc.font(fonts.semibold).fontSize(8);
     if (['MATERIAL', 'ACLARACIONES', 'OBS. TELA'].includes(row[0]) && (doc.widthOfString(row[1]) > valueW - 6 || /[\r\n]/.test(row[1]))) {
       overflowNotes.push(row[0] + ': ' + row[1]);
       row[1] = 'VER NOTAS COMPLETAS';
@@ -497,7 +594,7 @@ function drawHeraLegacyBlock(doc, x, y, w, _h, { order, detail, letter, fabricIm
     color: colors.paper
   });
   drawCell(doc, x, y + titleH, sectionW + labelW, orderH, 'Nº DE PEDIDO', {
-    bold: true, size: 7.2, align: 'center', fill: colors.soft
+    bold: true, size: 8, align: 'center', fill: colors.soft
   });
   drawCell(doc, valueX, y + titleH, valueW, orderH, value(order.orderCode), {
     bold: true, size: 9.5, align: 'center', fill: '#fff5ce'
@@ -505,29 +602,29 @@ function drawHeraLegacyBlock(doc, x, y, w, _h, { order, detail, letter, fabricIm
 
   const givenY = y + titleH + orderH;
   drawCell(doc, x, givenY, sectionW, rowH * 3, 'DATOS DADOS\nEN PEDIDO', {
-    semibold: true, size: 7, align: 'center', fill: '#edf2f1'
+    semibold: true, size: 7.6, align: 'center', fill: '#edf2f1'
   });
   [
     ['FRENTE TOLDO', legacyHeraValue(detail.width)],
     ['SALIDA TOLDO', legacyHeraValue(detail.projection)],
     ['ALTURA TOLDO', detail.manual ? legacyHeraValue(detail.height) : '-']
   ].forEach(([label, rowValue], index) => {
-    drawCell(doc, x + sectionW, givenY + index * rowH, labelW, rowH, label, { size: 6.8 });
-    drawCell(doc, valueX, givenY + index * rowH, valueW, rowH, rowValue, { size: 7.3, align: 'center' });
+    drawCell(doc, x + sectionW, givenY + index * rowH, labelW, rowH, label, { size: 7.5 });
+    drawCell(doc, valueX, givenY + index * rowH, valueW, rowH, rowValue, { size: 8, align: 'center' });
   });
 
   const planY = givenY + rowH * 3 + gapH;
   drawCell(doc, x, planY, sectionW, rows.length * rowH, 'DATOS\nPLANTEAMIENTO', {
-    semibold: true, size: 7.2, align: 'center', fill: '#edf2f1'
+    semibold: true, size: 7.8, align: 'center', fill: '#edf2f1'
   });
   rows.forEach(([label, rowValue], index) => {
     const rowY = planY + index * rowH;
     const highlighted = ['TELA', 'SALIDA DE TELA', 'ARRIBA', 'ABAJO'].includes(label);
     drawCell(doc, x + sectionW, rowY, labelW, rowH, label, {
-      bold: true, size: 6.8, align: 'center', fill: colors.paper
+      bold: true, size: 7.5, align: 'center', fill: colors.paper
     });
     drawCell(doc, valueX, rowY, valueW, rowH, rowValue, {
-      semibold: true, size: 7.2, align: 'center', fill: highlighted ? '#c9dff1' : colors.paper
+      semibold: true, size: 8, align: 'center', fill: highlighted ? '#c9dff1' : colors.paper
     });
   });
 
@@ -575,26 +672,27 @@ function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE
   roundedBox(doc, margin, 18, logoW, 88, 4, colors.paper, colors.line);
   drawTgmMark(doc, margin, 18, logoW, 88);
 
-  drawCell(doc, bodyX, 18, orderX - bodyX, 18, 'PEDIDO', { size: 7, align: 'right' });
-  drawCell(doc, orderX, 18, orderW, 32, value(order.orderCode), { fill: colors.yellow, bold: true, size: 14, align: 'center' });
-  drawCell(doc, bodyX, 36, 76, 17, 'CLIENTE:', { italic: true, size: 7 });
-  drawCell(doc, bodyX + 76, 36, orderX - bodyX - 76, 17, value(order.customer), { semibold: true, size: 7 });
-  drawAuthorReviewerRow(doc, bodyX, 53, orderX - bodyX, 17, order, 76, 7);
-  drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 7 });
-  drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 7 });
+  drawCell(doc, bodyX, 18, orderX - bodyX, 18, 'PEDIDO', { size: 9, align: 'right' });
+  drawCell(doc, orderX, 18, orderW, 32, value(order.orderCode), { fill: colors.yellow, bold: true, size: 17, minSize: 11, fit: true, align: 'center' });
+  drawCell(doc, bodyX, 36, 76, 17, 'CLIENTE:', { italic: true, size: 8.5 });
+  drawCell(doc, bodyX + 76, 36, orderX - bodyX - 76, 17, value(order.customer), { semibold: true, size: 9.5, minSize: 7, fit: true });
+  drawAuthorReviewerRow(doc, bodyX, 53, orderX - bodyX, 17, order, 76, 9, { fit: true, minSize: 7 });
+  drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 8.5 });
+  drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 9, minSize: 7, fit: true });
   const orderOfs = distinctOrderOfs(order);
   const headerOfText = orderOfs.length === 1
     ? orderOfs[0]
     : orderOfs.length > 1 ? 'VER EN CADA TOLDO' : '';
   drawCell(doc, orderX, 50, 32, 37, headerOfText ? 'OF' : '', {
-    bold: true, size: 7, align: 'right', preserveBlank: true
+    bold: true, size: 9, align: 'right', preserveBlank: true
   });
   drawCell(doc, orderX + 32, 50, orderW - 32, 37, headerOfText, {
-    bold: true, size: 7, align: 'center', preserveBlank: true
+    bold: true, size: 10, minSize: 7, fit: true, align: 'center', preserveBlank: true
   });
   doc.rect(bodyX, 87, pageW - margin - bodyX, 19).fill(colors.ink);
-  doc.fillColor(colors.paper).font(fonts.bold).fontSize(11)
-    .text(title, bodyX + 4, 92, { width: pageW - margin - bodyX - 8, align: 'center' });
+  drawFittedText(doc, title, bodyX + 4, 90, pageW - margin - bodyX - 8, 16, {
+    font: fonts.bold, maxSize: 13, minSize: 10, align: 'center', color: colors.paper
+  });
 }
 
 function drawFabricMeta(doc, x, y, w, order, lines) {
@@ -1009,25 +1107,27 @@ function drawAmbarDiagram(doc, x, y, w, h) {
 }
 
 function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
-  const title = options.title || 'PATRÓN GENERAL';
+  const title = options.title === '' ? '' : options.title || 'PATRÓN GENERAL';
   const rollLabel = options.rollLabel || 'PARA ENROLLAR EN TUBO';
   const loadLabel = options.loadLabel || 'VARILLA BLANCA';
   const valance = buildValanceDiagramSpec(awning);
-  roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(9).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
+  if (!options.legacy) roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
+  if (title) doc.fillColor(colors.ink).font(fonts.bold).fontSize(10).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
   doc.moveTo(x + 25, y + 30).lineTo(x + w - 25, y + 30).strokeColor('#74a887').lineWidth(1).stroke();
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.5).text('FRENTE TELA', x + 55, y + 23, { width: w - 110, align: 'center' });
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.5).text('FRENTE TELA', x + 55, y + 21.5, { width: w - 110, align: 'center' });
 
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
     : 'SIN BAMBA';
-  doc.roundedRect(x + 38, y + 38, w - 76, 14, 4)
-    .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
-    .text(badge, x + 42, y + 42, { width: w - 84, align: 'center' });
+  if (!options.legacy) {
+    doc.roundedRect(x + 38, y + 38, w - 76, 14, 4)
+      .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
+    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6.2)
+      .text(badge, x + 42, y + 40.5, { width: w - 84, align: 'center' });
+  }
 
   const frameX = x + 38;
-  const frameY = y + 72;
+  const frameY = y + (options.legacy ? 52 : 72);
   const frameW = w - 76;
   const frameH = valance.hasValance ? 178 : 232;
   doc.rect(frameX, frameY, frameW, frameH).strokeColor('#9ebbb0').lineWidth(1).stroke();
@@ -1035,12 +1135,12 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   doc.moveTo(frameX, topFoldY).lineTo(frameX + 48, topFoldY)
     .moveTo(frameX + frameW - 48, topFoldY).lineTo(frameX + frameW, topFoldY)
     .strokeColor('#c5d5cf').lineWidth(0.7).stroke();
-  doc.fillColor('#4f8b68').fontSize(5.4)
+  doc.fillColor('#4f8b68').fontSize(6.4)
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
     .text(rollLabel, frameX, frameY + 12, { width: frameW, align: 'center' })
     .text('BASTILLA\nCOSIDA O SOLDADA', frameX + 12, frameY + 112, { width: 55, align: 'center' })
     .text('BASTILLA\nCOSIDA O SOLDADA', frameX + frameW - 67, frameY + 112, { width: 55, align: 'center' });
-  doc.fillColor('#4f8b68').fontSize(5.2).text('CAÍDA', frameX + frameW + 8, frameY + 78, { width: 30, align: 'center' });
+  doc.fillColor('#4f8b68').fontSize(6.2).text('CAÍDA', frameX + frameW + 8, frameY + 78, { width: 30, align: 'center' });
   drawFabricDimension(doc, frameX - 10, frameY, frameY + 14, '2,5', 'left');
   drawFabricDimension(doc, frameX + frameW + 10, frameY, topFoldY, '33,5', 'right');
   drawFabricDimension(doc, frameX - 10, frameY + frameH - 13, frameY + frameH, '3,3', 'left');
@@ -1615,30 +1715,30 @@ function drawDiagramShell(doc, x, y, w, h, title) {
 }
 
 function drawDiagramText(doc, text, x, y, w) {
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.5).text(text, x, y, { width: w, align: 'center' });
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.5).text(text, x, y, { width: w, align: 'center' });
 }
 
 function drawSideLabel(doc, text, x, y, w) {
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.2).text(text, x, y, { width: w, align: 'center' });
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.2).text(text, x, y, { width: w, align: 'center' });
 }
 
 function drawMiniTable(doc, x, y, w, title, rows, rowH = 13, options = {}) {
-  drawBar(doc, x, y, w, 13, title);
+  drawBar(doc, x, y, w, 13, title, options);
   rows.forEach(([label, rowValue], index) => {
     const rowY = y + 13 + index * rowH;
     const labelW = Math.min(70, w * 0.43);
-    drawCell(doc, x, rowY, labelW, rowH, label, { fill: colors.gray, bold: true, size: 6.2, align: 'center' });
+    drawCell(doc, x, rowY, labelW, rowH, label, { fill: options.neutral ? '#dedede' : colors.gray, bold: true, size: 7, align: 'center' });
     drawCell(doc, x + labelW, rowY, w - labelW, rowH, rowValue, {
-      semibold: true, size: 6.2, align: 'center', preserveBlank: options.preserveBlank
+      semibold: true, size: 7, align: 'center', preserveBlank: options.preserveBlank
     });
   });
 }
 
-function drawFabricMetric(doc, x, y, w, label, metricValue, h = 14) {
+function drawFabricMetric(doc, x, y, w, label, metricValue, h = 14, options = {}) {
   const labelW = Math.round(w * 0.48);
-  drawCell(doc, x, y, labelW, h, label, { fill: colors.gray, size: 6.3, align: 'center' });
+  drawCell(doc, x, y, labelW, h, label, { fill: options.neutral ? '#dedede' : colors.gray, size: 7.2, align: 'center' });
   drawCell(doc, x + labelW, y, w - labelW, h, metricValue, {
-    bold: true, size: h > 14 ? 10.5 : 9.5, align: 'center', preserveBlank: true
+    bold: true, size: h > 14 ? 11.5 : 10.5, align: 'center', preserveBlank: true
   });
 }
 
@@ -1686,25 +1786,32 @@ function fitTextWithOverflowLabel(doc, text, overflowLabel, width, height, size)
   return `${text.slice(0, low).trimEnd()}${suffix}`.trim();
 }
 
-function drawBar(doc, x, y, w, h, text) {
-  doc.rect(x, y, w, h).fillAndStroke(colors.gray, colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5)
-    .text(text, x + 3, y + 3.2, { width: w - 6, align: 'center', ellipsis: true });
+function drawBar(doc, x, y, w, h, text, options = {}) {
+  doc.rect(x, y, w, h).fillAndStroke(options.neutral ? '#dedede' : colors.gray, options.neutral ? '#202020' : colors.ink);
+  doc.fillColor(options.neutral ? '#202020' : colors.ink).font(fonts.bold).fontSize(7.2)
+    .text(text, x + 3, y + 2.4, { width: w - 6, align: 'center', ellipsis: true });
 }
 
-function drawAuthorReviewerRow(doc, x, y, w, h, order, labelW, size) {
+function drawAuthorReviewerRow(doc, x, y, w, h, order, labelW, size, options = {}) {
   const halfW = w / 2;
   drawCell(doc, x, y, labelW, h, 'TÉCNICO:', { italic: true, size });
-  drawCell(doc, x + labelW, y, halfW - labelW, h, value(order.technician), { semibold: true, size });
+  drawCell(doc, x + labelW, y, halfW - labelW, h, value(order.technician), { semibold: true, size, ...options });
   drawCell(doc, x + halfW, y, labelW, h, 'REVISOR:', { italic: true, size });
-  drawCell(doc, x + halfW + labelW, y, halfW - labelW, h, value(order.reviewer), { semibold: true, size });
+  drawCell(doc, x + halfW + labelW, y, halfW - labelW, h, value(order.reviewer), { semibold: true, size, ...options });
 }
 
 function drawCell(doc, x, y, w, h, text, options = {}) {
   doc.rect(x, y, w, h).fillAndStroke(options.fill || colors.paper, colors.line);
   const font = options.bold ? fonts.bold : options.semibold ? fonts.semibold : options.italic ? fonts.italic : fonts.regular;
-  const size = options.size || 7;
   const cellText = options.preserveBlank ? String(text ?? '').trim() : value(text);
+  let size = options.size || 7;
+  if (options.fit) {
+    const minSize = options.minSize || 5;
+    doc.font(font);
+    while (size > minSize && (doc.fontSize(size).widthOfString(cellText) > Math.max(0, w - 6) || doc.currentLineHeight() > h - 3)) {
+      size = Math.max(minSize, size - 0.25);
+    }
+  }
   doc.fillColor(options.color || colors.ink).font(font).fontSize(size)
     .text(cellText, x + 3, y + Math.max(2, (h - size) / 2 - 0.6), {
       width: Math.max(0, w - 6),

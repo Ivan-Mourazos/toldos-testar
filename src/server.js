@@ -430,12 +430,11 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     targets.push({
       type: 'pdf',
       filename: `${cleanOrder}-1.pdf`,
-      savedPath: path.join(pdfDirectory, `${cleanOrder}-1.pdf`),
-      build: () => buildOrderPlanteamientoPdf({ order, calculation })
+      savedPath: path.join(pdfDirectory, `${cleanOrder}-1.pdf`)
     });
 
     await Promise.all(targets.map(async (target) => {
-      target.contents = await target.build();
+      if (target.build) target.contents = await target.build();
       target.exists = await fileExists(target.savedPath);
     }));
     const existing = targets.filter((target) => target.exists).map((target) => target.filename);
@@ -444,20 +443,27 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       return;
     }
 
-    await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
-    const saved = [];
-    for (const target of targets) {
-      await writeFileAtomic(target.savedPath, target.contents);
-      saved.push({ type: target.type, of: target.of, filename: target.filename, savedPath: target.savedPath, overwritten: target.exists });
-    }
-
+    const saved = targets.map((target) => ({
+      type: target.type,
+      of: target.of,
+      filename: target.filename,
+      savedPath: target.savedPath,
+      overwritten: target.exists
+    }));
     const updated = markReviewFilesGenerated(review, {
       generatedBy: review.order?.technician || review.createdBy,
       files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath })),
       excludedNonAcrylicFabrics
     });
-    const reviewPdf = await buildOrderReviewPdf({ order: updated.order, calculation, review: updated });
-    await workflowStore.saveReview(updated, reviewPdf);
+    const pdfTarget = targets.find((target) => target.type === 'pdf');
+    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated });
+
+    await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
+    for (const target of targets) await writeFileAtomic(target.savedPath, target.contents);
+
+    // Se guarda exactamente el mismo PDF en ambos destinos; solo cambia el
+    // nombre: PEDIDO-1.pdf en Planteamientos y PEDIDO.pdf en la carpeta anual.
+    await workflowStore.saveReview(updated, pdfTarget.contents);
     res.json({ ok: true, review: updated, saved, excludedNonAcrylicFabrics });
   } catch (error) {
     if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
@@ -764,7 +770,7 @@ function buildPlanteamientoPath(orderCode) {
     throw new Error('No pude determinar el año desde el número de pedido.');
   }
 
-  return path.join(config.orderArchiveRoot, String(year), 'TOLDOS', `${cleanOrder}-1.pdf`);
+  return path.join(config.orderArchiveRoot, String(year), 'TOLDOS', `${cleanOrder}.pdf`);
 }
 
 function serveDistFolder() {

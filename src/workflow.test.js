@@ -7,6 +7,7 @@ import {
   createReviewPackage,
   createWorkflowStore,
   defaultWorkflowSettings,
+  extractReviewPackageFromPdf,
   markReviewApproved,
   markReviewFilesGenerated,
   isAbsolutePathTemplate,
@@ -18,6 +19,7 @@ import {
   workflowReadiness
 } from './workflow.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
+import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
 
 const temporaryDirectories = [];
 
@@ -27,6 +29,24 @@ afterEach(async () => {
 });
 
 describe('flujo de revisión y producción', () => {
+  it('puede reabrir desde la web el planteamiento definitivo guardado en la carpeta anual', async () => {
+    const awning = { id: 'a', of: '0230001', model: 'BAMBALINA', units: 1, width: 300, projection: 100 };
+    const order = { orderCode: 'AR2601234', awnings: [awning] };
+    const calculation = {
+      ofs: [{
+        of: awning.of,
+        awningId: awning.id,
+        awningIndex: 0,
+        calculation: { valid: true, fabricWidth: 300, fabricDrop: 100, fabricMl: 3, fabricPanels: 1 },
+        despiece: { rows: [], anchoring: null }
+      }]
+    };
+    const review = { kind: 'toldos-testar-review', orderCode: order.orderCode, status: 'PRODUCED', order, production: { files: [] } };
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, review });
+
+    await expect(extractReviewPackageFromPdf(pdf)).resolves.toEqual(review);
+  });
+
   it('resuelve el año del pedido en las tres rutas configurables', () => {
     const template = path.join(os.tmpdir(), 'Pedidos', '{YYYY}', 'TOLDOS');
     expect(resolveDirectoryTemplate(template, 'AR2601234')).toBe(path.join(os.tmpdir(), 'Pedidos', '2026', 'TOLDOS'));
