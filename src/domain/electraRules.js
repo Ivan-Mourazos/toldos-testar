@@ -233,17 +233,18 @@ function buildMaterials(context) {
   const {
     awning, device, support, hasCofre, hasGuide, lacado, fabric,
     rollStockLength, guideStockLength, fabricMl,
-    loadProfileReference, loadProfileBase, boxProfileReference, motor
+    loadProfileReference, boxProfileReference, motor
   } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     supportMaterial(support, lacado.suffix, units),
     line(`TURA80HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P801'),
     line('CASPUNCE', units, 'CASQUILLO PUNTA'),
-    line(loadProfileReference.code, units, loadProfileDescription(loadProfileBase))
+    line(loadProfileReference.code, units, loadProfileDescription()),
+    plasticUniversalCaps(lacado, units)
   ];
   if (support === 'UNIVERSAL 3 AGUJEROS') {
-    materials.push(...universalAccessories(lacado, units));
+    materials.push(...universalSupportAccessories(units));
   }
   if (hasCofre) materials.push(line(boxProfileReference.code, units, 'PERFIL COFRE ELECTRA'));
   if (hasGuide) {
@@ -284,7 +285,7 @@ function buildDespiece(context) {
     awning, device, support, hasCofre, hasGuide, lacado,
     rollStockLength, guideStockLength,
     rollTubeLength, loadBarLength, boxProfileLength, guideLength,
-    loadProfileReference, loadProfileBase, boxProfileReference, motor
+    loadProfileReference, boxProfileReference, motor
   } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const rows = [];
@@ -299,13 +300,9 @@ function buildDespiece(context) {
     } else {
       push(4, 'CASQUILLO MÁQUINA EJE 50 MM Ø78', 'CASMAQEJE5078MM', units);
     }
-    push(5, loadProfileDescription(loadProfileBase), loadProfileReference.code, units, loadBarLength);
-    if (support === 'UNIVERSAL 3 AGUJEROS') {
-      const [caps] = universalAccessories(lacado, units);
-      push(6, caps.description, caps.code, caps.quantity);
-    } else {
-      push(6, 'JUEGO DE TAPAS BARRA DE CARGA', null, units);
-    }
+    push(5, loadProfileDescription(), loadProfileReference.code, units, loadBarLength);
+    const caps = plasticUniversalCaps(lacado, units);
+    push(6, caps.description, caps.code, caps.quantity);
     if (device === 'MOTOR') {
       push(8, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
       push(9, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);
@@ -334,8 +331,9 @@ function buildDespiece(context) {
   }
 
   push(4, device === 'MOTOR' ? 'SOPORTE UNIVERSAL HIPRO' : 'CASQUILLO MÁQUINA EJE 63 MM Ø78', device === 'MOTOR' ? 'SOPORTEUNVHIPRO' : 'CASMAQEJE6378MM', units);
-  push(5, loadProfileDescription(loadProfileBase), loadProfileReference.code, units, loadBarLength);
-  push(6, 'JUEGO DE TAPAS BARRA DE CARGA', null, units);
+  push(5, loadProfileDescription(), loadProfileReference.code, units, loadBarLength);
+  const caps = plasticUniversalCaps(lacado, units);
+  push(6, caps.description, caps.code, caps.quantity);
   push(8, 'PERFIL COFRE ELECTRA', boxProfileReference.code, units, boxProfileLength);
   push(9, 'JUEGO DE TERMINALES', null, units);
   if (device === 'MOTOR') {
@@ -405,17 +403,16 @@ function universalProfileStockLengths(suffix) {
   return suffix === 'NE05' ? [700] : [600];
 }
 
-function loadProfileDescription(base) {
-  return base === 'PUNI280'
-    ? 'PERFIL ALUMINIO UNIVERS 280'
-    : 'PERFIL CARGA MAXISCREEN-ELIT VERTICAL';
+function loadProfileDescription() {
+  return 'TUBO DE CARGA ELIT';
 }
 
-function universalAccessories(lacado, units) {
-  return [
-    line(`TAPOPLUN280${plasticCapSuffix(lacado)}`, units, 'KIT TAPONES PLÁSTICO UNIVERS 280'),
-    line('MOSQBOACIN60MM', 2 * units, 'MOSQUETÓN BOMBERO ACERO INOX 60 MM')
-  ];
+function plasticUniversalCaps(lacado, units) {
+  return line(`TAPOPLUN280${plasticCapSuffix(lacado)}`, units, 'KIT TAPONES PLÁSTICO UNIVERS 280');
+}
+
+function universalSupportAccessories(units) {
+  return [line('MOSQBOACIN60MM', 2 * units, 'MOSQUETÓN BOMBERO ACERO INOX 60 MM')];
 }
 
 function wallMaterial(wallType, units) {

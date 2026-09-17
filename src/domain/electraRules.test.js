@@ -123,6 +123,26 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
       expect.objectContaining({ code: 'SOPMAXSCRBL16', quantity: 1 })
     ]));
   });
+
+  test.each([
+    ['SIN COFRE / CON GUÍA', 'SOPORTE ELIT VERTICAL'],
+    ['SIN COFRE / CON GUÍA', 'SOPORTES ALMAGRO'],
+    ['SIN COFRE / CON GUÍA', 'UNIVERSAL 3 AGUJEROS'],
+    ['SIN COFRE / CON GUÍA', 'SOPORTE MAXISCREEN'],
+    ['CON COFRE / SIN GUÍA', 'SOPORTE MAXISCREEM BOX']
+  ])('%s con %s lleva tubo Elit y tapones de plástico Univers', (submodel, electraSupport) => {
+    const result = calculate({ submodel, electraSupport });
+
+    expect(result.calculation.valid).toBe(true);
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ description: 'TUBO DE CARGA ELIT', quantity: 1 }),
+      expect.objectContaining({ code: 'TAPOPLUN280BL16', description: 'KIT TAPONES PLÁSTICO UNIVERS 280', quantity: 1 })
+    ]));
+    expect(result.despiece.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ num: 5, name: 'TUBO DE CARGA ELIT', units: 1 }),
+      expect.objectContaining({ num: 6, reference: 'TAPOPLUN280BL16', name: 'KIT TAPONES PLÁSTICO UNIVERS 280', units: 1 })
+    ]));
+  });
 });
 
 describe('ELECTRA / Elit Vertical · variantes', () => {

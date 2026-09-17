@@ -127,7 +127,7 @@ Núcleo común localizado en Excel, PDF, manuales o catálogo de RPS:
 - dos guías y sus retenedores cuando la variante las incluye (`ELITGU12...` y `KITRETENEDOR...`);
 - tela y elementos textiles específicos.
 
-En los libros de Cortina aparecen además piezas genéricas como `TAPOPLUN280`, `CASPLAS` y `MOSQBOACIN60MM`. La configuración las conserva donde corresponde al soporte Universal y al accionamiento, sin trasladarlas indiscriminadamente a las demás construcciones.
+En los libros de Cortina aparecen además piezas genéricas como `TAPOPLUN280`, `CASPLAS` y `MOSQBOACIN60MM`. A partir de la confirmación de taller del 17/09/2026, todos los Electra se plantean con `TUBO DE CARGA ELIT` y su juego de tapones de plástico Univers (`TAPOPLUN280`). El mosquetón continúa asociado únicamente a la construcción que lo requiere.
 
 Los manuales muestran además felpa en ambos lados de cada guía, soportes/tope superior de guía, tornillería de accionamiento y un refuerzo horizontal opcional. RPS contiene, entre otras, la referencia activa `FELPAELIT`, pero no existe histórico de reservas que permita deducir con seguridad su unidad o cantidad. Estas piezas quedan identificadas como siguiente ampliación; no se les asigna una cantidad inventada.
 
