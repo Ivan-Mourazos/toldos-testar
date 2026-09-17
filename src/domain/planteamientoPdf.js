@@ -1116,10 +1116,10 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   const rollLabel = options.rollLabel || 'PARA ENROLLAR EN TUBO';
   const loadLabel = options.loadLabel || 'VARILLA BLANCA';
   const valance = buildValanceDiagramSpec(awning);
+  const hems = buildGeneralFabricDiagramSpec(awning);
   if (!options.legacy) roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   if (title) doc.fillColor(colors.ink).font(fonts.bold).fontSize(10).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
-  doc.moveTo(x + 25, y + 30).lineTo(x + w - 25, y + 30).strokeColor('#74a887').lineWidth(1).stroke();
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.5).text('FRENTE TELA', x + 55, y + 21.5, { width: w - 110, align: 'center' });
+  drawHorizontalDimension(doc, x + 25, x + w - 25, y + 30, 'FRENTE TELA');
 
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
@@ -1135,24 +1135,40 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   const frameY = y + (options.legacy ? 52 : 72);
   const frameW = w - 76;
   const frameH = valance.hasValance ? 178 : 232;
-  doc.rect(frameX, frameY, frameW, frameH).strokeColor('#9ebbb0').lineWidth(1).stroke();
+  doc.rect(frameX, frameY, frameW, frameH).strokeColor('#202020').lineWidth(1).stroke();
   const topFoldY = frameY + 40;
+  const topSeamY = frameY + 5;
+  const bottomSeamY = frameY + frameH - 7;
+  const sideSeamInset = 5;
   doc.moveTo(frameX, topFoldY).lineTo(frameX + 48, topFoldY)
     .moveTo(frameX + frameW - 48, topFoldY).lineTo(frameX + frameW, topFoldY)
-    .strokeColor('#c5d5cf').lineWidth(0.7).stroke();
+    .moveTo(frameX, bottomSeamY).lineTo(frameX + 48, bottomSeamY)
+    .moveTo(frameX + frameW - 48, bottomSeamY).lineTo(frameX + frameW, bottomSeamY)
+    .strokeColor('#e36f69').lineWidth(0.65).stroke();
+  doc.moveTo(frameX + sideSeamInset, frameY).lineTo(frameX + sideSeamInset, topFoldY + 18)
+    .moveTo(frameX + frameW - sideSeamInset, frameY).lineTo(frameX + frameW - sideSeamInset, topFoldY + 18)
+    .moveTo(frameX + sideSeamInset, frameY + frameH - 54).lineTo(frameX + sideSeamInset, frameY + frameH)
+    .moveTo(frameX + frameW - sideSeamInset, frameY + frameH - 54).lineTo(frameX + frameW - sideSeamInset, frameY + frameH)
+    .strokeColor('#e36f69').lineWidth(0.55).dash(2, { space: 1 }).stroke().undash();
+  doc.moveTo(frameX + sideSeamInset, topSeamY).lineTo(frameX + frameW - sideSeamInset, topSeamY)
+    .strokeColor('#e36f69').lineWidth(0.55).stroke();
   doc.fillColor('#4f8b68').fontSize(6.4)
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
-    .text(rollLabel, frameX, frameY + 12, { width: frameW, align: 'center' })
-    .text('BASTILLA\nCOSIDA O SOLDADA', frameX + 12, frameY + 112, { width: 55, align: 'center' })
-    .text('BASTILLA\nCOSIDA O SOLDADA', frameX + frameW - 67, frameY + 112, { width: 55, align: 'center' });
-  doc.fillColor('#4f8b68').fontSize(6.2).text('CAÍDA', frameX + frameW + 8, frameY + 78, { width: 30, align: 'center' });
-  drawFabricDimension(doc, frameX - 10, frameY, frameY + 14, '2,5', 'left');
-  drawFabricDimension(doc, frameX + frameW + 10, frameY, topFoldY, '33,5', 'right');
-  drawFabricDimension(doc, frameX - 10, frameY + frameH - 13, frameY + frameH, '3,3', 'left');
-  drawFabricDimension(doc, frameX + frameW + 10, frameY + frameH - 14, frameY + frameH, '4', 'right');
+    .text(rollLabel, frameX, frameY + 13, { width: frameW, align: 'center' });
+  drawVerticalArrow(doc, frameX + frameW / 2, frameY - 4, frameY + 1, 'down');
+  drawBastillaCallout(doc, frameX + sideSeamInset, frameY + 120, 'left');
+  drawBastillaCallout(doc, frameX + frameW - sideSeamInset, frameY + 120, 'right');
+  drawRotatedDiagramText(doc, 'CAÍDA', frameX + frameW + 15, frameY + frameH / 2, Math.max(56, frameH - 70));
+  drawFabricDimension(doc, frameX - 10, frameY, topSeamY, formatInstructionMeasure(hems.topHemCm), 'left');
+  drawFabricDimension(doc, frameX + frameW + 10, frameY, topFoldY, formatInstructionMeasure(hems.topBastillaCm), 'right');
+  drawHorizontalFabricDimension(doc, frameX, frameX + sideSeamInset, frameY + frameH + 7, formatInstructionMeasure(hems.sideBastillaCm));
+  drawFabricDimension(doc, frameX + frameW + 10, bottomSeamY, frameY + frameH, formatInstructionMeasure(hems.bottomHemCm), 'right');
+  if (valance.hasValance) {
+    doc.rect(frameX, frameY + frameH - 4, frameW, 4).fillAndStroke(colors.paper, '#7fa594');
+  }
 
   if (valance.hasValance) {
-    const gap = valance.separate ? 23 : 8;
+    const gap = 42;
     const valanceY = frameY + frameH + gap;
     if (!valance.separate) {
       doc.moveTo(frameX, frameY + frameH).lineTo(frameX, valanceY)
@@ -1160,20 +1176,91 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
         .strokeColor('#7fa594').lineWidth(0.7).stroke();
     }
     drawValancePanel(doc, frameX, valanceY, frameW, 42, valance, {
-      topLabel: loadLabel,
-      bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
+      bodyLabel: `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${valance.curve}`,
+      measurement: '',
+      topSeamColor: '#e36f69'
     });
+    drawDiagramText(doc, loadLabel, frameX + 18, frameY + frameH + 4, frameW - 36);
+    drawVerticalArrow(doc, frameX + 9, frameY + frameH + 14, frameY + frameH + 2, 'up');
+    drawDiagramText(doc, loadLabel, frameX + 18, valanceY - 15, frameW - 36);
+    drawVerticalArrow(doc, frameX + frameW - 9, valanceY - 13, valanceY - 2, 'down');
+    drawFabricDimension(doc, frameX - 10, valanceY + 5, valanceY + 42, formatInstructionMeasure(valance.height), 'left');
+    drawFabricDimension(doc, frameX + frameW + 10, valanceY, valanceY + 5, formatInstructionMeasure(hems.valanceTopHemCm), 'right');
   }
+}
+
+export function buildGeneralFabricDiagramSpec(awning = {}) {
+  return {
+    topHemCm: 2.5,
+    topBastillaCm: 33.5,
+    sideBastillaCm: 3.3,
+    bottomHemCm: 4,
+    valanceTopHemCm: 4,
+    valance: buildValanceDiagramSpec(awning)
+  };
+}
+
+function drawHorizontalDimension(doc, startX, endX, y, label) {
+  const center = (startX + endX) / 2;
+  const labelW = Math.min(80, endX - startX - 40);
+  const gap = labelW / 2 + 5;
+  doc.strokeColor('#087b32').lineWidth(0.75)
+    .moveTo(startX, y).lineTo(center - gap, y)
+    .moveTo(center + gap, y).lineTo(endX, y)
+    .moveTo(startX, y - 4).lineTo(startX, y + 4)
+    .moveTo(endX, y - 4).lineTo(endX, y + 4)
+    .stroke();
+  drawArrowHead(doc, startX, y, 'left');
+  drawArrowHead(doc, endX, y, 'right');
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(6.5)
+    .text(label, center - labelW / 2, y - 8.5, { width: labelW, align: 'center' });
+}
+
+function drawBastillaCallout(doc, seamX, y, side) {
+  const pointingLeft = side === 'left';
+  const textX = pointingLeft ? seamX + 9 : seamX - 65;
+  const arrowStart = pointingLeft ? seamX + 24 : seamX - 24;
+  const arrowEnd = pointingLeft ? seamX + 2 : seamX - 2;
+  doc.strokeColor('#087b32').lineWidth(0.7).moveTo(arrowStart, y).lineTo(arrowEnd, y).stroke();
+  drawArrowHead(doc, arrowEnd, y, pointingLeft ? 'left' : 'right');
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(5.4)
+    .text('BASTILLA\nCOSIDA O SOLDADA', textX, y - 6, { width: 56, align: pointingLeft ? 'left' : 'right' });
+}
+
+function drawVerticalArrow(doc, x, startY, endY, direction) {
+  doc.strokeColor('#087b32').lineWidth(0.75).moveTo(x, startY).lineTo(x, endY).stroke();
+  drawArrowHead(doc, x, endY, direction);
+}
+
+function drawArrowHead(doc, x, y, direction) {
+  const size = 3.5;
+  const points = direction === 'up'
+    ? [[x, y], [x - size, y + size], [x + size, y + size]]
+    : direction === 'down'
+      ? [[x, y], [x - size, y - size], [x + size, y - size]]
+      : direction === 'left'
+        ? [[x, y], [x + size, y - size], [x + size, y + size]]
+        : [[x, y], [x - size, y - size], [x - size, y + size]];
+  doc.polygon(...points).fill('#087b32');
+}
+
+function drawHorizontalFabricDimension(doc, startX, endX, y, label) {
+  doc.moveTo(startX, y).lineTo(endX, y)
+    .moveTo(startX, y - 4).lineTo(startX, y + 4)
+    .moveTo(endX, y - 4).lineTo(endX, y + 4)
+    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(6.2)
+    .text(label, startX - 27, y + 2, { width: 24, align: 'right' });
 }
 
 function drawFabricDimension(doc, x, startY, endY, label, side) {
   doc.moveTo(x, startY).lineTo(x, endY)
-    .moveTo(x - 3, startY).lineTo(x + 3, startY)
-    .moveTo(x - 3, endY).lineTo(x + 3, endY)
-    .strokeColor('#74a887').lineWidth(0.55).stroke();
-  const textX = side === 'left' ? x - 21 : x + 4;
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(4.8)
-    .text(label, textX, (startY + endY) / 2 - 3, { width: 17, align: 'center' });
+    .moveTo(x - 4, startY).lineTo(x + 4, startY)
+    .moveTo(x - 4, endY).lineTo(x + 4, endY)
+    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
+  const textX = side === 'left' ? x - 29 : x + 5;
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(6.2)
+    .text(label, textX, (startY + endY) / 2 - 4, { width: 24, align: 'center' });
 }
 
 function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
@@ -1371,6 +1458,10 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
   }
   doc.stroke();
   doc.rect(x, y, w, Math.min(5, h / 4)).fillAndStroke('#edf3f0', '#7fa594');
+  if (options.topSeamColor) {
+    doc.moveTo(x + 5, y + Math.min(5, h / 4)).lineTo(x + w - 5, y + Math.min(5, h / 4))
+      .strokeColor(options.topSeamColor).lineWidth(0.6).stroke();
+  }
 
   if (options.topLabel) {
     drawDiagramText(doc, options.topLabel, x, y - 11, w);

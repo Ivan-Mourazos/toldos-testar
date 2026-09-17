@@ -3,6 +3,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {
   awningLetter,
   buildFabricLineDetail,
+  buildGeneralFabricDiagramSpec,
   buildHeraMiniPlanDetail,
   buildOrderPlanteamientoPdf,
   buildPlanteamientoPlan,
@@ -96,6 +97,43 @@ describe('datos del planteamiento de telas', () => {
   ])('la bambalina autónoma conserva la forma %s', (curve, expected) => {
     expect(buildValanceDiagramSpec({ model: 'BAMBALINA', valanceHeight: 25, valanceCurve: curve }))
       .toMatchObject({ standalone: true, hasValance: true, height: 25, curve: expected });
+  });
+
+  test('el patrón general conserva las bastillas fijas y solo hace variable la altura y curva de la bamba', () => {
+    const spec = buildGeneralFabricDiagramSpec({
+      model: 'CAMBIO TELA',
+      valanceHeight: 27,
+      valanceCurve: 'NORMAL'
+    });
+
+    expect(spec).toMatchObject({
+      topHemCm: 2.5,
+      topBastillaCm: 33.5,
+      sideBastillaCm: 3.3,
+      bottomHemCm: 4,
+      valanceTopHemCm: 4,
+      valance: { height: 27, curve: 'NORMAL', hasValance: true }
+    });
+    expect(spec).not.toHaveProperty('valanceSideBastillaCm');
+  });
+
+  test('el patrón general muestra dos varillas blancas y no rotula la palabra unión', async () => {
+    const order = {
+      orderCode: 'AR26-GENERICO-TEST',
+      fabric: heraAcrylic120,
+      sameFabric: true,
+      awnings: [{
+        id: 'generic-a', of: '0239999', model: 'CAMBIO TELA', units: 1,
+        width: 401, projection: 315, valanceHeight: 27, valanceCurve: 'NORMAL'
+      }]
+    };
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(1);
+    const items = (await page.getTextContent()).items.map((item) => item.str);
+
+    expect(items.filter((text) => text === 'VARILLA BLANCA')).toHaveLength(2);
+    expect(items.join(' ')).not.toContain('UNIÓN');
   });
 
   test.each([
