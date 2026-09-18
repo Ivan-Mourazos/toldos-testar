@@ -77,6 +77,9 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
     ? String(old.heraBottomFinish || '').trim().toUpperCase()
     : '';
   const heraInteriorFace = String(old.heraInteriorFace || '').trim().toUpperCase();
+  const chainColor = String(old.heraChainColor || '').trim().toUpperCase();
+  base.heraChainColor = base.model === 'HERA' && ['BLANCO', 'NEGRO'].includes(chainColor)
+    ? chainColor as Awning['heraChainColor'] : '';
   base.heraInteriorFace = base.model === 'HERA' && ['DERECHO', 'REVES', 'REVÉS'].includes(heraInteriorFace)
     ? (heraInteriorFace === 'REVES' ? 'REVÉS' : heraInteriorFace) as Awning['heraInteriorFace']
     : '';
@@ -476,6 +479,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     heraJoin: isHera ? awning.heraJoin : '',
     heraTopFinish: isHera ? (awning.heraTopFinish || 'VARILLA PLANA') : '',
     heraBottomFinish: isHera ? awning.heraBottomFinish : '',
+    heraChainColor: isHera ? awning.heraChainColor : '',
     heraInteriorFace: isHera ? awning.heraInteriorFace : '',
     hasValance: model === 'BAMBALINA' ? true : supportsValance ? awning.hasValance : null,
     valanceHeight: supportsValance ? awning.valanceHeight : null,

@@ -27,10 +27,15 @@ try {
   const image = 'data:image/png;base64,' + (await readFile('src/domain/assets/tgm-logo.png')).toString('base64');
   for (const [index, variant] of ['HERA 43 MAQUINA', 'HERA 56 MAQUINA', 'HERA 56 MOTOR'].entries()) {
     const order = { orderCode: 'AR269990' + index, customer: 'PRUEBA HERA', technician: 'IVAN', reviewer: 'JAIME', fabric: 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR', sameFabric: true, awnings: [{ id: 'a', of: '999900' + index, model: 'HERA', submodel: variant, width: 205, projection: 140, height: 240, units: 1, heraJoin: 'VERTICAL', heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'PLETINA', heraInteriorFace: 'REVÉS', ...(index === 1 ? { fabricImage: image } : {}) }] };
+    order.awnings[0].height = index === 0 ? 220 : 250;
+    order.awnings[0].heraChainColor = index === 0 ? 'BLANCO' : 'NEGRO';
+    const chainCode = index === 0 ? 'SCRANILBLAN150C' : 'SCRANILNEGRO150C';
     const calc = await request('/api/calculate', order); assert.equal(calc.ofs[0].calculation.valid, true);
+    assert.equal(calc.ofs[0].materials.some(m => m.code === chainCode), index !== 2);
     const saved = await request('/api/reviews', { order }); assert.equal(saved.review.status, 'PENDING_REVIEW');
     const reopened = await request('/api/reviews/' + order.orderCode, null, 'GET');
     assert.equal((reopened.review || reopened).order.awnings[0].fabricImage, order.awnings[0].fabricImage);
+    assert.equal((reopened.review || reopened).order.awnings[0].heraChainColor, order.awnings[0].heraChainColor);
     const approved = await request('/api/reviews/' + order.orderCode + '/approve', { reviewer: 'JAIME' }); assert.equal(approved.review.status, 'APPROVED');
     assert.deepEqual(await readdir(path.join(directory, 'rps')).catch(() => []), index === 0 ? [] : Array.from({ length: index }, (_, i) => '999900' + i + '.xls'));
     const generated = await request('/api/reviews/' + order.orderCode + '/generate-files', {});
@@ -41,12 +46,18 @@ try {
     const text = (await (await doc.getPage(1)).getTextContent()).items.map(i => i.str).join(' ');
     assert.ok(text.includes('CORTE TELA')); assert.ok(text.includes('REVÉS DENTRO')); assert.ok(text.includes('VERTICAL'));
     const workbook = await readFile(generated.saved.find(f => f.type === 'rps').savedPath, 'latin1');
-    assert.ok(workbook.includes('ACRILI2170P120')); assert.ok(!workbook.includes('CADENA'));
+    assert.ok(workbook.includes('ACRILI2170P120'));
+    assert.equal(workbook.includes(chainCode), index !== 2);
     if (index === 0) {
       const invalid = structuredClone(order); invalid.orderCode = 'AR2699999'; invalid.awnings[0].heraInteriorFace = '';
       await request('/api/reviews', { order: invalid }); await request('/api/reviews/' + invalid.orderCode + '/approve', { reviewer: 'JAIME' });
       const response = await fetch(base + '/api/reviews/' + invalid.orderCode + '/generate-files', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
       assert.ok(!response.ok); assert.match((await response.json()).error, /incompletos|bloqueantes/);
+      const noRing = structuredClone(order); noRing.orderCode = 'AR2699998'; noRing.awnings[0].height = 200;
+      await request('/api/reviews', { order: noRing });
+      await request('/api/reviews/' + noRing.orderCode + '/approve', { reviewer: 'JAIME' });
+      const blocked = await fetch(base + '/api/reviews/' + noRing.orderCode + '/generate-files', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      assert.ok(!blocked.ok); assert.match((await blocked.json()).error, /incompletos|bloqueantes/);
     }
   }
   browser = await chromium.launch({ headless: true }); const page = await browser.newPage({ viewport: { width: 1500, height: 950 } });

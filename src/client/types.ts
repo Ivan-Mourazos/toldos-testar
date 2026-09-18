@@ -28,6 +28,7 @@ export type Awning = {
   heraJoin: '' | 'NINGUNO' | 'VERTICAL' | 'HORIZONTAL';
   heraTopFinish: string;
   heraBottomFinish: string;
+  heraChainColor: '' | 'BLANCO' | 'NEGRO';
   heraInteriorFace: '' | 'DERECHO' | 'REVÉS';
   hasValance: boolean | null;
   valanceHeight: number | null;
@@ -538,6 +539,8 @@ export type Calculation = {
       guideStockLength?: number | null;
       height?: number;
       chainLength?: number | null;
+      chainRingLength?: number | null;
+      chainRingCode?: string;
       heraVariant?: string;
       heraJoin?: Awning['heraJoin'];
       fabricCutWidth?: number;

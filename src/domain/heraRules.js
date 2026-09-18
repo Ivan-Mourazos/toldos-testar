@@ -1,6 +1,7 @@
 import { resolveFabric } from './fabricCatalog.js';
 import { formatNumber, roundQuantity } from './math.js';
 import { roundFabricMeters } from './reservationFabrics.js';
+import { resolveHeraChainRing } from './heraChain.js';
 import {
   HERA_FABRIC_ALLOWANCES,
   HERA_SPECIAL_TUBE_FROM_CM,
@@ -24,6 +25,8 @@ export function calculateHera({ order, awning }) {
     ? round1((height - rule.chainHeightDiscountCm) * 2)
     : null;
   const acrylic = isAcrylic(fabric);
+  const chainRingLength = chainLength === null ? null : round1(chainLength / 2);
+  const chainRing = resolveHeraChainRing(awning.heraChainColor, chainRingLength);
   const usage = calculateHeraFabricUsage({
     fabricWidth,
     fabricDrop,
@@ -68,6 +71,18 @@ export function calculateHera({ order, awning }) {
   }
 
   diagnostics.push({ level: 'warn', awningId: awning.id, message: `HERA en OF ${awning.of}: requiere completar el planteamiento en CAD.` });
+  if (rule && !rule.motor) {
+    diagnostics.push({
+      level: 'warn',
+      awningId: awning.id,
+      message: `HERA en OF ${awning.of}: pedir siempre cadena sin empalme (anillo de cadena).`
+    });
+    if (!['BLANCO', 'NEGRO'].includes(awning.heraChainColor)) {
+      diagnostics.push({ level: 'pending', awningId: awning.id, message: `HERA en OF ${awning.of}: elegir color del anillo de cadena (blanco o negro) para reservar.` });
+    } else if (chainRingLength > 0 && !chainRing) {
+      diagnostics.push({ level: 'pending', awningId: awning.id, message: `HERA en OF ${awning.of}: consultar con compras el anillo de cadena ${awning.heraChainColor.toLowerCase()} de ${formatNumber(chainRingLength)} cm cerrado (${formatNumber(chainLength)} cm desarrollado). No hay referencia exacta verificada; no sustituir por otra medida ni empalmar.` });
+    }
+  }
   const specialTubeRequired = Number(awning.width) > HERA_SPECIAL_TUBE_FROM_CM;
   if (specialTubeRequired) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `HERA en OF ${awning.of}: pedir tubo especial y cambiar el presupuesto.` });
@@ -85,7 +100,10 @@ export function calculateHera({ order, awning }) {
   return {
     of: awning.of,
     description: buildDescription(awning, { variant, fabricWidth, fabricDrop, fabricMl, join }),
-    materials: valid ? [{ code: fabric.code, quantity: fabricMl, description: fabric.description }] : [],
+    materials: valid ? [
+      { code: fabric.code, quantity: fabricMl, description: fabric.description },
+      ...(chainRing ? [{ ...chainRing, quantity: units }] : [])
+    ] : [],
     despiece: null,
     diagnostics,
     calculation: {
@@ -113,6 +131,8 @@ export function calculateHera({ order, awning }) {
       heraVariant: variant,
       heraJoin: join,
       chainLength,
+      chainRingLength,
+      chainRingCode: chainRing?.code || '',
       seamCount: usage.seams,
       seamAllowanceCm: usage.seams * HERA_FABRIC_ALLOWANCES.joinCm,
       squaringAllowanceCm: join && join !== 'NINGUNO' ? HERA_FABRIC_ALLOWANCES.squaringEachEndCm * 2 : 0,

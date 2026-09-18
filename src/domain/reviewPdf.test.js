@@ -204,7 +204,7 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
     const calculation = calculateOrder(order);
     const [entry] = buildReviewSheetEntries(order, calculation);
 
-    expect(entry.status).toBe('VÁLIDO');
+    expect(entry.status).toBe('REVISAR');
     expect(entry.title).toBe('HERA');
     expect(entry.fields).toEqual(expect.arrayContaining([
       { label: 'Variante', value: 'HERA 43 máquina' },
@@ -215,6 +215,9 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
       { label: 'Altura instalación', value: '240' },
       { label: 'Tubo calculado', value: '201,7' },
       { label: 'Cadena', value: '340' },
+      { label: 'Anillo cerrado', value: '170' },
+      { label: 'Color cadena', value: 'Pendiente' },
+      { label: 'Artículo cadena', value: 'Pendiente compras' },
       { label: 'Empate cliente', value: 'Vertical' },
       { label: 'Paños', value: '2' },
       { label: 'Metros tela', value: '3,4 ml' },

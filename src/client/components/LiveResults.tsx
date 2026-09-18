@@ -188,6 +188,7 @@ function FabricIndication({ awning, calculation }: { awning?: Awning; calculatio
     <>
       <strong>CAD manual</strong>
       <small>{tube} · {chain}</small>
+      {calculation.chainRingLength != null && <small>Anillo cerrado: {formatDecimal(calculation.chainRingLength)} cm · {awning?.heraChainColor || 'Color pendiente'} · {calculation.chainRingCode || 'Referencia pendiente'}</small>}
       <small>Empate: {join ? controlLabel(join) : 'Sin indicar'}</small>
       {calculation.specialTubeRequired && <small>Tubo especial · cambiar presupuesto</small>}
     </>

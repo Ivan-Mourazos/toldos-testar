@@ -19,7 +19,7 @@ module.exports = {
       max_memory_restart: '768M',
       env: {
         NODE_ENV: 'production',
-        ENABLE_HERA: 'false',
+        ENABLE_HERA: 'true',
         ENABLE_LEGACY_EXPORTS: 'false'
       }
     }

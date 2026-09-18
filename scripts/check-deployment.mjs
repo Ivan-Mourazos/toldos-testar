@@ -154,8 +154,8 @@ async function checkEcosystem() {
     if (app.env?.NODE_ENV !== 'production') {
       fail('PM2 debe definir NODE_ENV=production.');
     }
-    if (app.env?.ENABLE_HERA !== 'false') {
-      fail('PM2 debe forzar ENABLE_HERA=false mientras HERA no esté validado.');
+    if (!['true', 'false'].includes(app.env?.ENABLE_HERA)) {
+      fail('PM2 debe definir ENABLE_HERA como true o false.');
     }
     if (app.env?.ENABLE_LEGACY_EXPORTS !== 'false') {
       fail('PM2 debe mantener cerradas las exportaciones directas antiguas.');
@@ -247,11 +247,11 @@ function checkDatabaseEnvironment(values) {
 async function checkWorkflowEnvironment(values) {
   const heraEnabled = unquote(values.get('ENABLE_HERA')).toLowerCase();
   if (!heraEnabled) {
-    pass('PM2 fuerza HERA desactivado en producción.');
+    pass('HERA utiliza la configuración explícita de PM2.');
   } else if (heraEnabled !== 'true' && heraEnabled !== 'false') {
     fail('.env define ENABLE_HERA con un valor distinto de true o false.');
   } else if (heraEnabled === 'true') {
-    fail('ENABLE_HERA=true no está autorizado en producción hasta completar y validar su configuración.');
+    pass('HERA habilitado; se conservan las validaciones del pedido y de la reserva.');
   } else {
     pass('HERA permanece desactivado en producción.');
   }

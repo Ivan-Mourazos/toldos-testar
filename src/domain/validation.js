@@ -150,6 +150,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     wallType: cleanText(awning?.wallType).toUpperCase(),
     submodel,
     heraJoin: model === 'HERA' ? normalizeHeraJoin(awning?.heraJoin) : '',
+    heraChainColor: model === 'HERA' && ['BLANCO', 'NEGRO'].includes(cleanText(awning?.heraChainColor).toUpperCase())
+      ? cleanText(awning.heraChainColor).toUpperCase() : '',
     heraTopFinish: model === 'HERA' ? cleanText(awning?.heraTopFinish || 'VARILLA PLANA').toUpperCase() : '',
     heraBottomFinish: model === 'HERA' ? cleanText(awning?.heraBottomFinish).toUpperCase() : '',
     heraInteriorFace: model === 'HERA' && ['DERECHO', 'REVES', 'REVÉS'].includes(cleanText(awning?.heraInteriorFace).toUpperCase())

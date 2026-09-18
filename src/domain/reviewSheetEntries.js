@@ -96,6 +96,11 @@ export function buildReviewSheetEntries(order, calculation) {
       if (awning.submodel !== 'HERA 56 MOTOR') addField(cardFields, 'Altura instalación', measure(awning.height), true);
       addField(cardFields, 'Tubo calculado', measure(calc.rollTubeLength), true);
       addField(cardFields, 'Cadena', calc.chainLength === null ? 'NO LLEVA' : measure(calc.chainLength), true);
+      if (calc.chainRingLength != null) {
+        addField(cardFields, 'Anillo cerrado', measure(calc.chainRingLength), true);
+        addField(cardFields, 'Color cadena', awning.heraChainColor || 'PENDIENTE', true);
+        addField(cardFields, 'Artículo cadena', calc.chainRingCode || 'Pendiente compras');
+      }
       addField(cardFields, 'Empate cliente', awning.heraJoin, true);
       addField(cardFields, 'Arriba', awning.heraTopFinish || 'VARILLA PLANA', true);
       addField(cardFields, 'Abajo', awning.heraBottomFinish, true);

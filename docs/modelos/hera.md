@@ -11,12 +11,34 @@ Esta ficha recoge investigación ya realizada. No añade una validación del pro
 - Código interno y comercial: HERA. Alias registrado: ROLL-SYSTEM.
 - Variantes actuales: HERA 43 máquina, HERA 56 máquina, HERA 56 motor.
 - Fabricante, proveedor y manual técnico aplicable: pendientes de verificar documentalmente.
-- Funcionamiento actual: desarrollo habilitado; producción/PM2 mantiene HERA deshabilitado.
-- Alcance de reserva actual: únicamente tejido. No hay despiece automático completo de tubo, soportes, accionamiento, cadena y demás componentes.
+- Funcionamiento actual: desarrollo habilitado; configuración PM2 habilitada por petición expresa de Iván el 18/09/2026. Despliegue remoto a cargo del usuario; no verificado desde esta sesión.
+- Alcance de reserva actual: tejido y un anillo de cadena por unidad en variantes de máquina, cuando color y medida coinciden con una referencia verificada. No hay despiece automático completo de tubo, soportes, accionamiento y demás componentes.
 - Próximo trabajo independiente: identificar manuales aplicables, inventariar piezas por variante y comprobar correspondencias RPS. No hace falta esperar la respuesta del 3981 para empezar esto.
-- Despliegue y activación: pendientes; no incluidos en esta entrega.
+- Activación configurada; despliegue remoto pendiente de ejecución por el usuario. Continúa pendiente el despiece completo.
 
 ## Estado por área
+
+### Cadena sin empalme — criterio de taller, 18/09/2026
+
+Iván indica que los HERA con cadena deben llevarla siempre sin empate/empalme y que se debe pedir expresamente. Las capturas de catálogo y el maestro RPS muestran «Screen anillo de cadena», referencia genérica SCRANIL, etiquetada para Toldos Hera, con variantes blancas y negras por medida. Se aplica a HERA 43 máquina y HERA 56 máquina; HERA 56 motor no lleva cadena según las reglas actuales. El cálculo muestra siempre el aviso de pedido en las variantes de máquina. No modifica el sentido del empate de la tela ni la fórmula de longitud de cadena.
+
+Iván confirma que la medida comercial es el largo del anillo cerrado: al cortarlo y extenderlo, la cadena mide el doble. Por ejemplo, un anillo de catálogo de 150 cm equivale a 300 cm de cadena desarrollada. El cálculo actual chainLength = (altura − descuento) × 2 expresa la longitud desarrollada; para compararla con la medida comercial del anillo se divide entre dos. No redondear a otra medida comercial sin un criterio confirmado para medidas no disponibles.
+
+Reserva incorporada: el formulario exige seleccionar blanco o negro. Se reserva una unidad por toldo si la medida del anillo coincide exactamente con una referencia activa verificada: blanco 100/150/200/250/300/400 cm (SCRANILBLAN…C), negro 150/200/300 cm (SCRANILNEGRO…C). Si falta color o referencia exacta, se emite un diagnóstico pendiente que bloquea la generación definitiva. No se usa SCRANIL genérico ni referencias antiguas de baja. La altura determina la medida; la salida no interviene. No se crean pedidos de compra automáticamente.
+
+### Contraste RPS de cadena — 18/09/2026
+
+Consulta de solo lectura reproducible con `node scripts/audit-hera-chain.mjs`; evidencia local en `output/hera-chain/schema.json` y `purchases.json` (no versionados). Se encontraron 28 líneas de compra bajo los códigos/descripciones consultados. No se ha acreditado una regla de redondeo ni de elección automática de color.
+
+| Fuente | Evidencia |
+| --- | --- |
+| Compra 055490, 28/11/2017, Manirol | 6 anillos metálicos de 150 cm; comentario explícito: cadena de 300 cm, doblada de 150 cm. Referencia actualmente de baja; evidencia dimensional, no pieza seleccionable |
+| Compra 041239, 06/02/2015, Manirol | 5 anillos de 250 cm; comentario confirma 500 cm de cadena doblada. Referencia actualmente de baja |
+| Compra 074214, 04/08/2022, Manirol | Blanco 150 cm: 50 unidades; negro 150 cm: 4 + 46 unidades; negro 200 cm: 50 unidades |
+| Compra 076397, 06/03/2023, Ibersol | Blanco 300 cm: 6 unidades |
+| Consumo AR.24.07030, OF 0212194, 15/01/2025 | 1 SCRANILBLAN150C en Hera 56 |
+| Consumo AR.25.00114, OF 0212542, 14/01/2025 | 3 SCRANILNEGRO150C para cambiar cadenas a Hera |
+| Consumo AR.23.02802, OF 0192785, 29/06/2023 | 2 SCRANILNEGRO150C en Hera 56 con estructura marrón: el color requiere elección expresa |
 
 | Área | Estado | Evidencia y límite |
 | --- | --- | --- |

@@ -85,6 +85,7 @@ export function AnticaRuleReference() {
 
 export function HeraRuleReference() {
   return <>
+    <p>Cadena siempre sin empalme. El anillo cerrado mide la mitad de la longitud de cadena calculada desde la altura de instalación. Se reserva uno por toldo al elegir color y coincidir con una medida de catálogo; si no coincide, consultar con compras.</p>
     <Band id="01" title="Descuentos y aumentos" description="F = frente; C = caída indicada; A = altura de instalación. Todas las medidas en cm.">
       <Table label="Reglas HERA por variante" columns={['Variante', 'Frente tela', 'Caída tela', 'Tubo', 'Longitud cadena']} rows={Object.entries(HERA_RULES).map(([variant, rule]) => [variant, 'F − ' + number(rule.fabricWidthDiscountCm), 'C + ' + number(rule.fabricDropAllowanceCm), 'F − ' + number(rule.rollTubeDiscountCm), rule.chainHeightDiscountCm === null ? 'No lleva' : '(A − ' + number(rule.chainHeightDiscountCm) + ') × 2'])} />
     </Band>
@@ -98,7 +99,7 @@ export function HeraRuleReference() {
         ['Sin empate', 'El frente con bastillas debe caber en el rollo. Sin aumento de escuadrado.'],
         ['Tubo especial', 'Aviso cuando el frente supera ' + number(HERA_SPECIAL_TUBE_FROM_CM) + ' cm.']
       ]} />
-      <p>En el pedido se eligen variante, empate, cara interior y remate inferior. La web sigue requiriendo completar el planteamiento en CAD y reserva únicamente tela para HERA.</p>
+      <p>En el pedido se eligen variante, empate, cara interior, remate inferior y color de cadena si lleva máquina. La web requiere completar el planteamiento en CAD y reserva tela y anillo de cadena con referencia exacta.</p>
     </Band>
   </>;
 }

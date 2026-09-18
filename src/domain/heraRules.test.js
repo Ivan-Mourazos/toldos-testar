@@ -29,6 +29,45 @@ function hera(overrides = {}, orderOverrides = {}) {
 }
 
 describe('reglas HERA', () => {
+  test.each([
+    ['HERA 43 MAQUINA', 220, 'BLANCO', 'SCRANILBLAN150C'],
+    ['HERA 56 MAQUINA', 250, 'NEGRO', 'SCRANILNEGRO150C']
+  ])('%s reserva un anillo por toldo usando altura y no salida', (submodel, height, heraChainColor, code) => {
+    const result = hera({ submodel, height, heraChainColor, projection: 120, units: 3 });
+    expect(result.ofs[0].calculation).toMatchObject({ chainLength: 300, chainRingLength: 150, chainRingCode: code });
+    const reservation = normalizeReservation({ orderCode: 'AR26HERA', ofs: result.ofs });
+    expect(reservation.ofs[0].materials).toContainEqual(expect.objectContaining({ code, quantity: 3 }));
+    expect(result.diagnostics.some(item => item.level === 'pending')).toBe(false);
+    const otherDrop = hera({ submodel, height, heraChainColor, projection: 200 });
+    expect(otherDrop.ofs[0].calculation.chainRingCode).toBe(code);
+  });
+
+  test('normaliza y conserva el color elegido para la reserva', () => {
+    const result = hera({ height: 250, heraChainColor: ' blanco ' });
+    expect(result.ofs[0].calculation.chainRingCode).toBe('SCRANILBLAN150C');
+  });
+
+  test.each([{ height: 230, heraChainColor: 'BLANCO' }, { height: 250, heraChainColor: '' }])('deja pendiente la reserva sin referencia exacta o color: %j', (patch) => {
+    const result = hera(patch);
+    expect(result.diagnostics.some(item => item.level === 'pending')).toBe(true);
+    expect(result.ofs[0].materials.some(item => item.code.startsWith('SCRANIL'))).toBe(false);
+  });
+
+  test('motor no reserva cadena aunque conserve el color de una variante manual', () => {
+    const result = hera({ submodel: 'HERA 56 MOTOR', height: 250, heraChainColor: 'BLANCO' });
+    expect(result.ofs[0].materials.some(item => item.code.startsWith('SCRANIL'))).toBe(false);
+    expect(result.diagnostics.some(item => item.level === 'pending')).toBe(false);
+  });
+
+  test.each(['HERA 43 MAQUINA', 'HERA 56 MAQUINA'])('%s exige pedir cadena sin empalme aunque la tela lleve empate', (submodel) => {
+    const result = hera({ submodel, heraJoin: 'VERTICAL' });
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({
+      level: 'warn',
+      awningId: 'hera-a',
+      message: expect.stringContaining('pedir siempre cadena sin empalme (anillo de cadena)')
+    }));
+  });
+
   test('HERA 56 máquina reproduce el caso AR.24.00727 y solo reserva la tela', () => {
     const result = hera();
     const ofBlock = result.ofs[0];
@@ -85,6 +124,7 @@ describe('reglas HERA', () => {
       fabricDrop: 185,
       chainLength: null
     });
+    expect(result.diagnostics.some((item) => item.message.includes('anillo de cadena'))).toBe(false);
   });
 
   test('el acrílico suma 3 cm por bastilla lateral antes de comprobar el rollo', () => {

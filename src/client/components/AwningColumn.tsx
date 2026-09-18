@@ -163,7 +163,7 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
     || (isElectra && !awning.electraSupport)
     || (isHera && !awning.heraJoin)
     || (isHera && awning.submodel !== 'HERA 56 MOTOR' && !Number(awning.height))
-    || (isHera && (!awning.heraTopFinish || !awning.heraBottomFinish || !awning.heraInteriorFace))
+    || (isHera && (!awning.heraTopFinish || !awning.heraBottomFinish || !awning.heraInteriorFace || (awning.submodel !== 'HERA 56 MOTOR' && !awning.heraChainColor)))
     || getRequiredDimensions(awning.model).some((field: keyof Awning) => !Number(awning[field]))
     || missingWindowDimensions
     || missingCurtainConfig
@@ -470,6 +470,9 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                 </div>
               )}
             </div>
+          )}
+          {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
+            <SelectField label="Color del anillo de cadena" value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir color…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
           )}
           {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
             <NumberField label="Altura instalación" value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />

@@ -15,7 +15,7 @@ const child = spawn(process.execPath, ['src/server.js'], {
     NODE_ENV: 'production',
     HOST: '127.0.0.1',
     PORT: String(port),
-    ENABLE_HERA: 'false',
+    ENABLE_HERA: 'true',
     ENABLE_LEGACY_EXPORTS: 'false',
     ENABLE_FILE_WRITES: 'false',
     REVIEW_DIRECTORY: path.join(temporaryRoot, '{YYYY}', 'reviews'),
@@ -43,15 +43,16 @@ try {
 
   const catalog = await readJson(`${baseUrl}/api/catalog`);
   assert(catalog.response.ok, 'No se pudo leer el catálogo.');
-  assert(catalog.body.features?.heraEnabled === false, 'El catálogo no marca HERA como desactivado.');
-  assert(!catalog.body.models?.some((model) => model.code === 'HERA'), 'HERA sigue visible en el catálogo de producción.');
+  assert(catalog.body.features?.heraEnabled === true, 'El catálogo no marca HERA como activado.');
+  assert(catalog.body.models?.some((model) => model.code === 'HERA'), 'HERA no aparece en el catálogo de producción.');
 
   const heraAttempt = await readJson(`${baseUrl}/api/calculate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ awnings: [{ id: 'smoke-hera', model: 'HERA', workType: 'FULL_AWNING' }] })
+    body: JSON.stringify({ orderCode: 'AR26SMOKE', fabric: 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR', awnings: [{ id: 'smoke-hera', of: '0230001', model: 'HERA', submodel: 'HERA 43 MAQUINA', units: 1, width: 205, projection: 140, height: 220, heraChainColor: 'BLANCO', heraJoin: 'VERTICAL', heraBottomFinish: 'PLETINA', heraInteriorFace: 'DERECHO' }] })
   });
-  assert(heraAttempt.response.status === 409, 'La API de producción no bloqueó un pedido HERA.');
+  assert(heraAttempt.response.ok && heraAttempt.body.ofs?.[0]?.calculation?.valid, 'La API de producción no calcula HERA.');
+  assert(heraAttempt.body.ofs[0].materials.some(item => item.code === 'SCRANILBLAN150C' && item.quantity === 1), 'La reserva HERA no incluye el anillo esperado.');
 
   const legacyReservation = { orderCode: 'AR26SMOKE', ofs: [{ of: '0230001', materials: [] }] };
   for (const route of ['/api/export', '/api/export/save']) {
@@ -67,7 +68,7 @@ try {
   assert(homepage.ok && (await homepage.text()).includes('<div id="root">'), 'El frontend de producción no está disponible.');
 
   console.log('[OK] Healthcheck, frontend y catálogo de producción disponibles.');
-  console.log('[OK] HERA está oculto y bloqueado en producción.');
+  console.log('[OK] HERA está visible, calcula y reserva el anillo en producción.');
   console.log('[OK] Las exportaciones directas antiguas están cerradas en producción.');
 } catch (error) {
   failure = error;

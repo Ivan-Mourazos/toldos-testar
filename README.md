@@ -25,11 +25,9 @@ pnpm dev
 El servidor de desarrollo usa `http://127.0.0.1:4400` salvo que `.env` defina
 otros valores para `HOST` o `PORT`.
 
-HERA está habilitado por defecto con `pnpm dev`. En cambio, cuando
-`NODE_ENV=production`, HERA queda deshabilitado por defecto y tampoco se
-aceptan pedidos HERA enviados directamente a la API. `ENABLE_HERA=true` se
-reserva para pruebas controladas arrancadas fuera de PM2; la instalación PM2
-fuerza `ENABLE_HERA=false` hasta que termine la configuración del modelo.
+HERA está habilitado con `pnpm dev` y en la configuración PM2 de producción
+(`ENABLE_HERA=true`). Fuera de PM2, producción requiere definir explícitamente
+esta variable. Se conservan la revisión y los bloqueos por datos pendientes.
 
 Las rutas antiguas `/api/export` y `/api/export/save` se conservan para pruebas
 de desarrollo, pero PM2 las desactiva. La aprobación de una revisión no genera
@@ -62,9 +60,11 @@ marca `BORRADOR PARA REVISION - NO PRODUCCION` y no guarda ni envía archivos a 
 
 La implementación HERA todavía es provisional: en desarrollo genera el mini
 planteamiento dimensional, señala que debe completarse en CAD y reserva
-exclusivamente la tela. La investigación actual está documentada en
-`docs/rps-hera-evidence.md`, pero no debe usarse para producción hasta completar
-su configuración y validación.
+la tela y el anillo de cadena cuando coinciden color y medida con una referencia
+verificada. Sin color o sin referencia exacta, queda pendiente de revisión con
+compras y se bloquea la generación definitiva. La investigación está documentada en
+`docs/rps-hera-evidence.md` y `docs/modelos/hera.md`. La activación solicitada
+permite este alcance parcial; el despiece completo sigue pendiente.
 
 ## Configuración de carpetas
 
@@ -123,7 +123,7 @@ NODE_ENV=production
 HOST=127.0.0.1
 PORT=4400
 
-ENABLE_HERA=false
+ENABLE_HERA=true
 ENABLE_LEGACY_EXPORTS=false
 ENABLE_FILE_WRITES=true
 
@@ -145,8 +145,8 @@ Usar `HOST=0.0.0.0` únicamente si se publica el puerto directamente dentro de
 una VLAN controlada. Con proxy local, conservar `127.0.0.1`.
 
 El JSON de `WORKFLOW_SETTINGS_FILE` prevalece sobre las rutas y el interruptor
-de escritura de `.env` cuando ya existe. HERA y las exportaciones antiguas se
-mantienen además bloqueados por [ecosystem.config.cjs](./ecosystem.config.cjs).
+de escritura de `.env` cuando ya existe. [ecosystem.config.cjs](./ecosystem.config.cjs)
+activa HERA y mantiene bloqueadas las exportaciones antiguas.
 
 ### 3. Publicar y arrancar
 
@@ -172,7 +172,7 @@ de archivos solo debe activarse cuando sus permisos estén comprobados.
 
 ```bash
 curl -fsS http://127.0.0.1:4400/api/health | jq .
-curl -fsS http://127.0.0.1:4400/api/catalog | jq -e '.features.heraEnabled == false'
+curl -fsS http://127.0.0.1:4400/api/catalog | jq -e '.features.heraEnabled == true'
 curl -fsS -H 'Accept: text/html' http://127.0.0.1:4400/ -o /dev/null
 ```
 

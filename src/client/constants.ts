@@ -32,6 +32,7 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     heraJoin: '',
     heraTopFinish: '',
     heraBottomFinish: '',
+    heraChainColor: '',
     heraInteriorFace: '',
     hasValance: null,
     valanceHeight: null,
