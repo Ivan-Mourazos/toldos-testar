@@ -12,6 +12,7 @@ import {
   suggestedTubeForDestination
 } from './arzuaProParameters.js';
 import { resolveMotorRemote } from './motorAccessories.js';
+import { crossedMinimumLines, resolveCrossedKit, crossedFabricLimits, crossedProfileByFinish } from './arzuaCrossed.js';
 
 export { arzuaProEstablishedProjections };
 
@@ -20,20 +21,23 @@ export function calculateArzuaPro({ order, awning }) {
   const structureColor = awning.structureColor || order.structureColor;
   const lacado = resolveLacado(structureColor);
   const colorSuffix = lacado.suffix;
+  const crossed = awning.armConfiguration === 'CROSSED';
+  const crossedKit = crossed ? resolveCrossedKit(structureColor) : null;
   const selectedTube = awning.tubeLoad || suggestedTubeForDestination(awning.destination, parameters);
   const tubeLoad = normalizeTubeLoad(selectedTube);
   const device = normalizeDevice(awning.device);
   const supportSystem = resolveArzuaSupport(awning, parameters);
   const motorPower = resolveArzuaMotorPower(awning, parameters);
-  const requiredMotorTorqueNm = device === 'MOTOR'
+  const requiredMotorTorqueNm = device === 'MOTOR' && !crossed
     ? resolveArzuaRequiredTorque(awning.width, awning.projection)
     : null;
   const armCount = supportSystem === 'GALICIA' ? 3 : 1;
   const diagnostics = [];
-  const minimumLine = lookupMinimumLine(parameters.minimumLineByArm, awning.projection, device);
+  const minimumLine = lookupMinimumLine(crossed ? crossedMinimumLines : parameters.minimumLineByArm, awning.projection, device);
+  const maximumLine = crossed ? (device === 'MAQ. EXTERIOR' ? 400 : 395) : parameters.standardMaxWidth;
   const modified = Boolean(awning.reglasModificadas);
   const belowMinimum = awning.width < minimumLine;
-  const overMaximum = supportSystem === 'ARZUA' && awning.width > parameters.standardMaxWidth;
+  const overMaximum = supportSystem === 'ARZUA' && awning.width > maximumLine;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
@@ -42,6 +46,22 @@ export function calculateArzuaPro({ order, awning }) {
   // El gate de incompletitud de calculateOrder solo cubre OF/modelo/frente/salida;
   // sin estos campos el cálculo asumiría MOTOR/EVO 80 o emitiría MANIVE...0C en silencio.
   const missingFields = [];
+  if (crossed) {
+    const issue = (message, level = 'error') => diagnostics.push({ level, awningId: awning.id, message });
+    if (!crossedKit) issue(`Brazo cruzado: falta equivalencia ERP confirmada del kit para ${structureColor || 'el lacado elegido'}.`);
+    if (typeof awning.crossedAdditionalTerminals !== 'boolean') issue('Brazo cruzado: confirmar si se necesita un juego adicional de terminales. La tarifa los muestra dentro del kit, pero el pedido 091076 incluye ambos.');
+    if (supportSystem !== 'ARZUA' || (Number(awning.armCount) && Number(awning.armCount) !== 2)) issue('Brazo cruzado AROND: requiere soporte ARZUA y dos brazos.');
+    if (!crossedMinimumLines.some((row) => row.arm === Number(awning.projection))) issue('Brazo cruzado: salida admitida entre 150 y 350 cm, en pasos de 25 cm.');
+    if (overMaximum) issue(`Brazo cruzado: frente máximo ${maximumLine} cm para ${device}.`);
+    // El kit inferior confirmado no se sustituye por el kit posterior de UNIVERS.
+    if (tubeLoad !== 'TUBO DE CARGA EVO 80') issue('Brazo cruzado: kit inferior confirmado para EVO 80. La variante de sujeción posterior requiere verificar su referencia ERP.');
+    if (device === 'MOTOR' && !['55/17', '70/17'].includes(awning.motorPower)) issue('Brazo cruzado: seleccionar y confirmar el motor; la tabla de par estándar no cubre esta configuración.');
+    const limits = crossedFabricLimits(fabric);
+    if (limits && (awning.width > limits.width || awning.projection > limits.projection)) issue(`Brazo cruzado: esta familia de lona admite como máximo ${limits.width} × ${limits.projection} cm.`);
+    if (fabric && !limits) issue('Brazo cruzado: comprobar el límite de la lona; su familia no está identificada en la tabla Llaza 2026.', 'warn');
+    issue('BRAZOS CRUZADOS: kit en soporte izquierdo, dos brazos e inclinación máxima 30°.', 'warn');
+    if (Number(awning.projection) >= 300 && device !== 'MOTOR') issue('Llaza recomienda motor a partir de 300 cm de salida con brazos cruzados.', 'warn');
+  }
   if (!structureColor) missingFields.push('lacado');
   if (!fabricSelection) missingFields.push('tela');
   if (!device) missingFields.push('dispositivo válido');
@@ -71,11 +91,13 @@ export function calculateArzuaPro({ order, awning }) {
     seamBaseCm: parameters.seamBaseCm
   }) : null;
   const length = round1(awning.width - lookupDiscount(parameters.widthDiscounts, tubeLoad, device, 9.8));
+  if (crossed && (length <= 0 || length > 500)) diagnostics.push({ level: 'error', awningId: awning.id, message: 'Brazo cruzado: el corte de la barra de carga debe caber en el perfil de 500 cm.' });
   const rollTubeLength = round1(awning.width - lookupDiscount(parameters.rollTubeDiscounts, tubeLoad, device, 9.8));
   const stockLength = chooseStockLength(length, parameters.stockLengths);
   const fabricInvalid = Boolean(fabricSelection && !fabric);
   const stockUnavailable = stockLength === null;
   const valid = missingFields.length === 0
+    && !diagnostics.some((item) => item.level === 'error')
     && !fabricInvalid
     && (!valanceFabricSelection || valance === 0 || Boolean(valanceFabric))
     && !stockUnavailable
@@ -105,13 +127,13 @@ export function calculateArzuaPro({ order, awning }) {
 
   const materials = valid
     ? buildMaterials({
-      awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount,
+      awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, crossedKit,
       stockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl: valanceUsage?.ml || 0
     })
     : [];
 
   const despiece = valid
-    ? buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, stockLength, length, rollTubeLength })
+    ? buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, stockLength, length, rollTubeLength })
     : null;
 
   if (missingFields.length > 0) {
@@ -126,13 +148,13 @@ export function calculateArzuaPro({ order, awning }) {
       awningId: awning.id,
       message: `ARZUA PRO no válido: frente ${awning.width} cm, mínimo ${minimumLine} cm para salida ${awning.projection} y ${device}.`
     });
-  } else if (overMaximum && !modified) {
+  } else if (!crossed && overMaximum && !modified) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
       message: `ARZUA PRO no válido: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm con soporte ARZUA.`
     });
-  } else if (overMaximum && modified) {
+  } else if (!crossed && overMaximum && modified) {
     diagnostics.push({
       level: 'warn',
       awningId: awning.id,
@@ -150,6 +172,11 @@ export function calculateArzuaPro({ order, awning }) {
       model: 'ARZUA PRO',
       valid,
       minimumLine,
+      maximumLine,
+      armConfiguration: crossed ? 'CROSSED' : 'STANDARD',
+      physicalArmCount: crossed ? 2 : supportSystem === 'GALICIA' ? 3 : 2,
+      crossedKit: crossedKit || '',
+      loadProfileStockLength: crossed ? 500 : stockLength,
       width: awning.width,
       projection: awning.projection,
       fabricWidth,
@@ -194,7 +221,7 @@ const refCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASMAQEJE
 const descCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78');
 const refManivela = (lacado, crankHeight) => `MANIVE${crankSuffix(lacado)}${crankHeight}C`;
 
-function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, stockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl }) {
+function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, crossedKit, stockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl }) {
   const units = Math.max(1, Number(awning.units) || 1);
   // Las dos varillas de vaina se cortan al largo de la barra de carga, y de la
   // rígida blanca entra el doble que de la negra: se cumple exacto en 243 de las
@@ -205,14 +232,14 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
     { code: refSoporte(supportSystem, colorSuffix), quantity: units, description: supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND' },
     { code: refTuboEnrolle(stockLength), quantity: 2 * units, description: 'TUBO DE ENROLLE P801' },
     { code: refCasquilloPunta, quantity: units, description: 'CASQUILLO PUNTA CON EJE Ø78' },
-    { code: refTerminales(colorSuffix), quantity: units, description: 'JGO TERMINAL INFERIOR EVO 70-80' },
+    { code: crossedKit || refTerminales(colorSuffix), quantity: units, description: crossedKit ? 'KIT BRAZO CRUZADO AROND INFERIOR CON TERMINALES' : 'JGO TERMINAL INFERIOR EVO 70-80' },
     { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM' },
     { code: 'VARILLAVAINARBLA', quantity: round1(2 * varillaMl * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA' }
   ];
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
     materials.push(
-      { code: refTuboCargaEvo(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA EVO 80' },
+      { code: crossedKit ? crossedProfileByFinish[colorSuffix] : refTuboCargaEvo(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA EVO 80' },
       { code: refTaponesEvo(lacado), quantity: units, description: 'KIT TAPONES EVO 80' },
       { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: armCount * units, description: supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX' }
     );
@@ -248,6 +275,9 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
   if (fabric) {
     materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
   }
+  if (crossedKit && awning.crossedAdditionalTerminals === true) {
+    materials.push({ code: refTerminales(colorSuffix), quantity: units, description: 'JUEGO TERMINALES ADICIONAL CONFIRMADO' });
+  }
   if (valanceFabric && valanceFabricMl > 0) {
     materials.push({ code: valanceFabric.code, quantity: valanceFabricMl, description: `${valanceFabric.description} · BAMBA` });
   }
@@ -255,7 +285,7 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
   return materials;
 }
 
-function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, stockLength, length, rollTubeLength }) {
+function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, stockLength, length, rollTubeLength }) {
   const rows = [];
   const awningUnits = Math.max(1, Number(awning.units) || 1);
   const push = (num, name, reference, units, rowLength = null) => {
@@ -271,7 +301,7 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
   }
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
-    push(5, 'TUBO DE CARGA EVO 80', refTuboCargaEvo(colorSuffix, stockLength), awningUnits, length);
+    push(5, 'TUBO DE CARGA EVO 80', crossedKit ? crossedProfileByFinish[colorSuffix] : refTuboCargaEvo(colorSuffix, stockLength), awningUnits, length);
     push(6, 'KIT TAPONES EVO 80', refTaponesEvo(lacado), awningUnits);
   } else {
     push(5, 'TUBO DE CARGA UNIVERS 280', refTuboCargaUnivers(colorSuffix, stockLength), awningUnits, length);
@@ -279,7 +309,7 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
   }
 
   push(7, supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX', refBrazosOnyx(colorSuffix, awning.projection), armCount * awningUnits, awning.projection);
-  push(8, 'JUEGO DE TERMINALES', refTerminales(colorSuffix), awningUnits);
+  push(8, crossedKit ? 'KIT CRUZADO AROND + TERMINALES' : 'JUEGO DE TERMINALES', crossedKit || refTerminales(colorSuffix), awningUnits);
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
@@ -299,6 +329,7 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
   }
 
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
+  if (crossedKit && awning.crossedAdditionalTerminals === true) push(13, 'JUEGO TERMINALES ADICIONAL CONFIRMADO', refTerminales(colorSuffix), awningUnits);
   const anchoring = wallEntry
     ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * awningUnits }
     : null;
@@ -311,7 +342,7 @@ function buildDescription(awning, calc) {
   const bambaText = valance > 0
     ? ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm`
     : '';
-  return `Toldo ARZUA PRO ${awning.width}x${awning.projection} · tela ${formatNumber(calc.fabricWidth)}x${formatNumber(calc.fabricDrop)} · paño ${formatNumber(calc.fabricMl)} ml${bambaText}`;
+  return `Toldo ARZUA PRO${awning.armConfiguration === 'CROSSED' ? ' BRAZOS CRUZADOS · kit izquierdo · inclinación máx. 30°' : ''} ${awning.width}x${awning.projection} · tela ${formatNumber(calc.fabricWidth)}x${formatNumber(calc.fabricDrop)} · paño ${formatNumber(calc.fabricMl)} ml${bambaText}`;
 }
 
 function lookupMinimumLine(minimumLines, arm, device) {
@@ -348,4 +379,3 @@ function normalizeDevice(value) {
 function round1(value) {
   return Math.round(value * 10) / 10;
 }
-

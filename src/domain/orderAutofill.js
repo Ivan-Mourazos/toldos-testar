@@ -152,7 +152,7 @@ export function inferOrderModel(line = {}) {
   if (code === 'ANTICA' || text.includes('MODELO ANTICA')) return 'ANTICA';
   if (code === 'SELENA' || text.includes('MODELO SELENA') || text.includes('TOLDO SELENA')) return 'SELENA';
   if (code === 'CORTINA' || code === 'CORTINAUNI' || description.startsWith('TOLDO CORTINA') || text.includes('MODELO CORTINA')) return 'CORTINA';
-  if (code === 'ARZUA' || text.includes('MODELO ARZUA') || text.includes('ART 325')) return 'ARZUA PRO';
+  if (code === 'ARZUA' || code === 'BRACRU' || text.includes('MODELO ARZUA') || text.includes('ART 325')) return 'ARZUA PRO';
   return '';
 }
 
@@ -193,6 +193,7 @@ export function extractOrderTextData(value, model = '') {
 function buildAwningSuggestion(line, model, index) {
   const detailText = [line.comment, line.manufacturingNotes].filter(Boolean).join('\n');
   const extracted = extractOrderTextData(detailText, model);
+  const crossed = model === 'ARZUA PRO' && (normalize(line.articleCode) === 'BRACRU' || /BRAZOS?\s+CRUZADOS?/.test(normalize(`${line.description || ''} ${detailText}`)));
   const fabricOnly = fabricOnlyModels.has(model);
   const submodel = model === 'ELECTRA' ? inferElectraVariant(line.articleCode, detailText) : extracted.submodel;
   const electraSupport = model === 'ELECTRA'
@@ -214,7 +215,8 @@ function buildAwningSuggestion(line, model, index) {
     structureColor: extracted.structureColor,
     rotFabric: extracted.rotFabric,
     rotValance: model === 'BAMBALINA' ? extracted.rotValance || extracted.rotFabric : extracted.rotValance,
-    armCount: extracted.armCount,
+    armCount: crossed ? extracted.armCount || 2 : extracted.armCount,
+    armConfiguration: crossed ? 'CROSSED' : 'STANDARD',
     device: extracted.device || (model === 'SELENA' ? 'MAQ. INTERIOR' : ''),
     motorPower: extracted.motorPower,
     placement: extracted.placement,

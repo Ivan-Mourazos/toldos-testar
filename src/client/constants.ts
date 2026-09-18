@@ -53,6 +53,8 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     rotFabric: '',
     rotValance: '',
     armCount: null,
+    armConfiguration: 'STANDARD',
+    crossedAdditionalTerminals: null,
     device: '',
     placement: '',
     wallType: '',

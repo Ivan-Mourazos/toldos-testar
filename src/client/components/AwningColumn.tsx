@@ -535,10 +535,18 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
           )}
           {(fields.arzua || fields.galicia) && (
             <div className="awning-form-section awning-core-config">
+              {fields.arzua && <>
+                <SegmentedField label="Configuración de brazos" value={awning.armConfiguration === 'CROSSED' ? 'CRUZADOS' : 'NORMALES'} options={['NORMALES', 'CRUZADOS']} onChange={(value) => {
+                  update({ armConfiguration: value === 'CRUZADOS' ? 'CROSSED' : 'STANDARD', ...(value === 'CRUZADOS' ? { armCount: 2, supportSystem: 'ARZUA', tubeLoad: 'TUBO DE CARGA EVO 80' } : {}) });
+                  setShowGaliciaPrompt(false);
+                }} />
+                {awning.armConfiguration === 'CROSSED' && <p>Dos brazos · kit izquierdo · inclinación máxima 30°. Kit inferior para EVO 80.</p>}
+                {awning.armConfiguration === 'CROSSED' && <SelectField label="Terminales · confirmar con taller" value={awning.crossedAdditionalTerminals === true ? 'JUEGO ADICIONAL' : awning.crossedAdditionalTerminals === false ? 'SOLO LOS DEL KIT' : ''} options={['SOLO LOS DEL KIT', 'JUEGO ADICIONAL']} placeholder="Pendiente de confirmar…" onChange={(value) => update({ crossedAdditionalTerminals: value === 'JUEGO ADICIONAL' ? true : value === 'SOLO LOS DEL KIT' ? false : null })} />}
+              </>}
               <SegmentedField
                 label="Nº de brazos"
                 value={awning.armCount === null ? '' : String(awning.armCount)}
-                options={(fields.galicia ? fields.armOptions : [2, 3]).map(String)}
+                options={(fields.galicia ? fields.armOptions : awning.armConfiguration === 'CROSSED' ? [2] : [2, 3]).map(String)}
                 onChange={fields.galicia ? (value) => update({ armCount: Number(value) }) : chooseArms}
               />
               {fields.tubeLoad && (

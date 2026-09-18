@@ -836,7 +836,9 @@ function diagramSpec(diagram, awning, calculation) {
   const selectedTube = calculation?.tubeLoad || awning.tubeLoad;
   const specs = {
     ARZUA: {
-      title: 'ARZÚA PRO', roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: 'BRAZOS ONYX'
+      title: awning.armConfiguration === 'CROSSED' ? 'ARZÚA · BRAZOS CRUZADOS' : 'ARZÚA PRO',
+      roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: 'BRAZOS ONYX',
+      crossed: awning.armConfiguration === 'CROSSED'
     },
     GALICIA: {
       title: 'GALICIA', roll: 'TUBO DE ENROLLE P801', load: selectedTube || 'TUBO DE CARGA', arms: 'BRAZOS ONYX'
@@ -880,10 +882,10 @@ function drawArmSystemDiagram(doc, x, y, w, h, spec) {
 
   const schematicArms = 2;
   for (let index = 0; index < schematicArms; index += 1) {
-    const offset = (index - 1) * 5;
+    const offset = spec.crossed ? (index ? 12 : -12) : (index - 1) * 5;
     const jointX = wallX + 78 + offset;
     const jointY = y + 157 + offset;
-    doc.moveTo(rollX + 4, rollY + 22 + offset / 2).lineTo(jointX, jointY).lineTo(frontX - 8, frontY + 29 + offset / 2)
+    doc.moveTo(rollX + 4, rollY + 22 + offset / 2).lineTo(jointX, jointY).lineTo(frontX - 8, frontY + 29 + (spec.crossed ? -offset : offset) / 2)
       .strokeColor(index % 2 ? '#708e86' : '#466e64').lineWidth(1.15).stroke();
   }
 
@@ -891,7 +893,7 @@ function drawArmSystemDiagram(doc, x, y, w, h, spec) {
     .fillAndStroke('#e7eeec', '#466e64');
   drawDiagramText(doc, spec.roll, wallX - 8, rollY - 31, 86);
   drawDiagramText(doc, spec.load, frontX - 55, frontY + 47, 110);
-  drawDiagramText(doc, `${spec.arms} · SEGÚN TOLDO`, wallX + 48, frontY + 5, frontX - wallX - 62);
+  drawDiagramText(doc, spec.crossed ? '2 BRAZOS CRUZADOS' : `${spec.arms} · SEGÚN TOLDO`, wallX + 48, frontY + 5, frontX - wallX - 62);
   drawDimensionSummary(doc, x, y, w);
   if (spec.extra) drawHardwareFooter(doc, x, y, w, h, [spec.extra]);
 }

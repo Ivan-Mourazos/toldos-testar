@@ -50,6 +50,8 @@ export type Awning = {
   rotFabric: string;
   rotValance: string;
   armCount: number | null;
+  armConfiguration?: 'STANDARD' | 'CROSSED';
+  crossedAdditionalTerminals?: boolean | null;
   device: string;
   placement: string;
   wallType: string;

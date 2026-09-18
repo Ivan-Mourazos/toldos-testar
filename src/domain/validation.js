@@ -143,6 +143,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     height: numberOrDefault(awning?.height, 0),
     hasValance,
     armCount: numberOrDefault(awning?.armCount, 0),
+    armConfiguration: model === 'ARZUA PRO' && awning?.armConfiguration === 'CROSSED' ? 'CROSSED' : 'STANDARD',
+    crossedAdditionalTerminals: typeof awning?.crossedAdditionalTerminals === 'boolean' ? awning.crossedAdditionalTerminals : null,
     device,
     placement: cleanText(awning?.placement).toUpperCase(),
     wallType: cleanText(awning?.wallType).toUpperCase(),
