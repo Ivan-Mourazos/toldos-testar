@@ -41,7 +41,9 @@ describe('lacados', () => {
   });
 
   test('lista canónica para el desplegable', () => {
-    expect(lacadoNames).toHaveLength(16);
+    expect(lacadoNames).toHaveLength(17);
+    expect(lacadoNames).toContain('ANTRACITA (RAL 7016)');
+    expect(resolveLacado('ANTRACITA (RAL 7016)')).toMatchObject({ suffix: 'GR16', crank: 'NEGRA' });
     expect(lacadoNames).toContain('BLANCO');
     expect(lacadoNames).toContain('LACADO ESPECIAL');
     expect(lacadoNames).toContain('GRIS 7016');

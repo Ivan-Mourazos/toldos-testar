@@ -2,6 +2,18 @@ import { describe, expect, test } from 'vitest';
 import { buildOrderAutofill, extractOrderTextData, inferOrderModel } from './orderAutofill.js';
 
 describe('autocompletado de pedidos RPS', () => {
+  test.each(['ANTRACITA', 'ANTRACITA 7016', 'GRIS ANTRACITA RAL 7016'])(
+    'reconoce el lacado de 4541: %s', (color) => {
+      expect(extractOrderTextData(`ESTRUCTURA DE ALUMINIO LACADO EN COLOR ${color}`, 'ARZUA PRO').structureColor)
+        .toBe('ANTRACITA (RAL 7016)');
+    }
+  );
+  test.each(['ANTRACITA MATE', 'ANTRACITA RAL 7021'])(
+    'no asigna GR16 a otro acabado: %s', (color) => {
+      expect(extractOrderTextData(`ESTRUCTURA DE ALUMINIO LACADO EN COLOR ${color}`, 'ARZUA PRO').structureColor)
+        .toBe('LACADO ESPECIAL');
+    }
+  );
   test.each([
     ['ARZUA', '', 'ARZUA PRO'],
     ['XACOBEO', '', 'XACOBEO'],

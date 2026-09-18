@@ -399,6 +399,12 @@ function inferValanceCurve(text) {
 function inferStructureColor(text) {
   const structure = /(?:ESTRUCTURA|ALUMINIO)[\s\S]{0,90}?(?:LACAD[OA]|COLOR)\s+(?:EN\s+COLOR\s+|COLOR\s+)?([A-Z0-9 -]{4,30})/.exec(text)?.[1] || '';
   if (/GRIS\s+7016\s+MATE/.test(structure)) return 'GRIS 7016 MATE TEXT.';
+  // No confundir el acabado mate/texturado con el antracita GR16 comprado.
+  if (/\bANTRACITA\b/.test(structure)) {
+    const ral = structure.match(/\b\d{4}\b/)?.[0];
+    return !/\bMATE\b|TEXT/.test(structure) && (!ral || ral === '7016')
+      ? 'ANTRACITA (RAL 7016)' : 'LACADO ESPECIAL';
+  }
   if (/NEGRO\s+MATE\s+(?:9005|9405)/.test(structure)) return 'NEGRO MATE 9005-9405';
   if (/NEGRO\s+MATE\s+9111/.test(structure)) return 'NEGRO MATE 9111';
   if (/\bBLANC[OA]\b/.test(structure)) return 'BLANCO';

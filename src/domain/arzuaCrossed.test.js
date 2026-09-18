@@ -73,7 +73,7 @@ describe('AROND brazo cruzado · tarifa 2026 y compras RPS', () => {
   test.each([
     ['BLANCO', 'KITBRCRUARONIBL16'], ['NEGRO (R-09011)', 'KITBRCRUARONINE11'],
     ['BURDEOS (R-03005)', 'KITBRCRUARONIBU05'], ['GRIS 7012', 'KITBRCRUARONIGR12'],
-    ['GRIS 7016', 'KITBRCRUARONIGR16']
+    ['GRIS 7016', 'KITBRCRUARONIGR16'], ['ANTRACITA (RAL 7016)', 'KITBRCRUARONIGR16']
   ])('reserva la referencia de compras de %s', (structureColor, code) => {
     expect(block({ structureColor }).materials).toContainEqual(expect.objectContaining({ code, quantity: 1 }));
   });
@@ -108,7 +108,7 @@ describe('AROND brazo cruzado · tarifa 2026 y compras RPS', () => {
   });
 
   test('PDF identifica el kit en el despiece sin añadir comentarios automáticos', async () => {
-    const input = order();
+    const input = order({ structureColor: 'ANTRACITA (RAL 7016)' });
     const buffer = await buildOrderPlanteamientoPdf({ order: input, calculation: calculateOrder(input) });
     const pdf = await getDocument({ data: new Uint8Array(buffer) }).promise;
     const page = await pdf.getPage(1);

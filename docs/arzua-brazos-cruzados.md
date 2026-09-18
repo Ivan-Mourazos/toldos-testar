@@ -49,6 +49,12 @@ no se añade ningún comentario automático de brazos cruzados al editar ni impr
 | Gris 7012 | KITBRCRUARONIGR12 | 087519 |
 | Gris 7016 | KITBRCRUARONIGR16 | 091076, OF 0232215 |
 
+El selector incluye también «ANTRACITA (RAL 7016)», equivalente al gris 7016
+confirmado en la compra de la OF 0232215. El importador reconoce ANTRACITA
+sin enviarlo a lacado especial. Un acabado mate/texturado o un RAL distinto
+no recibe esta equivalencia automáticamente. Los pedidos ya guardados como
+LACADO ESPECIAL deben corregirse seleccionando el acabado confirmado.
+
 Tarifa: kit inferior AROND 20 029 014 001 / 20 029 014 909.
 Las compras de colores no siempre tienen referencia de proveedor: no se han
 rellenado por deducción. Los cinco perfiles EVO de 500 cm se verificaron en el

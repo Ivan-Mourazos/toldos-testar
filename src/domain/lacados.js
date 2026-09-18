@@ -12,6 +12,8 @@ const table = Object.freeze([
   Object.freeze({ name: 'BURDEOS (R-03005)', suffix: 'BU05', crank: 'NEGRA' }),
   Object.freeze({ name: 'GRIS 7012', suffix: 'GR12', crank: 'NEGRA' }),
   Object.freeze({ name: 'GRIS 7016', suffix: 'GR16', crank: 'NEGRA' }),
+  // Pedido de compra 091076, OF 0232215: antracita 7016 usa GR16.
+  Object.freeze({ name: 'ANTRACITA (RAL 7016)', suffix: 'GR16', crank: 'NEGRA' }),
   Object.freeze({ name: 'GRIS 7016 MATE TEXT.', suffix: 'GT16', crank: 'NEGRA' }),
   Object.freeze({ name: 'NEGRO MATE 9111', suffix: 'NEM1', crank: 'NEGRA' }),
   Object.freeze({ name: 'NEGRO MATE 9005-9405', suffix: 'NM05', crank: 'NEGRA' }),

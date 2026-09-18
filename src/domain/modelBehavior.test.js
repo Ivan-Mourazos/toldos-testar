@@ -107,7 +107,8 @@ describe('modelBehavior', () => {
 
   test('opciones del formulario', () => {
     expect(formOptions.tecnicos).toEqual(['ÁNGEL', 'JAIME', 'ALBERTO', 'ADRIÁN', 'TAMARA', 'IVÁN']);
-    expect(formOptions.lacados).toHaveLength(16);
+    expect(formOptions.lacados).toHaveLength(17);
+    expect(formOptions.lacados).toContain('ANTRACITA (RAL 7016)');
     expect(formOptions.alturasManivela).toContain(170);
     expect(formOptions.sensores.map((s) => s.sensor)).toContain('SIN SENSOR');
   });

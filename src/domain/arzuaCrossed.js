@@ -29,7 +29,7 @@ export function resolveCrossedKit(color) {
     BLANCO: 'BL16',
     'NEGRO (R-09011)': 'NE11', NEGRO: 'NE11',
     'BURDEOS (R-03005)': 'BU05', BURDEOS: 'BU05',
-    'GRIS 7012': 'GR12', 'GRIS 7016': 'GR16'
+    'GRIS 7012': 'GR12', 'GRIS 7016': 'GR16', 'ANTRACITA (RAL 7016)': 'GR16'
   }[String(color || '').trim().toUpperCase().replace(/\s+/g, ' ')];
   return crossedKitByFinish[finish] || null;
 }
