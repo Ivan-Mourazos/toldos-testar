@@ -35,7 +35,9 @@ La última línea contradice la interpretación de la ilustración de página 26
 que muestra terminales dentro del kit. No se afirma que Compras se equivocase.
 El campo «Terminales · confirmar con taller» empieza pendiente y bloquea la
 reserva hasta elegir solo los del kit o juego adicional. Esta elección se
-imprime en el PDF. Ninguna de las dos opciones se ha aplicado a la OF real.
+refleja en las líneas del despiece del PDF. Ninguna de las dos opciones se ha aplicado a la OF real.
+Las observaciones de estructura contienen exclusivamente el texto del usuario:
+no se añade ningún comentario automático de brazos cruzados al editar ni imprimir.
 
 ## Equivalencias verificadas
 

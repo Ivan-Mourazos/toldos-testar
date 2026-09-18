@@ -107,16 +107,15 @@ describe('AROND brazo cruzado · tarifa 2026 y compras RPS', () => {
     expect(result.order.awnings[0]).toMatchObject({ model: 'ARZUA PRO', armConfiguration: 'CROSSED', armCount: 2 });
   });
 
-  test('PDF imprime kit, configuración y montaje', async () => {
+  test('PDF identifica el kit en el despiece sin añadir comentarios automáticos', async () => {
     const input = order();
     const buffer = await buildOrderPlanteamientoPdf({ order: input, calculation: calculateOrder(input) });
     const pdf = await getDocument({ data: new Uint8Array(buffer) }).promise;
     const page = await pdf.getPage(1);
     const text = (await page.getTextContent()).items.map((item) => item.str).join(' ');
-    expect(text).toContain('BRAZOS CRUZADOS');
+    expect(text).toContain('KIT CRUZADO AROND + TERMINALES');
     expect(text).toContain('KITBRCRUARONIGR16');
-    expect(text).toContain('KIT EN SOPORTE IZQUIERDO');
-    expect(text).toContain('30°');
+    expect(text).not.toContain('KIT EN SOPORTE IZQUIERDO');
     expect(text).not.toContain('TERMINEVOGR16');
   });
 });
