@@ -17,6 +17,9 @@ function baseAwning(overrides = {}) {
     sensor: 'SIN SENSOR',
     crankHeight: 170,
     machineSide: 'M.F.DER',
+    valanceCurve: 'RECTA',
+    rotFabric: 'NO',
+    rotValance: 'NO',
     ...overrides
   };
 }
@@ -193,7 +196,8 @@ describe('ARZUA PRO — campos de mecanizado sin elegir (formulario vacio por de
       })]
     }));
     expect(result.ofs[0].calculation.valid).toBe(false);
-    expect(result.ofs[0].materials).toEqual([]);
+    // La reserva se conserva mientras se completa: el error ya bloquea la generación.
+    expect(result.ofs[0].materials.length).toBeGreaterThan(0);
     expect(result.diagnostics.some((d) => d.level === 'error' && d.message.includes('posición del motor'))).toBe(true);
   });
 });
@@ -440,7 +444,7 @@ describe('normalización de campos nuevos del pedido', () => {
       orderDate: '2026-07-10', reviewer: 'TAMARA', remate: 'COMO TELA',
       curvaBamba: 'RECTA', bambaDistinta: true, telaBamba: 'PVC 580',
       rotTela: 'si', rotBamba: 'no',
-      awnings: [baseAwning({ submodel: 'con caja' })]
+      awnings: [baseAwning({ submodel: 'con caja', valanceCurve: '', rotFabric: '', rotValance: '' })]
     }));
 
     expect(normalized).toMatchObject({

@@ -6,6 +6,9 @@ export type Model = {
   supportsMultipleArms: boolean;
 };
 
+// Campo que falta para dar un toldo por completo (src/domain/awningCompleteness.js).
+export type MissingField = { field: string; label: string };
+
 export type Catalog = {
   source: { workbook: string; lastReviewed: string };
   models: Model[];
@@ -435,6 +438,7 @@ export type Calculation = {
     calculation?: {
       model: string;
       valid: boolean;
+      missingFields?: MissingField[];
       minimumLine: number;
       // Todos los modelos los devuelven. En IRIS no son copia de lo que
       // escribió el técnico: salen del escuadrado del hueco.
@@ -554,7 +558,7 @@ export type Calculation = {
       requiresCad?: boolean;
     };
   }[];
-  diagnostics: { level: 'error' | 'pending' | 'warn'; awningId?: string; message: string }[];
+  diagnostics: { level: 'error' | 'pending' | 'warn'; awningId?: string; awningIndex?: number; missingFields?: MissingField[]; message: string }[];
   totals: { awnings: number; materials: number };
 };
 

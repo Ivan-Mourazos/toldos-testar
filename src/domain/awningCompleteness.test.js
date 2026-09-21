@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { awningLetter, describeMissing, getMissingFields } from './awningCompleteness.js';
+import { calculateOrder } from './rules.js';
 
 // Un Arzúa completo: el caso AR2603332 de docs/rps-arzua-evidence.md.
 const arzua = {
@@ -88,5 +89,32 @@ describe('describeMissing y awningLetter', () => {
 
   it('nombra los toldos con letras', () => {
     expect([0, 1, 25, 26].map(awningLetter)).toEqual(['A', 'B', 'Z', 'AA']);
+  });
+});
+
+describe('calculateOrder aplica la regla', () => {
+  const order = (patch) => ({
+    orderCode: 'AR2603332', sameFabric: true, fabric: 'ACRILI2018P120|||120|||ACR AZUL', structureColor: 'BLANCO',
+    awnings: [{
+      id: 'a', units: 1, tubeLoad: 'TUBO DE CARGA EVO 80', armCount: 2, sensor: 'SIN SENSOR', placement: 'FRONTAL',
+      ...arzua, ...patch
+    }]
+  });
+
+  it('un Arzúa con bamba y sin curva ni rotulación no es válido, dice qué falta y conserva la reserva', () => {
+    const result = calculateOrder(order({ valanceCurve: '', rotFabric: '', rotValance: '' }));
+    const block = result.ofs[0];
+    const error = result.diagnostics.find((d) => d.missingFields);
+    expect(block.calculation.valid).toBe(false);
+    expect(error.level).toBe('error');
+    expect(error.missingFields.map((m) => m.field)).toEqual(['valanceCurve', 'rotFabric', 'rotValance']);
+    expect(error.message).toBe('Toldo A (ARZUA PRO, OF 0230194): falta curva bamba, rotulación tela y rotulación bamba.');
+    expect(block.materials.length).toBeGreaterThan(0);
+  });
+
+  it('completo, es válido y sin ese error', () => {
+    const result = calculateOrder(order({}));
+    expect(result.ofs[0].calculation.valid).toBe(true);
+    expect(result.diagnostics.some((d) => d.missingFields)).toBe(false);
   });
 });

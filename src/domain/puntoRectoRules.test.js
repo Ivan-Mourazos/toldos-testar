@@ -6,7 +6,7 @@ function awning(patch = {}) {
     id: 'point-test', of: '0227745', model: 'PUNTO RECTO', units: 1,
     width: 256, projection: 100, valanceHeight: 25,
     device: 'MAQUINA', armCount: 2, crankHeight: 150,
-    structureColor: 'BLANCO', rotFabric: 'NO', rotValance: 'NO',
+    structureColor: 'BLANCO', rotFabric: 'NO', rotValance: 'NO', valanceCurve: 'RECTA',
     wallType: '', ...patch
   };
 }

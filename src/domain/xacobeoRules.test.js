@@ -14,6 +14,8 @@ function awning(patch = {}) {
     crankHeight: 170,
     structureColor: 'BLANCO',
     rotFabric: 'NO',
+    rotValance: 'NO',
+    valanceCurve: 'RECTA',
     wallType: '',
     ...patch
   };

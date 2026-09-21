@@ -19,6 +19,7 @@ function payload(awning, overrides = {}) {
       anticaVariant: 'TUBO 50X30 CONTRAPESO', anticaSupportHeight: 0,
       device: 'MAQUINA', crankHeight: 200, machineSide: 'M.F.DER',
       sensor: 'SIN SENSOR', placement: 'FRONTAL', wallType: '',
+      valanceCurve: 'RECTA', rotFabric: 'NO', rotValance: 'NO',
       ...awning
     }],
     ...overrides

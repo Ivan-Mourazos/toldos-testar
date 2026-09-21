@@ -1149,6 +1149,7 @@ describe('planteamiento IRIS', () => {
     structureColor: 'BLANCO',
     wallType: '',
     curtainHasWindow: false,
+    rotFabric: 'NO',
     reglasModificadas: false
   };
 

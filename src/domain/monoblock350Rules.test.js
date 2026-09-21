@@ -7,7 +7,7 @@ function awning(patch = {}) {
     width: 695, projection: 275, valanceHeight: 25,
     device: 'MAQUINA', armCount: 3, crankHeight: 200,
     placement: 'TECHO', structureColor: 'BLANCO',
-    rotFabric: 'NO', rotValance: 'NO', wallType: '', ...patch
+    rotFabric: 'NO', rotValance: 'NO', valanceCurve: 'RECTA', wallType: '', ...patch
   };
 }
 

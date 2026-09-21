@@ -50,12 +50,13 @@ does render headless; only opening a raw `.pdf` in the browser does not.
 ## Reference case AR2603332
 
 Arzúa Pro, OF 0230194, 337 × 225, bamba 30, 2 brazos, EVO 80, blanco, motor,
-sin sensor, M.F. derecha, frontal, tela ACRILI2018P120. Expected: estado
+sin sensor, M.F. derecha, frontal, tela ACRILI2018P120, curva recta, sin
+rotulación. Expected: estado
 **Válido**, tela 326,2 × 300, **9 ml**, 15 líneas RPS.
 
-The card footer can still read **SIN COMPLETAR** while the calculation is
-valid: the card requires curva bamba and rotulación tela/bamba, the
-calculation does not. Check both.
+The card and the calculation share one rule (`src/domain/awningCompleteness.js`):
+if anything is missing, the footer reads **FALTA · …** with the fields, and the
+calculation is not valid.
 
 ## Stop
 

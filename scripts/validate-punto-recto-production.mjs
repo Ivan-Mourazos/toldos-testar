@@ -29,6 +29,8 @@ for (const item of workbooks) {
       width: row.width, projection: row.projection, valanceHeight: row.valanceHeight,
       device: row.device, armCount: row.armCount, crankHeight: row.crankHeight,
       sensor: row.sensor, structureColor: row.structureColor, rotFabric: 'NO', rotValance: 'NO',
+      // Datos que el formulario exige y el libro no guarda; no cambian ninguna medida.
+      valanceCurve: 'RECTA', machineSide: 'M.F.DER',
       fabric: `${row.fabricCode}|||${row.fabricRollWidth}|||TELA VALIDACION`,
       reglasModificadas: row.modified,
       pointFabricDropMultiplier: Math.SQRT2,

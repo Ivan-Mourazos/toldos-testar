@@ -19,7 +19,8 @@ import { calculateHera } from './heraRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
 import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
 import { normalizeOrder } from './validation.js';
-import { getFieldVisibility, getRequiredDimensions } from './modelBehavior.js';
+import { getRequiredDimensions } from './modelBehavior.js';
+import { awningLetter, describeMissing, getMissingFields } from './awningCompleteness.js';
 import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 import { withRpsCodes } from './rpsIrregularCodes.js';
 
@@ -103,19 +104,19 @@ export function calculateOrder(payload) {
         calculation: { ...result.calculation, valid: false }
       };
     }
-    const fields = getFieldVisibility({ model: awning.model, device: awning.device });
-    if (fields.motorLocation && !awning.machineSide) {
+    // Una sola regla para tarjeta, cálculo y generación. Se conserva la reserva
+    // para que el técnico vea el planteamiento mientras completa el toldo; el
+    // error basta para bloquear la generación de archivos.
+    const missingFields = getMissingFields(awning);
+    if (missingFields.length) {
       diagnostics.push({
         level: 'error',
         awningId: awning.id,
-        message: `${awning.model} incompleto en OF ${awning.of}: falta posición del motor.`
+        awningIndex,
+        missingFields,
+        message: `Toldo ${awningLetter(awningIndex)} (${awning.model}, OF ${awning.of}): falta ${describeMissing(missingFields)}.`
       });
-      result = {
-        ...result,
-        materials: [],
-        despiece: null,
-        calculation: { ...result.calculation, valid: false }
-      };
+      result = { ...result, calculation: { ...result.calculation, valid: false, missingFields } };
     }
     result = applyLegacyRpsFabricReservation({ awning, result });
     result = withRpsCodes(result);

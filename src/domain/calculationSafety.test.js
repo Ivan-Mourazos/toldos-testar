@@ -27,6 +27,7 @@ describe('protecciones del cálculo de tela', () => {
         machineSide: 'M.F.DER',
         wallType: '',
         sensor: 'SIN SENSOR',
+        rotFabric: 'NO',
         ...fields
       }]
     }).ofs[0].calculation;

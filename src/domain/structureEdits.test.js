@@ -6,7 +6,7 @@ import { buildOrderPlanteamientoPdf } from './planteamientoPdf.js';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 function fixture() {
-  return { orderCode: 'AR2609900', customer: 'PRUEBA', technician: 'IVAN', reviewer: 'JAIME', fabric: 'ACR NEGRO', structureColor: 'BLANCO', sameFabric: true, awnings: [{ id: 'a', of: '0230000', model: 'ANTICA', units: 1, width: 450, projection: 80, valanceHeight: 20, anticaVariant: 'TUBO 50X30 CONTRAPESO', device: 'MAQUINA', crankHeight: 200, machineSide: 'M.F.DER', placement: 'FRONTAL' }] };
+  return { orderCode: 'AR2609900', customer: 'PRUEBA', technician: 'IVAN', reviewer: 'JAIME', fabric: 'ACR NEGRO', structureColor: 'BLANCO', sameFabric: true, awnings: [{ id: 'a', of: '0230000', model: 'ANTICA', units: 1, width: 450, projection: 80, valanceHeight: 20, anticaVariant: 'TUBO 50X30 CONTRAPESO', device: 'MAQUINA', crankHeight: 200, machineSide: 'M.F.DER', placement: 'FRONTAL', valanceCurve: 'RECTA', rotFabric: 'NO', rotValance: 'NO' }] };
 }
 function edit(order, change) {
   const block = calculateOrder(order).ofs[0];

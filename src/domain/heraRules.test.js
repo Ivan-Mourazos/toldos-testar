@@ -18,6 +18,7 @@ function hera(overrides = {}, orderOverrides = {}) {
       heraJoin: 'NINGUNO',
       heraBottomFinish: 'VARILLA BLANCA',
       heraInteriorFace: 'DERECHO',
+      heraChainColor: 'BLANCO',
       units: 1,
       width: 163.5,
       projection: 165,

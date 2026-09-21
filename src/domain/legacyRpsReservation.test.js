@@ -46,6 +46,7 @@ function order({ width, units, main, valance }) {
     awnings: [{
       id: 'rps-edge', of: '0399998', model: 'CAMBIO TELA', units,
       width, projection: 100, valanceHeight: 25,
+      valanceCurve: 'RECTA', rotFabric: 'NO', rotValance: 'NO',
       fabric: main, valanceFabric: valance
     }]
   };

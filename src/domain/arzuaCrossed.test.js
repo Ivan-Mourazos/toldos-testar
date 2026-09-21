@@ -15,7 +15,7 @@ function order(patch = {}) {
       crossedAdditionalTerminals: false,
       device: 'MAQ. EXTERIOR', crankHeight: 150, machineSide: 'M.F.DER',
       tubeLoad: 'TUBO DE CARGA EVO 80', supportSystem: 'ARZUA',
-      structureColor: 'GRIS 7016', ...patch
+      structureColor: 'GRIS 7016', rotFabric: 'NO', ...patch
     }]
   };
 }

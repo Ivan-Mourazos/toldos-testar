@@ -19,6 +19,9 @@ function calculate(model, overrides = {}) {
       width: 300,
       projection: 250,
       valanceHeight: 30,
+      valanceCurve: 'RECTA',
+      rotFabric: 'NO',
+      rotValance: 'NO',
       ...overrides
     }]
   });

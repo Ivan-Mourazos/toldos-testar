@@ -57,4 +57,7 @@ export async function fillArzuaAR2603332(page) {
   await pick(page, 'Posición motor', 'M.F. derecha');
   await pick(page, 'Colocación', 'Frontal');
   await chooseFabric(page, 'ACRILI2018');
+  await pick(page, 'Curva bamba', 'Recta');
+  await segment(page, 'Rotulación tela', 'No');
+  await segment(page, 'Rotulación bamba', 'No');
 }
