@@ -44,17 +44,32 @@ export function normalizeRuleParameters(saved) {
   };
 }
 
+// Compara sin depender del orden de las claves: la tabla de frentes mínimos de
+// Galicia sale con las claves en otro orden al normalizarla dos veces, y una
+// comparación por texto la daba por cambiada sin que cambiara ningún valor.
+function sameValue(left, right) {
+  return stableJson(left) === stableJson(right);
+}
+
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
 // Solo las secciones que difieren del código.
 export function ruleParameterOverrides(parameters) {
   const defaults = normalizeRuleParameters();
   const overrides = {};
   for (const key of Object.keys(defaults)) {
-    if (JSON.stringify(parameters?.[key]) !== JSON.stringify(defaults[key])) overrides[key] = parameters[key];
+    if (!sameValue(parameters?.[key], defaults[key])) overrides[key] = parameters[key];
   }
   return overrides;
 }
 
 export function changedRuleSections(before, after) {
   return Object.keys(normalizeRuleParameters())
-    .filter((key) => JSON.stringify(before?.[key]) !== JSON.stringify(after?.[key]));
+    .filter((key) => !sameValue(before?.[key], after?.[key]));
 }

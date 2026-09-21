@@ -18,6 +18,12 @@ describe('parámetros de reglas', () => {
     expect(changedRuleSections(before, after)).toEqual(['cortina']);
   });
 
+  it('normalizar dos veces no inventa cambios aunque cambie el orden de las claves', () => {
+    const twice = normalizeRuleParameters(normalizeRuleParameters());
+    expect(ruleParameterOverrides(twice)).toEqual({});
+    expect(changedRuleSections(normalizeRuleParameters(), twice)).toEqual([]);
+  });
+
   it('acepta el alias antiguo storbox400 para Perla Box', () => {
     const edited = normalizeRuleParameters({ storbox400: { standardMaxWidth: 590 } });
     expect(edited.perlaBox.standardMaxWidth).toBe(590);
