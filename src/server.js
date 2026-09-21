@@ -14,6 +14,8 @@ import { buildOrderAutofill } from './domain/orderAutofill.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
+import { formOptions } from './domain/modelBehavior.js';
+import { createRuleParametersStore } from './ruleParametersStore.js';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
@@ -52,6 +54,12 @@ const workflowStore = createWorkflowStore({
     rpsUploadDirectory: config.rpsUploadDirectory,
     rpsPlanteamientosDirectory: config.rpsPlanteamientosDirectory
   })
+});
+// Parámetros de cálculo comunes a todos los puestos, con versión e historial.
+const ruleParametersStore = createRuleParametersStore({
+  file: config.ruleParametersFile,
+  historyFile: config.ruleParametersFile.replace(/\.json$/i, '') + '-history.jsonl',
+  technicians: formOptions.tecnicos
 });
 const deploymentFeatures = {
   heraEnabled: config.heraEnabled,
@@ -224,6 +232,39 @@ app.put('/api/workflow/settings', async (req, res, next) => {
   try {
     const settings = await workflowStore.saveSettings(req.body);
     res.json({ settings, readiness: workflowReadiness(settings) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/rule-parameters', async (_req, res, next) => {
+  try {
+    res.json(await ruleParametersStore.get());
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put('/api/rule-parameters', async (req, res, next) => {
+  try {
+    res.json(await ruleParametersStore.save(req.body || {}));
+  } catch (error) {
+    if (error.code === 'VERSION_CONFLICT') {
+      res.status(409).json({ error: error.message, current: error.current });
+      return;
+    }
+    if (error.code === 'INVALID_INPUT') {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    next(error);
+  }
+});
+
+app.get('/api/rule-parameters/history', async (req, res, next) => {
+  try {
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+    res.json({ entries: await ruleParametersStore.history(limit) });
   } catch (error) {
     next(error);
   }

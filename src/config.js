@@ -16,6 +16,8 @@ function booleanFromEnv(name, fallback = false) {
   return ['1', 'true', 'yes', 'on', 'si', 'sí'].includes(value);
 }
 
+const workflowSettingsFile = process.env.WORKFLOW_SETTINGS_FILE || path.resolve('.toldos-testar-settings.json');
+
 export const config = {
   host: process.env.HOST || '127.0.0.1',
   port: numberFromEnv('PORT', 4400),
@@ -28,7 +30,10 @@ export const config = {
   planteamientosDirectory: process.env.PLANTEAMIENTOS_DIRECTORY || '',
   rpsUploadDirectory: process.env.RPS_UPLOAD_DIRECTORY || process.env.EXPORT_DIRECTORY || '',
   rpsPlanteamientosDirectory: process.env.RPS_PLANTEAMIENTOS_DIRECTORY || '',
-  workflowSettingsFile: process.env.WORKFLOW_SETTINGS_FILE || path.resolve('.toldos-testar-settings.json'),
+  workflowSettingsFile,
+  // Parámetros comunes a todos los puestos: junto a la configuración del flujo,
+  // que en producción vive en /var/lib/toldos-testar.
+  ruleParametersFile: process.env.RULE_PARAMETERS_FILE || path.join(path.dirname(workflowSettingsFile), 'rule-parameters.json'),
   db: {
     server: process.env.DB_SERVER || '192.168.0.124',
     port: numberFromEnv('DB_PORT', 1433),

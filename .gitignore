@@ -11,3 +11,5 @@ _analysis/*.tmp
 .claude/worktrees
 .claude/settings.local.json
 .playwright-cli
+rule-parameters.json
+rule-parameters-history.jsonl
