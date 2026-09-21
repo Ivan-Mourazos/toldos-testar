@@ -36,7 +36,7 @@ export async function segment(page, group, option) {
 }
 
 export async function chooseFabric(page, query) {
-  const input = page.locator('.fabric-combobox input').first();
+  const input = page.getByRole('combobox', { name: 'Referencia', exact: true });
   await input.fill(query);
   await page.getByRole('option').first().waitFor();
   await page.getByRole('option').first().click();

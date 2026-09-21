@@ -43,7 +43,7 @@ try {
   await page.screenshot({ path: path.join(directory, 'parametros-bambalina.png'), fullPage: true });
   const image = 'data:image/png;base64,' + (await readFile('src/domain/assets/tgm-logo.png')).toString('base64');
   for (const [i, curve] of ['RECTA', 'NORMAL', 'SUAVE', 'EXTRASUAVE'].entries()) {
-    const order = { orderCode: 'AR269980' + i, customer: 'PRUEBA BAMBALINA', technician: 'IVAN', reviewer: 'JAIME', parameters, fabric: 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR', sameFabric: true, remate: 'COMO TELA', awnings: [{ id: 'a', of: '999800' + i, model: 'BAMBALINA', width: 300, projection: 0, valanceHeight: 30, valanceCurve: curve, units: 1, structureNotes: 'COMPROBAR REMATE Y VARILLA', fabricNotes: 'CENTRAR ROTULACION', ...(i === 1 ? { fabricImage: image } : {}) }] };
+    const order = { orderCode: 'AR269980' + i, customer: 'PRUEBA BAMBALINA', technician: 'IVAN', reviewer: 'JAIME', parameters, fabric: 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR', sameFabric: true, remate: 'COMO TELA', awnings: [{ id: 'a', of: '999800' + i, model: 'BAMBALINA', width: 300, projection: 0, valanceHeight: 30, valanceCurve: curve, rotValance: 'NO', units: 1, structureNotes: 'COMPROBAR REMATE Y VARILLA', fabricNotes: 'CENTRAR ROTULACION', ...(i === 1 ? { fabricImage: image } : {}) }] };
     const calc = await request('/api/calculate', order);
     assert.equal(calc.ofs[0].calculation.fabricDrop, 38);
     const saved = await request('/api/reviews', { order }); assert.equal(saved.review.status, 'PENDING_REVIEW');

@@ -43,6 +43,8 @@ describe('getMissingFields', () => {
 
   it('Selena y Electra llaman caída a la medida vertical', () => {
     expect(getMissingFields({ model: 'SELENA', of: '1', width: 300, projection: null })).toContainEqual({ field: 'projection', label: 'caída' });
+    // Cortina es vertical, pero su campo se llama Salida en la tarjeta.
+    expect(getMissingFields({ model: 'CORTINA', of: '1', width: 300, projection: null })).toContainEqual({ field: 'projection', label: 'salida' });
   });
 
   it('Cortina pide ventana y confección, y las cotas de la ventana si la lleva', () => {

@@ -41,7 +41,7 @@ await fillArzuaAR2603332(page);   // reference case, see below
 | Text/number field | `page.getByLabel('Frente', { exact: true })` |
 | `SelectField` | `role=combobox` named by its label; options use the display label (`Blanco`, `Motor`, `M.F. derecha`), so match case-insensitively. Use `pick()` |
 | `SegmentedField` | `getByRole('group', { name: 'Nº de brazos' }).getByRole('button', { name: '2' })` |
-| Fabric search | Has no accessible name: `page.locator('.fabric-combobox input')` |
+| Fabric search | `getByRole('combobox', { name: 'Referencia' })` in the order header; `Tela` or `Tela bamba` inside a card |
 | Tabs | Buttons `Pedido`, `Parámetros`, `Revisión`, `Configuración` |
 
 **Look at every screenshot.** The PDF preview is rasterised by the app itself, so it
@@ -66,5 +66,5 @@ Stop the background task when done. Leave `tmp/ui-audit/` for evidence;
 ## Common mistakes
 
 - Starting `pnpm dev` or `node src/server.js` without the overrides: writes can hit the real share.
-- Waiting for a toast to confirm success: an incomplete card blocks saving with "Completa al menos un toldo"; the missing fields are only listed under Planteamientos.
+- Expecting Guardar para revisión to save an incomplete awning straight away: it first opens a confirmation dialog listing what each awning lacks (`Guardar igualmente` / `Seguir completando`).
 - Using `page.getByRole('option', { name: 'BLANCO', exact: true })`: stored values are uppercase, labels are not.

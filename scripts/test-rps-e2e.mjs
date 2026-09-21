@@ -139,7 +139,7 @@ async function verifyBrowserCase(browserInstance, url) {
   await chooseSelect(page, 'Técnico', 'Iván');
   await chooseSelect(page, 'Revisión', 'Jaime');
 
-  const fabric = page.getByRole('combobox', { name: 'Código, color o nombre aproximado…' });
+  const fabric = page.getByRole('combobox', { name: 'Referencia', exact: true });
   await fabric.fill('ACRILI2018P120');
   const fabricOption = page.getByRole('option').filter({ hasText: 'ACRILI2018P120' }).first();
   await fabricOption.waitFor();
@@ -168,7 +168,7 @@ async function verifyBrowserCase(browserInstance, url) {
   await chooseSelect(awning, 'Sensor', 'Sin sensor');
 
   await page.getByText('VÁLIDO', { exact: true }).waitFor({ timeout: 15_000 });
-  await page.getByText('326 × 300 cm', { exact: true }).waitFor();
+  await page.getByText('326,2 × 300 cm', { exact: true }).waitFor();
   await page.getByText('9 ml', { exact: true }).waitFor();
 
   await page.getByRole('button', { name: 'Vista previa' }).click();
@@ -190,13 +190,11 @@ async function verifyBrowserCase(browserInstance, url) {
   assert.notEqual(await readonlyAwning.getAttribute('disabled'), null);
   assert.equal(await readonlyAwning.getByLabel('OF', { exact: true }).isDisabled(), true);
   const inlinePreview = reviewReader.getByRole('region', { name: 'Vista previa del planteamiento' });
-  await inlinePreview.locator('.pdf-preview-page').nth(1).waitFor({ timeout: 20_000 });
-  assert.equal(await inlinePreview.locator('.pdf-preview-page').count(), 2);
-  const previewScroll = await inlinePreview.locator('.pdf-preview-scroll').evaluate((element) => ({
-    horizontal: element.scrollWidth > element.clientWidth,
-    vertical: element.scrollHeight > element.clientHeight
-  }));
-  assert.deepEqual(previewScroll, { horizontal: true, vertical: true });
+  // Desde el 16/09/2026 la bandeja muestra el PDF en un carrusel de una página:
+  // se comprueban las dos pasando de la primera a la segunda.
+  await inlinePreview.getByRole('img', { name: 'Página 1 de 2' }).waitFor({ timeout: 20_000 });
+  await inlinePreview.getByRole('button', { name: 'Página siguiente' }).first().click();
+  await inlinePreview.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
   await page.getByRole('button', { name: 'Aprobar', exact: true }).click();
   await page.getByRole('button', { name: 'Aprobar pedido', exact: true }).click();
   await page.getByText(/marcado como aprobado/).waitFor({ timeout: 20_000 });
@@ -215,13 +213,19 @@ async function verifyBrowserCase(browserInstance, url) {
   const rpsContent = (await readFile(rpsPath)).toString('latin1');
   assert.deepEqual(parseRpsWorkbook(rpsContent), [
     ['OF', 'ARTICULO', 'CANTIDAD'],
+    // Reserva según el consumo real desde el 04/09/2026 (docs/rps-arzua-evidence.md).
     ['0230194', 'SOPAR350BL16', '1'],
     ['0230194', 'TURA80HG600C', '2'],
+    ['0230194', 'CASPUNCEJE78MM', '1'],
+    ['0230194', 'TERMINEVOBL16', '1'],
+    ['0230194', 'VARILLAVAINANEG5', '3,3'],
+    ['0230194', 'VARILLAVAINARBLA', '6,6'],
     ['0230194', 'PEVO80BL16600C', '1'],
+    ['0230194', 'TAPONEVO8BL16', '1'],
     ['0230194', 'BONYXBL16225C', '1'],
-    ['0230194', 'RUEDAMOT78', '1'],
+    ['0230194', 'RUEDAMOT801MEC', '1'],
     ['0230194', 'SUNILUSIO55//17', '1'],
-    ['0230194', 'CORONALT6078', '1'],
+    ['0230194', 'CORONALT60', '1'],
     ['0230194', 'SOPORTEUNVHIPRO', '1'],
     ['0230194', 'SITUOIO1PURE', '1'],
     ['0230194', 'ACRILI2018P120', '9']
@@ -400,7 +404,7 @@ function apiCases() {
         valanceHeight: 30, destination: 'PARTICULAR', tubeLoad: 'TUBO DE CARGA EVO 80',
         device: 'MOTOR', sensor: 'SITUO IO 1 PURE'
       }),
-      calculation: { fabricWidth: 326, fabricDrop: 300, fabricMl: 9, motorPower: '55/17' },
+      calculation: { fabricWidth: 326.2, fabricDrop: 300, fabricMl: 9, motorPower: '55/17' },
       materials: { TURA80HG600C: 2, 'SUNILUSIO55//17': 1, ACRILI2018P120: 9, SITUOIO1PURE: 1 },
       pdfPages: 2
     },

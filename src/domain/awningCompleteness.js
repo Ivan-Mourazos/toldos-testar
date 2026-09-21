@@ -5,7 +5,7 @@
  * el cálculo no exigía curva, remate ni rotulación, así que un toldo con bamba
  * y sin curva llegaba al planteamiento definitivo diciendo "SIN BAMBA".
  */
-import { getFieldVisibility, getRequiredDimensions, isVerticalAwningModel, normalizeValanceFinish } from './modelBehavior.js';
+import { getFieldVisibility, getRequiredDimensions, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { electraMotors } from './electraParameters.js';
 
@@ -18,7 +18,9 @@ const windowDimensions = [
 
 function dimensionLabel(model, field) {
   if (field === 'width') return 'frente';
-  if (field === 'projection') return isVerticalAwningModel(model) ? 'caída' : 'salida';
+  // La misma palabra que el rótulo del campo en la tarjeta: solo Selena y
+  // Electra dicen caída; Cortina, aunque sea vertical, pregunta por la salida.
+  if (field === 'projection') return model === 'SELENA' || model === 'ELECTRA' ? 'caída' : 'salida';
   if (field === 'valanceHeight') return 'alto terminado';
   if (field === 'irisFrontTop') return 'frente superior';
   if (field === 'irisExitLeft') return 'salida izquierda';
