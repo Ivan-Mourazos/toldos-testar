@@ -1205,3 +1205,50 @@ describe('planteamiento IRIS', () => {
     expect(document.numPages).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe('maqueta única del planteamiento de telas', () => {
+  async function fabricPageText(order) {
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const page = await document.getPage(document.numPages);
+    return (await page.getTextContent()).items.map((item) => item.str).join(' ');
+  }
+
+  // La maqueta del Excel rotula el total en una celda propia ("7,5 ML"); la
+  // antigua lo escribía como "REFERENCIA: 7,5 ML". Así se distinguen.
+  const oldTotalsPattern = /[A-Z0-9]: [\d.,]+ ML/;
+
+  test.each([
+    ['CORTINA', { curtainHasWindow: false, curtainFinish: 'NORMAL', device: 'MOTOR' }],
+    ['IRIS', {
+      submodel: 'IRIS 110 CON COFRE', irisGuideType: 'ESTÁNDAR', irisGuideFixing: 'PARED', irisWindBlock: false,
+      irisAssumeSquare: true, irisFrontTop: 300, irisExitLeft: 250, device: 'MAQUINA', machineSide: 'M.F.DER',
+      crankHeight: 150, curtainHasWindow: false
+    }],
+    ['BAMBALINA', { valanceHeight: 30, valanceCurve: 'RECTA' }],
+    ['ENROLLABLE', {}]
+  ])('%s usa la misma maqueta que el Arzua y conserva su dibujo', async (model, extra) => {
+    const text = await fabricPageText({
+      orderCode: 'AR26-MAQUETA', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
+      awnings: [{ id: 'a', of: '0239001', model, units: 1, width: 300, projection: 250, valanceHeight: 0, placement: 'FRONTAL', structureColor: 'BLANCO', ...extra }]
+    });
+
+    expect(text).toContain('PAÑO TOTAL NECESARIO');
+    expect(text).toContain('DATOS BÁSICOS');
+    expect(text).not.toMatch(oldTotalsPattern);
+  });
+
+  test('con telas distintas por toldo, cada fila indica su tela', async () => {
+    const base = { units: 1, width: 300, projection: 250, valanceHeight: 0 };
+    const text = await fabricPageText({
+      orderCode: 'AR26-VARIAS', sameFabric: false,
+      awnings: [
+        { ...base, id: 'a', of: '0239002', model: 'CAMBIO TELA', fabric: 'ACR NEGRO' },
+        { ...base, id: 'b', of: '0239003', model: 'CAMBIO TELA', fabric: 'PVC-AUDIT|||300|||PVC VERDE DE PRUEBA|||PVC' }
+      ]
+    });
+
+    expect(text).toContain('VARIAS TELAS');
+    expect(text).toContain('TELA PVC VERDE DE PRUEBA');
+  });
+});

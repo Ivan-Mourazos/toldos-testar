@@ -436,27 +436,14 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   const margin = 24;
   const lines = entries.map(toFabricLine);
   drawFabricHeader(doc, { order, margin, pageW });
-  if (diagram === 'GENERAL' && !diagramAwning?.fabricImage) {
-    drawLegacyGeneralFabricBody(doc, { order, lines, diagramAwning, fabricTotals, margin, pageW, pageH });
-    drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
-    return;
-  }
-  const diagramW = 218;
-  drawAwningDiagram(doc, margin, 126, diagramW, 350, diagram, diagramAwning, diagramCalculation);
-
-  const contentX = margin + diagramW + 18;
-  const contentW = pageW - margin - contentX;
-  drawFabricMeta(doc, contentX, 126, contentW, order, lines);
-  drawFabricRows(doc, contentX, 205, contentW, lines, order);
-  drawFabricTotals(doc, contentX, 515, contentW, fabricTotals, lines);
-  drawStructureNotes(doc, margin, 488, diagramW, pageH - 48, order.notes);
+  drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagramCalculation, fabricTotals, margin, pageW, pageH });
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
 }
 
-// El patrón general recupera la lectura del Excel histórico: cajas rectas,
+// Todos los modelos comparten la lectura del Excel histórico: cajas rectas,
 // pocos rellenos, cotas arriba y el total de metros lineales grande al pie.
-// Los patrones técnicos específicos continúan usando sus composiciones propias.
-function drawLegacyGeneralFabricBody(doc, { order, lines, diagramAwning, fabricTotals, margin, pageW, pageH }) {
+// Solo cambia el dibujo de la izquierda, que es el propio de cada modelo.
+function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagramCalculation, fabricTotals, margin, pageW, pageH }) {
   const outerY = 114;
   const outerBottom = pageH - 32;
   doc.rect(margin, outerY, pageW - margin * 2, outerBottom - outerY)
@@ -464,10 +451,14 @@ function drawLegacyGeneralFabricBody(doc, { order, lines, diagramAwning, fabricT
 
   const diagramX = margin + 12;
   const diagramW = 242;
-  drawCell(doc, diagramX, 123, 206, 21, 'GENERAL', {
+  drawCell(doc, diagramX, 123, 206, 21, diagram.replaceAll('-', ' '), {
     bold: true, size: 10, align: 'center', fill: colors.paper
   });
-  drawGeneralDiagram(doc, diagramX, 149, diagramW, 332, { title: '', legacy: true }, diagramAwning);
+  if (diagram === 'GENERAL' && !diagramAwning?.fabricImage) {
+    drawGeneralDiagram(doc, diagramX, 149, diagramW, 332, { title: '', legacy: true }, diagramAwning);
+  } else {
+    drawAwningDiagram(doc, diagramX, 149, diagramW, 332, diagram, diagramAwning, diagramCalculation);
+  }
   if (String(order.notes || '').trim()) {
     drawStructureNotes(doc, diagramX, 488, diagramW, outerBottom - 10, order.notes);
   }
@@ -509,10 +500,11 @@ function drawLegacyGeneralFabricBody(doc, { order, lines, diagramAwning, fabricT
     drawCell(doc, metricsX, y + 29, metricW, 29, detail.workLabel, {
       size: 9.5, align: 'center', fill: colors.paper
     });
-    const instruction = [showOfInRows ? `OF ${value(line.awning.of)}` : '', detail.instruction]
+    const instruction = [showOfInRows ? `OF ${value(line.awning.of)}` : '', buildFabricRowInstruction(line, lines, order)]
       .filter(Boolean).join(' · ');
     drawFittedText(doc, instruction, metricsX + metricW + 12, y + 36, available - metricW - 12, 20, {
-      font: fonts.semibold, maxSize: 7.5, minSize: 5.8, align: 'center'
+      font: fonts.semibold, maxSize: 7.5, minSize: 4.8, align: 'center',
+      overflowLabel: '[NOTA COMPLETA EN EL PEDIDO]'
     });
   });
 
@@ -700,107 +692,22 @@ function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE
   });
 }
 
-function drawFabricMeta(doc, x, y, w, order, lines) {
-  const gap = 12;
-  const rotW = Math.round(w * 0.36);
-  const dataW = w - rotW - gap;
-  drawMiniTable(doc, x, y, rotW, 'ROTULACIÓN', [
-    ['TELA', summarizeAwningValue(lines, 'rotFabric', order.rotTela)],
-    ['BAMBA', summarizeAwningValue(lines, 'rotValance', order.rotBamba)]
-  ], 17, { preserveBlank: true });
-  drawMiniTable(doc, x + rotW + gap, y, dataW, 'DATOS BÁSICOS', [
-    ['MATERIAL', summarizeFabricMaterial(lines)],
-    ['CURVA', summarizeValanceCurve(lines)],
-    ['REMATE', summarizeRemate(lines, order)]
-  ], 17, { preserveBlank: true });
-}
-
-function drawFabricRows(doc, x, y, w, lines, order) {
-  const rowH = 70;
-  const rowGap = 4;
-  const showOfInRows = distinctOrderOfs(order).length > 1;
-  const mixedCurve = summarizeValanceCurve(lines) === 'SEGÚN TOLDO';
-  const mixedRemate = summarizeRemate(lines, order) === 'SEGÚN TOLDO';
-  const mixedRotFabric = summarizeAwningValue(lines, 'rotFabric', order.rotTela) === 'SEGÚN TOLDO';
-  const mixedRotValance = summarizeAwningValue(lines, 'rotValance', order.rotBamba) === 'SEGÚN TOLDO';
-  const mixedFabric = summarizeFabricMaterial(lines) === 'VARIAS TELAS';
-  lines.forEach((line, localIndex) => {
-    const rowY = y + localIndex * (rowH + rowGap);
-    const detail = buildFabricLineDetail(line.awning, line.calc, order);
-    const instructionParts = [];
-    if (mixedFabric) {
-      const description = fabricDescription(line.calc?.fabricCode, line.calc?.fabricDescription) || 'SIN DEFINIR';
-      const code = String(line.calc?.fabricCode || '').trim();
-      instructionParts.push(`TELA ${description}${code ? ` · ${code}` : ''}`);
-    }
-    instructionParts.push(detail.instruction);
-    if (mixedCurve && line.awning.valanceCurve) instructionParts.push(`CURVA ${line.awning.valanceCurve}`);
-    if (mixedRemate && remateValue(line.awning, order)) instructionParts.push(`REMATE ${remateValue(line.awning, order)}`);
-    if (mixedRotFabric) instructionParts.push(`ROT. TELA ${line.awning.rotFabric || order.rotTela || '-'}`);
-    if (mixedRotValance) instructionParts.push(`ROT. BAMBA ${line.awning.rotValance || order.rotBamba || '-'}`);
-    const instruction = instructionParts.filter(Boolean).join(' · ');
-    roundedBox(doc, x, rowY, w, rowH, 3, localIndex % 2 ? colors.paper : colors.soft, colors.line);
-    roundedBox(doc, x, rowY, 40, rowH, 3, colors.yellow, colors.ink);
-    doc.fillColor(colors.ink).font(fonts.bold).fontSize(15)
-      .text(awningLetter(line.index), x + 5, rowY + 24, { width: 30, align: 'center' });
-
-    const metricX = x + 48;
-    const metricGap = 6;
-    const metricW = w - (metricX - x) - 8;
-    const unitsW = 90;
-    const dropW = 166;
-    const fabricW = metricW - unitsW - dropW - metricGap * 2;
-    drawFabricMetric(doc, metricX, rowY + 4, fabricW, 'TELA', detail.fabricWidth, 20);
-    drawFabricMetric(doc, metricX + fabricW + metricGap, rowY + 4, dropW, isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 20);
-    drawFabricMetric(doc, metricX + fabricW + dropW + metricGap * 2, rowY + 4, unitsW, 'UN.', detail.units, 20);
-
-    drawCell(doc, metricX, rowY + 29, fabricW, 27, detail.workLabel, {
-      bold: true, size: 8.5, align: 'center', fill: colors.paper
-    });
-    const detailTextX = metricX + fabricW + 10;
-    const detailTextW = metricW - fabricW - 10;
-    drawFittedText(doc, instruction, detailTextX, rowY + 29, detailTextW, showOfInRows ? 23 : 34, {
-      font: fonts.semibold,
-      maxSize: 6.8,
-      minSize: 4.2,
-      overflowLabel: '[NOTA COMPLETA EN EL PEDIDO]'
-    });
-    if (showOfInRows) {
-      drawFittedText(doc, `OF ${value(line.awning.of)}`, detailTextX, rowY + 54, detailTextW, 10, {
-        font: fonts.bold,
-        maxSize: 8,
-        minSize: 6,
-        color: colors.ink,
-        align: 'left'
-      });
-    }
-  });
-}
-
-function drawFabricTotals(doc, x, y, w, totals, lines) {
-  const pageCodes = new Set(lines.flatMap(({ calc }) => [calc?.fabricCode, calc?.valanceFabricCode]).filter(Boolean));
-  const visibleTotals = totals.filter(({ code }) => pageCodes.has(code));
-  const displayTotals = visibleTotals.length > 0 ? visibleTotals : totals;
-  roundedBox(doc, x, y, w, 48, 3, colors.gray, colors.line);
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6.5)
-    .text('PAÑO TOTAL NECESARIO', x + 10, y + 8, { width: 134 });
-  const contentX = x + 151;
-  const contentW = w - 161;
-  const rowsPerColumn = 4;
-  const columnCount = Math.max(1, Math.ceil(displayTotals.length / rowsPerColumn));
-  const columnGap = 10;
-  const columnW = (contentW - (columnCount - 1) * columnGap) / columnCount;
-  (displayTotals.length > 0 ? displayTotals : [{ code: 'TELA SIN DEFINIR', amount: 0 }]).forEach((total, index) => {
-    const column = Math.floor(index / rowsPerColumn);
-    const row = index % rowsPerColumn;
-    drawFittedText(doc, `${total.code}: ${formatFabricMeasure(total.amount)} ML`, contentX + column * (columnW + columnGap), y + 6 + row * 9, columnW, 9, {
-      font: fonts.bold,
-      maxSize: displayTotals.length > 2 ? 7.2 : 10.5,
-      minSize: 5.2,
-      align: 'right',
-      overflowLabel: '[REF. LARGA]'
-    });
-  });
+// Cuando la página mezcla toldos con distinta tela, curva, remate o rotulación,
+// la cabecera dice "SEGÚN TOLDO" y cada fila tiene que decir el suyo.
+function buildFabricRowInstruction(line, lines, order) {
+  const detail = buildFabricLineDetail(line.awning, line.calc, order);
+  const parts = [];
+  if (summarizeFabricMaterial(lines) === 'VARIAS TELAS') {
+    const description = fabricDescription(line.calc?.fabricCode, line.calc?.fabricDescription) || 'SIN DEFINIR';
+    const code = String(line.calc?.fabricCode || '').trim();
+    parts.push(`TELA ${description}${code ? ` · ${code}` : ''}`);
+  }
+  parts.push(detail.instruction);
+  if (summarizeValanceCurve(lines) === 'SEGÚN TOLDO' && line.awning.valanceCurve) parts.push(`CURVA ${line.awning.valanceCurve}`);
+  if (summarizeRemate(lines, order) === 'SEGÚN TOLDO' && remateValue(line.awning, order)) parts.push(`REMATE ${remateValue(line.awning, order)}`);
+  if (summarizeAwningValue(lines, 'rotFabric', order.rotTela) === 'SEGÚN TOLDO') parts.push(`ROT. TELA ${line.awning.rotFabric || order.rotTela || '-'}`);
+  if (summarizeAwningValue(lines, 'rotValance', order.rotBamba) === 'SEGÚN TOLDO') parts.push(`ROT. BAMBA ${line.awning.rotValance || order.rotBamba || '-'}`);
+  return parts.filter(Boolean).join(' · ');
 }
 
 function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
@@ -1706,7 +1613,8 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
   const panelX = x + (w - panelW) / 2;
   // El panel baja para dejar sitio a la chapa de medidas sobre la varilla plana.
   const panelY = y + 76;
-  const panelH = 218;
+  // Bajo el panel caben la pletina y el refuerzo; si el hueco es más bajo, el panel cede.
+  const panelH = Math.min(218, h - 126);
   doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#7fa594');
   doc.rect(panelX, panelY, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
   doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
