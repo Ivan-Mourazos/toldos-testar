@@ -7,7 +7,8 @@ export default defineConfig({
     port: 4400
   },
   test: {
-    // Los worktrees de .claude/ son otras ramas: sus tests no son evidencia de main.
-    exclude: ['**/node_modules/**', '**/dist/**', '.claude/**']
+    // Alineado con eslint.config.js: .claude/ y output/releases/ alojan worktrees de otras
+    // ramas y tmp/ borradores locales; sus tests no son evidencia de main.
+    exclude: ['**/node_modules/**', '**/dist/**', '.claude/**', 'output/**', 'tmp/**']
   }
 });
