@@ -30,7 +30,7 @@ Nuevo `src/domain/awningCompleteness.js`. Recibe un toldo y devuelve lo que falt
 [{ field: 'valanceCurve', label: 'curva bamba' }, { field: 'rotFabric', label: 'rotulación tela' }]
 ```
 
-Es la regla actual de la tarjeta, trasladada sin cambiar condiciones. Las funciones auxiliares que hoy viven en el componente (`normalizeCortinaDevice`) pasan al dominio.
+Es la regla actual de la tarjeta, trasladada sin cambiar condiciones, más la ventana de Iris. Las funciones auxiliares que hoy viven en el componente (`normalizeCortinaDevice`) pasan al dominio.
 
 | Campo | Etiqueta | Cuándo falta |
 | --- | --- | --- |
@@ -39,7 +39,7 @@ Es la regla actual de la tarjeta, trasladada sin cambiar condiciones. Las funcio
 | `submodel` | variante | Modelos con variante |
 | `electraSupport` | tipo de soporte | Electra |
 | `width`, `projection`, `valanceHeight`… | frente, salida o caída, alto | Medidas obligatorias del modelo (`getRequiredDimensions`), con la etiqueta vertical/horizontal que ya usa la tarjeta |
-| `curtainHasWindow`, `curtainFinish` | ventana, confección | Modelos con configuración de cortina |
+| `curtainHasWindow`, `curtainFinish` | ventana, confección | Cortina, Cambio de cortina y Electra. Iris exige solo la ventana: su cálculo ya la pedía y la tarjeta no, otra divergencia que se cierra |
 | `curtainWindowExit`, `curtainWindowCorner`, `curtainWindowFloorHeight`, `curtainWindowHeight` | salida ventana, esquina, suelo-ventana, altura ventana | Cortina con ventana |
 | `motorPower` | motor Electra | Electra con motor |
 | `machineSide` | posición del motor / lado máquina | Motor; máquina en Electra y Selena |
@@ -54,7 +54,7 @@ Es la regla actual de la tarjeta, trasladada sin cambiar condiciones. Las funcio
 
 En `calculateOrder`, después de calcular cada toldo:
 
-- Si `getMissingFields` devuelve algo, se añade un diagnóstico `error` con `missingFields` y el mensaje *"Toldo A · Arzúa Pro · OF 0230194: falta curva bamba y rotulación tela."*, y `calculation.valid` pasa a `false`.
+- Si `getMissingFields` devuelve algo, se añade un diagnóstico `error` con `missingFields` y el mensaje *"Toldo A (ARZUA PRO, OF 0230194): falta curva bamba y rotulación tela."* El dominio no conoce los nombres comerciales, que viven en el cliente; la tarjeta y los avisos de la web sí los muestran (*Arzúa Pro*), y `calculation.valid` pasa a `false`.
 - La reserva y el despiece se conservan para que el técnico vea el planteamiento mientras completa. Sustituye a la comprobación actual de la posición del motor, que además los vaciaba.
 - Los toldos sin OF, modelo o medidas siguen fuera del cálculo, como hoy. La tarjeta dice igualmente qué les falta.
 - La generación de archivos ya se bloquea con cualquier error ([server.js](../../../src/server.js), `generate-files`): no hace falta tocarla.
@@ -79,7 +79,7 @@ En `calculateOrder`, después de calcular cada toldo:
 - Estructuras vacías: *"Completa el toldo A para ver su estructura."* El texto "Los trabajos de tela no generan planteamiento de estructura" solo sale cuando todos los elementos son trabajos de tela.
 - Barra lateral: "Faltan datos" en ámbar cuando algún toldo está incompleto, en vez de "Planteamiento vivo".
 - El buscador de tela queda asociado a su etiqueta (`aria-labelledby`).
-- Los mensajes nuevos nombran el toldo como la tarjeta: *"Toldo A · Arzúa Pro · OF …"*. Los mensajes propios de cada modelo se revisan al cerrar ese modelo.
+- Los avisos de la web nombran el toldo como la tarjeta: *"Toldo A · Arzúa Pro"*. Los mensajes propios de cada modelo se revisan al cerrar ese modelo.
 
 ## Fuera de alcance
 
