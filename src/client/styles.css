@@ -5226,3 +5226,72 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .awning-diagnostics li { border-radius: var(--radius-sm); padding: 6px 8px; }
 .awning-diagnostics .is-error { background: var(--danger-bg); color: var(--danger); }
 .awning-diagnostics .is-pending { background: var(--warn-bg); color: var(--warn); }
+
+/* Parámetros comunes: borrador pendiente de guardar, diálogo e historial. */
+.parameters-save-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  background: var(--warn-bg);
+  color: var(--warn);
+  box-shadow: var(--shadow);
+}
+.parameters-save-bar > div:first-child { display: grid; gap: 2px; }
+.parameters-save-bar span { font-size: 13px; color: var(--text); }
+.parameters-save-actions { display: flex; gap: var(--sp-2); justify-content: flex-end; flex-wrap: wrap; }
+.parameters-save-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+  background: rgb(12 39 44 / 0.45);
+}
+.parameters-save-dialog {
+  display: grid;
+  gap: var(--sp-3);
+  width: min(460px, 100%);
+  padding: var(--sp-6);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.parameters-save-dialog h2 { margin: 0; font-size: 18px; }
+.parameters-save-dialog p { margin: 0; color: var(--text-muted); font-size: 13px; }
+.parameters-history {
+  margin-bottom: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.parameters-history summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.parameters-history summary svg { width: 16px; height: 16px; flex: none; }
+.parameters-history ol { list-style: none; margin: 0; padding: 0 var(--sp-4) var(--sp-3); display: grid; gap: var(--sp-2); }
+.parameters-history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--border);
+}
+.parameters-history li > div { display: grid; gap: 2px; font-size: 13px; }
+.parameters-history small { color: var(--text-muted); }
+.parameters-history p { margin: 0; padding: 0 var(--sp-4) var(--sp-3); font-size: 13px; color: var(--text-muted); }

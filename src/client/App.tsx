@@ -21,7 +21,10 @@ import { getMissingFields } from '../domain/awningCompleteness.js';
 import { PdfPreviewPages } from './components/PdfPreviewPages';
 import { OrderView } from './views/OrderView';
 import { ParametersView } from './views/ParametersView';
-import { useParameters } from './hooks/useParameters';
+import { useParameters, type SaveDraftResult } from './hooks/useParameters';
+import { ParametersSaveBar } from './components/ParametersSaveBar';
+import { ParametersHistory } from './components/ParametersHistory';
+import { formOptions } from '../domain/modelBehavior.js';
 import { ReviewsView } from './views/ReviewsView';
 import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
@@ -202,6 +205,23 @@ export default function App() {
       parameters: ruleSettings.parameters,
       parametersVersion: ruleSettings.parametersVersion
     };
+  }
+
+  async function discardParameterDraft() {
+    const choice = await askForConfirmation({
+      title: 'Descartar cambios de parámetros',
+      message: 'Se perderán los cambios que no has guardado. Los parámetros comunes no cambian.',
+      confirmLabel: 'Descartar',
+      cancelLabel: 'Seguir editando',
+      tone: 'warning'
+    });
+    if (choice === 'confirm') ruleSettings.discardDraft();
+  }
+
+  function notifyParameterSave(result: SaveDraftResult) {
+    if (result.status === 'saved') notify('Los parámetros nuevos ya se usan en todos los puestos.', { tone: 'success', title: 'Parámetros guardados' });
+    else if (result.status === 'conflict') notify('Otro puesto guardó cambios antes. Tu borrador sigue aquí: revísalo y vuelve a guardar.', { tone: 'warning', title: 'Parámetros actualizados por otro puesto' });
+    else notify(result.message || 'No se pudieron guardar los parámetros.', { tone: 'error' });
   }
 
   async function saveForReview(confirmOverwrite = false, confirmIncomplete = false) {
@@ -426,6 +446,16 @@ export default function App() {
           )}
 
           {activeTab === 'parameters' && (
+            <>
+            <ParametersSaveBar
+              dirty={ruleSettings.dirty}
+              saving={ruleSettings.saving}
+              technicians={formOptions.tecnicos}
+              onDiscard={() => void discardParameterDraft()}
+              onSave={ruleSettings.saveDraft}
+              onResult={notifyParameterSave}
+            />
+            <ParametersHistory version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />
             <ParametersView
               parameters={ruleSettings.generalParameters}
               onUpdateArzua={ruleSettings.updateArzua}
@@ -462,6 +492,7 @@ export default function App() {
               onResetFabricJobs={ruleSettings.resetFabricJobs}
               onUpdateDrawings={ruleSettings.updateDrawings}
             />
+            </>
           )}
 
           {activeTab === 'reviews' && (
