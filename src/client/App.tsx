@@ -250,6 +250,7 @@ export default function App() {
       }
       setReviewRefresh((value) => value + 1);
       draft.resetDraft();
+      ruleSettings.restoreParameters();
       notify(`${data.review.orderCode}.pdf guardado en ${data.savedPath}. El formulario se ha limpiado.`, { tone: 'success', title: 'Guardado para revisión' });
     } catch {
       notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
@@ -311,6 +312,7 @@ export default function App() {
       if (choice !== 'confirm') return;
     }
     draft.resetDraft();
+    ruleSettings.restoreParameters();
     setAutofill(null);
     setActiveTab('order');
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });

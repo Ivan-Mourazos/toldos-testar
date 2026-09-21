@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { RuleParameters } from '../types';
 import { defaultArzuaProParameters, normalizeArzuaProParameters } from '../../domain/arzuaProParameters.js';
 import { defaultGaliciaParameters, normalizeGaliciaParameters } from '../../domain/galiciaParameters.js';
@@ -20,262 +20,227 @@ import { defaultElectraParameters, normalizeElectraParameters } from '../../doma
 import { defaultAmbarBoxParameters, normalizeAmbarBoxParameters } from '../../domain/ambarBoxParameters.js';
 import { defaultAgataBoxParameters, normalizeAgataBoxParameters } from '../../domain/agataBoxParameters.js';
 import { defaultFabricJobParameters, normalizeFabricJobParameters } from '../../domain/fabricJobParameters.js';
-import { defaultDrawingParameters, normalizeDrawingParameters } from '../../domain/drawingParameters.js';
-
-const parametersStorageKey = 'toldos-testar-parameters-v2';
+import { defaultRuleParameters, PARAMETERS_STORAGE_KEY, readStoredParameters, serializeParameterOverrides } from '../parameterStorage';
 
 function initialParameters(): RuleParameters {
   try {
-    const saved = JSON.parse(localStorage.getItem(parametersStorageKey) || 'null');
-    return {
-      arzuaPro: normalizeArzuaProParameters(saved?.arzuaPro || defaultArzuaProParameters),
-      galicia: normalizeGaliciaParameters(saved?.galicia || defaultGaliciaParameters),
-      perlaBox: normalizePerlaBoxParameters(saved?.perlaBox || saved?.storbox400 || defaultPerlaBoxParameters),
-      coralBox: normalizeCoralBoxParameters(saved?.coralBox || defaultCoralBoxParameters),
-      cuarzoBox: normalizeCuarzoBoxParameters(saved?.cuarzoBox || defaultCuarzoBoxParameters),
-      cortina: normalizeCortinaParameters(saved?.cortina || defaultCortinaParameters),
-      selena: normalizeSelenaParameters(saved?.selena || defaultSelenaParameters),
-      cambioCortina: normalizeCambioCortinaParameters(saved?.cambioCortina || defaultCambioCortinaParameters),
-      xacobeo: normalizeXacobeoParameters(saved?.xacobeo || defaultXacobeoParameters),
-      puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto || defaultPuntoRectoParameters),
-      monoblock350: normalizeMonoblock350Parameters(saved?.monoblock350 || defaultMonoblock350Parameters),
-      maxiscreem: normalizeMaxiscreemParameters(saved?.maxiscreem || defaultMaxiscreemParameters),
-      electra: normalizeElectraParameters(saved?.electra || defaultElectraParameters),
-      ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox || defaultAmbarBoxParameters),
-      agataBox: normalizeAgataBoxParameters(saved?.agataBox || defaultAgataBoxParameters),
-      fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs || defaultFabricJobParameters),
-      drawings: normalizeDrawingParameters(saved?.drawings || defaultDrawingParameters)
-    } as RuleParameters;
+    return readStoredParameters(localStorage);
   } catch {
-    return {
-      arzuaPro: structuredClone(defaultArzuaProParameters),
-      galicia: structuredClone(defaultGaliciaParameters),
-      perlaBox: structuredClone(defaultPerlaBoxParameters),
-      coralBox: structuredClone(defaultCoralBoxParameters),
-      cuarzoBox: structuredClone(defaultCuarzoBoxParameters),
-      cortina: structuredClone(defaultCortinaParameters),
-      selena: structuredClone(defaultSelenaParameters),
-      cambioCortina: structuredClone(defaultCambioCortinaParameters),
-      xacobeo: structuredClone(defaultXacobeoParameters),
-      puntoRecto: structuredClone(defaultPuntoRectoParameters),
-      monoblock350: structuredClone(defaultMonoblock350Parameters),
-      maxiscreem: structuredClone(defaultMaxiscreemParameters),
-      electra: structuredClone(defaultElectraParameters),
-      ambarBox: structuredClone(defaultAmbarBoxParameters),
-      agataBox: structuredClone(defaultAgataBoxParameters),
-      fabricJobs: structuredClone(defaultFabricJobParameters),
-      drawings: structuredClone(defaultDrawingParameters)
-    } as RuleParameters;
+    return defaultRuleParameters();
   }
 }
 
 export function useParameters() {
   const [parameters, setParameters] = useState<RuleParameters>(initialParameters);
+  // Solo se guarda lo que el usuario cambia en Parámetros: nunca al arrancar ni
+  // al abrir una revisión, para no congelar los valores del código (ver
+  // parameterStorage.ts).
+  const pendingSave = useRef(false);
 
   useEffect(() => {
-    localStorage.setItem(parametersStorageKey, JSON.stringify(parameters));
+    if (!pendingSave.current) return;
+    pendingSave.current = false;
+    try {
+      localStorage.setItem(PARAMETERS_STORAGE_KEY, serializeParameterOverrides(parameters));
+    } catch {
+      // Sin almacenamiento disponible: el puesto sigue con los valores del código.
+    }
   }, [parameters]);
 
+  const edit: typeof setParameters = (next) => {
+    pendingSave.current = true;
+    setParameters(next);
+  };
+
   function updateArzua(patch: Partial<RuleParameters['arzuaPro']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       arzuaPro: normalizeArzuaProParameters({ ...current.arzuaPro, ...patch })
     }) as RuleParameters);
   }
 
   function resetArzua() {
-    setParameters((current) => ({ ...current, arzuaPro: structuredClone(defaultArzuaProParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, arzuaPro: structuredClone(defaultArzuaProParameters) }) as RuleParameters);
   }
 
   function updateGalicia(patch: Partial<RuleParameters['galicia']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       galicia: normalizeGaliciaParameters({ ...current.galicia, ...patch })
     }) as RuleParameters);
   }
 
   function resetGalicia() {
-    setParameters((current) => ({ ...current, galicia: structuredClone(defaultGaliciaParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, galicia: structuredClone(defaultGaliciaParameters) }) as RuleParameters);
   }
 
   function updatePerlaBox(patch: Partial<RuleParameters['perlaBox']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       perlaBox: normalizePerlaBoxParameters({ ...current.perlaBox, ...patch })
     }) as RuleParameters);
   }
 
   function resetPerlaBox() {
-    setParameters((current) => ({ ...current, perlaBox: structuredClone(defaultPerlaBoxParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, perlaBox: structuredClone(defaultPerlaBoxParameters) }) as RuleParameters);
   }
 
   function updateCoralBox(patch: Partial<RuleParameters['coralBox']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       coralBox: normalizeCoralBoxParameters({ ...current.coralBox, ...patch })
     }) as RuleParameters);
   }
 
   function resetCoralBox() {
-    setParameters((current) => ({ ...current, coralBox: structuredClone(defaultCoralBoxParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, coralBox: structuredClone(defaultCoralBoxParameters) }) as RuleParameters);
   }
 
   function updateCuarzoBox(patch: Partial<RuleParameters['cuarzoBox']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       cuarzoBox: normalizeCuarzoBoxParameters({ ...current.cuarzoBox, ...patch })
     }) as RuleParameters);
   }
 
   function resetCuarzoBox() {
-    setParameters((current) => ({ ...current, cuarzoBox: structuredClone(defaultCuarzoBoxParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, cuarzoBox: structuredClone(defaultCuarzoBoxParameters) }) as RuleParameters);
   }
 
   function updateCortina(patch: Partial<RuleParameters['cortina']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       cortina: normalizeCortinaParameters({ ...current.cortina, ...patch })
     }) as RuleParameters);
   }
 
   function resetCortina() {
-    setParameters((current) => ({ ...current, cortina: structuredClone(defaultCortinaParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, cortina: structuredClone(defaultCortinaParameters) }) as RuleParameters);
   }
 
   function updateSelena(patch: Partial<RuleParameters['selena']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       selena: normalizeSelenaParameters({ ...current.selena, ...patch })
     }) as RuleParameters);
   }
 
   function resetSelena() {
-    setParameters((current) => ({ ...current, selena: structuredClone(defaultSelenaParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, selena: structuredClone(defaultSelenaParameters) }) as RuleParameters);
   }
 
   function updateCambioCortina(patch: Partial<RuleParameters['cambioCortina']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       cambioCortina: normalizeCambioCortinaParameters({ ...current.cambioCortina, ...patch })
     }) as RuleParameters);
   }
 
   function resetCambioCortina() {
-    setParameters((current) => ({ ...current, cambioCortina: structuredClone(defaultCambioCortinaParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, cambioCortina: structuredClone(defaultCambioCortinaParameters) }) as RuleParameters);
   }
 
   function updateXacobeo(patch: Partial<RuleParameters['xacobeo']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       xacobeo: normalizeXacobeoParameters({ ...current.xacobeo, ...patch })
     }) as RuleParameters);
   }
 
   function resetXacobeo() {
-    setParameters((current) => ({ ...current, xacobeo: structuredClone(defaultXacobeoParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, xacobeo: structuredClone(defaultXacobeoParameters) }) as RuleParameters);
   }
 
   function updatePuntoRecto(patch: Partial<RuleParameters['puntoRecto']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       puntoRecto: normalizePuntoRectoParameters({ ...current.puntoRecto, ...patch })
     }) as RuleParameters);
   }
 
   function resetPuntoRecto() {
-    setParameters((current) => ({ ...current, puntoRecto: structuredClone(defaultPuntoRectoParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, puntoRecto: structuredClone(defaultPuntoRectoParameters) }) as RuleParameters);
   }
 
   function updateMonoblock350(patch: Partial<RuleParameters['monoblock350']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       monoblock350: normalizeMonoblock350Parameters({ ...current.monoblock350, ...patch })
     }) as RuleParameters);
   }
 
   function resetMonoblock350() {
-    setParameters((current) => ({ ...current, monoblock350: structuredClone(defaultMonoblock350Parameters) }) as RuleParameters);
+    edit((current) => ({ ...current, monoblock350: structuredClone(defaultMonoblock350Parameters) }) as RuleParameters);
   }
 
   function updateMaxiscreem(patch: Partial<RuleParameters['maxiscreem']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       maxiscreem: normalizeMaxiscreemParameters({ ...current.maxiscreem, ...patch })
     }) as RuleParameters);
   }
 
   function resetMaxiscreem() {
-    setParameters((current) => ({ ...current, maxiscreem: structuredClone(defaultMaxiscreemParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, maxiscreem: structuredClone(defaultMaxiscreemParameters) }) as RuleParameters);
   }
 
   function updateElectra(patch: Partial<RuleParameters['electra']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       electra: normalizeElectraParameters({ ...current.electra, ...patch })
     }) as RuleParameters);
   }
 
   function resetElectra() {
-    setParameters((current) => ({ ...current, electra: structuredClone(defaultElectraParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, electra: structuredClone(defaultElectraParameters) }) as RuleParameters);
   }
 
   function updateAmbarBox(patch: Partial<RuleParameters['ambarBox']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       ambarBox: normalizeAmbarBoxParameters({ ...current.ambarBox, ...patch })
     }) as RuleParameters);
   }
 
   function resetAmbarBox() {
-    setParameters((current) => ({ ...current, ambarBox: structuredClone(defaultAmbarBoxParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, ambarBox: structuredClone(defaultAmbarBoxParameters) }) as RuleParameters);
   }
 
   function updateAgataBox(patch: Partial<RuleParameters['agataBox']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       agataBox: normalizeAgataBoxParameters({ ...current.agataBox, ...patch })
     }) as RuleParameters);
   }
 
   function resetAgataBox() {
-    setParameters((current) => ({ ...current, agataBox: structuredClone(defaultAgataBoxParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, agataBox: structuredClone(defaultAgataBoxParameters) }) as RuleParameters);
   }
 
   function updateFabricJobs(patch: Partial<RuleParameters['fabricJobs']>) {
-    setParameters((current) => ({
+    edit((current) => ({
       ...current,
       fabricJobs: normalizeFabricJobParameters({ ...current.fabricJobs, ...patch })
     }) as RuleParameters);
   }
 
   function resetFabricJobs() {
-    setParameters((current) => ({ ...current, fabricJobs: structuredClone(defaultFabricJobParameters) }) as RuleParameters);
+    edit((current) => ({ ...current, fabricJobs: structuredClone(defaultFabricJobParameters) }) as RuleParameters);
   }
 
   function updateDrawings(drawings: RuleParameters['drawings']) {
-    setParameters((current) => ({ ...current, drawings }) as RuleParameters);
+    edit((current) => ({ ...current, drawings }) as RuleParameters);
   }
 
+  // Corregir una revisión recalcula con los parámetros con que se guardó, pero
+  // no los convierte en los del puesto.
   function loadParameters(saved: RuleParameters) {
-    setParameters({
-      arzuaPro: normalizeArzuaProParameters(saved?.arzuaPro),
-      galicia: normalizeGaliciaParameters(saved?.galicia),
-      perlaBox: normalizePerlaBoxParameters(saved?.perlaBox),
-      coralBox: normalizeCoralBoxParameters(saved?.coralBox),
-      cuarzoBox: normalizeCuarzoBoxParameters(saved?.cuarzoBox),
-      cortina: normalizeCortinaParameters(saved?.cortina),
-      selena: normalizeSelenaParameters(saved?.selena),
-      cambioCortina: normalizeCambioCortinaParameters(saved?.cambioCortina),
-      xacobeo: normalizeXacobeoParameters(saved?.xacobeo),
-      puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto),
-      monoblock350: normalizeMonoblock350Parameters(saved?.monoblock350),
-      maxiscreem: normalizeMaxiscreemParameters(saved?.maxiscreem),
-      electra: normalizeElectraParameters(saved?.electra),
-      ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox),
-      agataBox: normalizeAgataBoxParameters(saved?.agataBox),
-      fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs),
-      drawings: normalizeDrawingParameters(saved?.drawings)
-    } as RuleParameters);
+    setParameters(defaultRuleParameters(saved));
+  }
+
+  // Vuelve a los parámetros del puesto al terminar de corregir una revisión.
+  function restoreParameters() {
+    setParameters(initialParameters());
   }
 
   return {
@@ -297,6 +262,7 @@ export function useParameters() {
     updateAgataBox, resetAgataBox,
     updateFabricJobs, resetFabricJobs,
     updateDrawings,
-    loadParameters
+    loadParameters,
+    restoreParameters
   };
 }
