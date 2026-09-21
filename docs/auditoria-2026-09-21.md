@@ -1,6 +1,6 @@
 # Auditoría general de Toldos Testar
 
-21/09/2026 · Actualizada al cerrar la fase 3 · Fase 1 desplegada; fases 2 y 3 sin desplegar
+21/09/2026 · Actualizada al cerrar la fase 3 · Fases 1, 2 y 3 desplegadas (21/09)
 
 [Plan detallado de la fase 1](./superpowers/plans/2026-09-21-fase-1-fallos-comunes.md) · [Seguimiento de modelos](./modelos/README.md) · [Guía de revisión](./guia-revision-modelos.md)
 
