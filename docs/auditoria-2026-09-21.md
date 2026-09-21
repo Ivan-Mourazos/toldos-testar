@@ -23,6 +23,7 @@ Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typeche
 | vitest | Contaba 1909 tests porque incluía el worktree de Codex; los reales son 990. Corregido en `9b1ef47` |
 | Skill de arranque | `.claude/skills/running-toldos-testar`: levanta la web aislada en 4310 sin tocar el recurso real y la recorre con Playwright. Probada desde cero con el caso AR2603332 |
 | Decisiones de Iván | Reserva completa = consumo real, también en Iris y HERA. Primero los fallos comunes, después modelo a modelo |
+| Fase 2 terminada (salvo legibilidad) | Una sola regla de toldo completo (`awningCompleteness.js`) para tarjeta, cálculo y generación: un toldo con bamba y sin curva ya no llega al planteamiento definitivo. La tarjeta dice qué falta y lo resalta; Guardar lo confirma con la lista; Estructuras y la barra lateral dejan de dar mensajes falsos. `test:e2e:rps`, roto desde el 13/08 sin que nadie lo viera, vuelve a pasar con Bambalina, HERA y Antica. 1083 tests |
 | Fase 1 terminada | Herramientas con casos válidos de los 17 modelos; `validate:reserva` mide 16 (antes 10, cinco de ellos mal); `validate:rps-refs` falla en blanco y negro y revisa también el despiece. `CASPUNCE` sustituido en 13 modelos y 26 códigos `…CM` traducidos: las referencias rotas en blanco o negro bajan de 72 a 49. 1059 tests |
 
 ## Definición de modelo terminado
@@ -72,6 +73,8 @@ Solo cuatro modelos tienen expediente (Bambalina, Enrollable, HERA y Antica) y u
 
 ## Interfaz (UX/UI)
 
+*Fase 2 (21/09): corregidos U1 a U9. Quedan U10 (se resuelve al reservar estructura en HERA e Iris), U11 (legibilidad, con muestra para Iván) y U12 (pregunta al taller).*
+
 Recorrido con la skill a 1600, 1366, 1280, 1024 y 800 px: sin errores de consola ni desbordamiento horizontal. La estética es coherente y Parámetros de Arzúa está muy bien explicado. Fallos por orden de impacto:
 
 | # | Hallazgo | Impacto | Dónde |
@@ -95,6 +98,7 @@ Recorrido con la skill a 1600, 1366, 1280, 1024 y 800 px: sin errores de consola
 - El servidor usa **pnpm 12.5.1** y el repositorio declara `pnpm@11.3.0`: cada `pnpm install` reescribe `packageManager` y el lockfile, y deja el árbol modificado. Hay que alinear las versiones (subir el repositorio a 12 o fijar 11.3.0 en el servidor con corepack).
 - El README documenta `/opt/toldos-testar`; el servidor real usa `/webs/toldos-testar`.
 - `.playwright-cli/` (capturas y logs de agosto) está en git sin motivo.
+- `awningLetter` sigue duplicada en `planteamientoPdf.js` y `reviewSheetEntries.js`; la segunda da "A" al toldo 27 en vez de "AA". Solo afecta a pedidos de más de 26 elementos.
 - La web no tiene autenticación y Configuración cambia las rutas de todos los puestos. Aceptable en la red interna, pero conviene saberlo.
 - Pendiente de IT desde el 06/09: cambiar la contraseña de `server.webs`, que salió en una captura.
 
@@ -115,7 +119,9 @@ Esfuerzo que recomiendo en Opus 5 para cada tarea. Criterio: **low** para cambio
 | 1.5 | Referencias irregulares de RPS (`BONYXNE11250CM`, `BPRT07BL1690CM`) en una sola tabla | medium |
 | 1.6 | Higiene: `.playwright-cli`, README del servidor, seguimiento de modelos al día | low |
 
-### Fase 2 · Formulario (U1-U9)
+### Fase 2 · Formulario (U1-U9) · terminada el 21/09 salvo 2.4
+
+[Especificación](./superpowers/specs/2026-09-21-regla-unica-toldo-completo-design.md) · [Plan](./superpowers/plans/2026-09-21-fase-2-regla-unica.md)
 
 | Tarea | Qué | Esfuerzo |
 | --- | --- | --- |
