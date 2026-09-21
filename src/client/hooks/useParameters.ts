@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RuleParameters } from '../types';
 import { defaultArzuaProParameters, normalizeArzuaProParameters } from '../../domain/arzuaProParameters.js';
 import { defaultGaliciaParameters, normalizeGaliciaParameters } from '../../domain/galiciaParameters.js';
@@ -20,36 +20,83 @@ import { defaultElectraParameters, normalizeElectraParameters } from '../../doma
 import { defaultAmbarBoxParameters, normalizeAmbarBoxParameters } from '../../domain/ambarBoxParameters.js';
 import { defaultAgataBoxParameters, normalizeAgataBoxParameters } from '../../domain/agataBoxParameters.js';
 import { defaultFabricJobParameters, normalizeFabricJobParameters } from '../../domain/fabricJobParameters.js';
-import { defaultRuleParameters, PARAMETERS_STORAGE_KEY, readStoredParameters, serializeParameterOverrides } from '../parameterStorage';
+import { changedRuleSections, normalizeRuleParameters } from '../../domain/ruleParameters.js';
 
-function initialParameters(): RuleParameters {
+type SharedParameters = { version: number; parameters: RuleParameters };
+export type SaveDraftResult = { status: 'saved' | 'conflict' | 'error'; message?: string };
+
+const REFRESH_EVERY_MS = 5 * 60 * 1000;
+// Claves de cuando cada navegador guardaba sus parámetros (hasta el 21/09/2026).
+const LEGACY_STORAGE_KEYS = ['toldos-testar-parameters-v2', 'toldos-testar-parameters-v3'];
+const normalize = (saved?: unknown) => normalizeRuleParameters(saved) as RuleParameters;
+
+async function fetchShared(): Promise<SharedParameters | null> {
   try {
-    return readStoredParameters(localStorage);
+    const response = await fetch('/api/rule-parameters');
+    if (!response.ok) return null;
+    const data = await response.json();
+    return { version: Number(data.version) || 0, parameters: normalize(data.parameters) };
   } catch {
-    return defaultRuleParameters();
+    // Sin conexión con el servidor: se siguen usando los últimos conocidos.
+    return null;
   }
 }
 
+/**
+ * Parámetros de cálculo en tres capas (docs/superpowers/specs/2026-09-21-
+ * parametros-comunes-design.md):
+ *  - vigentes: los comunes del servidor;
+ *  - borrador: lo que se edita en Parámetros, solo en este puesto hasta guardar;
+ *  - del pedido: los de una revisión abierta para corregirla.
+ * Los pedidos se calculan con los del pedido o, si no hay, con los vigentes;
+ * nunca con un borrador sin guardar.
+ */
 export function useParameters() {
-  const [parameters, setParameters] = useState<RuleParameters>(initialParameters);
-  // Solo se guarda lo que el usuario cambia en Parámetros: nunca al arrancar ni
-  // al abrir una revisión, para no congelar los valores del código (ver
-  // parameterStorage.ts).
-  const pendingSave = useRef(false);
+  const [shared, setShared] = useState<SharedParameters>(() => ({ version: 0, parameters: normalize() }));
+  const [draft, setDraft] = useState<RuleParameters | null>(null);
+  const [order, setOrder] = useState<{ parameters: RuleParameters; version: number | null } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const sharedRef = useRef(shared);
+  useEffect(() => { sharedRef.current = shared; }, [shared]);
+
+  const refresh = useCallback(() => fetchShared().then((next) => {
+    if (next) setShared(next);
+  }), []);
 
   useEffect(() => {
-    if (!pendingSave.current) return;
-    pendingSave.current = false;
     try {
-      localStorage.setItem(PARAMETERS_STORAGE_KEY, serializeParameterOverrides(parameters));
+      for (const key of LEGACY_STORAGE_KEYS) localStorage.removeItem(key);
     } catch {
-      // Sin almacenamiento disponible: el puesto sigue con los valores del código.
+      // Sin almacenamiento disponible: no hay nada que limpiar.
     }
-  }, [parameters]);
+    const onFocus = () => {
+      fetchShared().then((next) => {
+        if (next) setShared(next);
+      });
+    };
+    onFocus();
+    window.addEventListener('focus', onFocus);
+    const timer = window.setInterval(onFocus, REFRESH_EVERY_MS);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.clearInterval(timer);
+    };
+  }, []);
 
-  const edit: typeof setParameters = (next) => {
-    pendingSave.current = true;
-    setParameters(next);
+  useEffect(() => {
+    if (!draft) return undefined;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [draft]);
+
+  // Cada edición de Parámetros va al borrador. Si deja todo como los vigentes,
+  // el borrador desaparece.
+  const edit = (change: (current: RuleParameters) => RuleParameters) => {
+    setDraft((previous) => {
+      const next = change(previous ?? sharedRef.current.parameters);
+      return changedRuleSections(sharedRef.current.parameters, next).length ? next : null;
+    });
   };
 
   function updateArzua(patch: Partial<RuleParameters['arzuaPro']>) {
@@ -232,19 +279,65 @@ export function useParameters() {
     edit((current) => ({ ...current, drawings }) as RuleParameters);
   }
 
-  // Corregir una revisión recalcula con los parámetros con que se guardó, pero
-  // no los convierte en los del puesto.
-  function loadParameters(saved: RuleParameters) {
-    setParameters(defaultRuleParameters(saved));
+  function discardDraft() {
+    setDraft(null);
   }
 
-  // Vuelve a los parámetros del puesto al terminar de corregir una revisión.
+  // Pone una versión del historial como borrador: volver atrás es guardar.
+  function loadVersion(overrides: unknown) {
+    edit(() => normalize(overrides));
+  }
+
+  async function saveDraft(updatedBy: string, reason: string): Promise<SaveDraftResult> {
+    if (!draft) return { status: 'saved' };
+    setSaving(true);
+    try {
+      const response = await fetch('/api/rule-parameters', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ baseVersion: shared.version, parameters: draft, updatedBy, reason })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 409) {
+        // Otro puesto guardó antes: se cargan sus valores y el borrador se conserva.
+        setShared({ version: Number(data.current?.version) || 0, parameters: normalize(data.current?.parameters) });
+        return { status: 'conflict', message: data.error };
+      }
+      if (!response.ok) return { status: 'error', message: data.error || 'No se pudieron guardar los parámetros.' };
+      setShared({ version: Number(data.version) || 0, parameters: normalize(data.parameters) });
+      setDraft(null);
+      return { status: 'saved' };
+    } catch {
+      return { status: 'error', message: 'No se pudo contactar con el servidor.' };
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Corregir una revisión recalcula con los parámetros con que se guardó, sin
+  // tocar los comunes.
+  function loadParameters(saved: RuleParameters, version: number | null = null) {
+    setOrder({ parameters: normalize(saved), version });
+  }
+
+  // Al guardar o limpiar el pedido se vuelve a los comunes.
   function restoreParameters() {
-    setParameters(initialParameters());
+    setOrder(null);
   }
 
   return {
-    parameters,
+    parameters: order?.parameters ?? shared.parameters,
+    generalParameters: draft ?? shared.parameters,
+    parametersVersion: order ? order.version : shared.version,
+    version: shared.version,
+    dirty: draft !== null,
+    saving,
+    refresh,
+    discardDraft,
+    loadVersion,
+    saveDraft,
+    loadParameters,
+    restoreParameters,
     updateArzua, resetArzua,
     updateGalicia, resetGalicia,
     updatePerlaBox, resetPerlaBox,
@@ -261,8 +354,6 @@ export function useParameters() {
     updateAmbarBox, resetAmbarBox,
     updateAgataBox, resetAgataBox,
     updateFabricJobs, resetFabricJobs,
-    updateDrawings,
-    loadParameters,
-    restoreParameters
+    updateDrawings
   };
 }

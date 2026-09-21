@@ -163,7 +163,7 @@ export default function App() {
     }
     draft.loadOrder(review.order);
     setAutofill(null);
-    if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters);
+    if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters, review.order.parametersVersion ?? null);
     setActiveTab('order');
     notify(`Pedido ${review.orderCode} cargado en el formulario para corregirlo.`, { tone: 'info', title: 'Modo de corrección' });
   }
@@ -199,7 +199,8 @@ export default function App() {
       rotBamba: draft.rotBamba,
       notes: draft.notes,
       awnings: draft.awnings,
-      parameters: ruleSettings.parameters
+      parameters: ruleSettings.parameters,
+      parametersVersion: ruleSettings.parametersVersion
     };
   }
 
@@ -426,7 +427,7 @@ export default function App() {
 
           {activeTab === 'parameters' && (
             <ParametersView
-              parameters={ruleSettings.parameters}
+              parameters={ruleSettings.generalParameters}
               onUpdateArzua={ruleSettings.updateArzua}
               onUpdateGalicia={ruleSettings.updateGalicia}
               onResetArzua={ruleSettings.resetArzua}

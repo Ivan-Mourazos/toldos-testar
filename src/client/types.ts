@@ -669,6 +669,6 @@ export type ReviewSummary = {
   };
 };
 
-export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters } };
+export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters; parametersVersion?: number | null } };
 
 export type ActiveTab = 'order' | 'parameters' | 'reviews' | 'settings';
