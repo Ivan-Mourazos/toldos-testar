@@ -109,7 +109,7 @@ lectura. PM2 debe arrancar después de que estén disponibles.
 
 ### 2. Configurar `.env`
 
-En `/opt/toldos-testar`:
+En `/webs/toldos-testar`:
 
 ```bash
 cp .env.production.example .env
@@ -150,10 +150,10 @@ activa HERA y mantiene bloqueadas las exportaciones antiguas.
 
 ### 3. Publicar y arrancar
 
-Con el código situado en `/opt/toldos-testar`:
+Con el código situado en `/webs/toldos-testar`:
 
 ```bash
-cd /opt/toldos-testar
+cd /webs/toldos-testar
 pnpm install --frozen-lockfile
 pnpm build
 pnpm deploy:check
@@ -184,7 +184,10 @@ de permisos sobre los montajes ni la comprobación del acceso a SQL.
 ### 5. Actualizar
 
 ```bash
-cd /opt/toldos-testar
+cd /webs/toldos-testar
+# El árbol de producción llegó a tener commits propios (Codex, 15/09/2026).
+# Si esto lista algo, resolverlo antes de seguir: el pull fallaría.
+git log --oneline origin/main..HEAD
 git pull --ff-only
 pnpm install --frozen-lockfile
 pnpm build

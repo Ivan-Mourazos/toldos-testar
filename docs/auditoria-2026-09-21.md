@@ -1,6 +1,6 @@
 # Auditoría general de Toldos Testar
 
-21/09/2026 · main en `7bed288` · Sin despliegue
+21/09/2026 · Actualizada al cerrar la fase 1 · Sin despliegue
 
 [Plan detallado de la fase 1](./superpowers/plans/2026-09-21-fase-1-fallos-comunes.md) · [Seguimiento de modelos](./modelos/README.md) · [Guía de revisión](./guia-revision-modelos.md)
 
@@ -8,11 +8,11 @@
 
 Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typecheck en verde. Ninguno cumple todavía la definición de terminado de más abajo. Lo que deja los modelos a medias no es la falta de reglas; son cinco problemas comunes:
 
-1. **La reserva sube códigos que RPS no tiene.** `CASPUNCE` no existe: lo reservan 9 modelos y otros 4 lo imprimen en el despiece. En blanco o negro, que son los lacados habituales, también fallan Punto Recto (perfil Univers 270 y brazos), Xacobeo (perfil EVO 70 de 600), Arzúa y Monoblock en negro con EVO 80 (`PEVO80NE11600C`, de baja desde 2023) y cinco modelos con brazo Onyx negro de 250 (`BONYXNE11250C`; en RPS se llama `…250CM`). Una referencia de baja no bloquea la subida a RPS, así que el fallo no avisa: hay que buscarlo.
+1. **La reserva sube códigos que RPS no tiene.** `CASPUNCE` no existe: lo reservan 9 modelos y otros 4 lo imprimen en el despiece. En blanco o negro, que son los lacados habituales, también fallan Punto Recto (perfil Univers 270 y brazos), Xacobeo (perfil EVO 70 de 600), Arzúa y Monoblock en negro con EVO 80 (`PEVO80NE11600C`, de baja desde 2023) y cinco modelos con brazo Onyx negro de 250 (`BONYXNE11250C`; en RPS se llama `…250CM`). Una referencia de baja no bloquea la subida a RPS, así que el fallo no avisa: hay que buscarlo. *Fase 1: `CASPUNCE` y los `…CM` corregidos en todos los modelos; los 49 códigos que quedan son de cada modelo.*
 2. **La mejora de reserva de Arzúa no se propagó.** Arzúa reserva lo que el taller consume de verdad: casquillo con eje, terminales, tapones y varilla de vaina, y ya no lleva `CASPLAS`. Los demás modelos siguen con el juego del Excel antiguo, e Iris y HERA solo reservan tela.
 3. **Los parámetros viven en cada navegador.** Descuentos, límites y la biblioteca de dibujos se guardan en el `localStorage` de cada puesto y viajan con cada cálculo: dos puestos pueden calcular distinto el mismo pedido. Además, abrir una revisión para corregirla sustituye sin aviso los parámetros del navegador por los del pedido ([App.tsx:164](../src/client/App.tsx#L164)).
 4. **El formulario no dice qué falta.** La tarjeta tiene su propia regla de "completo", distinta de la del cálculo. Un Arzúa puede salir **Válido** en resultados y **SIN COMPLETAR** en la tarjeta sin decir por qué. Con bamba y sin curva, la hoja de telas imprime "SIN BAMBA".
-5. **Las herramientas de medida estaban a medias.** `validate:reserva` usaba entradas inválidas en cinco modelos y no conocía los cofres, Cortina ni Punto Recto. `validate:rps-refs` probaba salidas imposibles y no fallaba con códigos inexistentes. vitest contaba los tests de otra rama.
+5. **Las herramientas de medida estaban a medias.** `validate:reserva` usaba entradas inválidas en cinco modelos y no conocía los cofres, Cortina ni Punto Recto. `validate:rps-refs` probaba salidas imposibles y no fallaba con códigos inexistentes. vitest contaba los tests de otra rama. *Corregido en la fase 1.*
 
 ## Hecho hoy
 
@@ -23,6 +23,7 @@ Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typeche
 | vitest | Contaba 1909 tests porque incluía el worktree de Codex; los reales son 990. Corregido en `9b1ef47` |
 | Skill de arranque | `.claude/skills/running-toldos-testar`: levanta la web aislada en 4310 sin tocar el recurso real y la recorre con Playwright. Probada desde cero con el caso AR2603332 |
 | Decisiones de Iván | Reserva completa = consumo real, también en Iris y HERA. Primero los fallos comunes, después modelo a modelo |
+| Fase 1 terminada | Herramientas con casos válidos de los 17 modelos; `validate:reserva` mide 16 (antes 10, cinco de ellos mal); `validate:rps-refs` falla en blanco y negro y revisa también el despiece. `CASPUNCE` sustituido en 13 modelos y 26 códigos `…CM` traducidos: las referencias rotas en blanco o negro bajan de 72 a 49. 1059 tests |
 
 ## Definición de modelo terminado
 
@@ -40,7 +41,7 @@ Un modelo está terminado cuando cumple las siete condiciones. Son las de la [gu
 
 ## Estado por modelo
 
-Medidas: validación masiva de hoy contra los libros de 2025 y 2026 (2574 casos). Reserva: la columna "Dif. RPS" del validador compara con lo que subía el Excel antiguo, que ya no es el criterio, así que aquí se usa el consumo real. Donde la herramienta todavía no mide bien, se dice.
+Medido al cerrar la fase 1 (`9a277d9`). **Medidas**: validación masiva contra los libros de 2025 y 2026 (2574 casos). **Reserva**: `validate:reserva` contra el consumo real desde 2025, con todas las variantes válidas en blanco y negro; embalaje, vinilo y restos van aparte. La columna "Dif. RPS" del validador masivo compara con lo que subía el Excel antiguo y ya no es el criterio. **Códigos rotos**: `validate:rps-refs` en reserva y despiece, todas las salidas establecidas. Quedan 49, todos propios de cada modelo.
 
 | Modelo | Medidas (casos · dif.) | Reserva frente a consumo real | Códigos rotos en blanco/negro | Principal pendiente |
 | --- | --- | --- | --- | --- |
@@ -48,23 +49,23 @@ Medidas: validación masiva de hoy contra los libros de 2025 y 2026 (2574 casos)
 | Enrollable | 30 · 4 | Sin estructura | — | Muestra en taller |
 | Cambio de tela | 917 · 88 | 90 dif. de lona | — | Q-C02…C05 del [expediente](./modelos/cambio-tela.md); dibujo |
 | Cambio de cortina | 120 · 126 | 15 dif. de lona | — | Excepciones de 18 cm; confección |
-| Cortina | 342 · 82 (92 sin subir) | Sin medir: la herramienta no lo conocía | `CASPUNCE` en el despiece | Reserva completa; dibujo |
-| Selena | **Sin validador** | Faltan 14 artículos; no reserva casquillo punta | `CASPUNCE` en el despiece (vía Cortina) | Crear validador; brazo stor; reserva |
-| Punto Recto | 32 · 2 | Sin medir | **Perfil Univers 270 de baja, brazos inexistentes** | Qué perfil y brazos se consumen hoy |
-| Xacobeo | 28 · 0 | Faltan 6 (casquillo con eje, terminales, tapones, varilla) | **`PEVO702R…600C` no existe** | Largo de perfil EVO 70; reserva |
-| Arzúa Pro | 287 · **410** | Al día (solo embalaje y vinilo, a propósito) | `BONYXNE11250C`; **negro con EVO 80 reserva `PEVO80NE11600C`, de baja desde 2023** | Explicar las 410 diferencias; numeración del despiece; bronce y 7022 |
-| Galicia | 110 · 0 | Sin medir: no tiene artículo de venta propio | `BONYXNE11250C`, `CASPUNCE` en el despiece | Identificar sus OF; reserva |
-| Monoblock 350 | 50 · 10 | Sin medir: entrada inválida | **`PEVO80NE11600C` de baja**, `BONYXNE11250C` | Reserva; lacados muertos |
-| Ámbar Box | 28 · 0 | Sin medir | `CASPUNCE` | Reserva |
-| Ágata Box | 18 · 6 | Sin medir | `CASPUNCE` | Reserva; 6 diferencias |
-| Cuarzo Box | 28 · 4 | Sin medir | `CASPUNCE` | Reserva |
-| Perla Box | 227 · 8 | Sin medir | `BONYXNE11250C` | Reserva |
-| Coral Box | 54 · 8 | Sin medir | `BONYXNE11250C`, `PRBOX400NE11600C` | Reserva |
-| Electra | 21 · 31 | Faltan 18 | `CASPUNCE`, `PECARMAX500C`, `PERPRLON500C` | Matriz cofre/guía; reserva |
-| Diana vertical (Maxiscreem) | 11 · 4 | Sin medir: entrada inválida | `CASPUNCE` | El taller consume P701 y la web reserva P801; varilla de baja |
-| Iris | Validador propio, fuera del masivo | Solo lona y cristal; faltan 29 | — | Reservar estructura (decisión de hoy) |
-| HERA | 37 · 0 | Solo tela y cadena; faltan 19 | — | Reservar estructura (decisión de hoy); dudas del 3981 |
-| Antica | Sin validador masivo | Sin medir: entrada inválida | — | 30 preguntas al taller; kits y escuadras |
+| Cortina | 342 · 82 (92 sin subir) | Faltan 11, sobran 2 (183 OF) | — | Reserva completa; dibujo |
+| Selena | **Sin validador** | Faltan 13, sobran 3 (11 OF); no reserva casquillo punta | — | Crear validador; brazo stor; reserva |
+| Punto Recto | 32 · 2 | Faltan 8, sobran 8 (16 OF) | **11: perfil Univers 270 inexistente; brazos PRT 07 de 100 a 160 inexistentes o de baja** | Qué perfil y brazos se consumen hoy; salidas que se ofrecen |
+| Xacobeo | 28 · 0 | Faltan 3, sobran 3 (25 OF) | **`PEVO702R…600C` no existe; `BART25NE11200C` de baja** | Largo de perfil EVO 70; reserva |
+| Arzúa Pro | 287 · **410** | **Al día** (317 OF; embalaje y vinilo aparte) | **Negro con EVO 80: `PEVO80NE11600C` de baja; Onyx negro de 175 no existe** | Explicar las 410 diferencias; numeración del despiece; bronce y 7022 |
+| Galicia | 110 · 0 | Sin medir: no tiene artículo de venta propio | Los de Arzúa (EVO 80 y Onyx 175 negros) | Identificar sus OF; reserva |
+| Monoblock 350 | 50 · 10 | Faltan 19, sobran 5 (40 OF) | EVO 80 negro de baja; Onyx negro de 175 | Reserva; lacados muertos |
+| Ámbar Box | 28 · 0 | Faltan 6, sobran 7 (21 OF) | **10: soporte, perfil y tapas negros de baja; brazos PRT 07 de 100 a 130** | Reserva; piezas vigentes en negro |
+| Ágata Box | 18 · 6 | Faltan 14, sobran 12 (16 OF) | **11: nueve perfiles de 700 inexistentes; Onyx negro de 175 y 375** | Largos de perfil; reserva; 6 diferencias |
+| Cuarzo Box | 28 · 4 | Faltan 8, sobran 3 (28 OF) | `BART25NE11200C` de baja | Reserva |
+| Perla Box | 227 · 8 | Faltan 13, sobran 7 (182 OF) | **Motor `SUNEAIO50//17` inexistente**; Onyx negro de 175 | Motor de las salidas grandes; reserva |
+| Coral Box | 54 · 8 | Faltan 6, sobran 7 (46 OF) | **Motor `SUNEAIO50//17` inexistente**; perfil negro de 600; Onyx negro de 175 y 375 | Motor de las salidas grandes; reserva |
+| Electra | 21 · 31 | Faltan 14, sobran 4 (19 OF) | — | Matriz cofre/guía (solo 2 de las 4 combinaciones calculan); reserva |
+| Diana vertical (Maxiscreem) | 11 · 4 | Faltan 9, sobran 6 (7 OF) | `PERPRLONNE11500C` de baja | El taller consume P701 y la web reserva P801; varilla de baja |
+| Iris | Validador propio, fuera del masivo | Solo lona y cristal: faltan 29 (36 OF) | — | Reservar estructura (decisión de hoy) |
+| HERA | 37 · 0 | Solo tela y cadena: faltan 18 (17 OF) | — | Reservar estructura (decisión de hoy); dudas del 3981 |
+| Antica | Sin validador masivo | Faltan 16, sobran 6 (77 OF) | — | 30 preguntas al taller; kits y escuadras |
 | Cambio Antica | Sin datos | Sin estructura | — | Encontrar casos reales |
 
 Solo cuatro modelos tienen expediente (Bambalina, Enrollable, HERA y Antica) y uno lo tiene a medias (Cambio de tela). El [seguimiento](./modelos/README.md) se paró el 14/09 y no recoge lo hecho después (brazos cruzados, Electra, cadena HERA, ventana Iris, maqueta de telas).
@@ -100,7 +101,7 @@ Recorrido con la skill a 1600, 1366, 1280, 1024 y 800 px: sin errores de consola
 
 Esfuerzo que recomiendo en Opus 5 para cada tarea. Criterio: **low** para cambios mecánicos o de texto; **medium** para código con alcance claro y test que lo cierra; **high** para cerrar un modelo investigando pedidos y RPS; **xhigh** para modelos con reglas ambiguas o cambios de diseño; **max** para lo que mezcla todo con decisiones del taller.
 
-### Fase 1 · Fallos comunes
+### Fase 1 · Fallos comunes · terminada el 21/09
 
 [Plan detallado](./superpowers/plans/2026-09-21-fase-1-fallos-comunes.md).
 

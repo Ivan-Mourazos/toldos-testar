@@ -10,3 +10,4 @@ tmp
 _analysis/*.tmp
 .claude/worktrees
 .claude/settings.local.json
+.playwright-cli

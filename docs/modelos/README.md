@@ -4,6 +4,8 @@ Inicio: 13/09/2026. Inventario de 22 entradas comprobado contra [catalog.js](../
 
 [Guía para agentes](../guia-revision-modelos.md) · [Plantilla de expediente](./PLANTILLA.md)
 
+**Estado al 21/09/2026:** [auditoría general](../auditoria-2026-09-21.md) con la definición de modelo terminado, el estado medido de los 22 modelos y la hoja de ruta. Prevalece sobre la columna de estado de esta tabla hasta que cada modelo se cierre.
+
 ## Cómo utilizar el seguimiento
 
 Antes de trabajar un modelo, crear su expediente desde la plantilla y enlazarlo aquí. Reutilizar los documentos de evidencia existentes; su existencia no significa que el modelo, el manual o la reserva completa estén verificados. Anotar estado por área en el expediente y un próximo paso concreto en este índice.
@@ -86,3 +88,4 @@ La investigación previa de HERA sigue disponible y las incidencias urgentes de 
 | 14/09/2026 | Enrollable | Los 15 enrollables reales de 2026 cuadran al 100%; el decimosexto es una lona de escenario hecha con el Excel de enrollable, no un enrollable. El dibujo no mostraba ninguna medida y ahora rotula frente y corte. Destapado que el anidado no llegaba a la reserva que sube a RPS: corregido y contrastado sin mover Cambio de tela | Revisar la muestra con taller |
 | 14/09/2026 | Bambalina · 4111 | Q-B06 resuelto: la segunda OF del Excel no existe en RPS, es 0231486 con dos dígitos transpuestos. La orden real ya tiene dos unidades, pero el libro solo exportó su primera entrada y subió 1 ml en vez de 2. Segunda infrarreserva histórica del mismo tipo que Q-B08 | Avisar a OT de ambas; no tocar históricos |
 | 14/09/2026 | Suplemento configurable | Sujeción, paso y tres bastillas como campos opcionales; el dibujo deja de dar por hecho que va con broches y no rotula lo que no se rellena. Sin impacto en cálculo ni reserva. 861 tests, typecheck y lint en verde. [Especificación](../superpowers/specs/2026-09-14-suplemento-bambalina-design.md) | Revisar output/modelos/bambalina/muestra-suplemento.pdf contra el plano de Adrián |
+| 21/09/2026 | Auditoría general y fase 1 | Ramas y worktrees limpiados; Cambio de tela rescatado; vitest con los tests reales; herramientas de medida con casos válidos de los 17 modelos; CASPUNCE y códigos …CM corregidos en todos los modelos (referencias rotas en blanco o negro: 72 → 49). [Auditoría](../auditoria-2026-09-21.md) | Fase 2 (formulario) y después modelo a modelo, empezando por Cambio de tela |
