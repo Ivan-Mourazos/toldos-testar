@@ -54,7 +54,7 @@ Es la regla actual de la tarjeta, trasladada sin cambiar condiciones, más la ve
 
 En `calculateOrder`, después de calcular cada toldo:
 
-- Si `getMissingFields` devuelve algo, se añade un diagnóstico `error` con `missingFields` y el mensaje *"Toldo A (ARZUA PRO, OF 0230194): falta curva bamba y rotulación tela."* El dominio no conoce los nombres comerciales, que viven en el cliente; la tarjeta y los avisos de la web sí los muestran (*Arzúa Pro*), y `calculation.valid` pasa a `false`.
+- Si `getMissingFields` devuelve algo, se añade un diagnóstico `error` con `missingFields` y el mensaje *"Toldo A (ARZUA PRO, OF 0230194): falta curva bamba y rotulación tela."* Además, `calculation.valid` pasa a `false`. El mensaje lleva el código del modelo porque el dominio no conoce los nombres comerciales, que viven en el cliente; la tarjeta y los avisos de la web sí los muestran (*Arzúa Pro*).
 - La reserva y el despiece se conservan para que el técnico vea el planteamiento mientras completa. Sustituye a la comprobación actual de la posición del motor, que además los vaciaba.
 - Los toldos sin OF, modelo o medidas siguen fuera del cálculo, como hoy. La tarjeta dice igualmente qué les falta.
 - La generación de archivos ya se bloquea con cualquier error ([server.js](../../../src/server.js), `generate-files`): no hace falta tocarla.
