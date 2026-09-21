@@ -1,24 +1,26 @@
 /**
  * Contrasta contra RPS todas las referencias de artículo que el dominio puede
- * emitir, para que ninguna reserva salga con un código dado de baja o
- * inexistente.
+ * emitir, para que ninguna reserva ni despiece salga con un código dado de baja
+ * o inexistente.
  *
  * Mira dos cosas distintas:
  *  - Las literales escritas en los ficheros de reglas.
- *  - Las que se componen al vuelo, calculando un toldo de cada modelo en cada
- *    lacado del catálogo. Aquí es donde se esconden los fallos, porque una
- *    referencia mal compuesta solo aparece con un color concreto.
+ *  - Las que se componen al vuelo, calculando los casos válidos de cada modelo
+ *    en cada lacado del catálogo. Aquí es donde se esconden los fallos, porque
+ *    una referencia mal compuesta solo aparece con un color o un largo concreto.
  *
- * Una referencia de baja no bloquea la reserva en RPS, así que este fallo no
- * salta solo: hay que buscarlo. De ahí este script.
+ * Falla si hay códigos rotos en blanco o negro. En los demás lacados informa por
+ * modelo: puede ser un color que ya no se ofrece, y eso se decide modelo a modelo.
+ *
+ * Uso: node scripts/validate-rps-references.mjs ["MODELO"]
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import sql from 'mssql';
 import { config } from '../src/config.js';
-import { calculateOrder } from '../src/domain/rules.js';
 import { lacadoNames } from '../src/domain/lacados.js';
-import { fullAwningModelNames } from '../src/domain/modelBehavior.js';
+import { fullAwningModelNames, sampleAwnings } from './lib/model-samples.mjs';
+import { groupProblems, isPrefixOfExisting } from './lib/rps-references.mjs';
 
 // Referencias que la aplicación emite a sabiendas de que no están en el maestro,
 // con el motivo. Cualquier otra que aparezca es un fallo.
@@ -31,7 +33,7 @@ const aceptadas = new Map([
 
 const palabras = new Set([
   'BAMBALINA', 'COMPENSADORA', 'ENROLLABLE', 'HORIZONTAL', 'MAXISCREEM', 'MOVIMIENTO',
-  'TERMINADA', 'VERTICAL', 'ESTANDAR'
+  'TERMINADA', 'VERTICAL', 'ESTANDAR', 'STANDARD', 'INTERIOR', 'EXTERIOR', 'FINISHED'
 ]);
 
 const domainDir = 'src/domain';
@@ -58,86 +60,45 @@ const maestro = await pool.request().input('company', sql.VarChar(10), config.db
   .then((r) => new Map(r.recordset.map((row) => [row.CodArticle.toUpperCase(), row.InactiveDate])));
 await pool.close();
 
-const estado = (code) => {
-  if (!maestro.has(code)) return 'no existe en el maestro';
-  const baja = maestro.get(code);
-  return baja ? `de baja el ${String(baja).slice(4, 15)}` : '';
-};
+// TURA80HG o TA3BLAN4X4 son el principio de un código que se completa con el largo.
+for (const literal of [...literales.keys()]) {
+  if (isPrefixOfExisting(literal, maestro)) literales.delete(literal);
+}
 
-const base = {
-  id: 'a', of: '0000000', units: 1, width: 300, projection: 250, valanceHeight: 0,
-  machineSide: 'M.F.DER', crankHeight: 150, placement: 'FRONTAL', wallType: '', sensor: 'SIN SENSOR',
-  rotFabric: 'NO', rotValance: 'NO', curtainHasWindow: false, curtainFinish: 'NORMAL',
-  tubeLoad: 'TUBO DE CARGA UNIVERS 280', armCount: 2, reglasModificadas: false,
-  irisGuideType: 'ESTÁNDAR', irisGuideFixing: 'PARED', irisAssumeSquare: true,
-  irisFrontTop: 300, irisExitLeft: 250
+// Solo casos válidos de cada modelo: probar salidas o variantes imposibles
+// llenaba el informe de brazos que nadie puede pedir (BPRT07…150C).
+const found = new Map();
+const anota = (code, lugar) => {
+  const clean = String(code || '').toUpperCase();
+  if (!clean) return;
+  if (!found.has(clean)) found.set(clean, new Set());
+  found.get(clean).add(lugar);
 };
-const submodelos = {
-  ELECTRA: 'SIN COFRE / CON GUÍA', IRIS: 'IRIS 110 CON COFRE', HERA: 'HERA 43 MAQUINA',
-  MAXISCREEM: 'COFRE / VARILLA', 'AGATA BOX': 'SEMI BOX'
-};
-// Muchas referencias solo se componen con ciertas medidas: los perfiles llevan el
-// largo de stock y el cristal del IRIS se elige por el frente. Barrer con un solo
-// tamaño deja fuera justo esas, y así se coló CRISESTP140500C, que no existe.
-// La ventana va en el caso grande porque es donde el cristal se pasa de catálogo.
-const medidas = [
-  { width: 200, projection: 150, curtainHasWindow: false },
-  { width: 400, projection: 250, curtainHasWindow: false },
-  { width: 650, projection: 400, curtainHasWindow: true }
-];
-
-const compuestas = new Map();
-for (const model of fullAwningModelNames) {
+const soloModelo = process.argv[2] ? process.argv[2].toUpperCase() : null;
+for (const model of fullAwningModelNames.filter((m) => !soloModelo || m === soloModelo)) {
   for (const lacado of lacadoNames) {
-    for (const device of ['MAQUINA', 'MAQ. INTERIOR', 'MOTOR']) {
-    for (const medida of medidas) {
-      let result;
-      try {
-        result = calculateOrder({
-          orderCode: 'AUDIT', sameFabric: true, fabric: 'ACRILI2170P120|||120|||ACR NEGRO',
-          structureColor: lacado,
-          awnings: [{ ...base, ...medida, model, device, structureColor: lacado,
-            irisFrontTop: medida.width, irisExitLeft: medida.projection,
-            submodel: submodelos[model] || '', electraSupport: 'SOPORTE ELIT VERTICAL' }]
-        });
-      } catch { continue; }
-      for (const line of result.ofs[0]?.materials || []) {
-        const code = String(line.code || '').toUpperCase();
-        if (!code || literales.has(code)) continue;
-        if (!compuestas.has(code)) compuestas.set(code, new Set());
-        compuestas.get(code).add(`${model}/${lacado}`);
-      }
-    }
+    for (const { result } of sampleAwnings(model, lacado)) {
+      const block = result.ofs[0];
+      for (const line of block.materials) anota(line.code, `${model}/${lacado}`);
+      // El despiece también se imprime y el taller lo lee: un código roto ahí confunde igual.
+      for (const row of block.despiece?.rows || []) anota(row.reference, `${model}/${lacado}`);
     }
   }
 }
-
-const problemas = [];
-for (const [origen, mapa] of [['literal', literales], ['compuesta', compuestas]]) {
-  for (const [code, quien] of mapa) {
-    const mal = estado(code);
-    if (!mal) continue;
-    problemas.push({ code, origen, estado: mal, donde: [...quien].slice(0, 6), aceptada: aceptadas.get(code) || null });
+if (!soloModelo) {
+  for (const [code, ficheros] of literales) {
+    for (const fichero of ficheros) anota(code, `${fichero}/literal`);
   }
 }
-// Un artículo DE BAJA existió y se retiró: reservarlo es un error seguro.
-// Uno que no existe puede ser un lacado que nadie ha pedido nunca y que se daría
-// de alta cuando llegue el primero, así que se informa pero no se falla.
-const deBaja = problemas.filter((p) => !p.aceptada && p.estado.startsWith('de baja'));
-const sinAlta = problemas.filter((p) => !p.aceptada && !p.estado.startsWith('de baja'));
 
-console.log(JSON.stringify({
-  referenciasLiterales: literales.size,
-  referenciasCompuestas: compuestas.size,
-  aceptadasConMotivo: problemas.filter((p) => p.aceptada),
-  deBajaEnRps: deBaja,
-  sinAltaEnRps: { total: sinAlta.length, referencias: sinAlta }
-}, null, 2));
-
-if (deBaja.length) {
-  console.error(`\n${deBaja.length} referencias dadas de baja en RPS. La reserva saldría con códigos muertos.`);
+const { porModelo, fallanHabituales } = groupProblems({ found, maestro, aceptadas });
+console.log(JSON.stringify({ referencias: found.size, porModelo }, null, 2));
+for (const [model, { habituales, otros }] of Object.entries(porModelo)) {
+  const rotas = habituales.filter((p) => !p.aceptada).map((p) => `${p.code} (${p.estado})`);
+  if (rotas.length) console.error(`${model} en blanco/negro: ${rotas.join(', ')}`);
+  if (otros.length) console.error(`${model}: ${otros.length} códigos rotos en otros lacados`);
+}
+if (fallanHabituales) {
+  console.error(`\n${fallanHabituales} referencias rotas en blanco o negro. La reserva saldría con códigos que RPS no tiene.`);
   process.exitCode = 1;
-}
-if (sinAlta.length) {
-  console.error(`${sinAlta.length} referencias sin alta en el maestro. Algunas serán lacados que nadie ha pedido; otras, piezas que nunca se reservaron y hay que dar de alta.`);
 }

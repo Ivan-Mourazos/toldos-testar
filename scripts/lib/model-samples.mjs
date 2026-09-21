@@ -59,12 +59,11 @@ function submodelsOf(model) {
   return options && options.length ? options : [''];
 }
 
-// Primera, central y última salida establecida: los cambios de tramo (tubo,
-// brazos, motor) caen en los extremos.
+// Todas las salidas establecidas: el brazo cambia de código con cada una, y
+// probar solo los extremos dejó fuera el Onyx negro de 250 de Perla Box.
 function projectionsOf(model) {
   const established = getEstablishedProjections(model);
-  if (!established || !established.length) return [150, 250];
-  return [...new Set([established[0], established[Math.floor(established.length / 2)], established.at(-1)])];
+  return established && established.length ? established : [150, 250];
 }
 
 function calculate(awning, structureColor) {
