@@ -929,7 +929,7 @@ label span,
   text-transform: uppercase;
 }
 
-.awning-status:not(.badge-ok):not(.badge-danger) {
+.awning-status:not(.badge-ok):not(.badge-danger):not(.badge-warn) {
   background: var(--surface-muted);
   color: var(--text-muted);
 }
@@ -5220,3 +5220,9 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
   border-color: var(--warn);
   box-shadow: 0 0 0 1px var(--warn);
 }
+
+.awning-status.badge-warn { text-transform: none; letter-spacing: 0; padding: 6px 10px; text-align: center; }
+.awning-diagnostics { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 12px; }
+.awning-diagnostics li { border-radius: var(--radius-sm); padding: 6px 8px; }
+.awning-diagnostics .is-error { background: var(--danger-bg); color: var(--danger); }
+.awning-diagnostics .is-pending { background: var(--warn-bg); color: var(--warn); }
