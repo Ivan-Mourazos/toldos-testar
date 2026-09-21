@@ -5250,7 +5250,9 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .parameters-save-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  /* Encima del selector de modelo (80) y su menú (500); debajo de las listas
+     desplegables (1000) y de los avisos (1200), que deben verse sobre el diálogo. */
+  z-index: 950;
   display: grid;
   place-items: center;
   padding: var(--sp-4);

@@ -34,12 +34,20 @@ try {
   assert.equal(await page.getByLabel(/Margen del cuerpo/).count(), 0);
   await page.getByLabel('Remate de bambalina (cm)', { exact: true }).fill('8');
   await page.getByLabel('Costura entre paños (cm)', { exact: true }).focus();
+  // Desde la fase 3 los parámetros son comunes: se guardan para todos con técnico y motivo.
+  await page.getByRole('button', { name: 'Guardar para todos' }).first().click();
+  const saveDialog = page.getByRole('dialog', { name: 'Guardar para todos los puestos' });
+  await saveDialog.getByRole('combobox', { name: 'Quién hace el cambio', exact: true }).click();
+  await page.getByRole('option', { name: 'Iván' }).click();
+  await saveDialog.getByLabel('Motivo', { exact: true }).fill('Prueba de extremo a extremo');
+  await saveDialog.getByRole('button', { name: 'Guardar para todos' }).click();
+  await page.getByText('Parámetros guardados').waitFor();
   await page.reload();
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
   await page.locator('.parameter-model-trigger').click();
   await page.locator('.parameter-model-options button').filter({ hasText: 'Bambalina' }).click();
   assert.equal(await page.getByLabel('Remate de bambalina (cm)', { exact: true }).inputValue(), '8');
-  const parameters = await page.evaluate(() => JSON.parse(localStorage.getItem('toldos-testar-parameters-v2')));
+  const { parameters } = await request('/api/rule-parameters', null, 'GET');
   await page.screenshot({ path: path.join(directory, 'parametros-bambalina.png'), fullPage: true });
   const image = 'data:image/png;base64,' + (await readFile('src/domain/assets/tgm-logo.png')).toString('base64');
   for (const [i, curve] of ['RECTA', 'NORMAL', 'SUAVE', 'EXTRASUAVE'].entries()) {
