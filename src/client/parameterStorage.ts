@@ -11,22 +11,7 @@
  * son la fase 3 de docs/auditoria-2026-09-21.md.
  */
 import type { RuleParameters } from './types';
-import { normalizeArzuaProParameters } from '../domain/arzuaProParameters.js';
-import { normalizeGaliciaParameters } from '../domain/galiciaParameters.js';
-import { normalizeCoralBoxParameters, normalizePerlaBoxParameters } from '../domain/storbox400Parameters.js';
-import { normalizeCortinaParameters } from '../domain/cortinaParameters.js';
-import { normalizeSelenaParameters } from '../domain/selenaParameters.js';
-import { normalizeCambioCortinaParameters } from '../domain/cambioCortinaParameters.js';
-import { normalizeCuarzoBoxParameters } from '../domain/storbox250Parameters.js';
-import { normalizeXacobeoParameters } from '../domain/xacobeoParameters.js';
-import { normalizePuntoRectoParameters } from '../domain/puntoRectoParameters.js';
-import { normalizeMonoblock350Parameters } from '../domain/monoblock350Parameters.js';
-import { normalizeMaxiscreemParameters } from '../domain/maxiscreemParameters.js';
-import { normalizeElectraParameters } from '../domain/electraParameters.js';
-import { normalizeAmbarBoxParameters } from '../domain/ambarBoxParameters.js';
-import { normalizeAgataBoxParameters } from '../domain/agataBoxParameters.js';
-import { normalizeFabricJobParameters } from '../domain/fabricJobParameters.js';
-import { normalizeDrawingParameters } from '../domain/drawingParameters.js';
+import { normalizeRuleParameters, ruleParameterOverrides } from '../domain/ruleParameters.js';
 
 export const PARAMETERS_STORAGE_KEY = 'toldos-testar-parameters-v3';
 // v2 guardaba todo, también los valores de fábrica: de ella solo se rescata la
@@ -38,25 +23,7 @@ type ReadableStorage = { getItem: (key: string) => string | null };
 
 // Valores del código, con las secciones de `saved` que haya.
 export function defaultRuleParameters(saved?: Saved): RuleParameters {
-  return {
-    arzuaPro: normalizeArzuaProParameters(saved?.arzuaPro),
-    galicia: normalizeGaliciaParameters(saved?.galicia),
-    perlaBox: normalizePerlaBoxParameters(saved?.perlaBox || saved?.storbox400),
-    coralBox: normalizeCoralBoxParameters(saved?.coralBox),
-    cuarzoBox: normalizeCuarzoBoxParameters(saved?.cuarzoBox),
-    cortina: normalizeCortinaParameters(saved?.cortina),
-    selena: normalizeSelenaParameters(saved?.selena),
-    cambioCortina: normalizeCambioCortinaParameters(saved?.cambioCortina),
-    xacobeo: normalizeXacobeoParameters(saved?.xacobeo),
-    puntoRecto: normalizePuntoRectoParameters(saved?.puntoRecto),
-    monoblock350: normalizeMonoblock350Parameters(saved?.monoblock350),
-    maxiscreem: normalizeMaxiscreemParameters(saved?.maxiscreem),
-    electra: normalizeElectraParameters(saved?.electra),
-    ambarBox: normalizeAmbarBoxParameters(saved?.ambarBox),
-    agataBox: normalizeAgataBoxParameters(saved?.agataBox),
-    fabricJobs: normalizeFabricJobParameters(saved?.fabricJobs),
-    drawings: normalizeDrawingParameters(saved?.drawings)
-  } as RuleParameters;
+  return normalizeRuleParameters(saved) as RuleParameters;
 }
 
 function readJson(storage: ReadableStorage, key: string): Saved {
@@ -77,12 +44,5 @@ export function readStoredParameters(storage: ReadableStorage): RuleParameters {
 // Solo las secciones que difieren del código: las demás seguirán a sus
 // correcciones futuras.
 export function serializeParameterOverrides(parameters: RuleParameters): string {
-  const defaults = defaultRuleParameters();
-  const overrides: Partial<RuleParameters> = {};
-  for (const key of Object.keys(defaults) as (keyof RuleParameters)[]) {
-    if (JSON.stringify(parameters[key]) !== JSON.stringify(defaults[key])) {
-      (overrides as Record<string, unknown>)[key] = parameters[key];
-    }
-  }
-  return JSON.stringify(overrides);
+  return JSON.stringify(ruleParameterOverrides(parameters));
 }
