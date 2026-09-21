@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -116,7 +117,7 @@ function buildMaterials(context) {
   const units = Math.max(1, Number(awning.units) || 1);
   const materials = [
     { code: 'TURA70HG600C', quantity: units, description: 'TUBO DE ENROLLE P701' },
-    { code: 'CASPUNCE', quantity: units, description: 'CASQUILLO PUNTA' },
+    { code: tipBushing('P701').code, quantity: units, description: tipBushing('P701').description },
     { code: `PSBOX250${lacado.suffix}${stockLength}C`, quantity: units, description: 'KIT PERFILES ALUMINIO STORBOX250' },
     { code: `BART25${lacado.suffix}${awning.projection}C`, quantity: units, description: 'JUEGO DE BRAZOS ART250' }
   ];
@@ -154,7 +155,7 @@ function buildDespiece(context) {
 
   push(1, 'JUEGO SOPORTE STORBOX250', null, units);
   push(2, 'TUBO DE ENROLLE P701', 'TURA70HG600C', units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P701').code, units);
   push(5, 'KIT PERFILES ALUMINIO STORBOX250', `PSBOX250${lacado.suffix}${stockLength}C`, units, structureLength);
   push(6, 'TAPAS DE ALUMINIO', null, units);
   push(7, 'JUEGO DE BRAZOS ART250', `BART25${lacado.suffix}${awning.projection}C`, units, awning.projection);

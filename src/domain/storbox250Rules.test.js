@@ -42,7 +42,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'TURA70HG600C', quantity: 1 },
-      { code: 'CASPUNCE', quantity: 1 },
+      { code: 'CASPUNCEJE70MM', quantity: 1 },
       { code: 'PSBOX250BL16450C', quantity: 1 },
       { code: 'BART25BL16125C', quantity: 1 },
       { code: 'MANIVEBL16100C', quantity: 1 },
@@ -76,7 +76,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'TURA70HG600C', quantity: 1 },
-      { code: 'CASPUNCE', quantity: 1 },
+      { code: 'CASPUNCEJE70MM', quantity: 1 },
       { code: 'PSBOX250BL16450C', quantity: 1 },
       { code: 'BART25BL16200C', quantity: 1 },
       { code: 'SOPORTEUNVHIPRO', quantity: 1 },

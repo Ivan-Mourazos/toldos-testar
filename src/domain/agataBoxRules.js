@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -168,7 +169,7 @@ function buildMaterials(context) {
   const materials = [
     line(colored('SOBMODUL', suffix), supportCount * units, 'SOPORTES DE BRAZO ÁGATA BOX'),
     line(`TURA80HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P801'),
-    line('CASPUNCE', units, 'CASQUILLO PUNTA'),
+    line(tipBushing('P801').code, units, tipBushing('P801').description),
     line(coloredStock(loadBarPrefix(submodel), suffix, profileStockLength), units, `BARRA DE CARGA ÁGATA ${submodel}`),
     line(coloredStock('TUBHI442', suffix, profileStockLength), units, 'BARRA CUADRADA 40x40x2'),
     line(colored('BONYX', suffix, awning.projection, 'C'), armCount * units, 'BRAZOS ONYX'),
@@ -225,7 +226,7 @@ function buildDespiece(context) {
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
   push(1, 'SOPORTES DE BRAZO ÁGATA BOX', colored('SOBMODUL', suffix), supportCount * units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${rollStockLength}C`, units, lengths.rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MAQUINA' ? 'CASQUILLO EJE 63MM Ø78' : 'SOPORTE UNIVERSAL HIPRO', device === 'MAQUINA' ? 'CASMAQEJE6378MM' : 'SOPORTEUNVHIPRO', units);
   push(5, `BARRA DE CARGA ÁGATA ${submodel}`, coloredStock(loadBarPrefix(submodel), suffix, profileStockLength), units, lengths.loadBarLength);
   push(6, 'BARRA CUADRADA 40x40x2', coloredStock('TUBHI442', suffix, profileStockLength), units, lengths.squareBarLength);

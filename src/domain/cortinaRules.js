@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -166,7 +167,7 @@ function buildDespiece(context) {
   const support = supportMaterial(curtainSupport, suffix, units);
   push(1, support.description, support.code, units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${stockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MOTOR' ? 'SOPORTE UNIVERSAL HIPRO' : 'CASQUILLO MAQUINA EJE 50MM Ø78', device === 'MOTOR' ? 'SOPORTEUNVHIPRO' : 'CASMAQEJE5078MM', units);
   push(5, 'TUBO DE CARGA UNIVERS 280', `PUNI280${universProfileSuffix(suffix)}${stockLength}C`, units, structureLength);
   push(6, 'KIT TAPONES UNIVERS 280', `TAPOPLUN280${plasticCapSuffix(lacado)}`, units);

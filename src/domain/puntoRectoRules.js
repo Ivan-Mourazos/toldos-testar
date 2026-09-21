@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -161,7 +162,7 @@ function buildMaterials(context) {
   const materials = [
     line(`SOPUNI3AGU${lacado.suffix}`, units, 'JGO.SOPORTE UNIVERSAL 3 FUROS'),
     line(`${rollSystem === 'P801' ? 'TURA80HG' : 'TURA70HG'}${stockLength}C`, units, `TUBO DE ENROLLE ${rollSystem}`),
-    line('CASPUNCE', units, 'CASQUILLO PUNTA'),
+    line(tipBushing(rollSystem).code, units, tipBushing(rollSystem).description),
     line(lacado.suffix ? `PUNI270${lacado.suffix}${stockLength}C` : '', units, 'TUBO DE CARGA UNIVERS 270'),
     line(`BPRT07${lacado.suffix}${awning.projection}C`, armCount * units, 'BRAZO PRT07')
   ].filter(Boolean);
@@ -197,7 +198,7 @@ function buildDespiece(context) {
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
   push(1, 'JGO.SOPORTE UNIVERSAL 3 FUROS', `SOPUNI3AGU${lacado.suffix}`, units);
   push(2, `TUBO DE ENROLLE ${rollSystem}`, `${rollSystem === 'P801' ? 'TURA80HG' : 'TURA70HG'}${stockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing(rollSystem).code, units);
   if (device === 'MAQUINA') push(4, 'KIT DE TORNILLOS MAQUINA', null, units);
   push(5, 'TUBO DE CARGA UNIVERS 270', lacado.suffix ? `PUNI270${lacado.suffix}${stockLength}C` : null, units, loadBarLength);
   push(6, 'KIT DE TAPONES', null, units);

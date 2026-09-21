@@ -8,11 +8,11 @@ describe('reservas por OF', () => {
       ofs: [
         { of: '3303333', description: 'Toldo A', materials: [
           { code: 'ACRILI2170P120', quantity: 13.5 },
-          { code: 'CASPUNCE', quantity: 1 }
+          { code: 'CASPUNCEJE78MM', quantity: 1 }
         ] },
         { of: '3303333', description: 'Toldo B', materials: [
           { code: 'ACRILI2170P120', quantity: 13.5 },
-          { code: 'CASPUNCE', quantity: 1 }
+          { code: 'CASPUNCEJE78MM', quantity: 1 }
         ] }
       ]
     });
@@ -20,7 +20,7 @@ describe('reservas por OF', () => {
     expect(reservation.ofs).toHaveLength(1);
     expect(reservation.ofs[0].materials).toEqual([
       { code: 'ACRILI2170P120', description: '', quantity: 27 },
-      { code: 'CASPUNCE', description: '', quantity: 2 }
+      { code: 'CASPUNCEJE78MM', description: '', quantity: 2 }
     ]);
   });
 

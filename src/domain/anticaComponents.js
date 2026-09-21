@@ -1,3 +1,5 @@
+import { tipBushing } from './tipBushing.js';
+
 // RPS consultado el 14/09/2026; ver docs/modelos/antica.md (F08/P10).
 // Catálogo explícito: otros largos no siguen necesariamente el mismo código.
 const standardLengths = new Set([80, 100, 120, 150, 170, 200, 225, 250]);
@@ -12,5 +14,5 @@ export function resolveAnticaCrank(awning, lacado) {
   return { color, height, code, name: 'MANIVELA LUXE ' + color + ' ' + height };
 }
 export function anticaPointCode(rollSystem) {
-  return rollSystem === 'P801' ? 'CASPUNCEJE78MM' : 'CASPUNCEJE70MM';
+  return tipBushing(rollSystem).code;
 }

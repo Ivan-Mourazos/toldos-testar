@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -239,7 +240,7 @@ function buildMaterials(context) {
   const materials = [
     supportMaterial(support, lacado.suffix, units),
     line(`TURA80HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P801'),
-    line('CASPUNCE', units, 'CASQUILLO PUNTA'),
+    line(tipBushing('P801').code, units, tipBushing('P801').description),
     line(loadProfileReference.code, units, loadProfileDescription()),
     plasticUniversalCaps(lacado, units)
   ];
@@ -293,7 +294,7 @@ function buildDespiece(context) {
   const supportLine = supportMaterial(support, lacado.suffix, units);
   push(1, supportLine.description, supportLine.code, units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${rollStockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   if (!hasCofre) {
     if (device === 'MOTOR') {
       push(4, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);

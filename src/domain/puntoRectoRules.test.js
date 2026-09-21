@@ -31,7 +31,7 @@ describe('PUNTO RECTO contra hoja y reservas reales', () => {
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPUNI3AGUBL16', quantity: 1 },
       { code: 'TURA70HG600C', quantity: 1 },
-      { code: 'CASPUNCE', quantity: 1 },
+      { code: 'CASPUNCEJE70MM', quantity: 1 },
       { code: 'PUNI270BL16600C', quantity: 1 },
       { code: 'BPRT07BL16100C', quantity: 2 },
       { code: 'CASMAQEJE6370MM', quantity: 1 },

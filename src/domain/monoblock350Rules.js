@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -144,7 +145,7 @@ function buildMaterials(context) {
   const materials = [
     line(`SOPBRAMONOB${suffix}`, armCount * units, 'JGO SOPORTE BRAZO MONOBLOC 350'),
     line(`TURA80HG${stockLength}C`, units, 'TUBO DE ENROLLE P801'),
-    line('CASPUNCE', units, 'CASQUILLO PUNTA'),
+    line(tipBushing('P801').code, units, tipBushing('P801').description),
     line(`PEVO80${suffix}${stockLength}C`, units, 'TUBO DE CARGA EVO 80'),
     line(`TAPONEVO7${suffix}`, units, 'KIT TAPONES EVO 80'),
     line(`BONYX${suffix}${awning.projection}C`, armCount * units, 'BRAZO ONYX'),
@@ -188,7 +189,7 @@ function buildDespiece(context) {
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
   push(1, 'SOPORTES BRAZOS MONOBLOC350', `SOPBRAMONOB${suffix}`, armCount * units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${stockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MOTOR' ? 'RUEDA MOTRIZ Ø 78' : 'CASQUILLO MAQUINA EJE 50MM Ø78', device === 'MOTOR' ? 'RUEDAMOT78' : 'CASMAQEJE5078MM', units);
   push(5, 'TUBO DE CARGA EVO 80', `PEVO80${suffix}${stockLength}C`, units, loadBarLength);
   push(6, 'KIT TAPONES EVO 80', `TAPONEVO7${suffix}`, units);

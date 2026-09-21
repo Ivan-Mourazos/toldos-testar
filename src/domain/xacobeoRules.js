@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -103,7 +104,7 @@ function buildMaterials({ awning, device, lacado, fabric, separateValance, stock
   const materials = [
     { code: `SOPART250${lacado.suffix}`, quantity: units, description: 'JUEGO SOPORTE ART250' },
     { code: `TURA70HG${stockLength}C`, quantity: units, description: 'TUBO DE ENROLLE P701' },
-    { code: 'CASPUNCE', quantity: units, description: 'CASQUILLO PUNTA' },
+    { code: tipBushing('P701').code, quantity: units, description: tipBushing('P701').description },
     { code: `PEVO702R${lacado.suffix}${stockLength}C`, quantity: units, description: 'TUBO DE CARGA EVO 70' },
     { code: `BART25${lacado.suffix}${awning.projection}C`, quantity: units, description: 'JUEGO DE BRAZOS ART250' }
   ];
@@ -140,7 +141,7 @@ function buildDespiece({ awning, device, lacado, stockLength, rollTubeLength, lo
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference, units: rowUnits, length });
   push(1, 'JUEGO SOPORTE ART250', `SOPART250${lacado.suffix}`, units);
   push(2, 'TUBO DE ENROLLE P701', `TURA70HG${stockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P701').code, units);
   if (device !== 'MOTOR') push(4, device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø70' : 'CASQUILLO EJE 63MM Ø70', device === 'MAQ. INTERIOR' ? 'CASMAQEJE5070MM' : 'CASMAQEJE6370MM', units);
   push(5, 'TUBO DE CARGA EVO 70', `PEVO702R${lacado.suffix}${stockLength}C`, units, loadBarLength);
   push(6, 'KIT TAPONES EVO 70', null, units);

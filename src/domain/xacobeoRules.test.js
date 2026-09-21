@@ -42,7 +42,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPART250BL16', quantity: 1 },
       { code: 'TURA70HG600C', quantity: 1 },
-      { code: 'CASPUNCE', quantity: 1 },
+      { code: 'CASPUNCEJE70MM', quantity: 1 },
       { code: 'PEVO702RBL16600C', quantity: 1 },
       { code: 'BART25BL16250C', quantity: 1 },
       { code: 'CASMAQEJE6370MM', quantity: 1 },
@@ -70,7 +70,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPART250BL16', quantity: 1 },
       { code: 'TURA70HG600C', quantity: 1 },
-      { code: 'CASPUNCE', quantity: 1 },
+      { code: 'CASPUNCEJE70MM', quantity: 1 },
       { code: 'PEVO702RBL16600C', quantity: 1 },
       { code: 'BART25BL16125C', quantity: 1 },
       { code: 'SOPORTEUNVHIPRO', quantity: 1 },

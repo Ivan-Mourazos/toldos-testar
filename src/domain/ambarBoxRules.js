@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -148,7 +149,7 @@ function buildMaterials(context) {
   const materials = [
     line(supportReference(placement, suffix), units, supportName(placement)),
     line(`TURA70HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P701'),
-    line('CASPUNCE', units, 'CASQUILLO PUNTA'),
+    line(tipBushing('P701').code, units, tipBushing('P701').description),
     line(suffix ? `PMICRB30${suffix}${profileStockLength}C` : '', units, 'KIT DE PERFILES ÁMBAR BOX'),
     line(suffix ? `TAPMICB300${suffix}` : '', units, 'KIT TAPAS ÁMBAR BOX'),
     line(suffix ? `BPRT07${suffix}${awning.projection}C` : '', units, 'JUEGO DE BRAZOS PRT07')
@@ -189,7 +190,7 @@ function buildDespiece(context) {
   const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
   push(1, supportName(placement), supportReference(placement, suffix), units);
   push(2, 'TUBO DE ENROLLE P701', `TURA70HG${rollStockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P701').code, units);
   push(4, device === 'MAQUINA' ? 'KIT TORNILLOS FIJ. MAQ.' : 'KIT FIJACIÓN MOTOR', null, units);
   push(5, 'KIT DE PERFILES ÁMBAR BOX', suffix ? `PMICRB30${suffix}${profileStockLength}C` : null, units, structureLength);
   push(6, 'KIT TAPAS ÁMBAR BOX', suffix ? `TAPMICB300${suffix}` : null, units);

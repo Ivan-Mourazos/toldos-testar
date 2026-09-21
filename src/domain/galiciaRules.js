@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -230,7 +231,7 @@ function buildDespiece({ awning, lacado, colorSuffix, tubeLoad, device, armCount
 
   push(1, 'JUEGO SOPORTE GALICIA', refSupport(colorSuffix), awningUnits);
   push(2, 'TUBO DE ENROLLE P801', refRollTube(stockLength), awningUnits, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', awningUnits);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, awningUnits);
   if (device === 'MOTOR') push(4, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', awningUnits);
   else push(4, descMachineBush(device), refMachineBush(device), awningUnits);
 

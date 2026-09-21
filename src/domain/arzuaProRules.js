@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -212,7 +213,7 @@ const refSoporte = (supportSystem, colorSuffix) => supportSystem === 'GALICIA' ?
 const refTuboEnrolle = (stockLength) => `TURA80HG${stockLength}C`;
 const refTuboCargaEvo = (colorSuffix, stockLength) => `PEVO80${colorSuffix}${stockLength}C`;
 const refTuboCargaUnivers = (colorSuffix, stockLength) => `PUNI280${universProfileSuffix(colorSuffix)}${stockLength}C`;
-const refCasquilloPunta = 'CASPUNCEJE78MM';
+const refCasquilloPunta = tipBushing('P801').code;
 const refTaponesUnivers = (lacado) => `TAPOPLUN280${plasticCapSuffix(lacado)}`;
 const refTaponesEvo = (lacado) => `TAPONEVO8${plasticCapSuffix(lacado)}`;
 const refTerminales = (colorSuffix) => `TERMINEVO${colorSuffix}`;

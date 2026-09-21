@@ -1,3 +1,4 @@
+import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -149,7 +150,7 @@ function buildMaterials(context) {
   const materials = [];
   if (config.reserveKitParts) materials.push({ code: refSupport(config, suffix), quantity: units, description: `JUEGO SOPORTE ${config.pieceName}` });
   materials.push({ code: refRollTube(stockLength), quantity: config.rollTubeUnits * units, description: 'TUBO DE ENROLLE P801' });
-  if (config.reserveTipBushing) materials.push({ code: 'CASPUNCE', quantity: units, description: 'CASQUILLO PUNTA' });
+  if (config.reserveTipBushing) materials.push({ code: tipBushing('P801').code, quantity: units, description: tipBushing('P801').description });
   if (config.reserveKitParts) {
     materials.push(
       { code: refProfiles(config, suffix, stockLength), quantity: units, description: `KIT PERFILES ${config.pieceName}` },
@@ -197,7 +198,7 @@ function buildDespiece(context) {
 
   push(1, `JUEGO SOPORTE ${config.pieceName}`, refSupport(config, suffix), units);
   push(2, 'TUBO DE ENROLLE P801', refRollTube(stockLength), units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', 'CASPUNCE', units);
+  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MOTOR' ? 'RUEDA MOTRIZ Ø 78' : 'CASQUILLO EJE 81MM', device === 'MOTOR' ? 'RUEDAMOT78' : 'CASTRAEX80', units);
   push(5, `KIT PERFILES ${config.pieceName}`, refProfiles(config, suffix, stockLength), units, structureLength);
   push(6, `KIT TAPAS ${device} ${config.pieceName}`, refCaps(config, device, suffix), units);
