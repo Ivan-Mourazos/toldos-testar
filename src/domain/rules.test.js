@@ -257,8 +257,10 @@ describe('calculateOrder — CAMBIO TELA', () => {
       }]
     });
 
+    // Sin bamba no hay remate de 5 cm: caída 300 + 40 (criterio de Iván, 14/09/2026).
+    // El Excel de este pedido daba 6,9 porque sumaba el remate igualmente.
     expect(result.ofs[0].materials).toEqual([
-      { code: 'ALPHANA04P250', quantity: 6.9, description: 'PVC 580 NARANJA' }
+      { code: 'ALPHANA04P250', quantity: 6.8, description: 'PVC 580 NARANJA' }
     ]);
   });
 });
@@ -1187,7 +1189,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'ACRILI2226P120', quantity: 49.35 }),
       expect.objectContaining({ code: 'TURA80HG600C', quantity: 3 }),
-      expect.objectContaining({ code: 'CASPUNCE', quantity: 3 }),
+      expect.objectContaining({ code: 'CASPUNCEJE78MM', quantity: 3 }),
       expect.objectContaining({ code: 'SOSTORB400BL16', quantity: 3 }),
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
       expect.objectContaining({ code: 'BONYXBL16300C', quantity: 1 }),
