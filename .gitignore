@@ -8,3 +8,5 @@ tmp
 .logs
 .codex-dev*.log
 _analysis/*.tmp
+.claude/worktrees
+.claude/settings.local.json
