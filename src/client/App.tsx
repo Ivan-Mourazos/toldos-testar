@@ -16,6 +16,8 @@ import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadines
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
+import { incompleteAwningLines } from './incompleteAwnings';
+import { getMissingFields } from '../domain/awningCompleteness.js';
 import { PdfPreviewPages } from './components/PdfPreviewPages';
 import { OrderView } from './views/OrderView';
 import { ParametersView } from './views/ParametersView';
@@ -201,10 +203,22 @@ export default function App() {
     };
   }
 
-  async function saveForReview(confirmOverwrite = false) {
+  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false) {
+    const incomplete = incompleteAwningLines(draft.awnings);
     if (!calculation || calculation.ofs.length === 0) {
-      notify('Completa al menos un toldo antes de guardarlo para revisión.', { tone: 'warning' });
+      notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
       return;
+    }
+    if (incomplete.length && !confirmIncomplete) {
+      const choice = await askForConfirmation({
+        title: 'Hay elementos sin completar',
+        message: 'Se puede guardar como borrador para revisión, pero no se podrán generar los archivos definitivos hasta completarlos.',
+        confirmLabel: 'Guardar igualmente',
+        cancelLabel: 'Seguir completando',
+        tone: 'warning',
+        details: incomplete
+      });
+      if (choice !== 'confirm') return;
     }
     if (!draft.orderCode.trim()) {
       notify('Indica el número de pedido para crear el archivo de revisión.', { tone: 'warning' });
@@ -227,7 +241,7 @@ export default function App() {
           tone: 'warning',
           details: data.existing
         });
-        if (choice === 'confirm') await saveForReview(true);
+        if (choice === 'confirm') await saveForReview(true, true);
         return;
       }
       if (!response.ok) {
@@ -246,7 +260,8 @@ export default function App() {
 
   async function openPlanteamientoPreview() {
     if (!calculation || calculation.ofs.length === 0) {
-      notify('Completa al menos un toldo para ver el planteamiento.', { tone: 'warning' });
+      const incomplete = incompleteAwningLines(draft.awnings);
+      notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo para ver el planteamiento.', { tone: 'warning', title: 'Faltan datos' });
       return;
     }
     setWorking('preview');
@@ -301,8 +316,9 @@ export default function App() {
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
 
-  const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : calculationState === 'idle' ? 'badge-neutral' : 'badge-ok';
-  const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : calculationState === 'idle' ? 'Esperando pedido' : 'Planteamiento vivo';
+  const hasIncomplete = draft.awnings.some((awning) => getMissingFields(awning).length > 0);
+  const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : calculationState === 'idle' ? 'badge-neutral' : hasIncomplete ? 'badge-warn' : 'badge-ok';
+  const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : calculationState === 'idle' ? 'Esperando pedido' : hasIncomplete ? 'Faltan datos' : 'Planteamiento vivo';
   const viewTitle = activeTab === 'order'
     ? 'Nuevo planteamiento'
     : activeTab === 'parameters'

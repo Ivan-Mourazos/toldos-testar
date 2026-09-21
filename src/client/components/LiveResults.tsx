@@ -1,3 +1,4 @@
+import { awningLetter } from '../../domain/awningCompleteness.js';
 import React, { useState } from 'react';
 import { AlertCircle, FileSpreadsheet, Layers3, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
@@ -78,7 +79,12 @@ function StructurePreview({ blocks, awnings, selectedBlock, onSelect, onUpdate }
   onSelect: (key: string) => void;
   onUpdate?: (id: string, patch: Partial<Awning>) => void;
 }) {
-  if (!selectedBlock) return <EmptyResult text="Los trabajos de tela no generan planteamiento de estructura." />;
+  if (!selectedBlock) {
+    const firstFull = awnings.findIndex((item) => item.workType !== 'FABRIC_ONLY');
+    return <EmptyResult text={firstFull === -1
+      ? 'Los trabajos de tela no generan planteamiento de estructura.'
+      : `Completa el toldo ${awningLetter(firstFull)} para ver su estructura.`} />;
+  }
   const awning = findAwning(selectedBlock, awnings);
   const calc = selectedBlock.calculation!;
 
@@ -248,17 +254,6 @@ function groupMaterialRows(ofs: Calculation['ofs']) {
   return Array.from(rows.entries()).map(([key, row]) => fabricKeys.has(key)
     ? { ...row, quantity: roundFabricMeters(row.quantity) }
     : row);
-}
-
-function awningLetter(index: number) {
-  let number = index + 1;
-  let label = '';
-  while (number > 0) {
-    number -= 1;
-    label = String.fromCharCode(65 + (number % 26)) + label;
-    number = Math.floor(number / 26);
-  }
-  return label;
 }
 
 function buildStatusText(state: CalculationState, calculation: Calculation | null) {
