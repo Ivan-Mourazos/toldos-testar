@@ -58,6 +58,15 @@ The card and the calculation share one rule (`src/domain/awningCompleteness.js`)
 if anything is missing, the footer reads **FALTA · …** with the fields, and the
 calculation is not valid.
 
+## Shared parameters
+
+Rule parameters live on the server, next to the settings file: the isolated
+instance keeps `rule-parameters.json` and its history in `tmp/ui-audit/`.
+Editing in Parámetros creates a draft; it only reaches calculations after
+**Guardar para todos** (technician + reason). The server caches the file, so to
+start from code defaults stop the instance, delete `tmp/ui-audit/rule-parameters*`
+and start it again.
+
 ## Stop
 
 Stop the background task when done. Leave `tmp/ui-audit/` for evidence;

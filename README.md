@@ -101,7 +101,8 @@ Usar rutas Linux montadas; no configurar unidades Windows ni rutas UNC:
 - `/mnt/toldos/oficina-tecnica`
 - `/mnt/toldos/rps`
 - `/mnt/rps/ventas/planteamientos` para el histórico de PDF de RPS
-- `/var/lib/toldos-testar` para la configuración persistente
+- `/var/lib/toldos-testar` para la configuración persistente y los parámetros de
+  cálculo comunes a todos los puestos (`rule-parameters.json` y su historial)
 
 El usuario que ejecuta PM2 debe poder leer, crear y renombrar archivos en los
 dos montajes de entrada. En el histórico de planteamientos basta con permiso de
@@ -132,6 +133,7 @@ PLANTEAMIENTOS_DIRECTORY=/mnt/toldos/oficina-tecnica/{YYYY}/TOLDOS
 RPS_UPLOAD_DIRECTORY=/mnt/toldos/rps
 RPS_PLANTEAMIENTOS_DIRECTORY=/mnt/rps/ventas/planteamientos/{YYYY}
 WORKFLOW_SETTINGS_FILE=/var/lib/toldos-testar/workflow-settings.json
+RULE_PARAMETERS_FILE=/var/lib/toldos-testar/rule-parameters.json
 
 DB_SERVER=<SERVIDOR_SQL>
 DB_PORT=1433

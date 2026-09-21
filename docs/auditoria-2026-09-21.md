@@ -1,6 +1,6 @@
 # Auditoría general de Toldos Testar
 
-21/09/2026 · Actualizada al cerrar la fase 2 · Fase 1 desplegada, fase 2 sin desplegar
+21/09/2026 · Actualizada al cerrar la fase 3 · Fase 1 desplegada; fases 2 y 3 sin desplegar
 
 [Plan detallado de la fase 1](./superpowers/plans/2026-09-21-fase-1-fallos-comunes.md) · [Seguimiento de modelos](./modelos/README.md) · [Guía de revisión](./guia-revision-modelos.md)
 
@@ -23,6 +23,7 @@ Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typeche
 | vitest | Contaba 1909 tests porque incluía el worktree de Codex; los reales son 990. Corregido en `9b1ef47` |
 | Skill de arranque | `.claude/skills/running-toldos-testar`: levanta la web aislada en 4310 sin tocar el recurso real y la recorre con Playwright. Probada desde cero con el caso AR2603332 |
 | Decisiones de Iván | Reserva completa = consumo real, también en Iris y HERA. Primero los fallos comunes, después modelo a modelo |
+| Fase 3 terminada | Parámetros comunes en el servidor con versión e historial; los pedidos nunca se calculan con un borrador sin guardar. Los cinco recorridos e2e pasan. De paso: la tabla de Galicia parecía distinta sin serlo (orden de claves) y el diálogo de guardar quedaba tapado por el selector de modelo |
 | Parámetros congelados | Los puestos calculaban con los valores de fábrica de julio. Comprobado en las 39 revisiones web de 2026 y arreglado en `f88ebf2` (sin desplegar) |
 | Fase 2 terminada (salvo legibilidad) | Una sola regla de toldo completo (`awningCompleteness.js`) para tarjeta, cálculo y generación: un toldo con bamba y sin curva ya no llega al planteamiento definitivo. La tarjeta dice qué falta y lo resalta; Guardar lo confirma con la lista; Estructuras y la barra lateral dejan de dar mensajes falsos. `test:e2e:rps`, roto desde el 13/08 sin que nadie lo viera, vuelve a pasar con Bambalina, HERA y Antica. 1083 tests |
 | Fase 1 terminada | Herramientas con casos válidos de los 17 modelos; `validate:reserva` mide 16 (antes 10, cinco de ellos mal); `validate:rps-refs` falla en blanco y negro y revisa también el despiece. `CASPUNCE` sustituido en 13 modelos y 26 códigos `…CM` traducidos: las referencias rotas en blanco o negro bajan de 72 a 49. 1059 tests |
@@ -131,7 +132,9 @@ Esfuerzo que recomiendo en Opus 5 para cada tarea. Criterio: **low** para cambio
 | 2.3 | Mensajes: estructuras vacías, estado de la barra lateral, "Toldo A" en los avisos, etiqueta del buscador de tela (U4, U6, U8, U9) | low |
 | 2.4 | Legibilidad: tamaños mínimos y contraste, con muestra antes/después para Iván (U11) | medium |
 
-### Fase 3 · Parámetros compartidos
+### Fase 3 · Parámetros compartidos · terminada el 21/09
+
+[Especificación](./superpowers/specs/2026-09-21-parametros-comunes-design.md) · [Plan](./superpowers/plans/2026-09-21-fase-3-parametros-comunes.md). Un solo juego en el servidor (`rule-parameters.json`), borrador con "Guardar para todos" (técnico y motivo), conflicto si otro puesto guardó antes, historial con vuelta atrás y versión guardada en cada pedido. Probado con dos navegadores a la vez.
 
 **3.0 hecho (21/09):** arreglo urgente de los parámetros congelados en cada navegador (`f88ebf2`).
 
