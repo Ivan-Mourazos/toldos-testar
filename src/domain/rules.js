@@ -21,6 +21,7 @@ import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calc
 import { normalizeOrder } from './validation.js';
 import { getFieldVisibility, getRequiredDimensions } from './modelBehavior.js';
 import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
+import { withRpsCodes } from './rpsIrregularCodes.js';
 
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
@@ -117,6 +118,7 @@ export function calculateOrder(payload) {
       };
     }
     result = applyLegacyRpsFabricReservation({ awning, result });
+    result = withRpsCodes(result);
     ofs.push({
       awningId: awning.id,
       awningIndex,
