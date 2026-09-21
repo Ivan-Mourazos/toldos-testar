@@ -146,7 +146,10 @@ function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanc
     return Number(awning.projection) + allowance + integratedValance;
   }
   if (model === 'CAMBIO TELA') {
-    return Number(awning.projection) + bodyAllowance + (separateValance ? 0 : valanceHeight + valanceExtra);
+    // El remate solo existe si hay bamba. Sumarlo con alto 0 añadía 5 cm a cada
+    // cambio de tela sin bambalina: 17 de los 24 desajustes de caída de 2026.
+    const integratedValance = separateValance || valanceHeight <= 0 ? 0 : valanceHeight + valanceExtra;
+    return Number(awning.projection) + bodyAllowance + integratedValance;
   }
   return Number(awning.projection) + bodyAllowance;
 }

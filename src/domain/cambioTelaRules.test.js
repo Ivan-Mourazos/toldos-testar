@@ -53,8 +53,15 @@ describe('calculateCambioTela', () => {
       awning: baseAwning({ width: 329, projection: 300, valanceHeight: 0 })
     });
 
+    // Dos paños con rollo de 250; con 120 harían falta tres y el consumo sería otro.
+    expect(result.calculation.fabricRollWidth).toBe(250);
+    expect(result.calculation.fabricPanels).toBe(2);
+    // El Excel de este pedido da 6,9 porque suma el remate sin haber bamba: su hoja
+    // CAM. TELA lleva el +5 en las cuatro columnas. Iván confirma el 14/09/2026 que
+    // ese remate es de la bambalina, así que sin bamba la caída es salida + 40.
+    expect(result.calculation.fabricDrop).toBe(340);
     expect(result.materials).toEqual([
-      { code: 'ALPHANA04P250', quantity: 6.9, description: 'PVC 580 NARANJA' }
+      { code: 'ALPHANA04P250', quantity: 6.8, description: 'PVC 580 NARANJA' }
     ]);
   });
 
@@ -68,5 +75,31 @@ describe('calculateCambioTela', () => {
     expect(result.diagnostics).toEqual([
       { level: 'error', awningId: 'a1', message: 'Tela no encontrada en el catálogo: "ACR GENERAT RED".' }
     ]);
+  });
+});
+
+// Contrastado contra los Excel de OT leídos el 14/09/2026. El remate de bamba solo
+// existe si hay bamba: 17 de los 24 desajustes de caída de 2026 eran este +5.
+describe('cambio de tela sin bambalina', () => {
+  it.each([
+    ['AR2600109', '0224173', 577.4, 350, 390, 19.5],
+    ['AR2601149', '0226295', 440, 275, 315, 12.6],
+    ['AR2601844', '0227517', 399, 225, 265, 10.6],
+    ['AR2601854', '0227591', 532, 300, 340, 17]
+  ])('%s con BAMBA vacío calcula salida + 40, sin el remate', (orderCode, of, width, projection, drop, ml) => {
+    const result = calculateCambioTela({
+      order: { orderCode, fabric: 'ACR NEGRO' },
+      awning: baseAwning({ of, width, projection, valanceHeight: 0 })
+    });
+    expect(result.calculation.fabricDrop).toBe(drop);
+    expect(result.calculation.fabricMl).toBeCloseTo(ml, 2);
+  });
+
+  it('con bambalina sigue sumando el alto y su remate', () => {
+    const result = calculateCambioTela({
+      order: { fabric: 'ACR NEGRO' },
+      awning: baseAwning({ projection: 215, valanceHeight: 25 })
+    });
+    expect(result.calculation.fabricDrop).toBe(285);
   });
 });
