@@ -12,9 +12,10 @@ type Props = {
   placeholder?: string;
   allowEmpty?: boolean;
   emptyLabel?: string;
+  missing?: boolean;
 };
 
-export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado' }: Props) {
+export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado', missing = false }: Props) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -77,7 +78,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
   };
 
   return (
-    <div ref={rootRef} className={`field select-field${open ? ' is-open' : ''}`}>
+    <div ref={rootRef} className={`field select-field${open ? ' is-open' : ''}${missing ? ' is-missing' : ''}`}>
       <span id={labelId}>{label}</span>
       <button
         ref={triggerRef}
@@ -88,6 +89,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
         aria-controls={listboxId}
         aria-haspopup="listbox"
         aria-labelledby={labelId}
+        aria-invalid={missing || undefined}
         title={value ? controlLabel(value) : undefined}
         onClick={() => open ? setOpen(false) : showOptions()}
         onKeyDown={handleKeyDown}

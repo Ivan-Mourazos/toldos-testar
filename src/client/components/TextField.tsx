@@ -1,9 +1,9 @@
 
-export function TextField({ label, value, onChange, placeholder = '', onBlur, hint }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; onBlur?: () => void; hint?: string }) {
+export function TextField({ label, value, onChange, placeholder = '', onBlur, hint, missing = false }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; onBlur?: () => void; hint?: string; missing?: boolean }) {
   return (
-    <label>
+    <label className={missing ? 'is-missing' : undefined}>
       <span>{label}</span>
-      <input value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} onBlur={onBlur} />
+      <input value={value} placeholder={placeholder} aria-invalid={missing || undefined} onChange={(event) => onChange(event.target.value)} onBlur={onBlur} />
       {hint && <small className="field-hint-warn">{hint}</small>}
     </label>
   );

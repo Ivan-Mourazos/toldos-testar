@@ -19,9 +19,11 @@ type Props = {
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  missing?: boolean;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre aproximado…', disabled = false }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre aproximado…', disabled = false, missing = false }: Props) {
+  const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
   const [options, setOptions] = useState<FabricOption[]>([]);
   const [open, setOpen] = useState(false);
@@ -78,13 +80,15 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   }
 
   return (
-    <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}`}>
-      <span>{label}</span>
+    <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}${missing ? ' is-missing' : ''}`}>
+      <span id={labelId}>{label}</span>
       <div className="fabric-input-wrap">
         <Search aria-hidden="true" />
         <input
           ref={inputRef}
           role="combobox"
+          aria-labelledby={labelId}
+          aria-invalid={missing || undefined}
           aria-expanded={open}
           aria-controls={listId}
           autoComplete="off"

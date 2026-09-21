@@ -5210,3 +5210,13 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
   .review-inline-preview .review-preview-actions { width: 100%; justify-content: flex-end; }
   .review-inline-preview .pdf-carousel-stage { padding: 8px 40px; }
 }
+
+/* Campo que falta para dar el toldo por completo (regla de awningCompleteness.js). */
+.is-missing > span:first-child { color: var(--warn); }
+.is-missing input,
+.is-missing .select-control,
+.is-missing .segmented-control,
+.is-missing .fabric-input-wrap {
+  border-color: var(--warn);
+  box-shadow: 0 0 0 1px var(--warn);
+}
