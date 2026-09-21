@@ -47,6 +47,8 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   const rawModel = String(old.model || base.model || '');
   base.model = normalizeModelName(rawModel);
   const isCurtainLike = base.model.includes('CORTINA') || base.model === 'ELECTRA';
+  // IRIS también decide si lleva ventana (de cristal), aunque no tenga confección de cortina.
+  const hasWindowChoice = isCurtainLike || base.model === 'IRIS';
   base.workType = old.workType === 'FABRIC_ONLY' || old.workType === 'FULL_AWNING'
     ? old.workType
     : getModelWorkType(base.model);
@@ -98,7 +100,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.structureColor = typeof old.structureColor === 'string' ? old.structureColor : '';
   base.rotFabric = typeof old.rotFabric === 'string' ? old.rotFabric : '';
   base.rotValance = typeof old.rotValance === 'string' ? old.rotValance : '';
-  base.curtainHasWindow = isCurtainLike && typeof old.curtainHasWindow === 'boolean' ? old.curtainHasWindow : null;
+  base.curtainHasWindow = hasWindowChoice && typeof old.curtainHasWindow === 'boolean' ? old.curtainHasWindow : null;
   base.curtainFinish = isCurtainLike && ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish).toUpperCase())
     ? old.curtainFinish as Awning['curtainFinish']
     : '';
@@ -450,6 +452,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
   const fresh = createAwning(getModelWorkType(model));
   const isElectra = model === 'ELECTRA';
   const isCurtain = model.includes('CORTINA') || isElectra;
+  const hasWindowChoice = isCurtain || model === 'IRIS';
   const isCurtainStructure = model.includes('CORTINA') || model === 'SELENA';
   const isBox = model === 'PERLA BOX' || model === 'CORAL BOX' || model === 'CUARZO BOX';
   const isXacobeo = model === 'XACOBEO';
@@ -494,7 +497,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     rotValance: supportsValance ? awning.rotValance : '',
     armCount: armCount ?? null,
     placement: awning.placement,
-    curtainHasWindow: isCurtain ? awning.curtainHasWindow : null,
+    curtainHasWindow: hasWindowChoice ? awning.curtainHasWindow : null,
     curtainFinish: isCurtain ? awning.curtainFinish : '',
     curtainSupport: model === 'CORTINA' ? (awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS') : '',
     electraSupport: '',

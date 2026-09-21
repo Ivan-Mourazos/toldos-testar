@@ -322,3 +322,22 @@ describe('switchAwningModel', () => {
     });
   });
 });
+
+describe('ventana de cristal en IRIS', () => {
+  test('conserva la ventana al reabrir un borrador IRIS', () => {
+    const withWindow = sanitizeAwning({ ...createAwning(), model: 'IRIS', curtainHasWindow: true, curtainFinish: 'VELCRO' });
+    const withoutWindow = sanitizeAwning({ ...createAwning(), model: 'IRIS', curtainHasWindow: false });
+
+    expect(withWindow.curtainHasWindow).toBe(true);
+    expect(withoutWindow.curtainHasWindow).toBe(false);
+    // IRIS solo decide si lleva cristal: la confección es cosa de las cortinas.
+    expect(withWindow.curtainFinish).toBe('');
+  });
+
+  test('conserva la ventana al cambiar entre cortina e IRIS', () => {
+    const cortina = { ...createAwning(), model: 'CORTINA', curtainHasWindow: true };
+
+    expect(switchAwningModel(cortina, 'IRIS').curtainHasWindow).toBe(true);
+    expect(switchAwningModel(cortina, 'IRIS').curtainFinish).toBe('');
+  });
+});

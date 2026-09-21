@@ -448,6 +448,12 @@ export function AwningColumn({ awning, index, ofCalculation, parameters, sameFab
                 options={['SÍ', 'NO']}
                 onChange={(value) => update({ irisWindBlock: value === 'SÍ' })}
               />
+              <SegmentedField
+                label="Ventana de cristal"
+                value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'}
+                options={['SIN VENTANA', 'CON VENTANA']}
+                onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })}
+              />
             </div>
           )}
           {isDropArmModel && (
