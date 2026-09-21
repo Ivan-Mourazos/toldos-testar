@@ -10,7 +10,7 @@ Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typeche
 
 1. **La reserva sube códigos que RPS no tiene.** `CASPUNCE` no existe: lo reservan 9 modelos y otros 4 lo imprimen en el despiece. En blanco o negro, que son los lacados habituales, también fallan Punto Recto (perfil Univers 270 y brazos), Xacobeo (perfil EVO 70 de 600), Arzúa y Monoblock en negro con EVO 80 (`PEVO80NE11600C`, de baja desde 2023) y cinco modelos con brazo Onyx negro de 250 (`BONYXNE11250C`; en RPS se llama `…250CM`). Una referencia de baja no bloquea la subida a RPS, así que el fallo no avisa: hay que buscarlo. *Fase 1: `CASPUNCE` y los `…CM` corregidos en todos los modelos; los 49 códigos que quedan son de cada modelo.*
 2. **La mejora de reserva de Arzúa no se propagó.** Arzúa reserva lo que el taller consume de verdad: casquillo con eje, terminales, tapones y varilla de vaina, y ya no lleva `CASPLAS`. Los demás modelos siguen con el juego del Excel antiguo, e Iris y HERA solo reservan tela.
-3. **Los parámetros viven en cada navegador.** Descuentos, límites y la biblioteca de dibujos se guardan en el `localStorage` de cada puesto y viajan con cada cálculo: dos puestos pueden calcular distinto el mismo pedido. Además, abrir una revisión para corregirla sustituye sin aviso los parámetros del navegador por los del pedido ([App.tsx:164](../src/client/App.tsx#L164)).
+3. **Los parámetros viven en cada navegador.** Descuentos, límites y la biblioteca de dibujos se guardan en el `localStorage` de cada puesto y viajan con cada cálculo: dos puestos pueden calcular distinto el mismo pedido. Además, abrir una revisión para corregirla sustituye sin aviso los parámetros del navegador por los del pedido ([App.tsx:164](../src/client/App.tsx#L164)). *Peor de lo previsto: la web los escribía enteros al arrancar, y los dos puestos de OT seguían en septiembre con los valores de julio (Cambio Antica con 25 cm de caída en vez de 65; Cambio de cortina sin costuras). Ninguno de los 39 pedidos web de 2026 tenía esos modelos, así que nada salió mal a fabricar. Arreglo urgente en `f88ebf2`: se descartan los valores viejos, solo se guarda lo que el usuario cambia y abrir una revisión no toca los parámetros del puesto.*
 4. **El formulario no dice qué falta.** La tarjeta tiene su propia regla de "completo", distinta de la del cálculo. Un Arzúa puede salir **Válido** en resultados y **SIN COMPLETAR** en la tarjeta sin decir por qué. Con bamba y sin curva, la hoja de telas imprime "SIN BAMBA".
 5. **Las herramientas de medida estaban a medias.** `validate:reserva` usaba entradas inválidas en cinco modelos y no conocía los cofres, Cortina ni Punto Recto. `validate:rps-refs` probaba salidas imposibles y no fallaba con códigos inexistentes. vitest contaba los tests de otra rama. *Corregido en la fase 1.*
 
@@ -23,6 +23,7 @@ Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typeche
 | vitest | Contaba 1909 tests porque incluía el worktree de Codex; los reales son 990. Corregido en `9b1ef47` |
 | Skill de arranque | `.claude/skills/running-toldos-testar`: levanta la web aislada en 4310 sin tocar el recurso real y la recorre con Playwright. Probada desde cero con el caso AR2603332 |
 | Decisiones de Iván | Reserva completa = consumo real, también en Iris y HERA. Primero los fallos comunes, después modelo a modelo |
+| Parámetros congelados | Los puestos calculaban con los valores de fábrica de julio. Comprobado en las 39 revisiones web de 2026 y arreglado en `f88ebf2` (sin desplegar) |
 | Fase 2 terminada (salvo legibilidad) | Una sola regla de toldo completo (`awningCompleteness.js`) para tarjeta, cálculo y generación: un toldo con bamba y sin curva ya no llega al planteamiento definitivo. La tarjeta dice qué falta y lo resalta; Guardar lo confirma con la lista; Estructuras y la barra lateral dejan de dar mensajes falsos. `test:e2e:rps`, roto desde el 13/08 sin que nadie lo viera, vuelve a pasar con Bambalina, HERA y Antica. 1083 tests |
 | Fase 1 terminada | Herramientas con casos válidos de los 17 modelos; `validate:reserva` mide 16 (antes 10, cinco de ellos mal); `validate:rps-refs` falla en blanco y negro y revisa también el despiece. `CASPUNCE` sustituido en 13 modelos y 26 códigos `…CM` traducidos: las referencias rotas en blanco o negro bajan de 72 a 49. 1059 tests |
 
@@ -131,6 +132,8 @@ Esfuerzo que recomiendo en Opus 5 para cada tarea. Criterio: **low** para cambio
 | 2.4 | Legibilidad: tamaños mínimos y contraste, con muestra antes/después para Iván (U11) | medium |
 
 ### Fase 3 · Parámetros compartidos
+
+**3.0 hecho (21/09):** arreglo urgente de los parámetros congelados en cada navegador (`f88ebf2`).
 
 Es un cambio de diseño, así que va con especificación propia antes de tocar código. Abrir una revisión no puede cambiar los parámetros del puesto; los parámetros tienen que ser comunes, versionados y quedar guardados con cada pedido. Hay que decidir con Iván quién puede cambiarlos. **Esfuerzo: xhigh** para la especificación y high para ejecutarla.
 
