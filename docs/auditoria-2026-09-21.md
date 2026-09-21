@@ -91,7 +91,8 @@ Recorrido con la skill a 1600, 1366, 1280, 1024 y 800 px: sin errores de consola
 
 ## Despliegue e higiene
 
-- El árbol del servidor puede seguir en los commits de Codex (`20d2bdf`), lo que rompe `git pull --ff-only`. Antes del próximo despliegue: `git log --oneline origin/main..HEAD` y, si solo aparecen esos dos, `git reset --hard origin/main`.
+- **Desplegado `ee55a2d` el 21/09/2026** (fase 1): smoke y health en verde, `productionReady: true`. El árbol del servidor ya estaba en main sin los commits de Codex.
+- El servidor usa **pnpm 12.5.1** y el repositorio declara `pnpm@11.3.0`: cada `pnpm install` reescribe `packageManager` y el lockfile, y deja el árbol modificado. Hay que alinear las versiones (subir el repositorio a 12 o fijar 11.3.0 en el servidor con corepack).
 - El README documenta `/opt/toldos-testar`; el servidor real usa `/webs/toldos-testar`.
 - `.playwright-cli/` (capturas y logs de agosto) está en git sin motivo.
 - La web no tiene autenticación y Configuración cambia las rutas de todos los puestos. Aceptable en la red interna, pero conviene saberlo.
