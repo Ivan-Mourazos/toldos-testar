@@ -1,0 +1,163 @@
+# Auditoría general de Toldos Testar
+
+21/09/2026 · main en `7bed288` · Sin despliegue
+
+[Plan detallado de la fase 1](./superpowers/plans/2026-09-21-fase-1-fallos-comunes.md) · [Seguimiento de modelos](./modelos/README.md) · [Guía de revisión](./guia-revision-modelos.md)
+
+## Resumen
+
+Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typecheck en verde. Ninguno cumple todavía la definición de terminado de más abajo. Lo que deja los modelos a medias no es la falta de reglas; son cinco problemas comunes:
+
+1. **La reserva sube códigos que RPS no tiene.** `CASPUNCE` no existe: lo reservan 9 modelos y otros 4 lo imprimen en el despiece. En blanco o negro, que son los lacados habituales, también fallan Punto Recto (perfil Univers 270 y brazos), Xacobeo (perfil EVO 70 de 600), Arzúa y Monoblock en negro con EVO 80 (`PEVO80NE11600C`, de baja desde 2023) y cinco modelos con brazo Onyx negro de 250 (`BONYXNE11250C`; en RPS se llama `…250CM`). Una referencia de baja no bloquea la subida a RPS, así que el fallo no avisa: hay que buscarlo.
+2. **La mejora de reserva de Arzúa no se propagó.** Arzúa reserva lo que el taller consume de verdad: casquillo con eje, terminales, tapones y varilla de vaina, y ya no lleva `CASPLAS`. Los demás modelos siguen con el juego del Excel antiguo, e Iris y HERA solo reservan tela.
+3. **Los parámetros viven en cada navegador.** Descuentos, límites y la biblioteca de dibujos se guardan en el `localStorage` de cada puesto y viajan con cada cálculo: dos puestos pueden calcular distinto el mismo pedido. Además, abrir una revisión para corregirla sustituye sin aviso los parámetros del navegador por los del pedido ([App.tsx:164](../src/client/App.tsx#L164)).
+4. **El formulario no dice qué falta.** La tarjeta tiene su propia regla de "completo", distinta de la del cálculo. Un Arzúa puede salir **Válido** en resultados y **SIN COMPLETAR** en la tarjeta sin decir por qué. Con bamba y sin curva, la hoja de telas imprime "SIN BAMBA".
+5. **Las herramientas de medida estaban a medias.** `validate:reserva` usaba entradas inválidas en cinco modelos y no conocía los cofres, Cortina ni Punto Recto. `validate:rps-refs` probaba salidas imposibles y no fallaba con códigos inexistentes. vitest contaba los tests de otra rama.
+
+## Hecho hoy
+
+| Qué | Resultado |
+| --- | --- |
+| Ramas y worktrees | Eliminados `bambalina`, `worktree-cambio-tela`, `codex/antica` y `codex/antica-despliegue` (también en GitHub). Todo su contenido ya estaba en main. Solo queda `main` |
+| Trabajo sin commitear | El arreglo del remate de 5 cm del Cambio de tela y su expediente estaban en el worktree de bambalina. Rescatados en `c4488e4` |
+| vitest | Contaba 1909 tests porque incluía el worktree de Codex; los reales son 990. Corregido en `9b1ef47` |
+| Skill de arranque | `.claude/skills/running-toldos-testar`: levanta la web aislada en 4310 sin tocar el recurso real y la recorre con Playwright. Probada desde cero con el caso AR2603332 |
+| Decisiones de Iván | Reserva completa = consumo real, también en Iris y HERA. Primero los fallos comunes, después modelo a modelo |
+
+## Definición de modelo terminado
+
+Un modelo está terminado cuando cumple las siete condiciones. Son las de la [guía](./guia-revision-modelos.md#9-expediente-estados-y-criterio-de-cierre) convertidas en comprobaciones:
+
+| # | Condición | Cómo se comprueba |
+| --- | --- | --- |
+| 1 | Medidas iguales a las de los pedidos reales o diferencia explicada | `pnpm validate:<modelo>` sin diferencias sin explicar en el expediente |
+| 2 | Reserva igual al consumo real | `pnpm validate:reserva "<MODELO>"`: `falta` vacía o cada línea justificada (embalaje, vinilo…); `sobra` vacía |
+| 3 | Ningún código inexistente ni de baja en los lacados que se ofrecen | `pnpm validate:rps-refs` sin fallos para el modelo |
+| 4 | El formulario pide lo mismo que el cálculo y dice qué falta | Tarjeta y cálculo usan la misma regla (fase 2) |
+| 5 | Dibujo y PDF revisados | Muestra de las variantes principales vista por Iván |
+| 6 | Tests de regresión con casos reales | Casos del validador convertidos en tests |
+| 7 | Expediente al día | `docs/modelos/<modelo>.md` con estado, dudas para OT y siguiente paso |
+
+## Estado por modelo
+
+Medidas: validación masiva de hoy contra los libros de 2025 y 2026 (2574 casos). Reserva: la columna "Dif. RPS" del validador compara con lo que subía el Excel antiguo, que ya no es el criterio, así que aquí se usa el consumo real. Donde la herramienta todavía no mide bien, se dice.
+
+| Modelo | Medidas (casos · dif.) | Reserva frente a consumo real | Códigos rotos en blanco/negro | Principal pendiente |
+| --- | --- | --- | --- | --- |
+| Bambalina | 234 · 4 | Sin estructura | — | Muestra en taller |
+| Enrollable | 30 · 4 | Sin estructura | — | Muestra en taller |
+| Cambio de tela | 917 · 88 | 90 dif. de lona | — | Q-C02…C05 del [expediente](./modelos/cambio-tela.md); dibujo |
+| Cambio de cortina | 120 · 126 | 15 dif. de lona | — | Excepciones de 18 cm; confección |
+| Cortina | 342 · 82 (92 sin subir) | Sin medir: la herramienta no lo conocía | `CASPUNCE` en el despiece | Reserva completa; dibujo |
+| Selena | **Sin validador** | Faltan 14 artículos; no reserva casquillo punta | `CASPUNCE` en el despiece (vía Cortina) | Crear validador; brazo stor; reserva |
+| Punto Recto | 32 · 2 | Sin medir | **Perfil Univers 270 de baja, brazos inexistentes** | Qué perfil y brazos se consumen hoy |
+| Xacobeo | 28 · 0 | Faltan 6 (casquillo con eje, terminales, tapones, varilla) | **`PEVO702R…600C` no existe** | Largo de perfil EVO 70; reserva |
+| Arzúa Pro | 287 · **410** | Al día (solo embalaje y vinilo, a propósito) | `BONYXNE11250C`; **negro con EVO 80 reserva `PEVO80NE11600C`, de baja desde 2023** | Explicar las 410 diferencias; numeración del despiece; bronce y 7022 |
+| Galicia | 110 · 0 | Sin medir: no tiene artículo de venta propio | `BONYXNE11250C`, `CASPUNCE` en el despiece | Identificar sus OF; reserva |
+| Monoblock 350 | 50 · 10 | Sin medir: entrada inválida | **`PEVO80NE11600C` de baja**, `BONYXNE11250C` | Reserva; lacados muertos |
+| Ámbar Box | 28 · 0 | Sin medir | `CASPUNCE` | Reserva |
+| Ágata Box | 18 · 6 | Sin medir | `CASPUNCE` | Reserva; 6 diferencias |
+| Cuarzo Box | 28 · 4 | Sin medir | `CASPUNCE` | Reserva |
+| Perla Box | 227 · 8 | Sin medir | `BONYXNE11250C` | Reserva |
+| Coral Box | 54 · 8 | Sin medir | `BONYXNE11250C`, `PRBOX400NE11600C` | Reserva |
+| Electra | 21 · 31 | Faltan 18 | `CASPUNCE`, `PECARMAX500C`, `PERPRLON500C` | Matriz cofre/guía; reserva |
+| Diana vertical (Maxiscreem) | 11 · 4 | Sin medir: entrada inválida | `CASPUNCE` | El taller consume P701 y la web reserva P801; varilla de baja |
+| Iris | Validador propio, fuera del masivo | Solo lona y cristal; faltan 29 | — | Reservar estructura (decisión de hoy) |
+| HERA | 37 · 0 | Solo tela y cadena; faltan 19 | — | Reservar estructura (decisión de hoy); dudas del 3981 |
+| Antica | Sin validador masivo | Sin medir: entrada inválida | — | 30 preguntas al taller; kits y escuadras |
+| Cambio Antica | Sin datos | Sin estructura | — | Encontrar casos reales |
+
+Solo cuatro modelos tienen expediente (Bambalina, Enrollable, HERA y Antica) y uno lo tiene a medias (Cambio de tela). El [seguimiento](./modelos/README.md) se paró el 14/09 y no recoge lo hecho después (brazos cruzados, Electra, cadena HERA, ventana Iris, maqueta de telas).
+
+## Interfaz (UX/UI)
+
+Recorrido con la skill a 1600, 1366, 1280, 1024 y 800 px: sin errores de consola ni desbordamiento horizontal. La estética es coherente y Parámetros de Arzúa está muy bien explicado. Fallos por orden de impacto:
+
+| # | Hallazgo | Impacto | Dónde |
+| --- | --- | --- | --- |
+| U1 | La tarjeta muestra "SIN COMPLETAR" sin decir qué falta, con una regla distinta a la del cálculo | Alto: el operario busca a ciegas; el cálculo puede dar Válido a la vez | [AwningColumn.tsx:160-180](../src/client/components/AwningColumn.tsx#L160-L180) |
+| U2 | Con bamba y sin curva, el PDF de telas imprime "CURVA: SIN BAMBA" | Alto: instrucción errónea al taller (la revisión lo bloquea, la vista previa no) | Cálculo de trabajos de tela y PDF |
+| U3 | El aviso de qué falta ("falta posición del motor") sale abajo, en Planteamientos, no junto al campo | Medio | [LiveResults.tsx](../src/client/components/LiveResults.tsx) |
+| U4 | Con un toldo incompleto, Estructuras dice "Los trabajos de tela no generan planteamiento de estructura" | Medio: mensaje falso | [LiveResults.tsx:81](../src/client/components/LiveResults.tsx#L81) |
+| U5 | "Guardar para revisión" parece disponible y al pulsarlo responde "Completa al menos un toldo" sin decir cuál ni qué | Medio | [App.tsx](../src/client/App.tsx) |
+| U6 | La barra lateral dice "Planteamiento vivo" en verde con el toldo incompleto y en las demás pestañas | Bajo | [App.tsx:304-305](../src/client/App.tsx#L304-L305) |
+| U7 | "Soporte" aparece sin marcar pero el cálculo usa Arzúa en silencio | Bajo | Arzúa |
+| U8 | El buscador de tela no tiene nombre accesible | Bajo | [FabricCombobox.tsx](../src/client/components/FabricCombobox.tsx) |
+| U9 | Los avisos nombran "ARZUA PRO en OF 0230194" y la tarjeta "Toldo A" | Bajo | Diagnósticos del dominio |
+| U10 | El selector de modelo dice "Estructura y tela" en HERA e Iris, que hoy solo reservan tela | Bajo, se resuelve en su fase | [ModelPickerDialog.tsx:49](../src/client/components/ModelPickerDialog.tsx#L49) |
+| U11 | Textos de 9-11 px (etiquetas, subtítulos) y grises claros sobre fondo claro | Medio en puestos de taller: legibilidad | [styles.css](../src/client/styles.css) |
+| U12 | El PDF de estructura imprime un recuadro verde "VERDADERO" | Duda: viene del Excel. Preguntar al taller si lo usa o se sustituye por un texto claro | [planteamientoPdf.js](../src/domain/planteamientoPdf.js) |
+
+## Despliegue e higiene
+
+- El árbol del servidor puede seguir en los commits de Codex (`20d2bdf`), lo que rompe `git pull --ff-only`. Antes del próximo despliegue: `git log --oneline origin/main..HEAD` y, si solo aparecen esos dos, `git reset --hard origin/main`.
+- El README documenta `/opt/toldos-testar`; el servidor real usa `/webs/toldos-testar`.
+- `.playwright-cli/` (capturas y logs de agosto) está en git sin motivo.
+- La web no tiene autenticación y Configuración cambia las rutas de todos los puestos. Aceptable en la red interna, pero conviene saberlo.
+- Pendiente de IT desde el 06/09: cambiar la contraseña de `server.webs`, que salió en una captura.
+
+## Hoja de ruta
+
+Esfuerzo que recomiendo en Opus 5 para cada tarea. Criterio: **low** para cambios mecánicos o de texto; **medium** para código con alcance claro y test que lo cierra; **high** para cerrar un modelo investigando pedidos y RPS; **xhigh** para modelos con reglas ambiguas o cambios de diseño; **max** para lo que mezcla todo con decisiones del taller.
+
+### Fase 1 · Fallos comunes
+
+[Plan detallado](./superpowers/plans/2026-09-21-fase-1-fallos-comunes.md).
+
+| Tarea | Qué | Esfuerzo |
+| --- | --- | --- |
+| 1.1 | Casos válidos por modelo para las herramientas; si un modelo no produce ninguno, falla | medium |
+| 1.2 | `validate:reserva` con casos válidos y los artículos de venta de todos los modelos | medium |
+| 1.3 | `validate:rps-refs` con casos válidos, sin falsos positivos y fallando en blanco/negro | medium |
+| 1.4 | `CASPUNCE` sustituido por el casquillo con eje del tubo en reserva y despiece de todos los modelos | medium |
+| 1.5 | Referencias irregulares de RPS (`BONYXNE11250CM`, `BPRT07BL1690CM`) en una sola tabla | medium |
+| 1.6 | Higiene: `.playwright-cli`, README del servidor, seguimiento de modelos al día | low |
+
+### Fase 2 · Formulario (U1-U9)
+
+| Tarea | Qué | Esfuerzo |
+| --- | --- | --- |
+| 2.1 | Una sola regla de "completo" en el dominio; tarjeta, guardado y cálculo la usan; la tarjeta lista lo que falta y resalta los campos (U1, U3, U5) | high |
+| 2.2 | Con bamba, la curva es obligatoria también en el cálculo (U2) | medium |
+| 2.3 | Mensajes: estructuras vacías, estado de la barra lateral, "Toldo A" en los avisos, etiqueta del buscador de tela (U4, U6, U8, U9) | low |
+| 2.4 | Legibilidad: tamaños mínimos y contraste, con muestra antes/después para Iván (U11) | medium |
+
+### Fase 3 · Parámetros compartidos
+
+Es un cambio de diseño, así que va con especificación propia antes de tocar código. Abrir una revisión no puede cambiar los parámetros del puesto; los parámetros tienen que ser comunes, versionados y quedar guardados con cada pedido. Hay que decidir con Iván quién puede cambiarlos. **Esfuerzo: xhigh** para la especificación y high para ejecutarla.
+
+### Fase 4 · Modelo a modelo
+
+Cada modelo se cierra con la definición de terminado, con plan propio escrito al empezarlo y un commit por modelo. Orden de la guía, de sencillo a complejo:
+
+| # | Modelo | Esfuerzo | Por qué |
+| --- | --- | --- | --- |
+| 1 | Cambio de tela | high | 88 diferencias y 90 de lona por explicar; ya hay investigación hecha |
+| 2 | Enrollable | medium | 4 diferencias; solo cerrar |
+| 3 | Bambalina | medium | 4 diferencias y 12 de lona; solo cerrar |
+| 4 | Cambio de cortina | high | 126 diferencias, casi todas excepciones de 18 cm |
+| 5 | Cortina | high | 82 diferencias, reserva sin medir, 92 pedidos sin subir |
+| 6 | Selena | high | No tiene validador; faltan 14 artículos |
+| 7 | Punto Recto | high | Perfil y brazos inexistentes en los colores normales |
+| 8 | Xacobeo | medium | Medidas perfectas; perfil EVO 70 y reserva |
+| 9 | Arzúa Pro | xhigh | 410 diferencias por explicar en el modelo que más se vende |
+| 10 | Galicia | high | Sin artículo de venta propio para medir la reserva |
+| 11 | Monoblock 350 | high | Lacados de baja y reserva sin medir |
+| 12-16 | Ámbar, Ágata, Cuarzo, Perla y Coral Box | medium cada uno | Medidas casi perfectas; falta reserva |
+| 17 | Electra | xhigh | Matriz cofre/guía y 31 diferencias |
+| 18 | Diana vertical | high | Tubo real distinto del de la web |
+| 19 | Iris | xhigh | Pasa a reservar estructura completa |
+| 20 | HERA | xhigh | Igual que Iris, y ya está activo en producción |
+| 21 | Antica | max | 30 preguntas al taller, kits, escuadras, variantes |
+| 22 | Cambio Antica | high | Sin casos en el validador |
+
+### Fase 5 · Despliegue
+
+Se hará cuando lo encargues: poner el servidor en `origin/main`, desplegar con `deploy:check` y `deploy:smoke`, y comprobar. **Esfuerzo: low**, con Iván presente porque se entra como root.
+
+## Preguntas abiertas para Oficina Técnica
+
+- ¿El recuadro "VERDADERO" del PDF de estructura sirve de algo al taller o se cambia por un texto claro (U12)?
+- Arzúa en bronce y gris 7022: ¿se retira el color o se dan de alta las piezas? (pendiente desde el 04/09)
+- Diana vertical: el taller consume tubo P701 (`TURA70HG`, 5 de 7 OF) y la web reserva P801. ¿Cuál es el correcto?
+- Las del expediente de cada modelo, que se revisarán al llegar a él.
