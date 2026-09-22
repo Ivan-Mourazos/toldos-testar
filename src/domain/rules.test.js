@@ -1537,6 +1537,11 @@ describe('CORTINA · decisiones de Iván y consumo real (22/09/2026)', () => {
     expect(stronger.calculation.motorPower).toBe('35/17');
   });
 
+  test.each(['MAQ. INTERIOR', 'MOTOR'])('el despiece con %s se numera sin saltos', (device) => {
+    const rows = calc({ device, crankHeight: device === 'MOTOR' ? null : 200 }).despiece.rows;
+    expect(rows.map((row) => row.num)).toEqual(rows.map((_, index) => index + 1));
+  });
+
   test('elige la barra más corta que existe en RPS para tubo y perfil', () => {
     // Tubo y perfil de 289 cm: barra de 400 en blanco (BL10 existe en 400).
     const white = calc({});

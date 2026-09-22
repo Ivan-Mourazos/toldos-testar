@@ -200,7 +200,8 @@ function buildDespiece(context) {
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
-  const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference, units: rowUnits, length });
+  // Numeración seguida: con máquina hay una fila menos que con motor.
+  const push = (_num, name, reference, rowUnits, length = null) => rows.push({ num: rows.length + 1, name, reference, units: rowUnits, length });
 
   const support = supportMaterial(curtainSupport, suffix, units);
   push(1, support.description, support.code, units);

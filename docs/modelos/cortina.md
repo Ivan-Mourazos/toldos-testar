@@ -1,12 +1,12 @@
 # Cortina — expediente
 
-22/09/2026 · **En curso: medido; pendiente de decisiones de Iván (§6)** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Evidencia anterior](../rps-cortina-evidence.md)
+22/09/2026 · **Implementado (22/09): pendiente de la revisión de la muestra por Iván y de dos dudas para OT** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Evidencia anterior](../rps-cortina-evidence.md)
 
 ## 1. Alcance y punto de reanudación
 
 - Código `CORTINA`: toldo cortina completo (estructura, tela y reserva). 402 cortinas en 233 libros: 243 en 2025 y 159 en 2026. 214 OF con consumo real desde 2025.
 - Alcance: medidas (frente de tela, caída, tubo, perfil), reserva completa frente al consumo real, formulario y dibujo.
-- Siguiente acción: respuestas de Iván a Q-CO01..Q-CO05; después, implementar §5 y la muestra del PDF.
+- Siguiente acción: Iván revisa la muestra (`output/modelos/cortina/`). Q-CO04 y Q-CO05 quedan para OT.
 
 ## 2. Reglas del maestro (`TOLDOS TESTAR 10-4.xlsm`, hoja `CORT`)
 
@@ -56,21 +56,31 @@ Recorrido de los 402 toldos (`tmp/cortina-full/scan.mjs`), 22/09/2026.
 | Tubo Ø70 `TURA70` y casquillos Ø70 | ≈ 1 de cada 4 OF, con cualquier frente | Siempre Ø78 | **Q-CO05** |
 | Casquillo máquina eje 63 | ≈ 1 de cada 3 OF | Siempre eje 50 | **Q-CO05** |
 
-## 5. Cambios propuestos (sin decisión pendiente)
+## 5. Cambios hechos (`65bf1d7` y siguiente)
 
 1. Reservar puente abatible (2 pletinas y 2 anillas), kit de regleta, máquina MB-11 según lacado y casquillo de punta Ø78.
 2. Quitar `CASPLAS` de la reserva.
 3. Varillas negra y blanca por metros de frente de tela (blanca × 2 con bamba).
 4. Cristal por ventana: frente de tela − 2 × esquina + 10 cm.
 5. Kit de motor: `RUEDAMOT801MEC` y `CORONALT5078`.
-6. Barras de 400, 500, 600 y 700 para tubo y perfil.
+6. Barras de 400, 500, 600 y 700 para tubo y perfil; el perfil Univers solo en los largos que existen en RPS para cada color (`universProfileLengths.js`: el bronce 28 solo en 700, el gris 7012 desde 500…).
+7. Caída: resta 18 cm por defecto, con la opción "Restar 18 cm abajo: No" en la tarjeta; el candado permite otro valor. Sin bamba no se suma el +5 (Q-CO01, Q-CO02).
+8. Casquillo de máquina: eje 50 con máquina interior y eje 63 con exterior, como en Arzúa (exterior: 15 de 21 OF con eje 63).
+9. Motor 15/17 por defecto; con el candado, 35/17 o 55/17.
+10. Dibujo: la cota suelo-ventana y la altura del velcro siguen lo que se resta de verdad (`curtainBottomDeduction`).
+11. Despiece numerado sin saltos (con máquina hay una fila menos que con motor).
+12. Selena conserva el cálculo y la reserva anteriores (`legacyReservation`) hasta su revisión: reutiliza el cálculo de Cortina.
+
+`validate:reserva CORTINA` después: solo quedan el cristal (las muestras del validador no llevan ventana) y los casquillos Ø70 (Q-CO05). Nada se reserva sin consumirse. `validate:rps-refs`: 0 códigos rotos en Cortina y Selena.
+
+Hallazgo transversal: un lacado escrito como "GRIS (R-7012)" no se reconoce y cae en blanco sin avisar (`resolveLacado`). Afecta a todos los modelos.
 
 ## 6. Dudas para Iván
 
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
-| Q-CO01 | Dijiste: en Cortina se restan 18 por defecto y el técnico puede quitarlos. En los libros solo se restaron en 1 de cada 3, sin relación con técnico, cliente ni ventana. ¿Lo mantenemos por defecto? | 18 cm de caída en todas las cortinas |
-| Q-CO02 | Sin bamba, ¿se quita el +5 (alto + 40) como en Cambio de tela y Cambio de cortina? | 5 cm en las cortinas sin bamba |
-| Q-CO03 | En 34 cortinas, casi todas sin ventana y de 2025, se sumaron 10 o 15 cm más. ¿Hay un caso en que la cortina lleve más margen? | Solo si es una regla |
-| Q-CO04 | ¿Qué motor lleva cada cortina? Se usaron 15/17 (318 × 140), 35/17 (500 × 300, 480 × 460) y 55/17 (963 × 258) | Motor y reserva |
-| Q-CO05 | ¿Cuándo se usa tubo Ø70 en vez de Ø78, y casquillo de máquina eje 63 en vez de 50? En los datos no depende del frente | Tubo y casquillos |
+| Q-CO01 | **Resuelta por Iván el 22/09/2026.** Se restan 18 por defecto, con opción de no restarlos | Hecho |
+| Q-CO02 | **Resuelta por Iván el 22/09/2026.** Sin bamba no se suma el +5 | Hecho |
+| Q-CO03 | **Resuelta por Iván el 22/09/2026.** Casos esporádicos, como en los cambios de tela: se ponen con el candado | Ninguno |
+| Q-CO04 | **Para OT** (Iván no lo sabe). ¿Qué motor lleva cada cortina? Se usaron 15/17 (318 × 140), 35/17 (500 × 300, 480 × 460) y 55/17 (963 × 258) | Motor y reserva |
+| Q-CO05 | **Para OT** (Iván no lo sabe). El eje 63 queda resuelto con la regla de Arzúa (exterior). ¿Cuándo se usa tubo Ø70 en vez de Ø78, y casquillo de máquina eje 63 en vez de 50? En los datos no depende del frente | Tubo y casquillos |
