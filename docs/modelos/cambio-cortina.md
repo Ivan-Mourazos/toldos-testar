@@ -27,8 +27,8 @@
 | Medidas | Verificado | Todas las diferencias tienen causa (§4); reglas decididas por Iván el 22/09 |
 | Reserva de lona | Verificado | En toda OF donde coincide la caída, la web reserva lo mismo que `Q28` del libro (2025 y 2026). Con la regla nueva la web reserva 18 cm más de caída que los libros que descontaban |
 | Referencias | No aplica | Solo reserva lona |
-| Formulario | Pendiente | Ventana y confección obligatorias (fase 2); falta revisar opciones con la muestra |
-| Dibujo y PDF | Pendiente | Muestra por hacer |
+| Formulario | Revisado por Claude; pendiente de Iván | Ventana, confección y medidas de ventana obligatorias; el candado muestra "Descuento inferior tela" (0). Muestra en `output/modelos/cambio-cortina/cc-00-formulario.png` y `cc-01-candado.png` |
+| Dibujo y PDF | Revisado por Claude; pendiente de Iván y de Q-CC03 | `output/modelos/cambio-cortina/cc-pdf-1..3.png`: sin bamba (275), bamba de la misma tela con ventana y velcro (350), bamba en otra tela con tubo (290) |
 
 ## 4. Medidas: de dónde salen las diferencias
 
@@ -70,3 +70,4 @@ La web coincide con `Q28` del libro en todas las OF cuya caída coincide: la fó
 | --- | --- | --- |
 | Q-CC01 | **Resuelta por Iván el 22/09/2026.** En Cambio de cortina no se descuenta: la salida que se pone ya es la que debe llevar. El −18 es de Cortina (el toldo completo): allí se descuenta por defecto, sea bar o particular, y el técnico puede no descontarlo (por ejemplo, para asegurar aunque quede más tela envuelta). Se aplicará al revisar Cortina | Cambio de cortina: 18 cm más de caída que los libros de Tamara, Lucía, Iván y Adrián |
 | Q-CC02 | **Resuelta por Iván el 22/09/2026.** Sin bamba no se suma el +5 | 5 cm menos de caída en las cortinas sin bamba |
+| Q-CC03 | En el dibujo con ventana, la cota de abajo resta 18 a la altura suelo-ventana (el técnico pone 90 y el dibujo dice 72), como si la tela acabara 18 cm por encima del suelo. Si en Cambio de cortina no se descuentan los 18 cm, ¿la cota debe ser 90? La altura del velcro se dibuja como salida de ventana − 10 | Solo el dibujo del PDF (`planteamientoPdf.js`); no cambia la tela |
