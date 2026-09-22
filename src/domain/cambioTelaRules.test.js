@@ -103,3 +103,30 @@ describe('cambio de tela sin bambalina', () => {
     expect(result.calculation.fabricDrop).toBe(285);
   });
 });
+
+// Los libros de OT llevan a veces un ajuste escrito a mano en la fórmula de la
+// caída de un pedido concreto (CAM. TELA, fila 5). No es la regla: se reproduce
+// con la excepción técnica de la tarjeta. Leído en los libros el 22/09/2026.
+describe('excepciones a mano de los libros, reproducidas con la excepción técnica', () => {
+  it('AR2602326: +15 a mano, bamba en otra tela → margen de 55', () => {
+    const result = calculateCambioTela({
+      order: { orderCode: 'AR2602326', fabric: 'ACR NEGRO' },
+      awning: baseAwning({
+        of: '0228363', width: 245, projection: 227, valanceHeight: 25, valanceFabric: 'ACR AZUL',
+        reglasModificadas: true, fabricJobDropAllowanceCm: 55
+      })
+    });
+    expect(result.calculation.fabricDrop).toBe(282);
+  });
+
+  it('AR2603013: −36 a mano, sin bamba → margen de 4', () => {
+    const result = calculateCambioTela({
+      order: { orderCode: 'AR2603013', fabric: 'ACR NEGRO' },
+      awning: baseAwning({
+        of: '0229897', width: 306, projection: 302, valanceHeight: 0,
+        reglasModificadas: true, fabricJobDropAllowanceCm: 4
+      })
+    });
+    expect(result.calculation.fabricDrop).toBe(306);
+  });
+});
