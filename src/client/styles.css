@@ -706,6 +706,9 @@ label span,
 }
 
 .awning-column {
+  /* Campos de una fila alineados por abajo: una etiqueta en dos líneas
+     ("Alto terminado (cm)") no descuadra las cajas de al lado. */
+  align-items: end;
   display: grid;
   gap: var(--sp-2);
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1846,9 +1849,12 @@ label span,
   letter-spacing: 0;
 }
 
+/* El título ocupa lo que dejan la etiqueta y los botones: con la tarjeta
+   estrecha (1280 px) el subtítulo "antes …" se metía debajo del candado. */
 .awning-column-header {
   display: grid;
-  grid-template-columns: minmax(70px, 1fr) auto minmax(70px, 1fr);
+  gap: 6px;
+  grid-template-columns: minmax(56px, auto) minmax(0, 1fr) auto;
 }
 
 .awning-model-title {
@@ -1857,6 +1863,8 @@ label span,
   font-weight: 800;
   justify-self: center;
   line-height: 1.15;
+  min-width: 0;
+  overflow-wrap: anywhere;
   text-align: center;
 }
 
