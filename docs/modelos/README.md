@@ -1,5 +1,7 @@
 # Seguimiento de modelos y trabajos de tela
 
+**Dudas abiertas de todos los modelos: [lista única](./dudas-abiertas.md).**
+
 Inicio: 13/09/2026. Inventario de 22 entradas comprobado contra [catalog.js](../../src/domain/catalog.js) y [modelBehavior.json](../../src/domain/data/modelBehavior.json): 17 modelos de toldo completo y 5 trabajos de tela. Actualizar este índice si cambia el catálogo.
 
 [Guía para agentes](../guia-revision-modelos.md) · [Plantilla de expediente](./PLANTILLA.md)
