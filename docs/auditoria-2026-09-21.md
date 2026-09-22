@@ -30,7 +30,7 @@ Los 22 modelos calculan y la base técnica está sana: 990 tests, lint y typeche
 
 ## Definición de modelo terminado
 
-Un modelo está terminado cuando cumple las siete condiciones. Son las de la [guía](./guia-revision-modelos.md#9-expediente-estados-y-criterio-de-cierre) convertidas en comprobaciones:
+Un modelo está terminado cuando cumple las nueve condiciones. Son las de la [guía](./guia-revision-modelos.md#9-expediente-estados-y-criterio-de-cierre) convertidas en comprobaciones:
 
 | # | Condición | Cómo se comprueba |
 | --- | --- | --- |
@@ -41,6 +41,8 @@ Un modelo está terminado cuando cumple las siete condiciones. Son las de la [gu
 | 5 | Dibujo y PDF revisados | Muestra de las variantes principales vista por Iván |
 | 6 | Tests de regresión con casos reales | Casos del validador convertidos en tests |
 | 7 | Expediente al día | `docs/modelos/<modelo>.md` con estado, dudas para OT y siguiente paso |
+| 8 | Formulario revisado a la vista (Iván, 22/09/2026) | Todas las opciones en todos sus estados (con/sin ventana o bamba, máquina/motor, candado abierto) y bien colocadas a 1280×720 y 1600; solo escritorio |
+| 9 | Nombre del modelo (Iván, 22/09/2026) | El "antes …" solo si el modelo cambió de nombre; si repite lo mismo o es la descripción del artículo, se quita (`redundantLegacyNames` en `controlLabels.ts`) |
 
 ## Estado por modelo
 

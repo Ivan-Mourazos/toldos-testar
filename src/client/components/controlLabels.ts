@@ -74,6 +74,19 @@ export function controlLabel(value: string) {
     .replace(/\b(r|ral)-(?=\d)/g, (code) => code.toLocaleUpperCase('es-ES'));
 }
 
-export function legacyModelName(value: string) {
+// Modelos en los que el nombre de RPS no aporta nada en pantalla: es el mismo
+// ("MODELO GALICIA") o la descripción del artículo ("CORTINA UNIVERSAL").
+// Se revisa en cada modelo al darlo por terminado (Iván, 22/09/2026).
+const redundantLegacyNames = new Set([
+  'CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'
+]);
+
+export function rpsModelName(value: string) {
   return legacyModelNames[String(value || '').toUpperCase()] || '';
+}
+
+// Nombre anterior que se enseña como "antes …": solo si el modelo cambió de nombre.
+export function legacyModelName(value: string) {
+  const model = String(value || '').toUpperCase();
+  return redundantLegacyNames.has(model) ? '' : rpsModelName(model);
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { controlLabel, legacyModelName } from './controlLabels';
+import { controlLabel, legacyModelName, rpsModelName } from './controlLabels';
 
 describe('nombres de modelo contrastados con RPS', () => {
   test.each([
@@ -24,6 +24,18 @@ describe('nombres de modelo contrastados con RPS', () => {
     ['CUARZO BOX', 'Cuarzo Box', 'STORBOX 250']
   ])('%s muestra nombre actual y denominación RPS', (model, current, rps) => {
     expect(controlLabel(model)).toBe(current);
-    expect(legacyModelName(model)).toBe(rps);
+    expect(rpsModelName(model)).toBe(rps);
   });
+
+  // Iván, 22/09/2026: el "antes …" solo si el modelo cambió de nombre; si repite
+  // lo mismo o es la descripción del artículo, sobra.
+  test.each(['CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'])(
+    '%s no muestra "antes …"',
+    (model) => expect(legacyModelName(model)).toBe('')
+  );
+
+  test.each([['AMBAR BOX', 'MICROBOX'], ['MAXISCREEM', 'MAXISSCREEN'], ['ARZUA PRO', 'ART 325 / ARZUA']])(
+    '%s, que cambió de nombre, sí lo muestra',
+    (model, before) => expect(legacyModelName(model)).toBe(before)
+  );
 });
