@@ -1218,7 +1218,10 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     drawSmallMeasure(doc, windowX - 1, windowY - 20, 25, awning.curtainWindowCorner);
     drawSmallMeasure(doc, windowX + windowW - 24, windowY - 20, 25, awning.curtainWindowCorner);
     drawSmallMeasure(doc, measureX, windowY + 14, 27, awning.curtainWindowHeight);
-    drawSmallMeasure(doc, measureX, windowY + windowH, 27, Number(awning.curtainWindowFloorHeight) - 18);
+    // Los 18 cm son del toldo cortina completo. Cambio de cortina es solo la tela
+    // de una cortina existente: las medidas de ventana van tal cual (Iván, 22/09/2026).
+    const floorDeduction = awning.model === 'CAMBIO CORTINA' ? 0 : 18;
+    drawSmallMeasure(doc, measureX, windowY + windowH, 27, Number(awning.curtainWindowFloorHeight) - floorDeduction);
     doc.moveTo(measureX - 4, windowY).lineTo(measureX - 4, windowY + windowH)
       .strokeColor('#879f98').lineWidth(0.6).stroke();
   }
@@ -1254,6 +1257,14 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     if (spec.finish === 'VELCRO') {
       drawCurtainDataRow(doc, x + 28, dataY + 68, w - 56, 'ALTURA VELCRO:', velcroHeight);
     }
+  } else if (String(awning.model || '').toUpperCase() === 'CAMBIO CORTINA') {
+    // Sin ventana, el taller sigue necesitando las medidas de la cortina.
+    const dataY = y + 247;
+    drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'FRENTE:', awning.width);
+    drawCurtainDataRow(doc, x + 28, dataY + 17, w - 56, 'SALIDA:', awning.projection);
+    if (spec.finish === 'VELCRO') {
+      drawCurtainDataRow(doc, x + 28, dataY + 34, w - 56, 'ALTURA VELCRO:', velcroHeight);
+    }
   } else if (spec.finish === 'VELCRO') {
     doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
       .text(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)} CM`, x + 28, y + 331, { width: w - 56, align: 'center' });
@@ -1267,6 +1278,7 @@ export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
   const model = String(awning.model || '').trim().toUpperCase();
   const titleParts = [model === 'SELENA' ? 'SELENA' : model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : 'CORTINA'];
   if (hasWindow) titleParts.push('VENTANA');
+  else if (model === 'CAMBIO CORTINA') titleParts.push('SIN VENTANA');
   if (finish !== 'NORMAL') titleParts.push(finish);
   return {
     finish,

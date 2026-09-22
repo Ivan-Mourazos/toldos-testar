@@ -1239,6 +1239,40 @@ describe('maqueta única del planteamiento de telas', () => {
     expect(text).not.toMatch(oldTotalsPattern);
   });
 
+  test('la cota suelo-ventana resta 18 cm en Cortina y no en Cambio de cortina (Iván, 22/09/2026)', async () => {
+    const windowAwning = {
+      id: 'a', of: '0239002', units: 1, width: 240, projection: 285, valanceHeight: 0,
+      rotFabric: 'NO', curtainHasWindow: true, curtainFinish: 'NORMAL',
+      curtainWindowExit: 200, curtainWindowCorner: 30, curtainWindowFloorHeight: 90, curtainWindowHeight: 110
+    };
+    const order = (awning) => ({
+      orderCode: 'AR26-VENTANA', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO', awnings: [awning]
+    });
+
+    const change = await fabricPageText(order({ ...windowAwning, model: 'CAMBIO CORTINA' }));
+    const full = await fabricPageText(order({
+      ...windowAwning, model: 'CORTINA', device: 'MOTOR', structureColor: 'BLANCO', placement: 'FRONTAL'
+    }));
+
+    expect(change).not.toMatch(/\b72\b/);
+    expect(full).toMatch(/\b72\b/);
+  });
+
+  test('Cambio de cortina sin ventana lo dice en el dibujo y pone sus medidas (Iván, 22/09/2026)', async () => {
+    const text = await fabricPageText({
+      orderCode: 'AR26-SINVENTANA', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
+      awnings: [{
+        id: 'a', of: '0239003', model: 'CAMBIO CORTINA', units: 1, width: 113, projection: 235, valanceHeight: 0,
+        rotFabric: 'NO', curtainHasWindow: false, curtainFinish: 'VELCRO'
+      }]
+    });
+
+    expect(text).toContain('CORTINA · SIN VENTANA · VELCRO');
+    expect(text).toMatch(/FRENTE:\s+113/);
+    expect(text).toMatch(/SALIDA:\s+235/);
+    expect(text).toMatch(/ALTURA VELCRO:\s+225/);
+  });
+
   test('con bamba en otra tela, el paño total es la suma ya hecha, no "a + b"', async () => {
     const text = await fabricPageText({
       orderCode: 'AR26-SUMA', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
