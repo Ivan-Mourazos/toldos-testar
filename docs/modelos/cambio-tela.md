@@ -7,7 +7,7 @@
 - Código `CAMBIO TELA`, trabajo de tela (`FABRIC_ONLY`) sobre un toldo de fachada existente. Es el trabajo de tela más frecuente: 436 de 575 en 2026 y 481 en 2025.
 - Alcance: caída y frente de la tela, bamba de la misma tela o de otra, reserva de lona, excepciones por pedido y planteamiento de telas.
 - Rama: `main`. Último commit del modelo: el de este expediente.
-- Siguiente acción: Iván u OT revisan la muestra del PDF y responden Q-C02 y Q-C06.
+- Siguiente acción: Iván u OT revisan la muestra del PDF y responden Q-C06 y Q-C07.
 
 ## 2. Reglas
 
@@ -29,7 +29,7 @@
 | Referencias | No aplica | Solo reserva lona, del catálogo de telas |
 | Formulario | Verificado | Regla única de toldo completo (fase 2); excepciones con el candado |
 | Dibujo y PDF | Revisado por Claude; pendiente del taller | Muestra en `output/modelos/cambio-tela/ct-pdf-1..3.png` (sin bamba, bamba de la misma tela, bamba en otra tela) |
-| Revisión con OT | Pendiente | Q-C02 y Q-C06 |
+| Revisión con OT | En curso | Q-C02 resuelta (22/09); pendientes Q-C06 y Q-C07 |
 
 ## 4. Medidas: diferencias con los libros
 
@@ -78,7 +78,7 @@ Cambios en la herramienta hechos para medir esto (22/09/2026): el validador comp
 
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
-| Q-C02 | Siete libros de 2025 y 2026 llevan **+15 cm** escritos a mano en la caída. ¿Es una práctica con una causa (tipo de toldo, cliente, algún sistema existente) que deba ser una opción del formulario, o son casos sueltos? | Si es práctica, conviene una opción en vez de depender del candado |
+| Q-C02 | **Resuelta por Iván el 22/09/2026.** Los +15 cm de siete libros no son una regla: se da algo más de tela en un pedido concreto por algún motivo, y hay que ver el pedido. Se hace con la excepción técnica de la tarjeta ("Margen de caída"), que queda a la vista en ese toldo | Ninguno: no se añade opción al formulario |
 | Q-C06 | En once OF de 2026 con bamba en otra tela, esa tela no se reservó desde el libro. ¿Se sacaba de retales, o se olvidaba? La web ahora la reserva | Si sale de retales, habría que poder no reservarla |
 | Q-C07 | En el PDF de telas, el campo "SALIDA" muestra el largo de corte del paño (salida + 40 + bamba), y "PAÑO TOTAL NECESARIO" es el total del pedido repetido en cada toldo. ¿Se entiende así en el taller o conviene renombrarlo? | Solo lectura del planteamiento |
 
@@ -87,4 +87,4 @@ Avisar a OT de las infrarreservas históricas de §5 (exportación rota y subida
 ## 8. Cierre
 
 - Cerrado para su alcance: medidas, reserva y formulario verificados contra 917 trabajos reales de 2025 y 2026, sin diferencias sin explicar.
-- Pendiente para darlo por terminado del todo: revisión de la muestra del PDF por Iván u OT y respuestas a Q-C02, Q-C06 y Q-C07.
+- Pendiente para darlo por terminado del todo: revisión de la muestra del PDF por Iván u OT y respuestas a Q-C06 y Q-C07.
