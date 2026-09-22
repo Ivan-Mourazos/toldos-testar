@@ -124,7 +124,7 @@ export function normalizeFabricDiagramOverride(modelCode, value) {
 
 export function getAwningDiagram(awning) {
   const model = String(awning?.model || '').toUpperCase();
-  if (!model.includes('CORTINA') && model !== 'ELECTRA') return getModelDiagram(model);
+  if (!model.includes('CORTINA') && model !== 'ELECTRA' && model !== 'SELENA') return getModelDiagram(model);
   const finish = ['VELCRO', 'TUBO'].includes(awning?.curtainFinish) ? awning.curtainFinish : 'NORMAL';
   if (awning?.curtainHasWindow) {
     if (finish === 'VELCRO') return 'CORTINA-VENTANA-VELCRO';
@@ -163,6 +163,9 @@ export function getFieldVisibility({ model, device }) {
     sensor: hasInstallation && isMotor && modelBehavior.sensors !== false,
     motorLocation: hasInstallation && isMotor,
     machineLocation: hasInstallation && isMachine,
+    // Selena puede llevar ventana, como Cortina (Iván, 22/09/2026); su confección
+    // es siempre normal, así que no se pregunta.
+    curtainWindow: model === 'SELENA',
     crankHeight: hasInstallation && isMachine,
     placement: hasInstallation,
     wallType: hasInstallation,

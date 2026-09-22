@@ -24,6 +24,7 @@ function selena(overrides = {}) {
     wallType: '',
     rotFabric: 'NO',
     rotValance: 'NO',
+    curtainHasWindow: false,
     ...overrides
   };
 }
@@ -212,5 +213,29 @@ describe('SELENA · soporte (Iván, 22/09/2026)', () => {
     expect(maxiscreem.ofs[0].materials.map((item) => item.code)).toContain('SOPMAXSCRBL16');
     expect(maxiscreem.ofs[0].materials.map((item) => item.code)).not.toContain('SOPUNI3AGUBL16');
     expect(maxiscreem.ofs[0].despiece.rows[0]).toMatchObject({ name: 'JGO. SOPORTE MAXISCREEM' });
+  });
+});
+
+describe('SELENA · ventana (Iván, 22/09/2026)', () => {
+  const ventana = {
+    curtainHasWindow: true, curtainWindowExit: 150, curtainWindowCorner: 15,
+    curtainWindowFloorHeight: 60, curtainWindowHeight: 110
+  };
+
+  test('puede llevar ventana y entonces reserva cristal', () => {
+    const result = calculate(ventana);
+    const materials = result.ofs[0].materials;
+
+    expect(result.ofs[0].calculation.valid).toBe(true);
+    // Frente de tela 278 − 2 × 15 + 10 = 258 cm.
+    expect(materials.find((item) => item.code === 'CRISTATP140650')?.quantity).toBe(2.58);
+    expect(calculate().ofs[0].materials.map((item) => item.code)).not.toContain('CRISTATP140650');
+  });
+
+  test('con ventana pide sus cuatro medidas y usa el dibujo con ventana', () => {
+    const incompleta = calculate({ curtainHasWindow: true });
+    expect(incompleta.ofs[0].calculation.valid).toBe(false);
+    expect(incompleta.diagnostics.some(({ message }) => /ventana/i.test(message))).toBe(true);
+    expect(getFabricPatternDiagram(selena(ventana))).toBe('CORTINA-VENTANA');
   });
 });

@@ -11,6 +11,8 @@ export function useVisibleFields(awning: Awning) {
       galicia: awning.model === 'GALICIA',
       hera: awning.model === 'HERA',
       curtain: awning.model.includes('CORTINA') || awning.model === 'ELECTRA',
+      // Selena pregunta ventana, pero no confección: siempre es normal.
+      curtainWindow: awning.model === 'SELENA',
       electra: awning.model === 'ELECTRA',
       iris: awning.model === 'IRIS',
       selena: awning.model === 'SELENA',

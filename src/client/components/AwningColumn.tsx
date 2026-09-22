@@ -598,7 +598,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             {fields.requiresRotFabric && !standaloneValance && <SegmentedField label="Rotulación tela" missing={isMissing('rotFabric')} value={awning.rotFabric} options={formOptions.rotulacion} onChange={(rotFabric) => update({ rotFabric })} />}
             {hasValance && <SegmentedField label="Rotulación bamba" missing={isMissing('rotValance')} value={awning.rotValance} options={formOptions.rotulacion} onChange={(rotValance) => update({ rotValance })} />}
           </div>}
-          {(fields.curtain || isElectra) && (
+          {(fields.curtain || fields.curtainWindow || isElectra) && (
             <div className="awning-form-section curtain-config">
               <span className="awning-form-section-title">{isElectra ? 'Configuración textil Electra / Elit Vertical' : 'Configuración de cortina'}</span>
               {(awning.model === 'CORTINA' || isSelena) && <div className="curtain-option">
@@ -618,7 +618,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   onChange={(electraSupport) => update({ electraSupport: electraSupport as Awning['electraSupport'] })}
                 />
               </div>}
-              {fields.curtain && <div className="curtain-option">
+              {(fields.curtain || fields.curtainWindow) && <div className="curtain-option">
                 <SegmentedField label="Ventana" missing={isMissing('curtainHasWindow')} value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'} options={['SIN VENTANA', 'CON VENTANA']} onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })} />
               </div>}
               {fields.curtain && awning.curtainHasWindow !== null && <div className="curtain-option">
@@ -630,7 +630,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {awning.model === 'CAMBIO CORTINA' && <div className="curtain-option">
                 <SegmentedField label="Arriba" value={awning.curtainTopFinish || 'VARILLA'} options={['VARILLA', 'REMACHADO']} onChange={(curtainTopFinish) => update({ curtainTopFinish: curtainTopFinish as Awning['curtainTopFinish'] })} />
               </div>}
-              {fields.curtain && awning.curtainHasWindow && <div className="curtain-window-measures" role="group" aria-label="Medidas de ventana">
+              {(fields.curtain || fields.curtainWindow) && awning.curtainHasWindow && <div className="curtain-window-measures" role="group" aria-label="Medidas de ventana">
                 <NumberField label="Salida ventana" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
                 <NumberField label="Esquina" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
                 <NumberField label="Suelo-ventana" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />

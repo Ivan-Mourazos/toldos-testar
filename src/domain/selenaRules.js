@@ -18,11 +18,7 @@ export function calculateSelena({ order, awning }) {
   // Selena comparte piezas con Cortina, incluido el soporte: a veces va con el
   // soporte Maxiscreem, y por eso algún libro antiguo está hecho en esa hoja
   // (Iván, 22/09/2026).
-  const syntheticAwning = {
-    ...awning,
-    curtainHasWindow: false,
-    curtainFinish: 'NORMAL'
-  };
+  const syntheticAwning = { ...awning, curtainFinish: 'NORMAL' };
   const result = calculateCortina({
     order: {
       ...order,

@@ -62,9 +62,9 @@ export function getMissingFields(awning) {
   }
   // Iris también pregunta si lleva ventana de cristal: su cálculo ya lo exigía
   // y la tarjeta no, así que el toldo quedaba sin calcular sin decir por qué.
-  if ((curtain || model === 'IRIS') && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', 'ventana');
+  if ((curtain || isSelena || model === 'IRIS') && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', 'ventana');
   if (curtain && !awning.curtainFinish) add('curtainFinish', 'confección');
-  if (curtain && awning.curtainHasWindow === true) {
+  if ((curtain || isSelena) && awning.curtainHasWindow === true) {
     for (const [field, label] of windowDimensions) {
       if (!Number(awning[field])) add(field, label);
     }

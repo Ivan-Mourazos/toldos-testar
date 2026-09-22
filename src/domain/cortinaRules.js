@@ -190,7 +190,7 @@ function buildMaterials(context) {
     material('VARILLAVAINANEG5', round2(rodMl * units), 'VARILLA VAINA NEGRA 4,5MM'),
     material('VARILLAVAINARBLA', round2(rodMl * (valance > 0 ? 2 : 1) * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA')
   );
-  if (!selena && awning.curtainHasWindow) {
+  if (awning.curtainHasWindow) {
     // Cristal de 140 de ancho: frente de tela menos las dos esquinas y 10 cm de
     // margen. Coincide con lo consumido en las OF con ventana (0212718: 3,90 m).
     const glassCm = Number(fabricWidth) - 2 * (Number(awning.curtainWindowCorner) || 0) + 10;

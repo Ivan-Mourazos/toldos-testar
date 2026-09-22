@@ -1,13 +1,13 @@
 # Selena — expediente
 
-22/09/2026 · **Reserva y medidas contrastadas; tres dudas menores** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md)
+22/09/2026 · **Terminado salvo el accionamiento (Q-SE04)** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md)
 
 ## 1. Alcance y punto de reanudación
 
 - Código `SELENA`: vertical con dos brazos Stor-21. Reutiliza el cálculo de Cortina con su propio margen.
 - **En los libros está como CORTINA** (y uno como MAXISCREEM, por el soporte que lleva): buscar "SELENA" en los libros no encuentra nada. Se localizan por el código de pedido de RPS. 17 OF con consumo real desde 2025 y 20 toldos en 16 libros.
 - Iván (22/09/2026): Selena comparte muchas piezas con Cortina, y a veces se usa el soporte Maxiscreem; por eso algún libro está hecho en esa hoja.
-- Siguiente acción: Iván u OT responden Q-SE01..Q-SE04.
+- Siguiente acción: OT confirma si existe Selena a motor (Q-SE04). Lo demás está cerrado.
 
 ## 2. Reglas
 
@@ -18,6 +18,7 @@
 | Descuento inferior | Ninguno: el margen ya es el recorrido vertical | `bottomDeductionCm: 0` |
 | Accionamiento | Solo máquina interior; exige lado de máquina | `selenaRules.js` |
 | Soporte | Universal 3 agujeros o Maxiscreem, como Cortina | Iván, 22/09/2026 |
+| Ventana | Puede llevarla; entonces pide sus cuatro medidas y reserva cristal (frente de tela − 2 × esquina + 10) | Iván, 22/09/2026; la OF 0223051 consumió 14 ml de cristal |
 
 ## 3. Reserva frente al consumo real (17 OF desde 2025)
 
@@ -54,13 +55,19 @@ La regla de la web (margen 50, más 5 de remate con bamba) es la mayoritaria y c
 
 ## 5. Formulario y dibujo
 
-Revisado a 1280×720 y 1600 (`output/modelos/selena/`): la tarjeta pide bamba, curva, lacado, lado de máquina, altura de manivela y colocación, y avisa de que es un sistema vertical con dos brazos Stor. Con un lacado sin brazos, la tarjeta queda en REVISAR con el motivo. El despiece va numerado sin saltos y lleva el juego de brazos. El dibujo es el de cortina sin ventana, rotulado SELENA.
+Revisado a 1280×720 y 1600 (`output/modelos/selena/`, con `selena-ventana.png`): la tarjeta pide bamba, curva, lacado, lado de máquina, altura de manivela y colocación, y avisa de que es un sistema vertical con dos brazos Stor. Con un lacado sin brazos, la tarjeta queda en REVISAR con el motivo. El despiece va numerado sin saltos y lleva el juego de brazos. El dibujo es el de cortina sin ventana, rotulado SELENA.
 
-## 6. Dudas
+## 6. Lo que dicen los manuales de Oficina Técnica
+
+Buscado el 22/09/2026 en `\192.168.0.128OftecnicaOficina Tecnica`: **no hay manual propio de Selena ni del sistema Stor**. Lo único que aparece es el juego de brazos en la tarifa nacional 2026 (pág. 434): **J/B STOR-21 de 0,50 m**, en un solo tamaño, mínimo 10 juegos en blanco; en la misma página están las bridas a barandilla Ø42 y Ø51 y el enganche a obra Super-Stor, que encajan con la nota "piezas Stor barandilla" de la tarjeta.
+
+No aparecen por ningún lado el brazo `BRSTORSUPERBL16`, el kit de guías `K/GUIABLAN` ni la máquina Geiger `MAQ13C`: son de pedidos antiguos y no se reservan (Q-SE03 resuelta). Tampoco se dice nada del accionamiento a motor, y en las 17 OF con consumo no hay ningún motor.
+
+## 7. Dudas
 
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
 | Q-SE01 | **Resuelta con los libros (22/09/2026).** El margen de 50 con remate de 5 es el mayoritario y coincide con la lona consumida; se mantiene | Ninguno |
-| Q-SE02 | La OF 0223051 consumió 14 ml de cristal. ¿Puede llevar ventana una Selena? Hoy la web no la ofrece | Ventana y reserva de cristal |
-| Q-SE03 | ¿Siguen vigentes el brazo `BRSTORSUPERBL16`, el kit de guías `K/GUIABLAN` y la máquina Geiger `MAQ13C` (2 OF), o son de pedidos antiguos? | Piezas que faltarían en la reserva |
-| Q-SE04 | ¿Existe Selena a motor? Hoy solo se admite máquina interior | Accionamiento |
+| Q-SE02 | **Resuelta por Iván el 22/09/2026.** Selena puede llevar ventana: la tarjeta la pregunta y reserva cristal | Hecho |
+| Q-SE03 | **Resuelta el 22/09/2026.** No están en los manuales: son de pedidos antiguos y no se reservan | Ninguno |
+| Q-SE04 | **Para OT.** ¿Existe Selena a motor? El manual no lo dice y no hay ningún motor en las 17 OF; la web solo admite máquina interior | Accionamiento |
