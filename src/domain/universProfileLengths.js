@@ -5,11 +5,14 @@
 // una referencia inválida. Un color que no esté aquí (lacado especial, texturados
 // sin perfil propio) sigue con la barra de 600, como antes del 22/09/2026.
 const lengthsBySuffix = Object.freeze({
+  '': [], // lacado especial: no hay perfil Univers propio
   A536: [500],
+  GT16: [], // gris 7016 mate texturado: sin perfil Univers
+  NM05: [], // el perfil existe, pero el soporte SOPUNI3AGUNM05 no
   BL06: [600, 700],
   BL10: [400, 500, 600, 700],
   BL16: [400, 500, 600, 700],
-  BR28: [700], // 400 y 500 existen, pero de baja desde 2020 y 2021
+  BR28: [], // los tres largos están de baja desde 2020-2021
   BU05: [400, 500, 600, 700],
   G16M: [500],
   GR12: [500, 600, 700],
@@ -24,7 +27,6 @@ const lengthsBySuffix = Object.freeze({
   NE05: [400, 500, 600, 700],
   NE11: [600, 700],
   NEM1: [500, 700],
-  NM05: [600, 700],
   O516: [400, 500, 600, 700],
   ORO: [400, 500, 600, 700],
   P537: [500],
@@ -37,5 +39,5 @@ const lengthsBySuffix = Object.freeze({
 
 export function universProfileStockLengths(universSuffix, wanted) {
   const available = lengthsBySuffix[String(universSuffix || '')];
-  return wanted.filter((length) => (available ? available.includes(length) : length === 600));
+  return available ? wanted.filter((length) => available.includes(length)) : wanted.filter((length) => length === 600);
 }

@@ -55,7 +55,7 @@ describe('SELENA · configuración inicial', () => {
       reservedFabricMl: 6.9,
       rollTubeLength: 279,
       structureLength: 279,
-      stockLength: 600,
+      stockLength: 400,
       armCount: 2,
       selenaFabricDropAllowanceCm: 50,
       selenaValanceFinishAllowanceCm: 5
@@ -63,20 +63,13 @@ describe('SELENA · configuración inicial', () => {
     expect(ofBlock.description).toContain('Toldo SELENA 290x160 · brazos Stor');
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPUNI3AGUBL16', quantity: 1 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }),
-      expect.objectContaining({ code: 'PUNI280BL10600C', quantity: 1 }),
+      expect.objectContaining({ code: 'TURA80HG400C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280BL10400C', quantity: 1 }),
       expect.objectContaining({ code: 'TAPOPLUN280BL16', quantity: 1 }),
       expect.objectContaining({ code: 'CASMAQEJE5078MM', quantity: 1 }),
-      expect.objectContaining({ code: 'CASPLAS', quantity: 1 }),
-      expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2821P120', quantity: 6.9 })
     ]));
-    expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ num: 11, name: 'CADENILLAS INOX', units: 2 }),
-      expect.objectContaining({ num: 12, name: 'PUENTES ABATIBLES', units: 2 }),
-      expect.objectContaining({ num: 13, name: 'MOSQUETONES INOX 60', units: 2 }),
-      expect.objectContaining({ num: 14, name: 'REGLETA ZAMACK', units: 2 })
-    ]));
+    expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
   });
 
   test.each([
@@ -172,5 +165,39 @@ describe('SELENA · integración', () => {
       fabricWidthDiscounts: { 'MAQ. INTERIOR': 13, 'MAQ. EXTERIOR': 12.5, MOTOR: 11 },
       rollTubeDiscounts: { 'MAQ. INTERIOR': 11 }
     });
+  });
+});
+
+describe('SELENA · reserva contrastada con el consumo real (22/09/2026)', () => {
+  const codes = (result) => result.ofs[0].materials.map((item) => item.code);
+  const qty = (result, code) => result.ofs[0].materials.find((item) => item.code === code)?.quantity;
+
+  test('reserva un juego de brazos Stor-21 del color del lacado', () => {
+    expect(qty(calculate(), 'BRASTORBL16')).toBe(1);
+    expect(qty(calculate({ units: 2 }), 'BRASTORBL16')).toBe(2);
+    expect(qty(calculate({}, { structureColor: 'NEGRO (R-09011)' }), 'BRASTORNE11')).toBe(1);
+  });
+
+  test('reserva máquina, casquillo de punta y varillas, como en Cortina', () => {
+    const result = calculate();
+    expect(qty(result, 'MAQMB11L12BLAN')).toBe(1);
+    expect(qty(result, 'CASPUNCEJE78MM')).toBe(1);
+    // Frente de tela 278 cm: negra arriba, blanca abajo y en la bamba.
+    expect(qty(result, 'VARILLAVAINANEG5')).toBe(2.78);
+    expect(qty(result, 'VARILLAVAINARBLA')).toBe(5.56);
+  });
+
+  test('no reserva lo que Selena no consume: taco de nailon, mosquetones, puente abatible ni regleta', () => {
+    const list = codes(calculate());
+    for (const code of ['CASPLAS', 'MOSQBOACIN60MM', 'PLEACIN', 'ANIACIN', 'KITREGLETAZAMAK', 'CRISTATP140650']) {
+      expect(list).not.toContain(code);
+    }
+  });
+
+  test('conserva su margen: sin bamba no resta el remate y nunca descuenta 18 cm', () => {
+    expect(calculate({ valanceHeight: 0, hasValance: false }).ofs[0].calculation).toMatchObject({
+      fabricDrop: 210, curtainFabricDeductionCm: 0
+    });
+    expect(calculate().ofs[0].calculation.fabricDrop).toBe(230);
   });
 });

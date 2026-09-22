@@ -1503,10 +1503,10 @@ describe('CORTINA · decisiones de Iván y consumo real (22/09/2026)', () => {
     expect(qty(ofBlock, 'CASPUNCEJE78MM')).toBe(1);
     expect(qty(ofBlock, 'CASMAQEJE5078MM')).toBe(1);
     // Frente de tela 288 cm: negra arriba; blanca en la cortina y en la bamba.
-    expect(qty(ofBlock, 'VARILLAVAINANEG5')).toBe(2.9);
-    expect(qty(ofBlock, 'VARILLAVAINARBLA')).toBe(5.8);
+    expect(qty(ofBlock, 'VARILLAVAINANEG5')).toBe(2.88);
+    expect(qty(ofBlock, 'VARILLAVAINARBLA')).toBe(5.76);
     expect(codes(ofBlock)).not.toContain('CASPLAS');
-    expect(qty(calc({ valanceHeight: 0 }), 'VARILLAVAINARBLA')).toBe(2.9);
+    expect(qty(calc({ valanceHeight: 0 }), 'VARILLAVAINARBLA')).toBe(2.88);
     expect(qty(calc({}, 'NEGRO (R-09011)'), 'MAQMB11L12NEGRO')).toBe(1);
   });
 

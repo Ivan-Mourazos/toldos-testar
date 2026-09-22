@@ -7,6 +7,7 @@ import { crankSuffix, machineCode, plasticCapSuffix, resolveLacado, universProfi
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { universProfileStockLengths } from './universProfileLengths.js';
+import { selenaArmCode } from './selenaArms.js';
 import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
@@ -28,7 +29,7 @@ export function calculateCortina({ order, awning }) {
     ? Math.max(0, Number(awning.curtainFabricDeductionCm) || 0)
     : awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm;
   const motorPower = device === 'MOTOR'
-    ? !(parameters.legacyReservation === true) && awning.reglasModificadas && ['35/17', '55/17'].includes(String(awning.motorPower)) ? String(awning.motorPower) : '15/17'
+    ? awning.reglasModificadas && ['35/17', '55/17'].includes(String(awning.motorPower)) ? String(awning.motorPower) : '15/17'
     : '';
   const missingFields = [];
   const diagnostics = [];
@@ -56,11 +57,12 @@ export function calculateCortina({ order, awning }) {
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
   // El margen de 45 lleva el remate de 5 de la bamba: sin bamba de la misma tela
   // no se suma (Iván, 22/09/2026).
-  // Selena reutiliza este cálculo con sus propios márgenes y reserva, pendiente
-  // de su revisión: legacyReservation conserva lo anterior al 22/09/2026.
-  const legacy = parameters.legacyReservation === true;
+  // Selena reutiliza este cálculo: su margen ya lleva el remate cuando hay bamba
+  // (selenaRules lo suma), así que aquí no se resta nada.
+  const selena = String(awning.model || '').trim().toUpperCase() === 'SELENA';
+  const armCode = selena ? selenaArmCode(lacado.suffix) : '';
   const integratedValance = !separateValance.requested && valance > 0;
-  const mainDropAllowance = integratedValance || (legacy && !separateValance.requested)
+  const mainDropAllowance = (selena ? !separateValance.requested : integratedValance)
     ? parameters.fabricDropAllowanceCm
     : Math.max(0, parameters.fabricDropAllowanceCm - 5);
   const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance) - deduction);
@@ -72,12 +74,8 @@ export function calculateCortina({ order, awning }) {
     seamAllowanceCm: parameters.seamAllowanceCm,
     seamBaseCm: parameters.seamBaseCm
   });
-  const stockLength = legacy
-    ? chooseStockLength(Math.max(rollTubeLength, structureLength), parameters.stockLengths)
-    : chooseStockLength(rollTubeLength, parameters.stockLengths);
-  const profileStockLength = legacy
-    ? stockLength
-    : chooseStockLength(structureLength, universProfileStockLengths(universProfileSuffix(lacado.suffix), parameters.stockLengths));
+  const stockLength = chooseStockLength(rollTubeLength, parameters.stockLengths);
+  const profileStockLength = chooseStockLength(structureLength, universProfileStockLengths(universProfileSuffix(lacado.suffix), parameters.stockLengths));
   const overWidth = Number(awning.width) > parameters.standardMaxWidth;
   const overDrop = Number(awning.projection) > parameters.standardMaxDrop;
   const modified = Boolean(awning.reglasModificadas);
@@ -92,6 +90,7 @@ export function calculateCortina({ order, awning }) {
     && Boolean(fabric)
     && separateValance.valid
     && Boolean(stockLength) && Boolean(profileStockLength)
+    && (!selena || Boolean(armCode))
     && negativeCuts.length === 0
     && (!(overWidth || overDrop) || modified);
 
@@ -105,6 +104,8 @@ export function calculateCortina({ order, awning }) {
   appendSeparateValanceDiagnostic(diagnostics, awning, separateValance);
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA incompleta en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
+  } else if (selena && !armCode) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `SELENA no válida: no hay brazos Stor-21 en ${lacado.name}.` });
   } else if (!stockLength || !profileStockLength) {
     const piece = !stockLength ? `el tubo de ${rollTubeLength}` : `el perfil de ${structureLength}`;
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA no válida: ningún largo de stock admite ${piece} cm en este lacado.` });
@@ -114,12 +115,12 @@ export function calculateCortina({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de Cortina modificadas.` });
   }
 
-  const context = { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, profileStockLength, structureLength, rollTubeLength, fabricWidth, valance, motorPower, fabricMl: fabricUsage.ml };
+  const context = { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, profileStockLength, structureLength, rollTubeLength, fabricWidth, valance, motorPower, selena, armCode, fabricMl: fabricUsage.ml };
   return {
     of: awning.of,
     description: buildDescription(awning, { fabricWidth, fabricDrop, fabricMl: fabricUsage.ml }),
-    materials: valid ? (legacy ? buildLegacyMaterials(context) : buildMaterials(context)) : [],
-    despiece: valid ? (legacy ? buildLegacyDespiece(context) : buildDespiece(context)) : null,
+    materials: valid ? buildMaterials(context) : [],
+    despiece: valid ? buildDespiece(context) : null,
     diagnostics,
     calculation: {
       model: 'CORTINA', valid, minimumLine: 0,
@@ -144,7 +145,7 @@ export function calculateCortina({ order, awning }) {
 // 22/09/2026: puente abatible, regleta, máquina, casquillo de punta, varillas y cristal
 // se consumían y no se reservaban; el taco de nailon se reservaba y no se consume.
 function buildMaterials(context) {
-  const { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, profileStockLength, fabricWidth, valance, motorPower, fabricMl } = context;
+  const { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, profileStockLength, fabricWidth, valance, motorPower, selena, armCode, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [
@@ -173,15 +174,23 @@ function buildMaterials(context) {
   // Varillas de vaina al frente de tela: negra arriba; blanca abajo y otra en la
   // bamba (el dibujo CORTINA-* del maestro lleva dos varillas blancas).
   const rodMl = Math.ceil(Number(fabricWidth) || 0) / 100;
+  // Selena lleva sus brazos Stor-21 y no usa puente abatible, regleta ni
+  // mosquetones: contrastado con las 17 OF con consumo desde 2025.
+  if (selena) {
+    materials.push(material(armCode, units, 'JGO BRAZOS STOR-21'));
+  } else {
+    materials.push(
+      material('PLEACIN', 2 * units, 'PLETINA PUENTE ABATIBLE ACERO INOX'),
+      material('ANIACIN', 2 * units, 'ANILLA PUENTE ABATIBLE ACERO INOX'),
+      material('KITREGLETAZAMAK', units, 'KIT REGLETA ZAMAK PRT T20 NX'),
+      material('MOSQBOACIN60MM', 2 * units, 'MOSQUETONES INOX 60')
+    );
+  }
   materials.push(
-    material('PLEACIN', 2 * units, 'PLETINA PUENTE ABATIBLE ACERO INOX'),
-    material('ANIACIN', 2 * units, 'ANILLA PUENTE ABATIBLE ACERO INOX'),
-    material('KITREGLETAZAMAK', units, 'KIT REGLETA ZAMAK PRT T20 NX'),
-    material('MOSQBOACIN60MM', 2 * units, 'MOSQUETONES INOX 60'),
-    material('VARILLAVAINANEG5', round1(rodMl * units), 'VARILLA VAINA NEGRA 4,5MM'),
-    material('VARILLAVAINARBLA', round1(rodMl * (valance > 0 ? 2 : 1) * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA')
+    material('VARILLAVAINANEG5', round2(rodMl * units), 'VARILLA VAINA NEGRA 4,5MM'),
+    material('VARILLAVAINARBLA', round2(rodMl * (valance > 0 ? 2 : 1) * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA')
   );
-  if (awning.curtainHasWindow) {
+  if (!selena && awning.curtainHasWindow) {
     // Cristal de 140 de ancho: frente de tela menos las dos esquinas y 10 cm de
     // margen. Coincide con lo consumido en las OF con ventana (0212718: 3,90 m).
     const glassCm = Number(fabricWidth) - 2 * (Number(awning.curtainWindowCorner) || 0) + 10;
@@ -196,7 +205,7 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, lacado, device, curtainSupport, stockLength, profileStockLength, structureLength, rollTubeLength, motorPower } = context;
+  const { awning, lacado, device, curtainSupport, stockLength, profileStockLength, structureLength, rollTubeLength, motorPower, selena, armCode } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
@@ -219,87 +228,20 @@ function buildDespiece(context) {
     push(7, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(8, `MANIVELA LUXE ${height} ${lacado.crank}`, `MANIVE${crankSuffix(lacado)}${height}C`, units, height);
   }
-  push(10, 'CADENILLAS INOX', null, 2 * units);
-  push(11, 'PUENTE ABATIBLE: PLETINA', 'PLEACIN', 2 * units);
-  push(12, 'PUENTE ABATIBLE: ANILLA', 'ANIACIN', 2 * units);
-  push(13, 'MOSQUETONES INOX 60', 'MOSQBOACIN60MM', 2 * units);
-  push(14, 'KIT REGLETA ZAMAK', 'KITREGLETAZAMAK', units);
+  if (selena) {
+    push(0, 'JGO BRAZOS STOR-21', armCode, units);
+  } else {
+    push(0, 'CADENILLAS INOX', null, 2 * units);
+    push(0, 'PUENTE ABATIBLE: PLETINA', 'PLEACIN', 2 * units);
+    push(0, 'PUENTE ABATIBLE: ANILLA', 'ANIACIN', 2 * units);
+    push(0, 'MOSQUETONES INOX 60', 'MOSQBOACIN60MM', 2 * units);
+    push(0, 'KIT REGLETA ZAMAK', 'KITREGLETAZAMAK', units);
+  }
 
   const wall = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wall ? { name: wall.tornilleria, reference: wall.referencia || null, units: wall.unidades * units } : null;
   return { rows, anchoring };
 }
-
-// Reserva y despiece anteriores al 22/09/2026. Solo los usa Selena hasta su revisión.
-function buildLegacyMaterials(context) {
-  const { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, fabricMl } = context;
-  const units = Math.max(1, Number(awning.units) || 1);
-  const suffix = lacado.suffix;
-  const materials = [
-    supportMaterial(curtainSupport, suffix, units),
-    material(`TURA80HG${stockLength}C`, units, 'TUBO DE ENROLLE P801'),
-    material(`PUNI280${universProfileSuffix(suffix)}${stockLength}C`, units, 'TUBO DE CARGA UNIVERS 280'),
-    material(`TAPOPLUN280${plasticCapSuffix(lacado)}`, units, 'KIT TAPONES UNIVERS 280')
-  ];
-
-  if (device === 'MOTOR') {
-    materials.push(
-      material('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
-      material('CORONALT6078', units, 'CORONA LT 60 ADAPTADA Ø 78'),
-      material('RUEDAMOT78', units, 'RUEDA MOTRIZ Ø 78'),
-      material('SUNILUSIO15//17', units, 'MOTOR SOMFY SUNILUS 15/17 IO')
-    );
-  } else {
-    const height = Math.max(0, Number(awning.crankHeight) || 0);
-    materials.push(
-      material('CASMAQEJE5078MM', units, 'CASQUILLO MAQUINA EJE 50MM Ø78'),
-      material('CASPLAS', units, 'TACO NAYLON MAQUINA'),
-      material(`MANIVE${crankSuffix(lacado)}${height}C`, units, `MANIVELA LUXE ${height} ${lacado.crank}`)
-    );
-  }
-  materials.push(material('MOSQBOACIN60MM', 2 * units, 'MOSQUETONES INOX 60'));
-  if (fabric) materials.push(material(fabric.code, fabricMl, fabric.description));
-  appendSeparateValanceMaterial(materials, separateValance);
-
-  const wall = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
-  if (wall?.referencia) materials.push(material(wall.referencia, wall.unidades * units, wall.tornilleria));
-  return materials;
-}
-
-function buildLegacyDespiece(context) {
-  const { awning, lacado, device, curtainSupport, stockLength, structureLength, rollTubeLength } = context;
-  const units = Math.max(1, Number(awning.units) || 1);
-  const suffix = lacado.suffix;
-  const rows = [];
-  const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference, units: rowUnits, length });
-
-  const support = supportMaterial(curtainSupport, suffix, units);
-  push(1, support.description, support.code, units);
-  push(2, 'TUBO DE ENROLLE P801', `TURA80HG${stockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
-  push(4, device === 'MOTOR' ? 'SOPORTE UNIVERSAL HIPRO' : 'CASQUILLO MAQUINA EJE 50MM Ø78', device === 'MOTOR' ? 'SOPORTEUNVHIPRO' : 'CASMAQEJE5078MM', units);
-  push(5, 'TUBO DE CARGA UNIVERS 280', `PUNI280${universProfileSuffix(suffix)}${stockLength}C`, units, structureLength);
-  push(6, 'KIT TAPONES UNIVERS 280', `TAPOPLUN280${plasticCapSuffix(lacado)}`, units);
-  if (device === 'MOTOR') {
-    push(8, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
-    push(9, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);
-    push(10, 'MOTOR SOMFY SUNILUS 15/17 IO', 'SUNILUSIO15//17', units);
-  } else {
-    const height = Math.max(0, Number(awning.crankHeight) || 0);
-    push(8, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
-    push(9, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
-    push(10, `MANIVELA LUXE ${height} ${lacado.crank}`, `MANIVE${crankSuffix(lacado)}${height}C`, units, height);
-  }
-  push(11, 'CADENILLAS INOX', null, 2 * units);
-  push(12, 'PUENTES ABATIBLES', null, 2 * units);
-  push(13, 'MOSQUETONES INOX 60', 'MOSQBOACIN60MM', 2 * units);
-  push(14, 'REGLETA ZAMACK', null, 2 * units);
-
-  const wall = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
-  const anchoring = wall ? { name: wall.tornilleria, reference: wall.referencia || null, units: wall.unidades * units } : null;
-  return { rows, anchoring };
-}
-
 
 function material(code, quantity, description) {
   return { code, quantity, description };

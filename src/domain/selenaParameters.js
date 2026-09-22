@@ -3,14 +3,12 @@ import { defaultCortinaParameters, normalizeCortinaParameters } from './cortinaP
 export const defaultSelenaParameters = {
   ...defaultCortinaParameters,
   fabricDropAllowanceCm: 50,
-  // Selena conserva el cálculo y la reserva de Cortina anteriores al 22/09/2026
-  // (sin −18 y barra de 600) hasta que se revise con sus propios datos.
+  // Selena no descuenta por abajo: su margen ya es el recorrido vertical.
   bottomDeductionCm: 0,
-  legacyReservation: true,
   fabricWidthDiscounts: { ...defaultCortinaParameters.fabricWidthDiscounts },
   rollTubeDiscounts: { ...defaultCortinaParameters.rollTubeDiscounts },
   loadProfileDiscounts: { ...defaultCortinaParameters.loadProfileDiscounts },
-  stockLengths: [600]
+  stockLengths: [...defaultCortinaParameters.stockLengths]
 };
 
 export function normalizeSelenaParameters(input = {}) {
