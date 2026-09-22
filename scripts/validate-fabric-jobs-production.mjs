@@ -8,7 +8,7 @@ import { calculateOrder } from '../src/domain/rules.js';
 const excelRoot = process.env.TOLDOS_EXCEL_ROOT || String.raw`Y:\2026\TOLDOS`;
 const validationYear = Number(process.env.RPS_VALIDATION_YEAR);
 const orderPrefix = Number.isInteger(validationYear) ? `AR${String(validationYear).slice(-2)}` : '';
-const supportedModels = new Set(['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
+const supportedModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
 const filenames = (await readdir(excelRoot)).filter((name) => (
   /\.xlsm$/i.test(name) && (!orderPrefix || compact(name).startsWith(orderPrefix))
 ));
@@ -35,6 +35,9 @@ for (const row of rows) {
       valanceHeight: row.valanceHeight,
       valanceFabric: row.valanceFabric,
       anticaVariant: 'SOPORTE FIJO 3 AGUJEROS',
+      // El libro no guarda ventana ni confección de la cortina; no cambian la lona.
+      curtainHasWindow: false,
+      curtainFinish: 'NORMAL',
       fabric: row.fabric,
       reglasModificadas: false
     }]
