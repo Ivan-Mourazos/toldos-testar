@@ -601,7 +601,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {(fields.curtain || isElectra) && (
             <div className="awning-form-section curtain-config">
               <span className="awning-form-section-title">{isElectra ? 'Configuración textil Electra / Elit Vertical' : 'Configuración de cortina'}</span>
-              {awning.model === 'CORTINA' && <div className="curtain-option">
+              {(awning.model === 'CORTINA' || isSelena) && <div className="curtain-option">
                 <SelectField
                   label="Soporte"
                   value={awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS'}

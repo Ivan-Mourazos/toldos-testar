@@ -201,3 +201,16 @@ describe('SELENA · reserva contrastada con el consumo real (22/09/2026)', () =>
     expect(calculate().ofs[0].calculation.fabricDrop).toBe(230);
   });
 });
+
+describe('SELENA · soporte (Iván, 22/09/2026)', () => {
+  test('admite el soporte Maxiscreem, como Cortina; por defecto, universal', () => {
+    const universal = calculate();
+    const maxiscreem = calculate({ curtainSupport: 'MAXISCREEM' });
+
+    expect(universal.ofs[0].materials.map((item) => item.code)).toContain('SOPUNI3AGUBL16');
+    expect(maxiscreem.ofs[0].calculation.curtainSupport).toBe('MAXISCREEM');
+    expect(maxiscreem.ofs[0].materials.map((item) => item.code)).toContain('SOPMAXSCRBL16');
+    expect(maxiscreem.ofs[0].materials.map((item) => item.code)).not.toContain('SOPUNI3AGUBL16');
+    expect(maxiscreem.ofs[0].despiece.rows[0]).toMatchObject({ name: 'JGO. SOPORTE MAXISCREEM' });
+  });
+});

@@ -15,11 +15,13 @@ export function calculateSelena({ order, awning }) {
   // se suma además su alto confeccionado y 5 cm de remate.
   const cortinaAllowance = parameters.fabricDropAllowanceCm
     + (hasIntegratedValance || hasSeparateValance ? valanceFinishAllowanceCm : 0);
+  // Selena comparte piezas con Cortina, incluido el soporte: a veces va con el
+  // soporte Maxiscreem, y por eso algún libro antiguo está hecho en esa hoja
+  // (Iván, 22/09/2026).
   const syntheticAwning = {
     ...awning,
     curtainHasWindow: false,
-    curtainFinish: 'NORMAL',
-    curtainSupport: 'UNIVERSAL 3 AGUJEROS'
+    curtainFinish: 'NORMAL'
   };
   const result = calculateCortina({
     order: {

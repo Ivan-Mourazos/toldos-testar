@@ -4,7 +4,7 @@
 
 ## 1. Alcance y punto de reanudación
 
-- Código `CORTINA`: toldo cortina completo (estructura, tela y reserva). 402 cortinas en 233 libros: 243 en 2025 y 159 en 2026. 214 OF con consumo real desde 2025.
+- Código `CORTINA`: toldo cortina completo (estructura, tela y reserva). 402 toldos en 233 libros, de los que **20 son Selena**: los pedidos de Selena se escriben en los libros como CORTINA (ver [expediente de Selena](./selena.md)). Quedan 382 cortinas en 219 libros. 214 OF con consumo real desde 2025.
 - Alcance: medidas (frente de tela, caída, tubo, perfil), reserva completa frente al consumo real, formulario y dibujo.
 - Siguiente acción: Iván revisa la muestra (`output/modelos/cortina/`). Q-CO04 y Q-CO05 quedan para OT.
 
@@ -30,7 +30,7 @@ Recorrido de los 402 toldos (`tmp/cortina-full/scan.mjs`), 22/09/2026.
 | Perfil | 53 | Ídem |
 | Caída | 209 | 109 el libro restó 18; 46 el libro no sumó el +5 sin bamba; 36 el libro sumó +10 o +15 (casi todas sin ventana); el resto, ajustes sueltos |
 
-**El −18 no sigue una regla.** Se restó en 110 cortinas y no en 234. No depende del técnico (Tamara 39 sí y 39 no; Iván 9 sí y 18 no), ni del cliente (bares: 35 de 104; resto: 75 de 240), ni de la ventana.
+**El −18 no sigue una regla.** Sin contar las 20 Selena: 104 con −18, 193 sin él, 35 sin el +5 de la bamba y 50 con ajustes sueltos. Se restó en 104 cortinas y no en 228. No depende del técnico (Tamara 39 sí y 39 no; Iván 9 sí y 18 no), ni del cliente (bares: 35 de 104; resto: 75 de 240), ni de la ventana.
 
 **+10 / +15:** 34 cortinas, 32 con el dibujo GENERAL (sin ventana), casi todas de 2025 (Alberto, Banesa, Jaime).
 

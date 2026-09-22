@@ -356,7 +356,8 @@ function normalizeCurtainFinish(value) {
 }
 
 function normalizeCurtainSupport(model, value) {
-  if (model !== 'CORTINA') return '';
+  // Selena comparte soporte con Cortina (Iván, 22/09/2026).
+  if (model !== 'CORTINA' && model !== 'SELENA') return '';
   return cleanText(value).toUpperCase() === 'MAXISCREEM'
     ? 'MAXISCREEM'
     : 'UNIVERSAL 3 AGUJEROS';
