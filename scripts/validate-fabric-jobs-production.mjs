@@ -41,12 +41,18 @@ for (const row of rows) {
   });
   const ofBlock = result.ofs[0];
   const calculation = ofBlock?.calculation;
+  // ESTR.0n!Q28 es la lona que se reserva (costuras de 2,2 y 7 cm), no la del
+  // planteamiento (2,5 y 6,5): se compara con la reserva de la web. Compararla
+  // con fabricMl daba un paño de diferencia en el límite del rollo.
+  const actualOf = (field) => (field === 'fabricMl'
+    ? calculation?.reservedFabricMl ?? calculation?.fabricMl
+    : calculation?.[field]);
   for (const [field, expected] of [
     ['fabricWidth', row.fabricWidth],
     ['fabricDrop', row.fabricDrop],
     ['fabricMl', row.fabricMl]
   ]) {
-    if (expected > 0 && !nearlyEqual(calculation?.[field], expected)) {
+    if (expected > 0 && !nearlyEqual(actualOf(field), expected)) {
       dimensionalMismatches.push({
         file: row.filename,
         slot: row.slot,
@@ -54,7 +60,7 @@ for (const row of rows) {
         model: row.model,
         field,
         expected,
-        actual: calculation?.[field] ?? null
+        actual: actualOf(field) ?? null
       });
     }
   }
@@ -68,8 +74,10 @@ const excelMaterials = new Map();
 for (const workbook of workbooks) {
   const relevantOfs = new Set(workbook.rows.map((row) => row.of));
   for (const material of workbook.rpsRows) {
+    // Una OF puede repartirse entre varios libros (AR…-1, AR…-2) o varias líneas:
+    // se suman. Con set() se quedaba solo la última y el libro parecía reservar menos.
     if (relevantOfs.has(material.of) && isFabricCode(material.code)) {
-      excelMaterials.set(`${material.of}|${material.code}`, round3(material.quantity));
+      addQuantity(excelMaterials, `${material.of}|${material.code}`, material.quantity);
     }
   }
 }
