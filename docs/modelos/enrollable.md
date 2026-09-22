@@ -1,10 +1,10 @@
 # Enrollable — segundo trabajo de tela
 
-14/09/2026 · Cálculo verificado · Sin despliegue
+22/09/2026 · **Cerrado para su alcance salvo la revisión del taller** · Cálculo desplegado
 
 [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Piloto previo](./bambalina.md)
 
-Rama `bambalina`. Siguiente acción ejecutable: revisar output/modelos/enrollable/muestra-enrollable.pdf con taller.
+Rama `main`. Siguiente acción ejecutable: revisar output/modelos/enrollable/muestra-enrollable.pdf con taller.
 
 ## Alcance y decisiones de OT
 
@@ -53,7 +53,7 @@ Es la segunda vez en este programa que la etiqueta del libro no identifica el tr
 | Q-E02 | Corregido | Dos enrollables de distinto corte compartían un dibujo rotulado con el del primero. La agrupación del planteamiento ya distingue por medidas rotuladas |
 | Q-E03 | Corregido | El anidado de piezas estrechas solo estaba en el planteamiento, no en la reserva que sube a RPS. Ver abajo |
 | Q-E04 | Resuelto por Iván | El AR2602716 queda fuera del alcance: no es un enrollable |
-| Q-E05 | Pendiente | No se han inventariado tejidos, anchos de rollo ni límites de medida propios del enrollable |
+| Q-E05 | Resuelto por inventario (22/09) | Los 16 enrollables reales de 2026 son todos acrílicos (ACRILI y ACRRES), en rollo de 120 salvo uno de 153, con frentes de 50 a 83 cm y de 1 a 3 unidades. Ningún límite propio que añadir: la regla general cubre el rango |
 
 ### El anidado llegaba a medias
 
@@ -76,3 +76,18 @@ Ese contraste obligó además a corregir un test sintético de Cambio de tela qu
 No se ha revisado el diagrama CAMBIO ENROLLABLE, que sigue siendo estático y tampoco recibe el cálculo. Pertenece al alcance de Cambio de tela.
 
 «Sin variantes» procede de la confirmación de Iván, no de un inventario de pedidos. Si aparece un enrollable con ollaos, refuerzo distinto u otro remate, hay que reabrir Q-E05.
+
+## Contraste de 2025 (22/09/2026)
+
+`RPS_VALIDATION_YEAR=2025 pnpm validate:fabric-jobs`: 13 trabajos, 39 comprobaciones. Frente y corte coinciden en todos. Las dos diferencias son de reserva y dan la razón a la web:
+
+| Libro | Frente · unidades | Excel y RPS | Web | Motivo |
+| --- | --- | --- | --- | --- |
+| AR2501123-2 (OF 0214422) | 52 cm · 2 | 6,5 ml | 3,25 ml | Dos piezas de 52 caben una junto a otra en el rollo de 120: comparten pasada (anidado confirmado por Iván el 14/09) |
+| AR2506340-2 (OF 0223795) | 60 cm · 2 | 7,5 ml | 3,75 ml | Ídem con 60 cm |
+
+RPS recibió el doble de lona de la necesaria en esas dos OF. No se corrigen pedidos ya fabricados.
+
+## Cierre (22/09/2026)
+
+Cerrado para su alcance: 29 enrollables reales de 2025 y 2026 contrastados, sin diferencias sin explicar. Pendiente solo la revisión de la muestra con el taller.
