@@ -4,9 +4,12 @@ export const defaultCortinaParameters = {
   standardMaxWidth: 500,
   standardMaxDrop: 400,
   fabricDropAllowanceCm: 45,
+  // Iván, 22/09/2026: en Cortina se restan 18 cm por defecto; el técnico puede
+  // no restarlos en la tarjeta. En Cambio de cortina no se restan nunca.
+  bottomDeductionCm: 18,
   seamAllowanceCm: 2.2,
   seamBaseCm: 7,
-  stockLengths: [600],
+  stockLengths: [400, 500, 600, 700],
   fabricWidthDiscounts: {
     'MAQ. INTERIOR': 12,
     'MAQ. EXTERIOR': 12.5,
@@ -32,6 +35,7 @@ export function normalizeCortinaParameters(input = {}) {
     standardMaxWidth: positive(input.standardMaxWidth, defaults.standardMaxWidth),
     standardMaxDrop: positive(input.standardMaxDrop, defaults.standardMaxDrop),
     fabricDropAllowanceCm: nonNegative(input.fabricDropAllowanceCm, defaults.fabricDropAllowanceCm),
+    bottomDeductionCm: nonNegative(input.bottomDeductionCm, defaults.bottomDeductionCm),
     seamAllowanceCm: nonNegative(input.seamAllowanceCm, defaults.seamAllowanceCm),
     seamBaseCm: nonNegative(input.seamBaseCm, defaults.seamBaseCm),
     stockLengths: normalizeStockLengths(input.stockLengths, defaults.stockLengths),

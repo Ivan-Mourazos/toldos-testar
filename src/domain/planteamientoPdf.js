@@ -1220,7 +1220,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     drawSmallMeasure(doc, measureX, windowY + 14, 27, awning.curtainWindowHeight);
     // Los 18 cm son del toldo cortina completo. Cambio de cortina es solo la tela
     // de una cortina existente: las medidas de ventana van tal cual (Iván, 22/09/2026).
-    const floorDeduction = awning.model === 'CAMBIO CORTINA' ? 0 : 18;
+    const floorDeduction = curtainBottomDeduction(awning);
     drawSmallMeasure(doc, measureX, windowY + windowH, 27, Number(awning.curtainWindowFloorHeight) - floorDeduction);
     doc.moveTo(measureX - 4, windowY).lineTo(measureX - 4, windowY + windowH)
       .strokeColor('#879f98').lineWidth(0.6).stroke();
@@ -2111,9 +2111,23 @@ export function resolveCurtainVelcroHeight(awning = {}) {
   const curtainExit = Number(awning.curtainWindowExit);
   const projection = Number(awning.projection);
   const base = Number.isFinite(curtainExit) && curtainExit > 0 ? curtainExit : projection;
-  // TELA!E36 = salida − 18 + 8. Los 18 son de Cortina; en Cambio de cortina, +8 (Iván, 22/09/2026).
-  const offset = String(awning.model || '').trim().toUpperCase() === 'CAMBIO CORTINA' ? 8 : -10;
-  return Number.isFinite(base) ? Math.max(0, base + offset) : null;
+  // TELA!E36 = salida − 18 + 8: los 18 son el descuento inferior de la tela.
+  return Number.isFinite(base) ? Math.max(0, base - curtainBottomDeduction(awning) + 8) : null;
+}
+
+// Lo que se resta abajo a la tela, para cotas y velcro del dibujo. Cambio de
+// cortina no resta; Cortina resta 18 salvo que el técnico elija no restarlos o
+// ponga otro valor con el candado (Iván, 22/09/2026). Selena y Electra, 18.
+export function curtainBottomDeduction(awning = {}) {
+  const model = String(awning.model || '').trim().toUpperCase();
+  if (model === 'CAMBIO CORTINA') return 0;
+  if (model === 'CORTINA') {
+    if (awning.reglasModificadas && awning.curtainFabricDeductionCm !== null && awning.curtainFabricDeductionCm !== undefined) {
+      return Math.max(0, Number(awning.curtainFabricDeductionCm) || 0);
+    }
+    if (awning.curtainSkipBottomDeduction) return 0;
+  }
+  return 18;
 }
 
 export function summarizeFabricMaterial(lines = []) {

@@ -261,6 +261,14 @@ describe('datos del planteamiento de telas', () => {
     ]);
   });
 
+  test('ALTURA VELCRO en Cortina sigue lo que se resta de verdad: sin restar, salida + 8', () => {
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(200);
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210, curtainSkipBottomDeduction: true })).toBe(218);
+    expect(resolveCurtainVelcroHeight({
+      model: 'CORTINA', projection: 300, curtainWindowExit: 210, reglasModificadas: true, curtainFabricDeductionCm: 10
+    })).toBe(208);
+  });
+
   test('ALTURA VELCRO replica TELA!E36: salida − 18 + 8 en Cortina y salida + 8 en Cambio de cortina', () => {
     expect(resolveCurtainVelcroHeight({ projection: 300, curtainWindowExit: 210 })).toBe(200);
     expect(resolveCurtainVelcroHeight({ projection: 300 })).toBe(290);
@@ -1259,6 +1267,11 @@ describe('maqueta única del planteamiento de telas', () => {
 
     expect(change).not.toMatch(/\b72\b/);
     expect(full).toMatch(/\b72\b/);
+
+    const fullWithoutDeduction = await fabricPageText(order({
+      ...windowAwning, model: 'CORTINA', device: 'MOTOR', structureColor: 'BLANCO', placement: 'FRONTAL', curtainSkipBottomDeduction: true
+    }));
+    expect(fullWithoutDeduction).not.toMatch(/\b72\b/);
   });
 
   test('Cambio de cortina sin ventana lo dice en el dibujo y pone sus medidas (Iván, 22/09/2026)', async () => {

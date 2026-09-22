@@ -1258,7 +1258,8 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       orderCode: 'AR2603413',
       structureColor: 'NEGRO (R-09011)',
       fabric: 'ACR NEGRO',
-      awnings: [cortina({ of: '0230342' })]
+      // El libro no restó los 18 cm: el técnico elige "no restar" en la tarjeta.
+      awnings: [cortina({ of: '0230342', curtainSkipBottomDeduction: true })]
     }));
     const ofBlock = result.ofs[0];
 
@@ -1269,13 +1270,13 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       fabricMl: 7.5,
       structureLength: 154,
       rollTubeLength: 154,
-      stockLength: 600,
+      stockLength: 400,
       curtainFabricDeductionCm: 0
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPUNI3AGUNE11', quantity: 1 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }),
-      expect.objectContaining({ code: 'PUNI280NE05600C', quantity: 1 }),
+      expect.objectContaining({ code: 'TURA80HG400C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280NE05400C', quantity: 1 }),
       expect.objectContaining({ code: 'TAPOPLUN280NE11', quantity: 1 }),
       expect.objectContaining({ code: 'CASMAQEJE5078MM', quantity: 1 }),
       expect.objectContaining({ code: 'MANIVENE11200C', quantity: 1 }),
@@ -1292,15 +1293,16 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       awnings: [cortina({
         of: '0230271', width: 326.5, projection: 140, valanceHeight: 0,
         device: 'MAQ. EXTERIOR', crankHeight: 120,
-        curtainHasWindow: false,
+        curtainHasWindow: false, curtainSkipBottomDeduction: true,
         curtainWindowExit: null, curtainWindowCorner: null,
         curtainWindowFloorHeight: null, curtainWindowHeight: null
       })]
     }));
 
     expect(result.ofs[0].calculation).toMatchObject({
-      valid: true, fabricWidth: 314, fabricDrop: 185,
-      fabricMl: 5.55, structureLength: 315.5, rollTubeLength: 315.5
+      // Sin bamba ya no se suma el +5 (Iván, 22/09/2026): el libro daba 185.
+      valid: true, fabricWidth: 314, fabricDrop: 180,
+      fabricMl: 5.4, structureLength: 315.5, rollTubeLength: 315.5
     });
   });
 
@@ -1354,15 +1356,15 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       fabric: 'ACR NEGRO',
       awnings: [cortina({
         width: 126, projection: 100, valanceHeight: 0,
-        curtainHasWindow: false,
+        curtainHasWindow: false, curtainSkipBottomDeduction: true,
         curtainWindowExit: null, curtainWindowCorner: null,
         curtainWindowFloorHeight: null, curtainWindowHeight: null
       })]
     }));
 
     expect(result.ofs[0].calculation).toMatchObject({
-      valid: true, fabricWidth: 114, fabricDrop: 145,
-      fabricPanels: 2, fabricMl: 2.9
+      valid: true, fabricWidth: 114, fabricDrop: 140,
+      fabricPanels: 2, fabricMl: 2.8
     });
   });
 
@@ -1373,7 +1375,7 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       fabric: 'ACR NEGRO',
       awnings: [1, 2].map(() => cortina({
         of: '0229551', width: 321.5, projection: 150, valanceHeight: 0,
-        device: 'MOTOR', crankHeight: null, curtainHasWindow: false,
+        device: 'MOTOR', crankHeight: null, curtainHasWindow: false, curtainSkipBottomDeduction: true,
         curtainWindowExit: null, curtainWindowCorner: null,
         curtainWindowFloorHeight: null, curtainWindowHeight: null
       }))
@@ -1385,23 +1387,23 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 2 }),
       expect.objectContaining({ code: 'SOPORTEUNVHIPRO', quantity: 2 }),
       expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 4 }),
-      expect.objectContaining({ code: 'ACRILI2170P120', quantity: 11.7 })
+      expect.objectContaining({ code: 'ACRILI2170P120', quantity: 11.4 })
     ]));
   });
 
-  test('el descuento inferior de 18 cm solo se aplica como excepción individual', () => {
+  test('con el candado se puede poner otro descuento inferior, y avisa', () => {
     const result = calculateOrder(basePayload({
       fabric: 'ACR NEGRO',
       structureColor: 'BLANCO',
       awnings: [cortina({
         width: 200, projection: 300, valanceHeight: 15,
-        reglasModificadas: true, curtainFabricDeductionCm: 18
+        reglasModificadas: true, curtainFabricDeductionCm: 10
       })]
     }));
 
     expect(result.ofs[0].calculation).toMatchObject({
-      valid: true, fabricWidth: 188, fabricDrop: 342,
-      fabricMl: 6.84, curtainFabricDeductionCm: 18
+      valid: true, fabricWidth: 188, fabricDrop: 350,
+      fabricMl: 7, curtainFabricDeductionCm: 10
     });
     expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(true);
   });
@@ -1463,6 +1465,85 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
     expect(result.ofs[0].calculation.valid).toBe(false);
     expect(result.ofs[0].materials).toEqual([]);
     expect(result.diagnostics.some((item) => item.message.includes('máximo 500x400'))).toBe(true);
+  });
+});
+
+describe('CORTINA · decisiones de Iván y consumo real (22/09/2026)', () => {
+  function cortina(overrides = {}) {
+    return baseAwning({
+      model: 'CORTINA', of: '0239100', width: 300, projection: 250, valanceHeight: 20,
+      device: 'MAQ. INTERIOR', crankHeight: 200, curtainHasWindow: false, curtainFinish: 'NORMAL',
+      curtainWindowExit: null, curtainWindowCorner: null, curtainWindowFloorHeight: null, curtainWindowHeight: null,
+      wallType: '', ...overrides
+    });
+  }
+  const calc = (overrides, color = 'BLANCO') => calculateOrder(basePayload({
+    structureColor: color, fabric: 'ACR NEGRO', awnings: [cortina(overrides)]
+  })).ofs[0];
+  const codes = (ofBlock) => ofBlock.materials.map((item) => item.code);
+  const qty = (ofBlock, code) => ofBlock.materials.find((item) => item.code === code)?.quantity;
+
+  test('resta 18 cm por defecto y el técnico puede elegir no restarlos', () => {
+    expect(calc({}).calculation).toMatchObject({ valid: true, fabricDrop: 297, curtainFabricDeductionCm: 18 });
+    const skipped = calc({ curtainSkipBottomDeduction: true });
+    expect(skipped.calculation).toMatchObject({ valid: true, fabricDrop: 315, curtainFabricDeductionCm: 0 });
+  });
+
+  test('sin bamba no suma el remate de 5 cm', () => {
+    expect(calc({ valanceHeight: 0 }).calculation.fabricDrop).toBe(272);
+    expect(calc({ valanceHeight: 0, curtainSkipBottomDeduction: true }).calculation.fabricDrop).toBe(290);
+  });
+
+  test('reserva lo que se consume: puente abatible, regleta, máquina, casquillo de punta y varillas', () => {
+    const ofBlock = calc({});
+    expect(qty(ofBlock, 'PLEACIN')).toBe(2);
+    expect(qty(ofBlock, 'ANIACIN')).toBe(2);
+    expect(qty(ofBlock, 'KITREGLETAZAMAK')).toBe(1);
+    expect(qty(ofBlock, 'MAQMB11L12BLAN')).toBe(1);
+    expect(qty(ofBlock, 'CASPUNCEJE78MM')).toBe(1);
+    expect(qty(ofBlock, 'CASMAQEJE5078MM')).toBe(1);
+    // Frente de tela 288 cm: negra arriba; blanca en la cortina y en la bamba.
+    expect(qty(ofBlock, 'VARILLAVAINANEG5')).toBe(2.9);
+    expect(qty(ofBlock, 'VARILLAVAINARBLA')).toBe(5.8);
+    expect(codes(ofBlock)).not.toContain('CASPLAS');
+    expect(qty(calc({ valanceHeight: 0 }), 'VARILLAVAINARBLA')).toBe(2.9);
+    expect(qty(calc({}, 'NEGRO (R-09011)'), 'MAQMB11L12NEGRO')).toBe(1);
+  });
+
+  test('máquina exterior lleva casquillo de eje 63, como en Arzúa', () => {
+    const ofBlock = calc({ device: 'MAQ. EXTERIOR' });
+    expect(qty(ofBlock, 'CASMAQEJE6378MM')).toBe(1);
+    expect(codes(ofBlock)).not.toContain('CASMAQEJE5078MM');
+  });
+
+  test('con ventana reserva cristal: frente de tela menos dos esquinas más 10 cm', () => {
+    const ofBlock = calc({
+      width: 422, curtainHasWindow: true, curtainWindowExit: 350, curtainWindowCorner: 15,
+      curtainWindowFloorHeight: 110, curtainWindowHeight: 137
+    });
+    // 410 − 30 + 10 = 390 cm: lo que se consumió en la OF 0212718.
+    expect(qty(ofBlock, 'CRISTATP140650')).toBe(3.9);
+    expect(codes(calc({}))).not.toContain('CRISTATP140650');
+  });
+
+  test('motor: rueda y corona que se consumen, y motor 35 o 55 con el candado', () => {
+    const motor = calc({ device: 'MOTOR', crankHeight: null });
+    expect(codes(motor)).toEqual(expect.arrayContaining(['SUNILUSIO15//17', 'SOPORTEUNVHIPRO', 'RUEDAMOT801MEC', 'CORONALT5078']));
+    expect(codes(motor)).not.toContain('RUEDAMOT78');
+    expect(codes(motor)).not.toContain('CORONALT6078');
+    expect(codes(motor)).not.toContain('MAQMB11L12BLAN');
+    const stronger = calc({ device: 'MOTOR', crankHeight: null, reglasModificadas: true, motorPower: '35/17' });
+    expect(codes(stronger)).toContain('SUNILUSIO35//17');
+    expect(stronger.calculation.motorPower).toBe('35/17');
+  });
+
+  test('elige la barra más corta que existe en RPS para tubo y perfil', () => {
+    // Tubo y perfil de 289 cm: barra de 400 en blanco (BL10 existe en 400).
+    const white = calc({});
+    expect(codes(white)).toEqual(expect.arrayContaining(['TURA80HG400C', 'PUNI280BL10400C']));
+    // Gris 7012 no tiene perfil de 400: sube a 500; el tubo sigue en 400.
+    const grey = calc({}, 'GRIS 7012');
+    expect(codes(grey)).toEqual(expect.arrayContaining(['TURA80HG400C', 'PUNI280GR12500C']));
   });
 });
 

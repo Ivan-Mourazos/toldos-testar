@@ -176,6 +176,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),
     curtainWindowHeight: numberOrDefault(awning?.curtainWindowHeight, 0),
     curtainFabricDeductionCm: numberOrDefault(awning?.curtainFabricDeductionCm, 0),
+    curtainSkipBottomDeduction: model === 'CORTINA' && awning?.curtainSkipBottomDeduction === true,
     curtainTopFinish: model === 'CAMBIO CORTINA'
       ? cleanText(awning?.curtainTopFinish).toUpperCase() === 'REMACHADO' ? 'REMACHADO' : 'VARILLA'
       : '',

@@ -41,7 +41,11 @@ const scenarios = [
     width: 326.5, projection: 140, valanceHeight: 25,
     device: 'MAQ. EXTERIOR', crankHeight: 120,
     curtainHasWindow: false, curtainFinish: 'NORMAL', curtainSupport: 'UNIVERSAL 3 AGUJEROS'
-  }, { mainSeams: { seamAllowanceCm: 2.2, seamBaseCm: 7 } }),
+  }, {
+    mainSeams: { seamAllowanceCm: 2.2, seamBaseCm: 7 },
+    // Cortina resta 18 cm por defecto (Iván, 22/09/2026).
+    separatedDrop: ({ projection }) => Number(projection) + 40 - 18
+  }),
   scenario('GALICIA', {
     width: 596, projection: 300, valanceHeight: 25, armCount: 3,
     device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 150

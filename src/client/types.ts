@@ -77,6 +77,8 @@ export type Awning = {
   curtainWindowFloorHeight: number | null;
   curtainWindowHeight: number | null;
   curtainFabricDeductionCm: number | null;
+  /** Cortina: el técnico elige no restar los 18 cm de abajo (por defecto se restan). */
+  curtainSkipBottomDeduction: boolean;
   /** Cambio de cortina: cómo va arriba. Remachado lleva bastilla. */
   curtainTopFinish: '' | 'VARILLA' | 'REMACHADO';
   curtainFabricWidthDiscountCm: number | null;
@@ -205,6 +207,8 @@ export type CortinaParameters = {
   standardMaxWidth: number;
   standardMaxDrop: number;
   fabricDropAllowanceCm: number;
+  /** Cortina: descuento inferior de la tela por defecto (18). Selena, 0. */
+  bottomDeductionCm: number;
   seamAllowanceCm: number;
   seamBaseCm: number;
   stockLengths: number[];

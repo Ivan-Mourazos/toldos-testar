@@ -264,7 +264,11 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 : {}),
               ...((awning.model === 'CORTINA' || isSelena) && !awning.reglasModificadas && cortinaDevice
                 ? {
-                    curtainFabricDeductionCm: awning.curtainFabricDeductionCm ?? 0,
+                    curtainFabricDeductionCm: awning.curtainFabricDeductionCm
+                      ?? (awning.curtainSkipBottomDeduction ? 0 : curtainLikeParameters.bottomDeductionCm ?? 0),
+                    ...(awning.model === 'CORTINA' && cortinaDevice === 'MOTOR'
+                      ? { motorPower: ['35/17', '55/17'].includes(awning.motorPower) ? awning.motorPower : '15/17' }
+                      : {}),
                     curtainFabricWidthDiscountCm: awning.curtainFabricWidthDiscountCm ?? curtainLikeParameters.fabricWidthDiscounts[cortinaDevice],
                     curtainRollTubeDiscountCm: awning.curtainRollTubeDiscountCm ?? curtainLikeParameters.rollTubeDiscounts[cortinaDevice],
                     curtainLoadProfileDiscountCm: awning.curtainLoadProfileDiscountCm ?? curtainLikeParameters.loadProfileDiscounts[cortinaDevice]
@@ -620,6 +624,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {fields.curtain && awning.curtainHasWindow !== null && <div className="curtain-option">
                 <SegmentedField label="Confección" missing={isMissing('curtainFinish')} value={awning.curtainFinish} options={['NORMAL', 'VELCRO', 'TUBO']} onChange={(curtainFinish) => update({ curtainFinish: curtainFinish as Awning['curtainFinish'] })} />
               </div>}
+              {awning.model === 'CORTINA' && !awning.reglasModificadas && <div className="curtain-option">
+                <SegmentedField label={`Restar ${parameters.cortina.bottomDeductionCm} cm abajo`} value={awning.curtainSkipBottomDeduction ? 'NO' : 'SI'} options={['SI', 'NO']} onChange={(value) => update({ curtainSkipBottomDeduction: value === 'NO' })} />
+              </div>}
               {awning.model === 'CAMBIO CORTINA' && <div className="curtain-option">
                 <SegmentedField label="Arriba" value={awning.curtainTopFinish || 'VARILLA'} options={['VARILLA', 'REMACHADO']} onChange={(curtainTopFinish) => update({ curtainTopFinish: curtainTopFinish as Awning['curtainTopFinish'] })} />
               </div>}
@@ -679,6 +686,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <NumberField label="Descuento frente tela (cm)" value={awning.curtainFabricWidthDiscountCm} min={0} step={0.5} onChange={(curtainFabricWidthDiscountCm) => update({ curtainFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.curtainRollTubeDiscountCm} min={0} step={0.5} onChange={(curtainRollTubeDiscountCm) => update({ curtainRollTubeDiscountCm })} />
                 <NumberField label="Descuento Univers 280 (cm)" value={awning.curtainLoadProfileDiscountCm} min={0} step={0.5} onChange={(curtainLoadProfileDiscountCm) => update({ curtainLoadProfileDiscountCm })} />
+                {awning.model === 'CORTINA' && cortinaDevice === 'MOTOR' && <SegmentedField label="Motor" value={['35/17', '55/17'].includes(awning.motorPower) ? awning.motorPower : '15/17'} options={['15/17', '35/17', '55/17']} onChange={(motorPower) => update({ motorPower })} />}
               </>}
               {isBox && <>
                 <NumberField label="Frente mínimo (cm)" value={awning.boxMinimumLineCm} min={0} step={0.5} onChange={(boxMinimumLineCm) => update({ boxMinimumLineCm })} />
