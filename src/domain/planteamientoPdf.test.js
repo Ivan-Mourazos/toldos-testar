@@ -1239,6 +1239,22 @@ describe('maqueta única del planteamiento de telas', () => {
     expect(text).not.toMatch(oldTotalsPattern);
   });
 
+  test('con bamba en otra tela, el paño total es la suma ya hecha, no "a + b"', async () => {
+    const text = await fabricPageText({
+      orderCode: 'AR26-SUMA', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
+      fabric: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL NEGRO 2170|||ACRILICA (LONA)',
+      awnings: [{
+        id: 'a', of: '0228363', model: 'CAMBIO TELA', units: 1, width: 245, projection: 227,
+        valanceHeight: 25, valanceCurve: 'RECTA', rotFabric: 'NO', rotValance: 'NO',
+        valanceFabric: 'ACRILI2359P120|||120|||LONA ACRILICA 2359|||ACRILICA (LONA)'
+      }]
+    });
+
+    expect(text).not.toMatch(/\d \+ \d/);
+    // Cuerpo: 3 paños de 2,67 = 8,01; bamba: 3 paños de 0,30 = 0,9.
+    expect(text).toMatch(/8,9 ML/);
+  });
+
   test('con telas distintas por toldo, cada fila indica su tela', async () => {
     const base = { units: 1, width: 300, projection: 250, valanceHeight: 0 };
     const text = await fabricPageText({

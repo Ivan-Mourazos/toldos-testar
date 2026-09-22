@@ -520,7 +520,8 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   doc.fillColor('#202020').font(fonts.bold).fontSize(9)
     .text('PAÑO TOTAL NECESARIO', contentX + 8, totalY + 23, { width: labelW - 16, align: 'center' });
   drawCell(doc, contentX + labelW, totalY, contentW - labelW, 42,
-    `${totals.map(({ amount }) => formatFabricMeasure(amount)).join(' + ') || '0'} ML`, {
+    // Con varias telas el taller quiere la cifra ya sumada; los códigos van al lado.
+    `${formatFabricMeasure(totals.reduce((sum, { amount }) => sum + (Number(amount) || 0), 0))} ML`, {
       bold: true, size: 17, align: 'right', fill: '#dedede'
     });
 }
