@@ -1273,6 +1273,20 @@ describe('maqueta única del planteamiento de telas', () => {
     expect(text).toMatch(/ALTURA VELCRO:\s+225/);
   });
 
+  test('la bamba de una cortina lleva varilla blanca arriba y B.N(3) abajo, como el dibujo del maestro', async () => {
+    const text = await fabricPageText({
+      orderCode: 'AR26-BAMBA-CORTINA', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
+      awnings: [{
+        id: 'a', of: '0239004', model: 'CAMBIO CORTINA', units: 1, width: 240, projection: 285, valanceHeight: 20,
+        valanceCurve: 'RECTA', rotFabric: 'NO', rotValance: 'NO', curtainHasWindow: true, curtainFinish: 'NORMAL',
+        curtainWindowExit: 200, curtainWindowCorner: 30, curtainWindowFloorHeight: 90, curtainWindowHeight: 110
+      }]
+    });
+
+    expect(text.match(/VARILLA BLANCA \(5,5\)/g)).toHaveLength(2);
+    expect(text).toContain('B.N(3)');
+  });
+
   test('con bamba en otra tela, el paño total es la suma ya hecha, no "a + b"', async () => {
     const text = await fabricPageText({
       orderCode: 'AR26-SUMA', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',

@@ -1192,7 +1192,9 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const frameX = x + 43;
   const frameY = y + 68;
   const frameW = w - 86;
-  const frameH = spec.hasWindow ? 125 : spec.hasValance ? 194 : 226;
+  // Con ventana, y siempre en Cambio de cortina, abajo van las medidas.
+  const withDataRows = spec.hasWindow || String(awning.model || '').toUpperCase() === 'CAMBIO CORTINA';
+  const frameH = withDataRows ? 118 : spec.hasValance ? 194 : 226;
   doc.rect(frameX, frameY, frameW, frameH).fillAndStroke('#fbfcfc', '#7fa594');
 
   drawDiagramText(
@@ -1239,31 +1241,34 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   }
 
   if (spec.hasValance) {
-    const valanceY = bottomY + 17;
+    // En el maestro la bamba es otra pieza: varilla blanca arriba y B.N(3) abajo.
+    const valanceY = bottomY + (spec.curtainPieces ? 22 : 17);
+    if (spec.curtainPieces) drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, bottomY + 11, frameW);
     if (!spec.separateValance) {
       doc.moveTo(frameX + 9, bottomY).lineTo(frameX + 9, valanceY)
         .moveTo(frameX + frameW - 9, bottomY).lineTo(frameX + frameW - 9, valanceY)
         .strokeColor('#7fa594').lineWidth(0.65).stroke();
     }
     drawCurtainValancePiece(doc, frameX, valanceY, frameW, spec);
+    if (spec.curtainPieces) drawDiagramText(doc, 'B.N(3)', frameX, valanceY + 28, frameW);
   }
 
   if (spec.hasWindow) {
-    const dataY = y + 247;
+    const dataY = y + 252;
     drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'SALIDA:', awning.curtainWindowExit);
-    drawCurtainDataRow(doc, x + 28, dataY + 17, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
-    drawCurtainDataRow(doc, x + 28, dataY + 34, w - 56, 'H. SUELO-VENT.:', awning.curtainWindowFloorHeight);
-    drawCurtainDataRow(doc, x + 28, dataY + 51, w - 56, 'H. VENTANA:', awning.curtainWindowHeight);
+    drawCurtainDataRow(doc, x + 28, dataY + 16, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
+    drawCurtainDataRow(doc, x + 28, dataY + 32, w - 56, 'H. SUELO-VENT.:', awning.curtainWindowFloorHeight);
+    drawCurtainDataRow(doc, x + 28, dataY + 48, w - 56, 'H. VENTANA:', awning.curtainWindowHeight);
     if (spec.finish === 'VELCRO') {
-      drawCurtainDataRow(doc, x + 28, dataY + 68, w - 56, 'ALTURA VELCRO:', velcroHeight);
+      drawCurtainDataRow(doc, x + 28, dataY + 64, w - 56, 'ALTURA VELCRO:', velcroHeight);
     }
   } else if (String(awning.model || '').toUpperCase() === 'CAMBIO CORTINA') {
     // Sin ventana, el taller sigue necesitando las medidas de la cortina.
-    const dataY = y + 247;
+    const dataY = y + 252;
     drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'FRENTE:', awning.width);
-    drawCurtainDataRow(doc, x + 28, dataY + 17, w - 56, 'SALIDA:', awning.projection);
+    drawCurtainDataRow(doc, x + 28, dataY + 16, w - 56, 'SALIDA:', awning.projection);
     if (spec.finish === 'VELCRO') {
-      drawCurtainDataRow(doc, x + 28, dataY + 34, w - 56, 'ALTURA VELCRO:', velcroHeight);
+      drawCurtainDataRow(doc, x + 28, dataY + 32, w - 56, 'ALTURA VELCRO:', velcroHeight);
     }
   } else if (spec.finish === 'VELCRO') {
     doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
@@ -1283,6 +1288,8 @@ export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
   return {
     finish,
     hasWindow,
+    // Cortina y Cambio de cortina siguen los dibujos CORTINA-* del maestro.
+    curtainPieces: model === 'CORTINA' || model === 'CAMBIO CORTINA',
     hasValance: valance.hasValance,
     separateValance: valance.separate,
     title: titleParts.join(' · '),
@@ -1317,8 +1324,8 @@ function drawCurtainSideFinishes(doc, x, y, w, h, spec) {
 function drawRotatedDiagramText(doc, text, centerX, centerY, width) {
   doc.save();
   doc.rotate(-90, { origin: [centerX, centerY] });
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(5.1)
-    .text(text, centerX - width / 2, centerY - 3, { width, align: 'center', lineBreak: false });
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.5)
+    .text(text, centerX - width / 2, centerY - 4, { width, align: 'center', lineBreak: false });
   doc.restore();
 }
 

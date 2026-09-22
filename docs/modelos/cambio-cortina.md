@@ -28,7 +28,7 @@
 | Reserva de lona | Verificado | En toda OF donde coincide la caída, la web reserva lo mismo que `Q28` del libro (2025 y 2026). Con la regla nueva la web reserva 18 cm más de caída que los libros que descontaban |
 | Referencias | No aplica | Solo reserva lona |
 | Formulario | Revisado por Claude; pendiente de Iván | Ventana, confección y medidas de ventana obligatorias; el candado muestra "Descuento inferior tela" (0). Muestra en `output/modelos/cambio-cortina/cc-00-formulario.png` y `cc-01-candado.png` |
-| Dibujo y PDF | Revisado por Claude; pendiente de Iván y de Q-CC03 | `output/modelos/cambio-cortina/cc-pdf-1..3.png`: sin bamba (275), bamba de la misma tela con ventana y velcro (350), bamba en otra tela con tubo (290) |
+| Dibujo y PDF | Contrastado con el maestro; pendiente de Iván, Q-CC04 y Q-CC05 | §6. Muestra en `output/modelos/cambio-cortina/cc-pdf-1..4.png`: sin ventana (275), ventana normal con bamba (350), ventana y velcro (350), tubo con bamba en otra tela (290) |
 
 ## 4. Medidas: de dónde salen las diferencias
 
@@ -63,15 +63,31 @@ Los pedidos con −18 son cambios de tela de verdad: 81 de 89 llevan en RPS el a
 
 La web coincide con `Q28` del libro en todas las OF cuya caída coincide: la fórmula de reserva es la misma y solo cambia la caída que recibe. Medido el 22/09 con la regla antigua (−18): las 11 OF de 2026 y 21 de 2025 con diferencia de reserva eran exactamente las de caída distinta.
 
-## 6. Pruebas
+## 6. Dibujo: contraste con el maestro
+
+Los dibujos de cortina del maestro están en la hoja `IMAGENES` y el técnico elige uno en `TELA!C9`. En los 96 libros: CORTINA-VENTANA 75, GENERAL 8, CORTINA-VENTANA-VELCRO 6, CORTINA TUBO VENTANA 4, CORTINA TUBO 3.
+
+| Detalle del maestro | Web antes | Web ahora (22/09) |
+| --- | --- | --- |
+| Varilla negra (5,09) en PVC arriba; B.N(4) en los laterales; varilla blanca (5,5) abajo | Igual, pero B.N(4) a 5 pt, casi ilegible | B.N(4) a 6,5 pt |
+| Bamba como pieza aparte: varilla blanca (5,5) en la cortina y otra en la bamba; B.N(3) abajo | Una sola varilla blanca y sin B.N(3) | Dos varillas y B.N(3) (Cortina y Cambio de cortina) |
+| Velcro: bandas en los dos laterales | Igual | Igual |
+| Tubo: E.T. Ø40 abajo | Igual | Igual |
+| Cota suelo-ventana: `IMAGENES!E12 = suelo-ventana − 18` | −18 siempre | −18 solo en Cortina (Iván, 22/09) |
+| Sin ventana | Sin medidas | "CORTINA · SIN VENTANA" con frente, salida y altura de velcro (Iván, 22/09) |
+| Altura de velcro: `TELA!E36 = salida ventana − 18 + 8` | Salida ventana − 10 | Igual. **Q-CC05** |
+
+## 7. Pruebas
 
 - `fabricOnlyRules.test.js`: con bamba (alto + bamba + 45), sin bamba (alto + 40), 238,5 × 270 con tres paños, descuento puntual con el candado.
 - `differentValanceFabric.contract.test.js`: bamba en otra tela, cuerpo alto + 40.
 
-## 7. Dudas para OT
+## 8. Dudas para OT
 
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
 | Q-CC01 | **Resuelta por Iván el 22/09/2026.** En Cambio de cortina no se descuenta: la salida que se pone ya es la que debe llevar. El −18 es de Cortina (el toldo completo): allí se descuenta por defecto, sea bar o particular, y el técnico puede no descontarlo (por ejemplo, para asegurar aunque quede más tela envuelta). Se aplicará al revisar Cortina | Cambio de cortina: 18 cm más de caída que los libros de Tamara, Lucía, Iván y Adrián |
 | Q-CC02 | **Resuelta por Iván el 22/09/2026.** Sin bamba no se suma el +5 | 5 cm menos de caída en las cortinas sin bamba |
-| Q-CC03 | En el dibujo con ventana, la cota de abajo resta 18 a la altura suelo-ventana (el técnico pone 90 y el dibujo dice 72), como si la tela acabara 18 cm por encima del suelo. Si en Cambio de cortina no se descuentan los 18 cm, ¿la cota debe ser 90? La altura del velcro se dibuja como salida de ventana − 10 | Solo el dibujo del PDF (`planteamientoPdf.js`); no cambia la tela |
+| Q-CC03 | **Resuelta por Iván el 22/09/2026.** En Cambio de cortina las medidas de ventana van tal cual; el −18 de la cota es de Cortina | Arreglado en `86ce4ff` |
+| Q-CC04 | Cambio de cortina sin ventana y confección normal: la web usa el dibujo general (varilla negra o blanca, "para enrollar en tubo", bastilla). Los dibujos de cortina del maestro ponen varilla negra (5,09) en PVC y B.N(4). ¿Cuál vale para una cortina sin ventana? | Solo rótulos del dibujo |
+| Q-CC05 | La altura del velcro en el Excel es salida de ventana − 18 + 8 (la web: − 10). Si en Cambio de cortina no se descuentan los 18, ¿es salida + 8, o se queda en − 10? | Cota del velcro en el dibujo |
