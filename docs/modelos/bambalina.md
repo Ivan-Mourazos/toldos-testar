@@ -154,3 +154,14 @@ Límites: las bastillas 1, 3 y 4 y el paso 34 salen del plano del 4220, un únic
 - La línea de sujeción del suplemento solo se traza si hay sujeción. Antes se dibujaba siempre y marcaba un canto sin decir cuál, el mismo defecto que los rótulos fijos pero en forma de trazo. Se detectó revisando el catálogo de dibujos, no con un test: la ausencia de una línea vectorial no se puede afirmar extrayendo texto del PDF.
 - Recorrido completo superado con pnpm test:e2e:bambalina: parámetros persistidos, cuatro curvas, corte, guardar, reabrir, aprobar, generar, imagen, notas, PDF y reserva.
 - Catálogo de dibujos revisado a tamaño de impresión con pnpm render:diagramas: cuatro curvas, suplemento sin configurar y enrollable.
+
+## Contraste de 2025 (22/09/2026)
+
+`RPS_VALIDATION_YEAR=2025 pnpm validate:fabric-jobs`: 112 bambalinas, 336 comprobaciones, 334 coincidentes. Las dos diferencias son del libro:
+
+| Libro | Excel | Web | Motivo |
+| --- | --- | --- | --- |
+| AR2502756, toldo 2 (OF 0217499) | 0,9 ml | 1,8 ml | Dos unidades, pero la fórmula de `ESTR.02!Q28` de ese libro no multiplica por `Q13`: el Excel reservó una. Mismo defecto que Q-B08 |
+| AR2505997, toldo 1 (OF 0223162) | 3 ml | 1,05 ml | `Q28` escrito a mano, sin fórmula; el cálculo da 35 cm × 3 paños |
+
+Con 2026, son 231 bambalinas reales de dos años sin ninguna diferencia atribuible a la web.
