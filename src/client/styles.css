@@ -3866,6 +3866,25 @@ textarea:focus {
   grid-column: 1 / -1;
 }
 
+/* Las medidas de ventana van en su propia fila: con un número impar de opciones
+   encima (candado abierto, Cambio de cortina) empezaban a mitad de fila. */
+.curtain-config .curtain-window-measures {
+  display: grid;
+  gap: 4px 6px;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+}
+
+/* Excepciones del candado en dos columnas; el aviso y los selectores, a lo ancho. */
+.awning-overrides {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.awning-overrides > .awning-modified-chip,
+.awning-overrides > .segmented-field {
+  grid-column: 1 / -1;
+}
+
 .pdf-preview-backdrop {
   align-items: center;
   background: rgb(7 25 29 / 0.58);

@@ -630,12 +630,12 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {awning.model === 'CAMBIO CORTINA' && <div className="curtain-option">
                 <SegmentedField label="Arriba" value={awning.curtainTopFinish || 'VARILLA'} options={['VARILLA', 'REMACHADO']} onChange={(curtainTopFinish) => update({ curtainTopFinish: curtainTopFinish as Awning['curtainTopFinish'] })} />
               </div>}
-              {fields.curtain && awning.curtainHasWindow && <>
+              {fields.curtain && awning.curtainHasWindow && <div className="curtain-window-measures" role="group" aria-label="Medidas de ventana">
                 <NumberField label="Salida ventana" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
                 <NumberField label="Esquina" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
                 <NumberField label="Suelo-ventana" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
                 <NumberField label="H. ventana" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
-              </>}
+              </div>}
             </div>
           )}
           {!sameFabric && <div className="awning-wide-field"><FabricCombobox label="Tela" value={awning.fabric} disabled={readOnly} onChange={(fabric) => update({ fabric })} /></div>}
