@@ -71,7 +71,8 @@ describe('ningún modelo baja al taller un despiece con piezas negativas', () =>
   });
 
   test.each(Object.keys(modelos))('%s calcula con normalidad un toldo de medidas corrientes', (model) => {
-    const result = run(model, 300, 250);
+    // Punto Recto no tiene brazo de 250: su salida corriente es 140.
+    const result = run(model, 300, model === 'PUNTO RECTO' ? 140 : 250);
     expect(result.ofs[0].calculation.valid).toBe(true);
     expect(result.ofs[0].despiece.rows.every((row) => row.length === null || row.length > 0)).toBe(true);
   });

@@ -56,7 +56,7 @@ Medido al cerrar la fase 1 (`9a277d9`). **Medidas**: validación masiva contra l
 | Cambio de cortina | 166 · todas explicadas | Igual a la del libro con la misma caída | — | **Terminado (22/09)**: sin −18 y sin +5 sin bamba; formulario y PDF revisados por Iván ([expediente](./modelos/cambio-cortina.md)) |
 | Cortina | 402 · explicadas | Completa según consumo real (184 OF); solo cristal y Ø70 fuera de la muestra | — | **Implementado (22/09)** ([expediente](./modelos/cortina.md)); falta muestra con Iván y dos dudas para OT |
 | Selena | Sin libros; contraste con consumo real | Completa (17 OF): brazos Stor-21, máquina, casquillo y varillas | — | **Terminado (22/09)** ([expediente](./modelos/selena.md)); solo falta confirmar con OT si existe a motor |
-| Punto Recto | 32 · 2 | Faltan 8, sobran 8 (16 OF) | **11: perfil Univers 270 inexistente; brazos PRT 07 de 100 a 160 inexistentes o de baja** | Qué perfil y brazos se consumen hoy; salidas que se ofrecen |
+| Punto Recto | 68 · 0 | Completa (19 OF) | 0 | **Terminado (22/09)** ([expediente](./modelos/punto-recto.md)): Univers 280 y brazos vigentes por lacado |
 | Xacobeo | 28 · 0 | Faltan 3, sobran 3 (25 OF) | **`PEVO702R…600C` no existe; `BART25NE11200C` de baja** | Largo de perfil EVO 70; reserva |
 | Arzúa Pro | 287 · **410** | **Al día** (317 OF; embalaje y vinilo aparte) | **Negro con EVO 80: `PEVO80NE11600C` de baja; Onyx negro de 175 no existe** | Explicar las 410 diferencias; numeración del despiece; bronce y 7022 |
 | Galicia | 110 · 0 | Sin medir: no tiene artículo de venta propio | Los de Arzúa (EVO 80 y Onyx 175 negros) | Identificar sus OF; reserva |

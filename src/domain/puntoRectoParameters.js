@@ -1,6 +1,8 @@
 export const puntoRectoDevices = ['MAQUINA', 'MOTOR'];
 
-export const puntoRectoEstablishedProjections = [80, 90, 100, 110, 120, 130, 140, 150, 160];
+// Salidas con brazo PRT-07 en RPS (ver puntoRectoArms.js). El 110 solo existía
+// en blanco y está de baja; el 130 y el 150 no han existido nunca.
+export const puntoRectoEstablishedProjections = [70, 80, 90, 100, 120, 140, 160];
 
 export const defaultPuntoRectoParameters = {
   standardMaxWidth: 600,
@@ -10,7 +12,7 @@ export const defaultPuntoRectoParameters = {
   verticalFabricDropAllowanceCm: 40,
   seamAllowanceCm: 2.5,
   seamBaseCm: 6.5,
-  stockLengths: [600, 700],
+  stockLengths: [400, 500, 600, 700],
   fabricWidthDiscounts: { MAQUINA: 12, MOTOR: 11 },
   rollTubeDiscounts: { MAQUINA: 11, MOTOR: 10 },
   loadBarDiscounts: { MAQUINA: 11, MOTOR: 10 },
