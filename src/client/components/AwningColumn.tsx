@@ -620,6 +620,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {fields.curtain && awning.curtainHasWindow !== null && <div className="curtain-option">
                 <SegmentedField label="Confección" missing={isMissing('curtainFinish')} value={awning.curtainFinish} options={['NORMAL', 'VELCRO', 'TUBO']} onChange={(curtainFinish) => update({ curtainFinish: curtainFinish as Awning['curtainFinish'] })} />
               </div>}
+              {awning.model === 'CAMBIO CORTINA' && <div className="curtain-option">
+                <SegmentedField label="Arriba" value={awning.curtainTopFinish || 'VARILLA'} options={['VARILLA', 'REMACHADO']} onChange={(curtainTopFinish) => update({ curtainTopFinish: curtainTopFinish as Awning['curtainTopFinish'] })} />
+              </div>}
               {fields.curtain && awning.curtainHasWindow && <>
                 <NumberField label="Salida ventana" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
                 <NumberField label="Esquina" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />

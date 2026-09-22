@@ -120,6 +120,9 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.curtainFabricDeductionCm = Number.isFinite(Number(old.curtainFabricDeductionCm))
     ? Number(old.curtainFabricDeductionCm)
     : null;
+  base.curtainTopFinish = base.model === 'CAMBIO CORTINA'
+    ? old.curtainTopFinish === 'REMACHADO' ? 'REMACHADO' : 'VARILLA'
+    : '';
   base.curtainFabricWidthDiscountCm = nullableNumber(old.curtainFabricWidthDiscountCm);
   base.curtainRollTubeDiscountCm = nullableNumber(old.curtainRollTubeDiscountCm);
   base.curtainLoadProfileDiscountCm = nullableNumber(old.curtainLoadProfileDiscountCm);
@@ -506,6 +509,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     curtainWindowFloorHeight: isCurtain ? awning.curtainWindowFloorHeight : null,
     curtainWindowHeight: isCurtain ? awning.curtainWindowHeight : null,
     curtainFabricDeductionCm: isCurtainStructure ? awning.curtainFabricDeductionCm : null,
+    curtainTopFinish: model === 'CAMBIO CORTINA' ? (awning.curtainTopFinish || 'VARILLA') : '',
     curtainFabricWidthDiscountCm: isCurtainStructure ? awning.curtainFabricWidthDiscountCm : null,
     curtainRollTubeDiscountCm: isCurtainStructure ? awning.curtainRollTubeDiscountCm : null,
     curtainLoadProfileDiscountCm: isCurtainStructure ? awning.curtainLoadProfileDiscountCm : null,

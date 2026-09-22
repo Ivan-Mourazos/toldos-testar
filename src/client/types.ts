@@ -77,6 +77,8 @@ export type Awning = {
   curtainWindowFloorHeight: number | null;
   curtainWindowHeight: number | null;
   curtainFabricDeductionCm: number | null;
+  /** Cambio de cortina: cómo va arriba. Remachado lleva bastilla. */
+  curtainTopFinish: '' | 'VARILLA' | 'REMACHADO';
   curtainFabricWidthDiscountCm: number | null;
   curtainRollTubeDiscountCm: number | null;
   curtainLoadProfileDiscountCm: number | null;

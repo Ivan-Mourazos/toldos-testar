@@ -451,7 +451,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
 
   const diagramX = margin + 12;
   const diagramW = 242;
-  drawCell(doc, diagramX, 123, 206, 21, diagram.replaceAll('-', ' '), {
+  drawCell(doc, diagramX, 123, 206, 21, fabricDiagramHeading(diagram, lines.map(({ awning }) => awning)), {
     bold: true, size: 10, align: 'center', fill: colors.paper
   });
   if (diagram === 'GENERAL' && !diagramAwning?.fabricImage) {
@@ -1199,13 +1199,13 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
 
   drawDiagramText(
     doc,
-    spec.finish === 'NORMAL' && !spec.hasWindow ? 'VARILLA NEGRA O BLANCA' : 'VARILLA NEGRA (5,09) EN PVC',
+    spec.riveted ? 'REMACHADO · BASTILLA ARRIBA' : spec.generalCurtain ? 'VARILLA NEGRA O BLANCA' : 'VARILLA NEGRA (5,09) EN PVC',
     frameX - 8,
     frameY - 13,
     frameW + 16
   );
   doc.rect(frameX, frameY, frameW, 6).fillAndStroke('#edf3f0', '#7fa594');
-  if (spec.finish === 'NORMAL' && !spec.hasWindow) {
+  if (spec.generalCurtain) {
     drawDiagramText(doc, 'PARA ENROLLAR EN TUBO', frameX + 8, frameY + 17, frameW - 16);
   }
   drawCurtainSideFinishes(doc, frameX, frameY, frameW, frameH, spec);
@@ -1276,6 +1276,26 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   }
 }
 
+const generalHeadingNames = {
+  'ARZUA PRO': 'ARZÚA PRO',
+  'AMBAR BOX': 'ÁMBAR BOX',
+  'AGATA BOX': 'ÁGATA BOX',
+  MAXISCREEM: 'DIANA VERTICAL',
+  'CAMBIO TELA': 'CAMBIO DE TELA',
+  'CAMBIO ANTICA': 'CAMBIO ANTICA'
+};
+
+// "GENERAL" es el nombre interno del dibujo; en el papel se pone lo que es.
+export function fabricDiagramHeading(diagram, awnings = []) {
+  if (diagram !== 'GENERAL') return diagram.replaceAll('-', ' ');
+  const names = [...new Set(awnings.map((awning) => {
+    const model = String(awning?.model || '').trim().toUpperCase();
+    return generalHeadingNames[model] || model;
+  }).filter(Boolean))];
+  if (names.length === 0) return 'TOLDO';
+  return names.length <= 2 ? names.join(' · ') : 'VARIOS MODELOS';
+}
+
 export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
   const hasWindow = diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
   const finish = diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
@@ -1290,6 +1310,11 @@ export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
     hasWindow,
     // Cortina y Cambio de cortina siguen los dibujos CORTINA-* del maestro.
     curtainPieces: model === 'CORTINA' || model === 'CAMBIO CORTINA',
+    // Una cortina sin ventana ni velcro ni tubo usaba el dibujo general del toldo.
+    // En Cambio de cortina lleva lo de toda cortina: varilla arriba, o remachado
+    // con bastilla si el técnico lo elige (Iván, 22/09/2026).
+    generalCurtain: finish === 'NORMAL' && !hasWindow && model !== 'CAMBIO CORTINA',
+    riveted: model === 'CAMBIO CORTINA' && String(awning.curtainTopFinish || '').toUpperCase() === 'REMACHADO',
     hasValance: valance.hasValance,
     separateValance: valance.separate,
     title: titleParts.join(' · '),
@@ -1316,7 +1341,7 @@ function drawCurtainSideFinishes(doc, x, y, w, h, spec) {
   }
   const label = spec.finish === 'VELCRO'
     ? 'B.N(4)'
-    : spec.finish === 'NORMAL' && !spec.hasWindow ? 'BASTILLA' : 'B.N(4)';
+    : spec.generalCurtain ? 'BASTILLA' : 'B.N(4)';
   drawRotatedDiagramText(doc, label, x - 11, y + h / 2, Math.max(48, h - 36));
   drawRotatedDiagramText(doc, label, x + w + 11, y + h / 2, Math.max(48, h - 36));
 }
@@ -2083,7 +2108,9 @@ export function resolveCurtainVelcroHeight(awning = {}) {
   const curtainExit = Number(awning.curtainWindowExit);
   const projection = Number(awning.projection);
   const base = Number.isFinite(curtainExit) && curtainExit > 0 ? curtainExit : projection;
-  return Number.isFinite(base) ? Math.max(0, base - 10) : null;
+  // TELA!E36 = salida − 18 + 8. Los 18 son de Cortina; en Cambio de cortina, +8 (Iván, 22/09/2026).
+  const offset = String(awning.model || '').trim().toUpperCase() === 'CAMBIO CORTINA' ? 8 : -10;
+  return Number.isFinite(base) ? Math.max(0, base + offset) : null;
 }
 
 export function summarizeFabricMaterial(lines = []) {

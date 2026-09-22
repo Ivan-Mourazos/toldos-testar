@@ -28,7 +28,7 @@
 | Reserva de lona | Verificado | En toda OF donde coincide la caída, la web reserva lo mismo que `Q28` del libro (2025 y 2026). Con la regla nueva la web reserva 18 cm más de caída que los libros que descontaban |
 | Referencias | No aplica | Solo reserva lona |
 | Formulario | Revisado por Claude; pendiente de Iván | Ventana, confección y medidas de ventana obligatorias; el candado muestra "Descuento inferior tela" (0). Muestra en `output/modelos/cambio-cortina/cc-00-formulario.png` y `cc-01-candado.png` |
-| Dibujo y PDF | Contrastado con el maestro; pendiente de Iván, Q-CC04 y Q-CC05 | §6. Muestra en `output/modelos/cambio-cortina/cc-pdf-1..4.png`: sin ventana (275), ventana normal con bamba (350), ventana y velcro (350), tubo con bamba en otra tela (290) |
+| Dibujo y PDF | Contrastado con el maestro; pendiente del visto bueno de Iván | §6. Muestra en `output/modelos/cambio-cortina/cc-pdf-1..4.png`: sin ventana (275), ventana normal con bamba (350), ventana y velcro (350), tubo con bamba en otra tela (290) |
 
 ## 4. Medidas: de dónde salen las diferencias
 
@@ -75,7 +75,9 @@ Los dibujos de cortina del maestro están en la hoja `IMAGENES` y el técnico el
 | Tubo: E.T. Ø40 abajo | Igual | Igual |
 | Cota suelo-ventana: `IMAGENES!E12 = suelo-ventana − 18` | −18 siempre | −18 solo en Cortina (Iván, 22/09) |
 | Sin ventana | Sin medidas | "CORTINA · SIN VENTANA" con frente, salida y altura de velcro (Iván, 22/09) |
-| Altura de velcro: `TELA!E36 = salida ventana − 18 + 8` | Salida ventana − 10 | Igual. **Q-CC05** |
+| Altura de velcro: `TELA!E36 = salida ventana − 18 + 8` | Salida ventana − 10 | Cortina: − 10; Cambio de cortina: + 8 (Iván, 22/09) |
+| Cabecera del dibujo | "GENERAL" | Lo que es: "CAMBIO DE TELA", "ARZÚA PRO"… (Iván, 22/09) |
+| Arriba: varilla, o remachado con bastilla | Siempre varilla (o el dibujo general sin ventana) | Campo "Arriba" en la tarjeta de Cambio de cortina: varilla por defecto; remachado pone "REMACHADO · BASTILLA ARRIBA" (Iván, 22/09) |
 
 ## 7. Pruebas
 
@@ -89,5 +91,5 @@ Los dibujos de cortina del maestro están en la hoja `IMAGENES` y el técnico el
 | Q-CC01 | **Resuelta por Iván el 22/09/2026.** En Cambio de cortina no se descuenta: la salida que se pone ya es la que debe llevar. El −18 es de Cortina (el toldo completo): allí se descuenta por defecto, sea bar o particular, y el técnico puede no descontarlo (por ejemplo, para asegurar aunque quede más tela envuelta). Se aplicará al revisar Cortina | Cambio de cortina: 18 cm más de caída que los libros de Tamara, Lucía, Iván y Adrián |
 | Q-CC02 | **Resuelta por Iván el 22/09/2026.** Sin bamba no se suma el +5 | 5 cm menos de caída en las cortinas sin bamba |
 | Q-CC03 | **Resuelta por Iván el 22/09/2026.** En Cambio de cortina las medidas de ventana van tal cual; el −18 de la cota es de Cortina | Arreglado en `86ce4ff` |
-| Q-CC04 | Cambio de cortina sin ventana y confección normal: la web usa el dibujo general (varilla negra o blanca, "para enrollar en tubo", bastilla). Los dibujos de cortina del maestro ponen varilla negra (5,09) en PVC y B.N(4). ¿Cuál vale para una cortina sin ventana? | Solo rótulos del dibujo |
-| Q-CC05 | La altura del velcro en el Excel es salida de ventana − 18 + 8 (la web: − 10). Si en Cambio de cortina no se descuentan los 18, ¿es salida + 8, o se queda en − 10? | Cota del velcro en el dibujo |
+| Q-CC04 | **Resuelta por Iván el 22/09/2026.** Normalmente lleva varilla arriba; a veces va remachado y entonces se le hace una bastilla. Se elige en la tarjeta ("Arriba") | Solo el dibujo |
+| Q-CC05 | **Resuelta por Iván el 22/09/2026.** En Cambio de cortina la altura del velcro es salida + 8 | Solo el dibujo |

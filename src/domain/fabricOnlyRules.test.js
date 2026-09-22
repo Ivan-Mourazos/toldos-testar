@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
+import { normalizeOrder } from './validation.js';
 import { ANTICA_TUBE_33_VARIANT, ANTICA_TUBE_42_VARIANT } from './anticaRules.js';
 
 const base = {
@@ -349,6 +350,15 @@ describe('trabajos solo de tela', () => {
     expect(standard.diagnostics).toEqual([]);
     expect(deducted.ofs[0].calculation).toMatchObject({ valid: true, fabricDrop: 297, curtainFabricDeductionCm: 18 });
     expect(deducted.diagnostics[0].level).toBe('warn');
+  });
+
+  test('CAMBIO CORTINA guarda cómo va arriba: varilla por defecto o remachado', () => {
+    const order = (awning) => normalizeOrder({ ...base, awnings: [{ id: 'a', of: '1', model: 'CAMBIO CORTINA', ...awning }] });
+
+    expect(order({}).awnings[0].curtainTopFinish).toBe('VARILLA');
+    expect(order({ curtainTopFinish: 'remachado' }).awnings[0].curtainTopFinish).toBe('REMACHADO');
+    expect(normalizeOrder({ ...base, awnings: [{ id: 'b', of: '2', model: 'CORTINA', curtainTopFinish: 'REMACHADO' }] })
+      .awnings[0].curtainTopFinish).toBe('');
   });
 
   test('CAMBIO CORTINA permite anular el descuento como excepción individual', () => {

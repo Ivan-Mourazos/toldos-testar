@@ -33,6 +33,7 @@ const preferredLabels: Record<string, string> = {
   'TOLDO-VELCRO': 'Toldo con velcro',
   'CAMBIO ENROLLABLE': 'Cambio de enrollable',
   'SUPLEMENTO': 'Suplemento',
+  'REMACHADO': 'Remachado · bastilla',
   'BASE': 'Salida base',
   'FINISHED': 'Tela terminada',
   'STANDARD': 'Estándar',

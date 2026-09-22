@@ -261,9 +261,12 @@ describe('datos del planteamiento de telas', () => {
     ]);
   });
 
-  test('ALTURA VELCRO replica la salida visible del Excel menos 10 cm', () => {
+  test('ALTURA VELCRO replica TELA!E36: salida − 18 + 8 en Cortina y salida + 8 en Cambio de cortina', () => {
     expect(resolveCurtainVelcroHeight({ projection: 300, curtainWindowExit: 210 })).toBe(200);
     expect(resolveCurtainVelcroHeight({ projection: 300 })).toBe(290);
+    // Iván, 22/09/2026: sin el descuento de 18 cm, en Cambio de cortina es +8.
+    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(218);
+    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300 })).toBe(308);
   });
 
   test('la altura de velcro variable queda en el bloque individual', () => {
@@ -1270,7 +1273,7 @@ describe('maqueta única del planteamiento de telas', () => {
     expect(text).toContain('CORTINA · SIN VENTANA · VELCRO');
     expect(text).toMatch(/FRENTE:\s+113/);
     expect(text).toMatch(/SALIDA:\s+235/);
-    expect(text).toMatch(/ALTURA VELCRO:\s+225/);
+    expect(text).toMatch(/ALTURA VELCRO:\s+243/);
   });
 
   test('la bamba de una cortina lleva varilla blanca arriba y B.N(3) abajo, como el dibujo del maestro', async () => {
@@ -1285,6 +1288,33 @@ describe('maqueta única del planteamiento de telas', () => {
 
     expect(text.match(/VARILLA BLANCA \(5,5\)/g)).toHaveLength(2);
     expect(text).toContain('B.N(3)');
+  });
+
+  test('la cabecera del dibujo dice qué es, no "GENERAL" (Iván, 22/09/2026)', async () => {
+    const text = await fabricPageText({
+      orderCode: 'AR26-CABECERA', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
+      awnings: [{ id: 'a', of: '0239005', model: 'CAMBIO TELA', units: 1, width: 300, projection: 250, valanceHeight: 0, rotFabric: 'NO' }]
+    });
+
+    expect(text).toContain('CAMBIO DE TELA');
+    expect(text).not.toContain('GENERAL');
+  });
+
+  test('Cambio de cortina: varilla arriba por defecto; remachado lleva bastilla (Iván, 22/09/2026)', async () => {
+    const awning = {
+      id: 'a', of: '0239006', model: 'CAMBIO CORTINA', units: 1, width: 113, projection: 235, valanceHeight: 0,
+      rotFabric: 'NO', curtainHasWindow: false, curtainFinish: 'NORMAL'
+    };
+    const order = (item) => ({ orderCode: 'AR26-ARRIBA', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO', awnings: [item] });
+
+    const rod = await fabricPageText(order(awning));
+    const riveted = await fabricPageText(order({ ...awning, curtainTopFinish: 'REMACHADO' }));
+
+    expect(rod).toContain('VARILLA NEGRA (5,09) EN PVC');
+    expect(rod).toContain('B.N(4)');
+    expect(rod).not.toContain('PARA ENROLLAR EN TUBO');
+    expect(riveted).toContain('REMACHADO · BASTILLA ARRIBA');
+    expect(riveted).not.toContain('VARILLA NEGRA (5,09) EN PVC');
   });
 
   test('con bamba en otra tela, el paño total es la suma ya hecha, no "a + b"', async () => {
