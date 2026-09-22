@@ -37,7 +37,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
     const ofBlock = result.ofs[0];
 
     expect(ofBlock.calculation).toMatchObject({
-      model: 'XACOBEO', valid: true, minimumLine: 282,
+      model: 'XACOBEO', valid: true, minimumLine: 287,
       fabricWidth: 352.5, fabricDrop: 325, fabricPanels: 4, fabricMl: 13,
       rollTubeLength: 354.1, structureLength: 355.1, stockLength: 600
     });
@@ -47,6 +47,10 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
       { code: 'CASPUNCEJE70MM', quantity: 1 },
       { code: 'PEVO702RBL16600C', quantity: 1 },
       { code: 'BART25BL16250C', quantity: 1 },
+      { code: 'TERMINEVOBL16', quantity: 1 },
+      { code: 'TAPONEVO7BL16', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 3.56 },
+      { code: 'VARILLAVAINARBLA', quantity: 7.12 },
       { code: 'CASMAQEJE6370MM', quantity: 1 },
       { code: 'MAQMB11L12BLAN', quantity: 1 },
       { code: 'MANIVEBL16170C', quantity: 1 },
@@ -75,6 +79,10 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
       { code: 'CASPUNCEJE70MM', quantity: 1 },
       { code: 'PEVO702RBL16600C', quantity: 1 },
       { code: 'BART25BL16125C', quantity: 1 },
+      { code: 'TERMINEVOBL16', quantity: 1 },
+      { code: 'TAPONEVO7BL16', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 2.58 },
+      { code: 'VARILLAVAINARBLA', quantity: 5.16 },
       { code: 'SOPORTEUNVHIPRO', quantity: 1 },
       { code: 'SUNILUSIO35//17', quantity: 1 },
       { code: 'CORONA LT5070', quantity: 1 },
@@ -90,7 +98,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
       device: 'MAQ. INTERIOR', crankHeight: 150
     });
     expect(result.ofs[0].calculation).toMatchObject({
-      minimumLine: 212, fabricWidth: 305, rollTubeLength: 306.4, structureLength: 307.4
+      minimumLine: 207, fabricWidth: 305, rollTubeLength: 306.4, structureLength: 307.4
     });
     expect(result.ofs[0].materials).toContainEqual(expect.objectContaining({ code: 'CASMAQEJE5070MM', quantity: 1 }));
   });
@@ -102,8 +110,30 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
       reglasModificadas: true, xacMinimumLineCm: 180
     });
 
-    expect(invalid.ofs[0].calculation).toMatchObject({ valid: false, minimumLine: 182 });
+    expect(invalid.ofs[0].calculation).toMatchObject({ valid: false, minimumLine: 187 });
     expect(overridden.ofs[0].calculation).toMatchObject({ valid: true, minimumLine: 180 });
     expect(overridden.diagnostics.some((item) => item.level === 'warn')).toBe(true);
+  });
+});
+
+describe('XACOBEO · límites del manual ART 250 (22/09/2026)', () => {
+  test('con brazo de 2,50 la línea máxima baja a 400 cm', () => {
+    const dentro = order({ width: 400, projection: 250 });
+    const fuera = order({ width: 430, projection: 250 });
+    const conCandado = order({ width: 430, projection: 250, reglasModificadas: true });
+
+    expect(dentro.ofs[0].calculation.valid).toBe(true);
+    expect(fuera.ofs[0].calculation.valid).toBe(false);
+    expect(fuera.diagnostics.some(({ message }) => message.includes('máximo de 400 cm'))).toBe(true);
+    expect(conCandado.ofs[0].calculation.valid).toBe(true);
+  });
+
+  test('con brazo de 2,00 sigue llegando a 450 cm', () => {
+    expect(order({ width: 450, projection: 200 }).ofs[0].calculation.valid).toBe(true);
+  });
+
+  test('la línea mínima es salida + 37 con máquina exterior y + 32 con interior', () => {
+    expect(order({ width: 300, projection: 200 }).ofs[0].calculation.minimumLine).toBe(237);
+    expect(order({ width: 300, projection: 200, device: 'MAQ. INTERIOR' }).ofs[0].calculation.minimumLine).toBe(232);
   });
 });

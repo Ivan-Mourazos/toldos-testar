@@ -27,7 +27,7 @@ Estados de la revisión: pendiente / en curso / con dudas / verificado para un a
 | CORTINA | Cortina / CORTINA UNIVERSAL | [Evidencia](../rps-cortina-evidence.md) · [Expediente](./cortina.md) | Implementado (22/09): −18 por defecto con opción de no restar, sin +5 sin bamba, reserva completa según consumo real. Pendiente: muestra con Iván y motor / tubo Ø70 con OT |
 | SELENA | Selena | [Expediente](./selena.md) | Terminado (22/09): medidas confirmadas con los libros (están como CORTINA), reserva con brazos Stor-21, ventana con cristal y soporte Maxiscreem. Pendiente: si existe a motor (OT) |
 | PUNTO RECTO | Punto Recto | [Evidencia](../rps-punto-recto-evidence.md) · [Expediente](./punto-recto.md) | Terminado (22/09): 68 comprobaciones de medidas sin diferencias; perfil Univers 280, tapones, varillas y manivela; brazos PRT-07 solo en las salidas que existen por lacado. Pendiente: dos dudas de OT |
-| XACOBEO | Xacobeo / ART 250, XACOBEO | [Evidencia](../rps-xacobeo-evidence.md) | Pendiente: manual aplicable, cálculo y dibujo |
+| XACOBEO | Xacobeo / ART 250, XACOBEO | [Evidencia](../rps-xacobeo-evidence.md) · [Expediente](./xacobeo.md) | Terminado (23/09): contrastado con el manual ART 250; línea mínima y máxima corregidas, terminales, tapones y varillas añadidos. Pendiente Q-X01 (lona 12,5 o 11,9) |
 | ARZUA PRO | Arzúa Pro / ART 325, ARZUA | [Evidencia](../rps-arzua-evidence.md) | Pendiente: variantes de tubo/soporte y piezas completas |
 | GALICIA | Galicia / MODELO GALICIA | [Evidencia](../rps-galicia-evidence.md) | Pendiente: brazos, tramos y representación |
 | MONOBLOCK 350 | Monoblock 350 / ARZUA MONOBLOC | [Evidencia](../rps-monoblock-350-evidence.md) | Pendiente: configuraciones de brazos y soportes |

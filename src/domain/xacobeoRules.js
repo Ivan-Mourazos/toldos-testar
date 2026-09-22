@@ -2,7 +2,7 @@ import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
-import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
+import { crankSuffix, machineCode, plasticCapSuffix, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { normalizeXacobeoParameters } from './xacobeoParameters.js';
@@ -51,7 +51,8 @@ export function calculateXacobeo({ order, awning }) {
   });
   const stockLength = parameters.stockLengths.find((item) => item >= Math.max(rollTubeLength, loadBarLength)) || null;
   const belowMinimum = Number(awning.width) < minimumLine;
-  const overMaximum = Number(awning.width) > parameters.standardMaxWidth;
+  const maxWidth = parameters.maxWidthByProjection?.[Number(awning.projection)] || parameters.standardMaxWidth;
+  const overMaximum = Number(awning.width) > maxWidth;
   const modified = Boolean(awning.reglasModificadas);
   const valid = missingFields.length === 0
     && Boolean(fabric)
@@ -67,7 +68,7 @@ export function calculateXacobeo({ order, awning }) {
   } else if (belowMinimum) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `XACOBEO no válido: frente ${awning.width} cm, mínimo ${minimumLine} cm para salida ${awning.projection} y ${device}.` });
   } else if (overMaximum && !modified) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: `XACOBEO no válido: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm.` });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `XACOBEO no válido: frente ${awning.width} cm supera el máximo de ${maxWidth} cm para salida ${awning.projection}.` });
   } else if (!stockLength) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `XACOBEO no válido: ningún largo de stock admite ${Math.max(rollTubeLength, loadBarLength)} cm.` });
   } else if (modified) {
@@ -99,14 +100,23 @@ export function calculateXacobeo({ order, awning }) {
   };
 }
 
-function buildMaterials({ awning, device, lacado, fabric, separateValance, stockLength, fabricMl }) {
+function buildMaterials({ awning, device, lacado, fabric, separateValance, stockLength, loadBarLength, fabricMl }) {
   const units = Math.max(1, Number(awning.units) || 1);
+  const rodMl = Math.ceil(Number(loadBarLength) || 0) / 100;
   const materials = [
     { code: `SOPART250${lacado.suffix}`, quantity: units, description: 'JUEGO SOPORTE ART250' },
     { code: `TURA70HG${stockLength}C`, quantity: units, description: 'TUBO DE ENROLLE P701' },
     { code: tipBushing('P701').code, quantity: units, description: tipBushing('P701').description },
     { code: `PEVO702R${lacado.suffix}${stockLength}C`, quantity: units, description: 'TUBO DE CARGA EVO 70' },
-    { code: `BART25${lacado.suffix}${awning.projection}C`, quantity: units, description: 'JUEGO DE BRAZOS ART250' }
+    { code: `BART25${lacado.suffix}${awning.projection}C`, quantity: units, description: 'JUEGO DE BRAZOS ART250' },
+    // Consumo real de 25 OF desde 2025: terminales en 24 y tapones en 19.
+    { code: `TERMINEVO${lacado.suffix}`, quantity: units, description: 'JGO TERMINAL INFERIOR EVO 70-80' },
+    { code: `TAPONEVO7${plasticCapSuffix(lacado)}`, quantity: units, description: 'KIT TAPONES EVO 70' },
+    // Varillas al largo de la barra de carga, como en Arzúa: una negra y dos
+    // blancas. En 17 de las 20 OF con varilla el taller usó blanca también para
+    // la tercera, pero el total es siempre tres veces la barra.
+    { code: 'VARILLAVAINANEG5', quantity: round2(rodMl * units), description: 'VARILLA VAINA NEGRA 4,5MM' },
+    { code: 'VARILLAVAINARBLA', quantity: round2(2 * rodMl * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA' }
   ];
 
   if (device === 'MOTOR') {
@@ -201,6 +211,10 @@ function buildDescription(awning, calculation) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const valanceText = valance > 0 ? ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm` : '';
   return `Toldo XACOBEO ${awning.width}x${awning.projection} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · paño ${formatNumber(calculation.fabricMl)} ml${valanceText}`;
+}
+
+function round2(value) {
+  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
 
 function round1(value) {

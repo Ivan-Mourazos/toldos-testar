@@ -3,9 +3,12 @@ export const xacobeoDevices = ['MAQ. EXTERIOR', 'MAQ. INTERIOR', 'MOTOR'];
 export const xacobeoMinimumLineByProjection = [125, 150, 175, 200, 225, 250]
   .map((projection) => ({
     projection,
+    // Manual ART 250 (rev. 23-10-14), pág. 8: la línea mínima es salida + 37 con
+    // máquina exterior y salida + 32 con máquina interior o motor. La web los tenía
+    // al revés; ningún pedido real quedaba por debajo (29 xacobeos de 2025-2026).
     values: {
-      'MAQ. EXTERIOR': projection + 32,
-      'MAQ. INTERIOR': projection + 37,
+      'MAQ. EXTERIOR': projection + 37,
+      'MAQ. INTERIOR': projection + 32,
       MOTOR: projection + 32
     }
   }));
@@ -13,8 +16,14 @@ export const xacobeoMinimumLineByProjection = [125, 150, 175, 200, 225, 250]
 export const xacobeoEstablishedProjections = xacobeoMinimumLineByProjection
   .map((item) => item.projection);
 
+// Manual ART 250 (rev. 23-10-14), pág. 8: la línea máxima es 4,50 m hasta brazo
+// de 2,00 y 4,00 m con brazos de 2,25 y 2,50. Ningún pedido real de 2025-2026 se
+// sale (el mayor con salida 250 mide 375,5).
+export const xacobeoMaxWidthByProjection = Object.freeze({ 225: 400, 250: 400 });
+
 export const defaultXacobeoParameters = {
   standardMaxWidth: 450,
+  maxWidthByProjection: { ...xacobeoMaxWidthByProjection },
   fabricDropAllowanceCm: 45,
   seamAllowanceCm: 2.5,
   seamBaseCm: 6.5,
