@@ -1,13 +1,13 @@
 # Cambio de cortina — expediente
 
-22/09/2026 · **En curso: reglas decididas; faltan formulario y muestra del PDF** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Evidencia anterior](../rps-cambio-cortina-evidence.md)
+22/09/2026 · **Terminado** (pendiente solo de que OT corrija el maestro, F-CC01) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Evidencia anterior](../rps-cambio-cortina-evidence.md)
 
 ## 1. Alcance y punto de reanudación
 
 - Código `CAMBIO CORTINA`: trabajo de tela (`FABRIC_ONLY`) sobre un toldo cortina existente. 168 cortinas en 96 libros: 106 en 2025 y 62 en 2026.
 - Alcance: caída y frente de la tela, bamba de la misma tela o de otra, reserva de lona, ventana y confección (solo formulario y PDF; no cambian la lona).
 - Rama: `main`.
-- Siguiente acción: muestra del formulario y del PDF para Iván.
+- Siguiente acción: ninguna en la web. OT debe quitar el −18 (y el +5 sin bamba) de `CAM.CORT.` en el maestro.
 
 ## 2. Reglas
 
@@ -27,8 +27,8 @@
 | Medidas | Verificado | Todas las diferencias tienen causa (§4); reglas decididas por Iván el 22/09 |
 | Reserva de lona | Verificado | En toda OF donde coincide la caída, la web reserva lo mismo que `Q28` del libro (2025 y 2026). Con la regla nueva la web reserva 18 cm más de caída que los libros que descontaban |
 | Referencias | No aplica | Solo reserva lona |
-| Formulario | Revisado por Claude; pendiente de Iván | Ventana, confección y medidas de ventana obligatorias; el candado muestra "Descuento inferior tela" (0). Muestra en `output/modelos/cambio-cortina/cc-00-formulario.png` y `cc-01-candado.png` |
-| Dibujo y PDF | Contrastado con el maestro; pendiente del visto bueno de Iván | §6. Muestra en `output/modelos/cambio-cortina/cc-pdf-1..4.png`: sin ventana (275), ventana normal con bamba (350), ventana y velcro (350), tubo con bamba en otra tela (290) |
+| Formulario | Verificado por Iván (22/09) | Ventana, confección y medidas de ventana obligatorias; el candado muestra "Descuento inferior tela" (0). Muestra en `output/modelos/cambio-cortina/cc-00-formulario.png` y `cc-01-candado.png` |
+| Dibujo y PDF | Verificado por Iván (22/09) | §6. Muestra en `output/modelos/cambio-cortina/cc-pdf-1..4.png`: sin ventana (275), ventana normal con bamba (350), ventana y velcro (350), tubo con bamba en otra tela (290) |
 
 ## 4. Medidas: de dónde salen las diferencias
 

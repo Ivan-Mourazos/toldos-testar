@@ -149,6 +149,12 @@ Se mantiene el formato habitual; no se traslada la plantilla HERA. drawAnticaDia
 
 Una imagen por toldo puede sustituir el esquema de tela. La prueba recorre guardado, reapertura y PDF con imagen en C03; no vuelve a ensayar el portapapeles común. Notas vacías permanecen vacías; observación de estructura llega al PDF. Se conserva autor/revisor y paginado compartido. No se acredita aceptación del dibujo por taller.
 
+
+**Fallos vistos el 22/09/2026 al revisar Cambio de cortina (pendientes para este modelo):**
+
+- F-A01 · Dibujo de Cambio Antica: el rótulo "ENTRADA TUBO 50x30" se monta sobre la línea de la lona. Muestra en `output/modelos/cambio-cortina/` (prueba `tmp/ui-audit/otros-dibujos.mjs`).
+- F-A02 · Tarjeta de Cambio Antica sin configuración: el aviso sale dos veces, "CAMBIO ANTICA incompleto… falta configuración Antica" (de `fabricOnlyRules.js`) y "Toldo C … falta configuración Antica y rotulación tela" (regla única de `awningCompleteness.js`). Debe quedar solo el de la regla única.
+
 ## 12. Pruebas ejecutadas
 
 14/09/2026: TypeScript sin errores; ESLint src y scripts del alcance sin errores;908 tests/50 archivos pasan.58 pruebas dirigidas iniciales de Antica/parámetros/edición/PDF también pasan. Vitebuild con --configLoader native correcto; aviso previo de bundle>500kB. Se usa cargador nativo por permisos del entorno de esbuild, sin cambio de configuración del proyecto.
