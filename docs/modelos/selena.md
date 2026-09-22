@@ -39,7 +39,7 @@ Los brazos Stor-21 solo existen en RPS en siete colores: blanco 9016 y 9006, neg
 
 ## 4. Medidas contrastadas con los libros
 
-Los 20 toldos de las 16 libros (que están como CORTINA) dan esto, con la caída que escribió el libro:
+Los 20 toldos de los 16 libros (que están como CORTINA) dan esto, con la caída que escribió el libro:
 
 | Caso | Toldos | Caída del libro |
 | --- | --- | --- |
