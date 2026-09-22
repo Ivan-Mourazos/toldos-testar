@@ -1,75 +1,90 @@
-# Cambio de tela — tercer trabajo de tela
+# Cambio de tela — expediente
 
-14/09/2026 · En curso · Sin despliegue
+22/09/2026 · **Cerrado para su alcance salvo la revisión del taller** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md)
 
-[Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Bambalina](./bambalina.md) · [Enrollable](./enrollable.md)
+## 1. Alcance y punto de reanudación
 
-Rama `bambalina`, en el worktree `.claude/worktrees/bambalina` para no coincidir con la rama `codex/antica`, que ocupa el directorio principal.
+- Código `CAMBIO TELA`, trabajo de tela (`FABRIC_ONLY`) sobre un toldo de fachada existente. Es el trabajo de tela más frecuente: 436 de 575 en 2026 y 481 en 2025.
+- Alcance: caída y frente de la tela, bamba de la misma tela o de otra, reserva de lona, excepciones por pedido y planteamiento de telas.
+- Rama: `main`. Último commit del modelo: el de este expediente.
+- Siguiente acción: Iván u OT revisan la muestra del PDF y responden Q-C02 y Q-C06.
 
-## Alcance y decisiones de OT
+## 2. Reglas
 
-Cambio de tela sobre toldo de fachada existente (CAMBIO TELA, trabajo FABRIC_ONLY). Es el trabajo de tela más frecuente: 432 de los 567 de 2026.
+| ID | Regla | Fuente | Implementación |
+| --- | --- | --- | --- |
+| R01 | Frente de tela = frente medido, sin descuento | Hoja `CAM. TELA` del maestro | `fabricOnlyRules.js` |
+| R02 | Caída del cuerpo = salida + 40 | Maestro; parámetro `Trabajos de tela` | Ídem |
+| R03 | Con bamba de la misma tela, + alto de bamba + 5 (remate) | Maestro; **Iván, 14/09/2026: el +5 es el remate de la bamba y solo va si hay bamba** | Ídem (`c4488e4`) |
+| R04 | Con bamba en otra tela, el cuerpo sigue en salida + 40 y la bamba se calcula y reserva aparte: alto + 5 | Maestro; mismo criterio que Arzúa (AR2601535-1) | Ídem |
+| R05 | Reserva de lona: `ESTR.01!Q28`, costuras de 2,2 cm y 7 cm de margen; el planteamiento visible usa 2,5 y 6,5 | Maestro | `legacyRpsFabricMath.js` |
+| R06 | Un ajuste escrito a mano en un libro se reproduce con la excepción técnica de la tarjeta ("Margen de caída") | Libros de 2025 y 2026 | Tests en `cambioTelaRules.test.js` |
 
-Regla del maestro: frente sin descuento, caída del cuerpo `salida + 40`; si la bamba va en la misma tela, se añade `alto bamba + 5`.
+## 3. Estado por área
 
-**Iván confirma el 14/09/2026 que ese +5 es el remate de la bambalina y solo se aplica si hay bambalina.** No depende del campo REMATE de la cabecera del pedido.
-
-## Estado por área
-
-| Área | Resultado y límite |
-| --- | --- |
-| Identidad | Confección sobre sistema existente; no se le asigna fabricante |
-| Fuentes internas | Regla del maestro documentada; barrido de 2026 en curso |
-| Configuraciones | Sin inventariar: bamba integrada o en otra tela, remates y sistemas existentes |
-| Cálculo | 53 divergencias dimensionales sobre 1296, en 25 libros de 338. En análisis |
-| Dibujo | Sin revisar |
-| Reserva | 38 diferencias frente al Excel y 43 frente a RPS, sobre 335 OF. Sin analizar |
-| Revisión taller | Pendiente |
-
-## Configuraciones y discrepancias
-
-| ID | Estado | Acción / resultado |
+| Área | Estado | Evidencia |
 | --- | --- | --- |
-| Q-C01 | En curso | El cálculo sumaba el remate de 5 cm aunque no hubiera bambalina, porque `valanceExtra` se añadía con alto 0. 17 de las 24 divergencias de caída de 2026 son exactamente ese −5. Corregido según el criterio de Iván; falta medir cuántos libros lo confirman |
-| Q-C02 | Pendiente | Tres casos de +15 sin explicar, entre ellos AR2600490 (salida 215, bamba 25, alto 300 frente a los 285 de la regla) |
-| Q-C03 | Pendiente | Casos sueltos de +117, −41, −45 y +10 sin revisar |
-| Q-C04 | Pendiente de decidir | AR2601479 no lleva bamba y su Excel usa `salida + 45`. Con el criterio de Iván debería ser `salida + 40`. Un test existente da por bueno ese 345 porque lo tomó de ese libro. Hay que medir si es un caso aislado antes de cambiarlo |
-| Q-C05 | Pendiente | Ni el dibujo ni la reserva se han revisado todavía |
+| Medidas | Verificado | 2026: 1308 comprobaciones sobre 436 trabajos; 2025: 1443 sobre 481. Todas las diferencias explicadas (§4) |
+| Reserva de lona | Verificado | La web reserva lo que calcula el propio libro en todas las OF de 2026; las diferencias con RPS son errores históricos del Excel o de la subida (§5) |
+| Referencias | No aplica | Solo reserva lona, del catálogo de telas |
+| Formulario | Verificado | Regla única de toldo completo (fase 2); excepciones con el candado |
+| Dibujo y PDF | Revisado por Claude; pendiente del taller | Muestra en `output/modelos/cambio-tela/ct-pdf-1..3.png` (sin bamba, bamba de la misma tela, bamba en otra tela) |
+| Revisión con OT | Pendiente | Q-C02 y Q-C06 |
 
-## Límites
+## 4. Medidas: diferencias con los libros
 
-El barrido inicial del 14/09/2026 tenía un fallo de extracción: leía el campo BAMBA de la fila 17, que es un sí/no de cabecera, en vez de la medida de la fila 26. Sus cifras no valen. El campo REMATE está en la fila 11 y pertenece al pedido, no al toldo.
+Validador `pnpm validate:fabric-jobs` (`RPS_VALIDATION_YEAR=2025|2026`), 22/09/2026.
 
-El campo REMATE no interviene: el cálculo de trabajos de tela no lo lee en ningún punto. Comprobado el 14/09/2026 sobre fabricOnlyRules.js y cambioTelaRules.js.
+| Caso | 2026 | 2025 | Explicación |
+| --- | --- | --- | --- |
+| Caída −5 cm sin bamba | 43 | 53 | El libro suma el remate de 5 cm aunque no haya bamba. El `+5` se fue añadiendo al maestro columna a columna y cada pedido congeló el estado del día (ver F-C01). Regla R03 |
+| +15 escrito a mano | 4 | 3 | AR2600490, AR2600553, AR2602326, AR2603391; AR2502366 (`+15+15`), AR2502455-1 y AR2502455-2. **Q-C02** |
+| Otros ajustes a mano | 3 | 3 | AR2603013 (`−36`, dos toldos), AR2601988 (`+157` con salida 20); AR2502113-1 (`+50` en vez de `+40`, dos toldos), AR2503323 (`+29`) |
+| Metros de tela | 50 y 2 | — | 50 son consecuencia de las caídas anteriores. AR2600131: la celda usa ancho 120 con una tela de 153 (RPS recibió 17,6, lo mismo que la web). AR2603078: 15 escrito a mano |
 
-## De dónde sale el +5 (F-C01)
+No queda ninguna diferencia sin explicar.
 
-Leídas las fórmulas guardadas en los libros, sin ejecutar nada. La cadena del alto es `ESTR.0n!Q27` → `TELA!N15` → tabla `TELA.01` → hoja `CAM. TELA`, fila 5, una columna por toldo.
+### De dónde sale el +5 (F-C01)
 
-En AR2600109 esas cuatro fórmulas son:
+La cadena del alto es `ESTR.0n!Q27` → `TELA!N15` → `CAM. TELA` fila 5, una columna por toldo. En AR2600109:
 
 ~~~
 B5 (toldo 01) = IF('DATOS '!C12=0, 'DATOS '!C25+40+'DATOS '!C26,    'DATOS '!C25+40)
 C5 (toldo 02) = IF('DATOS '!C12=0, 'DATOS '!G25+40+'DATOS '!G26+5,  'DATOS '!G25+40)
-D5 (toldo 03) = IF('DATOS '!C12=0, 'DATOS '!K25+40+'DATOS '!K26+5,  'DATOS '!K25+40)
-E5 (toldo 04) = IF('DATOS '!C12=0, 'DATOS '!O25+40+'DATOS '!O26+5,  'DATOS '!O25+40)
 ~~~
 
-Al toldo 01 le falta el `+5`. Y no es cosa de un libro: la presencia del `+5` varía por columna y por libro.
+El `+5` falta en unas columnas y está en otras según el libro, y donde está se suma fuera del alto de bamba, así que también se aplica con bamba 0. El Excel se contradice consigo mismo; vale el criterio de Iván.
 
-| Libro | Toldo 1 | Toldo 2 | Toldo 3 | Toldo 4 |
-| --- | --- | --- | --- | --- |
-| AR2601149 | sin | sin | +5 | +5 |
-| AR2603160 | sin | sin | sin | +5 |
-| AR2604331 | sin | +5 | +5 | +5 |
-| AR2602594 | sin | +5 | +5 | +5 |
-| AR2601479 | +5 | +5 | +5 | +5 |
-| AR2600490 | +5 | +5 | +5 | +5 |
+## 5. Reserva: diferencias con el libro y con RPS (2026)
 
-Las divergencias caen exactamente donde falta: AR2601149 en los toldos 1 y 2, AR2603160 en el 1, 2 y 3, AR2604331 solo en el 1. La correlación es completa.
+La web coincide con lo que calcula cada libro en su hoja de estructura (`Q28`) en todas las OF. Lo que no coincide es lo que el libro exportó o lo que llegó a RPS:
 
-El `+5` se fue añadiendo al maestro columna por columna y cada pedido congeló el estado del día en que se copió. No es una regla con condición: es una edición a medio propagar.
+| Grupo | OF | Qué pasó |
+| --- | --- | --- |
+| Bamba en otra tela sin reservar | 11: 0224622, 0224854, 0225709, 0225885, 0227211, 0228162, 0228643, 0229087, 0229273, 0229891, 0231722 | El libro solo exporta la tela del cuerpo; la de la bamba no se reservaba. En algunas aparece después añadida a mano en RPS. La web la reserva sola. **Q-C06** |
+| Exportación rota | 0226126 (7,4 de 18,5), 0228186 (15,4 de 30,8) | La tabla de exportación del libro lleva menos de lo que calcula el propio libro. RPS se quedó corto |
+| Subida incompleta | 0227787 | Dos libros para la misma OF; solo llegó el primero a RPS (51,8 de 62,9 ml) |
+| Redondeo | 0230245 | 61,05 frente a 61,1 |
 
-Además, donde está, se suma **fuera** del alto de bamba (`+C26+5`, no `+(C26+5)`), así que también se aplica con bamba 0. Es el mismo defecto que tenía la web.
+Cambios en la herramienta hechos para medir esto (22/09/2026): el validador comparaba `Q28` (reserva) con la lona del planteamiento de la web y se quedaba solo con la última línea cuando una OF tenía varias (`194084c`). Además, un toldo incompleto mostraba la lona del planteamiento en vez de la reserva real (`b8a3dc3`).
 
-Consecuencia: el Excel no puede servir de referencia para esta regla, porque se contradice consigo mismo. Vale el criterio de Iván, y las diferencias con los históricos se documentan en vez de reproducirse.
+## 6. Pruebas
+
+- `cambioTelaRules.test.js`: pedidos reales AR2603017, AR2603051-1, AR2600676, AR2601479; cuatro sin bamba (AR2600109, AR2601149, AR2601844, AR2601854); excepciones AR2602326 y AR2603013.
+- `awningCompleteness.test.js`: AR2602115, frente 584, reserva 5 paños completo o incompleto.
+- `fabricOnlyRules.test.js`, `differentValanceFabric.contract.test.js` y `legacyRpsReservation.test.js`: bamba en otra tela, contrato de telas distintas y límite del rollo.
+
+## 7. Dudas para OT
+
+| ID | Pregunta | Impacto |
+| --- | --- | --- |
+| Q-C02 | Siete libros de 2025 y 2026 llevan **+15 cm** escritos a mano en la caída. ¿Es una práctica con una causa (tipo de toldo, cliente, algún sistema existente) que deba ser una opción del formulario, o son casos sueltos? | Si es práctica, conviene una opción en vez de depender del candado |
+| Q-C06 | En once OF de 2026 con bamba en otra tela, esa tela no se reservó desde el libro. ¿Se sacaba de retales, o se olvidaba? La web ahora la reserva | Si sale de retales, habría que poder no reservarla |
+| Q-C07 | En el PDF de telas, el campo "SALIDA" muestra el largo de corte del paño (salida + 40 + bamba), y "PAÑO TOTAL NECESARIO" es el total del pedido repetido en cada toldo. ¿Se entiende así en el taller o conviene renombrarlo? | Solo lectura del planteamiento |
+
+Avisar a OT de las infrarreservas históricas de §5 (exportación rota y subida incompleta), igual que con Bambalina (Q-B06 y Q-B08). No se corrigen pedidos ya fabricados.
+
+## 8. Cierre
+
+- Cerrado para su alcance: medidas, reserva y formulario verificados contra 917 trabajos reales de 2025 y 2026, sin diferencias sin explicar.
+- Pendiente para darlo por terminado del todo: revisión de la muestra del PDF por Iván u OT y respuestas a Q-C02, Q-C06 y Q-C07.

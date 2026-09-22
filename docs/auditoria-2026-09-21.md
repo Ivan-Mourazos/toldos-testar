@@ -50,7 +50,7 @@ Medido al cerrar la fase 1 (`9a277d9`). **Medidas**: validación masiva contra l
 | --- | --- | --- | --- | --- |
 | Bambalina | 234 · 4 | Sin estructura | — | Muestra en taller |
 | Enrollable | 30 · 4 | Sin estructura | — | Muestra en taller |
-| Cambio de tela | 917 · 88 | 90 dif. de lona | — | Q-C02…C05 del [expediente](./modelos/cambio-tela.md); dibujo |
+| Cambio de tela | 917 · todas explicadas | Igual a la de los libros; diferencias con RPS = errores históricos | — | **Cerrado para su alcance (22/09)**. Falta revisión del PDF con taller y Q-C02, Q-C06, Q-C07 del [expediente](./modelos/cambio-tela.md) |
 | Cambio de cortina | 120 · 126 | 15 dif. de lona | — | Excepciones de 18 cm; confección |
 | Cortina | 342 · 82 (92 sin subir) | Faltan 11, sobran 2 (183 OF) | — | Reserva completa; dibujo |
 | Selena | **Sin validador** | Faltan 13, sobran 3 (11 OF); no reserva casquillo punta | — | Crear validador; brazo stor; reserva |
