@@ -32,8 +32,7 @@ const scenarios = [
     width: 300, projection: 250, valanceHeight: 25,
     curtainHasWindow: false, curtainFinish: 'NORMAL'
   }, {
-    mainSeams: { seamAllowanceCm: 2.2, seamBaseCm: 7 },
-    separatedDrop: ({ projection }) => projection + 40 - 18
+    mainSeams: { seamAllowanceCm: 2.2, seamBaseCm: 7 }
   }),
   scenario('CAMBIO TELA', {
     width: 300, projection: 250, valanceHeight: 25

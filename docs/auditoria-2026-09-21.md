@@ -51,7 +51,7 @@ Medido al cerrar la fase 1 (`9a277d9`). **Medidas**: validación masiva contra l
 | Bambalina | 234 · todas explicadas | Sin estructura; lona igual a la del cálculo del libro | — | **Cerrado para su alcance** (2025 añadido el 22/09). Muestra en taller |
 | Enrollable | 30 · todas explicadas | Sin estructura; lona igual o mejor que el Excel (anidado) | — | **Cerrado para su alcance (22/09)**. Muestra en taller |
 | Cambio de tela | 917 · todas explicadas | Igual a la de los libros; diferencias con RPS = errores históricos | — | **Terminado (22/09)**: PDF revisado por Iván, dudas resueltas ([expediente](./modelos/cambio-tela.md)) |
-| Cambio de cortina | 120 · 126 | 15 dif. de lona | — | Excepciones de 18 cm; confección |
+| Cambio de cortina | 166 · todas explicadas | Igual a la del libro con la misma caída | — | **Reglas decididas (22/09)**: sin −18 y sin +5 sin bamba. Faltan formulario y PDF ([expediente](./modelos/cambio-cortina.md)) |
 | Cortina | 342 · 82 (92 sin subir) | Faltan 11, sobran 2 (183 OF) | — | Reserva completa; dibujo |
 | Selena | **Sin validador** | Faltan 13, sobran 3 (11 OF); no reserva casquillo punta | — | Crear validador; brazo stor; reserva |
 | Punto Recto | 32 · 2 | Faltan 8, sobran 8 (16 OF) | **11: perfil Univers 270 inexistente; brazos PRT 07 de 100 a 160 inexistentes o de baja** | Qué perfil y brazos se consumen hoy; salidas que se ofrecen |

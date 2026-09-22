@@ -1087,7 +1087,7 @@ function CambioCortinaParametersView({ parameters, selectedModel, onSelectModel,
         </div>
       </div>
 
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>34 paños de 2026 revisados: 26 aplican el descuento estándar de 18 cm y 8 lo anulan como ajuste técnico. RPS confirma las cantidades de lona reservadas por OF.</span></aside>
+      <aside className="rps-evidence"><strong>Contraste real</strong><span>168 cortinas de 2025 y 2026 revisadas: la reserva de RPS coincide con la del libro. En Cambio de cortina la salida medida ya es la de la tela, así que no se descuenta (Iván, 22/09/2026); un descuento puntual se pone con el candado de la tarjeta.</span></aside>
     </section>
   );
 }

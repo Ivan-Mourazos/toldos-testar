@@ -125,7 +125,10 @@ export function calculateFabricOnly({ order, awning }) {
 function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance, parameters, curtainParameters, curtainDeduction, finishedAnticaRoundEntry, roundAnticaEntry }) {
   if (model === 'BAMBALINA') return valanceHeight + valanceExtra;
   if (model === 'CAMBIO CORTINA') {
-    const curtainAllowance = curtainParameters.fabricDropAllowanceCm - (separateValance ? valanceExtra : 0);
+    // El margen de 45 incluye el remate de 5 de la bamba: sin bamba de la misma
+    // tela no se suma (Iván, 22/09/2026; mismo criterio que Cambio de tela).
+    const integratedValance = !separateValance && valanceHeight > 0;
+    const curtainAllowance = curtainParameters.fabricDropAllowanceCm - (integratedValance ? 0 : valanceExtra);
     return Number(awning.projection)
       + (separateValance ? 0 : valanceHeight)
       + Math.max(0, curtainAllowance)

@@ -1,5 +1,7 @@
 # Cambio Cortina: contraste Excel y RPSNext
 
+> 22/09/2026: sustituido por el [expediente de Cambio de cortina](./modelos/cambio-cortina.md). Iván decidió que en Cambio de cortina **no** se descuentan los 18 cm (son de Cortina) ni se suma el +5 sin bamba; lo que sigue es la evidencia anterior.
+
 ## Muestra
 
 - 40 pedidos de 2026 identificados en RPSNext como cambios de tela para toldos Cortina.

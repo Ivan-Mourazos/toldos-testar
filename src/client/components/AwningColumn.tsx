@@ -663,7 +663,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {awning.reglasModificadas && (
             <div className="awning-overrides">
               <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>
-              {(awning.model === 'CORTINA' || isSelena) && (
+              {(awning.model === 'CORTINA' || awning.model === 'CAMBIO CORTINA' || isSelena) && (
                 <NumberField
                   label="Descuento inferior tela (cm)"
                   value={awning.curtainFabricDeductionCm}

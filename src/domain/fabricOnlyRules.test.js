@@ -30,7 +30,7 @@ function calculate(model, overrides = {}) {
 describe('trabajos solo de tela', () => {
   test.each([
     ['CAMBIO TELA', 325],
-    ['CAMBIO CORTINA', 307],
+    ['CAMBIO CORTINA', 325],
     ['ENROLLABLE', 275],
     ['CAMBIO ANTICA', 350]
   ])('%s aplica su fórmula del Excel y no genera estructura', (model, expectedDrop) => {
@@ -308,7 +308,7 @@ describe('trabajos solo de tela', () => {
     expect(result.diagnostics[0].message).toContain('falta ventana y confección');
   });
 
-  test('CAMBIO CORTINA aplica 18 cm de descuento estándar también sin bamba', () => {
+  test('CAMBIO CORTINA sin bamba no descuenta ni suma el remate de 5 (Iván, 22/09/2026)', () => {
     const result = calculate('CAMBIO CORTINA', {
       projection: 330,
       valanceHeight: 0,
@@ -318,12 +318,12 @@ describe('trabajos solo de tela', () => {
 
     expect(result.ofs[0].calculation).toMatchObject({
       valid: true,
-      fabricDrop: 357,
-      curtainFabricDeductionCm: 18
+      fabricDrop: 370,
+      curtainFabricDeductionCm: 0
     });
   });
 
-  test('CAMBIO CORTINA reproduce el histórico 238,5 × 297 con tres paños', () => {
+  test('CAMBIO CORTINA 238,5 × 270 sin bamba: caída 310 con tres paños', () => {
     const result = calculate('CAMBIO CORTINA', {
       width: 238.5,
       projection: 270,
@@ -334,10 +334,21 @@ describe('trabajos solo de tela', () => {
 
     expect(result.ofs[0].calculation).toMatchObject({
       valid: true,
-      fabricDrop: 297,
+      fabricDrop: 310,
       fabricPanels: 3,
-      fabricMl: 8.91
+      fabricMl: 9.3
     });
+  });
+
+  test('CAMBIO CORTINA no descuenta: la salida medida ya es la de la tela; el candado permite un descuento puntual (Iván, 22/09/2026)', () => {
+    const awning = { projection: 250, valanceHeight: 20, curtainHasWindow: false, curtainFinish: 'NORMAL' };
+    const standard = calculate('CAMBIO CORTINA', awning);
+    const deducted = calculate('CAMBIO CORTINA', { ...awning, reglasModificadas: true, curtainFabricDeductionCm: 18 });
+
+    expect(standard.ofs[0].calculation).toMatchObject({ valid: true, fabricDrop: 315, curtainFabricDeductionCm: 0 });
+    expect(standard.diagnostics).toEqual([]);
+    expect(deducted.ofs[0].calculation).toMatchObject({ valid: true, fabricDrop: 297, curtainFabricDeductionCm: 18 });
+    expect(deducted.diagnostics[0].level).toBe('warn');
   });
 
   test('CAMBIO CORTINA permite anular el descuento como excepción individual', () => {
