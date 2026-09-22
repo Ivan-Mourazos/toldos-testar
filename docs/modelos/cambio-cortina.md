@@ -55,6 +55,10 @@ Contraste con las reglas decididas (R02, R03), sobre las 166 cortinas con caída
 | El libro sumó el +5 sin bamba | 12 |
 | Ajustes a mano (+10, −5, +0) | 9 |
 
+### De dónde sale el −18 (F-CC01)
+
+Los pedidos con −18 son cambios de tela de verdad: 81 de 89 llevan en RPS el artículo `CAMTELTOL` ("Cambio de tela a toldo de fachada"), 4 son cambios de tela a faldón y 2 una lona de backwall. El descuento viene del propio maestro: la hoja `CAM.CORT.` de `TOLDOS TESTAR 10-4.xlsm` tiene `IF(C12=0, salida+40+bamba+5-18, salida+40-18)` en las cuatro columnas, la misma fórmula que `CORT!K25` de Cortina. Quien usa el maestro tal cual resta 18; Jaime, Banesa y Alberto lo borran a mano. **Pendiente para OT: quitar el −18 de `CAM.CORT.` fila 5 (y el +5 cuando no hay bamba)**, para que los libros coincidan con la web.
+
 ## 5. Reserva
 
 La web coincide con `Q28` del libro en todas las OF cuya caída coincide: la fórmula de reserva es la misma y solo cambia la caída que recibe. Medido el 22/09 con la regla antigua (−18): las 11 OF de 2026 y 21 de 2025 con diferencia de reserva eran exactamente las de caída distinta.
