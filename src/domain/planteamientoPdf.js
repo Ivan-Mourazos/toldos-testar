@@ -894,7 +894,7 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
   // de piezas que sí corta el cofre.
   const hasCompensator = normalizeIrisGuideType(awning.irisGuideType) === 'COMPENSADORA';
   const hasBox = irisHasCassette(awning.submodel, awning.irisGuideType);
-  drawDiagramShell(doc, x, y, w, h, String(awning.submodel || 'IRIS').toUpperCase());
+  drawDiagramShell(doc, x, y, w, h);
 
   const panelX = x + 52;
   const panelY = y + 74;
@@ -1176,10 +1176,8 @@ function drawFabricDimension(doc, x, startY, endY, label, side) {
 function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const spec = buildCurtainDiagramSpec(diagram, awning);
   const velcroHeight = resolveCurtainVelcroHeight(awning) ?? 0;
+  // El nombre completo va en la cabecera de la página (fabricDiagramHeading).
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
-  doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
-    .text(spec.title, x + 18, y + 13, { width: w - 36, align: 'center' });
 
   const badge = spec.hasValance
     ? `${spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(spec.valanceHeight)} CM`
@@ -1287,6 +1285,12 @@ const generalHeadingNames = {
 
 // "GENERAL" es el nombre interno del dibujo; en el papel se pone lo que es.
 export function fabricDiagramHeading(diagram, awnings = []) {
+  const first = awnings[0] || {};
+  if (diagram.startsWith('CORTINA')) return buildCurtainDiagramSpec(diagram, first).title;
+  if (diagram === 'BAMBALINA') return `BAMBALINA · ${buildValanceDiagramSpec(first).curve}`;
+  if (diagram === 'ANTICA') return String(first.model || '').toUpperCase() === 'ANTICA' ? 'ANTICA' : 'CAMBIO ANTICA';
+  if (diagram === 'IRIS') return String(first.submodel || 'IRIS').toUpperCase();
+  if (diagram === 'TOLDO-VELCRO') return 'TOLDO · VELCRO';
   if (diagram !== 'GENERAL') return diagram.replaceAll('-', ' ');
   const names = [...new Set(awnings.map((awning) => {
     const model = String(awning?.model || '').trim().toUpperCase();
@@ -1447,7 +1451,7 @@ function drawCurtainDataRow(doc, x, y, w, label, measure) {
 
 function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   const valance = buildValanceDiagramSpec(awning);
-  drawDiagramShell(doc, x, y, w, h, 'TOLDO · VELCRO');
+  drawDiagramShell(doc, x, y, w, h);
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
     : 'SIN BAMBA';
@@ -1498,7 +1502,7 @@ function drawHatchedBand(doc, x, y, w, h) {
 }
 
 function drawChangeRollerDiagram(doc, x, y, w, h) {
-  drawDiagramShell(doc, x, y, w, h, 'CAMBIO ENROLLABLE');
+  drawDiagramShell(doc, x, y, w, h);
   const panelX = x + 42;
   const panelY = y + 72;
   const panelW = w - 84;
@@ -1549,7 +1553,7 @@ function hemLabel(value) {
 function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   const supplement = buildSupplementSpec(awning);
-  drawDiagramShell(doc, x, y, w, h, 'SUPLEMENTO');
+  drawDiagramShell(doc, x, y, w, h);
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
     .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
@@ -1644,7 +1648,7 @@ function drawValanceOverSupplement(doc, x, top, w, bottom, curve) {
 // de PVC son siempre iguales y que un enrollable no tiene más variantes. Lo que
 // faltaba era el corte, que hasta ahora no aparecía en ninguna parte del dibujo.
 function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
-  drawDiagramShell(doc, x, y, w, h, 'ENROLLABLE');
+  drawDiagramShell(doc, x, y, w, h);
   const medidas = [
     calculation.fabricWidth ? `FRENTE ${formatInstructionMeasure(calculation.fabricWidth)} CM` : '',
     calculation.fabricDrop ? `CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM` : ''
@@ -1673,7 +1677,7 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
 
 function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
-  drawDiagramShell(doc, x, y, w, h, `BAMBALINA · ${valance.curve}`);
+  drawDiagramShell(doc, x, y, w, h);
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.2)
     .text(`ALTO TERMINADO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
@@ -1693,7 +1697,7 @@ function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
 }
 
 function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
-  drawDiagramShell(doc, x, y, w, h, awning.model === 'ANTICA' ? 'ANTICA' : 'CAMBIO ANTICA');
+  drawDiagramShell(doc, x, y, w, h);
   const variant = normalizeAnticaVariant(awning.anticaVariant) || awning.anticaVariant || 'CONFIGURACIÓN SIN INDICAR';
   const isCounterweight = variant === 'TUBO 50X30 CONTRAPESO';
   const isFixed = variant === 'SOPORTE FIJO 3 AGUJEROS';
@@ -1758,11 +1762,10 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     .text('MEDIDAS Y BAMBA SEGÚN EL BLOQUE DE CADA TOLDO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
 
-function drawDiagramShell(doc, x, y, w, h, title) {
+// El nombre del dibujo va una sola vez, en la cabecera de la página
+// (fabricDiagramHeading); aquí solo el marco.
+function drawDiagramShell(doc, x, y, w, h) {
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(9)
-    .text(title, x + 8, y + 9, { width: w - 16, align: 'center' });
-  doc.moveTo(x + 24, y + 32).lineTo(x + w - 24, y + 32).strokeColor('#7fa594').lineWidth(1).stroke();
 }
 
 function drawDiagramText(doc, text, x, y, w) {

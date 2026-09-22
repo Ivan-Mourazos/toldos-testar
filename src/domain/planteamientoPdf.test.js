@@ -1290,6 +1290,35 @@ describe('maqueta única del planteamiento de telas', () => {
     expect(text).toContain('B.N(3)');
   });
 
+  test('el nombre del dibujo de cortina sale una sola vez, completo, en la cabecera', async () => {
+    const text = await fabricPageText({
+      orderCode: 'AR26-NOMBRE', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
+      awnings: [{
+        id: 'a', of: '0239007', model: 'CAMBIO CORTINA', units: 1, width: 300, projection: 250, valanceHeight: 0,
+        rotFabric: 'NO', curtainHasWindow: false, curtainFinish: 'TUBO'
+      }]
+    });
+
+    expect(text.match(/CORTINA · SIN VENTANA · TUBO/g)).toHaveLength(1);
+    expect(text).not.toContain('CORTINA TUBO');
+  });
+
+  test.each([
+    // El nombre completo va en la cabecera y el dibujo no lo repite. En
+    // Enrollable la etiqueta de la fila coincide con el nombre: dos en total.
+    ['BAMBALINA', { projection: 0, valanceHeight: 30, valanceCurve: 'RECTA' }, 'BAMBALINA · RECTA', 1],
+    ['CAMBIO ANTICA', { anticaVariant: 'SOPORTE FIJO 3 AGUJEROS', valanceHeight: 20, valanceCurve: 'RECTA' }, 'CAMBIO ANTICA', 1],
+    ['ENROLLABLE', {}, 'ENROLLABLE', 2]
+  ])('%s: el nombre del dibujo sale una sola vez', async (model, extra, heading, expected) => {
+    const text = await fabricPageText({
+      orderCode: 'AR26-UNA-VEZ', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
+      awnings: [{ id: 'a', of: '0239008', model, units: 1, width: 300, projection: 250, valanceHeight: 0, rotFabric: 'NO', rotValance: 'NO', ...extra }]
+    });
+
+    const items = text.split(/\s{2,}/).map((item) => item.trim());
+    expect(items.filter((item) => item === heading)).toHaveLength(expected);
+  });
+
   test('la cabecera del dibujo dice qué es, no "GENERAL" (Iván, 22/09/2026)', async () => {
     const text = await fabricPageText({
       orderCode: 'AR26-CABECERA', fabric: 'ACR NEGRO', sameFabric: true, rotTela: 'NO', rotBamba: 'NO',
