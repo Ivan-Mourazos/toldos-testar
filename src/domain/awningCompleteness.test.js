@@ -120,3 +120,24 @@ describe('calculateOrder aplica la regla', () => {
     expect(result.diagnostics.some((d) => d.missingFields)).toBe(false);
   });
 });
+
+describe('la reserva de un toldo incompleto es la real', () => {
+  // AR2602115: frente 584 con rollo de 120. La reserva de RPS (ESTR.01!Q28, con
+  // 2,2 y 7 cm) da 5 paños; el planteamiento (2,5 y 6,5 cm) da 6. Faltar un dato
+  // del formulario no puede cambiar la cantidad que se reserva.
+  const cambioTela = (patch) => calculateOrder({
+    orderCode: 'AR2602115', sameFabric: true, fabric: 'ACRILI2050P120|||120|||ACR',
+    awnings: [{ id: 'a', of: '0227968', model: 'CAMBIO TELA', units: 1, width: 584, projection: 300, valanceHeight: 20,
+      valanceCurve: 'RECTA', rotFabric: 'NO', rotValance: 'NO', ...patch }]
+  }).ofs[0];
+
+  it('completo reserva 5 paños de 3,65 m', () => {
+    expect(cambioTela({}).materials[0].quantity).toBe(18.25);
+  });
+
+  it('sin rotulación sigue reservando lo mismo, aunque no sea válido', () => {
+    const block = cambioTela({ rotFabric: '' });
+    expect(block.calculation.valid).toBe(false);
+    expect(block.materials[0].quantity).toBe(18.25);
+  });
+});

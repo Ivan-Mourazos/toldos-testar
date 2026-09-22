@@ -104,9 +104,12 @@ export function calculateOrder(payload) {
         calculation: { ...result.calculation, valid: false }
       };
     }
-    // Una sola regla para tarjeta, cálculo y generación. Se conserva la reserva
-    // para que el técnico vea el planteamiento mientras completa el toldo; el
-    // error basta para bloquear la generación de archivos.
+    result = applyLegacyRpsFabricReservation({ awning, result });
+    result = withRpsCodes(result);
+    // Una sola regla para tarjeta, cálculo y generación. Va después de la reserva
+    // legada, que solo se aplica a toldos válidos: un toldo incompleto muestra
+    // la misma reserva que tendrá al completarlo, y el error basta para
+    // bloquear la generación de archivos.
     const missingFields = getMissingFields(awning);
     if (missingFields.length) {
       diagnostics.push({
@@ -118,8 +121,6 @@ export function calculateOrder(payload) {
       });
       result = { ...result, calculation: { ...result.calculation, valid: false, missingFields } };
     }
-    result = applyLegacyRpsFabricReservation({ awning, result });
-    result = withRpsCodes(result);
     ofs.push({
       awningId: awning.id,
       awningIndex,
