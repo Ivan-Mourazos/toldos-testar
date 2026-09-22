@@ -7,7 +7,7 @@
 - Código `CAMBIO TELA`, trabajo de tela (`FABRIC_ONLY`) sobre un toldo de fachada existente. Es el trabajo de tela más frecuente: 436 de 575 en 2026 y 481 en 2025.
 - Alcance: caída y frente de la tela, bamba de la misma tela o de otra, reserva de lona, excepciones por pedido y planteamiento de telas.
 - Rama: `main`. Último commit del modelo: el de este expediente.
-- Siguiente acción: Iván u OT revisan la muestra del PDF y responden Q-C06 y Q-C07.
+- Siguiente acción: Iván u OT revisan la muestra del PDF. Dudas respondidas.
 
 ## 2. Reglas
 
@@ -19,6 +19,7 @@
 | R04 | Con bamba en otra tela, el cuerpo sigue en salida + 40 y la bamba se calcula y reserva aparte: alto + 5 | Maestro; mismo criterio que Arzúa (AR2601535-1) | Ídem |
 | R05 | Reserva de lona: `ESTR.01!Q28`, costuras de 2,2 cm y 7 cm de margen; el planteamiento visible usa 2,5 y 6,5 | Maestro | `legacyRpsFabricMath.js` |
 | R06 | Un ajuste escrito a mano en un libro se reproduce con la excepción técnica de la tarjeta ("Margen de caída") | Libros de 2025 y 2026 | Tests en `cambioTelaRules.test.js` |
+| R07 | La bamba acrílica en otra tela se reserva siempre. La de PVC no se reserva por ahora: al generar los archivos, la web pregunta por las telas no acrílicas (también la de la bamba) y el técnico elige "No incluir" | **Iván, 22/09/2026** | `reservationFabrics.js`; test Q-C06 en `reservationFabrics.test.js` |
 
 ## 3. Estado por área
 
@@ -29,7 +30,7 @@
 | Referencias | No aplica | Solo reserva lona, del catálogo de telas |
 | Formulario | Verificado | Regla única de toldo completo (fase 2); excepciones con el candado |
 | Dibujo y PDF | Revisado por Claude; pendiente del taller | Muestra en `output/modelos/cambio-tela/ct-pdf-1..3.png` (sin bamba, bamba de la misma tela, bamba en otra tela) |
-| Revisión con OT | En curso | Q-C02 resuelta (22/09); pendientes Q-C06 y Q-C07 |
+| Revisión con OT | Hecha | Q-C02, Q-C06 y Q-C07 resueltas por Iván el 22/09 |
 
 ## 4. Medidas: diferencias con los libros
 
@@ -61,7 +62,7 @@ La web coincide con lo que calcula cada libro en su hoja de estructura (`Q28`) e
 
 | Grupo | OF | Qué pasó |
 | --- | --- | --- |
-| Bamba en otra tela sin reservar | 11: 0224622, 0224854, 0225709, 0225885, 0227211, 0228162, 0228643, 0229087, 0229273, 0229891, 0231722 | El libro solo exporta la tela del cuerpo; la de la bamba no se reservaba. En algunas aparece después añadida a mano en RPS. La web la reserva sola. **Q-C06** |
+| Bamba en otra tela sin reservar | 11: 0224622, 0224854, 0225709, 0225885, 0227211, 0228162, 0228643, 0229087, 0229273, 0229891, 0231722 | El libro solo exporta la tela del cuerpo; la de la bamba no se reservaba. En algunas aparece después añadida a mano en RPS. Solo AR2600936 lleva bamba de PVC (`DATOS!C12` = "PVC NEGRO"); las demás son acrílicas (o "COMO TELA" / "GRANATE - AZUL"). **Q-C06: en las acrílicas era un error del libro**; la web las reserva (R07) |
 | Exportación rota | 0226126 (7,4 de 18,5), 0228186 (15,4 de 30,8) | La tabla de exportación del libro lleva menos de lo que calcula el propio libro. RPS se quedó corto |
 | Subida incompleta | 0227787 | Dos libros para la misma OF; solo llegó el primero a RPS (51,8 de 62,9 ml) |
 | Redondeo | 0230245 | 61,05 frente a 61,1 |
@@ -79,12 +80,12 @@ Cambios en la herramienta hechos para medir esto (22/09/2026): el validador comp
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
 | Q-C02 | **Resuelta por Iván el 22/09/2026.** Los +15 cm de siete libros no son una regla: se da algo más de tela en un pedido concreto por algún motivo, y hay que ver el pedido. Se hace con la excepción técnica de la tarjeta ("Margen de caída"), que queda a la vista en ese toldo | Ninguno: no se añade opción al formulario |
-| Q-C06 | En once OF de 2026 con bamba en otra tela, esa tela no se reservó desde el libro. ¿Se sacaba de retales, o se olvidaba? La web ahora la reserva | Si sale de retales, habría que poder no reservarla |
-| Q-C07 | En el PDF de telas, el campo "SALIDA" muestra el largo de corte del paño (salida + 40 + bamba), y "PAÑO TOTAL NECESARIO" es el total del pedido repetido en cada toldo. ¿Se entiende así en el taller o conviene renombrarlo? | Solo lectura del planteamiento |
+| Q-C06 | **Resuelta por Iván el 22/09/2026.** La bamba de PVC no se reserva por ahora; si es acrílica, no reservarla es un error. De las once OF, solo una es de PVC: las otras diez quedaron infrarreservadas | La web ya lo hace: reserva la acrílica y, con PVC, pregunta al generar (R07) |
+| Q-C07 | **Resuelta por Iván el 22/09/2026.** "SALIDA" (largo de corte) y "PAÑO TOTAL NECESARIO" (total del pedido en cada toldo) se quedan como están: el taller está acostumbrado | Ninguno |
 
-Avisar a OT de las infrarreservas históricas de §5 (exportación rota y subida incompleta), igual que con Bambalina (Q-B06 y Q-B08). No se corrigen pedidos ya fabricados.
+Avisar a OT de las infrarreservas históricas de §5 (bamba acrílica sin reservar en diez OF, exportación rota y subida incompleta), igual que con Bambalina (Q-B06 y Q-B08). No se corrigen pedidos ya fabricados.
 
 ## 8. Cierre
 
 - Cerrado para su alcance: medidas, reserva y formulario verificados contra 917 trabajos reales de 2025 y 2026, sin diferencias sin explicar.
-- Pendiente para darlo por terminado del todo: revisión de la muestra del PDF por Iván u OT y respuestas a Q-C06 y Q-C07.
+- Pendiente para darlo por terminado del todo: revisión de la muestra del PDF por Iván u OT. Las dudas están resueltas.
