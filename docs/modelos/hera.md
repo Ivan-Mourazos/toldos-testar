@@ -12,11 +12,33 @@ Esta ficha recoge investigación ya realizada. No añade una validación del pro
 - Variantes actuales: HERA 43 máquina, HERA 56 máquina, HERA 56 motor.
 - Fabricante, proveedor y manual técnico aplicable: pendientes de verificar documentalmente.
 - Funcionamiento actual: desarrollo habilitado; configuración PM2 habilitada por petición expresa de Iván el 18/09/2026. Despliegue remoto a cargo del usuario; no verificado desde esta sesión.
-- Alcance de reserva actual: tejido y un anillo de cadena por unidad en variantes de máquina, cuando color y medida coinciden con una referencia verificada. No hay despiece automático completo de tubo, soportes, accionamiento y demás componentes.
+- Alcance de reserva actual (23/09/2026): tejido, anillo de cadena y **la estructura según el consumo real** (ver "Reserva de estructura" más abajo). Sin despiece en el PDF: el planteamiento sigue en CAD.
 - Próximo trabajo independiente: identificar manuales aplicables, inventariar piezas por variante y comprobar correspondencias RPS. No hace falta esperar la respuesta del 3981 para empezar esto.
 - Activación configurada; despliegue remoto pendiente de ejecución por el usuario. Continúa pendiente el despiece completo.
 
 ## Estado por área
+
+### Reserva de estructura según el consumo real — 23/09/2026
+
+Fuente: `CPRImputationMaterialMO` de las 24 OF de HERA 56 imputadas desde 2025 (`tmp/hera/matriz.mjs`), el [informe de Codex](./informe-iris-hera-consumo.md), el remate "Abajo" de sus libros y el maestro de RPS (referencias activas). Código en `heraPieces.js`.
+
+| Pieza | Código | Consumo real | La web |
+| --- | --- | --- | --- |
+| Kit Swift 43-56 (mando + soporte) | `SCRKITSW4350BLAN/NEGR` | 1 por toldo en todas las OF | 1 por toldo |
+| Adaptador Swift tubo Ø56 | `SCRADPSWIFBLAN/NEGR` | 2 por toldo con cadena; 1 con motor (3 de 4 OF) | Así |
+| Tubo Ø56 de 600 | `SCRTUBO53600C` | Se reparten los cortes por barra (AR2603981: 3 barras para 5 toldos) | Los cortes que caben en una barra salen de ella, dentro de cada toldo |
+| Contrapeso y uniones de cadena | `SCRECONTRCAD…`, `SCRUNICAD…` | 1 y 2 por toldo con cadena, también con el anillo cerrado (OF 0212194) | Así |
+| Rueda LT50 para tubo de 53 | `RUEDAAPLT5053` | 1 por toldo con motor | Así |
+| Abajo "varilla blanca" | `SCRPECBLAN600C` + tapones `SCRTAPINFBLANDCH/IZQ` + `VARILLAVAINARBLA` | Perfil de contrapeso con sus tapones y varilla vaina del ancho de la tela (AR2603981, AR2603165, AR2603535) | Así. El perfil y los tapones solo existen en blanco, y en blanco se gastan también con estructura negra |
+| Abajo "pletina" o "entrada de pletina" | `PLA4BLAN/NEGR25MM635C` | En lugar del perfil de contrapeso (AR2503063) | Así |
+| Macarrón | `MACALENGUSCREN43` | El ancho de la tela (3,44 m con 348,5 de frente) | El ancho de la tela |
+| HERA 43 | `SCRKITSW43…` ("solamente para el Ø43"), `SCRTUBO43P600CM` | Solo 1 OF desde 2025 (0218353), mezclada con piezas del 56 | Kit y tubo del Ø43, sin adaptador (Q-H10) |
+
+- **Color:** el kit y el adaptador van en blanco o negro también a motor. La tarjeta pide ahora "Color mecanismos" en el HERA a motor ("Color cadena" en los de cadena, que antes decía "Color del anillo de cadena").
+- **La cadena sigue siendo el anillo cerrado** (criterio de Iván del 18/09). El almacén imputa cadena por metros con uniones (Q-H08).
+- **Motor y mando no se reservan:** varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide. Sale un aviso para añadirlos a mano (Q-H07).
+- Después, `validate:reserva HERA` solo echa en falta la cadena por metros (Q-H08) y la tapa tornillo Swift (Q-H05). Referencias rotas: 0 de 23.
+- Tarjeta a 1280×720 y 1600: la variante va en su propia línea (antes se cortaba "HERA 56 …" y no se distinguía máquina de motor). Válida, sin scroll horizontal. Capturas en `tmp/ui-audit/shots/hera-card-*.png`.
 
 ### Cadena sin empalme — criterio de taller, 18/09/2026
 
@@ -46,7 +68,7 @@ Consulta de solo lectura reproducible con `node scripts/audit-hera-chain.mjs`; e
 | Variantes | En curso | Hay tres variantes en las guías internas; falta contrastar catálogo del proveedor |
 | Cálculo dimensional | En curso, contraste parcial | Veinte medidas del 3981 coinciden; ver histórico y excepciones en la evidencia |
 | Reserva de tela | Con dudas | 14,5 ml calculados frente a 15 ml previstos en la OF del 3981, bajo hipótesis de ausencia de empate |
-| Despiece y reserva de estructura | Pendiente | No implementados en el flujo actual |
+| Despiece y reserva de estructura | Reserva hecha (23/09); despiece no | Reserva según el consumo real (apartado anterior); el despiece sigue en CAD |
 | Formulario y flujo | En curso | Pruebas aisladas existentes de tres variantes; no certifican fabricación real |
 | Parámetros | Pendiente de auditoría completa | Hay heraParameters.js; comprobar integración y mantenimiento desde la pantalla |
 | Notas y PDF 2D | En curso | Aclaraciones destacadas y continuadas; pendiente revisión de taller de muestras |

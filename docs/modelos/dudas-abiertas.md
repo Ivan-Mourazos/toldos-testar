@@ -42,7 +42,13 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-B07 | Bambalina | Notas largas: la fila del planteamiento tiene poco espacio y remite al pedido | Remite al pedido |
 | Q-H01 | HERA | Diferencia de 0,5 ml frente a RPS: ¿redondeo por toldo, margen u otra confección? | Regla actual |
 | Q-H02 | HERA | ¿Sin empate y con qué cara interior? | Lo pregunta la tarjeta |
-| Q-H03 | HERA | Falta manual y despiece de las tres variantes para reservar estructura | No reserva estructura |
+| Q-H03 | HERA | Falta manual y despiece de las tres variantes | Desde el 23/09 reserva la estructura según el consumo real de 24 OF |
+| Q-H05 | HERA | Tapa tornillo Swift (`SCRTAPTOR`, 2 por toldo) en 9 de 17 OF: ¿cuándo? | No se reserva |
+| Q-H06 | HERA | Macarrón con lengüeta en casi todas las OF, redondo en las dos últimas (AR2603535, AR2603981): ¿se ha cambiado? | Con lengüeta |
+| Q-H07 | HERA | Motor y mando a motor: Sunilus 6/17, 10/17 o RS100 solar. ¿Cuál y cómo se elige? | No los reserva; avisa |
+| Q-H08 | HERA | El almacén imputa cadena por metros con uniones, no el anillo cerrado que se pidió el 18/09. ¿Se sigue pidiendo el anillo? | Anillo, contrapeso y dos uniones |
+| Q-H09 | HERA | Abajo: "E.T. platanero" no tiene consumo; y AR2602729 dice "varilla blanca" en el libro pero gastó pletina | Platanero: nada abajo |
+| Q-H10 | HERA | HERA 43: ¿kit "solo Ø43" y tubo Ø43? La única OF desde 2025 (0218353) gastó el kit 43-56 y tubo del 56 | Kit y tubo del Ø43, sin adaptador |
 | Q-H04 | HERA | Revisión de la muestra con taller | Muestra disponible |
 
 ## Para el taller (revisión de muestras)

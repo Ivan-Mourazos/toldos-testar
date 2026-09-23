@@ -48,10 +48,16 @@ describe('reglas HERA', () => {
     expect(result.ofs[0].calculation.chainRingCode).toBe('SCRANILBLAN150C');
   });
 
-  test.each([{ height: 230, heraChainColor: 'BLANCO' }, { height: 250, heraChainColor: '' }])('deja pendiente la reserva sin referencia exacta o color: %j', (patch) => {
-    const result = hera(patch);
+  test('deja pendiente el anillo sin referencia exacta', () => {
+    const result = hera({ height: 230, heraChainColor: 'BLANCO' });
     expect(result.diagnostics.some(item => item.level === 'pending')).toBe(true);
     expect(result.ofs[0].materials.some(item => item.code.startsWith('SCRANIL'))).toBe(false);
+  });
+
+  test('sin color no calcula: el kit y el adaptador van en blanco o negro', () => {
+    const result = hera({ height: 250, heraChainColor: '' });
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.diagnostics.map((item) => item.message).join(' ')).toContain('color cadena');
   });
 
   test('motor no reserva cadena aunque conserve el color de una variante manual', () => {
@@ -69,7 +75,7 @@ describe('reglas HERA', () => {
     }));
   });
 
-  test('HERA 56 máquina reproduce el caso AR.24.00727 y solo reserva la tela', () => {
+  test('HERA 56 máquina reproduce el caso AR.24.00727', () => {
     const result = hera();
     const ofBlock = result.ofs[0];
 
@@ -84,9 +90,13 @@ describe('reglas HERA', () => {
       reservedFabricMl: 2,
       requiresCad: true
     });
-    expect(ofBlock.materials).toEqual([{
-      code: 'SOLTIS96NUBP267', quantity: 1.9, description: 'SOLTIS 96 NUBE'
-    }]);
+    expect(ofBlock.materials.map(({ code, quantity }) => [code, quantity])).toEqual([
+      ['SOLTIS96NUBP267', 1.9],
+      ['SCRKITSW4350BLAN', 1], ['SCRADPSWIFBLAN', 2], ['SCRTUBO53600C', 1],
+      ['SCRECONTRCADBLAN', 1], ['SCRUNICADBLAN', 2],
+      ['SCRPECBLAN600C', 1], ['SCRTAPINFBLANDCH', 1], ['SCRTAPINFBLANIZQ', 1],
+      ['MACALENGUSCREN43', 1.59], ['VARILLAVAINARBLA', 1.59]
+    ]);
     expect(ofBlock.despiece).toBeNull();
     expect(result.diagnostics.some((item) => item.level === 'warn' && item.message.includes('CAD'))).toBe(true);
   });
@@ -243,4 +253,38 @@ test.each([{ heraBottomFinish: '' }, { heraInteriorFace: '' }, { heraInteriorFac
   expect(result.ofs[0].calculation.valid).toBe(false);
   expect(result.ofs[0].materials).toEqual([]);
   expect(result.diagnostics.some((item) => item.level === 'error')).toBe(true);
+});
+
+describe('HERA: estructura según el consumo real', () => {
+  const codes = (result) => Object.fromEntries(result.ofs[0].materials.map(({ code, quantity }) => [code, quantity]));
+
+  test('AR2603165 (OF 0229888): cadena, varilla blanca y tubo Ø56 como gastó el almacén', () => {
+    const materials = codes(hera({ width: 348.5, projection: 210, height: 260, heraJoin: 'VERTICAL' }));
+    // Consumo real: kit, 2 adaptadores, tubo, contrapeso, 2 uniones, perfil de contrapeso
+    // con sus tapones, y macarrón y varilla de 3,44 m (el ancho de la tela).
+    expect(materials).toMatchObject({
+      SCRKITSW4350BLAN: 1, SCRADPSWIFBLAN: 2, SCRTUBO53600C: 1, SCRECONTRCADBLAN: 1, SCRUNICADBLAN: 2,
+      SCRPECBLAN600C: 1, SCRTAPINFBLANDCH: 1, SCRTAPINFBLANIZQ: 1, MACALENGUSCREN43: 3.44, VARILLAVAINARBLA: 3.44
+    });
+  });
+
+  test('AR2602932 (OF 0229643): a motor, un adaptador, rueda LT50 y sin cadena', () => {
+    const result = hera({ submodel: 'HERA 56 MOTOR', width: 270, projection: 200, height: 0, units: 3 });
+    const materials = codes(result);
+    expect(materials).toMatchObject({ SCRKITSW4350BLAN: 3, SCRADPSWIFBLAN: 3, RUEDAAPLT5053: 3, SCRTUBO53600C: 2, SCRPECBLAN600C: 2 });
+    expect(Object.keys(materials).some((code) => /^SCR(ANIL|ECONTRCAD|UNICAD)/.test(code))).toBe(false);
+    expect(result.diagnostics.map((item) => item.message).join(' ')).toContain('motor y mando sin reservar');
+  });
+
+  test('con pletina abajo, pletina 25×4 en negro en vez del perfil de contrapeso', () => {
+    const materials = codes(hera({ heraBottomFinish: 'ENTRADA DE PLETINA', heraChainColor: 'NEGRO', height: 250 }));
+    expect(materials).toMatchObject({ PLA4NEGR25MM635C: 1, SCRKITSW4350NEGR: 1, SCRADPSWIFNEGR: 2, SCRECONTRCADNEGRO: 1, SCRUNICADNEGR: 2 });
+    expect(Object.keys(materials).some((code) => /^(SCRPEC|SCRTAPINF|VARILLA)/.test(code))).toBe(false);
+  });
+
+  test('HERA 43: kit solo para el Ø43 y tubo Ø43, sin adaptador', () => {
+    const materials = codes(hera({ submodel: 'HERA 43 MAQUINA', height: 220 }));
+    expect(materials).toMatchObject({ SCRKITSW43BLAN: 1, SCRTUBO43P600CM: 1 });
+    expect(Object.keys(materials).some((code) => code.startsWith('SCRADPSWIF') || code === 'SCRTUBO53600C')).toBe(false);
+  });
 });

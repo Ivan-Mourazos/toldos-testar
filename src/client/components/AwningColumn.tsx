@@ -378,9 +378,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {/* En su propia línea: dentro del campo alargaba la fila y bajaba Frente y Salida. */}
           {isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
           <TextField label="OF" missing={isMissing('of')} value={awning.of} onChange={(of) => update({ of: of.trim() })} />
-          {isHera && fields.submodel && (
-            <SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, height: submodel === 'HERA 56 MOTOR' ? null : awning.height })} />
-          )}
           {fields.dimensions.includes('width') && <NumberField label={widthLabel} missing={isMissing('width')} value={awning.width} min={0} onChange={updateWidth} />}
           {fields.dimensions.includes('projection') && (useEstablishedProjection ? (
             <SelectField
@@ -459,8 +456,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               )}
             </div>
           )}
-          {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
-            <SelectField label="Color del anillo de cadena" missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir color…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
+          {/* A todo el ancho: en su columna se cortaba ("HERA 56 …") y no se distinguía máquina de motor. */}
+          {isHera && fields.submodel && (
+            <div className="awning-wide-field">
+              <SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, height: submodel === 'HERA 56 MOTOR' ? null : awning.height })} />
+            </div>
+          )}
+          {isHera && (
+            <SelectField label={awning.submodel === 'HERA 56 MOTOR' ? 'Color mecanismos' : 'Color cadena'} missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir color…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
           )}
           {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
             <NumberField label="Altura instalación" missing={isMissing('height')} value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />

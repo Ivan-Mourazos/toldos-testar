@@ -80,7 +80,8 @@ export function getMissingFields(awning, order = null) {
     if (!awning.heraTopFinish) add('heraTopFinish', 'remate superior');
     if (!awning.heraBottomFinish) add('heraBottomFinish', 'remate inferior');
     if (!awning.heraInteriorFace) add('heraInteriorFace', 'cara interior');
-    if (withChain && !awning.heraChainColor) add('heraChainColor', 'color de la cadena');
+    // El kit Swift y el adaptador van en blanco o negro también a motor.
+    if (!awning.heraChainColor) add('heraChainColor', withChain ? 'color cadena' : 'color mecanismos');
   }
   // Iris también pregunta si lleva ventana de cristal: su cálculo ya lo exigía
   // y la tarjeta no, así que el toldo quedaba sin calcular sin decir por qué.

@@ -2,6 +2,7 @@ import { resolveFabric } from './fabricCatalog.js';
 import { formatNumber, roundQuantity } from './math.js';
 import { roundFabricMeters } from './reservationFabrics.js';
 import { resolveHeraChainRing } from './heraChain.js';
+import { heraStructurePieces } from './heraPieces.js';
 import {
   HERA_FABRIC_ALLOWANCES,
   HERA_SPECIAL_TUBE_FROM_CM,
@@ -77,11 +78,13 @@ export function calculateHera({ order, awning }) {
       awningId: awning.id,
       message: `HERA en OF ${awning.of}: pedir siempre cadena sin empalme (anillo de cadena).`
     });
-    if (!['BLANCO', 'NEGRO'].includes(awning.heraChainColor)) {
-      diagnostics.push({ level: 'pending', awningId: awning.id, message: `HERA en OF ${awning.of}: elegir color del anillo de cadena (blanco o negro) para reservar.` });
-    } else if (chainRingLength > 0 && !chainRing) {
+    if (['BLANCO', 'NEGRO'].includes(awning.heraChainColor) && chainRingLength > 0 && !chainRing) {
       diagnostics.push({ level: 'pending', awningId: awning.id, message: `HERA en OF ${awning.of}: consultar con compras el anillo de cadena ${awning.heraChainColor.toLowerCase()} de ${formatNumber(chainRingLength)} cm cerrado (${formatNumber(chainLength)} cm desarrollado). No hay referencia exacta verificada; no sustituir por otra medida ni empalmar.` });
     }
+  }
+  if (rule?.motor) {
+    // El motor y el mando varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide.
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `HERA en OF ${awning.of}: motor y mando sin reservar; añádelos en la reserva.` });
   }
   const specialTubeRequired = Number(awning.width) > HERA_SPECIAL_TUBE_FROM_CM;
   if (specialTubeRequired) {
@@ -102,7 +105,8 @@ export function calculateHera({ order, awning }) {
     description: buildDescription(awning, { variant, fabricWidth, fabricDrop, fabricMl, join }),
     materials: valid ? [
       { code: fabric.code, quantity: fabricMl, description: fabric.description },
-      ...(chainRing ? [{ ...chainRing, quantity: units }] : [])
+      ...(chainRing ? [{ ...chainRing, quantity: units }] : []),
+      ...heraStructurePieces({ variant, color: awning.heraChainColor, units, rollTubeLength, fabricWidth, bottomFinish: awning.heraBottomFinish })
     ] : [],
     despiece: null,
     diagnostics,

@@ -40,9 +40,10 @@ function modelExtras(model, device) {
   if (model === 'ANTICA') return anticaVariants.map((anticaVariant) => ({ anticaVariant, anticaSupportHeight: 40 }));
   if (model === 'HERA') {
     // Con el rollo de 120 de la tela de muestra, un frente mayor exige empate.
-    return ['NINGUNO', 'VERTICAL'].map((heraJoin) => ({
-      heraJoin, heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'PLETINA', heraInteriorFace: 'DERECHO', heraChainColor: 'BLANCO', height: 250
-    }));
+    // Blanco y negro, y los dos remates de abajo con piezas (perfil de contrapeso o pletina).
+    return ['NINGUNO', 'VERTICAL'].flatMap((heraJoin) => ['BLANCO', 'NEGRO'].flatMap((heraChainColor) => ['VARILLA BLANCA', 'PLETINA'].map((heraBottomFinish) => ({
+      heraJoin, heraTopFinish: 'VARILLA PLANA', heraBottomFinish, heraInteriorFace: 'DERECHO', heraChainColor, height: 250
+    }))));
   }
   if (model === 'ELECTRA') {
     const motor = device === 'MOTOR' ? { motorPower: electraMotors[0].value } : {};
