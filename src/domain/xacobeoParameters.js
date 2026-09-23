@@ -46,6 +46,7 @@ export const defaultXacobeoParameters = {
   minimumLineByProjection: xacobeoMinimumLineByProjection
 };
 
+/** @returns {import('../client/types').XacobeoParameters} */
 export function normalizeXacobeoParameters(input = {}) {
   const defaults = defaultXacobeoParameters;
   return {

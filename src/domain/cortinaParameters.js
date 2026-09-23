@@ -27,6 +27,7 @@ export const defaultCortinaParameters = {
   }
 };
 
+/** @returns {import('../client/types').CortinaParameters} */
 export function normalizeCortinaParameters(input = {}) {
   const defaults = defaultCortinaParameters;
   return {
