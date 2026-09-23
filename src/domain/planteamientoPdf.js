@@ -1764,9 +1764,10 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     doc.rect(endX - 7, bottomY, 14, 28).fillAndStroke(colors.gray, colors.ink);
     drawSideLabel(doc, 'CONTRAPESO', endX - 78, bottomY + 7, 66);
   } else if (isFixed) {
-    const plateY = y + h - 57;
-    doc.rect(wallX + 22, plateY, w - 82, 5).fillAndStroke(colors.gray, colors.ink);
-    drawDiagramText(doc, 'ENTRADA PLETINA 25x4', wallX + 18, plateY + 11, w - 72);
+    // La pletina va en el dobladillo, al final de la lona, como el tubo en las otras
+    // variantes; antes era una barra suelta al pie del dibujo (AR2600921, 23/09/2026).
+    doc.rect(endX - 8, endY - 1, 16, 5).fillAndStroke(colors.gray, colors.ink);
+    drawSideLabel(doc, 'ENTRADA PLETINA 25x4', endX - 115, endY + 24, 110);
   }
 
   drawDiagramText(doc, 'FRENTE TELA', x + 28, y + 47, w - 56);

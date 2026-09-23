@@ -41,7 +41,7 @@ Estados de la revisión: pendiente / en curso / con dudas / verificado para un a
 | IRIS | Iris / aliases SCREENY 110, 130, 150 | [Evidencia](../rps-iris-evidence.md) | Pendiente: documentación por tamaño/cofre y geometría |
 | HERA | HERA / ROLL-SYSTEM | [Evidencia](../rps-hera-evidence.md) · [Expediente iniciado](./hera.md) | En curso: manual/proveedor y despiece; dudas del 3981 pendientes |
 | ANTICA | Antica / ANTICA · fabricación TGM | [Expediente](./antica.md) · [Fuentes y consumos](./antica-fuentes.json) | En curso: parámetros, manivela y acero nominal incorporados; 118 OF y compras contrastadas. [30 preguntas para encargado](./antica-preguntas-taller.md); kits, escuadras y variantes aún pendientes. No cerrar modelo |
-| CAMBIO ANTICA | Cambio antica / CAMBIO DE TELA A TOLDO ANTICA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) | Pendiente: geometría y confección, sin reservar estructura nueva |
+| CAMBIO ANTICA | Cambio antica / CAMBIO DE TELA A TOLDO ANTICA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) · [Expediente](./cambio-antica.md) | Terminado salvo dudas (23/09): se vende como CAMTELTOL y en los libros es "CAMBIO TELA" con +65; el validador ya los reconoce. AR2600921 igual que el libro; formulario y PDF revisados (pletina del soporte fijo al final de la lona). Pendientes Q-CA01 a Q-CA03 |
 
 ## Lotes propuestos, de menor a mayor alcance
 

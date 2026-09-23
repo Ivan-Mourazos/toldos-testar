@@ -17,6 +17,11 @@ const rows = workbooks.flatMap((item) => item.rows);
 const ofs = [...new Set(rows.map((row) => row.of).filter(Boolean))];
 const liveRpsRows = await loadLiveFabricRows(ofs);
 const liveOfs = new Set(liveRpsRows.map((row) => normalizeOf(row.of)));
+// El Cambio Antica se hace con la plantilla CAMBIO TELA ANTICA.xlsm, cuyo modelo en
+// DATOS es "CAMBIO TELA": solo el comentario de la línea de venta de RPS dice que el
+// toldo es un Antica (AR2502455). Sin esto el validador no veía ningún Cambio Antica.
+const anticaOfs = await loadAnticaFabricOfs(rows.filter((row) => row.model === 'CAMBIO TELA').map((row) => row.of));
+for (const row of rows) if (row.model === 'CAMBIO TELA' && anticaOfs.has(row.of)) row.model = 'CAMBIO ANTICA';
 
 const dimensionalMismatches = [];
 const webMaterials = new Map();
@@ -229,6 +234,37 @@ async function loadLiveFabricRows(ofs) {
         ORDER BY mo.CodManufacturingOrder, m.CreationTimestamp;
       `);
       result.push(...response.recordset);
+    }
+    return result;
+  } finally {
+    await pool.close();
+  }
+}
+
+async function loadAnticaFabricOfs(ofs) {
+  const result = new Set();
+  if (ofs.length === 0) return result;
+  const pool = await connect();
+  try {
+    for (let offset = 0; offset < ofs.length; offset += 400) {
+      const batch = ofs.slice(offset, offset + 400);
+      const request = pool.request();
+      const placeholders = batch.map((of, index) => {
+        request.input(`of${index}`, sql.VarChar(20), of);
+        return `@of${index}`;
+      });
+      const response = await request.query(`
+        SELECT mo.CodManufacturingOrder AS [of], CONCAT(CAST(l.Description AS nvarchar(max)), ' ', CAST(l.Comment AS nvarchar(max))) AS description
+        FROM dbo.FACOrderLineSL l
+        JOIN dbo.CPRManufacturingOrder mo
+          ON mo.IDManufacturingOrder = l.IDManufacturingOrder AND mo.CodCompany = l.CodCompany
+        JOIN dbo.STKArticle a ON a.IDArticle = l.IDArticle AND a.CodCompany = l.CodCompany
+        WHERE CONVERT(varchar(40), mo.CodManufacturingOrder) IN (${placeholders.join(', ')})
+          AND a.CodArticle LIKE 'CAMTEL%'
+          AND CONCAT(CAST(l.Description AS nvarchar(max)), ' ', CAST(l.Comment AS nvarchar(max))) LIKE '%ANTICA%';
+      `);
+      // Palabra completa: "ATLANTICA" aparece en referencias de cliente.
+      for (const row of response.recordset) if (/\bANTICA\b/i.test(row.description)) result.add(normalizeOf(row.of));
     }
     return result;
   } finally {

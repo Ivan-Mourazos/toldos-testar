@@ -640,7 +640,12 @@ describe('buildOrderPlanteamientoPdf', () => {
       .toEqual([['without-valance'], ['with-valance']]);
   });
 
-  test.each(['TUBO 50X30', 'TUBO 50X30 CONTRAPESO'])('el rótulo de %s queda separado de las dos líneas de lona (F-A01)', async (anticaVariant) => {
+  test.each([
+    ['TUBO 50X30', 'ENTRADA TUBO 50x30'],
+    ['TUBO 50X30 CONTRAPESO', 'ENTRADA TUBO 50x30'],
+    // La pletina del soporte fijo va al final de la lona, como el tubo.
+    ['SOPORTE FIJO 3 AGUJEROS', 'ENTRADA PLETINA 25x4']
+  ])('el rótulo de %s queda separado de las dos líneas de lona (F-A01)', async (anticaVariant, labelText) => {
     const order = {
       orderCode: 'AR26-ANTICA-F-A01', fabric: heraAcrylic120, sameFabric: true,
       awnings: [{
@@ -655,7 +660,7 @@ describe('buildOrderPlanteamientoPdf', () => {
       const document = await loading.promise;
       const page = await document.getPage(1);
       const content = await page.getTextContent();
-      const label = content.items.find((item) => item.str === 'ENTRADA TUBO 50x30');
+      const label = content.items.find((item) => item.str === labelText);
       expect(label).toBeDefined();
       // F-A01 se reproduce con 300 × 200: el texto cruzaba las dos líneas.
       // Pasamos el borde superior del texto al eje Y descendente de los trazos PDFKit.
@@ -667,7 +672,9 @@ describe('buildOrderPlanteamientoPdf', () => {
       for (let i = 0; i < operators.fnArray.length; i += 1) {
         if (operators.fnArray[i] === OPS.setStrokeRGBColor) strokeColor = operators.argsArray[i][0];
         if (operators.fnArray[i] === OPS.constructPath && ['#7fa594', '#bfd2ca'].includes(strokeColor)) {
-          fabricLines.push(operators.argsArray[i][2]);
+          // Solo los trazos largos: el soporte fijo dibuja su eje con el mismo verde.
+          const bounds = operators.argsArray[i][2];
+          if (bounds[2] - bounds[0] > 40) fabricLines.push(bounds);
         }
       }
       expect(fabricLines).toHaveLength(2);

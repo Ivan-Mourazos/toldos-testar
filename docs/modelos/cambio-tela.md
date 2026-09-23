@@ -39,7 +39,7 @@ Validador `pnpm validate:fabric-jobs` (`RPS_VALIDATION_YEAR=2025|2026`), 22/09/2
 | Caso | 2026 | 2025 | Explicación |
 | --- | --- | --- | --- |
 | Caída −5 cm sin bamba | 43 | 53 | El libro suma el remate de 5 cm aunque no haya bamba. El `+5` se fue añadiendo al maestro columna a columna y cada pedido congeló el estado del día (ver F-C01). Regla R03 |
-| +15 escrito a mano | 4 | 3 | AR2600490, AR2600553, AR2602326, AR2603391; AR2502366 (`+15+15`), AR2502455-1 y AR2502455-2. **Q-C02** |
+| +15 escrito a mano | 4 | 3 | AR2600490, AR2600553, AR2602326, AR2603391; AR2502366 (`+15+15`), AR2502455-1 y AR2502455-2 (estos dos son Cambio Antica: desde el 23/09 el validador los cuenta allí, ver [cambio-antica.md](./cambio-antica.md)). **Q-C02** |
 | Otros ajustes a mano | 3 | 3 | AR2603013 (`−36`, dos toldos), AR2601988 (`+157` con salida 20); AR2502113-1 (`+50` en vez de `+40`, dos toldos), AR2503323 (`+29`) |
 | Metros de tela | 50 y 2 | — | 50 son consecuencia de las caídas anteriores. AR2600131: la celda usa ancho 120 con una tela de 153 (RPS recibió 17,6, lo mismo que la web). AR2603078: 15 escrito a mano |
 
