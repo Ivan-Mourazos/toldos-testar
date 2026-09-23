@@ -1960,6 +1960,12 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
     }
   }
 
+  // Como en los libros: la fila ya da el corte (hecha + 5) y el texto dice de cuánto
+  // queda hecha ("BAMBALINA HECHA DE 25 CM" con salida 30).
+  if (model === 'BAMBALINA' && height > 0) {
+    instructionParts.push(`BAMBALINA HECHA DE ${formatInstructionMeasure(height)}CM`);
+  }
+
   if ((model.includes('CORTINA') || model === 'ELECTRA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
     const velcroHeight = resolveCurtainVelcroHeight(awning);
     if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);

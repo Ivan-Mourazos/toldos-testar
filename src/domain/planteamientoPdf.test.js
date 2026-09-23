@@ -215,6 +215,13 @@ describe('datos del planteamiento de telas', () => {
     expect(detail.instruction).not.toContain('BAMBALINA INCLUIDA');
   });
 
+  test('el trabajo BAMBALINA dice de cuánto queda hecha, como en los libros', () => {
+    const detail = buildFabricLineDetail({ model: 'BAMBALINA', valanceHeight: 25 }, { fabricDrop: 30 });
+
+    expect(detail.fabricDrop).toBe('30,0');
+    expect(detail.instruction).toMatch(/^BAMBALINA HECHA DE 25CM/);
+  });
+
   test.each(['XACOBEO', 'CUARZO BOX'])('%s conserva la instrucción VARILLA BLANCA ATRÁS', (model) => {
     const detail = buildFabricLineDetail({ model, valanceHeight: 0 }, {});
 
