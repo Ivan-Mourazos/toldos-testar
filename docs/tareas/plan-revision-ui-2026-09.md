@@ -100,6 +100,22 @@ Se despliega lote a lote, con el comando de una línea.
 - Barrido completo otra vez y comparación con el de la fase 1 (cifras de hallazgos antes y después).
 - Iván hace un pedido real de principio a fin en producción y dice qué le sigue molestando. Eso abre, si hace falta, una ronda corta.
 
+## Modelo y esfuerzo recomendados
+
+En Codex, el modelo que ya se usó (GPT-6 Sol). Si el selector ofrece una variante más ligera, vale para las filas de esfuerzo medio. La cuota de Codex se acabó con dos tareas en esfuerzo alto: el medio es la opción por defecto y el alto solo donde hay que decidir o depurar.
+
+| Tarea | Quién | Esfuerzo | Por qué |
+| --- | --- | --- | --- |
+| Fase 1 · Barrido | Codex | Medio (alto solo si el script falla con varios modelos) | Mecánico y largo: recorrer, capturar, medir. No decide nada |
+| Fase 2 · Revisión y prioridades | Claude | Alto | Criterio de diseño y contexto del proyecto |
+| Lote A · Sistema de estilos | Claude (define) · Codex (migra pantallas) | Alto · Medio | Definir tokens y componentes es diseño; aplicarlos es repetitivo |
+| Lote B · Pedido y tarjetas | Claude (primer modelo) · Codex (los 21 restantes) | Alto · Medio | Una vez fijado el patrón, es copiarlo modelo a modelo |
+| Lote C · Resultados, reserva, despiece | Codex | Medio | Con especificación cerrada |
+| Lote D · Visor de PDF | Codex | Alto | Interacción (zoom, páginas, foco) y renderizado: fácil de romper |
+| Lote E · Revisión e Historial | Claude | Alto | Flujo de aprobar y generar: hay que decidir |
+| Lote F · Parámetros y Configuración | Claude | Alto | La pantalla más grande y con más estado (borrador, conflicto, historial) |
+| Revisar cada rama de Codex | Claude | Medio | Mirar el diff, las capturas y pasar las pruebas |
+
 ## Tecnología
 
 La base es actual y adecuada: React 19, TypeScript, Vite, Express 5, PDFKit para generar y pdf.js para ver. **No se cambia de framework ni se reescribe.** Un cambio grande costaría semanas y no arregla los problemas reales, que son de diseño y coherencia.
