@@ -31,6 +31,8 @@ function order(awningPatch = {}, orderPatch = {}) {
   });
 }
 
+// El perfil EVO 70 blanco solo existe de 700 en RPS (el de 600 no existe): barra y
+// tubo de enrolle van a 700 (23/09/2026).
 describe('XACOBEO contra hoja XAC y RPS final', () => {
   test('AR2603241: máquina exterior reproduce medidas y reserva completa', () => {
     const result = order();
@@ -39,13 +41,13 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
     expect(ofBlock.calculation).toMatchObject({
       model: 'XACOBEO', valid: true, minimumLine: 287,
       fabricWidth: 352.5, fabricDrop: 325, fabricPanels: 4, fabricMl: 13,
-      rollTubeLength: 354.1, structureLength: 355.1, stockLength: 600
+      rollTubeLength: 354.1, structureLength: 355.1, stockLength: 700
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPART250BL16', quantity: 1 },
-      { code: 'TURA70HG600C', quantity: 1 },
+      { code: 'TURA70HG700C', quantity: 1 },
       { code: 'CASPUNCEJE70MM', quantity: 1 },
-      { code: 'PEVO702RBL16600C', quantity: 1 },
+      { code: 'PEVO702RBL16700C', quantity: 1 },
       { code: 'BART25BL16250C', quantity: 1 },
       { code: 'TERMINEVOBL16', quantity: 1 },
       { code: 'TAPONEVO7BL16', quantity: 1 },
@@ -71,13 +73,13 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
     expect(ofBlock.calculation).toMatchObject({
       valid: true, minimumLine: 157, motorPower: '35/17',
       fabricWidth: 255, fabricDrop: 182, fabricMl: 5.46,
-      rollTubeLength: 257.1, structureLength: 257.3, stockLength: 600
+      rollTubeLength: 257.1, structureLength: 257.3, stockLength: 700
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPART250BL16', quantity: 1 },
-      { code: 'TURA70HG600C', quantity: 1 },
+      { code: 'TURA70HG700C', quantity: 1 },
       { code: 'CASPUNCEJE70MM', quantity: 1 },
-      { code: 'PEVO702RBL16600C', quantity: 1 },
+      { code: 'PEVO702RBL16700C', quantity: 1 },
       { code: 'BART25BL16125C', quantity: 1 },
       { code: 'TERMINEVOBL16', quantity: 1 },
       { code: 'TAPONEVO7BL16', quantity: 1 },

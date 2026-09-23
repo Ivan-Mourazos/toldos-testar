@@ -6,6 +6,8 @@ import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { ambarPlacementGroup, normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
+import { ambarCapsExist, boxProfileIssue, pickBoxProfileLength } from './boxAvailability.js';
+import { puntoRectoArmCode } from './puntoRectoArms.js';
 import {
   calculateVerticalDropArmFabricDrop,
   isVerticalDropArmMode,
@@ -62,7 +64,13 @@ export function calculateAmbarBox({ order, awning }) {
   const fabricDrop = round1(fabricDropRaw);
   const rollTubeLength = round1(Number(awning.width) - discounts.roll);
   const structureLength = round1(Number(awning.width) - discounts.profile);
-  const profileStockLength = chooseStock(structureLength, parameters.profileStockLengths);
+  const profileStockLength = pickBoxProfileLength('AMBAR BOX', lacado.suffix, parameters.profileStockLengths, structureLength);
+  // El Ámbar no se fabrica en todos los lacados (en negro, perfil, tapas y soportes
+  // están de baja) y el brazo PRT-07 tampoco existe en todas las salidas.
+  const availabilityIssue = structureColor
+    ? boxProfileIssue('AMBAR BOX', lacado.suffix, lacado.name, structureLength)
+      || (!puntoRectoArmCode(lacado.suffix, awning.projection) ? `ÁMBAR BOX no válido: no hay brazo PRT-07 de ${awning.projection} cm en ${lacado.name}.` : null)
+    : null;
   const rollStockLength = chooseStock(rollTubeLength, parameters.rollStockLengths);
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
@@ -74,7 +82,8 @@ export function calculateAmbarBox({ order, awning }) {
   });
   const overMaximum = Number(awning.width) > parameters.standardMaxWidth;
   const unsupportedProjection = ![80, 90, 100, 110, 120, 130, 140].includes(Number(awning.projection));
-  const valid = missingFields.length === 0
+  if (availabilityIssue) diagnostics.push({ level: 'error', awningId: awning.id, message: availabilityIssue });
+  const valid = !availabilityIssue && missingFields.length === 0
     && Boolean(fabric)
     && separateValance.valid
     && Boolean(profileStockLength)
@@ -151,8 +160,14 @@ function buildMaterials(context) {
     line(`TURA70HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P701'),
     line(tipBushing('P701').code, units, tipBushing('P701').description),
     line(suffix ? `PMICRB30${suffix}${profileStockLength}C` : '', units, 'KIT DE PERFILES ÁMBAR BOX'),
-    line(suffix ? `TAPMICB300${suffix}` : '', units, 'KIT TAPAS ÁMBAR BOX'),
-    line(suffix ? `BPRT07${suffix}${awning.projection}C` : '', units, 'JUEGO DE BRAZOS PRT07')
+    // Las tapas solo existen en algunos lacados (en blanco, de baja desde 2021).
+    line(ambarCapsExist(suffix) ? `TAPMICB300${suffix}` : '', units, 'KIT TAPAS ÁMBAR BOX'),
+    line(suffix ? `BPRT07${suffix}${awning.projection}C` : '', units, 'JUEGO DE BRAZOS PRT07'),
+    // Kit de montaje Microbox 300 (23 de 39 OF) y varillas al largo del perfil, la blanca
+    // del mismo largo que la negra: se consumían y no se reservaban.
+    line(suffix ? `KITMOMIC300M${suffix}` : '', units, 'KIT MONTAJE MICROBOX 300'),
+    line('VARILLAVAINANEG5', round1(Math.ceil(Number(context.structureLength) || 0) / 100 * units), 'VARILLA VAINA NEGRA 4,5MM'),
+    line('VARILLAVAINARBLA', round1(Math.ceil(Number(context.structureLength) || 0) / 100 * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA')
   ].filter(Boolean);
 
   if (device === 'MOTOR') {
@@ -160,8 +175,8 @@ function buildMaterials(context) {
     materials.push(
       line(`SUNILUSIO${motorPower.replace('/', '//')}`, units, `MOTOR SOMFY SUNILUS ${motorPower} IO`),
       line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
-      line('CORONA LT5070', units, 'CORONA LT50 ADAPTADA Ø70'),
-      line('ADAPTADORESTUBO70', units, 'RUEDA MOTRIZ LT50'),
+      line('RUEDAMOTHI68', units, 'RUEDA MOTRIZ CENTRADA HIPRO Ø68'),
+      line('CORONACENMEC70', units, 'CORONA CENTRADA MECANIZADA TUBO Ø70'),
       { ...line(remote.code, units, remote.description), aggregation: 'max' }
     );
     const sensor = sensorMaterial(awning.sensor);
@@ -171,8 +186,7 @@ function buildMaterials(context) {
     materials.push(
       line(`MANIVE${crankSuffix(lacado)}${height}C`, units, `MANIVELA LUXE ${lacado.crank} ${height}`),
       line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
-      line('CASPLAS', units, 'TACO NAYLON MAQUINA'),
-      line('CASMAQEJE6378MM', units, 'CASQUILLO EJE 63MM Ø78')
+      line('CASMAQEJE5070MM', units, 'CASQUILLO MAQUINA EJE 50MM Ø70')
     );
   }
   if (fabric) materials.push(line(fabric.code, fabricMl, fabric.description));
@@ -187,21 +201,22 @@ function buildDespiece(context) {
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
-  const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
+  const push = (_num, name, reference, rowUnits, length = null) => rows.push({ num: rows.length + 1, name, reference: reference || null, units: rowUnits, length });
   push(1, supportName(placement), supportReference(placement, suffix), units);
   push(2, 'TUBO DE ENROLLE P701', `TURA70HG${rollStockLength}C`, units, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P701').code, units);
   push(4, device === 'MAQUINA' ? 'KIT TORNILLOS FIJ. MAQ.' : 'KIT FIJACIÓN MOTOR', null, units);
   push(5, 'KIT DE PERFILES ÁMBAR BOX', suffix ? `PMICRB30${suffix}${profileStockLength}C` : null, units, structureLength);
-  push(6, 'KIT TAPAS ÁMBAR BOX', suffix ? `TAPMICB300${suffix}` : null, units);
+  if (ambarCapsExist(suffix)) push(6, 'KIT TAPAS ÁMBAR BOX', `TAPMICB300${suffix}`, units);
   push(7, 'JUEGO DE BRAZOS PRT07', suffix ? `BPRT07${suffix}${awning.projection}C` : null, units, awning.projection);
+  push(8, 'KIT MONTAJE MICROBOX 300', suffix ? `KITMOMIC300M${suffix}` : null, units);
   push(9, 'JUEGO DE TERMINALES', null, units);
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
     push(10, `MOTOR SOMFY SUNILUS ${motorPower} IO`, `SUNILUSIO${motorPower.replace('/', '//')}`, units);
     push(11, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
-    push(12, 'CORONA LT50 ADAPTADA Ø70', 'CORONA LT5070', units);
-    push(13, 'RUEDA MOTRIZ LT50', 'ADAPTADORESTUBO70', units);
+    push(12, 'CORONA CENTRADA MECANIZADA TUBO Ø70', 'CORONACENMEC70', units);
+    push(13, 'RUEDA MOTRIZ CENTRADA HIPRO Ø68', 'RUEDAMOTHI68', units);
     push(21, remote.description, remote.code, units);
     const sensor = sensorMaterial(awning.sensor);
     if (sensor) push(22, sensor.description, sensor.code, units);
@@ -209,8 +224,7 @@ function buildDespiece(context) {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
     push(10, `MANIVELA LUXE ${lacado.crank} ${height}`, `MANIVE${crankSuffix(lacado)}${height}C`, units, height);
     push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
-    push(12, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
-    push(13, 'CASQUILLO EJE 63MM Ø78', 'CASMAQEJE6378MM', units);
+    push(12, 'CASQUILLO MAQUINA EJE 50MM Ø70', 'CASMAQEJE5070MM', units);
   }
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry

@@ -12,7 +12,9 @@ const baseOrder = {
 const baseAwning = {
   id: 'ambar-1', of: '0228861', model: 'AMBAR BOX', units: 1,
   width: 260, projection: 120, valanceHeight: 0,
-  structureColor: 'NEGRO (R-09011)', device: 'MAQUINA', placement: 'FRONTAL',
+  // La OF 0228861 era negro mate: el Ámbar no se fabrica en negro 9011 (perfil, tapas y
+  // soportes de baja en RPS).
+  structureColor: 'NEGRO MATE 9111', device: 'MAQUINA', placement: 'FRONTAL',
   crankHeight: 150, wallType: 'DIRECTA A PARED', sensor: '', reglasModificadas: false
 };
 
@@ -28,9 +30,13 @@ describe('Ámbar Box', () => {
       fabricMl: 6.741169
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
-      'SOPMICROBF/TNE11', 'TURA70HG600C', 'CASPUNCEJE70MM', 'PMICRB30NE11500C',
-      'TAPMICB300NE11', 'BPRT07NE11120C', 'MAQMB11L12NEGRO', 'ACRILI2143P120'
+      'SOPMICROBF/TNEM1', 'TURA70HG600C', 'CASPUNCEJE70MM', 'PMICRB30NEM1500C',
+      'TAPMICB300NEM1', 'BPRT07NEM1120C', 'MAQMB11L12NEGRO', 'ACRILI2143P120',
+      // OF 0228861 (consumo real, 23/09/2026): casquillo de eje 50 para tubo Ø70.
+      'CASMAQEJE5070MM', 'KITMOMIC300MNEM1', 'VARILLAVAINANEG5', 'VARILLAVAINARBLA'
     ]));
+    expect(result.materials.map((line) => line.code)).not.toEqual(expect.arrayContaining(['CASPLAS']));
+    expect(result.materials.map((line) => line.code)).not.toContain('CASMAQEJE6378MM');
   });
 
   it('usa los descuentos y soportes de entre paredes', () => {
@@ -41,13 +47,17 @@ describe('Ámbar Box', () => {
     expect(result.calculation).toMatchObject({ fabricWidth: 247.5, rollTubeLength: 250.5, structureLength: 249.5 });
     expect(result.materials.map((line) => line.code)).toContain('SOPENPAMB300BL16');
     expect(result.materials.map((line) => line.code)).toContain('SUNILUSIO15//17');
+    // Kit de motor del tubo Ø70 que se consume: rueda Hi68 y corona centrada.
+    expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining(['RUEDAMOTHI68', 'CORONACENMEC70']));
+    expect(result.materials.map((line) => line.code)).not.toContain('CORONA LT5070');
   });
 
   it('permite reproducir una caída excepcional editada en producción', () => {
     const result = calculateAmbarBox({
       order: baseOrder,
       awning: {
-        ...baseAwning, width: 250, projection: 100, structureColor: 'VERDE (R-06005)',
+        // En verde 6005 no hay perfil de Ámbar en RPS: el caso se prueba en blanco.
+        ...baseAwning, width: 250, projection: 100, structureColor: 'BLANCO',
         valanceHeight: 10, reglasModificadas: true,
         ambarFabricDropMultiplier: 2, ambarFabricDropAllowanceCm: 55
       }
@@ -157,7 +167,7 @@ describe('Ámbar Box', () => {
   it('bloquea el frente superior a 500 sin excepción', () => {
     const result = calculateAmbarBox({ order: baseOrder, awning: { ...baseAwning, width: 571 } });
     expect(result.calculation.valid).toBe(false);
-    expect(result.diagnostics[0].message).toContain('máximo estándar');
+    expect(result.diagnostics.some((item) => item.message.includes('máximo estándar'))).toBe(true);
   });
 
   it('la bajada vertical no relaja los límites estándar', () => {

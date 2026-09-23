@@ -47,7 +47,8 @@ describe('Ágata Box', () => {
     ]));
   });
 
-  it('reproduce el Ágata Cofre 650x200 con motor SUNEA', () => {
+  // Con cofre se consume Sunilus (no Sunea) y la barra es el perfil frontal PRMODUL.
+  it('reproduce el Ágata Cofre 650x200 con motor Sunilus', () => {
     const result = calculateAgataBox({
       order: baseOrder,
       awning: { ...baseAwning, width: 650, projection: 200, valanceHeight: 0, submodel: 'COFRE' }
@@ -58,7 +59,7 @@ describe('Ágata Box', () => {
       enclosureLength: 642.1, motorPower: '55/17'
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
-      'PRCOMODULBL16700C', 'SOTLMODULBL16', 'PRIMODULBL16700C', 'SUNEAIO55//17'
+      'PRMODULBL16700C', 'TAPAPFMODULBL16', 'TAPAMODULBL16', 'SOTLMODULBL16', 'PRIMODULBL16700C', 'SUNILUSIO55//17'
     ]));
   });
 
@@ -71,7 +72,14 @@ describe('Ágata Box', () => {
       valid: true, submodel: 'SEMI', supportCount: 11, profileSupportCount: 7,
       fabricWidth: 1132, fabricDrop: 420, motorPower: '100/17'
     });
-    expect(result.materials.map((line) => line.code)).toContain('PRSCMODULBL16700C');
+    // El semicofre lleva la barra redonda ROND-80 y sus tapas (PRSCMODUL no se consume).
+    expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining(['PRROMODULBL16700C', 'TARONDMODBL16', 'TAPSMODULBL16']));
+    // 4 brazos = 2 juegos de brazos y de soportes de brazo.
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
+      expect.objectContaining({ code: 'SOBMODULBL16', quantity: 2 })
+    ]));
+    expect(result.despiece.rows.map((row) => row.num)).toEqual(result.despiece.rows.map((_, index) => index + 1));
   });
 
   it('bloquea la máquina en Cofre', () => {

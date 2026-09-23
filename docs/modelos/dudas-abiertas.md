@@ -25,6 +25,9 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-M02 | Monoblock 350 | Motor con 4 brazos: se consumió el 70/17 (2 OF) y el manual pide 85-100 Nm | 55/17 (2), 70/17 (3), 85/17 (4) |
 | Q-M03 | Monoblock 350 | Frentes de 720 a 725: el almacén usó una barra de 700 aunque el corte pasa de 700. ¿Hasta dónde vale una sola y cómo se empalma por encima? | Una hasta 725; después, barras iguales |
 | Q-M04 | Monoblock 350 | Se usa Univers 280 en 31 de 59 OF, pero el manual solo da el corte del EVO. ¿Mismo descuento? | El del EVO |
+| Q-AG01 | Ágata Box | Patines de soporte de brazo y de brazo, regleta de unión y pasadores: salen en unas pocas OF sin regla clara | No se reservan |
+| Q-AG02 | Ágata Box | Se consume sobre todo el Sunilus 85/17; la tabla por brazos y salida propone 35-55 con 2 brazos | La tabla |
+| Q-AG03 | Ágata Box | El libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras | La fórmula |
 | Q-A02 | Transversal | 36 referencias rotas en lacados poco habituales (bronce, gris texturado…): faltan soportes Galicia, perfiles o terminales en esos colores. ¿Se ofrecen esos lacados? | Se ofrecen todos |
 | Q-X01 | Xacobeo | El manual ART 250 descuenta 11,9 cm de lona con máquina exterior; la web y los libros usan 12,5 (112 comprobaciones sin diferencias) | 12,5 |
 | Q-SE04 | Selena | ¿Existe Selena a motor? No hay manual y no hay motores en las 17 OF | Solo máquina interior |

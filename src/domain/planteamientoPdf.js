@@ -57,12 +57,14 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
     const plan = buildPlanteamientoPlan(order, calculation);
     plan.structureEntries.forEach(({ awning, index, ofBlock }) => {
       const split = splitDespiece(ofBlock?.despiece?.rows || []);
-      const pages = Math.max(1, Math.ceil(split.main.length / 21), Math.ceil(split.accessories.length / 3));
+      // Hasta DESPIECE_ROWS_PER_PAGE filas por hoja: drawDespieceTable estrecha las filas
+      // para que quepan. Por encima, la hoja sigue en otra.
+      const pages = Math.max(1, Math.ceil(split.main.length / DESPIECE_ROWS_PER_PAGE), Math.ceil(split.accessories.length / 3));
       for (let page = 0; page < pages; page += 1) {
         doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
         const pageBlock = pages === 1 ? ofBlock : {
           ...ofBlock,
-          despiece: { ...ofBlock.despiece, rows: [...split.main.slice(page * 21, (page + 1) * 21), ...split.accessories.slice(page * 3, (page + 1) * 3)] }
+          despiece: { ...ofBlock.despiece, rows: [...split.main.slice(page * DESPIECE_ROWS_PER_PAGE, (page + 1) * DESPIECE_ROWS_PER_PAGE), ...split.accessories.slice(page * 3, (page + 1) * 3)] }
         };
         drawStructurePage(doc, { order, awning, ofBlock: pageBlock, index, continuation: pages > 1 ? ' · ' + (page + 1) + '/' + pages : '' });
       }
@@ -206,6 +208,10 @@ function resolveDiagramCalculation(entry) {
   };
 }
 
+// 28 filas caben a unos 8 pt de alto con el texto de 6,3-6,6 pt: el Ágata con cofre, motor
+// y tres brazos llega a 27.
+const DESPIECE_ROWS_PER_PAGE = 28;
+
 function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = '' }) {
   const pageW = doc.page.width;
   const pageH = doc.page.height;
@@ -219,7 +225,10 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   const rightX = margin + leftW + gap;
   const split = splitDespiece(ofBlock?.despiece?.rows || []);
 
-  const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main);
+  // Debajo de la tabla van accesorios (43), el hueco (9) y el anclaje (24), y el pie
+  // de página ocupa los últimos 20 pt.
+  const despieceMaxBottom = pageH - 20 - 43 - 9 - 24;
+  const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main, despieceMaxBottom);
   drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
 
   const accessoriesY = despieceBottom;
@@ -272,12 +281,14 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
     .text(`TOLDO ${awningLetter(index)}`, bodyX + 7, 69.5, { width: 50 });
 }
 
-function drawDespieceTable(doc, x, y, w, rows) {
+function drawDespieceTable(doc, x, y, w, rows, maxBottom = Infinity) {
   const verticalW = 28;
   const tableX = x + verticalW;
   const tableW = w - verticalW;
   const headerH = 14;
-  const rowH = 9.7;
+  const rowCountForHeight = Math.max(6, rows.length);
+  // 9,7 pt de alto de fila; si no caben todas, se estrechan (el texto es de 6,3-6,6 pt).
+  const rowH = Math.min(9.7, (maxBottom - y - 14) / rowCountForHeight);
   // La tabla imprimía siempre veinte filas y rellenaba de rayas las que sobraban.
   // Ese relleno no lo lee nadie y es el hueco que necesitan las observaciones, así
   // que se dibujan las piezas que hay. El mínimo evita una tabla ridícula cuando

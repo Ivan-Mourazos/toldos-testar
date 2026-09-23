@@ -33,7 +33,11 @@
 
 `pnpm validate:xacobeo`: 112 comprobaciones y **ninguna diferencia**, antes y después de los cambios.
 
-## 5. Dudas
+## 5. Referencias (23/09/2026)
+
+Al revisar los cofres salió que el perfil EVO 70 blanco (`PEVO702R`) solo existe de 700: la web reservaba el de 600, que no existe. Ahora barra y tubo de enrolle van al largo que existe en ese lacado, y en negro, donde no hay perfil, el toldo no es válido y lo dice. Igual con el brazo ART 250: el negro de 200 está de baja desde 2023 (`boxAvailability.js`).
+
+## 6. Dudas
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |

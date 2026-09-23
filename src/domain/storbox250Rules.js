@@ -6,6 +6,7 @@ import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { normalizeCuarzoBoxParameters } from './storbox250Parameters.js';
+import { art250ArmExists, boxProfileIssue, pickBoxProfileLength } from './boxAvailability.js';
 import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
@@ -55,11 +56,17 @@ export function calculateCuarzoBox({ order, awning }) {
     seamAllowanceCm: parameters.seamAllowanceCm,
     seamBaseCm: parameters.seamBaseCm
   });
-  const stockLength = parameters.stockLengths.find((item) => item >= Math.max(structureLength, loadBarLength)) || null;
+  const neededLength = Math.max(structureLength, loadBarLength);
+  const stockLength = pickBoxProfileLength('CUARZO BOX', lacado.suffix, parameters.stockLengths, neededLength);
+  const availabilityIssue = structureColor
+    ? boxProfileIssue('CUARZO BOX', lacado.suffix, lacado.name, neededLength)
+      || (!art250ArmExists(lacado.suffix, awning.projection) ? `CUARZO BOX no válido: no hay brazo ART 250 de ${awning.projection} cm en ${lacado.name}.` : null)
+    : null;
   const belowMinimum = Number(awning.width) < minimumLine;
   const overMaximum = Number(awning.width) > parameters.standardMaxWidth;
   const modified = Boolean(awning.reglasModificadas);
-  const valid = missingFields.length === 0
+  if (availabilityIssue) diagnostics.push({ level: 'error', awningId: awning.id, message: availabilityIssue });
+  const valid = !availabilityIssue && missingFields.length === 0
     && Boolean(fabric)
     && separateValance.valid
     && !belowMinimum
@@ -112,72 +119,66 @@ export function calculateCuarzoBox({ order, awning }) {
   };
 }
 
-function buildMaterials(context) {
-  const { awning, lacado, device, fabric, separateValance, stockLength, fabricMl } = context;
+// Piezas del Cuarzo Box contrastadas con el consumo real de 38 OF desde 2024:
+// - Conjunto de soportes STORBOX 250 (31 OF), que no se reservaba.
+// - Motor Sunea 35/17 con el kit del tubo Ø70: rueda centrada Hi68 y corona centrada
+//   mecanizada (11-12 OF). Se reservaba la corona LT50 Ø70, que no se consume, y no
+//   se reservaban ni el motor ni la rueda.
+// - Máquina con casquillo de eje 50 Ø70 (16 OF; el de 63 en 9, Q-PR02) y sin CASPLAS.
+// - Varilla blanca al largo del perfil (29 OF; la negra solo en 5).
+function cuarzoPieces(context) {
+  const { awning, lacado, device, stockLength, structureLength, rollTubeLength, loadBarLength, motorPower } = context;
   const units = Math.max(1, Number(awning.units) || 1);
-  const materials = [
-    { code: 'TURA70HG600C', quantity: units, description: 'TUBO DE ENROLLE P701' },
+  const pieces = [
+    { code: `SOSTORBOX25${lacado.suffix}`, quantity: units, description: 'CONJUNTO SOPORTES STORBOX 250' },
+    { code: 'TURA70HG600C', quantity: units, description: 'TUBO DE ENROLLE P701', length: rollTubeLength },
     { code: tipBushing('P701').code, quantity: units, description: tipBushing('P701').description },
-    { code: `PSBOX250${lacado.suffix}${stockLength}C`, quantity: units, description: 'KIT PERFILES ALUMINIO STORBOX250' },
-    { code: `BART25${lacado.suffix}${awning.projection}C`, quantity: units, description: 'JUEGO DE BRAZOS ART250' }
+    { code: `PSBOX250${lacado.suffix}${stockLength}C`, quantity: units, description: 'KIT PERFILES ALUMINIO STORBOX250', length: structureLength },
+    { code: null, quantity: units, description: 'BARRA DE CARGA STORBOX 250', length: loadBarLength, reserve: false },
+    { code: `BART25${lacado.suffix}${awning.projection}C`, quantity: units, description: 'JUEGO DE BRAZOS ART250', length: awning.projection },
+    { code: 'VARILLAVAINARBLA', quantity: round1(Math.ceil(Number(structureLength) || 0) / 100 * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA', despiece: false }
   ];
-
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
-    materials.push(
-      { code: 'SOPORTEUNVHIPRO', quantity: units, description: 'SOPORTE UNIVERSAL HIPRO' },
-      { code: 'CORONA LT5070', quantity: units, description: 'CORONA LT50 ADAPTADA Ø70' },
-      { code: remote.code, quantity: units, description: remote.description }
-    );
     const sensor = sensorMaterial(awning.sensor);
-    if (sensor) materials.push({ ...sensor, quantity: units });
+    pieces.push(
+      { code: 'RUEDAMOTHI68', quantity: units, description: 'RUEDA MOTRIZ CENTRADA HIPRO Ø68' },
+      { code: `SUNEAIO${motorPower}//17`, quantity: units, description: `MOTOR SOMFY SUNEA ${motorPower}/17 IO` },
+      { code: 'CORONACENMEC70', quantity: units, description: 'CORONA CENTRADA MECANIZADA TUBO Ø70' },
+      { code: 'SOPORTEUNVHIPRO', quantity: units, description: 'SOPORTE UNIVERSAL HIPRO' },
+      { code: remote.code, quantity: units, description: remote.description },
+      ...(sensor ? [{ ...sensor, quantity: units }] : [])
+    );
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-    materials.push(
-      { code: `MANIVE${crankSuffix(lacado)}${crankHeight}C`, quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
+    pieces.push(
+      { code: 'CASMAQEJE5070MM', quantity: units, description: 'CASQUILLO MAQUINA EJE 50MM Ø70' },
       { code: machineCode(lacado), quantity: units, description: `MÁQUINA MB-11 L-120 ${lacado.crank}` },
-      { code: 'CASPLAS', quantity: units, description: 'TACO NAYLON MAQUINA' }
+      { code: `MANIVE${crankSuffix(lacado)}${crankHeight}C`, quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, length: crankHeight }
     );
   }
+  return pieces;
+}
+
+function buildMaterials(context) {
+  const { awning, fabric, separateValance, fabricMl } = context;
+  const units = Math.max(1, Number(awning.units) || 1);
+  const materials = cuarzoPieces(context)
+    .filter((piece) => piece.code && piece.reserve !== false)
+    .map(({ code, quantity, description }) => ({ code, quantity, description }));
   if (fabric) materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
   appendSeparateValanceMaterial(materials, separateValance);
-
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   if (wallEntry?.referencia) materials.push({ code: wallEntry.referencia, quantity: wallEntry.unidades * units, description: wallEntry.tornilleria });
   return materials;
 }
 
 function buildDespiece(context) {
-  const { awning, lacado, device, stockLength, structureLength, rollTubeLength, loadBarLength, motorPower } = context;
+  const { awning } = context;
   const units = Math.max(1, Number(awning.units) || 1);
-  const rows = [];
-  const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference, units: rowUnits, length });
-
-  push(1, 'JUEGO SOPORTE STORBOX250', null, units);
-  push(2, 'TUBO DE ENROLLE P701', 'TURA70HG600C', units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', tipBushing('P701').code, units);
-  push(5, 'KIT PERFILES ALUMINIO STORBOX250', `PSBOX250${lacado.suffix}${stockLength}C`, units, structureLength);
-  push(6, 'TAPAS DE ALUMINIO', null, units);
-  push(7, 'JUEGO DE BRAZOS ART250', `BART25${lacado.suffix}${awning.projection}C`, units, awning.projection);
-  push(8, 'BARRA DE CARGA STORBOX 250', null, units, loadBarLength);
-  push(9, 'JUEGO DE TERMINALES', null, units);
-  if (device === 'MOTOR') {
-    const remote = resolveMotorRemote(awning.sensor);
-    push(10, `MOTOR SOMFY SUNEA ${motorPower}/17 IO`, null, units);
-    push(11, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
-    push(12, 'CORONA LT50 ADAPTADA Ø70', 'CORONA LT5070', units);
-    push(13, 'RUEDA MOTRIZ LT50', 'ADAPTADORESTUBO70', 0);
-    push(21, remote.description, remote.code, units);
-    const sensor = sensorMaterial(awning.sensor);
-    if (sensor) push(22, sensor.description, sensor.code, units);
-  } else {
-    const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-    push(10, `MANIVELA LUXE ${lacado.crank} ${crankHeight}`, `MANIVE${crankSuffix(lacado)}${crankHeight}C`, units, crankHeight);
-    push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
-    push(12, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
-    push(13, 'CASQUILLO EJE 63MM Ø70', 'CASMAQEJE6370MM', 0);
-  }
-
+  const rows = cuarzoPieces(context)
+    .filter((piece) => piece.despiece !== false)
+    .map((piece, index) => ({ num: index + 1, name: piece.description, reference: piece.code || null, units: piece.quantity, length: piece.length ?? null }));
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry
     ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * units }

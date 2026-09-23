@@ -5,6 +5,8 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, resolveLacado, machineCode } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
+import { onyxArmExists } from './arzuaAvailability.js';
+import { boxProfileIssue, pickBoxProfileLength } from './boxAvailability.js';
 import {
   normalizeCoralBoxParameters,
   normalizePerlaBoxParameters,
@@ -88,10 +90,18 @@ function calculateBox({ order, awning }, config) {
     seamAllowanceCm: parameters.seamAllowanceCm,
     seamBaseCm: parameters.seamBaseCm
   });
-  const stockLength = chooseStockLength(Math.max(structureLength, rollTubeLength, protectorLength), parameters.stockLengths);
+  // El perfil solo existe en unos largos por lacado (Coral negro: 400 y 500): se usa el
+  // habitual si existe y, si no, el que haya. El tubo de enrolle va al mismo largo.
+  const neededLength = Math.max(structureLength, rollTubeLength, protectorLength);
+  const stockLength = pickBoxProfileLength(config.model, lacado.suffix, parameters.stockLengths, neededLength);
+  const availabilityIssue = structureColor
+    ? boxProfileIssue(config.model, lacado.suffix, lacado.name, neededLength)
+      || (!onyxArmExists(lacado.suffix, awning.projection) ? `${config.model} no válido: no hay brazo Onyx de ${awning.projection} cm en ${lacado.name}.` : null)
+    : null;
   const automaticMotorPower = resolveBoxMotorPower(awning.projection, parameters);
   const motorPower = effectiveMotorPower(awning, automaticMotorPower);
-  const valid = missingFields.length === 0
+  if (availabilityIssue) diagnostics.push({ level: 'error', awningId: awning.id, message: availabilityIssue });
+  const valid = !availabilityIssue && missingFields.length === 0
     && Boolean(fabric)
     && separateValance.valid
     && !belowMinimum
@@ -275,10 +285,6 @@ function effectiveMotorPower(awning, fallback) {
   if (!awning.reglasModificadas) return fallback;
   const parsed = Number.parseInt(String(awning.motorPower || ''), 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function chooseStockLength(length, stockLengths) {
-  return stockLengths.find((item) => item >= length) || null;
 }
 
 function buildDescription(awning, calculation, model) {

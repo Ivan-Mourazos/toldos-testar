@@ -5,6 +5,9 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
+import { galiciaSingleArmExists, onyxArmLines } from './galiciaSupportPieces.js';
+import { onyxArmExists } from './arzuaAvailability.js';
+import { agataLacadoIssue } from './boxAvailability.js';
 import {
   agataBoxEstablishedProjections,
   normalizeAgataBoxParameters,
@@ -69,6 +72,11 @@ export function calculateAgataBox({ order, awning }) {
   const enclosureLength = submodel === 'OPEN' ? 0 : round1(Number(awning.width) - discounts.enclosure);
   const rollStockLength = chooseRollStock(rollTubeLength, parameters.rollStockLengths);
   const profileStockLength = parameters.profileStockLength;
+  const availabilityIssue = structureColor && submodel
+    ? agataLacadoIssue(submodel, lacado.suffix, lacado.name)
+      || (!onyxArmExists(lacado.suffix, awning.projection) || (armCount % 2 === 1 && !galiciaSingleArmExists(lacado.suffix, awning.projection))
+        ? `ÁGATA BOX no válido: no hay brazo Onyx de ${awning.projection} cm${armCount % 2 === 1 ? ' suelto' : ''} en ${lacado.name}.` : null)
+    : null;
   const profileSupportCount = calculateAgataProfileSupportCount(awning.width);
   const automaticMotorPower = resolveAgataMotorPower(awning.projection, armCount, parameters);
   const motorPower = resolveMotorPower(awning.motorPower, automaticMotorPower);
@@ -85,7 +93,8 @@ export function calculateAgataBox({ order, awning }) {
   const overMaximum = Number(awning.width) > parameters.standardMaxWidth;
   const unsupportedProjection = !agataBoxEstablishedProjections.includes(Number(awning.projection));
   const unsupportedMachineCofre = submodel === 'COFRE' && device === 'MAQUINA';
-  const valid = missingFields.length === 0
+  if (availabilityIssue) diagnostics.push({ level: 'error', awningId: awning.id, message: availabilityIssue });
+  const valid = !availabilityIssue && missingFields.length === 0
     && Boolean(fabric)
     && separateValance.valid
     && Boolean(rollStockLength)
@@ -166,17 +175,29 @@ function buildMaterials(context) {
   const { awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount, rollStockLength, profileStockLength, motorPower, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
+  // Consumo real de 24 OF desde 2024: soportes y brazos van por JUEGOS (un juego por
+  // cada dos brazos y un suelto si son tres), los soportes a pared o techo son los
+  // frontales SOFTMODUL (se reservaban como soportes de brazo) y el cofre lleva tapas.
+  const armSets = Math.floor(armCount / 2);
+  const varillaMl = Math.ceil(Number(context.lengths.loadBarLength) || 0) / 100;
   const materials = [
-    line(colored('SOBMODUL', suffix), supportCount * units, 'SOPORTES DE BRAZO ÁGATA BOX'),
+    line(colored('SOBMODUL', suffix), armSets * units, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX'),
+    armCount % 2 ? line(colored('SOBDMODUL', suffix), units, 'SOPORTE BRAZO DERECHO ÁGATA BOX') : null,
+    line(colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX'),
     line(`TURA80HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P801'),
     line(tipBushing('P801').code, units, tipBushing('P801').description),
     line(coloredStock(loadBarPrefix(submodel), suffix, profileStockLength), units, `BARRA DE CARGA ÁGATA ${submodel}`),
+    line(colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units, 'TAPAS BARRA DE CARGA ÁGATA BOX'),
+    line(colored(boxCapPrefix(submodel), suffix), units, 'TAPAS ÁGATA BOX'),
     line(coloredStock('TUBHI442', suffix, profileStockLength), units, 'BARRA CUADRADA 40x40x2'),
-    line(colored('BONYX', suffix, awning.projection, 'C'), armCount * units, 'BRAZOS ONYX'),
-    line(coloredStock('PRDLED', suffix, profileStockLength), units, 'PERFIL DIFUSOR ÁGATA BOX'),
+    ...onyxArmLines(suffix, awning.projection, armCount, units).map((item) => line(item.code, item.quantity, item.description)),
+    line(colored('TERMIMODUL', suffix), armSets * units, 'JUEGO TERMINAL ÁGATA BOX'),
+    // Varillas al largo de la barra: con la variante abierta la blanca va doble.
+    line('VARILLAVAINANEG5', round1(varillaMl * units), 'VARILLA VAINA NEGRA 4,5MM'),
+    line('VARILLAVAINARBLA', round1((submodel === 'OPEN' ? 2 : 1) * varillaMl * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA'),
     line(coloredStock('PRLMODUL', suffix, profileStockLength), units, 'PERFIL LIRA ÁGATA BOX'),
     line(`PRVMODUL${profileStockLength}C`, units, 'PERFIL PROTECTOR DE LONA'),
-    line(colored('SOMPMODUL', suffix), 2 * units, 'SOPORTES DE PUNTA ÁGATA BOX')
+    line(colored('SOMPMODUL', suffix), units, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX')
   ];
 
   if (submodel !== 'OPEN') {
@@ -188,16 +209,17 @@ function buildMaterials(context) {
     );
   }
   if (submodel === 'COFRE') materials.push(line(coloredStock('PRIMODUL', suffix, profileStockLength), 2 * units, 'PERFIL INFERIOR ÁGATA BOX'));
-  if (placement === 'TECHO') materials.push(line(colored('SOTEMODUL', suffix), supportCount * units, 'SOPORTE TECHO ÁGATA BOX'));
 
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
-    const family = submodel === 'COFRE' ? 'SUNEAIO' : 'SUNILUSIO';
+    // Se consume Sunilus en todas las variantes (también con cofre), con la rueda Ø78 y
+    // la corona LT60 a Ø78 (11 OF) y el kit de tornillos del motor (10 OF).
     materials.push(
-      line(`${family}${motorPower}//17`, units, `MOTOR SOMFY ${submodel === 'COFRE' ? 'SUNEA' : 'SUNILUS'} ${motorPower}/17 IO`),
+      line(`SUNILUSIO${motorPower}//17`, units, `MOTOR SOMFY SUNILUS ${motorPower}/17 IO`),
       line('RUEDAMOT78', units, 'RUEDA MOTRIZ Ø78'),
-      line('CORONALT6078', units, 'CORONA LT60 ADAPTADA Ø78'),
+      line('CORONALT60DESC', units, 'CORONA ADAPTADA LT60 A Ø78'),
       line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
+      line('KITTORMODUL', units, 'KIT TORNILLOS FIJACION MOTOR MODULBOX'),
       { ...line(remote.code, units, remote.description), aggregation: 'max' }
     );
     const sensor = sensorMaterial(awning.sensor);
@@ -207,7 +229,6 @@ function buildMaterials(context) {
     materials.push(
       line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
       line(`MANIVE${crankSuffix(lacado)}${height}C`, units, `MANIVELA LUXE ${lacado.crank} ${height}`),
-      line('CASPLAS', units, 'TACO NAYLON MAQUINA'),
       line('CASMAQEJE6378MM', units, 'CASQUILLO EJE 63MM Ø78')
     );
   }
@@ -223,25 +244,29 @@ function buildDespiece(context) {
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
-  const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
-  push(1, 'SOPORTES DE BRAZO ÁGATA BOX', colored('SOBMODUL', suffix), supportCount * units);
+  // Numeración correlativa y las mismas piezas que la reserva.
+  const push = (_num, name, reference, rowUnits, length = null) => rows.push({ num: rows.length + 1, name, reference: reference || null, units: rowUnits, length });
+  push(1, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX', colored('SOBMODUL', suffix), Math.floor(armCount / 2) * units);
+  if (armCount % 2) push(1, 'SOPORTE BRAZO DERECHO ÁGATA BOX', colored('SOBDMODUL', suffix), units);
+  push(1, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX', colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${rollStockLength}C`, units, lengths.rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MAQUINA' ? 'CASQUILLO EJE 63MM Ø78' : 'SOPORTE UNIVERSAL HIPRO', device === 'MAQUINA' ? 'CASMAQEJE6378MM' : 'SOPORTEUNVHIPRO', units);
   push(5, `BARRA DE CARGA ÁGATA ${submodel}`, coloredStock(loadBarPrefix(submodel), suffix, profileStockLength), units, lengths.loadBarLength);
   push(6, 'BARRA CUADRADA 40x40x2', coloredStock('TUBHI442', suffix, profileStockLength), units, lengths.squareBarLength);
-  push(7, 'BRAZOS ONYX', colored('BONYX', suffix, awning.projection, 'C'), armCount * units, awning.projection);
-  push(8, 'PERFIL DIFUSOR ÁGATA BOX', coloredStock('PRDLED', suffix, profileStockLength), units, lengths.diffuserLength);
+  push(5, 'TAPAS BARRA DE CARGA ÁGATA BOX', colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units);
+  push(5, 'TAPAS ÁGATA BOX', colored(boxCapPrefix(submodel), suffix), units);
+  onyxArmLines(suffix, awning.projection, armCount, units).forEach((item) => push(7, item.description, item.code, item.quantity, awning.projection));
+  push(7, 'JUEGO TERMINAL ÁGATA BOX', colored('TERMIMODUL', suffix), Math.floor(armCount / 2) * units);
   if (device === 'MOTOR') {
-    const family = submodel === 'COFRE' ? 'SUNEAIO' : 'SUNILUSIO';
     push(9, 'RUEDA MOTRIZ Ø78', 'RUEDAMOT78', units);
-    push(10, `MOTOR SOMFY ${submodel === 'COFRE' ? 'SUNEA' : 'SUNILUS'} ${motorPower}/17 IO`, `${family}${motorPower}//17`, units);
-    push(11, 'CORONA LT60 ADAPTADA Ø78', 'CORONALT6078', units);
+    push(10, `MOTOR SOMFY SUNILUS ${motorPower}/17 IO`, `SUNILUSIO${motorPower}//17`, units);
+    push(11, 'CORONA ADAPTADA LT60 A Ø78', 'CORONALT60DESC', units);
+    push(11, 'KIT TORNILLOS FIJACION MOTOR MODULBOX', 'KITTORMODUL', units);
   } else {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
     push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(10, `MANIVELA LUXE ${lacado.crank} ${height}`, `MANIVE${crankSuffix(lacado)}${height}C`, units, height);
-    push(11, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
   }
   push(12, 'PERFIL LIRA ÁGATA BOX', coloredStock('PRLMODUL', suffix, profileStockLength), units, lengths.liraLength);
   push(13, 'PERFIL PROTECTOR DE LONA', `PRVMODUL${profileStockLength}C`, units, lengths.protectorLength);
@@ -252,18 +277,23 @@ function buildDespiece(context) {
     push(17, 'PERFIL SELLADOR ÁGATA BOX', coloredStock('PRPMODUL', suffix, profileStockLength), units, lengths.enclosureLength);
     push(18, 'SOPORTES DE CIERRE ÁGATA BOX', colored(submodel === 'COFRE' ? 'SOTLMODUL' : 'SOINMODU', suffix), profileSupportCount * units);
   }
-  push(19, 'SOPORTES DE PUNTA ÁGATA BOX', colored('SOMPMODUL', suffix), 2 * units);
+  push(19, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX', colored('SOMPMODUL', suffix), units);
   if (submodel === 'COFRE') push(20, 'PERFIL INFERIOR ÁGATA BOX', coloredStock('PRIMODUL', suffix, profileStockLength), 2 * units, lengths.enclosureLength);
-  if (placement === 'TECHO') push(21, 'SOPORTE TECHO ÁGATA BOX', colored('SOTEMODUL', suffix), supportCount * units);
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * units } : null;
   return { rows, anchoring };
 }
 
+// Barra de carga: con cofre, el perfil frontal PRMODUL; el resto, la redonda ROND-80.
+// PRCOMODUL y PRSCMODUL no se consumen nunca.
 function loadBarPrefix(submodel) {
-  if (submodel === 'COFRE') return 'PRCOMODUL';
-  if (submodel === 'SEMI') return 'PRSCMODUL';
-  return 'PRROMODUL';
+  return submodel === 'COFRE' ? 'PRMODUL' : 'PRROMODUL';
+}
+
+function boxCapPrefix(submodel) {
+  if (submodel === 'COFRE') return 'TAPAMODUL';
+  if (submodel === 'OPEN') return 'TAPAOMODUL';
+  return 'TAPSMODUL';
 }
 
 function colored(prefix, suffix, measurement = '', tail = '') {

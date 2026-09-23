@@ -6,6 +6,7 @@ import { crankSuffix, machineCode, plasticCapSuffix, resolveLacado } from './lac
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { normalizeXacobeoParameters } from './xacobeoParameters.js';
+import { art250ArmExists, evo70Issue, pickEvo70Length } from './boxAvailability.js';
 import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
@@ -49,12 +50,21 @@ export function calculateXacobeo({ order, awning }) {
     seamAllowanceCm: parameters.seamAllowanceCm,
     seamBaseCm: parameters.seamBaseCm
   });
-  const stockLength = parameters.stockLengths.find((item) => item >= Math.max(rollTubeLength, loadBarLength)) || null;
+  // El perfil EVO 70 solo existe en unos largos por lacado (en blanco, el de 700; en
+  // negro, ninguno): el largo de stock sale de ahí y el tubo de enrolle va igual.
+  const neededLength = Math.max(rollTubeLength, loadBarLength);
+  const stockLength = structureColor ? pickEvo70Length(lacado.suffix, neededLength) : parameters.stockLengths.find((item) => item >= neededLength) || null;
+  // El brazo ART 250 tampoco existe en todas las salidas por lacado (negro de 200, de baja).
+  const availabilityIssue = structureColor
+    ? evo70Issue(lacado.suffix, lacado.name, neededLength)
+      || (!art250ArmExists(lacado.suffix, awning.projection) ? `XACOBEO no válido: no hay brazo ART 250 de ${awning.projection} cm en ${lacado.name}.` : null)
+    : null;
   const belowMinimum = Number(awning.width) < minimumLine;
   const maxWidth = parameters.maxWidthByProjection?.[Number(awning.projection)] || parameters.standardMaxWidth;
   const overMaximum = Number(awning.width) > maxWidth;
   const modified = Boolean(awning.reglasModificadas);
-  const valid = missingFields.length === 0
+  if (availabilityIssue) diagnostics.push({ level: 'error', awningId: awning.id, message: availabilityIssue });
+  const valid = !availabilityIssue && missingFields.length === 0
     && Boolean(fabric)
     && separateValance.valid
     && !belowMinimum
