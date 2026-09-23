@@ -1,5 +1,6 @@
 import {
   boxMotorPowerByProjection,
+  legacyBoxMotorPowerByProjection,
   coralBoxMinimumLineByProjection,
   perlaBoxMinimumLineByProjection
 } from './storbox400Constants.js';
@@ -107,6 +108,8 @@ function normalizeMotorPowers(input, defaults) {
   if (!Array.isArray(input)) return structuredClone(defaults);
   return defaults.map((row) => {
     const candidate = input.find((item) => Number(item?.projection) === row.projection);
-    return { projection: row.projection, power: positive(candidate?.power, row.power) };
+    const legacy = legacyBoxMotorPowerByProjection.find((item) => item.projection === row.projection);
+    const power = positive(candidate?.power, row.power);
+    return { projection: row.projection, power: legacy && power === legacy.power && power !== row.power ? row.power : power };
   });
 }

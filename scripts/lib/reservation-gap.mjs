@@ -40,6 +40,7 @@ export const condicionDeOF = {
 // Consumo real que no debe reservar el planteamiento, con el motivo.
 const aparteConMotivo = [
   { patron: /^TUBOTRA/, motivo: 'Embalaje: lo pone almacén, no el planteamiento (decisión de OT, 04/09/2026).' },
+  { patron: /^FILMEMBALAR/, motivo: 'Film de embalar: embalaje, como el tubo transparente (decisión de OT, 04/09/2026).' },
   { patron: /^V504/, motivo: 'Vinilo de rotulación: la cantidad no depende del toldo (decisión de OT, 04/09/2026).' },
   { patron: /^RESTO/, motivo: 'Resto de almacén: sobrante de una pieza que se reserva nueva. Informativo.' }
 ];

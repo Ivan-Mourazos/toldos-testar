@@ -21,15 +21,22 @@ const configs = {
   perla: {
     model: 'PERLA BOX', parameterKey: 'perlaBox', normalize: normalizePerlaBoxParameters,
     supportPrefix: 'SOSTORBS300', profilePrefix: 'PRBOXS300', capPrefix: 'TAPBS300',
-    pieceName: 'STORBOX S-300', reserveKitParts: false, motorWheelUnits: 2,
-    sharedMotorAccessories: false, rollTubeUnits: 2, reserveTipBushing: false
+    pieceName: 'STORBOX S-300', reserveKitParts: true, motorWheelUnits: 1,
+    sharedMotorAccessories: false, rollTubeUnits: 1, reserveTipBushing: true,
+    // Perla con máquina gasta el casquillo de eje 50 (104 OF), no el CASTRAEX80.
+    machineBushing: { code: 'CASMAQEJE5078MM', description: 'CASQUILLO MAQUINA EJE 50MM Ø78' },
+    // Goma amortiguadora de la base del perfil: unos 5 m por toldo (40 de 74 OF).
+    rubber: { code: 'GOMAAMORTIG', quantity: 5, description: 'GOMA AMORTIGUADORA BASE 5XØ6X7' }
   },
   coral: {
     model: 'CORAL BOX', parameterKey: 'coralBox', normalize: normalizeCoralBoxParameters,
     supportPrefix: 'SOSTORB400', profilePrefix: 'PRBOX400',
     capPrefix: { MOTOR: 'TAPAMOBOX400', MAQUINA: 'TAPAMAEBOX400' },
     pieceName: 'STORBOX 400', reserveKitParts: true, motorWheelUnits: 1,
-    sharedMotorAccessories: true, rollTubeUnits: 1, reserveTipBushing: true
+    sharedMotorAccessories: true, rollTubeUnits: 1, reserveTipBushing: true,
+    // Coral con máquina exterior sí gasta el casquillo de transmisión L-81 (10 de 11 OF).
+    machineBushing: { code: 'CASTRAEX80', description: 'CASQUILLO EJE 81MM' },
+    rubber: null
   }
 };
 
@@ -148,6 +155,9 @@ function buildMaterials(context) {
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [];
+  // Varillas de vaina al largo del perfil: en Perla y Coral la blanca va del mismo
+  // largo que la negra (no el doble, como en el Arzúa).
+  const varillaMl = Math.ceil(Number(context.structureLength) || 0) / 100;
   if (config.reserveKitParts) materials.push({ code: refSupport(config, suffix), quantity: units, description: `JUEGO SOPORTE ${config.pieceName}` });
   materials.push({ code: refRollTube(stockLength), quantity: config.rollTubeUnits * units, description: 'TUBO DE ENROLLE P801' });
   if (config.reserveTipBushing) materials.push({ code: tipBushing('P801').code, quantity: units, description: tipBushing('P801').description });
@@ -163,9 +173,10 @@ function buildMaterials(context) {
     const remote = resolveMotorRemote(awning.sensor);
     const sharedAccessory = config.sharedMotorAccessories ? { aggregation: 'max' } : {};
     materials.push(
-      { code: 'RUEDAMOT78', quantity: config.motorWheelUnits * units, description: 'RUEDA MOTRIZ Ø 78' },
+      // El kit que se consume es el del Arzúa: rueda P-801 mecanizada y corona LT60.
+      { code: 'RUEDAMOT801MEC', quantity: config.motorWheelUnits * units, description: 'RUEDA MOTRIZ A P-801 MECANIZADA' },
       { code: `SUNEAIO${motorPower}//17`, quantity: units, description: `MOTOR SOMFY SUNEA ${motorPower}/17 IO` },
-      { code: 'CORONALT6078', quantity: units, description: 'CORONA LT 60 ADAPTADA Ø 78' },
+      { code: 'CORONALT60', quantity: units, description: 'CORONA ADAPTADA LT60 P-801' },
       { code: 'SOPORTEUNVHIPRO', quantity: units, description: 'SOPORTE UNIVERSAL HIPRO' },
       { code: remote.code, quantity: units, description: remote.description, ...sharedAccessory }
     );
@@ -174,13 +185,16 @@ function buildMaterials(context) {
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
-      { code: 'CASTRAEX80', quantity: units, description: 'CASQUILLO EJE 81MM' },
+      { code: config.machineBushing.code, quantity: units, description: config.machineBushing.description },
       { code: machineCode(lacado), quantity: units, description: `MÁQUINA MB-11 L-120 ${lacado.crank}` },
-      { code: refCrank(lacado, crankHeight), quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` },
-      { code: 'CASPLAS', quantity: units, description: 'TACO NAYLON MAQUINA' }
+      { code: refCrank(lacado, crankHeight), quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${crankHeight}` }
     );
   }
-  materials.push({ code: 'PRPRO4600C', quantity: units, description: 'PERFIL PROTECTOR LONA' });
+  materials.push(
+    { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM' },
+    { code: 'VARILLAVAINARBLA', quantity: round1(varillaMl * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA' }
+  );
+  if (config.rubber) materials.push({ code: config.rubber.code, quantity: config.rubber.quantity * units, description: config.rubber.description });
   if (fabric) materials.push({ code: fabric.code, quantity: fabricMl, description: fabric.description });
   appendSeparateValanceMaterial(materials, separateValance);
 
@@ -190,25 +204,25 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, lacado, device, stockLength, structureLength, rollTubeLength, protectorLength, motorPower, config } = context;
+  const { awning, lacado, device, stockLength, structureLength, rollTubeLength, motorPower, config } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
-  const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference, units: rowUnits, length });
+  // Numeración correlativa: los números fijos dejaban huecos (sin el 9 a motor).
+  const push = (_num, name, reference, rowUnits, length = null) => rows.push({ num: rows.length + 1, name, reference, units: rowUnits, length });
 
   push(1, `JUEGO SOPORTE ${config.pieceName}`, refSupport(config, suffix), units);
   push(2, 'TUBO DE ENROLLE P801', refRollTube(stockLength), units, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
-  push(4, device === 'MOTOR' ? 'RUEDA MOTRIZ Ø 78' : 'CASQUILLO EJE 81MM', device === 'MOTOR' ? 'RUEDAMOT78' : 'CASTRAEX80', units);
+  push(4, device === 'MOTOR' ? 'RUEDA MOTRIZ A P-801 MECANIZADA' : config.machineBushing.description, device === 'MOTOR' ? 'RUEDAMOT801MEC' : config.machineBushing.code, units);
   push(5, `KIT PERFILES ${config.pieceName}`, refProfiles(config, suffix, stockLength), units, structureLength);
   push(6, `KIT TAPAS ${device} ${config.pieceName}`, refCaps(config, device, suffix), units);
   push(7, 'JUEGO DE BRAZOS ONYX', refArm(suffix, awning.projection), units, awning.projection);
   push(8, 'JUEGO DE TERMINALES', null, units);
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
-    push(9, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);
     push(10, `MOTOR SOMFY SUNEA ${motorPower}/17 IO`, `SUNEAIO${motorPower}//17`, units);
-    push(11, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
+    push(11, 'CORONA ADAPTADA LT60 P-801', 'CORONALT60', units);
     push(12, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
     push(21, remote.description, remote.code, units);
     const sensor = sensorMaterial(awning.sensor);
@@ -217,10 +231,9 @@ function buildDespiece(context) {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
     push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(10, `MANIVELA LUXE ${lacado.crank} ${height}`, refCrank(lacado, height), units, height);
-    push(11, 'TACO NAYLON MAQUINA', 'CASPLAS', units);
     push(12, 'KIT DE TORNILLOS MAQUINA', null, units);
   }
-  push(13, 'PERFIL PROTECTOR LONA', 'PRPRO4600C', units, protectorLength);
+  if (config.rubber) push(13, config.rubber.description, config.rubber.code, config.rubber.quantity * units);
 
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry

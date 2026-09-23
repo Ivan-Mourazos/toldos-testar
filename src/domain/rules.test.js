@@ -1100,6 +1100,8 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
   });
 });
 
+// Reserva contrastada con el consumo real (CPRImputationMaterialMO, 23/09/2026):
+// OF 0230460 y 0230215 de Perla consumieron exactamente estas piezas.
 describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
   test('AR2603486: máquina, frente 295 y salida 200', () => {
     const result = calculateOrder(basePayload({
@@ -1121,18 +1123,24 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       stockLength: 600, armCount: 1
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
-      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'SOSTORBS300BL16', quantity: 1 },
+      { code: 'TURA80HG600C', quantity: 1 },
+      { code: 'CASPUNCEJE78MM', quantity: 1 },
+      { code: 'PRBOXS300BL16600C', quantity: 1 },
+      { code: 'TAPBS300BL16', quantity: 1 },
       { code: 'BONYXBL16200C', quantity: 1 },
-      { code: 'CASTRAEX80', quantity: 1 },
+      { code: 'CASMAQEJE5078MM', quantity: 1 },
       { code: 'MAQMB11L12BLAN', quantity: 1 },
       { code: 'MANIVEBL16120C', quantity: 1 },
-      { code: 'CASPLAS', quantity: 1 },
-      { code: 'PRPRO4600C', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 2.8 },
+      { code: 'VARILLAVAINARBLA', quantity: 2.8 },
+      { code: 'GOMAAMORTIG', quantity: 5 },
       { code: 'ACRILI2038P120', quantity: 7.35 }
     ]);
+    expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
   });
 
-  test('AR2603349: motor SUNEA 50/17, negro y salida 300', () => {
+  test('AR2603349: motor SUNEA 55/17, negro y salida 300, como se consumió', () => {
     const result = calculateOrder(basePayload({
       orderCode: 'AR2603349',
       structureColor: 'NEGRO (R-09011)',
@@ -1145,14 +1153,15 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     const ofBlock = result.ofs[0];
 
     expect(ofBlock.calculation).toMatchObject({
-      valid: true, minimumLine: 340, motorPower: '50/17',
+      valid: true, minimumLine: 340, motorPower: '55/17',
       structureLength: 536.3, rollTubeLength: 538.5,
       fabricWidth: 532.8, fabricDrop: 345, fabricMl: 17.25
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'BONYXNE11300C', quantity: 1 }),
-      expect.objectContaining({ code: 'RUEDAMOT78', quantity: 2 }),
-      expect.objectContaining({ code: 'SUNEAIO50//17', quantity: 1 }),
+      expect.objectContaining({ code: 'RUEDAMOT801MEC', quantity: 1 }),
+      expect.objectContaining({ code: 'CORONALT60', quantity: 1 }),
+      expect.objectContaining({ code: 'SUNEAIO55//17', quantity: 1 }),
       expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 }),
       expect.objectContaining({ code: 'ACRILI1070P120', quantity: 17.25 })
     ]));
@@ -1173,7 +1182,8 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(calculated.ofs).toHaveLength(2);
     expect(reservation.ofs).toHaveLength(1);
     expect(reservation.ofs[0].materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 4 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'SOSTORBS300BL16', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2038P120', quantity: 14.7 })
     ]));
   });
@@ -1251,7 +1261,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       structureLength: 279.3,
       rollTubeLength: 281.5,
       fabricWidth: 275.8,
-      motorPower: '35/17'
+      motorPower: '55/17'
     });
     expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(false);
   });
@@ -1288,8 +1298,9 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       expect.objectContaining({ code: 'SOSTORB400BL16', quantity: 3 }),
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
       expect.objectContaining({ code: 'BONYXBL16300C', quantity: 1 }),
-      expect.objectContaining({ code: 'RUEDAMOT78', quantity: 3 }),
-      expect.objectContaining({ code: 'SUNEAIO50//17', quantity: 3 }),
+      expect.objectContaining({ code: 'RUEDAMOT801MEC', quantity: 3 }),
+      expect.objectContaining({ code: 'CORONALT60', quantity: 3 }),
+      expect.objectContaining({ code: 'SUNEAIO55//17', quantity: 3 }),
       expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 }),
       expect.objectContaining({ code: 'EOLIS3DIO', quantity: 1 })
     ]));
