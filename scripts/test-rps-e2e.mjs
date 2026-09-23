@@ -127,6 +127,8 @@ async function verifyBrowserCase(browserInstance, url) {
   });
   page.on('pageerror', (error) => report.consoleErrors.push(error.message));
   page.on('requestfailed', (request) => {
+    // El editor de estructura cancela el cálculo anterior al cambiar algo (AbortController): no es un fallo.
+    if (request.failure()?.errorText === 'net::ERR_ABORTED') return;
     report.requestFailures.push(`${request.method()} ${request.url()}: ${request.failure()?.errorText || 'fallo'}`);
   });
 
@@ -215,7 +217,8 @@ async function verifyBrowserCase(browserInstance, url) {
     ['OF', 'ARTICULO', 'CANTIDAD'],
     // Reserva según el consumo real desde el 04/09/2026 (docs/rps-arzua-evidence.md).
     ['0230194', 'SOPAR350BL16', '1'],
-    ['0230194', 'TURA80HG600C', '2'],
+    // Un tubo de enrolle por toldo (consumo real por OF, 23/09/2026).
+    ['0230194', 'TURA80HG600C', '1'],
     ['0230194', 'CASPUNCEJE78MM', '1'],
     ['0230194', 'TERMINEVOBL16', '1'],
     ['0230194', 'VARILLAVAINANEG5', '3,3'],
@@ -405,7 +408,7 @@ function apiCases() {
         device: 'MOTOR', sensor: 'SITUO IO 1 PURE'
       }),
       calculation: { fabricWidth: 326.2, fabricDrop: 300, fabricMl: 9, motorPower: '55/17' },
-      materials: { TURA80HG600C: 2, 'SUNILUSIO55//17': 1, ACRILI2018P120: 9, SITUOIO1PURE: 1 },
+      materials: { TURA80HG600C: 1, 'SUNILUSIO55//17': 1, ACRILI2018P120: 9, SITUOIO1PURE: 1 },
       pdfPages: 2
     },
     {
@@ -417,7 +420,8 @@ function apiCases() {
         tubeLoad: 'TUBO DE CARGA UNIVERS 280'
       }),
       calculation: { fabricWidth: 417, fabricDrop: 420, fabricMl: 16.8, armCount: 2 },
-      materials: { SOPARTGLBL16: 1, TURA80HG600C: 2, BONYXBL16350C: 2, ACRILI2170P120: 16.8 },
+      // BONYX y SOPARTGL son juegos de dos: 2 brazos, un juego (consumo real).
+      materials: { SOPARTGLBL16: 1, TURA80HG600C: 1, BONYXBL16350C: 1, ACRILI2170P120: 16.8 },
       pdfPages: 2
     },
     {
@@ -428,7 +432,8 @@ function apiCases() {
         valanceHeight: 30, device: 'MAQ. EXTERIOR', crankHeight: 170
       }),
       calculation: { fabricWidth: 352.5, fabricDrop: 325, fabricMl: 13, rollTubeLength: 354.1 },
-      materials: { SOPART250BL16: 1, TURA70HG600C: 1, BART25BL16250C: 1, ACRILI2925P120: 13 },
+      // El tubo va con el largo del EVO 70, que en blanco solo existe de 700 (23/09/2026).
+      materials: { SOPART250BL16: 1, TURA70HG700C: 1, BART25BL16250C: 1, ACRILI2925P120: 13 },
       pdfPages: 2
     },
     {
@@ -437,10 +442,11 @@ function apiCases() {
       order: order('AR2603393', 'ACRILI2245P120|||120|||LONA ACRILICA MASACRIL BOTELLA 2245', {
         of: '0230266', model: 'MONOBLOCK 350', width: 695, projection: 275,
         valanceHeight: 25, device: 'MAQUINA', armCount: 3, crankHeight: 200,
-        placement: 'TECHO'
+        placement: 'TECHO', tubeLoad: 'TUBO DE CARGA EVO 80'
       }),
       calculation: { fabricWidth: 680.8, fabricDrop: 345, fabricMl: 20.7, supportCount: 8 },
-      materials: { TURA80HG700C: 1, PEVO80BL16700C: 1, SOPFTEMONUNDBL16: 8, ACRILI2245P120: 20.7 },
+      // Soportes de techo por juegos, como gastó la OF 0230266 (4 juegos para 8 soportes).
+      materials: { TURA80HG700C: 1, PEVO80BL16700C: 1, SOPFTECMONOBBL16: 4, ACRILI2245P120: 20.7 },
       pdfPages: 2
     },
     {
@@ -453,8 +459,9 @@ function apiCases() {
         curtainWindowCorner: 15, curtainWindowFloorHeight: 70, curtainWindowHeight: 140,
         structureColor: 'NEGRO (R-09011)'
       }),
-      calculation: { fabricWidth: 153, fabricDrop: 375, fabricMl: 7.5, rollTubeLength: 154 },
-      materials: { SOPUNI3AGUNE11: 1, CASMAQEJE5078MM: 1, MOSQBOACIN60MM: 2, ACRILI2170P120: 7.5 },
+      // −18 por defecto en Cortina (Iván, 22/09/2026): 310 + 45 + 20 − 18.
+      calculation: { fabricWidth: 153, fabricDrop: 357, fabricMl: 7.14, rollTubeLength: 154 },
+      materials: { SOPUNI3AGUNE11: 1, CASMAQEJE5078MM: 1, MOSQBOACIN60MM: 2, ACRILI2170P120: 7.14 },
       pdfPages: 2
     }
   ];
