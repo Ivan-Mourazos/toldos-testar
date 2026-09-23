@@ -153,7 +153,7 @@ Una imagen por toldo puede sustituir el esquema de tela. La prueba recorre guard
 **Fallos vistos el 22/09/2026 al revisar Cambio de cortina (pendientes para este modelo):**
 
 - F-A01 · Dibujo de Cambio Antica: el rótulo "ENTRADA TUBO 50x30" se monta sobre la línea de la lona. Muestra en `output/modelos/cambio-cortina/` (prueba `tmp/ui-audit/otros-dibujos.mjs`).
-- F-A02 · Tarjeta de Cambio Antica sin configuración: el aviso sale dos veces, "CAMBIO ANTICA incompleto… falta configuración Antica" (de `fabricOnlyRules.js`) y "Toldo C … falta configuración Antica y rotulación tela" (regla única de `awningCompleteness.js`). Debe quedar solo el de la regla única.
+- F-A02 · **Resuelto el 23/09/2026** (una sola lista de lo que falta: el cálculo ya no repite el "incompleto" del modelo). Era: tarjeta de Cambio Antica sin configuración: el aviso sale dos veces, "CAMBIO ANTICA incompleto… falta configuración Antica" (de `fabricOnlyRules.js`) y "Toldo C … falta configuración Antica y rotulación tela" (regla única de `awningCompleteness.js`). Debe quedar solo el de la regla única.
 
 ## 12. Pruebas ejecutadas
 
