@@ -110,8 +110,13 @@ export function calculateOrder(payload) {
     // legada, que solo se aplica a toldos válidos: un toldo incompleto muestra
     // la misma reserva que tendrá al completarlo, y el error basta para
     // bloquear la generación de archivos.
-    const missingFields = getMissingFields(awning);
+    const missingFields = getMissingFields(awning, order);
     if (missingFields.length) {
+      // El "X incompleto en OF …" de la regla del modelo dice lo mismo con otras
+      // palabras: se queda solo esta lista, que es la que enseña la tarjeta.
+      for (let i = diagnostics.length - 1; i >= 0; i -= 1) {
+        if (diagnostics[i].awningId === awning.id && / incompleto en OF /.test(diagnostics[i].message || '')) diagnostics.splice(i, 1);
+      }
       diagnostics.push({
         level: 'error',
         awningId: awning.id,

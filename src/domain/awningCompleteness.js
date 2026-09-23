@@ -27,7 +27,18 @@ function dimensionLabel(model, field) {
   return field;
 }
 
-export function getMissingFields(awning) {
+// Modelos cuya regla exige colocación (el resto la pregunta pero no la necesita).
+const placementRequired = new Set(['AGATA BOX', 'AMBAR BOX', 'ELECTRA', 'IRIS', 'MAXISCREEM', 'MONOBLOCK 350']);
+// HERA y Selena llevan su propia comprobación de tela.
+const fabricOwnCheck = new Set(['HERA', 'SELENA']);
+
+// `order` (opcional) trae la tela del pedido: con "misma tela" la tela no está en
+// el toldo. Sin `order` no se comprueba la tela.
+/**
+ * @param {any} awning
+ * @param {{ fabric?: string, sameFabric?: boolean } | null} [order]
+ */
+export function getMissingFields(awning, order = null) {
   const missing = [];
   const add = (field, label) => {
     if (!missing.some((item) => item.field === field)) missing.push({ field, label });
@@ -46,6 +57,17 @@ export function getMissingFields(awning) {
   const hasValance = standaloneValance || Number(awning.valanceHeight) > 0;
 
   if (!awning.of) add('of', 'OF');
+  // Lo mismo que exigía cada modelo en su cálculo y la tarjeta no decía: la tarjeta
+  // ponía "FALTA · rotulación" y el cálculo "falta tela y dispositivo" (pedido 4611).
+  if (order && fields.workType === 'FULL_AWNING' && !fabricOwnCheck.has(model)) {
+    const fabric = order.sameFabric !== false ? order.fabric : awning.fabric;
+    if (!String(fabric || '').trim()) add('fabric', 'tela');
+  }
+  if (fields.device && !device) add('device', 'dispositivo');
+  if (fields.crankHeight && !Number(awning.crankHeight)) add('crankHeight', 'altura manivela');
+  // Sin tubo elegido, Arzúa y Galicia lo proponen según el destino.
+  if (fields.tubeLoad && !awning.tubeLoad && !awning.destination) add('tubeLoad', 'tubo de carga');
+  if (fields.device && placementRequired.has(model) && !awning.placement) add('placement', 'colocación');
   if (fields.submodel && !awning.submodel) add('submodel', 'variante');
   if (isElectra && !awning.electraSupport) add('electraSupport', 'tipo de soporte');
   for (const field of getRequiredDimensions(model)) {

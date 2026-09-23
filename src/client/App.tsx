@@ -238,7 +238,7 @@ export default function App() {
   }
 
   async function saveForReview(confirmOverwrite = false, confirmIncomplete = false) {
-    const incomplete = incompleteAwningLines(draft.awnings);
+    const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
     if (!calculation || calculation.ofs.length === 0) {
       notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
       return;
@@ -295,7 +295,7 @@ export default function App() {
 
   async function openPlanteamientoPreview() {
     if (!calculation || calculation.ofs.length === 0) {
-      const incomplete = incompleteAwningLines(draft.awnings);
+      const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
       notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo para ver el planteamiento.', { tone: 'warning', title: 'Faltan datos' });
       return;
     }
@@ -352,7 +352,7 @@ export default function App() {
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
 
-  const hasIncomplete = draft.awnings.some((awning) => getMissingFields(awning).length > 0);
+  const hasIncomplete = draft.awnings.some((awning) => getMissingFields(awning, { fabric: draft.fabric, sameFabric: draft.sameFabric }).length > 0);
   const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : calculationState === 'idle' ? 'badge-neutral' : hasIncomplete ? 'badge-warn' : 'badge-ok';
   const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : calculationState === 'idle' ? 'Esperando pedido' : hasIncomplete ? 'Faltan datos' : 'Planteamiento vivo';
   const viewTitle = activeTab === 'order'

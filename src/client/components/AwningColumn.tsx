@@ -43,6 +43,7 @@ type Props = {
   diagnostics?: Calculation['diagnostics'];
   sameFabric: boolean;
   knownOfs?: string[] | null;
+  orderFabric?: string;
   parameters: RuleParameters;
   readOnly?: boolean;
   onUpdate: (id: string, patch: Partial<Awning>) => void;
@@ -57,7 +58,7 @@ export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
   return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;
 }
 
-export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   const standaloneValance = awning.model === 'BAMBALINA';
@@ -145,7 +146,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const pointRequiredArms = suggestedPuntoRectoArmCount(awning.width, parameters.puntoRecto);
   const monoblockRequiredArms = suggestedMonoblockArmCount(awning.width, awning.projection, parameters.monoblock350);
   // Misma regla que el cálculo y la generación de archivos (awningCompleteness.js).
-  const missingFields = getMissingFields(awning);
+  const missingFields = getMissingFields(awning, { fabric: orderFabric, sameFabric });
   const missingSet = new Set(missingFields.map((item) => item.field));
   const isMissing = (field: string) => missingSet.has(field);
   const status = missingFields.length
@@ -536,7 +537,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 onChange={fields.galicia ? (value) => update({ armCount: Number(value) }) : chooseArms}
               />
               {fields.tubeLoad && (
-                <SegmentedField label="Tubo de carga" value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} />
+                <SegmentedField label="Tubo de carga" missing={isMissing('tubeLoad')} value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} />
               )}
               {fields.supportOptions.length > 0 && (
                 <SegmentedField label="Soporte" value={awning.supportSystem} options={fields.supportOptions} onChange={fields.arzua ? chooseArzuaSupport : (supportSystem) => update({ supportSystem })} />
@@ -544,7 +545,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
           {fields.tubeLoad && !fields.arzua && !fields.galicia && (
-            <div className="awning-wide-field"><SegmentedField label="Tubo de carga" value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} /></div>
+            <div className="awning-wide-field"><SegmentedField label="Tubo de carga" missing={isMissing('tubeLoad')} value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} /></div>
           )}
           {fields.submodel && !isHera && (
             <SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={updateSubmodel} />
@@ -634,18 +635,18 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {!sameFabric && <div className="awning-wide-field"><FabricCombobox label="Tela" value={awning.fabric} disabled={readOnly} onChange={(fabric) => update({ fabric })} /></div>}
           {(fields.device || fields.sensor || fields.motorLocation || fields.machineLocation || fields.crankHeight) && (
             <div className="awning-actuation-row awning-wide-field">
-              {fields.device && <SelectField label="Dispositivo" value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={updateDevice} />}
+              {fields.device && <SelectField label="Dispositivo" missing={isMissing('device')} value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={updateDevice} />}
               {isElectra && electraDevice === 'MOTOR' && <SelectField label="Motor Electra" missing={isMissing('motorPower')} value={awning.motorPower} options={electraMotors.map(({ value }) => value)} placeholder="Obligatorio · elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
               {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.motorLocation && <SelectField label="Posición motor" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {isFullAntica && fields.crankHeight && <SelectField label="Color manivela" value={awning.anticaCrankColor || 'AUTOMÁTICO'} options={['AUTOMÁTICO', 'BLANCA', 'NEGRA']} onChange={(v) => update({ anticaCrankColor: v as Awning['anticaCrankColor'] })} />}
-              {fields.crankHeight && <SelectField label="Altura manivela" value={awning.crankHeight === null ? '' : String(awning.crankHeight)} options={formOptions.alturasManivela.map(String)} placeholder="Elegir…" onChange={(v) => update({ crankHeight: v === '' ? null : Number(v) })} />}
+              {fields.crankHeight && <SelectField label="Altura manivela" missing={isMissing('crankHeight')} value={awning.crankHeight === null ? '' : String(awning.crankHeight)} options={formOptions.alturasManivela.map(String)} placeholder="Elegir…" onChange={(v) => update({ crankHeight: v === '' ? null : Number(v) })} />}
             </div>
           )}
           {(fields.placement || fields.wallType) && (
             <div className="awning-installation-row awning-wide-field">
-              {fields.placement && <SelectField label="Colocación" value={awning.placement} options={formOptions.colocaciones} placeholder="Elegir…" onChange={(placement) => update({ placement })} />}
+              {fields.placement && <SelectField label="Colocación" missing={isMissing('placement')} value={awning.placement} options={formOptions.colocaciones} placeholder="Elegir…" onChange={(placement) => update({ placement })} />}
               {fields.wallType && <SelectField label="Tipo de pared" value={awning.wallType} options={formOptions.tiposPared.map((p) => p.pared)} placeholder="No indicada" allowEmpty emptyLabel="No indicada" onChange={(wallType) => update({ wallType })} />}
             </div>
           )}

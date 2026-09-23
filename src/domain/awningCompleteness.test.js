@@ -6,7 +6,7 @@ import { calculateOrder } from './rules.js';
 const arzua = {
   model: 'ARZUA PRO', of: '0230194', width: 337, projection: 225, valanceHeight: 30,
   valanceCurve: 'RECTA', remate: 'COMO TELA', remateColor: '', rotFabric: 'NO', rotValance: 'NO',
-  structureColor: 'BLANCO', device: 'MOTOR', machineSide: 'M.F.DER', submodel: ''
+  structureColor: 'BLANCO', device: 'MOTOR', machineSide: 'M.F.DER', submodel: '', tubeLoad: 'TUBO DE CARGA EVO 80'
 };
 const fields = (awning) => getMissingFields(awning).map((m) => m.field);
 
@@ -23,7 +23,10 @@ describe('getMissingFields', () => {
     ['rotFabric', { rotFabric: '' }, 'rotulación tela'],
     ['rotValance', { rotValance: '' }, 'rotulación bamba'],
     ['structureColor', { structureColor: '' }, 'lacado'],
-    ['machineSide', { machineSide: '' }, 'posición del motor']
+    ['machineSide', { machineSide: '' }, 'posición del motor'],
+    ['device', { device: '' }, 'dispositivo'],
+    ['tubeLoad', { tubeLoad: '' }, 'tubo de carga'],
+    ['crankHeight', { device: 'MAQ. EXTERIOR', crankHeight: null }, 'altura manivela']
   ])('Arzúa sin %s', (field, patch, label) => {
     expect(getMissingFields({ ...arzua, ...patch })).toContainEqual({ field, label });
   });
@@ -37,6 +40,17 @@ describe('getMissingFields', () => {
     expect(fields({ ...arzua, remate: 'OTRO', remateColor: '' })).toEqual(['remateColor']);
   });
 
+  // Pedido 4611: la tarjeta decía "FALTA · rotulación" y el cálculo "falta tela".
+  it('con el pedido, pide la tela del pedido o la del toldo', () => {
+    expect(getMissingFields(arzua, { fabric: '', sameFabric: true })).toContainEqual({ field: 'fabric', label: 'tela' });
+    expect(getMissingFields(arzua, { fabric: 'ACR AZUL', sameFabric: true })).toEqual([]);
+    expect(getMissingFields({ ...arzua, fabric: '' }, { fabric: 'ACR AZUL', sameFabric: false })).toContainEqual({ field: 'fabric', label: 'tela' });
+  });
+
+  it('sin tubo elegido no lo pide si hay destino: Arzúa lo propone', () => {
+    expect(fields({ ...arzua, tubeLoad: '', destination: 'PARTICULAR' })).toEqual([]);
+  });
+
   it('sin modelo solo pide el modelo', () => {
     expect(getMissingFields({ model: '' })).toEqual([{ field: 'model', label: 'modelo' }]);
   });
@@ -48,7 +62,7 @@ describe('getMissingFields', () => {
   });
 
   it('Cortina pide ventana y confección, y las cotas de la ventana si la lleva', () => {
-    const cortina = { model: 'CORTINA', of: '1', width: 300, projection: 200, rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQ. INTERIOR', curtainHasWindow: null, curtainFinish: '' };
+    const cortina = { model: 'CORTINA', of: '1', width: 300, projection: 200, rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQ. INTERIOR', crankHeight: 150, curtainHasWindow: null, curtainFinish: '' };
     expect(fields(cortina)).toEqual(['curtainHasWindow', 'curtainFinish']);
     expect(fields({ ...cortina, curtainHasWindow: true, curtainFinish: 'NORMAL' })).toEqual([
       'curtainWindowExit', 'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight'
@@ -56,13 +70,13 @@ describe('getMissingFields', () => {
   });
 
   it('Iris pide si lleva ventana de cristal, pero no confección', () => {
-    const iris = { model: 'IRIS', of: '1', irisFrontTop: 300, irisExitLeft: 250, submodel: 'IRIS 110 CON COFRE', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', curtainHasWindow: null };
+    const iris = { model: 'IRIS', of: '1', irisFrontTop: 300, irisExitLeft: 250, submodel: 'IRIS 110 CON COFRE', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, placement: 'FRONTAL', curtainHasWindow: null };
     expect(fields(iris)).toEqual(['curtainHasWindow']);
     expect(getMissingFields({ ...iris, irisFrontTop: null })).toContainEqual({ field: 'irisFrontTop', label: 'frente superior' });
   });
 
   it('Electra pide soporte y, con motor, el motor', () => {
-    const electra = { model: 'ELECTRA', of: '1', width: 300, projection: 250, submodel: 'SIN COFRE / CON GUÍA', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MOTOR', machineSide: 'M.F.DER', curtainHasWindow: false, curtainFinish: 'NORMAL', electraSupport: '', motorPower: '' };
+    const electra = { model: 'ELECTRA', of: '1', width: 300, projection: 250, submodel: 'SIN COFRE / CON GUÍA', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MOTOR', machineSide: 'M.F.DER', placement: 'FRONTAL', curtainHasWindow: false, curtainFinish: 'NORMAL', electraSupport: '', motorPower: '' };
     expect(fields(electra)).toEqual(['electraSupport', 'motorPower']);
   });
 
@@ -73,7 +87,7 @@ describe('getMissingFields', () => {
   });
 
   it('Antica con soporte fijo pide la altura soporte-brazo', () => {
-    const antica = { model: 'ANTICA', of: '1', width: 300, projection: 200, rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', anticaVariant: 'SOPORTE FIJO 3 AGUJEROS', anticaSupportHeight: null };
+    const antica = { model: 'ANTICA', of: '1', width: 300, projection: 200, rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, anticaVariant: 'SOPORTE FIJO 3 AGUJEROS', anticaSupportHeight: null };
     expect(fields(antica)).toEqual(['anticaSupportHeight']);
   });
 

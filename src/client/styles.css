@@ -5251,8 +5251,8 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 }
 
 .awning-status.badge-warn { text-transform: none; letter-spacing: 0; padding: 6px 10px; text-align: center; }
-.awning-diagnostics { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 12px; }
-.awning-diagnostics li { border-radius: var(--radius-sm); padding: 6px 8px; }
+.awning-diagnostics { grid-column: 1 / -1; list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 12px; line-height: 1.4; }
+.awning-diagnostics li { border-radius: var(--radius-sm); padding: 7px 10px; text-align: center; font-weight: 600; }
 .awning-diagnostics .is-error { background: var(--danger-bg); color: var(--danger); }
 .awning-diagnostics .is-pending { background: var(--warn-bg); color: var(--warn); }
 

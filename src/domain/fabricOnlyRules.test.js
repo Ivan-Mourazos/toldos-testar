@@ -287,7 +287,7 @@ describe('trabajos solo de tela', () => {
       curtainFinish: 'NORMAL'
     });
     expect(incomplete.ofs[0].materials).toEqual([]);
-    expect(incomplete.diagnostics[0].message).toContain('faltan medidas de ventana');
+    expect(incomplete.diagnostics[0].message).toContain('falta salida ventana, esquina, suelo-ventana y altura ventana');
 
     const complete = calculate('CAMBIO CORTINA', {
       curtainHasWindow: true,

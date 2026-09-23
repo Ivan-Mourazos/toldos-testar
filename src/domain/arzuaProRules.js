@@ -154,7 +154,7 @@ export function calculateArzuaPro({ order, awning }) {
       // Si el lacado limita el EVO 80, se dice qué largos hay: el mensaje genérico hacía
       // pensar en los parámetros cuando la causa es el color.
       message: evoTube && evo80AvailableLengths(colorSuffix)
-        ? `ARZUA PRO no válido: la barra mide ${length} cm y en ${lacado.name} el EVO 80 solo existe de ${evo80AvailableLengths(colorSuffix).join(', ')} cm. Prueba con Univers 280 u otro lacado.`
+        ? `ARZUA PRO no válido: la barra mide ${formatNumber(length)} cm y en ${lacado.name} el EVO 80 solo existe de ${evo80AvailableLengths(colorSuffix).join(', ')} cm. Prueba con Univers 280 u otro lacado.`
         : `ARZUA PRO no válido: ningún largo de stock configurado admite ${length} cm.`
     });
   }

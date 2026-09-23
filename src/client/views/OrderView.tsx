@@ -149,6 +149,7 @@ export function OrderView({
               diagnostics={(calculation?.diagnostics || []).filter((item) => item.awningId === awning.id && !item.missingFields && (item.level === 'error' || item.level === 'pending'))}
               sameFabric={sameFabric}
               knownOfs={knownOfs}
+              orderFabric={fabric}
               parameters={parameters}
               readOnly={readOnly}
               onUpdate={updateAwning}
