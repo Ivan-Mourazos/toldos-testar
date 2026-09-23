@@ -2,7 +2,7 @@
 
 Ejecución reproducible en la instancia aislada `http://127.0.0.1:4310` (`simulationMode=true`, `fileWritesEnabled=false`), solo escritorio. Rama `codex/ui-barrido-2026-09`. No se modificó código de la aplicación. Script: `tmp/ui-audit/barrido.mjs`; datos crudos y capturas: `tmp/ui-audit/` (ignorado por Git).
 
-Se guardaron 226 capturas distintas en 1280×720 y 1600×1000. Se inspeccionaron visualmente todas mediante 15 hojas de contacto en `tmp/ui-audit/contactos/`. El inventario completo contiene 10550 observaciones de controles en [CSV](barrido-inventario-2026-09.csv).
+Se guardaron 226 capturas distintas en 1280×720 y 1600×1000. Se inspeccionaron visualmente todas mediante 15 hojas de contacto en `tmp/ui-audit/contactos/`. El inventario completo contiene 10550 observaciones de controles en CSV (`tmp/ui-audit/barrido-inventario-2026-09.csv`, local: 2 MB).
 
 ## Cobertura de modelos
 
@@ -336,7 +336,7 @@ Los tiempos son de Playwright en Chromium local, no tiempos humanos. Los clics s
 
 ## Inventario de controles
 
-El [CSV completo](barrido-inventario-2026-09.csv) registra una fila por control visible y captura: pantalla, resolución, tipo, etiqueta accesible, texto visible, placeholder, estado deshabilitado, archivo/componente o fuente de la etiqueta y ruta de captura. El origen se infiere de los componentes que renderizan cada pantalla y de `controlLabels.ts` / `modelBehavior.js` para nombres de modelos y opciones.
+El CSV completo (`tmp/ui-audit/barrido-inventario-2026-09.csv`, local) registra una fila por control visible y captura: pantalla, resolución, tipo, etiqueta accesible, texto visible, placeholder, estado deshabilitado, archivo/componente o fuente de la etiqueta y ruta de captura. El origen se infiere de los componentes que renderizan cada pantalla y de `controlLabels.ts` / `modelBehavior.js` para nombres de modelos y opciones.
 
 | Pantalla/estado | 1280 controles | 1600 controles | Captura |
 | --- | ---: | ---: | --- |
