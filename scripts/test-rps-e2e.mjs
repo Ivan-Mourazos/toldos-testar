@@ -176,8 +176,10 @@ async function verifyBrowserCase(browserInstance, url) {
   await page.getByRole('button', { name: 'Vista previa' }).click();
   const preview = page.getByRole('dialog', { name: 'Vista previa del planteamiento' });
   await preview.waitFor({ timeout: 20_000 });
-  await preview.locator('.pdf-preview-page').nth(1).waitFor({ timeout: 20_000 });
-  assert.equal(await preview.locator('.pdf-preview-page').count(), 2);
+  // Desde el 23/09/2026 Pedido usa el mismo visor que Revisión: una página cada vez.
+  await preview.getByRole('img', { name: 'Página 1 de 2' }).waitFor({ timeout: 20_000 });
+  await preview.getByRole('button', { name: 'Página siguiente' }).first().click();
+  await preview.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
 
   await preview.getByRole('button', { name: 'Cerrar vista previa' }).click();
   await page.getByRole('button', { name: 'Guardar para revisión' }).click();

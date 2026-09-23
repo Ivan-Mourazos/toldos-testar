@@ -117,7 +117,7 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
         const base = page.getViewport({ scale: 1 });
         pageWidthsRef.current.set(number, base.width);
         const scale = zoom === 'height'
-          ? stageSize.height / base.height
+          ? Math.min(stageSize.height / base.height, stageSize.width / base.width)
           : zoom === 'fit' ? stageSize.width / base.width : zoom / 100;
         const cached = imagesRef.current.get(number);
         if (cached && Math.abs(cached.scale - scale) < 0.01) return;
@@ -169,7 +169,7 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
     const image = imagesRef.current.get(pageNumber);
     const baseHeight = image && image.height / image.scale;
     const current = zoom === 'fit' ? (baseWidth ? Math.round(stageSize.width / baseWidth * 100) : 100)
-      : zoom === 'height' ? (baseHeight ? Math.round(stageSize.height / baseHeight * 100) : 100)
+      : zoom === 'height' ? (baseHeight && baseWidth ? Math.round(Math.min(stageSize.height / baseHeight, stageSize.width / baseWidth) * 100) : 100)
         : zoom;
     setZoom(Math.max(50, Math.min(300, Math.round(current / 25) * 25 + direction * 25)));
   };
@@ -206,16 +206,16 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
   const baseWidth = image && image.width / image.scale;
   const baseHeight = image && image.height / image.scale;
   const expectedScale = zoom === 'height'
-    ? (baseHeight ? stageSize.height / baseHeight : 0)
+    ? (baseHeight && baseWidth ? Math.min(stageSize.height / baseHeight, stageSize.width / baseWidth) : 0)
     : zoom === 'fit' ? (baseWidth ? stageSize.width / baseWidth : 0) : zoom / 100;
   const visibleImage = image && Math.abs(image.scale - expectedScale) < 0.01 ? image : null;
 
   return (
     <div className="pdf-carousel" ref={rootRef} aria-label={ariaLabel} tabIndex={0}>
       <div className="pdf-carousel-toolbar" role="group" aria-label="Zoom del PDF">
-        <button type="button" onClick={() => setZoom('height')} aria-pressed={zoom === 'height'}>Ajustar al alto</button>
+        <button type="button" onClick={() => setZoom('height')} aria-pressed={zoom === 'height'}>Página entera</button>
         <button type="button" onClick={() => setZoom('fit')} aria-pressed={zoom === 'fit'}>Ajustar al ancho</button>
-        <span className="pdf-carousel-zoom-value">{zoom === 'height' ? 'Alto' : zoom === 'fit' ? 'Ancho' : `${zoom} %`}</span>
+        <span className="pdf-carousel-zoom-value">{zoom === 'height' ? 'Entera' : zoom === 'fit' ? 'Ancho' : `${zoom} %`}</span>
         <button type="button" onClick={() => changeZoom(-1)} aria-label="Reducir zoom"><Minus aria-hidden="true" /></button>
         <button type="button" onClick={() => changeZoom(1)} aria-label="Ampliar zoom"><Plus aria-hidden="true" /></button>
         <span className="pdf-carousel-wheel-hint">Ctrl + rueda</span>

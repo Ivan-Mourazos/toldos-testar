@@ -39,8 +39,8 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
     const dialog = page.getByRole('dialog', { name: 'Vista previa del planteamiento' });
       await dialog.getByText('Página 1 de 3').waitFor({ timeout: 20000 });
       await dialog.getByRole('img', { name: 'Página 1 de 3' }).waitFor({ timeout: 20000 });
-      if (await dialog.getByRole('button', { name: 'Ajustar al alto' }).getAttribute('aria-pressed') !== 'true') {
-        throw new Error('El ajuste inicial no ocupa el alto del visor.');
+      if (await dialog.getByRole('button', { name: 'Página entera' }).getAttribute('aria-pressed') !== 'true') {
+        throw new Error('El ajuste inicial no es «Página entera».');
       }
       const pageHeight = await dialog.getByRole('img', { name: 'Página 1 de 3' }).evaluate((node) => node.getBoundingClientRect().height);
       const availableHeight = await dialog.locator('.pdf-carousel-stage').evaluate((node) => {
@@ -110,6 +110,10 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
       const overwrite = page.getByRole('button', { name: 'Actualizar pedido', exact: true });
       if (await overwrite.count()) await overwrite.click();
       await page.getByRole('button', { name: 'Revisión', exact: true }).click({ timeout: 30000 });
+      // A menos de 1500 px la lista de Revisión empieza plegada (lote E): se abre.
+      const showList = page.getByRole('button', { name: 'Mostrar la lista de pedidos' });
+      await page.getByRole('button', { name: /lista de pedidos/ }).first().waitFor({ timeout: 15000 });
+      if (await showList.count()) await showList.click();
       await page.locator('.review-list-item').first().waitFor({ timeout: 15000 });
       await page.locator('.review-list-item').first().click();
       const reviewViewer = page.locator('.review-inline-preview .pdf-carousel').first();
@@ -121,7 +125,8 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
       await fullscreen.getByText('Página 2 de 3').waitFor();
       await page.keyboard.press('Escape');
       await fullscreen.waitFor({ state: 'hidden' });
-    if (errors.some((error) => !/status of (400|409)/.test(error))) throw new Error(`Errores de navegador: ${errors.join('; ')}`);
+    // El recargado en caliente de Vite (WebSocket) no es de la app: falla si otra instancia usa su puerto.
+    if (errors.some((error) => !/status of (400|409)|WebSocket|\[vite\]/.test(error))) throw new Error(`Errores de navegador: ${errors.join('; ')}`);
     console.log(`Visor PDF ${viewport.width}x${viewport.height}: OK`);
   } finally {
     await browser.close();

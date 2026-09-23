@@ -58,11 +58,12 @@ export function ReviewOrderDetail({
   );
 
   if (loading) {
-    return <section className="review-reader panel"><div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido y su vista previa…</div></section>;
+    // El botón de la lista va también aquí: con la lista plegada no habría forma de abrirla.
+    return <section className="review-reader panel">{listToggle}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido y su vista previa…</div></section>;
   }
 
   if (!review) {
-    return <section className="review-reader panel"><div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
+    return <section className="review-reader panel">{listToggle}<div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
   }
 
   const reviewParameters = review.order.parameters || parameters;
