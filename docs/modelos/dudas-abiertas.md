@@ -16,7 +16,7 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-PR04 | Punto Recto | La salida de 160 existe en RPS pero no en la tarifa 2026 (llega a 1,40 m) | Se ofrece |
 | Q-A01 | Arzúa Pro | El manual vigente (AROND-350, 2025, igual que el Complet-PRO 350) descuenta 12,4 de lona con máquina y 10,4 de barra Univers; los libros del taller, 13 y 11,4. Las 182 diferencias de medidas salen de ahí. El ART Extens 325 ya no aplica: es el Arzúa antiguo, hasta 2021 | Los del manual |
 | Q-A03 | Arzúa Pro | El manual AROND-350 dice que no admite brazos cruzados, pero la tarifa 2026 vende un kit cruzado AROND | Los admite con el kit |
-| Q-A04 | Arzúa Pro y Galicia | Con soporte Galicia: ¿siempre tres brazos? 10 de 132 OF llevaron dos. ¿El brazo suelto va de un lado concreto? (56 izquierdos y 56 derechos) | Tres por defecto y se puede elegir dos; el suelto, derecho |
+| Q-A04 | Arzúa Pro y Galicia | Iván, 23/09: en el Arzúa, 3 brazos es el soporte Galicia (resuelto). Queda: ¿el brazo y el soporte sueltos van de un lado concreto? (56 izquierdos y 56 derechos) | El suelto, derecho |
 | Q-A05 | Arzúa Pro | La ficha TGM permite 8 m con Galicia, pero la barra más larga es de 700: entre 7,10 y 8,00 m no hay barra de stock. ¿Se empalma? Y en gris 7012 el EVO solo existe de 500, que el Arzúa no usa | Se para por falta de barra |
 | Q-A02 | Transversal | 36 referencias rotas en lacados poco habituales (bronce, gris texturado…): faltan soportes Galicia, perfiles o terminales en esos colores. ¿Se ofrecen esos lacados? | Se ofrecen todos |
 | Q-X01 | Xacobeo | El manual ART 250 descuenta 11,9 cm de lona con máquina exterior; la web y los libros usan 12,5 (112 comprobaciones sin diferencias) | 12,5 |
