@@ -169,7 +169,7 @@ async function verifyBrowserCase(browserInstance, url) {
   await chooseSelect(awning, 'Colocación', 'Frontal');
   await chooseSelect(awning, 'Sensor', 'Sin sensor');
 
-  await page.getByText('VÁLIDO', { exact: true }).waitFor({ timeout: 15_000 });
+  await page.locator('footer.awning-status', { hasText: 'VÁLIDO' }).waitFor({ timeout: 15_000 });
   await page.getByText('326,2 × 300 cm', { exact: true }).waitFor();
   await page.getByText('9 ml', { exact: true }).waitFor();
 

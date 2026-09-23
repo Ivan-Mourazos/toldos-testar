@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowRight, Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CircleAlert, Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
+import { withoutAwningPrefix } from '../diagnosticText';
 import type { Awning, BoxDevice, Calculation, CortinaDevice, ElectraSupport, RuleParameters } from '../types';
 import { formOptions, getFabricDiagramOptions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { useVisibleFields } from '../hooks/useVisibleFields';
@@ -249,7 +250,11 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
       data-awning-letter={awningLetter(index)}
     >
       <header className="awning-column-header">
-        <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
+        <span className="awning-column-heading">
+          <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
+          {/* El estado también arriba: con varias tarjetas había que bajar para verlo. */}
+          {!readOnly && <span className={`awning-header-status ${statusClass}`}>{missingFields.length ? `FALTA ${missingFields.length}` : status}</span>}
+        </span>
         <strong className="awning-model-title">
           {controlLabel(awning.model)}
           {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
@@ -464,7 +469,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
           {isHera && (
-            <SelectField label={awning.submodel === 'HERA 56 MOTOR' ? 'Color mecanismos' : 'Color cadena'} missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir color…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
+            <SelectField label={awning.submodel === 'HERA 56 MOTOR' ? 'Color mecanismos' : 'Color cadena'} missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
           )}
           {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
             <NumberField label="Altura instalación" missing={isMissing('height')} value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
@@ -674,12 +679,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <p className="awning-pending">Sin reglas de cálculo todavía. Se guarda pero no genera materiales.</p>
           )}
 
-          {isHera && (
-            <p className="awning-pending">
-              Requiere planteamiento CAD manual.{Number(awning.width) > 300 ? ' Pedir tubo especial y cambiar el presupuesto.' : ''}
-            </p>
-          )}
-
           {awning.reglasModificadas && (
             <div className="awning-overrides">
               <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>
@@ -789,16 +788,44 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
         </>
       )}
 
-      {!readOnly && <footer className={`awning-status ${statusClass}`}>{status}</footer>}
+      {!readOnly && (missingFields.length ? (
+        <footer className={`awning-status ${statusClass}`}>
+          FALTA{missingFields.map((item) => (
+            <React.Fragment key={item.field}> · <button type="button" className="awning-status-link" onClick={(event) => focusMissingField(event.currentTarget, item)}>{item.label}</button></React.Fragment>
+          ))}
+        </footer>
+      ) : <footer className={`awning-status ${statusClass}`}>{status}</footer>)}
       {!readOnly && diagnostics.length > 0 && (
         <ul className="awning-diagnostics" aria-label="Avisos del cálculo">
           {diagnostics.map((item, index) => (
-            <li key={index} className={item.level === 'error' ? 'is-error' : 'is-pending'}>{item.message}</li>
+            <li key={index} className={item.level === 'error' ? 'is-error' : 'is-pending'}>
+              {item.level === 'error' ? <CircleAlert aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />}
+              <span>{withoutAwningPrefix(item.message)}</span>
+            </li>
           ))}
         </ul>
       )}
     </fieldset>
   );
+}
+
+// Lleva al campo que falta: el que tiene la misma etiqueta (regla del nombre único) o, si
+// no, el primero marcado. La tela es del pedido y está arriba, en su buscador.
+function focusMissingField(origin: HTMLElement, item: { field: string; label: string }) {
+  const target = item.field === 'fabric'
+    ? document.querySelector<HTMLElement>('.order-header .fabric-combobox input')
+    : findMissingControl(origin.closest('.awning-column'), item.label);
+  if (!target) return;
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  target.focus({ preventScroll: true });
+}
+
+function findMissingControl(card: Element | null, label: string) {
+  if (!card) return null;
+  const wanted = label.toLocaleLowerCase('es-ES');
+  const marked = Array.from(card.querySelectorAll<HTMLElement>('.is-missing'));
+  const match = marked.find((element) => element.querySelector('span')?.textContent?.trim().toLocaleLowerCase('es-ES') === wanted) || marked[0];
+  return match?.querySelector<HTMLElement>('input, button, textarea, [tabindex]') || null;
 }
 
 function formatDropArmMeasure(value: number) {

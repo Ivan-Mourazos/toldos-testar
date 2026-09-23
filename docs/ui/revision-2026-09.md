@@ -119,3 +119,14 @@ La web está en buen estado: nada se sale de la pantalla, las 22 tarjetas llegan
 - **Pendiente para más adelante:** avisar en el diálogo de aprobar si algún toldo tiene algo por resolver, que después bloqueará la generación.
 
 Capturas: `tmp/ui-audit/shots/ui-lote-e-*` (scripts `tmp/ui-audit/lote-e.mjs` y `lote-e-flujo.mjs`). El e2e de RPS aprueba con el diálogo nuevo.
+
+## Lotes A y B (parte) · hechos el 23/09/2026
+
+- **A1 · contraste.** Una sola variable de texto secundario (`--text-muted: #50656a`) y una dorada para rótulos (`--accent-text: #876200`); verde de "VÁLIDO" y color de aviso más oscuros. 51 colores de texto sueltos pasan a esas variables. axe (contraste AA) en Pedido con dos toldos, Revisión, Parámetros y Configuración: **0 avisos** (216 en el barrido). Script: `tmp/ui-audit/axe-rapido.mjs`.
+- **B1 · avisos una vez.** En "Planteamientos" solo los del pedido y una línea por toldo ("Toldo B: 3 avisos · ver en su tarjeta") que lleva a la tarjeta. En HERA se quita la nota fija que repetía el aviso del CAD y del tubo especial.
+- **B2 · estilo de los avisos.** En la tarjeta van a la izquierda, con icono y sin el prefijo "HERA en OF …:" (`src/client/diagnosticText.ts`, con test).
+- **B3 · FALTA.** En el orden en que se rellena la tarjeta (`getMissingFields`, así que igual en la tarjeta, al guardar y en "Qué revisar"). Cada campo es un enlace que lleva a él, y la cabecera de la tarjeta dice "FALTA 5" o "VÁLIDO". "altura de instalación" pasa a "altura instalación", como el campo.
+- **B4 · tarjetas en filas.** 2 por fila a 1280 y 3 a 1600, sin desplazamiento a lo ancho.
+- **Pendiente del lote B:** B5 (orden común de campos en todos los modelos, empezando por Iris).
+
+Capturas: `tmp/ui-audit/shots/ui-lote-b-*` (script `tmp/ui-audit/lote-b.mjs`).
