@@ -275,7 +275,7 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
 
   doc.rect(bodyX, 67, bodyW, 13).fill(colors.ink);
   doc.fillColor(colors.paper).font(fonts.bold).fontSize(9)
-    .text(value(awning.model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : awning.model), bodyX + 52, 69, { width: bodyW - orderW - 52, align: 'center' });
+    .text(value(awning.model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : awning.model === 'MAXISCREEM' ? 'DIANA VERTICAL / MAXISCREEN' : awning.model), bodyX + 52, 69, { width: bodyW - orderW - 52, align: 'center' });
   doc.fontSize(8).text(value(awning.device), orderX, 69, { width: orderW, align: 'center' });
   doc.fillColor(colors.yellow).font(fonts.bold).fontSize(6.5)
     .text(`TOLDO ${awningLetter(index)}`, bodyX + 7, 69.5, { width: 50 });

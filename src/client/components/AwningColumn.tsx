@@ -558,7 +558,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <div className="awning-wide-field"><SegmentedField label="Tubo de carga" missing={isMissing('tubeLoad')} value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} /></div>
           )}
           {fields.submodel && !isHera && (
-            <SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={updateSubmodel} />
+            // A lo ancho: las variantes son largas ("SIN COFRE / CON GUÍA") y en una columna
+            // se cortaban.
+            <div className="awning-wide-field"><SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={updateSubmodel} /></div>
           )}
           {isAntica && (
             <div className="awning-wide-field">

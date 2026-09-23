@@ -46,7 +46,11 @@ function modelExtras(model, device) {
   }
   if (model === 'ELECTRA') {
     const motor = device === 'MOTOR' ? { motorPower: electraMotors[0].value } : {};
-    return ['SOPORTE ELIT VERTICAL', 'SOPORTE MAXISCREEM BOX'].map((electraSupport) => ({ electraSupport, ...noWindow, ...motor }));
+    // Todos los soportes y con ventana: sin ellos el barrido daba por no reservados el
+    // soporte universal, sus mosquetones y el cristal.
+    const withWindow = { curtainHasWindow: true, curtainFinish: 'NORMAL', curtainWindowExit: 150, curtainWindowCorner: 30, curtainWindowFloorHeight: 40, curtainWindowHeight: 100 };
+    return ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS', 'SOPORTE MAXISCREEN', 'SOPORTE MAXISCREEM BOX']
+      .flatMap((electraSupport) => [noWindow, withWindow].map((window) => ({ electraSupport, ...window, ...motor })));
   }
   if (model === 'IRIS') return [{ irisGuideType: 'ESTÁNDAR', irisGuideFixing: 'PARED', irisAssumeSquare: true, ...noWindow }];
   if (model === 'CORTINA' || model === 'SELENA') return [noWindow];

@@ -28,6 +28,10 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-AG01 | Ágata Box | Patines de soporte de brazo y de brazo, regleta de unión y pasadores: salen en unas pocas OF sin regla clara | No se reservan |
 | Q-AG02 | Ágata Box | Se consume sobre todo el Sunilus 85/17; la tabla por brazos y salida propone 35-55 con 2 brazos | La tabla |
 | Q-AG03 | Ágata Box | El libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras | La fórmula |
+| Q-E01 | Electra | Sin cofre: tapas del perfil, juego TAPASLAMAXSC (2024 y 2026) o dos TAPAELITVERT (2023-2025). Van en negro aunque la estructura sea blanca: ¿siempre? | Juego TAPASLAMAXSC en negro |
+| Q-E02 | Electra | En 4 a 7 OF se usó tubo Ø70 (P701) en vez de Ø78: ¿cuándo? | Ø78 |
+| Q-E03 | Electra | Con cofre: anillas, pletinas y mosquetones de puente abatible en 5 de 10 OF: ¿con qué montaje? | Solo con soporte universal |
+| Q-D01 | Diana vertical | Kit de montaje del cable (MONTCABLEMAXSC) en 2 de 6 OF: ¿cuándo? | No se reserva |
 | Q-A02 | Transversal | 36 referencias rotas en lacados poco habituales (bronce, gris texturado…): faltan soportes Galicia, perfiles o terminales en esos colores. ¿Se ofrecen esos lacados? | Se ofrecen todos |
 | Q-X01 | Xacobeo | El manual ART 250 descuenta 11,9 cm de lona con máquina exterior; la web y los libros usan 12,5 (112 comprobaciones sin diferencias) | 12,5 |
 | Q-SE04 | Selena | ¿Existe Selena a motor? No hay manual y no hay motores en las 17 OF | Solo máquina interior |

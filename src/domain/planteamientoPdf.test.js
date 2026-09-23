@@ -1112,7 +1112,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(text).toContain('SOTEMODULBL16');
   });
 
-  test('el ELECTRA con quince filas de despiece (banda ajustada) conserva la medida de guías al recortar', async () => {
+  test('el ELECTRA con catorce filas de despiece (banda ajustada) conserva la medida de guías al recortar', async () => {
     // Mismo pedido que "el PDF Electra incluye guías...": SIN COFRE / CON GUÍA +
     // MAQ. INTERIOR da quince filas de despiece, la banda de observaciones más
     // ajustada que produce ELECTRA. Con dos observaciones largas la caja no
@@ -1137,7 +1137,8 @@ describe('buildOrderPlanteamientoPdf', () => {
       }]
     };
     const calculation = calculateOrder(order);
-    expect(calculation.ofs[0].despiece.rows).toHaveLength(15);
+    // 14 filas desde el 23/09/2026 (sin CASPLAS, que no se consume).
+    expect(calculation.ofs[0].despiece.rows).toHaveLength(14);
     expect(calculation.ofs[0].calculation).toMatchObject({ guideLength: 246, valid: true });
 
     const items = await paginaUno(order, calculation);

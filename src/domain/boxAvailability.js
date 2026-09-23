@@ -69,6 +69,33 @@ export function evo70Issue(suffix, lacadoName, needed) {
   return null;
 }
 
+// Perfil de carga Maxiscreen-Elit (PECARMAX) y perfil protector del cofre (PERPRLON) de
+// Diana vertical y Electra: largos activos por lacado. Con lacado especial se usan los
+// blancos y se lacan fuera (OF 0229970: PECARMAXBL16700C y PERPRLONBL16700C con EXT_LACAR).
+const verticalProfileLengths = Object.freeze({
+  PECARMAX: {
+    BL16: [500, 700], GR16: [700], GT44: [700], MATX: [500], MR07: [400, 500], MR14: [500, 700], MR17: [700],
+    NE11: [500, 700], O516: [500, 700], VE05: [500], VE09: [700]
+  },
+  PERPRLON: {
+    BL16: [500, 700], GR12: [700], GR16: [500], MATX: [500], MR14: [500, 700], MR17: [700], NE11: [700],
+    O516: [500, 700], PL27: [500], VE09: [500]
+  }
+});
+
+// Largo del perfil: el habitual si existe y cabe; si no, el más corto que quepa. null
+// si ese lacado no tiene el perfil o ninguno es bastante largo.
+export function pickVerticalProfileLength(base, suffix, wanted, needed) {
+  const available = verticalProfileLengths[base]?.[String(suffix || 'BL16')];
+  if (!available) return null;
+  const usual = [...wanted].sort((a, b) => a - b).find((length) => available.includes(length) && length >= needed);
+  return usual || available.find((length) => length >= needed) || null;
+}
+
+export function verticalProfileCode(base, suffix, length) {
+  return `${base}${suffix || 'BL16'}${length}C`;
+}
+
 export function boxProfileLengths(model, suffix) {
   return profileLengths[model]?.[String(suffix || '')] || null;
 }

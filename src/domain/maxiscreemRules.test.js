@@ -31,12 +31,19 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
       motorPower: '15/17'
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
+      // OF 0229970 (consumo real): tubo Ø70, kit Hi68 y corona centrada, cable del rollo
+      // de 200 m por metros (14 m en las dos unidades) y terminal de suelo.
       expect.objectContaining({ code: 'SOPMAXSCRBOX', quantity: 2 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
-      expect.objectContaining({ code: 'PECARMAX', quantity: 2 }),
-      expect.objectContaining({ code: 'PERPRLON', quantity: 2 }),
-      expect.objectContaining({ code: 'CABLEMAXIS3MM25M', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA70HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'CASPUNCEJE70MM', quantity: 2 }),
+      // Lacado especial: perfiles blancos lacados fuera, como gastó esa OF.
+      expect.objectContaining({ code: expect.stringMatching(/^PECARMAXBL16\d{3}C$/), quantity: 2 }),
+      expect.objectContaining({ code: expect.stringMatching(/^PERPRLONBL16\d{3}C$/), quantity: 2 }),
+      expect.objectContaining({ code: 'CABLEMAXIS3MM200', quantity: 12.8 }),
+      expect.objectContaining({ code: 'TERSUMAXSCR', quantity: 2 }),
       expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 2 }),
+      expect.objectContaining({ code: 'RUEDAMOTHI68', quantity: 2 }),
+      expect.objectContaining({ code: 'CORONACENMEC70', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI1072P120', quantity: 19.02 }),
       expect.objectContaining({ code: 'ANCLHSTM12145', quantity: 8 })
     ]));
@@ -55,7 +62,9 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPMAXSCRNE11', quantity: 1 }),
       expect.objectContaining({ code: 'PECARMAXNE11500C', quantity: 1 }),
-      expect.objectContaining({ code: 'CASMAQEJE6378MM', quantity: 1 }),
+      // OF 0215897 (consumo real): casquillo de eje 50 para tubo Ø70 y terminal de suelo.
+      expect.objectContaining({ code: 'CASMAQEJE5070MM', quantity: 1 }),
+      expect.objectContaining({ code: 'TERSUMAXSCRNE11', quantity: 1 }),
       expect.objectContaining({ code: 'MANIVENE11170C', quantity: 1 })
     ]));
     expect(ofBlock.materials.some((line) => line.code.startsWith('PERPRLON'))).toBe(false);
@@ -67,13 +76,13 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'VARILLAMAXSCR8MM', quantity: 2 })
     ]));
-    expect(ofBlock.materials.some((line) => line.code === 'CABLEMAXIS3MM25M')).toBe(false);
+    expect(ofBlock.materials.some((line) => line.code === 'CABLEMAXIS3MM200')).toBe(false);
   });
 
   test('la variante solo cofre no reserva guías', () => {
     const ofBlock = order({ submodel: 'COFRE' }).ofs[0];
     expect(ofBlock.calculation).toMatchObject({ valid: true, guideType: '' });
-    expect(ofBlock.materials.some((line) => ['CABLEMAXIS3MM25M', 'VARILLAMAXSCR8MM'].includes(line.code))).toBe(false);
+    expect(ofBlock.materials.some((line) => ['CABLEMAXIS3MM200', 'VARILLAMAXSCR8MM'].includes(line.code))).toBe(false);
   });
 
   test('rechaza frente superior a 500 salvo excepción técnica', () => {

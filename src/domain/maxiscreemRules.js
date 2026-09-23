@@ -5,6 +5,7 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
+import { pickVerticalProfileLength, verticalProfileCode } from './boxAvailability.js';
 import {
   maxiscreemGuide,
   maxiscreemVariantGroup,
@@ -53,7 +54,11 @@ export function calculateMaxiscreem({ order, awning }) {
     : 0;
   const guideLength = guide ? round1(Number(awning.width) - parameters.guideDiscountCm) : 0;
   const rollStockLength = resolveStock(rollTubeLength, parameters.rollStockLengths);
-  const profileStockLength = resolveStock(Math.max(loadBarLength, boxProfileLength), parameters.profileStockLengths);
+  // Perfil de carga y del cofre, cada uno con su largo entre los que existen en ese
+  // lacado (en negro, el del cofre solo de 700: el de 500 está de baja desde 2020).
+  const loadStockLength = pickVerticalProfileLength('PECARMAX', lacado.suffix, parameters.profileStockLengths, loadBarLength);
+  const boxStockLength = variantGroup === 'COFRE' ? pickVerticalProfileLength('PERPRLON', lacado.suffix, parameters.profileStockLengths, boxProfileLength) : null;
+  const profileStockLength = variantGroup === 'COFRE' ? (loadStockLength && boxStockLength ? Math.max(loadStockLength, boxStockLength) : null) : loadStockLength;
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: rawFabricDrop,
@@ -94,7 +99,7 @@ export function calculateMaxiscreem({ order, awning }) {
 
   const context = {
     awning, device, variant, variantGroup, guide, lacado, fabric, valanceFabric,
-    rollStockLength, profileStockLength, rollTubeLength, loadBarLength,
+    rollStockLength, profileStockLength, loadStockLength, boxStockLength, rollTubeLength, loadBarLength,
     boxProfileLength, guideLength, fabricMl: fabricUsage.ml,
     valanceFabricMl: valanceUsage?.ml || 0
   };
@@ -130,39 +135,62 @@ export function calculateMaxiscreem({ order, awning }) {
   };
 }
 
-function buildMaterials(context) {
-  const { awning, device, variantGroup, guide, lacado, fabric, valanceFabric, rollStockLength, profileStockLength, fabricMl, valanceFabricMl } = context;
+// Piezas de la Diana vertical, contrastadas con el consumo real (9 OF desde 2024):
+// - Tubo de enrolle Ø70 (P701) con su casquillo de punta, en 8 de 9 OF; la web
+//   reservaba el P801.
+// - Motor Sunilus 15/17 con rueda centrada Hi68 y corona centrada Ø70; con máquina,
+//   casquillo de eje 50 Ø70. Sin CASPLAS.
+// - Cable de acero del rollo de 200 m, por metros: dos tramos del largo de la guía (se
+//   reservaba el rollo de 25 m, que no se consume).
+// - Juego de tapas del perfil de carga y varillas negra y blanca al largo del perfil.
+function dianaPieces(context) {
+  const { awning, device, variantGroup, guide, lacado, rollStockLength, loadStockLength, boxStockLength, rollTubeLength, loadBarLength, boxProfileLength, guideLength } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
-  const materials = [
-    line(`${variantGroup === 'COFRE' ? 'SOPMAXSCRBOX' : 'SOPMAXSCR'}${suffix}`, units, variantGroup === 'COFRE' ? 'SOPORTE MAXISCREEM PARA COFRE' : 'SOPORTE MAXISCREEM SIN COFRE'),
-    line(`TURA80HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P801'),
-    line(tipBushing('P801').code, units, tipBushing('P801').description),
-    line(profileCode('PECARMAX', suffix, profileStockLength), units, 'PERFIL CARGA MAXISCREEM')
+  const varillaMl = Math.ceil(Number(loadBarLength) || 0) / 100;
+  const cofre = variantGroup === 'COFRE';
+  const pieces = [
+    { code: `${cofre ? 'SOPMAXSCRBOX' : 'SOPMAXSCR'}${suffix}`, quantity: units, description: cofre ? 'SOPORTE MAXISCREEM PARA COFRE' : 'SOPORTE MAXISCREEM SIN COFRE' },
+    { code: `TURA70HG${rollStockLength}C`, quantity: units, description: 'TUBO DE ENROLLE P701', length: rollTubeLength },
+    { code: tipBushing('P701').code, quantity: units, description: tipBushing('P701').description },
+    { code: verticalProfileCode('PECARMAX', suffix, loadStockLength), quantity: units, description: 'PERFIL CARGA MAXISCREEM', length: loadBarLength },
+    // El juego de tapas solo existe en blanco, gris 7016 y negro.
+    ...(['BL16', 'GR16', 'NE11'].includes(suffix) ? [{ code: `TAPASLAMAXSC${suffix}`, quantity: units, description: 'JGO TAPAS PERFIL CARGA MAXISCREEN' }] : []),
+    ...(cofre ? [{ code: verticalProfileCode('PERPRLON', suffix, boxStockLength), quantity: units, description: 'PERFIL COFRE MAXISCREEM', length: boxProfileLength }] : []),
+    // Terminal de suelo del cable: uno por toldo (OF 0229970 y 0215897).
+    ...(guide ? [{ code: `TERSUMAXSCR${suffix}`, quantity: units, description: 'KIT TERMINAL SUELO MAXISCREEN' }] : []),
+    ...(guide === 'CABLE' ? [{ code: 'CABLEMAXIS3MM200', quantity: round1((2 * (Number(guideLength) || 0)) / 100 * units), description: 'CABLE ACERO 3MM MAXISCREEN', length: guideLength }] : []),
+    ...(guide === 'VARILLA' ? [{ code: 'VARILLAMAXSCR8MM', quantity: units, description: 'VARILLA DE GUIADO MAXISCREEM', length: guideLength }] : []),
+    { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM', despiece: false },
+    { code: 'VARILLAVAINARBLA', quantity: round1(varillaMl * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA', despiece: false }
   ];
-  if (variantGroup === 'COFRE') materials.push(line(profileCode('PERPRLON', suffix, profileStockLength), units, 'PERFIL COFRE MAXISCREEM'));
-  if (guide === 'CABLE') materials.push(line('CABLEMAXIS3MM25M', units, 'CABLE DE ACERO 3 MM MAXISCREEM'));
-  if (guide === 'VARILLA') materials.push(line('VARILLAMAXSCR8MM', units, 'VARILLA DE GUIADO MAXISCREEM'));
-
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
-    materials.push(
-      line('SUNILUSIO15//17', units, 'MOTOR SOMFY SUNILUS 15/17 IO'),
-      line('RUEDAMOT78', units, 'RUEDA MOTRIZ Ø 78'),
-      line('CORONALT6078', units, 'CORONA LT 60 ADAPTADA Ø 78'),
-      line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
-      { ...line(remote.code, units, remote.description), aggregation: 'max' }
-    );
     const sensor = sensorMaterial(awning.sensor);
-    if (sensor) materials.push({ ...sensor, quantity: units, aggregation: 'max' });
+    pieces.push(
+      { code: 'SUNILUSIO15//17', quantity: units, description: 'MOTOR SOMFY SUNILUS 15/17 IO' },
+      { code: 'RUEDAMOTHI68', quantity: units, description: 'RUEDA MOTRIZ CENTRADA HIPRO Ø68' },
+      { code: 'CORONACENMEC70', quantity: units, description: 'CORONA CENTRADA MECANIZADA TUBO Ø70' },
+      { code: 'SOPORTEUNVHIPRO', quantity: units, description: 'SOPORTE UNIVERSAL HIPRO' },
+      { code: remote.code, quantity: units, description: remote.description, aggregation: 'max' },
+      ...(sensor ? [{ ...sensor, quantity: units, aggregation: 'max' }] : [])
+    );
   } else {
-    materials.push(
-      line('CASMAQEJE6378MM', units, 'CASQUILLO MAQUINA EJE 63 MM Ø78'),
-      line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
-      line(`MANIVE${crankSuffix(lacado)}${awning.crankHeight}C`, units, `MANIVELA LUXE ${lacado.crank} ${awning.crankHeight}`),
-      line('CASPLAS', units, 'TACO NYLON MAQUINA')
+    pieces.push(
+      { code: 'CASMAQEJE5070MM', quantity: units, description: 'CASQUILLO MAQUINA EJE 50MM Ø70' },
+      { code: machineCode(lacado), quantity: units, description: `MÁQUINA MB-11 L-120 ${lacado.crank}` },
+      { code: `MANIVE${crankSuffix(lacado)}${awning.crankHeight}C`, quantity: units, description: `MANIVELA LUXE ${lacado.crank} ${awning.crankHeight}`, length: awning.crankHeight }
     );
   }
+  return pieces;
+}
+
+function buildMaterials(context) {
+  const { awning, fabric, valanceFabric, fabricMl, valanceFabricMl } = context;
+  const units = Math.max(1, Number(awning.units) || 1);
+  const materials = dianaPieces(context)
+    .filter((piece) => piece.code && piece.reserve !== false)
+    .map(({ code, quantity, description, aggregation }) => (aggregation ? { ...line(code, quantity, description), aggregation } : line(code, quantity, description)));
   if (fabric) materials.push(line(fabric.code, fabricMl, fabric.description));
   if (valanceFabric && valanceFabricMl > 0) materials.push(line(valanceFabric.code, valanceFabricMl, `${valanceFabric.description} · BAMBA`));
   const wall = wallMaterial(awning.wallType, units);
@@ -171,31 +199,11 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, device, variantGroup, guide, lacado, rollStockLength, profileStockLength, rollTubeLength, loadBarLength, boxProfileLength, guideLength } = context;
+  const { awning } = context;
   const units = Math.max(1, Number(awning.units) || 1);
-  const suffix = lacado.suffix;
-  const rows = [];
-  const push = (num, name, reference, rowUnits, length = null) => rows.push({ num, name, reference: reference || null, units: rowUnits, length });
-  push(1, variantGroup === 'COFRE' ? 'SOPORTE MAXISCREEM PARA COFRE' : 'SOPORTE MAXISCREEM SIN COFRE', `${variantGroup === 'COFRE' ? 'SOPMAXSCRBOX' : 'SOPMAXSCR'}${suffix}`, units);
-  push(2, 'TUBO DE ENROLLE P801', `TURA80HG${rollStockLength}C`, units, rollTubeLength);
-  push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
-  if (device === 'MAQUINA') push(4, 'CASQUILLO MAQUINA EJE 63 MM Ø78', 'CASMAQEJE6378MM', units);
-  push(5, 'PERFIL CARGA MAXISCREEM', profileCode('PECARMAX', suffix, profileStockLength), units, loadBarLength);
-  push(6, 'JUEGO DE TAPAS BARRA DE CARGA', null, units);
-  if (variantGroup === 'COFRE') push(8, 'PERFIL COFRE MAXISCREEM', profileCode('PERPRLON', suffix, profileStockLength), units, boxProfileLength);
-  if (guide) push(9, 'JUEGO DE TERMINALES', null, units);
-  if (device === 'MOTOR') {
-    push(10, 'MOTOR SOMFY SUNILUS 15/17 IO', 'SUNILUSIO15//17', units);
-    push(11, 'RUEDA MOTRIZ Ø 78', 'RUEDAMOT78', units);
-    push(12, 'CORONA LT 60 ADAPTADA Ø 78', 'CORONALT6078', units);
-    push(13, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
-  } else {
-    push(10, `MANIVELA LUXE ${lacado.crank} ${awning.crankHeight}`, `MANIVE${crankSuffix(lacado)}${awning.crankHeight}C`, units, awning.crankHeight);
-    push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
-    push(12, 'TACO NYLON MAQUINA', 'CASPLAS', units);
-  }
-  if (guide === 'CABLE') push(14, 'CABLE DE ACERO 3 MM MAXISCREEM', 'CABLEMAXIS3MM25M', units, guideLength);
-  if (guide === 'VARILLA') push(14, 'VARILLA DE GUIADO MAXISCREEM', 'VARILLAMAXSCR8MM', units, guideLength);
+  const rows = dianaPieces(context)
+    .filter((piece) => piece.despiece !== false)
+    .map((piece, index) => ({ num: index + 1, name: piece.description, reference: piece.code || null, units: piece.quantity, length: piece.length ?? null }));
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * units } : null;
   return { rows, anchoring };
@@ -204,7 +212,6 @@ function buildDespiece(context) {
 function line(code, quantity, description) { return code ? { code, quantity, description } : null; }
 function normalizeDevice(value) { const clean = String(value || '').trim().toUpperCase(); if (clean === 'MOTOR') return 'MOTOR'; if (clean.includes('MAQ')) return 'MAQUINA'; return ''; }
 function resolveStock(length, stocks) { return stocks.find((stock) => stock >= length) || null; }
-function profileCode(base, suffix, stock) { return suffix ? `${base}${suffix}${stock}C` : base; }
 function effectiveNumber(awning, field, fallback) { const value = awning[field]; return awning.reglasModificadas && value !== null && value !== undefined && Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : Number(fallback) || 0; }
 function wallMaterial(wallType, units) { const entry = behaviorData.options.tiposPared.find((item) => item.pared === wallType); return entry?.referencia ? line(entry.referencia, entry.unidades * units, entry.tornilleria) : null; }
 function sensorMaterial(value) { const sensor = String(value || '').trim().toUpperCase(); if (sensor === 'MOVIMIENTO') return { code: 'EOLIS3DIO', description: 'EOLIS 3D WIREFREE IO' }; if (sensor === 'EOLIS IO') return { code: 'EOLISSENSORIO', description: 'EOLIS SENSOR IO' }; if (sensor === 'SOL') return { code: 'SUNISIIIO', description: 'SUNIS II IO' }; return null; }

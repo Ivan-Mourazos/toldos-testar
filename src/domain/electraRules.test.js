@@ -98,15 +98,15 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
     ]));
   });
 
-  test('el soporte Universal reproduce el perfil y accesorios observados en pedidos reales', () => {
+  // Consumo real (23/09/2026): sin cofre se usa el perfil Maxiscreen-Elit también con
+  // soporte universal (OF de ELECTRSCCG con SOPUNI3AGU y PECARMAX), con su juego de tapas.
+  test('sin cofre con soporte Universal lleva el perfil Maxiscreen-Elit, como se consume', () => {
     const result = calculate({ electraSupport: 'UNIVERSAL 3 AGUJEROS' });
 
-    expect(result.calculation.profileStockLength).toBe(600);
-    expect(result.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'PUNI280BL10600C', quantity: 1 }),
-      expect.objectContaining({ code: 'TAPOPLUN280BL16', quantity: 1 }),
-      expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 2 })
+    expect(result.materials.map(({ code }) => code)).toEqual(expect.arrayContaining([
+      expect.stringMatching(/^PECARMAXBL16/), 'TAPASLAMAXSCNE11', 'MOSQBOACIN60MM', 'FELPAELIT', 'VARILLAVAINARBLA'
     ]));
+    expect(result.materials.some(({ code }) => code.startsWith('PUNI280'))).toBe(false);
   });
 
   test('el soporte Maxiscreen usa los mismos descuentos que Cortina con Maxiscreen', () => {
@@ -130,18 +130,22 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
     ['SIN COFRE / CON GUÍA', 'UNIVERSAL 3 AGUJEROS'],
     ['SIN COFRE / CON GUÍA', 'SOPORTE MAXISCREEN'],
     ['CON COFRE / SIN GUÍA', 'SOPORTE MAXISCREEM BOX']
-  ])('%s con %s lleva tubo Elit y tapones de plástico Univers', (submodel, electraSupport) => {
+  ])('%s con %s lleva el perfil de carga de su variante y sus tapas', (submodel, electraSupport) => {
     const result = calculate({ submodel, electraSupport });
+    const cofre = submodel.startsWith('CON COFRE');
+    const caps = cofre ? 'TAPOPLUN280BL16' : 'TAPASLAMAXSCNE11';
 
     expect(result.calculation.valid).toBe(true);
     expect(result.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ description: 'TUBO DE CARGA ELIT', quantity: 1 }),
-      expect.objectContaining({ code: 'TAPOPLUN280BL16', description: 'KIT TAPONES PLÁSTICO UNIVERS 280', quantity: 1 })
+      expect.objectContaining({ code: caps, quantity: 1 })
     ]));
+    expect(result.materials.some(({ code }) => code.startsWith(cofre ? 'PUNI280' : 'PECARMAX'))).toBe(true);
     expect(result.despiece.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ num: 5, name: 'TUBO DE CARGA ELIT', units: 1 }),
-      expect.objectContaining({ num: 6, reference: 'TAPOPLUN280BL16', name: 'KIT TAPONES PLÁSTICO UNIVERS 280', units: 1 })
+      expect.objectContaining({ name: 'TUBO DE CARGA ELIT', units: 1 }),
+      expect.objectContaining({ reference: caps, units: 1 })
     ]));
+    expect(result.despiece.rows.map((row) => row.num)).toEqual(result.despiece.rows.map((_, index) => index + 1));
   });
 });
 
@@ -194,7 +198,7 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     expect(names).toEqual(expect.arrayContaining([
       'CADENILLAS INOX',
       'PUENTES ABATIBLES',
-      'MOSQUETONES INOX 60',
+      'MOSQUETÓN BOMBERO ACERO INOX 60 MM',
       'REGLETA ZAMACK'
     ]));
   });
@@ -268,16 +272,18 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     ]));
   });
 
-  test('el lacado especial conserva las referencias reales de stock sin sufijo', () => {
+  test('el lacado especial usa los perfiles blancos, que se lacan fuera', () => {
     const result = calculate({
       submodel: 'CON COFRE / SIN GUÍA',
       electraSupport: 'SOPORTE MAXISCREEM BOX',
       structureColor: 'LACADO ESPECIAL'
     }, { structureColor: '' });
 
+    // Con cofre la barra es Univers (en lacado especial, la base) y el perfil del cofre,
+    // el blanco que se laca fuera, como en la OF 0229970.
     expect(result.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'PECARMAX500C' }),
-      expect.objectContaining({ code: 'PERPRLON500C' })
+      expect.objectContaining({ code: 'PUNI280' }),
+      expect.objectContaining({ code: expect.stringMatching(/^PERPRLONBL16(500|700)C$/) })
     ]));
   });
 
@@ -329,8 +335,10 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
       expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 })
     ]));
     expect(result.despiece.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ num: 21, reference: 'SITUOIO1PURE', units: 1 })
+      expect.objectContaining({ reference: 'SITUOIO1PURE', units: 1 })
     ]));
+    // Kit de motor que se consume: rueda P-801 mecanizada y corona LT50 Ø78.
+    expect(result.materials.map(({ code }) => code)).toEqual(expect.arrayContaining(['RUEDAMOT801MEC', 'CORONALT5078']));
   });
 
   test('el motor no se presupone y debe confirmarse en el pedido', () => {
