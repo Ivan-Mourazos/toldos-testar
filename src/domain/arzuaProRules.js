@@ -5,7 +5,7 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { resolveLacado, crankSuffix, machineCode, plasticCapSuffix, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { arzuaProEstablishedProjections, galiciaSupportLimits } from './arzuaProConstants.js';
-import { evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
+import { evo80AvailableLengths, evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
 import { galiciaArmLines, galiciaSingleArmExists, galiciaSupportLines } from './galiciaSupportPieces.js';
 import {
   normalizeArzuaProParameters,
@@ -151,7 +151,11 @@ export function calculateArzuaPro({ order, awning }) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
-      message: `ARZUA PRO no válido: ningún largo de stock configurado admite ${length} cm.`
+      // Si el lacado limita el EVO 80, se dice qué largos hay: el mensaje genérico hacía
+      // pensar en los parámetros cuando la causa es el color.
+      message: evoTube && evo80AvailableLengths(colorSuffix)
+        ? `ARZUA PRO no válido: la barra mide ${length} cm y en ${lacado.name} el EVO 80 solo existe de ${evo80AvailableLengths(colorSuffix).join(', ')} cm. Prueba con Univers 280 u otro lacado.`
+        : `ARZUA PRO no válido: ningún largo de stock configurado admite ${length} cm.`
     });
   }
 

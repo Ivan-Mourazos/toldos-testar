@@ -587,6 +587,24 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     expect(galiciaArzua({ width: 520, projection: 350, reglasModificadas: true }).calculation.valid).toBe(true);
   });
 
+  // Pedido 4611 (23/09/2026): en verde 6005 el EVO 80 solo existe de 500 y el toldo
+  // salía "sin largo de stock" aunque la barra de 494,6 cabía.
+  test('AR2604611: verde 6005 con EVO 80 usa el único largo que existe (500)', () => {
+    const verde = (width) => calculateOrder(basePayload({
+      orderCode: 'AR2604611', fabric: 'ACR AZUL', structureColor: 'VERDE (R-06005)',
+      awnings: [baseAwning({
+        of: '0232297', width, projection: 200, valanceHeight: 20, structureColor: 'VERDE (R-06005)',
+        tubeLoad: 'TUBO DE CARGA EVO 80', device: 'MAQ. EXTERIOR', crankHeight: 150
+      })]
+    }));
+    const ok = verde(505);
+    expect(ok.ofs[0].calculation).toMatchObject({ valid: true, structureLength: 494.6, stockLength: 500 });
+    expect(asLines(ok.ofs[0].materials)).toEqual(expect.arrayContaining(['PEVO80VE05500C x1']));
+    const tooLong = verde(560);
+    expect(tooLong.ofs[0].calculation.valid).toBe(false);
+    expect(tooLong.diagnostics.some((d) => d.message.includes('el EVO 80 solo existe de 500 cm'))).toBe(true);
+  });
+
   test('AR2603332: motor 55/17, EVO 80 y medidas exactas del planteamiento', () => {
     const result = calculateOrder(basePayload({
       orderCode: 'AR2603332',

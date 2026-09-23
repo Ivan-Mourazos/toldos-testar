@@ -38,9 +38,18 @@ const onyxArmsBySuffix = Object.freeze({
 
 // Un lacado que no esté en la tabla (lacado especial, colores sin perfil propio)
 // conserva los largos pedidos: lo detecta `pnpm validate:rps-refs`.
+// Si ninguno de los largos habituales existe en ese lacado, se usan los que hay: en
+// verde 6005 solo existe el de 500 y el pedido 4611 (505 de frente, barra 494,6) se
+// quedaba sin largo de stock aunque la barra cabía (23/09/2026).
 export function evo80StockLengths(colorSuffix, wanted) {
   const available = evo80LengthsBySuffix[String(colorSuffix || '')];
-  return available ? wanted.filter((length) => available.includes(length)) : wanted;
+  if (!available) return wanted;
+  const usual = wanted.filter((length) => available.includes(length));
+  return usual.length > 0 ? usual : [...available];
+}
+
+export function evo80AvailableLengths(colorSuffix) {
+  return evo80LengthsBySuffix[String(colorSuffix || '')] || null;
 }
 
 export function onyxArmExists(colorSuffix, projection) {
