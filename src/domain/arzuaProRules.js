@@ -34,10 +34,13 @@ export function calculateArzuaPro({ order, awning }) {
   const requiredMotorTorqueNm = device === 'MOTOR' && !crossed
     ? resolveArzuaRequiredTorque(awning.width, awning.projection)
     : null;
-  const armCount = supportSystem === 'GALICIA' ? 3 : 1;
+  // Con soporte Galicia van tres brazos salvo que se pidan dos (10 de 132 OF reales).
+  // Con AROND siempre dos: `armCount` cuenta ahí juegos, no brazos.
+  const galiciaArms = Number(awning.armCount) === 2 ? 2 : 3;
+  const armCount = supportSystem === 'GALICIA' ? galiciaArms : 1;
   const diagnostics = [];
   const minimumLine = lookupMinimumLine(crossed ? crossedMinimumLines : parameters.minimumLineByArm, awning.projection, device);
-  const galicia = supportSystem === 'GALICIA';
+  const galicia = supportSystem === 'GALICIA' && galiciaArms === 3;
   const maximumLine = crossed
     ? (device === 'MAQ. EXTERIOR' ? 400 : 395)
     : galicia ? galiciaSupportLimits.maximumWidthCm : parameters.standardMaxWidth;
@@ -46,7 +49,7 @@ export function calculateArzuaPro({ order, awning }) {
   const overProjection = galicia && !crossed && Number(awning.projection) > galiciaSupportLimits.maximumProjectionCm;
   const overMaximum = awning.width > maximumLine || overProjection;
   const maximumText = galicia
-    ? `supera el máximo con soporte GALICIA (${galiciaSupportLimits.maximumWidthCm} × ${galiciaSupportLimits.maximumProjectionCm} cm)`
+    ? `supera el máximo con tres brazos (${galiciaSupportLimits.maximumWidthCm} × ${galiciaSupportLimits.maximumProjectionCm} cm)`
     : `supera el máximo estándar de ${parameters.standardMaxWidth} cm con soporte ARZUA`;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
@@ -109,7 +112,7 @@ export function calculateArzuaPro({ order, awning }) {
   const evoTube = tubeLoad === 'TUBO DE CARGA EVO 80' && !crossed;
   const profileLengths = evoTube ? evo80StockLengths(colorSuffix, parameters.stockLengths) : parameters.stockLengths;
   const stockLength = chooseStockLength(length, profileLengths);
-  const singleArmMissing = !crossed && supportSystem === 'GALICIA' && !galiciaSingleArmExists(colorSuffix, awning.projection);
+  const singleArmMissing = !crossed && galicia && !galiciaSingleArmExists(colorSuffix, awning.projection);
   const armMissing = !crossed && (!onyxArmExists(colorSuffix, awning.projection) || singleArmMissing);
   const fabricInvalid = Boolean(fabricSelection && !fabric);
   const stockUnavailable = stockLength === null;
@@ -201,7 +204,7 @@ export function calculateArzuaPro({ order, awning }) {
       minimumLine,
       maximumLine,
       armConfiguration: crossed ? 'CROSSED' : 'STANDARD',
-      physicalArmCount: crossed ? 2 : supportSystem === 'GALICIA' ? 3 : 2,
+      physicalArmCount: crossed ? 2 : supportSystem === 'GALICIA' ? galiciaArms : 2,
       crossedKit: crossedKit || '',
       loadProfileStockLength: crossed ? 500 : stockLength,
       width: awning.width,

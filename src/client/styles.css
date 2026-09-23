@@ -5204,6 +5204,8 @@ textarea,
   color: var(--warn);
 }
 
+.awning-row-warn { grid-column: 1 / -1; margin: 0; }
+
 /* Consulta de reglas: tablas legibles dentro de la página de parámetros existente. */
 .rule-reference-content { min-width: 0; display: grid; gap: 12px; }
 .rule-reference-content > p { margin: 0; font-size: 12px; line-height: 1.6; }

@@ -567,6 +567,13 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     expect(asLines(ofBlock.materials)).toEqual(expect.arrayContaining(['BONYXGR12250C x1', 'BONYXIGR12250C x1']));
   });
 
+  test('soporte Galicia con dos brazos: solo los juegos y el máximo de dos brazos', () => {
+    const ofBlock = galiciaArzua({ armCount: 2 });
+    expect(ofBlock.calculation).toMatchObject({ valid: true, physicalArmCount: 2 });
+    expect(asLines(ofBlock.materials).filter((line) => /^(BONYX|SOPARTGL)/.test(line))).toEqual(['BONYXBL16250C x1', 'SOPARTGLBL16 x1']);
+    expect(galiciaArzua({ armCount: 2, width: 650 }).calculation.valid).toBe(false);
+  });
+
   test('soporte Galicia: en negro no hay brazo suelto de 150 y el toldo no es válido', () => {
     const ofBlock = galiciaArzua({ structureColor: 'NEGRO (R-09011)', projection: 150, width: 300 });
     expect(ofBlock.calculation.valid).toBe(false);

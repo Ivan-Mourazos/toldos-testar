@@ -1,6 +1,6 @@
 # Arzúa Pro — expediente
 
-23/09/2026 · **En curso: reserva y límites al día; falta decidir los descuentos (Q-A01) y revisar formulario y PDF** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-arzua-evidence.md)
+23/09/2026 · **Terminado salvo las dudas Q-A01 y Q-A03 a Q-A05** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-arzua-evidence.md)
 
 ## 1. Alcance y fuentes
 
@@ -82,7 +82,19 @@ Consultado en RPS con la fecha de baja (`arzuaAvailability.js` y `galiciaSupport
 
 Con esto, Arzúa no tiene códigos rotos en blanco ni en negro. En otros lacados quedan 60, casi todos soportes Galicia o perfiles que no existen en ese color (bronce, gris texturado…). Es un problema transversal, no del modelo (Q-A02).
 
-## 7. En qué se apoya cada decisión
+## 7. Formulario y PDF (puntos 8 y 9)
+
+Revisado a 1280×720 y a 1600, con el caso AR2603332 y un segundo toldo con soporte Galicia: los dos válidos, sin errores y sin scroll horizontal.
+
+| Qué se vio | Arreglo |
+| --- | --- |
+| Con soporte Galicia, "Nº de brazos" no marcaba nada y el cálculo lo ignoraba (siempre 3) | Galicia marca 3 y admite 2; AROND, 2. Elegir 3 brazos pone el soporte Galicia |
+| Elegir 3 brazos ofrecía cambiar al modelo GALICIA | Quitado: un Arzúa de tres brazos es un Arzúa con soporte Galicia (ficha TGM y 100 OF reales), no otro artículo |
+| El aviso "Esta OF no pertenece al pedido" alargaba el campo OF y bajaba Frente y Salida | Va en su propia línea encima de la fila |
+| PDF de estructura con 13 filas (Galicia) | Medido en el PDF: la fila 13 acaba donde empieza "Elementos accesorios", no se monta. En la vista previa lo parecía por el rasterizado |
+| Nombre "antes ART 325 / ARZUA" | Es la descripción del artículo ARZUA en RPS y la web la copia. Está desfasada (el ART 325 es el soporte del Arzúa antiguo): tarea para OT |
+
+## 8. En qué se apoya cada decisión
 
 | Decisión | Fuente |
 | --- | --- |
@@ -92,9 +104,8 @@ Con esto, Arzúa no tiene códigos rotos en blanco ni en negro. En otros lacados
 | Juego + suelto con Galicia | Consumo real: 100 de 132 OF |
 | Largos de EVO 80, brazos y sueltos | Maestro de RPS con `InactiveDate` |
 
-## 8. Pendiente
+## 9. Pendiente
 
 - Decidir Q-A01 y, con ello, rehacer el contraste de medidas.
-- Revisar el formulario y la muestra del PDF (puntos 8 y 9 de la definición de terminado).
-- Lacados bronce y 7022, que venían señalados en la auditoría.
+- Lacados bronce y 7022, que venían señalados en la auditoría (parte de Q-A02).
 - Hecho: la numeración del despiece ahora es correlativa (antes saltaba del 12 al 21 y dejaba el 4 vacío a motor).
