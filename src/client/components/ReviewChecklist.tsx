@@ -1,0 +1,90 @@
+import React, { useEffect, useState } from 'react';
+import { AlertTriangle, CheckCircle2, CircleAlert } from 'lucide-react';
+import type { Awning, ReviewPackage, RuleParameters } from '../types';
+import { awningLetter, getMissingFields, describeMissing } from '../../domain/awningCompleteness.js';
+import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
+import { controlLabel } from './controlLabels';
+
+type Diagnostic = { level: string; awningId?: string; message: string };
+
+// "Qué revisar": una línea por toldo con lo que más se equivoca (modelo, medidas, tela,
+// lacado, dispositivo) y su estado. Iván, 23/09/2026: al revisar no se sabe bien qué
+// mirar de los datos introducidos.
+export function ReviewChecklist({ review, parameters, onFocusAwning }: {
+  review: ReviewPackage;
+  parameters: RuleParameters;
+  onFocusAwning: (letter: string) => void;
+}) {
+  const order = review.order;
+  const [diagnostics, setDiagnostics] = useState<Diagnostic[] | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...order, parameters }),
+      signal: controller.signal
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => setDiagnostics(data?.diagnostics || []))
+      .catch(() => { /* cancelado o sin conexión: el resumen sale sin avisos */ });
+    return () => controller.abort();
+  }, [order, parameters]);
+
+  return (
+    <section className="review-checklist" aria-label="Qué revisar">
+      <h3>Qué revisar</h3>
+      <ol>
+        {order.awnings.map((awning, index) => {
+          const letter = awningLetter(index);
+          const missing = getMissingFields(awning, order);
+          const own = (diagnostics || []).filter((item) => item.awningId === awning.id);
+          const errors = own.filter((item) => item.level === 'error').length;
+          const pending = own.filter((item) => item.level === 'pending').length;
+          const warnings = own.filter((item) => item.level === 'warn').length;
+          const state = missing.length || errors || pending ? 'error' : warnings ? 'warn' : 'ok';
+          return (
+            <li key={awning.id || index}>
+              <button type="button" className={`review-checklist-row is-${state}`} onClick={() => onFocusAwning(letter)}>
+                <span className="review-checklist-letter">{letter}</span>
+                <span className="review-checklist-model">
+                  <strong>{controlLabel(awning.model)}</strong>
+                  {variantOf(awning) && <small>{controlLabel(variantOf(awning))}</small>}
+                </span>
+                <span>{measuresOf(awning)}</span>
+                <span className="review-checklist-fabric">{fabricOf(awning, order) || 'Sin tela'}</span>
+                <span>{controlLabel(awning.structureColor || order.structureColor || '') || '—'}</span>
+                <span>{controlLabel(awning.device || '') || '—'}</span>
+                <span className="review-checklist-state" title={own.map((item) => item.message).join('\n') || undefined}>
+                  {state === 'ok' && <><CheckCircle2 aria-hidden="true" />Completo</>}
+                  {state === 'warn' && <><AlertTriangle aria-hidden="true" />{warnings} {warnings === 1 ? 'aviso' : 'avisos'}</>}
+                  {state === 'error' && <><CircleAlert aria-hidden="true" />{missing.length ? `Falta ${describeMissing(missing)}` : errors ? `${errors} ${errors === 1 ? 'error' : 'errores'}` : `${pending} por resolver`}</>}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+function variantOf(awning: Awning) {
+  return awning.submodel || awning.anticaVariant || '';
+}
+
+function measuresOf(awning: Awning) {
+  if (awning.model === 'IRIS') return pair(awning.irisFrontTop, awning.irisExitLeft);
+  if (awning.model === 'BAMBALINA') return pair(awning.width, awning.valanceHeight);
+  return pair(awning.width, awning.projection);
+}
+
+function pair(first: unknown, second: unknown) {
+  return `${Number(first) || '—'} × ${Number(second) || '—'}`;
+}
+
+function fabricOf(awning: Awning, order: ReviewPackage['order']) {
+  const selection = order.sameFabric === false ? awning.fabric : order.fabric;
+  return selection ? fabricSelectionLabel(selection) : '';
+}

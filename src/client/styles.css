@@ -5326,3 +5326,91 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .parameters-history li > div { display: grid; gap: 2px; font-size: 13px; }
 .parameters-history small { color: var(--text-muted); }
 .parameters-history p { margin: 0; padding: 0 var(--sp-4) var(--sp-3); font-size: 13px; color: var(--text-muted); }
+
+/* Revisión · lote E (23/09/2026): formulario y PDF a la vez, pasos visibles, "Qué revisar"
+   y devolver al técnico. A 1280 la lista de pedidos se pliega para dejar sitio. */
+.reviews-layout.is-list-collapsed { grid-template-columns: minmax(0, 1fr); }
+.reviews-layout.is-list-collapsed .review-inbox { display: none; }
+.review-reader { container-type: inline-size; }
+.review-reader-header { flex-wrap: wrap; row-gap: 10px; }
+.review-reader-header > div.review-reader-title { align-items: center; display: flex; gap: 10px; }
+.review-reader-title small { color: #4f6663; font-size: 11px; }
+.review-list-toggle { flex: 0 0 auto; }
+
+.review-steps { align-items: center; display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.review-steps li { align-items: center; color: #4f6663; display: flex; font-size: 11px; gap: 6px; }
+.review-steps li + li::before { background: #c9d6d2; content: ''; height: 1px; width: 16px; }
+.review-steps li span:last-child { display: grid; line-height: 1.15; }
+.review-steps small { color: #5b6f6c; font-size: 9.5px; }
+.review-step-dot { align-items: center; border: 1px solid #c9d6d2; border-radius: 50%; display: inline-flex; font-size: 10px; font-weight: 800; height: 20px; justify-content: center; width: 20px; }
+.review-steps li.is-current { color: #0c272c; }
+.review-steps li.is-current .review-step-dot { background: #efb51b; border-color: #dcaa20; color: #173238; }
+.review-steps li.is-done .review-step-dot { background: #dff3e9; border-color: #9fd2b8; color: #176146; }
+
+.review-state-note { align-items: flex-start; border-radius: 8px; display: flex; font-size: 12px; gap: 9px; line-height: 1.4; margin-top: 12px; padding: 9px 11px; }
+.review-state-note span { display: grid; gap: 2px; }
+.review-state-note svg { flex: 0 0 auto; height: 17px; margin-top: 1px; width: 17px; }
+.review-state-note.is-returned { background: #fdecea; border: 1px solid #f1c3bb; color: #7f2c21; }
+.review-state-note.is-approved { background: #e7f4ed; border: 1px solid #b9dccb; color: #225b47; }
+.order-return-note { margin: 0 0 12px; }
+.review-state-hint { color: #4f6663; font-size: 12px; margin: 10px 0 0; }
+.review-list-note { color: #9d3528; font-size: 11px; grid-column: 1 / -1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.review-checklist { background: #ffffff; border: 1px solid #d8e2df; border-radius: 8px; margin-top: 12px; overflow: hidden; }
+.review-checklist h3 { border-bottom: 1px solid #e3ebe8; color: #4f6663; font-size: 11px; letter-spacing: 0.04em; margin: 0; padding: 8px 11px; text-transform: uppercase; }
+.review-checklist ol { list-style: none; margin: 0; padding: 0; }
+.review-checklist-row {
+  align-items: center;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #eef3f1;
+  color: #16383d;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  font-size: 12px;
+  gap: 10px;
+  grid-template-columns: 24px minmax(110px, 1.2fr) 88px minmax(130px, 1.8fr) minmax(70px, 0.8fr) minmax(70px, 0.8fr) minmax(120px, 1.3fr);
+  padding: 7px 11px;
+  text-align: left;
+  width: 100%;
+}
+.review-checklist li:last-child .review-checklist-row { border-bottom: 0; }
+.review-checklist-row:hover, .review-checklist-row:focus-visible { background: #f5f9f8; }
+.review-checklist-letter { align-items: center; background: #efb51b; border-radius: 5px; color: #173238; display: inline-flex; font-size: 11px; font-weight: 800; height: 22px; justify-content: center; width: 22px; }
+.review-checklist-model { display: grid; line-height: 1.2; }
+.review-checklist-model small { color: #4f6663; font-size: 10.5px; }
+.review-checklist-fabric { overflow-wrap: anywhere; }
+.review-checklist-state { align-items: center; display: flex; font-weight: 700; gap: 5px; }
+.review-checklist-state svg { flex: 0 0 auto; height: 15px; width: 15px; }
+.review-checklist-row.is-ok .review-checklist-state { color: #176146; }
+.review-checklist-row.is-warn .review-checklist-state { color: #865d00; }
+.review-checklist-row.is-error .review-checklist-state { color: #9d3528; }
+
+.review-panes { align-items: start; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: 12px; }
+.review-form-pane { max-height: calc(100vh - 150px); overflow: auto; overscroll-behavior: contain; padding-right: 4px; }
+.review-pdf-pane { position: sticky; top: 12px; }
+.review-pdf-pane .review-inline-preview { margin-top: 0; }
+.review-form-pane .review-readonly-order { margin-top: 0; }
+/* En el panel las tarjetas van una debajo de otra: en tira se cortaba el segundo toldo. */
+/* Los datos del pedido ya están en la cabecera y en "Qué revisar": en el panel se aplastaban. */
+.review-form-pane .order-header { display: none; }
+.review-form-pane .awning-grid { grid-auto-columns: auto; grid-auto-flow: row; grid-template-columns: minmax(0, 1fr); overflow: visible; }
+.awning-column.is-flash { box-shadow: 0 0 0 3px #efb51b; transition: box-shadow 0.3s; }
+
+/* Solo lectura con aspecto de texto: antes parecía que se podía editar. */
+.review-readonly-order :is(input, textarea):disabled,
+.review-readonly-order .select-control:disabled { background: transparent; border-color: #e3ebe8; }
+.review-readonly-order .segmented-control button:disabled:not(.active) { background: transparent; border-color: transparent; }
+.fabric-readonly-value { color: #16383d; font-size: 13px; font-weight: 600; line-height: 1.35; margin: 4px 0 0; overflow-wrap: anywhere; }
+
+.review-decision-field { color: #16383d; display: grid; font-size: 12px; font-weight: 700; gap: 4px; margin-top: 10px; }
+.review-decision-field :is(select, textarea) { background: #ffffff; border: 1px solid #c9d6d2; border-radius: 6px; font: inherit; font-weight: 400; line-height: 1.35; min-height: 38px; padding: 7px 9px; }
+.review-decision-field textarea { resize: vertical; }
+
+@container (max-width: 900px) {
+  .review-panes { grid-template-columns: minmax(0, 1fr); }
+  .review-form-pane { max-height: none; overflow: visible; }
+  .review-pdf-pane { position: static; }
+  .review-checklist-row { grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr); }
+}

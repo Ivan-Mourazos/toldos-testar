@@ -246,6 +246,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
       disabled={readOnly}
       aria-label={`${fabricOnly ? 'Trabajo de tela' : 'Toldo'} ${String.fromCharCode(65 + index)} · ${controlLabel(awning.model)}`}
       aria-readonly={readOnly || undefined}
+      data-awning-letter={awningLetter(index)}
     >
       <header className="awning-column-header">
         <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>

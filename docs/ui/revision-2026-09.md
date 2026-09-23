@@ -106,3 +106,16 @@ La web está en buen estado: nada se sale de la pantalla, las 22 tarjetas llegan
    - **Pasos visibles:** Borrador → Por revisar → Aprobado → Generado, en la cabecera del pedido. Cada botón dice lo que hace y lo que no: "Aprobar (no genera nada)". "Generar archivos" solo aparece después, con la lista exacta de lo que se va a escribir y dónde.
    - **Qué revisar:** encima del formulario, un resumen por toldo con lo que se suele equivocar: modelo y variante, frente × salida, tela, lacado, dispositivo, avisos. Cada dato está enlazado a su campo del formulario y a su página del PDF.
    - **Devolver en vez de no aprobar:** botón "Devolver al técnico" con un motivo. El pedido vuelve a Por revisar con la nota visible para el técnico. Hoy solo existe "Corregir en Pedido", que hace la corrección el propio revisor.
+
+## Lote E · Revisión · hecho el 23/09/2026
+
+- **Dos paneles:** formulario (solo lectura, tarjetas una debajo de otra) y PDF, cada uno con su desplazamiento. A menos de 1500 px la lista de pedidos se pliega con un botón (R2, R3).
+- **Pasos siempre a la vista:** Por revisar (o Devuelto) → Aprobado ("no genera nada") → Archivos generados. Tras aprobar: "Aún no se ha generado nada".
+- **"Qué revisar":** una línea por toldo (modelo, variante, medidas, tela, lacado, dispositivo, estado). Al pulsarla, el formulario salta a esa tarjeta y la resalta. El estado distingue lo que falta, los errores, lo que queda por resolver y los avisos; al pasar el ratón se ve el texto.
+- **Devolver al técnico** con quién revisa y qué hay que cambiar. El pedido sigue en Por revisar como "Devuelto", con la nota en la lista y en el detalle; al abrirlo con "Corregir en Pedido", la nota se ve arriba en Pedido hasta que se vuelve a guardar o se limpia. El servidor ya lo admitía (`request-changes`), pero la pantalla no lo usaba.
+- **Aprobar** pide quién revisa en el mismo diálogo, con nota opcional (R5). Antes fallaba al pulsar si el pedido no tenía técnico.
+- **La tela se lee entera** en solo lectura (R1). Los campos de solo lectura ya no parecen editables (R4). Los datos del pedido están en la cabecera y no se repiten aplastados en el panel.
+- **PDF de estructura:** la casilla "VERDADERO" dice "VÁLIDO" (pregunta 1).
+- **Pendiente para más adelante:** avisar en el diálogo de aprobar si algún toldo tiene algo por resolver, que después bloqueará la generación.
+
+Capturas: `tmp/ui-audit/shots/ui-lote-e-*` (scripts `tmp/ui-audit/lote-e.mjs` y `lote-e-flujo.mjs`). El e2e de RPS aprueba con el diálogo nuevo.
