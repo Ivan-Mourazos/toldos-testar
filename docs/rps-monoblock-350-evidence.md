@@ -1,5 +1,7 @@
 # Evidencia RPS: Monoblock 350
 
+> **23/09/2026: el despiece de este documento está superado.** Copiaba la reserva de los libros, que no es lo que se consume: brazos y soportes por unidades en vez de por juegos, tapones de EVO 70, currón que no se usa, sin terminales, varillas ni tapones de la barra 40×40, y una sola barra de 700 en frentes grandes. La reserva vigente está en el [expediente](./modelos/monoblock-350.md). Las medidas siguen valiendo.
+
 ## Fuentes
 
 - `Y:\PROGRAMAS CALCULO\TOLDOS TESTAR 10-4.xlsm`, hoja oculta `MON.350`.

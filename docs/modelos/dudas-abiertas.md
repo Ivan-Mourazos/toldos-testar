@@ -21,6 +21,10 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-G01 | Galicia | Máquina MB-11 L-120 (32 OF) o Geiger 1.13 L-140 (17 OF): ¿de qué depende? | MB-11 |
 | Q-G02 | Galicia | ¿Cuándo se pone el motor 70/17? Se consume el 55/17 en 13 de 18 OF, también con tres brazos y 650 de frente | 55/17; el 70/17 con el candado |
 | Q-G03 | Galicia | La ficha TGM permite 8 m con tres brazos y hay 10 OF con tubo de enrolle de 800, pero la barra más larga es de 700: ¿se empalma? ¿Se permite salida 350 con tres brazos? (3 OF reales) | Máximo 700 con candado; aviso por encima de 325 con tres brazos |
+| Q-M01 | Monoblock 350 | ¿Mínimos y máximos del manual de 2016 (brazos ART 350) o del catálogo actual de Llaza (Onyx)? Cambian los de 3 brazos (p. ej. 429 o 421 con 2,25) y el máximo con 3,50 (7,75 o 8,25) | Los del manual |
+| Q-M02 | Monoblock 350 | Motor con 4 brazos: se consumió el 70/17 (2 OF) y el manual pide 85-100 Nm | 55/17 (2), 70/17 (3), 85/17 (4) |
+| Q-M03 | Monoblock 350 | Frentes de 720 a 725: el almacén usó una barra de 700 aunque el corte pasa de 700. ¿Hasta dónde vale una sola y cómo se empalma por encima? | Una hasta 725; después, barras iguales |
+| Q-M04 | Monoblock 350 | Se usa Univers 280 en 31 de 59 OF, pero el manual solo da el corte del EVO. ¿Mismo descuento? | El del EVO |
 | Q-A02 | Transversal | 36 referencias rotas en lacados poco habituales (bronce, gris texturado…): faltan soportes Galicia, perfiles o terminales en esos colores. ¿Se ofrecen esos lacados? | Se ofrecen todos |
 | Q-X01 | Xacobeo | El manual ART 250 descuenta 11,9 cm de lona con máquina exterior; la web y los libros usan 12,5 (112 comprobaciones sin diferencias) | 12,5 |
 | Q-SE04 | Selena | ¿Existe Selena a motor? No hay manual y no hay motores en las 17 OF | Solo máquina interior |

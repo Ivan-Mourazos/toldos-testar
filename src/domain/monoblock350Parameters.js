@@ -1,4 +1,5 @@
 import {
+  manualCommercialMotor,
   monoblock350EstablishedProjections,
   monoblock350ManualRules,
   monoblock350ManualSpec
@@ -124,8 +125,8 @@ function normalizeRules(input, defaults) {
         ),
         motorTorqueNm: positive(row?.values?.[arms]?.motorTorqueNm, defaultRow.values[arms].motorTorqueNm),
         motorPower: migrateLegacyMotor(
-          row?.values?.[arms]?.motorPower,
-          legacyRow.values[arms].motorPower,
+          migrateLegacyMotor(row?.values?.[arms]?.motorPower, legacyRow.values[arms].motorPower, defaultRow.values[arms].motorPower),
+          manualCommercialMotor(defaultRow.projection, arms),
           defaultRow.values[arms].motorPower
         )
       }]))

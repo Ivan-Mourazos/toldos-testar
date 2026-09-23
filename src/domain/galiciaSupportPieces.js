@@ -47,13 +47,20 @@ function singleSupportSide(colorSuffix) {
   return singleSupportSides[String(colorSuffix || '')]?.[0] || 'D';
 }
 
-export function galiciaArmLines(colorSuffix, projection, armCount, units) {
-  const lines = [{ code: `BONYX${colorSuffix}${projection}C`, quantity: units, description: 'JUEGO DE BRAZOS ONYX' }];
-  if (Number(armCount) === 3) {
+// Brazos Onyx por juegos: dos brazos son un juego y un número impar añade uno suelto.
+// Lo usan Galicia (2 o 3) y Monoblock 350 (2, 3 o 4: cuatro son dos juegos).
+export function onyxArmLines(colorSuffix, projection, armCount, units) {
+  const arms = Number(armCount) || 2;
+  const lines = [{ code: `BONYX${colorSuffix}${projection}C`, quantity: Math.floor(arms / 2) * units, description: 'JUEGO DE BRAZOS ONYX' }];
+  if (arms % 2 === 1) {
     const side = singleArmSide(colorSuffix, projection);
     lines.push({ code: `BONYX${side}${colorSuffix}${projection}C`, quantity: units, description: `BRAZO ONYX ${side === 'D' ? 'DERECHO' : 'IZQUIERDO'}` });
   }
   return lines;
+}
+
+export function galiciaArmLines(colorSuffix, projection, armCount, units) {
+  return onyxArmLines(colorSuffix, projection, armCount, units);
 }
 
 export function galiciaSupportLines(colorSuffix, armCount, units) {

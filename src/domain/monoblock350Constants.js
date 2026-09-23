@@ -27,17 +27,26 @@ const commercialMotorByTorque = {
   100: '100/12'
 };
 
+// Motor que se consume (todas las OF a motor desde 2024): 55/17 con 2 brazos y 70/17
+// con 3, también con 4 en las dos OF que hay (Q-M02). Con 4 se deja el del manual
+// (85 Nm), que es lo que pide el par. El par del manual se conserva como referencia.
+export const monoblock350MotorByArms = Object.freeze({ 2: '55/17', 3: '70/17', 4: '85/17' });
+
+// Motor que proponía la web hasta el 23/09/2026 (el comercial más cercano al par del
+// manual): si una configuración guardada lo conserva, se migra al de arriba.
+export function manualCommercialMotor(projection, arms) {
+  const index = monoblock350EstablishedProjections.indexOf(Number(projection));
+  return index < 0 ? null : commercialMotorByTorque[motorTorqueTube80[arms][index]];
+}
+
 export const monoblock350ManualRules = monoblock350EstablishedProjections.map((projection, index) => ({
   projection,
-  values: Object.fromEntries([2, 3, 4].map((arms) => {
-    const motorTorqueNm = motorTorqueTube80[arms][index];
-    return [arms, {
-      minimum: minimumWidths[arms][index],
-      maximum: maximumWidths[arms][index],
-      motorTorqueNm,
-      motorPower: commercialMotorByTorque[motorTorqueNm]
-    }];
-  }))
+  values: Object.fromEntries([2, 3, 4].map((arms) => [arms, {
+    minimum: minimumWidths[arms][index],
+    maximum: maximumWidths[arms][index],
+    motorTorqueNm: motorTorqueTube80[arms][index],
+    motorPower: monoblock350MotorByArms[arms]
+  }]))
 }));
 
 export const monoblock350ManualSpec = {

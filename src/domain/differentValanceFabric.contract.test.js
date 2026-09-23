@@ -72,7 +72,7 @@ const scenarios = [
   }),
   scenario('MONOBLOCK 350', {
     width: 520, projection: 150, valanceHeight: 25, armCount: 2,
-    device: 'MAQUINA', placement: 'FRONTAL', crankHeight: 200
+    device: 'MAQUINA', placement: 'FRONTAL', crankHeight: 200, tubeLoad: 'TUBO DE CARGA EVO 80'
   }),
   scenario('PUNTO RECTO', {
     width: 256, projection: 100, valanceHeight: 25, armCount: 2,

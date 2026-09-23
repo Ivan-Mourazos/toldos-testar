@@ -12,7 +12,7 @@ describe('protecciones del cálculo de tela', () => {
   test.each([
     ['ARZUA PRO', { width: 337, projection: 225, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80', crankHeight: 200 }],
     ['MAXISCREEM', { width: 335, projection: 280, submodel: 'CON CABLE', device: 'MAQUINA', placement: 'FRONTAL', crankHeight: 170 }],
-    ['MONOBLOCK 350', { width: 520, projection: 150, armCount: 2, device: 'MAQUINA', placement: 'FRONTAL', crankHeight: 200 }]
+    ['MONOBLOCK 350', { width: 520, projection: 150, armCount: 2, device: 'MAQUINA', placement: 'FRONTAL', crankHeight: 200, tubeLoad: 'TUBO DE CARGA EVO 80' }]
   ])('%s ignora una referencia de bamba residual cuando la altura es cero', (model, fields) => {
     const calculate = (valanceFabric) => calculateOrder({
       ...commonOrder,

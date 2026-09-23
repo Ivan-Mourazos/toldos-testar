@@ -31,6 +31,12 @@ function modelExtras(model, device) {
   // Con soportes Galicia es el modelo GALICIA, aunque en RPS se venda como ARZUA.
   if (model === 'ARZUA PRO') return tubeLoads.map((tubeLoad) => ({ tubeLoad, armCount: 2, supportSystem: 'ARZUA' }));
   if (model === 'GALICIA') return tubeLoads.map((tubeLoad) => ({ tubeLoad, armCount: 3 }));
+  // Monoblock llega a 12 m: sin frentes grandes no saldrían el currón ni los empalmes.
+  if (model === 'MONOBLOCK 350') {
+    return tubeLoads.flatMap((tubeLoad) => [2, 3, 4].flatMap((armCount) => ['FRONTAL', 'TECHO'].map((placement) => ({
+      tubeLoad, armCount, placement, widths: [320, 450, 580, 700, 800, 900, 1100]
+    }))));
+  }
   if (model === 'ANTICA') return anticaVariants.map((anticaVariant) => ({ anticaVariant, anticaSupportHeight: 40 }));
   if (model === 'HERA') {
     // Con el rollo de 120 de la tela de muestra, un frente mayor exige empate.
@@ -81,9 +87,11 @@ export function sampleAwnings(model, structureColor = 'BLANCO') {
     for (const device of devicesOf(model)) {
       for (const extra of modelExtras(model, device)) {
         for (const projection of projectionsOf(model)) {
-          for (const width of WIDTHS) {
+          for (const width of extra.widths || WIDTHS) {
+            const fields = { ...extra };
+            delete fields.widths;
             const awning = {
-              ...common, ...extra, id: 'a', of: '0000000', model, submodel, device,
+              ...common, ...fields, id: 'a', of: '0000000', model, submodel, device,
               width, projection, structureColor, irisFrontTop: width, irisExitLeft: projection
             };
             const result = calculate(awning, structureColor);
