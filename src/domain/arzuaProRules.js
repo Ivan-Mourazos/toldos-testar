@@ -5,6 +5,7 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { resolveLacado, crankSuffix, machineCode, plasticCapSuffix, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
+import { evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
 import {
   normalizeArzuaProParameters,
   resolveArzuaMotorPower,
@@ -94,7 +95,13 @@ export function calculateArzuaPro({ order, awning }) {
   const length = round1(awning.width - lookupDiscount(parameters.widthDiscounts, tubeLoad, device, 9.8));
   if (crossed && (length <= 0 || length > 500)) diagnostics.push({ level: 'error', awningId: awning.id, message: 'Brazo cruzado: el corte de la barra de carga debe caber en el perfil de 500 cm.' });
   const rollTubeLength = round1(awning.width - lookupDiscount(parameters.rollTubeDiscounts, tubeLoad, device, 9.8));
-  const stockLength = chooseStockLength(length, parameters.stockLengths);
+  // El perfil EVO 80 no existe en todos los largos de cada lacado (en negro, el de
+  // 600 está de baja desde 2023); el Univers 280 tiene su propia tabla.
+  // El brazo cruzado usa su propio perfil de 500, así que no se filtra.
+  const evoTube = tubeLoad === 'TUBO DE CARGA EVO 80' && !crossed;
+  const profileLengths = evoTube ? evo80StockLengths(colorSuffix, parameters.stockLengths) : parameters.stockLengths;
+  const stockLength = chooseStockLength(length, profileLengths);
+  const armMissing = !crossed && !onyxArmExists(colorSuffix, awning.projection);
   const fabricInvalid = Boolean(fabricSelection && !fabric);
   const stockUnavailable = stockLength === null;
   const valid = missingFields.length === 0
@@ -102,6 +109,7 @@ export function calculateArzuaPro({ order, awning }) {
     && !fabricInvalid
     && (!valanceFabricSelection || valance === 0 || Boolean(valanceFabric))
     && !stockUnavailable
+    && !armMissing
     && !belowMinimum
     && (!overMaximum || modified);
   if (fabricSelection && !fabric) {
@@ -116,6 +124,13 @@ export function calculateArzuaPro({ order, awning }) {
       level: 'error',
       awningId: awning.id,
       message: `Tela de bamba no encontrada en el catálogo: "${valanceFabricSelection}".`
+    });
+  }
+  if (armMissing) {
+    diagnostics.push({
+      level: 'error',
+      awningId: awning.id,
+      message: `ARZUA PRO no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
     });
   }
   if (stockUnavailable) {
