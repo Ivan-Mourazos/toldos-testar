@@ -127,6 +127,7 @@ Capturas: `tmp/ui-audit/shots/ui-lote-e-*` (scripts `tmp/ui-audit/lote-e.mjs` y 
 - **B2 · estilo de los avisos.** En la tarjeta van a la izquierda, con icono y sin el prefijo "HERA en OF …:" (`src/client/diagnosticText.ts`, con test).
 - **B3 · FALTA.** En el orden en que se rellena la tarjeta (`getMissingFields`, así que igual en la tarjeta, al guardar y en "Qué revisar"). Cada campo es un enlace que lleva a él, y la cabecera de la tarjeta dice "FALTA 5" o "VÁLIDO". "altura de instalación" pasa a "altura instalación", como el campo.
 - **B4 · tarjetas en filas.** 2 por fila a 1280 y 3 a 1600, sin desplazamiento a lo ancho.
-- **Pendiente del lote B:** B5 (orden común de campos en todos los modelos, empezando por Iris).
+- **B5 · variante arriba.** Un solo campo de variante para todos los modelos, justo después de las medidas (y de la bamba si la hay). En Iris sale antes de su configuración; el FALTA sigue el mismo orden.
+- **Lote D (Codex) fusionado:** un solo visor de PDF en Pedido y Revisión, con páginas, zoom (página entera por defecto, al ancho, +/−, Ctrl + rueda), teclado y Esc. e2e `pnpm test:e2e:pdf-viewer` (necesita la instancia aislada).
 
 Capturas: `tmp/ui-audit/shots/ui-lote-b-*` (script `tmp/ui-audit/lote-b.mjs`).

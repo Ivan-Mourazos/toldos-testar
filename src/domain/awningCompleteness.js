@@ -20,8 +20,8 @@ const windowDimensions = [
 // campos. Antes salía en el orden de las comprobaciones ("OF · tela · dispositivo ·
 // tubo de carga · frente…"). Lo que no está en la lista va al final, en su orden.
 const fillOrder = [
-  'fabric', 'of', 'width', 'projection', 'irisFrontTop', 'irisExitLeft', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
-  'submodel', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
+  'fabric', 'of', 'width', 'projection', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
+  'submodel', 'irisFrontTop', 'irisExitLeft', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
   'heraChainColor', 'height', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace',
   'curtainHasWindow', 'curtainFinish', ...windowDimensions.map(([field]) => field),
   'structureColor', 'rotFabric', 'rotValance', 'device', 'motorPower', 'machineSide', 'crankHeight', 'placement'

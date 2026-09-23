@@ -154,6 +154,15 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const status = missingFields.length
     ? `FALTA · ${missingFields.map((item) => item.label).join(' · ')}`
     : ofCalculation ? (ofCalculation.valid ? 'VÁLIDO' : 'REVISAR') : 'SIN CALCULAR';
+  // La variante decide el resto de la tarjeta: va justo después de las medidas en todos los
+  // modelos (en Iris salía en mitad de la tarjeta). A lo ancho: las variantes son largas
+  // ("SIN COFRE / CON GUÍA", "HERA 56 máquina") y en una columna se cortaban.
+  const variantField = fields.submodel ? (
+    <div className="awning-wide-field">
+      <SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…"
+        onChange={isHera ? (submodel) => update({ submodel, height: submodel === 'HERA 56 MOTOR' ? null : awning.height }) : updateSubmodel} />
+    </div>
+  ) : null;
   const statusClass = missingFields.length ? 'badge-warn' : status === 'VÁLIDO' ? 'badge-ok' : status === 'REVISAR' ? 'badge-danger' : '';
   // Si el toldo trae una salida que no está en la lista establecida (p. ej. un
   // borrador migrado con salida libre), mostramos el número real en vez de un
@@ -396,6 +405,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           ) : (
             <NumberField label={projectionLabel} missing={isMissing('projection')} value={awning.projection} min={0} onChange={updateProjection} />
           ))}
+          {!supportsValance && variantField}
           {fields.iris && (
             <div className="awning-form-section">
               <span className="awning-form-section-title">Configuración IRIS</span>
@@ -462,12 +472,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               )}
             </div>
           )}
-          {/* A todo el ancho: en su columna se cortaba ("HERA 56 …") y no se distinguía máquina de motor. */}
-          {isHera && fields.submodel && (
-            <div className="awning-wide-field">
-              <SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={(submodel) => update({ submodel, height: submodel === 'HERA 56 MOTOR' ? null : awning.height })} />
-            </div>
-          )}
           {isHera && (
             <SelectField label={awning.submodel === 'HERA 56 MOTOR' ? 'Color mecanismos' : 'Color cadena'} missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
           )}
@@ -507,6 +511,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {valanceFinish === 'OTRO' && <TextField label="Color remate" missing={isMissing('remateColor')} value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
             </div>
           )}
+          {supportsValance && variantField}
           {fabricDiagramOptions.length > 1 && (
             <div className="awning-wide-field">
               <SelectField
@@ -565,11 +570,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
           {fields.tubeLoad && !fields.arzua && !fields.galicia && (
             <div className="awning-wide-field"><SegmentedField label="Tubo de carga" missing={isMissing('tubeLoad')} value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} /></div>
-          )}
-          {fields.submodel && !isHera && (
-            // A lo ancho: las variantes son largas ("SIN COFRE / CON GUÍA") y en una columna
-            // se cortaban.
-            <div className="awning-wide-field"><SelectField label="Variante" missing={isMissing('submodel')} value={awning.submodel} options={fields.submodelOptions} placeholder="Elegir variante…" onChange={updateSubmodel} /></div>
           )}
           {isAntica && (
             <div className="awning-wide-field">
