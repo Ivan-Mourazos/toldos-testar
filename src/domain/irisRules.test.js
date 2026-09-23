@@ -146,9 +146,15 @@ describe('IRIS · lona y cristal', () => {
     expect(calculate({ units: 2 }).calculation.fabricMl).toBe(17.4);
   });
 
-  test('reserva la lona y, con ventana, el cristal estabilizado', () => {
-    expect(calculate().materials).toEqual([
-      { code: 'IRISTESTP120', quantity: 8.7, description: 'LONA DE PRUEBA IRIS' }
+  test('reserva la lona, las piezas comunes y, con ventana, el cristal estabilizado', () => {
+    // Piezas que no dependen del cofre ni de la guía, como en las OF de IRIS110C/CO a
+    // máquina: casquillo Ø70, placa, tubo P701, pletina terminal, tapones, goma, casquillo
+    // de eje cuadrado, MB-11 y manivela.
+    expect(calculate().materials.map(({ code, quantity }) => [code, quantity])).toEqual([
+      ['IRISTESTP120', 8.7],
+      ['CASNMOSZ70MM', 1], ['CASPLACASZ', 1], ['TURA70HG500C', 1], ['PLETSCR13300C', 1],
+      ['TAPTERSZ13BLAN', 2], ['GOMASSCR700C', 1],
+      ['CASCES132070MM', 1], ['MAQMB11L12BLAN', 1], ['MANIVEBL16150C', 1]
     ]);
     expect(calculate({ curtainHasWindow: true, units: 2 }).materials).toContainEqual({
       code: 'CRISESTP140300C',
@@ -272,5 +278,18 @@ describe('IRIS · despiece', () => {
 
   test('no hay despiece cuando el toldo no es válido', () => {
     expect(calculate({ irisGuideType: 'PEQUEÑA' }).despiece).toBeNull();
+  });
+});
+
+describe('IRIS · piezas comunes según el consumo real', () => {
+  const codes = (result) => Object.fromEntries(result.materials.map(({ code, quantity }) => [code, quantity]));
+
+  test('130 a motor: casquillos Ø80, tubo P801, rueda P-801 mecanizada y soporte Hipro, sin máquina', () => {
+    const result = calculate({ submodel: 'IRIS 130 CON COFRE', device: 'MOTOR', structureColor: 'NEGRO (R-09011)' });
+    const materials = codes(result);
+    expect(materials).toMatchObject({ CASNMOSZ78MM: 1, CASADMOSZ78MM: 1, RUEDAMOT801MEC: 1, SOPORTEUNVHIPRO: 1, TAPTERSZ13NEGR: 2, GOMASSCRN700C: 1 });
+    expect(Object.keys(materials).some((code) => /^(MAQ|MANIVE|CASCES|TURA70)/.test(code))).toBe(false);
+    expect(Object.keys(materials).some((code) => code.startsWith('TURA80HG'))).toBe(true);
+    expect(result.diagnostics.map((item) => item.message).join(' ')).toContain('motor y mando sin reservar');
   });
 });

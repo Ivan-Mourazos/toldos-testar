@@ -35,6 +35,11 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-CA01 | Cambio Antica | ¿Qué salida se mide? En AR2600921 la venta dice 379 × 120, pero el libro usa 70 y con el +65 da la caída cortada (158) | La salida que se escriba, más 65 |
 | Q-CA02 | Cambio Antica | Bamba en otra tela: la plantilla suma +55 al cuerpo en el toldo 01 y +40 en el 02 | +40 |
 | Q-CA03 | Cambio Antica | AR2502455: caídas de 245 y 275 escritas a mano, 45-53 cm más que la fórmula. ¿Otra forma de medir? | La fórmula (+65) |
+| Q-I01 | Iris | Cofre redondo o cuadrado: cambia perfiles y tapas y la tarjeta no lo pide. ¿Se añade? | No los reserva |
+| Q-I02 | Iris | Guía: RPS distingue GPZ C, ÚNICA y STORM; la tarjeta, estándar, pequeña y compensadora. ¿Cómo se corresponden? | No reserva guías, pies ni cremallera |
+| Q-I03 | Iris | Los artículos "sin guía" (C/COS/GU) consumen guías, pies y cremallera | — |
+| Q-I04 | Iris | Varilla vaina y macarrón: ¿cuánto? En el 150 el ancho de la tela; en el 110 y 130 hasta 8 m por toldo | No los reserva |
+| Q-I05 | Iris | Motor (Sunea, Sunilus de 10 a 35 Nm, Meteor CSI): ¿cuál y se pide en la tarjeta? | No lo reserva; avisa |
 | Q-A02 | Transversal | 36 referencias rotas en lacados poco habituales (bronce, gris texturado…): faltan soportes Galicia, perfiles o terminales en esos colores. ¿Se ofrecen esos lacados? | Se ofrecen todos |
 | Q-X01 | Xacobeo | El manual ART 250 descuenta 11,9 cm de lona con máquina exterior; la web y los libros usan 12,5 (112 comprobaciones sin diferencias) | 12,5 |
 | Q-SE04 | Selena | ¿Existe Selena a motor? No hay manual y no hay motores en las 17 OF | Solo máquina interior |

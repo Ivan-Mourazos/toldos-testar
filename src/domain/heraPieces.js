@@ -10,6 +10,8 @@
 // - macarrón y, con varilla blanca, varilla vaina: el ancho de la tela.
 // El HERA 43 lleva su kit ("solamente para el Ø43") y el tubo Ø43, sin adaptador.
 
+import { barsForCuts as barsFor } from './math.js';
+
 const TUBE_STOCK_CM = 600;
 const PROFILE_STOCK_CM = 600;
 const PLATE_STOCK_CM = 635;
@@ -63,14 +65,6 @@ function bottomPieces({ finish, suffix, units, fabricWidth }) {
     { code: 'SCRTAPINFBLANDCH', quantity: units, description: 'TAPON SCREEN TUBO INFERIOR DERECHO' },
     { code: 'SCRTAPINFBLANIZQ', quantity: units, description: 'TAPON SCREEN TUBO INFERIOR IZQUIERDO' }
   ];
-}
-
-// Barras enteras para `units` cortes iguales: los que caben en una barra se sacan de ella.
-export function barsFor(cut, units, stock) {
-  const length = Number(cut) || 0;
-  if (length <= 0) return 0;
-  if (length > stock) return units * Math.ceil(length / stock);
-  return Math.ceil(units / Math.floor(stock / length));
 }
 
 function round2(value) {

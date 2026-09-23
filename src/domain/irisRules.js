@@ -1,4 +1,6 @@
 import { formatNumber } from './math.js';
+import { resolveLacado } from './lacados.js';
+import { irisCommonPieces } from './irisPieces.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
@@ -184,6 +186,13 @@ export function calculateIris({ order, awning }) {
   if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de IRIS modificadas.` });
   }
+  if (device === 'MOTOR') {
+    // Se usan varios motores (Sunea y Sunilus de 10 a 35 Nm) y la tarjeta no lo pide.
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: motor y mando sin reservar; añádelos en la reserva.` });
+  }
+  // Perfiles del cofre, guías, pies y cremallera dependen del cofre (redondo o cuadrado) y
+  // del sistema de guía, que la tarjeta aún no distingue (dudas Q-I01 a Q-I03).
+  diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: perfiles del cofre, guías y cremallera sin reservar; añádelos en la reserva.` });
 
   const valid = missingFields.length === 0
     && opening.valid
@@ -199,6 +208,12 @@ export function calculateIris({ order, awning }) {
   if (valid && fabric) materials.push({ code: fabric.code, quantity: fabricUsage.ml, description: fabric.description });
   const glassLine = valid ? glassMaterial(glassSize, awning.units) : null;
   if (glassLine) materials.push(glassLine);
+  if (valid) {
+    materials.push(...irisCommonPieces({
+      series, device, lacado: resolveLacado(structureColor), units: Math.max(1, Number(awning.units) || 1),
+      rollTubeLength, loadBarLength, ballastLength, crankHeight: awning.crankHeight
+    }));
+  }
 
   return {
     of: awning.of,

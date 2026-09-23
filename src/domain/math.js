@@ -14,3 +14,12 @@ export function formatNumber(value) {
   if (!Number.isFinite(number)) return String(value ?? '').trim() || '-';
   return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(number);
 }
+
+// Barras enteras para `units` cortes iguales: los que caben en una barra salen de ella
+// (AR2603981: 5 tubos de HERA en 3 barras de 600).
+export function barsForCuts(cut, units, stock) {
+  const length = Number(cut) || 0;
+  if (length <= 0) return 0;
+  if (length > stock) return units * Math.ceil(length / stock);
+  return Math.ceil(units / Math.floor(stock / length));
+}
