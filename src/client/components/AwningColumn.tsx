@@ -640,7 +640,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <NumberField label="Salida ventana" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
                 <NumberField label="Esquina" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
                 <NumberField label="Suelo-ventana" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
-                <NumberField label="H. ventana" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
+                <NumberField label="Altura ventana" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
               </div>}
             </div>
           )}

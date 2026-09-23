@@ -1753,7 +1753,8 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     }
   } else {
     doc.rect(endX - 8, endY - 3, 16, tube === '30x10' ? 8 : 13).fillAndStroke(colors.paper, colors.ink);
-    drawSideLabel(doc, `ENTRADA TUBO ${tube}`, endX - 115, endY - 28, 110);
+    // F-A01: en 50×30 el rótulo cruzaba la lona (PDF de 300 × 200); queda bajo ambas líneas.
+    drawSideLabel(doc, `ENTRADA TUBO ${tube}`, endX - 115, tube === '50x30' ? endY + 24 : endY - 28, 110);
   }
 
   if (isCounterweight) {

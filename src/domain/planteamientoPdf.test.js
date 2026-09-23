@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {
   awningLetter,
   buildFabricLineDetail,
@@ -638,6 +638,46 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(plan.fabricPages).toHaveLength(2);
     expect(plan.fabricPages.map(({ entries }) => entries.map(({ awning }) => awning.id)))
       .toEqual([['without-valance'], ['with-valance']]);
+  });
+
+  test.each(['TUBO 50X30', 'TUBO 50X30 CONTRAPESO'])('el rótulo de %s queda separado de las dos líneas de lona (F-A01)', async (anticaVariant) => {
+    const order = {
+      orderCode: 'AR26-ANTICA-F-A01', fabric: heraAcrylic120, sameFabric: true,
+      awnings: [{
+        id: 'antica', of: '0240003', model: 'CAMBIO ANTICA', units: 1,
+        width: 300, projection: 200, valanceHeight: 0, anticaVariant,
+        anticaMeasurementMode: 'BASE', rotFabric: 'NO'
+      }]
+    };
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const loading = getDocument({ data: new Uint8Array(buffer) });
+    try {
+      const document = await loading.promise;
+      const page = await document.getPage(1);
+      const content = await page.getTextContent();
+      const label = content.items.find((item) => item.str === 'ENTRADA TUBO 50x30');
+      expect(label).toBeDefined();
+      // F-A01 se reproduce con 300 × 200: el texto cruzaba las dos líneas.
+      // Pasamos el borde superior del texto al eje Y descendente de los trazos PDFKit.
+      const labelTop = page.view[3] - label.transform[5]
+        - content.styles[label.fontName].ascent * label.height;
+      const operators = await page.getOperatorList();
+      const fabricLines = [];
+      let strokeColor;
+      for (let i = 0; i < operators.fnArray.length; i += 1) {
+        if (operators.fnArray[i] === OPS.setStrokeRGBColor) strokeColor = operators.argsArray[i][0];
+        if (operators.fnArray[i] === OPS.constructPath && ['#7fa594', '#bfd2ca'].includes(strokeColor)) {
+          fabricLines.push(operators.argsArray[i][2]);
+        }
+      }
+      expect(fabricLines).toHaveLength(2);
+      for (const bounds of fabricLines) {
+        // Tres puntos de separación incluyen la mitad del grosor del trazo.
+        expect(labelTop).toBeGreaterThan(bounds[3] + 3);
+      }
+    } finally {
+      await loading.destroy();
+    }
   });
 
   test('el planteamiento Ø42 conserva 273,5 × 180 y rotula el tubo redondo', async () => {
