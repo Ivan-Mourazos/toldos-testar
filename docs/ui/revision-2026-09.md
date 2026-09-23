@@ -95,3 +95,14 @@ La web está en buen estado: nada se sale de la pantalla, las 22 tarjetas llegan
 3. **B · Tarjetas.** Avisos una vez, FALTA ordenado, rejilla y orden común.
 4. **C · Despiece** y **D · Visor**, en paralelo por Codex.
 5. **F · Parámetros y Configuración.**
+
+## Respuestas de Iván (23/09/2026) y lo que se hace
+
+1. **Casilla "VERDADERO":** "como prefieras". Pasa a **"VÁLIDO"**, la palabra de la tarjeta; con un fallo sigue "REVISAR".
+2. **Filas o tira:** Iván pide ver cómo sería (boceto en la respuesta; pendiente de su visto bueno).
+3. **Historial:** `HistoryView` es el historial antiguo, guardado en cada navegador (localStorage). El historial compartido ya existe: la pestaña **Generados** de Revisión, que sigue mostrando los PDF después de que RPS los procese (carpeta "Histórico de planteamientos RPS"). Se quita `HistoryView` y se mejora Generados: búsqueda por pedido, cliente, OF o modelo, y filtro de año.
+4. **Revisión:** "ver el PDF y el formulario donde se introducen los datos". Dos paneles lado a lado, cada uno con su propio desplazamiento.
+5. **Qué molesta:** el ir y venir entre poner a revisar, ir a revisar y aprobar o no. **Miedo a que aprobar genere ya los archivos.** No saber qué mirar de los datos introducidos. Lo recoge el lote E:
+   - **Pasos visibles:** Borrador → Por revisar → Aprobado → Generado, en la cabecera del pedido. Cada botón dice lo que hace y lo que no: "Aprobar (no genera nada)". "Generar archivos" solo aparece después, con la lista exacta de lo que se va a escribir y dónde.
+   - **Qué revisar:** encima del formulario, un resumen por toldo con lo que se suele equivocar: modelo y variante, frente × salida, tela, lacado, dispositivo, avisos. Cada dato está enlazado a su campo del formulario y a su página del PDF.
+   - **Devolver en vez de no aprobar:** botón "Devolver al técnico" con un motivo. El pedido vuelve a Por revisar con la nota visible para el técnico. Hoy solo existe "Corregir en Pedido", que hace la corrección el propio revisor.
