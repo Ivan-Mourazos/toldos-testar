@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../../.."
 D="$PWD/tmp/ui-audit"
 mkdir -p "$D"/{review,plan,rps,export,archive,rpsplan}
-export NODE_ENV=development HOST=127.0.0.1 PORT=4310
+export NODE_ENV=development HOST=127.0.0.1 PORT="${PORT:-4310}"
 export ENABLE_FILE_WRITES=false ENABLE_HERA=true ENABLE_LEGACY_EXPORTS=false
 export WORKFLOW_SETTINGS_FILE="$D/settings.json"
 export REVIEW_DIRECTORY="$D/review" PLANTEAMIENTOS_DIRECTORY="$D/plan"

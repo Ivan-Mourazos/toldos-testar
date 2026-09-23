@@ -1,7 +1,7 @@
 // Ayudas de Playwright para la instancia aislada de 4310 (ver SKILL.md).
 import { chromium } from 'playwright';
 
-export const BASE_URL = 'http://127.0.0.1:4310';
+export const BASE_URL = process.env.TOLDOS_ISOLATED_URL || 'http://127.0.0.1:4310';
 
 export async function openApp(viewport = { width: 1600, height: 1000 }) {
   const health = await fetch(`${BASE_URL}/api/health`).then((r) => r.json());
