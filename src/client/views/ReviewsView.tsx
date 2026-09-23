@@ -3,6 +3,7 @@ import { ChevronRight, FileSearch, RefreshCw, Search } from 'lucide-react';
 import type { ReviewPackage, ReviewSummary, RuleParameters } from '../types';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail, ReviewStatusBadge } from '../components/ReviewOrderDetail';
+import { ReviewDecisionDialog, type ReviewDecision } from '../components/ReviewDecisionDialog';
 
 export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, onConfirm }: {
   refreshKey: number;
@@ -23,6 +24,9 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
   const [approving, setApproving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [detailRefresh, setDetailRefresh] = useState(0);
+  const [decision, setDecision] = useState<ReviewDecision | null>(null);
+  // A 1280 la lista y los dos paneles (formulario y PDF) no caben a la vez: se pliega.
+  const [listCollapsed, setListCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1500);
   const listRequestId = useRef(0);
 
   async function load() {
@@ -138,29 +142,53 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
     }
   }
 
-  async function approveSelected() {
+  function askDecision(mode: ReviewDecision['mode']) {
     if (!selected || !selectedReview) return;
-    const choice = await onConfirm({
-      title: `Aprobar ${selected.orderCode}`,
-      message: 'El pedido quedará marcado como Aprobado en la lista de revisión. Esta acción no genera reservas ni envía archivos a producción.',
-      confirmLabel: 'Aprobar pedido',
-      cancelLabel: 'Seguir revisando',
-      tone: 'warning'
-    });
-    if (choice !== 'confirm') return;
+    setDecision({ mode, orderCode: selected.orderCode, defaultReviewer: selectedReview.order.reviewer || selectedReview.order.technician || '' });
+  }
 
+  async function submitDecision({ reviewer, note }: { reviewer: string; note: string }) {
+    const current = decision;
+    setDecision(null);
+    if (!current) return;
+    if (current.mode === 'approve') await approveSelected(reviewer, note);
+    else await returnSelected(reviewer, note);
+  }
+
+  async function returnSelected(reviewer: string, note: string) {
+    if (!selected) return;
+    setApproving(true);
+    try {
+      const response = await fetch(`/api/reviews/${encodeURIComponent(selected.orderCode)}/request-changes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewer, note })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo devolver el pedido.');
+      updateLocalReview(data.review as ReviewPackage);
+      onToast(`Pedido ${selected.orderCode} devuelto al técnico con tu nota.`, { tone: 'success', title: 'Pedido devuelto' });
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudo devolver el pedido.', { tone: 'error' });
+    } finally {
+      setApproving(false);
+    }
+  }
+
+  async function approveSelected(reviewer: string, note: string) {
+    if (!selected || !selectedReview) return;
     setApproving(true);
     try {
       const response = await fetch(`/api/reviews/${encodeURIComponent(selected.orderCode)}/mark-approved`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reviewer: selectedReview.order.reviewer || selectedReview.order.technician })
+        body: JSON.stringify({ reviewer, note })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudo aprobar el pedido.');
       updateLocalReview(data.review as ReviewPackage);
       setViewMode('approved');
-      onToast(`Pedido ${selected.orderCode} marcado como aprobado.`, { tone: 'success', title: 'Revisión aprobada' });
+      onToast(`Pedido ${selected.orderCode} aprobado. Aún no se ha generado ningún archivo.`, { tone: 'success', title: 'Revisión aprobada' });
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo aprobar el pedido.', { tone: 'error' });
     } finally {
@@ -252,7 +280,7 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
   }
 
   return (
-    <section className="reviews-layout">
+    <section className={`reviews-layout${listCollapsed ? ' is-list-collapsed' : ''}`}>
       <div className="review-inbox panel">
         <div className="section-header review-toolbar">
           <div><h2>{viewMode === 'queue' ? 'Por revisar' : viewMode === 'approved' ? 'Aprobados' : 'Archivos generados'}</h2><span>{scopedReviews.length} pedidos en {year}</span></div>
@@ -275,6 +303,7 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
                   <span className="review-list-main"><strong>{review.orderCode}</strong><small>{review.summary.customer || 'Sin cliente'}</small></span>
                   <ReviewStatusBadge status={review.status} />
                   <span className="review-list-meta">{formatAwningCount(review.summary.awnings)} · {formatDate(review.updatedAt)}</span>
+                  {review.status === 'CHANGES_REQUESTED' && review.reviewNote && <span className="review-list-note">{review.reviewNote}</span>}
                   <ChevronRight aria-hidden="true" />
                 </button>
               ))}
@@ -294,9 +323,13 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
         generating={generating}
         onEdit={() => void openSelected()}
         onReuse={() => void reuseSelected()}
-        onApprove={() => void approveSelected()}
+        listCollapsed={listCollapsed}
+        onToggleList={() => setListCollapsed((value) => !value)}
+        onApprove={() => askDecision('approve')}
+        onReturn={() => askDecision('return')}
         onGenerate={() => void generateSelected()}
       />
+      {decision && <ReviewDecisionDialog decision={decision} onCancel={() => setDecision(null)} onSubmit={(value) => void submitDecision(value)} />}
     </section>
   );
 }

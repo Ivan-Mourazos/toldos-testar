@@ -169,7 +169,7 @@ async function verifyBrowserCase(browserInstance, url) {
   await chooseSelect(awning, 'Colocación', 'Frontal');
   await chooseSelect(awning, 'Sensor', 'Sin sensor');
 
-  await page.getByText('VÁLIDO', { exact: true }).waitFor({ timeout: 15_000 });
+  await page.locator('footer.awning-status', { hasText: 'VÁLIDO' }).waitFor({ timeout: 15_000 });
   await page.getByText('326,2 × 300 cm', { exact: true }).waitFor();
   await page.getByText('9 ml', { exact: true }).waitFor();
 
@@ -198,8 +198,11 @@ async function verifyBrowserCase(browserInstance, url) {
   await inlinePreview.getByRole('button', { name: 'Página siguiente' }).first().click();
   await inlinePreview.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
   await page.getByRole('button', { name: 'Aprobar', exact: true }).click();
-  await page.getByRole('button', { name: 'Aprobar pedido', exact: true }).click();
-  await page.getByText(/marcado como aprobado/).waitFor({ timeout: 20_000 });
+  // Desde el 23/09/2026 el diálogo de aprobar pide quién revisa y avisa de que no genera nada.
+  const approveDialog = page.getByRole('dialog', { name: 'Aprobar AR2603332' });
+  await approveDialog.locator('select').selectOption('ÁNGEL');
+  await approveDialog.getByRole('button', { name: 'Aprobar (sin generar)', exact: true }).click();
+  await page.getByText(/aprobado. Aún no se ha generado ningún archivo/).waitFor({ timeout: 20_000 });
 
   const reviewPath = path.join(workflowDirectory, '2026', 'TOLDOS', 'AR2603332.pdf');
   const rpsPath = path.join(workflowDirectory, 'RPS', '0230194.xls');

@@ -25,6 +25,11 @@ export function LiveResults({ calculation, state, awnings, onUpdate }: Props) {
   const structureBlocks = ofCards.filter((ofBlock) => findAwning(ofBlock, awnings)?.workType !== 'FABRIC_ONLY' && ofBlock.despiece);
   const materialRows = groupMaterialRows(calculation?.ofs || []);
   const diagnostics = calculation?.diagnostics || [];
+  const orderDiagnostics = diagnostics.filter((item) => !awnings.some((awning) => awning.id === item.awningId));
+  const awningSummaries = awnings.flatMap((awning, index) => {
+    const own = diagnostics.filter((item) => item.awningId === awning.id);
+    return own.length ? [{ letter: awningLetter(index), count: own.length, errors: own.some((item) => item.level === 'error' || item.level === 'pending') }] : [];
+  });
   const selectedBlock = structureBlocks.find((block) => blockKey(block) === selectedStructure) || structureBlocks[0];
 
   return (
@@ -41,11 +46,21 @@ export function LiveResults({ calculation, state, awnings, onUpdate }: Props) {
         </div>
       </div>
 
-      {diagnostics.length > 0 && (
+      {/* Los avisos de cada toldo ya están en su tarjeta: aquí solo los del pedido y una
+          línea por toldo que lleva a ella (antes salían todos dos veces). */}
+      {(orderDiagnostics.length > 0 || awningSummaries.length > 0) && (
         <ul className="diagnostics-list">
-          {diagnostics.map((item, index) => (
+          {orderDiagnostics.map((item, index) => (
             <li key={`${item.message}-${index}`} className={item.level === 'error' ? 'badge-danger' : 'badge-warn'}>
               <AlertCircle aria-hidden="true" />{item.message}
+            </li>
+          ))}
+          {awningSummaries.map((summary) => (
+            <li key={summary.letter} className={summary.errors ? 'badge-danger' : 'badge-warn'}>
+              <AlertCircle aria-hidden="true" />
+              <button type="button" className="diagnostics-awning-link" onClick={() => focusAwningCard(summary.letter)}>
+                Toldo {summary.letter}: {summary.count} {summary.count === 1 ? 'aviso' : 'avisos'} · ver en su tarjeta
+              </button>
             </li>
           ))}
         </ul>
@@ -261,4 +276,12 @@ function buildStatusText(state: CalculationState, calculation: Calculation | nul
   if (state === 'error') return 'Hay datos pendientes de revisar';
   if (calculation) return 'Estructura, tela y reserva se actualizan al cambiar el pedido';
   return 'Esperando datos del pedido';
+}
+
+function focusAwningCard(letter: string) {
+  const card = document.querySelector<HTMLElement>(`.awning-grid [data-awning-letter="${letter}"]`);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  card.classList.add('is-flash');
+  window.setTimeout(() => card.classList.remove('is-flash'), 1400);
 }

@@ -9,7 +9,9 @@ export async function openApp(viewport = { width: 1600, height: 1000 }) {
     throw new Error(`La instancia de 4310 no está aislada: ${JSON.stringify(health)}`);
   }
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport });
+  // Con contexto propio: @axe-core/playwright no admite páginas creadas con browser.newPage().
+  const context = await browser.newContext({ viewport });
+  const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });

@@ -106,3 +106,27 @@ La web está en buen estado: nada se sale de la pantalla, las 22 tarjetas llegan
    - **Pasos visibles:** Borrador → Por revisar → Aprobado → Generado, en la cabecera del pedido. Cada botón dice lo que hace y lo que no: "Aprobar (no genera nada)". "Generar archivos" solo aparece después, con la lista exacta de lo que se va a escribir y dónde.
    - **Qué revisar:** encima del formulario, un resumen por toldo con lo que se suele equivocar: modelo y variante, frente × salida, tela, lacado, dispositivo, avisos. Cada dato está enlazado a su campo del formulario y a su página del PDF.
    - **Devolver en vez de no aprobar:** botón "Devolver al técnico" con un motivo. El pedido vuelve a Por revisar con la nota visible para el técnico. Hoy solo existe "Corregir en Pedido", que hace la corrección el propio revisor.
+
+## Lote E · Revisión · hecho el 23/09/2026
+
+- **Dos paneles:** formulario (solo lectura, tarjetas una debajo de otra) y PDF, cada uno con su desplazamiento. A menos de 1500 px la lista de pedidos se pliega con un botón (R2, R3).
+- **Pasos siempre a la vista:** Por revisar (o Devuelto) → Aprobado ("no genera nada") → Archivos generados. Tras aprobar: "Aún no se ha generado nada".
+- **"Qué revisar":** una línea por toldo (modelo, variante, medidas, tela, lacado, dispositivo, estado). Al pulsarla, el formulario salta a esa tarjeta y la resalta. El estado distingue lo que falta, los errores, lo que queda por resolver y los avisos; al pasar el ratón se ve el texto.
+- **Devolver al técnico** con quién revisa y qué hay que cambiar. El pedido sigue en Por revisar como "Devuelto", con la nota en la lista y en el detalle; al abrirlo con "Corregir en Pedido", la nota se ve arriba en Pedido hasta que se vuelve a guardar o se limpia. El servidor ya lo admitía (`request-changes`), pero la pantalla no lo usaba.
+- **Aprobar** pide quién revisa en el mismo diálogo, con nota opcional (R5). Antes fallaba al pulsar si el pedido no tenía técnico.
+- **La tela se lee entera** en solo lectura (R1). Los campos de solo lectura ya no parecen editables (R4). Los datos del pedido están en la cabecera y no se repiten aplastados en el panel.
+- **PDF de estructura:** la casilla "VERDADERO" dice "VÁLIDO" (pregunta 1).
+- **Pendiente para más adelante:** avisar en el diálogo de aprobar si algún toldo tiene algo por resolver, que después bloqueará la generación.
+
+Capturas: `tmp/ui-audit/shots/ui-lote-e-*` (scripts `tmp/ui-audit/lote-e.mjs` y `lote-e-flujo.mjs`). El e2e de RPS aprueba con el diálogo nuevo.
+
+## Lotes A y B (parte) · hechos el 23/09/2026
+
+- **A1 · contraste.** Una sola variable de texto secundario (`--text-muted: #50656a`) y una dorada para rótulos (`--accent-text: #876200`); verde de "VÁLIDO" y color de aviso más oscuros. 51 colores de texto sueltos pasan a esas variables. axe (contraste AA) en Pedido con dos toldos, Revisión, Parámetros y Configuración: **0 avisos** (216 en el barrido). Script: `tmp/ui-audit/axe-rapido.mjs`.
+- **B1 · avisos una vez.** En "Planteamientos" solo los del pedido y una línea por toldo ("Toldo B: 3 avisos · ver en su tarjeta") que lleva a la tarjeta. En HERA se quita la nota fija que repetía el aviso del CAD y del tubo especial.
+- **B2 · estilo de los avisos.** En la tarjeta van a la izquierda, con icono y sin el prefijo "HERA en OF …:" (`src/client/diagnosticText.ts`, con test).
+- **B3 · FALTA.** En el orden en que se rellena la tarjeta (`getMissingFields`, así que igual en la tarjeta, al guardar y en "Qué revisar"). Cada campo es un enlace que lleva a él, y la cabecera de la tarjeta dice "FALTA 5" o "VÁLIDO". "altura de instalación" pasa a "altura instalación", como el campo.
+- **B4 · tarjetas en filas.** 2 por fila a 1280 y 3 a 1600, sin desplazamiento a lo ancho.
+- **Pendiente del lote B:** B5 (orden común de campos en todos los modelos, empezando por Iris).
+
+Capturas: `tmp/ui-audit/shots/ui-lote-b-*` (script `tmp/ui-audit/lote-b.mjs`).

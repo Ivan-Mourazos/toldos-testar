@@ -8,8 +8,7 @@ import {
   Save,
   ShieldCheck,
   SlidersHorizontal,
-  X
-} from 'lucide-react';
+  X, Undo2 } from 'lucide-react';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
 import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
@@ -19,6 +18,7 @@ import { TabButton } from './components/TabButton';
 import { incompleteAwningLines } from './incompleteAwnings';
 import { getMissingFields } from '../domain/awningCompleteness.js';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
+import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
 import { ParametersView } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
@@ -44,6 +44,8 @@ export default function App() {
   const [reviewRefresh, setReviewRefresh] = useState(0);
   const [autofillLoading, setAutofillLoading] = useState(false);
   const [autofill, setAutofill] = useState<OrderAutofill | null>(null);
+  // Nota del revisor al devolver un pedido: se ve en Pedido mientras se corrige.
+  const [returnNote, setReturnNote] = useState<{ by: string; at: string; note: string } | null>(null);
   // OF del pedido según RPS, junto al pedido al que pertenecen. Solo valen si ese
   // pedido es el que está en pantalla: así una revisión abierta o un formulario
   // vaciado no se comparan con las OF del pedido anterior. null = no se conocen y
@@ -197,6 +199,9 @@ export default function App() {
     }
     draft.loadOrder(review.order);
     setAutofill(null);
+    setReturnNote(review.status === 'CHANGES_REQUESTED' && review.reviewNote
+      ? { by: review.reviewedBy, at: review.reviewedAt || '', note: review.reviewNote }
+      : null);
     if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters, review.order.parametersVersion ?? null);
     setActiveTab('order');
     notify(`Pedido ${review.orderCode} cargado en el formulario para corregirlo.`, { tone: 'info', title: 'Modo de corrección' });
@@ -301,6 +306,7 @@ export default function App() {
         return;
       }
       setReviewRefresh((value) => value + 1);
+      setReturnNote(null);
       draft.resetDraft();
       ruleSettings.restoreParameters();
       notify(`${data.review.orderCode}.pdf guardado en ${data.savedPath}. El formulario se ha limpiado.`, { tone: 'success', title: 'Guardado para revisión' });
@@ -361,6 +367,7 @@ export default function App() {
     draft.resetDraft();
     ruleSettings.restoreParameters();
     setAutofill(null);
+    setReturnNote(null);
     setActiveTab('order');
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
@@ -430,6 +437,15 @@ export default function App() {
         </header>
 
         <div className="workspace-content">
+          {activeTab === 'order' && returnNote && (
+            <div className="review-state-note is-returned order-return-note" role="status">
+              <Undo2 aria-hidden="true" />
+              <span>
+                <strong>Devuelto por {controlLabel(returnNote.by) || 'el revisor'}{returnNote.at ? ` · ${new Date(returnNote.at).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}` : ''}</strong>
+                {returnNote.note}
+              </span>
+            </div>
+          )}
           {activeTab === 'order' && (
             <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
               <OrderView

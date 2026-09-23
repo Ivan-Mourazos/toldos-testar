@@ -82,8 +82,9 @@ describe('getMissingFields', () => {
 
   it('HERA pide empate, remates, cara interior, color y, salvo el 56 motor, altura', () => {
     const hera = { model: 'HERA', of: '1', width: 200, projection: 200, submodel: 'HERA 43 MAQUINA', rotFabric: 'NO' };
-    expect(fields(hera)).toEqual(['heraJoin', 'height', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace', 'heraChainColor']);
-    expect(fields({ ...hera, submodel: 'HERA 56 MOTOR' })).toEqual(['heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace', 'heraChainColor']);
+    // En el orden de la tarjeta: color y altura, empate, remates y cara interior.
+    expect(fields(hera)).toEqual(['heraChainColor', 'height', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace']);
+    expect(fields({ ...hera, submodel: 'HERA 56 MOTOR' })).toEqual(['heraChainColor', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace']);
   });
 
   it('Antica con soporte fijo pide la altura soporte-brazo', () => {

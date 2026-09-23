@@ -82,7 +82,9 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   return (
     <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}${missing ? ' is-missing' : ''}`}>
       <span id={labelId}>{label}</span>
-      <div className="fabric-input-wrap">
+      {/* En solo lectura (Revisión) la tela se lee entera: dentro del buscador se cortaba
+          a "ACRI…" y el revisor no podía comprobarla. */}
+      {disabled && value ? <p className="fabric-readonly-value">{fabricSelectionLabel(value)}</p> : <div className="fabric-input-wrap">
         <Search aria-hidden="true" />
         <input
           ref={inputRef}
@@ -126,7 +128,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
             <X aria-hidden="true" />
           </button>
         )}
-      </div>
+      </div>}
       {open && createPortal(
         <div ref={menuRef} id={listId} className="fabric-options fabric-options-portal" style={menuStyle} role="listbox">
           {loading && <div className="fabric-option-state">Buscando en RPSNext…</div>}

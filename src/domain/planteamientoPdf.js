@@ -351,7 +351,8 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   const valid = calc?.valid !== false;
   roundedBox(doc, x, y + 69, w, 43, 3, valid ? colors.green : '#fae0dc', colors.ink);
   doc.fillColor(valid ? colors.greenText : colors.red).font(fonts.bold).fontSize(15)
-    .text(valid ? 'VERDADERO' : 'REVISAR', x + 5, y + 84, { width: w - 10, align: 'center' });
+    // Antes "VERDADERO", copiado del Excel; ahora la misma palabra que la tarjeta (Iván, 23/09/2026).
+    .text(valid ? 'VÁLIDO' : 'REVISAR', x + 5, y + 84, { width: w - 10, align: 'center' });
 
   drawMiniTable(doc, x, y + 123, w, 'DETALLES', [
     ['LACADO', awning.structureColor || order.structureColor],

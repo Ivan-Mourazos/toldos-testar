@@ -16,6 +16,26 @@ const windowDimensions = [
   ['curtainWindowHeight', 'altura ventana']
 ];
 
+// Orden en que se rellena la tarjeta: el FALTA se lee de arriba abajo, igual que los
+// campos. Antes salía en el orden de las comprobaciones ("OF · tela · dispositivo ·
+// tubo de carga · frente…"). Lo que no está en la lista va al final, en su orden.
+const fillOrder = [
+  'fabric', 'of', 'width', 'projection', 'irisFrontTop', 'irisExitLeft', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
+  'submodel', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
+  'heraChainColor', 'height', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace',
+  'curtainHasWindow', 'curtainFinish', ...windowDimensions.map(([field]) => field),
+  'structureColor', 'rotFabric', 'rotValance', 'device', 'motorPower', 'machineSide', 'crankHeight', 'placement'
+];
+
+/**
+ * @param {{ field: string, label: string }[]} missing
+ * @returns {{ field: string, label: string }[]}
+ */
+function byFillOrder(missing) {
+  const rank = (field) => { const index = fillOrder.indexOf(field); return index === -1 ? fillOrder.length : index; };
+  return missing.map((item, index) => ({ item, index })).sort((a, b) => rank(a.item.field) - rank(b.item.field) || a.index - b.index).map(({ item }) => item);
+}
+
 function dimensionLabel(model, field) {
   if (field === 'width') return 'frente';
   // La misma palabra que el rótulo del campo en la tarjeta: solo Selena y
@@ -76,7 +96,7 @@ export function getMissingFields(awning, order = null) {
   if (isHera) {
     const withChain = awning.submodel !== 'HERA 56 MOTOR';
     if (!awning.heraJoin) add('heraJoin', 'empate');
-    if (withChain && !Number(awning.height)) add('height', 'altura de instalación');
+    if (withChain && !Number(awning.height)) add('height', 'altura instalación');
     if (!awning.heraTopFinish) add('heraTopFinish', 'remate superior');
     if (!awning.heraBottomFinish) add('heraBottomFinish', 'remate inferior');
     if (!awning.heraInteriorFace) add('heraInteriorFace', 'cara interior');
@@ -110,7 +130,7 @@ export function getMissingFields(awning, order = null) {
   if (fields.requiresRotFabric && !standaloneValance && !awning.rotFabric) add('rotFabric', 'rotulación tela');
   if (hasValance && !awning.rotValance) add('rotValance', 'rotulación bamba');
   if (fields.requiresStructureColor && !awning.structureColor) add('structureColor', 'lacado');
-  return missing;
+  return byFillOrder(missing);
 }
 
 export function describeMissing(missing) {
