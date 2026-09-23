@@ -4,8 +4,9 @@ import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { resolveLacado, crankSuffix, machineCode, plasticCapSuffix, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
-import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
+import { arzuaProEstablishedProjections, galiciaSupportLimits } from './arzuaProConstants.js';
 import { evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
+import { galiciaArmLines, galiciaSingleArmExists, galiciaSupportLines } from './galiciaSupportPieces.js';
 import {
   normalizeArzuaProParameters,
   resolveArzuaMotorPower,
@@ -36,10 +37,17 @@ export function calculateArzuaPro({ order, awning }) {
   const armCount = supportSystem === 'GALICIA' ? 3 : 1;
   const diagnostics = [];
   const minimumLine = lookupMinimumLine(crossed ? crossedMinimumLines : parameters.minimumLineByArm, awning.projection, device);
-  const maximumLine = crossed ? (device === 'MAQ. EXTERIOR' ? 400 : 395) : parameters.standardMaxWidth;
+  const galicia = supportSystem === 'GALICIA';
+  const maximumLine = crossed
+    ? (device === 'MAQ. EXTERIOR' ? 400 : 395)
+    : galicia ? galiciaSupportLimits.maximumWidthCm : parameters.standardMaxWidth;
   const modified = Boolean(awning.reglasModificadas);
   const belowMinimum = awning.width < minimumLine;
-  const overMaximum = supportSystem === 'ARZUA' && awning.width > maximumLine;
+  const overProjection = galicia && !crossed && Number(awning.projection) > galiciaSupportLimits.maximumProjectionCm;
+  const overMaximum = awning.width > maximumLine || overProjection;
+  const maximumText = galicia
+    ? `supera el máximo con soporte GALICIA (${galiciaSupportLimits.maximumWidthCm} × ${galiciaSupportLimits.maximumProjectionCm} cm)`
+    : `supera el máximo estándar de ${parameters.standardMaxWidth} cm con soporte ARZUA`;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
@@ -101,7 +109,8 @@ export function calculateArzuaPro({ order, awning }) {
   const evoTube = tubeLoad === 'TUBO DE CARGA EVO 80' && !crossed;
   const profileLengths = evoTube ? evo80StockLengths(colorSuffix, parameters.stockLengths) : parameters.stockLengths;
   const stockLength = chooseStockLength(length, profileLengths);
-  const armMissing = !crossed && !onyxArmExists(colorSuffix, awning.projection);
+  const singleArmMissing = !crossed && supportSystem === 'GALICIA' && !galiciaSingleArmExists(colorSuffix, awning.projection);
+  const armMissing = !crossed && (!onyxArmExists(colorSuffix, awning.projection) || singleArmMissing);
   const fabricInvalid = Boolean(fabricSelection && !fabric);
   const stockUnavailable = stockLength === null;
   const valid = missingFields.length === 0
@@ -130,7 +139,9 @@ export function calculateArzuaPro({ order, awning }) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
-      message: `ARZUA PRO no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
+      message: onyxArmExists(colorSuffix, awning.projection)
+        ? `ARZUA PRO no válido: con soporte Galicia va un brazo Onyx suelto y no lo hay de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
+        : `ARZUA PRO no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
     });
   }
   if (stockUnavailable) {
@@ -168,13 +179,13 @@ export function calculateArzuaPro({ order, awning }) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
-      message: `ARZUA PRO no válido: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm con soporte ARZUA.`
+      message: `ARZUA PRO no válido: ${awning.width} × ${awning.projection} cm ${maximumText}.`
     });
   } else if (!crossed && overMaximum && modified) {
     diagnostics.push({
       level: 'warn',
       awningId: awning.id,
-      message: `Reglas modificadas en OF ${awning.of}: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm con soporte ARZUA.`
+      message: `Reglas modificadas en OF ${awning.of}: ${awning.width} × ${awning.projection} cm ${maximumText}.`
     });
   }
 
@@ -224,7 +235,13 @@ export function calculateArzuaPro({ order, awning }) {
 
 // Referencias compartidas entre RPS (buildMaterials) y despiece (buildDespiece):
 // mismo cálculo de código, una sola vez, para que ambos no puedan divergir por error.
-const refSoporte = (supportSystem, colorSuffix) => supportSystem === 'GALICIA' ? `SOPARTGL${colorSuffix}` : `SOPAR350${colorSuffix}`;
+// Con soporte Galicia son tres brazos: un juego y uno suelto, y lo mismo en soportes.
+const supportLines = (supportSystem, colorSuffix, armCount, units) => supportSystem === 'GALICIA'
+  ? galiciaSupportLines(colorSuffix, armCount, units)
+  : [{ code: `SOPAR350${colorSuffix}`, quantity: units, description: 'JUEGO SOPORTE AROND' }];
+const armLines = (supportSystem, colorSuffix, projection, armCount, units) => supportSystem === 'GALICIA'
+  ? galiciaArmLines(colorSuffix, projection, armCount, units)
+  : [{ code: refBrazosOnyx(colorSuffix, projection), quantity: units, description: 'JUEGO DE BRAZOS ONYX' }];
 const refTuboEnrolle = (stockLength) => `TURA80HG${stockLength}C`;
 const refTuboCargaEvo = (colorSuffix, stockLength) => `PEVO80${colorSuffix}${stockLength}C`;
 const refTuboCargaUnivers = (colorSuffix, stockLength) => `PUNI280${universProfileSuffix(colorSuffix)}${stockLength}C`;
@@ -245,7 +262,7 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
   // 0230194 (barra 327,2 · varilla 3,29 m) y 0230330 (489,6 · 4,90 m).
   const varillaMl = Math.ceil(Number(length) || 0) / 100;
   const materials = [
-    { code: refSoporte(supportSystem, colorSuffix), quantity: units, description: supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND' },
+    ...supportLines(supportSystem, colorSuffix, armCount, units),
     { code: refTuboEnrolle(stockLength), quantity: 2 * units, description: 'TUBO DE ENROLLE P801' },
     { code: refCasquilloPunta, quantity: units, description: 'CASQUILLO PUNTA CON EJE Ø78' },
     { code: crossedKit || refTerminales(colorSuffix), quantity: units, description: crossedKit ? 'KIT BRAZO CRUZADO AROND INFERIOR CON TERMINALES' : 'JGO TERMINAL INFERIOR EVO 70-80' },
@@ -257,13 +274,13 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
     materials.push(
       { code: crossedKit ? crossedProfileByFinish[colorSuffix] : refTuboCargaEvo(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA EVO 80' },
       { code: refTaponesEvo(lacado), quantity: units, description: 'KIT TAPONES EVO 80' },
-      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: armCount * units, description: supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX' }
+      ...armLines(supportSystem, colorSuffix, awning.projection, armCount, units)
     );
   } else {
     materials.push(
       { code: refTuboCargaUnivers(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA UNIVERS 280' },
       { code: refTaponesUnivers(lacado), quantity: units, description: 'KIT TAPONES UNIVERS 280' },
-      { code: refBrazosOnyx(colorSuffix, awning.projection), quantity: armCount * units, description: supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX' }
+      ...armLines(supportSystem, colorSuffix, awning.projection, armCount, units)
     );
   }
 
@@ -304,11 +321,13 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
 function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, stockLength, length, rollTubeLength }) {
   const rows = [];
   const awningUnits = Math.max(1, Number(awning.units) || 1);
-  const push = (num, name, reference, units, rowLength = null) => {
-    rows.push({ num, name, reference, units, length: rowLength });
+  // Numeración correlativa: con Galicia hay dos filas de soporte y dos de brazo, y
+  // sin máquina el número 4 quedaba vacío.
+  const push = (_num, name, reference, units, rowLength = null) => {
+    rows.push({ num: rows.length + 1, name, reference, units, length: rowLength });
   };
 
-  push(1, supportSystem === 'GALICIA' ? 'JUEGO SOPORTE GALICIA' : 'JUEGO SOPORTE AROND', refSoporte(supportSystem, colorSuffix), awningUnits);
+  supportLines(supportSystem, colorSuffix, armCount, awningUnits).forEach((line) => push(1, line.description, line.code, line.quantity));
   push(2, 'TUBO DE ENROLLE P801', refTuboEnrolle(stockLength), awningUnits, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', refCasquilloPunta, awningUnits);
 
@@ -324,7 +343,7 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
     push(6, 'KIT TAPONES UNIVERS 280', refTaponesUnivers(lacado), awningUnits);
   }
 
-  push(7, supportSystem === 'GALICIA' ? 'BRAZO ONYX' : 'JUEGO DE BRAZOS ONYX', refBrazosOnyx(colorSuffix, awning.projection), armCount * awningUnits, awning.projection);
+  armLines(supportSystem, colorSuffix, awning.projection, armCount, awningUnits).forEach((line) => push(7, line.description, line.code, line.quantity, awning.projection));
   push(8, crossedKit ? 'KIT CRUZADO AROND + TERMINALES' : 'JUEGO DE TERMINALES', crossedKit || refTerminales(colorSuffix), awningUnits);
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {

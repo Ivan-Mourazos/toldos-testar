@@ -540,6 +540,46 @@ describe('normalización de campos nuevos del pedido', () => {
 describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
   const asLines = (materials) => materials.map((m) => `${m.code} x${m.quantity}`).sort();
 
+  // Con soporte Galicia son tres brazos: en RPS se consume un juego y uno suelto de
+  // brazos y de soportes (100 de las 132 OF de Arzúa con SOPARTGL desde 2024).
+  const galiciaArzua = (overrides) => calculateOrder(basePayload({
+    fabric: 'ACR AZUL', structureColor: 'BLANCO',
+    awnings: [baseAwning({
+      of: '0230999', width: 520, projection: 250, valanceHeight: 25, supportSystem: 'GALICIA',
+      destination: 'PARTICULAR', tubeLoad: 'TUBO DE CARGA EVO 80', device: 'MAQ. EXTERIOR', crankHeight: 200, ...overrides
+    })]
+  })).ofs[0];
+
+  test('soporte Galicia: un juego y un suelto de brazos y de soportes', () => {
+    const ofBlock = galiciaArzua();
+    expect(ofBlock.calculation).toMatchObject({ valid: true, supportSystem: 'GALICIA', physicalArmCount: 3 });
+    const lines = asLines(ofBlock.materials);
+    expect(lines).toEqual(expect.arrayContaining(['SOPARTGLBL16 x1', 'SOPARTGLDBL16 x1', 'BONYXBL16250C x1', 'BONYXDBL16250C x1']));
+    expect(lines.filter((line) => /^(BONYX|SOPARTGL)/.test(line))).toHaveLength(4);
+    expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
+  });
+
+  test('soporte Galicia: el brazo suelto es izquierdo si no hay derecho en ese lacado', () => {
+    // En gris 7012 el brazo de 250 solo existe como izquierdo (el EVO solo hay de 500,
+    // que el Arzúa no usa: va con Univers).
+    const ofBlock = galiciaArzua({ structureColor: 'GRIS 7012', width: 480, tubeLoad: 'TUBO DE CARGA UNIVERS 280' });
+    expect(ofBlock.calculation.valid).toBe(true);
+    expect(asLines(ofBlock.materials)).toEqual(expect.arrayContaining(['BONYXGR12250C x1', 'BONYXIGR12250C x1']));
+  });
+
+  test('soporte Galicia: en negro no hay brazo suelto de 150 y el toldo no es válido', () => {
+    const ofBlock = galiciaArzua({ structureColor: 'NEGRO (R-09011)', projection: 150, width: 300 });
+    expect(ofBlock.calculation.valid).toBe(false);
+  });
+
+  test('soporte Galicia: hasta 8,00 m de línea y 3,25 m de salida (ficha técnica TGM)', () => {
+    // Por encima de 7,10 m no hay barra de stock que llegue (la mayor es de 700).
+    expect(galiciaArzua({ width: 700 }).calculation.valid).toBe(true);
+    expect(galiciaArzua({ width: 820 }).calculation.valid).toBe(false);
+    expect(galiciaArzua({ width: 520, projection: 350 }).calculation.valid).toBe(false);
+    expect(galiciaArzua({ width: 520, projection: 350, reglasModificadas: true }).calculation.valid).toBe(true);
+  });
+
   test('AR2603332: motor 55/17, EVO 80 y medidas exactas del planteamiento', () => {
     const result = calculateOrder(basePayload({
       orderCode: 'AR2603332',
@@ -577,10 +617,12 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({ name: 'TUBO DE ENROLLE P801', reference: 'TURA80HG600C', length: 327.2 }),
       expect.objectContaining({ name: 'TUBO DE CARGA EVO 80', reference: 'PEVO80BL16600C', length: 327.2 }),
-      expect.objectContaining({ num: 6, name: 'KIT TAPONES EVO 80', reference: 'TAPONEVO8BL16', units: 1 }),
+      expect.objectContaining({ num: 5, name: 'KIT TAPONES EVO 80', reference: 'TAPONEVO8BL16', units: 1 }),
       expect.objectContaining({ name: 'MANDO SITUO 1 IO PURE', reference: 'SITUOIO1PURE', units: 1 })
     ]));
-    expect(ofBlock.despiece.rows.find((row) => row.name === 'MANDO SITUO 1 IO PURE').num).toBe(21);
+    // Numeración correlativa: a motor no hay casquillo de máquina y el mando va el último.
+    expect(ofBlock.despiece.rows.find((row) => row.name === 'MANDO SITUO 1 IO PURE').num).toBe(12);
+    expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
   });
 
   test('normalizeOrder conserva lacado y rotulación propios de cada toldo', () => {

@@ -14,7 +14,10 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-PR02 | Punto Recto y Cortina | Casquillo de máquina: eje 50 en 10 OF y eje 63 en 6. ¿De qué depende? | Eje 50 en Punto Recto; en Cortina, 50 con máquina interior y 63 con exterior |
 | Q-PR03 | Punto Recto | ¿Perfil Univers 280 o 270? La tarifa vende los dos; en RPS el 270 solo existe en blanco de 700 y se consume el 280 | Univers 280 |
 | Q-PR04 | Punto Recto | La salida de 160 existe en RPS pero no en la tarifa 2026 (llega a 1,40 m) | Se ofrece |
-| Q-A01 | Arzúa Pro | Tres juegos de descuentos distintos: manual ART Extens 325, manual Complet-PRO 350 (el que usa la web) y los libros del taller (lona 13 y Univers 11,4). Las 182 diferencias de medidas salen todas de ahí | Los del Complet-PRO 350 |
+| Q-A01 | Arzúa Pro | El manual vigente (AROND-350, 2025, igual que el Complet-PRO 350) descuenta 12,4 de lona con máquina y 10,4 de barra Univers; los libros del taller, 13 y 11,4. Las 182 diferencias de medidas salen de ahí. El ART Extens 325 ya no aplica: es el Arzúa antiguo, hasta 2021 | Los del manual |
+| Q-A03 | Arzúa Pro | El manual AROND-350 dice que no admite brazos cruzados, pero la tarifa 2026 vende un kit cruzado AROND | Los admite con el kit |
+| Q-A04 | Arzúa Pro y Galicia | Con soporte Galicia: ¿siempre tres brazos? 10 de 132 OF llevaron dos. ¿El brazo suelto va de un lado concreto? (56 izquierdos y 56 derechos) | Tres brazos; el suelto, derecho |
+| Q-A05 | Arzúa Pro | La ficha TGM permite 8 m con Galicia, pero la barra más larga es de 700: entre 7,10 y 8,00 m no hay barra de stock. ¿Se empalma? Y en gris 7012 el EVO solo existe de 500, que el Arzúa no usa | Se para por falta de barra |
 | Q-A02 | Transversal | 36 referencias rotas en lacados poco habituales (bronce, gris texturado…): faltan soportes Galicia, perfiles o terminales en esos colores. ¿Se ofrecen esos lacados? | Se ofrecen todos |
 | Q-X01 | Xacobeo | El manual ART 250 descuenta 11,9 cm de lona con máquina exterior; la web y los libros usan 12,5 (112 comprobaciones sin diferencias) | 12,5 |
 | Q-SE04 | Selena | ¿Existe Selena a motor? No hay manual y no hay motores en las 17 OF | Solo máquina interior |
