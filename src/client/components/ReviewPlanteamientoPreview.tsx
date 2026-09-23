@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Eye, Maximize2, RefreshCw, X } from 'lucide-react';
 import type { ReviewPackage, RuleParameters } from '../types';
-import { PdfPreviewCarousel } from './PdfPreviewCarousel';
+import { PdfPreviewViewer } from './PdfPreviewViewer';
 
 type PreviewState = {
   source: string;
@@ -51,7 +51,7 @@ function GeneratedReviewPreview({ review, pdfIndex }: { review: ReviewPackage; p
         ))}
       </div>
       {file.type === 'pdf'
-        ? <PdfPreviewCarousel key={url} url={url} ariaLabel={`Vista previa de ${file.filename}`} />
+        ? <PdfPreviewViewer key={url} url={url} ariaLabel={`Vista previa de ${file.filename}`} />
         : <ReservationPreview key={url} url={url} filename={file.filename} />}
     </PreviewShell>
   );
@@ -178,7 +178,7 @@ function CalculatedReviewPreview({ order, parameters }: {
     >
       {visiblePreview.status === 'loading' && <div className="review-preview-placeholder">Preparando la vista previa…</div>}
       {visiblePreview.status === 'error' && <div className="review-preview-placeholder is-error" role="alert">{visiblePreview.error}</div>}
-      {visiblePreview.status === 'ready' && visiblePreview.url && <PdfPreviewCarousel key={visiblePreview.url} url={visiblePreview.url} />}
+      {visiblePreview.status === 'ready' && visiblePreview.url && <PdfPreviewViewer key={visiblePreview.url} url={visiblePreview.url} />}
     </PreviewShell>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ClipboardList,
   Eraser,
@@ -18,7 +18,7 @@ import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { incompleteAwningLines } from './incompleteAwnings';
 import { getMissingFields } from '../domain/awningCompleteness.js';
-import { PdfPreviewPages } from './components/PdfPreviewPages';
+import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { OrderView } from './views/OrderView';
 import { ParametersView } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
@@ -37,6 +37,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
   const [working, setWorking] = useState<'review' | 'preview' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const previewButtonRef = useRef<HTMLButtonElement>(null);
+  const previewDialogRef = useRef<HTMLDivElement>(null);
   const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings | null>(null);
   const [workflowReadiness, setWorkflowReadiness] = useState<WorkflowReadiness | null>(null);
   const [reviewRefresh, setReviewRefresh] = useState(0);
@@ -90,6 +92,22 @@ export default function App() {
 
   useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    const focusFrame = requestAnimationFrame(() => previewDialogRef.current?.querySelector<HTMLElement>('.pdf-carousel')?.focus());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setPreviewUrl('');
+      requestAnimationFrame(() => previewButtonRef.current?.focus());
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      window.removeEventListener('keydown', onKeyDown);
+    };
   }, [previewUrl]);
 
   async function autofillOrder() {
@@ -312,10 +330,7 @@ export default function App() {
         return;
       }
       const blob = await response.blob();
-      setPreviewUrl((current) => {
-        if (current) URL.revokeObjectURL(current);
-        return URL.createObjectURL(blob);
-      });
+      setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       notify('No se pudo generar la vista previa.', { tone: 'error' });
     } finally {
@@ -324,10 +339,8 @@ export default function App() {
   }
 
   function closePreview() {
-    setPreviewUrl((current) => {
-      if (current) URL.revokeObjectURL(current);
-      return '';
-    });
+    setPreviewUrl('');
+    requestAnimationFrame(() => previewButtonRef.current?.focus());
   }
 
   async function clearForm() {
@@ -404,7 +417,7 @@ export default function App() {
                 <Eraser aria-hidden="true" />
                 Limpiar
               </button>
-              <button className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={openPlanteamientoPreview}>
+              <button ref={previewButtonRef} className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={openPlanteamientoPreview}>
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
               </button>
@@ -536,7 +549,7 @@ export default function App() {
         onResolveDialog={resolveDialog}
       />
       {previewUrl && (
-        <div className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
+        <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
           <div className="pdf-preview-window">
             <header>
               <div><strong>Vista previa del planteamiento</strong><span>Estructuras A5 y telas A4</span></div>
@@ -545,7 +558,7 @@ export default function App() {
                 <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
               </div>
             </header>
-            <PdfPreviewPages key={previewUrl} url={previewUrl} />
+            <PdfPreviewViewer key={previewUrl} url={previewUrl} />
           </div>
         </div>
       )}

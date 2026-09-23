@@ -3935,71 +3935,8 @@ textarea:focus {
 .pdf-preview-window header span { color: #70817e; font-size: 10px; }
 .pdf-preview-actions { align-items: center; display: flex; gap: 7px; }
 
-.pdf-preview-scroll {
-  background: #dfe6e4;
-  min-height: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
-  position: relative;
-  scrollbar-color: #9db4ae transparent;
-  scrollbar-width: thin;
-}
-
-.pdf-preview-scroll::-webkit-scrollbar {
-  height: 10px;
-  width: 10px;
-}
-
-.pdf-preview-scroll::-webkit-scrollbar-thumb {
-  background: #9db4ae;
-  background-clip: padding-box;
-  border: 2px solid transparent;
-  border-radius: 999px;
-}
-
-.pdf-preview-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.pdf-preview-pages {
-  align-items: center;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  min-height: 100%;
-  min-width: 100%;
-  padding: 18px;
-  width: max-content;
-}
-
-.pdf-preview-page {
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgb(9 36 40 / 0.16);
-  line-height: 0;
-  max-width: none;
-}
-
-.pdf-preview-page canvas,
-.pdf-preview-page img {
-  display: block;
-  height: auto !important;
-  max-width: none;
-}
-
-.pdf-preview-state {
-  color: #49635f;
-  font-size: 12px;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
-
-.pdf-preview-state.is-error {
-  color: #9f3328;
-}
+.pdf-preview-window .pdf-carousel { display: flex; flex-direction: column; min-height: 0; }
+.pdf-preview-window .pdf-carousel-stage { flex: 1; height: auto; min-height: 0; }
 
 /* ---------- Alineación visual TGM Design System ---------- */
 
@@ -4190,10 +4127,6 @@ textarea,
 }
 .parameter-model-information strong { color: #153f45; font-size: 13px; }
 .parameter-model-information p { color: #637975; font-size: 11px; line-height: 1.55; margin: 0; max-width: 760px; }
-
-.pdf-preview-page {
-  box-shadow: 0 5px 16px rgb(9 36 40 / 0.13);
-}
 
 /* ---------- Flujo compartido de revisión y producción ---------- */
 
@@ -4753,31 +4686,68 @@ textarea,
 
 .pdf-carousel {
   background: #10272c;
+  min-width: 0;
   outline: none;
 }
 
 .pdf-carousel:focus-visible { box-shadow: inset 0 0 0 2px #e8b62a; }
+
+.pdf-carousel-toolbar {
+  align-items: center;
+  background: #0d2226;
+  color: #d9e7e5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.pdf-carousel-toolbar button,
+.pdf-carousel-pages button {
+  background: transparent;
+  border: 1px solid #385156;
+  border-radius: 6px;
+  color: #d9e7e5;
+  cursor: pointer;
+  font-size: 11px;
+  min-height: 28px;
+  padding: 4px 9px;
+}
+
+.pdf-carousel-toolbar button[aria-pressed="true"],
+.pdf-carousel-pages button[aria-current="page"] { background: #edb51b; border-color: #edb51b; color: #102a2f; font-weight: 700; }
+.pdf-carousel-toolbar button:hover:not([aria-pressed="true"]),
+.pdf-carousel-pages button:hover:not([aria-current="page"]) { border-color: #edb51b; }
+.pdf-carousel-toolbar button svg { display: block; height: 15px; width: 15px; }
+.pdf-carousel-zoom-value { font-size: 11px; min-width: 44px; text-align: center; }
+.pdf-carousel-wheel-hint { color: #9ab2b0; font-size: 10px; margin-left: 4px; }
 
 .pdf-carousel-stage {
   align-items: center;
   background:
     radial-gradient(circle at 50% 45%, rgb(64 88 91 / 0.62), transparent 56%),
     linear-gradient(145deg, #142f34, #0b1e22);
+  box-sizing: border-box;
   display: flex;
   height: clamp(360px, 55vh, 540px);
   justify-content: center;
-  overflow: hidden;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
   padding: 18px 62px;
   position: relative;
+  width: 100%;
 }
+
+.pdf-carousel-canvas { flex: 0 0 auto; margin: auto; }
 
 .pdf-carousel-page {
   background: #ffffff;
   box-shadow: 0 18px 50px rgb(0 0 0 / 0.38), 0 2px 8px rgb(0 0 0 / 0.25);
   display: block;
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
+  height: 100%;
+  max-width: none;
+  width: 100%;
 }
 
 .pdf-carousel-state {
@@ -4833,6 +4803,17 @@ textarea,
 .pdf-carousel-footer button:hover:not(:disabled) { border-color: #dfaa17; color: #efbd30; }
 .pdf-carousel-footer button:disabled { opacity: 0.25; }
 .pdf-carousel-footer svg { height: 15px; width: 15px; }
+
+.pdf-carousel-pages {
+  background: #0d2226;
+  border-top: 1px solid rgb(255 255 255 / 0.09);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 12px 9px;
+}
+
+.pdf-carousel-pages button { flex: 0 0 auto; min-width: 28px; }
 
 @media (max-width: 1200px) {
   .reviews-layout { grid-template-columns: minmax(0, 1fr); }
@@ -5154,10 +5135,6 @@ textarea,
 }
 
 @media (max-width: 600px) {
-  .pdf-preview-pages { min-width: 0; width: auto; }
-  .pdf-preview-page { max-width: 100%; }
-  .pdf-preview-page canvas,
-  .pdf-preview-page img { max-width: 100%; }
   .notification-stack { bottom: 12px; left: 12px; max-width: none; right: 12px; width: auto; }
   .confirmation-dialog { padding: 17px; }
   .confirmation-actions { display: grid; grid-template-columns: 1fr; }
@@ -5230,7 +5207,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .review-inline-preview:modal .pdf-carousel-stage,
 .review-inline-preview:modal .reservation-preview,
 .review-inline-preview:modal .review-preview-placeholder { flex: 1; min-height: 0; height: auto; }
-.review-inline-preview:modal .pdf-carousel-page { width: 100%; height: 100%; background: transparent; box-shadow: none; }
+.review-inline-preview:modal .pdf-carousel-page { background: #ffffff; }
 .review-inline-preview:modal .reservation-preview { padding: 12px; }
 .review-inline-preview:modal .reservation-preview-sheet { max-width: 1400px; }
 .review-inline-preview:modal .reservation-preview table { font-size: 13px; }
