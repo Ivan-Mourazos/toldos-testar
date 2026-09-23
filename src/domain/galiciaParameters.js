@@ -56,10 +56,13 @@ export function suggestedGaliciaArmCount(width, parameters = defaultGaliciaParam
   return Number(width) > parameters.armSwitchWidth ? 3 : 2;
 }
 
-export function resolveGaliciaMotorPower(awning, parameters = defaultGaliciaParameters) {
+export function resolveGaliciaMotorPower(awning, _parameters = defaultGaliciaParameters) {
   const selected = String(awning.motorPower || '').toUpperCase();
   if (awning.reglasModificadas && (selected === '55/17' || selected === '70/17')) return selected;
-  return Number(awning.armCount) === 3 || suggestedGaliciaArmCount(awning.width, parameters) === 3 ? '70/17' : '55/17';
+  // El 55/17 es el que se consume: 13 de 18 OF a motor desde 2025, también con tres
+  // brazos y 650 de frente (OF 0230045). No hay regla para el 70/17 (Q-G02): se elige
+  // con el candado.
+  return '55/17';
 }
 
 function positiveNumber(value, fallback) {

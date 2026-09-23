@@ -50,9 +50,4 @@ export const arzuaProManualSpec = {
   }
 };
 
-// Ficha técnica TGM 1.014.0 (intranet, "Explicación técnica", 21/09/2026): con
-// tres brazos, que en la web es el soporte Galicia, el toldo llega a 8,00 m de
-// línea y 3,25 m de salida. Con dos brazos manda el manual AROND-350: 6,00 × 3,50.
-export const galiciaSupportLimits = Object.freeze({ maximumWidthCm: 800, maximumProjectionCm: 325 });
-
 export const arzuaProEstablishedProjections = minimumLineByArm.map((item) => item.arm);

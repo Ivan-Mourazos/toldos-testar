@@ -5,11 +5,12 @@
  */
 
 // Artículo de venta de RPS con el que se identifican las OF de cada modelo.
-// GALICIA no tiene uno propio: se vende como ARZUA y su validador lo reconoce
-// por los soportes SOPARTGL, que también llevan algunos Arzúa. Se resuelve en
-// la tarea del modelo, no aquí.
+// GALICIA no tiene uno propio: se vende como ARZUA y se distingue por los soportes
+// SOPARTGL (condicionDeOF, más abajo).
 export const articuloDeVenta = {
   'ARZUA PRO': "= 'ARZUA'",
+  // En RPS no hay artículo GALICIA: se vende como ARZUA y se distingue por el soporte.
+  GALICIA: "= 'ARZUA'",
   XACOBEO: "= 'XACOBEO'",
   'MONOBLOCK 350': "= 'MONOB'",
   ANTICA: "= 'ANTICA'",
@@ -25,6 +26,15 @@ export const articuloDeVenta = {
   'CUARZO BOX': "= 'CUARZOBOX'",
   'PERLA BOX': "= 'PERLABOX'",
   'CORAL BOX': "= 'CORALBOX'"
+};
+
+// Condición extra sobre la OF (alias mo) cuando el artículo de venta no basta.
+const conSoporteGalicia = `EXISTS (SELECT 1 FROM dbo.CPRImputationMaterialMO g
+  JOIN dbo.STKArticle ga ON ga.IDArticle = g.IDArticle AND ga.CodCompany = g.CodCompany
+  WHERE g.IDManufacturingOrder = mo.IDManufacturingOrder AND ga.CodArticle LIKE 'SOPARTGL%')`;
+export const condicionDeOF = {
+  'ARZUA PRO': `NOT ${conSoporteGalicia}`,
+  GALICIA: conSoporteGalicia
 };
 
 // Consumo real que no debe reservar el planteamiento, con el motivo.

@@ -4,9 +4,8 @@ import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { resolveLacado, crankSuffix, machineCode, plasticCapSuffix, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
-import { arzuaProEstablishedProjections, galiciaSupportLimits } from './arzuaProConstants.js';
+import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
 import { evo80AvailableLengths, evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
-import { galiciaArmLines, galiciaSingleArmExists, galiciaSupportLines } from './galiciaSupportPieces.js';
 import {
   normalizeArzuaProParameters,
   resolveArzuaMotorPower,
@@ -34,23 +33,20 @@ export function calculateArzuaPro({ order, awning }) {
   const requiredMotorTorqueNm = device === 'MOTOR' && !crossed
     ? resolveArzuaRequiredTorque(awning.width, awning.projection)
     : null;
-  // Con soporte Galicia van tres brazos salvo que se pidan dos (10 de 132 OF reales).
-  // Con AROND siempre dos: `armCount` cuenta ahí juegos, no brazos.
-  const galiciaArms = Number(awning.armCount) === 2 ? 2 : 3;
-  const armCount = supportSystem === 'GALICIA' ? galiciaArms : 1;
+  // El Arzúa lleva dos brazos con soporte AROND. Con soportes Galicia (o tres brazos)
+  // es el modelo GALICIA, que tiene sus propios descuentos y mínimos (Iván, 23/09/2026).
+  // `armCount` cuenta juegos de brazos, no brazos.
+  const armCount = 1;
   const diagnostics = [];
+  if (supportSystem === 'GALICIA' || Number(awning.armCount) === 3) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: 'ARZUA PRO no válido: con soportes Galicia o tres brazos es el modelo GALICIA.' });
+  }
   const minimumLine = lookupMinimumLine(crossed ? crossedMinimumLines : parameters.minimumLineByArm, awning.projection, device);
-  const galicia = supportSystem === 'GALICIA' && galiciaArms === 3;
-  const maximumLine = crossed
-    ? (device === 'MAQ. EXTERIOR' ? 400 : 395)
-    : galicia ? galiciaSupportLimits.maximumWidthCm : parameters.standardMaxWidth;
+  const maximumLine = crossed ? (device === 'MAQ. EXTERIOR' ? 400 : 395) : parameters.standardMaxWidth;
   const modified = Boolean(awning.reglasModificadas);
   const belowMinimum = awning.width < minimumLine;
-  const overProjection = galicia && !crossed && Number(awning.projection) > galiciaSupportLimits.maximumProjectionCm;
-  const overMaximum = awning.width > maximumLine || overProjection;
-  const maximumText = galicia
-    ? `supera el máximo con tres brazos (${galiciaSupportLimits.maximumWidthCm} × ${galiciaSupportLimits.maximumProjectionCm} cm)`
-    : `supera el máximo estándar de ${parameters.standardMaxWidth} cm con soporte ARZUA`;
+  const overMaximum = awning.width > maximumLine;
+  const maximumText = `supera el máximo estándar de ${parameters.standardMaxWidth} cm (manual AROND-350)`;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
@@ -112,8 +108,7 @@ export function calculateArzuaPro({ order, awning }) {
   const evoTube = tubeLoad === 'TUBO DE CARGA EVO 80' && !crossed;
   const profileLengths = evoTube ? evo80StockLengths(colorSuffix, parameters.stockLengths) : parameters.stockLengths;
   const stockLength = chooseStockLength(length, profileLengths);
-  const singleArmMissing = !crossed && galicia && !galiciaSingleArmExists(colorSuffix, awning.projection);
-  const armMissing = !crossed && (!onyxArmExists(colorSuffix, awning.projection) || singleArmMissing);
+  const armMissing = !crossed && !onyxArmExists(colorSuffix, awning.projection);
   const fabricInvalid = Boolean(fabricSelection && !fabric);
   const stockUnavailable = stockLength === null;
   const valid = missingFields.length === 0
@@ -142,9 +137,7 @@ export function calculateArzuaPro({ order, awning }) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
-      message: onyxArmExists(colorSuffix, awning.projection)
-        ? `ARZUA PRO no válido: con soporte Galicia va un brazo Onyx suelto y no lo hay de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
-        : `ARZUA PRO no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
+      message: `ARZUA PRO no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
     });
   }
   if (stockUnavailable) {
@@ -208,7 +201,7 @@ export function calculateArzuaPro({ order, awning }) {
       minimumLine,
       maximumLine,
       armConfiguration: crossed ? 'CROSSED' : 'STANDARD',
-      physicalArmCount: crossed ? 2 : supportSystem === 'GALICIA' ? galiciaArms : 2,
+      physicalArmCount: 2,
       crossedKit: crossedKit || '',
       loadProfileStockLength: crossed ? 500 : stockLength,
       width: awning.width,
@@ -242,13 +235,8 @@ export function calculateArzuaPro({ order, awning }) {
 
 // Referencias compartidas entre RPS (buildMaterials) y despiece (buildDespiece):
 // mismo cálculo de código, una sola vez, para que ambos no puedan divergir por error.
-// Con soporte Galicia son tres brazos: un juego y uno suelto, y lo mismo en soportes.
-const supportLines = (supportSystem, colorSuffix, armCount, units) => supportSystem === 'GALICIA'
-  ? galiciaSupportLines(colorSuffix, armCount, units)
-  : [{ code: `SOPAR350${colorSuffix}`, quantity: units, description: 'JUEGO SOPORTE AROND' }];
-const armLines = (supportSystem, colorSuffix, projection, armCount, units) => supportSystem === 'GALICIA'
-  ? galiciaArmLines(colorSuffix, projection, armCount, units)
-  : [{ code: refBrazosOnyx(colorSuffix, projection), quantity: units, description: 'JUEGO DE BRAZOS ONYX' }];
+const supportLines = (supportSystem, colorSuffix, armCount, units) => [{ code: `SOPAR350${colorSuffix}`, quantity: units, description: 'JUEGO SOPORTE AROND' }];
+const armLines = (supportSystem, colorSuffix, projection, armCount, units) => [{ code: refBrazosOnyx(colorSuffix, projection), quantity: units, description: 'JUEGO DE BRAZOS ONYX' }];
 const refTuboEnrolle = (stockLength) => `TURA80HG${stockLength}C`;
 const refTuboCargaEvo = (colorSuffix, stockLength) => `PEVO80${colorSuffix}${stockLength}C`;
 const refTuboCargaUnivers = (colorSuffix, stockLength) => `PUNI280${universProfileSuffix(colorSuffix)}${stockLength}C`;
@@ -270,7 +258,8 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
   const varillaMl = Math.ceil(Number(length) || 0) / 100;
   const materials = [
     ...supportLines(supportSystem, colorSuffix, armCount, units),
-    { code: refTuboEnrolle(stockLength), quantity: 2 * units, description: 'TUBO DE ENROLLE P801' },
+    // Un tubo por toldo: 217 de 247 OF desde 2025. Se reservaban dos.
+    { code: refTuboEnrolle(stockLength), quantity: units, description: 'TUBO DE ENROLLE P801' },
     { code: refCasquilloPunta, quantity: units, description: 'CASQUILLO PUNTA CON EJE Ø78' },
     { code: crossedKit || refTerminales(colorSuffix), quantity: units, description: crossedKit ? 'KIT BRAZO CRUZADO AROND INFERIOR CON TERMINALES' : 'JGO TERMINAL INFERIOR EVO 70-80' },
     { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM' },
@@ -328,8 +317,7 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
 function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, stockLength, length, rollTubeLength }) {
   const rows = [];
   const awningUnits = Math.max(1, Number(awning.units) || 1);
-  // Numeración correlativa: con Galicia hay dos filas de soporte y dos de brazo, y
-  // sin máquina el número 4 quedaba vacío.
+  // Numeración correlativa: sin máquina el 4 quedaba vacío y el mando iba al 21.
   const push = (_num, name, reference, units, rowLength = null) => {
     rows.push({ num: rows.length + 1, name, reference, units, length: rowLength });
   };

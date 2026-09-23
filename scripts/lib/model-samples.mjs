@@ -28,11 +28,8 @@ const tubeLoads = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
 
 // Campos propios de cada modelo, con valores de sus listas de opciones.
 function modelExtras(model, device) {
-  if (model === 'ARZUA PRO') {
-    // Arzúa admite soportes Galicia (SOPARTGL, 65 OF): sin ellos el barrido los daría por no reservados.
-    const supports = getModelBehavior(model).supportOptions || ['ARZUA'];
-    return tubeLoads.flatMap((tubeLoad) => supports.map((supportSystem) => ({ tubeLoad, armCount: 2, supportSystem })));
-  }
+  // Con soportes Galicia es el modelo GALICIA, aunque en RPS se venda como ARZUA.
+  if (model === 'ARZUA PRO') return tubeLoads.map((tubeLoad) => ({ tubeLoad, armCount: 2, supportSystem: 'ARZUA' }));
   if (model === 'GALICIA') return tubeLoads.map((tubeLoad) => ({ tubeLoad, armCount: 3 }));
   if (model === 'ANTICA') return anticaVariants.map((anticaVariant) => ({ anticaVariant, anticaSupportHeight: 40 }));
   if (model === 'HERA') {

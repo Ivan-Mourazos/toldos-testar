@@ -540,51 +540,14 @@ describe('normalización de campos nuevos del pedido', () => {
 describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
   const asLines = (materials) => materials.map((m) => `${m.code} x${m.quantity}`).sort();
 
-  // Con soporte Galicia son tres brazos: en RPS se consume un juego y uno suelto de
-  // brazos y de soportes (100 de las 132 OF de Arzúa con SOPARTGL desde 2024).
-  const galiciaArzua = (overrides) => calculateOrder(basePayload({
-    fabric: 'ACR AZUL', structureColor: 'BLANCO',
-    awnings: [baseAwning({
-      of: '0230999', width: 520, projection: 250, valanceHeight: 25, supportSystem: 'GALICIA',
-      destination: 'PARTICULAR', tubeLoad: 'TUBO DE CARGA EVO 80', device: 'MAQ. EXTERIOR', crankHeight: 200, ...overrides
-    })]
-  })).ofs[0];
-
-  test('soporte Galicia: un juego y un suelto de brazos y de soportes', () => {
-    const ofBlock = galiciaArzua();
-    expect(ofBlock.calculation).toMatchObject({ valid: true, supportSystem: 'GALICIA', physicalArmCount: 3 });
-    const lines = asLines(ofBlock.materials);
-    expect(lines).toEqual(expect.arrayContaining(['SOPARTGLBL16 x1', 'SOPARTGLDBL16 x1', 'BONYXBL16250C x1', 'BONYXDBL16250C x1']));
-    expect(lines.filter((line) => /^(BONYX|SOPARTGL)/.test(line))).toHaveLength(4);
-    expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
-  });
-
-  test('soporte Galicia: el brazo suelto es izquierdo si no hay derecho en ese lacado', () => {
-    // En gris 7012 el brazo de 250 solo existe como izquierdo (el EVO solo hay de 500,
-    // que el Arzúa no usa: va con Univers).
-    const ofBlock = galiciaArzua({ structureColor: 'GRIS 7012', width: 480, tubeLoad: 'TUBO DE CARGA UNIVERS 280' });
-    expect(ofBlock.calculation.valid).toBe(true);
-    expect(asLines(ofBlock.materials)).toEqual(expect.arrayContaining(['BONYXGR12250C x1', 'BONYXIGR12250C x1']));
-  });
-
-  test('soporte Galicia con dos brazos: solo los juegos y el máximo de dos brazos', () => {
-    const ofBlock = galiciaArzua({ armCount: 2 });
-    expect(ofBlock.calculation).toMatchObject({ valid: true, physicalArmCount: 2 });
-    expect(asLines(ofBlock.materials).filter((line) => /^(BONYX|SOPARTGL)/.test(line))).toEqual(['BONYXBL16250C x1', 'SOPARTGLBL16 x1']);
-    expect(galiciaArzua({ armCount: 2, width: 650 }).calculation.valid).toBe(false);
-  });
-
-  test('soporte Galicia: en negro no hay brazo suelto de 150 y el toldo no es válido', () => {
-    const ofBlock = galiciaArzua({ structureColor: 'NEGRO (R-09011)', projection: 150, width: 300 });
-    expect(ofBlock.calculation.valid).toBe(false);
-  });
-
-  test('soporte Galicia: hasta 8,00 m de línea y 3,25 m de salida (ficha técnica TGM)', () => {
-    // Por encima de 7,10 m no hay barra de stock que llegue (la mayor es de 700).
-    expect(galiciaArzua({ width: 700 }).calculation.valid).toBe(true);
-    expect(galiciaArzua({ width: 820 }).calculation.valid).toBe(false);
-    expect(galiciaArzua({ width: 520, projection: 350 }).calculation.valid).toBe(false);
-    expect(galiciaArzua({ width: 520, projection: 350, reglasModificadas: true }).calculation.valid).toBe(true);
+  // Con soportes Galicia o tres brazos es el modelo GALICIA (Iván, 23/09/2026).
+  test.each([{ supportSystem: 'GALICIA' }, { armCount: 3 }])('Arzúa con %o no es válido: es el modelo GALICIA', (overrides) => {
+    const ofBlock = calculateOrder(basePayload({
+      fabric: 'ACR AZUL', structureColor: 'BLANCO',
+      awnings: [baseAwning({ of: '0230999', width: 520, projection: 250, valanceHeight: 25, destination: 'PARTICULAR', tubeLoad: 'TUBO DE CARGA EVO 80', device: 'MAQ. EXTERIOR', crankHeight: 200, ...overrides })]
+    }));
+    expect(ofBlock.ofs[0].calculation.valid).toBe(false);
+    expect(ofBlock.diagnostics.some((d) => d.message.includes('es el modelo GALICIA'))).toBe(true);
   });
 
   // Pedido 4611 (23/09/2026): en verde 6005 el EVO 80 solo existe de 500 y el toldo
@@ -636,7 +599,7 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
       'ACRILI2018P120 x9', 'BONYXBL16225C x1', 'CASPUNCEJE78MM x1', 'CORONALT60 x1',
       'PEVO80BL16600C x1', 'RUEDAMOT801MEC x1', 'SITUOIO1PURE x1',
       'SOPAR350BL16 x1', 'SOPORTEUNVHIPRO x1', 'SUNILUSIO55//17 x1',
-      'TAPONEVO8BL16 x1', 'TERMINEVOBL16 x1', 'TURA80HG600C x2',
+      'TAPONEVO8BL16 x1', 'TERMINEVOBL16 x1', 'TURA80HG600C x1',
       'VARILLAVAINANEG5 x3.3', 'VARILLAVAINARBLA x6.6'
     ].sort());
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
@@ -683,7 +646,7 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
       'ACRILI2170P120 x14.5', 'BONYXNE11225C x1', 'CASMAQEJE6378MM x1',
       'CASPUNCEJE78MM x1', 'MANIVENE11250C x1', 'MAQMB11L12NEGRO x1',
       'PUNI280NE05600C x1', 'SOPAR350NE11 x1', 'TAPOPLUN280NE11 x1',
-      'TERMINEVONE11 x1', 'TURA80HG600C x2',
+      'TERMINEVONE11 x1', 'TURA80HG600C x1',
       'VARILLAVAINANEG5 x4.9', 'VARILLAVAINARBLA x9.8'
     ].sort());
   });
@@ -744,7 +707,7 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
 
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPAR350BL16', quantity: 2 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 4 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
       expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 2 }),
       expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2018P120', quantity: 18 })
@@ -781,7 +744,7 @@ describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
     expect(calculation.motorPower).toBe('55/17');
     expect(materials).toContainEqual(expect.objectContaining({ code: 'PEVO80BL16600C', quantity: 1 }));
     expect(materials).toContainEqual(expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 1 }));
-    expect(materials).toContainEqual(expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }));
+    expect(materials).toContainEqual(expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }));
     expect(materials.some((line) => line.code === 'CASPUNCE')).toBe(false);
   });
 
@@ -815,6 +778,9 @@ describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
   });
 });
 
+// Las piezas se contrastan con lo que salió del almacén en cada OF
+// (CPRImputationMaterialMO, 23/09/2026). Diferencias conocidas: el brazo y el soporte
+// sueltos son a veces izquierdos (Q-A04) y a veces se imputan barras de 500 (Q-A06).
 describe('GALICIA contra planteamientos y RPSNext', () => {
   test('AR2603380: EVO 80, máquina exterior, blanco y 3 brazos', () => {
     const result = calculateOrder(basePayload({
@@ -834,15 +800,26 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       fabricWidth: 583, fabricDrop: 360, fabricMl: 18,
       armCount: 3, stockLength: 600
     });
+    // OF 0230335: consumió exactamente estas piezas.
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
-      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'SOPARTGLDBL16', quantity: 1 },
+      { code: 'TURA80HG600C', quantity: 1 },
+      { code: 'CASPUNCEJE78MM', quantity: 1 },
       { code: 'PEVO80BL16600C', quantity: 1 },
-      { code: 'BONYXBL16300C', quantity: 3 },
+      { code: 'TAPONEVO8BL16', quantity: 1 },
+      { code: 'BONYXBL16300C', quantity: 1 },
+      { code: 'BONYXDBL16300C', quantity: 1 },
+      { code: 'TERMINEVOBL16', quantity: 1 },
+      { code: 'TERMINEVOUNDBL16', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 5.9 },
+      { code: 'VARILLAVAINARBLA', quantity: 11.7 },
+      { code: 'MAQMB11L12BLAN', quantity: 1 },
       { code: 'CASMAQEJE6378MM', quantity: 1 },
-      { code: 'CASPLAS', quantity: 1 },
+      { code: 'MANIVEBL16150C', quantity: 1 },
       { code: 'ACRILI2250P120', quantity: 18 }
     ]);
+    expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
   });
 
   test('AR2602119: PVC 580 de ancho 250 reserva 11,1 ml', () => {
@@ -881,14 +858,23 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(ofBlock.materials).toContainEqual(expect.objectContaining({
       code: 'ACRILI2170P120', quantity: 17.7
     }));
+    // OF 0230126: las mismas piezas (con brazo y soporte sueltos izquierdos).
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLNE11', quantity: 1 },
-      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'SOPARTGLDNE11', quantity: 1 },
+      { code: 'TURA80HG600C', quantity: 1 },
+      { code: 'CASPUNCEJE78MM', quantity: 1 },
       { code: 'PUNI280NE05600C', quantity: 1 },
       { code: 'TAPOPLUN280NE11', quantity: 1 },
-      { code: 'BONYXNE11225C', quantity: 3 },
+      { code: 'BONYXNE11225C', quantity: 1 },
+      { code: 'BONYXDNE11225C', quantity: 1 },
+      { code: 'TERMINEVONE11', quantity: 1 },
+      { code: 'TERMINEVOUNDNE11', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 5.9 },
+      { code: 'VARILLAVAINARBLA', quantity: 11.7 },
+      { code: 'MAQMB11L12NEGRO', quantity: 1 },
       { code: 'CASMAQEJE6378MM', quantity: 1 },
-      { code: 'CASPLAS', quantity: 1 },
+      { code: 'MANIVENE11200C', quantity: 1 },
       { code: 'ACRILI2170P120', quantity: 17.7 }
     ]);
   });
@@ -907,8 +893,11 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
 
     expect(materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPARTGLNE11', quantity: 2 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 4 }),
-      expect.objectContaining({ code: 'BONYXNE11225C', quantity: 6 }),
+      expect.objectContaining({ code: 'SOPARTGLDNE11', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'BONYXNE11225C', quantity: 2 }),
+      expect.objectContaining({ code: 'BONYXDNE11225C', quantity: 2 }),
+      expect.objectContaining({ code: 'TERMINEVOUNDNE11', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2170P120', quantity: 35.4 })
     ]));
   });
@@ -931,24 +920,31 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPARTGLBL16', quantity: 1 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }),
       expect.objectContaining({ code: 'PUNI280BL10600C', quantity: 1 }),
-      expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),
+      expect.objectContaining({ code: 'BONYXBL16350C', quantity: 1 }),
       expect.objectContaining({ code: 'ACRILI2170P120', quantity: 16.8 })
     ]));
+    // OF 0230134: con dos brazos, un juego de brazos y uno de soportes, sin sueltos
+    // ni terminal indiferente. El almacén imputó tubo y perfil de 500 (Q-A06).
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
-      { code: 'TURA80HG600C', quantity: 2 },
+      { code: 'TURA80HG600C', quantity: 1 },
+      { code: 'CASPUNCEJE78MM', quantity: 1 },
       { code: 'PUNI280BL10600C', quantity: 1 },
       { code: 'TAPOPLUN280BL16', quantity: 1 },
-      { code: 'BONYXBL16350C', quantity: 2 },
+      { code: 'BONYXBL16350C', quantity: 1 },
+      { code: 'TERMINEVOBL16', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 4.2 },
+      { code: 'VARILLAVAINARBLA', quantity: 8.4 },
+      { code: 'MAQMB11L12BLAN', quantity: 1 },
       { code: 'CASMAQEJE6378MM', quantity: 1 },
-      { code: 'CASPLAS', quantity: 1 },
+      { code: 'MANIVEBL16250C', quantity: 1 },
       { code: 'ACRILI2170P120', quantity: 16.8 }
     ]);
   });
 
-  test('AR2603289: 3 brazos y motor 70 para frente 650', () => {
+  test('AR2603289: 3 brazos y motor 55 para frente 650, como se consumió', () => {
     const result = calculateOrder(basePayload({
       structureColor: 'BLANCO',
       fabric: 'ACR PIEDRA',
@@ -960,33 +956,39 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     }));
     const ofBlock = result.ofs[0];
     expect(ofBlock.calculation).toMatchObject({
-      valid: true, armCount: 3, requiredArmCount: 3, motorPower: '70/17',
+      valid: true, armCount: 3, requiredArmCount: 3, motorPower: '55/17',
       structureLength: 640, rollTubeLength: 640, fabricWidth: 639,
       fabricDrop: 295, fabricMl: 17.7, stockLength: 700
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'BONYXBL16225C', quantity: 3 }),
-      expect.objectContaining({ code: 'SUNILUSIO70//17', quantity: 1 }),
+      expect.objectContaining({ code: 'BONYXBL16225C', quantity: 1 }),
+      expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 1 }),
       expect.objectContaining({ code: 'ANCLHSTM12145', quantity: 4 }),
       expect.objectContaining({ code: 'ACRILI3605P120', quantity: 17.7 })
     ]));
+    // OF 0230045: motor 55/17 con el kit del Arzúa (rueda P-801 y corona LT60).
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
-      { code: 'TURA80HG700C', quantity: 2 },
+      { code: 'SOPARTGLDBL16', quantity: 1 },
+      { code: 'TURA80HG700C', quantity: 1 },
+      { code: 'CASPUNCEJE78MM', quantity: 1 },
       { code: 'PUNI280BL10700C', quantity: 1 },
       { code: 'TAPOPLUN280BL16', quantity: 1 },
-      { code: 'BONYXBL16225C', quantity: 3 },
-      { code: 'RUEDAMOT78', quantity: 1 },
-      { code: 'SUNILUSIO70//17', quantity: 1 },
-      { code: 'CORONALT6078', quantity: 1 },
+      { code: 'BONYXBL16225C', quantity: 1 },
+      { code: 'BONYXDBL16225C', quantity: 1 },
+      { code: 'TERMINEVOBL16', quantity: 1 },
+      { code: 'TERMINEVOUNDBL16', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 6.4 },
+      { code: 'VARILLAVAINARBLA', quantity: 12.8 },
+      { code: 'RUEDAMOT801MEC', quantity: 1 },
+      { code: 'SUNILUSIO55//17', quantity: 1 },
+      { code: 'CORONALT60', quantity: 1 },
       { code: 'SOPORTEUNVHIPRO', quantity: 1 },
       { code: 'SITUOIO1PURE', quantity: 1 },
       { code: 'ANCLHSTM12145', quantity: 4 },
       { code: 'ACRILI3605P120', quantity: 17.7 }
     ]);
-    expect(ofBlock.despiece.rows.find((row) => row.num === 21)).toMatchObject({
-      reference: 'SITUOIO1PURE', units: 1
-    });
+    expect(ofBlock.despiece.rows.find((row) => row.reference === 'SITUOIO1PURE')).toMatchObject({ units: 1 });
   });
 
   test('AR2603420: EVO separa largo de enrollamiento y carga', () => {
@@ -1006,16 +1008,26 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'PEVO80BL16700C', quantity: 1 }),
-      expect.objectContaining({ code: 'BONYXBL16300C', quantity: 3 }),
+      expect.objectContaining({ code: 'BONYXBL16300C', quantity: 1 }),
       expect.objectContaining({ code: 'ACRILI2143P120', quantity: 21.9 })
     ]));
+    // OF 0230410: consumió exactamente estas piezas.
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
-      { code: 'TURA80HG700C', quantity: 2 },
+      { code: 'SOPARTGLDBL16', quantity: 1 },
+      { code: 'TURA80HG700C', quantity: 1 },
+      { code: 'CASPUNCEJE78MM', quantity: 1 },
       { code: 'PEVO80BL16700C', quantity: 1 },
-      { code: 'BONYXBL16300C', quantity: 3 },
+      { code: 'TAPONEVO8BL16', quantity: 1 },
+      { code: 'BONYXBL16300C', quantity: 1 },
+      { code: 'BONYXDBL16300C', quantity: 1 },
+      { code: 'TERMINEVOBL16', quantity: 1 },
+      { code: 'TERMINEVOUNDBL16', quantity: 1 },
+      { code: 'VARILLAVAINANEG5', quantity: 6.4 },
+      { code: 'VARILLAVAINARBLA', quantity: 12.8 },
+      { code: 'MAQMB11L12BLAN', quantity: 1 },
       { code: 'CASMAQEJE6378MM', quantity: 1 },
-      { code: 'CASPLAS', quantity: 1 },
+      { code: 'MANIVEBL16250C', quantity: 1 },
       { code: 'ACRILI2143P120', quantity: 21.9 }
     ]);
   });
@@ -1025,10 +1037,22 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       parameters: { galicia: { fabricDropAllowanceCm: 50, seamAllowanceCm: 0, seamBaseCm: 0, stockLengths: [650, 750] } },
       awnings: [baseAwning({
         model: 'GALICIA', width: 650, projection: 300, valanceHeight: 20,
-        armCount: 3, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA EVO 80'
+        armCount: 3, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA UNIVERS 280'
       })]
     }));
+    // Con Univers: el EVO 80 solo existe en los largos de su tabla, así que no sigue
+    // a unos largos de stock inventados.
     expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 370, fabricPanels: 6, fabricMl: 22.2, stockLength: 650 });
+  });
+
+  // Ficha técnica TGM: con tres brazos, hasta 325 de salida. Hay OF reales con 350, así
+  // que avisa sin bloquear.
+  test('tres brazos con salida 350 avisa sin bloquear', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 350, armCount: 3, device: 'MAQ. EXTERIOR' })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(true);
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({ level: 'warn', message: expect.stringContaining('hasta 325 cm de salida') }));
   });
 
   test('frente superior a 550 no permite quedarse con 2 brazos', () => {
@@ -1040,15 +1064,15 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(result.diagnostics.some((item) => item.message.includes('necesita 3 brazos'))).toBe(true);
   });
 
-  test('la potencia solo se puede forzar al activar una excepción técnica', () => {
+  test('el 70/17 solo se puede forzar al activar una excepción técnica', () => {
     const automatic = calculateOrder(basePayload({
-      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '55/17' })]
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '70/17' })]
     }));
     const overridden = calculateOrder(basePayload({
-      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '55/17', reglasModificadas: true })]
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '70/17', reglasModificadas: true })]
     }));
-    expect(automatic.ofs[0].calculation.motorPower).toBe('70/17');
-    expect(overridden.ofs[0].calculation.motorPower).toBe('55/17');
+    expect(automatic.ofs[0].calculation.motorPower).toBe('55/17');
+    expect(overridden.ofs[0].calculation.motorPower).toBe('70/17');
   });
 
   test('sol o viento-sol cambia automáticamente al mando SITUO 5', () => {

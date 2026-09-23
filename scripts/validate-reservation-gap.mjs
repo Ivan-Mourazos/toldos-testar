@@ -18,7 +18,7 @@
 import sql from 'mssql';
 import { config } from '../src/config.js';
 import { sampleAwnings } from './lib/model-samples.mjs';
-import { articuloDeVenta, classifyGap } from './lib/reservation-gap.mjs';
+import { articuloDeVenta, classifyGap, condicionDeOF } from './lib/reservation-gap.mjs';
 
 const modelo = process.argv[2] ? process.argv[2].toUpperCase() : null;
 const objetivo = modelo ? { [modelo]: articuloDeVenta[modelo] } : articuloDeVenta;
@@ -56,6 +56,7 @@ for (const [model, filtro] of Object.entries(objetivo)) {
     JOIN dbo.CPRImputationMaterialMO i ON i.IDManufacturingOrder = mo.IDManufacturingOrder AND i.CodCompany = mo.CodCompany
     JOIN dbo.STKArticle a ON a.IDArticle = i.IDArticle AND a.CodCompany = i.CodCompany
     WHERE o.CodCompany = @company AND UPPER(art.CodArticle) ${filtro} AND YEAR(i.ImputationDate) >= 2025
+      ${condicionDeOF[model] ? `AND ${condicionDeOF[model]}` : ''}
     GROUP BY a.CodArticle, a.Description
     ORDER BY ofs DESC;`).then((r) => r.recordset);
 

@@ -1,5 +1,7 @@
 # Evidencia GALICIA
 
+> **23/09/2026: la reserva de este documento está superada.** Se contrastó con lo que planeaba RPS (`_MaterialesPrevistosOF`), que era la reserva equivocada: dos tubos de enrolle, tres juegos de brazos, un solo juego de soportes y sin casquillo de punta, terminales, varillas, máquina ni manivela. La reserva vigente, contrastada con el consumo real de 90 OF, está en el [expediente del Galicia](./modelos/galicia.md). Las medidas siguen valiendo: 49 de 49.
+
 Fuentes revisadas hasta el 17/07/2026:
 
 - `TOLDOS TESTAR 10-4.xlsm`, hoja `GAL`.

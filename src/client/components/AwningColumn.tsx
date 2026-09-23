@@ -1,5 +1,5 @@
-import React from 'react';
-import { Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
 import type { Awning, BoxDevice, Calculation, CortinaDevice, ElectraSupport, RuleParameters } from '../types';
 import { formOptions, getFabricDiagramOptions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { useVisibleFields } from '../hooks/useVisibleFields';
@@ -64,6 +64,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const standaloneValance = awning.model === 'BAMBALINA';
   const simpleFabricJob = ['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA'].includes(awning.model);
   const fabricDiagramOptions = getFabricDiagramOptions(awning.model);
+  const [showGaliciaPrompt, setShowGaliciaPrompt] = useState(false);
   const update = (patch: Partial<Awning>) => onUpdate(awning.id, patch);
   const supportsValance = fields.dimensions.includes('valanceHeight');
   const cortinaDevice = normalizeCortinaDevice(awning.device);
@@ -158,18 +159,20 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   // select en blanco que ocultaría el valor que el cálculo sí está usando.
   const projectionInList = awning.projection === null || (fields.establishedProjections || []).includes(awning.projection);
   const useEstablishedProjection = Boolean(fields.establishedProjections) && !awning.reglasModificadas && projectionInList;
-  // En el Arzúa los tres brazos van con soporte Galicia (ficha técnica TGM y 100 de
-  // 132 OF reales): elegir 3 cambia el soporte, no el modelo. El AROND solo lleva dos.
+  // El Arzúa es de dos brazos; con tres (soportes Galicia) es el modelo GALICIA.
   function chooseArms(value: string) {
-    update(value === '3' ? { armCount: 3, supportSystem: 'GALICIA' } : { armCount: 2 });
+    if (value === '3') {
+      setShowGaliciaPrompt(true);
+      return;
+    }
+    setShowGaliciaPrompt(false);
+    update({ armCount: Number(value) });
   }
 
-  function chooseArzuaSupport(supportSystem: string) {
-    update(supportSystem === 'GALICIA'
-      ? { supportSystem, armCount: awning.armCount === 2 ? 2 : 3 }
-      : { supportSystem, armCount: 2 });
+  function changeToGalicia() {
+    setShowGaliciaPrompt(false);
+    update({ model: 'GALICIA', armCount: 3, supportSystem: '' });
   }
-
 
   function updateWidth(width: number | null) {
     if (fields.galicia && width !== null) {
@@ -525,6 +528,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <div className="awning-form-section awning-core-config">
               {fields.arzua && <>
                 <SegmentedField label="Configuración de brazos" value={awning.armConfiguration === 'CROSSED' ? 'CRUZADOS' : 'NORMALES'} options={['NORMALES', 'CRUZADOS']} onChange={(value) => {
+                  setShowGaliciaPrompt(false);
                   update({ armConfiguration: value === 'CRUZADOS' ? 'CROSSED' : 'STANDARD', ...(value === 'CRUZADOS' ? { armCount: 2, supportSystem: 'ARZUA', tubeLoad: 'TUBO DE CARGA EVO 80' } : {}) });
                 }} />
                 {awning.armConfiguration === 'CROSSED' && <p>Dos brazos · kit izquierdo · inclinación máxima 30°. Kit inferior para EVO 80.</p>}
@@ -532,7 +536,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               </>}
               <SegmentedField
                 label="Nº de brazos"
-                value={fields.arzua && awning.armCount === null ? (awning.supportSystem === 'GALICIA' ? '3' : awning.supportSystem ? '2' : '') : awning.armCount === null ? '' : String(awning.armCount)}
+                value={fields.arzua ? '2' : awning.armCount === null ? '' : String(awning.armCount)}
                 options={(fields.galicia ? fields.armOptions : awning.armConfiguration === 'CROSSED' ? [2] : [2, 3]).map(String)}
                 onChange={fields.galicia ? (value) => update({ armCount: Number(value) }) : chooseArms}
               />
@@ -540,7 +544,13 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <SegmentedField label="Tubo de carga" missing={isMissing('tubeLoad')} value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} />
               )}
               {fields.supportOptions.length > 0 && (
-                <SegmentedField label="Soporte" value={awning.supportSystem} options={fields.supportOptions} onChange={fields.arzua ? chooseArzuaSupport : (supportSystem) => update({ supportSystem })} />
+                <SegmentedField label="Soporte" value={awning.supportSystem} options={fields.supportOptions} onChange={(supportSystem) => update({ supportSystem })} />
+              )}
+              {fields.arzua && showGaliciaPrompt && (
+                <div className="model-switch-prompt" role="alert">
+                  <div><strong>3 brazos es el modelo GALICIA</strong><span>Se conservarán la OF y las medidas.</span></div>
+                  <button type="button" onClick={changeToGalicia}>Cambiar modelo<ArrowRight aria-hidden="true" /></button>
+                </div>
               )}
             </div>
           )}
