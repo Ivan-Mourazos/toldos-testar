@@ -4245,8 +4245,14 @@ textarea,
 .workflow-production-switch strong { color: #153f45; font-size: 12px; }
 .workflow-production-switch small { color: var(--text-muted); font-size: 10px; }
 .workflow-toggle { align-items: center; cursor: pointer; display: flex; gap: 8px; }
-.workflow-toggle input { accent-color: #1e6b54; height: 17px; width: 17px; }
-.workflow-toggle span { color: #23484d; font-size: 11px; font-weight: 800; }
+.workflow-toggle > span { color: #23484d; font-size: 12px; font-weight: 700; }
+.workflow-toggle input { appearance: none; background: #c9d6d2; border-radius: 999px; cursor: pointer; height: 22px; margin: 0; position: relative; transition: background 0.15s; width: 40px; }
+.workflow-toggle input::after { background: #ffffff; border-radius: 50%; box-shadow: 0 1px 2px rgb(0 0 0 / 0.25); content: ''; height: 18px; left: 2px; position: absolute; top: 2px; transition: left 0.15s; width: 18px; }
+.workflow-toggle input:checked { background: #1e6b54; }
+.workflow-toggle input:checked::after { left: 20px; }
+.workflow-toggle input:focus-visible { outline: 2px solid var(--tgm-yellow); outline-offset: 2px; }
+.workflow-toggle strong { color: var(--text-muted); font-size: 11px; font-weight: 800; min-width: 74px; }
+.workflow-toggle strong.is-on { color: var(--ok); }
 
 .workflow-settings-footer {
   align-items: center;
@@ -5397,3 +5403,31 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .awning-status { column-gap: 4px; flex-wrap: wrap; padding: 4px 8px; row-gap: 2px; }
 .awning-status-link { background: none; border: 0; color: inherit; cursor: pointer; font: inherit; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
 .awning-status-link:hover, .awning-status-link:focus-visible { text-decoration-thickness: 2px; }
+
+/* Parámetros · lote F (24/09/2026): índice fijo de secciones y tablas compactas. Los
+   campos de tres cifras medían 250 px porque las tablas ocupaban todo el ancho. */
+.parameter-section-index {
+  align-items: center;
+  backdrop-filter: blur(6px);
+  background: rgb(237 242 240 / 0.94);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 8px 2px;
+  position: sticky;
+  z-index: 15;
+}
+.parameter-section-index > span { color: var(--text-muted); font-size: 11px; font-weight: 700; margin-right: 2px; text-transform: uppercase; }
+.parameter-section-index button { align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; color: var(--text); cursor: pointer; display: inline-flex; font: inherit; font-size: 11.5px; gap: 5px; padding: 4px 10px; }
+.parameter-section-index button:hover, .parameter-section-index button:focus-visible { border-color: var(--border-strong); background: #ffffff; }
+.parameter-section-index strong { color: var(--accent-text); font-family: var(--mono); font-size: 11px; }
+.parameter-band, .drawing-parameters { scroll-margin-top: 120px; }
+
+.parameter-table { min-width: 0; width: auto; }
+.parameter-table input { min-width: 0; width: 92px; }
+.parameter-table-discounts { table-layout: auto; }
+.parameter-table-discounts input { width: 92px; }
+.parameter-table td:first-child { min-width: 130px; }
+.parameter-table-lines, .parameter-table-lines.galicia-lines { min-width: 0; table-layout: auto; }

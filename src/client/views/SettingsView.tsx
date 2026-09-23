@@ -19,6 +19,16 @@ export function SettingsView({
   const [checking, setChecking] = useState(false);
   const [directoryCheck, setDirectoryCheck] = useState<WorkflowDirectoryCheck | null>(null);
   const formIsConfigured = form.productionEnabled && Boolean(form.reviewDirectory && form.planteamientosDirectory && form.rpsUploadDirectory);
+  // El aviso dice solo lo que falta: antes pedía «Completa las rutas y activa la generación»
+  // aunque las rutas estuvieran puestas (revisión de interfaz, F4).
+  const missingRoutes = [
+    [form.reviewDirectory, 'Pedidos para revisión'],
+    [form.planteamientosDirectory, 'Planteamientos generados'],
+    [form.rpsUploadDirectory, 'Subida de material']
+  ].filter(([value]) => !value).map(([, label]) => label);
+  const missingText = missingRoutes.length
+    ? `Falta la ruta de ${missingRoutes.join(', ')}`
+    : 'Activa «Generar archivos» para poder generar';
   const formMatchesSaved = form.productionEnabled === settings.productionEnabled
     && form.reviewDirectory === settings.reviewDirectory
     && form.planteamientosDirectory === settings.planteamientosDirectory
@@ -131,13 +141,17 @@ export function SettingsView({
           <ShieldCheck aria-hidden="true" />
           <span><strong>Generación de archivos</strong><small>Habilita el segundo paso: PDF definitivo y Excel de reserva para pedidos ya aprobados.</small></span>
         </div>
+        {/* Interruptor con nombre de la acción: la casilla decía solo «Desactivado». */}
         <label className="workflow-toggle">
+          <span>Generar archivos</span>
           <input
             type="checkbox"
+            role="switch"
+            aria-checked={form.productionEnabled}
             checked={form.productionEnabled}
             onChange={(event) => updateForm({ productionEnabled: event.target.checked })}
           />
-          <span>{form.productionEnabled ? 'Activado' : 'Desactivado'}</span>
+          <strong className={form.productionEnabled ? 'is-on' : ''}>{form.productionEnabled ? 'Activado' : 'Desactivado'}</strong>
         </label>
       </div>
 
@@ -164,7 +178,7 @@ export function SettingsView({
           <span>{directoryCheck?.ok
             ? 'Carpetas comprobadas'
             : !formIsConfigured
-              ? 'Completa las rutas y activa la generación'
+              ? missingText
               : !formMatchesSaved
                 ? 'Hay cambios sin guardar ni comprobar'
                 : readiness.productionReady

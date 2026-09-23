@@ -131,3 +131,13 @@ Capturas: `tmp/ui-audit/shots/ui-lote-e-*` (scripts `tmp/ui-audit/lote-e.mjs` y 
 - **Lote D (Codex) fusionado:** un solo visor de PDF en Pedido y Revisión, con páginas, zoom (página entera por defecto, al ancho, +/−, Ctrl + rueda), teclado y Esc. e2e `pnpm test:e2e:pdf-viewer` (necesita la instancia aislada).
 
 Capturas: `tmp/ui-audit/shots/ui-lote-b-*` (script `tmp/ui-audit/lote-b.mjs`).
+
+## Lote F · Parámetros y Configuración · hecho el 24/09/2026
+
+- **F1 · índice de secciones.** Barra fija arriba con las secciones del modelo (01, 02… y Dibujos), que lleva a cada una; con cambios sin guardar se coloca debajo de su barra. Se construye leyendo las secciones de la pantalla (`ParameterSectionIndex.tsx`), así sirve para los 22 modelos sin tocar sus vistas. Los dibujos no pasan a otra pestaña: el selector de modelo va dentro de cada vista y una pestaña lo habría escondido; el índice lleva a ellos de un clic.
+- **F1 · tablas compactas.** Las tablas de descuentos, mínimos y rangos ya no ocupan todo el ancho: campos numéricos de 92 px (medían hasta 250).
+- **F2.** En Arzúa, "Frente máximo normal" pasa a "Máximo que acepta la web", con la referencia al máximo del manual (600) de la tarjeta de arriba.
+- **F4 · Configuración.** Interruptor "Generar archivos · Activado/Desactivado" en vez de una casilla que decía el estado. El aviso del pie dice solo lo que falta: qué ruta, o activar la generación.
+- axe (contraste) sigue en 0 en Pedido, Revisión, Parámetros y Configuración.
+
+Capturas: `tmp/ui-audit/shots/ui-lote-f-*` (script `tmp/ui-audit/lote-f.mjs`).

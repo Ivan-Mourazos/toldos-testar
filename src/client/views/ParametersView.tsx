@@ -448,8 +448,8 @@ function ArzuaParametersView({ parameters, selectedModel, onSelectModel, onUpdat
           </div>
           <div className="arzua-edit-grid arzua-edit-grid-2">
             <div className="arzua-input-card source-manual">
-              <NumberField label="Frente máximo normal (cm)" value={parameters.standardMaxWidth} min={1} max={700} onChange={(standardMaxWidth) => standardMaxWidth !== null && onUpdate({ standardMaxWidth })} />
-              <small>Llaza marca 600 cm. La opción “Modificar reglas” permite documentar una excepción.</small>
+              <NumberField label="Máximo que acepta la web (cm)" value={parameters.standardMaxWidth} min={1} max={700} onChange={(standardMaxWidth) => standardMaxWidth !== null && onUpdate({ standardMaxWidth })} />
+              <small>El manual de Llaza marca {arzuaProManualSpec.maximumWidthCm} cm (arriba). Por encima, la tarjeta pide «Modificar reglas» para documentar la excepción.</small>
             </div>
             <aside className="arzua-plain-note"><BookOpen aria-hidden="true" /><div><strong>Qué significa</strong><span>Un toldo de 601 cm no debe pasar como uno normal aunque exista una barra de 650 o 700 cm en almacén.</span></div></aside>
           </div>

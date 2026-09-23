@@ -23,6 +23,7 @@ import { OrderView } from './views/OrderView';
 import { ParametersView } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
 import { ParametersSaveBar } from './components/ParametersSaveBar';
+import { ParameterSectionIndex } from './components/ParameterSectionIndex';
 import { ParametersHistory } from './components/ParametersHistory';
 import { formOptions } from '../domain/modelBehavior.js';
 import { ReviewsView } from './views/ReviewsView';
@@ -497,6 +498,7 @@ export default function App() {
               onResult={notifyParameterSave}
             />
             <ParametersHistory version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />
+            <ParameterSectionIndex />
             <ParametersView
               parameters={ruleSettings.generalParameters}
               onUpdateArzua={ruleSettings.updateArzua}
