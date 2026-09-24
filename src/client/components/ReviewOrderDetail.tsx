@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine, X } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
 import type { ReviewPackage, RuleParameters } from '../types';
 import { OrderView } from '../views/OrderView';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
@@ -37,6 +37,7 @@ export function ReviewOrderDetail({
 }) {
   const formRef = useRef<HTMLFieldSetElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const previewButtonRef = useRef<HTMLButtonElement>(null);
   const availableModels = useMemo(
     () => Array.from(new Set(review?.order.awnings.map((awning) => awning.model).filter(Boolean) || [])),
     [review]
@@ -86,7 +87,7 @@ export function ReviewOrderDetail({
           ].filter(Boolean).join(' · ')}</small>
         </div>
         <div className="review-reader-actions">
-          <button className="ghost-button" type="button" disabled={disabled} onClick={() => setPreviewOpen(true)}>
+          <button ref={previewButtonRef} className="ghost-button" type="button" disabled={disabled} onClick={() => setPreviewOpen(true)}>
             <Eye aria-hidden="true" />Vista previa
           </button>
           {!isProduced && (
@@ -166,47 +167,13 @@ export function ReviewOrderDetail({
       </fieldset>
 
       {previewOpen && (
-        <ReviewPreviewDialog review={review} parameters={reviewParameters} onClose={() => setPreviewOpen(false)} />
+        <ReviewPlanteamientoPreview
+          review={review}
+          parameters={reviewParameters}
+          onClose={() => { setPreviewOpen(false); previewButtonRef.current?.focus(); }}
+        />
       )}
     </section>
-  );
-}
-
-function ReviewPreviewDialog({ review, parameters, onClose }: {
-  review: ReviewPackage;
-  parameters: RuleParameters;
-  onClose: () => void;
-}) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    closeRef.current?.focus();
-    function handleKeyDown(event: KeyboardEvent) {
-      // Con el visor en pantalla completa (<dialog> modal), Esc solo cierra ese nivel.
-      if (event.key === 'Escape' && !document.querySelector('dialog:modal')) onClose();
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      previousFocus?.focus();
-    };
-  }, [onClose]);
-
-  return (
-    <div className="model-picker-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="model-picker review-preview-dialog" role="dialog" aria-modal="true" aria-label={`Vista previa de ${review.orderCode}`}>
-        <header className="model-picker-header">
-          <div className="model-picker-icon"><Eye aria-hidden="true" /></div>
-          <div>
-            <span>Pedido {review.orderCode}</span>
-            <h2>Vista previa</h2>
-          </div>
-          <button ref={closeRef} className="icon-button" type="button" onClick={onClose} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-        </header>
-        <ReviewPlanteamientoPreview review={review} parameters={parameters} />
-      </section>
-    </div>
   );
 }
 

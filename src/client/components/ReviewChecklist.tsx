@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, CircleAlert } from 'lucide-react';
 import type { Awning, ReviewPackage, RuleParameters } from '../types';
 import { awningLetter, getMissingFields, describeMissing } from '../../domain/awningCompleteness.js';
@@ -15,7 +15,9 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
   parameters: RuleParameters;
   onFocusAwning: (letter: string) => void;
 }) {
-  const order = review.order;
+  // Cada toldo necesita un id propio para repartir los avisos: en pedidos con el id
+  // vacío o repetido, cada fila se llevaba los avisos de todos los toldos.
+  const order = useMemo(() => withUniqueAwningIds(review.order), [review.order]);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[] | null>(null);
   const [onlyWithWarnings, setOnlyWithWarnings] = useState(false);
 
@@ -79,6 +81,16 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
       </ol>}
     </section>
   );
+}
+
+function withUniqueAwningIds(order: ReviewPackage['order']): ReviewPackage['order'] {
+  const seen = new Set<string>();
+  const awnings = order.awnings.map((awning, index) => {
+    const id = awning.id && !seen.has(awning.id) ? awning.id : `toldo-${index + 1}`;
+    seen.add(id);
+    return id === awning.id ? awning : { ...awning, id };
+  });
+  return awnings.every((awning, index) => awning === order.awnings[index]) ? order : { ...order, awnings };
 }
 
 function variantOf(awning: Awning) {

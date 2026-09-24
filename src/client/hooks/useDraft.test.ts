@@ -195,6 +195,16 @@ describe('buildReusableDraft', () => {
       structureNotes: 'Conservar esta configuración'
     });
   });
+
+  test('cada toldo lleva un id propio aunque el pedido guardado los tenga repetidos o vacíos', () => {
+    const toldo = { ...createAwning(), of: '0232325', model: 'ELECTRA', width: 450, projection: 250 };
+    const reusable = buildReusableDraft({ ...defaultDraft(), awnings: [{ ...toldo, id: 'x' }, { ...toldo, id: 'x' }, { ...toldo, id: '' }] });
+
+    const ids = reusable.awnings.map((awning) => awning.id);
+    expect(ids[0]).toBe('x');
+    expect(new Set(ids).size).toBe(3);
+    expect(ids.every(Boolean)).toBe(true);
+  });
 });
 
 describe('migrateLegacyDraft (borrador v3/v4 completo -> DraftState v5)', () => {

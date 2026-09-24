@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Eye, Maximize2, RefreshCw, X } from 'lucide-react';
 import type { ReviewPackage, RuleParameters } from '../types';
 import { PdfPreviewViewer } from './PdfPreviewViewer';
@@ -11,18 +11,21 @@ type PreviewState = {
   error: string;
 };
 
-export function ReviewPlanteamientoPreview({ review, parameters }: {
+// Con onClose se abre ya a pantalla completa y al salir se cierra del todo (pedido
+// abierto, rediseño 24/09/2026: Iván no quería un diálogo intermedio).
+export function ReviewPlanteamientoPreview({ review, parameters, onClose }: {
   review: ReviewPackage;
   parameters: RuleParameters;
+  onClose?: () => void;
 }) {
   const pdfIndex = review.production?.files.findIndex((file) => file.type === 'pdf') ?? -1;
   if (review.status === 'PRODUCED' && pdfIndex >= 0) {
-    return <GeneratedReviewPreview review={review} pdfIndex={pdfIndex} />;
+    return <GeneratedReviewPreview review={review} pdfIndex={pdfIndex} onClose={onClose} />;
   }
-  return <CalculatedReviewPreview order={review.order} parameters={parameters} />;
+  return <CalculatedReviewPreview order={review.order} parameters={parameters} onClose={onClose} />;
 }
 
-function GeneratedReviewPreview({ review, pdfIndex }: { review: ReviewPackage; pdfIndex: number }) {
+function GeneratedReviewPreview({ review, pdfIndex, onClose }: { review: ReviewPackage; pdfIndex: number; onClose?: () => void }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(pdfIndex);
   const files = review.production!.files;
@@ -35,6 +38,7 @@ function GeneratedReviewPreview({ review, pdfIndex }: { review: ReviewPackage; p
       subtitle={`${file.filename} · ${file.type === 'pdf' ? 'planteamiento definitivo' : `reserva de material${file.of ? ` de la OF ${file.of}` : ''}`}`}
       refreshing={false}
       onRefresh={() => setRefreshKey((value) => value + 1)}
+      onClose={onClose}
     >
       <div className="generated-preview-selector" role="group" aria-label="Archivo que se muestra">
         {files.map((candidate, index) => (
@@ -114,9 +118,10 @@ function ReservationPreview({ url, filename }: { url: string; filename: string }
   );
 }
 
-function CalculatedReviewPreview({ order, parameters }: {
+function CalculatedReviewPreview({ order, parameters, onClose }: {
   order: ReviewPackage['order'];
   parameters: RuleParameters;
+  onClose?: () => void;
 }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [preview, setPreview] = useState<PreviewState>({ source: '', refreshKey: -1, status: 'loading', url: '', error: '' });
@@ -175,6 +180,7 @@ function CalculatedReviewPreview({ order, parameters }: {
       refreshing={visiblePreview.status === 'loading'}
       retry={visiblePreview.status === 'error'}
       onRefresh={() => setRefreshKey((value) => value + 1)}
+      onClose={onClose}
     >
       {visiblePreview.status === 'loading' && <div className="review-preview-placeholder">Preparando la vista previa…</div>}
       {visiblePreview.status === 'error' && <div className="review-preview-placeholder is-error" role="alert">{visiblePreview.error}</div>}
@@ -183,20 +189,23 @@ function CalculatedReviewPreview({ order, parameters }: {
   );
 }
 
-function PreviewShell({ title, subtitle, refreshing, retry = false, onRefresh, children }: {
+function PreviewShell({ title, subtitle, refreshing, retry = false, onRefresh, onClose, children }: {
   title: string;
   subtitle: string;
   refreshing: boolean;
   retry?: boolean;
   onRefresh: () => void;
+  onClose?: () => void;
   children: React.ReactNode;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(Boolean(onClose));
+  const collapse = () => (onClose ? onClose() : setExpanded(false));
   const dialogRef = useRef<HTMLDialogElement>(null);
   const expandRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
+  // Antes de pintar: abierto ya a pantalla completa, no se ve un instante en línea.
+  useLayoutEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (!expanded) {
@@ -219,7 +228,7 @@ function PreviewShell({ title, subtitle, refreshing, retry = false, onRefresh, c
 
   return (
     <dialog ref={dialogRef} className="review-inline-preview" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
-      onCancel={(event) => { event.preventDefault(); setExpanded(false); }}>
+      onCancel={(event) => { event.preventDefault(); collapse(); }}>
       <header>
         <div>
           <span className="review-preview-icon"><Eye aria-hidden="true" /></span>
@@ -232,7 +241,7 @@ function PreviewShell({ title, subtitle, refreshing, retry = false, onRefresh, c
         <button ref={expandRef} className="ghost-button" type="button" hidden={expanded} onClick={() => setExpanded(true)}>
           <Maximize2 aria-hidden="true" />Pantalla completa
         </button>
-        <button ref={closeRef} className="ghost-button" type="button" hidden={!expanded} onClick={() => setExpanded(false)} aria-label="Cerrar pantalla completa">
+        <button ref={closeRef} className="ghost-button" type="button" hidden={!expanded} onClick={collapse} aria-label={onClose ? "Cerrar vista previa" : "Cerrar pantalla completa"}>
           <X aria-hidden="true" />Cerrar <kbd>Esc</kbd>
         </button>
         </div>

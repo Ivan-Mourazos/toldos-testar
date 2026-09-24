@@ -117,22 +117,19 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
       await inboxRow.getByRole('button', { name: 'Abrir' }).click({ timeout: 15000 });
       const reviewReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
       await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).click();
-      const previewDialog = page.getByRole('dialog', { name: 'Vista previa de AR2603332' });
-      await previewDialog.waitFor({ timeout: 20000 });
-      const reviewViewer = previewDialog.locator('.review-inline-preview .pdf-carousel').first();
-      await reviewViewer.getByText('Página 1 de 3').waitFor({ timeout: 20000 });
-      await previewDialog.getByRole('button', { name: 'Pantalla completa' }).first().click();
+      // Desde el 24/09/2026 la vista previa del pedido abierto sale ya a pantalla completa.
       const fullscreen = page.locator('dialog.review-inline-preview:modal');
-      await fullscreen.waitFor();
+      await fullscreen.waitFor({ timeout: 20000 });
+      await fullscreen.getByText('Página 1 de 3').waitFor({ timeout: 20000 });
       await fullscreen.getByRole('button', { name: 'Página siguiente' }).first().click();
       await fullscreen.getByText('Página 2 de 3').waitFor();
+      await page.keyboard.press('ArrowLeft');
+      await fullscreen.getByText('Página 1 de 3').waitFor();
       await page.keyboard.press('Escape');
       await fullscreen.waitFor({ state: 'hidden' });
-      // El diálogo está anidado: el primer Esc solo sale de pantalla completa
-      // y el segundo cierra la vista previa.
-      await reviewViewer.getByText('Página 2 de 3').waitFor();
-      await page.keyboard.press('Escape');
-      await previewDialog.waitFor({ state: 'hidden' });
+      if (!(await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).evaluate((node) => node === document.activeElement))) {
+        throw new Error('Esc no devolvió el foco a Vista previa del pedido abierto');
+      }
       await reviewReader.waitFor();
     // El recargado en caliente de Vite (WebSocket) no es de la app: falla si otra instancia usa su puerto.
     if (errors.some((error) => !/status of (400|409)|WebSocket|\[vite\]/.test(error))) throw new Error(`Errores de navegador: ${errors.join('; ')}`);

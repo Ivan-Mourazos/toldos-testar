@@ -194,10 +194,9 @@ async function verifyBrowserCase(browserInstance, url) {
   assert.notEqual(await readonlyAwning.getAttribute('disabled'), null);
   assert.equal(await readonlyAwning.getByLabel('OF', { exact: true }).isDisabled(), true);
 
-  // Desde el 24/09/2026 la vista previa del pedido abierto es un diálogo aparte,
-  // no un bloque fijo del lector (Pedido abierto sin aprobar ni devolver).
+  // Desde el 24/09/2026 la vista previa del pedido abierto se abre ya a pantalla completa.
   await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).click();
-  const reviewPreviewDialog = page.getByRole('dialog', { name: 'Vista previa de AR2603332' });
+  const reviewPreviewDialog = page.locator('dialog.review-inline-preview:modal');
   await reviewPreviewDialog.waitFor({ timeout: 20_000 });
   // Desde el 16/09/2026 la bandeja muestra el PDF en un carrusel de una página:
   // se comprueban las dos pasando de la primera a la segunda.

@@ -5003,6 +5003,8 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .review-checklist-toggle input { accent-color: #efb51b; height: 14px; width: 14px; }
 
 .awning-column.is-flash { box-shadow: 0 0 0 3px #efb51b; transition: box-shadow 0.3s; }
+/* Al saltar a un toldo (Qué revisar, avisos), la barra superior fija no tapa su cabecera. */
+.awning-column[data-awning-letter] { scroll-margin-top: calc(var(--topnav-height) + 16px); }
 
 /* Solo lectura con aspecto de texto: antes parecía que se podía editar. */
 .review-readonly-order :is(input, textarea):disabled,
@@ -5015,27 +5017,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .review-reader-header { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; }
 .review-reader-actions { margin-left: auto; }
 .review-generate-note { color: var(--text-muted); font-size: 11px; }
-.review-preview-dialog .review-inline-preview { margin: 0; }
 .review-production-summary .review-reuse-button { align-self: center; flex: 0 0 auto; margin-left: auto; }
-
-/* Fix 1 (revisión Task 6): a 1280×720 el visor de PDF se comía el pie de página
-   ("‹ Página 1 de 2 ›") porque .pdf-carousel-stage pedía una altura fija en vh que no
-   cabía dentro de .model-picker. Dentro del diálogo de Vista previa, el visor pasa a
-   ser una columna flex: la cabecera, la barra de herramientas y el pie se quedan fijos
-   y solo la página del PDF (o la reserva) se encoge para que el pie siempre se vea sin
-   necesidad de scroll. No toca el visor fuera de este diálogo. */
-.review-preview-dialog { display: flex; flex-direction: column; height: calc(100vh - 48px); overflow: hidden; }
-.review-preview-dialog .model-picker-header { flex: 0 0 auto; }
-.review-preview-dialog .review-inline-preview { display: flex; flex: 1; flex-direction: column; min-height: 0; }
-.review-preview-dialog .review-inline-preview > header,
-.review-preview-dialog .generated-preview-selector,
-.review-preview-dialog .pdf-carousel-toolbar,
-.review-preview-dialog .pdf-carousel-footer,
-.review-preview-dialog .pdf-carousel-pages { flex: 0 0 auto; }
-.review-preview-dialog .pdf-carousel { display: flex; flex: 1; flex-direction: column; min-height: 0; }
-.review-preview-dialog .pdf-carousel-stage,
-.review-preview-dialog .reservation-preview,
-.review-preview-dialog .review-preview-placeholder { flex: 1; height: auto; min-height: 180px; }
 
 @container (max-width: 900px) {
   .review-checklist-row { grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr); }
@@ -5110,6 +5092,9 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .orders-scope button[aria-pressed="true"] { background: var(--tgm-black); border-color: var(--tgm-black); color: #ffffff; }
 .orders-search { align-items: center; display: flex; gap: 6px; margin-left: auto; min-width: 280px; }
 .orders-inbox-bar .review-year { flex: 0 0 90px; }
+/* Vacío en la bandeja: una línea discreta, no un hueco de 160 px entre las dos listas. */
+.orders-inbox .review-empty { border: 1px dashed var(--border); border-radius: 8px; flex-direction: row; font-size: 12px; margin: 0; min-height: 0; padding: 10px 12px; }
+.orders-inbox .review-empty svg { height: 16px; width: 16px; }
 .orders-list { border: 1px solid var(--border); border-radius: 8px; list-style: none; margin: 0; overflow: hidden; padding: 0; }
 .orders-row { align-items: center; border-top: 1px solid #eef3f1; display: grid; gap: 12px; grid-template-columns: 120px minmax(0, 1fr) 220px 90px; padding: 8px 12px; }
 .orders-row:first-child { border-top: 0; }

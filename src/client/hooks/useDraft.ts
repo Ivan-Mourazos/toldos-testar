@@ -362,7 +362,7 @@ export function useDraft() {
     setRotBamba(entry.rotBamba || fallback.rotBamba);
     setNotes(collectFabricOrderNotes(entry.notes, entry.awnings));
     setAwnings(entry.awnings.length
-      ? entry.awnings.map((awning) => ({ ...sanitizeAwning(awning as unknown as Record<string, unknown>), id: awning.id }))
+      ? withUniqueIds(entry.awnings.map((awning) => ({ ...sanitizeAwning(awning as unknown as Record<string, unknown>), id: awning.id })))
       : []);
   }
 
@@ -410,14 +410,25 @@ export function useDraft() {
   };
 }
 
+// Un id vacío o repetido hace que editar un toldo cambie también el otro y que los
+// avisos se repartan mal: cada toldo cargado lleva el suyo.
+function withUniqueIds<T extends { id?: string }>(awnings: T[]): T[] {
+  const seen = new Set<string>();
+  return awnings.map((awning) => {
+    const id = awning.id && !seen.has(awning.id) ? awning.id : uid();
+    seen.add(id);
+    return id === awning.id ? awning : { ...awning, id };
+  });
+}
+
 export function buildReusableDraft(entry: DraftState): DraftState {
   return {
     ...entry,
     notes: collectFabricOrderNotes(entry.notes, entry.awnings),
-    awnings: entry.awnings.map((awning) => ({
+    awnings: withUniqueIds(entry.awnings.map((awning) => ({
       ...sanitizeAwning(awning as unknown as Record<string, unknown>),
-      id: awning.id || uid()
-    }))
+      id: awning.id
+    })))
   };
 }
 
