@@ -6,8 +6,8 @@ import {
   FolderCog,
   Inbox,
   Save,
-  ShieldCheck,
   SlidersHorizontal,
+  UserRound,
   X, Undo2 } from 'lucide-react';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
@@ -16,7 +16,6 @@ import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { incompleteAwningLines } from './incompleteAwnings';
-import { getMissingFields } from '../domain/awningCompleteness.js';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
@@ -30,7 +29,8 @@ import { ReviewsView } from './views/ReviewsView';
 import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
 import { todayIso } from './constants';
-import { readCurrentUser } from './currentUser';
+import { readCurrentUser, saveCurrentUser } from './currentUser';
+import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { stampAuthorship } from './authorship';
 
 export default function App() {
@@ -55,8 +55,13 @@ export default function App() {
   // no se avisa de nada.
   const [orderOfs, setOrderOfs] = useState<{ orderCode: string; ofs: string[] } | null>(null);
   // Quién usa este navegador (diseño 24/09/2026, apartado 2): pone el autor/revisor
-  // del pedido al guardar sin preguntarlo. setCurrentUser lo usa la Task 4 (barra superior).
-  const [currentUser] = useState(() => readCurrentUser());
+  // del pedido al guardar sin preguntarlo.
+  const [currentUser, setCurrentUser] = useState(() => readCurrentUser());
+  const [choosingUser, setChoosingUser] = useState(false);
+  // Cuántos pedidos hay pendientes de revisar, para el contador de la pestaña "Pedidos".
+  // Lo calcula OrdersInbox y lo sube con onPendingCount (Task 5).
+  const [pendingCount] = useState(0);
+  function chooseUser(name: string) { saveCurrentUser(name); setCurrentUser(name); setChoosingUser(false); }
   const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
 
   const { calculation, calculationState } = useCalculation({
@@ -382,45 +387,32 @@ export default function App() {
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
 
-  const hasIncomplete = draft.awnings.some((awning) => getMissingFields(awning, { fabric: draft.fabric, sameFabric: draft.sameFabric }).length > 0);
-  const statusBadgeClass = calculationState === 'validating' ? 'badge-warn' : calculationState === 'error' ? 'badge-danger' : calculationState === 'idle' ? 'badge-neutral' : hasIncomplete ? 'badge-warn' : 'badge-ok';
-  const statusLabel = calculationState === 'validating' ? 'Actualizando' : calculationState === 'error' ? 'Revisar datos' : calculationState === 'idle' ? 'Esperando pedido' : hasIncomplete ? 'Faltan datos' : 'Planteamiento vivo';
   const viewTitle = activeTab === 'order'
-    ? 'Nuevo planteamiento'
+    ? 'Nuevo pedido'
     : activeTab === 'parameters'
       ? 'Parámetros de modelos'
       : activeTab === 'reviews'
-        ? 'Revisión de pedidos'
+        ? 'Pedidos'
         : 'Configuración de carpetas';
 
   return (
     <main className="app-shell">
-      <aside className="app-sidebar">
+      <header className="app-topnav">
         <div className="brand">
           <div className="brand-mark"><img src="/logo-tgm-transparent.png" alt="TGM" /></div>
-          <div>
-            <h1>Toldos</h1>
-            <span>Planteamientos</span>
-          </div>
+          <div><h1>Toldos</h1><span>Planteamientos</span></div>
         </div>
-
+        {/* Barra superior (diseño 24/09/2026, apartado 1): la lateral quitaba 204 px a 1280. */}
         <nav className="app-tabs" aria-label="Vistas">
-          <TabButton active={activeTab === 'order'} disabled={working === 'review'} icon={<ClipboardList />} label="Pedido" onClick={() => setActiveTab('order')} />
+          <TabButton active={activeTab === 'order'} disabled={working === 'review'} icon={<ClipboardList />} label="Nuevo pedido" onClick={() => setActiveTab('order')} />
+          <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} icon={<Inbox />} label={pendingCount ? `Pedidos · ${pendingCount}` : 'Pedidos'} onClick={() => setActiveTab('reviews')} />
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
-          <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} icon={<Inbox />} label="Revisión" onClick={() => setActiveTab('reviews')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
         </nav>
-
-        <div className="sidebar-meta">
-          <div className={`production-mode ${workflowReadiness?.productionReady ? 'is-ready' : ''}`}>
-            <ShieldCheck aria-hidden="true" />
-            <div><strong>{workflowReadiness?.productionReady ? 'Generación disponible' : workflowReadiness?.reviewReady ? 'Revisión disponible' : 'Configura la revisión'}</strong><small>Aprobar y generar son pasos separados</small></div>
-          </div>
-          <span className={statusBadgeClass}>{statusLabel}</span>
-          <small>{catalog ? `${catalog.models.length} modelos · ${catalog.fabricStats.total} telas` : 'Cargando catálogo'}</small>
-          <small>{catalog ? `${catalog.referenceStats.total} referencias` : ''}</small>
-        </div>
-      </aside>
+        <button type="button" className="app-current-user" onClick={() => setChoosingUser(true)} aria-label="Cambiar quién soy">
+          <UserRound aria-hidden="true" />Soy: {currentUser ? controlLabel(currentUser) : '—'}
+        </button>
+      </header>
 
       <section className="app-workspace">
         <header className="topbar">
@@ -588,6 +580,9 @@ export default function App() {
             <PdfPreviewViewer key={previewUrl} url={previewUrl} />
           </div>
         </div>
+      )}
+      {(!currentUser || choosingUser) && (
+        <WhoAreYouDialog current={currentUser} onChoose={chooseUser} onCancel={currentUser ? () => setChoosingUser(false) : undefined} />
       )}
     </main>
   );

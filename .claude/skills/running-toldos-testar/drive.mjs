@@ -16,7 +16,7 @@ export async function openApp(viewport = { width: 1600, height: 1000 }) {
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(BASE_URL);
-  await page.getByRole('button', { name: 'Pedido', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Nuevo pedido', exact: true }).waitFor();
   return { browser, page, errors };
 }
 

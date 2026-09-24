@@ -5357,3 +5357,28 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .parameter-table-discounts input { width: 92px; }
 .parameter-table td:first-child { min-width: 130px; }
 .parameter-table-lines, .parameter-table-lines.galicia-lines { min-width: 0; table-layout: auto; }
+
+/* Barra superior (rediseño 24/09/2026): sustituye a la barra lateral. */
+.app-shell { display: block; }
+.app-topnav { align-items: center; background: var(--tgm-black); color: #dfe9e6; display: flex; gap: 18px; padding: 8px 20px; position: sticky; top: 0; z-index: 30; }
+.app-topnav .brand { align-items: center; display: flex; gap: 10px; }
+.app-topnav .brand img { height: 28px; }
+.app-topnav .brand h1 { color: #ffffff; font-size: 14px; margin: 0; }
+.app-topnav .brand span { color: #b9c9c5; font-size: 11px; }
+.app-topnav .app-tabs { display: flex; gap: 6px; }
+.app-current-user { align-items: center; background: #16383e; border: 1px solid #2f5358; border-radius: 6px; color: #ffffff; cursor: pointer; display: inline-flex; font: inherit; font-size: 12px; gap: 6px; margin-left: auto; padding: 6px 10px; }
+.app-current-user svg { height: 15px; width: 15px; }
+.app-workspace { margin: 0 auto; max-width: none; padding: 12px 20px 24px; }
+.who-are-you-options { display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); margin-top: 12px; }
+.who-are-you-options button { background: #ffffff; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; font: inherit; font-weight: 700; padding: 12px; }
+.who-are-you-options button:hover, .who-are-you-options button.is-current { background: var(--tgm-yellow-soft); border-color: var(--tgm-yellow); }
+
+/* Ajustes tras comprobación visual: los estilos de `.app-tabs`/`.brand-mark` de la barra
+   lateral (arriba en este archivo) seguían aplicando porque no iban ligados a `.app-sidebar`.
+   `--topnav-height` la usan `.parameters-save-bar` y ParameterSectionIndex.tsx para
+   engancharse justo debajo de la barra superior, que ahora es la que es sticky arriba. */
+:root { --topnav-height: 52px; }
+.app-topnav .brand-mark { background: transparent; height: 28px; width: auto; }
+.app-topnav .app-tabs { margin-top: 0; }
+.app-topnav .app-tabs button { min-height: 34px; padding: 0 12px; width: auto; }
+.parameters-save-bar { top: var(--topnav-height); }

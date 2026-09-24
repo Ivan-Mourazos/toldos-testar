@@ -28,8 +28,10 @@ export function ParameterSectionIndex() {
           found.push({ id: drawings.id, number: '', title: 'Dibujos' });
         }
         setSections((current) => JSON.stringify(current) === JSON.stringify(found) ? current : found);
-        // Debajo de la barra de "Cambios sin guardar", que también es fija.
-        setTop(document.querySelector<HTMLElement>('.parameters-save-bar')?.getBoundingClientRect().height || 0);
+        // Debajo de la barra superior y de la barra de "Cambios sin guardar", que también son fijas.
+        const topnavHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topnav-height')) || 0;
+        const saveBarHeight = document.querySelector<HTMLElement>('.parameters-save-bar')?.getBoundingClientRect().height || 0;
+        setTop(topnavHeight + saveBarHeight);
       });
     };
     read();
