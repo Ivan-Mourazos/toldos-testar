@@ -5228,3 +5228,28 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .awning-blocks-dots button { background: var(--border-strong); border: 0; border-radius: 999px; cursor: pointer; height: 8px; padding: 0; width: 8px; }
 .awning-blocks-dots button.is-active { background: var(--tgm-yellow); width: 18px; }
 @media (prefers-reduced-motion: reduce) { .awning-blocks .awning-blocks-track { scroll-behavior: auto; } }
+
+/* Tarjetas de lectura (rediseño 24/09/2026 §5): etiqueta y valor, sin cajas. Es la
+   misma tarjeta que al editar, así que no puede faltar ningún dato. */
+.awning-blocks.is-reading .awning-column { gap: 6px; }
+.awning-blocks.is-reading .awning-column label > span,
+.awning-blocks.is-reading .awning-column .field > span { color: var(--text-muted); font-size: 10px; }
+.awning-blocks.is-reading .awning-column input,
+.awning-blocks.is-reading .awning-column textarea,
+.awning-blocks.is-reading .awning-column .select-control {
+  -webkit-text-fill-color: var(--text);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--text);
+  font-weight: 650;
+  min-height: 0;
+  opacity: 1;
+  padding: 1px 0;
+}
+.awning-blocks.is-reading .awning-column .select-control svg { display: none; }
+.awning-blocks.is-reading .awning-column .segmented-control { background: transparent; border: 0; box-shadow: none; padding: 0; }
+.awning-blocks.is-reading .awning-column .segmented-option:not(.active) { display: none; }
+.awning-blocks.is-reading .awning-column .segmented-option.active { background: transparent; box-shadow: none; color: var(--text); font-weight: 650; padding: 1px 0; text-align: left; }
+.awning-blocks.is-reading .awning-column .segmented-control.is-empty::after { color: var(--text-muted); content: '—'; }
+.observation-lines-empty { color: var(--text-muted); font-size: 12px; margin: 4px 10px 8px; }

@@ -91,6 +91,10 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
         aria-labelledby={labelId}
         aria-invalid={missing || undefined}
         title={value ? controlLabel(value) : undefined}
+        // El valor en bruto queda en el markup (como en un <input>): algunos campos de
+        // medida (p. ej. "Salida" con lista de valores establecidos) usan este control en
+        // vez de un NumberField, y así no desaparece el dato al leerlo desde fuera.
+        value={value || undefined}
         onClick={() => open ? setOpen(false) : showOptions()}
         onKeyDown={handleKeyDown}
       >

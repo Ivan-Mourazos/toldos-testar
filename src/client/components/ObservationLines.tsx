@@ -11,6 +11,7 @@ type Props = {
 export function ObservationLines({ label, value, onChange, readOnly = false }: Props) {
   const lines = observationLines(value);
   const listRef = useRef<HTMLDivElement>(null);
+  const isEmpty = lines.every((line) => !line.trim());
 
   function updateLine(index: number, nextValue: string) {
     const next = [...lines];
@@ -43,6 +44,7 @@ export function ObservationLines({ label, value, onChange, readOnly = false }: P
           <Plus aria-hidden="true" />Añadir línea
         </button>}
       </header>
+      {readOnly && isEmpty ? <p className="observation-lines-empty">Sin observaciones</p> : (
       <div className="observation-lines-list" ref={listRef}>
         {lines.map((line, index) => (
           <div className="observation-line" key={index}>
@@ -74,6 +76,7 @@ export function ObservationLines({ label, value, onChange, readOnly = false }: P
           </div>
         ))}
       </div>
+      )}
     </section>
   );
 }
