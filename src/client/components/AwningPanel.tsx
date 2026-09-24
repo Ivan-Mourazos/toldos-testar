@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FileSpreadsheet, Layers3, Scissors, X } from 'lucide-react';
 import type { Awning, Calculation } from '../types';
 import { awningLetter, describeMissing, getMissingFields } from '../../domain/awningCompleteness.js';
@@ -6,15 +6,19 @@ import { controlLabel, legacyModelName } from './controlLabels';
 import { FabricSheet, StructureSheet } from './LiveResults';
 import { awningReservationRows } from '../awningPanel';
 import { formatDecimal } from '../constants';
+import { PdfPreviewViewer } from './PdfPreviewViewer';
 
 type PanelTab = 'despiece' | 'dibujo' | 'reserva';
+
+// El pedido tal como se envía para generar el planteamiento (parámetros, tela, remate…).
+// Con la tela basta para saber qué le falta al toldo; el resto hace falta para su PDF.
+export type PanelOrder = { fabric: string; sameFabric: boolean } & Record<string, unknown>;
 
 type Props = {
   awning: Awning;
   index: number;
   calculation: Calculation | null;
-  // Tela del pedido: sin ella no se sabe qué le falta a un toldo con la misma tela.
-  order: { fabric: string; sameFabric: boolean };
+  order: PanelOrder;
   onUpdate: (id: string, patch: Partial<Awning>) => void;
   onClose: () => void;
 };
@@ -24,6 +28,8 @@ type Props = {
 // vuelve al botón que lo abrió. Reutiliza las hojas de «Planteamientos».
 export function AwningPanel({ awning, index, calculation, order, onUpdate, onClose }: Props) {
   const letter = awningLetter(index);
+  // Como la tarjeta: «Tela A» para un trabajo de tela, «Toldo A» para un toldo.
+  const elementName = `${awning.workType === 'FABRIC_ONLY' ? 'Tela' : 'Toldo'} ${letter}`;
   const block = calculation?.ofs.find((ofBlock) => ofBlock.awningId === awning.id && ofBlock.calculation);
   const hasStructure = awning.workType !== 'FABRIC_ONLY' && Boolean(block?.despiece);
   const [chosenTab, setTab] = useState<PanelTab>(hasStructure ? 'despiece' : 'dibujo');
@@ -54,7 +60,9 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
 
   function moveTab(event: React.KeyboardEvent, current: number) {
     if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    // Que no llegue al visor del PDF, que también cambia de página con las flechas.
     event.preventDefault();
+    event.stopPropagation();
     const next = tabs[(current + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
     setTab(next.id);
     document.getElementById(`awning-panel-tab-${next.id}`)?.focus();
@@ -71,7 +79,7 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
       ref={dialogRef}
       className="awning-panel"
       aria-modal="true"
-      aria-label={`Despiece y dibujo del toldo ${letter}`}
+      aria-label={`Despiece y dibujo ${awning.workType === 'FABRIC_ONLY' ? 'de la tela' : 'del toldo'} ${letter}`}
       onCancel={(event) => { event.preventDefault(); onClose(); }}
       onMouseDown={(event) => { pressedOnBackdrop.current = event.target === event.currentTarget; }}
       onClick={(event) => { if (pressedOnBackdrop.current && event.target === event.currentTarget) onClose(); }}
@@ -81,7 +89,7 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
           <div>
             <span>Despiece y dibujo</span>
             <h2>
-              Toldo {letter} · {controlLabel(awning.model) || 'sin modelo'}
+              {elementName} · {controlLabel(awning.model) || 'sin modelo'}
               {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
             </h2>
           </div>
@@ -99,7 +107,7 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
           </div>
         ) : (
           <>
-            <div className="planning-tabs awning-panel-tabs" role="tablist" aria-label={`Vistas del toldo ${letter}`} style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+            <div className="planning-tabs awning-panel-tabs" role="tablist" aria-label={`Vistas de ${elementName}`} style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
               {tabs.map((item, position) => (
                 <button
                   key={item.id}
@@ -119,7 +127,10 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
             </div>
             <div className="awning-panel-body" id="awning-panel-tabpanel" role="tabpanel" aria-labelledby={`awning-panel-tab-${tab}`}>
               {tab === 'despiece' && <div className="structure-sheet-preview"><StructureSheet block={block} awning={awning} onUpdate={onUpdate} /></div>}
-              {tab === 'dibujo' && <FabricSheet block={block} awning={awning} onUpdate={onUpdate} />}
+              {tab === 'dibujo' && <>
+                <AwningDrawingPreview awning={awning} order={order} />
+                <FabricSheet block={block} awning={awning} onUpdate={onUpdate} />
+              </>}
               {tab === 'reserva' && (reservation.length === 0
                 ? <p className="result-empty">Este toldo todavía no tiene líneas de reserva.</p>
                 : (
@@ -134,5 +145,52 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
         )}
       </div>
     </dialog>
+  );
+}
+
+// El dibujo de la tela es el del PDF del planteamiento: se pide el de este toldo solo y
+// se abre en su hoja de tela. Espera un momento tras cada cambio, como el cálculo.
+function AwningDrawingPreview({ awning, order }: { awning: Awning; order: PanelOrder }) {
+  const requestBody = JSON.stringify({ order: { ...order, awnings: [awning] } });
+  const [preview, setPreview] = useState<{ source: string; status: 'ready' | 'error'; url: string; error: string } | null>(null);
+  const visible = preview && preview.source === requestBody ? preview : null;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let objectUrl = '';
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch('/api/planteamiento', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody,
+          signal: controller.signal
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || 'No se pudo preparar el dibujo.');
+        }
+        const blob = await response.blob();
+        if (controller.signal.aborted) return;
+        objectUrl = URL.createObjectURL(blob);
+        setPreview({ source: requestBody, status: 'ready', url: objectUrl, error: '' });
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setPreview({ source: requestBody, status: 'error', url: '', error: error instanceof Error ? error.message : 'No se pudo preparar el dibujo.' });
+      }
+    }, 350);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [requestBody]);
+
+  return (
+    <section className="awning-panel-drawing" aria-label="Dibujo de la tela" aria-busy={!visible}>
+      {!visible && <p className="awning-panel-drawing-state" role="status">Preparando el dibujo…</p>}
+      {visible?.status === 'error' && <p className="awning-panel-drawing-state is-error" role="alert">{visible.error}</p>}
+      {visible?.status === 'ready' && <PdfPreviewViewer key={visible.url} url={visible.url} startAt="firstWide" ariaLabel={`Dibujo de la tela · OF ${awning.of || 'sin OF'}`} />}
+    </section>
   );
 }

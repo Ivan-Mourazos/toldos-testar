@@ -2,14 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { firstWidePage } from '../pdfPages';
 
 type PageImage = { url: string; width: number; height: number; scale: number };
 type Zoom = 'height' | 'fit' | number;
 const MAX_RENDER_SCALE = 4;
 
-export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
+// startAt="firstWide" abre en la primera página ancha (la hoja de tela, A4 apaisada);
+// por defecto se abre en la 1.
+export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', startAt = 'first' }: {
   url: string;
   ariaLabel?: string;
+  startAt?: 'first' | 'firstWide';
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -64,9 +68,20 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
         loadingTask = getDocument({ data });
         const pdf = await loadingTask.promise;
         if (!active) return;
+        let firstPage = 1;
+        if (startAt === 'firstWide') {
+          const widths: number[] = [];
+          for (let number = 1; number <= pdf.numPages; number += 1) {
+            const page = await pdf.getPage(number);
+            widths.push(page.getViewport({ scale: 1 }).width);
+            page.cleanup();
+          }
+          if (!active) return;
+          firstPage = firstWidePage(widths);
+        }
         pdfRef.current = pdf;
         setPageCount(pdf.numPages);
-        setPageNumber(1);
+        setPageNumber(firstPage);
         setZoom('height');
         setRenderError(false);
         setImages(new Map());
@@ -89,7 +104,7 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
       cache.clear();
       void loadingTask?.destroy();
     };
-  }, [url]);
+  }, [url, startAt]);
 
   useEffect(() => {
     if (status !== 'ready' || documentKey !== url || !pdfRef.current || stageSize.width <= 0 || stageSize.height <= 0) return;

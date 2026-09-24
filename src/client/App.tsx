@@ -483,6 +483,7 @@ export default function App() {
                 autofillLoading={autofillLoading}
                 autofill={autofill}
                 knownOfs={knownOfs}
+                panelOrder={currentOrderPayload()}
               />
             </fieldset>
           )}

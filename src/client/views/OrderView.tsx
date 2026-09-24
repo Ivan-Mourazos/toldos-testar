@@ -6,7 +6,7 @@ import { AwningBlocks } from '../components/AwningBlocks';
 import { awningStatuses } from '../awningBlocks';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
-import { AwningPanel } from '../components/AwningPanel';
+import { AwningPanel, type PanelOrder } from '../components/AwningPanel';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
 export function OrderView({
@@ -39,7 +39,8 @@ export function OrderView({
   autofillLoading,
   autofill,
   readOnly = false,
-  diagnostics
+  diagnostics,
+  panelOrder
 }: {
   availableModelNames: string[];
   orderCode: string;
@@ -75,6 +76,8 @@ export function OrderView({
   // Solo para el estado de cada toldo en el índice (el pedido abierto no pasa el cálculo
   // completo: las tarjetas de lectura cambiarían sus observaciones con él).
   diagnostics?: Calculation['diagnostics'] | null;
+  // El pedido completo (parámetros, remate…) para el PDF del dibujo en el panel del toldo.
+  panelOrder?: Record<string, unknown>;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
   // Toldo cuyo panel «Despiece y dibujo» está abierto.
@@ -174,7 +177,7 @@ export function OrderView({
           awning={awnings[panelIndex]}
           index={panelIndex}
           calculation={calculation}
-          order={{ fabric, sameFabric }}
+          order={{ ...panelOrder, fabric, sameFabric } as PanelOrder}
           onUpdate={updateAwning}
           onClose={() => setPanelAwningId(null)}
         />
