@@ -1092,6 +1092,42 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(await celdaRevisor(order)).toBe('JAIME');
   });
 
+  // Panel «Despiece y dibujo» (rediseño 3): el PDF de un solo toldo lleva su letra de
+  // siempre. Con el pedido entero y `onlyAwningId` del tercero sale «C», nunca «A» ni «B».
+  test('con onlyAwningId sale solo ese toldo y con su propia letra', async () => {
+    const base = pedidoArzua('');
+    const [awning] = base.awnings;
+    const order = {
+      ...base,
+      awnings: [
+        { ...awning, id: 'a', of: '0299001' },
+        { ...awning, id: 'b', of: '0299002' },
+        { ...awning, id: 'c', of: '0299003' }
+      ]
+    };
+    const calculation = calculateOrder(order);
+    expect(buildPlanteamientoPlan(order, calculation, { onlyAwningId: 'c' }).structureEntries.map(({ index }) => index)).toEqual([2]);
+
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation, onlyAwningId: 'c' });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const items = [];
+    for (let numero = 1; numero <= document.numPages; numero += 1) {
+      const page = await document.getPage(numero);
+      items.push(...(await page.getTextContent()).items.map((item) => item.str.trim()).filter(Boolean));
+    }
+    const text = items.join(' ');
+    // Hoja de estructura: cabecera «TOLDO C» y pie «Toldo C · Estructura».
+    expect(text).toContain('TOLDO C');
+    expect(text).toMatch(/Toldo C · Estructura/);
+    expect(text).not.toMatch(/TOLDO [AB]\b|Toldo [AB] ·/);
+    // Hoja de tela: la casilla amarilla de la letra de cada fila.
+    expect(items).toContain('C');
+    expect(items).not.toContain('A');
+    expect(items).not.toContain('B');
+    expect(text).toContain('0299003');
+    expect(text).not.toMatch(/0299001|0299002/);
+  });
+
   test('la casilla REVISOR queda vacía si nadie corrigió', async () => {
     const order = { ...pedidoArzua(''), technician: 'IVÁN', reviewer: '' };
     const revisor = await celdaRevisor(order);

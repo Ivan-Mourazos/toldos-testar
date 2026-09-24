@@ -38,14 +38,16 @@ const fonts = hasEmbeddedFonts
   ? { regular: 'ToldosRegular', semibold: 'ToldosSemibold', bold: 'ToldosBold', italic: 'ToldosItalic' }
   : { regular: 'Helvetica', semibold: 'Helvetica-Bold', bold: 'Helvetica-Bold', italic: 'Helvetica-Oblique' };
 
-export async function buildOrderPlanteamientoPdf({ order, calculation, review = null }) {
+// Con `onlyAwningId` sale solo ese toldo (el panel «Despiece y dibujo»), pero con su letra
+// de siempre: el plan se hace con el pedido entero y se filtra después.
+export async function buildOrderPlanteamientoPdf({ order: fullOrder, calculation, review = null, onlyAwningId = null }) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     const doc = new PDFDocument({
       autoFirstPage: false,
       margin: 0,
       info: {
-        Title: `${order.orderCode || 'Pedido'}-1`,
+        Title: `${fullOrder.orderCode || 'Pedido'}-1`,
         Subject: 'Planteamiento de estructuras y telas',
         Creator: 'toldos-testar'
       }
@@ -55,7 +57,11 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const plan = buildPlanteamientoPlan(order, calculation);
+    const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId });
+    // Las cabeceras (OF del pedido, observaciones…) hablan solo del toldo que sale.
+    const order = onlyAwningId
+      ? { ...fullOrder, awnings: fullOrder.awnings.filter((awning) => awning.id === onlyAwningId) }
+      : fullOrder;
     plan.structureEntries.forEach(({ awning, index, ofBlock }) => {
       const split = splitDespiece(ofBlock?.despiece?.rows || []);
       // Hasta DESPIECE_ROWS_PER_PAGE filas por hoja: drawDespieceTable estrecha las filas
@@ -115,10 +121,11 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
   });
 }
 
-export function buildPlanteamientoPlan(order, calculation) {
+export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null } = {}) {
+  // Se filtra tras numerar: cada toldo conserva su índice y, con él, su letra.
   const entries = order.awnings
     .map((awning, index) => ({ awning, index, ofBlock: findAwningBlock(calculation, awning, index) }))
-    .filter((entry) => entry.ofBlock);
+    .filter((entry) => entry.ofBlock && (!onlyAwningId || entry.awning.id === onlyAwningId));
   const structureEntries = entries.filter(({ awning }) => (
     !isFabricOnlyModel(awning.model) && !isHeraAwning(awning)
   ));

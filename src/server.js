@@ -184,7 +184,10 @@ app.post('/api/planteamiento', async (req, res, next) => {
   try {
     const order = normalizeOrder(req.body?.order || req.body);
     const calculation = await calculateConfiguredOrder(order);
-    const pdf = await buildOrderPlanteamientoPdf({ order, calculation });
+    // El panel «Despiece y dibujo» pide el pedido entero y un solo toldo, para que salga
+    // con su letra.
+    const onlyAwningId = typeof req.body?.onlyAwningId === 'string' && req.body.onlyAwningId ? req.body.onlyAwningId : null;
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, onlyAwningId });
     const filename = `${order.orderCode ? sanitizeOrderCode(order.orderCode) : 'PLANTEAMIENTO'}-1.pdf`;
 
     res
