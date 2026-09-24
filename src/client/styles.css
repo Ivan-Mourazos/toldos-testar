@@ -1585,6 +1585,49 @@ label span,
   font-weight: 800;
 }
 
+/* Observaciones de tela del pedido, dentro del bloque «Tela» (rediseño 3 §3): cabecera y
+   filas más compactas que las del uso suelto, para no disparar la altura de la cabecera. */
+.order-header-material .observation-lines {
+  margin-top: 4px;
+}
+
+.order-header-material .observation-lines-header {
+  min-height: 18px;
+  padding: 1px 6px 1px 8px;
+}
+
+.order-header-material .observation-lines-header button {
+  min-height: 18px;
+  padding: 1px 5px;
+}
+
+.order-header-material .observation-lines-list {
+  gap: 3px;
+  padding: 3px;
+}
+
+.order-header-material .observation-line {
+  grid-template-columns: 18px minmax(0, 1fr) 18px;
+  min-height: 18px;
+  padding: 1px;
+}
+
+.order-header-material .observation-line input {
+  font-size: 10px;
+  height: 18px;
+  min-height: 0;
+  padding: 0 4px;
+}
+
+.order-header-material .observation-line-remove {
+  height: 18px;
+  width: 18px;
+}
+
+.order-header-material .observation-line-number {
+  font-size: 8px;
+}
+
 .order-header-actions {
   min-width: 0;
 }
@@ -3500,30 +3543,8 @@ textarea:focus {
   min-width: 0;
 }
 
-.order-observations {
-  margin-top: 12px;
-  width: 100%;
-}
-
 .awning-structure-notes {
   min-width: 0;
-}
-
-.order-observations .observation-lines {
-  border-color: #cbd9d6;
-  box-shadow: 0 5px 16px rgb(27 73 67 / 6%);
-}
-
-.order-observations .observation-lines-header {
-  background: #eef4f2;
-  min-height: 40px;
-  padding-left: 12px;
-  padding-right: 10px;
-}
-
-.order-observations .observation-lines-list {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: 9px;
 }
 
 .observation-lines {
@@ -4220,7 +4241,6 @@ textarea,
 .review-readonly-order .segmented-control button:disabled { background: #f7faf9; border-color: #d5e0dd; color: #496560; }
 .review-readonly-order .segmented-control button.active:disabled { background: #efb51b; border-color: #dcaa20; color: #173238; }
 .review-readonly-order .order-fabric-per-awning { cursor: default; }
-.review-readonly-order .order-observations { margin-bottom: 0; }
 
 .review-inline-preview {
   background: #f7f9f8;
@@ -4482,7 +4502,6 @@ textarea,
   .awning-column { grid-template-columns: minmax(0, 1fr); }
   .awning-column > * { grid-column: 1; }
   .machine-controls { grid-template-columns: 1fr; }
-  .order-observations .observation-lines-list { grid-template-columns: 1fr; }
   .parameter-band { grid-template-columns: 1fr; }
   .parameter-grid-3, .discount-tables { grid-template-columns: 1fr; }
   .parameters-heading { gap: var(--sp-4); }

@@ -3,10 +3,13 @@ import { DatabaseZap, Layers3, LoaderCircle, Plus, Scissors } from 'lucide-react
 import type { OrderAutofill } from '../types';
 import { TextField } from './TextField';
 import { FabricCombobox } from './FabricCombobox';
+import { ObservationLines } from './ObservationLines';
+import { ReadModeContext } from './ReadMode';
 
 type Props = {
   orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string;
   fabric: string; sameFabric: boolean;
+  notes: string; onNotesChange: (value: string) => void;
   set: (patch: Record<string, string | boolean>) => void;
   onAddAwning: () => void;
   onAddFabricWork: () => void;
@@ -56,6 +59,12 @@ export function OrderHeader(props: Props) {
                   <span>Por toldo</span>
                 </label>}
             </div>
+            {/* La cabecera no está dentro de ReadModeContext (es un fieldset deshabilitado):
+                se provee aquí para que las observaciones lean con el mismo criterio que la
+                ficha (rediseño 3 §3). */}
+            <ReadModeContext.Provider value={!!props.readOnly}>
+              <ObservationLines label="Observaciones de tela del pedido" value={props.notes} onChange={props.onNotesChange} readOnly={props.readOnly} />
+            </ReadModeContext.Provider>
           </section>
         </div>
       </div>

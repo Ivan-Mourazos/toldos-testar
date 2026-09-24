@@ -6,7 +6,6 @@ import { AwningBlocks } from '../components/AwningBlocks';
 import { awningStatuses } from '../awningBlocks';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
-import { ObservationLines } from '../components/ObservationLines';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
 export function OrderView({
@@ -117,6 +116,8 @@ export function OrderView({
             orderDate={orderDate}
             fabric={fabric}
             sameFabric={sameFabric}
+            notes={notes}
+            onNotesChange={setNotes}
             onAddAwning={() => setPickerType('FULL_AWNING')}
             onAddFabricWork={() => setPickerType('FABRIC_ONLY')}
             onAutofill={onAutofill}
@@ -159,10 +160,6 @@ export function OrderView({
             />
           )}
         />
-
-        <div className="order-observations">
-          <ObservationLines readOnly={readOnly} label="Observaciones de tela del pedido" value={notes} onChange={setNotes} />
-        </div>
       </section>}
 
       {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} onUpdate={updateAwning} />}
