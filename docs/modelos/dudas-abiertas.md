@@ -2,6 +2,8 @@
 
 Lista única para resolver de una sentada con Iván y OT cuando estén revisados casi todos los modelos (encargo de Iván, 22/09/2026). Cada duda vive también en el expediente de su modelo; aquí está el resumen con lo que hace la web mientras tanto.
 
+**24/09/2026:** taller respondió las dudas de HERA e IRIS ([documento](./dudas-hera-iris-respuestas-2026-09-24.docx)). Las resueltas salen de esta lista y quedan anotadas con su fecha en [hera.md](./hera.md) e [iris.md](./iris.md): Q-H01 a Q-H06, Q-H08 a Q-H10, Q-I01, Q-I03 y Q-I04, y lo principal de Q-I02.
+
 Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** (Oficina Técnica, y si no está, se busca en la web), después el maestro de RPS con su fecha de baja, después el consumo real y, por último, los libros. En el expediente se anota en qué se apoya cada decisión.
 
 ## Pendientes
@@ -35,26 +37,14 @@ Método de cada modelo, desde Punto Recto: **primero el manual del fabricante** 
 | Q-CA01 | Cambio Antica | ¿Qué salida se mide? En AR2600921 la venta dice 379 × 120, pero el libro usa 70 y con el +65 da la caída cortada (158) | La salida que se escriba, más 65 |
 | Q-CA02 | Cambio Antica | Bamba en otra tela: la plantilla suma +55 al cuerpo en el toldo 01 y +40 en el 02 | +40 |
 | Q-CA03 | Cambio Antica | AR2502455: caídas de 245 y 275 escritas a mano, 45-53 cm más que la fórmula. ¿Otra forma de medir? | La fórmula (+65) |
-| Q-I01 | Iris | Cofre redondo o cuadrado: cambia perfiles y tapas y la tarjeta no lo pide. ¿Se añade? | No los reserva |
-| Q-I02 | Iris | Guía: RPS distingue GPZ C, ÚNICA y STORM; la tarjeta, estándar, pequeña y compensadora. ¿Cómo se corresponden? | No reserva guías, pies ni cremallera |
-| Q-I03 | Iris | Los artículos "sin guía" (C/COS/GU) consumen guías, pies y cremallera | — |
-| Q-I04 | Iris | Varilla vaina y macarrón: ¿cuánto? En el 150 el ancho de la tela; en el 110 y 130 hasta 8 m por toldo | No los reserva |
-| Q-I05 | Iris | Motor (Sunea, Sunilus de 10 a 35 Nm, Meteor CSI): ¿cuál y se pide en la tarjeta? | No lo reserva; avisa |
+| Q-I02 | Iris | Taller (24/09) resolvió lo principal: se reservan guías, pies y cremallera XL, y estándar = ÚNICA A/M, pequeña = ÚNICA M, compensadora = GPZ C. Queda: la guía STORM (6 OF de junio de 2025) no tiene opción en la tarjeta; la pequeña gastó PVC interior `PEGIZ13` en 2 de 4 OF y `PEGIZS1` en 1; el compensador "para pared" (`PEGCPZ13`, 1 OF) frente al "entreparedes" (`PEGCZ13`, 8); la cremallera blanca o gris parece ir con la lona, no con el lacado | Estándar, pequeña y compensadora según esa correspondencia; STORM a mano; `PEGIZS1`; `PEGCZ13`; cremallera por el lacado |
+| Q-I05 | Iris | Motor: taller (24/09) dice que lo habitual es el Sunilus, pero depende de taller. Se ha usado Sunilus 10/17 y 15/17 en el 110, 35/17 y 10/17 en el 130, Sunea 10/17 en un lote de 11 OF y Meteor CSI. ¿Se pide en la tarjeta o se deja a taller? | No lo reserva; avisa de que lo habitual es el Sunilus |
 | Q-A02 | Transversal | 36 referencias rotas en lacados poco habituales (bronce, gris texturado…): faltan soportes Galicia, perfiles o terminales en esos colores. ¿Se ofrecen esos lacados? | Se ofrecen todos |
 | Q-X01 | Xacobeo | El manual ART 250 descuenta 11,9 cm de lona con máquina exterior; la web y los libros usan 12,5 (112 comprobaciones sin diferencias) | 12,5 |
 | Q-SE04 | Selena | ¿Existe Selena a motor? No hay manual y no hay motores en las 17 OF | Solo máquina interior |
 | Q-C07 | Cambio de tela | Avisar a OT de las infrarreservas históricas (bamba acrílica sin reservar, exportación rota, subida incompleta). No se corrigen pedidos ya fabricados | — |
 | Q-B07 | Bambalina | Notas largas: la fila del planteamiento tiene poco espacio y remite al pedido | Remite al pedido |
-| Q-H01 | HERA | Diferencia de 0,5 ml frente a RPS: ¿redondeo por toldo, margen u otra confección? | Regla actual |
-| Q-H02 | HERA | ¿Sin empate y con qué cara interior? | Lo pregunta la tarjeta |
-| Q-H03 | HERA | Falta manual y despiece de las tres variantes | Desde el 23/09 reserva la estructura según el consumo real de 24 OF |
-| Q-H05 | HERA | Tapa tornillo Swift (`SCRTAPTOR`, 2 por toldo) en 9 de 17 OF: ¿cuándo? | No se reserva |
-| Q-H06 | HERA | Macarrón con lengüeta en casi todas las OF, redondo en las dos últimas (AR2603535, AR2603981): ¿se ha cambiado? | Con lengüeta |
-| Q-H07 | HERA | Motor y mando a motor: Sunilus 6/17, 10/17 o RS100 solar. ¿Cuál y cómo se elige? | No los reserva; avisa |
-| Q-H08 | HERA | El almacén imputa cadena por metros con uniones, no el anillo cerrado que se pidió el 18/09. ¿Se sigue pidiendo el anillo? | Anillo, contrapeso y dos uniones |
-| Q-H09 | HERA | Abajo: "E.T. platanero" no tiene consumo; y AR2602729 dice "varilla blanca" en el libro pero gastó pletina | Platanero: nada abajo |
-| Q-H10 | HERA | HERA 43: ¿kit "solo Ø43" y tubo Ø43? La única OF desde 2025 (0218353) gastó el kit 43-56 y tubo del 56 | Kit y tubo del Ø43, sin adaptador |
-| Q-H04 | HERA | Revisión de la muestra con taller | Muestra disponible |
+| Q-H07 | HERA | Motor y mando: taller (24/09) dice que "depende del tipo de modelo". Desde 2024 solo se ha motorizado el HERA 56 (5 OF): Sunilus 6/17 en 3, 10/17 en 1 y el kit solar RS100 en la que decía "motor solar". Propuesta en el [expediente](./hera.md): Sunilus IO 6/17, o el kit RS100 si el pedido dice solar. ¿Se confirma, y qué mando? | No los reserva; avisa |
 
 ## Para el taller (revisión de muestras)
 

@@ -1,6 +1,6 @@
 # HERA — expediente inicial
 
-13/09/2026 · Piloto documental · Alcance todavía parcial
+13/09/2026 · Piloto documental · Alcance todavía parcial · 24/09/2026: taller resuelve todas las dudas salvo el motor (Q-H07)
 
 [Guía de trabajo](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Evidencia técnica existente](../rps-hera-evidence.md)
 
@@ -35,8 +35,8 @@ Fuente: `CPRImputationMaterialMO` de las 24 OF de HERA 56 imputadas desde 2025 (
 | HERA 43 | `SCRKITSW43…` ("solamente para el Ø43"), `SCRTUBO43P600CM` | Solo 1 OF desde 2025 (0218353), mezclada con piezas del 56 | Kit y tubo del Ø43, sin adaptador (Q-H10) |
 
 - **Color:** el kit y el adaptador van en blanco o negro también a motor. La tarjeta pide ahora "Color mecanismos" en el HERA a motor ("Color cadena" en los de cadena, que antes decía "Color del anillo de cadena").
-- **La cadena sigue siendo el anillo cerrado** (criterio de Iván del 18/09). El almacén imputa cadena por metros con uniones (Q-H08).
-- **Motor y mando no se reservan:** varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide. Sale un aviso para añadirlos a mano (Q-H07).
+- **La cadena sigue siendo el anillo cerrado** (criterio de Iván del 18/09, confirmado por taller el 24/09: "sí, se reserva siempre el anillo"). El almacén imputa cadena por metros con uniones (Q-H08, resuelta).
+- **Motor y mando no se reservan:** varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide. Sale un aviso para añadirlos a mano. Taller, 24/09: "depende del tipo de modelo"; hay una propuesta por variante en Q-H07, sin aplicar hasta que la confirme Iván.
 - Después, `validate:reserva HERA` solo echa en falta la cadena por metros (Q-H08) y la tapa tornillo Swift (Q-H05). Referencias rotas: 0 de 23.
 - Tarjeta a 1280×720 y 1600: la variante va en su propia línea (antes se cortaba "HERA 56 …" y no se distinguía máquina de motor). Válida, sin scroll horizontal. Capturas en `tmp/ui-audit/shots/hera-card-*.png`.
 
@@ -111,10 +111,34 @@ Cinco HERA 56 máquina. Las veinte medidas de tubo, frente de tela, caída de te
 
 | ID | Dato pendiente | Impacto | Decisión necesaria / siguiente acción |
 | --- | --- | --- | --- |
-| Q-H01 | Diferencia de 0,5 ml frente a RPS | Cantidad reservada | Confirmar si los 15 ml responden a redondeo por toldo, margen adicional u otra confección; mantener la regla actual mientras no haya evidencia |
-| Q-H02 | Ausencia de empate y cara interior | Confección y croquis | Confirmar sin empate y derecho/revés interior; la nota del lado izquierdo no resuelve esa elección |
-| Q-H03 | Despiece de las tres variantes | Reserva completa | Obtener manual/despiece y correspondencias RPS; no habilitar estructura con códigos o cantidades supuestos |
-| Q-H04 | Revisión de muestra por taller | Lectura y fabricación | Revisar la ficha del toldo A y las otras variantes con Iván/OT y registrar resultado y fecha |
+| Q-H01 | Diferencia de 0,5 ml frente a RPS | Cantidad reservada | **Resuelta por taller el 24/09/2026.** "Regla actual OK": se mantiene |
+| Q-H02 | Ausencia de empate y cara interior | Confección y croquis | **Resuelta por taller el 24/09/2026.** "La cara la indica el pedido": la tarjeta la sigue preguntando y se rellena con lo que diga el pedido |
+| Q-H03 | Despiece de las tres variantes | Reserva completa | **Resuelta por taller el 24/09/2026.** "OK" a la reserva de estructura según el consumo real de 24 OF (23/09). Sigue sin manual del fabricante |
+| Q-H04 | Revisión de muestra por taller | Lectura y fabricación | **Resuelta por taller el 24/09/2026.** "OK" a la muestra |
+| Q-H05 | Tapa tornillo Swift (`SCRTAPTOR`, 2 por toldo) en 9 de 17 OF | Reserva | **Resuelta por taller el 24/09/2026.** "OK": no se reserva |
+| Q-H06 | Macarrón con lengüeta o redondo (redondo en AR2603535 y AR2603981) | Reserva | **Resuelta por taller el 24/09/2026.** "Lo elige taller": se sigue reservando el de lengüeta y taller decide al fabricar |
+| Q-H07 | Motor y mando a motor: ¿cuál y cómo se elige? | Reserva | **Abierta.** Taller: "depende del tipo de modelo". Ver propuesta abajo; no se aplica hasta que la confirme Iván. Mientras, no se reservan y se avisa |
+| Q-H08 | ¿Se sigue pidiendo el anillo cerrado aunque el almacén imputa cadena por metros? | Reserva | **Resuelta por taller el 24/09/2026.** "Sí, se reserva siempre el anillo": anillo, contrapeso y dos uniones, como hasta ahora |
+| Q-H09 | Abajo "E.T. platanero" sin consumo; AR2602729 con varilla en el libro y pletina gastada | Reserva | **Resuelta por taller el 24/09/2026.** "OK": con platanero no se reserva nada abajo |
+| Q-H10 | HERA 43: ¿kit "solo Ø43" y tubo Ø43? | Reserva | **Resuelta por taller el 24/09/2026.** "OK": kit y tubo del Ø43, sin adaptador |
+
+Las respuestas están en [el documento de taller](./dudas-hera-iris-respuestas-2026-09-24.docx) (24/09/2026, traído por Iván).
+
+### Q-H07: propuesta de motor por variante (sin aplicar)
+
+Consumo desde 2024 (`tmp/iris/respuestas/hera-motor.mjs`, solo lectura): solo 5 OF con motor, todas **HERA 56**. El HERA 43 no se ha motorizado nunca en ese periodo, y el HERA 56 máquina no lleva motor.
+
+| OF | Pedido | Motor | Mando | Texto del pedido |
+| --- | --- | --- | --- | --- |
+| 0209383 | AR.24.05460 (9 toldos) | Sunilus SCR 6/17 | Situo 5 IO Pure (uno cada 2-3 toldos) | Motor con mando a distancia |
+| 0213095 | AR.25.00393 (2) | Sunilus SCR 6/17 | Situo 5 IO Pure | Motor con mando a distancia |
+| 0229643 | AR.26.02932 (3) | Sunilus IO 6/17 | Situo 1 IO Pure, uno por toldo | Motorizados con mando a distancia |
+| 0218832 | AR.25.03495 (3) | Sunilus IO 10/17 | Situo 5 IO Pure | Motor con mando a distancia |
+| 0213066 | AR.25.00357 (2) | RS100 solar IO 10/12 con batería, panel y soportes | Situo 5 IO Pure | **Motor solar** |
+
+`SUNILUSCR6//17` y `SUNILUSIO6//17` son el mismo motor de Somfy (referencia 1032959) con dos códigos; los dos están activos.
+
+**Propuesta para Iván:** HERA 56 MOTOR reserva `SUNILUSIO6//17` (3 de 4 OF sin solar); si el pedido dice "solar", el kit RS100 (`RS10010//12`, `BATERIASOLAR`, `PANELSORS100`, `RS100SOBT`, `RS100SOPAN`) en lugar del Sunilus. Queda por decidir el mando: Situo 1 por toldo o Situo 5 por pedido. El 10/17 de la OF 0218832 no se explica con los datos (no hay medidas en el pedido).
 
 La comparación técnica utilizó una cara interior provisional solo para poder obtener el cálculo numérico. No debe reutilizarse como elección real de fabricación; el informe mantiene esa carencia identificada. El silencio no resuelve Q-H01 ni Q-H02.
 

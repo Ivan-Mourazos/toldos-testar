@@ -61,8 +61,8 @@ export function irisCommonPieces({ series, device, lacado, units = 1, rollTubeLe
 // - perfil superior, el mismo con cofre redondo o cuadrado (en 52 de las 64 OF);
 // - perfil inferior redondo o cuadrado (51 de 64; manual de BAT, piezas 11 y 11/1);
 // - un juego de tapas por toldo (57 de 64, uno por toldo en 54).
-// Las 7 OF sin tapas no tienen imputada ninguna pieza de estructura: el proyecto
-// AR.25.013xx (se imputó en sus OF hermanas) y dos 150 de septiembre aún abiertas.
+// Las 7 OF sin tapas no tienen imputada ninguna pieza de estructura: cinco de los
+// pedidos AR.25.01353 a 01364 (se imputó en sus OF hermanas) y dos 150 aún abiertas.
 // El 150 solo tiene cofre redondo (manual del 150 y maestro de RPS).
 const boxFamilies = Object.freeze({
   110: { top: 'PECOSSU1', REDONDO: { bottom: 'PECORSU1', caps: 'TAPASSUN1' }, CUADRADO: { bottom: 'PECOCSU1', caps: 'TAPASCOU1' } },
