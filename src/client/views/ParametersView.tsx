@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, Calculator, Check, ChevronDown, Layers3, Package, RotateCcw, Ruler, Scissors } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, Calculator, Check, ChevronDown, Package, RotateCcw, Ruler, Scissors } from 'lucide-react';
 import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, ElectraMatrixSupport, ElectraParameters, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
 import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
@@ -7,6 +7,8 @@ import { controlLabel, legacyModelName } from '../components/controlLabels';
 import { AnticaRuleReference, HeraRuleReference, IrisRuleReference, CambioAnticaRuleReference } from './RuleReferencePanels';
 import { arzuaProManualSpec } from '../../domain/arzuaProConstants.js';
 import { DrawingParametersPanel } from '../components/DrawingParametersPanel';
+import { fullAwningModelNames, fabricOnlyModelNames } from '../../domain/modelBehavior.js';
+import { groupModelsByFamily } from '../../domain/catalog.js';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
 const devices: Device[] = ['MOTOR', 'MAQ. INTERIOR', 'MAQ. EXTERIOR'];
@@ -65,17 +67,23 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     delete byModel[selectedModel];
     onUpdateDrawings({ byModel });
   };
-  const withDrawings = (content: React.ReactNode) => <>{content}<DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} /></>;
+  const withSidebar = (content: React.ReactNode, drawings = false) => <div className="parameter-layout">
+    <ParameterModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+    <div className="parameter-layout-main">
+      {content}
+      {drawings && <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />}
+    </div>
+  </div>;
+  const withDrawings = (content: React.ReactNode) => withSidebar(content, true);
 
   if (selectedModel === 'HERA' || selectedModel === 'ANTICA' || selectedModel === 'IRIS') {
-    return withDrawings(<OrderConfiguredModelView selectedModel={selectedModel} onSelectModel={setSelectedModel} />);
+    return withDrawings(<OrderConfiguredModelView selectedModel={selectedModel} />);
   }
 
   if (selectedModel === 'XACOBEO') {
     return withDrawings(<XacobeoParametersView
       parameters={parameters.xacobeo}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateXacobeo}
       onReset={onResetXacobeo}
     />);
@@ -85,7 +93,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<PuntoRectoParametersView
       parameters={parameters.puntoRecto}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdatePuntoRecto}
       onReset={onResetPuntoRecto}
     />);
@@ -95,7 +102,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<Monoblock350ParametersView
       parameters={parameters.monoblock350}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateMonoblock350}
       onReset={onResetMonoblock350}
     />);
@@ -105,7 +111,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<MaxiscreemParametersView
       parameters={parameters.maxiscreem}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateMaxiscreem}
       onReset={onResetMaxiscreem}
     />);
@@ -115,7 +120,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<ElectraParametersView
       parameters={parameters.electra}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateElectra}
       onReset={onResetElectra}
     />);
@@ -125,7 +129,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<AmbarBoxParametersView
       parameters={parameters.ambarBox}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateAmbarBox}
       onReset={onResetAmbarBox}
     />);
@@ -135,7 +138,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<AgataBoxParametersView
       parameters={parameters.agataBox}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateAgataBox}
       onReset={onResetAgataBox}
     />);
@@ -145,7 +147,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<CortinaParametersView
       parameters={parameters.cortina}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateCortina}
       onReset={onResetCortina}
     />);
@@ -155,7 +156,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<CortinaParametersView
       parameters={parameters.selena}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateSelena}
       onReset={onResetSelena}
     />);
@@ -165,7 +165,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<CambioCortinaParametersView
       parameters={parameters.cambioCortina}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateCambioCortina}
       onReset={onResetCambioCortina}
     />);
@@ -175,7 +174,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<FabricJobsParametersView
       parameters={parameters.fabricJobs}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateFabricJobs}
       onReset={onResetFabricJobs}
     />);
@@ -187,7 +185,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<BoxParametersView
       parameters={isPerla ? parameters.perlaBox : isCuarzo ? parameters.cuarzoBox : parameters.coralBox}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={isPerla ? onUpdatePerlaBox : isCuarzo ? onUpdateCuarzoBox : onUpdateCoralBox}
       onReset={isPerla ? onResetPerlaBox : isCuarzo ? onResetCuarzoBox : onResetCoralBox}
     />);
@@ -197,7 +194,6 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     return withDrawings(<ArzuaParametersView
       parameters={parameters.arzuaPro}
       selectedModel={selectedModel}
-      onSelectModel={setSelectedModel}
       onUpdate={onUpdateArzua}
       onReset={onResetArzua}
     />);
@@ -239,9 +235,8 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
     });
   }
 
-  return (
+  return withSidebar(
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
 
       <header className="parameters-heading">
         <div>
@@ -319,11 +314,15 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
 
 const fabricParameterModels = new Set<FabricJobModel>(['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
 
-const parameterModels: SelectedModel[] = [
+const supportedParameterModels = new Set<SelectedModel>([
   'ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'MAXISCREEM', 'ELECTRA', 'IRIS', 'HERA', 'ANTICA',
   'CORTINA', 'SELENA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA',
   'AMBAR BOX', 'AGATA BOX', 'PERLA BOX', 'CORAL BOX', 'CUARZO BOX'
-];
+]);
+const parameterModelGroups: { family: string; models: SelectedModel[] }[] = groupModelsByFamily(
+  [...fullAwningModelNames, ...fabricOnlyModelNames]
+    .filter((model): model is SelectedModel => supportedParameterModels.has(model as SelectedModel))
+);
 
 function parameterModelName(model: SelectedModel) {
   const current = controlLabel(model);
@@ -339,7 +338,6 @@ function ParameterModelTitle({ model }: { model: SelectedModel }) {
 type ArzuaParametersProps = {
   parameters: ArzuaProParameters;
   selectedModel: 'ARZUA PRO';
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<ArzuaProParameters>) => void;
   onReset: () => void;
 };
@@ -372,7 +370,7 @@ const arzuaDiscountCopy: Record<DiscountGroup, { title: string; help: string; so
 
 const parameterNumber = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 });
 
-function ArzuaParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: ArzuaParametersProps) {
+function ArzuaParametersView({ parameters, selectedModel, onUpdate, onReset }: ArzuaParametersProps) {
   const exampleFront = 400;
   const exampleDiscount = parameters.fabricWidthDiscounts[tubes[0]].MOTOR;
   const exampleFabric = exampleFront - exampleDiscount;
@@ -403,7 +401,6 @@ function ArzuaParametersView({ parameters, selectedModel, onSelectModel, onUpdat
 
   return (
     <section className="parameters-page arzua-parameters">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading arzua-parameters-heading">
         <div>
@@ -559,12 +556,10 @@ function ArzuaParametersView({ parameters, selectedModel, onSelectModel, onUpdat
   );
 }
 
-function OrderConfiguredModelView({ selectedModel, onSelectModel }: {
+function OrderConfiguredModelView({ selectedModel }: {
   selectedModel: 'HERA' | 'ANTICA' | 'IRIS';
-  onSelectModel: (model: SelectedModel) => void;
 }) {
   return <section className="parameters-page">
-    <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
     <header className="parameters-heading"><div><span className="section-kicker">Consulta de reglas actuales</span><ParameterModelTitle model={selectedModel} /><p>Aumentos, descuentos y condiciones que aplica la web. Consulta sin modificar pedidos ni valores generales.</p></div></header>
     {selectedModel === 'ANTICA' ? <AnticaRuleReference /> : selectedModel === 'HERA' ? <HeraRuleReference /> : <IrisRuleReference />}
   </section>;
@@ -574,83 +569,43 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
   selectedModel: SelectedModel;
   onSelectModel: (model: SelectedModel) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const pickerRef = useRef<HTMLDivElement>(null);
-  const selectedNames = parameterModelName(selectedModel);
-
-  useEffect(() => {
-    if (!open) return;
-    function closeOnOutsideClick(event: PointerEvent) {
-      if (!pickerRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false);
-    }
-    document.addEventListener('pointerdown', closeOnOutsideClick);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('pointerdown', closeOnOutsideClick);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [open]);
-
   return (
-    <div className="parameter-model-selector">
-      <div className="parameter-model-picker" ref={pickerRef}>
-        <span className="parameter-model-picker-label">Modelo del catálogo</span>
-        <button
-          className="parameter-model-trigger"
-          type="button"
-          aria-expanded={open}
-          aria-haspopup="listbox"
-          onClick={() => setOpen((value) => !value)}
-        >
-          <span className="parameter-model-trigger-icon"><Layers3 aria-hidden="true" /></span>
-          <span className="parameter-model-trigger-copy">
-            <strong>{selectedNames.current}</strong>
-            {selectedNames.legacy && <small><span>RPS</span>{selectedNames.legacy}</small>}
-          </span>
-          <ChevronDown className={open ? 'is-open' : ''} aria-hidden="true" />
-        </button>
-        {open && (
-          <div className="parameter-model-menu" role="listbox" aria-label="Modelos configurables">
-            <header><span>Modelos actuales</span><small>Denominación RPS cuando es distinta</small></header>
-            <div className="parameter-model-options">
-              {parameterModels.map((model) => {
+    <nav className="parameter-model-sidebar" aria-label="Modelos de parámetros">
+      <strong className="parameter-model-sidebar-title">Modelos</strong>
+      {parameterModelGroups.map(({ family, models }) => (
+        <section className="parameter-model-family" key={family || 'tela'}>
+          <h3>{family || 'TRABAJOS DE TELA'}</h3>
+          {models.map((model) => {
                 const names = parameterModelName(model);
                 const active = model === selectedModel;
                 return (
                   <button
                     key={model}
                     type="button"
-                    role="option"
-                    aria-selected={active}
-                    className={active ? 'is-active' : ''}
-                    onClick={() => { onSelectModel(model); setOpen(false); }}
+                    data-model={model}
+                    className={active ? 'is-active' : undefined}
+                    aria-current={active ? 'page' : undefined}
+                    onClick={() => onSelectModel(model)}
                   >
-                    <span><strong>{names.current}</strong>{names.legacy && <small><span>RPS</span>{names.legacy}</small>}</span>
+                    <span><strong>{names.current}</strong>{names.legacy && <small>RPS · {names.legacy}</small>}</span>
                     {active && <Check aria-hidden="true" />}
                   </button>
                 );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-      <small>{parameterModels.length} modelos · denominación de RPS visible cuando es distinta</small>
-    </div>
+          })}
+        </section>
+      ))}
+    </nav>
   );
 }
 
 type XacobeoProps = {
   parameters: XacobeoParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<XacobeoParameters>) => void;
   onReset: () => void;
 };
 
-function XacobeoParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: XacobeoProps) {
+function XacobeoParametersView({ parameters, selectedModel, onUpdate, onReset }: XacobeoProps) {
   const xacDevices: Device[] = ['MAQ. EXTERIOR', 'MAQ. INTERIOR', 'MOTOR'];
   const discountRows = [
     ['fabricWidthDiscounts', 'Frente de tela'],
@@ -672,7 +627,6 @@ function XacobeoParametersView({ parameters, selectedModel, onSelectModel, onUpd
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas XAC, despiece ART250 y reserva RPS.</p></div>
@@ -712,12 +666,11 @@ function XacobeoParametersView({ parameters, selectedModel, onSelectModel, onUpd
 type MaxiscreemProps = {
   parameters: MaxiscreemParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<MaxiscreemParameters>) => void;
   onReset: () => void;
 };
 
-function MaxiscreemParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: MaxiscreemProps) {
+function MaxiscreemParametersView({ parameters, selectedModel, onUpdate, onReset }: MaxiscreemProps) {
   const groups: { code: MaxiscreemVariantGroup; label: string }[] = [
     { code: 'COFRE', label: 'Con cofre' },
     { code: 'SIN_COFRE', label: 'Sin cofre' }
@@ -741,7 +694,6 @@ function MaxiscreemParametersView({ parameters, selectedModel, onSelectModel, on
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Con o sin cofre y guiado por cable o varilla.</p></div>
@@ -784,12 +736,11 @@ function MaxiscreemParametersView({ parameters, selectedModel, onSelectModel, on
 type ElectraProps = {
   parameters: ElectraParameters;
   selectedModel: 'ELECTRA';
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<ElectraParameters>) => void;
   onReset: () => void;
 };
 
-function ElectraParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: ElectraProps) {
+function ElectraParametersView({ parameters, selectedModel, onUpdate, onReset }: ElectraProps) {
   const supports: ElectraMatrixSupport[] = ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS'];
   const devices: CortinaDevice[] = ['MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR'];
   const supportPieces = [
@@ -832,7 +783,6 @@ function ElectraParametersView({ parameters, selectedModel, onSelectModel, onUpd
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Nuevo modelo · Elit Vertical</span><ParameterModelTitle model={selectedModel} /><p>Reglas por soporte, con o sin cofre y con o sin guía.</p></div>
@@ -875,12 +825,11 @@ function ElectraParametersView({ parameters, selectedModel, onSelectModel, onUpd
 type Monoblock350Props = {
   parameters: Monoblock350Parameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<Monoblock350Parameters>) => void;
   onReset: () => void;
 };
 
-function Monoblock350ParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: Monoblock350Props) {
+function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onReset }: Monoblock350Props) {
   const devices: Monoblock350Device[] = ['MAQUINA', 'MOTOR'];
   const discountRows = [
     ['fabric', 'Frente de tela'],
@@ -903,7 +852,6 @@ function Monoblock350ParametersView({ parameters, selectedModel, onSelectModel, 
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Hoja MON.350, estructura Arzúa Monobloc y reserva RPS.</p></div>
@@ -935,7 +883,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onSelectModel, 
 
       <div className="parameter-band">
         <div className="parameter-band-title"><span>03</span><div><h3>Rangos por salida y brazos</h3><p>Frentes mínimos, máximos y motor automático.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{[2, 3, 4].map((arms) => <th key={arms}>{arms} brazos · mín/máx · motor</th>)}</tr></thead>
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines monoblock-ranges-table"><thead><tr><th>Salida</th>{[2, 3, 4].map((arms) => <th key={arms}>{arms} brazos · mín/máx · motor</th>)}</tr></thead>
           <tbody>{parameters.dimensionalRules.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{([2, 3, 4] as const).map((arms) => <td key={arms}><div className="parameter-inline-fields"><input aria-label={`MONOBLOCK ${row.projection} ${arms} mínimo`} type="number" min="1" value={row.values[arms].minimum} onChange={(event) => updateRule(row.projection, arms, 'minimum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} máximo`} type="number" min="1" value={row.values[arms].maximum} onChange={(event) => updateRule(row.projection, arms, 'maximum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} motor`} value={row.values[arms].motorPower} onChange={(event) => updateRule(row.projection, arms, 'motorPower', event.target.value)} /></div></td>)}</tr>)}</tbody>
         </table></div>
       </div>
@@ -948,12 +896,11 @@ function Monoblock350ParametersView({ parameters, selectedModel, onSelectModel, 
 type PuntoRectoProps = {
   parameters: PuntoRectoParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<PuntoRectoParameters>) => void;
   onReset: () => void;
 };
 
-function PuntoRectoParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: PuntoRectoProps) {
+function PuntoRectoParametersView({ parameters, selectedModel, onUpdate, onReset }: PuntoRectoProps) {
   const pointDevices: BoxDevice[] = ['MAQUINA', 'MOTOR'];
   const discountRows = [
     ['fabricWidthDiscounts', 'Frente de tela'],
@@ -971,7 +918,6 @@ function PuntoRectoParametersView({ parameters, selectedModel, onSelectModel, on
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de la hoja PUNTO RECTO, despiece PRT07 y reserva RPS.</p></div>
@@ -1018,7 +964,6 @@ function PuntoRectoParametersView({ parameters, selectedModel, onSelectModel, on
 type CambioCortinaProps = {
   parameters: CambioCortinaParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<CambioCortinaParameters>) => void;
   onReset: () => void;
 };
@@ -1026,12 +971,11 @@ type CambioCortinaProps = {
 type FabricJobsProps = {
   parameters: FabricJobParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<FabricJobParameters>) => void;
   onReset: () => void;
 };
 
-function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: FabricJobsProps) {
+function FabricJobsParametersView({ parameters, selectedModel, onUpdate, onReset }: FabricJobsProps) {
   const jobs: { model: FabricJobModel; label: string; note: string }[] = [
     { model: 'CAMBIO TELA', label: 'Cambio de tela', note: 'Margen del cuerpo' },
     { model: 'ENROLLABLE', label: 'Enrollable', note: 'Entrada de confección' },
@@ -1043,7 +987,6 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
       <header className="parameters-heading">
         <div><span className="section-kicker">Trabajo sin estructura</span><ParameterModelTitle model={selectedModel} /><p>Comparte los márgenes comunes de confección; cada modelo conserva su caída propia.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
@@ -1069,10 +1012,9 @@ function FabricJobsParametersView({ parameters, selectedModel, onSelectModel, on
   );
 }
 
-function CambioCortinaParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: CambioCortinaProps) {
+function CambioCortinaParametersView({ parameters, selectedModel, onUpdate, onReset }: CambioCortinaProps) {
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Trabajo de tela</span><ParameterModelTitle model={selectedModel} /><p>Confección de tela sin estructura ni lacado.</p></div>
@@ -1097,12 +1039,11 @@ function CambioCortinaParametersView({ parameters, selectedModel, onSelectModel,
 type CortinaProps = {
   parameters: CortinaParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<CortinaParameters>) => void;
   onReset: () => void;
 };
 
-function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: CortinaProps) {
+function CortinaParametersView({ parameters, selectedModel, onUpdate, onReset }: CortinaProps) {
   const selena = selectedModel === 'SELENA';
   const curtainDevices: CortinaDevice[] = selena
     ? ['MAQ. INTERIOR']
@@ -1119,7 +1060,6 @@ function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpd
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>{selena ? 'Sistema vertical con brazos Stor, confección de tela y reserva RPS.' : 'Reglas de estructura, confección de tela y reserva RPS.'}</p></div>
@@ -1154,7 +1094,6 @@ function CortinaParametersView({ parameters, selectedModel, onSelectModel, onUpd
 type BoxProps = {
   parameters: BoxParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<BoxParameters>) => void;
   onReset: () => void;
 };
@@ -1162,12 +1101,11 @@ type BoxProps = {
 type AmbarBoxProps = {
   parameters: AmbarBoxParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<AmbarBoxParameters>) => void;
   onReset: () => void;
 };
 
-function AmbarBoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: AmbarBoxProps) {
+function AmbarBoxParametersView({ parameters, selectedModel, onUpdate, onReset }: AmbarBoxProps) {
   const placementGroups: { code: AmbarPlacementGroup; label: string }[] = [
     { code: 'FRONTAL_TECHO', label: 'Frontal / techo' },
     { code: 'ENTRE_PAREDES', label: 'Entre paredes' }
@@ -1190,7 +1128,6 @@ function AmbarBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de estructura, tela y reserva RPS.</p></div>
@@ -1231,7 +1168,7 @@ function AmbarBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
   );
 }
 
-function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: BoxProps) {
+function BoxParametersView({ parameters, selectedModel, onUpdate, onReset }: BoxProps) {
   const boxDevices: BoxDevice[] = ['MAQUINA', 'MOTOR'];
   const isPerla = selectedModel === 'PERLA BOX';
   const isCuarzo = selectedModel === 'CUARZO BOX';
@@ -1258,7 +1195,6 @@ function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate,
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
@@ -1303,12 +1239,11 @@ function BoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate,
 type AgataBoxProps = {
   parameters: AgataBoxParameters;
   selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
   onUpdate: (patch: Partial<AgataBoxParameters>) => void;
   onReset: () => void;
 };
 
-function AgataBoxParametersView({ parameters, selectedModel, onSelectModel, onUpdate, onReset }: AgataBoxProps) {
+function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }: AgataBoxProps) {
   const devices: AgataDevice[] = ['MAQUINA', 'MOTOR'];
   const variants: AgataRuleVariant[] = ['OPEN', 'SEMI', 'COFRE'];
   const discountRows: [keyof AgataPieceDiscounts, string][] = [
@@ -1351,7 +1286,6 @@ function AgataBoxParametersView({ parameters, selectedModel, onSelectModel, onUp
 
   return (
     <section className="parameters-page">
-      <ParameterModelSelector selectedModel={selectedModel} onSelectModel={onSelectModel} />
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas para Open, Semiopen, Semiclose y Cofre.</p></div>
