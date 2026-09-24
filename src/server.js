@@ -11,7 +11,7 @@ import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { verifyStructureArticles } from './domain/structureEdits.js';
 import { buildOrderAutofill } from './domain/orderAutofill.js';
-import { buildFabricProposals } from './domain/autofillFabricHint.js';
+import { attachFabricProposals } from './domain/autofillFabricHint.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
@@ -139,18 +139,10 @@ app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
     const source = await getRpsOrder(orderCode);
     if (!source) return res.status(404).json({ error: `El pedido ${orderCode} no existe en RPSNext.` });
     const result = buildOrderAutofill(source);
-    const textsById = new Map(result.order.awnings.map((awning) => [awning.id, awning._sourceText || '']));
-    const fabricProposals = await buildFabricProposals(
-      result.order.awnings,
-      textsById,
-      { search: async (query, limit) => (await searchCatalogFabrics(query, limit)).items }
-    );
-    // `_sourceText` solo sirve para calcular las propuestas: no forma parte del pedido.
-    result.order.awnings.forEach((awning) => { delete awning._sourceText; });
-    if (fabricProposals.length > 0) {
-      result.fabricProposals = fabricProposals;
-      result.summary = [...(result.summary || []), 'tela: elige entre las propuestas'];
-    }
+    // Si las propuestas de tela fallan, el pedido se devuelve igual, sin ellas.
+    await attachFabricProposals(result, {
+      search: async (query, limit) => (await searchCatalogFabrics(query, limit)).items
+    });
     return res.json(result);
   } catch (error) {
     return next(error);
