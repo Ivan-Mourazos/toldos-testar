@@ -17,6 +17,24 @@ try {
   await fillArzuaAR2603332(page);
   await page.waitForTimeout(500);
 
+  // «Limpiar» pregunta; al salir con Esc o con «Volver al pedido» el foco vuelve a
+  // «Limpiar», no al <body>.
+  const clearButton = page.getByRole('button', { name: 'Limpiar', exact: true });
+  const clearDialog = page.getByRole('alertdialog', { name: 'Limpiar el formulario' });
+  for (const [how, leave] of [
+    ['Esc', () => page.keyboard.press('Escape')],
+    ['«Volver al pedido»', () => clearDialog.getByRole('button', { name: 'Volver al pedido', exact: true }).click()]
+  ]) {
+    await clearButton.click();
+    await clearDialog.waitFor();
+    await leave();
+    await clearDialog.waitFor({ state: 'hidden' });
+    await page.waitForTimeout(100);
+    const focused = await page.evaluate(() => document.activeElement?.textContent?.trim() || document.activeElement?.tagName);
+    assert.equal(focused, 'Limpiar', `tras cerrar «Limpiar» con ${how} el foco vuelve al botón (está en "${focused}")`);
+  }
+  console.log('OK: tras la confirmación de «Limpiar» (Esc y «Volver al pedido») el foco vuelve a «Limpiar»');
+
   // La línea resumen de Planteamientos: «1 estructura · 1 tela · N líneas RPS · 9 ml».
   await page.waitForFunction(
     () => /1 estructura · 1 tela · \d+ líneas RPS · 9 ml/.test(document.querySelector('.planning-summary-text')?.textContent || ''),
@@ -42,15 +60,23 @@ try {
   const row1Code = await dialog.locator('.structure-edit-table tbody tr').first().locator('td').nth(1).locator('small').innerText();
   await row1.fill('2');
 
-  // Con la edición abierta, Esc no cierra el panel ni la pierde.
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(200);
-  assert.equal(await dialog.isVisible(), true, 'Esc con el despiece en edición no cierra el panel');
-  assert.equal(await row1.inputValue(), '2', 'Esc con el despiece en edición no pierde lo escrito');
-  console.log('OK: Esc con el despiece en edición no cierra ni pierde la edición');
-
-  // La X y el cambio de pestaña preguntan; «Seguir editando» deja la edición como estaba.
+  // Con la edición abierta, Esc pregunta como la X. Tres Esc seguidos (abre, descarta la
+  // pregunta, vuelve a abrir) no deben cerrar el <dialog> por su cuenta (Chrome lo hace
+  // tras varios «cancel» evitados).
   const discard = page.getByRole('alertdialog', { name: 'Despiece sin guardar' });
+  for (let press = 0; press < 3; press += 1) {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(250);
+  }
+  await discard.waitFor();
+  await discard.getByRole('button', { name: 'Seguir editando', exact: true }).click();
+  await discard.waitFor({ state: 'hidden' });
+  assert.equal(await dialog.isVisible(), true, 'tras tres Esc y «Seguir editando» el panel sigue a la vista');
+  assert.equal(await row1.inputValue(), '2', 'tras tres Esc y «Seguir editando» la edición sigue');
+  assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden', 'con el panel abierto la página no se desplaza');
+  console.log('OK: tres Esc con el despiece en edición preguntan y «Seguir editando» conserva panel y edición');
+
+  // La X y el cambio de pestaña también preguntan; «Seguir editando» deja la edición.
   for (const [action, run] of [
     ['la X', () => dialog.getByRole('button', { name: 'Cerrar panel', exact: true }).click()],
     ['la pestaña Reserva', () => dialog.getByRole('tab', { name: 'Reserva', exact: true }).click()]
@@ -62,6 +88,10 @@ try {
     await discard.waitFor({ state: 'hidden' });
     assert.equal(await dialog.isVisible(), true, `${action}: tras «Seguir editando» el panel sigue abierto`);
     assert.equal(await row1.inputValue(), '2', `${action}: tras «Seguir editando» la edición sigue`);
+    if (action === 'la X') {
+      const backOnClose = await dialog.getByRole('button', { name: 'Cerrar panel', exact: true }).evaluate((node) => node === document.activeElement);
+      assert.equal(backOnClose, true, 'tras «Seguir editando» el foco vuelve a «Cerrar panel»');
+    }
     console.log(`OK: ${action} con el despiece en edición pregunta y «Seguir editando» la conserva`);
   }
   const recalculated = page.waitForResponse((response) => response.url().endsWith('/api/calculate'));
@@ -82,6 +112,7 @@ try {
   await dialog.waitFor({ state: 'hidden' });
   const focusedIsOpenButton = await openButton.evaluate((node) => node === document.activeElement);
   assert.equal(focusedIsOpenButton, true, 'tras Esc el foco vuelve al botón «Despiece y dibujo» del toldo A');
+  assert.equal(await page.evaluate(() => document.body.style.overflow), '', 'al cerrar el panel la página vuelve a desplazarse');
   console.log('OK: Esc cierra el panel y el foco vuelve al botón «Despiece y dibujo»');
 
   // La reserva del pedido, al desplegar la línea resumen, también lleva el cambio.
