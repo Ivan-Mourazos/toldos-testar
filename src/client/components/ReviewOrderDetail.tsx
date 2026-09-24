@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine, X } from 'lucide-react';
-import type { ReviewPackage, ReviewStatus, RuleParameters } from '../types';
+import type { ReviewPackage, RuleParameters } from '../types';
 import { OrderView } from '../views/OrderView';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { ReviewChecklist } from './ReviewChecklist';
@@ -53,10 +53,13 @@ export function ReviewOrderDetail({
   }
 
   const reviewParameters = review.order.parameters || parameters;
-  const produced = review.status === 'PRODUCED' && Boolean(review.production);
+  // Un pedido generado ya no se corrige ni se genera desde aquí: sus archivos ya salieron.
+  // Para hacer otro parecido está «Reutilizar datos» en el bloque de archivos.
+  const isProduced = review.status === 'PRODUCED';
+  const produced = isProduced && Boolean(review.production);
   const canGenerate = canGenerateReview(review.status, review.order.technician, currentUser);
   // Sin autor (pedidos históricos), puede generar cualquiera: no hay a quién señalar.
-  const generateNote = !canGenerate && review.status !== 'PRODUCED' && review.order.technician
+  const generateNote = !canGenerate && !isProduced && review.order.technician
     ? `Lo genera el autor (${controlLabel(review.order.technician)})`
     : '';
 
@@ -86,19 +89,23 @@ export function ReviewOrderDetail({
           <button className="ghost-button" type="button" disabled={disabled} onClick={() => setPreviewOpen(true)}>
             <Eye aria-hidden="true" />Vista previa
           </button>
-          <button className="ghost-button" type="button" disabled={disabled} onClick={onEdit}>
-            <PencilLine aria-hidden="true" />Corregir
-          </button>
-          <button
-            className="primary-button review-generate-button"
-            type="button"
-            disabled={disabled || !canGenerate}
-            title={generateNote || undefined}
-            onClick={onGenerate}
-          >
-            <Factory aria-hidden="true" />{generating ? 'Generando…' : 'Generar archivos'}
-          </button>
-          {generateNote && <span className="review-generate-note">{generateNote}</span>}
+          {!isProduced && (
+            <>
+              <button className="ghost-button" type="button" disabled={disabled} onClick={onEdit}>
+                <PencilLine aria-hidden="true" />Corregir
+              </button>
+              <button
+                className="primary-button review-generate-button"
+                type="button"
+                disabled={disabled || !canGenerate}
+                title={generateNote || undefined}
+                onClick={onGenerate}
+              >
+                <Factory aria-hidden="true" />{generating ? 'Generando…' : 'Generar archivos'}
+              </button>
+              {generateNote && <span className="review-generate-note">{generateNote}</span>}
+            </>
+          )}
         </div>
       </header>
 
@@ -130,8 +137,6 @@ export function ReviewOrderDetail({
           orderCode={review.order.orderCode}
           customer={review.order.customer}
           orderDate={review.order.orderDate}
-          technician={review.order.technician}
-          reviewer={review.order.reviewer}
           fabric={review.order.fabric}
           sameFabric={review.order.sameFabric}
           notes={review.order.notes}
@@ -144,8 +149,6 @@ export function ReviewOrderDetail({
           setOrderCode={noop}
           setCustomer={noop}
           setOrderDate={noop}
-          setTechnician={noop}
-          setReviewer={noop}
           setFabric={noop}
           setSameFabric={noop}
           setNotes={noop}
@@ -228,16 +231,6 @@ function GeneratedFileLink({ review, file, index }: {
       {isPdf ? <ExternalLink aria-hidden="true" /> : <Download aria-hidden="true" />}
     </a>
   );
-}
-
-export function ReviewStatusBadge({ status }: { status: ReviewStatus }) {
-  const labels: Record<ReviewStatus, string> = {
-    PENDING_REVIEW: 'Pendiente',
-    CHANGES_REQUESTED: 'Devuelto',
-    APPROVED: 'Aprobado',
-    PRODUCED: 'Archivos generados'
-  };
-  return <span className={`review-status status-${status.toLowerCase()}`}>{labels[status]}</span>;
 }
 
 function formatDateTime(value: string) {

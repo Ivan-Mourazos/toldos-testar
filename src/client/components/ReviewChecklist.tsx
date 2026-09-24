@@ -33,6 +33,17 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
     return () => controller.abort();
   }, [order, parameters]);
 
+  const rows = order.awnings.map((awning, index) => {
+    const missing = getMissingFields(awning, order);
+    const own = (diagnostics || []).filter((item) => item.awningId === awning.id);
+    const errors = own.filter((item) => item.level === 'error').length;
+    const pending = own.filter((item) => item.level === 'pending').length;
+    const warnings = own.filter((item) => item.level === 'warn').length;
+    const state = missing.length || errors || pending ? 'error' : warnings ? 'warn' : 'ok';
+    return { awning, index, letter: awningLetter(index), missing, own, errors, pending, warnings, state };
+  });
+  const visibleRows = onlyWithWarnings ? rows.filter((row) => row.state !== 'ok') : rows;
+
   return (
     <section className="review-checklist" aria-label="Qué revisar">
       <h3>Qué revisar</h3>
@@ -40,16 +51,10 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
         <input type="checkbox" checked={onlyWithWarnings} onChange={(event) => setOnlyWithWarnings(event.target.checked)} />
         Solo los que tienen avisos
       </label>
-      <ol>
-        {order.awnings.map((awning, index) => {
-          const letter = awningLetter(index);
-          const missing = getMissingFields(awning, order);
-          const own = (diagnostics || []).filter((item) => item.awningId === awning.id);
-          const errors = own.filter((item) => item.level === 'error').length;
-          const pending = own.filter((item) => item.level === 'pending').length;
-          const warnings = own.filter((item) => item.level === 'warn').length;
-          const state = missing.length || errors || pending ? 'error' : warnings ? 'warn' : 'ok';
-          if (onlyWithWarnings && state === 'ok') return null;
+      {visibleRows.length === 0
+        ? <p className="review-checklist-empty">{onlyWithWarnings ? 'Ningún toldo tiene avisos.' : 'El pedido no tiene toldos.'}</p>
+        : <ol>
+        {visibleRows.map(({ awning, index, letter, missing, own, errors, pending, warnings, state }) => {
           return (
             <li key={awning.id || index}>
               <button type="button" className={`review-checklist-row is-${state}`} onClick={() => onFocusAwning(letter)}>
@@ -71,7 +76,7 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
             </li>
           );
         })}
-      </ol>
+      </ol>}
     </section>
   );
 }

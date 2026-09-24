@@ -3,6 +3,8 @@
 // esa persona queda como revisor (casilla REVISOR del PDF).
 export function stampAuthorship(order: { technician?: string; reviewer?: string }, currentUser: string) {
   const technician = order.technician || currentUser || '';
-  const reviewer = currentUser && technician && currentUser !== technician ? currentUser : order.reviewer || '';
+  // El autor no puede ser su propio revisor: si lo era (pedidos antiguos), se vacía.
+  const kept = order.reviewer && order.reviewer !== technician ? order.reviewer : '';
+  const reviewer = currentUser && technician && currentUser !== technician ? currentUser : kept;
   return { technician, reviewer };
 }

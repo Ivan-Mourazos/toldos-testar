@@ -1293,56 +1293,6 @@ label span,
   padding: 0;
 }
 
-.app-sidebar {
-  background: #0b2328;
-  border-right: 1px solid rgb(255 255 255 / 0.08);
-  box-shadow: 10px 0 34px rgb(8 31 35 / 0.10);
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 14px;
-  position: sticky;
-  top: 0;
-}
-
-.app-sidebar .brand {
-  background: rgb(255 255 255 / 0.035);
-  border: 1px solid rgb(255 255 255 / 0.06);
-  border-radius: 17px;
-  gap: 8px;
-  padding: 8px;
-}
-
-.app-sidebar .brand-mark {
-  background: transparent;
-  height: 46px;
-  padding: 3px;
-  width: 58px;
-}
-
-.app-sidebar .brand-mark img {
-  display: block;
-  height: 100%;
-  object-fit: contain;
-  width: 100%;
-}
-
-.app-sidebar .brand h1 {
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.app-sidebar .brand span {
-  color: #9fb4b5;
-  font-size: 11px;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
 .app-tabs {
   background: transparent;
   border: 0;
@@ -1385,27 +1335,6 @@ label span,
 .app-tabs button:disabled {
   cursor: wait;
   opacity: 0.65;
-}
-
-.sidebar-meta {
-  align-items: flex-start;
-  display: grid;
-  gap: 5px;
-  margin-top: auto;
-  padding: 10px 4px 2px;
-}
-
-.sidebar-meta .badge-ok,
-.sidebar-meta .badge-danger,
-.sidebar-meta .badge-warn,
-.sidebar-meta .badge-neutral {
-  min-height: 24px;
-  padding: 0 9px;
-}
-
-.sidebar-meta small {
-  color: #8fa7a9;
-  font-size: 10px;
 }
 
 .simulation-mode {
@@ -4038,33 +3967,8 @@ textarea,
 
 /* ---------- Flujo compartido de revisión y producción ---------- */
 
-.production-mode {
-  align-items: center;
-  background: rgb(226 178 50 / 0.12);
-  border: 1px solid rgb(226 178 50 / 0.28);
-  border-radius: 6px;
-  color: #f0c550;
-  display: flex;
-  gap: 8px;
-  margin-bottom: 5px;
-  padding: 8px 9px;
-  width: 100%;
-}
-
-.production-mode.is-ready {
-  background: rgb(86 171 129 / 0.14);
-  border-color: rgb(86 171 129 / 0.34);
-  color: #80d2a8;
-}
-
-.production-mode > svg { height: 16px; width: 16px; }
-.production-mode div { display: grid; gap: 1px; min-width: 0; }
-.production-mode strong { color: currentColor; font-size: 10px; font-weight: 800; }
-.production-mode div small { color: #9fb4b5; line-height: 1.2; }
-
 .settings-panel,
-.review-reader,
-.review-desk {
+.review-reader {
   background: rgb(255 255 255 / 0.9);
   border: 1px solid #d3dfdc;
   box-shadow: 0 8px 26px rgb(9 36 40 / 0.07);
@@ -4094,10 +3998,8 @@ textarea,
 }
 
 .workflow-heading-icon svg { height: 22px; width: 22px; }
-.workflow-heading span,
-.review-desk-head span { color: var(--accent-text); font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.workflow-heading h2,
-.review-desk-head h2 { color: #0c272c; font-size: 20px; margin: 2px 0; }
+.workflow-heading span { color: var(--accent-text); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.workflow-heading h2 { color: #0c272c; font-size: 20px; margin: 2px 0; }
 .workflow-heading p { color: #627875; font-size: 12px; margin: 0; }
 
 .workflow-route-grid {
@@ -4226,26 +4128,9 @@ textarea,
 
 .reviews-back-button { justify-self: start; }
 
-.review-reader,
-.review-desk { margin: 0; padding: 14px; }
+.review-reader { margin: 0; padding: 14px; }
 
 .review-year { text-align: center; }
-
-.review-status {
-  align-items: center;
-  border-radius: 999px;
-  display: inline-flex;
-  font-size: 9px;
-  font-weight: 850;
-  min-height: 22px;
-  padding: 0 8px;
-  white-space: nowrap;
-}
-
-.status-pending_review { background: #fff1c7; color: #865d00; }
-.status-changes_requested { background: #fde8e4; color: #9d3528; }
-.status-approved { background: #dff3e9; color: #176146; }
-.status-produced { background: #dfeff3; color: #155f72; }
 
 .review-reader { min-width: 0; }
 .review-reader-header { align-items: center; border-bottom: 1px solid #dce5e2; display: flex; gap: 16px; justify-content: space-between; padding: 2px 2px 13px; }
@@ -4255,26 +4140,8 @@ textarea,
 .review-reader-header small { color: var(--text-muted); font-size: 10px; }
 .review-reader-actions { align-items: center; display: flex; flex: 0 0 auto; gap: 8px; }
 
-.review-approve-button { background: #237657; border-color: #237657; color: #ffffff; }
-.review-approve-button:hover:not(:disabled) { background: #195f45; border-color: #195f45; }
 .review-generate-button { background: #155f72; border-color: #155f72; color: #ffffff; }
 .review-generate-button:hover:not(:disabled) { background: #104c5b; border-color: #104c5b; }
-
-.review-approved-summary {
-  align-items: center;
-  background: #e7f4ed;
-  border: 1px solid #b9dccb;
-  border-radius: 8px;
-  color: #225b47;
-  display: flex;
-  font-size: 10px;
-  gap: 9px;
-  margin-top: 12px;
-  padding: 9px 11px;
-}
-
-.review-approved-summary svg { flex: 0 0 auto; height: 17px; width: 17px; }
-.review-approved-summary span { display: grid; gap: 1px; }
 
 .review-production-block {
   background: #eef6f7;
@@ -4646,23 +4513,8 @@ textarea,
 
 @media (max-width: 760px) {
   .app-shell { display: block; }
-  .app-sidebar {
-    align-items: center;
-    display: grid;
-    gap: 8px;
-    grid-template-columns: auto minmax(0, 1fr);
-    height: auto;
-    padding: 8px 10px;
-    position: sticky;
-    z-index: 900;
-  }
-  .app-sidebar .brand { border-radius: 10px; padding: 4px 7px; }
-  .app-sidebar .brand-mark { height: 34px; width: 43px; }
-  .app-sidebar .brand h1 { font-size: 11px; }
-  .app-sidebar .brand span { display: none; }
   .app-tabs { display: grid; gap: 4px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; overflow: visible; padding: 0; }
   .app-tabs button { justify-content: center; min-height: 40px; padding: 0 7px; }
-  .sidebar-meta { display: none; }
   .topbar { min-height: auto; padding: 12px 12px 9px; }
   .workspace-content { padding: 0 12px 18px; }
   .workbench, .awnings-section, .live-results, .despiece, .parameters-page { margin-left: 0; margin-right: 0; }
@@ -4677,8 +4529,6 @@ textarea,
 }
 
 @media (max-width: 600px) {
-  .app-sidebar { display: block; padding: 7px 8px; }
-  .app-sidebar .brand { display: none; }
   .app-tabs button { flex-direction: column; font-size: 10px; gap: 2px; min-height: 43px; padding: 3px 2px; }
   .app-tabs button svg { height: 14px; width: 14px; }
   .parameter-model-menu { left: -2px; width: calc(100vw - 28px); }
@@ -5120,6 +4970,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .review-checklist { background: #ffffff; border: 1px solid #d8e2df; border-radius: 8px; margin-top: 12px; overflow: hidden; }
 .review-checklist h3 { border-bottom: 1px solid #e3ebe8; color: #4f6663; font-size: 11px; letter-spacing: 0.04em; margin: 0; padding: 8px 11px; text-transform: uppercase; }
 .review-checklist ol { list-style: none; margin: 0; padding: 0; }
+.review-checklist-empty { color: var(--text-muted); font-size: 12px; margin: 0; padding: 10px 11px; }
 .review-checklist-row {
   align-items: center;
   background: none;
@@ -5244,7 +5095,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
    lateral (arriba en este archivo) seguían aplicando porque no iban ligados a `.app-sidebar`.
    `--topnav-height` la usan `.parameters-save-bar` y ParameterSectionIndex.tsx para
    engancharse justo debajo de la barra superior, que ahora es la que es sticky arriba. */
-:root { --topnav-height: 52px; }
+:root { --topnav-height: 50px; } /* medido en el navegador: .app-topnav mide 50 px */
 .app-topnav .brand-mark { background: transparent; height: 28px; width: auto; }
 .app-topnav .app-tabs { margin-top: 0; }
 .app-topnav .app-tabs button { min-height: 34px; padding: 0 12px; width: auto; }

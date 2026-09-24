@@ -5,21 +5,26 @@ import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
 import { canGenerateReview } from '../generatePermission';
 
-export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCount, onOpen, onReuse, onToast, onConfirm }: {
+// Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
+// anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
+// elegido, que no filtra los pendientes.
+export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onToast, onConfirm }: {
   refreshKey: number;
   parameters: RuleParameters;
   currentUser: string;
-  onPendingCount: (count: number) => void;
+  pending: ReviewSummary[];
+  pendingLoading: boolean;
+  onChanged: () => void;
   onOpen: (review: ReviewPackage) => void | Promise<void>;
   onReuse: (review: ReviewPackage) => void | Promise<void>;
   onToast: Notify;
   onConfirm: AskForConfirmation;
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
-  const [reviews, setReviews] = useState<ReviewSummary[]>([]);
+  const [history, setHistory] = useState<ReviewSummary[]>([]);
   const [selectedCode, setSelectedCode] = useState('');
   const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [generating, setGenerating] = useState(false);
   const listRequestId = useRef(0);
@@ -30,31 +35,22 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
     fetch(`/api/reviews?year=${year}`)
       .then(async (response) => {
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'No se pudo cargar la bandeja.');
+        if (!response.ok) throw new Error(data.error || 'No se pudo cargar el historial.');
         return data.reviews as ReviewSummary[];
       })
       .then((items) => {
         if (cancelled || requestId !== listRequestId.current) return;
-        setReviews(items);
-        // Ya no se elige un pedido automáticamente al cargar: el abierto sigue si sigue
-        // existiendo, y si no, se vuelve a la bandeja (Bandeja de Pedidos, 24/09/2026).
-        setSelectedCode((current) => items.some((item) => item.orderCode === current) ? current : '');
-        setLoading(false);
+        setHistory(items);
+        setHistoryLoading(false);
       })
       .catch((error) => {
         if (cancelled || requestId !== listRequestId.current) return;
-        setLoading(false);
-        onToast(error instanceof Error ? error.message : 'No se pudo cargar la bandeja.', { tone: 'error' });
+        setHistoryLoading(false);
+        onToast(error instanceof Error ? error.message : 'No se pudo cargar el historial.', { tone: 'error' });
       });
     return () => { cancelled = true; };
   }, [year, refreshKey, onToast]);
 
-  // Para el contador «Pedidos · N» de la barra superior (Task 4/5).
-  useEffect(() => {
-    onPendingCount(reviews.filter((review) => ['PENDING_REVIEW', 'CHANGES_REQUESTED', 'APPROVED'].includes(review.status)).length);
-  }, [reviews, onPendingCount]);
-
-  const selected = reviews.find((review) => review.orderCode === selectedCode) || null;
   const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;
   const detailLoading = Boolean(selectedCode && !detailIsCurrent);
@@ -76,10 +72,10 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
   }, [selectedCode, refreshKey, onToast]);
 
   async function openSelected() {
-    if (!selected) return;
+    if (!selectedCode) return;
     setWorking(true);
     try {
-      const review = selectedReview || await fetchReviewDetails(selected.orderCode);
+      const review = selectedReview || await fetchReviewDetails(selectedCode);
       await onOpen(review);
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo abrir el pedido.', { tone: 'error' });
@@ -89,10 +85,10 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
   }
 
   async function reuseSelected() {
-    if (!selected) return;
+    if (!selectedCode) return;
     setWorking(true);
     try {
-      const review = selectedReview || await fetchReviewDetails(selected.orderCode);
+      const review = selectedReview || await fetchReviewDetails(selectedCode);
       await onReuse(review);
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudieron reutilizar los datos del pedido.', { tone: 'error' });
@@ -102,8 +98,8 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
   }
 
   async function generateSelected() {
-    if (!selected || !selectedReview || !canGenerateReview(selected.status, selectedReview.order.technician, currentUser)) return;
-    const targetCode = selected.orderCode;
+    if (!selectedReview || !canGenerateReview(selectedReview.status, selectedReview.order.technician, currentUser)) return;
+    const targetCode = selectedReview.orderCode;
     const initialChoice = await onConfirm({
       title: `Generar archivos de ${targetCode}`,
       message: '¿Está aprobado en CoordinaOT? Se guardará el PDF definitivo en Planteamientos y un Excel de reserva por cada OF en Subida de material.',
@@ -161,13 +157,20 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
         }
 
         if (!response.ok) throw new Error(data.error || 'No se pudieron generar los archivos.');
-        updateLocalReview(data.review as ReviewPackage);
+        setSelectedCode('');
+        setDetail(null);
+        // Se releen pendientes (App), historial y contador: el pedido pasa al Historial.
+        onChanged();
+        if (data.unchanged) {
+          // Otro puesto lo generó mientras estaba abierto: no se ha escrito nada nuevo.
+          onToast('Este pedido ya estaba generado.', { tone: 'info', title: 'Sin cambios' });
+          return;
+        }
         const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
-        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} ${rpsCount === 1 ? 'Excel de reserva' : 'Excel de reserva'}.`, {
+        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} Excel de reserva.`, {
           tone: 'success',
           title: 'Archivos generados'
         });
-        setSelectedCode('');
         return;
       }
     } catch (error) {
@@ -177,22 +180,17 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
     }
   }
 
-  function updateLocalReview(review: ReviewPackage) {
-    setDetail((current) => current?.orderCode === review.orderCode
-      ? { orderCode: review.orderCode, review: { ...review, order: current.review?.order || review.order } }
-      : current);
-    setReviews((current) => current.map((item) => item.orderCode === review.orderCode ? reviewSummary(review) : item));
-  }
-
   return (
     <section className="reviews-layout">
       {selectedCode === ''
         ? <OrdersInbox
-            reviews={reviews}
+            pending={pending}
+            history={history}
             currentUser={currentUser}
-            loading={loading}
+            pendingLoading={pendingLoading}
+            historyLoading={historyLoading}
             year={year}
-            onYear={(value) => { setLoading(true); setYear(value); }}
+            onYear={(value) => { setHistoryLoading(true); setYear(value); }}
             onOpen={setSelectedCode}
           />
         : (
@@ -211,12 +209,6 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
         )}
     </section>
   );
-}
-
-function reviewSummary(review: ReviewPackage): ReviewSummary {
-  const { order, ...summary } = review;
-  void order;
-  return summary;
 }
 
 async function fetchReviewDetails(orderCode: string) {

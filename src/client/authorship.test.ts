@@ -14,6 +14,10 @@ describe('stampAuthorship', () => {
     expect(stampAuthorship({ technician: 'IVÁN', reviewer: 'JAIME' }, 'IVÁN')).toEqual({ technician: 'IVÁN', reviewer: 'JAIME' });
   });
 
+  it('un revisor igual al autor no se conserva: nadie corrigió', () => {
+    expect(stampAuthorship({ technician: 'IVÁN', reviewer: 'IVÁN' }, 'IVÁN')).toEqual({ technician: 'IVÁN', reviewer: '' });
+  });
+
   it('sin usuario elegido deja el pedido como está', () => {
     expect(stampAuthorship({ technician: 'ÁNGEL', reviewer: '' }, '')).toEqual({ technician: 'ÁNGEL', reviewer: '' });
   });

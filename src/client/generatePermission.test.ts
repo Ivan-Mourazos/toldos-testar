@@ -18,6 +18,11 @@ describe('canGenerateReview — el permiso de generar (autor sí, otros no)', ()
     expect(canGenerateReview('PRODUCED', '', 'IVÁN')).toBe(false);
   });
 
+  it('un estado que el servidor no genera tampoco se puede generar aquí', () => {
+    expect(canGenerateReview('ARCHIVED', 'IVÁN', 'IVÁN')).toBe(false);
+    expect(canGenerateReview('', '', 'IVÁN')).toBe(false);
+  });
+
   it('pedido histórico sin autor: puede generarlo cualquiera', () => {
     expect(canGenerateReview('PENDING_REVIEW', '', 'IVÁN')).toBe(true);
     expect(canGenerateReview('APPROVED', '', 'ÁNGEL')).toBe(true);

@@ -32,6 +32,7 @@ import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { stampAuthorship } from './authorship';
+import { usePendingReviews } from './hooks/usePendingReviews';
 
 export default function App() {
   const draft = useDraft();
@@ -58,11 +59,12 @@ export default function App() {
   // del pedido al guardar sin preguntarlo.
   const [currentUser, setCurrentUser] = useState(() => readCurrentUser());
   const [choosingUser, setChoosingUser] = useState(false);
-  // Cuántos pedidos hay pendientes de revisar, para el contador de la pestaña "Pedidos".
-  // Lo calcula OrdersInbox y lo sube con onPendingCount (Task 5).
-  const [pendingCount, setPendingCount] = useState(0);
   function chooseUser(name: string) { saveCurrentUser(name); setCurrentUser(name); setChoosingUser(false); }
   const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
+  // Pendientes de generar (año actual y anterior): alimentan la bandeja y el contador
+  // «Pedidos · N» desde que carga la página, y se releen al guardar o generar.
+  const pendingReviews = usePendingReviews(reviewRefresh, notify);
+  const pendingCount = pendingReviews.reviews.length;
 
   const { calculation, calculationState } = useCalculation({
     activeTab,
@@ -201,7 +203,7 @@ export default function App() {
     if (hasDraftData) {
       const choice = await askForConfirmation({
         title: `Corregir ${review.orderCode}`,
-        message: 'Los datos que haya ahora en Pedido se sustituirán por esta revisión. Los archivos ya guardados no se modificarán hasta que vuelvas a guardar.',
+        message: 'Los datos que haya ahora en Nuevo pedido se sustituirán por los de este pedido. Los archivos ya guardados no se modificarán hasta que vuelvas a guardar.',
         confirmLabel: 'Abrir para corregir',
         cancelLabel: 'Conservar formulario',
         tone: 'warning'
@@ -301,13 +303,13 @@ export default function App() {
       const response = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: currentOrderPayload(), confirmOverwrite })
+        body: JSON.stringify({ order: currentOrderPayload(), confirmOverwrite, savedBy: currentUser })
       });
       const data = await response.json();
       if (response.status === 409 && data.needsConfirmation) {
         const choice = await askForConfirmation({
           title: `Actualizar ${draft.orderCode}`,
-          message: 'Este pedido ya está en la bandeja de revisión. Si continúas, el PDF actual se sustituirá por los datos del formulario.',
+          message: 'Este pedido ya está guardado en Pedidos. Si continúas, el PDF actual se sustituirá por los datos del formulario.',
           confirmLabel: 'Actualizar pedido',
           cancelLabel: 'Conservar el actual',
           tone: 'warning',
@@ -455,8 +457,6 @@ export default function App() {
                 orderCode={draft.orderCode}
                 customer={draft.customer}
                 orderDate={draft.orderDate}
-                technician={draft.technician}
-                reviewer={draft.reviewer}
                 fabric={draft.fabric}
                 sameFabric={draft.sameFabric}
                 notes={draft.notes}
@@ -469,8 +469,6 @@ export default function App() {
                 setOrderCode={updateOrderCode}
                 setCustomer={draft.setCustomer}
                 setOrderDate={draft.setOrderDate}
-                setTechnician={draft.setTechnician}
-                setReviewer={draft.setReviewer}
                 setFabric={draft.setFabric}
                 setSameFabric={draft.setSameFabric}
                 setNotes={draft.setNotes}
@@ -544,7 +542,9 @@ export default function App() {
               refreshKey={reviewRefresh}
               parameters={ruleSettings.parameters}
               currentUser={currentUser}
-              onPendingCount={setPendingCount}
+              pending={pendingReviews.reviews}
+              pendingLoading={pendingReviews.loading}
+              onChanged={() => setReviewRefresh((value) => value + 1)}
               onOpen={editReview}
               onReuse={reuseReview}
               onToast={notify}

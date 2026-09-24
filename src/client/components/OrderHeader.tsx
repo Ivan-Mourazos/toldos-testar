@@ -5,8 +5,8 @@ import { TextField } from './TextField';
 import { FabricCombobox } from './FabricCombobox';
 
 type Props = {
-  orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string; technician: string;
-  reviewer: string; fabric: string; sameFabric: boolean;
+  orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string;
+  fabric: string; sameFabric: boolean;
   set: (patch: Record<string, string | boolean>) => void;
   onAddAwning: () => void;
   onAddFabricWork: () => void;

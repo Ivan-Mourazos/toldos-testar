@@ -14,8 +14,6 @@ export function OrderView({
   onOrderCodeBlur,
   customer,
   orderDate,
-  technician,
-  reviewer,
   fabric,
   sameFabric,
   notes,
@@ -26,8 +24,6 @@ export function OrderView({
   setOrderCode,
   setCustomer,
   setOrderDate,
-  setTechnician,
-  setReviewer,
   setFabric,
   setSameFabric,
   setNotes,
@@ -48,8 +44,6 @@ export function OrderView({
   onOrderCodeBlur?: () => void;
   customer: string;
   orderDate: string;
-  technician: string;
-  reviewer: string;
   fabric: string;
   sameFabric: boolean;
   notes: string;
@@ -62,8 +56,6 @@ export function OrderView({
   setOrderCode: (value: string) => void;
   setCustomer: (value: string) => void;
   setOrderDate: (value: string) => void;
-  setTechnician: (value: string) => void;
-  setReviewer: (value: string) => void;
   setFabric: (value: string) => void;
   setSameFabric: (value: boolean) => void;
   setNotes: (value: string) => void;
@@ -91,8 +83,6 @@ export function OrderView({
     if ('orderCode' in patch) setOrderCode(patch.orderCode as string);
     if ('customer' in patch) setCustomer(patch.customer as string);
     if ('orderDate' in patch) setOrderDate(patch.orderDate as string);
-    if ('technician' in patch) setTechnician(patch.technician as string);
-    if ('reviewer' in patch) setReviewer(patch.reviewer as string);
     if ('fabric' in patch) setFabric(patch.fabric as string);
     if ('sameFabric' in patch) {
       const nextSameFabric = patch.sameFabric as boolean;
@@ -116,8 +106,6 @@ export function OrderView({
             onOrderCodeBlur={onOrderCodeBlur}
             customer={customer}
             orderDate={orderDate}
-            technician={technician}
-            reviewer={reviewer}
             fabric={fabric}
             sameFabric={sameFabric}
             onAddAwning={() => setPickerType('FULL_AWNING')}

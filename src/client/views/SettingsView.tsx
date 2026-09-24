@@ -53,7 +53,7 @@ export function SettingsView({
       setForm(data.settings);
       onSaved(data.settings, data.readiness);
       onToast(data.readiness.productionReady
-        ? 'Rutas guardadas. Ya se pueden generar los archivos de pedidos aprobados.'
+        ? 'Rutas guardadas. El autor ya puede generar los archivos de sus pedidos cuando estén aprobados en CoordinaOT.'
         : 'Rutas guardadas. La generación de archivos sigue deshabilitada.', {
         tone: 'success',
         title: 'Configuración guardada'
@@ -105,7 +105,7 @@ export function SettingsView({
         <RouteField
           step="01"
           title="Pedidos para revisión"
-          description="Aquí se guarda PEDIDO.pdf para revisar. El propio PDF contiene los datos editables que abre la bandeja compartida."
+          description="Aquí se guarda PEDIDO.pdf al guardar un pedido. El propio PDF contiene los datos editables que abre la bandeja compartida de Pedidos."
           value={form.reviewDirectory}
           onChange={(reviewDirectory) => updateForm({ reviewDirectory })}
           placeholder="/mnt/toldos/oficina-tecnica/{YYYY}/TOLDOS"
@@ -113,7 +113,7 @@ export function SettingsView({
         <RouteField
           step="02"
           title="Planteamientos generados"
-          description="Aquí guarda Generar archivos el PDF definitivo PEDIDO-1.pdf. Aprobar por sí solo no escribe aquí."
+          description="Aquí guarda Generar archivos el PDF definitivo PEDIDO-1.pdf. Guardar un pedido no escribe aquí."
           value={form.planteamientosDirectory}
           onChange={(planteamientosDirectory) => updateForm({ planteamientosDirectory })}
           placeholder="/mnt/toldos/planteamientos/{YYYY}"
@@ -121,7 +121,7 @@ export function SettingsView({
         <RouteField
           step="03"
           title="Subida de material"
-          description="Aquí guarda Generar archivos un Excel de reserva por cada OF. Aprobar por sí solo no escribe aquí."
+          description="Aquí guarda Generar archivos un Excel de reserva por cada OF. Guardar un pedido no escribe aquí."
           value={form.rpsUploadDirectory}
           onChange={(rpsUploadDirectory) => updateForm({ rpsUploadDirectory })}
           placeholder="/mnt/toldos/rps"
@@ -129,7 +129,7 @@ export function SettingsView({
         <RouteField
           step="04"
           title="Histórico de planteamientos RPS"
-          description="RPS mueve aquí los PDF procesados. Permite seguir viéndolos en Generados después de desaparecer de la carpeta de entrada."
+          description="RPS mueve aquí los PDF procesados. Permite seguir viéndolos en el Historial de Pedidos después de desaparecer de la carpeta de entrada."
           value={form.rpsPlanteamientosDirectory}
           onChange={(rpsPlanteamientosDirectory) => updateForm({ rpsPlanteamientosDirectory })}
           placeholder="/mnt/rps/ventas/planteamientos/{YYYY}"
@@ -139,7 +139,7 @@ export function SettingsView({
       <div className="workflow-production-switch">
         <div>
           <ShieldCheck aria-hidden="true" />
-          <span><strong>Generación de archivos</strong><small>Habilita el segundo paso: PDF definitivo y Excel de reserva para pedidos ya aprobados.</small></span>
+          <span><strong>Generación de archivos</strong><small>Habilita «Generar archivos»: el autor del pedido, cuando ya está aprobado en CoordinaOT, guarda el PDF definitivo y los Excel de reserva.</small></span>
         </div>
         {/* Interruptor con nombre de la acción: la casilla decía solo «Desactivado». */}
         <label className="workflow-toggle">
