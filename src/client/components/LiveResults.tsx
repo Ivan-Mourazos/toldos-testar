@@ -1,13 +1,13 @@
 import { awningLetter } from '../../domain/awningCompleteness.js';
-import React, { useState } from 'react';
-import { AlertCircle, FileSpreadsheet, Layers3, Scissors } from 'lucide-react';
+import React from 'react';
+import { AlertCircle, FileSpreadsheet } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
 import { FabricImageEditor } from './FabricImageEditor';
 import { StructureEditor } from './StructureEditor';
 import { formatDecimal } from '../constants';
 import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
 import { controlLabel, legacyModelName } from './controlLabels';
-import { groupMaterialRows } from '../awningPanel';
+import { formatSummary, groupMaterialRows, planningSummary } from '../awningPanel';
 import { requestAwningFocus } from '../awningFocus';
 
 type Props = {
@@ -17,38 +17,41 @@ type Props = {
   onUpdate?: (id: string, patch: Partial<Awning>) => void;
 };
 
-type ResultTab = 'structure' | 'fabric' | 'rps';
-
-export function LiveResults({ calculation, state, awnings, onUpdate }: Props) {
-  const [activeTab, setActiveTab] = useState<ResultTab>('structure');
-  const [selectedStructure, setSelectedStructure] = useState('');
-  const ofCards = calculation?.ofs.filter((ofBlock) => ofBlock.calculation) || [];
-  const structureBlocks = ofCards.filter((ofBlock) => findAwning(ofBlock, awnings)?.workType !== 'FABRIC_ONLY' && ofBlock.despiece);
+// Zona «Planteamientos» bajo los toldos (rediseño 3 §2): una línea resumen plegada. El
+// despiece y la tela de cada toldo se editan en su panel «Despiece y dibujo»; aquí solo
+// quedan los avisos del pedido (siempre visibles) y, al desplegar, la reserva RPS completa.
+export function LiveResults({ calculation, state, awnings }: Props) {
   const materialRows = groupMaterialRows(calculation?.ofs || []);
+  const summary = planningSummary(calculation);
   const diagnostics = calculation?.diagnostics || [];
   const orderDiagnostics = diagnostics.filter((item) => !awnings.some((awning) => awning.id === item.awningId));
   const awningSummaries = awnings.flatMap((awning, index) => {
     const own = diagnostics.filter((item) => item.awningId === awning.id);
     return own.length ? [{ letter: awningLetter(index), count: own.length, errors: own.some((item) => item.level === 'error' || item.level === 'pending') }] : [];
   });
-  const selectedBlock = structureBlocks.find((block) => blockKey(block) === selectedStructure) || structureBlocks[0];
+  const warningCount = orderDiagnostics.length + awningSummaries.reduce((total, item) => total + item.count, 0);
 
   return (
-    <section className="planning-results panel">
-      <div className="section-header planning-results-header">
-        <div>
-          <h2>Planteamientos</h2>
-          <span>{buildStatusText(state, calculation)}</span>
-        </div>
-        <div className="planning-result-counts">
-          <span>{structureBlocks.length} estructuras</span>
-          <span>{ofCards.length} telas</span>
-          <span>{materialRows.length} líneas RPS</span>
-        </div>
-      </div>
+    <section className="panel">
+      <details className="planning-summary">
+        <summary>
+          <span className="planning-summary-title">
+            <h2>Planteamientos</h2>
+            <span className="planning-summary-status">{buildStatusText(state, calculation)}</span>
+          </span>
+          <span className="planning-summary-text">{formatSummary(summary)}</span>
+          {warningCount > 0 && (
+            <span className="planning-summary-warnings badge-warn">
+              <AlertCircle aria-hidden="true" />{warningCount} {warningCount === 1 ? 'aviso' : 'avisos'}
+            </span>
+          )}
+        </summary>
+        <ReservationPreview rows={materialRows} />
+      </details>
 
       {/* Los avisos de cada toldo ya están en su tarjeta: aquí solo los del pedido y una
-          línea por toldo que lleva a ella (antes salían todos dos veces). */}
+          línea por toldo que lleva a ella (antes salían todos dos veces). Siempre visibles,
+          fuera de la línea resumen plegada. */}
       {(orderDiagnostics.length > 0 || awningSummaries.length > 0) && (
         <ul className="diagnostics-list">
           {orderDiagnostics.map((item, index) => (
@@ -66,68 +69,7 @@ export function LiveResults({ calculation, state, awnings, onUpdate }: Props) {
           ))}
         </ul>
       )}
-
-      <div className="planning-tabs" role="tablist" aria-label="Vistas del planteamiento">
-        <ResultTabButton active={activeTab === 'structure'} icon={<Layers3 />} label="Estructuras" count={structureBlocks.length} onClick={() => setActiveTab('structure')} />
-        <ResultTabButton active={activeTab === 'fabric'} icon={<Scissors />} label="Telas" count={ofCards.length} onClick={() => setActiveTab('fabric')} />
-        <ResultTabButton active={activeTab === 'rps'} icon={<FileSpreadsheet />} label="Reserva RPS" count={materialRows.length} onClick={() => setActiveTab('rps')} />
-      </div>
-
-      {activeTab === 'structure' && <StructurePreview blocks={structureBlocks} awnings={awnings} selectedBlock={selectedBlock} onSelect={setSelectedStructure} onUpdate={onUpdate} />}
-      {activeTab === 'fabric' && <FabricPreview blocks={ofCards} awnings={awnings} onUpdate={onUpdate} />}
-      {activeTab === 'rps' && <ReservationPreview rows={materialRows} />}
     </section>
-  );
-}
-
-function ResultTabButton({ active, icon, label, count, onClick }: { active: boolean; icon: React.ReactNode; label: string; count: number; onClick: () => void }) {
-  return (
-    <button type="button" role="tab" aria-selected={active} className={active ? 'active' : ''} onClick={onClick}>
-      {icon}<span>{label}</span><strong>{count}</strong>
-    </button>
-  );
-}
-
-function StructurePreview({ blocks, awnings, selectedBlock, onSelect, onUpdate }: {
-  blocks: Calculation['ofs'];
-  awnings: Awning[];
-  selectedBlock?: Calculation['ofs'][number];
-  onSelect: (key: string) => void;
-  onUpdate?: (id: string, patch: Partial<Awning>) => void;
-}) {
-  if (!selectedBlock) {
-    const firstFull = awnings.findIndex((item) => item.workType !== 'FABRIC_ONLY');
-    return <EmptyResult text={firstFull === -1
-      ? 'Los trabajos de tela no generan planteamiento de estructura.'
-      : `Completa el toldo ${awningLetter(firstFull)} para ver su estructura.`} />;
-  }
-  const awning = findAwning(selectedBlock, awnings);
-  const calc = selectedBlock.calculation!;
-
-  return (
-    <div className="structure-preview">
-      <nav className="structure-selector" aria-label="Estructura que se muestra">
-        {blocks.map((block, index) => {
-          const item = findAwning(block, awnings);
-          const active = blockKey(block) === blockKey(selectedBlock);
-          return (
-            <button key={blockKey(block)} type="button" className={active ? 'active' : ''} aria-pressed={active} onClick={() => onSelect(blockKey(block))}>
-              <strong>{awningLetter(block.awningIndex ?? index)}</strong>
-              <span>{controlLabel(item?.model || block.calculation?.model || '')}</span>
-              <small>OF {block.of || 'sin OF'}</small>
-            </button>
-          );
-        })}
-      </nav>
-
-      <article className="structure-sheet-preview">
-        <header>
-          <div><span>Estructura {awningLetter(selectedBlock.awningIndex ?? 0)}</span><h3>{controlLabel(awning?.model || calc.model)} {legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}</h3></div>
-          <div className="structure-sheet-meta"><span>OF</span><strong>{selectedBlock.of || '-'}</strong><span>Estado</span><strong className={calc.valid ? 'text-ok' : 'text-danger'}>{calc.valid ? 'Válido' : 'Revisar'}</strong></div>
-        </header>
-        <StructureSheet block={selectedBlock} awning={awning} onUpdate={onUpdate} />
-      </article>
-    </div>
   );
 }
 
@@ -156,15 +98,6 @@ export function StructureSheet({ block, awning, onUpdate }: { block: OfBlock; aw
         </aside>
       </div>
     </>
-  );
-}
-
-function FabricPreview({ blocks, awnings, onUpdate }: { blocks: Calculation['ofs']; awnings: Awning[]; onUpdate?: Props['onUpdate'] }) {
-  if (blocks.length === 0) return <EmptyResult text="Completa un elemento para preparar el planteamiento de telas." />;
-  return (
-    <FabricTable>
-      {blocks.map((block, index) => <FabricRows key={blockKey(block)} block={block} index={index} awning={findAwning(block, awnings)} onUpdate={onUpdate} />)}
-    </FabricTable>
   );
 }
 
@@ -270,16 +203,6 @@ function InfoBlock({ title, lines }: { title: string; lines: string[] }) {
 
 function EmptyResult({ text }: { text: string }) {
   return <p className="result-empty">{text}</p>;
-}
-
-function findAwning(ofBlock: Calculation['ofs'][number], awnings: Awning[]) {
-  return awnings.find((item) => item.id === ofBlock.awningId)
-    || (ofBlock.awningIndex !== undefined ? awnings[ofBlock.awningIndex] : undefined)
-    || awnings.find((item) => item.of.trim() === ofBlock.of);
-}
-
-function blockKey(block: Calculation['ofs'][number]) {
-  return block.awningId || `${block.awningIndex ?? ''}-${block.of}`;
 }
 
 function buildStatusText(state: CalculationState, calculation: Calculation | null) {

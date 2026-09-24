@@ -2011,33 +2011,66 @@ label span,
   padding: 7px;
 }
 
-.planning-results {
-  gap: 9px;
+/* Zona «Planteamientos» bajo los toldos (rediseño 3 §2): línea resumen plegada, cerrada
+   por defecto. Los avisos van siempre visibles fuera de ella (ver .diagnostics-list). */
+.planning-summary {
+  background: #f6f8f7;
+  border: 1px solid #d1dcda;
+  border-radius: 8px;
   margin: 12px 0 0;
-  max-width: none;
-  padding: 10px;
+  padding: 0;
   width: 100%;
 }
 
-.planning-results-header {
+.planning-summary > summary {
   align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  list-style: none;
+  padding: 10px 12px;
+}
+
+.planning-summary > summary::-webkit-details-marker {
+  display: none;
+}
+
+.planning-summary[open] > summary {
+  border-bottom: 1px solid #d1dcda;
+}
+
+.planning-summary-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-right: auto;
+}
+
+.planning-summary-title h2 {
+  font-size: 15px;
   margin: 0;
 }
 
-.planning-result-counts {
-  display: flex;
-  flex-wrap: wrap;
+.planning-summary-status {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.planning-summary-text {
+  color: #334c4a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.planning-summary-warnings {
   gap: 5px;
 }
 
-.planning-result-counts span {
-  background: #e8efed;
-  border: 1px solid #d1dedb;
-  border-radius: 6px;
-  color: #49615f;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 7px;
+.planning-summary > .rps-result-preview {
+  border: 0;
+  border-radius: 0 0 8px 8px;
+  margin: 0;
 }
 
 .planning-tabs {
@@ -2098,108 +2131,11 @@ label span,
   color: #10272b;
 }
 
-.structure-preview {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: 150px minmax(0, 1fr);
-  min-width: 0;
-}
-
-.structure-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.structure-selector button {
-  background: #f6f8f7;
-  border: 1px solid #d1dcda;
-  border-radius: 6px;
-  color: #334c4a;
-  cursor: pointer;
-  display: grid;
-  gap: 1px;
-  grid-template-columns: 25px minmax(0, 1fr);
-  min-height: 44px;
-  padding: 5px 7px;
-  text-align: left;
-}
-
-.structure-selector button:hover,
-.structure-selector button.active {
-  border-color: #d3a119;
-}
-
-.structure-selector button.active {
-  background: #fff8df;
-  box-shadow: inset 3px 0 0 var(--tgm-yellow);
-}
-
-.structure-selector button > strong {
-  align-items: center;
-  background: var(--tgm-yellow);
-  border-radius: 4px;
-  color: #10272b;
-  display: flex;
-  grid-row: 1 / 3;
-  justify-content: center;
-}
-
-.structure-selector button > span,
-.structure-selector button > small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.structure-selector button > span {
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.structure-selector button > small {
-  color: var(--text-muted);
-  font-size: 9px;
-}
-
 .structure-sheet-preview {
   border: 1px solid #aebfbb;
   border-radius: 6px;
   min-width: 0;
   overflow: hidden;
-}
-
-.structure-sheet-preview > header {
-  align-items: stretch;
-  background: #102f34;
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  min-height: 48px;
-}
-
-.structure-sheet-preview > header > div:first-child {
-  padding: 7px 10px;
-}
-
-.structure-sheet-preview > header span {
-  color: #bdcbc8;
-  display: block;
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.structure-sheet-preview h3 {
-  font-size: 15px;
-  margin: 1px 0 0;
-}
-
-.structure-sheet-preview h3 small {
-  color: #bdcbc8;
-  font-size: 9px;
-  font-weight: 600;
-  margin-left: 6px;
 }
 
 .structure-sheet-meta {
@@ -3794,7 +3730,7 @@ textarea:focus {
 .panel,
 .order-header,
 .parameters-page,
-.planning-results,
+.planning-summary,
 .pdf-preview-window,
 .model-picker {
   border-radius: 10px;

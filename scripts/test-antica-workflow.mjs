@@ -69,13 +69,19 @@ try {
   assert.ok((await color.innerText()).toLowerCase().includes('negra'));
   const whiteCalc = page.waitForResponse(r => r.url().endsWith('/api/calculate') && r.request().postDataJSON()?.awnings?.[0]?.anticaCrankColor === 'BLANCA');
   await color.click(); await page.getByRole('option', { name: 'Blanca', exact: true }).click(); await whiteCalc;
-  await page.getByText('Editar despiece', {exact:true}).waitFor();
+  await page.getByRole('button', { name: 'Despiece y dibujo', exact: true }).waitFor();
   await page.screenshot({ path: path.join(directory, 'formulario-antica.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Editar despiece', exact: true }).click();
+  // «Editar despiece» ya no está en la zona de abajo: se abre desde el panel del toldo A.
+  await page.getByRole('button', { name: 'Despiece y dibujo', exact: true }).click();
+  const panel = page.getByRole('dialog', { name: 'Despiece y dibujo del toldo A' });
+  await panel.getByRole('tab', { name: 'Despiece', exact: true }).click();
+  await panel.getByRole('button', { name: 'Editar despiece', exact: true }).click();
   assert.equal(await page.getByLabel('Reserva fila 7', { exact: true }).inputValue(), '0.533333');
   assert.equal(await page.getByLabel('Reserva fila 12', { exact: true }).inputValue(), '0.73');
   await page.screenshot({ path: path.join(directory, 'materiales-antica.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
+  await panel.getByRole('button', { name: 'Cancelar', exact: true }).click();
+  await panel.getByRole('button', { name: 'Cerrar panel' }).click();
+  await panel.waitFor({ state: 'hidden' });
   const image = 'data:image/png;base64,' + (await readFile('src/domain/assets/tgm-logo.png')).toString('base64');
   for (const [i, variant] of anticaVariants.entries()) {
     const sample = structuredClone(order); sample.orderCode = 'AR269971' + i;
