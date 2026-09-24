@@ -99,6 +99,23 @@
   color: #1d2b2e;
 }
 
+/* Tecla pequeña: las opciones de los campos segmentados de Nuevo pedido (Lacado,
+   Dispositivo…). Igual de hundida y activa que las demás teclas, pero conserva los
+   colores propios de .segmented-option.active (fondo #e8b226, texto #0c272c) para
+   que el contraste siga siendo el mismo y axe no reporte violaciones. */
+.segmented-option.tecla-3d {
+  background: linear-gradient(180deg, #ffffff, #eef3f1);
+  box-shadow: inset 0 1px 0 var(--brillo), 0 1px 0 0 var(--canto), 0 2px 4px -2px rgb(13 42 47 / 0.22);
+  transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, background var(--relieve-ms) ease;
+}
+.segmented-option.tecla-3d:hover:not(.active) { transform: translateY(-1px); }
+.segmented-option.tecla-3d.active {
+  background: #e8b226;
+  box-shadow: inset 0 1px 3px rgb(90 62 0 / 0.35), inset 0 0 0 1px rgb(124 84 0 / 0.15);
+  color: #0c272c;
+  transform: translateY(1px);
+}
+
 /* Botón: primario (fondo de color) y secundario (claro). Canto oscuro abajo. */
 .boton-3d, .primary-button, .ghost-button {
   box-shadow:
@@ -167,3 +184,7 @@
 /* El visor ya tiene una barra oscura: las teclas claras conservan texto oscuro. */
 .pdf-carousel-toolbar button.tecla-3d { color: var(--text); }
 .parameters-save-bar.panel-3d { border-color: var(--warn); }
+
+/* Sombra de papel de la página del PDF (rediseño 3, tarea 5): .hoja-3d es demasiado
+   sutil sobre el visor oscuro, así que la página recupera su sombra original. */
+.pdf-carousel-page { box-shadow: 0 18px 50px rgb(0 0 0 / .38), 0 2px 8px rgb(0 0 0 / .25); }

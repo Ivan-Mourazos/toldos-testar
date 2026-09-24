@@ -263,7 +263,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
 
   return (
     <fieldset
-      className={`awning-column panel${fabricOnly ? ' fabric-only-column' : ''}${readOnly ? ' is-readonly' : ''}`}
+      className={`awning-column panel hoja-3d${fabricOnly ? ' fabric-only-column' : ''}${readOnly ? ' is-readonly' : ''}`}
       disabled={readOnly}
       aria-label={`${fabricOnly ? 'Trabajo de tela' : 'Toldo'} ${String.fromCharCode(65 + index)} · ${controlLabel(awning.model)}`}
       aria-readonly={readOnly || undefined}

@@ -13,7 +13,7 @@ export function SegmentedField({ label, value, options, onChange, missing = fals
           <button
             key={option}
             type="button"
-            className={option === value ? 'segmented-option active' : 'segmented-option'}
+            className={option === value ? 'segmented-option tecla-3d active' : 'segmented-option tecla-3d'}
             aria-pressed={option === value}
             onClick={() => onChange(option)}
           >

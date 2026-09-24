@@ -105,7 +105,7 @@ function placesOf(markup: string, text: string): Set<Place> {
   const escaped = pattern(text);
   if (new RegExp(`<input[^>]*\\svalue="${escaped}"`).test(markup)) places.add('input');
   if (new RegExp(`class="select-control[^"]*"[^>]*><span>${escaped}</span>`).test(markup)) places.add('select');
-  if (new RegExp(`class="segmented-option active"[^>]*>${escaped}</button>`).test(markup)) places.add('segmented');
+  if (new RegExp(`class="segmented-option[^"]*\\bactive\\b[^"]*"[^>]*>${escaped}</button>`).test(markup)) places.add('segmented');
   if (new RegExp(`(?<!<button[^<]*)>${escaped}<`).test(markup)) places.add('text');
   return places;
 }
@@ -146,7 +146,7 @@ function controls(markup: string) {
     found.set(`select:${match[1]}`, match[2]);
   }
   for (const match of markup.matchAll(/role="group" aria-label="([^"]+)"[^>]*>(.*?)<\/div>/g)) {
-    const active = /class="segmented-option active"[^>]*>([^<]*)<\/button>/.exec(match[2]);
+    const active = /class="segmented-option[^"]*\bactive\b[^"]*"[^>]*>([^<]*)<\/button>/.exec(match[2]);
     if (/class="segmented-option/.test(match[2])) found.set(`segmented:${match[1]}`, active ? active[1] : '');
   }
   for (const match of markup.matchAll(/<label[^>]*>\s*<span[^>]*>([^<]+)<\/span>\s*<input([^>]*)>/g)) {
