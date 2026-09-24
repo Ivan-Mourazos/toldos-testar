@@ -38,13 +38,15 @@ La tarjeta pregunta **Forma del cofre** (redondo o cuadrado) en el 110 y el 130 
 | Tapas redondo | `TAPASSUN1` | `TAPASCOR3` | `TAPASSUN5` | 57 OF, un juego por toldo en 54 |
 | Tapas cuadrado | `TAPASCOU1` | `TAPASCOU3` | — | |
 
-- Perfiles: una barra por toldo del largo más corto que da el corte del cofre.
+- Perfiles: del largo que menos material gasta para todas las unidades del toldo (con una, el más corto que da el corte; tres cofres de 245,6 salen de dos barras de 500). El taller reparte las barras entre toldos (OF 0208933: una barra de 600 para dos).
+- **La forma es obligatoria también en los pedidos ya guardados.** Un Iris con cofre guardado antes del 24/09 no tiene forma: al reabrirlo sale "FALTA · forma del cofre" y el cálculo da no válido, sin ninguna línea de reserva (tampoco la lona), hasta que se elija. Bloquea su generación. En la cola de revisión de la instancia aislada (4310) no hay ningún Iris; la del servidor real no se ha consultado.
+- El 150 no pregunta la forma y se reserva siempre redondo: lo dicen el manual del 150 y el maestro de RPS (no hay `PECOCSU5` ni `TAPASCOU5`). Taller dijo "se añade para cada modelo", así que queda pendiente de confirmar (Q-I08).
 - Las 7 OF sin tapas no tienen ninguna pieza de estructura imputada: cinco OF de los pedidos AR.25.01353 a AR.25.01364 (la estructura se imputó en sus OF hermanas) y dos 150 de septiembre aún abiertas.
 - El texto de la línea de RPS solo dice la forma en 3 de 144 líneas, y el Iris no tiene autorrelleno: no se deduce.
 
 ### Guías (Q-I02 y Q-I03)
 
-Correspondencia de la guía interna de OT y el manual de BAT (confirmada por el consumo):
+Taller dijo solo "hay que reservar las guías y la cremallera, siempre la XL". La correspondencia entre la tarjeta y los sistemas de BAT no la dio taller: sale de la guía interna de OT (`guía toldos iris.odt`) y del manual de BAT, y la confirma el consumo:
 
 | Tarjeta | BAT | Consumo real desde 2024 | La web reserva por toldo |
 | --- | --- | --- | --- |
@@ -56,12 +58,13 @@ Correspondencia de la guía interna de OT y el manual de BAT (confirmada por el 
 - Las piezas de guía van por la guía más larga (MFI o MFD) y salen de barras de 600 cuando caben dos: una barra hasta 3 m de guía, dos por encima (OF 0214360, 458 de caída: 2 barras).
 - De los largos que existen, el que menos material gasta: dos guías de 205 salen de una de 500 (OF 0216104).
 - Los "sin guía" (`C/COS/GU`) son **sin guía compensadora** (taller, Q-I03): llevan la guía normal, sus pies y la cremallera, y así se reservan.
+- Guía exterior GPZ C: 4 piezas por toldo es una **inferencia** (dos por guía), no un dato. Encaja con las 8 OF que gastaron 2 barras por toldo, pero la OF 0199118 (400 × 235) gastó 3.
 
 ### Cremallera, varilla y macarrón (Q-I02 y Q-I04)
 
 | Pieza | Código | Regla | Evidencia |
 | --- | --- | --- | --- |
-| Cremallera | `ZIPXLBLAN` / `ZIPXLGRIS` | Siempre la XL; los metros de la caída de la tela | Acuerdo del 09/10/2025, repetido por taller el 24/09. Desde octubre de 2025, 11 imputaciones XL y 2 de la normal. 0229575: 2,9 m (250 + 40); 0222569: 2,64 m (234 + 30); 0218395: 2,89 m (252 + 40) |
+| Cremallera | `ZIPXLBLAN` / `ZIPXLGRIS` | Siempre la XL. **Provisional:** una caída de tela por toldo | Acuerdo del 09/10/2025, repetido por taller el 24/09, que no dijo cuánta. Desde octubre de 2025, 11 imputaciones XL y 2 de la normal. Una caída: 0221340, 3,3 m (281,5 + 40); 0222569, 2,64 m (234 + 30); 0229575, 2,9 m (250 + 40); 0222767, 1,85 m (144,5 + 30). Dos caídas: 0229896, 8,1 m (2 × (365 + 40)); 0227816, 5,2 m con 233 de caída. En el 150, 9,38 m por toldo (0208640) y 7,8 (0215709). Pendiente Q-I06 |
 | Varilla vaina | `VARILLAVAINARBLA` | Frente + 10 cm, en metros | Respuesta de taller (Q-I04); se vende por metros (rollo de 250 m) |
 | Macarrón Ø8 | `MACARRNEGR8MM` | Frente + 10 cm, en metros | Ídem; es el Ø8 del manual de BAT (piezas 12/A y 17/A) |
 
@@ -71,8 +74,10 @@ La cremallera blanca o gris (la negra está de baja desde 2021) se elige por la 
 
 - Los perfiles de BAT no siguen la tabla de lacados: blanco es `BLAN` o `BL10` (9010), negro `NEGR` o `NE05` (9005), y cada familia tiene sus colores y largos (`irisStock.js`, maestro del 24/09).
 - Si BAT no tiene el lacado en esa familia, el perfil **en bruto** para lacar fuera, como hace el taller (OF 0213064 marrón 8003, 0214385 plata 9006, 0206880 marrón óxido). La tarjeta avisa.
-- Si tampoco hay bruto (tapas cuadradas del 130 en negro, perfil de guía solo motor en negro), no se reserva y la tarjeta dice qué falta para añadirlo a mano.
+- Si el color existe pero ningún largo llega al corte, también va en bruto, y el aviso dice que falta el largo, no el color.
+- Si tampoco hay bruto, no se reserva y la tarjeta dice qué falta para añadirlo a mano. En negro 9011: el perfil inferior cuadrado del 110 (`PECOCSU1` no tiene negro y su bruto está de baja desde el 12/04/2024), las tapas cuadradas del 130 y el perfil de guía solo motor. La lista por lacado está en Q-I07.
 - PVC interior, guía exterior GPZ C y pies: blanco o negro por la columna de la manivela, como los tapones.
+- Pies: la regla tiene excepciones. La OF 0220023 (marrón 8014) y la 0201015 (gris) gastaron pies blancos.
 - `validate:rps-refs IRIS`: 143 referencias en todos los lacados, 0 rotas.
 
 ### No se reserva
@@ -93,7 +98,10 @@ La cremallera blanca o gris (la negra está de baja desde 2021) se elige por la 
 | ID | Pregunta | Estado |
 | --- | --- | --- |
 | Q-I01 | Cofre redondo o cuadrado: cambia perfiles y tapas | **Resuelta por taller el 24/09/2026.** "Sí cambia y se añade para cada modelo": campo en la tarjeta y reserva de perfiles y tapas |
-| Q-I02 | Guía: GPZ C, ÚNICA y STORM frente a estándar, pequeña y compensadora | **Resuelta en parte por taller el 24/09/2026.** "Hay que reservar las guías y la cremallera, siempre la XL": estándar = ÚNICA A/M, pequeña = ÚNICA M, compensadora = GPZ C. Sigue abierto: la STORM (6 OF de junio de 2025, pedidos AR.25.01352 a AR.25.01658) no tiene opción en la tarjeta; el PVC interior de la pequeña (`PEGIZS1` o `PEGIZ13`); compensador entreparedes o para pared; y el color de la cremallera, que parece ir con la lona |
+| Q-I02 | Guía: GPZ C, ÚNICA y STORM frente a estándar, pequeña y compensadora | **Resuelta en parte por taller el 24/09/2026.** Taller: "hay que reservar las guías y la cremallera, siempre la XL". La correspondencia estándar = ÚNICA A/M, pequeña = ÚNICA M, compensadora = GPZ C no la dio taller: sale de la guía interna de OT y del consumo. Sigue abierto: la STORM (6 OF de junio de 2025, pedidos AR.25.01352 a AR.25.01658) no tiene opción en la tarjeta; el PVC interior de la pequeña (`PEGIZS1` o `PEGIZ13`); compensador entreparedes o para pared; y el color de la cremallera, que parece ir con la lona |
 | Q-I03 | Los "sin guía" (`C/COS/GU`) consumen guías, pies y cremallera | **Resuelta por taller el 24/09/2026.** "Los sin guía son sin guía compensadora": llevan la guía normal |
 | Q-I04 | Varilla vaina y macarrón: ¿cuánto? | **Resuelta por taller el 24/09/2026.** "Hay que reservar frente + 10 cm" |
 | Q-I05 | Motor: ¿cuál y se pide en la tarjeta? | **Abierta.** Taller: "Lo habitual es el Sunilus, pero depende de taller". Consumo desde 2024: en el 110, Sunilus IO 10/17 (8 OF) y 15/17 (5), y Sunea IO 10/17 en las 11 OF de junio de 2025 de los pedidos AR.25.01352 a AR.25.01658; en el 130, Sunilus IO 35/17 (6) y 10/17 (3), y Meteor CSI (3); en el 150, uno distinto en cada OF. No se reserva; avisa |
+| Q-I06 | Cremallera XL: ¿una o dos caídas por toldo (una por lado)? | **Abierta.** Se reserva una caída de tela, provisional. Ver OF en §2 |
+| Q-I07 | Lacados sin pieza en RPS, ni lacada ni en bruto | **Abierta.** Ver [dudas abiertas](./dudas-abiertas.md). La web avisa para añadirla a mano |
+| Q-I08 | ¿El 150 va siempre con cofre redondo? | **Abierta, para confirmar.** La web no lo pregunta y reserva el redondo, porque el manual del 150 y el maestro de RPS solo tienen el redondo |

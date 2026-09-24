@@ -332,7 +332,8 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
 
   test('OF 0214360 (AR2501096): 130 cofre redondo, blanco, motor, 408 × 458: guías de más de 3 m, dos barras', () => {
     // Gastó PECOSSU3BLAN500C, PECORSU3BLAN500C, TAPASCOR3BLAN, 2 PEMMSU13BLAN600C,
-    // 2 PECGSU13BLAN600C, 3 PEGIZS1BLAN600C, 4 PIEGMMSUBLAN y 5 m de cremallera blanca.
+    // 2 PECGSU13BLAN600C, 3 PEGIZS1BLAN600C y 4 PIEGMMSUBLAN (y cremallera normal: es de
+    // antes del acuerdo de la XL). La XL va por una caída de tela, provisional (Q-I06).
     const result = real({ of: '0214360', submodel: 'IRIS 130 CON COFRE', device: 'MOTOR', irisFrontTop: 408, irisExitLeft: 458 });
     expect(reserved(result, 'PECOSSU3BLAN500C')).toEqual([
       ['PECOSSU3BLAN500C', 1], ['PECORSU3BLAN500C', 1], ['TAPASCOR3BLAN', 1],
@@ -361,7 +362,7 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
   });
 
   test('OF 0218395 (AR2503239): 130 sin cofre, blanco, 450 × 252: sin cofre, con pernos de guía', () => {
-    // Gastó PECGSU13BLAN600C, PEGIZS1BLAN600C, 4 PIEGMMSUBLAN, PERGUIA y 2,89 m de cremallera.
+    // Gastó PECGSU13BLAN600C, PEGIZS1BLAN600C, 4 PIEGMMSUBLAN y PERGUIA (y cremallera normal).
     const result = real({ of: '0218395', submodel: 'IRIS 130 SIN COFRE', irisBoxShape: '', irisFrontTop: 450, irisExitLeft: 252 });
     expect(reserved(result, 'PEMMSU13BLAN600C')).toEqual([
       ['PEMMSU13BLAN600C', 1], ['PECGSU13BLAN600C', 1], ['PEGIZS1BLAN600C', 1], ['PIEGMMSUBLAN', 4], ['PERGUIA', 1],
@@ -390,8 +391,29 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
     expect(codes).toEqual(expect.arrayContaining(['PECOSSU3BRUT500C', 'PECOCSU3BRUT500C']));
     expect(codes.some((code) => code.startsWith('TAPASCOU3') || code.startsWith('PEMoSU13'))).toBe(false);
     const messages = result.diagnostics.map((item) => item.message).join(' ');
-    expect(messages).toContain('en bruto para lacarlo fuera');
-    expect(messages).toContain('tapas del cofre cuadrado, perfil de guía solo motor');
+    expect(messages).toContain('BAT no tiene en NEGRO (R-09011) perfil superior del cofre y perfil inferior del cofre cuadrado; se reserva en bruto');
+    expect(messages).toContain('no hay en RPS tapas del cofre cuadrado y perfil de guía solo motor, ni lacado ni en bruto');
+  });
+
+  test('si el color existe pero ningún largo llega al corte, el aviso culpa al largo y no al color', () => {
+    // Gris 7012: la guía ÚNICA existe en GR12, pero solo de 500; con 560 de caída la guía
+    // mide 546,3 y sale el bruto de 600. El cofre 130 no existe en GR12: ahí sí es el color.
+    const result = real({ submodel: 'IRIS 130 CON COFRE', device: 'MOTOR', structureColor: 'GRIS 7012', irisExitLeft: 560, reglasModificadas: true });
+    expect(result.materials.map(({ code }) => code)).toEqual(expect.arrayContaining(['PEMMSU13BRUT600C', 'PECOSSU3BRUT500C']));
+    const messages = result.diagnostics.map((item) => item.message).join(' ');
+    expect(messages).toContain('en GRIS 7012, perfil de guía y perfil tapa de guía no llegan al largo del corte');
+    expect(messages).toContain('BAT no tiene en GRIS 7012 perfil superior del cofre, perfil inferior del cofre redondo y tapas del cofre redondo');
+    // Sin lacado ni bruto de ese largo: el cuadrado 110 antracita llega solo a 500.
+    const long = real({ irisBoxShape: 'CUADRADO', structureColor: 'ANTRACITA (RAL 7016)', irisFrontTop: 520, reglasModificadas: true });
+    expect(long.diagnostics.map((item) => item.message).join(' ')).toContain('no hay en RPS perfil inferior del cofre cuadrado de largo suficiente para el corte');
+  });
+
+  test('con varias unidades el cofre sale del largo que menos gasta para todas', () => {
+    // Tres cofres de 245,6 (el de la OF 0216104): dos barras de 500, no tres de 400.
+    const result = real({ units: 3, irisBoxShape: 'CUADRADO', device: 'MOTOR', structureColor: 'ANTRACITA (RAL 7016)', irisFrontTop: 247, irisExitLeft: 217 });
+    expect(Object.fromEntries(result.materials.map(({ code, quantity }) => [code, quantity]))).toMatchObject({
+      PECOSSU1GR16500C: 2, PECOCSU1GR16500C: 2, TAPASCOU1GR16: 3
+    });
   });
 
   test('a motor avisa de que el motor no se reserva y de que lo habitual es el Sunilus (Q-I05)', () => {

@@ -218,7 +218,7 @@ export function calculateIris({ order, awning }) {
     }));
     const box = hasBox
       ? irisBoxPieces({ series, shape: boxShape, lacado, units, boxProfileLength })
-      : { lines: [], missing: [], raw: false };
+      : { lines: [], issues: [] };
     const guides = irisGuidePieces({
       guideType, hasBox, lacado, units,
       guideLength: Math.max(guideLeftLength, guideRightLength),
@@ -226,14 +226,8 @@ export function calculateIris({ order, awning }) {
       compensatorLength: Math.max(compensatorLeftLength, compensatorRightLength)
     });
     materials.push(...box.lines, ...guides.lines, ...irisZipAndHemPieces({ lacado, units, front: opening.frontToldo, fabricDrop }));
-    const missingPieces = [...box.missing, ...guides.missing];
-    if (missingPieces.length) {
-      diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: en ${structureColor} no hay en RPS ${missingPieces.join(', ')}, ni lacado ni en bruto. Añádelos a mano en la reserva.` });
-    }
-    if (box.raw || guides.raw) {
-      // Así lo hace el taller cuando BAT no tiene el color (OF 0213064, 0214385).
-      diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: BAT no tiene algún perfil en ${structureColor}; se reserva en bruto para lacarlo fuera.` });
-    }
+    diagnostics.push(...irisStockWarnings([...box.issues, ...guides.issues], structureColor)
+      .map((message) => ({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: ${message}` })));
   }
 
   return {
@@ -300,6 +294,29 @@ export function calculateIris({ order, awning }) {
       motorPower: device === 'MOTOR' ? String(awning.motorPower || '') : ''
     }
   };
+}
+
+/**
+ * Avisos de las piezas que no salen lacadas, diciendo si falta el color o el largo.
+ * En bruto para lacar fuera es lo que hace el taller cuando BAT no tiene el color
+ * (OF 0213064, 0214385); sin bruto, hay que añadirlas a mano.
+ */
+function irisStockWarnings(issues, structureColor) {
+  const group = (raw, reason) => {
+    const names = issues.filter((item) => item.raw === raw && item.reason === reason).map((item) => item.label);
+    const text = names.length > 1 ? `${names.slice(0, -1).join(', ')} y ${names.at(-1)}` : names[0] || '';
+    return { text, many: names.length > 1 };
+  };
+  const messages = [];
+  const rawColor = group(true, 'color');
+  const rawLength = group(true, 'length');
+  const noneColor = group(false, 'color');
+  const noneLength = group(false, 'length');
+  if (rawColor.text) messages.push(`BAT no tiene en ${structureColor} ${rawColor.text}; se reserva en bruto para lacarlo fuera.`);
+  if (rawLength.text) messages.push(`en ${structureColor}, ${rawLength.text} no ${rawLength.many ? 'llegan' : 'llega'} al largo del corte; se reserva en bruto, más largo, para lacarlo fuera.`);
+  if (noneColor.text) messages.push(`en ${structureColor} no hay en RPS ${noneColor.text}, ni lacado ni en bruto. ${noneColor.many ? 'Añádelos' : 'Añádelo'} a mano en la reserva.`);
+  if (noneLength.text) messages.push(`no hay en RPS ${noneLength.text} de largo suficiente para el corte, ni en ${structureColor} ni en bruto. ${noneLength.many ? 'Añádelos' : 'Añádelo'} a mano en la reserva.`);
+  return messages;
 }
 
 /**

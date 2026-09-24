@@ -116,7 +116,7 @@ Cinco HERA 56 máquina. Las veinte medidas de tubo, frente de tela, caída de te
 | Q-H03 | Despiece de las tres variantes | Reserva completa | **Resuelta por taller el 24/09/2026.** "OK" a la reserva de estructura según el consumo real de 24 OF (23/09). Sigue sin manual del fabricante |
 | Q-H04 | Revisión de muestra por taller | Lectura y fabricación | **Resuelta por taller el 24/09/2026.** "OK" a la muestra |
 | Q-H05 | Tapa tornillo Swift (`SCRTAPTOR`, 2 por toldo) en 9 de 17 OF | Reserva | **Resuelta por taller el 24/09/2026.** "OK": no se reserva |
-| Q-H06 | Macarrón con lengüeta o redondo (redondo en AR2603535 y AR2603981) | Reserva | **Resuelta por taller el 24/09/2026.** "Lo elige taller": se sigue reservando el de lengüeta y taller decide al fabricar |
+| Q-H06 | Macarrón con lengüeta o redondo (redondo en AR2603535 y AR2603981) | Reserva | **Respondida por taller el 24/09/2026:** "Lo elige taller". Se lee como "seguir reservando el de lengüeta y que taller cambie al fabricar"; **pendiente de que Iván confirme esa lectura** |
 | Q-H07 | Motor y mando a motor: ¿cuál y cómo se elige? | Reserva | **Abierta.** Taller: "depende del tipo de modelo". Ver propuesta abajo; no se aplica hasta que la confirme Iván. Mientras, no se reservan y se avisa |
 | Q-H08 | ¿Se sigue pidiendo el anillo cerrado aunque el almacén imputa cadena por metros? | Reserva | **Resuelta por taller el 24/09/2026.** "Sí, se reserva siempre el anillo": anillo, contrapeso y dos uniones, como hasta ahora |
 | Q-H09 | Abajo "E.T. platanero" sin consumo; AR2602729 con varilla en el libro y pletina gastada | Reserva | **Resuelta por taller el 24/09/2026.** "OK": con platanero no se reserva nada abajo |

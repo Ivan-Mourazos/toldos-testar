@@ -71,13 +71,15 @@ function lengthOf(entry) {
 /**
  * Perfil del Iris en el color del lacado y el largo que menos material gasta para
  * `pieces` piezas: dos guías de 270 salen de una barra de 600 y no de dos de 500. Si
- * el lacado no está en la familia, o no llega a la pieza, el bruto. null si no hay
- * ninguno: lo que falta se avisa, no se inventa.
- * @returns {{ code: string, stock: number, raw: boolean } | null}
+ * el lacado no está en la familia, o no llega a la pieza, el bruto. Sin código si no
+ * hay ninguno: lo que falta se avisa, no se inventa.
+ * `reason` dice por qué no sale lacado: 'color' si BAT no tiene ese color en la
+ * familia y 'length' si lo tiene pero ningún largo llega al corte; '' si sale lacado.
+ * @returns {{ code: string | null, stock: number, raw: boolean, reason: '' | 'color' | 'length' }}
  */
 export function irisProfile(family, lacado, pieceLength, pieces = 1) {
   const byColor = profiles[family];
-  if (!byColor) return null;
+  if (!byColor) return { code: null, stock: 0, raw: false, reason: 'color' };
   const needed = Number(pieceLength) || 0;
   const used = (item) => barsForCuts(needed, pieces, lengthOf(item)) * lengthOf(item);
   const pick = (color) => {
@@ -88,11 +90,13 @@ export function irisProfile(family, lacado, pieceLength, pieces = 1) {
     const tail = typeof entry === 'number' ? `${entry}C` : entry;
     return { code: `${family}${color}${tail}`, stock, raw: color === 'BRUT' };
   };
-  for (const color of colorsFor(lacado)) {
+  const colors = colorsFor(lacado).filter((color) => byColor[color]);
+  for (const color of colors) {
     const found = pick(color);
-    if (found) return found;
+    if (found) return { ...found, reason: '' };
   }
-  return pick('BRUT');
+  const reason = colors.length ? 'length' : 'color';
+  return { ...(pick('BRUT') || { code: null, stock: 0, raw: false }), reason };
 }
 
 /**

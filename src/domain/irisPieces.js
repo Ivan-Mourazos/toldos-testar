@@ -71,13 +71,14 @@ const boxFamilies = Object.freeze({
 });
 
 /**
- * Perfiles y tapas del cofre. `missing` lista lo que no existe en RPS en ese lacado
- * (ni lacado ni en bruto) y `raw`, si alguna pieza sale en bruto para lacar fuera.
+ * Perfiles y tapas del cofre. `issues` lista las piezas que no salen lacadas: en bruto
+ * para lacar fuera (`raw`) o sin ninguna referencia en RPS, y por qué ('color' o
+ * 'length', ver irisProfile).
  */
 export function irisBoxPieces({ series, shape, lacado, units = 1, boxProfileLength }) {
   const spec = boxFamilies[series];
   const variant = spec?.[shape];
-  const result = { lines: [], missing: [], raw: false };
+  const result = { lines: [], issues: [] };
   if (!variant || !lacado || !(boxProfileLength > 0)) return result;
   const shapeName = shape === 'CUADRADO' ? 'CUADRADO' : 'REDONDO';
   const pieces = [
@@ -85,20 +86,20 @@ export function irisBoxPieces({ series, shape, lacado, units = 1, boxProfileLeng
     [variant.bottom, `PERFIL COFRE INFERIOR ${shapeName} ${series}`, `perfil inferior del cofre ${shapeName.toLowerCase()}`]
   ];
   for (const [family, description, label] of pieces) {
-    const profile = irisProfile(family, lacado, boxProfileLength);
-    if (!profile) {
-      result.missing.push(label);
-      continue;
-    }
-    result.raw ||= profile.raw;
+    // Con varias unidades, el largo que menos gasta para todas: el taller saca los
+    // cofres de varios toldos de una barra (OF 0208933: una barra de 600 para dos toldos).
+    const profile = irisProfile(family, lacado, boxProfileLength, units);
+    if (profile.reason) result.issues.push({ label, reason: profile.reason, raw: profile.raw });
+    if (!profile.code) continue;
     result.lines.push({ code: profile.code, quantity: barsFor(boxProfileLength, units, profile.stock), description, length: boxProfileLength });
   }
   const capsPiece = irisCaps(variant.caps, lacado);
+  const capsLabel = `tapas del cofre ${shapeName.toLowerCase()}`;
   if (capsPiece) {
-    result.raw ||= capsPiece.raw;
+    if (capsPiece.raw) result.issues.push({ label: capsLabel, reason: 'color', raw: true });
     result.lines.push({ code: capsPiece.code, quantity: units, description: `JGO TAPAS COFRE ${shapeName} ${series}` });
   } else {
-    result.missing.push(`tapas del cofre ${shapeName.toLowerCase()}`);
+    result.issues.push({ label: capsLabel, reason: 'color', raw: false });
   }
   return result;
 }
@@ -120,18 +121,15 @@ export function irisBoxPieces({ series, shape, lacado, units = 1, boxProfileLeng
 const GUIDE_PVC_STOCK_CM = 600;
 
 export function irisGuidePieces({ guideType, hasBox, lacado, units = 1, guideLength, zipLength, compensatorLength }) {
-  const result = { lines: [], missing: [], raw: false };
+  const result = { lines: [], issues: [] };
   if (!lacado || !(guideLength > 0)) return result;
   const white = lacado.crank === 'BLANCA';
   const plain = white ? 'BLAN' : 'NEGR';
   const innerLength = zipLength > 0 ? zipLength : guideLength;
   const profile = (family, length, pieces, description, label) => {
     const found = irisProfile(family, lacado, length, pieces * units);
-    if (!found) {
-      result.missing.push(label);
-      return;
-    }
-    result.raw ||= found.raw;
+    if (found.reason) result.issues.push({ label, reason: found.reason, raw: found.raw });
+    if (!found.code) return;
     result.lines.push({ code: found.code, quantity: barsFor(length, pieces * units, found.stock), description, length });
   };
   const pvc = (code, length, pieces, description) => result.lines.push({
@@ -162,9 +160,9 @@ export function irisGuidePieces({ guideType, hasBox, lacado, units = 1, guideLen
 
 /**
  * Cremallera, varilla vaina y macarrón (Q-I02 y Q-I04).
- * - Cremallera: siempre la XL (acuerdo del 09/10/2025, repetido el 24/09/2026). Desde
- *   entonces se gasta la caída de la tela: 2,9 m en la OF 0229575 (250 + 40) y 2,64 en
- *   la 0222569 (234 + 30). Blanca o gris: el negro está de baja desde 2021; se elige por
+ * - Cremallera: siempre la XL (acuerdo del 09/10/2025, repetido el 24/09/2026). PROVISIONAL:
+ *   una caída de tela por toldo, como en las OF 0229575 (2,9 m con 250 + 40) y 0222569
+ *   (2,64 con 234 + 30); otras gastaron dos (0229896: 8,1 = 2 × 405). Duda Q-I06. Blanca o gris: el negro está de baja desde 2021; se elige por
  *   la columna de la manivela, que acierta 16 de las 19 OF con XL.
  * - Varilla vaina y macarrón de Ø8: frente + 10 cm, en metros (rollo de 250 m y metros).
  */
