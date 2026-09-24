@@ -7,7 +7,7 @@ import { StructureEditor } from './StructureEditor';
 import { formatDecimal } from '../constants';
 import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
 import { controlLabel, legacyModelName } from './controlLabels';
-import { collectFabricMaterialKeys, roundFabricMeters } from '../../domain/reservationFabrics.js';
+import { groupMaterialRows } from '../awningPanel';
 import { requestAwningFocus } from '../awningFocus';
 
 type Props = {
@@ -125,64 +125,92 @@ function StructurePreview({ blocks, awnings, selectedBlock, onSelect, onUpdate }
           <div><span>Estructura {awningLetter(selectedBlock.awningIndex ?? 0)}</span><h3>{controlLabel(awning?.model || calc.model)} {legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}</h3></div>
           <div className="structure-sheet-meta"><span>OF</span><strong>{selectedBlock.of || '-'}</strong><span>Estado</span><strong className={calc.valid ? 'text-ok' : 'text-danger'}>{calc.valid ? 'Válido' : 'Revisar'}</strong></div>
         </header>
-        {awning && selectedBlock.structureEditor && onUpdate && <StructureEditor key={awning.id} awning={awning} editor={selectedBlock.structureEditor} armCount={calc.armCount} onUpdate={onUpdate} />}
-        <div className="structure-sheet-body">
-          <div className="despiece-table-wrap">
-            <table className="despiece-table">
-              <thead><tr><th>Nº</th><th>Nombre pieza</th><th>Referencia</th><th className="num">Un.</th><th className="num">Corte (cm)</th></tr></thead>
-              <tbody>{selectedBlock.despiece?.rows.map((row) => (
-                <tr key={row.num}><td className="num">{row.num}</td><td>{row.name}</td><td className={row.reference ? 'code' : 'despiece-no-ref'}>{row.reference || 'Sin código de reserva'}</td><td className="num">{row.units}</td><td className="num">{row.length === null ? '-' : `${formatDecimal(row.length)} cm`}</td></tr>
-              ))}</tbody>
-            </table>
-          </div>
-          <aside className="structure-sheet-side">
-            <InfoBlock title="Datos de partida" lines={[`Frente ${awning?.width ?? calc.width ?? '-'} cm`, `${isVerticalAwningModel(awning?.model) ? 'Caída' : 'Salida'} ${awning?.projection ?? calc.projection ?? '-'} cm`]} />
-            <InfoBlock title="Tela calculada" lines={[`${formatDecimal(calc.fabricWidth)} × ${formatDecimal(calc.fabricDrop)} cm`, `${formatDecimal(calc.fabricMl)} ml`]} />
-            {selectedBlock.despiece?.anchoring && <InfoBlock title="Anclaje" lines={[selectedBlock.despiece.anchoring.name, `${selectedBlock.despiece.anchoring.reference || 'Sin referencia'} × ${selectedBlock.despiece.anchoring.units}`]} />}
-          </aside>
-        </div>
+        <StructureSheet block={selectedBlock} awning={awning} onUpdate={onUpdate} />
       </article>
     </div>
+  );
+}
+
+type OfBlock = Calculation['ofs'][number];
+
+// Cuerpo de la hoja de estructura de un toldo: el editor del despiece, la tabla y sus
+// datos. Lo usan la zona «Planteamientos» y el panel «Despiece y dibujo» del toldo.
+export function StructureSheet({ block, awning, onUpdate }: { block: OfBlock; awning?: Awning; onUpdate?: Props['onUpdate'] }) {
+  const calc = block.calculation!;
+  return (
+    <>
+      {awning && block.structureEditor && onUpdate && <StructureEditor key={awning.id} awning={awning} editor={block.structureEditor} armCount={calc.armCount} onUpdate={onUpdate} />}
+      <div className="structure-sheet-body">
+        <div className="despiece-table-wrap">
+          <table className="despiece-table">
+            <thead><tr><th>Nº</th><th>Nombre pieza</th><th>Referencia</th><th className="num">Un.</th><th className="num">Corte (cm)</th></tr></thead>
+            <tbody>{block.despiece?.rows.map((row) => (
+              <tr key={row.num}><td className="num">{row.num}</td><td>{row.name}</td><td className={row.reference ? 'code' : 'despiece-no-ref'}>{row.reference || 'Sin código de reserva'}</td><td className="num">{row.units}</td><td className="num">{row.length === null ? '-' : `${formatDecimal(row.length)} cm`}</td></tr>
+            ))}</tbody>
+          </table>
+        </div>
+        <aside className="structure-sheet-side">
+          <InfoBlock title="Datos de partida" lines={[`Frente ${awning?.width ?? calc.width ?? '-'} cm`, `${isVerticalAwningModel(awning?.model) ? 'Caída' : 'Salida'} ${awning?.projection ?? calc.projection ?? '-'} cm`]} />
+          <InfoBlock title="Tela calculada" lines={[`${formatDecimal(calc.fabricWidth)} × ${formatDecimal(calc.fabricDrop)} cm`, `${formatDecimal(calc.fabricMl)} ml`]} />
+          {block.despiece?.anchoring && <InfoBlock title="Anclaje" lines={[block.despiece.anchoring.name, `${block.despiece.anchoring.reference || 'Sin referencia'} × ${block.despiece.anchoring.units}`]} />}
+        </aside>
+      </div>
+    </>
   );
 }
 
 function FabricPreview({ blocks, awnings, onUpdate }: { blocks: Calculation['ofs']; awnings: Awning[]; onUpdate?: Props['onUpdate'] }) {
   if (blocks.length === 0) return <EmptyResult text="Completa un elemento para preparar el planteamiento de telas." />;
   return (
+    <FabricTable>
+      {blocks.map((block, index) => <FabricRows key={blockKey(block)} block={block} index={index} awning={findAwning(block, awnings)} onUpdate={onUpdate} />)}
+    </FabricTable>
+  );
+}
+
+// Planteamiento de tela de un solo toldo: su fila, la imagen de tela y la bamba separada.
+// Lo usa el panel «Despiece y dibujo»; la zona «Planteamientos» pinta las mismas filas.
+export function FabricSheet({ block, awning, onUpdate }: { block: OfBlock; awning?: Awning; onUpdate?: Props['onUpdate'] }) {
+  return <FabricTable><FabricRows block={block} index={0} awning={awning} onUpdate={onUpdate} /></FabricTable>;
+}
+
+function FabricTable({ children }: { children: React.ReactNode }) {
+  return (
     <div className="fabric-preview-table-wrap">
       <table className="fabric-preview-table">
         <thead><tr><th>Elemento</th><th>Modelo</th><th>OF</th><th>Tela</th><th className="num">Frente tela</th><th className="num">Salida paño</th><th className="num">Paños</th><th className="num">Total</th><th>Indicaciones</th></tr></thead>
-        <tbody>{blocks.map((block, index) => {
-          const awning = findAwning(block, awnings);
-          const calc = block.calculation!;
-          const heraVariant = calc.model === 'HERA' ? calc.heraVariant || awning?.submodel : '';
-          const mainFabricMl = calc.mainFabricMl ?? calc.fabricMl;
-          const mainFabricPanels = calc.mainFabricPanels ?? calc.fabricPanels;
-          const hasSeparateValance = Boolean(calc.valanceFabricCode) && Number(calc.valanceFabricMl) > 0;
-          return (
-            <React.Fragment key={blockKey(block)}>
-              <tr>
-                <td><strong className="result-letter">{awningLetter(block.awningIndex ?? index)}</strong></td>
-                <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
-                <td>{block.of || '-'}</td><td className="code">{calc.fabricCode || '-'}</td>
-                <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{mainFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(mainFabricMl)} ml</strong></td>
-                <td><FabricIndication awning={awning} calculation={calc} /></td>
-              </tr>
-              {awning && <tr><td colSpan={9}>{onUpdate ? <FabricImageEditor awning={awning} onUpdate={onUpdate} /> : awning.fabricImage ? <img className="fabric-custom-image" src={awning.fabricImage} alt="Imagen personalizada del planteamiento de tela" /> : null}</td></tr>}
-              {hasSeparateValance && (
-                <tr className="fabric-valance-row">
-                  <td><small>{awningLetter(block.awningIndex ?? index)} · bamba</small></td>
-                  <td><strong>Bambalina</strong><small>tejido independiente</small></td>
-                  <td>{block.of || '-'}</td><td className="code">{calc.valanceFabricCode}</td>
-                  <td className="num">{formatDecimal(calc.valanceFabricWidth ?? calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.valanceDrop)} cm</td><td className="num">{calc.valanceFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.valanceFabricMl)} ml</strong></td>
-                  <td>Bamba separada de {formatDecimal(awning?.valanceHeight)} cm</td>
-                </tr>
-              )}
-            </React.Fragment>
-          );
-        })}</tbody>
+        <tbody>{children}</tbody>
       </table>
     </div>
+  );
+}
+
+function FabricRows({ block, index, awning, onUpdate }: { block: OfBlock; index: number; awning?: Awning; onUpdate?: Props['onUpdate'] }) {
+  const calc = block.calculation!;
+  const heraVariant = calc.model === 'HERA' ? calc.heraVariant || awning?.submodel : '';
+  const mainFabricMl = calc.mainFabricMl ?? calc.fabricMl;
+  const mainFabricPanels = calc.mainFabricPanels ?? calc.fabricPanels;
+  const hasSeparateValance = Boolean(calc.valanceFabricCode) && Number(calc.valanceFabricMl) > 0;
+  return (
+    <>
+      <tr>
+        <td><strong className="result-letter">{awningLetter(block.awningIndex ?? index)}</strong></td>
+        <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
+        <td>{block.of || '-'}</td><td className="code">{calc.fabricCode || '-'}</td>
+        <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{mainFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(mainFabricMl)} ml</strong></td>
+        <td><FabricIndication awning={awning} calculation={calc} /></td>
+      </tr>
+      {awning && <tr><td colSpan={9}>{onUpdate ? <FabricImageEditor awning={awning} onUpdate={onUpdate} /> : awning.fabricImage ? <img className="fabric-custom-image" src={awning.fabricImage} alt="Imagen personalizada del planteamiento de tela" /> : null}</td></tr>}
+      {hasSeparateValance && (
+        <tr className="fabric-valance-row">
+          <td><small>{awningLetter(block.awningIndex ?? index)} · bamba</small></td>
+          <td><strong>Bambalina</strong><small>tejido independiente</small></td>
+          <td>{block.of || '-'}</td><td className="code">{calc.valanceFabricCode}</td>
+          <td className="num">{formatDecimal(calc.valanceFabricWidth ?? calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.valanceDrop)} cm</td><td className="num">{calc.valanceFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.valanceFabricMl)} ml</strong></td>
+          <td>Bamba separada de {formatDecimal(awning?.valanceHeight)} cm</td>
+        </tr>
+      )}
+    </>
   );
 }
 
@@ -252,24 +280,6 @@ function findAwning(ofBlock: Calculation['ofs'][number], awnings: Awning[]) {
 
 function blockKey(block: Calculation['ofs'][number]) {
   return block.awningId || `${block.awningIndex ?? ''}-${block.of}`;
-}
-
-function groupMaterialRows(ofs: Calculation['ofs']) {
-  const rows = new Map<string, { of: string; description: string; code: string; quantity: number }>();
-  const fabricKeys = collectFabricMaterialKeys(ofs);
-  for (const ofBlock of ofs) {
-    for (const material of ofBlock.materials) {
-      const key = `${ofBlock.of.trim().toUpperCase()}||${material.code.trim().toUpperCase()}`;
-      const current = rows.get(key) || { of: ofBlock.of, description: material.description || '', code: material.code, quantity: 0 };
-      current.quantity = material.aggregation === 'max'
-        ? Math.round(Math.max(current.quantity, material.quantity) * 1000) / 1000
-        : Math.round((current.quantity + material.quantity) * 1000) / 1000;
-      rows.set(key, current);
-    }
-  }
-  return Array.from(rows.entries()).map(([key, row]) => fabricKeys.has(key)
-    ? { ...row, quantity: roundFabricMeters(row.quantity) }
-    : row);
 }
 
 function buildStatusText(state: CalculationState, calculation: Calculation | null) {

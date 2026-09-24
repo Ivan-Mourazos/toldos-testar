@@ -6,6 +6,7 @@ import { AwningBlocks } from '../components/AwningBlocks';
 import { awningStatuses } from '../awningBlocks';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
+import { AwningPanel } from '../components/AwningPanel';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
 export function OrderView({
@@ -76,6 +77,9 @@ export function OrderView({
   diagnostics?: Calculation['diagnostics'] | null;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
+  // Toldo cuyo panel «Despiece y dibujo» está abierto.
+  const [panelAwningId, setPanelAwningId] = useState<string | null>(null);
+  const panelIndex = panelAwningId ? awnings.findIndex((awning) => awning.id === panelAwningId) : -1;
   const enabledModels = new Set(availableModelNames);
 
   function chooseModel(model: string) {
@@ -157,12 +161,24 @@ export function OrderView({
               onUpdate={updateAwning}
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}
+              onOpenPanel={setPanelAwningId}
             />
           )}
         />
       </section>}
 
       {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} onUpdate={updateAwning} />}
+
+      {!readOnly && panelIndex !== -1 && (
+        <AwningPanel
+          awning={awnings[panelIndex]}
+          index={panelIndex}
+          calculation={calculation}
+          order={{ fabric, sameFabric }}
+          onUpdate={updateAwning}
+          onClose={() => setPanelAwningId(null)}
+        />
+      )}
 
       {!readOnly && pickerType && (
         <ModelPickerDialog

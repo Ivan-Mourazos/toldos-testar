@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ArrowRight, CircleAlert, Copy, Lock, LockOpen, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CircleAlert, Copy, Layers3, Lock, LockOpen, Trash2 } from 'lucide-react';
 import { withoutAwningPrefix } from '../diagnosticText';
 import type { Awning, BoxDevice, Calculation, CortinaDevice, ElectraSupport, RuleParameters } from '../types';
 import { formOptions, getFabricDiagramOptions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
@@ -56,6 +56,8 @@ type Props = {
   onUpdate: (id: string, patch: Partial<Awning>) => void;
   onDuplicate: (id: string) => void;
   onRemove: (id: string) => void;
+  // Abre el panel «Despiece y dibujo» de este toldo (solo al editar).
+  onOpenPanel?: (id: string) => void;
 };
 
 // Estilo del estado en la cabecera de la ficha de lectura: los mismos colores que al editar.
@@ -68,7 +70,7 @@ export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
   return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;
 }
 
-export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', readOnly = false, readStatus, onUpdate, onDuplicate, onRemove }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   const standaloneValance = awning.model === 'BAMBALINA';
@@ -280,6 +282,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
         </strong>
         {!readOnly && <div className="card-actions">
+          {onOpenPanel && <button type="button" className="ghost-button awning-panel-open" onClick={() => onOpenPanel(awning.id)}><Layers3 aria-hidden="true" />Despiece y dibujo</button>}
           {!isHera && <button
             type="button"
             className={awning.reglasModificadas ? 'icon-button active' : 'icon-button'}
