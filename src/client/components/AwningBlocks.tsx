@@ -221,6 +221,7 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
         ref={trackRef}
         className="awning-grid awning-blocks-track"
         style={{ '--per-page': perPage } as React.CSSProperties}
+        role="group"
         tabIndex={0}
         aria-label="Tarjetas de toldos (Re Pág y Av Pág cambian de bloque)"
         onScroll={syncPageFromScroll}
