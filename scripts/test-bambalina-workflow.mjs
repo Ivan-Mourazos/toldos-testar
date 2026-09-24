@@ -26,6 +26,8 @@ try {
   await request('/api/workflow/settings', { productionEnabled: true, reviewDirectory: path.join(directory, 'reviews'), planteamientosDirectory: path.join(directory, 'plans'), rpsUploadDirectory: path.join(directory, 'rps'), rpsPlanteamientosDirectory: path.join(directory, 'archive') }, 'PUT');
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1500, height: 950 } });
+  // Usuario del navegador (diseño 24/09/2026): evita que salga «¿Quién eres?» al abrir Parámetros.
+  await page.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
   await page.goto(base);
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
   await page.locator('.parameter-model-trigger').click();

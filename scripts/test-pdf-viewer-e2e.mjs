@@ -33,6 +33,11 @@ async function buildThreePageOrder(page) {
 
 for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 1000 }]) {
   const { browser, page, errors } = await openApp(viewport);
+  // Usuario del navegador (diseño 24/09/2026): openApp ya navegó, así que el guion de
+  // inicio se añade después y se recarga para que surta efecto y no salga «¿Quién eres?».
+  await page.context().addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
+  await page.reload();
+  await page.getByRole('button', { name: 'Nuevo pedido', exact: true }).waitFor();
   page.setDefaultTimeout(7000);
   try {
     await buildThreePageOrder(page);
@@ -109,22 +114,28 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
       await page.waitForTimeout(500);
       const overwrite = page.getByRole('button', { name: 'Actualizar pedido', exact: true });
       if (await overwrite.count()) await overwrite.click();
-      await page.getByRole('button', { name: 'Revisión', exact: true }).click({ timeout: 30000 });
-      // A menos de 1500 px la lista de Revisión empieza plegada (lote E): se abre.
-      const showList = page.getByRole('button', { name: 'Mostrar la lista de pedidos' });
-      await page.getByRole('button', { name: /lista de pedidos/ }).first().waitFor({ timeout: 15000 });
-      if (await showList.count()) await showList.click();
-      await page.locator('.review-list-item').first().waitFor({ timeout: 15000 });
-      await page.locator('.review-list-item').first().click();
-      const reviewViewer = page.locator('.review-inline-preview .pdf-carousel').first();
+      await page.getByRole('button', { name: /^Pedidos/ }).click({ timeout: 30000 });
+      // Desde el 24/09/2026 el pedido se abre por "Abrir" en la bandeja y la vista
+      // previa es un diálogo aparte (Pedido abierto sin aprobar ni devolver).
+      const inboxRow = page.locator('.orders-row', { hasText: 'AR2603332' });
+      await inboxRow.getByRole('button', { name: 'Abrir' }).click({ timeout: 15000 });
+      const reviewReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
+      await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).click();
+      const previewDialog = page.getByRole('dialog', { name: 'Vista previa de AR2603332' });
+      await previewDialog.waitFor({ timeout: 20000 });
+      const reviewViewer = previewDialog.locator('.review-inline-preview .pdf-carousel').first();
       await reviewViewer.getByText('Página 1 de 3').waitFor({ timeout: 20000 });
-      await page.getByRole('button', { name: 'Pantalla completa' }).first().click();
+      await previewDialog.getByRole('button', { name: 'Pantalla completa' }).first().click();
       const fullscreen = page.locator('dialog.review-inline-preview:modal');
       await fullscreen.waitFor();
       await fullscreen.getByRole('button', { name: 'Página siguiente' }).first().click();
       await fullscreen.getByText('Página 2 de 3').waitFor();
       await page.keyboard.press('Escape');
       await fullscreen.waitFor({ state: 'hidden' });
+      // El diálogo está anidado: un único Esc cierra los dos niveles (comprobado a mano),
+      // así que se vuelve directamente al pedido abierto, no al visor sin pantalla completa.
+      await previewDialog.waitFor({ state: 'hidden' });
+      await reviewReader.waitFor();
     // El recargado en caliente de Vite (WebSocket) no es de la app: falla si otra instancia usa su puerto.
     if (errors.some((error) => !/status of (400|409)|WebSocket|\[vite\]/.test(error))) throw new Error(`Errores de navegador: ${errors.join('; ')}`);
     console.log(`Visor PDF ${viewport.width}x${viewport.height}: OK`);

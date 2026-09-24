@@ -17,7 +17,7 @@ const reportPath = path.join(artifactDirectory, 'report.json');
 const startedAt = new Date().toISOString();
 const report = {
   startedAt,
-  mode: 'review-approval-generation',
+  mode: 'review-generation-without-approval',
   rps: {},
   apiCases: [],
   browserCase: null,
@@ -120,6 +120,8 @@ async function verifyBrowserCase(browserInstance, url) {
       value: undefined
     });
   });
+  // Usuario del navegador (diseño 24/09/2026): evita que salga «¿Quién eres?».
+  await context.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
 
   const page = await context.newPage();
   page.on('console', (message) => {
@@ -133,13 +135,11 @@ async function verifyBrowserCase(browserInstance, url) {
   });
 
   await page.goto(url, { waitUntil: 'networkidle' });
-  await page.getByText('Generación disponible', { exact: true }).waitFor();
-  await page.getByText('Aprobar y generar son pasos separados', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('dialog', { name: '¿Quién eres?' }).count(), 0, 'No debería pedir usuario: ya está guardado en localStorage.');
+  await page.getByText('Soy: Iván', { exact: true }).waitFor();
 
   await page.getByRole('textbox', { name: 'Pedido' }).fill('AR2603332');
   await page.getByRole('textbox', { name: 'Cliente' }).fill('LECHE CELTA');
-  await chooseSelect(page, 'Técnico', 'Iván');
-  await chooseSelect(page, 'Revisión', 'Jaime');
 
   const fabric = page.getByRole('combobox', { name: 'Referencia', exact: true });
   await fabric.fill('ACRILI2018P120');
@@ -185,26 +185,26 @@ async function verifyBrowserCase(browserInstance, url) {
   await page.getByRole('button', { name: 'Guardar para revisión' }).click();
   await page.getByText(/Guardado en Pedidos para revisión: AR2603332\.pdf/).waitFor();
 
-  await page.getByRole('button', { name: 'Revisión', exact: true }).click();
-  const reviewItem = page.getByRole('button').filter({ hasText: 'AR2603332' });
-  await reviewItem.waitFor();
+  await page.getByRole('button', { name: /^Pedidos/ }).click();
+  const inboxRow = page.locator('.orders-row', { hasText: 'AR2603332' });
+  await inboxRow.getByRole('button', { name: 'Abrir' }).click();
   const reviewReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
   const readonlyAwning = reviewReader.locator('.awning-column');
   await readonlyAwning.waitFor();
   assert.notEqual(await readonlyAwning.getAttribute('disabled'), null);
   assert.equal(await readonlyAwning.getByLabel('OF', { exact: true }).isDisabled(), true);
-  const inlinePreview = reviewReader.getByRole('region', { name: 'Vista previa del planteamiento' });
+
+  // Desde el 24/09/2026 la vista previa del pedido abierto es un diálogo aparte,
+  // no un bloque fijo del lector (Pedido abierto sin aprobar ni devolver).
+  await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).click();
+  const reviewPreviewDialog = page.getByRole('dialog', { name: 'Vista previa de AR2603332' });
+  await reviewPreviewDialog.waitFor({ timeout: 20_000 });
   // Desde el 16/09/2026 la bandeja muestra el PDF en un carrusel de una página:
   // se comprueban las dos pasando de la primera a la segunda.
-  await inlinePreview.getByRole('img', { name: 'Página 1 de 2' }).waitFor({ timeout: 20_000 });
-  await inlinePreview.getByRole('button', { name: 'Página siguiente' }).first().click();
-  await inlinePreview.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
-  await page.getByRole('button', { name: 'Aprobar', exact: true }).click();
-  // Desde el 23/09/2026 el diálogo de aprobar pide quién revisa y avisa de que no genera nada.
-  const approveDialog = page.getByRole('dialog', { name: 'Aprobar AR2603332' });
-  await approveDialog.locator('select').selectOption('ÁNGEL');
-  await approveDialog.getByRole('button', { name: 'Aprobar (sin generar)', exact: true }).click();
-  await page.getByText(/aprobado. Aún no se ha generado ningún archivo/).waitFor({ timeout: 20_000 });
+  await reviewPreviewDialog.getByRole('img', { name: 'Página 1 de 2' }).waitFor({ timeout: 20_000 });
+  await reviewPreviewDialog.getByRole('button', { name: 'Página siguiente' }).first().click();
+  await reviewPreviewDialog.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
+  await reviewPreviewDialog.getByRole('button', { name: 'Cerrar vista previa' }).click();
 
   const reviewPath = path.join(workflowDirectory, '2026', 'TOLDOS', 'AR2603332.pdf');
   const rpsPath = path.join(workflowDirectory, 'RPS', '0230194.xls');
@@ -213,8 +213,9 @@ async function verifyBrowserCase(browserInstance, url) {
   await assert.rejects(access(rpsPath));
   await assert.rejects(access(pdfPath));
 
-  await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
-  await page.getByRole('button', { name: 'Generar archivos', exact: true }).last().click();
+  // Ya no hay que aprobar: solo el autor (IVÁN, autostampado al guardar) puede generar.
+  await reviewReader.getByRole('button', { name: 'Generar archivos', exact: true }).click();
+  await page.getByRole('button', { name: 'Sí, generar archivos', exact: true }).click();
   await page.getByText(/Guardado AR2603332-1\.pdf/).waitFor({ timeout: 30_000 });
 
   const rpsContent = (await readFile(rpsPath)).toString('latin1');
@@ -242,8 +243,15 @@ async function verifyBrowserCase(browserInstance, url) {
   assert.equal(generatedPdf.pages, 2);
   assert.match(generatedPdf.text, /AR2603332/);
   assert.match(generatedPdf.text, /0230194/);
-  await page.getByText('Archivos generados', { exact: true }).first().waitFor();
-  await page.getByText(/generados por IVÁN, autor del pedido/i).waitFor();
+  assert.match(generatedPdf.text, /IVÁN/);
+
+  // Tras generar, el pedido pasa a Historial y ya no está pendiente en la bandeja:
+  // se reabre desde ahí para ver el bloque de archivos generados.
+  const historyRow = page.locator('.orders-row', { hasText: 'AR2603332' });
+  await historyRow.getByRole('button', { name: 'Ver' }).click();
+  const producedReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
+  // El nombre del autor va pegado al mismo <strong>: «Archivos generados por IVÁN, autor del pedido».
+  await producedReader.getByText(/^Archivos generados por IVÁN, autor del pedido$/).waitFor();
 
   await page.getByRole('button', { name: 'Reutilizar datos' }).click();
   await page.getByRole('button', { name: 'Reutilizar datos', exact: true }).last().click();
@@ -267,8 +275,9 @@ async function verifyBrowserCase(browserInstance, url) {
     pdfFile: path.basename(pdfPath),
     pdfPages: generatedPdf.pages,
     reviewVerified: true,
-    approvalVerified: true,
-    separatedGenerationVerified: true,
+    // Ya no hay paso de aprobación en la web (Pedido abierto sin aprobar ni devolver,
+    // 24/09/2026): genera directamente el autor.
+    generationByAuthorVerified: true,
     clearVerified: true,
     screenshot: path.basename(screenshotPath)
   };

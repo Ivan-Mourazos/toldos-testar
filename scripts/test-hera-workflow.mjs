@@ -61,6 +61,8 @@ try {
     }
   }
   browser = await chromium.launch({ headless: true }); const page = await browser.newPage({ viewport: { width: 1500, height: 950 } });
+  // Usuario del navegador (diseño 24/09/2026): evita que salga «¿Quién eres?» al abrir Parámetros.
+  await page.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
   await page.goto(base); await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
   for (const model of ['HERA', 'Antica']) {
     await page.locator('.parameter-model-trigger').click();
