@@ -8,6 +8,7 @@ import {
   createWorkflowStore,
   defaultWorkflowSettings,
   extractReviewPackageFromPdf,
+  isPendingGeneration,
   markReviewApproved,
   markReviewFilesGenerated,
   isAbsolutePathTemplate,
@@ -295,5 +296,15 @@ describe('flujo de revisión y producción', () => {
       production: null
     });
     expect(approved.order).toBe(order);
+  });
+});
+
+describe('pendiente de generar', () => {
+  it('cualquier pedido guardado y no generado se puede generar (aprobar lo lleva CoordinaOT)', () => {
+    expect(isPendingGeneration('PENDING_REVIEW')).toBe(true);
+    expect(isPendingGeneration('CHANGES_REQUESTED')).toBe(true);
+    expect(isPendingGeneration('APPROVED')).toBe(true);
+    expect(isPendingGeneration('PRODUCED')).toBe(false);
+    expect(isPendingGeneration('')).toBe(false);
   });
 });

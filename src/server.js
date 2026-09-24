@@ -29,6 +29,7 @@ import {
   defaultWorkflowSettings,
   fileExists,
   getOrderYear,
+  isPendingGeneration,
   markReviewApproved,
   markReviewChangesRequested,
   markReviewFilesGenerated,
@@ -429,8 +430,8 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
       return;
     }
-    if (review.status !== 'APPROVED') {
-      throw httpError(409, 'Aprueba el pedido antes de generar sus archivos.');
+    if (!isPendingGeneration(review.status)) {
+      throw httpError(409, 'Este pedido no se puede generar desde la web.');
     }
 
     const order = normalizeOrder(review.order);
