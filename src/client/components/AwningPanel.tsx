@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FileSpreadsheet, Layers3, Scissors, X } from 'lucide-react';
 import type { Awning, Calculation } from '../types';
 import { awningLetter, describeMissing, getMissingFields } from '../../domain/awningCompleteness.js';
@@ -7,12 +7,17 @@ import { FabricSheet, StructureSheet } from './LiveResults';
 import { awningReservationRows } from '../awningPanel';
 import { formatDecimal } from '../constants';
 import { PdfPreviewViewer } from './PdfPreviewViewer';
+import type { AskForConfirmation } from './NotificationCenter';
 
 type PanelTab = 'despiece' | 'dibujo' | 'reserva';
 
 // El pedido tal como se envía para generar el planteamiento (parámetros, tela, remate…).
 // Con la tela basta para saber qué le falta al toldo; el resto hace falta para su PDF.
 export type PanelOrder = { fabric: string; sameFabric: boolean } & Record<string, unknown>;
+
+// El PDF del dibujo ya pedido: se guarda en el panel para no volver a pedirlo cada vez
+// que se vuelve a la pestaña «Dibujo». `body` es la petición con la que se hizo.
+type Drawing = { body: string; status: 'ready' | 'error'; url: string; error: string };
 
 type Props = {
   awning: Awning;
@@ -21,19 +26,26 @@ type Props = {
   order: PanelOrder;
   onUpdate: (id: string, patch: Partial<Awning>) => void;
   onClose: () => void;
+  // Confirmación de la aplicación, para no perder un despiece a medio editar.
+  onConfirm?: AskForConfirmation;
 };
 
 // Panel lateral «Despiece y dibujo» de un toldo (rediseño 3 §2). Es un <dialog> modal,
 // como la vista previa de la revisión: Esc, la X o un clic fuera lo cierran y el foco
 // vuelve al botón que lo abrió. Reutiliza las hojas de «Planteamientos».
-export function AwningPanel({ awning, index, calculation, order, onUpdate, onClose }: Props) {
+export function AwningPanel({ awning, index, calculation, order, onUpdate, onClose, onConfirm }: Props) {
   const letter = awningLetter(index);
+  const fabricOnly = awning.workType === 'FABRIC_ONLY';
   // Como la tarjeta: «Tela A» para un trabajo de tela, «Toldo A» para un toldo.
-  const elementName = `${awning.workType === 'FABRIC_ONLY' ? 'Tela' : 'Toldo'} ${letter}`;
+  const elementName = `${fabricOnly ? 'Tela' : 'Toldo'} ${letter}`;
   const block = calculation?.ofs.find((ofBlock) => ofBlock.awningId === awning.id && ofBlock.calculation);
-  const hasStructure = awning.workType !== 'FABRIC_ONLY' && Boolean(block?.despiece);
+  const hasStructure = !fabricOnly && Boolean(block?.despiece);
   const [chosenTab, setTab] = useState<PanelTab>(hasStructure ? 'despiece' : 'dibujo');
   const tab = chosenTab === 'despiece' && !hasStructure ? 'dibujo' : chosenTab;
+  // Mientras se edita el despiece, el panel no se cierra ni cambia de pestaña sin preguntar:
+  // la edición vive en el editor y se perdería sin avisar.
+  const [editingDespiece, setEditingDespiece] = useState(false);
+  const [drawing, setDrawing] = useState<Drawing | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const pressedOnBackdrop = useRef(false);
@@ -58,14 +70,47 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
     };
   }, []);
 
+  // El PDF se revoca solo cuando otro lo sustituye o al cerrar el panel: mientras siga en
+  // el estado se puede volver a enseñar (ida y vuelta de pestañas o de un dato).
+  const drawingUrl = drawing?.url;
+  useEffect(() => () => { if (drawingUrl) URL.revokeObjectURL(drawingUrl); }, [drawingUrl]);
+
+  async function confirmDiscard() {
+    if (!editingDespiece) return true;
+    if (!onConfirm) return false;
+    const choice = await onConfirm({
+      title: 'Despiece sin guardar',
+      message: 'Hay cambios del despiece sin guardar. ¿Descartarlos?',
+      confirmLabel: 'Descartar',
+      cancelLabel: 'Seguir editando',
+      tone: 'warning'
+    });
+    return choice === 'confirm';
+  }
+
+  async function requestClose() {
+    if (await confirmDiscard()) onClose();
+  }
+
+  async function chooseTab(next: PanelTab) {
+    if (next === tab) return;
+    if (!(await confirmDiscard())) return;
+    setTab(next);
+    document.getElementById(`awning-panel-tab-${next}`)?.focus();
+  }
+
   function moveTab(event: React.KeyboardEvent, current: number) {
-    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    const targets: Record<string, number> = {
+      ArrowRight: (current + 1) % tabs.length,
+      ArrowLeft: (current + tabs.length - 1) % tabs.length,
+      Home: 0,
+      End: tabs.length - 1
+    };
+    if (!(event.key in targets)) return;
     // Que no llegue al visor del PDF, que también cambia de página con las flechas.
     event.preventDefault();
     event.stopPropagation();
-    const next = tabs[(current + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-    setTab(next.id);
-    document.getElementById(`awning-panel-tab-${next.id}`)?.focus();
+    void chooseTab(tabs[targets[event.key]].id);
   }
 
   const missing = getMissingFields(awning, order);
@@ -74,15 +119,15 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
   // El <dialog> no tiene relleno: un clic sobre él mismo solo puede ser en el fondo. Se
   // cierra al soltar (click), no al pulsar: si no, el clic acabaría en la página de detrás
   // y le quitaría el foco al botón que lo abrió. Un arrastre desde dentro no lo cierra.
+  // Con el despiece en edición, Esc no cierra (la edición sigue) y la X o el fondo preguntan.
   return (
     <dialog
       ref={dialogRef}
       className="awning-panel"
-      aria-modal="true"
-      aria-label={`Despiece y dibujo ${awning.workType === 'FABRIC_ONLY' ? 'de la tela' : 'del toldo'} ${letter}`}
-      onCancel={(event) => { event.preventDefault(); onClose(); }}
+      aria-label={`Despiece y dibujo ${fabricOnly ? 'de la tela' : 'del toldo'} ${letter}`}
+      onCancel={(event) => { event.preventDefault(); if (!editingDespiece) onClose(); }}
       onMouseDown={(event) => { pressedOnBackdrop.current = event.target === event.currentTarget; }}
-      onClick={(event) => { if (pressedOnBackdrop.current && event.target === event.currentTarget) onClose(); }}
+      onClick={(event) => { if (pressedOnBackdrop.current && event.target === event.currentTarget) void requestClose(); }}
     >
       <div className="awning-panel-inner">
         <header className="awning-panel-header">
@@ -97,12 +142,12 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
             <dt>OF</dt><dd>{block?.of || awning.of || '-'}</dd>
             {block?.calculation && <><dt>Estado</dt><dd className={block.calculation.valid ? 'text-ok' : 'text-danger'}>{block.calculation.valid ? 'Válido' : 'Revisar'}</dd></>}
           </dl>
-          <button ref={closeRef} type="button" className="icon-button" onClick={onClose} aria-label="Cerrar panel"><X aria-hidden="true" /></button>
+          <button ref={closeRef} type="button" className="icon-button" onClick={() => void requestClose()} aria-label="Cerrar panel"><X aria-hidden="true" /></button>
         </header>
 
         {!block ? (
           <div className="awning-panel-empty">
-            <p><strong>Completa el toldo para ver su despiece</strong></p>
+            <p><strong>{fabricOnly ? 'Completa la tela para ver su dibujo' : 'Completa el toldo para ver su despiece'}</strong></p>
             {missing.length > 0 && <p>Falta {describeMissing(missing)}.</p>}
           </div>
         ) : (
@@ -118,7 +163,7 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
                   aria-controls="awning-panel-tabpanel"
                   tabIndex={tab === item.id ? 0 : -1}
                   className={tab === item.id ? 'active' : ''}
-                  onClick={() => setTab(item.id)}
+                  onClick={() => void chooseTab(item.id)}
                   onKeyDown={(event) => moveTab(event, position)}
                 >
                   {item.icon}<span>{item.label}</span>
@@ -126,9 +171,9 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
               ))}
             </div>
             <div className="awning-panel-body" id="awning-panel-tabpanel" role="tabpanel" aria-labelledby={`awning-panel-tab-${tab}`}>
-              {tab === 'despiece' && <div className="structure-sheet-preview"><StructureSheet block={block} awning={awning} onUpdate={onUpdate} /></div>}
+              {tab === 'despiece' && <div className="structure-sheet-preview"><StructureSheet block={block} awning={awning} onUpdate={onUpdate} onEditingChange={setEditingDespiece} /></div>}
               {tab === 'dibujo' && <>
-                <AwningDrawingPreview awning={awning} order={order} />
+                <AwningDrawingPreview awning={awning} order={order} drawing={drawing} onDrawing={setDrawing} />
                 <FabricSheet block={block} awning={awning} onUpdate={onUpdate} />
               </>}
               {tab === 'reserva' && (reservation.length === 0
@@ -148,16 +193,33 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
   );
 }
 
-// El dibujo de la tela es el del PDF del planteamiento: se pide el de este toldo solo y
-// se abre en su hoja de tela. Espera un momento tras cada cambio, como el cálculo.
-function AwningDrawingPreview({ awning, order }: { awning: Awning; order: PanelOrder }) {
-  const requestBody = JSON.stringify({ order: { ...order, awnings: [awning] } });
-  const [preview, setPreview] = useState<{ source: string; status: 'ready' | 'error'; url: string; error: string } | null>(null);
-  const visible = preview && preview.source === requestBody ? preview : null;
+// Devuelve el mismo objeto mientras sus campos no cambien: el pedido llega nuevo en cada
+// render de la aplicación y, sin esto, se serializaría entero (imágenes incluidas) cada vez.
+function useShallowStable<T extends Record<string, unknown>>(value: T): T {
+  const [stable, setStable] = useState(value);
+  const keys = Object.keys(value);
+  const same = keys.length === Object.keys(stable).length && keys.every((key) => Object.is(value[key], stable[key]));
+  if (!same) setStable(value);
+  return same ? stable : value;
+}
+
+// El dibujo de la tela es el del PDF del planteamiento: se pide el pedido entero limitado
+// a este toldo (así sale con su letra) y se abre en su hoja de tela. Espera un momento
+// tras cada cambio, como el cálculo; si la petición no ha cambiado, reutiliza el PDF.
+function AwningDrawingPreview({ awning, order, drawing, onDrawing }: {
+  awning: Awning;
+  order: PanelOrder;
+  drawing: Drawing | null;
+  onDrawing: (drawing: Drawing) => void;
+}) {
+  const stableOrder = useShallowStable(order);
+  const requestBody = useMemo(() => JSON.stringify({ order: stableOrder, onlyAwningId: awning.id }), [stableOrder, awning.id]);
+  const current = drawing?.body === requestBody;
+  const visible = current ? drawing : null;
 
   useEffect(() => {
+    if (current) return;
     const controller = new AbortController();
-    let objectUrl = '';
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch('/api/planteamiento', {
@@ -172,19 +234,17 @@ function AwningDrawingPreview({ awning, order }: { awning: Awning; order: PanelO
         }
         const blob = await response.blob();
         if (controller.signal.aborted) return;
-        objectUrl = URL.createObjectURL(blob);
-        setPreview({ source: requestBody, status: 'ready', url: objectUrl, error: '' });
+        onDrawing({ body: requestBody, status: 'ready', url: URL.createObjectURL(blob), error: '' });
       } catch (error) {
         if (controller.signal.aborted) return;
-        setPreview({ source: requestBody, status: 'error', url: '', error: error instanceof Error ? error.message : 'No se pudo preparar el dibujo.' });
+        onDrawing({ body: requestBody, status: 'error', url: '', error: error instanceof Error ? error.message : 'No se pudo preparar el dibujo.' });
       }
     }, 350);
     return () => {
       window.clearTimeout(timer);
       controller.abort();
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [requestBody]);
+  }, [requestBody, current, onDrawing]);
 
   return (
     <section className="awning-panel-drawing" aria-label="Dibujo de la tela" aria-busy={!visible}>

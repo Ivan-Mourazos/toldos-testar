@@ -4,16 +4,29 @@ import type { Awning, StructureEditorState, StructureRow } from '../types';
 import { formatDecimal } from '../constants';
 
 type Article = { code: string; description: string; unitCode: string };
-type Props = { awning: Awning; editor: StructureEditorState; armCount?: number; onUpdate: (id: string, patch: Partial<Awning>) => void };
+type Props = {
+  awning: Awning;
+  editor: StructureEditorState;
+  armCount?: number;
+  onUpdate: (id: string, patch: Partial<Awning>) => void;
+  // Avisa de si hay una edición abierta (sin aplicar), para que quien lo contiene no la
+  // pierda al cerrarse o cambiar de vista. Al desmontarse se da por cerrada.
+  onEditingChange?: (editing: boolean) => void;
+};
 const armModels = ['ANTICA', 'GALICIA', 'PUNTO RECTO', 'MONOBLOCK 350', 'AGATA BOX'];
 
-export function StructureEditor({ awning, editor, armCount, onUpdate }: Props) {
+export function StructureEditor({ awning, editor, armCount, onUpdate, onEditingChange }: Props) {
   const [editing, setEditing] = useState(false);
   const [rows, setRows] = useState<StructureRow[]>([]);
   const [signature, setSignature] = useState('');
   const [searchRow, setSearchRow] = useState('');
   const [error, setError] = useState('');
   const lastUnits = useRef(new Map<string, number>());
+  useEffect(() => {
+    if (!editing || !onEditingChange) return;
+    onEditingChange(true);
+    return () => onEditingChange(false);
+  }, [editing, onEditingChange]);
   const changedDuringEdit = editing && signature !== editor.signature;
   const updateRow = (id: string, patch: Partial<StructureRow>) => setRows((current) => current.map((row) => row.id === id ? { ...row, ...patch } : row));
   const begin = () => { lastUnits.current = new Map(editor.rows.map((row) => [row.id, row.units])); setRows(structuredClone(editor.rows)); setSignature(editor.signature); setError(''); setEditing(true); };

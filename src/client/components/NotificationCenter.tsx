@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckCircle2, CircleAlert, CircleX, Info, TriangleAlert, X } from 'lucide-react';
 
@@ -160,8 +160,19 @@ function NotificationToast({ toast, onDismiss }: { toast: ToastItem; onDismiss: 
 }
 
 function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onResolve: (result: DialogResult) => void }) {
+  const hostRef = useRef<HTMLDialogElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
+
+  // Es un <dialog> modal nativo para quedar en la capa superior: así también se ve y se
+  // usa encima de otro <dialog> modal abierto (el panel «Despiece y dibujo» pregunta antes
+  // de descartar un despiece). Se abre antes del efecto de abajo, que le da el foco.
+  useLayoutEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    host.showModal();
+    return () => host.close();
+  }, []);
 
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -201,15 +212,21 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
   const tone = dialog.tone || 'default';
   const Icon = tone === 'danger' ? CircleAlert : tone === 'warning' ? TriangleAlert : Info;
 
+  // Esc lo resuelve el manejador de teclado de arriba; el cierre nativo se evita para que
+  // el <dialog> se cierre solo al desmontarse.
   return (
+    <dialog
+      ref={hostRef}
+      className="confirmation-host"
+      role="alertdialog"
+      aria-labelledby={`confirmation-title-${dialog.id}`}
+      aria-describedby={`confirmation-message-${dialog.id}`}
+      onCancel={(event) => event.preventDefault()}
+    >
     <div className="confirmation-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onResolve('dismiss'); }}>
       <section
         ref={dialogRef}
         className={`confirmation-dialog confirmation-${tone}`}
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby={`confirmation-title-${dialog.id}`}
-        aria-describedby={`confirmation-message-${dialog.id}`}
       >
         <button type="button" className="confirmation-close boton-3d" onClick={() => onResolve('dismiss')} aria-label="Cerrar diálogo"><X aria-hidden="true" /></button>
         <div className="confirmation-heading">
@@ -231,5 +248,6 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
         </div>
       </section>
     </div>
+    </dialog>
   );
 }

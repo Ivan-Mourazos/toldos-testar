@@ -7,6 +7,7 @@ import { awningStatuses } from '../awningBlocks';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { AwningPanel, type PanelOrder } from '../components/AwningPanel';
+import type { AskForConfirmation } from '../components/NotificationCenter';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 
 export function OrderView({
@@ -40,7 +41,8 @@ export function OrderView({
   autofill,
   readOnly = false,
   diagnostics,
-  panelOrder
+  getPanelOrder,
+  onConfirm
 }: {
   availableModelNames: string[];
   orderCode: string;
@@ -77,7 +79,10 @@ export function OrderView({
   // completo: las tarjetas de lectura cambiarían sus observaciones con él).
   diagnostics?: Calculation['diagnostics'] | null;
   // El pedido completo (parámetros, remate…) para el PDF del dibujo en el panel del toldo.
-  panelOrder?: Record<string, unknown>;
+  // Es una función: solo se construye mientras el panel está abierto.
+  getPanelOrder?: () => Record<string, unknown>;
+  // Confirmación de la aplicación (el panel pregunta antes de descartar un despiece).
+  onConfirm?: AskForConfirmation;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
   // Toldo cuyo panel «Despiece y dibujo» está abierto.
@@ -170,16 +175,17 @@ export function OrderView({
         />
       </section>}
 
-      {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} onUpdate={updateAwning} />}
+      {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} />}
 
       {!readOnly && panelIndex !== -1 && (
         <AwningPanel
           awning={awnings[panelIndex]}
           index={panelIndex}
           calculation={calculation}
-          order={{ ...panelOrder, fabric, sameFabric } as PanelOrder}
+          order={{ ...getPanelOrder?.(), fabric, sameFabric } as PanelOrder}
           onUpdate={updateAwning}
           onClose={() => setPanelAwningId(null)}
+          onConfirm={onConfirm}
         />
       )}
 

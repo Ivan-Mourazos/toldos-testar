@@ -1,6 +1,6 @@
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import React from 'react';
-import { AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { AlertCircle, ChevronDown, FileSpreadsheet } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
 import { FabricImageEditor } from './FabricImageEditor';
 import { StructureEditor } from './StructureEditor';
@@ -14,8 +14,9 @@ type Props = {
   calculation: Calculation | null;
   state: CalculationState;
   awnings: Awning[];
-  onUpdate?: (id: string, patch: Partial<Awning>) => void;
 };
+
+type UpdateAwning = (id: string, patch: Partial<Awning>) => void;
 
 // Zona «Planteamientos» bajo los toldos (rediseño 3 §2): una línea resumen plegada. El
 // despiece y la tela de cada toldo se editan en su panel «Despiece y dibujo»; aquí solo
@@ -34,9 +35,12 @@ export function LiveResults({ calculation, state, awnings }: Props) {
   return (
     <section className="panel">
       <details className="planning-summary">
+        {/* Un <h2> dentro de <summary> perdería su papel de encabezado (el summary es un
+            botón); el título va en un <span> con el mismo aspecto. El chevrón y «Ver/Ocultar
+            reserva RPS» dicen que la línea se despliega. */}
         <summary>
           <span className="planning-summary-title">
-            <h2>Planteamientos</h2>
+            <span className="planning-summary-heading">Planteamientos</span>
             <span className="planning-summary-status">{buildStatusText(state, calculation)}</span>
           </span>
           <span className="planning-summary-text">{formatSummary(summary)}</span>
@@ -45,6 +49,11 @@ export function LiveResults({ calculation, state, awnings }: Props) {
               <AlertCircle aria-hidden="true" />{warningCount} {warningCount === 1 ? 'aviso' : 'avisos'}
             </span>
           )}
+          <span className="planning-summary-toggle">
+            <span className="planning-summary-toggle-closed">Ver reserva RPS</span>
+            <span className="planning-summary-toggle-open">Ocultar reserva RPS</span>
+            <ChevronDown aria-hidden="true" />
+          </span>
         </summary>
         <ReservationPreview rows={materialRows} />
       </details>
@@ -77,11 +86,11 @@ type OfBlock = Calculation['ofs'][number];
 
 // Cuerpo de la hoja de estructura de un toldo: el editor del despiece, la tabla y sus
 // datos. Lo usan la zona «Planteamientos» y el panel «Despiece y dibujo» del toldo.
-export function StructureSheet({ block, awning, onUpdate }: { block: OfBlock; awning?: Awning; onUpdate?: Props['onUpdate'] }) {
+export function StructureSheet({ block, awning, onUpdate, onEditingChange }: { block: OfBlock; awning?: Awning; onUpdate?: UpdateAwning; onEditingChange?: (editing: boolean) => void }) {
   const calc = block.calculation!;
   return (
     <>
-      {awning && block.structureEditor && onUpdate && <StructureEditor key={awning.id} awning={awning} editor={block.structureEditor} armCount={calc.armCount} onUpdate={onUpdate} />}
+      {awning && block.structureEditor && onUpdate && <StructureEditor key={awning.id} awning={awning} editor={block.structureEditor} armCount={calc.armCount} onUpdate={onUpdate} onEditingChange={onEditingChange} />}
       <div className="structure-sheet-body">
         <div className="despiece-table-wrap">
           <table className="despiece-table">
@@ -103,7 +112,7 @@ export function StructureSheet({ block, awning, onUpdate }: { block: OfBlock; aw
 
 // Planteamiento de tela de un solo toldo: su fila, la imagen de tela y la bamba separada.
 // Lo usa el panel «Despiece y dibujo»; la zona «Planteamientos» pinta las mismas filas.
-export function FabricSheet({ block, awning, onUpdate }: { block: OfBlock; awning?: Awning; onUpdate?: Props['onUpdate'] }) {
+export function FabricSheet({ block, awning, onUpdate }: { block: OfBlock; awning?: Awning; onUpdate?: UpdateAwning }) {
   return <FabricTable><FabricRows block={block} index={0} awning={awning} onUpdate={onUpdate} /></FabricTable>;
 }
 
@@ -118,7 +127,7 @@ function FabricTable({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FabricRows({ block, index, awning, onUpdate }: { block: OfBlock; index: number; awning?: Awning; onUpdate?: Props['onUpdate'] }) {
+function FabricRows({ block, index, awning, onUpdate }: { block: OfBlock; index: number; awning?: Awning; onUpdate?: UpdateAwning }) {
   const calc = block.calculation!;
   const heraVariant = calc.model === 'HERA' ? calc.heraVariant || awning?.submodel : '';
   const mainFabricMl = calc.mainFabricMl ?? calc.fabricMl;

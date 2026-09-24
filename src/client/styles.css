@@ -1586,46 +1586,53 @@ label span,
 }
 
 /* Observaciones de tela del pedido, dentro del bloque «Tela» (rediseño 3 §3): cabecera y
-   filas más compactas que las del uso suelto, para no disparar la altura de la cabecera. */
+   filas más compactas que las del uso suelto, para no disparar la altura de la cabecera,
+   pero con texto de 11 px y botones de al menos 24×24 (revisión final del plan 3). */
 .order-header-material .observation-lines {
   margin-top: 4px;
 }
 
 .order-header-material .observation-lines-header {
-  min-height: 18px;
-  padding: 1px 6px 1px 8px;
+  min-height: 24px;
+  padding: 0 4px 0 8px;
+}
+
+.order-header-material .observation-lines-header > span,
+.order-header-material .observation-lines-header button {
+  font-size: 11px;
 }
 
 .order-header-material .observation-lines-header button {
-  min-height: 18px;
+  min-height: 24px;
   padding: 1px 5px;
 }
 
 .order-header-material .observation-lines-list {
-  gap: 3px;
-  padding: 3px;
+  gap: 2px;
+  padding: 2px;
 }
 
 .order-header-material .observation-line {
-  grid-template-columns: 18px minmax(0, 1fr) 18px;
-  min-height: 18px;
-  padding: 1px;
+  gap: 3px;
+  grid-template-columns: 18px minmax(0, 1fr) 24px;
+  min-height: 24px;
+  padding: 0 1px;
 }
 
 .order-header-material .observation-line input {
-  font-size: 10px;
-  height: 18px;
+  font-size: 11px;
+  height: 22px;
   min-height: 0;
   padding: 0 4px;
 }
 
 .order-header-material .observation-line-remove {
-  height: 18px;
-  width: 18px;
+  height: 24px;
+  width: 24px;
 }
 
 .order-header-material .observation-line-number {
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .order-header-actions {
@@ -2047,9 +2054,10 @@ label span,
   margin-right: auto;
 }
 
-.planning-summary-title h2 {
+.planning-summary-heading {
   font-size: 15px;
-  margin: 0;
+  font-weight: 760;
+  line-height: 1.25;
 }
 
 .planning-summary-status {
@@ -2065,6 +2073,43 @@ label span,
 
 .planning-summary-warnings {
   gap: 5px;
+}
+
+/* «Ver/Ocultar reserva RPS» con un chevrón que gira al desplegar: la línea se abre. */
+.planning-summary-toggle {
+  align-items: center;
+  color: var(--text);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 4px;
+}
+
+.planning-summary-toggle svg {
+  height: 16px;
+  transition: transform 160ms ease;
+  width: 16px;
+}
+
+.planning-summary[open] .planning-summary-toggle svg {
+  transform: rotate(180deg);
+}
+
+.planning-summary-toggle-open,
+.planning-summary[open] .planning-summary-toggle-closed {
+  display: none;
+}
+
+.planning-summary[open] .planning-summary-toggle-open {
+  display: inline;
+}
+
+.planning-summary > summary:hover .planning-summary-toggle {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planning-summary-toggle svg { transition: none; }
 }
 
 .planning-summary > .rps-result-preview {
@@ -2136,22 +2181,6 @@ label span,
   border-radius: 6px;
   min-width: 0;
   overflow: hidden;
-}
-
-.structure-sheet-meta {
-  align-content: center;
-  background: #fff;
-  color: #14383d;
-  display: grid;
-  font-size: 10px;
-  gap: 1px 7px;
-  grid-template-columns: auto auto;
-  min-width: 150px;
-  padding: 5px 9px;
-}
-
-.structure-sheet-meta span {
-  color: var(--text-muted) !important;
 }
 
 .structure-sheet-body {
@@ -4603,6 +4632,25 @@ textarea,
 .app-notification:hover .notification-timer,
 .app-notification:focus-within .notification-timer { animation-play-state: paused; }
 
+/* Anfitrión nativo del diálogo de confirmación (capa superior): sin caja propia; el
+   fondo y la tarjeta los pinta .confirmation-backdrop, como antes. */
+.confirmation-host {
+  background: transparent;
+  border: 0;
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  max-height: none;
+  max-width: none;
+  overflow: visible;
+  padding: 0;
+  width: 100%;
+}
+
+.confirmation-host::backdrop {
+  background: transparent;
+}
+
 .confirmation-backdrop {
   align-items: center;
   background: rgb(7 25 29 / 0.62);
@@ -5199,16 +5247,6 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .read-note p { font-size: 12px; }
 .read-note.has-text p { background: #fff8df; border: 1px solid #f0c64a; border-radius: 6px; color: var(--text); margin: 3px 0 0; padding: 5px 8px; }
 .read-note .read-empty { color: #647578; margin: 2px 0 0; }
-
-/* Obs. estructura en lectura (revisión, §5): ni caja con borde ni fila por línea, solo
-   la etiqueta y el texto (o «Sin observaciones»). Clave propia porque no vive dentro de
-   .awning-blocks.is-reading: OrderView la usa también para las observaciones del pedido. */
-.observation-lines.is-reading { background: transparent; border: 0; }
-.observation-lines.is-reading .observation-lines-header { border-bottom: 0; min-height: 0; padding: 0; }
-.observation-lines.is-reading .observation-lines-empty { margin: 2px 0 0; }
-.observation-lines-read { display: grid; gap: 2px; padding: 2px 0 0; }
-.observation-lines-read p { color: var(--text); font-size: 12px; font-weight: 650; line-height: 1.3; margin: 0; }
-.observation-lines-empty { color: var(--text-muted); font-size: 12px; margin: 4px 10px 8px; }
 
 /* La cabecera del pedido es un fieldset para desactivarla en lectura: sin su marco. */
 fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
