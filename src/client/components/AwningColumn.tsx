@@ -13,6 +13,7 @@ import { FabricCombobox } from './FabricCombobox';
 import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
 import { READ_GROUPS, readGroupOrder } from '../readGroups';
+import type { AwningStatus } from '../awningBlocks';
 import { structureNotes as getStructureNotes } from '../../domain/structureNotes.js';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
@@ -49,10 +50,16 @@ type Props = {
   orderFabric?: string;
   parameters: RuleParameters;
   readOnly?: boolean;
+  // Estado del toldo en el pedido abierto, el mismo que enseña el índice de bloques: en
+  // lectura no hay cálculo propio de la tarjeta (ofCalculation) para deducirlo.
+  readStatus?: AwningStatus;
   onUpdate: (id: string, patch: Partial<Awning>) => void;
   onDuplicate: (id: string) => void;
   onRemove: (id: string) => void;
 };
+
+// Estilo del estado en la cabecera de la ficha de lectura: los mismos colores que al editar.
+const readStatusBadge: Record<AwningStatus['kind'], string> = { ok: 'badge-ok', missing: 'badge-warn', error: 'badge-danger', warn: 'badge-warn' };
 
 const electraCofreSupports: ElectraSupport[] = ['SOPORTE MAXISCREEM BOX'];
 const electraOpenSupports: ElectraSupport[] = ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS', 'SOPORTE MAXISCREEN'];
@@ -61,7 +68,7 @@ export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
   return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;
 }
 
-export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', readOnly = false, onUpdate, onDuplicate, onRemove }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', readOnly = false, readStatus, onUpdate, onDuplicate, onRemove }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   const standaloneValance = awning.model === 'BAMBALINA';
@@ -264,7 +271,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
         <span className="awning-column-heading">
           <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
           {/* El estado también arriba: con varias tarjetas había que bajar para verlo. */}
-          {!readOnly && <span className={`awning-header-status ${statusClass}`}>{missingFields.length ? `FALTA ${missingFields.length}` : status}</span>}
+          {readOnly
+            ? readStatus && <span className={`awning-header-status ${readStatusBadge[readStatus.kind]}`}>{readStatus.kind === 'ok' ? 'VÁLIDO' : readStatus.kind === 'missing' ? readStatus.label.toLocaleUpperCase('es-ES') : readStatus.label}</span>
+            : <span className={`awning-header-status ${statusClass}`}>{missingFields.length ? `FALTA ${missingFields.length}` : status}</span>}
         </span>
         <strong className="awning-model-title">
           {controlLabel(awning.model)}
@@ -396,17 +405,17 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {/* En su propia línea: dentro del campo alargaba la fila y bajaba Frente y Salida. */}
           {!readOnly && isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
           <TextField label="OF" missing={isMissing('of')} value={awning.of} onChange={(of) => update({ of: of.trim() })} />
-          {fields.dimensions.includes('width') && <NumberField label={widthLabel} unit="cm" missing={isMissing('width')} value={awning.width} min={0} onChange={updateWidth} />}
+          {fields.dimensions.includes('width') && <NumberField label={widthLabel} missing={isMissing('width')} value={awning.width} min={0} onChange={updateWidth} />}
           {fields.dimensions.includes('projection') && (useEstablishedProjection ? (
             <SelectField
-              label={projectionLabel} unit="cm" missing={isMissing('projection')}
+              label={projectionLabel} missing={isMissing('projection')}
               value={awning.projection === null ? '' : String(awning.projection)}
               options={(fields.establishedProjections || []).map(String)}
               placeholder="Elegir…"
               onChange={(v) => updateProjection(v === '' ? null : Number(v))}
             />
           ) : (
-            <NumberField label={projectionLabel} unit="cm" missing={isMissing('projection')} value={awning.projection} min={0} onChange={updateProjection} />
+            <NumberField label={projectionLabel} missing={isMissing('projection')} value={awning.projection} min={0} onChange={updateProjection} />
           ))}
           {!supportsValance && variantField}
           {fields.iris && (
@@ -418,14 +427,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={['SÍ', 'NO']}
                 onChange={(value) => update({ irisAssumeSquare: value === 'SÍ' })}
               />
-              <NumberField label="Frente superior" unit="cm" missing={isMissing('irisFrontTop')} value={awning.irisFrontTop} min={0} onChange={(irisFrontTop) => update({ irisFrontTop })} />
-              <NumberField label="Salida izquierda" unit="cm" missing={isMissing('irisExitLeft')} value={awning.irisExitLeft} min={0} onChange={(irisExitLeft) => update({ irisExitLeft })} />
+              <NumberField label="Frente superior" missing={isMissing('irisFrontTop')} value={awning.irisFrontTop} min={0} onChange={(irisFrontTop) => update({ irisFrontTop })} />
+              <NumberField label="Salida izquierda" missing={isMissing('irisExitLeft')} value={awning.irisExitLeft} min={0} onChange={(irisExitLeft) => update({ irisExitLeft })} />
               {!awning.irisAssumeSquare && (
                 <>
-                  <NumberField label="Frente inferior" unit="cm" value={awning.irisFrontBottom} min={0} onChange={(irisFrontBottom) => update({ irisFrontBottom })} />
-                  <NumberField label="Salida derecha" unit="cm" value={awning.irisExitRight} min={0} onChange={(irisExitRight) => update({ irisExitRight })} />
-                  <NumberField label="Diagonal 1 (a salida izq.)" unit="cm" value={awning.irisDiagonal1} min={0} onChange={(irisDiagonal1) => update({ irisDiagonal1 })} />
-                  <NumberField label="Diagonal 2 (a salida der.)" unit="cm" value={awning.irisDiagonal2} min={0} onChange={(irisDiagonal2) => update({ irisDiagonal2 })} />
+                  <NumberField label="Frente inferior" value={awning.irisFrontBottom} min={0} onChange={(irisFrontBottom) => update({ irisFrontBottom })} />
+                  <NumberField label="Salida derecha" value={awning.irisExitRight} min={0} onChange={(irisExitRight) => update({ irisExitRight })} />
+                  <NumberField label="Diagonal 1 (a salida izq.)" value={awning.irisDiagonal1} min={0} onChange={(irisDiagonal1) => update({ irisDiagonal1 })} />
+                  <NumberField label="Diagonal 2 (a salida der.)" value={awning.irisDiagonal2} min={0} onChange={(irisDiagonal2) => update({ irisDiagonal2 })} />
                 </>
               )}
               <SelectField
@@ -488,7 +497,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <SelectField label={awning.submodel === 'HERA 56 MOTOR' ? 'Color mecanismos' : 'Color cadena'} missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
           )}
           {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
-            <NumberField label="Altura instalación" unit="cm" missing={isMissing('height')} value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
+            <NumberField label="Altura instalación" missing={isMissing('height')} value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
           )}
           {isHera && (
             <div className="awning-wide-field">
@@ -659,10 +668,10 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <SegmentedField label="Arriba" value={awning.curtainTopFinish || 'VARILLA'} options={['VARILLA', 'REMACHADO']} onChange={(curtainTopFinish) => update({ curtainTopFinish: curtainTopFinish as Awning['curtainTopFinish'] })} />
               </div>}
               {(fields.curtain || fields.curtainWindow) && awning.curtainHasWindow && <div className="curtain-window-measures" role="group" aria-label="Medidas de ventana">
-                <NumberField label="Salida ventana" unit="cm" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
-                <NumberField label="Esquina" unit="cm" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
-                <NumberField label="Suelo-ventana" unit="cm" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
-                <NumberField label="Altura ventana" unit="cm" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
+                <NumberField label="Salida ventana" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
+                <NumberField label="Esquina" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
+                <NumberField label="Suelo-ventana" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
+                <NumberField label="Altura ventana" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
               </div>}
             </div>
           )}
@@ -675,7 +684,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {fields.motorLocation && <SelectField label="Posición motor" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {isFullAntica && fields.crankHeight && <SelectField label="Color manivela" value={awning.anticaCrankColor || 'AUTOMÁTICO'} options={['AUTOMÁTICO', 'BLANCA', 'NEGRA']} onChange={(v) => update({ anticaCrankColor: v as Awning['anticaCrankColor'] })} />}
-              {fields.crankHeight && <SelectField label="Altura manivela" unit="cm" missing={isMissing('crankHeight')} value={awning.crankHeight === null ? '' : String(awning.crankHeight)} options={formOptions.alturasManivela.map(String)} placeholder="Elegir…" onChange={(v) => update({ crankHeight: v === '' ? null : Number(v) })} />}
+              {fields.crankHeight && <SelectField label="Altura manivela" missing={isMissing('crankHeight')} value={awning.crankHeight === null ? '' : String(awning.crankHeight)} options={formOptions.alturasManivela.map(String)} placeholder="Elegir…" onChange={(v) => update({ crankHeight: v === '' ? null : Number(v) })} />}
             </div>
           )}
           {(fields.placement || fields.wallType) && (

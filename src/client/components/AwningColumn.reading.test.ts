@@ -10,6 +10,8 @@ import {
 import { normalizeRuleParameters } from '../../domain/ruleParameters.js';
 import { getMissingFields } from '../../domain/awningCompleteness.js';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
+import { readUnitOf } from '../readGroups';
+import type { AwningStatus } from '../awningBlocks';
 import { electraMotors } from '../../domain/electraParameters.js';
 import type { Awning, RuleParameters } from '../types';
 
@@ -335,7 +337,8 @@ function placeholderSelects(markup: string) {
 
 // Cada select, segmentado e input con etiqueta enseña al leer lo mismo que al editar: el
 // mismo texto en el valor de su par, «—» si al editar estaba vacío (o con el texto de
-// ayuda del select) y, si es un número, con su unidad si la lleva («285 cm»).
+// ayuda del select) y, en las medidas, con su unidad («285 cm»). La unidad sale de la
+// misma lista que usan los campos (readUnitOf): una « cm» de más o de menos falla.
 function expectControlsKept(model: string, awning: Awning, sameFabric: boolean) {
   const editMarkup = render(awning, false, { sameFabric });
   const edit = controls(editMarkup);
@@ -346,9 +349,10 @@ function expectControlsKept(model: string, awning: Awning, sameFabric: boolean) 
     const label = control.slice(control.indexOf(':') + 1);
     // Un select sin valor puede leerse «—» o con el mismo texto si esa ausencia es una
     // elección («Dibujo de confección · Automático»).
+    const unit = control.startsWith('segmented:') ? '' : readUnitOf(label);
     const expected = shown === '' ? ['—']
       : control.startsWith('select:') && placeholders.has(label) ? ['—', shown]
-        : /^\d+(?:\.\d+)?$/.test(shown) ? [shown, `${shown} cm`] : [shown];
+        : [unit ? `${shown} ${unit}` : shown];
     expect(expected, `${model} ${control} enseña "${shown}" al editar y "${read.get(label)}" al leer`).toContain(read.get(label));
   }
 }
@@ -468,4 +472,39 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
       for (const awning of samplesFor(model)) expectNoOthers(model, render(awning, true));
     });
   }
+});
+
+// La cabecera de la ficha lleva el estado del toldo (rediseño 3 §1), el mismo del índice
+// de bloques: en el pedido abierto la tarjeta no tiene cálculo propio para deducirlo.
+describe('ficha de lectura: estado en la cabecera', () => {
+  const [awning] = samplesFor('ARZUA PRO');
+  const header = (readStatus: AwningStatus | undefined, readOnly = true) => {
+    const markup = renderToStaticMarkup(React.createElement(AwningColumn, {
+      awning, index: 0, parameters, sameFabric: true, orderFabric: SAMPLE_FABRIC, readOnly, readStatus,
+      onUpdate: noop, onDuplicate: noop, onRemove: noop
+    }));
+    return /<span class="awning-header-status ([^"]*)">([^<]*)<\/span>/.exec(markup)?.slice(1) ?? null;
+  };
+
+  it('enseña cada tipo de estado con su estilo', () => {
+    expect(header({ kind: 'ok', label: '✓' })).toEqual(['badge-ok', 'VÁLIDO']);
+    expect(header({ kind: 'missing', label: 'falta 2' })).toEqual(['badge-warn', 'FALTA 2']);
+    expect(header({ kind: 'error', label: '1 error' })).toEqual(['badge-danger', '1 error']);
+    expect(header({ kind: 'error', label: '3 errores' })).toEqual(['badge-danger', '3 errores']);
+    expect(header({ kind: 'warn', label: '1 aviso' })).toEqual(['badge-warn', '1 aviso']);
+    expect(header({ kind: 'warn', label: '2 avisos' })).toEqual(['badge-warn', '2 avisos']);
+  });
+
+  it('sin estado no pinta insignia, y el pie de estado sigue oculto al leer', () => {
+    expect(header(undefined)).toBeNull();
+    const markup = renderToStaticMarkup(React.createElement(AwningColumn, {
+      awning, index: 0, parameters, sameFabric: true, orderFabric: SAMPLE_FABRIC, readOnly: true, readStatus: { kind: 'ok', label: '✓' },
+      onUpdate: noop, onDuplicate: noop, onRemove: noop
+    }));
+    expect(markup).not.toContain('awning-status');
+  });
+
+  it('al editar, la insignia sigue saliendo de la propia tarjeta', () => {
+    expect(header({ kind: 'error', label: '1 error' }, false)?.[1]).not.toBe('1 error');
+  });
 });

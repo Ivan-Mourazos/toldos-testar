@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { READ_GROUPS, readGroupOf, readGroupOrder } from './readGroups';
+import { READ_GROUPS, readGroupOf, readGroupOrder, readUnitOf } from './readGroups';
 
 describe('ficha de lectura: grupos (rediseño 3 §1)', () => {
   it('cuatro grupos en orden y «Otros» al final', () => {
@@ -27,5 +27,10 @@ describe('ficha de lectura: grupos (rediseño 3 §1)', () => {
     expect(readGroupOf('Restar 10 cm abajo')).toBe('estructura');
     expect(readGroupOf('Motor')).toBe('accionamiento');
     expect(readGroupOf('Descuento frente tela (cm)')).toBe('estructura');
+  });
+
+  it('solo las medidas en cm llevan unidad', () => {
+    for (const label of ['Frente', 'Salida', 'Caída', 'Altura manivela', 'Bamba (cm)', 'Margen caída tela (cm)']) expect(readUnitOf(label), label).toBe('cm');
+    for (const label of ['OF', 'Nº de soportes', 'Nº de brazos manual', 'Factor diagonal de paño', 'Nº brazos', 'Lacado']) expect(readUnitOf(label), label).toBe('');
   });
 });

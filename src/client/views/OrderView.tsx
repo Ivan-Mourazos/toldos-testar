@@ -103,6 +103,9 @@ export function OrderView({
     if ('remateColor' in patch) setRemateColor(patch.remateColor as string);
   }
 
+  // Un estado por toldo: lo enseñan el índice de bloques y, en lectura, la cabecera de la ficha.
+  const statuses = awningStatuses(awnings, { fabric, sameFabric }, diagnostics ?? calculation?.diagnostics ?? []);
+
   return (
     <>
       <section className="workbench">
@@ -136,7 +139,7 @@ export function OrderView({
         <AwningBlocks
           awnings={awnings}
           reading={readOnly}
-          statuses={awningStatuses(awnings, { fabric, sameFabric }, diagnostics ?? calculation?.diagnostics ?? [])}
+          statuses={statuses}
           renderCard={(awning, index) => (
             <AwningColumn
               key={awning.id}
@@ -149,6 +152,7 @@ export function OrderView({
               orderFabric={fabric}
               parameters={parameters}
               readOnly={readOnly}
+              readStatus={statuses[index]}
               onUpdate={updateAwning}
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}

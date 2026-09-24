@@ -4,6 +4,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { controlLabel } from './controlLabels';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
 import { ReadPair, useReadMode, withUnit } from './ReadMode';
+import { readUnitOf } from '../readGroups';
 
 type Props = {
   label: string;
@@ -14,13 +15,12 @@ type Props = {
   allowEmpty?: boolean;
   emptyLabel?: string;
   missing?: boolean;
-  // Solo para la ficha de lectura: la unidad («225 cm») y qué escribir si no hay valor y
-  // eso es una elección en sí («Automático»); si no, «—».
-  unit?: string;
+  // Solo para la ficha de lectura: qué escribir si no hay valor y eso es una elección en
+  // sí («Automático»); si no, «—».
   readEmptyAs?: string;
 };
 
-export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado', missing = false, unit, readEmptyAs = '' }: Props) {
+export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado', missing = false, readEmptyAs = '' }: Props) {
   const reading = useReadMode();
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -45,7 +45,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
     return () => document.removeEventListener('pointerdown', closeOutside);
   }, [open]);
 
-  if (reading) return <ReadPair label={label} value={value ? withUnit(controlLabel(value), unit) : readEmptyAs} />;
+  if (reading) return <ReadPair label={label} value={value ? withUnit(controlLabel(value), readUnitOf(label)) : readEmptyAs} />;
 
   const showOptions = () => {
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
