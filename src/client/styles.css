@@ -5357,3 +5357,100 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .parameter-table-discounts input { width: 92px; }
 .parameter-table td:first-child { min-width: 130px; }
 .parameter-table-lines, .parameter-table-lines.galicia-lines { min-width: 0; table-layout: auto; }
+
+/* Rediseño de Parámetros: el catálogo ocupa una columna persistente y el índice
+   de secciones queda alineado con el contenido, sin tapar la lista. */
+.workspace-content:has(> .parameter-layout) > .parameter-section-index {
+  margin-left: 202px;
+}
+.parameter-layout {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 190px minmax(0, 1fr);
+}
+.parameter-layout-main { display: grid; gap: 12px; min-width: 0; }
+.parameter-layout-main > .parameters-page,
+.parameter-layout-main > .drawing-parameters { margin: 0; min-width: 0; }
+.parameter-layout > .parameter-model-sidebar {
+  box-sizing: border-box;
+  align-self: start;
+  position: sticky;
+  top: 54px;
+  width: 190px;
+  max-height: calc(100vh - 66px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #f4f8f6;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 8px;
+  scrollbar-width: thin;
+  z-index: 10;
+}
+.workspace-content:has(> .parameters-save-bar) .parameter-layout > .parameter-model-sidebar {
+  top: 120px;
+  max-height: calc(100vh - 132px);
+}
+.parameter-model-sidebar-title {
+  color: #173d39;
+  display: block;
+  font-size: 12px;
+  letter-spacing: .07em;
+  padding: 0 7px 9px;
+  text-transform: uppercase;
+}
+.parameter-model-family + .parameter-model-family { margin-top: 11px; }
+.parameter-model-family h3 {
+  color: #526a65;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .045em;
+  margin: 0 0 4px;
+  padding: 0 7px;
+  text-transform: uppercase;
+}
+.parameter-model-family button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #1d3a3a;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 4px;
+  justify-content: space-between;
+  margin: 1px 0;
+  min-height: 31px;
+  padding: 5px 7px;
+  text-align: left;
+  width: 100%;
+}
+.parameter-model-family button:hover,
+.parameter-model-family button:focus-visible { background: #fff; border-color: #d3dfdb; outline: none; }
+.parameter-model-family button.is-active { background: #fff5d3; border-color: #dcb535; }
+.parameter-model-family button > span { display: grid; gap: 1px; min-width: 0; }
+.parameter-model-family button strong { font-size: 10px; line-height: 1.25; }
+.parameter-model-family button small { color: #627871; font-size: 8px; line-height: 1.2; }
+.parameter-model-family button > svg { color: #806207; flex: none; height: 13px; width: 13px; }
+@media (max-width: 900px) {
+  .workspace-content:has(> .parameter-layout) > .parameter-section-index { margin-left: 0; }
+  .parameter-layout { grid-template-columns: minmax(0, 1fr); }
+  .parameter-layout > .parameter-model-sidebar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    max-height: 250px;
+  }
+  .workspace-content:has(> .parameters-save-bar) .parameter-layout > .parameter-model-sidebar { top: auto; max-height: 250px; }
+}
+
+/* Tres valores por brazo caben sin desplazamiento lateral a 1280 px. */
+.monoblock-ranges-table { width: 100%; }
+.monoblock-ranges-table th,
+.monoblock-ranges-table td { padding: 3px 2px; }
+.monoblock-ranges-table th:first-child,
+.monoblock-ranges-table td:first-child { min-width: 40px; width: 40px; }
+.monoblock-ranges-table .parameter-inline-fields { gap: 3px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.monoblock-ranges-table .parameter-inline-fields input { box-sizing: border-box; font-size: 10px; min-width: 0; padding-inline: 3px; width: 100%; }

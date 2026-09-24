@@ -4,7 +4,8 @@ import { mkdir, mkdtemp } from 'node:fs/promises';
 import path from 'node:path';
 import net from 'node:net';
 import { chromium } from 'playwright';
-import { models } from '../src/domain/catalog.js';
+import { groupModelsByFamily, models } from '../src/domain/catalog.js';
+import { fullAwningModelNames, fabricOnlyModelNames } from '../src/domain/modelBehavior.js';
 const output = path.resolve('output/playwright/parameters');
 await mkdir(output, { recursive: true });
 const directory = await mkdtemp(path.join(output, 'run-'));
@@ -12,26 +13,30 @@ const probe = net.createServer();
 await new Promise(r => probe.listen(0, '127.0.0.1', r));
 const port = probe.address().port;
 await new Promise(r => probe.close(r));
-const server = spawn(process.execPath, ['src/server.js'], { windowsHide: true, stdio: 'ignore', env: {
+const isolatedUrl = process.env.TOLDOS_ISOLATED_URL;
+const server = isolatedUrl ? null : spawn(process.execPath, ['src/server.js'], { windowsHide: true, stdio: 'ignore', env: {
   ...process.env, NODE_ENV: 'production', HOST: '127.0.0.1', PORT: String(port), ENABLE_FILE_WRITES: 'false',
   WORKFLOW_SETTINGS_FILE: path.join(directory, 'settings.json'), REVIEW_DIRECTORY: path.join(directory, 'reviews')
 } });
 let browser;
 try {
-  const base = 'http://127.0.0.1:' + port;
-  for (let i = 0; i < 100; i++) { try { if ((await fetch(base + '/api/health')).ok) break; } catch { /* Esperar al arranque local. */ } await new Promise(r => setTimeout(r, 100)); }
+  const base = isolatedUrl || 'http://127.0.0.1:' + port;
+  let ready = false;
+  for (let i = 0; i < 100; i++) { try { if ((await fetch(base + '/api/health')).ok) { ready = true; break; } } catch { /* Esperar al arranque local. */ } await new Promise(r => setTimeout(r, 100)); }
+  assert.ok(ready, 'El servidor aislado no arrancó: ' + base);
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto(base);
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
-  await page.locator('.parameter-model-trigger').click();
-  const names = await page.locator('.parameter-model-options strong').allTextContents();
+  const sidebar = page.getByRole('navigation', { name: 'Modelos de parámetros' });
+  const names = await sidebar.locator('button strong').allTextContents();
   assert.equal(names.length, models.length);
-  await page.locator('.parameter-model-trigger').click();
+  const expectedOrder = groupModelsByFamily([...fullAwningModelNames, ...fabricOnlyModelNames]).flatMap(({ models: group }) => group);
+  assert.deepEqual(await sidebar.locator('button').evaluateAll((buttons) => buttons.map((button) => button.dataset.model)), expectedOrder);
+  assert.equal(await page.locator('.parameter-model-trigger').count(), 0);
   async function selectModel(name) {
-    await page.locator('.parameter-model-trigger').click();
-    await page.locator('.parameter-model-options button').filter({ has: page.getByText(name, { exact: true }) }).click();
+    await sidebar.locator('button').filter({ has: page.getByText(name, { exact: true }) }).click();
   }
   for (const name of names) {
     await selectModel(name);
@@ -70,4 +75,4 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false);
   assert.deepEqual(errors, []);
   console.log('OK: ' + names.length + ' fichas, ejemplo Antica, HERA, Iris válida/inválida y Cambio Antica. ' + directory);
-} finally { await browser?.close(); server.kill(); }
+} finally { await browser?.close(); server?.kill(); }
