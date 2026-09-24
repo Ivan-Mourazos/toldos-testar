@@ -1,0 +1,143 @@
+/* Relieve al estilo de CoordinaOT (plan docs/ui/diseno-3d-plan.md, 24/09/2026).
+   No es 3D real: cada pieza lleva un brillo arriba, un canto abajo (sombra sin
+   desenfoque, el "grosor"), una sombra de ambiente y un filete de 1 px. Al pasar el
+   ratón sube 1 px; al pulsar se hunde y la sombra pasa a inset, como una tecla. Lo
+   activo o abierto se queda hundido. Los nombres son los de CoordinaOT para que se
+   reconozcan en los dos proyectos. Se importa después de styles.css. */
+
+:root {
+  --edge: rgb(13 42 47 / 0.10);
+  --contact: rgb(13 42 47 / 0.08);
+  --canto: #b8cbc5;
+  --canto-oscuro: rgb(0 0 0 / 0.22);
+  --brillo: rgb(255 255 255 / 0.85);
+  --sombra-chip: 0 4px 10px -4px rgb(13 42 47 / 0.18);
+  --sombra-chip-alta: 0 8px 16px -6px rgb(13 42 47 / 0.24);
+  --sombra-panel: 0 14px 40px -18px rgb(13 42 47 / 0.30);
+  --sombra-hoja: 0 10px 16px -10px rgb(13 42 47 / 0.45);
+  --hundido: inset 0 1px 3px rgb(13 42 47 / 0.16), inset 0 0 0 1px var(--edge);
+  --relieve-ms: 120ms;
+}
+
+/* Pieza: filas de la bandeja y de «Qué revisar». Borde izquierdo con el color de su
+   estado (--pieza-acento). */
+.pieza-3d {
+  background: linear-gradient(180deg, #ffffff, #f7faf9);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--pieza-acento, var(--border-strong));
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 var(--brillo),
+    0 2px 0 0 var(--canto),
+    var(--sombra-chip);
+  transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease;
+}
+.pieza-3d:hover {
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 var(--brillo),
+    0 3px 0 0 var(--canto),
+    var(--sombra-chip-alta);
+  transform: translateY(-1px);
+}
+.pieza-3d:active,
+.pieza-3d.is-hundida {
+  box-shadow: var(--hundido);
+  transform: translateY(1px);
+}
+
+/* Tecla: pestañas, chips (Míos/Todos, Página entera…), modelos de Parámetros.
+   La activa ([aria-pressed="true"], [aria-current], .is-active) se queda hundida. */
+.tecla-3d {
+  background: linear-gradient(180deg, #ffffff, #eef3f1);
+  border: 1px solid var(--border-strong);
+  box-shadow:
+    inset 0 1px 0 var(--brillo),
+    0 2px 0 0 var(--canto),
+    0 3px 6px -3px rgb(13 42 47 / 0.25);
+  transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, background var(--relieve-ms) ease;
+}
+.tecla-3d:hover { transform: translateY(-1px); }
+.tecla-3d:active,
+.tecla-3d[aria-pressed="true"],
+.tecla-3d[aria-current="page"],
+.tecla-3d.is-active {
+  background: linear-gradient(180deg, #f3e2ad, var(--tgm-yellow-soft));
+  border-color: #c99a1f;
+  box-shadow: var(--hundido);
+  color: #3b2a00;
+  transform: translateY(1px);
+}
+
+/* Tecla sobre la barra oscura: oscura en reposo y amarilla, hundida, la activa. */
+.tecla-3d.sobre-oscuro {
+  background: linear-gradient(180deg, #1b4046, #102f34);
+  border-color: #2f5358;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.10), 0 2px 0 0 #041316, 0 3px 6px -3px rgb(0 0 0 / 0.5);
+  color: #dfe9e6;
+}
+.tecla-3d.sobre-oscuro:active,
+.tecla-3d.sobre-oscuro[aria-pressed="true"],
+.tecla-3d.sobre-oscuro[aria-current="page"],
+.tecla-3d.sobre-oscuro.is-active {
+  background: linear-gradient(180deg, #c8951c, var(--tgm-yellow));
+  border-color: #a57a12;
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.28);
+  color: #1d2b2e;
+}
+
+/* Botón: primario (fondo de color) y secundario (claro). Canto oscuro abajo. */
+.boton-3d {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 2px 0 var(--canto-oscuro),
+    0 4px 8px -3px rgb(13 42 47 / 0.35);
+  transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, filter var(--relieve-ms) ease;
+}
+.boton-3d:hover:not(:disabled) { filter: brightness(1.04); transform: translateY(-1px); }
+.boton-3d:active:not(:disabled) {
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.22);
+  transform: translateY(1px);
+}
+.boton-3d:disabled { box-shadow: none; }
+
+/* Panel: bandeja, pedido abierto, Parámetros. No se mueve. */
+.panel-3d {
+  border: 1px solid var(--border);
+  box-shadow:
+    0 0 0 1px var(--edge),
+    inset 0 1px 0 var(--brillo),
+    0 2px 0 0 rgb(184 203 197 / 0.6),
+    var(--sombra-panel);
+}
+
+/* Hoja: tarjetas de toldo y página del PDF. Papel sobre la mesa, sin movimiento para no
+   distraer mientras se rellena. */
+.hoja-3d {
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 1px var(--contact),
+    var(--sombra-hoja);
+}
+
+/* Lo abierto porque alguien lo pulsó (un bloque desplegado). */
+.bloque-3d-hundido {
+  background: #f1f5f3;
+  box-shadow: var(--hundido);
+}
+
+/* Un solo anillo de foco en toda la web. */
+:where(.pieza-3d, .tecla-3d, .boton-3d):focus-visible {
+  outline: 2px solid var(--tgm-yellow);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pieza-3d, .tecla-3d, .boton-3d { transition: none; }
+  .pieza-3d:hover, .pieza-3d:active, .pieza-3d.is-hundida,
+  .tecla-3d:hover, .tecla-3d:active, .tecla-3d[aria-pressed="true"], .tecla-3d[aria-current="page"], .tecla-3d.is-active,
+  .boton-3d:hover:not(:disabled), .boton-3d:active:not(:disabled) { transform: none; }
+}

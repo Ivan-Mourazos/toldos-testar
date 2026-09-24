@@ -5092,6 +5092,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .orders-scope button[aria-pressed="true"] { background: var(--tgm-black); border-color: var(--tgm-black); color: #ffffff; }
 .orders-search { align-items: center; display: flex; gap: 6px; margin-left: auto; min-width: 280px; }
 .orders-inbox-bar .review-year { flex: 0 0 90px; }
+.order-fabric-per-awning-note { align-self: end; color: var(--text-muted); font-size: 12px; font-weight: 700; padding-bottom: 6px; white-space: nowrap; }
 /* Vacío en la bandeja: una línea discreta, no un hueco de 160 px entre las dos listas. */
 .orders-inbox .review-empty { border: 1px dashed var(--border); border-radius: 8px; flex-direction: row; font-size: 12px; margin: 0; min-height: 0; padding: 10px 12px; }
 .orders-inbox .review-empty svg { height: 16px; width: 16px; }

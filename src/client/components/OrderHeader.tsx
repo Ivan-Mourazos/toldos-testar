@@ -43,14 +43,18 @@ export function OrderHeader(props: Props) {
           <section className="order-material-cluster order-fabric-cluster">
             <div className={`order-fabric-row${props.sameFabric ? '' : ' is-per-awning'}`}>
               <FabricCombobox label="Referencia" value={props.fabric} disabled={props.readOnly || !props.sameFabric} onChange={(v) => props.set({ fabric: v })} />
-              <label className="order-fabric-per-awning">
-                <input
-                  type="checkbox"
-                  checked={!props.sameFabric}
-                  onChange={(event) => props.set({ sameFabric: !event.target.checked })}
-                />
-                <span>Por toldo</span>
-              </label>
+              {/* En lectura no se puede cambiar: el interruptor sobra y solo se indica si
+                  cada toldo lleva su propia tela. */}
+              {props.readOnly
+                ? !props.sameFabric && <span className="order-fabric-per-awning-note">Tela por toldo</span>
+                : <label className="order-fabric-per-awning">
+                  <input
+                    type="checkbox"
+                    checked={!props.sameFabric}
+                    onChange={(event) => props.set({ sameFabric: !event.target.checked })}
+                  />
+                  <span>Por toldo</span>
+                </label>}
             </div>
           </section>
         </div>

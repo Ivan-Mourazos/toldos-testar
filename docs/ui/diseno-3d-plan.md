@@ -59,7 +59,7 @@ Accesibilidad: `:focus-visible` único, `prefers-reduced-motion`, y axe sin avis
 
 Cada paso se despliega por separado, con capturas antes y después a 1280×720 y 1600×1000.
 
-1. **Tokens y recetas.** Crear `src/client/styles/relieve.css`, importado después de `styles.css`, con los tokens, las cinco recetas, el anillo de foco y `prefers-reduced-motion`. No se aplica a nada todavía. Incluye una página de muestra en `tmp/` para ver las piezas juntas y ajustarlas contigo.
+1. **Tokens y recetas.** Crear `src/client/relieve.css`, importado después de `styles.css`, con los tokens, las cinco recetas, el anillo de foco y `prefers-reduced-motion`. No se aplica a nada todavía. Incluye una página de muestra en `tmp/` para ver las piezas juntas y ajustarlas contigo.
 2. **Pedidos:** filas de la bandeja, chips Míos/Todos, botones Abrir/Ver, Vista previa, Corregir y Generar, y filas de «Qué revisar».
 3. **Barra superior y botones de toda la web**, primarios y secundarios.
 4. **Nuevo pedido:** las tarjetas de toldo como hojas, los segmentados (Sí/No, 2/3 brazos) como teclas y el panel de resumen. Va junto al plan 2 (toldos por bloques), porque ese plan rehace esas tarjetas.
