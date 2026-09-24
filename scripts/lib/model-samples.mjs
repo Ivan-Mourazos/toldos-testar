@@ -53,7 +53,12 @@ function modelExtras(model, device) {
     return ['SOPORTE ELIT VERTICAL', 'SOPORTES ALMAGRO', 'UNIVERSAL 3 AGUJEROS', 'SOPORTE MAXISCREEN', 'SOPORTE MAXISCREEM BOX']
       .flatMap((electraSupport) => [noWindow, withWindow].map((window) => ({ electraSupport, ...window, ...motor })));
   }
-  if (model === 'IRIS') return [{ irisGuideType: 'ESTÁNDAR', irisGuideFixing: 'PARED', irisAssumeSquare: true, ...noWindow }];
+  // Las tres guías y las dos formas de cofre: cada una reserva perfiles distintos.
+  if (model === 'IRIS') {
+    return ['ESTÁNDAR', 'PEQUEÑA', 'COMPENSADORA'].flatMap((irisGuideType) => ['REDONDO', 'CUADRADO'].map((irisBoxShape) => ({
+      irisGuideType, irisBoxShape, irisGuideFixing: 'PARED', irisAssumeSquare: true, ...noWindow
+    })));
+  }
   if (model === 'CORTINA' || model === 'SELENA') return [noWindow];
   return [{}];
 }

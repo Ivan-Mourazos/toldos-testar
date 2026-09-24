@@ -26,6 +26,7 @@ function awning(overrides = {}) {
     submodel: 'IRIS 110 CON COFRE',
     irisGuideType: 'ESTÁNDAR',
     irisGuideFixing: 'PARED',
+    irisBoxShape: 'REDONDO',
     irisWindBlock: false,
     irisAssumeSquare: true,
     irisFrontTop: 300,
@@ -146,15 +147,18 @@ describe('IRIS · lona y cristal', () => {
     expect(calculate({ units: 2 }).calculation.fabricMl).toBe(17.4);
   });
 
-  test('reserva la lona, las piezas comunes y, con ventana, el cristal estabilizado', () => {
-    // Piezas que no dependen del cofre ni de la guía, como en las OF de IRIS110C/CO a
-    // máquina: casquillo Ø70, placa, tubo P701, pletina terminal, tapones, goma, casquillo
-    // de eje cuadrado, MB-11 y manivela.
+  test('reserva la lona, las piezas comunes, el cofre, las guías y, con ventana, el cristal estabilizado', () => {
+    // Piezas comunes de las OF de IRIS110C/CO a máquina (casquillo Ø70, placa, tubo P701,
+    // pletina terminal, tapones, goma, casquillo de eje cuadrado, MB-11 y manivela), el
+    // cofre redondo, la guía ÚNICA, la cremallera XL y la varilla y el macarrón.
     expect(calculate().materials.map(({ code, quantity }) => [code, quantity])).toEqual([
       ['IRISTESTP120', 8.7],
       ['CASNMOSZ70MM', 1], ['CASPLACASZ', 1], ['TURA70HG500C', 1], ['PLETSCR13300C', 1],
       ['TAPTERSZ13BLAN', 2], ['GOMASSCR700C', 1],
-      ['CASCES132070MM', 1], ['MAQMB11L12BLAN', 1], ['MANIVEBL16150C', 1]
+      ['CASCES132070MM', 1], ['MAQMB11L12BLAN', 1], ['MANIVEBL16150C', 1],
+      ['PECOSSU1BLAN500C', 1], ['PECORSU1BLAN700C', 1], ['TAPASSUN1BLAN', 1],
+      ['PEMMSU13BLAN600C', 1], ['PECGSU13BLAN600C', 1], ['PEGIZS1BLAN600C', 1], ['PIEGMMSUBLAN', 4],
+      ['ZIPXLBLAN', 2.9], ['VARILLAVAINARBLA', 3.1], ['MACARRNEGR8MM', 3.1]
     ]);
     expect(calculate({ curtainHasWindow: true, units: 2 }).materials).toContainEqual({
       code: 'CRISESTP140300C',
@@ -291,5 +295,108 @@ describe('IRIS · piezas comunes según el consumo real', () => {
     expect(Object.keys(materials).some((code) => /^(MAQ|MANIVE|CASCES|TURA70)/.test(code))).toBe(false);
     expect(Object.keys(materials).some((code) => code.startsWith('TURA80HG'))).toBe(true);
     expect(result.diagnostics.map((item) => item.message).join(' ')).toContain('motor y mando sin reservar');
+  });
+});
+
+// Casos reales: la configuración, el lacado y las medidas salen del texto de la línea de
+// pedido; lo "gastado" es CPRImputationMaterialMO de esa OF. La cremallera antes de
+// octubre de 2025 era la normal: ahora siempre la XL (acuerdo del 09/10/2025).
+describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24/09/2026)', () => {
+  const real = (overrides) => calculate({ curtainHasWindow: false, ...overrides });
+  const reserved = (result, from) => {
+    const lines = result.materials.map(({ code, quantity }) => [code, quantity]);
+    return lines.slice(lines.findIndex(([code]) => code === from));
+  };
+
+  test('OF 0216104 (AR2502025): 110 cofre cuadrado, antracita, motor, 247 × 217, pieza a pieza como lo gastado', () => {
+    // Gastó PECOSSU1GR16400C, PECOCSU1GR16400C, TAPASCOU1GR16, PEMMSU13GR16500C,
+    // PECGSU13GR16500C, PEGIZS1NEGR600C y 4 PIEGMMSUNEGR (y 3 m de cremallera normal).
+    const result = real({ of: '0216104', irisBoxShape: 'CUADRADO', device: 'MOTOR', structureColor: 'ANTRACITA (RAL 7016)', irisFrontTop: 247, irisExitLeft: 217 });
+    expect(reserved(result, 'PECOSSU1GR16400C')).toEqual([
+      ['PECOSSU1GR16400C', 1], ['PECOCSU1GR16400C', 1], ['TAPASCOU1GR16', 1],
+      ['PEMMSU13GR16500C', 1], ['PECGSU13GR16500C', 1], ['PEGIZS1NEGR600C', 1], ['PIEGMMSUNEGR', 4],
+      ['ZIPXLGRIS', 2.47], ['VARILLAVAINARBLA', 2.57], ['MACARRNEGR8MM', 2.57]
+    ]);
+  });
+
+  test('OF 0221340 (AR2505024): 110 cofre redondo, negro, máquina, 253 × 281,5: negro 9005 de BAT y XL gris', () => {
+    // Gastó PECORSU1NE05700C, TAPASSUN1NE05, PECGSU13NEGR600C, PEGIZS1NEGR600C, 4 pies y
+    // 3,3 m de ZIPXLGRIS; la caída de tela es 281,5 + 40 = 321,5.
+    const result = real({ of: '0221340', structureColor: 'NEGRO (R-09011)', irisFrontTop: 253, irisExitLeft: 281.5 });
+    expect(reserved(result, 'PECOSSU1NEGR700C')).toEqual([
+      ['PECOSSU1NEGR700C', 1], ['PECORSU1NE05400C', 1], ['TAPASSUN1NE05', 1],
+      ['PEMMSU13NEGR600C', 1], ['PECGSU13NEGR600C', 1], ['PEGIZS1NEGR600C', 1], ['PIEGMMSUNEGR', 4],
+      ['ZIPXLGRIS', 3.22], ['VARILLAVAINARBLA', 2.63], ['MACARRNEGR8MM', 2.63]
+    ]);
+  });
+
+  test('OF 0214360 (AR2501096): 130 cofre redondo, blanco, motor, 408 × 458: guías de más de 3 m, dos barras', () => {
+    // Gastó PECOSSU3BLAN500C, PECORSU3BLAN500C, TAPASCOR3BLAN, 2 PEMMSU13BLAN600C,
+    // 2 PECGSU13BLAN600C, 3 PEGIZS1BLAN600C, 4 PIEGMMSUBLAN y 5 m de cremallera blanca.
+    const result = real({ of: '0214360', submodel: 'IRIS 130 CON COFRE', device: 'MOTOR', irisFrontTop: 408, irisExitLeft: 458 });
+    expect(reserved(result, 'PECOSSU3BLAN500C')).toEqual([
+      ['PECOSSU3BLAN500C', 1], ['PECORSU3BLAN500C', 1], ['TAPASCOR3BLAN', 1],
+      ['PEMMSU13BLAN600C', 2], ['PECGSU13BLAN600C', 2], ['PEGIZS1BLAN600C', 2], ['PIEGMMSUBLAN', 4],
+      ['ZIPXLBLAN', 4.98], ['VARILLAVAINARBLA', 4.18], ['MACARRNEGR8MM', 4.18]
+    ]);
+  });
+
+  test('OF 0222767 (AR2505799): guía pequeña (GPZ ÚNICA M), perfil de guía solo motor y pies de enganche', () => {
+    const result = real({ of: '0222767', irisGuideType: 'PEQUEÑA', device: 'MOTOR', structureColor: 'ANTRACITA (RAL 7016)', irisFrontTop: 294.5, irisExitLeft: 144.5 });
+    const codes = Object.fromEntries(result.materials.map(({ code, quantity }) => [code, quantity]));
+    // Gastó PEMoSU13GR16600CM (código terminado en CM) y 4 PIEGURSZ13NEGR.
+    expect(codes).toMatchObject({ PEMoSU13GR16600CM: 1, PIEGURSZ13NEGR: 4, TAPASSUN1GR16: 1 });
+    expect(Object.keys(codes).some((code) => code.startsWith('PEMMSU13') || code.startsWith('PIEGMMSU'))).toBe(false);
+  });
+
+  test('OF 0205831 (AR2403290): compensadora (GPZ C), blanco, máquina, 247 × 254', () => {
+    // Gastó PEGSZ13BLAN600C, PEGCZ13BLAN600C, 2 PEGEZ13BLAN600C, PEGIZ13BLAN600C,
+    // 2 PIEBLAN y TAPASSUN1BLAN. Dos guías de 242 caben en la barra de 500.
+    const result = real({ of: '0205831', irisGuideType: 'COMPENSADORA', irisFrontTop: 247, irisExitLeft: 254 });
+    expect(reserved(result, 'PEGSZ13BLAN500C')).toEqual([
+      ['PEGSZ13BLAN500C', 1], ['PEGCZ13BLAN600C', 1], ['PEGEZ13BLAN600C', 2], ['PEGIZ13BLAN600C', 1], ['PIEBLAN', 2],
+      ['ZIPXLBLAN', 2.94], ['VARILLAVAINARBLA', 2.57], ['MACARRNEGR8MM', 2.57]
+    ]);
+    expect(Object.fromEntries(result.materials.map(({ code, quantity }) => [code, quantity]))).toMatchObject({ TAPASSUN1BLAN: 1 });
+  });
+
+  test('OF 0218395 (AR2503239): 130 sin cofre, blanco, 450 × 252: sin cofre, con pernos de guía', () => {
+    // Gastó PECGSU13BLAN600C, PEGIZS1BLAN600C, 4 PIEGMMSUBLAN, PERGUIA y 2,89 m de cremallera.
+    const result = real({ of: '0218395', submodel: 'IRIS 130 SIN COFRE', irisBoxShape: '', irisFrontTop: 450, irisExitLeft: 252 });
+    expect(reserved(result, 'PEMMSU13BLAN600C')).toEqual([
+      ['PEMMSU13BLAN600C', 1], ['PECGSU13BLAN600C', 1], ['PEGIZS1BLAN600C', 1], ['PIEGMMSUBLAN', 4], ['PERGUIA', 1],
+      ['ZIPXLBLAN', 2.92], ['VARILLAVAINARBLA', 4.6], ['MACARRNEGR8MM', 4.6]
+    ]);
+    expect(result.materials.some(({ code }) => /^(PECO|TAPAS)/.test(code))).toBe(false);
+  });
+
+  test('con cofre en el 110 y el 130 pide la forma; el 150 va siempre redondo', () => {
+    const missing = real({ irisBoxShape: '' });
+    expect(missing.calculation.valid).toBe(false);
+    expect(missing.diagnostics.some((item) => item.level === 'error' && item.message.includes('forma del cofre'))).toBe(true);
+    const iris150 = real({ submodel: 'IRIS 150 CON COFRE', device: 'MOTOR', irisBoxShape: '', irisFrontTop: 600, irisExitLeft: 300 });
+    expect(iris150.calculation.valid).toBe(true);
+    expect(iris150.calculation.irisBoxShape).toBe('REDONDO');
+    expect(iris150.materials.map(({ code }) => code)).toEqual(
+      expect.arrayContaining(['PECOSSU5BL10600C', 'PECORSU5BL10600C', 'TAPASSUN5BL10'])
+    );
+  });
+
+  test('sin el color en BAT va en bruto para lacar fuera; si tampoco hay bruto, avisa sin inventar el código', () => {
+    // 130 negro: no hay cofre 130 en 9005 (bruto, como la OF 0214385), ni tapas cuadradas
+    // en negro o bruto, ni perfil de guía solo motor en negro.
+    const result = real({ submodel: 'IRIS 130 CON COFRE', irisBoxShape: 'CUADRADO', irisGuideType: 'PEQUEÑA', device: 'MOTOR', structureColor: 'NEGRO (R-09011)' });
+    const codes = result.materials.map(({ code }) => code);
+    expect(codes).toEqual(expect.arrayContaining(['PECOSSU3BRUT500C', 'PECOCSU3BRUT500C']));
+    expect(codes.some((code) => code.startsWith('TAPASCOU3') || code.startsWith('PEMoSU13'))).toBe(false);
+    const messages = result.diagnostics.map((item) => item.message).join(' ');
+    expect(messages).toContain('en bruto para lacarlo fuera');
+    expect(messages).toContain('tapas del cofre cuadrado, perfil de guía solo motor');
+  });
+
+  test('a motor avisa de que el motor no se reserva y de que lo habitual es el Sunilus (Q-I05)', () => {
+    const messages = real({ device: 'MOTOR' }).diagnostics.map((item) => item.message).join(' ');
+    expect(messages).toContain('Lo habitual es el Sunilus, pero lo elige taller');
+    expect(messages).not.toContain('guías y cremallera sin reservar');
   });
 });

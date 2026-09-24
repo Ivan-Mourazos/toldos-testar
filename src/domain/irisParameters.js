@@ -25,6 +25,10 @@ export const irisSubmodels = [
 
 export const irisGuideTypes = ['ESTÁNDAR', 'PEQUEÑA', 'COMPENSADORA'];
 export const irisGuideFixings = ['PARED', 'TECHO'];
+// Forma del cofre: cambia el perfil inferior y las tapas (manual de BAT, piezas 11 y
+// 11/1). Taller, 24/09/2026: "sí cambia y se añade para cada modelo". El 150 solo
+// existe con cofre redondo.
+export const irisBoxShapes = ['REDONDO', 'CUADRADO'];
 export const irisDevices = ['MAQUINA', 'MOTOR'];
 // Largos de rollo que se compran de verdad. RPS no tiene alta ninguno por encima
 // de 450 y en nueve años no se ha consumido ninguno: el histórico llega justo
@@ -131,6 +135,28 @@ export function irisHasBox(submodel) {
  */
 export function irisHasCassette(submodel, guideType) {
   return irisHasBox(submodel) || normalizeIrisGuideType(guideType) === 'COMPENSADORA';
+}
+
+/**
+ * Si la tarjeta debe preguntar la forma del cofre: solo cuando hay cofre y la serie
+ * tiene las dos formas. En el 150 la respuesta es siempre REDONDO.
+ */
+export function irisAsksBoxShape(awning = {}) {
+  return irisHasCassette(awning.submodel, awning.irisGuideType) && irisSeriesOf(awning.submodel) !== '150';
+}
+
+/** Forma del cofre que vale para el cálculo: la elegida, REDONDO en el 150 y '' sin cofre. */
+export function resolveIrisBoxShape(awning = {}) {
+  if (!irisHasCassette(awning.submodel, awning.irisGuideType)) return '';
+  if (irisSeriesOf(awning.submodel) === '150') return 'REDONDO';
+  return normalizeIrisBoxShape(awning.irisBoxShape);
+}
+
+export function normalizeIrisBoxShape(value) {
+  const clean = normalizeText(value);
+  if (clean.startsWith('REDOND')) return 'REDONDO';
+  if (clean.startsWith('CUADRAD')) return 'CUADRADO';
+  return '';
 }
 
 export function normalizeIrisSubmodel(value) {

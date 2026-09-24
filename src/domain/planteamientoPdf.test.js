@@ -1255,6 +1255,7 @@ describe('planteamiento IRIS', () => {
     submodel: 'IRIS 110 CON COFRE',
     irisGuideType: 'ESTÁNDAR',
     irisGuideFixing: 'PARED',
+    irisBoxShape: 'REDONDO',
     irisWindBlock: false,
     irisAssumeSquare: true,
     irisFrontTop: 300,

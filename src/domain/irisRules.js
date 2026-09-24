@@ -1,6 +1,6 @@
 import { formatNumber } from './math.js';
 import { resolveLacado } from './lacados.js';
-import { irisCommonPieces } from './irisPieces.js';
+import { irisBoxPieces, irisCommonPieces, irisGuidePieces, irisZipAndHemPieces } from './irisPieces.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
@@ -10,6 +10,7 @@ import {
   getIrisFabricDropAllowance,
   getIrisLimits,
   irisConfigCode,
+  irisAsksBoxShape,
   irisHasCassette,
   irisSeriesOf,
   normalizeIrisDevice,
@@ -17,6 +18,7 @@ import {
   normalizeIrisGuideType,
   normalizeIrisParameters,
   normalizeIrisSubmodel,
+  resolveIrisBoxShape,
   resolveIrisGlassSize
 } from './irisParameters.js';
 
@@ -30,6 +32,7 @@ export function calculateIris({ order, awning }) {
   const series = irisSeriesOf(submodel);
   const hasCompensator = guideType === 'COMPENSADORA';
   const hasBox = irisHasCassette(submodel, guideType);
+  const boxShape = resolveIrisBoxShape({ submodel, irisGuideType: guideType, irisBoxShape: awning.irisBoxShape });
   const modified = Boolean(awning.reglasModificadas);
   const structureColor = awning.structureColor || order.structureColor;
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
@@ -97,6 +100,7 @@ export function calculateIris({ order, awning }) {
   if (!submodel) missingFields.push('submodelo');
   if (!guideType) missingFields.push('tipo de guía');
   if (!guideFixing) missingFields.push('fijación de la guía');
+  if (irisAsksBoxShape({ submodel, irisGuideType: guideType }) && !boxShape) missingFields.push('forma del cofre');
   if (!device) missingFields.push('accionamiento');
   if (!awning.placement) missingFields.push('colocación');
   if (!structureColor) missingFields.push('lacado');
@@ -187,12 +191,10 @@ export function calculateIris({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de IRIS modificadas.` });
   }
   if (device === 'MOTOR') {
-    // Se usan varios motores (Sunea y Sunilus de 10 a 35 Nm) y la tarjeta no lo pide.
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: motor y mando sin reservar; añádelos en la reserva.` });
+    // Taller, 24/09/2026 (Q-I05): "lo habitual es el Sunilus, pero depende de taller".
+    // Se han usado Sunea y Sunilus de 10 a 35 Nm y Meteor CSI; la tarjeta no lo pide.
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: motor y mando sin reservar. Lo habitual es el Sunilus, pero lo elige taller: añádelos en la reserva.` });
   }
-  // Perfiles del cofre, guías, pies y cremallera dependen del cofre (redondo o cuadrado) y
-  // del sistema de guía, que la tarjeta aún no distingue (dudas Q-I01 a Q-I03).
-  diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: perfiles del cofre, guías y cremallera sin reservar; añádelos en la reserva.` });
 
   const valid = missingFields.length === 0
     && opening.valid
@@ -209,10 +211,29 @@ export function calculateIris({ order, awning }) {
   const glassLine = valid ? glassMaterial(glassSize, awning.units) : null;
   if (glassLine) materials.push(glassLine);
   if (valid) {
+    const lacado = resolveLacado(structureColor);
+    const units = Math.max(1, Number(awning.units) || 1);
     materials.push(...irisCommonPieces({
-      series, device, lacado: resolveLacado(structureColor), units: Math.max(1, Number(awning.units) || 1),
-      rollTubeLength, loadBarLength, ballastLength, crankHeight: awning.crankHeight
+      series, device, lacado, units, rollTubeLength, loadBarLength, ballastLength, crankHeight: awning.crankHeight
     }));
+    const box = hasBox
+      ? irisBoxPieces({ series, shape: boxShape, lacado, units, boxProfileLength })
+      : { lines: [], missing: [], raw: false };
+    const guides = irisGuidePieces({
+      guideType, hasBox, lacado, units,
+      guideLength: Math.max(guideLeftLength, guideRightLength),
+      zipLength: Math.max(zipLeftLength, zipRightLength),
+      compensatorLength: Math.max(compensatorLeftLength, compensatorRightLength)
+    });
+    materials.push(...box.lines, ...guides.lines, ...irisZipAndHemPieces({ lacado, units, front: opening.frontToldo, fabricDrop }));
+    const missingPieces = [...box.missing, ...guides.missing];
+    if (missingPieces.length) {
+      diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: en ${structureColor} no hay en RPS ${missingPieces.join(', ')}, ni lacado ni en bruto. Añádelos a mano en la reserva.` });
+    }
+    if (box.raw || guides.raw) {
+      // Así lo hace el taller cuando BAT no tiene el color (OF 0213064, 0214385).
+      diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: BAT no tiene algún perfil en ${structureColor}; se reserva en bruto para lacarlo fuera.` });
+    }
   }
 
   return {
@@ -243,6 +264,7 @@ export function calculateIris({ order, awning }) {
       submodel,
       irisGuideType: guideType,
       irisGuideFixing: guideFixing,
+      irisBoxShape: boxShape,
       irisWindBlock: windBlock,
       irisConfigCode: configCode,
       irisHeightLeft: round1(opening.heightLeft),

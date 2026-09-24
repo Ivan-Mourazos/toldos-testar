@@ -8,6 +8,7 @@
 import { getFieldVisibility, getRequiredDimensions, normalizeValanceFinish } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { electraMotors } from './electraParameters.js';
+import { irisAsksBoxShape, normalizeIrisBoxShape } from './irisParameters.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -21,7 +22,7 @@ const windowDimensions = [
 // tubo de carga · frente…"). Lo que no está en la lista va al final, en su orden.
 const fillOrder = [
   'fabric', 'of', 'width', 'projection', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
-  'submodel', 'irisFrontTop', 'irisExitLeft', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
+  'submodel', 'irisFrontTop', 'irisExitLeft', 'irisBoxShape', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
   'heraChainColor', 'height', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace',
   'curtainHasWindow', 'curtainFinish', ...windowDimensions.map(([field]) => field),
   'structureColor', 'rotFabric', 'rotValance', 'device', 'motorPower', 'machineSide', 'crankHeight', 'placement'
@@ -106,6 +107,8 @@ export function getMissingFields(awning, order = null) {
   // Iris también pregunta si lleva ventana de cristal: su cálculo ya lo exigía
   // y la tarjeta no, así que el toldo quedaba sin calcular sin decir por qué.
   if ((curtain || isSelena || model === 'IRIS') && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', 'ventana');
+  // Redondo o cuadrado cambia el perfil inferior y las tapas del cofre (taller, 24/09/2026).
+  if (model === 'IRIS' && irisAsksBoxShape(awning) && !normalizeIrisBoxShape(awning.irisBoxShape)) add('irisBoxShape', 'forma del cofre');
   if (curtain && !awning.curtainFinish) add('curtainFinish', 'confección');
   if ((curtain || isSelena) && awning.curtainHasWindow === true) {
     for (const [field, label] of windowDimensions) {

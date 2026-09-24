@@ -41,7 +41,7 @@ describe('ningún modelo baja al taller un despiece con piezas negativas', () =>
     ELECTRA: { model: 'ELECTRA', device: 'MAQ. INTERIOR', submodel: 'SIN COFRE / CON GUÍA', electraSupport: 'SOPORTE ELIT VERTICAL' },
     IRIS: {
       model: 'IRIS', device: 'MAQUINA', submodel: 'IRIS 110 CON COFRE',
-      irisGuideType: 'ESTÁNDAR', irisGuideFixing: 'PARED', irisAssumeSquare: true
+      irisGuideType: 'ESTÁNDAR', irisGuideFixing: 'PARED', irisBoxShape: 'REDONDO', irisAssumeSquare: true
     }
   };
   const medidas = (model, width, drop) => model === 'IRIS'
