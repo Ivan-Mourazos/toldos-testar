@@ -64,15 +64,15 @@ try {
   // Usuario del navegador (diseño 24/09/2026): evita que salga «¿Quién eres?» al abrir Parámetros.
   await page.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
   await page.goto(base); await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
+  // Desde el 24/09/2026 los modelos se eligen en la lista fija de la izquierda.
+  const sidebar = page.getByRole('navigation', { name: 'Modelos de parámetros' });
   for (const model of ['HERA', 'Antica']) {
-    await page.locator('.parameter-model-trigger').click();
-    await page.locator('.parameter-model-options button').filter({ hasText: model }).first().click();
-    await page.locator('.parameter-model-trigger').click();
-    const options = page.locator('.parameter-model-options button'); const last = options.last();
+    await sidebar.locator('button').filter({ has: page.getByText(model, { exact: true }) }).first().click();
+    assert.ok((await page.locator('.parameters-heading h2').innerText()).includes(model), model + ' no se abre');
+    const last = sidebar.locator('button').last();
     await last.scrollIntoViewIfNeeded();
-    assert.equal(await last.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); }), true, 'El menú está recortado');
+    assert.equal(await last.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); }), true, 'La lista de modelos está recortada');
     await page.screenshot({ path: path.join(directory, model + '-selector.png') });
-    await page.locator('.parameter-model-trigger').click();
   }
   console.log('OK: 3 variantes, guardar/reabrir/aprobar/generar, bloqueo incompleto, imagen, PDF y selector HERA/Antica. ' + directory);
 } finally { await browser?.close(); server.kill(); }
