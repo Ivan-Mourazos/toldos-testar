@@ -26,23 +26,39 @@ describe('resumen de la línea plegada de Planteamientos', () => {
     expect(formatSummary({ structures: 1, fabrics: 1, rpsLines: 1, fabricMeters: 9 })).toBe('1 estructura · 1 tela · 1 línea RPS · 9 ml');
   });
 
-  it('cuenta estructuras, telas, líneas RPS y suma los metros de tela de dos OF', () => {
+  it('cuenta estructuras, telas y líneas RPS; los metros son los de la reserva, redondeados', () => {
+    // Dos OF de 3,2 ml: la reserva pide 3,5 + 3,5, así que la línea dice 7 ml, no 6,4.
     const calculation = {
       ofs: [
         {
           awningId: 'a', of: '0230194', despiece: { rows: [], anchoring: null },
-          calculation: { fabricMl: 5, valanceFabricCode: 'BAMBA1', valanceFabricMl: 2 },
-          materials: [{ code: 'X', description: 'Pieza X', quantity: 1 }]
+          calculation: { fabricCode: 'TELA1', fabricMl: 3.2 },
+          materials: [{ code: 'X', description: 'Pieza X', quantity: 1 }, { code: 'TELA1', description: 'Tela', quantity: 3.2 }]
         },
         {
           awningId: 'b', of: '0230195', despiece: null,
-          calculation: { fabricMl: 4 },
-          materials: [{ code: 'Y', description: 'Pieza Y', quantity: 1 }]
+          calculation: { fabricCode: 'TELA1', fabricMl: 3.2 },
+          materials: [{ code: 'TELA1', description: 'Tela', quantity: 3.2 }]
         }
       ],
       diagnostics: []
     } as never;
-    expect(planningSummary(calculation)).toEqual({ structures: 1, fabrics: 2, rpsLines: 2, fabricMeters: 11 });
+    expect(planningSummary(calculation)).toEqual({ structures: 1, fabrics: 2, rpsLines: 3, fabricMeters: 7 });
+    expect(planningSummary(calculation).fabricMeters).toBe(
+      groupMaterialRows((calculation as { ofs: never }).ofs).filter((row) => row.code === 'TELA1').reduce((total, row) => total + row.quantity, 0)
+    );
+  });
+
+  it('suma la bamba de tejido independiente como otra fila de tela de la reserva', () => {
+    const calculation = {
+      ofs: [{
+        awningId: 'a', of: '0230194', despiece: null,
+        calculation: { fabricCode: 'TELA1', fabricMl: 5, valanceFabricCode: 'BAMBA1', valanceFabricMl: 0.4 },
+        materials: [{ code: 'TELA1', description: 'Tela', quantity: 5 }, { code: 'BAMBA1', description: 'Bamba', quantity: 0.4 }]
+      }],
+      diagnostics: []
+    } as never;
+    expect(planningSummary(calculation).fabricMeters).toBe(5.5);
   });
 
   it('sin cálculo, todo a cero', () => {
