@@ -16,6 +16,7 @@ const colors = {
   ink: '#10282d',
   inkSoft: '#29474d',
   yellow: '#f7bd19',
+  yellowSoft: '#fff8df',
   gray: '#dce4e2',
   grayDark: '#80908d',
   line: '#9aaba8',
@@ -66,7 +67,17 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
           ...ofBlock,
           despiece: { ...ofBlock.despiece, rows: [...split.main.slice(page * DESPIECE_ROWS_PER_PAGE, (page + 1) * DESPIECE_ROWS_PER_PAGE), ...split.accessories.slice(page * 3, (page + 1) * 3)] }
         };
-        drawStructurePage(doc, { order, awning, ofBlock: pageBlock, index, continuation: pages > 1 ? ' · ' + (page + 1) + '/' + pages : '' });
+        let remaining = drawStructurePage(doc, {
+          order, awning, ofBlock: pageBlock, index,
+          continuation: pages > 1 ? ' · ' + (page + 1) + '/' + pages : '',
+          showNotes: page === pages - 1
+        });
+        while (remaining) {
+          doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
+          drawStructureHeader(doc, { order, awning, index, margin: 14, pageW: doc.page.width });
+          remaining = drawNotesBox(doc, 14, 88, doc.page.width - 28, doc.page.height - 24, remaining, true);
+          drawPageFooter(doc, 14, doc.page.width, doc.page.height, `Toldo ${awningLetter(index)} · Observaciones (continuación)`);
+        }
       }
     });
 
@@ -77,7 +88,13 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
         drawHeraFabricPage(doc, { order, entries });
       } else {
         doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-        drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
+        let remaining = drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
+        while (remaining) {
+          doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
+          drawFabricHeader(doc, { order, margin: 24, pageW: doc.page.width });
+          remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true);
+          drawPageFooter(doc, 24, doc.page.width, doc.page.height, 'Planteamiento de telas · Observaciones (continuación)');
+        }
       }
     });
 
@@ -212,7 +229,7 @@ function resolveDiagramCalculation(entry) {
 // y tres brazos llega a 27.
 const DESPIECE_ROWS_PER_PAGE = 28;
 
-function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = '' }) {
+function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = '', showNotes = true }) {
   const pageW = doc.page.width;
   const pageH = doc.page.height;
   const margin = 14;
@@ -238,15 +255,19 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
   drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
 
-  // La columna derecha acaba siempre en 335, así que una banda a todo el ancho se
-  // quedaría en 30 pt de alto. Con el ancho de la izquierda caben 101 caracteres
-  // por línea y el alto lo da lo que haya soltado la tabla de despiece.
+  // La columna derecha acaba en 335; cuando el despiece ocupa la izquierda,
+  // esa zona conserva al menos tres líneas para las observaciones.
   const notesTop = anchoringY + 24 + 6;
-  const notesBottom = pageH - 48;
+  const notesBottom = pageH - 24;
   const notas = structureNotes(awning, ofBlock?.calculation);
-  if (notesBottom - notesTop >= 32) drawStructureNotes(doc, margin, notesTop, leftW, notesBottom, notas);
-  else drawStructureNotes(doc, rightX, 336, rightW, notesBottom, notas);
+  let remaining = '';
+  if (showNotes) {
+    remaining = notesBottom - notesTop >= 54
+      ? drawNotesBox(doc, margin, notesTop, leftW, notesBottom, notas)
+      : drawNotesBox(doc, rightX, 336, rightW, notesBottom, notas);
+  }
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura${continuation}`);
+  return remaining;
 }
 
 function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
@@ -404,42 +425,35 @@ function drawAnchoring(doc, x, y, w, anchoring) {
   drawCell(doc, x + w - 34, y + 13, 34, 11, anchoring?.units || '', { size: 6, align: 'center' });
 }
 
-// La elipsis de PDFKit es muda y el taller no distingue unos puntos suspensivos de
-// un texto que acaba en puntos, así que cuando algo se queda fuera se dice con
-// todas las letras.
-function drawStructureNotes(doc, x, y, w, bottom, notes) {
-  roundedBox(doc, x, y, w, bottom - y, 2, colors.paper, colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5).text('Observaciones:', x + 4, y + 4);
+// Mide el texto con la misma fuente y anchura con las que se imprime. Devuelve
+// íntegro el resto para la página siguiente, sin elipsis ni pérdida de palabras.
+function splitNotesToFit(doc, notes, width, height) {
+  doc.font(fonts.regular).fontSize(6.5);
+  const fits = (text) => doc.heightOfString(text, { width }) <= height - 1;
+  if (fits(notes)) return [notes, ''];
+  let low = 1;
+  let high = notes.length;
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (fits(notes.slice(0, middle))) low = middle;
+    else high = middle - 1;
+  }
+  const lastSpace = Math.max(notes.lastIndexOf(' ', low), notes.lastIndexOf('\n', low));
+  const cut = lastSpace > 0 ? lastSpace : low;
+  return [notes.slice(0, cut).trimEnd(), notes.slice(cut).trimStart()];
+}
 
+function drawNotesBox(doc, x, y, w, bottom, notes, continuation = false) {
+  const text = String(notes ?? '').trim();
+  roundedBox(doc, x, y, w, bottom - y, 2, text ? colors.yellowSoft : colors.paper, text ? colors.yellow : colors.ink);
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5)
+    .text(continuation ? 'Observaciones (continuación)' : 'OBSERVACIONES', x + 4, y + 4);
   const textW = w - 8;
   const textH = bottom - y - 20;
-  const texto = value(notes);
-  doc.font(fonts.regular).fontSize(6.5);
-  const cabe = doc.heightOfString(texto, { width: textW }) <= textH;
-
-  if (cabe) {
-    doc.fillColor(colors.ink).text(texto, x + 4, y + 16, { width: textW, height: textH });
-    return;
-  }
-
-  const aviso = '(sigue en el pedido)';
-  // Se mide con fonts.bold, la misma fuente con la que se dibuja mas abajo: si se
-  // midiera con la fuente regular (mas estrecha) y el aviso llegase a ocupar dos
-  // lineas, la altura medida se quedaria corta frente a la altura real dibujada.
-  doc.font(fonts.bold);
-  const avisoH = doc.heightOfString(aviso, { width: textW });
-  doc.font(fonts.regular);
-  // El suelo tiene que ser una línea real del cuerpo de observaciones, no un
-  // número inventado: con la fuente y el tamaño (6,5 pt) ya activos,
-  // currentLineHeight() da la altura real de una línea (8,6455 pt aquí). Un
-  // suelo más bajo que eso podía recortar la única línea que cabía.
-  const minLineHeight = doc.currentLineHeight();
-  doc.fillColor(colors.ink).text(texto, x + 4, y + 16, {
-    width: textW,
-    height: Math.max(minLineHeight, textH - avisoH),
-    ellipsis: true
-  });
-  doc.fillColor(colors.red).font(fonts.bold).text(aviso, x + 4, bottom - avisoH - 4, { width: textW });
+  const [visible, remaining] = splitNotesToFit(doc, text || '-', textW, textH);
+  doc.fillColor(colors.ink).font(fonts.regular).fontSize(6.5)
+    .text(visible, x + 4, y + 16, { width: textW, height: textH });
+  return text ? remaining : '';
 }
 
 function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals }) {
@@ -448,8 +462,9 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   const margin = 24;
   const lines = entries.map(toFabricLine);
   drawFabricHeader(doc, { order, margin, pageW });
-  drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagramCalculation, fabricTotals, margin, pageW, pageH });
+  const remaining = drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagramCalculation, fabricTotals, margin, pageW, pageH });
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
+  return remaining;
 }
 
 // Todos los modelos comparten la lectura del Excel histórico: cajas rectas,
@@ -471,9 +486,9 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   } else {
     drawAwningDiagram(doc, diagramX, 149, diagramW, 332, diagram, diagramAwning, diagramCalculation);
   }
-  if (String(order.notes || '').trim()) {
-    drawStructureNotes(doc, diagramX, 488, diagramW, outerBottom - 10, order.notes);
-  }
+  const remainingNotes = String(order.notes || '').trim()
+    ? drawNotesBox(doc, diagramX, 488, diagramW, outerBottom - 10, order.notes)
+    : '';
 
   const contentX = margin + 270;
   const contentW = pageW - margin - 12 - contentX;
@@ -536,6 +551,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
     `${formatFabricMeasure(totals.reduce((sum, { amount }) => sum + (Number(amount) || 0), 0))} ML`, {
       bold: true, size: 17, align: 'right', fill: '#dedede'
     });
+  return remainingNotes;
 }
 
 function drawHeraFabricPage(doc, { order, entries }) {

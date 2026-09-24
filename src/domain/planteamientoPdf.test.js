@@ -1091,41 +1091,69 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(telas).toContain('LLEVAR ANCLAJE QUIMICO DE REPUESTO');
   });
 
-  test('avisa cuando el texto no cabe en lugar de cortarlo en silencio', async () => {
-    const largo = Array.from({ length: 40 }, (_, i) => `OBSERVACION NUMERO ${i + 1} CON TEXTO SUFICIENTE PARA NO CABER`).join('\n');
-    const [estructura] = await textoDeLaHoja(pedidoArzua(largo));
-    expect(estructura).toContain('(sigue en el pedido)');
+  async function notesBox(order, calculation) {
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const operators = await (await document.getPage(1)).getOperatorList();
+    const colorIndex = operators.fnArray.findIndex((operation, index) =>
+      operation === OPS.setFillRGBColor && operators.argsArray[index][0] === '#fff8df');
+    if (colorIndex < 0) return null;
+    expect(operators.fnArray[colorIndex + 1]).toBe(OPS.setStrokeRGBColor);
+    expect(operators.argsArray[colorIndex + 1][0]).toBe('#f7bd19');
+    expect(operators.fnArray[colorIndex + 2]).toBe(OPS.constructPath);
+    return operators.argsArray[colorIndex + 2][2];
+  }
+
+  test('el recuadro crece con cinco piezas y conserva tres líneas con veinte', async () => {
+    async function boundsFor(count) {
+      const order = pedidoArzua('Comprobar fijación y color del perfil.');
+      const calculation = calculateOrder(order);
+      calculation.ofs[0].despiece.rows = Array.from({ length: count }, (_, index) => ({
+        num: index + 1, name: `PIEZA ${index + 1}`, reference: `TEST${index + 1}`, units: 1, length: 200
+      }));
+      return notesBox(order, calculation);
+    }
+    const five = await boundsFor(5);
+    const twenty = await boundsFor(20);
+    expect(five[3] - five[1]).toBeGreaterThan(140);
+    expect(twenty[3] - twenty[1]).toBeGreaterThan(54);
+    expect(five[3] - five[1]).toBeGreaterThan(twenty[3] - twenty[1]);
   });
 
-  test('sin hueco bajo el anclaje, las observaciones vuelven a la caja estrecha de la derecha y avisan del corte', async () => {
-    // ÁGATA BOX COFRE/MOTOR 250x150 es el mismo pedido de veinte filas de despiece
-    // que usa buildAgataBoxTwentyRowOrder mas arriba: llena la tabla y deja el
-    // hueco de las observaciones en 0 pt, forzando la rama del else en
-    // drawStructurePage (la caja de 164x35,53 en rightX/336, no la banda ancha).
-    const order = buildAgataBoxTwentyRowOrder();
-    order.notes = CUATRO_OBSERVACIONES;
-    order.awnings[0].structureNotes = CUATRO_OBSERVACIONES;
-    const calculation = calculateOrder(order);
-    expect(calculation.ofs[0].despiece.rows).toHaveLength(24);
+  test('las observaciones largas continúan completas en estructura y tela con pedido y OF', async () => {
+    const largo = Array.from({ length: 70 }, (_, index) =>
+      `NOTA ${String(index + 1).padStart(2, '0')} COMPROBAR EL MONTAJE Y LA MEDIDA EN OBRA`).join('\n');
+    const paginas = await textoDeLaHoja(pedidoArzua(largo));
+    const fabricStart = paginas.findIndex((text) => text.includes('PLANTEAMIENTO DE TELAS'));
+    expect(fabricStart).toBeGreaterThan(1);
+    expect(paginas.length - fabricStart).toBeGreaterThan(1);
+    for (const group of [paginas.slice(0, fabricStart), paginas.slice(fabricStart)]) {
+      const numbers = group.flatMap((text) => [...text.matchAll(/NOTA (\d{2})/g)].map((match) => Number(match[1])));
+      expect(numbers).toEqual(Array.from({ length: 70 }, (_, index) => index + 1));
+      for (const page of group.slice(1)) {
+        expect(page).toContain('Observaciones (continuación)');
+        expect(page).toContain('AR2699002');
+        expect(page).toContain('0299002');
+      }
+    }
+    expect(paginas.join(' ')).not.toContain('(sigue en el pedido)');
+  });
 
-    const [estructura, items] = await (async () => {
-      const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+  test('el fondo amarillo destaca observaciones escritas y no aparece con notas vacías', async () => {
+    const filled = pedidoArzua('Confirmar el color del perfil.');
+    expect(await notesBox(filled, calculateOrder(filled))).not.toBeNull();
+    const empty = pedidoArzua('');
+    expect(await notesBox(empty, calculateOrder(empty))).toBeNull();
+
+    async function fabricHasHighlight(order) {
+      const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
       const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
-      const page = await document.getPage(1);
-      const content = await page.getTextContent();
-      return [content.items.map((item) => item.str).join(' '), content.items];
-    })();
-
-    // La caja pequeña sólo tiene ~35,53 pt de alto: ni la primera observación
-    // completa cabe entera, así que el aviso de corte tiene que aparecer.
-    expect(estructura).toContain('(sigue en el pedido)');
-
-    // Y el rótulo "Observaciones:" tiene que estar en la columna derecha
-    // (rightX = 417.28 + 4 de relleno interior = 421.28 medido), no en la banda
-    // ancha de la izquierda (margin = 14).
-    const label = items.find((item) => item.str === 'Observaciones:');
-    expect(label).toBeDefined();
-    expect(label.transform[4]).toBeGreaterThan(300);
+      const operators = await (await document.getPage(document.numPages)).getOperatorList();
+      return operators.fnArray.some((operation, index) =>
+        operation === OPS.setFillRGBColor && operators.argsArray[index][0] === '#fff8df');
+    }
+    expect(await fabricHasHighlight(filled)).toBe(true);
+    expect(await fabricHasHighlight(empty)).toBe(false);
   });
 
   async function paginaUno(order, calculation) {
