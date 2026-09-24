@@ -5198,3 +5198,32 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .monoblock-ranges-table td:first-child { min-width: 40px; width: 40px; }
 .monoblock-ranges-table .parameter-inline-fields { gap: 3px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .monoblock-ranges-table .parameter-inline-fields input { box-sizing: border-box; font-size: 10px; min-width: 0; padding-inline: 3px; width: 100%; }
+
+/* Toldos por bloques (rediseño 24/09/2026 §6): fila paginada con índice. */
+.awning-blocks { display: grid; gap: 8px; min-width: 0; }
+.awning-index { display: flex; flex-wrap: wrap; gap: 6px; }
+.awning-index-item { align-items: center; background: #ffffff; border: 1px solid var(--border-strong); border-radius: 7px; cursor: pointer; display: inline-flex; font: inherit; font-size: 12px; gap: 6px; padding: 3px 9px; }
+.awning-index-item strong { font-size: 12px; }
+.awning-index-item.is-ok span { color: var(--ok); }
+.awning-index-item.is-warn span { color: var(--warn); }
+.awning-index-item.is-error span, .awning-index-item.is-missing span { color: var(--danger); font-weight: 700; }
+.awning-index-item.is-visible { background: var(--tgm-yellow-soft); border-color: var(--tgm-yellow); }
+.awning-blocks .awning-blocks-track {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-auto-columns: calc((100% - (var(--per-page) - 1) * 12px) / var(--per-page));
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  overflow-x: hidden;
+  padding: 2px 2px 6px;
+  position: relative;
+  scroll-snap-type: x mandatory;
+}
+.awning-blocks-slot { min-width: 0; scroll-snap-align: start; }
+.awning-blocks-nav { align-items: center; display: flex; gap: 8px; justify-content: center; }
+.awning-blocks-label { font-size: 12px; font-weight: 700; min-width: 90px; text-align: center; }
+.awning-blocks-dots { display: inline-flex; gap: 5px; margin-left: 8px; }
+.awning-blocks-dots button { background: var(--border-strong); border: 0; border-radius: 999px; cursor: pointer; height: 8px; padding: 0; width: 8px; }
+.awning-blocks-dots button.is-active { background: var(--tgm-yellow); width: 18px; }
+@media (prefers-reduced-motion: reduce) { .awning-blocks .awning-blocks-track { scroll-behavior: auto; } }

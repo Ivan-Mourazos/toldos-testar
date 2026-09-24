@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import type { Awning, Calculation, CalculationState, OrderAutofill, RuleParameters } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
+import { AwningBlocks } from '../components/AwningBlocks';
+import { awningStatus } from '../awningBlocks';
+import { getMissingFields } from '../../domain/awningCompleteness.js';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { ObservationLines } from '../components/ObservationLines';
@@ -127,8 +130,14 @@ export function OrderView({
           </div>
         </div>
 
-        <div className="awning-grid">
-          {awnings.map((awning, index) => (
+        <AwningBlocks
+          awnings={awnings}
+          reading={readOnly}
+          statuses={awnings.map((awning) => awningStatus(
+            getMissingFields(awning, { fabric, sameFabric }),
+            (calculation?.diagnostics || []).filter((item) => item.awningId === awning.id && !item.missingFields)
+          ))}
+          renderCard={(awning, index) => (
             <AwningColumn
               key={awning.id}
               awning={awning}
@@ -144,8 +153,8 @@ export function OrderView({
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}
             />
-          ))}
-        </div>
+          )}
+        />
 
         <div className="order-observations">
           <ObservationLines readOnly={readOnly} label="Observaciones de tela del pedido" value={notes} onChange={setNotes} />
