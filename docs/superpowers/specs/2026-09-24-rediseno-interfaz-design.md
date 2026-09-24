@@ -145,3 +145,22 @@ Pruebas: casos reales de esos pedidos en `orderAutofill.test.js`, y volver a pas
 7. **Autorrelleno desde RPS:** tela propuesta, rotulación, ventana, accionamiento, sin toldos falsos y resumen final.
 
 Cada paso se despliega por separado. Los pasos 1 y 2 van juntos, porque sin el pedido abierto la bandeja no sirve. Los pasos 5 y 6 los hace Codex en paralelo ([encargo](../../tareas/codex-rediseno-pasos-5-6.md)).
+
+## Pendiente: diseño de la tarjeta de lectura (Iván, 24/09/2026)
+
+Hechos los pasos 1 a 3 y 5 a 6, la tarjeta de lectura del pedido abierto enseña todos los datos, pero «así está feo». Es la misma tarjeta de edición sin cajas, y en una Cuarzo Box se ve esto:
+
+- **Tamaños mezclados.** Los valores de desplegable («Blanco», «Máquina») salen grandes y los de botones de elección («No») pequeños.
+- **Filas descuadradas.** «Rotulación tela» queda más baja que «Lacado» en la misma fila, porque los dos tipos de control miden distinto.
+- **Vacíos mudos.** «Bamba (cm)» sin valor deja un hueco; no se sabe si falta o es cero.
+- **Orden de formulario.** Los datos salen en el orden de edición, sin agrupar y con mucho aire entre filas.
+- **Observaciones sin forma.** «Obs. estructura» y la franja gris de «Observaciones de tela del pedido» parecen restos del formulario.
+
+Qué se quiere, a concretar con bocetos al empezar:
+
+- **Una ficha de lectura** con etiqueta y valor en columnas alineadas, la misma letra para todos los valores y los vacíos como «—».
+- **Grupos cortos con título**, por ejemplo Medidas (OF, frente, salida, bamba), Estructura (lacado, brazos, tubo), Accionamiento (dispositivo, lado, altura de manivela, sensor), Colocación y Tela (rotulación, bamba). Los grupos salen de la misma lista de campos visibles, para no perder ningún dato.
+- **Las observaciones** como una nota destacada, con el mismo criterio que el recuadro del PDF (§8), o una línea discreta si no hay.
+- **Se mantiene la prueba de paridad** de `AwningColumn.reading.test.ts`: la ficha nueva tiene que enseñar lo mismo que la tarjeta de edición.
+
+Va con el paso 4, que también rehace las tarjetas de Nuevo pedido. Este plan (el 3) incluye además el relieve de Nuevo pedido y la sombra de papel de la página del PDF en el visor.
