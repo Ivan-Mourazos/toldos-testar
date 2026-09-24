@@ -194,15 +194,15 @@
    de ellos, las zonas en gris muy claro. Los grises son los de la casa, con un punto
    verde; los textos apagados se oscurecen para seguir leyéndose sobre el fondo. */
 :root {
-  --bg: #d3dbd8;
+  --bg: #b9c5c1;
   --surface: #ffffff;
-  --surface-muted: #eef2f1;
-  --zone: #f3f6f5;
-  --border: #d3ddda;
-  --border-strong: #b3c2bd;
-  --text-muted: #45595e;
-  --accent-text: #6f4f00;
-  --canto: #b3c2bd;
+  --surface-muted: #e1e8e5;
+  --zone: #e8eeec;
+  --border: #c3cfcb;
+  --border-strong: #99aca6;
+  --text-muted: #3a4d52;
+  --accent-text: #5c4100;
+  --canto: #99aca6;
 }
 body, .app-shell { background: var(--bg); }
 .observation-lines { background: var(--zone); border-color: var(--border); }
@@ -212,3 +212,6 @@ body, .app-shell { background: var(--bg); }
 .review-reader.panel, .orders-inbox.panel { background: var(--surface-muted); }
 .review-reader .review-checklist, .review-reader .order-header, .review-reader .awning-column,
 .orders-inbox .orders-row:not(.is-mine) { background: var(--surface); }
+/* Parámetros: la ficha del modelo en gris claro; sus tarjetas y campos, en blanco. */
+.parameters-page { background: var(--surface-muted); }
+.parameters-page .parameter-band + .parameter-band { border-top-color: var(--border-strong); }
