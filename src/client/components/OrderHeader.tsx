@@ -1,9 +1,7 @@
 import React from 'react';
 import { DatabaseZap, Layers3, LoaderCircle, Plus, Scissors } from 'lucide-react';
 import type { OrderAutofill } from '../types';
-import { formOptions } from '../../domain/modelBehavior.js';
 import { TextField } from './TextField';
-import { SelectField } from './SelectField';
 import { FabricCombobox } from './FabricCombobox';
 
 type Props = {
@@ -29,8 +27,6 @@ export function OrderHeader(props: Props) {
           <label className="field"><span>Fecha</span>
             <input type="date" value={props.orderDate} onChange={(e) => props.set({ orderDate: e.target.value })} />
           </label>
-          <SelectField label="Técnico" value={props.technician} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ technician: v })} />
-          <SelectField label="Revisión" value={props.reviewer} options={formOptions.tecnicos} placeholder="Sin asignar" onChange={(v) => props.set({ reviewer: v })} />
         </div>
         {!props.readOnly && <div className="order-autofill-action">
           <button type="button" className="order-autofill-button" disabled={props.autofillLoading || !props.orderCode.trim()} onClick={props.onAutofill}>

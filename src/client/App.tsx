@@ -30,6 +30,8 @@ import { ReviewsView } from './views/ReviewsView';
 import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
 import { todayIso } from './constants';
+import { readCurrentUser } from './currentUser';
+import { stampAuthorship } from './authorship';
 
 export default function App() {
   const draft = useDraft();
@@ -52,6 +54,9 @@ export default function App() {
   // vaciado no se comparan con las OF del pedido anterior. null = no se conocen y
   // no se avisa de nada.
   const [orderOfs, setOrderOfs] = useState<{ orderCode: string; ofs: string[] } | null>(null);
+  // Quién usa este navegador (diseño 24/09/2026, apartado 2): pone el autor/revisor
+  // del pedido al guardar sin preguntarlo. setCurrentUser lo usa la Task 4 (barra superior).
+  const [currentUser] = useState(() => readCurrentUser());
   const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
 
   const { calculation, calculationState } = useCalculation({
@@ -218,18 +223,22 @@ export default function App() {
     });
     if (choice !== 'confirm') return;
     draft.reuseOrder(review.order);
+    // Es un pedido nuevo: el autor lo pone quien lo guarde, no el del histórico reutilizado.
+    draft.setTechnician('');
+    draft.setReviewer('');
     setAutofill(null);
     setActiveTab('order');
     notify(`Datos de ${review.orderCode} cargados en el formulario.`, { tone: 'success', title: 'Datos reutilizados' });
   }
 
   function currentOrderPayload() {
+    const authorship = stampAuthorship({ technician: draft.technician, reviewer: draft.reviewer }, currentUser);
     return {
       orderCode: draft.orderCode,
       customer: draft.customer,
       orderDate: draft.orderDate,
-      technician: draft.technician,
-      reviewer: draft.reviewer,
+      technician: authorship.technician,
+      reviewer: authorship.reviewer,
       fabric: draft.fabric,
       sameFabric: draft.sameFabric,
       remate: draft.remate,
