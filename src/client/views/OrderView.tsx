@@ -179,6 +179,8 @@ export function OrderView({
 
       {!readOnly && panelIndex !== -1 && (
         <AwningPanel
+          // Cada apertura monta un <dialog> nuevo (showModal solo corre al montar).
+          key={panelAwningId}
           awning={awnings[panelIndex]}
           index={panelIndex}
           calculation={calculation}

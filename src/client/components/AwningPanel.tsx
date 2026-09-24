@@ -49,6 +49,8 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const pressedOnBackdrop = useRef(false);
+  // Abierto para React: lo cierra la limpieza del montaje, no un cierre nativo.
+  const open = useRef(false);
   const tabs: Array<{ id: PanelTab; label: string; icon: React.ReactNode }> = [
     ...(hasStructure ? [{ id: 'despiece' as const, label: 'Despiece', icon: <Layers3 aria-hidden="true" /> }] : []),
     { id: 'dibujo', label: 'Dibujo', icon: <Scissors aria-hidden="true" /> },
@@ -61,10 +63,12 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const previousOverflow = document.body.style.overflow;
     dialog.showModal();
+    open.current = true;
     document.body.style.overflow = 'hidden';
     closeRef.current?.focus();
     return () => {
-      dialog.close();
+      open.current = false;
+      if (dialog.open) dialog.close();
       document.body.style.overflow = previousOverflow;
       opener?.focus({ preventScroll: true });
     };
@@ -90,6 +94,16 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
 
   async function requestClose() {
     if (await confirmDiscard()) onClose();
+  }
+
+  // Esc hace lo mismo que la X: con el despiece en edición, pregunta. Se atiende en keydown
+  // y se evita el comportamiento nativo: Chrome, tras varios «cancel» evitados seguidos,
+  // cierra el <dialog> por su cuenta sin avisar a React. Un Esc que ya ha usado otro
+  // control (un desplegable abierto) no llega aquí.
+  function handleEscape(event: React.KeyboardEvent) {
+    if (event.key !== 'Escape' || event.defaultPrevented) return;
+    event.preventDefault();
+    void requestClose();
   }
 
   async function chooseTab(next: PanelTab) {
@@ -119,13 +133,17 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
   // El <dialog> no tiene relleno: un clic sobre él mismo solo puede ser en el fondo. Se
   // cierra al soltar (click), no al pulsar: si no, el clic acabaría en la página de detrás
   // y le quitaría el foco al botón que lo abrió. Un arrastre desde dentro no lo cierra.
-  // Con el despiece en edición, Esc no cierra (la edición sigue) y la X o el fondo preguntan.
+  // Con el despiece en edición, Esc, la X y el fondo preguntan antes de cerrar. Si el
+  // <dialog> se cerrase aun así por su cuenta, el panel se da por cerrado (onClose) para
+  // que el estado y la página no se queden a medias.
   return (
     <dialog
       ref={dialogRef}
       className="awning-panel"
       aria-label={`Despiece y dibujo ${fabricOnly ? 'de la tela' : 'del toldo'} ${letter}`}
-      onCancel={(event) => { event.preventDefault(); if (!editingDespiece) onClose(); }}
+      onKeyDown={handleEscape}
+      onCancel={(event) => { event.preventDefault(); void requestClose(); }}
+      onClose={() => { if (open.current) onClose(); }}
       onMouseDown={(event) => { pressedOnBackdrop.current = event.target === event.currentTarget; }}
       onClick={(event) => { if (pressedOnBackdrop.current && event.target === event.currentTarget) void requestClose(); }}
     >
