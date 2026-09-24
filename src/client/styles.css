@@ -4216,12 +4216,16 @@ textarea,
 .workflow-directory-list strong { color: #21464b; font-size: 10px; }
 .workflow-directory-list small { color: var(--text-muted); font-size: 9px; overflow-wrap: anywhere; }
 
+/* Bandeja de Pedidos (24/09/2026): antes lista + detalle uno al lado del otro; ahora
+   la bandeja o el pedido abierto ocupan todo el ancho, uno debajo de otro. */
 .reviews-layout {
   align-items: start;
   display: grid;
   gap: 12px;
-  grid-template-columns: minmax(330px, 0.6fr) minmax(680px, 2.2fr);
+  grid-template-columns: minmax(0, 1fr);
 }
+
+.reviews-back-button { justify-self: start; }
 
 .review-inbox,
 .review-reader,
@@ -4730,14 +4734,7 @@ textarea,
 .pdf-carousel-pages button { flex: 0 0 auto; min-width: 28px; }
 
 @media (max-width: 1200px) {
-  .reviews-layout { grid-template-columns: minmax(0, 1fr); }
-  .review-inbox { max-height: none; position: static; }
-  .review-list { max-height: 360px; }
   .parameter-model-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-@media (max-width: 1550px) and (min-width: 1201px) {
-  .reviews-layout { grid-template-columns: minmax(330px, 0.6fr) minmax(620px, 2fr); }
 }
 
 @media (max-width: 900px) {
@@ -5236,9 +5233,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .parameters-history p { margin: 0; padding: 0 var(--sp-4) var(--sp-3); font-size: 13px; color: var(--text-muted); }
 
 /* Revisión · lote E (23/09/2026): formulario y PDF a la vez, pasos visibles, "Qué revisar"
-   y devolver al técnico. A 1280 la lista de pedidos se pliega para dejar sitio. */
-.reviews-layout.is-list-collapsed { grid-template-columns: minmax(0, 1fr); }
-.reviews-layout.is-list-collapsed .review-inbox { display: none; }
+   y devolver al técnico. */
 .review-reader { container-type: inline-size; }
 .review-reader-header { flex-wrap: wrap; row-gap: 10px; }
 .review-reader-header > div.review-reader-title { align-items: center; display: flex; gap: 10px; }
@@ -5382,3 +5377,17 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .app-topnav .app-tabs { margin-top: 0; }
 .app-topnav .app-tabs button { min-height: 34px; padding: 0 12px; width: auto; }
 .parameters-save-bar { top: var(--topnav-height); }
+
+/* Bandeja de Pedidos (rediseño 24/09/2026). */
+.orders-inbox { display: grid; gap: 10px; padding: 16px; }
+.orders-inbox-bar { align-items: center; display: flex; gap: 12px; }
+.orders-inbox-bar h2 { font-size: 15px; margin: 0; }
+.orders-scope { display: inline-flex; gap: 4px; }
+.orders-scope button { background: #ffffff; border: 1px solid var(--border-strong); border-radius: 999px; cursor: pointer; font: inherit; font-size: 12px; padding: 3px 12px; }
+.orders-scope button[aria-pressed="true"] { background: var(--tgm-black); border-color: var(--tgm-black); color: #ffffff; }
+.orders-search { align-items: center; display: flex; gap: 6px; margin-left: auto; min-width: 280px; }
+.orders-list { border: 1px solid var(--border); border-radius: 8px; list-style: none; margin: 0; overflow: hidden; padding: 0; }
+.orders-row { align-items: center; border-top: 1px solid #eef3f1; display: grid; gap: 12px; grid-template-columns: 120px minmax(0, 1fr) 220px 90px; padding: 8px 12px; }
+.orders-row:first-child { border-top: 0; }
+.orders-row small { color: var(--text-muted); }
+.orders-row.is-mine { background: #fffaf0; box-shadow: inset 3px 0 0 var(--tgm-yellow); }

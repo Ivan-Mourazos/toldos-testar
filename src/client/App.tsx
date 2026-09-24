@@ -60,7 +60,7 @@ export default function App() {
   const [choosingUser, setChoosingUser] = useState(false);
   // Cuántos pedidos hay pendientes de revisar, para el contador de la pestaña "Pedidos".
   // Lo calcula OrdersInbox y lo sube con onPendingCount (Task 5).
-  const [pendingCount] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
   function chooseUser(name: string) { saveCurrentUser(name); setCurrentUser(name); setChoosingUser(false); }
   const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
 
@@ -543,6 +543,8 @@ export default function App() {
             <ReviewsView
               refreshKey={reviewRefresh}
               parameters={ruleSettings.parameters}
+              currentUser={currentUser}
+              onPendingCount={setPendingCount}
               onOpen={editReview}
               onReuse={reuseReview}
               onToast={notify}

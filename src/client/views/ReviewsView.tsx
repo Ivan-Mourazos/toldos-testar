@@ -1,21 +1,21 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronRight, FileSearch, RefreshCw, Search } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { ReviewPackage, ReviewSummary, RuleParameters } from '../types';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
-import { ReviewOrderDetail, ReviewStatusBadge } from '../components/ReviewOrderDetail';
+import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { ReviewDecisionDialog, type ReviewDecision } from '../components/ReviewDecisionDialog';
+import { OrdersInbox } from '../components/OrdersInbox';
 
-export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, onConfirm }: {
+export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCount, onOpen, onReuse, onToast, onConfirm }: {
   refreshKey: number;
   parameters: RuleParameters;
+  currentUser: string;
+  onPendingCount: (count: number) => void;
   onOpen: (review: ReviewPackage) => void | Promise<void>;
   onReuse: (review: ReviewPackage) => void | Promise<void>;
   onToast: Notify;
   onConfirm: AskForConfirmation;
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
-  const [query, setQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'queue' | 'approved' | 'produced'>('queue');
   const [reviews, setReviews] = useState<ReviewSummary[]>([]);
   const [selectedCode, setSelectedCode] = useState('');
   const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
@@ -23,30 +23,8 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
   const [working, setWorking] = useState(false);
   const [approving, setApproving] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [detailRefresh, setDetailRefresh] = useState(0);
   const [decision, setDecision] = useState<ReviewDecision | null>(null);
-  // A 1280 la lista y los dos paneles (formulario y PDF) no caben a la vez: se pliega.
-  const [listCollapsed, setListCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1500);
   const listRequestId = useRef(0);
-
-  async function load() {
-    const requestId = ++listRequestId.current;
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/reviews?year=${year}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'No se pudo cargar la bandeja.');
-      if (requestId !== listRequestId.current) return;
-      setReviews(data.reviews);
-      setSelectedCode((current) => data.reviews.some((item: ReviewSummary) => item.orderCode === current) ? current : data.reviews[0]?.orderCode || '');
-      setDetailRefresh((current) => current + 1);
-    } catch (error) {
-      if (requestId !== listRequestId.current) return;
-      onToast(error instanceof Error ? error.message : 'No se pudo cargar la bandeja.', { tone: 'error' });
-    } finally {
-      if (requestId === listRequestId.current) setLoading(false);
-    }
-  }
 
   useEffect(() => {
     const requestId = ++listRequestId.current;
@@ -60,7 +38,9 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
       .then((items) => {
         if (cancelled || requestId !== listRequestId.current) return;
         setReviews(items);
-        setSelectedCode((current) => items.some((item) => item.orderCode === current) ? current : items[0]?.orderCode || '');
+        // Ya no se elige un pedido automáticamente al cargar: el abierto sigue si sigue
+        // existiendo, y si no, se vuelve a la bandeja (Bandeja de Pedidos, 24/09/2026).
+        setSelectedCode((current) => items.some((item) => item.orderCode === current) ? current : '');
         setLoading(false);
       })
       .catch((error) => {
@@ -71,50 +51,31 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
     return () => { cancelled = true; };
   }, [year, refreshKey, onToast]);
 
-  const reviewCounts = useMemo(() => ({
-    queue: reviews.filter(isPending).length,
-    approved: reviews.filter(isApproved).length,
-    produced: reviews.filter(isProduced).length
-  }), [reviews]);
-  const scopedReviews = useMemo(() => reviews.filter((review) => {
-    if (viewMode === 'queue') return isPending(review);
-    if (viewMode === 'approved') return isApproved(review);
-    return isProduced(review);
-  }), [reviews, viewMode]);
+  // Para el contador «Pedidos · N» de la barra superior (Task 4/5).
+  useEffect(() => {
+    onPendingCount(reviews.filter((review) => ['PENDING_REVIEW', 'CHANGES_REQUESTED', 'APPROVED'].includes(review.status)).length);
+  }, [reviews, onPendingCount]);
 
-  const filtered = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    if (!term) return scopedReviews;
-    return scopedReviews.filter((review) =>
-      review.orderCode.toLowerCase().includes(term)
-      || review.summary.customer.toLowerCase().includes(term)
-      || review.summary.models.some((model) => model.toLowerCase().includes(term))
-    );
-  }, [scopedReviews, query]);
-
-  const effectiveSelectedCode = filtered.some((item) => item.orderCode === selectedCode)
-    ? selectedCode
-    : filtered[0]?.orderCode || '';
-  const selected = reviews.find((review) => review.orderCode === effectiveSelectedCode) || null;
-  const detailIsCurrent = detail?.orderCode === effectiveSelectedCode;
+  const selected = reviews.find((review) => review.orderCode === selectedCode) || null;
+  const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;
-  const detailLoading = Boolean(effectiveSelectedCode && !detailIsCurrent);
+  const detailLoading = Boolean(selectedCode && !detailIsCurrent);
 
   useEffect(() => {
-    if (!effectiveSelectedCode) return;
+    if (!selectedCode) return;
     let cancelled = false;
-    fetchReviewDetails(effectiveSelectedCode)
+    fetchReviewDetails(selectedCode)
       .then((review) => {
         if (cancelled) return;
-        setDetail({ orderCode: effectiveSelectedCode, review });
+        setDetail({ orderCode: selectedCode, review });
       })
       .catch((error) => {
         if (cancelled) return;
-        setDetail({ orderCode: effectiveSelectedCode, review: null });
+        setDetail({ orderCode: selectedCode, review: null });
         onToast(error instanceof Error ? error.message : 'No se pudieron cargar los datos del pedido.', { tone: 'error' });
       });
     return () => { cancelled = true; };
-  }, [effectiveSelectedCode, refreshKey, detailRefresh, onToast]);
+  }, [selectedCode, refreshKey, onToast]);
 
   async function openSelected() {
     if (!selected) return;
@@ -187,7 +148,6 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudo aprobar el pedido.');
       updateLocalReview(data.review as ReviewPackage);
-      setViewMode('approved');
       onToast(`Pedido ${selected.orderCode} aprobado. Aún no se ha generado ningún archivo.`, { tone: 'success', title: 'Revisión aprobada' });
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo aprobar el pedido.', { tone: 'error' });
@@ -257,7 +217,6 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
 
         if (!response.ok) throw new Error(data.error || 'No se pudieron generar los archivos.');
         updateLocalReview(data.review as ReviewPackage);
-        setViewMode('produced');
         const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
         onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} ${rpsCount === 1 ? 'Excel de reserva' : 'Excel de reserva'}.`, {
           tone: 'success',
@@ -280,55 +239,40 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
   }
 
   return (
-    <section className={`reviews-layout${listCollapsed ? ' is-list-collapsed' : ''}`}>
-      <div className="review-inbox panel">
-        <div className="section-header review-toolbar">
-          <div><h2>{viewMode === 'queue' ? 'Por revisar' : viewMode === 'approved' ? 'Aprobados' : 'Archivos generados'}</h2><span>{scopedReviews.length} {scopedReviews.length === 1 ? 'pedido' : 'pedidos'} en {year}</span></div>
-          <button className="icon-button" type="button" disabled={generating} onClick={() => void load()} aria-label="Actualizar"><RefreshCw aria-hidden="true" /></button>
-        </div>
-        <div className="review-view-switch" role="group" aria-label="Vista de revisión">
-          <button type="button" disabled={generating} aria-pressed={viewMode === 'queue'} className={viewMode === 'queue' ? 'is-active' : ''} onClick={() => setViewMode('queue')}>Por revisar <span>{reviewCounts.queue}</span></button>
-          <button type="button" disabled={generating} aria-pressed={viewMode === 'approved'} className={viewMode === 'approved' ? 'is-active' : ''} onClick={() => setViewMode('approved')}>Aprobados <span>{reviewCounts.approved}</span></button>
-          <button type="button" disabled={generating} aria-pressed={viewMode === 'produced'} className={viewMode === 'produced' ? 'is-active' : ''} onClick={() => setViewMode('produced')}>Generados <span>{reviewCounts.produced}</span></button>
-        </div>
-        <div className="review-filters">
-          <label><Search aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente o modelo…" aria-label="Buscar pedidos" /></label>
-          <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => { setLoading(true); setYear(Number(event.target.value)); }} aria-label="Año" />
-        </div>
-        <div className="review-list">
-          {loading ? <div className="review-empty">Cargando pedidos…</div>
-            : filtered.length === 0 ? <div className="review-empty"><FileSearch aria-hidden="true" />No hay pedidos para esta búsqueda.</div>
-              : filtered.map((review) => (
-                <button className={`review-list-item ${effectiveSelectedCode === review.orderCode ? 'is-selected' : ''}`} disabled={generating} type="button" key={review.orderCode} onClick={() => setSelectedCode(review.orderCode)}>
-                  <span className="review-list-main"><strong>{review.orderCode}</strong><small>{review.summary.customer || 'Sin cliente'}</small></span>
-                  <ReviewStatusBadge status={review.status} />
-                  <span className="review-list-meta">{formatAwningCount(review.summary.awnings)} · {formatDate(review.updatedAt)}</span>
-                  {review.status === 'CHANGES_REQUESTED' && review.reviewNote && <span className="review-list-note">{review.reviewNote}</span>}
-                  <ChevronRight aria-hidden="true" />
-                </button>
-              ))}
-        </div>
-      </div>
-
-      <ReviewOrderDetail
-        review={selectedReview}
-        parameters={parameters}
-        loading={detailLoading}
-        canEdit={Boolean(selected && isPending(selected))}
-        canReuse={Boolean(selected && isReviewed(selected))}
-        canApprove={Boolean(selected && isPending(selected))}
-        canGenerate={Boolean(selected && selected.status === 'APPROVED')}
-        disabled={working || approving || generating}
-        approving={approving}
-        generating={generating}
-        onEdit={() => void openSelected()}
-        onReuse={() => void reuseSelected()}
-        listCollapsed={listCollapsed}
-        onToggleList={() => setListCollapsed((value) => !value)}
-        onApprove={() => askDecision('approve')}
-        onReturn={() => askDecision('return')}
-        onGenerate={() => void generateSelected()}
-      />
+    <section className="reviews-layout">
+      {selectedCode === ''
+        ? <OrdersInbox
+            reviews={reviews}
+            currentUser={currentUser}
+            loading={loading}
+            year={year}
+            onYear={(value) => { setLoading(true); setYear(value); }}
+            onOpen={setSelectedCode}
+          />
+        : (
+          <>
+            <button type="button" className="ghost-button reviews-back-button" onClick={() => setSelectedCode('')}>← Pedidos</button>
+            <ReviewOrderDetail
+              review={selectedReview}
+              parameters={parameters}
+              loading={detailLoading}
+              canEdit={Boolean(selected && isPending(selected))}
+              canReuse={Boolean(selected && isReviewed(selected))}
+              canApprove={Boolean(selected && isPending(selected))}
+              canGenerate={Boolean(selected && selected.status === 'APPROVED')}
+              disabled={working || approving || generating}
+              approving={approving}
+              generating={generating}
+              onEdit={() => void openSelected()}
+              onReuse={() => void reuseSelected()}
+              listCollapsed={true}
+              onToggleList={() => setSelectedCode('')}
+              onApprove={() => askDecision('approve')}
+              onReturn={() => askDecision('return')}
+              onGenerate={() => void generateSelected()}
+            />
+          </>
+        )}
       {decision && <ReviewDecisionDialog decision={decision} onCancel={() => setDecision(null)} onSubmit={(value) => void submitDecision(value)} />}
     </section>
   );
@@ -340,29 +284,12 @@ function reviewSummary(review: ReviewPackage): ReviewSummary {
   return summary;
 }
 
-function formatDate(iso: string) {
-  const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('es-ES');
-}
-
-function formatAwningCount(count: number) {
-  return `${count} ${count === 1 ? 'toldo' : 'toldos'}`;
-}
-
 function isPending(review: Pick<ReviewSummary, 'status'>) {
   return review.status === 'PENDING_REVIEW' || review.status === 'CHANGES_REQUESTED';
 }
 
 function isReviewed(review: Pick<ReviewSummary, 'status'>) {
   return review.status === 'APPROVED' || review.status === 'PRODUCED';
-}
-
-function isApproved(review: Pick<ReviewSummary, 'status'>) {
-  return review.status === 'APPROVED';
-}
-
-function isProduced(review: Pick<ReviewSummary, 'status'>) {
-  return review.status === 'PRODUCED';
 }
 
 async function fetchReviewDetails(orderCode: string) {
