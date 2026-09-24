@@ -28,7 +28,7 @@ const AUTOFILL: OrderAutofill = {
   fabricProposals: [PROPOSAL]
 };
 
-function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as (proposal: FabricProposal, selection: string) => void) {
+function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as (proposal: FabricProposal, selection: string) => void, readOnly = false) {
   return renderToStaticMarkup(React.createElement(OrderHeader, {
     orderCode: 'AR2604716', customer: 'CLIENTE', orderDate: '',
     fabric: '', sameFabric: true,
@@ -39,7 +39,7 @@ function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as 
     autofill,
     awnings: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
     onApplyFabricProposal,
-    readOnly: false
+    readOnly
   }));
 }
 
@@ -91,5 +91,33 @@ describe('OrderHeader · resumen al terminar (rediseño 4, tarea 4)', () => {
   it('sin resumen, no muestra la lista de frases', () => {
     const markup = render({ ...AUTOFILL, summary: [] });
     expect(markup).not.toContain('order-autofill-summary-lines');
+  });
+});
+
+describe('OrderHeader · propuestas de tela, accesibilidad y lectura (revisión final del plan 4)', () => {
+  it('cada bloque de opciones es un grupo con la frase como nombre, y los botones dicen si están pulsados', () => {
+    const markup = render(AUTOFILL);
+    expect(markup).toContain('role="group" aria-label="tejido acrilico, tintado masa, color negro"');
+    expect((markup.match(/aria-pressed="false"/g) || [])).toHaveLength(PROPOSAL.options.length);
+  });
+
+  it('en modo lectura los botones de propuesta salen desactivados', () => {
+    const markup = render(AUTOFILL, noop, true);
+    const buttons = markup.match(/<button[^>]*class="order-fabric-proposal-option"[^>]*>/g) || [];
+    expect(buttons).toHaveLength(PROPOSAL.options.length);
+    expect(buttons.every((button) => button.includes('disabled'))).toBe(true);
+  });
+
+  it('fuera del modo lectura los botones de propuesta están activos', () => {
+    const markup = render(AUTOFILL);
+    const buttons = markup.match(/<button[^>]*class="order-fabric-proposal-option"[^>]*>/g) || [];
+    expect(buttons.some((button) => button.includes('disabled'))).toBe(false);
+  });
+
+  it('un grupo sin opciones enseña «sin coincidencias en el catálogo»', () => {
+    const markup = render({ ...AUTOFILL, fabricProposals: [{ ...PROPOSAL, options: [] }] });
+    expect(markup).toContain('Tela propuesta para A, B');
+    expect(markup).toContain('sin coincidencias en el catálogo');
+    expect(markup).not.toContain('order-fabric-proposal-option');
   });
 });

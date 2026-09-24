@@ -118,7 +118,7 @@ export function OrderView({
 
   // El técnico elige una tela propuesta del catálogo; nunca se pone sola (rediseño 4 §10).
   function applyProposal(proposal: FabricProposal, selection: string) {
-    applyFabricProposal({ awnings, sameFabric, setFabric, setSameFabric, updateAwning }, proposal, selection);
+    applyFabricProposal({ awnings, fabric, sameFabric, setFabric, setSameFabric, updateAwning }, proposal, selection);
   }
 
   // Un estado por toldo: lo enseñan el índice de bloques y, en lectura, la cabecera de la ficha.

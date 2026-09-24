@@ -35,11 +35,15 @@ function proposalLetters(proposal: FabricProposal, awnings: Pick<Awning, 'id'>[]
 export function OrderHeader(props: Props) {
   // Qué opción se ha elegido en cada bloque de propuestas, para marcar su botón sin
   // quitar las demás: el técnico puede cambiar de opinión (rediseño 4 §10).
-  const [chosenByProposal, setChosenByProposal] = React.useState<Record<number, string>>({});
+  // Las marcas van ligadas al autorrelleno que las produjo: con otro autorrelleno
+  // (otra consulta a RPS) empiezan vacías.
+  const [chosen, setChosen] = React.useState<{ autofill: OrderAutofill | null; byProposal: Record<number, string> }>({ autofill: null, byProposal: {} });
+  const chosenByProposal = chosen.autofill === props.autofill ? chosen.byProposal : {};
 
   function chooseFabricProposal(index: number, proposal: FabricProposal, selection: string) {
+    if (props.readOnly) return;
     props.onApplyFabricProposal(proposal, selection);
-    setChosenByProposal((previous) => ({ ...previous, [index]: selection }));
+    setChosen({ autofill: props.autofill, byProposal: { ...chosenByProposal, [index]: selection } });
   }
 
   return (
@@ -123,18 +127,22 @@ export function OrderHeader(props: Props) {
               {props.autofill.fabricProposals.map((proposal, index) => (
                 <div className="order-fabric-proposal" key={`${proposal.phrase}-${index}`}>
                   <span>Tela propuesta para {proposalLetters(proposal, props.awnings) || '—'}: «{proposal.phrase}»</span>
-                  <div className="order-fabric-proposal-options">
-                    {proposal.options.slice(0, 5).map((option) => (
-                      <button
-                        type="button"
-                        key={option.selection}
-                        className={`order-fabric-proposal-option${chosenByProposal[index] === option.selection ? ' is-chosen' : ''}`}
-                        onClick={() => chooseFabricProposal(index, proposal, option.selection)}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
+                  {proposal.options.length === 0
+                    ? <em className="order-fabric-proposal-empty">sin coincidencias en el catálogo</em>
+                    : <div className="order-fabric-proposal-options" role="group" aria-label={proposal.phrase}>
+                      {proposal.options.slice(0, 5).map((option) => (
+                        <button
+                          type="button"
+                          key={option.selection}
+                          className={`order-fabric-proposal-option${chosenByProposal[index] === option.selection ? ' is-chosen' : ''}`}
+                          aria-pressed={chosenByProposal[index] === option.selection}
+                          disabled={props.readOnly}
+                          onClick={() => chooseFabricProposal(index, proposal, option.selection)}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>}
                 </div>
               ))}
             </div>

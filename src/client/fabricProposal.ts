@@ -4,9 +4,11 @@ import type { Awning, FabricProposal } from './types';
 // de un bloque de propuestas y esto la pone en el pedido, nunca sola. Si el grupo
 // cubre todos los toldos y el pedido usa tela común, se cambia la tela del pedido;
 // si no, se pone en cada toldo del grupo y se desactiva «misma tela», igual que
-// OrderView.setOrderField al desmarcar «Por toldo».
+// OrderView.setOrderField al desmarcar «Por toldo»: antes, la tela común pasa a los
+// toldos de fuera del grupo que no tienen tela, para que ninguno se quede sin ella.
 export type FabricProposalDraft = {
-  awnings: Pick<Awning, 'id'>[];
+  awnings: Pick<Awning, 'id' | 'fabric'>[];
+  fabric: string;
   sameFabric: boolean;
   setFabric: (value: string) => void;
   setSameFabric: (value: boolean) => void;
@@ -22,6 +24,13 @@ export function applyFabricProposal(draft: FabricProposalDraft, proposal: Fabric
     return;
   }
 
-  if (draft.sameFabric) draft.setSameFabric(false);
+  if (draft.sameFabric) {
+    if (draft.fabric) {
+      draft.awnings
+        .filter((awning) => !proposal.awningIds.includes(awning.id) && !awning.fabric)
+        .forEach((awning) => draft.updateAwning(awning.id, { fabric: draft.fabric }));
+    }
+    draft.setSameFabric(false);
+  }
   proposal.awningIds.forEach((id) => draft.updateAwning(id, { fabric: selection }));
 }
