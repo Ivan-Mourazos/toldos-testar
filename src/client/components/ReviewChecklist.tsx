@@ -59,7 +59,7 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
         {visibleRows.map(({ awning, index, letter, missing, own, errors, pending, warnings, state }) => {
           return (
             <li key={awning.id || index}>
-              <button type="button" className={`review-checklist-row is-${state}`} onClick={() => onFocusAwning(letter)}>
+              <button type="button" className={`review-checklist-row pieza-3d is-${state}`} onClick={() => onFocusAwning(letter)}>
                 <span className="review-checklist-letter">{letter}</span>
                 <span className="review-checklist-model">
                   <strong>{controlLabel(awning.model)}</strong>

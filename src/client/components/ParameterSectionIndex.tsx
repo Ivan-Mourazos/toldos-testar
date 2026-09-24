@@ -45,7 +45,7 @@ export function ParameterSectionIndex() {
     <nav className="parameter-section-index" aria-label="Secciones de los parámetros" style={{ top }}>
       <span>Ir a</span>
       {sections.map((section) => (
-        <button key={section.id} type="button" onClick={() => document.getElementById(section.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+        <button key={section.id} className="tecla-3d" type="button" onClick={() => document.getElementById(section.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
           {section.number && <strong>{section.number}</strong>}{section.title}
         </button>
       ))}

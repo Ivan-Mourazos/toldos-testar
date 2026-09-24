@@ -32,7 +32,7 @@ export function ParametersSaveBar({ dirty, saving, technicians, onDiscard, onSav
 
   return (
     <>
-      <div className="parameters-save-bar" role="status">
+      <div className="parameters-save-bar panel-3d" role="status">
         <div>
           <strong>Cambios sin guardar</strong>
           <span>Solo los ves tú. Los pedidos se siguen calculando con los parámetros guardados.</span>
@@ -44,7 +44,7 @@ export function ParametersSaveBar({ dirty, saving, technicians, onDiscard, onSav
       </div>
       {open && (
         <div className="parameters-save-backdrop">
-          <div className="parameters-save-dialog" role="dialog" aria-modal="true" aria-labelledby="parameters-save-title">
+          <div className="parameters-save-dialog panel-3d" role="dialog" aria-modal="true" aria-labelledby="parameters-save-title">
             <h2 id="parameters-save-title">Guardar para todos los puestos</h2>
             <p>Los pedidos nuevos se calcularán con estos valores. Queda registrado quién y por qué, y se puede volver atrás desde el historial.</p>
             <SelectField label="Quién hace el cambio" value={updatedBy} options={technicians} placeholder="Elegir técnico…" onChange={setUpdatedBy} />

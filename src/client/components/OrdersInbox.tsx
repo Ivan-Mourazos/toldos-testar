@@ -20,20 +20,20 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   const [query, setQuery] = useState('');
   const sections = inboxSections({ pending, history }, { me: currentUser, scope, query });
   const row = (review: ReviewSummary, action: string) => (
-    <li key={review.orderCode} className={`orders-row${review.summary.technician === currentUser ? ' is-mine' : ''}`}>
+    <li key={review.orderCode} className={`orders-row pieza-3d${review.summary.technician === currentUser ? ' is-mine' : ''}`}>
       <strong>{review.orderCode}</strong>
       <span>{review.summary.customer || 'Sin cliente'} · {(review.summary.models || []).map(controlLabel).join(' + ')}</span>
       <small>Autor: {review.summary.technician ? controlLabel(review.summary.technician) : '—'} · {new Date(review.updatedAt).toLocaleDateString('es-ES')}</small>
-      <button type="button" className={action === 'Abrir' ? 'primary-button' : 'ghost-button'} onClick={() => onOpen(review.orderCode)}>{action}</button>
+      <button type="button" className={action === 'Abrir' ? 'primary-button boton-3d' : 'ghost-button boton-3d'} onClick={() => onOpen(review.orderCode)}>{action}</button>
     </li>
   );
   return (
-    <section className="orders-inbox panel" aria-label="Pedidos">
+    <section className="orders-inbox panel panel-3d" aria-label="Pedidos">
       <header className="orders-inbox-bar">
         <h2>Pendientes de generar</h2>
         <div className="orders-scope" role="group" aria-label="Qué pedidos">
-          <button type="button" aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
-          <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todos {sections.pendingAll}</button>
+          <button type="button" className="tecla-3d" aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
+          <button type="button" className="tecla-3d" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todos {sections.pendingAll}</button>
         </div>
         <label className="orders-search"><Search aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente, OF o modelo…" aria-label="Buscar pedidos" /></label>
       </header>

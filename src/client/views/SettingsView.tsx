@@ -91,7 +91,7 @@ export function SettingsView({
   }
 
   return (
-    <section className="settings-panel panel">
+    <section className="settings-panel panel panel-3d">
       <div className="workflow-heading">
         <div className="workflow-heading-icon"><FolderCog aria-hidden="true" /></div>
         <div>
