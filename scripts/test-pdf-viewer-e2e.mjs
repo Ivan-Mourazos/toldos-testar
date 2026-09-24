@@ -32,12 +32,8 @@ async function buildThreePageOrder(page) {
 }
 
 for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 1000 }]) {
+  // openApp ya deja elegido el usuario del navegador (IVÁN) antes de cargar la página.
   const { browser, page, errors } = await openApp(viewport);
-  // Usuario del navegador (diseño 24/09/2026): openApp ya navegó, así que el guion de
-  // inicio se añade después y se recarga para que surta efecto y no salga «¿Quién eres?».
-  await page.context().addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
-  await page.reload();
-  await page.getByRole('button', { name: 'Nuevo pedido', exact: true }).waitFor();
   page.setDefaultTimeout(7000);
   try {
     await buildThreePageOrder(page);

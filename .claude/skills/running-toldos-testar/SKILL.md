@@ -42,7 +42,9 @@ await fillArzuaAR2603332(page);   // reference case, see below
 | `SelectField` | `role=combobox` named by its label; options use the display label (`Blanco`, `Motor`, `M.F. derecha`), so match case-insensitively. Use `pick()` |
 | `SegmentedField` | `getByRole('group', { name: 'Nº de brazos' }).getByRole('button', { name: '2' })` |
 | Fabric search | `getByRole('combobox', { name: 'Referencia' })` in the order header; `Tela` or `Tela bamba` inside a card |
-| Tabs | Buttons `Pedido`, `Parámetros`, `Revisión`, `Configuración` |
+| Tabs | Buttons `Nuevo pedido`, `Pedidos` (shows `Pedidos · N` when there are orders pending generation, so match `/^Pedidos/`), `Parámetros`, `Configuración` |
+
+`openApp` presets the browser user (`localStorage['toldos-testar-usuario'] = 'IVÁN'`) before the first navigation so «¿Quién eres?» does not block the page; pass `openApp(viewport, { user: null })` to see and screenshot that dialog. Scripts that open their own browser must do the same with `context.addInitScript`.
 
 **Look at every screenshot.** The PDF preview is rasterised by the app itself, so it
 does render headless; only opening a raw `.pdf` in the browser does not.

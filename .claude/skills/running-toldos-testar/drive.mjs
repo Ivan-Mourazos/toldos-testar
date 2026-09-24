@@ -3,7 +3,12 @@ import { chromium } from 'playwright';
 
 export const BASE_URL = process.env.TOLDOS_ISOLATED_URL || 'http://127.0.0.1:4310';
 
-export async function openApp(viewport = { width: 1600, height: 1000 }) {
+// Quién usa el navegador (localStorage «toldos-testar-usuario», en mayúsculas). Se pone
+// antes de la primera navegación para que no salga «¿Quién eres?»; con { user: null }
+// no se pone y el diálogo aparece (para capturarlo).
+export const DEFAULT_USER = 'IVÁN';
+
+export async function openApp(viewport = { width: 1600, height: 1000 }, { user = DEFAULT_USER } = {}) {
   const health = await fetch(`${BASE_URL}/api/health`).then((r) => r.json());
   if (!health.simulationMode || health.fileWritesEnabled) {
     throw new Error(`La instancia de 4310 no está aislada: ${JSON.stringify(health)}`);
@@ -11,12 +16,14 @@ export async function openApp(viewport = { width: 1600, height: 1000 }) {
   const browser = await chromium.launch({ headless: true });
   // Con contexto propio: @axe-core/playwright no admite páginas creadas con browser.newPage().
   const context = await browser.newContext({ viewport });
+  if (user) await context.addInitScript((name) => localStorage.setItem('toldos-testar-usuario', name), user);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(BASE_URL);
-  await page.getByRole('button', { name: 'Nuevo pedido', exact: true }).waitFor();
+  if (user) await page.getByRole('button', { name: 'Nuevo pedido', exact: true }).waitFor();
+  else await page.getByRole('dialog').first().waitFor();
   return { browser, page, errors };
 }
 

@@ -14,14 +14,19 @@ const port = probe.address().port;
 await new Promise(r => probe.close(r));
 const server = spawn(process.execPath, ['src/server.js'], { windowsHide: true, stdio: 'ignore', env: {
   ...process.env, NODE_ENV: 'production', HOST: '127.0.0.1', PORT: String(port), ENABLE_FILE_WRITES: 'false',
-  WORKFLOW_SETTINGS_FILE: path.join(directory, 'settings.json'), REVIEW_DIRECTORY: path.join(directory, 'reviews')
+  WORKFLOW_SETTINGS_FILE: path.join(directory, 'settings.json'), REVIEW_DIRECTORY: path.join(directory, 'reviews'),
+  PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'plans'), RPS_UPLOAD_DIRECTORY: path.join(directory, 'rps'), RPS_PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'archive'),
+  EXPORT_DIRECTORY: path.join(directory, 'export'), ORDER_ARCHIVE_ROOT: path.join(directory, 'order-archive')
 } });
 let browser;
 try {
   const base = 'http://127.0.0.1:' + port;
   for (let i = 0; i < 100; i++) { try { if ((await fetch(base + '/api/health')).ok) break; } catch { /* Esperar al arranque local. */ } await new Promise(r => setTimeout(r, 100)); }
   browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  // Usuario ya elegido para que «¿Quién eres?» no tape la página (diseño 24/09/2026).
+  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
+  await context.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
+  const page = await context.newPage();
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto(base);
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();

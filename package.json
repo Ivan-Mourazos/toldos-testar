@@ -36,6 +36,7 @@
     "validate:iris": "node scripts/validate-iris-production.mjs",
     "validate:reserva": "node scripts/validate-reservation-gap.mjs",
     "test:e2e:bambalina": "pnpm build && node scripts/test-bambalina-workflow.mjs",
+    "test:e2e:antica": "pnpm build && node scripts/test-antica-workflow.mjs",
     "validate:fabric-jobs": "node scripts/validate-fabric-jobs-production.mjs",
     "validate:cortina": "node scripts/validate-cortina-production.mjs",
     "validate:cambio-cortina": "node scripts/validate-cambio-cortina-production.mjs",
