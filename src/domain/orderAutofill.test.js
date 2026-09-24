@@ -365,4 +365,51 @@ describe('autocompletado de pedidos RPS', () => {
     expect(result.order.awnings).toHaveLength(1);
     expect(result.order.awnings[0]).toMatchObject({ model: 'CAMBIO CORTINA', width: 138.5, projection: 255 });
   });
+
+  test('AR2604667 (CORTINAUNI, accionamiento manual sin interior/exterior) deja el dispositivo pendiente', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.04667' },
+      lines: [{
+        lineId: 'ar2604667',
+        articleCode: 'CORTINAUNI',
+        description: '',
+        comment: 'POR CONFECCION E INSTALACION DE TOLDOS CORTINA ENROLLABLES, DE DIFERENTES MEDIDAS, CON ACCIONAMIENTO MANUAL. CON ESTRUCTURA DE ALUMINIO LACADO EN COLOR MARRON 8014, TORNILLERIA Y ANCLAJES EN ACERO INOXIDABLE, FABRICADOS EN LONAPOLIESTER RECUBIERTA DE PVC 580 GR/M² COLOR MARRON. INCLUYEN VENTANA EN PVC TRANSPARENTE.',
+        manufacturingOrder: '0240667',
+        quantity: 8
+      }]
+    });
+
+    expect(result.order.awnings).toHaveLength(8);
+    expect(result.order.awnings.every((awning) => awning.model === 'CORTINA')).toBe(true);
+    expect(result.order.awnings.every((awning) => awning.device === '')).toBe(true);
+    expect(result.order.awnings.every((awning) => awning.curtainHasWindow === true)).toBe(true);
+    expect(result.order.awnings.every((awning) => awning.structureColor === 'MARRON (R-08014)')).toBe(true);
+    expect(result.pending.some((item) => item.includes('dispositivo: RPS dice accionamiento manual; elige máquina interior o exterior'))).toBe(true);
+  });
+
+  test('accionamiento manual en un modelo de caja (PERLA BOX) resuelve MAQUINA', () => {
+    expect(extractOrderTextData('CON ACCIONAMIENTO MANUAL', 'PERLA BOX').device).toBe('MAQUINA');
+  });
+
+  test('accionamiento manual en SELENA resuelve MAQ. INTERIOR', () => {
+    expect(extractOrderTextData('CON ACCIONAMIENTO MANUAL', 'SELENA').device).toBe('MAQ. INTERIOR');
+  });
+
+  test('máquina interior/exterior explícita gana sobre el accionamiento manual genérico', () => {
+    expect(extractOrderTextData('CON ACCIONAMIENTO MANUAL. MAQUINA INTERIOR', 'CORTINA').device).toBe('MAQ. INTERIOR');
+    expect(extractOrderTextData('CON ACCIONAMIENTO MANUAL. MAQUINA EXTERIOR', 'CORTINA').device).toBe('MAQ. EXTERIOR');
+  });
+
+  test('AR2604716 (cambio de tela cortina 138,5x255) reconoce ventana incluida y rotulación', () => {
+    const data = extractOrderTextData(
+      'CONFECCION E INSTALACION DE CAMBIO DE TELA PARA TOLDO CORTINA DE MEDIDAS 138,5 CM X 255 CM, FABRICADO EN TEJIDO ACRILICO, TINTADO MASA,COLOR NEGRO, CON VENTANA EN PVC TRANSPARENTE. INCLUYE ROTULACION MARCA MAHOU + LOCAL COMERCIAL.',
+      'CAMBIO CORTINA'
+    );
+    expect(data.curtainHasWindow).toBe(true);
+    expect(data.rotFabric).toBe('SI');
+  });
+
+  test('«SIN ROTULACION» marca la rotulación de tela como NO', () => {
+    expect(extractOrderTextData('TOLDO SIN ROTULACION', 'ARZUA PRO').rotFabric).toBe('NO');
+  });
 });

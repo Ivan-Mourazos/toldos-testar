@@ -3,9 +3,15 @@ import { getFieldVisibility, getModelBehavior } from './modelBehavior.js';
 import { normalizeElectraMotor } from './electraParameters.js';
 
 const fabricOnlyModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE']);
-const boxDeviceModels = new Set(['AMBAR BOX', 'AGATA BOX', 'MAXISCREEM', 'MONOBLOCK 350', 'PUNTO RECTO', 'ANTICA', 'CUARZO BOX', 'PERLA BOX', 'CORAL BOX']);
 const electraArticleCodes = new Set(['ELECTR', 'ELECTRCCCG', 'ELECTRCCSG', 'ELECTRSCCG', 'ELECTRSCSG', 'ELITV']);
 const blockedElectraArticleCodes = new Set(['ELECTRA', 'ELECTRAZIP', 'ELECTRS/COS/GU']);
+
+// Patrones de accionamiento, compartidos entre inferDevice e
+// isManualDeviceUnresolved para no duplicar la detección.
+const motorDevicePattern = /\bMOTOR(?:IZADO|IZADA)?\b|ACCIONAMIENTO\s+(?:POR\s+)?MOTOR/;
+const exteriorDevicePattern = /MAQ(?:UINA)?\.?\s+EXTERIOR|MAQUINA\s+FUERA/;
+const interiorDevicePattern = /MAQ(?:UINA)?\.?\s+INTERIOR|MAQUINA\s+DENTRO/;
+const manualDevicePattern = /ACCIONAMIENTO\s+MANUAL|ACCIONAD[OA]\s+MANUAL|\bMANUALMENTE\b/;
 
 export function buildOrderAutofill({ header = {}, lines = [], materials = [] } = {}) {
   const recovered = [];
@@ -191,7 +197,7 @@ export function extractOrderTextData(value, model = '') {
     ? dimensions.valanceHeight
     : matchNumber(text, /BAMBALINA\s+DE\s+(\d{1,3}(?:[.,]\d+)?)\s*CM/);
   const structureColor = inferStructureColor(text);
-  const hasWindow = /\bCON\s+(?:UNA\s+)?VENTANA(?:S)?\b/.test(text) || /VENTANA(?:S)?\s+(?:EN|DE)\s+PVC/.test(text);
+  const hasWindow = /\bCON\s+(?:UNA\s+)?VENTANA(?:S)?\b/.test(text) || /VENTANA(?:S)?\s+(?:EN|DE)\s+PVC/.test(text) || /\bINCLUYEN?\s+VENTANA/.test(text);
   const withoutWindow = /\bSIN\s+VENTANA(?:S)?\b/.test(text);
   const curtainLike = model.includes('CORTINA') || model === 'ELECTRA';
   const withoutValance = /\bSIN\s+BAMBALINA\b/.test(text);
@@ -201,9 +207,10 @@ export function extractOrderTextData(value, model = '') {
     hasValance: valanceHeight !== null ? valanceHeight > 0 : withoutValance ? false : null,
     valanceCurve: inferValanceCurve(text),
     structureColor,
-    rotFabric: /ROTULACI[OÓ]N/.test(text) ? 'SI' : '',
+    rotFabric: /SIN\s+ROTULACI[OÓ]N/.test(text) ? 'NO' : /ROTULACI[OÓ]N/.test(text) ? 'SI' : '',
     rotValance: /ROTULACI[OÓ]N\s+EN\s+(?:LA\s+)?BAMBALINA/.test(text) ? 'SI' : '',
     device: inferDevice(text, model),
+    deviceManualUnresolved: isManualDeviceUnresolved(text, model),
     motorPower: model === 'ELECTRA' ? normalizeElectraMotor(text) : '',
     placement: /ENTRE\s+PAREDES/.test(text) ? 'ENTRE PAREDES' : /COLOCACI[OÓ]N\s+(?:A\s+)?TECHO|INSTALACI[OÓ]N\s+(?:A\s+)?TECHO/.test(text) ? 'TECHO' : '',
     armCount: matchNumber(text, /(?:CON|DE)\s+([234])\s+BRAZOS?\b/),
@@ -246,6 +253,7 @@ function buildAwningSuggestion(line, model, index) {
     armCount: crossed ? extracted.armCount || 2 : extracted.armCount,
     armConfiguration: crossed ? 'CROSSED' : 'STANDARD',
     device: extracted.device || (model === 'SELENA' ? 'MAQ. INTERIOR' : ''),
+    deviceManualUnresolved: extracted.deviceManualUnresolved,
     motorPower: extracted.motorPower,
     placement: extracted.placement,
     tubeLoad: extracted.tubeLoad,
@@ -313,7 +321,11 @@ function describePendingAwning(awning, index) {
   if (fields.includes('valanceHeight') && awning.model !== 'BAMBALINA' && awning.hasValance === null) pending.push('bambalina sí/no');
   if ((awning.model === 'BAMBALINA' || awning.hasValance === true) && !awning.valanceCurve) pending.push('curva bambalina');
   if ((awning.model === 'BAMBALINA' || awning.hasValance === true) && !awning.rotValance) pending.push('rotulación bambalina sí/no');
-  if (visibility.device && !awning.device) pending.push('accionamiento');
+  if (visibility.device && !awning.device) {
+    pending.push(awning.deviceManualUnresolved
+      ? 'dispositivo: RPS dice accionamiento manual; elige máquina interior o exterior'
+      : 'accionamiento');
+  }
   if (visibility.tubeLoad && !awning.tubeLoad) pending.push('tubo de carga');
   if (visibility.submodel && !awning.submodel) pending.push('variante');
   if (awning.model === 'ELECTRA' && !awning.electraSupport) pending.push('tipo de soporte');
@@ -349,13 +361,23 @@ function isAuxiliaryLine(line) {
 }
 
 function inferDevice(text, model) {
-  if (/\bMOTOR(?:IZADO|IZADA)?\b/.test(text) || /ACCIONAMIENTO\s+(?:POR\s+)?MOTOR/.test(text)) return 'MOTOR';
-  if (/MAQ(?:UINA)?\.?\s+EXTERIOR|MAQUINA\s+FUERA/.test(text)) return 'MAQ. EXTERIOR';
-  if (/MAQ(?:UINA)?\.?\s+INTERIOR|MAQUINA\s+DENTRO/.test(text)) return 'MAQ. INTERIOR';
-  if (!/ACCIONAMIENTO\s+MANUAL|ACCIONAD[OA]\s+MANUAL|\bMANUALMENTE\b/.test(text)) return '';
-  if (model === 'SELENA') return 'MAQ. INTERIOR';
-  if (model === 'ELECTRA') return '';
-  return boxDeviceModels.has(model) ? 'MAQUINA' : '';
+  if (motorDevicePattern.test(text)) return 'MOTOR';
+  if (exteriorDevicePattern.test(text)) return 'MAQ. EXTERIOR';
+  if (interiorDevicePattern.test(text)) return 'MAQ. INTERIOR';
+  if (!manualDevicePattern.test(text)) return '';
+  // RPS solo dice "accionamiento manual", sin decir interior/exterior. Si el
+  // modelo tiene una sola máquina (caja o Selena), se puede deducir; si tiene
+  // interior y exterior por separado, el técnico debe elegir.
+  const deviceOptions = getFieldVisibility({ model, device: '' }).deviceOptions;
+  if (deviceOptions.includes('MAQUINA')) return 'MAQUINA';
+  if (deviceOptions.length === 1 && deviceOptions[0] === 'MAQ. INTERIOR') return 'MAQ. INTERIOR';
+  return '';
+}
+
+function isManualDeviceUnresolved(text, model) {
+  if (motorDevicePattern.test(text) || exteriorDevicePattern.test(text) || interiorDevicePattern.test(text)) return false;
+  if (!manualDevicePattern.test(text)) return false;
+  return inferDevice(text, model) === '';
 }
 
 function usesDropDimension(model) {
