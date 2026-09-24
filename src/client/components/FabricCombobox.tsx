@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Check, Search, X } from 'lucide-react';
 import { fabricSelectionLabel, serializeFabricSelection } from '../../domain/fabricCatalog.js';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
+import { ReadPair, useReadMode } from './ReadMode';
 
 type FabricOption = {
   code: string;
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre aproximado…', disabled = false, missing = false }: Props) {
+  const reading = useReadMode();
   const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
   const [options, setOptions] = useState<FabricOption[]>([]);
@@ -64,6 +66,8 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
     document.addEventListener('pointerdown', closeOutside);
     return () => document.removeEventListener('pointerdown', closeOutside);
   }, [open]);
+
+  if (reading) return <ReadPair label={label} value={value ? fabricSelectionLabel(value) : ''} />;
 
   function choose(option: FabricOption) {
     onChange(serializeFabricSelection(option));

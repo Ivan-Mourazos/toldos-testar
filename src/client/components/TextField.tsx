@@ -1,5 +1,8 @@
+import { ReadPair, useReadMode } from './ReadMode';
 
 export function TextField({ label, value, onChange, placeholder = '', onBlur, hint, missing = false }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; onBlur?: () => void; hint?: string; missing?: boolean }) {
+  const reading = useReadMode();
+  if (reading) return <ReadPair label={label} value={value} />;
   return (
     <label className={missing ? 'is-missing' : undefined}>
       <span>{label}</span>

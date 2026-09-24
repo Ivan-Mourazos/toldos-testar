@@ -5220,42 +5220,30 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .awning-blocks-dots button.is-active { background: var(--tgm-yellow); width: 18px; }
 @media (prefers-reduced-motion: reduce) { .awning-blocks .awning-blocks-track { scroll-behavior: auto; } }
 
-/* Tarjetas de lectura (rediseño 24/09/2026 §5): etiqueta y valor, sin cajas. Es la
-   misma tarjeta que al editar, así que no puede faltar ningún dato. Además, más
-   compacta que al editar (revisión: al menos ~20 % menos alta con el mismo
-   contenido), apretando los huecos entre filas y quitando el relleno que solo
-   hacía falta para las cajas de formulario. */
-.awning-blocks.is-reading .awning-column { gap: 3px 6px; padding: 6px; }
-.awning-blocks.is-reading .awning-column label,
-.awning-blocks.is-reading .awning-column .field { gap: 2px; }
-.awning-blocks.is-reading .awning-column label > span,
-.awning-blocks.is-reading .awning-column .field > span { color: var(--text-muted); font-size: 10px; }
-.awning-blocks.is-reading .awning-column input,
-.awning-blocks.is-reading .awning-column textarea,
-.awning-blocks.is-reading .awning-column .select-control {
-  -webkit-text-fill-color: var(--text);
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-  color: var(--text);
-  font-weight: 650;
-  min-height: 0;
-  opacity: 1;
-  padding: 1px 0;
-}
-.awning-blocks.is-reading .awning-column .select-control svg { display: none; }
-.awning-blocks.is-reading .awning-column .segmented-control { background: transparent; border: 0; box-shadow: none; padding: 0; }
-.awning-blocks.is-reading .awning-column .segmented-option:not(.active) { display: none; }
-.awning-blocks.is-reading .awning-column .segmented-option.active { background: transparent; box-shadow: none; color: var(--text); font-weight: 650; padding: 1px 0; text-align: left; }
-.awning-blocks.is-reading .awning-column .segmented-control.is-empty::after { color: var(--text-muted); content: '—'; }
-/* La banda gris de configuración de brazos (y el resto de .awning-form-section,
-   p. ej. IRIS): mismo fondo, menos aire arriba y abajo. */
-.awning-blocks.is-reading .awning-column .awning-form-section { gap: 3px 6px; padding: 4px var(--sp-3); }
-.awning-blocks.is-reading .awning-column .awning-wide-field,
-.awning-blocks.is-reading .awning-column .awning-finish-row,
-.awning-blocks.is-reading .awning-column .awning-actuation-row,
-.awning-blocks.is-reading .awning-column .awning-installation-row,
-.awning-blocks.is-reading .awning-column .awning-valance-options { gap: 3px 6px; }
+/* Ficha de lectura (rediseño 3 §1): los campos se aplanan en una rejilla de dos
+   columnas y el orden por grupo los reúne bajo su título. La tarjeta sigue siendo la
+   de edición (AwningColumn), así que no puede faltar ningún dato. */
+.awning-blocks.is-reading .awning-column { gap: 3px 6px; padding: 6px 10px 8px; }
+.awning-column.is-readonly .awning-column-body { display: grid; gap: 0 18px; grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+.awning-column.is-readonly .awning-column-body :is(.awning-form-section, .awning-wide-field, .awning-finish-row, .awning-actuation-row, .awning-installation-row, .awning-valance-options, .awning-core-config, .curtain-config, .curtain-option, .curtain-window-measures, .awning-compact-choice, .awning-overrides, .awning-structure-notes) { display: contents; }
+.awning-column.is-readonly .awning-form-section-title { display: none; }
+.awning-column.is-readonly .awning-modified-chip { grid-column: 1 / -1; margin: 3px 0; }
+.read-group-title { color: var(--accent-text); font-size: 10px; grid-column: 1 / -1; letter-spacing: .07em; margin: 8px 0 2px; text-transform: uppercase; }
+.awning-column.is-readonly .awning-column-body:not(:has(.read-pair[data-group="medidas"])) .read-group-title[data-group="medidas"],
+.awning-column.is-readonly .awning-column-body:not(:has(.read-pair[data-group="estructura"], .awning-modified-chip)) .read-group-title[data-group="estructura"],
+.awning-column.is-readonly .awning-column-body:not(:has(.read-pair[data-group="accionamiento"])) .read-group-title[data-group="accionamiento"],
+.awning-column.is-readonly .awning-column-body:not(:has(.read-pair[data-group="colocacion"])) .read-group-title[data-group="colocacion"],
+.awning-column.is-readonly .awning-column-body:not(:has(.read-pair[data-group="otros"])) .read-group-title[data-group="otros"] { display: none; }
+.read-pair { align-items: baseline; border-bottom: 1px dotted #dfe7e4; display: flex; font-size: 12px; gap: 8px; justify-content: space-between; min-width: 0; padding: 3px 0; }
+.read-label { color: var(--text-muted); }
+.read-value { color: var(--text); font-weight: 650; overflow-wrap: anywhere; text-align: right; }
+/* Mismo tamaño y peso que un valor (§1); solo el gris lo distingue, con contraste AA. */
+.read-value.is-empty { color: #647578; }
+.read-note { grid-column: 1 / -1; margin-top: 8px; }
+.read-note .read-label { color: var(--accent-text); display: block; font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+.read-note p { font-size: 12px; }
+.read-note.has-text p { background: #fff8df; border: 1px solid #f0c64a; border-radius: 6px; color: var(--text); margin: 3px 0 0; padding: 5px 8px; }
+.read-note .read-empty { color: #647578; margin: 2px 0 0; }
 
 /* Obs. estructura en lectura (revisión, §5): ni caja con borde ni fila por línea, solo
    la etiqueta y el texto (o «Sin observaciones»). Clave propia porque no vive dentro de
@@ -5269,5 +5257,3 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 
 /* La cabecera del pedido es un fieldset para desactivarla en lectura: sin su marco. */
 fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
-.awning-blocks.is-reading .fabric-combobox .fabric-input-wrap { background: transparent; border-color: transparent; box-shadow: none; padding-left: 0; }
-.awning-blocks.is-reading .fabric-combobox .fabric-input-wrap svg { display: none; }

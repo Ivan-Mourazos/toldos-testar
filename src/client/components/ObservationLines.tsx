@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { useReadMode } from './ReadMode';
 
 type Props = {
   label: string;
@@ -9,9 +10,23 @@ type Props = {
 };
 
 export function ObservationLines({ label, value, onChange, readOnly = false }: Props) {
+  const reading = useReadMode();
   const lines = observationLines(value);
   const listRef = useRef<HTMLDivElement>(null);
   const isEmpty = lines.every((line) => !line.trim());
+
+  // Ficha de lectura del toldo (rediseño 3 §1): nota amarilla si hay texto, línea gris si
+  // no. Las observaciones del pedido no van en la ficha y siguen con su lectura de siempre.
+  if (reading) {
+    return (
+      <div className={`read-note${isEmpty ? '' : ' has-text'}`} data-group="notas" style={{ order: 99 }}>
+        <span className="read-label">{label}</span>
+        {isEmpty ? <p className="read-empty">Sin observaciones</p> : (
+          <p>{lines.filter((line) => line.trim()).map((line, index) => <React.Fragment key={index}>{index > 0 && <br />}{line}</React.Fragment>)}</p>
+        )}
+      </div>
+    );
+  }
 
   function updateLine(index: number, nextValue: string) {
     const next = [...lines];

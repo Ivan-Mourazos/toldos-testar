@@ -11,6 +11,8 @@ import { SelectField } from './SelectField';
 import { SegmentedField } from './SegmentedField';
 import { FabricCombobox } from './FabricCombobox';
 import { ObservationLines } from './ObservationLines';
+import { ReadModeContext } from './ReadMode';
+import { READ_GROUPS, readGroupOrder } from '../readGroups';
 import { structureNotes as getStructureNotes } from '../../domain/structureNotes.js';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
@@ -388,22 +390,23 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
         </div>}
       </header>
 
+      <ReadModeContext.Provider value={readOnly}>
       {awning.model && (
-        <>
+        <ReadSheetBody reading={readOnly}>
           {/* En su propia línea: dentro del campo alargaba la fila y bajaba Frente y Salida. */}
-          {isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
+          {!readOnly && isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
           <TextField label="OF" missing={isMissing('of')} value={awning.of} onChange={(of) => update({ of: of.trim() })} />
-          {fields.dimensions.includes('width') && <NumberField label={widthLabel} missing={isMissing('width')} value={awning.width} min={0} onChange={updateWidth} />}
+          {fields.dimensions.includes('width') && <NumberField label={widthLabel} unit="cm" missing={isMissing('width')} value={awning.width} min={0} onChange={updateWidth} />}
           {fields.dimensions.includes('projection') && (useEstablishedProjection ? (
             <SelectField
-              label={projectionLabel} missing={isMissing('projection')}
+              label={projectionLabel} unit="cm" missing={isMissing('projection')}
               value={awning.projection === null ? '' : String(awning.projection)}
               options={(fields.establishedProjections || []).map(String)}
               placeholder="Elegir…"
               onChange={(v) => updateProjection(v === '' ? null : Number(v))}
             />
           ) : (
-            <NumberField label={projectionLabel} missing={isMissing('projection')} value={awning.projection} min={0} onChange={updateProjection} />
+            <NumberField label={projectionLabel} unit="cm" missing={isMissing('projection')} value={awning.projection} min={0} onChange={updateProjection} />
           ))}
           {!supportsValance && variantField}
           {fields.iris && (
@@ -415,14 +418,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={['SÍ', 'NO']}
                 onChange={(value) => update({ irisAssumeSquare: value === 'SÍ' })}
               />
-              <NumberField label="Frente superior" missing={isMissing('irisFrontTop')} value={awning.irisFrontTop} min={0} onChange={(irisFrontTop) => update({ irisFrontTop })} />
-              <NumberField label="Salida izquierda" missing={isMissing('irisExitLeft')} value={awning.irisExitLeft} min={0} onChange={(irisExitLeft) => update({ irisExitLeft })} />
+              <NumberField label="Frente superior" unit="cm" missing={isMissing('irisFrontTop')} value={awning.irisFrontTop} min={0} onChange={(irisFrontTop) => update({ irisFrontTop })} />
+              <NumberField label="Salida izquierda" unit="cm" missing={isMissing('irisExitLeft')} value={awning.irisExitLeft} min={0} onChange={(irisExitLeft) => update({ irisExitLeft })} />
               {!awning.irisAssumeSquare && (
                 <>
-                  <NumberField label="Frente inferior" value={awning.irisFrontBottom} min={0} onChange={(irisFrontBottom) => update({ irisFrontBottom })} />
-                  <NumberField label="Salida derecha" value={awning.irisExitRight} min={0} onChange={(irisExitRight) => update({ irisExitRight })} />
-                  <NumberField label="Diagonal 1 (a salida izq.)" value={awning.irisDiagonal1} min={0} onChange={(irisDiagonal1) => update({ irisDiagonal1 })} />
-                  <NumberField label="Diagonal 2 (a salida der.)" value={awning.irisDiagonal2} min={0} onChange={(irisDiagonal2) => update({ irisDiagonal2 })} />
+                  <NumberField label="Frente inferior" unit="cm" value={awning.irisFrontBottom} min={0} onChange={(irisFrontBottom) => update({ irisFrontBottom })} />
+                  <NumberField label="Salida derecha" unit="cm" value={awning.irisExitRight} min={0} onChange={(irisExitRight) => update({ irisExitRight })} />
+                  <NumberField label="Diagonal 1 (a salida izq.)" unit="cm" value={awning.irisDiagonal1} min={0} onChange={(irisDiagonal1) => update({ irisDiagonal1 })} />
+                  <NumberField label="Diagonal 2 (a salida der.)" unit="cm" value={awning.irisDiagonal2} min={0} onChange={(irisDiagonal2) => update({ irisDiagonal2 })} />
                 </>
               )}
               <SelectField
@@ -469,7 +472,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={[...dropArmModeOptions]}
                 onChange={(dropArmMode) => update({ dropArmMode: dropArmMode as Awning['dropArmMode'] })}
               />
-              {verticalDrop && (
+              {verticalDrop && !readOnly && (
                 <div className="drop-arm-mode-summary" role="note">
                   <strong>Corte vertical previsto: {formatDropArmMeasure(verticalFabricDrop)} cm</strong>
                   <span>
@@ -485,7 +488,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <SelectField label={awning.submodel === 'HERA 56 MOTOR' ? 'Color mecanismos' : 'Color cadena'} missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
           )}
           {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
-            <NumberField label="Altura instalación" missing={isMissing('height')} value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
+            <NumberField label="Altura instalación" unit="cm" missing={isMissing('height')} value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
           )}
           {isHera && (
             <div className="awning-wide-field">
@@ -493,7 +496,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
 
-          {isSelena && (
+          {isSelena && !readOnly && (
             <p className="awning-pending">
               Sistema vertical con dos brazos Stor. Confirma siempre el lado de la máquina antes de generar el planteamiento.
             </p>
@@ -530,6 +533,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 placeholder="Automático"
                 allowEmpty
                 emptyLabel="Automático"
+                readEmptyAs="Automático"
                 onChange={(fabricDiagramOverride) => update({ fabricDiagramOverride: fabricDiagramOverride as Awning['fabricDiagramOverride'] })}
               />
             </div>
@@ -554,12 +558,12 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   setShowGaliciaPrompt(false);
                   update({ armConfiguration: value === 'CRUZADOS' ? 'CROSSED' : 'STANDARD', ...(value === 'CRUZADOS' ? { armCount: 2, supportSystem: 'ARZUA', tubeLoad: 'TUBO DE CARGA EVO 80' } : {}) });
                 }} />
-                {awning.armConfiguration === 'CROSSED' && <p>Dos brazos · kit izquierdo · inclinación máxima 30°. Kit inferior para EVO 80.</p>}
+                {awning.armConfiguration === 'CROSSED' && !readOnly && <p>Dos brazos · kit izquierdo · inclinación máxima 30°. Kit inferior para EVO 80.</p>}
                 {awning.armConfiguration === 'CROSSED' && <SelectField label="Terminales · confirmar con taller" value={awning.crossedAdditionalTerminals === true ? 'JUEGO ADICIONAL' : awning.crossedAdditionalTerminals === false ? 'SOLO LOS DEL KIT' : ''} options={['SOLO LOS DEL KIT', 'JUEGO ADICIONAL']} placeholder="Pendiente de confirmar…" onChange={(value) => update({ crossedAdditionalTerminals: value === 'JUEGO ADICIONAL' ? true : value === 'SOLO LOS DEL KIT' ? false : null })} />}
               </>}
               <SegmentedField
                 label="Nº de brazos"
-                value={fields.arzua ? '2' : awning.armCount === null ? '' : String(awning.armCount)}
+                value={fields.arzua ? '2' : awning.armCount == null ? '' : String(awning.armCount)}
                 options={(fields.galicia ? fields.armOptions : awning.armConfiguration === 'CROSSED' ? [2] : [2, 3]).map(String)}
                 onChange={fields.galicia ? (value) => update({ armCount: Number(value) }) : chooseArms}
               />
@@ -569,7 +573,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {fields.supportOptions.length > 0 && (
                 <SegmentedField label="Soporte" value={awning.supportSystem} options={fields.supportOptions} onChange={(supportSystem) => update({ supportSystem })} />
               )}
-              {fields.arzua && showGaliciaPrompt && (
+              {fields.arzua && showGaliciaPrompt && !readOnly && (
                 <div className="model-switch-prompt" role="alert">
                   <div><strong>3 brazos es el modelo GALICIA</strong><span>Se conservarán la OF y las medidas.</span></div>
                   <button type="button" onClick={changeToGalicia}>Cambiar modelo<ArrowRight aria-hidden="true" /></button>
@@ -655,10 +659,10 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <SegmentedField label="Arriba" value={awning.curtainTopFinish || 'VARILLA'} options={['VARILLA', 'REMACHADO']} onChange={(curtainTopFinish) => update({ curtainTopFinish: curtainTopFinish as Awning['curtainTopFinish'] })} />
               </div>}
               {(fields.curtain || fields.curtainWindow) && awning.curtainHasWindow && <div className="curtain-window-measures" role="group" aria-label="Medidas de ventana">
-                <NumberField label="Salida ventana" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
-                <NumberField label="Esquina" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
-                <NumberField label="Suelo-ventana" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
-                <NumberField label="Altura ventana" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
+                <NumberField label="Salida ventana" unit="cm" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
+                <NumberField label="Esquina" unit="cm" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
+                <NumberField label="Suelo-ventana" unit="cm" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
+                <NumberField label="Altura ventana" unit="cm" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
               </div>}
             </div>
           )}
@@ -671,7 +675,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {fields.motorLocation && <SelectField label="Posición motor" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {isFullAntica && fields.crankHeight && <SelectField label="Color manivela" value={awning.anticaCrankColor || 'AUTOMÁTICO'} options={['AUTOMÁTICO', 'BLANCA', 'NEGRA']} onChange={(v) => update({ anticaCrankColor: v as Awning['anticaCrankColor'] })} />}
-              {fields.crankHeight && <SelectField label="Altura manivela" missing={isMissing('crankHeight')} value={awning.crankHeight === null ? '' : String(awning.crankHeight)} options={formOptions.alturasManivela.map(String)} placeholder="Elegir…" onChange={(v) => update({ crankHeight: v === '' ? null : Number(v) })} />}
+              {fields.crankHeight && <SelectField label="Altura manivela" unit="cm" missing={isMissing('crankHeight')} value={awning.crankHeight === null ? '' : String(awning.crankHeight)} options={formOptions.alturasManivela.map(String)} placeholder="Elegir…" onChange={(v) => update({ crankHeight: v === '' ? null : Number(v) })} />}
             </div>
           )}
           {(fields.placement || fields.wallType) && (
@@ -681,16 +685,17 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
           {fields.arms && !fields.galicia && (
-            <div className="awning-compact-choice"><SegmentedField label={isPuntoRecto ? `Nº brazos · mínimo ${pointRequiredArms}` : isMonoblock350 ? `Nº brazos · automático ${monoblockRequiredArms}` : isAgataBox ? `Nº brazos · automático ${suggestedAgataArmCount(awning.width)}` : 'Nº brazos'} value={awning.armCount === null ? '' : String(awning.armCount)} options={fields.armOptions.map(String)} onChange={(v) => update({ armCount: Number(v) })} /></div>
+            <div className="awning-compact-choice"><SegmentedField label={isPuntoRecto ? `Nº brazos · mínimo ${pointRequiredArms}` : isMonoblock350 ? `Nº brazos · automático ${monoblockRequiredArms}` : isAgataBox ? `Nº brazos · automático ${suggestedAgataArmCount(awning.width)}` : 'Nº brazos'} value={awning.armCount == null ? '' : String(awning.armCount)} options={fields.armOptions.map(String)} onChange={(v) => update({ armCount: Number(v) })} /></div>
           )}
 
-          {!fields.implemented && (
+          {!fields.implemented && !readOnly && (
             <p className="awning-pending">Sin reglas de cálculo todavía. Se guarda pero no genera materiales.</p>
           )}
 
           {awning.reglasModificadas && (
             <div className="awning-overrides">
-              <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>
+              {/* En la ficha va con la Estructura: son sus reglas modificadas. */}
+              <p className="awning-modified-chip" data-group="estructura" style={readOnly ? { order: readGroupOrder('estructura') + 1 } : undefined}>Excepción técnica activa para este toldo.</p>
               {(awning.model === 'CORTINA' || awning.model === 'CAMBIO CORTINA' || isSelena) && (
                 <NumberField
                   label="Descuento inferior tela (cm)"
@@ -794,8 +799,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
 
-        </>
+        </ReadSheetBody>
       )}
+      </ReadModeContext.Provider>
 
       {!readOnly && (missingFields.length ? (
         <footer className={`awning-status ${statusClass}`}>
@@ -815,6 +821,21 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
         </ul>
       )}
     </fieldset>
+  );
+}
+
+// Ficha de lectura (rediseño 3 §1): en lectura los campos van dentro de un cuerpo que se
+// aplana en una rejilla, con los títulos de grupo delante; el orden CSS de cada par los
+// reúne bajo su título. Al editar no hay envoltorio: la tarjeta sigue igual.
+function ReadSheetBody({ reading, children }: { reading: boolean; children: React.ReactNode }) {
+  if (!reading) return <>{children}</>;
+  return (
+    <div className="awning-column-body">
+      {READ_GROUPS.map((group) => (
+        <h5 key={group.id} className="read-group-title" data-group={group.id} style={{ order: readGroupOrder(group.id) }}>{group.title}</h5>
+      ))}
+      {children}
+    </div>
   );
 }
 

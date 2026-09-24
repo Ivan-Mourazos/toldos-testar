@@ -56,6 +56,28 @@ function labels(markup: string) {
   return found;
 }
 
+// Rótulos de un grupo de campos al editar (role="group"), no de un campo: en la ficha sus
+// campos salen uno a uno en su grupo y se comprueban uno a uno.
+const groupLabels = new Set(['Medidas de ventana']);
+
+// Etiquetas de la ficha de lectura (rediseño 3 §1): cada campo es un par «etiqueta ·
+// valor» (<span class="read-label">) y Obs. estructura una nota con la misma etiqueta.
+function readLabels(markup: string) {
+  const found = new Set<string>();
+  for (const match of markup.matchAll(/<span class="read-label">([^<]+)<\/span>/g)) found.add(match[1]);
+  return found;
+}
+
+// Cada par de la ficha: etiqueta → valor tal cual se ve («—» si está vacío).
+function readPairs(markup: string) {
+  const found = new Map<string, string>();
+  for (const match of markup.matchAll(/<div class="read-pair" data-group="[^"]+"[^>]*><span class="read-label">([^<]+)<\/span><b class="read-value[^"]*">([^<]*)<\/b><\/div>/g)) {
+    expect(found.has(match[1]), `etiqueta repetida en la ficha: ${match[1]}`).toBe(false);
+    found.set(match[1], match[2]);
+  }
+  return found;
+}
+
 // renderToStaticMarkup escapa el texto y los atributos: el valor buscado también.
 function html(text: string) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
@@ -86,12 +108,25 @@ function placesOf(markup: string, text: string): Set<Place> {
   return places;
 }
 
+// Al leer ya no hay controles: el valor está en el <b class="read-value"> de su par (las
+// medidas con su unidad, «285 cm») o, si era texto suelto, sigue siendo texto.
+type ReadPlace = 'read' | 'text';
+
+function readPlacesOf(markup: string, text: string): Set<ReadPlace> {
+  const places = new Set<ReadPlace>();
+  if (!text) return places;
+  const escaped = pattern(text);
+  if (new RegExp(`<b class="read-value">${escaped}(?: cm)?</b>`).test(markup)) places.add('read');
+  if (new RegExp(`(?<!<button[^<]*)>${escaped}<`).test(markup)) places.add('text');
+  return places;
+}
+
 // Dónde puede verse al leer lo que al editar estaba en cada sitio.
-const readPlacesFor: Record<Place, Place[]> = {
-  input: ['input', 'text'],
-  select: ['select'],
-  segmented: ['segmented'],
-  text: ['text']
+const readPlacesFor: Record<Place, ReadPlace[]> = {
+  input: ['read', 'text'], // las líneas de observaciones pasan de <input> a texto de la nota
+  select: ['read'],
+  segmented: ['read'],
+  text: ['text', 'read']
 };
 
 // Sitios de edición que cuentan: los controles, y el texto suelto solo si no está en ninguno.
@@ -282,25 +317,52 @@ function expectValuesKept(model: string, awning: Awning, sameFabric: boolean) {
     // cada campo (fields.* en modelBehavior.js) porque ya la aplica AwningColumn al
     // editar, y es lo que estamos comparando.
     if (!shownWhenEditing.size) continue;
-    const shownWhenReading = new Set([...placesOf(read, text), ...placesOf(read, label)]);
+    const shownWhenReading = new Set([...readPlacesOf(read, text), ...readPlacesOf(read, label)]);
     const lost = [...shownWhenEditing].filter((place) => !readPlacesFor[place].some((allowed) => shownWhenReading.has(allowed)));
     expect(lost, `${model} pierde "${key}"=${raw} al leer (se veía en ${[...shownWhenEditing].join(', ')})`).toEqual([]);
   }
 }
 
-// Cada select, segmentado e input con etiqueta enseña al leer lo mismo que al editar.
+// Selects que al editar enseñan su texto de ayuda («Elegir…», «Automático»), no un valor:
+// sin valor el botón no lleva title (SelectField).
+function placeholderSelects(markup: string) {
+  const found = new Set<string>();
+  for (const match of markup.matchAll(/<span id="[^"]+">([^<]+)<\/span><button([^>]*)>/g)) {
+    if (/class="select-control/.test(match[2]) && !/\stitle="/.test(match[2])) found.add(match[1]);
+  }
+  return found;
+}
+
+// Cada select, segmentado e input con etiqueta enseña al leer lo mismo que al editar: el
+// mismo texto en el valor de su par, «—» si al editar estaba vacío (o con el texto de
+// ayuda del select) y, si es un número, con su unidad si la lleva («285 cm»).
 function expectControlsKept(model: string, awning: Awning, sameFabric: boolean) {
-  const edit = controls(render(awning, false, { sameFabric }));
-  const read = controls(render(awning, true, { sameFabric }));
+  const editMarkup = render(awning, false, { sameFabric });
+  const edit = controls(editMarkup);
+  const placeholders = placeholderSelects(editMarkup);
+  const read = readPairs(render(awning, true, { sameFabric }));
   expect(edit.size, `${model}: la muestra no pinta ningún control`).toBeGreaterThan(0);
   for (const [control, shown] of edit) {
-    expect(read.get(control), `${model} ${control} enseña "${shown}" al editar`).toBe(shown);
+    const label = control.slice(control.indexOf(':') + 1);
+    // Un select sin valor puede leerse «—» o con el mismo texto si esa ausencia es una
+    // elección («Dibujo de confección · Automático»).
+    const expected = shown === '' ? ['—']
+      : control.startsWith('select:') && placeholders.has(label) ? ['—', shown]
+        : /^\d+(?:\.\d+)?$/.test(shown) ? [shown, `${shown} cm`] : [shown];
+    expect(expected, `${model} ${control} enseña "${shown}" al editar y "${read.get(label)}" al leer`).toContain(read.get(label));
   }
 }
 
-// FabricCombobox en lectura: la etiqueta del campo y, justo después, la tela entera en texto.
+// La tela en la ficha: el par con su etiqueta y la tela entera en texto.
 function fabricShown(markup: string, label: string, fabric: string) {
-  return new RegExp(`<span id="[^"]+">${pattern(label)}</span><p class="fabric-readonly-value">${pattern(fabricSelectionLabel(fabric))}</p>`).test(markup);
+  return readPairs(markup).get(label) === html(fabricSelectionLabel(fabric));
+}
+
+// Ninguna etiqueta de la ficha cae en «Otros»: si aparece un campo nuevo, hay que
+// declararle grupo en readGroups.ts.
+function expectNoOthers(model: string, markup: string) {
+  const others = [...markup.matchAll(/<div class="read-pair" data-group="otros"[^>]*><span class="read-label">([^<]+)</g)].map((match) => match[1]);
+  expect(others, `${model}: sin grupo en la ficha`).toEqual([]);
 }
 
 function expectFabricsShown(model: string, awning: Awning, sameFabric: boolean) {
@@ -328,8 +390,8 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
     it(`${model}: cada campo que se ve al editar se ve al leer`, () => {
       for (const awning of samplesFor(model)) {
         const edit = labels(render(awning, false));
-        const read = labels(render(awning, true));
-        const lost = [...edit].filter((label) => !read.has(label));
+        const read = readLabels(render(awning, true));
+        const lost = [...edit].filter((label) => !groupLabels.has(label) && !read.has(label));
         expect(lost, `${model} pierde ${lost.join(', ')}`).toEqual([]);
       }
     });
@@ -341,8 +403,8 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
           const value = awning[key as keyof Awning];
           if (value === null || value === undefined || value === '' || value === 0) continue;
           // Con salidas establecidas la salida es un SelectField: se ve su texto, no un value.
-          const places = placesOf(read, String(value));
-          expect(places.has('input') || places.has('select'), `${model} ${key}=${value}`).toBe(true);
+          const places = readPlacesOf(read, String(value));
+          expect(places.has('read'), `${model} ${key}=${value}`).toBe(true);
         }
       }
     });
@@ -378,8 +440,8 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
 
       it('cada campo que se ve al editar se ve al leer', () => {
         const edit = labels(render(awning, false, { sameFabric: false }));
-        const read = labels(render(awning, true, { sameFabric: false }));
-        const lost = [...edit].filter((label) => !read.has(label));
+        const read = readLabels(render(awning, true, { sameFabric: false }));
+        const lost = [...edit].filter((label) => !groupLabels.has(label) && !read.has(label));
         expect(lost, `${model} pierde ${lost.join(', ')}`).toEqual([]);
       });
 
@@ -396,6 +458,14 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
         const read = render(awning, true, { sameFabric: false });
         expect(read).toContain('Excepción técnica activa para este toldo.');
       });
+
+      it('ningún campo de la ficha cae en «Otros»', () => {
+        expectNoOthers(model, render(awning, true, { sameFabric: false }));
+      });
+    });
+
+    it(`${model}: ningún campo de la ficha cae en «Otros» (muestras del cálculo)`, () => {
+      for (const awning of samplesFor(model)) expectNoOthers(model, render(awning, true));
     });
   }
 });

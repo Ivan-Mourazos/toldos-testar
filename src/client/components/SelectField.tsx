@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
 import { controlLabel } from './controlLabels';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
+import { ReadPair, useReadMode, withUnit } from './ReadMode';
 
 type Props = {
   label: string;
@@ -13,9 +14,14 @@ type Props = {
   allowEmpty?: boolean;
   emptyLabel?: string;
   missing?: boolean;
+  // Solo para la ficha de lectura: la unidad («225 cm») y qué escribir si no hay valor y
+  // eso es una elección en sí («Automático»); si no, «—».
+  unit?: string;
+  readEmptyAs?: string;
 };
 
-export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado', missing = false }: Props) {
+export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado', missing = false, unit, readEmptyAs = '' }: Props) {
+  const reading = useReadMode();
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -38,6 +44,8 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
     document.addEventListener('pointerdown', closeOutside);
     return () => document.removeEventListener('pointerdown', closeOutside);
   }, [open]);
+
+  if (reading) return <ReadPair label={label} value={value ? withUnit(controlLabel(value), unit) : readEmptyAs} />;
 
   const showOptions = () => {
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
