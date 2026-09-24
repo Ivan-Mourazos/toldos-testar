@@ -30,8 +30,7 @@ try {
   await page.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
   await page.goto(base);
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
-  await page.locator('.parameter-model-trigger').click();
-  await page.locator('.parameter-model-options button').filter({ hasText: 'Bambalina' }).click();
+  await page.getByRole('navigation', { name: 'Modelos de parámetros' }).locator('button').filter({ has: page.getByText('Bambalina', { exact: true }) }).click();
   assert.equal(await page.getByLabel(/Bambalina · La caída/).count(), 0);
   assert.equal(await page.getByLabel(/Margen del cuerpo/).count(), 0);
   await page.getByLabel('Remate de bambalina (cm)', { exact: true }).fill('8');
@@ -46,8 +45,7 @@ try {
   await page.getByText('Parámetros guardados').waitFor();
   await page.reload();
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
-  await page.locator('.parameter-model-trigger').click();
-  await page.locator('.parameter-model-options button').filter({ hasText: 'Bambalina' }).click();
+  await page.getByRole('navigation', { name: 'Modelos de parámetros' }).locator('button').filter({ has: page.getByText('Bambalina', { exact: true }) }).click();
   assert.equal(await page.getByLabel('Remate de bambalina (cm)', { exact: true }).inputValue(), '8');
   const { parameters } = await request('/api/rule-parameters', null, 'GET');
   await page.screenshot({ path: path.join(directory, 'parametros-bambalina.png'), fullPage: true });
