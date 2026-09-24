@@ -97,6 +97,24 @@ Es la sección "Pedidos" y sustituye a "Revisión".
 - **Lista fija de modelos a la izquierda,** agrupada por familia (Brazos invisibles, Cofre, Vertical, Clásicos, Trabajos de tela), igual que en "Añadir toldo". El modelo activo va marcado. Sustituye al desplegable en banda oscura.
 - **El índice de secciones** (01, 02… y Dibujos) queda arriba del contenido del modelo.
 
+### 10. "Obtener datos del pedido" (autorrelleno desde RPS)
+
+Medido el 24/09/2026 sobre los 90 pedidos de 2026 más recientes (`tmp/autofill/medir.mjs`):
+- 67 no son toldos (lonas de remolque, reparaciones, puertas) y se descartan bien;
+- de los 39 toldos reconocidos, solo 12 quedan completos tras rellenar;
+- lo que más falta: frente (22), salida (18), tela (12), dispositivo (12) y los datos de ventana de las cortinas (11).
+
+Parte no se puede sacar: muchas líneas dicen "de diferentes medidas". Lo que sí se mejora:
+
+1. **Tela propuesta desde el texto.** El comentario la describe ("tejido acrílico, tintado en masa, color negro"). Se proponen las telas del catálogo que encajan y el técnico elige una. No se pone sola. Hoy solo se saca de lo ya reservado en RPS, que en un pedido nuevo no existe.
+2. **Rotulación:** "incluye rotulación" → rotulación de tela "Sí".
+3. **Ventana:** "con ventana en PVC" → cortina con ventana. Las medidas de ventana siguen en FALTA.
+4. **Accionamiento:** "accionamiento manual" → máquina. Interior o exterior sigue sin elegir si el texto no lo dice.
+5. **Reparaciones y reposiciones no crean toldos:** por ejemplo, "manipulación: reposición de tubo de carga a toldo Perla Box". Sale solo un aviso.
+6. **Resumen al terminar:** qué se ha rellenado, qué no y por qué. Por ejemplo: "8 cortinas · lacado marrón 8014 · rotulación sí · medidas: RPS pone 'diferentes medidas'".
+
+Pruebas: casos reales de esos pedidos en `orderAutofill.test.js`, y volver a pasar la medición para comparar las cifras.
+
 ## Fuera de alcance
 
 - **Leer de CoordinaOT** si un pedido está aprobado. Es otro proyecto; por ahora se pregunta al generar.
@@ -124,5 +142,6 @@ Es la sección "Pedidos" y sustituye a "Revisión".
 4. **Despiece y dibujo por toldo:** panel lateral, línea resumen abajo y observaciones de tela al encabezado.
 5. **PDF:** recuadro de observaciones adaptable y destacado.
 6. **Parámetros:** lista de modelos a la izquierda.
+7. **Autorrelleno desde RPS:** tela propuesta, rotulación, ventana, accionamiento, sin toldos falsos y resumen final.
 
-Cada paso se despliega por separado. Los pasos 1 y 2 van juntos, porque sin el pedido abierto la bandeja no sirve.
+Cada paso se despliega por separado. Los pasos 1 y 2 van juntos, porque sin el pedido abierto la bandeja no sirve. Los pasos 5 y 6 los hace Codex en paralelo ([encargo](../../tareas/codex-rediseno-pasos-5-6.md)).
