@@ -1076,6 +1076,29 @@ describe('buildOrderPlanteamientoPdf', () => {
     };
   }
 
+  // Casilla REVISOR (diseño 24/09/2026, apartado 2): el nombre de quien guardó una
+  // corrección, o vacía si nadie corrigió. Vacía se imprime como «-», igual que el resto.
+  async function celdaRevisor(order) {
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order) });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const items = (await (await document.getPage(1)).getTextContent()).items.map((item) => item.str.trim()).filter(Boolean);
+    const index = items.indexOf('REVISOR:');
+    expect(index).toBeGreaterThanOrEqual(0);
+    return items[index + 1];
+  }
+
+  test('la casilla REVISOR muestra order.reviewer', async () => {
+    const order = { ...pedidoArzua(''), technician: 'IVÁN', reviewer: 'JAIME' };
+    expect(await celdaRevisor(order)).toBe('JAIME');
+  });
+
+  test('la casilla REVISOR queda vacía si nadie corrigió', async () => {
+    const order = { ...pedidoArzua(''), technician: 'IVÁN', reviewer: '' };
+    const revisor = await celdaRevisor(order);
+    expect(revisor).toBe('-');
+    expect(revisor).not.toBe('IVÁN');
+  });
+
   test('imprime las cuatro observaciones de estructura', async () => {
     const [estructura] = await textoDeLaHoja(pedidoArzua(CUATRO_OBSERVACIONES));
     expect(estructura).toContain('PONER REFUERZO EN EL LATERAL DERECHO');

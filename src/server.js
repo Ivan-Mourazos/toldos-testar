@@ -29,7 +29,6 @@ import {
   defaultWorkflowSettings,
   fileExists,
   getOrderYear,
-  isPendingGeneration,
   markReviewApproved,
   markReviewChangesRequested,
   markReviewFilesGenerated,
@@ -39,6 +38,7 @@ import {
   workflowReadiness,
   writeFileAtomic
 } from './workflow.js';
+import { generateFilesDecision, reviewAuthorship, saveReviewDecision } from './reviewRules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -338,8 +338,6 @@ app.post('/api/reviews', async (req, res, next) => {
     const rawOrder = req.body?.order || req.body;
     const normalizedOrder = normalizeOrder(rawOrder);
     const orderCode = sanitizeOrderCode(normalizedOrder.orderCode);
-    const order = structuredClone({ ...rawOrder, orderCode });
-    const calculation = await calculateConfiguredOrder(order);
     let existing = null;
     try {
       existing = await workflowStore.getReview(orderCode);
@@ -347,7 +345,9 @@ app.post('/api/reviews', async (req, res, next) => {
       if (error.code !== 'ENOENT') throw error;
     }
 
-    if (existing && req.body?.confirmOverwrite !== true) {
+    const decision = saveReviewDecision(existing, req.body?.confirmOverwrite === true);
+    if (decision.action === 'refuse') throw httpError(decision.statusCode, decision.error);
+    if (decision.action === 'confirm') {
       res.status(409).json({
         needsConfirmation: true,
         existing: [`${orderCode}.pdf`],
@@ -356,6 +356,17 @@ app.post('/api/reviews', async (req, res, next) => {
       return;
     }
 
+    // El autor no cambia al corregir (diseño 24/09/2026, apartado 2): se decide aquí
+    // con el pedido guardado delante, no solo con lo que mande el navegador.
+    const authorship = reviewAuthorship({
+      existingTechnician: existing?.order?.technician,
+      existingReviewer: existing?.order?.reviewer,
+      technician: rawOrder?.technician,
+      reviewer: rawOrder?.reviewer,
+      savedBy: req.body?.savedBy
+    });
+    const order = structuredClone({ ...rawOrder, orderCode, ...authorship });
+    const calculation = await calculateConfiguredOrder(order);
     const review = createReviewPackage({ order, calculation, existing });
     const pdf = await buildOrderReviewPdf({ order, calculation, review });
     const savedPath = await workflowStore.saveReview(review, pdf);
@@ -426,13 +437,12 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     }
 
     const review = await workflowStore.getReview(req.params.orderCode);
-    if (review.status === 'PRODUCED') {
+    const decision = generateFilesDecision(review.status);
+    if (decision.action === 'unchanged') {
       res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
       return;
     }
-    if (!isPendingGeneration(review.status)) {
-      throw httpError(409, 'Este pedido no se puede generar desde la web.');
-    }
+    if (decision.action === 'refuse') throw httpError(decision.statusCode, decision.error);
 
     const order = normalizeOrder(review.order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);

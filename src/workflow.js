@@ -190,13 +190,9 @@ export function markReviewApproved(review, { reviewer, note = '', now = new Date
   };
 }
 
-// Aprobar y devolver se hacen en CoordinaOT (diseño 24/09/2026, apartado 3): aquí todo
-// pedido guardado y no generado está pendiente de generar, venga del estado que venga.
-const pendingGenerationStatuses = new Set(['PENDING_REVIEW', 'CHANGES_REQUESTED', 'APPROVED']);
-
-export function isPendingGeneration(status) {
-  return pendingGenerationStatuses.has(status);
-}
+// Aprobar y devolver se hacen en CoordinaOT (diseño 24/09/2026, apartado 3): la regla de
+// "pendiente de generar" vive en reviewRules.js para que la use también la web.
+export { isPendingGeneration } from './reviewRules.js';
 
 export function markReviewFilesGenerated(review, { generatedBy = '', files, excludedNonAcrylicFabrics = [], now = new Date().toISOString() }) {
   return {
