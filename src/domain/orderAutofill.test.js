@@ -384,7 +384,11 @@ describe('autocompletado de pedidos RPS', () => {
     expect(result.order.awnings.every((awning) => awning.device === '')).toBe(true);
     expect(result.order.awnings.every((awning) => awning.curtainHasWindow === true)).toBe(true);
     expect(result.order.awnings.every((awning) => awning.structureColor === 'MARRON (R-08014)')).toBe(true);
-    expect(result.pending.some((item) => item.includes('dispositivo: RPS dice accionamiento manual; elige máquina interior o exterior'))).toBe(true);
+    expect(result.pending.some((item) => item.includes('accionamiento: RPS dice manual; elige máquina interior o exterior'))).toBe(true);
+    // No se repite el pendiente genérico «accionamiento» para los mismos toldos.
+    expect(result.pending.some((item) => item.endsWith(': accionamiento'))).toBe(false);
+    // El indicador interno no llega al cliente.
+    expect(result.order.awnings.every((awning) => !('deviceManualUnresolved' in awning))).toBe(true);
   });
 
   test('accionamiento manual en un modelo de caja (PERLA BOX) resuelve MAQUINA', () => {
@@ -430,7 +434,9 @@ describe('autocompletado de pedidos RPS', () => {
       expect(result.summary[0]).toBe('8 cortinas · lacado marrón 8014 · rotulación no indicada · medidas: RPS pone «diferentes medidas»');
     });
 
-    test('AR2604716: una línea de resumen por modelo distinto, más las reparaciones descartadas', () => {
+    // Mezcla a propósito la línea MANIPUVARIOS de AR2604730 con las de AR2604716 para
+    // tener dos reparaciones en el mismo resumen; no es un pedido real tal cual.
+    test('AR2604716 más la línea MANIPUVARIOS de AR2604730: una línea de resumen por modelo distinto, más las reparaciones descartadas', () => {
       const result = buildOrderAutofill({
         header: { orderCode: 'AR.26.04716' },
         lines: [
@@ -501,6 +507,144 @@ describe('autocompletado de pedidos RPS', () => {
         ],
         warnings: [],
         lineNotes: new Map()
+      });
+      expect(summary).toEqual(['2 cortinas · rotulación no indicada']);
+    });
+  });
+});
+
+describe('arreglos de la revisión final del plan 4', () => {
+  describe('isRepairLine: solo reparaciones de verdad', () => {
+    test('VARIOS con «CAMBIO DE TELA … POR REPOSICION DE LONA DETERIORADA» crea su cambio de tela', () => {
+      const line = {
+        lineId: 'varios-cambio',
+        articleCode: 'VARIOS',
+        description: '',
+        comment: 'CAMBIO DE TELA PARA TOLDO EXISTENTE POR REPOSICION DE LONA DETERIORADA',
+        manufacturingOrder: '0240901',
+        quantity: 1
+      };
+      expect(isRepairLine(line)).toBe(false);
+      const result = buildOrderAutofill({ header: { orderCode: 'AR.26.04901' }, lines: [line] });
+      expect(result.order.awnings).toHaveLength(1);
+      expect(result.order.awnings[0].model).toBe('CAMBIO TELA');
+    });
+
+    test('«SUMINISTRO E INSTALACION DE TOLDO MODELO ELECTRA EN REPOSICION DEL ANTERIOR» crea su Electra', () => {
+      const line = {
+        lineId: 'electra-reposicion',
+        articleCode: '',
+        description: '',
+        comment: 'SUMINISTRO E INSTALACION DE TOLDO MODELO ELECTRA EN REPOSICION DEL ANTERIOR',
+        manufacturingOrder: '0240902',
+        quantity: 1
+      };
+      expect(isRepairLine(line)).toBe(false);
+      const result = buildOrderAutofill({ header: { orderCode: 'AR.26.04902' }, lines: [line] });
+      expect(result.order.awnings).toHaveLength(1);
+      expect(result.order.awnings[0].model).toBe('ELECTRA');
+    });
+
+    test('«… MODELO HERA …, REPOSICION DEL EXISTENTE» crea su HERA (la palabra suelta en el comentario no basta)', () => {
+      const line = {
+        lineId: 'hera-reposicion',
+        articleCode: '',
+        description: '',
+        comment: 'TOLDO MODELO HERA 43 CON ACCIONAMIENTO MANUAL, REPOSICION DEL EXISTENTE',
+        manufacturingOrder: '0240903',
+        quantity: 1
+      };
+      expect(isRepairLine(line)).toBe(false);
+      const result = buildOrderAutofill({ header: { orderCode: 'AR.26.04903' }, lines: [line] });
+      expect(result.order.awnings).toHaveLength(1);
+      expect(result.order.awnings[0].model).toBe('HERA');
+    });
+
+    test('MANIPUVARIOS sigue siendo reparación por su descripción y COMPLEMENTOTF porque el comentario empieza por «POR REPARACION»', () => {
+      expect(isRepairLine({
+        articleCode: 'MANIPUVARIOS',
+        description: 'MANIPULACION O CORTE MATERIAL (VENTAS)',
+        comment: 'POR REPOSICION DE TUBO DE CARGA DE MEDIA 389,3 CM, LACADO BLANCO, A TOLDO PERLA BOX.'
+      })).toBe(true);
+      expect(isRepairLine({
+        articleCode: 'COMPLEMENTOTF',
+        description: ' COMPLEMENTO O ACCESORIO PARA TOLDO FACHADA ',
+        comment: 'POR REPARACION DE TOLDO CORTINA, CON REPOSICION DE CADENILLAS, ABATIBLES, MOSQUETONES Y REGLETAS.'
+      })).toBe(true);
+    });
+  });
+
+  describe('aviso de reparación', () => {
+    test('sin «…» si el comentario tiene menos de 80 caracteres, y sin «(OF )» si no hay OF', () => {
+      const result = buildOrderAutofill({
+        header: { orderCode: 'AR.26.04904' },
+        lines: [{ articleCode: 'COMPLEMENTOTF', description: 'COMPLEMENTO', comment: 'POR REPARACION DE TOLDO CORTINA.', manufacturingOrder: '', quantity: 1 }]
+      });
+      expect(result.warnings).toEqual(['Reparación o reposición: no crea toldo. «POR REPARACION DE TOLDO CORTINA.»']);
+    });
+
+    test('sin comentario, el aviso usa la descripción', () => {
+      const result = buildOrderAutofill({
+        header: { orderCode: 'AR.26.04905' },
+        lines: [{ articleCode: 'MANIPUVARIOS', description: 'MANIPULACION O CORTE MATERIAL (VENTAS)', comment: '', manufacturingOrder: '0240905', quantity: 1 }]
+      });
+      expect(result.warnings).toEqual(['Reparación o reposición (OF 0240905): no crea toldo. «MANIPULACION O CORTE MATERIAL (VENTAS)»']);
+    });
+  });
+
+  describe('rotulación', () => {
+    test('«INCLUYE ROTULACION. SIN ROTULACION EN BAMBALINA» deja la tela en SÍ y la bambalina en NO', () => {
+      const data = extractOrderTextData('INCLUYE ROTULACION. SIN ROTULACION EN BAMBALINA', 'ARZUA PRO');
+      expect(data.rotFabric).toBe('SI');
+      expect(data.rotValance).toBe('NO');
+    });
+
+    test('«SIN ROTULACION EN LA BAMBALINA» solo no dice nada de la tela', () => {
+      expect(extractOrderTextData('TOLDO CON BAMBALINA, SIN ROTULACION EN LA BAMBALINA', 'ARZUA PRO').rotFabric).toBe('');
+    });
+  });
+
+  describe('accionamiento', () => {
+    test('«MAQUINA INTERIOR» en un modelo de caja se queda en MAQUINA, su única máquina', () => {
+      expect(extractOrderTextData('CON MAQUINA INTERIOR', 'PERLA BOX').device).toBe('MAQUINA');
+      expect(extractOrderTextData('CON MAQUINA EXTERIOR', 'CORAL BOX').device).toBe('MAQUINA');
+    });
+
+    test('en un modelo con interior y exterior, «MAQUINA INTERIOR» sigue siendo MAQ. INTERIOR', () => {
+      expect(extractOrderTextData('CON MAQUINA INTERIOR', 'ARZUA PRO').device).toBe('MAQ. INTERIOR');
+    });
+  });
+
+  describe('resumen', () => {
+    test('los nombres de producto no se pluralizan; cortinas y cambios de tela sí', () => {
+      const summary = summarizeAutofill({
+        awnings: [
+          { id: 'a', model: 'CORAL BOX', structureColor: '', rotFabric: '' },
+          { id: 'b', model: 'CORAL BOX', structureColor: '', rotFabric: '' },
+          { id: 'c', model: 'MONOBLOCK 350', structureColor: '', rotFabric: '' },
+          { id: 'd', model: 'MONOBLOCK 350', structureColor: '', rotFabric: '' },
+          { id: 'e', model: 'CORTINA', structureColor: '', rotFabric: '' },
+          { id: 'f', model: 'CORTINA', structureColor: '', rotFabric: '' },
+          { id: 'g', model: 'CAMBIO TELA', structureColor: '', rotFabric: '' },
+          { id: 'h', model: 'CAMBIO TELA', structureColor: '', rotFabric: '' }
+        ],
+        warnings: []
+      });
+      expect(summary).toEqual([
+        '2 Coral Box · rotulación no indicada',
+        '2 Monoblock 350 · rotulación no indicada',
+        '2 cortinas · rotulación no indicada',
+        '2 cambios de tela · rotulación no indicada'
+      ]);
+    });
+
+    test('el lacado no sale si algún elemento del grupo no tiene color', () => {
+      const summary = summarizeAutofill({
+        awnings: [
+          { id: 'a', model: 'CORTINA', structureColor: 'MARRON (R-08014)', rotFabric: '' },
+          { id: 'b', model: 'CORTINA', structureColor: '', rotFabric: '' }
+        ],
+        warnings: []
       });
       expect(summary).toEqual(['2 cortinas · rotulación no indicada']);
     });

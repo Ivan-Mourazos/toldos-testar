@@ -79,6 +79,8 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
   }
 
   const pending = awnings.flatMap((awning, index) => describePendingAwning(awning, index));
+  // Solo sirve para redactar el pendiente de accionamiento: no forma parte del pedido.
+  awnings.forEach((awning) => { delete awning.deviceManualUnresolved; });
   const uniqueWarnings = unique(warnings);
   const lineNotes = new Map(awnings.map((awning) => [awning.id, awning._sourceText]));
   return {
@@ -108,30 +110,32 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
 
 // --- Resumen final (Tarea 4): qué se ha rellenado, qué no y por qué (rediseño 4 §10) ---
 
-// Nombres en singular para el resumen; el dominio no puede importar
-// controlLabels.ts (es del cliente), así que se repite aquí en pequeño.
+// Nombres para el resumen, en singular y plural; el dominio no puede importar
+// controlLabels.ts (es del cliente), así que se repite aquí en pequeño. Solo los
+// nombres comunes (cortina, cambio de tela…) llevan plural en castellano; los
+// nombres de producto se quedan como son: «2 Coral Box», «3 Monoblock 350».
 const summaryModelNames = {
-  CORTINA: 'cortina',
-  'CAMBIO CORTINA': 'cambio de cortina',
-  'CAMBIO TELA': 'cambio de tela',
-  'CAMBIO ANTICA': 'cambio de antica',
-  BAMBALINA: 'bambalina',
-  ENROLLABLE: 'lona de puerta enrollable',
-  'AMBAR BOX': 'ámbar box',
-  'AGATA BOX': 'ágata box',
-  'PERLA BOX': 'perla box',
-  'CORAL BOX': 'coral box',
-  'CUARZO BOX': 'cuarzo box',
-  MAXISCREEM: 'diana vertical',
-  ELECTRA: 'electra',
-  SELENA: 'selena',
-  HERA: 'hera',
-  ANTICA: 'antica',
-  'PUNTO RECTO': 'punto recto',
-  XACOBEO: 'xacobeo',
-  GALICIA: 'galicia',
-  'MONOBLOCK 350': 'monoblock 350',
-  'ARZUA PRO': 'arzúa pro'
+  CORTINA: ['cortina', 'cortinas'],
+  'CAMBIO CORTINA': ['cambio de cortina', 'cambios de cortina'],
+  'CAMBIO TELA': ['cambio de tela', 'cambios de tela'],
+  'CAMBIO ANTICA': ['cambio de antica', 'cambios de antica'],
+  BAMBALINA: ['bambalina', 'bambalinas'],
+  ENROLLABLE: ['lona de puerta enrollable', 'lonas de puerta enrollable'],
+  'AMBAR BOX': 'Ámbar Box',
+  'AGATA BOX': 'Ágata Box',
+  'PERLA BOX': 'Perla Box',
+  'CORAL BOX': 'Coral Box',
+  'CUARZO BOX': 'Cuarzo Box',
+  MAXISCREEM: 'Diana vertical',
+  ELECTRA: 'Electra',
+  SELENA: 'Selena',
+  HERA: 'HERA',
+  ANTICA: 'Antica',
+  'PUNTO RECTO': 'Punto Recto',
+  XACOBEO: 'Xacobeo',
+  GALICIA: 'Galicia',
+  'MONOBLOCK 350': 'Monoblock 350',
+  'ARZUA PRO': 'Arzúa Pro'
 };
 
 const structureColorAccents = {
@@ -166,11 +170,12 @@ export function summarizeAutofill({ awnings = [], warnings = [], lineNotes = new
 }
 
 function describeModelGroupSummary(model, group, lineNotes) {
-  const name = pluralizeSummaryName(summaryModelNames[model] || model.toLowerCase(), group.length);
+  const name = summaryModelName(model, group.length);
   const parts = [`${group.length} ${name}`];
 
-  const colors = new Set(group.map((awning) => awning.structureColor).filter(Boolean));
-  if (colors.size === 1) {
+  // El lacado solo sale si TODOS los elementos del grupo lo tienen y es el mismo.
+  const colors = new Set(group.map((awning) => awning.structureColor || ''));
+  if (colors.size === 1 && !colors.has('')) {
     const label = structureColorSummary([...colors][0]);
     if (label) parts.push(`lacado ${label}`);
   }
@@ -186,11 +191,10 @@ function describeModelGroupSummary(model, group, lineNotes) {
   return parts.join(' · ');
 }
 
-function pluralizeSummaryName(singular, count) {
-  if (count === 1) return singular;
-  const [first, ...rest] = singular.split(' ');
-  const pluralFirst = /[aeiouáéíóú]$/i.test(first) ? `${first}s` : `${first}es`;
-  return [pluralFirst, ...rest].join(' ');
+function summaryModelName(model, count) {
+  const name = summaryModelNames[model] || model;
+  if (!Array.isArray(name)) return name;
+  return count === 1 ? name[0] : name[1];
 }
 
 function structureColorSummary(value) {
@@ -234,27 +238,33 @@ function composeCustomerName(customerValue, businessValue) {
   return `${customer} - ${business}`;
 }
 
-// Palabras de reparación/reposición: sin ellas la línea no se toca. Con ellas,
-// solo se descarta si el texto no describe además una confección nueva y el
-// código de artículo, por sí solo (sin el texto), no es uno de toldo o cambio
-// de tela conocido.
-const repairWordsPattern = /\b(REPOSICION|REPARACION|MANIPULACION|CORTE MATERIAL)\b/;
-const newAwningPattern = /\bCONFECCION( E INSTALACION)? DE (TOLDO|TOLDOS|CAMBIO|CAMBIOS)\b/;
+// Una línea es reparación o reposición cuando lo dice el artículo o la
+// descripción (MANIPULACION, CORTE MATERIAL, REPARACION, REPOSICION) o cuando el
+// comentario EMPIEZA por «(POR) REPARACION/REPOSICION». Una mención suelta en el
+// comentario no basta: «TOLDO MODELO HERA…, REPOSICION DEL EXISTENTE» es un toldo
+// nuevo. Nunca se descarta si el texto describe una confección o un suministro
+// nuevo, un cambio de tela, o si el código de artículo es de toldo conocido.
+const repairDescriptionPattern = /\b(REPOSICION|REPARACION|MANIPULACION|CORTE MATERIAL)\b/;
+const repairCommentStartPattern = /^(POR )?(REPARACION|REPOSICION)\b/;
+const newAwningPattern = /\b(CONFECCION|SUMINISTRO|FABRICACION)( E INSTALACION)? DE (TOLDOS?|CAMBIOS?)\b/;
+const fabricChangePattern = /\bCAMBIOS? DE TELA\b/;
 
 export function isRepairLine(line = {}) {
   const description = normalize(`${line.description || ''} ${line.articleDescription || ''}`);
   const comment = normalize(line.comment);
   const text = `${description} ${comment}`;
-  if (!repairWordsPattern.test(text)) return false;
-  if (newAwningPattern.test(text)) return false;
+  const saysRepair = repairDescriptionPattern.test(description) || repairCommentStartPattern.test(comment);
+  if (!saysRepair) return false;
+  if (newAwningPattern.test(text) || fabricChangePattern.test(text)) return false;
   if (inferOrderModel({ articleCode: line.articleCode })) return false;
   return true;
 }
 
 function describeRepairWarning(line) {
   const of = cleanOf(line.manufacturingOrder);
-  const excerpt = clean(line.comment).slice(0, 80);
-  return `Reparación o reposición (OF ${of}): no crea toldo. «${excerpt}…»`;
+  const source = clean(line.comment) || clean(line.description) || clean(line.articleDescription);
+  const excerpt = source.length > 80 ? `${source.slice(0, 80)}…` : source;
+  return `Reparación o reposición${of ? ` (OF ${of})` : ''}: no crea toldo.${excerpt ? ` «${excerpt}»` : ''}`;
 }
 
 export function inferOrderModel(line = {}) {
@@ -308,8 +318,9 @@ export function extractOrderTextData(value, model = '') {
     hasValance: valanceHeight !== null ? valanceHeight > 0 : withoutValance ? false : null,
     valanceCurve: inferValanceCurve(text),
     structureColor,
-    rotFabric: /SIN\s+ROTULACI[OÓ]N/.test(text) ? 'NO' : /ROTULACI[OÓ]N/.test(text) ? 'SI' : '',
-    rotValance: /ROTULACI[OÓ]N\s+EN\s+(?:LA\s+)?BAMBALINA/.test(text) ? 'SI' : '',
+    rotFabric: inferFabricRotulation(text),
+    rotValance: valanceWithoutRotulationPattern.test(text) ? 'NO'
+      : /ROTULACI[OÓ]N\s+EN\s+(?:LA\s+)?BAMBALINA/.test(text) ? 'SI' : '',
     device: inferDevice(text, model),
     deviceManualUnresolved: isManualDeviceUnresolved(text, model),
     motorPower: model === 'ELECTRA' ? normalizeElectraMotor(text) : '',
@@ -324,6 +335,18 @@ export function extractOrderTextData(value, model = '') {
     curtainWindowHeight: curtainLike ? matchNumber(text, /H(?:\.|ALTURA)?\s*(?:DE\s+)?VENTANA\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
     submodel: inferSubmodel(text, model)
   };
+}
+
+// «SIN ROTULACION EN BAMBALINA» habla de la bambalina, no de la tela: no cuenta
+// para la rotulación de tela. Un «INCLUYE ROTULACION» explícito gana siempre.
+const valanceWithoutRotulationPattern = /SIN\s+ROTULACI[OÓ]N\s+EN\s+(?:LA\s+)?BAMBALINA/;
+
+function inferFabricRotulation(text) {
+  const fabricText = text.replace(new RegExp(valanceWithoutRotulationPattern.source, 'g'), ' ');
+  if (/\bINCLUYEN?\s+(?:LA\s+)?ROTULACI[OÓ]N/.test(fabricText)) return 'SI';
+  if (/SIN\s+ROTULACI[OÓ]N/.test(fabricText)) return 'NO';
+  if (/ROTULACI[OÓ]N/.test(fabricText)) return 'SI';
+  return '';
 }
 
 function buildAwningSuggestion(line, model, index) {
@@ -427,7 +450,7 @@ function describePendingAwning(awning, index) {
   if ((awning.model === 'BAMBALINA' || awning.hasValance === true) && !awning.rotValance) pending.push('rotulación bambalina sí/no');
   if (visibility.device && !awning.device) {
     pending.push(awning.deviceManualUnresolved
-      ? 'dispositivo: RPS dice accionamiento manual; elige máquina interior o exterior'
+      ? 'accionamiento: RPS dice manual; elige máquina interior o exterior'
       : 'accionamiento');
   }
   if (visibility.tubeLoad && !awning.tubeLoad) pending.push('tubo de carga');
@@ -466,13 +489,17 @@ function isAuxiliaryLine(line) {
 
 function inferDevice(text, model) {
   if (motorDevicePattern.test(text)) return 'MOTOR';
-  if (exteriorDevicePattern.test(text)) return 'MAQ. EXTERIOR';
-  if (interiorDevicePattern.test(text)) return 'MAQ. INTERIOR';
+  const deviceOptions = getFieldVisibility({ model, device: '' }).deviceOptions || [];
+  // Los modelos de caja solo ofrecen «MAQUINA»: si RPS dice «máquina interior»
+  // o «exterior», se queda en la única máquina que existe para el modelo.
+  const machineOptions = deviceOptions.filter((option) => option !== 'MOTOR');
+  const onlyGenericMachine = machineOptions.length === 1 && machineOptions[0] === 'MAQUINA';
+  if (exteriorDevicePattern.test(text)) return onlyGenericMachine ? 'MAQUINA' : 'MAQ. EXTERIOR';
+  if (interiorDevicePattern.test(text)) return onlyGenericMachine ? 'MAQUINA' : 'MAQ. INTERIOR';
   if (!manualDevicePattern.test(text)) return '';
   // RPS solo dice "accionamiento manual", sin decir interior/exterior. Si el
   // modelo tiene una sola máquina (caja o Selena), se puede deducir; si tiene
   // interior y exterior por separado, el técnico debe elegir.
-  const deviceOptions = getFieldVisibility({ model, device: '' }).deviceOptions;
   if (deviceOptions.includes('MAQUINA')) return 'MAQUINA';
   if (deviceOptions.length === 1 && deviceOptions[0] === 'MAQ. INTERIOR') return 'MAQ. INTERIOR';
   return '';
