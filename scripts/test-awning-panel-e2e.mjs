@@ -1,8 +1,10 @@
 // Prueba e2e del panel «Despiece y dibujo» de un toldo (rediseño 3, tarea 6): rellena
 // Arzúa AR2603332, comprueba la línea resumen de Planteamientos, abre el panel del
-// toldo A, edita el despiece (fila 1 a 2 unidades) y comprueba que la Reserva lo
-// refleja, cierra con Esc y comprueba el foco, y por último abre el pedido guardado y
-// comprueba la ficha de lectura (grupos, «Frente» con su unidad, sin botón del panel).
+// toldo A, edita el despiece (fila 1 a 2 unidades) comprobando que Esc, la X y el cambio
+// de pestaña no pierden la edición sin preguntar, y comprueba que la Reserva del panel y
+// la de la línea resumen desplegada lo reflejan; cierra con Esc y comprueba el foco, y por
+// último abre el pedido guardado y comprueba la ficha de lectura (grupos, «Frente» con su
+// unidad, «OF» leída, sin controles ni botón del panel).
 // Ejecutar con TOLDOS_ISOLATED_URL=http://127.0.0.1:4330 node scripts/test-awning-panel-e2e.mjs
 import assert from 'node:assert/strict';
 import { addAwning, fillArzuaAR2603332, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
@@ -39,6 +41,29 @@ try {
   const row1 = dialog.getByLabel('Reserva fila 1', { exact: true });
   const row1Code = await dialog.locator('.structure-edit-table tbody tr').first().locator('td').nth(1).locator('small').innerText();
   await row1.fill('2');
+
+  // Con la edición abierta, Esc no cierra el panel ni la pierde.
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+  assert.equal(await dialog.isVisible(), true, 'Esc con el despiece en edición no cierra el panel');
+  assert.equal(await row1.inputValue(), '2', 'Esc con el despiece en edición no pierde lo escrito');
+  console.log('OK: Esc con el despiece en edición no cierra ni pierde la edición');
+
+  // La X y el cambio de pestaña preguntan; «Seguir editando» deja la edición como estaba.
+  const discard = page.getByRole('alertdialog', { name: 'Despiece sin guardar' });
+  for (const [action, run] of [
+    ['la X', () => dialog.getByRole('button', { name: 'Cerrar panel', exact: true }).click()],
+    ['la pestaña Reserva', () => dialog.getByRole('tab', { name: 'Reserva', exact: true }).click()]
+  ]) {
+    await run();
+    await discard.waitFor();
+    assert.match(await discard.innerText(), /Hay cambios del despiece sin guardar\. ¿Descartarlos\?/);
+    await discard.getByRole('button', { name: 'Seguir editando', exact: true }).click();
+    await discard.waitFor({ state: 'hidden' });
+    assert.equal(await dialog.isVisible(), true, `${action}: tras «Seguir editando» el panel sigue abierto`);
+    assert.equal(await row1.inputValue(), '2', `${action}: tras «Seguir editando» la edición sigue`);
+    console.log(`OK: ${action} con el despiece en edición pregunta y «Seguir editando» la conserva`);
+  }
   const recalculated = page.waitForResponse((response) => response.url().endsWith('/api/calculate'));
   await dialog.getByRole('button', { name: /^(Aplicar al planteamiento y reserva|Confirmar despiece revisado)$/ }).click();
   await recalculated;
@@ -58,6 +83,16 @@ try {
   const focusedIsOpenButton = await openButton.evaluate((node) => node === document.activeElement);
   assert.equal(focusedIsOpenButton, true, 'tras Esc el foco vuelve al botón «Despiece y dibujo» del toldo A');
   console.log('OK: Esc cierra el panel y el foco vuelve al botón «Despiece y dibujo»');
+
+  // La reserva del pedido, al desplegar la línea resumen, también lleva el cambio.
+  const summary = page.locator('details.planning-summary');
+  await summary.locator('summary').click();
+  assert.equal(await summary.evaluate((node) => node.open), true, 'la línea resumen se despliega');
+  const summaryRow = summary.locator('.rps-table tbody tr', { has: page.locator('td.code', { hasText: row1Code }) }).first();
+  await summaryRow.waitFor();
+  const summaryQuantity = await summaryRow.locator('td').last().innerText();
+  assert.equal(summaryQuantity, '2', `cantidad de ${row1Code} en la reserva de la línea resumen: "${summaryQuantity}"`);
+  console.log(`OK: la reserva de la línea resumen enseña 2 para ${row1Code}`);
 
   // Guarda el pedido y ábrelo desde Pedidos → Abrir.
   await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
@@ -87,6 +122,13 @@ try {
   const frenteValue = await frentePair.locator('.read-value').innerText();
   assert.equal(frenteValue, '337 cm', `«Frente» en la ficha de lectura: "${frenteValue}"`);
   console.log('OK: la ficha de lectura enseña los grupos «Medidas»/«Accionamiento» y «Frente» = «337 cm»');
+
+  // «OF» leída como par y ningún control en la tarjeta, que sigue deshabilitada.
+  const ofPair = readCardA.locator('.read-pair').filter({ has: page.locator('.read-label', { hasText: /^OF$/ }) });
+  assert.equal(await ofPair.locator('.read-value').innerText(), '0230194', '«OF» en la ficha de lectura');
+  assert.equal(await readCardA.locator('input').count(), 0, 'la ficha de lectura no tiene ningún input');
+  assert.notEqual(await readCardA.getAttribute('disabled'), null, 'la tarjeta de lectura sigue deshabilitada');
+  console.log('OK: la ficha de lectura enseña «OF» = 0230194, sin inputs y deshabilitada');
 
   // Sin botón «Despiece y dibujo» en modo lectura.
   const readOpenButtons = await readCardA.getByRole('button', { name: 'Despiece y dibujo', exact: true }).count();

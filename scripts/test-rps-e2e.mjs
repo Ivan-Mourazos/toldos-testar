@@ -170,8 +170,22 @@ async function verifyBrowserCase(browserInstance, url) {
   await chooseSelect(awning, 'Sensor', 'Sin sensor');
 
   await page.locator('footer.awning-status', { hasText: 'VÁLIDO' }).waitFor({ timeout: 15_000 });
-  await page.getByText('326,2 × 300 cm', { exact: true }).waitFor();
-  await page.getByText('9 ml', { exact: true }).waitFor();
+  // Rediseño 3: Planteamientos es una línea resumen plegada («… · 9 ml») y la tela
+  // calculada del toldo está en su panel «Despiece y dibujo», pestaña Despiece.
+  await page.waitForFunction(
+    () => /· 9 ml$/.test(document.querySelector('.planning-summary-text')?.textContent?.trim() || ''),
+    null,
+    { timeout: 15_000 }
+  );
+  await awning.getByRole('button', { name: 'Despiece y dibujo', exact: true }).click();
+  const awningPanel = page.getByRole('dialog', { name: 'Despiece y dibujo del toldo A' });
+  await awningPanel.waitFor();
+  await awningPanel.getByRole('tab', { name: 'Despiece', exact: true }).click();
+  await awningPanel.locator('.structure-info-block', { hasText: 'Tela calculada' })
+    .getByText('326,2 × 300 cm', { exact: true })
+    .waitFor();
+  await awningPanel.getByRole('button', { name: 'Cerrar panel', exact: true }).click();
+  await awningPanel.waitFor({ state: 'hidden' });
 
   await page.getByRole('button', { name: 'Vista previa' }).click();
   const preview = page.getByRole('dialog', { name: 'Vista previa del planteamiento' });
@@ -192,7 +206,11 @@ async function verifyBrowserCase(browserInstance, url) {
   const readonlyAwning = reviewReader.locator('.awning-column');
   await readonlyAwning.waitFor();
   assert.notEqual(await readonlyAwning.getAttribute('disabled'), null);
-  assert.equal(await readonlyAwning.getByLabel('OF', { exact: true }).isDisabled(), true);
+  // Rediseño 3: la tarjeta abierta es una ficha de lectura, pares «etiqueta · valor» sin
+  // controles.
+  const ofPair = readonlyAwning.locator('.read-pair').filter({ has: page.locator('.read-label', { hasText: /^OF$/ }) });
+  assert.equal(await ofPair.locator('.read-value').innerText(), '0230194');
+  assert.equal(await readonlyAwning.locator('input').count(), 0);
 
   // Desde el 24/09/2026 la vista previa del pedido abierto se abre ya a pantalla completa.
   await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).click();
