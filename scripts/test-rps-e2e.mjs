@@ -138,7 +138,7 @@ async function verifyBrowserCase(browserInstance, url) {
   assert.equal(await page.getByRole('dialog', { name: '¿Quién eres?' }).count(), 0, 'No debería pedir usuario: ya está guardado en localStorage.');
   await page.getByText('Soy: Iván', { exact: true }).waitFor();
 
-  await page.getByRole('textbox', { name: 'Pedido' }).fill('AR2603332');
+  await page.getByRole('textbox', { name: 'Pedido', exact: true }).fill('AR2603332');
   await page.getByRole('textbox', { name: 'Cliente' }).fill('LECHE CELTA');
 
   const fabric = page.getByRole('combobox', { name: 'Referencia', exact: true });
@@ -275,7 +275,7 @@ async function verifyBrowserCase(browserInstance, url) {
   await page.getByText(/cargados en el formulario/).waitFor();
   await page.getByRole('button', { name: 'Limpiar' }).click();
   await page.getByRole('button', { name: 'Limpiar formulario', exact: true }).click();
-  assert.equal(await page.getByRole('textbox', { name: 'Pedido' }).inputValue(), '');
+  assert.equal(await page.getByRole('textbox', { name: 'Pedido', exact: true }).inputValue(), '');
   assert.equal(await page.locator('.awning-column').count(), 0);
   assert.equal(await page.getByRole('button', { name: 'Guardar para revisión' }).isDisabled(), true);
 
