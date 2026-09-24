@@ -51,7 +51,12 @@
 
 /* Tecla: pestañas, chips (Míos/Todos, Página entera…), modelos de Parámetros.
    La activa ([aria-pressed="true"], [aria-current], .is-active) se queda hundida. */
-.tecla-3d {
+.tecla-3d,
+.orders-scope button.tecla-3d,
+.parameter-model-family button.tecla-3d,
+.parameter-section-index button.tecla-3d,
+.pdf-carousel-toolbar button.tecla-3d,
+.who-are-you-options button.tecla-3d {
   background: linear-gradient(180deg, #ffffff, #eef3f1);
   border: 1px solid var(--border-strong);
   box-shadow:
@@ -64,7 +69,12 @@
 .tecla-3d:active,
 .tecla-3d[aria-pressed="true"],
 .tecla-3d[aria-current="page"],
-.tecla-3d.is-active {
+.tecla-3d[aria-current="true"],
+.tecla-3d.is-active,
+.orders-scope button.tecla-3d[aria-pressed="true"],
+.parameter-model-family button.tecla-3d[aria-current="true"],
+.pdf-carousel-toolbar button.tecla-3d[aria-pressed="true"],
+.who-are-you-options button.tecla-3d[aria-pressed="true"] {
   background: linear-gradient(180deg, #f3e2ad, var(--tgm-yellow-soft));
   border-color: #c99a1f;
   box-shadow: var(--hundido);
@@ -90,19 +100,19 @@
 }
 
 /* Botón: primario (fondo de color) y secundario (claro). Canto oscuro abajo. */
-.boton-3d {
+.boton-3d, .primary-button, .ghost-button {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.28),
     0 2px 0 var(--canto-oscuro),
     0 4px 8px -3px rgb(13 42 47 / 0.35);
   transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, filter var(--relieve-ms) ease;
 }
-.boton-3d:hover:not(:disabled) { filter: brightness(1.04); transform: translateY(-1px); }
-.boton-3d:active:not(:disabled) {
+:is(.boton-3d, .primary-button, .ghost-button):hover:not(:disabled) { filter: brightness(1.04); transform: translateY(-1px); }
+:is(.boton-3d, .primary-button, .ghost-button):active:not(:disabled) {
   box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.22);
   transform: translateY(1px);
 }
-.boton-3d:disabled { box-shadow: none; }
+:is(.boton-3d, .primary-button, .ghost-button):disabled { box-shadow: none; }
 
 /* Panel: bandeja, pedido abierto, Parámetros. No se mueve. */
 .panel-3d {
@@ -130,14 +140,30 @@
 }
 
 /* Un solo anillo de foco en toda la web. */
-:where(.pieza-3d, .tecla-3d, .boton-3d):focus-visible {
+:where(.pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button):focus-visible {
   outline: 2px solid var(--tgm-yellow);
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pieza-3d, .tecla-3d, .boton-3d { transition: none; }
+  .pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button { transition: none; }
   .pieza-3d:hover, .pieza-3d:active, .pieza-3d.is-hundida,
-  .tecla-3d:hover, .tecla-3d:active, .tecla-3d[aria-pressed="true"], .tecla-3d[aria-current="page"], .tecla-3d.is-active,
-  .boton-3d:hover:not(:disabled), .boton-3d:active:not(:disabled) { transform: none; }
+  .tecla-3d:hover, .tecla-3d:active, .tecla-3d[aria-pressed="true"], .tecla-3d[aria-current="page"], .tecla-3d[aria-current="true"], .tecla-3d.is-active,
+  :is(.boton-3d, .primary-button, .ghost-button):hover:not(:disabled), :is(.boton-3d, .primary-button, .ghost-button):active:not(:disabled) { transform: none; }
 }
+
+/* Cada pedido y cada comprobación se separan como piezas; las reglas de sombra
+   siguen viviendo en .pieza-3d y el color del canto identifica el estado. */
+.orders-list { border: 0; border-radius: 0; display: grid; gap: 6px; overflow: visible; padding: 2px; }
+.orders-list .orders-row.pieza-3d { border-top: 1px solid var(--border); }
+.orders-row.is-mine { --pieza-acento: var(--tgm-yellow); }
+.review-checklist { background: transparent; border: 0; overflow: visible; }
+.review-checklist ol { display: grid; gap: 6px; padding: 2px; }
+.review-checklist li:last-child .review-checklist-row.pieza-3d { border-bottom: 1px solid var(--border); }
+.review-checklist-row.is-ok { --pieza-acento: var(--ok); }
+.review-checklist-row.is-warn { --pieza-acento: var(--warn); }
+.review-checklist-row.is-error { --pieza-acento: var(--danger); }
+
+/* El visor ya tiene una barra oscura: las teclas claras conservan texto oscuro. */
+.pdf-carousel-toolbar button.tecla-3d { color: var(--text); }
+.parameters-save-bar.panel-3d { border-color: var(--warn); }

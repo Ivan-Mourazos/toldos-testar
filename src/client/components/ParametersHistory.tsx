@@ -33,7 +33,7 @@ export function ParametersHistory({ version, onLoadVersion }: { version: number;
 
   const latest = entries?.[0];
   return (
-    <details className="parameters-history">
+    <details className="parameters-history panel-3d">
       <summary>
         <History aria-hidden="true" />
         <span>

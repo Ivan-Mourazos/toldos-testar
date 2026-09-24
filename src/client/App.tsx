@@ -412,7 +412,7 @@ export default function App() {
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
         </nav>
-        <button type="button" className="app-current-user" onClick={() => setChoosingUser(true)} aria-label="Cambiar quién soy">
+        <button type="button" className="app-current-user tecla-3d sobre-oscuro" onClick={() => setChoosingUser(true)} aria-label="Cambiar quién soy">
           <UserRound aria-hidden="true" />Soy: {currentUser ? controlLabel(currentUser) : '—'}
         </button>
       </header>
@@ -560,7 +560,7 @@ export default function App() {
                   onSaved={(settings, readiness) => { setWorkflowSettings(settings); setWorkflowReadiness(readiness); }}
                   onToast={notify}
                 />
-              : <section className="settings-panel panel">Cargando configuración…</section>
+              : <section className="settings-panel panel panel-3d">Cargando configuración…</section>
           )}
         </div>
       </section>

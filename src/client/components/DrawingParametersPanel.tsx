@@ -52,7 +52,7 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
     }]);
   }
 
-  return <section className="drawing-parameters" aria-labelledby="drawing-parameters-title">
+  return <section className="drawing-parameters panel-3d" aria-labelledby="drawing-parameters-title">
     <header className="drawing-parameters-heading">
       <div>
         <span className="section-kicker">Biblioteca del taller · {model}</span>

@@ -213,8 +213,8 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
   return (
     <div className="pdf-carousel" ref={rootRef} aria-label={ariaLabel} tabIndex={0}>
       <div className="pdf-carousel-toolbar" role="group" aria-label="Zoom del PDF">
-        <button type="button" onClick={() => setZoom('height')} aria-pressed={zoom === 'height'}>Página entera</button>
-        <button type="button" onClick={() => setZoom('fit')} aria-pressed={zoom === 'fit'}>Ajustar al ancho</button>
+        <button type="button" className="tecla-3d" onClick={() => setZoom('height')} aria-pressed={zoom === 'height'}>Página entera</button>
+        <button type="button" className="tecla-3d" onClick={() => setZoom('fit')} aria-pressed={zoom === 'fit'}>Ajustar al ancho</button>
         <span className="pdf-carousel-zoom-value">{zoom === 'height' ? 'Entera' : zoom === 'fit' ? 'Ancho' : `${zoom} %`}</span>
         <button type="button" onClick={() => changeZoom(-1)} aria-label="Reducir zoom"><Minus aria-hidden="true" /></button>
         <button type="button" onClick={() => changeZoom(1)} aria-label="Ampliar zoom"><Plus aria-hidden="true" /></button>
@@ -227,7 +227,7 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF' }: {
         {visibleStatus === 'ready' && renderError && <div className="pdf-carousel-state is-error">No se pudo mostrar esta página.</div>}
         {visibleStatus === 'ready' && visibleImage && (
           <div className="pdf-carousel-canvas" style={{ width: visibleImage.width, height: visibleImage.height }}>
-            <img className="pdf-carousel-page" src={visibleImage.url} alt={`Página ${pageNumber} de ${pageCount}`} width={visibleImage.width} height={visibleImage.height} />
+            <img className="pdf-carousel-page hoja-3d" src={visibleImage.url} alt={`Página ${pageNumber} de ${pageCount}`} width={visibleImage.width} height={visibleImage.height} />
           </div>
         )}
         {visibleStatus === 'ready' && pageCount > 1 && <>

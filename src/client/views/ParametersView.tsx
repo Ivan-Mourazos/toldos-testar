@@ -236,7 +236,7 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
   }
 
   return withSidebar(
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div>
@@ -400,7 +400,7 @@ function ArzuaParametersView({ parameters, selectedModel, onUpdate, onReset }: A
   }
 
   return (
-    <section className="parameters-page arzua-parameters">
+    <section className="parameters-page arzua-parameters panel-3d">
 
       <header className="parameters-heading arzua-parameters-heading">
         <div>
@@ -559,7 +559,7 @@ function ArzuaParametersView({ parameters, selectedModel, onUpdate, onReset }: A
 function OrderConfiguredModelView({ selectedModel }: {
   selectedModel: 'HERA' | 'ANTICA' | 'IRIS';
 }) {
-  return <section className="parameters-page">
+  return <section className="parameters-page panel-3d">
     <header className="parameters-heading"><div><span className="section-kicker">Consulta de reglas actuales</span><ParameterModelTitle model={selectedModel} /><p>Aumentos, descuentos y condiciones que aplica la web. Consulta sin modificar pedidos ni valores generales.</p></div></header>
     {selectedModel === 'ANTICA' ? <AnticaRuleReference /> : selectedModel === 'HERA' ? <HeraRuleReference /> : <IrisRuleReference />}
   </section>;
@@ -570,7 +570,7 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
   onSelectModel: (model: SelectedModel) => void;
 }) {
   return (
-    <nav className="parameter-model-sidebar" aria-label="Modelos de parámetros">
+    <nav className="parameter-model-sidebar panel-3d" aria-label="Modelos de parámetros">
       <strong className="parameter-model-sidebar-title">Modelos</strong>
       {parameterModelGroups.map(({ family, models }) => (
         <section className="parameter-model-family" key={family || 'tela'}>
@@ -583,8 +583,8 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
                     key={model}
                     type="button"
                     data-model={model}
-                    className={active ? 'is-active' : undefined}
-                    aria-current={active ? 'page' : undefined}
+                    className={active ? 'tecla-3d is-active' : 'tecla-3d'}
+                    aria-current={active ? 'true' : undefined}
                     onClick={() => onSelectModel(model)}
                   >
                     <span><strong>{names.current}</strong>{names.legacy && <small>RPS · {names.legacy}</small>}</span>
@@ -626,7 +626,7 @@ function XacobeoParametersView({ parameters, selectedModel, onUpdate, onReset }:
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas XAC, despiece ART250 y reserva RPS.</p></div>
@@ -693,7 +693,7 @@ function MaxiscreemParametersView({ parameters, selectedModel, onUpdate, onReset
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Con o sin cofre y guiado por cable o varilla.</p></div>
@@ -782,7 +782,7 @@ function ElectraParametersView({ parameters, selectedModel, onUpdate, onReset }:
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Nuevo modelo · Elit Vertical</span><ParameterModelTitle model={selectedModel} /><p>Reglas por soporte, con o sin cofre y con o sin guía.</p></div>
@@ -851,7 +851,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onRes
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Hoja MON.350, estructura Arzúa Monobloc y reserva RPS.</p></div>
@@ -917,7 +917,7 @@ function PuntoRectoParametersView({ parameters, selectedModel, onUpdate, onReset
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de la hoja PUNTO RECTO, despiece PRT07 y reserva RPS.</p></div>
@@ -986,7 +986,7 @@ function FabricJobsParametersView({ parameters, selectedModel, onUpdate, onReset
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
       <header className="parameters-heading">
         <div><span className="section-kicker">Trabajo sin estructura</span><ParameterModelTitle model={selectedModel} /><p>Comparte los márgenes comunes de confección; cada modelo conserva su caída propia.</p></div>
         <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
@@ -1014,7 +1014,7 @@ function FabricJobsParametersView({ parameters, selectedModel, onUpdate, onReset
 
 function CambioCortinaParametersView({ parameters, selectedModel, onUpdate, onReset }: CambioCortinaProps) {
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Trabajo de tela</span><ParameterModelTitle model={selectedModel} /><p>Confección de tela sin estructura ni lacado.</p></div>
@@ -1059,7 +1059,7 @@ function CortinaParametersView({ parameters, selectedModel, onUpdate, onReset }:
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>{selena ? 'Sistema vertical con brazos Stor, confección de tela y reserva RPS.' : 'Reglas de estructura, confección de tela y reserva RPS.'}</p></div>
@@ -1127,7 +1127,7 @@ function AmbarBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de estructura, tela y reserva RPS.</p></div>
@@ -1194,7 +1194,7 @@ function BoxParametersView({ parameters, selectedModel, onUpdate, onReset }: Box
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
@@ -1285,7 +1285,7 @@ function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
   }
 
   return (
-    <section className="parameters-page">
+    <section className="parameters-page panel-3d">
 
       <header className="parameters-heading">
         <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas para Open, Semiopen, Semiclose y Cofre.</p></div>
