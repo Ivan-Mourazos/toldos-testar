@@ -14,8 +14,13 @@ export function onAwningFocus(handler: (letter: string) => void) {
   return () => bus.removeEventListener(EVENT, listener);
 }
 
+// Con «reducir movimiento» del sistema los saltos son instantáneos.
+export function scrollBehavior(): ScrollBehavior {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
 export function revealAwningCard(card: HTMLElement) {
-  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  card.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
   card.classList.add('is-flash');
   window.setTimeout(() => card.classList.remove('is-flash'), 1400);
 }

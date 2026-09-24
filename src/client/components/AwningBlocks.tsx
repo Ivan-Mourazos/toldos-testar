@@ -3,7 +3,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Awning } from '../types';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { BLOCK_GAP, cardsPerPage, pageCount, pageLabel, pageOfIndex, type AwningStatus } from '../awningBlocks';
-import { onAwningFocus, revealAwningCard } from '../awningFocus';
+import { onAwningFocus, revealAwningCard, scrollBehavior } from '../awningFocus';
+
+// Lo primero que puede recibir el foco dentro de una tarjeta (PageUp/PageDown lo lleva
+// a la primera tarjeta del bloque nuevo).
+const FOCUSABLE = 'input, select, textarea, button, [tabindex]:not([tabindex="-1"])';
+// Tope por si el navegador no dispara «scrollend» (o no hay nada que desplazar).
+const PROGRAMMATIC_SCROLL_TIMEOUT = 1000;
 
 // Toldos por bloques (rediseño 24/09/2026, §6). Todas las tarjetas se montan, en una
 // fila que se desplaza por dentro: así el foco con Tab y las pruebas llegan a
@@ -19,6 +25,11 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
   const [page, setPage] = useState(0);
   const pages = pageCount(awnings.length, perPage);
   const previousCount = useRef(awnings.length);
+  const previousPerPage = useRef(perPage);
+  // Mientras la fila se desplaza por código (flechas, índice, teclas, foco), el scroll pasa
+  // por páginas intermedias: no se sincroniza la etiqueta con él hasta que termina.
+  const programmaticScroll = useRef<{ target: number; timer: number } | null>(null);
+  const syncFromScrollRef = useRef<() => void>(() => undefined);
 
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -40,25 +51,71 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
     return cardAt(index)?.querySelector<HTMLElement>('[data-awning-letter]') || cardAt(index);
   }
 
-  function goTo(target: number) {
+  function endProgrammaticScroll() {
+    const current = programmaticScroll.current;
+    if (!current) return;
+    window.clearTimeout(current.timer);
+    programmaticScroll.current = null;
+    syncFromScrollRef.current();
+  }
+
+  function startProgrammaticScroll(target: number) {
+    if (programmaticScroll.current) window.clearTimeout(programmaticScroll.current.timer);
+    programmaticScroll.current = { target, timer: window.setTimeout(endProgrammaticScroll, PROGRAMMATIC_SCROLL_TIMEOUT) };
+  }
+
+  function goTo(target: number, behavior: ScrollBehavior = scrollBehavior()) {
     const track = trackRef.current;
     const next = Math.max(0, Math.min(pages - 1, target));
     const first = cardAt(next * perPage);
-    if (track && first) track.scrollTo({ left: first.offsetLeft, behavior: 'smooth' });
+    if (track && first) {
+      startProgrammaticScroll(first.offsetLeft);
+      track.scrollTo({ left: first.offsetLeft, behavior });
+    }
     setPage(next);
+    return next;
   }
 
-  // Al añadir un toldo, la fila salta a su bloque.
+  // Termina el desplazamiento por código cuando la fila llega a su destino. Un «scrollend»
+  // de un desplazamiento anterior, interrumpido a medias, no cuenta.
   useEffect(() => {
-    if (awnings.length > previousCount.current) goTo(pageOfIndex(awnings.length - 1, perPage));
+    const track = trackRef.current;
+    if (!track) return;
+    const onScrollEnd = () => {
+      const current = programmaticScroll.current;
+      if (!current) return;
+      const maxScrollLeft = track.scrollWidth - track.clientWidth;
+      const arrived = Math.abs(track.scrollLeft - Math.min(current.target, maxScrollLeft)) <= 4;
+      if (arrived) endProgrammaticScroll();
+    };
+    track.addEventListener('scrollend', onScrollEnd);
+    return () => track.removeEventListener('scrollend', onScrollEnd);
+  }, []);
+
+  useEffect(() => () => {
+    if (programmaticScroll.current) window.clearTimeout(programmaticScroll.current.timer);
+  }, []);
+
+  // Al añadir un toldo, la fila salta a su bloque. Solo si llega uno: las cargas de
+  // varios a la vez (autorrellenar, reutilizar datos, borrador recuperado) no mueven la fila.
+  useEffect(() => {
+    const previous = previousCount.current;
     previousCount.current = awnings.length;
+    if (awnings.length === previous + 1) goTo(pageOfIndex(awnings.length - 1, perPage));
   });
 
-  // Con otro ancho cambian las tarjetas por página: la fila se recoloca en la suya. page y
-  // pages se omiten a propósito: perPage solo cambia desde el ResizeObserver, en su propio
-  // turno, así que leerlos aquí (sin dispararse por ellos) no deja el efecto desactualizado.
-  useEffect(() => { goTo(Math.min(page, pages - 1)); }, [perPage]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  // Con otro ancho cambian las tarjetas por página: la fila se recoloca en el bloque de la
+  // primera tarjeta que se veía. page y pages se omiten a propósito: perPage solo cambia
+  // desde el ResizeObserver, en su propio turno, así que leerlos aquí (sin dispararse por
+  // ellos) no deja el efecto desactualizado.
+  useEffect(() => {
+    const firstShown = page * previousPerPage.current;
+    previousPerPage.current = perPage;
+    goTo(pageOfIndex(firstShown, perPage));
+  }, [perPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // goTo y revealableCardAt se crean en cada render pero solo leen awnings, page, perPage
+  // y pages: con ellos en las dependencias el oyente siempre ve los valores actuales.
   useEffect(() => onAwningFocus((letter) => {
     const index = awnings.findIndex((_, position) => awningLetter(position) === letter);
     if (index < 0) return;
@@ -85,11 +142,11 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
     } else {
       window.setTimeout(reveal, 250);
     }
-  }));
+  }), [awnings, page, perPage, pages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function syncPageFromScroll() {
     const track = trackRef.current;
-    if (!track) return;
+    if (!track || programmaticScroll.current) return;
     // Con las ranuras de relleno el último bloque siempre llena una página, así que el
     // navegador ya no recorta el scroll antes del offset "ideal". Se deja igualmente el
     // tope como red de seguridad ante el redondeo de subpíxel del cálculo de abajo.
@@ -98,10 +155,40 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
     if (track.scrollLeft >= maxScrollLeft - 1) { setPage(pages - 1); return; }
     setPage(Math.round(track.scrollLeft / (track.clientWidth + BLOCK_GAP)));
   }
+  useEffect(() => { syncFromScrollRef.current = syncPageFromScroll; });
+
+  // El foco (Tab, o un fill() de las pruebas) puede caer en una tarjeta de otro bloque: el
+  // navegador desplaza la fila lo justo para enseñarla y la deja a media tarjeta. Se
+  // recoloca en el bloque de esa tarjeta. El navegador desplaza después de avisar del
+  // foco, así que se espera un fotograma para no quedar pisado por ese desplazamiento. Y
+  // sin animación: al escribir, el navegador vuelve a asegurar que se ve el cursor y eso
+  // cortaba a medias un desplazamiento suave, con la fila de nuevo en el bloque anterior.
+  function onTrackFocus(event: React.FocusEvent) {
+    const slot = (event.target as HTMLElement).closest<HTMLElement>('[data-awning-index]');
+    if (!slot || !trackRef.current?.contains(slot)) return;
+    const index = Number(slot.dataset.awningIndex);
+    const target = pageOfIndex(index, perPage);
+    if (target === page) return;
+    startProgrammaticScroll(Number.NaN);
+    window.requestAnimationFrame(() => goTo(target, 'auto'));
+  }
+
+  function focusFirstOf(pageIndex: number) {
+    const slot = cardAt(pageIndex * perPage);
+    const first = Array.from(slot?.querySelectorAll<HTMLElement>(FOCUSABLE) || [])
+      .find((element) => !element.matches(':disabled'));
+    first?.focus({ preventScroll: true });
+  }
 
   function onKeyDown(event: React.KeyboardEvent) {
-    if (event.key === 'PageDown') { event.preventDefault(); goTo(page + 1); }
-    if (event.key === 'PageUp') { event.preventDefault(); goTo(page - 1); }
+    if (event.key !== 'PageDown' && event.key !== 'PageUp') return;
+    event.preventDefault();
+    const next = goTo(page + (event.key === 'PageDown' ? 1 : -1));
+    // Con el foco dentro de una tarjeta, pasa a la primera del bloque nuevo: si se quedara
+    // en la anterior, ya no se vería y el siguiente Tab devolvería la fila atrás.
+    const focused = document.activeElement;
+    const inCard = focused instanceof HTMLElement && focused.closest('[data-awning-index]') && trackRef.current?.contains(focused);
+    if (inCard && next !== page) focusFirstOf(next);
   }
 
   const firstVisible = page * perPage;
@@ -111,18 +198,22 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
     <div className={`awning-blocks${reading ? ' is-reading' : ''}`} onKeyDown={onKeyDown}>
       {awnings.length > 1 && (
         <nav className="awning-index" aria-label="Índice de toldos">
-          {awnings.map((awning, index) => (
-            <button
-              key={awning.id}
-              type="button"
-              className={`awning-index-item is-${statuses[index]?.kind || 'ok'}${isVisible(index) ? ' is-visible' : ''}`}
-              aria-current={isVisible(index) ? 'true' : undefined}
-              onClick={() => goTo(pageOfIndex(index, perPage))}
-            >
-              <strong>{awningLetter(index)}</strong>
-              <span>{statuses[index]?.label || '✓'}</span>
-            </button>
-          ))}
+          {awnings.map((awning, index) => {
+            const status = statuses[index] || { kind: 'ok', label: '✓' };
+            return (
+              <button
+                key={awning.id || index}
+                type="button"
+                className={`awning-index-item is-${status.kind}${isVisible(index) ? ' is-visible' : ''}`}
+                aria-current={isVisible(index) ? 'true' : undefined}
+                aria-label={`Toldo ${awningLetter(index)}: ${status.kind === 'ok' ? 'completo' : status.label}`}
+                onClick={() => goTo(pageOfIndex(index, perPage))}
+              >
+                <strong>{awningLetter(index)}</strong>
+                <span>{status.label}</span>
+              </button>
+            );
+          })}
         </nav>
       )}
 
@@ -130,10 +221,17 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
         ref={trackRef}
         className="awning-grid awning-blocks-track"
         style={{ '--per-page': perPage } as React.CSSProperties}
+        tabIndex={0}
+        aria-label="Tarjetas de toldos (Re Pág y Av Pág cambian de bloque)"
         onScroll={syncPageFromScroll}
+        onFocus={onTrackFocus}
       >
         {awnings.map((awning, index) => (
-          <div key={awning.id} className="awning-blocks-slot" data-awning-index={index}>
+          <div
+            key={awning.id || index}
+            className={`awning-blocks-slot${index % perPage === 0 ? ' is-page-start' : ''}`}
+            data-awning-index={index}
+          >
             {renderCard(awning, index)}
           </div>
         ))}
