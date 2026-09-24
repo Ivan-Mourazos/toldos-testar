@@ -115,6 +115,22 @@ Parte no se puede sacar: muchas líneas dicen "de diferentes medidas". Lo que s�
 
 Pruebas: casos reales de esos pedidos en `orderAutofill.test.js`, y volver a pasar la medición para comparar las cifras.
 
+**Resultado (24/09/2026, plan 4)**, con los mismos 90 pedidos:
+
+| | Antes | Después |
+|---|---|---|
+| Toldos reconocidos | 38 | 37 |
+| Toldos completos | 12 | 12 |
+| Toldos sin tela que reciben una propuesta | — | 23 de 24 |
+| Falta dispositivo | 15 | 14 |
+| Falta lacado | 1 | 0 |
+
+- Los toldos reconocidos bajan porque ya no se cuenta el Perla Box falso de la reposición de AR2604730.
+- Los completos no suben, y es lo esperado:
+  - la tela se propone pero no se pone sola;
+  - las medidas de «diferentes medidas» no están en RPS;
+  - las cortinas con accionamiento manual siguen pidiendo elegir entre máquina interior y exterior.
+
 ## Fuera de alcance
 
 - **Leer de CoordinaOT** si un pedido está aprobado. Es otro proyecto; por ahora se pregunta al generar.
