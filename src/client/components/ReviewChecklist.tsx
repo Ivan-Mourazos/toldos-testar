@@ -17,6 +17,7 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
 }) {
   const order = review.order;
   const [diagnostics, setDiagnostics] = useState<Diagnostic[] | null>(null);
+  const [onlyWithWarnings, setOnlyWithWarnings] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -35,6 +36,10 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
   return (
     <section className="review-checklist" aria-label="Qué revisar">
       <h3>Qué revisar</h3>
+      <label className="review-checklist-toggle">
+        <input type="checkbox" checked={onlyWithWarnings} onChange={(event) => setOnlyWithWarnings(event.target.checked)} />
+        Solo los que tienen avisos
+      </label>
       <ol>
         {order.awnings.map((awning, index) => {
           const letter = awningLetter(index);
@@ -44,6 +49,7 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
           const pending = own.filter((item) => item.level === 'pending').length;
           const warnings = own.filter((item) => item.level === 'warn').length;
           const state = missing.length || errors || pending ? 'error' : warnings ? 'warn' : 'ok';
+          if (onlyWithWarnings && state === 'ok') return null;
           return (
             <li key={awning.id || index}>
               <button type="button" className={`review-checklist-row is-${state}`} onClick={() => onFocusAwning(letter)}>

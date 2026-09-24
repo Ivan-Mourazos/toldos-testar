@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { ReviewPackage, ReviewSummary, RuleParameters } from '../types';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
-import { ReviewDecisionDialog, type ReviewDecision } from '../components/ReviewDecisionDialog';
 import { OrdersInbox } from '../components/OrdersInbox';
 
 export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCount, onOpen, onReuse, onToast, onConfirm }: {
@@ -21,9 +20,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
   const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
-  const [approving, setApproving] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [decision, setDecision] = useState<ReviewDecision | null>(null);
   const listRequestId = useRef(0);
 
   useEffect(() => {
@@ -103,67 +100,14 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
     }
   }
 
-  function askDecision(mode: ReviewDecision['mode']) {
-    if (!selected || !selectedReview) return;
-    setDecision({ mode, orderCode: selected.orderCode, defaultReviewer: selectedReview.order.reviewer || selectedReview.order.technician || '' });
-  }
-
-  async function submitDecision({ reviewer, note }: { reviewer: string; note: string }) {
-    const current = decision;
-    setDecision(null);
-    if (!current) return;
-    if (current.mode === 'approve') await approveSelected(reviewer, note);
-    else await returnSelected(reviewer, note);
-  }
-
-  async function returnSelected(reviewer: string, note: string) {
-    if (!selected) return;
-    setApproving(true);
-    try {
-      const response = await fetch(`/api/reviews/${encodeURIComponent(selected.orderCode)}/request-changes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reviewer, note })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'No se pudo devolver el pedido.');
-      updateLocalReview(data.review as ReviewPackage);
-      onToast(`Pedido ${selected.orderCode} devuelto al técnico con tu nota.`, { tone: 'success', title: 'Pedido devuelto' });
-    } catch (error) {
-      onToast(error instanceof Error ? error.message : 'No se pudo devolver el pedido.', { tone: 'error' });
-    } finally {
-      setApproving(false);
-    }
-  }
-
-  async function approveSelected(reviewer: string, note: string) {
-    if (!selected || !selectedReview) return;
-    setApproving(true);
-    try {
-      const response = await fetch(`/api/reviews/${encodeURIComponent(selected.orderCode)}/mark-approved`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reviewer, note })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'No se pudo aprobar el pedido.');
-      updateLocalReview(data.review as ReviewPackage);
-      onToast(`Pedido ${selected.orderCode} aprobado. Aún no se ha generado ningún archivo.`, { tone: 'success', title: 'Revisión aprobada' });
-    } catch (error) {
-      onToast(error instanceof Error ? error.message : 'No se pudo aprobar el pedido.', { tone: 'error' });
-    } finally {
-      setApproving(false);
-    }
-  }
-
   async function generateSelected() {
-    if (!selected || !selectedReview || selected.status !== 'APPROVED') return;
+    if (!selected || !selectedReview || selected.status === 'PRODUCED') return;
     const targetCode = selected.orderCode;
     const initialChoice = await onConfirm({
       title: `Generar archivos de ${targetCode}`,
-      message: 'Se guardará el planteamiento PDF en Planteamientos y un Excel de reserva por cada OF en Subida de material.',
+      message: '¿Está aprobado en CoordinaOT? Se guardará el PDF definitivo en Planteamientos y un Excel de reserva por cada OF en Subida de material.',
       details: [`${targetCode}-1.pdf`, ...selectedReview.summary.ofs.map((of) => `${of}.xls`)],
-      confirmLabel: 'Generar archivos',
+      confirmLabel: 'Sí, generar archivos',
       cancelLabel: 'Ahora no',
       tone: 'warning'
     });
@@ -222,6 +166,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
           tone: 'success',
           title: 'Archivos generados'
         });
+        setSelectedCode('');
         return;
       }
     } catch (error) {
@@ -250,30 +195,19 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
             onOpen={setSelectedCode}
           />
         : (
-          <>
-            <button type="button" className="ghost-button reviews-back-button" onClick={() => setSelectedCode('')}>← Pedidos</button>
-            <ReviewOrderDetail
-              review={selectedReview}
-              parameters={parameters}
-              loading={detailLoading}
-              canEdit={Boolean(selected && isPending(selected))}
-              canReuse={Boolean(selected && isReviewed(selected))}
-              canApprove={Boolean(selected && isPending(selected))}
-              canGenerate={Boolean(selected && selected.status === 'APPROVED')}
-              disabled={working || approving || generating}
-              approving={approving}
-              generating={generating}
-              onEdit={() => void openSelected()}
-              onReuse={() => void reuseSelected()}
-              listCollapsed={true}
-              onToggleList={() => setSelectedCode('')}
-              onApprove={() => askDecision('approve')}
-              onReturn={() => askDecision('return')}
-              onGenerate={() => void generateSelected()}
-            />
-          </>
+          <ReviewOrderDetail
+            review={selectedReview}
+            parameters={parameters}
+            loading={detailLoading}
+            currentUser={currentUser}
+            disabled={working || generating}
+            generating={generating}
+            onBack={() => setSelectedCode('')}
+            onEdit={() => void openSelected()}
+            onReuse={() => void reuseSelected()}
+            onGenerate={() => void generateSelected()}
+          />
         )}
-      {decision && <ReviewDecisionDialog decision={decision} onCancel={() => setDecision(null)} onSubmit={(value) => void submitDecision(value)} />}
     </section>
   );
 }
@@ -282,14 +216,6 @@ function reviewSummary(review: ReviewPackage): ReviewSummary {
   const { order, ...summary } = review;
   void order;
   return summary;
-}
-
-function isPending(review: Pick<ReviewSummary, 'status'>) {
-  return review.status === 'PENDING_REVIEW' || review.status === 'CHANGES_REQUESTED';
-}
-
-function isReviewed(review: Pick<ReviewSummary, 'status'>) {
-  return review.status === 'APPROVED' || review.status === 'PRODUCED';
 }
 
 async function fetchReviewDetails(orderCode: string) {
