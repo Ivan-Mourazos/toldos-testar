@@ -159,31 +159,112 @@ function NotificationToast({ toast, onDismiss }: { toast: ToastItem; onDismiss: 
   );
 }
 
+// Vuelta del foco al cerrar una confirmación. El botón de origen a menudo se desactiva
+// justo después (se guarda o se generan archivos) y entonces el navegador deja el foco en
+// el <body>. Por eso, durante un rato, mientras el foco siga sin dueño se le devuelve en
+// cuanto vuelva a poder recibirlo; una confirmación encadenada que se abra entretanto
+// hereda ese destino. Si no llega a poder, va al título de la vista, nunca al <body>.
+const FOCUS_RETURN_MS = 3000;
+let pendingFocusTarget: HTMLElement | null = null;
+let focusRetryTimer = 0;
+// Último elemento con foco: si el botón que abre la confirmación se desactiva antes de
+// abrirla («Guardar para revisión» → «Guardando…»), el foco ya está en el <body>.
+let lastFocused: HTMLElement | null = null;
+if (typeof document !== 'undefined') {
+  document.addEventListener('focusin', (event) => {
+    if (event.target instanceof HTMLElement && event.target !== document.body) lastFocused = event.target;
+  });
+}
+
+function canTakeFocus(element: HTMLElement) {
+  return element.isConnected && !element.matches(':disabled') && !element.closest('[inert]');
+}
+
+function focusHasNoOwner() {
+  return !document.activeElement || document.activeElement === document.body;
+}
+
+function takePendingFocusTarget() {
+  window.clearTimeout(focusRetryTimer);
+  const target = pendingFocusTarget;
+  pendingFocusTarget = null;
+  return target;
+}
+
+function focusViewHeading() {
+  const heading = document.querySelector<HTMLElement>('.topbar h2');
+  if (!heading) return;
+  if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+  heading.focus({ preventScroll: true });
+}
+
+function returnFocus(target: HTMLElement | null) {
+  takePendingFocusTarget();
+  if (!target || target === document.body) return;
+  if (canTakeFocus(target)) target.focus({ preventScroll: true });
+  // El origen ya no existe (p. ej. el panel que se ha cerrado): solo si nadie más ha
+  // recogido el foco (el panel lo devuelve a su botón).
+  if (!target.isConnected) {
+    if (focusHasNoOwner()) focusViewHeading();
+    return;
+  }
+  pendingFocusTarget = target;
+  const startedAt = performance.now();
+  const watch = () => {
+    if (pendingFocusTarget !== target) return;
+    const owner = document.activeElement;
+    // Otro elemento tiene el foco (el usuario siguió, u otro diálogo): se deja.
+    if (owner && owner !== document.body && owner !== target) { pendingFocusTarget = null; return; }
+    if (owner !== target && canTakeFocus(target)) target.focus({ preventScroll: true });
+    if (performance.now() - startedAt > FOCUS_RETURN_MS) {
+      pendingFocusTarget = null;
+      if (focusHasNoOwner()) focusViewHeading();
+      return;
+    }
+    focusRetryTimer = window.setTimeout(watch, 100);
+  };
+  focusRetryTimer = window.setTimeout(watch, 100);
+}
+
 function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onResolve: (result: DialogResult) => void }) {
   const hostRef = useRef<HTMLDialogElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
 
+  // Mientras está abierto; el evento «close» nativo que llega después de desmontarlo no
+  // debe resolver otra confirmación encadenada.
+  const active = useRef(false);
+
   // Es un <dialog> modal nativo para quedar en la capa superior: así también se ve y se
   // usa encima de otro <dialog> modal abierto (el panel «Despiece y dibujo» pregunta antes
-  // de descartar un despiece). Se abre antes del efecto de abajo, que le da el foco.
+  // de descartar un despiece). El modal nativo ya deja inerte el resto de la página, así
+  // que #root no se marca. El elemento al que vuelve el foco se toma ANTES de abrirlo
+  // (showModal mueve el foco dentro) y se devuelve al cerrarlo.
   useLayoutEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-    host.showModal();
-    return () => host.close();
-  }, []);
-
-  useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const appRoot = document.getElementById('root');
-    const rootWasInert = appRoot?.hasAttribute('inert') || false;
+    // Una confirmación encadenada (la anterior no pudo devolver el foco) hereda su destino.
+    // Si el foco está sin dueño, el último que lo tuvo (el botón que se desactivó).
+    const pending = takePendingFocusTarget();
+    const previousFocus = focusHasNoOwner()
+      ? pending || (lastFocused?.isConnected ? lastFocused : null)
+      : document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    // Si ya hay otro modal que bloquea el desplazamiento (el panel), no se toca: al cerrar
+    // se le devolvería un «hidden» que ya no le corresponde.
+    const locksScroll = document.body.style.overflow !== 'hidden';
     const previousBodyOverflow = document.body.style.overflow;
-    appRoot?.setAttribute('inert', '');
-    document.body.style.overflow = 'hidden';
+    active.current = true;
+    host.showModal();
+    if (locksScroll) document.body.style.overflow = 'hidden';
     cancelRef.current?.focus();
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
+        // Un Esc que ya atendió otro (el panel lo usa para abrir esta misma pregunta, y
+        // este oyente se añade mientras ese evento aún sube) no la descarta.
+        if (event.defaultPrevented) return;
+        // Sin el comportamiento nativo (cancel/close): Chrome cierra el diálogo por su
+        // cuenta tras varios cancel evitados, y aquí Esc ya es «descartar».
+        event.preventDefault();
         onResolve('dismiss');
         return;
       }
@@ -202,10 +283,11 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => {
+      active.current = false;
       document.removeEventListener('keydown', handleKeyDown);
-      if (appRoot && !rootWasInert) appRoot.removeAttribute('inert');
-      document.body.style.overflow = previousBodyOverflow;
-      window.setTimeout(() => previousFocus?.focus(), 0);
+      if (host.open) host.close();
+      if (locksScroll) document.body.style.overflow = previousBodyOverflow;
+      returnFocus(previousFocus);
     };
   }, [onResolve]);
 
@@ -213,7 +295,8 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
   const Icon = tone === 'danger' ? CircleAlert : tone === 'warning' ? TriangleAlert : Info;
 
   // Esc lo resuelve el manejador de teclado de arriba; el cierre nativo se evita para que
-  // el <dialog> se cierre solo al desmontarse.
+  // el <dialog> se cierre solo al desmontarse. Si aun así se cerrara solo, cuenta como
+  // descartar.
   return (
     <dialog
       ref={hostRef}
@@ -222,6 +305,7 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
       aria-labelledby={`confirmation-title-${dialog.id}`}
       aria-describedby={`confirmation-message-${dialog.id}`}
       onCancel={(event) => event.preventDefault()}
+      onClose={() => { if (active.current) onResolve('dismiss'); }}
     >
     <div className="confirmation-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onResolve('dismiss'); }}>
       <section
