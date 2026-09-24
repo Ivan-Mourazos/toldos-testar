@@ -71,3 +71,25 @@ describe('OrderHeader · propuestas de tela (rediseño 4, tarea 3)', () => {
     expect(markup).not.toContain('is-chosen');
   });
 });
+
+describe('OrderHeader · resumen al terminar (rediseño 4, tarea 4)', () => {
+  it('enseña las frases del resumen antes de los contadores', () => {
+    const markup = render({
+      ...AUTOFILL,
+      summary: [
+        '8 cortinas · lacado marrón 8014 · rotulación no indicada · medidas: RPS pone «diferentes medidas»',
+        'tela: elige entre las propuestas'
+      ]
+    });
+    expect(markup).toContain('order-autofill-summary-lines');
+    expect(markup).toContain('8 cortinas · lacado marrón 8014 · rotulación no indicada · medidas: RPS pone «diferentes medidas»');
+    expect(markup).toContain('tela: elige entre las propuestas');
+    // Las frases del resumen van antes de los contadores («campos recuperados»).
+    expect(markup.indexOf('8 cortinas')).toBeLessThan(markup.indexOf('campos recuperados'));
+  });
+
+  it('sin resumen, no muestra la lista de frases', () => {
+    const markup = render({ ...AUTOFILL, summary: [] });
+    expect(markup).not.toContain('order-autofill-summary-lines');
+  });
+});

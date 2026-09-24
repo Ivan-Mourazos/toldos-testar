@@ -147,7 +147,10 @@ app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
     );
     // `_sourceText` solo sirve para calcular las propuestas: no forma parte del pedido.
     result.order.awnings.forEach((awning) => { delete awning._sourceText; });
-    if (fabricProposals.length > 0) result.fabricProposals = fabricProposals;
+    if (fabricProposals.length > 0) {
+      result.fabricProposals = fabricProposals;
+      result.summary = [...(result.summary || []), 'tela: elige entre las propuestas'];
+    }
     return res.json(result);
   } catch (error) {
     return next(error);

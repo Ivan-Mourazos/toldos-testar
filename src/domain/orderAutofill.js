@@ -79,6 +79,8 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
   }
 
   const pending = awnings.flatMap((awning, index) => describePendingAwning(awning, index));
+  const uniqueWarnings = unique(warnings);
+  const lineNotes = new Map(awnings.map((awning) => [awning.id, awning._sourceText]));
   return {
     source: 'RPSNext',
     order: {
@@ -99,8 +101,107 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
     },
     recovered: unique(recovered),
     pending: unique(pending),
-    warnings: unique(warnings)
+    warnings: uniqueWarnings,
+    summary: summarizeAutofill({ awnings, warnings: uniqueWarnings, lineNotes })
   };
+}
+
+// --- Resumen final (Tarea 4): qué se ha rellenado, qué no y por qué (rediseño 4 §10) ---
+
+// Nombres en singular para el resumen; el dominio no puede importar
+// controlLabels.ts (es del cliente), así que se repite aquí en pequeño.
+const summaryModelNames = {
+  CORTINA: 'cortina',
+  'CAMBIO CORTINA': 'cambio de cortina',
+  'CAMBIO TELA': 'cambio de tela',
+  'CAMBIO ANTICA': 'cambio de antica',
+  BAMBALINA: 'bambalina',
+  ENROLLABLE: 'lona de puerta enrollable',
+  'AMBAR BOX': 'ámbar box',
+  'AGATA BOX': 'ágata box',
+  'PERLA BOX': 'perla box',
+  'CORAL BOX': 'coral box',
+  'CUARZO BOX': 'cuarzo box',
+  MAXISCREEM: 'diana vertical',
+  ELECTRA: 'electra',
+  SELENA: 'selena',
+  HERA: 'hera',
+  ANTICA: 'antica',
+  'PUNTO RECTO': 'punto recto',
+  XACOBEO: 'xacobeo',
+  GALICIA: 'galicia',
+  'MONOBLOCK 350': 'monoblock 350',
+  'ARZUA PRO': 'arzúa pro'
+};
+
+const structureColorAccents = {
+  MARRON: 'marrón',
+  NEGRO: 'negro',
+  BLANCO: 'blanco',
+  GRIS: 'gris',
+  VERDE: 'verde',
+  BRONCE: 'bronce',
+  BURDEOS: 'burdeos',
+  MARFIL: 'marfil',
+  ANTRACITA: 'antracita'
+};
+
+// Cubre el error real de RPS «DIFRERENTES» además de «DIFERENTES».
+const differentMeasuresPattern = /\bDIF(?:E|RE)RENTES\s+MEDIDAS\b/;
+
+export function summarizeAutofill({ awnings = [], warnings = [], lineNotes = new Map() } = {}) {
+  const groups = new Map();
+  for (const awning of awnings) {
+    if (!groups.has(awning.model)) groups.set(awning.model, []);
+    groups.get(awning.model).push(awning);
+  }
+
+  const summary = [...groups.entries()].map(([model, group]) => describeModelGroupSummary(model, group, lineNotes));
+
+  const repairCount = warnings.filter((warning) => warning.startsWith('Reparación o reposición')).length;
+  if (repairCount > 0) {
+    summary.push(`${repairCount} ${repairCount === 1 ? 'reparación o reposición' : 'reparaciones o reposiciones'} sin toldo`);
+  }
+  return summary;
+}
+
+function describeModelGroupSummary(model, group, lineNotes) {
+  const name = pluralizeSummaryName(summaryModelNames[model] || model.toLowerCase(), group.length);
+  const parts = [`${group.length} ${name}`];
+
+  const colors = new Set(group.map((awning) => awning.structureColor).filter(Boolean));
+  if (colors.size === 1) {
+    const label = structureColorSummary([...colors][0]);
+    if (label) parts.push(`lacado ${label}`);
+  }
+
+  const rotulacion = group.some((awning) => awning.rotFabric === 'SI') ? 'sí'
+    : group.some((awning) => awning.rotFabric === 'NO') ? 'no'
+      : 'no indicada';
+  parts.push(`rotulación ${rotulacion}`);
+
+  const mentionsDifferentMeasures = group.some((awning) => differentMeasuresPattern.test(normalize(lineNotes.get(awning.id))));
+  if (mentionsDifferentMeasures) parts.push('medidas: RPS pone «diferentes medidas»');
+
+  return parts.join(' · ');
+}
+
+function pluralizeSummaryName(singular, count) {
+  if (count === 1) return singular;
+  const [first, ...rest] = singular.split(' ');
+  const pluralFirst = /[aeiouáéíóú]$/i.test(first) ? `${first}s` : `${first}es`;
+  return [pluralFirst, ...rest].join(' ');
+}
+
+function structureColorSummary(value) {
+  const match = /^([A-ZÁÉÍÓÚÑ ]+?)\s*(?:\(([^)]+)\))?$/.exec(String(value || '').trim());
+  if (!match) return '';
+  const name = match[1].trim();
+  const code = match[2] || '';
+  const label = structureColorAccents[name] || name.toLowerCase();
+  const digitsMatch = /(\d{4,5})/.exec(code);
+  const digits = digitsMatch ? (digitsMatch[1].length === 5 && digitsMatch[1].startsWith('0') ? digitsMatch[1].slice(1) : digitsMatch[1]) : '';
+  return digits ? `${label} ${digits}` : label;
 }
 
 function expandEditableLine(line, model) {

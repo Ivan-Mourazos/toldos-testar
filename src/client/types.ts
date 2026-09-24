@@ -601,6 +601,9 @@ export type OrderAutofill = {
   pending: string[];
   warnings: string[];
   fabricProposals?: FabricProposal[];
+  // Resumen final: qué se ha rellenado, qué no y por qué, en frases cortas
+  // (rediseño 4 §10).
+  summary?: string[];
 };
 
 export type WorkflowSettings = {

@@ -623,7 +623,7 @@ label span,
   white-space: nowrap;
 }
 
-.order-autofill-summary ul {
+.order-autofill-summary details ul {
   background: #fff;
   border: 1px solid #c8ddd8;
   border-radius: 8px;
@@ -638,6 +638,23 @@ label span,
   right: 0;
   top: 18px;
   z-index: 20;
+}
+
+/* Resumen final del autorrelleno (rediseño 4 §10): qué se ha rellenado, qué no
+   y por qué, en dos o tres frases cortas antes de los contadores. */
+.order-autofill-summary-lines {
+  display: grid;
+  flex-basis: 100%;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  order: -1;
+  padding: 0;
+}
+
+.order-autofill-summary-lines li {
+  color: #174e54;
+  font-weight: 700;
 }
 
 /* Propuestas de tela desde el texto de RPS (rediseño 4 §10): el técnico elige una

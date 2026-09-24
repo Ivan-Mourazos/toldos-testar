@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildOrderAutofill, extractOrderTextData, inferOrderModel, isRepairLine } from './orderAutofill.js';
+import { buildOrderAutofill, extractOrderTextData, inferOrderModel, isRepairLine, summarizeAutofill } from './orderAutofill.js';
 
 describe('autocompletado de pedidos RPS', () => {
   test.each(['ANTRACITA', 'ANTRACITA 7016', 'GRIS ANTRACITA RAL 7016'])(
@@ -411,5 +411,98 @@ describe('autocompletado de pedidos RPS', () => {
 
   test('«SIN ROTULACION» marca la rotulación de tela como NO', () => {
     expect(extractOrderTextData('TOLDO SIN ROTULACION', 'ARZUA PRO').rotFabric).toBe('NO');
+  });
+
+  describe('resumen al terminar (rediseño 4, tarea 4)', () => {
+    test('AR2604667 (8 cortinas, lacado común, sin rotulación, medidas diferentes)', () => {
+      const result = buildOrderAutofill({
+        header: { orderCode: 'AR.26.04667' },
+        lines: [{
+          lineId: 'ar2604667',
+          articleCode: 'CORTINAUNI',
+          description: '',
+          comment: 'POR CONFECCION E INSTALACION DE TOLDOS CORTINA ENROLLABLES, DE DIFERENTES MEDIDAS, CON ACCIONAMIENTO MANUAL. CON ESTRUCTURA DE ALUMINIO LACADO EN COLOR MARRON 8014, TORNILLERIA Y ANCLAJES EN ACERO INOXIDABLE, FABRICADOS EN LONAPOLIESTER RECUBIERTA DE PVC 580 GR/M² COLOR MARRON. INCLUYEN VENTANA EN PVC TRANSPARENTE.',
+          manufacturingOrder: '0240667',
+          quantity: 8
+        }]
+      });
+
+      expect(result.summary[0]).toBe('8 cortinas · lacado marrón 8014 · rotulación no indicada · medidas: RPS pone «diferentes medidas»');
+    });
+
+    test('AR2604716: una línea de resumen por modelo distinto, más las reparaciones descartadas', () => {
+      const result = buildOrderAutofill({
+        header: { orderCode: 'AR.26.04716' },
+        lines: [
+          {
+            lineId: 'ar2604716-complemento',
+            articleCode: 'COMPLEMENTOTF',
+            description: ' COMPLEMENTO O ACCESORIO PARA TOLDO FACHADA ',
+            comment: 'POR REPARACION DE TOLDO CORTINA, CON REPOSICION DE CADENILLAS, ABATIBLES, MOSQUETONES Y REGLETAS.',
+            manufacturingOrder: '0240716',
+            quantity: 1
+          },
+          {
+            lineId: 'ar2604716-tubo',
+            articleCode: 'MANIPUVARIOS',
+            description: 'MANIPULACION O CORTE MATERIAL (VENTAS)',
+            comment: 'POR REPOSICION DE TUBO DE CARGA DE MEDIA 389,3 CM, LACADO BLANCO, A TOLDO PERLA BOX.',
+            manufacturingOrder: '0240730',
+            quantity: 1
+          },
+          {
+            lineId: 'ar2604716-camteltol',
+            articleCode: 'CAMTELTOL',
+            description: '',
+            comment: 'CONFECCION E INSTALACION DE CAMBIO DE TELA PARA TOLDO CORTINA DE MEDIDAS 138,5 CM X 255 CM, FABRICADO EN TEJIDO ACRILICO, TINTADO MASA,COLOR NEGRO, CON VENTANA EN PVC TRANSPARENTE. INCLUYE ROTULACION MARCA MAHOU + LOCAL COMERCIAL.',
+            manufacturingOrder: '0240717',
+            quantity: 1
+          },
+          {
+            lineId: 'ar2604716-vigo',
+            articleCode: 'CAMTELTOL',
+            description: '',
+            comment: 'REF: PUB REVOLVER, VIGO CONFECCION E INSTALACION DE CAMBIOS DE TELA PARA TOLDOS, DE DIFRERENTES MEDIDAS, CON BAMBALINA DE 25 CM DE ANCHO, TERMINACION RECTA, FABRICADOS EN TEJIDO ACRILICO , TINTADO MASA, COLOR NEGRO. INCLUYE ROTULACION MARCA MAHOU + LOCAL COMERCIAL.',
+            manufacturingOrder: '0240718',
+            quantity: 3
+          }
+        ]
+      });
+
+      // Dos grupos de modelo distintos: CAMBIO CORTINA (el texto menciona «CORTINA») y
+      // CAMBIO TELA (el texto de Vigo no lo hace), cada uno con su rotulación «sí».
+      expect(result.summary).toEqual(expect.arrayContaining([
+        '1 cambio de cortina · rotulación sí',
+        '3 cambios de tela · rotulación sí · medidas: RPS pone «diferentes medidas»',
+        '2 reparaciones o reposiciones sin toldo'
+      ]));
+      expect(result.summary).toHaveLength(3);
+    });
+  });
+
+  describe('summarizeAutofill (función pura)', () => {
+    test('sin toldos ni avisos, no da ninguna línea', () => {
+      expect(summarizeAutofill({ awnings: [], warnings: [] })).toEqual([]);
+    });
+
+    test('una sola reparación usa el singular', () => {
+      const summary = summarizeAutofill({
+        awnings: [],
+        warnings: ['Reparación o reposición (OF 1): no crea toldo. «…»']
+      });
+      expect(summary).toEqual(['1 reparación o reposición sin toldo']);
+    });
+
+    test('el lacado solo aparece cuando todo el grupo comparte el mismo', () => {
+      const summary = summarizeAutofill({
+        awnings: [
+          { id: 'a', model: 'CORTINA', structureColor: 'MARRON (R-08014)', rotFabric: '' },
+          { id: 'b', model: 'CORTINA', structureColor: 'NEGRO (R-09011)', rotFabric: '' }
+        ],
+        warnings: [],
+        lineNotes: new Map()
+      });
+      expect(summary).toEqual(['2 cortinas · rotulación no indicada']);
+    });
   });
 });

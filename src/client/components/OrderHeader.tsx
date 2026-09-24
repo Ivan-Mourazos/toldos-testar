@@ -109,6 +109,11 @@ export function OrderHeader(props: Props) {
 
       {props.autofill && (
         <aside className="order-autofill-summary" aria-live="polite">
+          {props.autofill.summary && props.autofill.summary.length > 0 && (
+            <ul className="order-autofill-summary-lines">
+              {props.autofill.summary.map((line) => <li key={line}>{line}</li>)}
+            </ul>
+          )}
           <div>
             <strong>Datos obtenidos de {props.autofill.source}</strong>
             <span>{props.autofill.recovered.length} campos recuperados · {props.autofill.pending.length} {props.autofill.pending.length === 1 ? 'pendiente' : 'pendientes'} · todos editables</span>
