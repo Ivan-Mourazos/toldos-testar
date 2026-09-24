@@ -128,7 +128,7 @@ function StructurePreview({ blocks, awnings, selectedBlock, onSelect, onUpdate }
         <div className="structure-sheet-body">
           <div className="despiece-table-wrap">
             <table className="despiece-table">
-              <thead><tr><th>Nº</th><th>Nombre pieza</th><th>Referencia</th><th className="num">Un.</th><th className="num">Longitud de corte</th></tr></thead>
+              <thead><tr><th>Nº</th><th>Nombre pieza</th><th>Referencia</th><th className="num">Un.</th><th className="num">Corte (cm)</th></tr></thead>
               <tbody>{selectedBlock.despiece?.rows.map((row) => (
                 <tr key={row.num}><td className="num">{row.num}</td><td>{row.name}</td><td className={row.reference ? 'code' : 'despiece-no-ref'}>{row.reference || 'Sin código de reserva'}</td><td className="num">{row.units}</td><td className="num">{row.length === null ? '-' : `${formatDecimal(row.length)} cm`}</td></tr>
               ))}</tbody>

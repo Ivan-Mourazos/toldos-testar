@@ -1,7 +1,6 @@
 import type { Awning } from './types';
 
 export const storageKey = 'toldos-testar-draft-v6';
-export const historyStorageKey = 'toldos-testar-history-v1';
 
 export function uid() {
   if (typeof globalThis.crypto?.randomUUID === 'function') {

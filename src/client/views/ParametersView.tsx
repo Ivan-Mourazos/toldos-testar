@@ -326,12 +326,14 @@ const parameterModels: SelectedModel[] = [
 ];
 
 function parameterModelName(model: SelectedModel) {
-  return { current: controlLabel(model), legacy: legacyModelName(model) || controlLabel(model) };
+  const current = controlLabel(model);
+  const legacy = legacyModelName(model);
+  return { current, legacy: legacy && legacy.toLocaleUpperCase('es') !== current.toLocaleUpperCase('es') ? legacy : '' };
 }
 
 function ParameterModelTitle({ model }: { model: SelectedModel }) {
   const names = parameterModelName(model);
-  return <h2>{names.current}<small>RPS · {names.legacy}</small></h2>;
+  return <h2>{names.current}{names.legacy && <small>RPS · {names.legacy}</small>}</h2>;
 }
 
 type ArzuaParametersProps = {
@@ -606,13 +608,13 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
           <span className="parameter-model-trigger-icon"><Layers3 aria-hidden="true" /></span>
           <span className="parameter-model-trigger-copy">
             <strong>{selectedNames.current}</strong>
-            <small><span>RPS</span>{selectedNames.legacy}</small>
+            {selectedNames.legacy && <small><span>RPS</span>{selectedNames.legacy}</small>}
           </span>
           <ChevronDown className={open ? 'is-open' : ''} aria-hidden="true" />
         </button>
         {open && (
           <div className="parameter-model-menu" role="listbox" aria-label="Modelos configurables">
-            <header><span>Modelos actuales</span><small>Debajo aparece su denominación anterior en RPS</small></header>
+            <header><span>Modelos actuales</span><small>Denominación RPS cuando es distinta</small></header>
             <div className="parameter-model-options">
               {parameterModels.map((model) => {
                 const names = parameterModelName(model);
@@ -626,7 +628,7 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
                     className={active ? 'is-active' : ''}
                     onClick={() => { onSelectModel(model); setOpen(false); }}
                   >
-                    <span><strong>{names.current}</strong><small><span>RPS</span>{names.legacy}</small></span>
+                    <span><strong>{names.current}</strong>{names.legacy && <small><span>RPS</span>{names.legacy}</small>}</span>
                     {active && <Check aria-hidden="true" />}
                   </button>
                 );
@@ -635,7 +637,7 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
           </div>
         )}
       </div>
-      <small>{parameterModels.length} modelos · nombre actual y denominación de RPS siempre visibles</small>
+      <small>{parameterModels.length} modelos · denominación de RPS visible cuando es distinta</small>
     </div>
   );
 }

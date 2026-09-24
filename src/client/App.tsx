@@ -310,7 +310,7 @@ export default function App() {
       setReturnNote(null);
       draft.resetDraft();
       ruleSettings.restoreParameters();
-      notify(`${data.review.orderCode}.pdf guardado en ${data.savedPath}. El formulario se ha limpiado.`, { tone: 'success', title: 'Guardado para revisión' });
+      notify(`Guardado en Pedidos para revisión: ${data.review.orderCode}.pdf`, { tone: 'success', title: 'Guardado para revisión' });
     } catch {
       notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
     } finally {

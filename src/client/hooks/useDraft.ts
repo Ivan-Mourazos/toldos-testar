@@ -1,8 +1,8 @@
 import { normalizeFabricImage } from '../../domain/fabricImage.js';
 import { normalizeStructureEdit } from '../../domain/structureEdits.js';
-import { useEffect, useState } from 'react';
-import type { Awning, DraftState, HistoryEntry } from '../types';
-import { createAwning, storageKey, historyStorageKey, todayIso, uid } from '../constants';
+import { useState } from 'react';
+import type { Awning, DraftState } from '../types';
+import { createAwning, storageKey, todayIso, uid } from '../constants';
 import { formOptions, getModelBehavior, getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
 import { inferHeraVariant, normalizeHeraJoin } from '../../domain/heraParameters.js';
@@ -276,18 +276,6 @@ function clearStoredDrafts() {
   draftStorageKeys.forEach((key) => localStorage.removeItem(key));
 }
 
-function getInitialHistory(): HistoryEntry[] {
-  if (typeof localStorage === 'undefined') return [];
-
-  try {
-    const saved = JSON.parse(localStorage.getItem(historyStorageKey) || '[]');
-    return Array.isArray(saved) ? saved : [];
-  } catch {
-    localStorage.removeItem(historyStorageKey);
-    return [];
-  }
-}
-
 export function useDraft() {
   const [initialDraft] = useState(() => {
     clearStoredDrafts();
@@ -307,11 +295,6 @@ export function useDraft() {
   const [rotBamba, setRotBamba] = useState(initialDraft.rotBamba);
   const [notes, setNotes] = useState(initialDraft.notes);
   const [awnings, setAwnings] = useState<Awning[]>(initialDraft.awnings);
-  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>(() => getInitialHistory());
-
-  useEffect(() => {
-    localStorage.setItem(historyStorageKey, JSON.stringify(historyEntries.slice(0, 80)));
-  }, [historyEntries]);
 
   function updateAwning(id: string, patch: Partial<Awning>) {
     setAwnings((current) =>
@@ -359,15 +342,11 @@ export function useDraft() {
     setAwnings((current) => current.filter((awning) => awning.id !== id));
   }
 
-  function reuseHistory(entry: HistoryEntry) {
-    loadOrder(buildReusableDraft(entry));
-  }
-
   function reuseOrder(entry: DraftState) {
     loadOrder(buildReusableDraft(entry));
   }
 
-  function loadOrder(entry: DraftState | HistoryEntry) {
+  function loadOrder(entry: DraftState) {
     const fallback = defaultDraft();
     setOrderCode(entry.orderCode);
     setCustomer(entry.customer);
@@ -421,12 +400,10 @@ export function useDraft() {
     rotBamba, setRotBamba,
     notes, setNotes,
     awnings,
-    historyEntries, setHistoryEntries,
     updateAwning,
     addAwning,
     duplicateAwning,
     removeAwning,
-    reuseHistory,
     reuseOrder,
     loadOrder,
     resetDraft

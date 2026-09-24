@@ -283,7 +283,7 @@ export function ReviewsView({ refreshKey, parameters, onOpen, onReuse, onToast, 
     <section className={`reviews-layout${listCollapsed ? ' is-list-collapsed' : ''}`}>
       <div className="review-inbox panel">
         <div className="section-header review-toolbar">
-          <div><h2>{viewMode === 'queue' ? 'Por revisar' : viewMode === 'approved' ? 'Aprobados' : 'Archivos generados'}</h2><span>{scopedReviews.length} pedidos en {year}</span></div>
+          <div><h2>{viewMode === 'queue' ? 'Por revisar' : viewMode === 'approved' ? 'Aprobados' : 'Archivos generados'}</h2><span>{scopedReviews.length} {scopedReviews.length === 1 ? 'pedido' : 'pedidos'} en {year}</span></div>
           <button className="icon-button" type="button" disabled={generating} onClick={() => void load()} aria-label="Actualizar"><RefreshCw aria-hidden="true" /></button>
         </div>
         <div className="review-view-switch" role="group" aria-label="Vista de revisión">

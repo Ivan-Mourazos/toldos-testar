@@ -587,28 +587,6 @@ export type DraftState = {
   awnings: Awning[];
 };
 
-export type HistoryEntry = {
-  id: string;
-  createdAt: string;
-  orderCode: string;
-  customer: string;
-  orderDate: string;
-  technician: string;
-  reviewer: string;
-  fabric: string;
-  sameFabric: boolean;
-  remate: string;
-  remateColor: string;
-  structureColor: string;
-  rotTela: string;
-  rotBamba: string;
-  ofs: string[];
-  models: string[];
-  awnings: Awning[];
-  diagnostics: number;
-  notes: string;
-};
-
 export type OrderAutofill = {
   source: string;
   order: DraftState;

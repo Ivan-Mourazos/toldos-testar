@@ -183,7 +183,7 @@ async function verifyBrowserCase(browserInstance, url) {
 
   await preview.getByRole('button', { name: 'Cerrar vista previa' }).click();
   await page.getByRole('button', { name: 'Guardar para revisión' }).click();
-  await page.getByText(/AR2603332\.pdf guardado en/).waitFor();
+  await page.getByText(/Guardado en Pedidos para revisión: AR2603332\.pdf/).waitFor();
 
   await page.getByRole('button', { name: 'Revisión', exact: true }).click();
   const reviewItem = page.getByRole('button').filter({ hasText: 'AR2603332' });
