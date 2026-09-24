@@ -5173,7 +5173,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
    ser una columna flex: la cabecera, la barra de herramientas y el pie se quedan fijos
    y solo la página del PDF (o la reserva) se encoge para que el pie siempre se vea sin
    necesidad de scroll. No toca el visor fuera de este diálogo. */
-.review-preview-dialog { display: flex; flex-direction: column; overflow: hidden; }
+.review-preview-dialog { display: flex; flex-direction: column; height: calc(100vh - 48px); overflow: hidden; }
 .review-preview-dialog .model-picker-header { flex: 0 0 auto; }
 .review-preview-dialog .review-inline-preview { display: flex; flex: 1; flex-direction: column; min-height: 0; }
 .review-preview-dialog .review-inline-preview > header,
