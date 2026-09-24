@@ -8,6 +8,7 @@ import { formatDecimal } from '../constants';
 import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { collectFabricMaterialKeys, roundFabricMeters } from '../../domain/reservationFabrics.js';
+import { requestAwningFocus } from '../awningFocus';
 
 type Props = {
   calculation: Calculation | null;
@@ -58,7 +59,7 @@ export function LiveResults({ calculation, state, awnings, onUpdate }: Props) {
           {awningSummaries.map((summary) => (
             <li key={summary.letter} className={summary.errors ? 'badge-danger' : 'badge-warn'}>
               <AlertCircle aria-hidden="true" />
-              <button type="button" className="diagnostics-awning-link" onClick={() => focusAwningCard(summary.letter)}>
+              <button type="button" className="diagnostics-awning-link" onClick={() => requestAwningFocus(summary.letter)}>
                 Toldo {summary.letter}: {summary.count} {summary.count === 1 ? 'aviso' : 'avisos'} · ver en su tarjeta
               </button>
             </li>
@@ -276,12 +277,4 @@ function buildStatusText(state: CalculationState, calculation: Calculation | nul
   if (state === 'error') return 'Hay datos pendientes de revisar';
   if (calculation) return 'Estructura, tela y reserva se actualizan al cambiar el pedido';
   return 'Esperando datos del pedido';
-}
-
-function focusAwningCard(letter: string) {
-  const card = document.querySelector<HTMLElement>(`.awning-grid [data-awning-letter="${letter}"]`);
-  if (!card) return;
-  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  card.classList.add('is-flash');
-  window.setTimeout(() => card.classList.remove('is-flash'), 1400);
 }

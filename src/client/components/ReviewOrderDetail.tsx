@@ -6,6 +6,7 @@ import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { ReviewChecklist } from './ReviewChecklist';
 import { controlLabel } from './controlLabels';
 import { canGenerateReview } from '../generatePermission';
+import { requestAwningFocus } from '../awningFocus';
 
 const noop = () => undefined;
 
@@ -35,7 +36,6 @@ export function ReviewOrderDetail({
   onReuse: () => void;
   onGenerate: () => void;
 }) {
-  const formRef = useRef<HTMLFieldSetElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewButtonRef = useRef<HTMLButtonElement>(null);
   const availableModels = useMemo(
@@ -63,16 +63,6 @@ export function ReviewOrderDetail({
   const generateNote = !canGenerate && !isProduced && review.order.technician
     ? `Lo genera el autor (${controlLabel(review.order.technician)})`
     : '';
-
-  // El formulario va en su propio panel con desplazamiento: se lleva la tarjeta del
-  // toldo elegido en "Qué revisar" a la vista y se resalta un momento.
-  function focusAwning(letter: string) {
-    const card = formRef.current?.querySelector<HTMLElement>(`[data-awning-letter="${letter}"]`);
-    if (!card) return;
-    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    card.classList.add('is-flash');
-    window.setTimeout(() => card.classList.remove('is-flash'), 1400);
-  }
 
   return (
     <section className="review-reader panel" aria-label={`Datos de revisión de ${review.orderCode}`}>
@@ -130,9 +120,9 @@ export function ReviewOrderDetail({
         </div>
       )}
 
-      <ReviewChecklist review={review} parameters={reviewParameters} onFocusAwning={focusAwning} />
+      <ReviewChecklist review={review} parameters={reviewParameters} onFocusAwning={requestAwningFocus} />
 
-      <fieldset ref={formRef} className="review-readonly-order" disabled aria-label="Formulario del pedido en solo lectura">
+      <fieldset className="review-readonly-order" disabled aria-label="Formulario del pedido en solo lectura">
         <OrderView
           availableModelNames={availableModels}
           orderCode={review.order.orderCode}
