@@ -13,6 +13,10 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
   const mappedLines = [];
 
   for (const line of lines) {
+    if (isRepairLine(line)) {
+      warnings.push(describeRepairWarning(line));
+      continue;
+    }
     const model = inferOrderModel(line);
     if (!model) continue;
     mappedLines.push({ line, model });
@@ -59,10 +63,11 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
   if (fabric) recovered.push('Tela común');
   if (uniqueFabrics.length > 1) recovered.push('Tela por elemento');
 
-  if (mappedLines.length === 0) {
+  const nonRepairLines = lines.filter((line) => !isRepairLine(line));
+  if (mappedLines.length === 0 && nonRepairLines.length > 0) {
     warnings.push('RPS no contiene líneas que se puedan asociar con un modelo admitido.');
   }
-  const unmappedManufactured = lines.filter((line) => clean(line.manufacturingOrder) && !inferOrderModel(line) && !isAuxiliaryLine(line));
+  const unmappedManufactured = nonRepairLines.filter((line) => clean(line.manufacturingOrder) && !inferOrderModel(line) && !isAuxiliaryLine(line));
   if (unmappedManufactured.length > 0) {
     warnings.push(`${unmappedManufactured.length} línea(s) con OF no corresponden a un toldo o cambio de tela reconocido y no se añadieron.`);
   }
@@ -120,6 +125,29 @@ function composeCustomerName(customerValue, businessValue) {
   if (!customer) return business;
   if (!business || normalize(customer) === normalize(business)) return customer;
   return `${customer} - ${business}`;
+}
+
+// Palabras de reparación/reposición: sin ellas la línea no se toca. Con ellas,
+// solo se descarta si el texto no describe además una confección nueva y el
+// código de artículo, por sí solo (sin el texto), no es uno de toldo o cambio
+// de tela conocido.
+const repairWordsPattern = /\b(REPOSICION|REPARACION|MANIPULACION|CORTE MATERIAL)\b/;
+const newAwningPattern = /\bCONFECCION( E INSTALACION)? DE (TOLDO|TOLDOS|CAMBIO|CAMBIOS)\b/;
+
+export function isRepairLine(line = {}) {
+  const description = normalize(`${line.description || ''} ${line.articleDescription || ''}`);
+  const comment = normalize(line.comment);
+  const text = `${description} ${comment}`;
+  if (!repairWordsPattern.test(text)) return false;
+  if (newAwningPattern.test(text)) return false;
+  if (inferOrderModel({ articleCode: line.articleCode })) return false;
+  return true;
+}
+
+function describeRepairWarning(line) {
+  const of = cleanOf(line.manufacturingOrder);
+  const excerpt = clean(line.comment).slice(0, 80);
+  return `Reparación o reposición (OF ${of}): no crea toldo. «${excerpt}…»`;
 }
 
 export function inferOrderModel(line = {}) {

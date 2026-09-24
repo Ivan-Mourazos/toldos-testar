@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildOrderAutofill, extractOrderTextData, inferOrderModel } from './orderAutofill.js';
+import { buildOrderAutofill, extractOrderTextData, inferOrderModel, isRepairLine } from './orderAutofill.js';
 
 describe('autocompletado de pedidos RPS', () => {
   test.each(['ANTRACITA', 'ANTRACITA 7016', 'GRIS ANTRACITA RAL 7016'])(
@@ -297,5 +297,72 @@ describe('autocompletado de pedidos RPS', () => {
     });
     expect(result.order.customer).toBe('SANCHEZ GOMEZ, NURIA');
     expect(result.order.orderDate).toBe('');
+  });
+
+  test('AR2604730 (MANIPUVARIOS, reposición de tubo de carga) se reconoce como reparación', () => {
+    const line = {
+      lineId: 'ar2604730',
+      articleCode: 'MANIPUVARIOS',
+      description: 'MANIPULACION O CORTE MATERIAL (VENTAS)',
+      comment: 'POR REPOSICION DE TUBO DE CARGA DE MEDIA 389,3 CM, LACADO BLANCO, A TOLDO PERLA BOX.',
+      manufacturingOrder: '0240730',
+      quantity: 1
+    };
+    expect(isRepairLine(line)).toBe(true);
+
+    const result = buildOrderAutofill({ header: { orderCode: 'AR.26.04730' }, lines: [line] });
+
+    expect(result.order.awnings).toHaveLength(0);
+    expect(result.warnings).toEqual(['Reparación o reposición (OF 0240730): no crea toldo. «POR REPOSICION DE TUBO DE CARGA DE MEDIA 389,3 CM, LACADO BLANCO, A TOLDO PERLA …»']);
+  });
+
+  test('AR2604716 (COMPLEMENTOTF, reparación de cortina) se reconoce como reparación', () => {
+    const line = {
+      lineId: 'ar2604716-complemento',
+      articleCode: 'COMPLEMENTOTF',
+      description: ' COMPLEMENTO O ACCESORIO PARA TOLDO FACHADA ',
+      comment: 'POR REPARACION DE TOLDO CORTINA, CON REPOSICION DE CADENILLAS, ABATIBLES, MOSQUETONES Y REGLETAS.',
+      manufacturingOrder: '0240716',
+      quantity: 1
+    };
+    expect(isRepairLine(line)).toBe(true);
+
+    const result = buildOrderAutofill({ header: { orderCode: 'AR.26.04716' }, lines: [line] });
+
+    expect(result.order.awnings).toHaveLength(0);
+    expect(result.warnings).toEqual(['Reparación o reposición (OF 0240716): no crea toldo. «POR REPARACION DE TOLDO CORTINA, CON REPOSICION DE CADENILLAS, ABATIBLES, MOSQUE…»']);
+  });
+
+  test('las líneas de reparación no cuentan en el aviso genérico de OF sin toldo reconocido', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.04716' },
+      lines: [{
+        lineId: 'ar2604716-complemento',
+        articleCode: 'COMPLEMENTOTF',
+        description: ' COMPLEMENTO O ACCESORIO PARA TOLDO FACHADA ',
+        comment: 'POR REPARACION DE TOLDO CORTINA, CON REPOSICION DE CADENILLAS, ABATIBLES, MOSQUETONES Y REGLETAS.',
+        manufacturingOrder: '0240716',
+        quantity: 1
+      }]
+    });
+
+    expect(result.warnings.some((warning) => warning.includes('no corresponden a un toldo'))).toBe(false);
+  });
+
+  test('AR2604716 (CAMTELTOL, cambio de tela real) no es una reparación y crea su toldo', () => {
+    const line = {
+      lineId: 'ar2604716-camteltol',
+      articleCode: 'CAMTELTOL',
+      description: '',
+      comment: 'CONFECCION E INSTALACION DE CAMBIO DE TELA PARA TOLDO CORTINA DE MEDIDAS 138,5 CM X 255 CM, FABRICADO EN TEJIDO ACRILICO, TINTADO MASA,COLOR NEGRO, CON VENTANA EN PVC TRANSPARENTE. INCLUYE ROTULACION MARCA MAHOU + LOCAL COMERCIAL.',
+      manufacturingOrder: '0240717',
+      quantity: 1
+    };
+    expect(isRepairLine(line)).toBe(false);
+
+    const result = buildOrderAutofill({ header: { orderCode: 'AR.26.04716' }, lines: [line] });
+
+    expect(result.order.awnings).toHaveLength(1);
+    expect(result.order.awnings[0]).toMatchObject({ model: 'CAMBIO CORTINA', width: 138.5, projection: 255 });
   });
 });
