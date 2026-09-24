@@ -5221,6 +5221,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
   scroll-snap-type: x mandatory;
 }
 .awning-blocks-slot { min-width: 0; scroll-snap-align: start; }
+.awning-blocks-slot.is-filler { visibility: hidden; }
 .awning-blocks-nav { align-items: center; display: flex; gap: 8px; justify-content: center; }
 .awning-blocks-label { font-size: 12px; font-weight: 700; min-width: 90px; text-align: center; }
 .awning-blocks-dots { display: inline-flex; gap: 5px; margin-left: 8px; }

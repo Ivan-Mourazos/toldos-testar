@@ -54,7 +54,9 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
     previousCount.current = awnings.length;
   });
 
-  // Con otro ancho cambian las tarjetas por página: la fila se recoloca en la suya.
+  // Con otro ancho cambian las tarjetas por página: la fila se recoloca en la suya. page y
+  // pages se omiten a propósito: perPage solo cambia desde el ResizeObserver, en su propio
+  // turno, así que leerlos aquí (sin dispararse por ellos) no deja el efecto desactualizado.
   useEffect(() => { goTo(Math.min(page, pages - 1)); }, [perPage]); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
 
   useEffect(() => onAwningFocus((letter) => {
@@ -88,9 +90,9 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
   function syncPageFromScroll() {
     const track = trackRef.current;
     if (!track) return;
-    // El último bloque, si no llega a llenar una página, no cabe desplazado del todo a la
-    // izquierda: el navegador recorta el scroll antes de llegar a su offset "ideal". Al
-    // tope del scroll la página es la última sí o sí, sin fiarse del redondeo de abajo.
+    // Con las ranuras de relleno el último bloque siempre llena una página, así que el
+    // navegador ya no recorta el scroll antes del offset "ideal". Se deja igualmente el
+    // tope como red de seguridad ante el redondeo de subpíxel del cálculo de abajo.
     const maxScrollLeft = track.scrollWidth - track.clientWidth;
     if (maxScrollLeft <= 0) { setPage(0); return; }
     if (track.scrollLeft >= maxScrollLeft - 1) { setPage(pages - 1); return; }
@@ -134,6 +136,12 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
           <div key={awning.id} className="awning-blocks-slot" data-awning-index={index}>
             {renderCard(awning, index)}
           </div>
+        ))}
+        {/* Si el último bloque va corto (p. ej. 5 toldos a 3 por página), rellenamos con
+            ranuras invisibles: si no, el bloque no llena la página y la tarjeta anterior
+            asoma junto a la última. */}
+        {Array.from({ length: perPage * pages - awnings.length }, (_, filler) => (
+          <div key={`filler-${filler}`} className="awning-blocks-slot is-filler" aria-hidden="true" />
         ))}
       </div>
 
