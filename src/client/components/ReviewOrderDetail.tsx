@@ -180,7 +180,8 @@ function ReviewPreviewDialog({ review, parameters, onClose }: {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeRef.current?.focus();
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
+      // Con el visor en pantalla completa (<dialog> modal), Esc solo cierra ese nivel.
+      if (event.key === 'Escape' && !document.querySelector('dialog:modal')) onClose();
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => {

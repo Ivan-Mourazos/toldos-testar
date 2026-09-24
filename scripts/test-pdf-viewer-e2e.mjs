@@ -132,8 +132,10 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
       await fullscreen.getByText('Página 2 de 3').waitFor();
       await page.keyboard.press('Escape');
       await fullscreen.waitFor({ state: 'hidden' });
-      // El diálogo está anidado: un único Esc cierra los dos niveles (comprobado a mano),
-      // así que se vuelve directamente al pedido abierto, no al visor sin pantalla completa.
+      // El diálogo está anidado: el primer Esc solo sale de pantalla completa
+      // y el segundo cierra la vista previa.
+      await reviewViewer.getByText('Página 2 de 3').waitFor();
+      await page.keyboard.press('Escape');
       await previewDialog.waitFor({ state: 'hidden' });
       await reviewReader.waitFor();
     // El recargado en caliente de Vite (WebSocket) no es de la app: falla si otra instancia usa su puerto.
