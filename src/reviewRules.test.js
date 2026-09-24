@@ -48,13 +48,17 @@ describe('guardar sobre un pedido existente (ruta POST /api/reviews)', () => {
     const expected = { action: 'refuse', statusCode: 409, error: PRODUCED_SAVE_ERROR };
     expect(saveReviewDecision({ status: 'PRODUCED' }, false)).toEqual(expected);
     expect(saveReviewDecision({ status: 'PRODUCED' }, true)).toEqual(expected);
-    expect(PRODUCED_SAVE_ERROR).toBe('Este pedido ya está generado; usa «Reutilizar datos» para hacer uno nuevo.');
+    expect(PRODUCED_SAVE_ERROR).toBe('Este pedido ya está generado. Cambia el número de pedido para guardarlo como uno nuevo.');
   });
 });
 
 describe('reviewAuthorship — autor y revisor al guardar en el servidor', () => {
   it('pedido nuevo: el autor es quien lo guarda y no hay revisor', () => {
     expect(reviewAuthorship({ technician: 'IVÁN', reviewer: '', savedBy: 'IVÁN' })).toEqual({ technician: 'IVÁN', reviewer: '' });
+  });
+
+  it('pedido nuevo con un técnico heredado (borrador antiguo): manda quien guarda', () => {
+    expect(reviewAuthorship({ technician: 'ÁNGEL', reviewer: 'JAIME', savedBy: 'IVÁN' })).toEqual({ technician: 'IVÁN', reviewer: '' });
   });
 
   it('el autor guardado no cambia aunque el navegador mande otro técnico', () => {

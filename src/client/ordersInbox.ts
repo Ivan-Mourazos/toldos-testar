@@ -21,11 +21,11 @@ export function mergePendingReviews(lists: ReviewSummary[][]) {
   const byCode = new Map<string, ReviewSummary>();
   for (const review of lists.flat()) {
     const current = byCode.get(review.orderCode);
-    if (!current || review.updatedAt > current.updatedAt) byCode.set(review.orderCode, review);
+    if (!current || (review.updatedAt || '') > (current.updatedAt || '')) byCode.set(review.orderCode, review);
   }
   return [...byCode.values()]
     .filter((review) => isPendingGeneration(review.status))
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
 }
 
 function normalize(value: string) {

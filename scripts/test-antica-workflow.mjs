@@ -35,7 +35,9 @@ try {
   await context.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
   const page = await context.newPage();
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  await request('/api/reviews', { order });
+  // Lo guarda el autor (IVÁN) y lo corrige JAIME: queda IVÁN de autor y JAIME de revisor.
+  await request('/api/reviews', { order, savedBy: 'IVÁN' });
+  await request('/api/reviews', { order, savedBy: 'JAIME', confirmOverwrite: true });
   await page.goto(base);
   // Pedidos → Abrir (pendientes de generar) → Corregir carga el pedido en Nuevo pedido.
   async function openFromInbox(code, action = 'Abrir') {
@@ -130,7 +132,7 @@ try {
   await page.screenshot({ path: path.join(directory, 'pedido-generado.png'), fullPage: false });
   // Y el servidor no deja pisarlo al guardar, ni confirmando.
   const refused = await request('/api/reviews', { order, confirmOverwrite: true }, 'POST', 409);
-  assert.equal(refused.error, 'Este pedido ya está generado; usa «Reutilizar datos» para hacer uno nuevo.');
+  assert.equal(refused.error, 'Este pedido ya está generado. Cambia el número de pedido para guardarlo como uno nuevo.');
   assert.deepEqual(errors, []);
   console.log('OK: seis variantes, cuatro brazos, selector y persistencia de color, Pedidos → Abrir → Corregir/guardar, generar sin aprobar (API y web), pedido generado sin Corregir ni Generar, imagen, notas vacías, PDF y reserva. ' + directory);
 } finally { await browser?.close(); server.kill(); }

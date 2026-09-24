@@ -10,7 +10,7 @@ export function isPendingGeneration(status) {
   return pendingGenerationStatuses.has(status);
 }
 
-export const PRODUCED_SAVE_ERROR = 'Este pedido ya está generado; usa «Reutilizar datos» para hacer uno nuevo.';
+export const PRODUCED_SAVE_ERROR = 'Este pedido ya está generado. Cambia el número de pedido para guardarlo como uno nuevo.';
 export const NOT_GENERABLE_ERROR = 'Este pedido no se puede generar desde la web.';
 
 /**
@@ -52,7 +52,11 @@ export function saveReviewDecision(existing, confirmOverwrite) {
 export function reviewAuthorship({ existingTechnician = '', existingReviewer = '', technician = '', reviewer = '', savedBy = '' }) {
   const incomingTechnician = clean(technician);
   const saver = clean(savedBy);
-  const author = clean(existingTechnician) || incomingTechnician || saver;
+  // En un pedido nuevo manda quien guarda: un borrador antiguo o un «Corregir» con otro
+  // número pueden traer un técnico que no es quien lo está guardando.
+  const author = clean(existingTechnician) || saver || incomingTechnician;
+  // Sin autor guardado (pedido nuevo o histórico sin autor) nadie ha corregido todavía.
+  if (!clean(existingTechnician)) return { technician: author, reviewer: '' };
   const corrector = saver || (incomingTechnician !== author ? incomingTechnician : '');
   if (corrector && corrector !== author) return { technician: author, reviewer: corrector };
   const previous = clean(reviewer) || clean(existingReviewer);
