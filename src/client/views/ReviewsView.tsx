@@ -3,6 +3,7 @@ import type { ReviewPackage, ReviewSummary, RuleParameters } from '../types';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
+import { canGenerateReview } from '../generatePermission';
 
 export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCount, onOpen, onReuse, onToast, onConfirm }: {
   refreshKey: number;
@@ -101,7 +102,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, onPendingCoun
   }
 
   async function generateSelected() {
-    if (!selected || !selectedReview || selected.status === 'PRODUCED') return;
+    if (!selected || !selectedReview || !canGenerateReview(selected.status, selectedReview.order.technician, currentUser)) return;
     const targetCode = selected.orderCode;
     const initialChoice = await onConfirm({
       title: `Generar archivos de ${targetCode}`,

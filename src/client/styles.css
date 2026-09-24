@@ -5165,7 +5165,26 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .review-reader-actions { margin-left: auto; }
 .review-generate-note { color: var(--text-muted); font-size: 11px; }
 .review-preview-dialog .review-inline-preview { margin: 0; }
-.review-production-summary .review-reuse-button { margin-left: auto; }
+.review-production-summary .review-reuse-button { align-self: center; flex: 0 0 auto; margin-left: auto; }
+
+/* Fix 1 (revisión Task 6): a 1280×720 el visor de PDF se comía el pie de página
+   ("‹ Página 1 de 2 ›") porque .pdf-carousel-stage pedía una altura fija en vh que no
+   cabía dentro de .model-picker. Dentro del diálogo de Vista previa, el visor pasa a
+   ser una columna flex: la cabecera, la barra de herramientas y el pie se quedan fijos
+   y solo la página del PDF (o la reserva) se encoge para que el pie siempre se vea sin
+   necesidad de scroll. No toca el visor fuera de este diálogo. */
+.review-preview-dialog { display: flex; flex-direction: column; overflow: hidden; }
+.review-preview-dialog .model-picker-header { flex: 0 0 auto; }
+.review-preview-dialog .review-inline-preview { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.review-preview-dialog .review-inline-preview > header,
+.review-preview-dialog .generated-preview-selector,
+.review-preview-dialog .pdf-carousel-toolbar,
+.review-preview-dialog .pdf-carousel-footer,
+.review-preview-dialog .pdf-carousel-pages { flex: 0 0 auto; }
+.review-preview-dialog .pdf-carousel { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.review-preview-dialog .pdf-carousel-stage,
+.review-preview-dialog .reservation-preview,
+.review-preview-dialog .review-preview-placeholder { flex: 1; height: auto; min-height: 180px; }
 
 @container (max-width: 900px) {
   .review-checklist-row { grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr); }

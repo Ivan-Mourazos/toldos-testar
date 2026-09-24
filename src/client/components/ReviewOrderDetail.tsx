@@ -5,6 +5,7 @@ import { OrderView } from '../views/OrderView';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { ReviewChecklist } from './ReviewChecklist';
 import { controlLabel } from './controlLabels';
+import { canGenerateReview } from '../generatePermission';
 
 const noop = () => undefined;
 
@@ -53,9 +54,11 @@ export function ReviewOrderDetail({
 
   const reviewParameters = review.order.parameters || parameters;
   const produced = review.status === 'PRODUCED' && Boolean(review.production);
-  const isAuthor = Boolean(review.order.technician) && currentUser === review.order.technician;
-  const canGenerate = review.status !== 'PRODUCED' && isAuthor;
-  const generateNote = !isAuthor ? `Lo genera el autor (${controlLabel(review.order.technician)})` : '';
+  const canGenerate = canGenerateReview(review.status, review.order.technician, currentUser);
+  // Sin autor (pedidos históricos), puede generar cualquiera: no hay a quién señalar.
+  const generateNote = !canGenerate && review.status !== 'PRODUCED' && review.order.technician
+    ? `Lo genera el autor (${controlLabel(review.order.technician)})`
+    : '';
 
   // El formulario va en su propio panel con desplazamiento: se lleva la tarjeta del
   // toldo elegido en "Qué revisar" a la vista y se resalta un momento.
