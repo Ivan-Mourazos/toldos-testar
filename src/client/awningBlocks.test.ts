@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { awningStatus, cardsPerPage, pageCount, pageLabel, pageOfIndex } from './awningBlocks';
+import { awningStatus, awningStatuses, cardsPerPage, pageCount, pageLabel, pageOfIndex } from './awningBlocks';
+import { SAMPLE_FABRIC, sampleAwnings } from '../../scripts/lib/model-samples.mjs';
+import type { Awning } from './types';
 
 describe('toldos por bloques (rediseño 24/09/2026 §6)', () => {
   it('caben tarjetas de 420 px como mínimo, hasta 3', () => {
@@ -31,5 +33,24 @@ describe('toldos por bloques (rediseño 24/09/2026 §6)', () => {
     expect(awningStatus([], [{ level: 'error' }])).toEqual({ kind: 'error', label: '1 error' });
     expect(awningStatus([], [{ level: 'warn' }])).toEqual({ kind: 'warn', label: '1 aviso' });
     expect(awningStatus([], [{ level: 'warn' }, { level: 'warn' }])).toEqual({ kind: 'warn', label: '2 avisos' });
+  });
+
+  // Pedido abierto (revisión final del plan 2): el índice daba ✓ a un toldo con errores
+  // de cálculo porque no recibía los avisos. Son los mismos que «Qué revisar».
+  it('el estado de cada toldo cuenta sus avisos del cálculo, no los de otros', () => {
+    const complete = sampleAwnings('ARZUA PRO')[0].awning as Awning;
+    const awnings = [{ ...complete, id: 'a' }, { ...complete, id: 'b' }, { ...complete, id: 'c', width: 0 }];
+    const order = { fabric: SAMPLE_FABRIC, sameFabric: true };
+    const diagnostics = [
+      { level: 'error', awningId: 'b', message: 'Frente por debajo del mínimo' },
+      { level: 'warn', awningId: 'a', message: 'Aviso' },
+      { level: 'error', awningId: 'c', missingFields: [{}], message: 'Falta el frente' }
+    ];
+    expect(awningStatuses(awnings, order, diagnostics)).toEqual([
+      { kind: 'warn', label: '1 aviso' },
+      { kind: 'error', label: '1 error' },
+      { kind: 'missing', label: 'falta 1' }
+    ]);
+    expect(awningStatuses(awnings.slice(0, 2), order, [])).toEqual([{ kind: 'ok', label: '✓' }, { kind: 'ok', label: '✓' }]);
   });
 });

@@ -1,4 +1,5 @@
-import { awningLetter } from '../domain/awningCompleteness.js';
+import { awningLetter, getMissingFields } from '../domain/awningCompleteness.js';
+import type { Awning } from './types';
 
 // Toldos por bloques (rediseño 24/09/2026, §6): una fila de tarjetas que pasa de
 // bloque en bloque. Caben tantas como admita el ancho a 420 px cada una, con un
@@ -35,4 +36,19 @@ export function awningStatus(missing: unknown[], diagnostics: Array<{ level: str
   const warnings = diagnostics.filter((item) => item.level === 'warn').length;
   if (warnings) return { kind: 'warn', label: `${warnings} ${warnings === 1 ? 'aviso' : 'avisos'}` };
   return { kind: 'ok', label: '✓' };
+}
+
+type StatusDiagnostic = { level: string; awningId?: string; missingFields?: unknown[] };
+
+// Estado de cada toldo en el índice: lo que le falta y los avisos del cálculo que son
+// suyos. Los avisos de campos que faltan ya cuentan como «falta», no se repiten.
+export function awningStatuses(
+  awnings: Awning[],
+  order: { fabric: string; sameFabric: boolean },
+  diagnostics: StatusDiagnostic[]
+): AwningStatus[] {
+  return awnings.map((awning) => awningStatus(
+    getMissingFields(awning, order),
+    diagnostics.filter((item) => item.awningId === awning.id && !item.missingFields)
+  ));
 }

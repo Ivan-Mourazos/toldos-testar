@@ -1,6 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
-import type { ReviewPackage, RuleParameters } from '../types';
+import type { Calculation, ReviewPackage, RuleParameters } from '../types';
 import { OrderView } from '../views/OrderView';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { ReviewChecklist } from './ReviewChecklist';
@@ -42,6 +42,28 @@ export function ReviewOrderDetail({
     () => Array.from(new Set(review?.order.awnings.map((awning) => awning.model).filter(Boolean) || [])),
     [review]
   );
+  // Cada toldo necesita un id propio para repartir los avisos: en pedidos con el id
+  // vacío o repetido, cada fila de «Qué revisar» se llevaba los avisos de todos.
+  const order = useMemo(() => review ? withUniqueAwningIds(review.order) : null, [review]);
+  const reviewParameters = review?.order.parameters || parameters;
+  // Un solo cálculo para «Qué revisar» y para el estado de cada toldo en el índice de
+  // los bloques: si no, el índice daba ✓ a un toldo con errores de cálculo.
+  const [diagnostics, setDiagnostics] = useState<Calculation['diagnostics'] | null>(null);
+
+  useEffect(() => {
+    if (!order) return undefined;
+    const controller = new AbortController();
+    fetch('/api/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...order, parameters: reviewParameters }),
+      signal: controller.signal
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => setDiagnostics(data?.diagnostics || []))
+      .catch(() => { /* cancelado o sin conexión: el resumen sale sin avisos */ });
+    return () => controller.abort();
+  }, [order, reviewParameters]);
 
   const backButton = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>← Pedidos</button>;
 
@@ -49,11 +71,10 @@ export function ReviewOrderDetail({
     return <section className="review-reader panel panel-3d">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido y su vista previa…</div></section>;
   }
 
-  if (!review) {
+  if (!review || !order) {
     return <section className="review-reader panel panel-3d">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
   }
 
-  const reviewParameters = review.order.parameters || parameters;
   // Un pedido generado ya no se corrige ni se genera desde aquí: sus archivos ya salieron.
   // Para hacer otro parecido está «Reutilizar datos» en el bloque de archivos.
   const isProduced = review.status === 'PRODUCED';
@@ -120,7 +141,7 @@ export function ReviewOrderDetail({
         </div>
       )}
 
-      <ReviewChecklist review={review} parameters={reviewParameters} onFocusAwning={requestAwningFocus} />
+      <ReviewChecklist order={order} diagnostics={diagnostics} onFocusAwning={requestAwningFocus} />
 
       {/* Sin fieldset desactivado: dejaría sin usar el índice y las flechas de los bloques.
           Cada tarjeta y la cabecera se desactivan por su cuenta en modo lectura. */}
@@ -135,8 +156,9 @@ export function ReviewOrderDetail({
           notes={review.order.notes}
           remate={review.order.remate}
           remateColor={review.order.remateColor}
-          awnings={review.order.awnings}
+          awnings={order.awnings}
           calculation={null}
+          diagnostics={diagnostics}
           calculationState="idle"
           parameters={reviewParameters}
           setOrderCode={noop}
@@ -167,6 +189,16 @@ export function ReviewOrderDetail({
       )}
     </section>
   );
+}
+
+function withUniqueAwningIds(order: ReviewPackage['order']): ReviewPackage['order'] {
+  const seen = new Set<string>();
+  const awnings = order.awnings.map((awning, index) => {
+    const id = awning.id && !seen.has(awning.id) ? awning.id : `toldo-${index + 1}`;
+    seen.add(id);
+    return id === awning.id ? awning : { ...awning, id };
+  });
+  return awnings.every((awning, index) => awning === order.awnings[index]) ? order : { ...order, awnings };
 }
 
 function GeneratedFileLink({ review, file, index }: {

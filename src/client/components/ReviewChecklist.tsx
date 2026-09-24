@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle2, CircleAlert } from 'lucide-react';
-import type { Awning, ReviewPackage, RuleParameters } from '../types';
+import type { Awning, ReviewPackage } from '../types';
 import { awningLetter, getMissingFields, describeMissing } from '../../domain/awningCompleteness.js';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
 import { controlLabel } from './controlLabels';
@@ -10,30 +10,14 @@ type Diagnostic = { level: string; awningId?: string; message: string };
 // "Qué revisar": una línea por toldo con lo que más se equivoca (modelo, medidas, tela,
 // lacado, dispositivo) y su estado. Iván, 23/09/2026: al revisar no se sabe bien qué
 // mirar de los datos introducidos.
-export function ReviewChecklist({ review, parameters, onFocusAwning }: {
-  review: ReviewPackage;
-  parameters: RuleParameters;
+// El pedido (con un id propio por toldo) y sus avisos llegan de ReviewOrderDetail, que
+// los comparte con el índice de los bloques.
+export function ReviewChecklist({ order, diagnostics, onFocusAwning }: {
+  order: ReviewPackage['order'];
+  diagnostics: Diagnostic[] | null;
   onFocusAwning: (letter: string) => void;
 }) {
-  // Cada toldo necesita un id propio para repartir los avisos: en pedidos con el id
-  // vacío o repetido, cada fila se llevaba los avisos de todos los toldos.
-  const order = useMemo(() => withUniqueAwningIds(review.order), [review.order]);
-  const [diagnostics, setDiagnostics] = useState<Diagnostic[] | null>(null);
   const [onlyWithWarnings, setOnlyWithWarnings] = useState(false);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch('/api/calculate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...order, parameters }),
-      signal: controller.signal
-    })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => setDiagnostics(data?.diagnostics || []))
-      .catch(() => { /* cancelado o sin conexión: el resumen sale sin avisos */ });
-    return () => controller.abort();
-  }, [order, parameters]);
 
   const rows = order.awnings.map((awning, index) => {
     const missing = getMissingFields(awning, order);
@@ -81,16 +65,6 @@ export function ReviewChecklist({ review, parameters, onFocusAwning }: {
       </ol>}
     </section>
   );
-}
-
-function withUniqueAwningIds(order: ReviewPackage['order']): ReviewPackage['order'] {
-  const seen = new Set<string>();
-  const awnings = order.awnings.map((awning, index) => {
-    const id = awning.id && !seen.has(awning.id) ? awning.id : `toldo-${index + 1}`;
-    seen.add(id);
-    return id === awning.id ? awning : { ...awning, id };
-  });
-  return awnings.every((awning, index) => awning === order.awnings[index]) ? order : { ...order, awnings };
 }
 
 function variantOf(awning: Awning) {

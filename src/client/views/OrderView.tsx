@@ -3,8 +3,7 @@ import type { Awning, Calculation, CalculationState, OrderAutofill, RuleParamete
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
 import { AwningBlocks } from '../components/AwningBlocks';
-import { awningStatus } from '../awningBlocks';
-import { getMissingFields } from '../../domain/awningCompleteness.js';
+import { awningStatuses } from '../awningBlocks';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { ObservationLines } from '../components/ObservationLines';
@@ -39,7 +38,8 @@ export function OrderView({
   onAutofill,
   autofillLoading,
   autofill,
-  readOnly = false
+  readOnly = false,
+  diagnostics
 }: {
   availableModelNames: string[];
   orderCode: string;
@@ -72,6 +72,9 @@ export function OrderView({
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
   readOnly?: boolean;
+  // Solo para el estado de cada toldo en el índice (el pedido abierto no pasa el cálculo
+  // completo: las tarjetas de lectura cambiarían sus observaciones con él).
+  diagnostics?: Calculation['diagnostics'] | null;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
   const enabledModels = new Set(availableModelNames);
@@ -133,10 +136,7 @@ export function OrderView({
         <AwningBlocks
           awnings={awnings}
           reading={readOnly}
-          statuses={awnings.map((awning) => awningStatus(
-            getMissingFields(awning, { fabric, sameFabric }),
-            (calculation?.diagnostics || []).filter((item) => item.awningId === awning.id && !item.missingFields)
-          ))}
+          statuses={awningStatuses(awnings, { fabric, sameFabric }, diagnostics ?? calculation?.diagnostics ?? [])}
           renderCard={(awning, index) => (
             <AwningColumn
               key={awning.id}
