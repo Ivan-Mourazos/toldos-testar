@@ -13,3 +13,4 @@ _analysis/*.tmp
 .playwright-cli
 rule-parameters.json
 rule-parameters-history.jsonl
+.superpowers/
