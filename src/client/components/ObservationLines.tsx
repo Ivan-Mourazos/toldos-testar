@@ -37,45 +37,52 @@ export function ObservationLines({ label, value, onChange, readOnly = false }: P
   }
 
   return (
-    <section className="observation-lines" aria-label={label}>
+    <section className={`observation-lines${readOnly ? ' is-reading' : ''}`} aria-label={label}>
       <header className="observation-lines-header">
         <span>{label}</span>
         {!readOnly && <button type="button" onClick={() => addLine()}>
           <Plus aria-hidden="true" />Añadir línea
         </button>}
       </header>
-      {readOnly && isEmpty ? <p className="observation-lines-empty">Sin observaciones</p> : (
-      <div className="observation-lines-list" ref={listRef}>
-        {lines.map((line, index) => (
-          <div className="observation-line" key={index}>
-            <span className="observation-line-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-            <input
-              type="text"
-              data-observation-line={index}
-              value={line}
-              aria-label={`${label}, línea ${index + 1}`}
-              placeholder="Escribe una observación"
-              readOnly={readOnly}
-              onChange={(event) => updateLine(index, event.target.value)}
-              onKeyDown={(event) => {
-                if (readOnly) return;
-                if (event.key !== 'Enter') return;
-                event.preventDefault();
-                addLine(index);
-              }}
-            />
-            {!readOnly && <button
-              type="button"
-              className="observation-line-remove"
-              aria-label={`Eliminar ${label.toLowerCase()}, línea ${index + 1}`}
-              onClick={() => removeLine(index)}
-              disabled={lines.length === 1 && !line}
-            >
-              <Trash2 aria-hidden="true" />
-            </button>}
+      {readOnly ? (
+        isEmpty ? <p className="observation-lines-empty">Sin observaciones</p> : (
+          // Solo la línea de etiqueta y el texto, sin la caja con borde de la edición
+          // (rediseño 24/09/2026 §5, revisión): en lectura no hay nada que enfocar ni
+          // que borrar por línea.
+          <div className="observation-lines-read">
+            {lines.filter((line) => line.trim()).map((line, index) => <p key={index}>{line}</p>)}
           </div>
-        ))}
-      </div>
+        )
+      ) : (
+        <div className="observation-lines-list" ref={listRef}>
+          {lines.map((line, index) => (
+            <div className="observation-line" key={index}>
+              <span className="observation-line-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              <input
+                type="text"
+                data-observation-line={index}
+                value={line}
+                aria-label={`${label}, línea ${index + 1}`}
+                placeholder="Escribe una observación"
+                onChange={(event) => updateLine(index, event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  addLine(index);
+                }}
+              />
+              <button
+                type="button"
+                className="observation-line-remove"
+                aria-label={`Eliminar ${label.toLowerCase()}, línea ${index + 1}`}
+                onClick={() => removeLine(index)}
+                disabled={lines.length === 1 && !line}
+              >
+                <Trash2 aria-hidden="true" />
+              </button>
+            </div>
+          ))}
+        </div>
       )}
     </section>
   );

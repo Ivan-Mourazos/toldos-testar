@@ -5230,8 +5230,13 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 @media (prefers-reduced-motion: reduce) { .awning-blocks .awning-blocks-track { scroll-behavior: auto; } }
 
 /* Tarjetas de lectura (rediseño 24/09/2026 §5): etiqueta y valor, sin cajas. Es la
-   misma tarjeta que al editar, así que no puede faltar ningún dato. */
-.awning-blocks.is-reading .awning-column { gap: 6px; }
+   misma tarjeta que al editar, así que no puede faltar ningún dato. Además, más
+   compacta que al editar (revisión: al menos ~20 % menos alta con el mismo
+   contenido), apretando los huecos entre filas y quitando el relleno que solo
+   hacía falta para las cajas de formulario. */
+.awning-blocks.is-reading .awning-column { gap: 3px 6px; padding: 6px; }
+.awning-blocks.is-reading .awning-column label,
+.awning-blocks.is-reading .awning-column .field { gap: 2px; }
 .awning-blocks.is-reading .awning-column label > span,
 .awning-blocks.is-reading .awning-column .field > span { color: var(--text-muted); font-size: 10px; }
 .awning-blocks.is-reading .awning-column input,
@@ -5252,6 +5257,23 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .awning-blocks.is-reading .awning-column .segmented-option:not(.active) { display: none; }
 .awning-blocks.is-reading .awning-column .segmented-option.active { background: transparent; box-shadow: none; color: var(--text); font-weight: 650; padding: 1px 0; text-align: left; }
 .awning-blocks.is-reading .awning-column .segmented-control.is-empty::after { color: var(--text-muted); content: '—'; }
+/* La banda gris de configuración de brazos (y el resto de .awning-form-section,
+   p. ej. IRIS): mismo fondo, menos aire arriba y abajo. */
+.awning-blocks.is-reading .awning-column .awning-form-section { gap: 3px 6px; padding: 4px var(--sp-3); }
+.awning-blocks.is-reading .awning-column .awning-wide-field,
+.awning-blocks.is-reading .awning-column .awning-finish-row,
+.awning-blocks.is-reading .awning-column .awning-actuation-row,
+.awning-blocks.is-reading .awning-column .awning-installation-row,
+.awning-blocks.is-reading .awning-column .awning-valance-options { gap: 3px 6px; }
+
+/* Obs. estructura en lectura (revisión, §5): ni caja con borde ni fila por línea, solo
+   la etiqueta y el texto (o «Sin observaciones»). Clave propia porque no vive dentro de
+   .awning-blocks.is-reading: OrderView la usa también para las observaciones del pedido. */
+.observation-lines.is-reading { background: transparent; border: 0; }
+.observation-lines.is-reading .observation-lines-header { border-bottom: 0; min-height: 0; padding: 0; }
+.observation-lines.is-reading .observation-lines-empty { margin: 2px 0 0; }
+.observation-lines-read { display: grid; gap: 2px; padding: 2px 0 0; }
+.observation-lines-read p { color: var(--text); font-size: 12px; font-weight: 650; line-height: 1.3; margin: 0; }
 .observation-lines-empty { color: var(--text-muted); font-size: 12px; margin: 4px 10px 8px; }
 
 /* La cabecera del pedido es un fieldset para desactivarla en lectura: sin su marco. */
