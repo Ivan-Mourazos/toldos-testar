@@ -17,6 +17,12 @@ export function ReadPair({ label, value }: { label: string; value: React.ReactNo
   );
 }
 
+// Número de la ficha con coma decimal («12,5»), sin redondear ni agrupar miles; vacío si
+// no hay número.
+export function readNumber(value: number | null | undefined) {
+  return typeof value === 'number' && Number.isFinite(value) ? String(value).replace('.', ',') : '';
+}
+
 // Valor con su unidad («285 cm»); vacío si no hay valor.
 export function withUnit(value: string | number, unit?: string) {
   const text = String(value);

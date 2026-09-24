@@ -63,7 +63,7 @@ export function OrderHeader(props: Props) {
                 se provee aquí para que las observaciones lean con el mismo criterio que la
                 ficha (rediseño 3 §3). */}
             <ReadModeContext.Provider value={!!props.readOnly}>
-              <ObservationLines label="Observaciones de tela del pedido" value={props.notes} onChange={props.onNotesChange} readOnly={props.readOnly} />
+              <ObservationLines label="Observaciones de tela del pedido" value={props.notes} onChange={props.onNotesChange} />
             </ReadModeContext.Provider>
           </section>
         </div>

@@ -272,9 +272,10 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
       <header className="awning-column-header">
         <span className="awning-column-heading">
           <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
-          {/* El estado también arriba: con varias tarjetas había que bajar para verlo. */}
+          {/* El estado también arriba: con varias tarjetas había que bajar para verlo. Todo
+              en mayúsculas, como al editar: «VÁLIDO», «FALTA 1», «1 ERROR», «2 AVISOS». */}
           {readOnly
-            ? readStatus && <span className={`awning-header-status ${readStatusBadge[readStatus.kind]}`}>{readStatus.kind === 'ok' ? 'VÁLIDO' : readStatus.kind === 'missing' ? readStatus.label.toLocaleUpperCase('es-ES') : readStatus.label}</span>
+            ? readStatus && <span className={`awning-header-status ${readStatusBadge[readStatus.kind]}`}>{readStatus.kind === 'ok' ? 'VÁLIDO' : readStatus.label.toLocaleUpperCase('es-ES')}</span>
             : <span className={`awning-header-status ${statusClass}`}>{missingFields.length ? `FALTA ${missingFields.length}` : status}</span>}
         </span>
         <strong className="awning-model-title">
@@ -530,7 +531,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {hasValance && (
             <div className="awning-valance-options awning-wide-field">
               <SelectField label="Curva bamba" missing={isMissing('valanceCurve')} value={awning.valanceCurve} options={formOptions.curvasBamba} placeholder="Elegir…" onChange={(valanceCurve) => update({ valanceCurve })} />
-              {!standaloneValance && <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" disabled={readOnly} onChange={(valanceFabric) => update({ valanceFabric })} />}
+              {!standaloneValance && <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" readEmptyAs="Igual que la tela" disabled={readOnly} onChange={(valanceFabric) => update({ valanceFabric })} />}
               <SegmentedField label="Remate" missing={isMissing('remate')} value={valanceFinish} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
               {valanceFinish === 'OTRO' && <TextField label="Color remate" missing={isMissing('remateColor')} value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
             </div>
@@ -545,7 +546,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 placeholder="Automático"
                 allowEmpty
                 emptyLabel="Automático"
-                readEmptyAs="Automático"
                 onChange={(fabricDiagramOverride) => update({ fabricDiagramOverride: fabricDiagramOverride as Awning['fabricDiagramOverride'] })}
               />
             </div>
@@ -807,7 +807,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
 
           {!fabricOnly && (
             <div className="awning-structure-notes awning-wide-field">
-              <ObservationLines readOnly={readOnly} label="Obs. estructura" value={getStructureNotes(awning, ofCalculation)} onChange={(structureNotes) => update({ structureNotes, ...(isElectra ? { structureNotesEdited: true } : {}) })} />
+              <ObservationLines label="Obs. estructura" value={getStructureNotes(awning, ofCalculation)} onChange={(structureNotes) => update({ structureNotes, ...(isElectra ? { structureNotesEdited: true } : {}) })} />
             </div>
           )}
 

@@ -63,7 +63,8 @@ const byPattern: Array<[RegExp, ReadGroupId]> = [
 ];
 
 // Unidad de cada valor en la ficha («285 cm»): las medidas en cm que no la llevan ya en la
-// etiqueta, y las que sí («Bamba (cm)»). La usan los campos al leer y la prueba de paridad.
+// etiqueta. Las que sí («Bamba (cm)») se leen sin repetirla: «Bamba (cm) · 30». La usan los
+// campos al leer y la prueba de paridad.
 const cmLabels = new Set([
   'Frente', 'Frente tela terminada', 'Salida', 'Caída', 'Caída tela terminada', 'Salida base', 'Salida brazo',
   'Frente superior', 'Salida izquierda', 'Frente inferior', 'Salida derecha',
@@ -73,7 +74,7 @@ const cmLabels = new Set([
 
 export function readUnitOf(label: string) {
   const clean = label.trim();
-  return cmLabels.has(clean) || /\(cm\)$/.test(clean) ? 'cm' : '';
+  return cmLabels.has(clean) ? 'cm' : '';
 }
 
 export function readGroupOf(label: string): ReadGroupId {

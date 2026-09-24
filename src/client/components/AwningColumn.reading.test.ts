@@ -319,7 +319,9 @@ function expectValuesKept(model: string, awning: Awning, sameFabric: boolean) {
     // cada campo (fields.* en modelBehavior.js) porque ya la aplica AwningColumn al
     // editar, y es lo que estamos comparando.
     if (!shownWhenEditing.size) continue;
-    const shownWhenReading = new Set([...readPlacesOf(read, text), ...readPlacesOf(read, label)]);
+    // Los números se leen con coma decimal («20,5»): se busca también así.
+    const readText = typeof raw === 'number' ? text.replace('.', ',') : text;
+    const shownWhenReading = new Set([...readPlacesOf(read, text), ...readPlacesOf(read, label), ...readPlacesOf(read, readText)]);
     const lost = [...shownWhenEditing].filter((place) => !readPlacesFor[place].some((allowed) => shownWhenReading.has(allowed)));
     expect(lost, `${model} pierde "${key}"=${raw} al leer (se veía en ${[...shownWhenEditing].join(', ')})`).toEqual([]);
   }
@@ -335,10 +337,25 @@ function placeholderSelects(markup: string) {
   return found;
 }
 
+// Vacíos con significado (revisión final del plan 3): al leer, en vez de «—», dicen lo que
+// significan. Los selects con opción vacía con nombre (emptyLabel en AwningColumn) y la
+// tela de la bamba, que vacía es la del toldo. Un campo nuevo con emptyLabel falla aquí
+// hasta declararlo.
+const meaningfulEmpty: Record<string, string> = {
+  'select:Tipo de pared': 'No indicada',
+  'select:Lacado': 'Sin indicar',
+  'select:Sujeción del suplemento': 'Sin indicar',
+  'select:Remate inferior': 'Sin indicar',
+  'select:Dibujo de confección': 'Automático',
+  'input:Tela bamba': 'Igual que la tela'
+};
+
 // Cada select, segmentado e input con etiqueta enseña al leer lo mismo que al editar: el
 // mismo texto en el valor de su par, «—» si al editar estaba vacío (o con el texto de
-// ayuda del select) y, en las medidas, con su unidad («285 cm»). La unidad sale de la
-// misma lista que usan los campos (readUnitOf): una « cm» de más o de menos falla.
+// ayuda del select), o el nombre de ese vacío si lo tiene (meaningfulEmpty), y, en las
+// medidas, con su unidad («285 cm»). La unidad sale de la misma lista que usan los campos
+// (readUnitOf): una « cm» de más o de menos falla; «Bamba (cm)» se lee sin ella. Los
+// números del <input> se leen con coma decimal («12,5»).
 function expectControlsKept(model: string, awning: Awning, sameFabric: boolean) {
   const editMarkup = render(awning, false, { sameFabric });
   const edit = controls(editMarkup);
@@ -350,9 +367,11 @@ function expectControlsKept(model: string, awning: Awning, sameFabric: boolean) 
     // Un select sin valor puede leerse «—» o con el mismo texto si esa ausencia es una
     // elección («Dibujo de confección · Automático»).
     const unit = control.startsWith('segmented:') ? '' : readUnitOf(label);
-    const expected = shown === '' ? ['—']
-      : control.startsWith('select:') && placeholders.has(label) ? ['—', shown]
-        : [unit ? `${shown} ${unit}` : shown];
+    const value = control.startsWith('input:') && /^-?\d+\.\d+$/.test(shown) ? shown.replace('.', ',') : shown;
+    const empty = meaningfulEmpty[control] ?? '—';
+    const expected = shown === '' ? [empty]
+      : control.startsWith('select:') && placeholders.has(label) ? [empty, shown]
+        : [unit ? `${value} ${unit}` : value];
     expect(expected, `${model} ${control} enseña "${shown}" al editar y "${read.get(label)}" al leer`).toContain(read.get(label));
   }
 }
@@ -474,6 +493,35 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
   }
 });
 
+// Valores de la ficha (revisión final del plan 3): sin la unidad repetida cuando ya está
+// en la etiqueta, con coma decimal, y los vacíos con significado dicho con palabras.
+describe('ficha de lectura: cómo se escriben los valores', () => {
+  const [base] = samplesFor('ARZUA PRO');
+  const awning: Awning = { ...base, hasValance: true, valanceHeight: 30, valanceFabric: '', wallType: '', width: 337.5 };
+  const read = readPairs(render(awning, true));
+
+  it('«Bamba (cm)» se lee «30», sin repetir la unidad', () => {
+    expect(read.get('Bamba (cm)')).toBe('30');
+  });
+
+  it('los decimales se leen con coma', () => {
+    expect(read.get('Frente')).toBe('337,5 cm');
+  });
+
+  it('«Tela bamba» vacía se lee «Igual que la tela»', () => {
+    expect(read.get('Tela bamba')).toBe('Igual que la tela');
+  });
+
+  it('«Tipo de pared» vacío se lee con su opción vacía, «No indicada»', () => {
+    expect(read.get('Tipo de pared')).toBe('No indicada');
+  });
+
+  it('un dato que falta de verdad sigue siendo «—»', () => {
+    const incomplete = readPairs(render({ ...awning, structureColor: '' }, true));
+    expect(incomplete.get('Lacado')).toBe('—');
+  });
+});
+
 // La cabecera de la ficha lleva el estado del toldo (rediseño 3 §1), el mismo del índice
 // de bloques: en el pedido abierto la tarjeta no tiene cálculo propio para deducirlo.
 describe('ficha de lectura: estado en la cabecera', () => {
@@ -489,10 +537,11 @@ describe('ficha de lectura: estado en la cabecera', () => {
   it('enseña cada tipo de estado con su estilo', () => {
     expect(header({ kind: 'ok', label: '✓' })).toEqual(['badge-ok', 'VÁLIDO']);
     expect(header({ kind: 'missing', label: 'falta 2' })).toEqual(['badge-warn', 'FALTA 2']);
-    expect(header({ kind: 'error', label: '1 error' })).toEqual(['badge-danger', '1 error']);
-    expect(header({ kind: 'error', label: '3 errores' })).toEqual(['badge-danger', '3 errores']);
-    expect(header({ kind: 'warn', label: '1 aviso' })).toEqual(['badge-warn', '1 aviso']);
-    expect(header({ kind: 'warn', label: '2 avisos' })).toEqual(['badge-warn', '2 avisos']);
+    // Una sola caja para todas las insignias: mayúsculas, como «VÁLIDO» y «FALTA 2».
+    expect(header({ kind: 'error', label: '1 error' })).toEqual(['badge-danger', '1 ERROR']);
+    expect(header({ kind: 'error', label: '3 errores' })).toEqual(['badge-danger', '3 ERRORES']);
+    expect(header({ kind: 'warn', label: '1 aviso' })).toEqual(['badge-warn', '1 AVISO']);
+    expect(header({ kind: 'warn', label: '2 avisos' })).toEqual(['badge-warn', '2 AVISOS']);
   });
 
   it('sin estado no pinta insignia, y el pie de estado sigue oculto al leer', () => {

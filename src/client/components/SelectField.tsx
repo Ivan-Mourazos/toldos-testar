@@ -15,12 +15,9 @@ type Props = {
   allowEmpty?: boolean;
   emptyLabel?: string;
   missing?: boolean;
-  // Solo para la ficha de lectura: qué escribir si no hay valor y eso es una elección en
-  // sí («Automático»); si no, «—».
-  readEmptyAs?: string;
 };
 
-export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel = 'No indicado', missing = false, readEmptyAs = '' }: Props) {
+export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel, missing = false }: Props) {
   const reading = useReadMode();
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -45,7 +42,13 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
     return () => document.removeEventListener('pointerdown', closeOutside);
   }, [open]);
 
-  if (reading) return <ReadPair label={label} value={value ? withUnit(controlLabel(value), readUnitOf(label)) : readEmptyAs} />;
+  // En la ficha, un vacío que es una opción con nombre propio («Tipo de pared · No
+  // indicada», «Dibujo de confección · Automático») se lee con ese nombre. Un dato
+  // obligatorio que falta, o un select sin opción vacía con nombre, se lee «—».
+  if (reading) {
+    const emptyRead = allowEmpty && emptyLabel && !missing ? emptyLabel : '';
+    return <ReadPair label={label} value={value ? withUnit(controlLabel(value), readUnitOf(label)) : emptyRead} />;
+  }
 
   const showOptions = () => {
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
@@ -115,11 +118,11 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
               className={`select-option${option === value ? ' is-selected' : ''}${index === activeIndex ? ' is-active' : ''}`}
               role="option"
               aria-selected={option === value}
-              title={option ? controlLabel(option) : emptyLabel}
+              title={option ? controlLabel(option) : emptyLabel ?? 'No indicado'}
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => choose(option)}
             >
-              <span>{option ? controlLabel(option) : emptyLabel}</span>
+              <span>{option ? controlLabel(option) : emptyLabel ?? 'No indicado'}</span>
               {option === value && <Check aria-hidden="true" />}
             </button>
           ))}

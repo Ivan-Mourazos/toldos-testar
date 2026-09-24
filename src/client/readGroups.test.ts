@@ -30,7 +30,9 @@ describe('ficha de lectura: grupos (rediseño 3 §1)', () => {
   });
 
   it('solo las medidas en cm llevan unidad', () => {
-    for (const label of ['Frente', 'Salida', 'Caída', 'Altura manivela', 'Bamba (cm)', 'Margen caída tela (cm)']) expect(readUnitOf(label), label).toBe('cm');
+    for (const label of ['Frente', 'Salida', 'Caída', 'Altura manivela']) expect(readUnitOf(label), label).toBe('cm');
     for (const label of ['OF', 'Nº de soportes', 'Nº de brazos manual', 'Factor diagonal de paño', 'Nº brazos', 'Lacado']) expect(readUnitOf(label), label).toBe('');
+    // La etiqueta ya dice la unidad: el valor va solo («Bamba (cm) · 30», no «30 cm»).
+    for (const label of ['Bamba (cm)', 'Margen caída tela (cm)']) expect(readUnitOf(label), label).toBe('');
   });
 });

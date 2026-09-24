@@ -21,9 +21,12 @@ type Props = {
   placeholder?: string;
   disabled?: boolean;
   missing?: boolean;
+  // Solo para la ficha: qué leer si no hay tela y eso significa algo («Tela bamba · Igual
+  // que la tela»); si no, «—».
+  readEmptyAs?: string;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre aproximado…', disabled = false, missing = false }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre aproximado…', disabled = false, missing = false, readEmptyAs = '' }: Props) {
   const reading = useReadMode();
   const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
@@ -67,7 +70,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
     return () => document.removeEventListener('pointerdown', closeOutside);
   }, [open]);
 
-  if (reading) return <ReadPair label={label} value={value ? fabricSelectionLabel(value) : ''} />;
+  if (reading) return <ReadPair label={label} value={value ? fabricSelectionLabel(value) : readEmptyAs} />;
 
   function choose(option: FabricOption) {
     onChange(serializeFabricSelection(option));
