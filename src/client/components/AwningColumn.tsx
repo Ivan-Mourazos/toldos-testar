@@ -22,7 +22,7 @@ import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockA
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
-import { irisGuideFixings, irisGuideTypes } from '../../domain/irisParameters.js';
+import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes } from '../../domain/irisParameters.js';
 import {
   anticaVariants,
   cambioAnticaVariants,
@@ -437,6 +437,15 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={irisGuideFixings}
                 onChange={(value) => update({ irisGuideFixing: value as Awning['irisGuideFixing'] })}
               />
+              {/* Solo con cofre y en el 110 y el 130: el 150 siempre lo lleva redondo. */}
+              {irisAsksBoxShape(awning) && (
+                <SegmentedField
+                  label="Forma del cofre" missing={isMissing('irisBoxShape')}
+                  value={awning.irisBoxShape}
+                  options={irisBoxShapes}
+                  onChange={(value) => update({ irisBoxShape: value as Awning['irisBoxShape'] })}
+                />
+              )}
               <SegmentedField
                 label="Secur Wind Block"
                 value={awning.irisWindBlock ? 'SÍ' : 'NO'}

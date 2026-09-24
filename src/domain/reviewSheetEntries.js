@@ -77,6 +77,7 @@ export function buildReviewSheetEntries(order, calculation) {
       }
       addField(cardFields, 'Tipo de guía', awning.irisGuideType, true);
       addField(cardFields, 'Fijación de guía', awning.irisGuideFixing, true);
+      if (ofBlock?.calculation?.irisBoxShape) addField(cardFields, 'Forma del cofre', ofBlock.calculation.irisBoxShape, true);
     }
     if (supportsVerticalDropArm(awning.model)) {
       addField(cardFields, 'Posición de trabajo', normalizeDropArmMode(awning.dropArmMode), true);

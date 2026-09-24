@@ -42,7 +42,6 @@
   border: 1px solid #bfc9c7;
   border-radius: 16px;
   background: #f4f6f5;
-  box-shadow: 0 18px 45px rgba(16, 40, 45, .08);
 }
 
 .drawing-parameters-heading {
@@ -1169,7 +1168,6 @@ label span,
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
   margin: var(--sp-6) auto 0;
   max-width: 1240px;
   overflow: hidden;
@@ -1328,7 +1326,6 @@ label span,
 .app-tabs button.active {
   background: #e2b232;
   border: 0;
-  box-shadow: 0 7px 20px rgb(0 0 0 / 0.16);
   color: #10272b;
 }
 
@@ -1433,14 +1430,9 @@ label span,
   min-height: 34px;
 }
 
-.primary-button {
-  box-shadow: 0 7px 20px rgb(166 118 8 / 0.18);
-}
-
 .ghost-button,
 .icon-text-button {
   background: #fbfcfb;
-  box-shadow: 0 1px 2px rgb(13 42 47 / 0.05);
 }
 
 .icon-button {
@@ -3971,7 +3963,6 @@ textarea,
 .review-reader {
   background: rgb(255 255 255 / 0.9);
   border: 1px solid #d3dfdc;
-  box-shadow: 0 8px 26px rgb(9 36 40 / 0.07);
 }
 
 .settings-panel {
@@ -4404,7 +4395,6 @@ textarea,
 
 .pdf-carousel-page {
   background: #ffffff;
-  box-shadow: 0 18px 50px rgb(0 0 0 / 0.38), 0 2px 8px rgb(0 0 0 / 0.25);
   display: block;
   height: 100%;
   max-width: none;
@@ -4900,7 +4890,6 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
   border-radius: var(--radius);
   background: var(--warn-bg);
   color: var(--warn);
-  box-shadow: var(--shadow);
 }
 .parameters-save-bar > div:first-child { display: grid; gap: 2px; }
 .parameters-save-bar span { font-size: 13px; color: var(--text); }
@@ -4923,7 +4912,6 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
   padding: var(--sp-6);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--shadow);
 }
 .parameters-save-dialog h2 { margin: 0; font-size: 18px; }
 .parameters-save-dialog p { margin: 0; color: var(--text-muted); font-size: 13px; }
@@ -5100,7 +5088,7 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .orders-row { align-items: center; border-top: 1px solid #eef3f1; display: grid; gap: 12px; grid-template-columns: 120px minmax(0, 1fr) 220px 90px; padding: 8px 12px; }
 .orders-row:first-child { border-top: 0; }
 .orders-row small { color: var(--text-muted); }
-.orders-row.is-mine { background: #fffaf0; box-shadow: inset 3px 0 0 var(--tgm-yellow); }
+.orders-row.is-mine { background: #fffaf0; }
 
 /* Rediseño de Parámetros: el catálogo ocupa una columna persistente y el índice
    de secciones queda alineado con el contenido, sin tapar la lista. */

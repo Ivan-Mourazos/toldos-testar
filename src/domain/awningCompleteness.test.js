@@ -70,9 +70,19 @@ describe('getMissingFields', () => {
   });
 
   it('Iris pide si lleva ventana de cristal, pero no confección', () => {
-    const iris = { model: 'IRIS', of: '1', irisFrontTop: 300, irisExitLeft: 250, submodel: 'IRIS 110 CON COFRE', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, placement: 'FRONTAL', curtainHasWindow: null };
+    const iris = { model: 'IRIS', of: '1', irisFrontTop: 300, irisExitLeft: 250, submodel: 'IRIS 110 CON COFRE', irisBoxShape: 'REDONDO', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, placement: 'FRONTAL', curtainHasWindow: null };
     expect(fields(iris)).toEqual(['curtainHasWindow']);
     expect(getMissingFields({ ...iris, irisFrontTop: null })).toContainEqual({ field: 'irisFrontTop', label: 'frente superior' });
+  });
+
+  it('Iris con cofre pide la forma del cofre, salvo el 150 (siempre redondo) y sin cofre', () => {
+    const iris = { model: 'IRIS', of: '1', irisFrontTop: 300, irisExitLeft: 250, submodel: 'IRIS 130 CON COFRE', irisBoxShape: '', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, placement: 'FRONTAL', curtainHasWindow: false };
+    expect(getMissingFields(iris)).toEqual([{ field: 'irisBoxShape', label: 'forma del cofre' }]);
+    expect(fields({ ...iris, irisBoxShape: 'CUADRADO' })).toEqual([]);
+    expect(fields({ ...iris, submodel: 'IRIS 150 CON COFRE', device: 'MOTOR', machineSide: 'M.F.DER' })).toEqual([]);
+    expect(fields({ ...iris, submodel: 'IRIS 110 SIN COFRE' })).toEqual([]);
+    // La compensadora lleva cofre aunque el submodelo diga "sin cofre".
+    expect(fields({ ...iris, submodel: 'IRIS 110 SIN COFRE', irisGuideType: 'COMPENSADORA' })).toEqual(['irisBoxShape']);
   });
 
   it('Electra pide soporte y, con motor, el motor', () => {

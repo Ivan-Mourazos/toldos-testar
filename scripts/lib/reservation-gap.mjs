@@ -46,12 +46,14 @@ const aparteConMotivo = [
   { patron: /^RESTO/, motivo: 'Resto de almacén: sobrante de una pieza que se reserva nueva. Informativo.' }
 ];
 
-const colorSuffix = '(BL\\d\\d|NE\\d\\d|NEGRO|BLAN|MR\\d\\d|VE\\d\\d|GR\\d\\d|PL\\d\\d|O5\\d\\d|MA\\d\\d|BU\\d\\d|NEM\\d|NM\\d\\d|GT\\d\\d|BR\\d\\d)';
+// Los perfiles de BAT (Iris) usan además NEGR, NEMA, G16M y BRUT (bruto, para lacar
+// fuera), y algún largo termina en CM (PEMoSU13GR16600CM).
+const colorSuffix = '(BL\\d\\d|NE\\d\\d|NEGRO|NEGR|NEMA|G16M|BRUT|BLAN|MR\\d\\d|VE\\d\\d|GR\\d\\d|PL\\d\\d|O5\\d\\d|MA\\d\\d|BU\\d\\d|NEM\\d|NM\\d\\d|GT\\d\\d|BR\\d\\d)';
 
 // Una referencia es "la misma pieza en otro color o largo" si comparte raíz.
 export function rootCode(code) {
   return String(code).toUpperCase()
-    .replace(new RegExp(`${colorSuffix}?\\d{3,4}C$`), '')
+    .replace(new RegExp(`${colorSuffix}?\\d{3,4}CM?$`), '')
     .replace(new RegExp(`${colorSuffix}$`), '');
 }
 

@@ -211,7 +211,7 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
         aria-labelledby={`confirmation-title-${dialog.id}`}
         aria-describedby={`confirmation-message-${dialog.id}`}
       >
-        <button type="button" className="confirmation-close" onClick={() => onResolve('dismiss')} aria-label="Cerrar diálogo"><X aria-hidden="true" /></button>
+        <button type="button" className="confirmation-close boton-3d" onClick={() => onResolve('dismiss')} aria-label="Cerrar diálogo"><X aria-hidden="true" /></button>
         <div className="confirmation-heading">
           <span className="confirmation-icon"><Icon aria-hidden="true" /></span>
           <div>
@@ -227,7 +227,7 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
         )}
         <div className="confirmation-actions">
           <button ref={cancelRef} className="ghost-button" type="button" onClick={() => onResolve('cancel')}>{dialog.cancelLabel || 'Cancelar'}</button>
-          <button className={tone === 'danger' ? 'danger-button' : 'primary-button'} type="button" onClick={() => onResolve('confirm')}>{dialog.confirmLabel || 'Continuar'}</button>
+          <button className={tone === 'danger' ? 'danger-button boton-3d' : 'primary-button boton-3d'} type="button" onClick={() => onResolve('confirm')}>{dialog.confirmLabel || 'Continuar'}</button>
         </div>
       </section>
     </div>

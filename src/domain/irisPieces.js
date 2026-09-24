@@ -1,10 +1,11 @@
 import { crankSuffix, machineCode } from './lacados.js';
 import { barsForCuts as barsFor } from './math.js';
+import { irisCaps, irisProfile } from './irisStock.js';
 
 // Piezas del Iris que no dependen del cofre (redondo o cuadrado) ni del sistema de guía
 // (GPZ C, ÚNICA o STORM), según el consumo real de las 75 OF de Iris imputadas desde
-// 2024 (23/09/2026). Los perfiles del cofre, las guías, sus pies y la cremallera esperan
-// a las preguntas 1, 2 y 4 del informe de Codex (informe-iris-hera-consumo.md):
+// 2024 (23/09/2026). El cofre, las guías y la cremallera van más abajo, desde las
+// respuestas de taller del 24/09/2026:
 // - casquillo de punta y placa del eje, uno por toldo;
 // - tubo P701 en el 110, P801 en el 130 y Ø110 en el 150, en los largos que se gastan;
 // - pletina terminal de 300 (el lastre), dos tapones terminales y la goma de retención;
@@ -53,4 +54,128 @@ export function irisCommonPieces({ series, device, lacado, units = 1, rollTubeLe
     );
   }
   return lines.filter((line) => line.quantity > 0);
+}
+
+// Cofre, según las respuestas de taller del 24/09/2026 (Q-I01: "sí cambia y se añade")
+// y el consumo de las OF con cofre imputadas desde 2024:
+// - perfil superior, el mismo con cofre redondo o cuadrado (en 52 de las 64 OF);
+// - perfil inferior redondo o cuadrado (51 de 64; manual de BAT, piezas 11 y 11/1);
+// - un juego de tapas por toldo (57 de 64, uno por toldo en 54).
+// Las 7 OF sin tapas no tienen imputada ninguna pieza de estructura: cinco de los
+// pedidos AR.25.01353 a 01364 (se imputó en sus OF hermanas) y dos 150 aún abiertas.
+// El 150 solo tiene cofre redondo (manual del 150 y maestro de RPS).
+const boxFamilies = Object.freeze({
+  110: { top: 'PECOSSU1', REDONDO: { bottom: 'PECORSU1', caps: 'TAPASSUN1' }, CUADRADO: { bottom: 'PECOCSU1', caps: 'TAPASCOU1' } },
+  130: { top: 'PECOSSU3', REDONDO: { bottom: 'PECORSU3', caps: 'TAPASCOR3' }, CUADRADO: { bottom: 'PECOCSU3', caps: 'TAPASCOU3' } },
+  150: { top: 'PECOSSU5', REDONDO: { bottom: 'PECORSU5', caps: 'TAPASSUN5' } }
+});
+
+/**
+ * Perfiles y tapas del cofre. `issues` lista las piezas que no salen lacadas: en bruto
+ * para lacar fuera (`raw`) o sin ninguna referencia en RPS, y por qué ('color' o
+ * 'length', ver irisProfile).
+ */
+export function irisBoxPieces({ series, shape, lacado, units = 1, boxProfileLength }) {
+  const spec = boxFamilies[series];
+  const variant = spec?.[shape];
+  const result = { lines: [], issues: [] };
+  if (!variant || !lacado || !(boxProfileLength > 0)) return result;
+  const shapeName = shape === 'CUADRADO' ? 'CUADRADO' : 'REDONDO';
+  const pieces = [
+    [spec.top, `PERFIL COFRE SUPERIOR ${series}`, 'perfil superior del cofre'],
+    [variant.bottom, `PERFIL COFRE INFERIOR ${shapeName} ${series}`, `perfil inferior del cofre ${shapeName.toLowerCase()}`]
+  ];
+  for (const [family, description, label] of pieces) {
+    // Con varias unidades, el largo que menos gasta para todas: el taller saca los
+    // cofres de varios toldos de una barra (OF 0208933: una barra de 600 para dos toldos).
+    const profile = irisProfile(family, lacado, boxProfileLength, units);
+    if (profile.reason) result.issues.push({ label, reason: profile.reason, raw: profile.raw });
+    if (!profile.code) continue;
+    result.lines.push({ code: profile.code, quantity: barsFor(boxProfileLength, units, profile.stock), description, length: boxProfileLength });
+  }
+  const capsPiece = irisCaps(variant.caps, lacado);
+  const capsLabel = `tapas del cofre ${shapeName.toLowerCase()}`;
+  if (capsPiece) {
+    if (capsPiece.raw) result.issues.push({ label: capsLabel, reason: 'color', raw: true });
+    result.lines.push({ code: capsPiece.code, quantity: units, description: `JGO TAPAS COFRE ${shapeName} ${series}` });
+  } else {
+    result.issues.push({ label: capsLabel, reason: 'color', raw: false });
+  }
+  return result;
+}
+
+// Guías según el sistema (Q-I02, "hay que reservar las guías y la cremallera"). La
+// correspondencia con la tarjeta sale de la guía interna de OT (guía toldos iris.odt)
+// y del manual de BAT: estándar = GPZ ÚNICA A/M, pequeña = GPZ ÚNICA M (solo motor),
+// compensadora = GPZ C. Cantidades, del consumo desde 2024:
+// - ÚNICA A/M (43 OF): perfil de guía (43), perfil tapa de guía (42) y guía PVC
+//   interior (38), dos piezas por toldo (una barra de 600 hasta 3 m de guía); cuatro
+//   pies (en las 43, cuatro por toldo en 35).
+// - ÚNICA M (4 OF, todas a motor): perfil de guía solo motor y cuatro pies de enganche
+//   (4 de 4); tapa de guía (3 de 4) y PVC interior como la A/M.
+// - GPZ C (12 OF): perfil de guía (10), compensador (9) y PVC interior (8), dos piezas
+//   por toldo; guía exterior, cuatro (2 barras por toldo en 8); dos pies (9).
+// - Sin cofre (Cabrio), además un juego de pernos de guía (11 de 11 OF).
+// Los perfiles van en el color del lacado (irisStock.js); el PVC y los pies, en blanco
+// o negro por la columna de la manivela, como los tapones.
+const GUIDE_PVC_STOCK_CM = 600;
+
+export function irisGuidePieces({ guideType, hasBox, lacado, units = 1, guideLength, zipLength, compensatorLength }) {
+  const result = { lines: [], issues: [] };
+  if (!lacado || !(guideLength > 0)) return result;
+  const white = lacado.crank === 'BLANCA';
+  const plain = white ? 'BLAN' : 'NEGR';
+  const innerLength = zipLength > 0 ? zipLength : guideLength;
+  const profile = (family, length, pieces, description, label) => {
+    const found = irisProfile(family, lacado, length, pieces * units);
+    if (found.reason) result.issues.push({ label, reason: found.reason, raw: found.raw });
+    if (!found.code) return;
+    result.lines.push({ code: found.code, quantity: barsFor(length, pieces * units, found.stock), description, length });
+  };
+  const pvc = (code, length, pieces, description) => result.lines.push({
+    code, quantity: barsFor(length, pieces * units, GUIDE_PVC_STOCK_CM), description, length
+  });
+
+  if (guideType === 'COMPENSADORA') {
+    profile('PEGSZ13', guideLength, 2, 'PERFIL GUIA SCREENY GPZ C', 'perfil de guía GPZ C');
+    profile('PEGCZ13', compensatorLength > 0 ? compensatorLength : guideLength, 2, 'PERFIL GUIA COMPENSADORA ENTREPAREDES GPZ C', 'perfil compensador GPZ C');
+    pvc(`PEGEZ13${plain}600C`, guideLength, 4, 'PERFIL GUIA EXTERIOR SCREENY GPZ C');
+    pvc(`PEGIZ13${plain}600C`, innerLength, 2, 'GUIA PVC INTERIOR ZIP');
+    result.lines.push({ code: `PIE${plain}`, quantity: 2 * units, description: 'PIE SCREENY GPZ C' });
+  } else if (guideType === 'ESTÁNDAR' || guideType === 'PEQUEÑA') {
+    const onlyMotor = guideType === 'PEQUEÑA';
+    profile(onlyMotor ? 'PEMoSU13' : 'PEMMSU13', guideLength, 2,
+      onlyMotor ? 'PERFIL GUIA MOTOR GPZ UNICA' : 'PERFIL GUIA MAQUINA/MOTOR GPZ UNICA',
+      onlyMotor ? 'perfil de guía solo motor' : 'perfil de guía');
+    profile('PECGSU13', guideLength, 2, 'PERFIL CUBIERTA GUIA', 'perfil tapa de guía');
+    pvc(`PEGIZS1${plain}600C`, innerLength, 2, 'GUIA PVC INTERIOR ZIP UNICA');
+    result.lines.push(onlyMotor
+      ? { code: `PIEGURSZ13${plain}`, quantity: 4 * units, description: 'PIE ENGANCHE GUIA MOTOR' }
+      : { code: `PIEGMMSU${plain}`, quantity: 4 * units, description: 'PIE PARA GUIA UNICA (MAQUINA/MOTOR)' });
+  }
+  if (!hasBox && result.lines.length) result.lines.push({ code: 'PERGUIA', quantity: units, description: 'JGO PERNO GUIA SCREENY GPZ' });
+  result.lines = result.lines.filter((line) => line.quantity > 0);
+  return result;
+}
+
+/**
+ * Cremallera, varilla vaina y macarrón (Q-I02 y Q-I04).
+ * - Cremallera: siempre la XL (acuerdo del 09/10/2025, repetido el 24/09/2026). PROVISIONAL:
+ *   una caída de tela por toldo, como en las OF 0229575 (2,9 m con 250 + 40) y 0222569
+ *   (2,64 con 234 + 30); otras gastaron dos (0229896: 8,1 = 2 × 405). Duda Q-I06. Blanca o gris: el negro está de baja desde 2021; se elige por
+ *   la columna de la manivela, que acierta 16 de las 19 OF con XL.
+ * - Varilla vaina y macarrón de Ø8: frente + 10 cm, en metros (rollo de 250 m y metros).
+ */
+export function irisZipAndHemPieces({ lacado, units = 1, front, fabricDrop }) {
+  if (!lacado || !(front > 0)) return [];
+  const hemMeters = round2((front + 10) / 100 * units);
+  return [
+    { code: lacado.crank === 'BLANCA' ? 'ZIPXLBLAN' : 'ZIPXLGRIS', quantity: round2((Number(fabricDrop) || 0) / 100 * units), description: 'CREMALLERA XL ZIP (M)' },
+    { code: 'VARILLAVAINARBLA', quantity: hemMeters, description: 'VARILLA VAINA RIGIDA 5,5 BLANCA (M)' },
+    { code: 'MACARRNEGR8MM', quantity: hemMeters, description: 'MACARRON PVC NEGRO 8MM (M)' }
+  ].filter((line) => line.quantity > 0);
+}
+
+function round2(value) {
+  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }

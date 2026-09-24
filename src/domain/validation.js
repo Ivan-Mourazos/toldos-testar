@@ -17,6 +17,7 @@ import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeElectraMotor, normalizeElectraParameters, normalizeElectraSupport, normalizeElectraVariant } from './electraParameters.js';
 import {
   normalizeIrisGuideFixing,
+  normalizeIrisBoxShape,
   normalizeIrisGuideType,
   normalizeIrisSubmodel
 } from './irisParameters.js';
@@ -218,6 +219,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     electraFabricDropAllowanceCm: nullableNumber(awning?.electraFabricDropAllowanceCm),
     irisGuideType: model === 'IRIS' ? normalizeIrisGuideType(awning?.irisGuideType) : '',
     irisGuideFixing: model === 'IRIS' ? normalizeIrisGuideFixing(awning?.irisGuideFixing) : '',
+    irisBoxShape: model === 'IRIS' ? normalizeIrisBoxShape(awning?.irisBoxShape) : '',
     irisWindBlock: model === 'IRIS' && awning?.irisWindBlock === true,
     irisAssumeSquare: model === 'IRIS' && awning?.irisAssumeSquare === true,
     irisFrontTop: numberOrDefault(awning?.irisFrontTop, 0),

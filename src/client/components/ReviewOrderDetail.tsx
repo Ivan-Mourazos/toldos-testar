@@ -43,14 +43,14 @@ export function ReviewOrderDetail({
     [review]
   );
 
-  const backButton = <button type="button" className="ghost-button reviews-back-button" onClick={onBack}>← Pedidos</button>;
+  const backButton = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>← Pedidos</button>;
 
   if (loading) {
-    return <section className="review-reader panel">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido y su vista previa…</div></section>;
+    return <section className="review-reader panel panel-3d">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido y su vista previa…</div></section>;
   }
 
   if (!review) {
-    return <section className="review-reader panel">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
+    return <section className="review-reader panel panel-3d">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
   }
 
   const reviewParameters = review.order.parameters || parameters;
@@ -65,7 +65,7 @@ export function ReviewOrderDetail({
     : '';
 
   return (
-    <section className="review-reader panel" aria-label={`Datos de revisión de ${review.orderCode}`}>
+    <section className="review-reader panel panel-3d" aria-label={`Datos de revisión de ${review.orderCode}`}>
       <header className="review-reader-header">
         {backButton}
         <div className="review-reader-title">
@@ -77,16 +77,16 @@ export function ReviewOrderDetail({
           ].filter(Boolean).join(' · ')}</small>
         </div>
         <div className="review-reader-actions">
-          <button ref={previewButtonRef} className="ghost-button" type="button" disabled={disabled} onClick={() => setPreviewOpen(true)}>
+          <button ref={previewButtonRef} className="ghost-button boton-3d" type="button" disabled={disabled} onClick={() => setPreviewOpen(true)}>
             <Eye aria-hidden="true" />Vista previa
           </button>
           {!isProduced && (
             <>
-              <button className="ghost-button" type="button" disabled={disabled} onClick={onEdit}>
+              <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
                 <PencilLine aria-hidden="true" />Corregir
               </button>
               <button
-                className="primary-button review-generate-button"
+                className="primary-button boton-3d review-generate-button"
                 type="button"
                 disabled={disabled || !canGenerate}
                 title={generateNote || undefined}
@@ -108,7 +108,7 @@ export function ReviewOrderDetail({
               <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${review.order.technician || review.production.createdBy}, autor del pedido` : ''}</strong>
               <small>{formatDateTime(review.production.createdAt)} · abre el PDF o descarga cada reserva directamente.</small>
             </span>
-            <button className="ghost-button review-reuse-button" type="button" disabled={disabled} onClick={onReuse}>
+            <button className="ghost-button boton-3d review-reuse-button" type="button" disabled={disabled} onClick={onReuse}>
               <CopyPlus aria-hidden="true" />Reutilizar datos
             </button>
           </div>

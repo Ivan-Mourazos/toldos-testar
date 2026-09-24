@@ -7,6 +7,13 @@ describe('rootCode', () => {
     expect(rootCode('TURA70HG600C')).toBe('TURA70HG');
     expect(rootCode('CASPUNCEJE70MM')).toBe('CASPUNCEJE70MM');
   });
+
+  it('reconoce los colores de BAT del Iris y los largos terminados en CM', () => {
+    expect(rootCode('PEGCZ13NEGR600C')).toBe(rootCode('PEGCZ13BLAN600C'));
+    expect(rootCode('TAPASCOU1BRUT')).toBe('TAPASCOU1');
+    expect(rootCode('PEMoSU13GR16600CM')).toBe('PEMOSU13');
+    expect(rootCode('PIEGURSZ13NEGR')).toBe('PIEGURSZ13');
+  });
 });
 
 describe('classifyGap', () => {

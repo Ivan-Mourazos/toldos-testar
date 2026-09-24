@@ -8,7 +8,7 @@ export function TabButton({ active, disabled = false, icon, label, onClick }: {
   onClick: () => void;
 }) {
   return (
-    <button className={active ? 'active' : ''} type="button" disabled={disabled} onClick={onClick}>
+    <button className={active ? 'active tecla-3d sobre-oscuro' : 'tecla-3d sobre-oscuro'} aria-current={active ? 'page' : undefined} type="button" disabled={disabled} onClick={onClick}>
       {icon}
       {label}
     </button>
