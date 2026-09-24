@@ -103,7 +103,7 @@ export function OrderView({
   return (
     <>
       <section className="workbench">
-        <div className="order-strip">
+        <fieldset className="order-strip" disabled={readOnly}>
           <OrderHeader
             orderCode={orderCode}
             onOrderCodeBlur={onOrderCodeBlur}
@@ -119,7 +119,7 @@ export function OrderView({
             readOnly={readOnly}
             set={setOrderField}
           />
-        </div>
+        </fieldset>
       </section>
 
       {awnings.length > 0 && <section className="awnings-section order-elements-section">

@@ -122,7 +122,9 @@ export function ReviewOrderDetail({
 
       <ReviewChecklist review={review} parameters={reviewParameters} onFocusAwning={requestAwningFocus} />
 
-      <fieldset className="review-readonly-order" disabled aria-label="Formulario del pedido en solo lectura">
+      {/* Sin fieldset desactivado: dejaría sin usar el índice y las flechas de los bloques.
+          Cada tarjeta y la cabecera se desactivan por su cuenta en modo lectura. */}
+      <div className="review-readonly-order" role="group" aria-label="Formulario del pedido en solo lectura">
         <OrderView
           availableModelNames={availableModels}
           orderCode={review.order.orderCode}
@@ -154,7 +156,7 @@ export function ReviewOrderDetail({
           autofill={null}
           readOnly
         />
-      </fieldset>
+      </div>
 
       {previewOpen && (
         <ReviewPlanteamientoPreview

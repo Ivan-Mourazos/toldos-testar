@@ -5253,3 +5253,8 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .awning-blocks.is-reading .awning-column .segmented-option.active { background: transparent; box-shadow: none; color: var(--text); font-weight: 650; padding: 1px 0; text-align: left; }
 .awning-blocks.is-reading .awning-column .segmented-control.is-empty::after { color: var(--text-muted); content: '—'; }
 .observation-lines-empty { color: var(--text-muted); font-size: 12px; margin: 4px 10px 8px; }
+
+/* La cabecera del pedido es un fieldset para desactivarla en lectura: sin su marco. */
+fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
+.awning-blocks.is-reading .fabric-combobox .fabric-input-wrap { background: transparent; border-color: transparent; box-shadow: none; padding-left: 0; }
+.awning-blocks.is-reading .fabric-combobox .fabric-input-wrap svg { display: none; }
