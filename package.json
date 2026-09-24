@@ -38,6 +38,7 @@
     "test:e2e:bambalina": "pnpm build && node scripts/test-bambalina-workflow.mjs",
     "test:e2e:antica": "pnpm build && node scripts/test-antica-workflow.mjs",
     "test:e2e:bloques": "node scripts/test-awning-blocks-e2e.mjs",
+    "test:e2e:panel": "node scripts/test-awning-panel-e2e.mjs",
     "validate:fabric-jobs": "node scripts/validate-fabric-jobs-production.mjs",
     "validate:cortina": "node scripts/validate-cortina-production.mjs",
     "validate:cambio-cortina": "node scripts/validate-cambio-cortina-production.mjs",
