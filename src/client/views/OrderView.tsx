@@ -9,6 +9,8 @@ import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { AwningPanel, type PanelOrder } from '../components/AwningPanel';
 import type { AskForConfirmation } from '../components/NotificationCenter';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
+import { applyFabricProposal } from '../fabricProposal';
+import type { FabricProposal } from '../types';
 
 export function OrderView({
   availableModelNames,
@@ -114,6 +116,11 @@ export function OrderView({
     if ('remateColor' in patch) setRemateColor(patch.remateColor as string);
   }
 
+  // El técnico elige una tela propuesta del catálogo; nunca se pone sola (rediseño 4 §10).
+  function applyProposal(proposal: FabricProposal, selection: string) {
+    applyFabricProposal({ awnings, sameFabric, setFabric, setSameFabric, updateAwning }, proposal, selection);
+  }
+
   // Un estado por toldo: lo enseñan el índice de bloques y, en lectura, la cabecera de la ficha.
   const statuses = awningStatuses(awnings, { fabric, sameFabric }, diagnostics ?? calculation?.diagnostics ?? []);
 
@@ -135,6 +142,8 @@ export function OrderView({
             onAutofill={onAutofill}
             autofillLoading={autofillLoading}
             autofill={autofill}
+            awnings={awnings}
+            onApplyFabricProposal={applyProposal}
             readOnly={readOnly}
             set={setOrderField}
           />

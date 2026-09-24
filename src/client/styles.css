@@ -588,6 +588,7 @@ label span,
   border: 1px solid #c8ddd8;
   border-radius: 10px;
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   grid-column: 1 / -1;
   margin-top: 8px;
@@ -637,6 +638,52 @@ label span,
   right: 0;
   top: 18px;
   z-index: 20;
+}
+
+/* Propuestas de tela desde el texto de RPS (rediseño 4 §10): el técnico elige una
+   opción del catálogo; nada se pone sola. Ocupan su propia fila dentro del resumen. */
+.order-fabric-proposals {
+  display: grid;
+  flex-basis: 100%;
+  gap: 8px;
+}
+
+.order-fabric-proposal {
+  display: grid;
+  gap: 4px;
+}
+
+.order-fabric-proposal > span {
+  color: #174e54;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.order-fabric-proposal-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.order-fabric-proposal-option {
+  background: #fff;
+  border: 1px solid #c8ddd8;
+  border-radius: 8px;
+  color: #174e54;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.order-fabric-proposal-option:hover {
+  background: #e4f1ee;
+}
+
+.order-fabric-proposal-option.is-chosen {
+  background: #174e54;
+  border-color: #174e54;
+  color: #fff;
+  font-weight: 700;
 }
 
 @keyframes autofill-spin {

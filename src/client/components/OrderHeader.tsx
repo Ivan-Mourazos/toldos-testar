@@ -1,6 +1,7 @@
 import React from 'react';
 import { DatabaseZap, Layers3, LoaderCircle, Plus, Scissors } from 'lucide-react';
-import type { OrderAutofill } from '../types';
+import type { Awning, FabricProposal, OrderAutofill } from '../types';
+import { awningLetter } from '../../domain/awningCompleteness.js';
 import { TextField } from './TextField';
 import { FabricCombobox } from './FabricCombobox';
 import { ObservationLines } from './ObservationLines';
@@ -16,10 +17,31 @@ type Props = {
   onAutofill: () => void;
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
+  // Solo para poner las letras («B, C») de las propuestas de tela junto a la frase de RPS.
+  awnings: Pick<Awning, 'id'>[];
+  onApplyFabricProposal: (proposal: FabricProposal, selection: string) => void;
   readOnly?: boolean;
 };
 
+// Letras de los toldos de una propuesta, en el orden A, B, C… del pedido.
+function proposalLetters(proposal: FabricProposal, awnings: Pick<Awning, 'id'>[]) {
+  return proposal.awningIds
+    .map((id) => awnings.findIndex((awning) => awning.id === id))
+    .filter((index) => index >= 0)
+    .map((index) => awningLetter(index))
+    .join(', ');
+}
+
 export function OrderHeader(props: Props) {
+  // Qué opción se ha elegido en cada bloque de propuestas, para marcar su botón sin
+  // quitar las demás: el técnico puede cambiar de opinión (rediseño 4 §10).
+  const [chosenByProposal, setChosenByProposal] = React.useState<Record<number, string>>({});
+
+  function chooseFabricProposal(index: number, proposal: FabricProposal, selection: string) {
+    props.onApplyFabricProposal(proposal, selection);
+    setChosenByProposal((previous) => ({ ...previous, [index]: selection }));
+  }
+
   return (
     <section className={`order-header panel${props.readOnly ? ' is-readonly' : ''}`} aria-readonly={props.readOnly || undefined}>
       <div className="order-header-group order-header-general">
@@ -91,6 +113,27 @@ export function OrderHeader(props: Props) {
             <strong>Datos obtenidos de {props.autofill.source}</strong>
             <span>{props.autofill.recovered.length} campos recuperados · {props.autofill.pending.length} {props.autofill.pending.length === 1 ? 'pendiente' : 'pendientes'} · todos editables</span>
           </div>
+          {props.autofill.fabricProposals && props.autofill.fabricProposals.length > 0 && (
+            <div className="order-fabric-proposals">
+              {props.autofill.fabricProposals.map((proposal, index) => (
+                <div className="order-fabric-proposal" key={`${proposal.phrase}-${index}`}>
+                  <span>Tela propuesta para {proposalLetters(proposal, props.awnings) || '—'}: «{proposal.phrase}»</span>
+                  <div className="order-fabric-proposal-options">
+                    {proposal.options.slice(0, 5).map((option) => (
+                      <button
+                        type="button"
+                        key={option.selection}
+                        className={`order-fabric-proposal-option${chosenByProposal[index] === option.selection ? ' is-chosen' : ''}`}
+                        onClick={() => chooseFabricProposal(index, proposal, option.selection)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           {props.autofill.pending.length > 0 && (
             <details>
               <summary>Ver pendientes</summary>

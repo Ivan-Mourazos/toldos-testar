@@ -269,7 +269,10 @@ function buildAwningSuggestion(line, model, index) {
     fabric: '',
     valanceFabric: '',
     structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : '',
-    fabricNotes: ''
+    fabricNotes: '',
+    // Texto de la línea, para proponer telas del catálogo (Tarea 3). No se
+    // guarda con el pedido: el servidor lo quita de la respuesta.
+    _sourceText: detailText
   };
 }
 

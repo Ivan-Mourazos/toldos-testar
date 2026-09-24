@@ -588,12 +588,19 @@ export type DraftState = {
   awnings: Awning[];
 };
 
+export type FabricProposalOption = { selection: string; label: string };
+
+// Telas propuestas del catálogo a partir del texto de RPS, agrupadas por toldos que
+// comparten la misma frase. El técnico elige una opción; nunca se pone sola (rediseño 4 §10).
+export type FabricProposal = { awningIds: string[]; phrase: string; options: FabricProposalOption[] };
+
 export type OrderAutofill = {
   source: string;
   order: DraftState;
   recovered: string[];
   pending: string[];
   warnings: string[];
+  fabricProposals?: FabricProposal[];
 };
 
 export type WorkflowSettings = {

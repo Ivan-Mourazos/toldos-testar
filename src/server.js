@@ -11,6 +11,7 @@ import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { verifyStructureArticles } from './domain/structureEdits.js';
 import { buildOrderAutofill } from './domain/orderAutofill.js';
+import { buildFabricProposals } from './domain/autofillFabricHint.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
@@ -105,16 +106,21 @@ app.get('/api/catalog', (_req, res) => {
   res.json(applyDeploymentFeaturesToCatalog(getCatalog(), deploymentFeatures));
 });
 
+// Búsqueda de telas con reserva: primero RPS, y si falla, el Excel local. La
+// usan tanto el buscador de tela como las propuestas del autorrelleno.
+async function searchCatalogFabrics(query, limit) {
+  try {
+    return { source: 'RPSNext', items: await searchRpsFabrics({ query, limit }) };
+  } catch (error) {
+    console.error('RPSNext no disponible para telas:', error.message);
+    return { source: 'Excel local', items: searchStaticFabrics(query, limit) };
+  }
+}
+
 app.get('/api/catalog/fabrics', async (req, res) => {
   const query = String(req.query.q || '').trim();
   const limit = Number(req.query.limit) || 30;
-  try {
-    const items = await searchRpsFabrics({ query, limit });
-    res.json({ source: 'RPSNext', items });
-  } catch (error) {
-    console.error('RPSNext no disponible para telas:', error.message);
-    res.json({ source: 'Excel local', items: searchStaticFabrics(query, limit) });
-  }
+  res.json(await searchCatalogFabrics(query, limit));
 });
 
 app.get('/api/catalog/articles', async (req, res) => {
@@ -132,7 +138,17 @@ app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
     if (!orderCode) return res.status(400).json({ error: 'Indica un número de pedido.' });
     const source = await getRpsOrder(orderCode);
     if (!source) return res.status(404).json({ error: `El pedido ${orderCode} no existe en RPSNext.` });
-    return res.json(buildOrderAutofill(source));
+    const result = buildOrderAutofill(source);
+    const textsById = new Map(result.order.awnings.map((awning) => [awning.id, awning._sourceText || '']));
+    const fabricProposals = await buildFabricProposals(
+      result.order.awnings,
+      textsById,
+      { search: async (query, limit) => (await searchCatalogFabrics(query, limit)).items }
+    );
+    // `_sourceText` solo sirve para calcular las propuestas: no forma parte del pedido.
+    result.order.awnings.forEach((awning) => { delete awning._sourceText; });
+    if (fabricProposals.length > 0) result.fabricProposals = fabricProposals;
+    return res.json(result);
   } catch (error) {
     return next(error);
   }
