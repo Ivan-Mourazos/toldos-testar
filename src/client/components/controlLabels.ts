@@ -57,6 +57,8 @@ const legacyModelNames: Record<string, string> = {
   BAMBALINA: 'BAMBALINA NUEVA',
   'CAMBIO ANTICA': 'CAMBIO DE TELA A TOLDO ANTICA',
   HERA: 'ROLL-SYSTEM',
+  // Iris es el nombre comercial de TGM para la línea Screeny de BAT (docs/rps-iris-evidence.md).
+  IRIS: 'SCREENY (BAT)',
   ANTICA: 'ANTICA',
   'AMBAR BOX': 'MICROBOX',
   'AGATA BOX': 'MODULBOX',

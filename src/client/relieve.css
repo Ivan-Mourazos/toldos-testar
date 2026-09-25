@@ -244,3 +244,12 @@ body, .app-shell { background: var(--bg); }
 .review-checklist-model { align-items: baseline; display: flex; gap: 8px; }
 .card-actions > button { height: 32px; min-height: 32px; }
 .card-actions > .icon-button { width: 32px; }
+/* Tarjeta: cabecera en una línea (TOLDO A · modelo · estado) y botones a la misma
+   altura y alineados por abajo (Iván, 25/09/2026). */
+.awning-column-header { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
+.awning-column-header .awning-column-heading { align-items: center; display: flex; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
+.awning-column-header .awning-model-title { font-size: 15px; line-height: 1.2; margin: 0; text-align: left; }
+.awning-column-header .card-actions { align-items: center; display: flex; gap: 6px; }
+.awning-column-header .card-actions > button, .awning-column-header .awning-panel-open { box-sizing: border-box; height: 32px; min-height: 32px; }
+.awning-column-header .card-actions > .icon-button { width: 32px; }
+.awning-column.is-readonly .awning-diagnostics { margin: 8px 0 0; }

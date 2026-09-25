@@ -15,7 +15,7 @@ import { ReadModeContext } from './ReadMode';
 import { READ_GROUPS, readGroupOrder } from '../readGroups';
 import type { AwningStatus } from '../awningBlocks';
 import { structureNotes as getStructureNotes } from '../../domain/structureNotes.js';
-import { controlLabel, legacyModelName } from './controlLabels';
+import { controlLabel } from './controlLabels';
 import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
 import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.js';
 import { ambarPlacementGroup } from '../../domain/ambarBoxParameters.js';
@@ -282,19 +282,18 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
       aria-readonly={readOnly || undefined}
       data-awning-letter={awningLetter(index)}
     >
+      {/* Cabecera en una línea: «TOLDO A · Arzúa Pro» y el estado. El nombre antiguo ya sale
+          en Parámetros y en «Añadir toldo»; aquí solo ocupaba sitio (Iván, 25/09/2026). */}
       <header className="awning-column-header">
         <span className="awning-column-heading">
           <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
+          <strong className="awning-model-title">{controlLabel(awning.model)}</strong>
           {/* El estado también arriba: con varias tarjetas había que bajar para verlo. Todo
               en mayúsculas, como al editar: «VÁLIDO», «FALTA 1», «1 ERROR», «2 AVISOS». */}
           {readOnly
             ? readStatus && <span className={`awning-header-status ${readStatusBadge[readStatus.kind]}`}>{readStatus.kind === 'ok' ? 'VÁLIDO' : readStatus.label.toLocaleUpperCase('es-ES')}</span>
             : <span className={`awning-header-status ${statusClass}`}>{missingFields.length ? `FALTA ${missingFields.length}` : status}</span>}
         </span>
-        <strong className="awning-model-title">
-          {controlLabel(awning.model)}
-          {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
-        </strong>
         {!readOnly && <div className="card-actions">
           {onOpenPanel && <button type="button" className="ghost-button awning-panel-open" onClick={() => onOpenPanel(awning.id)}><Layers3 aria-hidden="true" />Despiece y dibujo</button>}
           {!isHera && <button
@@ -835,7 +834,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
         </footer>
       // Válido ya lo dice la etiqueta de arriba: el pie solo sale si hay algo que atender.
       ) : status === 'VÁLIDO' ? null : <footer className={`awning-status ${statusClass}`}>{status}</footer>)}
-      {!readOnly && diagnostics.length > 0 && (
+      {/* También en la ficha de lectura: «2 AVISOS» arriba y aquí qué son. */}
+      {diagnostics.length > 0 && (
         <ul className="awning-diagnostics" aria-label="Avisos del cálculo">
           {diagnostics.map((item, index) => (
             <li key={index} className={item.level === 'error' ? 'is-error' : 'is-pending'}>
