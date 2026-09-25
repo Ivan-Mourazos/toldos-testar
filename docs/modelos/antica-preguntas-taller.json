@@ -1,77 +1,88 @@
 {
   "title": "Preguntas para cerrar el modelo Antica",
-  "date": "15/09/2026",
+  "date": "15/09/2026 · reescritas el 25/09/2026",
   "recipient": "Encargado de taller y Oficina Técnica",
-  "intro": "Necesitamos fijar el despiece y las reglas de fabricación del Antica para que la web prepare materiales y cantidades completos. Esta lista reúne las dudas anteriores y las nuevas encontradas en Excel, consumos, compras y planos. Responder por número; si una opción no se fabrica, indicarlo. Las medidas lineales son cm salvo que se indique mm.",
-  "confirmed": "Ya confirmado: modelo propio TGM; soporte habitual de enrollamiento Cortina de tres agujeros; brazos caseros; tubo 50×30 y pletina 30×10. Se parte de los Excel, sin considerar confirmados todos sus descuentos. La manivela puede tener un color diferente de la estructura.",
+  "intro": "Con estas respuestas, la web podrá preparar el Antica completo: qué piezas lleva cada toldo, cuántas y de qué medida. Contesta por número debajo de cada pregunta; si algo no se fabrica, dilo. Medidas en cm salvo que se diga otra cosa.",
+  "confirmed": "Ya está claro: el Antica es de fabricación propia (TGM); el soporte del enrollamiento es el de Cortina de tres agujeros; los brazos se hacen en el taller con pletina de 30×10, y la carga habitual es tubo de 50×30. La manivela puede ir de otro color que la estructura.",
+  "changes": "25/09/2026: preguntas reescritas en lenguaje claro, sin casos de pedidos antiguos ni del Excel. Sale la 25 (el proyecto especial de Madrid de 2024), porque era un encargo puntual: si vuelve algo así, entra por la 24. Las demás conservan su número.",
   "groups": [
     {
       "title": "Materiales y fabricación",
       "questions": [
         {
           "id": 1,
-          "title": "Brazos y corte de fabricación",
-          "question": "La pletina habitual 30×10 está confirmada. ¿Se corta a la salida indicada o hay descuentos, aumentos, plegados o piezas soldadas? Indicar las excepciones y sus medidas.",
-          "evidence": "0591: Excel 80 cm y compra 85. 3341: Excel 60 y compra 50. En el Ø33 de 2024/1310 se consumió pletina inox 25×6."
+          "title": "Corte de los brazos",
+          "question": "¿Los brazos se cortan a la medida de la salida, o hay que sumar o restar algo (por el plegado, la soldadura u otra pieza)?",
+          "web": "Corta cada brazo a la salida justa, sin sumar ni restar.",
+          "why": "Es la medida con que se cortan y la pletina que se reserva."
         },
         {
           "id": 2,
-          "title": "Tubo y contrapeso del 50×30",
-          "question": "Se han separado tubo 50×30×2 y contrapeso de pletina 30×10. ¿Llevan ambos el corte de carga del Excel? Confirmar posición del contrapeso, cuándo se monta y corte físico de cada pieza.",
-          "evidence": "2898: Excel carga 314 cm; compra una pieza de 326. Iván acepta partir del Excel, sin asegurar el descuento exacto."
+          "title": "Tubo de 50×30 y contrapeso",
+          "question": "En la variante de contrapeso, ¿el tubo de 50×30 y el contrapeso (pletina de 30×10) se cortan al mismo largo? ¿Dónde va el contrapeso y cuándo se monta?",
+          "web": "Corta los dos al mismo largo: el frente menos el descuento de la carga.",
+          "why": "Son dos cortes y dos materiales que se reservan."
         },
         {
           "id": 3,
-          "title": "Carga maciza o tubo hueco de 30×10",
-          "question": "¿La variante 30×10 con bamba lleva normalmente pletina maciza, tubo hueco o permite las dos opciones? Indicar cuándo se usa cada una y sus cortes.",
-          "evidence": "2024/0204 y 0345: compras especifica pletina 30×10. 2024/5526: compra TUBGA30MM10MM1,5 y bamba luminosa."
+          "title": "Carga de la variante 30×10 con bamba",
+          "question": "¿La carga es pletina maciza de 30×10, tubo hueco de 30×10, o una u otra según el caso? ¿Cuándo cada una?",
+          "web": "Pone pletina maciza. El tubo hueco solo se ha visto en un toldo con bamba luminosa.",
+          "why": "Cambia la pieza que se reserva."
         },
         {
           "id": 4,
           "title": "Escuadra de cada brazo",
-          "question": "¿Qué escuadra lleva cada montaje? Confirmar una por brazo, sección y espesor, largo, taladros, orientación y diferencias entre frontal, techo y lateral. Identificar los separadores adicionales.",
-          "evidence": "Compras: 40×40 y 45×45; piezas de 10×4, 4×12, 9×11 y 10×13 cm. 5686 añade un separador de brazo."
+          "question": "¿Qué escuadra lleva cada brazo según el montaje (frontal, techo o lateral)? Medida del ángulo (40×40 o 45×45), largo, taladros y posición. ¿Lleva algún separador?",
+          "web": "La pone en el despiece, una por brazo, pero sin referencia ni medida, y no la reserva.",
+          "why": "Sin estos datos no se puede reservar ni cortar."
         },
         {
           "id": 5,
-          "title": "Variante fija de tres agujeros",
-          "question": "¿La carga del fijo es P701 o pletina 30×10? ¿Dónde va la pletina 25×4 y cuál es su corte y material? Indicar cuándo cambia el montaje.",
-          "evidence": "Maestro fijo: carga P701, corte F−11 en máquina; 3374: pletina 30×10 y F−12. Pletina aluminio 25×4 aparece en RPS, sin correspondencia física demostrada."
+          "title": "Soporte fijo de tres agujeros",
+          "question": "En el soporte fijo, ¿la carga es tubo P701 o pletina de 30×10? ¿Dónde va la pletina de 25×4, de qué material es y cómo se corta?",
+          "web": "Pone tubo P701 como carga. La pletina de 25×4 sale en el despiece sin referencia.",
+          "why": "Cambia la carga que se corta y se reserva."
         }
       ]
     },
     {
-      "title": "Tornillería tapones y anclajes",
+      "title": "Tornillería, tapones y anclajes",
       "questions": [
         {
           "id": 6,
-          "title": "Kit de tornillos de máquina",
-          "question": "Desglosar el kit: tornillos, tuercas, arandelas y otras piezas; indicar medida, material, unidades por toldo y referencia conocida. Aclarar diferencias según máquina y colocación.",
-          "evidence": "Los Excel muestran un kit sin referencia. Los previstos y materiales de fabricación de RPS no detallan su contenido."
+          "title": "Kit de tornillos de la máquina",
+          "question": "¿Qué lleva el kit (tornillos, tuercas, arandelas…), cuántas piezas de cada y de qué medida? ¿Cambia según la máquina o dónde va colocada?",
+          "web": "Pone «kit de tornillos de máquina» en el despiece, sin referencia, y no lo reserva.",
+          "why": "Para reservarlo completo."
         },
         {
           "id": 7,
           "title": "Kit de tapones",
-          "question": "Distinguir tapones del tubo o perfil y tapas de tuerca. Indicar cantidad, medida, color y referencia por variante, y si alguno viene incluido con otra pieza.",
-          "evidence": "TAPONTOR13MMNEGRO es tapa de tuerca M8; TAPONTOR17MMNEGRO es M10. Su consumo varía y no identifica el kit completo."
+          "question": "¿Qué tapones lleva (del tubo, del perfil, tapas de tuerca M8 o M10), cuántos y de qué color? ¿Alguno viene ya con otra pieza?",
+          "web": "Pone «kit de tapones» en el despiece, sin referencia, y no lo reserva.",
+          "why": "Para reservarlos sin que falte ni sobre ninguno."
         },
         {
           "id": 8,
-          "title": "Taco de nylon de máquina",
-          "question": "¿Qué taco es, cuántos se montan y en qué máquinas? ¿Se compra separado o está incluido en el kit de tornillos, soporte o máquina? Indicar referencia o pieza equivalente.",
-          "evidence": "La fila TACO NAYLON MAQ. del Excel no tiene referencia. Debemos evitar omitirlo o reservarlo dos veces."
+          "title": "Taco de nailon de la máquina",
+          "question": "¿Qué taco es, cuántos se ponen y en qué máquinas? ¿Va aparte o viene dentro de otro kit (tornillos, soporte o máquina)?",
+          "web": "Lo pone en el despiece sin referencia y no lo reserva.",
+          "why": "Para no olvidarlo ni reservarlo dos veces."
         },
         {
           "id": 9,
-          "title": "Uniones del brazo y de la carga",
-          "question": "Desglosar cada unión: brazo a escuadra y brazo a carga. Indicar tornillos, ejes, tuercas, arandelas, casquillos y tapones por brazo, además de diferencias con 3 o 4 brazos.",
-          "evidence": "2025/4870 consume 30 arandelas M8 para tres toldos. 5961 usa tapas M8 y M10; los totales no permiten deducir el kit universal."
+          "title": "Uniones del brazo",
+          "question": "¿Qué tornillería lleva la unión del brazo con la escuadra y la del brazo con la carga (tornillos, ejes, tuercas, arandelas, casquillos, tapones)? ¿Cambia con tres o cuatro brazos?",
+          "web": "No la reserva.",
+          "why": "Se gasta en cada toldo y hoy no se reserva."
         },
         {
           "id": 10,
-          "title": "Anclajes y criterio de suministro",
-          "question": "¿Qué anclajes lleva cada soporte según pared y colocación? Confirmar unidades, elementos incluidos en kits y qué aporta instalación o cliente. Indicar los materiales que deben reservarse desde esta web.",
-          "evidence": "La tabla común de anclajes existe, pero no constituye un despiece validado de cada montaje Antica. No descontar materiales suministrados por otro responsable."
+          "title": "Anclajes",
+          "question": "¿Qué anclajes lleva cada soporte según la pared y la colocación? ¿Cuáles pone el taller y cuáles el instalador o el cliente?",
+          "web": "Usa la tabla de anclajes común a todos los modelos; si no se dice la pared, no pone ninguno.",
+          "why": "Para reservar solo lo que sale del taller."
         }
       ]
     },
@@ -80,138 +91,151 @@
       "questions": [
         {
           "id": 11,
-          "title": "Selección de tubo de enrollamiento",
-          "question": "¿Cuándo se usa P701, P801 u otro tubo? Fijar tabla por frente, salida, brazos y accionamiento; indicar si OT necesita elegirlo expresamente.",
-          "evidence": "Web: P801 desde más de 400 cm. 4488 usa P801 con frente 381,4. 2024/1310 consume tubo ELY Ø60."
+          "title": "Tubo de enrollamiento",
+          "question": "¿Cuándo va el tubo P701 (Ø70), cuándo el P801 (Ø78) y cuándo otro? ¿Depende del frente, la salida, los brazos o de si va a motor?",
+          "web": "P801 a partir de 4 m de frente; P701 por debajo.",
+          "why": "Cambian el tubo, sus casquillos y el kit de motor."
         },
         {
           "id": 12,
-          "title": "Casquillo de máquina de 50 o de 63",
-          "question": "¿Qué casquillo corresponde a cada máquina y posición? Confirmar ejes de 50/63 y punta de 70/78, y detallar compatibilidad con P701/P801 u otros tubos.",
-          "evidence": "Web y maestro usan CASMAQEJE6370MM/6378MM. RPS también registra casquillos de eje 50, por ejemplo en 2898."
+          "title": "Casquillo de máquina de eje 50 o de eje 63",
+          "question": "¿Qué casquillo va con cada máquina y colocación: eje 50 o eje 63?",
+          "web": "Pone el de eje 63 (de Ø70 o Ø78, según el tubo). Es la misma duda que en otros modelos (Q-PR02 de la lista de dudas).",
+          "why": "Para reservar el casquillo que encaja."
         },
         {
           "id": 13,
-          "title": "Entradas de tubo redondo y bolas",
-          "question": "Confirmar diámetros reales, referencia, espesor y corte de Ø33/Ø42. ¿Qué cambia al llevar bolas decorativas? Indicar piezas de fijación, dos remates por toldo u otra cantidad y descuento exacto.",
-          "evidence": "4860 consume tubo 42,4×2,65 y 14 remates EMBEBRON60MM40 para siete toldos. Compras recoge tubos aproximadamente 17 cm más largos que el Excel."
+          "title": "Entradas de tubo redondo (Ø33 y Ø42) y bolas",
+          "question": "¿Qué tubo exacto se usa (diámetro y grosor) y cómo se corta? Si lleva bolas decorativas, ¿cuántas, cómo se sujetan y cuánto cambia el corte?",
+          "web": "Calcula la tela de estas variantes, pero no reserva el tubo ni las bolas.",
+          "why": "Para reservar y cortar el tubo y los remates."
         },
         {
           "id": 14,
           "title": "Máquinas y manivelas",
-          "question": "¿Qué máquinas se montan actualmente y en qué casos? Confirmar largos/colores especiales de manivela y si se entrega una por toldo o puede compartirse entre varios.",
-          "evidence": "Web usa MB11; históricos muestran MB9 y otras máquinas. 3341 tiene dos toldos y una manivela. 4488 confirma manivelas blancas con estructura negra."
+          "question": "¿Qué máquina se monta hoy y cuándo otra? ¿De qué largos y colores son las manivelas, y va una por toldo o se puede compartir?",
+          "web": "Máquina MB-11 y una manivela por toldo, del largo según la altura y del color que se elija.",
+          "why": "Para reservar la máquina y la manivela que se entregan."
         },
         {
           "id": 15,
-          "title": "Motores adaptadores y mandos",
-          "question": "Fijar selección de motor por dimensiones, tejido y peso; confirmar ruedas, coronas, soportes y accesorios compatibles. ¿Cuántos mandos y sensores se reservan por toldo, OF o pedido?",
-          "evidence": "Web: 15/17 con dos brazos y 35/17 con tres o cuatro. Es una regla existente, aún sin tabla técnica completa contrastada."
+          "title": "Motores y mandos",
+          "question": "¿Qué motor lleva según la medida y la tela, y con qué rueda, corona y soporte? ¿Cuántos mandos y sensores van: por toldo, por OF o por pedido?",
+          "web": "Motor 15/17 con dos brazos y 35/17 con tres o cuatro; mando y sensor, los que se elijan en la tarjeta.",
+          "why": "Para reservar un motor con fuerza suficiente y los mandos justos."
         }
       ]
     },
     {
-      "title": "Confección y aumentos de tela",
+      "title": "Confección y tela",
       "questions": [
         {
           "id": 16,
-          "title": "Aumento de la variante contrapeso",
-          "question": "¿El aumento correcto de tela es salida × raíz de 2 +76+bamba o +60+bamba? ¿Depende de posición, confección o variante? Confirmar también bamba en otro tejido.",
-          "evidence": "Maestro ANTICA 50 X 30 CONTRAPESO: primera posición L24 usa +76 y otra R24 usa +60. Es la discrepancia Q01."
+          "title": "Tela de la variante de contrapeso",
+          "question": "Para la caída, ¿se suma a la diagonal de la salida (salida × 1,41) 76 cm más la bamba, o 60 más la bamba? ¿Depende de algo? ¿Y con la bamba en otra tela?",
+          "web": "Diagonal + 76 + bamba; con la bamba en otra tela, salida + 40.",
+          "why": "Es el largo de tela que se corta."
         },
         {
           "id": 17,
-          "title": "Geometría y aumento del 0591",
-          "question": "¿Por qué se usa una diagonal con altura 75 y salida 80, más 77 y bamba 20? Indicar qué medida se toma en obra y cuándo reemplaza la diagonal de 45 grados.",
-          "evidence": "0591: caída de Excel 206,6586 cm; regla general 209,1371. Necesitamos una condición o excepción explícita, no un ajuste global supuesto."
+          "title": "Caída con los brazos a otro ángulo",
+          "question": "En el 50×30, ¿la caída se calcula siempre con los brazos a 45°, o a veces se mide la altura en obra y se usa la diagonal real? ¿Cuándo?",
+          "web": "Calcula siempre con los brazos a 45°.",
+          "why": "Si hay casos con otra caída, la tarjeta tiene que pedir la altura."
         },
         {
           "id": 18,
-          "title": "Sin bamba y remate del 3341",
-          "question": "¿El 3341 realmente se fabrica sin bamba integrada, con bamba separada o con otro remate? Definir cómo debe elegirse en el formulario.",
-          "evidence": "Excel indica bamba 12, pero la caída usa salida × raíz de 2 +70 y no suma la bamba. La carga es 50×30."
+          "title": "Variante 50×30 sin bamba",
+          "question": "La variante sin bamba, ¿lleva algún remate abajo o una bamba aparte? ¿Cómo se sabe en el pedido que es esta variante?",
+          "web": "No deja poner bamba y calcula la caída como diagonal + 70.",
+          "why": "Para elegir bien la variante en la tarjeta y cortar la tela justa."
         },
         {
           "id": 19,
-          "title": "Paños costuras y márgenes",
-          "question": "Confirmar costura entre paños, margen base, bastillas, entrada de tubo y aumento de bamba separada; distinguir acrílico, técnico/PVC y confección horizontal/vertical.",
-          "evidence": "Web usa costura 2,5 cm, margen 6,5 y bamba separada +5. Hay Excel con margen 7 y costura 2,2; pueden cambiar el número de paños."
+          "title": "Paños, costuras y márgenes",
+          "question": "¿Cuánto se da de costura entre paños, de margen, de bastillas, de entrada de tubo y a la bamba aparte? ¿Cambia entre tela acrílica y técnica o PVC, o si se confecciona en horizontal o en vertical?",
+          "web": "Costura 2,5, margen 6,5 y bamba aparte + 5, para todas las telas.",
+          "why": "Puede cambiar el número de paños y la tela que se reserva."
         },
         {
           "id": 20,
-          "title": "Varilla de vaina y otros consumibles",
-          "question": "¿Qué varilla, hilo y otros consumibles lleva cada confección? Confirmar referencia, blanco/negro, número de entradas y longitud de corte; indicar cuáles deben reservarse.",
-          "evidence": "VARILLAVAINANEG5/BLAN5 aparece en muchas OF. A menudo su consumo se aproxima a frente−9 cm por toldo; hay diferencias y no se ha convertido en regla automática."
+          "title": "Varilla y otros consumibles",
+          "question": "¿Qué varilla (blanca o negra), hilo u otros consumibles lleva cada confección, cuántas entradas y de qué largo? ¿Cuáles hay que reservar?",
+          "web": "No reserva varilla en el Antica. Lo que se gasta suele rondar el frente menos 9 cm por toldo.",
+          "why": "Se gasta en cada toldo y hoy no se reserva."
         }
       ]
     },
     {
-      "title": "Reserva compras y trabajos especiales",
+      "title": "Reserva y trabajos especiales",
       "questions": [
         {
           "id": 21,
-          "title": "Consumo nominal o barras enteras",
-          "question": "Elegir criterio de reserva para acero: suma de cortes/600 o barras enteras según aprovechamiento. Fijar pérdida de sierra, retales, redondeo, reparto por OF y quién corrige lo realmente consumido.",
-          "evidence": "Provisionalmente se calcula consumo nominal con seis decimales. RPS contiene barras completas y fracciones; no demuestra un criterio único."
+          "title": "Acero: lo que suman los cortes o barras enteras",
+          "question": "¿Se reserva el acero por lo que suman los cortes o por barras enteras? ¿Cuánto se pierde en cada corte y qué se hace con los retales?",
+          "web": "Reserva lo que suman los cortes, sin pérdida de sierra (por ejemplo, 4,8 m de pletina son 0,8 barras de 6 m).",
+          "why": "Si se reserva de menos, falta acero; si se redondea a barras, sobra."
         },
         {
           "id": 22,
-          "title": "Largos comerciales y empalmes",
-          "question": "Confirmar stock de cada tubo/perfil, uso de barras de 500/600/700 y aprovechamiento compartido. Para cortes de acero mayores de 600, detallar suministro especial o empalme y todas sus piezas.",
-          "evidence": "4488 consume P801 de 500 y 700; la web elige 600/700. Hay cargas históricas de 628, 644 y 697 cm en artículos descritos como barra de 6 m."
+          "title": "Largos de barra y empalmes",
+          "question": "¿Qué largos hay en stock de cada tubo y perfil (5, 6 o 7 m), y se aprovecha una barra para varios toldos? Con cortes de acero de más de 6 m, ¿se pide material especial o se empalma, y con qué piezas?",
+          "web": "Tubo de enrolle de 6 o 7 m, uno por toldo. Con cortes de acero de más de 6 m, avisa de que el taller decida cómo.",
+          "why": "Para reservar las barras que se gastan y saber cómo se hacen los toldos grandes."
         },
         {
           "id": 23,
-          "title": "Cincado lacado y acabados",
-          "question": "¿Qué piezas se cincan o lacan y en qué orden? Definir las excepciones sin lacar, colores distintos y criterio de cantidad de las operaciones externas. Confirmar proveedor cuando cambia el material.",
-          "evidence": "EXT_CINCAR/EXT_LACAR factura a veces lotes y a veces piezas: 5961 registra cincado 4 para un texto que enumera 20 piezas. No copiar esa cantidad como número de componentes."
+          "title": "Cincado y lacado",
+          "question": "¿Qué piezas se cincan o se lacan fuera, cuáles no, y cómo se cuenta (por pieza o por lote)? ¿Hay que reservarlo desde la web?",
+          "web": "No reserva el cincado ni el lacado.",
+          "why": "Para saber si la reserva tiene que incluir esos trabajos."
         },
         {
           "id": 24,
-          "title": "Complementos y configuraciones especiales",
-          "question": "Enumerar qué se fabrica con tejadillo, faldón lateral, bamba luminosa, LED, automatismos, bolas, separadores u otros complementos. Dar despiece, cortes y referencias de cada opción admitida.",
-          "evidence": "La ficha TGM ofrece varios complementos; RPS contiene BAMBALUZ y remates que el despiece estándar aún no cubre completamente."
-        },
-        {
-          "id": 25,
-          "title": "Proyecto especial de Madrid",
-          "question": "¿Debe incorporarse como variante propia? Identificar plano y revisión vigentes, soporte/brazo/carga aplicables, referencias y cantidades de tornillos.",
-          "evidence": "Carpeta 2024/AR2403464_anticas madrid: Excel 030125 suma 651 toldos; plano V16_2 suma 805. Excel indica 2 prisioneros M4 por toldo y plano p.13 indica 4. No usarlo como kit habitual."
+          "title": "Complementos",
+          "question": "¿Qué complementos se hacen en el Antica (tejadillo, faldón lateral, bamba luminosa, LED, automatismos, bolas, separadores…) y qué piezas, cortes y referencias lleva cada uno?",
+          "web": "Solo tiene sensores; los demás complementos no tienen despiece.",
+          "why": "Para poder planificar y reservar los que se venden."
         }
       ]
     },
     {
-      "title": "Configuraciones parámetros y cierre",
+      "title": "Medidas, variantes y cierre",
       "questions": [
         {
           "id": 26,
-          "title": "Límites y número de brazos",
-          "question": "Aprobar límites de frente/salida para 2, 3 y 4 brazos y para cada montaje. Indicar cuándo hace falta apoyo adicional, otro material o una revisión especial.",
-          "evidence": "Web propone tres brazos desde más de 400 cm. 0591 lleva dos con 510. Ficha TGM: 575×160 con dos, 800×160 con tres; otros textos comerciales mencionan 2 m de salida."
+          "title": "Medidas máximas y número de brazos",
+          "question": "¿Hasta qué frente y qué salida se hace con dos, tres y cuatro brazos, en cada montaje? ¿Cuándo hace falta un apoyo más u otro material?",
+          "web": "Pasa a tres brazos por encima de 4 m de frente. La ficha TGM dice 5,75 × 1,60 con dos brazos y 8 × 1,60 con tres.",
+          "why": "Decide qué medidas acepta la web y cuántos brazos pone."
         },
         {
           "id": 27,
-          "title": "Lista final de variantes y nombres",
-          "question": "Confirmar las seis variantes actuales y añadir o retirar las necesarias: 50×30 contrapeso, 50×30 sin bamba, 30×10 con bamba, entrada Ø33, entrada Ø42 y fijo tres agujeros. Indicar nombres claros para OT/taller y configuraciones incompatibles.",
-          "evidence": "Antica es fabricación TGM y el soporte habitual del enrollamiento es Cortina de tres agujeros, ya confirmado. Evitar que “fijo” o el texto de venta elijan una variante incorrecta."
+          "title": "Variantes y nombres",
+          "question": "¿Son estas las variantes que se hacen: 50×30 con contrapeso, 50×30 sin bamba, 30×10 con bamba, entrada de tubo Ø33, entrada Ø42 y fijo de tres agujeros? ¿Sobra o falta alguna? ¿Con qué nombre las conoce el taller y cuáles no se pueden combinar?",
+          "web": "Ofrece esas seis.",
+          "why": "Para que no se elija una variante equivocada por el texto de la venta."
         },
         {
           "id": 28,
-          "title": "Parámetros y excepciones por pedido",
-          "question": "¿Qué valores deben poder modificarse globalmente y cuáles solo por toldo? Indicar quién revisa cambios, qué campos son obligatorios y cómo se documentan excepciones de corte, material, soporte o acabado.",
-          "evidence": "La pestaña actual consulta reglas reales. Hay edición de despiece y brazos, pero no una parametrización global completa de Antica."
+          "title": "Qué se puede cambiar y dónde",
+          "question": "¿Qué valores del Antica tiene que poder cambiar la oficina para todos los pedidos (en Parámetros) y cuáles solo en un toldo concreto? ¿Quién revisa esos cambios?",
+          "web": "Parámetros enseña las reglas del Antica, pero no deja cambiarlas; en cada toldo se pueden editar el despiece y los brazos.",
+          "why": "Para ajustar sin tocar la web cuando cambie algo del taller."
         },
         {
           "id": 29,
-          "title": "Dibujos e información para taller",
-          "question": "Sobre el formato anterior, señalar vistas, cotas, secciones, etiquetas y observaciones indispensables para cada variante. Aclarar si se necesita vista frontal con brazos, lateral o 3D, y qué debe mantenerse al sustituir una imagen.",
-          "evidence": "Se conserva la plantilla habitual; el dibujo de tela es un esquema, no un plano de fabricación. La imagen alternativa no debe ocultar medidas, materiales o advertencias."
+          "title": "Dibujo para el taller",
+          "question": "¿Qué tiene que salir en el dibujo de cada variante (vistas, cotas, secciones, rótulos, observaciones)? ¿Hace falta una vista de frente con los brazos, una lateral o en 3D?",
+          "web": "Dibuja un esquema lateral de la tela, no un plano de fabricación.",
+          "why": "Para que el taller tenga en el papel lo que necesita."
         },
         {
           "id": 30,
-          "title": "Muestras y aceptación final",
-          "question": "Elegir OF de referencia para cada variante y sus montajes importantes. Revisar corte, despiece, reserva, formulario, parámetros y PDF; anotar quién valida y cualquier caso no aplicable o excluido.",
-          "evidence": "Usar los pedidos de esta lista y una fabricación actual. El modelo no se cerrará con kits, cantidades o variantes pendientes; una prueba del programa no sustituye la revisión de taller."
+          "title": "Muestras para dar el modelo por bueno",
+          "question": "¿Qué pedido usamos de muestra para cada variante, y quién revisa el corte, las piezas, la reserva y el PDF?",
+          "web": "Tiene las seis variantes probadas, pero el taller no ha revisado ninguna muestra.",
+          "why": "El modelo no se cierra sin esa revisión."
         }
       ]
     }

@@ -4,7 +4,7 @@
 
 [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md)
 
-Rama `bambalina`, partiendo de 6420950 en main. Recorre el piloto de Codex, el saneado de lint y test, el barrido de 2026, el anidado de rollo, el suplemento configurable y la resolución del 4111. Siguiente acción ejecutable: revisar la muestra en taller y avisar a OT de las dos infrarreservas históricas (Q-B06 y Q-B08).
+Rama `bambalina`, partiendo de 6420950 en main. Recorre el piloto de Codex, el saneado de lint y test, el barrido de 2026, el anidado de rollo, el suplemento configurable y la resolución del 4111. Siguiente acción ejecutable: revisar la muestra en taller. El aviso a OT de las dos infrarreservas históricas (Q-B06 y Q-B08) se retiró el 25/09/2026: no se tratan pedidos antiguos.
 
 ## Alcance y decisiones de OT
 
