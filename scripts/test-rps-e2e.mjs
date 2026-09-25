@@ -462,7 +462,8 @@ function apiCases() {
         of: '0230011', model: 'XACOBEO', width: 365, projection: 250,
         valanceHeight: 30, device: 'MAQ. EXTERIOR', crankHeight: 170
       }),
-      calculation: { fabricWidth: 352.5, fabricDrop: 325, fabricMl: 13, rollTubeLength: 354.1 },
+      // Lona según el manual ART 250 desde el 25/09/2026 (Q-X01): 365 − 11,9.
+      calculation: { fabricWidth: 353.1, fabricDrop: 325, fabricMl: 13, rollTubeLength: 354.1 },
       // El tubo va con el largo del EVO 70, que en blanco solo existe de 700 (23/09/2026).
       materials: { SOPART250BL16: 1, TURA70HG700C: 1, BART25BL16250C: 1, ACRILI2925P120: 13 },
       pdfPages: 2

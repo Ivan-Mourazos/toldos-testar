@@ -72,7 +72,8 @@ try {
   assert.ok((await page.getByRole('table', { name: 'Descuentos Iris seleccionados' }).innerText()).includes('5,2 cm'));
   await page.screenshot({ path: path.join(directory, 'iris.png'), fullPage: true });
   await selectModel('Cambio antica');
-  assert.ok((await page.getByRole('table', { name: 'Aumentos Cambio Antica' }).innerText()).toLowerCase().includes('tela terminada'));
+  // Desde el 25/09/2026 (Q-CA01) la caída es la medida de la tela más lo que se sume.
+  assert.ok((await page.getByRole('table', { name: 'Caída Cambio Antica' }).innerText()).includes('M + A'));
   await page.screenshot({ path: path.join(directory, 'cambio-antica.png'), fullPage: true });
   await page.setViewportSize({ width: 800, height: 1000 });
   await selectModel('Antica');
