@@ -6,33 +6,21 @@ Actualizado el 25/09/2026:
 
 - **Iris y HERA ya no tienen dudas.** El taller las contestó el 24/09. Lo que la web hace de forma provisional está en [iris.md](./iris.md) y [hera.md](./hera.md).
 - **Fuera lo que miraba el pasado.** Salen las preguntas sobre pedidos antiguos que pudieron salir mal y las que solo tocaban el Excel. La referencia ahora es la web.
+- **Iván contestó 11 dudas el 25/09** y aclaró parte de otras tres (Q-G03, Q-M03 y Q-A02). Las contestadas están al final, en [Contestadas](#contestadas-el-25092026), con lo que cambia en la web. Las que siguen aquí son para el taller.
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
 ## Brazos invisibles
 
-### Arzúa Pro
-
-- **¿Con qué descuento se cortan la lona y la barra de carga Univers del Arzúa Pro?** El manual del fabricante (AROND-350) dice 12,4 cm de lona con máquina (10,8 con motor) y 10,4 de barra Univers. El taller venía cortando con 13 (11 con motor) y 11,4. La web usa los del manual, así que la lona sale 0,6 cm más ancha con máquina y la barra 1 cm más larga. Importa porque son las medidas de corte del planteamiento. <sub>Q-A01</sub>
-- **¿Se pueden hacer brazos cruzados en el Arzúa Pro?** El manual dice que este modelo no los admite, pero la tarifa 2026 vende un kit de brazos cruzados AROND. La web los deja con ese kit. Importa para no vender un montaje que el fabricante no respalda. <sub>Q-A03</sub>
-
 ### Galicia
 
-- **Con tres brazos, ¿el brazo suelto y el soporte suelto tienen que ser de un lado concreto?** Con tres brazos se reserva un juego (izquierdo y derecho) y uno suelto, y lo mismo con los soportes. Se han gastado tantos izquierdos como derechos. La web reserva el derecho (el izquierdo si el derecho no existe en ese color). Pasa igual en el Monoblock 350 y el Ágata Box. Importa para reservar la pieza que se va a montar. <sub>Q-A04</sub>
 - **¿Qué máquina lleva el Galicia: la MB-11 L-120 o la Geiger 1.13 L-140? ¿De qué depende?** Se usan las dos (unas dos de cada tres veces, la MB-11). La web reserva siempre la MB-11, también en el Monoblock 350. Importa para reservar la máquina que se monta. <sub>Q-G01</sub>
 - **¿Cuándo lleva el Galicia el motor 70/17 en vez del 55/17?** Lo normal es el 55/17, también con tres brazos y 6,50 m de frente. El 70/17 aparece a veces, sin relación clara con la medida. La web pone el 55/17; el 70/17, solo si el técnico lo cambia con el candado. Importa para reservar un motor con fuerza suficiente. <sub>Q-G02</sub>
-- **¿Hasta qué frente y qué salida se hace el Galicia con tres brazos?** La ficha TGM llega a 8 m de frente, pero la barra de carga más larga es de 7 m: ¿se empalma? Y la ficha para en 3,25 m de salida con tres brazos, aunque se han hecho de 3,50. La web no pasa de 7 m (el candado lo permite) y avisa, sin bloquear, por encima de 3,25 m de salida con tres brazos. Importa para no aceptar un toldo que no se puede fabricar, ni rechazar uno que sí. <sub>Q-G03</sub>
-
-### Xacobeo
-
-- **¿Cuánto se descuenta a la lona del Xacobeo con máquina exterior: 12,5 cm u 11,9?** El manual del fabricante (ART 250) dice 11,9; el taller corta con 12,5, y la web también. Importa porque es el ancho de corte de la lona. <sub>Q-X01</sub>
+- **Con tres brazos, ¿se hace el Galicia con 3,50 m de salida?** La ficha TGM llega a 3,25 m con tres brazos, pero se han hecho de 3,50. La web avisa por encima de 3,25, sin bloquear. (Lo del frente ya está contestado: por encima de 7 m, la barra se empalma.) Importa para no aceptar un toldo que no se puede fabricar, ni rechazar uno que sí. <sub>Q-G03</sub>
 
 ### Monoblock 350
 
-- **¿Qué línea mínima y qué frente máximo valen con tres brazos: los del manual de 2016 o los del catálogo actual del fabricante (brazos Onyx)?** Cambian la línea mínima con tres brazos (por ejemplo, 4,29 o 4,21 m con 2,25 de salida) y el frente máximo con 3,50 de salida (7,75 u 8,25 m). La web usa los del manual. Importa porque decide qué medidas acepta la web. <sub>Q-M01</sub>
-- **¿Qué motor lleva el Monoblock 350 con cuatro brazos?** Con cuatro brazos se ha puesto el 70/17, pero el manual pide un motor más fuerte (de 85 a 100 Nm). La web pone el 55/17 con dos brazos, el 70/17 con tres y el 85/17 con cuatro. Importa para reservar un motor que mueva el toldo. <sub>Q-M02</sub>
-- **¿Hasta qué frente vale una sola barra de 7 m para la barra de carga y el tubo 40×40, y cómo se empalma por encima?** Con algo más de 7,10 m de frente, el corte ya pasa de 7 m. La web usa una barra de 7 m hasta 7,25 m de frente y, por encima, dos barras iguales empalmadas. Importa para reservar las barras que hacen falta y saber cómo se monta. <sub>Q-M03</sub>
-- **Con barra de carga Univers 280, ¿cuánto se descuenta al cortarla?** El manual solo da el descuento de la barra EVO, y más o menos la mitad de los Monoblock llevan Univers. La web le aplica el mismo que a la EVO. Importa porque es la medida de corte de la barra. <sub>Q-M04</sub>
+- **¿Hasta qué frente vale una sola barra de 7 m para la barra de carga y el tubo 40×40, y cómo se empalma por encima?** Con algo más de 7,10 m de frente, el corte ya pasa de 7 m. La web usa una barra de 7 m hasta 7,25 m de frente y, por encima, dos barras iguales empalmadas. Iván: antes se revisan los pedidos pasados (lo hace Oficina Técnica); si no se aclara, pasa al taller. Importa para reservar las barras que hacen falta y saber cómo se monta. <sub>Q-M03</sub>
 
 ## Cofres
 
@@ -58,15 +46,11 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 - **¿Cuándo lleva la Diana vertical el kit de montaje del cable (`MONTCABLEMAXSC`)?** Se ha puesto en una de cada tres. La web no lo reserva. Importa para que no falte al montar. <sub>Q-D01</sub>
 
-### Selena
-
-- **¿Se hace la Selena a motor?** No hay manual que lo diga y nunca se ha hecho con motor. La web solo la deja con máquina interior. Importa para saber si hay que preparar el motor y su kit. <sub>Q-SE04</sub>
-
 ## Clásicos
 
 ### Punto Recto
 
-- **Con tubo de Ø70 y motor, ¿el kit es el adaptador de tubo 70 y la corona LT50 de Ø70 (`ADAPTADORESTUBO70` y `CORONA LT5070`)?** Existen en RPS, pero no se han usado nunca: los Punto Recto a motor han ido con tubo de Ø78. La web reserva esas dos piezas. Importa para reservar un kit que encaje. <sub>Q-PR01</sub>
+- **Con tubo de Ø70 y motor, ¿el kit es el adaptador de tubo 70 y la corona LT50 de Ø70 (`ADAPTADORESTUBO70` y `CORONA LT5070`)?** Existen en RPS, pero no se han usado nunca: los Punto Recto a motor han ido con tubo de Ø78. La web reserva esas dos piezas. En el Antica, con tubo Ø70 y motor se montan la rueda Hipro Ø68 y la corona centrada (`RUEDAMOTHI68` y `CORONACENMEC70`): ¿valen también aquí? Importa para reservar un kit que encaje. <sub>Q-PR01</sub>
 - **¿Qué barra de carga lleva el Punto Recto: Univers 280 o Univers 270?** La tarifa vende las dos, pero en RPS la 270 solo existe en blanco de 7 m y siempre se ha puesto la 280. La web pone la 280. Importa para reservar la barra correcta. <sub>Q-PR03</sub>
 - **¿Se sigue haciendo el Punto Recto con 1,60 m de salida?** El brazo existe en RPS (en blanco), pero la tarifa 2026 llega a 1,40 m. La web lo ofrece. Importa para no vender una medida que ya no está en tarifa. <sub>Q-PR04</sub>
 
@@ -78,18 +62,13 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 ### Cambio Antica
 
-- **En un cambio de tela de Antica, ¿qué medida es la «salida» que se escribe?** A veces la venta trae una salida y el técnico calcula con otra más corta (por ejemplo, 120 en la venta y 70 en el cálculo). La web suma 65 a la salida que escribas para sacar la caída. Importa porque de ahí sale el largo de tela que se corta. <sub>Q-CA01</sub>
 - **Con la bamba en otra tela, ¿cuánto se suma a la salida para la caída del cuerpo: 40 cm o 55?** Se han usado los dos. La web suma 40 (se cambia en Parámetros). Importa porque es el largo de tela que se corta. <sub>Q-CA02</sub>
-
-### Bambalina
-
-- **Cuando la nota de una bambalina es larga, ¿vale que el planteamiento remita al pedido o tiene que verse entera?** La fila del planteamiento tiene poco sitio y, si la nota no cabe, la web pone que se mire el pedido. Importa para que el taller no se pierda una indicación. <sub>Q-B07</sub>
 
 ## Para todos los modelos
 
-- **Casquillo de máquina: ¿cuándo va el de eje 50 y cuándo el de eje 63?** Se usan los dos (en el Punto Recto, 10 y 6 veces) y no se ve de qué depende. La web pone el de eje 50 en el Punto Recto, el Monoblock 350 y los cofres; en la Cortina, el de 50 con máquina interior y el de 63 con exterior. Importa para reservar el casquillo que encaja en la máquina. <sub>Q-PR02</sub>
+- **Casquillo de máquina: ¿cuándo va el de eje 50 y cuándo el de eje 63?** Se usan los dos (en el Punto Recto, 10 y 6 veces; en el Antica, 19 y 13) y no se ve de qué depende. La web pone el de eje 50 en el Punto Recto, el Monoblock 350 y los cofres; en la Cortina, el de 50 con máquina interior y el de 63 con exterior; en el Antica, el de 63. Importa para reservar el casquillo que encaja en la máquina. <sub>Q-PR02</sub>
 - **¿Qué largo de barra se reserva: el más corto que llega al corte o el habitual?** En el Arzúa, el Galicia y los cofres, la web reserva barras de 6 o 7 m para el tubo y los perfiles (y un tubo de 6,50 m que en RPS no existe). El almacén gasta muchas de 4 y 5 m. Importa para reservar lo que de verdad se gasta y no bloquear barras largas. <sub>Q-A06</sub>
-- **¿Se venden los toldos en lacados poco habituales (bronce, gris texturado…)?** En esos colores faltan en RPS piezas como los soportes del Galicia, algunos perfiles o terminales. La web ofrece todos los lacados y, en esos, reserva piezas que en RPS no existen. Importa porque la reserva sale incompleta sin que se note. <sub>Q-A02</sub>
+- **Cuando un toldo va en un lacado poco habitual (bronce, gris texturado…) y se manda a lacar fuera, ¿qué piezas se cogen del almacén y de qué color?** Iván: a veces se venden así, y esas piezas se mandan a lacar. En esos colores faltan en RPS piezas como los soportes del Galicia, algunos perfiles o terminales, y la web reserva códigos que no existen. En la Electra ya se hace así: perfiles blancos que se lacan fuera. ¿Vale la misma regla para todos (la pieza en blanco y el lacado aparte)? ¿Hay piezas que no se lacan? Importa porque hoy la reserva sale incompleta sin que se note. <sub>Q-A02</sub>
 
 ## Muestras que tiene que mirar el taller
 
@@ -97,3 +76,23 @@ No son dudas: son PDF de muestra, ya preparados, para que el taller confirme que
 
 - Cambio de tela, Enrollable y Bambalina.
 - Cambio Antica (soporte fijo).
+
+Iván (25/09): hay que agrandar la letra de los PDF todo lo que se pueda sin que se salga de los recuadros, y ajustar los recuadros al espaciado. Pendiente de hacer antes de dar las muestras al taller.
+
+## Contestadas el 25/09/2026
+
+Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica.
+
+| Código | Pregunta | Respuesta | En la web |
+| --- | --- | --- | --- |
+| Q-A01 | Descuentos de lona y barra Univers del Arzúa Pro: manual o taller | Según el manual (AROND-350) | Ya lo hace: 12,4 / 12,2 / 10,8 de lona y 10,4 de barra |
+| Q-A03 | Brazos cruzados en el Arzúa Pro | Sí: se están haciendo, y el kit cruzado cita el AROND-350 como soporte válido | Ya lo hace, con el kit cruzado AROND |
+| Q-A04 | Lado del brazo y el soporte sueltos con tres brazos (Galicia, Monoblock 350, Ágata Box) | No es de un lado concreto. Tiene que ser un dato opcional del pedido; si no se pone, decide el taller | Pendiente: dato opcional en la tarjeta. Sin él, se sigue reservando el derecho y el PDF dirá que el lado lo decide el taller |
+| Q-G03 | Galicia con más de 7 m de frente | La barra se empalma | Pendiente: dejar pasar hasta 8 m con empalme, como el Monoblock 350. La salida de 3,50 con tres brazos sigue abierta |
+| Q-X01 | Lona del Xacobeo con máquina exterior: 12,5 u 11,9 | Como el manual: 11,9 | Pendiente. El manual también da 11,6 con máquina interior y 9,9 con motor, y la web usa 12 y 11: se aplica el manual en los tres |
+| Q-M01 | Monoblock 350 con tres brazos: manual de 2016 o catálogo actual | El manual más reciente del modelo | Pendiente: localizar el manual más reciente de Llaza y aplicar sus mínimos y máximos (hay que migrar los parámetros guardados en el servidor) |
+| Q-M02 | Motor del Monoblock 350 con cuatro brazos | Como dice el manual | Ya lo hace: 85/17 con cuatro brazos |
+| Q-M04 | Descuento de la barra Univers 280 en el Monoblock 350 | 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Pendiente: barra Univers = descuento EVO − 1 cm |
+| Q-SE04 | Selena a motor | En teoría, sí | Pendiente: ofrecer motor en la Selena, con el kit de la Cortina, que comparte tubo y piezas |
+| Q-CA01 | Qué «salida» se escribe en un Cambio Antica | En un cambio de tela, la salida ya debería ser la medida de la tela | Por concretar con Iván cómo se aplica (hoy la web suma 65 a lo que se escribe) |
+| Q-B07 | Notas largas de la Bambalina | En la línea va «bamba de tanto, hecha de tanto»; lo demás, en Observaciones | Pendiente: revisar que la línea lleve solo eso y que el resto pase a Observaciones |

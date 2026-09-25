@@ -63,8 +63,8 @@ A 1280×720 y 1600, con el caso AR2603380 (OF 0230335): válido, sin errores ni 
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
-| Q-A04 | ¿El brazo y el soporte sueltos van de un lado concreto? (56 izquierdos, 56 derechos) | Derecho |
+| Q-A04 | **Resuelta (Iván, 25/09/2026):** no van de un lado concreto. Debe ser un dato opcional del pedido; si no se pone, decide el taller | Hoy, derecho. Pendiente: dato opcional en la tarjeta y, sin él, aviso en el PDF de que el lado lo decide el taller |
 | Q-A06 | ¿Se reserva el largo de stock más corto que cabe? El almacén imputa muchos de 500 | 600 o 700 |
 | Q-G01 | Máquina MB-11 L-120 (32 OF) o Geiger 1.13 L-140 (17 OF): ¿de qué depende? | MB-11 |
 | Q-G02 | ¿Cuándo se pone el motor 70/17? (5 de 18 OF, sin relación clara con la medida) | 55/17; 70/17 con el candado |
-| Q-G03 | La ficha permite 8 m con tres brazos y hay 10 OF con tubo de 800, pero la barra más larga es de 700. ¿Se empalma la barra? Y la salida de 350 con tres brazos: ¿se permite? | Máximo 700 con candado; aviso por encima de 325 con tres brazos |
+| Q-G03 | La ficha permite 8 m con tres brazos y hay 10 OF con tubo de 800, pero la barra más larga es de 700. **Iván (25/09/2026): sí se empalma** (pendiente: dejar pasar hasta 8 m con empalme, como el Monoblock 350). Sigue abierta la salida de 350 con tres brazos: ¿se permite? | Máximo 700 con candado; aviso por encima de 325 con tres brazos |

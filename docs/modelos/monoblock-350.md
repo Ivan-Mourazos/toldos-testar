@@ -70,8 +70,8 @@ A 1280×720 y 1600, con AR2603393 (OF 0230266: 695 × 275, 3 brazos, techo, máq
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
-| Q-M01 | ¿Mínimos y máximos del manual de 2016 (brazos ART 350) o del catálogo actual (Onyx)? Cambian los de 3 brazos y el máximo con 3,50 (7,75 o 8,25) | Los del manual |
-| Q-M02 | Motor: con 4 brazos se consumió el 70/17 (2 OF) y el manual pide 85-100 Nm | 55/17, 70/17 y 85/17 |
-| Q-M03 | Frentes de 720 a 725: el almacén usó una barra de 700 aunque el corte pasa de 700. ¿Hasta dónde vale una sola? Por encima, ¿cómo se empalma? | Una hasta 725; después, barras iguales |
-| Q-M04 | Barra Univers: el manual solo da el corte del EVO. ¿Mismo descuento? | El del EVO |
+| Q-M01 | **Resuelta (Iván, 25/09/2026): el manual más reciente del modelo.** Cambian los de 3 brazos y el máximo con 3,50 (7,75 o 8,25) | Hoy, los del manual de 2016. Pendiente: localizar el manual más reciente de Llaza, aplicar sus valores y migrar los parámetros guardados en el servidor |
+| Q-M02 | **Resuelta (Iván, 25/09/2026): como dice el manual.** Con 4 brazos se consumió el 70/17 (2 OF) y el manual pide 85-100 Nm | 55/17, 70/17 y 85/17: ya es lo del manual |
+| Q-M03 | Frentes de 720 a 725: el almacén usó una barra de 700 aunque el corte pasa de 700. ¿Hasta dónde vale una sola? Por encima, ¿cómo se empalma? Iván (25/09/2026): revisar cómo se hizo en pedidos pasados; si no se aclara, pasa al taller | Una hasta 725; después, barras iguales |
+| Q-M04 | **Resuelta (Iván, 25/09/2026):** la barra Univers se descuenta 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Hoy, el del EVO. Pendiente: EVO − 1 cm |
 | Q-A04, Q-A06, Q-G01, Q-PR02 | Lado del suelto, largo de stock, máquina MB-11 o Geiger, casquillo de eje 50 o 63 | Derecho, 600/700, MB-11, eje 50 |

@@ -1,6 +1,6 @@
 # Arzúa Pro — expediente
 
-23/09/2026 · **Terminado salvo las dudas Q-A01, Q-A03 y Q-A06** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-arzua-evidence.md)
+23/09/2026 · **Terminado salvo la duda Q-A06** (Q-A01 y Q-A03, contestadas por Iván el 25/09/2026) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-arzua-evidence.md)
 
 ## 1. Alcance y fuentes
 
@@ -33,9 +33,9 @@ La intranet de producción lo recoge así: brazos Onyx, soportes AROND o GALIZIA
 | Línea mínima | Salida + 45 (motor, máq. int.); + 50 (máq. ext.) | Igual en las 9 salidas | — |
 | Máximo con 2 brazos (AROND) | 6,00 × 3,50 | 600, se salta con el candado. Hay 6 libros por encima (el mayor, 650) | — |
 | Par del motor, tubo Ø80 | 25 Nm a 1,50 m de salida hasta 2,50 m de línea | Pide 30: se queda del lado seguro | — |
-| Brazos cruzados | "Este modelo no admite brazos cruzados" | Los admite con el kit cruzado AROND de la tarifa 2026 (Q-A03) | — |
+| Brazos cruzados | "Este modelo no admite brazos cruzados" | Los admite con el kit cruzado AROND de la tarifa 2026. **Q-A03 resuelta (Iván, 25/09/2026):** se están haciendo con brazos cruzados y el kit cita el AROND-350 como soporte válido | — |
 
-**Q-A01**: el taller es coherente consigo mismo en las 128 estructuras, y el manual vigente dice otra cosa en dos piezas: la lona (0,6 cm más en la web con máquina, 0,2 con motor) y la barra Univers (1 cm más en la web). Las 182 diferencias de medidas contra los libros salen todas de ahí:
+**Q-A01 · resuelta por Iván el 25/09/2026: se corta según el manual**, que es lo que ya hace la web. Contexto: el taller es coherente consigo mismo en las 128 estructuras, y el manual vigente dice otra cosa en dos piezas: la lona (0,6 cm más en la web con máquina, 0,2 con motor) y la barra Univers (1 cm más en la web). Las 182 diferencias de medidas contra los libros salen todas de ahí:
 
 | Diferencia | Casos | Causa |
 | --- | --- | --- |
@@ -85,6 +85,6 @@ Revisado a 1280×720 y a 1600 con el caso AR2603332: válido, sin errores y sin 
 
 ## 9. Pendiente
 
-- Decidir Q-A01 y, con ello, rehacer el contraste de medidas.
+- Hecho (25/09/2026): Q-A01 decidida a favor del manual. Las 182 diferencias con los libros quedan explicadas; no hay que tocar las medidas.
 - Lacados bronce y 7022, que venían señalados en la auditoría (parte de Q-A02).
 - Hecho: la numeración del despiece ahora es correlativa (antes saltaba del 12 al 21 y dejaba el 4 vacío a motor).
