@@ -83,7 +83,7 @@ export function controlLabel(value: string) {
 // ("MODELO GALICIA") o la descripción del artículo ("CORTINA UNIVERSAL").
 // Se revisa en cada modelo al darlo por terminado (Iván, 22/09/2026).
 const redundantLegacyNames = new Set([
-  'CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'
+  'CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'CAMBIO ANTICA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'
 ]);
 
 export function rpsModelName(value: string) {
