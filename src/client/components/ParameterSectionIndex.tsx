@@ -5,6 +5,7 @@ type Section = { id: string; number: string; title: string };
 // Índice fijo de las secciones de Parámetros (01, 02… y Dibujos). Cada modelo ocupaba unos
 // 2.500 px y había que bajar a ciegas (revisión de interfaz, F1, 23/09/2026). Lee las
 // secciones que haya en pantalla, así sirve para las vistas de los 22 modelos sin tocarlas.
+// Va en la columna de la ficha, alineado con ella y sin banda propia (Iván, 25/09/2026).
 export function ParameterSectionIndex() {
   const [sections, setSections] = useState<Section[]>([]);
   const [top, setTop] = useState(0);

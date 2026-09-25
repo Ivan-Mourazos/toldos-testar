@@ -23,7 +23,6 @@ import { OrderView } from './views/OrderView';
 import { ParametersView } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
 import { ParametersSaveBar } from './components/ParametersSaveBar';
-import { ParameterSectionIndex } from './components/ParameterSectionIndex';
 import { ParametersHistory } from './components/ParametersHistory';
 import { formOptions } from '../domain/modelBehavior.js';
 import { ReviewsView } from './views/ReviewsView';
@@ -421,6 +420,8 @@ export default function App() {
         <header className="topbar">
           <div className="workspace-heading">
             <h2>{viewTitle}</h2>
+            {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
+            {activeTab === 'parameters' && <ParametersHistory version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />}
           </div>
           {activeTab === 'order' && (
             <div className="topbar-actions">
@@ -498,8 +499,6 @@ export default function App() {
               onSave={ruleSettings.saveDraft}
               onResult={notifyParameterSave}
             />
-            <ParametersHistory version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />
-            <ParameterSectionIndex />
             <ParametersView
               parameters={ruleSettings.generalParameters}
               onUpdateArzua={ruleSettings.updateArzua}

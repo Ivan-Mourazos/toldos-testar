@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { NumberField } from '../components/NumberField';
+import { ParameterBand, ParameterNote } from '../components/ParameterSheet';
+import { controlLabel } from '../components/controlLabels';
 import { SelectField } from '../components/SelectField';
 import type { FabricJobParameters } from '../types';
 import { anticaVariants, calculateAnticaBodyDrop } from '../../domain/anticaRules.js';
@@ -9,8 +11,9 @@ import { HERA_RULES, HERA_FABRIC_ALLOWANCES, HERA_SPECIAL_TUBE_FROM_CM } from '.
 import { defaultIrisParameters, getIrisDiscounts, getIrisFabricDropAllowance, getIrisLimits, irisSubmodels, irisGuideTypes, irisDevices, irisSeriesOf, irisHasCassette } from '../../domain/irisParameters.js';
 
 const number = (value: number) => new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(value);
+// Misma sección numerada que las fichas editables (Iván, 25/09/2026).
 function Band({ id, title, description, children }: { id: string; title: string; description: string; children: React.ReactNode }) {
-  return <div className="parameter-band rule-reference-band"><div className="parameter-band-title"><span>{id}</span><div><h3>{title}</h3><p>{description}</p></div></div><div className="rule-reference-content">{children}</div></div>;
+  return <ParameterBand number={id} title={title} description={description}>{children}</ParameterBand>;
 }
 function Table({ label, columns, rows }: { label: string; columns: string[]; rows: React.ReactNode[][] }) {
   return <div className="parameter-table-wrap"><table className="parameter-table rule-reference-table" aria-label={label}><thead><tr>{columns.map(column => <th key={column} scope="col">{column}</th>)}</tr></thead><tbody>{rows.map((row, i) => <tr key={i}>{row.map((cell, j) => j === 0 ? <th key={j} scope="row">{cell}</th> : <td key={j}>{cell}</td>)}</tr>)}</tbody></table></div>;
@@ -36,14 +39,14 @@ export function AnticaRuleReference() {
     <Band id="TGM" title="Fabricación propia · estado de revisión" description="Soporte habitual de Cortina de tres agujeros y brazos fabricados en taller. Confirmado por OT el 14/09/2026.">
       <p className="rule-reference-warning">Reserva de estructura parcial: faltan escuadras, kits, perfiles de variantes pendientes y otros auxiliares. Los artículos de brazos especiales encontrados en RPS no equivalen al brazo habitual.</p>
       <Table label="Contraste Antica con taller" columns={['Comprobación', 'Resultado']} rows={[
-        ['Excel y aumentos', 'Las tablas inferiores muestran lo que calcula la web. Los históricos contienen ajustes particulares: 0591 cambia la diagonal y el aumento; 3341 omite la bamba en la caída. No se aplican esos ajustes a todos los pedidos.'],
-        ['Brazos y límites', 'La selección automática cambia a 3 al superar 400 cm; el Excel 0591 indica 2 para 510 cm. La ficha TGM publica 575 cm con 2 brazos y 800 cm con 3, ambos con salida 160 cm. Requiere confirmar la configuración con OT.'],
+        ['Aumentos', 'Las tablas inferiores muestran lo que calcula la web. Los históricos contienen ajustes particulares: 0591 cambia la diagonal y el aumento; 3341 omite la bamba en la caída. No se aplican esos ajustes a todos los pedidos.'],
+        ['Brazos y límites', 'La selección automática cambia a 3 al superar 400 cm; el pedido histórico 0591 lleva 2 para 510 cm. La ficha TGM publica 575 cm con 2 brazos y 800 cm con 3, ambos con salida 160 cm. Requiere confirmar la configuración con OT.'],
         ['Manivela independiente', 'Color automático, blanco o negro por toldo. La máquina conserva su acabado. El 4488 confirma manivelas blancas y máquinas negras.'],
-        ['Materiales de fabricación', 'OT confirma tubo 50×30 y pletina 30×10. RPS confirma las referencias y barras de 6 m. Se conservan los cortes nominales del Excel; las escuadras, tornillería y tapones requieren completar su detalle.']
+        ['Materiales de fabricación', 'OT confirma tubo 50×30 y pletina 30×10. RPS confirma las referencias y barras de 6 m. Los cortes nominales son los que aplica la web; las escuadras, tornillería y tapones requieren completar su detalle.']
       ]} />
       <p><a href="https://www.toldosgomez.com/archivos/upload/descargas/tgm_ficha_toldo_antica.pdf" target="_blank" rel="noreferrer">Consultar ficha oficial TGM</a> · Es una ficha comercial, no un despiece de fabricación. Las opciones especiales y las medidas mayores que el stock de 700 cm requieren revisión de OT.</p>
     </Band>
-    <Band id="MAT" title="Materiales de fabricación" description="Referencias contrastadas con RPS y compras. Medidas nominales del Excel, confirmadas como punto de partida por OT el 15/09/2026.">
+    <Band id="MAT" title="Materiales de fabricación" description="Referencias contrastadas con RPS y compras. Medidas nominales de la web, confirmadas como punto de partida por OT el 15/09/2026.">
       <Table label="Materias primas Antica" columns={['Pieza', 'Artículo RPS', 'Unidad de almacén', 'Corte nominal']} rows={[
         ['Brazos de fabricación propia', ANTICA_STEEL.flat.code, 'Barra de 6 m · acero 30×10 mm', 'Una pletina por brazo, con el largo indicado en el despiece.'],
         ['Tubo 50×30', ANTICA_STEEL.tube.code, 'Barra de 6 m · tubo 50×30×2 mm', 'Un tubo por toldo, con el descuento de carga de su configuración.'],
@@ -54,7 +57,7 @@ export function AnticaRuleReference() {
       <p>Reserva nominal de acero = unidades × corte (cm) / 600. No incluye merma ni aprovechamiento de retales. Las barras de acero de 600 cm son distintas del stock de enrollamiento P701/P801. Cincado y lacado son operaciones: la cantidad facturada no siempre coincide con el número de piezas.</p>
     </Band>
     <Band id="01" title="Aumentos de tela" description="Antica completo. S = salida; H = altura soporte-brazo; B = alto de bamba. Todas las medidas en cm.">
-      <Table label="Aumentos de Antica" columns={['Configuración', 'Bamba en la misma tela / sin bamba', 'Bamba en otra tela']} rows={anticaVariants.map(v => [v, anticaFormula(v, false), v === 'TUBO 50X30 SIN BAMBA' ? 'No admite bamba' : anticaFormula(v, true)])} />
+      <Table label="Aumentos de Antica" columns={['Configuración', 'Bamba en la misma tela / sin bamba', 'Bamba en otra tela']} rows={anticaVariants.map(v => [controlLabel(v), anticaFormula(v, false), v === 'TUBO 50X30 SIN BAMBA' ? 'No admite bamba' : anticaFormula(v, true)])} />
       <p>Con bamba en otra tela, la pieza separada mide el frente indicado × (B + {number(ANTICA_RULES.valanceExtraCm)} cm). Con B = 0 se aplica la columna de la misma tela. El corte se redondea a una décima de cm.</p>
     </Band>
     <Band id="02" title="Comprobar un ejemplo" description="Estas medidas solo sirven para consultar el cálculo; no se guardan en ningún pedido.">
@@ -68,7 +71,7 @@ export function AnticaRuleReference() {
       <output className="rule-reference-result" aria-live="polite">{result === null ? 'Indica las medidas necesarias para calcular.' : 'Caída de corte: ' + number(Math.round((result + Number.EPSILON) * 10) / 10) + ' cm'}<small>{anticaFormula(variant, actualSeparate)}</small></output>
     </Band>
     <Band id="03" title="Descuentos al frente" description="Restar al frente indicado para obtener cada pieza. Los descuentos de Ø33 y Ø42 son específicos de máquina.">
-      <Table label="Descuentos de Antica" columns={['Configuración', 'Dispositivo', 'Tela (cm)', 'Tubo enrollamiento (cm)', 'Carga (cm)']} rows={anticaVariants.flatMap(v => ['MAQUINA', 'MOTOR'].map(device => { const d = getAnticaDiscounts(v, device); return [v, device, number(d.fabric), number(d.roll), number(d.load)]; }))} />
+      <Table label="Descuentos de Antica" columns={['Configuración', 'Dispositivo', 'Tela (cm)', 'Tubo enrollamiento (cm)', 'Carga (cm)']} rows={anticaVariants.flatMap(v => ['MAQUINA', 'MOTOR'].map(device => { const d = getAnticaDiscounts(v, device); return [controlLabel(v), controlLabel(device), number(d.fabric), number(d.roll), number(d.load)]; }))} />
     </Band>
     <Band id="04" title="Brazos, stock y confección" description="Reglas actuales de selección automática.">
       <Table label="Reglas generales de Antica" columns={['Regla', 'Aplicación']} rows={[
@@ -85,9 +88,10 @@ export function AnticaRuleReference() {
 
 export function HeraRuleReference() {
   return <>
-    <p>Cadena siempre sin empalme. El anillo cerrado mide la mitad de la longitud de cadena calculada desde la altura de instalación. Se reserva uno por toldo al elegir color y coincidir con una medida de catálogo; si no coincide, consultar con compras.</p>
     <Band id="01" title="Descuentos y aumentos" description="F = frente; C = caída indicada; A = altura de instalación. Todas las medidas en cm.">
-      <Table label="Reglas HERA por variante" columns={['Variante', 'Frente tela', 'Caída tela', 'Tubo', 'Longitud cadena']} rows={Object.entries(HERA_RULES).map(([variant, rule]) => [variant, 'F − ' + number(rule.fabricWidthDiscountCm), 'C + ' + number(rule.fabricDropAllowanceCm), 'F − ' + number(rule.rollTubeDiscountCm), rule.chainHeightDiscountCm === null ? 'No lleva' : '(A − ' + number(rule.chainHeightDiscountCm) + ') × 2'])} />
+      <Table label="Reglas HERA por variante" columns={['Variante', 'Frente de tela', 'Caída de tela', 'Tubo', 'Longitud de cadena']} rows={Object.entries(HERA_RULES).map(([variant, rule]) => [controlLabel(variant), 'F − ' + number(rule.fabricWidthDiscountCm), 'C + ' + number(rule.fabricDropAllowanceCm), 'F − ' + number(rule.rollTubeDiscountCm), rule.chainHeightDiscountCm === null ? 'No lleva' : '(A − ' + number(rule.chainHeightDiscountCm) + ') × 2'])} />
+      <ParameterNote>Cadena siempre sin empalme. El anillo cerrado mide la mitad de la cadena calculada.</ParameterNote>
+      <ParameterNote>Se reserva un anillo por toldo si el color coincide con una medida de catálogo; si no, consultar con compras.</ParameterNote>
     </Band>
     <Band id="02" title="Confección y empates" description="Se aplican después de obtener las medidas de tela de la tabla superior.">
       <Table label="Confección HERA" columns={['Concepto', 'Aplicación']} rows={[
@@ -99,7 +103,8 @@ export function HeraRuleReference() {
         ['Sin empate', 'El frente con bastillas debe caber en el rollo. Sin aumento de escuadrado.'],
         ['Tubo especial', 'Aviso cuando el frente supera ' + number(HERA_SPECIAL_TUBE_FROM_CM) + ' cm.']
       ]} />
-      <p>En el pedido se eligen variante, empate, cara interior, remate inferior y color de cadena si lleva máquina. La web requiere completar el planteamiento en CAD y reserva tela y anillo de cadena con referencia exacta.</p>
+      <ParameterNote>En el pedido se eligen variante, empate, cara interior, remate inferior y, con máquina, color de cadena.</ParameterNote>
+      <ParameterNote>El planteamiento se completa en CAD; la web reserva tela y anillo de cadena con referencia exacta.</ParameterNote>
     </Band>
   </>;
 }
@@ -152,7 +157,7 @@ export function CambioAnticaRuleReference({ parameters }: { parameters: FabricJo
   return <Band id="03" title="Aumentos por configuración" description="Cambio de tela Antica. S = salida base y B = alto de bamba; medidas en cm.">
     <Table label="Aumentos Cambio Antica" columns={['Configuración', 'Misma tela / sin bamba', 'Bamba en otra tela']} rows={[
       ['Configuraciones no redondas', 'S + ' + number(parameters.dropAllowanceByModel['CAMBIO ANTICA']) + ' + B + ' + number(parameters.valanceExtraCm), 'S + ' + number(parameters.anticaSeparateValanceAllowanceCm)],
-      ...Object.entries(anticaRoundEntrySpecs).map(([variant, rule]) => [variant + ' · medida base', 'S + ' + number(rule.cambioDropAllowanceCm) + ' + B + ' + number(parameters.valanceExtraCm), 'S + ' + number(rule.cambioSeparateValanceAllowanceCm)]),
+      ...Object.entries(anticaRoundEntrySpecs).map(([variant, rule]) => [controlLabel(variant) + ' · medida base', 'S + ' + number(rule.cambioDropAllowanceCm) + ' + B + ' + number(parameters.valanceExtraCm), 'S + ' + number(rule.cambioSeparateValanceAllowanceCm)]),
       ['Ø33 / Ø42 · tela terminada', 'Caída indicada, sin aumento adicional', 'Caída indicada, sin aumento adicional']
     ]} />
     <p>El modo «tela terminada» ya incluye la entrada de tubo y la bamba. La bamba de otro tejido se corta aparte con B + {number(parameters.valanceExtraCm)} cm. «50×30 sin bamba» no admite B mayor que cero.</p>

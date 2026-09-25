@@ -20,7 +20,9 @@ const sectionLabels: Record<string, string> = {
 const formatDate = (value: string) => new Date(value).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
 
 // Historial de los parámetros comunes. Cargar una versión la pone como
-// borrador: volver atrás es guardar, y también queda registrado.
+// borrador: volver atrás es guardar, y también queda registrado. Va en una línea pequeña
+// junto al título «Parámetros de modelos»; la lista se abre encima de la página, sin
+// empujarla (Iván, 25/09/2026).
 export function ParametersHistory({ version, onLoadVersion }: { version: number; onLoadVersion: (overrides: unknown) => void }) {
   const [entries, setEntries] = useState<Entry[] | null>(null);
 
@@ -32,35 +34,36 @@ export function ParametersHistory({ version, onLoadVersion }: { version: number;
   }, [version]);
 
   const latest = entries?.[0];
+  const summary = version === 0
+    ? 'Parámetros del código: nadie los ha cambiado todavía'
+    : `Versión ${version}${latest ? ` · ${latest.updatedBy} · ${formatDate(latest.updatedAt)} · ${latest.reason}` : ''}`;
   return (
-    <details className="parameters-history panel-3d">
-      <summary>
+    <details className="parameters-history">
+      <summary title={summary}>
         <History aria-hidden="true" />
-        <span>
-          {version === 0
-            ? 'Parámetros del código: nadie los ha cambiado todavía'
-            : `Versión ${version}${latest ? ` · ${latest.updatedBy} · ${formatDate(latest.updatedAt)} · ${latest.reason}` : ''}`}
-        </span>
+        <span>{summary}</span>
       </summary>
-      {entries && entries.length > 0 ? (
-        <ol>
-          {entries.map((entry) => (
-            <li key={entry.version}>
-              <div>
-                <strong>Versión {entry.version}</strong>
-                <span>{formatDate(entry.updatedAt)} · {entry.updatedBy}</span>
-                <span>{entry.reason}</span>
-                <small>{entry.changedSections.map((key) => sectionLabels[key] || key).join(', ')}</small>
-              </div>
-              {entry.version !== version && (
-                <button className="ghost-button" type="button" onClick={() => onLoadVersion(entry.overrides)}>Cargar esta versión</button>
-              )}
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p>Sin cambios registrados.</p>
-      )}
+      <div className="parameters-history-panel panel-3d">
+        {entries && entries.length > 0 ? (
+          <ol>
+            {entries.map((entry) => (
+              <li key={entry.version}>
+                <div>
+                  <strong>Versión {entry.version}</strong>
+                  <span>{formatDate(entry.updatedAt)} · {entry.updatedBy}</span>
+                  <span>{entry.reason}</span>
+                  <small>{entry.changedSections.map((key) => sectionLabels[key] || key).join(', ')}</small>
+                </div>
+                {entry.version !== version && (
+                  <button className="ghost-button" type="button" onClick={() => onLoadVersion(entry.overrides)}>Cargar esta versión</button>
+                )}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>Sin cambios registrados.</p>
+        )}
+      </div>
     </details>
   );
 }

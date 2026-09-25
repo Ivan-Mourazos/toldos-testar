@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { BookOpen, Calculator, Check, ChevronDown, Package, RotateCcw, Ruler, Scissors } from 'lucide-react';
+import { Check } from 'lucide-react';
 import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, ElectraMatrixSupport, ElectraParameters, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
 import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
-import { controlLabel, legacyModelName } from '../components/controlLabels';
+import { controlLabel } from '../components/controlLabels';
+import { ParameterBand, ParameterNote, ParameterSheet, deviceHeader, parameterModelName } from '../components/ParameterSheet';
+import { ParameterSectionIndex } from '../components/ParameterSectionIndex';
 import { AnticaRuleReference, HeraRuleReference, IrisRuleReference, CambioAnticaRuleReference } from './RuleReferencePanels';
 import { arzuaProManualSpec } from '../../domain/arzuaProConstants.js';
 import { DrawingParametersPanel } from '../components/DrawingParametersPanel';
@@ -60,256 +62,75 @@ type Props = {
 
 export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateElectra, onResetElectra, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs, onUpdateDrawings }: Props) {
   const [selectedModel, setSelectedModel] = useState<SelectedModel>('ARZUA PRO');
-  const isGalicia = selectedModel === 'GALICIA';
-  const isBox = selectedModel === 'CORAL BOX' || selectedModel === 'PERLA BOX' || selectedModel === 'CUARZO BOX';
   const clearSelectedDrawings = () => {
     const byModel = { ...parameters.drawings.byModel };
     delete byModel[selectedModel];
     onUpdateDrawings({ byModel });
   };
-  const withSidebar = (content: React.ReactNode, drawings = false) => <div className="parameter-layout">
+
+  // Columna de la ficha: el índice «Ir a», la ficha del modelo y, justo debajo y con el
+  // mismo ancho, sus dibujos. Igual para los 22 modelos (Iván, 25/09/2026).
+  return <div className="parameter-layout">
     <ParameterModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
     <div className="parameter-layout-main">
-      {content}
-      {drawings && <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />}
+      <ParameterSectionIndex />
+      {renderSheet()}
+      <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />
     </div>
   </div>;
-  const withDrawings = (content: React.ReactNode) => withSidebar(content, true);
 
-  if (selectedModel === 'HERA' || selectedModel === 'ANTICA' || selectedModel === 'IRIS') {
-    return withDrawings(<OrderConfiguredModelView selectedModel={selectedModel} />);
-  }
-
-  if (selectedModel === 'XACOBEO') {
-    return withDrawings(<XacobeoParametersView
-      parameters={parameters.xacobeo}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateXacobeo}
-      onReset={onResetXacobeo}
-    />);
-  }
-
-  if (selectedModel === 'PUNTO RECTO') {
-    return withDrawings(<PuntoRectoParametersView
-      parameters={parameters.puntoRecto}
-      selectedModel={selectedModel}
-      onUpdate={onUpdatePuntoRecto}
-      onReset={onResetPuntoRecto}
-    />);
-  }
-
-  if (selectedModel === 'MONOBLOCK 350') {
-    return withDrawings(<Monoblock350ParametersView
-      parameters={parameters.monoblock350}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateMonoblock350}
-      onReset={onResetMonoblock350}
-    />);
-  }
-
-  if (selectedModel === 'MAXISCREEM') {
-    return withDrawings(<MaxiscreemParametersView
-      parameters={parameters.maxiscreem}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateMaxiscreem}
-      onReset={onResetMaxiscreem}
-    />);
-  }
-
-  if (selectedModel === 'ELECTRA') {
-    return withDrawings(<ElectraParametersView
-      parameters={parameters.electra}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateElectra}
-      onReset={onResetElectra}
-    />);
-  }
-
-  if (selectedModel === 'AMBAR BOX') {
-    return withDrawings(<AmbarBoxParametersView
-      parameters={parameters.ambarBox}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateAmbarBox}
-      onReset={onResetAmbarBox}
-    />);
-  }
-
-  if (selectedModel === 'AGATA BOX') {
-    return withDrawings(<AgataBoxParametersView
-      parameters={parameters.agataBox}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateAgataBox}
-      onReset={onResetAgataBox}
-    />);
-  }
-
-  if (selectedModel === 'CORTINA') {
-    return withDrawings(<CortinaParametersView
-      parameters={parameters.cortina}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateCortina}
-      onReset={onResetCortina}
-    />);
-  }
-
-  if (selectedModel === 'SELENA') {
-    return withDrawings(<CortinaParametersView
-      parameters={parameters.selena}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateSelena}
-      onReset={onResetSelena}
-    />);
-  }
-
-  if (selectedModel === 'CAMBIO CORTINA') {
-    return withDrawings(<CambioCortinaParametersView
-      parameters={parameters.cambioCortina}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateCambioCortina}
-      onReset={onResetCambioCortina}
-    />);
-  }
-
-  if (fabricParameterModels.has(selectedModel as FabricJobModel)) {
-    return withDrawings(<FabricJobsParametersView
-      parameters={parameters.fabricJobs}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateFabricJobs}
-      onReset={onResetFabricJobs}
-    />);
-  }
-
-  if (isBox) {
+  function renderSheet() {
+    if (selectedModel === 'HERA' || selectedModel === 'ANTICA' || selectedModel === 'IRIS') {
+      return <OrderConfiguredModelView selectedModel={selectedModel} />;
+    }
+    if (selectedModel === 'ARZUA PRO') {
+      return <ArzuaParametersView parameters={parameters.arzuaPro} selectedModel={selectedModel} onUpdate={onUpdateArzua} onReset={onResetArzua} />;
+    }
+    if (selectedModel === 'GALICIA') {
+      return <GaliciaParametersView parameters={parameters.galicia} onUpdate={onUpdateGalicia} onReset={onResetGalicia} />;
+    }
+    if (selectedModel === 'XACOBEO') {
+      return <XacobeoParametersView parameters={parameters.xacobeo} selectedModel={selectedModel} onUpdate={onUpdateXacobeo} onReset={onResetXacobeo} />;
+    }
+    if (selectedModel === 'PUNTO RECTO') {
+      return <PuntoRectoParametersView parameters={parameters.puntoRecto} selectedModel={selectedModel} onUpdate={onUpdatePuntoRecto} onReset={onResetPuntoRecto} />;
+    }
+    if (selectedModel === 'MONOBLOCK 350') {
+      return <Monoblock350ParametersView parameters={parameters.monoblock350} selectedModel={selectedModel} onUpdate={onUpdateMonoblock350} onReset={onResetMonoblock350} />;
+    }
+    if (selectedModel === 'MAXISCREEM') {
+      return <MaxiscreemParametersView parameters={parameters.maxiscreem} selectedModel={selectedModel} onUpdate={onUpdateMaxiscreem} onReset={onResetMaxiscreem} />;
+    }
+    if (selectedModel === 'ELECTRA') {
+      return <ElectraParametersView parameters={parameters.electra} selectedModel={selectedModel} onUpdate={onUpdateElectra} onReset={onResetElectra} />;
+    }
+    if (selectedModel === 'AMBAR BOX') {
+      return <AmbarBoxParametersView parameters={parameters.ambarBox} selectedModel={selectedModel} onUpdate={onUpdateAmbarBox} onReset={onResetAmbarBox} />;
+    }
+    if (selectedModel === 'AGATA BOX') {
+      return <AgataBoxParametersView parameters={parameters.agataBox} selectedModel={selectedModel} onUpdate={onUpdateAgataBox} onReset={onResetAgataBox} />;
+    }
+    if (selectedModel === 'CORTINA') {
+      return <CortinaParametersView parameters={parameters.cortina} selectedModel={selectedModel} onUpdate={onUpdateCortina} onReset={onResetCortina} />;
+    }
+    if (selectedModel === 'SELENA') {
+      return <CortinaParametersView parameters={parameters.selena} selectedModel={selectedModel} onUpdate={onUpdateSelena} onReset={onResetSelena} />;
+    }
+    if (selectedModel === 'CAMBIO CORTINA') {
+      return <CambioCortinaParametersView parameters={parameters.cambioCortina} selectedModel={selectedModel} onUpdate={onUpdateCambioCortina} onReset={onResetCambioCortina} />;
+    }
+    if (fabricParameterModels.has(selectedModel as FabricJobModel)) {
+      return <FabricJobsParametersView parameters={parameters.fabricJobs} selectedModel={selectedModel} onUpdate={onUpdateFabricJobs} onReset={onResetFabricJobs} />;
+    }
     const isPerla = selectedModel === 'PERLA BOX';
     const isCuarzo = selectedModel === 'CUARZO BOX';
-    return withDrawings(<BoxParametersView
+    return <BoxParametersView
       parameters={isPerla ? parameters.perlaBox : isCuarzo ? parameters.cuarzoBox : parameters.coralBox}
       selectedModel={selectedModel}
       onUpdate={isPerla ? onUpdatePerlaBox : isCuarzo ? onUpdateCuarzoBox : onUpdateCoralBox}
       onReset={isPerla ? onResetPerlaBox : isCuarzo ? onResetCuarzoBox : onResetCoralBox}
-    />);
+    />;
   }
-
-  if (selectedModel === 'ARZUA PRO') {
-    return withDrawings(<ArzuaParametersView
-      parameters={parameters.arzuaPro}
-      selectedModel={selectedModel}
-      onUpdate={onUpdateArzua}
-      onReset={onResetArzua}
-    />);
-  }
-
-  const current = isGalicia ? parameters.galicia : parameters.arzuaPro;
-
-  function updateDiscount(group: DiscountGroup, tube: string, device: Device, value: number) {
-    const matrix = {
-      ...current[group],
-      [tube]: { ...current[group][tube], [device]: value }
-    };
-    if (isGalicia) onUpdateGalicia({ [group]: matrix } as Partial<GaliciaParameters>);
-    else onUpdateArzua({ [group]: matrix } as Partial<ArzuaProParameters>);
-  }
-
-  function updateArzuaMinimum(arm: number, device: Device, value: number) {
-    onUpdateArzua({
-      minimumLineByArm: parameters.arzuaPro.minimumLineByArm.map((row) => row.arm === arm
-        ? { ...row, values: { ...row.values, [device]: value } }
-        : row)
-    });
-  }
-
-  function updateStockLength(index: number, value: number | null) {
-    if (value === null) return;
-    const stockLengths = current.stockLengths.map((currentValue, currentIndex) => (
-        currentIndex === index ? value : currentValue
-    ));
-    if (isGalicia) onUpdateGalicia({ stockLengths });
-    else onUpdateArzua({ stockLengths });
-  }
-
-  function updateGaliciaMinimum(projection: number, arms: 2 | 3, device: Device, value: number) {
-    onUpdateGalicia({
-      minimumLineByProjection: parameters.galicia.minimumLineByProjection.map((row) => row.projection === projection
-        ? { ...row, values: { ...row.values, [arms]: { ...row.values[arms], [device]: value } } }
-        : row)
-    });
-  }
-
-  return withSidebar(
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div>
-          <span className="section-kicker">Modelo en producción</span>
-          <ParameterModelTitle model={selectedModel} />
-          <p>Reglas aplicadas en tiempo real al formulario, estructura, tela y reserva RPS.</p>
-        </div>
-        <button className="ghost-button" type="button" onClick={isGalicia ? onResetGalicia : onResetArzua}>
-          <RotateCcw aria-hidden="true" />Restaurar Excel
-        </button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Selección automática</h3><p>{isGalicia ? 'El frente propone 2 o 3 brazos; los brazos determinan el motor.' : 'El frente determina la potencia del motor.'} El tubo se elige directamente en cada toldo.</p></div></div>
-        <div className="parameter-grid parameter-grid-3">
-          {isGalicia ? (
-            <NumberField label="3 brazos desde frente (cm)" value={parameters.galicia.armSwitchWidth} min={1} onChange={(armSwitchWidth) => armSwitchWidth !== null && onUpdateGalicia({ armSwitchWidth })} />
-          ) : (
-            <NumberField label="Motor 70 desde frente (cm)" value={parameters.arzuaPro.motor70WidthFrom} min={1} onChange={(motor70WidthFrom) => motor70WidthFrom !== null && onUpdateArzua({ motor70WidthFrom })} />
-          )}
-          <NumberField label={`Frente máximo ${selectedModel} (cm)`} value={current.standardMaxWidth} min={1} onChange={(standardMaxWidth) => standardMaxWidth !== null && (isGalicia ? onUpdateGalicia({ standardMaxWidth }) : onUpdateArzua({ standardMaxWidth }))} />
-        </div>
-        {isGalicia && <p className="parameter-note">Motor automático: 2 brazos = 55/17 · 3 brazos = 70/17.</p>}
-      </div>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Tela y barras comerciales</h3><p>Márgenes de confección y longitudes disponibles en almacén. La web elige la barra automáticamente.</p></div></div>
-        <div className="parameter-grid parameter-grid-3">
-          <NumberField label="Margen de caída (cm)" value={current.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && (isGalicia ? onUpdateGalicia({ fabricDropAllowanceCm }) : onUpdateArzua({ fabricDropAllowanceCm }))} />
-          <NumberField label="Costura entre paños (cm)" value={current.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && (isGalicia ? onUpdateGalicia({ seamAllowanceCm }) : onUpdateArzua({ seamAllowanceCm }))} />
-          <NumberField label="Margen base de paño (cm)" value={current.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && (isGalicia ? onUpdateGalicia({ seamBaseCm }) : onUpdateArzua({ seamBaseCm }))} />
-          {current.stockLengths.map((stockLength, index) => (
-            <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateStockLength(index, value)} />
-          ))}
-        </div>
-      </div>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente para cada pieza y para la tela.</p></div></div>
-        <div className="parameter-table-wrap discount-table-wrap">
-          <table className="parameter-table parameter-table-discounts">
-            <thead><tr><th>Pieza</th><th>Tubo</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
-            <tbody>{discountGroups.flatMap((group) => tubes.map((tube, tubeIndex) => (
-              <tr key={`${group}-${tube}`}>
-                {tubeIndex === 0 && <td className="discount-part" rowSpan={tubes.length}>{discountLabels[group]}</td>}
-                <td>{tube.replace('TUBO DE CARGA ', '')}</td>
-                {devices.map((device) => <td key={device}><input aria-label={`${selectedModel} ${group} ${tube} ${device}`} type="number" step="0.1" min="0" value={current[group][tube][device]} onChange={(event) => updateDiscount(group, tube, device, Number(event.target.value))} /></td>)}
-              </tr>
-            )))}</tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>04</span><div><h3>Líneas mínimas</h3><p>Frente mínimo admisible para cada salida, dispositivo y número de brazos.</p></div></div>
-        <div className="parameter-table-wrap">
-          {isGalicia ? (
-            <table className="parameter-table parameter-table-lines galicia-lines">
-              <thead><tr><th rowSpan={2}>Salida</th><th colSpan={3}>2 brazos</th><th colSpan={3}>3 brazos</th></tr><tr>{[2, 3].flatMap((arms) => devices.map((device) => <th key={`${arms}-${device}`}>{device}</th>))}</tr></thead>
-              <tbody>{parameters.galicia.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{([2, 3] as const).flatMap((arms) => devices.map((device) => <td key={`${arms}-${device}`}><input aria-label={`GALICIA salida ${row.projection} ${arms} brazos ${device}`} type="number" step="0.1" min="1" value={row.values[arms][device]} onChange={(event) => updateGaliciaMinimum(row.projection, arms, device, Number(event.target.value))} /></td>))}</tr>)}</tbody>
-            </table>
-          ) : (
-            <table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
-              <tbody>{parameters.arzuaPro.minimumLineByArm.map((row) => <tr key={row.arm}><td className="num">{row.arm}</td>{devices.map((device) => <td key={device}><input aria-label={`ARZUA salida ${row.arm} ${device}`} type="number" min="1" value={row.values[device]} onChange={(event) => updateArzuaMinimum(row.arm, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>{isGalicia ? '49 estructuras Galicia de 2026 revisadas: 43 casos estándar coinciden en medidas y 6 quedan como excepción técnica por superar 700 cm.' : '891 ARZUA revisados: 726 máquina, 165 motor, 395 EVO 80 y 406 UNIVERS 280.'}</span></aside>
-      <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />
-    </section>
-  );
 }
 
 const fabricParameterModels = new Set<FabricJobModel>(['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
@@ -324,15 +145,83 @@ const parameterModelGroups: { family: string; models: SelectedModel[] }[] = grou
     .filter((model): model is SelectedModel => supportedParameterModels.has(model as SelectedModel))
 );
 
-function parameterModelName(model: SelectedModel) {
-  const current = controlLabel(model);
-  const legacy = legacyModelName(model);
-  return { current, legacy: legacy && legacy.toLocaleUpperCase('es') !== current.toLocaleUpperCase('es') ? legacy : '' };
-}
+const parameterNumber = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 });
 
-function ParameterModelTitle({ model }: { model: SelectedModel }) {
-  const names = parameterModelName(model);
-  return <h2>{names.current}{names.legacy && <small>{names.legacy}</small>}</h2>;
+type GaliciaProps = {
+  parameters: GaliciaParameters;
+  onUpdate: (patch: Partial<GaliciaParameters>) => void;
+  onReset: () => void;
+};
+
+function GaliciaParametersView({ parameters, onUpdate, onReset }: GaliciaProps) {
+  function updateDiscount(group: DiscountGroup, tube: string, device: Device, value: number) {
+    onUpdate({ [group]: { ...parameters[group], [tube]: { ...parameters[group][tube], [device]: value } } } as Partial<GaliciaParameters>);
+  }
+
+  function updateStockLength(index: number, value: number | null) {
+    if (value === null) return;
+    onUpdate({ stockLengths: parameters.stockLengths.map((currentValue, currentIndex) => currentIndex === index ? value : currentValue) });
+  }
+
+  function updateMinimum(projection: number, arms: 2 | 3, device: Device, value: number) {
+    onUpdate({
+      minimumLineByProjection: parameters.minimumLineByProjection.map((row) => row.projection === projection
+        ? { ...row, values: { ...row.values, [arms]: { ...row.values[arms], [device]: value } } }
+        : row)
+    });
+  }
+
+  return (
+    <ParameterSheet
+      model="GALICIA"
+      description="Reglas aplicadas en tiempo real al formulario, estructura, tela y reserva RPS."
+      onReset={onReset}
+      evidence="49 estructuras Galicia de 2026 revisadas: 43 casos estándar coinciden en medidas y 6 quedan como excepción técnica por superar 700 cm."
+    >
+      <ParameterBand number="01" title="Selección automática" description="El frente propone 2 o 3 brazos; los brazos determinan el motor. El tubo se elige directamente en cada toldo.">
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="3 brazos desde frente (cm)" value={parameters.armSwitchWidth} min={1} onChange={(armSwitchWidth) => armSwitchWidth !== null && onUpdate({ armSwitchWidth })} />
+          <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(standardMaxWidth) => standardMaxWidth !== null && onUpdate({ standardMaxWidth })} />
+        </div>
+        <ParameterNote>Motor automático: 2 brazos = 55/17 · 3 brazos = 70/17.</ParameterNote>
+      </ParameterBand>
+
+      <ParameterBand number="02" title="Tela y barras comerciales" description="Márgenes de confección y longitudes disponibles en almacén. La web elige la barra automáticamente.">
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="Margen de caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && onUpdate({ fabricDropAllowanceCm })} />
+          <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && onUpdate({ seamAllowanceCm })} />
+          <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && onUpdate({ seamBaseCm })} />
+          {parameters.stockLengths.map((stockLength, index) => (
+            <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateStockLength(index, value)} />
+          ))}
+        </div>
+      </ParameterBand>
+
+      <ParameterBand number="03" title="Descuentos dimensionales" description="Centímetros descontados al frente para cada pieza y para la tela.">
+        <div className="parameter-table-wrap">
+          <table className="parameter-table parameter-table-discounts">
+            <thead><tr><th>Pieza</th><th>Tubo</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
+            <tbody>{discountGroups.flatMap((group) => tubes.map((tube, tubeIndex) => (
+              <tr key={`${group}-${tube}`}>
+                {tubeIndex === 0 && <td className="discount-part" rowSpan={tubes.length}>{discountLabels[group]}</td>}
+                <td className="discount-tube">{controlLabel(tube)}</td>
+                {devices.map((device) => <td key={device}><input aria-label={`GALICIA ${group} ${tube} ${device}`} type="number" step="0.1" min="0" value={parameters[group][tube][device]} onChange={(event) => updateDiscount(group, tube, device, Number(event.target.value))} /></td>)}
+              </tr>
+            )))}</tbody>
+          </table>
+        </div>
+      </ParameterBand>
+
+      <ParameterBand number="04" title="Líneas mínimas" description="Frente mínimo admisible para cada salida, dispositivo y número de brazos.">
+        <div className="parameter-table-wrap">
+          <table className="parameter-table parameter-table-lines galicia-lines">
+            <thead><tr><th rowSpan={2}>Salida</th><th colSpan={3}>2 brazos</th><th colSpan={3}>3 brazos</th></tr><tr>{[2, 3].flatMap((arms) => devices.map((device) => <th key={`${arms}-${device}`}>{deviceHeader(device)}</th>))}</tr></thead>
+            <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{([2, 3] as const).flatMap((arms) => devices.map((device) => <td key={`${arms}-${device}`}><input aria-label={`GALICIA salida ${row.projection} ${arms} brazos ${device}`} type="number" step="0.1" min="1" value={row.values[arms][device]} onChange={(event) => updateMinimum(row.projection, arms, device, Number(event.target.value))} /></td>))}</tr>)}</tbody>
+          </table>
+        </div>
+      </ParameterBand>
+    </ParameterSheet>
+  );
 }
 
 type ArzuaParametersProps = {
@@ -350,30 +239,21 @@ const arzuaDeviceLabels: Record<Device, string> = {
 
 const arzuaDiscountGroups: DiscountGroup[] = ['fabricWidthDiscounts', 'rollTubeDiscounts', 'widthDiscounts'];
 
-const arzuaDiscountCopy: Record<DiscountGroup, { title: string; help: string; source: string }> = {
-  fabricWidthDiscounts: {
-    title: 'Tela',
-    help: 'Ancho que se corta de la lona.',
-    source: 'Manual Llaza'
-  },
-  rollTubeDiscounts: {
-    title: 'Tubo de enrollar',
-    help: 'Tubo redondo donde se recoge la tela.',
-    source: 'Manual Llaza'
-  },
-  widthDiscounts: {
-    title: 'Barra delantera',
-    help: 'Perfil que cierra el toldo por delante.',
-    source: 'Manual Llaza'
-  }
+const arzuaDiscountTitles: Record<DiscountGroup, string> = {
+  fabricWidthDiscounts: 'Tela',
+  rollTubeDiscounts: 'Tubo de enrollar',
+  widthDiscounts: 'Barra delantera'
 };
 
-const parameterNumber = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 });
+// Descuentos del manual, en el orden motor / máquina dentro / máquina fuera.
+const arzuaManualDiscounts = arzuaDiscountGroups
+  .map((group) => `${arzuaDiscountTitles[group].toLocaleLowerCase('es')} ${devices.map((device) => parameterNumber.format(arzuaProManualSpec.cuttingDiscountsCm[group][device])).join(' / ')}`)
+  .join(' · ');
 
+// Arzúa Pro con el patrón común de fichas (Iván, 25/09/2026). Conserva todos los datos del
+// manual Llaza y todos los campos editables de la versión anterior.
 function ArzuaParametersView({ parameters, selectedModel, onUpdate, onReset }: ArzuaParametersProps) {
-  const exampleFront = 400;
-  const exampleDiscount = parameters.fabricWidthDiscounts[tubes[0]].MOTOR;
-  const exampleFabric = exampleFront - exampleDiscount;
+  const example = parameters.minimumLineByArm.find((row) => row.arm === 250);
 
   function updateDiscount(group: DiscountGroup, device: Device, value: number) {
     onUpdate({
@@ -400,169 +280,99 @@ function ArzuaParametersView({ parameters, selectedModel, onUpdate, onReset }: A
   }
 
   return (
-    <section className="parameters-page arzua-parameters panel-3d">
-
-      <header className="parameters-heading arzua-parameters-heading">
-        <div>
-          <span className="section-kicker">Manual revisado · modelo en producción</span>
-          <ParameterModelTitle model={selectedModel} />
-          <p>{arzuaProManualSpec.product} · fabricación e instalación rev. {arzuaProManualSpec.revision}</p>
+    <ParameterSheet
+      model={selectedModel}
+      description={`${arzuaProManualSpec.product} · fabricación e instalación rev. ${arzuaProManualSpec.revision}`}
+      onReset={onReset}
+      evidence={`891 Arzúa revisados: 726 máquina, 165 motor, 395 EVO 80 y 406 UNIVERS 280. Límites, pares de motor, descuentos y frentes mínimos según el manual ${arzuaProManualSpec.product} rev. 2.1.`}
+    >
+      <ParameterBand number="01" title="Límites" description={`Límites físicos que Llaza da para el ${arzuaProManualSpec.product.replace('Llaza ', '')}.`}>
+        <div className="parameter-table-wrap">
+          <table className="parameter-table" aria-label="Límites del manual Llaza">
+            <thead><tr><th>Dato del manual</th><th>Valor</th><th>Qué significa</th></tr></thead>
+            <tbody>
+              <tr><td>Frente máximo</td><td className="num">{arzuaProManualSpec.maximumWidthCm} cm</td><td>Más ancho necesita una excepción técnica.</td></tr>
+              <tr><td>Salida máxima</td><td className="num">{arzuaProManualSpec.maximumProjectionCm} cm</td><td>Es el brazo más largo admitido.</td></tr>
+              <tr><td>Inclinación</td><td className="num">{arzuaProManualSpec.inclinationDegrees.min}–{arzuaProManualSpec.inclinationDegrees.max}°</td><td>Recorrido regulable del soporte.</td></tr>
+              <tr><td>Tubo de enrollar</td><td className="num">Ø{arzuaProManualSpec.rollingTubeDiameterMm} mm</td><td>Permite enrollar hasta {arzuaProManualSpec.maximumProjectionCm} cm de salida.</td></tr>
+            </tbody>
+          </table>
         </div>
-        <button className="ghost-button" type="button" onClick={onReset}>
-          <RotateCcw aria-hidden="true" />Restaurar valores correctos
-        </button>
-      </header>
-
-      <div className="arzua-source-strip" aria-label="Origen de los parámetros">
-        <span className="parameter-source source-manual"><BookOpen aria-hidden="true" />Manual Llaza<small>Todos los límites y descuentos técnicos</small></span>
-        <span className="parameter-source source-workshop"><Calculator aria-hidden="true" />Confección Testar<small>Solo lo que el manual no especifica</small></span>
-        <span className="parameter-source source-stock"><Package aria-hidden="true" />Almacén<small>Barras disponibles y preferencias</small></span>
-      </div>
-
-      <section className="arzua-guide" aria-labelledby="arzua-guide-title">
-        <header>
-          <span>Antes de cambiar números</span>
-          <h3 id="arzua-guide-title">La web hace tres cosas, siempre en este orden</h3>
-          <p>Primero mira el toldo, después calcula lo que hay que cortar y al final comprueba que cabe.</p>
-        </header>
-        <ol className="arzua-guide-steps">
-          <li><span>1</span><Ruler aria-hidden="true" /><div><strong>Mide</strong><small>Frente = ancho total. Salida = lo que abre el brazo.</small></div></li>
-          <li><span>2</span><Scissors aria-hidden="true" /><div><strong>Resta</strong><small>Al frente le quita unos centímetros para obtener cada corte.</small></div></li>
-          <li><span>3</span><Check aria-hidden="true" /><div><strong>Comprueba</strong><small>La salida necesita un frente mínimo. Si no llega, el toldo no es válido.</small></div></li>
-        </ol>
-        <div className="arzua-measure-rule" aria-label={`Ejemplo: ${exampleFront} menos ${exampleDiscount} es ${exampleFabric} centímetros de tela`}>
-          <span>Ejemplo con motor y EVO 80</span>
-          <strong><b>{exampleFront}</b><i>frente</i><em>−</em><b>{parameterNumber.format(exampleDiscount)}</b><i>descuento</i><em>=</em><b>{parameterNumber.format(exampleFabric)}</b><i>tela</i></strong>
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="Máximo que acepta la web (cm)" value={parameters.standardMaxWidth} min={1} max={700} onChange={(standardMaxWidth) => standardMaxWidth !== null && onUpdate({ standardMaxWidth })} />
         </div>
-      </section>
+        <ParameterNote>Por encima de {arzuaProManualSpec.maximumWidthCm} cm la tarjeta pide «Modificar reglas» para documentar la excepción: un toldo de 601 cm no pasa como normal aunque haya barra de 650 o 700 cm.</ParameterNote>
+      </ParameterBand>
 
-      <div className="parameter-band arzua-parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Hasta dónde puede llegar</h3><p>Estos son los límites físicos que Llaza da para el COMPLET-PRO 350.</p></div></div>
-        <div className="arzua-parameter-content">
-          <div className="arzua-limit-grid">
-            <article><small>Frente máximo</small><strong>{arzuaProManualSpec.maximumWidthCm}<span> cm</span></strong><p>Más ancho necesita una excepción técnica.</p></article>
-            <article><small>Salida máxima</small><strong>{arzuaProManualSpec.maximumProjectionCm}<span> cm</span></strong><p>Es el brazo más largo admitido.</p></article>
-            <article><small>Inclinación</small><strong>{arzuaProManualSpec.inclinationDegrees.min}–{arzuaProManualSpec.inclinationDegrees.max}<span>°</span></strong><p>Recorrido regulable del soporte.</p></article>
-            <article><small>Tubo usado</small><strong>Ø{arzuaProManualSpec.rollingTubeDiameterMm}<span> mm</span></strong><p>Permite enrollar hasta 350 cm de salida.</p></article>
-          </div>
-          <div className="arzua-edit-grid arzua-edit-grid-2">
-            <div className="arzua-input-card source-manual">
-              <NumberField label="Máximo que acepta la web (cm)" value={parameters.standardMaxWidth} min={1} max={700} onChange={(standardMaxWidth) => standardMaxWidth !== null && onUpdate({ standardMaxWidth })} />
-              <small>El manual de Llaza marca {arzuaProManualSpec.maximumWidthCm} cm (arriba). Por encima, la tarjeta pide «Modificar reglas» para documentar la excepción.</small>
-            </div>
-            <aside className="arzua-plain-note"><BookOpen aria-hidden="true" /><div><strong>Qué significa</strong><span>Un toldo de 601 cm no debe pasar como uno normal aunque exista una barra de 650 o 700 cm en almacén.</span></div></aside>
-          </div>
+      <ParameterBand number="02" title="Selección automática" description="Atajos de Testar. El operario puede cambiar tubo o motor en un toldo concreto.">
+        <div className="parameter-grid parameter-grid-3">
+          <SelectField label="Tubo · particular" value={parameters.privateTube} options={tubes} onChange={(privateTube) => onUpdate({ privateTube })} />
+          <SelectField label="Tubo · empresa u hostelería" value={parameters.businessTube} options={tubes} onChange={(businessTube) => onUpdate({ businessTube })} />
+          <NumberField label="Motor 70/17 desde (cm)" value={parameters.motor70WidthFrom} min={arzuaProManualSpec.maximumWidthCm + 1} onChange={(motor70WidthFrom) => motor70WidthFrom !== null && onUpdate({ motor70WidthFrom })} />
         </div>
-      </div>
-
-      <div className="parameter-band arzua-parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Qué elige la web sola</h3><p>Son atajos de Testar. El operario todavía puede cambiar tubo o motor en un toldo concreto.</p></div></div>
-        <div className="arzua-parameter-content">
-          <div className="arzua-edit-grid arzua-edit-grid-3">
-            <div className="arzua-input-card source-stock">
-              <SelectField label="Para un particular, proponer" value={parameters.privateTube} options={tubes} onChange={(privateTube) => onUpdate({ privateTube })} />
-              <small>Solo lo propone; no lo bloquea.</small>
-            </div>
-            <div className="arzua-input-card source-stock">
-              <SelectField label="Para empresa u hostelería, proponer" value={parameters.businessTube} options={tubes} onChange={(businessTube) => onUpdate({ businessTube })} />
-              <small>Solo lo propone; no lo bloquea.</small>
-            </div>
-            <div className="arzua-input-card source-workshop">
-              <NumberField label="Motor 70/17 solo en excepción desde (cm)" value={parameters.motor70WidthFrom} min={arzuaProManualSpec.maximumWidthCm + 1} onChange={(motor70WidthFrom) => motor70WidthFrom !== null && onUpdate({ motor70WidthFrom })} />
-              <small>Llaza llega hasta 600 cm. Dentro del manual, el 55/17 cubre el máximo exigido de 50 Nm.</small>
-            </div>
-          </div>
-
-          <div className="arzua-motor-summary">
-            <div><span>Dentro del manual: hasta {arzuaProManualSpec.maximumWidthCm} cm</span><strong>Motor 55/17</strong></div>
-            <ChevronDown aria-hidden="true" />
-            <div><span>Fuera del manual: desde {parameters.motor70WidthFrom} cm</span><strong>Motor 70/17 por excepción</strong></div>
-            <p>La web consulta la tabla Llaza para tubo Ø80. Como pide entre 30 y 50 Nm, el 55/17 sirve para todas las combinaciones estándar.</p>
-          </div>
-
-          <details className="arzua-reference-details">
-            <summary>Ver la tabla de motor del manual Llaza (tubo Ø80)</summary>
-            <p>Busca la salida a la izquierda y el frente arriba. El número de la casilla es el par mínimo en Nm. “—” significa que esa combinación es demasiado estrecha.</p>
-            <div className="parameter-table-wrap">
-              <table className="parameter-table arzua-motor-table">
-                <thead><tr><th>Salida ↓ / frente →</th>{arzuaProManualSpec.motorTube80.widthsCm.map((width) => <th key={width}>{width}</th>)}</tr></thead>
-                <tbody>{arzuaProManualSpec.motorTube80.rows.map((row) => <tr key={row.projectionCm}><td className="num">{row.projectionCm} cm</td>{row.torqueNm.map((torque, index) => <td key={arzuaProManualSpec.motorTube80.widthsCm[index]} className={torque === null ? 'is-impossible' : 'num'}>{torque ?? '—'}</td>)}</tr>)}</tbody>
-              </table>
-            </div>
-          </details>
-        </div>
-      </div>
-
-      <div className="parameter-band arzua-parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Cuánta tela y qué barra</h3><p>Llaza no da aquí el largo de caída ni los márgenes de unión. Por eso esta parte usa las reglas internas de confección y el stock real.</p></div></div>
-        <div className="arzua-parameter-content">
-          <div className="arzua-fabric-recipes">
-            <article><span>Si tela y bamba son iguales</span><strong>salida + {parameters.fabricDropAllowanceCm} + alto de bamba</strong></article>
-            <article><span>Si la bamba lleva otra tela</span><strong>cuerpo: salida + {Math.max(0, parameters.fabricDropAllowanceCm - 5)} · bamba: alto + 5</strong></article>
-          </div>
-          <div className="arzua-edit-grid arzua-edit-grid-3">
-            <div className="arzua-input-card source-workshop"><NumberField label="Tela extra en la caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && onUpdate({ fabricDropAllowanceCm })} /><small>Es el margen que se suma a la salida.</small></div>
-            <div className="arzua-input-card source-workshop"><NumberField label="Solape entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && onUpdate({ seamAllowanceCm })} /><small>Se añade por cada unión entre paños.</small></div>
-            <div className="arzua-input-card source-workshop"><NumberField label="Margen fijo de confección (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && onUpdate({ seamBaseCm })} /><small>Se añade una vez al cálculo del paño.</small></div>
-          </div>
-          <div className="arzua-stock-row">
-            <div><Package aria-hidden="true" /><span><strong>Barras disponibles</strong><small>La web coge la primera que sea suficientemente larga.</small></span></div>
-            <div className="arzua-stock-inputs">{parameters.stockLengths.map((stockLength, index) => <NumberField key={index} label={`Barra ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateStockLength(index, value)} />)}</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="parameter-band arzua-parameter-band">
-        <div className="parameter-band-title"><span>04</span><div><h3>Lo que se resta al frente</h3><p>Lee cada casilla así: “frente menos este número”. Todo está en centímetros.</p></div></div>
-        <div className="arzua-parameter-content">
-          <div className="parameter-table-wrap discount-table-wrap">
-            <table className="parameter-table parameter-table-discounts arzua-discount-table">
-              <thead><tr><th>Qué cortamos</th>{devices.map((device) => <th key={device}>{arzuaDeviceLabels[device]}</th>)}</tr></thead>
-              <tbody>{arzuaDiscountGroups.map((group) => {
-                const copy = arzuaDiscountCopy[group];
-                return <tr key={group}>
-                  <td className="discount-part"><strong>{copy.title}</strong><small>{copy.help}</small><em>{copy.source}</em></td>
-                  {devices.map((device) => <td key={device}><div className="arzua-table-input"><input aria-label={`ARZUA ${copy.title} ${arzuaDeviceLabels[device]}`} type="number" step="0.1" min="0" value={parameters[group][tubes[0]][device]} onChange={(event) => updateDiscount(group, device, Number(event.target.value))} /><span>cm</span></div></td>)}
-                </tr>;
-              })}</tbody>
-            </table>
-          </div>
-          <aside className="arzua-manual-contrast">
-            <BookOpen aria-hidden="true" />
-            <div><strong>Estos valores salen literalmente del manual</strong><p>En el orden motor / máquina dentro / máquina fuera: tela 10,8 / 12,2 / 12,4 cm; tubo de enrollar 9,8 / 11,2 / 11,4 cm; barra delantera 9,8 / 10,2 / 10,4 cm. Son iguales con EVO 80 y UNIVERS 280.</p></div>
-          </aside>
-        </div>
-      </div>
-
-      <div className="parameter-band arzua-parameter-band">
-        <div className="parameter-band-title"><span>05</span><div><h3>El frente mínimo para cada salida</h3><p>Cuanto más abre el toldo, más ancho necesita para que los brazos quepan cerrados.</p></div></div>
-        <div className="arzua-parameter-content">
-          <div className="arzua-minimum-example"><Ruler aria-hidden="true" /><span>Ejemplo: con salida 250, hacen falta <strong>295 cm</strong> con motor o máquina dentro, y <strong>300 cm</strong> con máquina fuera.</span></div>
+        <ParameterNote>El tubo solo se propone; no se bloquea. Motor 55/17 hasta {arzuaProManualSpec.maximumWidthCm} cm: el manual pide entre 30 y 50 Nm con tubo Ø{arzuaProManualSpec.rollingTubeDiameterMm}. Motor 70/17 solo por excepción desde {parameters.motor70WidthFrom} cm.</ParameterNote>
+        <details className="parameter-details">
+          <summary>Tabla de motor del manual Llaza (tubo Ø{arzuaProManualSpec.rollingTubeDiameterMm})</summary>
+          <ParameterNote>Salida a la izquierda y frente arriba; cada casilla es el par mínimo en Nm. «—»: combinación demasiado estrecha.</ParameterNote>
           <div className="parameter-table-wrap">
-            <table className="parameter-table parameter-table-lines arzua-minimum-table">
-              <thead><tr><th>Si la salida es</th><th>Motor</th><th>Máquina dentro</th><th>Máquina fuera</th></tr></thead>
-              <tbody>{parameters.minimumLineByArm.map((row) => <tr key={row.arm} className={row.arm >= 300 ? 'is-manual-correction' : ''}>
-                <td className="num"><strong>{row.arm}</strong><span> cm</span>{row.arm >= 300 && <small>Corregido con Llaza</small>}</td>
-                {(['MOTOR', 'MAQ. INTERIOR', 'MAQ. EXTERIOR'] as Device[]).map((device) => <td key={device}><div className="arzua-table-input"><input aria-label={`ARZUA salida ${row.arm} ${arzuaDeviceLabels[device]}`} type="number" min="1" value={row.values[device]} onChange={(event) => updateMinimum(row.arm, device, Number(event.target.value))} /><span>cm</span></div></td>)}
-              </tr>)}</tbody>
+            <table className="parameter-table parameter-motor-table" aria-label="Par de motor del manual Llaza">
+              <thead><tr><th>Salida ↓ / frente →</th>{arzuaProManualSpec.motorTube80.widthsCm.map((width) => <th key={width}>{width}</th>)}</tr></thead>
+              <tbody>{arzuaProManualSpec.motorTube80.rows.map((row) => <tr key={row.projectionCm}><td className="num">{row.projectionCm} cm</td>{row.torqueNm.map((torque, index) => <td key={arzuaProManualSpec.motorTube80.widthsCm[index]} className={torque === null ? 'is-impossible' : 'num'}>{torque ?? '—'}</td>)}</tr>)}</tbody>
             </table>
           </div>
-          <aside className="arzua-correction-note"><Check aria-hidden="true" /><span><strong>Corrección aplicada:</strong> las salidas 300, 325 y 350 estaban mal copiadas en PRO.MIN. Ahora coinciden con la página 6 del manual Llaza.</span></aside>
-        </div>
-      </div>
+        </details>
+      </ParameterBand>
 
-      <aside className="rps-evidence arzua-evidence"><strong>El manual manda</strong><span>Los límites, pares de motor, descuentos y frentes mínimos salen de Llaza COMPLET-PRO 350 rev. 2.1. El Excel de Testar se usó únicamente para detectar diferencias antiguas; ya no redondea estos valores.</span></aside>
-    </section>
+      <ParameterBand number="03" title="Tela y barras comerciales" description="El manual no da la caída ni los márgenes de unión: son reglas de confección de Testar y barras del almacén.">
+        <div className="parameter-grid parameter-grid-3">
+          <NumberField label="Tela extra en la caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(fabricDropAllowanceCm) => fabricDropAllowanceCm !== null && onUpdate({ fabricDropAllowanceCm })} />
+          <NumberField label="Solape entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && onUpdate({ seamAllowanceCm })} />
+          <NumberField label="Margen fijo de confección (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && onUpdate({ seamBaseCm })} />
+          {parameters.stockLengths.map((stockLength, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={stockLength} min={1} step={50} onChange={(value) => updateStockLength(index, value)} />)}
+        </div>
+        <ParameterNote>Caída de tela: salida + {parameters.fabricDropAllowanceCm} + alto de bamba. Con la bamba en otra tela: cuerpo salida + {Math.max(0, parameters.fabricDropAllowanceCm - 5)} y bamba alto + 5.</ParameterNote>
+        <ParameterNote>El solape se suma por cada unión entre paños y el margen fijo, una vez por paño. La web coge la primera barra suficientemente larga.</ParameterNote>
+      </ParameterBand>
+
+      <ParameterBand number="04" title="Descuentos al frente" description="Cada casilla se lee «frente menos este número», en cm.">
+        <div className="parameter-table-wrap">
+          <table className="parameter-table parameter-table-lines">
+            <thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{arzuaDeviceLabels[device]}</th>)}</tr></thead>
+            <tbody>{arzuaDiscountGroups.map((group) => {
+              const title = arzuaDiscountTitles[group];
+              return <tr key={group}>
+                <td>{title}</td>
+                {devices.map((device) => <td key={device}><input aria-label={`ARZUA ${title} ${arzuaDeviceLabels[device]}`} type="number" step="0.1" min="0" value={parameters[group][tubes[0]][device]} onChange={(event) => updateDiscount(group, device, Number(event.target.value))} /></td>)}
+              </tr>;
+            })}</tbody>
+          </table>
+        </div>
+        <ParameterNote>Manual Llaza (motor / máquina dentro / máquina fuera): {arzuaManualDiscounts} cm. Iguales con EVO 80 y UNIVERS 280.</ParameterNote>
+      </ParameterBand>
+
+      <ParameterBand number="05" title="Frente mínimo por salida" description="Cuanto más abre el toldo, más ancho necesita para que los brazos quepan cerrados.">
+        <div className="parameter-table-wrap">
+          <table className="parameter-table parameter-table-lines">
+            <thead><tr><th>Salida</th>{devices.map((device) => <th key={device}>{arzuaDeviceLabels[device]}</th>)}</tr></thead>
+            <tbody>{parameters.minimumLineByArm.map((row) => <tr key={row.arm}>
+              <td className="num">{row.arm}</td>
+              {devices.map((device) => <td key={device}><input aria-label={`ARZUA salida ${row.arm} ${arzuaDeviceLabels[device]}`} type="number" min="1" value={row.values[device]} onChange={(event) => updateMinimum(row.arm, device, Number(event.target.value))} /></td>)}
+            </tr>)}</tbody>
+          </table>
+        </div>
+        {example && <ParameterNote>Ejemplo: con salida 250 hacen falta {example.values.MOTOR} cm con motor, {example.values['MAQ. INTERIOR']} con máquina dentro y {example.values['MAQ. EXTERIOR']} con máquina fuera.</ParameterNote>}
+        <ParameterNote>Corrección aplicada: las salidas 300, 325 y 350 siguen la página 6 del manual Llaza.</ParameterNote>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
 function OrderConfiguredModelView({ selectedModel }: {
   selectedModel: 'HERA' | 'ANTICA' | 'IRIS';
 }) {
-  return <section className="parameters-page panel-3d">
-    <header className="parameters-heading"><div><span className="section-kicker">Consulta de reglas actuales</span><ParameterModelTitle model={selectedModel} /><p>Aumentos, descuentos y condiciones que aplica la web. Consulta sin modificar pedidos ni valores generales.</p></div></header>
+  return <ParameterSheet model={selectedModel} kind="consulta" description="Aumentos, descuentos y condiciones que aplica la web. Consulta sin modificar pedidos ni valores generales.">
     {selectedModel === 'ANTICA' ? <AnticaRuleReference /> : selectedModel === 'HERA' ? <HeraRuleReference /> : <IrisRuleReference />}
-  </section>;
+  </ParameterSheet>;
 }
 
 function ParameterModelSelector({ selectedModel, onSelectModel }: {
@@ -626,15 +436,13 @@ function XacobeoParametersView({ parameters, selectedModel, onUpdate, onReset }:
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas XAC, despiece ART250 y reserva RPS.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites, tela y largos comerciales</h3><p>Los largos comerciales son las barras disponibles en almacén; la web elige automáticamente la menor que permita cortar la pieza.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description="Despiece ART250, confección de tela y reserva RPS."
+      onReset={onReset}
+      evidence="13 estructuras Xacobeo completas de 2026 y un caso motorizado de 2025 revisados: las 56 medidas contrastadas son correctas y las reservas RPS comprobables no presentan diferencias."
+    >
+      <ParameterBand number="01" title="Límites, tela y largos comerciales" description="Los largos comerciales son las barras disponibles en almacén; la web elige automáticamente la menor que permita cortar la pieza.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="Margen de caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
@@ -642,24 +450,20 @@ function XacobeoParametersView({ parameters, selectedModel, onUpdate, onReset }:
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
           {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente según pieza y accionamiento.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{xacDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="02" title="Descuentos dimensionales" description="Centímetros descontados al frente según pieza y accionamiento.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{xacDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{discountRows.map(([field, label]) => <tr key={field}><td>{label}</td>{xacDevices.map((device) => <td key={device}><input aria-label={`XACOBEO ${label} ${device}`} type="number" min="0" step="0.1" value={parameters[field][device]} onChange={(event) => updateDiscount(field, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Líneas mínimas</h3><p>Frente mínimo por salida y tipo de accionamiento.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{xacDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="03" title="Líneas mínimas" description="Frente mínimo por salida y tipo de accionamiento.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{xacDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{xacDevices.map((device) => <td key={device}><input aria-label={`XACOBEO salida ${row.projection} ${device}`} type="number" min="1" value={row.values[device]} onChange={(event) => updateMinimum(row.projection, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>13 estructuras Xacobeo completas de 2026 y un caso motorizado de 2025 revisados. Las 56 medidas contrastadas coinciden con XAC y las reservas RPS comprobables no presentan diferencias.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -693,15 +497,13 @@ function MaxiscreemParametersView({ parameters, selectedModel, onUpdate, onReset
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Con o sin cofre y guiado por cable o varilla.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites y confección</h3><p>Medidas máximas y márgenes usados en el paño vertical.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description="Con o sin cofre y guiado por cable o varilla."
+      onReset={onReset}
+      evidence="Casos Diana/Maxiscreen de 2025 y 2026 revisados: cofre y sin cofre, máquina y motor. Tela, P801, perfiles, soportes y guías coinciden con los planteamientos disponibles."
+    >
+      <ParameterBand number="01" title="Límites y confección" description="Medidas máximas y márgenes usados en el paño vertical.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="Caída máxima estándar (cm)" value={parameters.standardMaxDrop} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxDrop: value })} />
@@ -711,25 +513,21 @@ function MaxiscreemParametersView({ parameters, selectedModel, onUpdate, onReset
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Largos de almacén</h3><p>La web elige automáticamente el primer largo que admite la pieza.</p></div></div>
+      <ParameterBand number="02" title="Largos de almacén" description="La web elige automáticamente el primer largo que admite la pieza.">
         <div className="parameter-grid parameter-grid-3">
           {parameters.rollStockLengths.map((length, index) => <NumberField key={`roll-${index}`} label={`Stock P801 ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ rollStockLengths: parameters.rollStockLengths.map((item, current) => current === index ? value : item) })} />)}
           {parameters.profileStockLengths.map((length, index) => <NumberField key={`profile-${index}`} label={`Stock perfiles ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ profileStockLengths: parameters.profileStockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Descuentos dimensionales</h3><p>Valores distintos según haya cofre y según el accionamiento.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Configuración</th><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="03" title="Descuentos dimensionales" description="Valores distintos según haya cofre y según el accionamiento.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Configuración</th><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{groups.flatMap(({ code, label }) => discountRows.map(([field, piece], index) => <tr key={`${code}-${field}`}><td>{index === 0 ? label : ''}</td><td>{piece}</td>{devices.map((device) => <td key={device}><input aria-label={`MAXISCREEM ${label} ${piece} ${device}`} type="number" min="0" step="0.1" value={parameters.discounts[code][device][field]} onChange={(event) => updateDiscount(code, device, field, Number(event.target.value))} /></td>)}</tr>))}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>Casos Diana/Maxiscreen de 2025 y 2026 revisados: cofre y sin cofre, máquina y motor. Tela, P801, perfiles, soportes y guías coinciden con los planteamientos disponibles.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -782,43 +580,38 @@ function ElectraParametersView({ parameters, selectedModel, onUpdate, onReset }:
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Nuevo modelo · Elit Vertical</span><ParameterModelTitle model={selectedModel} /><p>Reglas por soporte, con o sin cofre y con o sin guía.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar fuentes</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites, confección y almacén</h3><p>El soporte es obligatorio en cada pedido. Las medidas superiores a 500 × 300 cm requieren excepción técnica.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      kind="nuevo"
+      description="Reglas por soporte, con o sin cofre y con o sin guía."
+      onReset={onReset}
+      evidence="Archivo de descuentos, reglas de Cortina con Maxiscreen y 37 líneas ELECTR de 2024–2026 revisadas. RPS usa ELECTRA; en documentación también aparece como ELIT VERTICAL."
+    >
+      <ParameterBand number="01" title="Límites, confección y almacén" description="El soporte es obligatorio en cada pedido. Las medidas superiores a 500 × 300 cm requieren excepción técnica.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="Caída máxima estándar (cm)" value={parameters.standardMaxDrop} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxDrop: value })} />
-          {devices.map((device) => <NumberField key={device} label={`Margen de caída · ${device} (cm)`} value={parameters.fabricDropAllowanceCm[device]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(device, value)} />)}
+          {devices.map((device) => <NumberField key={device} label={`Margen de caída · ${deviceHeader(device)} (cm)`} value={parameters.fabricDropAllowanceCm[device]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(device, value)} />)}
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
           {parameters.rollStockLengths.map((length, index) => <NumberField key={`roll-${index}`} label={`Stock P801 ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ rollStockLengths: parameters.rollStockLengths.map((item, current) => current === index ? value : item) })} />)}
           {parameters.profileStockLengths.map((length, index) => <NumberField key={`profile-${index}`} label={`Stock perfiles ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ profileStockLengths: parameters.profileStockLengths.map((item, current) => current === index ? value : item) })} />)}
           {parameters.guideStockLengths.map((length, index) => <NumberField key={`guide-${index}`} label={`Stock guías ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ guideStockLengths: parameters.guideStockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos según soporte</h3><p>Tabla interna de Electra y descuentos de Cortina para el soporte Maxiscreen. Todos los valores se descuentan en centímetros.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Soporte</th><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="02" title="Descuentos según soporte" description="Tabla interna de Electra y descuentos de Cortina para el soporte Maxiscreen. Todos los valores se descuentan en centímetros.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Soporte</th><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{supports.flatMap((support) => supportPieces.map(([field, label], index) => <tr key={`${support}-${field}`}><td>{index === 0 ? support : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA ${support} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.supportDiscounts[support][device][field]} onChange={(event) => updateSupportDiscount(support, device, field, Number(event.target.value))} /></td>)}</tr>))}</tbody>
         </table></div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Configuración con cofre</h3><p>Descuentos recuperados de los planteamientos Electra con cofre que reutilizan la estructura MAXISCREEM.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="03" title="Configuración con cofre" description="Descuentos recuperados de los planteamientos Electra con cofre que reutilizan la estructura MAXISCREEM.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{cofrePieces.map(([field, label]) => <tr key={field}><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA cofre ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.cofreDiscounts[device][field]} onChange={(event) => updateCofreDiscount(device, field, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>Archivo de descuentos, reglas de Cortina con Maxiscreen y 37 líneas ELECTR de 2024–2026 revisadas. RPS usa ELECTRA; en documentación también aparece como ELIT VERTICAL.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -851,15 +644,13 @@ function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onRes
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Hoja MON.350, estructura Arzúa Monobloc y reserva RPS.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Tela y estructura</h3><p>Márgenes de confección, barras comerciales disponibles y reparto de soportes.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description="Estructura Arzúa Monobloc, confección de tela y reserva RPS."
+      onReset={onReset}
+      evidence="Diez planteamientos de 2026 revisados, con casos de 2, 3 y 4 brazos entre 287 y 972 cm. Medidas, soportes, P801, EVO 80, motores y tela contrastados con RPS."
+    >
+      <ParameterBand number="01" title="Tela y estructura" description="Márgenes de confección, barras comerciales disponibles y reparto de soportes.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Margen caída tela (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
           <NumberField label="Remate de bamba (cm)" value={parameters.valanceExtraCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ valanceExtraCm: value })} />
@@ -872,24 +663,20 @@ function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onRes
           <NumberField label="Primer currón desde (cm)" value={parameters.curronStartWidthCm} min={1} onChange={(value) => value !== null && onUpdate({ curronStartWidthCm: value })} />
           <NumberField label="Segundo currón desde (cm)" value={parameters.curronSecondWidthCm} min={1} onChange={(value) => value !== null && onUpdate({ curronSecondWidthCm: value })} />
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente por accionamiento.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="02" title="Descuentos dimensionales" description="Centímetros descontados al frente por accionamiento.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{discountRows.map(([field, label]) => <tr key={field}><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`MONOBLOCK ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.discounts[device][field]} onChange={(event) => updateDiscount(device, field, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Rangos por salida y brazos</h3><p>Frentes mínimos, máximos y motor automático.</p></div></div>
+      <ParameterBand number="03" title="Rangos por salida y brazos" description="Frentes mínimos, máximos y motor automático.">
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines monoblock-ranges-table"><thead><tr><th>Salida</th>{[2, 3, 4].map((arms) => <th key={arms}>{arms} brazos · mín/máx · motor</th>)}</tr></thead>
           <tbody>{parameters.dimensionalRules.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{([2, 3, 4] as const).map((arms) => <td key={arms}><div className="parameter-inline-fields"><input aria-label={`MONOBLOCK ${row.projection} ${arms} mínimo`} type="number" min="1" value={row.values[arms].minimum} onChange={(event) => updateRule(row.projection, arms, 'minimum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} máximo`} type="number" min="1" value={row.values[arms].maximum} onChange={(event) => updateRule(row.projection, arms, 'maximum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} motor`} value={row.values[arms].motorPower} onChange={(event) => updateRule(row.projection, arms, 'motorPower', event.target.value)} /></div></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>Diez planteamientos de 2026 revisados, con casos de 2, 3 y 4 brazos entre 287 y 972 cm. Medidas, soportes, P801, EVO 80, motores y tela contrastados con RPS.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -917,25 +704,22 @@ function PuntoRectoParametersView({ parameters, selectedModel, onUpdate, onReset
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de la hoja PUNTO RECTO, despiece PRT07 y reserva RPS.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Estructura automática</h3><p>El frente selecciona P701 o P801 y exige el número mínimo de brazos. Los largos comerciales son las barras disponibles en almacén.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description="Despiece PRT07, confección de tela y reserva RPS."
+      onReset={onReset}
+      evidence="18 estructuras de 2026 y cinco casos históricos de máquina y motor revisados. Las excepciones de caída de paño quedan editables por toldo."
+    >
+      <ParameterBand number="01" title="Estructura automática" description="El frente selecciona P701 o P801 y exige el número mínimo de brazos. Los largos comerciales son las barras disponibles en almacén.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="P801 y 3 brazos desde (cm)" value={parameters.armSwitchWidth} min={1} onChange={(value) => value !== null && onUpdate({ armSwitchWidth: value })} />
           {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
-        <p className="parameter-note">Hasta {parameters.armSwitchWidth} cm: P701 y mínimo 2 brazos. Por encima: P801 y mínimo 3 brazos. La web escoge la barra comercial más corta que admita el corte; este dato no se cubre en el pedido.</p>
-      </div>
+        <ParameterNote>Hasta {parameters.armSwitchWidth} cm: P701 y mínimo 2 brazos. Por encima: P801 y mínimo 3 brazos. La web escoge la barra comercial más corta que admita el corte; este dato no se cubre en el pedido.</ParameterNote>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Geometría del paño</h3><p>La caída sigue la diagonal de los brazos y añade el margen fijo y la bambalina.</p></div></div>
+      <ParameterBand number="02" title="Geometría del paño" description="La caída sigue la diagonal de los brazos y añade el margen fijo y la bambalina.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Multiplicador de la salida" value={parameters.fabricDropMultiplier} min={0.1} step={0.01} onChange={(value) => value !== null && onUpdate({ fabricDropMultiplier: value })} />
           <NumberField label="Margen fijo de paño (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
@@ -943,21 +727,18 @@ function PuntoRectoParametersView({ parameters, selectedModel, onUpdate, onReset
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-        <p className="parameter-note">Estándar: salida × multiplicador + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</p>
-      </div>
+        <ParameterNote>Estándar: salida × multiplicador + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</ParameterNote>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Descuentos y motores</h3><p>Descuentos al frente y potencia automática según brazos.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{pointDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="03" title="Descuentos y motores" description="Descuentos al frente y potencia automática según brazos.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{pointDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{discountRows.map(([field, label]) => <tr key={field}><td>{label}</td>{pointDevices.map((device) => <td key={device}><input aria-label={`PUNTO RECTO ${label} ${device}`} type="number" min="0" step="0.1" value={parameters[field][device]} onChange={(event) => updateDiscount(field, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
         <div className="parameter-grid parameter-grid-3">
           {([2, 3, 4] as const).map((arms) => <SelectField key={arms} label={`Motor con ${arms} brazos`} value={parameters.motorPowerByArm[arms]} options={['15/17', '35/17', '50/17']} onChange={(power) => updateMotorPower(arms, power)} />)}
         </div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>18 estructuras de 2026 y cinco casos históricos de máquina y motor revisados. Las excepciones de caída de paño quedan editables por toldo.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -986,53 +767,50 @@ function FabricJobsParametersView({ parameters, selectedModel, onUpdate, onReset
   }
 
   return (
-    <section className="parameters-page panel-3d">
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Trabajo sin estructura</span><ParameterModelTitle model={selectedModel} /><p>Comparte los márgenes comunes de confección; cada modelo conserva su caída propia.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Márgenes de confección</h3><p>{selectedModel === 'BAMBALINA' ? 'Corte de bambalina: alto terminado + remate. El remate también se comparte con las bambas de los demás trabajos de tela.' : 'Centímetros añadidos a las medidas indicadas. El remate de bambalina se comparte con los demás trabajos de tela.'}</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      kind="tela"
+      description="Comparte los márgenes comunes de confección; cada modelo conserva su caída propia."
+      onReset={onReset}
+      evidenceLabel="Valores por defecto"
+      evidence="Cambio de tela +40 cm, Enrollable +25 cm, Bambalina +5 cm y Cambio Antica +65 cm; Antica usa +40 cm cuando la bamba va en otra tela. Esa bamba se reserva por separado."
+    >
+      <ParameterBand number="01" title="Márgenes de confección" description={selectedModel === 'BAMBALINA' ? 'Corte de bambalina: alto terminado + remate. El remate también se comparte con las bambas de los demás trabajos de tela.' : 'Centímetros añadidos a las medidas indicadas. El remate de bambalina se comparte con los demás trabajos de tela.'}>
         <div className="parameter-grid parameter-grid-3">
           {jobs.filter((job) => job.model === selectedModel).map((job) => <NumberField key={job.model} label={`${job.label} · ${job.note} (cm)`} value={parameters.dropAllowanceByModel[job.model]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(job.model, value)} />)}
           {selectedModel === 'CAMBIO ANTICA' && <NumberField label="Antica con bamba en otra tela (cm)" value={parameters.anticaSeparateValanceAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ anticaSeparateValanceAllowanceCm: value })} />}
           {selectedModel !== 'ENROLLABLE' && <NumberField label="Remate de bambalina (cm)" value={parameters.valanceExtraCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ valanceExtraCm: value })} />}
         </div>
-      </div>
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Paños</h3><p>Costuras usadas para calcular el número de paños y los metros lineales.</p></div></div>
+      </ParameterBand>
+      <ParameterBand number="02" title="Paños" description="Costuras usadas para calcular el número de paños y los metros lineales.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-      </div>
+      </ParameterBand>
       {selectedModel === 'CAMBIO ANTICA' && <CambioAnticaRuleReference parameters={parameters} />}
-      <aside className="rps-evidence"><strong>Origen Excel</strong><span>CAM. TELA +40 cm, ENROL. +25 cm, BAMBALINA +5 cm y CAM. ANTICA +65 cm; Antica usa +40 cm cuando la bamba va en otra tela. Esa bamba se reserva por separado.</span></aside>
-    </section>
+    </ParameterSheet>
   );
 }
 
 function CambioCortinaParametersView({ parameters, selectedModel, onUpdate, onReset }: CambioCortinaProps) {
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Trabajo de tela</span><ParameterModelTitle model={selectedModel} /><p>Confección de tela sin estructura ni lacado.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Caída y paños</h3><p>Regla estándar aplicada al alto medido y a la bamba.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      kind="tela"
+      description="Confección de tela sin estructura ni lacado."
+      onReset={onReset}
+      evidence="168 cortinas de 2025 y 2026 revisadas: la reserva de RPS coincide con la que calcula la web. En Cambio de cortina la salida medida ya es la de la tela, así que no se descuenta (Iván, 22/09/2026); un descuento puntual se pone con el candado de la tarjeta."
+    >
+      <ParameterBand number="01" title="Caída y paños" description="Regla estándar aplicada al alto medido y a la bamba.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Margen inferior tela (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
           <NumberField label="Descuento inferior estándar (cm)" value={parameters.bottomDeductionCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ bottomDeductionCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>168 cortinas de 2025 y 2026 revisadas: la reserva de RPS coincide con la del libro. En Cambio de cortina la salida medida ya es la de la tela, así que no se descuenta (Iván, 22/09/2026); un descuento puntual se pone con el candado de la tarjeta.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -1059,15 +837,13 @@ function CortinaParametersView({ parameters, selectedModel, onUpdate, onReset }:
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>{selena ? 'Sistema vertical con brazos Stor, confección de tela y reserva RPS.' : 'Reglas de estructura, confección de tela y reserva RPS.'}</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites y caída</h3><p>Medidas estándar y margen inferior aplicado a la tela.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description={selena ? 'Sistema vertical con brazos Stor, confección de tela y reserva RPS.' : 'Reglas de estructura, confección de tela y reserva RPS.'}
+      onReset={onReset}
+      evidence={selena ? 'Pedido AR.26.03959 contrastado: frente 290, caída 160 y bamba integrada de 15 producen un corte de 278 × 230 cm y 6,9 ml. La caída suma 50 cm y la bamba integrada añade 5 cm de confección.' : '110 estructuras y 68 PDF de 2026 revisados. La variante Maxiscreem cambia únicamente el soporte y comparte estos descuentos con la Cortina normal; la caída estándar suma 45 cm.'}
+    >
+      <ParameterBand number="01" title="Límites y caída" description="Medidas estándar y margen inferior aplicado a la tela.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="Altura máxima (cm)" value={parameters.standardMaxDrop} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxDrop: value })} />
@@ -1077,17 +853,14 @@ function CortinaParametersView({ parameters, selectedModel, onUpdate, onReset }:
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
           {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente según el accionamiento.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{curtainDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="02" title="Descuentos dimensionales" description="Centímetros descontados al frente según el accionamiento.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{curtainDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{discountRows.map(([field, label]) => <tr key={field}><td>{label}</td>{curtainDevices.map((device) => <td key={device}><input aria-label={`${selectedModel} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters[field][device]} onChange={(event) => updateDiscount(field, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>{selena ? 'Pedido AR.26.03959 y Excel original contrastados: frente 290, caída 160 y bamba integrada de 15 producen un corte de 278 × 230 cm y 6,9 ml. La caída suma 50 cm y la bamba integrada añade 5 cm de confección.' : '110 estructuras y 68 PDF de 2026 revisados. La variante Maxiscreem cambia únicamente el soporte y comparte estos descuentos con la Cortina normal; la caída estándar suma 45 cm.'}</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -1127,25 +900,22 @@ function AmbarBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas de estructura, tela y reserva RPS.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites y barras comerciales</h3><p>Longitudes disponibles para los perfiles y tubos de la serie. La web selecciona la adecuada automáticamente.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description="Reglas de estructura, tela y reserva RPS."
+      onReset={onReset}
+      evidence="14 estructuras Ámbar Box de 2026 revisadas. Los descuentos de tela, tubo y perfiles coinciden; cuatro caídas modificadas quedan disponibles como excepción técnica."
+    >
+      <ParameterBand number="01" title="Límites y barras comerciales" description="Longitudes disponibles para los perfiles y tubos de la serie. La web selecciona la adecuada automáticamente.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           {parameters.profileStockLengths.map((length, index) => <NumberField key={`profile-${index}`} label={`Perfil comercial ${index + 1} (cm)`} value={length} min={1} step={100} onChange={(value) => value !== null && onUpdate({ profileStockLengths: parameters.profileStockLengths.map((item, current) => current === index ? value : item) })} />)}
           {parameters.rollStockLengths.map((length, index) => <NumberField key={`roll-${index}`} label={`Tubo comercial ${index + 1} (cm)`} value={length} min={1} step={100} onChange={(value) => value !== null && onUpdate({ rollStockLengths: parameters.rollStockLengths.map((item, current) => current === index ? value : item) })} />)}
           <SelectField label="Motor" value={parameters.motorPower} options={['15/17', '35/17']} onChange={(motorPower) => onUpdate({ motorPower })} />
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Geometría del paño</h3><p>Diagonal de brazos, margen fijo y costuras del Excel.</p></div></div>
+      <ParameterBand number="02" title="Geometría del paño" description="Diagonal de brazos, margen fijo y costuras entre paños.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Factor diagonal" value={parameters.fabricDropMultiplier} min={0.1} step={0.01} onChange={(value) => value !== null && onUpdate({ fabricDropMultiplier: value })} />
           <NumberField label="Margen fijo de paño (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
@@ -1153,18 +923,15 @@ function AmbarBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-        <p className="parameter-note">Estándar: salida × factor diagonal + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</p>
-      </div>
+        <ParameterNote>Estándar: salida × factor diagonal + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</ParameterNote>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Descuentos dimensionales</h3><p>Varían por colocación y dispositivo.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Colocación</th><th>Pieza</th>{ambarDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="03" title="Descuentos dimensionales" description="Varían por colocación y dispositivo.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Colocación</th><th>Pieza</th>{ambarDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{placementGroups.flatMap(({ code, label }) => discountRows.map(([field, piece], index) => <tr key={`${code}-${field}`}><td>{index === 0 ? label : ''}</td><td>{piece}</td>{ambarDevices.map((device) => <td key={device}><input aria-label={`ÁMBAR ${label} ${piece} ${device}`} type="number" min="0" step="0.1" value={parameters[field][code][device]} onChange={(event) => updateDiscount(field, code, device, Number(event.target.value))} /></td>)}</tr>))}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>14 estructuras Ámbar Box de 2026 revisadas. Los descuentos de tela, tubo y perfiles coinciden; cuatro caídas modificadas quedan disponibles como excepción técnica.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -1194,15 +961,17 @@ function BoxParametersView({ parameters, selectedModel, onUpdate, onReset }: Box
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>{isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites y tela</h3><p>Medidas generales, caída y cálculo de paños.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description={isPerla ? 'Reglas S-300, despiece Perla Box y reserva RPS.' : isCuarzo ? 'Reglas ST250, despiece Cuarzo Box y reserva RPS.' : 'Reglas ST400, despiece Coral Box y reserva RPS.'}
+      onReset={onReset}
+      evidence={isPerla
+        ? 'Contrastado con 80 pedidos y 85 estructuras S-300 de 2026: las 340 medidas de tela, tubo, perfiles y protector son correctas.'
+        : isCuarzo
+          ? 'Contrastado con 7 estructuras Cuarzo Box de 2026: las 28 medidas de tela, tubo, perfiles y barra de carga son correctas.'
+          : 'Contrastado con 18 pedidos y 21 estructuras Coral Box de 2026: las 84 medidas de tela, tubo, perfiles y protector son correctas.'}
+    >
+      <ParameterBand number="01" title="Límites y tela" description="Medidas generales, caída y cálculo de paños.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="Margen de caída (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
@@ -1210,11 +979,10 @@ function BoxParametersView({ parameters, selectedModel, onUpdate, onReset }: Box
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente según pieza y dispositivo.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{boxDevices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="02" title="Descuentos dimensionales" description="Centímetros descontados al frente según pieza y dispositivo.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{boxDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{([
             ['profileDiscountCm', 'Kit de perfiles'],
             ['rollDiscountCm', 'Tubo de enrollamiento'],
@@ -1222,17 +990,14 @@ function BoxParametersView({ parameters, selectedModel, onUpdate, onReset }: Box
             ['protectorDiscountCm', isCuarzo ? 'Barra de carga' : 'Protector de lona']
           ] as const).map(([field, label]) => <tr key={field}><td>{label}</td>{boxDevices.map((device) => <td key={device}><input aria-label={`${selectedModel} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters[field][device]} onChange={(event) => updateDiscount(field, device, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Líneas mínimas y motor</h3><p>Frente mínimo y potencia SUNEA por salida.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{boxDevices.map((device) => <th key={device}>{device}</th>)}<th>Motor</th></tr></thead>
+      <ParameterBand number="03" title="Líneas mínimas y motor" description="Frente mínimo y potencia SUNEA por salida.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{boxDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}<th>Potencia del motor</th></tr></thead>
           <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{boxDevices.map((device) => <td key={device}><input aria-label={`${selectedModel} salida ${row.projection} ${device}`} type="number" min="1" value={row.values[device]} onChange={(event) => updateMinimum(row.projection, device, Number(event.target.value))} /></td>)}<td><input aria-label={`${selectedModel} motor salida ${row.projection}`} type="number" min="1" value={parameters.motorPowerByProjection.find((item) => item.projection === row.projection)?.power || ''} onChange={(event) => updatePower(row.projection, Number(event.target.value))} /></td></tr>)}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>{isPerla ? '80 pedidos y 85 estructuras S-300 de 2026 revisados. Las 340 medidas de tela, tubo, perfiles y protector coinciden con el Excel.' : isCuarzo ? '7 estructuras Cuarzo Box de 2026 revisadas. Las 28 medidas de tela, tubo, perfiles y barra de carga coinciden con el Excel.' : '18 pedidos y 21 estructuras Coral Box de 2026 revisados. Las 84 medidas de tela, tubo, perfiles y protector coinciden con el Excel.'}</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
 
@@ -1285,15 +1050,13 @@ function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
   }
 
   return (
-    <section className="parameters-page panel-3d">
-
-      <header className="parameters-heading">
-        <div><span className="section-kicker">Modelo en producción</span><ParameterModelTitle model={selectedModel} /><p>Reglas para Open, Semiopen, Semiclose y Cofre.</p></div>
-        <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Restaurar Excel</button>
-      </header>
-
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>01</span><div><h3>Límites, paño y soportes</h3><p>Serie de hasta cuatro brazos con selección automática por frente.</p></div></div>
+    <ParameterSheet
+      model={selectedModel}
+      description="Reglas para Open, Semiopen, Semiclose y Cofre."
+      onReset={onReset}
+      evidence="Ocho planteamientos Open, Semi y Cofre de 2025-2026 revisados: medidas, soportes y motores correctos."
+    >
+      <ParameterBand number="01" title="Límites, paño y soportes" description="Serie de hasta cuatro brazos con selección automática por frente.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo estándar (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           {([2, 3, 4] as const).map((arms) => <NumberField key={arms} label={`Máximo con ${arms} brazos (cm)`} value={parameters.maxWidthByArms[arms]} min={1} onChange={(value) => value !== null && updateMaximum(arms, value)} />)}
@@ -1304,23 +1067,19 @@ function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
           <NumberField label="Paso entre soportes (cm)" value={parameters.supportBaseStepWidth} min={1} onChange={(value) => value !== null && onUpdate({ supportBaseStepWidth: value })} />
           <NumberField label="Stock perfiles (cm)" value={parameters.profileStockLength} min={1} onChange={(value) => value !== null && onUpdate({ profileStockLength: value })} />
         </div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>02</span><div><h3>Líneas mínimas y motor</h3><p>Frente mínimo por salida, dispositivo y número de brazos.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{devices.flatMap((device) => ([2, 3, 4] as const).map((arms) => <th key={`${device}-${arms}`}>{device === 'MAQUINA' ? 'Maq.' : 'Motor'} · {arms}B</th>))}{([2, 3, 4] as const).map((arms) => <th key={`motor-${arms}`}>Nm · {arms}B</th>)}</tr></thead>
+      <ParameterBand number="02" title="Líneas mínimas y motor" description="Frente mínimo por salida, dispositivo y número de brazos.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{devices.flatMap((device) => ([2, 3, 4] as const).map((arms) => <th key={`${device}-${arms}`}>{device === 'MAQUINA' ? 'Máq.' : 'Motor'} · {arms}B</th>))}{([2, 3, 4] as const).map((arms) => <th key={`motor-${arms}`}>Nm · {arms}B</th>)}</tr></thead>
           <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{devices.flatMap((device) => ([2, 3, 4] as const).map((arms) => <td key={`${device}-${arms}`}><input aria-label={`ÁGATA mínimo ${row.projection} ${device} ${arms} brazos`} type="number" min="1" step="0.1" value={row.values[device][arms]} onChange={(event) => updateMinimum(row.projection, device, arms, Number(event.target.value))} /></td>))}{([2, 3, 4] as const).map((arms) => <td key={`power-${arms}`}><input aria-label={`ÁGATA motor ${row.projection} ${arms} brazos`} type="number" min="1" value={parameters.motorPowerByProjection.find((item) => item.projection === row.projection)?.values[arms] || ''} onChange={(event) => updateMotor(row.projection, arms, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
-      </div>
+      </ParameterBand>
 
-      <div className="parameter-band">
-        <div className="parameter-band-title"><span>03</span><div><h3>Descuentos dimensionales</h3><p>Centímetros descontados al frente por variante y accionamiento.</p></div></div>
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Variante</th><th>Pieza</th>{devices.map((device) => <th key={device}>{device}</th>)}</tr></thead>
+      <ParameterBand number="03" title="Descuentos dimensionales" description="Centímetros descontados al frente por variante y accionamiento.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Variante</th><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{variants.flatMap((variant) => discountRows.map(([piece, label], index) => <tr key={`${variant}-${piece}`}><td>{index === 0 ? variant : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ÁGATA ${variant} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.discounts[variant][device][piece]} onChange={(event) => updateDiscount(variant, device, piece, Number(event.target.value))} /></td>)}</tr>))}</tbody>
         </table></div>
-      </div>
-
-      <aside className="rps-evidence"><strong>Contraste real</strong><span>Ocho planteamientos Open, Semi y Cofre de 2025-2026 revisados. Medidas, soportes y motores reproducen los Excel de producción.</span></aside>
-    </section>
+      </ParameterBand>
+    </ParameterSheet>
   );
 }
