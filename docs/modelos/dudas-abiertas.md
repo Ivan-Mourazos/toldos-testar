@@ -60,9 +60,7 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 ## Trabajos de tela
 
-### Cambio Antica
-
-- **Con la bamba en otra tela, ¿cuánto se suma a la salida para la caída del cuerpo: 40 cm o 55?** Se han usado los dos. La web suma 40 (se cambia en Parámetros). Importa porque es el largo de tela que se corta. <sub>Q-CA02</sub>
+me dijeron: en un cambio de tela, que sume 40 para el enrrolle y lo necesario para entrada de tubo. con 55 debería valer. poder variar esto es necesario en el formulario.
 
 ## Para todos los modelos
 
@@ -94,5 +92,5 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 | Q-M02 | Motor del Monoblock 350 con cuatro brazos | Como dice el manual | Ya lo hace: 85/17 con cuatro brazos |
 | Q-M04 | Descuento de la barra Univers 280 en el Monoblock 350 | 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Pendiente: barra Univers = descuento EVO − 1 cm |
 | Q-SE04 | Selena a motor | En teoría, sí | Pendiente: ofrecer motor en la Selena, con el kit de la Cortina, que comparte tubo y piezas |
-| Q-CA01 | Qué «salida» se escribe en un Cambio Antica | En un cambio de tela, la salida ya debería ser la medida de la tela | Por concretar con Iván cómo se aplica (hoy la web suma 65 a lo que se escribe) |
+| Q-CA01 | Qué «salida» se escribe en un Cambio Antica | El pedido trae la medida de la tela vieja tal cual (se abre y se mide). Con un campo sencillo para sumar lo que haga falta | Hecho: caída = medida de la tela + «Sumar a la caída». Con eso sobra también Q-CA02 (40 o 55 con la bamba en otra tela): ya no se suma nada |
 | Q-B07 | Notas largas de la Bambalina | En la línea va «bamba de tanto, hecha de tanto»; lo demás, en Observaciones | Pendiente: revisar que la línea lleve solo eso y que el resto pase a Observaciones |

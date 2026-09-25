@@ -3,11 +3,7 @@ import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { normalizeFabricJobParameters, resolveFabricJobAllowance } from './fabricJobParameters.js';
-import {
-  normalizeAnticaMeasurementMode,
-  normalizeAnticaVariant,
-  resolveAnticaRoundEntry
-} from './anticaRules.js';
+import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 
 const supportedModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
 
@@ -27,24 +23,16 @@ export function calculateFabricOnly({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const anticaVariant = model === 'CAMBIO ANTICA' ? normalizeAnticaVariant(awning.anticaVariant) : '';
   const roundAnticaEntry = resolveAnticaRoundEntry(anticaVariant);
-  const anticaMeasurementMode = roundAnticaEntry
-    ? normalizeAnticaMeasurementMode(awning.anticaMeasurementMode, anticaVariant)
-    : '';
-  const finishedAnticaRoundEntry = Boolean(roundAnticaEntry) && anticaMeasurementMode === 'FINISHED';
+  // Iván, 25/09/2026: en un cambio de tela el pedido trae la medida de la tela vieja,
+  // tal cual (se abre y se mide). Solo se suma lo que el técnico ponga en la tarjeta.
+  const cambioAnticaExtra = model === 'CAMBIO ANTICA' ? Number(awning.cambioAnticaExtraCm) || 0 : 0;
   const widthAdjustment = modified ? Number(awning.fabricJobWidthAdjustmentCm) || 0 : 0;
   const fabricWidth = round1(Math.max(0, Number(awning.width) + widthAdjustment));
-  const standardAllowance = finishedAnticaRoundEntry
-    ? 0
-    : roundAnticaEntry
-      ? separateValance
-        ? roundAnticaEntry.cambioSeparateValanceAllowanceCm
-        : roundAnticaEntry.cambioDropAllowanceCm
-      : resolveFabricJobAllowance(model, hasValance, parameters);
-  const bodyAllowance = finishedAnticaRoundEntry
-    ? 0
+  const bodyAllowance = model === 'CAMBIO ANTICA'
+    ? cambioAnticaExtra
     : modified && awning.fabricJobDropAllowanceCm !== null && awning.fabricJobDropAllowanceCm !== undefined
       ? Math.max(0, Number(awning.fabricJobDropAllowanceCm) || 0)
-      : standardAllowance;
+      : resolveFabricJobAllowance(model, hasValance, parameters);
   const valanceExtra = modified && awning.fabricJobValanceExtraCm !== null && awning.fabricJobValanceExtraCm !== undefined
     ? Math.max(0, Number(awning.fabricJobValanceExtraCm) || 0)
     : parameters.valanceExtraCm;
@@ -55,8 +43,7 @@ export function calculateFabricOnly({ order, awning }) {
       : curtainParameters.bottomDeductionCm
     : 0;
   const bodyDrop = calculateBodyDrop({
-    model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance,
-    parameters, curtainParameters, curtainDeduction, finishedAnticaRoundEntry, roundAnticaEntry
+    model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance, curtainParameters, curtainDeduction
   });
   const fabricDrop = round1(bodyDrop);
   const mainUsage = calculateFabricUsage({
@@ -105,7 +92,6 @@ export function calculateFabricOnly({ order, awning }) {
     fabricJobWidthAdjustmentCm: widthAdjustment,
     fabricJobDropAllowanceCm: bodyAllowance,
     fabricJobValanceExtraCm: valanceExtra,
-    anticaMeasurementMode: anticaMeasurementMode || undefined,
     anticaEntryDiameterMm: roundAnticaEntry?.diameterMm
   };
 
@@ -122,7 +108,7 @@ export function calculateFabricOnly({ order, awning }) {
   };
 }
 
-function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance, parameters, curtainParameters, curtainDeduction, finishedAnticaRoundEntry, roundAnticaEntry }) {
+function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance, curtainParameters, curtainDeduction }) {
   if (model === 'BAMBALINA') return valanceHeight + valanceExtra;
   if (model === 'CAMBIO CORTINA') {
     // El margen de 45 incluye el remate de 5 de la bamba: sin bamba de la misma
@@ -134,20 +120,9 @@ function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanc
       + Math.max(0, curtainAllowance)
       - curtainDeduction;
   }
-  if (model === 'CAMBIO ANTICA') {
-    // Los pedidos históricos mezclan salida base y caída ya confeccionada.
-    // FINISHED evita aplicar dos veces la entrada de tubo y la propia bamba.
-    if (finishedAnticaRoundEntry) return Number(awning.projection) + bodyAllowance;
-    const allowance = roundAnticaEntry
-      ? bodyAllowance
-      : separateValance ? parameters.anticaSeparateValanceAllowanceCm : bodyAllowance;
-    const integratedValance = separateValance
-      ? 0
-      : roundAnticaEntry
-        ? valanceHeight + valanceExtra
-        : valanceHeight + valanceExtra;
-    return Number(awning.projection) + allowance + integratedValance;
-  }
+  // La medida de la tela vieja ya incluye la entrada de tubo y la bamba de la misma
+  // tela; la bamba de otra tela se corta aparte (valanceDrop).
+  if (model === 'CAMBIO ANTICA') return Number(awning.projection) + bodyAllowance;
   if (model === 'CAMBIO TELA') {
     // El remate solo existe si hay bamba. Sumarlo con alto 0 añadía 5 cm a cada
     // cambio de tela sin bambalina: 17 de los 24 desajustes de caída de 2026.

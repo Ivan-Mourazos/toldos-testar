@@ -759,8 +759,7 @@ type FabricJobsProps = {
 function FabricJobsParametersView({ parameters, selectedModel, onUpdate, onReset }: FabricJobsProps) {
   const jobs: { model: FabricJobModel; label: string; note: string }[] = [
     { model: 'CAMBIO TELA', label: 'Cambio de tela', note: 'Margen del cuerpo' },
-    { model: 'ENROLLABLE', label: 'Enrollable', note: 'Entrada de confección' },
-    { model: 'CAMBIO ANTICA', label: 'Cambio Antica', note: 'Aumento con bamba' }
+    { model: 'ENROLLABLE', label: 'Enrollable', note: 'Entrada de confección' }
   ];
   function updateAllowance(model: FabricJobModel, value: number) {
     onUpdate({ dropAllowanceByModel: { ...parameters.dropAllowanceByModel, [model]: value } });
@@ -773,12 +772,11 @@ function FabricJobsParametersView({ parameters, selectedModel, onUpdate, onReset
       description="Comparte los márgenes comunes de confección; cada modelo conserva su caída propia."
       onReset={onReset}
       evidenceLabel="Valores por defecto"
-      evidence="Cambio de tela +40 cm, Enrollable +25 cm, Bambalina +5 cm y Cambio Antica +65 cm; Antica usa +40 cm cuando la bamba va en otra tela. Esa bamba se reserva por separado."
+      evidence="Cambio de tela +40 cm, Enrollable +25 cm y Bambalina +5 cm. Cambio Antica corta la medida de la tela vieja más lo que se sume en la tarjeta. La bamba en otra tela se reserva por separado."
     >
       <ParameterBand number="01" title="Márgenes de confección" description={selectedModel === 'BAMBALINA' ? 'Corte de bambalina: alto terminado + remate. El remate también se comparte con las bambas de los demás trabajos de tela.' : 'Centímetros añadidos a las medidas indicadas. El remate de bambalina se comparte con los demás trabajos de tela.'}>
         <div className="parameter-grid parameter-grid-3">
           {jobs.filter((job) => job.model === selectedModel).map((job) => <NumberField key={job.model} label={`${job.label} · ${job.note} (cm)`} value={parameters.dropAllowanceByModel[job.model]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(job.model, value)} />)}
-          {selectedModel === 'CAMBIO ANTICA' && <NumberField label="Antica con bamba en otra tela (cm)" value={parameters.anticaSeparateValanceAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ anticaSeparateValanceAllowanceCm: value })} />}
           {selectedModel !== 'ENROLLABLE' && <NumberField label="Remate de bambalina (cm)" value={parameters.valanceExtraCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ valanceExtraCm: value })} />}
         </div>
       </ParameterBand>

@@ -257,50 +257,23 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
     expect(pdf.text).toContain('Tubo especial · cambiar presupuesto');
   });
 
-  test.each([
-    {
-      diameter: 33, mode: 'BASE', projection: 105,
-      measureType: 'Salida base', dimensionLabel: 'Salida base'
-    },
-    {
-      diameter: 42, mode: 'FINISHED', projection: 180,
-      measureType: 'Tela terminada', dimensionLabel: 'Caída tela terminada'
-    }
-  ])('aclara el tipo de medida de Cambio Antica Ø$diameter', ({ diameter, mode, projection, measureType, dimensionLabel }) => {
+  test('Cambio Antica enseña la medida de la tela y lo sumado a la caída', async () => {
     const base = reviewOrder().awnings[0];
     const order = reviewOrder({ awnings: [{
-      ...base, model: 'CAMBIO ANTICA', width: 273.5, projection, valanceHeight: 0,
-      anticaVariant: `ENTRADA TUBO Ø${diameter} MM`, anticaMeasurementMode: mode
+      ...base, model: 'CAMBIO ANTICA', width: 273.5, projection: 180, valanceHeight: 0,
+      anticaVariant: 'ENTRADA TUBO Ø42 MM', cambioAnticaExtraCm: 10
     }] });
     const [entry] = buildReviewSheetEntries(order, calculateOrder(order));
 
-    expect(entry.fields).toContainEqual({ label: 'Medida de caída', value: measureType });
-    expect(entry.fields).toContainEqual({ label: dimensionLabel, value: String(projection).replace('.', ',') });
-    expect(entry.fields).toContainEqual({ label: 'Configuración Antica', value: `Entrada tubo Ø${diameter} mm` });
-    expect(entry.fields.some((field) => field.label === 'Frente tela')).toBe(false);
-    expect(entry.fields.some((field) => field.label === 'Salida tela')).toBe(false);
-  });
+    expect(entry.fields).toContainEqual({ label: 'Frente de tela', value: '273,5' });
+    expect(entry.fields).toContainEqual({ label: 'Caída de tela', value: '180' });
+    expect(entry.fields).toContainEqual({ label: 'Sumado a la caída', value: '10' });
+    expect(entry.fields).toContainEqual({ label: 'Configuración Antica', value: 'Entrada tubo Ø42 mm' });
+    expect(entry.fields.some((field) => field.label === 'Medida de caída')).toBe(false);
 
-  test('imprime el tipo y la etiqueta de medida Antica en el PDF de revisión', async () => {
-    const base = reviewOrder().awnings[0];
-    const order = reviewOrder({ awnings: [
-      {
-        ...base, id: 'antica-base', of: '3300033', model: 'CAMBIO ANTICA',
-        projection: 105, valanceHeight: 0, anticaVariant: 'ENTRADA TUBO Ø33 MM',
-        anticaMeasurementMode: 'BASE'
-      },
-      {
-        ...base, id: 'antica-finished', of: '4200042', model: 'CAMBIO ANTICA',
-        projection: 180, valanceHeight: 0, anticaVariant: 'ENTRADA TUBO Ø42 MM',
-        anticaMeasurementMode: 'FINISHED'
-      }
-    ] });
     const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation: calculateOrder(order) }));
-
-    expect(pdf.text).toContain('Medida de caída');
-    expect(pdf.text).toContain('Salida base');
-    expect(pdf.text).toContain('Caída tela terminada');
-    expect(pdf.text).toContain('Tela terminada');
+    expect(pdf.text).toContain('Caída de tela');
+    expect(pdf.text).toContain('Sumado a la caída');
   });
 
   test('imprime dispositivo, sensor y posición del motor en el PDF de Punto Recto', async () => {

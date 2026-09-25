@@ -45,6 +45,6 @@ Estos dos casos estaban contados en Cambio de tela como "+15 escrito a mano" ([c
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
-| Q-CA01 | ¿Qué salida se mide? En AR2600921 la venta dice 379 × 120, pero el libro usa salida 70, y con el +65 da la caída de 158 que se cortó. **Iván (25/09/2026): en un cambio de tela, la salida ya debería ser la medida de la tela.** Por concretar cómo se aplica | La salida que se escriba, más 65 |
-| Q-CA02 | Bamba en otra tela: la plantilla suma +55 al cuerpo en el toldo 01 y +40 en el 02 | +40 (Parámetros) |
+| Q-CA01 | ¿Qué salida se mide? En AR2600921 la venta dice 379 × 120, pero el libro usa salida 70, y con el +65 da la caída de 158 que se cortó. **Resuelta por Iván (25/09/2026): el pedido trae la medida de la tela vieja tal cual (se abre y se mide), y hace falta un campo sencillo para sumar lo que se quiera** | Caída = «Caída de tela» + «Sumar a la caída». Ya no suma 65 ni los aumentos de Ø33/Ø42, y desaparece la elección «medida base / tela terminada» |
+| Q-CA02 | Bamba en otra tela: la plantilla suma +55 al cuerpo en el toldo 01 y +40 en el 02. **Sin objeto desde el 25/09/2026:** el cuerpo es la medida de la tela tal cual; la bamba de otra tela se corta aparte con alto + remate | Nada que sumar |
 | Q-CA03 | AR2502455: caídas de 245 y 275 escritas a mano, unos 45-53 cm más que la fórmula. ¿Se midió de otra forma (por ejemplo, la diagonal del brazo)? **Retirada de la lista el 25/09/2026** (Iván: fuera las dudas sobre pedidos antiguos y las comprobaciones contra los libros; la referencia es la web). | La fórmula (+65) |

@@ -29,7 +29,6 @@ import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes } fro
 import {
   anticaVariants,
   cambioAnticaVariants,
-  normalizeAnticaMeasurementMode,
   normalizeAnticaVariant,
   resolveAnticaRoundEntry
 } from '../../domain/anticaRules.js';
@@ -107,15 +106,12 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const isFullAntica = awning.model === 'ANTICA';
   const normalizedAnticaVariant = normalizeAnticaVariant(awning.anticaVariant);
   const roundAnticaEntry = resolveAnticaRoundEntry(normalizedAnticaVariant);
-  const isCambioAnticaRound = awning.model === 'CAMBIO ANTICA' && Boolean(roundAnticaEntry);
-  const anticaMeasurementMode = isCambioAnticaRound
-    ? normalizeAnticaMeasurementMode(awning.anticaMeasurementMode, normalizedAnticaVariant)
-    : '';
-  const isFinishedAnticaRound = isCambioAnticaRound && anticaMeasurementMode === 'FINISHED';
+  // Cambio Antica: el pedido trae la medida de la tela vieja tal cual (Iván, 25/09/2026).
+  const isCambioAntica = awning.model === 'CAMBIO ANTICA';
   const isFullAnticaRound = isFullAntica && Boolean(roundAnticaEntry);
-  const widthLabel = isCambioAnticaRound ? 'Frente tela terminada' : 'Frente';
-  const projectionLabel = isSelena || isElectra ? 'Caída' : isCambioAnticaRound
-    ? isFinishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
+  const widthLabel = isCambioAntica ? 'Frente de tela' : 'Frente';
+  const projectionLabel = isSelena || isElectra ? 'Caída' : isCambioAntica
+    ? 'Caída de tela'
     : isFullAnticaRound ? 'Salida brazo' : 'Salida';
   const boxDevice = normalizeBoxDevice(awning.device);
   const curtainLikeParameters = isSelena ? parameters.selena : parameters.cortina;
@@ -163,11 +159,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
     valanceHeight: awning.valanceHeight ?? 0,
     separateValance: hasSeparateValance
   });
-  const roundAnticaDefaultAllowance = roundAnticaEntry
-    ? hasSeparateValance
-      ? roundAnticaEntry.cambioSeparateValanceAllowanceCm
-      : roundAnticaEntry.cambioDropAllowanceCm
-    : null;
   const valanceFinish = normalizeValanceFinish(awning, awning.remate);
   const pointRequiredArms = suggestedPuntoRectoArmCount(awning.width, parameters.puntoRecto);
   const monoblockRequiredArms = suggestedMonoblockArmCount(awning.width, awning.projection, parameters.monoblock350);
@@ -398,11 +389,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               ...(simpleFabricJob && !awning.reglasModificadas
                 ? {
                     fabricJobWidthAdjustmentCm: awning.fabricJobWidthAdjustmentCm ?? 0,
-                    fabricJobDropAllowanceCm: isFinishedAnticaRound
-                      ? 0
-                      : roundAnticaDefaultAllowance
-                        ?? awning.fabricJobDropAllowanceCm
-                        ?? resolveFabricJobAllowance(awning.model, hasValance, parameters.fabricJobs),
+                    fabricJobDropAllowanceCm: awning.fabricJobDropAllowanceCm
+                      ?? resolveFabricJobAllowance(awning.model, hasValance, parameters.fabricJobs),
                     fabricJobValanceExtraCm: awning.fabricJobValanceExtraCm ?? parameters.fabricJobs.valanceExtraCm
                   }
                 : {})
@@ -617,8 +605,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 placeholder="Elegir configuración…"
                 onChange={(anticaVariant) => update({
                   anticaVariant: anticaVariant as Awning['anticaVariant'],
-                  anticaMeasurementMode: !isFullAntica && resolveAnticaRoundEntry(anticaVariant) ? 'BASE' : '',
-                  ...(!isFullAntica ? { fabricJobDropAllowanceCm: null } : {}),
                   ...(anticaVariant === 'TUBO 50X30 SIN BAMBA'
                     ? { hasValance: false, valanceHeight: 0, valanceCurve: '', valanceFabric: '', remate: '', remateColor: '', rotValance: '' }
                     : {}),
@@ -627,18 +613,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                     : {})
                 })}
               />
-              {isCambioAnticaRound && (
-                <SegmentedField
-                  label="Medida de caída"
-                  value={anticaMeasurementMode}
-                  options={['BASE', 'FINISHED']}
-                  onChange={(anticaMeasurementMode) => update({
-                    anticaMeasurementMode: anticaMeasurementMode as Awning['anticaMeasurementMode'],
-                    fabricJobDropAllowanceCm: anticaMeasurementMode === 'FINISHED'
-                      ? 0
-                      : roundAnticaDefaultAllowance
-                  })}
-                />
+              {isCambioAntica && (
+                <NumberField label="Sumar a la caída (cm)" value={awning.cambioAnticaExtraCm} step={0.5} onChange={(cambioAnticaExtraCm) => update({ cambioAnticaExtraCm })} />
               )}
               {isFullAntica && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || isFullAnticaRound) && (
                 <NumberField label="Altura soporte-brazo (cm)" missing={isMissing('anticaSupportHeight')} value={awning.anticaSupportHeight} min={0} step={0.1} onChange={(anticaSupportHeight) => update({ anticaSupportHeight })} />
@@ -807,7 +783,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               </>}
               {simpleFabricJob && <>
                 <NumberField label="Ajuste de frente (cm)" value={awning.fabricJobWidthAdjustmentCm} step={0.1} onChange={(fabricJobWidthAdjustmentCm) => update({ fabricJobWidthAdjustmentCm })} />
-                {!standaloneValance && <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />}
+                {!standaloneValance && !isCambioAntica && <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />}
                 {hasValance && <NumberField label="Remate de bamba (cm)" value={awning.fabricJobValanceExtraCm} min={0} step={0.5} onChange={(fabricJobValanceExtraCm) => update({ fabricJobValanceExtraCm })} />}
               </>}
               {(fields.arzua || fields.galicia) && <>

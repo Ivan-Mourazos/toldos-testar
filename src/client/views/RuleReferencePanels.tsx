@@ -6,7 +6,7 @@ import { SelectField } from '../components/SelectField';
 import type { FabricJobParameters } from '../types';
 import { anticaVariants, calculateAnticaBodyDrop } from '../../domain/anticaRules.js';
 import { ANTICA_STEEL } from '../../domain/anticaMaterials.js';
-import { ANTICA_RULES, anticaRoundEntrySpecs, getAnticaDiscounts, getAnticaDropRule } from '../../domain/anticaParameters.js';
+import { ANTICA_RULES, getAnticaDiscounts, getAnticaDropRule } from '../../domain/anticaParameters.js';
 import { HERA_RULES, HERA_FABRIC_ALLOWANCES, HERA_SPECIAL_TUBE_FROM_CM } from '../../domain/heraParameters.js';
 import { defaultIrisParameters, getIrisDiscounts, getIrisFabricDropAllowance, getIrisLimits, irisSubmodels, irisGuideTypes, irisDevices, irisSeriesOf, irisHasCassette } from '../../domain/irisParameters.js';
 
@@ -154,13 +154,11 @@ export function IrisRuleReference() {
 }
 
 export function CambioAnticaRuleReference({ parameters }: { parameters: FabricJobParameters }) {
-  return <Band id="03" title="Aumentos por configuración" description="Cambio de tela Antica. S = salida base y B = alto de bamba; medidas en cm.">
-    <Table label="Aumentos Cambio Antica" columns={['Configuración', 'Misma tela / sin bamba', 'Bamba en otra tela']} rows={[
-      ['Configuraciones no redondas', 'S + ' + number(parameters.dropAllowanceByModel['CAMBIO ANTICA']) + ' + B + ' + number(parameters.valanceExtraCm), 'S + ' + number(parameters.anticaSeparateValanceAllowanceCm)],
-      ...Object.entries(anticaRoundEntrySpecs).map(([variant, rule]) => [controlLabel(variant) + ' · medida base', 'S + ' + number(rule.cambioDropAllowanceCm) + ' + B + ' + number(parameters.valanceExtraCm), 'S + ' + number(rule.cambioSeparateValanceAllowanceCm)]),
-      ['Ø33 / Ø42 · tela terminada', 'Caída indicada, sin aumento adicional', 'Caída indicada, sin aumento adicional']
+  return <Band id="03" title="Caída de tela" description="Cambio de tela Antica. M = medida de la tela vieja, A = lo que se suma en la tarjeta y B = alto de bamba; medidas en cm.">
+    <Table label="Caída Cambio Antica" columns={['Bamba', 'Cuerpo', 'Bamba aparte']} rows={[
+      ['Sin bamba o de la misma tela', 'M + A', '—'],
+      ['En otra tela', 'M + A', 'B + ' + number(parameters.valanceExtraCm)]
     ]} />
-    <p>El modo «tela terminada» ya incluye la entrada de tubo y la bamba. La bamba de otro tejido se corta aparte con B + {number(parameters.valanceExtraCm)} cm. «50×30 sin bamba» no admite B mayor que cero.</p>
-    <p>Las entradas redondas en medida base utilizan sus aumentos específicos, no el margen general. Las excepciones técnicas del pedido pueden cambiar frente, remate y aumento; con tela terminada no se vuelve a sumar el aumento. En las variantes no redondas con bamba separada se aplica el aumento específico de bamba en otra tela.</p>
+    <p>El pedido trae la medida de la tela vieja, tal cual: se abre y se mide, así que ya incluye la entrada de tubo y la bamba de la misma tela. Si hace falta más, se suma en «Sumar a la caída» de la tarjeta. Vale igual para todas las configuraciones; «50×30 sin bamba» no admite bamba.</p>
   </Band>;
 }

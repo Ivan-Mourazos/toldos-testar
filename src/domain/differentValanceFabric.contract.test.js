@@ -109,10 +109,11 @@ const scenarios = [
     width: 365, projection: 250, valanceHeight: 30,
     device: 'MAQ. EXTERIOR', crankHeight: 170
   }),
+  // El pedido trae la medida de la tela vieja tal cual (Iván, 25/09/2026).
   scenario('CAMBIO ANTICA', {
     width: 273.5, projection: 180, valanceHeight: 25,
     anticaVariant: 'TUBO 30X10 CON BAMBA'
-  })
+  }, { separatedDrop: ({ projection }) => Number(projection) })
 ];
 
 const cases = scenarios.flatMap((item) => [1, 2].flatMap((units) => (

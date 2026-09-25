@@ -14,13 +14,13 @@ export const READ_GROUPS: Array<{ id: ReadGroupId; title: string }> = [
 // Las etiquetas tal cual las pinta AwningColumn.
 const byLabel: Record<string, ReadGroupId> = {
   // Medidas (Frente y Salida cambian de nombre en Antica, Selena y Electra)
-  OF: 'medidas', Frente: 'medidas', 'Frente tela terminada': 'medidas',
-  Salida: 'medidas', Caída: 'medidas', 'Caída tela terminada': 'medidas', 'Salida base': 'medidas', 'Salida brazo': 'medidas',
+  OF: 'medidas', Frente: 'medidas', 'Frente tela terminada': 'medidas', 'Frente de tela': 'medidas',
+  Salida: 'medidas', Caída: 'medidas', 'Caída tela terminada': 'medidas', 'Caída de tela': 'medidas', 'Salida base': 'medidas', 'Salida brazo': 'medidas',
   'Bamba (cm)': 'medidas', 'Alto terminado (cm)': 'medidas', 'Altura instalación': 'medidas',
   'Hueco escuadrado': 'medidas', 'Frente superior': 'medidas', 'Salida izquierda': 'medidas', 'Frente inferior': 'medidas',
   'Salida derecha': 'medidas', 'Diagonal 1 (a salida izq.)': 'medidas', 'Diagonal 2 (a salida der.)': 'medidas',
   'Salida ventana': 'medidas', Esquina: 'medidas', 'Suelo-ventana': 'medidas', 'Altura ventana': 'medidas',
-  'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas',
+  'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas', 'Sumar a la caída (cm)': 'medidas', 'Sumado a la caída': 'medidas',
   // Estructura
   Lacado: 'estructura', Variante: 'estructura', 'Configuración de brazos': 'estructura',
   'Terminales · confirmar con taller': 'estructura',
@@ -66,7 +66,7 @@ const byPattern: Array<[RegExp, ReadGroupId]> = [
 // etiqueta. Las que sí («Bamba (cm)») se leen sin repetirla: «Bamba (cm) · 30». La usan los
 // campos al leer y la prueba de paridad.
 const cmLabels = new Set([
-  'Frente', 'Frente tela terminada', 'Salida', 'Caída', 'Caída tela terminada', 'Salida base', 'Salida brazo',
+  'Frente', 'Frente tela terminada', 'Frente de tela', 'Salida', 'Caída', 'Caída tela terminada', 'Caída de tela', 'Salida base', 'Salida brazo',
   'Frente superior', 'Salida izquierda', 'Frente inferior', 'Salida derecha',
   'Diagonal 1 (a salida izq.)', 'Diagonal 2 (a salida der.)', 'Altura instalación',
   'Salida ventana', 'Esquina', 'Suelo-ventana', 'Altura ventana', 'Altura manivela'

@@ -2,7 +2,6 @@ import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { getFieldVisibility, isFabricOnlyModel, isVerticalAwningModel, normalizeValanceFinish } from './modelBehavior.js';
 import {
-  normalizeAnticaMeasurementMode,
   normalizeAnticaVariant,
   resolveAnticaRoundEntry
 } from './anticaRules.js';
@@ -43,19 +42,15 @@ export function buildReviewSheetEntries(order, calculation) {
     const standaloneValance = awning.model === 'BAMBALINA';
     const anticaVariant = normalizeAnticaVariant(awning.anticaVariant);
     const roundAnticaEntry = resolveAnticaRoundEntry(anticaVariant);
-    const cambioAnticaRound = awning.model === 'CAMBIO ANTICA' && Boolean(roundAnticaEntry);
-    const anticaMeasurementMode = cambioAnticaRound
-      ? normalizeAnticaMeasurementMode(awning.anticaMeasurementMode, anticaVariant)
-      : '';
-    const finishedAnticaRound = cambioAnticaRound && anticaMeasurementMode === 'FINISHED';
+    const cambioAntica = awning.model === 'CAMBIO ANTICA';
     const valanceFinish = normalizeValanceFinish(awning, awning.remate || order.remate);
     const cardFields = [];
 
     addField(cardFields, 'OF', awning.of, true);
-    if (fields.dimensions.includes('width')) addField(cardFields, cambioAnticaRound ? 'Frente tela terminada' : 'Frente', measure(awning.width), true);
+    if (fields.dimensions.includes('width')) addField(cardFields, cambioAntica ? 'Frente de tela' : 'Frente', measure(awning.width), true);
     if (fields.dimensions.includes('projection')) {
-      const projectionLabel = cambioAnticaRound
-        ? finishedAnticaRound ? 'Caída tela terminada' : 'Salida base'
+      const projectionLabel = cambioAntica
+        ? 'Caída de tela'
         : awning.model === 'ANTICA' && roundAnticaEntry ? 'Salida brazo' : isVerticalAwningModel(awning.model) ? 'Caída' : 'Salida';
       addField(cardFields, projectionLabel, measure(awning.projection), true);
     }
@@ -122,7 +117,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.tubeLoad) addField(cardFields, 'Tubo de carga', awning.tubeLoad, true);
     if (fields.submodel && !isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);
-    if (cambioAnticaRound) addField(cardFields, 'Medida de caída', anticaMeasurementMode, true);
+    if (cambioAntica && Number(awning.cambioAnticaExtraCm)) addField(cardFields, 'Sumado a la caída', measure(awning.cambioAnticaExtraCm), true);
     if (awning.model === 'ANTICA' && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || roundAnticaEntry)) {
       addField(cardFields, 'Altura soporte-brazo', measure(awning.anticaSupportHeight), true);
     }
