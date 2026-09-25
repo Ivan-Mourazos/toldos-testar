@@ -59,7 +59,7 @@ Consultado en RPS con la fecha de baja (`arzuaAvailability.js`, 23/09/2026):
 - **Perfil EVO 80**: en negro solo existen el de 500 y el de 700; **el de 600 está de baja desde 2023** y la web lo reservaba. Ahora elige entre los largos que existen en ese lacado, y si ninguno de los habituales existe (verde 6005 solo tiene el de 500, pedido 4611) usa el que haya.
 - **Brazos Onyx**: en negro no hay de 175 (salta de 150 a 200). Ahora el toldo sale no válido con el motivo en vez de reservar una referencia inexistente.
 
-Con esto, Arzúa no tiene códigos rotos en blanco ni en negro. En otros lacados quedan 24, casi todos perfiles que no existen en ese color (bronce, gris texturado…). Es un problema transversal, no del modelo (Q-A02).
+Con esto, Arzúa no tiene códigos rotos en blanco ni en negro. En otros lacados quedan 24, casi todos perfiles que no existen en ese color (bronce, gris texturado…). Es un problema transversal, no del modelo (Q-A02). **Resuelto el 25/09/2026 (Iván):** la pieza que no existe en ese color se reserva en blanco para lacarla fuera, con un aviso en la tarjeta ([lacadoFallback.js](../../src/domain/lacadoFallback.js)). Quedan 0.
 
 ## 7. Formulario y PDF (puntos 8 y 9)
 
@@ -86,5 +86,5 @@ Revisado a 1280×720 y a 1600 con el caso AR2603332: válido, sin errores y sin 
 ## 9. Pendiente
 
 - Hecho (25/09/2026): Q-A01 decidida a favor del manual. Las 182 diferencias con los libros quedan explicadas; no hay que tocar las medidas.
-- Lacados bronce y 7022, que venían señalados en la auditoría (parte de Q-A02).
+- Hecho (25/09/2026): lacados bronce y 7022, en blanco para lacar fuera (Q-A02).
 - Hecho: la numeración del despiece ahora es correlativa (antes saltaba del 12 al 21 y dejaba el 4 vacío a motor).

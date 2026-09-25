@@ -50,7 +50,7 @@ La tabla del Monoblock (mínimos, máximos y motor por salida y brazos) está gu
 
 - Brazo Onyx inexistente en ese lacado y salida (o sin brazo suelto con 3 brazos): el toldo no es válido y dice por qué. Así el negro de 150 con 3 brazos ya no reserva `BONYXDNE11150C`, que no existe.
 - EVO 80 y Univers 280 solo en los largos que existen en cada lacado.
-- `pnpm validate:rps-refs`: ninguna referencia rota en blanco ni en negro. En otros lacados quedan 114: los soportes del Monoblock solo existen en unos pocos colores (Q-A02).
+- `pnpm validate:rps-refs`: ninguna referencia rota en blanco ni en negro. En otros lacados quedan 114: los soportes del Monoblock solo existen en unos pocos colores (Q-A02). **Resuelto el 25/09/2026 (Iván):** la pieza que no existe en ese color se reserva en blanco para lacarla fuera, con un aviso en la tarjeta ([lacadoFallback.js](../../src/domain/lacadoFallback.js)). Quedan 4: la barra EVO de 400 en bronce, marrón y gris texturado (tampoco existe en blanco) y en lacado especial; es el largo de barra de Q-A06.
 
 ## 5. Formulario y PDF (puntos 8 y 9)
 

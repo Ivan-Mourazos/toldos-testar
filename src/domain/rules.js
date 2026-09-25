@@ -23,6 +23,7 @@ import { getRequiredDimensions } from './modelBehavior.js';
 import { awningLetter, describeMissing, getMissingFields } from './awningCompleteness.js';
 import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 import { withRpsCodes } from './rpsIrregularCodes.js';
+import { withLacadoFallback } from './lacadoFallback.js';
 
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
@@ -106,6 +107,10 @@ export function calculateOrder(payload) {
     }
     result = applyLegacyRpsFabricReservation({ awning, result });
     result = withRpsCodes(result);
+    // Lacado poco habitual: lo que no existe en ese color va en blanco para lacar fuera.
+    const knownDiagnostics = result.diagnostics?.length || 0;
+    result = withLacadoFallback(result, { awning, order });
+    diagnostics.push(...(result.diagnostics || []).slice(knownDiagnostics));
     // Una sola regla para tarjeta, cálculo y generación. Va después de la reserva
     // legada, que solo se aplica a toldos válidos: un toldo incompleto muestra
     // la misma reserva que tendrá al completarlo, y el error basta para

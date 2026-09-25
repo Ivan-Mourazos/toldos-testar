@@ -42,7 +42,7 @@ El mismo cambio del tubo de enrolle (1 por toldo, no 2) se aplicó al Arzúa: 21
 
 - El EVO 80 se elige entre los largos que existen en cada lacado (`arzuaAvailability.js`): el de 600 negro está de baja desde 2023.
 - Sin brazo Onyx en ese lacado y salida (o sin brazo suelto con 3 brazos), el toldo no es válido y dice por qué.
-- `pnpm validate:rps-refs`: sin códigos rotos en blanco ni en negro (antes, `PEVO80NE11600C` de baja y `BONYXNE11175C` inexistente). En otros lacados quedan 63, casi todos soportes Galicia que solo existen en blanco, negro y marfil (Q-A02).
+- `pnpm validate:rps-refs`: sin códigos rotos en blanco ni en negro (antes, `PEVO80NE11600C` de baja y `BONYXNE11175C` inexistente). En otros lacados quedan 63, casi todos soportes Galicia que solo existen en blanco, negro y marfil (Q-A02). **Resuelto el 25/09/2026 (Iván):** la pieza que no existe en ese color se reserva en blanco para lacarla fuera, con un aviso en la tarjeta ([lacadoFallback.js](../../src/domain/lacadoFallback.js)). Quedan 0.
 
 ## 5. Formulario y PDF (puntos 8 y 9)
 
