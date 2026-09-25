@@ -58,3 +58,17 @@ describe('drawing parameters', () => {
     expect(awning.fabricImage).toBeNull();
   });
 });
+
+describe('la biblioteca de dibujos llega al PDF', () => {
+  it('normalizeOrder conserva los dibujos de Parámetros', async () => {
+    const { normalizeOrder } = await import('./validation.js');
+    const { readFileSync } = await import('node:fs');
+    const image = 'data:image/png;base64,' + readFileSync(new URL('./assets/tgm-logo.png', import.meta.url)).toString('base64');
+    const order = normalizeOrder({
+      orderCode: 'T', awnings: [{ id: 'a', of: '0200001', model: 'BAMBALINA', units: 1, width: 300, valanceHeight: 25 }],
+      parameters: { drawings: { byModel: { BAMBALINA: [{ id: 'g', name: 'General', enabled: true, image, conditions: [] }] } } }
+    });
+    expect(order.parameters.drawings.byModel.BAMBALINA).toHaveLength(1);
+    expect(order.parameters.drawings.byModel.BAMBALINA[0].image).toBeTruthy();
+  });
+});

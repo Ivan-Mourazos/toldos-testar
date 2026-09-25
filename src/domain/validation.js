@@ -1,3 +1,4 @@
+import { normalizeDrawingParameters } from './drawingParameters.js';
 import { normalizeFabricImage } from './fabricImage.js';
 import { normalizeStructureEdit } from './structureEdits.js';
 import { roundQuantity } from './math.js';
@@ -71,7 +72,10 @@ export function normalizeOrder(payload) {
       cortina: normalizeCortinaParameters(payload.parameters?.cortina),
       electra: normalizeElectraParameters(payload.parameters?.electra),
       selena: normalizeSelenaParameters(payload.parameters?.selena),
-      cambioCortina: normalizeCambioCortinaParameters(payload.parameters?.cambioCortina)
+      cambioCortina: normalizeCambioCortinaParameters(payload.parameters?.cambioCortina),
+      // Biblioteca de dibujos de Parámetros: sin esto el servidor la perdía al normalizar
+      // y ningún dibujo de la biblioteca llegaba al PDF (25/09/2026).
+      drawings: normalizeDrawingParameters(payload.parameters?.drawings)
     },
     awnings: awnings.map((awning, index) => normalizeAwning(awning, index, payload))
   };
