@@ -100,11 +100,11 @@ describe('OrderHeader · propuestas de tela, accesibilidad y lectura (revisión 
     expect((markup.match(/aria-pressed="false"/g) || [])).toHaveLength(PROPOSAL.options.length);
   });
 
-  it('en modo lectura los botones de propuesta salen desactivados', () => {
+  // Desde el 25/09/2026 el pedido abierto solo enseña la tela y sus observaciones.
+  it('en modo lectura no salen las propuestas de tela', () => {
     const markup = render(AUTOFILL, noop, true);
-    const buttons = markup.match(/<button[^>]*class="order-fabric-proposal-option"[^>]*>/g) || [];
-    expect(buttons).toHaveLength(PROPOSAL.options.length);
-    expect(buttons.every((button) => button.includes('disabled'))).toBe(true);
+    expect(markup).not.toContain('order-fabric-proposal-option');
+    expect(markup).toContain('order-header-read-line');
   });
 
   it('fuera del modo lectura los botones de propuesta están activos', () => {

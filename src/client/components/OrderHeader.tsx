@@ -6,6 +6,7 @@ import { TextField } from './TextField';
 import { FabricCombobox } from './FabricCombobox';
 import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
+import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
 
 type Props = {
   orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string;
@@ -44,24 +45,33 @@ export function OrderHeader(props: Props) {
     setChosen({ autofill: props.autofill, byProposal: { ...chosenByProposal, [index]: selection } });
   }
 
+  // En el pedido abierto, pedido, cliente y fecha ya salen junto al título: aquí solo
+  // queda la tela y sus observaciones, en una línea (Iván, 25/09/2026).
+  if (props.readOnly) {
+    return (
+      <section className="order-header panel is-readonly order-header-compact" aria-readonly>
+        <p className="order-header-read-line">
+          <span className="read-label">Tela</span>
+          <strong>{props.sameFabric ? (props.fabric ? fabricSelectionLabel(props.fabric) : '—') : 'Tela por toldo'}</strong>
+        </p>
+        <ReadModeContext.Provider value>
+          <ObservationLines label="Observaciones de tela del pedido" value={props.notes} onChange={props.onNotesChange} />
+        </ReadModeContext.Provider>
+      </section>
+    );
+  }
+
   return (
     <section className={`order-header panel${props.readOnly ? ' is-readonly' : ''}`} aria-readonly={props.readOnly || undefined}>
       <div className="order-header-group order-header-general">
         <h3>Datos del pedido</h3>
-        {/* En lectura, una línea como la ficha de los toldos: sin cajas de formulario. */}
-        {props.readOnly ? (
-          <p className="order-header-read">
-            <strong>{props.orderCode || '—'}</strong>
-            <span>{props.customer || 'Sin cliente'}</span>
-            <span>{props.orderDate ? props.orderDate.split('-').reverse().join('/') : 'Sin fecha'}</span>
-          </p>
-        ) : <div className="order-header-grid">
+        <div className="order-header-grid">
           <TextField label="Pedido" value={props.orderCode} onChange={(v) => props.set({ orderCode: v })} onBlur={props.onOrderCodeBlur} placeholder="AR26xxxxx" />
           <TextField label="Cliente" value={props.customer} onChange={(v) => props.set({ customer: v })} />
           <label className="field"><span>Fecha</span>
             <input type="date" value={props.orderDate} onChange={(e) => props.set({ orderDate: e.target.value })} />
           </label>
-        </div>}
+        </div>
         {!props.readOnly && <div className="order-autofill-action">
           <button type="button" className="order-autofill-button" disabled={props.autofillLoading || !props.orderCode.trim()} onClick={props.onAutofill}>
             {props.autofillLoading ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <DatabaseZap aria-hidden="true" />}

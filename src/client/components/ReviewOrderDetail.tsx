@@ -3,10 +3,8 @@ import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreads
 import type { Calculation, ReviewPackage, RuleParameters } from '../types';
 import { OrderView } from '../views/OrderView';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
-import { ReviewChecklist } from './ReviewChecklist';
 import { controlLabel } from './controlLabels';
 import { canGenerateReview } from '../generatePermission';
-import { requestAwningFocus } from '../awningFocus';
 
 const noop = () => undefined;
 
@@ -93,6 +91,7 @@ export function ReviewOrderDetail({
           <h2>{review.orderCode}</h2>
           <small>{[
             review.summary.customer || 'Sin cliente',
+            review.order.orderDate && `pedido del ${review.order.orderDate.split('-').reverse().join('/')}`,
             review.order.technician && `autor ${controlLabel(review.order.technician)}`,
             review.updatedAt && `guardado ${formatDateTime(review.updatedAt)}`
           ].filter(Boolean).join(' · ')}</small>
@@ -141,7 +140,6 @@ export function ReviewOrderDetail({
         </div>
       )}
 
-      <ReviewChecklist order={order} diagnostics={diagnostics} onFocusAwning={requestAwningFocus} />
 
       {/* Sin fieldset desactivado: dejaría sin usar el índice y las flechas de los bloques.
           Cada tarjeta y la cabecera se desactivan por su cuenta en modo lectura. */}

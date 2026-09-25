@@ -233,3 +233,14 @@ body, .app-shell { background: var(--bg); }
 /* Los botones de icono (candado, duplicar, eliminar, cerrar…) con el mismo relieve y el
    mismo fondo que los botones con texto como «Despiece y dibujo» (Iván, 25/09/2026). */
 .icon-button:not(.active) { background: #fbfcfb; border-color: var(--border-strong); color: var(--text); }
+/* Pedido abierto más compacto: la tela y sus observaciones en una línea; «Qué revisar»
+   con filas de una línea; botones de la tarjeta a la misma altura (25/09/2026). */
+.order-header.order-header-compact { align-items: baseline; display: flex; flex-wrap: wrap; gap: 6px 24px; padding: 8px 12px; }
+.order-header-read-line { align-items: baseline; display: flex; gap: 10px; margin: 0; }
+.order-header-read-line .read-label { color: var(--accent-text); font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.order-header-compact .read-note { align-items: baseline; display: flex; flex: 1; gap: 10px; margin: 0; min-width: 260px; }
+.order-header-compact .read-note p { margin: 0; }
+.review-checklist-row { padding: 4px 11px; }
+.review-checklist-model { align-items: baseline; display: flex; gap: 8px; }
+.card-actions > button { height: 32px; min-height: 32px; }
+.card-actions > .icon-button { width: 32px; }

@@ -186,11 +186,11 @@ async function run1280() {
     assert.notEqual(readCardDisabled, null, 'la tarjeta del pedido abierto debe tener el atributo disabled');
     console.log('OK: la tarjeta del pedido abierto tiene el atributo disabled');
 
-    // «Qué revisar», fila E: la fila salta al bloque de la E y la deja a la vista.
-    await page.locator('.review-checklist-row', { has: page.locator('.review-checklist-letter', { hasText: /^E$/ }) }).click();
-    await waitLabel(page, labelFor(Math.floor(4 / readPerPage), readPerPage, 5), 'pedido abierto tras «Qué revisar» E');
-    await waitInsideTrack(page, '.review-readonly-order [data-awning-letter="E"]', 'pedido abierto tras «Qué revisar» E');
-    console.log(`OK: «Qué revisar» E lleva al bloque "${labelFor(Math.floor(4 / readPerPage), readPerPage, 5)}" con la E a la vista`);
+    // Índice del pedido abierto, letra E (desde el 25/09/2026 no hay «Qué revisar»): la fila salta al bloque de la E.
+    await page.locator('.review-readonly-order .awning-index-item', { has: page.locator('strong', { hasText: /^E$/ }) }).click();
+    await waitLabel(page, labelFor(Math.floor(4 / readPerPage), readPerPage, 5), 'pedido abierto tras el índice E');
+    await waitInsideTrack(page, '.review-readonly-order [data-awning-letter="E"]', 'pedido abierto tras el índice E');
+    console.log(`OK: el índice E lleva al bloque "${labelFor(Math.floor(4 / readPerPage), readPerPage, 5)}" con la E a la vista`);
 
     const relevant = errors.filter((error) => !/status of (400|409)|WebSocket|\[vite\]/.test(error));
     assert.deepEqual(relevant, [], `sin errores de consola/página relevantes (obtenido: ${JSON.stringify(relevant)})`);
