@@ -12,6 +12,14 @@ Resultado de la primera entrega del 14/09: inventario, contraste de cinco maestr
 
 Evidencia copiada a output/modelos/antica/fuentes; originales en la unidad Y:, compartida como \\192.168.0.128\Oftecnica\Oficina Tecnica. Las copias y pruebas están ignoradas por Git. El JSON enlazado conserva rutas originales, SHA-256, fórmulas y consumos seleccionados para reanudar sin depender de la conversación.
 
+**Actualización 25/09/2026 (Claude):** `validate:reserva ANTICA` medía casi solo el proyecto especial de Madrid de 2024 (brazos BANTICA de 44 cm, soportes propios, tubo Screen Ø43). Ahora lo excluye (`condicionDeOF` en scripts/lib/reservation-gap.mjs) y quedan 39 OF del Antica habitual desde 2024 (17 desde 2025). Cruzadas con los libros (`tmp/antica/cruce.mjs`, `tmp/antica/por-of.mjs`):
+
+- **Varilla negra VARILLAVAINANEG5: frente − 9 cm por toldo**, con máquina y con motor (246 → 2,37 m; 488 → 4,79 m; 656 → 6,48 m; 212 + 227 → 4,21 m; 430 + 422 + 640 → 14,65 m). La web no la reservaba; ahora sí. Sale de la lista de preguntas (antes la 20).
+- **Kit de motor:** los cinco Antica a motor llevan Sunilus 15/17 y soporte Hipro; con P701, rueda RUEDAMOTHI68 y corona CORONACENMEC70 (como Ámbar y Diana); con P801, RUEDAMOT801MEC y CORONALT5078 (como Punto Recto). La web reservaba ADAPTADORESTUBO70 / CORONA LT5070 y RUEDAMOT78 / CORONALT6078, que no se consumen. Corregido. La potencia 35/17 con tres o cuatro brazos se mantiene hasta que conteste el encargado (pregunta 15): los datos solo tienen un toldo ancho (4,85 m), con 15/17.
+- **Casquillo de máquina:** eje 50 en 19 OF, eje 63 en 13, mezclado en todos los años. Sigue abierto (pregunta 12, igual que Q-PR02).
+- **Manivela:** en 10 OF de dos toldos se gastó una sola. Añadido a la pregunta 14; la web sigue con una por toldo.
+- Lo que aún falta en la reserva depende del taller: cincado exterior (EXT_CINCAR, pregunta 23), escuadras de ángulo 40×40 (pregunta 4) y el casquillo de eje 50.
+
 ## 2. Identidad
 
 | Dato | Valor y evidencia |

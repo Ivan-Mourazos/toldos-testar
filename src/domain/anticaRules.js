@@ -172,9 +172,10 @@ function buildMaterials(context) {
 
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
+    const kit = motorKit(rollSystem);
     materials.push(
-      line(rollSystem === 'P801' ? 'RUEDAMOT78' : 'ADAPTADORESTUBO70', units, rollSystem === 'P801' ? 'RUEDA MOTRIZ Ø 78' : 'RUEDA MOTRIZ LT50'),
-      line(rollSystem === 'P801' ? 'CORONALT6078' : 'CORONA LT5070', units, rollSystem === 'P801' ? 'CORONA LT 60 ADAPTADA Ø 78' : 'CORONA LT50 ADAPTADA Ø70'),
+      line(kit.wheel.code, units, kit.wheel.name),
+      line(kit.crown.code, units, kit.crown.name),
       line(`SUNILUSIO${motorPower.split('/')[0]}//17`, units, `MOTOR SOMFY SUNILUS ${motorPower} IO`),
       line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
       { ...line(remote.code, units, remote.description), aggregation: 'max' }
@@ -191,6 +192,9 @@ function buildMaterials(context) {
   for (const part of context.steelParts) {
     materials.push({ ...line(part.reference, part.reservationQuantity, part.name), unitCode: part.unitCode });
   }
+  // Una varilla por toldo de frente − 9 cm: es lo que consume el taller en las 39 OF
+  // del Antica habitual de 2024-2026, con máquina y con motor.
+  materials.push(line('VARILLAVAINANEG5', round2(Math.max(0, Number(awning.width) - 9) / 100 * units), 'VARILLA VAINA NEGRA 4,5MM'));
   materials.push(line(fabric.code, mainFabricMl, fabric.description));
   if (valanceFabric && valanceFabricMl > 0) materials.push(line(valanceFabric.code, valanceFabricMl, `${valanceFabric.description} · BAMBA`));
   const wall = wallMaterial(awning.wallType, units);
@@ -214,8 +218,9 @@ function buildDespiece(context) {
   rows.push(...context.steelParts.filter(part => part.num !== 5));
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
-    push(8, rollSystem === 'P801' ? 'RUEDA MOTRIZ Ø 78' : 'RUEDA MOTRIZ LT50', rollSystem === 'P801' ? 'RUEDAMOT78' : 'ADAPTADORESTUBO70', units);
-    push(9, rollSystem === 'P801' ? 'CORONA LT 60 ADAPTADA Ø 78' : 'CORONA LT50 ADAPTADA Ø70', rollSystem === 'P801' ? 'CORONALT6078' : 'CORONA LT5070', units);
+    const kit = motorKit(rollSystem);
+    push(8, kit.wheel.name, kit.wheel.code, units);
+    push(9, kit.crown.name, kit.crown.code, units);
     push(10, `MOTOR SOMFY SUNILUS ${motorPower} IO`, `SUNILUSIO${motorPower.split('/')[0]}//17`, units);
     push(11, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
     push(21, remote.description, remote.code, units);
@@ -234,6 +239,14 @@ function buildDespiece(context) {
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * units } : null;
   return { rows, anchoring };
+}
+
+// Rueda y corona que se consumen en los Antica a motor: con P701, las del Hipro Ø68
+// (OF 0205590, 0208096, 0223086); con P801, las mecanizadas del P801, como Punto Recto.
+function motorKit(rollSystem) {
+  return rollSystem === 'P801'
+    ? { wheel: { code: 'RUEDAMOT801MEC', name: 'RUEDA MOTRIZ A P-801 MECANIZADA' }, crown: { code: 'CORONALT5078', name: 'CORONA ADAPTADA LT50 TUBO Ø78' } }
+    : { wheel: { code: 'RUEDAMOTHI68', name: 'RUEDA MOTRIZ CENTRADA HIPRO Ø68' }, crown: { code: 'CORONACENMEC70', name: 'CORONA CENTRADA MECANIZADA TUBO Ø70' } };
 }
 
 function loadPieceName(variant) {

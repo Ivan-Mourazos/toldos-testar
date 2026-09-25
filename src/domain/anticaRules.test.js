@@ -130,11 +130,41 @@ describe('ANTICA contra los cuatro libros históricos', () => {
       valid: true, fabricWidth: 317, fabricDrop: 237.4, fabricMl: 14.25,
       rollTubeLength: 318, structureLength: 317, motorPower: '15/17'
     });
+    // Kit de motor del tubo Ø70 que se consume en los Antica a motor (OF 0205590,
+    // 0208096 y 0223086): rueda Hipro Ø68 y corona centrada mecanizada.
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'ADAPTADORESTUBO70', quantity: 2 }),
-      expect.objectContaining({ code: 'CORONA LT5070', quantity: 2 }),
-      expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 2 })
+      expect.objectContaining({ code: 'RUEDAMOTHI68', quantity: 2 }),
+      expect.objectContaining({ code: 'CORONACENMEC70', quantity: 2 }),
+      expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 2 }),
+      expect.objectContaining({ code: 'SOPORTEUNVHIPRO', quantity: 2 })
     ]));
+    const codes = ofBlock.materials.map((item) => item.code);
+    expect(codes).not.toContain('ADAPTADORESTUBO70');
+    expect(codes).not.toContain('CORONA LT5070');
+    expect(ofBlock.despiece.rows).toContainEqual(expect.objectContaining({ reference: 'RUEDAMOTHI68' }));
+    expect(ofBlock.despiece.rows).toContainEqual(expect.objectContaining({ reference: 'CORONACENMEC70' }));
+  });
+
+  test('a motor con tubo P801 lleva la rueda y la corona del P801 que se consumen', () => {
+    const ofBlock = calculateOrder(payload({
+      width: 500, projection: 100, anticaVariant: 'TUBO 30X10 CON BAMBA', device: 'MOTOR', machineSide: 'M.F IZQ'
+    })).ofs[0];
+
+    expect(ofBlock.calculation).toMatchObject({ valid: true, rollSystem: 'P801' });
+    const codes = ofBlock.materials.map((item) => item.code);
+    expect(codes).toEqual(expect.arrayContaining(['RUEDAMOT801MEC', 'CORONALT5078', 'SOPORTEUNVHIPRO']));
+    expect(codes).not.toContain('RUEDAMOT78');
+    expect(codes).not.toContain('CORONALT6078');
+  });
+
+  // Consumo real de 2024-2026: una varilla negra por toldo de frente − 9 cm
+  // (246 → 2,37 m; 488 → 4,79 m; 212 + 227 → 4,21 m), con máquina y con motor.
+  test.each([
+    ['MAQUINA', 246, 1, 2.37],
+    ['MOTOR', 328, 2, 6.38]
+  ])('%s reserva varilla negra de frente − 9 cm por toldo', (device, width, units, ml) => {
+    const ofBlock = calculateOrder(payload({ width, units, device, machineSide: 'M.F IZQ' })).ofs[0];
+    expect(ofBlock.materials).toContainEqual(expect.objectContaining({ code: 'VARILLAVAINANEG5', quantity: ml }));
   });
 
   test('fijo de 3 agujeros usa la altura soporte-brazo del libro 2026', () => {

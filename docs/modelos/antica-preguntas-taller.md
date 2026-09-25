@@ -4,9 +4,9 @@
 
 Con estas respuestas, la web podrá preparar el Antica completo: qué piezas lleva cada toldo, cuántas y de qué medida. Contesta por número debajo de cada pregunta; si algo no se fabrica, dilo. Medidas en cm salvo que se diga otra cosa.
 
-Ya está claro: el Antica es de fabricación propia (TGM); el soporte del enrollamiento es el de Cortina de tres agujeros; los brazos se hacen en el taller con pletina de 30×10, y la carga habitual es tubo de 50×30. La manivela puede ir de otro color que la estructura.
+Ya está claro: el Antica es de fabricación propia (TGM); el soporte del enrollamiento es el de Cortina de tres agujeros; los brazos se hacen en el taller con pletina de 30×10, y la carga habitual es tubo de 50×30. La manivela puede ir de otro color que la estructura. Por lo que se ha gastado en 2024-2026, la web ya reserva la varilla negra (frente − 9 cm por toldo) y, a motor, la rueda y la corona que se montan (Hipro Ø68 con tubo P701; las del P801 con tubo P801).
 
-25/09/2026: preguntas reescritas en lenguaje claro, sin casos de pedidos antiguos ni del Excel. Sale la 25 (el proyecto especial de Madrid de 2024), porque era un encargo puntual: si vuelve algo así, entra por la 24. Las demás conservan su número.
+25/09/2026: preguntas reescritas en lenguaje claro, sin casos de pedidos antiguos ni del Excel. Sale la 25 (el proyecto especial de Madrid de 2024), porque era un encargo puntual: si vuelve algo así, entra por la 24. Las demás conservan su número. Sale también la 20 (varilla): el consumo real ya la contesta.
 
 ## Materiales y fabricación
 
@@ -128,7 +128,7 @@ Por qué importa: cambian el tubo, sus casquillos y el kit de motor.
 
 **¿Qué casquillo va con cada máquina y colocación: eje 50 o eje 63?**
 
-Hoy la web: pone el de eje 63 (de Ø70 o Ø78, según el tubo). Es la misma duda que en otros modelos (Q-PR02 de la lista de dudas).
+Hoy la web: pone el de eje 63 (de Ø70 o Ø78, según el tubo). En los Antica de 2024-2026 se gastó el de eje 50 en 19 OF y el de eje 63 en 13, sin que dependa del año ni del tubo. Es la misma duda que en otros modelos (Q-PR02 de la lista de dudas).
 
 Por qué importa: para reservar el casquillo que encaja.
 
@@ -146,21 +146,21 @@ Por qué importa: para reservar y cortar el tubo y los remates.
 
 ### 14. Máquinas y manivelas
 
-**¿Qué máquina se monta hoy y cuándo otra? ¿De qué largos y colores son las manivelas, y va una por toldo o se puede compartir?**
+**¿Qué máquina se monta hoy y cuándo otra? ¿De qué largos y colores son las manivelas? Cuando un pedido lleva dos toldos, ¿se entrega una manivela para los dos?**
 
-Hoy la web: máquina MB-11 y una manivela por toldo, del largo según la altura y del color que se elija.
+Hoy la web: máquina MB-11 y una manivela por toldo, del largo según la altura y del color que se elija. En 10 OF de dos toldos se gastó una sola manivela.
 
 Por qué importa: para reservar la máquina y la manivela que se entregan.
 
 **Respuesta de taller:**
 
-### 15. Motores y mandos
+### 15. Potencia del motor
 
-**¿Qué motor lleva según la medida y la tela, y con qué rueda, corona y soporte? ¿Cuántos mandos y sensores van: por toldo, por OF o por pedido?**
+**¿Con tres o cuatro brazos hace falta el motor 35/17, o basta el 15/17? ¿Depende del frente, la salida o la tela?**
 
-Hoy la web: motor 15/17 con dos brazos y 35/17 con tres o cuatro; mando y sensor, los que se elijan en la tarjeta.
+Hoy la web: motor 15/17 con dos brazos y 35/17 con tres o cuatro. En los cinco Antica a motor de 2024-2026 se montó el 15/17, también en uno de 4,85 m.
 
-Por qué importa: para reservar un motor con fuerza suficiente y los mandos justos.
+Por qué importa: para reservar un motor con fuerza suficiente, sin pasarse.
 
 **Respuesta de taller:**
 
@@ -203,16 +203,6 @@ Por qué importa: para elegir bien la variante en la tarjeta y cortar la tela ju
 Hoy la web: costura 2,5, margen 6,5 y bamba aparte + 5, para todas las telas.
 
 Por qué importa: puede cambiar el número de paños y la tela que se reserva.
-
-**Respuesta de taller:**
-
-### 20. Varilla y otros consumibles
-
-**¿Qué varilla (blanca o negra), hilo u otros consumibles lleva cada confección, cuántas entradas y de qué largo? ¿Cuáles hay que reservar?**
-
-Hoy la web: no reserva varilla en el Antica. Lo que se gasta suele rondar el frente menos 9 cm por toldo.
-
-Por qué importa: se gasta en cada toldo y hoy no se reserva.
 
 **Respuesta de taller:**
 

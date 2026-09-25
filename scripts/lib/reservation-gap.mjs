@@ -32,9 +32,17 @@ export const articuloDeVenta = {
 const conSoporteGalicia = `EXISTS (SELECT 1 FROM dbo.CPRImputationMaterialMO g
   JOIN dbo.STKArticle ga ON ga.IDArticle = g.IDArticle AND ga.CodCompany = g.CodCompany
   WHERE g.IDManufacturingOrder = mo.IDManufacturingOrder AND ga.CodArticle LIKE 'SOPARTGL%')`;
+// El proyecto especial de Madrid (2024, más de 600 toldos con brazos BANTICA de 44 cm,
+// soportes propios y tubo Screen Ø43) se vendió como ANTICA pero no es el modelo habitual:
+// sin excluirlo tapa las 39 OF del Antica normal.
+const proyectoAnticaMadrid = `EXISTS (SELECT 1 FROM dbo.CPRImputationMaterialMO m
+  JOIN dbo.STKArticle ma ON ma.IDArticle = m.IDArticle AND ma.CodCompany = m.CodCompany
+  WHERE m.IDManufacturingOrder = mo.IDManufacturingOrder
+    AND (ma.CodArticle LIKE 'BANTICA%' OR ma.CodArticle LIKE 'SOP_ANTICA%' OR ma.CodArticle LIKE 'SOPO_ANTICA%' OR ma.CodArticle LIKE 'SCRTUBO43%'))`;
 export const condicionDeOF = {
   'ARZUA PRO': `NOT ${conSoporteGalicia}`,
-  GALICIA: conSoporteGalicia
+  GALICIA: conSoporteGalicia,
+  ANTICA: `NOT ${proyectoAnticaMadrid}`
 };
 
 // Consumo real que no debe reservar el planteamiento, con el motivo.
