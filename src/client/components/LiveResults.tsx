@@ -33,7 +33,7 @@ export function LiveResults({ calculation, state, awnings }: Props) {
   const warningCount = orderDiagnostics.length + awningSummaries.reduce((total, item) => total + item.count, 0);
 
   return (
-    <section className="panel">
+    <section className="planning-summary-panel">
       <details className="planning-summary">
         {/* Un <h2> dentro de <summary> perdería su papel de encabezado (el summary es un
             botón); el título va en un <span> con el mismo aspecto. El chevrón y «Ver/Ocultar

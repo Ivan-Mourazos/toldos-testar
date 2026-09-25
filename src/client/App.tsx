@@ -420,7 +420,6 @@ export default function App() {
       <section className="app-workspace">
         <header className="topbar">
           <div className="workspace-heading">
-            <span>Oficina técnica</span>
             <h2>{viewTitle}</h2>
           </div>
           {activeTab === 'order' && (

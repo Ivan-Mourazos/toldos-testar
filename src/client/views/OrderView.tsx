@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Layers3, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState, OrderAutofill, RuleParameters } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
 import { AwningColumn } from '../components/AwningColumn';
@@ -137,8 +138,6 @@ export function OrderView({
             sameFabric={sameFabric}
             notes={notes}
             onNotesChange={setNotes}
-            onAddAwning={() => setPickerType('FULL_AWNING')}
-            onAddFabricWork={() => setPickerType('FABRIC_ONLY')}
             onAutofill={onAutofill}
             autofillLoading={autofillLoading}
             autofill={autofill}
@@ -150,15 +149,26 @@ export function OrderView({
         </fieldset>
       </section>
 
-      {awnings.length > 0 && <section className="awnings-section order-elements-section">
+      {(awnings.length > 0 || !readOnly) && <section className="awnings-section order-elements-section">
         <div className="section-header">
           <div>
             <h2>Elementos del pedido</h2>
-            <span>{awnings.length} {awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…</span>
+            <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…` : 'Añade el primer toldo o trabajo de tela.'}</span>
           </div>
+          {/* Antes eran una fila entera en la cabecera del pedido (espaciado, 25/09/2026). */}
+          {!readOnly && (
+            <div className="order-add-actions">
+              <button type="button" className="ghost-button" onClick={() => setPickerType('FULL_AWNING')}>
+                <Layers3 aria-hidden="true" />Añadir toldo
+              </button>
+              <button type="button" className="ghost-button" onClick={() => setPickerType('FABRIC_ONLY')}>
+                <Scissors aria-hidden="true" />Añadir trabajo de tela
+              </button>
+            </div>
+          )}
         </div>
 
-        <AwningBlocks
+        {awnings.length > 0 && <AwningBlocks
           awnings={awnings}
           reading={readOnly}
           statuses={statuses}
@@ -181,7 +191,7 @@ export function OrderView({
               onOpenPanel={setPanelAwningId}
             />
           )}
-        />
+        />}
       </section>}
 
       {!readOnly && awnings.length > 0 && <LiveResults calculation={calculation} state={calculationState} awnings={awnings} />}

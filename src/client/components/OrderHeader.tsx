@@ -1,5 +1,5 @@
 import React from 'react';
-import { DatabaseZap, Layers3, LoaderCircle, Plus, Scissors } from 'lucide-react';
+import { DatabaseZap, LoaderCircle } from 'lucide-react';
 import type { Awning, FabricProposal, OrderAutofill } from '../types';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { TextField } from './TextField';
@@ -12,8 +12,6 @@ type Props = {
   fabric: string; sameFabric: boolean;
   notes: string; onNotesChange: (value: string) => void;
   set: (patch: Record<string, string | boolean>) => void;
-  onAddAwning: () => void;
-  onAddFabricWork: () => void;
   onAutofill: () => void;
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
@@ -94,22 +92,6 @@ export function OrderHeader(props: Props) {
           </section>
         </div>
       </div>
-
-      {!props.readOnly && <div className="order-header-group order-header-actions">
-        <h3>Nuevo elemento</h3>
-        <div className="order-add-actions">
-          <button type="button" className="work-type-option" onClick={props.onAddAwning}>
-            <Layers3 aria-hidden="true" />
-            <span><strong>Añadir toldo</strong><small>Elegir modelo</small></span>
-            <Plus aria-hidden="true" />
-          </button>
-          <button type="button" className="work-type-option work-type-option-fabric" onClick={props.onAddFabricWork}>
-            <Scissors aria-hidden="true" />
-            <span><strong>Añadir trabajo de tela</strong><small>Cambio, cortina, enrollable, bamba o Antica</small></span>
-            <Plus aria-hidden="true" />
-          </button>
-        </div>
-      </div>}
 
       {props.autofill && (
         <aside className="order-autofill-summary" aria-live="polite">

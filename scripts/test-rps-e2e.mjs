@@ -169,7 +169,7 @@ async function verifyBrowserCase(browserInstance, url) {
   await chooseSelect(awning, 'Colocación', 'Frontal');
   await chooseSelect(awning, 'Sensor', 'Sin sensor');
 
-  await page.locator('footer.awning-status', { hasText: 'VÁLIDO' }).waitFor({ timeout: 15_000 });
+  await page.locator('.awning-header-status', { hasText: 'VÁLIDO' }).waitFor({ timeout: 15_000 });
   // Rediseño 3: Planteamientos es una línea resumen plegada («… · 9 ml») y la tela
   // calculada del toldo está en su panel «Despiece y dibujo», pestaña Despiece.
   await page.waitForFunction(

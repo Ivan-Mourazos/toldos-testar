@@ -34,7 +34,6 @@ function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as 
     fabric: '', sameFabric: true,
     notes: '', onNotesChange: noop,
     set: noop,
-    onAddAwning: noop, onAddFabricWork: noop,
     onAutofill: noop, autofillLoading: false,
     autofill,
     awnings: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],

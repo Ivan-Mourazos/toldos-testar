@@ -821,7 +821,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <React.Fragment key={item.field}> · <button type="button" className="awning-status-link" onClick={(event) => focusMissingField(event.currentTarget, item)}>{item.label}</button></React.Fragment>
           ))}
         </footer>
-      ) : <footer className={`awning-status ${statusClass}`}>{status}</footer>)}
+      // Válido ya lo dice la etiqueta de arriba: el pie solo sale si hay algo que atender.
+      ) : status === 'VÁLIDO' ? null : <footer className={`awning-status ${statusClass}`}>{status}</footer>)}
       {!readOnly && diagnostics.length > 0 && (
         <ul className="awning-diagnostics" aria-label="Avisos del cálculo">
           {diagnostics.map((item, index) => (

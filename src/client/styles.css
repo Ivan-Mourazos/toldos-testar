@@ -5358,3 +5358,19 @@ fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
 .awning-panel-drawing .pdf-carousel-stage { height: clamp(340px, 52vh, 520px); }
 .awning-panel-drawing-state { align-items: center; background: #fff; border: 1px dashed var(--border-strong); border-radius: 6px; color: var(--text-muted); display: flex; font-size: 13px; justify-content: center; margin: 0; min-height: 160px; }
 .awning-panel-drawing-state.is-error { color: var(--danger); }
+
+/* Espaciado compacto (Iván, 25/09/2026: «demasiado espaciado»). La cabecera de cada
+   pestaña pierde el rótulo y el aire de más; los botones de añadir van junto a
+   «Elementos del pedido»; Planteamientos es una sola caja; «Qué revisar» pone el título
+   y el filtro en la misma línea. */
+.topbar { min-height: 0; padding: 6px 16px 8px; }
+.workspace-heading h2 { font-size: 20px; }
+.order-elements-section > .section-header { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+.order-add-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.order-add-actions .ghost-button { min-height: 32px; }
+.planning-summary-panel { margin: 10px 0 0; }
+.planning-summary-panel > .planning-summary { background: var(--surface); margin: 0; }
+.review-checklist { display: grid; grid-template-columns: auto 1fr; }
+.review-checklist > h3 { border-bottom: 1px solid #e3ebe8; grid-column: 1; }
+.review-checklist > .review-checklist-toggle { border-bottom: 1px solid #e3ebe8; grid-column: 2; justify-content: flex-end; }
+.review-checklist > :not(h3):not(.review-checklist-toggle) { grid-column: 1 / -1; }
