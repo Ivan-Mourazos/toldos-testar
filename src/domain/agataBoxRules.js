@@ -5,7 +5,7 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
-import { galiciaSingleArmExists, onyxArmLines } from './galiciaSupportPieces.js';
+import { galiciaSingleArmExists, looseSideLetter, looseSideName, onyxArmLines } from './galiciaSupportPieces.js';
 import { onyxArmExists } from './arzuaAvailability.js';
 import { agataLacadoIssue } from './boxAvailability.js';
 import {
@@ -182,7 +182,7 @@ function buildMaterials(context) {
   const varillaMl = Math.ceil(Number(context.lengths.loadBarLength) || 0) / 100;
   const materials = [
     line(colored('SOBMODUL', suffix), armSets * units, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX'),
-    armCount % 2 ? line(colored('SOBDMODUL', suffix), units, 'SOPORTE BRAZO DERECHO ÁGATA BOX') : null,
+    armCount % 2 ? line(colored(`SOB${looseSideLetter(awning.looseSide) || 'D'}MODUL`, suffix), units, looseSideName('SOPORTE BRAZO ÁGATA BOX', looseSideLetter(awning.looseSide) || 'D', looseSideLetter(awning.looseSide))) : null,
     line(colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX'),
     line(`TURA80HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P801'),
     line(tipBushing('P801').code, units, tipBushing('P801').description),
@@ -190,7 +190,7 @@ function buildMaterials(context) {
     line(colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units, 'TAPAS BARRA DE CARGA ÁGATA BOX'),
     line(colored(boxCapPrefix(submodel), suffix), units, 'TAPAS ÁGATA BOX'),
     line(coloredStock('TUBHI442', suffix, profileStockLength), units, 'BARRA CUADRADA 40x40x2'),
-    ...onyxArmLines(suffix, awning.projection, armCount, units).map((item) => line(item.code, item.quantity, item.description)),
+    ...onyxArmLines(suffix, awning.projection, armCount, units, awning.looseSide).map((item) => line(item.code, item.quantity, item.description)),
     line(colored('TERMIMODUL', suffix), armSets * units, 'JUEGO TERMINAL ÁGATA BOX'),
     // Varillas al largo de la barra: con la variante abierta la blanca va doble.
     line('VARILLAVAINANEG5', round1(varillaMl * units), 'VARILLA VAINA NEGRA 4,5MM'),
@@ -247,7 +247,7 @@ function buildDespiece(context) {
   // Numeración correlativa y las mismas piezas que la reserva.
   const push = (_num, name, reference, rowUnits, length = null) => rows.push({ num: rows.length + 1, name, reference: reference || null, units: rowUnits, length });
   push(1, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX', colored('SOBMODUL', suffix), Math.floor(armCount / 2) * units);
-  if (armCount % 2) push(1, 'SOPORTE BRAZO DERECHO ÁGATA BOX', colored('SOBDMODUL', suffix), units);
+  if (armCount % 2) push(1, looseSideName('SOPORTE BRAZO ÁGATA BOX', looseSideLetter(awning.looseSide) || 'D', looseSideLetter(awning.looseSide)), colored(`SOB${looseSideLetter(awning.looseSide) || 'D'}MODUL`, suffix), units);
   push(1, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX', colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units);
   push(2, 'TUBO DE ENROLLE P801', `TURA80HG${rollStockLength}C`, units, lengths.rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
@@ -256,7 +256,7 @@ function buildDespiece(context) {
   push(6, 'BARRA CUADRADA 40x40x2', coloredStock('TUBHI442', suffix, profileStockLength), units, lengths.squareBarLength);
   push(5, 'TAPAS BARRA DE CARGA ÁGATA BOX', colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units);
   push(5, 'TAPAS ÁGATA BOX', colored(boxCapPrefix(submodel), suffix), units);
-  onyxArmLines(suffix, awning.projection, armCount, units).forEach((item) => push(7, item.description, item.code, item.quantity, awning.projection));
+  onyxArmLines(suffix, awning.projection, armCount, units, awning.looseSide).forEach((item) => push(7, item.description, item.code, item.quantity, awning.projection));
   push(7, 'JUEGO TERMINAL ÁGATA BOX', colored('TERMIMODUL', suffix), Math.floor(armCount / 2) * units);
   if (device === 'MOTOR') {
     push(9, 'RUEDA MOTRIZ Ø78', 'RUEDAMOT78', units);

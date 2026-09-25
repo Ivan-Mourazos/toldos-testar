@@ -189,7 +189,7 @@ function monoblockPieces(context) {
   const evo = tubeLoad === 'TUBO DE CARGA EVO 80';
   const varillaMl = Math.ceil(Number(loadBarLength) || 0) / 100;
   const pieces = [
-    ...monoblockArmSupportLines(suffix, armCount, units),
+    ...monoblockArmSupportLines(suffix, armCount, units, awning.looseSide),
     ...groupBars(rollBars).map(({ length, count }) => ({ code: `TURA80HG${length}C`, quantity: count * units, description: 'TUBO DE ENROLLE P801', length: rollTubeLength })),
     { code: tipBushing('P801').code, quantity: units, description: tipBushing('P801').description },
     ...groupBars(loadBars).map(({ length, count }) => evo
@@ -198,7 +198,7 @@ function monoblockPieces(context) {
     evo
       ? { code: `TAPONEVO8${plasticCapSuffix(lacado)}`, quantity: units, description: 'KIT TAPONES EVO 80' }
       : { code: `TAPOPLUN280${plasticCapSuffix(lacado)}`, quantity: units, description: 'KIT TAPONES UNIVERS 280' },
-    ...monoblockArmLines(suffix, awning.projection, armCount, units),
+    ...monoblockArmLines(suffix, awning.projection, armCount, units, awning.looseSide),
     { code: `TERMINEVO${suffix}`, quantity: Math.floor(armCount / 2) * units, description: 'JGO TERMINAL INFERIOR EVO 70-80' },
     ...(armCount % 2 ? [{ code: `TERMINEVOUND${suffix}`, quantity: units, description: 'TERMINAL INFERIOR INDIFERENTE EVO 70-80' }] : []),
     { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM', despiece: false },

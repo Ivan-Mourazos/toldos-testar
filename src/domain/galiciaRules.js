@@ -240,7 +240,7 @@ function galiciaPieces({ awning, lacado, colorSuffix, tubeLoad, device, armCount
   // entra el doble, como en el Arzúa (mismo tubo y misma barra).
   const varillaMl = Math.ceil(Number(structureLength) || 0) / 100;
   const pieces = [
-    ...galiciaSupportLines(colorSuffix, armCount, units),
+    ...galiciaSupportLines(colorSuffix, armCount, units, awning.looseSide),
     ...groupBars(rollBars).map(({ length, count }) => ({ code: refRollTube(length), quantity: count * units, description: 'TUBO DE ENROLLE P801', length: rollTubeLength })),
     { code: tipBushing('P801').code, quantity: units, description: 'CASQUILLO PUNTA CON EJE Ø78' },
     ...groupBars(loadBars).map(({ length, count }) => (tubeLoad === 'TUBO DE CARGA EVO 80'
@@ -249,7 +249,7 @@ function galiciaPieces({ awning, lacado, colorSuffix, tubeLoad, device, armCount
     tubeLoad === 'TUBO DE CARGA EVO 80'
       ? { code: refEvoCaps(lacado), quantity: units, description: 'KIT TAPONES EVO 80' }
       : { code: refUniversCaps(lacado), quantity: units, description: 'KIT TAPONES UNIVERS 280' },
-    ...galiciaArmLines(colorSuffix, awning.projection, armCount, units).map((line) => ({ ...line, length: awning.projection })),
+    ...galiciaArmLines(colorSuffix, awning.projection, armCount, units, awning.looseSide).map((line) => ({ ...line, length: awning.projection })),
     { code: refTerminals(colorSuffix), quantity: units, description: 'JGO TERMINAL INFERIOR EVO 70-80' },
     ...(armCount === 3 ? [{ code: refMiddleTerminal(colorSuffix), quantity: units, description: 'TERMINAL INFERIOR INDIFERENTE EVO 70-80' }] : []),
     { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM', despiece: false },

@@ -24,7 +24,7 @@ Método: consumo real por OF (`tmp/cofres/por-of.mjs`), contraste pieza a pieza 
 | Coral | Faltaban 6 (motor 55/17, kit de motor, varillas) y sobraban 7 | Nada |
 | Cuarzo | Faltaban 8 (soporte, motor y su kit Ø70, casquillo de máquina Ø70, varilla) | Solo el casquillo de eje 63 (Q-PR02) |
 | Ámbar | Faltaban 6 (kit de montaje, varillas, kit de motor Ø70, casquillo Ø70) y sobraban 7 | Nada |
-| Ágata | Faltaban 14 y sobraban 12 | Quedan patines, regleta y pasadores (Q-AG01), el motor 85/17 (Q-AG02) y el soporte suelto izquierdo (Q-A04: sin lado fijo, dato opcional del pedido; Iván, 25/09/2026) |
+| Ágata | Faltaban 14 y sobraban 12 | Quedan patines, regleta y pasadores (Q-AG01), el motor 85/17 (Q-AG02) y el soporte suelto izquierdo (Q-A04: sin lado fijo; desde el 25/09/2026 se elige en la tarjeta o lo decide el taller) |
 
 Reglas comunes que salen del consumo:
 

@@ -35,6 +35,10 @@ for (const model of fullAwningModelNames) {
   }
 }
 
+// Las piezas sueltas del lado que no sale en las muestras (el pedido puede elegir el
+// izquierdo o el derecho, Q-A04).
+for (const prefix of ['BONYXD', 'BONYXI', 'SOPARTGLD', 'SOPARTGLI', 'SOPBRAMONOBD', 'SOPBRAMONOBI', 'SOBDMODUL', 'SOBIMODUL']) prefixes.add(prefix);
+
 const pool = await new sql.ConnectionPool({
   server: config.db.server, port: config.db.port, user: config.db.user, password: config.db.password,
   database: config.db.database, options: { encrypt: false, trustServerCertificate: true },

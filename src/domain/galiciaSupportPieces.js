@@ -27,8 +27,23 @@ const singleArmsBySuffix = Object.freeze({
 // Soporte Galicia suelto: solo existe en blanco y en negro.
 const singleSupportSides = Object.freeze({ BL16: ['D', 'I'], NE11: ['D', 'I'] });
 
-// Se reserva el derecho y, si no existe en ese lacado y salida, el izquierdo. Un lacado
-// sin ninguno conserva el derecho para que lo detecte `pnpm validate:rps-refs`.
+// Lado del suelto: el que diga el pedido («IZQUIERDO» / «DERECHO»). Iván, 25/09/2026
+// (Q-A04): no es de un lado concreto; si no se indica, lo decide el taller y se reserva
+// uno cualquiera. Si el elegido no existe en ese color, la reserva lo pide en blanco
+// para lacar (lacadoFallback.js).
+export function looseSideLetter(value) {
+  const clean = String(value || '').toUpperCase();
+  if (clean.startsWith('IZQ')) return 'I';
+  if (clean.startsWith('DER')) return 'D';
+  return '';
+}
+
+export function looseSideName(piece, side, chosen) {
+  return chosen ? `${piece} ${side === 'D' ? 'DERECHO' : 'IZQUIERDO'}` : `${piece} SUELTO · LADO A ELEGIR EN TALLER`;
+}
+
+// Sin lado elegido se reserva el derecho y, si no existe en ese lacado y salida, el
+// izquierdo. Un lacado sin ninguno conserva el derecho para que lo detecte `pnpm validate:rps-refs`.
 function singleArmSide(colorSuffix, projection) {
   const sides = singleArmsBySuffix[String(colorSuffix || '')];
   if (!sides) return 'D';
@@ -43,31 +58,33 @@ export function galiciaSingleArmExists(colorSuffix, projection) {
   return sides ? [...sides.D, ...sides.I].includes(Number(projection)) : true;
 }
 
-function singleSupportSide(colorSuffix) {
-  return singleSupportSides[String(colorSuffix || '')]?.[0] || 'D';
+function singleSupportSide(colorSuffix, chosen = '') {
+  return chosen || singleSupportSides[String(colorSuffix || '')]?.[0] || 'D';
 }
 
 // Brazos Onyx por juegos: dos brazos son un juego y un número impar añade uno suelto.
 // Lo usan Galicia (2 o 3) y Monoblock 350 (2, 3 o 4: cuatro son dos juegos).
-export function onyxArmLines(colorSuffix, projection, armCount, units) {
+export function onyxArmLines(colorSuffix, projection, armCount, units, looseSide = '') {
   const arms = Number(armCount) || 2;
   const lines = [{ code: `BONYX${colorSuffix}${projection}C`, quantity: Math.floor(arms / 2) * units, description: 'JUEGO DE BRAZOS ONYX' }];
   if (arms % 2 === 1) {
-    const side = singleArmSide(colorSuffix, projection);
-    lines.push({ code: `BONYX${side}${colorSuffix}${projection}C`, quantity: units, description: `BRAZO ONYX ${side === 'D' ? 'DERECHO' : 'IZQUIERDO'}` });
+    const chosen = looseSideLetter(looseSide);
+    const side = chosen || singleArmSide(colorSuffix, projection);
+    lines.push({ code: `BONYX${side}${colorSuffix}${projection}C`, quantity: units, description: looseSideName('BRAZO ONYX', side, chosen) });
   }
   return lines;
 }
 
-export function galiciaArmLines(colorSuffix, projection, armCount, units) {
-  return onyxArmLines(colorSuffix, projection, armCount, units);
+export function galiciaArmLines(colorSuffix, projection, armCount, units, looseSide = '') {
+  return onyxArmLines(colorSuffix, projection, armCount, units, looseSide);
 }
 
-export function galiciaSupportLines(colorSuffix, armCount, units) {
+export function galiciaSupportLines(colorSuffix, armCount, units, looseSide = '') {
   const lines = [{ code: `SOPARTGL${colorSuffix}`, quantity: units, description: 'JUEGO SOPORTE GALICIA' }];
   if (Number(armCount) === 3) {
-    const side = singleSupportSide(colorSuffix);
-    lines.push({ code: `SOPARTGL${side}${colorSuffix}`, quantity: units, description: `SOPORTE GALICIA ${side === 'D' ? 'DERECHO' : 'IZQUIERDO'}` });
+    const chosen = looseSideLetter(looseSide);
+    const side = singleSupportSide(colorSuffix, chosen);
+    lines.push({ code: `SOPARTGL${side}${colorSuffix}`, quantity: units, description: looseSideName('SOPORTE GALICIA', side, chosen) });
   }
   return lines;
 }

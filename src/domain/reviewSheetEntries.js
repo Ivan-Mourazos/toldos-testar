@@ -155,6 +155,10 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.placement) addField(cardFields, 'Colocación', awning.placement, true);
     if (fields.wallType) addField(cardFields, 'Tipo de pared', awning.wallType || 'NO INDICADA', true);
     if (fields.arms) addField(cardFields, 'Nº de brazos', awning.armCount, true);
+    // Q-A04: con brazos impares, el lado del suelto es opcional; vacío, lo elige el taller.
+    if (['GALICIA', 'MONOBLOCK 350', 'AGATA BOX'].includes(awning.model) && Number(ofBlock?.calculation?.armCount ?? awning.armCount) % 2 === 1) {
+      addField(cardFields, 'Lado del brazo suelto', awning.looseSide || 'LO DECIDE EL TALLER', true);
+    }
 
     return {
       awning, letter: awningLetter(index), tag: `${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`,

@@ -138,6 +138,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const agataDevice = boxDevice;
   const agataVariant = normalizeAgataSubmodel(awning.submodel) || 'OPEN';
   const agataArmCount = Number(awning.armCount) || suggestedAgataArmCount(awning.width);
+  // Con brazos impares va un brazo y un soporte sueltos: su lado es opcional (Q-A04).
+  const looseSideArms = awning.model === 'GALICIA' ? Number(awning.armCount) || suggestedGaliciaArmCount(awning.width, parameters.galicia)
+    : isMonoblock350 ? monoblockArmCount : isAgataBox ? agataArmCount : 0;
   const agataMinimumLine = agataDevice
     ? resolveAgataMinimumLine(awning.projection, agataDevice, agataArmCount, parameters.agataBox)
     : null;
@@ -683,6 +686,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {fields.placement && <SelectField label="Colocación" missing={isMissing('placement')} value={awning.placement} options={formOptions.colocaciones} placeholder="Elegir…" onChange={(placement) => update({ placement })} />}
               {fields.wallType && <SelectField label="Tipo de pared" value={awning.wallType} options={formOptions.tiposPared.map((p) => p.pared)} placeholder="No indicada" allowEmpty emptyLabel="No indicada" onChange={(wallType) => update({ wallType })} />}
             </div>
+          )}
+          {looseSideArms % 2 === 1 && (
+            <div className="awning-compact-choice"><SelectField label="Lado del brazo suelto" value={awning.looseSide} options={['IZQUIERDO', 'DERECHO']} placeholder="Lo decide el taller" allowEmpty emptyLabel="Lo decide el taller" onChange={(looseSide) => update({ looseSide: looseSide as Awning['looseSide'] })} /></div>
           )}
           {fields.arms && !fields.galicia && (
             <div className="awning-compact-choice"><SegmentedField label={isPuntoRecto ? `Nº brazos · mínimo ${pointRequiredArms}` : isMonoblock350 ? `Nº brazos · automático ${monoblockRequiredArms}` : isAgataBox ? `Nº brazos · automático ${suggestedAgataArmCount(awning.width)}` : 'Nº brazos'} value={awning.armCount == null ? '' : String(awning.armCount)} options={fields.armOptions.map(String)} onChange={(v) => update({ armCount: Number(v) })} /></div>

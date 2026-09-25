@@ -1,6 +1,6 @@
 // Piezas del Monoblock 350 contrastadas con el consumo real de 59 OF de MONOB desde
 // 2024 y el maestro de RPS con InactiveDate (23/09/2026).
-import { onyxArmLines } from './galiciaSupportPieces.js';
+import { looseSideLetter, looseSideName, onyxArmLines } from './galiciaSupportPieces.js';
 
 // En RPS los soportes van en JUEGO (dos piezas) y hay sueltos para completar un
 // número impar. Solo existen en estos lacados; en el resto lo detecta
@@ -18,16 +18,18 @@ export const squareBarLengths = Object.freeze({ BLANCO: [400, 500, 600, 700], NE
 // Tubo de enrolle P801: largos activos.
 export const rollTubeLengths = Object.freeze([400, 500, 600, 700, 800]);
 
-export function monoblockArmLines(suffix, projection, armCount, units) {
-  return onyxArmLines(suffix, projection, armCount, units).map((line) => ({ ...line, length: projection }));
+export function monoblockArmLines(suffix, projection, armCount, units, looseSide = '') {
+  return onyxArmLines(suffix, projection, armCount, units, looseSide).map((line) => ({ ...line, length: projection }));
 }
 
 // Soporte de brazo: uno por brazo, en juegos de dos y un suelto si son tres.
-export function monoblockArmSupportLines(suffix, armCount, units) {
+export function monoblockArmSupportLines(suffix, armCount, units, looseSide = '') {
   const arms = Number(armCount) || 2;
   const lines = [{ code: `SOPBRAMONOB${suffix}`, quantity: Math.floor(arms / 2) * units, description: 'JUEGO SOPORTE BRAZO MONOBLOC 350' }];
   if (arms % 2 === 1) {
-    lines.push({ code: `SOPBRAMONOBD${suffix}`, quantity: units, description: 'SOPORTE BRAZO MONOBLOC 350 DERECHO', missingSingle: !armSupportSingles.includes(suffix) });
+    const chosen = looseSideLetter(looseSide);
+    const side = chosen || 'D';
+    lines.push({ code: `SOPBRAMONOB${side}${suffix}`, quantity: units, description: looseSideName('SOPORTE BRAZO MONOBLOC 350', side, chosen), missingSingle: !armSupportSingles.includes(suffix) });
   }
   return lines;
 }
