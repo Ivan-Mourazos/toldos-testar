@@ -1,16 +1,27 @@
 export const monoblock350EstablishedProjections = [150, 175, 200, 225, 250, 275, 300, 325, 350];
 
+// Mínimos y máximos del catálogo MONOBLOC-350 actual de Llaza, con brazos Onyx
+// (intranet, 22/09/2026): es el documento más reciente del modelo y el que manda
+// (Iván, 25/09/2026, Q-M01). Frente al manual ART 350 de 2016 solo cambian los de tres
+// brazos: mínimos desde 2,00 de salida y máximo 8,25 con 3,25 y 3,50.
 const minimumWidths = {
   2: [212, 237, 262, 287, 312, 337, 362, 387, 412],
-  3: [307, 345, 382, 429, 457, 495, 532, 570, 607],
+  3: [307, 345, 383, 421, 459, 497, 535, 573, 611],
   4: [404, 454, 504, 554, 604, 654, 704, 754, 804]
 };
 
 const maximumWidths = {
   2: [600, 600, 600, 600, 600, 600, 600, 550, 550],
-  3: [900, 900, 900, 900, 900, 900, 900, 775, 775],
+  3: [900, 900, 900, 900, 900, 900, 900, 825, 825],
   4: [1200, 1200, 1200, 1200, 1200, 1200, 1200, 1100, 1100]
 };
+
+// Los del manual de 2016, que la web usaba hasta el 25/09/2026: si siguen guardados en
+// el servidor, se migran a los del catálogo.
+export const monoblock350Manual2016ThreeArms = Object.freeze({
+  minimum: [307, 345, 382, 429, 457, 495, 532, 570, 607],
+  maximum: [900, 900, 900, 900, 900, 900, 900, 775, 775]
+});
 
 const motorTorqueTube80 = {
   2: [40, 40, 40, 50, 50, 50, 50, 50, 50],
@@ -56,7 +67,7 @@ export const monoblock350ManualSpec = {
   inclinationDegrees: { wall: [0, 90], ceiling: [0, 90] },
   maximumWidthsByProjectionCm: [
     { projectionCm: 300, values: { 2: 600, 3: 900, 4: 1200 } },
-    { projectionCm: 350, values: { 2: 550, 3: 775, 4: 1100 } }
+    { projectionCm: 350, values: { 2: 550, 3: 825, 4: 1100 } }
   ],
   minimumWidthsByProjectionCm: monoblock350EstablishedProjections.map((projectionCm, index) => ({
     projectionCm,

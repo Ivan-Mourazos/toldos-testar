@@ -22,8 +22,8 @@
 | Cortes con máquina: tubo, lona, EVO, barra 40×40 | 132 / 142 / 122 / 10 mm | — | Igual |
 | Cortes con motor Ø60 a tubo Ø80 | 120 / 130 / 115 / 10 mm | — | Igual |
 | Línea mínima, 2 y 4 brazos | 212 … 412 y 404 … 804 | Igual | Igual |
-| Línea mínima, 3 brazos (salida 2,00 a 3,50) | 382, 429, 457, 495, 532, 570, 607 | 383, 421, 459, 497, 535, 573, 611 | La del manual (Q-M01) |
-| Línea máxima con 3,50 de salida y 3 brazos | 7,75 | 8,25 | 7,75 (Q-M01) |
+| Línea mínima, 3 brazos (salida 2,00 a 3,50) | 382, 429, 457, 495, 532, 570, 607 | 383, 421, 459, 497, 535, 573, 611 | **La del catálogo** desde el 25/09/2026 (Q-M01) |
+| Línea máxima con 3,25 y 3,50 de salida y 3 brazos | 7,75 | 8,25 | **8,25** desde el 25/09/2026 (Q-M01) |
 | Motor | Par por salida (40 a 100 Nm) | "A partir de 2 brazos o 3,00 m, motor" | El que se consume (apartado 3) |
 
 La tabla del Monoblock (mínimos, máximos y motor por salida y brazos) está guardada en los parámetros comunes del servidor, así que cambiar los mínimos no llegaría a producción sin migrarlos: por eso Q-M01 se decide antes de tocarla.
@@ -70,7 +70,7 @@ A 1280×720 y 1600, con AR2603393 (OF 0230266: 695 × 275, 3 brazos, techo, máq
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
-| Q-M01 | **Resuelta (Iván, 25/09/2026): el manual más reciente del modelo.** Cambian los de 3 brazos y el máximo con 3,50 (7,75 o 8,25) | Hoy, los del manual de 2016. Pendiente: localizar el manual más reciente de Llaza, aplicar sus valores y migrar los parámetros guardados en el servidor |
+| Q-M01 | **Resuelta (Iván, 25/09/2026): el manual más reciente del modelo.** Cambian los de 3 brazos y el máximo con 3,50 (7,75 o 8,25) | Hecho: el documento más reciente del modelo es el catálogo MONOBLOC-350 actual (Onyx, intranet 22/09/2026); en Oficina Técnica solo está el manual de 2016. Mínimos y máximos de tres brazos del catálogo; los del manual guardados en el servidor se migran solos |
 | Q-M02 | **Resuelta (Iván, 25/09/2026): como dice el manual.** Con 4 brazos se consumió el 70/17 (2 OF) y el manual pide 85-100 Nm | 55/17, 70/17 y 85/17: ya es lo del manual |
 | Q-M03 | Frentes de 720 a 725: el almacén usó una barra de 700 aunque el corte pasa de 700. ¿Hasta dónde vale una sola? Por encima, ¿cómo se empalma? Iván (25/09/2026): revisar cómo se hizo en pedidos pasados; si no se aclara, pasa al taller | Una hasta 725; después, barras iguales |
 | Q-M04 | **Resuelta (Iván, 25/09/2026):** la barra Univers se descuenta 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Hecho: descuento de la EVO − 1 cm (también en Parámetros y en la excepción técnica) |

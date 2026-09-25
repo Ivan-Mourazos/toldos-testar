@@ -1,5 +1,6 @@
 import {
   manualCommercialMotor,
+  monoblock350Manual2016ThreeArms,
   monoblock350EstablishedProjections,
   monoblock350ManualRules,
   monoblock350ManualSpec
@@ -118,19 +119,24 @@ function normalizeRules(input, defaults) {
   return defaults.map((defaultRow) => {
     const row = Array.isArray(input) ? input.find((item) => Number(item?.projection) === defaultRow.projection) : null;
     const legacyRow = legacyRules.find((item) => item.projection === defaultRow.projection);
+    const index = monoblock350EstablishedProjections.indexOf(defaultRow.projection);
+    // Tres brazos: además de la versión antigua, los del manual de 2016 pasan a los del catálogo.
+    const from2016 = (arms, field, value) => (arms === 3
+      ? migrateLegacyNumber(value, monoblock350Manual2016ThreeArms[field][index], defaultRow.values[arms][field])
+      : value);
     return {
       projection: defaultRow.projection,
       values: Object.fromEntries([2, 3, 4].map((arms) => [arms, {
-        minimum: migrateLegacyNumber(
+        minimum: from2016(arms, 'minimum', migrateLegacyNumber(
           row?.values?.[arms]?.minimum,
           legacyRow.values[arms].minimum,
           defaultRow.values[arms].minimum
-        ),
-        maximum: migrateLegacyNumber(
+        )),
+        maximum: from2016(arms, 'maximum', migrateLegacyNumber(
           row?.values?.[arms]?.maximum,
           legacyRow.values[arms].maximum,
           defaultRow.values[arms].maximum
-        ),
+        )),
         motorTorqueNm: positive(row?.values?.[arms]?.motorTorqueNm, defaultRow.values[arms].motorTorqueNm),
         motorPower: migrateLegacyMotor(
           migrateLegacyMotor(row?.values?.[arms]?.motorPower, legacyRow.values[arms].motorPower, defaultRow.values[arms].motorPower),

@@ -673,7 +673,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onRes
         <ParameterNote>La barra Univers 280 se descuenta {MONOBLOCK_UNIVERS_LESS_CM} cm menos que la EVO 80, porque la EVO lleva tapas más grandes.</ParameterNote>
       </ParameterBand>
 
-      <ParameterBand number="03" title="Rangos por salida y brazos" description="Frentes mínimos, máximos y motor automático.">
+      <ParameterBand number="03" title="Rangos por salida y brazos" description="Frentes mínimos, máximos y motor automático, del catálogo MONOBLOC-350 actual de Llaza (brazos Onyx), que es el documento más reciente del modelo.">
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines monoblock-ranges-table"><thead><tr><th>Salida</th>{[2, 3, 4].map((arms) => <th key={arms}>{arms} brazos · mín/máx · motor</th>)}</tr></thead>
           <tbody>{parameters.dimensionalRules.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{([2, 3, 4] as const).map((arms) => <td key={arms}><div className="parameter-inline-fields"><input aria-label={`MONOBLOCK ${row.projection} ${arms} mínimo`} type="number" min="1" value={row.values[arms].minimum} onChange={(event) => updateRule(row.projection, arms, 'minimum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} máximo`} type="number" min="1" value={row.values[arms].maximum} onChange={(event) => updateRule(row.projection, arms, 'maximum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} motor`} value={row.values[arms].motorPower} onChange={(event) => updateRule(row.projection, arms, 'motorPower', event.target.value)} /></div></td>)}</tr>)}</tbody>
         </table></div>

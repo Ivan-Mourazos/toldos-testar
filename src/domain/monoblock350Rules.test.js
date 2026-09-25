@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
+import { normalizeMonoblock350Parameters } from './monoblock350Parameters.js';
 
 function awning(patch = {}) {
   return {
@@ -19,11 +20,34 @@ function order(awningPatch = {}, orderPatch = {}) {
   });
 }
 
+describe('MONOBLOCK 350 · catálogo Onyx actual (Q-M01)', () => {
+  test('los mínimos y máximos de tres brazos del manual de 2016 guardados en el servidor pasan a los del catálogo', () => {
+    const stored = [150, 175, 200, 225, 250, 275, 300, 325, 350].map((projection, index) => ({
+      projection,
+      values: {
+        2: { minimum: [212, 237, 262, 287, 312, 337, 362, 387, 412][index], maximum: index > 6 ? 550 : 600, motorPower: '55/17' },
+        3: { minimum: [307, 345, 382, 429, 457, 495, 532, 570, 607][index], maximum: index > 6 ? 775 : 900, motorPower: '70/17' },
+        4: { minimum: [404, 454, 504, 554, 604, 654, 704, 754, 804][index], maximum: index > 6 ? 1100 : 1200, motorPower: '85/17' }
+      }
+    }));
+    const rules = normalizeMonoblock350Parameters({ dimensionalRules: stored }).dimensionalRules;
+    expect(rules.map((row) => row.values[3].minimum)).toEqual([307, 345, 383, 421, 459, 497, 535, 573, 611]);
+    expect(rules.map((row) => row.values[3].maximum)).toEqual([900, 900, 900, 900, 900, 900, 900, 825, 825]);
+    expect(rules.map((row) => row.values[2].minimum)).toEqual([212, 237, 262, 287, 312, 337, 362, 387, 412]);
+  });
+
+  test('un valor cambiado a mano en Parámetros se respeta', () => {
+    const rules = normalizeMonoblock350Parameters({ dimensionalRules: [{ projection: 275, values: { 3: { minimum: 500, maximum: 880 } } }] }).dimensionalRules;
+    expect(rules.find((row) => row.projection === 275).values[3]).toMatchObject({ minimum: 500, maximum: 880 });
+  });
+});
+
 describe('MONOBLOCK 350 contra hoja MON.350 y RPS', () => {
   test('AR2603393: máquina, tres brazos y colocación a techo', () => {
     const ofBlock = order().ofs[0];
     expect(ofBlock.calculation).toMatchObject({
-      valid: true, minimumLine: 495, maximumLine: 900,
+      // Mínimo del catálogo Onyx actual (Q-M01, 25/09/2026): 4,97; el manual de 2016 decía 4,95.
+      valid: true, minimumLine: 497, maximumLine: 900,
       armCount: 3, requiredArmCount: 3, supportCount: 8, curronCount: 1,
       fabricWidth: 680.8, fabricDrop: 345, fabricPanels: 6, fabricMl: 20.7,
       rollTubeLength: 681.8, structureLength: 682.8, squareBarLength: 694, stockLength: 700
