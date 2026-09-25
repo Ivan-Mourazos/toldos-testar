@@ -98,7 +98,7 @@ export async function buildOrderPlanteamientoPdf({ order: fullOrder, calculation
         while (remaining) {
           doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
           drawFabricHeader(doc, { order, margin: 24, pageW: doc.page.width });
-          remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true);
+          remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true, FABRIC_PAGE_TEXT);
           drawPageFooter(doc, 24, doc.page.width, doc.page.height, 'Planteamiento de telas · Observaciones (continuación)');
         }
       }
@@ -434,8 +434,8 @@ function drawAnchoring(doc, x, y, w, anchoring) {
 
 // Mide el texto con la misma fuente y anchura con las que se imprime. Devuelve
 // íntegro el resto para la página siguiente, sin elipsis ni pérdida de palabras.
-function splitNotesToFit(doc, notes, width, height) {
-  doc.font(fonts.regular).fontSize(6.5);
+function splitNotesToFit(doc, notes, width, height, size = 6.5) {
+  doc.font(fonts.regular).fontSize(size);
   const fits = (text) => doc.heightOfString(text, { width }) <= height - 1;
   if (fits(notes)) return [notes, ''];
   let low = 1;
@@ -450,18 +450,22 @@ function splitNotesToFit(doc, notes, width, height) {
   return [notes.slice(0, cut).trimEnd(), notes.slice(cut).trimStart()];
 }
 
-function drawNotesBox(doc, x, y, w, bottom, notes, continuation = false) {
+function drawNotesBox(doc, x, y, w, bottom, notes, continuation = false, size = 6.5) {
   const text = String(notes ?? '').trim();
   roundedBox(doc, x, y, w, bottom - y, 2, text ? colors.yellowSoft : colors.paper, text ? colors.yellow : colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5)
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(size)
     .text(continuation ? 'Observaciones (continuación)' : 'OBSERVACIONES', x + 4, y + 4);
+  const textTop = 6 + size * 1.5;
   const textW = w - 8;
-  const textH = bottom - y - 20;
-  const [visible, remaining] = splitNotesToFit(doc, text || '-', textW, textH);
-  doc.fillColor(colors.ink).font(fonts.regular).fontSize(6.5)
-    .text(visible, x + 4, y + 16, { width: textW, height: textH });
+  const textH = bottom - y - textTop - 4;
+  const [visible, remaining] = splitNotesToFit(doc, text || '-', textW, textH, size);
+  doc.fillColor(colors.ink).font(fonts.regular).fontSize(size)
+    .text(visible, x + 4, y + textTop, { width: textW, height: textH });
   return text ? remaining : '';
 }
+
+// Tamaño de letra de las observaciones en la página de telas.
+const FABRIC_PAGE_TEXT = 9;
 
 function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals }) {
   const pageW = doc.page.width;
@@ -485,17 +489,19 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
 
   const diagramX = margin + 12;
   const diagramW = 242;
-  drawCell(doc, diagramX, 123, 206, 21, fabricDiagramHeading(diagram, lines.map(({ awning }) => awning)), {
-    bold: true, size: 10, align: 'center', fill: colors.paper
+  // El título ocupa el mismo ancho que el dibujo.
+  drawCell(doc, diagramX, 123, diagramW, 21, fabricDiagramHeading(diagram, lines.map(({ awning }) => awning)), {
+    bold: true, size: 12, minSize: 9, fit: true, align: 'center', fill: colors.paper
   });
   if (diagram === 'GENERAL' && !diagramAwning?.fabricImage) {
-    drawGeneralDiagram(doc, diagramX, 149, diagramW, 332, { title: '', legacy: true }, diagramAwning);
+    drawGeneralDiagram(doc, diagramX, 149, diagramW, 300, { title: '', legacy: true }, diagramAwning);
   } else {
-    drawAwningDiagram(doc, diagramX, 149, diagramW, 332, diagram, diagramAwning, diagramCalculation);
+    drawAwningDiagram(doc, diagramX, 149, diagramW, 300, diagram, diagramAwning, diagramCalculation);
   }
   const pageNotes = fabricPageNotes(order, lines);
   const remainingNotes = pageNotes
-    ? drawNotesBox(doc, diagramX, 488, diagramW, outerBottom - 10, pageNotes)
+    // Con letra de 9 pt, el recuadro sube para que quepan unas siete líneas.
+    ? drawNotesBox(doc, diagramX, 456, diagramW, outerBottom - 10, pageNotes, false, FABRIC_PAGE_TEXT)
     : '';
 
   const contentX = margin + 270;
@@ -505,14 +511,14 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   drawMiniTable(doc, contentX + 64, 123, rotW, 'ROTULACIÓN', [
     ['TELA', summarizeAwningValue(lines, 'rotFabric', order.rotTela)],
     ['BAMBA', summarizeAwningValue(lines, 'rotValance', order.rotBamba)]
-  ], 17, { preserveBlank: true, neutral: true });
+  ], 20, { preserveBlank: true, neutral: true, size: 9.5, barH: 17, barSize: 9.5 });
   drawMiniTable(doc, contentX + 64 + rotW + gap, 123, contentW - 64 - rotW - gap, 'DATOS BÁSICOS', [
     ['MATERIAL', summarizeFabricMaterial(lines)],
     ['CURVA', summarizeValanceCurve(lines)],
     ['REMATE', summarizeRemate(lines, order)]
-  ], 17, { preserveBlank: true, neutral: true });
+  ], 20, { preserveBlank: true, neutral: true, size: 9.5, barH: 17, barSize: 9.5 });
 
-  const rowY = 217;
+  const rowY = 214;
   const rowH = 62;
   const rowGap = 9;
   const letterW = 54;
@@ -521,7 +527,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
     const y = rowY + localIndex * (rowH + rowGap);
     const detail = buildFabricLineDetail(line.awning, line.calc, order);
     drawCell(doc, contentX, y, letterW, rowH, awningLetter(line.index), {
-      bold: true, size: 18, align: 'center', fill: colors.yellow
+      bold: true, size: 26, align: 'center', fill: colors.yellow
     });
 
     const metricsX = contentX + letterW + 10;
@@ -533,12 +539,12 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
     drawFabricMetric(doc, metricsX + metricW + metricGap, y, metricW, isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA', detail.fabricDrop, 29, { neutral: true });
     drawFabricMetric(doc, metricsX + metricW * 2 + metricGap * 2, y, unitsW, 'UN.', detail.units, 29, { neutral: true });
     drawCell(doc, metricsX, y + 29, metricW, 29, detail.workLabel, {
-      size: 9.5, align: 'center', fill: colors.paper
+      size: 11.5, minSize: 8, fit: true, align: 'center', fill: colors.paper
     });
     const instruction = [showOfInRows ? `OF ${value(line.awning.of)}` : '', buildFabricRowInstruction(line, lines, order)]
       .filter(Boolean).join(' · ');
-    drawFittedText(doc, instruction, metricsX + metricW + 12, y + 36, available - metricW - 12, 20, {
-      font: fonts.semibold, maxSize: 7.5, minSize: 4.8, align: 'center',
+    drawFittedText(doc, instruction, metricsX + metricW + 12, y + 32, available - metricW - 12, 28, {
+      font: fonts.semibold, maxSize: 10.5, minSize: 6, align: 'center',
       overflowLabel: '[NOTA COMPLETA EN EL PEDIDO]'
     });
   });
@@ -549,15 +555,15 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   const totalY = outerBottom - 51;
   const labelW = 250;
   doc.rect(contentX, totalY, labelW, 42).fillAndStroke(colors.paper, '#202020');
-  drawFittedText(doc, totals.map(({ code }) => code).join(' · ') || 'TELA SIN DEFINIR', contentX + 8, totalY + 6, labelW - 16, 13, {
-    font: fonts.semibold, maxSize: 8.5, minSize: 6.5, align: 'center', color: '#202020'
+  drawFittedText(doc, totals.map(({ code }) => code).join(' · ') || 'TELA SIN DEFINIR', contentX + 8, totalY + 5, labelW - 16, 15, {
+    font: fonts.semibold, maxSize: 11, minSize: 7, align: 'center', color: '#202020'
   });
-  doc.fillColor('#202020').font(fonts.bold).fontSize(9)
+  doc.fillColor('#202020').font(fonts.bold).fontSize(11.5)
     .text('PAÑO TOTAL NECESARIO', contentX + 8, totalY + 23, { width: labelW - 16, align: 'center' });
   drawCell(doc, contentX + labelW, totalY, contentW - labelW, 42,
     // Con varias telas el taller quiere la cifra ya sumada; los códigos van al lado.
     `${formatFabricMeasure(totals.reduce((sum, { amount }) => sum + (Number(amount) || 0), 0))} ML`, {
-      bold: true, size: 17, align: 'right', fill: '#dedede'
+      bold: true, size: 23, align: 'right', fill: '#dedede'
     });
   return remainingNotes;
 }
@@ -706,26 +712,26 @@ function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE
   roundedBox(doc, margin, 18, logoW, 88, 4, colors.paper, colors.line);
   drawTgmMark(doc, margin, 18, logoW, 88);
 
-  drawCell(doc, bodyX, 18, orderX - bodyX, 18, 'PEDIDO', { size: 9, align: 'right' });
+  drawCell(doc, bodyX, 18, orderX - bodyX, 18, 'PEDIDO', { size: 10.5, align: 'right' });
   drawCell(doc, orderX, 18, orderW, 32, value(order.orderCode), { fill: colors.yellow, bold: true, size: 17, minSize: 11, fit: true, align: 'center' });
-  drawCell(doc, bodyX, 36, 76, 17, 'CLIENTE:', { italic: true, size: 8.5 });
-  drawCell(doc, bodyX + 76, 36, orderX - bodyX - 76, 17, value(order.customer), { semibold: true, size: 9.5, minSize: 7, fit: true });
-  drawAuthorReviewerRow(doc, bodyX, 53, orderX - bodyX, 17, order, 76, 9, { fit: true, minSize: 7 });
-  drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 8.5 });
-  drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 9, minSize: 7, fit: true });
+  drawCell(doc, bodyX, 36, 76, 17, 'CLIENTE:', { italic: true, size: 10 });
+  drawCell(doc, bodyX + 76, 36, orderX - bodyX - 76, 17, value(order.customer), { semibold: true, size: 11, minSize: 7, fit: true });
+  drawAuthorReviewerRow(doc, bodyX, 53, orderX - bodyX, 17, order, 76, 10.5, { fit: true, minSize: 7 });
+  drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 10 });
+  drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 11, minSize: 7, fit: true });
   const orderOfs = distinctOrderOfs(order);
   const headerOfText = orderOfs.length === 1
     ? orderOfs[0]
     : orderOfs.length > 1 ? 'VER EN CADA TOLDO' : '';
   drawCell(doc, orderX, 50, 32, 37, headerOfText ? 'OF' : '', {
-    bold: true, size: 9, align: 'right', preserveBlank: true
+    bold: true, size: 10.5, align: 'right', preserveBlank: true
   });
   drawCell(doc, orderX + 32, 50, orderW - 32, 37, headerOfText, {
-    bold: true, size: 10, minSize: 7, fit: true, align: 'center', preserveBlank: true
+    bold: true, size: 13, minSize: 7, fit: true, align: 'center', preserveBlank: true
   });
   doc.rect(bodyX, 87, pageW - margin - bodyX, 19).fill(colors.ink);
   drawFittedText(doc, title, bodyX + 4, 90, pageW - margin - bodyX - 8, 16, {
-    font: fonts.bold, maxSize: 13, minSize: 10, align: 'center', color: colors.paper
+    font: fonts.bold, maxSize: 14, minSize: 10, align: 'center', color: colors.paper
   });
 }
 
@@ -886,12 +892,12 @@ function drawBoxSystemDiagram(doc, x, y, w, h, spec) {
 function drawTechnicalDiagramShell(doc, x, y, w, h, title) {
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(8))
     .text(title, x + 18, y + 13, { width: w - 36, align: 'center' });
 }
 
 function drawDimensionSummary(doc, x, y, w) {
-  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
     .text('ESQUEMA ORIENTATIVO', x + 34, y + 42, { width: w - 68, align: 'center' })
     .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', x + 34, y + 244, { width: w - 68, align: 'center' });
 }
@@ -901,7 +907,7 @@ function drawHardwareFooter(doc, x, y, w, h, labels) {
   const startY = y + h - 14 - labels.length * lineHeight;
   labels.forEach((label, index) => {
     doc.fillColor(index === 0 ? colors.inkSoft : colors.grayDark)
-      .font(index === 0 ? fonts.semibold : fonts.regular).fontSize(5.4)
+      .font(index === 0 ? fonts.semibold : fonts.regular).fontSize(diagramText(5.4))
       .text(label, x + 16, startY + index * lineHeight, { width: w - 32, align: 'center', ellipsis: true, lineBreak: false });
   });
 }
@@ -912,7 +918,7 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
   const guide = variant.includes('VARILLA') ? 'VARILLA' : variant.includes('CABLE') ? 'CABLE' : 'SIN GUÍA';
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(8))
     .text('MAXISCREEM', x + 18, y + 13, { width: w - 36, align: 'center' });
 
   const panelX = x + 49;
@@ -936,9 +942,9 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
 
   drawDiagramText(doc, withBox ? 'COFRE' : 'TUBO VISTO', panelX, panelY - 48, panelW);
   drawDiagramText(doc, guide, panelX, panelY + panelH + 18, panelW);
-  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
     .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', panelX + 8, panelY + 52, { width: panelW - 16, align: 'center' });
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.7))
     .text('P801 · PERFIL DE CARGA MAXISCREEM', x + 24, y + h - 25, { width: w - 48, align: 'center' });
 }
 
@@ -982,7 +988,7 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
   drawSideLabel(doc, `MFI ${formatNumber(calculation.guideLeftLength ?? 0)}`, x + 6, panelY + panelH / 2, 44);
   drawSideLabel(doc, `MFD ${formatNumber(calculation.guideRightLength ?? 0)}`, x + w - 50, panelY + panelH / 2, 44);
   drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', panelX, panelY + panelH + 18, panelW);
-  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
     .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + 24, y + h - 26, { width: w - 48, align: 'center' });
 }
 
@@ -993,7 +999,7 @@ function drawAgataDiagram(doc, x, y, w, h, awning) {
   const fullBox = variant === 'COFRE';
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(8))
     .text(`ÁGATA BOX · ${variant}`, x + 18, y + 13, { width: w - 36, align: 'center' });
 
   const wallX = x + 38;
@@ -1031,17 +1037,17 @@ function drawAgataDiagram(doc, x, y, w, h, awning) {
   doc.roundedRect(frontX - 8, frontY - 8, 15, 43, 3)
     .fillAndStroke('#e7eeec', '#466e64');
   drawDiagramText(doc, enclosed ? (fullBox ? 'COFRE COMPLETO' : 'CIERRE PARCIAL') : 'TUBO VISTO', wallX - 10, headY - 22, 62);
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6))
     .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', wallX + 35, frontY + 57, { width: frontX - wallX - 42, align: 'center' })
     .text('BRAZOS ONYX SEGÚN TOLDO', wallX + 45, frontY + 3, { width: frontX - wallX - 65, align: 'center' });
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.7))
     .text('P801 · MODUL 400 · BAMBA SEGÚN TOLDO', x + 24, y + h - 27, { width: w - 48, align: 'center' });
 }
 
 function drawAmbarDiagram(doc, x, y, w, h) {
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   doc.rect(x + 14, y + 8, w - 28, 19).fillAndStroke(colors.paper, colors.ink);
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(8)
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(8))
     .text('ÁMBAR BOX', x + 18, y + 13, { width: w - 36, align: 'center' });
 
   const wallX = x + 42;
@@ -1068,10 +1074,10 @@ function drawAmbarDiagram(doc, x, y, w, h) {
 
   doc.roundedRect(armEndX - 8, armEndY - 8, 15, 45, 3)
     .fillAndStroke('#e7eeec', '#466e64');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6)
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6))
     .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', wallX + 35, armEndY + 58, { width: armEndX - wallX - 42, align: 'center' })
     .text('BRAZOS PRT07', wallX + 47, armEndY + 4, { width: armEndX - wallX - 70, align: 'center' });
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(5.7)
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.7))
     .text('TUBO P701 · KIT DE PERFILES ÁMBAR BOX', x + 24, y + h - 27, { width: w - 48, align: 'center' });
 }
 
@@ -1082,7 +1088,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   const valance = buildValanceDiagramSpec(awning);
   const hems = buildGeneralFabricDiagramSpec(awning);
   if (!options.legacy) roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
-  if (title) doc.fillColor(colors.ink).font(fonts.bold).fontSize(10).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
+  if (title) doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(10)).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
   drawHorizontalDimension(doc, x + 25, x + w - 25, y + 30, 'FRENTE TELA');
 
   const badge = valance.hasValance
@@ -1091,14 +1097,17 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   if (!options.legacy) {
     doc.roundedRect(x + 38, y + 38, w - 76, 14, 4)
       .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
-    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(6.2)
+    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6.2))
       .text(badge, x + 42, y + 40.5, { width: w - 84, align: 'center' });
   }
 
   const frameX = x + 38;
   const frameY = y + (options.legacy ? 52 : 72);
   const frameW = w - 76;
-  const frameH = valance.hasValance ? 178 : 232;
+  // Cabe en la caja que le den: con bamba, la tela, el hueco de 42 y la bamba de 42.
+  const frameH = valance.hasValance
+    ? Math.min(178, h - (frameY - y) - 84 - 12)
+    : Math.min(232, h - (frameY - y) - 20);
   doc.rect(frameX, frameY, frameW, frameH).strokeColor('#202020').lineWidth(1).stroke();
   const topFoldY = frameY + 40;
   const topSeamY = frameY + 5;
@@ -1116,7 +1125,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
     .strokeColor('#e36f69').lineWidth(0.55).dash(2, { space: 1 }).stroke().undash();
   doc.moveTo(frameX + sideSeamInset, topSeamY).lineTo(frameX + frameW - sideSeamInset, topSeamY)
     .strokeColor('#e36f69').lineWidth(0.55).stroke();
-  doc.fillColor('#4f8b68').fontSize(6.4)
+  doc.fillColor('#4f8b68').fontSize(diagramText(6.4))
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
     .text(rollLabel, frameX, frameY + 13, { width: frameW, align: 'center' });
   drawVerticalArrow(doc, frameX + frameW / 2, frameY - 4, frameY + 1, 'down');
@@ -1176,19 +1185,20 @@ function drawHorizontalDimension(doc, startX, endX, y, label) {
     .stroke();
   drawArrowHead(doc, startX, y, 'left');
   drawArrowHead(doc, endX, y, 'right');
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(6.5)
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(6.5))
     .text(label, center - labelW / 2, y - 8.5, { width: labelW, align: 'center' });
 }
 
 function drawBastillaCallout(doc, seamX, y, side) {
   const pointingLeft = side === 'left';
-  const textX = pointingLeft ? seamX + 9 : seamX - 65;
+  // El texto va debajo de la flecha, en dos líneas, para no pisarla.
+  const textX = pointingLeft ? seamX + 3 : seamX - 75;
   const arrowStart = pointingLeft ? seamX + 24 : seamX - 24;
   const arrowEnd = pointingLeft ? seamX + 2 : seamX - 2;
   doc.strokeColor('#087b32').lineWidth(0.7).moveTo(arrowStart, y).lineTo(arrowEnd, y).stroke();
   drawArrowHead(doc, arrowEnd, y, pointingLeft ? 'left' : 'right');
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(5.4)
-    .text('BASTILLA\nCOSIDA O SOLDADA', textX, y - 6, { width: 56, align: pointingLeft ? 'left' : 'right' });
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(5.4))
+    .text('BASTILLA\nCOSIDA O SOLDADA', textX, y + 4, { width: 72, align: pointingLeft ? 'left' : 'right' });
 }
 
 function drawVerticalArrow(doc, x, startY, endY, direction) {
@@ -1213,7 +1223,7 @@ function drawHorizontalFabricDimension(doc, startX, endX, y, label) {
     .moveTo(startX, y - 4).lineTo(startX, y + 4)
     .moveTo(endX, y - 4).lineTo(endX, y + 4)
     .strokeColor('#4f8b68').lineWidth(0.75).stroke();
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(6.2)
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(6.2))
     .text(label, startX - 27, y + 2, { width: 24, align: 'right' });
 }
 
@@ -1223,7 +1233,7 @@ function drawFabricDimension(doc, x, startY, endY, label, side) {
     .moveTo(x - 4, endY).lineTo(x + 4, endY)
     .strokeColor('#4f8b68').lineWidth(0.75).stroke();
   const textX = side === 'left' ? x - 29 : x + 5;
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(6.2)
+  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(6.2))
     .text(label, textX, (startY + endY) / 2 - 4, { width: 24, align: 'center' });
 }
 
@@ -1238,7 +1248,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     : 'SIN BAMBA';
   doc.roundedRect(x + 28, y + 32, w - 56, 14, 4)
     .fillAndStroke(spec.hasValance ? '#fff4cc' : '#edf2f1', spec.hasValance ? '#d2a116' : '#9db0ac');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.2)
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.2))
     .text(badge, x + 32, y + 36, { width: w - 64, align: 'center' });
 
   const frameX = x + 43;
@@ -1294,8 +1304,9 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
 
   if (spec.hasValance) {
     // En el maestro la bamba es otra pieza: varilla blanca arriba y B.N(3) abajo.
-    const valanceY = bottomY + (spec.curtainPieces ? 22 : 17);
-    if (spec.curtainPieces) drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, bottomY + 11, frameW);
+    // Con la letra de la página de telas, las dos varillas necesitan 11 de separación.
+    const valanceY = bottomY + (spec.curtainPieces ? 26 : 19);
+    if (spec.curtainPieces) drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, bottomY + 14, frameW);
     if (!spec.separateValance) {
       doc.moveTo(frameX + 9, bottomY).lineTo(frameX + 9, valanceY)
         .moveTo(frameX + frameW - 9, bottomY).lineTo(frameX + frameW - 9, valanceY)
@@ -1323,7 +1334,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
       drawCurtainDataRow(doc, x + 28, dataY + 32, w - 56, 'ALTURA VELCRO:', velcroHeight);
     }
   } else if (spec.finish === 'VELCRO') {
-    doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+    doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
       .text(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)} CM`, x + 28, y + 331, { width: w - 56, align: 'center' });
   }
 }
@@ -1407,7 +1418,7 @@ function drawCurtainSideFinishes(doc, x, y, w, h, spec) {
 function drawRotatedDiagramText(doc, text, centerX, centerY, width) {
   doc.save();
   doc.rotate(-90, { origin: [centerX, centerY] });
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.5)
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(diagramText(6.5))
     .text(text, centerX - width / 2, centerY - 4, { width, align: 'center', lineBreak: false });
   doc.restore();
 }
@@ -1481,7 +1492,7 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
   const measurement = options.measurement !== undefined
     ? options.measurement
     : spec?.height > 0 ? ` · ${formatInstructionMeasure(spec.height)} CM` : '';
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(h <= 26 ? 4.8 : 5.2)
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(h <= 26 ? 5.4 : 6.2))
     .text(`${options.bodyLabel || 'BAMBALINA'}${measurement}`, x + 4, y + Math.max(9, h * 0.36), {
       width: w - 8,
       align: 'center'
@@ -1490,16 +1501,16 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
 
 function drawSmallMeasure(doc, x, y, w, measure) {
   doc.rect(x, y, w, 14).fillAndStroke(colors.paper, '#bcc9c5');
-  doc.fillColor(colors.ink).font(fonts.semibold).fontSize(6.5)
+  doc.fillColor(colors.ink).font(fonts.semibold).fontSize(diagramText(6.5))
     .text(formatNumber(measure), x + 2, y + 4, { width: w - 4, align: 'center' });
 }
 
 function drawCurtainDataRow(doc, x, y, w, label, measure) {
   const labelW = 91;
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(5.7)
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(5.7))
     .text(label, x, y + 3, { width: labelW, align: 'right' });
   doc.moveTo(x + labelW + 8, y + 13).lineTo(x + w, y + 13).strokeColor(colors.ink).lineWidth(0.7).stroke();
-  doc.font(fonts.semibold).fontSize(6.5)
+  doc.font(fonts.semibold).fontSize(diagramText(6.5))
     .text(formatNumber(measure), x + labelW + 8, y + 3, { width: w - labelW - 8, align: 'center' });
 }
 
@@ -1511,7 +1522,7 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
     : 'SIN BAMBA';
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4)
     .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
     .text(badge, x + 40, y + 41, { width: w - 80, align: 'center' });
 
   const panelX = x + 64;
@@ -1569,7 +1580,7 @@ function drawChangeRollerDiagram(doc, x, y, w, h) {
   drawDiagramText(doc, 'AL CORTE', panelX, panelY + panelH + 6, panelW);
   drawRotatedDiagramText(doc, 'E. PLETINA 30 × 6 · REFUERZO PVC INTERIOR', panelX - 12, panelY + panelH / 2, panelH - 14);
   drawRotatedDiagramText(doc, 'VARILLA PLANA POR REVÉS · CONT. SCREEN REDONDA', panelX + panelW + 12, panelY + panelH / 2, panelH - 14);
-  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(6)
+  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(6))
     .text('CONFECCIÓN SOBRE TELA EXISTENTE', panelX + 14, panelY + panelH / 2 - 4, { width: panelW - 28, align: 'center' });
 }
 
@@ -1609,7 +1620,7 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const supplement = buildSupplementSpec(awning);
   drawDiagramShell(doc, x, y, w, h);
   doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
     .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
 
   const stripX = x + 25;
@@ -1620,10 +1631,10 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const joinY = broochY + 22;
   // El suplemento va detrás, así que se dibuja primero y la bambalina lo tapa.
   doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#7fa594');
-  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.4)
+  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(5.4))
     .text('SUPLEMENTO POR DETRÁS', stripX + 8, stripY + stripH - 16, { width: stripW - 16, align: 'center' });
   drawValanceOverSupplement(doc, stripX, stripY, stripW, joinY, valance.curve);
-  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(6.4)
+  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(diagramText(6.4))
     .text('BAMBALINA', stripX + 8, stripY + 6, { width: stripW - 16, align: 'center' });
   // La línea de sujeción solo existe si hay sujeción: sin ella marcaría un canto
   // sin decir cuál, que es lo que se quiere evitar.
@@ -1652,14 +1663,14 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   }
 
   if (supplement.waveOverlapCm !== null) {
-    doc.fillColor('#c75d55').font(fonts.bold).fontSize(6.2)
+    doc.fillColor('#c75d55').font(fonts.bold).fontSize(diagramText(6.2))
       .text(`${formatInstructionMeasure(supplement.waveOverlapCm)} CM`, stripX - 27, broochY + 3, { width: 24, align: 'right' });
     doc.moveTo(stripX - 5, broochY).lineTo(stripX - 5, joinY)
       .moveTo(stripX - 8, broochY).lineTo(stripX - 2, broochY)
       .moveTo(stripX - 8, joinY).lineTo(stripX - 2, joinY)
       .strokeColor('#c75d55').lineWidth(0.65).stroke();
   }
-  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(9)
+  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(diagramText(9))
     .text('SUPLEMENTO', stripX + 8, joinY + 36, { width: stripW - 16, align: 'center' });
   const notes = [];
   if (supplement.waveOverlapCm !== null) {
@@ -1667,7 +1678,7 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   }
   if (supplement.fastening) notes.push('LOS PUNTOS DE BAMBALINA Y SUPLEMENTO DEBEN COINCIDIR');
   if (notes.length > 0) {
-    doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(5.8)
+    doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(5.8))
       .text(notes.join(' · '), x + 20, y + 272, { width: w - 40, align: 'center' });
   }
 }
@@ -1708,9 +1719,9 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
     calculation.fabricDrop ? `CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM` : ''
   ].filter(Boolean).join(' · ');
   if (medidas) {
-    doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
-    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.1)
-      .text(medidas, x + 40, y + 41, { width: w - 80, align: 'center' });
+    doc.roundedRect(x + 30, y + 35, w - 60, 19, 4).fillAndStroke('#fff4cc', '#d2a116');
+    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(8.5)
+      .text(medidas, x + 34, y + 40, { width: w - 68, align: 'center' });
   }
   const panelW = Math.min(112, w - 76);
   const panelX = x + (w - panelW) / 2;
@@ -1723,18 +1734,18 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
   doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
   drawDiagramText(doc, 'VARILLA PLANA', panelX, panelY - 16, panelW);
   drawDiagramText(doc, 'PLETINA 30 × 6', panelX, panelY + panelH + 8, panelW);
-  drawSideLabel(doc, 'AL CORTE', panelX - 30, panelY + 98, 28);
-  drawSideLabel(doc, 'AL CORTE', panelX + panelW + 2, panelY + 98, 28);
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(6)
+  drawSideLabel(doc, 'AL CORTE', panelX - 46, panelY + 98, 44);
+  drawSideLabel(doc, 'AL CORTE', panelX + panelW + 2, panelY + 98, 44);
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(6))
     .text('REFUERZO PVC POR DENTRO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
 
 function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   drawDiagramShell(doc, x, y, w, h);
-  doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(5.2)
-    .text(`ALTO TERMINADO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
+  doc.roundedRect(x + 30, y + 35, w - 60, 19, 4).fillAndStroke('#fff4cc', '#d2a116');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(8.5)
+    .text(`ALTO TERMINADO ${formatInstructionMeasure(valance.height)} CM`, x + 34, y + 40, { width: w - 68, align: 'center' });
   const stripX = x + 28;
   const stripY = y + 118;
   const stripW = w - 56;
@@ -1746,7 +1757,7 @@ function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   });
   drawRotatedDiagramText(doc, 'BASTILLA', stripX - 10, stripY + stripH / 2, stripH - 18);
   drawRotatedDiagramText(doc, 'BASTILLA', stripX + stripW + 10, stripY + stripH / 2, stripH - 18);
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(6)
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(6))
     .text(`REMATE ${valance.curve}`, stripX, stripY + stripH + 22, { width: stripW, align: 'center' });
 }
 
@@ -1814,41 +1825,49 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
   }
 
   drawDiagramText(doc, 'FRENTE TELA', x + 28, y + 47, w - 56);
-  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(5.8)
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
     .text('MEDIDAS Y BAMBA SEGÚN EL BLOQUE DE CADA TOLDO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
 }
 
 // El nombre del dibujo va una sola vez, en la cabecera de la página
 // (fabricDiagramHeading); aquí solo el marco.
+// Iván, 25/09/2026: letra más grande en la página de telas.
+const DIAGRAM_TEXT_SCALE = 1.3;
+function diagramText(size) {
+  return Number(size) * DIAGRAM_TEXT_SCALE;
+}
+
 function drawDiagramShell(doc, x, y, w, h) {
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
 }
 
 function drawDiagramText(doc, text, x, y, w) {
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.5).text(text, x, y, { width: w, align: 'center' });
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(diagramText(6.5)).text(text, x, y, { width: w, align: 'center' });
 }
 
 function drawSideLabel(doc, text, x, y, w) {
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(6.2).text(text, x, y, { width: w, align: 'center' });
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(diagramText(6.2)).text(text, x, y, { width: w, align: 'center' });
 }
 
 function drawMiniTable(doc, x, y, w, title, rows, rowH = 13, options = {}) {
-  drawBar(doc, x, y, w, 13, title, options);
+  const barH = options.barH || 13;
+  const size = options.size || 7;
+  drawBar(doc, x, y, w, barH, title, options);
   rows.forEach(([label, rowValue], index) => {
-    const rowY = y + 13 + index * rowH;
-    const labelW = Math.min(70, w * 0.43);
-    drawCell(doc, x, rowY, labelW, rowH, label, { fill: options.neutral ? '#dedede' : colors.gray, bold: true, size: 7, align: 'center' });
+    const rowY = y + barH + index * rowH;
+    const labelW = Math.min(options.size ? 84 : 70, w * 0.43);
+    drawCell(doc, x, rowY, labelW, rowH, label, { fill: options.neutral ? '#dedede' : colors.gray, bold: true, size, minSize: 6, fit: Boolean(options.size), align: 'center' });
     drawCell(doc, x + labelW, rowY, w - labelW, rowH, rowValue, {
-      semibold: true, size: 7, align: 'center', preserveBlank: options.preserveBlank
+      semibold: true, size, minSize: 6, fit: Boolean(options.size), align: 'center', preserveBlank: options.preserveBlank
     });
   });
 }
 
 function drawFabricMetric(doc, x, y, w, label, metricValue, h = 14, options = {}) {
   const labelW = Math.round(w * 0.48);
-  drawCell(doc, x, y, labelW, h, label, { fill: options.neutral ? '#dedede' : colors.gray, size: 7.2, align: 'center' });
+  drawCell(doc, x, y, labelW, h, label, { fill: options.neutral ? '#dedede' : colors.gray, size: 10, minSize: 7, fit: true, align: 'center' });
   drawCell(doc, x + labelW, y, w - labelW, h, metricValue, {
-    bold: true, size: h > 14 ? 11.5 : 10.5, align: 'center', preserveBlank: true
+    bold: true, size: h > 14 ? 15.5 : 10.5, minSize: 9, fit: true, align: 'center', preserveBlank: true
   });
 }
 
@@ -1897,9 +1916,10 @@ function fitTextWithOverflowLabel(doc, text, overflowLabel, width, height, size)
 }
 
 function drawBar(doc, x, y, w, h, text, options = {}) {
+  const size = options.barSize || 7.2;
   doc.rect(x, y, w, h).fillAndStroke(options.neutral ? '#dedede' : colors.gray, options.neutral ? '#202020' : colors.ink);
-  doc.fillColor(options.neutral ? '#202020' : colors.ink).font(fonts.bold).fontSize(7.2)
-    .text(text, x + 3, y + 2.4, { width: w - 6, align: 'center', ellipsis: true });
+  doc.fillColor(options.neutral ? '#202020' : colors.ink).font(fonts.bold).fontSize(size)
+    .text(text, x + 3, y + Math.max(2.4, (h - size) / 2 - 0.4), { width: w - 6, align: 'center', ellipsis: true });
 }
 
 function drawAuthorReviewerRow(doc, x, y, w, h, order, labelW, size, options = {}) {

@@ -74,7 +74,7 @@ No son dudas: son PDF de muestra, ya preparados, para que el taller confirme que
 - Cambio de tela, Enrollable y Bambalina.
 - Cambio Antica (soporte fijo).
 
-Iván (25/09): hay que agrandar la letra de los PDF todo lo que se pueda sin que se salga de los recuadros, y ajustar los recuadros al espaciado. Pendiente de hacer antes de dar las muestras al taller.
+Iván (25/09): hay que agrandar la letra de los PDF todo lo que se pueda sin que se salga de los recuadros, y ajustar los recuadros al espaciado. **Hecho en la página de telas** (la de estas muestras): cabecera, tablas, filas, dibujos, total y observaciones más grandes; el título del dibujo ocupa su ancho y las observaciones tienen más alto. Las muestras hay que sacarlas de nuevo.
 
 ## Contestadas el 25/09/2026
 

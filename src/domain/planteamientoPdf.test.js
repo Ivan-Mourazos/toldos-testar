@@ -1486,8 +1486,9 @@ describe('maqueta única del planteamiento de telas', () => {
       awnings: [{ id: 'a', of: '0239008', model, units: 1, width: 300, projection: 250, valanceHeight: 0, rotFabric: 'NO', rotValance: 'NO', ...extra }]
     });
 
-    const items = text.split(/\s{2,}/).map((item) => item.trim());
-    expect(items.filter((item) => item === heading)).toHaveLength(expected);
+    // Se cuentan apariciones: con letra más grande el lector de PDF junta el título con
+    // el texto de al lado en un mismo trozo.
+    expect(text.split(heading).length - 1).toBe(expected);
   });
 
   test('la cabecera del dibujo dice qué es, no "GENERAL" (Iván, 22/09/2026)', async () => {
