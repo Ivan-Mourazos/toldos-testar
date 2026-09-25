@@ -1,13 +1,13 @@
 # Selena — expediente
 
-22/09/2026 · **Terminado salvo el motor (Q-SE04, contestada el 25/09/2026)** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md)
+22/09/2026 · **Terminado** (Q-SE04: a motor desde el 25/09/2026) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md)
 
 ## 1. Alcance y punto de reanudación
 
 - Código `SELENA`: vertical con dos brazos Stor-21. Reutiliza el cálculo de Cortina con su propio margen.
 - **En los libros está como CORTINA** (y uno como MAXISCREEM, por el soporte que lleva): buscar "SELENA" en los libros no encuentra nada. Se localizan por el código de pedido de RPS. 17 OF con consumo real desde 2025 y 20 toldos en 16 libros.
 - Iván (22/09/2026): Selena comparte muchas piezas con Cortina, y a veces se usa el soporte Maxiscreem; por eso algún libro está hecho en esa hoja.
-- Siguiente acción: ofrecer la Selena a motor (Iván, 25/09/2026: «en teoría, sí»), con el kit de la Cortina, que comparte tubo y piezas. Lo demás está cerrado.
+- 25/09/2026: la Selena se ofrece también a motor (Iván: «en teoría, sí»), con el kit de la Cortina, que comparte tubo y piezas, y un aviso de que nunca se ha fabricado así. Pendiente solo la muestra con el taller.
 
 ## 2. Reglas
 
@@ -70,4 +70,4 @@ No aparecen por ningún lado el brazo `BRSTORSUPERBL16`, el kit de guías `K/GUI
 | Q-SE01 | **Resuelta con los libros (22/09/2026).** El margen de 50 con remate de 5 es el mayoritario y coincide con la lona consumida; se mantiene | Ninguno |
 | Q-SE02 | **Resuelta por Iván el 22/09/2026.** Selena puede llevar ventana: la tarjeta la pregunta y reserva cristal | Hecho |
 | Q-SE03 | **Resuelta el 22/09/2026.** No están en los manuales: son de pedidos antiguos y no se reservan | Ninguno |
-| Q-SE04 | **Resuelta por Iván el 25/09/2026: en teoría, sí.** El manual no lo dice y no hay ningún motor en las 17 OF; hoy la web solo admite máquina interior | Pendiente: motor con el kit de la Cortina |
+| Q-SE04 | **Resuelta por Iván el 25/09/2026: en teoría, sí.** El manual no lo dice y no hay ningún motor en las 17 OF; hoy la web solo admite máquina interior | Hecho: motor con el kit de la Cortina (Sunilus 15/17, soporte Hipro, rueda P801 y corona LT50 Ø78) y aviso |

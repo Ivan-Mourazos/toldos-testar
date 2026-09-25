@@ -501,7 +501,8 @@ function inferDevice(text, model) {
   // modelo tiene una sola máquina (caja o Selena), se puede deducir; si tiene
   // interior y exterior por separado, el técnico debe elegir.
   if (deviceOptions.includes('MAQUINA')) return 'MAQUINA';
-  if (deviceOptions.length === 1 && deviceOptions[0] === 'MAQ. INTERIOR') return 'MAQ. INTERIOR';
+  // Manual nunca es motor: cuenta solo la máquina (la Selena admite también motor).
+  if (machineOptions.length === 1 && machineOptions[0] === 'MAQ. INTERIOR') return 'MAQ. INTERIOR';
   return '';
 }
 

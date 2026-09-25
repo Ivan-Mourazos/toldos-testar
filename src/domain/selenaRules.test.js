@@ -90,14 +90,25 @@ describe('SELENA · configuración inicial', () => {
     expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 235, selenaFabricDropAllowanceCm: 55 });
   });
 
-  test('exige confirmar el lado de máquina y bloquea accionamientos aún no verificados', () => {
+  test('exige confirmar el lado de máquina y bloquea la máquina exterior', () => {
     const withoutSide = calculate({ machineSide: '' });
-    const motor = calculate({ device: 'MOTOR' });
+    const exterior = calculate({ device: 'MAQ. EXTERIOR' });
 
     expect(withoutSide.ofs[0]).toMatchObject({ materials: [], despiece: null });
     expect(withoutSide.diagnostics.some(({ message }) => message.includes('lado de la máquina'))).toBe(true);
-    expect(motor.ofs[0].calculation.valid).toBe(false);
-    expect(motor.diagnostics.some(({ message }) => message.includes('solo está verificada con máquina interior'))).toBe(true);
+    expect(exterior.ofs[0].calculation.valid).toBe(false);
+    expect(exterior.diagnostics.some(({ message }) => message.includes('solo se hace con máquina interior o con motor'))).toBe(true);
+  });
+
+  // Iván, 25/09/2026 (Q-SE04): en teoría se hace a motor; kit de la Cortina y aviso.
+  test('a motor lleva el kit de motor de la Cortina, sin máquina ni manivela, y avisa', () => {
+    const motor = calculate({ device: 'MOTOR', crankHeight: null });
+    const codes = motor.ofs[0].materials.map((line) => line.code);
+
+    expect(motor.ofs[0].calculation.valid).toBe(true);
+    expect(codes).toEqual(expect.arrayContaining(['SOPORTEUNVHIPRO', 'CORONALT5078', 'RUEDAMOT801MEC', 'SUNILUSIO15//17']));
+    expect(codes.some((code) => /^MAQMB11|^MANIVE/.test(code))).toBe(false);
+    expect(motor.diagnostics).toContainEqual(expect.objectContaining({ level: 'warn', message: expect.stringContaining('nunca se ha fabricado así') }));
   });
 });
 
@@ -127,11 +138,11 @@ describe('SELENA · integración', () => {
     expect(result.pending).toContain('A · SELENA: lado máquina');
   });
 
-  test('se publica como modelo completo con una única máquina admitida', () => {
+  test('se publica como modelo completo con máquina interior o motor', () => {
     expect(getModelBehavior('SELENA')).toMatchObject({ implemented: true, workType: 'FULL_AWNING' });
     expect(getFieldVisibility({ model: 'SELENA', device: 'MAQ. INTERIOR' })).toMatchObject({
       device: true,
-      deviceOptions: ['MAQ. INTERIOR'],
+      deviceOptions: ['MAQ. INTERIOR', 'MOTOR'],
       machineLocation: true,
       crankHeight: true,
       sensor: false

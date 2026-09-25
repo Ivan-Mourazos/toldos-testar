@@ -29,7 +29,10 @@ export function calculateSelena({ order, awning }) {
     },
     awning: syntheticAwning
   });
-  const unsupportedDevice = device && device !== 'MAQ. INTERIOR' && device !== 'MAQUINA';
+  // Iván, 25/09/2026 (Q-SE04): en teoría se hace a motor. Nunca se ha fabricado así, así
+  // que lleva el kit de la Cortina, con la que comparte tubo y piezas, y un aviso.
+  const motor = device === 'MOTOR';
+  const unsupportedDevice = device && device !== 'MAQ. INTERIOR' && device !== 'MAQUINA' && !motor;
   const missingMachineSide = !String(awning.machineSide || '').trim();
   const calculation = {
     ...result.calculation,
@@ -55,7 +58,14 @@ export function calculateSelena({ order, awning }) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
-      message: `SELENA en OF ${awning.of}: la configuración inicial solo está verificada con máquina interior.`
+      message: `SELENA en OF ${awning.of}: solo se hace con máquina interior o con motor.`
+    });
+  }
+  if (motor && calculation.valid) {
+    diagnostics.push({
+      level: 'warn',
+      awningId: awning.id,
+      message: `SELENA a motor en OF ${awning.of}: nunca se ha fabricado así; lleva el kit de motor de la Cortina. Confirmar con el taller.`
     });
   }
 
