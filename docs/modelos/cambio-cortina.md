@@ -7,7 +7,7 @@
 - Código `CAMBIO CORTINA`: trabajo de tela (`FABRIC_ONLY`) sobre un toldo cortina existente. 168 cortinas en 96 libros: 106 en 2025 y 62 en 2026.
 - Alcance: caída y frente de la tela, bamba de la misma tela o de otra, reserva de lona, ventana y confección (solo formulario y PDF; no cambian la lona).
 - Rama: `main`.
-- Siguiente acción: ninguna en la web. OT debe quitar el −18 (y el +5 sin bamba) de `CAM.CORT.` en el maestro.
+- Siguiente acción: ninguna. La tarea de quitar el −18 (y el +5 sin bamba) de `CAM.CORT.` en el maestro Excel se retiró el 25/09/2026: la referencia es la web.
 
 ## 2. Reglas
 

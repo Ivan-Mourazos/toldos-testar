@@ -1,6 +1,6 @@
 # HERA — expediente inicial
 
-13/09/2026 · Piloto documental · Alcance todavía parcial · 24/09/2026: taller resuelve todas las dudas salvo el motor (Q-H07)
+13/09/2026 · Piloto documental · Alcance todavía parcial · 24/09/2026: taller contesta todas las dudas · **Sin dudas abiertas:** Iván da por contestadas todas las del HERA a fecha 24/09/2026 (25/09), también el motor (Q-H07)
 
 [Guía de trabajo](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Evidencia técnica existente](../rps-hera-evidence.md)
 
@@ -36,7 +36,7 @@ Fuente: `CPRImputationMaterialMO` de las 24 OF de HERA 56 imputadas desde 2025 (
 
 - **Color:** el kit y el adaptador van en blanco o negro también a motor. La tarjeta pide ahora "Color mecanismos" en el HERA a motor ("Color cadena" en los de cadena, que antes decía "Color del anillo de cadena").
 - **La cadena sigue siendo el anillo cerrado** (criterio de Iván del 18/09, confirmado por taller el 24/09: "sí, se reserva siempre el anillo"). El almacén imputa cadena por metros con uniones (Q-H08, resuelta).
-- **Motor y mando no se reservan:** varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide. Sale un aviso para añadirlos a mano. Taller, 24/09: "depende del tipo de modelo"; hay una propuesta por variante en Q-H07, sin aplicar hasta que la confirme Iván.
+- **Motor y mando no se reservan:** varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide. Sale un aviso para añadirlos a mano. Taller, 24/09: "depende del tipo de modelo"; Iván da la pregunta por contestada (Q-H07). La web usa por ahora: no reserva motor ni mando y avisa; la propuesta por variante de abajo no está aplicada.
 - Después, `validate:reserva HERA` solo echa en falta la cadena por metros (Q-H08) y la tapa tornillo Swift (Q-H05). Referencias rotas: 0 de 23.
 - Tarjeta a 1280×720 y 1600: la variante va en su propia línea (antes se cortaba "HERA 56 …" y no se distinguía máquina de motor). Válida, sin scroll horizontal. Capturas en `tmp/ui-audit/shots/hera-card-*.png`.
 
@@ -116,15 +116,15 @@ Cinco HERA 56 máquina. Las veinte medidas de tubo, frente de tela, caída de te
 | Q-H03 | Despiece de las tres variantes | Reserva completa | **Resuelta por taller el 24/09/2026.** "OK" a la reserva de estructura según el consumo real de 24 OF (23/09). Sigue sin manual del fabricante |
 | Q-H04 | Revisión de muestra por taller | Lectura y fabricación | **Resuelta por taller el 24/09/2026.** "OK" a la muestra |
 | Q-H05 | Tapa tornillo Swift (`SCRTAPTOR`, 2 por toldo) en 9 de 17 OF | Reserva | **Resuelta por taller el 24/09/2026.** "OK": no se reserva |
-| Q-H06 | Macarrón con lengüeta o redondo (redondo en AR2603535 y AR2603981) | Reserva | **Respondida por taller el 24/09/2026:** "Lo elige taller". Se lee como "seguir reservando el de lengüeta y que taller cambie al fabricar"; **pendiente de que Iván confirme esa lectura** |
-| Q-H07 | Motor y mando a motor: ¿cuál y cómo se elige? | Reserva | **Abierta.** Taller: "depende del tipo de modelo". Ver propuesta abajo; no se aplica hasta que la confirme Iván. Mientras, no se reservan y se avisa |
+| Q-H06 | Macarrón con lengüeta o redondo (redondo en AR2603535 y AR2603981) | Reserva | **Respondida por taller el 24/09/2026:** "Lo elige taller". Iván la da por respondida a fecha 24/09. La web usa por ahora el de lengüeta, y taller lo cambia al fabricar si hace falta |
+| Q-H07 | Motor y mando a motor: ¿cuál y cómo se elige? | Reserva | **Contestada por taller el 24/09/2026; Iván la da por respondida.** Taller: "depende del tipo de modelo". La web usa por ahora: no reserva motor ni mando y avisa para añadirlos a mano. La propuesta de abajo no está aplicada |
 | Q-H08 | ¿Se sigue pidiendo el anillo cerrado aunque el almacén imputa cadena por metros? | Reserva | **Resuelta por taller el 24/09/2026.** "Sí, se reserva siempre el anillo": anillo, contrapeso y dos uniones, como hasta ahora |
 | Q-H09 | Abajo "E.T. platanero" sin consumo; AR2602729 con varilla en el libro y pletina gastada | Reserva | **Resuelta por taller el 24/09/2026.** "OK": con platanero no se reserva nada abajo |
 | Q-H10 | HERA 43: ¿kit "solo Ø43" y tubo Ø43? | Reserva | **Resuelta por taller el 24/09/2026.** "OK": kit y tubo del Ø43, sin adaptador |
 
-Las respuestas están en [el documento de taller](./dudas-hera-iris-respuestas-2026-09-24.docx) (24/09/2026, traído por Iván).
+Iván da por respondidas todas las dudas del HERA a fecha 24/09/2026 (25/09/2026): ya no están en la [lista de dudas abiertas](./dudas-abiertas.md). Las respuestas están en [el documento de taller](./dudas-hera-iris-respuestas-2026-09-24.docx) (24/09/2026, traído por Iván).
 
-### Q-H07: propuesta de motor por variante (sin aplicar)
+### Q-H07: propuesta de motor por variante (sin aplicar; la pregunta está respondida)
 
 Consumo desde 2024 (`tmp/iris/respuestas/hera-motor.mjs`, solo lectura): solo 5 OF con motor, todas **HERA 56**. El HERA 43 no se ha motorizado nunca en ese periodo, y el HERA 56 máquina no lleva motor.
 

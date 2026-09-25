@@ -47,4 +47,4 @@ Estos dos casos estaban contados en Cambio de tela como "+15 escrito a mano" ([c
 | --- | --- | --- |
 | Q-CA01 | ¿Qué salida se mide? En AR2600921 la venta dice 379 × 120, pero el libro usa salida 70, y con el +65 da la caída de 158 que se cortó | La salida que se escriba, más 65 |
 | Q-CA02 | Bamba en otra tela: la plantilla suma +55 al cuerpo en el toldo 01 y +40 en el 02 | +40 (Parámetros) |
-| Q-CA03 | AR2502455: caídas de 245 y 275 escritas a mano, unos 45-53 cm más que la fórmula. ¿Se midió de otra forma (por ejemplo, la diagonal del brazo)? | La fórmula (+65) |
+| Q-CA03 | AR2502455: caídas de 245 y 275 escritas a mano, unos 45-53 cm más que la fórmula. ¿Se midió de otra forma (por ejemplo, la diagonal del brazo)? **Retirada de la lista el 25/09/2026** (Iván: fuera las dudas sobre pedidos antiguos y las comprobaciones contra los libros; la referencia es la web). | La fórmula (+65) |

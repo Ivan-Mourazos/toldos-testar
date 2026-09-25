@@ -73,6 +73,6 @@ A 1280×720 y 1600, Perla de máquina y Ágata cofre con motor y 3 brazos: váli
 | --- | --- | --- |
 | Q-AG01 | Ágata: patines de soporte de brazo y de brazo, regleta de unión y pasadores salen en unas pocas OF sin regla clara | No se reservan |
 | Q-AG02 | Ágata: se consume sobre todo el Sunilus 85/17; la tabla por brazos y salida propone 35-55 con 2 brazos | La tabla |
-| Q-AG03 | Ágata: el libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras | La fórmula |
+| Q-AG03 | Ágata: el libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras. **Retirada de la lista el 25/09/2026** (Iván: fuera las dudas sobre pedidos antiguos y las comprobaciones contra los libros; la referencia es la web). | La fórmula |
 | Q-PR02 | Casquillo de máquina de eje 50 o 63 (Cuarzo: 16 y 9 OF) | Eje 50 |
 | Q-A06 | Largo de stock: el almacén imputa muchos perfiles y tubos de 400 y 500 | El habitual |

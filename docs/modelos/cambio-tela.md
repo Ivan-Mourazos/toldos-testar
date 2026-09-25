@@ -83,7 +83,7 @@ Cambios en la herramienta hechos para medir esto (22/09/2026): el validador comp
 | Q-C06 | **Resuelta por Iván el 22/09/2026.** La bamba de PVC no se reserva por ahora; si es acrílica, no reservarla es un error. De las once OF, solo una es de PVC: las otras diez quedaron infrarreservadas | La web ya lo hace: reserva la acrílica y, con PVC, pregunta al generar (R07) |
 | Q-C07 | **Resuelta por Iván el 22/09/2026.** "SALIDA" (largo de corte) y "PAÑO TOTAL NECESARIO" (total del pedido en cada toldo) se quedan como están: el taller está acostumbrado. Con dos telas (bamba en otra tela), el total se da ya sumado ("8,9 ML", no "8,0 + 0,9 ML"), a petición de Iván tras ver la muestra | `planteamientoPdf.js` |
 
-Avisar a OT de las infrarreservas históricas de §5 (bamba acrílica sin reservar en diez OF, exportación rota y subida incompleta), igual que con Bambalina (Q-B06 y Q-B08). No se corrigen pedidos ya fabricados.
+Retirado el 25/09/2026 (Iván: no se tratan pedidos antiguos): avisar a OT de las infrarreservas históricas de §5 (bamba acrílica sin reservar en diez OF, exportación rota y subida incompleta), igual que con Bambalina (Q-B06 y Q-B08). No se corrigen pedidos ya fabricados.
 
 ## 8. Cierre
 

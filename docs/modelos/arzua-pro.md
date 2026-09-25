@@ -71,7 +71,7 @@ Revisado a 1280×720 y a 1600 con el caso AR2603332: válido, sin errores y sin 
 | La tarjeta decía "FALTA · rotulación" y el cálculo "falta tela, dispositivo y tubo" (pedido 4611) | Una sola lista: la regla común pide lo mismo que el cálculo |
 | El aviso "Esta OF no pertenece al pedido" alargaba el campo OF y bajaba Frente y Salida | Va en su propia línea encima de la fila |
 | PDF de estructura con 13 filas | Medido en el PDF: la fila 13 acaba donde empieza "Elementos accesorios", no se monta. En la vista previa lo parecía por el rasterizado |
-| Nombre "antes ART 325 / ARZUA" | Es la descripción del artículo ARZUA en RPS y la web la copia. Está desfasada (el ART 325 es el soporte del Arzúa antiguo): tarea para OT |
+| Nombre "antes ART 325 / ARZUA" | Es la descripción del artículo ARZUA en RPS y la web la copia. Está desfasada (el ART 325 es el soporte del Arzúa antiguo). Desde el 25/09/2026 la web muestra el nombre del producto del proveedor (AROND-350, Llaza), así que ya no afecta a la web y sale de la lista de dudas |
 
 ## 8. En qué se apoya cada decisión
 
