@@ -5374,3 +5374,12 @@ fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
 .review-checklist > h3 { border-bottom: 1px solid #e3ebe8; grid-column: 1; }
 .review-checklist > .review-checklist-toggle { border-bottom: 1px solid #e3ebe8; grid-column: 2; justify-content: flex-end; }
 .review-checklist > :not(h3):not(.review-checklist-toggle) { grid-column: 1 / -1; }
+
+/* Excepción técnica en la ficha: plegada al final, antes de las observaciones. */
+.read-exception { background: #fff8df; border: 1px solid #f0c64a; border-radius: 6px; grid-column: 1 / -1; margin-top: 8px; order: 97; }
+.read-exception > summary { align-items: center; color: #5c4100; cursor: pointer; display: flex; font-size: 12px; font-weight: 650; gap: 10px; justify-content: space-between; list-style: none; padding: 5px 8px; }
+.read-exception > summary::-webkit-details-marker { display: none; }
+.read-exception-toggle { font-weight: 700; text-decoration: underline; }
+.read-exception[open] .read-exception-toggle { font-size: 0; }
+.read-exception[open] .read-exception-toggle::after { content: "Ocultar cambios"; font-size: 12px; }
+.read-exception-list { display: grid; gap: 0 18px; grid-template-columns: 1fr 1fr; padding: 0 8px 6px; }

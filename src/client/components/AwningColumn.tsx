@@ -70,6 +70,19 @@ export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
   return electraHasCofre(submodel) ? electraCofreSupports : electraOpenSupports;
 }
 
+// La excepción técnica en la ficha de lectura: una línea al final con un botón para ver
+// lo que se ha cambiado, y así los datos del toldo se leen sin ese bloque en medio
+// (Iván, 25/09/2026). Al editar sigue a la vista, como siempre.
+function ExceptionBlock({ readOnly, children }: { readOnly: boolean; children: React.ReactNode }) {
+  if (!readOnly) return <div className="awning-overrides">{children}</div>;
+  return (
+    <details className="read-exception">
+      <summary>Excepción técnica activa para este toldo.<span className="read-exception-toggle">Ver cambios</span></summary>
+      <div className="read-exception-list">{children}</div>
+    </details>
+  );
+}
+
 export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel }: Props) {
   const fields = useVisibleFields(awning);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
@@ -705,9 +718,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
 
           {awning.reglasModificadas && (
-            <div className="awning-overrides">
-              {/* En la ficha va con la Estructura: son sus reglas modificadas. */}
-              <p className="awning-modified-chip" data-group="estructura" style={readOnly ? { order: readGroupOrder('estructura') + 1 } : undefined}>Excepción técnica activa para este toldo.</p>
+            <ExceptionBlock readOnly={readOnly}>
+              {!readOnly && <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>}
               {(awning.model === 'CORTINA' || awning.model === 'CAMBIO CORTINA' || isSelena) && (
                 <NumberField
                   label="Descuento inferior tela (cm)"
@@ -802,7 +814,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {(fields.arzua || fields.galicia) && <>
                 {awning.device === 'MOTOR' && <SegmentedField label="Motor" value={awning.motorPower} options={['AUTOMÁTICO', '55/17', '70/17']} onChange={(motorPower) => update({ motorPower })} />}
               </>}
-            </div>
+            </ExceptionBlock>
           )}
 
           {!fabricOnly && (
