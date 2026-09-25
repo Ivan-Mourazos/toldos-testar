@@ -39,11 +39,26 @@ const OBSERVATION_SAMPLE = 'OBS PRUEBA LECTURA';
 const CARD_FABRIC = 'ACRILI2018P120|||120|||ACR AZUL';
 const VALANCE_FABRIC = 'ACRILI2020P120|||120|||ACR VERDE';
 
-function render(awning: Awning, readOnly: boolean, { sameFabric = true } = {}) {
-  return renderToStaticMarkup(React.createElement(AwningColumn, {
+function render(awning: Awning, readOnly: boolean, { sameFabric = true, ofCalculation = undefined as unknown } = {}) {
+  const markup = renderToStaticMarkup(React.createElement(AwningColumn, {
     awning, index: 0, parameters, sameFabric, orderFabric: SAMPLE_FABRIC, readOnly,
+    ofCalculation: ofCalculation as never,
     onUpdate: noop, onDuplicate: noop, onRemove: noop
   }));
+  // Iván, 25/09/2026: al leer, la excepción técnica enseña solo por qué hace falta y lo
+  // que cambia, no todos los campos del candado; esos campos no entran en la paridad.
+  return readOnly ? markup : withoutOverrides(markup);
+}
+
+function withoutOverrides(markup: string) {
+  const start = markup.indexOf('<div class="awning-overrides">');
+  if (start < 0) return markup;
+  let depth = 0;
+  for (const match of markup.slice(start).matchAll(/<div[\s>]|<\/div>/g)) {
+    depth += match[0].startsWith('</') ? -1 : 1;
+    if (depth === 0) return markup.slice(0, start) + markup.slice(start + (match.index ?? 0) + match[0].length);
+  }
+  return markup;
 }
 
 // Etiquetas de campo: <label><span>X</span>, grupos segmentados (aria-label), selects
@@ -477,9 +492,15 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
         expectFabricsShown(model, awning, false);
       });
 
-      it('la excepción técnica se ve al leer', () => {
-        const read = render(awning, true, { sameFabric: false });
-        expect(read).toContain('Excepción técnica activa para este toldo.');
+      it('la excepción técnica dice al leer por qué hace falta y solo lo que cambia', () => {
+        expect(render(awning, true, { sameFabric: false })).toContain('Excepción técnica activada sin cambios');
+        const read = render(awning, true, {
+          sameFabric: false,
+          ofCalculation: { valid: true, exception: { reasons: ['frente 598 cm, máximo 500 cm'], changes: [{ field: 'x', label: 'Descuento frente tela', value: 13, standard: 12 }] } }
+        });
+        expect(read).toContain('Excepción técnica: frente 598 cm, máximo 500 cm.');
+        expect(read).toContain('Descuento frente tela');
+        expect(read).toContain('(normal 12)');
       });
 
       it('ningún campo de la ficha cae en «Otros»', () => {

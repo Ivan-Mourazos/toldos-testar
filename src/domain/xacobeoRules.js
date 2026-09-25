@@ -1,3 +1,4 @@
+import { effectiveOverride } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -210,12 +211,7 @@ function normalizeDevice(value) {
   return '';
 }
 
-function effectiveNumber(awning, field, fallback) {
-  const override = awning[field];
-  return awning.reglasModificadas && override !== null && override !== undefined && Number.isFinite(Number(override))
-    ? Math.max(0, Number(override))
-    : Number(fallback) || 0;
-}
+function effectiveNumber(awning, field, fallback) { return effectiveOverride(awning, field, fallback); }
 
 function buildDescription(awning, calculation) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);

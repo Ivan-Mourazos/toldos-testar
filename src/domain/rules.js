@@ -23,6 +23,7 @@ import { getRequiredDimensions } from './modelBehavior.js';
 import { awningLetter, describeMissing, getMissingFields } from './awningCompleteness.js';
 import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 import { withRpsCodes } from './rpsIrregularCodes.js';
+import { beginRuleOverrides, finishRuleOverrides } from './ruleOverrides.js';
 import { withLacadoFallback } from './lacadoFallback.js';
 
 const implementedRules = new Map([
@@ -49,6 +50,39 @@ const implementedRules = new Map([
   ['BAMBALINA', calculateBambalina],
   ['ENROLLABLE', calculateEnrollable]
 ]);
+
+// Iván, 25/09/2026: el aviso de una excepción técnica tiene que decir lo que de verdad
+// se ha cambiado. Por qué hace falta sale de calcular el mismo toldo sin excepción: sus
+// errores (frente por encima del máximo, etc.) son lo que la excepción permite. Lo
+// cambiado, de los valores del candado que difieren del normal (ruleOverrides.js).
+function withCoherentException({ result, rule, order, awning, model, changes }) {
+  const own = new Set((result.diagnostics || []).map((item) => item.message));
+  const standard = rule({ order, awning: { ...awning, reglasModificadas: false }, model });
+  const reasons = (standard.diagnostics || [])
+    .filter((item) => item.level === 'error' && !own.has(item.message) && !/ incomplet[oa] /.test(item.message))
+    .map((item) => String(item.message)
+      .replace(/^[A-ZÁÉÍÓÚÑ0-9 ]+ no válid[oa]:s*/, '')
+      .replace(/.?s*Activa una excepción técnica[^.]*.?$/, '')
+      .replace(/.$/, ''));
+  const described = [
+    ...reasons,
+    ...changes.map(({ label, value, standard: normal }) => `${label} ${formatOverride(value)} (normal ${formatOverride(normal)})`)
+  ];
+  const message = described.length
+    ? `Excepción técnica en OF ${awning.of}: ${described.join('; ')}.`
+    : `Excepción técnica en OF ${awning.of} activada sin cambios: se calcula con los valores normales.`;
+  const diagnostics = (result.diagnostics || []).filter((item) => !/^Excepción técnica en OF /.test(item.message || ''));
+  diagnostics.push({ level: 'warn', awningId: awning.id, message });
+  return {
+    ...result,
+    diagnostics,
+    calculation: result.calculation ? { ...result.calculation, exception: { reasons, changes } } : result.calculation
+  };
+}
+
+function formatOverride(value) {
+  return typeof value === 'number' ? String(Math.round(value * 100) / 100).replace('.', ',') : String(value ?? '');
+}
 
 export function calculateOrder(payload) {
   const order = normalizeOrder(payload);
@@ -87,8 +121,12 @@ export function calculateOrder(payload) {
 
     const invalidUnits = !Number.isInteger(Number(awning.units)) || Number(awning.units) < 1;
     const calculationAwning = invalidUnits ? { ...awning, units: 1 } : awning;
+    const modified = Boolean(calculationAwning.reglasModificadas);
+    if (modified) beginRuleOverrides();
     let result = rule({ order, awning: calculationAwning, model });
+    const overrideChanges = modified ? finishRuleOverrides() : [];
     result = applyStructureEdit(awning, result);
+    if (modified) result = withCoherentException({ result, rule, order, awning: calculationAwning, model, changes: overrideChanges });
     if (Array.isArray(result.diagnostics)) {
       diagnostics.push(...result.diagnostics);
     }

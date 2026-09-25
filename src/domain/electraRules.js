@@ -1,3 +1,4 @@
+import { effectiveOverride } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -168,7 +169,7 @@ export function calculateElectra({ order, awning }) {
   } else if (unvalidatedTextile && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: 'ELECTRA con bamba o confección especial: requiere excepción técnica para confirmar medidas y metraje.' });
   } else if ((overWidth || overDrop) && !modified) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: `ELECTRA fuera de estándar: máximo ${parameters.standardMaxWidth}x${parameters.standardMaxDrop} cm. Activa una excepción técnica para continuar.` });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `ELECTRA fuera de estándar: ${awning.width}x${awning.projection} cm, máximo ${parameters.standardMaxWidth}x${parameters.standardMaxDrop} cm. Activa una excepción técnica para continuar.` });
   } else if (!rollStockLength || !profileStockLength || (hasGuide && !guideStockLength)) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: 'ELECTRA no válido: no hay largo de stock suficiente para las piezas calculadas.' });
   }
@@ -384,12 +385,7 @@ function wallMaterial(wallType, units) {
   return wall?.referencia ? line(wall.referencia, wall.unidades * units, wall.tornilleria) : null;
 }
 
-function effectiveNumber(awning, field, fallback) {
-  const value = awning[field];
-  return awning.reglasModificadas && value !== null && value !== undefined && Number.isFinite(Number(value))
-    ? Math.max(0, Number(value))
-    : Number(fallback) || 0;
-}
+function effectiveNumber(awning, field, fallback) { return effectiveOverride(awning, field, fallback); }
 
 function chooseStock(length, stockLengths) {
   return stockLengths.find((stock) => stock >= length) || null;

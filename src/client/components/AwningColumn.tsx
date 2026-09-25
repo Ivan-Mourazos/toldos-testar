@@ -72,12 +72,31 @@ export function getElectraSupportOptions(submodel: string): ElectraSupport[] {
 // La excepción técnica en la ficha de lectura: una línea al final con un botón para ver
 // lo que se ha cambiado, y así los datos del toldo se leen sin ese bloque en medio
 // (Iván, 25/09/2026). Al editar sigue a la vista, como siempre.
-function ExceptionBlock({ readOnly, children }: { readOnly: boolean; children: React.ReactNode }) {
+type ExceptionSummary = NonNullable<NonNullable<Props['ofCalculation']>['exception']>;
+
+const formatExceptionValue = (value: number | string) => (typeof value === 'number' ? String(Math.round(value * 100) / 100).replace('.', ',') : String(value));
+
+// Al leer, solo lo que de verdad cambia la excepción (Iván, 25/09/2026): por qué hace
+// falta y los valores del candado distintos del normal, no todos los campos.
+function ExceptionBlock({ readOnly, exception, children }: { readOnly: boolean; exception?: ExceptionSummary; children: React.ReactNode }) {
   if (!readOnly) return <div className="awning-overrides">{children}</div>;
+  const reasons = exception?.reasons || [];
+  const changes = exception?.changes || [];
+  const nothing = reasons.length === 0 && changes.length === 0;
   return (
     <details className="read-exception">
-      <summary>Excepción técnica activa para este toldo.<span className="read-exception-toggle">Ver cambios</span></summary>
-      <div className="read-exception-list">{children}</div>
+      <summary>
+        {nothing ? 'Excepción técnica activada sin cambios: valores normales.' : `Excepción técnica: ${reasons[0] || `${changes.length} ${changes.length === 1 ? 'valor cambiado' : 'valores cambiados'}`}.`}
+        {!nothing && <span className="read-exception-toggle">Ver cambios</span>}
+      </summary>
+      {!nothing && (
+        <ul className="read-exception-list">
+          {reasons.map((reason) => <li key={reason}><strong>Fuera de lo normal</strong><span>{reason}</span></li>)}
+          {changes.map((change) => (
+            <li key={change.field}><strong>{change.label}</strong><span>{formatExceptionValue(change.value)} <small>(normal {formatExceptionValue(change.standard)})</small></span></li>
+          ))}
+        </ul>
+      )}
     </details>
   );
 }
@@ -699,8 +718,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
 
           {awning.reglasModificadas && (
-            <ExceptionBlock readOnly={readOnly}>
-              {!readOnly && <p className="awning-modified-chip">Excepción técnica activa para este toldo.</p>}
+            <ExceptionBlock readOnly={readOnly} exception={ofCalculation?.exception}>
+              {!readOnly && <p className="awning-modified-chip">{ofCalculation?.exception?.reasons?.length ? `Excepción técnica: ${ofCalculation.exception.reasons.join('; ')}.` : 'Excepción técnica activa para este toldo. Cambia solo lo que haga falta: al leer se verá lo que difiere del valor normal.'}</p>}
               {(awning.model === 'CORTINA' || awning.model === 'CAMBIO CORTINA' || isSelena) && (
                 <NumberField
                   label="Descuento inferior tela (cm)"

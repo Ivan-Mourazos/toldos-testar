@@ -450,6 +450,8 @@ export type Calculation = {
       model: string;
       valid: boolean;
       missingFields?: MissingField[];
+      /** Excepción técnica: por qué hace falta y qué valores del candado difieren del normal. */
+      exception?: { reasons: string[]; changes: { field: string; label: string; value: number | string; standard: number | string }[] };
       minimumLine: number;
       // Todos los modelos los devuelven. En IRIS no son copia de lo que
       // escribió el técnico: salen del escuadrado del hueco.

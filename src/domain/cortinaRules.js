@@ -1,3 +1,4 @@
+import { effectiveOverride, noteOverride } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -31,6 +32,10 @@ export function calculateCortina({ order, awning }) {
   const motorPower = device === 'MOTOR'
     ? awning.reglasModificadas && ['35/17', '55/17'].includes(String(awning.motorPower)) ? String(awning.motorPower) : '15/17'
     : '';
+  if (awning.reglasModificadas) {
+    noteOverride('curtainFabricDeductionCm', deduction, awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm);
+    if (device === 'MOTOR') noteOverride('motorPower', motorPower, '15/17');
+  }
   const missingFields = [];
   const diagnostics = [];
 
@@ -110,7 +115,7 @@ export function calculateCortina({ order, awning }) {
     const piece = !stockLength ? `el tubo de ${rollTubeLength}` : `el perfil de ${structureLength}`;
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA no válida: ningún largo de stock admite ${piece} cm en este lacado.` });
   } else if ((overWidth || overDrop) && !modified) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA fuera de estándar: máximo ${parameters.standardMaxWidth}x${parameters.standardMaxDrop} cm.` });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA fuera de estándar: ${awning.width}x${awning.projection} cm, máximo ${parameters.standardMaxWidth}x${parameters.standardMaxDrop} cm.` });
   } else if (overWidth || overDrop || hasDimensionalOverrides(awning) || (modified && deduction !== parameters.bottomDeductionCm)) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de Cortina modificadas.` });
   }
@@ -272,10 +277,7 @@ function normalizeCurtainSupport(value) {
 }
 
 function effectiveDiscount(awning, field, table, device) {
-  const override = awning[field];
-  return awning.reglasModificadas && override !== null && override !== undefined && Number.isFinite(Number(override))
-    ? Math.max(0, Number(override))
-    : discount(table, device);
+  return effectiveOverride(awning, field, discount(table, device));
 }
 
 function hasDimensionalOverrides(awning) {

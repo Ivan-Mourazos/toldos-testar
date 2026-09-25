@@ -1,3 +1,4 @@
+import { effectiveOverride } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -325,12 +326,7 @@ function normalizePlacement(value) {
   return ['FRONTAL', 'TECHO', 'ENTRE PAREDES'].includes(clean) ? clean : '';
 }
 
-function effectiveNumber(awning, field, fallback) {
-  const override = awning[field];
-  return awning.reglasModificadas && override !== null && override !== undefined && Number.isFinite(Number(override))
-    ? Math.max(0, Number(override))
-    : Number(fallback) || 0;
-}
+function effectiveNumber(awning, field, fallback) { return effectiveOverride(awning, field, fallback); }
 
 function sensorMaterial(value) {
   const sensor = String(value || '').trim().toUpperCase();

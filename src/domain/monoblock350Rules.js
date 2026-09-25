@@ -1,3 +1,4 @@
+import { effectiveOverride } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -257,7 +258,7 @@ function buildDespiece(context) {
 
 function line(code, quantity, description) { return code ? { code, quantity, description } : null; }
 function normalizeDevice(value) { const clean = String(value || '').trim().toUpperCase(); if (clean === 'MOTOR') return 'MOTOR'; if (clean.includes('MAQ')) return 'MAQUINA'; return ''; }
-function effectiveNumber(awning, field, fallback) { const value = awning[field]; return awning.reglasModificadas && value !== null && value !== undefined && Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : Number(fallback) || 0; }
+function effectiveNumber(awning, field, fallback) { return effectiveOverride(awning, field, fallback); }
 function wallMaterial(wallType, armUnits) { const entry = behaviorData.options.tiposPared.find((item) => item.pared === wallType); return entry?.referencia ? line(entry.referencia, entry.unidades * armUnits, entry.tornilleria) : null; }
 function sensorMaterial(value) { const sensor = String(value || '').trim().toUpperCase(); if (sensor === 'MOVIMIENTO') return { code: 'EOLIS3DIO', description: 'EOLIS 3D WIREFREE IO' }; if (sensor === 'EOLIS IO') return { code: 'EOLISSENSORIO', description: 'EOLIS SENSOR IO' }; if (sensor === 'SOL') return { code: 'SUNISIIIO', description: 'SUNIS II IO' }; return null; }
 function buildDescription(awning, calculation) { const valance = Math.max(0, Number(awning.valanceHeight) || 0); const valanceText = valance > 0 ? ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm` : ''; return `Toldo MONOBLOCK 350 ${awning.width}x${awning.projection} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · paño ${formatNumber(calculation.fabricMl)} ml${valanceText}`; }

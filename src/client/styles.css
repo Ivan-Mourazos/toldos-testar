@@ -5033,7 +5033,10 @@ fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
 .read-exception-toggle { font-weight: 700; text-decoration: underline; }
 .read-exception[open] .read-exception-toggle { font-size: 0; }
 .read-exception[open] .read-exception-toggle::after { content: "Ocultar cambios"; font-size: 12px; }
-.read-exception-list { display: grid; gap: 0 18px; grid-template-columns: 1fr 1fr; padding: 0 8px 6px; }
+.read-exception-list { display: grid; gap: 3px 18px; grid-template-columns: 1fr 1fr; list-style: none; margin: 0; padding: 2px 8px 7px; }
+.read-exception-list li { display: grid; font-size: 12px; gap: 1px; }
+.read-exception-list li strong { color: var(--text-muted); font-size: 11px; font-weight: 650; }
+.read-exception-list li small { color: var(--text-muted); }
 
 /* Parámetros unificados (Iván, 25/09/2026): las 22 fichas con el mismo patrón. Cabecera
    oscura, secciones «01 Título» con la explicación a la izquierda y los campos o la tabla

@@ -1,3 +1,4 @@
+import { noteOverride } from './ruleOverrides.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -36,6 +37,11 @@ export function calculateFabricOnly({ order, awning }) {
   const valanceExtra = modified && awning.fabricJobValanceExtraCm !== null && awning.fabricJobValanceExtraCm !== undefined
     ? Math.max(0, Number(awning.fabricJobValanceExtraCm) || 0)
     : parameters.valanceExtraCm;
+  if (modified) {
+    noteOverride('fabricJobWidthAdjustmentCm', widthAdjustment, 0);
+    if (model !== 'CAMBIO ANTICA') noteOverride('fabricJobDropAllowanceCm', bodyAllowance, resolveFabricJobAllowance(model, hasValance, parameters));
+    if (hasValance) noteOverride('fabricJobValanceExtraCm', valanceExtra, parameters.valanceExtraCm);
+  }
 
   const curtainDeduction = model === 'CAMBIO CORTINA'
     ? modified
