@@ -1,4 +1,5 @@
 import { describe, expect, it, test } from 'vitest';
+import { normalizeGaliciaParameters } from './galiciaParameters.js';
 import { calculateOrder } from './rules.js';
 import { consolidateReservation, normalizeOrder } from './validation.js';
 
@@ -1053,6 +1054,34 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     }));
     expect(result.ofs[0].calculation.valid).toBe(true);
     expect(result.diagnostics).toContainEqual(expect.objectContaining({ level: 'warn', message: expect.stringContaining('hasta 325 cm de salida') }));
+  });
+
+  // Iván, 25/09/2026 (Q-G03): hasta 8 m; por encima de 7 m la barra de carga se empalma.
+  test('780 de frente: tubo de enrolle de 800 y barra de carga empalmada', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 780, projection: 300, armCount: 3, device: 'MAQ. EXTERIOR' })]
+    }));
+    const ofBlock = result.ofs[0];
+    expect(ofBlock.calculation.valid).toBe(true);
+    expect(ofBlock.materials).toContainEqual(expect.objectContaining({ code: 'TURA80HG800C', quantity: 1 }));
+    const loadBars = ofBlock.materials.filter((item) => /^PEVO80/.test(item.code));
+    expect(loadBars).toHaveLength(1);
+    expect(loadBars[0].quantity).toBe(2);
+    expect(Number(loadBars[0].code.match(/(\d{3})C$/)[1]) * 2).toBeGreaterThanOrEqual(ofBlock.calculation.structureLength);
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({ level: 'warn', message: expect.stringContaining('empalmada en 2 barras') }));
+  });
+
+  test('por encima de 800 hace falta la excepción técnica', () => {
+    const result = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 820, projection: 300, armCount: 3, device: 'MAQ. EXTERIOR' })]
+    }));
+    expect(result.ofs[0].calculation.valid).toBe(false);
+    expect(result.diagnostics.some((item) => item.message.includes('supera el máximo estándar de 800 cm'))).toBe(true);
+  });
+
+  test('el tope de 700 guardado antes en el servidor pasa a 800', () => {
+    expect(normalizeGaliciaParameters({ standardMaxWidth: 700 }).standardMaxWidth).toBe(800);
+    expect(normalizeGaliciaParameters({ standardMaxWidth: 750 }).standardMaxWidth).toBe(750);
   });
 
   test('frente superior a 550 no permite quedarse con 2 brazos', () => {

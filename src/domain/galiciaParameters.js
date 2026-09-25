@@ -1,7 +1,9 @@
 import { galiciaMinimumLineByProjection } from './galiciaConstants.js';
 
 export const defaultGaliciaParameters = {
-  standardMaxWidth: 700,
+  // Ficha TGM: hasta 8 m con tres brazos; por encima de 7 m la barra de carga se
+  // empalma (Iván, 25/09/2026, Q-G03). Antes la web paraba en 700.
+  standardMaxWidth: 800,
   armSwitchWidth: 550,
   privateTube: 'TUBO DE CARGA EVO 80',
   businessTube: 'TUBO DE CARGA UNIVERS 280',
@@ -29,7 +31,8 @@ export function normalizeGaliciaParameters(input = {}) {
   return {
     ...defaults,
     ...input,
-    standardMaxWidth: positiveNumber(input.standardMaxWidth, defaults.standardMaxWidth),
+    // El 700 guardado en el servidor era el tope anterior, no una decisión: pasa a 800.
+    standardMaxWidth: Number(input.standardMaxWidth) === 700 ? defaults.standardMaxWidth : positiveNumber(input.standardMaxWidth, defaults.standardMaxWidth),
     armSwitchWidth: positiveNumber(input.armSwitchWidth, defaults.armSwitchWidth),
     privateTube: normalizeTube(input.privateTube, defaults.privateTube),
     businessTube: normalizeTube(input.businessTube, defaults.businessTube),

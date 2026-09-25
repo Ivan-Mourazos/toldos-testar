@@ -14,6 +14,8 @@ import {
 import { resolveMotorRemote } from './motorAccessories.js';
 import { evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
 import { galiciaArmLines, galiciaSingleArmExists, galiciaSupportLines } from './galiciaSupportPieces.js';
+import { groupBars, rollTubeLengths, splitIntoBars } from './monoblock350Pieces.js';
+import { universProfileStockLengths } from './universProfileLengths.js';
 import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
@@ -77,12 +79,21 @@ export function calculateGalicia({ order, awning }) {
   // El EVO 80 no existe en todos los largos de cada lacado (en negro, el de 600 está
   // de baja desde 2023): se elige entre los que hay, como en el Arzúa.
   const profileLengths = tubeLoad === 'TUBO DE CARGA EVO 80' ? evo80StockLengths(colorSuffix, parameters.stockLengths) : parameters.stockLengths;
-  const stockLength = chooseStockLength(Math.max(structureLength, rollTubeLength), profileLengths);
+  const singleStock = chooseStockLength(Math.max(structureLength, rollTubeLength), profileLengths);
+  // Por encima de la barra más larga (Iván, 25/09/2026, Q-G03): el tubo de enrolle va de
+  // 800 y la barra de carga se empalma en barras iguales, como en el Monoblock 350.
+  const loadAvailable = tubeLoad === 'TUBO DE CARGA EVO 80'
+    ? evo80StockLengths(colorSuffix, [400, 500, 600, 700])
+    : universProfileStockLengths(universProfileSuffix(colorSuffix), [400, 500, 600, 700]);
+  const firstThatFits = (length) => (sorted) => sorted.find((item) => item >= length);
+  const rollBars = singleStock ? [singleStock] : splitIntoBars(rollTubeLength, rollTubeLengths, firstThatFits(rollTubeLength));
+  const loadBars = singleStock ? [singleStock] : splitIntoBars(structureLength, loadAvailable, firstThatFits(structureLength));
+  const stockLength = singleStock ?? (rollBars.length ? Math.max(...rollBars) : null);
   // Con tres brazos va además un brazo suelto: si no existe en ese lacado y salida, no
   // se reserva un código que RPS no tiene.
   const armMissing = !onyxArmExists(colorSuffix, awning.projection)
     || (armCount === 3 && !galiciaSingleArmExists(colorSuffix, awning.projection));
-  const stockUnavailable = stockLength === null;
+  const stockUnavailable = !rollBars.length || !loadBars.length;
   const fabricInvalid = Boolean(fabricSelection && !fabric);
   const valid = missingFields.length === 0
     && !fabricInvalid
@@ -111,7 +122,7 @@ export function calculateGalicia({ order, awning }) {
 
   const context = {
     awning, lacado, colorSuffix, tubeLoad, device, armCount, motorPower,
-    stockLength, structureLength, rollTubeLength, fabricMl, fabric, separateValance
+    stockLength, rollBars, loadBars, structureLength, rollTubeLength, fabricMl, fabric, separateValance
   };
   const materials = valid ? buildMaterials(context) : [];
   const despiece = valid ? buildDespiece(context) : null;
@@ -150,6 +161,12 @@ export function calculateGalicia({ order, awning }) {
     diagnostics.push({
       level: 'warn', awningId: awning.id,
       message: `Excepción técnica en OF ${awning.of}: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm.`
+    });
+  }
+  if (valid && loadBars.length > 1) {
+    diagnostics.push({
+      level: 'warn', awningId: awning.id,
+      message: `GALICIA de ${formatNumber(awning.width)} cm: la barra de carga va empalmada en ${loadBars.length} barras de ${loadBars[0]} cm.`
     });
   }
   // Ficha técnica TGM (intranet, 21/09/2026): con tres brazos la salida máxima es 3,25 m.
@@ -217,18 +234,18 @@ const refCrank = (lacado, height) => `MANIVE${crankSuffix(lacado)}${height}C`;
 // - Casquillo de punta, varillas, tapones EVO, máquina MB-11 y manivela se consumían
 //   y no se reservaban. El CASPLAS y la corona LT60 Ø78 no se consumen.
 // - Motor: el mismo kit que el Arzúa (rueda P-801 mecanizada y corona LT60).
-function galiciaPieces({ awning, lacado, colorSuffix, tubeLoad, device, armCount, motorPower, stockLength, structureLength, rollTubeLength }) {
+function galiciaPieces({ awning, lacado, colorSuffix, tubeLoad, device, armCount, motorPower, rollBars, loadBars, structureLength, rollTubeLength }) {
   const units = Math.max(1, Number(awning.units) || 1);
   // Las varillas de vaina se cortan al largo de la barra de carga; de la blanca
   // entra el doble, como en el Arzúa (mismo tubo y misma barra).
   const varillaMl = Math.ceil(Number(structureLength) || 0) / 100;
   const pieces = [
     ...galiciaSupportLines(colorSuffix, armCount, units),
-    { code: refRollTube(stockLength), quantity: units, description: 'TUBO DE ENROLLE P801', length: rollTubeLength },
+    ...groupBars(rollBars).map(({ length, count }) => ({ code: refRollTube(length), quantity: count * units, description: 'TUBO DE ENROLLE P801', length: rollTubeLength })),
     { code: tipBushing('P801').code, quantity: units, description: 'CASQUILLO PUNTA CON EJE Ø78' },
-    tubeLoad === 'TUBO DE CARGA EVO 80'
-      ? { code: refEvoTube(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA EVO 80', length: structureLength }
-      : { code: refUniversTube(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA UNIVERS 280', length: structureLength },
+    ...groupBars(loadBars).map(({ length, count }) => (tubeLoad === 'TUBO DE CARGA EVO 80'
+      ? { code: refEvoTube(colorSuffix, length), quantity: count * units, description: 'TUBO DE CARGA EVO 80', length: structureLength }
+      : { code: refUniversTube(colorSuffix, length), quantity: count * units, description: 'TUBO DE CARGA UNIVERS 280', length: structureLength })),
     tubeLoad === 'TUBO DE CARGA EVO 80'
       ? { code: refEvoCaps(lacado), quantity: units, description: 'KIT TAPONES EVO 80' }
       : { code: refUniversCaps(lacado), quantity: units, description: 'KIT TAPONES UNIVERS 280' },
