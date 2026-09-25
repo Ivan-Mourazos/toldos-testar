@@ -493,8 +493,9 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   } else {
     drawAwningDiagram(doc, diagramX, 149, diagramW, 332, diagram, diagramAwning, diagramCalculation);
   }
-  const remainingNotes = String(order.notes || '').trim()
-    ? drawNotesBox(doc, diagramX, 488, diagramW, outerBottom - 10, order.notes)
+  const pageNotes = fabricPageNotes(order, lines);
+  const remainingNotes = pageNotes
+    ? drawNotesBox(doc, diagramX, 488, diagramW, outerBottom - 10, pageNotes)
     : '';
 
   const contentX = margin + 270;
@@ -730,6 +731,24 @@ function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE
 
 // Cuando la página mezcla toldos con distinta tela, curva, remate o rotulación,
 // la cabecera dice "SEGÚN TOLDO" y cada fila tiene que decir el suyo.
+// Observaciones de la página de telas: las del pedido y, de cada bambalina, sus notas
+// con la letra del toldo. Antes iban en la línea y, si no cabían, remitían al pedido.
+export function fabricPageNotes(order = {}, lines = []) {
+  const awningNotes = lines
+    .filter(({ awning }) => String(awning?.model || '').trim().toUpperCase() === 'BAMBALINA')
+    .flatMap(({ awning, index }) => {
+      // Con imagen sustituta no se ve el dibujo: la varilla y las bastillas van aquí.
+      const hiddenDrawing = awning.fabricImage && normalizeFabricDiagramOverride('BAMBALINA', awning.fabricDiagramOverride) !== 'SUPLEMENTO';
+      const parts = [
+        hiddenDrawing && 'VARILLA BLANCA · BASTILLAS LATERALES',
+        String(awning.fabricNotes || '').trim() && 'OBS. TELA: ' + String(awning.fabricNotes).trim(),
+        String(awning.structureNotes || '').trim() && 'ACLARACIONES: ' + String(awning.structureNotes).trim()
+      ].filter(Boolean);
+      return parts.length ? [`${awningLetter(index)}: ${parts.join(' · ')}`] : [];
+    });
+  return [String(order.notes || '').trim(), ...awningNotes].filter(Boolean).join('\n');
+}
+
 function buildFabricRowInstruction(line, lines, order) {
   const detail = buildFabricLineDetail(line.awning, line.calc, order);
   const parts = [];
@@ -1997,21 +2016,17 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
     }
   }
 
-  // Como en los libros: la fila ya da el corte (hecha + 5) y el texto dice de cuánto
-  // queda hecha ("BAMBALINA HECHA DE 25 CM" con salida 30).
+  // Iván, 25/09/2026 (Q-B07): la línea dice de cuánto es y de cuánto queda hecha
+  // ("BAMBALINA DE 30CM, HECHA DE 25CM"); lo demás va a Observaciones
+  // (fabricPageNotes). La varilla y las bastillas ya salen en el dibujo.
   if (model === 'BAMBALINA' && height > 0) {
-    instructionParts.push(`BAMBALINA HECHA DE ${formatInstructionMeasure(height)}CM`);
+    const cut = Number(calculation.fabricDrop) > 0 ? Number(calculation.fabricDrop) : height + 5;
+    instructionParts.push(`BAMBALINA DE ${formatInstructionMeasure(cut)}CM, HECHA DE ${formatInstructionMeasure(height)}CM`);
   }
 
   if ((model.includes('CORTINA') || model === 'ELECTRA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
     const velcroHeight = resolveCurtainVelcroHeight(awning);
     if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);
-  }
-
-  if (model === 'BAMBALINA' && normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) !== 'SUPLEMENTO') {
-    instructionParts.push('VARILLA BLANCA · BASTILLAS LATERALES');
-    if (awning.fabricNotes) instructionParts.push('OBS. TELA: ' + awning.fabricNotes);
-    if (awning.structureNotes) instructionParts.push('ACLARACIONES: ' + awning.structureNotes);
   }
 
   if (['XACOBEO', 'CUARZO BOX', 'STORBOX 250'].includes(model)) {

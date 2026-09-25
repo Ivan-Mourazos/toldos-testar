@@ -3,6 +3,7 @@ import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {
   awningLetter,
   buildFabricLineDetail,
+  fabricPageNotes,
   buildGeneralFabricDiagramSpec,
   buildHeraMiniPlanDetail,
   buildOrderPlanteamientoPdf,
@@ -215,11 +216,25 @@ describe('datos del planteamiento de telas', () => {
     expect(detail.instruction).not.toContain('BAMBALINA INCLUIDA');
   });
 
-  test('el trabajo BAMBALINA dice de cuánto queda hecha, como en los libros', () => {
-    const detail = buildFabricLineDetail({ model: 'BAMBALINA', valanceHeight: 25 }, { fabricDrop: 30 });
+  // Iván, 25/09/2026 (Q-B07): solo «bamba de tanto, hecha de tanto»; lo demás, a Observaciones.
+  test('la línea de la BAMBALINA dice de cuánto es y de cuánto queda hecha, y nada más', () => {
+    const detail = buildFabricLineDetail(
+      { model: 'BAMBALINA', valanceHeight: 25, fabricNotes: 'OLLAOS CADA 40', structureNotes: 'IGUAL QUE LA ANTERIOR' },
+      { fabricDrop: 30 }
+    );
 
     expect(detail.fabricDrop).toBe('30,0');
-    expect(detail.instruction).toMatch(/^BAMBALINA HECHA DE 25CM/);
+    expect(detail.instruction).toBe('BAMBALINA DE 30CM, HECHA DE 25CM');
+  });
+
+  test('las notas de la bambalina pasan a Observaciones con la letra del toldo', () => {
+    const notes = fabricPageNotes({ notes: 'NOTA DEL PEDIDO' }, [
+      { awning: { model: 'BAMBALINA', fabricNotes: 'OLLAOS CADA 40', structureNotes: 'IGUAL QUE LA ANTERIOR' }, index: 1 },
+      { awning: { model: 'BAMBALINA' }, index: 2 },
+      { awning: { model: 'CAMBIO TELA', fabricNotes: 'NO VA AQUÍ' }, index: 0 }
+    ]);
+
+    expect(notes).toBe('NOTA DEL PEDIDO\nB: OBS. TELA: OLLAOS CADA 40 · ACLARACIONES: IGUAL QUE LA ANTERIOR');
   });
 
   test.each(['XACOBEO', 'CUARZO BOX'])('%s conserva la instrucción VARILLA BLANCA ATRÁS', (model) => {
