@@ -41,7 +41,7 @@ const byLabel: Record<string, ReadGroupId> = {
   'Descuento kit perfiles (cm)': 'estructura', 'Descuento protector lona (cm)': 'estructura',
   'Descuento tubo de carga (cm)': 'estructura', 'Nº de brazos manual': 'estructura', 'Nº de soportes': 'estructura',
   'Margen bajada vertical (cm)': 'estructura', 'Factor diagonal de paño': 'estructura', 'Margen fijo de paño (cm)': 'estructura',
-  'Descuento P801 (cm)': 'estructura', 'Descuento EVO 80 (cm)': 'estructura', 'Descuento barra 40×40 (cm)': 'estructura',
+  'Descuento P801 (cm)': 'estructura', 'Descuento EVO 80 (cm)': 'estructura', 'Descuento barra de carga (cm)': 'estructura', 'Descuento barra 40×40 (cm)': 'estructura',
   'Margen caída tela (cm)': 'estructura', 'Descuento tubo P801 (cm)': 'estructura', 'Descuento perfil de carga (cm)': 'estructura',
   'Descuento perfil de cofre (cm)': 'estructura', 'Descuento guía sobre caída (cm)': 'estructura',
   'Ajuste de frente (cm)': 'estructura', 'Margen de caída (cm)': 'estructura', 'Remate de bamba (cm)': 'estructura',

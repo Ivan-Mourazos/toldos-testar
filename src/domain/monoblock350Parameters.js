@@ -52,6 +52,14 @@ export const defaultMonoblock350Parameters = {
   dimensionalRules: cloneManualRules()
 };
 
+// La barra Univers 280 se descuenta 1 cm menos que la EVO 80, porque la EVO lleva
+// tapas más grandes (Iván, 25/09/2026, Q-M04). El manual solo da el de la EVO.
+export const MONOBLOCK_UNIVERS_LESS_CM = 1;
+
+export function monoblockLoadBarDiscount(evoDiscount, tubeLoad) {
+  return String(tubeLoad || '').toUpperCase().includes('UNIVERS') ? evoDiscount - MONOBLOCK_UNIVERS_LESS_CM : evoDiscount;
+}
+
 /** @returns {import('../client/types').Monoblock350Parameters} */
 export function normalizeMonoblock350Parameters(input = {}) {
   const defaults = defaultMonoblock350Parameters;

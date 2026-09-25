@@ -17,6 +17,7 @@ import {
   resolveMonoblockCurronCount,
   resolveMonoblockRule,
   resolveMonoblockSupportCount,
+  monoblockLoadBarDiscount,
   suggestedMonoblockArmCount
 } from './monoblock350Parameters.js';
 
@@ -52,7 +53,7 @@ export function calculateMonoblock350({ order, awning }) {
   const maximumLine = effectiveNumber(awning, 'monoblockMaximumLineCm', baseRule?.maximum || 0);
   const fabricDiscount = effectiveNumber(awning, 'monoblockFabricWidthDiscountCm', discounts.fabric);
   const rollDiscount = effectiveNumber(awning, 'monoblockRollDiscountCm', discounts.roll);
-  const loadBarDiscount = effectiveNumber(awning, 'monoblockLoadBarDiscountCm', discounts.loadBar);
+  const loadBarDiscount = effectiveNumber(awning, 'monoblockLoadBarDiscountCm', monoblockLoadBarDiscount(discounts.loadBar, tubeLoad));
   const squareBarDiscount = effectiveNumber(awning, 'monoblockSquareBarDiscountCm', discounts.squareBar);
   const dropAllowance = effectiveNumber(awning, 'monoblockFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
   const supportCount = effectiveNumber(

@@ -51,8 +51,9 @@ describe('MONOBLOCK 350 contra hoja MON.350 y RPS', () => {
     expect(ofBlock.calculation).toMatchObject({
       valid: true, minimumLine: 362, maximumLine: 600,
       supportCount: 6, motorPower: '55/17',
+      // Univers: 1 cm menos de descuento que la EVO (Q-M04): 488 − (11,5 − 1).
       fabricWidth: 475, fabricDrop: 370, fabricMl: 18.5,
-      rollTubeLength: 476, structureLength: 476.5, stockLength: 600
+      rollTubeLength: 476, structureLength: 477.5, stockLength: 600
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPBRAMONOBNE11', quantity: 1 }),

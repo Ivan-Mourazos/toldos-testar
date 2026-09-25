@@ -21,7 +21,7 @@ import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.j
 import { ambarPlacementGroup } from '../../domain/ambarBoxParameters.js';
 import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount } from '../../domain/agataBoxParameters.js';
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
-import { resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
+import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
@@ -343,7 +343,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                     monoblockSupportCount: awning.monoblockSupportCount ?? ofCalculation?.supportCount ?? monoblockSupportCount,
                     monoblockFabricWidthDiscountCm: awning.monoblockFabricWidthDiscountCm ?? monoblockDiscounts.fabric,
                     monoblockRollDiscountCm: awning.monoblockRollDiscountCm ?? monoblockDiscounts.roll,
-                    monoblockLoadBarDiscountCm: awning.monoblockLoadBarDiscountCm ?? monoblockDiscounts.loadBar,
+                    monoblockLoadBarDiscountCm: awning.monoblockLoadBarDiscountCm ?? monoblockLoadBarDiscount(monoblockDiscounts.loadBar, awning.tubeLoad),
                     monoblockSquareBarDiscountCm: awning.monoblockSquareBarDiscountCm ?? monoblockDiscounts.squareBar,
                     monoblockFabricDropAllowanceCm: awning.monoblockFabricDropAllowanceCm ?? parameters.monoblock350.fabricDropAllowanceCm
                   }
@@ -742,7 +742,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <NumberField label="Nº de soportes" value={awning.monoblockSupportCount} min={1} step={1} onChange={(monoblockSupportCount) => update({ monoblockSupportCount })} />
                 <NumberField label="Descuento frente tela (cm)" value={awning.monoblockFabricWidthDiscountCm} min={0} step={0.1} onChange={(monoblockFabricWidthDiscountCm) => update({ monoblockFabricWidthDiscountCm })} />
                 <NumberField label="Descuento P801 (cm)" value={awning.monoblockRollDiscountCm} min={0} step={0.1} onChange={(monoblockRollDiscountCm) => update({ monoblockRollDiscountCm })} />
-                <NumberField label="Descuento EVO 80 (cm)" value={awning.monoblockLoadBarDiscountCm} min={0} step={0.1} onChange={(monoblockLoadBarDiscountCm) => update({ monoblockLoadBarDiscountCm })} />
+                <NumberField label="Descuento barra de carga (cm)" value={awning.monoblockLoadBarDiscountCm} min={0} step={0.1} onChange={(monoblockLoadBarDiscountCm) => update({ monoblockLoadBarDiscountCm })} />
                 <NumberField label="Descuento barra 40×40 (cm)" value={awning.monoblockSquareBarDiscountCm} min={0} step={0.1} onChange={(monoblockSquareBarDiscountCm) => update({ monoblockSquareBarDiscountCm })} />
                 <NumberField label="Margen caída tela (cm)" value={awning.monoblockFabricDropAllowanceCm} min={0} step={0.5} onChange={(monoblockFabricDropAllowanceCm) => update({ monoblockFabricDropAllowanceCm })} />
                 {boxDevice === 'MOTOR' && <SegmentedField label="Motor" value={awning.motorPower || 'AUTOMÁTICO'} options={['AUTOMÁTICO', '40/17', '50/12', '55/17', '70/17', '85/17', '100/12']} onChange={(motorPower) => update({ motorPower })} />}

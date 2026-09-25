@@ -8,6 +8,7 @@ import { ParameterBand, ParameterNote, ParameterSheet, deviceHeader, parameterMo
 import { ParameterSectionIndex } from '../components/ParameterSectionIndex';
 import { AnticaRuleReference, HeraRuleReference, IrisRuleReference, CambioAnticaRuleReference } from './RuleReferencePanels';
 import { arzuaProManualSpec } from '../../domain/arzuaProConstants.js';
+import { MONOBLOCK_UNIVERS_LESS_CM } from '../../domain/monoblock350Parameters.js';
 import { DrawingParametersPanel } from '../components/DrawingParametersPanel';
 import { fullAwningModelNames, fabricOnlyModelNames } from '../../domain/modelBehavior.js';
 import { groupModelsByFamily } from '../../domain/catalog.js';
@@ -669,6 +670,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onRes
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{discountRows.map(([field, label]) => <tr key={field}><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`MONOBLOCK ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.discounts[device][field]} onChange={(event) => updateDiscount(device, field, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
+        <ParameterNote>La barra Univers 280 se descuenta {MONOBLOCK_UNIVERS_LESS_CM} cm menos que la EVO 80, porque la EVO lleva tapas más grandes.</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="03" title="Rangos por salida y brazos" description="Frentes mínimos, máximos y motor automático.">

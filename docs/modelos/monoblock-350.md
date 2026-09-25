@@ -37,7 +37,7 @@ La tabla del Monoblock (mínimos, máximos y motor por salida y brazos) está gu
 | Brazos Onyx | `BONYX…` es un juego: 2 brazos = 1 juego, 3 = juego + suelto, 4 = 2 juegos | Un juego por brazo (el doble) | Por juegos (`onyxArmLines`) |
 | Soporte de brazo | Igual, `SOPBRAMONOB…` en juego y suelto `…D`/`…I` | Uno por brazo | Por juegos |
 | Soportes a pared o techo | En juego (`SOPFROMONOBL` / `SOPFTECMONOB`) y un suelto si es impar | Todos sueltos | El número del manual, en juegos + suelto |
-| Barra de carga | **Univers 280 en 31 de 59 OF**, EVO 80 en el resto | Siempre EVO | Se elige en la tarjeta, como en el Arzúa (Q-M04) |
+| Barra de carga | **Univers 280 en 31 de 59 OF**, EVO 80 en el resto | Siempre EVO | Se elige en la tarjeta, como en el Arzúa. La Univers se descuenta 1 cm menos que la EVO (Q-M04, 25/09/2026) |
 | Tapones de la barra | `TAPONEVO8` o `TAPOPLUN280` | `TAPONEVO7` (EVO 70) | Según la barra |
 | Terminales | Juego y, con 3 brazos, el indiferente | No se reservaban | Como el Galicia |
 | Tapones del tubo 40×40 | 2 por toldo (`TAPTUBO40BL16` / `…NE05`) | No se reservaban | 2 |
@@ -73,5 +73,5 @@ A 1280×720 y 1600, con AR2603393 (OF 0230266: 695 × 275, 3 brazos, techo, máq
 | Q-M01 | **Resuelta (Iván, 25/09/2026): el manual más reciente del modelo.** Cambian los de 3 brazos y el máximo con 3,50 (7,75 o 8,25) | Hoy, los del manual de 2016. Pendiente: localizar el manual más reciente de Llaza, aplicar sus valores y migrar los parámetros guardados en el servidor |
 | Q-M02 | **Resuelta (Iván, 25/09/2026): como dice el manual.** Con 4 brazos se consumió el 70/17 (2 OF) y el manual pide 85-100 Nm | 55/17, 70/17 y 85/17: ya es lo del manual |
 | Q-M03 | Frentes de 720 a 725: el almacén usó una barra de 700 aunque el corte pasa de 700. ¿Hasta dónde vale una sola? Por encima, ¿cómo se empalma? Iván (25/09/2026): revisar cómo se hizo en pedidos pasados; si no se aclara, pasa al taller | Una hasta 725; después, barras iguales |
-| Q-M04 | **Resuelta (Iván, 25/09/2026):** la barra Univers se descuenta 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Hoy, el del EVO. Pendiente: EVO − 1 cm |
+| Q-M04 | **Resuelta (Iván, 25/09/2026):** la barra Univers se descuenta 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Hecho: descuento de la EVO − 1 cm (también en Parámetros y en la excepción técnica) |
 | Q-A04, Q-A06, Q-G01, Q-PR02 | Lado del suelto, largo de stock, máquina MB-11 o Geiger, casquillo de eje 50 o 63 | Derecho, 600/700, MB-11, eje 50 |
