@@ -56,8 +56,8 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
     <header className="drawing-parameters-heading">
       <div>
         <span className="section-kicker">Biblioteca del taller · {model}</span>
-        <h2 id="drawing-parameters-title">Dibujos por configuración</h2>
-        <p>El PDF elige automáticamente la ficha más específica que coincida. La imagen puesta manualmente en un pedido siempre manda.</p>
+        <h2 id="drawing-parameters-title">Dibujos del taller</h2>
+        <p>Sustituyen al dibujo de la web en el PDF de todos los pedidos de este modelo. Una imagen puesta en un toldo del pedido manda sobre ellos.</p>
       </div>
       <div className="drawing-parameters-actions">
         {variants.length > 0 && <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Vaciar dibujos</button>}
@@ -65,10 +65,16 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
       </div>
     </header>
 
+    <ol className="drawing-steps" aria-label="Cómo se usa">
+      <li><strong>Añade un dibujo</strong> y ponle su imagen (archivo o pegar).</li>
+      <li><strong>Di cuándo sale</strong> con «Solo cuando…» (por ejemplo, Accionamiento MOTOR). Sin nada, sale siempre.</li>
+      <li><strong>Pulsa «Guardar para todos»</strong> arriba: hasta entonces solo lo ves tú.</li>
+    </ol>
+
     {variants.length === 0 ? <button className="drawing-empty" type="button" onClick={add}>
       <ImagePlus aria-hidden="true" />
       <strong>Añadir el primer dibujo de {model}</strong>
-      <span>Puede ser el dibujo general del modelo; después añadiremos excepciones con condiciones.</span>
+      <span>Empieza por el dibujo general del modelo; después, si hace falta, otros para casos concretos.</span>
     </button> : <div className="drawing-rule-list">
       {variants.map((variant, index) => <DrawingRuleCard
         key={variant.id}
@@ -150,9 +156,9 @@ function DrawingRuleCard({ variant, index, canMoveDown, onChange, onDelete, onMo
     if (file) { event.preventDefault(); void importImage(file); }
   }}>
     <div className="drawing-rule-rank">
-      <button type="button" aria-label="Subir prioridad" disabled={index === 0} onClick={() => onMove(-1)}><ArrowUp aria-hidden="true" /></button>
-      <span>{String(index + 1).padStart(2, '0')}</span><small>prioridad</small>
-      <button type="button" aria-label="Bajar prioridad" disabled={!canMoveDown} onClick={() => onMove(1)}><ArrowDown aria-hidden="true" /></button>
+      <button type="button" aria-label="Subir en el orden" disabled={index === 0} onClick={() => onMove(-1)}><ArrowUp aria-hidden="true" /></button>
+      <span>{String(index + 1).padStart(2, '0')}</span><small title="Si dos dibujos encajan igual, sale el primero">orden</small>
+      <button type="button" aria-label="Bajar en el orden" disabled={!canMoveDown} onClick={() => onMove(1)}><ArrowDown aria-hidden="true" /></button>
     </div>
     <div className="drawing-rule-image">
       {variant.image ? <img src={variant.image} alt={`Dibujo ${variant.name}`} /> : <div><ImagePlus aria-hidden="true" /><span>Sin imagen</span></div>}
@@ -165,11 +171,11 @@ function DrawingRuleCard({ variant, index, canMoveDown, onChange, onDelete, onMo
     <div className="drawing-rule-content">
       <div className="drawing-rule-title">
         <label>Nombre del dibujo<input value={variant.name} onChange={(event) => onChange({ name: event.target.value })} /></label>
-        <label className="drawing-enabled"><input type="checkbox" checked={variant.enabled} onChange={(event) => onChange({ enabled: event.target.checked })} />Activo</label>
+        <label className="drawing-enabled" title="Si lo desactivas, se guarda pero no sale en ningún PDF"><input type="checkbox" checked={variant.enabled} onChange={(event) => onChange({ enabled: event.target.checked })} />Se usa</label>
         <button className="icon-button danger" type="button" aria-label={`Eliminar ${variant.name}`} onClick={onDelete}><Trash2 aria-hidden="true" /></button>
       </div>
-      <div className="drawing-condition-heading"><div><strong>Se usa cuando…</strong><span>{variant.conditions.length ? 'deben cumplirse todas las condiciones' : 'sin condiciones: dibujo general del modelo'}</span></div>
-        <button type="button" onClick={() => onChange({ conditions: [...variant.conditions, { field: 'device', value: 'MOTOR' }] })}><Plus aria-hidden="true" />Condición</button>
+      <div className="drawing-condition-heading"><div><strong>¿Cuándo sale?</strong><span>{variant.conditions.length ? 'Solo cuando el toldo cumple todo lo de abajo.' : 'Siempre: es el dibujo general del modelo.'}</span></div>
+        <button type="button" onClick={() => onChange({ conditions: [...variant.conditions, { field: 'device', value: 'MOTOR' }] })}><Plus aria-hidden="true" />Solo cuando…</button>
       </div>
       {variant.conditions.length > 0 && <div className="drawing-conditions">{variant.conditions.map((condition, conditionIndex) => {
         const meta = fields.find((field) => field.value === condition.field) || fields[0];

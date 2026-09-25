@@ -7,6 +7,8 @@ import { FabricSheet, StructureSheet } from './LiveResults';
 import { awningReservationRows } from '../awningPanel';
 import { formatDecimal } from '../constants';
 import { PdfPreviewViewer } from './PdfPreviewViewer';
+import { FabricImageEditor, type DrawingSource } from './FabricImageEditor';
+import { resolveConfiguredDrawing } from '../../domain/drawingParameters.js';
 import type { AskForConfirmation } from './NotificationCenter';
 
 type PanelTab = 'despiece' | 'dibujo' | 'reserva';
@@ -191,8 +193,9 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
             <div className="awning-panel-body" id="awning-panel-tabpanel" role="tabpanel" aria-labelledby={`awning-panel-tab-${tab}`}>
               {tab === 'despiece' && <div className="structure-sheet-preview"><StructureSheet block={block} awning={awning} onUpdate={onUpdate} onEditingChange={setEditingDespiece} /></div>}
               {tab === 'dibujo' && <>
+                <FabricImageEditor awning={awning} source={drawingSource(awning, order)} onUpdate={onUpdate} />
                 <AwningDrawingPreview awning={awning} order={order} drawing={drawing} onDrawing={setDrawing} />
-                <FabricSheet block={block} awning={awning} onUpdate={onUpdate} />
+                <FabricSheet block={block} awning={awning} />
               </>}
               {tab === 'reserva' && (reservation.length === 0
                 ? <p className="result-empty">Este toldo todavía no tiene líneas de reserva.</p>
@@ -213,6 +216,15 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
 
 // Devuelve el mismo objeto mientras sus campos no cambien: el pedido llega nuevo en cada
 // render de la aplicación y, sin esto, se serializaría entero (imágenes incluidas) cada vez.
+// Qué sale en el PDF: la imagen puesta en el toldo manda; si no hay, el dibujo del taller
+// que encaje (Parámetros); si tampoco, el de la web.
+function drawingSource(awning: Awning, order: PanelOrder): DrawingSource {
+  if (awning.fabricImage) return { kind: 'manual' };
+  const drawings = (order.parameters as { drawings?: unknown } | undefined)?.drawings;
+  const configured = resolveConfiguredDrawing({ ...awning, fabricImage: null }, drawings as never);
+  return configured ? { kind: 'library', name: configured.name } : { kind: 'web' };
+}
+
 function useShallowStable<T extends Record<string, unknown>>(value: T): T {
   const [stable, setStable] = useState(value);
   const keys = Object.keys(value);

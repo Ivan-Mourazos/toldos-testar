@@ -315,3 +315,38 @@ body, .app-shell { background: var(--bg); }
 .model-picker-legend span { align-items: center; display: inline-flex; gap: 5px; }
 /* La regla antigua `.model-picker-option span` (texto gris de 10px) no debe alcanzar al aviso. */
 .model-picker-option .model-picker-tip { color: #f4f7f6; font-size: 12px; }
+
+/* Qué dibujo sale en el PDF y cómo cambiarlo (Iván, 25/09/2026): una barra encima del
+   dibujo en «Despiece y dibujo». */
+.drawing-source { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; display: grid; gap: 8px; margin-bottom: 10px; padding: 10px 12px; }
+.drawing-source-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: space-between; }
+.drawing-source-current { align-items: center; display: flex; font-size: 13.5px; gap: 8px; margin: 0; }
+.drawing-source-current svg { color: var(--accent-text); flex: none; height: 18px; width: 18px; }
+.drawing-source-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.drawing-source-actions button svg { height: 16px; width: 16px; }
+.drawing-source-note { color: var(--text-muted); font-size: 12px; margin: 0; }
+.drawing-source-error { color: #9f1d1d; font-size: 12.5px; font-weight: 600; margin: 0; }
+.drawing-source-drop {
+  align-items: center;
+  background: #fffaf0;
+  border: 2px dashed #d3a024;
+  border-radius: 10px;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  outline: none;
+  padding: 16px 12px 12px;
+  position: relative;
+  text-align: center;
+}
+.drawing-source-drop:focus-visible, .drawing-source-drop.is-dragging { background: #fff3cf; border-color: #b7791f; }
+.drawing-source-drop > svg { color: #b7791f; height: 26px; width: 26px; }
+.drawing-source-drop strong { font-size: 14px; }
+.drawing-source-drop span, .drawing-source-drop small { color: var(--text-muted); font-size: 12px; }
+.drawing-source-drop .link-button { background: none; border: 0; color: var(--accent-text); cursor: pointer; font: inherit; font-weight: 700; padding: 0; text-decoration: underline; }
+.drawing-source-cancel { position: absolute; right: 8px; top: 8px; }
+
+/* Biblioteca de dibujos: los tres pasos, a la vista (Iván, 25/09/2026). */
+.drawing-steps { counter-reset: paso; display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; margin: 0; padding: 12px 16px 0; }
+.drawing-steps li { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; counter-increment: paso; font-size: 12.5px; line-height: 1.4; padding: 8px 10px 8px 36px; position: relative; }
+.drawing-steps li::before { align-items: center; background: var(--tgm-yellow, #f7bd19); border-radius: 50%; color: #1c1c1c; content: counter(paso); display: flex; font-size: 12px; font-weight: 800; height: 20px; justify-content: center; left: 9px; position: absolute; top: 9px; width: 20px; }

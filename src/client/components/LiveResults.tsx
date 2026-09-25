@@ -2,7 +2,6 @@ import { awningLetter } from '../../domain/awningCompleteness.js';
 import React from 'react';
 import { AlertCircle, ChevronDown, FileSpreadsheet } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
-import { FabricImageEditor } from './FabricImageEditor';
 import { StructureEditor } from './StructureEditor';
 import { formatDecimal } from '../constants';
 import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
@@ -110,10 +109,10 @@ export function StructureSheet({ block, awning, onUpdate, onEditingChange }: { b
   );
 }
 
-// Planteamiento de tela de un solo toldo: su fila, la imagen de tela y la bamba separada.
-// Lo usa el panel «Despiece y dibujo»; la zona «Planteamientos» pinta las mismas filas.
-export function FabricSheet({ block, awning, onUpdate }: { block: OfBlock; awning?: Awning; onUpdate?: UpdateAwning }) {
-  return <FabricTable><FabricRows block={block} index={0} awning={awning} onUpdate={onUpdate} /></FabricTable>;
+// Planteamiento de tela de un solo toldo: su fila y la bamba separada. Lo usa el panel
+// «Despiece y dibujo»; la imagen propia se pone encima del dibujo (FabricImageEditor).
+export function FabricSheet({ block, awning }: { block: OfBlock; awning?: Awning }) {
+  return <FabricTable><FabricRows block={block} index={0} awning={awning} /></FabricTable>;
 }
 
 function FabricTable({ children }: { children: React.ReactNode }) {
@@ -127,7 +126,7 @@ function FabricTable({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FabricRows({ block, index, awning, onUpdate }: { block: OfBlock; index: number; awning?: Awning; onUpdate?: UpdateAwning }) {
+function FabricRows({ block, index, awning }: { block: OfBlock; index: number; awning?: Awning }) {
   const calc = block.calculation!;
   const heraVariant = calc.model === 'HERA' ? calc.heraVariant || awning?.submodel : '';
   const mainFabricMl = calc.mainFabricMl ?? calc.fabricMl;
@@ -142,7 +141,6 @@ function FabricRows({ block, index, awning, onUpdate }: { block: OfBlock; index:
         <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{mainFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(mainFabricMl)} ml</strong></td>
         <td><FabricIndication awning={awning} calculation={calc} /></td>
       </tr>
-      {awning && <tr><td colSpan={9}>{onUpdate ? <FabricImageEditor awning={awning} onUpdate={onUpdate} /> : awning.fabricImage ? <img className="fabric-custom-image" src={awning.fabricImage} alt="Imagen personalizada del planteamiento de tela" /> : null}</td></tr>}
       {hasSeparateValance && (
         <tr className="fabric-valance-row">
           <td><small>{awningLetter(block.awningIndex ?? index)} · bamba</small></td>
