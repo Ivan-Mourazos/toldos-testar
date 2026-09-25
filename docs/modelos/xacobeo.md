@@ -1,6 +1,6 @@
 # Xacobeo — expediente
 
-23/09/2026 · **Terminado salvo Q-X01** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-xacobeo-evidence.md)
+23/09/2026 · **Terminado** (Q-X01 resuelta el 25/09/2026) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-xacobeo-evidence.md)
 
 ## 1. Alcance y fuentes
 
@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | Tubo Ø70: línea − 10,9 (máq. ext.), − 10,6 (int.), − 8,9 (motor) | Igual | Igual |
 | Perfil EVO 70: − 9,9 / − 9,6 / − 8,7 | Igual | Igual |
-| Lona: − 11,9 / − 11,6 / − 9,9 | − 12,5 / − 12 / − 11 | Los libros daban la razón a la web (112 comprobaciones sin diferencias, 27 con máquina exterior). **Q-X01, Iván (25/09/2026): como el manual.** Pendiente de aplicar en los tres accionamientos |
+| Lona: − 11,9 / − 11,6 / − 9,9 | − 12,5 / − 12 / − 11 | Los libros daban la razón a la web (112 comprobaciones sin diferencias, 27 con máquina exterior). **Q-X01, Iván (25/09/2026): como el manual.** Aplicado en los tres accionamientos; los valores de antes guardados en el servidor se migran solos |
 | Línea mínima: salida + 37 con máquina exterior; + 32 con interior o motor | Al revés | Corregido. Ningún pedido real quedaba por debajo |
 | Línea máxima: 4,50 m hasta brazo de 2,00; 4,00 m con 2,25 y 2,50 | 450 fijo | Límite por salida, saltable con el candado. El mayor real con salida 250 mide 375,5 |
 | Motor de 30 Nm con tubo Ø70 | Sunilus 35/17 | Sin cambio: es lo que se consume. La web no maneja pares en Nm |
@@ -41,4 +41,4 @@ Al revisar los cofres salió que el perfil EVO 70 blanco (`PEVO702R`) solo exist
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
-| Q-X01 | **Resuelta (Iván, 25/09/2026): como el manual.** El manual descuenta 11,9 / 11,6 / 9,9 cm de lona (máquina exterior, interior, motor); la web, 12,5 / 12 / 11 | Pendiente: pasar a los del manual |
+| Q-X01 | **Resuelta (Iván, 25/09/2026): como el manual.** El manual descuenta 11,9 / 11,6 / 9,9 cm de lona (máquina exterior, interior, motor); la web, 12,5 / 12 / 11 | Hecho: 11,9 / 11,6 / 9,9 |

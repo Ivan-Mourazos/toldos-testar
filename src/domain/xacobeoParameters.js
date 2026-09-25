@@ -28,10 +28,12 @@ export const defaultXacobeoParameters = {
   seamAllowanceCm: 2.5,
   seamBaseCm: 6.5,
   stockLengths: [600, 700],
+  // Lona según el manual ART 250 (Iván, 25/09/2026, Q-X01). El taller cortaba con
+  // 12,5 / 12 / 11; si esos valores siguen guardados en el servidor, se migran.
   fabricWidthDiscounts: {
-    'MAQ. EXTERIOR': 12.5,
-    'MAQ. INTERIOR': 12,
-    MOTOR: 11
+    'MAQ. EXTERIOR': 11.9,
+    'MAQ. INTERIOR': 11.6,
+    MOTOR: 9.9
   },
   rollTubeDiscounts: {
     'MAQ. EXTERIOR': 10.9,
@@ -57,11 +59,21 @@ export function normalizeXacobeoParameters(input = {}) {
     seamAllowanceCm: nonNegative(input.seamAllowanceCm, defaults.seamAllowanceCm),
     seamBaseCm: nonNegative(input.seamBaseCm, defaults.seamBaseCm),
     stockLengths: normalizeStockLengths(input.stockLengths, defaults.stockLengths),
-    fabricWidthDiscounts: normalizeDiscounts(input.fabricWidthDiscounts, defaults.fabricWidthDiscounts),
+    fabricWidthDiscounts: migrateLegacyDiscounts(normalizeDiscounts(input.fabricWidthDiscounts, defaults.fabricWidthDiscounts), legacyFabricWidthDiscounts, defaults.fabricWidthDiscounts),
     rollTubeDiscounts: normalizeDiscounts(input.rollTubeDiscounts, defaults.rollTubeDiscounts),
     loadBarDiscounts: normalizeDiscounts(input.loadBarDiscounts, defaults.loadBarDiscounts),
     minimumLineByProjection: normalizeMinimumLines(input.minimumLineByProjection, defaults.minimumLineByProjection)
   };
+}
+
+const legacyFabricWidthDiscounts = Object.freeze({ 'MAQ. EXTERIOR': 12.5, 'MAQ. INTERIOR': 12, MOTOR: 11 });
+
+// Un descuento guardado igual al de antes pasa al del manual; uno cambiado a mano se respeta.
+function migrateLegacyDiscounts(values, legacy, manual) {
+  return Object.fromEntries(Object.entries(values).map(([device, value]) => [
+    device,
+    value === legacy[device] && value !== manual[device] ? manual[device] : value
+  ]));
 }
 
 function normalizeDiscounts(input, defaults) {

@@ -86,7 +86,7 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 | Q-A03 | Brazos cruzados en el Arzúa Pro | Sí: se están haciendo, y el kit cruzado cita el AROND-350 como soporte válido | Ya lo hace, con el kit cruzado AROND |
 | Q-A04 | Lado del brazo y el soporte sueltos con tres brazos (Galicia, Monoblock 350, Ágata Box) | No es de un lado concreto. Tiene que ser un dato opcional del pedido; si no se pone, decide el taller | Pendiente: dato opcional en la tarjeta. Sin él, se sigue reservando el derecho y el PDF dirá que el lado lo decide el taller |
 | Q-G03 | Galicia con más de 7 m de frente | La barra se empalma | Pendiente: dejar pasar hasta 8 m con empalme, como el Monoblock 350. La salida de 3,50 con tres brazos sigue abierta |
-| Q-X01 | Lona del Xacobeo con máquina exterior: 12,5 u 11,9 | Como el manual: 11,9 | Pendiente. El manual también da 11,6 con máquina interior y 9,9 con motor, y la web usa 12 y 11: se aplica el manual en los tres |
+| Q-X01 | Lona del Xacobeo con máquina exterior: 12,5 u 11,9 | Como el manual: 11,9 | Hecho, en los tres accionamientos: 11,9 / 11,6 / 9,9. Los valores de antes guardados en el servidor pasan solos a los del manual |
 | Q-M01 | Monoblock 350 con tres brazos: manual de 2016 o catálogo actual | El manual más reciente del modelo | Pendiente: localizar el manual más reciente de Llaza y aplicar sus mínimos y máximos (hay que migrar los parámetros guardados en el servidor) |
 | Q-M02 | Motor del Monoblock 350 con cuatro brazos | Como dice el manual | Ya lo hace: 85/17 con cuatro brazos |
 | Q-M04 | Descuento de la barra Univers 280 en el Monoblock 350 | 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Pendiente: barra Univers = descuento EVO − 1 cm |

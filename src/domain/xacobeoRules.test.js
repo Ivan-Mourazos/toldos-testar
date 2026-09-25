@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
+import { normalizeXacobeoParameters } from './xacobeoParameters.js';
 
 function awning(patch = {}) {
   return {
@@ -40,7 +41,8 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
 
     expect(ofBlock.calculation).toMatchObject({
       model: 'XACOBEO', valid: true, minimumLine: 287,
-      fabricWidth: 352.5, fabricDrop: 325, fabricPanels: 4, fabricMl: 13,
+      // Lona según el manual ART 250 (Q-X01, 25/09/2026): 365 − 11,9. El libro cortaba 352,5.
+      fabricWidth: 353.1, fabricDrop: 325, fabricPanels: 4, fabricMl: 13,
       rollTubeLength: 354.1, structureLength: 355.1, stockLength: 700
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
@@ -72,7 +74,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
 
     expect(ofBlock.calculation).toMatchObject({
       valid: true, minimumLine: 157, motorPower: '35/17',
-      fabricWidth: 255, fabricDrop: 182, fabricMl: 5.46,
+      fabricWidth: 256.1, fabricDrop: 182, fabricMl: 5.46,
       rollTubeLength: 257.1, structureLength: 257.3, stockLength: 700
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
@@ -100,9 +102,16 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
       device: 'MAQ. INTERIOR', crankHeight: 150
     });
     expect(result.ofs[0].calculation).toMatchObject({
-      minimumLine: 207, fabricWidth: 305, rollTubeLength: 306.4, structureLength: 307.4
+      minimumLine: 207, fabricWidth: 305.4, rollTubeLength: 306.4, structureLength: 307.4
     });
     expect(result.ofs[0].materials).toContainEqual(expect.objectContaining({ code: 'CASMAQEJE5070MM', quantity: 1 }));
+  });
+
+  test('los descuentos de lona guardados de antes (12,5 / 12 / 11) pasan a los del manual', () => {
+    expect(normalizeXacobeoParameters({ fabricWidthDiscounts: { 'MAQ. EXTERIOR': 12.5, 'MAQ. INTERIOR': 12, MOTOR: 11 } }).fabricWidthDiscounts)
+      .toEqual({ 'MAQ. EXTERIOR': 11.9, 'MAQ. INTERIOR': 11.6, MOTOR: 9.9 });
+    // Un valor cambiado a mano en Parámetros se respeta.
+    expect(normalizeXacobeoParameters({ fabricWidthDiscounts: { 'MAQ. EXTERIOR': 12.2 } }).fabricWidthDiscounts['MAQ. EXTERIOR']).toBe(12.2);
   });
 
   test('bloquea la línea mínima y permite una excepción técnica explícita', () => {
