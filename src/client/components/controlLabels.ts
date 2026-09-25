@@ -43,11 +43,13 @@ const preferredLabels: Record<string, string> = {
 };
 
 const legacyModelNames: Record<string, string> = {
-  'ARZUA PRO': 'ART 325 / ARZUA',
+  // Nombre del producto del proveedor (Iván, 25/09/2026). El ART 325 era el soporte
+  // del Arzúa antiguo (hasta 2021); hoy es el AROND-350 de Llaza.
+  'ARZUA PRO': 'AROND-350 (LLAZA)',
   GALICIA: 'MODELO GALICIA',
-  XACOBEO: 'ART 250 / XACOBEO',
+  XACOBEO: 'ART 250 (LLAZA)',
   'PUNTO RECTO': 'PUNTO RECTO',
-  'MONOBLOCK 350': 'ARZUA MONOBLOC',
+  'MONOBLOCK 350': 'MONOBLOC 350 (LLAZA)',
   MAXISCREEM: 'MAXISSCREEN',
   ELECTRA: 'ELIT VERTICAL',
   CORTINA: 'CORTINA UNIVERSAL',
@@ -56,7 +58,8 @@ const legacyModelNames: Record<string, string> = {
   ENROLLABLE: 'LONA PARA PUERTA ENROLLABLE',
   BAMBALINA: 'BAMBALINA NUEVA',
   'CAMBIO ANTICA': 'CAMBIO DE TELA A TOLDO ANTICA',
-  HERA: 'ROLL-SYSTEM',
+  HERA: 'SCREEN ROLL-SYSTEM',
+  SELENA: 'STOR-21 (LLAZA)',
   // Iris es el nombre comercial de TGM para la línea Screeny de BAT (docs/rps-iris-evidence.md).
   IRIS: 'SCREENY (BAT)',
   ANTICA: 'ANTICA',

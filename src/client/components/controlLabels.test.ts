@@ -3,11 +3,11 @@ import { controlLabel, legacyModelName, rpsModelName } from './controlLabels';
 
 describe('nombres de modelo contrastados con RPS', () => {
   test.each([
-    ['ARZUA PRO', 'Arzúa Pro', 'ART 325 / ARZUA'],
+    ['ARZUA PRO', 'Arzúa Pro', 'AROND-350 (LLAZA)'],
     ['GALICIA', 'Galicia', 'MODELO GALICIA'],
-    ['XACOBEO', 'Xacobeo', 'ART 250 / XACOBEO'],
+    ['XACOBEO', 'Xacobeo', 'ART 250 (LLAZA)'],
     ['PUNTO RECTO', 'Punto Recto', 'PUNTO RECTO'],
-    ['MONOBLOCK 350', 'Monoblock 350', 'ARZUA MONOBLOC'],
+    ['MONOBLOCK 350', 'Monoblock 350', 'MONOBLOC 350 (LLAZA)'],
     ['MAXISCREEM', 'Diana vertical', 'MAXISSCREEN'],
     ['CORTINA', 'Cortina', 'CORTINA UNIVERSAL'],
     ['CAMBIO CORTINA', 'Cambio de cortina', 'CAMBIO DE TELA A TOLDO CORTINA'],
@@ -15,7 +15,9 @@ describe('nombres de modelo contrastados con RPS', () => {
     ['ENROLLABLE', 'Enrollable', 'LONA PARA PUERTA ENROLLABLE'],
     ['BAMBALINA', 'Bambalina', 'BAMBALINA NUEVA'],
     ['CAMBIO ANTICA', 'Cambio antica', 'CAMBIO DE TELA A TOLDO ANTICA'],
-    ['HERA', 'HERA', 'ROLL-SYSTEM'],
+    ['HERA', 'HERA', 'SCREEN ROLL-SYSTEM'],
+    ['SELENA', 'Selena', 'STOR-21 (LLAZA)'],
+    ['IRIS', 'Iris', 'SCREENY (BAT)'],
     ['ANTICA', 'Antica', 'ANTICA'],
     ['AMBAR BOX', 'Ámbar Box', 'MICROBOX'],
     ['AGATA BOX', 'Ágata Box', 'MODULBOX'],
@@ -34,7 +36,7 @@ describe('nombres de modelo contrastados con RPS', () => {
     (model) => expect(legacyModelName(model)).toBe('')
   );
 
-  test.each([['AMBAR BOX', 'MICROBOX'], ['MAXISCREEM', 'MAXISSCREEN'], ['ARZUA PRO', 'ART 325 / ARZUA']])(
+  test.each([['AMBAR BOX', 'MICROBOX'], ['MAXISCREEM', 'MAXISSCREEN'], ['ARZUA PRO', 'AROND-350 (LLAZA)']])(
     '%s, que cambió de nombre, sí lo muestra',
     (model, before) => expect(legacyModelName(model)).toBe(before)
   );

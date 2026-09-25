@@ -332,7 +332,7 @@ function parameterModelName(model: SelectedModel) {
 
 function ParameterModelTitle({ model }: { model: SelectedModel }) {
   const names = parameterModelName(model);
-  return <h2>{names.current}{names.legacy && <small>RPS · {names.legacy}</small>}</h2>;
+  return <h2>{names.current}{names.legacy && <small>{names.legacy}</small>}</h2>;
 }
 
 type ArzuaParametersProps = {
@@ -587,7 +587,7 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
                     aria-current={active ? 'true' : undefined}
                     onClick={() => onSelectModel(model)}
                   >
-                    <span><strong>{names.current}</strong>{names.legacy && <small>RPS · {names.legacy}</small>}</span>
+                    <span><strong>{names.current}</strong>{names.legacy && <small>{names.legacy}</small>}</span>
                     {active && <Check aria-hidden="true" />}
                   </button>
                 );

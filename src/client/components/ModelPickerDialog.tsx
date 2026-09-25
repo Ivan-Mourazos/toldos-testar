@@ -46,7 +46,7 @@ export function ModelPickerDialog({ workType, models, onSelect, onClose }: Props
                 return (
                   <button key={model} type="button" className="model-picker-option" onClick={() => onSelect(model)}>
                     <strong>{controlLabel(model)}</strong>
-                    {(legacyModelName(model) || !implemented || fabricOnly) && <span>{[legacyModelName(model) && `Antes ${legacyModelName(model)}`, fabricOnly ? 'Sin estructura' : !implemented ? 'Pendiente de reglas' : ''].filter(Boolean).join(' · ')}</span>}
+                    {(legacyModelName(model) || !implemented || fabricOnly) && <span>{[legacyModelName(model), fabricOnly ? 'Sin estructura' : !implemented ? 'Pendiente de reglas' : ''].filter(Boolean).join(' · ')}</span>}
                   </button>
                 );
               })}

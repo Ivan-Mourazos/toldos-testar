@@ -137,7 +137,7 @@ function FabricRows({ block, index, awning, onUpdate }: { block: OfBlock; index:
     <>
       <tr>
         <td><strong className="result-letter">{awningLetter(block.awningIndex ?? index)}</strong></td>
-        <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>antes {legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
+        <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>{legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
         <td>{block.of || '-'}</td><td className="code">{calc.fabricCode || '-'}</td>
         <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{mainFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(mainFabricMl)} ml</strong></td>
         <td><FabricIndication awning={awning} calculation={calc} /></td>

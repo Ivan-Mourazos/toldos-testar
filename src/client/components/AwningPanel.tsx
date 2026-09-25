@@ -153,7 +153,7 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
             <span>Despiece y dibujo</span>
             <h2>
               {elementName} · {controlLabel(awning.model) || 'sin modelo'}
-              {legacyModelName(awning.model) && <small>antes {legacyModelName(awning.model)}</small>}
+              {legacyModelName(awning.model) && <small>{legacyModelName(awning.model)}</small>}
             </h2>
           </div>
           <dl className="awning-panel-meta">
