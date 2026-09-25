@@ -20,7 +20,7 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 ### Monoblock 350
 
-- **¿Hasta qué frente vale una sola barra de 7 m para la barra de carga y el tubo 40×40, y cómo se empalma por encima?** Con algo más de 7,10 m de frente, el corte ya pasa de 7 m. La web usa una barra de 7 m hasta 7,25 m de frente y, por encima, dos barras iguales empalmadas. Iván: antes se revisan los pedidos pasados (lo hace Oficina Técnica); si no se aclara, pasa al taller. Importa para reservar las barras que hacen falta y saber cómo se monta. <sub>Q-M03</sub>
+- **En un Monoblock de 7,10 a 7,25 m de frente, la barra de carga mide algo más de 7 m. ¿Cómo se hace: con una barra de 7 m y un trozo empalmado, o con dos barras iguales?** Revisados los pedidos de 2025 y 2026: en los cuatro de 7,20 y 7,25 m el almacén solo apuntó una barra (dos de 7 m y dos de 6 m), sin retales, así que no se ve cómo se completa. Por encima de 8 m sí está claro: dos barras iguales (5+5, 6+6, 7+7), que es lo que hace la web. La web reserva una sola barra de 7 m hasta 7,25 m. Importa para reservar las barras que hacen falta. <sub>Q-M03</sub>
 
 ## Cofres
 
