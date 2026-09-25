@@ -117,19 +117,19 @@
 }
 
 /* Botón: primario (fondo de color) y secundario (claro). Canto oscuro abajo. */
-.boton-3d, .primary-button, .ghost-button {
+.boton-3d, .primary-button, .ghost-button, .icon-button {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.28),
     0 2px 0 var(--canto-oscuro),
     0 4px 8px -3px rgb(13 42 47 / 0.35);
   transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, filter var(--relieve-ms) ease;
 }
-:is(.boton-3d, .primary-button, .ghost-button):hover:not(:disabled) { filter: brightness(1.04); transform: translateY(-1px); }
-:is(.boton-3d, .primary-button, .ghost-button):active:not(:disabled) {
+:is(.boton-3d, .primary-button, .ghost-button, .icon-button):hover:not(:disabled) { filter: brightness(1.04); transform: translateY(-1px); }
+:is(.boton-3d, .primary-button, .ghost-button, .icon-button):active:not(:disabled) {
   box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.22);
   transform: translateY(1px);
 }
-:is(.boton-3d, .primary-button, .ghost-button):disabled { box-shadow: none; }
+:is(.boton-3d, .primary-button, .ghost-button, .icon-button):disabled { box-shadow: none; }
 
 /* Panel: bandeja, pedido abierto, Parámetros. No se mueve. */
 .panel-3d {
@@ -157,16 +157,16 @@
 }
 
 /* Un solo anillo de foco en toda la web. */
-:where(.pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button):focus-visible {
+:where(.pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button, .icon-button):focus-visible {
   outline: 2px solid var(--tgm-yellow);
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button { transition: none; }
+  .pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button, .icon-button { transition: none; }
   .pieza-3d:hover, .pieza-3d:active, .pieza-3d.is-hundida,
   .tecla-3d:hover, .tecla-3d:active, .tecla-3d[aria-pressed="true"], .tecla-3d[aria-current="page"], .tecla-3d[aria-current="true"], .tecla-3d.is-active,
-  :is(.boton-3d, .primary-button, .ghost-button):hover:not(:disabled), :is(.boton-3d, .primary-button, .ghost-button):active:not(:disabled) { transform: none; }
+  :is(.boton-3d, .primary-button, .ghost-button, .icon-button):hover:not(:disabled), :is(.boton-3d, .primary-button, .ghost-button, .icon-button):active:not(:disabled) { transform: none; }
 }
 
 /* Cada pedido y cada comprobación se separan como piezas; las reglas de sombra
@@ -215,3 +215,21 @@ body, .app-shell { background: var(--bg); }
 /* Parámetros: la ficha del modelo en gris claro; sus tarjetas y campos, en blanco. */
 .parameters-page { background: var(--surface-muted); }
 .parameters-page .parameter-band + .parameter-band { border-top-color: var(--border-strong); }
+
+/* Pantallas anchas y lectura (Iván, 25/09/2026). La cabecera del pedido ya solo tiene
+   Datos y Tela: dos columnas que se estiran con la pantalla. */
+.order-header { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.order-header-read { align-items: baseline; display: flex; flex-wrap: wrap; font-size: 14px; gap: 6px 14px; margin: 2px 0 0; }
+.order-header-read strong { font-size: 16px; }
+.order-header-read span + span::before, .order-header-read strong + span::before { color: var(--text-muted); content: "·"; margin-right: 14px; }
+/* Parámetros: los modelos, planos; solo el activo en relieve. */
+.parameter-model-family button.tecla-3d:not([aria-current="true"]) { background: transparent; border-color: transparent; box-shadow: none; transform: none; }
+.parameter-model-family button.tecla-3d:not([aria-current="true"]):hover { background: var(--surface); border-color: var(--border); }
+.parameter-model-sidebar { scrollbar-color: transparent transparent; }
+.parameter-model-sidebar:hover { scrollbar-color: var(--border-strong) transparent; }
+/* Quedaron tres campos (Pedido, Cliente, Fecha) al quitar Técnico y Revisión: la rejilla
+   de cinco columnas de las pantallas anchas dejaba dos huecos vacíos. */
+.order-header-general .order-header-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr); }
+/* Los botones de icono (candado, duplicar, eliminar, cerrar…) con el mismo relieve y el
+   mismo fondo que los botones con texto como «Despiece y dibujo» (Iván, 25/09/2026). */
+.icon-button:not(.active) { background: #fbfcfb; border-color: var(--border-strong); color: var(--text); }
