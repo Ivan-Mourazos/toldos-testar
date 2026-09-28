@@ -103,9 +103,22 @@ for (const file of sources) {
     if (rule.parent?.type === 'atrule' && /keyframes/i.test(rule.parent.name)) return;
     if (rule.selector.includes(':root')) return; // variables: las cambia dark.css
     const decls = [];
+    // Si la regla deja un fondo claro o intenso (amarillo de la tecla activa…), su letra
+    // oscura se queda: pasarla a clara la haría ilegible sobre el amarillo.
+    const keepsLightBackground = rule.nodes.some((node) => node.type === 'decl' && kindOf(node.prop) === 'background'
+      && (/var\(--tgm-yellow\)/.test(node.value) || (node.value.match(colorPattern) || []).some((color) => {
+        const rgb = parse(color);
+        return rgb && rgb.a >= 0.2 && hsl(rgb).l >= 0.35 && !darkColor('background', color);
+      })));
     rule.walkDecls((decl) => {
       const kind = kindOf(decl.prop);
-      if (!kind || decl.value.includes('var(')) return;
+      if (!kind) return;
+      if (kind === 'text' && keepsLightBackground) {
+        // Se repite tal cual para ganar a otra regla oscura anterior del mismo elemento.
+        if (colorPattern.test(decl.value)) decls.push(postcss.decl({ prop: decl.prop, value: decl.value, important: decl.important }));
+        colorPattern.lastIndex = 0;
+        return;
+      }
       let changed = false;
       const value = decl.value.replace(colorPattern, (color) => {
         const dark = darkColor(kind, color);
@@ -113,7 +126,11 @@ for (const file of sources) {
         changed = true;
         return dark;
       });
-      if (changed) decls.push(postcss.decl({ prop: decl.prop, value, important: decl.important }));
+      // Los fondos se repiten siempre, cambien o no, para que el orden de la cascada sea el
+      // mismo que en claro: si no, el fondo oscurecido de la tecla en reposo pisa al de
+      // la activa o encendida (que no tiene nada que traducir o usa var()).
+      if (changed || kind === 'background')
+        decls.push(postcss.decl({ prop: decl.prop, value, important: decl.important }));
     });
     if (!decls.length) return;
     const selector = rule.selectors.map((item) => `:root[data-theme="dark"] ${item}`).join(',\n');

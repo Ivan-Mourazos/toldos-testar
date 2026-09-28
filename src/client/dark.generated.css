@@ -3,11 +3,20 @@
     border: 1px solid var(--border);
     background: var(--surface)
 }
+:root[data-theme="dark"] .drawing-parameters-heading {
+    background: #10282d
+}
 :root[data-theme="dark"] .drawing-parameters-actions button,
 :root[data-theme="dark"] .drawing-image-actions button,
 :root[data-theme="dark"] .drawing-condition-heading button {
     background: var(--surface);
     color: var(--text)
+}
+:root[data-theme="dark"] .drawing-parameters-actions .primary-button {
+    background: #f7bd19
+}
+:root[data-theme="dark"] .drawing-parameters-actions .ghost-button {
+    background: transparent
 }
 :root[data-theme="dark"] .drawing-empty {
     border: 2px dashed var(--border);
@@ -25,7 +34,8 @@
     background: var(--surface)
 }
 :root[data-theme="dark"] .drawing-rule-rank {
-    color: var(--text)
+    color: #10282d;
+    background: #f7bd19
 }
 :root[data-theme="dark"] .drawing-rule-rank button {
     background: var(--surface);
@@ -64,6 +74,53 @@
 :root[data-theme="dark"] input,
 :root[data-theme="dark"] select,
 :root[data-theme="dark"] textarea {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .panel {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .badge-ok {
+    background: var(--ok-bg)
+}
+:root[data-theme="dark"] .badge-danger {
+    background: var(--danger-bg)
+}
+:root[data-theme="dark"] .badge-warn {
+    background: var(--warn-bg)
+}
+:root[data-theme="dark"] .badge-neutral {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .primary-button {
+    background: var(--tgm-yellow)
+}
+:root[data-theme="dark"] .primary-button:hover:not(:disabled) {
+    background: #dd9600
+}
+:root[data-theme="dark"] .ghost-button,
+:root[data-theme="dark"] .icon-text-button {
+    background: transparent
+}
+:root[data-theme="dark"] .ghost-button:hover:not(:disabled),
+:root[data-theme="dark"] .icon-text-button:hover:not(:disabled) {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .icon-button {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .topbar {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .brand-mark {
+    background: var(--tgm-yellow)
+}
+:root[data-theme="dark"] .app-tabs {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .app-tabs button {
+    background: transparent
+}
+:root[data-theme="dark"] .workbench {
     background: var(--surface)
 }
 :root[data-theme="dark"] .order-autofill-button {
@@ -108,17 +165,108 @@
 :root[data-theme="dark"] .order-fabric-proposal-empty {
     color: var(--text-muted)
 }
+:root[data-theme="dark"] .order-fabric-proposal-option.is-chosen {
+    background: #174e54
+}
+:root[data-theme="dark"] .order-header input[readonly] {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .section-header {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .awning-form-section {
+    background: var(--surface-muted)
+}
 :root[data-theme="dark"] .drop-arm-mode.is-vertical {
     background: #3a3016
 }
 :root[data-theme="dark"] .drop-arm-mode-summary {
     background: #3a3016
 }
+:root[data-theme="dark"] .model-switch-prompt {
+    background: var(--tgm-yellow-soft)
+}
+:root[data-theme="dark"] .model-switch-prompt button {
+    background: var(--tgm-black)
+}
+:root[data-theme="dark"] .automatic-decisions {
+    background: var(--tgm-black)
+}
+:root[data-theme="dark"] .automatic-decisions dl > div {
+    background: #292929
+}
+:root[data-theme="dark"] .awning-pending {
+    background: var(--warn-bg)
+}
+:root[data-theme="dark"] .icon-button.active {
+    background: var(--tgm-yellow)
+}
+:root[data-theme="dark"] .awning-modified-chip {
+    background: var(--warn-bg)
+}
+:root[data-theme="dark"] .segmented-option {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .segmented-option.active {
+    background: var(--tgm-yellow)
+}
+:root[data-theme="dark"] .awning-status:not(.badge-ok):not(.badge-danger):not(.badge-warn) {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .of-card {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .rps-table th {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .rps-table tbody tr:hover {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .despiece-card {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .despiece-info-block {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameters-page {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameter-model-switch {
+    background: #111
+}
+:root[data-theme="dark"] .parameter-model-switch button {
+    background: transparent
+}
+:root[data-theme="dark"] .parameters-heading {
+    background: var(--tgm-black)
+}
+:root[data-theme="dark"] .parameters-heading .ghost-button:hover {
+    background: #292929
+}
+:root[data-theme="dark"] .parameter-table-discounts .discount-part {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .rps-evidence {
+    background: var(--surface-muted)
+}
 :root[data-theme="dark"] .app-shell {
     background: radial-gradient(circle at 88% 0%, var(--surface-muted), transparent 32%), linear-gradient(135deg, var(--surface) 0%, var(--surface) 100%)
 }
+:root[data-theme="dark"] .app-tabs {
+    background: transparent
+}
+:root[data-theme="dark"] .app-tabs button:hover {
+    background: rgb(255 255 255 / 0.07)
+}
 :root[data-theme="dark"] .app-tabs button.active {
-    color: var(--text)
+    background: #e2b232;
+    color: #10272b
+}
+:root[data-theme="dark"] .simulation-mode {
+    background: rgb(226 178 50 / 0.12)
+}
+:root[data-theme="dark"] .topbar {
+    background: transparent
 }
 :root[data-theme="dark"] .workspace-heading h2 {
     color: var(--text)
@@ -131,6 +279,9 @@
 :root[data-theme="dark"] .ghost-button,
 :root[data-theme="dark"] .icon-text-button {
     background: var(--surface)
+}
+:root[data-theme="dark"] .workbench {
+    background: transparent
 }
 :root[data-theme="dark"] .order-material-cluster {
     border-left: 1px solid var(--border)
@@ -156,6 +307,15 @@
 :root[data-theme="dark"] .order-header .segmented-control.is-empty {
     background: var(--surface)
 }
+:root[data-theme="dark"] .section-header {
+    background: transparent
+}
+:root[data-theme="dark"] .awning-grid::-webkit-scrollbar-thumb {
+    background: #9db4ae
+}
+:root[data-theme="dark"] .awning-grid::-webkit-scrollbar-track {
+    background: transparent
+}
 :root[data-theme="dark"] .awning-column {
     background: var(--surface);
     border: 1px solid var(--border)
@@ -169,6 +329,12 @@
 :root[data-theme="dark"] .segmented-control.is-empty {
     background: var(--surface);
     border-color: var(--border)
+}
+:root[data-theme="dark"] .automatic-decisions {
+    background: #0d2c31
+}
+:root[data-theme="dark"] .automatic-decisions dl > div {
+    background: #17383e
 }
 :root[data-theme="dark"] .rps-table th {
     background: var(--surface)
@@ -188,6 +354,7 @@
     border: 1px solid var(--border)
 }
 :root[data-theme="dark"] .planning-tabs button {
+    background: transparent;
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .planning-tabs button:hover {
@@ -202,7 +369,8 @@
     background: var(--surface-muted)
 }
 :root[data-theme="dark"] .planning-tabs button.active strong {
-    color: var(--text)
+    background: var(--tgm-yellow);
+    color: #10272b
 }
 :root[data-theme="dark"] .structure-sheet-preview {
     border: 1px solid var(--border)
@@ -231,7 +399,8 @@
     color: var(--text)
 }
 :root[data-theme="dark"] .result-letter {
-    color: var(--text)
+    background: var(--tgm-yellow);
+    color: #10272b
 }
 :root[data-theme="dark"] .rps-result-preview {
     background: var(--surface-muted);
@@ -258,6 +427,9 @@
     background: var(--surface);
     border-color: var(--border)
 }
+:root[data-theme="dark"] .rps-result-preview .rps-table th {
+    background: #173b40
+}
 :root[data-theme="dark"] .rps-result-preview .rps-table td {
     color: var(--text)
 }
@@ -276,11 +448,18 @@
 :root[data-theme="dark"] .text-danger {
     color: #f2a3a3
 }
+:root[data-theme="dark"] .parameter-model-switch {
+    background: #0c272c
+}
 :root[data-theme="dark"] .parameter-model-switch button.active {
-    color: var(--text)
+    background: #e2b232;
+    color: #10272b
 }
 :root[data-theme="dark"] .parameter-model-switch button.active small {
     color: #f0c565
+}
+:root[data-theme="dark"] .parameters-heading {
+    background: #12343a
 }
 :root[data-theme="dark"] .parameters-heading .ghost-button {
     background: var(--surface);
@@ -324,6 +503,7 @@
     border: 1px solid var(--border)
 }
 :root[data-theme="dark"] .select-option {
+    background: transparent;
     color: var(--text)
 }
 :root[data-theme="dark"] .select-option.is-active {
@@ -347,15 +527,20 @@
 :root[data-theme="dark"] .toggle-thumb {
     background: var(--surface)
 }
+:root[data-theme="dark"] .toggle-switch.is-on {
+    background: #e8b226
+}
 :root[data-theme="dark"] .segmented-control {
     background: var(--surface);
     border: 1px solid var(--border)
 }
 :root[data-theme="dark"] .segmented-option {
+    background: transparent;
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .segmented-option.active {
-    color: var(--text)
+    background: #e8b226;
+    color: #0c272c
 }
 :root[data-theme="dark"] .segmented-option:hover:not(.active) {
     background: var(--surface);
@@ -368,10 +553,14 @@
 :root[data-theme="dark"] .fabric-combobox.is-disabled .fabric-input-wrap {
     background: var(--surface)
 }
+:root[data-theme="dark"] .fabric-combobox.is-disabled input {
+    background: transparent
+}
 :root[data-theme="dark"] .fabric-input-wrap > svg {
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .fabric-clear-button {
+    background: transparent;
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .fabric-clear-button:hover,
@@ -384,6 +573,7 @@
     border: 1px solid var(--border)
 }
 :root[data-theme="dark"] .fabric-option {
+    background: transparent;
     color: var(--text)
 }
 :root[data-theme="dark"] .fabric-option:hover,
@@ -392,6 +582,9 @@
 }
 :root[data-theme="dark"] .fabric-option-meta {
     color: #f0c565
+}
+:root[data-theme="dark"] .work-type-launcher {
+    background: #0d2c31
 }
 :root[data-theme="dark"] .work-type-option {
     background: var(--surface);
@@ -411,6 +604,9 @@
 :root[data-theme="dark"] .work-type-option-fabric > svg:first-child {
     background: #17301f;
     color: var(--text)
+}
+:root[data-theme="dark"] .model-picker-backdrop {
+    background: rgb(7 25 29 / 0.58)
 }
 :root[data-theme="dark"] .model-picker {
     background: var(--surface);
@@ -447,6 +643,7 @@
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .observation-lines-header button {
+    background: transparent;
     color: var(--text)
 }
 :root[data-theme="dark"] .observation-lines-header button:hover {
@@ -457,7 +654,11 @@
     border: 1px solid var(--border)
 }
 :root[data-theme="dark"] .observation-line input {
+    background: transparent;
     color: var(--text)
+}
+:root[data-theme="dark"] .observation-line-remove {
+    background: transparent
 }
 :root[data-theme="dark"] .observation-line-remove:hover:not(:disabled) {
     background: #3b1d1d;
@@ -478,6 +679,9 @@
 :root[data-theme="dark"] .awning-section-empty {
     border: 1px dashed var(--border)
 }
+:root[data-theme="dark"] .pdf-preview-backdrop {
+    background: rgb(7 25 29 / 0.58)
+}
 :root[data-theme="dark"] .pdf-preview-window {
     background: var(--surface);
     border: 1px solid var(--border)
@@ -488,6 +692,9 @@
 }
 :root[data-theme="dark"] .pdf-preview-window header strong {
     color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-selector {
+    background: #0c272c
 }
 :root[data-theme="dark"] .parameter-model-trigger {
     background: var(--surface);
@@ -508,7 +715,11 @@
     background: var(--surface);
     border: 1px solid var(--border)
 }
+:root[data-theme="dark"] .parameter-model-menu > header {
+    background: #102e33
+}
 :root[data-theme="dark"] .parameter-model-options > button {
+    background: transparent;
     color: var(--text)
 }
 :root[data-theme="dark"] .parameter-model-options > button:hover,
@@ -534,6 +745,9 @@
     background: var(--surface);
     border: 1px solid var(--border)
 }
+:root[data-theme="dark"] .workflow-heading-icon {
+    background: #0c272c
+}
 :root[data-theme="dark"] .workflow-heading h2 {
     color: var(--text)
 }
@@ -544,8 +758,9 @@
     border-left: 2px solid var(--border)
 }
 :root[data-theme="dark"] .workflow-step {
+    background: #e2b232;
     border: 4px solid var(--border);
-    color: var(--text)
+    color: #10272b
 }
 :root[data-theme="dark"] .workflow-route-copy strong {
     color: var(--text)
@@ -568,6 +783,9 @@
 }
 :root[data-theme="dark"] .workflow-toggle input::after {
     background: var(--surface)
+}
+:root[data-theme="dark"] .workflow-toggle input:checked {
+    background: #1e6b54
 }
 :root[data-theme="dark"] .workflow-settings-footer code {
     background: var(--surface);
@@ -605,6 +823,12 @@
 }
 :root[data-theme="dark"] .review-reader-header h2 {
     color: var(--text)
+}
+:root[data-theme="dark"] .review-generate-button {
+    background: #155f72
+}
+:root[data-theme="dark"] .review-generate-button:hover:not(:disabled) {
+    background: #104c5b
 }
 :root[data-theme="dark"] .review-production-block {
     background: #15283a;
@@ -650,7 +874,8 @@
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .review-readonly-order .segmented-control button.active:disabled {
-    color: var(--text)
+    background: #efb51b;
+    color: #173238
 }
 :root[data-theme="dark"] .review-inline-preview {
     background: var(--surface);
@@ -691,7 +916,12 @@
     color: #f0c565
 }
 :root[data-theme="dark"] .generated-preview-selector button.is-active > span {
-    color: var(--text)
+    background: #eab522;
+    color: #122d32
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview {
+    background: radial-gradient(circle at 50% 42%, rgb(64 88 91 / 0.62), transparent 56%),
+    linear-gradient(145deg, #142f34, #0b1e22)
 }
 :root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet {
     background: var(--surface)
@@ -707,6 +937,9 @@
     background: #17301f;
     color: var(--text)
 }
+:root[data-theme="dark"] .review-inline-preview .reservation-preview th {
+    background: #17383d
+}
 :root[data-theme="dark"] .review-inline-preview .reservation-preview td {
     border-bottom: 1px solid var(--border);
     color: var(--text)
@@ -714,9 +947,24 @@
 :root[data-theme="dark"] .review-inline-preview .reservation-preview tbody tr:nth-child(even) {
     background: var(--surface)
 }
+:root[data-theme="dark"] .pdf-carousel {
+    background: #10272c
+}
+:root[data-theme="dark"] .pdf-carousel-toolbar {
+    background: #0d2226
+}
+:root[data-theme="dark"] .pdf-carousel-toolbar button,
+:root[data-theme="dark"] .pdf-carousel-pages button {
+    background: transparent
+}
 :root[data-theme="dark"] .pdf-carousel-toolbar button[aria-pressed="true"],
 :root[data-theme="dark"] .pdf-carousel-pages button[aria-current="page"] {
-    color: var(--text)
+    background: #edb51b;
+    color: #102a2f
+}
+:root[data-theme="dark"] .pdf-carousel-stage {
+    background: radial-gradient(circle at 50% 45%, rgb(64 88 91 / 0.62), transparent 56%),
+    linear-gradient(145deg, #142f34, #0b1e22)
 }
 :root[data-theme="dark"] .pdf-carousel-page {
     background: var(--surface)
@@ -726,12 +974,18 @@
     color: var(--text)
 }
 :root[data-theme="dark"] .pdf-carousel-arrow:hover:not(:disabled) {
-    color: var(--text)
+    background: #edb51b;
+    color: #102a2f
 }
 :root[data-theme="dark"] .pdf-carousel-footer {
+    background: #0d2226;
     border-top: 1px solid var(--border)
 }
+:root[data-theme="dark"] .pdf-carousel-footer button {
+    background: transparent
+}
 :root[data-theme="dark"] .pdf-carousel-pages {
+    background: #0d2226;
     border-top: 1px solid var(--border)
 }
 @media (max-width: 760px) {
@@ -769,16 +1023,32 @@
 :root[data-theme="dark"] .notification-copy > span {
     color: var(--text-muted)
 }
+:root[data-theme="dark"] .notification-close,
+:root[data-theme="dark"] .confirmation-close {
+    background: transparent
+}
 :root[data-theme="dark"] .notification-close:hover,
 :root[data-theme="dark"] .confirmation-close:hover {
     background: var(--surface);
     color: var(--text)
+}
+:root[data-theme="dark"] .notification-timer {
+    background: currentColor
 }
 :root[data-theme="dark"] .notification-success .notification-timer {
     color: #86d6a6
 }
 :root[data-theme="dark"] .notification-info .notification-timer {
     color: #93c7f0
+}
+:root[data-theme="dark"] .confirmation-host {
+    background: transparent
+}
+:root[data-theme="dark"] .confirmation-host::backdrop {
+    background: transparent
+}
+:root[data-theme="dark"] .confirmation-backdrop {
+    background: rgb(7 25 29 / 0.62)
 }
 :root[data-theme="dark"] .confirmation-dialog {
     background: var(--surface);
@@ -813,6 +1083,13 @@
 :root[data-theme="dark"] .confirmation-actions {
     border-top: 1px solid var(--border)
 }
+:root[data-theme="dark"] .danger-button {
+    background: #a93d34;
+    color: #ffffff
+}
+:root[data-theme="dark"] .danger-button:hover:not(:disabled) {
+    background: #8f3029
+}
 :root[data-theme="dark"] .structure-editor {
     border-bottom: 1px solid var(--border)
 }
@@ -835,6 +1112,12 @@
 :root[data-theme="dark"] .structure-row-modified {
     background: #3a3016
 }
+:root[data-theme="dark"] .structure-article-search {
+    background: white
+}
+:root[data-theme="dark"] .fabric-image-editor {
+    border: 1px dashed var(--border, var(--border))
+}
 :root[data-theme="dark"] .fabric-image-editor button {
     border: 1px solid var(--border);
     background: var(--surface);
@@ -851,6 +1134,27 @@
     background: #3a3016
 }
 :root[data-theme="dark"] .review-inline-preview:modal .pdf-carousel-page {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .diagnostics-awning-link {
+    background: none
+}
+:root[data-theme="dark"] .awning-diagnostics .is-error {
+    background: var(--danger-bg)
+}
+:root[data-theme="dark"] .awning-diagnostics .is-pending {
+    background: var(--warn-bg)
+}
+:root[data-theme="dark"] .parameters-save-bar {
+    background: var(--warn-bg)
+}
+:root[data-theme="dark"] .parameters-save-backdrop {
+    background: rgb(12 39 44 / 0.45)
+}
+:root[data-theme="dark"] .parameters-save-dialog {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameters-history {
     background: var(--surface)
 }
 :root[data-theme="dark"] .review-reader-title small {
@@ -870,6 +1174,7 @@
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .review-checklist-row {
+    background: none;
     border-bottom: 1px solid var(--border);
     color: var(--text)
 }
@@ -878,7 +1183,8 @@
     background: var(--surface)
 }
 :root[data-theme="dark"] .review-checklist-letter {
-    color: var(--text)
+    background: #efb51b;
+    color: #173238
 }
 :root[data-theme="dark"] .review-checklist-model small {
     color: var(--text-muted)
@@ -898,23 +1204,49 @@
 }
 :root[data-theme="dark"] .review-readonly-order :is(input, textarea):disabled,
 :root[data-theme="dark"] .review-readonly-order .select-control:disabled {
+    background: transparent;
     border-color: var(--border)
+}
+:root[data-theme="dark"] .review-readonly-order .segmented-control button:disabled:not(.active) {
+    background: transparent
 }
 :root[data-theme="dark"] .fabric-readonly-value {
     color: var(--text)
 }
+:root[data-theme="dark"] .awning-status-link {
+    background: none
+}
 :root[data-theme="dark"] .parameter-section-index {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameter-section-index button {
     background: var(--surface)
 }
 :root[data-theme="dark"] .parameter-section-index button:hover,
 :root[data-theme="dark"] .parameter-section-index button:focus-visible {
     background: var(--surface)
 }
+:root[data-theme="dark"] .app-topnav {
+    background: var(--tgm-black)
+}
+:root[data-theme="dark"] .app-current-user {
+    background: #16383e
+}
 :root[data-theme="dark"] .who-are-you-options button {
     background: var(--surface)
 }
+:root[data-theme="dark"] .who-are-you-options button:hover,
+:root[data-theme="dark"] .who-are-you-options button.is-current {
+    background: var(--tgm-yellow-soft)
+}
+:root[data-theme="dark"] .app-topnav .brand-mark {
+    background: transparent
+}
 :root[data-theme="dark"] .orders-scope button {
     background: var(--surface)
+}
+:root[data-theme="dark"] .orders-scope button[aria-pressed="true"] {
+    background: var(--tgm-black)
 }
 :root[data-theme="dark"] .orders-row {
     border-top: 1px solid var(--border)
@@ -932,6 +1264,7 @@
     color: var(--text-muted)
 }
 :root[data-theme="dark"] .parameter-model-family button {
+    background: transparent;
     color: var(--text)
 }
 :root[data-theme="dark"] .parameter-model-family button:hover,
@@ -948,6 +1281,15 @@
 :root[data-theme="dark"] .awning-index-item {
     background: var(--surface)
 }
+:root[data-theme="dark"] .awning-index-item.is-visible {
+    background: var(--tgm-yellow-soft)
+}
+:root[data-theme="dark"] .awning-blocks-dots button {
+    background: var(--border-strong)
+}
+:root[data-theme="dark"] .awning-blocks-dots button.is-active {
+    background: var(--tgm-yellow)
+}
 :root[data-theme="dark"] .read-pair {
     border-bottom: 1px dotted var(--border)
 }
@@ -959,6 +1301,12 @@
 }
 :root[data-theme="dark"] .read-note .read-empty {
     color: var(--text-muted)
+}
+:root[data-theme="dark"] .awning-panel {
+    background: transparent
+}
+:root[data-theme="dark"] .awning-panel::backdrop {
+    background: rgb(7 25 29 / 0.45)
 }
 :root[data-theme="dark"] .awning-panel-inner {
     background: var(--surface)
@@ -975,6 +1323,9 @@
 :root[data-theme="dark"] .awning-panel-drawing-state {
     background: var(--surface)
 }
+:root[data-theme="dark"] .planning-summary-panel > .planning-summary {
+    background: var(--surface)
+}
 :root[data-theme="dark"] .review-checklist > h3 {
     border-bottom: 1px solid var(--border)
 }
@@ -986,6 +1337,19 @@
 }
 :root[data-theme="dark"] .read-exception > summary {
     color: #f0c565
+}
+:root[data-theme="dark"] .parameter-layout-main > .parameter-section-index {
+    background: var(--bg)
+}
+:root[data-theme="dark"] .parameters-history {
+    background: transparent
+}
+:root[data-theme="dark"] .parameters-history summary:hover,
+:root[data-theme="dark"] .parameters-history[open] summary {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameters-history-panel {
+    background: var(--surface)
 }
 :root[data-theme="dark"] .pieza-3d {
     background: linear-gradient(180deg, var(--surface), var(--surface))
@@ -1007,21 +1371,60 @@
 :root[data-theme="dark"] .parameter-model-family button.tecla-3d[aria-current="true"],
 :root[data-theme="dark"] .pdf-carousel-toolbar button.tecla-3d[aria-pressed="true"],
 :root[data-theme="dark"] .who-are-you-options button.tecla-3d[aria-pressed="true"] {
+    background: linear-gradient(180deg, #3a3016, var(--tgm-yellow-soft));
     color: #f0c565
+}
+:root[data-theme="dark"] .tecla-3d.sobre-oscuro {
+    background: linear-gradient(180deg, #1b4046, #102f34)
 }
 :root[data-theme="dark"] .tecla-3d.sobre-oscuro:active,
 :root[data-theme="dark"] .tecla-3d.sobre-oscuro[aria-pressed="true"],
 :root[data-theme="dark"] .tecla-3d.sobre-oscuro[aria-current="page"],
 :root[data-theme="dark"] .tecla-3d.sobre-oscuro.is-active {
-    color: var(--text)
+    background: linear-gradient(180deg, #c8951c, var(--tgm-yellow));
+    color: #1d2b2e
 }
 :root[data-theme="dark"] .segmented-option.tecla-3d {
     background: linear-gradient(180deg, var(--surface), var(--surface))
 }
 :root[data-theme="dark"] .segmented-option.tecla-3d.active {
-    color: var(--text)
+    background: #e8b226;
+    color: #0c272c
 }
 :root[data-theme="dark"] .bloque-3d-hundido {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .review-checklist {
+    background: transparent
+}
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .app-shell {
+    background: var(--bg)
+}
+:root[data-theme="dark"] .observation-lines {
+    background: var(--zone)
+}
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .awning-column {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .review-reader.panel,
+:root[data-theme="dark"] .orders-inbox.panel {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .review-reader .review-checklist,
+:root[data-theme="dark"] .review-reader .order-header,
+:root[data-theme="dark"] .review-reader .awning-column,
+:root[data-theme="dark"] .orders-inbox .orders-row:not(.is-mine) {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameters-page {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .parameter-model-family button.tecla-3d:not([aria-current="true"]) {
+    background: transparent
+}
+:root[data-theme="dark"] .parameter-model-family button.tecla-3d:not([aria-current="true"]):hover {
     background: var(--surface)
 }
 :root[data-theme="dark"] .icon-button:not(.active) {
@@ -1034,6 +1437,12 @@
 :root[data-theme="dark"] .model-picker-status.is-pending,
 :root[data-theme="dark"] .model-picker-legend .is-pending {
     color: #f0c565
+}
+:root[data-theme="dark"] .model-picker-tip {
+    background: #10262b
+}
+:root[data-theme="dark"] .drawing-source {
+    background: var(--surface)
 }
 :root[data-theme="dark"] .drawing-source-error {
     color: #f2a3a3
@@ -1048,17 +1457,45 @@
 :root[data-theme="dark"] .drawing-source-drop > svg {
     color: #f0c565
 }
+:root[data-theme="dark"] .drawing-source-drop .link-button {
+    background: none
+}
+:root[data-theme="dark"] .drawing-steps li {
+    background: var(--surface)
+}
 :root[data-theme="dark"] .drawing-steps li::before {
-    color: var(--text)
+    background: var(--tgm-yellow, #f7bd19);
+    color: #1c1c1c
 }
 :root[data-theme="dark"] .read-exception-plain {
     color: #f0c565
+}
+:root[data-theme="dark"] .tone-review .orders-dot {
+    background: #d3a024
+}
+:root[data-theme="dark"] .tone-returned .orders-dot {
+    background: #c2410c
+}
+:root[data-theme="dark"] .tone-approved .orders-dot {
+    background: #1d7a4c
+}
+:root[data-theme="dark"] .orders-group-title .orders-count {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .orders-block .orders-list {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .orders-block .orders-row {
+    background: var(--surface)
 }
 :root[data-theme="dark"] .orders-block .orders-row:hover {
     background: var(--surface)
 }
 :root[data-theme="dark"] .orders-block .orders-row.is-open {
     background: #3a3016
+}
+:root[data-theme="dark"] .orders-row-toggle {
+    background: transparent
 }
 :root[data-theme="dark"] .orders-chip.is-ok {
     background: #17301f;
@@ -1074,6 +1511,9 @@
     border-color: #7d3a3a;
     color: #f2a3a3
 }
+:root[data-theme="dark"] .orders-me {
+    background: var(--tgm-black, #10262b)
+}
 :root[data-theme="dark"] .orders-detail-list li.is-warn .orders-detail-notes {
     color: #f0c565
 }
@@ -1082,6 +1522,16 @@
 }
 :root[data-theme="dark"] .orders-detail-note {
     color: #f0c565
+}
+:root[data-theme="dark"] .read-note.has-text p {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .orders-block .orders-list {
+    background: transparent
+}
+:root[data-theme="dark"] .orders-block .orders-row,
+:root[data-theme="dark"] .orders-block .orders-row:last-child {
+    background: var(--surface)
 }
 :root[data-theme="dark"] .orders-block .orders-row:hover {
     background: var(--surface)
@@ -1093,4 +1543,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text)
+}
+:root[data-theme="dark"] .orders-inbox {
+    background: transparent
 }
