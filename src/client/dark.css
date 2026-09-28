@@ -1,0 +1,94 @@
+/* Modo oscuro (Iván, 28/09/2026). Se activa con el botón de la barra de arriba, que
+   pone data-theme="dark" en <html> y lo recuerda en este navegador. Las variables van
+   aquí; los colores escritos a mano en los estilos los traduce dark.generated.css
+   (scripts/generate-dark-theme.mjs). Aquí, después, los retoques a mano. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e181b;
+  --surface: #17242a;
+  --surface-muted: #121e22;
+  --zone: #1b2a2f;
+  --border: #2c3f44;
+  --border-strong: #3e555a;
+  --text: #e3ecea;
+  --text-muted: #9fb4b2;
+  --accent-text: #ecb74c;
+  --tgm-yellow-soft: #3a3016;
+
+  --ok: #6fcf93;
+  --ok-bg: #15301f;
+  --danger: #f08b8b;
+  --danger-bg: #3b1d1d;
+  --warn: #f0c565;
+  --warn-bg: #3a3016;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 6px 16px rgb(0 0 0 / 0.3);
+  --edge: rgb(255 255 255 / 0.06);
+  --contact: rgb(0 0 0 / 0.35);
+  --canto: #3e555a;
+  --brillo: rgb(255 255 255 / 0.05);
+  --sombra-chip: 0 4px 10px -4px rgb(0 0 0 / 0.5);
+  --sombra-chip-alta: 0 8px 16px -6px rgb(0 0 0 / 0.55);
+  --sombra-panel: 0 14px 40px -18px rgb(0 0 0 / 0.6);
+  --sombra-hoja: 0 10px 16px -10px rgb(0 0 0 / 0.7);
+  --hundido: inset 0 1px 3px rgb(0 0 0 / 0.45), inset 0 0 0 1px var(--edge);
+}
+
+:root[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+
+/* Campos: fondo un punto más claro que la tarjeta, como en CoordinaOT. */
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .select-control {
+  background: #1f2f35;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder { color: #7f9694; }
+
+/* Botones con relieve: sobre fondo oscuro, gris azulado; el principal sigue en amarillo. */
+:root[data-theme="dark"] .ghost-button,
+:root[data-theme="dark"] .icon-button:not(.active),
+:root[data-theme="dark"] .tecla-3d:not([aria-pressed="true"]):not(.active) {
+  background: #22343a;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+:root[data-theme="dark"] .primary-button { color: #14120a; }
+
+/* Pedidos: filas en pieza oscura, como el Historial de CoordinaOT. */
+:root[data-theme="dark"] .orders-block .orders-row,
+:root[data-theme="dark"] .orders-block .orders-row:last-child {
+  background: #1a282e;
+  border-color: #33474c;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 2px 6px rgb(0 0 0 / 0.35);
+}
+:root[data-theme="dark"] .orders-block .orders-row:hover { background: #1f3036; border-color: #4a6166; }
+:root[data-theme="dark"] .orders-block .orders-row.is-open { background: #2a2615; border-color: #8a6d24; }
+:root[data-theme="dark"] .orders-me { background: var(--tgm-yellow); color: #14120a; }
+:root[data-theme="dark"] .orders-model-tag { background: #22343a; border-color: #3e555a; color: #cfe0dd; }
+:root[data-theme="dark"] .orders-chip.is-ok { background: #15301f; border-color: #2e6a45; color: #86d6a6; }
+:root[data-theme="dark"] .orders-chip.is-warn { background: #3a3016; border-color: #7a6224; color: #f0c565; }
+:root[data-theme="dark"] .orders-chip.is-error { background: #3b1d1d; border-color: #7d3a3a; color: #f2a3a3; }
+
+/* Las hojas de PDF y las imágenes siguen en blanco: son papel. */
+:root[data-theme="dark"] .pdf-carousel-page,
+:root[data-theme="dark"] .fabric-custom-image { background: #ffffff; }
+
+/* Botón del modo en la barra de arriba. */
+.theme-toggle { align-items: center; background: transparent; border: 1px solid rgb(255 255 255 / 0.18); border-radius: 8px; color: #e3ecea; cursor: pointer; display: inline-flex; height: 30px; justify-content: center; margin-right: 8px; width: 34px; }
+.theme-toggle:hover { background: rgb(255 255 255 / 0.08); }
+.theme-toggle svg { height: 16px; width: 16px; }
+
+/* Lista de modelos de Parámetros: plana, solo el activo con relieve (como en claro). */
+:root[data-theme="dark"] .parameter-model-family button.tecla-3d:not([aria-current="true"]) { background: transparent; border-color: transparent; box-shadow: none; }
+:root[data-theme="dark"] .parameter-model-family button.tecla-3d:not([aria-current="true"]):hover { background: var(--zone); border-color: var(--border); }
+
+/* El botón del modo, a la derecha junto a «Soy». */
+.theme-toggle { margin-left: auto; }
+.theme-toggle + .app-current-user { margin-left: 0; }
+
+/* Observaciones de la ficha: neutras también en oscuro (el amarillo, solo para avisos). */
+:root[data-theme="dark"] .read-note.has-text p { background: var(--surface-muted); border-color: var(--border); border-left-color: var(--border-strong); color: var(--text); }

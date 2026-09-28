@@ -27,14 +27,15 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   const sections = inboxSections({ pending, history }, { me: currentUser, scope, query });
   const groups = pendingGroups(sections.pending);
 
-  const columns = (
-    <div className="orders-columns" aria-hidden="true">
+  const columns = (withDate: boolean) => (
+    <div className={withDate ? 'orders-columns' : 'orders-columns is-history'} aria-hidden="true">
       <span />
-      <span>Pedido</span><span>Cliente</span><span>Modelos</span><span>Autor</span><span>Fecha</span><span className="is-end">Toldos</span>
+      <span>Pedido</span><span>Cliente</span><span>Modelos</span><span>Autor</span>{withDate && <span>Fecha</span>}<span className="is-end">Toldos</span>
     </div>
   );
-  const block = (reviews: ReviewSummary[]) => (
-    <div className="orders-block">
+  // En el historial ya se agrupa por días: la fecha de cada fila sobra, como en CoordinaOT.
+  const block = (reviews: ReviewSummary[], withDate = true) => (
+    <div className={withDate ? 'orders-block' : 'orders-block is-history'}>
       <ul className="orders-list">
         {reviews.map((review) => (
           <OrderRow
@@ -44,6 +45,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
             open={openCode === review.orderCode}
             onToggle={() => setOpenCode((current) => (current === review.orderCode ? null : review.orderCode))}
             onOpen={() => onOpen(review.orderCode)}
+            withDate={withDate}
           />
         ))}
       </ul>
@@ -51,18 +53,19 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   );
 
   return (
-    <section className="orders-inbox panel panel-3d" aria-label="Pedidos">
-      <header className="orders-inbox-bar">
-        <h2>Pendientes</h2>
-        <div className="orders-scope" role="group" aria-label="Qué pedidos">
-          <button type="button" className="tecla-3d" aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
-          <button type="button" className="tecla-3d" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todos {sections.pendingAll}</button>
-        </div>
+    <section className="orders-inbox" aria-label="Pedidos">
+      {/* Como CoordinaOT: sin panel de fondo; buscador y filtros en una barra encima de la lista. */}
+      <header className="orders-inbox-bar orders-filters">
         <label className="orders-search"><Search aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente, OF o modelo…" aria-label="Buscar pedidos" /></label>
+        <span className="orders-filter-label">Pendientes de</span>
+        <div className="orders-scope" role="group" aria-label="Qué pedidos pendientes">
+          <button type="button" className="tecla-3d" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todo el equipo {sections.pendingAll}</button>
+          <button type="button" className="tecla-3d" aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
+        </div>
       </header>
       {pendingLoading ? <p className="review-empty">Cargando pedidos…</p>
         : groups.length === 0 ? <p className="review-empty"><FileSearch aria-hidden="true" />{scope === 'mine' ? 'No tienes pedidos pendientes.' : 'No hay pedidos pendientes.'}</p>
-          : <>{columns}{groups.map((group) => (
+          : <>{columns(true)}{groups.map((group) => (
             <section key={group.status} className="orders-group" aria-label={`${group.label}: ${group.reviews.length}`}>
               <h3 className={`orders-group-title tone-${group.tone}`}><span className="orders-dot" aria-hidden="true" />{group.label}<span className="orders-count">{group.reviews.length}</span></h3>
               {block(group.reviews)}
@@ -75,22 +78,23 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
       </header>
       {historyLoading ? <p className="review-empty">Cargando historial…</p>
         : sections.history.length === 0 ? <p className="review-empty">No hay pedidos generados en {year}.</p>
-          : <>{columns}{groupByDay(sections.history).map((day) => (
+          : <>{columns(false)}{groupByDay(sections.history).map((day) => (
             <section key={day.key} className="orders-group" aria-label={`${day.label}: ${day.reviews.length} pedidos`}>
               <h3 className="orders-day-title">{day.label}<span>· {day.reviews.length} {day.reviews.length === 1 ? 'pedido' : 'pedidos'}</span></h3>
-              {block(day.reviews)}
+              {block(day.reviews, false)}
             </section>
           ))}</>}
     </section>
   );
 }
 
-function OrderRow({ review, mine, open, onToggle, onOpen }: {
+function OrderRow({ review, mine, open, onToggle, onOpen, withDate }: {
   review: ReviewSummary;
   mine: boolean;
   open: boolean;
   onToggle: () => void;
   onOpen: () => void;
+  withDate: boolean;
 }) {
   const detailId = `orders-detail-${review.orderCode}`;
   const awnings = review.summary.awningList;
@@ -111,7 +115,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen }: {
         <span className="orders-customer">{review.summary.customer || 'Sin cliente'}</span>
         <span className="orders-model-tags">{Array.from(new Set(review.summary.models || [])).map((model) => <span key={model} className="orders-model-tag">{controlLabel(model)}</span>)}</span>
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
-        <span className="orders-date">{formatListDate(review.updatedAt)}</span>
+        {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
           {awnings?.length
             ? awnings.map((item) => <AwningChip key={item.letter} item={item} />)

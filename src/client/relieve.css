@@ -462,3 +462,15 @@ body, .app-shell { background: var(--bg); }
 .orders-day-title { align-items: baseline; display: flex; font-size: 13.5px; font-weight: 800; gap: 6px; margin: 10px 0 2px 4px; }
 .orders-day-title span { color: var(--text-muted); font-size: 12.5px; font-weight: 600; }
 .orders-group { gap: 5px; }
+
+/* Pedidos, tercera vuelta (Iván, 28/09/2026): sin panel de fondo, como CoordinaOT; el
+   título de la página y la lista comparten el mismo ancho centrado; buscador a la
+   izquierda; sin fecha por fila en el historial (ya va por días); más sitio para los toldos. */
+.orders-inbox { background: transparent; border: 0; box-shadow: none; padding: 0; }
+.app-shell:has(.orders-inbox) .topbar { margin-inline: auto; max-width: 1480px; width: 100%; }
+.orders-filters { gap: 10px; margin-bottom: 4px; }
+.orders-filters .orders-search { margin-left: 0; max-width: 440px; min-width: 300px; flex: 1 1 360px; }
+.orders-filter-label { color: var(--text-muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; margin-left: 8px; text-transform: uppercase; }
+.orders-block, .orders-columns { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 92px 280px; }
+.orders-block.is-history, .orders-columns.is-history { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 280px; }
+.orders-awnings { flex-wrap: nowrap; }

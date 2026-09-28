@@ -8,10 +8,12 @@ import {
   Save,
   SlidersHorizontal,
   UserRound,
-  X, Undo2 } from 'lucide-react';
+  X, Undo2, Moon, Sun } from 'lucide-react';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
 import './relieve.css';
+import './dark.generated.css';
+import './dark.css';
 import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
@@ -59,6 +61,14 @@ export default function App() {
   // del pedido al guardar sin preguntarlo.
   const [currentUser, setCurrentUser] = useState(() => readCurrentUser());
   const [choosingUser, setChoosingUser] = useState(false);
+  // Modo oscuro (Iván, 28/09/2026): se recuerda en este navegador.
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try { return window.localStorage.getItem('toldos-tema') === 'dark' ? 'dark' : 'light'; } catch { return 'light'; }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { window.localStorage.setItem('toldos-tema', theme); } catch { /* sin almacenamiento: dura hasta recargar */ }
+  }, [theme]);
   function chooseUser(name: string) { saveCurrentUser(name); setCurrentUser(name); setChoosingUser(false); }
   const { toasts, dialog, notify, askForConfirmation, dismissToast, resolveDialog } = useNotifications();
   // Pendientes de generar (año actual y anterior): alimentan la bandeja y el contador
@@ -411,6 +421,9 @@ export default function App() {
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
         </nav>
+        <button type="button" className="theme-toggle" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
+          {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+        </button>
         <button type="button" className="app-current-user tecla-3d sobre-oscuro" onClick={() => setChoosingUser(true)} aria-label="Cambiar quién soy">
           <UserRound aria-hidden="true" />Soy: {currentUser ? controlLabel(currentUser) : '—'}
         </button>

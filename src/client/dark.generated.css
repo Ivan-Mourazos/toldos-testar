@@ -1,0 +1,1096 @@
+/*  Generado con scripts/generate-dark-theme.mjs. No editar a mano: los retoques van en dark.css.  */
+:root[data-theme="dark"] .drawing-parameters {
+    border: 1px solid var(--border);
+    background: var(--surface)
+}
+:root[data-theme="dark"] .drawing-parameters-actions button,
+:root[data-theme="dark"] .drawing-image-actions button,
+:root[data-theme="dark"] .drawing-condition-heading button {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .drawing-empty {
+    border: 2px dashed var(--border);
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .drawing-empty svg {
+    color: #f0c565
+}
+:root[data-theme="dark"] .drawing-empty span {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .drawing-rule {
+    border: 1px solid var(--border);
+    background: var(--surface)
+}
+:root[data-theme="dark"] .drawing-rule-rank {
+    color: var(--text)
+}
+:root[data-theme="dark"] .drawing-rule-rank button {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .drawing-rule-image {
+    border-right: 1px solid var(--border);
+    background: var(--surface)
+}
+:root[data-theme="dark"] .drawing-rule-image > img,
+:root[data-theme="dark"] .drawing-rule-image > div:first-child {
+    border: 1px solid var(--border);
+    background: var(--surface)
+}
+:root[data-theme="dark"] .drawing-rule-title {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .drawing-rule input,
+:root[data-theme="dark"] .drawing-rule select {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .drawing-rule .icon-button.danger {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .drawing-condition-heading button {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .drawing-error {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] body {
+    background: var(--surface)
+}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .order-autofill-button {
+    background: #17301f;
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-autofill-button:hover:not(:disabled) {
+    background: var(--surface-muted);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .order-autofill-summary {
+    background: #17301f;
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .order-autofill-summary strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-autofill-summary span,
+:root[data-theme="dark"] .order-autofill-summary summary,
+:root[data-theme="dark"] .order-autofill-summary li {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .order-autofill-summary details ul {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .order-autofill-summary-lines li {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-fabric-proposal > span {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-fabric-proposal-option {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-fabric-proposal-option:not(:disabled):hover {
+    background: #17301f
+}
+:root[data-theme="dark"] .order-fabric-proposal-empty {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .drop-arm-mode.is-vertical {
+    background: #3a3016
+}
+:root[data-theme="dark"] .drop-arm-mode-summary {
+    background: #3a3016
+}
+:root[data-theme="dark"] .app-shell {
+    background: radial-gradient(circle at 88% 0%, var(--surface-muted), transparent 32%), linear-gradient(135deg, var(--surface) 0%, var(--surface) 100%)
+}
+:root[data-theme="dark"] .app-tabs button.active {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workspace-heading h2 {
+    color: var(--text)
+}
+:root[data-theme="dark"] .clear-form-button:hover:not(:disabled) {
+    background: #3b1d1d;
+    border-color: #7d3a3a;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .ghost-button,
+:root[data-theme="dark"] .icon-text-button {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .order-material-cluster {
+    border-left: 1px solid var(--border)
+}
+:root[data-theme="dark"] .order-cluster-title {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-fabric-per-awning {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .order-fabric-per-awning:hover {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .order-fabric-per-awning:has(input:checked) {
+    background: #3a3016
+}
+:root[data-theme="dark"] .order-fabric-per-awning span {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-header .select-control.is-placeholder,
+:root[data-theme="dark"] .order-header .segmented-control.is-empty {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .awning-column {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .awning-column:hover {
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .awning-model-title {
+    color: var(--text)
+}
+:root[data-theme="dark"] .segmented-control.is-empty {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .rps-table th {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .planning-summary {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .planning-summary[open] > summary {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .planning-summary-text {
+    color: var(--text)
+}
+:root[data-theme="dark"] .planning-tabs {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .planning-tabs button {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .planning-tabs button:hover {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .planning-tabs button.active {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .planning-tabs strong {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .planning-tabs button.active strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .structure-sheet-preview {
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .structure-info-block {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .structure-info-block h4 {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .fabric-preview-table-wrap {
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .fabric-preview-table th,
+:root[data-theme="dark"] .fabric-preview-table td {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .fabric-preview-table th {
+    background: var(--surface);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .fabric-preview-table .fabric-valance-row td {
+    background: var(--surface);
+    border-bottom-color: var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .result-letter {
+    color: var(--text)
+}
+:root[data-theme="dark"] .rps-result-preview {
+    background: var(--surface-muted);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .rps-result-icon {
+    background: #3a3016;
+    border: 1px solid #7a6224;
+    color: #f0c565
+}
+:root[data-theme="dark"] .rps-result-summary > span:nth-child(2) > strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .rps-result-of-count {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .rps-result-note {
+    background: var(--surface);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .rps-result-preview .rps-table-wrap {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .rps-result-preview .rps-table td {
+    color: var(--text)
+}
+:root[data-theme="dark"] .rps-result-preview .rps-table td.code {
+    color: var(--text)
+}
+:root[data-theme="dark"] .rps-result-preview .rps-table tbody tr:nth-child(even) {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .rps-result-preview .rps-table tbody tr:hover {
+    background: #3a3016
+}
+:root[data-theme="dark"] .text-ok {
+    color: var(--text)
+}
+:root[data-theme="dark"] .text-danger {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .parameter-model-switch button.active {
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-switch button.active small {
+    color: #f0c565
+}
+:root[data-theme="dark"] .parameters-heading .ghost-button {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameters-heading .ghost-button:hover {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] label span,
+:root[data-theme="dark"] .field > span {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+    color: var(--text)
+}
+:root[data-theme="dark"] input:hover:not(:disabled):not([readonly]),
+:root[data-theme="dark"] textarea:hover:not(:disabled) {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .select-control {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .select-control > svg {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .select-control:hover {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .select-field.is-open .select-control > svg {
+    color: #f0c565
+}
+:root[data-theme="dark"] .select-options {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .select-option {
+    color: var(--text)
+}
+:root[data-theme="dark"] .select-option.is-active {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .select-option.is-selected {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .select-option.is-selected.is-active {
+    background: #3a3016
+}
+:root[data-theme="dark"] .select-option > svg {
+    color: #f0c565
+}
+:root[data-theme="dark"] .toggle-switch {
+    background: var(--surface-muted);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .toggle-thumb {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .segmented-control {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .segmented-option {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .segmented-option.active {
+    color: var(--text)
+}
+:root[data-theme="dark"] .segmented-option:hover:not(.active) {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-header-group h3,
+:root[data-theme="dark"] .awning-form-section-title {
+    color: var(--text)
+}
+:root[data-theme="dark"] .fabric-combobox.is-disabled .fabric-input-wrap {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .fabric-input-wrap > svg {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .fabric-clear-button {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .fabric-clear-button:hover,
+:root[data-theme="dark"] .fabric-clear-button:focus-visible {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .fabric-options {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .fabric-option {
+    color: var(--text)
+}
+:root[data-theme="dark"] .fabric-option:hover,
+:root[data-theme="dark"] .fabric-option:focus-visible {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .fabric-option-meta {
+    color: #f0c565
+}
+:root[data-theme="dark"] .work-type-option {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .work-type-option:hover,
+:root[data-theme="dark"] .work-type-option:focus-visible {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .work-type-option > svg:first-child {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .work-type-option > svg:last-child {
+    color: #f0c565
+}
+:root[data-theme="dark"] .work-type-option-fabric > svg:first-child {
+    background: #17301f;
+    color: var(--text)
+}
+:root[data-theme="dark"] .model-picker {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .model-picker-header span {
+    color: #f0c565
+}
+:root[data-theme="dark"] .model-picker-icon {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .model-picker-icon.fabric {
+    background: #17301f;
+    color: var(--text)
+}
+:root[data-theme="dark"] .model-picker-option {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .model-picker-option:hover,
+:root[data-theme="dark"] .model-picker-option:focus-visible {
+    background: #3a3016
+}
+:root[data-theme="dark"] .observation-lines {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .observation-lines-header {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .observation-lines-header > span {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .observation-lines-header button {
+    color: var(--text)
+}
+:root[data-theme="dark"] .observation-lines-header button:hover {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .observation-line {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .observation-line input {
+    color: var(--text)
+}
+:root[data-theme="dark"] .observation-line-remove:hover:not(:disabled) {
+    background: #3b1d1d;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .fabric-jobs-section {
+    border-top: 1px solid var(--border)
+}
+:root[data-theme="dark"] .fabric-jobs-section .section-header h2 {
+    color: var(--text)
+}
+:root[data-theme="dark"] .fabric-only-column {
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .fabric-only-column .awning-column-tag {
+    color: var(--text)
+}
+:root[data-theme="dark"] .awning-section-empty {
+    border: 1px dashed var(--border)
+}
+:root[data-theme="dark"] .pdf-preview-window {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .pdf-preview-window > header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .pdf-preview-window header strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-trigger {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-trigger > svg {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .parameter-model-trigger-icon {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .parameter-model-trigger-copy small > span {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameter-model-menu {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .parameter-model-options > button {
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-options > button:hover,
+:root[data-theme="dark"] .parameter-model-options > button:focus-visible {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .parameter-model-options > button.is-active {
+    background: #3a3016
+}
+:root[data-theme="dark"] .parameter-model-options > button > svg {
+    color: #f0c565
+}
+:root[data-theme="dark"] .parameter-model-information {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .parameter-model-information strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .settings-panel,
+:root[data-theme="dark"] .review-reader {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-heading h2 {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-heading p {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .workflow-route-card {
+    border-left: 2px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-step {
+    border: 4px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-route-copy strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-production-switch {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-production-switch svg {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-production-switch strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-toggle > span {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-toggle input {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .workflow-toggle input::after {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .workflow-settings-footer code {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-ready.is-ready {
+    color: #86d6a6
+}
+:root[data-theme="dark"] .workflow-directory-results {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-directory-results > header {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .workflow-directory-results.is-ok > header {
+    background: #17301f;
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-directory-results.has-errors > header {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .workflow-directory-list > div {
+    border-right: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-directory-list .is-ok svg {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-directory-list strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-reader-header {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-reader-header h2 {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-production-block {
+    background: #15283a;
+    border: 1px solid #2f5878
+}
+:root[data-theme="dark"] .review-production-summary {
+    background: #15283a;
+    border-bottom: 1px solid #2f5878;
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-production-summary small {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-generated-file {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-generated-file > svg {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-generated-file-icon {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-generated-file.is-pdf .review-generated-file-icon {
+    background: #3b1d1d;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .review-readonly-order .awning-column:hover {
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .review-readonly-order :is(input, textarea):disabled,
+:root[data-theme="dark"] .review-readonly-order :is(input, textarea)[readonly] {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-readonly-order .select-control:disabled,
+:root[data-theme="dark"] .review-readonly-order .segmented-control button:disabled {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-readonly-order .segmented-control button.active:disabled {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-inline-preview > header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-inline-preview header strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-preview-icon {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .review-preview-placeholder {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-preview-placeholder.is-error {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .generated-preview-selector {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .generated-preview-selector button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .generated-preview-selector button > span {
+    background: var(--surface);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .generated-preview-selector button.is-active {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .generated-preview-selector button.is-active > span {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet > header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet > header strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet > header small {
+    background: #17301f;
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview td {
+    border-bottom: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview tbody tr:nth-child(even) {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .pdf-carousel-toolbar button[aria-pressed="true"],
+:root[data-theme="dark"] .pdf-carousel-pages button[aria-current="page"] {
+    color: var(--text)
+}
+:root[data-theme="dark"] .pdf-carousel-page {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .pdf-carousel-arrow {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .pdf-carousel-arrow:hover:not(:disabled) {
+    color: var(--text)
+}
+:root[data-theme="dark"] .pdf-carousel-footer {
+    border-top: 1px solid var(--border)
+}
+:root[data-theme="dark"] .pdf-carousel-pages {
+    border-top: 1px solid var(--border)
+}
+@media (max-width: 760px) {
+    :root[data-theme="dark"] .workflow-directory-list > div {
+        border-bottom: 1px solid var(--border)
+    }
+}
+:root[data-theme="dark"] .app-notification {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .notification-icon {
+    background: var(--surface);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .notification-success .notification-icon {
+    background: #17301f;
+    color: var(--text)
+}
+:root[data-theme="dark"] .notification-error .notification-icon {
+    background: #3b1d1d;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .notification-warning .notification-icon {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .notification-info .notification-icon {
+    background: #15283a;
+    color: #93c7f0
+}
+:root[data-theme="dark"] .notification-copy strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .notification-copy > span {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .notification-close:hover,
+:root[data-theme="dark"] .confirmation-close:hover {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .notification-success .notification-timer {
+    color: #86d6a6
+}
+:root[data-theme="dark"] .notification-info .notification-timer {
+    color: #93c7f0
+}
+:root[data-theme="dark"] .confirmation-dialog {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .confirmation-icon {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .confirmation-warning .confirmation-icon {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .confirmation-danger .confirmation-icon {
+    background: #3b1d1d;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .confirmation-heading h2 {
+    color: var(--text)
+}
+:root[data-theme="dark"] .confirmation-dialog > p {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .confirmation-details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .confirmation-details li + li {
+    border-top: 1px solid var(--border)
+}
+:root[data-theme="dark"] .confirmation-actions {
+    border-top: 1px solid var(--border)
+}
+:root[data-theme="dark"] .structure-editor {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .structure-editor button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .structure-editor input,
+:root[data-theme="dark"] .structure-editor select {
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .structure-editor-warning {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .structure-edited-badge {
+    color: #f0c565
+}
+:root[data-theme="dark"] .structure-row-modified {
+    background: #3a3016
+}
+:root[data-theme="dark"] .fabric-image-editor button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .fabric-image-editor button:hover {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .rule-reference-result {
+    background: #3a3016;
+    color: var(--text)
+}
+:root[data-theme="dark"] .rule-reference-warning {
+    background: #3a3016
+}
+:root[data-theme="dark"] .review-inline-preview:modal .pdf-carousel-page {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .review-reader-title small {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-state-note.is-returned {
+    background: #3b1d1d;
+    border: 1px solid #7d3a3a;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .review-checklist {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-checklist h3 {
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-checklist-row {
+    border-bottom: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-checklist-row:hover,
+:root[data-theme="dark"] .review-checklist-row:focus-visible {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .review-checklist-letter {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-checklist-model small {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-checklist-row.is-ok .review-checklist-state {
+    color: #86d6a6
+}
+:root[data-theme="dark"] .review-checklist-row.is-warn .review-checklist-state {
+    color: #f0c565
+}
+:root[data-theme="dark"] .review-checklist-row.is-error .review-checklist-state {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .review-checklist-toggle {
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-readonly-order :is(input, textarea):disabled,
+:root[data-theme="dark"] .review-readonly-order .select-control:disabled {
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .fabric-readonly-value {
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-section-index {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameter-section-index button:hover,
+:root[data-theme="dark"] .parameter-section-index button:focus-visible {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .who-are-you-options button {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .orders-scope button {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .orders-row {
+    border-top: 1px solid var(--border)
+}
+:root[data-theme="dark"] .orders-row.is-mine {
+    background: #3a3016
+}
+:root[data-theme="dark"] .parameter-layout > .parameter-model-sidebar {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameter-model-sidebar-title {
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-family h3 {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .parameter-model-family button {
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-family button:hover,
+:root[data-theme="dark"] .parameter-model-family button:focus-visible {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .parameter-model-family button.is-active {
+    background: #3a3016
+}
+:root[data-theme="dark"] .parameter-model-family button > svg {
+    color: #f0c565
+}
+:root[data-theme="dark"] .awning-index-item {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .read-pair {
+    border-bottom: 1px dotted var(--border)
+}
+:root[data-theme="dark"] .read-value.is-empty {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .read-note.has-text p {
+    background: #3a3016
+}
+:root[data-theme="dark"] .read-note .read-empty {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .awning-panel-inner {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .awning-panel-header h2 {
+    color: var(--text)
+}
+:root[data-theme="dark"] .awning-panel-body .structure-sheet-preview {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .awning-panel-empty {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .awning-panel-drawing-state {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .review-checklist > h3 {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-checklist > .review-checklist-toggle {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .read-exception {
+    background: #3a3016
+}
+:root[data-theme="dark"] .read-exception > summary {
+    color: #f0c565
+}
+:root[data-theme="dark"] .pieza-3d {
+    background: linear-gradient(180deg, var(--surface), var(--surface))
+}
+:root[data-theme="dark"] .tecla-3d,
+:root[data-theme="dark"] .orders-scope button.tecla-3d,
+:root[data-theme="dark"] .parameter-model-family button.tecla-3d,
+:root[data-theme="dark"] .parameter-section-index button.tecla-3d,
+:root[data-theme="dark"] .pdf-carousel-toolbar button.tecla-3d,
+:root[data-theme="dark"] .who-are-you-options button.tecla-3d {
+    background: linear-gradient(180deg, var(--surface), var(--surface))
+}
+:root[data-theme="dark"] .tecla-3d:active,
+:root[data-theme="dark"] .tecla-3d[aria-pressed="true"],
+:root[data-theme="dark"] .tecla-3d[aria-current="page"],
+:root[data-theme="dark"] .tecla-3d[aria-current="true"],
+:root[data-theme="dark"] .tecla-3d.is-active,
+:root[data-theme="dark"] .orders-scope button.tecla-3d[aria-pressed="true"],
+:root[data-theme="dark"] .parameter-model-family button.tecla-3d[aria-current="true"],
+:root[data-theme="dark"] .pdf-carousel-toolbar button.tecla-3d[aria-pressed="true"],
+:root[data-theme="dark"] .who-are-you-options button.tecla-3d[aria-pressed="true"] {
+    color: #f0c565
+}
+:root[data-theme="dark"] .tecla-3d.sobre-oscuro:active,
+:root[data-theme="dark"] .tecla-3d.sobre-oscuro[aria-pressed="true"],
+:root[data-theme="dark"] .tecla-3d.sobre-oscuro[aria-current="page"],
+:root[data-theme="dark"] .tecla-3d.sobre-oscuro.is-active {
+    color: var(--text)
+}
+:root[data-theme="dark"] .segmented-option.tecla-3d {
+    background: linear-gradient(180deg, var(--surface), var(--surface))
+}
+:root[data-theme="dark"] .segmented-option.tecla-3d.active {
+    color: var(--text)
+}
+:root[data-theme="dark"] .bloque-3d-hundido {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .icon-button:not(.active) {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .model-picker-status.is-ready,
+:root[data-theme="dark"] .model-picker-legend .is-ready {
+    color: #86d6a6
+}
+:root[data-theme="dark"] .model-picker-status.is-pending,
+:root[data-theme="dark"] .model-picker-legend .is-pending {
+    color: #f0c565
+}
+:root[data-theme="dark"] .drawing-source-error {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .drawing-source-drop {
+    background: #3a3016
+}
+:root[data-theme="dark"] .drawing-source-drop:focus-visible,
+:root[data-theme="dark"] .drawing-source-drop.is-dragging {
+    background: #3a3016
+}
+:root[data-theme="dark"] .drawing-source-drop > svg {
+    color: #f0c565
+}
+:root[data-theme="dark"] .drawing-steps li::before {
+    color: var(--text)
+}
+:root[data-theme="dark"] .read-exception-plain {
+    color: #f0c565
+}
+:root[data-theme="dark"] .orders-block .orders-row:hover {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .orders-block .orders-row.is-open {
+    background: #3a3016
+}
+:root[data-theme="dark"] .orders-chip.is-ok {
+    background: #17301f;
+    border-color: var(--border);
+    color: #86d6a6
+}
+:root[data-theme="dark"] .orders-chip.is-warn {
+    background: #3a3016;
+    color: #f0c565
+}
+:root[data-theme="dark"] .orders-chip.is-error {
+    background: #3b1d1d;
+    border-color: #7d3a3a;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .orders-detail-list li.is-warn .orders-detail-notes {
+    color: #f0c565
+}
+:root[data-theme="dark"] .orders-detail-list li.is-error .orders-detail-notes {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .orders-detail-note {
+    color: #f0c565
+}
+:root[data-theme="dark"] .orders-block .orders-row:hover {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .orders-block .orders-row.is-open {
+    background: #3a3016
+}
+:root[data-theme="dark"] .orders-model-tag {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
