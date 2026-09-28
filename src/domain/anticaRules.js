@@ -115,11 +115,11 @@ export function calculateAntica({ order, awning }) {
   if (invalidValance) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA ${variant} no admite bambalina.` });
   if (!stockLength) diagnostics.push({ level: 'error', awningId: awning.id, message: `ANTICA no válido: ningún largo de stock admite ${Math.max(rollTubeLength, loadBarLength)} cm.` });
 
-  if (valid) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA · fabricación TGM: faltan escuadras, kits y otros componentes por concretar con taller. La reserva automática de estructura es parcial.' });
-  if (valid && device === 'MAQUINA' && !crank.code) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA: manivela sin correspondencia automática para ese color y largo. Selecciona el artículo en Editar despiece para incluirla en la reserva.' });
+  if (valid) diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ANTICA · fabricación TGM: faltan escuadras, kits y otros componentes por concretar con taller. La reserva automática de estructura es parcial.' });
+  if (valid && device === 'MAQUINA' && !crank.code) diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ANTICA: manivela sin correspondencia automática para ese color y largo. Selecciona el artículo en Editar despiece para incluirla en la reserva.' });
 
-  if (valid) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA · acero: reserva nominal de cortes / 600 cm por barra. No incluye merma ni resuelve aprovechamiento de retales. Revisar los cortes y cantidades con taller.' });
-  if (valid && steelParts.some(part => part.length > ANTICA_STEEL.flat.stockLengthCm)) diagnostics.push({ level: 'warning', awningId: awning.id, message: 'ANTICA: hay cortes de acero mayores que la barra comercial de 600 cm. Taller debe definir el suministro o empalme y ajustar la reserva antes de fabricar.' });
+  if (valid) diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ANTICA · acero: reserva nominal de cortes / 600 cm por barra. No incluye merma ni resuelve aprovechamiento de retales. Revisar los cortes y cantidades con taller.' });
+  if (valid && steelParts.some(part => part.length > ANTICA_STEEL.flat.stockLengthCm)) diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ANTICA: hay cortes de acero mayores que la barra comercial de 600 cm. Taller debe definir el suministro o empalme y ajustar la reserva antes de fabricar.' });
 
   const motorPower = armCount >= 3 ? '35/17' : '15/17';
   const context = {

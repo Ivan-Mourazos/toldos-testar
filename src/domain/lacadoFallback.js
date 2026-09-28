@@ -61,7 +61,7 @@ export function withLacadoFallback(result, { awning, order }) {
   const diagnostics = [
     ...(result.diagnostics || []),
     {
-      level: 'warning',
+      level: 'warn',
       awningId: awning.id,
       message: `Lacado ${lacadoName}: estas piezas no existen en ese color y se reservan en blanco para lacar fuera: ${[...painted].join(', ')}.`
     }

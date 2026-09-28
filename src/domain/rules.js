@@ -128,7 +128,9 @@ export function calculateOrder(payload) {
     result = applyStructureEdit(awning, result);
     if (modified) result = withCoherentException({ result, rule, order, awning: calculationAwning, model, changes: overrideChanges });
     if (Array.isArray(result.diagnostics)) {
-      diagnostics.push(...result.diagnostics);
+      // El nivel de aviso de la web es «warn»: un «warning» de una regla no llegaba a la
+      // tarjeta (que filtra error/pending/warn) y sí a la lista de Pedidos (28/09/2026).
+      diagnostics.push(...result.diagnostics.map((item) => (item.level === 'warning' ? { ...item, level: 'warn' } : item)));
     }
     if (invalidUnits) {
       diagnostics.push({

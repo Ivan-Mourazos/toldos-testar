@@ -223,7 +223,7 @@ describe('Antica TGM: piezas compradas y fabricación propia', () => {
       expect.objectContaining({ code: 'CASPUNCEJE78MM', quantity: 2 })
     ]));
     expect(block.materials.some(m => m.code === 'CASPUNCE' || m.code.startsWith('BANTICA'))).toBe(false);
-    expect(result.diagnostics.some(d => d.level === 'warning' && d.message.includes('reserva automática de estructura es parcial'))).toBe(true);
+    expect(result.diagnostics.some(d => d.level === 'warn' && d.message.includes('reserva automática de estructura es parcial'))).toBe(true);
   });
   test('conserva el color automático en pedidos antiguos y selecciona casquillo P701', () => {
     const block = calculateOrder(payload({})).ofs[0];

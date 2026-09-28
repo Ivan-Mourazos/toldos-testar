@@ -38,7 +38,7 @@ describe('lacados poco habituales: la pieza que no existe en su color va en blan
     expect(codes).not.toContain('SOPAR350GR22');
     expect(result.ofs[0].despiece.rows.map((row) => row.reference)).not.toContain('SOPAR350GR22');
     const warning = result.diagnostics.find((item) => /lacar fuera/.test(item.message));
-    expect(warning?.level).toBe('warning');
+    expect(warning?.level).toBe('warn');
     expect(warning.message).toContain('SOPAR350BL16');
   });
 

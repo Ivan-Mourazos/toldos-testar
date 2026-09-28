@@ -69,3 +69,22 @@ export function formatListDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
+
+// Historial por días, como CoordinaOT: «Jueves 24/09/26 · 15 pedidos» (Iván, 28/09/2026).
+export function groupByDay(reviews: ReviewSummary[]) {
+  const groups: { key: string; label: string; reviews: ReviewSummary[] }[] = [];
+  for (const review of reviews) {
+    const date = new Date(review.updatedAt);
+    // Día local, no UTC: un pedido guardado de noche no salta al día siguiente.
+    const key = Number.isNaN(date.getTime()) ? 'sin-fecha' : `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    let group = groups.find((item) => item.key === key);
+    if (!group) {
+      const weekday = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('es-ES', { weekday: 'long' });
+      const day = Number.isNaN(date.getTime()) ? 'Sin fecha' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      group = { key, label: weekday ? `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${day}` : day, reviews: [] };
+      groups.push(group);
+    }
+    group.reviews.push(review);
+  }
+  return groups;
+}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FileSearch, FolderOpen, Search } from 'lucide-react';
 import type { ReviewSummary } from '../types';
-import { formatListDate, inboxSections, pendingGroups } from '../ordersInbox';
+import { formatListDate, groupByDay, inboxSections, pendingGroups } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
 
 type AwningItem = NonNullable<ReviewSummary['summary']['awningList']>[number];
@@ -20,18 +20,21 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   onYear: (year: number) => void;
   onOpen: (orderCode: string) => void;
 }) {
-  const [scope, setScope] = useState<'mine' | 'all'>('mine');
+  // Iván, 28/09/2026: al entrar se ve todo, porque lo que toca revisar es de otros.
+  const [scope, setScope] = useState<'mine' | 'all'>('all');
   const [query, setQuery] = useState('');
   const [openCode, setOpenCode] = useState<string | null>(null);
   const sections = inboxSections({ pending, history }, { me: currentUser, scope, query });
   const groups = pendingGroups(sections.pending);
 
+  const columns = (
+    <div className="orders-columns" aria-hidden="true">
+      <span />
+      <span>Pedido</span><span>Cliente</span><span>Modelos</span><span>Autor</span><span>Fecha</span><span className="is-end">Toldos</span>
+    </div>
+  );
   const block = (reviews: ReviewSummary[]) => (
     <div className="orders-block">
-      <div className="orders-columns" aria-hidden="true">
-        <span />
-        <span>Pedido</span><span>Cliente</span><span>Autor</span><span>Fecha</span><span>Toldos</span>
-      </div>
       <ul className="orders-list">
         {reviews.map((review) => (
           <OrderRow
@@ -59,12 +62,12 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
       </header>
       {pendingLoading ? <p className="review-empty">Cargando pedidos…</p>
         : groups.length === 0 ? <p className="review-empty"><FileSearch aria-hidden="true" />{scope === 'mine' ? 'No tienes pedidos pendientes.' : 'No hay pedidos pendientes.'}</p>
-          : groups.map((group) => (
+          : <>{columns}{groups.map((group) => (
             <section key={group.status} className="orders-group" aria-label={`${group.label}: ${group.reviews.length}`}>
               <h3 className={`orders-group-title tone-${group.tone}`}><span className="orders-dot" aria-hidden="true" />{group.label}<span className="orders-count">{group.reviews.length}</span></h3>
               {block(group.reviews)}
             </section>
-          ))}
+          ))}</>}
       <header className="orders-inbox-bar">
         <h2>Generados</h2>
         <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => onYear(Number(event.target.value))} aria-label="Año" />
@@ -72,7 +75,12 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
       </header>
       {historyLoading ? <p className="review-empty">Cargando historial…</p>
         : sections.history.length === 0 ? <p className="review-empty">No hay pedidos generados en {year}.</p>
-          : block(sections.history)}
+          : <>{columns}{groupByDay(sections.history).map((day) => (
+            <section key={day.key} className="orders-group" aria-label={`${day.label}: ${day.reviews.length} pedidos`}>
+              <h3 className="orders-day-title">{day.label}<span>· {day.reviews.length} {day.reviews.length === 1 ? 'pedido' : 'pedidos'}</span></h3>
+              {block(day.reviews)}
+            </section>
+          ))}</>}
     </section>
   );
 }
@@ -101,12 +109,13 @@ function OrderRow({ review, mine, open, onToggle, onOpen }: {
         <ChevronDown className="orders-chevron" aria-hidden="true" />
         <strong className="orders-code">{review.orderCode}</strong>
         <span className="orders-customer">{review.summary.customer || 'Sin cliente'}</span>
+        <span className="orders-model-tags">{Array.from(new Set(review.summary.models || [])).map((model) => <span key={model} className="orders-model-tag">{controlLabel(model)}</span>)}</span>
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
         <span className="orders-date">{formatListDate(review.updatedAt)}</span>
         <span className="orders-awnings">
           {awnings?.length
             ? awnings.map((item) => <AwningChip key={item.letter} item={item} />)
-            : <span className="orders-models">{(review.summary.models || []).map(controlLabel).join(' + ')}</span>}
+            : <span className="orders-models">{review.summary.awnings} {review.summary.awnings === 1 ? 'elemento' : 'elementos'}</span>}
         </span>
       </div>
       {open && (

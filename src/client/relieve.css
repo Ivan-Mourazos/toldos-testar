@@ -435,3 +435,30 @@ body, .app-shell { background: var(--bg); }
 /* El botón invisible cubre toda la fila (también las letras), como en CoordinaOT. */
 .orders-block .orders-row-toggle { z-index: 2; }
 .orders-block .orders-row-cells, .orders-block .orders-chip { pointer-events: none; }
+
+/* Pedidos, segunda vuelta para parecerse de verdad al Historial de CoordinaOT (Iván,
+   28/09/2026): ancho máximo centrado para que las columnas llenen la fila, cada pedido
+   una pieza con relieve y hueco entre filas, historial por días, etiqueta de modelo y
+   los toldos alineados a la derecha. */
+.orders-inbox { margin-inline: auto; max-width: 1480px; width: 100%; }
+.orders-block, .orders-columns { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 92px 200px; }
+.orders-columns { font-size: 12px; font-weight: 650; letter-spacing: 0; padding: 0 15px; text-transform: none; }
+.orders-columns .is-end { text-align: right; }
+.orders-block .orders-list { background: transparent; border: 0; border-radius: 0; box-shadow: none; display: grid; gap: 5px; overflow: visible; }
+.orders-block .orders-row, .orders-block .orders-row:last-child {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.75) inset, 0 2px 6px rgb(20 44 48 / 0.09);
+  overflow: hidden;
+}
+.orders-block .orders-row:hover { background: #f7faf9; border-color: #7f9892; }
+.orders-block .orders-row.is-open { background: #fffaf0; border-color: #d3a024; box-shadow: inset 4px 0 0 var(--tgm-yellow, #f7bd19), 0 2px 8px rgb(20 44 48 / 0.12); }
+.orders-row-cells { font-size: 13.5px; min-height: 38px; }
+.orders-code { font-size: 14px; font-weight: 800; letter-spacing: 0.01em; }
+.orders-model-tags { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.orders-model-tag { background: #eef3f1; border: 1px solid #c8d6d1; border-radius: 6px; color: #2f4a4d; font-size: 11.5px; font-weight: 650; padding: 1px 7px; white-space: nowrap; }
+.orders-awnings { justify-content: flex-end; }
+.orders-day-title { align-items: baseline; display: flex; font-size: 13.5px; font-weight: 800; gap: 6px; margin: 10px 0 2px 4px; }
+.orders-day-title span { color: var(--text-muted); font-size: 12.5px; font-weight: 600; }
+.orders-group { gap: 5px; }

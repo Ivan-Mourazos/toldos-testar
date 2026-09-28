@@ -84,3 +84,12 @@ describe('bloques de Pedidos por estado', () => {
     expect(formatListDate('2026-09-04T10:00:00.000Z')).toBe('04/09/2026');
   });
 });
+
+describe('historial por días', () => {
+  it('agrupa por día con el nombre del día y respeta el orden', async () => {
+    const { groupByDay } = await import('./ordersInbox');
+    const make = (orderCode: string, updatedAt: string) => ({ orderCode, updatedAt, summary: {} }) as never;
+    const groups = groupByDay([make('A', '2026-09-24T10:00:00'), make('B', '2026-09-24T08:00:00'), make('C', '2026-09-23T10:00:00')]);
+    expect(groups.map((group) => [group.label, group.reviews.length])).toEqual([['Jueves 24/09/26', 2], ['Miércoles 23/09/26', 1]]);
+  });
+});
