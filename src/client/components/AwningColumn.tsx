@@ -78,10 +78,28 @@ const formatExceptionValue = (value: number | string) => (typeof value === 'numb
 
 // Al leer, solo lo que de verdad cambia la excepción (Iván, 25/09/2026): por qué hace
 // falta y los valores del candado distintos del normal, no todos los campos.
-function ExceptionBlock({ readOnly, exception, children }: { readOnly: boolean; exception?: ExceptionSummary; children: React.ReactNode }) {
+// En lectura no llega el cálculo de la tarjeta, solo sus avisos: entonces se lee el aviso
+// «Excepción técnica en OF …: motivo; cambio…» (rules.js), que dice lo mismo.
+function exceptionFromMessage(message: string | undefined): ExceptionSummary | undefined {
+  if (!message) return undefined;
+  if (/activada sin cambios/.test(message)) return { reasons: [], changes: [] };
+  const text = message.replace(/^Excepción técnica en OF[^:]*:\s*/, '').replace(/\.$/, '');
+  const parts = text.split('; ').filter(Boolean);
+  const changes = parts.flatMap((part) => {
+    const match = /^(.+) (\S+) \(normal ([^)]+)\)$/.exec(part);
+    return match ? [{ field: match[1], label: match[1], value: match[2], standard: match[3] }] : [];
+  });
+  return { reasons: parts.filter((part) => !/\(normal [^)]+\)$/.test(part)), changes };
+}
+
+function ExceptionBlock({ readOnly, exception, message, children }: { readOnly: boolean; exception?: ExceptionSummary; message?: string; children: React.ReactNode }) {
   if (!readOnly) return <div className="awning-overrides">{children}</div>;
-  const reasons = exception?.reasons || [];
-  const changes = exception?.changes || [];
+  const known = exception || exceptionFromMessage(message);
+  if (!known) {
+    return <div className="read-exception"><p className="read-exception-plain">Excepción técnica activa para este toldo.</p></div>;
+  }
+  const reasons = known.reasons;
+  const changes = known.changes;
   const nothing = reasons.length === 0 && changes.length === 0;
   return (
     <details className="read-exception">
@@ -103,6 +121,9 @@ function ExceptionBlock({ readOnly, exception, children }: { readOnly: boolean; 
 
 export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel }: Props) {
   const fields = useVisibleFields(awning);
+  // El aviso de la excepción técnica sale en su bloque (motivo y cambios): no se repite abajo.
+  const exceptionNotice = awning.reglasModificadas ? diagnostics.find((item) => /^Excepción técnica en OF /.test(item.message || '')) : undefined;
+  const listedDiagnostics = exceptionNotice ? diagnostics.filter((item) => item !== exceptionNotice) : diagnostics;
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   const standaloneValance = awning.model === 'BAMBALINA';
   const simpleFabricJob = ['CAMBIO TELA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA'].includes(awning.model);
@@ -718,8 +739,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
 
           {awning.reglasModificadas && (
-            <ExceptionBlock readOnly={readOnly} exception={ofCalculation?.exception}>
-              {!readOnly && <p className="awning-modified-chip">{ofCalculation?.exception?.reasons?.length ? `Excepción técnica: ${ofCalculation.exception.reasons.join('; ')}.` : 'Excepción técnica activa para este toldo. Cambia solo lo que haga falta: al leer se verá lo que difiere del valor normal.'}</p>}
+            <ExceptionBlock readOnly={readOnly} exception={ofCalculation?.exception} message={exceptionNotice?.message}>
+              {!readOnly && <p className="awning-modified-chip">{exceptionNotice ? `Excepción técnica: ${exceptionNotice.message.replace(/^Excepción técnica en OF[^:]*:\s*/, '')}` : 'Excepción técnica activa para este toldo. Cambia solo lo que haga falta: al leer se verá lo que difiere del valor normal.'}</p>}
               {(awning.model === 'CORTINA' || awning.model === 'CAMBIO CORTINA' || isSelena) && (
                 <NumberField
                   label="Descuento inferior tela (cm)"
@@ -836,9 +857,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
       // Válido ya lo dice la etiqueta de arriba: el pie solo sale si hay algo que atender.
       ) : status === 'VÁLIDO' ? null : <footer className={`awning-status ${statusClass}`}>{status}</footer>)}
       {/* También en la ficha de lectura: «2 AVISOS» arriba y aquí qué son. */}
-      {diagnostics.length > 0 && (
+      {listedDiagnostics.length > 0 && (
         <ul className="awning-diagnostics" aria-label="Avisos del cálculo">
-          {diagnostics.map((item, index) => (
+          {listedDiagnostics.map((item, index) => (
             <li key={index} className={item.level === 'error' ? 'is-error' : 'is-pending'}>
               {item.level === 'error' ? <CircleAlert aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />}
               <span>{withoutAwningPrefix(item.message)}</span>

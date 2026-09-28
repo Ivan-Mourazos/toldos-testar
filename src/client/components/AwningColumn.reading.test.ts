@@ -493,7 +493,8 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
       });
 
       it('la excepción técnica dice al leer por qué hace falta y solo lo que cambia', () => {
-        expect(render(awning, true, { sameFabric: false })).toContain('Excepción técnica activada sin cambios');
+        // Sin cálculo ni aviso no se sabe qué cambió: no se dice «sin cambios».
+        expect(render(awning, true, { sameFabric: false })).toContain('Excepción técnica activa para este toldo.');
         const read = render(awning, true, {
           sameFabric: false,
           ofCalculation: { valid: true, exception: { reasons: ['frente 598 cm, máximo 500 cm'], changes: [{ field: 'x', label: 'Descuento frente tela', value: 13, standard: 12 }] } }
@@ -576,5 +577,24 @@ describe('ficha de lectura: estado en la cabecera', () => {
 
   it('al editar, la insignia sigue saliendo de la propia tarjeta', () => {
     expect(header({ kind: 'error', label: '1 error' }, false)?.[1]).not.toBe('1 error');
+  });
+});
+
+// Iván, 28/09/2026: en lectura no llega el cálculo; el bloque se lee del aviso y el aviso
+// no se repite abajo.
+describe('excepción técnica en lectura, a partir del aviso', () => {
+  it('dice el motivo y los cambios, y no repite el aviso', () => {
+    const [base] = samplesFor('CORTINA');
+    const awning: Awning = { ...base, reglasModificadas: true };
+    const message = 'Excepción técnica en OF 0232508: CORTINA fuera de estándar: 598x235 cm, máximo 500x400 cm; Descuento frente tela 13 (normal 12).';
+    const read = renderToStaticMarkup(React.createElement(AwningColumn, {
+      awning, index: 3, parameters, sameFabric: true, orderFabric: SAMPLE_FABRIC, readOnly: true,
+      diagnostics: [{ level: 'warn', awningId: awning.id, message }],
+      onUpdate: noop, onDuplicate: noop, onRemove: noop
+    }));
+    expect(read).toContain('Excepción técnica: CORTINA fuera de estándar: 598x235 cm, máximo 500x400 cm.');
+    expect(read).toContain('(normal 12)');
+    expect(read).not.toContain('sin cambios');
+    expect(read).not.toContain('awning-diagnostics');
   });
 });
