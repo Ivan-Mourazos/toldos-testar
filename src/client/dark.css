@@ -108,3 +108,11 @@
    tarjeta blanca de claro sobre el carril gris. */
 :root[data-theme="dark"] .planning-tabs { background: #111c20; }
 :root[data-theme="dark"] .planning-tabs button.active { background: #2a3d43; box-shadow: 0 1px 3px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.06); color: var(--text); }
+
+/* Botones amarillos dentro de grupos que pasan su letra a clara: la letra sigue oscura. */
+:root[data-theme="dark"] .drawing-parameters-actions .primary-button,
+:root[data-theme="dark"] .drawing-image-actions .primary-button,
+:root[data-theme="dark"] .drawing-condition-heading .primary-button { color: #14120a; }
+/* El candado activo es amarillo: icono oscuro también al pasar el ratón. */
+:root[data-theme="dark"] .icon-button.active,
+:root[data-theme="dark"] .icon-button.active:hover:not(:disabled) { color: var(--tgm-black); }

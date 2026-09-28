@@ -123,6 +123,9 @@
 :root[data-theme="dark"] .workbench {
     background: var(--surface)
 }
+:root[data-theme="dark"] .section-header svg {
+    color: var(--text)
+}
 :root[data-theme="dark"] .order-autofill-button {
     background: #17301f;
     border: 1px solid var(--border);
@@ -1545,5 +1548,13 @@
     color: var(--text)
 }
 :root[data-theme="dark"] .orders-inbox {
+    background: transparent
+}
+:root[data-theme="dark"] .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled),
+:root[data-theme="dark"] .app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active),
+:root[data-theme="dark"] .app-shell .segmented-option.tecla-3d:not(.active) {
+    background: var(--tecla-cara)
+}
+:root[data-theme="dark"] .app-shell .drawing-parameters-actions .ghost-button:not(:disabled) {
     background: transparent
 }

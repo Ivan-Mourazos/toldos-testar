@@ -6,6 +6,10 @@
     <meta name="theme-color" content="#0c272c" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <title>Toldos</title>
+    <!-- El modo recordado en este navegador se pone antes de pintar, sin destello en claro. -->
+    <script>
+      try { if (localStorage.getItem('toldos-tema') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (error) { /* sin almacenamiento */ }
+    </script>
   </head>
   <body>
     <div id="root"></div>

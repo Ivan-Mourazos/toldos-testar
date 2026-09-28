@@ -119,6 +119,11 @@ for (const file of sources) {
         colorPattern.lastIndex = 0;
         return;
       }
+      // El negro de la marca escrito como variable también es letra oscura.
+      if (kind === 'text' && decl.value.trim() === 'var(--tgm-black)') {
+        decls.push(postcss.decl({ prop: decl.prop, value: 'var(--text)', important: decl.important }));
+        return;
+      }
       let changed = false;
       const value = decl.value.replace(colorPattern, (color) => {
         const dark = darkColor(kind, color);
