@@ -5,9 +5,24 @@ import { readGroupOf, readGroupOrder } from '../readGroups';
 export const ReadModeContext = createContext(false);
 export const useReadMode = () => useContext(ReadModeContext);
 
+// Valores por defecto que al leer no aportan nada (Iván, 28/09/2026): lo normal no se
+// escribe. Si el valor es otro, sí sale.
+export const readHiddenDefaults: Record<string, string> = {
+  'Dibujo de confección': 'Automático',
+  'Tela bamba': 'Igual que la tela'
+};
+
+// Vacíos que se dicen con palabras en vez de «—».
+const readEmptyWords: Record<string, string> = {
+  'Bamba (cm)': 'Sin bamba'
+};
+
 // El vacío se escribe «—» y en gris, para que no se confunda con un dato que falta sin más.
 export function ReadPair({ label, value }: { label: string; value: React.ReactNode }) {
   const group = readGroupOf(label);
+  if (typeof value === 'string' && readHiddenDefaults[label] === value) return null;
+  const blank = value === null || value === undefined || value === '';
+  if (blank && readEmptyWords[label]) value = readEmptyWords[label];
   const empty = value === null || value === undefined || value === '';
   return (
     <div className="read-pair" data-group={group} style={{ order: readGroupOrder(group) + 1 }}>

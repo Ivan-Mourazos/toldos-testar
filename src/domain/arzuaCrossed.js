@@ -34,6 +34,11 @@ export function resolveCrossedKit(color) {
   return crossedKitByFinish[finish] || null;
 }
 
+// La lona más limitada de la tabla de Llaza: por debajo, cualquier lona vale.
+export function crossedStrictestFabricLimit() {
+  return { width: 275, projection: 250 };
+}
+
 // Solo reconocer nombres de producto inequívocos. Acrílica o PVC genéricos
 // no identifican una familia de la tabla del fabricante.
 export function crossedFabricLimits(fabric) {

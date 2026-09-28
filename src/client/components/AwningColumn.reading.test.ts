@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readHiddenDefaults } from './ReadMode';
 import { AwningColumn } from './AwningColumn';
 import { controlLabel } from './controlLabels';
 import { SAMPLE_FABRIC, sampleAwnings } from '../../../scripts/lib/model-samples.mjs';
@@ -48,6 +49,13 @@ function render(awning: Awning, readOnly: boolean, { sameFabric = true, ofCalcul
   // Iván, 25/09/2026: al leer, la excepción técnica enseña solo por qué hace falta y lo
   // que cambia, no todos los campos del candado; esos campos no entran en la paridad.
   return readOnly ? markup : withoutOverrides(markup);
+}
+
+// Un campo que al leer se oculta porque tiene su valor por defecto (ReadMode.readHiddenDefaults).
+function hiddenWhenDefault(label: string, awning: Awning) {
+  if (!(label in readHiddenDefaults)) return false;
+  const read = render(awning, true, { sameFabric: false });
+  return !read.includes(`<span class="read-label">${label}</span>`);
 }
 
 function withoutOverrides(markup: string) {
@@ -362,7 +370,8 @@ const meaningfulEmpty: Record<string, string> = {
   'select:Sujeción del suplemento': 'Sin indicar',
   'select:Remate inferior': 'Sin indicar',
   'select:Dibujo de confección': 'Automático',
-  'input:Tela bamba': 'Igual que la tela'
+  'input:Tela bamba': 'Igual que la tela',
+  'input:Bamba (cm)': 'Sin bamba'
 };
 
 // Cada select, segmentado e input con etiqueta enseña al leer lo mismo que al editar: el
@@ -383,6 +392,8 @@ function expectControlsKept(model: string, awning: Awning, sameFabric: boolean) 
     // elección («Dibujo de confección · Automático»).
     const unit = control.startsWith('segmented:') ? '' : readUnitOf(label);
     const value = control.startsWith('input:') && /^-?\d+\.\d+$/.test(shown) ? shown.replace('.', ',') : shown;
+    // Iván, 28/09/2026: el valor por defecto (Dibujo automático, bamba de la misma tela) no se escribe al leer.
+    if (label in readHiddenDefaults && read.get(label) === undefined && (shown === '' || shown === readHiddenDefaults[label] || placeholders.has(label))) continue;
     const empty = meaningfulEmpty[control] ?? '—';
     const expected = shown === '' ? [empty]
       : control.startsWith('select:') && placeholders.has(label) ? [empty, shown]
@@ -429,7 +440,7 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
       for (const awning of samplesFor(model)) {
         const edit = labels(render(awning, false));
         const read = readLabels(render(awning, true));
-        const lost = [...edit].filter((label) => !groupLabels.has(label) && !read.has(label));
+        const lost = [...edit].filter((label) => !groupLabels.has(label) && !read.has(label) && !hiddenWhenDefault(label, awning));
         expect(lost, `${model} pierde ${lost.join(', ')}`).toEqual([]);
       }
     });
@@ -530,8 +541,9 @@ describe('ficha de lectura: cómo se escriben los valores', () => {
     expect(read.get('Frente')).toBe('337,5 cm');
   });
 
-  it('«Tela bamba» vacía se lee «Igual que la tela»', () => {
-    expect(read.get('Tela bamba')).toBe('Igual que la tela');
+  // Iván, 28/09/2026: la bamba de la misma tela es lo normal y no se escribe al leer.
+  it('«Tela bamba» vacía no se escribe: es la misma tela', () => {
+    expect(read.get('Tela bamba')).toBeUndefined();
   });
 
   it('«Tipo de pared» vacío se lee con su opción vacía, «No indicada»', () => {

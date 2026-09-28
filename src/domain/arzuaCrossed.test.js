@@ -93,7 +93,15 @@ describe('AROND brazo cruzado · tarifa 2026 y compras RPS', () => {
     input.fabric = 'TEST|||120|||ACRILICA';
     const result = calculateOrder(input);
     expect(result.ofs[0].calculation.valid).toBe(true);
-    expect(result.diagnostics.some((item) => item.message.includes('familia no está identificada'))).toBe(true);
+    expect(result.diagnostics.some((item) => item.message.includes('pasa del límite de algunas lonas'))).toBe(true);
+  });
+
+  test('con una lona que no está en la tabla y una medida pequeña no avisa, ni del kit', () => {
+    const input = order({ width: 210, projection: 200 });
+    input.fabric = 'TEST|||120|||ACRILICA';
+    const messages = calculateOrder(input).diagnostics.map((item) => item.message).join(' | ');
+    expect(messages).not.toContain('límite de algunas lonas');
+    expect(messages).not.toContain('kit en soporte izquierdo');
   });
 
   test('conserva configuración tras serializar y normalizar', () => {

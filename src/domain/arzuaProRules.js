@@ -14,7 +14,7 @@ import {
   suggestedTubeForDestination
 } from './arzuaProParameters.js';
 import { resolveMotorRemote } from './motorAccessories.js';
-import { crossedMinimumLines, resolveCrossedKit, crossedFabricLimits, crossedProfileByFinish } from './arzuaCrossed.js';
+import { crossedMinimumLines, resolveCrossedKit, crossedFabricLimits, crossedProfileByFinish, crossedStrictestFabricLimit } from './arzuaCrossed.js';
 
 export { arzuaProEstablishedProjections };
 
@@ -67,8 +67,14 @@ export function calculateArzuaPro({ order, awning }) {
     if (device === 'MOTOR' && !['55/17', '70/17'].includes(awning.motorPower)) issue('Brazo cruzado: seleccionar y confirmar el motor; la tabla de par estándar no cubre esta configuración.');
     const limits = crossedFabricLimits(fabric);
     if (limits && (awning.width > limits.width || awning.projection > limits.projection)) issue(`Brazo cruzado: esta familia de lona admite como máximo ${limits.width} × ${limits.projection} cm.`);
-    if (fabric && !limits) issue('Brazo cruzado: comprobar el límite de la lona; su familia no está identificada en la tabla Llaza 2026.', 'warn');
-    issue('BRAZOS CRUZADOS: kit en soporte izquierdo, dos brazos e inclinación máxima 30°.', 'warn');
+    // Iván, 28/09/2026: con una lona que no está en la tabla de Llaza (casi todas), el aviso
+    // salía siempre. Solo hace falta si la medida pasa del límite más estricto de la tabla.
+    const strictest = crossedStrictestFabricLimit();
+    if (fabric && !limits && (awning.width > strictest.width || awning.projection > strictest.projection)) {
+      issue(`Brazo cruzado: ${awning.width} × ${awning.projection} cm pasa del límite de algunas lonas (la más estricta admite ${strictest.width} × ${strictest.projection}). Comprobar la de este pedido.`, 'warn');
+    }
+    // El kit en el soporte izquierdo, dos brazos e inclinación máxima 30° no es un aviso: la
+    // tarjeta lo dice como nota junto a «Configuración de brazos».
     if (Number(awning.projection) >= 300 && device !== 'MOTOR') issue('Llaza recomienda motor a partir de 300 cm de salida con brazos cruzados.', 'warn');
   }
   if (!structureColor) missingFields.push('lacado');

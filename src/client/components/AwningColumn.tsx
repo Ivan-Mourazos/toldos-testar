@@ -613,7 +613,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   setShowGaliciaPrompt(false);
                   update({ armConfiguration: value === 'CRUZADOS' ? 'CROSSED' : 'STANDARD', ...(value === 'CRUZADOS' ? { armCount: 2, supportSystem: 'ARZUA', tubeLoad: 'TUBO DE CARGA EVO 80' } : {}) });
                 }} />
-                {awning.armConfiguration === 'CROSSED' && !readOnly && <p>Dos brazos · kit izquierdo · inclinación máxima 30°. Kit inferior para EVO 80.</p>}
+                {awning.armConfiguration === 'CROSSED' && <p className="awning-note">Brazos cruzados: dos brazos, kit en el soporte izquierdo, inclinación máxima 30°. Kit inferior para EVO 80.</p>}
                 {awning.armConfiguration === 'CROSSED' && <SelectField label="Terminales · confirmar con taller" value={awning.crossedAdditionalTerminals === true ? 'JUEGO ADICIONAL' : awning.crossedAdditionalTerminals === false ? 'SOLO LOS DEL KIT' : ''} options={['SOLO LOS DEL KIT', 'JUEGO ADICIONAL']} placeholder="Pendiente de confirmar…" onChange={(value) => update({ crossedAdditionalTerminals: value === 'JUEGO ADICIONAL' ? true : value === 'SOLO LOS DEL KIT' ? false : null })} />}
               </>}
               <SegmentedField
