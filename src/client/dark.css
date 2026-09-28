@@ -36,26 +36,26 @@
 
 :root[data-theme="dark"] body { background: var(--bg); color: var(--text); }
 
-/* Campos: fondo un punto más claro que la tarjeta, como en CoordinaOT. */
+/* Profundidad en oscuro: las mismas cuatro alturas que en claro (relieve.css), con
+   tonos separados. Página casi negra; campos hundidos, más oscuros que la tarjeta y con
+   sombra por dentro; tarjeta gris azulada; botones más claros, con brillo y canto negro. */
+:root[data-theme="dark"] {
+  --campo: #0d171a;
+  --campo-borde: #3d555b;
+  --campo-sombra: inset 0 2px 3px rgb(0 0 0 / 0.55), inset 0 0 0 1px rgb(0 0 0 / 0.2);
+  --tecla-cara: linear-gradient(180deg, #3a5057 0%, #2a3d43 100%);
+  --tecla-borde: #526c72;
+  --tecla-canto: #040a0c;
+  --tecla-brillo: rgb(255 255 255 / 0.12);
+  --tecla-texto: #e3ecea;
+}
 :root[data-theme="dark"] input,
 :root[data-theme="dark"] select,
 :root[data-theme="dark"] textarea,
-:root[data-theme="dark"] .select-control {
-  background: #1f2f35;
-  border-color: var(--border-strong);
-  color: var(--text);
-}
+:root[data-theme="dark"] .select-control { color: var(--text); }
 :root[data-theme="dark"] input::placeholder,
 :root[data-theme="dark"] textarea::placeholder { color: #7f9694; }
 
-/* Botones con relieve: sobre fondo oscuro, gris azulado; el principal sigue en amarillo. */
-:root[data-theme="dark"] .ghost-button,
-:root[data-theme="dark"] .icon-button:not(.active),
-:root[data-theme="dark"] .tecla-3d:not([aria-pressed="true"]):not(.active) {
-  background: #22343a;
-  border-color: var(--border-strong);
-  color: var(--text);
-}
 :root[data-theme="dark"] .primary-button { color: #14120a; }
 
 /* Pedidos: filas en pieza oscura, como el Historial de CoordinaOT. */

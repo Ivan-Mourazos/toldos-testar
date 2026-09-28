@@ -474,3 +474,48 @@ body, .app-shell { background: var(--bg); }
 .orders-block, .orders-columns { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 92px 280px; }
 .orders-block.is-history, .orders-columns.is-history { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 280px; }
 .orders-awnings { flex-wrap: nowrap; }
+
+/* Profundidad (Iván, 28/09/2026: «que se distingan inputs, botones y fondo»). Cuatro
+   alturas, cada una con su tono: la página abajo; los campos, hundidos (su propio gris,
+   sombra por dentro); las tarjetas, encima en blanco; los botones, en relieve (cara con
+   degradado, brillo arriba y canto abajo). Los colores son variables para que el modo
+   oscuro solo cambie los tonos (dark.css). */
+:root {
+  --campo: #eef3f1;
+  --campo-borde: #a3b5b0;
+  --campo-sombra: inset 0 1px 2px rgb(13 42 47 / 0.16), inset 0 0 0 1px rgb(13 42 47 / 0.02);
+  --tecla-cara: linear-gradient(180deg, #ffffff 0%, #e4ebe8 100%);
+  --tecla-borde: #93a7a1;
+  --tecla-canto: #7f958f;
+  --tecla-brillo: rgb(255 255 255 / 0.9);
+  --tecla-texto: var(--text);
+}
+:root .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control) {
+  background-color: var(--campo);
+  border-color: var(--campo-borde);
+  box-shadow: var(--campo-sombra);
+}
+:root .app-shell :is(input, select, textarea, .select-control):disabled { box-shadow: none; }
+:root .app-shell .segmented-control:not(.is-empty) { background: var(--campo); border-color: var(--campo-borde); box-shadow: var(--campo-sombra); }
+/* El aviso de campo que falta manda sobre el hundido. */
+:root .app-shell .is-missing :is(input, .select-control, .segmented-control) {
+  border-color: var(--warn);
+  box-shadow: var(--campo-sombra), 0 0 0 1px var(--warn);
+}
+
+/* Botones secundarios y de icono: tecla en relieve. El amarillo, los de las bandas
+   oscuras y la lista de modelos de Parámetros (plana, solo el activo en relieve)
+   conservan lo suyo. */
+.app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled),
+.app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active),
+.app-shell .segmented-option.tecla-3d:not(.active) {
+  background: var(--tecla-cara);
+  border-color: var(--tecla-borde);
+  box-shadow: inset 0 1px 0 var(--tecla-brillo), 0 2px 0 var(--tecla-canto), 0 3px 6px -3px rgb(13 42 47 / 0.35);
+  color: var(--tecla-texto);
+}
+.app-shell .segmented-option.tecla-3d:not(.active) { box-shadow: inset 0 1px 0 var(--tecla-brillo), 0 1px 0 var(--tecla-canto); }
+.app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(:disabled):active {
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.25);
+}
+.app-shell .drawing-parameters-actions .ghost-button:not(:disabled) { background: transparent; box-shadow: none; color: #fff; }
