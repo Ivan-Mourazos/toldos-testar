@@ -201,7 +201,8 @@ async function verifyBrowserCase(browserInstance, url) {
 
   await page.getByRole('button', { name: /^Pedidos/ }).click();
   const inboxRow = page.locator('.orders-row', { hasText: 'AR2603332' });
-  await inboxRow.getByRole('button', { name: 'Abrir' }).click();
+  await inboxRow.locator('.orders-row-toggle').click();
+  await inboxRow.getByRole('button', { name: 'Abrir el pedido' }).click();
   const reviewReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
   const readonlyAwning = reviewReader.locator('.awning-column');
   await readonlyAwning.waitFor();
@@ -265,7 +266,8 @@ async function verifyBrowserCase(browserInstance, url) {
   // Tras generar, el pedido pasa a Historial y ya no está pendiente en la bandeja:
   // se reabre desde ahí para ver el bloque de archivos generados.
   const historyRow = page.locator('.orders-row', { hasText: 'AR2603332' });
-  await historyRow.getByRole('button', { name: 'Ver' }).click();
+  await historyRow.locator('.orders-row-toggle').click();
+  await historyRow.getByRole('button', { name: 'Abrir el pedido' }).click();
   const producedReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
   // El nombre del autor va pegado al mismo <strong>: «Archivos generados por IVÁN, autor del pedido».
   await producedReader.getByText(/^Archivos generados por IVÁN, autor del pedido$/).waitFor();

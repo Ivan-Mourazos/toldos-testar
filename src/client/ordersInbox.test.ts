@@ -70,3 +70,17 @@ describe('mergePendingReviews — pendientes del año actual y el anterior', () 
     expect(pendingYears(new Date('2026-01-05T10:00:00Z'))).toEqual([2026, 2025]);
   });
 });
+
+describe('bloques de Pedidos por estado', () => {
+  it('pone primero lo que está por revisar y omite los bloques vacíos', async () => {
+    const { pendingGroups } = await import('./ordersInbox');
+    const make = (orderCode: string, status: string) => ({ orderCode, status, summary: {} }) as never;
+    const groups = pendingGroups([make('B', 'APPROVED'), make('A', 'PENDING_REVIEW'), make('C', 'PENDING_REVIEW')]);
+    expect(groups.map((group) => [group.label, group.reviews.length])).toEqual([['Por revisar', 2], ['Aprobados · falta generar', 1]]);
+  });
+
+  it('escribe las fechas con dos cifras', async () => {
+    const { formatListDate } = await import('./ordersInbox');
+    expect(formatListDate('2026-09-04T10:00:00.000Z')).toBe('04/09/2026');
+  });
+});

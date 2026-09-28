@@ -146,7 +146,8 @@ async function run1280() {
     await page.getByRole('button', { name: /^Pedidos/ }).click();
     const allFilter = page.getByRole('button', { name: /^Todos/ });
     await allFilter.waitFor({ timeout: 3000 }).then(() => allFilter.click()).catch(() => undefined);
-    await page.locator('.orders-row', { hasText: 'AR2603332' }).getByRole('button', { name: 'Abrir' }).click();
+    await page.locator('.orders-row', { hasText: 'AR2603332' }).locator('.orders-row-toggle').click();
+    await page.locator('.orders-row', { hasText: 'AR2603332' }).getByRole('button', { name: 'Abrir el pedido' }).click();
     await page.locator('.review-readonly-order .awning-blocks-track').waitFor();
     const readPerPage = await perPageOf(page);
 

@@ -114,7 +114,8 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
       // Desde el 24/09/2026 el pedido se abre por "Abrir" en la bandeja y la vista
       // previa es un diálogo aparte (Pedido abierto sin aprobar ni devolver).
       const inboxRow = page.locator('.orders-row', { hasText: 'AR2603332' });
-      await inboxRow.getByRole('button', { name: 'Abrir' }).click({ timeout: 15000 });
+      await inboxRow.locator('.orders-row-toggle').click({ timeout: 15000 });
+      await inboxRow.getByRole('button', { name: 'Abrir el pedido' }).click();
       const reviewReader = page.getByRole('region', { name: 'Datos de revisión de AR2603332' });
       await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).click();
       // Desde el 24/09/2026 la vista previa del pedido abierto sale ya a pantalla completa.

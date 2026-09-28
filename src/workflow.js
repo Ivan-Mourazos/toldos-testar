@@ -2,6 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { calculateOrder } from './domain/rules.js';
+import { normalizeOrder } from './domain/validation.js';
+import { summarizeAwnings } from './domain/awningListSummary.js';
 
 export const REVIEW_FILE_SUFFIX = '.pdf';
 const LEGACY_REVIEW_FILE_SUFFIX = '.toldos.json';
@@ -163,6 +166,14 @@ export function createReviewPackage({ order, calculation, existing = null, now =
 export function reviewSummary(review) {
   const summary = { ...review };
   delete summary.order;
+  // Estado de cada toldo para la lista de Pedidos (28/09/2026). Se calcula desde el
+  // pedido guardado; si no se puede, la lista enseña solo los modelos.
+  try {
+    const order = normalizeOrder(review.order);
+    summary.summary = { ...summary.summary, awningList: summarizeAwnings(order, calculateOrder(order)) };
+  } catch {
+    // Pedido antiguo o incompleto: sin estados por toldo.
+  }
   return summary;
 }
 

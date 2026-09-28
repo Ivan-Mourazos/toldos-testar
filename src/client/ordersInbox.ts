@@ -49,3 +49,23 @@ export function inboxSections(
   const history = historySource.filter((review) => review.status === 'PRODUCED' && matches(review, query));
   return { pending, history, pendingMine: pendingMineList.length, pendingAll: pendingAllList.length };
 }
+
+// Bloques de la bandeja por estado, como las Revisiones de CoordinaOT (Iván, 28/09/2026):
+// arriba lo que nadie ha revisado todavía, después lo devuelto y lo aprobado que falta generar.
+export const pendingGroupOrder = [
+  { status: 'PENDING_REVIEW', label: 'Por revisar', tone: 'review' },
+  { status: 'CHANGES_REQUESTED', label: 'Devueltos con cambios', tone: 'returned' },
+  { status: 'APPROVED', label: 'Aprobados · falta generar', tone: 'approved' }
+] as const;
+
+export function pendingGroups(pending: ReviewSummary[]) {
+  return pendingGroupOrder
+    .map((group) => ({ ...group, reviews: pending.filter((review) => review.status === group.status) }))
+    .filter((group) => group.reviews.length > 0);
+}
+
+// Fecha con dos cifras en día y mes, como en el resto de la web: 24/09/2026.
+export function formatListDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}

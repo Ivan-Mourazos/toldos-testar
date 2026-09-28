@@ -351,3 +351,75 @@ body, .app-shell { background: var(--bg); }
 .drawing-steps li { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; counter-increment: paso; font-size: 12.5px; line-height: 1.4; padding: 8px 10px 8px 36px; position: relative; }
 .drawing-steps li::before { align-items: center; background: var(--tgm-yellow, #f7bd19); border-radius: 50%; color: #1c1c1c; content: counter(paso); display: flex; font-size: 12px; font-weight: 800; height: 20px; justify-content: center; left: 9px; position: absolute; top: 9px; width: 20px; }
 .read-exception-plain { color: #5c4100; font-size: 12px; font-weight: 650; margin: 0; padding: 5px 8px; }
+
+/* Pedidos como las listas de CoordinaOT (Iván, 28/09/2026): bloque blanco con relieve,
+   rótulos de columna encima, filas densas con línea fina y toda la fila pulsable; la
+   abierta lleva barra amarilla a la izquierda y fondo suave. */
+.orders-inbox { gap: 12px; }
+.orders-inbox-bar h2 { font-size: 16px; }
+.orders-inbox-bar .orders-count { color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.orders-group { display: grid; gap: 6px; }
+.orders-group-title { align-items: center; display: flex; font-size: 13px; font-weight: 750; gap: 8px; margin: 4px 0 0; }
+.orders-dot { border-radius: 50%; height: 9px; width: 9px; }
+.tone-review .orders-dot { background: #d3a024; }
+.tone-returned .orders-dot { background: #c2410c; }
+.tone-approved .orders-dot { background: #1d7a4c; }
+.orders-group-title .orders-count { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font-size: 11.5px; padding: 0 8px; }
+.orders-block {
+  --orders-cols: 18px 112px minmax(200px, 420px) 150px 92px minmax(180px, 1fr);
+  display: grid;
+  gap: 4px;
+}
+.orders-columns { color: var(--text-muted); display: grid; font-size: 11px; font-weight: 700; gap: 14px; grid-template-columns: var(--orders-cols); letter-spacing: 0.04em; padding: 0 14px; text-transform: uppercase; }
+.orders-block .orders-list {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 3px 10px rgb(20 44 48 / 0.08);
+  display: block;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.orders-block .orders-row {
+  background: var(--surface);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+  display: block;
+  padding: 0;
+  position: relative;
+}
+.orders-block .orders-row:last-child { border-bottom: 0; }
+.orders-block .orders-row:hover { background: #f4f7f6; }
+.orders-block .orders-row.is-open { background: #fffaf0; box-shadow: inset 4px 0 0 var(--tgm-yellow, #f7bd19); }
+.orders-row-toggle { background: transparent; border: 0; cursor: pointer; inset: 0; position: absolute; width: 100%; z-index: 0; }
+.orders-row-toggle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: -2px; }
+.orders-row.is-open .orders-row-toggle { bottom: auto; height: 40px; }
+.orders-row-cells { align-items: center; display: grid; font-size: 13.5px; gap: 14px; grid-template-columns: var(--orders-cols); min-height: 40px; padding: 4px 14px; pointer-events: none; position: relative; }
+.orders-chevron { color: var(--text-muted); height: 16px; transition: transform 0.15s ease; width: 16px; }
+.orders-row.is-open .orders-chevron { transform: rotate(180deg); }
+.orders-code { font-family: var(--mono); font-size: 13px; }
+.orders-customer, .orders-models { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.orders-models { color: var(--text-muted); }
+.orders-awnings { display: flex; flex-wrap: wrap; gap: 4px; }
+.orders-chip { align-items: center; border: 1px solid var(--border); border-radius: 6px; display: inline-flex; font-size: 12px; font-weight: 750; gap: 2px; padding: 0 5px; pointer-events: auto; }
+.orders-chip svg { height: 12px; width: 12px; }
+.orders-chip.is-ok { background: #eef7f1; border-color: #bfdcc9; color: #1d6b43; }
+.orders-chip.is-warn { background: #fff4d6; border-color: #e7b93c; color: #7a5200; }
+.orders-chip.is-error { background: #fdecec; border-color: #eba9a9; color: #9f1d1d; }
+.orders-author { align-items: center; display: inline-flex; gap: 6px; }
+.orders-me { background: var(--tgm-black, #10262b); border-radius: 999px; color: #fff; font-size: 10.5px; font-style: normal; font-weight: 750; padding: 0 7px; }
+.orders-date { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.orders-detail { border-top: 1px dashed var(--border); display: grid; gap: 10px; padding: 10px 14px 12px 46px; position: relative; z-index: 1; }
+.orders-detail-list { display: grid; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.orders-detail-list li { align-items: baseline; display: grid; font-size: 13px; gap: 12px; grid-template-columns: 40px 150px 110px minmax(0, 1fr); }
+.orders-detail-notes { color: var(--text-muted); }
+.orders-detail-list li.is-warn .orders-detail-notes { color: #7a5200; }
+.orders-detail-list li.is-error .orders-detail-notes { color: #9f1d1d; }
+.orders-detail-actions { align-items: center; display: flex; gap: 12px; justify-content: flex-end; }
+.orders-detail-note { color: #7a5200; font-size: 12.5px; margin: 0 auto 0 0; }
+.orders-detail-empty { color: var(--text-muted); font-size: 13px; margin: 0; }

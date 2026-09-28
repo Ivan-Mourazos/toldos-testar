@@ -42,7 +42,11 @@ try {
   // Pedidos → Abrir (pendientes de generar) → Corregir carga el pedido en Nuevo pedido.
   async function openFromInbox(code, action = 'Abrir') {
     await page.getByRole('button', { name: /^Pedidos/ }).click();
-    await page.locator('.orders-row').filter({ hasText: code }).getByRole('button', { name: action, exact: true }).click();
+    // Desde el 28/09/2026 la fila se despliega y el pedido se abre desde dentro.
+    void action;
+    const row = page.locator('.orders-row').filter({ hasText: code });
+    await row.locator('.orders-row-toggle').click();
+    await row.getByRole('button', { name: 'Abrir el pedido' }).click();
     await page.getByRole('heading', { name: code, exact: true }).waitFor();
   }
   const color = page.getByRole('combobox', { name: 'Color manivela', exact: true });

@@ -141,7 +141,8 @@ try {
   const allFilter = page.getByRole('button', { name: /^Todos/ });
   if (await allFilter.count()) await allFilter.click();
   await page.waitForTimeout(300);
-  await page.locator('.orders-row', { hasText: 'AR2603332' }).getByRole('button', { name: 'Abrir' }).click();
+  await page.locator('.orders-row', { hasText: 'AR2603332' }).locator('.orders-row-toggle').click();
+  await page.locator('.orders-row', { hasText: 'AR2603332' }).getByRole('button', { name: 'Abrir el pedido' }).click();
   await page.locator('.review-readonly-order .awning-blocks-track').waitFor();
   console.log('OK: se abre el pedido guardado desde Pedidos');
 

@@ -667,6 +667,8 @@ export type ReviewSummary = {
     ofs: string[];
     models: string[];
     diagnostics: number;
+    /** Estado de cada toldo (se calcula al listar). */
+    awningList?: { letter: string; model: string; of: string; state: 'ok' | 'warn' | 'error'; notes: string[] }[];
   };
 };
 
