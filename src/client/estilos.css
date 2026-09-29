@@ -1,28 +1,27 @@
 /* Entrada única de los estilos de la web (la importa App.tsx, después de las letras).
 
-   Por qué capas: la web está pasando al estilo de CoordinaOT zona a zona. Los estilos de
-   siempre (styles.css, relieve.css, dark.generated.css, dark.css) siguen cargados para las
-   zonas que aún no se han rehecho, y muchas de sus reglas son muy específicas (el oscuro
-   generado llega a 16 componentes por selector). Si compitieran con la capa de CoordinaOT
-   por especificidad, cualquiera de ellas podría ganar sin avisar. Metiéndolos en
-   `@layer legacy`, cualquier regla sin capa (las de `coordina/`) gana siempre, sea cual sea
-   su especificidad, y la capa nueva puede escribir selectores normales.
+   La web pasó al estilo de CoordinaOT zona a zona (coordina/README.md). Lo que queda de los
+   estilos de antes (styles.css, relieve.css, dark.css) sigue en `@layer legacy`: son los
+   componentes que CoordinaOT no tiene (formulario de toldos, panel de despiece y dibujo, vista
+   previa del PDF, parámetros…) y muchas de sus reglas son muy específicas. Metiéndolos en la
+   capa, cualquier regla sin capa (las de `coordina/`) gana siempre, sea cual sea su
+   especificidad, y la capa nueva escribe selectores normales, sin `:root:root` ni
+   repeticiones para empatar.
 
-   Orden de las capas (de menos a más fuerza): `base` (la de CoordinaOT en piezas.css: solo
-   pone el cursor donde nadie ha dicho otra cosa) < `legacy` < reglas sin capa. `base` se
-   declara aquí primero para que siga por debajo de lo de siempre, como estaba antes.
+   Orden de las capas (de menos a más fuerza): `base` (la de CoordinaOT en piezas.css: solo pone
+   el cursor donde nadie ha dicho otra cosa) < `legacy` < reglas sin capa. `base` se declara
+   aquí primero para que siga por debajo de lo de siempre.
 
    Ojo con `!important`: en capas se invierte (un `!important` de `legacy` gana a uno sin
-   capa). Lo de siempre solo tiene uno, el de `prefers-reduced-motion` de styles.css, que
-   debe ganar a todo; la capa de CoordinaOT no usa `!important`.
+   capa). Lo de siempre solo tiene uno, el de `prefers-reduced-motion` de styles.css, que debe
+   ganar a todo; la capa de CoordinaOT no usa `!important`.
 
-   Cuando la tarea 6 del plan borre lo de siempre, se quitan estas cuatro líneas y la capa
-   `legacy` desaparece. Las zonas nuevas van sin capa en `coordina/`. */
+   Cuando una zona de `legacy` se rehaga con las piezas de CoordinaOT, se borran sus reglas de
+   estos tres ficheros; cuando no quede ninguna, se quita `legacy` y sus tres `@import`. */
 @layer base, legacy;
 
 @import './styles.css' layer(legacy);
 @import './relieve.css' layer(legacy);
-@import './dark.generated.css' layer(legacy);
 @import './dark.css' layer(legacy);
 
 @import './coordina/tokens.css';

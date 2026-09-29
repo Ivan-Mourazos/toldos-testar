@@ -1,40 +1,26 @@
-/* Modo oscuro (Iván, 28/09/2026). Se activa con el botón de la barra de arriba, que
-   pone data-theme="dark" en <html> y lo recuerda en este navegador. Las variables van
-   aquí; los colores escritos a mano en los estilos los traduce dark.generated.css
-   (scripts/generate-dark-theme.mjs). Aquí, después, los retoques a mano. */
+/* Lo que queda del modo oscuro de antes (Iván, 28/09/2026), en la capa `legacy`. Se activa con
+   data-theme="dark" en <html> (botón de la cabecera). Los colores y las superficies del oscuro
+   son ya los de CoordinaOT (coordina/tokens.css y las piezas de coordina/): este fichero solo
+   tiene lo que las zonas aún no rehechas siguen necesitando, es decir:
+   1. las variables propias de lo de siempre (estados, sombras, campos y teclas del relieve);
+   2. las reglas oscuras de sus componentes, que antes generaba scripts/generate-dark-theme.mjs a
+      partir de los colores escritos a mano de styles.css. Ya no se generan: se quitaron las que
+      no llegaban a aplicarse (pruebas en el informe de la limpieza, 29/09/2026) y el resto se
+      mantiene a mano. Al rehacer una zona con las variables de la capa, se borran de aquí. */
 :root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #151617;
-  --surface: #222426;
-  --surface-muted: #1b1d1f;
-  --zone: #2a2d30;
-  --border: #3b3e41;
-  --border-strong: #565b60;
-  --text: #f0f0ed;
-  --text-muted: #b3b5b4;
-  --accent-text: #eac46e;
-  --tgm-yellow-soft: #382e1b;
-
   --ok: #6fcf93;
   --ok-bg: #15301f;
-  --danger: #f08b8b;
   --danger-bg: #3b1d1d;
   --warn: #f0c565;
   --warn-bg: #3a3016;
 
   --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 6px 16px rgb(0 0 0 / 0.3);
-  --edge: rgb(255 255 255 / 0.06);
-  --contact: rgb(0 0 0 / 0.35);
-  --canto: #55595d;
-  --brillo: rgb(255 255 255 / 0.05);
   --sombra-chip: 0 4px 10px -4px rgb(0 0 0 / 0.5);
   --sombra-chip-alta: 0 8px 16px -6px rgb(0 0 0 / 0.55);
   --sombra-panel: 0 14px 40px -18px rgb(0 0 0 / 0.6);
   --sombra-hoja: 0 10px 16px -10px rgb(0 0 0 / 0.7);
   --hundido: inset 0 1px 3px rgb(0 0 0 / 0.45), inset 0 0 0 1px var(--edge);
 }
-
-:root[data-theme="dark"] body { background: var(--bg); color: var(--text); }
 
 /* Profundidad en oscuro: las mismas cuatro alturas que en claro (relieve.css), con
    tonos separados. Página casi negra; campos hundidos, más oscuros que la tarjeta y con
@@ -49,6 +35,445 @@
   --tecla-brillo: rgb(255 255 255 / 0.12);
   --tecla-texto: #f0f0ed;
 }
+
+:root[data-theme="dark"] .drawing-error {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .order-autofill-summary {
+    background: #1e3028;
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .order-autofill-summary strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-autofill-summary span,
+:root[data-theme="dark"] .order-autofill-summary summary,
+:root[data-theme="dark"] .order-autofill-summary li {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .order-autofill-summary details ul {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .order-autofill-summary-lines li {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-fabric-proposal > span {
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-fabric-proposal-option {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .order-fabric-proposal-option:not(:disabled):hover {
+    background: #1e3028
+}
+:root[data-theme="dark"] .order-fabric-proposal-empty {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .order-fabric-proposal-option.is-chosen {
+    background: #174e54
+}
+:root[data-theme="dark"] .order-header input[readonly] {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .drop-arm-mode.is-vertical {
+    background: #342b1b
+}
+:root[data-theme="dark"] .drop-arm-mode-summary {
+    background: #342b1b
+}
+:root[data-theme="dark"] .model-switch-prompt {
+    background: var(--tgm-yellow-soft)
+}
+:root[data-theme="dark"] .model-switch-prompt button {
+    background: var(--tgm-black)
+}
+:root[data-theme="dark"] .awning-pending {
+    background: var(--warn-bg)
+}
+:root[data-theme="dark"] .awning-status:not(.badge-ok):not(.badge-danger):not(.badge-warn) {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .despiece-card {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .despiece-info-block {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .parameter-table-discounts .discount-part {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .order-material-cluster {
+    border-left: 1px solid var(--border)
+}
+:root[data-theme="dark"] .order-fabric-per-awning:has(input:checked) {
+    background: #342b1b
+}
+:root[data-theme="dark"] .order-header .select-control.is-placeholder,
+:root[data-theme="dark"] .order-header .segmented-control.is-empty {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .awning-grid::-webkit-scrollbar-thumb {
+    background: #9db4ae
+}
+:root[data-theme="dark"] .awning-grid::-webkit-scrollbar-track {
+    background: transparent
+}
+:root[data-theme="dark"] .planning-summary[open] > summary {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .planning-tabs strong {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .planning-tabs button.active strong {
+    background: var(--tgm-yellow);
+    color: #10272b
+}
+:root[data-theme="dark"] .fabric-preview-table th,
+:root[data-theme="dark"] .fabric-preview-table td {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .fabric-preview-table .fabric-valance-row td {
+    background: var(--surface);
+    border-bottom-color: var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .rps-result-of-count {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .text-ok {
+    color: var(--text)
+}
+:root[data-theme="dark"] label span,
+:root[data-theme="dark"] .field > span {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] input:hover:not(:disabled):not([readonly]),
+:root[data-theme="dark"] textarea:hover:not(:disabled) {
+    background: var(--surface);
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .segmented-control {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .fabric-combobox.is-disabled .fabric-input-wrap {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .fabric-combobox.is-disabled input {
+    background: transparent
+}
+:root[data-theme="dark"] .fabric-option:hover,
+:root[data-theme="dark"] .fabric-option:focus-visible {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .observation-lines-header {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .observation-line-remove:hover:not(:disabled) {
+    background: #352425;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .fabric-only-column {
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .fabric-only-column .awning-column-tag {
+    color: var(--text)
+}
+:root[data-theme="dark"] .awning-section-empty {
+    border: 1px dashed var(--border)
+}
+:root[data-theme="dark"] .parameter-model-trigger {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .parameter-model-trigger > svg {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .settings-panel,
+:root[data-theme="dark"] .review-reader {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-route-card {
+    border-left: 2px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-production-switch {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-settings-footer code {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-ready.is-ready {
+    color: #86d6a6
+}
+:root[data-theme="dark"] .workflow-directory-results {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-directory-results > header {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .workflow-directory-results.is-ok > header {
+    background: #1e3028;
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-directory-results.has-errors > header {
+    background: #342b1b;
+    color: #f0c565
+}
+:root[data-theme="dark"] .workflow-directory-list > div {
+    border-right: 1px solid var(--border)
+}
+:root[data-theme="dark"] .workflow-directory-list .is-ok svg {
+    color: var(--text)
+}
+:root[data-theme="dark"] .workflow-directory-list strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-generate-button:hover:not(:disabled) {
+    background: #104c5b
+}
+:root[data-theme="dark"] .review-production-block {
+    background: #242d36;
+    border: 1px solid #4c6479
+}
+:root[data-theme="dark"] .review-production-summary {
+    background: #242d36;
+    border-bottom: 1px solid #4c6479;
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-production-summary small {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-generated-file {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-generated-file > svg {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-generated-file-icon {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-generated-file.is-pdf .review-generated-file-icon {
+    background: #352425;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .review-readonly-order :is(input, textarea):disabled,
+:root[data-theme="dark"] .review-readonly-order :is(input, textarea)[readonly] {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-readonly-order .select-control:disabled,
+:root[data-theme="dark"] .review-readonly-order .segmented-control button:disabled {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-readonly-order .segmented-control button.active:disabled {
+    background: #efb51b;
+    color: #173238
+}
+:root[data-theme="dark"] .review-inline-preview {
+    background: var(--surface);
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-preview-placeholder {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .review-preview-placeholder.is-error {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .generated-preview-selector {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .generated-preview-selector button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .generated-preview-selector button > span {
+    background: var(--surface);
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .generated-preview-selector button.is-active {
+    background: #342b1b;
+    color: #f0c565
+}
+:root[data-theme="dark"] .generated-preview-selector button.is-active > span {
+    background: #eab522;
+    color: #122d32
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview {
+    background: radial-gradient(circle at 50% 42%, rgb(64 88 91 / 0.62), transparent 56%),
+    linear-gradient(145deg, #142f34, #0b1e22)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet > header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet > header strong {
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview-sheet > header small {
+    background: #1e3028;
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview th {
+    background: #17383d
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview td {
+    border-bottom: 1px solid var(--border);
+    color: var(--text)
+}
+:root[data-theme="dark"] .review-inline-preview .reservation-preview tbody tr:nth-child(even) {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .notification-warning .notification-icon {
+    background: #342b1b;
+    color: #f0c565
+}
+:root[data-theme="dark"] .notification-info .notification-icon {
+    background: #242d36;
+    color: #93c7f0
+}
+:root[data-theme="dark"] .notification-close:hover,
+:root[data-theme="dark"] .confirmation-close:hover {
+    background: var(--surface);
+    color: var(--text)
+}
+:root[data-theme="dark"] .notification-info .notification-timer {
+    color: #93c7f0
+}
+:root[data-theme="dark"] .confirmation-host::backdrop {
+    background: transparent
+}
+:root[data-theme="dark"] .confirmation-details li + li {
+    border-top: 1px solid var(--border)
+}
+:root[data-theme="dark"] .danger-button:hover:not(:disabled) {
+    background: #8f3029
+}
+:root[data-theme="dark"] .structure-editor {
+    border-bottom: 1px solid var(--border)
+}
+:root[data-theme="dark"] .structure-editor input,
+:root[data-theme="dark"] .structure-editor select {
+    border: 1px solid var(--border)
+}
+:root[data-theme="dark"] .structure-editor-warning {
+    background: #342b1b;
+    color: #f0c565
+}
+:root[data-theme="dark"] .structure-edited-badge {
+    color: #f0c565
+}
+:root[data-theme="dark"] .structure-row-modified {
+    background: #342b1b
+}
+:root[data-theme="dark"] .structure-article-search {
+    background: white
+}
+:root[data-theme="dark"] .awning-diagnostics .is-pending {
+    background: var(--warn-bg)
+}
+:root[data-theme="dark"] .review-state-note.is-returned {
+    background: #352425;
+    border: 1px solid #785052;
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .review-readonly-order :is(input, textarea):disabled,
+:root[data-theme="dark"] .review-readonly-order .select-control:disabled {
+    background: transparent;
+    border-color: var(--border)
+}
+:root[data-theme="dark"] .review-readonly-order .segmented-control button:disabled:not(.active) {
+    background: transparent
+}
+:root[data-theme="dark"] .fabric-readonly-value {
+    color: var(--text)
+}
+:root[data-theme="dark"] .orders-row.is-mine {
+    background: #342b1b
+}
+:root[data-theme="dark"] .read-pair {
+    border-bottom: 1px dotted var(--border)
+}
+:root[data-theme="dark"] .read-value.is-empty {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .read-note.has-text p {
+    background: #342b1b
+}
+:root[data-theme="dark"] .read-note .read-empty {
+    color: var(--text-muted)
+}
+:root[data-theme="dark"] .awning-panel::backdrop {
+    background: rgb(7 25 29 / 0.45)
+}
+:root[data-theme="dark"] .awning-panel-empty {
+    background: var(--surface)
+}
+:root[data-theme="dark"] .awning-panel-drawing-state {
+    background: var(--surface)
+}
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .app-shell {
+    background: var(--bg)
+}
+:root[data-theme="dark"] .review-reader.panel,
+:root[data-theme="dark"] .orders-inbox.panel {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .drawing-source-error {
+    color: #f2a3a3
+}
+:root[data-theme="dark"] .drawing-source-drop {
+    background: #342b1b
+}
+:root[data-theme="dark"] .drawing-source-drop:focus-visible,
+:root[data-theme="dark"] .drawing-source-drop.is-dragging {
+    background: #342b1b
+}
+:root[data-theme="dark"] .drawing-source-drop > svg {
+    color: #f0c565
+}
+:root[data-theme="dark"] .drawing-source-drop .link-button {
+    background: none
+}
+:root[data-theme="dark"] .read-exception-plain {
+    color: #f0c565
+}
+:root[data-theme="dark"] .orders-detail-list li.is-warn .orders-detail-notes {
+    color: #f0c565
+}
+:root[data-theme="dark"] .orders-detail-note {
+    color: #f0c565
+}
+:root[data-theme="dark"] .read-note.has-text p {
+    background: var(--surface-muted)
+}
+:root[data-theme="dark"] .orders-coordina-down {
+    background: var(--warn-bg)
+}
+
+/* Retoques a mano sobre lo anterior. */
+:root[data-theme="dark"] body { background: var(--bg); color: var(--text); }
 :root[data-theme="dark"] input,
 :root[data-theme="dark"] select,
 :root[data-theme="dark"] textarea,
@@ -56,76 +481,18 @@
 :root[data-theme="dark"] input::placeholder,
 :root[data-theme="dark"] textarea::placeholder { color: #969a9c; }
 
-:root[data-theme="dark"] .primary-button { color: #14120a; }
-
 /* Pedidos: filas en pieza oscura, como el Historial de CoordinaOT. */
-:root[data-theme="dark"] .orders-block .orders-row,
-:root[data-theme="dark"] .orders-block .orders-row:last-child {
-  background: #292b2d;
-  border-color: #474b4e;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 2px 6px rgb(0 0 0 / 0.35);
-}
-:root[data-theme="dark"] .orders-block .orders-row:hover { background: #34373a; border-color: #676b6f; }
-:root[data-theme="dark"] .orders-block .orders-row.is-open { background: #393020; border-color: #947339; }
-:root[data-theme="dark"] .orders-me { background: var(--tgm-yellow); color: #14120a; }
-:root[data-theme="dark"] .orders-model-tag { background: #35383a; border-color: #55595d; color: #e4e5e2; }
-:root[data-theme="dark"] .orders-chip.is-ok { background: #15301f; border-color: #2e6a45; color: #86d6a6; }
-:root[data-theme="dark"] .orders-chip.is-warn { background: #3a3016; border-color: #7a6224; color: #f0c565; }
-:root[data-theme="dark"] .orders-chip.is-error { background: #3b1d1d; border-color: #7d3a3a; color: #f2a3a3; }
-:root[data-theme="dark"] .orders-group-title.tone-review { color: #f0c565; }
-:root[data-theme="dark"] .orders-group-title.tone-returned { color: #ff9a78; }
-:root[data-theme="dark"] .orders-group-title.tone-approved { color: #86d6a6; }
-:root[data-theme="dark"] .orders-detail-list li { background: #2b2d2f; border-color: #56595b; }
 :root[data-theme="dark"] .orders-detail-list li.is-warn { border-left-color: #d7a629; }
-:root[data-theme="dark"] .orders-detail-list li.is-error { border-left-color: #d05a37; }
 :root[data-theme="dark"] .orders-detail-returned { background: #502d27; color: #ffad95; }
-:root[data-theme="dark"] .orders-detail-approved { background: #1b3c2c; color: #a5e6ba; }
-
-/* Las hojas de PDF y las imágenes siguen en blanco: son papel. */
-:root[data-theme="dark"] .pdf-carousel-page,
-:root[data-theme="dark"] .fabric-custom-image { background: #ffffff; }
-
-/* Botón del modo en la barra de arriba. */
-.theme-toggle { align-items: center; background: transparent; border: 1px solid rgb(255 255 255 / 0.18); border-radius: 8px; color: #e3ecea; cursor: pointer; display: inline-flex; height: 40px; justify-content: center; margin-right: 8px; width: 40px; }
-.theme-toggle:hover { background: rgb(255 255 255 / 0.08); }
-.theme-toggle:focus-visible { outline: 2px solid var(--tgm-yellow); outline-offset: 2px; }
-.theme-toggle svg { height: 16px; width: 16px; }
-
-/* Lista de modelos de Parámetros: plana, solo el activo con relieve (como en claro). */
-:root[data-theme="dark"] .parameter-model-family button.tecla-3d:not([aria-current="true"]) { background: transparent; border-color: transparent; box-shadow: none; }
-:root[data-theme="dark"] .parameter-model-family button.tecla-3d:not([aria-current="true"]):hover { background: var(--zone); border-color: var(--border); }
-
-/* El botón del modo, a la derecha junto a «Soy». */
-.theme-toggle { margin-left: auto; }
-.theme-toggle + .app-current-user { margin-left: 0; }
-
-/* «Generar archivos» es azul petróleo: letra blanca, no la oscura del botón amarillo. */
-:root[data-theme="dark"] .review-generate-button { color: #ffffff; }
 
 /* Interruptor apagado: que se vea el carril sobre la tarjeta oscura. */
-:root[data-theme="dark"] .toggle-switch:not(.is-on) { background: #36393b; border-color: #62666a; }
-:root[data-theme="dark"] .toggle-switch:not(.is-on) .toggle-thumb { background: #b3b5b4; }
 :root[data-theme="dark"] .workflow-toggle input { background: #36393b; border: 1px solid #62666a; }
-:root[data-theme="dark"] .workflow-toggle input::after { background: #b3b5b4; top: 1px; }
 :root[data-theme="dark"] .workflow-toggle input:checked { background: #1e6b54; border-color: #2e8a6c; }
-:root[data-theme="dark"] .workflow-toggle input:checked::after { background: #ffffff; }
 
 /* Observaciones de la ficha: neutras también en oscuro (el amarillo, solo para avisos). */
 :root[data-theme="dark"] .read-note.has-text p { background: var(--surface-muted); border-color: var(--border); border-left-color: var(--border-strong); color: var(--text); }
 
-/* Pestañas del panel (Despiece, Dibujo, Reserva): la activa, un punto más clara, como la
-   tarjeta blanca de claro sobre el carril gris. */
-:root[data-theme="dark"] .planning-tabs { background: #1b1d1f; }
-:root[data-theme="dark"] .planning-tabs button.active { background: #393c3f; box-shadow: 0 1px 3px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.06); color: var(--text); }
-
 /* Las cabeceras de los formularios comparten el mismo carbón que sus tarjetas. */
 :root[data-theme="dark"] .parameters-heading,
-:root[data-theme="dark"] .drawing-parameters-heading { background: #303235; border-color: #4b4e51; }
+:root[data-theme="dark"] .drawing-parameters-heading { border-color: #4b4e51; }
 
-/* Botones amarillos dentro de grupos que pasan su letra a clara: la letra sigue oscura. */
-:root[data-theme="dark"] .drawing-parameters-actions .primary-button,
-:root[data-theme="dark"] .drawing-image-actions .primary-button,
-:root[data-theme="dark"] .drawing-condition-heading .primary-button { color: #14120a; }
-/* El candado activo es amarillo: icono oscuro también al pasar el ratón. */
-:root[data-theme="dark"] .icon-button.active,
-:root[data-theme="dark"] .icon-button.active:hover:not(:disabled) { color: var(--tgm-black); }

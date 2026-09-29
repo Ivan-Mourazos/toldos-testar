@@ -91,7 +91,7 @@
 }
 
 /* ── Equivalencias: variables de la web → tokens de CoordinaOT ──
-   Las reglas de siempre (styles.css, relieve.css, dark.css, dark.generated.css) usan
+   Las reglas de siempre (styles.css, relieve.css, dark.css) usan
    estos nombres. Donde significan lo mismo que un token de CoordinaOT, apuntan a él; así
    las zonas que aún no se han rehecho ya toman los colores nuevos sin reescribirlas.
 
@@ -102,7 +102,7 @@
    | --border-strong,       |                                              |                                           |
    | --text, --text-muted,  |                                              |                                           |
    | --edge, --contact      |                                              |                                           |
-   | --surface-muted        | --surface-2 (solo claro)                     | el segundo gris de superficie             |
+   | --surface-muted        | --surface-2                                  | el segundo gris de superficie             |
    | --tgm-yellow           | --color-brand-400                            | el dorado de lo activo y del foco         |
    | --tgm-yellow-soft      | brand-500 al 15 % sobre --glass-chip         | el tinte de `.pestana-activa` (oscuro:    |
    |                        | (oscuro: brand-400 al 18 %)                  | brand-400 al 18 %)                        |
@@ -115,7 +115,7 @@
    | --brillo               | --glass-highlight                            | el brillo del canto superior              |
    | --topnav-height        | 58px (py-2.5 ×2 + h-9 + borde de la tira)    | alto de la cabecera, en px porque         |
    |                        |                                              | ParameterSectionIndex lo lee con parseFloat|
-   | --danger (solo claro)  | #b91c1c (text-red-700)                       | el rojo de texto de CoordinaOT            |
+   | --danger               | #b91c1c (text-red-700; oscuro red-400 #f87171)| el rojo de texto de CoordinaOT            |
 */
 :root {
   --tgm-yellow: var(--color-brand-400);
@@ -129,19 +129,16 @@
   --canto: color-mix(in srgb, var(--border-strong) 80%, transparent);
   --brillo: var(--glass-highlight);
   --topnav-height: 58px;
-}
-/* Solo en claro: en oscuro siguen los de dark.css (#1b1d1f y #f08b8b) hasta que Pedidos y
-   Parámetros se rehagan. Antes lo conseguía la especificidad de
-   `:root[data-theme="dark"]` en dark.css; con lo de siempre en `@layer legacy` un `:root`
-   de aquí ganaría también en oscuro, así que se dice con el selector. */
-:root:not([data-theme="dark"]) {
+  /* --surface-muted: el segundo gris de superficie de CoordinaOT en los dos modos (en oscuro
+     #2a2c31, un punto MÁS CLARO que la tarjeta; el #1b1d1f de antes era más oscuro). */
   --surface-muted: var(--surface-2);
-  /* El rojo de texto de CoordinaOT sobre la página (`text-red-700`, el de «URGENTE» en
-     PedidoCard.tsx). El #c62828 de antes se quedaba en 4,0:1 sobre el --bg nuevo en los
-     «falta N» del índice de toldos; este da 4,65:1. */
+  /* --danger: el rojo de texto de CoordinaOT. En claro `text-red-700` (el de «URGENTE» en
+     PedidoCard.tsx): el #c62828 de antes se quedaba en 4,0:1 sobre el --bg nuevo en los «falta N»
+     del índice de toldos y este da 4,65:1. En oscuro `dark:text-red-400`, más abajo. */
   --danger: #b91c1c;
 }
 :root[data-theme="dark"] {
   --tgm-yellow-soft: color-mix(in srgb, var(--color-brand-400) 18%, var(--glass-chip));
   --accent-text: var(--color-brand-300);
+  --danger: #f87171;
 }

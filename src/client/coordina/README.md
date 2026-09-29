@@ -34,13 +34,13 @@ ventana (`clamp(14px, …, 16px)`). Aquí la raíz se queda en 16 px, porque
 ## Orden de carga: lo de siempre en `@layer legacy`
 
 `App.tsx` importa solo `src/client/estilos.css` (después de las letras). Ese fichero mete
-los estilos de siempre (`styles.css`, `relieve.css`, `dark.generated.css`, `dark.css`) en
+los estilos de siempre que quedan (`styles.css`, `relieve.css`, `dark.css`) en
 la capa `legacy` y carga detrás, **sin capa**, `coordina/tokens.css`, `coordina/piezas.css`,
 `coordina/nuevo-pedido.css`, `coordina/pedidos.css`, `coordina/parametros.css` y `coordina/configuracion.css`.
 
 Por qué: una regla sin capa gana a cualquier regla con capa, sea cual sea su
 especificidad. Así la capa de CoordinaOT manda siempre sobre lo de siempre, aunque allí
-haya selectores de 4 a 16 componentes (el oscuro generado), y aquí se escriben selectores
+haya selectores muy específicos, y aquí se escriben selectores
 normales: nada de `:root:root` ni de repetir cada regla para el oscuro solo para empatar.
 Una variante `:root[data-theme="dark"]` solo hace falta cuando el valor del oscuro es
 otro.
@@ -48,16 +48,19 @@ otro.
 Reglas para seguir:
 
 - Las zonas nuevas van en ficheros de `coordina/`, importados en `estilos.css` sin capa.
-- Lo de siempre se queda en `@layer legacy` hasta que la tarea 6 del plan lo borre; al
-  hacerlo se quitan sus cuatro `@import` de `estilos.css`.
+- Lo de siempre se queda en `@layer legacy` mientras haya zonas sin rehacer (la tarea 6 del plan
+  ya quitó lo que no se usaba; ver su informe). Al rehacer una zona se borran sus reglas de esos
+  tres ficheros y, cuando no quede ninguna, se quita la capa y sus tres `@import` de `estilos.css`.
 - Orden de capas declarado en `estilos.css`: `base` < `legacy` < sin capa. `base` es la
   de CoordinaOT (el cursor de `piezas.css`), que sigue por debajo de lo de siempre.
 - `!important` se invierte en capas: uno de `legacy` gana a todo lo de aquí. Lo de siempre
   solo tiene el de `prefers-reduced-motion` (styles.css), que debe ganar; aquí no se usa
   `!important`.
-- Dos variables de `tokens.css` se quedan solo en claro (`:root:not([data-theme="dark"])`)
-  porque en oscuro manda el valor de `dark.css`: `--danger` y `--surface-muted`. Antes lo
-  conseguía la especificidad de `dark.css`; ahora está escrito.
+- El anillo de foco de teclado es el `:focus-visible` general de `piezas.css` (el de CoordinaOT,
+  2px dorado a 1px), sin capa: gana a lo de siempre. Las piezas que quieren otro (filas de
+  Pedidos, campos) lo dicen con su propia regla en `coordina/`.
+- `--danger` y `--surface-muted` también son los de CoordinaOT en oscuro (`red-400` y `--surface-2`);
+  ya no queda ninguna variable de `tokens.css` que dependa de `dark.css`.
 
 ## Equivalencias: variables de la web → tokens de CoordinaOT
 

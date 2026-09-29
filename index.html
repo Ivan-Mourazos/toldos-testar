@@ -6,9 +6,17 @@
     <meta name="theme-color" content="#d6dbe2" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <title>Planteamientos TGM</title>
-    <!-- El modo recordado en este navegador se pone antes de pintar, sin destello en claro. -->
+    <!-- El modo recordado en este navegador se pone antes de pintar, sin destello en claro. Con
+         él, el color de la barra del navegador (el --bg de CoordinaOT de cada modo): si no, hasta
+         que arranca React se ve la del claro aunque la página sea oscura. App.tsx lo mantiene al
+         cambiar de modo. -->
     <script>
-      try { if (localStorage.getItem('toldos-tema') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (error) { /* sin almacenamiento */ }
+      try {
+        if (localStorage.getItem('toldos-tema') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1a1b1f');
+        }
+      } catch (error) { /* sin almacenamiento */ }
     </script>
   </head>
   <body>

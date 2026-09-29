@@ -66,6 +66,8 @@
   background: var(--surface-2);
   border-color: transparent;
 }
+/* Como antes del anillo general: el foco de teclado se ve en el fondo de la fila, sin anillo. */
+.parameter-model-family button:focus-visible { outline: none; }
 .parameter-model-family button strong {
   font-size: 0.75rem;
   font-weight: 600;

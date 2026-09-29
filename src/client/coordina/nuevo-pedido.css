@@ -5,7 +5,7 @@
    y de qué línea de globals.css sale).
 
    Selectores normales: los estilos de siempre (styles.css, relieve.css,
-   dark.generated.css) pintan estas mismas clases, a veces con selectores muy específicos,
+   dark.css) pintan estas mismas clases, a veces con selectores muy específicos,
    pero están en `@layer legacy` (ver estilos.css) y esta capa va sin capa, así que gana en
    los dos temas sin tocarlos. Una regla `:root[data-theme="dark"]` solo aparece donde el
    oscuro de CoordinaOT tiene otro valor.
@@ -714,6 +714,9 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   transform: translateY(-1px);
 }
 .model-picker-option:active { transform: translateY(1px); }
+/* El foco de teclado se ve en la propia opción (fondo, borde y sombra de arriba): sin el anillo
+   dorado general de piezas.css, que se sumaría. */
+.model-picker-option:focus-visible { outline: none; }
 :root[data-theme="dark"] .model-picker-option {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),

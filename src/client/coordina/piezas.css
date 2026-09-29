@@ -21,16 +21,13 @@ body {
   background: color-mix(in srgb, var(--color-brand-400) 30%, transparent);
 }
 
-/* El anillo de foco general va DENTRO de `legacy`, al final: así sigue compitiendo por
-   especificidad con los anillos propios de lo de siempre (botones a 2px de separación,
-   teclas y selector de modelo que marcan el foco con borde y sombra en vez de anillo),
-   igual que antes de las capas. Sin capa pisaría a todos. Cuando la tarea 6 borre lo de
-   siempre, sale de la capa. */
-@layer legacy {
-  :focus-visible {
-    outline: 2px solid var(--color-brand-400);
-    outline-offset: 1px;
-  }
+/* El anillo de foco de teclado, como el `:focus-visible` de CoordinaOT (globals.css línea 194):
+   2px de dorado a 1px del borde. Sin capa, gana a lo de siempre; las piezas que quieren otro
+   anillo (hacia dentro en las filas de Pedidos, solo el borde en los campos…) lo dicen con su
+   propia regla en estos ficheros, que va más específica. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-400);
+  outline-offset: 1px;
 }
 
 /* En capa `base` como en CoordinaOT: por debajo de lo de siempre y de todo lo sin capa

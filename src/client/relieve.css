@@ -6,47 +6,13 @@
    reconozcan en los dos proyectos. Se importa después de styles.css. */
 
 :root {
-  --edge: rgb(13 42 47 / 0.10);
-  --contact: rgb(13 42 47 / 0.08);
-  --canto: #b8cbc5;
   --canto-oscuro: rgb(0 0 0 / 0.22);
-  --brillo: rgb(255 255 255 / 0.85);
   --sombra-chip: 0 4px 10px -4px rgb(13 42 47 / 0.18);
   --sombra-chip-alta: 0 8px 16px -6px rgb(13 42 47 / 0.24);
   --sombra-panel: 0 14px 40px -18px rgb(13 42 47 / 0.30);
   --sombra-hoja: 0 10px 16px -10px rgb(13 42 47 / 0.45);
   --hundido: inset 0 1px 3px rgb(13 42 47 / 0.16), inset 0 0 0 1px var(--edge);
   --relieve-ms: 120ms;
-}
-
-/* Pieza: filas de la bandeja y de «Qué revisar». Borde izquierdo con el color de su
-   estado (--pieza-acento). */
-.pieza-3d {
-  background: linear-gradient(180deg, #ffffff, #f7faf9);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--pieza-acento, var(--border-strong));
-  border-radius: 8px;
-  box-shadow:
-    0 0 0 1px var(--edge),
-    0 1px 2px var(--contact),
-    inset 0 1px 0 var(--brillo),
-    0 2px 0 0 var(--canto),
-    var(--sombra-chip);
-  transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease;
-}
-.pieza-3d:hover {
-  box-shadow:
-    0 0 0 1px var(--edge),
-    0 1px 2px var(--contact),
-    inset 0 1px 0 var(--brillo),
-    0 3px 0 0 var(--canto),
-    var(--sombra-chip-alta);
-  transform: translateY(-1px);
-}
-.pieza-3d:active,
-.pieza-3d.is-hundida {
-  box-shadow: var(--hundido);
-  transform: translateY(1px);
 }
 
 /* Tecla: pestañas, chips (Míos/Todos, Página entera…), modelos de Parámetros.
@@ -65,39 +31,6 @@
     0 3px 6px -3px rgb(13 42 47 / 0.25);
   transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, background var(--relieve-ms) ease;
 }
-.tecla-3d:hover { transform: translateY(-1px); }
-.tecla-3d:active,
-.tecla-3d[aria-pressed="true"],
-.tecla-3d[aria-current="page"],
-.tecla-3d[aria-current="true"],
-.tecla-3d.is-active,
-.orders-scope button.tecla-3d[aria-pressed="true"],
-.parameter-model-family button.tecla-3d[aria-current="true"],
-.pdf-carousel-toolbar button.tecla-3d[aria-pressed="true"],
-.who-are-you-options button.tecla-3d[aria-pressed="true"] {
-  background: linear-gradient(180deg, #f3e2ad, var(--tgm-yellow-soft));
-  border-color: #c99a1f;
-  box-shadow: var(--hundido);
-  color: #3b2a00;
-  transform: translateY(1px);
-}
-
-/* Tecla sobre la barra oscura: oscura en reposo y amarilla, hundida, la activa. */
-.tecla-3d.sobre-oscuro {
-  background: linear-gradient(180deg, #1b4046, #102f34);
-  border-color: #2f5358;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.10), 0 2px 0 0 #041316, 0 3px 6px -3px rgb(0 0 0 / 0.5);
-  color: #dfe9e6;
-}
-.tecla-3d.sobre-oscuro:active,
-.tecla-3d.sobre-oscuro[aria-pressed="true"],
-.tecla-3d.sobre-oscuro[aria-current="page"],
-.tecla-3d.sobre-oscuro.is-active {
-  background: linear-gradient(180deg, #c8951c, var(--tgm-yellow));
-  border-color: #a57a12;
-  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.28);
-  color: #1d2b2e;
-}
 
 /* Tecla pequeña: las opciones de los campos segmentados de Nuevo pedido (Lacado,
    Dispositivo…). Igual de hundida y activa que las demás teclas, pero conserva los
@@ -107,13 +40,6 @@
   background: linear-gradient(180deg, #ffffff, #eef3f1);
   box-shadow: inset 0 1px 0 var(--brillo), 0 1px 0 0 var(--canto), 0 2px 4px -2px rgb(13 42 47 / 0.22);
   transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, background var(--relieve-ms) ease;
-}
-.segmented-option.tecla-3d:hover:not(.active) { transform: translateY(-1px); }
-.segmented-option.tecla-3d.active {
-  background: #e8b226;
-  box-shadow: inset 0 1px 3px rgb(90 62 0 / 0.35), inset 0 0 0 1px rgb(124 84 0 / 0.15);
-  color: #0c272c;
-  transform: translateY(1px);
 }
 
 /* Botón: primario (fondo de color) y secundario (claro). Canto oscuro abajo. */
@@ -125,11 +51,6 @@
   transition: transform var(--relieve-ms) ease, box-shadow var(--relieve-ms) ease, filter var(--relieve-ms) ease;
 }
 :is(.boton-3d, .primary-button, .ghost-button, .icon-button):hover:not(:disabled) { filter: brightness(1.04); transform: translateY(-1px); }
-:is(.boton-3d, .primary-button, .ghost-button, .icon-button):active:not(:disabled) {
-  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.22);
-  transform: translateY(1px);
-}
-:is(.boton-3d, .primary-button, .ghost-button, .icon-button):disabled { box-shadow: none; }
 
 /* Panel: bandeja, pedido abierto, Parámetros. No se mueve. */
 .panel-3d {
@@ -141,27 +62,6 @@
     var(--sombra-panel);
 }
 
-/* Hoja: tarjetas de toldo y página del PDF. Papel sobre la mesa, sin movimiento para no
-   distraer mientras se rellena. */
-.hoja-3d {
-  box-shadow:
-    0 0 0 1px var(--edge),
-    0 1px 1px var(--contact),
-    var(--sombra-hoja);
-}
-
-/* Lo abierto porque alguien lo pulsó (un bloque desplegado). */
-.bloque-3d-hundido {
-  background: #f1f5f3;
-  box-shadow: var(--hundido);
-}
-
-/* Un solo anillo de foco en toda la web. */
-:where(.pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button, .icon-button):focus-visible {
-  outline: 2px solid var(--tgm-yellow);
-  outline-offset: 2px;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .pieza-3d, .tecla-3d, .boton-3d, .primary-button, .ghost-button, .icon-button { transition: none; }
   .pieza-3d:hover, .pieza-3d:active, .pieza-3d.is-hundida,
@@ -171,47 +71,16 @@
 
 /* Cada pedido y cada comprobación se separan como piezas; las reglas de sombra
    siguen viviendo en .pieza-3d y el color del canto identifica el estado. */
-.orders-list { border: 0; border-radius: 0; display: grid; gap: 6px; overflow: visible; padding: 2px; }
-.orders-list .orders-row.pieza-3d { border-top: 1px solid var(--border); }
 .orders-row.is-mine { --pieza-acento: var(--tgm-yellow); }
-.review-checklist { background: transparent; border: 0; overflow: visible; }
-.review-checklist ol { display: grid; gap: 6px; padding: 2px; }
-.review-checklist li:last-child .review-checklist-row.pieza-3d { border-bottom: 1px solid var(--border); }
-.review-checklist-row.is-ok { --pieza-acento: var(--ok); }
-.review-checklist-row.is-warn { --pieza-acento: var(--warn); }
-.review-checklist-row.is-error { --pieza-acento: var(--danger); }
-
-/* El visor ya tiene una barra oscura: las teclas claras conservan texto oscuro. */
-.pdf-carousel-toolbar button.tecla-3d { color: var(--text); }
-.parameters-save-bar.panel-3d { border-color: var(--warn); }
-
-/* Sombra de papel de la página del PDF (rediseño 3, tarea 5): .hoja-3d es demasiado
-   sutil sobre el visor oscuro, así que la página recupera su sombra original. */
-.pdf-carousel-page { box-shadow: 0 18px 50px rgb(0 0 0 / .38), 0 2px 8px rgb(0 0 0 / .25); }
 
 /* Contraste como en CoordinaOT (Iván, 24/09/2026: «muy blanco y plano»). Tres niveles
    bien separados: el fondo de la página en gris medio, los paneles en blanco y, dentro
    de ellos, las zonas en gris muy claro. Los grises son los de la casa, con un punto
    verde; los textos apagados se oscurecen para seguir leyéndose sobre el fondo. */
-:root {
-  --bg: #b9c5c1;
-  --surface: #ffffff;
-  --surface-muted: #e1e8e5;
-  --zone: #e8eeec;
-  --border: #c3cfcb;
-  --border-strong: #99aca6;
-  --text-muted: #3a4d52;
-  --accent-text: #5c4100;
-  --canto: #99aca6;
-}
 body, .app-shell { background: var(--bg); }
-.observation-lines { background: var(--zone); border-color: var(--border); }
-.panel, .awning-column { background: var(--surface); }
 /* Los paneles que contienen tarjetas o filas van en gris claro, y lo de dentro en
    blanco: así cada tarjeta, fila o bloque se despega de su panel. */
 .review-reader.panel, .orders-inbox.panel { background: var(--surface-muted); }
-.review-reader .review-checklist, .review-reader .order-header, .review-reader .awning-column,
-.orders-inbox .orders-row:not(.is-mine) { background: var(--surface); }
 /* Parámetros: la ficha del modelo en gris claro; sus tarjetas y campos, en blanco. */
 .parameters-page { background: var(--surface-muted); }
 .parameters-page .parameter-band + .parameter-band { border-top-color: var(--border-strong); }
@@ -219,31 +88,15 @@ body, .app-shell { background: var(--bg); }
 /* Pantallas anchas y lectura (Iván, 25/09/2026). La cabecera del pedido ya solo tiene
    Datos y Tela: dos columnas que se estiran con la pantalla. */
 .order-header { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
-.order-header-read { align-items: baseline; display: flex; flex-wrap: wrap; font-size: 14px; gap: 6px 14px; margin: 2px 0 0; }
-.order-header-read strong { font-size: 16px; }
-.order-header-read span + span::before, .order-header-read strong + span::before { color: var(--text-muted); content: "·"; margin-right: 14px; }
-/* Parámetros: los modelos, planos; solo el activo en relieve. */
-.parameter-model-family button.tecla-3d:not([aria-current="true"]) { background: transparent; border-color: transparent; box-shadow: none; transform: none; }
-.parameter-model-family button.tecla-3d:not([aria-current="true"]):hover { background: var(--surface); border-color: var(--border); }
-.parameter-model-sidebar { scrollbar-color: transparent transparent; }
-.parameter-model-sidebar:hover { scrollbar-color: var(--border-strong) transparent; }
 /* Quedaron tres campos (Pedido, Cliente, Fecha) al quitar Técnico y Revisión: la rejilla
    de cinco columnas de las pantallas anchas dejaba dos huecos vacíos. */
 .order-header-general .order-header-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr); }
-/* Los botones de icono (candado, duplicar, eliminar, cerrar…) con el mismo relieve y el
-   mismo fondo que los botones con texto como «Despiece y dibujo» (Iván, 25/09/2026). */
-.icon-button:not(.active) { background: #fbfcfb; border-color: var(--border-strong); color: var(--text); }
 /* Pedido abierto más compacto: la tela y sus observaciones en una línea; «Qué revisar»
    con filas de una línea; botones de la tarjeta a la misma altura (25/09/2026). */
 .order-header.order-header-compact { align-items: baseline; display: flex; flex-wrap: wrap; gap: 6px 24px; padding: 8px 12px; }
 .order-header-read-line { align-items: baseline; display: flex; gap: 10px; margin: 0; }
-.order-header-read-line .read-label { color: var(--accent-text); font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
 .order-header-compact .read-note { align-items: baseline; display: flex; flex: 1; gap: 10px; margin: 0; min-width: 260px; }
 .order-header-compact .read-note p { margin: 0; }
-.review-checklist-row { padding: 4px 11px; }
-.review-checklist-model { align-items: baseline; display: flex; gap: 8px; }
-.card-actions > button { height: 32px; min-height: 32px; }
-.card-actions > .icon-button { width: 32px; }
 /* Tarjeta: cabecera en una línea (TOLDO A · modelo · estado) y botones a la misma
    altura y alineados por abajo (Iván, 25/09/2026). */
 .awning-column-header { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
@@ -259,7 +112,6 @@ body, .app-shell { background: var(--bg); }
 .model-picker { max-width: 1000px; }
 .model-picker.is-fabric { max-width: 440px; }
 .model-picker-columns { display: grid; gap: 14px; align-items: start; }
-.model-picker-family + .model-picker-family { margin-top: 0; }
 .model-picker-family-title { border-bottom: 1px solid var(--border); padding-bottom: 5px; }
 .model-picker-list { display: grid; gap: 4px; list-style: none; margin: 0; padding: 0; }
 .model-picker-option {
@@ -278,8 +130,6 @@ body, .app-shell { background: var(--bg); }
 .model-picker-option .model-picker-name small { color: var(--text-muted); font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .model-picker-status { display: grid; place-items: center; position: relative; }
 .model-picker-status svg, .model-picker-legend svg { height: 17px; width: 17px; }
-.model-picker-status.is-ready, .model-picker-legend .is-ready { color: #1d7a4c; }
-.model-picker-status.is-pending, .model-picker-legend .is-pending { color: #b7791f; }
 .model-picker-tip {
   background: #10262b;
   border-radius: 8px;
@@ -314,7 +164,7 @@ body, .app-shell { background: var(--bg); }
 }
 .model-picker-legend span { align-items: center; display: inline-flex; gap: 5px; }
 /* La regla antigua `.model-picker-option span` (texto gris de 10px) no debe alcanzar al aviso. */
-.model-picker-option .model-picker-tip { color: #f4f7f6; font-size: 12px; }
+.model-picker-option .model-picker-tip { font-size: 12px; }
 
 /* Qué dibujo sale en el PDF y cómo cambiarlo (Iván, 25/09/2026): una barra encima del
    dibujo en «Despiece y dibujo». */
@@ -323,7 +173,6 @@ body, .app-shell { background: var(--bg); }
 .drawing-source-current { align-items: center; display: flex; font-size: 13.5px; gap: 8px; margin: 0; }
 .drawing-source-current svg { color: var(--accent-text); flex: none; height: 18px; width: 18px; }
 .drawing-source-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.drawing-source-actions button svg { height: 16px; width: 16px; }
 .drawing-source-note { color: var(--text-muted); font-size: 12px; margin: 0; }
 .drawing-source-error { color: #9f1d1d; font-size: 12.5px; font-weight: 600; margin: 0; }
 .drawing-source-drop {
@@ -349,22 +198,12 @@ body, .app-shell { background: var(--bg); }
 /* Biblioteca de dibujos: los tres pasos, a la vista (Iván, 25/09/2026). */
 .drawing-steps { counter-reset: paso; display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; margin: 0; padding: 12px 16px 0; }
 .drawing-steps li { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; counter-increment: paso; font-size: 12.5px; line-height: 1.4; padding: 8px 10px 8px 36px; position: relative; }
-.drawing-steps li::before { align-items: center; background: var(--tgm-yellow, #f7bd19); border-radius: 50%; color: #1c1c1c; content: counter(paso); display: flex; font-size: 12px; font-weight: 800; height: 20px; justify-content: center; left: 9px; position: absolute; top: 9px; width: 20px; }
+.drawing-steps li::before { align-items: center; border-radius: 50%; content: counter(paso); display: flex; font-size: 12px; font-weight: 800; height: 20px; justify-content: center; left: 9px; position: absolute; top: 9px; width: 20px; }
 .read-exception-plain { color: #5c4100; font-size: 12px; font-weight: 650; margin: 0; padding: 5px 8px; }
 
 /* Pedidos como las listas de CoordinaOT (Iván, 28/09/2026): bloque blanco con relieve,
    rótulos de columna encima, filas densas con línea fina y toda la fila pulsable; la
    abierta lleva barra amarilla a la izquierda y fondo suave. */
-.orders-inbox { gap: 12px; }
-.orders-inbox-bar h2 { font-size: 16px; }
-.orders-inbox-bar .orders-count { color: var(--text-muted); font-size: 12px; font-weight: 700; }
-.orders-group { display: grid; gap: 6px; }
-.orders-group-title { align-items: center; display: flex; font-size: 13px; font-weight: 750; gap: 8px; margin: 4px 0 0; }
-.orders-dot { border-radius: 50%; height: 9px; width: 9px; }
-.tone-review .orders-dot { background: #d3a024; }
-.tone-returned .orders-dot { background: #c2410c; }
-.tone-approved .orders-dot { background: #1d7a4c; }
-.orders-group-title .orders-count { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font-size: 11.5px; padding: 0 8px; }
 .orders-block {
   --orders-cols: 18px 112px minmax(200px, 420px) 150px 92px minmax(180px, 1fr);
   display: grid;
@@ -375,7 +214,6 @@ body, .app-shell { background: var(--bg); }
   background: var(--surface);
   border: 1px solid var(--border-strong);
   border-radius: 10px;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 3px 10px rgb(20 44 48 / 0.08);
   display: block;
   gap: 0;
   list-style: none;
@@ -383,44 +221,10 @@ body, .app-shell { background: var(--bg); }
   overflow: hidden;
   padding: 0;
 }
-.orders-block .orders-row {
-  background: var(--surface);
-  border: 0;
-  border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  box-shadow: none;
-  display: block;
-  padding: 0;
-  position: relative;
-}
-.orders-block .orders-row:last-child { border-bottom: 0; }
-.orders-block .orders-row:hover { background: #f4f7f6; }
-.orders-block .orders-row.is-open { background: #fffaf0; box-shadow: inset 4px 0 0 var(--tgm-yellow, #f7bd19); }
-.orders-row-toggle { background: transparent; border: 0; cursor: pointer; inset: 0; position: absolute; width: 100%; z-index: 0; }
-.orders-row-toggle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: -2px; }
-.orders-row.is-open .orders-row-toggle { bottom: auto; height: 40px; }
 .orders-row-cells { align-items: center; display: grid; font-size: 13.5px; gap: 14px; grid-template-columns: var(--orders-cols); min-height: 40px; padding: 4px 14px; pointer-events: none; position: relative; }
 .orders-chevron { color: var(--text-muted); height: 16px; transition: transform 0.15s ease; width: 16px; }
-.orders-row.is-open .orders-chevron { transform: rotate(180deg); }
-.orders-code { font-family: var(--mono); font-size: 13px; }
-.orders-customer, .orders-models { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .orders-models { color: var(--text-muted); }
-.orders-awnings { display: flex; flex-wrap: wrap; gap: 4px; }
-.orders-chip { align-items: center; border: 1px solid var(--border); border-radius: 6px; display: inline-flex; font-size: 12px; font-weight: 750; gap: 2px; padding: 0 5px; pointer-events: auto; }
-.orders-chip svg { height: 12px; width: 12px; }
-.orders-chip.is-ok { background: #eef7f1; border-color: #bfdcc9; color: #1d6b43; }
-.orders-chip.is-warn { background: #fff4d6; border-color: #e7b93c; color: #7a5200; }
-.orders-chip.is-error { background: #fdecec; border-color: #eba9a9; color: #9f1d1d; }
-.orders-author { align-items: center; display: inline-flex; gap: 6px; }
-.orders-me { background: var(--tgm-black, #10262b); border-radius: 999px; color: #fff; font-size: 10.5px; font-style: normal; font-weight: 750; padding: 0 7px; }
-.orders-date { color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.orders-detail { border-top: 1px dashed var(--border); display: grid; gap: 10px; padding: 10px 14px 12px 46px; position: relative; z-index: 1; }
-.orders-detail-list { display: grid; gap: 4px; list-style: none; margin: 0; padding: 0; }
-.orders-detail-list li { align-items: baseline; display: grid; font-size: 13px; gap: 12px; grid-template-columns: 40px 150px 110px minmax(0, 1fr); }
-.orders-detail-notes { color: var(--text-muted); }
 .orders-detail-list li.is-warn .orders-detail-notes { color: #7a5200; }
-.orders-detail-list li.is-error .orders-detail-notes { color: #9f1d1d; }
-.orders-detail-actions { align-items: center; display: flex; gap: 12px; justify-content: flex-end; }
 .orders-detail-note { color: #7a5200; font-size: 12.5px; margin: 0 auto 0 0; }
 .orders-detail-empty { color: var(--text-muted); font-size: 13px; margin: 0; }
 
@@ -433,47 +237,14 @@ body, .app-shell { background: var(--bg); }
 .awning-column.is-readonly .read-pair .read-value { text-align: left; }
 .awning-note { color: var(--text-muted); font-size: 12px; grid-column: 1 / -1; margin: 2px 0 0; }
 /* El botón invisible cubre toda la fila (también las letras), como en CoordinaOT. */
-.orders-block .orders-row-toggle { z-index: 2; }
 .orders-block .orders-row-cells, .orders-block .orders-chip { pointer-events: none; }
 
 /* Pedidos, segunda vuelta para parecerse de verdad al Historial de CoordinaOT (Iván,
    28/09/2026): ancho máximo centrado para que las columnas llenen la fila, cada pedido
    una pieza con relieve y hueco entre filas, historial por días, etiqueta de modelo y
    los toldos alineados a la derecha. */
-.orders-inbox { margin-inline: auto; max-width: 1480px; width: 100%; }
-.orders-block, .orders-columns { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 92px 200px; }
-.orders-columns { font-size: 12px; font-weight: 650; letter-spacing: 0; padding: 0 15px; text-transform: none; }
-.orders-columns .is-end { text-align: right; }
-.orders-block .orders-list { background: transparent; border: 0; border-radius: 0; box-shadow: none; display: grid; gap: 5px; overflow: visible; }
-.orders-block .orders-row, .orders-block .orders-row:last-child {
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.75) inset, 0 2px 6px rgb(20 44 48 / 0.09);
-  overflow: hidden;
-}
-.orders-block .orders-row:hover { background: #f7faf9; border-color: #7f9892; }
-.orders-block .orders-row.is-open { background: #fffaf0; border-color: #d3a024; box-shadow: inset 4px 0 0 var(--tgm-yellow, #f7bd19), 0 2px 8px rgb(20 44 48 / 0.12); }
-.orders-row-cells { font-size: 13.5px; min-height: 38px; }
-.orders-code { font-size: 14px; font-weight: 800; letter-spacing: 0.01em; }
-.orders-model-tags { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
-.orders-model-tag { background: #eef3f1; border: 1px solid #c8d6d1; border-radius: 6px; color: #2f4a4d; font-size: 11.5px; font-weight: 650; padding: 1px 7px; white-space: nowrap; }
-.orders-awnings { justify-content: flex-end; }
 .orders-day-title { align-items: baseline; display: flex; font-size: 13.5px; font-weight: 800; gap: 6px; margin: 10px 0 2px 4px; }
-.orders-day-title span { color: var(--text-muted); font-size: 12.5px; font-weight: 600; }
 .orders-group { gap: 5px; }
-
-/* Pedidos, tercera vuelta (Iván, 28/09/2026): sin panel de fondo, como CoordinaOT; el
-   título de la página y la lista comparten el mismo ancho centrado; buscador a la
-   izquierda; sin fecha por fila en el historial (ya va por días); más sitio para los toldos. */
-.orders-inbox { background: transparent; border: 0; box-shadow: none; padding: 0; }
-.app-shell:has(.orders-inbox) .topbar { margin-inline: auto; max-width: 1480px; width: 100%; }
-.orders-filters { gap: 10px; margin-bottom: 4px; }
-.orders-filters .orders-search { margin-left: 0; max-width: 440px; min-width: 300px; flex: 1 1 360px; }
-.orders-filter-label { color: var(--text-muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; margin-left: 8px; text-transform: uppercase; }
-.orders-block, .orders-columns { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 92px 280px; }
-.orders-block.is-history, .orders-columns.is-history { --orders-cols: 18px 128px minmax(0, 1fr) 230px 150px 280px; }
-.orders-awnings { flex-wrap: nowrap; }
 
 /* Profundidad (Iván, 28/09/2026: «que se distingan inputs, botones y fondo»). Cuatro
    alturas, cada una con su tono: la página abajo; los campos, hundidos (su propio gris,
@@ -490,80 +261,22 @@ body, .app-shell { background: var(--bg); }
   --tecla-brillo: rgb(255 255 255 / 0.9);
   --tecla-texto: var(--text);
 }
-:root .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control) {
-  background-color: var(--campo);
-  border-color: var(--campo-borde);
-  box-shadow: var(--campo-sombra);
-}
-:root .app-shell :is(input, select, textarea, .select-control):disabled { box-shadow: none; }
-:root .app-shell .segmented-control:not(.is-empty) { background: var(--campo); border-color: var(--campo-borde); box-shadow: var(--campo-sombra); }
-/* El aviso de campo que falta manda sobre el hundido. */
-:root .app-shell .is-missing :is(input, .select-control, .segmented-control) {
-  border-color: var(--warn);
-  box-shadow: var(--campo-sombra), 0 0 0 1px var(--warn);
-}
-
-/* Botones secundarios y de icono: tecla en relieve. El amarillo, los de las bandas
-   oscuras y la lista de modelos de Parámetros (plana, solo el activo en relieve)
-   conservan lo suyo. */
-.app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled),
-.app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active),
-.app-shell .segmented-option.tecla-3d:not(.active) {
-  background: var(--tecla-cara);
-  border-color: var(--tecla-borde);
-  box-shadow: inset 0 1px 0 var(--tecla-brillo), 0 2px 0 var(--tecla-canto), 0 3px 6px -3px rgb(13 42 47 / 0.35);
-  color: var(--tecla-texto);
-}
-.app-shell .segmented-option.tecla-3d:not(.active) { box-shadow: inset 0 1px 0 var(--tecla-brillo), 0 1px 0 var(--tecla-canto); }
-.app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(:disabled):active {
-  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.25);
-}
-.app-shell .drawing-parameters-actions .ghost-button:not(:disabled) { background: transparent; box-shadow: none; color: #fff; }
 
 /* Aprobación de CoordinaOT en Pedidos (29/09/2026). */
 .orders-coordina-down { align-items: center; background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 8px; color: var(--accent-text); display: flex; font-size: 13px; font-weight: 600; gap: 8px; margin: 0 0 10px; padding: 8px 12px; }
 .orders-coordina-down svg { height: 16px; width: 16px; }
-.orders-chip-coordina { font-size: 11px; font-weight: 800; margin-left: 2px; }
-.orders-chip-coordina.is-approved { color: var(--ok); }
-.orders-chip-coordina.is-returned { color: var(--danger); }
-.orders-chip-coordina.is-waiting { color: var(--text-muted); }
 .orders-detail-returned { color: var(--danger); display: block; font-size: 12px; grid-column: 1 / -1; margin-top: 2px; }
 /* Ocupa la línea entera del toldo, como la nota devuelta: en una columna estrecha se partía en tres. */
 .orders-detail-approved { color: var(--ok); display: block; font-size: 12px; grid-column: 1 / -1; margin-top: 2px; }
 
 /* La prioridad se lee primero en el bloque, después en la fila y finalmente en cada toldo. */
 .orders-group-title { font-size: 15px; gap: 9px; margin: 12px 0 3px; }
-.orders-dot { flex: 0 0 10px; height: 10px; width: 10px; }
 .orders-group-title .orders-count { font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 800; min-width: 25px; padding: 2px 7px; text-align: center; }
-.orders-group-title.tone-review { color: #b17b09; }
-.orders-group-title.tone-returned { color: #bd4a2e; }
-.orders-group-title.tone-approved { color: #23734c; }
-.orders-block .orders-row.tone-review { border-left: 4px solid #d7a629; }
-.orders-block .orders-row.tone-returned { border-left: 4px solid #d05a37; }
-.orders-row.tone-review .orders-row-cells,
-.orders-row.tone-returned .orders-row-cells { padding-left: 11px; }
-.orders-awnings { gap: 5px; }
 .orders-chip { border-width: 1.5px; font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 800; gap: 3px; min-height: 23px; padding: 2px 6px; white-space: nowrap; }
-.orders-chip svg { height: 13px; width: 13px; }
-.orders-chip-coordina { font-size: 13px; line-height: 1; margin-left: 1px; }
-.orders-detail { border-top-style: solid; gap: 12px; padding: 12px 16px 14px 42px; }
-.orders-detail-list { gap: 8px; }
 .orders-detail-list li { align-items: start; border: 1px solid var(--border); border-radius: 7px; column-gap: 12px; grid-template-columns: 42px minmax(100px, 150px) minmax(100px, 115px) minmax(0, 1fr); padding: 9px 11px; row-gap: 6px; }
 .orders-detail-list li.is-warn { border-left: 3px solid #d7a629; }
-.orders-detail-list li.is-error { border-left: 3px solid #bd4a2e; }
-.orders-detail-list li > strong,
-.orders-detail-list li > span:nth-child(3) { padding-top: 2px; }
-.orders-detail-notes { line-height: 1.45; overflow-wrap: anywhere; }
 .orders-detail-returned { background: rgb(189 74 46 / 0.1); border-radius: 5px; color: #bd4a2e; font-size: 12.5px; font-weight: 600; margin: 0; padding: 7px 9px; }
-.orders-detail-approved { background: rgb(35 115 76 / 0.1); border-radius: 5px; margin: 0; padding: 7px 9px; }
-@media (max-width: 760px) {
-  .orders-detail { padding-left: 12px; }
-  .orders-detail-list li { grid-template-columns: 42px minmax(0, 1fr); }
-  .orders-detail-list li > span:nth-child(3),
-  .orders-detail-notes,
-  .orders-detail-returned,
-  .orders-detail-approved { grid-column: 1 / -1; }
-}
+.orders-detail-approved { border-radius: 5px; margin: 0; padding: 7px 9px; }
 
 /* La nota de CoordinaOT puede ocupar dos líneas (qué toldo falta y cómo está). */
 .review-generate-note { max-width: 320px; white-space: normal; }
