@@ -4,6 +4,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
+import { createCoordinaClient } from './coordinaStatus.js';
+import { awningLetter } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
 import { searchStaticFabrics } from './domain/fabricCatalog.js';
 import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
@@ -39,7 +41,7 @@ import {
   workflowReadiness,
   writeFileAtomic
 } from './workflow.js';
-import { generateFilesDecision, reviewAuthorship, saveReviewDecision } from './reviewRules.js';
+import { generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,6 +71,7 @@ const deploymentFeatures = {
 };
 
 const app = express();
+const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
 const generationLocks = new Set();
 
 app.use(compression());
@@ -293,6 +296,17 @@ app.post('/api/workflow/check-directories', async (req, res, next) => {
   }
 });
 
+// Estado de las OF en CoordinaOT para la web (Pedidos y el pedido abierto). La clave
+// vive aquí, en el servidor: el navegador nunca la ve.
+app.get('/api/coordina/ofs', async (req, res, next) => {
+  try {
+    const ofs = String(req.query.ofs || '').split(',').map((of) => of.trim()).filter(Boolean).slice(0, 500);
+    res.set('Cache-Control', 'no-store').json(await coordina.statusOf(ofs));
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get('/api/reviews', async (req, res, next) => {
   try {
     const year = Number(req.query.year) || new Date().getFullYear();
@@ -460,6 +474,14 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
 
     const order = normalizeOrder(review.order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
+
+    // Solo se genera lo que CoordinaOT ha aprobado, OF por OF, preguntando en el momento.
+    // Si CoordinaOT no responde, no se genera (diseño 29/09/2026, opción A).
+    const approvalAwnings = order.awnings.map((awning, index) => ({ letter: awningLetter(index), of: awning.of }));
+    const approval = await coordina.statusOf(uniqueOfs(approvalAwnings), { fresh: true });
+    const approvalBlock = generationBlock(approvalAwnings, approval);
+    if (approvalBlock) throw httpError(approval.disponible ? 409 : 503, approvalBlock);
+
     const calculation = await calculateConfiguredOrder(order);
     const blockingDiagnostics = calculation.diagnostics.filter((item) => item.level === 'error' || item.level === 'pending');
     if (calculation.ofs.length !== order.awnings.length || blockingDiagnostics.length > 0) {

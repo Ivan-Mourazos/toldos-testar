@@ -34,6 +34,10 @@ export const config = {
   // Parámetros comunes a todos los puestos: junto a la configuración del flujo,
   // que en producción vive en /var/lib/toldos-testar.
   ruleParametersFile: process.env.RULE_PARAMETERS_FILE || path.join(path.dirname(workflowSettingsFile), 'rule-parameters.json'),
+  // Aprobación leída de CoordinaOT (diseño 29/09/2026). Sin las dos, «Generar archivos»
+  // queda bloqueado: nunca se genera sin aprobación comprobada.
+  coordinaUrl: process.env.COORDINA_URL || '',
+  coordinaClave: process.env.COORDINA_CLAVE || '',
   db: {
     server: process.env.DB_SERVER || '192.168.0.124',
     port: numberFromEnv('DB_PORT', 1433),

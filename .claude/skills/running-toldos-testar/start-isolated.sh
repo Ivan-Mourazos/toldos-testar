@@ -12,4 +12,8 @@ export WORKFLOW_SETTINGS_FILE="$D/settings.json"
 export REVIEW_DIRECTORY="$D/review" PLANTEAMIENTOS_DIRECTORY="$D/plan"
 export RPS_UPLOAD_DIRECTORY="$D/rps" EXPORT_DIRECTORY="$D/export"
 export ORDER_ARCHIVE_ROOT="$D/archive" RPS_PLANTEAMIENTOS_DIRECTORY="$D/rpsplan"
+# CoordinaOT simulado (scripts/fake-coordina.mjs): la aislada nunca pregunta al real.
+export FAKE_COORDINA_PORT="${FAKE_COORDINA_PORT:-4320}"
+export COORDINA_URL="http://127.0.0.1:$FAKE_COORDINA_PORT" COORDINA_CLAVE="clave-de-prueba"
+node scripts/fake-coordina.mjs &
 exec node src/server.js
