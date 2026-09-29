@@ -4,16 +4,16 @@
    (scripts/generate-dark-theme.mjs). Aquí, después, los retoques a mano. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0e181b;
-  --surface: #17242a;
-  --surface-muted: #121e22;
-  --zone: #1b2a2f;
-  --border: #2c3f44;
-  --border-strong: #3e555a;
-  --text: #e3ecea;
-  --text-muted: #9fb4b2;
-  --accent-text: #ecb74c;
-  --tgm-yellow-soft: #3a3016;
+  --bg: #151617;
+  --surface: #222426;
+  --surface-muted: #1b1d1f;
+  --zone: #2a2d30;
+  --border: #3b3e41;
+  --border-strong: #565b60;
+  --text: #f0f0ed;
+  --text-muted: #b3b5b4;
+  --accent-text: #eac46e;
+  --tgm-yellow-soft: #382e1b;
 
   --ok: #6fcf93;
   --ok-bg: #15301f;
@@ -25,7 +25,7 @@
   --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 6px 16px rgb(0 0 0 / 0.3);
   --edge: rgb(255 255 255 / 0.06);
   --contact: rgb(0 0 0 / 0.35);
-  --canto: #3e555a;
+  --canto: #55595d;
   --brillo: rgb(255 255 255 / 0.05);
   --sombra-chip: 0 4px 10px -4px rgb(0 0 0 / 0.5);
   --sombra-chip-alta: 0 8px 16px -6px rgb(0 0 0 / 0.55);
@@ -40,35 +40,35 @@
    tonos separados. Página casi negra; campos hundidos, más oscuros que la tarjeta y con
    sombra por dentro; tarjeta gris azulada; botones más claros, con brillo y canto negro. */
 :root[data-theme="dark"] {
-  --campo: #0d171a;
-  --campo-borde: #3d555b;
+  --campo: #191b1d;
+  --campo-borde: #55595d;
   --campo-sombra: inset 0 2px 3px rgb(0 0 0 / 0.55), inset 0 0 0 1px rgb(0 0 0 / 0.2);
-  --tecla-cara: linear-gradient(180deg, #3a5057 0%, #2a3d43 100%);
-  --tecla-borde: #526c72;
-  --tecla-canto: #040a0c;
+  --tecla-cara: linear-gradient(180deg, #414447 0%, #323538 100%);
+  --tecla-borde: #62666a;
+  --tecla-canto: #101113;
   --tecla-brillo: rgb(255 255 255 / 0.12);
-  --tecla-texto: #e3ecea;
+  --tecla-texto: #f0f0ed;
 }
 :root[data-theme="dark"] input,
 :root[data-theme="dark"] select,
 :root[data-theme="dark"] textarea,
 :root[data-theme="dark"] .select-control { color: var(--text); }
 :root[data-theme="dark"] input::placeholder,
-:root[data-theme="dark"] textarea::placeholder { color: #7f9694; }
+:root[data-theme="dark"] textarea::placeholder { color: #969a9c; }
 
 :root[data-theme="dark"] .primary-button { color: #14120a; }
 
 /* Pedidos: filas en pieza oscura, como el Historial de CoordinaOT. */
 :root[data-theme="dark"] .orders-block .orders-row,
 :root[data-theme="dark"] .orders-block .orders-row:last-child {
-  background: #1a282e;
-  border-color: #33474c;
+  background: #292b2d;
+  border-color: #474b4e;
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 2px 6px rgb(0 0 0 / 0.35);
 }
-:root[data-theme="dark"] .orders-block .orders-row:hover { background: #1f3036; border-color: #4a6166; }
-:root[data-theme="dark"] .orders-block .orders-row.is-open { background: #2a2615; border-color: #8a6d24; }
+:root[data-theme="dark"] .orders-block .orders-row:hover { background: #34373a; border-color: #676b6f; }
+:root[data-theme="dark"] .orders-block .orders-row.is-open { background: #393020; border-color: #947339; }
 :root[data-theme="dark"] .orders-me { background: var(--tgm-yellow); color: #14120a; }
-:root[data-theme="dark"] .orders-model-tag { background: #22343a; border-color: #3e555a; color: #cfe0dd; }
+:root[data-theme="dark"] .orders-model-tag { background: #35383a; border-color: #55595d; color: #e4e5e2; }
 :root[data-theme="dark"] .orders-chip.is-ok { background: #15301f; border-color: #2e6a45; color: #86d6a6; }
 :root[data-theme="dark"] .orders-chip.is-warn { background: #3a3016; border-color: #7a6224; color: #f0c565; }
 :root[data-theme="dark"] .orders-chip.is-error { background: #3b1d1d; border-color: #7d3a3a; color: #f2a3a3; }
@@ -78,8 +78,9 @@
 :root[data-theme="dark"] .fabric-custom-image { background: #ffffff; }
 
 /* Botón del modo en la barra de arriba. */
-.theme-toggle { align-items: center; background: transparent; border: 1px solid rgb(255 255 255 / 0.18); border-radius: 8px; color: #e3ecea; cursor: pointer; display: inline-flex; height: 30px; justify-content: center; margin-right: 8px; width: 34px; }
+.theme-toggle { align-items: center; background: transparent; border: 1px solid rgb(255 255 255 / 0.18); border-radius: 8px; color: #e3ecea; cursor: pointer; display: inline-flex; height: 40px; justify-content: center; margin-right: 8px; width: 40px; }
 .theme-toggle:hover { background: rgb(255 255 255 / 0.08); }
+.theme-toggle:focus-visible { outline: 2px solid var(--tgm-yellow); outline-offset: 2px; }
 .theme-toggle svg { height: 16px; width: 16px; }
 
 /* Lista de modelos de Parámetros: plana, solo el activo con relieve (como en claro). */
@@ -94,10 +95,10 @@
 :root[data-theme="dark"] .review-generate-button { color: #ffffff; }
 
 /* Interruptor apagado: que se vea el carril sobre la tarjeta oscura. */
-:root[data-theme="dark"] .toggle-switch:not(.is-on) { background: #2c3f44; border-color: #4a6166; }
-:root[data-theme="dark"] .toggle-switch:not(.is-on) .toggle-thumb { background: #9fb4b2; }
-:root[data-theme="dark"] .workflow-toggle input { background: #2c3f44; border: 1px solid #4a6166; }
-:root[data-theme="dark"] .workflow-toggle input::after { background: #9fb4b2; top: 1px; }
+:root[data-theme="dark"] .toggle-switch:not(.is-on) { background: #36393b; border-color: #62666a; }
+:root[data-theme="dark"] .toggle-switch:not(.is-on) .toggle-thumb { background: #b3b5b4; }
+:root[data-theme="dark"] .workflow-toggle input { background: #36393b; border: 1px solid #62666a; }
+:root[data-theme="dark"] .workflow-toggle input::after { background: #b3b5b4; top: 1px; }
 :root[data-theme="dark"] .workflow-toggle input:checked { background: #1e6b54; border-color: #2e8a6c; }
 :root[data-theme="dark"] .workflow-toggle input:checked::after { background: #ffffff; }
 
@@ -106,8 +107,12 @@
 
 /* Pestañas del panel (Despiece, Dibujo, Reserva): la activa, un punto más clara, como la
    tarjeta blanca de claro sobre el carril gris. */
-:root[data-theme="dark"] .planning-tabs { background: #111c20; }
-:root[data-theme="dark"] .planning-tabs button.active { background: #2a3d43; box-shadow: 0 1px 3px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.06); color: var(--text); }
+:root[data-theme="dark"] .planning-tabs { background: #1b1d1f; }
+:root[data-theme="dark"] .planning-tabs button.active { background: #393c3f; box-shadow: 0 1px 3px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.06); color: var(--text); }
+
+/* Las cabeceras de los formularios comparten el mismo carbón que sus tarjetas. */
+:root[data-theme="dark"] .parameters-heading,
+:root[data-theme="dark"] .drawing-parameters-heading { background: #303235; border-color: #4b4e51; }
 
 /* Botones amarillos dentro de grupos que pasan su letra a clara: la letra sigue oscura. */
 :root[data-theme="dark"] .drawing-parameters-actions .primary-button,

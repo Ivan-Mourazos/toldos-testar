@@ -53,8 +53,8 @@ function tint(h) {
 }
 
 const darkTints = {
-  background: { amber: '#3a3016', green: '#17301f', blue: '#15283a', red: '#3b1d1d' },
-  border: { amber: '#7a6224', green: '#2e6a45', blue: '#2f5878', red: '#7d3a3a' },
+  background: { amber: '#342b1b', green: '#1e3028', blue: '#242d36', red: '#352425' },
+  border: { amber: '#786038', green: '#426854', blue: '#4c6479', red: '#785052' },
   text: { amber: '#f0c565', green: '#86d6a6', blue: '#93c7f0', red: '#f2a3a3' }
 };
 
