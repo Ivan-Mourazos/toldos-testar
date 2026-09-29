@@ -588,8 +588,11 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
    (0.5rem arriba, 1rem a la derecha y abajo) y no de `.awning-panel-inner`: así un clic
    en esa franja cae en el `<dialog>` y AwningPanel lo trata como un clic en el fondo y
    cierra. */
-.awning-panel::backdrop { background: color-mix(in srgb, var(--bg) 40%, black); }
-:root[data-theme="dark"] .awning-panel::backdrop { background: color-mix(in srgb, var(--bg) 88%, black); }
+/* Mismo color que `telon-ficha`, pero transparente (Iván, 29/09/2026): CoordinaOT lo hace
+   opaco porque a la izquierda enseña la hoja del pedido; aquí dejaría un hueco vacío, así
+   que detrás se sigue viendo, apagado, el pedido con sus tarjetas. */
+.awning-panel::backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 40%, black) 72%, transparent); }
+:root[data-theme="dark"] .awning-panel::backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 88%, black) 78%, transparent); }
 .awning-panel {
   height: calc(100vh - var(--topnav-height));
   padding: 0.5rem 1rem 1rem 0;
@@ -685,9 +688,10 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   backdrop-filter: blur(4px);
   background: rgb(0 0 0 / 0.5);
 }
-/* La vista previa del PDF sí lleva el telón de la ficha (`telon-ficha`, globals.css 516-524). */
-.pdf-preview-backdrop { background: color-mix(in srgb, var(--bg) 40%, black); }
-:root[data-theme="dark"] .pdf-preview-backdrop { background: color-mix(in srgb, var(--bg) 88%, black); }
+/* La vista previa del PDF lleva el telón de la ficha (`telon-ficha`, globals.css 516-524),
+   transparente como el del panel «Despiece y dibujo» (Iván, 29/09/2026). */
+.pdf-preview-backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 40%, black) 72%, transparent); }
+:root[data-theme="dark"] .pdf-preview-backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 88%, black) 78%, transparent); }
 .model-picker,
 .confirmation-dialog {
   background: var(--glass-bg-strong);
