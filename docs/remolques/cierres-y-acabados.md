@@ -44,6 +44,15 @@ Además (publicaciones de TGM en `lonaspararemolque`, fotos IMG_3930 a IMG_3935)
 - **Trasera abierta**: la lona de atrás se enrolla hacia arriba y se ata con cintas
   (IMG_3935).
 
+## Pedidos con medidas de ganchos
+
+Algunos pedidos traen las posiciones de los **ganchos** del remolque en vez de las de los
+ollaos. El taller pone un **ollao en el medio de cada par de ganchos** y, si se quiere, uno
+en cada extremo (no siempre a 2,5 cm). Las medidas suelen seguir el convenio de los ollaos
+(delante y detrás de izquierda a derecha, laterales de atrás a delante) y van **sobre el
+remolque**: para pasarlas a la lona hecha, que es 1 cm más grande, se suma medio
+centímetro. A veces el pedido viene medido al revés.
+
 ## Ventana
 
 De **malla con borde negro**, con una **persiana de lona enrollable** encima que se recoge
