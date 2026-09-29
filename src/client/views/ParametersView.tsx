@@ -381,7 +381,7 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
   onSelectModel: (model: SelectedModel) => void;
 }) {
   return (
-    <nav className="parameter-model-sidebar panel-3d" aria-label="Modelos de parámetros">
+    <nav className="parameter-model-sidebar panel-3d panel-vidrio" aria-label="Modelos de parámetros">
       <strong className="parameter-model-sidebar-title">Modelos</strong>
       {parameterModelGroups.map(({ family, models }) => (
         <section className="parameter-model-family" key={family || 'tela'}>
@@ -394,7 +394,7 @@ function ParameterModelSelector({ selectedModel, onSelectModel }: {
                     key={model}
                     type="button"
                     data-model={model}
-                    className={active ? 'tecla-3d is-active' : 'tecla-3d'}
+                    className={active ? 'tecla-3d is-active bloque-3d-hundido' : 'tecla-3d'}
                     aria-current={active ? 'true' : undefined}
                     onClick={() => onSelectModel(model)}
                   >

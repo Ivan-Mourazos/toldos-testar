@@ -52,7 +52,7 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
     }]);
   }
 
-  return <section className="drawing-parameters panel-3d" aria-labelledby="drawing-parameters-title">
+  return <section className="drawing-parameters panel-3d panel-vidrio" aria-labelledby="drawing-parameters-title">
     <header className="drawing-parameters-heading">
       <div>
         <span className="section-kicker">Biblioteca del taller · {model}</span>
@@ -163,8 +163,8 @@ function DrawingRuleCard({ variant, index, canMoveDown, onChange, onDelete, onMo
     <div className="drawing-rule-image">
       {variant.image ? <img src={variant.image} alt={`Dibujo ${variant.name}`} /> : <div><ImagePlus aria-hidden="true" /><span>Sin imagen</span></div>}
       <div className="drawing-image-actions">
-        <button type="button" disabled={busy} onClick={() => input.current?.click()}><ImagePlus aria-hidden="true" />Importar</button>
-        <button type="button" disabled={busy} onClick={() => void paste()}><ClipboardPaste aria-hidden="true" />Pegar</button>
+        <button className="ghost-button" type="button" disabled={busy} onClick={() => input.current?.click()}><ImagePlus aria-hidden="true" />Importar</button>
+        <button className="ghost-button" type="button" disabled={busy} onClick={() => void paste()}><ClipboardPaste aria-hidden="true" />Pegar</button>
       </div>
       <input ref={input} hidden type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void importImage(file); }} />
     </div>
@@ -175,7 +175,7 @@ function DrawingRuleCard({ variant, index, canMoveDown, onChange, onDelete, onMo
         <button className="icon-button danger" type="button" aria-label={`Eliminar ${variant.name}`} onClick={onDelete}><Trash2 aria-hidden="true" /></button>
       </div>
       <div className="drawing-condition-heading"><div><strong>¿Cuándo sale?</strong><span>{variant.conditions.length ? 'Solo cuando el toldo cumple todo lo de abajo.' : 'Siempre: es el dibujo general del modelo.'}</span></div>
-        <button type="button" onClick={() => onChange({ conditions: [...variant.conditions, { field: 'device', value: 'MOTOR' }] })}><Plus aria-hidden="true" />Solo cuando…</button>
+        <button className="ghost-button" type="button" onClick={() => onChange({ conditions: [...variant.conditions, { field: 'device', value: 'MOTOR' }] })}><Plus aria-hidden="true" />Solo cuando…</button>
       </div>
       {variant.conditions.length > 0 && <div className="drawing-conditions">{variant.conditions.map((condition, conditionIndex) => {
         const meta = fields.find((field) => field.value === condition.field) || fields[0];

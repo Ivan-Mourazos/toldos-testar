@@ -32,7 +32,7 @@ export function ParametersSaveBar({ dirty, saving, technicians, onDiscard, onSav
 
   return (
     <>
-      <div className="parameters-save-bar panel-3d" role="status">
+      <div className="parameters-save-bar panel-3d glass-panel-strong" role="status">
         <div>
           <strong>Cambios sin guardar</strong>
           <span>Solo los ves tú. Los pedidos se siguen calculando con los parámetros guardados.</span>

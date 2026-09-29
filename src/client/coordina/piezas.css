@@ -77,6 +77,30 @@ body {
     0 10px 34px -16px var(--glass-shadow);
 }
 
+/* Panel de vidrio sin `backdrop-filter`: la misma pieza que `.glass-panel` (globals.css
+   248-272), la de las tarjetas de CoordinaOT sobre el fondo (TecnicoCard.tsx 67:
+   `glass-panel rounded-xl`). Sin desenfoque porque no hay nada detrás que desenfocar, cada
+   panel sería una capa más y, sobre todo, un `backdrop-filter` hace de bloque contenedor de
+   los hijos `position: fixed` (los desplegables de los selectores dejarían de salir
+   pegados a su campo). Sin el filo dorado de arriba de antes: CoordinaOT no marca sus
+   paneles con un color. La cabecera del pedido y la tarjeta de toldo (Nuevo pedido) lo
+   llevan por su clase de siempre; Parámetros lo pone en el JSX. */
+.panel-vidrio,
+:is(.order-header, .awning-column) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 30%, transparent), transparent 30%),
+    var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 1px 1px rgba(0, 0, 0, 0.03),
+    0 2px 0 -1px color-mix(in srgb, var(--border-strong) 40%, transparent),
+    0 14px 40px -18px var(--glass-shadow);
+}
+
 /* Panel opaco sin telón detrás (globals.css 279-287). */
 .panel-solido {
   background: var(--surface);

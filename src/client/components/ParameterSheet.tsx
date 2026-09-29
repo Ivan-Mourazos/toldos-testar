@@ -33,7 +33,7 @@ export function ParameterSheet({ model, kind = 'produccion', description, onRese
 }) {
   const names = parameterModelName(model);
   return (
-    <section className="parameters-page panel-3d">
+    <section className="parameters-page panel-3d panel-vidrio">
       <header className="parameters-heading">
         <div>
           <span className="section-kicker">{kickers[kind]}</span>

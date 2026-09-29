@@ -35,8 +35,8 @@ ventana (`clamp(14px, …, 16px)`). Aquí la raíz se queda en 16 px, porque
 
 `App.tsx` importa solo `src/client/estilos.css` (después de las letras). Ese fichero mete
 los estilos de siempre (`styles.css`, `relieve.css`, `dark.generated.css`, `dark.css`) en
-la capa `legacy` y carga detrás, **sin capa**, `coordina/tokens.css`, `coordina/piezas.css`
-y `coordina/nuevo-pedido.css`.
+la capa `legacy` y carga detrás, **sin capa**, `coordina/tokens.css`, `coordina/piezas.css`,
+`coordina/nuevo-pedido.css`, `coordina/pedidos.css` y `coordina/parametros.css`.
 
 Por qué: una regla sin capa gana a cualquier regla con capa, sea cual sea su
 especificidad. Así la capa de CoordinaOT manda siempre sobre lo de siempre, aunque allí
@@ -78,7 +78,8 @@ Reglas para seguir:
 
 ## Piezas disponibles
 
-`glass-header`, `glass-panel`, `glass-panel-strong`, `panel-solido`, `glass-chip`,
+`glass-header`, `glass-panel`, `glass-panel-strong`, `panel-solido`, `panel-vidrio` (el
+`glass-panel` sin `backdrop-filter`, que haría de bloque contenedor de los desplegables fijos), `glass-chip`,
 `glass-chip-activo`, `tira-3d`, `pestana-activa`, `bloque-3d`, `bloque-3d-hundido`,
 `telon-ficha`, `hoja-3d`, `pista`, `chip-3d`, `boton-3d`, `glass-pop`, `ventana-3d`,
 `overlay-in/out`, `drawer-in`, `pop-out`, `desplegable` (+ `-abre`, `-cierra`),

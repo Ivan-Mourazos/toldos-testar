@@ -43,7 +43,7 @@ export function ParametersHistory({ version, onLoadVersion }: { version: number;
         <History aria-hidden="true" />
         <span>{summary}</span>
       </summary>
-      <div className="parameters-history-panel panel-3d">
+      <div className="parameters-history-panel panel-3d glass-pop">
         {entries && entries.length > 0 ? (
           <ol>
             {entries.map((entry) => (

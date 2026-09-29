@@ -42,24 +42,9 @@
 }
 
 /* ── Paneles: cabecera del pedido y tarjeta de toldo ──
-   Misma pieza que `.glass-panel` (globals.css 248-272), la de las tarjetas de CoordinaOT
-   sobre el fondo (TecnicoCard.tsx 67: `glass-panel rounded-xl`). Sin `backdrop-filter`: no
-   hay nada detrás que desenfocar y cada tarjeta sería una capa más. Sin el filo dorado de
-   arriba de antes: CoordinaOT no marca sus paneles con un color. */
-:is(.order-header, .awning-column) {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 30%, transparent), transparent 30%),
-    var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 0.75rem;
-  box-shadow:
-    0 0 0 1px var(--edge),
-    0 1px 2px var(--contact),
-    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
-    0 1px 1px rgba(0, 0, 0, 0.03),
-    0 2px 0 -1px color-mix(in srgb, var(--border-strong) 40%, transparent),
-    0 14px 40px -18px var(--glass-shadow);
-}
+   Son `panel-vidrio` (piezas.css): el `glass-panel` de CoordinaOT sin desenfoque. Se les
+   aplica por su clase de siempre para no tocar el JSX; las zonas nuevas (Parámetros) ponen
+   `panel-vidrio` directamente. */
 .awning-column.is-flash {
   box-shadow: 0 0 0 3px var(--color-brand-400);
 }
@@ -684,7 +669,8 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
    ConfirmDialog.tsx 107-122: telón `bg-black/50 backdrop-blur-sm` y panel
    `glass-panel-strong ... rounded-2xl p-4`. */
 .model-picker-backdrop,
-.confirmation-backdrop {
+.confirmation-backdrop,
+.parameters-save-backdrop {
   backdrop-filter: blur(4px);
   background: rgb(0 0 0 / 0.5);
 }
@@ -693,7 +679,8 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .pdf-preview-backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 40%, black) 72%, transparent); }
 :root[data-theme="dark"] .pdf-preview-backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 88%, black) 78%, transparent); }
 .model-picker,
-.confirmation-dialog {
+.confirmation-dialog,
+.parameters-save-dialog {
   background: var(--glass-bg-strong);
   backdrop-filter: blur(24px) saturate(1.8);
   border: 1px solid var(--glass-border);
