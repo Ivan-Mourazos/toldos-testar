@@ -227,20 +227,267 @@
 }
 .rem-editor h2,
 .rem-vacio h2 { color: var(--text); font-size: 15px; margin: 2px 0 0; }
+.rem-editor-cabecera { margin-bottom: 0.75rem; }
 .rem-editor-estado {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 0.5rem;
   color: var(--aviso-texto);
   font-size: 12px;
-  font-weight: 600;
-  margin: 6px 0 0;
+  font-weight: 700;
+  margin: 0.625rem 0 0;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
 }
-.rem-editor-estado.is-ok { color: var(--correcto-texto); }
-.rem-editor-marcador {
+.rem-editor-estado.is-ok {
+  background: var(--correcto-fondo);
+  border-color: var(--correcto-borde);
+  color: var(--correcto-texto);
+}
+
+/* ── Editor: formulario a la izquierda; dibujo (Task 5) y resultados a la derecha ── */
+.rem-editor-cuerpo {
+  align-items: start;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(26rem, 30rem) minmax(0, 1fr);
+}
+.rem-editor-izquierda,
+.rem-editor-derecha { min-width: 0; }
+.rem-editor-derecha { display: flex; flex-direction: column; gap: 0.75rem; }
+/* El hueco del dibujo no ocupa nada hasta que entre (Task 5). */
+.rem-dibujo:empty { display: none; }
+
+/* ── Formulario: pasos numerados como los grupos de la tarjeta de toldo ── */
+.rem-form { display: grid; gap: 0.625rem; }
+.rem-paso { border-bottom: 1px solid var(--border); padding-bottom: 0.625rem; }
+.rem-paso:last-child { border-bottom: 0; padding-bottom: 0; }
+.rem-paso-titulo { align-items: center; display: flex; gap: 0.5rem; margin-bottom: 0.375rem; }
+.rem-paso-titulo h3 {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.rem-paso-numero {
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.375rem;
+  color: var(--text);
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 700;
+  height: 1.25rem;
+  justify-content: center;
+  width: 1.25rem;
+}
+.rem-rejilla { align-items: start; display: grid; gap: 0.5rem; }
+.rem-rejilla-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rem-rejilla-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.rem-span-2 { grid-column: span 2; }
+.rem-span-3 { grid-column: span 3; }
+.rem-span-4 { grid-column: 1 / -1; }
+.rem-campo { align-content: start; min-width: 0; }
+
+/* Error de validación: solo aparece tras tocar el campo (lo decide `erroresVisibles`). El rojo de
+   CoordinaOT en el borde y en el mensaje; el ámbar queda para «falta» y avisos. */
+.rem-error {
+  color: var(--error-texto);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.app-shell .rem-campo.is-invalido :is(input, .select-control, .segmented-control) {
+  border-color: var(--error-texto);
+  box-shadow: 0 0 0 1px var(--error-borde);
+}
+.rem-campo.is-invalido > span:first-child { color: var(--error-texto); }
+
+/* La banda de dentro del paso (ollaos): la caja `bg-surface-2/70` de las tarjetas de toldo. */
+.rem-banda {
+  align-items: start;
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0.5rem;
+}
+.rem-nota {
+  align-self: end;
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 0.5rem;
+  color: var(--aviso-texto);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0.375rem 0.625rem;
+}
+.rem-par { display: grid; gap: 0.5rem; grid-template-columns: minmax(0, 1fr); }
+.rem-contorno { display: grid; gap: 2px; min-width: 0; }
+.rem-aviso-campo { color: var(--aviso-texto); font-size: 10px; font-weight: 600; line-height: 1.3; }
+.rem-enlace {
+  background: none;
+  border: 0;
+  color: var(--accent-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  justify-self: start;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rem-enlace:hover { color: var(--text); }
+.rem-material-pie { color: var(--accent-text); font-size: 10px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.rem-sin-stock { color: var(--error-texto); }
+
+/* ── Resultados: tarjetas de datos, reparto de ollaos y notas ── */
+.rem-resultados { display: grid; gap: 0.5rem; min-width: 0; }
+.rem-datos {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+}
+.rem-dato {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 0.375rem 0.5rem;
+}
+.rem-dato span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.rem-dato strong {
+  color: var(--text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.rem-ollaos { display: grid; gap: 4px; }
+.rem-pie-ollaos { color: var(--text-muted); font-size: 11px; font-weight: 500; margin: 0; }
+.rem-tabla-caja {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+.rem-tabla {
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  min-width: 42rem;
+  width: 100%;
+}
+.rem-tabla th,
+.rem-tabla td { padding: 0.375rem 0.25rem; text-align: center; }
+.rem-tabla thead th {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.rem-tabla tbody tr + tr > * { border-top: 1px solid var(--border); }
+.rem-tabla thead th:first-child,
+.rem-tabla tbody th {
+  padding-left: 0.625rem;
+  text-align: left;
+  width: 10.5rem;
+}
+.rem-tabla tbody th { color: var(--text-muted); font-size: 10px; font-weight: 700; }
+.rem-tabla td { color: var(--text); }
+.rem-tabla-total { font-weight: 700; }
+
+.rem-ollaos-editor {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.rem-ollaos-editor.is-invalido { border-color: var(--error-texto); }
+.rem-ollaos-editor > header {
+  align-items: center;
+  background: var(--surface-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0.75rem;
+  justify-content: space-between;
+  padding: 0.375rem 0.625rem;
+}
+.rem-ollaos-editor h4 {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.rem-ollaos-editor > header span { color: var(--text-muted); font-size: 11px; font-weight: 500; }
+.rem-ollaos-fila {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 9.5rem minmax(0, 1fr);
+  padding: 0.5rem 0.625rem;
+}
+.rem-ollaos-nombre { align-content: center; display: grid; gap: 4px; justify-items: start; }
+.rem-ollaos-nombre p { color: var(--text); font-size: 10px; font-weight: 700; line-height: 1.25; margin: 0; }
+.rem-ollaos-nombre span {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 0.375rem;
+}
+.rem-ollaos-casillas { display: grid; gap: 3px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.rem-ollaos-casillas label { gap: 2px; }
+.rem-ollaos-casillas label > span { color: var(--text-muted); font-size: 10px; text-align: center; }
+.app-shell .rem-ollaos-casillas input[type="number"] {
+  -moz-appearance: textfield;
+  font-size: 11px;
+  height: 1.75rem;
+  min-width: 0;
+  padding: 0 2px;
+  text-align: center;
+  width: 100%;
+}
+.rem-ollaos-casillas input::-webkit-inner-spin-button,
+.rem-ollaos-casillas input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.rem-ollaos-error {
+  background: var(--error-fondo);
+  border-top: 1px solid var(--error-borde);
+  margin: 0;
+  padding: 0.375rem 0.625rem;
+}
+
+.rem-notas { color: var(--aviso-texto); font-size: 11px; font-weight: 600; margin: 0; padding-left: 1rem; }
+.rem-vacio-resultado {
   border: 1px dashed var(--border-strong);
   border-radius: 0.5rem;
   color: var(--text-muted);
   font-size: 12px;
-  margin: 0.75rem 0 0;
-  padding: 1.5rem 1rem;
+  margin: 0;
+  padding: 1.25rem 1rem;
   text-align: center;
 }
 .rem-vacio { text-align: center; }

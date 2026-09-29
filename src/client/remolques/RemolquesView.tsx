@@ -1,13 +1,16 @@
 import React from 'react';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { CabeceraPedido } from './CabeceraPedido';
+import { FormularioBaqueton } from './FormularioBaqueton';
+import { FormularioLona } from './FormularioLona';
 import { PestanasElementos } from './PestanasElementos';
+import { ResultadosBaqueton, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
 import { useRemolques } from './useRemolques';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
-// pestañas de elementos y, debajo, el editor del elemento activo. El editor (formulario,
-// dibujo y resultados) llega en la Task 4; de momento la ficha enseña qué le falta.
+// pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
+// (con «Listo» / «Falta: …» debajo) y, a la derecha, el hueco del dibujo (Task 5) y los resultados.
 export function RemolquesView({ usuario, notify, askForConfirmation }: {
   usuario: string;
   notify: Notify;
@@ -17,7 +20,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation }: {
   const {
     numeroPedido, cliente, fecha, lineas, versionActiva, cargandoPedido, rps,
   } = ws.estado;
-  const { lineaActiva, estadosLinea } = ws;
+  const { lineaActiva, estadosLinea, lona, baq, resLona, resBaq, params } = ws;
   const hayPedido = Boolean(numeroPedido.trim());
   const indiceActivo = lineaActiva ? lineas.indexOf(lineaActiva) : -1;
   const estadoActivo = lineaActiva ? estadosLinea[lineaActiva.version] : null;
@@ -64,12 +67,50 @@ export function RemolquesView({ usuario, notify, askForConfirmation }: {
 
       {lineaActiva ? (
         <section className="panel-vidrio rem-editor" aria-label={`Editor de ${rotuloElemento(lineaActiva, indiceActivo)}`}>
-          <p className="rem-editor-etiqueta">Editando dentro de {numeroPedido}</p>
-          <h2>{rotuloElemento(lineaActiva, indiceActivo)}</h2>
-          <p className={`rem-editor-estado${estadoActivo?.lista ? ' is-ok' : ''}`}>
-            {estadoActivo?.lista ? 'Listo.' : `Falta: ${estadoActivo?.falta}`}
-          </p>
-          <p className="rem-editor-marcador">Formulario en la Task 4</p>
+          <header className="rem-editor-cabecera">
+            <p className="rem-editor-etiqueta">Editando dentro de {numeroPedido}</p>
+            <h2>{rotuloElemento(lineaActiva, indiceActivo)}</h2>
+          </header>
+          <div className="rem-editor-cuerpo">
+            <div className="rem-editor-izquierda">
+              {lineaActiva.tipo === 'lona' ? (
+                <FormularioLona input={lona} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
+                  onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
+              ) : (
+                <FormularioBaqueton input={baq} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
+                  onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
+              )}
+              {/* Todavía no se guarda nada: lo que importa es si el elemento está listo. */}
+              <p className={`rem-editor-estado${estadoActivo?.lista ? ' is-ok' : ''}`} role="status">
+                {estadoActivo?.lista ? 'Listo.' : `Falta: ${estadoActivo?.falta}`}
+              </p>
+            </div>
+            <div className="rem-editor-derecha">
+              {/* Aquí entra el dibujo (Task 5), encima de los resultados. */}
+              <div className="rem-dibujo" data-hueco="dibujo" />
+              {ws.medidasSuficientes && lineaActiva.tipo === 'lona' ? (
+                <ResultadosLona
+                  res={resLona}
+                  modoOllaos={lona.modoOllaos}
+                  primerOllao={lona.primerOllao ?? params.primerOllao}
+                  errorOllaos={ws.erroresVisibles.ollaosManuales}
+                  onOllaosChange={(ollaosManuales) => ws.cambiarInput({ ...lona, ollaosManuales })}
+                />
+              ) : ws.medidasSuficientes && lineaActiva.tipo === 'baqueton' ? (
+                <ResultadosBaqueton
+                  res={resBaq}
+                  modoOllaos={baq.modoOllaos}
+                  primerOllao={baq.primerOllao ?? params.primerOllao}
+                  errorOllaos={ws.erroresVisibles.ollaosManuales}
+                  onOllaosChange={(ollaosManuales) => ws.cambiarInput({ ...baq, ollaosManuales })}
+                />
+              ) : (
+                <p className="rem-vacio-resultado">
+                  Completa las medidas necesarias para calcular los paños y el reparto de ollaos.
+                </p>
+              )}
+            </div>
+          </div>
         </section>
       ) : (
         <section className="panel-vidrio rem-vacio">
