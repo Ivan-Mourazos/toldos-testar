@@ -149,8 +149,6 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
         </div>
         <CampoSiNo name="ventana" label="Ventana" span={2} error={errores.ventana}
           value={input.ventana} onChange={(v) => set('ventana', v)} />
-        <CampoSiNo name="rotulacion" label="Rotulación" span={2} error={errores.rotulacion}
-          value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
         {input.ventana && (
           <>
             <CampoNum name="ventanaAncho" error={errores.ventanaAncho} label="Ancho ventana" value={input.ventanaAncho ?? 0}
@@ -159,6 +157,9 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
               onChange={(v) => set('ventanaAlto', v)} />
           </>
         )}
+        {/* Después de la ventana y sus medidas, como en la web de remolques de antes (orden de tabulación). */}
+        <CampoSiNo name="rotulacion" label="Rotulación" span={2} error={errores.rotulacion}
+          value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
       </PasoFormulario>
     </div>
   );

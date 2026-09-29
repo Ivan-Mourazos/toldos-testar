@@ -1,4 +1,5 @@
 import { awningLetter } from '../../domain/awningCompleteness.js';
+import { formatearNumeroEs } from './numeroEs';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 
 /**
@@ -10,6 +11,6 @@ import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 export function rotuloElemento(linea: LineaPedido, indice: number): string {
   const nombre = linea.tipo === 'lona' ? 'Remolque' : 'Baquetón';
   const { largo, ancho } = linea.input;
-  const medidas = largo > 0 && ancho > 0 ? ` ${largo}×${ancho}` : '';
+  const medidas = largo > 0 && ancho > 0 ? ` ${formatearNumeroEs(largo)}×${formatearNumeroEs(ancho)}` : '';
   return `${awningLetter(indice)} · ${nombre}${medidas}`;
 }

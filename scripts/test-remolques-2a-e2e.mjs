@@ -6,6 +6,10 @@
 // «Abrir en Remolques».
 //   · lona-24: TIPO 05 (radio de esquina 8), ventana 50×35, rotulación y ollaos «según se indica».
 //   · baqueton-28: cliente AYALA, baquetón 28, ollaos «según se indica».
+// Además, un pedido con dos casos de ollaos «repartidos automáticamente» (lona-02, TIPO 03 con
+// ventana y rotulación; baqueton-07) que compara la tabla de reparto con la del `result`, y que
+// el cliente de la cabecera sobrevive a recargar. Los 32 casos, sin navegador, los compara
+// src/client/remolques/resultados-paridad.test.tsx.
 // Si RPS no responde en la instancia aislada, esa parte se anota (SALTADO) y se sigue.
 // Ejecutar con la aislada en marcha: node scripts/test-remolques-2a-e2e.mjs
 import assert from 'node:assert/strict';
@@ -15,9 +19,14 @@ import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive
 const casos = JSON.parse(fs.readFileSync('src/remolques/__fixtures__/produccion-2026-09.json', 'utf8'));
 const lona = casos.find((c) => c.caso === 'lona-24');
 const baqueton = casos.find((c) => c.caso === 'baqueton-28');
+const lonaRepartida = casos.find((c) => c.caso === 'lona-02');
+const baquetonRepartido = casos.find((c) => c.caso === 'baqueton-07');
 assert.ok(lona && baqueton, 'los casos lona-24 y baqueton-28 existen en la fixture');
+assert.ok(lonaRepartida?.input.modoOllaos === 'REPARTIDOS' && baquetonRepartido?.input.modoOllaos === 'REPARTIDOS',
+  'lona-02 y baqueton-07 llevan los ollaos repartidos automáticamente');
 
 const PEDIDO_PRUEBA = 'AR.26.99999'; // no existe en RPS: no trae nada y los borradores cuelgan de él
+const CLIENTE_PRUEBA = 'TALLERES X';
 const PEDIDO_RPS = 'AR.26.04286'; // pedido real de remolques (3 líneas de lona), solo lectura
 
 const fmt = (n) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 });
@@ -96,10 +105,16 @@ async function teclearCaso(page, c) {
   }
   await ed.locator('input[data-campo="material"]').fill(i.material);
   await page.keyboard.press('Escape');
-  await elegir(page, ed, 'modoOllaos', 'A medida');
-  for (const [nombre, clave] of CLAVES_OLLAOS) {
-    const fila = filaOllaos(page, ed, nombre);
-    for (let n = 0; n < i.ollaosManuales[clave].length; n++) await fila.locator('input').nth(n).fill(String(i.ollaosManuales[clave][n]));
+  if (i.modoOllaos === 'REPARTIDOS') {
+    await elegir(page, ed, 'modoOllaos', 'Repartidos automáticamente');
+    await num(ed, 'pasoOllaos', i.pasoOllaos);
+    await ed.locator('input[data-campo="primerOllao"]').fill(String(i.primerOllao));
+  } else {
+    await elegir(page, ed, 'modoOllaos', 'A medida');
+    for (const [nombre, clave] of CLAVES_OLLAOS) {
+      const fila = filaOllaos(page, ed, nombre);
+      for (let n = 0; n < i.ollaosManuales[clave].length; n++) await fila.locator('input').nth(n).fill(String(i.ollaosManuales[clave][n]));
+    }
   }
   await page.waitForTimeout(300);
 }
@@ -113,9 +128,23 @@ async function comprobarCaso(page, c, etapa) {
   for (const d of await ed.locator('.rem-dato').all()) tarjetas[(await d.locator('span').textContent()).trim()] = (await d.locator('strong').innerText()).trim();
   assert.deepEqual(tarjetas, esperado(c), `${c.caso} ${etapa}: tarjetas de resultados`);
   const reparto = {};
-  for (const [nombre, clave] of CLAVES_OLLAOS) {
-    const valores = await filaOllaos(page, ed, nombre).locator('input').evaluateAll((els) => els.map((e) => e.value));
-    reparto[clave] = valores.filter((v) => v !== '').map((v) => Number(v.replace(',', '.')));
+  if (c.input.modoOllaos === 'REPARTIDOS') {
+    // La tabla del reparto automático: tres filas (laterales, atrás, delante), 12 huecos y el total.
+    const filas = await ed.locator('.rem-tabla tbody tr').all();
+    assert.equal(filas.length, 3, `${c.caso} ${etapa}: la tabla tiene tres filas`);
+    for (const [n, [, clave]] of CLAVES_OLLAOS.entries()) {
+      const celdas = await filas[n].locator('td').allInnerTexts();
+      const total = Number(celdas.pop());
+      reparto[clave] = celdas.filter((t) => t !== '–').map((t) => Number(t.replace(',', '.')));
+      assert.equal(total, reparto[clave].length, `${c.caso} ${etapa}: el total de ${clave} coincide con sus posiciones`);
+    }
+    assert.equal((await ed.locator('.rem-pie-ollaos').innerText()).trim(),
+      `Primer y último ollao a ${fmt(c.input.primerOllao)} cm del borde.`, `${c.caso} ${etapa}: pie del reparto`);
+  } else {
+    for (const [nombre, clave] of CLAVES_OLLAOS) {
+      const valores = await filaOllaos(page, ed, nombre).locator('input').evaluateAll((els) => els.map((e) => e.value));
+      reparto[clave] = valores.filter((v) => v !== '').map((v) => Number(v.replace(',', '.')));
+    }
   }
   assert.deepEqual(reparto, c.result.reparto, `${c.caso} ${etapa}: posiciones de ollaos`);
   assert.deepEqual(await ed.locator('.rem-notas li').allInnerTexts(), c.result.notas, `${c.caso} ${etapa}: notas`);
@@ -144,6 +173,8 @@ const rpsResponde = async (numero) => {
     assert.ok(await page.locator('.producto-en-pruebas').isVisible(), 'Remolques lleva la etiqueta «en pruebas»');
     assert.equal(await page.evaluate(() => localStorage.getItem('planteamientos-producto')), 'remolques', 'el producto elegido se recuerda');
     await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_PRUEBA);
+    const cliente = page.locator('.rem-cabecera').getByLabel('Cliente', { exact: true });
+    await cliente.fill(CLIENTE_PRUEBA);
 
     await page.getByRole('button', { name: '+ Remolque' }).click();
     await editor(page).waitFor();
@@ -164,6 +195,8 @@ const rpsResponde = async (numero) => {
     await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_PRUEBA);
     await pestanas(page).first().waitFor();
     assert.equal(await pestanas(page).count(), 2, 'el borrador conserva los dos elementos tras recargar');
+    // El cliente vuelve a la cabecera con los borradores (antes solo volvía a los elementos).
+    assert.equal(await cliente.inputValue(), CLIENTE_PRUEBA, 'tras recargar la cabecera conserva el cliente');
     await pestanas(page).nth(0).click();
     await comprobarCaso(page, lona, 'tras recargar');
     await pestanas(page).nth(1).click();
@@ -184,6 +217,26 @@ const rpsResponde = async (numero) => {
     assert.match(await pestanas(page).first().innerText(), /^A · Remolque 127×104/, 'queda la lona');
     console.log('OK: borrar un elemento pide confirmación (Cancelar conserva, Eliminar quita)');
 
+    assert.deepEqual(errors, [], 'sin errores de consola');
+  } finally {
+    await browser.close();
+  }
+}
+
+// ── Parte 1b: ollaos repartidos automáticamente ──
+{
+  const { browser, page, errors } = await openApp({ width: 1600, height: 1000 });
+  page.setDefaultTimeout(10000);
+  try {
+    await page.getByRole('button', { name: /^Remolques/ }).click();
+    await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_PRUEBA);
+    await page.getByRole('button', { name: '+ Remolque' }).click();
+    await editor(page).waitFor();
+    await teclearCaso(page, lonaRepartida);
+    await comprobarCaso(page, lonaRepartida, 'repartidos');
+    await page.getByRole('button', { name: '+ Baquetón' }).click();
+    await teclearCaso(page, baquetonRepartido);
+    await comprobarCaso(page, baquetonRepartido, 'repartidos');
     assert.deepEqual(errors, [], 'sin errores de consola');
   } finally {
     await browser.close();

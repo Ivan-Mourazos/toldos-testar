@@ -24,12 +24,15 @@ import {
   pedidoRpsVisible as calcularPedidoRpsVisible,
 } from '../../remolques/workspace/selectores.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
+import { todayIso } from '../constants';
 import { rotuloElemento } from './rotulo';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
 
-const hoy = () => new Date().toISOString().slice(0, 10);
+// Fecha local, la misma que usa toldos: con `toISOString()` (UTC) entre las 00:00 y las 02:00 de
+// verano la cabecera y los elementos nuevos saldrían con la fecha de ayer.
+const hoy = todayIso;
 
 // ── Estado ──────────────────────────────────────────────────────────────────
 // El reductor de `src/remolques/workspace/estado.ts` no se toca. Por encima de él hay dos
@@ -60,12 +63,19 @@ export function reducirRemolques(estado: EstadoRemolques, accion: AccionRemolque
   }
   const siguiente = reducirWorkspace(estado, accion);
   let fecha = estado.fecha;
+  let cliente = siguiente.cliente;
   if (accion.tipo === 'PEDIDO_CAMBIADO'
     && normalizarNumeroPedidoRps(accion.valor) !== normalizarNumeroPedidoRps(estado.numeroPedido)) {
     // Otro pedido es otro trabajo: su fecha llega de sus borradores o de RPS.
     fecha = hoy();
   } else if (accion.tipo === 'BORRADORES_RECUPERADOS') {
     fecha = siguiente.lineas[0]?.input.cabecera.fecha || fecha;
+    // El cliente igual que la fecha: el reductor copiado solo recupera las líneas, y sin esto
+    // el campo «Cliente» de la cabecera quedaría vacío (y los elementos nuevos, sin cliente).
+    // Lo escrito a mano antes de que aterricen los borradores manda.
+    if (!cliente.trim()) {
+      cliente = siguiente.lineas.map((linea) => linea.input.cabecera.cliente.trim()).find(Boolean) ?? cliente;
+    }
   } else if (accion.tipo === 'LINEA_ANADIDA' && accion.linea.origenRps) {
     fecha = accion.linea.input.cabecera.fecha || fecha;
   }
@@ -80,7 +90,7 @@ export function reducirRemolques(estado: EstadoRemolques, accion: AccionRemolque
       };
     }
   }
-  return { ...siguiente, fecha };
+  return { ...siguiente, fecha, cliente };
 }
 
 // ── Catálogos (equivalente de useCatalogos) ─────────────────────────────────

@@ -4,7 +4,10 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const MINIMUM_NODE = [22, 13, 0];
+// 22.18: desde la pantalla de remolques, `node src/server.js` importa ficheros .ts (materiales,
+// pedido-rps...) y solo Node >= 22.18 los ejecuta sin flags (type-stripping activado por
+// defecto). Con uno anterior el servidor entero, toldos incluido, no llega a arrancar.
+const MINIMUM_NODE = [22, 18, 0];
 const DATABASE_KEYS = [
   'DB_SERVER',
   'DB_PORT',

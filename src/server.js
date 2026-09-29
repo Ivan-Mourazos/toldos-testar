@@ -328,6 +328,7 @@ app.get('/api/remolques/rps-pedido', async (req, res) => {
       : null;
     res.set('Cache-Control', 'no-store').json({ pedido: enriquecido });
   } catch (error) {
+    console.error('No se pudo consultar RPS para remolques', error instanceof Error ? error.message : error);
     res.status(503).json({ error: error instanceof Error ? error.message : 'No se pudo consultar RPS.' });
   }
 });
