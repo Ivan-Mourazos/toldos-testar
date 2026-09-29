@@ -557,3 +557,21 @@
 }
 .rem-vacio { text-align: center; }
 .rem-vacio p { color: var(--text-muted); font-size: 12px; margin: 4px 0 0; }
+
+/* ── Aviso en Nuevo pedido de toldos: el pedido de RPS es de remolques ── */
+.rem-aviso-pedido {
+  align-items: center;
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 0.5rem;
+  color: var(--aviso-texto);
+  display: flex;
+  font-size: 12px;
+  gap: 0.75rem;
+  line-height: 1.4;
+  margin: 0 0 12px;
+  padding: 0.5rem 0.75rem;
+}
+.rem-aviso-pedido svg { flex: none; height: 17px; width: 17px; }
+.rem-aviso-pedido span { display: grid; flex: 1; gap: 2px; min-width: 0; }
+.rem-aviso-pedido strong { font-weight: 600; }

@@ -36,6 +36,8 @@ import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
 import { RemolquesView } from './remolques/RemolquesView';
+import { AvisoPedidoRemolques } from './remolques/AvisoPedidoRemolques';
+import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
 import { SelectorProducto, guardarProducto, leerProducto, type Producto } from './remolques/SelectorProducto';
 
 export default function App() {
@@ -62,6 +64,10 @@ export default function App() {
   const [reviewRefresh, setReviewRefresh] = useState(0);
   const [autofillLoading, setAutofillLoading] = useState(false);
   const [autofill, setAutofill] = useState<OrderAutofill | null>(null);
+  // Pedido de RPS que resulta ser de remolques (sin toldos): se avisa en lugar de rellenar
+  // el formulario de toldos y solo vale mientras ese sea el número en pantalla.
+  const [pedidoRemolques, setPedidoRemolques] = useState<{ numero: string; lineas: number } | null>(null);
+  const [pedidoSolicitado, setPedidoSolicitado] = useState<{ numero: string; id: number } | null>(null);
   // Nota del revisor al devolver un pedido: se ve en Pedido mientras se corrige.
   const [returnNote, setReturnNote] = useState<{ by: string; at: string; note: string } | null>(null);
   // OF del pedido según RPS, junto al pedido al que pertenecen. Solo valen si ese
@@ -159,6 +165,22 @@ export default function App() {
     };
   }, [previewUrl]);
 
+  async function trailerLinesOf(orderCode: string): Promise<number> {
+    try {
+      const response = await fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(orderCode)}`);
+      if (!response.ok) return 0;
+      const data = await response.json() as { pedido: { lineas: unknown[] } | null };
+      return data.pedido?.lineas.length ?? 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function openInTrailers(numero: string) {
+    chooseProducto('remolques');
+    setPedidoSolicitado({ numero, id: Date.now() });
+  }
+
   async function autofillOrder() {
     const orderCode = draft.orderCode.trim();
     if (!orderCode) {
@@ -178,11 +200,23 @@ export default function App() {
     }
 
     setAutofillLoading(true);
+    setPedidoRemolques(null);
     try {
       const response = await fetch(`/api/orders/${encodeURIComponent(orderCode)}/autofill`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudieron obtener los datos del pedido.');
       const result = data as OrderAutofill;
+      // Un pedido sin ningún toldo puede ser de remolques: se pregunta a la ruta de RPS de
+      // remolques (la que decide qué es una línea de remolque). Los pedidos con toldos no
+      // pasan por aquí y, si la consulta falla, todo sigue como antes.
+      if (result.order.awnings.length === 0) {
+        const trailers = await trailerLinesOf(orderCode);
+        if (trailers > 0) {
+          setPedidoRemolques({ numero: orderCode, lineas: trailers });
+          setAutofill(null);
+          return;
+        }
+      }
       const currentResult = { ...result, order: { ...result.order, orderDate: todayIso() } };
       draft.loadOrder(currentResult.order);
       setAutofill(currentResult);
@@ -502,6 +536,10 @@ export default function App() {
               </span>
             </div>
           )}
+          {activeTab === 'order' && producto === 'toldos' && pedidoRemolques
+            && normalizarNumeroPedidoRps(pedidoRemolques.numero) === normalizarNumeroPedidoRps(draft.orderCode) && (
+            <AvisoPedidoRemolques numero={pedidoRemolques.numero} lineas={pedidoRemolques.lineas} onAbrir={() => openInTrailers(pedidoRemolques.numero)} />
+          )}
           {activeTab === 'order' && producto === 'toldos' && (
             <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
               <OrderView
@@ -542,7 +580,7 @@ export default function App() {
 
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
-              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} />
+              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} />
             </div>
           )}
 

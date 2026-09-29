@@ -12,12 +12,24 @@ import { useRemolques } from './useRemolques';
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el dibujo de siempre (con las observaciones) y los resultados.
-export function RemolquesView({ usuario, notify, askForConfirmation }: {
+export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado }: {
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
+  /** Pedido que Toldos manda abrir aquí («Abrir en Remolques»); `id` distingue una petición de la siguiente. */
+  pedidoSolicitado?: { numero: string; id: number } | null;
 }) {
   const ws = useRemolques({ usuario, notify, askForConfirmation });
+  // Solo se atiende cada petición una vez: `cambiarNumeroPedido` cambia de identidad en cada
+  // pintado y, como dependencia, repetiría la orden y pisaría lo que se escriba después.
+  const ultimoPedidoSolicitado = React.useRef<number | null>(null);
+  const cambiarNumeroRef = React.useRef(ws.cambiarNumeroPedido);
+  React.useEffect(() => { cambiarNumeroRef.current = ws.cambiarNumeroPedido; });
+  React.useEffect(() => {
+    if (!pedidoSolicitado || ultimoPedidoSolicitado.current === pedidoSolicitado.id) return;
+    ultimoPedidoSolicitado.current = pedidoSolicitado.id;
+    cambiarNumeroRef.current(pedidoSolicitado.numero);
+  }, [pedidoSolicitado]);
   const {
     numeroPedido, cliente, fecha, lineas, versionActiva, cargandoPedido, rps,
   } = ws.estado;
