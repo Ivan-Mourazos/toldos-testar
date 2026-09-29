@@ -268,6 +268,11 @@ async function verifyBrowserCase(browserInstance, url) {
   assert.match(generatedPdf.text, /AR2603332/);
   assert.match(generatedPdf.text, /0230194/);
   assert.match(generatedPdf.text, /IVÁN/);
+  // El simulado aprueba con revisor «jaime»: al generar queda apuntado como revisor del
+  // pedido (JSON guardado) y sale en «REVISOR:» del PDF definitivo, sin teclearlo.
+  const generatedReview = await (await fetch(`${url}/api/reviews/AR2603332`)).json();
+  assert.equal((generatedReview.review ?? generatedReview).order.reviewer, 'JAIME');
+  assert.match(generatedPdf.text, /JAIME/);
 
   // Tras generar, el pedido pasa a Historial y ya no está pendiente en la bandeja:
   // se reabre desde ahí para ver el bloque de archivos generados.

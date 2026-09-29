@@ -29,7 +29,7 @@ export function createCoordinaClient({ url, key, fetchImpl = fetch, timeoutMs = 
         if (!response.ok) return { disponible: false, motivo: `CoordinaOT respondió ${response.status}.` };
         const data = await response.json();
         for (const item of data.ofs || []) {
-          const value = { estado: String(item.estado || 'sin_estado'), nota: String(item.nota || ''), actualizado: item.actualizado ?? null };
+          const value = { estado: String(item.estado || 'sin_estado'), nota: String(item.nota || ''), actualizado: item.actualizado ?? null, revisor: String(item.revisor || '') };
           cache.set(item.of, { at: now(), value });
           result[item.of] = value;
         }

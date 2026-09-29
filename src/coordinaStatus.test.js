@@ -12,10 +12,13 @@ describe('cliente de CoordinaOT', () => {
   });
 
   it('pide con la clave en la cabecera y devuelve por OF', async () => {
-    const fetchImpl = reply([{ of: '0230194', estado: 'aprobada', nota: '', actualizado: '2026-09-29T08:00:00Z' }]);
+    const fetchImpl = reply([{ of: '0230194', estado: 'aprobada', nota: '', actualizado: '2026-09-29T08:00:00Z', revisor: 'jaime' }]);
     const client = createCoordinaClient({ url: 'http://coordina:4300/', key: 'secreta', fetchImpl });
     const result = await client.statusOf(['0230194', '0230194', '']);
-    expect(result).toEqual({ disponible: true, ofs: { '0230194': { estado: 'aprobada', nota: '', actualizado: '2026-09-29T08:00:00Z' } } });
+    expect(result).toEqual({ disponible: true, ofs: { '0230194': { estado: 'aprobada', nota: '', actualizado: '2026-09-29T08:00:00Z', revisor: 'jaime' } } });
+    // Sin `revisor` en la respuesta (CoordinaOT antiguo o OF no aprobada) el valor es vacío.
+    const old = createCoordinaClient({ url: 'http://c', key: 'k', fetchImpl: reply([{ of: '9', estado: 'en_revision' }]) });
+    expect((await old.statusOf(['9'])).ofs['9'].revisor).toBe('');
     const [url, init] = fetchImpl.mock.calls[0];
     expect(url).toBe('http://coordina:4300/api/integracion/ofs?ofs=0230194');
     expect(init.headers['X-Clave-Integracion']).toBe('secreta');

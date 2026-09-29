@@ -41,7 +41,7 @@ import {
   workflowReadiness,
   writeFileAtomic
 } from './workflow.js';
-import { generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
+import { generateFilesDecision, generationBlock, approvalReviewers, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -481,6 +481,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     const approval = await coordina.statusOf(uniqueOfs(approvalAwnings), { fresh: true });
     const approvalBlock = generationBlock(approvalAwnings, approval);
     if (approvalBlock) throw httpError(approval.disponible ? 409 : 503, approvalBlock);
+    const reviewer = approvalReviewers(approvalAwnings, approval, formOptions.tecnicos);
 
     const calculation = await calculateConfiguredOrder(order);
     const blockingDiagnostics = calculation.diagnostics.filter((item) => item.level === 'error' || item.level === 'pending');
@@ -543,6 +544,12 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath })),
       excludedNonAcrylicFabrics
     });
+    // Quien aprobó en CoordinaOT queda como revisor del pedido antes de dibujar el PDF, para
+    // que «REVISOR:» del planteamiento definitivo salga relleno sin que nadie lo teclee.
+    if (reviewer) {
+      updated.order = { ...updated.order, reviewer };
+      updated.reviewedBy = reviewer;
+    }
     const pdfTarget = targets.find((target) => target.type === 'pdf');
     pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated });
 

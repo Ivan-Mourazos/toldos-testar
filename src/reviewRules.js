@@ -125,3 +125,33 @@ export function generationBlock(awnings, status) {
     .join(', ');
   return `Sin aprobar en CoordinaOT: ${detail}.`;
 }
+
+const plain = (value) => String(value ?? '').trim().normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase();
+
+/**
+ * Nombre del revisor como está en la lista de técnicos de toldos (CoordinaOT manda el
+ * id sin tildes, «angel»; aquí se escribe «ÁNGEL»). Sin coincidencia, el id en mayúsculas.
+ * @param {string} id
+ * @param {string[]} technicians
+ */
+export function reviewerName(id, technicians) {
+  const wanted = plain(id);
+  if (!wanted) return '';
+  return technicians.find((name) => plain(name) === wanted) || wanted;
+}
+
+/**
+ * Quién ha aprobado el pedido en CoordinaOT: los revisores de los toldos aprobados, en
+ * el orden de los toldos y sin repetir, para apuntarlos en «REVISOR:» del planteamiento.
+ * @param {{ letter: string, of: string }[]} awnings
+ * @param {{ disponible?: boolean, ofs?: Record<string, { estado?: string, revisor?: string }> } | null} status
+ * @param {string[]} technicians
+ */
+export function approvalReviewers(awnings, status, technicians) {
+  if (!status?.disponible) return '';
+  const names = awnings
+    .map((awning) => status.ofs?.[cleanOf(awning.of)])
+    .filter((item) => item?.estado === 'aprobada' && plain(item.revisor))
+    .map((item) => reviewerName(item.revisor, technicians));
+  return [...new Set(names)].join(', ');
+}

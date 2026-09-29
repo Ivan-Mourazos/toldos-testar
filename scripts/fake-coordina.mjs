@@ -36,7 +36,11 @@ export function startFakeCoordina({ port = 0, key = defaultKey } = {}) {
       if (down) return send(res, 500, { error: 'caído' });
       if (req.headers['x-clave-integracion'] !== key) return send(res, 401, { error: 'Clave no válida' });
       const ofs = (url.searchParams.get('ofs') || '').split(',').map((of) => of.trim()).filter(Boolean);
-      return send(res, 200, { ofs: ofs.map((of) => ({ of, estado: 'aprobada', nota: '', actualizado: null, ...states[of] })) });
+      return send(res, 200, { ofs: ofs.map((of) => {
+        const item = { of, estado: 'aprobada', nota: '', actualizado: null, ...states[of] };
+        // Como CoordinaOT: el revisor solo viene con la OF aprobada (por defecto «jaime»).
+        return { ...item, revisor: item.estado === 'aprobada' ? (states[of]?.revisor ?? 'jaime') : '' };
+      }) });
     }
     send(res, 404, { error: 'No existe' });
   });

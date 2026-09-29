@@ -86,11 +86,24 @@ try {
   const serverSays = await page.evaluate(() => fetch('/api/reviews/AR2603332/generate-files', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(async (r) => [r.status, (await r.json()).error]));
   // La aislada no tiene las salidas activadas y ese control va antes que el de CoordinaOT
   // (403): el 503 se cubre con las pruebas unitarias de generationBlock (reviewRules.test.js).
-  if (serverSays[0] === 403) console.log('SALTADO: el 503 no se puede ver en la aislada (salidas desactivadas → 403 primero)');
-  else {
+  let skipped503 = false;
+  if (serverSays[0] === 403) {
+    skipped503 = true;
+    console.log('SALTADO: el 503 no se puede ver en la aislada (salidas desactivadas → 403 primero)');
+  } else {
     assert.deepEqual(serverSays, [503, 'No se puede comprobar la aprobación en CoordinaOT; inténtalo en un momento.']);
     console.log('OK: CoordinaOT caído → el servidor no genera (503)');
   }
+  // Con CoordinaOT caído, la propia API dice «no disponible» (así el aviso de Pedidos no es
+  // solo cosa de la pantalla). La memoria de 30 s puede tardar en caducar: se reintenta.
+  const apiLimit = Date.now() + CACHE_WAIT_MS;
+  for (;;) {
+    const api = await page.evaluate(() => fetch('/api/coordina/ofs?ofs=0230194').then((r) => r.json()));
+    if (api.disponible === false) break;
+    if (Date.now() > apiLimit) throw new Error(`/api/coordina/ofs seguía disponible tras ${CACHE_WAIT_MS / 1000} s con CoordinaOT caído.`);
+    await page.waitForTimeout(3000);
+  }
+  console.log('OK: CoordinaOT caído → /api/coordina/ofs dice disponible:false');
   await down(false);
 
   await set({ '0230194': { estado: 'aprobada', nota: '' } });
@@ -101,7 +114,19 @@ try {
   console.log('OK: aprobada → «Aprobados · falta generar» y botón encendido para el autor');
   await shot('aprobado-boton');
 
-  console.log('Aprobación CoordinaOT: OK');
+  // En la lista, un solo signo por toldo y, al desplegar, quién aprobó (el revisor que
+  // luego se apunta al generar; el JSON y el PDF se comprueban en test-rps-e2e.mjs).
+  await page.reload();
+  await page.getByRole('button', { name: /^Pedidos/ }).first().click();
+  await rowOf().first().waitFor();
+  await rowOf().locator('.orders-row-toggle').click();
+  await rowOf().getByText('Aprobado por Jaime').waitFor();
+  await rowOf().getByRole('img', { name: /aprobada en CoordinaOT/ }).first().waitFor({ state: 'visible' });
+  assert.equal(await rowOf().locator('.orders-awnings').getByRole('img', { name: /aprobada en CoordinaOT/ }).count(), 1);
+  console.log('OK: aprobada → «Aprobado por Jaime» al desplegar y una sola marca de CoordinaOT');
+  await shot('aprobado-por');
+
+  console.log(skipped503 ? 'Aprobación CoordinaOT: OK (503 saltado en la aislada)' : 'Aprobación CoordinaOT: OK');
 } finally {
   await post('/__reset');
   await browser.close();

@@ -3,6 +3,8 @@ import { AlertTriangle, Check, ChevronDown, CircleAlert, FileSearch, FolderOpen,
 import type { CoordinaStatus, ReviewSummary } from '../types';
 import { formatListDate, groupByDay, inboxSections, pendingGroups } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
+import { formOptions } from '../../domain/modelBehavior.js';
+import { reviewerName } from '../../reviewRules.js';
 
 type AwningItem = NonNullable<ReviewSummary['summary']['awningList']>[number];
 
@@ -136,12 +138,15 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
                 // La nota de devolución solo se enseña si CoordinaOT la tiene devuelta.
                 const returned = coordinaStatus?.disponible ? coordinaStatus.ofs?.[item.of.trim()] : undefined;
                 const nota = returned?.estado === 'devuelta' ? returned.nota : '';
+                // Quién aprobó en CoordinaOT; es el que quedará de revisor al generar.
+                const approvedBy = returned?.estado === 'aprobada' && returned.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
                 return (
                 <li key={item.letter} className={`is-${item.state}`}>
                   <AwningChip item={item} coordinaStatus={coordinaStatus} />
                   <strong>{controlLabel(item.model)}</strong>
                   <span>OF {item.of || '—'}</span>
                   <span className="orders-detail-notes">{item.notes.length ? item.notes.join(' · ') : 'Sin avisos.'}</span>
+                  {approvedBy && <span className="orders-detail-approved">Aprobado por {controlLabel(approvedBy)}</span>}
                   {nota && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {nota}</span>}
                 </li>
                 );

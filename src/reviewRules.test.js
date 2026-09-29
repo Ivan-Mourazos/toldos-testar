@@ -7,7 +7,9 @@ import {
   isPendingGeneration,
   NOT_GENERABLE_ERROR,
   PRODUCED_SAVE_ERROR,
+  approvalReviewers,
   reviewAuthorship,
+  reviewerName,
   saveReviewDecision,
   uniqueOfs
 } from './reviewRules.js';
@@ -143,5 +145,24 @@ describe('aprobación leída de CoordinaOT', () => {
 
   it('generationBlock: pedido sin toldos', () => {
     expect(generationBlock([], status({}))).toBe('El pedido no tiene toldos.');
+  });
+});
+
+describe('revisor desde CoordinaOT', () => {
+  const tecnicos = ['ÁNGEL', 'JAIME', 'ALBERTO', 'ADRIÁN', 'TAMARA', 'IVÁN'];
+  const awnings = [{ letter: 'A', of: '1' }, { letter: 'B', of: '2' }, { letter: 'C', of: '3' }];
+  it('reviewerName traduce a la lista de técnicos sin tildes ni mayúsculas', () => {
+    expect(reviewerName('angel', tecnicos)).toBe('ÁNGEL');
+    expect(reviewerName('carron', tecnicos)).toBe('CARRON');
+    expect(reviewerName('', tecnicos)).toBe('');
+  });
+  it('approvalReviewers: sin repetir y en orden de toldos', () => {
+    const status = { disponible: true, ofs: { '1': { estado: 'aprobada', revisor: 'jaime' }, '2': { estado: 'aprobada', revisor: 'angel' }, '3': { estado: 'aprobada', revisor: 'jaime' } } };
+    expect(approvalReviewers(awnings, status, tecnicos)).toBe('JAIME, ÁNGEL');
+  });
+  it('approvalReviewers: no aprobadas, vacíos y sin CoordinaOT fuera', () => {
+    const status = { disponible: true, ofs: { '1': { estado: 'aprobada', revisor: 'carron' }, '2': { estado: 'en_revision', revisor: 'jaime' }, '3': { estado: 'aprobada', revisor: '' } } };
+    expect(approvalReviewers(awnings, status, tecnicos)).toBe('CARRON');
+    expect(approvalReviewers(awnings, { disponible: false }, tecnicos)).toBe('');
   });
 });
