@@ -1,0 +1,1027 @@
+/* Nuevo pedido con el estilo de CoordinaOT (tarea 2 del plan «Estilo CoordinaOT», 29/09/2026).
+   Regla de Iván: «siempre que rediseñes cualquier zona de la web, mira en CoordinaOT cómo
+   está y cópialo». Aquí no hay colores ni sombras propias: todo sale de los tokens de
+   tokens.css y de los valores de las piezas de piezas.css (cada bloque dice de qué pieza
+   y de qué línea de globals.css sale).
+
+   Por qué `:root:root` delante de casi todo: los estilos de siempre (styles.css,
+   relieve.css, dark.generated.css) pintan estas mismas clases con colores escritos a mano
+   y, en oscuro, con `:root[data-theme="dark"] .clase` (especificidad 0,3,0). Con
+   `:root:root .clase` esta capa empata con ellos y, como se importa la última, gana en los
+   dos temas sin tocar los ficheros de siempre.
+
+   Los tamaños de letra y de caja de la web se conservan (la web es un formulario denso y
+   CoordinaOT un tablero): aquí cambian el color, el relieve, el radio y el borde. */
+
+/* ── Estados: los colores de aviso, error y correcto de CoordinaOT ──
+   Aviso = `border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300`
+   (Drawer.tsx 632, AvisoParteNuevo.tsx 54-55). Error = `bg-red-600/12 text-red-700
+   dark:text-red-300` (FilaOF.tsx 105). Correcto = el `texto` del rol «plantear»
+   (`text-emerald-800 dark:text-emerald-300`, lib/estado.ts). Son colores con transparencia
+   sobre lo que haya debajo, como allí. */
+:root {
+  --aviso-fondo: rgb(245 158 11 / 0.10);
+  --aviso-borde: rgb(245 158 11 / 0.30);
+  --aviso-texto: #92400e;
+  --error-fondo: rgb(220 38 38 / 0.12);
+  --error-borde: rgb(220 38 38 / 0.30);
+  --error-texto: #b91c1c;
+  --correcto-fondo: rgb(5 150 105 / 0.12);
+  --correcto-borde: rgb(5 150 105 / 0.30);
+  --correcto-texto: #065f46;
+  /* Tinta oscura sobre dorado: la de `bg-brand-400 text-[#231903]` (BotonArriba.tsx 30). */
+  --tinta-dorado: #231903;
+  /* Marca de «falta por rellenar» sobre el borde de un campo: amber-600 / amber-500. */
+  --aviso-marca: #d97706;
+}
+:root[data-theme="dark"] {
+  --aviso-texto: #fcd34d;
+  --error-texto: #fca5a5;
+  --correcto-texto: #6ee7b7;
+  --aviso-marca: #f59e0b;
+}
+
+/* ── Paneles: cabecera del pedido y tarjeta de toldo ──
+   Misma pieza que `.glass-panel` (globals.css 248-272), la de las tarjetas de CoordinaOT
+   sobre el fondo (TecnicoCard.tsx 67: `glass-panel rounded-xl`). Sin `backdrop-filter`: no
+   hay nada detrás que desenfocar y cada tarjeta sería una capa más. Sin el filo dorado de
+   arriba de antes: CoordinaOT no marca sus paneles con un color. */
+:root:root :is(.order-header, .awning-column),
+:root:root :is(.order-header, .awning-column):hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 30%, transparent), transparent 30%),
+    var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 1px 1px rgba(0, 0, 0, 0.03),
+    0 2px 0 -1px color-mix(in srgb, var(--border-strong) 40%, transparent),
+    0 14px 40px -18px var(--glass-shadow);
+}
+:root[data-theme="dark"]:root .awning-column.is-flash,
+:root:root .awning-column.is-flash {
+  box-shadow: 0 0 0 3px var(--color-brand-400);
+}
+/* La etiqueta «TOLDO A» y el título de cada grupo: el rótulo de bloque de CoordinaOT
+   (`TITULO_BLOQUE` en MarcoFicha.tsx 264: 11 px, semibold, mayúsculas, apagado). */
+:root:root .order-header-group h3,
+:root:root .awning-form-section-title,
+:root:root .awning-column-tag,
+:root:root .fabric-only-column .awning-column-tag {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+:root:root .order-header-group h3 { font-size: 11px; }
+:root:root .awning-column-header .awning-model-title,
+:root:root .section-header h2,
+:root:root .workspace-heading h2 { color: var(--text); }
+
+/* Las bandas de dentro de la tarjeta (configuración de brazos, cortina, observaciones):
+   el fondo `bg-surface-2/70` de las cajas de la ficha (Drawer.tsx 1458) con la línea
+   `border-[var(--glass-border)]` de sus bloques (BloqueDesplegable.tsx 74). */
+:root:root .awning-form-section {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border-block: 1px solid var(--border);
+}
+:root:root .awning-form-section.drop-arm-mode.is-vertical {
+  background: var(--aviso-fondo);
+  border-color: var(--aviso-borde);
+}
+:root:root .order-header-group,
+:root:root .order-material-cluster { border-color: var(--border); }
+:root:root .order-header-actions { border-color: var(--border); }
+
+/* ── Campos: texto, número, fecha, selector y área de texto ──
+   Misma pieza que `.glass-chip` (globals.css 339-392), que es la que CoordinaOT pone a su
+   buscador (FilterBar.tsx 229: `glass-chip rounded-lg py-1.5 pl-8 pr-7 text-xs text-text
+   outline-none placeholder:text-text-muted focus:border-brand-400`) y al botón de sus
+   desplegables (Select.tsx 226). Diferencia deliberada: no se levantan al pasar el ratón
+   (un campo que se mueve mientras se rellena un formulario de treinta campos molesta). */
+:root:root .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control),
+:root:root :is(.fabric-input-wrap input) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 40%, transparent), transparent 45%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 80%, white 20%),
+    0 1px 1px rgba(0, 0, 0, 0.03),
+    0 2px 0 0 color-mix(in srgb, var(--border-strong) 80%, transparent),
+    0 10px 20px -10px var(--glass-shadow);
+  color: var(--text);
+  outline: none;
+  transform: none;
+}
+:root[data-theme="dark"]:root .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control),
+:root[data-theme="dark"]:root :is(.fabric-input-wrap input) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 -1px rgba(0, 0, 0, 0.5),
+    0 10px 22px -12px rgba(0, 0, 0, 0.7);
+}
+:root:root .app-shell :is(input, select, textarea, .select-control)::placeholder,
+:root:root .app-shell :is(input, textarea)::placeholder { color: var(--text-muted); }
+:root:root .app-shell :is(input, select, textarea, .select-control):hover,
+:root:root .app-shell .select-control:hover { border-color: var(--border-strong); }
+:root:root .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):focus,
+:root:root .app-shell .select-control:focus-visible,
+:root:root .app-shell .select-field.is-open .select-control {
+  border-color: var(--color-brand-400);
+  outline: none;
+}
+/* Solo lectura y apagado: la caja `bg-surface-2` de CoordinaOT, sin relieve. */
+:root:root .app-shell :is(input, select, textarea, .select-control):disabled,
+:root:root .app-shell .order-header input[readonly],
+:root:root .app-shell input[readonly] {
+  background: var(--surface-2);
+  border-color: var(--border);
+  box-shadow: none;
+  color: var(--text-muted);
+}
+:root:root .app-shell .fabric-combobox.is-disabled .fabric-input-wrap { background: transparent; }
+/* Sin valor elegido todavía: la misma caja, con el trazo punteado del hueco por rellenar. */
+:root:root .app-shell .select-control.is-placeholder { color: var(--text-muted); }
+:root:root .select-control > svg,
+:root:root .fabric-input-wrap > svg { color: var(--text-muted); }
+/* Falta por rellenar: el aviso de CoordinaOT sobre el borde del campo. */
+:root:root .app-shell .is-missing :is(input, .select-control, .segmented-control, .fabric-input-wrap input) {
+  border-color: var(--aviso-marca);
+  box-shadow: 0 0 0 1px var(--aviso-borde);
+}
+:root:root .app-shell .is-missing .fabric-input-wrap { border-color: transparent; box-shadow: none; }
+/* La casilla «Por toldo», «Activar» y demás casillas siguen el dorado de marca. */
+:root:root input[type="checkbox"],
+:root:root input[type="radio"] { accent-color: var(--color-brand-400); }
+
+/* ── Desplegables: el `glass-pop` de CoordinaOT (globals.css 813-834) ──
+   Opciones como las de su Select (Select.tsx 279-283): `rounded-lg px-2.5 py-1.5 text-xs
+   font-medium`, la resaltada sobre `--glass-highlight`, la elegida en dorado. */
+:root:root .select-options,
+:root:root .fabric-options {
+  background: var(--glass-bg-pop);
+  backdrop-filter: blur(28px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 18px 50px -18px var(--glass-shadow);
+  scrollbar-color: var(--border-strong) transparent;
+}
+:root:root .select-option,
+:root:root .fabric-option {
+  background: transparent;
+  border-radius: 0.5rem;
+  color: var(--text-muted);
+}
+:root:root .fabric-option strong { color: var(--text); }
+:root:root .select-option.is-active,
+:root:root .fabric-option:hover,
+:root:root .fabric-option:focus-visible {
+  background: var(--glass-highlight);
+  color: var(--text);
+}
+:root:root .select-option.is-selected,
+:root:root .select-option.is-selected.is-active {
+  background: transparent;
+  color: var(--accent-text);
+}
+:root:root .select-option.is-selected.is-active { background: var(--glass-highlight); }
+:root:root .select-option > svg { color: var(--accent-text); }
+:root:root .fabric-option-meta { color: var(--accent-text); }
+
+/* ── Botones ──
+   Secundario y de icono = `chip-3d` (globals.css 645-672), el «botón neutro» de CoordinaOT
+   (Drawer.tsx 812: `chip-3d rounded-lg px-2.5 py-1 text-xs font-semibold text-text`). */
+:root:root .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled),
+:root:root .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active),
+:root:root .app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active),
+:root:root .app-shell .order-autofill-button,
+:root:root .app-shell .order-fabric-proposal-option:not(.is-chosen),
+:root:root .app-shell .awning-index-item:not(.is-visible) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 2px 0 0 color-mix(in srgb, var(--border-strong) 80%, transparent),
+    0 6px 12px -4px var(--glass-shadow);
+  color: var(--text);
+}
+:root:root .app-shell :is(.icon-button):not(.active):not(:disabled) { color: var(--text); }
+:root:root .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled):hover,
+:root:root .app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active):hover,
+:root:root .app-shell .order-autofill-button:hover:not(:disabled),
+:root:root .app-shell .order-fabric-proposal-option:not(.is-chosen):not(:disabled):hover,
+:root:root .app-shell .awning-index-item:not(.is-visible):hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border-color: var(--glass-border);
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 2px 4px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 95%, white 5%),
+    0 3px 0 0 color-mix(in srgb, var(--border-strong) 90%, transparent),
+    0 10px 18px -4px var(--glass-shadow);
+  filter: none;
+  transform: translateY(-1px);
+}
+:root:root .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled):active,
+:root:root .app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not(.active):not(.is-active):active,
+:root:root .app-shell .order-autofill-button:active:not(:disabled) {
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.12),
+    0 1px 2px -1px var(--glass-shadow);
+  transform: translateY(1px);
+}
+:root:root .app-shell :is(.ghost-button, .icon-button, .icon-text-button):disabled {
+  box-shadow: none;
+  transform: none;
+}
+:root[data-theme="dark"]:root .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled),
+:root[data-theme="dark"]:root .app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active),
+:root[data-theme="dark"]:root .app-shell .order-autofill-button,
+:root[data-theme="dark"]:root .app-shell .order-fabric-proposal-option:not(.is-chosen),
+:root[data-theme="dark"]:root .app-shell .awning-index-item:not(.is-visible) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 -1px rgba(0, 0, 0, 0.5),
+    0 6px 14px -8px rgba(0, 0, 0, 0.7);
+}
+/* «Limpiar» avisa de lo que hace con el rojo de CoordinaOT (`text-red-700 dark:text-red-400`). */
+:root:root .app-shell .clear-form-button:hover:not(:disabled) {
+  background: var(--error-fondo);
+  border-color: var(--error-borde);
+  color: var(--error-texto);
+}
+
+/* Activo (candado cerrado, opción elegida, toldo a la vista): `glass-chip-activo` +
+   `text-brand-800 dark:text-brand-300` (globals.css 372-392; FilterBar.tsx / Select.tsx). */
+:root:root .app-shell .icon-button.active,
+:root:root .app-shell .icon-button.active:hover:not(:disabled),
+:root:root .app-shell .segmented-option.active,
+:root:root .app-shell .segmented-option.tecla-3d.active,
+:root:root .app-shell .awning-index-item.is-visible,
+:root:root .app-shell .order-fabric-proposal-option.is-chosen,
+:root:root .app-shell .order-fabric-per-awning:has(input:checked) {
+  background: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
+  border-color: var(--color-brand-400);
+  box-shadow: inset 0 1px 3px rgba(90, 60, 0, 0.25);
+  color: var(--accent-text);
+  filter: none;
+  transform: translateY(1px);
+}
+:root[data-theme="dark"]:root .app-shell .icon-button.active,
+:root[data-theme="dark"]:root .app-shell .icon-button.active:hover:not(:disabled),
+:root[data-theme="dark"]:root .app-shell .segmented-option.active,
+:root[data-theme="dark"]:root .app-shell .segmented-option.tecla-3d.active,
+:root[data-theme="dark"]:root .app-shell .awning-index-item.is-visible,
+:root[data-theme="dark"]:root .app-shell .order-fabric-proposal-option.is-chosen,
+:root[data-theme="dark"]:root .app-shell .order-fabric-per-awning:has(input:checked) {
+  background: color-mix(in srgb, var(--color-brand-400) 18%, var(--glass-chip));
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Principal = botón de color macizo `boton-3d` (globals.css 678-704) en el dorado de marca
+   con tinta `#231903`, la receta del dorado de CoordinaOT (BotonArriba.tsx 30; hover
+   `brand-300`). «Pasar a revisión» de allí es verde azulado, pero el principal de esta web
+   es dorado desde siempre y el diseño aprobado dice que pasa al dorado de CoordinaOT. */
+:root:root .app-shell .primary-button,
+:root:root .app-shell .model-switch-prompt button {
+  background: var(--color-brand-400);
+  border: 1px solid var(--color-brand-500);
+  border-radius: 0.5rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 2px 0 rgba(0, 0, 0, 0.18),
+    0 4px 8px -3px rgba(15, 23, 42, 0.35);
+  color: var(--tinta-dorado);
+  filter: none;
+  font-weight: 600;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 140ms ease;
+}
+:root:root .app-shell .primary-button:hover:not(:disabled),
+:root:root .app-shell .model-switch-prompt button:hover:not(:disabled) {
+  background: var(--color-brand-300);
+  border-color: var(--color-brand-400);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 3px 0 rgba(0, 0, 0, 0.18),
+    0 8px 14px -4px rgba(15, 23, 42, 0.4);
+  filter: none;
+  transform: translateY(-1px);
+}
+:root:root .app-shell .primary-button:active:not(:disabled),
+:root:root .app-shell .model-switch-prompt button:active:not(:disabled) {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateY(1px);
+}
+:root:root .app-shell .primary-button:disabled { box-shadow: none; }
+:root[data-theme="dark"]:root .app-shell .primary-button,
+:root[data-theme="dark"]:root .app-shell .model-switch-prompt button {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 2px 0 rgba(0, 0, 0, 0.5),
+    0 4px 10px -3px rgba(0, 0, 0, 0.7);
+  color: var(--tinta-dorado);
+}
+:root[data-theme="dark"]:root .app-shell .primary-button:disabled { box-shadow: none; }
+/* Destructivo: `boton-3d` con `bg-red-600 text-white hover:bg-red-700` (ConfirmDialog.tsx 84). */
+:root:root .danger-button {
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 0.5rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 2px 0 rgba(0, 0, 0, 0.18),
+    0 4px 8px -3px rgba(15, 23, 42, 0.35);
+  color: #fff;
+  font-weight: 600;
+}
+:root:root .danger-button:hover:not(:disabled) { background: #b91c1c; border-color: #b91c1c; }
+:root:root .danger-button:active:not(:disabled) { box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3); transform: translateY(1px); }
+
+/* Opciones de los segmentados («Lacado», «Rotulación», «Sí/No»…): las mismas fichas que los
+   filtros de CoordinaOT (FilterBar.tsx 131: `glass-chip rounded-lg px-2.5 py-1.5 text-xs
+   font-semibold`; activa = `glass-chip-activo text-brand-800 dark:text-brand-300`). La
+   tira de fondo hundida de antes desaparece: son teclas sueltas, como su `tira-3d`. */
+:root:root .app-shell .segmented-control:not(.is-empty),
+:root:root .app-shell .segmented-control.is-empty {
+  background: transparent;
+  box-shadow: none;
+  gap: 4px;
+}
+:root:root .app-shell .segmented-control:not(.is-empty) { border-color: transparent; }
+:root:root .app-shell .segmented-control.is-empty,
+:root:root .order-header .segmented-control.is-empty {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+}
+:root:root .app-shell .segmented-option:not(.active) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 1px 0 0 color-mix(in srgb, var(--border-strong) 80%, transparent),
+    0 4px 8px -4px var(--glass-shadow);
+  color: var(--text);
+}
+:root:root .app-shell .segmented-option { border-radius: 0.5rem; font-weight: 600; }
+:root:root .app-shell .segmented-option:hover:not(.active) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border-color: var(--glass-border);
+  color: var(--text);
+}
+:root[data-theme="dark"]:root .app-shell .segmented-option:not(.active) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 0 -1px rgba(0, 0, 0, 0.5),
+    0 4px 10px -6px rgba(0, 0, 0, 0.7);
+}
+:root:root .app-shell .segmented-option.active { border-width: 1px; border-style: solid; }
+
+/* «Por toldo» y el resto de casillas con caja: ficha de vidrio como un filtro. */
+:root:root .app-shell .order-fabric-per-awning {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 40%, transparent), transparent 45%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  color: var(--text);
+}
+:root:root .order-fabric-per-awning span { color: inherit; }
+
+/* ── Etiquetas de estado ──
+   Las píldoras planas de CoordinaOT (`pildora-aviso`, `pildora-plantear`, globals.css
+   297-328) para «FALTA n» y «VÁLIDO»; el rojo tintado de FilaOF.tsx 105 para los
+   errores; `bg-surface-2 text-text-muted ring-1 ring-border` (FilaOF.tsx 97) para las
+   neutras. La forma es la de sus etiquetas: `rounded px-1.5 py-0.5 font-bold uppercase`. */
+:root:root .badge-warn,
+:root:root .awning-status.badge-warn {
+  background: #fbe7b8;
+  border: 1px solid #e6c877;
+  color: #6b4708;
+}
+:root[data-theme="dark"]:root .badge-warn,
+:root[data-theme="dark"]:root .awning-status.badge-warn {
+  background: #4a3611;
+  border-color: #6d5017;
+  color: #f7d98d;
+}
+:root:root .badge-ok {
+  background: #cdeade;
+  border: 1px solid #94cdb5;
+  color: #0a5138;
+}
+:root[data-theme="dark"]:root .badge-ok {
+  background: #123a2b;
+  border-color: #1d5943;
+  color: #86e3bd;
+}
+:root:root .badge-danger {
+  background: var(--error-fondo);
+  border: 1px solid var(--error-borde);
+  color: var(--error-texto);
+}
+:root:root .badge-neutral,
+:root:root .awning-status:not(.badge-ok):not(.badge-danger):not(.badge-warn) {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+:root:root .badge-ok,
+:root:root .badge-danger,
+:root:root .badge-warn,
+:root:root .badge-neutral,
+:root:root .awning-status {
+  border-radius: 0.25rem;
+  font-weight: 700;
+}
+
+/* Índice de toldos («A falta 2»): la ficha de filtro de CoordinaOT; el número de lo que
+   falta va en su rojo de texto y lo correcto en su verde. */
+:root:root .awning-index-item { border-radius: 0.5rem; color: var(--text); }
+:root:root .awning-index-item.is-ok span { color: var(--correcto-texto); }
+:root:root .awning-index-item.is-warn span { color: var(--aviso-texto); }
+:root:root .awning-index-item.is-error span,
+:root:root .awning-index-item.is-missing span { color: var(--error-texto); }
+:root:root .awning-index-item.is-visible span { color: inherit; }
+
+/* ── Avisos ──
+   `rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-amber-800
+   dark:text-amber-300` (Drawer.tsx 632). Excepción técnica, «pendiente», cambio de modelo
+   y avisos en línea. */
+:root:root .awning-pending,
+:root:root .awning-modified-chip,
+:root:root .awning-diagnostics .is-pending,
+:root:root .model-switch-prompt,
+:root:root .drop-arm-mode-summary,
+:root:root .orders-coordina-down {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 0.5rem;
+  color: var(--aviso-texto);
+}
+:root:root .model-switch-prompt { border-left-width: 1px; }
+:root:root .drop-arm-mode-summary { border-left: 4px solid var(--color-brand-400); }
+:root:root .model-switch-prompt span,
+:root:root .drop-arm-mode-summary span,
+:root:root .drop-arm-mode-summary strong { color: var(--aviso-texto); }
+:root:root .awning-diagnostics .is-error {
+  background: var(--error-fondo);
+  border: 1px solid var(--error-borde);
+  border-radius: 0.5rem;
+  color: var(--error-texto);
+}
+:root:root .read-exception,
+:root:root .read-exception-plain,
+:root:root .read-exception > summary { color: var(--aviso-texto); }
+:root:root .field-hint-warn { color: var(--aviso-texto); }
+:root:root .drawing-error,
+:root:root .drawing-source-error { color: var(--error-texto); }
+
+/* «Obtener datos del pedido» y su resumen, las propuestas de tela: cajas de la ficha. */
+:root:root .order-autofill-button { font-weight: 600; }
+:root:root .order-autofill-summary {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+:root:root .order-autofill-summary strong,
+:root:root .order-autofill-summary-lines li,
+:root:root .order-fabric-proposal > span { color: var(--text); }
+:root:root .order-autofill-summary span,
+:root:root .order-autofill-summary summary,
+:root:root .order-autofill-summary li,
+:root:root .order-fabric-proposal-empty { color: var(--text-muted); }
+:root:root .order-autofill-summary details ul {
+  background: var(--glass-bg-pop);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 18px 50px -18px var(--glass-shadow);
+}
+:root:root .order-autofill-summary-lines li { color: var(--text); }
+
+/* ── Observaciones ──
+   La caja `rounded-lg bg-surface-2/70` de CoordinaOT (Drawer.tsx 1458) y cada línea como su
+   fila (FilaOF.tsx 80: `rounded-lg bg-surface ring-1 ring-border`). «Añadir línea» es su
+   enlace de bloque (Drawer.tsx 742: `text-[11px] font-semibold text-brand-800
+   hover:underline dark:text-brand-300`). */
+:root:root .observation-lines {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+:root:root .observation-lines-header { border-bottom-color: var(--border); }
+:root:root .observation-lines-header > span { color: var(--text-muted); font-weight: 600; letter-spacing: 0.025em; }
+:root:root .observation-lines-header button {
+  background: transparent;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+:root:root .observation-lines-header button:hover { background: transparent; text-decoration: underline; }
+:root:root .observation-lines-header button:focus-visible,
+:root:root .observation-line-remove:focus-visible { outline: 2px solid var(--color-brand-400); }
+:root:root .observation-line {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+:root:root .observation-line:focus-within {
+  border-color: var(--color-brand-400);
+  box-shadow: none;
+}
+:root:root .observation-line input,
+:root:root .app-shell .observation-line input {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--text);
+}
+:root:root .observation-line input::placeholder { color: var(--text-muted); }
+:root:root .observation-line-remove:hover:not(:disabled) {
+  background: var(--error-fondo);
+  color: var(--error-texto);
+}
+
+/* ── Resultados de dentro del panel: hojas y cajas de la ficha ── */
+:root:root .despiece-card,
+:root:root .of-card,
+:root:root .rps-result-preview,
+:root:root .structure-info-block {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+:root:root .despiece-info-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+:root:root .structure-sheet-preview,
+:root:root .awning-panel-body .structure-sheet-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+:root:root .rps-table-wrap { border-color: var(--border); border-radius: 0.5rem; }
+:root:root .rps-table th { background: var(--surface-2); border-bottom-color: var(--border-strong); color: var(--text-muted); }
+:root:root .structure-info-block h4 { color: var(--text-muted); }
+:root:root .structure-info-block p { color: var(--text); }
+:root:root .rps-result-icon { background: var(--aviso-fondo); border-color: var(--aviso-borde); color: var(--aviso-texto); }
+:root:root .rps-result-of-count { background: var(--surface-2); border-color: var(--border); color: var(--text-muted); }
+:root:root .awning-panel-empty,
+:root:root .awning-panel-drawing-state {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border-color: var(--border-strong);
+  border-radius: 0.5rem;
+}
+:root:root .awning-panel-drawing-state.is-error { color: var(--error-texto); }
+
+/* ── Panel «Despiece y dibujo»: la ficha lateral de CoordinaOT (MarcoFicha.tsx 53-85) ──
+   Telón = `telon-ficha` (globals.css 516-524) sobre la página; panel =
+   `glass-panel-strong drawer-in rounded-xl` (globals.css 274-277, 526-536). La ficha flota
+   con 1 rem de margen a la derecha, como allí; el `<dialog>` sigue sin relleno propio
+   (un clic sobre él es un clic en el fondo) y ese margen es del propio `<dialog>`. */
+:root:root .awning-panel::backdrop { background: color-mix(in srgb, var(--bg) 40%, black); }
+:root[data-theme="dark"]:root .awning-panel::backdrop { background: color-mix(in srgb, var(--bg) 88%, black); }
+:root:root .awning-panel {
+  height: calc(100vh - var(--topnav-height));
+  padding: 0.5rem 1rem 1rem 0;
+  width: calc(720px + 1rem);
+}
+:root:root .awning-panel-inner {
+  animation: drawer-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 10px 34px -16px var(--glass-shadow);
+}
+:root:root .awning-panel-header span { color: var(--text-muted); font-weight: 600; letter-spacing: 0.025em; }
+:root:root .awning-panel-header h2 { color: var(--text); }
+/* Las tres pestañas (Despiece, Dibujo, Reserva) = `tira-3d` (globals.css 401-459): teclas
+   sueltas y la activa hundida en dorado (`pestana-activa`). */
+:root:root .planning-tabs {
+  background: none;
+  border: 0;
+  gap: 6px;
+  padding: 0;
+}
+:root:root .planning-tabs button {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 40%, transparent), transparent 45%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 80%, white 20%),
+    0 2px 0 0 color-mix(in srgb, var(--border-strong) 80%, transparent),
+    0 6px 12px -6px var(--glass-shadow);
+  color: var(--text-muted);
+  font-weight: 600;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+:root:root .planning-tabs button:hover:not(.active) {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 40%, transparent), transparent 45%),
+    var(--glass-chip);
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 2px 4px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 3px 0 0 color-mix(in srgb, var(--border-strong) 90%, transparent),
+    0 10px 18px -6px var(--glass-shadow);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+:root[data-theme="dark"]:root .planning-tabs button {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 -1px rgba(0, 0, 0, 0.5),
+    0 6px 14px -8px rgba(0, 0, 0, 0.7);
+}
+:root:root .planning-tabs button.active,
+:root[data-theme="dark"]:root .planning-tabs button.active {
+  background: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
+  border: 1px solid var(--color-brand-400);
+  box-shadow: inset 0 1px 3px rgba(90, 60, 0, 0.25);
+  color: var(--color-brand-800);
+  transform: translateY(1px);
+}
+:root[data-theme="dark"]:root .planning-tabs button.active {
+  background: color-mix(in srgb, var(--color-brand-400) 18%, var(--glass-chip));
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+  color: var(--color-brand-300);
+}
+:root:root .planning-tabs strong { background: var(--surface-2); color: var(--text-muted); }
+:root:root .planning-tabs button.active strong { background: var(--color-brand-400); color: var(--tinta-dorado); }
+/* Resumen de planteamientos de la pantalla (desplegable bajo las tarjetas). */
+:root:root .planning-summary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+}
+:root:root .planning-summary[open] > summary { border-bottom-color: var(--border); }
+:root:root .planning-summary-text { color: var(--text); }
+:root:root .planning-summary > .rps-result-preview { border-radius: 0 0 0.75rem 0.75rem; }
+
+/* ── Selector de modelo y avisos de confirmación: el diálogo de CoordinaOT ──
+   ConfirmDialog.tsx 107-122: telón `bg-black/50 backdrop-blur-sm` y panel
+   `glass-panel-strong ... rounded-2xl p-4`. */
+:root:root .model-picker-backdrop,
+:root:root .confirmation-backdrop {
+  backdrop-filter: blur(4px);
+  background: rgb(0 0 0 / 0.5);
+}
+/* La vista previa del PDF sí lleva el telón de la ficha (`telon-ficha`, globals.css 516-524). */
+:root:root .pdf-preview-backdrop { background: color-mix(in srgb, var(--bg) 40%, black); }
+:root[data-theme="dark"]:root .pdf-preview-backdrop { background: color-mix(in srgb, var(--bg) 88%, black); }
+:root:root .model-picker,
+:root:root .confirmation-dialog {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 10px 34px -16px var(--glass-shadow);
+}
+:root:root .model-picker-header h2,
+:root:root .confirmation-heading h2 { color: var(--text); font-weight: 700; }
+:root:root .model-picker-header span,
+:root:root .confirmation-heading span { color: var(--text-muted); font-weight: 600; letter-spacing: 0.025em; }
+:root:root .confirmation-dialog > p { color: var(--text-muted); }
+:root:root .model-picker-icon,
+:root:root .model-picker-icon.fabric,
+:root:root .confirmation-icon {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--accent-text);
+}
+:root:root .confirmation-warning .confirmation-icon { background: var(--aviso-fondo); border-color: var(--aviso-borde); color: var(--aviso-texto); }
+:root:root .confirmation-danger .confirmation-icon { background: var(--error-fondo); border-color: var(--error-borde); color: var(--error-texto); }
+:root:root .confirmation-details {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+}
+:root:root .confirmation-details li + li,
+:root:root .confirmation-actions,
+:root:root .model-picker-family-title,
+:root:root .model-picker-legend { border-color: var(--border); }
+/* Filas del selector = la ficha `chip-3d` (Drawer.tsx 812). */
+:root:root .model-picker-option {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 2px 0 0 color-mix(in srgb, var(--border-strong) 80%, transparent),
+    0 6px 12px -4px var(--glass-shadow);
+  color: var(--text);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+:root:root .model-picker-option:hover,
+:root:root .model-picker-option:focus-visible {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border-color: var(--glass-border);
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 2px 4px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 95%, white 5%),
+    0 3px 0 0 color-mix(in srgb, var(--border-strong) 90%, transparent),
+    0 10px 18px -4px var(--glass-shadow);
+  transform: translateY(-1px);
+}
+:root:root .model-picker-option:active { transform: translateY(1px); }
+:root[data-theme="dark"]:root .model-picker-option {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 -1px rgba(0, 0, 0, 0.5),
+    0 6px 14px -8px rgba(0, 0, 0, 0.7);
+}
+:root:root .model-picker-status.is-ready,
+:root:root .model-picker-legend .is-ready { color: var(--correcto-texto); }
+:root:root .model-picker-status.is-pending,
+:root:root .model-picker-legend .is-pending { color: var(--aviso-texto); }
+/* El globo de ayuda es la `pista` de CoordinaOT (globals.css 617-642). */
+:root:root .model-picker-tip,
+:root:root .model-picker-option .model-picker-tip {
+  background: rgba(24, 26, 31, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 8px 20px -6px rgba(0, 0, 0, 0.45),
+    0 2px 6px -2px rgba(0, 0, 0, 0.35);
+  color: #f3f4f6;
+}
+
+/* ── Vista previa del PDF ──
+   La ventana es el panel opaco de CoordinaOT (`ventana-3d`, globals.css 840-860) sobre
+   su telón; las páginas siguen siendo `hoja-3d` (papel blanco). El fondo del visor es el
+   telón oscuro que rodea a la hoja en su ficha (Drawer.tsx 619: gris de visor) y las
+   barras de arriba y abajo son claras del panel, con teclas `chip-3d`. */
+:root:root .pdf-preview-window {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 60%, transparent), transparent 40%),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 3px 0 -1px color-mix(in srgb, var(--border-strong) 70%, transparent),
+    0 18px 40px -14px var(--glass-shadow);
+}
+:root[data-theme="dark"]:root .pdf-preview-window {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 3px 0 -1px rgba(0, 0, 0, 0.55),
+    0 20px 44px -14px rgba(0, 0, 0, 0.8);
+}
+:root:root .pdf-preview-window > header {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+:root:root .pdf-preview-window header strong { color: var(--text); }
+:root:root .pdf-carousel,
+:root:root .pdf-carousel-toolbar,
+:root:root .pdf-carousel-footer,
+:root:root .pdf-carousel-pages {
+  background: var(--surface-2);
+  color: var(--text);
+}
+:root:root .pdf-carousel-footer,
+:root:root .pdf-carousel-pages { border-top: 1px solid var(--border); }
+:root:root .pdf-carousel-stage {
+  background: #525659;
+  border-block: 1px solid var(--border);
+}
+:root:root .pdf-carousel-state { color: #f3f4f6; }
+:root:root .pdf-carousel-state.is-error { color: #fca5a5; }
+:root:root .pdf-carousel-wheel-hint { color: var(--text-muted); }
+:root:root .pdf-carousel-toolbar button,
+:root:root .pdf-carousel-pages button,
+:root:root .pdf-carousel-footer button {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 2px 0 0 color-mix(in srgb, var(--border-strong) 80%, transparent),
+    0 6px 12px -4px var(--glass-shadow);
+  color: var(--text);
+  font-weight: 600;
+}
+:root[data-theme="dark"]:root .pdf-carousel-toolbar button,
+:root[data-theme="dark"]:root .pdf-carousel-pages button,
+:root[data-theme="dark"]:root .pdf-carousel-footer button {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 -1px rgba(0, 0, 0, 0.5),
+    0 6px 14px -8px rgba(0, 0, 0, 0.7);
+}
+:root:root .pdf-carousel-toolbar button:hover:not([aria-pressed="true"]),
+:root:root .pdf-carousel-pages button:hover:not([aria-current="page"]),
+:root:root .pdf-carousel-footer button:hover:not(:disabled) {
+  border-color: var(--glass-border);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+:root:root .pdf-carousel-toolbar button[aria-pressed="true"],
+:root:root .pdf-carousel-pages button[aria-current="page"],
+:root[data-theme="dark"]:root .pdf-carousel-toolbar button[aria-pressed="true"],
+:root[data-theme="dark"]:root .pdf-carousel-pages button[aria-current="page"] {
+  background: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
+  border-color: var(--color-brand-400);
+  box-shadow: inset 0 1px 3px rgba(90, 60, 0, 0.25);
+  color: var(--color-brand-800);
+  transform: translateY(1px);
+}
+:root[data-theme="dark"]:root .pdf-carousel-toolbar button[aria-pressed="true"],
+:root[data-theme="dark"]:root .pdf-carousel-pages button[aria-current="page"] {
+  background: color-mix(in srgb, var(--color-brand-400) 18%, var(--glass-chip));
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+  color: var(--color-brand-300);
+}
+/* Flechas sobre el papel: las teclas `bg-white/10 hover:bg-white/20` del visor de
+   CoordinaOT (ScanViewer.tsx 37) pasan a `chip-3d` porque aquí van sobre gris. */
+:root:root .pdf-carousel-arrow {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+}
+:root:root .pdf-carousel-arrow:hover:not(:disabled) {
+  background: var(--color-brand-400);
+  color: var(--tinta-dorado);
+}
+:root:root .pdf-carousel:focus-visible { box-shadow: inset 0 0 0 2px var(--color-brand-400); }
+
+/* ── Editor del despiece (dentro del panel): botones `chip-3d`, aviso de CoordinaOT ── */
+:root:root .structure-editor { border-bottom-color: var(--border); }
+:root:root .structure-editor button {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 90%, white 10%),
+    0 2px 0 0 color-mix(in srgb, var(--border-strong) 80%, transparent),
+    0 6px 12px -4px var(--glass-shadow);
+  color: var(--text);
+  font-weight: 600;
+}
+:root[data-theme="dark"]:root .structure-editor button {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 -1px rgba(0, 0, 0, 0.5),
+    0 6px 14px -8px rgba(0, 0, 0, 0.7);
+}
+:root:root .structure-editor button:disabled { box-shadow: none; }
+:root:root .structure-editor-warning {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-left: 3px solid var(--color-brand-400);
+  border-radius: 0.5rem;
+  color: var(--aviso-texto);
+}
+:root:root .structure-edited-badge { color: var(--aviso-texto); }
+
+/* ── Tablas de resultado (reserva RPS, telas, despiece) ──
+   Las tablas de CoordinaOT (HistorialView, ListaView): cabecera apagada en mayúsculas sobre
+   `--surface-2`, filas con línea fina y sin cebreado de color; texto en `--text`. */
+:root:root .rps-result-preview .rps-table-wrap,
+:root:root .fabric-preview-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+:root:root .rps-result-preview .rps-table th,
+:root:root .fabric-preview-table th {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+:root:root .rps-result-preview .rps-table td,
+:root:root .rps-result-preview .rps-table td.code,
+:root:root .fabric-preview-table td { color: var(--text); }
+:root:root .rps-result-preview .rps-table td,
+:root:root .fabric-preview-table th,
+:root:root .fabric-preview-table td { border-bottom-color: var(--border); }
+:root:root .rps-result-preview .rps-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
+:root:root .rps-result-preview .rps-table tbody tr:hover,
+:root:root .rps-table tbody tr:hover { background: var(--aviso-fondo); }
+:root:root .fabric-preview-table .fabric-valance-row td {
+  background: var(--surface-2);
+  border-bottom-color: var(--border);
+  color: var(--text-muted);
+}
+:root:root .rps-result-summary > span:nth-child(2) > strong { color: var(--text); }
+:root:root .rps-result-note {
+  background: var(--aviso-fondo);
+  border-left: 3px solid var(--color-brand-400);
+  color: var(--aviso-texto);
+}
+:root:root .despiece-table th,
+:root:root .rps-table th { color: var(--text-muted); }
+:root:root .despiece-table td,
+:root:root .despiece-table th { border-bottom-color: var(--border); }
+/* La letra del toldo (A, B…): el dorado de marca con tinta `#231903`. */
+:root:root .result-letter { background: var(--color-brand-400); color: var(--tinta-dorado); }
+:root:root .text-ok { color: var(--correcto-texto); }
+:root:root .text-danger { color: var(--error-texto); }
+
+/* ── Decisiones automáticas, vacíos y resto de cajas de la tarjeta ──
+   La banda negra de antes pasa a la caja de la ficha (`bg-surface-2/70`, Drawer.tsx 1458). */
+:root:root .automatic-decisions {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+}
+:root:root .automatic-decisions dl > div { background: var(--surface); }
+:root:root .automatic-decisions dt,
+:root:root .automatic-decisions-head small { color: var(--text-muted); }
+:root:root .awning-section-empty {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.5rem;
+}
+:root:root .fabric-jobs-section { border-top-color: var(--border); }
+:root:root .fabric-jobs-section .section-header h2 { color: var(--text); }
+:root:root .fabric-readonly-value { color: var(--text); }
+:root:root .fabric-clear-button { color: var(--text-muted); }
+:root:root .fabric-clear-button:hover,
+:root:root .fabric-clear-button:focus-visible {
+  background: var(--glass-highlight);
+  color: var(--text);
+}
+:root:root .fabric-image-editor { border-color: var(--border-strong); border-radius: 0.5rem; }
+:root:root .fabric-image-editor:focus { outline-color: var(--color-brand-400); }
+:root:root .fabric-image-editor button {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
+    var(--glass-chip);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  font-weight: 600;
+}
+:root:root .fabric-image-editor button:hover { background: var(--glass-chip); }
+:root:root .read-pair { border-bottom-color: var(--border); }

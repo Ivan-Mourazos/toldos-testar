@@ -18,6 +18,7 @@ import './dark.css';
 // después, y así sus tokens y piezas pisan a los estilos de siempre.
 import './coordina/tokens.css';
 import './coordina/piezas.css';
+import './coordina/nuevo-pedido.css';
 import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
