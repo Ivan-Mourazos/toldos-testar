@@ -1,0 +1,247 @@
+/* Nuevo pedido de remolques (fase 2a, tarea 3, 30/09/2026): selector «Toldos | Remolques»,
+   cabecera con la importación de RPS, pestañas de elementos y ficha del elemento.
+
+   Regla de Iván: «siempre que rediseñes cualquier zona de la web, mira en CoordinaOT cómo
+   está y cópialo». Aquí no hay colores ni sombras propias: solo se combinan las piezas de
+   piezas.css (`tira-3d`, `pestana`, `pestana-activa`, `panel-vidrio`, `pildora-*`,
+   `scroll-thin`) y los tokens de tokens.css y nuevo-pedido.css (`--aviso-*`, `--error-*`,
+   `--correcto-*`). La cabecera es la de toldos (`order-header`), con sus campos y su botón
+   «Obtener datos del pedido» tal cual, así que aquí solo hay lo que toldos no tiene.
+
+   Sin capa, como el resto de `coordina/` (ver estilos.css): gana a lo de siempre. */
+
+/* ── Selector Toldos | Remolques (junto al título de Nuevo pedido) ── */
+.workspace-heading:has(.producto-selector) {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+.producto-selector {
+  border-radius: 0.5rem;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+/* La etiqueta «en pruebas»: la píldora de aviso plana de CoordinaOT (`pildora-aviso`). */
+.producto-en-pruebas {
+  border: 1px solid;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1rem;
+  padding: 0 0.375rem;
+  text-transform: none;
+}
+
+/* ── Cabecera: la importación de RPS, en el sitio de «Tela» ── */
+.rem-cabecera .order-header-rps { align-content: start; }
+.rem-rps-vacio,
+.rem-rps-aviso,
+.rem-rps-aplicada {
+  align-items: center;
+  border-radius: 0.5rem;
+  display: flex;
+  font-size: 11px;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.5rem 0.625rem;
+}
+/* La caja de la ficha de CoordinaOT: `rounded-lg bg-surface-2/70` con su línea. */
+.rem-rps-vacio,
+.rem-rps-aplicada {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+}
+.rem-rps-vacio { color: var(--text-muted); font-weight: 500; }
+.rem-rps-vacio svg { flex: none; height: 14px; width: 14px; }
+/* Avisos: el ámbar de CoordinaOT; el fallo de la consulta, su rojo. */
+.rem-rps-aviso {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  color: var(--aviso-texto);
+  font-weight: 600;
+  justify-content: space-between;
+}
+.rem-rps-aviso.is-error {
+  background: var(--error-fondo);
+  border-color: var(--error-borde);
+  color: var(--error-texto);
+}
+.rem-rps-aplicada { justify-content: space-between; }
+.rem-rps-aplicada > div { display: grid; gap: 2px; min-width: 0; }
+.rem-rps-aplicada strong { color: var(--text); font-size: 12px; font-weight: 600; }
+.rem-rps-aplicada span { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.rem-rps-pedido { display: grid; gap: 6px; min-width: 0; }
+.rem-rps-cliente {
+  align-items: baseline;
+  color: var(--text-muted);
+  display: flex;
+  font-size: 11px;
+  gap: 0.5rem;
+  margin: 0;
+}
+.rem-rps-cliente strong { color: var(--text); font-size: 12px; font-weight: 600; }
+.rem-rps-numero {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  color: var(--text);
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+  margin-left: auto;
+  padding: 0 0.375rem;
+}
+.rem-rps-lineas {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  max-height: 11.5rem;
+  overflow-y: auto;
+  padding: 0;
+}
+.rem-rps-linea {
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.5rem 0.625rem;
+}
+.rem-rps-linea.is-seleccionada {
+  background: color-mix(in srgb, var(--color-brand-500) 10%, var(--surface));
+  border-color: var(--color-brand-400);
+}
+.rem-rps-linea .ghost-button { flex: none; white-space: nowrap; }
+.rem-rps-linea-datos { display: grid; gap: 2px; min-width: 0; }
+.rem-rps-linea-datos p { margin: 0; }
+.rem-rps-linea-titulo { align-items: center; display: flex; flex-wrap: wrap; gap: 0.375rem; }
+.rem-rps-linea-titulo strong { color: var(--text); font-size: 12px; font-weight: 600; }
+.rem-etiqueta {
+  border: 1px solid;
+  border-radius: 0.25rem;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 0.375rem;
+  text-transform: uppercase;
+}
+.rem-rps-of { color: var(--text-muted); font-family: var(--font-mono), monospace; font-size: 10px; font-weight: 600; }
+.rem-rps-medidas { color: var(--text); font-family: var(--font-mono), monospace; font-size: 12px; font-weight: 600; }
+.rem-rps-detalle {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text-muted);
+  display: -webkit-box;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow: hidden;
+}
+.rem-rps-linea-datos .rem-rps-notas {
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 11px;
+  gap: 2px 0.75rem;
+  margin-top: 4px;
+  padding-top: 4px;
+}
+.rem-rps-ok { color: var(--correcto-texto); font-weight: 600; }
+.rem-aviso-materiales {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 0.5rem;
+  color: var(--aviso-texto);
+  font-size: 11px;
+  font-weight: 600;
+  margin: 6px 0 0;
+  padding: 0.375rem 0.625rem;
+}
+
+/* ── Pestañas de elementos: `tira-3d` con la activa `pestana-activa` ──
+   Cada pestaña son dos botones sin borde (abrir y quitar) dentro de la tecla: la tecla es la
+   que se hunde y se levanta, así que los botones no llevan fondo propio. */
+.rem-tira {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.rem-pestana {
+  gap: 0;
+  padding: 0;
+}
+.rem-pestana-abrir,
+.rem-pestana-quitar {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  height: 100%;
+}
+.rem-pestana-abrir {
+  border-radius: 0.5rem 0 0 0.5rem;
+  gap: 0.5rem;
+  max-width: 22rem;
+  padding: 0 0.375rem 0 0.75rem;
+}
+.rem-pestana-rotulo { overflow: hidden; text-overflow: ellipsis; }
+.rem-pestana:not(.pestana-activa) .rem-pestana-rotulo { color: var(--text); }
+/* Lo que falta o «listo»: el rojo y el verde de CoordinaOT; en la activa, el color de la
+   pestaña (el dorado de texto), como el índice de toldos. */
+.rem-pestana-estado { font-size: 11px; font-weight: 700; }
+.rem-pestana-estado.is-ok { color: var(--correcto-texto); }
+.rem-pestana-estado.is-falta { color: var(--aviso-texto); }
+.pestana-activa .rem-pestana-estado { color: inherit; }
+.rem-pestana-quitar {
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--text-muted);
+  justify-content: center;
+  padding: 0 0.5rem;
+}
+.rem-pestana-quitar svg { height: 14px; width: 14px; }
+.rem-pestana-quitar:hover { color: var(--error-texto); }
+/* El anillo de foco es el de piezas.css (2 px dorado); los botones de dentro lo recortan si
+   no se les da margen, así que se dibuja hacia dentro de la tecla. */
+.rem-pestana-abrir:focus-visible,
+.rem-pestana-quitar:focus-visible { outline-offset: -2px; }
+
+/* ── Ficha del elemento activo y estado vacío ── */
+.rem-editor,
+.rem-vacio {
+  margin-top: 8px;
+  padding: 0.875rem 1rem;
+}
+.rem-editor-etiqueta {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.rem-editor h2,
+.rem-vacio h2 { color: var(--text); font-size: 15px; margin: 2px 0 0; }
+.rem-editor-estado {
+  color: var(--aviso-texto);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 6px 0 0;
+}
+.rem-editor-estado.is-ok { color: var(--correcto-texto); }
+.rem-editor-marcador {
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.5rem;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0.75rem 0 0;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+.rem-vacio { text-align: center; }
+.rem-vacio p { color: var(--text-muted); font-size: 12px; margin: 4px 0 0; }

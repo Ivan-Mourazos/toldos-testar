@@ -36,7 +36,7 @@ ventana (`clamp(14px, …, 16px)`). Aquí la raíz se queda en 16 px, porque
 `App.tsx` importa solo `src/client/estilos.css` (después de las letras). Ese fichero mete
 los estilos de siempre que quedan (`styles.css`, `relieve.css`, `dark.css`) en
 la capa `legacy` y carga detrás, **sin capa**, `coordina/tokens.css`, `coordina/piezas.css`,
-`coordina/nuevo-pedido.css`, `coordina/pedidos.css`, `coordina/parametros.css` y `coordina/configuracion.css`.
+`coordina/nuevo-pedido.css`, `coordina/pedidos.css`, `coordina/parametros.css`, `coordina/configuracion.css` y `coordina/remolques.css`.
 
 Por qué: una regla sin capa gana a cualquier regla con capa, sea cual sea su
 especificidad. Así la capa de CoordinaOT manda siempre sobre lo de siempre, aunque allí

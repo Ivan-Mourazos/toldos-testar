@@ -35,12 +35,24 @@ import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
+import { RemolquesView } from './remolques/RemolquesView';
+import { SelectorProducto, guardarProducto, leerProducto, type Producto } from './remolques/SelectorProducto';
 
 export default function App() {
   const draft = useDraft();
   const ruleSettings = useParameters();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
+  // Toldos o Remolques en Nuevo pedido (diseño 30/09/2026, fase 2a). Remolques se monta la primera
+  // vez que se elige y se queda montado (oculto) para no perder el pedido a medias al cambiar
+  // de producto o de pestaña; los toldos ya viven en `draft`, que es de esta pantalla.
+  const [producto, setProducto] = useState<Producto>(() => leerProducto());
+  const [remolquesMontado, setRemolquesMontado] = useState(producto === 'remolques');
+  function chooseProducto(next: Producto) {
+    setProducto(next);
+    guardarProducto(next);
+    if (next === 'remolques') setRemolquesMontado(true);
+  }
   const [working, setWorking] = useState<'review' | 'preview' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const previewButtonRef = useRef<HTMLButtonElement>(null);
@@ -238,6 +250,7 @@ export default function App() {
       ? { by: review.reviewedBy, at: review.reviewedAt || '', note: review.reviewNote }
       : null);
     if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters, review.order.parametersVersion ?? null);
+    chooseProducto('toldos');
     setActiveTab('order');
     notify(`Pedido ${review.orderCode} cargado en el formulario para corregirlo.`, { tone: 'info', title: 'Modo de corrección' });
   }
@@ -256,6 +269,7 @@ export default function App() {
     draft.setTechnician('');
     draft.setReviewer('');
     setAutofill(null);
+    chooseProducto('toldos');
     setActiveTab('order');
     notify(`Datos de ${review.orderCode} cargados en el formulario.`, { tone: 'success', title: 'Datos reutilizados' });
   }
@@ -456,10 +470,11 @@ export default function App() {
         <header className="topbar">
           <div className="workspace-heading">
             <h2>{viewTitle}</h2>
+            {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && <ParametersHistory version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />}
           </div>
-          {activeTab === 'order' && (
+          {activeTab === 'order' && producto === 'toldos' && (
             <div className="topbar-actions">
               <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={() => void clearForm()}>
                 <Eraser aria-hidden="true" />
@@ -478,7 +493,7 @@ export default function App() {
         </header>
 
         <div className="workspace-content">
-          {activeTab === 'order' && returnNote && (
+          {activeTab === 'order' && producto === 'toldos' && returnNote && (
             <div className="review-state-note is-returned order-return-note" role="status">
               <Undo2 aria-hidden="true" />
               <span>
@@ -487,7 +502,7 @@ export default function App() {
               </span>
             </div>
           )}
-          {activeTab === 'order' && (
+          {activeTab === 'order' && producto === 'toldos' && (
             <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
               <OrderView
                 availableModelNames={catalog?.models.map((model) => model.code) ?? []}
@@ -523,6 +538,12 @@ export default function App() {
                 onConfirm={askForConfirmation}
               />
             </fieldset>
+          )}
+
+          {remolquesMontado && (
+            <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
+              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} />
+            </div>
           )}
 
           {activeTab === 'parameters' && (
