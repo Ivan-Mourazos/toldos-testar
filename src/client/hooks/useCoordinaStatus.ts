@@ -6,29 +6,44 @@ import type { CoordinaStatus } from '../types';
 // servidor, que es quien tiene la clave.
 const REFRESH_MS = 60_000;
 
+type Loaded = { key: string; status: CoordinaStatus };
+
+// Qué estado enseñar para la lista de OF actual. La vista de detalle no se desmonta al
+// cambiar de pedido, así que el estado guardado puede ser de la lista anterior: si no
+// es de esta clave se devuelve null («comprobando…») en vez de dejar pasar una
+// aprobación vieja que habilitaría «Generar archivos» un instante. Sin OF que consultar
+// (o pantalla cerrada) no hay nada pendiente de CoordinaOT.
+export function statusForKey(loaded: Loaded | null, key: string, enabled: boolean): CoordinaStatus | null {
+  if (!enabled || !key) return { disponible: true, ofs: {} };
+  return loaded && loaded.key === key ? loaded.status : null;
+}
+
 export function useCoordinaStatus(ofs: string[], enabled = true) {
-  const [status, setStatus] = useState<CoordinaStatus | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
   const key = [...new Set(ofs.filter(Boolean))].sort().join(',');
 
   useEffect(() => {
     if (!enabled || !key) return;
     let cancelled = false;
     const load = () => {
-      setLoading(true);
       fetch(`/api/coordina/ofs?ofs=${encodeURIComponent(key)}`)
-        .then((response) => response.json() as Promise<CoordinaStatus>)
-        .then((data) => { if (!cancelled) setStatus(data); })
-        .catch(() => { if (!cancelled) setStatus({ disponible: false, motivo: 'Sin conexión con el servidor.' }); })
-        .finally(() => { if (!cancelled) setLoading(false); });
+        .then(async (response) => {
+          const data = await response.json().catch(() => null);
+          // Una respuesta de error (500, 502…) no es un estado: se trata como no disponible.
+          if (!response.ok || !data) {
+            const motivo = data && typeof data.motivo === 'string' ? data.motivo : 'No se pudo consultar CoordinaOT.';
+            return { disponible: false, motivo } as CoordinaStatus;
+          }
+          return data as CoordinaStatus;
+        })
+        .catch(() => ({ disponible: false, motivo: 'Sin conexión con el servidor.' }) as CoordinaStatus)
+        .then((status) => { if (!cancelled) setLoaded({ key, status }); });
     };
     load();
     const timer = window.setInterval(load, REFRESH_MS);
     return () => { cancelled = true; window.clearInterval(timer); };
   }, [key, enabled]);
 
-  // Sin OF que consultar (o pantalla cerrada) no hay nada pendiente de CoordinaOT: se
-  // deriva aquí en vez de guardarlo desde el efecto.
-  if (!enabled || !key) return { status: { disponible: true, ofs: {} } as CoordinaStatus, loading: false };
-  return { status, loading };
+  const status = statusForKey(loaded, key, enabled);
+  return { status, loading: status === null };
 }

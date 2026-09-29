@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { canGenerateReview, generateState } from './generatePermission';
+import { COORDINA_UNAVAILABLE } from '../reviewRules.js';
 
 describe('canGenerateReview — el permiso de generar (autor sí, otros no)', () => {
   it('el autor puede generar', () => {
@@ -52,5 +53,12 @@ describe('generateState', () => {
   });
   it('ya generado: nada', () => {
     expect(generateState(review('IVÁN', ['0230194'], 'PRODUCED'), 'IVÁN', aprobado)).toEqual({ allowed: false, note: '' });
+  });
+  it('CoordinaOT no disponible: apagado y con la nota de no poder comprobar', () => {
+    expect(generateState(review('IVÁN', ['0230194']), 'IVÁN', { disponible: false } as never)).toEqual({ allowed: false, note: COORDINA_UNAVAILABLE });
+    expect(COORDINA_UNAVAILABLE).toBe('No se puede comprobar la aprobación en CoordinaOT; inténtalo en un momento.');
+  });
+  it('pedido histórico sin autor: cualquiera genera si está aprobado', () => {
+    expect(generateState(review('', ['0230194']), 'ÁNGEL', aprobado)).toEqual({ allowed: true, note: '' });
   });
 });

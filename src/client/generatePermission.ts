@@ -23,7 +23,7 @@ export function canGenerateReview(status: string, technician: string, currentUse
 // autor, CoordinaOT tiene que haber aprobado todas las OF. La nota dice por qué no, para
 // que el autor no tenga que adivinar ni confirmar a mano que está aprobado.
 export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, currentUser: string, status: CoordinaStatus | null) {
-  if (review.status === 'PRODUCED' || !canGenerateReview(review.status, '', currentUser)) return { allowed: false, note: '' };
+  if (review.status === 'PRODUCED' || !isPendingGeneration(review.status)) return { allowed: false, note: '' };
   if (review.order.technician && review.order.technician !== currentUser) {
     return { allowed: false, note: `Lo genera el autor (${controlLabel(review.order.technician)})` };
   }
