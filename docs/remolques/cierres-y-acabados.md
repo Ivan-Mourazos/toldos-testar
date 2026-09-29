@@ -12,7 +12,7 @@ lateral cuando solo lleva cierre atrás o delante).
 | Cierre | Cómo es |
 |---|---|
 | NO | Sin cierre. |
-| GOMA | Orejas en la esquina que se sujetan con goma (el aviso de la web dice «preparar orejas por lado»). |
+| GOMA | Orejas en la esquina que se sujetan con goma (el aviso de la web dice «preparar orejas por lado»). Referencia más realista, según Iván, la trasera del camión de la foto `lona_camion_arquillada_tir_2.jpg` («Servicios de xardinería»): la tapa de atrás y la lona lateral se unen en la esquina con una goma en zigzag que cruza de un lado a otro entre los ollaos de los dos bordes, de arriba abajo. |
 | CREMALLERA | Cremallera a **5 cm de la esquina**, de alto **hasta 4 cm por debajo de la cima**. Algunos clientes la quieren **del 9 (grande)**, por ejemplo Cano Muños. |
 | VELCRO | Velcro de **3 cm en el borde de la oreja**, que se pega sobre la lona lateral. |
 | PUENTES (ESVA, LATERALES, HIJOS DE PEDRO LOPEZ) | Cierre con **puentes**. En el de Hijos de Pedro López (foto `PUENTES 1.jpg`): **solapa cosida en vertical** en la esquina y, sobre ella, **puentes metálicos** (anilla rectangular sobre placa ovalada) repartidos a lo alto, por los que pasa una **cincha blanca de plástico**; arriba acaba en una presilla cosida y abajo sale suelta para abrochar. |
