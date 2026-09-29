@@ -25,6 +25,8 @@ const EFFECTIVE_ENV_KEYS = [
   'RPS_UPLOAD_DIRECTORY',
   'RPS_PLANTEAMIENTOS_DIRECTORY',
   'WORKFLOW_SETTINGS_FILE',
+  'COORDINA_URL',
+  'COORDINA_CLAVE',
   ...DATABASE_KEYS
 ];
 
@@ -201,6 +203,7 @@ async function checkEnvironment() {
   const effectiveValues = applyProcessEnvironment(parsed.values);
   checkNetworkEnvironment(effectiveValues);
   checkDatabaseEnvironment(effectiveValues);
+  checkCoordinaEnvironment(effectiveValues);
   await checkWorkflowEnvironment(effectiveValues);
   await checkEnvironmentPermissions(environmentFile);
 }
@@ -241,6 +244,35 @@ function checkDatabaseEnvironment(values) {
   const dbPort = unquote(values.get('DB_PORT'));
   if (dbPort && (!/^\d+$/.test(dbPort) || Number(dbPort) < 1 || Number(dbPort) > 65535)) {
     fail('.env define DB_PORT con un valor no válido.');
+  }
+}
+
+// «Generar archivos» pregunta a CoordinaOT por cada OF y, sin respuesta, no genera nada.
+// Por eso en producción faltar la URL o la clave es un error, no un aviso: el despliegue
+// pasaría en verde y el primer síntoma sería un técnico que no puede generar. Fuera de
+// producción (desarrollo, pruebas) basta un aviso, porque ahí es normal no tenerlo.
+function checkCoordinaEnvironment(values) {
+  const inProduction = unquote(values.get('NODE_ENV')).toLowerCase() === 'production';
+  const report = inProduction ? fail : warn;
+  const url = unquote(values.get('COORDINA_URL'));
+  const hasKey = hasValue(values, 'COORDINA_CLAVE');
+  let urlOk = false;
+  if (!url) {
+    report('.env no define COORDINA_URL; sin ella «Generar archivos» no puede consultar CoordinaOT (p. ej. http://127.0.0.1:4300).');
+  } else if (!isHttpUrl(url)) {
+    report('.env define COORDINA_URL con un valor que no es una dirección http(s).');
+  } else {
+    urlOk = true;
+  }
+  if (!hasKey) report('.env no define COORDINA_CLAVE; debe ser la misma clave que INTEGRACION_CLAVE en CoordinaOT.');
+  if (urlOk && hasKey) pass('La conexión con CoordinaOT está configurada (URL y clave definidas; la clave no se muestra).');
+}
+
+function isHttpUrl(value) {
+  try {
+    return ['http:', 'https:'].includes(new URL(value).protocol);
+  } catch {
+    return false;
   }
 }
 

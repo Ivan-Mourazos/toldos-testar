@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  COORDINA_NOT_CONFIGURED,
   COORDINA_UNAVAILABLE,
   coordinaGroup,
   generateFilesDecision,
   generationBlock,
   isPendingGeneration,
+  normalizeOf,
   NOT_GENERABLE_ERROR,
   PRODUCED_SAVE_ERROR,
   approvalReviewers,
@@ -143,6 +145,37 @@ describe('aprobación leída de CoordinaOT', () => {
       .toBe('Sin aprobar en CoordinaOT: B (0230195) sin revisión en CoordinaOT.');
   });
 
+  it('normalizeOf recorta y rellena con ceros hasta 7 cifras solo si son todo dígitos', () => {
+    expect(normalizeOf('230194')).toBe('0230194');
+    expect(normalizeOf(' 230194 ')).toBe('0230194');
+    expect(normalizeOf('0230194')).toBe('0230194');
+    expect(normalizeOf('12345678')).toBe('12345678');
+    expect(normalizeOf('231486.0')).toBe('231486.0');
+    expect(normalizeOf('OF0230194')).toBe('OF0230194');
+    expect(normalizeOf(undefined)).toBe('');
+  });
+
+  it('las reglas encuentran la OF sin el cero inicial', () => {
+    const short = [{ letter: 'A', of: '230194' }];
+    expect(uniqueOfs([...short, { letter: 'B', of: '0230194' }])).toEqual(['0230194']);
+    expect(coordinaGroup(short, status({ '0230194': ok }))).toBe('aprobado');
+    expect(generationBlock(short, status({ '0230194': ok }))).toBeNull();
+    expect(approvalReviewers(short, status({ '0230194': { estado: 'aprobada', revisor: 'angel' } }), ['ÁNGEL'])).toBe('ÁNGEL');
+  });
+
+  it('generationBlock: una OF no válida se dice como tal', () => {
+    const invalid = { estado: 'invalida', nota: '', actualizado: null, revisor: '' };
+    expect(generationBlock([{ letter: 'A', of: '0230194' }, { letter: 'B', of: '0230194/1' }], status({ '0230194': ok, '0230194/1': invalid })))
+      .toBe('Sin aprobar en CoordinaOT: B (0230194/1) OF no válida.');
+    expect(coordinaGroup([{ letter: 'B', of: '0230194/1' }], status({ '0230194/1': invalid }))).toBe('por_revisar');
+  });
+
+  it('generationBlock: CoordinaOT sin configurar lo dice, en vez de pedir reintentar', () => {
+    expect(generationBlock(awnings, { disponible: false, motivo: 'CoordinaOT no está configurado.' })).toBe(COORDINA_NOT_CONFIGURED);
+    expect(COORDINA_NOT_CONFIGURED).toBe('La conexión con CoordinaOT no está configurada en el servidor.');
+    expect(generationBlock(awnings, { disponible: false, motivo: 'CoordinaOT no responde.' })).toBe(COORDINA_UNAVAILABLE);
+  });
+
   it('generationBlock: pedido sin toldos', () => {
     expect(generationBlock([], status({}))).toBe('El pedido no tiene toldos.');
   });
@@ -150,18 +183,18 @@ describe('aprobación leída de CoordinaOT', () => {
 
 describe('revisor desde CoordinaOT', () => {
   const tecnicos = ['ÁNGEL', 'JAIME', 'ALBERTO', 'ADRIÁN', 'TAMARA', 'IVÁN'];
-  const awnings = [{ letter: 'A', of: '1' }, { letter: 'B', of: '2' }, { letter: 'C', of: '3' }];
+  const awnings = [{ letter: 'A', of: '0230191' }, { letter: 'B', of: '0230192' }, { letter: 'C', of: '0230193' }];
   it('reviewerName traduce a la lista de técnicos sin tildes ni mayúsculas', () => {
     expect(reviewerName('angel', tecnicos)).toBe('ÁNGEL');
     expect(reviewerName('carron', tecnicos)).toBe('CARRON');
     expect(reviewerName('', tecnicos)).toBe('');
   });
   it('approvalReviewers: sin repetir y en orden de toldos', () => {
-    const status = { disponible: true, ofs: { '1': { estado: 'aprobada', revisor: 'jaime' }, '2': { estado: 'aprobada', revisor: 'angel' }, '3': { estado: 'aprobada', revisor: 'jaime' } } };
+    const status = { disponible: true, ofs: { '0230191': { estado: 'aprobada', revisor: 'jaime' }, '0230192': { estado: 'aprobada', revisor: 'angel' }, '0230193': { estado: 'aprobada', revisor: 'jaime' } } };
     expect(approvalReviewers(awnings, status, tecnicos)).toBe('JAIME, ÁNGEL');
   });
   it('approvalReviewers: no aprobadas, vacíos y sin CoordinaOT fuera', () => {
-    const status = { disponible: true, ofs: { '1': { estado: 'aprobada', revisor: 'carron' }, '2': { estado: 'en_revision', revisor: 'jaime' }, '3': { estado: 'aprobada', revisor: '' } } };
+    const status = { disponible: true, ofs: { '0230191': { estado: 'aprobada', revisor: 'carron' }, '0230192': { estado: 'en_revision', revisor: 'jaime' }, '0230193': { estado: 'aprobada', revisor: '' } } };
     expect(approvalReviewers(awnings, status, tecnicos)).toBe('CARRON');
     expect(approvalReviewers(awnings, { disponible: false }, tecnicos)).toBe('');
   });

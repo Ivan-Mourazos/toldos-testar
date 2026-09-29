@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { CoordinaStatus } from '../types';
+import { normalizeOf } from '../../reviewRules.js';
 
 // Estado de las OF en CoordinaOT (diseño 29/09/2026): se pide al abrir, al cambiar
 // la lista y cada minuto mientras la pantalla está abierta. Pregunta a nuestro
@@ -20,7 +21,7 @@ export function statusForKey(loaded: Loaded | null, key: string, enabled: boolea
 
 export function useCoordinaStatus(ofs: string[], enabled = true) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
-  const key = [...new Set(ofs.filter(Boolean))].sort().join(',');
+  const key = [...new Set(ofs.map(normalizeOf).filter(Boolean))].sort().join(',');
 
   useEffect(() => {
     if (!enabled || !key) return;

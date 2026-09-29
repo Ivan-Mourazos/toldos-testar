@@ -4,7 +4,7 @@ import type { CoordinaStatus, ReviewSummary } from '../types';
 import { formatListDate, groupByDay, inboxSections, pendingGroups } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
 import { formOptions } from '../../domain/modelBehavior.js';
-import { reviewerName } from '../../reviewRules.js';
+import { COORDINA_NOT_CONFIGURED_MOTIVO, normalizeOf, reviewerName } from '../../reviewRules.js';
 
 type AwningItem = NonNullable<ReviewSummary['summary']['awningList']>[number];
 
@@ -68,7 +68,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
         </div>
       </header>
       {coordinaStatus && !coordinaStatus.disponible && (
-        <p className="orders-coordina-down" role="status"><AlertTriangle aria-hidden="true" />No se puede consultar CoordinaOT; los pedidos se muestran como por revisar.</p>
+        <p className="orders-coordina-down" role="status"><AlertTriangle aria-hidden="true" />{coordinaStatus.motivo === COORDINA_NOT_CONFIGURED_MOTIVO ? 'No se puede consultar CoordinaOT: la conexión no está configurada en el servidor.' : 'No se puede consultar CoordinaOT; los pedidos se muestran como por revisar.'}</p>
       )}
       {pendingLoading ? <p className="review-empty">Cargando pedidos…</p>
         : groups.length === 0 ? <p className="review-empty"><FileSearch aria-hidden="true" />{scope === 'mine' ? 'No tienes pedidos pendientes.' : 'No hay pedidos pendientes.'}</p>
@@ -136,7 +136,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
             <ul className="orders-detail-list">
               {awnings.map((item) => {
                 // La nota de devolución solo se enseña si CoordinaOT la tiene devuelta.
-                const returned = coordinaStatus?.disponible ? coordinaStatus.ofs?.[item.of.trim()] : undefined;
+                const returned = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)] : undefined;
                 const nota = returned?.estado === 'devuelta' ? returned.nota : '';
                 // Quién aprobó en CoordinaOT; es el que quedará de revisor al generar.
                 const approvedBy = returned?.estado === 'aprobada' && returned.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
@@ -165,7 +165,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
 
 function AwningChip({ item, coordinaStatus }: { item: AwningItem; coordinaStatus: CoordinaStatus | null }) {
   const label = item.state === 'ok' ? 'correcto' : item.state === 'warn' ? 'con aviso' : 'con errores';
-  const coordina = coordinaStatus?.disponible ? coordinaStatus.ofs?.[item.of.trim()]?.estado : undefined;
+  const coordina = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)]?.estado : undefined;
   // Un solo signo claro por toldo: si el cálculo está bien y CoordinaOT tiene marca, solo se
   // enseña la de CoordinaOT (evita «✓ ✓» o «✓ ↩», que parecen contradecirse). Con aviso o
   // error se mantiene el icono del cálculo y se añade la marca de CoordinaOT.

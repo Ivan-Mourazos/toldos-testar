@@ -72,6 +72,10 @@ function clean(value) {
 // web (grupos de Pedidos y botón «Generar archivos»), para que digan lo mismo.
 
 export const COORDINA_UNAVAILABLE = 'No se puede comprobar la aprobación en CoordinaOT; inténtalo en un momento.';
+// Falta COORDINA_URL o COORDINA_CLAVE en el servidor: reintentar no lo arregla, así que
+// se dice tal cual en vez de invitar a probar de nuevo. El motivo lo pone coordinaStatus.js.
+export const COORDINA_NOT_CONFIGURED = 'La conexión con CoordinaOT no está configurada en el servidor.';
+export const COORDINA_NOT_CONFIGURED_MOTIVO = 'CoordinaOT no está configurado.';
 
 const coordinaStateLabels = {
   devuelta: 'devuelta',
@@ -80,21 +84,28 @@ const coordinaStateLabels = {
   por_revisar: 'por revisar',
   en_revision: 'en revisión',
   anulada: 'anulada',
+  invalida: 'OF no válida',
   aprobada: 'aprobada',
   sin_estado: 'sin revisión en CoordinaOT'
 };
 
-function cleanOf(value) {
-  return String(value ?? '').trim();
+// La OF de un toldo se teclea libre y CoordinaOT las guarda con siete cifras («0230194»).
+// Esta es la única normalización: recorta y, si son solo dígitos y menos de siete, rellena
+// con ceros por la izquierda. Servidor, cliente HTTP y web buscan siempre con esta clave;
+// una OF que aun así no sea numérica (`231486.0`, `0230194/1`) no se envía a CoordinaOT.
+/** @param {unknown} value */
+export function normalizeOf(value) {
+  const of = String(value ?? '').trim();
+  return /^\d+$/.test(of) && of.length < 7 ? of.padStart(7, '0') : of;
 }
 
 function coordinaState(status, of) {
-  return status?.ofs?.[cleanOf(of)]?.estado || 'sin_estado';
+  return status?.ofs?.[normalizeOf(of)]?.estado || 'sin_estado';
 }
 
 /** @param {{ letter: string, of: string }[]} awnings */
 export function uniqueOfs(awnings) {
-  return [...new Set(awnings.map((awning) => cleanOf(awning.of)).filter(Boolean))];
+  return [...new Set(awnings.map((awning) => normalizeOf(awning.of)).filter(Boolean))];
 }
 
 /**
@@ -114,14 +125,14 @@ export function coordinaGroup(awnings, status) {
  */
 export function generationBlock(awnings, status) {
   if (awnings.length === 0) return 'El pedido no tiene toldos.';
-  const withoutOf = awnings.filter((awning) => !cleanOf(awning.of)).map((awning) => awning.letter);
+  const withoutOf = awnings.filter((awning) => !normalizeOf(awning.of)).map((awning) => awning.letter);
   if (withoutOf.length === 1) return `Falta la OF en el toldo ${withoutOf[0]}.`;
   if (withoutOf.length > 1) return `Falta la OF en los toldos ${withoutOf.join(', ')}.`;
-  if (!status?.disponible) return COORDINA_UNAVAILABLE;
+  if (!status?.disponible) return status?.motivo === COORDINA_NOT_CONFIGURED_MOTIVO ? COORDINA_NOT_CONFIGURED : COORDINA_UNAVAILABLE;
   const notApproved = awnings.filter((awning) => coordinaState(status, awning.of) !== 'aprobada');
   if (notApproved.length === 0) return null;
   const detail = notApproved
-    .map((awning) => `${awning.letter} (${cleanOf(awning.of)}) ${coordinaStateLabels[coordinaState(status, awning.of)] || coordinaState(status, awning.of)}`)
+    .map((awning) => `${awning.letter} (${normalizeOf(awning.of)}) ${coordinaStateLabels[coordinaState(status, awning.of)] || coordinaState(status, awning.of)}`)
     .join(', ');
   return `Sin aprobar en CoordinaOT: ${detail}.`;
 }
@@ -150,7 +161,7 @@ export function reviewerName(id, technicians) {
 export function approvalReviewers(awnings, status, technicians) {
   if (!status?.disponible) return '';
   const names = awnings
-    .map((awning) => status.ofs?.[cleanOf(awning.of)])
+    .map((awning) => status.ofs?.[normalizeOf(awning.of)])
     .filter((item) => item?.estado === 'aprobada' && plain(item.revisor))
     .map((item) => reviewerName(item.revisor, technicians));
   return [...new Set(names)].join(', ');

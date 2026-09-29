@@ -82,8 +82,8 @@ describe('pendingGroups según CoordinaOT', () => {
   const aprobada = { estado: 'aprobada', nota: '' };
 
   it('reparte por lo que dice CoordinaOT, en orden fijo', () => {
-    const status = { disponible: true, ofs: { '1': aprobada, '2': aprobada, '3': { estado: 'devuelta', nota: 'Falta cota' }, '4': { estado: 'en_revision' } } };
-    const groups = pendingGroups([coordinaReview('R', ['4']), coordinaReview('A', ['1', '2']), coordinaReview('D', ['1', '3'])], status);
+    const status = { disponible: true, ofs: { '0230191': aprobada, '0230192': aprobada, '0230193': { estado: 'devuelta', nota: 'Falta cota' }, '0230194': { estado: 'en_revision' } } };
+    const groups = pendingGroups([coordinaReview('R', ['0230194']), coordinaReview('A', ['230191', '0230192']), coordinaReview('D', ['0230191', '0230193'])], status);
     expect(groups.map((group) => [group.key, group.label, group.reviews.map((item) => item.orderCode)])).toEqual([
       ['por_revisar', 'Por revisar', ['R']],
       ['devuelto', 'Devueltos', ['D']],
@@ -92,9 +92,9 @@ describe('pendingGroups según CoordinaOT', () => {
   });
 
   it('sin respuesta de CoordinaOT, todo por revisar', () => {
-    const groups = pendingGroups([coordinaReview('A', ['1'])], { disponible: false });
+    const groups = pendingGroups([coordinaReview('A', ['0230191'])], { disponible: false });
     expect(groups.map((group) => group.key)).toEqual(['por_revisar']);
-    expect(pendingGroups([coordinaReview('A', ['1'])], null).map((group) => group.key)).toEqual(['por_revisar']);
+    expect(pendingGroups([coordinaReview('A', ['0230191'])], null).map((group) => group.key)).toEqual(['por_revisar']);
   });
 });
 
