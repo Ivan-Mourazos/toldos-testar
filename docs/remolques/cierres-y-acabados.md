@@ -32,6 +32,24 @@ más reforzado. Por eso la web sube la demasía del contorno: normal 3 cm, con b
 - Una **goma** (cordón elástico blanco, gris o negro) pasa por los ollaos y baja en zigzag
   hasta los ganchos del lateral del cajón, haciendo uves a lo largo del borde.
 
+Además (publicaciones de TGM en `lonaspararemolque`, fotos IMG_3930 a IMG_3935):
+
+- Todas las lonas llevan **ollaos de latón niquelado** y una **cuerda elástica de 6 mm
+  perimetral** (texto de la publicación). En las fotos los ollaos se ven dorados.
+- **Trasera con goma**: la tapa trasera cuelga de **ganchos arriba** y la goma sale de los
+  ollaos de abajo y cruza en diagonal hasta los ganchos del cajón, con una uve en cada
+  esquina (IMG_3930). En las esquinas laterales, goma en uve entre la lona y los ganchos
+  (IMG_3934).
+- **Recogida con solapa**: recomendada para remolques altos o arquillados y de ganado.
+- **Trasera abierta**: la lona de atrás se enrolla hacia arriba y se ata con cintas
+  (IMG_3935).
+
+## Ventana
+
+De **malla con borde negro**, con una **persiana de lona enrollable** encima que se recoge
+arriba enrollada y sujeta con dos cintas (IMG_3931); cerrada, la persiana tapa la ventana
+como una solapa (IMG_3932).
+
 ## Rotulación
 
 No se dibuja: no se sabe su sitio exacto. Solo se indica si lleva o no.
@@ -40,4 +58,5 @@ No se dibuja: no se sabe su sitio exacto. Solo se indica si lleva o no.
 
 `tmp/fotos-remolques/` (en el PC de Iván, no se sube). Están: remolques enteros con goma
 (varias formas), puentes de Hijos de Pedro López de cerca y ganchos corazón de cerca.
-Pendientes: cremallera, bastilla de cerca y ventana montada.
+También ventana con persiana, traseras con goma y ollaos de cerca (IMG_3930 a IMG_3935).
+Pendientes: cremallera y bastilla de cerca.
