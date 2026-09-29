@@ -1,0 +1,38 @@
+import type { LonaInput } from "./calc/lona.ts";
+import type { BaquetonInput } from "./calc/baqueton.ts";
+import { DEFAULT_PARAMS } from "./calc/params.ts";
+
+// La posición interna comienza en 10; las siguientes piezas del pedido usan
+// 11, 12… El PDF agrupado conserva siempre el nombre final PEDIDO-10.pdf.
+const cabecera = () => ({
+  numeroPedido: "", version: "10", cliente: "", revision: "", realizadoPor: "",
+  ordenFabricacion: "", fecha: new Date().toISOString().slice(0, 10), fechaSalida: "",
+});
+const sinOllaos = () => ({ laterales: [], atras: [], delante: [] });
+
+export function emptyLona(): LonaInput {
+  return {
+    cabecera: cabecera(),
+    cantidad: 1, largo: 0, ancho: 0, anchoAtras: 0, altoDelante: 0, altoAtras: 0, aguas: 0,
+    radioCumbrera: 0, radioHombro: 0, radioEsquina: 0, chaflan: 0,
+    radioChaflanAbajo: 0, radioChaflanArriba: 0,
+    contorno: 0, tipoPerfil: "",
+    recogeDelante: "", recogeAtras: "",
+    bastillaEnfundar: null, ventana: null, ventanaAncho: 0, ventanaAlto: 0, rotulacion: null,
+    modoOllaos: "", pasoOllaos: DEFAULT_PARAMS.pasoOllaosDefecto,
+    primerOllao: DEFAULT_PARAMS.primerOllao,
+    ollaosManuales: sinOllaos(), material: "", observaciones: "",
+  };
+}
+
+export function emptyBaqueton(): BaquetonInput {
+  return {
+    cabecera: cabecera(),
+    cantidad: 1, largo: 0, ancho: 0, baqueton: 0,
+    clienteEspecifico: "GENERAL",
+    modoOllaos: "", pasoOllaos: DEFAULT_PARAMS.pasoOllaosDefecto,
+    primerOllao: DEFAULT_PARAMS.primerOllao,
+    ollaosManuales: sinOllaos(), rotulacion: null,
+    material: "", observaciones: "",
+  };
+}
