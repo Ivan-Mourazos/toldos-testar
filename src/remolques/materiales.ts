@@ -1,0 +1,74 @@
+import sql from "mssql";
+import { MATERIALES_SEED, type Material } from "./calc/materiales-seed.ts";
+import { getRpsPool } from "./rps/pool.ts";
+
+// Subfamilia "PLASTICA (LONA)" (lonas PVC) de la empresa 001 en RPSNext.
+const SUBFAMILIA_PLASTICA_LONA = "8fcf241e-fcfa-4760-8992-26e35c031ffc";
+// Almacén "NUEVA SEDE ARZÚA" (donde se mira el stock de lona).
+const ALMACEN_ARZUA = "001-5";
+const CACHE_MS = 60 * 60 * 1000;
+
+let cache: { data: Material[]; at: number } | null = null;
+
+/** Materiales de producción: familias PVC identificadas como 580 o 650. */
+export function esLonaPvcProduccion(descripcion: string): boolean {
+  const nombre = descripcion.trim().toUpperCase();
+  return /^LONA\b/.test(nombre) && /(?:^|\D)(?:580|650)(?:\D|$)/.test(nombre);
+}
+
+const materialesSeedProduccion = () =>
+  MATERIALES_SEED.filter((material) => esLonaPvcProduccion(material.nombre));
+export function rowsToMateriales(
+  rows: Array<{ CodArticle: string; Description: string; StockArzua?: number | null }>,
+): Material[] {
+  return rows
+    .map((r) => ({
+      codigoBobina: (r.CodArticle ?? "").trim(),
+      nombre: (r.Description ?? "").trim(),
+      stockArzua: r.StockArzua != null ? Number(r.StockArzua) : null,
+    }))
+    .filter((m) =>
+      m.codigoBobina !== "" && m.nombre !== "" && esLonaPvcProduccion(m.nombre),
+    );
+}
+
+/**
+ * Lonas PVC de RPS: artículos activos de la empresa 001, subfamilia
+ * PLASTICA (LONA), solo variantes reales de bobina (Description con
+ * ':COLOR :ANCHO'), con el stock en la Nueva sede de Arzúa. Caché 1 h; si RPS
+ * no responde, última caché o semilla TC.
+ */
+export async function getMateriales(): Promise<Material[]> {
+  if (cache && Date.now() - cache.at < CACHE_MS) return cache.data;
+  const poolPromise = getRpsPool();
+  if (!poolPromise) return cache?.data ?? materialesSeedProduccion(); // RPS sin configurar
+  try {
+    const p = await poolPromise;
+    const res = await p.request()
+      .input("sub", sql.VarChar, SUBFAMILIA_PLASTICA_LONA)
+      .input("alm", sql.VarChar, ALMACEN_ARZUA)
+      .query(`
+        SELECT a.CodArticle, a.Description, st.StockArzua
+        FROM STKArticle a
+        LEFT JOIN (
+          SELECT IDArticle, SUM(Stock) AS StockArzua
+          FROM STKStock
+          WHERE CodCompany = '001' AND IDWarehouse = @alm
+          GROUP BY IDArticle
+        ) st ON st.IDArticle = a.IDArticle
+        WHERE a.CodCompany = '001'
+          AND a.IDProductSubFamily = @sub
+          AND a.InactiveDate IS NULL
+          AND a.Description LIKE '%:%:%'
+          AND (a.Description LIKE '%580%' OR a.Description LIKE '%650%')
+        ORDER BY a.Description`);
+    const data = rowsToMateriales(res.recordset);
+    if (data.length > 0) {
+      cache = { data, at: Date.now() };
+      return data;
+    }
+    return cache?.data ?? materialesSeedProduccion();
+  } catch {
+    return cache?.data ?? materialesSeedProduccion();
+  }
+}

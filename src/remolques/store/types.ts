@@ -1,0 +1,40 @@
+import type { LonaInput, LonaResult } from "../calc/lona.ts";
+import type { BaquetonInput, BaquetonResult } from "../calc/baqueton.ts";
+import type { CalcParams } from "../calc/params.ts";
+
+export type TipoPlanteamiento = "lona" | "baqueton";
+
+export interface PlanteamientoRecord {
+  id: string;
+  tipo: TipoPlanteamiento;
+  numeroPedido: string;
+  version: string;
+  cliente: string;
+  input: LonaInput | BaquetonInput;
+  result: LonaResult | BaquetonResult;
+  paramsSnapshot: CalcParams;
+  /** SVG serializado de la vista técnica en el momento de guardar (para PDF multi-remolque). */
+  snapshotSvg?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ListadoFiltro {
+  texto?: string;
+  tipo?: TipoPlanteamiento;
+  /** Mismo nº de pedido normalizado (admite AR260… y AR.26.0…). */
+  pedido?: string;
+  limit?: number;
+}
+
+export interface PlanteamientoStore {
+  list(filtro?: ListadoFiltro): Promise<PlanteamientoRecord[]>;
+  get(id: string): Promise<PlanteamientoRecord | null>;
+  save(
+    rec: Omit<PlanteamientoRecord, "id" | "createdAt" | "updatedAt"> & { id?: string },
+  ): Promise<PlanteamientoRecord>;
+  /** Borra un planteamiento. Devuelve true si existía. Irreversible. */
+  delete(id: string): Promise<boolean>;
+  getParams(): Promise<CalcParams>;
+  saveParams(p: CalcParams): Promise<void>;
+}

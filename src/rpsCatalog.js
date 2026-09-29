@@ -27,6 +27,15 @@ function getPool() {
   return poolPromise;
 }
 
+// La pantalla de remolques (src/remolques/rps) lee pedidos de RPS con esta misma
+// conexión de solo lectura en lugar de abrir otra: así hay un único pool y una
+// única configuración. Devuelve null si no hay credenciales, que es lo que
+// espera el código copiado de Remolques-TGM para caer en su modo sin RPS.
+export function getRpsPoolForRemolques() {
+  if (!config.db.user || !config.db.password) return null;
+  return getPool();
+}
+
 export async function searchRpsFabrics({ query = '', limit = 30 } = {}) {
   const safeLimit = Math.max(1, Math.min(Number(limit) || 30, 80));
   const items = await loadRpsFabrics();
