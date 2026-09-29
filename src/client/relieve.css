@@ -527,7 +527,7 @@ body, .app-shell { background: var(--bg); }
 .orders-chip-coordina.is-approved { color: var(--ok); }
 .orders-chip-coordina.is-returned { color: var(--danger); }
 .orders-chip-coordina.is-waiting { color: var(--text-muted); }
-.orders-detail-returned { color: var(--danger); display: block; font-size: 12px; margin-top: 2px; }
+.orders-detail-returned { color: var(--danger); display: block; font-size: 12px; grid-column: 1 / -1; margin-top: 2px; }
 
 /* La nota de CoordinaOT puede ocupar dos líneas (qué toldo falta y cómo está). */
 .review-generate-note { max-width: 320px; white-space: normal; }

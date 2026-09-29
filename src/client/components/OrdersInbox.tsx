@@ -161,13 +161,17 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
 function AwningChip({ item, coordinaStatus }: { item: AwningItem; coordinaStatus: CoordinaStatus | null }) {
   const label = item.state === 'ok' ? 'correcto' : item.state === 'warn' ? 'con aviso' : 'con errores';
   const coordina = coordinaStatus?.disponible ? coordinaStatus.ofs?.[item.of.trim()]?.estado : undefined;
+  // Un solo signo claro por toldo: si el cálculo está bien y CoordinaOT tiene marca, solo se
+  // enseña la de CoordinaOT (evita «✓ ✓» o «✓ ↩», que parecen contradecirse). Con aviso o
+  // error se mantiene el icono del cálculo y se añade la marca de CoordinaOT.
+  const showCalcIcon = !(item.state === 'ok' && coordina);
   return (
     <span className={`orders-chip is-${item.state}`} title={`${item.letter} · ${controlLabel(item.model)} · ${label} · CoordinaOT: ${coordina ?? 'sin datos'}`}>
       {item.letter}
-      {item.state === 'ok' ? <Check aria-hidden="true" /> : item.state === 'warn' ? <AlertTriangle aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
-      {coordina === 'aprobada' && <span className="orders-chip-coordina is-approved" aria-label="aprobada en CoordinaOT">✓</span>}
-      {coordina === 'devuelta' && <span className="orders-chip-coordina is-returned" aria-label="devuelta en CoordinaOT">↩</span>}
-      {coordina && coordina !== 'aprobada' && coordina !== 'devuelta' && <span className="orders-chip-coordina is-waiting" aria-label="en revisión en CoordinaOT">•</span>}
+      {showCalcIcon && (item.state === 'ok' ? <Check aria-hidden="true" /> : item.state === 'warn' ? <AlertTriangle aria-hidden="true" /> : <CircleAlert aria-hidden="true" />)}
+      {coordina === 'aprobada' && <span className="orders-chip-coordina is-approved" role="img" aria-label="aprobada en CoordinaOT">✓</span>}
+      {coordina === 'devuelta' && <span className="orders-chip-coordina is-returned" role="img" aria-label="devuelta en CoordinaOT">↩</span>}
+      {coordina && coordina !== 'aprobada' && coordina !== 'devuelta' && <span className="orders-chip-coordina is-waiting" role="img" aria-label="en revisión en CoordinaOT">•</span>}
     </span>
   );
 }
