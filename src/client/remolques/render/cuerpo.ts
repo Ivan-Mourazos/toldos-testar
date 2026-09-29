@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { CuerpoBaqueton, CuerpoLona, Perfil2D } from '../../../remolques/escena/tipos.ts';
+import { tuboPoligonal } from './herrajes';
 import { escalarUV, type Pieza } from './piezas';
 
 /** Amplitud de las arrugas del contorno: se notan con la luz rasante y no cambian la forma. */
@@ -85,11 +86,47 @@ function piezasBaqueton(c: CuerpoBaqueton): Pieza[] {
   ];
 }
 
+/** Cuadrilátero vertical de `a` a `b`, de `y = 0` a `y = alto`. */
+function franja(a: THREE.Vector3, b: THREE.Vector3, alto: number): THREE.BufferGeometry {
+  const geo = new THREE.BufferGeometry();
+  const largo = a.distanceTo(b);
+  geo.setAttribute('position', new THREE.Float32BufferAttribute([
+    a.x, 0, a.z, b.x, 0, b.z, b.x, alto, b.z, a.x, alto, a.z,
+  ], 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, largo, 0, largo, alto, 0, alto], 2));
+  geo.setIndex([0, 1, 2, 0, 2, 3]);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** El dobladillo de la bastilla, un pelo por fuera de la lona para que se vea el doble. */
+function piezasBastilla(c: CuerpoLona): Pieza[] {
+  const wA = c.perfilAtras[c.perfilAtras.length - 1][0];
+  const wD = c.perfilDelante[c.perfilDelante.length - 1][0];
+  const f = 0.3;
+  const V = (x: number, z: number) => new THREE.Vector3(x, 0, z);
+  return [
+    franja(V(-wA, -f), V(wA, -f), c.bastilla),
+    franja(V(-wD, c.largo + f), V(wD, c.largo + f), c.bastilla),
+    franja(V(wA + f, 0), V(wD + f, c.largo), c.bastilla),
+    franja(V(-wA - f, 0), V(-wD - f, c.largo), c.bastilla),
+  ].map((geometria) => ({ geometria, material: 'lonaOscura' as const }));
+}
+
+/** Costura de cada cara con el contorno: el perfil sin la base. */
+function costura(perfil: Perfil2D, z: number): Pieza {
+  const puntos = perfil.map(([x, y]) => new THREE.Vector3(x, y, z));
+  return { geometria: tuboPoligonal(puntos, 0.18), material: 'lonaOscura' };
+}
+
 export function piezasCuerpo(c: CuerpoLona | CuerpoBaqueton): Pieza[] {
   if (c.tipo === 'baqueton') return piezasBaqueton(c);
   return [
     { geometria: geometriaContorno(c), material: 'lona' },
     { geometria: geometriaPano(c.perfilDelante, c.largo), material: 'lona' },
     { geometria: geometriaPano(c.perfilAtras, 0), material: 'lona' },
+    costura(c.perfilDelante, c.largo),
+    costura(c.perfilAtras, 0),
+    ...(c.bastilla > 0 ? piezasBastilla(c) : []),
   ];
 }

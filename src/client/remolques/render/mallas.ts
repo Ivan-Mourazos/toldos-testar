@@ -1,10 +1,13 @@
 import * as THREE from 'three';
+import { DIAMETRO_GOMA } from '../../../remolques/escena/constantes.ts';
 import type { EscenaRemolque, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { piezasCajon } from './cajon';
+import { piezasCierres } from './cierres';
 import { piezasCuerpo } from './cuerpo';
-import { geometriaGancho, geometriaGoma, geometriaHueco, geometriaOllao } from './herrajes';
+import { geometriaGancho, geometriaGoma, geometriaHueco, geometriaOllao, tuboPoligonal } from './herrajes';
 import type { Materiales } from './materiales';
 import { sobreCara, type Pieza } from './piezas';
+import { piezasVentana } from './ventana';
 
 function instancias(geometria: THREE.BufferGeometry, material: THREE.Material, matrices: THREE.Matrix4[]) {
   const malla = new THREE.InstancedMesh(geometria, material, matrices.length);
@@ -23,8 +26,14 @@ export function construirMallas(escena: EscenaRemolque, materiales: Materiales):
   };
   piezasCuerpo(escena.cuerpo).forEach(anadir);
   piezasCajon(escena.cajon, escena.cuerpo.tipo === 'lona').forEach(anadir);
+  const cierres = piezasCierres(escena.cierres);
+  cierres.piezas.forEach(anadir);
+  if (escena.ventana) piezasVentana(escena.ventana).forEach(anadir);
 
-  const ollaos: Array<{ punto: Vec3; normal: Vec3 }> = escena.ollaos.map(({ punto, normal }) => ({ punto, normal }));
+  const ollaos: Array<{ punto: Vec3; normal: Vec3 }> = [
+    ...escena.ollaos.map(({ punto, normal }) => ({ punto, normal })),
+    ...cierres.ollaos,
+  ];
   if (ollaos.length > 0) {
     grupo.add(instancias(geometriaOllao(), materiales.laton, ollaos.map((o) => sobreCara(o.punto, o.normal, 0.25))));
     grupo.add(instancias(geometriaHueco(), materiales.hueco, ollaos.map((o) => sobreCara(o.punto, o.normal, 0.2))));
@@ -33,6 +42,7 @@ export function construirMallas(escena: EscenaRemolque, materiales: Materiales):
     grupo.add(instancias(geometriaGancho(), materiales.herraje, escena.ganchos.map((g) => sobreCara(g.punto, g.normal, 0.15))));
   }
   escena.gomas.forEach((goma) => anadir({ geometria: geometriaGoma(goma), material: 'goma' }));
+  cierres.gomas.forEach((puntos) => anadir({ geometria: tuboPoligonal(puntos, DIAMETRO_GOMA / 2), material: 'goma' }));
   return grupo;
 }
 
