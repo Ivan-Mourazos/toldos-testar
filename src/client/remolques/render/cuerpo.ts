@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import type { CuerpoBaqueton, CuerpoLona, Perfil2D } from '../../../remolques/escena/tipos.ts';
 import { tuboPoligonal } from './herrajes';
-import { escalarUV, type Pieza } from './piezas';
+import { plano, type Pieza } from './piezas';
 
 /** Amplitud de las arrugas del contorno: se notan con la luz rasante y no cambian la forma. */
 const ARRUGA = 0.35;
+/** Cuánto sobresale el dobladillo de la bastilla por fuera de la lona, en cm. */
+export const DESFASE_BASTILLA = 0.3;
 /** Largo de cada tramo del contorno a lo largo del remolque. */
 const TRAMO_Z = 10;
 
@@ -76,7 +78,6 @@ export function geometriaPano(perfil: Perfil2D, z: number): THREE.BufferGeometry
 }
 
 function piezasBaqueton(c: CuerpoBaqueton): Pieza[] {
-  const plano = (ancho: number, alto: number) => escalarUV(new THREE.PlaneGeometry(ancho, alto), ancho, alto);
   return [
     { geometria: plano(c.ancho, c.largo).rotateX(-Math.PI / 2).translate(0, 0, c.largo / 2), material: 'lona' },
     { geometria: plano(c.largo, c.caidaLateral).rotateY(Math.PI / 2).translate(c.ancho / 2, -c.caidaLateral / 2, c.largo / 2), material: 'lona' },
@@ -103,7 +104,7 @@ function franja(a: THREE.Vector3, b: THREE.Vector3, alto: number): THREE.BufferG
 function piezasBastilla(c: CuerpoLona): Pieza[] {
   const wA = c.perfilAtras[c.perfilAtras.length - 1][0];
   const wD = c.perfilDelante[c.perfilDelante.length - 1][0];
-  const f = 0.3;
+  const f = DESFASE_BASTILLA;
   const V = (x: number, z: number) => new THREE.Vector3(x, 0, z);
   return [
     franja(V(-wA, -f), V(wA, -f), c.bastilla),

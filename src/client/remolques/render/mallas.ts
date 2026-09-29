@@ -3,11 +3,15 @@ import { DIAMETRO_GOMA } from '../../../remolques/escena/constantes.ts';
 import type { EscenaRemolque, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { piezasCajon } from './cajon';
 import { piezasCierres } from './cierres';
-import { piezasCuerpo } from './cuerpo';
+import { DESFASE_BASTILLA, piezasCuerpo } from './cuerpo';
 import { geometriaGancho, geometriaGoma, geometriaHueco, geometriaOllao, tuboPoligonal } from './herrajes';
 import type { Materiales } from './materiales';
 import { sobreCara, type Pieza } from './piezas';
 import { piezasVentana } from './ventana';
+
+/** Separación del aro de latón y del hueco de un ollao respecto de la lona, en cm. */
+const SEPARACION_ARO = 0.25;
+const SEPARACION_HUECO = 0.2;
 
 function instancias(geometria: THREE.BufferGeometry, material: THREE.Material, matrices: THREE.Matrix4[]) {
   const malla = new THREE.InstancedMesh(geometria, material, matrices.length);
@@ -30,13 +34,15 @@ export function construirMallas(escena: EscenaRemolque, materiales: Materiales):
   cierres.piezas.forEach(anadir);
   if (escena.ventana) piezasVentana(escena.ventana).forEach(anadir);
 
-  const ollaos: Array<{ punto: Vec3; normal: Vec3 }> = [
-    ...escena.ollaos.map(({ punto, normal }) => ({ punto, normal })),
-    ...cierres.ollaos,
+  // Con bastilla, el dobladillo cubre los ollaos del borde de abajo: el aro va encima y el hueco delante.
+  const bastilla = escena.cuerpo.tipo === 'lona' ? escena.cuerpo.bastilla : 0;
+  const ollaos: Array<{ punto: Vec3; normal: Vec3; extra: number }> = [
+    ...escena.ollaos.map(({ punto, normal }) => ({ punto, normal, extra: bastilla > 0 && punto[1] <= bastilla ? DESFASE_BASTILLA : 0 })),
+    ...cierres.ollaos.map(({ punto, normal }) => ({ punto, normal, extra: 0 })),
   ];
   if (ollaos.length > 0) {
-    grupo.add(instancias(geometriaOllao(), materiales.laton, ollaos.map((o) => sobreCara(o.punto, o.normal, 0.25))));
-    grupo.add(instancias(geometriaHueco(), materiales.hueco, ollaos.map((o) => sobreCara(o.punto, o.normal, 0.2))));
+    grupo.add(instancias(geometriaOllao(), materiales.laton, ollaos.map((o) => sobreCara(o.punto, o.normal, SEPARACION_ARO + o.extra))));
+    grupo.add(instancias(geometriaHueco(), materiales.hueco, ollaos.map((o) => sobreCara(o.punto, o.normal, SEPARACION_HUECO + o.extra))));
   }
   if (escena.ganchos.length > 0) {
     grupo.add(instancias(geometriaGancho(), materiales.herraje, escena.ganchos.map((g) => sobreCara(g.punto, g.normal, 0.15))));

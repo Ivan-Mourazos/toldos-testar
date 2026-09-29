@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { escenaDePrueba } from './casos-prueba';
 import { piezasCierres } from './cierres';
 import { piezasCuerpo } from './cuerpo';
+import { construirMallas } from './mallas';
+import { crearMateriales } from './materiales';
 import { piezasVentana } from './ventana';
+import type { CierreEsquina, EscenaRemolque } from '../../../remolques/escena/tipos.ts';
 
 const cierre = (recogida: string) =>
   escenaDePrueba({ recogeDelante: recogida }).cierres.filter((c) => c.esquina === 'delante-derecha');
@@ -48,11 +51,152 @@ describe('ventana y acabados', () => {
     expect(maxY(piezas[2].geometria)).toBeGreaterThan(95);
   });
 
+  it('ventana: cada cinta rodea el rollo de la persiana y la trama de la lona no se estira', () => {
+    const escena = escenaDePrueba({ ventana: true, ventanaAncho: 50, ventanaAlto: 35 });
+    const piezas = piezasVentana(escena.ventana!);
+    const caja = (geo: THREE.BufferGeometry) => { geo.computeBoundingBox(); return geo.boundingBox!; };
+    const rollo = caja(piezas[2].geometria);
+    for (const cinta of piezas.slice(3)) {
+      const c = caja(cinta.geometria);
+      // Envuelve el rollo en y y en z, y solo ocupa su ancho de cinta en x.
+      expect(c.max.y).toBeGreaterThan(rollo.max.y);
+      expect(c.min.y).toBeLessThan(rollo.min.y);
+      expect(c.max.z).toBeGreaterThan(rollo.max.z);
+      expect(c.min.z).toBeLessThan(rollo.min.z);
+      expect(c.max.x - c.min.x).toBeCloseTo(2.5, 5);
+    }
+    // UV en cm: el contorno del rollo (2πr) por su largo (ancho + marcos).
+    const uv = piezas[2].geometria.getAttribute('uv');
+    let maxU = 0;
+    let maxV = 0;
+    for (let i = 0; i < uv.count; i += 1) { maxU = Math.max(maxU, uv.getX(i)); maxV = Math.max(maxV, uv.getY(i)); }
+    expect(maxU).toBeCloseTo(2 * Math.PI * 1.8, 5);
+    expect(maxV).toBeCloseTo(50 + 2 * 2, 5);
+  });
+
   it('bastilla: cuatro franjas de 5 cm en el borde de abajo; costuras en las dos caras', () => {
     const sin = piezasCuerpo(escenaDePrueba().cuerpo);
     const con = piezasCuerpo(escenaDePrueba({ bastillaEnfundar: true }).cuerpo);
     expect(con.length - sin.length).toBe(4);
     expect(maxY(con.at(-1)!.geometria)).toBeCloseTo(5, 5);
     expect(sin.filter((p) => p.material === 'lonaOscura')).toHaveLength(2);
+  });
+});
+
+const centro = (geo: THREE.BufferGeometry) => {
+  geo.computeBoundingBox();
+  return geo.boundingBox!.getCenter(new THREE.Vector3());
+};
+const semiancho = (escena: EscenaRemolque, z: number) => {
+  const c = escena.cuerpo;
+  if (c.tipo !== 'lona') throw new Error('no es lona');
+  const t = z / c.largo;
+  const a = c.perfilAtras.at(-1)![0];
+  const d = c.perfilDelante.at(-1)![0];
+  return a + (d - a) * t;
+};
+/** Distancia de un punto a la esquina a lo largo del lateral (`haciaLateral`). */
+const alLargo = (c: CierreEsquina, p: THREE.Vector3) =>
+  p.clone().sub(new THREE.Vector3(...c.base)).dot(new THREE.Vector3(...c.haciaLateral));
+const esquinaDerecha = (recogida: string) =>
+  escenaDePrueba({ recogeDelante: recogida }).cierres.find((c) => c.esquina === 'delante-derecha')!;
+
+describe('colocación de los cierres sobre la lona', () => {
+  for (const recogida of ['GOMA', 'PUENTES HIJOS DE PEDRO LOPEZ']) {
+    it(`${recogida}: en las cuatro esquinas todo queda en el lateral, dentro de la oreja`, () => {
+      const escena = escenaDePrueba({ recogeDelante: recogida, recogeAtras: recogida });
+      expect(escena.cierres).toHaveLength(4);
+      for (const c of escena.cierres) {
+        const r = piezasCierres([c]);
+        const lado = c.normal[0];
+        const enFlap = (p: THREE.Vector3) => {
+          expect(lado * p.x).toBeGreaterThanOrEqual(semiancho(escena, p.z) - 1e-6);
+          expect(lado * p.x).toBeLessThanOrEqual(semiancho(escena, p.z) + 2);
+          const a = alLargo(c, p);
+          expect(a).toBeGreaterThanOrEqual(-1e-6);
+          expect(a).toBeLessThanOrEqual(c.oreja + 1e-6);
+        };
+        r.piezas.forEach((p) => enFlap(centro(p.geometria)));
+        // Los ollaos de la oreja van los primeros; los del lateral quedan más allá del borde libre.
+        r.ollaos.slice(0, c.alturas.length).forEach((o) => enFlap(new THREE.Vector3(...o.punto)));
+        r.ollaos.forEach((o) => {
+          const p = new THREE.Vector3(...o.punto);
+          expect(lado * p.x).toBeGreaterThanOrEqual(semiancho(escena, p.z) - 1e-6);
+          expect(alLargo(c, p)).toBeGreaterThanOrEqual(-1e-6);
+        });
+      }
+    });
+  }
+
+  it('con una solapa estrecha los puentes y la cincha siguen sobre la solapa', () => {
+    const c: CierreEsquina = { ...esquinaDerecha('PUENTES HIJOS DE PEDRO LOPEZ'), oreja: 3 };
+    const r = piezasCierres([c]);
+    expect(r.piezas.length).toBeGreaterThan(1);
+    for (const p of r.piezas) {
+      const a = alLargo(c, centro(p.geometria));
+      expect(a).toBeGreaterThanOrEqual(0);
+      expect(a).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('con una solapa de 2 cm el ollao de la goma queda sobre la solapa', () => {
+    const c: CierreEsquina = { ...esquinaDerecha('GOMA'), oreja: 2 };
+    const r = piezasCierres([c]);
+    r.ollaos.slice(0, c.alturas.length).forEach((o) => {
+      const a = alLargo(c, new THREE.Vector3(...o.punto));
+      expect(a).toBeGreaterThanOrEqual(0);
+      expect(a).toBeLessThanOrEqual(2);
+    });
+  });
+
+  it('sin oreja no se dibuja nada que dependa de ella', () => {
+    for (const recogida of ['GOMA', 'VELCRO', 'PUENTES HIJOS DE PEDRO LOPEZ']) {
+      const r = piezasCierres([{ ...esquinaDerecha(recogida), oreja: 0 }]);
+      expect(r).toEqual({ piezas: [], ollaos: [], gomas: [] });
+    }
+  });
+
+  it('con una sola altura la goma no se dibuja (un solo punto no hace tubo)', () => {
+    const r = piezasCierres([{ ...esquinaDerecha('GOMA'), alto: 15, alturas: [7.5] }]);
+    expect(r.gomas).toEqual([]);
+    expect(r.ollaos).toHaveLength(1);
+  });
+});
+
+describe('bastilla y ollaos', () => {
+  const instanciada = (grupo: THREE.Group, material: THREE.Material) => {
+    let inst: THREE.InstancedMesh | undefined;
+    grupo.traverse((o) => { if (o instanceof THREE.InstancedMesh && o.material === material) inst = o; });
+    return inst!;
+  };
+  /** Cuánto se separa de su ollao (hacia fuera) la instancia `i` de una malla instanciada. */
+  const separacion = (inst: THREE.InstancedMesh, o: { punto: number[]; normal: number[] }, i: number) => {
+    const m = new THREE.Matrix4();
+    inst.getMatrixAt(i, m);
+    return new THREE.Vector3().setFromMatrixPosition(m)
+      .sub(new THREE.Vector3(...(o.punto as [number, number, number])))
+      .dot(new THREE.Vector3(...(o.normal as [number, number, number])));
+  };
+
+  it('con bastilla los aros y los huecos quedan por fuera del dobladillo', () => {
+    const escena = escenaDePrueba({ bastillaEnfundar: true });
+    const franja = piezasCuerpo(escena.cuerpo).slice(-4)[0].geometria;
+    franja.computeBoundingBox();
+    // La franja de atrás está en z = −desfase.
+    const desfase = -franja.boundingBox!.max.z;
+    expect(desfase).toBeGreaterThan(0);
+    const materiales = crearMateriales(escena.color, { texturas: false });
+    const grupo = construirMallas(escena, materiales);
+    for (const m of [materiales.laton, materiales.hueco]) {
+      const inst = instanciada(grupo, m);
+      escena.ollaos.forEach((o, i) => expect(separacion(inst, o, i)).toBeGreaterThan(desfase));
+    }
+  });
+
+  it('sin bastilla los ollaos no se mueven', () => {
+    const escena = escenaDePrueba();
+    const materiales = crearMateriales(escena.color, { texturas: false });
+    const grupo = construirMallas(escena, materiales);
+    expect(separacion(instanciada(grupo, materiales.laton), escena.ollaos[0], 0)).toBeCloseTo(0.25, 5);
   });
 });

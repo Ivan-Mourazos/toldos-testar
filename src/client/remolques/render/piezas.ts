@@ -25,3 +25,6 @@ export function escalarUV(geo: THREE.BufferGeometry, ancho: number, alto: number
   uv.needsUpdate = true;
   return geo;
 }
+
+/** Plano de `ancho` × `alto` cm con las UV en centímetros. */
+export const plano = (ancho: number, alto: number) => escalarUV(new THREE.PlaneGeometry(ancho, alto), ancho, alto);

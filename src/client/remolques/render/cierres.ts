@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { ANCHO_VELCRO } from '../../../remolques/escena/constantes.ts';
 import type { CierreEsquina, Vec3 } from '../../../remolques/escena/tipos.ts';
-import { escalarUV, sobreCara, v3, type Pieza } from './piezas';
+import { plano, sobreCara, v3, type Pieza } from './piezas';
 
 // Cierres de las esquinas como los hace el taller (docs/remolques/cierres-y-acabados.md):
 // la oreja o solapa del paño dobla sobre el lateral y encima va la goma, el velcro, la
@@ -35,12 +35,17 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
       geometria.applyMatrix4(sobreCara(centro, normal));
       r.piezas.push({ geometria, material });
     };
-    const plano = (ancho: number, alto: number) => escalarUV(new THREE.PlaneGeometry(ancho, alto), ancho, alto);
+
+    // Goma, velcro y puentes van sobre la oreja: sin oreja no hay dónde ponerlos.
+    const sobreOreja = c.tipo === 'GOMA' || c.tipo === 'PUENTES' || c.velcro !== null;
+    if (c.oreja <= 0 && sobreOreja) continue;
+    /** Posición, a lo largo del lateral, de algo que va a `d` cm del borde libre de la oreja: nunca pasa de media oreja. */
+    const desdeBorde = (d: number) => c.oreja - Math.min(d, c.oreja / 2);
 
     if (c.oreja > 0) colocar(plano(c.oreja, c.alto), punto(c.oreja / 2, c.alto / 2, 0.35), 'lona');
 
     if (c.tipo === 'GOMA') {
-      const enOreja = c.alturas.map((y) => punto(c.oreja - OLLAO_EN_OREJA, y, 0.4));
+      const enOreja = c.alturas.map((y) => punto(desdeBorde(OLLAO_EN_OREJA), y, 0.4));
       const medias = c.alturas.slice(1).map((y, i) => (c.alturas[i] + y) / 2);
       const enLateral = medias.map((y) => punto(c.oreja + OLLAO_EN_LATERAL, y, 0.1));
       for (const p of [...enOreja, ...enLateral]) r.ollaos.push({ punto: [p.x, p.y, p.z], normal: c.normal });
@@ -50,10 +55,13 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
         zigzag.push(p.clone().addScaledVector(normal, 0.8));
         if (enLateral[i]) zigzag.push(enLateral[i].clone().addScaledVector(normal, 0.8));
       });
-      r.gomas.push(zigzag.reverse());
+      if (zigzag.length >= 2) r.gomas.push(zigzag.reverse());
     }
 
-    if (c.velcro) colocar(plano(ANCHO_VELCRO, c.alto), punto(c.oreja - ANCHO_VELCRO / 2, c.alto / 2, 0.45), 'oscuro');
+    if (c.velcro) {
+      const ancho = Math.min(ANCHO_VELCRO, c.oreja);
+      colocar(plano(ancho, c.alto), punto(c.oreja - ancho / 2, c.alto / 2, 0.45), 'oscuro');
+    }
 
     if (c.cremallera) {
       const { distancia, hasta } = c.cremallera;
@@ -62,7 +70,7 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
     }
 
     if (c.tipo === 'PUENTES') {
-      const a = c.oreja - PUENTE_EN_SOLAPA;
+      const a = desdeBorde(PUENTE_EN_SOLAPA);
       for (const y of c.alturas) {
         const placa = new THREE.CylinderGeometry(1.6, 1.6, 0.25, 20).rotateX(Math.PI / 2).scale(1, 1.5, 1);
         colocar(placa, punto(a, y, 0.5), 'herraje');
