@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
-import type { Calculation, ReviewPackage, RuleParameters } from '../types';
+import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import { OrderView } from '../views/OrderView';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { controlLabel } from './controlLabels';
-import { canGenerateReview } from '../generatePermission';
+import { generateState } from '../generatePermission';
 
 const noop = () => undefined;
 
@@ -16,6 +16,7 @@ export function ReviewOrderDetail({
   parameters,
   loading,
   currentUser,
+  coordinaStatus,
   disabled,
   generating,
   onBack,
@@ -27,6 +28,7 @@ export function ReviewOrderDetail({
   parameters: RuleParameters;
   loading: boolean;
   currentUser: string;
+  coordinaStatus: CoordinaStatus | null;
   disabled: boolean;
   generating: boolean;
   onBack: () => void;
@@ -77,11 +79,8 @@ export function ReviewOrderDetail({
   // Para hacer otro parecido está «Reutilizar datos» en el bloque de archivos.
   const isProduced = review.status === 'PRODUCED';
   const produced = isProduced && Boolean(review.production);
-  const canGenerate = canGenerateReview(review.status, review.order.technician, currentUser);
-  // Sin autor (pedidos históricos), puede generar cualquiera: no hay a quién señalar.
-  const generateNote = !canGenerate && !isProduced && review.order.technician
-    ? `Lo genera el autor (${controlLabel(review.order.technician)})`
-    : '';
+  // El botón depende del autor y de que CoordinaOT haya aprobado todas las OF.
+  const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
 
   return (
     <section className="review-reader panel panel-3d" aria-label={`Datos de revisión de ${review.orderCode}`}>

@@ -4,7 +4,7 @@ import type { AskForConfirmation, Notify } from '../components/NotificationCente
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
-import { canGenerateReview } from '../generatePermission';
+import { generateState } from '../generatePermission';
 
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
 // anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
@@ -56,6 +56,10 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
 
   const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;
+  // Segunda consulta a CoordinaOT: la de las OF del pedido abierto (la de la bandeja solo
+  // corre en la lista). Un pedido ya generado no necesita preguntar.
+  const detailOfs = selectedReview ? (selectedReview.order.awnings || []).map((awning) => String(awning.of || '')) : [];
+  const { status: detailCoordina } = useCoordinaStatus(detailOfs, Boolean(selectedReview) && selectedReview?.status !== 'PRODUCED');
   const detailLoading = Boolean(selectedCode && !detailIsCurrent);
 
   useEffect(() => {
@@ -101,11 +105,11 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   }
 
   async function generateSelected() {
-    if (!selectedReview || !canGenerateReview(selectedReview.status, selectedReview.order.technician, currentUser)) return;
+    if (!selectedReview || !generateState(selectedReview, currentUser, detailCoordina).allowed) return;
     const targetCode = selectedReview.orderCode;
     const initialChoice = await onConfirm({
       title: `Generar archivos de ${targetCode}`,
-      message: '¿Está aprobado en CoordinaOT? Se guardará el PDF definitivo en Planteamientos y un Excel de reserva por cada OF en Subida de material.',
+      message: 'CoordinaOT ya lo ha aprobado. Se guardará el PDF definitivo en Planteamientos y un Excel de reserva por cada OF en Subida de material.',
       details: [`${targetCode}-1.pdf`, ...selectedReview.summary.ofs.map((of) => `${of}.xls`)],
       confirmLabel: 'Sí, generar archivos',
       cancelLabel: 'Ahora no',
@@ -203,6 +207,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             parameters={parameters}
             loading={detailLoading}
             currentUser={currentUser}
+            coordinaStatus={detailCoordina}
             disabled={working || generating}
             generating={generating}
             onBack={() => setSelectedCode('')}
