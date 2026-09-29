@@ -88,6 +88,11 @@ app.use('/api', (req, _res, next) => {
 
 app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 
+// Datos de la web que necesita la barra de arriba (diseño 29/09/2026).
+app.get('/api/app-info', (_req, res) => {
+  res.set('Cache-Control', 'no-store').json({ remolquesUrl: config.remolquesUrl });
+});
+
 app.get('/api/health', async (_req, res, next) => {
   try {
     const settings = await workflowStore.getSettings();

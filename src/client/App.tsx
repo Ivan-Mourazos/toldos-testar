@@ -7,11 +7,13 @@ import {
   Inbox,
   Save,
   SlidersHorizontal,
+  Truck,
   UserRound,
   X, Undo2, Moon, Sun } from 'lucide-react';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
 import './relieve.css';
+import './remolques-nav.css';
 import './dark.generated.css';
 import './dark.css';
 import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
@@ -65,6 +67,14 @@ export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try { return window.localStorage.getItem('toldos-tema') === 'dark' ? 'dark' : 'light'; } catch { return 'light'; }
   });
+  // Enlace a la web de remolques (diseño 29/09/2026, fase 1): se lee una vez; si falla, sin enlace.
+  const [remolquesUrl, setRemolquesUrl] = useState('');
+  useEffect(() => {
+    fetch('/api/app-info')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((info) => { if (info && typeof info.remolquesUrl === 'string') setRemolquesUrl(info.remolquesUrl); })
+      .catch(() => { /* sin datos de la barra: no sale el enlace */ });
+  }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     try { window.localStorage.setItem('toldos-tema', theme); } catch { /* sin almacenamiento: dura hasta recargar */ }
@@ -412,7 +422,7 @@ export default function App() {
       <header className="app-topnav">
         <div className="brand">
           <div className="brand-mark"><img src="/logo-tgm-transparent.png" alt="TGM" /></div>
-          <div><h1>Toldos</h1><span>Planteamientos</span></div>
+          <div><h1>Planteamientos</h1><span>TGM</span></div>
         </div>
         {/* Barra superior (diseño 24/09/2026, apartado 1): la lateral quitaba 204 px a 1280. */}
         <nav className="app-tabs" aria-label="Vistas">
@@ -420,6 +430,11 @@ export default function App() {
           <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} icon={<Inbox />} label={pendingCount ? `Pedidos · ${pendingCount}` : 'Pedidos'} onClick={() => setActiveTab('reviews')} />
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
+          {remolquesUrl && (
+            <a className="tecla-3d sobre-oscuro app-remolques-link" href={remolquesUrl}>
+              <Truck aria-hidden="true" />Remolques
+            </a>
+          )}
         </nav>
         <button type="button" className="theme-toggle" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
           {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}

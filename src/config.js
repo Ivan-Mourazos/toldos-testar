@@ -38,6 +38,9 @@ export const config = {
   // queda bloqueado: nunca se genera sin aprobación comprobada.
   coordinaUrl: process.env.COORDINA_URL || '',
   coordinaClave: process.env.COORDINA_CLAVE || '',
+  // Unificación con remolques (diseño 29/09/2026, fase 1): mientras sus pantallas no
+  // estén dentro, la barra enlaza con la web de remolques. Sin valor, no sale el enlace.
+  remolquesUrl: process.env.REMOLQUES_URL || '',
   db: {
     server: process.env.DB_SERVER || '192.168.0.124',
     port: numberFromEnv('DB_PORT', 1433),

@@ -1,0 +1,22 @@
+/* Enlace «Remolques» de la barra (diseño 29/09/2026, fase 1). Es un <a>, no un <button>, y
+   las reglas de `.app-tabs button` no lo alcanzan: aquí se le da el mismo aspecto que a las
+   pestañas para que la barra se vea de una pieza. Va en fichero propio porque relieve.css
+   y styles.css tenían cambios ajenos sin confirmar al añadirlo. */
+.app-topnav .app-tabs a.app-remolques-link {
+  align-items: center;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 9px;
+  justify-content: flex-start;
+  min-height: 34px;
+  padding: 0 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.app-topnav .app-tabs a.app-remolques-link svg { flex-shrink: 0; height: 15px; width: 15px; }
+.app-topnav .app-tabs a.app-remolques-link:hover { background: rgb(255 255 255 / 0.07); color: #ffffff; }
+.app-topnav .app-tabs a.app-remolques-link:focus-visible { outline: 2px solid var(--tgm-yellow); outline-offset: 2px; }
