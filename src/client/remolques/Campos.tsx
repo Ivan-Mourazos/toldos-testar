@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Check, ChevronDown, Search } from 'lucide-react';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
+import { InputDecimal } from './InputDecimal';
 
 // Los campos del formulario de remolques (los de `campos.tsx` de la web de remolques) hechos con
 // el marcado y las clases de los campos de las tarjetas de toldo: `field`, `select-field` /
@@ -43,14 +44,13 @@ export function CampoNum(props: {
   return (
     <label className={`rem-campo${props.error ? ' is-invalido' : ''}${cols(props.span)}`}>
       <span>{props.label}</span>
-      <input
+      <InputDecimal
         name={props.name}
         data-campo={props.name}
         aria-invalid={Boolean(props.error)}
         aria-describedby={props.error ? errorId : undefined}
-        type="number" inputMode="decimal" step="0.1" min="0"
-        value={props.value === 0 ? '' : props.value}
-        onChange={(e) => props.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+        value={props.value === 0 ? undefined : props.value}
+        onValor={(valor) => props.onChange(valor ?? 0)}
       />
       <MensajeError id={errorId} mensaje={props.error} />
     </label>

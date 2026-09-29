@@ -1,6 +1,7 @@
 import React from 'react';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { CabeceraPedido } from './CabeceraPedido';
+import { Escena3D } from './Escena3D';
 import { FormularioBaqueton } from './FormularioBaqueton';
 import { FormularioLona } from './FormularioLona';
 import { PestanasElementos } from './PestanasElementos';
@@ -10,7 +11,7 @@ import { useRemolques } from './useRemolques';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
-// (con «Listo» / «Falta: …» debajo) y, a la derecha, el hueco del dibujo (Task 5) y los resultados.
+// (con «Listo» / «Falta: …» debajo) y, a la derecha, el dibujo de siempre (con las observaciones) y los resultados.
 export function RemolquesView({ usuario, notify, askForConfirmation }: {
   usuario: string;
   notify: Notify;
@@ -86,8 +87,30 @@ export function RemolquesView({ usuario, notify, askForConfirmation }: {
               </p>
             </div>
             <div className="rem-editor-derecha">
-              {/* Aquí entra el dibujo (Task 5), encima de los resultados. */}
-              <div className="rem-dibujo" data-hueco="dibujo" />
+              {/* El dibujo de la web de remolques, con las mismas props que en su `Workspace`.
+                  Sin `onSnapshotReady`: todavía no hay PDF. */}
+              {lineaActiva.tipo === 'lona' ? (
+                <Escena3D modo="lona" medidasHechas={resLona.lonaHecha} largo={lona.largo} ancho={lona.ancho} anchoAtras={lona.anchoAtras}
+                  altoDelante={lona.altoDelante} altoAtras={lona.altoAtras}
+                  aguas={lona.aguas} radioCumbrera={lona.radioCumbrera} radioHombro={lona.radioHombro}
+                  radioEsquina={lona.radioEsquina} chaflan={lona.chaflan}
+                  radioChaflanAbajo={lona.radioChaflanAbajo} radioChaflanArriba={lona.radioChaflanArriba}
+                  ollaos={resLona.reparto}
+                  recogeDelante={lona.recogeDelante} recogeAtras={lona.recogeAtras}
+                  bastillaEnfundar={lona.bastillaEnfundar}
+                  tipoPerfil={lona.tipoPerfil} ventana={lona.ventana}
+                  ventanaAncho={lona.ventanaAncho} ventanaAlto={lona.ventanaAlto}
+                  material={lona.material}
+                  observaciones={lona.observaciones}
+                  onObservacionesChange={(observaciones) => ws.cambiarInput({ ...lona, observaciones })} />
+              ) : (
+                <Escena3D modo="baqueton" medidasHechas={resBaq.remolqueHecho} largo={baq.largo} ancho={baq.ancho}
+                  altoDelante={0} altoAtras={0} tipoPerfil="TIPO 01"
+                  baqueton={baq.baqueton} baquetonDelantero={resBaq.baquetonDelantero} baquetonTrasero={resBaq.baquetonTrasero} material={baq.material}
+                  ollaos={resBaq.reparto}
+                  observaciones={baq.observaciones}
+                  onObservacionesChange={(observaciones) => ws.cambiarInput({ ...baq, observaciones })} />
+              )}
               {ws.medidasSuficientes && lineaActiva.tipo === 'lona' ? (
                 <ResultadosLona
                   res={resLona}

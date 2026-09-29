@@ -255,8 +255,76 @@
 .rem-editor-izquierda,
 .rem-editor-derecha { min-width: 0; }
 .rem-editor-derecha { display: flex; flex-direction: column; gap: 0.75rem; }
-/* El hueco del dibujo no ocupa nada hasta que entre (Task 5). */
-.rem-dibujo:empty { display: none; }
+
+/* ── El dibujo de siempre (Escena3D): tarjeta con cabecera, lienzo y observaciones ──
+   El marco sigue a los tokens (claro y oscuro); el lienzo del SVG no: es una hoja técnica con
+   fondo blanco y los colores de la lona, y así se ve igual que en la web de remolques y en el
+   futuro PDF. */
+.rem-dibujo {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.rem-dibujo-cabecera {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  height: 3rem;
+  padding: 0 1rem;
+}
+.rem-dibujo-etiqueta {
+  color: var(--accent-text);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.rem-dibujo-separador {
+  background: var(--border-strong);
+  height: 1rem;
+  margin: 0 0.75rem;
+  width: 1px;
+}
+.rem-dibujo-titulo { color: var(--text); font-size: 13px; font-weight: 700; margin: 0; }
+/* El lienzo es una hoja blanca en claro y en oscuro: su texto hereda un color oscuro fijo y no el
+   claro del tema (los textos del SVG llevan su propio relleno, esto es lo que ve el resto). */
+.rem-dibujo-lienzo { background: #ffffff; color: #1f1f1f; display: block; height: auto; width: 100%; }
+.rem-dibujo-vacio {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+.rem-dibujo-vacio svg { color: var(--text-muted); }
+.rem-dibujo-vacio-texto { color: var(--text-muted); font-size: 13px; font-weight: 500; margin: 0; }
+.rem-dibujo-vacio-nota { color: var(--text-muted); font-size: 12px; margin: 0; }
+.rem-dibujo-pie { border-top: 1px solid var(--border); padding: 0.625rem 0.75rem; }
+.rem-observaciones {
+  align-items: center;
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.375rem 0.625rem;
+}
+.rem-observaciones > span {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.rem-observaciones input { flex: 1; min-width: 0; }
 
 /* ── Formulario: pasos numerados como los grupos de la tarjeta de toldo ── */
 .rem-form { display: grid; gap: 0.625rem; }
@@ -462,8 +530,7 @@
 .rem-ollaos-casillas { display: grid; gap: 3px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
 .rem-ollaos-casillas label { gap: 2px; }
 .rem-ollaos-casillas label > span { color: var(--text-muted); font-size: 10px; text-align: center; }
-.app-shell .rem-ollaos-casillas input[type="number"] {
-  -moz-appearance: textfield;
+.app-shell .rem-ollaos-casillas input {
   font-size: 11px;
   height: 1.75rem;
   min-width: 0;
@@ -471,8 +538,6 @@
   text-align: center;
   width: 100%;
 }
-.rem-ollaos-casillas input::-webkit-inner-spin-button,
-.rem-ollaos-casillas input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .rem-ollaos-error {
   background: var(--error-fondo);
   border-top: 1px solid var(--error-borde);

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LonaResult } from '../../remolques/calc/lona.ts';
 import type { BaquetonResult } from '../../remolques/calc/baqueton.ts';
+import { InputDecimal } from './InputDecimal';
 
 // Resultados del cálculo, los de `Resultados.tsx` de la web de remolques: tarjetas de datos,
 // tabla del reparto de ollaos (o su editor cuando van «según se indica») y notas. Los
@@ -66,12 +67,11 @@ function EditorOllaos({ reparto, error, onChange }: {
   error?: string;
   onChange: (reparto: RepartoOllaos) => void;
 }) {
-  const cambiar = (clave: ClaveReparto, indice: number, texto: string) => {
+  const cambiar = (clave: ClaveReparto, indice: number, valor: number | null) => {
     const siguiente = [...reparto[clave]];
-    if (texto === '') {
+    if (valor === null) {
       if (indice < siguiente.length) siguiente.splice(indice, 1);
     } else {
-      const valor = Number(texto);
       if (!Number.isFinite(valor) || valor <= 0 || indice > siguiente.length) return;
       siguiente[indice] = valor;
     }
@@ -96,17 +96,13 @@ function EditorOllaos({ reparto, error, onChange }: {
               {HUECOS.map((indice) => (
                 <label key={indice}>
                   <span>{indice + 1}</span>
-                  <input
+                  <InputDecimal
                     data-campo={clave === 'laterales' && indice === 0 ? 'ollaosManuales' : undefined}
                     aria-invalid={Boolean(error && posiciones.length === 0)}
                     aria-label={`${nombre}, ollao ${indice + 1}`}
-                    type="number"
-                    inputMode="decimal"
-                    step="0.1"
-                    min="0"
                     disabled={indice > posiciones.length}
-                    value={posiciones[indice] ?? ''}
-                    onChange={(evento) => cambiar(clave, indice, evento.target.value)}
+                    value={posiciones[indice]}
+                    onValor={(valor) => cambiar(clave, indice, valor)}
                   />
                 </label>
               ))}
