@@ -72,6 +72,14 @@
 :root[data-theme="dark"] .orders-chip.is-ok { background: #15301f; border-color: #2e6a45; color: #86d6a6; }
 :root[data-theme="dark"] .orders-chip.is-warn { background: #3a3016; border-color: #7a6224; color: #f0c565; }
 :root[data-theme="dark"] .orders-chip.is-error { background: #3b1d1d; border-color: #7d3a3a; color: #f2a3a3; }
+:root[data-theme="dark"] .orders-group-title.tone-review { color: #f0c565; }
+:root[data-theme="dark"] .orders-group-title.tone-returned { color: #ff9a78; }
+:root[data-theme="dark"] .orders-group-title.tone-approved { color: #86d6a6; }
+:root[data-theme="dark"] .orders-detail-list li { background: #2b2d2f; border-color: #56595b; }
+:root[data-theme="dark"] .orders-detail-list li.is-warn { border-left-color: #d7a629; }
+:root[data-theme="dark"] .orders-detail-list li.is-error { border-left-color: #d05a37; }
+:root[data-theme="dark"] .orders-detail-returned { background: #502d27; color: #ffad95; }
+:root[data-theme="dark"] .orders-detail-approved { background: #1b3c2c; color: #a5e6ba; }
 
 /* Las hojas de PDF y las imágenes siguen en blanco: son papel. */
 :root[data-theme="dark"] .pdf-carousel-page,

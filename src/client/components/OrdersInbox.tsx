@@ -37,7 +37,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
     </div>
   );
   // En el historial ya se agrupa por días: la fecha de cada fila sobra, como en CoordinaOT.
-  const block = (reviews: ReviewSummary[], withDate = true) => (
+  const block = (reviews: ReviewSummary[], withDate = true, tone?: string) => (
     <div className={withDate ? 'orders-block' : 'orders-block is-history'}>
       <ul className="orders-list">
         {reviews.map((review) => (
@@ -50,6 +50,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
             onOpen={() => onOpen(review.orderCode)}
             withDate={withDate}
             coordinaStatus={coordinaStatus}
+            tone={tone}
           />
         ))}
       </ul>
@@ -75,7 +76,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
           : <>{columns(true)}{groups.map((group) => (
             <section key={group.key} className="orders-group" aria-label={`${group.label}: ${group.reviews.length}`}>
               <h3 className={`orders-group-title tone-${group.tone}`}><span className="orders-dot" aria-hidden="true" />{group.label}<span className="orders-count">{group.reviews.length}</span></h3>
-              {block(group.reviews)}
+              {block(group.reviews, true, group.tone)}
             </section>
           ))}</>}
       <header className="orders-inbox-bar">
@@ -95,7 +96,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   );
 }
 
-function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStatus }: {
+function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStatus, tone }: {
   review: ReviewSummary;
   mine: boolean;
   open: boolean;
@@ -103,12 +104,13 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   onOpen: () => void;
   withDate: boolean;
   coordinaStatus: CoordinaStatus | null;
+  tone?: string;
 }) {
   const detailId = `orders-detail-${review.orderCode}`;
   const awnings = review.summary.awningList;
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
   return (
-    <li className={open ? 'orders-row is-open' : 'orders-row'}>
+    <li className={`orders-row${open ? ' is-open' : ''}${tone ? ` tone-${tone}` : ''}`}>
       <button
         type="button"
         className="orders-row-toggle"
@@ -145,7 +147,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
                   <AwningChip item={item} coordinaStatus={coordinaStatus} />
                   <strong>{controlLabel(item.model)}</strong>
                   <span>OF {item.of || '—'}</span>
-                  <span className="orders-detail-notes">{item.notes.length ? item.notes.join(' · ') : 'Sin avisos.'}</span>
+                  <span className="orders-detail-notes">{item.notes.length ? item.notes.join(' · ') : 'Sin avisos'}</span>
                   {approvedBy && <span className="orders-detail-approved">Aprobado por {controlLabel(approvedBy)}</span>}
                   {nota && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {nota}</span>}
                 </li>

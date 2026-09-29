@@ -531,5 +531,39 @@ body, .app-shell { background: var(--bg); }
 /* Ocupa la línea entera del toldo, como la nota devuelta: en una columna estrecha se partía en tres. */
 .orders-detail-approved { color: var(--ok); display: block; font-size: 12px; grid-column: 1 / -1; margin-top: 2px; }
 
+/* La prioridad se lee primero en el bloque, después en la fila y finalmente en cada toldo. */
+.orders-group-title { font-size: 15px; gap: 9px; margin: 12px 0 3px; }
+.orders-dot { flex: 0 0 10px; height: 10px; width: 10px; }
+.orders-group-title .orders-count { font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 800; min-width: 25px; padding: 2px 7px; text-align: center; }
+.orders-group-title.tone-review { color: #b17b09; }
+.orders-group-title.tone-returned { color: #bd4a2e; }
+.orders-group-title.tone-approved { color: #23734c; }
+.orders-block .orders-row.tone-review { border-left: 4px solid #d7a629; }
+.orders-block .orders-row.tone-returned { border-left: 4px solid #d05a37; }
+.orders-row.tone-review .orders-row-cells,
+.orders-row.tone-returned .orders-row-cells { padding-left: 11px; }
+.orders-awnings { gap: 5px; }
+.orders-chip { border-width: 1.5px; font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 800; gap: 3px; min-height: 23px; padding: 2px 6px; white-space: nowrap; }
+.orders-chip svg { height: 13px; width: 13px; }
+.orders-chip-coordina { font-size: 13px; line-height: 1; margin-left: 1px; }
+.orders-detail { border-top-style: solid; gap: 12px; padding: 12px 16px 14px 42px; }
+.orders-detail-list { gap: 8px; }
+.orders-detail-list li { align-items: start; border: 1px solid var(--border); border-radius: 7px; column-gap: 12px; grid-template-columns: 42px minmax(100px, 150px) minmax(100px, 115px) minmax(0, 1fr); padding: 9px 11px; row-gap: 6px; }
+.orders-detail-list li.is-warn { border-left: 3px solid #d7a629; }
+.orders-detail-list li.is-error { border-left: 3px solid #bd4a2e; }
+.orders-detail-list li > strong,
+.orders-detail-list li > span:nth-child(3) { padding-top: 2px; }
+.orders-detail-notes { line-height: 1.45; overflow-wrap: anywhere; }
+.orders-detail-returned { background: rgb(189 74 46 / 0.1); border-radius: 5px; color: #bd4a2e; font-size: 12.5px; font-weight: 600; margin: 0; padding: 7px 9px; }
+.orders-detail-approved { background: rgb(35 115 76 / 0.1); border-radius: 5px; margin: 0; padding: 7px 9px; }
+@media (max-width: 760px) {
+  .orders-detail { padding-left: 12px; }
+  .orders-detail-list li { grid-template-columns: 42px minmax(0, 1fr); }
+  .orders-detail-list li > span:nth-child(3),
+  .orders-detail-notes,
+  .orders-detail-returned,
+  .orders-detail-approved { grid-column: 1 / -1; }
+}
+
 /* La nota de CoordinaOT puede ocupar dos líneas (qué toldo falta y cómo está). */
 .review-generate-note { max-width: 320px; white-space: normal; }
