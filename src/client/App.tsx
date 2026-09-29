@@ -32,6 +32,7 @@ import { NotificationCenter, useNotifications } from './components/NotificationC
 import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
+import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
 
@@ -59,6 +60,8 @@ export default function App() {
   // Quién usa este navegador (diseño 24/09/2026, apartado 2): pone el autor/revisor
   // del pedido al guardar sin preguntarlo.
   const [currentUser, setCurrentUser] = useState(() => readCurrentUser());
+  // Círculo del chip de usuario: iniciales y color de la persona, como en CoordinaOT.
+  const currentAvatar = personaDe(currentUser);
   const [choosingUser, setChoosingUser] = useState(false);
   // Modo oscuro (Iván, 28/09/2026): se recuerda en este navegador.
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -441,8 +444,8 @@ export default function App() {
           </button>
           <button type="button" className="cabecera-usuario glass-chip" onClick={() => setChoosingUser(true)} aria-label="Cambiar quién soy">
             {/* El avatar con las iniciales, como el chip de usuario de CoordinaOT. */}
-            <span className="cabecera-avatar" aria-hidden="true">
-              {currentUser ? currentUser.slice(0, 2).toLocaleUpperCase('es-ES') : <UserRound />}
+            <span className="cabecera-avatar" aria-hidden="true" style={currentAvatar.color ? { background: currentAvatar.color, color: tintaSobre(currentAvatar.color) } : undefined}>
+              {currentUser ? currentAvatar.iniciales : <UserRound />}
             </span>
             <span className="cabecera-usuario-nombre">Soy: {currentUser ? controlLabel(currentUser) : '—'}</span>
           </button>

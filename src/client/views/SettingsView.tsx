@@ -91,7 +91,7 @@ export function SettingsView({
   }
 
   return (
-    <section className="settings-panel panel panel-3d">
+    <section className="settings-panel panel panel-3d panel-vidrio">
       <div className="workflow-heading">
         <div className="workflow-heading-icon"><FolderCog aria-hidden="true" /></div>
         <div>
@@ -136,7 +136,7 @@ export function SettingsView({
         />
       </div>
 
-      <div className="workflow-production-switch">
+      <div className="workflow-production-switch bloque-3d-hundido">
         <div>
           <ShieldCheck aria-hidden="true" />
           <span><strong>Generación de archivos</strong><small>Habilita «Generar archivos»: el autor del pedido, cuando ya está aprobado en CoordinaOT, guarda el PDF definitivo y los Excel de reserva.</small></span>

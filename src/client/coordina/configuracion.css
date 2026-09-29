@@ -1,0 +1,357 @@
+/* Configuración, confirmaciones, avisos emergentes y «¿Quién eres?» con el estilo de
+   CoordinaOT (tarea 5 del plan «Estilo CoordinaOT», 29/09/2026). Regla de Iván: «siempre que
+   rediseñes cualquier zona de la web, mira en CoordinaOT cómo está y cópialo».
+
+   Referencia, todo en coordina-ot/src/components:
+   - Confirmaciones = ConfirmDialog.tsx 107-158: panel `glass-panel-strong rounded-2xl p-4`
+     con `max-w-sm`, colgado a 1/3 de la altura (`top-1/3`) y con techo `max-h-[60vh]`; título
+     `text-sm font-bold`, mensaje `mt-1.5 text-sm text-text-muted`, botones `mt-4 gap-2` con
+     `rounded-lg px-3 py-1.5 text-xs font-semibold` (Cancelar: `border border-border
+     text-text-muted hover:text-text`; peligro: `bg-red-600 text-white hover:bg-red-700`).
+     El telón y el panel comunes están en piezas.css («Diálogo»).
+   - «¿Quién eres?» = IdentityGate.tsx: título `text-lg font-semibold` centrado, texto
+     `text-sm text-text-muted`, rejilla de 3 columnas `gap-3` con tarjetas `glass-panel
+     rounded-2xl p-4` (círculo de iniciales `size-14 text-lg font-bold` con el color de la
+     persona, nombre `text-sm font-semibold`; hover `scale-[1.03]` y `border-brand-400`). En
+     CoordinaOT es una página; aquí sigue siendo un diálogo sobre la web (así se puede volver
+     a abrir desde «Soy»), con las mismas tarjetas.
+   - Avisos emergentes = CoordinaOT no tiene avisos flotantes (sus avisos van en el flujo:
+     Board.tsx 2253, Drawer.tsx 632). Se usa el más parecido: el popover `glass-pop` con el
+     tinte `border-amber-500/30 bg-amber-500/10` (aviso), `red-500` (error) y `emerald`
+     (correcto) de esos avisos; título `text-xs font-bold` y texto `text-[11px]
+     text-text-muted`. Los colores son los `--aviso-*`, `--error-*` y `--correcto-*` de
+     nuevo-pedido.css.
+   - Configuración = un panel `glass-panel rounded-xl p-4` (MetricasView.tsx 313) con
+     rótulos `text-[11px] font-semibold uppercase tracking-wide text-text-muted`, bloque
+     hundido para el interruptor y botones `px-2.5 py-1 text-xs font-semibold`.
+   Traducción de Tailwind 4: 1 unidad = 0.25rem (`p-4` = 1rem, `px-3` = 0.75rem).
+
+   Va sin capa (ver estilos.css): gana a los estilos de siempre sin subir especificidad. */
+
+/* ── Confirmaciones ── */
+.confirmation-backdrop {
+  /* `top-1/3` de ConfirmDialog.tsx: el cuadro cuelga a un tercio de la altura, no centrado. */
+  align-items: flex-start;
+  padding: 33.333vh 1rem 1rem;
+}
+.confirmation-dialog {
+  max-height: 60vh;
+  max-width: 24rem;
+  padding: 1rem;
+}
+.confirmation-heading { gap: 0.625rem; padding-right: 2rem; }
+.confirmation-heading > div { gap: 0; }
+.confirmation-heading h2 {
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+}
+/* El rótulo pequeño encima del título: el de los bloques de CoordinaOT. */
+.confirmation-heading span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  line-height: 1rem;
+}
+.confirmation-icon {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--accent-text);
+  height: 2rem;
+  width: 2rem;
+}
+.confirmation-icon svg { height: 1rem; width: 1rem; }
+.confirmation-warning .confirmation-icon { background: var(--aviso-fondo); border-color: var(--aviso-borde); color: var(--aviso-texto); }
+.confirmation-danger .confirmation-icon { background: var(--error-fondo); border-color: var(--error-borde); color: var(--error-texto); }
+.confirmation-dialog > p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin: 0.75rem 0 0;
+}
+.confirmation-close {
+  border-radius: 0.5rem;
+  height: 1.75rem;
+  right: 0.75rem;
+  top: 0.75rem;
+  width: 1.75rem;
+}
+.confirmation-close svg { height: 0.875rem; width: 0.875rem; }
+.confirmation-details {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+.confirmation-details li + li { border-color: var(--border); }
+/* Sin raya encima: en CoordinaOT los botones van a 1rem del texto y nada más. */
+.confirmation-actions {
+  border-top: 0;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0;
+}
+.confirmation-actions button {
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  min-height: 0;
+  min-width: 0;
+  padding: 0.375rem 0.75rem;
+}
+/* Cancelar = `rounded-lg border border-border text-text-muted hover:text-text`: sin fondo
+   ni relieve, es la salida discreta. */
+.confirmation-actions .ghost-button {
+  background: transparent;
+  border: 1px solid var(--border);
+  box-shadow: none;
+  color: var(--text-muted);
+  filter: none;
+  transform: none;
+}
+.confirmation-actions .ghost-button:hover:not(:disabled) {
+  background: transparent;
+  color: var(--text);
+  filter: none;
+  transform: none;
+}
+.confirmation-actions .danger-button svg,
+.confirmation-actions .primary-button svg { height: 0.875rem; width: 0.875rem; }
+
+/* ── «¿Quién eres?» ── */
+.who-are-you-dialog { max-width: 36rem; padding: 1.5rem; }
+.who-are-you-dialog .confirmation-icon { display: none; }
+.who-are-you-dialog .confirmation-heading { justify-content: center; padding-right: 0; text-align: center; }
+.who-are-you-dialog .confirmation-heading h2 { font-size: 1.125rem; font-weight: 600; line-height: 1.75rem; }
+.who-are-you-dialog > p { margin: 0.25rem 0 1.5rem; text-align: center; }
+.who-are-you-options { gap: 0.75rem; margin-top: 0; }
+.who-are-you-option {
+  align-items: center;
+  border-radius: 1rem;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 0.5rem;
+  line-height: 1.25rem;
+  padding: 1rem;
+  transition: transform 150ms ease, border-color 150ms ease;
+}
+.who-are-you-option:hover { border-color: var(--color-brand-400); transform: scale(1.03); }
+/* La persona que ya es este navegador, si se reabre desde «Soy»: el dorado de lo activo. */
+.who-are-you-option.is-current {
+  background: var(--tgm-yellow-soft);
+  border-color: var(--color-brand-400);
+}
+.who-are-you-avatar {
+  background: var(--color-brand-500);
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  color: #1a1206;
+  display: grid;
+  font-size: 1.125rem;
+  font-weight: 700;
+  height: 3.5rem;
+  line-height: 1.75rem;
+  place-items: center;
+  width: 3.5rem;
+}
+
+/* ── Avisos emergentes ── */
+.notification-stack { gap: 0.5rem; max-width: min(24rem, calc(100vw - 28px)); }
+.app-notification {
+  /* Tinte del tono sobre el popover de vidrio; el «info» no lleva tinte. */
+  --aviso-t-fondo: transparent;
+  --aviso-t-borde: var(--glass-border);
+  --aviso-t-texto: var(--text-muted);
+  align-items: center;
+  animation: notification-in 180ms ease-out both;
+  backdrop-filter: blur(28px) saturate(1.8);
+  background: linear-gradient(var(--aviso-t-fondo), var(--aviso-t-fondo)), var(--glass-bg-pop);
+  border: 1px solid var(--aviso-t-borde);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 18px 50px -18px var(--glass-shadow);
+  gap: 0.625rem;
+  grid-template-columns: 1.25rem minmax(0, 1fr) 1.5rem;
+  min-height: 0;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+}
+.app-notification.notification-success {
+  --aviso-t-fondo: var(--correcto-fondo);
+  --aviso-t-borde: var(--correcto-borde);
+  --aviso-t-texto: var(--correcto-texto);
+}
+.app-notification.notification-error {
+  --aviso-t-fondo: var(--error-fondo);
+  --aviso-t-borde: var(--error-borde);
+  --aviso-t-texto: var(--error-texto);
+}
+.app-notification.notification-warning {
+  --aviso-t-fondo: var(--aviso-fondo);
+  --aviso-t-borde: var(--aviso-borde);
+  --aviso-t-texto: var(--aviso-texto);
+}
+.app-notification.notification-info { --aviso-t-texto: var(--accent-text); }
+/* El icono va suelto, sin recuadro: en CoordinaOT los avisos no llevan uno. */
+.notification-icon,
+.notification-success .notification-icon,
+.notification-error .notification-icon,
+.notification-warning .notification-icon,
+.notification-info .notification-icon {
+  background: transparent;
+  border-radius: 0;
+  color: var(--aviso-t-texto);
+  height: 1.25rem;
+  width: 1.25rem;
+}
+.notification-icon svg { height: 1.125rem; width: 1.125rem; }
+.notification-copy { gap: 0.125rem; }
+.notification-copy strong { color: var(--text); font-size: 0.75rem; font-weight: 700; line-height: 1rem; }
+.notification-copy > span { color: var(--text-muted); font-size: 11px; line-height: 1rem; }
+.notification-close {
+  border-radius: 0.5rem;
+  color: var(--text-muted);
+  height: 1.5rem;
+  width: 1.5rem;
+}
+.notification-close:hover { background: var(--glass-highlight); color: var(--text); }
+.notification-close svg { height: 0.875rem; width: 0.875rem; }
+.app-notification .notification-timer { color: var(--aviso-t-texto); opacity: 0.35; }
+
+/* ── Configuración de carpetas ── */
+.settings-panel { padding: 1rem; }
+.workflow-heading { gap: 0.75rem; margin-bottom: 1rem; }
+.workflow-heading-icon {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--accent-text);
+  height: 2.5rem;
+  width: 2.5rem;
+}
+.workflow-heading-icon svg { height: 1.25rem; width: 1.25rem; }
+/* Rótulo de bloque: `text-[11px] font-semibold uppercase tracking-wide text-text-muted`. */
+.workflow-heading span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+.workflow-heading h2 { color: var(--text); font-size: 1.125rem; font-weight: 700; line-height: 1.5rem; margin: 0; }
+.workflow-heading p { color: var(--text-muted); font-size: 0.75rem; line-height: 1rem; margin: 0.125rem 0 0; }
+
+/* Las cuatro rutas, en fila como una lista de FilaDesplegable: el número va sobre la raya
+   que las une, como antes, pero con las piezas de CoordinaOT. */
+.workflow-route-grid { margin-left: 0.875rem; }
+.workflow-route-card { border-left-color: var(--border); gap: 1rem; padding: 0.5rem 0 1rem 1.5rem; }
+.workflow-route-card:last-child { border-left-color: transparent; }
+.workflow-step {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  height: 1.75rem;
+  left: -0.875rem;
+  top: 0.25rem;
+  width: 1.75rem;
+}
+.workflow-route-copy { gap: 0.125rem; }
+.workflow-route-copy strong { color: var(--text); font-size: 0.75rem; font-weight: 600; line-height: 1rem; }
+.workflow-route-copy small { color: var(--text-muted); font-size: 11px; line-height: 1rem; }
+.workflow-route-card input { font-family: var(--font-mono); font-size: 0.75rem; }
+
+/* El interruptor de generar archivos: un bloque hundido (`bloque-3d-hundido` en el JSX). */
+.workflow-production-switch {
+  border-radius: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+.workflow-production-switch svg { color: var(--accent-text); height: 1.25rem; width: 1.25rem; }
+.workflow-production-switch strong { color: var(--text); font-size: 0.75rem; font-weight: 600; line-height: 1rem; }
+.workflow-production-switch small { color: var(--text-muted); font-size: 11px; line-height: 1rem; }
+.workflow-toggle > span { color: var(--text); font-size: 0.75rem; font-weight: 600; }
+/* CoordinaOT no tiene interruptores: es una casilla con el dorado de lo activo (el de las
+   pestañas y los filtros) y la tinta oscura de sus botones dorados. */
+.workflow-toggle input {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  box-sizing: border-box;
+  height: 1.375rem;
+  width: 2.5rem;
+}
+.workflow-toggle input::after {
+  background: var(--text-muted);
+  box-shadow: none;
+  height: 0.875rem;
+  left: 0.1875rem;
+  top: 0.1875rem;
+  width: 0.875rem;
+}
+.workflow-toggle input:checked { background: var(--color-brand-400); border-color: var(--color-brand-500); }
+.workflow-toggle input:checked::after { background: var(--tinta-dorado); left: 1.4375rem; }
+.workflow-toggle input:focus-visible { outline: 2px solid var(--color-brand-400); outline-offset: 2px; }
+.workflow-toggle strong { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+.workflow-toggle strong.is-on { color: var(--correcto-texto); }
+
+/* Resultado de comprobar las carpetas: los avisos de CoordinaOT (`border-*-500/30
+   bg-*-500/10`), verde si todo va bien y ámbar si algo falla. */
+.workflow-directory-results {
+  --resultado-fondo: var(--aviso-fondo);
+  --resultado-borde: var(--aviso-borde);
+  --resultado-texto: var(--aviso-texto);
+  background: linear-gradient(var(--resultado-fondo), var(--resultado-fondo)), var(--glass-chip);
+  border: 1px solid var(--resultado-borde);
+  border-radius: 0.75rem;
+  margin-top: 0.75rem;
+}
+.workflow-directory-results.is-ok {
+  --resultado-fondo: var(--correcto-fondo);
+  --resultado-borde: var(--correcto-borde);
+  --resultado-texto: var(--correcto-texto);
+}
+.workflow-directory-results > header,
+.workflow-directory-results.is-ok > header,
+.workflow-directory-results.has-errors > header {
+  background: transparent;
+  border-bottom: 1px solid var(--resultado-borde);
+  color: var(--resultado-texto);
+  padding: 0.5rem 0.75rem;
+}
+.workflow-directory-results > header > svg { height: 1.125rem; width: 1.125rem; }
+.workflow-directory-results > header strong { font-size: 0.75rem; font-weight: 700; line-height: 1rem; }
+.workflow-directory-results > header small { color: var(--text-muted); font-size: 11px; line-height: 1rem; }
+.workflow-directory-list > div { border-right-color: var(--resultado-borde); padding: 0.5rem 0.75rem; }
+.workflow-directory-list .is-ok svg { color: var(--correcto-texto); }
+.workflow-directory-list .has-error svg { color: var(--error-texto); }
+.workflow-directory-list strong { color: var(--text); font-size: 0.75rem; font-weight: 600; line-height: 1rem; }
+.workflow-directory-list small { color: var(--text-muted); font-size: 11px; line-height: 1rem; }
+
+/* Pie: el estado a la izquierda y los botones con la medida de los de CoordinaOT. */
+.workflow-settings-footer { margin-top: 1rem; }
+.workflow-ready { color: var(--aviso-texto); font-size: 11px; font-weight: 600; line-height: 1rem; }
+.workflow-ready.is-ready { color: var(--correcto-texto); }
+.workflow-settings-actions button {
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 0.375rem;
+  line-height: 1rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+}
+.workflow-settings-actions svg { height: 0.875rem; width: 0.875rem; }

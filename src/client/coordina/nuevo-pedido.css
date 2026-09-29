@@ -270,8 +270,9 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 /* Principal = botón de color macizo `boton-3d` (globals.css 678-704) en el dorado de marca
    con tinta `#231903`, la receta del dorado de CoordinaOT (BotonArriba.tsx 30; hover
    `brand-300`). «Pasar a revisión» de allí es verde azulado, pero el principal de esta web
-   es dorado desde siempre y el diseño aprobado dice que pasa al dorado de CoordinaOT. */
-.app-shell .primary-button,
+   es dorado desde siempre y el diseño aprobado dice que pasa al dorado de CoordinaOT. Vale
+   también dentro de las confirmaciones, que cuelgan del `body` y no del `.app-shell`. */
+:is(.app-shell, .confirmation-dialog) .primary-button,
 .app-shell .model-switch-prompt button {
   background: var(--color-brand-400);
   border: 1px solid var(--color-brand-500);
@@ -286,14 +287,14 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 140ms ease;
 }
 /* El oscuro va antes del :hover y el :active: si empatan, gana el estado. */
-:root[data-theme="dark"] .app-shell .primary-button,
+:root[data-theme="dark"] :is(.app-shell, .confirmation-dialog) .primary-button,
 :root[data-theme="dark"] .app-shell .model-switch-prompt button {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
     0 2px 0 rgba(0, 0, 0, 0.5),
     0 4px 10px -3px rgba(0, 0, 0, 0.7);
 }
-.app-shell .primary-button:hover:not(:disabled),
+:is(.app-shell, .confirmation-dialog) .primary-button:hover:not(:disabled),
 .app-shell .model-switch-prompt button:hover:not(:disabled) {
   background: var(--color-brand-300);
   border-color: var(--color-brand-400);
@@ -304,13 +305,13 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   filter: none;
   transform: translateY(-1px);
 }
-.app-shell .primary-button:active:not(:disabled),
+:is(.app-shell, .confirmation-dialog) .primary-button:active:not(:disabled),
 .app-shell .model-switch-prompt button:active:not(:disabled) {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
   transform: translateY(1px);
 }
-.app-shell .primary-button:disabled { box-shadow: none; }
-:root[data-theme="dark"] .app-shell .primary-button:disabled { box-shadow: none; }
+:is(.app-shell, .confirmation-dialog) .primary-button:disabled { box-shadow: none; }
+:root[data-theme="dark"] :is(.app-shell, .confirmation-dialog) .primary-button:disabled { box-shadow: none; }
 /* Destructivo: `boton-3d` con `bg-red-600 text-white hover:bg-red-700` (ConfirmDialog.tsx 84). */
 .danger-button {
   background: #dc2626;
@@ -665,54 +666,21 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .planning-summary-text { color: var(--text); }
 .planning-summary > .rps-result-preview { border-radius: 0 0 0.75rem 0.75rem; }
 
-/* ── Selector de modelo y avisos de confirmación: el diálogo de CoordinaOT ──
-   ConfirmDialog.tsx 107-122: telón `bg-black/50 backdrop-blur-sm` y panel
-   `glass-panel-strong ... rounded-2xl p-4`. */
-.model-picker-backdrop,
-.confirmation-backdrop,
-.parameters-save-backdrop {
-  backdrop-filter: blur(4px);
-  background: rgb(0 0 0 / 0.5);
-}
+/* ── Selector de modelo ──
+   El telón y el panel de los diálogos viven en piezas.css («Diálogo»); el aspecto de las
+   confirmaciones y de «¿Quién eres?» está en configuracion.css. */
 /* La vista previa del PDF lleva el telón de la ficha (`telon-ficha`, globals.css 516-524),
    transparente como el del panel «Despiece y dibujo» (Iván, 29/09/2026). */
 .pdf-preview-backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 40%, black) 72%, transparent); }
 :root[data-theme="dark"] .pdf-preview-backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 88%, black) 78%, transparent); }
-.model-picker,
-.confirmation-dialog,
-.parameters-save-dialog {
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(24px) saturate(1.8);
-  border: 1px solid var(--glass-border);
-  border-radius: 1rem;
-  box-shadow:
-    0 0 0 1px var(--edge),
-    0 1px 2px var(--contact),
-    inset 0 1px 0 0 var(--glass-highlight),
-    0 10px 34px -16px var(--glass-shadow);
-}
-.model-picker-header h2,
-.confirmation-heading h2 { color: var(--text); font-weight: 700; }
-.model-picker-header span,
-.confirmation-heading span { color: var(--text-muted); font-weight: 600; letter-spacing: 0.025em; }
-.confirmation-dialog > p { color: var(--text-muted); }
-.model-picker-icon,
-.confirmation-icon {
+.model-picker-header h2 { color: var(--text); font-weight: 700; }
+.model-picker-header span { color: var(--text-muted); font-weight: 600; letter-spacing: 0.025em; }
+.model-picker-icon {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   color: var(--accent-text);
 }
-.confirmation-warning .confirmation-icon { background: var(--aviso-fondo); border-color: var(--aviso-borde); color: var(--aviso-texto); }
-.confirmation-danger .confirmation-icon { background: var(--error-fondo); border-color: var(--error-borde); color: var(--error-texto); }
-.confirmation-details {
-  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  color: var(--text);
-}
-.confirmation-details li + li,
-.confirmation-actions,
 .model-picker-family-title,
 .model-picker-legend { border-color: var(--border); }
 /* Filas del selector = la ficha `chip-3d` (Drawer.tsx 812). */

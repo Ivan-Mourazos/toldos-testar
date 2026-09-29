@@ -36,7 +36,7 @@ ventana (`clamp(14px, …, 16px)`). Aquí la raíz se queda en 16 px, porque
 `App.tsx` importa solo `src/client/estilos.css` (después de las letras). Ese fichero mete
 los estilos de siempre (`styles.css`, `relieve.css`, `dark.generated.css`, `dark.css`) en
 la capa `legacy` y carga detrás, **sin capa**, `coordina/tokens.css`, `coordina/piezas.css`,
-`coordina/nuevo-pedido.css`, `coordina/pedidos.css` y `coordina/parametros.css`.
+`coordina/nuevo-pedido.css`, `coordina/pedidos.css`, `coordina/parametros.css` y `coordina/configuracion.css`.
 
 Por qué: una regla sin capa gana a cualquier regla con capa, sea cual sea su
 especificidad. Así la capa de CoordinaOT manda siempre sobre lo de siempre, aunque allí
@@ -88,6 +88,13 @@ Reglas para seguir:
 Propias del marco y la cabecera (traducción del JSX de CoordinaOT): `cabecera`,
 `cabecera-logo`, `cabecera-pestanas`, `pestana`, `pestana-contador`, `cabecera-derecha`,
 `cabecera-modo`, `cabecera-usuario`, `cabecera-avatar`, `cabecera-usuario-nombre`.
+
+El telón y el panel de los diálogos (selector de modelo, confirmaciones, «¿Quién eres?», guardar
+parámetros) están en `piezas.css` («Diálogo»); el aspecto de las confirmaciones, los avisos
+emergentes, «¿Quién eres?» y Configuración, en `configuracion.css`. Los círculos de iniciales
+con el color de cada técnico salen de `src/client/personas.ts` (los de `coordina-ot/src/lib/mock.ts`).
+CoordinaOT no tiene avisos flotantes: los de esta web son un `glass-pop` con el tinte de sus
+avisos en el flujo.
 
 Para una pieza que falte (p. ej. `parte-3d`, `familia-tag`, `bandeja-caja`), se copia de
 `globals.css` a `piezas.css` citando sus líneas.

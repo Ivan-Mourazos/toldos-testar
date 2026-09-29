@@ -2,6 +2,7 @@ import React from 'react';
 import { UserRound, X } from 'lucide-react';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { controlLabel } from './controlLabels';
+import { personaDe, tintaSobre } from '../personas';
 
 // La primera vez no se puede cerrar sin elegir (sin onCancel): así el autor de cada
 // pedido se pone solo y no hay que pedir técnico ni revisor en el formulario.
@@ -23,9 +24,18 @@ export function WhoAreYouDialog({ current, onChoose, onCancel }: {
         </div>
         <p>Se pone como autor de los pedidos que guardes y la bandeja te enseña primero los tuyos. Se cambia desde «Soy» arriba a la derecha.</p>
         <div className="who-are-you-options">
-          {(formOptions.tecnicos as string[]).map((name) => (
-            <button key={name} type="button" className={name === current ? 'tecla-3d is-current' : 'tecla-3d'} aria-pressed={name === current} onClick={() => onChoose(name)}>{controlLabel(name)}</button>
-          ))}
+          {/* Cada técnico con su círculo de iniciales y su color, como en la pantalla de elegir
+              persona de CoordinaOT. El círculo es solo dibujo (aria-hidden): el botón sigue
+              llamándose «Ángel», «Jaime»… */}
+          {(formOptions.tecnicos as string[]).map((name) => {
+            const { iniciales, color } = personaDe(name);
+            return (
+              <button key={name} type="button" className={name === current ? 'glass-panel who-are-you-option is-current' : 'glass-panel who-are-you-option'} aria-pressed={name === current} onClick={() => onChoose(name)}>
+                <span className="who-are-you-avatar" aria-hidden="true" style={color ? { background: color, color: tintaSobre(color) } : undefined}>{iniciales}</span>
+                <span>{controlLabel(name)}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
     </div>

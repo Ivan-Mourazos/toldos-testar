@@ -414,6 +414,32 @@ body {
     0 20px 44px -14px rgba(0, 0, 0, 0.8);
 }
 
+/* ── Diálogo: telón y panel (ConfirmDialog.tsx 107-122) ──
+   Telón `bg-black/50 backdrop-blur-sm` y panel `glass-panel-strong ... rounded-2xl p-4`. Lo
+   comparten el selector de modelo (Nuevo pedido), las confirmaciones y «¿Quién eres?»
+   (configuracion.css) y el aviso de guardar parámetros (parametros.css); cada zona pone
+   después su medida y su contenido. Las clases son las de siempre de cada diálogo para no
+   tocar el JSX. */
+.model-picker-backdrop,
+.confirmation-backdrop,
+.parameters-save-backdrop {
+  backdrop-filter: blur(4px);
+  background: rgb(0 0 0 / 0.5);
+}
+.model-picker,
+.confirmation-dialog,
+.parameters-save-dialog {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    0 1px 2px var(--contact),
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 10px 34px -16px var(--glass-shadow);
+}
+
 /* ── Entradas y salidas de telón, cajón y popover (globals.css 863-935) ── */
 .overlay-in { animation: overlay-in 160ms ease-out; }
 @keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
