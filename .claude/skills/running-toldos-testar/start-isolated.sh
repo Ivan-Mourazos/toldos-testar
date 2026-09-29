@@ -19,6 +19,11 @@ node scripts/fake-coordina.mjs &
 FAKE_PID=$!
 # Sin exec: el shell sigue vivo para parar el simulado cuando el servidor termine o lo
 # corten (Ctrl+C / kill); si no, quedaría huérfano escuchando en 4320.
-trap 'kill "$FAKE_PID" 2>/dev/null || true' EXIT
+# El servidor corre en background y wait() lo espera: así la trap se ejecuta inmediatamente
+# cuando bash recibe SIGTERM (de otro modo bash difiere la trap hasta que el hijo en foreground
+# salga, dejando los procesos huérfanos).
+node src/server.js &
+SERVER_PID=$!
+trap 'kill "$SERVER_PID" "$FAKE_PID" 2>/dev/null || true' EXIT
 trap 'exit 143' INT TERM
-node src/server.js
+wait "$SERVER_PID"
