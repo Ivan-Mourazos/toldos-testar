@@ -3,7 +3,8 @@
    sale. Lo que en CoordinaOT va con la clase `.dark` aquí va con `:root[data-theme="dark"]`.
    Las utilidades de Tailwind de sus componentes se traducen a valores exactos con la
    escala de Tailwind 4 (1 unidad = 0.25rem; rounded-lg = 0.5rem; text-xs = 0.75rem /
-   1rem; h-9 = 2.25rem…). Se importa después de tokens.css y de los estilos de siempre. */
+   1rem; h-9 = 2.25rem…). Va sin capa, después de tokens.css (ver estilos.css): gana a los
+   estilos de siempre, que están en `@layer legacy`, sin subir la especificidad. */
 
 /* ── Base (globals.css 167-232) ──
    El tamaño de letra de <html> NO se copia (CoordinaOT lo hace seguir al alto de la
@@ -20,13 +21,21 @@ body {
   background: color-mix(in srgb, var(--color-brand-400) 30%, transparent);
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-brand-400);
-  outline-offset: 1px;
+/* El anillo de foco general va DENTRO de `legacy`, al final: así sigue compitiendo por
+   especificidad con los anillos propios de lo de siempre (botones a 2px de separación,
+   teclas y selector de modelo que marcan el foco con borde y sombra en vez de anillo),
+   igual que antes de las capas. Sin capa pisaría a todos. Cuando la tarea 6 borre lo de
+   siempre, sale de la capa. */
+@layer legacy {
+  :focus-visible {
+    outline: 2px solid var(--color-brand-400);
+    outline-offset: 1px;
+  }
 }
 
-/* En capa `base` como en CoordinaOT: cualquier regla sin capa (las de la web) manda sobre
-   estas, así que solo ponen la mano donde nadie ha dicho otra cosa. */
+/* En capa `base` como en CoordinaOT: por debajo de lo de siempre y de todo lo sin capa
+   (orden declarado en estilos.css), así que solo ponen la mano donde nadie ha dicho otra
+   cosa. */
 @layer base {
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -234,10 +243,8 @@ body {
 :root[data-theme="dark"] .telon-ficha { background: color-mix(in srgb, var(--bg) 88%, black); }
 
 /* ── Hoja de papel del visor de PDF (globals.css 538-549) ──
-   Blanca en los dos temas: es papel. La tarjeta de toldo (.awning-column) también lleva
-   esta clase desde el relieve anterior; en oscuro su fondo lo fija
-   `:root[data-theme="dark"] .awning-column` (más específica), así que no se vuelve blanca.
-   La tarea de Nuevo pedido la pasará a su pieza. */
+   Blanca en los dos temas: es papel. Solo la llevan las páginas de la vista previa (la
+   tarjeta de toldo la dejó en la tarea de Nuevo pedido). */
 .hoja-3d {
   background: #fff;
   border-radius: 0.75rem;

@@ -10,15 +10,9 @@ import {
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@fontsource/didact-gothic/latin-400.css';
-import './styles.css';
-import './relieve.css';
-import './dark.generated.css';
-import './dark.css';
-// La capa de CoordinaOT va la última: con la misma especificidad manda lo que se importa
-// después, y así sus tokens y piezas pisan a los estilos de siempre.
-import './coordina/tokens.css';
-import './coordina/piezas.css';
-import './coordina/nuevo-pedido.css';
+// Todos los estilos entran por estilos.css: lo de siempre va en `@layer legacy` y la capa
+// de CoordinaOT (coordina/) sin capa, así que esta gana siempre (ver coordina/README.md).
+import './estilos.css';
 import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';

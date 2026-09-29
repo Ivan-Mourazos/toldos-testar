@@ -31,12 +31,33 @@ ventana (`clamp(14px, …, 16px)`). Aquí la raíz se queda en 16 px, porque
 `--topnav-height` tiene que ir en px (`ParameterSectionIndex.tsx` lo lee con
 `parseFloat`). A 1600×1000 la diferencia es de un 2 %.
 
-## Orden de carga
+## Orden de carga: lo de siempre en `@layer legacy`
 
-`App.tsx` importa los estilos de siempre (`styles.css`, `relieve.css`,
-`dark.generated.css`, `dark.css`) y **después** `coordina/tokens.css` y
-`coordina/piezas.css`. Con la misma especificidad manda lo último, así que los tokens de
-CoordinaOT pisan las variables de la web sin reescribir sus reglas.
+`App.tsx` importa solo `src/client/estilos.css` (después de las letras). Ese fichero mete
+los estilos de siempre (`styles.css`, `relieve.css`, `dark.generated.css`, `dark.css`) en
+la capa `legacy` y carga detrás, **sin capa**, `coordina/tokens.css`, `coordina/piezas.css`
+y `coordina/nuevo-pedido.css`.
+
+Por qué: una regla sin capa gana a cualquier regla con capa, sea cual sea su
+especificidad. Así la capa de CoordinaOT manda siempre sobre lo de siempre, aunque allí
+haya selectores de 4 a 16 componentes (el oscuro generado), y aquí se escriben selectores
+normales: nada de `:root:root` ni de repetir cada regla para el oscuro solo para empatar.
+Una variante `:root[data-theme="dark"]` solo hace falta cuando el valor del oscuro es
+otro.
+
+Reglas para seguir:
+
+- Las zonas nuevas van en ficheros de `coordina/`, importados en `estilos.css` sin capa.
+- Lo de siempre se queda en `@layer legacy` hasta que la tarea 6 del plan lo borre; al
+  hacerlo se quitan sus cuatro `@import` de `estilos.css`.
+- Orden de capas declarado en `estilos.css`: `base` < `legacy` < sin capa. `base` es la
+  de CoordinaOT (el cursor de `piezas.css`), que sigue por debajo de lo de siempre.
+- `!important` se invierte en capas: uno de `legacy` gana a todo lo de aquí. Lo de siempre
+  solo tiene el de `prefers-reduced-motion` (styles.css), que debe ganar; aquí no se usa
+  `!important`.
+- Dos variables de `tokens.css` se quedan solo en claro (`:root:not([data-theme="dark"])`)
+  porque en oscuro manda el valor de `dark.css`: `--danger` y `--surface-muted`. Antes lo
+  conseguía la especificidad de `dark.css`; ahora está escrito.
 
 ## Equivalencias: variables de la web → tokens de CoordinaOT
 

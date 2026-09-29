@@ -4,9 +4,10 @@
    oscuro va en `:root[data-theme="dark"]` y no en la clase `.dark`, porque es lo que pone
    el botón del modo de la web (index.html y App.tsx, localStorage `toldos-tema`).
 
-   Se importa DESPUÉS de los estilos de siempre (styles.css, relieve.css, dark.css…): con
-   la misma especificidad gana el último, así que las variables de la web pasan a valer lo
-   de CoordinaOT sin tocar las reglas que las usan. Regla de Iván: «siempre que rediseñes
+   Va sin capa (ver estilos.css): los estilos de siempre (styles.css, relieve.css,
+   dark.css…) están en `@layer legacy`, así que estas variables mandan sobre las suyas
+   aunque allí se declaren con un selector más específico, y las reglas de siempre que las
+   usan toman los valores de CoordinaOT sin reescribirlas. Regla de Iván: «siempre que rediseñes
    cualquier zona de la web, mira en CoordinaOT cómo está y cópialo». No se inventan
    valores aquí: si CoordinaOT cambia, se vuelve a copiar. */
 
@@ -101,7 +102,7 @@
    | --border-strong,       |                                              |                                           |
    | --text, --text-muted,  |                                              |                                           |
    | --edge, --contact      |                                              |                                           |
-   | --surface-muted        | --surface-2                                  | el segundo gris de superficie             |
+   | --surface-muted        | --surface-2 (solo claro)                     | el segundo gris de superficie             |
    | --tgm-yellow           | --color-brand-400                            | el dorado de lo activo y del foco         |
    | --tgm-yellow-soft      | brand-500 al 15 % sobre --glass-chip         | el tinte de `.pestana-activa` (oscuro:    |
    |                        | (oscuro: brand-400 al 18 %)                  | brand-400 al 18 %)                        |
@@ -117,7 +118,6 @@
    | --danger (solo claro)  | #b91c1c (text-red-700)                       | el rojo de texto de CoordinaOT            |
 */
 :root {
-  --surface-muted: var(--surface-2);
   --tgm-yellow: var(--color-brand-400);
   --tgm-yellow-soft: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
   --tgm-black: #17181c;
@@ -129,14 +129,19 @@
   --canto: color-mix(in srgb, var(--border-strong) 80%, transparent);
   --brillo: var(--glass-highlight);
   --topnav-height: 58px;
+}
+/* Solo en claro: en oscuro siguen los de dark.css (#1b1d1f y #f08b8b) hasta que Pedidos y
+   Parámetros se rehagan. Antes lo conseguía la especificidad de
+   `:root[data-theme="dark"]` en dark.css; con lo de siempre en `@layer legacy` un `:root`
+   de aquí ganaría también en oscuro, así que se dice con el selector. */
+:root:not([data-theme="dark"]) {
+  --surface-muted: var(--surface-2);
   /* El rojo de texto de CoordinaOT sobre la página (`text-red-700`, el de «URGENTE» en
      PedidoCard.tsx). El #c62828 de antes se quedaba en 4,0:1 sobre el --bg nuevo en los
-     «falta N» del índice de toldos; este da 4,65:1. En oscuro sigue el de dark.css. */
+     «falta N» del índice de toldos; este da 4,65:1. */
   --danger: #b91c1c;
 }
 :root[data-theme="dark"] {
   --tgm-yellow-soft: color-mix(in srgb, var(--color-brand-400) 18%, var(--glass-chip));
   --accent-text: var(--color-brand-300);
-  --canto: color-mix(in srgb, var(--border-strong) 80%, transparent);
-  --brillo: var(--glass-highlight);
 }
