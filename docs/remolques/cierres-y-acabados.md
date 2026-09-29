@@ -15,8 +15,8 @@ lateral cuando solo lleva cierre atrás o delante).
 | GOMA | Orejas en la esquina que se sujetan con goma (el aviso de la web dice «preparar orejas por lado»). |
 | CREMALLERA | Cremallera a **5 cm de la esquina**, de alto **hasta 4 cm por debajo de la cima**. Algunos clientes la quieren **del 9 (grande)**, por ejemplo Cano Muños. |
 | VELCRO | Velcro de **3 cm en el borde de la oreja**, que se pega sobre la lona lateral. |
-| PUENTES (ESVA, LATERALES, HIJOS DE PEDRO LOPEZ) | Cierre con **puentes**: tira vertical en la esquina con ollaos por la que se pasa la goma o el cordón (ver la foto de Hijos de Pedro López). |
-| Ganchos corazón | Otro cierre que usa el taller. Pendiente de foto y de decidir si entra como recogida propia. |
+| PUENTES (ESVA, LATERALES, HIJOS DE PEDRO LOPEZ) | Cierre con **puentes**. En el de Hijos de Pedro López (foto `PUENTES 1.jpg`): **solapa cosida en vertical** en la esquina y, sobre ella, **puentes metálicos** (anilla rectangular sobre placa ovalada) repartidos a lo alto, por los que pasa una **cincha blanca de plástico**; arriba acaba en una presilla cosida y abajo sale suelta para abrochar. |
+| Ganchos corazón | Foto `REMOLQUE CON GANCHOS CORAZON 1.jpg`: **dos filas de ganchos metálicos con forma de corazón/mariposa**, remachados, alternados a un lado y otro de la costura, y un **cordón elástico blanco** en zigzag de uno a otro, anudado abajo. Pendiente de decidir si entra como recogida propia del formulario (hoy no está) y con qué medidas. |
 
 ## Bastilla para enfundar
 
@@ -27,8 +27,8 @@ más reforzado. Por eso la web sube la demasía del contorno: normal 3 cm, con b
 ## Sujeción al remolque
 
 - La lona acaba en el borde de arriba del cajón del remolque, no llega al suelo.
-- Por el borde van **ollaos pequeños** (aro metálico de unos 2 cm), muy cerca del borde y a
-  su paso real. La hoja de taller de antes los dibujaba demasiado grandes.
+- Por el borde van **ollaos pequeños de latón dorado** (aro de unos 2 cm), muy cerca del borde
+  y a su paso real. La hoja de taller de antes los dibujaba demasiado grandes.
 - Una **goma** (cordón elástico blanco, gris o negro) pasa por los ollaos y baja en zigzag
   hasta los ganchos del lateral del cajón, haciendo uves a lo largo del borde.
 
@@ -38,5 +38,6 @@ No se dibuja: no se sabe su sitio exacto. Solo se indica si lleva o no.
 
 ## Fotos de referencia
 
-`tmp/fotos-remolques/` (en el PC de Iván, no se sube). Pendientes: cremallera, bastilla de
-cerca, ventana montada y cierre con ganchos corazón.
+`tmp/fotos-remolques/` (en el PC de Iván, no se sube). Están: remolques enteros con goma
+(varias formas), puentes de Hijos de Pedro López de cerca y ganchos corazón de cerca.
+Pendientes: cremallera, bastilla de cerca y ventana montada.
