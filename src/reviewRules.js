@@ -66,3 +66,62 @@ export function reviewAuthorship({ existingTechnician = '', existingReviewer = '
 function clean(value) {
   return String(value || '').trim();
 }
+
+// Aprobación leída de CoordinaOT (diseño 29/09/2026): CoordinaOT aprueba o devuelve
+// cada OF y aquí solo se lee. Estas reglas las usan el servidor (generate-files) y la
+// web (grupos de Pedidos y botón «Generar archivos»), para que digan lo mismo.
+
+export const COORDINA_UNAVAILABLE = 'No se puede comprobar la aprobación en CoordinaOT; inténtalo en un momento.';
+
+const coordinaStateLabels = {
+  devuelta: 'devuelta',
+  pendiente: 'pendiente',
+  en_curso: 'en curso',
+  por_revisar: 'por revisar',
+  en_revision: 'en revisión',
+  anulada: 'anulada',
+  aprobada: 'aprobada',
+  sin_estado: 'sin revisión en CoordinaOT'
+};
+
+function cleanOf(value) {
+  return String(value ?? '').trim();
+}
+
+function coordinaState(status, of) {
+  return status?.ofs?.[cleanOf(of)]?.estado || 'sin_estado';
+}
+
+/** @param {{ letter: string, of: string }[]} awnings */
+export function uniqueOfs(awnings) {
+  return [...new Set(awnings.map((awning) => cleanOf(awning.of)).filter(Boolean))];
+}
+
+/**
+ * Grupo de Pedidos según CoordinaOT. Sin respuesta, todo queda por revisar.
+ * @returns {'por_revisar' | 'devuelto' | 'aprobado'}
+ */
+export function coordinaGroup(awnings, status) {
+  if (!status?.disponible || awnings.length === 0) return 'por_revisar';
+  const states = awnings.map((awning) => coordinaState(status, awning.of));
+  if (states.includes('devuelta')) return 'devuelto';
+  return states.every((state) => state === 'aprobada') ? 'aprobado' : 'por_revisar';
+}
+
+/**
+ * Por qué no se puede generar todavía, en castellano llano; null si se puede.
+ * La OF que falta va primero: sin ella ni siquiera se puede preguntar a CoordinaOT.
+ */
+export function generationBlock(awnings, status) {
+  if (awnings.length === 0) return 'El pedido no tiene toldos.';
+  const withoutOf = awnings.filter((awning) => !cleanOf(awning.of)).map((awning) => awning.letter);
+  if (withoutOf.length === 1) return `Falta la OF en el toldo ${withoutOf[0]}.`;
+  if (withoutOf.length > 1) return `Falta la OF en los toldos ${withoutOf.join(', ')}.`;
+  if (!status?.disponible) return COORDINA_UNAVAILABLE;
+  const notApproved = awnings.filter((awning) => coordinaState(status, awning.of) !== 'aprobada');
+  if (notApproved.length === 0) return null;
+  const detail = notApproved
+    .map((awning) => `${awning.letter} (${cleanOf(awning.of)}) ${coordinaStateLabels[coordinaState(status, awning.of)] || coordinaState(status, awning.of)}`)
+    .join(', ');
+  return `Sin aprobar en CoordinaOT: ${detail}.`;
+}

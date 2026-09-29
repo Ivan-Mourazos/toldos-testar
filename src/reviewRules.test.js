@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  COORDINA_UNAVAILABLE,
+  coordinaGroup,
   generateFilesDecision,
+  generationBlock,
   isPendingGeneration,
   NOT_GENERABLE_ERROR,
   PRODUCED_SAVE_ERROR,
   reviewAuthorship,
-  saveReviewDecision
+  saveReviewDecision,
+  uniqueOfs
 } from './reviewRules.js';
 
 // server.js arranca Express al importarlo, así que las decisiones de las rutas
@@ -87,5 +91,57 @@ describe('reviewAuthorship — autor y revisor al guardar en el servidor', () =>
 
   it('pedido histórico sin autor: toma como autor al técnico recibido', () => {
     expect(reviewAuthorship({ existingTechnician: '', technician: 'ÁNGEL', savedBy: 'ÁNGEL' })).toEqual({ technician: 'ÁNGEL', reviewer: '' });
+  });
+});
+
+describe('aprobación leída de CoordinaOT', () => {
+  const awnings = [{ letter: 'A', of: '0230194' }, { letter: 'B', of: ' 0230195 ' }];
+  const status = (ofs) => ({ disponible: true, ofs });
+  const ok = { estado: 'aprobada', nota: '' };
+
+  it('uniqueOfs limpia espacios, vacíos y repetidas', () => {
+    expect(uniqueOfs([...awnings, { letter: 'C', of: '0230194' }, { letter: 'D', of: '' }])).toEqual(['0230194', '0230195']);
+  });
+
+  it('coordinaGroup: aprobado solo con todas aprobadas', () => {
+    expect(coordinaGroup(awnings, status({ '0230194': ok, '0230195': ok }))).toBe('aprobado');
+    expect(coordinaGroup(awnings, status({ '0230194': ok, '0230195': { estado: 'en_revision' } }))).toBe('por_revisar');
+    expect(coordinaGroup(awnings, status({ '0230194': ok }))).toBe('por_revisar');
+  });
+
+  it('coordinaGroup: una devuelta manda', () => {
+    expect(coordinaGroup(awnings, status({ '0230194': ok, '0230195': { estado: 'devuelta', nota: 'x' } }))).toBe('devuelto');
+  });
+
+  it('coordinaGroup: sin CoordinaOT o sin toldos, por revisar', () => {
+    expect(coordinaGroup(awnings, { disponible: false })).toBe('por_revisar');
+    expect(coordinaGroup(awnings, undefined)).toBe('por_revisar');
+    expect(coordinaGroup([], status({}))).toBe('por_revisar');
+  });
+
+  it('generationBlock: null con todo aprobado', () => {
+    expect(generationBlock(awnings, status({ '0230194': ok, '0230195': ok }))).toBeNull();
+  });
+
+  it('generationBlock: falta la OF va primero, aunque CoordinaOT no responda', () => {
+    expect(generationBlock([{ letter: 'A', of: '0230194' }, { letter: 'B', of: '' }], { disponible: false }))
+      .toBe('Falta la OF en el toldo B.');
+    expect(generationBlock([{ letter: 'A', of: '' }, { letter: 'C', of: ' ' }], status({})))
+      .toBe('Falta la OF en los toldos A, C.');
+  });
+
+  it('generationBlock: CoordinaOT sin responder bloquea', () => {
+    expect(generationBlock(awnings, { disponible: false })).toBe(COORDINA_UNAVAILABLE);
+  });
+
+  it('generationBlock: dice qué falta y cómo está', () => {
+    expect(generationBlock(awnings, status({ '0230194': { estado: 'devuelta', nota: 'n' }, '0230195': { estado: 'en_revision' } })))
+      .toBe('Sin aprobar en CoordinaOT: A (0230194) devuelta, B (0230195) en revisión.');
+    expect(generationBlock(awnings, status({ '0230194': ok })))
+      .toBe('Sin aprobar en CoordinaOT: B (0230195) sin revisión en CoordinaOT.');
+  });
+
+  it('generationBlock: pedido sin toldos', () => {
+    expect(generationBlock([], status({}))).toBe('El pedido no tiene toldos.');
   });
 });
