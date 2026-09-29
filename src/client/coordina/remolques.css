@@ -307,6 +307,27 @@
 .rem-dibujo-vacio-texto { color: var(--text-muted); font-size: 13px; font-weight: 500; margin: 0; }
 .rem-dibujo-vacio-nota { color: var(--text-muted); font-size: 12px; margin: 0; }
 .rem-dibujo-pie { border-top: 1px solid var(--border); padding: 0.625rem 0.75rem; }
+
+/* Render 3D (fase 2b): el lienzo transparente sobre la superficie del panel, así se ve bien en
+   claro y en oscuro; las cotas en SVG encima, con los tokens de texto de CoordinaOT. */
+.rem-render { aspect-ratio: 16 / 10; background: var(--surface); position: relative; }
+.rem-render-lienzo { inset: 0; position: absolute; }
+.rem-render canvas { display: block; height: 100%; width: 100%; }
+.rem-render-cotas { inset: 0; pointer-events: none; position: absolute; z-index: 1; }
+.rem-render-cotas line { stroke: var(--text); stroke-width: 1; }
+.rem-render-cotas marker path { fill: var(--text); }
+.rem-render-cotas text {
+  fill: var(--text);
+  font-family: var(--font);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+}
+.rem-render-cotas .rem-render-marca { font-size: 10px; font-weight: 500; }
+.rem-render-reiniciar { bottom: 0.625rem; position: absolute; right: 0.625rem; z-index: 2; }
 .rem-observaciones {
   align-items: center;
   background: color-mix(in srgb, var(--surface-2) 70%, transparent);
