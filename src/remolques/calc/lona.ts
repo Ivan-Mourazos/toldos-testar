@@ -1,6 +1,7 @@
 import { excelRound } from "./redondeo.ts";
 import { ajusteContorno, findRecogida, type CalcParams, type TipoPerfil } from "./params.ts";
-import { calcOllaos, type OllaosResult } from "./ollaos.ts";
+import { calcOllaos, sinPosiciones, type ModoOllaos, type OllaosResult, type RepartoLados } from "./ollaos.ts";
+import { ollaosSegunGanchos, sinReves, type LadosAlReves } from "./ganchos.ts";
 
 // El paño trasero usa la columna DELANTE de la recogida, igual que el Excel
 // (G11 y RPS D7). Confirmado por Iván el 2026-07-17: es el comportamiento
@@ -52,11 +53,17 @@ export interface LonaInput {
   /** Solo se indica si va rotulado; el contenido no forma parte del
    *  planteamiento. null = sin elegir. */
   rotulacion: boolean | null;
-  modoOllaos: "REPARTIDOS" | "SEGUN SE INDICA" | "";
+  modoOllaos: ModoOllaos;
   pasoOllaos: number;
   /** Distancia del primer y último ollao al borde; por defecto la de los parámetros. */
   primerOllao?: number;
   ollaosManuales: { laterales: number[]; atras: number[]; delante: number[] };
+  /** Con «SEGUN GANCHOS»: posiciones de los ganchos sobre el remolque, con el convenio de los ollaos. */
+  ganchos?: RepartoLados;
+  /** Lados que el pedido mide desde el otro extremo. */
+  ganchosAlReves?: LadosAlReves;
+  /** Con «SEGUN GANCHOS»: un ollao más en cada extremo, a `primerOllao` del borde. Ausente = sí. */
+  ollaosExtremos?: boolean;
   material: string; observaciones: string;
 }
 
@@ -70,6 +77,8 @@ export interface LonaResult {
   panoDelantero: Pano; panoTrasero: Pano; panoContorno: Pano | null;
   ollaos: OllaosResult;
   reparto: { laterales: number[]; atras: number[]; delante: number[] };
+  /** Solo con «SEGUN GANCHOS»: los ganchos ya sobre la lona hecha, para dibujarlos. */
+  ganchos?: RepartoLados;
   metrosTela: number;
   recogeDelanteTexto: string; recogeAtrasTexto: string;
   notas: string[];
@@ -132,18 +141,33 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
     lonaHecha.largo, lonaHecha.ancho, input.pasoOllaos, params,
     input.primerOllao, lonaHecha.anchoAtras,
   );
+  const segunGanchos = input.modoOllaos === "SEGUN GANCHOS"
+    ? ollaosSegunGanchos({
+        ganchos: input.ganchos ?? sinPosiciones(),
+        alReves: input.ganchosAlReves ?? sinReves(),
+        extremos: input.ollaosExtremos ?? true,
+        distanciaExtremo: input.primerOllao ?? params.primerOllao,
+        medidas: {
+          laterales: { remolque: input.largo, hecha: lonaHecha.largo },
+          atras: { remolque: anchoAtras, hecha: lonaHecha.anchoAtras },
+          delante: { remolque: input.ancho, hecha: lonaHecha.ancho },
+        },
+      })
+    : null;
   // Sin modo elegido no se reparte nada: enseñar un reparto plausible que
   // nadie ha confirmado es justo el fallo que este bloque corrige, y aquí
   // acabaría dibujado en la hoja de taller.
   const reparto = input.modoOllaos === ""
     ? { laterales: [], atras: [], delante: [] }
-    : input.modoOllaos === "SEGUN SE INDICA"
-      ? input.ollaosManuales
-      : {
-          laterales: ollaos.largo.posiciones,
-          atras: ollaos.anchoAtras.posiciones,
-          delante: ollaos.ancho.posiciones,
-        };
+    : segunGanchos
+      ? segunGanchos.ollaos
+      : input.modoOllaos === "SEGUN SE INDICA"
+        ? input.ollaosManuales
+        : {
+            laterales: ollaos.largo.posiciones,
+            atras: ollaos.anchoAtras.posiciones,
+            delante: ollaos.ancho.posiciones,
+          };
 
   const metrosTela = panoContorno
     ? excelRound(
@@ -168,7 +192,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   return {
     lonaHecha, contornoIntroducido, ajusteContorno: ajuste, contornoAjustado,
     panoDelantero, panoTrasero, panoContorno,
-    ollaos, reparto, metrosTela,
+    ollaos, reparto, ...(segunGanchos ? { ganchos: segunGanchos.ganchos } : {}), metrosTela,
     recogeDelanteTexto: recDel.nombre,
     recogeAtrasTexto: recAtr.nombre,
     notas,

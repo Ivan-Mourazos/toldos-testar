@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LonaResult } from '../../remolques/calc/lona.ts';
 import type { BaquetonResult } from '../../remolques/calc/baqueton.ts';
+import type { ModoOllaos } from '../../remolques/calc/ollaos.ts';
 import { InputDecimal } from './InputDecimal';
 
 // Resultados del cálculo, los de `Resultados.tsx` de la web de remolques: tarjetas de datos,
@@ -14,7 +15,6 @@ export interface RepartoOllaos {
 }
 
 type ClaveReparto = keyof RepartoOllaos;
-type ModoOllaos = 'REPARTIDOS' | 'SEGUN SE INDICA' | '';
 
 const fmt = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 

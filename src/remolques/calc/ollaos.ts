@@ -1,6 +1,15 @@
 import { excelRound } from "./redondeo.ts";
 import type { CalcParams } from "./params.ts";
 
+/** "" = sin elegir. «SEGUN GANCHOS»: el pedido trae los ganchos y los ollaos van entre ellos. */
+export type ModoOllaos = "REPARTIDOS" | "SEGUN SE INDICA" | "SEGUN GANCHOS" | "";
+
+/** Posiciones por lado, con el convenio de siempre: delante y detrás de izquierda a derecha,
+ *  laterales de atrás a delante. */
+export interface RepartoLados { laterales: number[]; atras: number[]; delante: number[] }
+
+export const sinPosiciones = (): RepartoLados => ({ laterales: [], atras: [], delante: [] });
+
 export interface EjeOllaos { n: number; dist: number; posiciones: number[] }
 export interface OllaosResult { largo: EjeOllaos; ancho: EjeOllaos; anchoAtras: EjeOllaos }
 
