@@ -743,8 +743,26 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .model-picker-legend .is-ready { color: var(--correcto-texto); }
 .model-picker-status.is-pending,
 .model-picker-legend .is-pending { color: var(--aviso-texto); }
-/* El globo de ayuda es la `pista` de CoordinaOT (globals.css 617-642). */
+/* El globo de ayuda es la `pista` de CoordinaOT (globals.css 617-642). Se coloca encima de
+   su tarjeta y con su mismo ancho (Iván, 30/09/2026): colgado del icono y abierto 250 px
+   hacia la izquierda, en la primera columna se salía del diálogo, que lo cortaba por el
+   borde y dejaba el texto pegado. */
+.model-picker-option { position: relative; }
+.model-picker-status { position: static; }
+/* En la primera tarjeta de cada columna, hacia abajo: encima tapaba el título del diálogo y
+   el borde de arriba lo cortaba. */
+.model-picker-list > li:first-child .model-picker-tip { bottom: auto; top: calc(100% + 6px); }
+/* La tarjeta con el ratón o el foco va por delante de sus vecinas: si no, su globo queda
+   debajo de las tarjetas que se pintan después. */
+.model-picker-option:hover,
+.model-picker-option:focus-visible { z-index: 30; }
 .model-picker-tip {
+  bottom: calc(100% + 6px);
+  left: 0;
+  padding: 0.5rem 0.625rem;
+  right: 0;
+  width: auto;
+  z-index: 20;
   background: rgba(24, 26, 31, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
