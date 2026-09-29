@@ -59,6 +59,10 @@ Reglas para seguir:
 - El anillo de foco de teclado es el `:focus-visible` general de `piezas.css` (el de CoordinaOT,
   2px dorado a 1px), sin capa: gana a lo de siempre. Las piezas que quieren otro (filas de
   Pedidos, campos) lo dicen con su propia regla en `coordina/`.
+- Excepción a «CoordinaOT manda»: cuando su pieza tiene un defecto de accesibilidad, aquí se corrige y se deja escrito.
+  Su `Select` resalta la opción con `--glass-highlight` (blanco sobre blanco en claro): aquí
+  la opción resaltada usa un tinte de brand-500 (`--opcion-resaltada`, en `nuevo-pedido.css`). Y nunca se quita el anillo
+  de foco (`outline: none`) a un elemento sin poner otra marca igual de visible: quien usa el teclado tiene que ver siempre dónde está.
 - `--danger` y `--surface-muted` también son los de CoordinaOT en oscuro (`red-400` y `--surface-2`);
   ya no queda ninguna variable de `tokens.css` que dependa de `dark.css`.
 

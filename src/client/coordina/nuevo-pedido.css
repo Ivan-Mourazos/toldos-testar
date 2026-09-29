@@ -119,6 +119,15 @@
   border-color: var(--color-brand-400);
   outline: none;
 }
+/* Además del borde, el anillo de foco de CoordinaOT (2 px dorado a 1 px, piezas.css): solo el
+   borde dorado de 1 px daba unos 1,9:1 en claro y costaba ver qué campo se está rellenando.
+   Con `:focus-visible` no sale al pulsar con el ratón un botón (el desplegable), pero sí al
+   entrar en un campo de texto, como en el resto de la app. El aviso «falta» sigue distinto: su
+   borde y su sombra son ámbar, y el anillo va por fuera con 1 px de separación. */
+.app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):focus-visible {
+  outline: 2px solid var(--color-brand-400);
+  outline-offset: 1px;
+}
 /* Solo lectura y apagado: la caja `bg-surface-2` de CoordinaOT, sin relieve. */
 .app-shell :is(input, select, textarea, .select-control):disabled,
 .app-shell .order-header input[readonly],
@@ -166,18 +175,26 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   color: var(--text-muted);
 }
 .fabric-option strong { color: var(--text); }
+/* La opción resaltada con las flechas (o el ratón) tiene que verse: en claro
+   `--glass-highlight` es blanco sobre el fondo blanco del desplegable y no se distinguía. Se usa
+   un tinte de la marca de CoordinaOT (brand-500, como la fila activa de Parámetros); en oscuro
+   el blanco al 12 % ya se ve. */
+.select-options,
+.fabric-options { --opcion-resaltada: color-mix(in srgb, var(--color-brand-500) 18%, var(--glass-bg-pop)); }
+:root[data-theme="dark"] .select-options,
+:root[data-theme="dark"] .fabric-options { --opcion-resaltada: var(--glass-highlight); }
 .select-option.is-active,
 .fabric-option:hover,
 .fabric-option:focus-visible {
-  background: var(--glass-highlight);
+  background: var(--opcion-resaltada);
   color: var(--text);
 }
-.select-option.is-selected,
-.select-option.is-selected.is-active {
+/* La elegida se distingue por el texto dorado y la marca; resaltada además lleva el fondo. */
+.select-option.is-selected {
   background: transparent;
   color: var(--accent-text);
 }
-.select-option.is-selected.is-active { background: var(--glass-highlight); }
+.select-option.is-selected.is-active { background: var(--opcion-resaltada); }
 .select-option > svg { color: var(--accent-text); }
 .fabric-option-meta { color: var(--accent-text); }
 
@@ -714,9 +731,8 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   transform: translateY(-1px);
 }
 .model-picker-option:active { transform: translateY(1px); }
-/* El foco de teclado se ve en la propia opción (fondo, borde y sombra de arriba): sin el anillo
-   dorado general de piezas.css, que se sumaría. */
-.model-picker-option:focus-visible { outline: none; }
+/* El foco de teclado lleva el anillo dorado general de piezas.css. Sin él, el foco era igual que
+   el ratón encima (y en oscuro la sombra de abajo ganaba, dejando solo 1 px de desplazamiento). */
 :root[data-theme="dark"] .model-picker-option {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
