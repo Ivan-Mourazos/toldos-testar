@@ -143,6 +143,15 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
               <CampoNum name="primerOllao" error={errores.primerOllao} label="Primer ollao" value={input.primerOllao ?? DEFAULT_PARAMS.primerOllao}
                 onChange={(v) => set('primerOllao', v)} />
             </>
+          ) : input.modoOllaos === 'SEGUN GANCHOS' ? (
+            <>
+              <CampoSiNo name="ollaosExtremos" label="Ollaos en los extremos" value={input.ollaosExtremos ?? true}
+                onChange={(v) => set('ollaosExtremos', v)} />
+              {(input.ollaosExtremos ?? true) && (
+                <CampoNum name="primerOllao" error={errores.primerOllao} label="Extremo al borde"
+                  value={input.primerOllao ?? DEFAULT_PARAMS.primerOllao} onChange={(v) => set('primerOllao', v)} />
+              )}
+            </>
           ) : (
             <p className="rem-nota rem-span-2">Introduce las posiciones exactas en el apartado de ollaos del resultado.</p>
           )}

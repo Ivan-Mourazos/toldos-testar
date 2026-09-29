@@ -5,7 +5,7 @@ import { Escena3D } from './Escena3D';
 import { FormularioBaqueton } from './FormularioBaqueton';
 import { FormularioLona } from './FormularioLona';
 import { PestanasElementos } from './PestanasElementos';
-import { ResultadosBaqueton, ResultadosLona } from './Resultados';
+import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
 import { useRemolques } from './useRemolques';
 
@@ -130,6 +130,8 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                   primerOllao={lona.primerOllao ?? params.primerOllao}
                   errorOllaos={ws.erroresVisibles.ollaosManuales}
                   onOllaosChange={(ollaosManuales) => ws.cambiarInput({ ...lona, ollaosManuales })}
+                  ganchos={pantallaGanchos(lona, ws.erroresVisibles.ganchos,
+                    (ganchos, ganchosAlReves) => ws.cambiarInput({ ...lona, ganchos, ganchosAlReves }))}
                 />
               ) : ws.medidasSuficientes && lineaActiva.tipo === 'baqueton' ? (
                 <ResultadosBaqueton
@@ -138,6 +140,8 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                   primerOllao={baq.primerOllao ?? params.primerOllao}
                   errorOllaos={ws.erroresVisibles.ollaosManuales}
                   onOllaosChange={(ollaosManuales) => ws.cambiarInput({ ...baq, ollaosManuales })}
+                  ganchos={pantallaGanchos(baq, ws.erroresVisibles.ganchos,
+                    (ganchos, ganchosAlReves) => ws.cambiarInput({ ...baq, ganchos, ganchosAlReves }))}
                 />
               ) : (
                 <p className="rem-vacio-resultado">

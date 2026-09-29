@@ -6,6 +6,7 @@ import type { Opcion } from './Campos';
 export const MODOS_OLLAOS: Opcion[] = [
   { value: 'REPARTIDOS', label: 'Repartidos automáticamente' },
   { value: 'SEGUN SE INDICA', label: 'A medida' },
+  { value: 'SEGUN GANCHOS', label: 'Según ganchos' },
 ];
 
 const etiquetasConocidas: Record<string, string> = {

@@ -1,7 +1,8 @@
 import React from 'react';
 import type { LonaResult } from '../../remolques/calc/lona.ts';
 import type { BaquetonResult } from '../../remolques/calc/baqueton.ts';
-import type { ModoOllaos } from '../../remolques/calc/ollaos.ts';
+import { sinPosiciones, type ModoOllaos } from '../../remolques/calc/ollaos.ts';
+import { avisosGanchos, MAX_GANCHOS_POR_LADO, sinReves } from '../../remolques/calc/ganchos.ts';
 import { InputDecimal } from './InputDecimal';
 
 // Resultados del cálculo, los de `Resultados.tsx` de la web de remolques: tarjetas de datos,
@@ -24,6 +25,48 @@ const filas: Array<{ clave: ClaveReparto; nombre: string }> = [
   { clave: 'delante', nombre: 'DELANTE · IZQUIERDA A DERECHA' },
 ];
 const HUECOS = Array.from({ length: 12 }, (_, i) => i);
+const HUECOS_GANCHOS = Array.from({ length: MAX_GANCHOS_POR_LADO }, (_, i) => i);
+
+/** Cambia una casilla de una lista de posiciones: vaciarla la quita y no se saltan huecos.
+ *  Devuelve null si el valor no vale (y entonces no se cambia nada). */
+function cambiarPosicion(lista: number[], indice: number, valor: number | null, maximo: number): number[] | null {
+  const siguiente = [...lista];
+  if (valor === null) {
+    if (indice < siguiente.length) siguiente.splice(indice, 1);
+  } else {
+    if (!Number.isFinite(valor) || valor <= 0 || indice > siguiente.length) return null;
+    siguiente[indice] = valor;
+  }
+  return siguiente.slice(0, maximo);
+}
+
+export interface GanchosPantalla {
+  /** Sobre el remolque, como vienen en el pedido. */
+  ganchos: RepartoOllaos;
+  alReves: Record<ClaveReparto, boolean>;
+  extremos: boolean;
+  avisos: string[];
+  error?: string;
+  onChange: (ganchos: RepartoOllaos, alReves: Record<ClaveReparto, boolean>) => void;
+}
+
+/** Lo que el editor de ganchos necesita de una lona o un baquetón; undefined en los otros modos. */
+export function pantallaGanchos(
+  input: { modoOllaos: ModoOllaos; ganchos?: RepartoOllaos; ganchosAlReves?: Record<ClaveReparto, boolean>; ollaosExtremos?: boolean },
+  error: string | undefined,
+  onChange: GanchosPantalla['onChange'],
+): GanchosPantalla | undefined {
+  if (input.modoOllaos !== 'SEGUN GANCHOS') return undefined;
+  const ganchos = input.ganchos ?? sinPosiciones();
+  return {
+    ganchos,
+    alReves: input.ganchosAlReves ?? sinReves(),
+    extremos: input.ollaosExtremos ?? true,
+    avisos: avisosGanchos(ganchos).map((aviso) => aviso.mensaje),
+    error,
+    onChange,
+  };
+}
 
 function Dato({ label, valor }: { label: string; valor: string }) {
   return (
@@ -68,14 +111,8 @@ function EditorOllaos({ reparto, error, onChange }: {
   onChange: (reparto: RepartoOllaos) => void;
 }) {
   const cambiar = (clave: ClaveReparto, indice: number, valor: number | null) => {
-    const siguiente = [...reparto[clave]];
-    if (valor === null) {
-      if (indice < siguiente.length) siguiente.splice(indice, 1);
-    } else {
-      if (!Number.isFinite(valor) || valor <= 0 || indice > siguiente.length) return;
-      siguiente[indice] = valor;
-    }
-    onChange({ ...reparto, [clave]: siguiente.slice(0, 12) });
+    const siguiente = cambiarPosicion(reparto[clave], indice, valor, 12);
+    if (siguiente) onChange({ ...reparto, [clave]: siguiente });
   };
 
   return (
@@ -115,12 +152,62 @@ function EditorOllaos({ reparto, error, onChange }: {
   );
 }
 
-function Ollaos({ modo, reparto, primerOllao, error, onChange }: {
+function EditorGanchos({ ganchos, alReves, error, onChange }: GanchosPantalla) {
+  return (
+    <div className={`rem-ollaos-editor${error ? ' is-invalido' : ''}`}>
+      <header>
+        <h4>Ganchos del pedido</h4>
+        <span>Sobre el remolque · cm</span>
+      </header>
+      {filas.map(({ clave, nombre }) => {
+        const posiciones = ganchos[clave];
+        return (
+          <section key={clave} className="rem-ollaos-fila">
+            <div className="rem-ollaos-nombre">
+              <p>{nombre}</p>
+              <span>{posiciones.length} {posiciones.length === 1 ? 'gancho' : 'ganchos'}</span>
+              <label className="rem-ganchos-reves">
+                <input
+                  type="checkbox"
+                  checked={alReves[clave]}
+                  onChange={(evento) => onChange(ganchos, { ...alReves, [clave]: evento.target.checked })}
+                />
+                Medido al revés
+              </label>
+            </div>
+            <div className="rem-ollaos-casillas">
+              {HUECOS_GANCHOS.map((indice) => (
+                <label key={indice}>
+                  <span>{indice + 1}</span>
+                  <InputDecimal
+                    data-campo={clave === 'laterales' && indice === 0 ? 'ganchos' : undefined}
+                    aria-invalid={Boolean(error && posiciones.length < 2)}
+                    aria-label={`${nombre}, gancho ${indice + 1}`}
+                    disabled={indice > posiciones.length}
+                    value={posiciones[indice]}
+                    onValor={(valor) => {
+                      const siguiente = cambiarPosicion(posiciones, indice, valor, MAX_GANCHOS_POR_LADO);
+                      if (siguiente) onChange({ ...ganchos, [clave]: siguiente }, alReves);
+                    }}
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+      {error && <p role="alert" className="rem-error rem-ollaos-error">{error}</p>}
+    </div>
+  );
+}
+
+function Ollaos({ modo, reparto, primerOllao, error, onChange, ganchos }: {
   modo: ModoOllaos;
   reparto: RepartoOllaos;
   primerOllao: number;
   error?: string;
   onChange: (reparto: RepartoOllaos) => void;
+  ganchos?: GanchosPantalla;
 }) {
   // Sin modo elegido no hay reparto que enseñar: una tabla vacía se leería como «este remolque
   // no lleva ollaos», que es justo lo que nadie ha dicho.
@@ -129,11 +216,33 @@ function Ollaos({ modo, reparto, primerOllao, error, onChange }: {
   }
   return (
     <div className="rem-ollaos">
-      {modo === 'SEGUN SE INDICA'
-        ? <EditorOllaos reparto={reparto} error={error} onChange={onChange} />
-        : <TablaReparto reparto={reparto} />}
+      {modo === 'SEGUN SE INDICA' ? (
+        <EditorOllaos reparto={reparto} error={error} onChange={onChange} />
+      ) : (
+        <>
+          {modo === 'SEGUN GANCHOS' && ganchos && (
+            <>
+              <EditorGanchos {...ganchos} />
+              {ganchos.avisos.length > 0 && (
+                <ul className="rem-ganchos-avisos" role="status">
+                  {ganchos.avisos.map((aviso) => <li key={aviso}>{aviso}</li>)}
+                </ul>
+              )}
+            </>
+          )}
+          <TablaReparto reparto={reparto} />
+        </>
+      )}
       {modo === 'REPARTIDOS' && (
         <p className="rem-pie-ollaos">Primer y último ollao a {fmt(primerOllao)} cm del borde.</p>
+      )}
+      {modo === 'SEGUN GANCHOS' && (
+        <p className="rem-pie-ollaos">
+          {ganchos?.extremos
+            ? `Un ollao entre cada par de ganchos y uno en cada extremo, a ${fmt(primerOllao)} cm del borde.`
+            : 'Un ollao entre cada par de ganchos.'}
+          {' '}Posiciones sobre la lona hecha.
+        </p>
       )}
     </div>
   );
@@ -153,9 +262,10 @@ type PropsComunes = {
   primerOllao: number;
   errorOllaos?: string;
   onOllaosChange: (reparto: RepartoOllaos) => void;
+  ganchos?: GanchosPantalla;
 };
 
-export function ResultadosLona({ res, modoOllaos, primerOllao, errorOllaos, onOllaosChange }: PropsComunes & { res: LonaResult }) {
+export function ResultadosLona({ res, modoOllaos, primerOllao, errorOllaos, onOllaosChange, ganchos }: PropsComunes & { res: LonaResult }) {
   return (
     <div className="rem-resultados" aria-label="Resultados de la lona" role="group">
       <div className="rem-datos">
@@ -173,13 +283,13 @@ export function ResultadosLona({ res, modoOllaos, primerOllao, errorOllaos, onOl
         <Dato label="Recoge atrás" valor={res.recogeAtrasTexto} />
         <Dato label="Metros de tela" valor={res.metrosTela > 0 ? `${fmt(res.metrosTela)} m` : '—'} />
       </div>
-      <Ollaos modo={modoOllaos} reparto={res.reparto} primerOllao={primerOllao} error={errorOllaos} onChange={onOllaosChange} />
+      <Ollaos modo={modoOllaos} reparto={res.reparto} primerOllao={primerOllao} error={errorOllaos} onChange={onOllaosChange} ganchos={ganchos} />
       <Notas notas={res.notas} />
     </div>
   );
 }
 
-export function ResultadosBaqueton({ res, modoOllaos, primerOllao, errorOllaos, onOllaosChange }: PropsComunes & { res: BaquetonResult }) {
+export function ResultadosBaqueton({ res, modoOllaos, primerOllao, errorOllaos, onOllaosChange, ganchos }: PropsComunes & { res: BaquetonResult }) {
   return (
     <div className="rem-resultados" aria-label="Resultados del baquetón" role="group">
       <div className="rem-datos">
@@ -192,7 +302,7 @@ export function ResultadosBaqueton({ res, modoOllaos, primerOllao, errorOllaos, 
         <Dato label="Superficie" valor={`${fmt(res.superficieM2)} m²/ud`} />
         <Dato label="Metros de tela" valor={res.metrosTela > 0 ? `${fmt(res.metrosTela)} m` : '—'} />
       </div>
-      <Ollaos modo={modoOllaos} reparto={res.reparto} primerOllao={primerOllao} error={errorOllaos} onChange={onOllaosChange} />
+      <Ollaos modo={modoOllaos} reparto={res.reparto} primerOllao={primerOllao} error={errorOllaos} onChange={onOllaosChange} ganchos={ganchos} />
       <Notas notas={res.notas} />
     </div>
   );
