@@ -39,5 +39,7 @@ export function construirMallas(escena: EscenaRemolque, materiales: Materiales):
 export function liberarGrupo(grupo: THREE.Group) {
   grupo.traverse((objeto) => {
     if (objeto instanceof THREE.Mesh) objeto.geometry.dispose();
+    // El InstancedMesh guarda además su búfer de matrices en la GPU, que solo suelta él mismo.
+    if (objeto instanceof THREE.InstancedMesh) objeto.dispose();
   });
 }

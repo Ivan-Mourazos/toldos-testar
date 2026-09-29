@@ -29,5 +29,8 @@ export function piezasCajon(c: Cajon, conBorde: boolean): Pieza[] {
     { geometria: geometriaCajon(ensanchar(c, 0.6, 3)).translate(0, -c.alto / 2 + 1.5, 0), material: 'chapa' },
   ];
   if (conBorde) piezas.push({ geometria: geometriaCajon(ensanchar(c, 1.2, 5)), material: 'chapa' });
+  // La cubierta del baquetón es plana en y = 0, igual que la cara de arriba del cajón: con las
+  // dos en el mismo plano el render parpadea (z-fighting). Se baja el cajón 3 mm.
+  else piezas.forEach((p) => p.geometria.translate(0, -0.3, 0));
   return piezas;
 }

@@ -25,10 +25,3 @@ export function escalarUV(geo: THREE.BufferGeometry, ancho: number, alto: number
   uv.needsUpdate = true;
   return geo;
 }
-
-/** Recorrido de tramos rectos: la goma va tensa de un punto al siguiente. */
-export function caminoPoligonal(puntos: THREE.Vector3[]) {
-  const camino = new THREE.CurvePath<THREE.Vector3>();
-  for (let i = 1; i < puntos.length; i += 1) camino.add(new THREE.LineCurve3(puntos[i - 1], puntos[i]));
-  return camino;
-}
