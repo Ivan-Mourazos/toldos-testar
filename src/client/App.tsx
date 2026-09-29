@@ -1,21 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ClipboardList,
   Eraser,
   Eye,
-  FolderCog,
-  Inbox,
   Save,
-  SlidersHorizontal,
-  Truck,
   UserRound,
   X, Undo2, Moon, Sun } from 'lucide-react';
-import '@fontsource-variable/plus-jakarta-sans';
+// Letra de CoordinaOT (Geist y Geist Mono) servida desde el proyecto; Didact Gothic es la
+// sustituta de Century Gothic para «Planteamientos» en la cabecera (ver coordina/piezas.css).
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '@fontsource/didact-gothic/latin-400.css';
 import './styles.css';
 import './relieve.css';
-import './remolques-nav.css';
 import './dark.generated.css';
 import './dark.css';
+// La capa de CoordinaOT va la última: con la misma especificidad manda lo que se importa
+// después, y así sus tokens y piezas pisan a los estilos de siempre.
+import './coordina/tokens.css';
+import './coordina/piezas.css';
 import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
@@ -77,6 +79,8 @@ export default function App() {
   }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    // La barra del navegador, del --bg de CoordinaOT de cada modo (como la cabecera).
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#1a1b1f' : '#d6dbe2');
     try { window.localStorage.setItem('toldos-tema', theme); } catch { /* sin almacenamiento: dura hasta recargar */ }
   }, [theme]);
   function chooseUser(name: string) { saveCurrentUser(name); setCurrentUser(name); setChoosingUser(false); }
@@ -419,29 +423,35 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <header className="app-topnav">
-        <div className="brand">
-          <div className="brand-mark"><img src="/logo-tgm-transparent.png" alt="TGM" /></div>
-          <div><h1>Planteamientos</h1><span>TGM</span></div>
+      {/* Cabecera como la de CoordinaOT (diseño 29/09/2026, estilo CoordinaOT): del color de
+          la página, logo a la izquierda, pestañas como teclas sueltas y, a la derecha, el modo
+          y «Soy» como su chip de usuario. Las clases salen de src/client/coordina/. */}
+      <header className="cabecera glass-header">
+        <div className="cabecera-logo">
+          <img src="/logo-tgm-transparent.png" alt="TGM" />
+          <h1>Planteamientos</h1>
         </div>
-        {/* Barra superior (diseño 24/09/2026, apartado 1): la lateral quitaba 204 px a 1280. */}
-        <nav className="app-tabs" aria-label="Vistas">
-          <TabButton active={activeTab === 'order'} disabled={working === 'review'} icon={<ClipboardList />} label="Nuevo pedido" onClick={() => setActiveTab('order')} />
-          <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} icon={<Inbox />} label={pendingCount ? `Pedidos · ${pendingCount}` : 'Pedidos'} onClick={() => setActiveTab('reviews')} />
-          <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} icon={<SlidersHorizontal />} label="Parámetros" onClick={() => setActiveTab('parameters')} />
-          <TabButton active={activeTab === 'settings'} disabled={working === 'review'} icon={<FolderCog />} label="Configuración" onClick={() => setActiveTab('settings')} />
+        <nav className="cabecera-pestanas tira-3d glass-chip" aria-label="Vistas">
+          <TabButton active={activeTab === 'order'} disabled={working === 'review'} label="Nuevo pedido" onClick={() => setActiveTab('order')} />
+          <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} label="Pedidos" count={pendingCount} onClick={() => setActiveTab('reviews')} />
+          <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => setActiveTab('parameters')} />
+          <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => setActiveTab('settings')} />
           {remolquesUrl && (
-            <a className="tecla-3d sobre-oscuro app-remolques-link" href={remolquesUrl}>
-              <Truck aria-hidden="true" />Remolques
-            </a>
+            <a className="pestana" href={remolquesUrl}>Remolques</a>
           )}
         </nav>
-        <button type="button" className="theme-toggle" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
-          {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-        </button>
-        <button type="button" className="app-current-user tecla-3d sobre-oscuro" onClick={() => setChoosingUser(true)} aria-label="Cambiar quién soy">
-          <UserRound aria-hidden="true" />Soy: {currentUser ? controlLabel(currentUser) : '—'}
-        </button>
+        <div className="cabecera-derecha">
+          <button type="button" className="cabecera-modo glass-chip" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
+            {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+          </button>
+          <button type="button" className="cabecera-usuario glass-chip" onClick={() => setChoosingUser(true)} aria-label="Cambiar quién soy">
+            {/* El avatar con las iniciales, como el chip de usuario de CoordinaOT. */}
+            <span className="cabecera-avatar" aria-hidden="true">
+              {currentUser ? currentUser.slice(0, 2).toLocaleUpperCase('es-ES') : <UserRound />}
+            </span>
+            <span className="cabecera-usuario-nombre">Soy: {currentUser ? controlLabel(currentUser) : '—'}</span>
+          </button>
+        </div>
       </header>
 
       <section className="app-workspace">

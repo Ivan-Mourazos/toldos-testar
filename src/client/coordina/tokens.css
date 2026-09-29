@@ -1,0 +1,142 @@
+/* Tokens de CoordinaOT (diseño docs/superpowers/specs/2026-09-29-estilo-coordina-design.md).
+   Copiados tal cual de coordina-ot/src/app/globals.css (29/09/2026): `@theme` (dorado de
+   marca, líneas 11-26), `:root` (líneas 31-110) y `.dark` (líneas 112-154). Aquí el tema
+   oscuro va en `:root[data-theme="dark"]` y no en la clase `.dark`, porque es lo que pone
+   el botón del modo de la web (index.html y App.tsx, localStorage `toldos-tema`).
+
+   Se importa DESPUÉS de los estilos de siempre (styles.css, relieve.css, dark.css…): con
+   la misma especificidad gana el último, así que las variables de la web pasan a valer lo
+   de CoordinaOT sin tocar las reglas que las usan. Regla de Iván: «siempre que rediseñes
+   cualquier zona de la web, mira en CoordinaOT cómo está y cópialo». No se inventan
+   valores aquí: si CoordinaOT cambia, se vuelve a copiar. */
+
+:root {
+  /* ── @theme de CoordinaOT: dorado calibrado a su logo ── */
+  --color-brand-50: #fdf8ec;
+  --color-brand-100: #fbeecd;
+  --color-brand-200: #f8df9d;
+  --color-brand-300: #f5cd66;
+  --color-brand-400: #f2b234;
+  --color-brand-500: #e79f1a;
+  --color-brand-600: #c78312;
+  --color-brand-700: #9e6512;
+  --color-brand-800: #764a12;
+  --color-brand-900: #4e300e;
+
+  /* CoordinaOT carga Geist con next/font; aquí sale de los paquetes
+     @fontsource-variable/geist y geist-mono (sin internet al arrancar ni al compilar). */
+  --font-sans: 'Geist Variable';
+  --font-mono: 'Geist Mono Variable';
+
+  /* ── :root de CoordinaOT: claro «plata glass» ── */
+  color-scheme: light;
+  --bg: #d6dbe2;
+  --bg-glow: #e2e6eb;
+  --surface: #ffffff;
+  --surface-2: #f4f5f7;
+  --zone: #f7f8fa;
+  --border: #e2e4e9;
+  --border-strong: #c8ccd4;
+  --text: #17181c;
+  --text-muted: #565b65;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-strong: rgba(255, 255, 255, 0.82);
+  --glass-bg-pop: rgba(255, 255, 255, 0.99);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+  --glass-shadow: rgba(24, 32, 48, 0.24);
+  --glass-chip: rgba(255, 255, 255, 0.85);
+
+  --edge: rgba(15, 23, 42, 0.08);
+  --contact: rgba(15, 23, 42, 0.12);
+
+  --hoy: #3f444c;
+  --tramo-holgado: #04785a;
+  --tramo-trabajo: #a15c07;
+  --tramo-ajustado: #c2143c;
+  --tramo-fuera: #6d28d9;
+}
+
+/* ── .dark de CoordinaOT: oscuro «carbón» ── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --hoy: #b3b9c2;
+
+  --bg: #1a1b1f;
+  --bg-glow: #222428;
+  --surface: #212225;
+  --surface-2: #2a2c31;
+  --zone: #1e1f23;
+  --border: #35373d;
+  --border-strong: #45484f;
+  --text: #eef0f2;
+  --text-muted: #b3b9c2;
+
+  --glass-bg: rgba(36, 38, 44, 0.92);
+  --glass-bg-strong: rgba(40, 42, 48, 0.95);
+  --glass-bg-pop: rgba(32, 34, 40, 0.99);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  --glass-chip: rgba(44, 47, 54, 0.95);
+  --edge: transparent;
+  --contact: transparent;
+
+  --tramo-holgado: #34d399;
+  --tramo-trabajo: #fbbf24;
+  --tramo-ajustado: #fb7185;
+  --tramo-fuera: #a78bfa;
+}
+
+/* ── Equivalencias: variables de la web → tokens de CoordinaOT ──
+   Las reglas de siempre (styles.css, relieve.css, dark.css, dark.generated.css) usan
+   estos nombres. Donde significan lo mismo que un token de CoordinaOT, apuntan a él; así
+   las zonas que aún no se han rehecho ya toman los colores nuevos sin reescribirlas.
+
+   | Variable de la web     | Token de CoordinaOT                          | Por qué                                   |
+   |------------------------|----------------------------------------------|-------------------------------------------|
+   | --bg, --surface,       | los mismos nombres (arriba)                  | mismo significado y mismo nombre          |
+   | --zone, --border,      |                                              |                                           |
+   | --border-strong,       |                                              |                                           |
+   | --text, --text-muted,  |                                              |                                           |
+   | --edge, --contact      |                                              |                                           |
+   | --surface-muted        | --surface-2                                  | el segundo gris de superficie             |
+   | --tgm-yellow           | --color-brand-400                            | el dorado de lo activo y del foco         |
+   | --tgm-yellow-soft      | brand-500 al 15 % sobre --glass-chip         | el tinte de `.pestana-activa` (oscuro:    |
+   |                        | (oscuro: brand-400 al 18 %)                  | brand-400 al 18 %)                        |
+   | --tgm-black            | #17181c (--text del claro), fijo             | tinta oscura sobre dorado en los dos      |
+   |                        |                                              | temas: grafito en vez de verde petróleo   |
+   | --accent-text          | --color-brand-800 (oscuro: brand-300)        | el texto dorado (`text-brand-800/300`)    |
+   | --font / --mono        | --font-sans / --font-mono (Geist)            | la letra de CoordinaOT                    |
+   | --radius / --radius-sm | 0.75rem (rounded-xl) / 0.5rem (rounded-lg)   | radio de paneles / de botones y chips     |
+   | --canto                | --border-strong al 80 %                      | el canto inferior de `chip-3d`            |
+   | --brillo               | --glass-highlight                            | el brillo del canto superior              |
+   | --topnav-height        | 58px (py-2.5 ×2 + h-9 + borde de la tira)    | alto de la cabecera, en px porque         |
+   |                        |                                              | ParameterSectionIndex lo lee con parseFloat|
+   | --danger (solo claro)  | #b91c1c (text-red-700)                       | el rojo de texto de CoordinaOT            |
+*/
+:root {
+  --surface-muted: var(--surface-2);
+  --tgm-yellow: var(--color-brand-400);
+  --tgm-yellow-soft: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
+  --tgm-black: #17181c;
+  --accent-text: var(--color-brand-800);
+  --font: var(--font-sans), Arial, Helvetica, sans-serif;
+  --mono: var(--font-mono), ui-monospace, Consolas, monospace;
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --canto: color-mix(in srgb, var(--border-strong) 80%, transparent);
+  --brillo: var(--glass-highlight);
+  --topnav-height: 58px;
+  /* El rojo de texto de CoordinaOT sobre la página (`text-red-700`, el de «URGENTE» en
+     PedidoCard.tsx). El #c62828 de antes se quedaba en 4,0:1 sobre el --bg nuevo en los
+     «falta N» del índice de toldos; este da 4,65:1. En oscuro sigue el de dark.css. */
+  --danger: #b91c1c;
+}
+:root[data-theme="dark"] {
+  --tgm-yellow-soft: color-mix(in srgb, var(--color-brand-400) 18%, var(--glass-chip));
+  --accent-text: var(--color-brand-300);
+  --canto: color-mix(in srgb, var(--border-strong) 80%, transparent);
+  --brillo: var(--glass-highlight);
+}
