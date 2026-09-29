@@ -113,7 +113,11 @@ Después (mejora posterior, no en estas fases): **anotaciones a mano sobre el di
   - **medidas habituales**: lista de largo × ancho del remolque (la medida que se teclea),
     cada una con sus ollaos por lados, en posiciones desde el borde de izquierda a
     derecha, como en el CAD. Ejemplo: 200 × 120 → delante 2,5 · 10 · 40 · 70 · 100 ·
-    108,5; laterales …; atrás ….
+    108,5; laterales …; atrás …. Lo importante son esas posiciones, tal cual.
+  - Las posiciones están medidas **sobre la lona hecha**, no sobre el remolque: en el
+    ejemplo, la lona se hace 1 cm mayor (121 de ancho) y las posiciones van sobre esos
+    121, igual que el reparto automático de hoy. La web las guarda e imprime tal cual,
+    sin ajustarlas; la ficha se busca por la medida del remolque que se teclea (200 × 120).
 - Al cargar un pedido de ese cliente, los campos vacíos se rellenan con su ficha y llevan
   la marca «del cliente». Si el largo × ancho del remolque coincide exactamente con una
   medida habitual, los ollaos pasan a «SEGÚN SE INDICA» con esas posiciones. El técnico
