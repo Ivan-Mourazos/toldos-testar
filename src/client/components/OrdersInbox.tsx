@@ -63,9 +63,9 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
       <header className="orders-inbox-bar orders-filters">
         <label className="orders-search"><Search aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente, OF o modelo…" aria-label="Buscar pedidos" /></label>
         <span className="orders-filter-label">Pendientes de</span>
-        <div className="orders-scope" role="group" aria-label="Qué pedidos pendientes">
-          <button type="button" className="tecla-3d" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todo el equipo {sections.pendingAll}</button>
-          <button type="button" className="tecla-3d" aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
+        <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué pedidos pendientes">
+          <button type="button" className={scope === 'all' ? 'pestana-activa' : undefined} aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todo el equipo {sections.pendingAll}</button>
+          <button type="button" className={scope === 'mine' ? 'pestana-activa' : undefined} aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
         </div>
       </header>
       {coordinaStatus && !coordinaStatus.disponible && (
@@ -110,7 +110,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   const awnings = review.summary.awningList;
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
   return (
-    <li className={`orders-row${open ? ' is-open' : ''}${tone ? ` tone-${tone}` : ''}`}>
+    <li className={`orders-row ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'}${tone ? ` tone-${tone}` : ''}`}>
       <button
         type="button"
         className="orders-row-toggle"
@@ -123,7 +123,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         <ChevronDown className="orders-chevron" aria-hidden="true" />
         <strong className="orders-code">{review.orderCode}</strong>
         <span className="orders-customer">{review.summary.customer || 'Sin cliente'}</span>
-        <span className="orders-model-tags">{Array.from(new Set(review.summary.models || [])).map((model) => <span key={model} className="orders-model-tag">{controlLabel(model)}</span>)}</span>
+        <span className="orders-model-tags">{Array.from(new Set(review.summary.models || [])).map((model) => <span key={model} className="orders-model-tag familia-tag">{controlLabel(model)}</span>)}</span>
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
@@ -173,7 +173,7 @@ function AwningChip({ item, coordinaStatus }: { item: AwningItem; coordinaStatus
   // error se mantiene el icono del cálculo y se añade la marca de CoordinaOT.
   const showCalcIcon = !(item.state === 'ok' && coordina);
   return (
-    <span className={`orders-chip is-${item.state}`} title={`${item.letter} · ${controlLabel(item.model)} · ${label} · CoordinaOT: ${coordina ?? 'sin datos'}`}>
+    <span className={`orders-chip is-${item.state}${item.state === 'ok' ? ' pildora-plantear' : item.state === 'warn' ? ' pildora-aviso' : ''}`} title={`${item.letter} · ${controlLabel(item.model)} · ${label} · CoordinaOT: ${coordina ?? 'sin datos'}`}>
       {item.letter}
       {showCalcIcon && (item.state === 'ok' ? <Check aria-hidden="true" /> : item.state === 'warn' ? <AlertTriangle aria-hidden="true" /> : <CircleAlert aria-hidden="true" />)}
       {coordina === 'aprobada' && <span className="orders-chip-coordina is-approved" role="img" aria-label="aprobada en CoordinaOT">✓</span>}

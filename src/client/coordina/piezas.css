@@ -96,6 +96,19 @@ body {
 .pildora-revisar { background: #e2dcfa; color: #422a94; border-color: #bdb0ee; }
 :root[data-theme="dark"] .pildora-revisar { background: #2c2350; color: #c9b8ff; border-color: #43376f; }
 
+/* ── Etiqueta de familia (globals.css 584-594) ──
+   El tinte sale de `--fam`, el color de la familia (en CoordinaOT lo pone `FamiliaTag.tsx`
+   en línea). Aquí lo pone quien la use. Falta la regla `.dark .familia-tag svg` del
+   original: aquí la etiqueta no lleva icono. */
+.familia-tag {
+  background: color-mix(in srgb, var(--fam) 9%, var(--glass-chip));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fam) 22%, transparent);
+}
+:root[data-theme="dark"] .familia-tag {
+  background: color-mix(in srgb, var(--fam) 20%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fam) 35%, transparent);
+}
+
 /* ── Chip de vidrio (globals.css 339-392) ── */
 .glass-chip {
   background:

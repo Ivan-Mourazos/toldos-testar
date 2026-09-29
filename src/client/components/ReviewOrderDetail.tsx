@@ -68,11 +68,11 @@ export function ReviewOrderDetail({
   const backButton = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>← Pedidos</button>;
 
   if (loading) {
-    return <section className="review-reader panel panel-3d">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido y su vista previa…</div></section>;
+    return <section className="review-reader">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido y su vista previa…</div></section>;
   }
 
   if (!review || !order) {
-    return <section className="review-reader panel panel-3d">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
+    return <section className="review-reader">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
   }
 
   // Un pedido generado ya no se corrige ni se genera desde aquí: sus archivos ya salieron.
@@ -83,7 +83,7 @@ export function ReviewOrderDetail({
   const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
 
   return (
-    <section className="review-reader panel panel-3d" aria-label={`Datos de revisión de ${review.orderCode}`}>
+    <section className="review-reader" aria-label={`Datos de revisión de ${review.orderCode}`}>
       <header className="review-reader-header">
         {backButton}
         <div className="review-reader-title">
@@ -120,7 +120,7 @@ export function ReviewOrderDetail({
       </header>
 
       {produced && review.production && (
-        <div className="review-production-block" role="status">
+        <div className="review-production-block bloque-3d" role="status">
           <div className="review-production-summary">
             <Factory aria-hidden="true" />
             <span>
@@ -207,7 +207,7 @@ function GeneratedFileLink({ review, file, index }: {
   const href = `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${index}`;
   return (
     <a
-      className={`review-generated-file ${isPdf ? 'is-pdf' : 'is-rps'}`}
+      className={`review-generated-file chip-3d ${isPdf ? 'is-pdf' : 'is-rps'}`}
       href={href}
       target={isPdf ? '_blank' : undefined}
       rel={isPdf ? 'noreferrer' : undefined}

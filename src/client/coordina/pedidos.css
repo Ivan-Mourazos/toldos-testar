@@ -1,0 +1,641 @@
+/* Pedidos y pedido abierto con el estilo de CoordinaOT (tarea 3 del plan «Estilo CoordinaOT»,
+   29/09/2026). Regla de Iván: «siempre que rediseñes cualquier zona de la web, mira en
+   CoordinaOT cómo está y cópialo». Aquí no hay colores ni sombras propias: todo sale de los
+   tokens de tokens.css y de las piezas de piezas.css (`bloque-3d`, `tira-3d`,
+   `pestana-activa`, `pildora-*`, `familia-tag`, `chip-3d`…), que el JSX pone en la clase.
+
+   Referencia, todo en coordina-ot/src/components:
+   - Revisiones = RevisionView.tsx (barra con el interruptor, un rótulo por estado, una fila
+     por pedido) + BloqueLista.tsx (rótulo y cabecera de columnas) + FilaDesplegable.tsx
+     (la fila que se abre).
+   - Historial = HistorialView.tsx (barra de filtros, días con su rótulo) + FilaOF.tsx (cada
+     OF dentro del detalle) + FamiliaTag.tsx (la etiqueta de familia).
+   - Pedido abierto = la cabecera de la ficha, MarcoFicha.tsx 148-197 (`h2 font-mono text-lg
+     font-bold`), y sus bloques `bloque-3d rounded-xl p-3`.
+   Traducción de Tailwind 4: 1 unidad = 0.25rem (`px-3` = 0.75rem, `gap-1.5` = 0.375rem).
+
+   Va sin capa (ver estilos.css): gana a los estilos de siempre sin subir especificidad. Los
+   tamaños de columna se conservan de la web (tiene columnas propias: modelos, autor, fecha,
+   toldos); el resto —letra, alturas, relieve, radios, colores— es el de CoordinaOT. */
+
+/* ── Marco de la bandeja ──
+   CoordinaOT no le pone tope propio: usa el ancho de la web (1800 px, ya en `.app-shell`) con
+   los márgenes de la cabecera. El tope de 1480 px y el hueco de 16 px eran de antes. */
+.orders-inbox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* `space-y-3`, el de HistorialView.tsx */
+  margin-inline: 0;
+  max-width: none;
+  padding: 0;
+}
+.app-shell:has(.orders-inbox) .topbar { margin-inline: 0; max-width: none; }
+
+/* ── Barra: buscador, rótulo y interruptor ──
+   HistorialView.tsx: `flex flex-wrap items-center gap-x-3 gap-y-2`. */
+.orders-filters,
+.orders-inbox-bar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+}
+/* Buscador: `relative min-w-56 flex-1 max-w-md`, lupa `left-2.5 size-3.5` y el campo
+   `glass-chip … py-1.5 pl-8 pr-7 text-xs` (el aspecto de vidrio lo da nuevo-pedido.css). */
+.orders-filters .orders-search {
+  display: block;
+  flex: 1 1 14rem;
+  margin: 0;
+  max-width: 28rem;
+  min-width: 14rem;
+  position: relative;
+}
+.orders-search svg {
+  color: var(--text-muted);
+  height: 0.875rem;
+  left: 0.625rem;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.875rem;
+}
+.orders-inbox .orders-search input {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.375rem 1.75rem 0.375rem 2rem;
+  width: 100%;
+}
+/* Rótulo de un grupo de filtros (FilterBar.tsx 103: `text-[10px] font-semibold uppercase
+   tracking-wide text-text-muted`) con la raya de división delante (`SeparadorFiltros`,
+   `h-5 w-px bg-[var(--glass-border)]`). */
+.orders-filter-label {
+  align-items: center;
+  color: var(--text-muted);
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 600;
+  gap: 0.75rem;
+  letter-spacing: 0.025em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.orders-filter-label::before {
+  background: var(--glass-border);
+  content: '';
+  height: 1.25rem;
+  width: 1px;
+}
+/* Interruptor «Solo mías / Todo el equipo» (RevisionView.tsx AlcanceToggle): la tira de teclas
+   `tira-3d glass-chip` y cada botón `rounded-md px-2.5 py-1 text-xs font-semibold`; el
+   elegido lleva `pestana-activa` (lo pone el JSX). Sin el `tecla-3d` de antes, que le daba
+   el aspecto de botón suelto y píldora. */
+.orders-scope {
+  border-radius: 0.5rem;
+  display: inline-flex;
+}
+.orders-scope button {
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  padding: 0.25rem 0.625rem;
+}
+.orders-scope button:not(.pestana-activa) { color: var(--text-muted); }
+.orders-scope button:not(.pestana-activa):hover { color: var(--text); }
+
+/* ── Cabecera de columnas (BloqueLista.tsx: `px-3 pb-1 text-[11px] font-semibold text-text-muted`) ── */
+.orders-columns {
+  color: var(--text-muted);
+  column-gap: 0.75rem;
+  display: grid;
+  font-size: 11px;
+  font-weight: 600;
+  grid-template-columns: var(--orders-cols);
+  letter-spacing: 0;
+  padding: 0 0.75rem 0.25rem;
+  text-transform: none;
+}
+.orders-columns .is-end { text-align: right; }
+/* Las mismas columnas en la cabecera y en cada fila (COLUMNAS_* de CoordinaOT: chevron 28 px,
+   pedido 136 px, cliente con el sobrante). Las de modelo, autor, fecha y toldos son de esta
+   web. Fila y cabecera comparten la variable para que cada rótulo caiga sobre su columna. */
+.orders-block,
+.orders-columns { --orders-cols: 28px 136px minmax(0, 1fr) 230px 150px 92px 280px; }
+.orders-block.is-history,
+.orders-columns.is-history { --orders-cols: 28px 136px minmax(0, 1fr) 230px 150px 280px; }
+
+/* ── Rótulo de un bloque: estado o día (BloqueLista.tsx: `mb-1.5 px-3 text-xs font-semibold
+   text-text`, punto `mr-2 inline-block size-2 rounded-full align-middle`, sufijo
+   `ml-2 font-normal text-text-muted`) ── */
+.orders-group { display: block; }
+.orders-group + .orders-group { margin-top: 0.5rem; } /* con el `gap-3` de arriba, el `gap-5` entre bloques de HistorialView.tsx */
+.orders-group-title,
+.orders-day-title {
+  align-items: baseline;
+  color: var(--text);
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  margin: 0 0 0.375rem;
+  padding: 0 0.75rem;
+}
+.orders-dot {
+  border-radius: 9999px;
+  display: inline-block;
+  flex: none;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  width: 0.5rem;
+}
+/* Los puntos del estado de CoordinaOT (lib/estado.ts): ámbar = por revisar, rojo = devuelta,
+   cian = aprobada. */
+.tone-review .orders-dot { background: #f59e0b; }
+.tone-returned .orders-dot { background: #dc2626; }
+.tone-approved .orders-dot { background: #0891b2; }
+.orders-group-title .orders-count,
+.orders-day-title span {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--text-muted);
+  font-size: inherit;
+  font-variant-numeric: normal;
+  font-weight: 400;
+  margin-left: 0.5rem;
+  min-width: 0;
+  padding: 0;
+}
+.orders-group-title .orders-count::before { content: '· '; }
+
+/* ── Título de una sección de la bandeja («Generados», con el año y la cuenta) ── */
+.orders-inbox-bar h2 {
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  margin: 0;
+}
+.orders-inbox-bar .orders-count {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+.orders-inbox-bar:not(.orders-filters) { margin-top: 0.75rem; }
+/* El año es un campo más de la barra: el mismo aspecto de vidrio, `text-xs`. */
+.orders-inbox .review-year {
+  flex: 0 0 5.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.375rem 0.625rem;
+}
+
+/* ── La lista: una tarjeta por pedido (FilaDesplegable.tsx con `tarjeta`) ──
+   `relative mb-1.5 overflow-hidden rounded-lg bloque-3d` y, abierta, `bloque-3d-hundido`.
+   El fondo, el borde y la sombra los ponen esas dos piezas (el JSX las pone en la clase). */
+.orders-block { display: block; }
+.orders-list {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+}
+.orders-row {
+  border-radius: 0.5rem;
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+/* La barra dorada de lo abierto recorre fila y detalle (`absolute inset-y-0 left-0 w-1
+   bg-brand-500`). */
+.orders-row.is-open::before {
+  background: var(--color-brand-500);
+  bottom: 0;
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 0.25rem;
+  z-index: 1;
+}
+/* La fila: `px-3 py-1.5`, abierta `bg-brand-500/10`, con el ratón `bg-surface-2`. El botón que
+   la cubre (`.orders-row-toggle`, hermano de las celdas) recibe el clic; las celdas no. */
+.orders-row-cells {
+  align-items: center;
+  column-gap: 0.75rem;
+  display: grid;
+  font-size: 11px;
+  grid-template-columns: var(--orders-cols);
+  line-height: 1rem;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.75rem;
+  pointer-events: none;
+  position: relative;
+}
+.orders-row:not(.is-open):hover .orders-row-cells { background: var(--surface-2); }
+.orders-row.is-open .orders-row-cells { background: color-mix(in srgb, var(--color-brand-500) 10%, transparent); }
+/* Cubre solo la fila, no el detalle (como en CoordinaOT, donde el botón vive en la fila). Con
+   la fila fija en 2.25rem el botón mide lo mismo cuando está abierta. */
+.orders-row-toggle {
+  background: transparent;
+  border: 0;
+  border-radius: 0.125rem;
+  cursor: pointer;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+.orders-row.is-open .orders-row-toggle { bottom: auto; height: 2.25rem; }
+/* CoordinaOT saca el anillo de foco hacia dentro (`focus-visible:outline-offset-[-2px]`)
+   para que el borde redondeado de la tarjeta no lo recorte. */
+.orders-row-toggle:focus-visible {
+  outline: 2px solid var(--color-brand-400);
+  outline-offset: -2px;
+  z-index: 3;
+}
+/* Chevron: `size-6` con un `size-3.5` de trazo 2.5 dentro; abierto gira 180°. */
+.orders-chevron {
+  color: var(--text-muted);
+  height: 0.875rem;
+  margin-left: 0.3125rem;
+  stroke-width: 2.5;
+  transition: transform 150ms ease;
+  width: 0.875rem;
+}
+.orders-row.is-open .orders-chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .orders-chevron { transition: none; } }
+/* El código: PedidoCodigo.tsx `font-mono text-sm font-semibold text-text`. */
+.orders-code {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.25rem;
+}
+/* El cliente: en Revisiones `text-[11px] text-text-muted`, en el Historial `text-text`. */
+.orders-customer {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orders-row:is(.tone-review, .tone-returned, .tone-approved) .orders-customer { color: var(--text-muted); }
+/* Modelos: FamiliaTag.tsx `rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-muted`
+   con el tinte `familia-tag`. El color es el de la familia «Toldo nuevo» de CoordinaOT
+   (lib/familia.ts), que es lo que son los modelos de esta web. Una sola línea, sin saltar. */
+.orders-model-tags {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow: hidden;
+}
+.orders-model-tag {
+  --fam: #c65a11;
+  background: color-mix(in srgb, var(--fam) 9%, var(--glass-chip));
+  border: 0;
+  border-radius: 0.375rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1rem;
+  padding: 0.125rem 0.375rem;
+  white-space: nowrap;
+}
+:root[data-theme="dark"] .orders-model-tag { background: color-mix(in srgb, var(--fam) 20%, transparent); }
+/* Autor y fecha: `text-[11px] leading-4 text-text-muted`. */
+.orders-author,
+.orders-date {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1rem;
+}
+.orders-author { align-items: center; display: inline-flex; gap: 0.375rem; }
+/* «Tú»: la píldora del contador de la pestaña activa (`rounded-full px-1.5 text-[10px]
+   font-bold`, `bg-brand-400/40`). */
+.orders-me {
+  background: color-mix(in srgb, var(--color-brand-400) 40%, transparent);
+  border-radius: 9999px;
+  color: var(--accent-text);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  padding: 0 0.375rem;
+}
+:root[data-theme="dark"] .orders-me { background: color-mix(in srgb, var(--color-brand-400) 40%, transparent); color: var(--accent-text); }
+
+/* ── Toldos de la fila: una píldora por toldo ──
+   Las de estado de CoordinaOT (`pildora-plantear` = correcto, `pildora-aviso` = aviso: las
+   pone el JSX) y, para el error, el rojo de `FilaOF.tsx` 105: `bg-red-600/12 text-red-700
+   dark:text-red-300`. Con la letra en negrita y, detrás, la marca de CoordinaOT. */
+.orders-awnings {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.orders-models { color: var(--text-muted); }
+.orders-chip {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  display: inline-flex;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  gap: 0.1875rem;
+  line-height: 1rem;
+  padding: 0.0625rem 0.375rem;
+}
+.orders-chip svg { height: 0.75rem; width: 0.75rem; }
+.orders-chip.is-error {
+  background: var(--error-fondo);
+  border-color: var(--error-borde);
+  color: var(--error-texto);
+}
+/* La marca de CoordinaOT junto a la letra: ✓ aprobada, ↩ devuelta, • en revisión. Toman el
+   color de la píldora para no cambiar su contraste; lo que las distingue es el signo. */
+.orders-chip-coordina {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: 0;
+}
+
+/* ── Detalle desplegado ──
+   FilaDesplegable.tsx: `border-t border-border px-3 py-2`; dentro, las OF como FilaOF.tsx:
+   `space-y-1.5` y cada una `rounded-lg bg-surface px-2.5 py-1.5 text-[11px] ring-1 ring-border`. */
+.orders-detail {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  position: relative;
+  z-index: 3;
+}
+.orders-detail-list {
+  display: grid;
+  gap: 0.375rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.orders-detail-list li {
+  align-items: center;
+  background: var(--surface);
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 1px var(--border);
+  column-gap: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 11px;
+  line-height: 1rem;
+  padding: 0.375rem 0.625rem;
+  row-gap: 0.25rem;
+}
+.orders-detail-list li > strong { color: var(--text); font-weight: 600; padding: 0; }
+.orders-detail-list li > span { color: var(--text-muted); padding: 0; }
+.orders-detail-list li > span:nth-child(3) { font-family: var(--mono); }
+.orders-detail-notes { color: var(--text-muted); flex: 1 1 12rem; line-height: 1rem; overflow-wrap: anywhere; }
+.orders-detail-list li.is-warn .orders-detail-notes { color: var(--aviso-texto); }
+.orders-detail-list li.is-error .orders-detail-notes { color: var(--error-texto); }
+/* La nota de devolución: NotaDevolucion como la pinta RevisionView.tsx, `rounded
+   bg-red-500/10 px-2 py-1.5 text-[11px]`, con el rojo de texto de CoordinaOT (red-700 /
+   red-300; el `text-red-600` del original se queda por debajo de 4,5:1 sobre el tinte). */
+.orders-detail-list li > .orders-detail-returned {
+  background: rgb(239 68 68 / 0.10);
+  border-radius: 0.25rem;
+  color: var(--error-texto);
+  flex: 1 1 100%;
+  font-size: 11px;
+  font-weight: 400;
+  margin: 0;
+  padding: 0.375rem 0.5rem;
+}
+.orders-detail-returned strong { font-weight: 600; }
+/* «Aprobado por …»: el estado dicho como palabra suelta, con el color de texto de «aprobada»
+   (lib/estado.ts `texto`: cian-700 / cian-300) y `font-medium`, como el «✓ Pedido listo…» de
+   la fila de Revisiones. */
+.orders-detail-list li > .orders-detail-approved {
+  background: none;
+  color: #0e7490;
+  flex: 1 1 100%;
+  font-size: 11px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+}
+:root[data-theme="dark"] .orders-detail-list li > .orders-detail-approved { color: #67e8f9; }
+.orders-detail-empty { color: var(--text-muted); font-size: 0.75rem; line-height: 1rem; margin: 0; }
+/* Acciones: `flex flex-wrap items-center gap-2`, el botón `rounded-lg px-2.5 py-1 text-xs
+   font-semibold`, a la izquierda como «Empezar revisión». La nota de revisión, detrás. */
+.orders-detail-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+.orders-detail-actions .primary-button {
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 0.375rem;
+  line-height: 1rem;
+  min-height: 0;
+  padding: 0.25rem 0.625rem;
+}
+.orders-detail-actions .primary-button svg { height: 0.875rem; width: 0.875rem; }
+.orders-detail-note {
+  color: var(--aviso-texto);
+  font-size: 11px;
+  line-height: 1rem;
+  margin: 0;
+  order: 2;
+}
+
+/* ── Avisos y vacíos de la bandeja ──
+   Aviso = `border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300`
+   (AvisoParteNuevo.tsx 54-55), sin ninguna caja de vidrio. Vacío = Bandeja.tsx 244: `grid
+   min-h-24 place-items-center rounded-lg border border-dashed border-border text-xs
+   text-text-muted`. */
+.orders-coordina-down {
+  align-items: center;
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 0.5rem;
+  color: var(--aviso-texto);
+  display: flex;
+  font-size: 0.75rem;
+  gap: 0.5rem;
+  line-height: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+}
+.orders-coordina-down svg { flex: none; height: 0.875rem; width: 0.875rem; }
+.orders-inbox .review-empty {
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 0.5rem;
+  color: var(--text-muted);
+  flex-direction: row;
+  font-size: 0.75rem;
+  gap: 0.5rem;
+  line-height: 1rem;
+  min-height: 6rem;
+  padding: 0.75rem;
+}
+.orders-inbox .review-empty svg { height: 1rem; width: 1rem; }
+
+/* ══ Pedido abierto ══
+   Sin panel de fondo: sus bloques (cabecera del pedido, tarjetas de toldo) ya son paneles de
+   vidrio, igual que en Nuevo pedido, y un panel dentro de otro los hundiría. */
+.review-reader {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+.review-reader-header {
+  align-items: center;
+  border-bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-start;
+  padding: 0;
+}
+/* El título como el de la ficha (MarcoFicha.tsx 150: `font-mono text-lg font-bold text-text`)
+   y, debajo del nombre, los datos en `text-xs text-text-muted`. */
+.review-reader-header > div.review-reader-title {
+  align-items: baseline;
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  min-width: 0;
+}
+.review-reader-header h2 {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.75rem;
+  margin: 0;
+}
+.review-reader-title small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+.review-reader-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.review-generate-note {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1rem;
+  max-width: 20rem;
+  white-space: normal;
+}
+/* Archivos generados: un `bloque-3d rounded-xl p-3` (MarcoFicha.tsx 253), que pone el JSX. */
+.review-production-block {
+  border-radius: 0.75rem;
+  margin: 0;
+  overflow: hidden;
+  padding: 0.75rem;
+}
+.review-production-summary {
+  align-items: center;
+  background: none;
+  border-bottom: 0;
+  color: var(--text);
+  display: flex;
+  font-size: 0.75rem;
+  gap: 0.75rem;
+  line-height: 1rem;
+  padding: 0;
+}
+.review-production-summary > svg { color: var(--text-muted); flex: none; height: 1rem; width: 1rem; }
+.review-production-summary > span { display: grid; gap: 0.125rem; min-width: 0; }
+.review-production-summary strong { font-weight: 600; }
+.review-production-summary small { color: var(--text-muted); font-size: 11px; line-height: 1rem; }
+.review-generated-files {
+  display: grid;
+  gap: 0.375rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  padding: 0.5rem 0 0;
+}
+/* Cada archivo: la tecla `chip-3d` (lo pone el JSX), con el icono en el recuadro neutro de
+   las etiquetas de DocumentosPedido.tsx 57 (`bg-surface-2 ring-1 ring-border text-muted`). */
+.review-generated-file {
+  align-items: center;
+  border-radius: 0.5rem;
+  color: var(--text);
+  column-gap: 0.625rem;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) 1rem;
+  min-height: 0;
+  padding: 0.375rem 0.625rem;
+  text-decoration: none;
+}
+.review-generated-file strong { color: var(--text); font-size: 11px; font-weight: 600; line-height: 1rem; }
+.review-generated-file small { color: var(--text-muted); font-size: 10px; line-height: 1rem; }
+.review-generated-file > svg { color: var(--text-muted); height: 0.875rem; width: 0.875rem; }
+.review-generated-file-icon,
+.review-generated-file.is-pdf .review-generated-file-icon {
+  background: var(--surface-2);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 1px var(--border);
+  color: var(--text-muted);
+  height: 2rem;
+  width: 2rem;
+}
+.review-generated-file-icon svg { height: 1rem; width: 1rem; }
+.review-readonly-order { margin: 0; }
+/* Rótulos de la ficha de lectura (grupos «Medidas», «Estructura»…, «Tela», observaciones): el
+   rótulo de bloque de CoordinaOT, `TITULO_BLOQUE` de MarcoFicha.tsx 264: `text-[11px]
+   font-semibold uppercase tracking-wide text-text-muted`. Antes iban en dorado oscuro. */
+.review-readonly-order .read-group-title,
+.review-readonly-order .read-note .read-label,
+.review-readonly-order .order-header-read-line .read-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+/* Devuelta en rojo: es lo que CoordinaOT pide (`ESTADO.devuelta.texto`, red-700 / red-300).
+   Sobre la píldora verde o ámbar del cálculo llega a 5:1; ✓ y • se quedan del color de la
+   píldora, porque el cian de «aprobada» (cian-700) no llega a 4,5:1 sobre el verde. */
+.orders-chip-coordina.is-returned { color: var(--error-texto); }
