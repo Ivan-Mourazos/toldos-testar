@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { inboxSections, mergePendingReviews, pendingYears } from './ordersInbox';
+import { inboxSections, mergePendingReviews, pendingGroups, pendingYears } from './ordersInbox';
+import type { ReviewSummary } from './types';
 
 const review = (orderCode: string, status: string, technician: string, extra: Record<string, unknown> = {}) => ({
   orderCode, status, updatedAt: '2026-09-24T09:00:00Z',
@@ -71,14 +72,33 @@ describe('mergePendingReviews — pendientes del año actual y el anterior', () 
   });
 });
 
-describe('bloques de Pedidos por estado', () => {
-  it('pone primero lo que está por revisar y omite los bloques vacíos', async () => {
-    const { pendingGroups } = await import('./ordersInbox');
-    const make = (orderCode: string, status: string) => ({ orderCode, status, summary: {} }) as never;
-    const groups = pendingGroups([make('B', 'APPROVED'), make('A', 'PENDING_REVIEW'), make('C', 'PENDING_REVIEW')]);
-    expect(groups.map((group) => [group.label, group.reviews.length])).toEqual([['Por revisar', 2], ['Aprobados · falta generar', 1]]);
+describe('pendingGroups según CoordinaOT', () => {
+  const coordinaReview = (code: string, ofs: string[]) => ({
+    orderCode: code,
+    status: 'PENDING_REVIEW',
+    updatedAt: '2026-09-29T08:00:00Z',
+    summary: { technician: 'IVÁN', customer: '', models: [], awnings: ofs.length, ofs, awningList: ofs.map((of, index) => ({ letter: String.fromCharCode(65 + index), model: 'ARZUA PRO', of, state: 'ok' as const, notes: [] })) }
+  }) as unknown as ReviewSummary;
+  const aprobada = { estado: 'aprobada', nota: '' };
+
+  it('reparte por lo que dice CoordinaOT, en orden fijo', () => {
+    const status = { disponible: true, ofs: { '1': aprobada, '2': aprobada, '3': { estado: 'devuelta', nota: 'Falta cota' }, '4': { estado: 'en_revision' } } };
+    const groups = pendingGroups([coordinaReview('R', ['4']), coordinaReview('A', ['1', '2']), coordinaReview('D', ['1', '3'])], status);
+    expect(groups.map((group) => [group.key, group.label, group.reviews.map((item) => item.orderCode)])).toEqual([
+      ['por_revisar', 'Por revisar', ['R']],
+      ['devuelto', 'Devueltos', ['D']],
+      ['aprobado', 'Aprobados · falta generar', ['A']]
+    ]);
   });
 
+  it('sin respuesta de CoordinaOT, todo por revisar', () => {
+    const groups = pendingGroups([coordinaReview('A', ['1'])], { disponible: false });
+    expect(groups.map((group) => group.key)).toEqual(['por_revisar']);
+    expect(pendingGroups([coordinaReview('A', ['1'])], null).map((group) => group.key)).toEqual(['por_revisar']);
+  });
+});
+
+describe('formato de fechas de Pedidos', () => {
   it('escribe las fechas con dos cifras', async () => {
     const { formatListDate } = await import('./ordersInbox');
     expect(formatListDate('2026-09-04T10:00:00.000Z')).toBe('04/09/2026');

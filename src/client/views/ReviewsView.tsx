@@ -3,6 +3,7 @@ import type { ReviewPackage, ReviewSummary, RuleParameters } from '../types';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
+import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import { canGenerateReview } from '../generatePermission';
 
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
@@ -28,6 +29,8 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   const [working, setWorking] = useState(false);
   const [generating, setGenerating] = useState(false);
   const listRequestId = useRef(0);
+  const pendingOfs = pending.flatMap((review) => (review.summary.awningList || []).map((item) => item.of));
+  const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '');
 
   useEffect(() => {
     const requestId = ++listRequestId.current;
@@ -192,6 +195,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             year={year}
             onYear={(value) => { setHistoryLoading(true); setYear(value); }}
             onOpen={setSelectedCode}
+            coordinaStatus={coordinaStatus}
           />
         : (
           <ReviewOrderDetail

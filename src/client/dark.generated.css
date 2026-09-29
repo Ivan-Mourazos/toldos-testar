@@ -1558,3 +1558,6 @@
 :root[data-theme="dark"] .app-shell .drawing-parameters-actions .ghost-button:not(:disabled) {
     background: transparent
 }
+:root[data-theme="dark"] .orders-coordina-down {
+    background: var(--warn-bg)
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FileSearch, FolderOpen, Search } from 'lucide-react';
-import type { ReviewSummary } from '../types';
+import type { CoordinaStatus, ReviewSummary } from '../types';
 import { formatListDate, groupByDay, inboxSections, pendingGroups } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
 
@@ -10,7 +10,7 @@ type AwningItem = NonNullable<ReviewSummary['summary']['awningList']>[number];
 // (punto de color, nombre y cuántos), columnas juntas y filas densas; toda la fila se
 // pulsa y se despliega dentro, con cada toldo y lo que le pasa. Los toldos se ven ya en la
 // fila (A ✓, D aviso) para saber qué hay que revisar sin abrir nada.
-export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen }: {
+export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus }: {
   pending: ReviewSummary[];
   history: ReviewSummary[];
   currentUser: string;
@@ -19,13 +19,14 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   year: number;
   onYear: (year: number) => void;
   onOpen: (orderCode: string) => void;
+  coordinaStatus: CoordinaStatus | null;
 }) {
   // Iván, 28/09/2026: al entrar se ve todo, porque lo que toca revisar es de otros.
   const [scope, setScope] = useState<'mine' | 'all'>('all');
   const [query, setQuery] = useState('');
   const [openCode, setOpenCode] = useState<string | null>(null);
   const sections = inboxSections({ pending, history }, { me: currentUser, scope, query });
-  const groups = pendingGroups(sections.pending);
+  const groups = pendingGroups(sections.pending, coordinaStatus);
 
   const columns = (withDate: boolean) => (
     <div className={withDate ? 'orders-columns' : 'orders-columns is-history'} aria-hidden="true">
@@ -46,6 +47,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
             onToggle={() => setOpenCode((current) => (current === review.orderCode ? null : review.orderCode))}
             onOpen={() => onOpen(review.orderCode)}
             withDate={withDate}
+            coordinaStatus={coordinaStatus}
           />
         ))}
       </ul>
@@ -63,10 +65,13 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
           <button type="button" className="tecla-3d" aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
         </div>
       </header>
+      {coordinaStatus && !coordinaStatus.disponible && (
+        <p className="orders-coordina-down" role="status"><AlertTriangle aria-hidden="true" />No se puede consultar CoordinaOT; los pedidos se muestran como por revisar.</p>
+      )}
       {pendingLoading ? <p className="review-empty">Cargando pedidos…</p>
         : groups.length === 0 ? <p className="review-empty"><FileSearch aria-hidden="true" />{scope === 'mine' ? 'No tienes pedidos pendientes.' : 'No hay pedidos pendientes.'}</p>
           : <>{columns(true)}{groups.map((group) => (
-            <section key={group.status} className="orders-group" aria-label={`${group.label}: ${group.reviews.length}`}>
+            <section key={group.key} className="orders-group" aria-label={`${group.label}: ${group.reviews.length}`}>
               <h3 className={`orders-group-title tone-${group.tone}`}><span className="orders-dot" aria-hidden="true" />{group.label}<span className="orders-count">{group.reviews.length}</span></h3>
               {block(group.reviews)}
             </section>
@@ -88,13 +93,14 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   );
 }
 
-function OrderRow({ review, mine, open, onToggle, onOpen, withDate }: {
+function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStatus }: {
   review: ReviewSummary;
   mine: boolean;
   open: boolean;
   onToggle: () => void;
   onOpen: () => void;
   withDate: boolean;
+  coordinaStatus: CoordinaStatus | null;
 }) {
   const detailId = `orders-detail-${review.orderCode}`;
   const awnings = review.summary.awningList;
@@ -118,7 +124,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate }: {
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
           {awnings?.length
-            ? awnings.map((item) => <AwningChip key={item.letter} item={item} />)
+            ? awnings.map((item) => <AwningChip key={item.letter} item={item} coordinaStatus={coordinaStatus} />)
             : <span className="orders-models">{review.summary.awnings} {review.summary.awnings === 1 ? 'elemento' : 'elementos'}</span>}
         </span>
       </div>
@@ -126,14 +132,20 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate }: {
         <div className="orders-detail" id={detailId}>
           {awnings?.length ? (
             <ul className="orders-detail-list">
-              {awnings.map((item) => (
+              {awnings.map((item) => {
+                // La nota de devolución solo se enseña si CoordinaOT la tiene devuelta.
+                const returned = coordinaStatus?.disponible ? coordinaStatus.ofs?.[item.of.trim()] : undefined;
+                const nota = returned?.estado === 'devuelta' ? returned.nota : '';
+                return (
                 <li key={item.letter} className={`is-${item.state}`}>
-                  <AwningChip item={item} />
+                  <AwningChip item={item} coordinaStatus={coordinaStatus} />
                   <strong>{controlLabel(item.model)}</strong>
                   <span>OF {item.of || '—'}</span>
                   <span className="orders-detail-notes">{item.notes.length ? item.notes.join(' · ') : 'Sin avisos.'}</span>
+                  {nota && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {nota}</span>}
                 </li>
-              ))}
+                );
+              })}
             </ul>
           ) : <p className="orders-detail-empty">{(review.summary.models || []).map(controlLabel).join(' + ')} · {review.summary.awnings} elementos</p>}
           <div className="orders-detail-actions">
@@ -146,12 +158,16 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate }: {
   );
 }
 
-function AwningChip({ item }: { item: AwningItem }) {
+function AwningChip({ item, coordinaStatus }: { item: AwningItem; coordinaStatus: CoordinaStatus | null }) {
   const label = item.state === 'ok' ? 'correcto' : item.state === 'warn' ? 'con aviso' : 'con errores';
+  const coordina = coordinaStatus?.disponible ? coordinaStatus.ofs?.[item.of.trim()]?.estado : undefined;
   return (
-    <span className={`orders-chip is-${item.state}`} title={`${item.letter} · ${controlLabel(item.model)} · ${label}`}>
+    <span className={`orders-chip is-${item.state}`} title={`${item.letter} · ${controlLabel(item.model)} · ${label} · CoordinaOT: ${coordina ?? 'sin datos'}`}>
       {item.letter}
       {item.state === 'ok' ? <Check aria-hidden="true" /> : item.state === 'warn' ? <AlertTriangle aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
+      {coordina === 'aprobada' && <span className="orders-chip-coordina is-approved" aria-label="aprobada en CoordinaOT">✓</span>}
+      {coordina === 'devuelta' && <span className="orders-chip-coordina is-returned" aria-label="devuelta en CoordinaOT">↩</span>}
+      {coordina && coordina !== 'aprobada' && coordina !== 'devuelta' && <span className="orders-chip-coordina is-waiting" aria-label="en revisión en CoordinaOT">•</span>}
     </span>
   );
 }

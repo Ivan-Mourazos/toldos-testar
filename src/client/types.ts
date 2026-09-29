@@ -641,6 +641,13 @@ export type WorkflowDirectoryCheck = {
 
 export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' | 'PRODUCED';
 
+// Estado de las OF en CoordinaOT (respuesta de /api/coordina/ofs).
+export type CoordinaStatus = {
+  disponible: boolean;
+  ofs?: Record<string, { estado: string; nota?: string; actualizado?: string | null }>;
+  motivo?: string;
+};
+
 export type ReviewSummary = {
   schemaVersion: number;
   kind: 'toldos-testar-review';

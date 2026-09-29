@@ -1,5 +1,5 @@
-import type { ReviewSummary } from './types';
-import { isPendingGeneration } from '../reviewRules.js';
+import type { CoordinaStatus, ReviewSummary } from './types';
+import { coordinaGroup, isPendingGeneration } from '../reviewRules.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
 // guardado y no generado, venga del estado que venga) e historial (generados).
@@ -50,17 +50,21 @@ export function inboxSections(
   return { pending, history, pendingMine: pendingMineList.length, pendingAll: pendingAllList.length };
 }
 
-// Bloques de la bandeja por estado, como las Revisiones de CoordinaOT (Iván, 28/09/2026):
-// arriba lo que nadie ha revisado todavía, después lo devuelto y lo aprobado que falta generar.
+// Bloques de la bandeja según CoordinaOT (diseño 29/09/2026): el grupo sale de cómo
+// están sus OF allí, no del estado guardado aquí. Sin respuesta, todo por revisar.
 export const pendingGroupOrder = [
-  { status: 'PENDING_REVIEW', label: 'Por revisar', tone: 'review' },
-  { status: 'CHANGES_REQUESTED', label: 'Devueltos con cambios', tone: 'returned' },
-  { status: 'APPROVED', label: 'Aprobados · falta generar', tone: 'approved' }
+  { key: 'por_revisar', label: 'Por revisar', tone: 'review' },
+  { key: 'devuelto', label: 'Devueltos', tone: 'returned' },
+  { key: 'aprobado', label: 'Aprobados · falta generar', tone: 'approved' }
 ] as const;
 
-export function pendingGroups(pending: ReviewSummary[]) {
+export function reviewAwnings(review: ReviewSummary) {
+  return (review.summary.awningList || []).map((item) => ({ letter: item.letter, of: item.of }));
+}
+
+export function pendingGroups(pending: ReviewSummary[], status: CoordinaStatus | null) {
   return pendingGroupOrder
-    .map((group) => ({ ...group, reviews: pending.filter((review) => review.status === group.status) }))
+    .map((group) => ({ ...group, reviews: pending.filter((review) => coordinaGroup(reviewAwnings(review), status) === group.key) }))
     .filter((group) => group.reviews.length > 0);
 }
 
