@@ -118,3 +118,53 @@ describe("las decisiones sin tomar son errores", () => {
     expect(campos).toContain("rotulacion");
   });
 });
+
+describe("ollaos según ganchos", () => {
+  const conGanchos = (extra = {}) => ({
+    ...lonaValida(),
+    modoOllaos: "SEGUN GANCHOS" as const,
+    ganchos: { laterales: [5, 300, 595], atras: [10, 125, 240], delante: [10, 125, 240] },
+    ...extra,
+  });
+  const camposGanchos = (input: Parameters<typeof erroresPlanteamiento>[0]) =>
+    erroresPlanteamiento(input).filter((e) => e.campo === "ganchos").map((e) => e.mensaje);
+
+  it("con dos o más ganchos por lado dentro del remolque es válido y no pide ollaos a medida", () => {
+    expect(errorPlanteamientoIncompleto(conGanchos())).toBeNull();
+  });
+
+  it("bloquea un lado con menos de dos ganchos", () => {
+    expect(camposGanchos(conGanchos({ ganchos: { laterales: [5, 595], atras: [10, 240], delante: [10] } })))
+      .toEqual(["Pon al menos dos ganchos en delante: los ollaos van entre ellos."]);
+  });
+
+  it("bloquea ganchos fuera del remolque, con el ancho trasero si va sesgado", () => {
+    expect(camposGanchos(conGanchos({ ganchos: { laterales: [5, 700], atras: [10, 240], delante: [10, 240] } })))
+      .toEqual(["Hay ganchos de laterales fuera del remolque (0 a 600 cm)."]);
+    expect(camposGanchos(conGanchos({ anchoAtras: 200 })))
+      .toEqual(["Hay ganchos de atrás fuera del remolque (0 a 200 cm)."]);
+  });
+
+  it("las medidas que bajan solo son un aviso, no un error", () => {
+    expect(camposGanchos(conGanchos({ ganchos: { laterales: [595, 300, 5], atras: [10, 240], delante: [10, 240] } })))
+      .toEqual([]);
+  });
+
+  it("la distancia del extremo solo se valida si lleva extremos", () => {
+    expect(erroresPlanteamiento(conGanchos({ primerOllao: -1 })))
+      .toContainEqual(expect.objectContaining({ campo: "primerOllao" }));
+    expect(erroresPlanteamiento(conGanchos({ primerOllao: -1, ollaosExtremos: false })))
+      .not.toContainEqual(expect.objectContaining({ campo: "primerOllao" }));
+  });
+
+  it("vale igual para el baquetón", () => {
+    const baqueton = {
+      ...emptyBaqueton(),
+      cabecera: { ...emptyBaqueton().cabecera, numeroPedido: "AR2603583" },
+      largo: 181, ancho: 121, baqueton: 22, material: "PVC 580 AZUL", rotulacion: false,
+      modoOllaos: "SEGUN GANCHOS" as const,
+      ganchos: { laterales: [10, 170], atras: [20], delante: [20, 100] },
+    };
+    expect(camposGanchos(baqueton)).toEqual(["Pon al menos dos ganchos en atrás: los ollaos van entre ellos."]);
+  });
+});

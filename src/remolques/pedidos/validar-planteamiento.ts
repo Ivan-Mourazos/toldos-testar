@@ -1,5 +1,7 @@
 import type { LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
+import { erroresGanchos, medidasRemolque } from "../calc/ganchos.ts";
+import { sinPosiciones } from "../calc/ollaos.ts";
 
 export interface ErrorPlanteamiento {
   campo: string;
@@ -79,6 +81,17 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput): ErrorPla
       "primerOllao",
       "La distancia del primer ollao no puede ser negativa.",
     );
+  } else if (input.modoOllaos === "SEGUN GANCHOS") {
+    for (const error of erroresGanchos(input.ganchos ?? sinPosiciones(), medidasRemolque(input))) {
+      errores.push({ campo: "ganchos", mensaje: error.mensaje });
+    }
+    if (input.ollaosExtremos ?? true) {
+      agregar(
+        !Number.isFinite(input.primerOllao) || Number(input.primerOllao) < 0,
+        "primerOllao",
+        "La distancia del ollao del extremo no puede ser negativa.",
+      );
+    }
   } else {
     const vacias = [
       ["laterales", input.ollaosManuales.laterales],
