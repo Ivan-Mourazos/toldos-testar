@@ -10,9 +10,20 @@ describe("cierres de las esquinas", () => {
   });
 
   it("la oreja es la demasía de la recogida sobre «NO», repartida en las dos esquinas", () => {
-    expect(orejaRecogida(DEFAULT_PARAMS, "GOMA")).toBe(12);
-    expect(orejaRecogida(DEFAULT_PARAMS, "PUENTES HIJOS DE PEDRO LOPEZ")).toBe(19.8);
-    expect(orejaRecogida(DEFAULT_PARAMS, "CREMALLERA")).toBe(0);
+    expect(orejaRecogida(DEFAULT_PARAMS, "GOMA", "delante")).toBe(12);
+    expect(orejaRecogida(DEFAULT_PARAMS, "PUENTES HIJOS DE PEDRO LOPEZ", "delante")).toBe(19.8);
+    expect(orejaRecogida(DEFAULT_PARAMS, "CREMALLERA", "delante")).toBe(0);
+  });
+
+  it("la oreja trasera sigue la columna con que se corta el paño (DELANTE cuando USAR_COLUMNA_ATRAS es false)", () => {
+    const e = escenaLona({ recogeAtras: "PUENTES LATERALES" })!;
+    // PUENTES LATERALES: delante 41, atras 21. El paño trasero se corta con DELANTE (41),
+    // así que la oreja es (41 - 3) / 2 = 19
+    expect(e.cierres.find((x) => x.esquina === "atras-izquierda")).toMatchObject({ oreja: 19 });
+    expect(e.cierres.find((x) => x.esquina === "atras-derecha")).toMatchObject({ oreja: 19 });
+    // También comprobar que las esquinas delanteras no cambian
+    const eDelante = escenaLona({ recogeDelante: "PUENTES LATERALES" })!;
+    expect(eDelante.cierres.find((x) => x.esquina === "delante-izquierda")).toMatchObject({ oreja: 19 });
   });
 
   it("reparte a lo alto con margen arriba y abajo", () => {
