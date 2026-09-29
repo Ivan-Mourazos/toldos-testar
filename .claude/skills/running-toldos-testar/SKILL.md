@@ -27,8 +27,9 @@ may be used (autofill, catalogue).
 The script also starts a fake CoordinaOT on 4320 (`scripts/fake-coordina.mjs`,
 all OFs approved by default; `POST /__estado`, `/__caido`, `/__reset` to change
 it). The isolated instance never talks to the real CoordinaOT.
-The e2e scripts (`test-rps-e2e.mjs`, `test-antica-workflow.mjs`) start their own server, so run
-them with `COORDINA_URL=http://127.0.0.1:4320 COORDINA_CLAVE=clave-de-prueba` or generating files gets 503.
+The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflow.mjs`,
+`test-parameter-consultation.mjs`) already start and stop their own fake CoordinaOT on a free port
+(`startFakeCoordina()`), so they need no extra env.
 
 ## Drive it with Playwright
 

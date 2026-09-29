@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { startFakeCoordina } from './fake-coordina.mjs';
 import { mkdir, mkdtemp } from 'node:fs/promises';
 import path from 'node:path';
 import net from 'node:net';
@@ -14,8 +15,10 @@ await new Promise(r => probe.listen(0, '127.0.0.1', r));
 const port = probe.address().port;
 await new Promise(r => probe.close(r));
 const isolatedUrl = process.env.TOLDOS_ISOLATED_URL;
+// CoordinaOT simulado propio (solo si lanzamos servidor nosotros); nunca el real.
+const coordina = isolatedUrl ? null : await startFakeCoordina();
 const server = isolatedUrl ? null : spawn(process.execPath, ['src/server.js'], { windowsHide: true, stdio: 'ignore', env: {
-  ...process.env, NODE_ENV: 'production', HOST: '127.0.0.1', PORT: String(port), ENABLE_FILE_WRITES: 'false',
+  ...process.env, NODE_ENV: 'production', HOST: '127.0.0.1', PORT: String(port), ENABLE_FILE_WRITES: 'false', COORDINA_URL: coordina.url, COORDINA_CLAVE: coordina.key,
   WORKFLOW_SETTINGS_FILE: path.join(directory, 'settings.json'), REVIEW_DIRECTORY: path.join(directory, 'reviews'),
   PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'plans'), RPS_UPLOAD_DIRECTORY: path.join(directory, 'rps'), RPS_PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'archive'),
   EXPORT_DIRECTORY: path.join(directory, 'export'), ORDER_ARCHIVE_ROOT: path.join(directory, 'order-archive')
@@ -81,4 +84,4 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false);
   assert.deepEqual(errors, []);
   console.log('OK: ' + names.length + ' fichas, ejemplo Antica, HERA, Iris válida/inválida y Cambio Antica. ' + directory);
-} finally { await browser?.close(); server?.kill(); }
+} finally { await browser?.close(); server?.kill(); await coordina?.close(); }

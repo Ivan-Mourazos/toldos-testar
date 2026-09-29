@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createAwning } from '../src/client/constants.ts';
 import { spawn } from 'node:child_process';
+import { startFakeCoordina } from './fake-coordina.mjs';
 import { mkdtemp, mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import net from 'node:net';
@@ -13,8 +14,10 @@ const directory = await mkdtemp(path.join(output, 'run-'));
 const probe = net.createServer(); await new Promise(r => probe.listen(0, '127.0.0.1', r));
 const port = probe.address().port; await new Promise(r => probe.close(r));
 const base = 'http://127.0.0.1:' + port;
+// CoordinaOT simulado propio: sin él el servidor rechaza generar archivos (503) y nunca se consulta el real.
+const coordina = await startFakeCoordina();
 const server = spawn(process.execPath, ['src/server.js'], { windowsHide: true, stdio: 'ignore', env: {
-  ...process.env, NODE_ENV: 'production', ENABLE_HERA: 'false', HOST: '127.0.0.1', PORT: String(port), ENABLE_FILE_WRITES: 'false',
+  ...process.env, NODE_ENV: 'production', ENABLE_HERA: 'false', HOST: '127.0.0.1', PORT: String(port), ENABLE_FILE_WRITES: 'false', COORDINA_URL: coordina.url, COORDINA_CLAVE: coordina.key,
   WORKFLOW_SETTINGS_FILE: path.join(directory, 'settings.json'), REVIEW_DIRECTORY: path.join(directory, 'reviews'),
   PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'plans'), RPS_UPLOAD_DIRECTORY: path.join(directory, 'rps'), RPS_PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'archive'),
   EXPORT_DIRECTORY: path.join(directory, 'export'), ORDER_ARCHIVE_ROOT: path.join(directory, 'order-archive')
@@ -145,4 +148,4 @@ try {
   assert.equal(refused.error, 'Este pedido ya está generado. Cambia el número de pedido para guardarlo como uno nuevo.');
   assert.deepEqual(errors, []);
   console.log('OK: seis variantes, cuatro brazos, selector y persistencia de color, Pedidos → Abrir → Corregir/guardar, generar sin aprobar (API y web), pedido generado sin Corregir ni Generar, imagen, notas vacías, PDF y reserva. ' + directory);
-} finally { await browser?.close(); server.kill(); }
+} finally { await browser?.close(); server.kill(); await coordina.close(); }

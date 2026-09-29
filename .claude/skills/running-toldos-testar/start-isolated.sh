@@ -16,4 +16,9 @@ export ORDER_ARCHIVE_ROOT="$D/archive" RPS_PLANTEAMIENTOS_DIRECTORY="$D/rpsplan"
 export FAKE_COORDINA_PORT="${FAKE_COORDINA_PORT:-4320}"
 export COORDINA_URL="http://127.0.0.1:$FAKE_COORDINA_PORT" COORDINA_CLAVE="clave-de-prueba"
 node scripts/fake-coordina.mjs &
-exec node src/server.js
+FAKE_PID=$!
+# Sin exec: el shell sigue vivo para parar el simulado cuando el servidor termine o lo
+# corten (Ctrl+C / kill); si no, quedaría huérfano escuchando en 4320.
+trap 'kill "$FAKE_PID" 2>/dev/null || true' EXIT
+trap 'exit 143' INT TERM
+node src/server.js

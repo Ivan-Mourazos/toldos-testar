@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { startFakeCoordina } from './fake-coordina.mjs';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import net from 'node:net';
 import path from 'node:path';
@@ -30,11 +31,15 @@ await mkdir(artifactDirectory, { recursive: true });
 const port = await findFreePort();
 const baseUrl = `http://127.0.0.1:${port}`;
 const serverOutput = [];
+// CoordinaOT simulado propio: sin él el servidor rechaza generar archivos (503) y nunca se consulta el real.
+const coordina = await startFakeCoordina();
 const server = spawn(process.execPath, ['src/server.js'], {
   cwd: root,
   env: {
     ...process.env,
     PORT: String(port),
+    COORDINA_URL: coordina.url,
+    COORDINA_CLAVE: coordina.key,
     ENABLE_FILE_WRITES: 'false',
     ENABLE_LEGACY_EXPORTS: 'true',
     WORKFLOW_SETTINGS_FILE: path.join(workflowDirectory, 'settings.json'),
@@ -93,6 +98,7 @@ try {
   if (browser) await browser.close().catch(() => {});
   if (rpsPool) await rpsPool.close().catch(() => {});
   server.kill();
+  await coordina.close();
   report.finishedAt = new Date().toISOString();
   report.serverOutput = serverOutput.join('').trim().split(/\r?\n/).filter(Boolean);
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
