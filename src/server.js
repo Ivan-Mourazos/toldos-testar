@@ -19,6 +19,10 @@ import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/r
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
 import { formOptions } from './domain/modelBehavior.js';
 import { createRuleParametersStore } from './ruleParametersStore.js';
+import { createRemolquesParametersStore } from './remolquesParametersStore.js';
+import { getMaterialesConOrigen } from './remolques/materiales.ts';
+import { pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
+import { materialPreferidoRps } from './remolques/rps/material-rps.ts';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
@@ -65,6 +69,8 @@ const ruleParametersStore = createRuleParametersStore({
   historyFile: config.ruleParametersFile.replace(/\.json$/i, '') + '-history.jsonl',
   technicians: formOptions.tecnicos
 });
+// Parámetros de cálculo de remolques (solo lectura en esta fase).
+const remolquesParametersStore = createRemolquesParametersStore({ file: config.remolquesParametersFile });
 const deploymentFeatures = {
   heraEnabled: config.heraEnabled,
   legacyExportsEnabled: config.legacyExportsEnabled
@@ -296,6 +302,39 @@ app.get('/api/rule-parameters/history', async (req, res, next) => {
 app.post('/api/workflow/check-directories', async (req, res, next) => {
   try {
     res.json(await checkWorkflowDirectories(req.body?.settings || req.body));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Remolques (fase 2a, solo lectura). Cuerpos y códigos son los de las rutas de
+// Remolques-TGM (api/materiales, api/rps/pedido, api/parametros); lo único añadido
+// es `origen` en materiales, para poder avisar si RPS no ha respondido.
+app.get('/api/remolques/materiales', async (_req, res, next) => {
+  try {
+    res.json(await getMaterialesConOrigen());
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/api/remolques/rps-pedido', async (req, res) => {
+  try {
+    const numero = typeof req.query.numero === 'string' ? req.query.numero : '';
+    const [pedido, { materiales }] = await Promise.all([pedidoRpsPorNumero(numero), getMaterialesConOrigen()]);
+    // Número no válido o pedido inexistente: 200 con pedido null, como en el original.
+    const enriquecido = pedido
+      ? { ...pedido, lineas: pedido.lineas.map((linea) => ({ ...linea, materialSugerido: materialPreferidoRps(linea, materiales) || null })) }
+      : null;
+    res.set('Cache-Control', 'no-store').json({ pedido: enriquecido });
+  } catch (error) {
+    res.status(503).json({ error: error instanceof Error ? error.message : 'No se pudo consultar RPS.' });
+  }
+});
+
+app.get('/api/remolques/parametros', async (_req, res, next) => {
+  try {
+    res.json(await remolquesParametersStore.get());
   } catch (error) {
     next(error);
   }

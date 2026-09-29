@@ -39,9 +39,25 @@ export function rowsToMateriales(
  * no responde, última caché o semilla TC.
  */
 export async function getMateriales(): Promise<Material[]> {
-  if (cache && Date.now() - cache.at < CACHE_MS) return cache.data;
+  return (await getMaterialesConOrigen()).materiales;
+}
+
+export type OrigenMateriales = "rps" | "semilla";
+
+/**
+ * Igual que getMateriales, pero dice de dónde salen: "rps" si son los leídos de
+ * RPS (o su última caché) y "semilla" si se ha caído a la lista incluida en el
+ * código. Añadido en toldos-testar para que la pantalla pueda avisar; la
+ * consulta y la caché son las de siempre.
+ */
+export async function getMaterialesConOrigen(): Promise<{ materiales: Material[]; origen: OrigenMateriales }> {
+  const deCache = (): { materiales: Material[]; origen: OrigenMateriales } =>
+    cache
+      ? { materiales: cache.data, origen: "rps" }
+      : { materiales: materialesSeedProduccion(), origen: "semilla" };
+  if (cache && Date.now() - cache.at < CACHE_MS) return { materiales: cache.data, origen: "rps" };
   const poolPromise = getRpsPool();
-  if (!poolPromise) return cache?.data ?? materialesSeedProduccion(); // RPS sin configurar
+  if (!poolPromise) return deCache(); // RPS sin configurar
   try {
     const p = await poolPromise;
     const res = await p.request()
@@ -65,10 +81,10 @@ export async function getMateriales(): Promise<Material[]> {
     const data = rowsToMateriales(res.recordset);
     if (data.length > 0) {
       cache = { data, at: Date.now() };
-      return data;
+      return { materiales: data, origen: "rps" };
     }
-    return cache?.data ?? materialesSeedProduccion();
+    return deCache();
   } catch {
-    return cache?.data ?? materialesSeedProduccion();
+    return deCache();
   }
 }

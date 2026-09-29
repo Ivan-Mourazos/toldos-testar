@@ -5,6 +5,7 @@ const originalHeraFlag = process.env.ENABLE_HERA;
 const originalLegacyExportsFlag = process.env.ENABLE_LEGACY_EXPORTS;
 const originalSettingsFile = process.env.WORKFLOW_SETTINGS_FILE;
 const originalRuleParametersFile = process.env.RULE_PARAMETERS_FILE;
+const originalRemolquesParametersFile = process.env.REMOLQUES_PARAMETERS_FILE;
 
 afterEach(() => {
   restoreEnvironment('NODE_ENV', originalNodeEnv);
@@ -12,6 +13,7 @@ afterEach(() => {
   restoreEnvironment('ENABLE_LEGACY_EXPORTS', originalLegacyExportsFlag);
   restoreEnvironment('WORKFLOW_SETTINGS_FILE', originalSettingsFile);
   restoreEnvironment('RULE_PARAMETERS_FILE', originalRuleParametersFile);
+  restoreEnvironment('REMOLQUES_PARAMETERS_FILE', originalRemolquesParametersFile);
   vi.resetModules();
 });
 
@@ -46,6 +48,14 @@ describe('configuración por entorno', () => {
     process.env.RULE_PARAMETERS_FILE = '/otra/ruta/parametros.json';
     const config = await loadConfig('production', '');
     expect(config.ruleParametersFile).toBe('/otra/ruta/parametros.json');
+  });
+
+  test('los parámetros de remolques van junto a los comunes y REMOLQUES_PARAMETERS_FILE manda si se indica', async () => {
+    process.env.RULE_PARAMETERS_FILE = '/var/lib/toldos-testar/rule-parameters.json';
+    delete process.env.REMOLQUES_PARAMETERS_FILE;
+    expect((await loadConfig('production', '')).remolquesParametersFile.replace(/\\/g, '/')).toBe('/var/lib/toldos-testar/remolques-parameters.json');
+    process.env.REMOLQUES_PARAMETERS_FILE = '/otra/ruta/remolques.json';
+    expect((await loadConfig('production', '')).remolquesParametersFile).toBe('/otra/ruta/remolques.json');
   });
 });
 
