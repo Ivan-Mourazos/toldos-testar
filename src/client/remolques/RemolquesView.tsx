@@ -98,7 +98,19 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                 {estadoActivo?.lista ? 'Listo.' : `Falta: ${estadoActivo?.falta}`}
               </p>
             </div>
-            <div className="rem-editor-derecha">
+            {/* Los editores de «A medida» y «Según ganchos» viven aquí, fuera de los formularios, y el onBlur
+                de éstos no los alcanza. Este manejador (focusout burbujea) marca el campo como tocado al salir
+                de cualquier casilla, o del «Medido al revés»: la casilla trae su data-campo o, si no, el
+                editor lo declara en data-campo-grupo. Sin esto el error de bloqueo nunca llegaría a verse. */}
+            <div
+              className="rem-editor-derecha"
+              onBlur={(evento) => {
+                const destino = evento.target as HTMLElement;
+                const campo = destino.dataset.campo
+                  ?? destino.closest<HTMLElement>('[data-campo-grupo]')?.dataset.campoGrupo;
+                if (campo) ws.marcarCampoTocado(campo);
+              }}
+            >
               {/* El dibujo de la web de remolques, con las mismas props que en su `Workspace`.
                   Sin `onSnapshotReady`: todavía no hay PDF. */}
               {lineaActiva.tipo === 'lona' ? (

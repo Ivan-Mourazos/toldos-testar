@@ -116,7 +116,7 @@ function EditorOllaos({ reparto, error, onChange }: {
   };
 
   return (
-    <div className={`rem-ollaos-editor${error ? ' is-invalido' : ''}`}>
+    <div className={`rem-ollaos-editor${error ? ' is-invalido' : ''}`} data-campo-grupo="ollaosManuales">
       <header>
         <h4>Ollaos a medida</h4>
         <span>Posiciones desde el origen · cm</span>
@@ -154,7 +154,7 @@ function EditorOllaos({ reparto, error, onChange }: {
 
 function EditorGanchos({ ganchos, alReves, error, onChange }: GanchosPantalla) {
   return (
-    <div className={`rem-ollaos-editor${error ? ' is-invalido' : ''}`}>
+    <div className={`rem-ollaos-editor${error ? ' is-invalido' : ''}`} data-campo-grupo="ganchos">
       <header>
         <h4>Ganchos del pedido</h4>
         <span>Sobre el remolque · cm</span>
