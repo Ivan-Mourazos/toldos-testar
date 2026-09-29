@@ -126,3 +126,22 @@ Ruta nueva: `GET /api/integracion/ofs?ofs=0230194,0230195`.
 - Remolques (se integra en fases posteriores y reutilizará esta pieza).
 - Generar archivos de forma automática al aprobar.
 - Cualquier escritura en CoordinaOT.
+
+## Añadido 29/09/2026: el revisor queda registrado solo
+
+Iván: «cuando se apruebe un toldo o un remolque en Coordina, que quede registrado
+automáticamente el revisor en los planteamientos».
+
+- CoordinaOT añade a cada OF el campo `revisor`: el id de quien la aprobó
+  (`of_overlay.revisor_id`, p. ej. `jaime`), **solo si está `aprobada`**; si no, `""`.
+  Con varias tareas aprobadas manda la aprobada más reciente. Es el único dato de
+  personas que sale, y lo pide Iván.
+- Toldos traduce ese id a su lista de técnicos (`modelBehavior.json`, `tecnicos`:
+  ÁNGEL, JAIME, ALBERTO, ADRIÁN, TAMARA, IVÁN) comparando sin tildes ni mayúsculas;
+  un id que no esté en la lista sale tal cual en mayúsculas.
+- Al pulsar «Generar archivos», con la consulta fresca, el pedido guarda
+  `order.reviewer` y `reviewedBy` con los revisores de sus OF, sin repetir y en el orden
+  de los toldos («JAIME» o «JAIME, ÁNGEL»). Sale en el campo «REVISOR:» del PDF
+  definitivo y queda en el historial.
+- En Pedidos, al desplegar un pedido, cada toldo aprobado dice «Aprobado por Jaime».
+- Remolques lo reutilizará cuando entre.

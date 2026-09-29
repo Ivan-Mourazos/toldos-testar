@@ -1252,6 +1252,85 @@ Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>"
 
 ---
 
+### Task 7: CoordinaOT — la consulta dice quién aprobó
+
+Añadido el 29/09/2026 (spec, sección «Añadido 29/09/2026»). Modelo recomendado: **Opus, esfuerzo medio** (web madre).
+
+**Files:**
+- Modify: `src/lib/integracion.ts`, `src/lib/server/estado-db.ts` (`leerOverlayPorOrdenes`), `src/lib/__tests__/integracion.test.ts`, `src/lib/__tests__/api-integracion-ofs.test.ts`
+
+**Interfaces:**
+- Produces: cada entrada de `GET /api/integracion/ofs` gana `revisor: string` = `revisor_id` de la fila `aprobada` más reciente de esa OF si el resumen es `aprobada`; `""` en cualquier otro caso. `FilaOverlayOf` gana `revisorId: string | null`.
+
+- [ ] **Step 1: Tests (fallan).** En `integracion.test.ts`, las filas de `resumirOf` llevan `revisorId`; añadir:
+```ts
+test("revisor solo si está aprobada: el de la aprobada más reciente", () => {
+  expect(resumirOf("1", [
+    { estado: "aprobada", observacion: null, updatedAt: "2026-09-29T08:00:00Z", revisorId: "angel" },
+    { estado: "aprobada", observacion: null, updatedAt: "2026-09-29T09:00:00Z", revisorId: "jaime" },
+  ]).revisor).toBe("jaime");
+  expect(resumirOf("2", [
+    { estado: "aprobada", observacion: null, updatedAt: "2026-09-29T08:00:00Z", revisorId: "angel" },
+    { estado: "en_revision", observacion: null, updatedAt: "2026-09-29T09:00:00Z", revisorId: "jaime" },
+  ]).revisor).toBe("");
+  expect(resumirOf("3", []).revisor).toBe("");
+  expect(resumirOf("4", [{ estado: "aprobada", observacion: null, updatedAt: "2026-09-29T08:00:00Z", revisorId: null }]).revisor).toBe("");
+});
+```
+Actualizar los `toEqual` existentes añadiendo `revisor` (`""` salvo las aprobadas). En `api-integracion-ofs.test.ts`, el `INSERT` lleva `revisor_id` (`"jaime"` en `0230194:5` aprobada, `null` en las demás) y el `toEqual` final incluye `revisor: "jaime"` en 0230194 y `revisor: ""` en las otras.
+- [ ] **Step 2:** `pnpm vitest run src/lib/__tests__/integracion.test.ts src/lib/__tests__/api-integracion-ofs.test.ts` → FAIL.
+- [ ] **Step 3: Implementar.** `FilaOverlayOf` + `revisorId: string | null`; `EstadoOfIntegracion` + `revisor: string`. En `resumirOf`: si `peor.normal === "aprobada"`, `revisor` = `revisorId` de la fila `aprobada` con `updatedAt` mayor (`?? ""`); si no, `""` (también en `sin_estado`). En `leerOverlayPorOrdenes`, añadir `revisor_id AS revisorId` al `SELECT` y usar `FilaOverlayOf` importado de `@/lib/integracion` en lugar de repetir el tipo a mano. Comentario: el revisor es el único dato de personas que sale, porque la web de planteamientos lo pone en su campo REVISOR.
+- [ ] **Step 4:** tests enfocados → PASS; luego `pnpm test && pnpm lint`.
+- [ ] **Step 5: Commit** en coordina-ot, sin push: `feat(integracion): la consulta de OF dice quién la aprobó`, con el porqué y la línea `Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>`.
+
+---
+
+### Task 8: Toldos — el revisor se apunta solo al generar
+
+Añadido el 29/09/2026. Modelo recomendado: **Sonnet, esfuerzo medio**.
+
+**Files:**
+- Modify: `src/reviewRules.js` (+ test), `src/coordinaStatus.js` (+ test), `src/server.js`, `scripts/fake-coordina.mjs`, `scripts/test-coordina-approval-e2e.mjs`, `src/client/types.ts`, `src/client/components/OrdersInbox.tsx`, `src/client/relieve.css`
+
+**Interfaces:**
+- Consumes: campo `revisor` de Task 7.
+- Produces: en `reviewRules.js`, `reviewerName(id: string, technicians: string[]): string` y `approvalReviewers(awnings, status, technicians: string[]): string`; el valor de `statusOf` por OF gana `revisor: string`.
+
+- [ ] **Step 1: Tests (fallan).** En `reviewRules.test.js`:
+```js
+describe('revisor desde CoordinaOT', () => {
+  const tecnicos = ['ÁNGEL', 'JAIME', 'ALBERTO', 'ADRIÁN', 'TAMARA', 'IVÁN'];
+  const awnings = [{ letter: 'A', of: '1' }, { letter: 'B', of: '2' }, { letter: 'C', of: '3' }];
+  it('reviewerName traduce a la lista de técnicos sin tildes ni mayúsculas', () => {
+    expect(reviewerName('angel', tecnicos)).toBe('ÁNGEL');
+    expect(reviewerName('carron', tecnicos)).toBe('CARRON');
+    expect(reviewerName('', tecnicos)).toBe('');
+  });
+  it('approvalReviewers: sin repetir y en orden de toldos', () => {
+    const status = { disponible: true, ofs: { '1': { estado: 'aprobada', revisor: 'jaime' }, '2': { estado: 'aprobada', revisor: 'angel' }, '3': { estado: 'aprobada', revisor: 'jaime' } } };
+    expect(approvalReviewers(awnings, status, tecnicos)).toBe('JAIME, ÁNGEL');
+  });
+  it('approvalReviewers: no aprobadas, vacíos y sin CoordinaOT fuera', () => {
+    const status = { disponible: true, ofs: { '1': { estado: 'aprobada', revisor: 'carron' }, '2': { estado: 'en_revision', revisor: 'jaime' }, '3': { estado: 'aprobada', revisor: '' } } };
+    expect(approvalReviewers(awnings, status, tecnicos)).toBe('CARRON');
+    expect(approvalReviewers(awnings, { disponible: false }, tecnicos)).toBe('');
+  });
+});
+```
+En `coordinaStatus.test.js`, la respuesta de prueba lleva `revisor: 'jaime'` y el resultado esperado también; si la respuesta no trae `revisor`, el valor es `''`.
+- [ ] **Step 2:** `pnpm vitest run src/reviewRules.test.js src/coordinaStatus.test.js` → FAIL.
+- [ ] **Step 3: Implementar.**
+  - `reviewRules.js`: `reviewerName` compara con `normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase()` contra cada técnico; sin coincidencia, el id en mayúsculas; vacío → `''`. `approvalReviewers` recorre los toldos en orden, toma los que están `aprobada` con `revisor` no vacío, aplica `reviewerName`, quita repetidos y une con `', '`.
+  - `coordinaStatus.js`: el valor guardado gana `revisor: String(item.revisor || '')`.
+  - `fake-coordina.mjs`: las `aprobada` llevan `revisor: 'jaime'` por defecto (un estado fijado con `/__estado` puede traer el suyo); si el estado no es `aprobada`, `revisor: ''`.
+  - `server.js`, en `generate-files`: tras pasar `generationBlock`, `const reviewer = approvalReviewers(approvalAwnings, approval, <lista de técnicos>)`. La lista es `tecnicos` de `src/domain/data/modelBehavior.json`; usar la misma vía por la que el servidor ya la expone (buscar `tecnicos` en `src/domain/modelBehavior.js` / `formOptions`). Tras `markReviewFilesGenerated`, poner `updated.order = { ...updated.order, reviewer }` y `updated.reviewedBy = reviewer` **antes** de construir el PDF, para que «REVISOR:» del PDF definitivo salga relleno. Comentario con el porqué.
+  - Web: en `types.ts`, el estado por OF gana `revisor?: string`. En `OrdersInbox.tsx`, en cada línea del detalle desplegado, si su OF está `aprobada` con revisor: `<span className="orders-detail-approved">Aprobado por {controlLabel(reviewerName(revisor, tecnicos))}</span>`, con `reviewerName` importado de `../../reviewRules.js` y la lista de técnicos de donde ya la lea la web (buscar `tecnicos` en `src/client`). CSS en `relieve.css`: `.orders-detail-approved { color: var(--ok); display: block; font-size: 12px; margin-top: 2px; }`.
+  - `scripts/test-coordina-approval-e2e.mjs`: en el caso aprobado, comprobar que el detalle desplegado dice «Aprobado por Jaime»; después pulsar «Generar archivos» y confirmar («Sí, generar archivos»), y comprobar que `GET /api/reviews/AR2603332` devuelve `review.order.reviewer === 'JAIME'` (ajustar al formato real de la respuesta).
+- [ ] **Step 4:** tests enfocados → PASS; `pnpm vitest run && pnpm lint && pnpm exec tsc --noEmit -p . && pnpm build`; reiniciar la aislada y ejecutar `node scripts/test-rps-e2e.mjs` y `node scripts/test-coordina-approval-e2e.mjs`.
+- [ ] **Step 5: Commit** `feat(aprobacion): el revisor de CoordinaOT se apunta solo en el planteamiento`, con el porqué y la línea `Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>`. No tocar ni añadir `src/client/styles.css` (cambio ajeno de Iván).
+
+---
+
 ## Despliegue (lo hace Iván; se le dan los comandos al final)
 
 1. Generar una clave: `node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"`.
