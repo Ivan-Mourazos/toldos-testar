@@ -62,6 +62,18 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 me dijeron: en un cambio de tela, que sume 40 para el enrrolle y lo necesario para entrada de tubo. con 55 debería valer. poder variar esto es necesario en el formulario.
 
+## Remolques
+
+Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
+
+- **Ganchos corazón: ¿se ofrecen como un tipo de recogida más en el formulario?** Si es que sí: ¿cuánto se añade al paño delantero o trasero y al lateral (como en las otras recogidas), y cuántos ganchos van a lo alto y a qué distancia? Hoy la web no los tiene. Importa para calcular el paño y dibujarlo. <sub>Q-R01</sub>
+- **Goma en la esquina: ¿cuántos ollaos lleva la oreja a lo alto y a qué altura?** La web pone 2 si la pared mide hasta 80 cm y 3 si mide más, repartidos en la mitad de abajo. Las gomas van al gancho del centro si la pared mide 100 cm o más, y si no, a los ganchos cercanos. Importa para la hoja de taller. <sub>Q-R02</sub>
+- **Puentes: ¿cada cuánto va un puente a lo alto?** La web pone uno cada 20 cm, empezando a 10 cm de abajo y acabando a 10 cm de arriba. Importa para la hoja de taller. <sub>Q-R03</sub>
+- **Cremallera: ¿qué número es la normal y qué clientes piden la del 9, además de Cano Muños?** La web todavía no distingue el número. Importa para las fichas de cliente, que rellenarán esto solas. <sub>Q-R04</sub>
+- **Pedidos que traen los ganchos: ¿algún gancho va justo en la esquina (a 0 cm)?** La web no deja poner un gancho en 0. Importa para no rechazar un pedido que sí se hace. <sub>Q-R05</sub>
+
+Y dos fotos que faltan, de cerca: una cremallera puesta y una bastilla de enfundar.
+
 ## Para todos los modelos
 
 - **Casquillo de máquina: ¿cuándo va el de eje 50 y cuándo el de eje 63?** Se usan los dos (en el Punto Recto, 10 y 6 veces; en el Antica, 19 y 13) y no se ve de qué depende. La web pone el de eje 50 en el Punto Recto, el Monoblock 350 y los cofres; en la Cortina, el de 50 con máquina interior y el de 63 con exterior; en el Antica, el de 63. Importa para reservar el casquillo que encaja en la máquina. <sub>Q-PR02</sub>
