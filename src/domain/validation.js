@@ -252,6 +252,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
       : '',
     anticaSupportHeight: numberOrDefault(awning?.anticaSupportHeight, 0),
     cambioAnticaExtraCm: nullableNumber(awning?.cambioAnticaExtraCm),
+    maxisCableMountKit: awning?.maxisCableMountKit === true,
     looseSide: ['IZQUIERDO', 'DERECHO'].includes(String(awning?.looseSide || '').toUpperCase()) ? String(awning.looseSide).toUpperCase() : '',
     valanceHeight,
     valanceCurve: cleanText(awning?.valanceCurve || legacyOrder.curvaBamba).toUpperCase(),

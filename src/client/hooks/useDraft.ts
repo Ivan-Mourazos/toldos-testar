@@ -180,6 +180,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.anticaSupportHeight = nullableNumber(old.anticaSupportHeight);
   base.cambioAnticaExtraCm = nullableNumber(old.cambioAnticaExtraCm);
   base.looseSide = old.looseSide === 'IZQUIERDO' || old.looseSide === 'DERECHO' ? old.looseSide : '';
+  base.maxisCableMountKit = old.maxisCableMountKit === true;
   base.structureEdit = normalizeStructureEdit(old.structureEdit) as Awning['structureEdit'];
   base.structureArmCount = nullableNumber(old.structureArmCount);
   base.structureNotesEdited = old.structureNotesEdited === true;
@@ -547,6 +548,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null,
     cambioAnticaExtraCm: model === 'CAMBIO ANTICA' ? awning.cambioAnticaExtraCm : null,
     looseSide: ['GALICIA', 'MONOBLOCK 350', 'AGATA BOX'].includes(model) ? awning.looseSide : '',
+    maxisCableMountKit: model === 'MAXISCREEM' ? awning.maxisCableMountKit : false,
     structureNotesEdited: false,
     structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : ''
   };

@@ -146,6 +146,8 @@ export type Awning = {
   anticaMeasurementMode: '' | 'BASE' | 'FINISHED';
   /** Galicia, Monoblock 350 y Ágata con brazos impares: lado del brazo y el soporte sueltos; vacío = lo decide el taller. */
   looseSide: '' | 'IZQUIERDO' | 'DERECHO';
+  /** Diana vertical con cable: kit de montaje del cable, se indica en el pedido (Q-D01). */
+  maxisCableMountKit: boolean;
   /** Cambio Antica: centímetros que el técnico suma a la caída medida de la tela. */
   cambioAnticaExtraCm: number | null;
   anticaSupportHeight: number | null;

@@ -108,7 +108,8 @@
 :root[data-theme="dark"] .order-material-cluster {
     border-left: 1px solid var(--border)
 }
-:root[data-theme="dark"] .order-fabric-per-awning:has(input:checked) {
+:root[data-theme="dark"] .order-fabric-per-awning:has(input:checked),
+:root[data-theme="dark"] .awning-check-field:has(input:checked) {
     background: #342b1b
 }
 :root[data-theme="dark"] .order-header .select-control.is-placeholder,

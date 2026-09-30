@@ -22,7 +22,7 @@ import { ambarPlacementGroup } from '../../domain/ambarBoxParameters.js';
 import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount } from '../../domain/agataBoxParameters.js';
 import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
-import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
+import { maxiscreemGuide, maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
 import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes } from '../../domain/irisParameters.js';
@@ -729,6 +729,15 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
           {looseSideArms % 2 === 1 && (
             <div className="awning-compact-choice"><SelectField label="Lado del brazo suelto" value={awning.looseSide} options={['IZQUIERDO', 'DERECHO']} placeholder="Lo decide el taller" allowEmpty emptyLabel="Lo decide el taller" onChange={(looseSide) => update({ looseSide: looseSide as Awning['looseSide'] })} /></div>
+          )}
+          {/* Q-D01: el kit de montaje del cable de la Diana se indica en el pedido. */}
+          {isMaxiscreem && maxiscreemGuide(awning.submodel) === 'CABLE' && (
+            <div className="awning-compact-choice">
+              <label className="awning-check-field">
+                <input type="checkbox" checked={awning.maxisCableMountKit === true} onChange={(event) => update({ maxisCableMountKit: event.target.checked })} />
+                <span>Kit de montaje del cable</span>
+              </label>
+            </div>
           )}
           {fields.arms && !fields.galicia && (
             <div className="awning-compact-choice"><SegmentedField label={isPuntoRecto ? `Nº brazos · mínimo ${pointRequiredArms}` : isMonoblock350 ? `Nº brazos · automático ${monoblockRequiredArms}` : isAgataBox ? `Nº brazos · automático ${suggestedAgataArmCount(awning.width)}` : 'Nº brazos'} value={awning.armCount == null ? '' : String(awning.armCount)} options={fields.armOptions.map(String)} onChange={(v) => update({ armCount: Number(v) })} /></div>

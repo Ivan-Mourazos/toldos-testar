@@ -79,6 +79,18 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
     expect(ofBlock.materials.some((line) => line.code === 'CABLEMAXIS3MM200')).toBe(false);
   });
 
+  // Taller, 30/09/2026 (Q-D01): el kit de montaje del cable se indica en el pedido. Casilla
+  // en la tarjeta; sin marcar no se reserva.
+  test('el kit de montaje del cable solo se reserva si se marca', () => {
+    const codes = (patch) => order(patch).ofs[0].materials.filter((line) => line.code === 'MONTCABLEMAXSC');
+    expect(codes({})).toEqual([]);
+    expect(codes({ maxisCableMountKit: true })).toEqual([expect.objectContaining({ code: 'MONTCABLEMAXSC', quantity: 2 })]);
+    // Con varilla no hay cable que montar.
+    expect(codes({ submodel: 'COFRE CON VARILLA', maxisCableMountKit: true })).toEqual([]);
+    const despiece = order({ maxisCableMountKit: true }).ofs[0].despiece.rows.map((row) => row.reference);
+    expect(despiece).toContain('MONTCABLEMAXSC');
+  });
+
   test('la variante solo cofre no reserva guías', () => {
     const ofBlock = order({ submodel: 'COFRE' }).ofs[0];
     expect(ofBlock.calculation).toMatchObject({ valid: true, guideType: '' });

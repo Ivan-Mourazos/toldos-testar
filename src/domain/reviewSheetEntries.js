@@ -159,6 +159,10 @@ export function buildReviewSheetEntries(order, calculation) {
     if (['GALICIA', 'MONOBLOCK 350', 'AGATA BOX'].includes(awning.model) && Number(ofBlock?.calculation?.armCount ?? awning.armCount) % 2 === 1) {
       addField(cardFields, 'Lado del brazo suelto', awning.looseSide || 'LO DECIDE EL TALLER', true);
     }
+    // Q-D01: la Diana con cable lleva el kit de montaje solo si lo dice el pedido.
+    if (awning.model === 'MAXISCREEM' && ofBlock?.calculation?.guideType === 'CABLE') {
+      addField(cardFields, 'Kit de montaje del cable', awning.maxisCableMountKit ? 'SÍ' : 'NO', true);
+    }
 
     return {
       awning, letter: awningLetter(index), tag: `${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`,

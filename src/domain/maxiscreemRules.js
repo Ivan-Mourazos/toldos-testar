@@ -160,6 +160,8 @@ function dianaPieces(context) {
     ...(cofre ? [{ code: verticalProfileCode('PERPRLON', suffix, boxStockLength), quantity: units, description: 'PERFIL COFRE MAXISCREEM', length: boxProfileLength }] : []),
     // Terminal de suelo del cable: uno por toldo (OF 0229970 y 0215897).
     ...(guide ? [{ code: `TERSUMAXSCR${suffix}`, quantity: units, description: 'KIT TERMINAL SUELO MAXISCREEN' }] : []),
+    // Kit de montaje del cable: se indica en el pedido (taller, 30/09/2026, Q-D01).
+    ...(guide === 'CABLE' && awning.maxisCableMountKit === true ? [{ code: 'MONTCABLEMAXSC', quantity: units, description: 'KIT MONTAJE CABLE MAXISCREEN' }] : []),
     ...(guide === 'CABLE' ? [{ code: 'CABLEMAXIS3MM200', quantity: round1((2 * (Number(guideLength) || 0)) / 100 * units), description: 'CABLE ACERO 3MM MAXISCREEN', length: guideLength }] : []),
     ...(guide === 'VARILLA' ? [{ code: 'VARILLAMAXSCR8MM', quantity: units, description: 'VARILLA DE GUIADO MAXISCREEM', length: guideLength }] : []),
     { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM', despiece: false },
