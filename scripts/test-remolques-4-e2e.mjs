@@ -3,7 +3,7 @@
 //   1. POST /api/remolques/pdf con cada muestra (src/remolques/hoja/muestras.ts): lona con ventana,
 //      baquetón, «Según ganchos», bastilla, los cinco perfiles y un pedido de tres elementos. Cada
 //      PDF: una hoja A4 apaisada por elemento, con los textos que da paginaHoja (pdfjs), en menos
-//      de 30 s. Cada hoja se pasa además a PNG en grises, como la imprimiría el taller.
+//      (el límite de 30 s lo vigila el servidor). Cada hoja se pasa además a PNG en grises, como la imprimiría el taller.
 //   2. Errores claros: un elemento incompleto → 400 con cuál y qué le falta; dos pedidos → 400.
 //   3. En la pantalla: «Vista previa del PDF» desactivado con lo que falta; con el remolque completo
 //      abre el visor con «Página 1 de 1» y Esc lo cierra; sin errores de consola.
@@ -12,6 +12,7 @@
 //      (la carpeta OFICINA TÉCNICA de la web vieja, solo lectura) copia al lado el PDF viejo.
 // Ejecutar con la aislada en marcha: node scripts/test-remolques-4-e2e.mjs
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -93,7 +94,6 @@ for (const nombre of NOMBRES_MUESTRAS) {
   const pdf = await pedirPdf(muestras[nombre]);
   assert.equal(pdf.status, 200, `${nombre}: ${pdf.cuerpo.toString('utf8').slice(0, 300)}`);
   assert.equal(pdf.tipo, 'application/pdf');
-  assert.ok(pdf.ms < 30000, `${nombre}: ${pdf.ms} ms`);
   const base = `${SALIDA}/muestra-${nombre}`;
   fs.writeFileSync(`${base}.pdf`, pdf.cuerpo);
   const leido = await leerPdf(pdf.cuerpo);
@@ -112,6 +112,9 @@ for (const nombre of NOMBRES_MUESTRAS) {
   const mezclado = await pedirPdf([lona, { ...muestras.baqueton[0], version: '11' }]);
   assert.equal(mezclado.status, 400);
   assert.equal(JSON.parse(mezclado.cuerpo.toString('utf8')).error, 'Todos los elementos de la hoja tienen que ser del mismo pedido.');
+  // Una ficha que no existe (o ya se leyó) no da datos: 404.
+  const ficha = await fetch(`${BASE_URL}/api/remolques/hoja/${randomUUID()}`);
+  assert.equal(ficha.status, 404, 'una ficha desconocida da 404');
   console.log('OK: errores claros');
 }
 
@@ -139,6 +142,13 @@ for (const nombre of NOMBRES_MUESTRAS) {
   console.log('OK: botón y visor en la pantalla');
 }
 
+// ── 3b. La vista previa no archiva nada ──
+for (const carpeta of ['rem-plan', 'rem-oficina']) {
+  const dentro = fs.readdirSync(path.join('tmp', 'ui-audit', carpeta), { recursive: true }).filter((f) => !fs.statSync(path.join('tmp', 'ui-audit', carpeta, f)).isDirectory());
+  assert.deepEqual(dentro, [], `tras las vistas previas, tmp/ui-audit/${carpeta} sigue sin ficheros`);
+}
+console.log('OK: las vistas previas no dejan ficheros en las carpetas de archivo');
+
 // ── 4. El PDF viejo del mismo pedido ──
 {
   const VIEJA = process.env.REMOLQUES_VIEJA_URL || 'http://192.168.0.90:4500';
@@ -163,6 +173,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
       const delPedido = remolquesUnicos(registros.filter((x) => normalizarNumeroPedido(x.numeroPedido) === numero));
       const pdf = await pedirPdf(delPedido.map((x) => ({ version: x.version, tipo: x.tipo, input: x.input })));
       const base = `${SALIDA}/pedido-${numero}`;
+      assert.ok(pdf.status < 500, `${numero}: el pedido real no puede dar un fallo del servidor (${pdf.status}: ${pdf.cuerpo.toString('utf8').slice(0, 300)})`);
       if (pdf.status !== 200) { console.log(`AVISO: ${numero} (${ids.join(', ')}): ${pdf.cuerpo.toString('utf8')}`); continue; }
       fs.writeFileSync(`${base}-nuevo.pdf`, pdf.cuerpo);
       await aPngs((await leerPdf(pdf.cuerpo)).doc, `${base}-nuevo`);
@@ -172,6 +183,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
       if (!viejo && fs.existsSync(`${base}-viejo.pdf`)) await aPngs((await leerPdf(fs.readFileSync(`${base}-viejo.pdf`))).doc, `${base}-viejo`);
       if (viejo && fs.existsSync(viejo)) {
         fs.copyFileSync(viejo, `${base}-viejo.pdf`);
+        await aPngs((await leerPdf(fs.readFileSync(`${base}-viejo.pdf`))).doc, `${base}-viejo`);
         console.log(`OK: ${numero} (${ids.join(', ')}): nuevo y viejo en ${base}-*.pdf`);
       } else {
         console.log(`${numero} (${ids.join(', ')}): nuevo en ${base}-nuevo.pdf; el viejo está en OFICINA TÉCNICA/${anio}/${viejoNombre}`);

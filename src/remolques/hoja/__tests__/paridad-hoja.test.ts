@@ -25,6 +25,7 @@ describe("hoja de taller: paridad con la web vieja", () => {
   const esperadas = new Map((referencia as Referencia[]).map((r) => [r.caso, r]));
 
   it("hay 32 hojas de referencia, una por caso", () => {
+    expect(lista.length).toBe(32);
     expect(esperadas.size).toBe(32);
     expect(lista.every((c) => esperadas.has(c.caso))).toBe(true);
   });

@@ -119,3 +119,16 @@ guardada en las mismas carpetas que hoy.
 - Muestras para Iván: PDF de una lona con ventana, un baquetón, un «Según ganchos» y un
   pedido con varios elementos, en color y pasados a grises, junto al PDF viejo del mismo
   pedido.
+
+## Al desplegar en el .90
+
+Cosas que no se pueden probar en el equipo de desarrollo y hay que medir la primera vez:
+
+- Tiempo de la hoja con SwiftShader (sin GPU): medir el pedido de «perfiles» (5 hojas) y un
+  pedido de unos 12 elementos, y compararlos con el límite de 30 s. Con esos tiempos se
+  confirma o se baja `MAX_ELEMENTOS_HOJA` (hoy 30, sin medir).
+- Tras `pm2 reload`, `pgrep -fa chrom` no debe mostrar procesos huérfanos de la carga anterior.
+- Memoria: mirar el RSS de Chromium (el límite de PM2 no lo cuenta) con una hoja en marcha y en
+  reposo.
+- Chromium corre sin sandbox cuando el servicio va como root, pero solo carga su propio origen
+  (todo lo demás se bloquea) y escucha solo en 127.0.0.1.
