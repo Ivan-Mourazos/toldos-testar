@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { ANCHO_VELCRO, CORAZON_LAZO, CORAZON_PLACA } from '../../../remolques/escena/constantes.ts';
+import { ANCHO_CREMALLERA, ANCHO_VELCRO, CORAZON_LAZO, CORAZON_PLACA } from '../../../remolques/escena/constantes.ts';
 import type { CierreEsquina, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { plano, sobreCara, v3, type Pieza } from './piezas';
 
@@ -19,8 +19,13 @@ export interface CierresEnMallas {
 
 /** La goma pasa algo por fuera del ollao y de la punta del gancho. */
 const FUERA_GOMA = 0.8;
-/** Cremallera fina: la tira de dientes, de 1 cm. */
-const ANCHO_CREMALLERA = 1;
+/* Cremallera: la banda oscura (ANCHO_CREMALLERA, más ancha que la de verdad para que se vea en la
+   hoja), con los dientes claros encima y un tirador claro arriba. */
+/** Dientes: a un lado y otro del centro de la banda, alternos, como engranan. */
+const DIENTE = { ancho: 0.7, alto: 0.6, paso: 1.5, grueso: 0.25 };
+/** El cursor, un poco más ancho que la banda, y la lengüeta que cuelga de él. */
+const CURSOR = { ancho: 4.2, alto: 3.6, grueso: 0.8 };
+const LENGUETA_CREMALLERA = { ancho: 2.4, alto: 6.5, grueso: 0.4 };
 /** Los puentes van a esta distancia del borde de la solapa. */
 const PUENTE_EN_SOLAPA = 4;
 const ANCHO_CINCHA = 2.5;
@@ -125,9 +130,22 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
       const tira = new THREE.BoxGeometry(ANCHO_CREMALLERA, hasta, 0.3);
       tira.applyMatrix4(sobreCara(enPano(hasta / 2, 0.2), normalPano));
       r.piezas.push({ geometria: tira, material: 'oscuro' });
-      const tirador = new THREE.BoxGeometry(0.8, 1.8, 0.3);
-      tirador.applyMatrix4(sobreCara(enPano(hasta - 1.4, 0.5), normalPano));
-      r.piezas.push({ geometria: tirador, material: 'herraje' });
+      // Dientes (todos en una sola malla): de abajo hasta el cursor, alternando a un lado y otro.
+      const dientes: THREE.BufferGeometry[] = [];
+      const cimaDientes = hasta - CURSOR.alto;
+      for (let y = DIENTE.alto, i = 0; y < cimaDientes; y += DIENTE.paso / 2, i += 1) {
+        const lado = i % 2 === 0 ? -1 : 1;
+        dientes.push(new THREE.BoxGeometry(DIENTE.ancho, DIENTE.alto, DIENTE.grueso)
+          .translate(lado * (DIENTE.ancho / 2 - 0.05), 0, 0)
+          .applyMatrix4(sobreCara(enPano(y, 0.45), normalPano)));
+      }
+      r.piezas.push({ geometria: unir(dientes), material: 'tirador' });
+      // El cursor, arriba del todo, y la lengüeta colgando por delante de los dientes.
+      const cursor = new THREE.BoxGeometry(CURSOR.ancho, CURSOR.alto, CURSOR.grueso)
+        .applyMatrix4(sobreCara(enPano(hasta - CURSOR.alto / 2, 0.6), normalPano));
+      const lengueta = new THREE.BoxGeometry(LENGUETA_CREMALLERA.ancho, LENGUETA_CREMALLERA.alto, LENGUETA_CREMALLERA.grueso)
+        .applyMatrix4(sobreCara(enPano(hasta - CURSOR.alto - LENGUETA_CREMALLERA.alto / 2 + 0.8, 1.2), normalPano));
+      r.piezas.push({ geometria: unir([cursor, lengueta]), material: 'tirador' });
     }
 
     if (c.tipo === 'PUENTES') {

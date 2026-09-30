@@ -5,7 +5,7 @@ import * as THREE from 'three';
 // DOM) se piden sin texturas.
 
 export type ClaveMaterial =
-  | 'lona' | 'lonaOscura' | 'chapa' | 'laton' | 'hueco' | 'goma' | 'oscuro' | 'malla' | 'cincha' | 'herraje'
+  | 'lona' | 'lonaOscura' | 'chapa' | 'laton' | 'hueco' | 'goma' | 'oscuro' | 'malla' | 'cincha' | 'herraje' | 'tirador'
   | 'guardabarros' | 'neumatico' | 'piloto' | 'ambar';
 export type Materiales = Record<ClaveMaterial, THREE.Material>;
 
@@ -120,6 +120,8 @@ export function crearMateriales(color: string, { texturas }: { texturas: boolean
     }),
     cincha: new THREE.MeshStandardMaterial({ color: '#f4f4f1', roughness: 0.85, side: THREE.DoubleSide }),
     herraje: new THREE.MeshStandardMaterial({ color: '#d4d7da', metalness: 0.9, roughness: 0.3 }),
+    // Los dientes y el tirador de la cremallera: metal claro, que se vea sobre su banda oscura.
+    tirador: new THREE.MeshStandardMaterial({ color: '#e2e5e8', metalness: 0.6, roughness: 0.35 }),
     // La chapa curvada del guardabarros se ve por dentro y por fuera.
     guardabarros: new THREE.MeshStandardMaterial({ color: '#d3d8dc', metalness: 0.55, roughness: 0.34, side: THREE.DoubleSide }),
     neumatico: new THREE.MeshStandardMaterial({ color: '#232426', roughness: 0.85 }),
@@ -152,6 +154,8 @@ export function crearMaterialesImpresion(): Materiales {
     malla: mate('#8c8c8c', { ...doble, transparent: true, opacity: 0.55 }),
     cincha: mate('#f2f2f2', doble),
     herraje: mate('#3c3c3c'),
+    // Claro y sin aristas: sobre la banda negra de la cremallera, sus dientes y su tirador se leen en gris.
+    tirador: mate('#d0d0d0'),
     guardabarros: mate('#b0b0b0', doble),
     neumatico: mate('#2e2e2e'),
     piloto: mate('#707070'),

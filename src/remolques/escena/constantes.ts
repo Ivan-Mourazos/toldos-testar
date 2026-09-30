@@ -15,6 +15,9 @@ export const CAJON_BAJO_FALDON = 25;
 export const BASTILLA = 5;
 export const CREMALLERA_A_ESQUINA = 5;
 export const CREMALLERA_BAJO_CIMA = 4;
+/** Ancho con que se dibuja la banda de la cremallera: algo más que la de verdad, para que se vea en
+ *  la hoja (Iván, 01/10/2026: la de 1 cm casi no se veía). */
+export const ANCHO_CREMALLERA = 3;
 export const ANCHO_VELCRO = 3;
 /** Margen arriba y abajo de los puentes y los ganchos corazón. Su paso a lo alto es el de los
  *  ollaos del elemento (Iván, 30/09/2026: «pon una medida como ollaos y listo»). */

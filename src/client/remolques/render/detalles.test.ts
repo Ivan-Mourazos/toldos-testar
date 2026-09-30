@@ -79,25 +79,36 @@ describe('cierres en 3D', () => {
     });
   });
 
-  it('cremallera fina en el paño, a 5 cm de la esquina, de abajo hasta 4 cm por debajo de la cima, con su tirador', () => {
+  // Iván, 01/10/2026: la tira de 1 cm casi no se veía en la hoja. Ahora es una banda oscura más ancha
+  // con los dientes claros encima (se lee como cremallera también en gris) y un tirador claro arriba.
+  it('cremallera en el paño, a 5 cm de la esquina, de abajo hasta 4 cm por debajo de la cima: banda, dientes y tirador', () => {
     const r = piezasCierres(cierre('CREMALLERA'));
-    expect(r.piezas.map((p) => p.material)).toEqual(['oscuro', 'herraje']);
-    const tira = r.piezas[0].geometria;
-    tira.computeBoundingBox();
-    const caja = tira.boundingBox!;
-    expect(caja.min.y).toBeCloseTo(0, 1);
-    expect(caja.max.y).toBeCloseTo(96, 1);
+    expect(r.piezas.map((p) => p.material)).toEqual(['oscuro', 'tirador', 'tirador']);
+    const caja = (i: number) => { const g = r.piezas[i].geometria; g.computeBoundingBox(); return g.boundingBox!; };
+    const tira = caja(0);
+    expect(tira.min.y).toBeCloseTo(0, 1);
+    expect(tira.max.y).toBeCloseTo(96, 1);
     // Sobre el paño de delante (z = 301, algo por fuera), no sobre el lateral (x = 100,5).
-    expect((caja.min.x + caja.max.x) / 2).toBeCloseTo(95.5, 1);
-    expect(caja.max.x - caja.min.x).toBeCloseTo(1, 1);
-    expect(caja.min.z).toBeGreaterThan(301);
-    expect(caja.max.z).toBeLessThan(302);
-    // El tirador, pequeño, arriba de la cremallera y en el mismo paño.
-    const tirador = r.piezas[1].geometria;
-    tirador.computeBoundingBox();
-    expect(tirador.boundingBox!.max.y).toBeLessThanOrEqual(96.5);
-    expect(tirador.boundingBox!.min.z).toBeGreaterThan(301);
-    expect(Math.abs((tirador.boundingBox!.min.x + tirador.boundingBox!.max.x) / 2 - 95.5)).toBeLessThan(0.1);
+    expect((tira.min.x + tira.max.x) / 2).toBeCloseTo(95.5, 1);
+    expect(tira.max.x - tira.min.x).toBeCloseTo(3, 1);
+    expect(tira.min.z).toBeGreaterThan(301);
+    expect(tira.max.z).toBeLessThan(302);
+    // Los dientes: dentro de la banda, a todo lo alto, por fuera de ella.
+    const dientes = caja(1);
+    expect(dientes.min.x).toBeGreaterThanOrEqual(tira.min.x);
+    expect(dientes.max.x).toBeLessThanOrEqual(tira.max.x);
+    expect(dientes.min.y).toBeLessThan(3);
+    expect(dientes.max.y).toBeGreaterThan(88);
+    expect(dientes.max.z).toBeGreaterThan(tira.max.z);
+    expect(r.piezas[1].geometria.getAttribute('position').count).toBeGreaterThan(24 * 20);
+    // El tirador: el cursor arriba, sin pasar de la cremallera, con la lengüeta colgando, en el mismo paño.
+    const tirador = caja(2);
+    expect(tirador.max.y).toBeLessThanOrEqual(96.5);
+    expect(tirador.max.y - tirador.min.y).toBeGreaterThan(6);
+    expect(tirador.max.x - tirador.min.x).toBeGreaterThan(3);
+    expect(tirador.max.z).toBeGreaterThan(dientes.max.z);
+    expect(tirador.min.z).toBeGreaterThan(301);
+    expect(Math.abs((tirador.min.x + tirador.max.x) / 2 - 95.5)).toBeLessThan(0.1);
   });
 
   it('velcro: la oreja y la tira de 3 cm en su borde', () => {
