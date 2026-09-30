@@ -2759,6 +2759,10 @@ textarea,
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
+  /* Hueco de la barra siempre reservado: con «Ajustar al ancho», si la barra aparecía y
+     desaparecía, el ancho medido cambiaba 15 px, la página se volvía a preparar y el visor
+     vibraba sin parar. */
+  scrollbar-gutter: stable;
   padding: 18px 62px;
   position: relative;
   width: 100%;
