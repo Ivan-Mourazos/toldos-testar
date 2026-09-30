@@ -145,6 +145,13 @@ describe("ollaos según ganchos", () => {
       .toEqual(["Hay ganchos de atrás fuera del remolque (0 a 200 cm)."]);
   });
 
+  it("con varios lados mal da un solo mensaje por clase, con todos los lados", () => {
+    expect(camposGanchos(conGanchos({ ganchos: { laterales: [5], atras: [10], delante: [10, 240] } })))
+      .toEqual(["Pon al menos dos ganchos en laterales y atrás: los ollaos van entre ellos."]);
+    expect(camposGanchos(conGanchos({ anchoAtras: 200, ganchos: { laterales: [5, 700], atras: [10, 240], delante: [10, 240] } })))
+      .toEqual(["Hay ganchos fuera del remolque en laterales (0 a 600 cm) y atrás (0 a 200 cm)."]);
+  });
+
   it("las medidas que bajan solo son un aviso, no un error", () => {
     expect(camposGanchos(conGanchos({ ganchos: { laterales: [595, 300, 5], atras: [10, 240], delante: [10, 240] } })))
       .toEqual([]);

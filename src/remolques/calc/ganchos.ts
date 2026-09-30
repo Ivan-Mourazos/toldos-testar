@@ -90,18 +90,33 @@ export function avisosGanchos(ganchos: RepartoLados): AvisoGanchos[] {
   return avisos;
 }
 
-export function erroresGanchos(ganchos: RepartoLados, remolque: Record<Lado, number>): AvisoGanchos[] {
-  const errores: AvisoGanchos[] = [];
-  for (const lado of LADOS) {
-    const v = ganchos[lado];
-    if (v.length < 2) {
-      errores.push({ lado, mensaje: `Pon al menos dos ganchos en ${NOMBRE_LADO[lado]}: los ollaos van entre ellos.` });
-    } else if (remolque[lado] > 0 && v.some((x) => x < 0 || x > remolque[lado])) {
-      errores.push({
-        lado,
-        mensaje: `Hay ganchos de ${NOMBRE_LADO[lado]} fuera del remolque (0 a ${fmt(remolque[lado])} cm).`,
-      });
-    }
+export interface ErrorGanchos { lados: Lado[]; mensaje: string }
+
+/** «a», «a y b», «a, b y c». */
+const enumerar = (partes: string[]) =>
+  partes.length <= 1 ? partes.join("") : `${partes.slice(0, -1).join(", ")} y ${partes[partes.length - 1]}`;
+
+/** Un error por clase (pocos ganchos, ganchos fuera) que nombra todos los lados: así el aviso del
+ *  editor y el «Falta:» de la pestaña dicen lo mismo y no hay que arreglar un lado para ver el siguiente. */
+export function erroresGanchos(ganchos: RepartoLados, remolque: Record<Lado, number>): ErrorGanchos[] {
+  const pocos = LADOS.filter((lado) => ganchos[lado].length < 2);
+  const fuera = LADOS.filter((lado) =>
+    ganchos[lado].length >= 2 && remolque[lado] > 0 && ganchos[lado].some((x) => x < 0 || x > remolque[lado]));
+  const rango = (lado: Lado) => `(0 a ${fmt(remolque[lado])} cm)`;
+  const errores: ErrorGanchos[] = [];
+  if (pocos.length > 0) {
+    errores.push({
+      lados: pocos,
+      mensaje: `Pon al menos dos ganchos en ${enumerar(pocos.map((lado) => NOMBRE_LADO[lado]))}: los ollaos van entre ellos.`,
+    });
+  }
+  if (fuera.length === 1) {
+    errores.push({ lados: fuera, mensaje: `Hay ganchos de ${NOMBRE_LADO[fuera[0]]} fuera del remolque ${rango(fuera[0])}.` });
+  } else if (fuera.length > 1) {
+    errores.push({
+      lados: fuera,
+      mensaje: `Hay ganchos fuera del remolque en ${enumerar(fuera.map((lado) => `${NOMBRE_LADO[lado]} ${rango(lado)}`))}.`,
+    });
   }
   return errores;
 }

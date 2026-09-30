@@ -139,8 +139,24 @@ describe("avisos y errores", () => {
       { laterales: 600, atras: 250, delante: 250 },
     );
     expect(errores).toEqual([
-      { lado: "laterales", mensaje: "Hay ganchos de laterales fuera del remolque (0 a 600 cm)." },
-      { lado: "atras", mensaje: "Pon al menos dos ganchos en atrás: los ollaos van entre ellos." },
+      { lados: ["atras"], mensaje: "Pon al menos dos ganchos en atrás: los ollaos van entre ellos." },
+      { lados: ["laterales"], mensaje: "Hay ganchos de laterales fuera del remolque (0 a 600 cm)." },
+    ]);
+  });
+  it("con varios lados mal, un solo error de cada clase que los nombra todos", () => {
+    const remolque = { laterales: 600, atras: 200, delante: 250 };
+    expect(erroresGanchos({ laterales: [5], atras: [], delante: [10] }, remolque)).toEqual([
+      { lados: ["laterales", "atras", "delante"], mensaje: "Pon al menos dos ganchos en laterales, atrás y delante: los ollaos van entre ellos." },
+    ]);
+    expect(erroresGanchos({ laterales: [5], atras: [10, 240], delante: [] }, remolque)).toEqual([
+      { lados: ["laterales", "delante"], mensaje: "Pon al menos dos ganchos en laterales y delante: los ollaos van entre ellos." },
+      { lados: ["atras"], mensaje: "Hay ganchos de atrás fuera del remolque (0 a 200 cm)." },
+    ]);
+    expect(erroresGanchos({ laterales: [5, 700], atras: [10, 240], delante: [-1, 60] }, remolque)).toEqual([
+      {
+        lados: ["laterales", "atras", "delante"],
+        mensaje: "Hay ganchos fuera del remolque en laterales (0 a 600 cm), atrás (0 a 200 cm) y delante (0 a 250 cm).",
+      },
     ]);
   });
 });
