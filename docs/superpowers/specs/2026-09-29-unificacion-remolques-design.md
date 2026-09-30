@@ -60,6 +60,13 @@ Cada fase se despliega sola; la web vieja sigue en uso hasta la fase 6.
    sin ventana (Chromium), con el dibujo en vector; `«pedido»-10.pdf` archivado en las dos
    carpetas de hoy; Excel del planteamiento. Mismo contenido que hoy o mejor. Antes de
    empezar, comprobar que Chromium funciona en el servidor .90.
+   Dibujo de la hoja (Iván, 30/09/2026), una hoja por remolque, sacado del mismo render que
+   la pantalla: arriba, grandes y sin cotas, dos 3/4 (desde delante y desde detrás en
+   diagonal, para ver los cuatro cierres); abajo, más pequeñas, las vistas rectas de
+   delante, detrás y lateral con cotas exactas y la posición de cada ollao y gancho. Sin
+   vista de arriba.
+   Orden acordado el 30/09/2026: primero los cambios pendientes de las dudas y la lanza,
+   ruedas y pilotos del render; después la fase 4, luego la 5 y al final la 3.
 5. **Flujo**: Pedidos con aprobación de CoordinaOT por OF y revisor en el PDF, Historial
    con «Reutilizar», Parámetros de remolques, y migración de los planteamientos y estados
    guardados en la web vieja.
