@@ -63,7 +63,7 @@ A 1280×720 y 1600, con AR2603393 (OF 0230266: 695 × 275, 3 brazos, techo, máq
 | Cortes, mínimos y máximos | Manual 2016; los libros los confirman (244 comprobaciones) |
 | Juegos y sueltos, soportes, tapones, terminales, varillas, apoyo del currón, kit de motor | Consumo real de 59 OF |
 | Barra Univers como opción | Consumo real: 31 de 59 OF |
-| Motor por brazos | Consumo real (2 y 3 brazos); manual (4 brazos) |
+| Motor por brazos | Consumo real (2 y 3 brazos); manual (4 brazos). Desde el 30/09/2026 el Galicia usa esta misma tabla (taller, Q-G02): cambiarla en Parámetros cambia también el motor del Galicia |
 | Empalme por encima de 725 | Consumo real de frentes de 720 a 972 |
 
 ## 7. Dudas

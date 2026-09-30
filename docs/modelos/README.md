@@ -8,6 +8,8 @@ Inicio: 13/09/2026. Inventario de 22 entradas comprobado contra [catalog.js](../
 
 **Estado al 21/09/2026:** [auditoría general](../auditoria-2026-09-21.md) con la definición de modelo terminado, el estado medido de los 22 modelos y la hoja de ruta. Prevalece sobre la columna de estado de esta tabla hasta que cada modelo se cierre.
 
+**30/09/2026:** aplicadas las respuestas del taller: motor del Galicia con la tabla del Monoblock 350 y sin aviso de 3,50 con tres brazos; patines y kit de unión del Ágata y su motor de 100 a 12 rpm; puente abatible y casquillo por la máquina en la Electra; casilla del kit de montaje del cable en la Diana; kit de motor Ø70 y aviso de 1,60 en el Punto Recto; y en Arzúa, Galicia y cofres, la barra más corta que llega. Detalle en cada expediente y en [Contestadas el 30/09/2026](./dudas-abiertas.md#contestadas-el-30092026).
+
 ## Cómo utilizar el seguimiento
 
 Antes de trabajar un modelo, crear su expediente desde la plantilla y enlazarlo aquí. Reutilizar los documentos de evidencia existentes; su existencia no significa que el modelo, el manual o la reserva completa estén verificados. Anotar estado por área en el expediente y un próximo paso concreto en este índice.
