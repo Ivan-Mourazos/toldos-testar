@@ -214,6 +214,44 @@ describe("la cola nunca se queda parada", () => {
     );
   });
 
+  it("si salta el tiempo de Playwright, el mensaje es el mismo de la hoja que tarda", async () => {
+    const falloIr = Object.assign(new Error("page.goto: Timeout 31000ms exceeded.\nCall log:\n  - navigating to …"), { name: "TimeoutError" });
+    let abiertas = 0;
+    const { estado, lanzar } = navegadorFalso(() => paginaFalsa([], abiertas++ === 0 ? { falloIr } : {}));
+    const servicio = crearServicioPdf({ urlHoja, lanzar, registrar: callado });
+    await expect(servicio.generar("a")).rejects.toThrow("La hoja de taller tardó más de 30 s en prepararse. Vuelve a intentarlo; si se repite, avisa a informática.");
+    await expect(servicio.generar("b")).resolves.toEqual(PDF);
+    expect(estado.lanzados).toBe(2);
+  });
+
+  it("los tiempos de Playwright van por encima del límite de la hoja", async () => {
+    const tiempos: number[] = [];
+    const pagina: PaginaHojaPdf = {
+      ...paginaFalsa([]),
+      async ir(_url, tiempoMs) { tiempos.push(tiempoMs); },
+      async esperarHoja(tiempoMs) { tiempos.push(tiempoMs); return null; },
+    };
+    const { lanzar } = navegadorFalso(() => pagina);
+    await crearServicioPdf({ urlHoja, lanzar }).generar("a");
+    expect(tiempos).toEqual([31_000, 31_000]);
+  });
+
+  it("al cerrar, las hojas que esperan en la cola se rechazan enseguida", async () => {
+    let soltar!: () => void;
+    const espera = new Promise<void>((resolver) => { soltar = resolver; });
+    const { lanzar } = navegadorFalso(() => paginaFalsa([], { espera }));
+    const servicio = crearServicioPdf({ urlHoja, lanzar });
+    const a = servicio.generar("a");
+    const b = servicio.generar("b");
+    const c = servicio.generar("c");
+    await new Promise((resolver) => setTimeout(resolver, 5));
+    await servicio.cerrar();
+    soltar();
+    await a.catch(() => {});
+    await expect(b).rejects.toMatchObject({ statusCode: 503, message: expect.stringMatching(/cerrando/) });
+    await expect(c).rejects.toMatchObject({ statusCode: 503, message: expect.stringMatching(/cerrando/) });
+  });
+
   it("después de cerrar no vuelve a abrir Chromium", async () => {
     const { estado, lanzar } = navegadorFalso(() => paginaFalsa([]));
     const servicio = crearServicioPdf({ urlHoja, lanzar });

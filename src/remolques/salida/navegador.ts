@@ -103,7 +103,20 @@ function conLimite<T>(promesa: Promise<T>, ms: number, mensaje: string, sobrante
 
 export async function lanzarChromium(): Promise<NavegadorPdf> {
   // launchServer y no launch: el servidor de Chromium sabe matar el proceso si no se cierra solo.
-  const servidor = await chromium.launchServer({ headless: true, args: ARGUMENTOS_CHROMIUM, timeout: TIEMPO_MAXIMO_MS });
+  // El precio es un websocket sin autenticación (solo una ruta aleatoria): por eso escucha solo en
+  // 127.0.0.1, nunca en la red.
+  // Sin los manejadores de señales de Playwright: con ellos, el SIGINT con que PM2 para y recarga
+  // hacía process.exit(130) antes de que el cierre ordenado de la web terminara. Chromium lo
+  // cierra shutdown() (servicio.cerrar()).
+  const servidor = await chromium.launchServer({
+    headless: true,
+    args: ARGUMENTOS_CHROMIUM,
+    timeout: TIEMPO_MAXIMO_MS,
+    host: "127.0.0.1",
+    handleSIGINT: false,
+    handleSIGTERM: false,
+    handleSIGHUP: false,
+  });
   let navegador: Browser;
   try {
     navegador = await chromium.connect(servidor.wsEndpoint(), { timeout: TIEMPO_MAXIMO_MS });
@@ -217,9 +230,14 @@ export function crearServicioPdf({
     return nuevo;
   }
 
+  const mensajeTiempo = `La hoja de taller tardó más de ${(tiempoMaximoMs / 1000).toLocaleString("es-ES")} s en prepararse. Vuelve a intentarlo; si se repite, avisa a informática.`;
+  // Los tiempos de Playwright van algo por encima del límite de la hoja para que gane siempre el
+  // de conLimite, con su mensaje; si aun así salta uno de Playwright, se dice lo mismo.
+  const tiempoPlaywrightMs = tiempoMaximoMs + 1_000;
+
   async function imprimir(pagina: PaginaHojaPdf, url: string): Promise<Buffer> {
-    await pagina.ir(url, tiempoMaximoMs);
-    const error = await pagina.esperarHoja(tiempoMaximoMs);
+    await pagina.ir(url, tiempoPlaywrightMs);
+    const error = await pagina.esperarHoja(tiempoPlaywrightMs);
     if (error) throw new ErrorSalidaPdf(`No se pudo preparar la hoja de taller: ${error}`);
     if (pagina.errores.length > 0) {
       throw new ErrorSalidaPdf(`La hoja de taller dio errores al pintarse: ${pagina.errores.join(" · ")}`);
@@ -247,10 +265,14 @@ export function crearServicioPdf({
     }
     let colgada = false;
     try {
-      return await conLimite(imprimir(pagina, url), tiempoMaximoMs,
-        `La hoja de taller tardó más de ${(tiempoMaximoMs / 1000).toLocaleString("es-ES")} s en prepararse. Vuelve a intentarlo; si se repite, avisa a informática.`);
+      return await conLimite(imprimir(pagina, url), tiempoMaximoMs, mensajeTiempo);
     } catch (error) {
       if (error instanceof ErrorTiempo) colgada = true;
+      if (error instanceof Error && error.name === "TimeoutError") {
+        colgada = true;
+        registrar(`Tiempo agotado en Chromium: ${texto(error)}`);
+        throw new ErrorTiempo(mensajeTiempo);
+      }
       throw error instanceof ErrorSalidaPdf ? error : fallo("No se pudo hacer el PDF", error);
     } finally {
       if (colgada) {

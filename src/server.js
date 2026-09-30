@@ -890,6 +890,12 @@ async function shutdown(signal) {
 
   let exitCode = 0;
   const closeErrors = [];
+  // Chromium se cierra a la vez que el servidor HTTP, no después: las hojas de taller que esperan
+  // en la cola se rechazan enseguida con 503 y el cierre no espera a hacerlas (con la cola llena
+  // pasaría de los 12 s del forzado).
+  const pdfClosed = servicioPdfRemolques.cerrar().catch((error) => {
+    closeErrors.push(error);
+  });
   try {
     await new Promise((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
@@ -904,11 +910,7 @@ async function shutdown(signal) {
     closeErrors.push(error);
   }
 
-  try {
-    await servicioPdfRemolques.cerrar();
-  } catch (error) {
-    closeErrors.push(error);
-  }
+  await pdfClosed;
 
   try {
     if (closeErrors.length > 0) throw new AggregateError(closeErrors, 'Falló el cierre de uno o más recursos.');
