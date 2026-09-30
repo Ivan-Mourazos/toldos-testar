@@ -50,7 +50,8 @@ describe("prepararPedidoHoja", () => {
     const base = deFixture("lona-02", "10");
     const cabecera = { ...base.input.cabecera, numeroPedido: 12345 };
     expect(falla([{ ...base, input: { ...base.input, cabecera } }])).toBe("Remolque 1: faltan el número de pedido o el material, o no son texto.");
-    const { material: _material, ...sinMaterial } = base.input;
+    const sinMaterial: Record<string, unknown> = { ...base.input };
+    delete sinMaterial.material;
     expect(falla([{ ...base, input: sinMaterial }])).toBe("Remolque 1: faltan el número de pedido o el material, o no son texto.");
   });
 

@@ -122,6 +122,7 @@ describe("servicio de PDF con Chromium", () => {
 
 describe("cierre con una hoja en marcha", () => {
   it("el «Target closed» de Playwright al cerrar sale como el mensaje de cierre del servidor", async () => {
+    // eslint-disable-next-line prefer-const -- la página lo usa antes de que exista
     let servicio!: ReturnType<typeof crearServicioPdf>;
     const pagina = paginaFalsa([]);
     pagina.esperarHoja = async () => {

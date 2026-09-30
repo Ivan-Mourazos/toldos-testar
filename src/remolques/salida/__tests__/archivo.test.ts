@@ -138,7 +138,7 @@ describe("archivo del PDF en dos carpetas", () => {
 
   it("un número de pedido hostil no sale de las carpetas de archivo", async () => {
     const { planteamientos, oficina, carpetas } = preparar();
-    for (const numeroPedido of ["../x", "AR/..", "..\..\AR2603632", "AR26/../../03632"]) {
+    for (const numeroPedido of ["../x", "AR/..", String.raw`..\..\AR2603632`, "AR26/../../03632"]) {
       const { destinos } = destinosPdfRemolques(numeroPedido, "", carpetas) as { destinos: string[] };
       expect(path.dirname(destinos[0])).toBe(planteamientos);
       expect(path.dirname(path.dirname(destinos[1]))).toBe(oficina);
