@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import casos from '../../remolques/__fixtures__/produccion-2026-09.json';
 import type { LonaInput } from '../../remolques/calc/lona.ts';
 import { estadoLinea, type LineaPedido } from '../../remolques/workspace/lineas.ts';
-import { cuerpoVistaPrevia, faltaParaPdf } from './vistaPrevia';
+import { crearGuardaPeticion, cuerpoVistaPrevia, faltaParaPdf } from './vistaPrevia';
 
 const lona02 = (casos as Array<{ caso: string; input: LonaInput }>).find((c) => c.caso === 'lona-02')!.input;
 const linea = (version: string, cambios: Partial<LonaInput> = {}): LineaPedido => ({
@@ -30,5 +30,25 @@ describe('vista previa del PDF de remolques', () => {
     const cuerpo = cuerpoVistaPrevia([linea('10')]);
     expect(cuerpo.elementos).toHaveLength(1);
     expect(Object.keys(cuerpo.elementos[0]).sort()).toEqual(['input', 'tipo', 'version']);
+  });
+});
+
+describe('guarda de peticiones de la vista previa', () => {
+  it('una respuesta que llega tras cerrar o cambiar de pedido ya no es vigente', () => {
+    const guarda = crearGuardaPeticion();
+    const { numero, senal } = guarda.nueva();
+    expect(guarda.vigente(numero)).toBe(true);
+    guarda.invalidar();
+    expect(guarda.vigente(numero)).toBe(false);
+    expect(senal.aborted).toBe(true);
+  });
+
+  it('una petición nueva anula la anterior', () => {
+    const guarda = crearGuardaPeticion();
+    const primera = guarda.nueva();
+    const segunda = guarda.nueva();
+    expect(guarda.vigente(primera.numero)).toBe(false);
+    expect(primera.senal.aborted).toBe(true);
+    expect(guarda.vigente(segunda.numero)).toBe(true);
   });
 });

@@ -15,3 +15,30 @@ export function faltaParaPdf(lineas: LineaPedido[], estados: Record<string, Esta
 export function cuerpoVistaPrevia(lineas: LineaPedido[]): { elementos: ElementoPedidoHoja[] } {
   return { elementos: lineas.map(({ version, tipo, input }) => ({ version, tipo, input })) };
 }
+
+/**
+ * Guarda de peticiones de la vista previa: solo la última petición vigente puede abrir el visor.
+ * Se invalida al cerrar, al desmontar y al cambiar el pedido mientras la hoja se prepara.
+ */
+export function crearGuardaPeticion() {
+  let actual = 0;
+  let abortador: AbortController | null = null;
+  return {
+    /** Empieza una petición: anula la anterior y devuelve su señal y su número. */
+    nueva() {
+      abortador?.abort();
+      abortador = new AbortController();
+      actual += 1;
+      return { numero: actual, senal: abortador.signal };
+    },
+    vigente(numero: number): boolean {
+      return numero === actual;
+    },
+    /** Descarta lo que esté en vuelo (cerrar, desmontar, cambiar de pedido). */
+    invalidar() {
+      abortador?.abort();
+      abortador = null;
+      actual += 1;
+    },
+  };
+}

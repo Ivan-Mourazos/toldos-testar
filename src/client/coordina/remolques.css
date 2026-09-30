@@ -246,6 +246,10 @@
 }
 
 /* ── Vista previa del PDF (fase 4): qué falta para poder verla, con el aviso de «Falta: …» ── */
+.rem-pdf-boton {
+  min-width: 12.5rem;
+}
+
 .rem-pdf-falta {
   background: var(--aviso-fondo);
   border: 1px solid var(--aviso-borde);

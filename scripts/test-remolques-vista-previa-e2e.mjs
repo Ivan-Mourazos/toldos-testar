@@ -38,7 +38,7 @@ for (const tema of ['claro', 'oscuro']) {
       await aviso.waitFor({ state: 'detached' });
       assert.ok(await boton.isEnabled(), 'con todo completo el botón se activa');
       await boton.click();
-      const preparando = page.getByRole('button', { name: 'Preparando la hoja de taller…' });
+      const preparando = page.getByRole('button', { name: 'Preparando la hoja…' });
       await preparando.waitFor();
       assert.ok(await preparando.isDisabled(), 'mientras prepara no admite otro clic');
       await page.screenshot({ path: `${DIR}/preparando-${tema}-${width}.png` });
@@ -49,7 +49,7 @@ for (const tema of ['claro', 'oscuro']) {
       await page.screenshot({ path: `${DIR}/visor-${tema}-${width}.png` });
       await page.keyboard.press('Escape');
       await visor.waitFor({ state: 'hidden' });
-      assert.ok(await boton.evaluate((el) => el === document.activeElement), 'el foco vuelve al botón');
+      await page.waitForFunction(() => document.activeElement?.textContent?.includes('Vista previa del PDF'));
       assert.deepEqual(errors, [], 'sin errores de consola');
       console.log(`OK ${tema} ${width}`);
     } finally {

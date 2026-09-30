@@ -4,7 +4,7 @@ import { Eye, X } from 'lucide-react';
 import type { Notify } from '../components/NotificationCenter';
 import { PdfPreviewViewer } from '../components/PdfPreviewViewer';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
-import { cuerpoVistaPrevia } from './vistaPrevia';
+import { crearGuardaPeticion, cuerpoVistaPrevia } from './vistaPrevia';
 
 // «Vista previa del PDF» de remolques (fase 4): pide al servidor la hoja de taller del pedido y la
 // abre en el mismo visor que toldos. No guarda nada en ninguna carpeta.
@@ -17,11 +17,30 @@ export function VistaPreviaPdf({ lineas, bloqueo, notify }: {
   const [url, setUrl] = useState('');
   const [preparando, setPreparando] = useState(false);
   const boton = useRef<HTMLButtonElement>(null);
+  const peticion = useRef('');
   const dialogo = useRef<HTMLDivElement>(null);
+  const cerrarRef = useRef<() => void>(() => undefined);
+  const guarda = useRef(crearGuardaPeticion());
+  const cuerpo = JSON.stringify(cuerpoVistaPrevia(lineas));
 
   useEffect(() => () => {
     if (url) URL.revokeObjectURL(url);
   }, [url]);
+
+  // Al desmontar (p. ej. se borra el último elemento) nada en vuelo puede abrir el visor.
+  useEffect(() => {
+    const g = guarda.current;
+    return () => g.invalidar();
+  }, []);
+
+  // Si el pedido cambia mientras la hoja se prepara, esa hoja ya no es la de este pedido.
+  useEffect(() => {
+    if (!preparando) return;
+    if (cuerpo !== peticion.current) {
+      guarda.current.invalidar();
+      setPreparando(false);
+    }
+  }, [cuerpo, preparando]);
 
   useEffect(() => {
     if (!url) return undefined;
@@ -29,8 +48,7 @@ export function VistaPreviaPdf({ lineas, bloqueo, notify }: {
     const alPulsar = (evento: KeyboardEvent) => {
       if (evento.key !== 'Escape') return;
       evento.preventDefault();
-      setUrl('');
-      requestAnimationFrame(() => boton.current?.focus());
+      cerrarRef.current();
     };
     window.addEventListener('keydown', alPulsar);
     return () => {
@@ -41,37 +59,49 @@ export function VistaPreviaPdf({ lineas, bloqueo, notify }: {
 
   async function abrir() {
     if (preparando) return;
+    const { numero, senal } = guarda.current.nueva();
+    peticion.current = cuerpo;
     setPreparando(true);
     try {
       const respuesta = await fetch('/api/remolques/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cuerpoVistaPrevia(lineas)),
+        body: cuerpo,
+        signal: senal,
       });
       if (!respuesta.ok) {
         const datos = await respuesta.json().catch(() => ({})) as { error?: string };
-        notify(datos.error || 'No se pudo preparar la vista previa del PDF.', { tone: 'error' });
+        if (guarda.current.vigente(numero)) notify(datos.error || 'No se pudo preparar la vista previa del PDF.', { tone: 'error' });
         return;
       }
-      setUrl(URL.createObjectURL(await respuesta.blob()));
+      const blob = await respuesta.blob();
+      // Llegó tarde (cerrado, desmontado o pedido cambiado): no se abre ni se guarda nada.
+      if (!guarda.current.vigente(numero)) return;
+      setUrl(URL.createObjectURL(blob));
     } catch {
-      notify('No se pudo preparar la vista previa del PDF.', { tone: 'error' });
+      if (guarda.current.vigente(numero)) notify('No se pudo preparar la vista previa del PDF.', { tone: 'error' });
     } finally {
-      setPreparando(false);
+      if (guarda.current.vigente(numero)) setPreparando(false);
     }
   }
 
   function cerrar() {
+    guarda.current.invalidar();
+    setPreparando(false);
     setUrl('');
     requestAnimationFrame(() => boton.current?.focus());
   }
 
+  useEffect(() => {
+    cerrarRef.current = cerrar;
+  });
+
   return (
     <>
-      <button ref={boton} type="button" className="ghost-button" disabled={Boolean(bloqueo) || preparando}
+      <button ref={boton} type="button" className="ghost-button rem-pdf-boton" disabled={Boolean(bloqueo) || preparando}
         aria-busy={preparando} title={bloqueo ?? undefined} onClick={() => void abrir()}>
         <Eye aria-hidden="true" />
-        {preparando ? 'Preparando la hoja de taller…' : 'Vista previa del PDF'}
+        {preparando ? 'Preparando la hoja…' : 'Vista previa del PDF'}
       </button>
       {/* En el body: dentro del panel, su backdrop-filter recortaría el diálogo a la sección. */}
       {url && createPortal(
@@ -81,7 +111,7 @@ export function VistaPreviaPdf({ lineas, bloqueo, notify }: {
               <div><strong>Vista previa de la hoja de taller</strong><span>Una hoja A4 apaisada por elemento · no se guarda en ninguna carpeta</span></div>
               <div className="pdf-preview-actions">
                 <button className="ghost-button" type="button" disabled={preparando} onClick={() => void abrir()}>
-                  <Eye aria-hidden="true" />{preparando ? 'Preparando…' : 'Actualizar'}
+                  <Eye aria-hidden="true" />{preparando ? 'Preparando la hoja…' : 'Actualizar'}
                 </button>
                 <button className="icon-button" type="button" onClick={cerrar} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
               </div>
