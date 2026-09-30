@@ -291,7 +291,7 @@ function ArzuaParametersView({ parameters, selectedModel, onUpdate, onReset }: A
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Máximo que acepta la web (cm)" value={parameters.standardMaxWidth} min={1} max={700} onChange={(standardMaxWidth) => standardMaxWidth !== null && onUpdate({ standardMaxWidth })} />
         </div>
-        <ParameterNote>Por encima de {arzuaProManualSpec.maximumWidthCm} cm la tarjeta pide «Modificar reglas» para documentar la excepción: un toldo de 601 cm no pasa como normal aunque haya barra de 650 o 700 cm.</ParameterNote>
+        <ParameterNote>Por encima de {arzuaProManualSpec.maximumWidthCm} cm la tarjeta pide «Modificar reglas» para documentar la excepción: un toldo de 601 cm no pasa como normal aunque haya barra de 700 cm.</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="02" title="Selección automática" description="Atajos de Testar. El operario puede cambiar tubo o motor en un toldo concreto.">
