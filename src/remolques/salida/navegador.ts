@@ -1,12 +1,20 @@
-import { chromium } from "playwright-core";
+import { chromium, type Browser } from "playwright-core";
 
 // Chromium sin ventana para la hoja de taller de remolques (fase 4). Se abre una vez y se
 // reutiliza (arrancarlo cuesta segundos); los PDF se hacen de uno en uno, con un tiempo máximo y
 // mensajes que se entienden. Cada PDF usa un contexto nuevo: sin caché ni estado de otro.
+// Nada puede dejar la cola parada: abrir y cerrar también tienen límite, y un Chromium que se
+// cuelga se descarta (se cierra o se mata) para que la siguiente hoja abra otro.
 
 /** WebGL por software (SwiftShader): el servidor .90 no tiene GPU. Los mismos que usan las e2e. */
 export const ARGUMENTOS_CHROMIUM = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"];
 export const TIEMPO_MAXIMO_MS = 30_000;
+/** Abrir o cerrar una página, o cerrar Chromium: si tarda más, se da por colgado. */
+export const TIEMPO_CIERRE_MS = 5_000;
+/** El PDF en marcha más los que esperan; con más, se responde enseguida que se vuelva a intentar. */
+export const MAX_PENDIENTES = 5;
+export const MENSAJE_COLA_LLENA = "Hay otras hojas de taller preparándose; vuelve a intentarlo en unos segundos.";
+const MENSAJE_CERRADO = "El servidor se está cerrando: no se pueden hacer más hojas de taller ahora.";
 /** A4 apaisado a 96 ppp: la página se pinta al tamaño de la hoja. */
 const VENTANA = { width: 1123, height: 794 };
 
@@ -22,12 +30,23 @@ export interface PaginaHojaPdf {
 
 export interface NavegadorPdf {
   conectado(): boolean;
-  abrirPagina(): Promise<PaginaHojaPdf>;
+  /** Una página que solo puede pedir recursos a `origen` (el propio servidor). */
+  abrirPagina(origen: string): Promise<PaginaHojaPdf>;
   cerrar(): Promise<void>;
+  /** Mata el proceso si `cerrar()` no ha podido. */
+  matar?(): Promise<void>;
+}
+
+export interface TrabajoPdf {
+  /** Se llama cuando el trabajo sale de la cola: guarda los datos de la hoja y devuelve su identificador. */
+  preparar(): string;
+  /** Falso si quien pidió el PDF ya no espera (cerró la conexión): entonces el trabajo se salta. */
+  sigueEsperando?(): boolean;
 }
 
 export interface ServicioPdf {
-  generar(id: string): Promise<Buffer>;
+  /** Con un identificador ya guardado o con un trabajo que lo guarda al salir de la cola. */
+  generar(trabajo: string | TrabajoPdf): Promise<Buffer>;
   cerrar(): Promise<void>;
 }
 
@@ -40,45 +59,99 @@ export class ErrorSalidaPdf extends Error {
   }
 }
 
+/** Se acabó el tiempo de algo que hace Chromium. */
+class ErrorTiempo extends ErrorSalidaPdf {}
+
 const texto = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+/** Lo que se le enseña a la persona: la primera línea, sin el «Call log» de Playwright. */
+export const primeraLinea = (error: unknown) => texto(error).split("\n")[0].trim();
 
 export function mensajeFalloLanzar(error: unknown): string {
   const detalle = texto(error);
   return /Executable doesn't exist|playwright install/i.test(detalle)
     ? "Falta el Chromium de la hoja de taller en el servidor. Instálalo con: pnpm exec playwright install chromium"
-    : `No se pudo abrir Chromium para hacer el PDF: ${detalle}`;
+    : `No se pudo abrir Chromium para hacer el PDF: ${primeraLinea(error)}`;
+}
+
+/** Los errores de consola que no estropean la hoja: solo que falte el icono de la pestaña. */
+export function errorConsolaIgnorable(mensaje: string, url: string): boolean {
+  return /^Failed to load resource/.test(mensaje) && /\/favicon\.(?:ico|png)(?:[?#]|$)/.test(url);
+}
+
+/** La promesa, o un ErrorTiempo a los `ms`; si llega tarde, su valor se entrega a `sobrante` (para cerrarlo). */
+function conLimite<T>(promesa: Promise<T>, ms: number, mensaje: string, sobrante?: (valor: T) => void): Promise<T> {
+  return new Promise<T>((resolver, rechazar) => {
+    let vencido = false;
+    const temporizador = setTimeout(() => {
+      vencido = true;
+      rechazar(new ErrorTiempo(mensaje));
+    }, ms);
+    promesa.then(
+      (valor) => {
+        clearTimeout(temporizador);
+        if (vencido) sobrante?.(valor);
+        else resolver(valor);
+      },
+      (error: unknown) => {
+        clearTimeout(temporizador);
+        if (!vencido) rechazar(error);
+      },
+    );
+  });
 }
 
 export async function lanzarChromium(): Promise<NavegadorPdf> {
-  // Arrancar también tiene límite: si no, un Chromium que no llega a abrir dejaría la cola parada.
-  const navegador = await chromium.launch({ headless: true, args: ARGUMENTOS_CHROMIUM, timeout: TIEMPO_MAXIMO_MS });
+  // launchServer y no launch: el servidor de Chromium sabe matar el proceso si no se cierra solo.
+  const servidor = await chromium.launchServer({ headless: true, args: ARGUMENTOS_CHROMIUM, timeout: TIEMPO_MAXIMO_MS });
+  let navegador: Browser;
+  try {
+    navegador = await chromium.connect(servidor.wsEndpoint(), { timeout: TIEMPO_MAXIMO_MS });
+  } catch (error) {
+    await servidor.kill().catch(() => {});
+    throw error;
+  }
   return {
     conectado: () => navegador.isConnected(),
-    cerrar: () => navegador.close(),
-    async abrirPagina() {
+    async cerrar() {
+      await navegador.close().catch(() => {});
+      await servidor.close();
+    },
+    matar: () => servidor.kill(),
+    async abrirPagina(origen) {
       const contexto = await navegador.newContext({ viewport: VENTANA, deviceScaleFactor: 1 });
-      const pagina = await contexto.newPage();
-      const errores: string[] = [];
-      pagina.on("pageerror", (error) => errores.push(error.message));
-      pagina.on("console", (mensaje) => {
-        if (mensaje.type() === "error") errores.push(mensaje.text());
-      });
-      return {
-        errores,
-        async ir(url, tiempoMs) {
-          await pagina.goto(url, { waitUntil: "load", timeout: tiempoMs });
-        },
-        async esperarHoja(tiempoMs) {
-          await pagina.waitForFunction(
-            () => window.hojaLista === true || typeof window.hojaError === "string",
-            undefined,
-            { timeout: tiempoMs },
-          );
-          return pagina.evaluate(() => window.hojaError ?? null);
-        },
-        pdf: () => pagina.pdf({ format: "A4", landscape: true, printBackground: true, preferCSSPageSize: true }),
-        cerrar: () => contexto.close(),
-      };
+      try {
+        // La hoja no tiene nada que pedir fuera del propio servidor.
+        await contexto.route("**/*", (ruta) =>
+          new URL(ruta.request().url()).origin === origen ? ruta.continue() : ruta.abort("blockedbyclient"));
+        const pagina = await contexto.newPage();
+        const errores: string[] = [];
+        pagina.on("pageerror", (error) => errores.push(error.message));
+        pagina.on("console", (mensaje) => {
+          if (mensaje.type() === "error" && !errorConsolaIgnorable(mensaje.text(), mensaje.location().url)) {
+            errores.push(mensaje.text());
+          }
+        });
+        return {
+          errores,
+          async ir(url, tiempoMs) {
+            await pagina.goto(url, { waitUntil: "load", timeout: tiempoMs });
+          },
+          async esperarHoja(tiempoMs) {
+            await pagina.waitForFunction(
+              () => window.hojaLista === true || typeof window.hojaError === "string",
+              undefined,
+              { timeout: tiempoMs },
+            );
+            return pagina.evaluate(() => window.hojaError ?? null);
+          },
+          pdf: () => pagina.pdf({ format: "A4", landscape: true, printBackground: true, preferCSSPageSize: true }),
+          cerrar: () => contexto.close(),
+        };
+      } catch (error) {
+        await contexto.close().catch(() => {});
+        throw error;
+      }
     },
   };
 }
@@ -87,30 +160,65 @@ export function crearServicioPdf({
   urlHoja,
   lanzar = lanzarChromium,
   tiempoMaximoMs = TIEMPO_MAXIMO_MS,
+  tiempoCierreMs = TIEMPO_CIERRE_MS,
+  maxPendientes = MAX_PENDIENTES,
+  registrar = (mensaje: string) => console.error(mensaje),
 }: {
   urlHoja: (id: string) => string;
   lanzar?: () => Promise<NavegadorPdf>;
   tiempoMaximoMs?: number;
+  tiempoCierreMs?: number;
+  maxPendientes?: number;
+  /** Adónde va el detalle completo de los fallos (por defecto, console.error). */
+  registrar?: (mensaje: string) => void;
 }): ServicioPdf {
-  let navegador: Promise<NavegadorPdf> | null = null;
+  let navegador: NavegadorPdf | null = null;
   let cola: Promise<unknown> = Promise.resolve();
+  let pendientes = 0;
+  let cerrado = false;
 
-  async function abrirNavegador(): Promise<NavegadorPdf> {
-    if (navegador) {
-      const actual = await navegador.catch(() => null);
-      if (actual?.conectado()) return actual;
-      await actual?.cerrar().catch(() => {});
-    }
-    const lanzado = lanzar().catch((error: unknown) => {
-      navegador = null;
-      throw new ErrorSalidaPdf(mensajeFalloLanzar(error));
-    });
-    navegador = lanzado;
-    return lanzado;
+  /** Al cliente, la primera línea; al registro, todo. */
+  function fallo(prefijo: string, error: unknown): ErrorSalidaPdf {
+    registrar(`${prefijo}: ${error instanceof Error && error.stack ? error.stack : texto(error)}`);
+    return new ErrorSalidaPdf(`${prefijo}: ${primeraLinea(error)}`);
   }
 
-  async function imprimir(pagina: PaginaHojaPdf, id: string): Promise<Buffer> {
-    await pagina.ir(urlHoja(id), tiempoMaximoMs);
+  async function cerrarNavegador(nav: NavegadorPdf): Promise<void> {
+    try {
+      await conLimite(nav.cerrar(), tiempoCierreMs, "Chromium no se cerró a tiempo.");
+    } catch (error) {
+      registrar(`${texto(error)} Se mata el proceso.`);
+      await nav.matar?.().catch((otro: unknown) => registrar(`No se pudo matar Chromium: ${texto(otro)}`));
+    }
+  }
+
+  /** Deja de usar ese Chromium (sin esperar a que se cierre): la siguiente hoja abre otro. */
+  function descartar(nav: NavegadorPdf, motivo: string) {
+    if (navegador === nav) navegador = null;
+    registrar(`Se descarta el Chromium de la hoja de taller (${motivo}); la siguiente hoja abrirá otro.`);
+    void cerrarNavegador(nav);
+  }
+
+  async function abrirNavegador(): Promise<NavegadorPdf> {
+    if (navegador?.conectado()) return navegador;
+    if (navegador) descartar(navegador, "se desconectó");
+    let nuevo: NavegadorPdf;
+    try {
+      nuevo = await conLimite(lanzar(), tiempoMaximoMs, "Chromium tardó demasiado en abrirse.", (tarde) => void cerrarNavegador(tarde));
+    } catch (error) {
+      registrar(`No se pudo abrir Chromium para la hoja de taller: ${texto(error)}`);
+      throw new ErrorSalidaPdf(mensajeFalloLanzar(error));
+    }
+    if (cerrado) {
+      void cerrarNavegador(nuevo);
+      throw new ErrorSalidaPdf(MENSAJE_CERRADO);
+    }
+    navegador = nuevo;
+    return nuevo;
+  }
+
+  async function imprimir(pagina: PaginaHojaPdf, url: string): Promise<Buffer> {
+    await pagina.ir(url, tiempoMaximoMs);
     const error = await pagina.esperarHoja(tiempoMaximoMs);
     if (error) throw new ErrorSalidaPdf(`No se pudo preparar la hoja de taller: ${error}`);
     if (pagina.errores.length > 0) {
@@ -121,43 +229,64 @@ export function crearServicioPdf({
     return pdf;
   }
 
-  async function hacer(id: string): Promise<Buffer> {
+  async function hacer(trabajo: TrabajoPdf): Promise<Buffer> {
+    if (cerrado) throw new ErrorSalidaPdf(MENSAJE_CERRADO);
+    if (trabajo.sigueEsperando && !trabajo.sigueEsperando()) {
+      registrar("Se salta una hoja de taller: quien la pidió ya no espera.");
+      throw new ErrorSalidaPdf("Quien pidió la hoja de taller ya no espera: no se hace el PDF.");
+    }
     const nav = await abrirNavegador();
+    const url = urlHoja(trabajo.preparar());
     let pagina: PaginaHojaPdf;
     try {
-      pagina = await nav.abrirPagina();
+      pagina = await conLimite(nav.abrirPagina(new URL(url).origin), tiempoCierreMs, "Chromium no abrió la página a tiempo.",
+        (tarde) => void tarde.cerrar().catch(() => {}));
     } catch (error) {
-      throw new ErrorSalidaPdf(`No se pudo abrir una página en Chromium: ${texto(error)}`);
+      descartar(nav, "no abrió la página");
+      throw fallo("No se pudo abrir una página en Chromium", error);
     }
-    let temporizador: ReturnType<typeof setTimeout> | undefined;
-    const limite = new Promise<never>((_, rechazar) => {
-      temporizador = setTimeout(() => rechazar(new ErrorSalidaPdf(
-        `La hoja de taller tardó más de ${(tiempoMaximoMs / 1000).toLocaleString("es-ES")} s en prepararse. Vuelve a intentarlo; si se repite, avisa a informática.`,
-      )), tiempoMaximoMs);
-    });
-    const trabajo = imprimir(pagina, id);
-    // Si gana el tiempo máximo, lo que quede del trabajo no debe acabar en un rechazo sin atender.
-    trabajo.catch(() => {});
+    let colgada = false;
     try {
-      return await Promise.race([trabajo, limite]);
+      return await conLimite(imprimir(pagina, url), tiempoMaximoMs,
+        `La hoja de taller tardó más de ${(tiempoMaximoMs / 1000).toLocaleString("es-ES")} s en prepararse. Vuelve a intentarlo; si se repite, avisa a informática.`);
     } catch (error) {
-      throw error instanceof ErrorSalidaPdf ? error : new ErrorSalidaPdf(`No se pudo hacer el PDF: ${texto(error)}`);
+      if (error instanceof ErrorTiempo) colgada = true;
+      throw error instanceof ErrorSalidaPdf ? error : fallo("No se pudo hacer el PDF", error);
     } finally {
-      clearTimeout(temporizador);
-      await pagina.cerrar().catch(() => {});
+      if (colgada) {
+        // No se espera: cerrar Chromium entero cierra también la página.
+        void pagina.cerrar().catch(() => {});
+        descartar(nav, "la hoja se quedó colgada");
+      } else {
+        const cerrada = await conLimite(pagina.cerrar(), tiempoCierreMs, "Chromium no cerró la página a tiempo.").then(
+          () => true,
+          (error: unknown) => {
+            registrar(texto(error));
+            return false;
+          },
+        );
+        if (!cerrada) descartar(nav, "no cerró la página");
+      }
     }
   }
 
   return {
-    generar(id) {
-      const trabajo = cola.then(() => hacer(id));
-      cola = trabajo.catch(() => undefined);
-      return trabajo;
+    generar(entrada) {
+      const trabajo: TrabajoPdf = typeof entrada === "string" ? { preparar: () => entrada } : entrada;
+      if (cerrado) return Promise.reject(new ErrorSalidaPdf(MENSAJE_CERRADO));
+      if (pendientes >= maxPendientes) return Promise.reject(new ErrorSalidaPdf(MENSAJE_COLA_LLENA));
+      pendientes += 1;
+      const hecho = cola.then(() => hacer(trabajo)).finally(() => {
+        pendientes -= 1;
+      });
+      cola = hecho.catch(() => undefined);
+      return hecho;
     },
     async cerrar() {
-      const actual = navegador ? await navegador.catch(() => null) : null;
+      cerrado = true;
+      const actual = navegador;
       navegador = null;
-      await actual?.cerrar().catch(() => {});
+      if (actual) await cerrarNavegador(actual);
     },
   };
 }

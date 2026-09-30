@@ -1,19 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { crearServicioPdf, ErrorSalidaPdf, mensajeFalloLanzar, type NavegadorPdf, type PaginaHojaPdf } from "../navegador.ts";
+import {
+  crearServicioPdf, ErrorSalidaPdf, errorConsolaIgnorable, MENSAJE_COLA_LLENA, mensajeFalloLanzar, type NavegadorPdf, type PaginaHojaPdf,
+} from "../navegador.ts";
 
 const PDF = Buffer.from("%PDF-1.7 prueba");
+function nunca<T>(): Promise<T> { return new Promise<T>(() => {}); }
 
-function paginaFalsa(registro: string[], opciones: { error?: string; errores?: string[]; colgada?: boolean; pdf?: Buffer } = {}): PaginaHojaPdf {
+function paginaFalsa(registro: string[], opciones: {
+  error?: string; errores?: string[]; colgada?: boolean; pdf?: Buffer; espera?: Promise<void>; sinCerrar?: boolean; falloIr?: Error;
+} = {}): PaginaHojaPdf {
   return {
     errores: opciones.errores ?? [],
-    async ir(url) { registro.push(`ir ${url}`); await Promise.resolve(); },
-    esperarHoja: () => (opciones.colgada ? new Promise<string | null>(() => {}) : Promise.resolve(opciones.error ?? null)),
+    async ir(url) {
+      registro.push(`ir ${url}`);
+      if (opciones.falloIr) throw opciones.falloIr;
+      await Promise.resolve();
+    },
+    esperarHoja: () => (opciones.colgada ? nunca<string | null>()
+      : (opciones.espera ?? Promise.resolve()).then(() => opciones.error ?? null)),
     async pdf() { registro.push("pdf"); return opciones.pdf ?? PDF; },
-    async cerrar() { registro.push("cerrar"); },
+    cerrar() {
+      registro.push("cerrar");
+      return opciones.sinCerrar ? nunca<void>() : Promise.resolve();
+    },
   };
 }
 
-function navegadorFalso(paginas: () => PaginaHojaPdf) {
+function navegadorFalso(paginas: () => PaginaHojaPdf | Promise<PaginaHojaPdf>) {
   const estado = { lanzados: 0, conectado: true, cerrado: false };
   const lanzar = async (): Promise<NavegadorPdf> => {
     estado.lanzados += 1;
@@ -104,5 +117,120 @@ describe("servicio de PDF con Chromium", () => {
     await servicio.generar("a");
     await servicio.cerrar();
     expect(estado.cerrado).toBe(true);
+  });
+});
+
+describe("la cola nunca se queda parada", () => {
+  const callado = () => {};
+
+  it("una página que nunca se cierra no bloquea la siguiente: ese Chromium se descarta", async () => {
+    const registro: string[] = [];
+    let abiertas = 0;
+    const { estado, lanzar } = navegadorFalso(() => paginaFalsa(registro, { sinCerrar: abiertas++ === 0 }));
+    const servicio = crearServicioPdf({ urlHoja, lanzar, tiempoCierreMs: 20, registrar: callado });
+    await expect(servicio.generar("a")).resolves.toEqual(PDF);
+    await expect(servicio.generar("b")).resolves.toEqual(PDF);
+    expect(estado.lanzados).toBe(2);
+    expect(estado.cerrado).toBe(true);
+  });
+
+  it("si Chromium no abre la página a tiempo, falla con un mensaje claro y la siguiente abre otro", async () => {
+    const registro: string[] = [];
+    let abiertas = 0;
+    const { estado, lanzar } = navegadorFalso(() => (abiertas++ === 0 ? nunca<PaginaHojaPdf>() : paginaFalsa(registro)));
+    const servicio = crearServicioPdf({ urlHoja, lanzar, tiempoCierreMs: 20, registrar: callado });
+    await expect(servicio.generar("a")).rejects.toThrow("No se pudo abrir una página en Chromium: Chromium no abrió la página a tiempo.");
+    await expect(servicio.generar("b")).resolves.toEqual(PDF);
+    expect(estado.lanzados).toBe(2);
+  });
+
+  it("si la hoja se cuelga, también se descarta ese Chromium", async () => {
+    let abiertas = 0;
+    const { estado, lanzar } = navegadorFalso(() => paginaFalsa([], { colgada: abiertas++ === 0 }));
+    const servicio = crearServicioPdf({ urlHoja, lanzar, tiempoMaximoMs: 20, registrar: callado });
+    await expect(servicio.generar("a")).rejects.toThrow(/tardó más de/);
+    await expect(servicio.generar("b")).resolves.toEqual(PDF);
+    expect(estado.lanzados).toBe(2);
+  });
+
+  it("si Chromium no se cierra, se mata el proceso", async () => {
+    let matado = false;
+    const lanzar = async (): Promise<NavegadorPdf> => ({
+      conectado: () => true,
+      abrirPagina: async () => paginaFalsa([]),
+      cerrar: () => nunca<void>(),
+      matar: async () => { matado = true; },
+    });
+    const servicio = crearServicioPdf({ urlHoja, lanzar, tiempoCierreMs: 20, registrar: callado });
+    await servicio.generar("a");
+    await servicio.cerrar();
+    expect(matado).toBe(true);
+  });
+
+  it("con la cola llena responde enseguida que se vuelva a intentar", async () => {
+    let soltar!: () => void;
+    const espera = new Promise<void>((resolver) => { soltar = resolver; });
+    const { lanzar } = navegadorFalso(() => paginaFalsa([], { espera }));
+    const servicio = crearServicioPdf({ urlHoja, lanzar, maxPendientes: 2 });
+    const a = servicio.generar("a");
+    const b = servicio.generar("b");
+    await expect(servicio.generar("c")).rejects.toThrow(MENSAJE_COLA_LLENA);
+    await expect(servicio.generar("c")).rejects.toMatchObject({ statusCode: 503 });
+    soltar();
+    await expect(Promise.all([a, b])).resolves.toEqual([PDF, PDF]);
+    // Al vaciarse, vuelve a admitir.
+    await expect(servicio.generar("d")).resolves.toEqual(PDF);
+  });
+
+  it("los datos se guardan al salir de la cola y se salta a quien ya no espera", async () => {
+    const registro: string[] = [];
+    const { lanzar } = navegadorFalso(() => paginaFalsa(registro));
+    const servicio = crearServicioPdf({ urlHoja, lanzar, registrar: callado });
+    const trabajo = (id: string, sigue = true) => ({
+      preparar: () => { registro.push(`preparar ${id}`); return id; },
+      sigueEsperando: () => sigue,
+    });
+    const [a, b, c] = await Promise.allSettled([servicio.generar(trabajo("a")), servicio.generar(trabajo("b", false)), servicio.generar(trabajo("c"))]);
+    expect(a.status).toBe("fulfilled");
+    expect(b).toMatchObject({ status: "rejected", reason: expect.any(ErrorSalidaPdf) });
+    expect(c.status).toBe("fulfilled");
+    expect(registro).toEqual([
+      "preparar a", `ir ${urlHoja("a")}`, "pdf", "cerrar",
+      "preparar c", `ir ${urlHoja("c")}`, "pdf", "cerrar",
+    ]);
+  });
+
+  it("a la persona, solo la primera línea del error de Chromium; al registro, todo", async () => {
+    const detalle: string[] = [];
+    const falloIr = new Error("page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4310/hoja\nCall log:\n  - navigating to …");
+    const { lanzar } = navegadorFalso(() => paginaFalsa([], { falloIr }));
+    const servicio = crearServicioPdf({ urlHoja, lanzar, registrar: (m) => detalle.push(m) });
+    const error = await servicio.generar("a").catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ErrorSalidaPdf);
+    expect((error as Error).message).toBe("No se pudo hacer el PDF: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4310/hoja");
+    expect(detalle.join("\n")).toContain("Call log:");
+    expect(mensajeFalloLanzar(new Error("browserType.launch: Target closed\n=== logs ===\n…"))).toBe(
+      "No se pudo abrir Chromium para hacer el PDF: browserType.launch: Target closed",
+    );
+  });
+
+  it("después de cerrar no vuelve a abrir Chromium", async () => {
+    const { estado, lanzar } = navegadorFalso(() => paginaFalsa([]));
+    const servicio = crearServicioPdf({ urlHoja, lanzar });
+    await servicio.generar("a");
+    await servicio.cerrar();
+    await expect(servicio.generar("b")).rejects.toMatchObject({ statusCode: 503, message: expect.stringMatching(/cerrando/) });
+    expect(estado.lanzados).toBe(1);
+  });
+});
+
+describe("errores de consola de la hoja", () => {
+  it("solo se ignora que falte el icono de la pestaña", () => {
+    const falta = "Failed to load resource: the server responded with a status of 404 (Not Found)";
+    expect(errorConsolaIgnorable(falta, "http://127.0.0.1:4310/favicon.ico")).toBe(true);
+    expect(errorConsolaIgnorable(falta, "http://127.0.0.1:4310/favicon.png?v=2")).toBe(true);
+    expect(errorConsolaIgnorable(falta, "http://127.0.0.1:4310/assets/hoja-abc.js")).toBe(false);
+    expect(errorConsolaIgnorable(falta, "http://127.0.0.1:4310/api/remolques/hoja/x")).toBe(false);
+    expect(errorConsolaIgnorable("TypeError: x", "http://127.0.0.1:4310/favicon.ico")).toBe(false);
   });
 });

@@ -23,9 +23,9 @@ import { createRemolquesParametersStore } from './remolquesParametersStore.js';
 import { getMaterialesConOrigen } from './remolques/materiales.ts';
 import { pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
 import { materialPreferidoRps } from './remolques/rps/material-rps.ts';
-import { prepararPedidoHoja } from './remolques/hoja/pedido.ts';
+import { ErrorPedidoHoja, prepararPedidoHoja } from './remolques/hoja/pedido.ts';
 import { crearAlmacenFichas } from './remolques/salida/fichas.ts';
-import { crearServicioPdf } from './remolques/salida/navegador.ts';
+import { crearServicioPdf, ErrorSalidaPdf } from './remolques/salida/navegador.ts';
 import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
 import {
   applyDeploymentFeaturesToCatalog,
@@ -385,17 +385,35 @@ app.get('/api/remolques/hoja/:id', (req, res) => {
 // carpeta; el archivo (src/remolques/salida/archivo.ts) lo llamará la fase 5.
 app.post('/api/remolques/pdf', async (req, res, next) => {
   let id = null;
+  // Si quien pidió el PDF cierra la conexión mientras espera en la cola, su hoja no se hace.
+  let seFue = false;
+  res.on('close', () => {
+    if (!res.writableFinished) seFue = true;
+  });
   try {
     const datos = prepararPedidoHoja(req.body?.elementos, await remolquesParametersStore.get());
-    id = fichasHojaRemolques.guardar(datos);
-    const pdf = await servicioPdfRemolques.generar(id);
+    const pdf = await servicioPdfRemolques.generar({
+      // La ficha se guarda al salir de la cola: su minuto empieza cuando Chromium va a pedirla.
+      preparar: () => (id = fichasHojaRemolques.guardar(datos)),
+      sigueEsperando: () => !seFue
+    });
+    if (seFue) return;
     res.set('Cache-Control', 'no-store')
       .setHeader('Content-Type', 'application/pdf')
       .setHeader('Content-Disposition', `inline; filename="${nombrePdf(datos.elementos[0].input.cabecera.numeroPedido)}"`)
       .send(pdf);
   } catch (error) {
-    if (error?.statusCode >= 500) console.error('No se pudo hacer la hoja de taller de remolques:', error.message);
-    next(error);
+    if (seFue) return;
+    if (error instanceof ErrorPedidoHoja) {
+      next(error);
+    } else if (error instanceof ErrorSalidaPdf) {
+      console.error('No se pudo hacer la hoja de taller de remolques:', error.message);
+      next(error);
+    } else {
+      // Un fallo que no es del pedido ni de Chromium es del servidor: 500, no el 400 por defecto.
+      console.error('Fallo inesperado al hacer la hoja de taller de remolques:', error);
+      next(httpError(500, 'No se pudo hacer la hoja de taller por un fallo del servidor. Avisa a informática.'));
+    }
   } finally {
     if (id) fichasHojaRemolques.borrar(id);
   }
