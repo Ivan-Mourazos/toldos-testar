@@ -36,8 +36,7 @@
 /* ── Cabecera: la importación de RPS, en el sitio de «Tela» ── */
 .rem-cabecera .order-header-rps { align-content: start; }
 .rem-rps-vacio,
-.rem-rps-aviso,
-.rem-rps-aplicada {
+.rem-rps-aviso {
   align-items: center;
   border-radius: 0.5rem;
   display: flex;
@@ -47,8 +46,7 @@
   padding: 0.5rem 0.625rem;
 }
 /* La caja de la ficha de CoordinaOT: `rounded-lg bg-surface-2/70` con su línea. */
-.rem-rps-vacio,
-.rem-rps-aplicada {
+.rem-rps-vacio {
   background: color-mix(in srgb, var(--surface-2) 70%, transparent);
   border: 1px solid var(--border);
 }
@@ -67,10 +65,6 @@
   border-color: var(--error-borde);
   color: var(--error-texto);
 }
-.rem-rps-aplicada { justify-content: space-between; }
-.rem-rps-aplicada > div { display: grid; gap: 2px; min-width: 0; }
-.rem-rps-aplicada strong { color: var(--text); font-size: 12px; font-weight: 600; }
-.rem-rps-aplicada span { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .rem-rps-pedido { display: grid; gap: 6px; min-width: 0; }
 .rem-rps-cliente {
@@ -139,17 +133,48 @@
   line-height: 1.35;
   overflow: hidden;
 }
-.rem-rps-linea-datos .rem-rps-notas {
-  border-top: 1px solid var(--border);
-  color: var(--text-muted);
+.rem-rps-ok { color: var(--correcto-texto); font-size: 11px; font-weight: 600; }
+/* Cuántas líneas de RPS tienen ya su elemento: el verde de CoordinaOT si están todas, el
+   ámbar si falta alguna. */
+.rem-rps-resumen {
+  color: var(--correcto-texto);
+  font-size: 11px;
+  font-weight: 600;
+  margin: 0;
+}
+.rem-rps-resumen.is-falta { color: var(--aviso-texto); }
+.rem-rps-linea > .pildora-aviso { flex: none; white-space: nowrap; }
+
+/* De qué línea de RPS salió el elemento abierto, encima de su formulario: la caja de la ficha
+   de CoordinaOT; ámbar si RPS no da las medidas claras. */
+.rem-rps-origen {
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 4px;
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.625rem;
+}
+.rem-rps-origen.is-revisar {
+  background: var(--aviso-fondo);
+  border-color: var(--aviso-borde);
+}
+.rem-rps-origen p { margin: 0; }
+.rem-rps-origen-avisos {
+  color: var(--aviso-texto);
   display: flex;
   flex-wrap: wrap;
   font-size: 11px;
-  gap: 2px 0.75rem;
-  margin-top: 4px;
-  padding-top: 4px;
+  font-weight: 600;
+  gap: 2px 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-.rem-rps-ok { color: var(--correcto-texto); font-weight: 600; }
+.rem-rps-origen-avisos li::before { content: "· "; }
+/* En la pestaña, el aviso de revisar va tras el rótulo sin empujar el «falta». */
+.rem-pestana-abrir .rem-etiqueta { flex: none; }
 .rem-aviso-materiales {
   background: var(--aviso-fondo);
   border: 1px solid var(--aviso-borde);

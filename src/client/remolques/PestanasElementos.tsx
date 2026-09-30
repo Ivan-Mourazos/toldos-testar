@@ -64,6 +64,11 @@ export function PestanasElementos({
                   onClick={() => onSeleccionar(linea.version)}
                 >
                   <span className="rem-pestana-rotulo">{rotulo}</span>
+                  {/* La línea de RPS sin medidas claras («CONFECCIÓN SEGÚN PATRÓN») se crea igual,
+                      pero avisa desde la pestaña: no hay que abrirla para saber que hay que mirarla. */}
+                  {linea.origenRps?.requiereRevision && (
+                    <span className="pildora-aviso rem-etiqueta" title="RPS no da las medidas completas de esta línea">Revisar</span>
+                  )}
                   {estado?.lista
                     ? <span className="rem-pestana-estado is-ok" aria-label="listo">✓</span>
                     : <span className="rem-pestana-estado is-falta">falta {faltan}</span>}

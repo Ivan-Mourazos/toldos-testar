@@ -5,15 +5,16 @@ import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { DEFAULT_PARAMS, type CalcParams } from '../../remolques/calc/params.ts';
 import type { TipoPlanteamiento } from '../../remolques/store/types.ts';
 import { emptyLona, emptyBaqueton } from '../../remolques/entradas-vacias.ts';
-import { crearInputDesdeRps } from '../../remolques/rps/aplicar-linea.ts';
-import { materialPreferidoRps } from '../../remolques/rps/material-rps.ts';
 import { FORMA_PEDIDO_RPS, normalizarNumeroPedidoRps } from '../../remolques/rps/numero-pedido.ts';
-import type { LineaPedidoRps, PedidoRps } from '../../remolques/rps/types.ts';
+import type { PedidoRps } from '../../remolques/rps/types.ts';
 import { erroresPlanteamiento } from '../../remolques/pedidos/validar-planteamiento.ts';
 import {
   estadoInicial, reducirWorkspace, type AccionWorkspace, type EstadoWorkspace,
 } from '../../remolques/workspace/estado.ts';
 import { guardarBorradores, leerBorradores } from '../../remolques/workspace/borradores-locales.ts';
+import {
+  lineasDesdePedidoRps, planificarImportacionRps, type ModoImportacionRps, type PlanImportacionRps,
+} from '../../remolques/workspace/importar-rps.ts';
 import { estadoLinea, siguienteVersion, type LineaPedido } from '../../remolques/workspace/lineas.ts';
 import {
   erroresVisibles as calcularErroresVisibles,
@@ -25,7 +26,7 @@ import {
 } from '../../remolques/workspace/selectores.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { todayIso } from '../constants';
-import { rotuloElemento } from './rotulo';
+import { describirLineaRps, rotuloElemento } from './rotulo';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -35,13 +36,10 @@ const PAUSA_GUARDADO_MS = 600;
 const hoy = todayIso;
 
 // ── Estado ──────────────────────────────────────────────────────────────────
-// El reductor de `src/remolques/workspace/estado.ts` no se toca. Por encima de él hay dos
-// cosas que la cabecera de toldos tiene y la pantalla de remolques de antes no:
-//  - la fecha del pedido, que baja a la cabecera de cada línea (como hace `CLIENTE_CAMBIADO`
-//    con el cliente);
-//  - el cliente que trae RPS: al aplicar una línea, si el pedido no tenía cliente, la
-//    cabecera lo toma de la línea (antes solo lo llevaba la línea y el campo «Cliente»
-//    seguía vacío pese a decir «RPS cargará cliente…»). Lo escrito a mano manda.
+// Por encima del reductor de `src/remolques/workspace/estado.ts` va lo que la cabecera de
+// toldos tiene y la pantalla de remolques de antes no: la fecha del pedido, que baja a la
+// cabecera de cada línea (como hace `CLIENTE_CAMBIADO` con el cliente). Al obtener el pedido
+// de RPS, la fecha es la de RPS; el cliente lo resuelve el reductor (lo escrito a mano manda).
 export interface EstadoRemolques extends EstadoWorkspace {
   fecha: string;
 }
@@ -50,11 +48,6 @@ export type AccionRemolques = AccionWorkspace | { tipo: 'FECHA_CAMBIADA'; valor:
 const conFecha = (linea: LineaPedido, fecha: string): LineaPedido => ({
   ...linea,
   input: { ...linea.input, cabecera: { ...linea.input.cabecera, fecha } },
-});
-
-const conCliente = (linea: LineaPedido, cliente: string): LineaPedido => ({
-  ...linea,
-  input: { ...linea.input, cabecera: { ...linea.input.cabecera, cliente } },
 });
 
 export function reducirRemolques(estado: EstadoRemolques, accion: AccionRemolques): EstadoRemolques {
@@ -76,19 +69,15 @@ export function reducirRemolques(estado: EstadoRemolques, accion: AccionRemolque
     if (!cliente.trim()) {
       cliente = siguiente.lineas.map((linea) => linea.input.cabecera.cliente.trim()).find(Boolean) ?? cliente;
     }
-  } else if (accion.tipo === 'LINEA_ANADIDA' && accion.linea.origenRps) {
-    fecha = accion.linea.input.cabecera.fecha || fecha;
-  }
-  if (accion.tipo === 'LINEA_ANADIDA' && accion.linea.origenRps && !estado.cliente.trim()) {
-    const clienteRps = accion.linea.input.cabecera.cliente.trim();
-    if (clienteRps) {
-      return {
-        ...siguiente,
-        fecha,
-        cliente: clienteRps,
-        lineas: siguiente.lineas.map((linea) => (linea.input.cabecera.cliente.trim() ? linea : conCliente(linea, clienteRps))),
-      };
-    }
+  } else if (accion.tipo === 'RPS_IMPORTADO' && siguiente !== estado) {
+    // Crear los elementos desde RPS trae su fecha; añadir los que faltan deja la de la cabecera,
+    // que es la que ya llevan los demás. Los elementos nuevos llevan la de la cabecera.
+    if (accion.modo === 'sustituir') fecha = accion.lineas[0]?.input.cabecera.fecha || fecha;
+    return {
+      ...siguiente,
+      fecha,
+      lineas: siguiente.lineas.map((linea) => (estado.lineas.includes(linea) ? linea : conFecha(linea, fecha))),
+    };
   }
   return { ...siguiente, fecha, cliente };
 }
@@ -128,19 +117,21 @@ function useCatalogos() {
 
 // ── Consulta a RPS (equivalente de useConsultaRps) ──────────────────────────
 /**
- * Consulta RPS con debounce de 450 ms. Tres guardas la frenan: un número
+ * Consulta RPS con debounce de 450 ms y entrega el pedido encontrado, tenga las líneas que tenga
+ * (antes solo se entregaba el de una línea, para aplicarla sola). Tres guardas la frenan: un número
  * sin forma de pedido no se consulta, un registro reutilizado no se
  * sobrescribe mientras no cambie de número, y la misma consulta (número +
  * reintento) no se repite. Además aborta la petición en curso si el efecto
  * se vuelve a ejecutar antes de que termine.
  */
 function useConsultaRps({
-  numeroPedido, reintento, despachar, onPedidoUnicaLinea, reiniciarGuarda: reiniciarGuardaRef,
+  numeroPedido, reintento, despachar, onPedidoEncontrado, reiniciarGuarda: reiniciarGuardaRef,
 }: {
   numeroPedido: string;
   reintento: number;
   despachar: Dispatch<AccionRemolques>;
-  onPedidoUnicaLinea: (pedido: PedidoRps) => void | Promise<void>;
+  /** `numero` es el consultado, ya normalizado. */
+  onPedidoEncontrado: (pedido: PedidoRps, numero: string) => void | Promise<void>;
   reiniciarGuarda: RefObject<(() => void) | null>;
 }) {
   const ultimaConsulta = useRef('');
@@ -173,7 +164,7 @@ function useConsultaRps({
           return;
         }
         despachar({ tipo: 'RPS_ENCONTRADO', pedido: payload.pedido });
-        if (payload.pedido.lineas.length === 1) await onPedidoUnicaLinea(payload.pedido);
+        await onPedidoEncontrado(payload.pedido, numero);
       }).catch((error: unknown) => {
         if (controller.signal.aborted) return;
         despachar({
@@ -186,7 +177,7 @@ function useConsultaRps({
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [despachar, numeroPedido, onPedidoUnicaLinea, reintento]);
+  }, [despachar, numeroPedido, onPedidoEncontrado, reintento]);
 }
 
 /**
@@ -214,7 +205,7 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
 
   // Aviso y confirmación llegan de la aplicación. Se guardan en una ref para que los
   // manejadores de abajo no cambien de identidad cuando cambie la de estas funciones:
-  // `aplicarPrimeraLineaRps` alimenta el efecto de la consulta a RPS, y si cambiara en cada
+  // `importarPedidoRps` alimenta el efecto de la consulta a RPS, y si cambiara en cada
   // pintado el efecto abortaría la consulta en curso.
   const notificar = useRef({ notify, askForConfirmation });
   useEffect(() => { notificar.current = { notify, askForConfirmation }; });
@@ -227,6 +218,14 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
   );
 
   const reiniciarGuardaRps = useRef<(() => void) | null>(null);
+  // El estado de este momento para lo que corre tras esperar (la consulta a RPS, la pregunta):
+  // decidir con el de cuando se lanzó podría crear elementos en un pedido que ya no es el abierto.
+  const estadoRef = useRef(estado);
+  useEffect(() => { estadoRef.current = estado; });
+  // Pedido (normalizado) cuyo resultado de RPS se pidió a propósito —«Obtener datos del pedido»,
+  // «Reintentar» o «Abrir en Remolques»—: ese sí pregunta si el pedido ya tiene elementos. La
+  // consulta que sale sola al teclear el número solo crea los elementos en un pedido vacío.
+  const importarAlLlegar = useRef('');
   const almacen = typeof window === 'undefined' ? null : window.localStorage;
   // Un pedido cuyos borradores ya se recuperaron; evita recuperarlos otra vez
   // por encima de lo que el usuario esté escribiendo.
@@ -416,110 +415,153 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     avisar('exito', `${rotulo} eliminado del pedido.`);
   }, [avisar, confirmar, lineas]);
 
-  const aplicarPedidoRps = useCallback(async (
-    pedido: PedidoRps,
-    lineaRps: LineaPedidoRps,
-    catalogoMateriales: Material[] = materialesRef.current,
-  ) => {
-    const indice = pedido.lineas.findIndex((item) => item.idLinea === lineaRps.idLinea);
-    const creado = crearInputDesdeRps(
-      pedido, lineaRps, Math.max(indice, 0), catalogoMateriales, params,
-      usuario || (input?.cabecera.realizadoPor ?? ''),
-    );
-    // La versión la fija `crearInputDesdeRps` a partir del índice de la línea en RPS, así que
-    // reimportar la misma línea sustituye la suya y no añade un duplicado.
-    const version = creado.input.cabecera.version;
-    const indiceExistente = lineas.findIndex((item) => item.version === version);
-    const existente = indiceExistente >= 0 ? lineas[indiceExistente] : undefined;
-    // Sustituir la línea entera se lleva por delante lo tecleado a mano, y el borrador se
-    // reescribe acto seguido: no hay vuelta atrás, así que se pregunta. Reimportar sin
-    // cambios no destruye nada y no interrumpe.
-    if (existente && JSON.stringify(existente.input) !== JSON.stringify(creado.input)) {
-      const respuesta = await confirmar({
-        title: `Sobrescribir ${rotuloElemento(existente, indiceExistente)}`,
-        message: 'Esta línea ya tiene datos y se sustituirán por los de RPS. Se perderá lo que hayas escrito o corregido a mano. No se puede deshacer.',
-        confirmLabel: 'Sobrescribir con RPS',
-        cancelLabel: 'Cancelar',
-        tone: 'danger',
-      });
-      if (respuesta !== 'confirm') return;
+  /** Las bobinas hacen falta para proponer la de RPS; si aún no han llegado, se piden ya. */
+  const asegurarMateriales = useCallback(async () => {
+    if (materialesRef.current.length > 0) return materialesRef.current;
+    const catalogo = await pedirMateriales().then((datos) => datos.materiales).catch(() => [] as Material[]);
+    if (catalogo.length > 0) {
+      materialesRef.current = catalogo;
+      setMateriales(catalogo);
     }
-    despachar({
-      tipo: 'LINEA_ANADIDA',
-      linea: {
-        version,
-        tipo: creado.tipo,
-        input: creado.input,
-        id: existente?.id,
-        snapshotSvg: null,
-        origenRps: {
-          numeroPedido: pedido.numero,
-          numeroLinea: lineaRps.numeroLinea,
-          idLinea: lineaRps.idLinea,
-          ordenFabricacion: lineaRps.ordenFabricacion,
-          importadoEn: new Date().toISOString(),
-        },
-      },
-    });
-    avisar('info', `Línea ${lineaRps.numeroLinea} de RPS aplicada. Todos los campos siguen siendo editables.`);
-  }, [avisar, confirmar, input, lineas, materialesRef, params, usuario]);
+    return catalogo;
+  }, [materialesRef, setMateriales]);
 
-  const aplicarPrimeraLineaRps = useCallback(async (pedido: PedidoRps) => {
-    // Esto se dispara solo, tras la consulta automática a RPS. Lo automático no pregunta ni
-    // pisa: si la línea que produciría la importación ya existe —recuperada de un borrador y
-    // quizá corregida a mano—, no hay nada que aplicar. Importar a mano desde el selector
-    // sigue sustituyendo, con su confirmación. La versión la fija `crearInputDesdeRps` con el
-    // índice de la línea en RPS, y esta es siempre la primera: la 10.
-    if (lineas.some((linea) => linea.version === '10')) return;
-    if (cargandoPedido) return;
-    let catalogo = materialesRef.current;
-    if (catalogo.length === 0) {
-      catalogo = await pedirMateriales().then((datos) => datos.materiales).catch(() => []);
-      if (catalogo.length > 0) {
-        materialesRef.current = catalogo;
-        setMateriales(catalogo);
-      }
+  /** Si el pedido ya tiene elementos: sustituirlos, añadir solo las que faltan o dejarlo. */
+  const preguntarModoImportacion = useCallback(async (
+    pedido: PedidoRps, plan: PlanImportacionRps, actuales: LineaPedido[],
+  ): Promise<ModoImportacionRps | null> => {
+    const rotuloDe = (linea: LineaPedido) => rotuloElemento(linea, actuales.indexOf(linea));
+    const details = [
+      ...plan.coincidencias.map(({ existente }, i) => `${describirLineaRps(pedido.lineas[i])}: ${existente ? `ya está como ${rotuloDe(existente)}` : 'no está en el pedido'}`),
+      ...plan.ajenas.map((linea) => `${rotuloDe(linea)}: no corresponde a ninguna línea de RPS`),
+    ];
+    const n = actuales.length;
+    const tiene = `El pedido ya tiene ${n} ${n === 1 ? 'elemento' : 'elementos'}.`;
+    const sustituir = '«Sustituir» deja solo las líneas de RPS con sus datos y quita lo demás: se pierde lo escrito o corregido a mano.';
+    const total = pedido.lineas.length;
+    if (plan.faltan.length > 0) {
+      const f = plan.faltan.length;
+      const respuesta = await confirmar({
+        title: `Obtener datos de ${pedido.numero}`,
+        message: `${tiene} RPS trae ${total} ${total === 1 ? 'línea' : 'líneas'} de remolque y ${f === 1 ? 'una no está' : `${f} no están`} todavía en el pedido. «Añadir solo las que faltan» no toca lo que ya hay. ${sustituir}`,
+        details,
+        confirmLabel: 'Añadir solo las que faltan',
+        alternativeLabel: 'Sustituir por las líneas de RPS',
+        cancelLabel: 'Cancelar',
+        tone: 'warning',
+      });
+      return respuesta === 'confirm' ? 'anadir' : respuesta === 'alternative' ? 'sustituir' : null;
     }
-    await aplicarPedidoRps(pedido, pedido.lineas[0], catalogo);
-  }, [aplicarPedidoRps, cargandoPedido, lineas, materialesRef, setMateriales]);
+    const respuesta = await confirmar({
+      title: `Obtener datos de ${pedido.numero}`,
+      message: `${tiene} Todas las líneas de RPS ya están, pero ${plan.ajenas.length > 0 ? 'hay elementos que no vienen de RPS o ' : ''}sus datos no coinciden con los de RPS. ${sustituir}`,
+      details,
+      confirmLabel: 'Sustituir por las líneas de RPS',
+      cancelLabel: 'Cancelar',
+      tone: 'danger',
+    });
+    return respuesta === 'confirm' ? 'sustituir' : null;
+  }, [confirmar]);
+
+  /**
+   * El pedido de RPS convertido en elementos, uno por línea y de una vez, como los toldos al
+   * obtener el pedido (Iván, 30/09/2026: antes se aplicaba cada línea a mano sobre el elemento
+   * abierto). En un pedido vacío se crean sin preguntar: no hay nada que perder. Si ya tiene
+   * elementos, lo automático no toca nada y lo pedido a propósito pregunta.
+   */
+  const importarPedidoRps = useCallback(async (pedido: PedidoRps, aPeticion: boolean) => {
+    const esteMismo = () => normalizarNumeroPedidoRps(estadoRef.current.numeroPedido)
+      === normalizarNumeroPedidoRps(pedido.numero);
+    if (!esteMismo() || estadoRef.current.cargandoPedido) return;
+    if (pedido.lineas.length === 0) {
+      if (aPeticion) avisar('info', 'El pedido existe en RPS, pero no tiene líneas de lona de remolque: añade los elementos a mano.');
+      return;
+    }
+    if (!aPeticion && estadoRef.current.lineas.length > 0) return;
+    const deRps = lineasDesdePedidoRps(pedido, {
+      materiales: await asegurarMateriales(),
+      params,
+      realizadoPor: usuario,
+      importadoEn: new Date().toISOString(),
+    });
+    // Mientras llegaban las bobinas se pudo cambiar de pedido o empezar a escribir.
+    if (!esteMismo()) return;
+    const actuales = estadoRef.current.lineas;
+    const revisar = pedido.lineas.filter((linea) => linea.requiereRevision).length;
+    const notaRevisar = revisar === 0 ? '' : revisar === 1
+      ? ' Una línea de RPS necesita revisión: está marcada en su elemento.'
+      : ` ${revisar} líneas de RPS necesitan revisión: están marcadas en sus elementos.`;
+    if (actuales.length === 0) {
+      despachar({ tipo: 'RPS_IMPORTADO', lineas: deRps, modo: 'sustituir' });
+      avisar(revisar ? 'info' : 'exito', `${deRps.length} ${deRps.length === 1 ? 'elemento creado' : 'elementos creados'} desde RPS, uno por línea del pedido. Completa en cada pestaña lo que falta; todo se puede editar.${notaRevisar}`);
+      return;
+    }
+    if (!aPeticion) return;
+    const plan = planificarImportacionRps(actuales, deRps);
+    if (plan.alDia) {
+      avisar('info', 'El pedido ya tiene todas las líneas de RPS con sus mismos datos: no hay nada nuevo que traer.');
+      return;
+    }
+    const modo = await preguntarModoImportacion(pedido, plan, actuales);
+    if (!modo || !esteMismo()) return;
+    despachar({ tipo: 'RPS_IMPORTADO', lineas: deRps, modo });
+    if (modo === 'sustituir') {
+      avisar('exito', `Elementos sustituidos por ${deRps.length === 1 ? 'la línea' : `las ${deRps.length} líneas`} de RPS.${notaRevisar}`);
+    } else {
+      const n = plan.faltan.length;
+      avisar('exito', `${n} ${n === 1 ? 'línea de RPS añadida' : 'líneas de RPS añadidas'} al pedido; lo que ya había no se ha tocado.`);
+    }
+  }, [asegurarMateriales, avisar, params, preguntarModoImportacion, usuario]);
 
   const pedidoRpsVisible = calcularPedidoRpsVisible(numeroPedido, rps.pedido);
   const origenRpsActivo = calcularOrigenRpsActivo(numeroPedido, activa);
   const estadoRpsVisible = calcularEstadoRpsVisible(numeroPedido, rps.numeroConsultado, rps.estado);
 
-  // La consulta automática usa siempre la última versión de `aplicarPrimeraLineaRps` sin
-  // depender de su identidad, que cambia con cada tecla (lleva `lineas` dentro).
-  const aplicarPrimeraRef = useRef(aplicarPrimeraLineaRps);
-  useEffect(() => { aplicarPrimeraRef.current = aplicarPrimeraLineaRps; });
-  const alEncontrarPedidoUnico = useCallback((pedido: PedidoRps) => aplicarPrimeraRef.current(pedido), []);
+  // La consulta usa siempre la última versión de `importarPedidoRps` sin depender de su
+  // identidad, que cambia con los catálogos y el usuario.
+  const importarRef = useRef(importarPedidoRps);
+  useEffect(() => { importarRef.current = importarPedidoRps; });
+  const alEncontrarPedido = useCallback((pedido: PedidoRps, numero: string) => {
+    const aPeticion = importarAlLlegar.current === numero;
+    if (aPeticion) importarAlLlegar.current = '';
+    return importarRef.current(pedido, aPeticion);
+  }, []);
 
   useConsultaRps({
     numeroPedido,
     reintento: rps.reintento,
     despachar,
-    onPedidoUnicaLinea: alEncontrarPedidoUnico,
+    onPedidoEncontrado: alEncontrarPedido,
     reiniciarGuarda: reiniciarGuardaRps,
   });
 
-  const cambiarNumeroPedido = (valor: string) => despachar({ tipo: 'PEDIDO_CAMBIADO', valor });
+  const cambiarNumeroPedido = (valor: string) => {
+    // Lo pedido a propósito era para el número de antes: al volver a él, lo que salga solo al
+    // teclearlo no debe preguntar como si se hubiera pulsado «Obtener datos del pedido».
+    if (normalizarNumeroPedidoRps(valor) !== importarAlLlegar.current) importarAlLlegar.current = '';
+    despachar({ tipo: 'PEDIDO_CAMBIADO', valor });
+  };
   const cambiarClientePedido = (valor: string) => despachar({ tipo: 'CLIENTE_CAMBIADO', valor });
   const cambiarFechaPedido = (valor: string) => despachar({ tipo: 'FECHA_CAMBIADA', valor });
-
-  const lineaSeleccionada = pedidoRpsVisible?.lineas.find((linea) => linea.idLinea === origenRpsActivo?.idLinea) ?? null;
-  const materialRpsAplicado = Boolean(lineaSeleccionada && (
-    lineaSeleccionada.materialSugerido || materialPreferidoRps(lineaSeleccionada, materiales)
-  ));
 
   const cambiarInput = (entrada: LonaInput | BaquetonInput) =>
     despachar({ tipo: 'INPUT_CAMBIADO', input: entrada });
 
-  const abrirSelectorRps = () => despachar({ tipo: 'RPS_SELECTOR_ABIERTO' });
-
-  /** «Obtener datos del pedido»: vuelve a consultar RPS aunque ya se hubiera consultado. */
-  const reintentarRps = () => {
+  /**
+   * «Obtener datos del pedido» (y «Reintentar»): vuelve a consultar RPS aunque ya se hubiera
+   * consultado y, al llegar, crea los elementos; si el pedido ya tiene, pregunta antes.
+   */
+  const obtenerDatosPedido = useCallback((numero?: string) => {
+    importarAlLlegar.current = normalizarNumeroPedidoRps(numero ?? estadoRef.current.numeroPedido);
     reiniciarGuardaRps.current?.();
     despachar({ tipo: 'RPS_REINTENTADO' });
-  };
+  }, []);
+
+  /** «Abrir en Remolques» desde Toldos: abre el pedido y lo obtiene como el botón. */
+  const abrirPedido = useCallback((numero: string) => {
+    despachar({ tipo: 'PEDIDO_CAMBIADO', valor: numero });
+    obtenerDatosPedido(numero);
+  }, [obtenerDatosPedido]);
 
   return {
     estado,
@@ -540,7 +582,6 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     pedidoRpsVisible,
     origenRpsActivo,
     estadoRpsVisible,
-    materialRpsAplicado,
     // manejadores
     cambiarNumeroPedido,
     cambiarClientePedido,
@@ -549,9 +590,8 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     seleccionarLinea,
     eliminarLinea,
     nuevaLinea,
-    aplicarPedidoRps,
-    abrirSelectorRps,
-    reintentarRps,
+    obtenerDatosPedido,
+    abrirPedido,
     marcarCampoTocado,
   };
 }

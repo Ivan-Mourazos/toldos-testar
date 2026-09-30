@@ -39,6 +39,10 @@
   max-width: 24rem;
   padding: 1rem;
 }
+/* Con tres salidas (p. ej. «Sustituir» o «Añadir solo las que faltan»), el ancho justo para
+   que los tres botones quepan en una fila sin partir su texto. */
+.confirmation-dialog.is-tres-salidas { max-height: 80vh; max-width: 34rem; }
+.confirmation-dialog.is-tres-salidas .confirmation-actions button { white-space: nowrap; }
 .confirmation-heading { gap: 0.625rem; padding-right: 2rem; }
 .confirmation-heading > div { gap: 0; }
 .confirmation-heading h2 {

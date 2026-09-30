@@ -33,12 +33,11 @@ const conDosLineas = (): EstadoWorkspace => {
 };
 
 describe("estadoInicial", () => {
-  it("arranca sin líneas, sin línea activa y con el selector de RPS abierto", () => {
+  it("arranca sin líneas y sin línea activa", () => {
     const estado = estadoInicial();
     expect(estado.lineas).toEqual([]);
     expect(estado.versionActiva).toBeNull();
     expect(estado.numeroPedido).toBe("");
-    expect(estado.rps.selectorAbierto).toBe(true);
   });
 
   it("al reutilizar un registro lo abre como línea con su id", () => {
@@ -73,7 +72,6 @@ describe("PEDIDO_CAMBIADO", () => {
       cargandoPedido: true,
       validacionIntentada: false,
       camposTocados: [],
-      rps: { ...previo.rps, selectorAbierto: true },
     });
   });
 
@@ -143,7 +141,6 @@ describe("LINEA_ANADIDA", () => {
       versionActiva: "12",
       validacionIntentada: false,
       camposTocados: [],
-      rps: { ...previo.rps, selectorAbierto: true },
     });
   });
 
@@ -166,7 +163,6 @@ describe("LINEA_SELECCIONADA y LINEA_ELIMINADA", () => {
     const estado = reducirWorkspace(previo, { tipo: "LINEA_SELECCIONADA", version: "10" });
     expect(estado).toEqual({
       ...previo, versionActiva: "10", validacionIntentada: false, camposTocados: [],
-      rps: { ...previo.rps, selectorAbierto: false },
     });
   });
 
@@ -282,10 +278,8 @@ describe("acciones de RPS y de proceso", () => {
     expect(reducirWorkspace(buscando, { tipo: "RPS_ERROR", mensaje: "boom" }).rps.error).toBe("boom");
   });
 
-  it("RPS_SELECTOR_ABIERTO y RPS_REINTENTADO solo tocan lo suyo", () => {
+  it("RPS_REINTENTADO solo toca lo suyo", () => {
     const previo = conDosLineas();
-    expect(reducirWorkspace(previo, { tipo: "RPS_SELECTOR_ABIERTO" }))
-      .toEqual({ ...previo, rps: { ...previo.rps, selectorAbierto: true } });
     expect(reducirWorkspace(previo, { tipo: "RPS_REINTENTADO" }))
       .toEqual({ ...previo, rps: { ...previo.rps, reintento: previo.rps.reintento + 1 } });
   });
@@ -294,6 +288,71 @@ describe("acciones de RPS y de proceso", () => {
     const ocupado = reducirWorkspace(conPedido(), { tipo: "ACCION_INICIADA", accion: "completar" });
     expect(ocupado.accion).toBe("completar");
     expect(reducirWorkspace(ocupado, { tipo: "ACCION_TERMINADA" }).accion).toBeNull();
+  });
+});
+
+describe("RPS_IMPORTADO", () => {
+  // Iván, 30/09/2026: obtener el pedido crea de una vez un elemento por línea de RPS.
+  const deRps = (version: string, idLinea: string, cambios: Partial<LonaInput> = {}): LineaPedido => ({
+    version, tipo: "lona", snapshotSvg: null,
+    input: {
+      ...inputCon(version, cambios),
+      cabecera: { ...inputCon(version).cabecera, numeroPedido: "AR.26.03583", cliente: "TALLERES RPS", ordenFabricacion: `OF-${idLinea}` },
+    },
+    origenRps: {
+      numeroPedido: "AR.26.03583", numeroLinea: Number(idLinea.slice(1)), idLinea,
+      ordenFabricacion: `OF-${idLinea}`, importadoEn: "2026-09-30T10:00:00Z",
+    },
+  });
+  const tres = [deRps("10", "L1", { largo: 250 }), deRps("11", "L2", { largo: 258 }), deRps("12", "L3", { largo: 250 })];
+
+  it("en un pedido vacío crea todos los elementos, abre el primero y trae el cliente", () => {
+    const previo = reducirWorkspace(conPedido(), { tipo: "CLIENTE_CAMBIADO", valor: "" });
+    const estado = reducirWorkspace(previo, { tipo: "RPS_IMPORTADO", lineas: tres, modo: "sustituir" });
+    expect(estado.lineas.map((l) => l.origenRps?.idLinea)).toEqual(["L1", "L2", "L3"]);
+    expect(estado.versionActiva).toBe("10");
+    expect(estado.cliente).toBe("TALLERES RPS");
+    // El número se escribe como en la cabecera, igual que al teclearlo.
+    for (const l of estado.lineas) expect(l.input.cabecera.numeroPedido).toBe("AR2603583");
+  });
+
+  it("lo escrito a mano en el cliente del pedido manda, también en los elementos nuevos", () => {
+    const previo = reducirWorkspace(conPedido(), { tipo: "CLIENTE_CAMBIADO", valor: "MI CLIENTE" });
+    const estado = reducirWorkspace(previo, { tipo: "RPS_IMPORTADO", lineas: tres, modo: "sustituir" });
+    expect(estado.cliente).toBe("MI CLIENTE");
+    for (const l of estado.lineas) expect(l.input.cabecera.cliente).toBe("MI CLIENTE");
+  });
+
+  it("sustituir quita lo que había y limpia la validación", () => {
+    const previo = reducirWorkspace(conDosLineas(), { tipo: "VALIDACION_INTENTADA" });
+    const estado = reducirWorkspace(previo, { tipo: "RPS_IMPORTADO", lineas: tres, modo: "sustituir" });
+    expect(estado.lineas).toHaveLength(3);
+    expect(estado.lineas.every((l) => l.origenRps)).toBe(true);
+    expect(estado.validacionIntentada).toBe(false);
+  });
+
+  it("añadir solo las que faltan conserva lo que había y abre la primera añadida", () => {
+    const previo = conDosLineas();
+    const estado = reducirWorkspace(previo, { tipo: "RPS_IMPORTADO", lineas: tres, modo: "anadir" });
+    expect(estado.lineas.map((l) => [l.version, l.origenRps?.idLinea ?? null])).toEqual([
+      ["10", null], ["11", null], ["12", "L1"], ["13", "L2"], ["14", "L3"],
+    ]);
+    expect(estado.lineas[0].input).toEqual(previo.lineas[0].input);
+    expect(estado.versionActiva).toBe("12");
+  });
+
+  it("obtener otra vez el mismo pedido no duplica elementos", () => {
+    const una = reducirWorkspace(conPedido(), { tipo: "RPS_IMPORTADO", lineas: tres, modo: "sustituir" });
+    const anadir = reducirWorkspace(una, { tipo: "RPS_IMPORTADO", lineas: tres, modo: "anadir" });
+    expect(anadir.lineas).toHaveLength(3);
+    expect(anadir.versionActiva).toBe(una.versionActiva);
+    const sustituir = reducirWorkspace(una, { tipo: "RPS_IMPORTADO", lineas: tres, modo: "sustituir" });
+    expect(sustituir.lineas).toHaveLength(3);
+  });
+
+  it("sin líneas de RPS no cambia nada", () => {
+    const previo = conDosLineas();
+    expect(reducirWorkspace(previo, { tipo: "RPS_IMPORTADO", lineas: [], modo: "anadir" })).toBe(previo);
   });
 });
 

@@ -1,25 +1,19 @@
 import React from 'react';
 import { DatabaseZap, LoaderCircle } from 'lucide-react';
 import { FORMA_PEDIDO_RPS, normalizarNumeroPedidoRps } from '../../remolques/rps/numero-pedido.ts';
-import type { LineaPedidoRps, OrigenRps, PedidoRps } from '../../remolques/rps/types.ts';
+import type { PedidoRps } from '../../remolques/rps/types.ts';
+import { indiceElementoDeLineaRps } from '../../remolques/workspace/importar-rps.ts';
+import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import type { EstadoConsultaRps } from '../../remolques/workspace/selectores.ts';
+import { awningLetter } from '../../domain/awningCompleteness.js';
+import { medidasLineaRps } from './rotulo';
 
 // Cabecera del pedido de remolques: la de toldos (`order-header`, mismas clases y mismo
 // marcado de campos) con «Pedido», «Cliente», «Fecha» y «Obtener datos del pedido». A la
-// derecha, en el sitio de «Tela», lo que enseñaba `ImportadorRps` en la web de remolques:
-// las líneas que RPS trae del pedido y cuál se ha aplicado. Sin «Realizado por»: lo pone «Soy».
-
-const medidas = (linea: LineaPedidoRps) => {
-  if (linea.tipoTrabajo === 'baqueton') {
-    return [linea.largo, linea.ancho, linea.baqueton].map((v) => v ?? '—').join(' × ');
-  }
-  const alto = linea.alto ?? (
-    linea.altoDelante !== null || linea.altoAtras !== null
-      ? `${linea.altoDelante ?? '—'}/${linea.altoAtras ?? '—'}`
-      : '—'
-  );
-  return [linea.largo, linea.ancho, alto].map((v) => v ?? '—').join(' × ');
-};
+// derecha, en el sitio de «Tela», el pedido tal como está en RPS y en qué elemento ha quedado
+// cada una de sus líneas. Obtener el pedido crea un elemento por línea de una vez, como en
+// toldos (Iván, 30/09/2026); ya no hay que aplicar las líneas una a una. Sin «Realizado por»:
+// lo pone «Soy».
 
 type Props = {
   numeroPedido: string;
@@ -32,11 +26,10 @@ type Props = {
   estadoRps: EstadoConsultaRps;
   pedidoRps: PedidoRps | null;
   errorRps: string | null;
-  origenRps: OrigenRps | null;
-  materialAplicado: boolean;
-  selectorRpsAbierto: boolean;
-  onAbrirSelector: () => void;
-  onAplicarLinea: (linea: LineaPedidoRps) => void;
+  /** Los elementos del pedido, para decir en cuál está cada línea de RPS. */
+  lineas: LineaPedido[];
+  versionActiva: string | null;
+  onAbrirElemento: (version: string) => void;
   onConsultarRps: () => void;
 };
 
@@ -87,24 +80,23 @@ export function CabeceraPedido(props: Props) {
             {consultando ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <DatabaseZap aria-hidden="true" />}
             {consultando ? 'Consultando RPS…' : 'Obtener datos del pedido'}
           </button>
-          <span>Rellena lo disponible; después todo se puede editar.</span>
+          <span>Crea un elemento por cada línea de remolque; después todo se puede editar.</span>
         </div>
       </div>
 
       <div className="order-header-group order-header-rps">
         <h3>Pedido en RPS</h3>
-        <ImportadorRps {...props} />
+        <PedidoEnRps {...props} />
       </div>
     </section>
   );
 }
 
-function ImportadorRps({
-  estadoRps, pedidoRps, errorRps, origenRps, materialAplicado, selectorRpsAbierto,
-  onAbrirSelector, onAplicarLinea, onConsultarRps,
+function PedidoEnRps({
+  estadoRps, pedidoRps, errorRps, lineas, numeroPedido, versionActiva, onAbrirElemento, onConsultarRps,
 }: Props) {
   if (estadoRps === 'idle') {
-    return <p className="rem-rps-vacio">Escribe el pedido completo y RPS cargará cliente, OF, cantidad y medidas.</p>;
+    return <p className="rem-rps-vacio">Escribe el pedido completo: se crea un elemento por cada línea de remolque de RPS, con cliente, OF, cantidad y medidas.</p>;
   }
 
   if (estadoRps === 'buscando') {
@@ -129,21 +121,9 @@ function ImportadorRps({
 
   if (!pedidoRps) return null;
 
-  if (origenRps && !selectorRpsAbierto) {
-    const linea = pedidoRps.lineas.find((candidata) => candidata.idLinea === origenRps.idLinea);
-    return (
-      <div className="rem-rps-aplicada">
-        <div>
-          <strong>RPS · Línea {origenRps.numeroLinea} aplicada</strong>
-          <span>
-            {linea?.ordenFabricacion ? `OF ${linea.ordenFabricacion} · ` : ''}
-            {linea ? `${medidas(linea)} cm · ${linea.cantidad} ud.` : pedidoRps.numero}
-          </span>
-        </div>
-        <button type="button" className="ghost-button" onClick={onAbrirSelector}>Cambiar línea</button>
-      </div>
-    );
-  }
+  const enPedido = pedidoRps.lineas.map((linea) => indiceElementoDeLineaRps(lineas, numeroPedido, linea));
+  const faltan = enPedido.filter((indice) => indice < 0).length;
+  const total = pedidoRps.lineas.length;
 
   return (
     <div className="rem-rps-pedido">
@@ -152,42 +132,48 @@ function ImportadorRps({
         <span>{pedidoRps.cliente.codigo}</span>
         <span className="rem-rps-numero">{pedidoRps.numero}</span>
       </p>
-      {pedidoRps.lineas.length === 0 ? (
+      {total === 0 ? (
         <p className="rem-rps-vacio">El pedido existe, pero no contiene líneas de lona de remolque.</p>
       ) : (
-        <ul className="rem-rps-lineas scroll-thin">
-          {pedidoRps.lineas.map((linea) => {
-            const seleccionada = origenRps?.idLinea === linea.idLinea;
-            return (
-              <li key={linea.idLinea} className={`rem-rps-linea${seleccionada ? ' is-seleccionada' : ''}`}>
-                <div className="rem-rps-linea-datos">
-                  <p className="rem-rps-linea-titulo">
-                    <strong>Línea {linea.numeroLinea} · {linea.tipoTrabajo === 'lona' ? 'Lona' : 'Baquetón'}</strong>
-                    {linea.requiereRevision && <span className="pildora-aviso rem-etiqueta">Revisar</span>}
-                    {linea.ordenFabricacion && <span className="rem-rps-of">OF {linea.ordenFabricacion}</span>}
-                  </p>
-                  <p className="rem-rps-medidas">{medidas(linea)} cm · {linea.cantidad} ud.</p>
-                  <p className="rem-rps-detalle" title={linea.detalle}>{linea.detalle || linea.descripcion}</p>
-                  {seleccionada && (
-                    <p className="rem-rps-notas">
-                      <span className="rem-rps-ok">✓ Datos copiados y editables</span>
-                      {linea.materialRps.texto && <span>RPS: {linea.materialRps.texto}{materialAplicado ? ' · bobina aplicada' : ' · elige bobina'}</span>}
-                      <span>
-                        Rotulación RPS: {linea.tipoRotulacion ?? (linea.rotulacion === null ? 'no indicada · revisar' : linea.rotulacion ? 'sí' : 'no')}
-                        {linea.textoRotulacion ? ` · «${linea.textoRotulacion}»` : ''}
-                      </span>
-                      {(linea.recogidaDelante || linea.recogidaAtras) && <span>Revisar el tipo de recogida</span>}
-                      {linea.tipoTrabajo === 'lona' && <span>Revisar perfil y contorno</span>}
+        <>
+          <p className={`rem-rps-resumen${faltan ? ' is-falta' : ''}`} role="status">
+            {faltan === 0
+              ? `${total === 1 ? 'Su línea de remolque está' : `Sus ${total} líneas de remolque están`} en el pedido.`
+              : `${faltan} de ${total} ${total === 1 ? 'línea' : 'líneas'} sin elemento: pulsa «Obtener datos del pedido» para traerlas.`}
+          </p>
+          <ul className="rem-rps-lineas scroll-thin">
+            {pedidoRps.lineas.map((linea, i) => {
+              const indice = enPedido[i];
+              const elemento = indice >= 0 ? lineas[indice] : null;
+              const activa = Boolean(elemento && elemento.version === versionActiva);
+              return (
+                <li key={linea.idLinea} className={`rem-rps-linea${activa ? ' is-seleccionada' : ''}`}>
+                  <div className="rem-rps-linea-datos">
+                    <p className="rem-rps-linea-titulo">
+                      <strong>Línea {linea.numeroLinea} · {linea.tipoTrabajo === 'lona' ? 'Lona' : 'Baquetón'}</strong>
+                      {linea.requiereRevision && <span className="pildora-aviso rem-etiqueta">Revisar</span>}
+                      {linea.ordenFabricacion && <span className="rem-rps-of">OF {linea.ordenFabricacion}</span>}
                     </p>
+                    <p className="rem-rps-medidas">{medidasLineaRps(linea)} cm · {linea.cantidad} ud.</p>
+                    <p className="rem-rps-detalle" title={linea.detalle}>{linea.detalle || linea.descripcion}</p>
+                  </div>
+                  {elemento ? (
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      aria-current={activa ? 'true' : undefined}
+                      onClick={() => onAbrirElemento(elemento.version)}
+                    >
+                      {activa ? `Abierto · ${awningLetter(indice)}` : `Abrir ${awningLetter(indice)}`}
+                    </button>
+                  ) : (
+                    <span className="pildora-aviso rem-etiqueta">Sin elemento</span>
                   )}
-                </div>
-                <button type="button" className="ghost-button" onClick={() => onAplicarLinea(linea)}>
-                  {seleccionada ? 'Volver a aplicar' : 'Usar línea'}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import type { EstadoConsultaRps } from "./selectores.ts";
 import {
   fusionarLineas, lineasDesdeRegistros, type LineaPedido,
 } from "./lineas.ts";
+import { lineasTrasImportar, type ModoImportacionRps } from "./importar-rps.ts";
 import { normalizarNumeroPedidoRps } from "../rps/numero-pedido.ts";
 
 export interface EstadoRpsWorkspace {
@@ -15,7 +16,6 @@ export interface EstadoRpsWorkspace {
   pedido: PedidoRps | null;
   error: string | null;
   reintento: number;
-  selectorAbierto: boolean;
 }
 
 export interface EstadoWorkspace {
@@ -57,7 +57,7 @@ export type AccionWorkspace =
   | { tipo: "INPUT_CAMBIADO"; input: LonaInput | BaquetonInput }
   | { tipo: "SNAPSHOT_CAPTURADO"; version: string; svg: string | null }
   | { tipo: "PEDIDO_COMPLETADO"; numeroPedido: string; registros: PlanteamientoRecord[] }
-  | { tipo: "RPS_SELECTOR_ABIERTO" }
+  | { tipo: "RPS_IMPORTADO"; lineas: LineaPedido[]; modo: ModoImportacionRps }
   | { tipo: "RPS_REINTENTADO" }
   | { tipo: "RPS_CONSULTA_INICIADA"; numero: string }
   | { tipo: "RPS_ENCONTRADO"; pedido: PedidoRps }
@@ -108,7 +108,7 @@ export function estadoInicial(inicial?: EntradaInicial): EstadoWorkspace {
     camposTocados: [],
     rps: {
       estado: "idle", numeroConsultado: "", pedido: null, error: null,
-      reintento: 0, selectorAbierto: true,
+      reintento: 0,
     },
     accion: null,
   };
@@ -139,7 +139,6 @@ export function reducirWorkspace(
         versionActiva: null,
         cargandoPedido: Boolean(normalizarNumeroPedidoRps(accion.valor)),
         ...SIN_VALIDAR,
-        rps: { ...estado.rps, selectorAbierto: true },
       };
     }
 
@@ -190,7 +189,6 @@ export function reducirWorkspace(
           : [...estado.lineas, accion.linea],
         versionActiva: accion.linea.version,
         ...SIN_VALIDAR,
-        rps: { ...estado.rps, selectorAbierto: !accion.linea.origenRps },
       };
     }
 
@@ -201,7 +199,6 @@ export function reducirWorkspace(
         ...estado,
         versionActiva: accion.version,
         ...SIN_VALIDAR,
-        rps: { ...estado.rps, selectorAbierto: false },
       };
     }
 
@@ -255,8 +252,29 @@ export function reducirWorkspace(
       };
     }
 
-    case "RPS_SELECTOR_ABIERTO":
-      return { ...estado, rps: { ...estado.rps, selectorAbierto: true } };
+    case "RPS_IMPORTADO": {
+      // Un elemento por línea de RPS de una vez, como los toldos al obtener el pedido. Qué se
+      // sustituye o se añade lo decide `lineasTrasImportar` con las líneas de este momento, no
+      // con las que había cuando se lanzó la consulta.
+      if (accion.lineas.length === 0) return estado;
+      const resultado = lineasTrasImportar(estado.lineas, accion.lineas, accion.modo);
+      // El cliente es del pedido: lo escrito a mano manda y, si no hay, se toma el de RPS. Los
+      // elementos nuevos llevan el de la cabecera y el número como se tecleó, igual que al
+      // escribirlos; los que ya estaban no se tocan (solo reciben cliente si no tenían).
+      const clienteRps = accion.lineas[0].input.cabecera.cliente.trim();
+      const cliente = estado.cliente.trim() ? estado.cliente : clienteRps;
+      const lineas = resultado.lineas.map((linea) => {
+        if (!estado.lineas.includes(linea)) return conCliente(conNumeroPedido(linea, estado.numeroPedido), cliente);
+        return linea.input.cabecera.cliente.trim() ? linea : conCliente(linea, cliente);
+      });
+      return {
+        ...estado,
+        cliente,
+        lineas,
+        versionActiva: resultado.versionActiva ?? estado.versionActiva,
+        ...(resultado.versionActiva ? SIN_VALIDAR : {}),
+      };
+    }
 
     case "RPS_REINTENTADO":
       return { ...estado, rps: { ...estado.rps, reintento: estado.rps.reintento + 1 } };

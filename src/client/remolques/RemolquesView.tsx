@@ -5,6 +5,7 @@ import { DibujoRemolque } from './DibujoRemolque';
 import { Escena3D } from './Escena3D';
 import { FormularioBaqueton } from './FormularioBaqueton';
 import { FormularioLona } from './FormularioLona';
+import { OrigenRpsElemento } from './OrigenRps';
 import { PestanasElementos } from './PestanasElementos';
 import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
@@ -23,16 +24,16 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   pedidoSolicitado?: { numero: string; id: number } | null;
 }) {
   const ws = useRemolques({ usuario, notify, askForConfirmation });
-  // Solo se atiende cada petición una vez: `cambiarNumeroPedido` cambia de identidad en cada
-  // pintado y, como dependencia, repetiría la orden y pisaría lo que se escriba después.
+  // Solo se atiende cada petición una vez: repetirla pisaría lo que se escriba después. Abrir
+  // el pedido desde Toldos es pedirlo a propósito: crea sus elementos como «Obtener datos del
+  // pedido» y, si ya tenía, pregunta.
   const ultimoPedidoSolicitado = React.useRef<number | null>(null);
-  const cambiarNumeroRef = React.useRef(ws.cambiarNumeroPedido);
-  React.useEffect(() => { cambiarNumeroRef.current = ws.cambiarNumeroPedido; });
+  const { abrirPedido } = ws;
   React.useEffect(() => {
     if (!pedidoSolicitado || ultimoPedidoSolicitado.current === pedidoSolicitado.id) return;
     ultimoPedidoSolicitado.current = pedidoSolicitado.id;
-    cambiarNumeroRef.current(pedidoSolicitado.numero);
-  }, [pedidoSolicitado]);
+    abrirPedido(pedidoSolicitado.numero);
+  }, [abrirPedido, pedidoSolicitado]);
   const {
     numeroPedido, cliente, fecha, lineas, versionActiva, cargandoPedido, rps,
   } = ws.estado;
@@ -57,14 +58,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           estadoRps={ws.estadoRpsVisible}
           pedidoRps={ws.pedidoRpsVisible}
           errorRps={rps.error}
-          origenRps={ws.origenRpsActivo}
-          materialAplicado={ws.materialRpsAplicado}
-          selectorRpsAbierto={rps.selectorAbierto}
-          onAbrirSelector={ws.abrirSelectorRps}
-          onAplicarLinea={(linea) => {
-            if (ws.pedidoRpsVisible) void ws.aplicarPedidoRps(ws.pedidoRpsVisible, linea);
-          }}
-          onConsultarRps={ws.reintentarRps}
+          lineas={lineas}
+          versionActiva={versionActiva}
+          onAbrirElemento={ws.seleccionarLinea}
+          onConsultarRps={() => ws.obtenerDatosPedido()}
         />
         {ws.origenMateriales === 'semilla' && (
           <p className="rem-aviso-materiales" role="status">
@@ -93,6 +90,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
             <p className="rem-editor-etiqueta">Editando dentro de {numeroPedido}</p>
             <h2>{rotuloElemento(lineaActiva, indiceActivo)}</h2>
           </header>
+          {ws.origenRpsActivo && <OrigenRpsElemento origen={ws.origenRpsActivo} />}
           <div className="rem-editor-cuerpo">
             <div className="rem-editor-izquierda">
               {lineaActiva.tipo === 'lona' ? (
@@ -184,7 +182,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           <p>
             {hayPedido
               ? 'Usa «+ Remolque» o «+ Baquetón». Cada uno queda dentro de este pedido.'
-              : 'Escribe arriba el número de pedido. Si existe en RPS, se cargan sus líneas automáticamente.'}
+              : 'Escribe arriba el número de pedido. Si existe en RPS, se crea un elemento por cada línea de remolque.'}
           </p>
         </section>
       )}

@@ -4,7 +4,8 @@ import { CheckCircle2, CircleAlert, CircleX, Info, TriangleAlert, X } from 'luci
 
 export type NotificationTone = 'success' | 'error' | 'warning' | 'info';
 export type DialogTone = 'default' | 'warning' | 'danger';
-export type DialogResult = 'confirm' | 'cancel' | 'dismiss';
+/** 'alternative': el tercer botón, solo si se pidió con `alternativeLabel`. */
+export type DialogResult = 'confirm' | 'alternative' | 'cancel' | 'dismiss';
 
 export type NotifyOptions = {
   tone?: NotificationTone;
@@ -17,6 +18,11 @@ export type ConfirmOptions = {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  /**
+   * Una segunda salida además de confirmar (p. ej. «Sustituir» frente a «Añadir solo las que
+   * faltan»); va entre cancelar y confirmar, en rojo porque suele ser la que borra.
+   */
+  alternativeLabel?: string;
   tone?: DialogTone;
   details?: string[];
 };
@@ -310,7 +316,7 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
     <div className="confirmation-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onResolve('dismiss'); }}>
       <section
         ref={dialogRef}
-        className={`confirmation-dialog confirmation-${tone}`}
+        className={`confirmation-dialog confirmation-${tone}${dialog.alternativeLabel ? ' is-tres-salidas' : ''}`}
       >
         <button type="button" className="confirmation-close boton-3d" onClick={() => onResolve('dismiss')} aria-label="Cerrar diálogo"><X aria-hidden="true" /></button>
         <div className="confirmation-heading">
@@ -328,6 +334,9 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
         )}
         <div className="confirmation-actions">
           <button ref={cancelRef} className="ghost-button" type="button" onClick={() => onResolve('cancel')}>{dialog.cancelLabel || 'Cancelar'}</button>
+          {dialog.alternativeLabel && (
+            <button className="danger-button boton-3d" type="button" onClick={() => onResolve('alternative')}>{dialog.alternativeLabel}</button>
+          )}
           <button className={tone === 'danger' ? 'danger-button boton-3d' : 'primary-button boton-3d'} type="button" onClick={() => onResolve('confirm')}>{dialog.confirmLabel || 'Continuar'}</button>
         </div>
       </section>

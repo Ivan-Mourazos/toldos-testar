@@ -57,3 +57,31 @@ describe('reducirRemolques · el resto de acciones no toca el cliente', () => {
     expect(siguiente.cliente).toBe('NUEVO');
   });
 });
+
+describe('reducirRemolques · obtener el pedido de RPS', () => {
+  const deRps = (version: string, idLinea: string): LineaPedido => ({
+    ...linea(version, 'TALLERES RPS', '2026-09-07'),
+    origenRps: {
+      numeroPedido: 'AR.26.04414', numeroLinea: 1, idLinea,
+      ordenFabricacion: null, importadoEn: '2026-09-30T10:00:00Z',
+    },
+  });
+  const conPedido = (): EstadoRemolques => reducirRemolques(vacio(), { tipo: 'PEDIDO_CAMBIADO', valor: 'AR2604414' });
+
+  it('al crear los elementos, la fecha del pedido es la de RPS, en la cabecera y en todos', () => {
+    const siguiente = reducirRemolques(conPedido(), {
+      tipo: 'RPS_IMPORTADO', lineas: [deRps('10', 'L1'), deRps('11', 'L2')], modo: 'sustituir',
+    });
+    expect(siguiente.fecha).toBe('2026-09-07');
+    expect(siguiente.lineas.map((l) => l.input.cabecera.fecha)).toEqual(['2026-09-07', '2026-09-07']);
+    expect(siguiente.cliente).toBe('TALLERES RPS');
+  });
+
+  it('al añadir solo las que faltan, la fecha escrita en la cabecera se queda y la llevan las nuevas', () => {
+    const conFecha = reducirRemolques(conPedido(), { tipo: 'FECHA_CAMBIADA', valor: '2026-09-15' });
+    const conUno = reducirRemolques(conFecha, { tipo: 'LINEA_ANADIDA', linea: linea('10', '', '2026-09-15') });
+    const siguiente = reducirRemolques(conUno, { tipo: 'RPS_IMPORTADO', lineas: [deRps('10', 'L1')], modo: 'anadir' });
+    expect(siguiente.fecha).toBe('2026-09-15');
+    expect(siguiente.lineas.map((l) => [l.version, l.input.cabecera.fecha])).toEqual([['10', '2026-09-15'], ['11', '2026-09-15']]);
+  });
+});

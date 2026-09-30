@@ -53,4 +53,12 @@ export interface OrigenRps {
   idLinea: string;
   ordenFabricacion: string | null;
   importadoEn: string;
+  // Lo que el elemento necesita para enseñar de dónde salió sin volver a consultar RPS (los
+  // borradores del navegador lo conservan). Opcional: las líneas importadas antes no lo traen.
+  /** RPS no da las medidas de forma inequívoca (p. ej. «CONFECCIÓN SEGÚN PATRÓN»). */
+  requiereRevision?: boolean;
+  /** Lo que conviene comprobar a mano de lo que trajo RPS. */
+  avisos?: string[];
+  /** El texto de la línea en RPS, para contrastarlo. */
+  texto?: string;
 }
