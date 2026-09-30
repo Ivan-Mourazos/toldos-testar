@@ -221,10 +221,10 @@ function buildMaterials(context) {
 
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
-    // Se consume Sunilus en todas las variantes (también con cofre), con la rueda Ø78 y
-    // la corona LT60 a Ø78 (11 OF) y el kit de tornillos del motor (10 OF).
+    // Taller, 30/09/2026 (Q-AG02): motor siempre Sunea, también en el Open y sin cofre. Va con
+    // la rueda Ø78, la corona LT60 a Ø78 (11 OF) y el kit de tornillos del motor (10 OF).
     materials.push(
-      line(motorCode(motorPower), units, `MOTOR SOMFY SUNILUS ${motorLabel(motorPower)} IO`),
+      line(motorCode(motorPower), units, `MOTOR SOMFY SUNEA ${motorLabel(motorPower)} IO`),
       line('RUEDAMOT78', units, 'RUEDA MOTRIZ Ø78'),
       line('CORONALT60DESC', units, 'CORONA ADAPTADA LT60 A Ø78'),
       line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
@@ -238,7 +238,8 @@ function buildMaterials(context) {
     materials.push(
       line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`),
       line(`MANIVE${crankSuffix(lacado)}${height}C`, units, `MANIVELA LUXE ${lacado.crank} ${height}`),
-      line('CASMAQEJE6378MM', units, 'CASQUILLO EJE 63MM Ø78')
+      // Taller, 30/09/2026 (Q-PR02): sin saber si la máquina es exterior o interior, eje 50.
+      line('CASMAQEJE5078MM', units, 'CASQUILLO MAQUINA EJE 50MM Ø78')
     );
   }
   if (fabric) materials.push(line(fabric.code, fabricMl, fabric.description));
@@ -261,7 +262,7 @@ function buildDespiece(context) {
   push(1, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX', colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units);
   pushBars(2, 'TUBO DE ENROLLE P801', bars.roll, (length) => `TURA80HG${length}C`, units, lengths.rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
-  push(4, device === 'MAQUINA' ? 'CASQUILLO EJE 63MM Ø78' : 'SOPORTE UNIVERSAL HIPRO', device === 'MAQUINA' ? 'CASMAQEJE6378MM' : 'SOPORTEUNVHIPRO', units);
+  push(4, device === 'MAQUINA' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'SOPORTE UNIVERSAL HIPRO', device === 'MAQUINA' ? 'CASMAQEJE5078MM' : 'SOPORTEUNVHIPRO', units);
   pushBars(5, `BARRA DE CARGA ÁGATA ${submodel}`, bars.load, (length) => coloredStock(loadBarPrefix(submodel), suffix, length), units, lengths.loadBarLength);
   pushBars(6, 'BARRA CUADRADA 40x40x2', bars.square, (length) => coloredStock('TUBHI442', suffix, length), units, lengths.squareBarLength);
   push(5, 'TAPAS BARRA DE CARGA ÁGATA BOX', colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units);
@@ -270,7 +271,7 @@ function buildDespiece(context) {
   push(7, 'JUEGO TERMINAL ÁGATA BOX', colored('TERMIMODUL', suffix), Math.floor(armCount / 2) * units);
   if (device === 'MOTOR') {
     push(9, 'RUEDA MOTRIZ Ø78', 'RUEDAMOT78', units);
-    push(10, `MOTOR SOMFY SUNILUS ${motorLabel(motorPower)} IO`, motorCode(motorPower), units);
+    push(10, `MOTOR SOMFY SUNEA ${motorLabel(motorPower)} IO`, motorCode(motorPower), units);
     push(11, 'CORONA ADAPTADA LT60 A Ø78', 'CORONALT60DESC', units);
     push(11, 'KIT TORNILLOS FIJACION MOTOR MODULBOX', 'KITTORMODUL', units);
   } else {
@@ -363,10 +364,10 @@ function joinKitLines(width, units) {
   ];
 }
 
-// El Sunilus de 50, 100 y 120 solo existe a 12 rpm: SUNILUSIO100//17 no está en RPS.
+// El Sunea de 50, 100 y 120 solo existe a 12 rpm: SUNEAIO100//17 no está en RPS.
 const motorSpeedByPower = Object.freeze({ 50: 12, 100: 12, 120: 12 });
 function motorLabel(power) { return `${power}/${motorSpeedByPower[power] || 17}`; }
-function motorCode(power) { return `SUNILUSIO${motorLabel(power).replace('/', '//')}`; }
+function motorCode(power) { return `SUNEAIO${motorLabel(power).replace('/', '//')}`; }
 
 function resolveMotorPower(value, fallback) {
   const parsed = Number(String(value || '').match(/\d+/)?.[0]);

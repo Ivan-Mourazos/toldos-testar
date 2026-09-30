@@ -29,7 +29,7 @@ describe('Ágata Box', () => {
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
       // Q-A06: tubo de 705 → el P801 de 800; barra redonda de 706 → dos de 500 empalmadas.
       'SOBMODULBL16', 'TURA80HG800C', 'PRROMODULBL16500C',
-      'BONYXBL16400C', 'SUNILUSIO85//17', 'ACRILI2143P120'
+      'BONYXBL16400C', 'SUNEAIO85//17', 'ACRILI2143P120'
     ]));
   });
 
@@ -48,8 +48,8 @@ describe('Ágata Box', () => {
     ]));
   });
 
-  // Con cofre se consume Sunilus (no Sunea) y la barra es el perfil frontal PRMODUL.
-  it('reproduce el Ágata Cofre 650x200 con motor Sunilus', () => {
+  // Taller, 30/09/2026 (Q-AG02): motor siempre Sunea, también con cofre. La barra es el perfil frontal PRMODUL.
+  it('reproduce el Ágata Cofre 650x200 con motor Sunea', () => {
     const result = calculateAgataBox({
       order: baseOrder,
       awning: { ...baseAwning, width: 650, projection: 200, valanceHeight: 0, submodel: 'COFRE' }
@@ -60,7 +60,7 @@ describe('Ágata Box', () => {
       enclosureLength: 642.1, motorPower: '55/17'
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
-      'PRMODULBL16700C', 'TAPAPFMODULBL16', 'TAPAMODULBL16', 'SOTLMODULBL16', 'PRIMODULBL16700C', 'SUNILUSIO55//17'
+      'PRMODULBL16700C', 'TAPAPFMODULBL16', 'TAPAMODULBL16', 'SOTLMODULBL16', 'PRIMODULBL16700C', 'SUNEAIO55//17'
     ]));
   });
 
@@ -147,19 +147,55 @@ describe('Ágata Box', () => {
     ]));
   });
 
-  // RPS: el Sunilus de 100 solo existe a 12 rpm (SUNILUSIO100//12); el //17 no existe.
-  it('con motor de 100 pide el Sunilus 100/12', () => {
+  // RPS: el Sunea de 100 solo existe a 12 rpm (SUNEAIO100//12); el //17 no existe.
+  it('con motor de 100 pide el Sunea 100/12', () => {
     const result = calculateAgataBox({
       order: baseOrder,
       awning: { ...baseAwning, width: 1005, projection: 350, armCount: 4, submodel: 'COFRE' }
     });
     expect(result.calculation.motorPower).toBe('100/12');
     const codes = result.materials.map((line) => line.code);
-    expect(codes).toContain('SUNILUSIO100//12');
-    expect(codes).not.toContain('SUNILUSIO100//17');
-    expect(result.despiece.rows.map((row) => row.reference)).toContain('SUNILUSIO100//12');
+    expect(codes).toContain('SUNEAIO100//12');
+    expect(codes).not.toContain('SUNEAIO100//17');
+    expect(result.despiece.rows.map((row) => row.reference)).toContain('SUNEAIO100//12');
     const forced = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, motorPower: '100/17' } });
-    expect(forced.materials.map((line) => line.code)).toContain('SUNILUSIO100//12');
+    expect(forced.materials.map((line) => line.code)).toContain('SUNEAIO100//12');
+  });
+
+  // Taller, 30/09/2026 (Q-AG02): «siempre Sunea», en el Open igual que con cofre.
+  it('el motor es siempre Sunea, sin ningún Sunilus, en Open, Semi y Cofre', () => {
+    for (const submodel of ['OPEN', 'SEMI', 'COFRE']) {
+      const result = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, submodel } });
+      const motor = result.materials.find((line) => /^SUNEAIO/.test(line.code));
+      expect(motor, submodel).toMatchObject({ code: 'SUNEAIO85//17', description: 'MOTOR SOMFY SUNEA 85/17 IO' });
+      expect(result.materials.some((line) => /SUNILUS/.test(line.code + line.description)), submodel).toBe(false);
+      const row = result.despiece.rows.find((item) => item.reference === 'SUNEAIO85//17');
+      expect(row?.name, submodel).toBe('MOTOR SOMFY SUNEA 85/17 IO');
+    }
+  });
+
+  it('cada potencia de la tabla tiene su Sunea de RPS', () => {
+    const wide = { ...baseAwning, width: 1005, projection: 350, armCount: 4 };
+    const forced = (motorPower) => calculateAgataBox({ order: baseOrder, awning: { ...wide, motorPower } }).materials.map((line) => line.code);
+    expect(forced('35/17')).toContain('SUNEAIO35//17');
+    expect(forced('40/17')).toContain('SUNEAIO40//17');
+    expect(forced('55/17')).toContain('SUNEAIO55//17');
+    expect(forced('70/17')).toContain('SUNEAIO70//17');
+    expect(forced('85/17')).toContain('SUNEAIO85//17');
+  });
+
+  // Taller, 30/09/2026 (Q-PR02): sin saber si la máquina es exterior o interior, el casquillo
+  // de eje 50, que es el que más se gasta.
+  it('con máquina lleva el casquillo de eje 50 Ø78 y no el de eje 63', () => {
+    const result = calculateAgataBox({
+      order: baseOrder,
+      awning: { ...baseAwning, width: 575, device: 'MAQUINA', armCount: 2, crankHeight: 200 }
+    });
+    const codes = result.materials.map((line) => line.code);
+    expect(codes).toContain('CASMAQEJE5078MM');
+    expect(codes).not.toContain('CASMAQEJE6378MM');
+    expect(result.materials.find((line) => line.code === 'CASMAQEJE5078MM').description).toBe('CASQUILLO MAQUINA EJE 50MM Ø78');
+    expect(result.despiece.rows).toContainEqual(expect.objectContaining({ name: 'CASQUILLO MAQUINA EJE 50MM Ø78', reference: 'CASMAQEJE5078MM' }));
   });
 
   it('calcula los soportes observados en producción', () => {
