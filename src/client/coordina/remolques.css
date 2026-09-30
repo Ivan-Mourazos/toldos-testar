@@ -245,6 +245,18 @@
   color: var(--correcto-texto);
 }
 
+/* ── Vista previa del PDF (fase 4): qué falta para poder verla, con el aviso de «Falta: …» ── */
+.rem-pdf-falta {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 0.5rem;
+  color: var(--aviso-texto);
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+}
+
 /* ── Editor: formulario a la izquierda; dibujo (Task 5) y resultados a la derecha ── */
 .rem-editor-cuerpo {
   align-items: start;

@@ -11,7 +11,7 @@ import { rotuloElemento } from './rotulo';
 // antes). Las letras siguen el orden del pedido, como las de los toldos.
 
 export function PestanasElementos({
-  lineas, estadosLinea, versionActiva, puedeAnadir, onSeleccionar, onEliminar, onNuevo,
+  lineas, estadosLinea, versionActiva, puedeAnadir, onSeleccionar, onEliminar, onNuevo, acciones, pie,
 }: {
   lineas: LineaPedido[];
   estadosLinea: Record<string, EstadoLinea>;
@@ -21,6 +21,10 @@ export function PestanasElementos({
   onSeleccionar: (version: string) => void;
   onEliminar: (version: string) => void;
   onNuevo: (tipo: TipoPlanteamiento) => void;
+  /** Acciones del pedido entero, antes de «+ Remolque» (la vista previa del PDF). */
+  acciones?: React.ReactNode;
+  /** Debajo de las pestañas (qué falta para el PDF). */
+  pie?: React.ReactNode;
 }) {
   const listas = lineas.filter((linea) => estadosLinea[linea.version]?.lista).length;
   return (
@@ -35,6 +39,7 @@ export function PestanasElementos({
           </span>
         </div>
         <div className="order-add-actions">
+          {acciones}
           <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('lona')}>+ Remolque</button>
           <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('baqueton')}>+ Baquetón</button>
         </div>
@@ -76,6 +81,7 @@ export function PestanasElementos({
           })}
         </div>
       )}
+      {pie}
     </section>
   );
 }

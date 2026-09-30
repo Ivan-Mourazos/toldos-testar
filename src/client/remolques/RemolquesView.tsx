@@ -8,6 +8,8 @@ import { FormularioLona } from './FormularioLona';
 import { PestanasElementos } from './PestanasElementos';
 import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
+import { VistaPreviaPdf } from './VistaPreviaPdf';
+import { faltaParaPdf } from './vistaPrevia';
 import { useRemolques } from './useRemolques';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
@@ -38,6 +40,8 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   const hayPedido = Boolean(numeroPedido.trim());
   const indiceActivo = lineaActiva ? lineas.indexOf(lineaActiva) : -1;
   const estadoActivo = lineaActiva ? estadosLinea[lineaActiva.version] : null;
+  // La hoja de taller solo sale con todos los elementos completos (fase 4).
+  const faltaPdf = faltaParaPdf(lineas, estadosLinea);
 
   return (
     <>
@@ -77,6 +81,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         onSeleccionar={ws.seleccionarLinea}
         onEliminar={(version) => void ws.eliminarLinea(version)}
         onNuevo={ws.nuevaLinea}
+        acciones={lineas.length > 0 ? <VistaPreviaPdf lineas={lineas} bloqueo={faltaPdf} notify={notify} /> : null}
+        pie={lineas.length > 0 && faltaPdf
+          ? <p className="rem-pdf-falta" role="status">Para la vista previa del PDF falta: {faltaPdf}</p>
+          : null}
       />
 
       {lineaActiva ? (
