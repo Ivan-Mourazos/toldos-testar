@@ -40,7 +40,8 @@ export async function buildOrderArchiveWorkbook(reservation, order = null) {
       ['TECNICO', order.technician || ''],
       ['REVISION', order.reviewer || ''],
       ['FECHA', formatDateOnly(order.orderDate)],
-      ['MATERIAL', order.fabric || ''],
+      // Con «Por toldo» la tela común guardada es vieja: vale la de los toldos.
+      ['MATERIAL', order.sameFabric === false ? summarizeAwningField(order.awnings, 'fabric', 'SEGUN TOLDO') : order.fabric || ''],
       ['REMATE', summarizeRemate(order.awnings) || order.remate || ''],
       ['CURVA BAMBA', summarizeAwningField(order.awnings, 'valanceCurve', 'SEGUN TOLDO')],
       ['TELA BAMBA', summarizeValanceFabric(order.awnings)],

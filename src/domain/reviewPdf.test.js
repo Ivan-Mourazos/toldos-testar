@@ -322,6 +322,16 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
     expect(pdf.text).toContain('MARCADOR FINAL DE OBSERVACIONES');
   });
 
+  // Informe tela-0930, F4: con «Por toldo» la tela común guardada es vieja y no es la
+  // del pedido; la cabecera la imprimía igual.
+  test('con tela por toldo, la cabecera no imprime la tela común guardada', async () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ fabric: 'SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96', sameFabric: false, awnings: [{ ...base, fabric: acrylic120 }] });
+    const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation: calculateOrder(order) }));
+    expect(pdf.text).toContain('Tela: por toldo');
+    expect(pdf.text).not.toContain('SOLTIS96NUBP267');
+  });
+
   test('permite revisar un toldo incompleto y lo marca claramente', () => {
     const order = reviewOrder({ awnings: [{ ...reviewOrder().awnings[0], of: '', width: null, projection: null }] });
     const [entry] = buildReviewSheetEntries(order, calculateOrder(order));

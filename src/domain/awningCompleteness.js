@@ -9,6 +9,7 @@ import { getFieldVisibility, getRequiredDimensions, normalizeValanceFinish } fro
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { electraMotors } from './electraParameters.js';
 import { irisAsksBoxShape, normalizeIrisBoxShape } from './irisParameters.js';
+import { resolveFabric } from './fabricCatalog.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -82,7 +83,8 @@ export function getMissingFields(awning, order = null) {
   // ponía "FALTA · rotulación" y el cálculo "falta tela y dispositivo" (pedido 4611).
   if (order && fields.workType === 'FULL_AWNING' && !fabricOwnCheck.has(model)) {
     const fabric = order.sameFabric !== false ? order.fabric : awning.fabric;
-    if (!String(fabric || '').trim()) add('fabric', 'tela');
+    // Un texto que no es una tela del catálogo (escrito sin elegir opción) tampoco vale.
+    if (!String(fabric || '').trim() || !resolveFabric(fabric)) add('fabric', 'tela');
   }
   if (fields.device && !device) add('device', 'dispositivo');
   if (fields.crankHeight && !Number(awning.crankHeight)) add('crankHeight', 'altura manivela');

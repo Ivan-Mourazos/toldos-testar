@@ -574,6 +574,7 @@ export default function App() {
                 knownOfs={knownOfs}
                 getPanelOrder={currentOrderPayload}
                 onConfirm={askForConfirmation}
+                onNotify={notify}
               />
             </fieldset>
           )}

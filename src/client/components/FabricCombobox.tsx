@@ -30,6 +30,9 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   const reading = useReadMode();
   const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
+  // Texto escrito sin elegir ninguna opción (informe tela-0930, F5). No se guarda como
+  // tela: la tela se queda vacía y el texto se sigue viendo, marcado «sin elegir».
+  const [typed, setTyped] = useState(false);
   const [options, setOptions] = useState<FabricOption[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,15 +73,28 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
     return () => document.removeEventListener('pointerdown', closeOutside);
   }, [open]);
 
+  // Una tela puesta desde fuera (propuesta, «Por toldo», otro pedido) sustituye lo que
+  // se hubiera escrito sin elegir.
+  const [seenValue, setSeenValue] = useState(value);
+  if (value !== seenValue) {
+    setSeenValue(value);
+    if (value) {
+      setTyped(false);
+      setQuery(fabricSelectionLabel(value));
+    }
+  }
+
   if (reading) return <ReadPair label={label} value={value ? fabricSelectionLabel(value) : readEmptyAs} />;
 
   function choose(option: FabricOption) {
+    setTyped(false);
     onChange(serializeFabricSelection(option));
     setQuery(`${option.code} · ${option.description}`);
     setOpen(false);
   }
 
   function clear() {
+    setTyped(false);
     setQuery('');
     setOptions([]);
     onChange('');
@@ -86,8 +102,10 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
     inputRef.current?.focus();
   }
 
+  const unchosen = typed && !value && Boolean(query.trim());
+
   return (
-    <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}${missing ? ' is-missing' : ''}`}>
+    <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}${missing || (unchosen && !open) ? ' is-missing' : ''}`}>
       <span id={labelId}>{label}</span>
       {/* En solo lectura (Revisión) la tela se lee entera: dentro del buscador se cortaba
           a "ACRI…" y el revisor no podía comprobarla. */}
@@ -97,22 +115,24 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           ref={inputRef}
           role="combobox"
           aria-labelledby={labelId}
-          aria-invalid={missing || undefined}
+          aria-invalid={missing || (unchosen && !open) || undefined}
           aria-expanded={open}
           aria-controls={listId}
           autoComplete="off"
           disabled={disabled}
-          value={value ? (open ? query : fabricSelectionLabel(value)) : ''}
+          value={open || typed ? query : value ? fabricSelectionLabel(value) : ''}
           placeholder={placeholder}
           onFocus={() => {
             if (disabled) return;
-            setQuery(fabricSelectionLabel(value));
+            if (!typed) setQuery(fabricSelectionLabel(value));
             setOpen(true);
           }}
           onChange={(event) => {
             const next = event.target.value;
             setQuery(next);
-            onChange(next);
+            setTyped(true);
+            // Lo escrito es una búsqueda, no una tela: la que hubiera deja de valer.
+            if (value) onChange('');
             setOpen(true);
           }}
           onKeyDown={(event) => {
@@ -136,6 +156,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           </button>
         )}
       </div>}
+      {unchosen && !open && <small className="fabric-unchosen-note" role="status">Sin elegir: pulsa una tela de la lista</small>}
       {open && createPortal(
         <div ref={menuRef} id={listId} className="fabric-options fabric-options-portal" style={menuStyle} role="listbox">
           {loading && <div className="fabric-option-state">Buscando en RPSNext…</div>}

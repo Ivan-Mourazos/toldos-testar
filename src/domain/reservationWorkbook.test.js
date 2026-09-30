@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
-import { buildOfWorkbook, buildReservationWorkbook } from './reservationWorkbook.js';
+import ExcelJS from 'exceljs';
+import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './reservationWorkbook.js';
 
 describe('contrato RPS antiguo', () => {
   test('GALICIA genera el .xls tabulado compatible con la web de reservas', async () => {
@@ -108,5 +109,28 @@ describe('contrato RPS antiguo', () => {
       '3303334\tTELA-RPS-NUEVA\t6,5',
       '3303334\tARTICULO-DECIMAL\t6,32222'
     ]);
+  });
+});
+
+// Informe tela-0930, F4: con «Por toldo», MATERIAL era la tela común vieja.
+describe('libro del pedido · MATERIAL', () => {
+  async function material(order) {
+    const buffer = await buildOrderArchiveWorkbook({ orderCode: order.orderCode, ofs: [] }, order);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    const sheet = workbook.getWorksheet('MATERIALES');
+    for (let row = 1; row <= 20; row += 1) {
+      if (sheet.getCell(row, 1).value === 'MATERIAL') return sheet.getCell(row, 2).value;
+    }
+    return undefined;
+  }
+
+  test('con tela común, la común', async () => {
+    expect(await material({ orderCode: 'AR1', fabric: 'ACR NEGRO', sameFabric: true, awnings: [{ fabric: 'ACR AZUL' }] })).toBe('ACR NEGRO');
+  });
+
+  test('por toldo, la de los toldos si coinciden y SEGUN TOLDO si no, nunca la común vieja', async () => {
+    expect(await material({ orderCode: 'AR1', fabric: 'ACR VIEJA', sameFabric: false, awnings: [{ fabric: 'ACR AZUL' }, { fabric: 'ACR AZUL' }] })).toBe('ACR AZUL');
+    expect(await material({ orderCode: 'AR1', fabric: 'ACR VIEJA', sameFabric: false, awnings: [{ fabric: 'ACR AZUL' }, { fabric: 'ACR NEGRO' }] })).toBe('SEGUN TOLDO');
   });
 });

@@ -7,6 +7,7 @@ import { FabricCombobox } from './FabricCombobox';
 import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
+import { appliedProposalSelection } from '../fabricProposal';
 
 type Props = {
   orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string;
@@ -16,8 +17,9 @@ type Props = {
   onAutofill: () => void;
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
-  // Solo para poner las letras («B, C») de las propuestas de tela junto a la frase de RPS.
-  awnings: Pick<Awning, 'id'>[];
+  // Las letras («B, C») de las propuestas de tela y la tela que lleva cada toldo, para
+  // marcar la opción que el pedido tiene puesta de verdad.
+  awnings: Pick<Awning, 'id' | 'fabric'>[];
   onApplyFabricProposal: (proposal: FabricProposal, selection: string) => void;
   readOnly?: boolean;
 };
@@ -32,17 +34,14 @@ function proposalLetters(proposal: FabricProposal, awnings: Pick<Awning, 'id'>[]
 }
 
 export function OrderHeader(props: Props) {
-  // Qué opción se ha elegido en cada bloque de propuestas, para marcar su botón sin
-  // quitar las demás: el técnico puede cambiar de opinión (rediseño 4 §10).
-  // Las marcas van ligadas al autorrelleno que las produjo: con otro autorrelleno
-  // (otra consulta a RPS) empiezan vacías.
-  const [chosen, setChosen] = React.useState<{ autofill: OrderAutofill | null; byProposal: Record<number, string> }>({ autofill: null, byProposal: {} });
-  const chosenByProposal = chosen.autofill === props.autofill ? chosen.byProposal : {};
+  // La opción marcada de cada bloque de propuestas sale del pedido, no de un clic
+  // recordado (informe tela-0930, F3): si luego se vacía o cambia la tela, o se pasa a
+  // «Por toldo», la marca lo refleja y el técnico no cree tener una tela que no tiene.
+  const fabricOrder = { fabric: props.fabric, sameFabric: props.sameFabric, awnings: props.awnings };
 
-  function chooseFabricProposal(index: number, proposal: FabricProposal, selection: string) {
+  function chooseFabricProposal(proposal: FabricProposal, selection: string) {
     if (props.readOnly) return;
     props.onApplyFabricProposal(proposal, selection);
-    setChosen({ autofill: props.autofill, byProposal: { ...chosenByProposal, [index]: selection } });
   }
 
   // En el pedido abierto, pedido, cliente y fecha ya salen junto al título: aquí solo
@@ -86,7 +85,11 @@ export function OrderHeader(props: Props) {
         <div className="order-material-clusters">
           <section className="order-material-cluster order-fabric-cluster">
             <div className={`order-fabric-row${props.sameFabric ? '' : ' is-per-awning'}`}>
-              <FabricCombobox label="Referencia" value={props.fabric} disabled={props.readOnly || !props.sameFabric} onChange={(v) => props.set({ fabric: v })} />
+              {/* Con «Por toldo» la tela común no es la del pedido: enseñarla en gris hacía
+                  creer que había una elegida (F4). */}
+              {props.sameFabric
+                ? <FabricCombobox label="Referencia" value={props.fabric} disabled={props.readOnly} onChange={(v) => props.set({ fabric: v })} />
+                : <div className="field order-fabric-per-awning-field"><span>Referencia</span><p className="order-fabric-per-awning-value">Tela por toldo · se elige en cada tarjeta</p></div>}
               {/* En lectura no se puede cambiar: el interruptor sobra y solo se indica si
                   cada toldo lleva su propia tela. */}
               {props.readOnly
@@ -123,7 +126,9 @@ export function OrderHeader(props: Props) {
           </div>
           {props.autofill.fabricProposals && props.autofill.fabricProposals.length > 0 && (
             <div className="order-fabric-proposals">
-              {props.autofill.fabricProposals.map((proposal, index) => (
+              {props.autofill.fabricProposals.map((proposal, index) => {
+                const applied = appliedProposalSelection(proposal, fabricOrder);
+                return (
                 <div className="order-fabric-proposal" key={`${proposal.phrase}-${index}`}>
                   <span>Tela propuesta para {proposalLetters(proposal, props.awnings) || '—'}: «{proposal.phrase}»</span>
                   {proposal.options.length === 0
@@ -133,17 +138,18 @@ export function OrderHeader(props: Props) {
                         <button
                           type="button"
                           key={option.selection}
-                          className={`order-fabric-proposal-option${chosenByProposal[index] === option.selection ? ' is-chosen' : ''}`}
-                          aria-pressed={chosenByProposal[index] === option.selection}
+                          className={`order-fabric-proposal-option${applied === option.selection ? ' is-chosen' : ''}`}
+                          aria-pressed={applied === option.selection}
                           disabled={props.readOnly}
-                          onClick={() => chooseFabricProposal(index, proposal, option.selection)}
+                          onClick={() => chooseFabricProposal(proposal, option.selection)}
                         >
                           {option.label}
                         </button>
                       ))}
                     </div>}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
           {props.autofill.pending.length > 0 && (

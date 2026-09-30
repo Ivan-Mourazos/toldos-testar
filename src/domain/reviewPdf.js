@@ -74,7 +74,8 @@ function startPage(doc, order) {
   doc.fillColor(colors.ink).font('Helvetica-Bold').fontSize(9).text('PDF DE REVISIÓN', 390, 25, { width: 173, align: 'right' });
   doc.fillColor(colors.red).fontSize(7).text('BORRADOR · NO PRODUCCIÓN', 390, 40, { width: 173, align: 'right' });
 
-  const fabric = fabricLabel(order.fabric);
+  // Con «Por toldo» la tela común guardada no es la del pedido: cada tarjeta lleva la suya.
+  const fabric = order.sameFabric === false ? 'por toldo' : fabricLabel(order.fabric);
   const metadata = [order.orderDate ? `Fecha: ${formatDate(order.orderDate)}` : '', order.technician ? `Técnico: ${order.technician}` : '', order.reviewer ? `Revisa: ${order.reviewer}` : '', fabric ? `Tela: ${fabric}` : '']
     .filter(Boolean).join('   ·   ');
   doc.fillColor(colors.muted).font('Helvetica').fontSize(7.2).text(metadata, MARGIN, 68, { width: CONTENT_WIDTH, ellipsis: true });

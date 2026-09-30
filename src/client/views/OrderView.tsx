@@ -8,9 +8,11 @@ import { awningStatuses } from '../awningBlocks';
 import { LiveResults } from '../components/LiveResults';
 import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { AwningPanel, type PanelOrder } from '../components/AwningPanel';
-import type { AskForConfirmation } from '../components/NotificationCenter';
+import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
 import { applyFabricProposal } from '../fabricProposal';
+import { planFabricToggle } from '../orderFabricToggle';
+import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
 import type { FabricProposal } from '../types';
 
 export function OrderView({
@@ -45,7 +47,8 @@ export function OrderView({
   readOnly = false,
   diagnostics,
   getPanelOrder,
-  onConfirm
+  onConfirm,
+  onNotify
 }: {
   availableModelNames: string[];
   orderCode: string;
@@ -86,6 +89,8 @@ export function OrderView({
   getPanelOrder?: () => Record<string, unknown>;
   // Confirmación de la aplicación (el panel pregunta antes de descartar un despiece).
   onConfirm?: AskForConfirmation;
+  // Avisos de la tela (al cambiar «Por toldo» o elegir una propuesta).
+  onNotify?: Notify;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
   // Toldo cuyo panel «Despiece y dibujo» está abierto.
@@ -104,22 +109,40 @@ export function OrderView({
     if ('customer' in patch) setCustomer(patch.customer as string);
     if ('orderDate' in patch) setOrderDate(patch.orderDate as string);
     if ('fabric' in patch) setFabric(patch.fabric as string);
-    if ('sameFabric' in patch) {
-      const nextSameFabric = patch.sameFabric as boolean;
-      setSameFabric(nextSameFabric);
-      if (!nextSameFabric && fabric) {
-        awnings.forEach((awning) => {
-          if (!awning.fabric) updateAwning(awning.id, { fabric });
-        });
-      }
-    }
+    if ('sameFabric' in patch) void toggleSameFabric(patch.sameFabric as boolean);
     if ('remate' in patch) setRemate(patch.remate as string);
     if ('remateColor' in patch) setRemateColor(patch.remateColor as string);
   }
 
-  // El técnico elige una tela propuesta del catálogo; nunca se pone sola (rediseño 4 §10).
+  // «Por toldo» sin perder la tela (informe tela-0930, F1): ver planFabricToggle.
+  async function toggleSameFabric(nextSameFabric: boolean) {
+    const plan = planFabricToggle({ fabric, awnings }, nextSameFabric);
+    if (plan.conflict) {
+      const [main, ...rest] = plan.conflict;
+      const lines = plan.conflict.map((group) => `${group.letters}: ${fabricSelectionLabel(group.fabric)}`).join(' · ');
+      const choice = onConfirm
+        ? await onConfirm({
+          title: 'Los toldos llevan telas distintas',
+          message: `${lines}. ¿Usar ${fabricSelectionLabel(main.fabric)} para todo el pedido? ${rest.map((group) => group.letters).join(', ')} ${rest.reduce((sum, group) => sum + group.count, 0) === 1 ? 'cambiaría' : 'cambiarían'} de tela.`,
+          confirmLabel: 'Usar la misma para todos',
+          cancelLabel: 'Seguir por toldo',
+          tone: 'warning'
+        })
+        : 'cancel';
+      if (choice !== 'confirm') {
+        onNotify?.('Sigue «Por toldo»: cada toldo conserva su tela.', { tone: 'info' });
+        return;
+      }
+    }
+    plan.awningPatches.forEach((item) => updateAwning(item.id, { fabric: item.fabric }));
+    setFabric(plan.fabric);
+    setSameFabric(plan.sameFabric);
+  }
+
+  // El técnico elige una tela propuesta del catálogo (rediseño 4 §10).
   function applyProposal(proposal: FabricProposal, selection: string) {
-    applyFabricProposal({ awnings, fabric, sameFabric, setFabric, setSameFabric, updateAwning }, proposal, selection);
+    const message = applyFabricProposal({ awnings, fabric, sameFabric, setFabric, setSameFabric, updateAwning }, proposal, selection, autofill?.fabricProposals ?? [proposal]);
+    if (message) onNotify?.(message, { tone: 'info' });
   }
 
   // Un estado por toldo: lo enseñan el índice de bloques y, en lectura, la cabecera de la ficha.

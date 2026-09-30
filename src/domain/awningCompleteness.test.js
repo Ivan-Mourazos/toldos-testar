@@ -47,6 +47,14 @@ describe('getMissingFields', () => {
     expect(getMissingFields({ ...arzua, fabric: '' }, { fabric: 'ACR AZUL', sameFabric: false })).toContainEqual({ field: 'fabric', label: 'tela' });
   });
 
+  // Informe tela-0930, F5: «negro» escrito en el buscador sin pulsar una opción no es
+  // una tela; antes la tarjeta lo daba por bueno y el cálculo decía «no encontrada».
+  it('un texto que no es una tela del catálogo cuenta como tela sin elegir', () => {
+    expect(getMissingFields(arzua, { fabric: 'negro', sameFabric: true })).toContainEqual({ field: 'fabric', label: 'tela' });
+    expect(getMissingFields({ ...arzua, fabric: 'negro' }, { fabric: '', sameFabric: false })).toContainEqual({ field: 'fabric', label: 'tela' });
+    expect(getMissingFields(arzua, { fabric: 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR', sameFabric: true })).toEqual([]);
+  });
+
   it('sin tubo elegido no lo pide si hay destino: Arzúa lo propone', () => {
     expect(fields({ ...arzua, tubeLoad: '', destination: 'PARTICULAR' })).toEqual([]);
   });

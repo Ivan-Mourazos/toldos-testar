@@ -995,3 +995,21 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 }
 .fabric-image-editor button:hover { background: var(--glass-chip); }
 .read-pair { border-bottom-color: var(--border); }
+
+/* Tela (informe tela-0930). Letra y colores de los avisos de la ficha: `text-[11px]
+   text-text-muted` y, si hay que mirarlo, los `--aviso-*` (configuracion.css 18-22). */
+.order-fabric-per-awning-value {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  margin: 0;
+  padding: 6px 0;
+}
+.fabric-unchosen-note {
+  color: var(--aviso-texto);
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 3px;
+}

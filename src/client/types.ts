@@ -599,8 +599,9 @@ export type DraftState = {
 export type FabricProposalOption = { selection: string; label: string };
 
 // Telas propuestas del catálogo a partir del texto de RPS, agrupadas por toldos que
-// comparten la misma frase. El técnico elige una opción; nunca se pone sola (rediseño 4 §10).
-export type FabricProposal = { awningIds: string[]; phrase: string; options: FabricProposalOption[] };
+// comparten la misma frase. Desde el 30/09/2026 la más probable ya viene puesta
+// (`preselected`) y el técnico la comprueba o elige otra.
+export type FabricProposal = { awningIds: string[]; phrase: string; options: FabricProposalOption[]; preselected?: string };
 
 export type OrderAutofill = {
   source: string;

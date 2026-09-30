@@ -28,7 +28,9 @@ const AUTOFILL: OrderAutofill = {
   fabricProposals: [PROPOSAL]
 };
 
-function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as (proposal: FabricProposal, selection: string) => void, readOnly = false) {
+type Overrides = { fabric?: string; sameFabric?: boolean; awnings?: { id: string; fabric: string }[] };
+
+function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as (proposal: FabricProposal, selection: string) => void, readOnly = false, overrides: Overrides = {}) {
   return renderToStaticMarkup(React.createElement(OrderHeader, {
     orderCode: 'AR2604716', customer: 'CLIENTE', orderDate: '',
     fabric: '', sameFabric: true,
@@ -36,9 +38,10 @@ function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as 
     set: noop,
     onAutofill: noop, autofillLoading: false,
     autofill,
-    awnings: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+    awnings: [{ id: 'a', fabric: '' }, { id: 'b', fabric: '' }, { id: 'c', fabric: '' }],
     onApplyFabricProposal,
-    readOnly
+    readOnly,
+    ...overrides
   }));
 }
 
@@ -118,5 +121,31 @@ describe('OrderHeader · propuestas de tela, accesibilidad y lectura (revisión 
     expect(markup).toContain('Tela propuesta para A, B');
     expect(markup).toContain('sin coincidencias en el catálogo');
     expect(markup).not.toContain('order-fabric-proposal-option');
+  });
+});
+
+describe('OrderHeader · la tela que se ve es la que lleva el pedido (informe tela-0930)', () => {
+  const [negro, azul] = PROPOSAL.options;
+
+  it('F3: la opción marcada sale de la tela común, no de un clic recordado', () => {
+    const markup = render(AUTOFILL, noop, false, { fabric: negro.selection });
+    expect((markup.match(/is-chosen/g) || [])).toHaveLength(1);
+    expect(markup).toMatch(/class="order-fabric-proposal-option is-chosen" aria-pressed="true"[^>]*>ACRILI2170P120/);
+    // Vaciada la tela (la «X» del buscador), ya no hay nada marcado.
+    expect(render(AUTOFILL, noop, false, { fabric: '' })).not.toContain('is-chosen');
+  });
+
+  it('F3: por toldo, se marca solo si todos los toldos del grupo la llevan', () => {
+    const awnings = [{ id: 'a', fabric: azul.selection }, { id: 'b', fabric: '' }, { id: 'c', fabric: '' }];
+    expect(render(AUTOFILL, noop, false, { sameFabric: false, awnings })).not.toContain('is-chosen');
+    const both = [{ id: 'a', fabric: azul.selection }, { id: 'b', fabric: azul.selection }, { id: 'c', fabric: '' }];
+    expect(render(AUTOFILL, noop, false, { sameFabric: false, awnings: both })).toMatch(/is-chosen" aria-pressed="true"[^>]*>ACRILI2018P120/);
+  });
+
+  it('F4: con «Por toldo», «Referencia» no enseña la tela común guardada', () => {
+    const markup = render(AUTOFILL, noop, false, { fabric: negro.selection, sameFabric: false });
+    expect(markup).toContain('Tela por toldo · se elige en cada tarjeta');
+    expect(markup).not.toContain('fabric-readonly-value');
+    expect(markup).not.toMatch(/value="ACRILI2170P120/);
   });
 });
