@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -54,6 +55,21 @@ try {
   assert(heraAttempt.response.ok && heraAttempt.body.ofs?.[0]?.calculation?.valid, 'La API de producción no calcula HERA.');
   assert(heraAttempt.body.ofs[0].materials.some(item => item.code === 'SCRANILBLAN150C' && item.quantity === 1), 'La reserva HERA no incluye el anillo esperado.');
 
+  // Hoja de taller de remolques (fase 4): Chromium arranca, pinta WebGL y hace el PDF con el build.
+  // Es la vista previa: no archiva nada, así que no toca ninguna carpeta compartida.
+  const { muestrasHoja } = await import('../src/remolques/hoja/muestras.ts');
+  const casosRemolques = JSON.parse(await readFile(path.join(projectDirectory, 'src', 'remolques', '__fixtures__', 'produccion-2026-09.json'), 'utf8'));
+  const hoja = await fetch(`${baseUrl}/api/remolques/pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ elementos: muestrasHoja(casosRemolques)['lona-ventana'] })
+  });
+  const hojaBytes = Buffer.from(await hoja.arrayBuffer());
+  assert(
+    hoja.ok && hojaBytes.subarray(0, 4).toString('ascii') === '%PDF',
+    `La hoja de taller de remolques no sale en PDF (${hoja.status}: ${hoja.ok ? 'no es un PDF' : hojaBytes.toString('utf8').slice(0, 300)}).`
+  );
+
   const legacyReservation = { orderCode: 'AR26SMOKE', ofs: [{ of: '0230001', materials: [] }] };
   for (const route of ['/api/export', '/api/export/save']) {
     const legacyAttempt = await readJson(`${baseUrl}${route}`, {
@@ -69,6 +85,7 @@ try {
 
   console.log('[OK] Healthcheck, frontend y catálogo de producción disponibles.');
   console.log('[OK] HERA está visible, calcula y reserva el anillo en producción.');
+  console.log('[OK] La hoja de taller de remolques sale en PDF con Chromium.');
   console.log('[OK] Las exportaciones directas antiguas están cerradas en producción.');
 } catch (error) {
   failure = error;

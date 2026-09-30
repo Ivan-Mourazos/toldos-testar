@@ -3,6 +3,7 @@ import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { comprobarCarpetasRemolques, comprobarChromium } from './lib/deploy-remolques.mjs';
 
 // 22.18: desde la pantalla de remolques, `node src/server.js` importa ficheros .ts (materiales,
 // pedido-rps...) y solo Node >= 22.18 los ejecuta sin flags (type-stripping activado por
@@ -27,6 +28,8 @@ const EFFECTIVE_ENV_KEYS = [
   'PLANTEAMIENTOS_DIRECTORY',
   'RPS_UPLOAD_DIRECTORY',
   'RPS_PLANTEAMIENTOS_DIRECTORY',
+  'REMOLQUES_PLANTEAMIENTOS_DIRECTORY',
+  'REMOLQUES_OFICINA_TECNICA_DIRECTORY',
   'WORKFLOW_SETTINGS_FILE',
   'COORDINA_URL',
   'COORDINA_CLAVE',
@@ -43,6 +46,7 @@ const successes = [];
 await checkNodeVersion();
 await checkPackageMetadata();
 await checkProductionBuild();
+await checkChromium();
 await checkEcosystem();
 await checkEnvironment();
 
@@ -146,6 +150,20 @@ async function checkHojaRemolques() {
   } else {
     pass('dist/hoja-remolques.html existe y el build no lleva las muestras de desarrollo.');
   }
+}
+
+// La hoja de taller de remolques se hace con el Chromium de playwright-core (fase 4).
+async function checkChromium() {
+  let paquete;
+  try {
+    paquete = JSON.parse(await readFile(path.join(projectDirectory, 'package.json'), 'utf8'));
+  } catch (error) {
+    fail(`No se pudo leer package.json: ${error.message}`);
+    return;
+  }
+  const resultado = await comprobarChromium({ paquete, importarPlaywright: () => import('playwright-core') });
+  resultado.errores.forEach(fail);
+  resultado.exitos.forEach(pass);
 }
 
 async function checkEcosystem() {
@@ -350,7 +368,9 @@ async function checkWorkflowEnvironment(values) {
     reviewDirectory: unquote(values.get('REVIEW_DIRECTORY')),
     planteamientosDirectory: unquote(values.get('PLANTEAMIENTOS_DIRECTORY')),
     rpsUploadDirectory: unquote(values.get('RPS_UPLOAD_DIRECTORY')),
-    rpsPlanteamientosDirectory: unquote(values.get('RPS_PLANTEAMIENTOS_DIRECTORY'))
+    rpsPlanteamientosDirectory: unquote(values.get('RPS_PLANTEAMIENTOS_DIRECTORY')),
+    remolquesPlanteamientosDirectory: unquote(values.get('REMOLQUES_PLANTEAMIENTOS_DIRECTORY')),
+    remolquesOficinaTecnicaDirectory: unquote(values.get('REMOLQUES_OFICINA_TECNICA_DIRECTORY'))
   };
   let persistedSettings = null;
 
@@ -376,7 +396,9 @@ async function checkWorkflowEnvironment(values) {
         reviewDirectory: stringOrFallback(persistedSettings.reviewDirectory, seedSettings.reviewDirectory),
         planteamientosDirectory: stringOrFallback(persistedSettings.planteamientosDirectory, seedSettings.planteamientosDirectory),
         rpsUploadDirectory: stringOrFallback(persistedSettings.rpsUploadDirectory, seedSettings.rpsUploadDirectory),
-        rpsPlanteamientosDirectory: stringOrFallback(persistedSettings.rpsPlanteamientosDirectory, seedSettings.rpsPlanteamientosDirectory)
+        rpsPlanteamientosDirectory: stringOrFallback(persistedSettings.rpsPlanteamientosDirectory, seedSettings.rpsPlanteamientosDirectory),
+        remolquesPlanteamientosDirectory: stringOrFallback(persistedSettings.remolquesPlanteamientosDirectory, seedSettings.remolquesPlanteamientosDirectory),
+        remolquesOficinaTecnicaDirectory: stringOrFallback(persistedSettings.remolquesOficinaTecnicaDirectory, seedSettings.remolquesOficinaTecnicaDirectory)
       }
     : seedSettings;
 
@@ -410,6 +432,16 @@ async function checkWorkflowEnvironment(values) {
     }
     await inspectLinuxPath(key, configuredPath, { template: true, required: strictDeployment, writable });
   }
+
+  const remolques = await comprobarCarpetasRemolques({
+    planteamientos: effectiveSettings.remolquesPlanteamientosDirectory,
+    oficinaTecnica: effectiveSettings.remolquesOficinaTecnicaDirectory,
+    escrituraActiva: effectiveSettings.productionEnabled,
+    estricto: strictDeployment
+  });
+  remolques.errores.forEach(fail);
+  remolques.avisos.forEach(warn);
+  remolques.exitos.forEach(pass);
 
   if (effectiveSettings.productionEnabled) pass('El interruptor persistido permite el flujo completo de producción.');
   else warn('El envío a producción está desactivado en la configuración efectiva.');
