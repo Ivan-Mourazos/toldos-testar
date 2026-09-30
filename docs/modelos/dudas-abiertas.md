@@ -36,13 +36,19 @@ me dijeron: en un cambio de tela, que sume 40 para el enrrolle y lo necesario pa
 
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
 
-- **Ganchos corazón: ¿se ofrecen como un tipo de recogida más en el formulario?** Si es que sí: ¿cuánto se añade al paño delantero o trasero y al lateral (como en las otras recogidas), y cuántos ganchos van a lo alto y a qué distancia? Hoy la web no los tiene. Importa para calcular el paño y dibujarlo. <sub>Q-R01</sub>
-- **Goma en la esquina: ¿cuántos ollaos lleva la oreja a lo alto y a qué altura?** La web pone 2 si la pared mide hasta 80 cm y 3 si mide más, repartidos en la mitad de abajo. Las gomas van al gancho del centro si la pared mide 100 cm o más, y si no, a los ganchos cercanos. Importa para la hoja de taller. <sub>Q-R02</sub>
-- **Puentes: ¿cada cuánto va un puente a lo alto?** La web pone uno cada 20 cm, empezando a 10 cm de abajo y acabando a 10 cm de arriba. Importa para la hoja de taller. <sub>Q-R03</sub>
-- **Cremallera: ¿qué número es la normal y qué clientes piden la del 9, además de Cano Muños?** La web todavía no distingue el número. Importa para las fichas de cliente, que rellenarán esto solas. <sub>Q-R04</sub>
-- **Pedidos que traen los ganchos: ¿algún gancho va justo en la esquina (a 0 cm)?** La web no deja poner un gancho en 0. Importa para no rechazar un pedido que sí se hace. <sub>Q-R05</sub>
+- **Ganchos corazón: ¿cuánto se añade al paño delantero o trasero y al lateral, y cada cuánto va un gancho a lo alto?** El 30/09 se decidió ofrecerlos como una recogida más. Mientras no se sepa, la web usará las medidas de la goma (27 y 27) y el paso de los ollaos. Importa para calcular el paño. <sub>Q-R01</sub>
+- **Cremallera del 9: ¿qué clientes la piden?** Iván no lo sabe: se busca en RPS (en revisión). Importa para las fichas de cliente. <sub>Q-R04</sub>
 
-Y dos fotos que faltan, de cerca: una cremallera puesta y una bastilla de enfundar.
+Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.
+
+Contestadas el 30/09 (Iván):
+
+| Código | Pregunta | Respuesta | En la web |
+| --- | --- | --- | --- |
+| Q-R01 | Ganchos corazón como recogida | Sí, mejor | Pendiente: añadirla a Parámetros y al dibujo (medidas: ver arriba) |
+| Q-R02 | Ollaos de la oreja en la esquina con goma | Como lo hace ahora | Ya lo hace |
+| Q-R03 | Cada cuánto va un puente a lo alto | Da igual, el taller lo hace a su criterio; poner una medida como los ollaos | Pendiente: separar los puentes con el paso de los ollaos |
+| Q-R05 | Gancho a 0 cm | No pasa | Ya lo hace: no deja poner 0 |
 
 ## Muestras que tiene que mirar el taller
 
