@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { perfilForma, perfilPuntos } from "../perfil.ts";
-import { nombrePerfil } from "../../calc/params.ts";
+import { nombrePerfil, PERFILES } from "../../calc/params.ts";
 
 const maxY = (pts: Array<[number, number]>) => Math.max(...pts.map(([, y]) => y));
 const maxX = (pts: Array<[number, number]>) => Math.max(...pts.map(([x]) => x));
@@ -109,9 +109,21 @@ describe("perfilPuntos", () => {
     }
   });
 
-  it("expone nombres de perfil claros para oficina técnica", () => {
-    expect(nombrePerfil("TIPO 04")).toContain("chaflanes");
-    expect(nombrePerfil("TIPO 05")).toContain("esquinas curvas");
+  // Iván, 30/09/2026: se ve solo el nombre, sin «TIPO 0X»; los códigos internos no cambian, así que
+  // los planteamientos guardados y los de la web vieja siguen valiendo.
+  it("expone solo el nombre del perfil, sin el código", () => {
+    expect((["TIPO 01", "TIPO 02", "TIPO 03", "TIPO 04", "TIPO 05"] as const).map(nombrePerfil))
+      .toEqual(["Recto", "Recto con aguas", "Arquillado con aguas", "Con chaflán", "Arquillado"]);
+  });
+
+  it("el desplegable va de lo más sencillo a lo más raro, con los códigos de siempre", () => {
+    expect(PERFILES.map((p) => [p.value, p.label])).toEqual([
+      ["TIPO 01", "Recto"],
+      ["TIPO 02", "Recto con aguas"],
+      ["TIPO 05", "Arquillado"],
+      ["TIPO 03", "Arquillado con aguas"],
+      ["TIPO 04", "Con chaflán"],
+    ]);
   });
 });
 

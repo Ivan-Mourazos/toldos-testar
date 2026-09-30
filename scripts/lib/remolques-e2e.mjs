@@ -4,6 +4,15 @@ import assert from 'node:assert/strict';
 
 export const fmt = (n) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 export const norm = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+// Lo que el desplegable «Tipo» enseña de cada perfil: solo el nombre, sin «TIPO 0X» (Iván,
+// 30/09/2026). Escrito a mano a propósito: si la pantalla cambiara los nombres, la e2e lo dice.
+export const NOMBRE_PERFIL = {
+  'TIPO 01': 'Recto',
+  'TIPO 02': 'Recto con aguas',
+  'TIPO 03': 'Arquillado con aguas',
+  'TIPO 04': 'Con chaflán',
+  'TIPO 05': 'Arquillado',
+};
 export const CLAVES_OLLAOS = [['LATERALES ·', 'laterales'], ['ATRÁS ·', 'atras'], ['DELANTE ·', 'delante']];
 
 // Con el remolque distinto detrás el contorno lleva una medida en cada punta (el paño se corta
@@ -55,7 +64,9 @@ export async function elegir(page, ed, campo, textoOpcion) {
   const menu = page.locator('.select-options-portal');
   await menu.waitFor();
   const opciones = await menu.locator('[role=option]').allInnerTexts();
-  const i = opciones.findIndex((t) => norm(t) === norm(textoOpcion) || norm(t).startsWith(`${norm(textoOpcion)} `));
+  // Primero el nombre exacto: «Recto» no puede quedarse con «Recto con aguas».
+  const exacta = opciones.findIndex((t) => norm(t) === norm(textoOpcion));
+  const i = exacta >= 0 ? exacta : opciones.findIndex((t) => norm(t).startsWith(`${norm(textoOpcion)} `));
   assert.ok(i >= 0, `hay opción «${textoOpcion}» en ${campo}: ${opciones.join(' | ')}`);
   await menu.locator('[role=option]').nth(i).click();
 }
@@ -75,7 +86,7 @@ export async function teclearCaso(page, c) {
   const ed = editor(page);
   const i = c.input;
   if (c.tipo === 'lona') {
-    await elegir(page, ed, 'tipoPerfil', i.tipoPerfil);
+    await elegir(page, ed, 'tipoPerfil', NOMBRE_PERFIL[i.tipoPerfil]);
     await elegir(page, ed, 'recogeDelante', i.recogeDelante);
     await elegir(page, ed, 'recogeAtras', i.recogeAtras);
     await siNo(ed, 'Bastilla enfundar', i.bastillaEnfundar);

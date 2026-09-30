@@ -25,7 +25,7 @@ import fs from 'node:fs';
 import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { calcLona } from '../src/remolques/calc/lona.ts';
 import { DEFAULT_PARAMS } from '../src/remolques/calc/params.ts';
-import { comprobarCaso, editor, elegir, filaOllaos, fmt, num, siNo, teclearCaso } from './lib/remolques-e2e.mjs';
+import { comprobarCaso, editor, elegir, filaOllaos, fmt, NOMBRE_PERFIL, num, siNo, teclearCaso } from './lib/remolques-e2e.mjs';
 
 const CAPTURAS = 'tmp/ui-audit/remolques-2b';
 fs.mkdirSync(CAPTURAS, { recursive: true });
@@ -286,7 +286,7 @@ if (fs.existsSync('dist/assets')) {
     // ── 5. Según ganchos ──
     await nuevoElemento(page, 'lona');
     const ed = editor(page);
-    await elegir(page, ed, 'tipoPerfil', 'TIPO 01');
+    await elegir(page, ed, 'tipoPerfil', NOMBRE_PERFIL['TIPO 01']);
     await elegir(page, ed, 'recogeDelante', 'NO');
     await elegir(page, ed, 'recogeAtras', 'NO');
     await num(ed, 'largo', 300);

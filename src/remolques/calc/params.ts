@@ -46,12 +46,14 @@ export interface CalcParams {
   tecnicos: string[];
 }
 
+/** Nombres de Iván (30/09/2026): se ve solo el nombre, sin «TIPO 0X». Los códigos no cambian (los
+ *  planteamientos guardados y la web vieja los usan); el orden es el del desplegable. */
 export const PERFILES = [
-  { value: "TIPO 01", label: "TIPO 01 · Recto" },
-  { value: "TIPO 02", label: "TIPO 02 · Dos aguas rectas" },
-  { value: "TIPO 03", label: "TIPO 03 · Dos aguas curvas" },
-  { value: "TIPO 04", label: "TIPO 04 · chaflanes" },
-  { value: "TIPO 05", label: "TIPO 05 · esquinas curvas" },
+  { value: "TIPO 01", label: "Recto" },
+  { value: "TIPO 02", label: "Recto con aguas" },
+  { value: "TIPO 05", label: "Arquillado" },
+  { value: "TIPO 03", label: "Arquillado con aguas" },
+  { value: "TIPO 04", label: "Con chaflán" },
 ] as const;
 export type TipoPerfil = (typeof PERFILES)[number]["value"];
 export const TIPOS_PERFIL: TipoPerfil[] = PERFILES.map((perfil) => perfil.value);

@@ -8,10 +8,41 @@ import type { ElementoHoja } from "../tipos.ts";
 
 // Paridad con la web vieja (fase 4): los 32 planteamientos reales dan los mismos textos en
 // cada casilla y en la tabla de ollaos. La referencia la generó el código de Remolques-TGM
-// (commit a7ffef0) sobre la misma fixture. Única diferencia a propósito: la fila nueva
-// «BASTILLA ENFUNDAR» de los acabados de la lona, que la hoja vieja no tenía.
+// (commit a7ffef0) sobre la misma fixture. Diferencias a propósito, y solo esas: la fila nueva
+// «BASTILLA ENFUNDAR» de los acabados de la lona, que la hoja vieja no tenía, y el texto del PERFIL,
+// porque Iván cambió el nombre de los tipos el 30/09/2026 (se ve solo el nombre, sin «TIPO 0X»; los
+// códigos guardados no cambian). Todo lo demás tiene que salir idéntico.
 type Caso = { caso: string; tipo: "lona" | "baqueton"; input: unknown; result: unknown; paramsSnapshot: unknown };
 type Referencia = { caso: string; hoja: DatosHoja; ollaos: TablaPosiciones };
+
+/** Lo que la web vieja escribía en PERFIL → el nombre nuevo de Iván (30/09/2026), a mano: si la
+ *  referencia trajera otro texto, la prueba falla en vez de aceptarlo. */
+const PERFIL_RENOMBRADO: Record<string, string> = {
+  "TIPO 01 · Recto": "Recto",
+  "TIPO 02 · Dos aguas rectas": "Recto con aguas",
+  "TIPO 03 · Dos aguas curvas": "Arquillado con aguas",
+  "TIPO 04 · chaflanes": "Con chaflán",
+  "TIPO 05 · esquinas curvas": "Arquillado",
+};
+
+/** La referencia de la web vieja con el PERFIL renombrado; nada más cambia. */
+function conPerfilRenombrado(hoja: DatosHoja): DatosHoja {
+  return {
+    ...hoja,
+    grupos: hoja.grupos.map((grupo) => ({
+      ...grupo,
+      datos: grupo.datos.map((dato) => (dato.etiqueta !== "PERFIL" ? dato : {
+        ...dato,
+        valores: dato.valores.map((valor) => {
+          if (valor === "—") return valor;
+          const nuevo = PERFIL_RENOMBRADO[valor];
+          if (!nuevo) throw new Error(`PERFIL de la web vieja sin nombre nuevo: «${valor}»`);
+          return nuevo;
+        }),
+      })),
+    })),
+  };
+}
 
 function sinAnadidos(hoja: DatosHoja): DatosHoja {
   return {
@@ -33,7 +64,7 @@ describe("hoja de taller: paridad con la web vieja", () => {
   it.each(lista.map((c) => [c.caso, c] as const))("%s da los mismos textos que la web vieja", (_nombre, caso) => {
     const elemento = { version: "10", tipo: caso.tipo, input: caso.input, result: caso.result } as ElementoHoja;
     const esperada = esperadas.get(caso.caso)!;
-    expect(sinAnadidos(datosHoja(elemento, 0, 1))).toEqual(esperada.hoja);
+    expect(sinAnadidos(datosHoja(elemento, 0, 1))).toEqual(conPerfilRenombrado(esperada.hoja));
     const primerOllao = elemento.input.primerOllao ?? (caso.paramsSnapshot as CalcParams).primerOllao;
     expect(tablaOllaos(elemento.input, elemento.result.reparto, primerOllao)).toEqual(esperada.ollaos);
   });
