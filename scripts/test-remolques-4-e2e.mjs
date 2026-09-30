@@ -1,7 +1,8 @@
 // Prueba e2e de la hoja de taller de remolques (fase 4) y muestras para Iván. Con la aislada en
 // marcha (puerto 4310):
 //   1. POST /api/remolques/pdf con cada muestra (src/remolques/hoja/muestras.ts): lona con ventana,
-//      baquetón, «Según ganchos», bastilla, los cinco perfiles y un pedido de tres elementos. Cada
+//      baquetón, «Según ganchos», bastilla, los cinco perfiles, un pedido de tres elementos, el sesgado
+//      y la cremallera delante y detrás (con aguas, ventana y observaciones de varias líneas). Cada
 //      PDF: una hoja A4 apaisada por elemento, con los textos que da paginaHoja (pdfjs), en menos
 //      (el límite de 30 s lo vigila el servidor). Cada hoja se pasa además a PNG en grises, como la imprimiría el taller.
 //   2. Errores claros: un elemento incompleto → 400 con cuál y qué le falta; dos pedidos → 400.
@@ -19,6 +20,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { muestrasHoja, NOMBRES_MUESTRAS } from '../src/remolques/hoja/muestras.ts';
+import { lineasObservaciones } from '../src/remolques/hoja/observaciones.ts';
 import { paginaHoja } from '../src/remolques/hoja/pagina.ts';
 import { prepararPedidoHoja } from '../src/remolques/hoja/pedido.ts';
 import { remolquesUnicos } from '../src/remolques/pedidos/agrupar-pedido.ts';
@@ -83,7 +85,10 @@ function comprobarTextos(nombre, leido, esperadas) {
       ...e.banda.map((c) => c.titulo), ...e.banda[0].lineas, e.material,
       e.ollaos.titulo, ...e.ollaos.filas.map((f) => f.nombre),
       ...(e.ganchos ? [e.ganchos.titulo, ...e.ganchos.filas.map((f) => f.nombre)] : []),
-      ...(e.observaciones.trim() ? [e.observaciones.trim()] : []),
+      // Una observación por línea, numeradas (Iván, 30/09/2026).
+      ...lineasObservaciones(e.observaciones === '—' ? '' : e.observaciones).map((linea, i) => `${i + 1}.${linea}`),
+      // La recogida de cada cara al pie de su vista, en las lonas.
+      ...(e.notasVistas ? [e.notasVistas.delante, e.notasVistas.detras] : []),
     ];
     for (const t of textos) assert.ok(sinEspacios(p.texto).includes(sinEspacios(t)), `${nombre} hoja ${n + 1}: sale «${t}»`);
   }

@@ -3,6 +3,7 @@ import { sinReves, type Lado } from "../calc/ganchos.ts";
 import type { CabeceraInput, LonaInput } from "../calc/lona.ts";
 import { sinPosiciones, type RepartoLados } from "../calc/ollaos.ts";
 import type { CalcParams } from "../calc/params.ts";
+import { notaRecogida } from "../etiquetas.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
 import { datosHoja, type DatosHoja } from "./datos-hoja.ts";
 import type { ElementoHoja } from "./tipos.ts";
@@ -31,6 +32,9 @@ export interface PaginaHojaDatos extends DatosHoja {
   cabecera: CabeceraHoja;
   ollaos: TablaPosiciones;
   ganchos: TablaPosiciones | null;
+  /** Lo que se escribe al pie de la vista de delante y de la de detrás: su recogida (Iván,
+   *  30/09/2026). null en el baquetón, que no lleva. */
+  notasVistas: { delante: string; detras: string } | null;
 }
 
 /** 12 columnas como la hoja de siempre; más si algún lado lleva más (la vieja cortaba en 12). */
@@ -102,5 +106,8 @@ export function paginaHoja(elemento: ElementoHoja, indice: number, total: number
     cabecera: cabeceraHoja(elemento.input.cabecera),
     ollaos: tablaOllaos(elemento.input, elemento.result.reparto, elemento.input.primerOllao ?? params.primerOllao),
     ganchos: tablaGanchos(elemento.input),
+    notasVistas: elemento.tipo === "lona"
+      ? { delante: notaRecogida(elemento.input.recogeDelante), detras: notaRecogida(elemento.input.recogeAtras) }
+      : null,
   };
 }

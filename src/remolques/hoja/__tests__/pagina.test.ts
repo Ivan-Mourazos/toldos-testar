@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { calcBaqueton, type BaquetonInput } from "../../calc/baqueton.ts";
 import { calcLona, type LonaInput } from "../../calc/lona.ts";
 import { DEFAULT_PARAMS } from "../../calc/params.ts";
-import { emptyLona } from "../../entradas-vacias.ts";
+import { emptyBaqueton, emptyLona } from "../../entradas-vacias.ts";
 import { cabeceraHoja, fechaEs, paginaHoja, tablaGanchos, tablaOllaos, tituloOllaos } from "../pagina.ts";
 
 const lona = (extra: Partial<LonaInput> = {}): LonaInput => ({
@@ -82,6 +83,20 @@ describe("paginaHoja", () => {
     expect(pagina.ollaos.filas[0].posiciones).toEqual(result.reparto.laterales);
     expect(pagina.ganchos).toBeNull();
     expect(pagina).not.toHaveProperty("notas");
+  });
+  // Iván, 30/09/2026: la recogida se lee en el propio dibujo, de frente la de delante y de espaldas
+  // la de atrás, con el nombre que se ve en el formulario.
+  it("la recogida de cada cara, para escribirla en su vista, con el nombre del formulario en mayúsculas", () => {
+    const input = lona({ recogeDelante: "PUENTES HIJOS DE PEDRO LOPEZ", recogeAtras: "GOMA" });
+    const pagina = paginaHoja({ version: "10", tipo: "lona", input, result: calcLona(input, DEFAULT_PARAMS) }, 0, 1, DEFAULT_PARAMS);
+    expect(pagina.notasVistas).toEqual({ delante: "RECOGIDA: PUENTES HIJOS DE PEDRO LÓPEZ", detras: "RECOGIDA: GOMA" });
+    const sinRecogida = lona({ recogeDelante: "NO", recogeAtras: "GANCHOS CORAZON" });
+    expect(paginaHoja({ version: "10", tipo: "lona", input: sinRecogida, result: calcLona(sinRecogida, DEFAULT_PARAMS) }, 0, 1, DEFAULT_PARAMS).notasVistas)
+      .toEqual({ delante: "RECOGIDA: NO", detras: "RECOGIDA: GANCHOS CORAZÓN" });
+  });
+  it("el baquetón no lleva recogidas", () => {
+    const input: BaquetonInput = { ...emptyBaqueton(), largo: 181, ancho: 121, baqueton: 22, modoOllaos: "REPARTIDOS", material: "PVC" };
+    expect(paginaHoja({ version: "10", tipo: "baqueton", input, result: calcBaqueton(input, DEFAULT_PARAMS) }, 0, 1, DEFAULT_PARAMS).notasVistas).toBeNull();
   });
   it("sin primer ollao en la entrada usa el de los parámetros", () => {
     const input = lona({ primerOllao: undefined });

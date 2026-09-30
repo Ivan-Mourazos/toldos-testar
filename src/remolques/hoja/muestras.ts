@@ -10,7 +10,7 @@ import type { ElementoPedidoHoja } from "./tipos.ts";
 
 export interface CasoFixture { caso: string; tipo: TipoPlanteamiento; input: LonaInput | BaquetonInput }
 
-export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado"] as const;
+export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado", "cremallera"] as const;
 export type NombreMuestra = (typeof NOMBRES_MUESTRAS)[number];
 
 const OBSERVACIONES_LARGAS = "REFORZAR LAS ESQUINAS DE DETRÁS CON DOBLE COSTURA. EL CLIENTE QUIERE LA ROTULACIÓN "
@@ -69,6 +69,13 @@ export function muestrasHoja(casos: CasoFixture[]): Record<NombreMuestra, Elemen
       tipoPerfil: "TIPO 01", ...SIN_AGUAS, contorno: 162.3, contornoAtras: 163.8, ventana: false,
       recogeDelante: "PUENTES HIJOS DE PEDRO LOPEZ", recogeAtras: "PUENTES HIJOS DE PEDRO LOPEZ",
       modoOllaos: "REPARTIDOS", pasoOllaos: 35, primerOllao: 2.5,
+    })],
+    // Revisión de Iván (30/09/2026): cremallera delante y detrás, en el paño; recto con aguas (su
+    // cota), ventana (sus cotas) y observaciones de varias líneas.
+    "cremallera": [copia(casos, "lona-02", "AR.26.99998", "10", {
+      tipoPerfil: "TIPO 02", ...SIN_AGUAS, aguas: 15, ventana: true, ventanaAncho: 50, ventanaAlto: 35,
+      recogeDelante: "CREMALLERA", recogeAtras: "CREMALLERA",
+      observaciones: "CREMALLERA DEL 9 (GRANDE)\nREFORZAR LAS ESQUINAS CON DOBLE COSTURA\nCOMPROBAR LA MEDIDA DEL CAJÓN ANTES DE CORTAR",
     })],
   };
 }

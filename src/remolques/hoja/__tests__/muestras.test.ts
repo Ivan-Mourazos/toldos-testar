@@ -7,7 +7,7 @@ import { tablaGanchos } from "../pagina.ts";
 import { prepararPedidoHoja } from "../pedido.ts";
 
 const ELEMENTOS: Record<(typeof NOMBRES_MUESTRAS)[number], number> = {
-  "lona-ventana": 1, baqueton: 1, "segun-ganchos": 1, bastilla: 1, perfiles: 5, varios: 3, sesgado: 1,
+  "lona-ventana": 1, baqueton: 1, "segun-ganchos": 1, bastilla: 1, perfiles: 5, varios: 3, sesgado: 1, cremallera: 1,
 };
 
 describe("muestras de la hoja de taller", () => {
@@ -34,5 +34,14 @@ describe("muestras de la hoja de taller", () => {
     expect("bastillaEnfundar" in muestras.bastilla[0].input && muestras.bastilla[0].input.bastillaEnfundar).toBe(true);
     expect(muestras.varios.map((e) => e.tipo)).toEqual(["lona", "baqueton", "lona"]);
     expect(muestras.varios[2].input.observaciones.length).toBeGreaterThan(200);
+  });
+
+  // Revisión de Iván, 30/09/2026: cremallera delante y detrás (en el paño), aguas, ventana y
+  // observaciones de varias líneas.
+  it("la de cremallera la lleva delante y detrás, con aguas, ventana y observaciones de varias líneas", () => {
+    const input = muestras.cremallera[0].input;
+    expect(input).toMatchObject({ recogeDelante: "CREMALLERA", recogeAtras: "CREMALLERA", tipoPerfil: "TIPO 02", ventana: true });
+    expect("aguas" in input && input.aguas).toBeGreaterThan(0);
+    expect(input.observaciones.split("\n").length).toBeGreaterThan(1);
   });
 });

@@ -103,12 +103,19 @@ body {
 .hoja-dato dt { color: var(--gris); font-size: 7pt; padding-top: 0.3mm; }
 .hoja-dato dd { font-size: 8.5pt; font-weight: 600; line-height: 1.15; margin: 0; }
 .hoja-dato dd span { display: block; }
+/* Textos de una sola línea: HojaPedido.tsx les baja la letra hasta que caben (data-letra-minima) y,
+   si ni así, se cortan con «…». */
+.hoja-una-linea { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* El MATERIAL, en una línea (Iván, 30/09/2026): de 9 pt a 7 pt como mucho. */
 .hoja-material { font-size: 9pt; font-weight: 600; margin: 0; }
-/* Regular, no negrita: el texto largo en negrita se lee peor. */
-.hoja-observaciones { font-size: 9pt; line-height: 1.3; margin: 0; white-space: pre-wrap; }
+/* Una observación por línea, numeradas y siempre en negrita (Iván, 30/09/2026). */
+.hoja-observaciones { font-size: 9pt; font-weight: 700; line-height: 1.3; list-style: none; margin: 0; padding: 0; }
+.hoja-observaciones li { display: grid; gap: 1.2mm; grid-template-columns: max-content 1fr; }
+.hoja-observaciones li span { overflow-wrap: anywhere; }
+.hoja-obs-numero { font-variant-numeric: tabular-nums; }
+.hoja-observaciones-vacias { font-size: 9pt; margin: 0; }
 /* Si la columna no cabe, un punto menos antes de dar la hoja por mala (HojaPedido.tsx). */
 .hoja-apretada .hoja-dato dd,
-.hoja-apretada .hoja-material,
 .hoja-apretada .hoja-observaciones { font-size: 7.5pt; }
 
 .hoja-dibujo { display: flex; flex-direction: column; gap: 3mm; }
@@ -126,6 +133,21 @@ body {
   letter-spacing: 0.08em;
   line-height: 3.5mm;
 }
+/* La recogida de la cara al pie de la vista de delante y de la de detrás, en la franja que la
+   captura deja libre (NOTA_VISTA_MM en medidas.ts): discreta, como los nombres de las vistas. */
+.hoja-vista-nota {
+  bottom: 0.6mm;
+  color: var(--gris);
+  font-size: 7pt;
+  font-weight: 600;
+  left: 0.5mm;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  margin: 0;
+  position: absolute;
+  right: 0.5mm;
+  text-align: center;
+}
 .hoja-sin-dibujo { align-items: center; color: var(--gris); display: flex; height: 100%; justify-content: center; }
 .hoja-cotas line { stroke: var(--tinta); }
 .hoja-cotas marker path { fill: var(--tinta); }
@@ -137,7 +159,6 @@ body {
   paint-order: stroke;
   stroke: #fff;
 }
-.hoja-cotas .hoja-marca { font-weight: 500; }
 .hoja-cotas .hoja-rotulo-vista { fill: var(--gris); letter-spacing: 0.12em; }
 
 /* ── Tablas de ollaos y ganchos, a lo ancho ── */

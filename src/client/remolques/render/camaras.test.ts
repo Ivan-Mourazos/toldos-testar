@@ -26,6 +26,22 @@ describe('cámaras', () => {
     }
   });
 
+  // La hoja escribe la recogida en una franja al pie de la vista de delante y de la de detrás: el
+  // dibujo (con sus cotas) se encuadra en lo que queda por encima, a la misma escala que sin franja.
+  it('con una franja reservada abajo, nada del remolque ni de sus cotas cae en ella', () => {
+    const [ancho, alto, reserva] = [800, 300, 30];
+    const camara = crearCamara('delante', escena.caja, ancho / alto, reserva / alto);
+    const libre = crearCamara('delante', escena.caja, ancho / (alto - reserva));
+    const yPantalla = (p: THREE.Vector3, c: THREE.Camera) => ((1 - aMundo(p).project(c).y) / 2) * alto;
+    for (const p of [...esquinas, ...escena.cotas.filter((c) => c.vistas.includes('delante')).flatMap((c) => [c.desde, c.hasta].map((v) => new THREE.Vector3(...v)))]) {
+      expect(yPantalla(p, camara)).toBeLessThanOrEqual(alto - reserva + 0.01);
+      expect(yPantalla(p, camara)).toBeGreaterThanOrEqual(0);
+    }
+    const o = camara as THREE.OrthographicCamera;
+    const l = libre as THREE.OrthographicCamera;
+    expect((o.top - o.bottom) / alto).toBeCloseTo((l.top - l.bottom) / (alto - reserva), 6);
+  });
+
   it('las vistas rectas no tienen perspectiva', () => {
     expect(crearCamara('delante', escena.caja, 1.6)).toBeInstanceOf(THREE.OrthographicCamera);
     expect(crearCamara('tres-cuartos', escena.caja, 1.6)).toBeInstanceOf(THREE.PerspectiveCamera);

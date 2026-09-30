@@ -46,7 +46,12 @@ const DIRECCION: Record<VistaCamara, Vec3> = {
 
 const ESQUINAS = [0, 1, 2, 3, 4, 5, 6, 7];
 
-export function crearCamara(vista: VistaCamara, caja: EscenaRemolque['caja'], aspecto: number): THREE.Camera {
+/**
+ * `reservaAbajo` (solo vistas rectas): fracción del alto que se deja libre al pie de la imagen,
+ * donde la hoja de taller escribe la recogida. El dibujo se encuadra en lo que queda por encima,
+ * como si la imagen midiera eso, y la franja queda vacía debajo.
+ */
+export function crearCamara(vista: VistaCamara, caja: EscenaRemolque['caja'], aspecto: number, reservaAbajo = 0): THREE.Camera {
   const { centro, tamano, caja: mundo } = encuadre(caja);
   const direccion = aMundo(DIRECCION[vista]).normalize();
   const radio = tamano.length() / 2;
@@ -80,11 +85,15 @@ export function crearCamara(vista: VistaCamara, caja: EscenaRemolque['caja'], as
   const [ancho, alto] = vista === 'delante' || vista === 'detras'
     ? [tamano.x, tamano.y]
     : vista === 'lateral' ? [tamano.z, tamano.y] : [tamano.x, tamano.z];
+  const libre = 1 - Math.min(Math.max(reservaAbajo, 0), 0.5);
+  const aspectoLibre = aspecto / libre;
   let semiAncho = ancho / 2;
   let semiAlto = alto / 2;
-  if (semiAncho / semiAlto > aspecto) semiAlto = semiAncho / aspecto;
-  else semiAncho = semiAlto * aspecto;
-  const camara = new THREE.OrthographicCamera(-semiAncho, semiAncho, semiAlto, -semiAlto, 1, radio * 8);
+  if (semiAncho / semiAlto > aspectoLibre) semiAlto = semiAncho / aspectoLibre;
+  else semiAncho = semiAlto * aspectoLibre;
+  // La franja de abajo alarga el encuadre hacia abajo, a la misma escala.
+  const franja = (2 * semiAlto * (1 - libre)) / libre;
+  const camara = new THREE.OrthographicCamera(-semiAncho, semiAncho, semiAlto, -semiAlto - franja, 1, radio * 8);
   camara.position.copy(centro).addScaledVector(direccion, radio * 4);
   // Vista de arriba con el frente del remolque arriba en la pantalla.
   if (vista === 'arriba') camara.up.set(0, 0, 1);

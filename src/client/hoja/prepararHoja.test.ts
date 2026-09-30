@@ -4,19 +4,21 @@ import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
 import { muestrasHoja, type CasoFixture } from '../../remolques/hoja/muestras.ts';
 import { prepararPedidoHoja } from '../../remolques/hoja/pedido.ts';
 import type { Capturador, VistaHoja } from '../remolques/render/captura';
-import { aPixeles, tamanoVista } from './medidas';
+import { aPixeles, NOTA_VISTA_MM, tamanoVista } from './medidas';
 import { prepararHoja } from './prepararHoja';
 
 function capturadorFalso() {
   const llamadas: Array<[VistaHoja, number, number]> = [];
+  const reservas: number[] = [];
   const capturador: Capturador = {
-    capturar: (_escena, vista, ancho, alto) => {
+    capturar: (_escena, vista, ancho, alto, reserva = 0) => {
       llamadas.push([vista, ancho, alto]);
+      reservas.push(reserva);
       return { png: `data:image/png;base64,${vista}`, ancho, alto, cotas: null, rotulos: [] };
     },
     liberar: () => {},
   };
-  return { capturador, llamadas };
+  return { capturador, llamadas, reservas };
 }
 
 const muestras = muestrasHoja(casos as CasoFixture[]);
@@ -37,5 +39,13 @@ describe('prepararHoja', () => {
     const [hoja] = prepararHoja(prepararPedidoHoja(muestras['segun-ganchos'], DEFAULT_PARAMS), capturador);
     expect(hoja.pagina.ganchos).not.toBeNull();
     expect(llamadas[0]).toEqual(['tres-cuartos', aPixeles(tamanoVista('tres-cuartos', true).ancho), aPixeles(tamanoVista('tres-cuartos', true).alto)]);
+  });
+
+  it('la vista de delante y la de detrás de una lona dejan al pie la franja de su recogida; el baquetón no', () => {
+    const { capturador, reservas } = capturadorFalso();
+    prepararHoja(prepararPedidoHoja(muestras.varios, DEFAULT_PARAMS), capturador);
+    const franja = aPixeles(NOTA_VISTA_MM);
+    // tres-cuartos, tres-cuartos-detras, delante, detras, lateral de cada elemento: lona, baquetón, lona.
+    expect(reservas).toEqual([0, 0, franja, franja, 0, 0, 0, 0, 0, 0, 0, 0, franja, franja, 0]);
   });
 });

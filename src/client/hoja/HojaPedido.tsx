@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { ajustarUnaLinea } from './ajusteTexto';
 import { PaginaHoja } from './PaginaHoja';
 import type { HojaPreparada } from './prepararHoja';
 
@@ -21,7 +22,8 @@ async function esperarRecursos(): Promise<void> {
 }
 
 /**
- * Todas las hojas del pedido. Cuando están pintadas comprueba que cada una cabe en su A4 (si la
+ * Todas las hojas del pedido. Cuando están pintadas ajusta a su ancho los textos de una línea y
+ * comprueba que cada una cabe en su A4 (si la
  * columna de datos no cabe, prueba con la letra algo menor; si tampoco, lo dice) y, con las
  * fuentes y las imágenes cargadas, avisa de que se puede imprimir.
  */
@@ -37,6 +39,8 @@ export function HojaPedido({ hojas, onLista, onError }: {
     // Primero las fuentes: medir con la letra de reserva daría otro alto.
     esperarRecursos().then(() => {
       if (!vigente) return;
+      // Con la letra buena ya cargada: el MATERIAL y la recogida de las vistas, en una línea.
+      if (raiz.current) ajustarUnaLinea(raiz.current);
       const paginas = Array.from(raiz.current?.querySelectorAll<HTMLElement>('.hoja-pagina') ?? []);
       for (const pagina of paginas) {
         const columna = pagina.querySelector<HTMLElement>('.hoja-columna');

@@ -17,6 +17,11 @@ export const HUECO_MM = 3;
  *  impreso; 1 pt = 0,3528 mm). */
 export const LETRA_COTA_MM = 2.5;
 
+/** Franja al pie de la vista de delante y de la de detrás para la recogida de esa cara (Iván,
+ *  30/09/2026): una línea de 7 pt como mucho (`.hoja-vista-nota` en hoja.css). El dibujo se
+ *  encuadra por encima de ella. */
+export const NOTA_VISTA_MM = 3.5;
+
 export interface MedidaMm { ancho: number; alto: number }
 
 const NORMAL: Record<VistaHoja, MedidaMm> = {

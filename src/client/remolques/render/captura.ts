@@ -26,7 +26,8 @@ export interface CapturaVista {
 }
 
 export interface Capturador {
-  capturar(escena: EscenaRemolque, vista: VistaHoja, ancho: number, alto: number): CapturaVista;
+  /** `reservaAbajo`: píxeles que se dejan libres al pie de una vista recta (la recogida de la hoja). */
+  capturar(escena: EscenaRemolque, vista: VistaHoja, ancho: number, alto: number, reservaAbajo?: number): CapturaVista;
   liberar(): void;
 }
 
@@ -112,7 +113,7 @@ export function crearCapturador(): Capturador {
   }
 
   return {
-    capturar(escena, vista, anchoPedido, altoPedido) {
+    capturar(escena, vista, anchoPedido, altoPedido, reservaAbajo = 0) {
       comprobarContexto();
       // Píxeles enteros y dentro de lo que admite la tarjeta. Las cotas se calculan con estas
       // medidas: si el lienzo no midiera justo esto, no caerían sobre el dibujo.
@@ -123,7 +124,7 @@ export function crearCapturador(): Capturador {
       if (gl.drawingBufferWidth !== ancho || gl.drawingBufferHeight !== alto) {
         throw new Error(`El navegador no deja dibujar la vista a ${ancho} × ${alto} píxeles (da ${gl.drawingBufferWidth} × ${gl.drawingBufferHeight}).`);
       }
-      const camara = crearCamara(vista, escena.caja, ancho / alto);
+      const camara = crearCamara(vista, escena.caja, ancho / alto, esRecta(vista) ? reservaAbajo / alto : 0);
       if (camara instanceof THREE.PerspectiveCamera && actual) ajustarAlRemolque(camara, actual.grupo, ancho, alto);
       colocarSol(base.sol, escena.caja, vista);
       renderer.render(base.escena, camara);

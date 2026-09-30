@@ -1,4 +1,5 @@
 import React from 'react';
+import { lineasObservaciones } from '../../remolques/hoja/observaciones.ts';
 import type { PaginaHojaDatos, TablaPosiciones } from '../../remolques/hoja/pagina.ts';
 import type { CapturaVista, VistaHoja } from '../remolques/render/captura';
 import { CapaCotasHoja } from './CapaCotasHoja';
@@ -23,7 +24,7 @@ function DatoCabecera({ etiqueta, valor }: { etiqueta: string; valor: string }) 
   return <div className="hoja-cab-dato"><span>{etiqueta}</span><strong>{valor}</strong></div>;
 }
 
-function Vista({ vista, captura, conGanchos }: { vista: VistaHoja; captura: CapturaVista | null; conGanchos: boolean }) {
+function Vista({ vista, captura, conGanchos, nota }: { vista: VistaHoja; captura: CapturaVista | null; conGanchos: boolean; nota: string | null }) {
   const { ancho, alto } = tamanoVista(vista, conGanchos);
   return (
     // El nombre va encima del recuadro, fuera: dentro pisaba los rótulos DELANTE / DETRÁS.
@@ -36,6 +37,8 @@ function Vista({ vista, captura, conGanchos }: { vista: VistaHoja; captura: Capt
             <CapaCotasHoja captura={captura} />
           </>
         ) : <span className="hoja-sin-dibujo">SIN DIBUJO</span>}
+        {/* La recogida de esa cara, en la franja que la captura deja libre al pie (Iván, 30/09/2026). */}
+        {nota && <p className="hoja-vista-nota hoja-una-linea" data-letra-minima="6">{nota}</p>}
       </div>
     </figure>
   );
@@ -71,7 +74,9 @@ function Tabla({ tabla }: { tabla: TablaPosiciones }) {
 export function PaginaHoja({ pagina, vistas }: { pagina: PaginaHojaDatos; vistas: Record<VistaHoja, CapturaVista> | null }) {
   const { cabecera } = pagina;
   const conGanchos = pagina.ganchos != null;
-  const vista = (v: VistaHoja) => <Vista vista={v} captura={vistas?.[v] ?? null} conGanchos={conGanchos} />;
+  const nota = (v: VistaHoja) => (v === 'delante' ? pagina.notasVistas?.delante : v === 'detras' ? pagina.notasVistas?.detras : null) ?? null;
+  const vista = (v: VistaHoja) => <Vista vista={v} captura={vistas?.[v] ?? null} conGanchos={conGanchos} nota={nota(v)} />;
+  const observaciones = lineasObservaciones(pagina.observaciones === '—' ? '' : pagina.observaciones);
   return (
     <article className={`hoja-pagina${conGanchos ? ' con-ganchos' : ''}`} data-titulo={pagina.titulo}>
       <header className="hoja-cabecera">
@@ -123,11 +128,19 @@ export function PaginaHoja({ pagina, vistas }: { pagina: PaginaHojaDatos; vistas
           ))}
           <div className="hoja-grupo">
             <span className="hoja-rotulo">MATERIAL</span>
-            <p className="hoja-material">{pagina.material}</p>
+            {/* En una línea: si no cabe, la letra baja hasta 7 pt y, si ni así, «…» (HojaPedido.tsx). */}
+            <p className="hoja-material hoja-una-linea" data-letra-minima="7">{pagina.material}</p>
           </div>
           <div className="hoja-grupo">
             <span className="hoja-rotulo">OBSERVACIONES</span>
-            <p className="hoja-observaciones">{pagina.observaciones}</p>
+            {/* Una por línea, numeradas y siempre en negrita (Iván, 30/09/2026). */}
+            {observaciones.length > 0 ? (
+              <ol className="hoja-observaciones">
+                {observaciones.map((linea, i) => (
+                  <li key={i}><span className="hoja-obs-numero">{i + 1}.</span><span>{linea}</span></li>
+                ))}
+              </ol>
+            ) : <p className="hoja-observaciones-vacias">—</p>}
           </div>
         </div>
         <div className="hoja-dibujo">

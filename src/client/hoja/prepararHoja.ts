@@ -3,13 +3,17 @@ import type { ElementoEscena } from '../../remolques/escena/tipos.ts';
 import { paginaHoja, type PaginaHojaDatos } from '../../remolques/hoja/pagina.ts';
 import type { DatosHojaPedido } from '../../remolques/hoja/tipos.ts';
 import { VISTAS_HOJA, type CapturaVista, type Capturador, type VistaHoja } from '../remolques/render/captura';
-import { aPixeles, tamanoVista } from './medidas';
+import { aPixeles, NOTA_VISTA_MM, tamanoVista } from './medidas';
 
 export interface HojaPreparada {
   pagina: PaginaHojaDatos;
   /** null si el elemento no tiene forma que dibujar (la hoja lo dice). */
   vistas: Record<VistaHoja, CapturaVista> | null;
 }
+
+/** Las vistas que llevan texto al pie (la recogida de esa cara) y dejan su franja libre. */
+const conNota = (pagina: PaginaHojaDatos, vista: VistaHoja) =>
+  pagina.notasVistas != null && (vista === 'delante' || vista === 'detras');
 
 /** Los textos y las cinco vistas de cada elemento, antes de pintar nada en la página. */
 export function prepararHoja(datos: DatosHojaPedido, capturador: Capturador): HojaPreparada[] {
@@ -21,7 +25,8 @@ export function prepararHoja(datos: DatosHojaPedido, capturador: Capturador): Ho
     const vistas = {} as Record<VistaHoja, CapturaVista>;
     for (const vista of VISTAS_HOJA) {
       const { ancho, alto } = tamanoVista(vista, pagina.ganchos != null);
-      vistas[vista] = capturador.capturar(escena, vista, aPixeles(ancho), aPixeles(alto));
+      const reserva = conNota(pagina, vista) ? aPixeles(NOTA_VISTA_MM) : 0;
+      vistas[vista] = capturador.capturar(escena, vista, aPixeles(ancho), aPixeles(alto), reserva);
     }
     return { pagina, vistas };
   });

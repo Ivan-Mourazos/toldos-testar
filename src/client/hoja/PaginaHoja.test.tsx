@@ -52,6 +52,29 @@ describe('PaginaHoja', () => {
     expect(html).toContain(`<strong class="hoja-cab-grande">${CLIENTE_LARGO}</strong>`);
   });
 
+  // Revisión de Iván, 30/09/2026.
+  it('las observaciones, una por línea, numeradas y sin las vacías', () => {
+    const base = pagina('lona-ventana');
+    const html = desescapar(renderToStaticMarkup(<PaginaHoja pagina={{ ...base, observaciones: 'REFORZAR\n\nOJO CON EL GOLPE' }} vistas={null} />));
+    expect(html).toContain('<ol class="hoja-observaciones"><li><span class="hoja-obs-numero">1.</span><span>REFORZAR</span></li>'
+      + '<li><span class="hoja-obs-numero">2.</span><span>OJO CON EL GOLPE</span></li></ol>');
+    const vacia = desescapar(renderToStaticMarkup(<PaginaHoja pagina={{ ...base, observaciones: '—' }} vistas={null} />));
+    expect(vacia).toContain('<p class="hoja-observaciones-vacias">—</p>');
+  });
+
+  it('la recogida se escribe al pie de la vista de delante y de la de detrás', () => {
+    const html = desescapar(renderToStaticMarkup(<PaginaHoja pagina={pagina('sesgado')} vistas={null} />));
+    expect(html.match(/RECOGIDA: PUENTES HIJOS DE PEDRO LÓPEZ/g)).toHaveLength(2);
+    expect(html).toMatch(/hoja-vista-delante[^]*hoja-vista-nota[^]*hoja-vista-detras[^]*hoja-vista-nota[^]*hoja-vista-lateral/);
+    const baqueton = desescapar(renderToStaticMarkup(<PaginaHoja pagina={pagina('baqueton')} vistas={null} />));
+    expect(baqueton).not.toContain('RECOGIDA');
+  });
+
+  it('el material va en una línea que se ajusta a lo ancho', () => {
+    const html = desescapar(renderToStaticMarkup(<PaginaHoja pagina={pagina('lona-ventana')} vistas={null} />));
+    expect(html).toMatch(/<p class="hoja-material hoja-una-linea"/);
+  });
+
   it('la bastilla de enfundar se dice en ACABADOS', () => {
     const html = desescapar(renderToStaticMarkup(<PaginaHoja pagina={pagina('bastilla')} vistas={null} />));
     expect(html).toMatch(/<dt>BASTILLA ENFUNDAR<\/dt><dd><span>SÍ<\/span><\/dd>/);
