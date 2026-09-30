@@ -622,6 +622,10 @@ export type WorkflowSettings = {
   planteamientosDirectory: string;
   rpsUploadDirectory: string;
   rpsPlanteamientosDirectory: string;
+  /** Hoja de taller de remolques: AR…-10.pdf (la carpeta que procesa RPS). */
+  remolquesPlanteamientosDirectory: string;
+  /** Hoja de taller de remolques: <año>/AR….pdf, con {YYYY}. */
+  remolquesOficinaTecnicaDirectory: string;
 };
 
 export type WorkflowReadiness = {

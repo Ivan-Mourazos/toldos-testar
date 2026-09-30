@@ -33,7 +33,9 @@ export function SettingsView({
     && form.reviewDirectory === settings.reviewDirectory
     && form.planteamientosDirectory === settings.planteamientosDirectory
     && form.rpsUploadDirectory === settings.rpsUploadDirectory
-    && form.rpsPlanteamientosDirectory === settings.rpsPlanteamientosDirectory;
+    && form.rpsPlanteamientosDirectory === settings.rpsPlanteamientosDirectory
+    && form.remolquesPlanteamientosDirectory === settings.remolquesPlanteamientosDirectory
+    && form.remolquesOficinaTecnicaDirectory === settings.remolquesOficinaTecnicaDirectory;
 
   function updateForm(patch: Partial<WorkflowSettings>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -133,6 +135,22 @@ export function SettingsView({
           value={form.rpsPlanteamientosDirectory}
           onChange={(rpsPlanteamientosDirectory) => updateForm({ rpsPlanteamientosDirectory })}
           placeholder="/mnt/rps/ventas/planteamientos/{YYYY}"
+        />
+        <RouteField
+          step="05"
+          title="Remolques · planteamientos"
+          description="Aquí se guarda la hoja de taller de remolques PEDIDO-10.pdf al pasar a producción: la misma carpeta que usaba la web de remolques."
+          value={form.remolquesPlanteamientosDirectory}
+          onChange={(remolquesPlanteamientosDirectory) => updateForm({ remolquesPlanteamientosDirectory })}
+          placeholder="/mnt/remolques/planteamientos"
+        />
+        <RouteField
+          step="06"
+          title="Remolques · oficina técnica"
+          description="Copia de la hoja de taller de remolques, PEDIDO.pdf en la carpeta del año del pedido."
+          value={form.remolquesOficinaTecnicaDirectory}
+          onChange={(remolquesOficinaTecnicaDirectory) => updateForm({ remolquesOficinaTecnicaDirectory })}
+          placeholder="/mnt/oftecnica/{YYYY}"
         />
       </div>
 

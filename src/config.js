@@ -31,6 +31,10 @@ export const config = {
   planteamientosDirectory: process.env.PLANTEAMIENTOS_DIRECTORY || '',
   rpsUploadDirectory: process.env.RPS_UPLOAD_DIRECTORY || process.env.EXPORT_DIRECTORY || '',
   rpsPlanteamientosDirectory: process.env.RPS_PLANTEAMIENTOS_DIRECTORY || '',
+  // Hoja de taller de remolques (fase 4): las carpetas de la web vieja (RUTA_PLANTEAMIENTOS y
+  // RUTA_OFICINA_TECNICA/<año>), como plantillas con {YYYY}. La configuración guardada prevalece.
+  remolquesPlanteamientosDirectory: process.env.REMOLQUES_PLANTEAMIENTOS_DIRECTORY || '',
+  remolquesOficinaTecnicaDirectory: process.env.REMOLQUES_OFICINA_TECNICA_DIRECTORY || '',
   workflowSettingsFile,
   // Parámetros comunes a todos los puestos: junto a la configuración del flujo,
   // que en producción vive en /var/lib/toldos-testar.

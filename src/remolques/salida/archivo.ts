@@ -1,0 +1,152 @@
+import path from "node:path";
+import { access, copyFile, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { constants } from "node:fs";
+import { anioDelPlanteamiento, nombrePdf } from "./nombre-pdf.ts";
+
+// Archivo de la hoja de taller de remolques en las dos carpetas de siempre (fase 4; lo llama la
+// fase 5 al pasar a producción): `AR…-10.pdf` en la de planteamientos (la que procesa RPS) y
+// `<año>/AR….pdf` en la de oficina técnica. Las carpetas salen de Configuración (plantillas con
+// {YYYY}, como las de toldos). Escritura atómica: las dos copias o ninguna.
+
+/** Lo que el archivo necesita de la configuración del flujo (Configuración → Rutas de trabajo). */
+export interface CarpetasRemolques {
+  productionEnabled: boolean;
+  remolquesPlanteamientosDirectory: string;
+  remolquesOficinaTecnicaDirectory: string;
+}
+
+type CodigoArchivo =
+  | "ESCRITURA_DESACTIVADA" | "SIN_CARPETAS" | "RUTA_NO_VALIDA" | "PEDIDO_NO_VALIDO"
+  | "NO_ES_PDF" | "CARPETA_NO_DISPONIBLE" | "PDF_EXISTENTE";
+
+export class ErrorArchivoPdf extends Error {
+  statusCode: number;
+  codigo: CodigoArchivo;
+  constructor(mensaje: string, statusCode: number, codigo: CodigoArchivo) {
+    super(mensaje);
+    this.name = "ErrorArchivoPdf";
+    this.statusCode = statusCode;
+    this.codigo = codigo;
+  }
+}
+
+export const MENSAJE_PDF_EXISTENTE = "Ya existe un PDF de este pedido en las carpetas de archivo. Se sustituirán las dos copias.";
+
+/** La parte fija de una plantilla, hasta el primer {YYYY}: tiene que existir (es el montaje de red). */
+export function raizPlantilla(plantilla: string): string {
+  const i = plantilla.indexOf("{YYYY}");
+  return i < 0 ? plantilla : path.dirname(`${plantilla.slice(0, i)}x`);
+}
+
+export function destinosPdfRemolques(
+  numeroPedido: string,
+  fecha: string,
+  carpetas: Omit<CarpetasRemolques, "productionEnabled">,
+  ahora = new Date(),
+): { nombre: string; anio: number; destinos: [string, string]; raices: [string, string] } {
+  const planteamientos = carpetas.remolquesPlanteamientosDirectory.trim();
+  const oficina = carpetas.remolquesOficinaTecnicaDirectory.trim();
+  if (!planteamientos || !oficina) {
+    throw new ErrorArchivoPdf("Faltan las carpetas de remolques en Configuración (planteamientos y oficina técnica). No se ha guardado el PDF.", 400, "SIN_CARPETAS");
+  }
+  const raices: [string, string] = [raizPlantilla(planteamientos), raizPlantilla(oficina)];
+  if (!raices.every((raiz) => path.isAbsolute(raiz))) {
+    throw new ErrorArchivoPdf("Las carpetas de remolques deben ser rutas absolutas del servidor.", 400, "RUTA_NO_VALIDA");
+  }
+  const nombre = nombrePdf(numeroPedido);
+  if (!/^[A-Z0-9]+-10\.pdf$/.test(nombre) || nombre.startsWith("SIN-PEDIDO")) {
+    throw new ErrorArchivoPdf("El número de pedido no es válido para archivar el PDF.", 400, "PEDIDO_NO_VALIDO");
+  }
+  const anio = anioDelPlanteamiento(numeroPedido, fecha, ahora);
+  const conAnio = (plantilla: string) => plantilla.replaceAll("{YYYY}", String(anio));
+  return {
+    nombre,
+    anio,
+    destinos: [path.join(conAnio(planteamientos), nombre), path.join(conAnio(oficina), nombre.replace(/-10\.pdf$/, ".pdf"))],
+    raices,
+  };
+}
+
+async function existe(fichero: string): Promise<boolean> {
+  try {
+    const datos = await stat(fichero);
+    if (!datos.isFile()) throw new Error(`El destino no es un archivo: ${fichero}`);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+    throw error;
+  }
+}
+
+export async function archivarPdfRemolques(
+  contenido: Uint8Array,
+  pedido: { numeroPedido: string; fecha: string },
+  carpetas: CarpetasRemolques,
+  opciones: { sustituir?: boolean; ahora?: Date } = {},
+): Promise<{ nombre: string; anio: number; destinos: string[]; sustituido: boolean }> {
+  if (!carpetas.productionEnabled) {
+    throw new ErrorArchivoPdf("La escritura de archivos está desactivada en Configuración: no se ha guardado el PDF.", 403, "ESCRITURA_DESACTIVADA");
+  }
+  if (Buffer.from(contenido.subarray(0, 4)).toString("ascii") !== "%PDF") {
+    throw new ErrorArchivoPdf("Lo que se iba a archivar no es un PDF.", 400, "NO_ES_PDF");
+  }
+  const { nombre, anio, destinos, raices } = destinosPdfRemolques(pedido.numeroPedido, pedido.fecha, carpetas, opciones.ahora);
+  // Las raíces deben existir: no crear una carpeta local si falta el montaje de red.
+  for (const raiz of raices) {
+    try {
+      if (!(await stat(raiz)).isDirectory()) throw new Error("No es una carpeta");
+      await access(raiz, constants.W_OK);
+    } catch {
+      throw new ErrorArchivoPdf(`La carpeta de archivo no está disponible o no permite escribir: ${raiz}`, 503, "CARPETA_NO_DISPONIBLE");
+    }
+  }
+  for (const destino of destinos) await mkdir(path.dirname(destino), { recursive: true });
+  const anteriores = await Promise.all(destinos.map(existe));
+  if (anteriores.some(Boolean) && !opciones.sustituir) throw new ErrorArchivoPdf(MENSAJE_PDF_EXISTENTE, 409, "PDF_EXISTENTE");
+
+  const marca = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const temporales = destinos.map((d) => `${d}.${marca}.tmp`);
+  const copias = destinos.map((d) => `${d}.${marca}.bak`);
+  const escritos: number[] = [];
+  try {
+    // Preparar ambas copias antes de tocar los PDF publicados.
+    for (let i = 0; i < destinos.length; i++) {
+      await writeFile(temporales[i], contenido, { flag: "wx" });
+      if (anteriores[i]) await copyFile(destinos[i], copias[i], constants.COPYFILE_EXCL);
+    }
+    for (let i = 0; i < destinos.length; i++) {
+      if (opciones.sustituir) {
+        await rename(temporales[i], destinos[i]);
+      } else {
+        // No sobrescribir un fichero que haya aparecido desde la comprobación.
+        await copyFile(temporales[i], destinos[i], constants.COPYFILE_EXCL);
+      }
+      escritos.push(i);
+    }
+    for (const destino of destinos) {
+      if (!Buffer.from(await readFile(destino)).equals(Buffer.from(contenido))) {
+        throw new Error(`La copia del PDF no coincide: ${destino}`);
+      }
+    }
+  } catch (error) {
+    const fallos: string[] = [];
+    for (const i of escritos.reverse()) {
+      try {
+        if (anteriores[i]) await rename(copias[i], destinos[i]);
+        else await rm(destinos[i], { force: true });
+      } catch {
+        fallos.push(destinos[i]);
+      }
+    }
+    if (fallos.length) {
+      throw new Error(`Archivo incompleto. Revisa ${fallos.join(", ")}; se conservan las copias .bak para recuperar los PDF anteriores.`);
+    }
+    await Promise.all(copias.map((d) => rm(d, { force: true }).catch(() => {})));
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") throw new ErrorArchivoPdf(MENSAJE_PDF_EXISTENTE, 409, "PDF_EXISTENTE");
+    throw error;
+  } finally {
+    await Promise.all(temporales.map((d) => rm(d, { force: true }).catch(() => {})));
+  }
+  await Promise.all(copias.map((d) => rm(d, { force: true }).catch(() => {})));
+  return { nombre, anio, destinos, sustituido: anteriores.some(Boolean) };
+}

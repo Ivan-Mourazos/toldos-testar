@@ -132,6 +132,10 @@ REVIEW_DIRECTORY=/mnt/toldos/oficina-tecnica/{YYYY}/TOLDOS
 PLANTEAMIENTOS_DIRECTORY=/mnt/toldos/oficina-tecnica/{YYYY}/TOLDOS
 RPS_UPLOAD_DIRECTORY=/mnt/toldos/rps
 RPS_PLANTEAMIENTOS_DIRECTORY=/mnt/rps/ventas/planteamientos/{YYYY}
+# Hoja de taller de remolques: copiar aquí los valores de RUTA_PLANTEAMIENTOS y RUTA_OFICINA_TECNICA
+# del .env de la web vieja de remolques; a la de oficina técnica se le añade /{YYYY}.
+REMOLQUES_PLANTEAMIENTOS_DIRECTORY=
+REMOLQUES_OFICINA_TECNICA_DIRECTORY=
 WORKFLOW_SETTINGS_FILE=/var/lib/toldos-testar/workflow-settings.json
 RULE_PARAMETERS_FILE=/var/lib/toldos-testar/rule-parameters.json
 

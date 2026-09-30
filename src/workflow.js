@@ -20,7 +20,9 @@ export function defaultWorkflowSettings(seed = {}) {
     reviewDirectory: seed.reviewDirectory || archiveTemplate,
     planteamientosDirectory: seed.planteamientosDirectory || archiveTemplate,
     rpsUploadDirectory: seed.rpsUploadDirectory || seed.exportDirectory || '',
-    rpsPlanteamientosDirectory: seed.rpsPlanteamientosDirectory || inferRpsPlanteamientosDirectory(seed.rpsUploadDirectory)
+    rpsPlanteamientosDirectory: seed.rpsPlanteamientosDirectory || inferRpsPlanteamientosDirectory(seed.rpsUploadDirectory),
+    remolquesPlanteamientosDirectory: seed.remolquesPlanteamientosDirectory || '',
+    remolquesOficinaTecnicaDirectory: seed.remolquesOficinaTecnicaDirectory || ''
   };
 }
 
@@ -31,14 +33,18 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     reviewDirectory: cleanPath(input?.reviewDirectory ?? current.reviewDirectory),
     planteamientosDirectory: cleanPath(input?.planteamientosDirectory ?? current.planteamientosDirectory),
     rpsUploadDirectory: cleanPath(input?.rpsUploadDirectory ?? current.rpsUploadDirectory),
-    rpsPlanteamientosDirectory: cleanPath(input?.rpsPlanteamientosDirectory ?? current.rpsPlanteamientosDirectory)
+    rpsPlanteamientosDirectory: cleanPath(input?.rpsPlanteamientosDirectory ?? current.rpsPlanteamientosDirectory),
+    remolquesPlanteamientosDirectory: cleanPath(input?.remolquesPlanteamientosDirectory ?? current.remolquesPlanteamientosDirectory),
+    remolquesOficinaTecnicaDirectory: cleanPath(input?.remolquesOficinaTecnicaDirectory ?? current.remolquesOficinaTecnicaDirectory)
   };
 
   for (const [label, value] of [
     ['carpeta de revisión', settings.reviewDirectory],
     ['carpeta de planteamientos', settings.planteamientosDirectory],
     ['carpeta de subida de material', settings.rpsUploadDirectory],
-    ['archivo histórico de planteamientos de RPS', settings.rpsPlanteamientosDirectory]
+    ['archivo histórico de planteamientos de RPS', settings.rpsPlanteamientosDirectory],
+    ['carpeta de planteamientos de remolques', settings.remolquesPlanteamientosDirectory],
+    ['carpeta de oficina técnica de remolques', settings.remolquesOficinaTecnicaDirectory]
   ]) {
     if (value && !isAbsolutePathTemplate(value)) {
       throw new Error(`La ${label} debe ser una ruta absoluta válida en el sistema del servidor.`);
@@ -69,6 +75,13 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
   ];
   if (settings.rpsPlanteamientosDirectory) {
     definitions.push(['rpsPlanteamientosDirectory', 'Histórico de planteamientos RPS', settings.rpsPlanteamientosDirectory, 'read']);
+  }
+  // Remolques (fase 4): solo si están puestas; no cuentan para «Generar archivos» de toldos.
+  if (settings.remolquesPlanteamientosDirectory) {
+    definitions.push(['remolquesPlanteamientosDirectory', 'Remolques · planteamientos', settings.remolquesPlanteamientosDirectory, 'write']);
+  }
+  if (settings.remolquesOficinaTecnicaDirectory) {
+    definitions.push(['remolquesOficinaTecnicaDirectory', 'Remolques · oficina técnica', settings.remolquesOficinaTecnicaDirectory, 'write']);
   }
   const directories = await Promise.all(definitions.map(async ([key, label, template, accessMode]) => {
     if (!template) return { key, label, path: '', ok: false, error: 'Falta indicar la ruta.' };

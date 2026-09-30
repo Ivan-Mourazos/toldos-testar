@@ -164,6 +164,35 @@ describe('flujo de revisión y producción', () => {
     expect(result.directories[1].error).toContain('no existe');
   });
 
+  it('guarda las dos carpetas de remolques y las comprueba solo si están puestas', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-directory-check-'));
+    temporaryDirectories.push(root);
+    const available = path.join(root, 'Disponible');
+    await fs.mkdir(path.join(available, '2026'), { recursive: true });
+    const settings = normalizeWorkflowSettings({
+      productionEnabled: true,
+      reviewDirectory: available,
+      planteamientosDirectory: available,
+      rpsUploadDirectory: available,
+      remolquesPlanteamientosDirectory: available,
+      remolquesOficinaTecnicaDirectory: path.join(available, '{YYYY}')
+    });
+    expect(settings.remolquesOficinaTecnicaDirectory).toBe(path.join(available, '{YYYY}'));
+    expect(() => normalizeWorkflowSettings({ remolquesPlanteamientosDirectory: 'relativa' }))
+      .toThrow('La carpeta de planteamientos de remolques debe ser una ruta absoluta válida en el sistema del servidor.');
+    const result = await checkWorkflowDirectories(settings, { year: 2026 });
+    expect(result.directories.map(({ label, ok }) => ({ label, ok }))).toEqual([
+      { label: 'Pedidos para revisión', ok: true },
+      { label: 'Planteamientos generados', ok: true },
+      { label: 'Subida de material', ok: true },
+      { label: 'Remolques · planteamientos', ok: true },
+      { label: 'Remolques · oficina técnica', ok: true }
+    ]);
+    // Las de remolques no cuentan para «Generar archivos» de toldos.
+    expect(workflowReadiness({ ...settings, remolquesPlanteamientosDirectory: '' }).productionReady).toBe(true);
+    expect(defaultWorkflowSettings({ remolquesPlanteamientosDirectory: '/mnt/r/plan' }).remolquesPlanteamientosDirectory).toBe('/mnt/r/plan');
+  });
+
   it('en Linux exige rutas POSIX montadas y rechaza rutas de Windows o UNC', () => {
     expect(isAbsolutePathTemplate('/mnt/toldos/{YYYY}/TOLDOS', 'linux')).toBe(true);
     expect(isAbsolutePathTemplate('C:\\Pedidos\\{YYYY}', 'linux')).toBe(false);
