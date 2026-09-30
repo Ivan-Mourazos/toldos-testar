@@ -92,8 +92,9 @@ Stop the background task when done. Leave `tmp/ui-audit/` for evidence;
 `/hoja-remolques.html` es una página interna (segunda entrada de Vite) que Chromium imprime en el
 servidor. En desarrollo se ve sin pasar por el servidor con una muestra:
 `http://127.0.0.1:4310/hoja-remolques.html?muestra=varios` (hay `lona-ventana`, `baqueton`,
-`segun-ganchos`, `bastilla`, `perfiles` y `varios`, de `src/remolques/hoja/muestras.ts`). Cuando
+`segun-ganchos`, `bastilla`, `perfiles`, `varios` y `sesgado`, de `src/remolques/hoja/muestras.ts`). Cuando
 termina de pintarse deja `window.hojaLista = true`, o el motivo en `window.hojaError`. Necesita
 WebGL: en Playwright, `launchArgs: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']`.
 Para mirarla en papel: `page.pdf({ format: 'A4', landscape: true, printBackground: true })` y
-`pdftoppm -r 200 -png` (y `-gray`, como la impresora del taller) sobre el PDF.
+`pdftoppm -r 200 -png` sobre el PDF (ojo: con `-png`, `-gray` no hace nada; para verla como la
+impresora, pasa cada PNG a luminancia en un canvas).
