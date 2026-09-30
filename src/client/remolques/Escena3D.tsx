@@ -11,6 +11,8 @@ import { calcularVentanaFrontal } from "../../remolques/geometry/ventana.ts";
 import { coloresMaterial } from "../../remolques/geometry/color-lona.ts";
 import { controlDescuelgue, flechaDescuelgue, marcasDistinguibles, tamanoSimbolo } from "../../remolques/geometry/caida.ts";
 import type { TipoPerfil } from "../../remolques/calc/params.ts";
+import { CREMALLERA_A_ESQUINA, CREMALLERA_BAJO_CIMA } from "../../remolques/escena/constantes.ts";
+import { bordeLona } from "../../remolques/escena/cotas.ts";
 
 type Punto = Punto2D;
 
@@ -144,6 +146,11 @@ const TRAZO_ARISTA = 1.4;
 const TRAZO_FINO = 0.9;
 const HALO_TEXTO = 4.5;
 
+/** Por debajo de este largo las dos flechas de dentro casi se tocan: van por fuera (Iván, 01/10/2026,
+ *  con unas aguas de 8 cm), con la punta en cada extremo y una cola hacia fuera, como en el render. */
+const COTA_MINIMA = 22;
+const COLA_COTA = 12;
+
 function Cota({
   desde, hasta, texto, rotacion = 0, textoDx = 0, textoDy = -7,
 }: {
@@ -151,12 +158,24 @@ function Cota({
 }) {
   const cx = (desde.x + hasta.x) / 2 + textoDx;
   const cy = (desde.y + hasta.y) / 2 + textoDy;
+  const largo = Math.hypot(hasta.x - desde.x, hasta.y - desde.y);
+  const fuera = largo > 0 && largo < COTA_MINIMA;
+  const u = fuera ? { x: (hasta.x - desde.x) / largo, y: (hasta.y - desde.y) / largo } : { x: 0, y: 0 };
+  const flecha = fuera ? "url(#cota-fuera)" : "url(#cota)";
   return (
     <g>
       <line
         x1={desde.x} y1={desde.y} x2={hasta.x} y2={hasta.y}
-        stroke={COLOR_COTA} strokeWidth={TRAZO_FINO} markerStart="url(#cota)" markerEnd="url(#cota)"
+        stroke={COLOR_COTA} strokeWidth={TRAZO_FINO} markerStart={flecha} markerEnd={flecha}
       />
+      {fuera && [[desde, -1], [hasta, 1]].map(([p, s], i) => {
+        const { x, y } = p as Punto;
+        const signo = s as number;
+        return (
+          <line key={i} x1={x} y1={y} x2={x + u.x * COLA_COTA * signo} y2={y + u.y * COLA_COTA * signo}
+            stroke={COLOR_COTA} strokeWidth={TRAZO_FINO} />
+        );
+      })}
       <text
         x={cx} y={cy} textAnchor="middle" fontSize="13" fontWeight="700"
         fontFamily={FUENTE_COTA} style={{ fontVariantNumeric: "tabular-nums" }}
@@ -197,21 +216,7 @@ function SimboloRecogida({ costura, tipo }: { costura: Costura; tipo: string }) 
     return <path d={d} fill="none" stroke={COLOR_RECOGIDA} strokeWidth={TRAZO_ARISTA} strokeLinejoin="round" />;
   }
 
-  if (tipo === "CREMALLERA") {
-    // doble línea con dientes
-    const medio = tamanoSimbolo(6) / 2;
-    const dientes: Punto[] = [];
-    for (let y = yBase - 6; y > yTop + 4; y -= 8) dientes.push({ x, y });
-    return (
-      <g stroke={COLOR_RECOGIDA} strokeWidth={TRAZO_ARISTA}>
-        <line x1={x - medio} y1={yBase} x2={x - medio} y2={yTop} />
-        <line x1={x + medio} y1={yBase} x2={x + medio} y2={yTop} />
-        {dientes.map((p, i) => (
-          <line key={i} x1={p.x - medio} y1={p.y} x2={p.x + medio} y2={p.y} />
-        ))}
-      </g>
-    );
-  }
+  // La cremallera no va en la costura sino en el paño (Cremallera, más abajo).
 
   if (tipo === "VELCRO") {
     // franja rayada pegada a la costura
@@ -245,6 +250,38 @@ function SimboloRecogida({ costura, tipo }: { costura: Costura; tipo: string }) 
   return null;
 }
 
+/**
+ * La cremallera, como en el render (Iván, 30/09 y 01/10/2026): en el paño de delante o de atrás, a
+ * 5 cm de la esquina hacia dentro, de abajo hasta 4 cm por debajo de la cima de la esquina. Una banda
+ * oscura con los dientes claros alternos y, arriba, el cursor con su lengüeta: se ve también en gris.
+ */
+function Cremallera({ tramo }: { tramo: TramoCremallera }) {
+  const { x, yBase, yTop } = tramo;
+  const alto = yBase - yTop;
+  if (alto < 14) return null;
+  const ancho = ANCHO_BANDA_CREMALLERA();
+  const dientes: number[] = [];
+  for (let y = yBase - 3; y > yTop + 9; y -= 3.2) dientes.push(y);
+  return (
+    <g>
+      <rect data-cremallera="banda" x={x - ancho / 2} y={yTop} width={ancho} height={alto} fill={COLOR_SILUETA} />
+      <g stroke="#ffffff" strokeWidth={1.1}>
+        {dientes.map((y, i) => (
+          <line key={i} x1={i % 2 === 0 ? x - ancho * 0.36 : x} y1={y} x2={i % 2 === 0 ? x : x + ancho * 0.36} y2={y} />
+        ))}
+      </g>
+      <g data-cremallera="tirador" fill="#ffffff" stroke={COLOR_SILUETA} strokeWidth={TRAZO_FINO}>
+        <rect x={x - ancho / 2 - 1.5} y={yTop} width={ancho + 3} height={6} rx={1.5} />
+        <rect x={x - ancho * 0.28} y={yTop + 5} width={ancho * 0.56} height={9} rx={1.5} />
+      </g>
+    </g>
+  );
+}
+
+interface TramoCremallera { x: number; yBase: number; yTop: number }
+/** La banda se identifica, no se mide: pasa por la exageración de símbolos. */
+const ANCHO_BANDA_CREMALLERA = () => tamanoSimbolo(7);
+
 /** Exportada, con calcularVista, para el test que comprueba que el dibujo
  *  cabe en el panel: el margen es ahora estrecho y a mano no se ve. */
 export interface OpcionesVista {
@@ -273,6 +310,8 @@ export interface OpcionesVista {
   lateralesDesdeFar: boolean;
   /** Con bastilla de enfundar el dobladillo va sujeto: los bordes no ceden. */
   conBastilla: boolean;
+  /** La recogida de esta cara es la cremallera, que va en el paño junto a la esquina. */
+  conCremallera?: boolean;
 }
 
 /** Punto de una curva cuadrática en el parámetro t. */
@@ -379,7 +418,13 @@ export function calcularVista(o: OpcionesVista) {
     // Normalmente las cotas quedan fuera: ancho debajo y alto a la izquierda.
     // En paños muy ajustados pasan dentro de la ventana para no pisar el contorno.
     const anchoDentro = baseY - bordeInferior < 44 && alto >= 44;
-    const altoDentro = x - origenX < 32 && ancho >= 34;
+    // El borde de la lona a media altura de la ventana (en un arquillado, más adentro que abajo).
+    const semiancho = bordeLona(near.map(([px, py]) => [px - o.anchoNear / 2, py] as [number, number]),
+      ventanaLocal.y + ventanaLocal.alto / 2);
+    // Con cremallera en esta cara, el sitio acaba en su banda: el número no la pisa.
+    const bordeIzq = origenX + (o.anchoNear / 2 - semiancho) * escala
+      + (o.conCremallera ? CREMALLERA_A_ESQUINA * escala + ANCHO_BANDA_CREMALLERA() / 2 : 0);
+    const altoDentro = x - bordeIzq < 32 && ancho >= 34;
     const yCotaAncho = anchoDentro ? bordeInferior - 25 : bordeInferior + 12;
     const xCotaAlto = altoDentro ? x + 12 : x - 18;
     return {
@@ -543,13 +588,17 @@ export function calcularVista(o: OpcionesVista) {
       })()
     : null;
   const xCotaAguas = frente.at(-1)!.x + 34;
+  const cremalleras = {
+    izquierda: { x: costuraIzq.x + CREMALLERA_A_ESQUINA * escala, yBase: costuraIzq.yBase, yTop: costuraIzq.yTop + CREMALLERA_BAJO_CIMA * escala },
+    derecha: { x: costuraDcha.x - CREMALLERA_A_ESQUINA * escala, yBase: costuraDcha.yBase, yTop: costuraDcha.yTop + CREMALLERA_BAJO_CIMA * escala },
+  };
   const largoPerspectiva = Math.hypot(profundidadX, profundidadY) || 1;
   return {
     frente, fondo, lateralNear, lateralFar, panoFondo, aristasLongitudinales, contornoFrente,
     cierrePinche, bordeInferiorFrente, bordeInferiorLateral, lateralCamino,
     pliegues, radioOllao,
     cubierta, tieneCumbrera, ventana, marcasOllaos, costuraIzq, costuraDcha,
-    bastillaBorde, bastillaInterior, chaflanCota,
+    bastillaBorde, bastillaInterior, chaflanCota, cremalleras, escala,
     anchoDesde: { x: frente[0].x, y: baseY + 35 },
     anchoHasta: { x: frente.at(-1)!.x, y: baseY + 35 },
     altoDesde: { x: frente[0].x - 42, y: baseY },
@@ -711,6 +760,12 @@ function PanelVista({
         <g>
           <SimboloRecogida costura={d.costuraIzq} tipo={recogida} />
           <SimboloRecogida costura={d.costuraDcha} tipo={recogida} />
+          {recogida === "CREMALLERA" && (
+            <>
+              <Cremallera tramo={d.cremalleras.izquierda} />
+              <Cremallera tramo={d.cremalleras.derecha} />
+            </>
+          )}
           {/* La anotación se une con un trazo a lo que nombra: sin línea de
               referencia, el nombre flota y hay que adivinar a qué se refiere. */}
           <line
@@ -852,6 +907,7 @@ export function Escena3D(props: Escena3DProps) {
       altoNear: altoDelante,
       altoFar: altoAtras,
       conVentana: props.modo === "lona" && (props.ventana ?? false),
+      conCremallera: props.modo === "lona" && props.recogeDelante === "CREMALLERA",
       ollaosNear: props.ollaos?.delante ?? [],
       ollaosLaterales: props.ollaos?.laterales ?? [],
       lateralesDesdeFar: true,
@@ -873,7 +929,7 @@ export function Escena3D(props: Escena3DProps) {
     props.aguas, props.radioCumbrera, props.radioHombro, props.radioEsquina, props.chaflan,
     props.radioChaflanAbajo, props.radioChaflanArriba,
     props.ventana, props.ventanaAncho, props.ventanaAlto, props.ollaos, altoDelante, altoAtras, anchoAtras,
-    bastilla,
+    bastilla, props.recogeDelante,
   ]);
 
   useEffect(() => {
@@ -914,6 +970,10 @@ export function Escena3D(props: Escena3DProps) {
             <marker id="cota" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto-start-reverse">
               <path d="M 7 0 L 0 3.5 L 7 7 z" fill={COLOR_COTA} />
             </marker>
+            {/* La misma flecha con la punta en el extremo y el cuerpo hacia fuera: cotas cortas. */}
+            <marker id="cota-fuera" markerWidth="7" markerHeight="7" refX="0" refY="3.5" orient="auto-start-reverse">
+              <path d="M 7 0 L 0 3.5 L 7 7 z" fill={COLOR_COTA} />
+            </marker>
           </defs>
           <rect width={ANCHO_PANEL * 2} height={ALTO_PANEL} fill="#ffffff" />
           <PanelVista
@@ -942,7 +1002,7 @@ export function Escena3D(props: Escena3DProps) {
               ancho={cotaAnchoAtras}
               largo={cotas.largo}
               mostrarLargo={false}
-              mostrarAguas={false}
+              mostrarAguas={mostrarAguas}
               aguas={props.aguas ?? 0}
               recogida={props.modo === "lona" ? (props.recogeAtras ?? "") : ""}
               bastilla={bastilla}
