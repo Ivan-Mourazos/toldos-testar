@@ -24,14 +24,14 @@ Método: consumo real por OF (`tmp/cofres/por-of.mjs`), contraste pieza a pieza 
 | Coral | Faltaban 6 (motor 55/17, kit de motor, varillas) y sobraban 7 | Nada |
 | Cuarzo | Faltaban 8 (soporte, motor y su kit Ø70, casquillo de máquina Ø70, varilla) | Solo el casquillo de eje 63 (Q-PR02) |
 | Ámbar | Faltaban 6 (kit de montaje, varillas, kit de motor Ø70, casquillo Ø70) y sobraban 7 | Nada |
-| Ágata | Faltaban 14 y sobraban 12 | Quedan patines, regleta y pasadores (Q-AG01), el motor 85/17 (Q-AG02) y el soporte suelto izquierdo (Q-A04: sin lado fijo; desde el 25/09/2026 se elige en la tarjeta o lo decide el taller) |
+| Ágata | Faltaban 14 y sobraban 12 | Quedan el motor 85/17 (Q-AG02) y el soporte suelto izquierdo (Q-A04: sin lado fijo; desde el 25/09/2026 se elige en la tarjeta o lo decide el taller) |
 
 Reglas comunes que salen del consumo:
 
 - **Motor y kit**:
   - Perla y Coral: Sunea 55/17 con el kit del Arzúa (rueda P-801 mecanizada y corona LT60). Se reservaban 30 a 50 según la salida y el kit Ø78. La tabla guardada se migra.
   - Cuarzo y Ámbar (tubo Ø70): rueda centrada Hi68 y corona centrada mecanizada Ø70, con Sunea 35/17 (Cuarzo) y Sunilus 15/17 (Ámbar). Se reservaba la corona LT50 y el adaptador, que no se consumen.
-  - Ágata: Sunilus en todas las variantes (se reservaba Sunea con cofre), con la rueda Ø78, la corona LT60 a Ø78 y el kit de tornillos del motor.
+  - Ágata: Sunilus en todas las variantes (se reservaba Sunea con cofre), con la rueda Ø78, la corona LT60 a Ø78 y el kit de tornillos del motor. El de 100 va a 12 rpm (`SUNILUSIO100//12`): hasta el 30/09/2026 la web pedía `SUNILUSIO100//17`, que no existe en RPS. El cambio de Sunilus a Sunea (Q-AG02) sigue pendiente.
 - **Máquina**:
   - Perla, Cuarzo y Ámbar: casquillo de eje 50 (Ø78 en Perla, Ø70 en los otros dos).
   - Coral: `CASTRAEX80`, que sí se consume.
@@ -43,6 +43,7 @@ Reglas comunes que salen del consumo:
 - **Tubo de enrolle y rueda**: uno por toldo (el Perla reservaba dos).
 - **Brazos y soportes del Ágata** por juegos, como en Galicia y Monoblock. Los soportes a pared o techo son los frontales `SOFTMODUL` (se reservaban como soportes de brazo).
 - **Barra del Ágata**: `PRMODUL` con cofre y la redonda `PRROMODUL` en el resto, con sus tapas y las del cofre. `PRCOMODUL`, `PRSCMODUL` y el difusor LED `PRDLED` (que en RPS no lleva lacado) no se consumen.
+- **Ágata, patines y kit de unión** (taller, 30/09/2026, Q-AG01): siempre dos kits de patines de codo (`PABMODUL`, brazo) y dos de horquilla (`PASBMODUL`, soporte de brazo) por toldo, que es lo que se consume en 9 de las 11 OF con patines desde 2023. Solo existen en blanco y negro (el de codo negro es `PABMODULNEGR`); en los demás colores van en blanco a lacar. Con más de 7 m de frente, el kit de unión: regleta `KUNIONMODUL` y bolsa de pasadores `PASADORMODUL` (lo consumido en las 12 OF de más de 700 desde 2024). Van en la reserva, no en el despiece, como las varillas.
 - **Perla**: 5 m de goma amortiguadora `GOMAAMORTIG` (la de 2025-2026). Fuera el perfil protector (6 de 275 OF).
 
 El film de embalar (`FILMEMBALAR`) va aparte, como el tubo transparente de embalaje.
@@ -71,7 +72,7 @@ A 1280×720 y 1600, Perla de máquina y Ágata cofre con motor y 3 brazos: váli
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
-| Q-AG01 | Ágata: patines de soporte de brazo y de brazo, regleta de unión y pasadores salen en unas pocas OF sin regla clara | No se reservan |
+| Q-AG01 | **Resuelta (taller, 30/09/2026):** patines siempre, de codo y de horquilla; kit de unión con más de 7 m de frente | Hecho: dos `PABMODUL` y dos `PASBMODUL` por toldo; `KUNIONMODUL` + `PASADORMODUL` por encima de 700 |
 | Q-AG02 | Ágata: se consume sobre todo el Sunilus 85/17; la tabla por brazos y salida propone 35-55 con 2 brazos | La tabla |
 | Q-AG03 | Ágata: el libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras. **Retirada de la lista el 25/09/2026** (Iván: fuera las dudas sobre pedidos antiguos y las comprobaciones contra los libros; la referencia es la web). | La fórmula |
 | Q-PR02 | Casquillo de máquina de eje 50 o 63 (Cuarzo: 16 y 9 OF) | Eje 50 |

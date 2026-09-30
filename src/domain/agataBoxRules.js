@@ -145,7 +145,7 @@ export function calculateAgataBox({ order, awning }) {
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '', fabricRollWidth: fabric?.width || 120,
       ...separateValanceCalculation(separateValance),
       structureLength: loadBarLength, rollTubeLength, stockLength: profileStockLength,
-      profileStockLength, rollStockLength, motorPower: device === 'MOTOR' ? `${motorPower}/17` : '',
+      profileStockLength, rollStockLength, motorPower: device === 'MOTOR' ? motorLabel(motorPower) : '',
       armCount, requiredArmCount, supportCount, profileSupportCount, submodel,
       squareBarLength, loadBarLength, diffuserLength, liraLength, protectorLength, enclosureLength,
       agataMinimumLineCm: minimumLine,
@@ -198,7 +198,9 @@ function buildMaterials(context) {
     line('VARILLAVAINARBLA', round1((submodel === 'OPEN' ? 2 : 1) * varillaMl * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA'),
     line(coloredStock('PRLMODUL', suffix, profileStockLength), units, 'PERFIL LIRA ÁGATA BOX'),
     line(`PRVMODUL${profileStockLength}C`, units, 'PERFIL PROTECTOR DE LONA'),
-    line(colored('SOMPMODUL', suffix), units, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX')
+    line(colored('SOMPMODUL', suffix), units, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX'),
+    ...patinLines(suffix, units).map((item) => line(item.code, item.quantity, item.description)),
+    ...joinKitLines(awning.width, units).map((item) => line(item.code, item.quantity, item.description))
   ];
 
   if (submodel !== 'OPEN') {
@@ -216,7 +218,7 @@ function buildMaterials(context) {
     // Se consume Sunilus en todas las variantes (también con cofre), con la rueda Ø78 y
     // la corona LT60 a Ø78 (11 OF) y el kit de tornillos del motor (10 OF).
     materials.push(
-      line(`SUNILUSIO${motorPower}//17`, units, `MOTOR SOMFY SUNILUS ${motorPower}/17 IO`),
+      line(motorCode(motorPower), units, `MOTOR SOMFY SUNILUS ${motorLabel(motorPower)} IO`),
       line('RUEDAMOT78', units, 'RUEDA MOTRIZ Ø78'),
       line('CORONALT60DESC', units, 'CORONA ADAPTADA LT60 A Ø78'),
       line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
@@ -261,7 +263,7 @@ function buildDespiece(context) {
   push(7, 'JUEGO TERMINAL ÁGATA BOX', colored('TERMIMODUL', suffix), Math.floor(armCount / 2) * units);
   if (device === 'MOTOR') {
     push(9, 'RUEDA MOTRIZ Ø78', 'RUEDAMOT78', units);
-    push(10, `MOTOR SOMFY SUNILUS ${motorPower}/17 IO`, `SUNILUSIO${motorPower}//17`, units);
+    push(10, `MOTOR SOMFY SUNILUS ${motorLabel(motorPower)} IO`, motorCode(motorPower), units);
     push(11, 'CORONA ADAPTADA LT60 A Ø78', 'CORONALT60DESC', units);
     push(11, 'KIT TORNILLOS FIJACION MOTOR MODULBOX', 'KITTORMODUL', units);
   } else {
@@ -308,6 +310,35 @@ function coloredStock(prefix, suffix, stockLength) {
 function chooseRollStock(length, stockLengths) {
   return stockLengths.find((stock) => stock >= length) || stockLengths[stockLengths.length - 1] || null;
 }
+
+// Taller, 30/09/2026 (Q-AG01): patines siempre, de codo (KIT PATINES BRAZO) y de horquilla
+// (KIT PATINES SOPORTE BRAZO). Se consumen dos juegos de cada por toldo (9 de las 11 OF
+// con patines desde 2023). En RPS solo siguen vivos el blanco y el negro (el de codo negro
+// es PABMODULNEGR); los demás colores están de baja desde 2023 y van en blanco a lacar.
+function patinLines(suffix, units) {
+  const elbow = suffix === 'NE11' ? 'PABMODULNEGR' : colored('PABMODUL', suffix);
+  return [
+    { code: elbow, quantity: 2 * units, description: 'KIT PATINES BRAZO (CODO) ÁGATA BOX' },
+    { code: colored('PASBMODUL', suffix), quantity: 2 * units, description: 'KIT PATINES SOPORTE BRAZO (HORQUILLA) ÁGATA BOX' }
+  ];
+}
+
+// Kit de unión con más de 7 m de frente (Q-AG01): la regleta de unión de los perfiles y
+// una bolsa de pasadores. Es lo que se consume en las 12 OF de más de 700 desde 2024.
+// Patines y kit de unión van a la reserva, no al despiece (como las varillas): la hoja
+// del Ágata ya llega a 26 filas y caben 28.
+function joinKitLines(width, units) {
+  if (!(Number(width) > 700)) return [];
+  return [
+    { code: 'KUNIONMODUL', quantity: units, description: 'KIT REGLETA UNIÓN PERFILES ÁGATA BOX' },
+    { code: 'PASADORMODUL', quantity: units, description: 'BOLSA PASADORES ELÁSTICOS Ø4X40' }
+  ];
+}
+
+// El Sunilus de 50, 100 y 120 solo existe a 12 rpm: SUNILUSIO100//17 no está en RPS.
+const motorSpeedByPower = Object.freeze({ 50: 12, 100: 12, 120: 12 });
+function motorLabel(power) { return `${power}/${motorSpeedByPower[power] || 17}`; }
+function motorCode(power) { return `SUNILUSIO${motorLabel(power).replace('/', '//')}`; }
 
 function resolveMotorPower(value, fallback) {
   const parsed = Number(String(value || '').match(/\d+/)?.[0]);

@@ -70,7 +70,7 @@ describe('Ágata Box', () => {
     });
     expect(result.calculation).toMatchObject({
       valid: true, submodel: 'SEMI', supportCount: 11, profileSupportCount: 7,
-      fabricWidth: 1132, fabricDrop: 420, motorPower: '100/17'
+      fabricWidth: 1132, fabricDrop: 420, motorPower: '100/12'
     });
     // El semicofre lleva la barra redonda ROND-80 y sus tapas (PRSCMODUL no se consume).
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining(['PRROMODULBL16700C', 'TARONDMODBL16', 'TAPSMODULBL16']));
@@ -106,6 +106,50 @@ describe('Ágata Box', () => {
       rollTubeLength: 708, fabricDrop: 475
     });
     expect(result.diagnostics[0].level).toBe('warn');
+  });
+
+  // Taller, 30/09/2026 (Q-AG01): patines siempre, de codo y de horquilla; el kit de unión
+  // (regleta y pasadores), con más de 7 m de frente.
+  it('reserva siempre los patines de codo y de horquilla', () => {
+    const white = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, width: 650, projection: 200, submodel: 'COFRE' } });
+    expect(white.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'PABMODULBL16', quantity: 2 }),
+      expect.objectContaining({ code: 'PASBMODULBL16', quantity: 2 })
+    ]));
+    const black = calculateAgataBox({
+      order: { ...baseOrder, structureColor: 'NEGRO (R-09011)' },
+      awning: { ...baseAwning, structureColor: 'NEGRO (R-09011)', units: 2 }
+    });
+    expect(black.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'PABMODULNEGR', quantity: 4 }),
+      expect.objectContaining({ code: 'PASBMODULNE11', quantity: 4 })
+    ]));
+  });
+
+  it('reserva el kit de unión solo con más de 7 m de frente', () => {
+    const codes = (width) => calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, width } }).materials.map((line) => line.code);
+    expect(codes(700)).not.toContain('KUNIONMODUL');
+    expect(codes(700)).not.toContain('PASADORMODUL');
+    const over = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, width: 717 } });
+    expect(over.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'KUNIONMODUL', quantity: 1 }),
+      expect.objectContaining({ code: 'PASADORMODUL', quantity: 1 })
+    ]));
+  });
+
+  // RPS: el Sunilus de 100 solo existe a 12 rpm (SUNILUSIO100//12); el //17 no existe.
+  it('con motor de 100 pide el Sunilus 100/12', () => {
+    const result = calculateAgataBox({
+      order: baseOrder,
+      awning: { ...baseAwning, width: 1005, projection: 350, armCount: 4, submodel: 'COFRE' }
+    });
+    expect(result.calculation.motorPower).toBe('100/12');
+    const codes = result.materials.map((line) => line.code);
+    expect(codes).toContain('SUNILUSIO100//12');
+    expect(codes).not.toContain('SUNILUSIO100//17');
+    expect(result.despiece.rows.map((row) => row.reference)).toContain('SUNILUSIO100//12');
+    const forced = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, motorPower: '100/17' } });
+    expect(forced.materials.map((line) => line.code)).toContain('SUNILUSIO100//12');
   });
 
   it('calcula los soportes observados en producción', () => {

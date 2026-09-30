@@ -825,7 +825,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <NumberField label="Descuento frente tela (cm)" value={awning.agataFabricWidthDiscountCm} min={0} step={0.1} onChange={(agataFabricWidthDiscountCm) => update({ agataFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.agataRollDiscountCm} min={0} step={0.1} onChange={(agataRollDiscountCm) => update({ agataRollDiscountCm })} />
                 <NumberField label="Margen caída tela (cm)" value={awning.agataFabricDropAllowanceCm} min={0} step={0.5} onChange={(agataFabricDropAllowanceCm) => update({ agataFabricDropAllowanceCm })} />
-                {agataDevice === 'MOTOR' && <SegmentedField label="Motor" value={awning.motorPower || 'AUTOMÁTICO'} options={['AUTOMÁTICO', '35/17', '40/17', '55/17', '70/17', '85/17', '100/17']} onChange={(motorPower) => update({ motorPower })} />}
+                {agataDevice === 'MOTOR' && <SegmentedField label="Motor" value={awning.motorPower === '100/17' ? '100/12' : awning.motorPower || 'AUTOMÁTICO'} options={['AUTOMÁTICO', '35/17', '40/17', '55/17', '70/17', '85/17', '100/12']} onChange={(motorPower) => update({ motorPower })} />}
               </>}
               {simpleFabricJob && <>
                 <NumberField label="Ajuste de frente (cm)" value={awning.fabricJobWidthAdjustmentCm} step={0.1} onChange={(fabricJobWidthAdjustmentCm) => update({ fabricJobWidthAdjustmentCm })} />
