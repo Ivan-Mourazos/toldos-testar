@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { DIAMETRO_GOMA } from '../../../remolques/escena/constantes.ts';
 import type { EscenaRemolque, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { piezasCajon } from './cajon';
+import { piezasChasis } from './chasis';
 import { piezasCierres } from './cierres';
 import { DESFASE_BASTILLA, piezasCuerpo } from './cuerpo';
 import { geometriaGancho, geometriaGoma, geometriaHueco, geometriaOllao, tuboPoligonal } from './herrajes';
@@ -30,6 +31,7 @@ export function construirMallas(escena: EscenaRemolque, materiales: Materiales):
   };
   piezasCuerpo(escena.cuerpo).forEach(anadir);
   piezasCajon(escena.cajon, escena.cuerpo.tipo === 'lona').forEach(anadir);
+  piezasChasis(escena.chasis).forEach(anadir);
   const cierres = piezasCierres(escena.cierres);
   cierres.piezas.forEach(anadir);
   if (escena.ventana) piezasVentana(escena.ventana).forEach(anadir);

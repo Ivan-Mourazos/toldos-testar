@@ -16,9 +16,17 @@ export const BASTILLA = 5;
 export const CREMALLERA_A_ESQUINA = 5;
 export const CREMALLERA_BAJO_CIMA = 4;
 export const ANCHO_VELCRO = 3;
-/** Separación a lo alto de los puentes, y margen arriba y abajo. */
-export const PASO_CIERRE = 20;
+/** Margen arriba y abajo de los puentes y los ganchos corazón. Su paso a lo alto es el de los
+ *  ollaos del elemento (Iván, 30/09/2026: «pon una medida como ollaos y listo»). */
 export const MARGEN_CIERRE = 10;
+/** Ganchos corazón (foto tmp/fotos-remolques/REMOLQUE CON GANCHOS CORAZON 1.jpg): dos filas de ganchos
+ *  remachados, una en la oreja y otra en el lateral, a esta distancia del borde libre de la oreja. */
+export const CORAZON_A_BORDE = 3;
+/** Placa del gancho corazón (ancho × alto) y su lengüeta, por donde pasa el cordón. */
+export const CORAZON_PLACA = 5;
+/** El cordón se anuda a esta distancia por debajo del primer gancho y cuelga un lazo de este largo. */
+export const CORAZON_NUDO = 4;
+export const CORAZON_LAZO = 8;
 /** Recogida con goma, como en las fotos del taller (tmp/fotos-remolques/lona_camion_arquillada_tir_2.jpg,
  *  IMG_3934.PNG e IMG_3930.jpg): la oreja lleva 2 o 3 ollaos en su borde libre, en la parte baja de la
  *  pared, y de cada uno baja una goma larga en diagonal, cruzando la esquina, hasta un gancho del cajón
@@ -48,3 +56,35 @@ export const MARGEN_VENTANA = 5;
 /** Las cotas van a esta distancia de la lona y las etiquetas a esta del ollao o gancho. */
 export const SEPARACION_COTA = 15;
 export const SEPARACION_ETIQUETA = 6;
+
+// Remolque genérico bajo la lona, solo para que se vea dónde está delante (lanza con enganche de
+// bola y rueda jockey), dónde detrás (dos pilotos rojos, como en tmp/fotos-remolques/IMG_3930.jpg) y
+// las ruedas. No está a escala de ningún pedido y no cambia ninguna medida de la lona ni del cajón.
+/** Del frente del cajón al centro de la bola del enganche. */
+export const LANZA_LARGO = 100;
+/** Tubo cuadrado de la lanza, y de su eje al fondo del cajón. */
+export const LANZA_SECCION = 6;
+export const LANZA_BAJO_CAJON = 5;
+/** Los tubos arrancan bajo el cajón, a esto del frente y del costado. */
+export const LANZA_DENTRO = 40;
+export const LANZA_A_COSTADO = 12;
+/** Cabeza del enganche (largo × ancho × alto) sobre la bola de 50 mm. */
+export const ENGANCHE = { largo: 22, ancho: 9, alto: 8 };
+export const RADIO_BOLA = 2.5;
+/** Rueda jockey: a esto de la bola, hacia el cajón. */
+export const RUEDA_JOCKEY_RADIO = 9;
+export const RUEDA_JOCKEY_ANCHO = 5;
+export const RUEDA_JOCKEY_A_BOLA = 35;
+/** Rueda de 13": neumático, llanta galvanizada y su ancho. */
+export const RUEDA_RADIO = 28;
+export const RADIO_LLANTA = 17;
+export const RUEDA_ANCHO = 16;
+/** Holgura entre el costado del cajón y el neumático, y del eje al fondo del cajón. */
+export const RUEDA_FUERA_CAJON = 4;
+export const EJE_BAJO_CAJON = 10;
+/** El guardabarros tapa la rueda por arriba con esta holgura. */
+export const GUARDABARROS_HOLGURA = 4;
+/** Pilotos traseros: tamaño, distancia al costado y al fondo del cajón. */
+export const PILOTO = { ancho: 20, alto: 11, fondo: 4, aEsquina: 6, sobreFondo: 5 };
+/** Rótulos DELANTE y DETRÁS: a esta distancia de lo que rotulan. */
+export const SEPARACION_ROTULO = 12;

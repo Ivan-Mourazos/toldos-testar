@@ -11,7 +11,7 @@ export type Perfil2D = Array<[number, number]>;
 export type Vista = "tres-cuartos" | "delante" | "detras" | "lateral" | "arriba";
 export type LadoBorde = "delante" | "atras" | "izquierdo" | "derecho";
 export type Esquina = "delante-izquierda" | "delante-derecha" | "atras-izquierda" | "atras-derecha";
-export type TipoCierre = "NO" | "GOMA" | "CREMALLERA" | "VELCRO" | "PUENTES";
+export type TipoCierre = "NO" | "GOMA" | "CORAZON" | "CREMALLERA" | "VELCRO" | "PUENTES";
 
 /** Un ollao o un gancho: su lado, su posición con el convenio de los ollaos y dónde cae. */
 export interface Marca { lado: LadoBorde; posicion: number; punto: Vec3; normal: Vec3 }
@@ -33,8 +33,12 @@ export interface CierreEsquina {
   normal: Vec3;
   /** Ancho de la oreja o solapa que dobla sobre el lateral; 0 si no lleva. */
   oreja: number;
-  /** Alturas de los puentes, repartidas a lo alto. */
+  /** Alturas de los puentes, repartidas a lo alto con el paso de los ollaos. */
   alturas: number[];
+  /** Ganchos corazón, de abajo arriba, alternando la fila de la oreja y la del lateral a un lado y
+   *  otro del borde libre de la oreja (`enOreja`); el cordón va de uno a otro en zigzag y se anuda
+   *  en `nudo`, en el borde de la oreja por debajo del primero. null en las demás recogidas o sin oreja. */
+  corazon: { ganchos: Array<{ punto: Vec3; enOreja: boolean }>; nudo: Vec3 } | null;
   /** Goma: cada ollao del borde libre de la oreja, de abajo arriba, con el gancho del cajón al que
    *  baja en diagonal (en la cara del paño) y el punto de la arista de la esquina por donde la goma
    *  dobla de una cara a la otra. Vacío en las demás recogidas o sin oreja. `ganchoNuevo` es false
@@ -69,6 +73,30 @@ export interface CuerpoBaqueton {
 /** Cajón genérico de chapa galvanizada, con las medidas del remolque. */
 export interface Cajon { largo: number; anchoDelante: number; anchoAtras: number; alto: number; zDesde: number; zHasta: number }
 
+/** Rueda: centro, radio del neumático y ancho; el eje va a lo ancho (x). */
+export interface RuedaEscena { centro: Vec3; radio: number; ancho: number }
+export interface TuboEscena { desde: Vec3; hasta: Vec3 }
+
+/** Remolque genérico bajo el cajón, para que se vea dónde está delante y detrás (no a escala). */
+export interface ChasisEscena {
+  /** Altura del suelo: donde apoyan las ruedas. */
+  suelo: number;
+  /** Los dos tubos de la lanza en V, izquierdo y derecho, de bajo el cajón al enganche. */
+  lanza: TuboEscena[];
+  seccionLanza: number;
+  enganche: { bola: Vec3; radioBola: number; cabeza: { centro: Vec3; largo: number; ancho: number; alto: number } };
+  ruedaJockey: { rueda: RuedaEscena; tubo: TuboEscena };
+  eje: TuboEscena;
+  /** Izquierda y derecha. */
+  ruedas: RuedaEscena[];
+  guardabarros: RuedaEscena[];
+  /** Pilotos traseros, izquierdo y derecho, en la cara de atrás del cajón. */
+  pilotos: Array<{ centro: Vec3; ancho: number; alto: number; fondo: number }>;
+}
+
+/** Rótulo DELANTE o DETRÁS de las vistas rectas; `alinear` es el del texto respecto a su punto. */
+export interface RotuloEscena { vistas: Vista[]; punto: Vec3; texto: "DELANTE" | "DETRÁS"; alinear: "start" | "middle" | "end" }
+
 export interface VentanaEscena { centro: Vec3; ancho: number; alto: number }
 
 /** Línea de cota, con las vistas en que se enseña. */
@@ -81,6 +109,7 @@ export interface EscenaRemolque {
   /** Color base del material (hex). */
   color: string;
   cajon: Cajon;
+  chasis: ChasisEscena;
   ollaos: Marca[];
   ganchos: Gancho[];
   gomas: Goma[];
@@ -88,7 +117,9 @@ export interface EscenaRemolque {
   ventana: VentanaEscena | null;
   cotas: CotaEscena[];
   etiquetas: EtiquetaEscena[];
-  /** Caja que envuelve lona y cajón, para encuadrar las cámaras. */
+  /** Se ven siempre, con o sin cotas. */
+  rotulos: RotuloEscena[];
+  /** Caja que envuelve lona, cajón y remolque, para encuadrar las cámaras. */
   caja: { min: Vec3; max: Vec3 };
 }
 

@@ -4,10 +4,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { EscenaRemolque, Vec3, Vista } from '../../../remolques/escena/tipos.ts';
 import { aMundo, crearCamara, encuadre, espejar } from './camaras';
-import { CapaCotas } from './CapaCotas';
+import { CapaCotas, CapaRotulos } from './CapaCotas';
 import { construirMallas, liberarGrupo } from './mallas';
 import { crearMateriales, liberarMateriales, type Materiales } from './materiales';
-import { cotasVisibles, type CotasPantalla } from './proyeccion';
+import { cotasVisibles, rotulosVisibles, type CotasPantalla, type RotuloPantalla } from './proyeccion';
 
 // Render 3D de la lona o el baquetón (fase 2b). Se carga aparte (React.lazy desde
 // DibujoRemolque) para que three.js no pese en el resto de la web. Pinta a demanda: al cambiar
@@ -84,6 +84,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     onFalloRef.current = onFallo;
   });
   const [cotas, setCotas] = useState<CotasPantalla | null>(null);
+  const [rotulos, setRotulos] = useState<RotuloPantalla[] | null>(null);
   const [tamano, setTamano] = useState({ ancho: 0, alto: 0 });
   const [movida, setMovida] = useState(false);
 
@@ -96,6 +97,9 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     const nuevas = d.conCotas && !m.girada ? cotasVisibles(d.escena, d.vista, m.camara, m.ancho, m.alto) : null;
     // Sin nada que rotular, null: al girar no se vuelve a pintar el componente en cada movimiento.
     setCotas(nuevas && (nuevas.lineas.length > 0 || nuevas.marcas.length > 0) ? nuevas : null);
+    // DELANTE y DETRÁS, siempre en las vistas rectas; la 3/4 no los lleva (y al girarla sigue en null).
+    const conRotulos = m.girada ? [] : rotulosVisibles(d.escena, d.vista, m.camara, m.ancho, m.alto);
+    setRotulos(conRotulos.length > 0 ? conRotulos : null);
   }, []);
 
   const colocarCamara = useCallback(() => {
@@ -262,6 +266,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     <div className="rem-render">
       {/* React no toca los hijos de este div: ahí va el lienzo de three.js. */}
       <div className="rem-render-lienzo" ref={lienzo} />
+      {rotulos && <CapaRotulos rotulos={rotulos} ancho={tamano.ancho} alto={tamano.alto} />}
       {cotas && <CapaCotas cotas={cotas} ancho={tamano.ancho} alto={tamano.alto} />}
       {vista === 'tres-cuartos' && movida && (
         <button type="button" className="chip-3d rem-render-reiniciar" onClick={colocarCamara}>

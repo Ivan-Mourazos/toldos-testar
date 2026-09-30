@@ -5,6 +5,7 @@ import { aMundo } from './camaras';
 export interface LineaCota { x1: number; y1: number; x2: number; y2: number; texto: string; tx: number; ty: number }
 export interface MarcaCota { x: number; y: number; texto: string }
 export interface CotasPantalla { lineas: LineaCota[]; marcas: MarcaCota[] }
+export interface RotuloPantalla { x: number; y: number; texto: string; alinear: 'start' | 'middle' | 'end' }
 
 /** Punto de la escena en píxeles del lienzo (origen arriba a la izquierda), por el mismo espejo que las mallas. */
 export function aPantalla(p: Vec3, camara: THREE.Camera, ancho: number, alto: number) {
@@ -22,4 +23,11 @@ export function cotasVisibles(escena: EscenaRemolque, vista: Vista, camara: THRE
   const marcas = escena.etiquetas.filter((e) => e.vistas.includes(vista))
     .map((e) => ({ ...aPantalla(e.punto, camara, ancho, alto), texto: e.texto }));
   return { lineas, marcas };
+}
+
+/** DELANTE y DETRÁS de la vista, en píxeles del lienzo. */
+export function rotulosVisibles(escena: EscenaRemolque, vista: Vista, camara: THREE.Camera, ancho: number, alto: number): RotuloPantalla[] {
+  camara.updateMatrixWorld();
+  return escena.rotulos.filter((r) => r.vistas.includes(vista))
+    .map((r) => ({ ...aPantalla(r.punto, camara, ancho, alto), texto: r.texto, alinear: r.alinear }));
 }

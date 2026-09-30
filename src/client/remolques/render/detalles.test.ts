@@ -6,6 +6,7 @@ import { piezasCuerpo } from './cuerpo';
 import { construirMallas } from './mallas';
 import { crearMateriales } from './materiales';
 import { piezasVentana } from './ventana';
+import { CORAZON_A_BORDE } from '../../../remolques/escena/constantes.ts';
 import type { CierreEsquina, EscenaRemolque } from '../../../remolques/escena/tipos.ts';
 
 const cierre = (recogida: string) =>
@@ -90,8 +91,32 @@ describe('cierres en 3D', () => {
 
   it('puentes: solapa, una placa y una anilla por altura y la cincha blanca', () => {
     const r = piezasCierres(cierre('PUENTES HIJOS DE PEDRO LOPEZ'));
-    expect(r.piezas).toHaveLength(1 + 5 * 2 + 1);
+    // Pared de 100 con el paso de los ollaos (35): puentes a 10, 50 y 90.
+    expect(r.piezas).toHaveLength(1 + 3 * 2 + 1);
     expect(r.piezas.at(-1)!.material).toBe('cincha');
+  });
+
+  it('ganchos corazón: la oreja, una placa con sus remaches por gancho y un cordón en zigzag anudado abajo', () => {
+    const [c] = cierre('GANCHOS CORAZON');
+    const { ganchos, nudo } = c.corazon!;
+    const r = piezasCierres([c]);
+    expect(r.piezas[0].material).toBe('lona');
+    expect(r.piezas.filter((p) => p.material === 'chapa')).toHaveLength(ganchos.length);
+    expect(r.piezas.filter((p) => p.material === 'oscuro')).toHaveLength(ganchos.length);
+    expect(r.ollaos).toEqual([]);
+    expect(r.ganchos).toEqual([]);
+    // El cordón y el lazo que cuelga del nudo.
+    expect(r.gomas).toHaveLength(2);
+    const [cordon, lazo] = r.gomas;
+    expect(cordon).toHaveLength(ganchos.length + 1);
+    expect(cordon[0].y).toBeCloseTo(nudo[1], 5);
+    cordon.slice(1).forEach((p, i) => {
+      // Por fuera de la lona, en la lengüeta de cada gancho, subiendo en zigzag.
+      expect(p.x).toBeGreaterThan(ganchos[i].punto[0]);
+      expect(p.y).toBeCloseTo(ganchos[i].punto[1], 5);
+      expect(p.z).toBeCloseTo(ganchos[i].punto[2], 5);
+    });
+    expect(Math.min(...lazo.map((p) => p.y))).toBeLessThan(nudo[1]);
   });
 
   it('sin recogida no se dibuja nada', () => {
@@ -198,6 +223,23 @@ describe('colocación de los cierres sobre la lona', () => {
       }
     });
   }
+
+  it('ganchos corazón en las cuatro esquinas: sobre el lateral, a un lado y otro del borde de la oreja, y el cordón por fuera', () => {
+    const escena = escenaDePrueba({ recogeDelante: 'GANCHOS CORAZON', recogeAtras: 'GANCHOS CORAZON' });
+    for (const c of escena.cierres) {
+      const r = piezasCierres([c]);
+      const lado = c.normal[0];
+      for (const p of r.piezas) {
+        const m = centro(p.geometria);
+        expect(lado * m.x).toBeGreaterThanOrEqual(semiancho(escena, m.z) - 1e-6);
+        expect(lado * m.x).toBeLessThanOrEqual(semiancho(escena, m.z) + 3);
+        const a = alLargo(c, m);
+        expect(a).toBeGreaterThanOrEqual(-1e-6);
+        expect(a).toBeLessThanOrEqual(c.oreja + CORAZON_A_BORDE + 1e-6);
+      }
+      for (const tramo of r.gomas) for (const p of tramo) expect(lado * p.x).toBeGreaterThan(semiancho(escena, p.z));
+    }
+  });
 
   it('con una solapa estrecha los puentes y la cincha siguen sobre la solapa', () => {
     const c: CierreEsquina = { ...esquinaDerecha('PUENTES HIJOS DE PEDRO LOPEZ'), oreja: 3 };

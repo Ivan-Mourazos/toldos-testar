@@ -1,12 +1,14 @@
 import * as THREE from 'three';
-import { ANCHO_VELCRO } from '../../../remolques/escena/constantes.ts';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { ANCHO_VELCRO, CORAZON_LAZO, CORAZON_PLACA } from '../../../remolques/escena/constantes.ts';
 import type { CierreEsquina, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { plano, sobreCara, v3, type Pieza } from './piezas';
 
 // Cierres de las esquinas como los hace el taller (docs/remolques/cierres-y-acabados.md):
 // la oreja o solapa del paño dobla sobre el lateral y encima va el velcro, la cremallera o los
 // puentes con su cincha; con goma, de los ollaos de la oreja bajan gomas en diagonal, cruzando
-// la esquina, a ganchos del cajón en la cara del paño.
+// la esquina, a ganchos del cajón en la cara del paño; con ganchos corazón, dos filas de ganchos a
+// un lado y otro del borde de la oreja y un cordón blanco en zigzag entre ellos, anudado abajo.
 
 export interface CierresEnMallas {
   piezas: Pieza[];
@@ -21,6 +23,33 @@ const FUERA_GOMA = 0.8;
 const PUENTE_EN_SOLAPA = 4;
 const ANCHO_CINCHA = 2.5;
 const CINCHA_SUELTA = 12;
+/** La lengüeta del gancho corazón sale esto de la placa: por ahí pasa el cordón. */
+const LENGUETA = 1;
+
+const unir = (partes: THREE.BufferGeometry[]) => mergeGeometries(partes.map((p) => p.toNonIndexed()))!;
+
+/** Placa del gancho corazón en el plano XY (mirando a +Z): de mariposa, con los costados hacia
+ *  dentro, y la lengüeta curvada en el centro por la que pasa el cordón a lo alto. */
+function geometriaCorazon(): THREE.BufferGeometry {
+  const m = CORAZON_PLACA / 2;
+  const forma = new THREE.Shape();
+  forma.moveTo(-m, -m);
+  forma.lineTo(m, -m);
+  forma.quadraticCurveTo(m * 0.35, 0, m, m);
+  forma.lineTo(-m, m);
+  forma.quadraticCurveTo(-m * 0.35, 0, -m, -m);
+  const placa = new THREE.ShapeGeometry(forma, 6).translate(0, 0, 0.05);
+  // Media vuelta en el plano XZ, abombada hacia fuera: el cordón la cruza de abajo arriba.
+  const lengueta = new THREE.TorusGeometry(LENGUETA, 0.3, 6, 12, Math.PI).rotateX(Math.PI / 2);
+  return unir([placa, lengueta]);
+}
+
+/** Los cuatro remaches de la placa, en sus puntas. */
+function geometriaRemaches(): THREE.BufferGeometry {
+  const d = CORAZON_PLACA / 2 - 0.7;
+  return unir([[-d, -d], [d, -d], [-d, d], [d, d]].map(([x, y]) =>
+    new THREE.CylinderGeometry(0.35, 0.35, 0.3, 10).rotateX(Math.PI / 2).translate(x, y, 0.2)));
+}
 
 /** Solo se dibujan los ganchos que pone la goma de la esquina (`ganchoNuevo`): si acaba en uno de la
  *  goma perimetral o en el del centro que ya puso otra goma, la escena ya lo ha decidido. */
@@ -40,7 +69,7 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
     };
 
     // Goma, velcro y puentes van sobre la oreja: sin oreja no hay dónde ponerlos.
-    const sobreOreja = c.tipo === 'GOMA' || c.tipo === 'PUENTES' || c.velcro !== null;
+    const sobreOreja = c.tipo === 'GOMA' || c.tipo === 'CORAZON' || c.tipo === 'PUENTES' || c.velcro !== null;
     if (c.oreja <= 0 && sobreOreja) continue;
     /** Posición, a lo largo del lateral, de algo que va a `d` cm del borde libre de la oreja: nunca pasa de media oreja. */
     const desdeBorde = (d: number) => c.oreja - Math.min(d, c.oreja / 2);
@@ -62,6 +91,23 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
           v3(gancho).addScaledVector(v3(cara), FUERA_GOMA),
         ]);
       }
+    }
+
+    if (c.corazon) {
+      const { ganchos, nudo } = c.corazon;
+      // La fila de la oreja va sobre ella (0,35 cm por fuera del lateral); la otra, sobre el lateral.
+      const cordon: THREE.Vector3[] = [v3(nudo).addScaledVector(normal, 0.8)];
+      for (const g of ganchos) {
+        const centro = v3(g.punto).addScaledVector(normal, g.enOreja ? 0.45 : 0.1);
+        // Galvanizado mate, como en la foto: con el herraje pulido salían casi negros.
+        colocar(geometriaCorazon(), centro, 'chapa');
+        colocar(geometriaRemaches(), centro, 'oscuro');
+        cordon.push(centro.clone().addScaledVector(normal, LENGUETA));
+      }
+      r.gomas.push(cordon);
+      // Del nudo cuelga un lazo, como en la foto.
+      const lazo = (a: number, y: number) => v3(nudo).addScaledVector(hacia, a).add(new THREE.Vector3(0, y, 0)).addScaledVector(normal, 0.8);
+      r.gomas.push([lazo(0, 0), lazo(-1.5, -CORAZON_LAZO), lazo(1.5, -CORAZON_LAZO), lazo(0, 0)]);
     }
 
     if (c.velcro) {

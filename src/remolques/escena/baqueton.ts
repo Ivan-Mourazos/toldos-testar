@@ -1,6 +1,7 @@
 import type { BaquetonInput, BaquetonResult } from "../calc/baqueton.ts";
 import { colorBaseMaterial } from "../geometry/color-lona.ts";
-import { cajaDe, cajonDe, gomasDe, marcasGanchos, marcasOllaos, posicionesGanchos } from "./comun.ts";
+import { cajaDe, chasisDe, rotulosDe } from "./chasis.ts";
+import { cajonDe, gomasDe, marcasGanchos, marcasOllaos, posicionesGanchos } from "./comun.ts";
 import { ALTO_CAJON, CAJON_BAJO_FALDON } from "./constantes.ts";
 import { cotasCuerpo, etiquetasMarcas } from "./cotas.ts";
 import type { CuerpoBaqueton, EscenaRemolque } from "./tipos.ts";
@@ -25,15 +26,18 @@ export function escenaBaqueton(input: BaquetonInput, res: BaquetonResult): Escen
   const bordes = { delante: -cuerpo.caidaDelante, atras: -cuerpo.caidaAtras, laterales: -cuerpo.caidaLateral };
   const ollaos = marcasOllaos(res.reparto, medidas, bordes);
   const ganchos = marcasGanchos(posicionesGanchos(res.reparto, res.ganchos), Boolean(res.ganchos), medidas, cajon, bordes);
+  const chasis = chasisDe(cajon);
+  const caja = cajaDe(ancho / 2, 0, largo, chasis);
   return {
     cuerpo,
     color: colorBaseMaterial(input.material),
-    cajon, ollaos, ganchos,
+    cajon, chasis, ollaos, ganchos,
     gomas: gomasDe(ollaos, ganchos),
     cierres: [],
     ventana: null,
-    cotas: cotasCuerpo(cuerpo, cajon),
+    cotas: cotasCuerpo(cuerpo, chasis.suelo),
     etiquetas: etiquetasMarcas(ollaos, ganchos),
-    caja: cajaDe(ancho, 0, largo, cajon.alto),
+    rotulos: rotulosDe(caja),
+    caja,
   };
 }

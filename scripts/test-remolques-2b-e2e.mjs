@@ -9,6 +9,7 @@
 //   2. En cada caso: el render pinta algo (el lienzo no está en blanco) en las cinco vistas, y
 //      captura cada una en tmp/ui-audit/remolques-2b/.
 //   3. Cotas: en «Delante» aparece el ancho de la lona hecha y, al apagarlas, desaparece la capa.
+//      Los rótulos DELANTE y DETRÁS siguen en las vistas rectas sin cotas (en la 3/4, no).
 //      Espejo: en «Delante», «Detrás» y «Lateral» la etiqueta del primer ollao (2,5) queda a la
 //      izquierda de quien mira y la del último a su derecha.
 //   4. Vista fija: girar la 3/4 con el ratón enseña «Volver a la vista fija», que la restituye.
@@ -253,9 +254,19 @@ if (fs.existsSync('dist/assets')) {
       await botonCotas(page).click();
       assert.equal(await botonCotas(page).getAttribute('aria-pressed'), 'false', `${c.caso}: Cotas se suelta`);
       await capa.waitFor({ state: 'detached' });
+      // DELANTE y DETRÁS se ven siempre en las vistas rectas, sin cotas; en la 3/4, no.
+      const rotulos = () => page.locator('.rem-render-rotulos text').evaluateAll((els) => els.map((e) => e.textContent.trim()));
+      assert.deepEqual(await rotulos(), ['DELANTE'], `${c.caso}: sin cotas, «Delante» lleva el rótulo DELANTE`);
+      await irAVista(page, 'Lateral');
+      assert.deepEqual(await rotulos(), ['DELANTE', 'DETRÁS'], `${c.caso}: el lateral rotula DELANTE y DETRÁS`);
+      const [xDelante, xDetras] = await page.locator('.rem-render-rotulos text').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().x));
+      assert.ok(xDelante > xDetras, `${c.caso}: en el lateral DELANTE queda a la derecha (el frente) y DETRÁS a la izquierda`);
+      await irAVista(page, 'Detrás');
+      assert.deepEqual(await rotulos(), ['DETRÁS'], `${c.caso}: «Detrás» lleva el rótulo DETRÁS`);
 
       // 4. Vista fija: girar la 3/4 y volver.
       await irAVista(page, '3/4');
+      assert.equal(await page.locator('.rem-render-rotulos').count(), 0, `${c.caso}: la 3/4 no lleva rótulos`);
       const volver = dibujo(page).getByRole('button', { name: 'Volver a la vista fija', exact: true });
       assert.equal(await volver.count(), 0, `${c.caso}: sin girar no hay «Volver a la vista fija»`);
       const caja = await page.locator('.rem-render canvas').boundingBox();

@@ -12,7 +12,6 @@ describe("escena de la lona", () => {
     if (e.cuerpo.tipo !== "lona") throw new Error("no es lona");
     expect(e.cuerpo.perfilDelante).toEqual([[-100.5, 0], [-100.5, 100], [100.5, 100], [100.5, 0]]);
     expect(e.cajon).toEqual({ largo: 300, anchoDelante: 200, anchoAtras: 200, alto: 40, zDesde: 0.5, zHasta: 300.5 });
-    expect(e.caja).toEqual({ min: [-100.5, -40, 0], max: [100.5, 100, 301] });
     expect(e.color).toBe("#b82b2f");
   });
 

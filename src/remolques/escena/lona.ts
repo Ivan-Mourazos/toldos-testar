@@ -3,7 +3,8 @@ import type { CalcParams, TipoPerfil } from "../calc/params.ts";
 import { colorBaseMaterial } from "../geometry/color-lona.ts";
 import { perfilForma, type PerfilOpts } from "../geometry/perfil.ts";
 import { cierresLona } from "./cierres.ts";
-import { cajaDe, cajonDe, gomasDe, marcasGanchos, marcasOllaos, posicionesGanchos } from "./comun.ts";
+import { cajaDe, chasisDe, rotulosDe } from "./chasis.ts";
+import { cajonDe, gomasDe, marcasGanchos, marcasOllaos, posicionesGanchos } from "./comun.ts";
 import { ALTO_CAJON, BASTILLA } from "./constantes.ts";
 import { cotasCuerpo, etiquetasMarcas } from "./cotas.ts";
 import type { CuerpoLona, EscenaRemolque, Perfil2D } from "./tipos.ts";
@@ -63,15 +64,18 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
   const bordes = { delante: 0, atras: 0, laterales: 0 };
   const ollaos = marcasOllaos(res.reparto, medidas, bordes);
   const ganchos = marcasGanchos(posicionesGanchos(res.reparto, res.ganchos), Boolean(res.ganchos), medidas, cajon, bordes);
+  const chasis = chasisDe(cajon);
+  const caja = cajaDe(Math.max(wD, wA) / 2, Math.max(hD, hA), largo, chasis);
   return {
     cuerpo,
     color: colorBaseMaterial(input.material),
-    cajon, ollaos, ganchos,
+    cajon, chasis, ollaos, ganchos,
     gomas: gomasDe(ollaos, ganchos),
     cierres: cierresLona(input, cuerpo, params, cajon, ganchos),
     ventana: ventanaLona(input, cuerpo),
-    cotas: cotasCuerpo(cuerpo, cajon),
+    cotas: cotasCuerpo(cuerpo, chasis.suelo),
     etiquetas: etiquetasMarcas(ollaos, ganchos),
-    caja: cajaDe(Math.max(wD, wA), Math.max(hD, hA), largo, cajon.alto),
+    rotulos: rotulosDe(caja),
+    caja,
   };
 }

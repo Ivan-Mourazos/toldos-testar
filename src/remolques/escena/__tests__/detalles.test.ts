@@ -7,8 +7,8 @@ import { escenaLona, lonaPrueba } from "./casos.ts";
 
 describe("cierres de las esquinas", () => {
   it("reconoce cada recogida", () => {
-    expect(["NO", "", "GOMA", "CREMALLERA", "VELCRO", "PUENTES ESVA", "PUENTES HIJOS DE PEDRO LOPEZ"].map(tipoCierre))
-      .toEqual(["NO", "NO", "GOMA", "CREMALLERA", "VELCRO", "PUENTES", "PUENTES"]);
+    expect(["NO", "", "GOMA", "GANCHOS CORAZON", "CREMALLERA", "VELCRO", "PUENTES ESVA", "PUENTES HIJOS DE PEDRO LOPEZ"].map(tipoCierre))
+      .toEqual(["NO", "NO", "GOMA", "CORAZON", "CREMALLERA", "VELCRO", "PUENTES", "PUENTES"]);
   });
 
   it("la oreja es la demasía de la recogida sobre «NO», repartida en las dos esquinas", () => {
@@ -28,9 +28,10 @@ describe("cierres de las esquinas", () => {
     expect(eDelante.cierres.find((x) => x.esquina === "delante-izquierda")).toMatchObject({ oreja: 19 });
   });
 
-  it("reparte a lo alto con margen arriba y abajo", () => {
-    expect(alturasCierre(100)).toEqual([10, 30, 50, 70, 90]);
-    expect(alturasCierre(15)).toEqual([7.5]);
+  it("reparte a lo alto con margen arriba y abajo, al paso que se le pida", () => {
+    expect(alturasCierre(100, 20)).toEqual([10, 30, 50, 70, 90]);
+    expect(alturasCierre(100, 35)).toEqual([10, 50, 90]);
+    expect(alturasCierre(15, 35)).toEqual([7.5]);
   });
 
   it("cremallera a 5 cm de la esquina y hasta 4 cm por debajo de la cima", () => {
@@ -220,10 +221,73 @@ describe("cierres de las esquinas", () => {
     });
   });
 
-  it("velcro de 3 cm en la oreja y puentes repartidos a lo alto", () => {
+  it("velcro de 3 cm en la oreja y puentes repartidos a lo alto con el paso de los ollaos", () => {
     const e = escenaLona({ recogeDelante: "VELCRO", recogeAtras: "PUENTES HIJOS DE PEDRO LOPEZ" })!;
     expect(e.cierres.find((x) => x.esquina === "delante-izquierda")).toMatchObject({ oreja: 12, velcro: { ancho: 3 }, alturas: [] });
-    expect(e.cierres.find((x) => x.esquina === "atras-izquierda")).toMatchObject({ tipo: "PUENTES", oreja: 19.8, alturas: [10, 30, 50, 70, 90] });
+    // Iván, 30/09/2026: «pon una medida como ollaos y listo»: el paso de los ollaos (35 por defecto).
+    expect(e.cierres.find((x) => x.esquina === "atras-izquierda")).toMatchObject({ tipo: "PUENTES", oreja: 19.8, alturas: [10, 50, 90] });
+  });
+
+  it("los puentes siguen el paso de los ollaos del elemento; sin paso, el de Parámetros", () => {
+    const atras = (pasoOllaos: number) =>
+      escenaLona({ recogeAtras: "PUENTES HIJOS DE PEDRO LOPEZ", pasoOllaos })!.cierres.find((x) => x.esquina === "atras-derecha")!.alturas;
+    expect(atras(20)).toEqual([10, 30, 50, 70, 90]);
+    expect(atras(40)).toEqual([10, 50, 90]);
+    expect(atras(0)).toEqual(alturasCierre(100, DEFAULT_PARAMS.pasoOllaosDefecto));
+  });
+
+  describe("ganchos corazón: dos filas alternadas a un lado y otro del borde de la oreja, con un cordón en zigzag", () => {
+    const corazon = (extra = {}) =>
+      escenaLona({ recogeDelante: "GANCHOS CORAZON", ...extra })!.cierres.find((x) => x.esquina === "delante-derecha")!;
+
+    it("lleva oreja, como la goma (mismas medidas provisionales), y ni goma en diagonal ni puentes", () => {
+      const c = corazon();
+      expect(c).toMatchObject({ tipo: "CORAZON", oreja: 12, alturas: [], gomaDiagonal: [], cremallera: null, velcro: null });
+    });
+
+    it("los ganchos suben de abajo arriba alternando oreja y lateral; cada fila, al paso de los ollaos", () => {
+      const c = corazon();
+      const { ganchos } = c.corazon!;
+      // Paso 35: un gancho de cada fila cada 35 cm, las dos filas desfasadas medio paso.
+      expect(ganchos.map((g) => g.punto[1])).toEqual(alturasCierre(100, 17.5));
+      expect(ganchos.map((g) => g.enOreja)).toEqual([true, false, true, false, true, false]);
+      // Delante-derecha: la esquina está en z = 301 y el lateral va hacia −z. La fila de la oreja, a 3 cm
+      // de su borde libre (12 cm); la otra, a 3 cm del borde sobre el lateral.
+      for (const g of ganchos) {
+        expect(g.punto[0]).toBe(100.5);
+        expect(g.punto[2]).toBe(g.enOreja ? 301 - 9 : 301 - 15);
+      }
+      const oreja = ganchos.filter((g) => g.enOreja).map((g) => g.punto[1]);
+      // Repartidos entre los márgenes, al paso entero más cercano: 32 cm en esta pared.
+      expect(oreja[1] - oreja[0]).toBe(32);
+    });
+
+    it("el cordón se anuda abajo, en el borde de la oreja, por debajo del primer gancho", () => {
+      const c = corazon();
+      expect(c.corazon!.nudo[2]).toBe(301 - 12);
+      expect(c.corazon!.nudo[1]).toBeLessThan(c.corazon!.ganchos[0].punto[1]);
+      expect(c.corazon!.nudo[1]).toBeGreaterThan(0);
+    });
+
+    it("con otro paso de ollaos cambian los ganchos", () => {
+      expect(corazon({ pasoOllaos: 50 }).corazon!.ganchos.map((g) => g.punto[1])).toEqual(alturasCierre(100, 25));
+    });
+
+    it("en las esquinas izquierdas y de atrás, sobre su lateral", () => {
+      const e = escenaLona({ recogeDelante: "GANCHOS CORAZON", recogeAtras: "GANCHOS CORAZON" })!;
+      const atrasIzq = e.cierres.find((x) => x.esquina === "atras-izquierda")!;
+      expect(atrasIzq.corazon!.ganchos[0].punto).toEqual([-100.5, 10, 9]);
+      expect(atrasIzq.corazon!.ganchos[1].punto[2]).toBe(15);
+      expect(e.cierres.filter((c) => c.corazon).length).toBe(4);
+    });
+
+    it("sin oreja no hay ganchos corazón; las demás recogidas no los llevan", () => {
+      const params = { ...DEFAULT_PARAMS, recogidas: DEFAULT_PARAMS.recogidas.map((r) => (r.nombre === "GANCHOS CORAZON" ? { ...r, delante: 3 } : r)) };
+      const input = lonaPrueba({ recogeDelante: "GANCHOS CORAZON" });
+      const e = construirEscena({ tipo: "lona", input, res: calcLona(input, params) }, params)!;
+      expect(e.cierres.find((x) => x.esquina === "delante-derecha")!.corazon).toBeNull();
+      escenaLona({ recogeDelante: "GOMA" })!.cierres.forEach((c) => expect(c.corazon).toBeNull());
+    });
   });
 });
 

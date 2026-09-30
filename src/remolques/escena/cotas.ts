@@ -1,5 +1,5 @@
 import { SEPARACION_COTA, SEPARACION_ETIQUETA } from "./constantes.ts";
-import type { Cajon, CotaEscena, CuerpoBaqueton, CuerpoLona, EtiquetaEscena, Gancho, LadoBorde, Marca, Vista } from "./tipos.ts";
+import type { CotaEscena, CuerpoBaqueton, CuerpoLona, EtiquetaEscena, Gancho, LadoBorde, Marca, Vista } from "./tipos.ts";
 
 const fmt = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
 const S = SEPARACION_COTA;
@@ -7,8 +7,9 @@ const S = SEPARACION_COTA;
 /** Vista en la que se lee cada lado; el izquierdo no tiene vista propia. */
 const VISTA_DEL_LADO: Record<LadoBorde, Vista | null> = { delante: "delante", atras: "detras", derecho: "lateral", izquierdo: null };
 
-export function cotasCuerpo(cuerpo: CuerpoLona | CuerpoBaqueton, cajon: Cajon): CotaEscena[] {
-  const yAbajo = -cajon.alto - S;
+/** `suelo`: donde apoyan las ruedas. Las cotas de abajo van por debajo, para no cruzar las ruedas. */
+export function cotasCuerpo(cuerpo: CuerpoLona | CuerpoBaqueton, suelo: number): CotaEscena[] {
+  const yAbajo = suelo - S;
   const L = cuerpo.largo;
   if (cuerpo.tipo === "lona") {
     const wD = cuerpo.perfilDelante[cuerpo.perfilDelante.length - 1][0] * 2;

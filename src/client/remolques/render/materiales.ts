@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 
 // Materiales del render: lona de PVC (tejido con algo de brillo), chapa galvanizada, latón de
-// los ollaos, goma blanca y herrajes. Las texturas se pintan en un canvas; en las pruebas (sin
+// los ollaos, goma blanca y herrajes; y, del remolque genérico, neumáticos, pilotos rojos y ámbar. Las texturas se pintan en un canvas; en las pruebas (sin
 // DOM) se piden sin texturas.
 
-export type ClaveMaterial = 'lona' | 'lonaOscura' | 'chapa' | 'laton' | 'hueco' | 'goma' | 'oscuro' | 'malla' | 'cincha' | 'herraje';
+export type ClaveMaterial =
+  | 'lona' | 'lonaOscura' | 'chapa' | 'laton' | 'hueco' | 'goma' | 'oscuro' | 'malla' | 'cincha' | 'herraje'
+  | 'guardabarros' | 'neumatico' | 'piloto' | 'ambar';
 export type Materiales = Record<ClaveMaterial, THREE.Material>;
 
 function lienzo(lado: number, pintar: (ctx: CanvasRenderingContext2D) => void): THREE.CanvasTexture | null {
@@ -118,6 +120,12 @@ export function crearMateriales(color: string, { texturas }: { texturas: boolean
     }),
     cincha: new THREE.MeshStandardMaterial({ color: '#f4f4f1', roughness: 0.85, side: THREE.DoubleSide }),
     herraje: new THREE.MeshStandardMaterial({ color: '#d4d7da', metalness: 0.9, roughness: 0.3 }),
+    // La chapa curvada del guardabarros se ve por dentro y por fuera.
+    guardabarros: new THREE.MeshStandardMaterial({ color: '#d3d8dc', metalness: 0.55, roughness: 0.34, side: THREE.DoubleSide }),
+    neumatico: new THREE.MeshStandardMaterial({ color: '#232426', roughness: 0.85 }),
+    // Algo de luz propia: con el sol de frente o de espaldas los pilotos se siguen viendo rojos.
+    piloto: new THREE.MeshStandardMaterial({ color: '#c3141b', emissive: '#5a0306', roughness: 0.25 }),
+    ambar: new THREE.MeshStandardMaterial({ color: '#e8871e', emissive: '#4a2200', roughness: 0.25 }),
   };
 }
 

@@ -1,7 +1,7 @@
 import { puntosMedios } from "../calc/ganchos.ts";
 import type { RepartoLados } from "../calc/ollaos.ts";
 import { GANCHO_BAJO_BORDE, OLLAO_AL_BORDE } from "./constantes.ts";
-import type { Cajon, EscenaRemolque, Gancho, Goma, LadoBorde, Marca, Vec3 } from "./tipos.ts";
+import type { Cajon, Gancho, Goma, LadoBorde, Marca, Vec3 } from "./tipos.ts";
 
 /** Medidas de la lona hecha (o del baquetón hecho) que fijan dónde cae cada ollao. */
 export interface MedidasCuerpo { largo: number; anchoDelante: number; anchoAtras: number }
@@ -70,8 +70,4 @@ export function gomasDe(ollaos: Marca[], ganchos: Gancho[]): Goma[] {
     const puntos = [...deOllaos, ...deGanchos].sort((a, b) => a.posicion - b.posicion).map((x) => x.punto);
     return [{ lado, puntos }];
   });
-}
-
-export function cajaDe(anchoMax: number, altoMax: number, largo: number, altoCajon: number): EscenaRemolque["caja"] {
-  return { min: [-anchoMax / 2, -altoCajon, 0], max: [anchoMax / 2, altoMax, largo] };
 }
