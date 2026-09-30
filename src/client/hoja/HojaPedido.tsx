@@ -5,7 +5,15 @@ import type { HojaPreparada } from './prepararHoja';
 const texto = (error: unknown) => (error instanceof Error ? error.message : String(error));
 const desborda = (el: HTMLElement) => el.scrollHeight > el.clientHeight + 1;
 
+/** Los pesos de Geist que usa hoja.css, con las letras de la hoja (acentos, Ñ, ×, ·, º). */
+const PESOS = [400, 500, 600, 700];
+const MUESTRA_LETRAS = 'AÁÉÍÓÚÑÜ×·º²0123456789,';
+
 async function esperarRecursos(): Promise<void> {
+  // `document.fonts.ready` puede resolverse antes de que empiece a bajar Geist (nada la ha pedido
+  // aún): se pide cada peso explícitamente, y sin ella la hoja se mediría con otra letra.
+  const caras = await Promise.all(PESOS.map((peso) => document.fonts.load(`${peso} 12pt "Geist Variable"`, MUESTRA_LETRAS)));
+  if (caras.some((lista) => lista.length === 0)) throw new Error('No se pudo cargar la letra de la hoja (Geist).');
   await document.fonts.ready;
   await Promise.all(Array.from(document.images).map((img) => img.decode().catch(() => {
     throw new Error(`No se pudo cargar la imagen ${img.getAttribute('src')?.slice(0, 60)}.`);
@@ -33,8 +41,13 @@ export function HojaPedido({ hojas, onLista, onError }: {
       for (const pagina of paginas) {
         const columna = pagina.querySelector<HTMLElement>('.hoja-columna');
         if (columna && desborda(columna)) pagina.classList.add('hoja-apretada');
-        if ((columna && desborda(columna)) || desborda(pagina)) {
+        if (columna && desborda(columna)) {
           onError(`«${pagina.dataset.titulo}» no cabe en una hoja: acorta las observaciones.`);
+          return;
+        }
+        // La columna cabe: lo que sobra por abajo es de la cabecera, la banda o las tablas.
+        if (desborda(pagina)) {
+          onError(`«${pagina.dataset.titulo}» no cabe en una hoja (cabecera o tablas).`);
           return;
         }
       }

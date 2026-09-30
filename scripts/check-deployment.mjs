@@ -1,5 +1,5 @@
 import { constants as fsConstants } from 'node:fs';
-import { access, readFile, stat } from 'node:fs/promises';
+import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -114,6 +114,37 @@ async function checkProductionBuild() {
     pass('dist/index.html existe y no está vacío.');
   } catch {
     fail('Falta dist/index.html. Ejecuta pnpm build antes de iniciar PM2.');
+  }
+  await checkHojaRemolques();
+}
+
+// La hoja de taller de remolques (fase 4) es la segunda página del build. En desarrollo se ve con
+// `?muestra=…` sin pasar por el servidor; en producción esa puerta no puede existir.
+async function checkHojaRemolques() {
+  try {
+    await stat(path.join(projectDirectory, 'dist', 'hoja-remolques.html'));
+  } catch {
+    fail('Falta dist/hoja-remolques.html (hoja de taller de remolques). Ejecuta pnpm build.');
+    return;
+  }
+  const carpeta = path.join(projectDirectory, 'dist', 'assets');
+  let trozos;
+  try {
+    trozos = (await readdir(carpeta)).filter((nombre) => nombre.endsWith('.js'));
+  } catch {
+    fail('Falta dist/assets. Ejecuta pnpm build.');
+    return;
+  }
+  const conMuestra = [];
+  for (const nombre of trozos) {
+    if (/muestra/i.test(nombre) || /\.get\(\s*["'`]muestra["'`]\s*\)/.test(await readFile(path.join(carpeta, nombre), 'utf8'))) {
+      conMuestra.push(nombre);
+    }
+  }
+  if (conMuestra.length > 0) {
+    fail(`El build lleva la muestra de desarrollo de la hoja de remolques (${conMuestra.join(', ')}). Ejecuta pnpm build de nuevo.`);
+  } else {
+    pass('dist/hoja-remolques.html existe y el build no lleva las muestras de desarrollo.');
   }
 }
 

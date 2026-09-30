@@ -7,7 +7,7 @@ import { tablaGanchos } from "../pagina.ts";
 import { prepararPedidoHoja } from "../pedido.ts";
 
 const ELEMENTOS: Record<(typeof NOMBRES_MUESTRAS)[number], number> = {
-  "lona-ventana": 1, baqueton: 1, "segun-ganchos": 1, bastilla: 1, perfiles: 5, varios: 3,
+  "lona-ventana": 1, baqueton: 1, "segun-ganchos": 1, bastilla: 1, perfiles: 5, varios: 3, sesgado: 1,
 };
 
 describe("muestras de la hoja de taller", () => {

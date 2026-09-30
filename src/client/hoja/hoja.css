@@ -50,8 +50,11 @@ body {
   grid-template-columns: 34mm 1fr 74mm;
   padding-bottom: 2mm;
 }
-.hoja-logo img { display: block; filter: grayscale(1); height: 16mm; object-fit: contain; width: 30mm; }
-.hoja-cab-grande { display: block; font-size: 12pt; font-weight: 700; margin-bottom: 1mm; }
+/* 13 mm de alto: la cabecera no pasa del alto de sus textos y deja holgura a la hoja con ganchos. */
+.hoja-logo img { display: block; filter: grayscale(1); height: 13mm; object-fit: contain; width: 30mm; }
+/* Una sola línea pase lo que pase: un cliente largo no puede hacer crecer la cabecera y sacar las tablas de la hoja. */
+.hoja-cabecera > div { min-width: 0; }
+.hoja-cab-grande { display: block; font-size: 12pt; font-weight: 700; margin-bottom: 1mm; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hoja-cab-datos { display: flex; gap: 6mm; }
 .hoja-cab-dato { align-items: baseline; display: flex; gap: 1.5mm; }
 .hoja-cab-dato span { color: var(--gris); font-size: 6.5pt; font-weight: 600; letter-spacing: 0.06em; }
@@ -72,7 +75,8 @@ body {
 .hoja-banda {
   border-bottom: 0.2mm solid var(--filete);
   display: grid;
-  grid-template-columns: 2.4fr 1.5fr 1fr;
+  /* El contorno sesgado («169,3 DEL. / 170,8 TRAS.») tiene que caber en una línea. */
+  grid-template-columns: 2.2fr 1.5fr 1.25fr;
   padding-bottom: 2mm;
 }
 .hoja-celda { padding: 0 3mm; }
@@ -110,7 +114,8 @@ body {
 .hoja-dibujo { display: flex; flex-direction: column; gap: 3mm; }
 .hoja-fila { display: flex; gap: 3mm; }
 .hoja-vista { flex: none; margin: 0; }
-.hoja-vista-marco { border: 0.2mm solid var(--filete); position: relative; }
+/* Filete con outline, no border: el borde se comería 0,4 mm del dibujo y encogería las cotas por debajo de 7 pt. */
+.hoja-vista-marco { outline: 0.2mm solid var(--filete); position: relative; }
 .hoja-vista img,
 .hoja-cotas { height: 100%; inset: 0; position: absolute; width: 100%; }
 .hoja-vista figcaption {

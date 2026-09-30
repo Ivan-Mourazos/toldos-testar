@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import casos from '../../remolques/__fixtures__/produccion-2026-09.json';
 import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
-import { muestrasHoja, type CasoFixture } from '../../remolques/hoja/muestras.ts';
+import { CLIENTE_LARGO, muestrasHoja, type CasoFixture } from '../../remolques/hoja/muestras.ts';
 import { paginaHoja } from '../../remolques/hoja/pagina.ts';
 import { prepararPedidoHoja } from '../../remolques/hoja/pedido.ts';
 import { PaginaHoja } from './PaginaHoja';
@@ -38,6 +38,18 @@ describe('PaginaHoja', () => {
     expect(html).toMatch(/<span>REVISADO POR<\/span><strong><\/strong>/);
     expect(html).not.toContain('NOTAS DEL CÁLCULO');
     expect(html).toContain('REFORZAR LAS ESQUINAS DE DETRÁS CON DOBLE COSTURA.');
+  });
+
+  it('con el remolque sesgado, el contorno de corte y su paño llevan las dos puntas', () => {
+    const html = desescapar(renderToStaticMarkup(<PaginaHoja pagina={pagina('sesgado')} vistas={null} />));
+    expect(html).toContain('<span class="hoja-rotulo">CONTORNO DE CORTE</span><strong class="hoja-celda-linea">169,3 DEL. / 170,8 TRAS.</strong>');
+    expect(html).toContain('1 PAÑO DE 234,5 × 169,3 DEL. / 170,8 TRAS.');
+    expect(html).toContain('ANCHO 130 DEL. / 131,5 TRAS.');
+  });
+
+  it('el nombre del cliente va entero en el HTML (el CSS lo deja en una línea)', () => {
+    const html = desescapar(renderToStaticMarkup(<PaginaHoja pagina={pagina('segun-ganchos')} vistas={null} />));
+    expect(html).toContain(`<strong class="hoja-cab-grande">${CLIENTE_LARGO}</strong>`);
   });
 
   it('la bastilla de enfundar se dice en ACABADOS', () => {
