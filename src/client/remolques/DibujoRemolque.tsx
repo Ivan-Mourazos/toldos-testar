@@ -55,7 +55,7 @@ export function DibujoRemolque(props: Props) {
           <header className="rem-dibujo-cabecera">
             <p className="rem-dibujo-etiqueta">Render</p>
             <span className="rem-dibujo-separador" aria-hidden="true" />
-            <div className="tira-3d rem-dibujo-vistas" role="group" aria-label="Vista">
+            <div className="tira-3d cabecera-pestanas rem-dibujo-vistas" role="group" aria-label="Vista">
               {VISTAS.map(({ vista: v, nombre }) => (
                 <button key={v} type="button" className={v === vista ? 'pestana pestana-activa' : 'pestana'}
                   aria-pressed={v === vista} onClick={() => setVista(v)}>

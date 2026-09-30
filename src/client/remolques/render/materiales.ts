@@ -36,7 +36,49 @@ function texturaTejido() {
   return t;
 }
 
-/** Malla de la ventana: hilos opacos y huecos transparentes, cada 1,5 cm. */
+/**
+ * Ondulaciones suaves de la lona tensada (cada 1,6 m): la lona nunca queda plana como una chapa y
+ * el brillo del PVC se ve justo en esas ondas. Es un mapa de normales hecho de senos con
+ * frecuencias enteras, así que se repite sin costuras. Va en la capa de barniz (clearcoat): la
+ * trama del tejido sigue en el bumpMap de la base, y three.js no mezcla bumpMap y normalMap en la
+ * misma capa.
+ */
+const PERIODO_ONDAS = 200;
+const ONDAS: Array<[number, number, number, number]> = [
+  // [frecuencia u, frecuencia v, amplitud, fase]
+  [1, 0, 1, 0.3], [0, 1, 0.8, 1.7], [1, 1, 0.55, 2.9], [2, -1, 0.4, 0.8],
+  [2, 1, 0.2, 4.1], [-1, 2, 0.18, 5.2],
+];
+function texturaOndas() {
+  const lado = 256;
+  const t = lienzo(lado, (ctx) => {
+    const imagen = ctx.createImageData(lado, lado);
+    for (let y = 0; y < lado; y += 1) {
+      for (let x = 0; x < lado; x += 1) {
+        let du = 0;
+        let dv = 0;
+        for (const [fu, fv, a, fase] of ONDAS) {
+          const c = a * Math.cos(2 * Math.PI * (fu * x + fv * y) / lado + fase);
+          du += c * fu;
+          dv += c * fv;
+        }
+        const n = new THREE.Vector3(-du * 0.05, -dv * 0.05, 1).normalize();
+        const i = (y * lado + x) * 4;
+        imagen.data[i] = (n.x * 0.5 + 0.5) * 255;
+        imagen.data[i + 1] = (n.y * 0.5 + 0.5) * 255;
+        imagen.data[i + 2] = (n.z * 0.5 + 0.5) * 255;
+        imagen.data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(imagen, 0, 0);
+  });
+  t?.repeat.set(1 / PERIODO_ONDAS, 1 / PERIODO_ONDAS);
+  return t;
+}
+
+/** Malla mosquitera de la ventana: hilos opacos y huecos transparentes de 1,5 mm. A la distancia del
+ *  render los hilos no se distinguen (como en las fotos): los mipmaps los funden en una trama gris
+ *  translúcida en vez de dibujar un damero que no existe. */
 function texturaRejilla() {
   const t = lienzo(32, (ctx) => {
     ctx.fillStyle = '#000000';
@@ -47,27 +89,31 @@ function texturaRejilla() {
       ctx.fillRect(0, i, 32, 2);
     }
   });
-  t?.repeat.set(1 / 1.5, 1 / 1.5);
+  t?.repeat.set(1 / 0.6, 1 / 0.6);
   return t;
 }
 
 export function crearMateriales(color: string, { texturas }: { texturas: boolean }): Materiales {
   const tejido = texturas ? texturaTejido() : null;
   const rejilla = texturas ? texturaRejilla() : null;
+  const ondas = texturas ? texturaOndas() : null;
   const lona = (tono: THREE.Color) => new THREE.MeshPhysicalMaterial({
-    color: tono, roughness: 0.62, metalness: 0, clearcoat: 0.18, clearcoatRoughness: 0.55,
+    color: tono, roughness: 0.42, metalness: 0, clearcoat: 0.4, clearcoatRoughness: 0.3,
     side: THREE.DoubleSide, bumpMap: tejido, bumpScale: 0.15,
+    clearcoatNormalMap: ondas, clearcoatNormalScale: new THREE.Vector2(0.45, 0.45),
   });
   return {
     lona: lona(new THREE.Color(color)),
     lonaOscura: lona(new THREE.Color(color).multiplyScalar(0.8)),
-    chapa: new THREE.MeshStandardMaterial({ color: '#b9bfc4', metalness: 0.85, roughness: 0.38 }),
-    laton: new THREE.MeshStandardMaterial({ color: '#c8a24a', metalness: 1, roughness: 0.28 }),
+    // Galvanizado: gris plata claro. Del todo metálico solo refleja la sala del entorno y salía
+    // gris oscuro, no la chapa brillante de las fotos.
+    chapa: new THREE.MeshStandardMaterial({ color: '#d3d8dc', metalness: 0.55, roughness: 0.34 }),
+    laton: new THREE.MeshStandardMaterial({ color: '#d9b45a', metalness: 1, roughness: 0.32 }),
     hueco: new THREE.MeshBasicMaterial({ color: '#1b1b1b' }),
     goma: new THREE.MeshStandardMaterial({ color: '#f2f2ee', roughness: 0.7 }),
     oscuro: new THREE.MeshStandardMaterial({ color: '#202225', roughness: 0.8, side: THREE.DoubleSide }),
     malla: new THREE.MeshStandardMaterial({
-      color: '#2a2c2e', roughness: 0.9, side: THREE.DoubleSide,
+      color: '#7d8286', roughness: 0.9, side: THREE.DoubleSide,
       transparent: true, alphaMap: rejilla, opacity: rejilla ? 1 : 0.55,
     }),
     cincha: new THREE.MeshStandardMaterial({ color: '#f4f4f1', roughness: 0.85, side: THREE.DoubleSide }),

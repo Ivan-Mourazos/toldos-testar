@@ -47,7 +47,7 @@ const DIRECCION_SOL: Record<Vista, Vec3> = {
   delante: [0.4, 1, 1.2],
   detras: [-0.4, 1, -1.2],
   lateral: [1.2, 1, -0.4],
-  arriba: [0.4, 1.6, 0.6],
+  arriba: [0.9, 1.1, 0.7],
 };
 
 /** Cómo se nombra cada vista en la etiqueta del lienzo, para quien usa lector de pantalla. */
@@ -106,6 +106,9 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     m.renderer.domElement.setAttribute('aria-label', `Render ${d.escena.cuerpo.tipo === 'lona' ? 'de la lona' : 'del baquetón'} sobre el remolque, vista ${NOMBRE_VISTA[d.vista]}`);
     m.camara = camara;
     colocarSol(m.sol, d.escena.caja, d.vista);
+    // Desde arriba la sombra del suelo sale como una losa gris pegada a un lado del remolque; en
+    // las vistas de frente el suelo queda de canto y no se ve. Solo la 3/4 lo necesita para asentarse.
+    m.suelo.visible = d.vista !== 'arriba';
     if (d.vista === 'tres-cuartos') {
       const { centro, tamano: t } = encuadre(d.escena.caja);
       const controles = new OrbitControls(camara, m.renderer.domElement);
@@ -149,7 +152,11 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     renderer.domElement.addEventListener('webglcontextlost', alPerderContexto);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    // Neutral (y no ACES) respeta el color de la lona: con ACES el gris 7038 salía casi blanco y
+    // los colores, lavados. La exposición baja y la luz ambiente suave dejan que cada cara tenga
+    // su tono, como en las fotos del taller, y que el brillo del PVC se note.
+    renderer.toneMapping = THREE.NeutralToneMapping;
+    renderer.toneMappingExposure = 0.7;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.setAttribute('role', 'img');
@@ -165,10 +172,10 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     // La sala tiene un panel de luz justo detrás de la cámara de delante: a plena intensidad y sin
     // girar, la lona de frente salía rosa y la de detrás, granate. Girada 45° y más suave, las
     // cinco vistas enseñan el color de la lona.
-    escena3D.environmentIntensity = 0.6;
+    escena3D.environmentIntensity = 0.8;
     escena3D.environmentRotation.y = Math.PI / 4;
-    escena3D.add(new THREE.HemisphereLight(0xffffff, 0x9aa0a6, 0.8));
-    const sol = new THREE.DirectionalLight(0xffffff, 2.2);
+    escena3D.add(new THREE.HemisphereLight(0xffffff, 0x9aa0a6, 0.35));
+    const sol = new THREE.DirectionalLight(0xffffff, 2.4);
     sol.castShadow = true;
     sol.shadow.mapSize.set(2048, 2048);
     sol.shadow.bias = -0.0004;
