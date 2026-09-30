@@ -5,8 +5,8 @@ import type { CierreEsquina, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { plano, sobreCara, v3, type Pieza } from './piezas';
 
 // Cierres de las esquinas como los hace el taller (docs/remolques/cierres-y-acabados.md):
-// la oreja o solapa del paño dobla sobre el lateral y encima va el velcro, la cremallera o los
-// puentes con su cincha; con goma, de los ollaos de la oreja bajan gomas en diagonal, cruzando
+// la oreja o solapa del paño dobla sobre el lateral y encima va el velcro o los puentes con su
+// cincha; la cremallera va en el paño de delante o de atrás, cerca de la esquina; con goma, de los ollaos de la oreja bajan gomas en diagonal, cruzando
 // la esquina, a ganchos del cajón en la cara del paño; con ganchos corazón, dos filas de ganchos a
 // un lado y otro del borde de la oreja y un cordón blanco en zigzag entre ellos, anudado abajo.
 
@@ -19,6 +19,8 @@ export interface CierresEnMallas {
 
 /** La goma pasa algo por fuera del ollao y de la punta del gancho. */
 const FUERA_GOMA = 0.8;
+/** Cremallera fina: la tira de dientes, de 1 cm. */
+const ANCHO_CREMALLERA = 1;
 /** Los puentes van a esta distancia del borde de la solapa. */
 const PUENTE_EN_SOLAPA = 4;
 const ANCHO_CINCHA = 2.5;
@@ -116,9 +118,16 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
     }
 
     if (c.cremallera) {
-      const { distancia, hasta } = c.cremallera;
-      colocar(new THREE.BoxGeometry(1, hasta, 0.3), punto(distancia, hasta / 2, 0.2), 'oscuro');
-      colocar(new THREE.BoxGeometry(1.2, 2.6, 0.4), punto(distancia, hasta - 2, 0.5), 'herraje');
+      // Va en el paño de delante o de atrás, no en el lateral (Iván, 30/09/2026): una tira oscura
+      // fina de abajo hasta 4 cm por debajo de la cima, pegada al paño, con un tirador pequeño arriba.
+      const { hasta, pie, normal: normalPano } = c.cremallera;
+      const enPano = (y: number, fuera: number) => v3(pie).add(new THREE.Vector3(0, y, 0)).addScaledVector(v3(normalPano), fuera);
+      const tira = new THREE.BoxGeometry(ANCHO_CREMALLERA, hasta, 0.3);
+      tira.applyMatrix4(sobreCara(enPano(hasta / 2, 0.2), normalPano));
+      r.piezas.push({ geometria: tira, material: 'oscuro' });
+      const tirador = new THREE.BoxGeometry(0.8, 1.8, 0.3);
+      tirador.applyMatrix4(sobreCara(enPano(hasta - 1.4, 0.5), normalPano));
+      r.piezas.push({ geometria: tirador, material: 'herraje' });
     }
 
     if (c.tipo === 'PUENTES') {

@@ -34,17 +34,25 @@ describe("cierres de las esquinas", () => {
     expect(alturasCierre(15, 35)).toEqual([7.5]);
   });
 
-  it("cremallera a 5 cm de la esquina y hasta 4 cm por debajo de la cima", () => {
+  // Iván, 30/09/2026: la cremallera es fina y va en el paño de delante o de atrás (no en el
+  // lateral), a 5 cm de la arista de la esquina hacia dentro, de abajo hasta 4 cm por debajo de la
+  // cima de la pared, una en cada esquina de ese paño.
+  it("cremallera en el paño, a 5 cm de la esquina hacia el centro y hasta 4 cm por debajo de la cima", () => {
     const e = escenaLona({ recogeDelante: "CREMALLERA" })!;
     const c = e.cierres.find((x) => x.esquina === "delante-derecha")!;
-    expect(c).toMatchObject({ tipo: "CREMALLERA", base: [100.5, 0, 301], alto: 100, oreja: 0, cremallera: { distancia: 5, hasta: 96 } });
-    expect(c.haciaLateral).toEqual([0, 0, -1]);
+    expect(c).toMatchObject({
+      tipo: "CREMALLERA", base: [100.5, 0, 301], alto: 100, oreja: 0,
+      cremallera: { distancia: 5, hasta: 96, pie: [95.5, 0, 301], normal: [0, 0, 1] },
+    });
+    expect(e.cierres.find((x) => x.esquina === "delante-izquierda")!.cremallera)
+      .toEqual({ distancia: 5, hasta: 96, pie: [-95.5, 0, 301], normal: [0, 0, 1] });
     expect(e.cierres.find((x) => x.esquina === "atras-derecha")!.tipo).toBe("NO");
   });
 
-  it("en un perfil a dos aguas la cima de la esquina es el hombro", () => {
+  it("en un perfil a dos aguas la cima de la esquina es el hombro; detrás va en el paño trasero", () => {
     const e = escenaLona({ tipoPerfil: "TIPO 02", aguas: 20, recogeAtras: "CREMALLERA" })!;
-    expect(e.cierres.find((x) => x.esquina === "atras-izquierda")!.cremallera).toEqual({ distancia: 5, hasta: 76 });
+    expect(e.cierres.find((x) => x.esquina === "atras-izquierda")!.cremallera)
+      .toEqual({ distancia: 5, hasta: 76, pie: [-95.5, 0, 0], normal: [0, 0, -1] });
   });
 
   describe("goma: de los ollaos de la oreja a ganchos del cajón en la cara del paño", () => {
@@ -296,6 +304,40 @@ describe("ventana", () => {
     const e = escenaLona({ ventana: true, ventanaAncho: 50, ventanaAlto: 35 })!;
     expect(e.ventana).toEqual({ centro: [0, 77.5, 301], ancho: 50, alto: 35 });
     expect(escenaLona({ ventana: false })!.ventana).toBeNull();
+  });
+});
+
+// Iván, 30/09/2026: las aguas y la ventana se acotan en el dibujo, como el alto y el ancho.
+describe("cotas de las aguas y de la ventana", () => {
+  it("con aguas (TIPO 02 y TIPO 03), del hombro a la cumbrera de frente y de espaldas, al otro lado del alto", () => {
+    const e = escenaLona({ tipoPerfil: "TIPO 02", aguas: 20 })!;
+    expect(e.cotas.filter((c) => c.texto === "20")).toEqual([
+      { vistas: ["delante"], desde: [115.5, 80, 301], hasta: [115.5, 100, 301], texto: "20" },
+      { vistas: ["detras"], desde: [-115.5, 80, 0], hasta: [-115.5, 100, 0], texto: "20" },
+    ]);
+    const arquillada = escenaLona({ tipoPerfil: "TIPO 03", aguas: 8, radioHombro: 10, altoAtras: 90 })!;
+    expect(arquillada.cotas.filter((c) => c.texto === "8")).toEqual([
+      { vistas: ["delante"], desde: [115.5, 92, 301], hasta: [115.5, 100, 301], texto: "8" },
+      { vistas: ["detras"], desde: [-115.5, 82, 0], hasta: [-115.5, 90, 0], texto: "8" },
+    ]);
+  });
+
+  it("sin aguas no hay cota de aguas", () => {
+    for (const extra of [{}, { tipoPerfil: "TIPO 04" as const, chaflan: 20 }, { tipoPerfil: "TIPO 05" as const, radioEsquina: 10 }]) {
+      const e = escenaLona(extra)!;
+      expect(e.cotas.filter((c) => c.vistas.includes("delante")).map((c) => c.texto)).toEqual(["201", "100"]);
+    }
+  });
+
+  it("la ventana, solo de frente: el ancho por debajo (con el número debajo) y el alto a su lado", () => {
+    const e = escenaLona({ ventana: true, ventanaAncho: 50, ventanaAlto: 35 })!;
+    expect(e.cotas.filter((c) => c.vistas.includes("delante"))).toEqual([
+      expect.objectContaining({ texto: "201" }),
+      expect.objectContaining({ texto: "100" }),
+      { vistas: ["delante"], desde: [-25, 52, 301], hasta: [25, 52, 301], texto: "50", textoDebajo: true },
+      { vistas: ["delante"], desde: [33, 60, 301], hasta: [33, 95, 301], texto: "35" },
+    ]);
+    expect(e.cotas.filter((c) => c.vistas.includes("detras")).map((c) => c.texto)).toEqual(["201", "100"]);
   });
 });
 

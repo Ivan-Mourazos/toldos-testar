@@ -45,8 +45,10 @@ export interface CierreEsquina {
    *  cuando la goma acaba en un gancho que ya está (uno de la goma perimetral de esa cara, o el del
    *  centro que ya puso otra goma): ese gancho no se vuelve a dibujar. */
   gomaDiagonal: Array<{ ollao: Vec3; esquina: Vec3; gancho: Vec3; ganchoNuevo: boolean }>;
-  /** Cremallera: distancia a la esquina y alto hasta el que llega. */
-  cremallera: { distancia: number; hasta: number } | null;
+  /** Cremallera fina, en el paño de delante o de atrás (no en el lateral): a `distancia` de la
+   *  arista de la esquina hacia el centro, de abajo (`pie`, y = 0) hasta `hasta`, 4 cm por debajo de
+   *  la cima de la pared. `normal`: la del paño, hacia fuera. */
+  cremallera: { distancia: number; hasta: number; pie: Vec3; normal: Vec3 } | null;
   /** Velcro: ancho de la tira en el borde de la oreja. */
   velcro: { ancho: number } | null;
 }
@@ -100,7 +102,11 @@ export interface RotuloEscena { vistas: Vista[]; punto: Vec3; texto: "DELANTE" |
 export interface VentanaEscena { centro: Vec3; ancho: number; alto: number }
 
 /** Línea de cota, con las vistas en que se enseña. */
-export interface CotaEscena { vistas: Vista[]; desde: Vec3; hasta: Vec3; texto: string }
+export interface CotaEscena {
+  vistas: Vista[]; desde: Vec3; hasta: Vec3; texto: string;
+  /** El número va por debajo de la línea (el ancho de la ventana: encima pisaría la ventana). */
+  textoDebajo?: boolean;
+}
 /** Número junto a un ollao o un gancho. `hacia`: hacia dónde se escribe en la hoja de taller, que
  *  los pone en vertical para que no se pisen (ollaos hacia arriba, sobre la lona; ganchos hacia
  *  abajo, sobre el cajón). */

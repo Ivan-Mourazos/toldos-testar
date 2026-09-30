@@ -79,10 +79,25 @@ describe('cierres en 3D', () => {
     });
   });
 
-  it('cremallera hasta 4 cm por debajo de la cima, con su tirador', () => {
+  it('cremallera fina en el paño, a 5 cm de la esquina, de abajo hasta 4 cm por debajo de la cima, con su tirador', () => {
     const r = piezasCierres(cierre('CREMALLERA'));
     expect(r.piezas.map((p) => p.material)).toEqual(['oscuro', 'herraje']);
-    expect(maxY(r.piezas[0].geometria)).toBeCloseTo(96, 1);
+    const tira = r.piezas[0].geometria;
+    tira.computeBoundingBox();
+    const caja = tira.boundingBox!;
+    expect(caja.min.y).toBeCloseTo(0, 1);
+    expect(caja.max.y).toBeCloseTo(96, 1);
+    // Sobre el paño de delante (z = 301, algo por fuera), no sobre el lateral (x = 100,5).
+    expect((caja.min.x + caja.max.x) / 2).toBeCloseTo(95.5, 1);
+    expect(caja.max.x - caja.min.x).toBeCloseTo(1, 1);
+    expect(caja.min.z).toBeGreaterThan(301);
+    expect(caja.max.z).toBeLessThan(302);
+    // El tirador, pequeño, arriba de la cremallera y en el mismo paño.
+    const tirador = r.piezas[1].geometria;
+    tirador.computeBoundingBox();
+    expect(tirador.boundingBox!.max.y).toBeLessThanOrEqual(96.5);
+    expect(tirador.boundingBox!.min.z).toBeGreaterThan(301);
+    expect(Math.abs((tirador.boundingBox!.min.x + tirador.boundingBox!.max.x) / 2 - 95.5)).toBeLessThan(0.1);
   });
 
   it('velcro: la oreja y la tira de 3 cm en su borde', () => {

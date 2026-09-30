@@ -13,10 +13,14 @@ export function CapaCotas({ cotas, ancho, alto }: { cotas: CotasPantalla; ancho:
       </defs>
       {cotas.lineas.map((l, i) => {
         const vertical = Math.abs(l.x2 - l.x1) < Math.abs(l.y2 - l.y1);
+        // Como en la hoja: una cota vertical en la mitad izquierda lleva el número a su izquierda,
+        // hacia fuera (el alto de la ventana y las aguas no caen encima de la ventana ni de la lona).
+        const aLaIzquierda = vertical && l.tx < ancho / 2;
         return (
           <g key={`l${i}`}>
             <line x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} markerStart={`url(#${flecha})`} markerEnd={`url(#${flecha})`} />
-            <text x={vertical ? l.tx + 8 : l.tx} y={vertical ? l.ty + 4 : l.ty - 6} textAnchor={vertical ? 'start' : 'middle'}>
+            <text x={vertical ? l.tx + (aLaIzquierda ? -8 : 8) : l.tx} y={vertical ? l.ty + 4 : l.ty + (l.textoDebajo ? 14 : -6)}
+              textAnchor={vertical ? (aLaIzquierda ? 'end' : 'start') : 'middle'}>
               {l.texto}
             </text>
           </g>

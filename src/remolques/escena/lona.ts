@@ -6,7 +6,7 @@ import { cierresLona } from "./cierres.ts";
 import { cajaDe, chasisDe, rotulosDe } from "./chasis.ts";
 import { cajonDe, gomasDe, marcasGanchos, marcasOllaos, posicionesGanchos } from "./comun.ts";
 import { ALTO_CAJON, BASTILLA } from "./constantes.ts";
-import { cotasCuerpo, etiquetasMarcas } from "./cotas.ts";
+import { cotasAguas, cotasCuerpo, cotasVentana, etiquetasMarcas } from "./cotas.ts";
 import type { CuerpoLona, EscenaRemolque, Perfil2D } from "./tipos.ts";
 import { ventanaLona } from "./ventana.ts";
 
@@ -66,14 +66,20 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
   const ganchos = marcasGanchos(posicionesGanchos(res.reparto, res.ganchos), Boolean(res.ganchos), medidas, cajon, bordes);
   const chasis = chasisDe(cajon);
   const caja = cajaDe(Math.max(wD, wA) / 2, Math.max(hD, hA), largo, chasis);
+  const ventana = ventanaLona(input, cuerpo);
+  const conAguas = input.tipoPerfil === "TIPO 02" || input.tipoPerfil === "TIPO 03";
   return {
     cuerpo,
     color: colorBaseMaterial(input.material),
     cajon, chasis, ollaos, ganchos,
     gomas: gomasDe(ollaos, ganchos),
     cierres: cierresLona(input, cuerpo, params, cajon, ganchos),
-    ventana: ventanaLona(input, cuerpo),
-    cotas: cotasCuerpo(cuerpo, chasis.suelo),
+    ventana,
+    cotas: [
+      ...cotasCuerpo(cuerpo, chasis.suelo),
+      ...(conAguas ? cotasAguas(cuerpo, input.aguas ?? 0, { delante: hD, atras: hA }) : []),
+      ...cotasVentana(ventana),
+    ],
     etiquetas: etiquetasMarcas(ollaos, ganchos),
     rotulos: rotulosDe(caja),
     caja,

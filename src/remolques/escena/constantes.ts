@@ -55,6 +55,9 @@ export const DEMASIA_SIN_RECOGIDA = 3;
 export const MARGEN_VENTANA = 5;
 /** Las cotas van a esta distancia de la lona y las etiquetas a esta del ollao o gancho. */
 export const SEPARACION_COTA = 15;
+/** Las cotas de la ventana van a esta distancia de su borde, sobre el paño de delante: lo justo para
+ *  que las flechas no pisen el marco en la hoja. */
+export const SEPARACION_COTA_VENTANA = 8;
 export const SEPARACION_ETIQUETA = 6;
 
 // Remolque genérico bajo la lona, solo para que se vea dónde está delante (lanza con enganche de

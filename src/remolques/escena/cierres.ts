@@ -148,7 +148,14 @@ export function cierresLona(
       gomaDiagonal: tipo === "GOMA"
         ? gomaDiagonal(base, alto, hacia, lado, oreja, cajon, cara === "delante" ? cajon.zHasta : cajon.zDesde, elegir[cara])
         : [],
-      cremallera: tipo === "CREMALLERA" ? { distancia: CREMALLERA_A_ESQUINA, hasta: r1(alto - CREMALLERA_BAJO_CIMA) } : null,
+      // En el paño (Iván, 30/09/2026): de la esquina hacia el centro, a lo ancho; la normal del paño
+      // es la contraria a la dirección que se aleja de él por el lateral.
+      cremallera: tipo === "CREMALLERA"
+        ? {
+          distancia: CREMALLERA_A_ESQUINA, hasta: r1(alto - CREMALLERA_BAJO_CIMA),
+          pie: [r1(lado * (semi - CREMALLERA_A_ESQUINA)), 0, z], normal: [0, 0, -hacia[2]],
+        }
+        : null,
       velcro: tipo === "VELCRO" ? { ancho: ANCHO_VELCRO } : null,
     };
   });
