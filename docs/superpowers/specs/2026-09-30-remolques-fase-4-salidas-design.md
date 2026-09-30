@@ -57,8 +57,9 @@ guardada en las mismas carpetas que hoy.
 - Un módulo `src/remolques/salida/` abre Chromium una vez y lo reutiliza; genera los PDF de
   uno en uno (cola), con un tiempo máximo (30 s) y mensajes claros si falla.
 - `page.pdf({ format: 'A4', landscape: true, printBackground: true })`.
-- Primer paso del plan: un comando para Iván que compruebe en el .90 que Chromium arranca
-  y pinta WebGL.
+- Comprobado el 30/09/2026 en el .90 (Node 24.14, root): `playwright install --with-deps
+  chromium` (Chrome for Testing 149, playwright 1.61.1) arranca, hace PDF y tiene WebGL con
+  SwiftShader («Chrome OK · WebGL: true»). Queda instalado en `/root/.cache/ms-playwright`.
 
 ### 3. Contenido de cada hoja
 
