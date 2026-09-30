@@ -3,53 +3,33 @@ import casos from "../../__fixtures__/produccion-2026-09.json";
 import { calcBaqueton, type BaquetonInput } from "../../calc/baqueton.ts";
 import { calcLona, type LonaInput } from "../../calc/lona.ts";
 import { DEFAULT_PARAMS } from "../../calc/params.ts";
-import type { ElementoPedidoHoja } from "../tipos.ts";
 import { ErrorPedidoHoja, MAX_ELEMENTOS_HOJA, prepararPedidoHoja } from "../pedido.ts";
+import type { ElementoPedidoHoja } from "../tipos.ts";
 
-type CasoFixture = { caso: string; tipo: "lona" | "baqueton"; input: Record<string, unknown> };
-
+type Caso = { caso: string; tipo: "lona" | "baqueton"; input: LonaInput | BaquetonInput };
 const deFixture = (id: string, version: string, numeroPedido = "AR.26.99990"): ElementoPedidoHoja => {
-  const caso = (casos as CasoFixture[]).find((c) => c.caso === id);
-  if (!caso) throw new Error(`La fixture no trae el caso ${id}.`);
-  const input = caso.input as Record<string, unknown>;
-  return {
-    version,
-    tipo: caso.tipo,
-    input: {
-      ...input,
-      cabecera: { ...(input.cabecera as Record<string, unknown>), numeroPedido },
-    } as LonaInput | BaquetonInput,
-  };
+  const c = (casos as Caso[]).find((x) => x.caso === id)!;
+  return { version, tipo: c.tipo, input: { ...c.input, cabecera: { ...c.input.cabecera, numeroPedido, version } } };
 };
-
-const falla = (elementos?: ElementoPedidoHoja[] | null | object[]): string => {
+const falla = (elementos: unknown) => {
   try {
-    prepararPedidoHoja(elementos as ElementoPedidoHoja[] | null | undefined, DEFAULT_PARAMS);
-    return "No falló";
-  } catch (e) {
-    if (e instanceof ErrorPedidoHoja) return e.message;
-    throw e;
+    prepararPedidoHoja(elementos, DEFAULT_PARAMS);
+  } catch (error) {
+    expect(error).toBeInstanceOf(ErrorPedidoHoja);
+    expect((error as ErrorPedidoHoja).statusCode).toBe(400);
+    return (error as Error).message;
   }
+  throw new Error("no ha fallado");
 };
 
 describe("prepararPedidoHoja", () => {
-  it("un pedido válido de dos elementos (uno de cada tipo)", () => {
-    const datos = prepararPedidoHoja([deFixture("lona-02", "10"), deFixture("baqueton-01", "11")], DEFAULT_PARAMS);
-    expect(datos.elementos).toHaveLength(2);
-    const lona = deFixture("lona-02", "10");
-    const baqueton = deFixture("baqueton-01", "11");
-    expect(datos.elementos[0]).toMatchObject({
-      version: "10",
-      tipo: "lona",
-      input: lona.input,
-    });
-    expect(datos.elementos[0].result).toEqual(calcLona(lona.input as LonaInput, DEFAULT_PARAMS));
-    expect(datos.elementos[1]).toMatchObject({
-      version: "11",
-      tipo: "baqueton",
-      input: baqueton.input,
-    });
-    expect(datos.elementos[1].result).toEqual(calcBaqueton(baqueton.input as BaquetonInput, DEFAULT_PARAMS));
+  it("ordena por versión y calcula cada elemento con los parámetros comunes", () => {
+    const lona = deFixture("lona-02", "11");
+    const baqueton = deFixture("baqueton-01", "10");
+    const datos = prepararPedidoHoja([lona, baqueton], DEFAULT_PARAMS);
+    expect(datos.elementos.map((e) => e.version)).toEqual(["10", "11"]);
+    expect(datos.elementos[0].result).toEqual(calcBaqueton(baqueton.input as BaquetonInput, DEFAULT_PARAMS));
+    expect(datos.elementos[1].result).toEqual(calcLona(lona.input as LonaInput, DEFAULT_PARAMS));
     expect(datos.params).toBe(DEFAULT_PARAMS);
   });
 
@@ -61,8 +41,8 @@ describe("prepararPedidoHoja", () => {
   });
 
   it("rechaza lo que no tiene forma de elemento", () => {
-    expect(falla([{ tipo: "lona" as const, version: "10", input: {} }] as ElementoPedidoHoja[])).toBe("El elemento 1 del pedido no tiene el formato esperado.");
-    const cambiado: ElementoPedidoHoja = { ...deFixture("lona-02", "10"), tipo: "baqueton" };
+    expect(falla([{ tipo: "toldo", version: "10", input: {} }])).toBe("El elemento 1 del pedido no tiene el formato esperado.");
+    const cambiado = { ...deFixture("lona-02", "10"), tipo: "baqueton" };
     expect(falla([cambiado])).toBe("Baquetón 1: el tipo no cuadra con sus datos.");
   });
 

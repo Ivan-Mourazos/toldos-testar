@@ -1,67 +1,56 @@
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import type { LonaInput } from "../calc/lona.ts";
+import type { TipoPlanteamiento } from "../store/types.ts";
 import type { ElementoPedidoHoja } from "./tipos.ts";
 
-export type NombreMuestra = "lona-ventana" | "baqueton" | "segun-ganchos" | "bastilla" | "perfiles" | "varios";
+// Pedidos de muestra de la hoja de taller, sacados de los casos reales de la fixture
+// (src/remolques/__fixtures__/produccion-2026-09.json). Los usan la página de la hoja en
+// desarrollo (?muestra=…), la e2e, el smoke del despliegue y las muestras para Iván.
+// Números de pedido de prueba (AR.26.9999x): no existen en RPS.
 
-type CasoFixture = { caso: string; tipo: "lona" | "baqueton"; input: unknown };
+export interface CasoFixture { caso: string; tipo: TipoPlanteamiento; input: LonaInput | BaquetonInput }
 
-// Texto largo para la muestra "varios": más de 200 caracteres
-const OBSERVACIONES_LARGAS = `Este es un remolque con observaciones extensas para verificar que se pueden escribir textos largos en el campo de observaciones de la hoja de taller sin que se desborde. Las observaciones pueden incluir notas especiales, instrucciones de montaje, especificaciones del cliente o cualquier otra información relevante para la fabricación.`;
+export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios"] as const;
+export type NombreMuestra = (typeof NOMBRES_MUESTRAS)[number];
+
+const OBSERVACIONES_LARGAS = "REFORZAR LAS ESQUINAS DE DETRÁS CON DOBLE COSTURA. EL CLIENTE QUIERE LA ROTULACIÓN "
+  + "CENTRADA EN EL LATERAL DERECHO Y LOS OLLAOS DE DELANTE LIBRES PARA LA CINCHA. COMPROBAR LA MEDIDA DEL CAJÓN "
+  + "ANTES DE CORTAR: EL REMOLQUE TIENE UN GOLPE EN LA ESQUINA DELANTERA IZQUIERDA.";
 
 function copia(
-  casos: CasoFixture[],
-  id: string,
-  numeroPedido: string,
-  version: string,
-  cambios: Partial<LonaInput> | Partial<BaquetonInput> = {},
+  casos: CasoFixture[], id: string, numeroPedido: string, version: string, cambios: Partial<LonaInput> | Partial<BaquetonInput> = {},
 ): ElementoPedidoHoja {
   const caso = casos.find((c) => c.caso === id);
   if (!caso) throw new Error(`La fixture de producción no trae el caso ${id}.`);
-  const input = caso.input as Record<string, unknown>;
   const cabecera = {
-    ...(input.cabecera as Record<string, unknown>),
-    numeroPedido,
-    version,
-    cliente: "CLIENTE DE PRUEBA",
-    realizadoPor: "IVÁN",
-    ordenFabricacion: "0239999",
-    fecha: "2026-09-30",
+    ...caso.input.cabecera, numeroPedido, version,
+    cliente: "CLIENTE DE PRUEBA", realizadoPor: "IVÁN", ordenFabricacion: "0239999", fecha: "2026-09-30",
   };
-  return {
-    version,
-    tipo: caso.tipo,
-    input: {
-      ...input,
-      ...cambios,
-      cabecera,
-    } as LonaInput | BaquetonInput,
-  };
+  return { version, tipo: caso.tipo, input: { ...caso.input, ...cambios, cabecera } as LonaInput | BaquetonInput };
 }
 
-// Ganchos válidos para lona-02 (200 × 121): laterales hasta 200, atras/delante hasta 121
-const GANCHOS_SEGUN = {
-  laterales: [10, 50, 90, 130, 170],
-  atras: [15, 60, 105],
-  delante: [15, 60, 105],
-};
+const SIN_AGUAS = { aguas: 0, radioCumbrera: 0, radioHombro: 0 };
 
 export function muestrasHoja(casos: CasoFixture[]): Record<NombreMuestra, ElementoPedidoHoja[]> {
   return {
     // TIPO 03 de 200 × 121 con ventana de 50 × 35 y recogida con goma detrás.
     "lona-ventana": [copia(casos, "lona-02", "AR.26.99990", "10")],
     "baqueton": [copia(casos, "baqueton-01", "AR.26.99991", "10")],
-    // La misma lona, recta sin ventana, con los ganchos del pedido y delante medido al revés.
-    "segun-ganchos": [copia(casos, "lona-02", "AR.26.99992", "10", { ventana: false, modoOllaos: "SEGUN GANCHOS", ganchos: GANCHOS_SEGUN })],
-    // Una lona con bastilla de enfundar (partiendo de lona-05 que ya es una buena muestra).
-    "bastilla": [copia(casos, "lona-05", "AR.26.99993", "10", { bastillaEnfundar: true })],
-    // Los cinco tipos de perfiles: TIPO 01 a 05 (modificamos tipoPerfil de casos existentes según sea necesario).
+    // La misma lona, recta y sin ventana, con los ganchos del pedido y delante medido al revés.
+    "segun-ganchos": [copia(casos, "lona-02", "AR.26.99992", "10", {
+      tipoPerfil: "TIPO 01", ...SIN_AGUAS, contorno: 307, ventana: false,
+      modoOllaos: "SEGUN GANCHOS",
+      ganchos: { laterales: [5, 100, 195], atras: [10, 60, 111], delante: [11, 61, 111] },
+      ganchosAlReves: { laterales: false, atras: false, delante: true },
+      ollaosExtremos: true,
+    })],
+    "bastilla": [copia(casos, "lona-02", "AR.26.99993", "10", { bastillaEnfundar: true })],
     "perfiles": [
-      copia(casos, "lona-03", "AR.26.99994", "10", { tipoPerfil: "TIPO 01" }),
-      copia(casos, "lona-10", "AR.26.99994", "11"), // Ya es TIPO 02
-      copia(casos, "lona-02", "AR.26.99994", "12"), // Ya es TIPO 03
-      copia(casos, "lona-06", "AR.26.99994", "13", { tipoPerfil: "TIPO 04", chaflan: 10 }),
-      copia(casos, "lona-11", "AR.26.99994", "14"), // Ya es TIPO 05
+      copia(casos, "lona-02", "AR.26.99994", "10", { tipoPerfil: "TIPO 01", ...SIN_AGUAS }),
+      copia(casos, "lona-02", "AR.26.99994", "11", { tipoPerfil: "TIPO 02", ...SIN_AGUAS, aguas: 8 }),
+      copia(casos, "lona-02", "AR.26.99994", "12", { tipoPerfil: "TIPO 03" }),
+      copia(casos, "lona-02", "AR.26.99994", "13", { tipoPerfil: "TIPO 04", ...SIN_AGUAS, chaflan: 15 }),
+      copia(casos, "lona-02", "AR.26.99994", "14", { tipoPerfil: "TIPO 05", ...SIN_AGUAS, radioEsquina: 10 }),
     ],
     "varios": [
       copia(casos, "lona-02", "AR.26.99996", "10"),

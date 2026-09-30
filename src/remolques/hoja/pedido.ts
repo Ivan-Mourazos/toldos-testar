@@ -21,102 +21,51 @@ export class ErrorPedidoHoja extends Error {
   }
 }
 
-export function prepararPedidoHoja(elementos?: ElementoPedidoHoja[] | null, params?: CalcParams): DatosHojaPedido {
-  if (!elementos || elementos.length === 0) {
+const esObjeto = (valor: unknown): valor is Record<string, unknown> =>
+  typeof valor === "object" && valor !== null && !Array.isArray(valor);
+
+function leerElemento(valor: unknown, posicion: number): ElementoPedidoHoja {
+  if (
+    !esObjeto(valor) || (valor.tipo !== "lona" && valor.tipo !== "baqueton") || typeof valor.version !== "string"
+    || !esObjeto(valor.input) || !esObjeto(valor.input.cabecera)
+  ) {
+    throw new ErrorPedidoHoja(`El elemento ${posicion + 1} del pedido no tiene el formato esperado.`);
+  }
+  const input = valor.input as unknown as LonaInput | BaquetonInput;
+  if ((valor.tipo === "baqueton") !== ("baqueton" in input)) {
+    throw new ErrorPedidoHoja(`${nombreElementoPedido(valor.version, valor.tipo)}: el tipo no cuadra con sus datos.`);
+  }
+  return { version: valor.version, tipo: valor.tipo, input };
+}
+
+const numeroVersion = (version: string) => {
+  const numero = Number(version);
+  return Number.isFinite(numero) ? numero : Number.MAX_SAFE_INTEGER;
+};
+
+export function prepararPedidoHoja(elementos: unknown, params: CalcParams): DatosHojaPedido {
+  if (!Array.isArray(elementos) || elementos.length === 0) {
     throw new ErrorPedidoHoja("El pedido no tiene elementos para la hoja de taller.");
   }
-
   if (elementos.length > MAX_ELEMENTOS_HOJA) {
-    throw new ErrorPedidoHoja("Un pedido admite como mucho 30 elementos en la hoja de taller.");
+    throw new ErrorPedidoHoja(`Un pedido admite como mucho ${MAX_ELEMENTOS_HOJA} elementos en la hoja de taller.`);
   }
-
-  // Validar que cada elemento tiene el formato esperado
-  for (let i = 0; i < elementos.length; i++) {
-    const e = elementos[i];
-    if (!e || typeof e !== "object" || !("tipo" in e) || !("version" in e) || !("input" in e)) {
-      throw new ErrorPedidoHoja(`El elemento ${i + 1} del pedido no tiene el formato esperado.`);
-    }
-    const input = e.input as Record<string, unknown>;
-    if (!input || typeof input !== "object" || !("cabecera" in input)) {
-      throw new ErrorPedidoHoja(`El elemento ${i + 1} del pedido no tiene el formato esperado.`);
-    }
+  const lista = elementos.map(leerElemento).sort((a, b) => numeroVersion(a.version) - numeroVersion(b.version));
+  const pedidos = new Set(lista.map((e) => normalizarNumeroPedido(String(e.input.cabecera.numeroPedido ?? ""))));
+  if (pedidos.has("")) throw new ErrorPedidoHoja("Falta el número de pedido.");
+  if (pedidos.size > 1) throw new ErrorPedidoHoja("Todos los elementos de la hoja tienen que ser del mismo pedido.");
+  if (new Set(lista.map((e) => e.version)).size !== lista.length) {
+    throw new ErrorPedidoHoja("Hay dos elementos con la misma versión en el pedido.");
   }
-
-  // Validar que el tipo cuadra con sus datos
-  for (let i = 0; i < elementos.length; i++) {
-    const e = elementos[i];
-    const tieneFormadeLona = "altoDelante" in e.input;
-    const tieneBaqueton = "baqueton" in e.input;
-
-    if (e.tipo === "lona" && !tieneFormadeLona) {
-      throw new ErrorPedidoHoja(`Lona ${i + 1}: el tipo no cuadra con sus datos.`);
-    }
-    if (e.tipo === "baqueton" && !tieneBaqueton) {
-      throw new ErrorPedidoHoja(`Baquetón ${i + 1}: el tipo no cuadra con sus datos.`);
-    }
-  }
-
-  // Validar que todos son del mismo pedido
-  const numeroNormalizado = normalizarNumeroPedido((elementos[0].input as Record<string, unknown>).cabecera.numeroPedido as string);
-  for (const e of elementos) {
-    if (!e.input.cabecera.numeroPedido.trim()) {
-      throw new ErrorPedidoHoja("Falta el número de pedido.");
-    }
-    if (normalizarNumeroPedido(e.input.cabecera.numeroPedido) !== numeroNormalizado) {
-      throw new ErrorPedidoHoja("Todos los elementos de la hoja tienen que ser del mismo pedido.");
-    }
-  }
-
-  // Validar que no hay versiones repetidas
-  const versiones = new Set<string>();
-  for (const e of elementos) {
-    if (versiones.has(e.version)) {
-      throw new ErrorPedidoHoja("Hay dos elementos con la misma versión en el pedido.");
-    }
-    versiones.add(e.version);
-  }
-
-  // Ordenar por versión (como números si son numéricos)
-  const ordenados = [...elementos].sort((a, b) => {
-    const numA = Number(a.version);
-    const numB = Number(b.version);
-    if (Number.isFinite(numA) && Number.isFinite(numB)) {
-      return numA - numB;
-    }
-    return a.version.localeCompare(b.version);
-  });
-
-  // Validar completitud y calcular
-  const elementosHoja: ElementoHoja[] = [];
-  for (let i = 0; i < ordenados.length; i++) {
-    const e = ordenados[i];
+  const calculados = lista.map((e): ElementoHoja => {
     const error = errorPlanteamientoIncompleto(e.input);
-    if (error) {
-      const nombre = nombreElementoPedido(e.version, e.tipo);
-      throw new ErrorPedidoHoja(`${nombre}: ${error}`);
-    }
-
+    if (error) throw new ErrorPedidoHoja(`${nombreElementoPedido(e.version, e.tipo)}: ${error}`);
     if (e.tipo === "lona") {
-      const result = calcLona(e.input as LonaInput, params!);
-      elementosHoja.push({
-        version: e.version,
-        tipo: "lona",
-        input: e.input as LonaInput,
-        result,
-      });
-    } else if (e.tipo === "baqueton") {
-      const result = calcBaqueton(e.input as BaquetonInput, params!);
-      elementosHoja.push({
-        version: e.version,
-        tipo: "baqueton",
-        input: e.input as BaquetonInput,
-        result,
-      });
+      const input = e.input as LonaInput;
+      return { version: e.version, tipo: "lona", input, result: calcLona(input, params) };
     }
-  }
-
-  return {
-    elementos: elementosHoja,
-    params: params!,
-  };
+    const input = e.input as BaquetonInput;
+    return { version: e.version, tipo: "baqueton", input, result: calcBaqueton(input, params) };
+  });
+  return { elementos: calculados, params };
 }
