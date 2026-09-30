@@ -8,12 +8,12 @@ export const BASE_URL = process.env.TOLDOS_ISOLATED_URL || 'http://127.0.0.1:431
 // no se pone y el diálogo aparece (para capturarlo).
 export const DEFAULT_USER = 'IVÁN';
 
-export async function openApp(viewport = { width: 1600, height: 1000 }, { user = DEFAULT_USER } = {}) {
+export async function openApp(viewport = { width: 1600, height: 1000 }, { user = DEFAULT_USER, launchArgs = [] } = {}) {
   const health = await fetch(`${BASE_URL}/api/health`).then((r) => r.json());
   if (!health.simulationMode || health.fileWritesEnabled) {
     throw new Error(`La instancia de 4310 no está aislada: ${JSON.stringify(health)}`);
   }
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, args: launchArgs });
   // Con contexto propio: @axe-core/playwright no admite páginas creadas con browser.newPage().
   const context = await browser.newContext({ viewport });
   if (user) await context.addInitScript((name) => localStorage.setItem('toldos-testar-usuario', name), user);

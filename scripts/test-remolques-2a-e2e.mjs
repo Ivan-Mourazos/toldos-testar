@@ -15,6 +15,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { comprobarCaso, editor, teclearCaso } from './lib/remolques-e2e.mjs';
 
 const casos = JSON.parse(fs.readFileSync('src/remolques/__fixtures__/produccion-2026-09.json', 'utf8'));
 const lona = casos.find((c) => c.caso === 'lona-24');
@@ -28,129 +29,6 @@ assert.ok(lonaRepartida?.input.modoOllaos === 'REPARTIDOS' && baquetonRepartido?
 const PEDIDO_PRUEBA = 'AR.26.99999'; // no existe en RPS: no trae nada y los borradores cuelgan de él
 const CLIENTE_PRUEBA = 'TALLERES X';
 const PEDIDO_RPS = 'AR.26.04286'; // pedido real de remolques (3 líneas de lona), solo lectura
-
-const fmt = (n) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 });
-const norm = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-const CLAVES_OLLAOS = [['LATERALES ·', 'laterales'], ['ATRÁS ·', 'atras'], ['DELANTE ·', 'delante']];
-
-// Lo que la pantalla debe enseñar de cada caso, con el formato de la web (coma decimal).
-function esperado(c) {
-  const r = c.result;
-  if (c.tipo === 'lona') {
-    return {
-      'Lona hecha': r.lonaHecha.anchoAtras != null && r.lonaHecha.anchoAtras !== r.lonaHecha.ancho
-        ? `${fmt(r.lonaHecha.largo)} × ${fmt(r.lonaHecha.ancho)} del. / ${fmt(r.lonaHecha.anchoAtras)} tras.`
-        : `${fmt(r.lonaHecha.largo)} × ${fmt(r.lonaHecha.ancho)}`,
-      [`Contorno corte (+${fmt(r.ajusteContorno)})`]: r.contornoAjustado ? fmt(r.contornoAjustado) : '—',
-      'Paño delantero': `${fmt(r.panoDelantero.ancho)} × ${fmt(r.panoDelantero.alto)}`,
-      'Paño trasero': `${fmt(r.panoTrasero.ancho)} × ${fmt(r.panoTrasero.alto)}`,
-      'Paño contorno': r.panoContorno ? `${fmt(r.panoContorno.ancho)} × ${fmt(r.panoContorno.alto)}` : '—',
-      'Recoge delante': r.recogeDelanteTexto,
-      'Recoge atrás': r.recogeAtrasTexto,
-      'Metros de tela': `${fmt(r.metrosTela)} m`,
-    };
-  }
-  return {
-    'Paño único': `${fmt(r.panoUnico.largo)} × ${fmt(r.panoUnico.ancho)}`,
-    'Remolque hecho': `${fmt(r.remolqueHecho.largo)} × ${fmt(r.remolqueHecho.ancho)}`,
-    'Baquetón + costura': fmt(r.baquetonCostura),
-    'Esquinas del./tras.': `${fmt(r.esquinaDelante)} / ${fmt(r.esquinaDetras)}`,
-    'Delante': r.baquetonDelantero != null ? `${fmt(r.baquetonDelantero)} · NO EN LÍNEA` : 'EN LÍNEA',
-    'Detrás': r.baquetonTrasero != null ? `${fmt(r.baquetonTrasero)} · NO EN LÍNEA` : 'EN LÍNEA',
-    'Superficie': `${fmt(r.superficieM2)} m²/ud`,
-    'Metros de tela': `${fmt(r.metrosTela)} m`,
-  };
-}
-
-// RemolquesView sigue montada (oculta) tras la primera visita: todo se busca dentro de su editor.
-const editor = (page) => page.locator('section.rem-editor');
-
-async function elegir(page, ed, campo, textoOpcion) {
-  await ed.locator(`[data-campo="${campo}"]`).click();
-  const menu = page.locator('.select-options-portal');
-  await menu.waitFor();
-  const opciones = await menu.locator('[role=option]').allInnerTexts();
-  const i = opciones.findIndex((t) => norm(t) === norm(textoOpcion) || norm(t).startsWith(`${norm(textoOpcion)} `));
-  assert.ok(i >= 0, `hay opción «${textoOpcion}» en ${campo}: ${opciones.join(' | ')}`);
-  await menu.locator('[role=option]').nth(i).click();
-}
-const num = async (ed, campo, v) => { if (v) await ed.locator(`input[data-campo="${campo}"]`).fill(String(v)); };
-const siNo = (ed, nombre, v) =>
-  ed.getByRole('group', { name: nombre, exact: true }).getByRole('button', { name: v ? 'Sí' : 'No', exact: true }).click();
-const filaOllaos = (page, ed, nombre) =>
-  ed.locator('.rem-ollaos-fila').filter({ has: page.locator(`[aria-label^="${nombre}"]`) });
-
-async function teclearCaso(page, c) {
-  const ed = editor(page);
-  const i = c.input;
-  if (c.tipo === 'lona') {
-    await elegir(page, ed, 'tipoPerfil', i.tipoPerfil);
-    await elegir(page, ed, 'recogeDelante', i.recogeDelante);
-    await elegir(page, ed, 'recogeAtras', i.recogeAtras);
-    await siNo(ed, 'Bastilla enfundar', i.bastillaEnfundar);
-    for (const k of ['cantidad', 'largo', 'ancho', 'anchoAtras', 'altoDelante', 'altoAtras', 'aguas', 'radioCumbrera', 'radioHombro', 'chaflan', 'radioChaflanAbajo', 'radioChaflanArriba', 'radioEsquina']) await num(ed, k, i[k]);
-    await num(ed, 'contorno', i.contorno);
-    await siNo(ed, 'Ventana', i.ventana);
-    if (i.ventana) { await num(ed, 'ventanaAncho', i.ventanaAncho); await num(ed, 'ventanaAlto', i.ventanaAlto); }
-    await siNo(ed, 'Rotulación', i.rotulacion);
-  } else {
-    for (const k of ['cantidad', 'largo', 'ancho', 'baqueton']) await num(ed, k, i[k]);
-    for (const k of ['baquetonDelante', 'baquetonDetras']) {
-      if (i[k] === undefined) continue;
-      await elegir(page, ed, `${k}Modo`, i[k] === null ? 'En línea con lateral' : 'Medida diferente');
-      if (i[k] !== null) await num(ed, k, i[k]);
-    }
-    await elegir(page, ed, 'clienteEspecifico', i.clienteEspecifico);
-    await siNo(ed, 'Rotulación', i.rotulacion);
-  }
-  await ed.locator('input[data-campo="material"]').fill(i.material);
-  await page.keyboard.press('Escape');
-  if (i.modoOllaos === 'REPARTIDOS') {
-    await elegir(page, ed, 'modoOllaos', 'Repartidos automáticamente');
-    await num(ed, 'pasoOllaos', i.pasoOllaos);
-    await ed.locator('input[data-campo="primerOllao"]').fill(String(i.primerOllao));
-  } else {
-    await elegir(page, ed, 'modoOllaos', 'A medida');
-    for (const [nombre, clave] of CLAVES_OLLAOS) {
-      const fila = filaOllaos(page, ed, nombre);
-      for (let n = 0; n < i.ollaosManuales[clave].length; n++) await fila.locator('input').nth(n).fill(String(i.ollaosManuales[clave][n]));
-    }
-  }
-  await page.waitForTimeout(300);
-}
-
-// Compara lo que hay en pantalla con el `result` del caso: tarjetas (lona hecha, contorno de
-// corte, paños…), posiciones de ollaos, notas, dibujo y estado «Listo.».
-async function comprobarCaso(page, c, etapa) {
-  const ed = editor(page);
-  assert.match((await ed.locator('.rem-editor-estado').innerText()).trim(), /^Listo\./, `${c.caso} ${etapa}: el elemento está listo`);
-  const tarjetas = {};
-  for (const d of await ed.locator('.rem-dato').all()) tarjetas[(await d.locator('span').textContent()).trim()] = (await d.locator('strong').innerText()).trim();
-  assert.deepEqual(tarjetas, esperado(c), `${c.caso} ${etapa}: tarjetas de resultados`);
-  const reparto = {};
-  if (c.input.modoOllaos === 'REPARTIDOS') {
-    // La tabla del reparto automático: tres filas (laterales, atrás, delante), 12 huecos y el total.
-    const filas = await ed.locator('.rem-tabla tbody tr').all();
-    assert.equal(filas.length, 3, `${c.caso} ${etapa}: la tabla tiene tres filas`);
-    for (const [n, [, clave]] of CLAVES_OLLAOS.entries()) {
-      const celdas = await filas[n].locator('td').allInnerTexts();
-      const total = Number(celdas.pop());
-      reparto[clave] = celdas.filter((t) => t !== '–').map((t) => Number(t.replace(',', '.')));
-      assert.equal(total, reparto[clave].length, `${c.caso} ${etapa}: el total de ${clave} coincide con sus posiciones`);
-    }
-    assert.equal((await ed.locator('.rem-pie-ollaos').innerText()).trim(),
-      `Primer y último ollao a ${fmt(c.input.primerOllao)} cm del borde.`, `${c.caso} ${etapa}: pie del reparto`);
-  } else {
-    for (const [nombre, clave] of CLAVES_OLLAOS) {
-      const valores = await filaOllaos(page, ed, nombre).locator('input').evaluateAll((els) => els.map((e) => e.value));
-      reparto[clave] = valores.filter((v) => v !== '').map((v) => Number(v.replace(',', '.')));
-    }
-  }
-  assert.deepEqual(reparto, c.result.reparto, `${c.caso} ${etapa}: posiciones de ollaos`);
-  assert.deepEqual(await ed.locator('.rem-notas li').allInnerTexts(), c.result.notas, `${c.caso} ${etapa}: notas`);
-  assert.ok(await page.locator('.rem-dibujo svg').first().isVisible(), `${c.caso} ${etapa}: el dibujo se ve`);
-  console.log(`OK: ${c.caso} ${etapa}: ${Object.keys(tarjetas).length} tarjetas, ollaos ${JSON.stringify(reparto)}, notas ${c.result.notas.length}`);
-}
 
 const pestanas = (page) => page.locator('.rem-pestana-abrir');
 const rpsResponde = async (numero) => {
