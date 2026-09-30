@@ -2,7 +2,7 @@
 
 Preguntas para Iván (Oficina Técnica) y el taller. Aquí solo están las que hacen falta para que la web funcione y los pedidos salgan bien: qué pieza lleva cada toldo, cuántas y de qué medida. Cada pregunta dice qué hace la web mientras tanto y por qué importa. El código del final (Q-…) enlaza con el expediente del modelo.
 
-Actualizado el 30/09/2026: **el taller contestó 16 dudas** (Q-G01, Q-G02, Q-G03, Q-M03, Q-AG01, Q-AG02, Q-CO04, Q-CO05, Q-E02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR03, Q-PR04 y Q-A06). Quedan a medias Q-CO05 y Q-E02 (falta desde qué salida se pone el tubo de Ø70) y Q-CO04 (falta qué Maestria va según el tamaño). Están en [Contestadas el 30/09/2026](#contestadas-el-30092026), con lo que cambia en la web.
+Actualizado el 30/09/2026: **el taller contestó 16 dudas** (Q-G01, Q-G02, Q-G03, Q-M03, Q-AG01, Q-AG02, Q-CO04, Q-CO05, Q-E02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR03, Q-PR04 y Q-A06). Q-CO05 y Q-E02 se cierran: no hay medida, el taller decide y lo normal es el Ø78. Queda a medias Q-CO04 (qué Maestria va según el tamaño), que se saca de RPS igual que Q-E01. Están en [Contestadas el 30/09/2026](#contestadas-el-30092026), con lo que cambia en la web.
 
 Actualizado el 25/09/2026:
 
@@ -16,12 +16,11 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 ### Cortina
 
-- **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño. Falta la tabla: qué potencia para qué frente y caída. La web pone el Sunilus 15/17. Importa para reservar el motor correcto. <sub>Q-CO04</sub>
-- **Tubo de Ø70 en la cortina (y en la Electra, que va igual): ¿a partir de qué salida se pone el de Ø78?** El taller dijo el 30/09 que el de Ø70 se pone cuando la salida es poca, y que también depende del stock. Falta la medida. La web pone siempre el de Ø78. Importa porque cambian el tubo y sus casquillos. <sub>Q-CO05 · Q-E02</sub>
+- **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño; Iván no sabe la tabla y pide sacarla de RPS (en revisión). La web pone el Sunilus 15/17. Importa para reservar el motor correcto. <sub>Q-CO04</sub>
 
 ### Electra
 
-- **En la Electra sin cofre, ¿qué tapas lleva el perfil de carga, y de qué color?** Se han usado un juego de tapas (`TAPASLAMAXSC`) o dos tapas sueltas (`TAPAELITVERT`), casi siempre en negro aunque la estructura sea blanca. La web reserva el juego, en negro. Importa para reservar las tapas que se montan. <sub>Q-E01</sub>
+- **En la Electra sin cofre, ¿qué tapas lleva el perfil de carga, y de qué color?** Se han usado un juego de tapas (`TAPASLAMAXSC`) o dos tapas sueltas (`TAPAELITVERT`), casi siempre en negro aunque la estructura sea blanca. Iván (30/09): decidirlo según lo que se gasta (en revisión en RPS). La web reserva el juego, en negro. Importa para reservar las tapas que se montan. <sub>Q-E01</sub>
 
 ## Clásicos
 
@@ -67,8 +66,8 @@ Respuestas del taller, traídas por Iván. «Pendiente» quiere decir que la web
 | Q-CO04 | Motor de la cortina | Maestria; depende también del tamaño | A medias: falta la tabla de potencias (ver Cortina). Pendiente: comprobar en RPS los códigos de los Maestria |
 | Q-G03 | Galicia con tres brazos y 3,50 m de salida | Sí se hace | Pendiente: quitar el aviso de más de 3,25 con tres brazos |
 | Q-M03 | Monoblock de 7,10 a 7,25 m: barra de carga | Una barra; si falta poco, se empata con un resto | Ya lo hace: una barra de 7 m |
-| Q-CO05 | Tubo de Ø70 en la cortina | Con poca salida; también depende del stock | Sigue abierta: falta la medida (ver Cortina). La web pone Ø78 |
-| Q-E02 | Tubo de Ø70 en la Electra | Como en la cortina | Igual que Q-CO05 |
+| Q-CO05 | Tubo de Ø70 en la cortina | Con poca salida y según el stock, a criterio del taller; no hay medida. Lo normal es el de Ø78 | Ya lo hace: Ø78 |
+| Q-E02 | Tubo de Ø70 en la Electra | Como en la cortina | Ya lo hace: Ø78 |
 | Q-E03 | Puente abatible en la Electra con cofre | Lo lleva cuando va con tubo Univers sin guías (en la práctica, casi siempre) | Pendiente: reservarlo cuando va con tubo Univers sin guías (hoy solo con soporte universal) |
 | Q-D01 | Kit de montaje del cable de la Diana vertical | Se indica en el pedido | Pendiente: casilla en la tarjeta («Kit de montaje del cable»); se reserva solo si se marca |
 | Q-PR01 | Kit de motor del Punto Recto | Según el tubo, de 70 o de 80. Con tubo de 70 lleva `CORONACENMEC70` y `RUEDAMOTHI68` | Pendiente: con tubo de 70, esas dos piezas en vez de `ADAPTADORESTUBO70` y `CORONA LT5070` |
