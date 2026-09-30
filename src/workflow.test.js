@@ -178,6 +178,8 @@ describe('flujo de revisión y producción', () => {
       remolquesOficinaTecnicaDirectory: path.join(available, '{YYYY}')
     });
     expect(settings.remolquesOficinaTecnicaDirectory).toBe(path.join(available, '{YYYY}'));
+    expect(() => normalizeWorkflowSettings({ remolquesOficinaTecnicaDirectory: available }))
+      .toThrow('La carpeta de oficina técnica de remolques debe llevar {YYYY}.');
     expect(() => normalizeWorkflowSettings({ remolquesPlanteamientosDirectory: 'relativa' }))
       .toThrow('La carpeta de planteamientos de remolques debe ser una ruta absoluta válida en el sistema del servidor.');
     const result = await checkWorkflowDirectories(settings, { year: 2026 });

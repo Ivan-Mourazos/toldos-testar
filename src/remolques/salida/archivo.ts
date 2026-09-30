@@ -1,5 +1,5 @@
 import path from "node:path";
-import { access, copyFile, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { access, copyFile, link, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { anioDelPlanteamiento, nombrePdf } from "./nombre-pdf.ts";
 
@@ -53,6 +53,9 @@ export function destinosPdfRemolques(
   if (!raices.every((raiz) => path.isAbsolute(raiz))) {
     throw new ErrorArchivoPdf("Las carpetas de remolques deben ser rutas absolutas del servidor.", 400, "RUTA_NO_VALIDA");
   }
+  if (!oficina.includes("{YYYY}")) {
+    throw new ErrorArchivoPdf("La carpeta de oficina técnica de remolques debe llevar {YYYY}: el PDF va en <año>/PEDIDO.pdf.", 400, "RUTA_NO_VALIDA");
+  }
   const nombre = nombrePdf(numeroPedido);
   if (!/^[A-Z0-9]+-10\.pdf$/.test(nombre) || nombre.startsWith("SIN-PEDIDO")) {
     throw new ErrorArchivoPdf("El número de pedido no es válido para archivar el PDF.", 400, "PEDIDO_NO_VALIDO");
@@ -75,6 +78,29 @@ async function existe(fichero: string): Promise<boolean> {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
     throw error;
+  }
+}
+
+/** Errores de link que significan «este sistema de archivos no admite enlaces duros» (p. ej. CIFS). */
+const LINK_NO_SOPORTADO = new Set(["EPERM", "ENOTSUP", "EOPNOTSUPP", "EXDEV", "EINVAL", "ENOSYS"]);
+
+/**
+ * Publica sin sustituir: link es atómico y falla con EEXIST si el destino ya existe (un archivo
+ * que haya aparecido desde la comprobación). Si el sistema no admite enlaces, se copia con
+ * COPYFILE_EXCL y se comprueba lo copiado. El temporal lo borra quien llama.
+ */
+async function publicarSinSustituir(temporal: string, destino: string, contenido: Uint8Array): Promise<void> {
+  try {
+    await link(temporal, destino);
+    return;
+  } catch (error) {
+    if (!LINK_NO_SOPORTADO.has((error as NodeJS.ErrnoException).code ?? "")) throw error;
+  }
+  await copyFile(temporal, destino, constants.COPYFILE_EXCL);
+  if (!Buffer.from(await readFile(destino)).equals(Buffer.from(contenido))) {
+    // Se publicó mal: se quita aquí mismo, que quien llama aún no lo tiene en su lista.
+    await rm(destino, { force: true });
+    throw new Error(`La copia del PDF no coincide: ${destino}`);
   }
 }
 
@@ -109,24 +135,19 @@ export async function archivarPdfRemolques(
   const copias = destinos.map((d) => `${d}.${marca}.bak`);
   const escritos: number[] = [];
   try {
-    // Preparar ambas copias antes de tocar los PDF publicados.
+    // Preparar ambas copias y comprobar sus bytes antes de tocar los PDF publicados: si algo no
+    // cuadra, no se ha publicado nada.
     for (let i = 0; i < destinos.length; i++) {
       await writeFile(temporales[i], contenido, { flag: "wx" });
+      if (!Buffer.from(await readFile(temporales[i])).equals(Buffer.from(contenido))) {
+        throw new Error(`La copia temporal del PDF no coincide: ${temporales[i]}`);
+      }
       if (anteriores[i]) await copyFile(destinos[i], copias[i], constants.COPYFILE_EXCL);
     }
     for (let i = 0; i < destinos.length; i++) {
-      if (opciones.sustituir) {
-        await rename(temporales[i], destinos[i]);
-      } else {
-        // No sobrescribir un fichero que haya aparecido desde la comprobación.
-        await copyFile(temporales[i], destinos[i], constants.COPYFILE_EXCL);
-      }
+      if (opciones.sustituir) await rename(temporales[i], destinos[i]);
+      else await publicarSinSustituir(temporales[i], destinos[i], contenido);
       escritos.push(i);
-    }
-    for (const destino of destinos) {
-      if (!Buffer.from(await readFile(destino)).equals(Buffer.from(contenido))) {
-        throw new Error(`La copia del PDF no coincide: ${destino}`);
-      }
     }
   } catch (error) {
     const fallos: string[] = [];

@@ -105,7 +105,7 @@ describe("servicio de PDF con Chromium", () => {
       throw new Error("browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium-1234/chrome");
     };
     const servicio = crearServicioPdf({ urlHoja, lanzar });
-    await expect(servicio.generar("a")).rejects.toThrow("Falta el Chromium de la hoja de taller en el servidor. Instálalo con: pnpm exec playwright install chromium");
+    await expect(servicio.generar("a")).rejects.toThrow("Falta el Chromium de la hoja de taller en el servidor. Instálalo con: PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium");
     await expect(servicio.generar("b")).rejects.toThrow(ErrorSalidaPdf);
     expect(intentos).toBe(2);
     expect(mensajeFalloLanzar(new Error("sin memoria"))).toBe("No se pudo abrir Chromium para hacer el PDF: sin memoria");

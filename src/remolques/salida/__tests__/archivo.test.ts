@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { rename } from "node:fs/promises";
+import { link, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { archivarPdfRemolques, destinosPdfRemolques, MENSAJE_PDF_EXISTENTE, raizPlantilla } from "../archivo.ts";
 
 vi.mock("node:fs/promises", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs/promises")>();
-  return { ...actual, rename: vi.fn(actual.rename) };
+  return { ...actual, rename: vi.fn(actual.rename), link: vi.fn(actual.link), writeFile: vi.fn(actual.writeFile) };
 });
 
 // Nada fuera de tmp/ del repositorio en las pruebas.
@@ -32,6 +32,8 @@ function preparar() {
 }
 afterEach(() => {
   vi.mocked(rename).mockReset();
+  vi.mocked(link).mockReset();
+  vi.mocked(writeFile).mockReset();
   for (const d of temporales.splice(0)) rmSync(d, { recursive: true, force: true });
 });
 const PDF = new Uint8Array([37, 80, 68, 70, 45, 49, 46, 55]);
@@ -101,6 +103,52 @@ describe("archivo del PDF en dos carpetas", () => {
     const hecho = await archivarPdfRemolques(PDF, PEDIDO, carpetas, { sustituir: true });
     expect(hecho.sustituido).toBe(true);
     for (const d of destinos) expect(readFileSync(d)).toEqual(Buffer.from(PDF));
+  });
+
+  it("si el destino aparece justo antes de publicar (EEXIST), 409 y no queda nada nuevo", async () => {
+    const { planteamientos, oficina, carpetas } = preparar();
+    const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
+    // La primera copia se enlaza bien; la segunda se la ha adelantado otro proceso.
+    vi.mocked(link)
+      .mockImplementationOnce(actual.link)
+      .mockRejectedValueOnce(Object.assign(new Error("ya existe"), { code: "EEXIST" }));
+    await expect(archivarPdfRemolques(PDF, PEDIDO, carpetas)).rejects.toMatchObject({ statusCode: 409, codigo: "PDF_EXISTENTE" });
+    expect(readdirSync(planteamientos)).toEqual([]);
+    expect(readdirSync(path.join(oficina, "2026"))).toEqual([]);
+  });
+
+  it("si el sistema de archivos no admite enlaces, copia y comprueba", async () => {
+    const { carpetas } = preparar();
+    vi.mocked(link).mockRejectedValue(Object.assign(new Error("no soportado"), { code: "EPERM" }));
+    const hecho = await archivarPdfRemolques(PDF, PEDIDO, carpetas);
+    expect(vi.mocked(link)).toHaveBeenCalledTimes(2);
+    for (const d of hecho.destinos) expect(readFileSync(d)).toEqual(Buffer.from(PDF));
+    expect(readdirSync(path.dirname(hecho.destinos[0]))).toEqual(["AR2603632-10.pdf"]);
+  });
+
+  it("si el temporal no tiene los bytes esperados, no publica nada", async () => {
+    const { planteamientos, oficina, carpetas } = preparar();
+    const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
+    vi.mocked(writeFile).mockImplementationOnce((f, _d, o) => actual.writeFile(f, "truncado", o as never));
+    await expect(archivarPdfRemolques(PDF, PEDIDO, carpetas)).rejects.toThrow("no coincide");
+    expect(vi.mocked(link)).not.toHaveBeenCalled();
+    expect(readdirSync(planteamientos)).toEqual([]);
+    expect(readdirSync(path.join(oficina, "2026"))).toEqual([]);
+  });
+
+  it("un número de pedido hostil no sale de las carpetas de archivo", async () => {
+    const { planteamientos, oficina, carpetas } = preparar();
+    for (const numeroPedido of ["../x", "AR/..", "..\..\AR2603632", "AR26/../../03632"]) {
+      const { destinos } = destinosPdfRemolques(numeroPedido, "", carpetas) as { destinos: string[] };
+      expect(path.dirname(destinos[0])).toBe(planteamientos);
+      expect(path.dirname(path.dirname(destinos[1]))).toBe(oficina);
+    }
+  });
+
+  it("rechaza una plantilla de oficina técnica sin {YYYY}", async () => {
+    const { oficina, carpetas } = preparar();
+    await expect(archivarPdfRemolques(PDF, PEDIDO, { ...carpetas, remolquesOficinaTecnicaDirectory: oficina }))
+      .rejects.toMatchObject({ statusCode: 400, codigo: "RUTA_NO_VALIDA" });
   });
 
   it("si falla la segunda copia, deja la primera como estaba", async () => {

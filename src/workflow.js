@@ -50,6 +50,9 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
       throw new Error(`La ${label} debe ser una ruta absoluta válida en el sistema del servidor.`);
     }
   }
+  if (settings.remolquesOficinaTecnicaDirectory && !settings.remolquesOficinaTecnicaDirectory.includes('{YYYY}')) {
+    throw new Error('La carpeta de oficina técnica de remolques debe llevar {YYYY}.');
+  }
 
   return settings;
 }

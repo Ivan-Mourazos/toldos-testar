@@ -1,4 +1,5 @@
 import { chromium, type Browser } from "playwright-core";
+import { ORDEN_INSTALAR_CHROMIUM } from "../../../scripts/lib/deploy-remolques.mjs";
 
 // Chromium sin ventana para la hoja de taller de remolques (fase 4). Se abre una vez y se
 // reutiliza (arrancarlo cuesta segundos); los PDF se hacen de uno en uno, con un tiempo máximo y
@@ -70,7 +71,7 @@ export const primeraLinea = (error: unknown) => texto(error).split("\n")[0].trim
 export function mensajeFalloLanzar(error: unknown): string {
   const detalle = texto(error);
   return /Executable doesn't exist|playwright install/i.test(detalle)
-    ? "Falta el Chromium de la hoja de taller en el servidor. Instálalo con: pnpm exec playwright install chromium"
+    ? `Falta el Chromium de la hoja de taller en el servidor. Instálalo con: ${ORDEN_INSTALAR_CHROMIUM}`
     : `No se pudo abrir Chromium para hacer el PDF: ${primeraLinea(error)}`;
 }
 
