@@ -207,3 +207,27 @@ describe('PUNTO RECTO · brazos que existen en RPS (22/09/2026)', () => {
     }
   });
 });
+
+describe('PUNTO RECTO · respuestas del taller del 30/09/2026', () => {
+  // Q-PR01: con tubo de 70 el kit de motor es la corona centrada y la rueda Hi68 (la
+  // pareja que va en todos los modelos con Ø70 desde 2023), no el adaptador LT50.
+  test('motor con tubo Ø70 reserva CORONACENMEC70 y RUEDAMOTHI68', () => {
+    const ofBlock = order({ device: 'MOTOR', crankHeight: null, machineSide: 'M.F.DER', sensor: 'SIN SENSOR' }).ofs[0];
+    expect(ofBlock.calculation).toMatchObject({ valid: true, rollSystem: 'P701' });
+    const codes = ofBlock.materials.map(({ code }) => code);
+    expect(codes).toEqual(expect.arrayContaining(['CORONACENMEC70', 'RUEDAMOTHI68']));
+    expect(codes).not.toContain('ADAPTADORESTUBO70');
+    expect(codes).not.toContain('CORONA LT5070');
+    const despiece = ofBlock.despiece.rows.map((row) => row.reference);
+    expect(despiece).toEqual(expect.arrayContaining(['CORONACENMEC70', 'RUEDAMOTHI68']));
+    expect(despiece).not.toContain('ADAPTADORESTUBO70');
+  });
+
+  // Q-PR04: la salida de 1,60 es una excepción sin stock. Se sigue ofreciendo, con aviso.
+  test('la salida de 160 es válida pero avisa de que es una excepción sin stock', () => {
+    const result = order({ projection: 160 });
+    expect(result.ofs[0].calculation.valid).toBe(true);
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({ level: 'warn', message: expect.stringContaining('160 cm de salida es una excepción') }));
+    expect(order({ projection: 140 }).diagnostics.some((item) => /es una excepción/.test(item.message))).toBe(false);
+  });
+});

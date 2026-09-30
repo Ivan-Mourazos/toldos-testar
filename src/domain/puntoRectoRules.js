@@ -126,6 +126,15 @@ export function calculatePuntoRecto({ order, awning }) {
   } else if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de PUNTO RECTO modificadas.` });
   }
+  // Taller, 30/09/2026 (Q-PR04): la salida de 1,60 m es una excepción y no hay stock. Se
+  // sigue ofreciendo, con aviso.
+  if (Number(awning.projection) === 160) {
+    diagnostics.push({
+      level: 'warn',
+      awningId: awning.id,
+      message: `PUNTO RECTO de 160 cm de salida es una excepción: no hay stock. Confirmar con el taller antes de fabricar.`
+    });
+  }
   if (verticalDrop) {
     diagnostics.push({
       level: 'warn',
@@ -185,8 +194,8 @@ function buildMaterials(context) {
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
     materials.push(
-      line(rollSystem === 'P801' ? 'RUEDAMOT801MEC' : 'ADAPTADORESTUBO70', units, rollSystem === 'P801' ? 'RUEDA MOTRIZ A P-801 MECANIZADA' : 'RUEDA MOTRIZ LT50'),
-      line(rollSystem === 'P801' ? 'CORONALT5078' : 'CORONA LT5070', units, rollSystem === 'P801' ? 'CORONA ADAPTADA LT50 TUBO Ø78' : 'CORONA LT50 ADAPTADA Ø70'),
+      line(motorWheel(rollSystem).code, units, motorWheel(rollSystem).description),
+      line(motorCrown(rollSystem).code, units, motorCrown(rollSystem).description),
       line(`SUNILUSIO${motorPower.split('/')[0]}//17`, units, `MOTOR SOMFY SUNILUS ${motorPower} IO`),
       line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
       { ...line(remote.code, units, remote.description), aggregation: 'max' }
@@ -229,8 +238,8 @@ function buildDespiece(context) {
   push(7, 'JGO BRAZOS PRT 07', armCode, armCount * units, awning.projection);
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
-    push(8, rollSystem === 'P801' ? 'RUEDA MOTRIZ A P-801 MECANIZADA' : 'RUEDA MOTRIZ LT50', rollSystem === 'P801' ? 'RUEDAMOT801MEC' : 'ADAPTADORESTUBO70', units);
-    push(9, rollSystem === 'P801' ? 'CORONA ADAPTADA LT50 TUBO Ø78' : 'CORONA LT50 ADAPTADA Ø70', rollSystem === 'P801' ? 'CORONALT5078' : 'CORONA LT5070', units);
+    push(8, motorWheel(rollSystem).description, motorWheel(rollSystem).code, units);
+    push(9, motorCrown(rollSystem).description, motorCrown(rollSystem).code, units);
     push(10, `MOTOR SOMFY SUNILUS ${motorPower} IO`, `SUNILUSIO${motorPower.split('/')[0]}//17`, units);
     push(11, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);
     push(21, remote.description, remote.code, units);
@@ -292,4 +301,20 @@ function round2(value) {
 
 function round1(value) {
   return Math.round(Number(value) * 10) / 10;
+}
+
+// Kit de motor según el tubo (taller, 30/09/2026, Q-PR01): con el de 80, la rueda P-801
+// mecanizada y la corona LT50 Ø78; con el de 70, la corona centrada mecanizada y la rueda
+// centrada Hi68, la pareja que va en todos los modelos con Ø70 desde 2023. Antes, con el
+// de 70 se reservaban ADAPTADORESTUBO70 y CORONA LT5070, que no se consumen.
+function motorWheel(rollSystem) {
+  return rollSystem === 'P801'
+    ? { code: 'RUEDAMOT801MEC', description: 'RUEDA MOTRIZ A P-801 MECANIZADA' }
+    : { code: 'RUEDAMOTHI68', description: 'RUEDA MOTRIZ CENTRADA HIPRO Ø68' };
+}
+
+function motorCrown(rollSystem) {
+  return rollSystem === 'P801'
+    ? { code: 'CORONALT5078', description: 'CORONA ADAPTADA LT50 TUBO Ø78' }
+    : { code: 'CORONACENMEC70', description: 'CORONA CENTRADA MECANIZADA TUBO Ø70' };
 }

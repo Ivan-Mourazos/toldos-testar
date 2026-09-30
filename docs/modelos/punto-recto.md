@@ -15,7 +15,7 @@ No hay manual de fabricación del PRT-07 en Oficina Técnica: solo la tarifa nac
 | --- | --- |
 | Perfil Univers 280 en vez del 270 | Consumo real (10 OF) y maestro de RPS. **La tarifa sí vende el Univers-270** (4, 5, 6 y 7 m, pág. 424), pero en RPS solo existe el blanco de 700 y no se consume. **Q-PR03** |
 | Brazos vigentes y de baja por lacado | Maestro de RPS con `InactiveDate`, más la tarifa: vende el PRT-07 de 0,70 a 1,40 m (pág. 434) |
-| Salida 160 | Existe en RPS en blanco, pero **no está en la tarifa**. **Q-PR04** |
+| Salida 160 | Existe en RPS en blanco, pero **no está en la tarifa**. Taller, 30/09/2026 (**Q-PR04**): es una excepción y no hay stock; se sigue ofreciendo, con aviso en la tarjeta |
 | Tapones, varillas, manivela, casquillo y kit de motor | Consumo real de 19 OF |
 | Medidas | Los libros de 2026 |
 | Tubo Ø70 sin barra de 400 | Maestro de RPS: de baja desde 2021 |
@@ -34,6 +34,7 @@ No hay manual de fabricación del PRT-07 en Oficina Técnica: solo la tarifa nac
 | Manivela | 5 OF | Solo en el despiece, sin código | Se reserva |
 | Casquillo de máquina | Eje 50 en 10 OF; eje 63 en 6 | Siempre eje 63 | Eje 50 (**Q-PR02**) |
 | Motor Ø78: rueda y corona | `RUEDAMOT801MEC` y `CORONALT5078` | `RUEDAMOT78` y `CORONALT6078`, que no se consumen | Cambiados, como en Cortina |
+| Motor Ø70: rueda y corona | `CORONACENMEC70` + `RUEDAMOTHI68`, juntas en todos los modelos con Ø70 desde 2023 (Ámbar 24 OF, Cuarzo 17, Cortina 5, Antica 5, Punto Recto 1) | `ADAPTADORESTUBO70` (0 imputaciones desde 2023) y `CORONA LT5070` (ninguna OF de Punto Recto) | Corona centrada y rueda Hi68 (taller, 30/09/2026, **Q-PR01**) |
 | Brazos PRT-07 | Según color y salida | Código compuesto con cualquier salida | Solo los que existen y no están de baja |
 
 `pnpm validate:reserva "PUNTO RECTO"` después: solo queda el casquillo de eje 63 (Q-PR02). Ya no sobra nada salvo piezas de las variantes que no se dieron en esas OF.
@@ -66,8 +67,8 @@ Revisado a 1280×720 y 1600 (`output/modelos/punto-recto/`): la tarjeta mantiene
 
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
-| Q-PR01 | Con tubo Ø70 y motor se reservan `ADAPTADORESTUBO70` y `CORONA LT5070`, que existen pero no se han consumido en estas OF (solo hubo dos motores, los dos con Ø78). ¿Son las piezas correctas? | Kit de motor con tubo Ø70 |
-| Q-PR02 | El casquillo de máquina: eje 50 en 10 OF y eje 63 en 6. Se reserva el de 50. ¿De qué depende? (la misma duda que en Cortina) | Casquillo de máquina |
+| Q-PR01 | **Resuelta (taller, 30/09/2026):** según el tubo, de 70 o de 80; con el de 70, `CORONACENMEC70` y `RUEDAMOTHI68` | Hecho: esas dos en vez de `ADAPTADORESTUBO70` y `CORONA LT5070` |
+| Q-PR02 | **Contestada (taller, 30/09/2026):** máquina exterior, casquillo largo (eje 63); interior, corto (eje 50). El Punto Recto solo sabe «máquina», no si es interior o exterior: sigue el eje 50 hasta que Iván diga si se pregunta en la tarjeta | Casquillo de máquina (pendiente) |
 | Q-PR03 | ¿El Punto Recto lleva perfil Univers 280 o 270? La tarifa vende los dos; en RPS el 270 solo existe en blanco de 700 y lo consumido es el 280 | Perfil de carga |
-| Q-PR04 | La salida de 160 cm existe en RPS (blanco) pero no está en la tarifa 2026, que llega a 1,40 m. ¿Se sigue ofreciendo? | Salidas del formulario |
+| Q-PR04 | **Resuelta (taller, 30/09/2026):** es una excepción; no hay stock | Hecho: se sigue ofreciendo la de 160, con aviso en la tarjeta de que es una excepción sin stock |
 
