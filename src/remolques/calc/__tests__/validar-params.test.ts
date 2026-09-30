@@ -25,6 +25,20 @@ describe("normalizarParams", () => {
     const p = normalizarParams({ recogidas: [DEFAULT_PARAMS.recogidas[0], propia] });
     expect(p.recogidas.filter((r) => r.nombre === "GANCHOS CORAZON")).toEqual([propia]);
   });
+  it("la recogida de HPL guardada sin la marca del paño trasero la recibe, sin tocar sus medidas ni las demás", () => {
+    const hplGuardada = { nombre: "PUENTES HIJOS DE PEDRO LOPEZ", delante: 44, atras: 43, lateralSoloAtras: 12, lateralSoloDelante: 8 };
+    const goma = { nombre: "GOMA", delante: 30, atras: 30, lateralSoloAtras: 0, lateralSoloDelante: 0 };
+    const p = normalizarParams({ recogidas: [DEFAULT_PARAMS.recogidas[0], goma, hplGuardada] });
+    expect(p.recogidas.find((r) => r.nombre === "PUENTES HIJOS DE PEDRO LOPEZ"))
+      .toEqual({ ...hplGuardada, panoTraseroConAnchoDelante: true });
+    expect(p.recogidas.find((r) => r.nombre === "GOMA")).toEqual(goma);
+    expect(p.recogidas.filter((r) => r.panoTraseroConAnchoDelante)).toHaveLength(1);
+  });
+  it("si la recogida de HPL se guardó con la marca en «no», se respeta", () => {
+    const hpl = { ...DEFAULT_PARAMS.recogidas.at(-1)!, panoTraseroConAnchoDelante: false };
+    const p = normalizarParams({ recogidas: [DEFAULT_PARAMS.recogidas[0], hpl] });
+    expect(p.recogidas.find((r) => r.nombre === hpl.nombre)?.panoTraseroConAnchoDelante).toBe(false);
+  });
   it("con null devuelve los valores por defecto", () => {
     expect(normalizarParams(null)).toEqual(DEFAULT_PARAMS);
   });
@@ -45,6 +59,10 @@ describe("validarParams", () => {
   it("exige la recogida NO y el cliente GENERAL", () => {
     expect(validarParams({ ...DEFAULT_PARAMS, recogidas: DEFAULT_PARAMS.recogidas.slice(1) }).ok).toBe(false);
     expect(validarParams({ ...DEFAULT_PARAMS, clientesBaqueton: [] }).ok).toBe(false);
+  });
+  it("rechaza una marca del paño trasero que no sea sí o no", () => {
+    const rotas = [{ ...DEFAULT_PARAMS.recogidas[0], panoTraseroConAnchoDelante: "si" }];
+    expect(validarParams({ ...DEFAULT_PARAMS, recogidas: rotas }).ok).toBe(false);
   });
   it("rechaza recogidas con demasías no numéricas", () => {
     const rotas = [{ ...DEFAULT_PARAMS.recogidas[0], delante: null }];

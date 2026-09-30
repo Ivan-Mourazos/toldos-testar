@@ -12,6 +12,21 @@ const CAMPOS_NUMERICOS = [
 /** Recogidas que el código añadió después de que hubiera Parámetros guardados. */
 const RECOGIDAS_NUEVAS = ["GANCHOS CORAZON"];
 
+/** Marcas que el código añadió a una recogida que ya existía, con el valor que le da. */
+const MARCAS_NUEVAS: Array<{ nombre: string; marca: "panoTraseroConAnchoDelante"; valor: boolean }> = [
+  { nombre: "PUENTES HIJOS DE PEDRO LOPEZ", marca: "panoTraseroConAnchoDelante", valor: true },
+];
+
+/** Pone a una recogida guardada las marcas nuevas que no trae; si ya las trae (sí o no), manda la guardada. */
+function conMarcasNuevas(recogida: Recogida): Recogida {
+  const faltan = MARCAS_NUEVAS.filter(
+    (m) => recogida?.nombre === m.nombre && recogida[m.marca] === undefined,
+  );
+  return faltan.length === 0
+    ? recogida
+    : { ...recogida, ...Object.fromEntries(faltan.map((m) => [m.marca, m.valor])) };
+}
+
 /** Lectura tolerante: completa con DEFAULT_PARAMS lo que falte en datos guardados antiguos. */
 export function normalizarParams(bruto: unknown): CalcParams {
   const p = (typeof bruto === "object" && bruto !== null ? bruto : {}) as Record<string, unknown>;
@@ -27,7 +42,9 @@ export function normalizarParams(bruto: unknown): CalcParams {
     const faltan = DEFAULT_PARAMS.recogidas.filter(
       (r) => RECOGIDAS_NUEVAS.includes(r.nombre) && !guardadas.some((g) => g?.nombre === r.nombre),
     );
-    resultado.recogidas = [...guardadas, ...faltan];
+    // Igual con una marca nueva de una recogida que ya estaba (el paño trasero de HPL, 30/09/2026):
+    // se le pone la del código solo si no la trae, y sus medidas guardadas no se tocan.
+    resultado.recogidas = [...guardadas.map(conMarcasNuevas), ...faltan];
   }
   if (Array.isArray(p.clientesBaqueton) && p.clientesBaqueton.length > 0) {
     resultado.clientesBaqueton = p.clientesBaqueton as ClienteBaqueton[];
@@ -80,6 +97,9 @@ export function validarParams(
         if (!esNumero(rec?.[campo])) {
           errores.push(`recogida «${rec?.nombre ?? i + 1}»: «${campo}» debe ser un número`);
         }
+      }
+      if (rec?.panoTraseroConAnchoDelante !== undefined && typeof rec.panoTraseroConAnchoDelante !== "boolean") {
+        errores.push(`recogida «${rec?.nombre ?? i + 1}»: «panoTraseroConAnchoDelante» debe ser sí o no`);
       }
     });
   }

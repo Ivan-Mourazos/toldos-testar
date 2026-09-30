@@ -18,6 +18,20 @@ lateral cuando solo lleva cierre atrás o delante).
 | PUENTES (ESVA, LATERALES, HIJOS DE PEDRO LOPEZ) | Cierre con **puentes**. En el de Hijos de Pedro López (foto `PUENTES 1.jpg`): **solapa cosida en vertical** en la esquina y, sobre ella, **puentes metálicos** (anilla rectangular sobre placa ovalada) repartidos a lo alto, por los que pasa una **cincha blanca de plástico**; arriba acaba en una presilla cosida y abajo sale suelta para abrochar. **Cada cuánto va un puente**: el taller lo hace a su criterio; la web los separa con el **paso de los ollaos** del elemento (35 cm por defecto), con 10 cm de margen arriba y abajo (Iván, 30/09/2026: «pon una medida como ollaos y listo»). |
 | GANCHOS CORAZON | Foto `REMOLQUE CON GANCHOS CORAZON 1.jpg`: **dos filas de ganchos metálicos con forma de corazón/mariposa**, remachados, alternados a un lado y otro de la costura, y un **cordón elástico blanco** en zigzag de uno a otro, anudado abajo. Es una recogida más del formulario («Ganchos corazón») desde el 30/09/2026. Sus medidas son **provisionales, las de la goma** (27 delante y 27 atrás, sin extra del lateral) hasta que el taller dé las suyas; los Parámetros guardados antes la reciben sola. En el dibujo: la oreja dobla sobre el lateral; una fila de ganchos va sobre la oreja, a 3 cm de su borde libre, y la otra sobre el lateral, a 3 cm del borde; cada fila lleva un gancho cada **paso de los ollaos** y las dos van desfasadas medio paso, así que se alternan a lo alto (10 cm de margen arriba y abajo). El cordón sube en zigzag de uno a otro y se anuda abajo, en el borde de la oreja, con un lazo colgando. |
 
+## Remolques más anchos detrás (sesgados)
+
+Contado por Iván el 30/09/2026 con el CAD de un pedido de Hijos de Pedro López (HPL).
+
+- **Los remolques de HPL son 1,5 cm más anchos detrás.** Ejemplo: 130 delante y 131,5 detrás,
+  con sus puentes delante y detrás. La lona hecha sí sigue al remolque (131 delante, 132,5
+  detrás) y los ollaos se reparten sobre cada ancho: delante 2,5 · 34 · 65,5 · 97 · 128,5 y
+  detrás 2,5 · 34,4 · 66,3 · 98,1 · 130 (paso 35; el reparto de la web da exactamente esos).
+- **Paño trasero de HPL con el ancho de delante**: los 42,5 de su recogida ya llevan el 1,5, así
+  que el paño trasero es 130 + 42,5 = **172,5**, igual que el delantero (no 131,5 + 42,5 = 174).
+  Es una marca de la recogida («PUENTES HIJOS DE PEDRO LOPEZ», `panoTraseroConAnchoDelante` en
+  Parámetros); las demás recogidas miden el paño trasero con el ancho de detrás. Los Parámetros
+  guardados antes de esta marca la reciben al leerlos, sin tocar sus medidas.
+
 ## Bastilla para enfundar
 
 Se añaden **5 cm más por cada lado** para hacer un **dobladillo de 5 cm**, que deja el borde

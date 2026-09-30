@@ -4,6 +4,10 @@ export interface Recogida {
   atras: number;
   lateralSoloAtras: number;
   lateralSoloDelante: number;
+  /** El paño trasero se mide con el ancho de DELANTE aunque el remolque sea más ancho detrás:
+   *  su demasía ya lleva esa diferencia. Solo los puentes de Hijos de Pedro López (CAD de
+   *  Iván, 30/09/2026: 130 delante, 131,5 detrás y paño trasero 130 + 42,5 = 172,5). */
+  panoTraseroConAnchoDelante?: boolean;
 }
 
 export interface ClienteBaqueton {
@@ -101,7 +105,9 @@ export const DEFAULT_PARAMS: CalcParams = {
     r("VELCRO", 27, 27),
     r("PUENTES ESVA", 21, 21, 19, 19),
     r("PUENTES LATERALES", 41, 21, 9, 9),
-    r("PUENTES HIJOS DE PEDRO LOPEZ", 42.5, 42.5, 11.5, 9),
+    // Sus remolques son 1,5 cm más anchos detrás y los 42,5 ya lo incluyen: el paño trasero
+    // se mide con el ancho de delante (CAD de Iván, 30/09/2026).
+    { ...r("PUENTES HIJOS DE PEDRO LOPEZ", 42.5, 42.5, 11.5, 9), panoTraseroConAnchoDelante: true },
   ],
   demasiaAlto: 4.5,
   demasiaContornoNormal: 3,

@@ -119,8 +119,11 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
     etiqueta: "PAÑO DELANTERO",
   };
   const demasiaTrasera = USAR_COLUMNA_ATRAS ? recAtr.atras : recAtr.delante;
+  // Hay recogidas cuya demasía ya cubre lo que el remolque crece detrás (los puentes de HPL,
+  // CAD de Iván del 30/09/2026): su paño trasero se mide con el ancho de delante.
+  const anchoPanoTrasero = recAtr.panoTraseroConAnchoDelante ? input.ancho : anchoAtras;
   const panoTrasero: Pano = {
-    ancho: r1(anchoAtras + demasiaTrasera),
+    ancho: r1(anchoPanoTrasero + demasiaTrasera),
     alto: r1(altoAtras + params.demasiaAlto),
     etiqueta: "PAÑO TRASERO",
   };

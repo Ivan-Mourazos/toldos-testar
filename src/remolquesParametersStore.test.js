@@ -39,6 +39,13 @@ describe('almacén de parámetros de remolques', () => {
     expect(recogidas.at(-1)).toEqual(DEFAULT_PARAMS.recogidas.find((r) => r.nombre === 'GANCHOS CORAZON'));
   });
 
+  it('un fichero guardado antes de la marca del paño trasero de HPL la recibe sin cambiar sus medidas', async () => {
+    const guardadas = DEFAULT_PARAMS.recogidas.map(({ panoTraseroConAnchoDelante: _marca, ...r }) => r);
+    await writeFile(file(), JSON.stringify({ recogidas: guardadas }), 'utf8');
+    const { recogidas } = await store().get();
+    expect(recogidas).toEqual(DEFAULT_PARAMS.recogidas);
+  });
+
   it('con un fichero roto vale el del código y se avisa en el log', async () => {
     await writeFile(file(), '{ esto no es json', 'utf8');
     expect(await store().get()).toEqual(DEFAULT_PARAMS);

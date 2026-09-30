@@ -154,3 +154,43 @@ describe("sin modo de ollaos elegido", () => {
     expect(calcLona(elegida, DEFAULT_PARAMS).reparto.laterales.length).toBeGreaterThan(0);
   });
 });
+
+// Pedido de Hijos de Pedro López con el CAD de Iván (30/09/2026): el remolque es 1,5 cm más
+// ancho detrás (130 delante, 131,5 detrás) y recoge con sus puentes delante y detrás.
+describe("calcLona — Hijos de Pedro López, 1,5 cm más ancho detrás (CAD de Iván)", () => {
+  const hpl: LonaInput = {
+    ...base,
+    largo: 211, ancho: 130, anchoAtras: 131.5,
+    tipoPerfil: "TIPO 01", aguas: 0,
+    recogeDelante: "PUENTES HIJOS DE PEDRO LOPEZ", recogeAtras: "PUENTES HIJOS DE PEDRO LOPEZ",
+    modoOllaos: "REPARTIDOS", pasoOllaos: 35, primerOllao: 2.5,
+  };
+  const res = calcLona(hpl, DEFAULT_PARAMS);
+
+  it("la recogida de HPL mide el paño trasero con el ancho de delante", () => {
+    expect(DEFAULT_PARAMS.recogidas.filter((r) => r.panoTraseroConAnchoDelante).map((r) => r.nombre))
+      .toEqual(["PUENTES HIJOS DE PEDRO LOPEZ"]);
+  });
+  it("paño delantero 172,5 y paño trasero también 172,5 (no 174): sus 42,5 ya llevan el 1,5", () => {
+    expect(res.panoDelantero.ancho).toBe(172.5);
+    expect(res.panoTrasero.ancho).toBe(172.5);
+  });
+  it("la lona hecha sí es más ancha detrás: 131 delante, 132,5 detrás", () => {
+    expect(res.lonaHecha).toMatchObject({ ancho: 131, anchoAtras: 132.5 });
+  });
+  it("los ollaos repartidos con paso 35 dan los del CAD delante y detrás", () => {
+    expect(res.reparto.delante).toEqual([2.5, 34, 65.5, 97, 128.5]);
+    expect(res.reparto.atras).toEqual([2.5, 34.4, 66.3, 98.1, 130]);
+  });
+  it("otra recogida sigue midiendo el paño trasero con el ancho de detrás", () => {
+    const goma = calcLona({ ...hpl, recogeDelante: "GOMA", recogeAtras: "GOMA" }, DEFAULT_PARAMS);
+    expect(goma.panoTrasero.ancho).toBe(158.5);
+  });
+  it("unos Parámetros sin la marca (los de antes) dan el paño trasero de siempre", () => {
+    const sinMarca = {
+      ...DEFAULT_PARAMS,
+      recogidas: DEFAULT_PARAMS.recogidas.map(({ panoTraseroConAnchoDelante: _marca, ...r }) => r),
+    };
+    expect(calcLona(hpl, sinMarca).panoTrasero.ancho).toBe(174);
+  });
+});
