@@ -8,13 +8,20 @@ describe('estado de cada modelo en los selectores', () => {
     for (const model of modelsWithPendingNotes) expect(catalog).toContain(model);
   });
 
-  test('Arzúa y los trabajos de tela están completos; Antica y Galicia no', () => {
+  test('Arzúa y los trabajos de tela están completos; Antica no', () => {
     for (const model of ['ARZUA PRO', 'XACOBEO', 'CAMBIO TELA', 'BAMBALINA', 'CAMBIO ANTICA']) expect(modelReadiness(model).ready).toBe(true);
-    for (const model of ['ANTICA', 'GALICIA']) expect(modelReadiness(model).ready).toBe(false);
+    expect(modelReadiness('ANTICA').ready).toBe(false);
+  });
+
+  // Taller, 30/09/2026: con sus respuestas ya aplicadas, estos modelos no tienen dudas propias.
+  test('Galicia, Electra, Diana, Monoblock 350 y Punto Recto quedan completos', () => {
+    for (const model of ['GALICIA', 'ELECTRA', 'MAXISCREEM', 'MONOBLOCK 350', 'PUNTO RECTO']) expect(modelReadiness(model).ready).toBe(true);
   });
 
   test('la explicación dice qué falta', () => {
-    expect(modelReadinessText('GALICIA')).toContain('MB-11 o Geiger');
+    expect(modelReadinessText('AGATA BOX')).toContain('Sunea');
+    expect(modelReadinessText('AGATA BOX')).not.toContain('patines');
+    expect(modelReadinessText('CORTINA')).toContain('Maestria');
     expect(modelReadinessText('XACOBEO')).toMatch(/^Completo/);
   });
 });

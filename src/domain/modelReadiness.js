@@ -5,35 +5,14 @@
 // Se mantiene a la par que docs/modelos/dudas-abiertas.md: al cerrar una duda, se
 // quita de aquí. Las dudas comunes a todos (casquillo de eje 50 o 63, largo de barra)
 // no se repiten en cada modelo.
+// Taller, 30/09/2026: salen las dudas de Galicia, Electra, Diana, Monoblock 350 y Punto
+// Recto, y los patines del Ágata (contestadas y ya aplicadas en la web).
 const pending = {
-  'AGATA BOX': [
-    'Cuándo lleva patines, regleta de unión y pasadores.',
-    'Qué motor lleva (casi siempre se ha puesto el 85/17).'
-  ],
-  CORTINA: [
-    'Qué motor lleva cada cortina (15/17, 35/17 o 55/17).',
-    'Cuándo lleva tubo de Ø70 en vez de Ø78.'
-  ],
-  ELECTRA: [
-    'Qué tapas lleva el perfil de carga sin cofre, y de qué color.',
-    'Cuándo lleva tubo de Ø70 en vez de Ø78.',
-    'Con cofre, con qué montaje lleva el puente abatible.'
-  ],
-  MAXISCREEM: ['Cuándo lleva el kit de montaje del cable.'],
+  'AGATA BOX': ['Si el motor pasa del Sunilus al Sunea (lo decide Oficina Técnica).'],
+  CORTINA: ['Qué motor Maestria lleva según el tamaño.'],
   SELENA: ['A motor nunca se ha fabricado: confirmar el kit con el taller.'],
   IRIS: ['El motor y el mando todavía no se reservan: se ponen a mano.'],
   HERA: ['El motor y el mando todavía no se reservan: se ponen a mano.'],
-  GALICIA: [
-    'Qué máquina lleva: MB-11 o Geiger.',
-    'Cuándo lleva el motor 70/17 en vez del 55/17.',
-    'Si se hace con 3,50 m de salida y tres brazos.'
-  ],
-  'MONOBLOCK 350': ['Cómo se hace la barra de carga entre 7,10 y 7,25 m de frente.'],
-  'PUNTO RECTO': [
-    'Qué kit de motor lleva con tubo de Ø70.',
-    'Qué barra de carga lleva: Univers 280 o 270.',
-    'Si se sigue haciendo con 1,60 m de salida.'
-  ],
   ANTICA: [
     'Fabricación propia: la reserva aún no lleva escuadras, kits, tornillería ni cincado.',
     'Quedan 28 preguntas para el encargado de taller.'
