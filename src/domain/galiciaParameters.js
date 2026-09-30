@@ -1,4 +1,6 @@
 import { galiciaMinimumLineByProjection } from './galiciaConstants.js';
+import { monoblock350MotorByArms } from './monoblock350Constants.js';
+import { defaultMonoblock350Parameters, resolveMonoblockRule } from './monoblock350Parameters.js';
 
 export const defaultGaliciaParameters = {
   // Ficha TGM: hasta 8 m con tres brazos; por encima de 7 m la barra de carga se
@@ -59,13 +61,15 @@ export function suggestedGaliciaArmCount(width, parameters = defaultGaliciaParam
   return Number(width) > parameters.armSwitchWidth ? 3 : 2;
 }
 
-export function resolveGaliciaMotorPower(awning, _parameters = defaultGaliciaParameters) {
+// Taller, 30/09/2026 (Q-G02): el motor depende del número de brazos y de la salida, como
+// en la tarifa del Monoblock 350, así que se usa su tabla (parámetros del Monoblock 350:
+// 55/17 con dos brazos y 70/17 con tres). Hasta entonces la web ponía siempre el 55/17.
+// Con el candado se puede elegir otro.
+export function resolveGaliciaMotorPower(awning, monoblockParameters = defaultMonoblock350Parameters) {
   const selected = String(awning.motorPower || '').toUpperCase();
-  if (awning.reglasModificadas && (selected === '55/17' || selected === '70/17')) return selected;
-  // El 55/17 es el que se consume: 13 de 18 OF a motor desde 2025, también con tres
-  // brazos y 650 de frente (OF 0230045). No hay regla para el 70/17 (Q-G02): se elige
-  // con el candado.
-  return '55/17';
+  if (awning.reglasModificadas && /^\d+\/\d+$/.test(selected)) return selected;
+  const rule = resolveMonoblockRule(awning.projection, awning.armCount, monoblockParameters);
+  return rule?.motorPower || monoblock350MotorByArms[Number(awning.armCount)] || '55/17';
 }
 
 function positiveNumber(value, fallback) {

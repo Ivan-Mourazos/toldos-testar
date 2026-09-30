@@ -12,6 +12,7 @@ import {
   suggestedGaliciaTube
 } from './galiciaParameters.js';
 import { resolveMotorRemote } from './motorAccessories.js';
+import { normalizeMonoblock350Parameters } from './monoblock350Parameters.js';
 import { evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
 import { galiciaArmLines, galiciaSingleArmExists, galiciaSupportLines } from './galiciaSupportPieces.js';
 import { groupBars, rollTubeLengths, splitIntoBars } from './monoblock350Pieces.js';
@@ -36,7 +37,7 @@ export function calculateGalicia({ order, awning }) {
   const requiredArmCount = suggestedGaliciaArmCount(awning.width, parameters);
   const suppliedArmCount = Number(awning.armCount);
   const armCount = [2, 3].includes(suppliedArmCount) ? suppliedArmCount : requiredArmCount;
-  const motorPower = resolveGaliciaMotorPower({ ...awning, armCount }, parameters);
+  const motorPower = resolveGaliciaMotorPower({ ...awning, armCount }, normalizeMonoblock350Parameters(order.parameters?.monoblock350));
   const minimumLine = lookupMinimumLine(parameters.minimumLineByProjection, awning.projection, armCount, device);
   const diagnostics = [];
   const missingFields = [];
@@ -169,14 +170,6 @@ export function calculateGalicia({ order, awning }) {
       message: `GALICIA de ${formatNumber(awning.width)} cm: la barra de carga va empalmada en ${loadBars.length} barras de ${loadBars[0]} cm.`
     });
   }
-  // Ficha técnica TGM (intranet, 21/09/2026): con tres brazos la salida máxima es 3,25 m.
-  // Se avisa sin bloquear: desde 2024 hay 3 OF de tres brazos con salida 350 (Q-G03).
-  if (valid && armCount === 3 && Number(awning.projection) > 325) {
-    diagnostics.push({
-      level: 'warn', awningId: awning.id,
-      message: `GALICIA con tres brazos: la ficha técnica admite hasta 325 cm de salida y este lleva ${awning.projection}.`
-    });
-  }
 
   return {
     of: awning.of,
@@ -257,7 +250,7 @@ function galiciaPieces({ awning, lacado, colorSuffix, tubeLoad, device, armCount
   ];
 
   if (device === 'MOTOR') {
-    const motorCode = motorPower === '70/17' ? 'SUNILUSIO70//17' : 'SUNILUSIO55//17';
+    const motorCode = `SUNILUSIO${motorPower.replace('/', '//')}`;
     const remote = resolveMotorRemote(awning.sensor);
     pieces.push(
       { code: 'RUEDAMOT801MEC', quantity: units, description: 'RUEDA MOTRIZ A P-801 MECANIZADA' },

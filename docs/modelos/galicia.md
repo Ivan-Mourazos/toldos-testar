@@ -31,7 +31,7 @@
 | Terminales | Juego `TERMINEVO` y, con 3 brazos, `TERMINEVOUND` para el del medio (56 OF) | No se reservaban | Juego y, con 3 brazos, el indiferente |
 | Casquillo de punta, tapones EVO, varillas | En todas las OF | No se reservaban | Como en el Arzúa |
 | Máquina y manivela | MB-11 L-120 (32 OF) o Geiger 1.13 L-140 (17 OF), y manivela | No se reservaban | MB-11 y manivela (Q-G01) |
-| Motor | 55/17 en 13 de 18 OF, también con 3 brazos y 650 de frente (OF 0230045); kit rueda P-801 mecanizada + corona LT60 | 70/17 con 3 brazos; rueda Ø78 + corona LT60 Ø78 | 55/17; 70/17 con el candado (Q-G02); el kit del Arzúa |
+| Motor | 55/17 en 13 de 18 OF, también con 3 brazos y 650 de frente (OF 0230045); kit rueda P-801 mecanizada + corona LT60 | 70/17 con 3 brazos; rueda Ø78 + corona LT60 Ø78 | La tabla del Monoblock 350 por brazos y salida: 55/17 con dos brazos y 70/17 con tres (taller, 30/09/2026, Q-G02); otro con el candado; el kit del Arzúa |
 | `CASPLAS` | No se consume | Se reservaba | Fuera |
 
 Después: **no sobra nada** y solo faltan el soporte suelto izquierdo (la web reserva el derecho, Q-A04) y la máquina Geiger (Q-G01). Contrastado pieza a pieza con las OF 0230335, 0230126, 0230134, 0230045 y 0230410, que son los tests de regresión.
@@ -55,8 +55,8 @@ A 1280×720 y 1600, con el caso AR2603380 (OF 0230335): válido, sin errores ni 
 | Modelo aparte del Arzúa | Iván, 23/09/2026; los libros (hoja `GAL`) |
 | Descuentos, mínimos, 2 brazos hasta 550 y 3 por encima | Libros: 49 de 49 estructuras |
 | Juego + suelto, tubo 1, terminales, piezas de máquina, kit de motor | Consumo real de 90 OF |
-| Motor 55/17 | Consumo real: 13 de 18 OF |
-| Aviso con 3 brazos y salida de más de 325 | Ficha técnica TGM e intranet; no bloquea porque hay 3 OF reales con 350 |
+| Motor por brazos y salida con la tabla del Monoblock 350 | Taller, 30/09/2026 (Q-G02): «depende del número de brazos y de la salida, como en la tarifa del Monoblock». Cambia lo consumido en las OF de tres brazos con 55/17 (por ejemplo, 0230045) |
+| Tres brazos con 3,50 de salida, sin aviso | Taller, 30/09/2026 (Q-G03): sí se hace (la ficha TGM decía 3,25; hay 3 OF reales con 350) |
 | Máximo 800, como la ficha (se salta con el candado). Por encima de 7 m, tubo de enrolle de 800 y barra de carga empalmada en barras iguales, con aviso | Iván, 25/09/2026 (Q-G03): se empalma. El 700 guardado en el servidor pasa solo a 800 |
 
 ## 7. Dudas
@@ -66,5 +66,5 @@ A 1280×720 y 1600, con el caso AR2603380 (OF 0230335): válido, sin errores ni 
 | Q-A04 | **Resuelta (Iván, 25/09/2026):** no van de un lado concreto. Debe ser un dato opcional del pedido; si no se pone, decide el taller | Hecho: «Lado del brazo suelto» en la tarjeta. Sin elegir, se reserva el derecho y el despiece dice «lado a elegir en taller» |
 | Q-A06 | ¿Se reserva el largo de stock más corto que cabe? El almacén imputa muchos de 500 | 600 o 700 |
 | Q-G01 | Máquina MB-11 L-120 (32 OF) o Geiger 1.13 L-140 (17 OF): ¿de qué depende? | MB-11 |
-| Q-G02 | ¿Cuándo se pone el motor 70/17? (5 de 18 OF, sin relación clara con la medida) | 55/17; 70/17 con el candado |
-| Q-G03 | La ficha permite 8 m con tres brazos y hay 10 OF con tubo de 800, pero la barra más larga es de 700. **Iván (25/09/2026): sí se empalma** (hecho: hasta 8 m, con empalme como en el Monoblock 350). Sigue abierta la salida de 350 con tres brazos: ¿se permite? | Máximo 800 (empalme desde 7 m); aviso por encima de 325 con tres brazos |
+| Q-G02 | **Resuelta (taller, 30/09/2026):** depende de los brazos y de la salida, como en la tarifa del Monoblock | Hecho: tabla de motores del Monoblock 350 (55/17 con dos brazos, 70/17 con tres); otro con el candado |
+| Q-G03 | La ficha permite 8 m con tres brazos y hay 10 OF con tubo de 800, pero la barra más larga es de 700. **Iván (25/09/2026): sí se empalma** (hecho: hasta 8 m, con empalme como en el Monoblock 350). **Taller (30/09/2026): con tres brazos y 3,50 de salida sí se hace** | Máximo 800 (empalme desde 7 m); tres brazos hasta 3,50 sin aviso |

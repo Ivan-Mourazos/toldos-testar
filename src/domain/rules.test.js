@@ -1,5 +1,6 @@
 import { describe, expect, it, test } from 'vitest';
 import { normalizeGaliciaParameters } from './galiciaParameters.js';
+import { normalizeMonoblock350Parameters } from './monoblock350Parameters.js';
 import { calculateOrder } from './rules.js';
 import { consolidateReservation, normalizeOrder } from './validation.js';
 
@@ -945,7 +946,9 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     ]);
   });
 
-  test('AR2603289: 3 brazos y motor 55 para frente 650, como se consumió', () => {
+  // En la OF 0230045 se consumió el 55/17; desde el 30/09/2026 (Q-G02) el motor sale de la
+  // tabla del Monoblock 350: con tres brazos, 70/17.
+  test('AR2603289: 3 brazos y motor 70/17 de la tabla del Monoblock para frente 650', () => {
     const result = calculateOrder(basePayload({
       structureColor: 'BLANCO',
       fabric: 'ACR PIEDRA',
@@ -957,17 +960,17 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     }));
     const ofBlock = result.ofs[0];
     expect(ofBlock.calculation).toMatchObject({
-      valid: true, armCount: 3, requiredArmCount: 3, motorPower: '55/17',
+      valid: true, armCount: 3, requiredArmCount: 3, motorPower: '70/17',
       structureLength: 640, rollTubeLength: 640, fabricWidth: 639,
       fabricDrop: 295, fabricMl: 17.7, stockLength: 700
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'BONYXBL16225C', quantity: 1 }),
-      expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 1 }),
+      expect.objectContaining({ code: 'SUNILUSIO70//17', quantity: 1 }),
       expect.objectContaining({ code: 'ANCLHSTM12145', quantity: 4 }),
       expect.objectContaining({ code: 'ACRILI3605P120', quantity: 17.7 })
     ]));
-    // OF 0230045: motor 55/17 con el kit del Arzúa (rueda P-801 y corona LT60).
+    // OF 0230045: motor con el kit del Arzúa (rueda P-801 y corona LT60).
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
       { code: 'SOPARTGLDBL16', quantity: 1 },
@@ -982,7 +985,7 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       { code: 'VARILLAVAINANEG5', quantity: 6.4 },
       { code: 'VARILLAVAINARBLA', quantity: 12.8 },
       { code: 'RUEDAMOT801MEC', quantity: 1 },
-      { code: 'SUNILUSIO55//17', quantity: 1 },
+      { code: 'SUNILUSIO70//17', quantity: 1 },
       { code: 'CORONALT60', quantity: 1 },
       { code: 'SOPORTEUNVHIPRO', quantity: 1 },
       { code: 'SITUOIO1PURE', quantity: 1 },
@@ -1046,14 +1049,13 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 370, fabricPanels: 6, fabricMl: 22.2, stockLength: 650 });
   });
 
-  // Ficha técnica TGM: con tres brazos, hasta 325 de salida. Hay OF reales con 350, así
-  // que avisa sin bloquear.
-  test('tres brazos con salida 350 avisa sin bloquear', () => {
+  // Taller, 30/09/2026 (Q-G03): con tres brazos y 3,50 de salida sí se hace; sin aviso.
+  test('tres brazos con salida 350 es válido y no avisa', () => {
     const result = calculateOrder(basePayload({
       awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 350, armCount: 3, device: 'MAQ. EXTERIOR' })]
     }));
     expect(result.ofs[0].calculation.valid).toBe(true);
-    expect(result.diagnostics).toContainEqual(expect.objectContaining({ level: 'warn', message: expect.stringContaining('hasta 325 cm de salida') }));
+    expect(result.diagnostics.some((item) => /hasta 325 cm de salida/.test(item.message))).toBe(false);
   });
 
   // Iván, 25/09/2026 (Q-G03): hasta 8 m; por encima de 7 m la barra de carga se empalma.
@@ -1093,15 +1095,43 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(result.diagnostics.some((item) => item.message.includes('necesita 3 brazos'))).toBe(true);
   });
 
-  test('el 70/17 solo se puede forzar al activar una excepción técnica', () => {
+  // Taller, 30/09/2026 (Q-G02): el motor depende de los brazos y de la salida, como en la
+  // tarifa del Monoblock 350: se usa su tabla. Con el candado se puede cambiar.
+  test('el motor sale de la tabla del Monoblock 350 por brazos y salida', () => {
+    const two = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 500, projection: 225, armCount: 2 })]
+    }));
+    const three = calculateOrder(basePayload({
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3 })]
+    }));
+    expect(two.ofs[0].calculation.motorPower).toBe('55/17');
+    expect(two.ofs[0].materials).toContainEqual(expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 1 }));
+    expect(three.ofs[0].calculation.motorPower).toBe('70/17');
+    expect(three.ofs[0].materials).toContainEqual(expect.objectContaining({ code: 'SUNILUSIO70//17', quantity: 1 }));
+  });
+
+  test('la tabla de motores es la guardada en los parámetros del Monoblock 350', () => {
+    const dimensionalRules = normalizeMonoblock350Parameters().dimensionalRules.map((row) => (row.projection === 225
+      ? { ...row, values: { ...row.values, 3: { ...row.values[3], motorPower: '85/17' } } }
+      : row));
+    const result = calculateOrder(basePayload({
+      parameters: { monoblock350: { dimensionalRules } },
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3 })]
+    }));
+    expect(result.ofs[0].calculation.motorPower).toBe('85/17');
+    expect(result.ofs[0].materials).toContainEqual(expect.objectContaining({ code: 'SUNILUSIO85//17' }));
+  });
+
+  test('con el candado se elige otro motor', () => {
     const automatic = calculateOrder(basePayload({
-      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '70/17' })]
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '55/17' })]
     }));
     const overridden = calculateOrder(basePayload({
-      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '70/17', reglasModificadas: true })]
+      awnings: [baseAwning({ model: 'GALICIA', width: 650, projection: 225, armCount: 3, motorPower: '55/17', reglasModificadas: true })]
     }));
-    expect(automatic.ofs[0].calculation.motorPower).toBe('55/17');
-    expect(overridden.ofs[0].calculation.motorPower).toBe('70/17');
+    expect(automatic.ofs[0].calculation.motorPower).toBe('70/17');
+    expect(overridden.ofs[0].calculation.motorPower).toBe('55/17');
+    expect(overridden.ofs[0].materials).toContainEqual(expect.objectContaining({ code: 'SUNILUSIO55//17' }));
   });
 
   test('sol o viento-sol cambia automáticamente al mando SITUO 5', () => {
