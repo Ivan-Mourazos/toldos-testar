@@ -5,7 +5,7 @@ import path from 'node:path';
 // Comprobaciones de despliegue de la hoja de taller de remolques (fase 4). Reciben lo que toca el
 // sistema (disco, Chromium) para poder probarlas sin un Chromium de verdad.
 
-export const ORDEN_INSTALAR_CHROMIUM = 'pnpm exec playwright-core install chromium';
+export const ORDEN_INSTALAR_CHROMIUM = 'PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium';
 
 export async function comprobarChromium({ paquete, importarPlaywright, acceso = access, lanzar = true }) {
   const core = paquete.dependencies?.['playwright-core'];

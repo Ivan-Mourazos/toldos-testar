@@ -161,7 +161,7 @@ Con el código situado en `/webs/toldos-testar`:
 ```bash
 cd /webs/toldos-testar
 pnpm install --frozen-lockfile
-pnpm exec playwright-core install chromium
+PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium
 pnpm build
 pnpm deploy:check
 pnpm deploy:smoke
@@ -176,7 +176,7 @@ La hoja de taller de remolques la hace el propio servidor con un Chromium sin ve
 (`playwright-core`, WebGL por SwiftShader; Chrome for Testing se instala en
 `~/.cache/ms-playwright`). La primera vez en un servidor nuevo hacen falta además sus
 librerías: `pnpm exec playwright-core install --with-deps chromium` (como root). El paso
-`pnpm exec playwright-core install chromium` del despliegue es idempotente y rápido si ya
+`PLAYWRIGHT_SKIP_BROWSER_GC=1` evita que Playwright borre los navegadores de otros proyectos del servidor (n8n, CoordinaOT). El paso `pnpm exec playwright-core install chromium` del despliegue es idempotente y rápido si ya
 está. `deploy:check` comprueba que está instalado y arranca, y `deploy:smoke` hace una hoja
 de verdad. Chromium vive fuera del proceso de Node: el límite de memoria de PM2 no lo cuenta.
 
@@ -205,7 +205,7 @@ cd /webs/toldos-testar
 git log --oneline origin/main..HEAD
 git pull --ff-only
 pnpm install --frozen-lockfile
-pnpm exec playwright-core install chromium
+PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium
 pnpm build
 pnpm deploy:check
 pnpm deploy:smoke
