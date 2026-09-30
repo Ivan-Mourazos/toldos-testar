@@ -128,7 +128,7 @@ Por qué importa: cambian el tubo, sus casquillos y el kit de motor.
 
 **¿Qué casquillo va con cada máquina y colocación: eje 50 o eje 63?**
 
-Hoy la web: pone el de eje 63 (de Ø70 o Ø78, según el tubo). En los Antica de 2024-2026 se gastó el de eje 50 en 19 OF y el de eje 63 en 13, sin que dependa del año ni del tubo. Es la misma duda que en otros modelos (Q-PR02 de la lista de dudas).
+Hoy la web: pone el de eje 50 (de Ø70 o Ø78, según el tubo). Contestada por el taller el 30/09/2026: sin saber si la máquina es exterior o interior, el de eje 50, que es el que más se gasta. Antes ponía el de eje 63. En los Antica de 2024-2026 se gastó el de eje 50 en 19 OF y el de eje 63 en 13, sin que dependa del año ni del tubo. Es la misma duda que en otros modelos (Q-PR02 de la lista de dudas).
 
 Por qué importa: para reservar el casquillo que encaja.
 

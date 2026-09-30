@@ -16,7 +16,7 @@ Evidencia copiada a output/modelos/antica/fuentes; originales en la unidad Y:, c
 
 - **Varilla negra VARILLAVAINANEG5: frente − 9 cm por toldo**, con máquina y con motor (246 → 2,37 m; 488 → 4,79 m; 656 → 6,48 m; 212 + 227 → 4,21 m; 430 + 422 + 640 → 14,65 m). La web no la reservaba; ahora sí. Sale de la lista de preguntas (antes la 20).
 - **Kit de motor:** los cinco Antica a motor llevan Sunilus 15/17 y soporte Hipro; con P701, rueda RUEDAMOTHI68 y corona CORONACENMEC70 (como Ámbar y Diana); con P801, RUEDAMOT801MEC y CORONALT5078 (como Punto Recto). La web reservaba ADAPTADORESTUBO70 / CORONA LT5070 y RUEDAMOT78 / CORONALT6078, que no se consumen. Corregido. La potencia 35/17 con tres o cuatro brazos se mantiene hasta que conteste el encargado (pregunta 15): los datos solo tienen un toldo ancho (4,85 m), con 15/17.
-- **Casquillo de máquina:** eje 50 en 19 OF, eje 63 en 13, mezclado en todos los años. Sigue abierto (pregunta 12, igual que Q-PR02).
+- **Casquillo de máquina:** eje 50 en 19 OF, eje 63 en 13, mezclado en todos los años. Resuelto el 30/09/2026 (pregunta 12, Q-PR02): como el modelo no sabe si la máquina es exterior o interior, lleva el eje 50, que es el que más se gasta: `CASMAQEJE5070MM` con P701 y `CASMAQEJE5078MM` con P801. Antes ponía el de eje 63.
 - **Manivela:** en 10 OF de dos toldos se gastó una sola. Añadido a la pregunta 14; la web sigue con una por toldo.
 - Lo que aún falta en la reserva depende del taller: cincado exterior (EXT_CINCAR, pregunta 23), escuadras de ángulo 40×40 (pregunta 4) y el casquillo de eje 50.
 
@@ -119,7 +119,7 @@ Cantidades por toldo, multiplicadas por unidades salvo accesorios con consolidac
 | P05/5 | Carga,1; frente menos descuento de variante | 50×30: TUBGA50MM30MM2MM; carga maciza 30×10: PLEAC30MM10. Contrapeso añadido en posición12. Redondos/fijo pendientes; ver desglose actualizado |
 | P06/6 | Kit tapones,1 | Sin referencia; contenido/material pendiente |
 | P07/7 | Brazo Antica,2–4; salida | Fabricación TGM; materia prima PLEAC30MM10. Cantidad N×U, corte nominal S y consumo N×U×S/600; cortes físicos pendientes de ratificar |
-| P08/8 máquina | Casquillo máquina,1 | CASMAQEJE6370MM/6378MM; UNI. Hay consumos de eje50: Q07 |
+| P08/8 máquina | Casquillo máquina,1 | CASMAQEJE5070MM/5078MM; UNI. El eje 63 (6370/6378) se sustituyó por el 50 el 30/09/2026 (Q-PR02) |
 | P09/9 máquina | Taco nylon,1 | Sin referencia; comprobar inclusión en kit y variante |
 | P10/10 máquina | Manivela,1; altura | MANIVEBL16{80,100,120,150,170,200,225,250}C o MANIVENE11{mismos}C; UNI. 350: MANIVEBLAN350C/MANIVENEGRO350C;325negra: MANIVENEGRO325C. Otros largos: sin asociación automática |
 | P11/11 máquina | Máquina MB11 L120,1 | MAQMB11L12BLAN/NEGRO; UNI. Conserva regla previa MB11; maestros antiguos muestran MB9 |

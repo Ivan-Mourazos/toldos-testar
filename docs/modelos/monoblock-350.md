@@ -30,7 +30,7 @@ La tabla del Monoblock (mínimos, máximos y motor por salida y brazos) está gu
 
 ## 3. Reserva frente al consumo real
 
-`validate:reserva` pasa de faltar 20 piezas y sobrar 5 a **faltar solo el casquillo de eje 63 (Q-PR02) y el soporte de brazo suelto izquierdo (Q-A04)**. Contrastado pieza a pieza con las OF 0230266, 0229011, 0227437, 0226281 y 0224325.
+`validate:reserva` pasa de faltar 20 piezas y sobrar 5 a **faltar solo el soporte de brazo suelto izquierdo (Q-A04)**; el casquillo de eje 63 quedó resuelto el 30/09/2026 con el eje 50 (Q-PR02). Contrastado pieza a pieza con las OF 0230266, 0229011, 0227437, 0226281 y 0224325.
 
 | Pieza | Consumo real | Antes | Ahora |
 | --- | --- | --- | --- |

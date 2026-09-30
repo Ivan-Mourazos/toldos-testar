@@ -22,18 +22,19 @@ Método: consumo real por OF (`tmp/cofres/por-of.mjs`), contraste pieza a pieza 
 | --- | --- | --- |
 | Perla | Faltaban 13 piezas (soporte, kit de perfiles y tapas S-300 desactivados, casquillo de punta, varillas, goma, kit de motor…) y sobraban 7 | No falta nada de estructura |
 | Coral | Faltaban 6 (motor 55/17, kit de motor, varillas) y sobraban 7 | Nada |
-| Cuarzo | Faltaban 8 (soporte, motor y su kit Ø70, casquillo de máquina Ø70, varilla) | Solo el casquillo de eje 63 (Q-PR02) |
+| Cuarzo | Faltaban 8 (soporte, motor y su kit Ø70, casquillo de máquina Ø70, varilla) | Nada (el casquillo de eje 63 se cambió por el de eje 50: Q-PR02, 30/09/2026) |
 | Ámbar | Faltaban 6 (kit de montaje, varillas, kit de motor Ø70, casquillo Ø70) y sobraban 7 | Nada |
-| Ágata | Faltaban 14 y sobraban 12 | Quedan el motor 85/17 (Q-AG02) y el soporte suelto izquierdo (Q-A04: sin lado fijo; desde el 25/09/2026 se elige en la tarjeta o lo decide el taller) |
+| Ágata | Faltaban 14 y sobraban 12 | Queda el soporte suelto izquierdo (el motor pasó a Sunea el 30/09/2026, Q-AG02) (Q-A04: sin lado fijo; desde el 25/09/2026 se elige en la tarjeta o lo decide el taller) |
 
 Reglas comunes que salen del consumo:
 
 - **Motor y kit**:
   - Perla y Coral: Sunea 55/17 con el kit del Arzúa (rueda P-801 mecanizada y corona LT60). Se reservaban 30 a 50 según la salida y el kit Ø78. La tabla guardada se migra.
   - Cuarzo y Ámbar (tubo Ø70): rueda centrada Hi68 y corona centrada mecanizada Ø70, con Sunea 35/17 (Cuarzo) y Sunilus 15/17 (Ámbar). Se reservaba la corona LT50 y el adaptador, que no se consumen.
-  - Ágata: Sunilus en todas las variantes (se reservaba Sunea con cofre), con la rueda Ø78, la corona LT60 a Ø78 y el kit de tornillos del motor. El de 100 va a 12 rpm (`SUNILUSIO100//12`): hasta el 30/09/2026 la web pedía `SUNILUSIO100//17`, que no existe en RPS. El cambio de Sunilus a Sunea (Q-AG02) sigue pendiente.
+  - Ágata: Sunea en todas las variantes, también en el Open (taller, 30/09/2026, Q-AG02: «siempre Sunea»; antes se reservaba Sunilus, salvo el Sunea con cofre), con la rueda Ø78, la corona LT60 a Ø78 y el kit de tornillos del motor. La tabla de potencias por brazos y salida no cambia; los códigos son `SUNEAIO35//17`, `SUNEAIO40//17`, `SUNEAIO55//17`, `SUNEAIO70//17`, `SUNEAIO85//17` y `SUNEAIO100//12` (todos activos en RPS el 30/09/2026). El de 100 va a 12 rpm porque el //17 no existe (hasta el 30/09/2026 la web pedía el `//17`). El consumo histórico es de Sunilus 85/17, así que `validate:reserva` lo sigue viendo como «falta»: es lo que se montaba antes de esta respuesta.
 - **Máquina**:
   - Perla, Cuarzo y Ámbar: casquillo de eje 50 (Ø78 en Perla, Ø70 en los otros dos).
+  - Ágata: casquillo de eje 50 Ø78 (`CASMAQEJE5078MM`). Antes ponía el de eje 63; el 30/09/2026 el taller dijo que, sin saber si la máquina es exterior o interior, va el de eje 50, que es el que más se gasta (Q-PR02).
   - Coral: `CASTRAEX80`, que sí se consume.
   - Ninguno lleva `CASPLAS`.
 - **Varillas**:
@@ -74,7 +75,7 @@ A 1280×720 y 1600, Perla de máquina y Ágata cofre con motor y 3 brazos: váli
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
 | Q-AG01 | **Resuelta (taller, 30/09/2026):** patines siempre, de codo y de horquilla; kit de unión con más de 7 m de frente | Hecho: dos `PABMODUL` y dos `PASBMODUL` por toldo; `KUNIONMODUL` + `PASADORMODUL` por encima de 700 |
-| Q-AG02 | Ágata: se consume sobre todo el Sunilus 85/17; la tabla por brazos y salida propone 35-55 con 2 brazos | La tabla |
+| Q-AG02 | **Resuelta (taller, 30/09/2026):** siempre Sunea; la potencia depende del toldo | Hecho: Sunea en todas las variantes con la tabla por brazos y salida |
 | Q-AG03 | Ágata: el libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras. **Retirada de la lista el 25/09/2026** (Iván: fuera las dudas sobre pedidos antiguos y las comprobaciones contra los libros; la referencia es la web). | La fórmula |
-| Q-PR02 | Casquillo de máquina de eje 50 o 63 (Cuarzo: 16 y 9 OF) | Eje 50 |
+| Q-PR02 | **Resuelta (taller, 30/09/2026):** sin saber si es exterior o interior, eje 50 (Cuarzo: 16 y 9 OF) | Hecho: eje 50 en todos, Ágata incluido (Coral lleva `CASTRAEX80`) |
 | Q-A06 | **Resuelta (taller, 30/09/2026):** la más corta que llegue al corte | Hecho: cada perfil y tubo, el más corto que existe en ese lacado y llega; en el Ágata, empalme por encima de 7 m |

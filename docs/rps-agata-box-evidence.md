@@ -12,7 +12,7 @@
 - Variantes visibles: Open, Semiopen, Semiclose y Cofre. Las dos variantes Semi comparten geometría.
 - Brazos automáticos por frente: 2 hasta 600 cm, 3 hasta 900 cm y 4 hasta 1200 cm.
 - Salidas estándar: 150 a 400 cm en pasos de 25 cm.
-- Open y Semi usan SUNILUS; Cofre usa SUNEA y no admite máquina.
+- Motor siempre SUNEA en todas las variantes (taller, 30/09/2026; antes Open y Semi usaban SUNILUS). El Cofre no admite máquina.
 - Caída de tela: salida + 45 cm + bamba.
 - Descuentos de tela, tubo y perfiles dependen de variante y accionamiento.
 - El número de soportes se calcula por frente, línea mínima y brazos, pero puede modificarse como excepción técnica individual.

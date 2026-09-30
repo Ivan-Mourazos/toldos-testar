@@ -2,7 +2,7 @@
 
 Preguntas para Iván (Oficina Técnica) y el taller. Aquí solo están las que hacen falta para que la web funcione y los pedidos salgan bien: qué pieza lleva cada toldo, cuántas y de qué medida. Cada pregunta dice qué hace la web mientras tanto y por qué importa. El código del final (Q-…) enlaza con el expediente del modelo.
 
-Actualizado el 30/09/2026: **el taller contestó 16 dudas** (Q-G01, Q-G02, Q-G03, Q-M03, Q-AG01, Q-AG02, Q-CO04, Q-CO05, Q-E02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR03, Q-PR04 y Q-A06). Q-CO05 y Q-E02 se cierran: no hay medida, el taller decide y lo normal es el Ø78. Queda a medias Q-CO04 (qué Maestria va según el tamaño). Q-E01 se cierra según lo que se gasta. **Hecho en la web el 30/09/2026:** Q-G02, Q-G03, Q-AG01, Q-E03, Q-D01, Q-PR01, Q-PR04, Q-A06 y parte de Q-PR02; quedan dos preguntas nuevas en [Todos los modelos](#todos-los-modelos). Están en [Contestadas el 30/09/2026](#contestadas-el-30092026), con lo que cambia en la web.
+Actualizado el 30/09/2026: **el taller contestó 16 dudas** (Q-G01, Q-G02, Q-G03, Q-M03, Q-AG01, Q-AG02, Q-CO04, Q-CO05, Q-E02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR03, Q-PR04 y Q-A06). Iván cerró además Q-T01 (la consignación va aparte). Q-CO05 y Q-E02 se cierran: no hay medida, el taller decide y lo normal es el Ø78. Queda a medias Q-CO04 (qué Maestria va según el tamaño). Q-E01 se cierra según lo que se gasta. **Hecho en la web el 30/09/2026:** Q-G02, Q-G03, Q-AG01, Q-AG02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR04 y Q-A06. Ya no queda ninguna pregunta abierta de «Todos los modelos». Están en [Contestadas el 30/09/2026](#contestadas-el-30092026), con lo que cambia en la web.
 
 Actualizado el 25/09/2026:
 
@@ -17,12 +17,6 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 ### Cortina
 
 - **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño; Iván no sabe la tabla y pide sacarla de RPS (en revisión). La web pone el Sunilus 15/17. Importa para reservar el motor correcto. <sub>Q-CO04</sub>
-
-## Todos los modelos
-
-- **Casquillo de máquina en los modelos que solo dicen «máquina»** (Antica, Ágata, Punto Recto, Monoblock 350, Perla, Coral, Cuarzo, Ámbar y Diana): el taller dijo que con máquina exterior va el casquillo largo (eje 63) y con interior el corto (eje 50), pero la tarjeta de estos modelos no pregunta si la máquina es interior o exterior. ¿Se pregunta en la tarjeta o se pone siempre el corto, que es el que más se gasta? Hoy la web pone el de eje 63 en Antica y Ágata y el de eje 50 en los demás (el Coral lleva su casquillo de transmisión). <sub>Q-PR02</sub>
-- **Tela en consignación: ¿cuenta como disponible?** Bajo la tela elegida la web enseña el stock de RPS. El almacén «CONSIGNACIÓN ARZÚA» tiene lona (unos 4.350 m). Mientras no se diga, la web no la suma a lo disponible y la enseña aparte («+ 70 m en consignación»). Importa para saber si hay tela para el pedido. <sub>Q-T01</sub>
-- **Barra más corta que llega: ¿con margen de corte?** La web reserva la barra más corta que llega al corte, sin margen: un corte de 400 lleva barra de 400. Si el taller necesita unos centímetros de sobra para cortar, hay que decir cuántos. <sub>Q-A06</sub>
 
 ## Clásicos
 
@@ -70,7 +64,7 @@ Respuestas del taller, traídas por Iván. «Pendiente» quiere decir que la web
 | Q-G01 | Máquina del Galicia: MB-11 L-120 o Geiger 1.13 L-140 | MB-11, siempre | Ya lo hace (también en el Monoblock 350) |
 | Q-G02 | Motor del Galicia: 55/17 o 70/17 | Depende del número de brazos y de la salida, como en la tarifa del Monoblock | Hecho: la tabla de motores del Monoblock 350 por brazos y salida (55/17 con dos brazos, 70/17 con tres); con el candado, otro |
 | Q-AG01 | Patines, regleta de unión y pasadores del Ágata Box | Patines siempre, de codo y de horquilla. Kit de unión con más de 7 m de frente | Hecho: dos kits de patines de codo (`PABMODUL`) y dos de horquilla (`PASBMODUL`) por toldo; con más de 7 m, `KUNIONMODUL` y `PASADORMODUL`. De paso, el motor de 100 va a 12 rpm (`SUNILUSIO100//12`): el //17 no existe |
-| Q-AG02 | Motor del Ágata Box | Siempre Sunea; la potencia depende del toldo | Pendiente de Iván: cambiar el Sunilus por el Sunea (códigos ya comprobados en RPS; con cofre se monta Sunea, en el Open casi siempre Sunilus) |
+| Q-AG02 | Motor del Ágata Box | Siempre Sunea; la potencia depende del toldo | Hecho el 30/09: motor Sunea en todas las variantes, también en el Open (`SUNEAIO35//17`, `40`, `55`, `70`, `85//17` y `SUNEAIO100//12`, todos activos en RPS), con la misma tabla por brazos y salida. Descripción «MOTOR SOMFY SUNEA … IO» |
 | Q-CO04 | Motor de la cortina | Maestria; depende también del tamaño | A medias: falta la tabla de potencias (ver Cortina). Pendiente: comprobar en RPS los códigos de los Maestria |
 | Q-G03 | Galicia con tres brazos y 3,50 m de salida | Sí se hace | Hecho: sin aviso con tres brazos y 3,50 de salida |
 | Q-M03 | Monoblock de 7,10 a 7,25 m: barra de carga | Una barra; si falta poco, se empata con un resto | Ya lo hace: una barra de 7 m |
@@ -82,8 +76,10 @@ Respuestas del taller, traídas por Iván. «Pendiente» quiere decir que la web
 | Q-PR01 | Kit de motor del Punto Recto | Según el tubo, de 70 o de 80. Con tubo de 70 lleva `CORONACENMEC70` y `RUEDAMOTHI68` | Hecho: con tubo de 70, `CORONACENMEC70` y `RUEDAMOTHI68` |
 | Q-PR03 | Barra de carga del Punto Recto | Solo la Univers 280 | Ya lo hace |
 | Q-PR04 | Punto Recto de 1,60 m de salida | Es una excepción; no hay stock | Hecho: se sigue ofreciendo, con aviso en la tarjeta de que es una excepción sin stock |
-| Q-PR02 | Casquillo de máquina: eje 50 o eje 63 | Depende de la máquina: exterior, casquillos largos; interior, cortos | A medias: el largo es el eje 63 y el corto el eje 50. Hecho donde la tarjeta dice si la máquina es interior o exterior (Arzúa, Galicia, Cortina, Xacobeo y, desde hoy, Electra, que antes iba por cofre). Falta en los modelos que solo dicen «máquina» (ver arriba) |
+| Q-PR02 | Casquillo de máquina: eje 50 o eje 63 | Depende de la máquina: exterior, casquillos largos; interior, cortos | Hecho: el largo es el eje 63 y el corto el eje 50. Donde la tarjeta dice si la máquina es interior o exterior (Arzúa, Galicia, Cortina, Xacobeo y Electra) se elige por ella. En los modelos que solo dicen «máquina», Iván (30/09) dijo que se ponga el eje 50, que es el que más se gasta: Antica y Ágata pasan del eje 63 al 50 del mismo Ø (`CASMAQEJE5070MM` / `CASMAQEJE5078MM`); los demás ya lo llevaban. El Coral no cambia: lleva `CASTRAEX80`, que es otra pieza |
 | Q-A06 | Largo de la barra que se reserva | La más corta que llegue al corte | Hecho: tubo y barra de carga, cada uno el más corto que existe en RPS en ese lacado y llega (Arzúa, Galicia y cofres); fuera el largo de 650, que no existe. En el Ágata, barras iguales empalmadas por encima de 7 m |
+| Q-A06 (margen) | Barra más corta que llega: ¿con margen de corte? | Sin margen: «ya se adaptan en taller» | Cerrada: la web sigue sin margen (un corte de 400 lleva barra de 400) |
+| Q-T01 | Tela en consignación: ¿cuenta como disponible? | Mejor aparte | Cerrada: ya lo hace; bajo la tela elegida el stock de RPS no suma el almacén «CONSIGNACIÓN ARZÚA» y lo enseña aparte («+ 70 m en consignación») |
 
 ## Contestadas el 25/09/2026
 

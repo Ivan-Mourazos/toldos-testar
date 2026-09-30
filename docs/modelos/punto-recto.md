@@ -37,7 +37,7 @@ No hay manual de fabricación del PRT-07 en Oficina Técnica: solo la tarifa nac
 | Motor Ø70: rueda y corona | `CORONACENMEC70` + `RUEDAMOTHI68`, juntas en todos los modelos con Ø70 desde 2023 (Ámbar 24 OF, Cuarzo 17, Cortina 5, Antica 5, Punto Recto 1) | `ADAPTADORESTUBO70` (0 imputaciones desde 2023) y `CORONA LT5070` (ninguna OF de Punto Recto) | Corona centrada y rueda Hi68 (taller, 30/09/2026, **Q-PR01**) |
 | Brazos PRT-07 | Según color y salida | Código compuesto con cualquier salida | Solo los que existen y no están de baja |
 
-`pnpm validate:reserva "PUNTO RECTO"` después: solo queda el casquillo de eje 63 (Q-PR02). Ya no sobra nada salvo piezas de las variantes que no se dieron en esas OF.
+`pnpm validate:reserva "PUNTO RECTO"` después: solo quedaba el casquillo de eje 63, que el taller resolvió el 30/09/2026 con el eje 50 (Q-PR02). Ya no sobra nada salvo piezas de las variantes que no se dieron en esas OF.
 
 ## 5. Brazos que existen de verdad
 
@@ -68,7 +68,7 @@ Revisado a 1280×720 y 1600 (`output/modelos/punto-recto/`): la tarjeta mantiene
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
 | Q-PR01 | **Resuelta (taller, 30/09/2026):** según el tubo, de 70 o de 80; con el de 70, `CORONACENMEC70` y `RUEDAMOTHI68` | Hecho: esas dos en vez de `ADAPTADORESTUBO70` y `CORONA LT5070` |
-| Q-PR02 | **Contestada (taller, 30/09/2026):** máquina exterior, casquillo largo (eje 63); interior, corto (eje 50). El Punto Recto solo sabe «máquina», no si es interior o exterior: sigue el eje 50 hasta que Iván diga si se pregunta en la tarjeta | Casquillo de máquina (pendiente) |
+| Q-PR02 | **Contestada (taller, 30/09/2026):** máquina exterior, casquillo largo (eje 63); interior, corto (eje 50). El Punto Recto solo sabe «máquina», no si es interior o exterior: Iván (30/09) confirmó que, sin saber si es interior o exterior, va el eje 50, que es el que más se gasta | Hecho: casquillo de eje 50 |
 | Q-PR03 | ¿El Punto Recto lleva perfil Univers 280 o 270? La tarifa vende los dos; en RPS el 270 solo existe en blanco de 700 y lo consumido es el 280 | Perfil de carga |
 | Q-PR04 | **Resuelta (taller, 30/09/2026):** es una excepción; no hay stock | Hecho: se sigue ofreciendo la de 160, con aviso en la tarjeta de que es una excepción sin stock |
 
