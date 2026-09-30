@@ -29,3 +29,13 @@ pasando con el mismo número de casos que en el origen.
   abre otra. Devuelve `null` si no hay credenciales, igual que el original.
 - `@types/mssql` entra como dependencia de desarrollo porque el código copiado importa
   `mssql` tipado.
+
+## Fase 4: la hoja de taller
+
+`hoja/datos-hoja.ts` y `hoja/datos-geometria.ts` están copiados de `Remolques-TGM/src/lib/pdf`
+(commit a7ffef0) con las mismas reglas: solo cambian los imports. `paridad-hoja.test.ts` compara
+los 32 casos reales con `__fixtures__/hoja-produccion-2026-09.json`, que generó el código de la web
+vieja sobre la misma fixture. Añadidos a propósito: la fila «BASTILLA ENFUNDAR», la tabla de
+ganchos («Según ganchos»), el paño y el contorno de corte con sus dos medidas cuando el remolque es
+distinto detrás, y las columnas que hagan falta si un lado lleva más de 12 ollaos (la vieja cortaba
+en 12). La hoja no lleva las notas del cálculo: solo las observaciones del técnico.

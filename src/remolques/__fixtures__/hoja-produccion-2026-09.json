@@ -1,0 +1,3482 @@
+[
+  {
+    "caso": "baqueton-01",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 291 × 191"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "261 × 161"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "12"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            34.5,
+            66.5,
+            98.5,
+            130.5,
+            162.5,
+            194.5,
+            226.5,
+            258.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            33.7,
+            64.9,
+            96.1,
+            127.3,
+            158.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            33.7,
+            64.9,
+            96.1,
+            127.3,
+            158.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-02",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 124 × 97,5",
+            "1 PAÑO DE 148 × 97,5",
+            "1 PAÑO DE 203 × 295,2"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "201 × 122",
+            "ALTO 93"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "295,2"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 8 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 10,1 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            41.7,
+            80.9,
+            120.1,
+            159.3,
+            198.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            41.5,
+            80.5,
+            119.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            41.5,
+            80.5,
+            119.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-03",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 155 × 94,5",
+            "1 PAÑO DE 179 × 94,5",
+            "1 PAÑO DE 283 × 318,6"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "281 × 153",
+            "ALTO 90"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "318,6"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 8 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 10,1 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            37,
+            71.5,
+            106,
+            140.5,
+            175,
+            209.5,
+            244,
+            278.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.1,
+            61.7,
+            91.3,
+            120.9,
+            150.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.1,
+            61.7,
+            91.3,
+            120.9,
+            150.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-04",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 317 × 189"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "281 × 153"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "15"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            37,
+            71.5,
+            106,
+            140.5,
+            175,
+            209.5,
+            244,
+            278.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.1,
+            61.7,
+            91.3,
+            120.9,
+            150.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.1,
+            61.7,
+            91.3,
+            120.9,
+            150.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-05",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 129 × 72,5",
+            "1 PAÑO DE 153 × 72,5",
+            "1 PAÑO DE 179 × 247,9"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "177 × 127",
+            "ALTO 68"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "247,9"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 10,5 CM",
+                "RADIO CUMBRERA 7,5 CM",
+                "RADIO HOMBRO 7,5 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            28.8,
+            66.4,
+            111,
+            146.3,
+            174.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            29,
+            60.3,
+            91.3,
+            124.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            29.8,
+            60.3,
+            90.5,
+            124.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-06",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 124 × 97,5",
+            "1 PAÑO DE 148 × 97,5",
+            "1 PAÑO DE 203 × 295,2"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "201 × 122",
+            "ALTO 93"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "295,2"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 8 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 10,1 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            35.2,
+            67.8,
+            100.5,
+            133.2,
+            165.8,
+            198.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            41.5,
+            80.5,
+            119.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            41.5,
+            80.5,
+            119.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-07",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 308 × 178"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "266 × 136"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "18"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m²:VERDE 6026 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            26.2,
+            50,
+            73.7,
+            97.4,
+            121.1,
+            144.9,
+            168.6,
+            192.3,
+            216,
+            239.8,
+            263.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            28.7,
+            54.9,
+            81.1,
+            107.3,
+            133.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            28.7,
+            54.9,
+            81.1,
+            107.3,
+            133.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-08",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 155 × 129,5",
+            "1 PAÑO DE 155 × 129,5",
+            "1 PAÑO DE 256 × 378,5"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "254 × 153",
+            "ALTO 125"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "378,5"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 16 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 8,2 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "CREMALLERA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            33.6,
+            64.8,
+            95.9,
+            127,
+            158.1,
+            189.3,
+            220.4,
+            251.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.1,
+            61.7,
+            91.3,
+            120.9,
+            150.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.1,
+            61.7,
+            91.3,
+            120.9,
+            150.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-09",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 272 × 212"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "186 × 126"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "40"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            38.7,
+            74.9,
+            111.1,
+            147.3,
+            183.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.8,
+            63,
+            93.3,
+            123.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            32.8,
+            63,
+            93.3,
+            123.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-10",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 111 × 79,5",
+            "1 PAÑO DE 135 × 79,5",
+            "1 PAÑO DE 153 × 240,1"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "151 × 109",
+            "ALTO 75"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "240,1"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 02 · Dos aguas rectas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 15 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "VELCRO"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            37.2,
+            71.8,
+            106.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            37.2,
+            71.8,
+            106.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-11",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 146 × 92,5",
+            "1 PAÑO DE 170 × 92,5",
+            "1 PAÑO DE 253 × 321,6"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "251 × 144",
+            "ALTO 88"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "321,6"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 05 · esquinas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "RADIO ESQUINA 8 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :  AZUL EUROPA:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            10,
+            50,
+            100,
+            150,
+            200,
+            241,
+            248.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            37.3,
+            72,
+            106.8,
+            141.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            37.3,
+            72,
+            106.8,
+            141.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-12",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 146 × 92,5",
+            "1 PAÑO DE 170 × 92,5",
+            "1 PAÑO DE 253 × 321,6"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "251 × 144",
+            "ALTO 88"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "321,6"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 05 · esquinas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "RADIO ESQUINA 8 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            10,
+            50,
+            100,
+            150,
+            200,
+            241,
+            248.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            37.3,
+            72,
+            106.8,
+            141.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            37.3,
+            72,
+            106.8,
+            141.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-13",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 136 × 92,5",
+            "1 PAÑO DE 160 × 92,5",
+            "1 PAÑO DE 228 × 311,6"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "226 × 134",
+            "ALTO 88"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "311,6"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 05 · esquinas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "RADIO ESQUINA 8 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :  AZUL EUROPA:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            10,
+            56,
+            112.5,
+            169,
+            216,
+            223.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            36,
+            67,
+            98,
+            129
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            36,
+            67,
+            98,
+            129
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-14",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 144 × 86,5",
+            "1 PAÑO DE 168 × 86,5",
+            "1 PAÑO DE 253 × 294,3"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "251 × 142",
+            "ALTO 82"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "294,3"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 7 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 10,1 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            37.6,
+            72.8,
+            107.9,
+            143.1,
+            178.2,
+            213.4,
+            248.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            36.8,
+            71,
+            105.3,
+            139.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            36.8,
+            71,
+            105.3,
+            139.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-15",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 291 × 191"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "261 × 161"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "12"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            34.5,
+            66.5,
+            98.5,
+            130.5,
+            162.5,
+            194.5,
+            226.5,
+            258.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            33.7,
+            64.9,
+            96.1,
+            127.3,
+            158.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            33.7,
+            64.9,
+            96.1,
+            127.3,
+            158.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-16",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 133 × 74,5",
+            "1 PAÑO DE 157 × 74,5",
+            "1 PAÑO DE 228 × 259,5"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "226 × 131",
+            "ALTO 70"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "259,5"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 7 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 10,1 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            39.3,
+            76.2,
+            113,
+            149.8,
+            186.7,
+            223.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            34,
+            65.5,
+            97,
+            128.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            34,
+            65.5,
+            97,
+            128.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-17",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 133 × 94,5",
+            "1 PAÑO DE 157 × 94,5",
+            "1 PAÑO DE 228 × 299,5"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "226 × 131",
+            "ALTO 90"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "299,5"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 7 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 10,1 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · REPARTIDOS · PRIMER Y ÚLTIMO OLLAO A 2,5 CM DEL BORDE",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            39.3,
+            76.2,
+            113,
+            149.8,
+            186.7,
+            223.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            34,
+            65.5,
+            97,
+            128.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            34,
+            65.5,
+            97,
+            128.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-18",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "3 PAÑOS DE 288 × 169"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "251 × 141"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "10"
+          ],
+          "notas": [
+            "DELANTE EN LÍNEA",
+            "TRASERO 20 · NO EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "HIJOS DE PEDRO LOPEZ"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA G650 2L 650 :GRIS RAL 7038 :250 AN",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.8,
+            31,
+            62.5,
+            94,
+            125.5,
+            157,
+            188.5,
+            220,
+            248.2
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.6,
+            37,
+            70.5,
+            104,
+            138.4
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.6,
+            37,
+            70.5,
+            104,
+            138.4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-19",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 278 × 209"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "221 × 161"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "20"
+          ],
+          "notas": [
+            "DELANTE EN LÍNEA",
+            "TRASERO 30 · NO EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "HIJOS DE PEDRO LOPEZ"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA G650 2L 650 :GRIS RAL 7038 :250 AN",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            3.2,
+            32,
+            63.6,
+            95.2,
+            126.8,
+            158.4,
+            190,
+            218.9
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.8,
+            31.8,
+            64.3,
+            96.8,
+            129.3,
+            158.2
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.8,
+            31.8,
+            64.3,
+            96.8,
+            129.3,
+            158.2
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-20",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 203 × 131"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "187 × 111"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "7"
+          ],
+          "notas": [
+            "DELANTE EN LÍNEA",
+            "TRASERO 3 · NO EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            26,
+            70,
+            115,
+            160,
+            184.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            35,
+            75,
+            108.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            55,
+            108.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-21",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 216 × 145"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "182 × 111"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "14"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            23,
+            67,
+            114,
+            158,
+            179.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            35,
+            75,
+            108.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            55,
+            108.5
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-22",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 261 × 168"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "235 × 142"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "10"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "GENERAL"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m²:ROJO RAL3002:250 AN",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            5,
+            48,
+            95,
+            142,
+            189,
+            230
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            44,
+            97,
+            137
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            27,
+            71,
+            115,
+            137
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-23",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 160 × 89,5",
+            "1 PAÑO DE 160 × 89,5",
+            "1 PAÑO DE 233 × 329,6"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "231 × 158",
+            "ALTO 85"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "329,6"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 05 · esquinas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "RADIO ESQUINA 8 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "CREMALLERA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            10,
+            16,
+            46,
+            96,
+            146,
+            196,
+            221,
+            228.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            40.8,
+            79,
+            117.3,
+            155.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            999999
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-24",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 107 × 51,5",
+            "1 PAÑO DE 131 × 51,5",
+            "1 PAÑO DE 130 × 200,6"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "128 × 105",
+            "ALTO 47"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "200,6"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 05 · esquinas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "RADIO ESQUINA 8 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            10,
+            30.5,
+            60.5,
+            90.5,
+            118,
+            125.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            36.9,
+            68.5,
+            100.4
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            36.9,
+            68.5,
+            100.4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-25",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 278 × 159"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "251 × 141"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "5"
+          ],
+          "notas": [
+            "DELANTE EN LÍNEA",
+            "TRASERO 15 · NO EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "HIJOS DE PEDRO LOPEZ"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA G650 2L 650 :GRIS RAL 7038 :250 AN",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.8,
+            31,
+            62.5,
+            94,
+            125.5,
+            157,
+            188.5,
+            220,
+            248.2
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.6,
+            37,
+            70.5,
+            104,
+            138.4
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.6,
+            37,
+            70.5,
+            104,
+            138.4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-26",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 134 × 74,5",
+            "1 PAÑO DE 152 × 74,5",
+            "1 PAÑO DE 248 × 254,2"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "227 × 132",
+            "ALTO 70"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "254,2"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 03 · Dos aguas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 10 CM",
+                "RADIO CUMBRERA 0 CM",
+                "RADIO HOMBRO 13 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "PUENTES ESVA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            10.5,
+            47.5,
+            114.5,
+            80,
+            215.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            10,
+            43.2,
+            88.7,
+            122
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            10,
+            43.2,
+            88.7,
+            122
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-27",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 123 × 74,5",
+            "1 PAÑO DE 147 × 74,5",
+            "1 PAÑO DE 183 × 255,3"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "181 × 121",
+            "ALTO 70"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "255,3"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 05 · esquinas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "RADIO ESQUINA 16,5 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "SÍ · 50 × 35 CM"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            10,
+            34.1,
+            62.3,
+            90.5,
+            118.7,
+            146.9,
+            174
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            7,
+            33.5,
+            60.5,
+            87.5,
+            114
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            7,
+            33.5,
+            60.5,
+            87.5,
+            114
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-28",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 326 × 219"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "264 × 157"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "28"
+          ],
+          "notas": [
+            "EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "AYALA"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            20,
+            71.5,
+            133,
+            193,
+            242.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            6,
+            34,
+            78.2,
+            123,
+            151
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            6,
+            34,
+            78.2,
+            123,
+            151
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-29",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 136 × 60,5",
+            "1 PAÑO DE 160 × 60,5",
+            "1 PAÑO DE 183 × 247,6"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "181 × 134",
+            "ALTO 56"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "247,6"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 05 · esquinas curvas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "RADIO ESQUINA 8 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            10,
+            60,
+            120,
+            171,
+            178.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            36,
+            67,
+            98,
+            129
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            36,
+            67,
+            98,
+            129
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "baqueton-30",
+    "hoja": {
+      "titulo": "BAQUETÓN",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 278 × 159"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA REMOLQUE",
+          "lineas": [
+            "251 × 141"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "BAQUETÓN",
+          "lineas": [
+            "5"
+          ],
+          "notas": [
+            "DELANTE EN LÍNEA",
+            "TRASERO 15 · NO EN LÍNEA"
+          ]
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "CLIENTE ESPECÍFICO",
+              "valores": [
+                "HIJOS DE PEDRO LOPEZ"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "SÍ"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA G650 2L 650 :GRIS RAL 7038 :250 AN",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.8,
+            31,
+            62.5,
+            94,
+            125.5,
+            157,
+            188.5,
+            220,
+            248.2
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.6,
+            37,
+            70.5,
+            104,
+            138.4
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.6,
+            37,
+            70.5,
+            104,
+            138.4
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-31",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 123 × 84,5",
+            "1 PAÑO DE 147 × 84,5",
+            "1 PAÑO DE 183 × 268"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "181 × 121",
+            "ALTO 80"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "268"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 02 · Dos aguas rectas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 11 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "GOMA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            14,
+            45,
+            74,
+            104,
+            134,
+            175
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            9,
+            34.5,
+            60.5,
+            86.5,
+            112
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            5,
+            30.5,
+            60.5,
+            90.5,
+            116
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "caso": "lona-32",
+    "hoja": {
+      "titulo": "REMOLQUE",
+      "banda": [
+        {
+          "titulo": "PAÑOS A CORTAR",
+          "lineas": [
+            "1 PAÑO DE 139 × 107,5",
+            "1 PAÑO DE 139 × 107,5",
+            "1 PAÑO DE 193 × 344,1"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "MEDIDA LONA HECHA",
+          "lineas": [
+            "191 × 137",
+            "ALTO 103"
+          ],
+          "notas": []
+        },
+        {
+          "titulo": "CONTORNO DE CORTE",
+          "lineas": [
+            "344,1"
+          ],
+          "notas": []
+        }
+      ],
+      "grupos": [
+        {
+          "titulo": "FORMA",
+          "datos": [
+            {
+              "etiqueta": "PERFIL",
+              "valores": [
+                "TIPO 02 · Dos aguas rectas"
+              ]
+            },
+            {
+              "etiqueta": "GEOMETRÍA",
+              "valores": [
+                "AGUAS 3 CM"
+              ]
+            }
+          ]
+        },
+        {
+          "titulo": "ACABADOS",
+          "datos": [
+            {
+              "etiqueta": "RECOGE DELANTE",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "RECOGE ATRÁS",
+              "valores": [
+                "CREMALLERA"
+              ]
+            },
+            {
+              "etiqueta": "VENTANA",
+              "valores": [
+                "NO"
+              ]
+            },
+            {
+              "etiqueta": "ROTULACIÓN",
+              "valores": [
+                "NO"
+              ]
+            }
+          ]
+        }
+      ],
+      "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+      "observaciones": "—"
+    },
+    "ollaos": {
+      "titulo": "OLLAOS · SEGUN SE INDICA",
+      "columnas": 12,
+      "filas": [
+        {
+          "nombre": "OLLAOS LATERALES DE ATRÁS A ADELANTE",
+          "posiciones": [
+            2.5,
+            39.5,
+            74.5,
+            112.5,
+            149,
+            188.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS ATRÁS DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            35.5,
+            66,
+            97,
+            134.5
+          ]
+        },
+        {
+          "nombre": "OLLAOS DELANTE DE IZQUIERDA A DERECHA",
+          "posiciones": [
+            2.5,
+            28,
+            68,
+            107,
+            134.5
+          ]
+        }
+      ]
+    }
+  }
+]
