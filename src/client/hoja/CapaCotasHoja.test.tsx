@@ -27,6 +27,15 @@ describe('cotas de las vistas de la hoja', () => {
     expect(html).toContain('>DELANTE<');
   });
 
+  // Iván, 01/10/2026: unas aguas de 8 cm juntaban las dos flechas.
+  it('una cota corta lleva las flechas por fuera, con su cola, y el número se sigue leyendo', () => {
+    const corta: CapturaVista = { ...captura, cotas: { lineas: [{ x1: 40, y1: 100, x2: 40, y2: 110, texto: '8', tx: 40, ty: 105 }], marcas: [] } };
+    const html = renderToStaticMarkup(<CapaCotasHoja captura={corta} />);
+    expect(html.match(/<line /g)).toHaveLength(3);
+    expect(html).toMatch(/marker-start="url\(#hoja-flecha-fuera-[^)]+\)"/);
+    expect(html).toContain('>8<');
+  });
+
   it('una cota con el número debajo lo escribe por debajo de su línea', () => {
     const html = renderToStaticMarkup(<CapaCotasHoja captura={captura} />);
     const y = (texto: string) => Number(new RegExp(`y="([\\d.]+)"[^>]*>${texto}<`).exec(html)![1]);

@@ -335,9 +335,29 @@ describe("cotas de las aguas y de la ventana", () => {
       expect.objectContaining({ texto: "201" }),
       expect.objectContaining({ texto: "100" }),
       { vistas: ["delante"], desde: [-25, 52, 301], hasta: [25, 52, 301], texto: "50", textoDebajo: true },
-      { vistas: ["delante"], desde: [33, 60, 301], hasta: [33, 95, 301], texto: "35" },
+      {
+        vistas: ["delante"], desde: [33, 60, 301], hasta: [33, 95, 301], texto: "35",
+        // Iván, 01/10/2026: con el borde de la lona a la altura del número y la misma cota por dentro
+        // de la ventana, para cuando entre la línea y el borde no quepa el número.
+        hueco: { borde: [100.5, 77.5, 301], dentro: { desde: [17, 60, 301], hasta: [17, 95, 301] } },
+      },
     ]);
     expect(e.cotas.filter((c) => c.vistas.includes("detras")).map((c) => c.texto)).toEqual(["201", "100"]);
+  });
+
+  it("con cremallera delante, el sitio del alto de la ventana acaba en su banda (a 5 cm de la esquina)", () => {
+    const e = escenaLona({ ventana: true, ventanaAncho: 50, ventanaAlto: 35, recogeDelante: "CREMALLERA" })!;
+    expect(e.cotas.find((c) => c.texto === "35")!.hueco!.borde).toEqual([100.5 - 5 - 1.5, 77.5, 301]);
+  });
+
+  it("en un perfil arquillado, el borde de la lona junto al alto de la ventana es el de su curva", () => {
+    const e = escenaLona({ tipoPerfil: "TIPO 05", radioEsquina: 60, ventana: true, ventanaAncho: 60, ventanaAlto: 30 })!;
+    const alto = e.cotas.find((c) => c.texto === "30")!;
+    const [, y] = alto.hueco!.borde;
+    // A esa altura la esquina redondeada ya se ha metido hacia dentro: menos que medio ancho.
+    expect(y).toBeGreaterThan(40);
+    expect(alto.hueco!.borde[0]).toBeLessThan(100.5);
+    expect(alto.hueco!.borde[0]).toBeGreaterThan(alto.desde[0]);
   });
 });
 

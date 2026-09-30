@@ -1,6 +1,6 @@
 import { excelRound } from "../calc/redondeo.ts";
-import { SEPARACION_COTA, SEPARACION_COTA_VENTANA, SEPARACION_ETIQUETA } from "./constantes.ts";
-import type { CotaEscena, CuerpoBaqueton, CuerpoLona, EtiquetaEscena, Gancho, LadoBorde, Marca, VentanaEscena, Vista } from "./tipos.ts";
+import { ANCHO_CREMALLERA, CREMALLERA_A_ESQUINA, SEPARACION_COTA, SEPARACION_COTA_VENTANA, SEPARACION_ETIQUETA } from "./constantes.ts";
+import type { CotaEscena, CuerpoBaqueton, CuerpoLona, EtiquetaEscena, Gancho, LadoBorde, Marca, Perfil2D, VentanaEscena, Vista } from "./tipos.ts";
 
 const fmt = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
 const r1 = (v: number) => excelRound(v, 1);
@@ -61,8 +61,25 @@ export function cotasAguas(cuerpo: CuerpoLona, aguas: number, altos: { delante: 
   ];
 }
 
-/** La ventana, de frente: el ancho por debajo de ella (con el número debajo, para no pisarla) y el alto a su lado. */
-export function cotasVentana(ventana: VentanaEscena | null): CotaEscena[] {
+/** Hasta dónde llega la lona por el lado de x positivo a la altura `y` (el perfil va centrado). */
+export function bordeLona(perfil: Perfil2D, y: number): number {
+  let x = 0;
+  for (let i = 1; i < perfil.length; i++) {
+    const [xa, ya] = perfil[i - 1];
+    const [xb, yb] = perfil[i];
+    if ((y < Math.min(ya, yb)) || (y > Math.max(ya, yb))) continue;
+    const t = yb === ya ? 1 : (y - ya) / (yb - ya);
+    x = Math.max(x, xa + (xb - xa) * t);
+  }
+  return x;
+}
+
+/**
+ * La ventana, de frente: el ancho por debajo de ella (con el número debajo, para no pisarla) y el alto
+ * a su lado. El alto lleva además el borde de la lona junto al número y la misma cota por dentro de la
+ * ventana: con un remolque estrecho y una ventana ancha, el número no cabe fuera (Iván, 01/10/2026).
+ */
+export function cotasVentana(ventana: VentanaEscena | null, perfil?: Perfil2D, { cremallera = false } = {}): CotaEscena[] {
   if (!ventana) return [];
   const [x, y, z] = ventana.centro;
   const abajo = r1(y - ventana.alto / 2);
@@ -71,7 +88,16 @@ export function cotasVentana(ventana: VentanaEscena | null): CotaEscena[] {
   const izquierda = r1(x - ventana.ancho / 2);
   return [
     { vistas: ["delante"], desde: [izquierda, abajo - SEPARACION_COTA_VENTANA, z], hasta: [derecha, abajo - SEPARACION_COTA_VENTANA, z], texto: fmt(ventana.ancho), textoDebajo: true },
-    { vistas: ["delante"], desde: [derecha + SEPARACION_COTA_VENTANA, abajo, z], hasta: [derecha + SEPARACION_COTA_VENTANA, arriba, z], texto: fmt(ventana.alto) },
+    {
+      vistas: ["delante"], desde: [derecha + SEPARACION_COTA_VENTANA, abajo, z], hasta: [derecha + SEPARACION_COTA_VENTANA, arriba, z], texto: fmt(ventana.alto),
+      ...(perfil ? {
+        hueco: {
+          // Con cremallera delante, el sitio acaba en su banda, a 5 cm de la esquina: el número no la pisa.
+          borde: [r1(bordeLona(perfil, y) - (cremallera ? CREMALLERA_A_ESQUINA + ANCHO_CREMALLERA / 2 : 0)), y, z],
+          dentro: { desde: [r1(derecha - SEPARACION_COTA_VENTANA), abajo, z], hasta: [r1(derecha - SEPARACION_COTA_VENTANA), arriba, z] },
+        },
+      } : {}),
+    },
   ];
 }
 

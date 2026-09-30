@@ -1,28 +1,33 @@
 import React, { useId } from 'react';
 import type { CotasPantalla, RotuloPantalla } from './proyeccion';
+import { trazarCota } from './trazadoCota';
 
-// Cotas encima del render, en SVG: el texto se lee igual de nítido en cualquier vista.
+// Cotas encima del render, en SVG: el texto se lee igual de nítido en cualquier vista. Cómo va cada
+// una (flechas por fuera si es corta, el alto de la ventana dentro si fuera no cabe): trazadoCota.
 export function CapaCotas({ cotas, ancho, alto }: { cotas: CotasPantalla; ancho: number; alto: number }) {
-  const flecha = `rem-render-flecha-${useId().replace(/:/g, '')}`;
+  const id = useId().replace(/:/g, '');
+  const flecha = `rem-render-flecha-${id}`;
+  const flechaFuera = `rem-render-flecha-fuera-${id}`;
+  const estilo = { anchoLienzo: ancho, letra: 11, flecha: 8, hueco: 8, bajaVertical: 4, subeHorizontal: 6, bajaHorizontal: 14 };
   return (
     <svg className="rem-render-cotas" width={ancho} height={alto} viewBox={`0 0 ${ancho} ${alto}`} aria-hidden="true">
       <defs>
         <marker id={flecha} markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse">
           <path d="M8 0 L0 4 L8 8 z" />
         </marker>
+        {/* La misma flecha con la punta en el extremo y el cuerpo hacia fuera. */}
+        <marker id={flechaFuera} markerWidth="8" markerHeight="8" refX="0" refY="4" orient="auto-start-reverse">
+          <path d="M8 0 L0 4 L8 8 z" />
+        </marker>
       </defs>
       {cotas.lineas.map((l, i) => {
-        const vertical = Math.abs(l.x2 - l.x1) < Math.abs(l.y2 - l.y1);
-        // Como en la hoja: una cota vertical en la mitad izquierda lleva el número a su izquierda,
-        // hacia fuera (el alto de la ventana y las aguas no caen encima de la ventana ni de la lona).
-        const aLaIzquierda = vertical && l.tx < ancho / 2;
+        const t = trazarCota(l, estilo);
+        const punta = `url(#${t.fuera ? flechaFuera : flecha})`;
         return (
           <g key={`l${i}`}>
-            <line x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} markerStart={`url(#${flecha})`} markerEnd={`url(#${flecha})`} />
-            <text x={vertical ? l.tx + (aLaIzquierda ? -8 : 8) : l.tx} y={vertical ? l.ty + 4 : l.ty + (l.textoDebajo ? 14 : -6)}
-              textAnchor={vertical ? (aLaIzquierda ? 'end' : 'start') : 'middle'}>
-              {l.texto}
-            </text>
+            <line {...t.linea} markerStart={punta} markerEnd={punta} />
+            {t.colas.map((c, j) => <line key={j} {...c} />)}
+            <text x={t.texto.x} y={t.texto.y} textAnchor={t.texto.anchor}>{l.texto}</text>
           </g>
         );
       })}

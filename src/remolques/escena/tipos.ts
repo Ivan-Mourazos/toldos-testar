@@ -106,6 +106,10 @@ export interface CotaEscena {
   vistas: Vista[]; desde: Vec3; hasta: Vec3; texto: string;
   /** El número va por debajo de la línea (el ancho de la ventana: encima pisaría la ventana). */
   textoDebajo?: boolean;
+  /** El alto de la ventana: `borde`, el borde de la lona a la altura del número por el lado en que
+   *  va; `dentro`, la misma cota por dentro de la ventana, para cuando entre la línea y el borde no
+   *  cabe el número (remolque estrecho, ventana ancha). Lo decide quien dibuja, que sabe la escala. */
+  hueco?: { borde: Vec3; dentro: { desde: Vec3; hasta: Vec3 } };
 }
 /** Número junto a un ollao o un gancho. `hacia`: hacia dónde se escribe en la hoja de taller, que
  *  los pone en vertical para que no se pisen (ollaos hacia arriba, sobre la lona; ganchos hacia

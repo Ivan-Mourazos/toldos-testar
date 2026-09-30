@@ -2,7 +2,7 @@ import type { LonaInput, LonaResult } from "../calc/lona.ts";
 import type { CalcParams, TipoPerfil } from "../calc/params.ts";
 import { colorBaseMaterial } from "../geometry/color-lona.ts";
 import { perfilForma, type PerfilOpts } from "../geometry/perfil.ts";
-import { cierresLona } from "./cierres.ts";
+import { cierresLona, tipoCierre } from "./cierres.ts";
 import { cajaDe, chasisDe, rotulosDe } from "./chasis.ts";
 import { cajonDe, gomasDe, marcasGanchos, marcasOllaos, posicionesGanchos } from "./comun.ts";
 import { ALTO_CAJON, BASTILLA } from "./constantes.ts";
@@ -78,7 +78,7 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
     cotas: [
       ...cotasCuerpo(cuerpo, chasis.suelo),
       ...(conAguas ? cotasAguas(cuerpo, input.aguas ?? 0, { delante: hD, atras: hA }) : []),
-      ...cotasVentana(ventana),
+      ...cotasVentana(ventana, cuerpo.perfilDelante, { cremallera: tipoCierre(input.recogeDelante) === "CREMALLERA" }),
     ],
     etiquetas: etiquetasMarcas(ollaos, ganchos),
     rotulos: rotulosDe(caja),
