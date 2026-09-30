@@ -184,7 +184,7 @@ function buildMaterials(context) {
     if (sensor) materials.push({ ...sensor, quantity: units, aggregation: 'max' });
   } else {
     materials.push(
-      line(rollSystem === 'P801' ? 'CASMAQEJE6378MM' : 'CASMAQEJE6370MM', units, rollSystem === 'P801' ? 'CASQUILLO EJE 63MM Ø78' : 'CASQUILLO EJE 63MM Ø70'),
+      line(rollSystem === 'P801' ? 'CASMAQEJE5078MM' : 'CASMAQEJE5070MM', units, rollSystem === 'P801' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO MAQUINA EJE 50MM Ø70'),
       line(crank.code, units, crank.name),
       line(machineCode(lacado), units, `MÁQUINA MB-11 L-120 ${lacado.crank}`)
     );
@@ -228,7 +228,7 @@ function buildDespiece(context) {
     if (sensor) push(22, sensor.description, sensor.code, units);
   } else {
     const crankHeight = crank.height;
-    push(8, rollSystem === 'P801' ? 'CASQUILLO EJE 63MM Ø78' : 'CASQUILLO EJE 63MM Ø70', rollSystem === 'P801' ? 'CASMAQEJE6378MM' : 'CASMAQEJE6370MM', units);
+    push(8, rollSystem === 'P801' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO MAQUINA EJE 50MM Ø70', rollSystem === 'P801' ? 'CASMAQEJE5078MM' : 'CASMAQEJE5070MM', units);
     push(9, 'TACO NAYLON MAQ.', null, units);
     push(10, crank.name, crank.code, units, crankHeight);
     push(11, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);

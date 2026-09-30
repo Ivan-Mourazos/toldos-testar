@@ -230,6 +230,20 @@ describe('Antica TGM: piezas compradas y fabricación propia', () => {
     expect(block.materials).toContainEqual(expect.objectContaining({ code: 'MANIVEBL16200C', quantity: 1 }));
     expect(block.materials).toContainEqual(expect.objectContaining({ code: 'CASPUNCEJE70MM', quantity: 1 }));
   });
+  // Taller, 30/09/2026 (Q-PR02): sin saber si la máquina es exterior o interior, casquillo de eje 50.
+  test('con máquina lleva el casquillo de eje 50 (Ø70 con P701) y no el de eje 63', () => {
+    const block = calculateOrder(payload({})).ofs[0];
+    const codes = block.materials.map(m => m.code);
+    expect(codes).toContain('CASMAQEJE5070MM');
+    expect(codes.some(code => /^CASMAQEJE63/.test(code))).toBe(false);
+    expect(block.despiece.rows).toContainEqual(expect.objectContaining({ name: 'CASQUILLO MAQUINA EJE 50MM Ø70', reference: 'CASMAQEJE5070MM' }));
+  });
+  test('con máquina y P801 lleva el casquillo de eje 50 Ø78', () => {
+    const block = calculateOrder(payload({ width: 500, projection: 100, structureArmCount: 4, rollSystem: 'P801' })).ofs[0];
+    const codes = block.materials.map(m => m.code);
+    expect(codes).toContain('CASMAQEJE5078MM');
+    expect(codes.some(code => /^CASMAQEJE63/.test(code))).toBe(false);
+  });
   test('un largo no homologado se puede revisar sin inventar referencia', () => {
     const result = calculateOrder(payload({ crankHeight: 300 }));
     expect(result.ofs[0].despiece.rows.find(r => r.num === 10).reference).toBeNull();
