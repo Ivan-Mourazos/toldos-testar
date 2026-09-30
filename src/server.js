@@ -23,6 +23,10 @@ import { createRemolquesParametersStore } from './remolquesParametersStore.js';
 import { getMaterialesConOrigen } from './remolques/materiales.ts';
 import { pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
 import { materialPreferidoRps } from './remolques/rps/material-rps.ts';
+import { prepararPedidoHoja } from './remolques/hoja/pedido.ts';
+import { crearAlmacenFichas } from './remolques/salida/fichas.ts';
+import { crearServicioPdf } from './remolques/salida/navegador.ts';
+import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
@@ -90,6 +94,10 @@ const deploymentFeatures = {
 const app = express();
 const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
 const generationLocks = new Set();
+// Hoja de taller de remolques (fase 4): los datos de cada PDF esperan aquí, en memoria y un
+// minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
+const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
+const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
 
 app.use(compression());
 app.use(express.json({ limit: '20mb' }));
@@ -360,6 +368,36 @@ app.get('/api/remolques/parametros', async (_req, res, next) => {
     res.json(await remolquesParametersStore.get());
   } catch (error) {
     next(error);
+  }
+});
+
+// La página interna de la hoja pide sus datos con el identificador que le dio el PDF. Un solo uso.
+app.get('/api/remolques/hoja/:id', (req, res) => {
+  const datos = fichasHojaRemolques.tomar(req.params.id);
+  if (!datos) {
+    res.status(404).json({ error: 'Los datos de esta hoja ya no están disponibles: vuelve a pedir el PDF.' });
+    return;
+  }
+  res.set('Cache-Control', 'no-store').json(datos);
+});
+
+// Vista previa de la hoja de taller: hace el PDF y lo devuelve. Nunca lo guarda en ninguna
+// carpeta; el archivo (src/remolques/salida/archivo.ts) lo llamará la fase 5.
+app.post('/api/remolques/pdf', async (req, res, next) => {
+  let id = null;
+  try {
+    const datos = prepararPedidoHoja(req.body?.elementos, await remolquesParametersStore.get());
+    id = fichasHojaRemolques.guardar(datos);
+    const pdf = await servicioPdfRemolques.generar(id);
+    res.set('Cache-Control', 'no-store')
+      .setHeader('Content-Type', 'application/pdf')
+      .setHeader('Content-Disposition', `inline; filename="${nombrePdf(datos.elementos[0].input.cabecera.numeroPedido)}"`)
+      .send(pdf);
+  } catch (error) {
+    if (error?.statusCode >= 500) console.error('No se pudo hacer la hoja de taller de remolques:', error.message);
+    next(error);
+  } finally {
+    if (id) fichasHojaRemolques.borrar(id);
   }
 });
 
@@ -849,6 +887,12 @@ async function shutdown(signal) {
   }
 
   try {
+    await servicioPdfRemolques.cerrar();
+  } catch (error) {
+    closeErrors.push(error);
+  }
+
+  try {
     if (closeErrors.length > 0) throw new AggregateError(closeErrors, 'Falló el cierre de uno o más recursos.');
     console.log('Servidor HTTP y conexión RPS cerrados correctamente.');
   } catch (error) {
@@ -888,6 +932,14 @@ function sanitizeOf(value) {
   }
 
   return clean.slice(0, 80);
+}
+
+/** Dirección de la página de la hoja para el Chromium del propio servidor. */
+function urlHojaRemolques(id) {
+  const { port } = server.address();
+  const comodin = ['', '0.0.0.0', '::'].includes(config.host);
+  const host = comodin ? '127.0.0.1' : config.host.includes(':') ? `[${config.host}]` : config.host;
+  return `http://${host}:${port}/hoja-remolques.html?id=${encodeURIComponent(id)}`;
 }
 
 function findDuplicatedFilenames(targets) {
@@ -941,7 +993,16 @@ function buildPlanteamientoPath(orderCode) {
 }
 
 function serveDistFolder() {
-  app.use(express.static(distDir, { index: false, maxAge: '1y', immutable: true }));
+  // Los recursos con hash se guardan un año; las páginas HTML no (hoja-remolques.html la abre
+  // Chromium directamente y tiene que llevar siempre los recursos del último despliegue).
+  app.use(express.static(distDir, {
+    index: false,
+    maxAge: '1y',
+    immutable: true,
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+    }
+  }));
   app.use((req, res, next) => {
     if (req.method === 'GET' && req.accepts('html')) {
       res.set('Cache-Control', 'no-cache');
