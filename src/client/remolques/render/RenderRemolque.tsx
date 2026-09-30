@@ -50,6 +50,15 @@ const DIRECCION_SOL: Record<Vista, Vec3> = {
   arriba: [0.4, 1.6, 0.6],
 };
 
+/** Cómo se nombra cada vista en la etiqueta del lienzo, para quien usa lector de pantalla. */
+const NOMBRE_VISTA: Record<Vista, string> = {
+  'tres-cuartos': 'en tres cuartos',
+  delante: 'de delante',
+  detras: 'de detrás',
+  lateral: 'lateral',
+  arriba: 'desde arriba',
+};
+
 /** Sol y su caja de sombras alrededor del remolque, para la vista que toca. */
 function colocarSol(sol: THREE.DirectionalLight, caja: EscenaRemolque['caja'], vista: Vista) {
   const { centro, tamano } = encuadre(caja);
@@ -94,6 +103,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     m.controles?.dispose();
     m.controles = null;
     const camara = crearCamara(d.vista, d.escena.caja, m.ancho / m.alto);
+    m.renderer.domElement.setAttribute('aria-label', `Render ${d.escena.cuerpo.tipo === 'lona' ? 'de la lona' : 'del baquetón'} sobre el remolque, vista ${NOMBRE_VISTA[d.vista]}`);
     m.camara = camara;
     colocarSol(m.sol, d.escena.caja, d.vista);
     if (d.vista === 'tres-cuartos') {
@@ -101,6 +111,8 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
       const controles = new OrbitControls(camara, m.renderer.domElement);
       controles.target.copy(centro);
       controles.enablePan = false;
+      // En el editor manda el desplazamiento de la página: la rueda sobre el render no acerca.
+      controles.enableZoom = false;
       // Girar alrededor, sin meterse bajo el suelo ni dentro de la caja de las cotas, y sin
       // alejarse más allá del plano lejano de la cámara.
       controles.minPolarAngle = 0.15;
@@ -225,9 +237,6 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     }
     m.grupo.scale.copy(ESPEJO);
     m.escena.add(m.grupo);
-    m.renderer.domElement.setAttribute('aria-label', escena.cuerpo.tipo === 'lona'
-      ? 'Render de la lona sobre el remolque'
-      : 'Render del baquetón sobre el remolque');
     const { centro, tamano: t } = encuadre(escena.caja);
     m.suelo.scale.set(t.x * 4, t.z * 4, 1);
     m.suelo.position.set(centro.x, escena.caja.min[1] - 0.05, centro.z);

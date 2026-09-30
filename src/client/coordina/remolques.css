@@ -328,6 +328,30 @@
 }
 .rem-render-cotas .rem-render-marca { font-size: 10px; font-weight: 500; }
 .rem-render-reiniciar { bottom: 0.625rem; position: absolute; right: 0.625rem; z-index: 2; }
+
+/* Cabecera del dibujo con las vistas (pestañas de CoordinaOT) y el interruptor de cotas. */
+.rem-dibujo-vistas { margin-left: auto; }
+/* Las teclas sueltas de CoordinaOT (`chip-3d rounded-lg px-2.5 py-1 text-xs font-semibold
+   text-text`, Drawer.tsx 812), a la altura de las pestañas; encendida lleva `glass-chip-activo`
+   con la tinta dorada de la pestaña activa. */
+.rem-dibujo-cotas,
+.rem-render-reiniciar {
+  border-radius: 0.5rem;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  padding: 0.25rem 0.625rem;
+}
+.rem-dibujo-cotas { height: 2.25rem; margin-left: 0.75rem; padding: 0 0.875rem; }
+.rem-dibujo-cotas.glass-chip-activo { color: var(--color-brand-800); }
+:root[data-theme="dark"] .rem-dibujo-cotas.glass-chip-activo { color: var(--color-brand-300); }
+/* El dibujo técnico de respaldo ya trae su propio marco. */
+.rem-dibujo .rem-dibujo { border: 0; border-radius: 0; box-shadow: none; }
+.rem-render-cargando { align-items: center; color: var(--text-muted); display: flex; font-size: 12px; justify-content: center; }
+.rem-render-aviso { color: var(--text-muted); font-size: 12px; margin: 0; padding: 0.5rem 0.75rem 0; }
 .rem-observaciones {
   align-items: center;
   background: color-mix(in srgb, var(--surface-2) 70%, transparent);
