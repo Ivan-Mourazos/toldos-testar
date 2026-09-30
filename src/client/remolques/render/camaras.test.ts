@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import type { Vista } from '../../../remolques/escena/tipos.ts';
-import { crearCamara } from './camaras';
+import { aMundo, crearCamara, espejar } from './camaras';
 import { escenaDePrueba } from './casos-prueba';
 import { cotasVisibles } from './proyeccion';
 
@@ -75,5 +75,17 @@ describe('izquierda y derecha como en el remolque de verdad', () => {
     const ancho = lineas.find((l) => l.texto === '201')!;
     const largo = lineas.find((l) => l.texto === '301')!;
     expect(ancho.tx).toBeGreaterThan(largo.tx);
+  });
+});
+
+describe('espejo', () => {
+  it('refleja x en el mundo y en el grupo de las mallas, sin que se pueda cambiar desde fuera', () => {
+    expect(aMundo([1, 2, 3]).toArray()).toEqual([-1, 2, 3]);
+    const grupo = new THREE.Group();
+    espejar(grupo);
+    expect(grupo.scale.toArray()).toEqual([-1, 1, 1]);
+    // Tocar la escala de un grupo no toca el espejo de los demás.
+    grupo.scale.set(5, 5, 5);
+    expect(aMundo([1, 0, 0]).toArray()).toEqual([-1, 0, 0]);
   });
 });

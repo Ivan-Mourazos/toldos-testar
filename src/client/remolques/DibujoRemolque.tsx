@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo, useState } from 'react';
 import type { CalcParams } from '../../remolques/calc/params.ts';
-import { construirEscena } from '../../remolques/escena/index.ts';
+import { construirEscenaSegura, escenaEstable } from './escenaDibujo';
 import type { ElementoEscena, Vista } from '../../remolques/escena/tipos.ts';
 import { soporteWebGL } from './soporteWebGL';
 import { useDiferido } from './useDiferido';
@@ -36,12 +36,17 @@ type Props = ElementoEscena & {
 export function DibujoRemolque(props: Props) {
   const { tipo, input, res, params } = props;
   // Se difiere el elemento entero: tipo, entrada y resultado cambian juntos al pasar de una
-  // lona a un baquetón y nunca deben mezclarse. `input` y `res` llegan memoizados de
-  // useRemolques, así que la escena solo se rehace (y el render solo recoloca la cámara) cuando
-  // cambia algo de verdad.
+  // lona a un baquetón y nunca deben mezclarse. `input` cambia con cualquier campo (también las
+  // observaciones o la cabecera), así que la escena se rehace a menudo; si sale igual que la
+  // anterior se sigue usando esa, y el render no se repinta ni pierde el giro de la 3/4.
   const elemento = useMemo(() => ({ tipo, input, res }) as ElementoEscena, [tipo, input, res]);
   const diferido = useDiferido(elemento);
-  const escena = useMemo(() => construirEscena(diferido, params), [diferido, params]);
+  const nueva = useMemo(() => construirEscenaSegura(diferido, params), [diferido, params]);
+  // Lo recordado del render anterior (el patrón de React para derivar de lo previo sin efectos).
+  const [seguida, setSeguida] = useState({ nueva, estable: nueva });
+  const cambia = seguida.nueva !== nueva;
+  const escena = cambia ? escenaEstable(seguida.estable, nueva) : seguida.estable;
+  if (cambia) setSeguida({ nueva, estable: escena });
   const [puede3D] = useState(soporteWebGL);
   const [fallo, setFallo] = useState(false);
   const [vista, setVista] = useState<Vista>('tres-cuartos');

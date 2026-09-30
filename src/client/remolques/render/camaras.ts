@@ -9,12 +9,18 @@ const FOV = 30;
  * La escena describe el remolque como es (x < 0 a su izquierda mirando hacia delante), pero
  * three.js es de mano derecha: con esos ejes tal cual, cada vista saldría en espejo (de frente,
  * el primer ollao a la derecha de quien mira). El render refleja x: las mallas cuelgan de un
- * grupo con esta escala y las cámaras, la luz y las cotas pasan por `aMundo`.
+ * grupo con esta escala (`espejar`) y las cámaras, la luz y las cotas pasan por `aMundo`.
+ * Congelado: nadie puede cambiarlo por error y descuadrar todas las vistas.
  */
-export const ESPEJO = new THREE.Vector3(-1, 1, 1);
+const ESPEJO: Readonly<THREE.Vector3> = Object.freeze(new THREE.Vector3(-1, 1, 1));
 
 export function aMundo(p: Vec3 | THREE.Vector3): THREE.Vector3 {
   return (Array.isArray(p) ? new THREE.Vector3(p[0], p[1], p[2]) : p.clone()).multiply(ESPEJO);
+}
+
+/** Pone el espejo al grupo de las mallas. */
+export function espejar(grupo: THREE.Object3D): void {
+  grupo.scale.copy(ESPEJO);
 }
 
 /** Centro y tamaño, ya en el mundo del render, de la caja de la escena con el margen de las cotas. */

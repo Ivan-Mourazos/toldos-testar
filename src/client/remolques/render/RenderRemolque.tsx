@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { EscenaRemolque, Vec3, Vista } from '../../../remolques/escena/tipos.ts';
-import { aMundo, crearCamara, encuadre, ESPEJO } from './camaras';
+import { aMundo, crearCamara, encuadre, espejar } from './camaras';
 import { CapaCotas } from './CapaCotas';
 import { construirMallas, liberarGrupo } from './mallas';
 import { crearMateriales, liberarMateriales, type Materiales } from './materiales';
@@ -26,6 +26,8 @@ interface Motor {
   color: string | null;
   /** La 3/4 se ha girado con el ratón: hasta volver a la vista fija, sin cotas. */
   girada: boolean;
+  /** La caja de la última escena (en texto): si no cambia, la 3/4 girada se queda como está. */
+  caja: string | null;
   ancho: number;
   alto: number;
 }
@@ -110,19 +112,15 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     // las vistas de frente el suelo queda de canto y no se ve. Solo la 3/4 lo necesita para asentarse.
     m.suelo.visible = d.vista !== 'arriba';
     if (d.vista === 'tres-cuartos') {
-      const { centro, tamano: t } = encuadre(d.escena.caja);
       const controles = new OrbitControls(camara, m.renderer.domElement);
-      controles.target.copy(centro);
+      controles.target.copy(encuadre(d.escena.caja).centro);
       controles.enablePan = false;
-      // En el editor manda el desplazamiento de la página: la rueda sobre el render no acerca.
+      // En el editor manda el desplazamiento de la página: la rueda sobre el render no acerca (y,
+      // sin zoom, la distancia a la lona no cambia al girar).
       controles.enableZoom = false;
-      // Girar alrededor, sin meterse bajo el suelo ni dentro de la caja de las cotas, y sin
-      // alejarse más allá del plano lejano de la cámara.
+      // Girar alrededor sin meterse bajo el suelo.
       controles.minPolarAngle = 0.15;
       controles.maxPolarAngle = Math.PI / 2 - 0.05;
-      const distancia = camara.position.distanceTo(centro);
-      controles.minDistance = Math.min(t.length() / 2, distancia);
-      controles.maxDistance = distancia * 3;
       controles.addEventListener('change', pintar);
       controles.addEventListener('start', () => {
         m.girada = true;
@@ -185,7 +183,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     suelo.receiveShadow = true;
     escena3D.add(suelo);
     motor.current = {
-      renderer, escena: escena3D, sol, suelo, camara: null, controles: null, grupo: null, materiales: null, color: null, girada: false, ancho: 0, alto: 0,
+      renderer, escena: escena3D, sol, suelo, camara: null, controles: null, grupo: null, materiales: null, color: null, girada: false, caja: null, ancho: 0, alto: 0,
     };
 
     const observador = new ResizeObserver(([entrada]) => {
@@ -209,6 +207,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
       if (m?.grupo) liberarGrupo(m.grupo);
       if (m?.materiales) liberarMateriales(m.materiales);
       entorno.dispose();
+      sol.dispose();
       suelo.geometry.dispose();
       (suelo.material as THREE.Material).dispose();
       renderer.dispose();
@@ -242,13 +241,19 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
       onFalloRef.current();
       return;
     }
-    m.grupo.scale.copy(ESPEJO);
+    espejar(m.grupo);
     m.escena.add(m.grupo);
     const { centro, tamano: t } = encuadre(escena.caja);
     m.suelo.scale.set(t.x * 4, t.z * 4, 1);
     m.suelo.position.set(centro.x, escena.caja.min[1] - 0.05, centro.z);
-    colocarCamara();
-  }, [escena, colocarCamara]);
+    // Si la 3/4 está girada y el remolque ocupa lo mismo (otro color, otra recogida…), se cambian
+    // las mallas y se repinta sin devolver la cámara a la vista fija.
+    const caja = JSON.stringify(escena.caja);
+    const mismaCaja = m.caja === caja;
+    m.caja = caja;
+    if (m.girada && mismaCaja) pintar();
+    else colocarCamara();
+  }, [escena, colocarCamara, pintar]);
 
   useEffect(() => { colocarCamara(); }, [vista, colocarCamara]);
   useEffect(() => { pintar(); }, [conCotas, pintar]);
