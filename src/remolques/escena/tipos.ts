@@ -33,8 +33,12 @@ export interface CierreEsquina {
   normal: Vec3;
   /** Ancho de la oreja o solapa que dobla sobre el lateral; 0 si no lleva. */
   oreja: number;
-  /** Alturas de los ollaos de la oreja (goma) o de los puentes. */
+  /** Alturas de los puentes, repartidas a lo alto. */
   alturas: number[];
+  /** Goma: cada ollao del borde libre de la oreja, de abajo arriba, con el gancho del cajón al que
+   *  baja en diagonal (en la cara del paño) y el punto de la arista de la esquina por donde la goma
+   *  dobla de una cara a la otra. Vacío en las demás recogidas o sin oreja. */
+  gomaDiagonal: Array<{ ollao: Vec3; esquina: Vec3; gancho: Vec3 }>;
   /** Cremallera: distancia a la esquina y alto hasta el que llega. */
   cremallera: { distancia: number; hasta: number } | null;
   /** Velcro: ancho de la tira en el borde de la oreja. */

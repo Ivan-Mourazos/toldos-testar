@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PARAMS } from "../../calc/params.ts";
 import { alturasCierre, orejaRecogida, tipoCierre } from "../cierres.ts";
-import { escenaLona } from "./casos.ts";
+import { calcLona } from "../../calc/lona.ts";
+import { construirEscena } from "../index.ts";
+import { escenaLona, lonaPrueba } from "./casos.ts";
 
 describe("cierres de las esquinas", () => {
   it("reconoce cada recogida", () => {
@@ -42,6 +44,112 @@ describe("cierres de las esquinas", () => {
   it("en un perfil a dos aguas la cima de la esquina es el hombro", () => {
     const e = escenaLona({ tipoPerfil: "TIPO 02", aguas: 20, recogeAtras: "CREMALLERA" })!;
     expect(e.cierres.find((x) => x.esquina === "atras-izquierda")!.cremallera).toEqual({ distancia: 5, hasta: 76 });
+  });
+
+  describe("goma: de los ollaos de la oreja a ganchos del cajón en la cara del paño, en X", () => {
+    const e = escenaLona({ recogeDelante: "GOMA", recogeAtras: "GOMA" })!;
+    const esquina = (nombre: string) => e.cierres.find((x) => x.esquina === nombre)!;
+    /** Punto de corte, visto de frente sobre la cara del paño (x, y), de dos tramos. */
+    const cortan = (a: { ollao: number[]; gancho: number[] }, b: { ollao: number[]; gancho: number[] }) => {
+      const [p, r] = [[a.ollao[0], a.ollao[1]], [a.gancho[0] - a.ollao[0], a.gancho[1] - a.ollao[1]]];
+      const [q, s] = [[b.ollao[0], b.ollao[1]], [b.gancho[0] - b.ollao[0], b.gancho[1] - b.ollao[1]]];
+      const cruz = r[0] * s[1] - r[1] * s[0];
+      const t = ((q[0] - p[0]) * s[1] - (q[1] - p[1]) * s[0]) / cruz;
+      const u = ((q[0] - p[0]) * r[1] - (q[1] - p[1]) * r[0]) / cruz;
+      return t > 0 && t < 1 && u > 0 && u < 1;
+    };
+
+    it("delante-derecha: tres pares, ollaos subiendo por la parte baja de la oreja", () => {
+      const c = esquina("delante-derecha");
+      expect(c.gomaDiagonal).toHaveLength(3);
+      expect(c.gomaDiagonal.map((g) => g.ollao[1])).toEqual([20, 40, 60]);
+      for (const { ollao } of c.gomaDiagonal) {
+        // En el borde libre de la oreja, sobre el lateral derecho.
+        expect(ollao[0]).toBeCloseTo(100.5, 5);
+        expect(c.base[2] - ollao[2]).toBeGreaterThan(c.oreja / 2);
+        expect(c.base[2] - ollao[2]).toBeLessThanOrEqual(c.oreja);
+      }
+    });
+
+    it("delante-derecha: cada gancho en la cara delantera del cajón, hacia dentro de la esquina; el ollao más alto al gancho más cercano", () => {
+      const c = esquina("delante-derecha");
+      const dentro = c.gomaDiagonal.map(({ gancho }) => {
+        expect(gancho[2]).toBe(e.cajon.zHasta);
+        expect(gancho[1]).toBe(-8);
+        return c.base[0] - gancho[0];
+      });
+      dentro.forEach((d) => { expect(d).toBeGreaterThanOrEqual(25); expect(d).toBeLessThanOrEqual(65); });
+      // Ollaos de abajo arriba ↔ ganchos de lejos a cerca.
+      expect([...dentro].sort((a, b) => b - a)).toEqual(dentro);
+      expect(new Set(dentro).size).toBe(3);
+      expect(cortan(c.gomaDiagonal[0], c.gomaDiagonal[1])).toBe(true);
+      expect(cortan(c.gomaDiagonal[1], c.gomaDiagonal[2])).toBe(true);
+    });
+
+    it("la goma dobla sobre la arista de la esquina en línea recta con las dos caras desplegadas", () => {
+      for (const nombre of ["delante-derecha", "atras-izquierda"]) {
+        const c = esquina(nombre);
+        for (const { ollao, esquina: arista, gancho } of c.gomaDiagonal) {
+          expect(arista[0]).toBe(c.base[0]);
+          expect(arista[2]).toBe(c.base[2]);
+          // Desplegadas: el ollao a `a` por el lateral, el gancho a `d` por el paño.
+          const a = Math.abs(ollao[2] - c.base[2]);
+          const d = Math.abs(gancho[0] - c.base[0]);
+          expect(arista[1]).toBeCloseTo(ollao[1] + ((gancho[1] - ollao[1]) * a) / (a + d), 1);
+          expect(arista[1]).toBeLessThan(ollao[1]);
+          expect(arista[1]).toBeGreaterThan(gancho[1]);
+        }
+      }
+    });
+
+    it("las esquinas de atrás enganchan en la cara trasera del cajón y las izquierdas hacia +x", () => {
+      const ai = esquina("atras-izquierda");
+      expect(ai.gomaDiagonal).toHaveLength(3);
+      for (const { ollao, gancho } of ai.gomaDiagonal) {
+        expect(gancho[2]).toBe(e.cajon.zDesde);
+        expect(gancho[0]).toBeGreaterThan(ai.base[0]);
+        expect(ollao[2]).toBeGreaterThan(0);
+        expect(ollao[0]).toBeCloseTo(-100.5, 5);
+      }
+    });
+
+    it("con una pared de 80 cm o menos, dos pares", () => {
+      const c = escenaLona({ recogeDelante: "GOMA", altoDelante: 80 })!.cierres.find((x) => x.esquina === "delante-izquierda")!;
+      expect(c.gomaDiagonal.map((g) => g.ollao[1])).toEqual([20, 40]);
+      expect(cortan(c.gomaDiagonal[0], c.gomaDiagonal[1])).toBe(true);
+    });
+
+    it("en un remolque estrecho los ganchos no pasan del centro del paño", () => {
+      const c = escenaLona({ recogeDelante: "GOMA", ancho: 60 })!.cierres.find((x) => x.esquina === "delante-derecha")!;
+      c.gomaDiagonal.forEach(({ gancho }) => expect(gancho[0]).toBeGreaterThan(0));
+      expect(new Set(c.gomaDiagonal.map((g) => g.gancho[0])).size).toBe(3);
+    });
+
+    it("con una oreja de 2 cm el ollao sigue sobre la oreja", () => {
+      const params = { ...DEFAULT_PARAMS, recogidas: DEFAULT_PARAMS.recogidas.map((r) => (r.nombre === "GOMA" ? { ...r, delante: 7 } : r)) };
+      const input = lonaPrueba({ recogeDelante: "GOMA" });
+      const c = construirEscena({ tipo: "lona", input, res: calcLona(input, params) }, params)!.cierres
+        .find((x) => x.esquina === "delante-derecha")!;
+      expect(c.oreja).toBe(2);
+      expect(c.gomaDiagonal).toHaveLength(3);
+      c.gomaDiagonal.forEach(({ ollao }) => {
+        const a = c.base[2] - ollao[2];
+        expect(a).toBeGreaterThan(0);
+        expect(a).toBeLessThanOrEqual(2);
+      });
+    });
+
+    it("sin oreja no hay goma en diagonal", () => {
+      const params = { ...DEFAULT_PARAMS, recogidas: DEFAULT_PARAMS.recogidas.map((r) => (r.nombre === "GOMA" ? { ...r, delante: 3 } : r)) };
+      const input = lonaPrueba({ recogeDelante: "GOMA" });
+      const e0 = construirEscena({ tipo: "lona", input, res: calcLona(input, params) }, params)!;
+      e0.cierres.forEach((c) => expect(c.gomaDiagonal).toEqual([]));
+    });
+
+    it("las demás recogidas no llevan goma en diagonal", () => {
+      const otra = escenaLona({ recogeDelante: "PUENTES HIJOS DE PEDRO LOPEZ" })!;
+      otra.cierres.forEach((c) => expect(c.gomaDiagonal).toEqual([]));
+    });
   });
 
   it("velcro de 3 cm en la oreja y puentes repartidos a lo alto", () => {

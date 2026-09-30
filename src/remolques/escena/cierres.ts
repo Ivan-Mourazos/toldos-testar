@@ -2,10 +2,13 @@ import { excelRound } from "../calc/redondeo.ts";
 import { findRecogida, type CalcParams } from "../calc/params.ts";
 import { USAR_COLUMNA_ATRAS } from "../calc/lona.ts";
 import type { LonaInput } from "../calc/lona.ts";
+import { semianchoCajon } from "./comun.ts";
 import {
-  ANCHO_VELCRO, CREMALLERA_A_ESQUINA, CREMALLERA_BAJO_CIMA, DEMASIA_SIN_RECOGIDA, MARGEN_CIERRE, PASO_CIERRE,
+  ANCHO_VELCRO, CREMALLERA_A_ESQUINA, CREMALLERA_BAJO_CIMA, DEMASIA_SIN_RECOGIDA, GANCHO_BAJO_BORDE,
+  GOMA_ALTO_DOS_OLLAOS, GOMA_ALTURAS_DOS, GOMA_ALTURAS_TRES, GOMA_GANCHO_A_ESQUINA, GOMA_GANCHO_ANTES_DEL_CENTRO,
+  MARGEN_CIERRE, OLLAO_EN_OREJA, PASO_CIERRE,
 } from "./constantes.ts";
-import type { CierreEsquina, CuerpoLona, Esquina, Perfil2D, TipoCierre, Vec3 } from "./tipos.ts";
+import type { Cajon, CierreEsquina, CuerpoLona, Esquina, Perfil2D, TipoCierre, Vec3 } from "./tipos.ts";
 
 const r1 = (v: number) => excelRound(v, 1);
 
@@ -33,7 +36,39 @@ export function orejaRecogida(params: CalcParams, nombre: string, cara: "delante
   return r1(Math.max(0, (columna - sinRecogida) / 2));
 }
 
-export function cierresLona(input: LonaInput, cuerpo: CuerpoLona, params: CalcParams): CierreEsquina[] {
+/** Goma de la esquina: los ollaos suben por el borde libre de la oreja, en la parte baja de la
+ *  pared, y cada uno baja en diagonal a un gancho de la cara del paño en el cajón. El más alto va
+ *  al gancho más cercano a la esquina, así que las gomas se cruzan en X (fotos del taller). */
+export function gomaDiagonal(
+  base: Vec3, alto: number, hacia: Vec3, lado: -1 | 1, oreja: number, cajon: Cajon, zCara: number,
+): CierreEsquina["gomaDiagonal"] {
+  if (oreja <= 0) return [];
+  const fracciones = alto <= GOMA_ALTO_DOS_OLLAOS ? GOMA_ALTURAS_DOS : GOMA_ALTURAS_TRES;
+  // Del más cercano al más lejano; en un remolque estrecho se acercan todos a la esquina
+  // en la misma proporción, sin pasar del centro del paño.
+  const distancias = GOMA_GANCHO_A_ESQUINA.slice(0, fracciones.length);
+  const semi = semianchoCajon(cajon, zCara);
+  const cabe = Math.max(0, semi - GOMA_GANCHO_ANTES_DEL_CENTRO);
+  const escala = Math.min(1, cabe / distancias[distancias.length - 1]);
+  // Sobre la oreja, a OLLAO_EN_OREJA de su borde libre; con una oreja estrecha, en su mitad.
+  const a = oreja - Math.min(OLLAO_EN_OREJA, oreja / 2);
+  return fracciones.map((f, i) => {
+    const y = r1(alto * f);
+    // Ollaos de abajo arriba ↔ ganchos de lejos a cerca.
+    const x = r1(lado * (semi - distancias[distancias.length - 1 - i] * escala));
+    // La goma tensa dobla la arista de la esquina: con el lateral y el paño desplegados en un
+    // plano va en línea recta, así que cruza la arista a esta altura.
+    const d = Math.abs(base[0] - x);
+    const yArista = r1(y + ((-GANCHO_BAJO_BORDE - y) * a) / (a + d));
+    return {
+      ollao: [r1(base[0] + hacia[0] * a), y, r1(base[2] + hacia[2] * a)],
+      esquina: [base[0], yArista, base[2]],
+      gancho: [x, -GANCHO_BAJO_BORDE, zCara],
+    };
+  });
+}
+
+export function cierresLona(input: LonaInput, cuerpo: CuerpoLona, params: CalcParams, cajon: Cajon): CierreEsquina[] {
   const esquinas: Array<{ esquina: Esquina; nombre: string; perfil: Perfil2D; z: number; lado: -1 | 1; hacia: Vec3; cara: "delante" | "atras" }> = [
     { esquina: "delante-izquierda", nombre: input.recogeDelante, perfil: cuerpo.perfilDelante, z: cuerpo.largo, lado: -1, hacia: [0, 0, -1], cara: "delante" },
     { esquina: "delante-derecha", nombre: input.recogeDelante, perfil: cuerpo.perfilDelante, z: cuerpo.largo, lado: 1, hacia: [0, 0, -1], cara: "delante" },
@@ -46,14 +81,19 @@ export function cierresLona(input: LonaInput, cuerpo: CuerpoLona, params: CalcPa
     const alto = perfil[1][1];
     const semi = perfil[perfil.length - 1][0];
     const conOreja = tipo === "GOMA" || tipo === "VELCRO" || tipo === "PUENTES";
+    const oreja = conOreja ? orejaRecogida(params, nombre, cara) : 0;
+    const base: Vec3 = [lado * semi, 0, z];
     return {
       esquina, tipo,
-      base: [lado * semi, 0, z],
+      base,
       alto,
       haciaLateral: hacia,
       normal: [lado, 0, 0],
-      oreja: conOreja ? orejaRecogida(params, nombre, cara) : 0,
-      alturas: tipo === "GOMA" || tipo === "PUENTES" ? alturasCierre(alto) : [],
+      oreja,
+      alturas: tipo === "PUENTES" ? alturasCierre(alto) : [],
+      gomaDiagonal: tipo === "GOMA"
+        ? gomaDiagonal(base, alto, hacia, lado, oreja, cajon, cara === "delante" ? cajon.zHasta : cajon.zDesde)
+        : [],
       cremallera: tipo === "CREMALLERA" ? { distancia: CREMALLERA_A_ESQUINA, hasta: r1(alto - CREMALLERA_BAJO_CIMA) } : null,
       velcro: tipo === "VELCRO" ? { ancho: ANCHO_VELCRO } : null,
     };

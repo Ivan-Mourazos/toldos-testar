@@ -68,7 +68,7 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
     color: colorBaseMaterial(input.material),
     cajon, ollaos, ganchos,
     gomas: gomasDe(ollaos, ganchos),
-    cierres: cierresLona(input, cuerpo, params),
+    cierres: cierresLona(input, cuerpo, params, cajon),
     ventana: ventanaLona(input, cuerpo),
     cotas: cotasCuerpo(cuerpo, cajon),
     etiquetas: etiquetasMarcas(ollaos, ganchos),

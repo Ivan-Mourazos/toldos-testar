@@ -4,25 +4,26 @@ import type { CierreEsquina, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { plano, sobreCara, v3, type Pieza } from './piezas';
 
 // Cierres de las esquinas como los hace el taller (docs/remolques/cierres-y-acabados.md):
-// la oreja o solapa del paño dobla sobre el lateral y encima va la goma, el velcro, la
-// cremallera o los puentes con su cincha.
+// la oreja o solapa del paño dobla sobre el lateral y encima va el velcro, la cremallera o los
+// puentes con su cincha; con goma, de los ollaos de la oreja bajan gomas en diagonal, cruzando
+// la esquina, a ganchos del cajón en la cara del paño.
 
 export interface CierresEnMallas {
   piezas: Pieza[];
   ollaos: Array<{ punto: Vec3; normal: Vec3 }>;
+  ganchos: Array<{ punto: Vec3; normal: Vec3 }>;
   gomas: THREE.Vector3[][];
 }
 
-/** Ollaos de la oreja: a esta distancia de su borde; los del lateral, a esta otra más allá. */
-const OLLAO_EN_OREJA = 2.5;
-const OLLAO_EN_LATERAL = 6;
+/** La goma pasa algo por fuera del ollao y de la punta del gancho. */
+const FUERA_GOMA = 0.8;
 /** Los puentes van a esta distancia del borde de la solapa. */
 const PUENTE_EN_SOLAPA = 4;
 const ANCHO_CINCHA = 2.5;
 const CINCHA_SUELTA = 12;
 
 export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
-  const r: CierresEnMallas = { piezas: [], ollaos: [], gomas: [] };
+  const r: CierresEnMallas = { piezas: [], ollaos: [], ganchos: [], gomas: [] };
   for (const c of cierres) {
     if (c.tipo === 'NO') continue;
     const base = v3(c.base);
@@ -45,17 +46,20 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
     if (c.oreja > 0) colocar(plano(c.oreja, c.alto), punto(c.oreja / 2, c.alto / 2, 0.35), 'lona');
 
     if (c.tipo === 'GOMA') {
-      const enOreja = c.alturas.map((y) => punto(desdeBorde(OLLAO_EN_OREJA), y, 0.4));
-      const medias = c.alturas.slice(1).map((y, i) => (c.alturas[i] + y) / 2);
-      const enLateral = medias.map((y) => punto(c.oreja + OLLAO_EN_LATERAL, y, 0.1));
-      for (const p of [...enOreja, ...enLateral]) r.ollaos.push({ punto: [p.x, p.y, p.z], normal: c.normal });
-      // Zigzag de arriba abajo: oreja, lateral, oreja…, por fuera de los ollaos.
-      const zigzag: THREE.Vector3[] = [];
-      enOreja.forEach((p, i) => {
-        zigzag.push(p.clone().addScaledVector(normal, 0.8));
-        if (enLateral[i]) zigzag.push(enLateral[i].clone().addScaledVector(normal, 0.8));
-      });
-      if (zigzag.length >= 2) r.gomas.push(zigzag.reverse());
+      // El gancho mira hacia fuera de la cara del paño: delante +z, detrás −z.
+      const cara: Vec3 = [0, 0, -c.haciaLateral[2]];
+      for (const { ollao, esquina, gancho } of c.gomaDiagonal) {
+        // El ollao va sobre la oreja, que está 0,35 cm por fuera del lateral.
+        const o = v3(ollao).addScaledVector(normal, 0.4);
+        r.ollaos.push({ punto: [o.x, o.y, o.z], normal: c.normal });
+        r.ganchos.push({ punto: gancho, normal: cara });
+        // Del ollao a la arista, que dobla por fuera de las dos caras, y de ahí al gancho.
+        r.gomas.push([
+          o.clone().addScaledVector(normal, FUERA_GOMA),
+          v3(esquina).addScaledVector(normal, FUERA_GOMA).addScaledVector(v3(cara), FUERA_GOMA),
+          v3(gancho).addScaledVector(v3(cara), FUERA_GOMA),
+        ]);
+      }
     }
 
     if (c.velcro) {

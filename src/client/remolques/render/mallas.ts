@@ -44,8 +44,9 @@ export function construirMallas(escena: EscenaRemolque, materiales: Materiales):
     grupo.add(instancias(geometriaOllao(), materiales.laton, ollaos.map((o) => sobreCara(o.punto, o.normal, SEPARACION_ARO + o.extra))));
     grupo.add(instancias(geometriaHueco(), materiales.hueco, ollaos.map((o) => sobreCara(o.punto, o.normal, SEPARACION_HUECO + o.extra))));
   }
-  if (escena.ganchos.length > 0) {
-    grupo.add(instancias(geometriaGancho(), materiales.herraje, escena.ganchos.map((g) => sobreCara(g.punto, g.normal, 0.15))));
+  const ganchos = [...escena.ganchos, ...cierres.ganchos];
+  if (ganchos.length > 0) {
+    grupo.add(instancias(geometriaGancho(), materiales.herraje, ganchos.map((g) => sobreCara(g.punto, g.normal, 0.15))));
   }
   escena.gomas.forEach((goma) => anadir({ geometria: geometriaGoma(goma), material: 'goma' }));
   cierres.gomas.forEach((puntos) => anadir({ geometria: tuboPoligonal(puntos, DIAMETRO_GOMA / 2), material: 'goma' }));
