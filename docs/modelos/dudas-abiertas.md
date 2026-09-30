@@ -2,6 +2,8 @@
 
 Preguntas para Iván (Oficina Técnica) y el taller. Aquí solo están las que hacen falta para que la web funcione y los pedidos salgan bien: qué pieza lleva cada toldo, cuántas y de qué medida. Cada pregunta dice qué hace la web mientras tanto y por qué importa. El código del final (Q-…) enlaza con el expediente del modelo.
 
+Actualizado el 30/09/2026: **el taller contestó 16 dudas** (Q-G01, Q-G02, Q-G03, Q-M03, Q-AG01, Q-AG02, Q-CO04, Q-CO05, Q-E02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR03, Q-PR04 y Q-A06). Quedan a medias Q-CO05 y Q-E02 (falta desde qué salida se pone el tubo de Ø70) y Q-CO04 (falta qué Maestria va según el tamaño). Están en [Contestadas el 30/09/2026](#contestadas-el-30092026), con lo que cambia en la web.
+
 Actualizado el 25/09/2026:
 
 - **Iris y HERA ya no tienen dudas.** El taller las contestó el 24/09. Lo que la web hace de forma provisional está en [iris.md](./iris.md) y [hera.md](./hera.md).
@@ -10,49 +12,18 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
-## Brazos invisibles
-
-### Galicia
-
-- **¿Qué máquina lleva el Galicia: la MB-11 L-120 o la Geiger 1.13 L-140? ¿De qué depende?** Se usan las dos (unas dos de cada tres veces, la MB-11). La web reserva siempre la MB-11, también en el Monoblock 350. Importa para reservar la máquina que se monta. <sub>Q-G01</sub>
-- **¿Cuándo lleva el Galicia el motor 70/17 en vez del 55/17?** Lo normal es el 55/17, también con tres brazos y 6,50 m de frente. El 70/17 aparece a veces, sin relación clara con la medida. La web pone el 55/17; el 70/17, solo si el técnico lo cambia con el candado. Importa para reservar un motor con fuerza suficiente. <sub>Q-G02</sub>
-- **Con tres brazos, ¿se hace el Galicia con 3,50 m de salida?** La ficha TGM llega a 3,25 m con tres brazos, pero se han hecho de 3,50. La web avisa por encima de 3,25, sin bloquear. (Lo del frente ya está contestado: por encima de 7 m, la barra se empalma.) Importa para no aceptar un toldo que no se puede fabricar, ni rechazar uno que sí. <sub>Q-G03</sub>
-
-### Monoblock 350
-
-- **En un Monoblock de 7,10 a 7,25 m de frente, la barra de carga mide algo más de 7 m. ¿Cómo se hace: con una barra de 7 m y un trozo empalmado, o con dos barras iguales?** Revisados los pedidos de 2025 y 2026: en los cuatro de 7,20 y 7,25 m el almacén solo apuntó una barra (dos de 7 m y dos de 6 m), sin retales, así que no se ve cómo se completa. Por encima de 8 m sí está claro: dos barras iguales (5+5, 6+6, 7+7), que es lo que hace la web. La web reserva una sola barra de 7 m hasta 7,25 m. Importa para reservar las barras que hacen falta. <sub>Q-M03</sub>
-
-## Cofres
-
-### Ágata Box
-
-- **¿Cuándo lleva el Ágata Box patines (del soporte de brazo y del brazo), regleta de unión y pasadores?** Salen solo en algunos pedidos y no se ve la regla. La web no los reserva. Importa para que no falten al montar ni se reserven de más. <sub>Q-AG01</sub>
-- **¿Qué motor lleva el Ágata Box?** Casi siempre se ha puesto el Sunilus 85/17. La web usa su tabla por brazos y salida, que con dos brazos pone del 35/17 al 55/17. Importa para reservar el motor correcto. <sub>Q-AG02</sub>
-
 ## Verticales
 
 ### Cortina
 
-- **¿Qué motor lleva cada cortina?** Se han usado el 15/17, el 35/17 y el 55/17 sin relación clara con la medida. La web pone el 15/17; el 35/17 o el 55/17, solo si el técnico lo cambia con el candado. Importa para reservar el motor correcto. <sub>Q-CO04</sub>
-- **¿Cuándo lleva la cortina tubo de enrolle de Ø70 en vez de Ø78?** Se ha usado en una de cada cuatro, con cualquier frente. La web pone siempre el de Ø78. Importa porque cambian el tubo y sus casquillos. <sub>Q-CO05</sub>
+- **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño. Falta la tabla: qué potencia para qué frente y caída. La web pone el Sunilus 15/17. Importa para reservar el motor correcto. <sub>Q-CO04</sub>
+- **Tubo de Ø70 en la cortina (y en la Electra, que va igual): ¿a partir de qué salida se pone el de Ø78?** El taller dijo el 30/09 que el de Ø70 se pone cuando la salida es poca, y que también depende del stock. Falta la medida. La web pone siempre el de Ø78. Importa porque cambian el tubo y sus casquillos. <sub>Q-CO05 · Q-E02</sub>
 
 ### Electra
 
 - **En la Electra sin cofre, ¿qué tapas lleva el perfil de carga, y de qué color?** Se han usado un juego de tapas (`TAPASLAMAXSC`) o dos tapas sueltas (`TAPAELITVERT`), casi siempre en negro aunque la estructura sea blanca. La web reserva el juego, en negro. Importa para reservar las tapas que se montan. <sub>Q-E01</sub>
-- **¿Cuándo lleva la Electra tubo de enrolle de Ø70 en vez de Ø78?** Se ha usado en unas pocas. La web pone siempre el de Ø78. Importa porque cambian el tubo y sus casquillos. <sub>Q-E02</sub>
-- **En la Electra con cofre, ¿con qué montaje lleva el puente abatible (anillas, pletinas y mosquetones)?** Se ha puesto en la mitad de las Electra con cofre. La web lo reserva solo con soporte universal. Importa para que no falte ni sobre. <sub>Q-E03</sub>
-
-### Diana vertical
-
-- **¿Cuándo lleva la Diana vertical el kit de montaje del cable (`MONTCABLEMAXSC`)?** Se ha puesto en una de cada tres. La web no lo reserva. Importa para que no falte al montar. <sub>Q-D01</sub>
 
 ## Clásicos
-
-### Punto Recto
-
-- **Con tubo de Ø70 y motor, ¿el kit es el adaptador de tubo 70 y la corona LT50 de Ø70 (`ADAPTADORESTUBO70` y `CORONA LT5070`)?** Existen en RPS, pero no se han usado nunca: los Punto Recto a motor han ido con tubo de Ø78. La web reserva esas dos piezas. En el Antica, con tubo Ø70 y motor se montan la rueda Hipro Ø68 y la corona centrada (`RUEDAMOTHI68` y `CORONACENMEC70`): ¿valen también aquí? Importa para reservar un kit que encaje. <sub>Q-PR01</sub>
-- **¿Qué barra de carga lleva el Punto Recto: Univers 280 o Univers 270?** La tarifa vende las dos, pero en RPS la 270 solo existe en blanco de 7 m y siempre se ha puesto la 280. La web pone la 280. Importa para reservar la barra correcta. <sub>Q-PR03</sub>
-- **¿Se sigue haciendo el Punto Recto con 1,60 m de salida?** El brazo existe en RPS (en blanco), pero la tarifa 2026 llega a 1,40 m. La web lo ofrece. Importa para no vender una medida que ya no está en tarifa. <sub>Q-PR04</sub>
 
 ### Antica
 
@@ -74,11 +45,6 @@ Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [c
 
 Y dos fotos que faltan, de cerca: una cremallera puesta y una bastilla de enfundar.
 
-## Para todos los modelos
-
-- **Casquillo de máquina: ¿cuándo va el de eje 50 y cuándo el de eje 63?** Se usan los dos (en el Punto Recto, 10 y 6 veces; en el Antica, 19 y 13) y no se ve de qué depende. La web pone el de eje 50 en el Punto Recto, el Monoblock 350 y los cofres; en la Cortina, el de 50 con máquina interior y el de 63 con exterior; en el Antica, el de 63. Importa para reservar el casquillo que encaja en la máquina. <sub>Q-PR02</sub>
-- **¿Qué largo de barra se reserva: el más corto que llega al corte o el habitual?** En el Arzúa, el Galicia y los cofres, la web reserva barras de 6 o 7 m para el tubo y los perfiles (y un tubo de 6,50 m que en RPS no existe). El almacén gasta muchas de 4 y 5 m. Importa para reservar lo que de verdad se gasta y no bloquear barras largas. <sub>Q-A06</sub>
-
 ## Muestras que tiene que mirar el taller
 
 No son dudas: son PDF de muestra, ya preparados, para que el taller confirme que se leen bien.
@@ -87,6 +53,29 @@ No son dudas: son PDF de muestra, ya preparados, para que el taller confirme que
 - Cambio Antica (soporte fijo).
 
 Iván (25/09): hay que agrandar la letra de los PDF todo lo que se pueda sin que se salga de los recuadros, y ajustar los recuadros al espaciado. **Hecho en la página de telas** (la de estas muestras): cabecera, tablas, filas, dibujos, total y observaciones más grandes; el título del dibujo ocupa su ancho y las observaciones tienen más alto. Las muestras hay que sacarlas de nuevo.
+
+## Contestadas el 30/09/2026
+
+Respuestas del taller, traídas por Iván. «Pendiente» quiere decir que la web todavía no lo aplica.
+
+| Código | Pregunta | Respuesta | En la web |
+| --- | --- | --- | --- |
+| Q-G01 | Máquina del Galicia: MB-11 L-120 o Geiger 1.13 L-140 | MB-11, siempre | Ya lo hace (también en el Monoblock 350) |
+| Q-G02 | Motor del Galicia: 55/17 o 70/17 | Depende del número de brazos y de la salida, como en la tarifa del Monoblock | Pendiente: usar en el Galicia la tabla de motores de la tarifa del Monoblock 350 (hoy pone siempre el 55/17) |
+| Q-AG01 | Patines, regleta de unión y pasadores del Ágata Box | Patines siempre, de codo y de horquilla. Kit de unión con más de 7 m de frente | Pendiente: reservar siempre los patines; el kit de unión, por encima de 7 m |
+| Q-AG02 | Motor del Ágata Box | Siempre Sunea; la potencia depende del toldo | Pendiente: comprobar en RPS el código de los Sunea y cambiar el Sunilus por el Sunea, manteniendo la tabla de potencia por brazos y salida |
+| Q-CO04 | Motor de la cortina | Maestria; depende también del tamaño | A medias: falta la tabla de potencias (ver Cortina). Pendiente: comprobar en RPS los códigos de los Maestria |
+| Q-G03 | Galicia con tres brazos y 3,50 m de salida | Sí se hace | Pendiente: quitar el aviso de más de 3,25 con tres brazos |
+| Q-M03 | Monoblock de 7,10 a 7,25 m: barra de carga | Una barra; si falta poco, se empata con un resto | Ya lo hace: una barra de 7 m |
+| Q-CO05 | Tubo de Ø70 en la cortina | Con poca salida; también depende del stock | Sigue abierta: falta la medida (ver Cortina). La web pone Ø78 |
+| Q-E02 | Tubo de Ø70 en la Electra | Como en la cortina | Igual que Q-CO05 |
+| Q-E03 | Puente abatible en la Electra con cofre | Lo lleva cuando va con tubo Univers sin guías (en la práctica, casi siempre) | Pendiente: reservarlo cuando va con tubo Univers sin guías (hoy solo con soporte universal) |
+| Q-D01 | Kit de montaje del cable de la Diana vertical | Se indica en el pedido | Pendiente: casilla en la tarjeta («Kit de montaje del cable»); se reserva solo si se marca |
+| Q-PR01 | Kit de motor del Punto Recto | Según el tubo, de 70 o de 80. Con tubo de 70 lleva `CORONACENMEC70` y `RUEDAMOTHI68` | Pendiente: con tubo de 70, esas dos piezas en vez de `ADAPTADORESTUBO70` y `CORONA LT5070` |
+| Q-PR03 | Barra de carga del Punto Recto | Solo la Univers 280 | Ya lo hace |
+| Q-PR04 | Punto Recto de 1,60 m de salida | Es una excepción; no hay stock | Pendiente: dejar de ofrecerla o avisar de que es una excepción sin stock |
+| Q-PR02 | Casquillo de máquina: eje 50 o eje 63 | Depende de la máquina: exterior, casquillos largos; interior, cortos | Pendiente: comprobar en RPS cuál es el largo y cuál el corto, y aplicarlo en todos los modelos (hoy solo la Cortina lo distingue) |
+| Q-A06 | Largo de la barra que se reserva | La más corta que llegue al corte | Pendiente: reservar la barra más corta que llega (Arzúa, Galicia y cofres; y quitar el tubo de 6,50 m que no existe) |
 
 ## Contestadas el 25/09/2026
 
