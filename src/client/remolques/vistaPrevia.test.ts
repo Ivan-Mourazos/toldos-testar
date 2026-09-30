@@ -31,6 +31,11 @@ describe('vista previa del PDF de remolques', () => {
     expect(cuerpo.elementos).toHaveLength(1);
     expect(Object.keys(cuerpo.elementos[0]).sort()).toEqual(['input', 'tipo', 'version']);
   });
+
+  it('las observaciones van sin las líneas vacías que dejó «Añadir línea»', () => {
+    const cuerpo = cuerpoVistaPrevia([linea('10', { observaciones: 'UNA\n\n DOS \n' })]);
+    expect(cuerpo.elementos[0].input.observaciones).toBe('UNA\nDOS');
+  });
 });
 
 describe('guarda de peticiones de la vista previa', () => {

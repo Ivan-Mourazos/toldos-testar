@@ -345,6 +345,21 @@
 .rem-render-cotas .rem-render-marca { font-size: 10px; font-weight: 500; }
 /* DELANTE / DETRÁS: con el estilo de las cotas pero más discretos (texto secundario, versalitas espaciadas). */
 .rem-render-rotulos { inset: 0; pointer-events: none; position: absolute; z-index: 1; }
+/* La recogida de la cara, al pie de la vista de delante y de la de detrás: como los rótulos. */
+.rem-render-nota {
+  bottom: 6px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  left: 0;
+  letter-spacing: 0.08em;
+  margin: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  z-index: 1;
+}
 .rem-render-rotulos text {
   fill: var(--text-muted);
   font-family: var(--font);

@@ -14,7 +14,7 @@ import { useRemolques } from './useRemolques';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
-// (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre (con las observaciones) y los resultados.
+// (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
 export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado }: {
   usuario: string;
   notify: Notify;
@@ -124,11 +124,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
             >
               {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques, con las mismas
                   props que en su `Workspace`. Sin `onSnapshotReady`: todavía no hay PDF. Las observaciones
-                  van en `DibujoRemolque`: `Escena3D` sin `onObservacionesChange` no pinta su pie. */}
+                  se escriben por líneas en el formulario (Iván, 30/09/2026); `Escena3D` sin
+                  `onObservacionesChange` no pinta su pie. */}
               {lineaActiva.tipo === 'lona' ? (
                 <DibujoRemolque tipo="lona" input={lona} res={resLona} params={params}
-                  observaciones={lona.observaciones}
-                  onObservacionesChange={(observaciones) => ws.cambiarInput({ ...lona, observaciones })}
                   respaldo={(
                     <Escena3D modo="lona" medidasHechas={resLona.lonaHecha} largo={lona.largo} ancho={lona.ancho} anchoAtras={lona.anchoAtras}
                       altoDelante={lona.altoDelante} altoAtras={lona.altoAtras}
@@ -144,8 +143,6 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                   )} />
               ) : (
                 <DibujoRemolque tipo="baqueton" input={baq} res={resBaq} params={params}
-                  observaciones={baq.observaciones}
-                  onObservacionesChange={(observaciones) => ws.cambiarInput({ ...baq, observaciones })}
                   respaldo={(
                     <Escena3D modo="baqueton" medidasHechas={resBaq.remolqueHecho} largo={baq.largo} ancho={baq.ancho}
                       altoDelante={0} altoAtras={0} tipoPerfil="TIPO 01"

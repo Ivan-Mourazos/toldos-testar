@@ -1,3 +1,4 @@
+import { limpiarObservaciones } from '../../remolques/hoja/observaciones.ts';
 import type { ElementoPedidoHoja } from '../../remolques/hoja/tipos.ts';
 import type { EstadoLinea, LineaPedido } from '../../remolques/workspace/lineas.ts';
 import { rotuloElemento } from './rotulo';
@@ -11,9 +12,14 @@ export function faltaParaPdf(lineas: LineaPedido[], estados: Record<string, Esta
   return `${rotuloElemento(linea, indice)}: ${estados[linea.version]?.falta ?? 'faltan datos.'}`;
 }
 
-/** Lo que necesita el servidor: el resultado lo calcula él con los parámetros comunes. */
+/** Lo que necesita el servidor: el resultado lo calcula él con los parámetros comunes. Las
+ *  observaciones van sin las líneas vacías que dejó «Añadir línea». */
 export function cuerpoVistaPrevia(lineas: LineaPedido[]): { elementos: ElementoPedidoHoja[] } {
-  return { elementos: lineas.map(({ version, tipo, input }) => ({ version, tipo, input })) };
+  return {
+    elementos: lineas.map(({ version, tipo, input }) => ({
+      version, tipo, input: { ...input, observaciones: limpiarObservaciones(input.observaciones) },
+    })),
+  };
 }
 
 /**

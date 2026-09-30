@@ -9,6 +9,7 @@ import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, PasoFormul
 import {
   conMedidaDelante, hayValoresDetras, radiosOpcionales, sinDetras, sinRadios, tieneDetras, tieneRadios,
 } from './medidasOpcionales';
+import { ObservationLines } from '../components/ObservationLines';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 
 // Formulario de la lona de remolque: los mismos campos, opciones, orden y avisos que el de la
@@ -21,10 +22,7 @@ const ETIQUETAS_RADIO = {
   radioChaflanAbajo: 'Radio abajo',
   radioChaflanArriba: 'Radio arriba',
 } as const;
-const PERFILES_VISIBLES = PERFILES.map((perfil) => ({
-  value: perfil.value,
-  label: perfil.label.replace(/ · ([a-záéíóúüñ])/u, (_, letra: string) => ` · ${letra.toLocaleUpperCase('es-ES')}`),
-}));
+const PERFILES_VISIBLES = PERFILES.map(({ value, label }) => ({ value, label }));
 
 export function FormularioLona({ input, materiales, params, errores = {}, onChange, onCampoTocado, onConfirm }: {
   input: LonaInput;
@@ -233,6 +231,11 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
         {/* Después de la ventana y sus medidas, como en la web de remolques de antes (orden de tabulación). */}
         <CampoSiNo name="rotulacion" label="Rotulación" span={2} error={errores.rotulacion}
           value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
+        {/* Por líneas, como las observaciones de tela de los toldos (Iván, 30/09/2026); se guardan en un
+            solo texto, una línea por renglón. Solo aquí: el dibujo ya no tiene su propia casilla. */}
+        <div className="rem-span-4">
+          <ObservationLines label="Observaciones" value={input.observaciones} onChange={(v) => set('observaciones', v)} />
+        </div>
       </PasoFormulario>
     </div>
   );

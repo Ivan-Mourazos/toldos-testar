@@ -37,6 +37,8 @@ export interface RenderRemolqueProps {
   vista: Vista;
   conCotas: boolean;
   onFallo: () => void;
+  /** Texto al pie de la vista (la recogida de frente y de espaldas), como en la hoja de taller. */
+  nota?: string | null;
 }
 
 /** Cómo se nombra cada vista en la etiqueta del lienzo, para quien usa lector de pantalla. */
@@ -48,7 +50,7 @@ const NOMBRE_VISTA: Record<Vista, string> = {
   arriba: 'desde arriba',
 };
 
-export default function RenderRemolque({ escena, vista, conCotas, onFallo }: RenderRemolqueProps) {
+export default function RenderRemolque({ escena, vista, conCotas, onFallo, nota = null }: RenderRemolqueProps) {
   const lienzo = useRef<HTMLDivElement>(null);
   const motor = useRef<Motor | null>(null);
   const datos = useRef({ escena, vista, conCotas });
@@ -221,6 +223,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
       <div className="rem-render-lienzo" ref={lienzo} />
       {rotulos && <CapaRotulos rotulos={rotulos} ancho={tamano.ancho} alto={tamano.alto} />}
       {cotas && <CapaCotas cotas={cotas} ancho={tamano.ancho} alto={tamano.alto} />}
+      {nota && <p className="rem-render-nota">{nota}</p>}
       {vista === 'tres-cuartos' && movida && (
         <button type="button" className="chip-3d rem-render-reiniciar" onClick={colocarCamara}>
           Volver a la vista fija

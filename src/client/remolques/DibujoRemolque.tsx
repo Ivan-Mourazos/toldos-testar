@@ -4,6 +4,7 @@ import { construirEscenaSegura, escenaEstable } from './escenaDibujo';
 import type { ElementoEscena, Vista } from '../../remolques/escena/tipos.ts';
 import { soporteWebGL } from './soporteWebGL';
 import { useDiferido } from './useDiferido';
+import { notaRecogida } from '../../remolques/etiquetas.ts';
 
 // El dibujo del elemento activo (fase 2b): el render 3D y, si el equipo no puede con él o
 // falla, el dibujo técnico de siempre. three.js va en un trozo aparte que solo se pide aquí.
@@ -17,6 +18,14 @@ const VISTAS: Array<{ vista: Vista; nombre: string }> = [
   { vista: 'arriba', nombre: 'Arriba' },
 ];
 
+/** Como en la hoja de taller: de frente y de espaldas se lee la recogida de esa cara (Iván, 30/09/2026). */
+function notaVista(elemento: ElementoEscena, vista: Vista): string | null {
+  if (elemento.tipo !== 'lona') return null;
+  if (vista === 'delante') return notaRecogida(elemento.input.recogeDelante);
+  if (vista === 'detras') return notaRecogida(elemento.input.recogeAtras);
+  return null;
+}
+
 /** Si el render (o la descarga de su trozo) revienta, se avisa y se pasa al dibujo técnico. */
 class LimiteFallo extends React.Component<{ onFallo: () => void; children: React.ReactNode }, { fallo: boolean }> {
   state = { fallo: false };
@@ -27,8 +36,6 @@ class LimiteFallo extends React.Component<{ onFallo: () => void; children: React
 
 type Props = ElementoEscena & {
   params: CalcParams;
-  observaciones: string;
-  onObservacionesChange: (valor: string) => void;
   /** El dibujo técnico (Escena3D), para cuando no hay 3D o falta la forma. */
   respaldo: React.ReactNode;
 };
@@ -76,7 +83,8 @@ export function DibujoRemolque(props: Props) {
           </header>
           <LimiteFallo onFallo={() => setFallo(true)}>
             <Suspense fallback={<div className="rem-render rem-render-cargando" role="status">Cargando el 3D…</div>}>
-              <RenderRemolque escena={escena} vista={vista} conCotas={conCotas} onFallo={() => setFallo(true)} />
+              <RenderRemolque escena={escena} vista={vista} conCotas={conCotas} onFallo={() => setFallo(true)}
+                nota={notaVista(props, vista)} />
             </Suspense>
           </LimiteFallo>
         </>
@@ -88,18 +96,6 @@ export function DibujoRemolque(props: Props) {
           )}
         </>
       )}
-      <div className="rem-dibujo-pie">
-        <label className="rem-observaciones">
-          <span>Observaciones</span>
-          <input
-            name="observaciones"
-            autoComplete="off"
-            placeholder="Añadir indicaciones para producción…"
-            value={props.observaciones}
-            onChange={(evento) => props.onObservacionesChange(evento.target.value)}
-          />
-        </label>
-      </div>
     </section>
   );
 }

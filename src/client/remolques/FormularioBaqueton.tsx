@@ -3,6 +3,7 @@ import type { BaquetonInput } from '../../remolques/calc/baqueton.ts';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { DEFAULT_PARAMS, type CalcParams } from '../../remolques/calc/params.ts';
 import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, PasoFormulario } from './Campos';
+import { ObservationLines } from '../components/ObservationLines';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 
 // Formulario del baquetón: los mismos campos, opciones, orden y avisos que el de la web de
@@ -89,6 +90,11 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, on
         </div>
         <CampoSiNo name="rotulacion" label="Rotulación" span={2} error={errores.rotulacion}
           value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
+        {/* Por líneas, como las observaciones de tela de los toldos (Iván, 30/09/2026); se guardan en un
+            solo texto, una línea por renglón. Solo aquí: el dibujo ya no tiene su propia casilla. */}
+        <div className="rem-span-4">
+          <ObservationLines label="Observaciones" value={input.observaciones} onChange={(v) => set('observaciones', v)} />
+        </div>
       </PasoFormulario>
     </div>
   );
