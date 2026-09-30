@@ -364,7 +364,7 @@ if (!hayRps) {
           lineasMixto.map((l) => (l.tipoTrabajo === 'lona' ? 'Remolque' : 'Baquetón')), `${tema}: lona o baquetón según RPS, en su orden`);
         await pestanas(page).nth(0).click();
         assert.equal(await editor(page).locator('input[data-campo="baqueton"]').inputValue(), String(lineasMixto[0].baqueton), `${tema}: el baquetón de RPS`);
-        assert.equal(await editor(page).locator('input[data-campo="material"]').inputValue(), lineasMixto[0].materialSugerido, `${tema}: la bobina de RPS`);
+        assert.equal(await editor(page).locator('textarea[data-campo="material"]').inputValue(), lineasMixto[0].materialSugerido, `${tema}: la bobina de RPS`);
         await pestanas(page).nth(1).click();
         assert.equal(await editor(page).locator('input[data-campo="altoDelante"]').inputValue(), String(lineasMixto[1].altoDelante ?? lineasMixto[1].alto), `${tema}: el alto de RPS`);
         await page.waitForTimeout(600);

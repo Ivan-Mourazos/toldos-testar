@@ -114,7 +114,7 @@ export async function teclearCaso(page, c) {
     await elegir(page, ed, 'clienteEspecifico', i.clienteEspecifico);
     await siNo(ed, 'Rotulación', i.rotulacion);
   }
-  await ed.locator('input[data-campo="material"]').fill(i.material);
+  await ed.locator('textarea[data-campo="material"]').fill(i.material);
   await page.keyboard.press('Escape');
   if (i.modoOllaos === 'REPARTIDOS') {
     await elegir(page, ed, 'modoOllaos', 'Repartidos automáticamente');

@@ -19,15 +19,16 @@ describe('observaciones por líneas en pantalla', () => {
     const html = renderToStaticMarkup(<FormularioLona input={lona({ observaciones: 'REFORZAR\nOJO CON EL GOLPE' })} materiales={[]} onChange={() => {}} />);
     expect(html).toContain('aria-label="Observaciones"');
     expect(html).toContain('Añadir línea');
-    expect(html).toContain('value="REFORZAR"');
-    expect(html).toContain('value="OJO CON EL GOLPE"');
+    // Cada línea en un área que crece, para leerla entera (Iván, 01/10/2026).
+    expect(html).toContain('>REFORZAR</textarea>');
+    expect(html).toContain('>OJO CON EL GOLPE</textarea>');
     expect(html).toContain('aria-label="Eliminar observaciones, línea 2"');
   });
 
   it('un texto de antes, de una línea, es una sola línea', () => {
     const html = renderToStaticMarkup(<FormularioLona input={lona({ observaciones: 'DE ANTES' })} materiales={[]} onChange={() => {}} />);
     expect(html.match(/data-observation-line=/g)).toHaveLength(1);
-    expect(html).toContain('value="DE ANTES"');
+    expect(html).toContain('>DE ANTES</textarea>');
   });
 
   it('el baquetón también', () => {
@@ -35,7 +36,7 @@ describe('observaciones por líneas en pantalla', () => {
       <FormularioBaqueton input={{ ...emptyBaqueton(), observaciones: 'UNA\nDOS' }} materiales={[]} onChange={() => {}} />,
     );
     expect(html).toContain('aria-label="Observaciones"');
-    expect(html).toContain('value="DOS"');
+    expect(html).toContain('>DOS</textarea>');
   });
 
   it('el dibujo ya no tiene su propia casilla de observaciones', () => {

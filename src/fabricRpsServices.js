@@ -88,6 +88,8 @@ function parseCodes(value) {
   const list = String(Array.isArray(value) ? value.join(',') : value || '')
     .split(',')
     .map((code) => code.trim().toUpperCase())
-    .filter((code) => /^[A-Z0-9._-]{1,40}$/.test(code));
+    // La barra la llevan algunas lonas de remolque (NS86B16P/NP250). Los códigos solo se
+    // comparan con las filas ya leídas: nunca entran en la consulta.
+    .filter((code) => /^[A-Z0-9._/-]{1,40}$/.test(code));
   return [...new Set(list)].slice(0, 20);
 }

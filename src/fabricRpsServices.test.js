@@ -68,6 +68,14 @@ describe('GET /api/catalog/fabrics/stock', () => {
     }
   });
 
+  it('admite los códigos de lona de remolque con barra (NS86B16P/NP250)', async () => {
+    const loadRows = vi.fn(async () => [{ code: 'NS86B16P/NP250', warehouseCode: '5', warehouseName: 'NUEVA SEDE ARZÚA', roll: 'A', meters: 90, reserved: 0 }]);
+    const res = fakeRes();
+    await fabricStockHandler(createFabricStockService({ loadRows }))({ query: { codes: 'ns86b16p/np250' } }, res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.items).toEqual([expect.objectContaining({ code: 'NS86B16P/NP250', disponible: 90, bobinasConDisponible: 1 })]);
+  });
+
   it('sin códigos válidos responde 400 y no consulta RPS', async () => {
     const loadRows = vi.fn(async () => ROWS);
     const res = fakeRes();

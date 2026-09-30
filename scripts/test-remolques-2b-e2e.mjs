@@ -297,7 +297,7 @@ if (fs.existsSync('dist/assets')) {
     await siNo(ed, 'Bastilla enfundar', false);
     await siNo(ed, 'Ventana', false);
     await siNo(ed, 'Rotulación', false);
-    await ed.locator('input[data-campo="material"]').fill(tipo02.input.material);
+    await ed.locator('textarea[data-campo="material"]').fill(tipo02.input.material);
     await page.keyboard.press('Escape');
     await elegir(page, ed, 'modoOllaos', 'Según ganchos');
     await page.getByRole('heading', { name: 'Ganchos del pedido' }).waitFor();

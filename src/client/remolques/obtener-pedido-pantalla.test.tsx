@@ -49,6 +49,12 @@ const cabecera = (lineas = creadas, versionActiva: string | null = '10') => rend
 );
 
 describe('cabecera: el pedido en RPS', () => {
+  // Iván, 01/10/2026: un cliente largo se lee entero (pasa a un segundo renglón). Su nombre va
+  // aparte: el de la etiqueta que lo envuelve sumaría el propio cliente.
+  it('el cliente, en un área que crece, se llama «Cliente»', () => {
+    expect(cabecera()).toMatch(/<textarea[^>]*name="clientePedido"[^>]*aria-label="Cliente"[^>]*>TALLERES CAL, C\. B\.<\/textarea>/);
+  });
+
   it('ya no ofrece aplicar las líneas una a una', () => {
     const html = cabecera();
     expect(html).not.toContain('Usar línea');

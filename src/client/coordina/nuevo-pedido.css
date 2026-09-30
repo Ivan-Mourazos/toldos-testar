@@ -105,7 +105,7 @@
 /* El relieve oscuro no va en los campos que ya dicen otra cosa más abajo (falta por
    rellenar, solo lectura de la cabecera, líneas de observaciones): sin el `:not()` esta
    regla, por llevar `:root[data-theme="dark"]`, les ganaría en oscuro. */
-:root[data-theme="dark"] .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):not(.is-missing :is(input, .select-control), .order-header [readonly], .observation-line input),
+:root[data-theme="dark"] .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):not(.is-missing :is(input, .select-control), .order-header [readonly], .observation-line :is(input, textarea)),
 :root[data-theme="dark"] .fabric-input-wrap input:not(.is-missing *) {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -539,13 +539,13 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   border-color: var(--color-brand-400);
   box-shadow: none;
 }
-.app-shell .observation-line input {
+.app-shell .observation-line :is(input, textarea) {
   background: transparent;
   border: 0;
   box-shadow: none;
   color: var(--text);
 }
-.observation-line input::placeholder { color: var(--text-muted); }
+.observation-line :is(input, textarea)::placeholder { color: var(--text-muted); }
 .observation-line-remove:hover:not(:disabled) {
   background: var(--error-fondo);
   color: var(--error-texto);

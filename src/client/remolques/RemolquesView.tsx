@@ -96,10 +96,12 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               {lineaActiva.tipo === 'lona' ? (
                 // key: los «Sí» pulsados a mano en el formulario son de cada elemento, no pasan al siguiente.
                 <FormularioLona key={lineaActiva.version} input={lona} materiales={ws.materiales} params={params}
-                  errores={ws.erroresVisibles} onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado}
+                  errores={ws.erroresVisibles} metrosTela={ws.medidasSuficientes ? resLona.metrosTela : 0}
+                  onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado}
                   onConfirm={askForConfirmation} />
               ) : (
                 <FormularioBaqueton input={baq} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
+                  metrosTela={ws.medidasSuficientes ? resBaq.metrosTela : 0}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
               )}
               {/* Todavía no se guarda nada: lo que importa es si el elemento está listo. */}

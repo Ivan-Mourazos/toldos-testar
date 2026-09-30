@@ -1,9 +1,12 @@
 import React, { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown, Search } from 'lucide-react';
+import { Check, ChevronDown, Search, X } from 'lucide-react';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
+import { FabricStockCodeLine } from '../components/FabricStockLine';
+import { enUnRenglon, useAltoAjustado } from '../hooks/useAltoAjustado';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
 import { InputDecimal } from './InputDecimal';
+import { codigoStockMaterial } from './stockMaterial';
 
 // Los campos del formulario de remolques (los de `campos.tsx` de la web de remolques) hechos con
 // el marcado y las clases de los campos de las tarjetas de toldo: `field`, `select-field` /
@@ -23,8 +26,9 @@ function MensajeError({ id, mensaje }: { id: string; mensaje?: string }) {
 }
 
 /** Un paso numerado del formulario, como los grupos de la tarjeta de toldo. */
+/** `recogidas`: dos columnas que se reparten lo que deja un Sí / No a su ancho. */
 export function PasoFormulario({ numero, titulo, children, columnas = 3 }: {
-  numero?: number; titulo: string; children: ReactNode; columnas?: 3 | 4;
+  numero?: number; titulo: string; children: ReactNode; columnas?: 3 | 4 | 'recogidas';
 }) {
   return (
     <section className="rem-paso">
@@ -239,14 +243,24 @@ const normalizar = (texto: string) => texto
 
 const formatoStock = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
 
-/** La bobina: escribe para buscar en las de RPS (mayor stock primero) o deja texto manual. */
+/**
+ * La bobina: escribe para buscar en las de RPS (mayor stock primero) o deja texto manual.
+ *
+ * Como la tela de los toldos (FabricCombobox y FabricStockLine), pero el nombre se lee entero: va
+ * en un área de texto de una sola línea lógica que crece a dos o más renglones, y no en un
+ * `input`, que cortaba «LONA NS86 2L 630 g/m² :GRI…» (Iván, 01/10/2026). Debajo, el código de la
+ * bobina y su stock en RPS con los textos de toldos; `metrosTela` es lo que pide este elemento.
+ */
 export function CampoMaterial(props: {
-  value: string; opciones: Material[]; onChange: (v: string) => void; span?: Rejilla; error?: string;
+  value: string; opciones: Material[]; onChange: (v: string) => void; span?: Rejilla; error?: string; metrosTela?: number;
 }) {
   const [abierto, setAbierto] = useState(false);
   const [indiceActivo, setIndiceActivo] = useState(0);
   const raiz = useRef<HTMLDivElement>(null);
   const menu = useRef<HTMLDivElement>(null);
+  const area = useRef<HTMLTextAreaElement>(null);
+  const codigo = codigoStockMaterial(props.value, props.opciones);
+  useAltoAjustado(area, props.value);
   const labelId = useId();
   const listaId = useId();
   const errorId = useId();
@@ -286,15 +300,25 @@ export function CampoMaterial(props: {
     setIndiceActivo(0);
   };
 
+  const borrar = () => {
+    props.onChange('');
+    setIndiceActivo(0);
+    setAbierto(true);
+    area.current?.focus();
+  };
+
   return (
-    <div ref={raiz} className={`field fabric-combobox rem-campo${abierto ? ' is-open' : ''}${props.error ? ' is-invalido' : ''}${cols(props.span)}`}>
+    <div ref={raiz} className={`field fabric-combobox rem-campo rem-material${abierto ? ' is-open' : ''}${props.error ? ' is-invalido' : ''}${cols(props.span)}`}>
       <span id={labelId}>Material</span>
       <div className="fabric-input-wrap">
         <Search aria-hidden="true" />
-        <input
+        <textarea
+          ref={area}
+          rows={1}
           data-campo="material"
           name="material"
           autoComplete="off"
+          spellCheck={false}
           role="combobox"
           aria-labelledby={labelId}
           aria-autocomplete="list"
@@ -307,11 +331,13 @@ export function CampoMaterial(props: {
           value={props.value}
           onFocus={() => setAbierto(true)}
           onChange={(evento) => {
-            props.onChange(evento.target.value);
+            props.onChange(enUnRenglon(evento.target.value));
             setIndiceActivo(0);
             setAbierto(true);
           }}
           onKeyDown={(evento) => {
+            // Intro nunca parte el nombre en dos: elige la opción resaltada o no hace nada.
+            if (evento.key === 'Enter') evento.preventDefault();
             if (evento.key === 'Escape') setAbierto(false);
             if (evento.key === 'ArrowDown') {
               evento.preventDefault();
@@ -322,12 +348,21 @@ export function CampoMaterial(props: {
               evento.preventDefault();
               setIndiceActivo((actual) => Math.max(actual - 1, 0));
             }
-            if (evento.key === 'Enter' && abierto && visibles[indiceActivo]) {
-              evento.preventDefault();
-              elegir(visibles[indiceActivo]);
-            }
+            if (evento.key === 'Enter' && abierto && visibles[indiceActivo]) elegir(visibles[indiceActivo]);
           }}
         />
+        {props.value && (
+          <button
+            type="button"
+            className="fabric-clear-button"
+            aria-label="Borrar material"
+            title="Borrar material"
+            onPointerDown={(evento) => evento.preventDefault()}
+            onClick={borrar}
+          >
+            <X aria-hidden="true" />
+          </button>
+        )}
       </div>
       {abierto && createPortal(
         <div ref={menu} id={listaId} className="fabric-options fabric-options-portal" style={estiloMenu} role="listbox" aria-labelledby={labelId}>
@@ -359,11 +394,9 @@ export function CampoMaterial(props: {
         document.body,
       )}
       <MensajeError id={errorId} mensaje={props.error} />
-      <small className="rem-material-pie" title={props.value}>
-        {material
-          ? `Bobina ${material.codigoBobina} · Stock Arzúa ${material.stockArzua == null ? 'sin dato' : formatoStock(Number(material.stockArzua))}`
-          : props.value ? 'Lona manual · sin dato de stock' : 'PVC 580/650 RPS · admite texto manual'}
-      </small>
+      {/* Sin código de RPS (texto manual) no hay stock que enseñar: nada. */}
+      <FabricStockCodeLine code={codigo} neededMl={props.metrosTela ?? 0}
+        prefix={<><strong className="rem-material-codigo">{codigo}</strong>{' · '}</>} />
     </div>
   );
 }

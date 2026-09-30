@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { DatabaseZap, LoaderCircle } from 'lucide-react';
 import { FORMA_PEDIDO_RPS, normalizarNumeroPedidoRps } from '../../remolques/rps/numero-pedido.ts';
 import type { PedidoRps } from '../../remolques/rps/types.ts';
@@ -6,6 +6,7 @@ import { indiceElementoDeLineaRps } from '../../remolques/workspace/importar-rps
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import type { EstadoConsultaRps } from '../../remolques/workspace/selectores.ts';
 import { awningLetter } from '../../domain/awningCompleteness.js';
+import { enUnRenglon, useAltoAjustado } from '../hooks/useAltoAjustado';
 import { medidasLineaRps } from './rotulo';
 
 // Cabecera del pedido de remolques: la de toldos (`order-header`, mismas clases y mismo
@@ -57,12 +58,10 @@ export function CabeceraPedido(props: Props) {
           <label>
             <span>Cliente</span>
             {/* Se apaga mientras el pedido no existe: el cliente pertenece a un pedido. */}
-            <input
-              name="clientePedido"
-              autoComplete="off"
+            <CampoCliente
               value={props.cliente}
               disabled={!hayPedido || props.cargando}
-              onChange={(evento) => props.onClienteChange(evento.target.value)}
+              onChange={props.onClienteChange}
             />
           </label>
           <label className="field">
@@ -89,6 +88,29 @@ export function CabeceraPedido(props: Props) {
         <PedidoEnRps {...props} />
       </div>
     </section>
+  );
+}
+
+/** El cliente se lee entero (Iván, 01/10/2026): un nombre largo pasa a un segundo renglón en vez
+ *  de cortarse; sigue siendo una sola línea (Intro no la parte). */
+function CampoCliente({ value, disabled, onChange }: { value: string; disabled: boolean; onChange: (valor: string) => void }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useAltoAjustado(ref, value);
+  return (
+    <textarea
+      ref={ref}
+      rows={1}
+      name="clientePedido"
+      // Su nombre, dicho aparte: el de la etiqueta que lo envuelve sumaría el texto que ya lleva dentro.
+      aria-label="Cliente"
+      className="rem-cabecera-cliente"
+      autoComplete="off"
+      spellCheck={false}
+      value={value}
+      disabled={disabled}
+      onChange={(evento) => onChange(enUnRenglon(evento.target.value))}
+      onKeyDown={(evento) => { if (evento.key === 'Enter') evento.preventDefault(); }}
+    />
   );
 }
 

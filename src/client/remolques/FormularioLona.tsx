@@ -24,9 +24,11 @@ const ETIQUETAS_RADIO = {
 } as const;
 const PERFILES_VISIBLES = PERFILES.map(({ value, label }) => ({ value, label }));
 
-export function FormularioLona({ input, materiales, params, errores = {}, onChange, onCampoTocado, onConfirm }: {
+export function FormularioLona({ input, materiales, params, errores = {}, metrosTela = 0, onChange, onCampoTocado, onConfirm }: {
   input: LonaInput;
   materiales: Material[];
+  /** Metros de tela que pide este elemento: el stock de la bobina avisa si no llegan. */
+  metrosTela?: number;
   params?: CalcParams;
   errores?: Record<string, string>;
   onChange: (i: LonaInput) => void;
@@ -119,19 +121,50 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
         if (campo) onCampoTocado?.(campo);
       }}
     >
-      <PasoFormulario titulo="Datos del remolque">
+      {/* Reparto del ancho (Iván, 01/10/2026): los números cortos, de cuatro en fila; lo largo (el
+          material, las recogidas con nombre largo, las observaciones) a su ancho y entero, sin «…».
+          La O.F. y la cantidad juntas arriba: las dos vienen de la línea de RPS. */}
+      <PasoFormulario titulo="Datos del remolque" columnas={4}>
         <CampoTexto name="ordenFabricacion" label="O.F." value={input.cabecera.ordenFabricacion ?? ''} onChange={(v) => setCab('ordenFabricacion', v)} />
+        <CampoNum name="cantidad" error={errores.cantidad} label="Cantidad" value={input.cantidad} onChange={(v) => set('cantidad', v)} />
       </PasoFormulario>
 
+      {/* La forma con lo que la define al lado del tipo (aguas, chaflán o radio) y, debajo, la bobina
+          a todo lo ancho. */}
       <PasoFormulario numero={1} titulo="Forma del remolque" columnas={4}>
         <CampoSelect name="tipoPerfil" label="Tipo" span={2} value={input.tipoPerfil} opciones={PERFILES_VISIBLES}
           sinElegir="Elige el perfil" error={errores.tipoPerfil}
           onChange={(v) => set('tipoPerfil', v as LonaInput['tipoPerfil'])} />
-        <CampoMaterial span={2} value={input.material} opciones={materiales} error={errores.material}
-          onChange={(v) => set('material', v)} />
+        {['TIPO 02', 'TIPO 03'].includes(input.tipoPerfil) && (
+          <CampoNum name="aguas" error={errores.aguas} label="Aguas" value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
+        )}
+        {input.tipoPerfil === 'TIPO 04' && (
+          <CampoNum name="chaflan" error={errores.chaflan} label="Chaflán · vértices"
+            value={input.chaflan ?? 0} onChange={(v) => set('chaflan', v)} />
+        )}
+        {input.tipoPerfil === 'TIPO 05' && (
+          <CampoNum name="radioEsquina" error={errores.radioEsquina} label="Radio esquina" value={input.radioEsquina ?? 0} onChange={(v) => set('radioEsquina', v)} />
+        )}
+        {/* Los radios del TIPO 03 y del TIPO 04 son opcionales (sin ellos, aristas vivas): van tras un
+            Sí / No. El del TIPO 05 no, porque sin él no hay contorno. */}
+        {camposRadio.length > 0 && (
+          <CampoSiNo name="conRadios" label="Con radios" value={verRadios} onChange={cambiarRadios} />
+        )}
+        {camposRadio.length > 0 && verRadios && (
+          <div className="rem-banda rem-span-4">
+            {camposRadio.map((campo) => (
+              <CampoNum key={campo} name={campo} label={ETIQUETAS_RADIO[campo]} value={input[campo] ?? 0}
+                onChange={(v) => set(campo, v)} />
+            ))}
+          </div>
+        )}
+        <CampoMaterial span={4} value={input.material} opciones={materiales} error={errores.material}
+          metrosTela={metrosTela} onChange={(v) => set('material', v)} />
       </PasoFormulario>
 
-      <PasoFormulario numero={2} titulo="Recogidas">
+      {/* Las dos recogidas se reparten el ancho que deja el Sí / No; un nombre largo («Puentes Hijos de
+          Pedro López») pasa a dos renglones en vez de cortarse. */}
+      <PasoFormulario numero={2} titulo="Recogidas" columnas="recogidas">
         <CampoSelect name="recogeDelante" label="Delante" value={input.recogeDelante} opciones={RECOGIDAS}
           sinElegir="Elige la recogida" error={errores.recogeDelante}
           onChange={(v) => set('recogeDelante', v)} />
@@ -143,33 +176,11 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
       </PasoFormulario>
 
       <PasoFormulario numero={3} titulo="Medidas · cm" columnas={4}>
-        <CampoNum name="cantidad" error={errores.cantidad} label="Cantidad" value={input.cantidad} onChange={(v) => set('cantidad', v)} />
         <CampoNum name="largo" error={errores.largo} label="Largo" value={input.largo} onChange={(v) => set('largo', v)} />
         <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho}
           onChange={(v) => onChange(conMedidaDelante(input, 'ancho', v, verDetras))} />
         <CampoNum name="altoDelante" error={errores.altoDelante} label="Alto delante" value={input.altoDelante}
           onChange={(v) => onChange(conMedidaDelante(input, 'altoDelante', v, verDetras))} />
-        {['TIPO 02', 'TIPO 03'].includes(input.tipoPerfil) && (
-          <CampoNum name="aguas" error={errores.aguas} label="Aguas" value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
-        )}
-        {input.tipoPerfil === 'TIPO 04' && (
-          <CampoNum name="chaflan" error={errores.chaflan} label="Chaflán · entre vértices"
-            value={input.chaflan ?? 0} onChange={(v) => set('chaflan', v)} />
-        )}
-        {input.tipoPerfil === 'TIPO 05' && (
-          <CampoNum name="radioEsquina" error={errores.radioEsquina} label="Radio esquina" value={input.radioEsquina ?? 0} onChange={(v) => set('radioEsquina', v)} />
-        )}
-        {/* Los radios del TIPO 03 y del TIPO 04 son opcionales (sin ellos, aristas vivas): van tras un
-            Sí / No. El del TIPO 05 no, porque sin él no hay contorno. */}
-        {camposRadio.length > 0 && (
-          <div className="rem-banda rem-banda-3 rem-span-3">
-            <CampoSiNo name="conRadios" label="Con radios" value={verRadios} onChange={cambiarRadios} />
-            {verRadios && camposRadio.map((campo) => (
-              <CampoNum key={campo} name={campo} label={ETIQUETAS_RADIO[campo]} value={input[campo] ?? 0}
-                onChange={(v) => set(campo, v)} />
-            ))}
-          </div>
-        )}
         <div className="rem-contorno">
           <CampoNum name="contorno" error={errores.contorno} label="Contorno" value={contornoVisible}
             onChange={(v) => onChange({ ...input, contorno: v, contornoScad: undefined })} />
@@ -177,8 +188,9 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
             (v) => onChange({ ...input, contorno: v, contornoScad: undefined }))}
         </div>
         {/* Remolque más ancho (o más alto) detrás: sus medidas de detrás, con el contorno de esa
-            punta, porque el paño contorno se corta en trapecio (CAD de Iván, 30/09/2026). */}
-        <div className="rem-banda rem-span-4">
+            punta, porque el paño contorno se corta en trapecio (CAD de Iván, 30/09/2026). La caja solo
+            sale con ellas: el Sí / No suelto no necesita marco. */}
+        <div className={`${verDetras ? 'rem-banda' : 'rem-fila'} rem-span-4`}>
           <CampoSiNo name="detrasDistinto" label="Detrás distinto" value={verDetras} onChange={cambiarDetras} />
           {verDetras && (
             <>
@@ -218,23 +230,24 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
             <p className="rem-nota rem-span-2">Introduce las posiciones exactas en el apartado de ollaos del resultado.</p>
           )}
         </div>
-        <CampoSiNo name="ventana" label="Ventana" span={2} error={errores.ventana}
+        {/* La ventana, sus dos medidas y la rotulación en una sola fila. */}
+        <CampoSiNo name="ventana" label="Ventana" error={errores.ventana}
           value={input.ventana} onChange={(v) => set('ventana', v)} />
-        {input.ventana && (
+        {input.ventana ? (
           <>
             <CampoNum name="ventanaAncho" error={errores.ventanaAncho} label="Ancho ventana" value={input.ventanaAncho ?? 0}
               onChange={(v) => set('ventanaAncho', v)} />
             <CampoNum name="ventanaAlto" error={errores.ventanaAlto} label="Alto ventana" value={input.ventanaAlto ?? 0}
               onChange={(v) => set('ventanaAlto', v)} />
           </>
-        )}
+        ) : <span className="rem-span-2" aria-hidden="true" />}
         {/* Después de la ventana y sus medidas, como en la web de remolques de antes (orden de tabulación). */}
-        <CampoSiNo name="rotulacion" label="Rotulación" span={2} error={errores.rotulacion}
+        <CampoSiNo name="rotulacion" label="Rotulación" error={errores.rotulacion}
           value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
         {/* Por líneas, como las observaciones de tela de los toldos (Iván, 30/09/2026); se guardan en un
             solo texto, una línea por renglón. Solo aquí: el dibujo ya no tiene su propia casilla. */}
         <div className="rem-span-4">
-          <ObservationLines label="Observaciones" value={input.observaciones} onChange={(v) => set('observaciones', v)} />
+          <ObservationLines label="Observaciones" value={input.observaciones} onChange={(v) => set('observaciones', v)} ajustarTexto />
         </div>
       </PasoFormulario>
     </div>

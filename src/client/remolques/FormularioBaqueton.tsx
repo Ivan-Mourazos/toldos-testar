@@ -6,8 +6,9 @@ import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, PasoFormul
 import { ObservationLines } from '../components/ObservationLines';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 
-// Formulario del baquetón: los mismos campos, opciones, orden y avisos que el de la web de
-// remolques (`FormularioBaqueton.tsx`). Sin «Realizado por»: lo pone «Soy» al crear la línea.
+// Formulario del baquetón: los mismos campos, opciones y avisos que el de la web de remolques
+// (`FormularioBaqueton.tsx`). Sin «Realizado por»: lo pone «Soy» al crear la línea. El reparto del
+// ancho es el de la lona (Iván, 01/10/2026): números cortos en fila y el material a todo lo ancho.
 
 const MODOS_CAIDA = [
   { value: 'CLIENTE', label: 'Según cliente' },
@@ -15,11 +16,13 @@ const MODOS_CAIDA = [
   { value: 'MEDIDA', label: 'Medida diferente' },
 ];
 
-export function FormularioBaqueton({ input, materiales, params, errores = {}, onChange, onCampoTocado }: {
+export function FormularioBaqueton({ input, materiales, params, errores = {}, metrosTela = 0, onChange, onCampoTocado }: {
   input: BaquetonInput;
   materiales: Material[];
   params?: CalcParams;
   errores?: Record<string, string>;
+  /** Metros de tela que pide este elemento: el stock de la bobina avisa si no llegan. */
+  metrosTela?: number;
   onChange: (i: BaquetonInput) => void;
   onCampoTocado?: (campo: string) => void;
 }) {
@@ -37,21 +40,23 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, on
         if (campo) onCampoTocado?.(campo);
       }}
     >
-      <PasoFormulario titulo="Datos del baquetón">
+      {/* La O.F. y la cantidad juntas, como en la lona: las dos vienen de la línea de RPS. */}
+      <PasoFormulario titulo="Datos del baquetón" columnas={4}>
         <CampoTexto name="ordenFabricacion" label="O.F." value={input.cabecera.ordenFabricacion ?? ''} onChange={(v) => setCab('ordenFabricacion', v)} />
+        <CampoNum name="cantidad" error={errores.cantidad} label="Cantidad" value={input.cantidad} onChange={(v) => set('cantidad', v)} />
       </PasoFormulario>
 
       <PasoFormulario numero={1} titulo="Medidas · cm" columnas={4}>
-        <CampoNum name="cantidad" error={errores.cantidad} label="Cantidad" value={input.cantidad} onChange={(v) => set('cantidad', v)} />
         <CampoNum name="largo" error={errores.largo} label="Largo" value={input.largo} onChange={(v) => set('largo', v)} />
         <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho} onChange={(v) => set('ancho', v)} />
         <CampoNum name="baqueton" error={errores.baqueton} label="Baquetón" value={input.baqueton} onChange={(v) => set('baqueton', v)} />
       </PasoFormulario>
 
       <PasoFormulario numero={2} titulo="Ajustes finales" columnas={4}>
+        {/* Cada caída: el modo a lo ancho de su mitad y, si es una medida, la medida debajo a su ancho. */}
         {(['baquetonDelante', 'baquetonDetras'] as const).map((campo) => (
           <div key={campo} className="rem-par rem-span-2">
-            <CampoSelect name={`${campo}Modo`} label={campo === 'baquetonDelante' ? 'Lona delante' : 'Lona detrás'}
+            <CampoSelect name={`${campo}Modo`} label={campo === 'baquetonDelante' ? 'Lona delante' : 'Lona detrás'} span={2}
               value={input[campo] === undefined ? 'CLIENTE' : input[campo] === null ? 'LINEA' : 'MEDIDA'}
               opciones={MODOS_CAIDA}
               onChange={(v) => set(campo, v === 'CLIENTE' ? undefined : v === 'LINEA' ? null : input.baqueton)} />
@@ -63,8 +68,11 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, on
         ))}
         <CampoSelect name="clienteEspecifico" label="Cliente específico" span={2} value={input.clienteEspecifico} opciones={CLIENTES}
           onChange={(v) => set('clienteEspecifico', v)} />
-        <CampoMaterial span={2} value={input.material} opciones={materiales} error={errores.material}
-          onChange={(v) => set('material', v)} />
+        <span aria-hidden="true" />
+        <CampoSiNo name="rotulacion" label="Rotulación" error={errores.rotulacion}
+          value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
+        <CampoMaterial span={4} value={input.material} opciones={materiales} error={errores.material}
+          metrosTela={metrosTela} onChange={(v) => set('material', v)} />
         <div className="rem-banda rem-span-4">
           <CampoSelect name="modoOllaos" label="Distribución de ollaos" span={2} value={input.modoOllaos} opciones={MODOS_OLLAOS}
             sinElegir="Elige el reparto" error={errores.modoOllaos}
@@ -88,12 +96,10 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, on
             <p className="rem-nota rem-span-2">Introduce las posiciones exactas en el apartado de ollaos del resultado.</p>
           )}
         </div>
-        <CampoSiNo name="rotulacion" label="Rotulación" span={2} error={errores.rotulacion}
-          value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
         {/* Por líneas, como las observaciones de tela de los toldos (Iván, 30/09/2026); se guardan en un
             solo texto, una línea por renglón. Solo aquí: el dibujo ya no tiene su propia casilla. */}
         <div className="rem-span-4">
-          <ObservationLines label="Observaciones" value={input.observaciones} onChange={(v) => set('observaciones', v)} />
+          <ObservationLines label="Observaciones" value={input.observaciones} onChange={(v) => set('observaciones', v)} ajustarTexto />
         </div>
       </PasoFormulario>
     </div>

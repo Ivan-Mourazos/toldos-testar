@@ -1,16 +1,19 @@
 import React, { useRef } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { enUnRenglon, useAltoAjustado } from '../hooks/useAltoAjustado';
 import { useReadMode } from './ReadMode';
 
 type Props = {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  /** Cada línea en un área que crece a los renglones que ocupe, para leerla entera (remolques). */
+  ajustarTexto?: boolean;
 };
 
 // En lectura (ReadModeContext, que dan la ficha del toldo y la cabecera del pedido) es una
 // nota; al editar, una lista de líneas.
-export function ObservationLines({ label, value, onChange }: Props) {
+export function ObservationLines({ label, value, onChange, ajustarTexto = false }: Props) {
   const reading = useReadMode();
   const lines = observationLines(value);
   const listRef = useRef<HTMLDivElement>(null);
@@ -40,7 +43,7 @@ export function ObservationLines({ label, value, onChange }: Props) {
     next.splice(afterIndex + 1, 0, '');
     onChange(next.join('\n'));
     requestAnimationFrame(() => {
-      listRef.current?.querySelector<HTMLInputElement>(`[data-observation-line="${afterIndex + 1}"]`)?.focus();
+      listRef.current?.querySelector<HTMLElement>(`[data-observation-line="${afterIndex + 1}"]`)?.focus();
     });
   }
 
@@ -64,19 +67,26 @@ export function ObservationLines({ label, value, onChange }: Props) {
         {lines.map((line, index) => (
           <div className="observation-line" key={index}>
             <span className="observation-line-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-            <input
-              type="text"
-              data-observation-line={index}
-              value={line}
-              aria-label={`${label}, línea ${index + 1}`}
-              placeholder="Escribe una observación"
-              onChange={(event) => updateLine(index, event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key !== 'Enter') return;
-                event.preventDefault();
-                addLine(index);
-              }}
-            />
+            {ajustarTexto ? (
+              <LineaAjustada
+                index={index} line={line} label={label}
+                onChange={(next) => updateLine(index, next)} onEnter={() => addLine(index)}
+              />
+            ) : (
+              <input
+                type="text"
+                data-observation-line={index}
+                value={line}
+                aria-label={`${label}, línea ${index + 1}`}
+                placeholder="Escribe una observación"
+                onChange={(event) => updateLine(index, event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  addLine(index);
+                }}
+              />
+            )}
             <button
               type="button"
               className="observation-line-remove"
@@ -90,6 +100,32 @@ export function ObservationLines({ label, value, onChange }: Props) {
         ))}
       </div>
     </section>
+  );
+}
+
+// La misma línea en un área de texto que crece: Intro sigue abriendo la línea siguiente, y lo
+// pegado con saltos queda en esta.
+function LineaAjustada({ index, line, label, onChange, onEnter }: {
+  index: number; line: string; label: string; onChange: (value: string) => void; onEnter: () => void;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useAltoAjustado(ref, line);
+  return (
+    <textarea
+      ref={ref}
+      rows={1}
+      className="observation-line-texto"
+      data-observation-line={index}
+      value={line}
+      aria-label={`${label}, línea ${index + 1}`}
+      placeholder="Escribe una observación"
+      onChange={(event) => onChange(enUnRenglon(event.target.value))}
+      onKeyDown={(event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        onEnter();
+      }}
+    />
   );
 }
 
