@@ -31,6 +31,14 @@ describe('almacén de parámetros de remolques', () => {
     expect(logger.warn).not.toHaveBeenCalled();
   });
 
+  it('un fichero guardado antes de los ganchos corazón los recibe del código', async () => {
+    const guardadas = DEFAULT_PARAMS.recogidas.filter((r) => r.nombre !== 'GANCHOS CORAZON');
+    await writeFile(file(), JSON.stringify({ recogidas: guardadas }), 'utf8');
+    const { recogidas } = await store().get();
+    expect(recogidas.slice(0, guardadas.length)).toEqual(guardadas);
+    expect(recogidas.at(-1)).toEqual(DEFAULT_PARAMS.recogidas.find((r) => r.nombre === 'GANCHOS CORAZON'));
+  });
+
   it('con un fichero roto vale el del código y se avisa en el log', async () => {
     await writeFile(file(), '{ esto no es json', 'utf8');
     expect(await store().get()).toEqual(DEFAULT_PARAMS);

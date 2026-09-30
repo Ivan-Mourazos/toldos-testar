@@ -9,6 +9,9 @@ const CAMPOS_NUMERICOS = [
   "baquetonDemasiaCostura", "baquetonDemasiaFinal",
 ] as const;
 
+/** Recogidas que el código añadió después de que hubiera Parámetros guardados. */
+const RECOGIDAS_NUEVAS = ["GANCHOS CORAZON"];
+
 /** Lectura tolerante: completa con DEFAULT_PARAMS lo que falte en datos guardados antiguos. */
 export function normalizarParams(bruto: unknown): CalcParams {
   const p = (typeof bruto === "object" && bruto !== null ? bruto : {}) as Record<string, unknown>;
@@ -17,7 +20,14 @@ export function normalizarParams(bruto: unknown): CalcParams {
     if (esNumero(p[campo])) resultado[campo] = p[campo];
   }
   if (Array.isArray(p.recogidas) && p.recogidas.length > 0) {
-    resultado.recogidas = p.recogidas as Recogida[];
+    const guardadas = p.recogidas as Recogida[];
+    // Unos Parámetros guardados antes de que existiera una recogida no la traen: se añade la del
+    // código para que salga en el formulario. Las guardadas no se tocan, y las que no son nuevas
+    // tampoco se reponen (si alguien quitó una, fue a propósito).
+    const faltan = DEFAULT_PARAMS.recogidas.filter(
+      (r) => RECOGIDAS_NUEVAS.includes(r.nombre) && !guardadas.some((g) => g?.nombre === r.nombre),
+    );
+    resultado.recogidas = [...guardadas, ...faltan];
   }
   if (Array.isArray(p.clientesBaqueton) && p.clientesBaqueton.length > 0) {
     resultado.clientesBaqueton = p.clientesBaqueton as ClienteBaqueton[];

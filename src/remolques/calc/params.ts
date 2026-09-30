@@ -94,6 +94,9 @@ export const DEFAULT_PARAMS: CalcParams = {
   recogidas: [
     r("NO", 3, 3),
     r("GOMA", 27, 27),
+    // Provisional (30/09/2026): las mismas medidas que la goma hasta que el taller dé las suyas
+    // (docs/modelos/dudas-abiertas.md, Q-R01).
+    r("GANCHOS CORAZON", 27, 27),
     r("CREMALLERA", 3, 3),
     r("VELCRO", 27, 27),
     r("PUENTES ESVA", 21, 21, 19, 19),

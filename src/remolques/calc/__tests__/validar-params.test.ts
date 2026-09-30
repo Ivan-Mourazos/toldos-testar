@@ -9,6 +9,22 @@ describe("normalizarParams", () => {
     expect(p.ajusteContornoBase).toBe(7);
     expect(p.recogidas).toEqual(DEFAULT_PARAMS.recogidas);
   });
+  it("unos Parámetros guardados sin una recogida nueva del código la reciben, sin tocar las suyas", () => {
+    const guardadas = [
+      { nombre: "NO", delante: 3, atras: 3, lateralSoloAtras: 0, lateralSoloDelante: 0 },
+      { nombre: "GOMA", delante: 30, atras: 30, lateralSoloAtras: 0, lateralSoloDelante: 0 },
+    ];
+    const p = normalizarParams({ recogidas: guardadas });
+    expect(p.recogidas.slice(0, 2)).toEqual(guardadas);
+    // Solo las recogidas que el código añadió después: una que se quitó a propósito no vuelve.
+    expect(p.recogidas.map((r) => r.nombre)).toEqual(["NO", "GOMA", "GANCHOS CORAZON"]);
+    expect(p.recogidas[2]).toEqual(DEFAULT_PARAMS.recogidas.find((r) => r.nombre === "GANCHOS CORAZON"));
+  });
+  it("si ya traen los ganchos corazón con otras medidas, se quedan las guardadas", () => {
+    const propia = { nombre: "GANCHOS CORAZON", delante: 20, atras: 20, lateralSoloAtras: 1, lateralSoloDelante: 1 };
+    const p = normalizarParams({ recogidas: [DEFAULT_PARAMS.recogidas[0], propia] });
+    expect(p.recogidas.filter((r) => r.nombre === "GANCHOS CORAZON")).toEqual([propia]);
+  });
   it("con null devuelve los valores por defecto", () => {
     expect(normalizarParams(null)).toEqual(DEFAULT_PARAMS);
   });

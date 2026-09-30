@@ -11,6 +11,7 @@ export const MODOS_OLLAOS: Opcion[] = [
 
 const etiquetasConocidas: Record<string, string> = {
   NO: 'No',
+  'GANCHOS CORAZON': 'Ganchos corazón',
   'PUENTES ESVA': 'Puentes ESVA',
   'PUENTES HIJOS DE PEDRO LOPEZ': 'Puentes Hijos de Pedro López',
   'HIJOS DE PEDRO LOPEZ': 'Hijos de Pedro López',
