@@ -101,8 +101,15 @@ la lona hecha, se guardan también en el resultado para dibujarlos.
   - con «Según ganchos», en los ganchos de verdad;
   - en los otros modos, un gancho en el medio de cada par de ollaos.
 - **Cierre de cada esquina**, según la recogida elegida delante y detrás:
-  - **Goma**: orejas unidas con goma en zigzag que cruza entre los ollaos de los dos bordes,
-    de arriba abajo.
+  - **Goma** (regla confirmada por Iván el 30/09/2026; la fuente es
+    `docs/remolques/cierres-y-acabados.md`): la oreja del paño dobla sobre el lateral y lleva
+    2 ollaos en su borde libre (pared de 80 cm o menos) o 3 (más alta), en la parte baja de la
+    pared. De cada ollao baja una goma en diagonal que dobla la esquina hasta un gancho del
+    cajón en la cara del paño: con la pared de 100 cm o más, todas al gancho del centro de esa
+    cara (uno solo, compartido por las dos esquinas); más baja, cada una a un gancho cercano a
+    la esquina, cruzadas en X. Si la goma perimetral ya tiene un gancho de esa cara a menos de
+    8 cm (también los del pedido con «Según ganchos»), la goma acaba en ese y no se pone otro.
+    Sin zigzag entre los dos bordes ni ollaos sueltos en el lateral.
   - **Cremallera**: a 5 cm de la esquina, hasta 4 cm por debajo de la cima, con su tirador.
   - **Velcro**: tira de 3 cm en el borde de la oreja, pegada sobre el lateral.
   - **Puentes** (ESVA, laterales, Hijos de Pedro López): solapa cosida en vertical, puentes
