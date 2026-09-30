@@ -37,13 +37,21 @@ describe("prepararPedidoHoja", () => {
     expect(falla([])).toBe("El pedido no tiene elementos para la hoja de taller.");
     expect(falla(undefined)).toBe("El pedido no tiene elementos para la hoja de taller.");
     const muchos = Array.from({ length: MAX_ELEMENTOS_HOJA + 1 }, (_, i) => deFixture("lona-02", String(10 + i)));
-    expect(falla(muchos)).toBe("Un pedido admite como mucho 30 elementos en la hoja de taller.");
+    expect(falla(muchos)).toBe("El pedido tiene 31 elementos y la hoja de taller admite como mucho 30. Divide el pedido o avisa a informática.");
   });
 
   it("rechaza lo que no tiene forma de elemento", () => {
     expect(falla([{ tipo: "toldo", version: "10", input: {} }])).toBe("El elemento 1 del pedido no tiene el formato esperado.");
     const cambiado = { ...deFixture("lona-02", "10"), tipo: "baqueton" };
     expect(falla([cambiado])).toBe("Baquetón 1: el tipo no cuadra con sus datos.");
+  });
+
+  it("un elemento con el número de pedido o el material mal puestos da 400, no un fallo del servidor", () => {
+    const base = deFixture("lona-02", "10");
+    const cabecera = { ...base.input.cabecera, numeroPedido: 12345 };
+    expect(falla([{ ...base, input: { ...base.input, cabecera } }])).toBe("Remolque 1: faltan el número de pedido o el material, o no son texto.");
+    const { material: _material, ...sinMaterial } = base.input;
+    expect(falla([{ ...base, input: sinMaterial }])).toBe("Remolque 1: faltan el número de pedido o el material, o no son texto.");
   });
 
   it("todos del mismo pedido, con número y sin versiones repetidas", () => {

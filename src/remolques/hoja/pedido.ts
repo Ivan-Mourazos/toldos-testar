@@ -10,6 +10,11 @@ import type { DatosHojaPedido, ElementoHoja, ElementoPedidoHoja } from "./tipos.
 // elemento completo), se ordena por versión (10, 11…) y se calcula aquí con los parámetros
 // comunes, para que la hoja nunca imprima un resultado que no sale del cálculo.
 
+/**
+ * Tope de elementos por hoja. Es una estimación: hay que volver a medirlo en el servidor .90
+ * (Chromium con SwiftShader, sin GPU) contra el límite de 30 s de la hoja (TIEMPO_MAXIMO_MS):
+ * un pedido de este tamaño debe imprimirse con margen. Si tarda más, bajar el valor aquí.
+ */
 export const MAX_ELEMENTOS_HOJA = 30;
 
 /** Un error en lo que manda la pantalla: la ruta responde 400 con este mensaje. */
@@ -31,9 +36,15 @@ function leerElemento(valor: unknown, posicion: number): ElementoPedidoHoja {
   ) {
     throw new ErrorPedidoHoja(`El elemento ${posicion + 1} del pedido no tiene el formato esperado.`);
   }
+  const nombre = nombreElementoPedido(valor.version, valor.tipo);
+  // Lo que el cálculo y la validación dan por hecho que es texto: sin esto, un campo que falta
+  // o es un número acabaría en un error 500 en vez de en un 400.
+  if (typeof valor.input.cabecera.numeroPedido !== "string" || typeof valor.input.material !== "string") {
+    throw new ErrorPedidoHoja(`${nombre}: faltan el número de pedido o el material, o no son texto.`);
+  }
   const input = valor.input as unknown as LonaInput | BaquetonInput;
   if ((valor.tipo === "baqueton") !== ("baqueton" in input)) {
-    throw new ErrorPedidoHoja(`${nombreElementoPedido(valor.version, valor.tipo)}: el tipo no cuadra con sus datos.`);
+    throw new ErrorPedidoHoja(`${nombre}: el tipo no cuadra con sus datos.`);
   }
   return { version: valor.version, tipo: valor.tipo, input };
 }
@@ -48,7 +59,9 @@ export function prepararPedidoHoja(elementos: unknown, params: CalcParams): Dato
     throw new ErrorPedidoHoja("El pedido no tiene elementos para la hoja de taller.");
   }
   if (elementos.length > MAX_ELEMENTOS_HOJA) {
-    throw new ErrorPedidoHoja(`Un pedido admite como mucho ${MAX_ELEMENTOS_HOJA} elementos en la hoja de taller.`);
+    throw new ErrorPedidoHoja(
+      `El pedido tiene ${elementos.length} elementos y la hoja de taller admite como mucho ${MAX_ELEMENTOS_HOJA}. Divide el pedido o avisa a informática.`,
+    );
   }
   const lista = elementos.map(leerElemento).sort((a, b) => numeroVersion(a.version) - numeroVersion(b.version));
   const pedidos = new Set(lista.map((e) => normalizarNumeroPedido(String(e.input.cabecera.numeroPedido ?? ""))));

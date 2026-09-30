@@ -120,6 +120,20 @@ describe("servicio de PDF con Chromium", () => {
   });
 });
 
+describe("cierre con una hoja en marcha", () => {
+  it("el «Target closed» de Playwright al cerrar sale como el mensaje de cierre del servidor", async () => {
+    let servicio!: ReturnType<typeof crearServicioPdf>;
+    const pagina = paginaFalsa([]);
+    pagina.esperarHoja = async () => {
+      await servicio.cerrar();
+      throw new Error("page.waitForFunction: Target page, context or browser has been closed");
+    };
+    const { lanzar } = navegadorFalso(() => pagina);
+    servicio = crearServicioPdf({ urlHoja, lanzar, registrar: () => {} });
+    await expect(servicio.generar("a")).rejects.toThrow("El servidor se está cerrando: no se pueden hacer más hojas de taller ahora.");
+  });
+});
+
 describe("la cola nunca se queda parada", () => {
   const callado = () => {};
 

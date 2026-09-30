@@ -274,6 +274,11 @@ export function crearServicioPdf({
         registrar(`Tiempo agotado en Chromium: ${texto(error)}`);
         throw new ErrorTiempo(mensajeTiempo);
       }
+      if (cerrado && !(error instanceof ErrorSalidaPdf)) {
+        // Al parar el servidor se cierra Chromium con la hoja en marcha: Playwright dice «Target closed».
+        registrar(`Hoja de taller interrumpida por el cierre del servidor: ${primeraLinea(error)}`);
+        throw new ErrorSalidaPdf(MENSAJE_CERRADO);
+      }
       throw error instanceof ErrorSalidaPdf ? error : fallo("No se pudo hacer el PDF", error);
     } finally {
       if (colgada) {

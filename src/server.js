@@ -102,6 +102,9 @@ const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
 const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
 
 app.use(compression());
+// La vista previa de la hoja de taller solo recibe un pedido: 1 MB de sobra. Va antes del límite
+// general porque el primer express.json que lee el cuerpo es el que manda.
+app.use('/api/remolques/pdf', express.json({ limit: '1mb' }));
 app.use(express.json({ limit: '20mb' }));
 
 app.use('/api', (req, _res, next) => {
