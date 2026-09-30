@@ -40,9 +40,20 @@ export interface EscenaBase {
   liberar(): void;
 }
 
-/** La escena sin el remolque. En impresión, más luz de ambiente y menos sol: grises planos y
- *  sombras muy suaves, que en blanco y negro no tapen nada. */
+/** Luces de cada modo. La pantalla, en color, con sol fuerte. */
+const LUZ_PANTALLA = { entorno: 0.8, cielo: 0xffffff, tierra: 0x9aa0a6, hemisferio: 0.35, sol: 2.4, radioSombra: 1, sombra: 0.16 };
+/**
+ * La hoja impresa va sin mapeo de tonos: con mucha luz la lona gris claro llegaba al papel en
+ * blanco puro (255) y no se distinguía de la hoja. Con esta luz, medida en las muestras en grises,
+ * la lona queda entre 190 y 215 según la cara, el cajón hacia 130–150 y el papel en 255; la tierra
+ * del hemisferio más oscura que el cielo separa el techo de los costados, y el sol flojo deja
+ * sombras muy suaves, que en blanco y negro no tapan nada.
+ */
+const LUZ_IMPRESION = { entorno: 0.27, cielo: 0xffffff, tierra: 0x8c8c8c, hemisferio: 0.75, sol: 0.6, radioSombra: 3, sombra: 0.08 };
+
+/** La escena sin el remolque, con las luces de la pantalla o las de la hoja impresa. */
 export function montarEscenaBase(renderer: THREE.WebGLRenderer, { impresion = false }: { impresion?: boolean } = {}): EscenaBase {
+  const luz = impresion ? LUZ_IMPRESION : LUZ_PANTALLA;
   const escena = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
   const sala = new RoomEnvironment();
@@ -53,16 +64,16 @@ export function montarEscenaBase(renderer: THREE.WebGLRenderer, { impresion = fa
   // La sala tiene un panel de luz justo detrás de la cámara de delante: a plena intensidad y sin
   // girar, la lona de frente salía rosa y la de detrás, granate. Girada 45° y más suave, las
   // cinco vistas enseñan el color de la lona.
-  escena.environmentIntensity = impresion ? 0.5 : 0.8;
+  escena.environmentIntensity = luz.entorno;
   escena.environmentRotation.y = Math.PI / 4;
-  escena.add(new THREE.HemisphereLight(0xffffff, impresion ? 0xd9d9d9 : 0x9aa0a6, impresion ? 1.1 : 0.35));
-  const sol = new THREE.DirectionalLight(0xffffff, impresion ? 1.3 : 2.4);
+  escena.add(new THREE.HemisphereLight(luz.cielo, luz.tierra, luz.hemisferio));
+  const sol = new THREE.DirectionalLight(0xffffff, luz.sol);
   sol.castShadow = true;
   sol.shadow.mapSize.set(2048, 2048);
   sol.shadow.bias = -0.0004;
-  if (impresion) sol.shadow.radius = 6;
+  if (impresion) sol.shadow.radius = luz.radioSombra;
   escena.add(sol, sol.target);
-  const suelo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShadowMaterial({ opacity: impresion ? 0.06 : 0.16 }));
+  const suelo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShadowMaterial({ opacity: luz.sombra }));
   suelo.rotation.x = -Math.PI / 2;
   suelo.receiveShadow = true;
   escena.add(suelo);

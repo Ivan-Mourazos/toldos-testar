@@ -86,3 +86,14 @@ Stop the background task when done. Leave `tmp/ui-audit/` for evidence;
 - Starting `pnpm dev` or `node src/server.js` without the overrides: writes can hit the real share.
 - Expecting Guardar para revisión to save an incomplete awning straight away: it first opens a confirmation dialog listing what each awning lacks (`Guardar igualmente` / `Seguir completando`).
 - Using `page.getByRole('option', { name: 'BLANCO', exact: true })`: stored values are uppercase, labels are not.
+
+## Hoja de taller de remolques (fase 4)
+
+`/hoja-remolques.html` es una página interna (segunda entrada de Vite) que Chromium imprime en el
+servidor. En desarrollo se ve sin pasar por el servidor con una muestra:
+`http://127.0.0.1:4310/hoja-remolques.html?muestra=varios` (hay `lona-ventana`, `baqueton`,
+`segun-ganchos`, `bastilla`, `perfiles` y `varios`, de `src/remolques/hoja/muestras.ts`). Cuando
+termina de pintarse deja `window.hojaLista = true`, o el motivo en `window.hojaError`. Necesita
+WebGL: en Playwright, `launchArgs: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']`.
+Para mirarla en papel: `page.pdf({ format: 'A4', landscape: true, printBackground: true })` y
+`pdftoppm -r 200 -png` (y `-gray`, como la impresora del taller) sobre el PDF.

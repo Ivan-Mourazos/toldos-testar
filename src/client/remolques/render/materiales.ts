@@ -135,8 +135,11 @@ export function crearMateriales(color: string, { texturas }: { texturas: boolean
  * negro. Mismas claves que en pantalla y sin texturas: en papel la trama del tejido solo ensucia.
  */
 export function crearMaterialesImpresion(): Materiales {
-  const mate = (color: string, extra: THREE.MeshStandardMaterialParameters = {}) =>
-    new THREE.MeshStandardMaterial({ color, roughness: 0.95, metalness: 0, ...extra });
+  // Las caras, un pelo hacia el fondo: las aristas (líneas justo en su borde) ganan siempre la
+  // pelea de profundidad y salen enteras, no a trazos.
+  const mate = (color: string, extra: THREE.MeshStandardMaterialParameters = {}) => new THREE.MeshStandardMaterial({
+    color, roughness: 0.95, metalness: 0, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, ...extra,
+  });
   const doble = { side: THREE.DoubleSide };
   return {
     lona: mate('#e6e6e6', doble),

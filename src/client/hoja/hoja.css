@@ -1,0 +1,162 @@
+/* Hoja de taller de remolques (fase 4): A4 apaisado, una hoja por elemento, en blanco y negro
+   (la impresora del taller es monocroma). Los tamaños de las vistas salen de medidas.ts, que es
+   a lo que se capturan: si cambias uno aquí, cámbialo allí. La letra de medidas nunca baja de
+   7 pt; el resto de tamaños sigue a la hoja de la web vieja. */
+@page { size: A4 landscape; margin: 0; }
+
+:root {
+  --tinta: #000;
+  --gris: #4d4d4d;
+  --filete: #9a9a9a;
+}
+
+* { box-sizing: border-box; }
+html, body { background: #fff; margin: 0; padding: 0; }
+body {
+  color: var(--tinta);
+  font-family: 'Geist Variable', Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.hoja-pagina {
+  break-after: page;
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+  height: 210mm;
+  overflow: hidden;
+  padding: 8mm 8mm 7mm;
+  width: 297mm;
+}
+.hoja-pagina:last-child { break-after: auto; }
+
+.hoja-rotulo {
+  color: var(--gris);
+  display: block;
+  font-size: 6.5pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.8mm;
+}
+
+/* ── Cabecera ── */
+.hoja-cabecera {
+  align-items: center;
+  border-bottom: 0.4mm solid var(--tinta);
+  display: grid;
+  gap: 4mm;
+  grid-template-columns: 34mm 1fr 74mm;
+  padding-bottom: 2mm;
+}
+.hoja-logo img { display: block; filter: grayscale(1); height: 16mm; object-fit: contain; width: 30mm; }
+.hoja-cab-grande { display: block; font-size: 12pt; font-weight: 700; margin-bottom: 1mm; }
+.hoja-cab-datos { display: flex; gap: 6mm; }
+.hoja-cab-dato { align-items: baseline; display: flex; gap: 1.5mm; }
+.hoja-cab-dato span { color: var(--gris); font-size: 6.5pt; font-weight: 600; letter-spacing: 0.06em; }
+/* Hueco también cuando va vacío («REVISADO POR» hasta la fase 5). */
+.hoja-cab-dato strong { display: inline-block; font-size: 8.5pt; font-weight: 600; min-width: 22mm; }
+
+.hoja-titulo {
+  border-bottom: 0.2mm solid var(--filete);
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin: 0;
+  padding: 1mm 0;
+  text-align: center;
+}
+
+/* ── Banda de corte: los paños son tres líneas y el contorno un número ── */
+.hoja-banda {
+  border-bottom: 0.2mm solid var(--filete);
+  display: grid;
+  grid-template-columns: 2.4fr 1.5fr 1fr;
+  padding-bottom: 2mm;
+}
+.hoja-celda { padding: 0 3mm; }
+.hoja-celda:first-child { padding-left: 0; }
+.hoja-celda + .hoja-celda { border-left: 0.2mm solid var(--filete); }
+.hoja-celda-linea { display: block; font-size: 12pt; font-weight: 700; line-height: 1.15; }
+.hoja-celda-nota { color: var(--gris); display: block; font-size: 7.5pt; margin-top: 0.3mm; }
+
+/* ── Cuerpo: datos a la izquierda, dibujo a la derecha ── */
+.hoja-cuerpo {
+  display: grid;
+  flex: none;
+  gap: 4mm;
+  /* 66 + 4 + 211 = 281 mm, el ancho de la hoja sin márgenes. */
+  grid-template-columns: 66mm 211mm;
+  /* Dos filas de vistas (56 + 47, o 44 + 35 con ganchos), el hueco de 3 y dos nombres de 3,5. */
+  height: 113mm;
+}
+.con-ganchos .hoja-cuerpo { height: 89mm; }
+.hoja-columna { border-right: 0.2mm solid var(--filete); overflow: hidden; padding-right: 3mm; }
+.hoja-grupo { margin-bottom: 3mm; }
+.hoja-grupo dl { margin: 0; }
+.hoja-dato { display: grid; gap: 1.5mm; grid-template-columns: 22mm 1fr; margin-bottom: 1.2mm; }
+.hoja-dato dt { color: var(--gris); font-size: 7pt; padding-top: 0.3mm; }
+.hoja-dato dd { font-size: 8.5pt; font-weight: 600; line-height: 1.15; margin: 0; }
+.hoja-dato dd span { display: block; }
+.hoja-material { font-size: 9pt; font-weight: 600; margin: 0; }
+/* Regular, no negrita: el texto largo en negrita se lee peor. */
+.hoja-observaciones { font-size: 9pt; line-height: 1.3; margin: 0; white-space: pre-wrap; }
+/* Si la columna no cabe, un punto menos antes de dar la hoja por mala (HojaPedido.tsx). */
+.hoja-apretada .hoja-dato dd,
+.hoja-apretada .hoja-material,
+.hoja-apretada .hoja-observaciones { font-size: 7.5pt; }
+
+.hoja-dibujo { display: flex; flex-direction: column; gap: 3mm; }
+.hoja-fila { display: flex; gap: 3mm; }
+.hoja-vista { flex: none; margin: 0; }
+.hoja-vista-marco { border: 0.2mm solid var(--filete); position: relative; }
+.hoja-vista img,
+.hoja-cotas { height: 100%; inset: 0; position: absolute; width: 100%; }
+.hoja-vista figcaption {
+  color: var(--gris);
+  font-size: 6.5pt;
+  font-weight: 600;
+  height: 3.5mm;
+  letter-spacing: 0.08em;
+  line-height: 3.5mm;
+}
+.hoja-sin-dibujo { align-items: center; color: var(--gris); display: flex; height: 100%; justify-content: center; }
+.hoja-cotas line { stroke: var(--tinta); }
+.hoja-cotas marker path { fill: var(--tinta); }
+.hoja-cotas text {
+  fill: var(--tinta);
+  font-family: 'Geist Variable', Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #fff;
+}
+.hoja-cotas .hoja-marca { font-weight: 500; }
+.hoja-cotas .hoja-rotulo-vista { fill: var(--gris); letter-spacing: 0.12em; }
+
+/* ── Tablas de ollaos y ganchos, a lo ancho ── */
+.hoja-tabla {
+  border-bottom: 0.3mm solid var(--tinta);
+  border-collapse: collapse;
+  border-top: 0.3mm solid var(--tinta);
+  table-layout: fixed;
+  width: 100%;
+}
+.hoja-tabla th,
+.hoja-tabla td {
+  border-right: 0.2mm solid var(--filete);
+  font-size: 8pt;
+  padding: 0.6mm 0.5mm;
+  text-align: center;
+}
+.hoja-tabla th { border-bottom: 0.3mm solid var(--tinta); color: var(--gris); font-size: 6.5pt; font-weight: 600; }
+.hoja-tabla td { border-bottom: 0.2mm solid var(--filete); font-variant-numeric: tabular-nums; }
+.hoja-tabla tr:last-child td { border-bottom: 0; }
+.hoja-tabla th:last-child,
+.hoja-tabla td:last-child { border-right: 0; }
+/* Ancho para «GANCHOS DELANTE DE DERECHA A IZQUIERDA (MEDIDO AL REVÉS)» en una línea. */
+.hoja-tabla .hoja-tabla-nombre { font-size: 7pt; font-weight: 600; text-align: left; white-space: nowrap; width: 86mm; }
+.hoja-tabla .hoja-tabla-total { font-weight: 700; width: 12mm; }
+
+.hoja-error { font: 12pt Arial, sans-serif; padding: 10mm; }
