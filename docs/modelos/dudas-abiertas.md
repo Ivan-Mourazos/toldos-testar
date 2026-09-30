@@ -21,6 +21,7 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 ## Todos los modelos
 
 - **Casquillo de máquina en los modelos que solo dicen «máquina»** (Antica, Ágata, Punto Recto, Monoblock 350, Perla, Coral, Cuarzo, Ámbar y Diana): el taller dijo que con máquina exterior va el casquillo largo (eje 63) y con interior el corto (eje 50), pero la tarjeta de estos modelos no pregunta si la máquina es interior o exterior. ¿Se pregunta en la tarjeta o se pone siempre el corto, que es el que más se gasta? Hoy la web pone el de eje 63 en Antica y Ágata y el de eje 50 en los demás (el Coral lleva su casquillo de transmisión). <sub>Q-PR02</sub>
+- **Tela en consignación: ¿cuenta como disponible?** Bajo la tela elegida la web enseña el stock de RPS. El almacén «CONSIGNACIÓN ARZÚA» tiene lona (unos 4.350 m). Mientras no se diga, la web no la suma a lo disponible y la enseña aparte («+ 70 m en consignación»). Importa para saber si hay tela para el pedido. <sub>Q-T01</sub>
 - **Barra más corta que llega: ¿con margen de corte?** La web reserva la barra más corta que llega al corte, sin margen: un corte de 400 lleva barra de 400. Si el taller necesita unos centímetros de sobra para cortar, hay que decir cuántos. <sub>Q-A06</sub>
 
 ## Clásicos
