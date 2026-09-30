@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ANCHO_VELCRO } from '../../../remolques/escena/constantes.ts';
+import { ANCHO_VELCRO, GANCHO_YA_PUESTO } from '../../../remolques/escena/constantes.ts';
 import type { CierreEsquina, Vec3 } from '../../../remolques/escena/tipos.ts';
 import { plano, sobreCara, v3, type Pieza } from './piezas';
 
@@ -22,8 +22,13 @@ const PUENTE_EN_SOLAPA = 4;
 const ANCHO_CINCHA = 2.5;
 const CINCHA_SUELTA = 12;
 
-export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
+/** `yaPuestos`: ganchos que ya lleva el cajón (los de la goma perimetral). Una goma de la esquina
+ *  que cae a menos de GANCHO_YA_PUESTO de uno de ellos, o del gancho del centro que ya puso la
+ *  otra esquina de la misma cara, usa ese gancho y no se dibuja otro. */
+export function piezasCierres(cierres: CierreEsquina[], yaPuestos: Array<{ punto: Vec3; normal: Vec3 }> = []): CierresEnMallas {
   const r: CierresEnMallas = { piezas: [], ollaos: [], ganchos: [], gomas: [] };
+  const hayGancho = (punto: Vec3, normal: Vec3) => [...yaPuestos, ...r.ganchos].some((g) =>
+    g.normal.every((n, i) => n === normal[i]) && v3(g.punto).distanceTo(v3(punto)) < GANCHO_YA_PUESTO);
   for (const c of cierres) {
     if (c.tipo === 'NO') continue;
     const base = v3(c.base);
@@ -52,7 +57,7 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
         // El ollao va sobre la oreja, que está 0,35 cm por fuera del lateral.
         const o = v3(ollao).addScaledVector(normal, 0.4);
         r.ollaos.push({ punto: [o.x, o.y, o.z], normal: c.normal });
-        r.ganchos.push({ punto: gancho, normal: cara });
+        if (!hayGancho(gancho, cara)) r.ganchos.push({ punto: gancho, normal: cara });
         // Del ollao a la arista, que dobla por fuera de las dos caras, y de ahí al gancho.
         r.gomas.push([
           o.clone().addScaledVector(normal, FUERA_GOMA),

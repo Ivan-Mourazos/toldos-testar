@@ -22,15 +22,20 @@ export const MARGEN_CIERRE = 10;
 /** Recogida con goma, como en las fotos del taller (tmp/fotos-remolques/lona_camion_arquillada_tir_2.jpg,
  *  IMG_3934.PNG e IMG_3930.jpg): la oreja lleva 2 o 3 ollaos en su borde libre, en la parte baja de la
  *  pared, y de cada uno baja una goma larga en diagonal, cruzando la esquina, hasta un gancho del cajón
- *  en la cara del paño. Las gomas se cruzan en X: el ollao más alto va al gancho más cercano a la
- *  esquina y el más bajo al más lejano. Hasta 80 cm de pared, dos ollaos; si es más alta, tres. */
+ *  en la cara del paño. Hasta 80 cm de pared, dos ollaos; si es más alta, tres. */
 export const GOMA_ALTO_DOS_OLLAOS = 80;
 /** Alturas de los ollaos de la oreja, en fracción del alto de la pared, de abajo arriba. */
 export const GOMA_ALTURAS_DOS = [0.25, 0.5];
 export const GOMA_ALTURAS_TRES = [0.2, 0.4, 0.6];
-/** Distancia de cada gancho a la esquina, a lo ancho del paño, del más cercano al más lejano. */
+/** Iván, 30/09/2026: si es bastante alto se juntan en el gancho del centro; si es más bajo, van a
+ *  los ganchos más cercanos. Desde esta pared (cm) todas las gomas de la esquina van al gancho del
+ *  centro de la cara del paño, que comparten las dos esquinas de esa cara. */
+export const ALTO_GOMA_AL_CENTRO = 100;
+/** Si ya hay un gancho a menos de esto (cm), la goma de la esquina usa ese y no se pone otro. */
+export const GANCHO_YA_PUESTO = 3;
+/** Pared más baja: distancia de cada gancho a la esquina, a lo ancho del paño, del más cercano al más lejano. */
 export const GOMA_GANCHO_A_ESQUINA = [30, 45, 60];
-/** Los ganchos de la goma nunca llegan al centro del paño: se quedan a esta distancia de él. */
+/** Con la pared baja, los ganchos cercanos nunca llegan al centro del paño: se quedan a esta distancia de él. */
 export const GOMA_GANCHO_ANTES_DEL_CENTRO = 5;
 /** Del borde libre de la oreja al centro de su ollao. */
 export const OLLAO_EN_OREJA = 2.5;

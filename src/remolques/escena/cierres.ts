@@ -4,7 +4,7 @@ import { USAR_COLUMNA_ATRAS } from "../calc/lona.ts";
 import type { LonaInput } from "../calc/lona.ts";
 import { semianchoCajon } from "./comun.ts";
 import {
-  ANCHO_VELCRO, CREMALLERA_A_ESQUINA, CREMALLERA_BAJO_CIMA, DEMASIA_SIN_RECOGIDA, GANCHO_BAJO_BORDE,
+  ALTO_GOMA_AL_CENTRO, ANCHO_VELCRO, CREMALLERA_A_ESQUINA, CREMALLERA_BAJO_CIMA, DEMASIA_SIN_RECOGIDA, GANCHO_BAJO_BORDE,
   GOMA_ALTO_DOS_OLLAOS, GOMA_ALTURAS_DOS, GOMA_ALTURAS_TRES, GOMA_GANCHO_A_ESQUINA, GOMA_GANCHO_ANTES_DEL_CENTRO,
   MARGEN_CIERRE, OLLAO_EN_OREJA, PASO_CIERRE,
 } from "./constantes.ts";
@@ -37,8 +37,9 @@ export function orejaRecogida(params: CalcParams, nombre: string, cara: "delante
 }
 
 /** Goma de la esquina: los ollaos suben por el borde libre de la oreja, en la parte baja de la
- *  pared, y cada uno baja en diagonal a un gancho de la cara del paño en el cajón. El más alto va
- *  al gancho más cercano a la esquina, así que las gomas se cruzan en X (fotos del taller). */
+ *  pared, y cada uno baja en diagonal a un gancho de la cara del paño en el cajón. Con la pared
+ *  alta todas se juntan en el gancho del centro de esa cara; con la pared más baja cada una va a
+ *  un gancho cercano a la esquina, el ollao más alto al más cercano, así que se cruzan en X. */
 export function gomaDiagonal(
   base: Vec3, alto: number, hacia: Vec3, lado: -1 | 1, oreja: number, cajon: Cajon, zCara: number,
 ): CierreEsquina["gomaDiagonal"] {
@@ -54,8 +55,8 @@ export function gomaDiagonal(
   const a = oreja - Math.min(OLLAO_EN_OREJA, oreja / 2);
   return fracciones.map((f, i) => {
     const y = r1(alto * f);
-    // Ollaos de abajo arriba ↔ ganchos de lejos a cerca.
-    const x = r1(lado * (semi - distancias[distancias.length - 1 - i] * escala));
+    // Pared alta: al centro. Si no, ollaos de abajo arriba ↔ ganchos de lejos a cerca.
+    const x = alto >= ALTO_GOMA_AL_CENTRO ? 0 : r1(lado * (semi - distancias[distancias.length - 1 - i] * escala));
     // La goma tensa dobla la arista de la esquina: con el lateral y el paño desplegados en un
     // plano va en línea recta, así que cruza la arista a esta altura.
     const d = Math.abs(base[0] - x);

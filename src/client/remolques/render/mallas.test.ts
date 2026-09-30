@@ -47,19 +47,23 @@ describe('mallas del render', () => {
     liberarGrupo(grupo);
   });
 
-  it('con goma en las cuatro esquinas se suman, por par, un ollao, un gancho y una goma', () => {
-    const escena = escenaDePrueba({ recogeDelante: 'GOMA', recogeAtras: 'GOMA' });
-    const pares = escena.cierres.reduce((n, c) => n + c.gomaDiagonal.length, 0);
-    expect(pares).toBe(12);
-    const materiales = crearMateriales(escena.color, { texturas: false });
-    const grupo = construirMallas(escena, materiales);
-    const [ollaos] = mallasCon(grupo, materiales.laton) as THREE.InstancedMesh[];
-    expect(ollaos.count).toBe(escena.ollaos.length + pares);
-    const [ganchos] = mallasCon(grupo, materiales.herraje).filter((m) => m instanceof THREE.InstancedMesh) as THREE.InstancedMesh[];
-    expect(ganchos.count).toBe(escena.ganchos.length + pares);
-    expect(mallasCon(grupo, materiales.goma)).toHaveLength(escena.gomas.length + pares);
-    liberarGrupo(grupo);
-  });
+  // Pared baja: un gancho cercano por par. Pared alta: un solo gancho en el centro de cada cara
+  // (los ganchos de la goma perimetral de la lona de prueba quedan a ±49 cm, lejos del centro).
+  for (const [alto, ganchosGoma] of [[70, 8], [120, 2]] as const) {
+    it(`con goma en las cuatro esquinas y pared de ${alto}: un ollao y una goma por par, y ${ganchosGoma} ganchos más`, () => {
+      const escena = escenaDePrueba({ recogeDelante: 'GOMA', recogeAtras: 'GOMA', altoDelante: alto });
+      const pares = escena.cierres.reduce((n, c) => n + c.gomaDiagonal.length, 0);
+      expect(pares).toBe(alto === 70 ? 8 : 12);
+      const materiales = crearMateriales(escena.color, { texturas: false });
+      const grupo = construirMallas(escena, materiales);
+      const [ollaos] = mallasCon(grupo, materiales.laton) as THREE.InstancedMesh[];
+      expect(ollaos.count).toBe(escena.ollaos.length + pares);
+      const [ganchos] = mallasCon(grupo, materiales.herraje).filter((m) => m instanceof THREE.InstancedMesh) as THREE.InstancedMesh[];
+      expect(ganchos.count).toBe(escena.ganchos.length + ganchosGoma);
+      expect(mallasCon(grupo, materiales.goma)).toHaveLength(escena.gomas.length + pares);
+      liberarGrupo(grupo);
+    });
+  }
 
   it('el baquetón es una cubierta y cuatro faldones', () => {
     const input = { ...emptyBaqueton(), largo: 181, ancho: 121, baqueton: 22, modoOllaos: 'REPARTIDOS' as const, material: 'PVC ROJO' };

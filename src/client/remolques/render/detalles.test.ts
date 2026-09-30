@@ -13,8 +13,8 @@ const cierre = (recogida: string) =>
 const maxY = (geo: THREE.BufferGeometry) => { geo.computeBoundingBox(); return geo.boundingBox!.max.y; };
 
 describe('cierres en 3D', () => {
-  it('goma: la oreja, un ollao en su borde por par, un gancho en el cajón y una goma que dobla la esquina', () => {
-    const [c] = cierre('GOMA');
+  it('goma en pared baja: la oreja, un ollao en su borde por par, un gancho cercano por par y una goma que dobla la esquina', () => {
+    const c = escenaDePrueba({ recogeDelante: 'GOMA', altoDelante: 90 }).cierres.find((x) => x.esquina === 'delante-derecha')!;
     const r = piezasCierres([c]);
     expect(r.piezas).toHaveLength(1);
     expect(r.ollaos).toHaveLength(3);
@@ -40,8 +40,33 @@ describe('cierres en 3D', () => {
     });
   });
 
+  it('goma en pared alta: tres gomas que se juntan en un solo gancho, el del centro de la cara', () => {
+    const c = escenaDePrueba({ recogeDelante: 'GOMA', altoDelante: 120 }).cierres.find((x) => x.esquina === 'delante-derecha')!;
+    const r = piezasCierres([c]);
+    expect(r.ollaos).toHaveLength(3);
+    expect(r.gomas).toHaveLength(3);
+    expect(r.ganchos).toEqual([{ punto: [0, -8, c.gomaDiagonal[0].gancho[2]], normal: [0, 0, 1] }]);
+    r.gomas.forEach((tramo) => expect(tramo[2].x).toBeCloseTo(0, 5));
+  });
+
+  it('gancho del centro: las dos esquinas de una cara lo comparten y no se repite', () => {
+    const escena = escenaDePrueba({ recogeDelante: 'GOMA', recogeAtras: 'GOMA', altoDelante: 120 });
+    const r = piezasCierres(escena.cierres);
+    expect(r.gomas).toHaveLength(12);
+    expect(r.ganchos.map((g) => g.punto)).toEqual([[0, -8, escena.cajon.zHasta], [0, -8, escena.cajon.zDesde]]);
+  });
+
+  it('gancho del centro: si ya hay un gancho de la goma perimetral a menos de 3 cm, no se añade otro', () => {
+    const escena = escenaDePrueba({ recogeDelante: 'GOMA', recogeAtras: 'GOMA', altoDelante: 120 });
+    const z = escena.cajon.zHasta;
+    const cerca = piezasCierres(escena.cierres, [{ punto: [2, -8, z], normal: [0, 0, 1] }]);
+    expect(cerca.ganchos.map((g) => g.punto)).toEqual([[0, -8, escena.cajon.zDesde]]);
+    const lejos = piezasCierres(escena.cierres, [{ punto: [4, -8, z], normal: [0, 0, 1] }]);
+    expect(lejos.ganchos).toHaveLength(2);
+  });
+
   it('goma en una esquina de atrás: el gancho mira hacia atrás', () => {
-    const c = escenaDePrueba({ recogeAtras: 'GOMA' }).cierres.find((x) => x.esquina === 'atras-derecha')!;
+    const c = escenaDePrueba({ recogeAtras: 'GOMA', altoDelante: 90 }).cierres.find((x) => x.esquina === 'atras-derecha')!;
     const r = piezasCierres([c]);
     expect(r.ganchos).toHaveLength(3);
     r.ganchos.forEach((g) => expect(g.normal).toEqual([0, 0, -1]));
@@ -132,9 +157,9 @@ const esquinaDerecha = (recogida: string) =>
   escenaDePrueba({ recogeDelante: recogida }).cierres.find((c) => c.esquina === 'delante-derecha')!;
 
 describe('colocación de los cierres sobre la lona', () => {
-  for (const recogida of ['GOMA', 'PUENTES HIJOS DE PEDRO LOPEZ']) {
-    it(`${recogida}: en las cuatro esquinas todo queda en el lateral, dentro de la oreja`, () => {
-      const escena = escenaDePrueba({ recogeDelante: recogida, recogeAtras: recogida });
+  for (const [recogida, alto] of [['GOMA', 90], ['GOMA', 120], ['PUENTES HIJOS DE PEDRO LOPEZ', 100]] as const) {
+    it(`${recogida} (pared de ${alto}): en las cuatro esquinas todo queda en el lateral, dentro de la oreja`, () => {
+      const escena = escenaDePrueba({ recogeDelante: recogida, recogeAtras: recogida, altoDelante: alto });
       expect(escena.cierres).toHaveLength(4);
       for (const c of escena.cierres) {
         const r = piezasCierres([c]);
@@ -149,21 +174,21 @@ describe('colocación de los cierres sobre la lona', () => {
         r.piezas.forEach((p) => enFlap(centro(p.geometria)));
         // Todos los ollaos del cierre van en la oreja: ya no hay ollaos sueltos en el lateral.
         r.ollaos.forEach((o) => enFlap(new THREE.Vector3(...o.punto)));
-        // Los ganchos de la goma, en la cara del paño del cajón y hacia dentro de la esquina.
+        // Los ganchos de la goma, en la cara del paño del cajón, entre la esquina y el centro.
         const zCara = c.esquina.startsWith('delante') ? escena.cajon.zHasta : escena.cajon.zDesde;
         r.ganchos.forEach((g) => {
           expect(g.punto[2]).toBe(zCara);
-          expect(lado * g.punto[0]).toBeGreaterThan(0);
+          expect(lado * g.punto[0]).toBeGreaterThanOrEqual(0);
           expect(lado * g.punto[0]).toBeLessThan(lado * c.base[0]);
         });
-        if (recogida === 'GOMA') expect(r.ganchos).toHaveLength(3);
+        if (recogida === 'GOMA') expect(r.ganchos).toHaveLength(alto >= 100 ? 1 : 3);
         // La goma va por fuera: ningún punto de sus tramos cae dentro de la lona ni del cajón.
         const largo = escena.cuerpo.tipo === 'lona' ? escena.cuerpo.largo : 0;
         for (const tramo of r.gomas) {
           for (let i = 1; i < tramo.length; i += 1) {
             for (let t = 0; t <= 1; t += 0.05) {
               const p = tramo[i - 1].clone().lerp(tramo[i], t);
-              const dentro = Math.abs(p.x) < semiancho(escena, Math.min(Math.max(p.z, 0), largo)) && p.z > 0 && p.z < largo && p.y < 100;
+              const dentro = Math.abs(p.x) < semiancho(escena, Math.min(Math.max(p.z, 0), largo)) && p.z > 0 && p.z < largo && p.y < c.alto;
               expect(dentro).toBe(false);
             }
           }
