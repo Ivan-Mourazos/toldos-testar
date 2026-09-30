@@ -1,10 +1,12 @@
 // Prueba e2e del botón «Vista previa del PDF» de Remolques (fase 4, tarea 7): con un elemento
 // incompleto explica qué falta; con una lona y un baquetón de la fixture abre el visor con 2 páginas.
+// Con un pedido real de RPS (AR.26.04286, solo lectura) obtenido de una vez —un elemento por línea
+// (Iván, 30/09/2026)—, la vista previa sigue desactivada y dice qué le falta al primero.
 // Capturas en tmp/ui-audit/remolques-7/. Ejecutar con la aislada en marcha:
 //   node scripts/test-remolques-vista-previa-e2e.mjs
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { teclearCaso } from './lib/remolques-e2e.mjs';
 
 const casos = JSON.parse(fs.readFileSync('src/remolques/__fixtures__/produccion-2026-09.json', 'utf8'));
@@ -55,5 +57,30 @@ for (const tema of ['claro', 'oscuro']) {
     } finally {
       await browser.close();
     }
+  }
+}
+
+// Un pedido obtenido de RPS: sus elementos llegan con lo que RPS da y la vista previa espera al resto.
+const PEDIDO_RPS = 'AR.26.04286';
+const rps = await fetch(`${BASE_URL}/api/remolques/rps-pedido?numero=${PEDIDO_RPS}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+const lineasRps = rps?.pedido?.lineas ?? [];
+if (lineasRps.length !== 3) {
+  console.log(`SALTADO: RPS no trae las 3 líneas de ${PEDIDO_RPS} en la aislada (${lineasRps.length})`);
+} else {
+  const { browser, page, errors } = await openApp({ width: 1280, height: 720 });
+  page.setDefaultTimeout(15000);
+  try {
+    await page.getByRole('button', { name: /^Remolques/ }).click();
+    await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_RPS);
+    await page.waitForFunction(() => document.querySelectorAll('.rem-pestana-abrir').length === 3);
+    const boton = page.getByRole('button', { name: 'Vista previa del PDF' });
+    assert.ok(await boton.isDisabled(), 'con lo que RPS no da, el botón está desactivado');
+    assert.match(await page.locator('.rem-pdf-falta').innerText(),
+      /^Para la vista previa del PDF falta: A · Remolque 250×143: Elige el tipo de perfil del remolque\.$/, 'dice qué le falta al primero');
+    await page.screenshot({ path: `${DIR}/rps-falta-claro-1280.png` });
+    assert.deepEqual(errors, [], 'sin errores de consola');
+    console.log(`OK ${PEDIDO_RPS}: 3 elementos de RPS y la vista previa dice qué falta`);
+  } finally {
+    await browser.close();
   }
 }

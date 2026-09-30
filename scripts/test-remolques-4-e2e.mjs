@@ -8,6 +8,9 @@
 //   2. Errores claros: un elemento incompleto → 400 con cuál y qué le falta; dos pedidos → 400.
 //   3. En la pantalla: «Vista previa del PDF» desactivado con lo que falta; con el remolque completo
 //      abre el visor con «Página 1 de 1» y Esc lo cierra; sin errores de consola.
+//   3c. Un pedido real de RPS (AR.26.04414, solo lectura) obtenido en la pantalla crea sus 4
+//      elementos de una vez (Iván, 30/09/2026); con el baquetón A completo, la hoja lleva su OF,
+//      su cliente y sus medidas de RPS.
 //   4. El PDF viejo del mismo pedido: busca en la web vieja (solo GET) el pedido real de los casos de
 //      la fixture usados en las muestras y hace el PDF nuevo de ese pedido entero; con PDF_VIEJOS_DIR
 //      (la carpeta OFICINA TÉCNICA de la web vieja, solo lectura) copia al lado el PDF viejo.
@@ -26,7 +29,8 @@ import { prepararPedidoHoja } from '../src/remolques/hoja/pedido.ts';
 import { remolquesUnicos } from '../src/remolques/pedidos/agrupar-pedido.ts';
 import { normalizarNumeroPedido } from '../src/remolques/pedidos/numero-pedido.ts';
 import { anioDelPlanteamiento, nombrePdf } from '../src/remolques/salida/nombre-pdf.ts';
-import { editor, teclearCaso } from './lib/remolques-e2e.mjs';
+import { claveBorradores } from '../src/remolques/workspace/borradores-locales.ts';
+import { editor, elegir, teclearCaso } from './lib/remolques-e2e.mjs';
 
 const SALIDA = 'tmp/ui-audit/remolques-4/final';
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -145,6 +149,56 @@ for (const nombre of NOMBRES_MUESTRAS) {
   assert.deepEqual(errors, [], 'sin errores de consola');
   await browser.close();
   console.log('OK: botón y visor en la pantalla');
+}
+
+// ── 3c. Un pedido obtenido de RPS llega a la hoja con sus datos ──
+{
+  const PEDIDO_MIXTO = 'AR.26.04414';
+  const rps = await fetch(`${BASE_URL}/api/remolques/rps-pedido?numero=${PEDIDO_MIXTO}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const lineasRps = rps?.pedido?.lineas ?? [];
+  if (lineasRps.length !== 4) {
+    console.log(`SALTADO: RPS no trae las 4 líneas de ${PEDIDO_MIXTO} en la aislada (${lineasRps.length})`);
+  } else {
+    const { browser, page, errors } = await openApp({ width: 1600, height: 1000 }, { launchArgs: CON_WEBGL });
+    page.setDefaultTimeout(20000);
+    await page.getByRole('button', { name: /^Remolques/ }).click();
+    await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_MIXTO);
+    await page.waitForFunction(() => document.querySelectorAll('.rem-pestana-abrir').length === 4);
+    assert.match((await page.locator('.rem-pestana-abrir').allInnerTexts())[0], /^A · Baquetón 260×160/, 'el primero es el baquetón de la línea 1');
+    // Solo el baquetón A: se quitan los demás (del último al segundo, cada uno con su confirmación).
+    for (const letra of ['D', 'C', 'B']) {
+      await page.getByRole('button', { name: new RegExp(`^Eliminar ${letra} · .* del pedido`) }).click();
+      const dialogo = page.getByRole('alertdialog');
+      await dialogo.getByRole('button', { name: 'Eliminar', exact: true }).click();
+      await dialogo.waitFor({ state: 'hidden' });
+    }
+    assert.equal(await page.locator('.rem-pestana-abrir').count(), 1, 'queda el baquetón A');
+    // Lo único que RPS no da de este baquetón es el reparto de ollaos.
+    await elegir(page, editor(page), 'modoOllaos', 'Repartidos automáticamente');
+    await page.locator('.rem-pdf-falta').waitFor({ state: 'detached' });
+    const boton = page.getByRole('button', { name: 'Vista previa del PDF' });
+    await boton.click();
+    await page.locator('.pdf-preview-window').getByText('Página 1 de 1').waitFor({ timeout: 60000 });
+    await page.keyboard.press('Escape');
+    await page.locator('.pdf-preview-window').waitFor({ state: 'detached' });
+    await page.waitForTimeout(900);
+    const borrador = JSON.parse(await page.evaluate((clave) => localStorage.getItem(clave), claveBorradores(PEDIDO_MIXTO)));
+    const elementos = borrador.lineas.map(({ version, tipo, input }) => ({ version, tipo, input }));
+    assert.equal(elementos.length, 1, 'el borrador guarda el baquetón');
+    assert.equal(elementos[0].input.cabecera.ordenFabricacion, lineasRps[0].ordenFabricacion, 'la OF es la de RPS');
+    const pdf = await pedirPdf(elementos);
+    assert.equal(pdf.status, 200, pdf.cuerpo.toString('utf8').slice(0, 300));
+    const leido = await leerPdf(pdf.cuerpo);
+    const datos = prepararPedidoHoja(elementos, params);
+    comprobarTextos('pedido de RPS', leido, datos.elementos.map((e, i) => paginaHoja(e, i, datos.elementos.length, params)));
+    for (const t of [lineasRps[0].ordenFabricacion, 'TALLERES SANTABALLA', PEDIDO_MIXTO]) {
+      assert.ok(sinEspacios(leido.paginas[0].texto).includes(sinEspacios(t)), `la hoja del pedido de RPS lleva «${t}»`);
+    }
+    fs.writeFileSync(`${SALIDA}/pedido-rps-${normalizarNumeroPedido(PEDIDO_MIXTO)}.pdf`, pdf.cuerpo);
+    assert.deepEqual(errors, [], 'sin errores de consola');
+    await browser.close();
+    console.log(`OK: ${PEDIDO_MIXTO} obtenido de RPS: 4 elementos de una vez y la hoja del baquetón con su OF y su cliente`);
+  }
 }
 
 // ── 3b. La vista previa no archiva nada ──
