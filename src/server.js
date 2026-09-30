@@ -28,7 +28,18 @@ import {
   assertDeploymentModelsEnabled,
   assertLegacyExportsEnabled
 } from './deploymentFeatures.js';
-import { closeRpsCatalog, getRpsOrder, searchRpsFabrics, searchRpsArticles, getRpsArticle } from './rpsCatalog.js';
+import {
+  closeRpsCatalog,
+  findRpsFabric,
+  getRpsOrder,
+  queryRpsFabricHistoryRows,
+  queryRpsFabricStockRows,
+  searchRpsFabrics,
+  searchRpsArticles,
+  getRpsArticle
+} from './rpsCatalog.js';
+import { createFabricHistoryService, createFabricStockService, fabricStockHandler } from './fabricRpsServices.js';
+import { preferredFabricCode } from './domain/fabricHistory.js';
 import {
   checkWorkflowDirectories,
   createReviewPackage,
@@ -137,6 +148,13 @@ app.get('/api/catalog/fabrics', async (req, res) => {
   res.json(await searchCatalogFabrics(query, limit));
 });
 
+// Stock de las telas elegidas (informe tela-0930): solo lectura de RPS, 60 s en caché.
+const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows });
+app.get('/api/catalog/fabrics/stock', fabricStockHandler(fabricStock));
+
+// Qué lona se usó antes con la misma frase de RPS, para dejar puesta la más probable.
+const fabricHistory = createFabricHistoryService({ loadRows: queryRpsFabricHistoryRows });
+
 app.get('/api/catalog/articles', async (req, res) => {
   try {
     res.json({ source: 'RPSNext', items: await searchRpsArticles({ query: req.query.q, limit: req.query.limit }) });
@@ -153,9 +171,13 @@ app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
     const source = await getRpsOrder(orderCode);
     if (!source) return res.status(404).json({ error: `El pedido ${orderCode} no existe en RPSNext.` });
     const result = buildOrderAutofill(source);
-    // Si las propuestas de tela fallan, el pedido se devuelve igual, sin ellas.
+    // Si las propuestas de tela fallan, el pedido se devuelve igual, sin ellas. Sin
+    // historial (aún cargando o RPS lento) la tela puesta es la 1.ª del buscador.
+    const history = await fabricHistory.getWithin(4000);
     await attachFabricProposals(result, {
-      search: async (query, limit) => (await searchCatalogFabrics(query, limit)).items
+      search: async (query, limit) => (await searchCatalogFabrics(query, limit)).items,
+      preferredCode: history ? async (query) => preferredFabricCode(history, query) : null,
+      findFabric: async (code) => findRpsFabric(code).catch(() => null)
     });
     return res.json(result);
   } catch (error) {
@@ -780,6 +802,11 @@ app.use((error, _req, res, _next) => {
 const server = app.listen(config.port, config.host, () => {
   console.log(`Toldos Testar disponible en http://${config.host}:${config.port}`);
   process.send?.('ready');
+  // El historial de telas tarda unos segundos: se prepara en segundo plano para que el
+  // primer autorrelleno ya lo tenga.
+  if (config.db.user && config.db.password) {
+    fabricHistory.get().catch((error) => console.error('No se pudo preparar el historial de telas:', error.message));
+  }
 });
 
 server.on('error', (error) => {

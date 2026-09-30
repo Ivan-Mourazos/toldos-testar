@@ -239,3 +239,78 @@ export async function searchRpsArticles({ query = '', limit = 30, exact = false 
 export async function getRpsArticle(reference) {
   return (await searchRpsArticles({ query: reference, limit: 1, exact: true }))[0] || null;
 }
+
+// Una lona del catálogo por su código exacto (la del historial que no salió en la
+// búsqueda de la propuesta).
+export async function findRpsFabric(code) {
+  const wanted = String(code || '').trim().toUpperCase();
+  if (!wanted) return null;
+  const items = await loadRpsFabrics();
+  return items.find((item) => item.code.toUpperCase() === wanted) || null;
+}
+
+// Filas para el historial de la frase de tela (domain/fabricHistory.js): la lona de
+// cada OF de los últimos 12 meses junto al texto de su línea de pedido. Solo lectura.
+export async function queryRpsFabricHistoryRows() {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company', sql.VarChar(10), config.db.company)
+    .query(`
+    SELECT
+      CONVERT(varchar(40), mo.CodManufacturingOrder) AS [of],
+      l.Comment AS comment,
+      mo.Notes AS notes,
+      a.CodArticle AS code,
+      a.Description AS description,
+      m.Quantity AS quantity
+    FROM dbo.FACOrderSL o
+    JOIN dbo.FACOrderLineSL l
+      ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
+    JOIN dbo.CPRManufacturingOrder mo
+      ON mo.IDManufacturingOrder = l.IDManufacturingOrder AND mo.CodCompany = l.CodCompany
+    JOIN dbo._MaterialesPrevistosOF m
+      ON m.IDManufacturingOrder = mo.IDManufacturingOrder AND m.CodCompany = mo.CodCompany
+    JOIN dbo.STKArticle a
+      ON a.IDArticle = m.IDArticle AND a.CodCompany = m.CodCompany
+    JOIN dbo.GENProductFamily pf
+      ON pf.IDProductFamily = a.IDProductFamily AND pf.CodCompany = a.CodCompany
+    WHERE o.CodCompany = @company
+      AND o.OrderDate >= DATEADD(month, -12, GETDATE())
+      AND pf.Description = 'LONA';
+  `);
+  return result.recordset;
+}
+
+// Stock de todas las lonas, una fila por bobina (Series) y almacén, con lo reservado
+// por OF en STKStockReserve (informe tela-0930, sección c). Solo lectura; lo resume
+// domain/fabricStock.js. Unos 170 ms para las ~1.500 filas.
+export async function queryRpsFabricStockRows() {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company', sql.VarChar(10), config.db.company)
+    .query(`
+    SELECT
+      a.CodArticle AS code,
+      CONVERT(varchar(20), w.CodWarehouse) AS warehouseCode,
+      w.Description AS warehouseName,
+      s.Series AS roll,
+      s.Stock AS meters,
+      ISNULL(r.reserved, 0) AS reserved
+    FROM dbo.STKStock s
+    JOIN dbo.STKArticle a
+      ON a.IDArticle = s.IDArticle AND a.CodCompany = s.CodCompany
+    JOIN dbo.GENProductFamily pf
+      ON pf.IDProductFamily = a.IDProductFamily AND pf.CodCompany = a.CodCompany
+    LEFT JOIN dbo.GENWarehouse w
+      ON w.IDWarehouse = s.IDWarehouse AND w.CodCompany = s.CodCompany
+    LEFT JOIN (
+      SELECT IDStock, CodCompany, SUM(Quantity) AS reserved
+      FROM dbo.STKStockReserve
+      GROUP BY IDStock, CodCompany
+    ) r ON r.IDStock = s.IDStock AND r.CodCompany = s.CodCompany
+    WHERE s.CodCompany = @company
+      AND s.Stock <> 0
+      AND pf.Description = 'LONA';
+  `);
+  return result.recordset;
+}

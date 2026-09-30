@@ -28,7 +28,7 @@ const AUTOFILL: OrderAutofill = {
   fabricProposals: [PROPOSAL]
 };
 
-type Overrides = { fabric?: string; sameFabric?: boolean; awnings?: { id: string; fabric: string }[] };
+type Overrides = { fabric?: string; sameFabric?: boolean; awnings?: { id: string; fabric: string }[]; pendingProposals?: number[] };
 
 function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as (proposal: FabricProposal, selection: string) => void, readOnly = false, overrides: Overrides = {}) {
   return renderToStaticMarkup(React.createElement(OrderHeader, {
@@ -147,5 +147,28 @@ describe('OrderHeader · la tela que se ve es la que lleva el pedido (informe te
     expect(markup).toContain('Tela por toldo · se elige en cada tarjeta');
     expect(markup).not.toContain('fabric-readonly-value');
     expect(markup).not.toMatch(/value="ACRILI2170P120/);
+  });
+});
+
+describe('OrderHeader · tela propuesta ya puesta (informe tela-0930)', () => {
+  const [negro] = PROPOSAL.options;
+  const preselected = { ...AUTOFILL, fabricProposals: [{ ...PROPOSAL, preselected: negro.selection }] };
+
+  it('marca la opción puesta y pide comprobarla, con «Correcta» y la marca bajo «Referencia»', () => {
+    const markup = render(preselected, noop, false, { fabric: negro.selection, pendingProposals: [0] });
+    expect(markup).toMatch(/is-chosen" aria-pressed="true"[^>]*>ACRILI2170P120/);
+    expect((markup.match(/Propuesta · compruébala/g) || [])).toHaveLength(2);
+    expect(markup).toContain('>Correcta</button>');
+  });
+
+  it('comprobada (o cambiada), ya no pide nada', () => {
+    const markup = render(preselected, noop, false, { fabric: negro.selection, pendingProposals: [] });
+    expect(markup).not.toContain('Propuesta · compruébala');
+    expect(markup).not.toContain('Correcta');
+  });
+
+  it('con tela común elegida, enseña la línea de stock bajo «Referencia»', () => {
+    expect(render(AUTOFILL, noop, false, { fabric: negro.selection })).toContain('fabric-stock-line');
+    expect(render(AUTOFILL, noop, false, { fabric: '' })).not.toContain('fabric-stock-line');
   });
 });

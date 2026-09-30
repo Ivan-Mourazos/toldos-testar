@@ -10,7 +10,8 @@ import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { AwningPanel, type PanelOrder } from '../components/AwningPanel';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
-import { applyFabricProposal } from '../fabricProposal';
+import { applyFabricProposal, pendingProposalIndexes } from '../fabricProposal';
+import { fabricCodeOf, fabricNeedByCode } from '../fabricStock';
 import { planFabricToggle } from '../orderFabricToggle';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
 import type { FabricProposal } from '../types';
@@ -97,6 +98,18 @@ export function OrderView({
   const [panelAwningId, setPanelAwningId] = useState<string | null>(null);
   const panelIndex = panelAwningId ? awnings.findIndex((awning) => awning.id === panelAwningId) : -1;
   const enabledModels = new Set(availableModelNames);
+  // Propuestas de tela ya comprobadas por el técnico (pulsó una opción o «Correcta»).
+  // Van ligadas al autorrelleno que las trajo: con otro, empiezan sin comprobar.
+  const [confirmed, setConfirmed] = useState<{ autofill: OrderAutofill | null; indexes: Set<number> }>({ autofill: null, indexes: new Set() });
+  const confirmedIndexes = confirmed.autofill === autofill ? confirmed.indexes : new Set<number>();
+  const proposals = autofill?.fabricProposals ?? [];
+  const pendingProposals = readOnly ? [] : pendingProposalIndexes(proposals, { fabric, sameFabric, awnings }, confirmedIndexes);
+  // Metros que el cálculo pide de cada tela, para compararlos con el stock.
+  const needByCode = fabricNeedByCode(calculation);
+
+  function confirmProposal(index: number) {
+    setConfirmed({ autofill, indexes: new Set([...confirmedIndexes, index]) });
+  }
 
   function chooseModel(model: string) {
     if (!pickerType) return;
@@ -119,11 +132,12 @@ export function OrderView({
     const plan = planFabricToggle({ fabric, awnings }, nextSameFabric);
     if (plan.conflict) {
       const [main, ...rest] = plan.conflict;
-      const lines = plan.conflict.map((group) => `${group.letters}: ${fabricSelectionLabel(group.fabric)}`).join(' · ');
+      const changed = rest.reduce((sum, group) => sum + group.count, 0);
       const choice = onConfirm
         ? await onConfirm({
           title: 'Los toldos llevan telas distintas',
-          message: `${lines}. ¿Usar ${fabricSelectionLabel(main.fabric)} para todo el pedido? ${rest.map((group) => group.letters).join(', ')} ${rest.reduce((sum, group) => sum + group.count, 0) === 1 ? 'cambiaría' : 'cambiarían'} de tela.`,
+          message: `¿Usar ${fabricSelectionLabel(main.fabric)} para todo el pedido? ${rest.map((group) => group.letters).join(', ')} ${changed === 1 ? 'cambiaría' : 'cambiarían'} de tela.`,
+          details: plan.conflict.map((group) => `${group.letters}: ${fabricSelectionLabel(group.fabric)}`),
           confirmLabel: 'Usar la misma para todos',
           cancelLabel: 'Seguir por toldo',
           tone: 'warning'
@@ -143,6 +157,9 @@ export function OrderView({
   function applyProposal(proposal: FabricProposal, selection: string) {
     const message = applyFabricProposal({ awnings, fabric, sameFabric, setFabric, setSameFabric, updateAwning }, proposal, selection, autofill?.fabricProposals ?? [proposal]);
     if (message) onNotify?.(message, { tone: 'info' });
+    // Elegir una opción, sea la puesta u otra, es comprobarla.
+    const index = proposals.indexOf(proposal);
+    if (index >= 0) confirmProposal(index);
   }
 
   // Un estado por toldo: lo enseñan el índice de bloques y, en lectura, la cabecera de la ficha.
@@ -166,6 +183,9 @@ export function OrderView({
             autofill={autofill}
             awnings={awnings}
             onApplyFabricProposal={applyProposal}
+            pendingProposals={pendingProposals}
+            onConfirmProposal={confirmProposal}
+            fabricNeedMl={needByCode.get(fabricCodeOf(fabric)) ?? 0}
             readOnly={readOnly}
             set={setOrderField}
           />
@@ -205,6 +225,8 @@ export function OrderView({
               sameFabric={sameFabric}
               knownOfs={knownOfs}
               orderFabric={fabric}
+              fabricPending={!sameFabric && pendingProposals.some((pending) => proposals[pending].awningIds.includes(awning.id))}
+              fabricNeedMl={needByCode.get(fabricCodeOf(awning.fabric)) ?? 0}
               parameters={parameters}
               readOnly={readOnly}
               readStatus={statuses[index]}

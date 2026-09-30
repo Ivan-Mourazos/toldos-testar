@@ -8,6 +8,7 @@ import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
 import { appliedProposalSelection } from '../fabricProposal';
+import { FabricStockLine } from './FabricStockLine';
 
 type Props = {
   orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string;
@@ -21,6 +22,12 @@ type Props = {
   // marcar la opción que el pedido tiene puesta de verdad.
   awnings: Pick<Awning, 'id' | 'fabric'>[];
   onApplyFabricProposal: (proposal: FabricProposal, selection: string) => void;
+  // Propuestas cuya tela se puso sola y aún no se ha comprobado (índices de
+  // autofill.fabricProposals), y la acción «Correcta».
+  pendingProposals?: number[];
+  onConfirmProposal?: (index: number) => void;
+  // Metros que el pedido pide de la tela común, para compararlos con su stock.
+  fabricNeedMl?: number;
   readOnly?: boolean;
 };
 
@@ -38,6 +45,8 @@ export function OrderHeader(props: Props) {
   // recordado (informe tela-0930, F3): si luego se vacía o cambia la tela, o se pasa a
   // «Por toldo», la marca lo refleja y el técnico no cree tener una tela que no tiene.
   const fabricOrder = { fabric: props.fabric, sameFabric: props.sameFabric, awnings: props.awnings };
+  const pending = props.pendingProposals ?? [];
+  const commonPending = props.sameFabric && Boolean(props.fabric) && pending.length > 0;
 
   function chooseFabricProposal(proposal: FabricProposal, selection: string) {
     if (props.readOnly) return;
@@ -103,6 +112,10 @@ export function OrderHeader(props: Props) {
                   <span>Por toldo</span>
                 </label>}
             </div>
+            {props.sameFabric && !props.readOnly && (commonPending || props.fabric) && <div className="order-fabric-common-meta">
+              {commonPending && <span className="fabric-proposal-pending">Propuesta · compruébala</span>}
+              <FabricStockLine selection={props.fabric} neededMl={props.fabricNeedMl} />
+            </div>}
             {/* La cabecera no está dentro de ReadModeContext (es un fieldset deshabilitado):
                 se provee aquí para que las observaciones lean con el mismo criterio que la
                 ficha (rediseño 3 §3). */}
@@ -146,6 +159,10 @@ export function OrderHeader(props: Props) {
                           {option.label}
                         </button>
                       ))}
+                      {pending.includes(index) && <>
+                        <span className="fabric-proposal-pending">Propuesta · compruébala</span>
+                        <button type="button" className="ghost-button order-fabric-proposal-confirm" onClick={() => props.onConfirmProposal?.(index)}>Correcta</button>
+                      </>}
                     </div>}
                 </div>
                 );

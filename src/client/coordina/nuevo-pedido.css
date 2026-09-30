@@ -1013,3 +1013,48 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   font-weight: 600;
   margin-top: 3px;
 }
+/* «Propuesta · compruébala»: la tela la puso la web y el técnico aún no la ha mirado.
+   Chip de aviso de CoordinaOT (`border-amber-500/30 bg-amber-500/10`, texto ámbar). */
+.fabric-proposal-pending {
+  align-self: center;
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 999px;
+  color: var(--aviso-texto);
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1rem;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.awning-wide-field > .fabric-proposal-pending { margin-top: 4px; }
+.order-fabric-proposal-confirm {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+}
+.order-fabric-common-meta {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 4px;
+}
+/* Stock en RPS bajo la tela: texto de nota de la ficha; ámbar si no hay o no llega. */
+.fabric-stock-line {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1rem;
+  margin: 3px 0 0;
+}
+.order-fabric-common-meta .fabric-stock-line { margin: 0; }
+.fabric-stock-line.is-aviso {
+  color: var(--aviso-texto);
+  font-weight: 600;
+}
+.fabric-stock-line.is-apagado { font-style: italic; }
+/* «Por toldo» va a la altura del buscador aunque debajo salga «Sin elegir…»: alineado
+   arriba y bajado lo que ocupa la etiqueta «Referencia» (16 px). */
+.app-shell .order-fabric-row { align-items: start; }
+.app-shell .order-fabric-row > .order-fabric-per-awning { align-self: start; margin-top: 16px; }

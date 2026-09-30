@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { attachFabricProposals, buildFabricProposals, fabricHintFromText, groupFabricHints } from './autofillFabricHint.js';
+import { applyPreselectedFabrics, attachFabricProposals, buildFabricProposals, fabricHintFromText, groupFabricHints } from './autofillFabricHint.js';
 
 describe('fabricHintFromText', () => {
   it('lee tejido acrílico tintado masa color negro, del cambio de tela de AR2604716', () => {
@@ -215,11 +215,13 @@ describe('attachFabricProposals', () => {
 
     await attachFabricProposals(result, { search });
     expect(result.fabricProposals).toHaveLength(1);
-    expect(result.summary).toEqual(['1 cortina · rotulación no indicada', 'tela: elige entre las propuestas']);
+    expect(result.summary).toEqual(['1 cortina · rotulación no indicada', 'tela: puesta ACRILI2025P120 · ACR CONFETTI, compruébala']);
+    // Y queda puesta en el pedido, como tela común.
+    expect(result.order).toMatchObject({ fabric: 'ACRILI2025P120|||120|||LONA ACRILICA BEIGE 2025|||ACRILICA (LONA)', sameFabric: true });
     expect('_sourceText' in result.order.awnings[0]).toBe(false);
   });
 
-  it('sin opciones en ningún grupo, no añade «tela: elige entre las propuestas»', async () => {
+  it('sin opciones en ningún grupo, no añade ninguna línea de tela al resumen', async () => {
     const result = makeResult('FABRICADO EN LONA ACRILICA COLOR BEIGE.');
     await attachFabricProposals(result, { search: async () => [] });
     expect(result.fabricProposals).toEqual([{ awningIds: ['a'], phrase: 'lona acrilica color beige', options: [] }]);
@@ -239,5 +241,99 @@ describe('attachFabricProposals', () => {
     } finally {
       consoleError.mockRestore();
     }
+  });
+});
+
+const NEGRO_TEXT = 'FABRICADO EN TEJIDO ACRILICO, TINTADO MASA,COLOR NEGRO.';
+const NEGRO = { code: 'ACRILI2170P120', width: 120, description: 'LONA ACRILICA MASACRIL 300 NEGRO 2170', material: 'ACRILICA (LONA)' };
+const NEGRO_N = { code: 'ACRILI2171P120', width: 120, description: 'LONA ACRILICA MASACRIL 300 NEGRO N 2171', material: 'ACRILICA (LONA)' };
+const RESTO = { code: 'RESTOLONAOPACA', width: 120, description: 'RESTO LONA OPACA NEGRO', material: 'ACRILICA (LONA)' };
+const sel = (fabric) => `${fabric.code}|||${fabric.width}|||${fabric.description}|||${fabric.material}`;
+
+describe('buildFabricProposals · la más probable ya puesta (informe tela-0930)', () => {
+  const awnings = [{ id: 'a', fabric: '' }];
+  const textsById = new Map([['a', NEGRO_TEXT]]);
+
+  it('sin historial, la propuesta puesta es la 1.ª opción del catálogo', async () => {
+    const [proposal] = await buildFabricProposals(awnings, textsById, { search: async () => [NEGRO, NEGRO_N] });
+    expect(proposal.preselected).toBe(sel(NEGRO));
+  });
+
+  it('nunca propone sobrantes «RESTO…»', async () => {
+    const [proposal] = await buildFabricProposals(awnings, textsById, { search: async () => [RESTO, NEGRO] });
+    expect(proposal.options.map((option) => option.selection)).toEqual([sel(NEGRO)]);
+    expect(proposal.preselected).toBe(sel(NEGRO));
+  });
+
+  it('con historial, la lona más usada con la misma frase pasa a ser la 1.ª y la puesta', async () => {
+    const [proposal] = await buildFabricProposals(awnings, textsById, {
+      search: async () => [NEGRO, NEGRO_N],
+      preferredCode: async (query) => (query === 'ACR NEGRO' ? 'ACRILI2171P120' : null)
+    });
+    expect(proposal.options.map((option) => option.selection)).toEqual([sel(NEGRO_N), sel(NEGRO)]);
+    expect(proposal.preselected).toBe(sel(NEGRO_N));
+  });
+
+  it('si la del historial no está entre las opciones, se añade la primera sin pasar de 5', async () => {
+    const botella = { code: 'ACRILI2245P120', width: 120, description: 'MASACRIL :BOTELLA 2245', material: 'ACRILICA (LONA)' };
+    const many = [1, 2, 3, 4, 5].map((n) => ({ ...NEGRO, code: `ACRILI000${n}P120` }));
+    const [proposal] = await buildFabricProposals(awnings, textsById, {
+      search: async () => many,
+      preferredCode: async () => 'ACRILI2245P120',
+      findFabric: async (code) => (code === 'ACRILI2245P120' ? botella : null)
+    });
+    expect(proposal.options).toHaveLength(5);
+    expect(proposal.preselected).toBe(sel(botella));
+    expect(proposal.options[0].selection).toBe(sel(botella));
+  });
+
+  it('si el historial falla, sigue con la 1.ª opción', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const [proposal] = await buildFabricProposals(awnings, textsById, {
+        search: async () => [NEGRO],
+        preferredCode: async () => { throw new Error('RPS caído'); }
+      });
+      expect(proposal.preselected).toBe(sel(NEGRO));
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+});
+
+describe('applyPreselectedFabrics · poner la tela propuesta en el pedido', () => {
+  const X = 'X|||120|||TELA X|||ACR';
+  const Y = 'Y|||120|||TELA Y|||ACR';
+  const order = (awnings, extra = {}) => ({ fabric: '', sameFabric: true, awnings, ...extra });
+
+  it('todas las propuestas iguales: tela común, también con elementos sin frase', () => {
+    const result = applyPreselectedFabrics(order([{ id: 'a', fabric: '' }, { id: 'b', fabric: '' }, { id: 'c', fabric: '' }]), [
+      { awningIds: ['a', 'b'], options: [], preselected: X }
+    ]);
+    expect(result).toMatchObject({ fabric: X, sameFabric: true });
+  });
+
+  it('propuestas distintas: por toldo, cada uno la suya y el que no tiene frase vacío (sale su FALTA)', () => {
+    const result = applyPreselectedFabrics(order([{ id: 'a', fabric: '' }, { id: 'b', fabric: '' }, { id: 'c', fabric: '' }]), [
+      { awningIds: ['a'], options: [], preselected: X },
+      { awningIds: ['b'], options: [], preselected: Y }
+    ]);
+    expect(result.sameFabric).toBe(false);
+    expect(result.fabric).toBe('');
+    expect(result.awnings.map((awning) => awning.fabric)).toEqual([X, Y, '']);
+  });
+
+  it('nunca pisa la tela que viene de la OF', () => {
+    const fromOf = order([{ id: 'a', fabric: X }, { id: 'b', fabric: '' }], { fabric: X });
+    const same = applyPreselectedFabrics(structuredClone(fromOf), [{ awningIds: ['b'], options: [], preselected: X }]);
+    expect(same).toMatchObject({ fabric: X, sameFabric: true });
+    const other = applyPreselectedFabrics(structuredClone(fromOf), [{ awningIds: ['b'], options: [], preselected: Y }]);
+    expect(other.sameFabric).toBe(false);
+    expect(other.awnings.map((awning) => awning.fabric)).toEqual([X, Y]);
+  });
+
+  it('sin propuestas puestas no toca nada', () => {
+    const before = order([{ id: 'a', fabric: '' }]);
+    expect(applyPreselectedFabrics(structuredClone(before), [{ awningIds: ['a'], options: [] }])).toEqual(before);
   });
 });

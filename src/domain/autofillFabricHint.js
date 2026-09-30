@@ -114,32 +114,88 @@ export function groupFabricHints(awnings = [], textsById = new Map()) {
 // grupos se buscan a la vez; cada uno prueba sus búsquedas en orden hasta que
 // una devuelve algo. Un grupo que se queda sin opciones se devuelve igual, con
 // `options: []`: el cliente enseña «sin coincidencias en el catálogo».
-export async function buildFabricProposals(awnings, textsById, { search, limit = 5 } = {}) {
+//
+// La opción más probable va primera y se devuelve en `preselected` para dejarla
+// puesta (informe tela-0930): la lona más usada antes con la misma pista
+// (`preferredCode(query)`, el historial de RPS) y, si no hay historial, la 1.ª del
+// buscador. Si la del historial no salió en la búsqueda, se pide con
+// `findFabric(code)` y se añade delante. Los sobrantes «RESTO…» nunca se proponen.
+export async function buildFabricProposals(awnings, textsById, { search, limit = 5, preferredCode = null, findFabric = null } = {}) {
   const groups = groupFabricHints(awnings, textsById);
   return Promise.all(groups.map(async (group) => {
     let fabrics = [];
     for (const query of group.queries || [group.query]) {
-      fabrics = (await search(query, limit)) || [];
+      // Se piden unas pocas de más por si hay que quitar sobrantes.
+      fabrics = ((await search(query, limit + 3)) || []).filter((fabric) => !isLeftover(fabric?.description));
       if (fabrics.length > 0) break;
     }
-    const options = fabrics.map((fabric) => {
+    const preferred = await historyFabric(group.query, fabrics, { preferredCode, findFabric });
+    if (preferred) fabrics = [preferred, ...fabrics.filter((fabric) => fabric.code !== preferred.code)];
+    const options = fabrics.slice(0, limit).map((fabric) => {
       const selection = serializeFabricSelection(fabric);
       return { selection, label: fabricSelectionLabel(selection) };
     });
-    return { awningIds: group.awningIds, phrase: group.phrase, options };
+    const proposal = { awningIds: group.awningIds, phrase: group.phrase, options };
+    if (options[0]) proposal.preselected = options[0].selection;
+    return proposal;
   }));
 }
 
-// Añade las propuestas de tela a la respuesta del autorrelleno. Si falla, el
-// pedido se devuelve igual, sin propuestas. Quita los campos internos que solo
-// sirven para calcularlas. «tela: elige entre las propuestas» solo se añade al
-// resumen si algún grupo tiene opciones que elegir.
-export async function attachFabricProposals(result, { search, limit } = {}) {
+// La lona del historial para esa pista, si sigue en el catálogo. Si el historial
+// falla, se sigue sin él: la propuesta vuelve a ser la 1.ª del buscador.
+async function historyFabric(query, fabrics, { preferredCode, findFabric }) {
+  if (!preferredCode) return null;
+  try {
+    const code = await preferredCode(query);
+    if (!code) return null;
+    const found = fabrics.find((fabric) => String(fabric.code).toUpperCase() === code);
+    if (found) return found;
+    const fabric = findFabric ? await findFabric(code) : null;
+    return fabric && !isLeftover(fabric.description) ? fabric : null;
+  } catch (error) {
+    console.error('No se pudo consultar el historial de telas:', error?.message || error);
+    return null;
+  }
+}
+
+// Deja puesta en el pedido la tela propuesta de cada grupo (informe tela-0930):
+// - Si, junto con las telas que ya traen las OF, todas son la misma: tela común.
+//   También cuando hay elementos sin frase: el pedido con varias telas es la excepción.
+// - Si hay dos o más distintas: «Por toldo», cada elemento con la suya; los que no
+//   tienen ni OF ni propuesta se quedan vacíos para que salga su FALTA.
+// Nunca pisa la tela de un elemento que ya la trae de la OF (esos no tienen propuesta).
+export function applyPreselectedFabrics(order, proposals = []) {
+  const preselected = proposals.filter((proposal) => proposal?.preselected);
+  if (!order || preselected.length === 0) return order;
+  const awnings = order.awnings || [];
+  const byId = new Map(awnings.map((awning) => [awning.id, awning]));
+  for (const proposal of preselected) {
+    for (const id of proposal.awningIds) {
+      const awning = byId.get(id);
+      if (awning && !awning.fabric) awning.fabric = proposal.preselected;
+    }
+  }
+  const fabrics = [...new Set(awnings.map((awning) => awning.fabric).filter(Boolean))];
+  if (fabrics.length === 1) {
+    order.sameFabric = true;
+    order.fabric = fabrics[0];
+  } else {
+    order.sameFabric = false;
+    order.fabric = '';
+  }
+  return order;
+}
+
+// Añade las propuestas de tela a la respuesta del autorrelleno y deja puesta la más
+// probable de cada grupo. Si falla, el pedido se devuelve igual, sin propuestas.
+// Quita los campos internos que solo sirven para calcularlas. El resumen dice qué
+// tela se ha puesto y que hay que comprobarla.
+export async function attachFabricProposals(result, { search, limit, preferredCode, findFabric } = {}) {
   const awnings = result?.order?.awnings || [];
   const textsById = new Map(awnings.map((awning) => [awning.id, awning._sourceText || '']));
   let fabricProposals = [];
   try {
-    fabricProposals = await buildFabricProposals(awnings, textsById, { search, limit });
+    fabricProposals = await buildFabricProposals(awnings, textsById, { search, limit, preferredCode, findFabric });
   } catch (error) {
     console.error('No se pudieron calcular las propuestas de tela:', error?.message || error);
     fabricProposals = [];
@@ -147,10 +203,17 @@ export async function attachFabricProposals(result, { search, limit } = {}) {
   // `_sourceText` solo sirve para calcular las propuestas: no forma parte del pedido.
   awnings.forEach((awning) => { delete awning._sourceText; });
   if (fabricProposals.length > 0) result.fabricProposals = fabricProposals;
-  if (fabricProposals.some((proposal) => proposal.options.length > 0)) {
-    result.summary = [...(result.summary || []), 'tela: elige entre las propuestas'];
+  applyPreselectedFabrics(result?.order, fabricProposals);
+  const placed = [...new Set(fabricProposals.map((proposal) => proposal.preselected).filter(Boolean))];
+  if (placed.length > 0) {
+    result.summary = [...(result.summary || []), `tela: puesta ${placed.map((selection) => fabricSelectionLabel(selection)).join(' / ')}, compruébala`];
   }
   return result;
+}
+
+// Los artículos «RESTO…» son sobrantes: ni se aprenden ni se proponen.
+export function isLeftover(description) {
+  return /^\s*RESTO/i.test(String(description || ''));
 }
 
 function stripAccents(value) {
