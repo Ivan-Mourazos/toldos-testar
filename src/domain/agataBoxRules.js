@@ -1,5 +1,6 @@
 import { effectiveOverride } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
+import { P801_TUBE_LENGTHS, PRVMODUL_LENGTHS, barsForCut, profileLengthsOrWhite } from './barLengths.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -71,8 +72,13 @@ export function calculateAgataBox({ order, awning }) {
   const liraLength = round1(Number(awning.width) - discounts.lira);
   const protectorLength = round1(Number(awning.width) - discounts.protector);
   const enclosureLength = submodel === 'OPEN' ? 0 : round1(Number(awning.width) - discounts.enclosure);
-  const rollStockLength = chooseRollStock(rollTubeLength, parameters.rollStockLengths);
-  const profileStockLength = parameters.profileStockLength;
+  // Taller, 30/09/2026 (Q-A06): cada barra, la más corta que llegue a su corte entre las
+  // que existen en RPS en ese lacado; por encima de la más larga, barras iguales que
+  // juntas llegan (con más de 7 m va el kit de unión). Antes el tubo era de 600 o 700 y
+  // todos los perfiles, de 700, también con 11 m de frente.
+  const bars = agataBars(lacado.suffix, { rollTubeLength, squareBarLength, loadBarLength, liraLength, protectorLength, enclosureLength }, submodel);
+  const rollStockLength = bars.roll[0] || null;
+  const profileStockLength = bars.load[0] || null;
   const availabilityIssue = structureColor && submodel
     ? agataLacadoIssue(submodel, lacado.suffix, lacado.name)
       || (!onyxArmExists(lacado.suffix, awning.projection) || (armCount % 2 === 1 && !galiciaSingleArmExists(lacado.suffix, awning.projection))
@@ -128,7 +134,7 @@ export function calculateAgataBox({ order, awning }) {
 
   const context = {
     awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount,
-    rollStockLength, profileStockLength, motorPower, fabricMl: fabricUsage.ml,
+    rollStockLength, profileStockLength, bars, motorPower, fabricMl: fabricUsage.ml,
     lengths: { rollTubeLength, squareBarLength, loadBarLength, diffuserLength, liraLength, protectorLength, enclosureLength }
   };
   return {
@@ -173,7 +179,7 @@ export function calculateAgataSupportCount({ width, minimumLine, armCount, param
 }
 
 function buildMaterials(context) {
-  const { awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount, rollStockLength, profileStockLength, motorPower, fabricMl } = context;
+  const { awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount, bars, motorPower, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   // Consumo real de 24 OF desde 2024: soportes y brazos van por JUEGOS (un juego por
@@ -185,19 +191,19 @@ function buildMaterials(context) {
     line(colored('SOBMODUL', suffix), armSets * units, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX'),
     armCount % 2 ? line(colored(`SOB${looseSideLetter(awning.looseSide) || 'D'}MODUL`, suffix), units, looseSideName('SOPORTE BRAZO ÁGATA BOX', looseSideLetter(awning.looseSide) || 'D', looseSideLetter(awning.looseSide))) : null,
     line(colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX'),
-    line(`TURA80HG${rollStockLength}C`, units, 'TUBO DE ENROLLE P801'),
+    ...barLines(bars.roll, (length) => `TURA80HG${length}C`, units, 'TUBO DE ENROLLE P801'),
     line(tipBushing('P801').code, units, tipBushing('P801').description),
-    line(coloredStock(loadBarPrefix(submodel), suffix, profileStockLength), units, `BARRA DE CARGA ÁGATA ${submodel}`),
+    ...barLines(bars.load, (length) => coloredStock(loadBarPrefix(submodel), suffix, length), units, `BARRA DE CARGA ÁGATA ${submodel}`),
     line(colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units, 'TAPAS BARRA DE CARGA ÁGATA BOX'),
     line(colored(boxCapPrefix(submodel), suffix), units, 'TAPAS ÁGATA BOX'),
-    line(coloredStock('TUBHI442', suffix, profileStockLength), units, 'BARRA CUADRADA 40x40x2'),
+    ...barLines(bars.square, (length) => coloredStock('TUBHI442', suffix, length), units, 'BARRA CUADRADA 40x40x2'),
     ...onyxArmLines(suffix, awning.projection, armCount, units, awning.looseSide).map((item) => line(item.code, item.quantity, item.description)),
     line(colored('TERMIMODUL', suffix), armSets * units, 'JUEGO TERMINAL ÁGATA BOX'),
     // Varillas al largo de la barra: con la variante abierta la blanca va doble.
     line('VARILLAVAINANEG5', round1(varillaMl * units), 'VARILLA VAINA NEGRA 4,5MM'),
     line('VARILLAVAINARBLA', round1((submodel === 'OPEN' ? 2 : 1) * varillaMl * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA'),
-    line(coloredStock('PRLMODUL', suffix, profileStockLength), units, 'PERFIL LIRA ÁGATA BOX'),
-    line(`PRVMODUL${profileStockLength}C`, units, 'PERFIL PROTECTOR DE LONA'),
+    ...barLines(bars.lira, (length) => coloredStock('PRLMODUL', suffix, length), units, 'PERFIL LIRA ÁGATA BOX'),
+    ...barLines(bars.protector, (length) => `PRVMODUL${length}C`, units, 'PERFIL PROTECTOR DE LONA'),
     line(colored('SOMPMODUL', suffix), units, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX'),
     ...patinLines(suffix, units).map((item) => line(item.code, item.quantity, item.description)),
     ...joinKitLines(awning.width, units).map((item) => line(item.code, item.quantity, item.description))
@@ -205,13 +211,13 @@ function buildMaterials(context) {
 
   if (submodel !== 'OPEN') {
     materials.push(
-      line(coloredStock('PRTMODUL', suffix, profileStockLength), units, 'PERFIL TEJADILLO ÁGATA BOX'),
-      line(coloredStock('PRPLMODUL', suffix, profileStockLength), units, 'PROTECTOR LONA TEJADILLO'),
-      line(coloredStock('PRPMODUL', suffix, profileStockLength), 2 * units, 'PERFIL POSTERIOR Y SELLADOR ÁGATA BOX'),
+      ...barLines(bars.roof, (length) => coloredStock('PRTMODUL', suffix, length), units, 'PERFIL TEJADILLO ÁGATA BOX'),
+      ...barLines(bars.roofProtector, (length) => coloredStock('PRPLMODUL', suffix, length), units, 'PROTECTOR LONA TEJADILLO'),
+      ...barLines(bars.back, (length) => coloredStock('PRPMODUL', suffix, length), 2 * units, 'PERFIL POSTERIOR Y SELLADOR ÁGATA BOX'),
       line(colored(submodel === 'COFRE' ? 'SOTLMODUL' : 'SOINMODU', suffix), profileSupportCount * units, 'SOPORTES DE CIERRE ÁGATA BOX')
     );
   }
-  if (submodel === 'COFRE') materials.push(line(coloredStock('PRIMODUL', suffix, profileStockLength), 2 * units, 'PERFIL INFERIOR ÁGATA BOX'));
+  if (submodel === 'COFRE') materials.push(...barLines(bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), 2 * units, 'PERFIL INFERIOR ÁGATA BOX'));
 
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
@@ -243,20 +249,21 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, device, placement, submodel, lacado, armCount, supportCount, profileSupportCount, rollStockLength, profileStockLength, motorPower, lengths } = context;
+  const { awning, device, placement, submodel, lacado, armCount, supportCount, profileSupportCount, bars, motorPower, lengths } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
   // Numeración correlativa y las mismas piezas que la reserva.
   const push = (_num, name, reference, rowUnits, length = null) => rows.push({ num: rows.length + 1, name, reference: reference || null, units: rowUnits, length });
+  const pushBars = (num, name, list, code, perAwning, length) => barLines(list, code, perAwning, name).forEach((item) => push(num, name, item.code, item.quantity, length));
   push(1, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX', colored('SOBMODUL', suffix), Math.floor(armCount / 2) * units);
   if (armCount % 2) push(1, looseSideName('SOPORTE BRAZO ÁGATA BOX', looseSideLetter(awning.looseSide) || 'D', looseSideLetter(awning.looseSide)), colored(`SOB${looseSideLetter(awning.looseSide) || 'D'}MODUL`, suffix), units);
   push(1, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX', colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units);
-  push(2, 'TUBO DE ENROLLE P801', `TURA80HG${rollStockLength}C`, units, lengths.rollTubeLength);
+  pushBars(2, 'TUBO DE ENROLLE P801', bars.roll, (length) => `TURA80HG${length}C`, units, lengths.rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MAQUINA' ? 'CASQUILLO EJE 63MM Ø78' : 'SOPORTE UNIVERSAL HIPRO', device === 'MAQUINA' ? 'CASMAQEJE6378MM' : 'SOPORTEUNVHIPRO', units);
-  push(5, `BARRA DE CARGA ÁGATA ${submodel}`, coloredStock(loadBarPrefix(submodel), suffix, profileStockLength), units, lengths.loadBarLength);
-  push(6, 'BARRA CUADRADA 40x40x2', coloredStock('TUBHI442', suffix, profileStockLength), units, lengths.squareBarLength);
+  pushBars(5, `BARRA DE CARGA ÁGATA ${submodel}`, bars.load, (length) => coloredStock(loadBarPrefix(submodel), suffix, length), units, lengths.loadBarLength);
+  pushBars(6, 'BARRA CUADRADA 40x40x2', bars.square, (length) => coloredStock('TUBHI442', suffix, length), units, lengths.squareBarLength);
   push(5, 'TAPAS BARRA DE CARGA ÁGATA BOX', colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units);
   push(5, 'TAPAS ÁGATA BOX', colored(boxCapPrefix(submodel), suffix), units);
   onyxArmLines(suffix, awning.projection, armCount, units, awning.looseSide).forEach((item) => push(7, item.description, item.code, item.quantity, awning.projection));
@@ -271,17 +278,17 @@ function buildDespiece(context) {
     push(9, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);
     push(10, `MANIVELA LUXE ${lacado.crank} ${height}`, `MANIVE${crankSuffix(lacado)}${height}C`, units, height);
   }
-  push(12, 'PERFIL LIRA ÁGATA BOX', coloredStock('PRLMODUL', suffix, profileStockLength), units, lengths.liraLength);
-  push(13, 'PERFIL PROTECTOR DE LONA', `PRVMODUL${profileStockLength}C`, units, lengths.protectorLength);
+  pushBars(12, 'PERFIL LIRA ÁGATA BOX', bars.lira, (length) => coloredStock('PRLMODUL', suffix, length), units, lengths.liraLength);
+  pushBars(13, 'PERFIL PROTECTOR DE LONA', bars.protector, (length) => `PRVMODUL${length}C`, units, lengths.protectorLength);
   if (submodel !== 'OPEN') {
-    push(14, 'PERFIL TEJADILLO ÁGATA BOX', coloredStock('PRTMODUL', suffix, profileStockLength), units, lengths.enclosureLength);
-    push(15, 'PROTECTOR LONA TEJADILLO', coloredStock('PRPLMODUL', suffix, profileStockLength), units, lengths.enclosureLength);
-    push(16, 'PERFIL POSTERIOR ÁGATA BOX', coloredStock('PRPMODUL', suffix, profileStockLength), units, lengths.enclosureLength);
-    push(17, 'PERFIL SELLADOR ÁGATA BOX', coloredStock('PRPMODUL', suffix, profileStockLength), units, lengths.enclosureLength);
+    pushBars(14, 'PERFIL TEJADILLO ÁGATA BOX', bars.roof, (length) => coloredStock('PRTMODUL', suffix, length), units, lengths.enclosureLength);
+    pushBars(15, 'PROTECTOR LONA TEJADILLO', bars.roofProtector, (length) => coloredStock('PRPLMODUL', suffix, length), units, lengths.enclosureLength);
+    pushBars(16, 'PERFIL POSTERIOR ÁGATA BOX', bars.back, (length) => coloredStock('PRPMODUL', suffix, length), units, lengths.enclosureLength);
+    pushBars(17, 'PERFIL SELLADOR ÁGATA BOX', bars.back, (length) => coloredStock('PRPMODUL', suffix, length), units, lengths.enclosureLength);
     push(18, 'SOPORTES DE CIERRE ÁGATA BOX', colored(submodel === 'COFRE' ? 'SOTLMODUL' : 'SOINMODU', suffix), profileSupportCount * units);
   }
   push(19, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX', colored('SOMPMODUL', suffix), units);
-  if (submodel === 'COFRE') push(20, 'PERFIL INFERIOR ÁGATA BOX', coloredStock('PRIMODUL', suffix, profileStockLength), 2 * units, lengths.enclosureLength);
+  if (submodel === 'COFRE') pushBars(20, 'PERFIL INFERIOR ÁGATA BOX', bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), 2 * units, lengths.enclosureLength);
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * units } : null;
   return { rows, anchoring };
@@ -307,8 +314,29 @@ function coloredStock(prefix, suffix, stockLength) {
   return suffix ? `${prefix}${suffix}${stockLength}C` : prefix;
 }
 
-function chooseRollStock(length, stockLengths) {
-  return stockLengths.find((stock) => stock >= length) || stockLengths[stockLengths.length - 1] || null;
+// Barras de cada perfil del Ágata para su corte (Q-A06). Con un color sin ese perfil se
+// toman los largos del blanco, que va a lacar.
+function agataBars(suffix, lengths, submodel) {
+  const colored = (prefix, cut) => barsForCut(profileLengthsOrWhite(prefix, suffix), cut);
+  const closed = submodel !== 'OPEN';
+  return {
+    roll: barsForCut(P801_TUBE_LENGTHS, lengths.rollTubeLength),
+    load: colored(loadBarPrefix(submodel), lengths.loadBarLength),
+    square: colored('TUBHI442', lengths.squareBarLength),
+    lira: colored('PRLMODUL', lengths.liraLength),
+    protector: barsForCut(PRVMODUL_LENGTHS, lengths.protectorLength),
+    roof: closed ? colored('PRTMODUL', lengths.enclosureLength) : [],
+    roofProtector: closed ? colored('PRPLMODUL', lengths.enclosureLength) : [],
+    back: closed ? colored('PRPMODUL', lengths.enclosureLength) : [],
+    bottom: submodel === 'COFRE' ? colored('PRIMODUL', lengths.enclosureLength) : []
+  };
+}
+
+// Una línea por largo de barra; con empalme, las barras que hagan falta por toldo.
+function barLines(list, code, perAwning, description) {
+  const counts = new Map();
+  for (const length of list) counts.set(length, (counts.get(length) || 0) + 1);
+  return [...counts].map(([length, count]) => ({ code: code(length), quantity: count * perAwning, description }));
 }
 
 // Taller, 30/09/2026 (Q-AG01): patines siempre, de codo (KIT PATINES BRAZO) y de horquilla

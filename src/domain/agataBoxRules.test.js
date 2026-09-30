@@ -27,7 +27,8 @@ describe('Ágata Box', () => {
       diffuserLength: 702.8, liraLength: 709.1, motorPower: '85/17'
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
-      'SOBMODULBL16', 'TURA80HG700C', 'PRROMODULBL16700C',
+      // Q-A06: tubo de 705 → el P801 de 800; barra redonda de 706 → dos de 500 empalmadas.
+      'SOBMODULBL16', 'TURA80HG800C', 'PRROMODULBL16500C',
       'BONYXBL16400C', 'SUNILUSIO85//17', 'ACRILI2143P120'
     ]));
   });
@@ -73,7 +74,16 @@ describe('Ágata Box', () => {
       fabricWidth: 1132, fabricDrop: 420, motorPower: '100/12'
     });
     // El semicofre lleva la barra redonda ROND-80 y sus tapas (PRSCMODUL no se consume).
-    expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining(['PRROMODULBL16700C', 'TARONDMODBL16', 'TAPSMODULBL16']));
+    expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining(['TARONDMODBL16', 'TAPSMODULBL16']));
+    // Q-A06: más de 7 m, barras iguales empalmadas; la OF 0222310 (1145 × 350) gastó
+    // dos de 600 de tubo, barra redonda, cuadrada, lira y tejadillo.
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'PRROMODULBL16600C', quantity: 2 }),
+      expect.objectContaining({ code: 'TUBHI442BL16600C', quantity: 2 }),
+      expect.objectContaining({ code: 'PRLMODULBL16600C', quantity: 2 }),
+      expect.objectContaining({ code: 'PRTMODULBL16600C', quantity: 2 })
+    ]));
     // 4 brazos = 2 juegos de brazos y de soportes de brazo.
     expect(result.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),

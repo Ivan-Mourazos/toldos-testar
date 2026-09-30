@@ -13,10 +13,10 @@ import {
 } from './galiciaParameters.js';
 import { resolveMotorRemote } from './motorAccessories.js';
 import { normalizeMonoblock350Parameters } from './monoblock350Parameters.js';
-import { evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
+import { onyxArmExists } from './arzuaAvailability.js';
+import { P801_TUBE_LENGTHS, profileLengthsOrWhite, shortestBar } from './barLengths.js';
 import { galiciaArmLines, galiciaSingleArmExists, galiciaSupportLines } from './galiciaSupportPieces.js';
-import { groupBars, rollTubeLengths, splitIntoBars } from './monoblock350Pieces.js';
-import { universProfileStockLengths } from './universProfileLengths.js';
+import { groupBars, splitIntoBars } from './monoblock350Pieces.js';
 import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
@@ -77,19 +77,19 @@ export function calculateGalicia({ order, awning }) {
   const fabricMl = fabricUsage.ml;
   const structureLength = round1(awning.width - lookupDiscount(parameters.widthDiscounts, tubeLoad, device, 10));
   const rollTubeLength = round1(awning.width - lookupDiscount(parameters.rollTubeDiscounts, tubeLoad, device, 10));
-  // El EVO 80 no existe en todos los largos de cada lacado (en negro, el de 600 está
-  // de baja desde 2023): se elige entre los que hay, como en el Arzúa.
-  const profileLengths = tubeLoad === 'TUBO DE CARGA EVO 80' ? evo80StockLengths(colorSuffix, parameters.stockLengths) : parameters.stockLengths;
-  const singleStock = chooseStockLength(Math.max(structureLength, rollTubeLength), profileLengths);
+  // Taller, 30/09/2026 (Q-A06): cada barra, la más corta que llegue a su corte entre los
+  // largos que existen en RPS en ese lacado; el tubo de enrolle y la barra de carga, cada
+  // uno el suyo (antes compartían 600 o 700). El EVO 80 no existe en todos los largos
+  // (en negro, el de 600 está de baja desde 2023).
   // Por encima de la barra más larga (Iván, 25/09/2026, Q-G03): el tubo de enrolle va de
   // 800 y la barra de carga se empalma en barras iguales, como en el Monoblock 350.
   const loadAvailable = tubeLoad === 'TUBO DE CARGA EVO 80'
-    ? evo80StockLengths(colorSuffix, [400, 500, 600, 700])
-    : universProfileStockLengths(universProfileSuffix(colorSuffix), [400, 500, 600, 700]);
-  const firstThatFits = (length) => (sorted) => sorted.find((item) => item >= length);
-  const rollBars = singleStock ? [singleStock] : splitIntoBars(rollTubeLength, rollTubeLengths, firstThatFits(rollTubeLength));
-  const loadBars = singleStock ? [singleStock] : splitIntoBars(structureLength, loadAvailable, firstThatFits(structureLength));
-  const stockLength = singleStock ?? (rollBars.length ? Math.max(...rollBars) : null);
+    ? profileLengthsOrWhite('PEVO80', colorSuffix)
+    : profileLengthsOrWhite('PUNI280', universProfileSuffix(colorSuffix), 'BL10');
+  const rollBars = splitIntoBars(rollTubeLength, P801_TUBE_LENGTHS, (sorted) => shortestBar(sorted, rollTubeLength));
+  const loadBars = splitIntoBars(structureLength, loadAvailable, (sorted) => shortestBar(sorted, structureLength));
+  const rollStockLength = rollBars.length ? Math.max(...rollBars) : null;
+  const stockLength = loadBars.length === 1 ? loadBars[0] : rollStockLength;
   // Con tres brazos va además un brazo suelto: si no existe en ese lacado y salida, no
   // se reserva un código que RPS no tiene.
   const armMissing = !onyxArmExists(colorSuffix, awning.projection)
@@ -196,6 +196,7 @@ export function calculateGalicia({ order, awning }) {
       structureLength,
       rollTubeLength,
       stockLength,
+      rollStockLength,
       tubeLoad,
       supportSystem: 'GALICIA',
       motorPower: device === 'MOTOR' ? motorPower : '',
@@ -318,9 +319,6 @@ function lookupDiscount(matrix, tubeLoad, device, fallback) {
   return matrix[tubeLoad]?.[device] ?? fallback;
 }
 
-function chooseStockLength(length, stockLengths) {
-  return stockLengths.find((item) => item >= length) || null;
-}
 
 function normalizeTubeLoad(value) {
   const clean = String(value || '').toUpperCase();

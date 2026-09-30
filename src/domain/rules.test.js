@@ -117,7 +117,7 @@ describe('ARZUA PRO despiece', () => {
     expect(despiece.rows.map((row) => row.num)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
     expect(despiece.rows.find((row) => row.name === 'KIT DE TORNILLOS MAQUINA').reference).toBeNull();
     expect(despiece.rows.find((row) => row.name === 'JUEGO DE BRAZOS ONYX')).toMatchObject({ reference: 'BONYXNE11275C', length: 275 });
-    expect(despiece.rows.find((row) => row.name === 'TUBO DE ENROLLE P801')).toMatchObject({ reference: 'TURA80HG600C', length: 338.6 });
+    expect(despiece.rows.find((row) => row.name === 'TUBO DE ENROLLE P801')).toMatchObject({ reference: 'TURA80HG400C', length: 338.6 });
     expect(despiece.rows.find((row) => row.name === 'MANIVELA LUXE NEGRA 200')).toMatchObject({ reference: 'MANIVENE11200C', length: 200 });
     expect(despiece.anchoring).toEqual({ name: 'ANCLAJE QUÍMICO M12', reference: 'ANCLHSTM12145', units: 4 });
   });
@@ -591,7 +591,10 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
       fabricMl: 9,
       structureLength: 327.2,
       rollTubeLength: 327.2,
-      stockLength: 600,
+      // Q-A06: la barra más corta que llega. El EVO blanco empieza en 500; el tubo, en 400,
+      // que es el que consumió la OF 0230194.
+      stockLength: 500,
+      rollStockLength: 400,
       motorPower: '55/17',
       requiredMotorTorqueNm: 40
     });
@@ -599,14 +602,14 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     // casquillo punta, terminal, corona LT60 y rueda motriz P-801 mecanizada.
     expect(asLines(ofBlock.materials)).toEqual([
       'ACRILI2018P120 x9', 'BONYXBL16225C x1', 'CASPUNCEJE78MM x1', 'CORONALT60 x1',
-      'PEVO80BL16600C x1', 'RUEDAMOT801MEC x1', 'SITUOIO1PURE x1',
+      'PEVO80BL16500C x1', 'RUEDAMOT801MEC x1', 'SITUOIO1PURE x1',
       'SOPAR350BL16 x1', 'SOPORTEUNVHIPRO x1', 'SUNILUSIO55//17 x1',
-      'TAPONEVO8BL16 x1', 'TERMINEVOBL16 x1', 'TURA80HG600C x1',
+      'TAPONEVO8BL16 x1', 'TERMINEVOBL16 x1', 'TURA80HG400C x1',
       'VARILLAVAINANEG5 x3.3', 'VARILLAVAINARBLA x6.6'
     ].sort());
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ name: 'TUBO DE ENROLLE P801', reference: 'TURA80HG600C', length: 327.2 }),
-      expect.objectContaining({ name: 'TUBO DE CARGA EVO 80', reference: 'PEVO80BL16600C', length: 327.2 }),
+      expect.objectContaining({ name: 'TUBO DE ENROLLE P801', reference: 'TURA80HG400C', length: 327.2 }),
+      expect.objectContaining({ name: 'TUBO DE CARGA EVO 80', reference: 'PEVO80BL16500C', length: 327.2 }),
       expect.objectContaining({ num: 5, name: 'KIT TAPONES EVO 80', reference: 'TAPONEVO8BL16', units: 1 }),
       expect.objectContaining({ name: 'MANDO SITUO 1 IO PURE', reference: 'SITUOIO1PURE', units: 1 })
     ]));
@@ -643,12 +646,13 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     }));
     // Contrastado contra las imputaciones reales de la OF 0230330, que consumió
     // casquillo punta, terminal, máquina MB-11 negra y las dos varillas de vaina
-    // con estas mismas cantidades. CASPLAS no lo consumió.
+    // con estas mismas cantidades. CASPLAS no lo consumió. Desde Q-A06 (30/09/2026), la
+    // barra más corta que llega: el Univers y el tubo de 500 que gastó esa OF.
     expect(asLines(result.ofs[0].materials)).toEqual([
       'ACRILI2170P120 x14.5', 'BONYXNE11225C x1', 'CASMAQEJE6378MM x1',
       'CASPUNCEJE78MM x1', 'MANIVENE11250C x1', 'MAQMB11L12NEGRO x1',
-      'PUNI280NE05600C x1', 'SOPAR350NE11 x1', 'TAPOPLUN280NE11 x1',
-      'TERMINEVONE11 x1', 'TURA80HG600C x1',
+      'PUNI280NE05500C x1', 'SOPAR350NE11 x1', 'TAPOPLUN280NE11 x1',
+      'TERMINEVONE11 x1', 'TURA80HG500C x1',
       'VARILLAVAINANEG5 x4.9', 'VARILLAVAINARBLA x9.8'
     ].sort());
   });
@@ -709,7 +713,7 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
 
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPAR350BL16', quantity: 2 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA80HG400C', quantity: 2 }),
       expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 2 }),
       expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2018P120', quantity: 18 })
@@ -744,9 +748,9 @@ describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
     const materials = result.ofs[0].materials;
     expect(calculation.tubeLoad).toBe('TUBO DE CARGA EVO 80');
     expect(calculation.motorPower).toBe('55/17');
-    expect(materials).toContainEqual(expect.objectContaining({ code: 'PEVO80BL16600C', quantity: 1 }));
+    expect(materials).toContainEqual(expect.objectContaining({ code: 'PEVO80BL16500C', quantity: 1 }));
     expect(materials).toContainEqual(expect.objectContaining({ code: 'SUNILUSIO55//17', quantity: 1 }));
-    expect(materials).toContainEqual(expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }));
+    expect(materials).toContainEqual(expect.objectContaining({ code: 'TURA80HG400C', quantity: 1 }));
     expect(materials.some((line) => line.code === 'CASPUNCE')).toBe(false);
   });
 
@@ -755,7 +759,7 @@ describe('ARZUA PRO decisiones automáticas contrastadas con RPSNext', () => {
       awnings: [baseAwning({ destination: 'HOSTELERÍA / EMPRESA', tubeLoad: '' })]
     }));
     expect(result.ofs[0].calculation.tubeLoad).toBe('TUBO DE CARGA UNIVERS 280');
-    expect(result.ofs[0].materials.some((line) => line.code === 'PUNI280BL10600C')).toBe(true);
+    expect(result.ofs[0].materials.some((line) => line.code === 'PUNI280BL10400C')).toBe(true);
   });
 
   test('motor 70 se selecciona desde el umbral configurable', () => {
@@ -918,22 +922,23 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     expect(ofBlock.calculation).toMatchObject({
       valid: true, minimumLine: 375, armCount: 2, structureLength: 418.5,
       rollTubeLength: 418.5, fabricWidth: 417, fabricDrop: 420, fabricMl: 16.8,
-      stockLength: 600, supportSystem: 'GALICIA'
+      stockLength: 500, rollStockLength: 500, supportSystem: 'GALICIA'
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SOPARTGLBL16', quantity: 1 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 1 }),
-      expect.objectContaining({ code: 'PUNI280BL10600C', quantity: 1 }),
+      expect.objectContaining({ code: 'TURA80HG500C', quantity: 1 }),
+      expect.objectContaining({ code: 'PUNI280BL10500C', quantity: 1 }),
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 1 }),
       expect.objectContaining({ code: 'ACRILI2170P120', quantity: 16.8 })
     ]));
     // OF 0230134: con dos brazos, un juego de brazos y uno de soportes, sin sueltos
-    // ni terminal indiferente. El almacén imputó tubo y perfil de 500 (Q-A06).
+    // ni terminal indiferente. El almacén imputó tubo y perfil de 500, que es lo que
+    // reserva la web desde Q-A06 (la barra más corta que llega).
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOPARTGLBL16', quantity: 1 },
-      { code: 'TURA80HG600C', quantity: 1 },
+      { code: 'TURA80HG500C', quantity: 1 },
       { code: 'CASPUNCEJE78MM', quantity: 1 },
-      { code: 'PUNI280BL10600C', quantity: 1 },
+      { code: 'PUNI280BL10500C', quantity: 1 },
       { code: 'TAPOPLUN280BL16', quantity: 1 },
       { code: 'BONYXBL16350C', quantity: 1 },
       { code: 'TERMINEVOBL16', quantity: 1 },
@@ -1036,7 +1041,7 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
     ]);
   });
 
-  test('los parámetros de Galicia controlan tela y largos de stock', () => {
+  test('los parámetros de Galicia controlan la tela; los largos de barra salen de RPS', () => {
     const result = calculateOrder(basePayload({
       parameters: { galicia: { fabricDropAllowanceCm: 50, seamAllowanceCm: 0, seamBaseCm: 0, stockLengths: [650, 750] } },
       awnings: [baseAwning({
@@ -1044,9 +1049,9 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
         armCount: 3, device: 'MAQ. EXTERIOR', tubeLoad: 'TUBO DE CARGA UNIVERS 280'
       })]
     }));
-    // Con Univers: el EVO 80 solo existe en los largos de su tabla, así que no sigue
-    // a unos largos de stock inventados.
-    expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 370, fabricPanels: 6, fabricMl: 22.2, stockLength: 650 });
+    // Q-A06: la barra, la más corta que existe y llega (640 de corte → Univers de 700);
+    // unos largos guardados que no existen (650, 750) ya no cuentan.
+    expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 370, fabricPanels: 6, fabricMl: 22.2, stockLength: 700, rollStockLength: 700 });
   });
 
   // Taller, 30/09/2026 (Q-G03): con tres brazos y 3,50 de salida sí se hace; sin aviso.
@@ -1155,7 +1160,7 @@ describe('GALICIA contra planteamientos y RPSNext', () => {
       })]
     }));
     expect(result.ofs[0].calculation.tubeLoad).toBe('TUBO DE CARGA UNIVERS 280');
-    expect(result.ofs[0].materials.some((item) => item.code === 'PUNI280BL10600C')).toBe(true);
+    expect(result.ofs[0].materials.some((item) => item.code === 'PUNI280BL10500C')).toBe(true);
   });
 });
 
@@ -1179,13 +1184,14 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       valid: true, minimumLine: 240,
       structureLength: 279.3, rollTubeLength: 281.9,
       fabricWidth: 275.8, fabricDrop: 245, fabricMl: 7.35,
-      stockLength: 600, armCount: 1
+      // Q-A06 (30/09/2026): la barra más corta que llega; la OF gastó las de 600.
+      stockLength: 400, rollStockLength: 400, armCount: 1
     });
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOSTORBS300BL16', quantity: 1 },
-      { code: 'TURA80HG600C', quantity: 1 },
+      { code: 'TURA80HG400C', quantity: 1 },
       { code: 'CASPUNCEJE78MM', quantity: 1 },
-      { code: 'PRBOXS300BL16600C', quantity: 1 },
+      { code: 'PRBOXS300BL16400C', quantity: 1 },
       { code: 'TAPBS300BL16', quantity: 1 },
       { code: 'BONYXBL16200C', quantity: 1 },
       { code: 'CASMAQEJE5078MM', quantity: 1 },
@@ -1241,7 +1247,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(calculated.ofs).toHaveLength(2);
     expect(reservation.ofs).toHaveLength(1);
     expect(reservation.ofs[0].materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA80HG400C', quantity: 2 }),
       expect.objectContaining({ code: 'SOSTORBS300BL16', quantity: 2 }),
       expect.objectContaining({ code: 'ACRILI2038P120', quantity: 14.7 })
     ]));
@@ -1352,7 +1358,11 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     ]);
     expect(materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'ACRILI2226P120', quantity: 49.35 }),
-      expect.objectContaining({ code: 'TURA80HG600C', quantity: 3 }),
+      // Q-A06: el tubo más corto que llega, como consumió la OF (dos de 400 y uno de 500).
+      expect.objectContaining({ code: 'TURA80HG400C', quantity: 2 }),
+      expect.objectContaining({ code: 'TURA80HG500C', quantity: 1 }),
+      expect.objectContaining({ code: 'PRBOX400BL16400C', quantity: 2 }),
+      expect.objectContaining({ code: 'PRBOX400BL16500C', quantity: 1 }),
       expect.objectContaining({ code: 'CASPUNCEJE78MM', quantity: 3 }),
       expect.objectContaining({ code: 'SOSTORB400BL16', quantity: 3 }),
       expect.objectContaining({ code: 'BONYXBL16350C', quantity: 2 }),

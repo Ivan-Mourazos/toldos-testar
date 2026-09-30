@@ -1,6 +1,6 @@
 # Arzúa Pro — expediente
 
-23/09/2026 · **Terminado salvo la duda Q-A06** (Q-A01 y Q-A03, contestadas por Iván el 25/09/2026) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-arzua-evidence.md)
+23/09/2026 · **Terminado** (Q-A01 y Q-A03, contestadas por Iván el 25/09/2026; Q-A06, por el taller el 30/09/2026) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-arzua-evidence.md)
 
 ## 1. Alcance y fuentes
 
@@ -57,6 +57,7 @@ El Arzúa ofrecía un soporte Galicia que duplicaba el modelo GALICIA con otros 
 Consultado en RPS con la fecha de baja (`arzuaAvailability.js`, 23/09/2026):
 
 - **Perfil EVO 80**: en negro solo existen el de 500 y el de 700; **el de 600 está de baja desde 2023** y la web lo reservaba. Ahora elige entre los largos que existen en ese lacado, y si ninguno de los habituales existe (verde 6005 solo tiene el de 500, pedido 4611) usa el que haya.
+- **Largo de las barras** (taller, 30/09/2026, Q-A06: «la más corta que llegue al corte»): el tubo de enrolle y la barra de carga eligen cada uno su largo, el más corto que existe en RPS en ese lacado y llega a su corte (tubo P801: 400 a 800; EVO 80 y Univers 280, los de `lacadoCodes.json`). Antes compartían uno de 600, 650 o 700: en blanco salía casi siempre el de 600 (corte de 189 → 600, cuando bastaba el de 400) y por encima de 6 m pedía `TURA80HG650C`, `PEVO80…650C` y `PUNI280…650C`, que **no existen**. Los largos de «Barra comercial» de Parámetros dejan de usarse. Lo confirman las OF 0230194 (tubo de 400) y 0230330 (tubo y Univers de 500). Sin margen de corte: queda por confirmar con el taller si hace falta.
 - **Brazos Onyx**: en negro no hay de 175 (salta de 150 a 200). Ahora el toldo sale no válido con el motivo en vez de reservar una referencia inexistente.
 
 Con esto, Arzúa no tiene códigos rotos en blanco ni en negro. En otros lacados quedan 24, casi todos perfiles que no existen en ese color (bronce, gris texturado…). Es un problema transversal, no del modelo (Q-A02). **Resuelto el 25/09/2026 (Iván):** la pieza que no existe en ese color se reserva en blanco para lacarla fuera, con un aviso en la tarjeta ([lacadoFallback.js](../../src/domain/lacadoFallback.js)). Quedan 0.
@@ -82,9 +83,11 @@ Revisado a 1280×720 y a 1600 con el caso AR2603332: válido, sin errores y sin 
 | Soportes Galicia y tres brazos van al modelo GALICIA | Iván, 23/09/2026; los libros |
 | Un tubo de enrolle por toldo | Consumo real: 217 de 247 OF |
 | Largos de EVO 80 y brazos | Maestro de RPS con `InactiveDate` |
+| Barra más corta que llega, tubo y barra de carga cada uno la suya | Taller, 30/09/2026 (Q-A06); maestro de RPS del 30/09/2026 |
 
 ## 9. Pendiente
 
 - Hecho (25/09/2026): Q-A01 decidida a favor del manual. Las 182 diferencias con los libros quedan explicadas; no hay que tocar las medidas.
 - Hecho (25/09/2026): lacados bronce y 7022, en blanco para lacar fuera (Q-A02).
+- Hecho (30/09/2026): la barra más corta que llega y fuera el largo de 650, que no existe (Q-A06).
 - Hecho: la numeración del despiece ahora es correlativa (antes saltaba del 12 al 21 y dejaba el 4 vacío a motor).

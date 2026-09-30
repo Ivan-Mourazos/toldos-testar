@@ -44,6 +44,7 @@ Reglas comunes que salen del consumo:
 - **Brazos y soportes del Ágata** por juegos, como en Galicia y Monoblock. Los soportes a pared o techo son los frontales `SOFTMODUL` (se reservaban como soportes de brazo).
 - **Barra del Ágata**: `PRMODUL` con cofre y la redonda `PRROMODUL` en el resto, con sus tapas y las del cofre. `PRCOMODUL`, `PRSCMODUL` y el difusor LED `PRDLED` (que en RPS no lleva lacado) no se consumen.
 - **Ágata, patines y kit de unión** (taller, 30/09/2026, Q-AG01): siempre dos kits de patines de codo (`PABMODUL`, brazo) y dos de horquilla (`PASBMODUL`, soporte de brazo) por toldo, que es lo que se consume en 9 de las 11 OF con patines desde 2023. Solo existen en blanco y negro (el de codo negro es `PABMODULNEGR`); en los demás colores van en blanco a lacar. Con más de 7 m de frente, el kit de unión: regleta `KUNIONMODUL` y bolsa de pasadores `PASADORMODUL` (lo consumido en las 12 OF de más de 700 desde 2024). Van en la reserva, no en el despiece, como las varillas.
+- **Largo de las barras** (taller, 30/09/2026, Q-A06: «la más corta que llegue al corte»): cada perfil y cada tubo, el más corto que existe en RPS en ese lacado y llega a su corte. Antes, el «habitual»: tubo P701 de 600 en Ámbar y Cuarzo (bastaba el de 500), perfil de 450 en Cuarzo, tubo y perfil de 600 en Perla y Coral (y el tubo al mismo largo que el perfil), y en el Ágata tubo de 600 o 700 y todos los perfiles de 700, también con 11 m de frente. En el Ágata, por encima de la barra más larga van barras iguales empalmadas, como se gasta (OF 0206073: dos de 500 con 1005 de frente; OF 0222310: dos de 600 con 1145). Los largos de Parámetros dejan de usarse.
 - **Perla**: 5 m de goma amortiguadora `GOMAAMORTIG` (la de 2025-2026). Fuera el perfil protector (6 de 275 OF).
 
 El film de embalar (`FILMEMBALAR`) va aparte, como el tubo transparente de embalaje.
@@ -76,4 +77,4 @@ A 1280×720 y 1600, Perla de máquina y Ágata cofre con motor y 3 brazos: váli
 | Q-AG02 | Ágata: se consume sobre todo el Sunilus 85/17; la tabla por brazos y salida propone 35-55 con 2 brazos | La tabla |
 | Q-AG03 | Ágata: el libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras. **Retirada de la lista el 25/09/2026** (Iván: fuera las dudas sobre pedidos antiguos y las comprobaciones contra los libros; la referencia es la web). | La fórmula |
 | Q-PR02 | Casquillo de máquina de eje 50 o 63 (Cuarzo: 16 y 9 OF) | Eje 50 |
-| Q-A06 | Largo de stock: el almacén imputa muchos perfiles y tubos de 400 y 500 | El habitual |
+| Q-A06 | **Resuelta (taller, 30/09/2026):** la más corta que llegue al corte | Hecho: cada perfil y tubo, el más corto que existe en ese lacado y llega; en el Ágata, empalme por encima de 7 m |

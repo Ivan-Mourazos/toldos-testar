@@ -1,6 +1,6 @@
 # Galicia — expediente
 
-23/09/2026 · **Terminado salvo las dudas Q-A04, Q-A06 y Q-G01 a Q-G03** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-galicia-evidence.md) · [Arzúa Pro](./arzua-pro.md)
+23/09/2026 · **Terminado** (Q-A04, Q-A06 y Q-G01 a Q-G03 contestadas) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Dudas](./dudas-abiertas.md) · [Evidencia anterior](../rps-galicia-evidence.md) · [Arzúa Pro](./arzua-pro.md)
 
 ## 1. Qué es el Galicia
 
@@ -40,7 +40,8 @@ El mismo cambio del tubo de enrolle (1 por toldo, no 2) se aplicó al Arzúa: 21
 
 ## 4. Referencias
 
-- El EVO 80 se elige entre los largos que existen en cada lacado (`arzuaAvailability.js`): el de 600 negro está de baja desde 2023.
+- El EVO 80 se elige entre los largos que existen en cada lacado: el de 600 negro está de baja desde 2023.
+- **Largo de las barras** (taller, 30/09/2026, Q-A06): el tubo de enrolle y la barra de carga, cada uno el más corto que existe en RPS en ese lacado y llega a su corte (tubo P801 de 400 a 800). Antes compartían uno de 600 o 700. Por encima de la barra más larga se sigue empalmando (Q-G03). La OF 0230134 gastó tubo y Univers de 500, que es lo que reserva ahora.
 - Sin brazo Onyx en ese lacado y salida (o sin brazo suelto con 3 brazos), el toldo no es válido y dice por qué.
 - `pnpm validate:rps-refs`: sin códigos rotos en blanco ni en negro (antes, `PEVO80NE11600C` de baja y `BONYXNE11175C` inexistente). En otros lacados quedan 63, casi todos soportes Galicia que solo existen en blanco, negro y marfil (Q-A02). **Resuelto el 25/09/2026 (Iván):** la pieza que no existe en ese color se reserva en blanco para lacarla fuera, con un aviso en la tarjeta ([lacadoFallback.js](../../src/domain/lacadoFallback.js)). Quedan 0.
 
@@ -64,7 +65,7 @@ A 1280×720 y 1600, con el caso AR2603380 (OF 0230335): válido, sin errores ni 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
 | Q-A04 | **Resuelta (Iván, 25/09/2026):** no van de un lado concreto. Debe ser un dato opcional del pedido; si no se pone, decide el taller | Hecho: «Lado del brazo suelto» en la tarjeta. Sin elegir, se reserva el derecho y el despiece dice «lado a elegir en taller» |
-| Q-A06 | ¿Se reserva el largo de stock más corto que cabe? El almacén imputa muchos de 500 | 600 o 700 |
+| Q-A06 | **Resuelta (taller, 30/09/2026):** la más corta que llegue al corte | Hecho: tubo y barra de carga, cada uno el más corto que existe en ese lacado y llega |
 | Q-G01 | Máquina MB-11 L-120 (32 OF) o Geiger 1.13 L-140 (17 OF): ¿de qué depende? | MB-11 |
 | Q-G02 | **Resuelta (taller, 30/09/2026):** depende de los brazos y de la salida, como en la tarifa del Monoblock | Hecho: tabla de motores del Monoblock 350 (55/17 con dos brazos, 70/17 con tres); otro con el candado |
 | Q-G03 | La ficha permite 8 m con tres brazos y hay 10 OF con tubo de 800, pero la barra más larga es de 700. **Iván (25/09/2026): sí se empalma** (hecho: hasta 8 m, con empalme como en el Monoblock 350). **Taller (30/09/2026): con tres brazos y 3,50 de salida sí se hace** | Máximo 800 (empalme desde 7 m); tres brazos hasta 3,50 sin aviso |

@@ -28,6 +28,8 @@ const lengthsBySuffix = Object.freeze({
   NE11: [600, 700],
   NEM1: [500, 700],
   O516: [400, 500, 600, 700],
+  // PL06 y ORO: todos los largos de baja (RPS, 30/09/2026). Como con un color que no
+  // existe (Q-A02), se toma el largo del blanco y la pieza va a lacar (lacadoFallback.js).
   ORO: [400, 500, 600, 700],
   P537: [500],
   PA19: [500, 600, 700],

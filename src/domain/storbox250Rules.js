@@ -8,6 +8,7 @@ import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { normalizeCuarzoBoxParameters } from './storbox250Parameters.js';
 import { art250ArmExists, boxProfileIssue, pickBoxProfileLength } from './boxAvailability.js';
+import { P701_TUBE_LENGTHS, shortestBar } from './barLengths.js';
 import {
   appendSeparateValanceDiagnostic,
   appendSeparateValanceMaterial,
@@ -58,7 +59,9 @@ export function calculateCuarzoBox({ order, awning }) {
     seamBaseCm: parameters.seamBaseCm
   });
   const neededLength = Math.max(structureLength, loadBarLength);
-  const stockLength = pickBoxProfileLength('CUARZO BOX', lacado.suffix, parameters.stockLengths, neededLength);
+  const stockLength = pickBoxProfileLength('CUARZO BOX', lacado.suffix, neededLength);
+  // Tubo P701: el más corto que llegue (Q-A06); antes, siempre el de 600.
+  const rollStockLength = shortestBar(P701_TUBE_LENGTHS, rollTubeLength);
   const availabilityIssue = structureColor
     ? boxProfileIssue('CUARZO BOX', lacado.suffix, lacado.name, neededLength)
       || (!art250ArmExists(lacado.suffix, awning.projection) ? `CUARZO BOX no válido: no hay brazo ART 250 de ${awning.projection} cm en ${lacado.name}.` : null)
@@ -72,6 +75,7 @@ export function calculateCuarzoBox({ order, awning }) {
     && separateValance.valid
     && !belowMinimum
     && Boolean(stockLength)
+    && Boolean(rollStockLength)
     && (!overMaximum || modified);
 
   if (fabricSelection && !fabric) {
@@ -84,7 +88,7 @@ export function calculateCuarzoBox({ order, awning }) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CUARZO BOX no válido: frente ${awning.width} cm, mínimo ${minimumLine} cm para salida ${awning.projection}.` });
   } else if (overMaximum && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CUARZO BOX no válido: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm.` });
-  } else if (!stockLength) {
+  } else if (!stockLength || !rollStockLength) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CUARZO BOX no válido: ningún perfil configurado admite ${Math.max(structureLength, loadBarLength)} cm.` });
   } else if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de CUARZO BOX modificadas.` });
@@ -92,7 +96,7 @@ export function calculateCuarzoBox({ order, awning }) {
 
   const motorPower = effectiveMotorPower(awning, 35);
   const context = {
-    awning, lacado, device, fabric, separateValance, stockLength, structureLength, rollTubeLength,
+    awning, lacado, device, fabric, separateValance, stockLength, rollStockLength, structureLength, rollTubeLength,
     loadBarLength, motorPower, fabricMl: fabricUsage.ml
   };
   return {
@@ -109,7 +113,7 @@ export function calculateCuarzoBox({ order, awning }) {
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
       ...separateValanceCalculation(separateValance),
-      structureLength, rollTubeLength, stockLength,
+      structureLength, rollTubeLength, stockLength, rollStockLength,
       motorPower: device === 'MOTOR' ? `${motorPower}/17` : '', armCount: 1,
       boxMinimumLineCm: minimumLine,
       boxProfileDiscountCm: profileDiscount,
@@ -128,11 +132,11 @@ export function calculateCuarzoBox({ order, awning }) {
 // - Máquina con casquillo de eje 50 Ø70 (16 OF; el de 63 en 9, Q-PR02) y sin CASPLAS.
 // - Varilla blanca al largo del perfil (29 OF; la negra solo en 5).
 function cuarzoPieces(context) {
-  const { awning, lacado, device, stockLength, structureLength, rollTubeLength, loadBarLength, motorPower } = context;
+  const { awning, lacado, device, stockLength, rollStockLength, structureLength, rollTubeLength, loadBarLength, motorPower } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const pieces = [
     { code: `SOSTORBOX25${lacado.suffix}`, quantity: units, description: 'CONJUNTO SOPORTES STORBOX 250' },
-    { code: 'TURA70HG600C', quantity: units, description: 'TUBO DE ENROLLE P701', length: rollTubeLength },
+    { code: `TURA70HG${rollStockLength}C`, quantity: units, description: 'TUBO DE ENROLLE P701', length: rollTubeLength },
     { code: tipBushing('P701').code, quantity: units, description: tipBushing('P701').description },
     { code: `PSBOX250${lacado.suffix}${stockLength}C`, quantity: units, description: 'KIT PERFILES ALUMINIO STORBOX250', length: structureLength },
     { code: null, quantity: units, description: 'BARRA DE CARGA STORBOX 250', length: loadBarLength, reserve: false },

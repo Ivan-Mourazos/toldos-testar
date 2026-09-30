@@ -24,9 +24,9 @@ describe('contrato RPS antiguo', () => {
     expect(lines).toEqual([
       'OF\tARTICULO\tCANTIDAD',
       '0230134\tSOPARTGLBL16\t1',
-      '0230134\tTURA80HG600C\t1',
+      '0230134\tTURA80HG500C\t1',
       '0230134\tCASPUNCEJE78MM\t1',
-      '0230134\tPUNI280BL10600C\t1',
+      '0230134\tPUNI280BL10500C\t1',
       '0230134\tTAPOPLUN280BL16\t1',
       '0230134\tBONYXBL16350C\t1',
       '0230134\tTERMINEVOBL16\t1',

@@ -60,7 +60,8 @@ describe('AROND brazo cruzado · tarifa 2026 y compras RPS', () => {
       expect(result.materials).toContainEqual(expect.objectContaining({ code, quantity: 1 }));
       expect(result.despiece.rows).toContainEqual(expect.objectContaining({ reference: code, units: 1 }));
     }
-    expect(result.calculation).toMatchObject({ loadProfileStockLength: 500, stockLength: 600 });
+    // Q-A06: el tubo de enrolle, el más corto que llega (400).
+    expect(result.calculation).toMatchObject({ loadProfileStockLength: 500, stockLength: 400, rollStockLength: 400 });
   });
 
   test('solo kit: no duplica terminales y multiplica kits y juegos de brazos por unidades', () => {
@@ -82,7 +83,8 @@ describe('AROND brazo cruzado · tarifa 2026 y compras RPS', () => {
     const result = block({ armConfiguration: 'STANDARD', width: 400 });
     expect(result.calculation).toMatchObject({ valid: true, minimumLine: 250 });
     expect(result.materials).toContainEqual(expect.objectContaining({ code: 'TERMINEVOGR16' }));
-    expect(result.materials).toContainEqual(expect.objectContaining({ code: 'PEVO80GR16600C' }));
+    // Q-A06: el EVO 80 gris 7016 más corto que llega a los 390 de corte es el de 500.
+    expect(result.materials).toContainEqual(expect.objectContaining({ code: 'PEVO80GR16500C' }));
     expect(result.materials.some((item) => item.code.startsWith('KITBRCRU'))).toBe(false);
   });
 

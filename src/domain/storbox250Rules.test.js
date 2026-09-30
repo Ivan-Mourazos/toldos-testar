@@ -38,15 +38,16 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
       model: 'CUARZO BOX', valid: true, minimumLine: 159,
       fabricWidth: 235.5, fabricDrop: 170, fabricMl: 5.1,
       rollTubeLength: 236.5, structureLength: 238.4,
-      stockLength: 450, boxProtectorDiscountCm: 16.6
+      // Q-A06 (30/09/2026): la barra más corta que llega (la OF 0228312 gastó 450 y 700).
+      stockLength: 350, rollStockLength: 500, boxProtectorDiscountCm: 16.6
     });
     // OF 0229835, consumo real (23/09/2026): soporte, casquillo de eje 50 Ø70, máquina y
     // manivela, sin CASPLAS.
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOSTORBOX25BL16', quantity: 1 },
-      { code: 'TURA70HG600C', quantity: 1 },
+      { code: 'TURA70HG500C', quantity: 1 },
       { code: 'CASPUNCEJE70MM', quantity: 1 },
-      { code: 'PSBOX250BL16450C', quantity: 1 },
+      { code: 'PSBOX250BL16350C', quantity: 1 },
       { code: 'BART25BL16125C', quantity: 1 },
       { code: 'VARILLAVAINARBLA', quantity: 2.4 },
       { code: 'CASMAQEJE5070MM', quantity: 1 },
@@ -56,8 +57,8 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
       { code: 'ANCLHSTM12145', quantity: 4 }
     ]);
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ reference: 'TURA70HG600C', length: 236.5 }),
-      expect.objectContaining({ reference: 'PSBOX250BL16450C', length: 238.4 }),
+      expect.objectContaining({ reference: 'TURA70HG500C', length: 236.5 }),
+      expect.objectContaining({ reference: 'PSBOX250BL16350C', length: 238.4 }),
       expect.objectContaining({ name: 'BARRA DE CARGA STORBOX 250', length: 237.4 })
     ]));
     expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
@@ -82,9 +83,9 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
     // OF 0228312, consumo real: motor Sunea 35/17 con rueda Hi68 y corona centrada Ø70.
     expect(ofBlock.materials.map(({ code, quantity }) => ({ code, quantity }))).toEqual([
       { code: 'SOSTORBOX25BL16', quantity: 1 },
-      { code: 'TURA70HG600C', quantity: 1 },
+      { code: 'TURA70HG500C', quantity: 1 },
       { code: 'CASPUNCEJE70MM', quantity: 1 },
-      { code: 'PSBOX250BL16450C', quantity: 1 },
+      { code: 'PSBOX250BL16350C', quantity: 1 },
       { code: 'BART25BL16200C', quantity: 1 },
       { code: 'VARILLAVAINARBLA', quantity: 2.5 },
       { code: 'RUEDAMOTHI68', quantity: 1 },

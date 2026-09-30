@@ -30,7 +30,8 @@ describe('Ámbar Box', () => {
       fabricMl: 6.741169
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
-      'SOPMICROBF/TNEM1', 'TURA70HG600C', 'CASPUNCEJE70MM', 'PMICRB30NEM1500C',
+      // Q-A06: la barra más corta que llega (252 de corte): tubo P701 de 500 y perfil de 400.
+      'SOPMICROBF/TNEM1', 'TURA70HG500C', 'CASPUNCEJE70MM', 'PMICRB30NEM1400C',
       'TAPMICB300NEM1', 'BPRT07NEM1120C', 'MAQMB11L12NEGRO', 'ACRILI2143P120',
       // OF 0228861 (consumo real, 23/09/2026): casquillo de eje 50 para tubo Ø70.
       'CASMAQEJE5070MM', 'KITMOMIC300MNEM1', 'VARILLAVAINANEG5', 'VARILLAVAINARBLA'

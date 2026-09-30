@@ -5,7 +5,8 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { resolveLacado, crankSuffix, machineCode, plasticCapSuffix, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { arzuaProEstablishedProjections } from './arzuaProConstants.js';
-import { evo80AvailableLengths, evo80StockLengths, onyxArmExists } from './arzuaAvailability.js';
+import { onyxArmExists } from './arzuaAvailability.js';
+import { P801_TUBE_LENGTHS, activeProfileLengths, profileLengthsOrWhite, shortestBar } from './barLengths.js';
 import {
   normalizeArzuaProParameters,
   resolveArzuaMotorPower,
@@ -108,15 +109,21 @@ export function calculateArzuaPro({ order, awning }) {
   const length = round1(awning.width - lookupDiscount(parameters.widthDiscounts, tubeLoad, device, 9.8));
   if (crossed && (length <= 0 || length > 500)) diagnostics.push({ level: 'error', awningId: awning.id, message: 'Brazo cruzado: el corte de la barra de carga debe caber en el perfil de 500 cm.' });
   const rollTubeLength = round1(awning.width - lookupDiscount(parameters.rollTubeDiscounts, tubeLoad, device, 9.8));
+  // Taller, 30/09/2026 (Q-A06): cada barra, la más corta que llegue a su corte entre los
+  // largos que existen en RPS; el tubo de enrolle y la barra de carga, cada uno el suyo.
+  // Hasta entonces compartían un largo de 600, 650 o 700, y el de 650 no existe.
   // El perfil EVO 80 no existe en todos los largos de cada lacado (en negro, el de
-  // 600 está de baja desde 2023); el Univers 280 tiene su propia tabla.
-  // El brazo cruzado usa su propio perfil de 500, así que no se filtra.
+  // 600 está de baja desde 2023). El brazo cruzado usa su propio perfil de 500.
   const evoTube = tubeLoad === 'TUBO DE CARGA EVO 80' && !crossed;
-  const profileLengths = evoTube ? evo80StockLengths(colorSuffix, parameters.stockLengths) : parameters.stockLengths;
-  const stockLength = chooseStockLength(length, profileLengths);
+  const loadLengths = evoTube
+    ? profileLengthsOrWhite('PEVO80', colorSuffix)
+    : profileLengthsOrWhite('PUNI280', universProfileSuffix(colorSuffix), 'BL10');
+  const rollStockLength = shortestBar(P801_TUBE_LENGTHS, rollTubeLength);
+  const loadStockLength = crossed ? 500 : shortestBar(loadLengths, length);
+  const stockLength = crossed ? rollStockLength : loadStockLength;
   const armMissing = !crossed && !onyxArmExists(colorSuffix, awning.projection);
   const fabricInvalid = Boolean(fabricSelection && !fabric);
-  const stockUnavailable = stockLength === null;
+  const stockUnavailable = rollStockLength === null || loadStockLength === null;
   const valid = missingFields.length === 0
     && !diagnostics.some((item) => item.level === 'error')
     && !fabricInvalid
@@ -152,21 +159,23 @@ export function calculateArzuaPro({ order, awning }) {
       awningId: awning.id,
       // Si el lacado limita el EVO 80, se dice qué largos hay: el mensaje genérico hacía
       // pensar en los parámetros cuando la causa es el color.
-      message: evoTube && evo80AvailableLengths(colorSuffix)
-        ? `ARZUA PRO no válido: la barra mide ${formatNumber(length)} cm y en ${lacado.name} el EVO 80 solo existe de ${evo80AvailableLengths(colorSuffix).join(', ')} cm. Prueba con Univers 280 u otro lacado.`
-        : `ARZUA PRO no válido: ningún largo de stock configurado admite ${length} cm.`
+      message: rollStockLength === null
+        ? `ARZUA PRO no válido: el tubo de enrolle mide ${formatNumber(rollTubeLength)} cm y el P801 más largo es de ${P801_TUBE_LENGTHS.at(-1)} cm.`
+        : evoTube && activeProfileLengths('PEVO80', colorSuffix).length
+          ? `ARZUA PRO no válido: la barra mide ${formatNumber(length)} cm y en ${lacado.name} el EVO 80 solo existe de ${activeProfileLengths('PEVO80', colorSuffix).join(', ')} cm. Prueba con Univers 280 u otro lacado.`
+          : `ARZUA PRO no válido: no hay barra de carga de ${formatNumber(length)} cm en RPS.`
     });
   }
 
   const materials = valid
     ? buildMaterials({
       awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, crossedKit,
-      stockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl: valanceUsage?.ml || 0
+      rollStockLength, loadStockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl: valanceUsage?.ml || 0
     })
     : [];
 
   const despiece = valid
-    ? buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, stockLength, length, rollTubeLength })
+    ? buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, rollStockLength, loadStockLength, length, rollTubeLength })
     : null;
 
   if (missingFields.length > 0) {
@@ -209,7 +218,8 @@ export function calculateArzuaPro({ order, awning }) {
       armConfiguration: crossed ? 'CROSSED' : 'STANDARD',
       physicalArmCount: 2,
       crossedKit: crossedKit || '',
-      loadProfileStockLength: crossed ? 500 : stockLength,
+      loadProfileStockLength: loadStockLength,
+      rollStockLength,
       width: awning.width,
       projection: awning.projection,
       fabricWidth,
@@ -255,7 +265,7 @@ const refCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASMAQEJE
 const descCasquilloMaquina = (device) => (device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'CASQUILLO EJE 63MM Ø78');
 const refManivela = (lacado, crankHeight) => `MANIVE${crankSuffix(lacado)}${crankHeight}C`;
 
-function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, crossedKit, stockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl }) {
+function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, supportSystem, motorPower, armCount, crossedKit, rollStockLength, loadStockLength, length, fabricMl, fabric, valanceFabric, valanceFabricMl }) {
   const units = Math.max(1, Number(awning.units) || 1);
   // Las dos varillas de vaina se cortan al largo de la barra de carga, y de la
   // rígida blanca entra el doble que de la negra: se cumple exacto en 243 de las
@@ -265,7 +275,7 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
   const materials = [
     ...supportLines(supportSystem, colorSuffix, armCount, units),
     // Un tubo por toldo: 217 de 247 OF desde 2025. Se reservaban dos.
-    { code: refTuboEnrolle(stockLength), quantity: units, description: 'TUBO DE ENROLLE P801' },
+    { code: refTuboEnrolle(rollStockLength), quantity: units, description: 'TUBO DE ENROLLE P801' },
     { code: refCasquilloPunta, quantity: units, description: 'CASQUILLO PUNTA CON EJE Ø78' },
     { code: crossedKit || refTerminales(colorSuffix), quantity: units, description: crossedKit ? 'KIT BRAZO CRUZADO AROND INFERIOR CON TERMINALES' : 'JGO TERMINAL INFERIOR EVO 70-80' },
     { code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM' },
@@ -274,13 +284,13 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
     materials.push(
-      { code: crossedKit ? crossedProfileByFinish[colorSuffix] : refTuboCargaEvo(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA EVO 80' },
+      { code: crossedKit ? crossedProfileByFinish[colorSuffix] : refTuboCargaEvo(colorSuffix, loadStockLength), quantity: units, description: 'TUBO DE CARGA EVO 80' },
       { code: refTaponesEvo(lacado), quantity: units, description: 'KIT TAPONES EVO 80' },
       ...armLines(supportSystem, colorSuffix, awning.projection, armCount, units)
     );
   } else {
     materials.push(
-      { code: refTuboCargaUnivers(colorSuffix, stockLength), quantity: units, description: 'TUBO DE CARGA UNIVERS 280' },
+      { code: refTuboCargaUnivers(colorSuffix, loadStockLength), quantity: units, description: 'TUBO DE CARGA UNIVERS 280' },
       { code: refTaponesUnivers(lacado), quantity: units, description: 'KIT TAPONES UNIVERS 280' },
       ...armLines(supportSystem, colorSuffix, awning.projection, armCount, units)
     );
@@ -320,7 +330,7 @@ function buildMaterials({ awning, lacado, colorSuffix, tubeLoad, device, support
   return materials;
 }
 
-function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, stockLength, length, rollTubeLength }) {
+function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportSystem, motorPower, armCount, crossedKit, rollStockLength, loadStockLength, length, rollTubeLength }) {
   const rows = [];
   const awningUnits = Math.max(1, Number(awning.units) || 1);
   // Numeración correlativa: sin máquina el 4 quedaba vacío y el mando iba al 21.
@@ -329,7 +339,7 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
   };
 
   supportLines(supportSystem, colorSuffix, armCount, awningUnits).forEach((line) => push(1, line.description, line.code, line.quantity));
-  push(2, 'TUBO DE ENROLLE P801', refTuboEnrolle(stockLength), awningUnits, rollTubeLength);
+  push(2, 'TUBO DE ENROLLE P801', refTuboEnrolle(rollStockLength), awningUnits, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', refCasquilloPunta, awningUnits);
 
   if (device === 'MAQ. INTERIOR' || device === 'MAQ. EXTERIOR') {
@@ -337,10 +347,10 @@ function buildDespiece({ awning, device, tubeLoad, lacado, colorSuffix, supportS
   }
 
   if (tubeLoad === 'TUBO DE CARGA EVO 80') {
-    push(5, 'TUBO DE CARGA EVO 80', crossedKit ? crossedProfileByFinish[colorSuffix] : refTuboCargaEvo(colorSuffix, stockLength), awningUnits, length);
+    push(5, 'TUBO DE CARGA EVO 80', crossedKit ? crossedProfileByFinish[colorSuffix] : refTuboCargaEvo(colorSuffix, loadStockLength), awningUnits, length);
     push(6, 'KIT TAPONES EVO 80', refTaponesEvo(lacado), awningUnits);
   } else {
-    push(5, 'TUBO DE CARGA UNIVERS 280', refTuboCargaUnivers(colorSuffix, stockLength), awningUnits, length);
+    push(5, 'TUBO DE CARGA UNIVERS 280', refTuboCargaUnivers(colorSuffix, loadStockLength), awningUnits, length);
     push(6, 'KIT TAPONES UNIVERS 280', refTaponesUnivers(lacado), awningUnits);
   }
 
@@ -393,9 +403,6 @@ function lookupDiscount(matrix, tubeLoad, device, fallback) {
   return matrix[tubeLoad]?.[device] ?? fallback;
 }
 
-function chooseStockLength(length, stockLengths) {
-  return stockLengths.find((item) => item >= length) || null;
-}
 
 function normalizeTubeLoad(value) {
   const cleanValue = String(value || '').trim().toUpperCase();

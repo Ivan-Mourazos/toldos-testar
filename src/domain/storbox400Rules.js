@@ -8,6 +8,7 @@ import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { onyxArmExists } from './arzuaAvailability.js';
 import { boxProfileIssue, pickBoxProfileLength } from './boxAvailability.js';
+import { P801_TUBE_LENGTHS, shortestBar } from './barLengths.js';
 import {
   normalizeCoralBoxParameters,
   normalizePerlaBoxParameters,
@@ -91,10 +92,13 @@ function calculateBox({ order, awning }, config) {
     seamAllowanceCm: parameters.seamAllowanceCm,
     seamBaseCm: parameters.seamBaseCm
   });
-  // El perfil solo existe en unos largos por lacado (Coral negro: 400 y 500): se usa el
-  // habitual si existe y, si no, el que haya. El tubo de enrolle va al mismo largo.
-  const neededLength = Math.max(structureLength, rollTubeLength, protectorLength);
-  const stockLength = pickBoxProfileLength(config.model, lacado.suffix, parameters.stockLengths, neededLength);
+  // Taller, 30/09/2026 (Q-A06): la barra más corta que llegue. El kit de perfiles, el
+  // más corto de los que existen en ese lacado (Coral negro: 400 y 500) que llegue al
+  // perfil y al protector; el tubo de enrolle, el P801 más corto que llegue al suyo. Antes
+  // los dos iban al mismo largo, el habitual de 600.
+  const neededLength = Math.max(structureLength, protectorLength);
+  const stockLength = pickBoxProfileLength(config.model, lacado.suffix, neededLength);
+  const rollStockLength = shortestBar(P801_TUBE_LENGTHS, rollTubeLength);
   const availabilityIssue = structureColor
     ? boxProfileIssue(config.model, lacado.suffix, lacado.name, neededLength)
       || (!onyxArmExists(lacado.suffix, awning.projection) ? `${config.model} no válido: no hay brazo Onyx de ${awning.projection} cm en ${lacado.name}.` : null)
@@ -107,6 +111,7 @@ function calculateBox({ order, awning }, config) {
     && separateValance.valid
     && !belowMinimum
     && Boolean(stockLength)
+    && Boolean(rollStockLength)
     && (!overMaximum || modified);
 
   if (fabricSelection && !fabric) {
@@ -119,14 +124,14 @@ function calculateBox({ order, awning }, config) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `${config.model} no válido: frente ${awning.width} cm, mínimo ${minimumLine} cm para salida ${awning.projection} y ${device}.` });
   } else if (overMaximum && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `${config.model} no válido: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm.` });
-  } else if (!stockLength) {
+  } else if (!stockLength || !rollStockLength) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `${config.model} no válido: ningún largo de stock configurado admite ${Math.max(structureLength, rollTubeLength, protectorLength)} cm.` });
   } else if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de ${config.model} modificadas.` });
   }
 
   const context = {
-    awning, lacado, device, fabric, separateValance, stockLength, structureLength, rollTubeLength, protectorLength, config,
+    awning, lacado, device, fabric, separateValance, stockLength, rollStockLength, structureLength, rollTubeLength, protectorLength, config,
     motorPower, fabricMl: fabricUsage.ml
   };
   return {
@@ -143,7 +148,7 @@ function calculateBox({ order, awning }, config) {
       fabricCode: fabric?.code || '', fabricDescription: fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
       ...separateValanceCalculation(separateValance),
-      structureLength, rollTubeLength, stockLength,
+      structureLength, rollTubeLength, stockLength, rollStockLength,
       motorPower: device === 'MOTOR' ? `${motorPower}/17` : '', armCount: 1,
       boxMinimumLineCm: minimumLine,
       boxProfileDiscountCm: profileDiscount,
@@ -162,7 +167,7 @@ const refArm = (suffix, projection) => `BONYX${suffix}${projection}C`;
 const refCrank = (lacado, height) => `MANIVE${crankSuffix(lacado)}${height}C`;
 
 function buildMaterials(context) {
-  const { awning, lacado, device, fabric, separateValance, stockLength, motorPower, fabricMl, config } = context;
+  const { awning, lacado, device, fabric, separateValance, stockLength, rollStockLength, motorPower, fabricMl, config } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const materials = [];
@@ -170,7 +175,7 @@ function buildMaterials(context) {
   // largo que la negra (no el doble, como en el Arzúa).
   const varillaMl = Math.ceil(Number(context.structureLength) || 0) / 100;
   if (config.reserveKitParts) materials.push({ code: refSupport(config, suffix), quantity: units, description: `JUEGO SOPORTE ${config.pieceName}` });
-  materials.push({ code: refRollTube(stockLength), quantity: config.rollTubeUnits * units, description: 'TUBO DE ENROLLE P801' });
+  materials.push({ code: refRollTube(rollStockLength), quantity: config.rollTubeUnits * units, description: 'TUBO DE ENROLLE P801' });
   if (config.reserveTipBushing) materials.push({ code: tipBushing('P801').code, quantity: units, description: tipBushing('P801').description });
   if (config.reserveKitParts) {
     materials.push(
@@ -215,7 +220,7 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, lacado, device, stockLength, structureLength, rollTubeLength, motorPower, config } = context;
+  const { awning, lacado, device, stockLength, rollStockLength, structureLength, rollTubeLength, motorPower, config } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
@@ -223,7 +228,7 @@ function buildDespiece(context) {
   const push = (_num, name, reference, rowUnits, length = null) => rows.push({ num: rows.length + 1, name, reference, units: rowUnits, length });
 
   push(1, `JUEGO SOPORTE ${config.pieceName}`, refSupport(config, suffix), units);
-  push(2, 'TUBO DE ENROLLE P801', refRollTube(stockLength), units, rollTubeLength);
+  push(2, 'TUBO DE ENROLLE P801', refRollTube(rollStockLength), units, rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MOTOR' ? 'RUEDA MOTRIZ A P-801 MECANIZADA' : config.machineBushing.description, device === 'MOTOR' ? 'RUEDAMOT801MEC' : config.machineBushing.code, units);
   push(5, `KIT PERFILES ${config.pieceName}`, refProfiles(config, suffix, stockLength), units, structureLength);

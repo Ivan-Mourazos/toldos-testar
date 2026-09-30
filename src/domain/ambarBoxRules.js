@@ -8,6 +8,7 @@ import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
 import { ambarPlacementGroup, normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
 import { ambarCapsExist, boxProfileIssue, pickBoxProfileLength } from './boxAvailability.js';
+import { P701_TUBE_LENGTHS, shortestBar } from './barLengths.js';
 import { puntoRectoArmCode } from './puntoRectoArms.js';
 import {
   calculateVerticalDropArmFabricDrop,
@@ -65,14 +66,15 @@ export function calculateAmbarBox({ order, awning }) {
   const fabricDrop = round1(fabricDropRaw);
   const rollTubeLength = round1(Number(awning.width) - discounts.roll);
   const structureLength = round1(Number(awning.width) - discounts.profile);
-  const profileStockLength = pickBoxProfileLength('AMBAR BOX', lacado.suffix, parameters.profileStockLengths, structureLength);
+  const profileStockLength = pickBoxProfileLength('AMBAR BOX', lacado.suffix, structureLength);
   // El Ámbar no se fabrica en todos los lacados (en negro, perfil, tapas y soportes
   // están de baja) y el brazo PRT-07 tampoco existe en todas las salidas.
   const availabilityIssue = structureColor
     ? boxProfileIssue('AMBAR BOX', lacado.suffix, lacado.name, structureLength)
       || (!puntoRectoArmCode(lacado.suffix, awning.projection) ? `ÁMBAR BOX no válido: no hay brazo PRT-07 de ${awning.projection} cm en ${lacado.name}.` : null)
     : null;
-  const rollStockLength = chooseStock(rollTubeLength, parameters.rollStockLengths);
+  // Tubo P701: el más corto que llegue (Q-A06); antes, siempre el de 600.
+  const rollStockLength = shortestBar(P701_TUBE_LENGTHS, rollTubeLength);
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDropRaw,
@@ -276,9 +278,6 @@ function normalizePlacement(value) {
 
 function effectiveNumber(awning, field, fallback) { return effectiveOverride(awning, field, fallback); }
 
-function chooseStock(length, stockLengths) {
-  return stockLengths.find((stock) => stock >= length) || null;
-}
 
 function buildDescription(awning, calculation) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);

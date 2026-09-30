@@ -100,14 +100,14 @@ export function boxProfileLengths(model, suffix) {
   return profileLengths[model]?.[String(suffix || '')] || null;
 }
 
-// Largo de perfil: el habitual (`wanted`) si existe en ese lacado y cabe; si no, el
-// más corto de los que existen que quepa. null si el lacado no tiene perfil o no
-// hay ninguno bastante largo.
-export function pickBoxProfileLength(model, suffix, wanted, needed) {
+// Largo de perfil (taller, 30/09/2026, Q-A06): el más corto de los que existen en ese
+// lacado que llegue al corte. Antes se prefería el «habitual» (600 en Perla y Coral, 450
+// en Cuarzo) aunque bastara uno más corto. null si el lacado no tiene perfil o no hay
+// ninguno bastante largo.
+export function pickBoxProfileLength(model, suffix, needed) {
   const available = boxProfileLengths(model, suffix);
   if (!available) return null;
-  const usual = [...wanted].sort((a, b) => a - b).find((length) => available.includes(length) && length >= needed);
-  return usual || available.find((length) => length >= needed) || null;
+  return [...available].sort((a, b) => a - b).find((length) => length >= needed) || null;
 }
 
 export function boxProfileIssue(model, suffix, lacadoName, needed) {
