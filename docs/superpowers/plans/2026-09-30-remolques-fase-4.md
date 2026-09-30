@@ -10,6 +10,13 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-30-remolques-fase-4-salidas-design.md`. Diseño general: `docs/superpowers/specs/2026-09-29-unificacion-remolques-design.md`. Origen de los textos: `Remolques-TGM/src/lib/pdf/` (commit `a7ffef0`, **solo lectura**).
 
+## Cambios posteriores al plan (30/09/2026) — mandan sobre el texto de las tareas
+
+- **Sin notas del cálculo** (Iván): la hoja no lleva el recuadro «NOTAS DEL CÁLCULO» ni el campo `notas` de `PaginaHojaDatos`; lo único escrito aparte son las OBSERVACIONES del técnico. Quitar de las tareas 1 y 4 el campo, su prueba y su sección.
+- **Bastilla de enfundar:** si la lleva, se indica en ACABADOS (fila «BASTILLA ENFUNDAR»); si no la lleva, «NO».
+- **Más de 12 columnas de ollaos** si algún lado las necesita (nunca ha pasado): se mantiene.
+- **Remolque sesgado** (commits `28bee2c` y `e70e102`, posteriores al plan): `LonaInput.contornoAtras`, y con «detrás distinto» el resultado lleva `contornoAtrasIntroducido`, `contornoAtrasAjustado` y `panoContorno.altoAtras`; la recogida de Hijos de Pedro López lleva `panoTraseroConAnchoDelante`. La hoja enseña el paño de contorno con sus dos medidas, como la tarjeta de resultados: «234,5 × 169,3 del. / 170,8 tras.» (y el CONTORNO DE CORTE igual). Los textos de la web vieja no lo tenían: es lo nuevo que se añade a `datos-hoja` con su prueba (caso de Hijos de Pedro López de `src/remolques/calc/__tests__/lona.test.ts`).
+
 ## Global Constraints
 
 - Solo escritorio (1280×720 a 1920); no adaptar a móvil.

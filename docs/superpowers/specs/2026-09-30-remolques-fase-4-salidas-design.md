@@ -70,7 +70,11 @@ guardada en las mismas carpetas que hoy.
   FORMA, ACABADOS, MATERIAL y OBSERVACIONES; a la derecha el dibujo (fila de arriba: los
   dos 3/4; fila de abajo: delante, detrás y lateral con cotas); abajo, a lo ancho, la tabla
   de ollaos y, con «Según ganchos», la de ganchos (sobre el remolque, como vienen en el
-  pedido, con «medido al revés» si lo lleva); notas del cálculo.
+  pedido, con «medido al revés» si lo lleva). **Sin notas del cálculo** (Iván, 30/09): lo
+  único escrito aparte son las observaciones que pone el técnico. La bastilla de enfundar,
+  si la lleva, se indica en ACABADOS. Con remolque sesgado, el paño de contorno lleva sus dos
+  medidas («234,5 × 169,3 del. / 170,8 tras.», trapecio). La tabla de ollaos admite más de
+  12 columnas si algún lado las necesita (no ha pasado nunca).
 - Si no cabe con buena lectura en una hoja, se decide con un PDF de muestra antes de dar la
   hoja por buena (primero se reduce el tamaño de las vistas rectas; nunca la letra de las
   medidas por debajo de lo que se lee impreso).
