@@ -31,7 +31,7 @@ export async function comprobarChromium({ paquete, importarPlaywright, acceso = 
       const navegador = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'], timeout: 20_000 });
       await navegador.close();
     } catch (error) {
-      return { errores: [`Chromium está instalado (${ejecutable}) pero no arranca; en un servidor nuevo faltan sus librerías: pnpm exec playwright-core install --with-deps chromium (${String(error.message).split('\n')[0]}).`], exitos: [] };
+      return { errores: [`Chromium está instalado (${ejecutable}) pero no arranca; en un servidor nuevo faltan sus librerías: PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install --with-deps chromium (${String(error.message).split('\n')[0]}).`], exitos: [] };
     }
   }
   return { errores: [], exitos: [`Chromium de la hoja de taller de remolques instalado${lanzar ? ' y arranca' : ''} (${ejecutable}).`] };
