@@ -72,8 +72,11 @@ async function checkPackageMetadata() {
 
   try {
     const packageJson = JSON.parse(await readFile(packageFile, 'utf8'));
-    if (packageJson.engines?.node !== '>=22.13.0') {
-      fail('package.json no fija engines.node en >=22.13.0.');
+    // Sale del mismo MINIMUM_NODE que la comprobación de arriba: si se sube uno y no el otro,
+    // el despliegue se bloquea sin motivo (pasó al subir el mínimo a 22.18).
+    const engineEsperado = `>=${formatVersion(MINIMUM_NODE)}`;
+    if (packageJson.engines?.node !== engineEsperado) {
+      fail(`package.json no fija engines.node en ${engineEsperado}.`);
     } else {
       pass('package.json fija la versión mínima de Node.');
     }
