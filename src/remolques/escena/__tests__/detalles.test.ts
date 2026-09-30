@@ -169,6 +169,51 @@ describe("cierres de las esquinas", () => {
       e0.cierres.forEach((c) => expect(c.gomaDiagonal).toEqual([]));
     });
 
+    describe("ganchos que ya están en el cajón", () => {
+      const delanteros = (escena: NonNullable<typeof e>) => escena.ganchos.filter((g) => g.lado === "delante").map((g) => g.punto);
+      const deCara = (escena: NonNullable<typeof e>, cara: "delante" | "atras") =>
+        escena.cierres.filter((c) => c.esquina.startsWith(cara)).flatMap((c) => c.gomaDiagonal);
+
+      it("a menos de 8 cm de un gancho de la goma perimetral de la misma cara, la goma acaba en ese y no se pone otro", () => {
+        // Pared de 90: el gancho a 45 cm de la esquina cae en x = 55; el perimetral más cercano está en x = 49.
+        const c = esquina("delante-derecha");
+        const perimetral = delanteros(e).find((p) => p[0] === 49)!;
+        const reusada = c.gomaDiagonal.find((g) => !g.ganchoNuevo)!;
+        expect(reusada.gancho).toEqual(perimetral);
+        // Ningún gancho nuevo de la esquina se queda casi encima de uno perimetral.
+        for (const g of deCara(e, "delante").filter((x) => x.ganchoNuevo)) {
+          for (const p of delanteros(e)) expect(Math.hypot(g.gancho[0] - p[0], g.gancho[2] - p[2])).toBeGreaterThanOrEqual(8);
+        }
+      });
+
+      it("a más de 8 cm pone su propio gancho", () => {
+        // El gancho a 60 cm de la esquina cae en x = 40, a 9 cm del perimetral de x = 49.
+        const c = esquina("delante-derecha");
+        expect(c.gomaDiagonal[0]).toMatchObject({ gancho: [40, -8, e.cajon.zHasta], ganchoNuevo: true });
+      });
+
+      it("pared alta: el gancho del centro se pone una sola vez por cara", () => {
+        for (const cara of ["delante", "atras"] as const) {
+          const gomas = deCara(alta, cara);
+          expect(gomas).toHaveLength(6);
+          expect(gomas.filter((g) => g.ganchoNuevo)).toHaveLength(1);
+        }
+      });
+
+      it("«Según ganchos»: un gancho del pedido cerca del centro recoge todas las gomas de esa cara", () => {
+        // Sobre el remolque a 96 cm → 96,5 en la lona hecha de 201 → x = 4.
+        const s = escenaLona({
+          recogeDelante: "GOMA", altoDelante: 120, modoOllaos: "SEGUN GANCHOS",
+          ganchos: { laterales: [10, 290], atras: [10, 190], delante: [96, 150] },
+        })!;
+        const delPedido = delanteros(s).find((p) => p[0] === 4)!;
+        expect(delPedido).toBeDefined();
+        const gomas = deCara(s, "delante");
+        expect(gomas).toHaveLength(6);
+        gomas.forEach((g) => expect(g).toMatchObject({ gancho: delPedido, ganchoNuevo: false }));
+      });
+    });
+
     it("las demás recogidas no llevan goma en diagonal", () => {
       const otra = escenaLona({ recogeDelante: "PUENTES HIJOS DE PEDRO LOPEZ" })!;
       otra.cierres.forEach((c) => expect(c.gomaDiagonal).toEqual([]));

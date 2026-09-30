@@ -31,8 +31,10 @@ export const GOMA_ALTURAS_TRES = [0.2, 0.4, 0.6];
  *  los ganchos más cercanos. Desde esta pared (cm) todas las gomas de la esquina van al gancho del
  *  centro de la cara del paño, que comparten las dos esquinas de esa cara. */
 export const ALTO_GOMA_AL_CENTRO = 100;
-/** Si ya hay un gancho a menos de esto (cm), la goma de la esquina usa ese y no se pone otro. */
-export const GANCHO_YA_PUESTO = 3;
+/** Si la goma perimetral ya tiene un gancho en la misma cara a menos de esto (cm) del que tocaría a
+ *  la goma de la esquina, la goma acaba en ese y no se pone otro: dos ganchos casi juntos no los pone
+ *  el taller. Vale también para los ganchos del pedido («Según ganchos»). */
+export const GANCHO_COMPARTIDO = 8;
 /** Pared más baja: distancia de cada gancho a la esquina, a lo ancho del paño, del más cercano al más lejano. */
 export const GOMA_GANCHO_A_ESQUINA = [30, 45, 60];
 /** Con la pared baja, los ganchos cercanos nunca llegan al centro del paño: se quedan a esta distancia de él. */

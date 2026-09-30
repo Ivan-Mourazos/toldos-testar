@@ -37,8 +37,10 @@ export interface CierreEsquina {
   alturas: number[];
   /** Goma: cada ollao del borde libre de la oreja, de abajo arriba, con el gancho del cajón al que
    *  baja en diagonal (en la cara del paño) y el punto de la arista de la esquina por donde la goma
-   *  dobla de una cara a la otra. Vacío en las demás recogidas o sin oreja. */
-  gomaDiagonal: Array<{ ollao: Vec3; esquina: Vec3; gancho: Vec3 }>;
+   *  dobla de una cara a la otra. Vacío en las demás recogidas o sin oreja. `ganchoNuevo` es false
+   *  cuando la goma acaba en un gancho que ya está (uno de la goma perimetral de esa cara, o el del
+   *  centro que ya puso otra goma): ese gancho no se vuelve a dibujar. */
+  gomaDiagonal: Array<{ ollao: Vec3; esquina: Vec3; gancho: Vec3; ganchoNuevo: boolean }>;
   /** Cremallera: distancia a la esquina y alto hasta el que llega. */
   cremallera: { distancia: number; hasta: number } | null;
   /** Velcro: ancho de la tira en el borde de la oreja. */

@@ -47,9 +47,10 @@ describe('mallas del render', () => {
     liberarGrupo(grupo);
   });
 
-  // Pared baja: un gancho cercano por par. Pared alta: un solo gancho en el centro de cada cara
-  // (los ganchos de la goma perimetral de la lona de prueba quedan a ±49 cm, lejos del centro).
-  for (const [alto, ganchosGoma] of [[70, 8], [120, 2]] as const) {
+  // Pared baja: un gancho cercano por par, salvo el que cae a menos de 8 cm de uno de la goma
+  // perimetral (la lona de prueba los tiene a ±49 cm): ese se comparte. Pared alta: un solo gancho
+  // en el centro de cada cara (lejos de los perimetrales).
+  for (const [alto, ganchosGoma] of [[70, 4], [120, 2]] as const) {
     it(`con goma en las cuatro esquinas y pared de ${alto}: un ollao y una goma por par, y ${ganchosGoma} ganchos más`, () => {
       const escena = escenaDePrueba({ recogeDelante: 'GOMA', recogeAtras: 'GOMA', altoDelante: alto });
       const pares = escena.cierres.reduce((n, c) => n + c.gomaDiagonal.length, 0);

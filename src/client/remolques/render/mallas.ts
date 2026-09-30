@@ -30,7 +30,7 @@ export function construirMallas(escena: EscenaRemolque, materiales: Materiales):
   };
   piezasCuerpo(escena.cuerpo).forEach(anadir);
   piezasCajon(escena.cajon, escena.cuerpo.tipo === 'lona').forEach(anadir);
-  const cierres = piezasCierres(escena.cierres, escena.ganchos);
+  const cierres = piezasCierres(escena.cierres);
   cierres.piezas.forEach(anadir);
   if (escena.ventana) piezasVentana(escena.ventana).forEach(anadir);
 
