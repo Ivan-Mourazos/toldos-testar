@@ -5,6 +5,10 @@ import type { EscenaRemolque, Vec3, Vista } from '../../../remolques/escena/tipo
 export const MARGEN_ENCUADRE = 30;
 const FOV = 30;
 
+/** Las vistas de la pantalla y la segunda 3/4 de la hoja de taller, desde detrás en diagonal:
+ *  entre las dos 3/4 se ven los cuatro cierres. */
+export type VistaCamara = Vista | 'tres-cuartos-detras';
+
 /**
  * La escena describe el remolque como es (x < 0 a su izquierda mirando hacia delante), pero
  * three.js es de mano derecha: con esos ejes tal cual, cada vista saldría en espejo (de frente,
@@ -29,9 +33,11 @@ export function encuadre(caja: EscenaRemolque['caja']) {
   return { centro: mundo.getCenter(new THREE.Vector3()), tamano: mundo.getSize(new THREE.Vector3()), caja: mundo };
 }
 
-/** Desde dónde mira cada vista, en ejes de la escena. La 3/4 mira desde delante a la derecha y algo por encima. */
-const DIRECCION: Record<Vista, Vec3> = {
+/** Desde dónde mira cada vista, en ejes de la escena. La 3/4 mira desde delante a la derecha y algo
+ *  por encima; la de detrás, desde detrás a la izquierda. */
+const DIRECCION: Record<VistaCamara, Vec3> = {
   'tres-cuartos': [1, 0.6, 1.25],
+  'tres-cuartos-detras': [-1, 0.6, -1.25],
   delante: [0, 0, 1],
   detras: [0, 0, -1],
   lateral: [1, 0, 0],
@@ -40,11 +46,11 @@ const DIRECCION: Record<Vista, Vec3> = {
 
 const ESQUINAS = [0, 1, 2, 3, 4, 5, 6, 7];
 
-export function crearCamara(vista: Vista, caja: EscenaRemolque['caja'], aspecto: number): THREE.Camera {
+export function crearCamara(vista: VistaCamara, caja: EscenaRemolque['caja'], aspecto: number): THREE.Camera {
   const { centro, tamano, caja: mundo } = encuadre(caja);
   const direccion = aMundo(DIRECCION[vista]).normalize();
   const radio = tamano.length() / 2;
-  if (vista === 'tres-cuartos') {
+  if (vista === 'tres-cuartos' || vista === 'tres-cuartos-detras') {
     const camara = new THREE.PerspectiveCamera(FOV, aspecto, 1, radio * 20);
     camara.position.copy(centro).add(direccion);
     camara.lookAt(centro);

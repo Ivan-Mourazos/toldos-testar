@@ -101,8 +101,10 @@ export interface VentanaEscena { centro: Vec3; ancho: number; alto: number }
 
 /** Línea de cota, con las vistas en que se enseña. */
 export interface CotaEscena { vistas: Vista[]; desde: Vec3; hasta: Vec3; texto: string }
-/** Número junto a un ollao o un gancho. */
-export interface EtiquetaEscena { vistas: Vista[]; punto: Vec3; texto: string }
+/** Número junto a un ollao o un gancho. `hacia`: hacia dónde se escribe en la hoja de taller, que
+ *  los pone en vertical para que no se pisen (ollaos hacia arriba, sobre la lona; ganchos hacia
+ *  abajo, sobre el cajón). */
+export interface EtiquetaEscena { vistas: Vista[]; punto: Vec3; texto: string; hacia: "arriba" | "abajo" }
 
 export interface EscenaRemolque {
   cuerpo: CuerpoLona | CuerpoBaqueton;

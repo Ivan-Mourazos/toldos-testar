@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import type { EscenaRemolque, Vec3, Vista } from '../../../remolques/escena/tipos.ts';
-import { aMundo, crearCamara, encuadre, espejar } from './camaras';
+import type { EscenaRemolque, Vista } from '../../../remolques/escena/tipos.ts';
+import { crearCamara, encuadre, espejar } from './camaras';
 import { CapaCotas, CapaRotulos } from './CapaCotas';
+import { colocarSol, montarEscenaBase } from './escenaBase';
 import { construirMallas, liberarGrupo } from './mallas';
 import { crearMateriales, liberarMateriales, type Materiales } from './materiales';
 import { cotasVisibles, rotulosVisibles, type CotasPantalla, type RotuloPantalla } from './proyeccion';
@@ -39,19 +39,6 @@ export interface RenderRemolqueProps {
   onFallo: () => void;
 }
 
-/**
- * De dónde viene el sol en cada vista, en ejes de la escena. Con un sol fijo, la cara de detrás
- * salía casi negra y la de delante lavada: cada vista fija lo pone delante de la cara que enseña,
- * alto y a la izquierda de quien mira. La 3/4, por delante a la derecha, como su cámara.
- */
-const DIRECCION_SOL: Record<Vista, Vec3> = {
-  'tres-cuartos': [0.6, 1.3, 0.9],
-  delante: [0.4, 1, 1.2],
-  detras: [-0.4, 1, -1.2],
-  lateral: [1.2, 1, -0.4],
-  arriba: [0.9, 1.1, 0.7],
-};
-
 /** Cómo se nombra cada vista en la etiqueta del lienzo, para quien usa lector de pantalla. */
 const NOMBRE_VISTA: Record<Vista, string> = {
   'tres-cuartos': 'en tres cuartos',
@@ -60,18 +47,6 @@ const NOMBRE_VISTA: Record<Vista, string> = {
   lateral: 'lateral',
   arriba: 'desde arriba',
 };
-
-/** Sol y su caja de sombras alrededor del remolque, para la vista que toca. */
-function colocarSol(sol: THREE.DirectionalLight, caja: EscenaRemolque['caja'], vista: Vista) {
-  const { centro, tamano } = encuadre(caja);
-  const radio = tamano.length() / 2;
-  sol.position.copy(centro).add(aMundo(DIRECCION_SOL[vista]).normalize().multiplyScalar(radio * 3));
-  sol.target.position.copy(centro);
-  const sombra = sol.shadow.camera;
-  sombra.left = -radio; sombra.right = radio; sombra.top = radio; sombra.bottom = -radio;
-  sombra.near = 1; sombra.far = radio * 6;
-  sombra.updateProjectionMatrix();
-}
 
 export default function RenderRemolque({ escena, vista, conCotas, onFallo }: RenderRemolqueProps) {
   const lienzo = useRef<HTMLDivElement>(null);
@@ -164,28 +139,9 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
     renderer.domElement.setAttribute('role', 'img');
     caja.appendChild(renderer.domElement);
 
-    const escena3D = new THREE.Scene();
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const sala = new RoomEnvironment();
-    const entorno = pmrem.fromScene(sala, 0.04);
-    sala.dispose();
-    pmrem.dispose();
-    escena3D.environment = entorno.texture;
-    // La sala tiene un panel de luz justo detrás de la cámara de delante: a plena intensidad y sin
-    // girar, la lona de frente salía rosa y la de detrás, granate. Girada 45° y más suave, las
-    // cinco vistas enseñan el color de la lona.
-    escena3D.environmentIntensity = 0.8;
-    escena3D.environmentRotation.y = Math.PI / 4;
-    escena3D.add(new THREE.HemisphereLight(0xffffff, 0x9aa0a6, 0.35));
-    const sol = new THREE.DirectionalLight(0xffffff, 2.4);
-    sol.castShadow = true;
-    sol.shadow.mapSize.set(2048, 2048);
-    sol.shadow.bias = -0.0004;
-    escena3D.add(sol, sol.target);
-    const suelo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShadowMaterial({ opacity: 0.16 }));
-    suelo.rotation.x = -Math.PI / 2;
-    suelo.receiveShadow = true;
-    escena3D.add(suelo);
+    // Luces, entorno y suelo de sombras: los mismos que la hoja de taller, en color (escenaBase.ts).
+    const base = montarEscenaBase(renderer);
+    const { escena: escena3D, sol, suelo } = base;
     motor.current = {
       renderer, escena: escena3D, sol, suelo, camara: null, controles: null, grupo: null, materiales: null, color: null, girada: false, caja: null, ancho: 0, alto: 0,
     };
@@ -210,10 +166,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo }: Ren
       m?.controles?.dispose();
       if (m?.grupo) liberarGrupo(m.grupo);
       if (m?.materiales) liberarMateriales(m.materiales);
-      entorno.dispose();
-      sol.dispose();
-      suelo.geometry.dispose();
-      (suelo.material as THREE.Material).dispose();
+      base.liberar();
       renderer.dispose();
       // Suelta ya el contexto WebGL: el navegador admite pocos a la vez y, en desarrollo, StrictMode
       // monta, desmonta y vuelve a montar.

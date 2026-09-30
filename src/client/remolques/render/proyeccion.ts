@@ -3,7 +3,7 @@ import type { EscenaRemolque, Vec3, Vista } from '../../../remolques/escena/tipo
 import { aMundo } from './camaras';
 
 export interface LineaCota { x1: number; y1: number; x2: number; y2: number; texto: string; tx: number; ty: number }
-export interface MarcaCota { x: number; y: number; texto: string }
+export interface MarcaCota { x: number; y: number; texto: string; hacia: 'arriba' | 'abajo' }
 export interface CotasPantalla { lineas: LineaCota[]; marcas: MarcaCota[] }
 export interface RotuloPantalla { x: number; y: number; texto: string; alinear: 'start' | 'middle' | 'end' }
 
@@ -21,7 +21,7 @@ export function cotasVisibles(escena: EscenaRemolque, vista: Vista, camara: THRE
     return { x1: a.x, y1: a.y, x2: b.x, y2: b.y, texto: c.texto, tx: (a.x + b.x) / 2, ty: (a.y + b.y) / 2 };
   });
   const marcas = escena.etiquetas.filter((e) => e.vistas.includes(vista))
-    .map((e) => ({ ...aPantalla(e.punto, camara, ancho, alto), texto: e.texto }));
+    .map((e) => ({ ...aPantalla(e.punto, camara, ancho, alto), texto: e.texto, hacia: e.hacia }));
   return { lineas, marcas };
 }
 

@@ -46,12 +46,12 @@ export function etiquetasMarcas(ollaos: Marca[], ganchos: Gancho[]): EtiquetaEsc
   const etiquetas: EtiquetaEscena[] = [];
   for (const o of ollaos) {
     const vista = VISTA_DEL_LADO[o.lado];
-    if (vista) etiquetas.push({ vistas: [vista], punto: [o.punto[0], o.punto[1] + SEPARACION_ETIQUETA, o.punto[2]], texto: fmt(o.posicion) });
+    if (vista) etiquetas.push({ vistas: [vista], punto: [o.punto[0], o.punto[1] + SEPARACION_ETIQUETA, o.punto[2]], texto: fmt(o.posicion), hacia: "arriba" });
   }
   // Los ganchos genéricos no son una medida: solo se rotulan los del pedido.
   for (const g of ganchos) {
     const vista = VISTA_DEL_LADO[g.lado];
-    if (vista && g.delPedido) etiquetas.push({ vistas: [vista], punto: [g.punto[0], g.punto[1] - SEPARACION_ETIQUETA, g.punto[2]], texto: fmt(g.posicion) });
+    if (vista && g.delPedido) etiquetas.push({ vistas: [vista], punto: [g.punto[0], g.punto[1] - SEPARACION_ETIQUETA, g.punto[2]], texto: fmt(g.posicion), hacia: "abajo" });
   }
   return etiquetas;
 }

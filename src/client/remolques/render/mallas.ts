@@ -6,13 +6,19 @@ import { piezasChasis } from './chasis';
 import { piezasCierres } from './cierres';
 import { DESFASE_BASTILLA, piezasCuerpo } from './cuerpo';
 import { geometriaGancho, geometriaGoma, geometriaHueco, geometriaOllao, tuboPoligonal } from './herrajes';
-import type { Materiales } from './materiales';
+import type { ClaveMaterial, Materiales } from './materiales';
 import { sobreCara, type Pieza } from './piezas';
 import { piezasVentana } from './ventana';
 
 /** Separación del aro de latón y del hueco de un ollao respecto de la lona, en cm. */
 const SEPARACION_ARO = 0.25;
 const SEPARACION_HUECO = 0.2;
+
+/** Aristas de la hoja impresa: el contorno de la lona, las costuras, la bastilla y el cajón, en
+ *  línea oscura. Se dibuja el borde de cada pieza y los pliegues de más de `ANGULO_ARISTA` grados. */
+export const COLOR_ARISTA = '#111111';
+const ANGULO_ARISTA = 30;
+const CON_ARISTAS = new Set<ClaveMaterial>(['lona', 'lonaOscura', 'chapa', 'guardabarros']);
 
 function instancias(geometria: THREE.BufferGeometry, material: THREE.Material, matrices: THREE.Matrix4[]) {
   const malla = new THREE.InstancedMesh(geometria, material, matrices.length);
@@ -21,12 +27,14 @@ function instancias(geometria: THREE.BufferGeometry, material: THREE.Material, m
   return malla;
 }
 
-export function construirMallas(escena: EscenaRemolque, materiales: Materiales): THREE.Group {
+export function construirMallas(escena: EscenaRemolque, materiales: Materiales, { aristas = false }: { aristas?: boolean } = {}): THREE.Group {
   const grupo = new THREE.Group();
+  const lineaArista = aristas ? new THREE.LineBasicMaterial({ color: COLOR_ARISTA }) : null;
   const anadir = ({ geometria, material }: Pieza) => {
     const malla = new THREE.Mesh(geometria, materiales[material]);
     malla.castShadow = true;
     malla.receiveShadow = true;
+    if (lineaArista && CON_ARISTAS.has(material)) malla.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometria, ANGULO_ARISTA), lineaArista));
     grupo.add(malla);
   };
   piezasCuerpo(escena.cuerpo).forEach(anadir);
@@ -60,5 +68,10 @@ export function liberarGrupo(grupo: THREE.Group) {
     if (objeto instanceof THREE.Mesh) objeto.geometry.dispose();
     // El InstancedMesh guarda además su búfer de matrices en la GPU, que solo suelta él mismo.
     if (objeto instanceof THREE.InstancedMesh) objeto.dispose();
+    // Las aristas de la hoja: su geometría y su material son solo suyos.
+    if (objeto instanceof THREE.LineSegments) {
+      objeto.geometry.dispose();
+      (objeto.material as THREE.Material).dispose();
+    }
   });
 }

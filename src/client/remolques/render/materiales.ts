@@ -129,6 +129,33 @@ export function crearMateriales(color: string, { texturas }: { texturas: boolean
   };
 }
 
+/**
+ * Materiales de la hoja de taller (fase 4). La impresora del taller es de blanco y negro, así que
+ * el dibujo se piensa en grises: lona gris claro, cajón y chasis en otro gris, goma y ollaos en
+ * negro. Mismas claves que en pantalla y sin texturas: en papel la trama del tejido solo ensucia.
+ */
+export function crearMaterialesImpresion(): Materiales {
+  const mate = (color: string, extra: THREE.MeshStandardMaterialParameters = {}) =>
+    new THREE.MeshStandardMaterial({ color, roughness: 0.95, metalness: 0, ...extra });
+  const doble = { side: THREE.DoubleSide };
+  return {
+    lona: mate('#e6e6e6', doble),
+    lonaOscura: mate('#a6a6a6', doble),
+    chapa: mate('#9c9c9c'),
+    laton: mate('#111111'),
+    hueco: new THREE.MeshBasicMaterial({ color: '#000000' }),
+    goma: mate('#111111'),
+    oscuro: mate('#2b2b2b', doble),
+    malla: mate('#8c8c8c', { ...doble, transparent: true, opacity: 0.55 }),
+    cincha: mate('#f2f2f2', doble),
+    herraje: mate('#3c3c3c'),
+    guardabarros: mate('#b0b0b0', doble),
+    neumatico: mate('#2e2e2e'),
+    piloto: mate('#707070'),
+    ambar: mate('#8f8f8f'),
+  };
+}
+
 export function liberarMateriales(materiales: Materiales) {
   const texturas = new Set<THREE.Texture>();
   for (const material of Object.values(materiales)) {
