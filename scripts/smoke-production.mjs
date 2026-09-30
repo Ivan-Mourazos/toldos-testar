@@ -62,7 +62,8 @@ try {
   const hoja = await fetch(`${baseUrl}/api/remolques/pdf`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ elementos: muestrasHoja(casosRemolques)['lona-ventana'] })
+    body: JSON.stringify({ elementos: muestrasHoja(casosRemolques)['lona-ventana'] }),
+    signal: AbortSignal.timeout(90_000)
   });
   const hojaBytes = Buffer.from(await hoja.arrayBuffer());
   assert(

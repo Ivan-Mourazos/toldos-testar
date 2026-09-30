@@ -58,7 +58,8 @@ console.log(
   `\nResultado: ${successes.length} comprobaciones correctas, ${warnings.length} avisos y ${failures.length} errores.`
 );
 
-if (failures.length > 0) process.exitCode = 1;
+// process.exit y no exitCode: un manejador abierto (p. ej. Chromium) no puede dejar colgado el despliegue.
+process.exit(failures.length > 0 ? 1 : 0);
 
 async function checkNodeVersion() {
   const current = parseVersion(process.versions.node);
