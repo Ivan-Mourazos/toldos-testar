@@ -36,7 +36,7 @@ me dijeron: en un cambio de tela, que sume 40 para el enrrolle y lo necesario pa
 
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
 
-- **Ganchos corazón: ¿cuánto se añade al paño delantero o trasero y al lateral, y cada cuánto va un gancho a lo alto?** El 30/09 se decidió ofrecerlos como una recogida más. Mientras no se sepa, la web usará las medidas de la goma (27 y 27) y el paso de los ollaos. Importa para calcular el paño. <sub>Q-R01</sub>
+- **Ganchos corazón: ¿cuánto se añade al paño delantero o trasero y al lateral, y cada cuánto va un gancho a lo alto?** El 30/09 se decidió ofrecerlos como una recogida más. Mientras no se sepa, la web usa las medidas de la goma (27 y 27) y el paso de los ollaos. Importa para calcular el paño. <sub>Q-R01</sub>
 - **Cremallera del 9: ¿qué clientes la piden?** Iván no lo sabe: se busca en RPS (en revisión). Importa para las fichas de cliente. <sub>Q-R04</sub>
 
 Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.
@@ -45,9 +45,9 @@ Contestadas el 30/09 (Iván):
 
 | Código | Pregunta | Respuesta | En la web |
 | --- | --- | --- | --- |
-| Q-R01 | Ganchos corazón como recogida | Sí, mejor | Pendiente: añadirla a Parámetros y al dibujo (medidas: ver arriba) |
+| Q-R01 | Ganchos corazón como recogida | Sí, mejor | Hecho el 30/09: recogida «Ganchos corazón» en Parámetros (27 y 27, como la goma, hasta tener las suyas; los Parámetros ya guardados la reciben sola) y en el dibujo 3D, con los ganchos al paso de los ollaos |
 | Q-R02 | Ollaos de la oreja en la esquina con goma | Como lo hace ahora | Ya lo hace |
-| Q-R03 | Cada cuánto va un puente a lo alto | Da igual, el taller lo hace a su criterio; poner una medida como los ollaos | Pendiente: separar los puentes con el paso de los ollaos |
+| Q-R03 | Cada cuánto va un puente a lo alto | Da igual, el taller lo hace a su criterio; poner una medida como los ollaos | Hecho el 30/09: en el dibujo 3D los puentes van al paso de los ollaos del elemento (35 cm por defecto), con 10 cm de margen arriba y abajo |
 | Q-R05 | Gancho a 0 cm | No pasa | Ya lo hace: no deja poner 0 |
 
 ## Muestras que tiene que mirar el taller
