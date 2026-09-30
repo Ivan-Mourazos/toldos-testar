@@ -266,6 +266,10 @@ function electraPieces(context) {
     );
   }
   if (support === 'UNIVERSAL 3 AGUJEROS') pieces.push(...universalSupportAccessories(units));
+  // Taller, 30/09/2026 (Q-E03): el puente abatible va cuando lleva tubo Univers sin guías,
+  // que es el Electra con cofre y sin guía (con cofre la barra es siempre el Univers 280).
+  // Dos anillas, dos pletinas y dos mosquetones, lo consumido en 5 de las 8 OF así.
+  if (hasCofre && !hasGuide) pieces.push(...swingBridgePieces(units));
   if (!hasCofre) {
     pieces.push(
       { code: null, quantity: 2 * units, description: 'CADENILLAS INOX', reserve: false },
@@ -290,7 +294,9 @@ function electraPieces(context) {
     );
   } else {
     const crankHeight = Math.max(0, Number(awning.crankHeight) || 0);
-    const machineBushing = hasCofre
+    // Taller, 30/09/2026 (Q-PR02): exterior, casquillo largo (eje 63); interior, corto
+    // (eje 50). Antes iba por cofre, y con cofre se gasta el de eje 50 en 5 de 7 OF.
+    const machineBushing = device === 'MAQ. EXTERIOR'
       ? { code: 'CASMAQEJE6378MM', description: 'CASQUILLO MÁQUINA EJE 63 MM Ø78' }
       : { code: 'CASMAQEJE5078MM', description: 'CASQUILLO MÁQUINA EJE 50 MM Ø78' };
     pieces.push(
@@ -374,6 +380,14 @@ function loadProfileDescription() {
 
 function plasticUniversalCaps(lacado, units) {
   return line(`TAPOPLUN280${plasticCapSuffix(lacado)}`, units, 'KIT TAPONES PLÁSTICO UNIVERS 280');
+}
+
+function swingBridgePieces(units) {
+  return [
+    line('ANIACIN', 2 * units, 'ANILLA PUENTE ABATIBLE ACERO INOX'),
+    line('PLEACIN', 2 * units, 'PLETINA PUENTE ABATIBLE ACERO INOX'),
+    line('MOSQBOACIN60MM', 2 * units, 'MOSQUETÓN BOMBERO ACERO INOX 60 MM')
+  ];
 }
 
 function universalSupportAccessories(units) {

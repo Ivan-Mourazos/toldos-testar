@@ -24,8 +24,10 @@ Medidas: `validate:electra` 69 comprobaciones y `validate:maxiscreem` 55, sin di
 | Varillas | Blanca siempre; negra con cofre | No se reservaban | Así |
 | Motor | Rueda P-801 mecanizada y corona LT50 Ø78 | Rueda Ø78 y corona LT60 Ø78 | Como en Cortina |
 | `CASPLAS` | No se consume | Se reservaba | Fuera |
+| Casquillo de máquina | Con cofre, eje 50 en 5 de 7 OF | Por cofre: con cofre, eje 63 | Por la máquina: exterior, eje 63 (largo); interior, eje 50 (corto) (taller, 30/09/2026, Q-PR02) |
+| Puente abatible (con cofre y sin guía) | `ANIACIN`, `PLEACIN` y `MOSQBOACIN60MM`, dos de cada, en 5 de 8 OF | Solo el mosquetón, y solo con soporte universal | Dos anillas, dos pletinas y dos mosquetones (taller, 30/09/2026, Q-E03) |
 
-Después, `validate:reserva ELECTRA` solo echa en falta las piezas del tubo Ø70 (Q-E02), la tapa alternativa (Q-E01) y el puente abatible con cofre (Q-E03).
+Después, `validate:reserva ELECTRA` solo echa en falta las piezas del tubo Ø70 (Q-E02: el taller elige; lo normal es el Ø78) y la tapa alternativa (Q-E01: se reserva lo que se gasta). El puente abatible con cofre (Q-E03) se reserva desde el 30/09/2026.
 
 ## 3. Diana vertical: lo que se corrigió
 
@@ -53,7 +55,7 @@ Después, `validate:reserva MAXISCREEM` solo echa en falta el mando de 5 canales
 
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
-| Q-E01 | Electra sin cofre: tapas del perfil, juego `TAPASLAMAXSC` (2024 y 2026) o dos `TAPAELITVERT` (2023-2025). Y van en negro aunque la estructura sea blanca: ¿siempre? | Juego `TAPASLAMAXSC` en negro |
-| Q-E02 | Electra: en 4 a 7 OF se usó tubo Ø70 (P701) en vez de Ø78: ¿cuándo? | Ø78 |
-| Q-E03 | Electra con cofre: anillas, pletinas y mosquetones de puente abatible en 5 de 10 OF: ¿con qué montaje? | Solo con soporte universal |
+| Q-E01 | **Cerrada (30/09/2026): según se gasta.** Electra sin cofre: juego `TAPASLAMAXSC` o dos `TAPAELITVERT`, en negro aunque la estructura sea blanca | Juego `TAPASLAMAXSC` en negro, que es lo que se gasta en 2026 (RPS) |
+| Q-E02 | **Cerrada (taller, 30/09/2026):** como en la cortina: con poca salida y según el stock, a criterio del taller; lo normal es el Ø78 | Ø78 |
+| Q-E03 | **Resuelta (taller, 30/09/2026):** lo lleva cuando va con tubo Univers sin guías (casi siempre) | Hecho: con cofre y sin guía, dos `ANIACIN`, dos `PLEACIN` y dos `MOSQBOACIN60MM` por toldo |
 | Q-D01 | Diana: kit de montaje del cable (`MONTCABLEMAXSC`) en 2 de 6 OF: ¿cuándo? | No se reserva |

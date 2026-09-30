@@ -362,16 +362,38 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     ]));
   });
 
-  test('usa casquillo de 50 mm sin cofre y de 63 mm con cofre', () => {
-    expect(calculate().materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'CASMAQEJE5078MM' })
+  // Taller, 30/09/2026 (Q-PR02): máquina exterior, casquillo largo (eje 63); interior,
+  // corto (eje 50). Antes iba por cofre (con cofre, eje 63), y con cofre se gasta el de
+  // eje 50 en 5 de 7 OF.
+  test.each([
+    ['SIN COFRE / CON GUÍA', 'SOPORTE ELIT VERTICAL'],
+    ['CON COFRE / SIN GUÍA', 'SOPORTE MAXISCREEM BOX']
+  ])('%s: casquillo de eje 50 con máquina interior y de eje 63 con exterior', (submodel, electraSupport) => {
+    const codes = (device) => calculate({ submodel, electraSupport, device }).materials.map((item) => item.code);
+    expect(codes('MAQ. INTERIOR')).toContain('CASMAQEJE5078MM');
+    expect(codes('MAQ. INTERIOR')).not.toContain('CASMAQEJE6378MM');
+    expect(codes('MAQ. EXTERIOR')).toContain('CASMAQEJE6378MM');
+    expect(codes('MAQ. EXTERIOR')).not.toContain('CASMAQEJE5078MM');
+  });
+
+  // Taller, 30/09/2026 (Q-E03): el puente abatible va cuando lleva tubo Univers sin guías,
+  // que es el Electra con cofre y sin guía (con cofre la barra es siempre el Univers 280).
+  // Se consume en 5 de las 8 OF así desde 2024: dos anillas, dos pletinas y dos mosquetones.
+  test('con cofre y sin guía reserva el puente abatible', () => {
+    const result = calculate({ submodel: 'CON COFRE / SIN GUÍA', electraSupport: 'SOPORTE MAXISCREEM BOX', units: 2 });
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ANIACIN', quantity: 4 }),
+      expect.objectContaining({ code: 'PLEACIN', quantity: 4 }),
+      expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 4 })
     ]));
-    expect(calculate({
-      submodel: 'CON COFRE / SIN GUÍA',
-      electraSupport: 'SOPORTE MAXISCREEM BOX'
-    }).materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'CASMAQEJE6378MM' })
-    ]));
+  });
+
+  test('con guía no lleva puente abatible', () => {
+    const codes = calculate({ submodel: 'CON COFRE / CON GUÍA', electraSupport: 'SOPORTE MAXISCREEM BOX', reglasModificadas: true, electraGuideDiscountCm: 14 })
+      .materials.map((item) => item.code);
+    expect(codes).not.toContain('ANIACIN');
+    expect(codes).not.toContain('PLEACIN');
+    expect(calculate().materials.map((item) => item.code)).not.toContain('ANIACIN');
   });
 
   test('usa referencia base y avisa cuando no existe perfil terminado activo', () => {
