@@ -265,7 +265,15 @@ type PropsComunes = {
   ganchos?: GanchosPantalla;
 };
 
+/** Con el remolque distinto detrás, el contorno lleva una medida en cada punta (el paño se corta en
+ *  trapecio): «169,3 del. / 170,8 tras.», como la lona hecha. Sin la de detrás, una raya. */
+function contornoPuntas(res: LonaResult): string {
+  const detras = res.contornoAtrasAjustado ? fmt(res.contornoAtrasAjustado) : '—';
+  return `${fmt(res.contornoAjustado)} del. / ${detras} tras.`;
+}
+
 export function ResultadosLona({ res, modoOllaos, primerOllao, errorOllaos, onOllaosChange, ganchos }: PropsComunes & { res: LonaResult }) {
+  const sesgada = res.contornoAtrasAjustado !== undefined;
   return (
     <div className="rem-resultados" aria-label="Resultados de la lona" role="group">
       <div className="rem-datos">
@@ -275,10 +283,13 @@ export function ResultadosLona({ res, modoOllaos, primerOllao, errorOllaos, onOl
             ? `${fmt(res.lonaHecha.largo)} × ${fmt(res.lonaHecha.ancho)} del. / ${fmt(res.lonaHecha.anchoAtras)} tras.`
             : `${fmt(res.lonaHecha.largo)} × ${fmt(res.lonaHecha.ancho)}`}
         />
-        <Dato label={`Contorno corte (+${fmt(res.ajusteContorno)})`} valor={res.contornoAjustado ? fmt(res.contornoAjustado) : '—'} />
+        <Dato label={`Contorno corte (+${fmt(res.ajusteContorno)})`}
+          valor={!res.contornoAjustado ? '—' : sesgada ? contornoPuntas(res) : fmt(res.contornoAjustado)} />
         <Dato label="Paño delantero" valor={`${fmt(res.panoDelantero.ancho)} × ${fmt(res.panoDelantero.alto)}`} />
         <Dato label="Paño trasero" valor={`${fmt(res.panoTrasero.ancho)} × ${fmt(res.panoTrasero.alto)}`} />
-        <Dato label="Paño contorno" valor={res.panoContorno ? `${fmt(res.panoContorno.ancho)} × ${fmt(res.panoContorno.alto)}` : '—'} />
+        <Dato label="Paño contorno" valor={!res.panoContorno ? '—' : sesgada
+          ? `${fmt(res.panoContorno.ancho)} × ${contornoPuntas(res)}`
+          : `${fmt(res.panoContorno.ancho)} × ${fmt(res.panoContorno.alto)}`} />
         <Dato label="Recoge delante" valor={res.recogeDelanteTexto} />
         <Dato label="Recoge atrás" valor={res.recogeAtrasTexto} />
         <Dato label="Metros de tela" valor={res.metrosTela > 0 ? `${fmt(res.metrosTela)} m` : '—'} />

@@ -1,28 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
+import type { AskForConfirmation } from '../components/NotificationCenter';
 import type { LonaInput } from '../../remolques/calc/lona.ts';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { ajusteContorno, DEFAULT_PARAMS, PERFILES, type CalcParams } from '../../remolques/calc/params.ts';
 import { excelRound } from '../../remolques/calc/redondeo.ts';
 import { contornoCalculado } from '../../remolques/geometry/contorno.ts';
 import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, PasoFormulario } from './Campos';
+import {
+  conMedidaDelante, hayValoresDetras, radiosOpcionales, sinDetras, sinRadios, tieneDetras, tieneRadios,
+} from './medidasOpcionales';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 
 // Formulario de la lona de remolque: los mismos campos, opciones, orden y avisos que el de la
 // web de remolques (`FormularioLona.tsx`). Sin «Realizado por»: lo pone «Soy» al crear la línea.
 
 const fmt = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+const ETIQUETAS_RADIO = {
+  radioCumbrera: 'Radio cumbrera',
+  radioHombro: 'Radio hombro',
+  radioChaflanAbajo: 'Radio abajo',
+  radioChaflanArriba: 'Radio arriba',
+} as const;
 const PERFILES_VISIBLES = PERFILES.map((perfil) => ({
   value: perfil.value,
   label: perfil.label.replace(/ · ([a-záéíóúüñ])/u, (_, letra: string) => ` · ${letra.toLocaleUpperCase('es-ES')}`),
 }));
 
-export function FormularioLona({ input, materiales, params, errores = {}, onChange, onCampoTocado }: {
+export function FormularioLona({ input, materiales, params, errores = {}, onChange, onCampoTocado, onConfirm }: {
   input: LonaInput;
   materiales: Material[];
   params?: CalcParams;
   errores?: Record<string, string>;
   onChange: (i: LonaInput) => void;
   onCampoTocado?: (campo: string) => void;
+  /** Para preguntar antes de borrar las medidas que esconde un «No»; sin él se borran sin preguntar. */
+  onConfirm?: AskForConfirmation;
 }) {
   const p = params ?? DEFAULT_PARAMS;
   const RECOGIDAS = opcionesConEtiqueta(p.recogidas.map((r) => r.nombre));
@@ -30,11 +42,14 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
     abajo: input.radioChaflanAbajo, arriba: input.radioChaflanArriba,
   });
   const contornoVisible = input.contorno ?? Math.max((input.contornoScad ?? 0) - ajuste, 0);
-  // El contorno se desarrolla sobre la LONA HECHA (ancho + demasía), no sobre el remolque
-  // pedido: validado contra la línea rosa del CAD de oficina técnica.
-  const calculado = contornoCalculado(input.tipoPerfil, {
-    ancho: input.ancho + p.demasiaLonaHecha,
-    alto: input.altoDelante,
+  // Los «Sí» pulsados a mano sin nada escrito todavía; con medidas ya escritas el Sí sale solo.
+  // El de los radios se recuerda con el perfil en el que se pulsó: otro perfil tiene otros radios.
+  const [detrasPedido, setDetrasPedido] = useState(false);
+  const [radiosPedidosEn, setRadiosPedidosEn] = useState<LonaInput['tipoPerfil']>('');
+  const verDetras = tieneDetras(input) || detrasPedido;
+  const camposRadio = radiosOpcionales(input.tipoPerfil);
+  const verRadios = tieneRadios(input) || (radiosPedidosEn !== '' && radiosPedidosEn === input.tipoPerfil);
+  const medidasContorno = {
     aguas: input.aguas,
     radioCumbrera: input.radioCumbrera,
     radioHombro: input.radioHombro,
@@ -42,8 +57,19 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
     chaflan: input.chaflan,
     radioChaflanAbajo: input.radioChaflanAbajo,
     radioChaflanArriba: input.radioChaflanArriba,
-  });
-  const contornoExacto = calculado == null ? null : excelRound(calculado, 1);
+  };
+  // El contorno se desarrolla sobre la LONA HECHA (ancho + demasía), no sobre el remolque
+  // pedido: validado contra la línea rosa del CAD de oficina técnica. El de detrás, igual con el
+  // ancho y el alto de detrás (cero = igual que delante).
+  const exacto = (ancho: number, alto: number) => {
+    const valor = contornoCalculado(input.tipoPerfil, { ...medidasContorno, ancho: ancho + p.demasiaLonaHecha, alto });
+    return valor == null ? null : excelRound(valor, 1);
+  };
+  const contornoExacto = exacto(input.ancho, input.altoDelante);
+  const contornoAtrasExacto = exacto(
+    (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho,
+    input.altoAtras > 0 ? input.altoAtras : input.altoDelante,
+  );
   const faltaDato = input.tipoPerfil === 'TIPO 04' && !(input.chaflan ?? 0)
     ? 'chaflán'
     : input.tipoPerfil === 'TIPO 05' && !(input.radioEsquina ?? 0)
@@ -52,6 +78,38 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
   const set = <K extends keyof LonaInput>(k: K, v: LonaInput[K]) => onChange({ ...input, [k]: v });
   const setCab = (k: keyof LonaInput['cabecera'], v: string) =>
     onChange({ ...input, cabecera: { ...input.cabecera, [k]: v } });
+  // Pasar a No borra lo que se esconde, para que nada se calcule con un dato que no se ve; si
+  // había algo escrito, antes se pregunta.
+  const quitar = async (conValores: boolean, pregunta: { title: string; message: string }, borrar: () => void) => {
+    if (conValores && onConfirm) {
+      const eleccion = await onConfirm({ ...pregunta, confirmLabel: 'Quitar', cancelLabel: 'Mantener', tone: 'warning' });
+      if (eleccion !== 'confirm') return;
+    }
+    borrar();
+  };
+  const cambiarDetras = (si: boolean) => {
+    if (si) { setDetrasPedido(true); return; }
+    void quitar(hayValoresDetras(input), {
+      title: 'Quitar las medidas de detrás',
+      message: 'Se borran el ancho, el alto y el contorno de detrás, y la lona se calcula igual delante que detrás.',
+    }, () => { setDetrasPedido(false); onChange(sinDetras(input)); });
+  };
+  const cambiarRadios = (si: boolean) => {
+    if (si) { setRadiosPedidosEn(input.tipoPerfil); return; }
+    void quitar(tieneRadios(input), {
+      title: 'Quitar los radios',
+      message: 'Se borran los radios y las aristas quedan vivas.',
+    }, () => { setRadiosPedidosEn(''); onChange(sinRadios(input)); });
+  };
+  const botonCalculado = (visible: number, calculado: number | null, usar: (v: number) => void) => (
+    faltaDato ? (
+      <small className="rem-aviso-campo">Introduce el {faltaDato} para calcularlo</small>
+    ) : calculado != null && Math.abs(visible - calculado) > 0.05 ? (
+      <button type="button" className="rem-enlace" onClick={() => usar(calculado)}>
+        Usar calculado: {fmt(calculado)}
+      </button>
+    ) : null
+  );
 
   return (
     // El onBlur de React es focusout, que sí burbujea: un solo manejador cubre todos los campos
@@ -89,46 +147,52 @@ export function FormularioLona({ input, materiales, params, errores = {}, onChan
       <PasoFormulario numero={3} titulo="Medidas · cm" columnas={4}>
         <CampoNum name="cantidad" error={errores.cantidad} label="Cantidad" value={input.cantidad} onChange={(v) => set('cantidad', v)} />
         <CampoNum name="largo" error={errores.largo} label="Largo" value={input.largo} onChange={(v) => set('largo', v)} />
-        <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho} onChange={(v) => set('ancho', v)} />
-        <CampoNum name="anchoAtras" label="Ancho detrás" value={input.anchoAtras ?? 0} onChange={(v) => set('anchoAtras', v)} />
-        <CampoNum name="altoDelante" error={errores.altoDelante} label="Alto delante" value={input.altoDelante} onChange={(v) => set('altoDelante', v)} />
-        <CampoNum name="altoAtras" label="Alto detrás" value={input.altoAtras} onChange={(v) => set('altoAtras', v)} />
+        <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho}
+          onChange={(v) => onChange(conMedidaDelante(input, 'ancho', v, verDetras))} />
+        <CampoNum name="altoDelante" error={errores.altoDelante} label="Alto delante" value={input.altoDelante}
+          onChange={(v) => onChange(conMedidaDelante(input, 'altoDelante', v, verDetras))} />
         {['TIPO 02', 'TIPO 03'].includes(input.tipoPerfil) && (
           <CampoNum name="aguas" error={errores.aguas} label="Aguas" value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
         )}
-        {input.tipoPerfil === 'TIPO 03' && (
-          <>
-            <CampoNum name="radioCumbrera" label="Radio cumbrera" value={input.radioCumbrera ?? 0} onChange={(v) => set('radioCumbrera', v)} />
-            <CampoNum name="radioHombro" label="Radio hombro" value={input.radioHombro ?? 0} onChange={(v) => set('radioHombro', v)} />
-          </>
-        )}
         {input.tipoPerfil === 'TIPO 04' && (
-          <>
-            <CampoNum name="chaflan" error={errores.chaflan} label="Chaflán · entre vértices"
-              value={input.chaflan ?? 0} onChange={(v) => set('chaflan', v)} />
-            <CampoNum name="radioChaflanAbajo" label="Radio abajo"
-              value={input.radioChaflanAbajo ?? 0} onChange={(v) => set('radioChaflanAbajo', v)} />
-            <CampoNum name="radioChaflanArriba" label="Radio arriba"
-              value={input.radioChaflanArriba ?? 0} onChange={(v) => set('radioChaflanArriba', v)} />
-          </>
+          <CampoNum name="chaflan" error={errores.chaflan} label="Chaflán · entre vértices"
+            value={input.chaflan ?? 0} onChange={(v) => set('chaflan', v)} />
         )}
         {input.tipoPerfil === 'TIPO 05' && (
           <CampoNum name="radioEsquina" error={errores.radioEsquina} label="Radio esquina" value={input.radioEsquina ?? 0} onChange={(v) => set('radioEsquina', v)} />
         )}
+        {/* Los radios del TIPO 03 y del TIPO 04 son opcionales (sin ellos, aristas vivas): van tras un
+            Sí / No. El del TIPO 05 no, porque sin él no hay contorno. */}
+        {camposRadio.length > 0 && (
+          <div className="rem-banda rem-banda-3 rem-span-3">
+            <CampoSiNo name="conRadios" label="Con radios" value={verRadios} onChange={cambiarRadios} />
+            {verRadios && camposRadio.map((campo) => (
+              <CampoNum key={campo} name={campo} label={ETIQUETAS_RADIO[campo]} value={input[campo] ?? 0}
+                onChange={(v) => set(campo, v)} />
+            ))}
+          </div>
+        )}
         <div className="rem-contorno">
           <CampoNum name="contorno" error={errores.contorno} label="Contorno" value={contornoVisible}
             onChange={(v) => onChange({ ...input, contorno: v, contornoScad: undefined })} />
-          {faltaDato ? (
-            <small className="rem-aviso-campo">Introduce el {faltaDato} para calcularlo</small>
-          ) : contornoExacto != null && Math.abs(contornoVisible - contornoExacto) > 0.05 ? (
-            <button
-              type="button"
-              className="rem-enlace"
-              onClick={() => onChange({ ...input, contorno: contornoExacto, contornoScad: undefined })}
-            >
-              Usar calculado: {fmt(contornoExacto)}
-            </button>
-          ) : null}
+          {botonCalculado(contornoVisible, contornoExacto,
+            (v) => onChange({ ...input, contorno: v, contornoScad: undefined }))}
+        </div>
+        {/* Remolque más ancho (o más alto) detrás: sus medidas de detrás, con el contorno de esa
+            punta, porque el paño contorno se corta en trapecio (CAD de Iván, 30/09/2026). */}
+        <div className="rem-banda rem-span-4">
+          <CampoSiNo name="detrasDistinto" label="Detrás distinto" value={verDetras} onChange={cambiarDetras} />
+          {verDetras && (
+            <>
+              <CampoNum name="anchoAtras" label="Ancho detrás" value={input.anchoAtras ?? 0} onChange={(v) => set('anchoAtras', v)} />
+              <CampoNum name="altoAtras" label="Alto detrás" value={input.altoAtras} onChange={(v) => set('altoAtras', v)} />
+              <div className="rem-contorno">
+                <CampoNum name="contornoAtras" error={errores.contornoAtras} label="Contorno detrás"
+                  value={input.contornoAtras ?? 0} onChange={(v) => set('contornoAtras', v)} />
+                {botonCalculado(input.contornoAtras ?? 0, contornoAtrasExacto, (v) => set('contornoAtras', v))}
+              </div>
+            </>
+          )}
         </div>
       </PasoFormulario>
 

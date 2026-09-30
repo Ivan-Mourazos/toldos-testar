@@ -88,8 +88,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           <div className="rem-editor-cuerpo">
             <div className="rem-editor-izquierda">
               {lineaActiva.tipo === 'lona' ? (
-                <FormularioLona input={lona} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
-                  onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
+                // key: los «Sí» pulsados a mano en el formulario son de cada elemento, no pasan al siguiente.
+                <FormularioLona key={lineaActiva.version} input={lona} materiales={ws.materiales} params={params}
+                  errores={ws.erroresVisibles} onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado}
+                  onConfirm={askForConfirmation} />
               ) : (
                 <FormularioBaqueton input={baq} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />

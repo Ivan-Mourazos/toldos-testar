@@ -37,6 +37,9 @@ export interface LonaInput {
   radioChaflanArriba?: number;
   /** Contorno real del remolque, antes de añadir las bastillas y la demasía de curva. */
   contorno?: number;
+  /** Contorno real en la punta de detrás, solo si el remolque es distinto detrás: el paño
+   *  contorno se corta entonces en trapecio (CAD de Iván, 30/09/2026). */
+  contornoAtras?: number;
   /** Campo histórico: contenía directamente la medida final de corte. */
   contornoScad?: number;
   /** Sin elegir hasta que el usuario decide: un perfil recto por defecto pasaría
@@ -67,13 +70,21 @@ export interface LonaInput {
   material: string; observaciones: string;
 }
 
-export interface Pano { ancho: number; alto: number; etiqueta: string }
+export interface Pano {
+  ancho: number; alto: number; etiqueta: string;
+  /** Solo en el paño contorno de un remolque distinto detrás: la medida en la punta de detrás
+   *  (`alto` es la de delante), porque se corta en trapecio. */
+  altoAtras?: number;
+}
 
 export interface LonaResult {
   lonaHecha: { largo: number; ancho: number; anchoAtras: number };
   contornoIntroducido: number;
   ajusteContorno: number;
   contornoAjustado: number;
+  /** Solo con el remolque distinto detrás: el contorno de detrás tal cual y con el mismo ajuste. */
+  contornoAtrasIntroducido?: number;
+  contornoAtrasAjustado?: number;
   panoDelantero: Pano; panoTrasero: Pano; panoContorno: Pano | null;
   ollaos: OllaosResult;
   reparto: { laterales: number[]; atras: number[]; delante: number[] };
@@ -85,6 +96,14 @@ export interface LonaResult {
 }
 
 const r1 = (v: number) => excelRound(v, 1);
+
+/** El remolque cambia de delante a detrás: otro ancho u otro alto (cero o ausente = igual). */
+export function detrasDistinto(
+  input: Pick<LonaInput, "ancho" | "anchoAtras" | "altoDelante" | "altoAtras">,
+): boolean {
+  return ((input.anchoAtras ?? 0) > 0 && input.anchoAtras !== input.ancho)
+    || (input.altoAtras > 0 && input.altoAtras !== input.altoDelante);
+}
 
 export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const recDel = findRecogida(params, input.recogeDelante);
@@ -112,6 +131,11 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
     : contornoIntroducido > 0
       ? r1(contornoIntroducido + ajuste)
       : 0;
+  // Distinto detrás, el contorno cambia de una punta a otra y el paño se corta en trapecio: la
+  // medida de detrás lleva el mismo ajuste. Si no, no se añade nada y el resultado queda igual.
+  const sesgada = detrasDistinto(input);
+  const contornoAtrasIntroducido = Math.max(input.contornoAtras ?? 0, 0);
+  const contornoAtrasAjustado = contornoAtrasIntroducido > 0 ? r1(contornoAtrasIntroducido + ajuste) : 0;
 
   const panoDelantero: Pano = {
     ancho: r1(input.ancho + recDel.delante),
@@ -137,6 +161,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
           ancho: r1(input.largo + demasiaContorno + recDel.lateralSoloDelante + recAtr.lateralSoloAtras),
           alto: contornoAjustado,
           etiqueta: "PAÑO CONTORNO",
+          ...(sesgada && contornoAtrasAjustado > 0 ? { altoAtras: contornoAtrasAjustado } : {}),
         }
       : null;
 
@@ -194,6 +219,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
 
   return {
     lonaHecha, contornoIntroducido, ajusteContorno: ajuste, contornoAjustado,
+    ...(sesgada ? { contornoAtrasIntroducido, contornoAtrasAjustado } : {}),
     panoDelantero, panoTrasero, panoContorno,
     ollaos, reparto, ...(segunGanchos ? { ganchos: segunGanchos.ganchos } : {}), metrosTela,
     recogeDelanteTexto: recDel.nombre,

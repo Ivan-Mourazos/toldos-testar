@@ -31,6 +31,16 @@ Contado por Iván el 30/09/2026 con el CAD de un pedido de Hijos de Pedro López
   Es una marca de la recogida («PUENTES HIJOS DE PEDRO LOPEZ», `panoTraseroConAnchoDelante` en
   Parámetros); las demás recogidas miden el paño trasero con el ancho de detrás. Los Parámetros
   guardados antes de esta marca la reciben al leerlos, sin tocar sus medidas.
+- **Con el remolque distinto detrás el paño contorno se corta en trapecio**: una medida de
+  contorno en la punta de delante y otra en la de detrás (en el CAD, 169,3 delante y 170,8
+  detrás con el paño de 234,5 de largo; la punta más ancha es la de detrás, donde van las
+  solapas de la recogida). La diferencia sale del otro ancho (y del otro alto, si lo hay). En el
+  formulario, «Detrás distinto» en Sí enseña «Ancho detrás», «Alto detrás» y «Contorno detrás»
+  (con su «Usar calculado» sobre el ancho de detrás más la demasía de la lona hecha y el alto de
+  detrás); con el remolque distinto detrás, el contorno de detrás es obligatorio. En los
+  resultados: «Paño contorno 234,5 × 169,3 del. / 170,8 tras.». Los metros de tela no cambian
+  (salen del largo del paño). Pasar «Detrás distinto» a No borra las medidas de detrás, para que
+  nada se calcule con un dato que no se ve (si había algo escrito, pregunta antes).
 
 ## Bastilla para enfundar
 

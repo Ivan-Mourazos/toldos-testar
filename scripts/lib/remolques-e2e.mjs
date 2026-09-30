@@ -6,9 +6,21 @@ export const fmt = (n) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 }
 export const norm = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 export const CLAVES_OLLAOS = [['LATERALES ·', 'laterales'], ['ATRÁS ·', 'atras'], ['DELANTE ·', 'delante']];
 
+// Con el remolque distinto detrás el contorno lleva una medida en cada punta (el paño se corta
+// en trapecio): «169,3 del. / 170,8 tras.», o una raya detrás si aún no se ha puesto.
+const puntasContorno = (r) =>
+  `${fmt(r.contornoAjustado)} del. / ${r.contornoAtrasAjustado ? fmt(r.contornoAtrasAjustado) : '—'} tras.`;
+
 // Lo que la pantalla debe enseñar de cada caso, con el formato de la web (coma decimal).
 export function esperado(c) {
   const r = c.result;
+  if (c.tipo === 'lona' && r.contornoAtrasAjustado !== undefined) {
+    return {
+      ...esperado({ ...c, result: { ...r, contornoAtrasAjustado: undefined } }),
+      [`Contorno corte (+${fmt(r.ajusteContorno)})`]: r.contornoAjustado ? puntasContorno(r) : '—',
+      'Paño contorno': r.panoContorno ? `${fmt(r.panoContorno.ancho)} × ${puntasContorno(r)}` : '—',
+    };
+  }
   if (c.tipo === 'lona') {
     return {
       'Lona hecha': r.lonaHecha.anchoAtras != null && r.lonaHecha.anchoAtras !== r.lonaHecha.ancho
@@ -53,6 +65,12 @@ export const siNo = (ed, nombre, v) =>
 export const filaOllaos = (page, ed, nombre) =>
   ed.locator('.rem-ollaos-fila').filter({ has: page.locator(`[aria-label^="${nombre}"]`) });
 
+// Las medidas que el formulario esconde tras un Sí / No: los radios opcionales de cada perfil y
+// las de detrás (solo si el remolque es distinto detrás; iguales que delante no cambian nada).
+const RADIOS_OPCIONALES = { 'TIPO 03': ['radioCumbrera', 'radioHombro'], 'TIPO 04': ['radioChaflanAbajo', 'radioChaflanArriba'] };
+const detrasDistinto = (i) => ((i.anchoAtras ?? 0) > 0 && i.anchoAtras !== i.ancho)
+  || (i.altoAtras > 0 && i.altoAtras !== i.altoDelante) || (i.contornoAtras ?? 0) > 0;
+
 export async function teclearCaso(page, c) {
   const ed = editor(page);
   const i = c.input;
@@ -61,8 +79,17 @@ export async function teclearCaso(page, c) {
     await elegir(page, ed, 'recogeDelante', i.recogeDelante);
     await elegir(page, ed, 'recogeAtras', i.recogeAtras);
     await siNo(ed, 'Bastilla enfundar', i.bastillaEnfundar);
-    for (const k of ['cantidad', 'largo', 'ancho', 'anchoAtras', 'altoDelante', 'altoAtras', 'aguas', 'radioCumbrera', 'radioHombro', 'chaflan', 'radioChaflanAbajo', 'radioChaflanArriba', 'radioEsquina']) await num(ed, k, i[k]);
+    for (const k of ['cantidad', 'largo', 'ancho', 'altoDelante', 'aguas', 'chaflan', 'radioEsquina']) await num(ed, k, i[k]);
+    const radios = (RADIOS_OPCIONALES[i.tipoPerfil] ?? []).filter((k) => i[k] > 0);
+    if (radios.length > 0) {
+      await siNo(ed, 'Con radios', true);
+      for (const k of radios) await num(ed, k, i[k]);
+    }
     await num(ed, 'contorno', i.contorno);
+    if (detrasDistinto(i)) {
+      await siNo(ed, 'Detrás distinto', true);
+      for (const k of ['anchoAtras', 'altoAtras', 'contornoAtras']) await num(ed, k, i[k]);
+    }
     await siNo(ed, 'Ventana', i.ventana);
     if (i.ventana) { await num(ed, 'ventanaAncho', i.ventanaAncho); await num(ed, 'ventanaAlto', i.ventanaAlto); }
     await siNo(ed, 'Rotulación', i.rotulacion);

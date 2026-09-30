@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { emptyLona } from "../../entradas-vacias.ts";
 import { DEFAULT_PARAMS } from "../params.ts";
-import { calcLona, type LonaInput } from "../lona.ts";
+import { calcLona, detrasDistinto, type LonaInput } from "../lona.ts";
 
 const base: LonaInput = {
   cabecera: {
@@ -192,5 +192,51 @@ describe("calcLona — Hijos de Pedro López, 1,5 cm más ancho detrás (CAD de 
       recogidas: DEFAULT_PARAMS.recogidas.map(({ panoTraseroConAnchoDelante: _marca, ...r }) => r),
     };
     expect(calcLona(hpl, sinMarca).panoTrasero.ancho).toBe(174);
+  });
+});
+
+// Con el remolque distinto detrás el paño contorno se corta en trapecio: una medida en cada
+// punta. CAD de Iván (30/09/2026): 169,3 delante y 170,8 detrás, largo del paño 234,5. El CAD no
+// trae el alto del remolque, así que aquí se introducen los contornos (TIPO 01, +7 de bastillas).
+describe("calcLona — contorno detrás con el remolque sesgado", () => {
+  const sesgada: LonaInput = {
+    ...base,
+    largo: 211, ancho: 130, anchoAtras: 131.5, altoDelante: 40, altoAtras: 40,
+    tipoPerfil: "TIPO 01", aguas: 0, contorno: 162.3, contornoAtras: 163.8,
+    recogeDelante: "PUENTES HIJOS DE PEDRO LOPEZ", recogeAtras: "PUENTES HIJOS DE PEDRO LOPEZ",
+  };
+  const res = calcLona(sesgada, DEFAULT_PARAMS);
+
+  it("ajusta el contorno de detrás igual que el de delante", () => {
+    expect(res.contornoAjustado).toBe(169.3);
+    expect(res.contornoAtrasIntroducido).toBe(163.8);
+    expect(res.contornoAtrasAjustado).toBe(170.8);
+  });
+  it("el paño contorno lleva las dos puntas: 234,5 × 169,3 delante / 170,8 detrás", () => {
+    expect(res.panoContorno).toEqual({ ancho: 234.5, alto: 169.3, altoAtras: 170.8, etiqueta: "PAÑO CONTORNO" });
+  });
+  it("los metros de tela no cambian: salen del largo de los paños", () => {
+    expect(res.metrosTela).toBe(5.8);
+  });
+  it("sin contorno detrás todavía, sale a cero y el paño no lleva punta trasera", () => {
+    const sinAtras = calcLona({ ...sesgada, contornoAtras: undefined }, DEFAULT_PARAMS);
+    expect(sinAtras.contornoAtrasAjustado).toBe(0);
+    expect(sinAtras.panoContorno).not.toHaveProperty("altoAtras");
+  });
+  it("un alto distinto detrás también cuenta como remolque distinto detrás", () => {
+    const alta = calcLona({ ...sesgada, anchoAtras: 0, altoAtras: 45 }, DEFAULT_PARAMS);
+    expect(alta.panoContorno?.altoAtras).toBe(170.8);
+  });
+  it("igual delante y detrás el resultado no cambia de forma, aunque haya un contorno detrás guardado", () => {
+    const recta = calcLona({ ...sesgada, anchoAtras: 130, altoAtras: 40 }, DEFAULT_PARAMS);
+    expect(recta).not.toHaveProperty("contornoAtrasIntroducido");
+    expect(recta).not.toHaveProperty("contornoAtrasAjustado");
+    expect(recta.panoContorno).toEqual({ ancho: 234.5, alto: 169.3, etiqueta: "PAÑO CONTORNO" });
+  });
+  it("detrasDistinto: otro ancho u otro alto detrás; cero es «igual»", () => {
+    expect(detrasDistinto({ ancho: 130, anchoAtras: 131.5, altoDelante: 40, altoAtras: 40 })).toBe(true);
+    expect(detrasDistinto({ ancho: 130, anchoAtras: 0, altoDelante: 40, altoAtras: 45 })).toBe(true);
+    expect(detrasDistinto({ ancho: 130, anchoAtras: 130, altoDelante: 40, altoAtras: 0 })).toBe(false);
+    expect(detrasDistinto({ ancho: 130, altoDelante: 40, altoAtras: 40 })).toBe(false);
   });
 });

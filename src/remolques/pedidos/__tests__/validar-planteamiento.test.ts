@@ -43,6 +43,19 @@ describe("validación previa al guardado y PDF", () => {
       .toContainEqual(expect.objectContaining({ campo: "radioEsquina" }));
   });
 
+  it("con el remolque distinto detrás exige también el contorno de detrás", () => {
+    const sesgada = { ...lonaValida(), anchoAtras: 251.5 };
+    expect(erroresPlanteamiento(sesgada)).toContainEqual({
+      campo: "contornoAtras",
+      mensaje: "Confirma el contorno de corte de detrás antes de guardar o generar el PDF.",
+    });
+    expect(erroresPlanteamiento({ ...lonaValida(), altoAtras: 225 }))
+      .toContainEqual(expect.objectContaining({ campo: "contornoAtras" }));
+    expect(errorPlanteamientoIncompleto({ ...sesgada, contornoAtras: 621.5 })).toBeNull();
+    // Igual delante y detrás no se pide.
+    expect(errorPlanteamientoIncompleto({ ...lonaValida(), anchoAtras: 250, altoAtras: 220 })).toBeNull();
+  });
+
   it("exige las dos medidas cuando el remolque lleva ventana", () => {
     const sinMedidas = erroresPlanteamiento({ ...lonaValida(), ventana: true });
     expect(sinMedidas).toContainEqual(expect.objectContaining({ campo: "ventanaAncho" }));
