@@ -134,3 +134,9 @@ Después (mejora posterior, no en estas fases): **anotaciones a mano sobre el di
   trabajo diario.
 - Guardado como los parámetros de toldos: en el servidor, común a todos los puestos y con
   historial de quién cambió qué.
+- Añadido el 01/10/2026 (explicado a Iván): la ficha guarda también el **sesgo detrás**
+  (p. ej. +1,5 cm de Hijos de Pedro López, que pone solo el «Detrás distinto»), la
+  **cremallera del 9** y las observaciones fijas **por líneas**; el botón del planteamiento
+  pasa a ser «Guardar en la ficha del cliente» (medida con sus ollaos o lo habitual); la
+  pantalla Clientes va en Parámetros › Remolques y guarda con quién y motivo. Los perfiles
+  se nombran Recto, Recto con aguas, Arquillado, Arquillado con aguas y Con chaflán.
