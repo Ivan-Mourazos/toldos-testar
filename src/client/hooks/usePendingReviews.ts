@@ -1,29 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ReviewSummary } from '../types';
+import type { PedidoBandeja } from '../types';
 import type { Notify } from '../components/NotificationCenter';
 import { mergePendingReviews, pendingYears } from '../ordersInbox';
+import { leerPedidosDelAnio } from './listaPedidos';
 
-// Pedidos pendientes de generar, para la bandeja y para el contador «Pedidos · N» de la
+// Pedidos pendientes de generar, de toldos y de remolques (fase 5), para la bandeja y para el contador «Pedidos · N» de la
 // barra superior. Vive en App para que el contador sea correcto desde que se abre la
 // página, sin tener que entrar en Pedidos, y se vuelve a leer cada vez que cambia
 // `refreshKey` (al guardar un pedido o generar sus archivos).
 export function usePendingReviews(refreshKey: number, onError: Notify) {
-  const [reviews, setReviews] = useState<ReviewSummary[]>([]);
+  const [reviews, setReviews] = useState<PedidoBandeja[]>([]);
   const [loading, setLoading] = useState(true);
   const requestId = useRef(0);
 
   useEffect(() => {
     const current = ++requestId.current;
-    Promise.all(pendingYears().map(async (year) => {
-      const response = await fetch(`/api/reviews?year=${year}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'No se pudo cargar la bandeja.');
-      return data.reviews as ReviewSummary[];
-    }))
-      .then((lists) => {
+    Promise.all(pendingYears().map((year) => leerPedidosDelAnio(year)))
+      .then((years) => {
         if (current !== requestId.current) return;
-        setReviews(mergePendingReviews(lists));
+        setReviews(mergePendingReviews(years.map((item) => item.pedidos)));
         setLoading(false);
+        const warning = years.map((item) => item.avisoRemolques).find(Boolean);
+        if (warning) onError(warning, { tone: 'error' });
       })
       .catch((error) => {
         if (current !== requestId.current) return;

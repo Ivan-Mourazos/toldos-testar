@@ -1,3 +1,5 @@
+import type { ResumenPedidoRemolques } from '../remolques/flujo/tipos.ts';
+
 export type Model = {
   code: string;
   family: string;
@@ -690,6 +692,9 @@ export type ReviewSummary = {
     awningList?: { letter: string; model: string; of: string; state: 'ok' | 'warn' | 'error'; notes: string[] }[];
   };
 };
+
+/** Una fila de Pedidos: un pedido de toldos o uno de remolques (fase 5). */
+export type PedidoBandeja = ReviewSummary | ResumenPedidoRemolques;
 
 export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters; parametersVersion?: number | null } };
 

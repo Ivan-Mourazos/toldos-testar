@@ -1,50 +1,54 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { ReviewPackage, ReviewSummary, RuleParameters } from '../types';
+import type { PedidoBandeja, ReviewPackage, RuleParameters } from '../types';
+import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import { generateState } from '../generatePermission';
+import { leerPedidosDelAnio } from '../hooks/listaPedidos';
+import { productoDe } from '../ordersInbox';
+import { PedidoRemolquesDetalle } from '../remolques/PedidoRemolquesDetalle';
 
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
 // anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
 // elegido, que no filtra los pendientes.
-export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onToast, onConfirm }: {
+export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onToast, onConfirm }: {
   refreshKey: number;
   parameters: RuleParameters;
   currentUser: string;
-  pending: ReviewSummary[];
+  pending: PedidoBandeja[];
   pendingLoading: boolean;
   onChanged: () => void;
   onOpen: (review: ReviewPackage) => void | Promise<void>;
   onReuse: (review: ReviewPackage) => void | Promise<void>;
+  onEditRemolques: (pedido: PedidoRemolques) => void;
+  onReuseRemolques: (pedido: PedidoRemolques) => void;
   onToast: Notify;
   onConfirm: AskForConfirmation;
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
-  const [history, setHistory] = useState<ReviewSummary[]>([]);
+  const [history, setHistory] = useState<PedidoBandeja[]>([]);
   const [selectedCode, setSelectedCode] = useState('');
+  // El pedido de remolques abierto (fase 5); el de toldos sigue en selectedCode.
+  const [selectedRemolques, setSelectedRemolques] = useState('');
   const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [generating, setGenerating] = useState(false);
   const listRequestId = useRef(0);
   const pendingOfs = pending.flatMap((review) => (review.summary.awningList || []).map((item) => item.of));
-  const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '');
+  const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '' && selectedRemolques === '');
 
   useEffect(() => {
     const requestId = ++listRequestId.current;
     let cancelled = false;
-    fetch(`/api/reviews?year=${year}`)
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'No se pudo cargar el historial.');
-        return data.reviews as ReviewSummary[];
-      })
-      .then((items) => {
+    leerPedidosDelAnio(year)
+      .then(({ pedidos, avisoRemolques }) => {
         if (cancelled || requestId !== listRequestId.current) return;
-        setHistory(items);
+        setHistory(pedidos);
         setHistoryLoading(false);
+        if (avisoRemolques) onToast(avisoRemolques, { tone: 'error' });
       })
       .catch((error) => {
         if (cancelled || requestId !== listRequestId.current) return;
@@ -189,7 +193,21 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
 
   return (
     <section className="reviews-layout">
-      {selectedCode === ''
+      {selectedRemolques
+        ? (
+          <PedidoRemolquesDetalle
+            orderCode={selectedRemolques}
+            refreshKey={refreshKey}
+            currentUser={currentUser}
+            onBack={() => setSelectedRemolques('')}
+            onCorregir={onEditRemolques}
+            onReutilizar={onReuseRemolques}
+            onChanged={onChanged}
+            onToast={onToast}
+            onConfirm={onConfirm}
+          />
+        )
+        : selectedCode === ''
         ? <OrdersInbox
             pending={pending}
             history={history}
@@ -198,7 +216,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             historyLoading={historyLoading}
             year={year}
             onYear={(value) => { setHistoryLoading(true); setYear(value); }}
-            onOpen={setSelectedCode}
+            onOpen={(review) => (productoDe(review) === 'remolques' ? setSelectedRemolques(review.orderCode) : setSelectedCode(review.orderCode))}
             coordinaStatus={coordinaStatus}
           />
         : (

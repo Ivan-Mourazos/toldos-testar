@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { collapseAwnings, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears } from './ordersInbox';
-import type { ReviewSummary } from './types';
+import { claveBandeja, collapseAwnings, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import type { PedidoBandeja, ReviewSummary } from './types';
 
 const review = (orderCode: string, status: string, technician: string, extra: Record<string, unknown> = {}) => ({
   orderCode, status, updatedAt: '2026-09-24T09:00:00Z',
   summary: { customer: 'Cliente', technician, ofs: ['0230194'], models: ['ARZUA PRO'], awnings: 1, reviewer: '', orderDate: '', diagnostics: 0 },
   ...extra
-}) as never;
+}) as unknown as PedidoBandeja;
 
 describe('inboxSections', () => {
   const pending = [
@@ -152,5 +152,36 @@ describe('limitModels', () => {
 
   it('sin modelos devuelve vacío', () => {
     expect(limitModels(undefined)).toEqual({ visible: [], hidden: [] });
+  });
+});
+
+describe('toldos y remolques juntos (fase 5)', () => {
+  const toldo = review('AR2601', 'PENDING_REVIEW', 'IVÁN');
+  const remolque = review('AR2601', 'PENDING_REVIEW', 'JAIME', {
+    kind: 'remolques', numeroPedido: 'AR.26.01',
+    summary: { customer: 'Talleres', technician: 'JAIME', ofs: ['0231780'], models: ['Arquillado con aguas'], awnings: 1, reviewer: '', orderDate: '', diagnostics: 0 },
+  });
+  const generadoRemolque = review('AR2602', 'PRODUCED', 'JAIME', { kind: 'remolques', numeroPedido: 'AR.26.02' });
+  const generadoToldo = review('AR2603', 'PRODUCED', 'IVÁN');
+
+  it('cada pedido dice de qué es; el mismo número en los dos son dos filas', () => {
+    expect([productoDe(toldo), productoDe(remolque)]).toEqual(['toldos', 'remolques']);
+    expect([claveBandeja(toldo), claveBandeja(remolque)]).toEqual(['toldos:AR2601', 'remolques:AR2601']);
+    expect(mergePendingReviews([[toldo], [remolque]])).toHaveLength(2);
+  });
+
+  it('el filtro deja solo los de un tipo, en pendientes y en generados, y cuenta solo esos', () => {
+    const fuentes = { pending: [toldo, remolque], history: [generadoRemolque, generadoToldo] };
+    const solo = inboxSections(fuentes, { me: 'IVÁN', scope: 'all', query: '', producto: 'remolques' });
+    expect([solo.pending.map(claveBandeja), solo.history.map(claveBandeja), solo.pendingAll]).toEqual([['remolques:AR2601'], ['remolques:AR2602'], 1]);
+    const toldos = inboxSections(fuentes, { me: 'IVÁN', scope: 'all', query: '', producto: 'toldos' });
+    expect([toldos.pending.map(claveBandeja), toldos.history.map(claveBandeja)]).toEqual([['toldos:AR2601'], ['toldos:AR2603']]);
+    expect(inboxSections(fuentes, { me: 'IVÁN', scope: 'all', query: '' }).pending).toHaveLength(2);
+  });
+
+  it('busca el perfil del remolque y el número como se escribió', () => {
+    const fuentes = { pending: [toldo, remolque], history: [] };
+    expect(inboxSections(fuentes, { me: 'IVÁN', scope: 'all', query: 'arquillado' }).pending.map(claveBandeja)).toEqual(['remolques:AR2601']);
+    expect(inboxSections(fuentes, { me: 'IVÁN', scope: 'all', query: 'AR.26.01' }).pending.map(claveBandeja)).toEqual(['remolques:AR2601']);
   });
 });

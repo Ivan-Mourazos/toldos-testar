@@ -1,4 +1,4 @@
-import type { CoordinaStatus, ReviewSummary } from './types';
+import type { CoordinaStatus, PedidoBandeja } from './types';
 import { coordinaGroup, isPendingGeneration } from '../reviewRules.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
@@ -14,14 +14,32 @@ export function pendingYears(now = new Date()) {
   return [year, year - 1];
 }
 
+// Toldos y remolques en la misma bandeja (fase 5): cada fila dice de qué es y un filtro deja ver
+// solo unos. Un número es de toldos o de remolques; aun así la clave lleva el tipo para no confundirlos.
+export type FiltroProducto = 'todos' | 'toldos' | 'remolques';
+export const filtrosProducto = [
+  { key: 'todos', label: 'Todos' },
+  { key: 'toldos', label: 'Toldos' },
+  { key: 'remolques', label: 'Remolques' },
+] as const;
+
+export function productoDe(review: Pick<PedidoBandeja, 'kind'>): 'toldos' | 'remolques' {
+  return review.kind === 'remolques' ? 'remolques' : 'toldos';
+}
+
+export function claveBandeja(review: Pick<PedidoBandeja, 'kind' | 'orderCode'>) {
+  return `${productoDe(review)}:${review.orderCode}`;
+}
+
 // Junta las listas de varios años por número de pedido (si la carpeta no depende del
 // año, las dos lecturas traen los mismos pedidos) y deja solo los pendientes de generar,
 // del más reciente al más antiguo.
-export function mergePendingReviews(lists: ReviewSummary[][]) {
-  const byCode = new Map<string, ReviewSummary>();
+export function mergePendingReviews<T extends PedidoBandeja>(lists: T[][]) {
+  const byCode = new Map<string, T>();
   for (const review of lists.flat()) {
-    const current = byCode.get(review.orderCode);
-    if (!current || (review.updatedAt || '') > (current.updatedAt || '')) byCode.set(review.orderCode, review);
+    const key = claveBandeja(review);
+    const current = byCode.get(key);
+    if (!current || (review.updatedAt || '') > (current.updatedAt || '')) byCode.set(key, review);
   }
   return [...byCode.values()]
     .filter((review) => isPendingGeneration(review.status))
@@ -32,21 +50,24 @@ function normalize(value: string) {
   return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
 
-function matches(review: ReviewSummary, query: string) {
+function matches(review: PedidoBandeja, query: string) {
   const term = normalize(query.trim());
   if (!term) return true;
-  const haystack = [review.orderCode, review.summary.customer, ...(review.summary.ofs || []), ...(review.summary.models || [])].join(' ');
+  // En remolques, el número también como se escribió (AR.26.04286) y el perfil como modelo.
+  const typed = 'numeroPedido' in review ? review.numeroPedido : '';
+  const haystack = [review.orderCode, typed, review.summary.customer, ...(review.summary.ofs || []), ...(review.summary.models || [])].join(' ');
   return normalize(haystack).includes(term);
 }
 
-export function inboxSections(
-  { pending: pendingSource, history: historySource }: { pending: ReviewSummary[]; history: ReviewSummary[] },
-  { me, scope, query }: { me: string; scope: 'mine' | 'all'; query: string }
+export function inboxSections<T extends PedidoBandeja>(
+  { pending: pendingSource, history: historySource }: { pending: T[]; history: T[] },
+  { me, scope, query, producto = 'todos' }: { me: string; scope: 'mine' | 'all'; query: string; producto?: FiltroProducto }
 ) {
-  const pendingAllList = pendingSource.filter((review) => isPendingGeneration(review.status));
+  const ofProduct = (review: T) => producto === 'todos' || productoDe(review) === producto;
+  const pendingAllList = pendingSource.filter((review) => isPendingGeneration(review.status) && ofProduct(review));
   const pendingMineList = pendingAllList.filter((review) => review.summary.technician === me);
   const pending = (scope === 'mine' ? pendingMineList : pendingAllList).filter((review) => matches(review, query));
-  const history = historySource.filter((review) => review.status === 'PRODUCED' && matches(review, query));
+  const history = historySource.filter((review) => review.status === 'PRODUCED' && ofProduct(review) && matches(review, query));
   return { pending, history, pendingMine: pendingMineList.length, pendingAll: pendingAllList.length };
 }
 
@@ -58,11 +79,11 @@ export const pendingGroupOrder = [
   { key: 'aprobado', label: 'Aprobados · falta generar', tone: 'approved' }
 ] as const;
 
-export function reviewAwnings(review: ReviewSummary) {
+export function reviewAwnings(review: PedidoBandeja) {
   return (review.summary.awningList || []).map((item) => ({ letter: item.letter, of: item.of }));
 }
 
-export function pendingGroups(pending: ReviewSummary[], status: CoordinaStatus | null) {
+export function pendingGroups<T extends PedidoBandeja>(pending: T[], status: CoordinaStatus | null) {
   return pendingGroupOrder
     .map((group) => ({ ...group, reviews: pending.filter((review) => coordinaGroup(reviewAwnings(review), status) === group.key) }))
     .filter((group) => group.reviews.length > 0);
@@ -75,8 +96,8 @@ export function formatListDate(value: string) {
 }
 
 // Historial por días, como CoordinaOT: «Jueves 24/09/26 · 15 pedidos» (Iván, 28/09/2026).
-export function groupByDay(reviews: ReviewSummary[]) {
-  const groups: { key: string; label: string; reviews: ReviewSummary[] }[] = [];
+export function groupByDay<T extends PedidoBandeja>(reviews: T[]) {
+  const groups: { key: string; label: string; reviews: T[] }[] = [];
   for (const review of reviews) {
     const date = new Date(review.updatedAt);
     // Día local, no UTC: un pedido guardado de noche no salta al día siguiente.

@@ -1,53 +1,58 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FileSearch, FolderOpen, Search } from 'lucide-react';
-import type { CoordinaStatus, ReviewSummary } from '../types';
-import { collapseAwnings, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups } from '../ordersInbox';
+import type { CoordinaStatus, PedidoBandeja } from '../types';
+import {
+  claveBandeja, collapseAwnings, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups, productoDe,
+  type FiltroProducto,
+} from '../ordersInbox';
 import { controlLabel } from './controlLabels';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { COORDINA_NOT_CONFIGURED_MOTIVO, normalizeOf, reviewerName } from '../../reviewRules.js';
 
-type AwningItem = NonNullable<ReviewSummary['summary']['awningList']>[number];
+type AwningItem = NonNullable<PedidoBandeja['summary']['awningList']>[number];
 
 // Iván, 28/09/2026: listas como las de CoordinaOT. Bloques por estado con su rótulo
 // (punto de color, nombre y cuántos), columnas juntas y filas densas; toda la fila se
 // pulsa y se despliega dentro, con cada toldo y lo que le pasa. Los toldos se ven ya en la
 // fila (A ✓, D aviso) para saber qué hay que revisar sin abrir nada.
 export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus }: {
-  pending: ReviewSummary[];
-  history: ReviewSummary[];
+  pending: PedidoBandeja[];
+  history: PedidoBandeja[];
   currentUser: string;
   pendingLoading: boolean;
   historyLoading: boolean;
   year: number;
   onYear: (year: number) => void;
-  onOpen: (orderCode: string) => void;
+  onOpen: (review: PedidoBandeja) => void;
   coordinaStatus: CoordinaStatus | null;
 }) {
   // Iván, 28/09/2026: al entrar se ve todo, porque lo que toca revisar es de otros.
   const [scope, setScope] = useState<'mine' | 'all'>('all');
   const [query, setQuery] = useState('');
+  // Toldos y remolques en la misma lista (fase 5), con un filtro para ver solo unos.
+  const [producto, setProducto] = useState<FiltroProducto>('todos');
   const [openCode, setOpenCode] = useState<string | null>(null);
-  const sections = inboxSections({ pending, history }, { me: currentUser, scope, query });
+  const sections = inboxSections({ pending, history }, { me: currentUser, scope, query, producto });
   const groups = pendingGroups(sections.pending, coordinaStatus);
 
   const columns = (withDate: boolean) => (
     <div className={withDate ? 'orders-columns' : 'orders-columns is-history'} aria-hidden="true">
       <span />
-      <span>Pedido</span><span>Cliente</span><span>Modelos</span><span>Autor</span>{withDate && <span>Fecha</span>}<span className="is-end">Toldos</span>
+      <span>Pedido</span><span>Cliente</span><span>Modelos</span><span>Autor</span>{withDate && <span>Fecha</span>}<span className="is-end">Elementos</span>
     </div>
   );
   // En el historial ya se agrupa por días: la fecha de cada fila sobra, como en CoordinaOT.
-  const block = (reviews: ReviewSummary[], withDate = true, tone?: string) => (
+  const block = (reviews: PedidoBandeja[], withDate = true, tone?: string) => (
     <div className={withDate ? 'orders-block' : 'orders-block is-history'}>
       <ul className="orders-list">
         {reviews.map((review) => (
           <OrderRow
-            key={review.orderCode}
+            key={claveBandeja(review)}
             review={review}
             mine={review.summary.technician === currentUser}
-            open={openCode === review.orderCode}
-            onToggle={() => setOpenCode((current) => (current === review.orderCode ? null : review.orderCode))}
-            onOpen={() => onOpen(review.orderCode)}
+            open={openCode === claveBandeja(review)}
+            onToggle={() => setOpenCode((current) => (current === claveBandeja(review) ? null : claveBandeja(review)))}
+            onOpen={() => onOpen(review)}
             withDate={withDate}
             coordinaStatus={coordinaStatus}
             tone={tone}
@@ -66,6 +71,12 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
         <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué pedidos pendientes">
           <button type="button" className={scope === 'all' ? 'pestana-activa' : undefined} aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todo el equipo {sections.pendingAll}</button>
           <button type="button" className={scope === 'mine' ? 'pestana-activa' : undefined} aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
+        </div>
+        <span className="orders-filter-label">Pedidos de</span>
+        <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué tipo de pedidos">
+          {filtrosProducto.map((filtro) => (
+            <button key={filtro.key} type="button" className={producto === filtro.key ? 'pestana-activa' : undefined} aria-pressed={producto === filtro.key} onClick={() => setProducto(filtro.key)}>{filtro.label}</button>
+          ))}
         </div>
       </header>
       {coordinaStatus && !coordinaStatus.disponible && (
@@ -97,7 +108,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
 }
 
 function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStatus, tone }: {
-  review: ReviewSummary;
+  review: PedidoBandeja;
   mine: boolean;
   open: boolean;
   onToggle: () => void;
@@ -106,7 +117,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   coordinaStatus: CoordinaStatus | null;
   tone?: string;
 }) {
-  const detailId = `orders-detail-${review.orderCode}`;
+  const detailId = `orders-detail-${productoDe(review)}-${review.orderCode}`;
   const awnings = review.summary.awningList;
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
   return (
@@ -124,7 +135,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         <ChevronDown className="orders-chevron" aria-hidden="true" />
         <strong className="orders-code">{review.orderCode}</strong>
         <span className="orders-customer">{review.summary.customer || 'Sin cliente'}</span>
-        <ModelTags models={review.summary.models} />
+        <ModelTags models={review.summary.models} producto={productoDe(review)} />
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
@@ -167,12 +178,14 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   );
 }
 
-function ModelTags({ models }: { models?: string[] }) {
+function ModelTags({ models, producto }: { models?: string[]; producto: 'toldos' | 'remolques' }) {
   const { visible, hidden } = limitModels(models);
+  const tinte = producto === 'remolques' ? ' is-remolques' : '';
   return (
     <span className="orders-model-tags">
-      {visible.map((model) => <span key={model} className="orders-model-tag familia-tag">{controlLabel(model)}</span>)}
-      {hidden.length > 0 && <span className="orders-model-tag familia-tag" title={Array.from(new Set(models)).map(controlLabel).join('\n')}>+{hidden.length}</span>}
+      <span className={`orders-kind-tag familia-tag is-${producto}`}>{producto === 'remolques' ? 'Remolque' : 'Toldo'}</span>
+      {visible.map((model) => <span key={model} className={`orders-model-tag familia-tag${tinte}`}>{controlLabel(model)}</span>)}
+      {hidden.length > 0 && <span className={`orders-model-tag familia-tag${tinte}`} title={Array.from(new Set(models)).map(controlLabel).join('\n')}>+{hidden.length}</span>}
     </span>
   );
 }

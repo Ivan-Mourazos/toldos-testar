@@ -36,6 +36,8 @@ import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
+import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
+import type { ModoCarga } from './remolques/guardarPedido';
 import { RemolquesView } from './remolques/RemolquesView';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
 import { useRemolquesParameters } from './remolques/useRemolquesParameters';
@@ -73,6 +75,9 @@ export default function App() {
   // el formulario de toldos y solo vale mientras ese sea el número en pantalla.
   const [pedidoRemolques, setPedidoRemolques] = useState<{ numero: string; lineas: number } | null>(null);
   const [pedidoSolicitado, setPedidoSolicitado] = useState<{ numero: string; id: number } | null>(null);
+  // Un pedido de remolques guardado que Pedidos manda abrir en Remolques («Corregir» o
+  // «Reutilizar datos», fase 5); `id` distingue una petición de la siguiente.
+  const [pedidoGuardadoSolicitado, setPedidoGuardadoSolicitado] = useState<{ id: number; pedido: PedidoRemolques; modo: ModoCarga } | null>(null);
   // «Limpiar» de Remolques: cada pulsación sube el contador y la pantalla de remolques, que es
   // quien tiene el pedido, pregunta y limpia.
   const [limpiarRemolques, setLimpiarRemolques] = useState(0);
@@ -187,6 +192,13 @@ export default function App() {
   function openInTrailers(numero: string) {
     chooseProducto('remolques');
     setPedidoSolicitado({ numero, id: Date.now() });
+  }
+
+  // La pregunta de si sustituir lo que haya en Remolques la hace la propia pantalla, que es quien lo sabe.
+  function abrirPedidoRemolques(pedido: PedidoRemolques, modo: ModoCarga) {
+    chooseProducto('remolques');
+    setActiveTab('order');
+    setPedidoGuardadoSolicitado({ id: Date.now(), pedido, modo });
   }
 
   async function autofillOrder() {
@@ -622,6 +634,7 @@ export default function App() {
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
               <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
+                pedidoGuardadoSolicitado={pedidoGuardadoSolicitado}
                 onGuardado={() => setReviewRefresh((value) => value + 1)} />
             </div>
           )}
@@ -692,6 +705,8 @@ export default function App() {
               onChanged={() => setReviewRefresh((value) => value + 1)}
               onOpen={editReview}
               onReuse={reuseReview}
+              onEditRemolques={(pedido) => abrirPedidoRemolques(pedido, 'corregir')}
+              onReuseRemolques={(pedido) => abrirPedidoRemolques(pedido, 'reutilizar')}
               onToast={notify}
               onConfirm={askForConfirmation}
             />
