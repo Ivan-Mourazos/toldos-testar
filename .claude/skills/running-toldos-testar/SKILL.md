@@ -48,6 +48,10 @@ The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflo
   instance with its own test folder:
   `ISOLATED_DIR="$PWD/tmp/remolques-5" PORT=4311 FAKE_COORDINA_PORT=4321 bash .claude/skills/running-toldos-testar/start-isolated.sh`
   and then `TOLDOS_ISOLATED_URL=http://127.0.0.1:4311 FAKE_COORDINA_PORT=4321 node scripts/test-remolques-5-e2e.mjs`.
+- Drafts e2e (borradores en el servidor, toldos y remolques): it deletes its test orders, so it runs on
+  its own isolated instance:
+  `ISOLATED_DIR="$PWD/tmp/borradores" PORT=4311 FAKE_COORDINA_PORT=4321 bash .claude/skills/running-toldos-testar/start-isolated.sh`
+  and then `TOLDOS_ISOLATED_URL=http://127.0.0.1:4311 node scripts/test-borradores-e2e.mjs`.
 
 ## Drive it with Playwright
 

@@ -44,6 +44,11 @@ La base actual contiene:
 
 El pedido no se envía directamente a producción:
 
+- `Guardar borrador` (Toldos y Remolques) deja un pedido a medias en el servidor, uno por número de
+  pedido, para seguirlo desde cualquier puesto. Sale en Pedidos › «Borradores» para todos, no cuenta
+  como pendiente ni va a CoordinaOT, y desaparece al guardarlo para revisión o con «Descartar
+  borrador». Se guarda en la carpeta de borradores de Configuración (`DRAFTS_DIRECTORY`).
+
 - `Guardar para revisión` crea únicamente `PEDIDO.pdf` en la carpeta TOLDOS compartida. El PDF muestra los paneles del formulario e incorpora internamente los datos editables para que la bandeja pueda volver a abrir el pedido.
 - La pestaña `Revisión` muestra esa bandeja a todos los puestos. Reproduce el mismo formulario de Pedido en solo lectura y una vista previa paginada del planteamiento.
 - `Aprobar` guarda el estado `APPROVED` dentro del mismo `PEDIDO.pdf` y lo mueve a la lista `Aprobados`. No genera reservas, archivos RPS ni `PEDIDO-1.pdf`.
@@ -74,6 +79,11 @@ Las cuatro rutas se administran desde la pestaña `Configuración` y se guardan 
 - Planteamientos generados (`PEDIDO-1.pdf`).
 - Subida de material (un `.xls` por OF).
 - Histórico de planteamientos RPS (solo lectura, después del procesado).
+
+Además, dos carpetas internas del servidor (no compartidas): la de los pedidos de remolques
+guardados (`REMOLQUES_REVISION_DIRECTORY`) y la de los borradores de toldos y remolques
+(`DRAFTS_DIRECTORY`, paso 08). Sin la de borradores la web funciona igual, pero no se pueden guardar
+borradores.
 
 Se admite el marcador `{YYYY}`, que se sustituye por el año extraído del pedido. El interruptor de generación no afecta a la aprobación web: aunque esté desactivado se pueden guardar y aprobar pedidos, pero no generar el PDF definitivo ni los Excel. Los valores de `.env` sirven únicamente como configuración inicial.
 
