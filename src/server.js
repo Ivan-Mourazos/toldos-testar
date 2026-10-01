@@ -27,6 +27,9 @@ import { ErrorPedidoHoja, prepararPedidoHoja } from './remolques/hoja/pedido.ts'
 import { crearAlmacenFichas } from './remolques/salida/fichas.ts';
 import { crearServicioPdf, ErrorSalidaPdf } from './remolques/salida/navegador.ts';
 import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
+import { crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
+import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
+import { crearServicioPedidosRemolques, paramsDeLaPantalla } from './remolques/flujo/servicio.ts';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
@@ -101,6 +104,26 @@ const generationLocks = new Set();
 // minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
 const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
 const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
+// Pedidos de remolques (fase 5): un JSON por pedido en la carpeta interna de Configuración y el
+// mismo camino que toldos (CoordinaOT aprueba, el autor genera, los dos PDF con sus datos dentro).
+const pedidosRemolques = crearServicioPedidosRemolques({
+  almacen: crearAlmacenPedidosRemolques({
+    carpeta: async () => (await workflowStore.getSettings()).remolquesRevisionDirectory
+  }),
+  ajustes: () => workflowStore.getSettings(),
+  parametros: () => remolquesParametersStore.get(),
+  coordina,
+  tecnicos: formOptions.tecnicos,
+  hacerPdf: hojaRemolquesPdf,
+  esPedidoDeToldos: async (orderCode) => {
+    try {
+      await workflowStore.getReview(orderCode);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+});
 
 app.use(compression());
 // La vista previa de la hoja de taller solo recibe un pedido: 1 MB de sobra. Va antes del límite
@@ -397,7 +420,11 @@ app.post('/api/remolques/pdf', async (req, res, next) => {
     if (!res.writableFinished) seFue = true;
   });
   try {
-    const datos = prepararPedidoHoja(req.body?.elementos, await remolquesParametersStore.get());
+    // «Corregir» un pedido guardado manda los parámetros con que se guardó; si no, los comunes.
+    const params = req.body?.params === undefined
+      ? await remolquesParametersStore.get()
+      : paramsDeLaPantalla(req.body.params);
+    const datos = prepararPedidoHoja(req.body?.elementos, params);
     const pdf = await servicioPdfRemolques.generar({
       // La ficha se guarda al salir de la cola: su minuto empieza cuando Chromium va a pedirla.
       preparar: () => (id = fichasHojaRemolques.guardar(datos)),
@@ -410,7 +437,7 @@ app.post('/api/remolques/pdf', async (req, res, next) => {
       .send(pdf);
   } catch (error) {
     if (seFue) return;
-    if (error instanceof ErrorPedidoHoja) {
+    if (error instanceof ErrorPedidoHoja || error instanceof ErrorPedidoRemolques) {
       next(error);
     } else if (error instanceof ErrorSalidaPdf) {
       console.error('No se pudo hacer la hoja de taller de remolques:', error.message);
@@ -424,6 +451,50 @@ app.post('/api/remolques/pdf', async (req, res, next) => {
     if (id) fichasHojaRemolques.borrar(id);
   }
 });
+
+// Pedidos de remolques (fase 5). Un error del pedido llega con su código; uno inesperado es 500.
+function rutaRemolques(manejar) {
+  return async (req, res, next) => {
+    try {
+      await manejar(req, res);
+    } catch (error) {
+      if (error?.statusCode) return next(error);
+      console.error('Fallo inesperado en los pedidos de remolques:', error);
+      return next(httpError(500, `No se pudo completar la operación por un fallo del servidor: ${error instanceof Error ? error.message : String(error)}`));
+    }
+  };
+}
+
+app.get('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
+  const year = Number(req.query.year) || new Date().getFullYear();
+  if (year < 2000 || year > 2100) throw httpError(400, 'El año no es válido.');
+  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.listar(year));
+}));
+
+app.post('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosRemolques.guardar(req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.get('/api/remolques/pedidos/:orderCode', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.obtener(req.params.orderCode));
+}));
+
+// La hoja de un pedido guardado, con sus parámetros: nunca se archiva.
+app.get('/api/remolques/pedidos/:orderCode/vista-previa', rutaRemolques(async (req, res) => {
+  const { pdf, nombre } = await pedidosRemolques.vistaPrevia(req.params.orderCode);
+  enviarPdf(res, pdf, nombre);
+}));
+
+app.post('/api/remolques/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosRemolques.generar(req.params.orderCode, req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.get('/api/remolques/pedidos/:orderCode/archivo', rutaRemolques(async (req, res) => {
+  const { pdf, nombre } = await pedidosRemolques.archivo(req.params.orderCode);
+  enviarPdf(res, pdf, nombre);
+}));
 
 // Estado de las OF en CoordinaOT para la web (Pedidos y el pedido abierto). La clave
 // vive aquí, en el servidor: el navegador nunca la ve.
@@ -966,6 +1037,23 @@ function urlHojaRemolques(id) {
   const comodin = ['', '0.0.0.0', '::'].includes(config.host);
   const host = comodin ? '127.0.0.1' : config.host.includes(':') ? `[${config.host}]` : config.host;
   return `http://${host}:${port}/hoja-remolques.html?id=${encodeURIComponent(id)}`;
+}
+
+/** La hoja de taller de remolques en PDF con el servicio de Chromium; su ficha se borra siempre. */
+async function hojaRemolquesPdf(datos) {
+  let id = null;
+  try {
+    return await servicioPdfRemolques.generar({ preparar: () => (id = fichasHojaRemolques.guardar(datos)) });
+  } finally {
+    if (id) fichasHojaRemolques.borrar(id);
+  }
+}
+
+function enviarPdf(res, pdf, nombre) {
+  res.set('Cache-Control', 'no-store')
+    .setHeader('Content-Type', 'application/pdf')
+    .setHeader('Content-Disposition', `inline; filename="${String(nombre).replace(/["\\\r\n]/g, '_')}"`)
+    .send(Buffer.from(pdf));
 }
 
 function findDuplicatedFilenames(targets) {
