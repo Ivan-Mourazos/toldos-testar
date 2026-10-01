@@ -27,7 +27,8 @@ describe('listar, leer y descartar', () => {
     await expect(listarBorradores(async () => respuesta(500, { error: 'Carpeta caída' }))).rejects.toThrow('Carpeta caída');
   });
 
-  it('leer: 404 es que no hay; el número va tal cual en la dirección', async () => {
+  it('leer: null (o un 404 antiguo) es que no hay; el número va tal cual en la dirección', async () => {
+    expect(await leerBorrador('AR.26.04286', async () => respuesta(200, null))).toBeNull();
     const pedir = vi.fn<Pedir>(async () => respuesta(404, { error: 'No hay borrador de este pedido.' }));
     expect(await leerBorrador('AR.26.04286', pedir)).toBeNull();
     expect(pedir).toHaveBeenCalledWith('/api/borradores/AR.26.04286', { cache: 'no-store' });
@@ -84,7 +85,7 @@ describe('guardarBorradorPreguntando', () => {
 describe('«Obtener datos del pedido» con borrador', () => {
   it('la pregunta dice de quién y de cuándo, y si se abre en la otra pantalla', () => {
     const misma = preguntaAlObtener(borrador, 'toldos');
-    expect(misma).toMatchObject({ confirmLabel: 'Abrir borrador', alternativeLabel: 'Empezar de cero', cancelLabel: 'Cancelar' });
+    expect(misma).toMatchObject({ confirmLabel: 'Abrir borrador', alternativeLabel: 'Empezar de cero', alternativeTone: 'neutral', cancelLabel: 'Cancelar' });
     expect(misma.message).toContain('AR2604286 tiene un borrador de Jaime del 01/10. ¿Lo abres?');
     expect(misma.message).not.toContain('se abrirá en');
     expect(preguntaAlObtener(borrador, 'remolques').message).toContain('Es de toldos: se abrirá en Toldos.');
@@ -100,17 +101,15 @@ describe('«Obtener datos del pedido» con borrador', () => {
     expect(confirmar).not.toHaveBeenCalled();
   });
 
-  it('mira la lista primero: si no está, no lo lee (un 404 sale como error en la consola)', async () => {
-    const pedir = vi.fn<Pedir>(async () => respuesta(200, { configurado: true, borradores: [{ ...resumen, orderCode: 'AR2600001' }] }));
+  it('una sola lectura: sin borrador (null) sigue con RPS', async () => {
+    const pedir = vi.fn<Pedir>(async () => respuesta(200, null));
     expect(await buscarBorradorAlObtener('AR.26.04286', 'toldos', vi.fn(), pedir)).toEqual({ accion: 'seguir' });
     expect(pedir).toHaveBeenCalledTimes(1);
-    expect(pedir).toHaveBeenCalledWith('/api/borradores', { cache: 'no-store' });
+    expect(pedir).toHaveBeenCalledWith('/api/borradores/AR.26.04286', { cache: 'no-store' });
   });
 
   it('con borrador: «Abrir borrador», «Empezar de cero» o nada', async () => {
-    const pedir: Pedir = async (url) => url === '/api/borradores'
-      ? respuesta(200, { configurado: true, borradores: [resumen] })
-      : respuesta(200, borrador);
+    const pedir: Pedir = async () => respuesta(200, borrador);
     expect(await buscarBorradorAlObtener('AR2604286', 'toldos', async () => 'confirm', pedir)).toEqual({ accion: 'abrir', borrador });
     expect(await buscarBorradorAlObtener('AR2604286', 'toldos', async () => 'alternative', pedir)).toEqual({ accion: 'seguir' });
     expect(await buscarBorradorAlObtener('AR2604286', 'toldos', async () => 'cancel', pedir)).toEqual({ accion: 'cancelar' });

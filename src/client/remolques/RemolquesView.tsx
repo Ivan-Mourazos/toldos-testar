@@ -134,7 +134,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
             </button>
             {/* Sin los parámetros comunes leídos no se guarda: saldría con los del código. */}
             <button type="button" className="primary-button rem-guardar-boton"
-              disabled={Boolean(faltaPdf) || ws.guardando || Boolean(ws.bloqueoParams.motivo)}
+              disabled={Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
               aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
               onClick={() => void ws.guardarParaRevision()}>
               <Save aria-hidden="true" />

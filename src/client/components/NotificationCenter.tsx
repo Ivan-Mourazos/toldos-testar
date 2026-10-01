@@ -23,6 +23,8 @@ export type ConfirmOptions = {
    * faltan»); va entre cancelar y confirmar, en rojo porque suele ser la que borra.
    */
   alternativeLabel?: string;
+  /** 'neutral' pinta la segunda salida como botón normal; por defecto 'danger' (rojo). */
+  alternativeTone?: 'danger' | 'neutral';
   tone?: DialogTone;
   details?: string[];
 };
@@ -335,7 +337,7 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
         <div className="confirmation-actions">
           <button ref={cancelRef} className="ghost-button" type="button" onClick={() => onResolve('cancel')}>{dialog.cancelLabel || 'Cancelar'}</button>
           {dialog.alternativeLabel && (
-            <button className="danger-button boton-3d" type="button" onClick={() => onResolve('alternative')}>{dialog.alternativeLabel}</button>
+            <button className={dialog.alternativeTone === 'neutral' ? 'ghost-button boton-3d' : 'danger-button boton-3d'} type="button" onClick={() => onResolve('alternative')}>{dialog.alternativeLabel}</button>
           )}
           <button className={tone === 'danger' ? 'danger-button boton-3d' : 'primary-button boton-3d'} type="button" onClick={() => onResolve('confirm')}>{dialog.confirmLabel || 'Continuar'}</button>
         </div>

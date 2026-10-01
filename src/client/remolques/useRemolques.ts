@@ -896,18 +896,29 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * El botón «Obtener datos del pedido» (y «Reintentar»): si el número tiene borrador, pregunta
    * «Abrir borrador» / «Empezar de cero»; si no, obtiene el pedido de RPS como siempre.
    */
+  const buscandoBorrador = useRef(false);
   const obtenerDatosPulsado = useCallback(async () => {
-    const numero = estadoRef.current.numeroPedido;
-    const respuesta = await buscarBorradorAlObtener(numero, 'remolques', confirmar);
-    if (respuesta.accion === 'cancelar') return;
-    if (respuesta.accion === 'abrir') {
-      // De remolques, aquí mismo y sin volver a preguntar; de toldos, lo abre la aplicación en Toldos.
-      const { borrador } = respuesta;
-      if (borrador.kind === 'remolques') await cargarBorrador(borrador, { preguntar: false });
-      else alAbrirBorradorToldos.current?.(borrador);
-      return;
+    // Un doble clic no abre dos preguntas ni lanza dos consultas.
+    if (buscandoBorrador.current) return;
+    buscandoBorrador.current = true;
+    try {
+      const numero = estadoRef.current.numeroPedido;
+      const respuesta = await buscarBorradorAlObtener(numero, 'remolques', confirmar);
+      // Mientras se esperaba, la pantalla pasó a otro pedido: la respuesta ya no es de este.
+      if (esOtroPedido(numero, estadoRef.current.numeroPedido)) return;
+      if (respuesta.accion === 'cancelar') return;
+      if (respuesta.accion === 'abrir') {
+        // De remolques, aquí mismo; de toldos, lo abre la aplicación en Toldos. Si la pantalla ya tiene
+        // líneas, se pregunta antes de sustituirlas (con solo el número escrito no hay nada que perder).
+        const { borrador } = respuesta;
+        if (borrador.kind === 'remolques') await cargarBorrador(borrador, { preguntar: estadoRef.current.lineas.length > 0 });
+        else alAbrirBorradorToldos.current?.(borrador);
+        return;
+      }
+      obtenerDatosPedido(numero);
+    } finally {
+      buscandoBorrador.current = false;
     }
-    obtenerDatosPedido(numero);
   }, [cargarBorrador, confirmar, obtenerDatosPedido]);
 
   return {

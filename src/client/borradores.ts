@@ -1,7 +1,6 @@
 import type {
   Borrador, ContenidoRemolques, ContenidoToldos, ResumenBorrador,
 } from '../borradores/tipos.ts';
-import { codigoBorrador } from '../borradores/reglas.ts';
 import { normalizarNumeroPedido } from '../remolques/pedidos/numero-pedido.ts';
 import type { AskForConfirmation, ConfirmOptions } from './components/NotificationCenter';
 import { controlLabel } from './components/controlLabels';
@@ -32,13 +31,13 @@ export async function listarBorradores(pedir: Pedir = porDefecto): Promise<{ con
   return { configurado: datos.configurado !== false, borradores: (datos.borradores as ResumenBorrador[] | undefined) ?? [] };
 }
 
-/** El borrador de ese número, o null si no hay. */
+/** El borrador de ese número, o null si no hay (el servidor da 200 con null; el 404 se acepta por compatibilidad). */
 export async function leerBorrador(numero: string, pedir: Pedir = porDefecto): Promise<Borrador | null> {
   const respuesta = await pedir(direccion(numero), { cache: 'no-store' });
   if (respuesta.status === 404) return null;
-  const datos = await datosDe(respuesta);
-  if (!respuesta.ok) throw new Error(errorDe(datos, 'No se pudo leer el borrador.'));
-  return datos as unknown as Borrador;
+  const datos: unknown = await respuesta.json().catch(() => null);
+  if (!respuesta.ok) throw new Error(errorDe((datos ?? {}) as Record<string, unknown>, 'No se pudo leer el borrador.'));
+  return (datos as Borrador | null) ?? null;
 }
 
 export async function descartarBorrador(numero: string, pedir: Pedir = porDefecto): Promise<void> {
@@ -104,6 +103,7 @@ export function preguntaAlObtener(borrador: Borrador, producto: 'toldos' | 'remo
     message: `${borrador.orderCode} tiene un borrador de ${controlLabel(borrador.savedBy)}${dia ? ` del ${dia}` : ''}. ¿Lo abres?${otraPantalla} «Empezar de cero» obtiene los datos de RPS y el borrador sigue en Pedidos.`,
     confirmLabel: 'Abrir borrador',
     alternativeLabel: 'Empezar de cero',
+    alternativeTone: 'neutral',
     cancelLabel: 'Cancelar',
     tone: 'warning',
   };
@@ -112,8 +112,6 @@ export function preguntaAlObtener(borrador: Borrador, producto: 'toldos' | 'remo
 /**
  * Antes de «Obtener datos del pedido»: si ese número tiene borrador, pregunta. Si no lo tiene o no se
  * puede leer, se sigue con RPS como siempre (un fallo aquí no impide obtener el pedido).
- * Primero mira la lista y solo lee el borrador si está en ella: leer uno que no existe da un 404, y el
- * navegador lo apunta como error en la consola cada vez que se pulsa el botón.
  */
 export async function buscarBorradorAlObtener(
   numero: string, producto: 'toldos' | 'remolques', confirmar: AskForConfirmation, pedir: Pedir = porDefecto,
@@ -121,9 +119,6 @@ export async function buscarBorradorAlObtener(
   if (!normalizarNumeroPedido(numero)) return { accion: 'seguir' };
   let borrador: Borrador | null;
   try {
-    const codigo = codigoBorrador(numero);
-    const { borradores } = await listarBorradores(pedir);
-    if (!borradores.some((resumen) => resumen.orderCode === codigo)) return { accion: 'seguir' };
     borrador = await leerBorrador(numero, pedir);
   } catch {
     return { accion: 'seguir' };

@@ -1,6 +1,6 @@
 import type { AlmacenBorradores } from "./almacen.ts";
 import {
-  codigoBorrador, crearBorrador, ErrorBorrador, leerContenido, MENSAJE_NO_HAY, MENSAJE_OCUPADO, MENSAJE_OTRO_NUMERO,
+  codigoBorrador, crearBorrador, ErrorBorrador, leerContenido, MENSAJE_OCUPADO, MENSAJE_OTRO_NUMERO,
   MENSAJE_SIN_AUTOR, MENSAJE_YA_EN_PEDIDOS, mensajeOtroTipo, resumenDeBorrador, SIN_CARPETA_BORRADORES,
 } from "./reglas.ts";
 import type { Borrador, ResumenBorrador } from "./tipos.ts";
@@ -38,10 +38,9 @@ export function crearServicioBorradores(deps: DependenciasBorradores) {
     return { configurado: true, borradores: (await deps.almacen.listar()).map(resumenDeBorrador) };
   }
 
-  async function obtener(orderCodeBruto: string): Promise<Borrador> {
-    const borrador = await deps.almacen.obtener(codigoBorrador(orderCodeBruto));
-    if (!borrador) throw new ErrorBorrador(MENSAJE_NO_HAY, 404);
-    return borrador;
+  /** El borrador de ese número, o null si no hay (o no hay carpeta): no es un error, y así el navegador no lo apunta como fallo. */
+  async function obtener(orderCodeBruto: string): Promise<Borrador | null> {
+    return await deps.almacen.obtener(codigoBorrador(orderCodeBruto));
   }
 
   async function guardar(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {

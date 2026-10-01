@@ -4,7 +4,7 @@ import path from "node:path";
 import { emptyLona } from "../../remolques/entradas-vacias.ts";
 import { crearAlmacenBorradores, type AlmacenBorradores } from "../almacen.ts";
 import {
-  MENSAJE_NO_HAY, MENSAJE_OCUPADO, MENSAJE_OTRO_NUMERO, MENSAJE_SIN_AUTOR, MENSAJE_YA_EN_PEDIDOS, mensajeOtroTipo,
+  MENSAJE_OCUPADO, MENSAJE_OTRO_NUMERO, MENSAJE_SIN_AUTOR, MENSAJE_YA_EN_PEDIDOS, mensajeOtroTipo,
   SIN_CARPETA_BORRADORES,
 } from "../reglas.ts";
 import { crearServicioBorradores, type DependenciasBorradores } from "../servicio.ts";
@@ -55,7 +55,7 @@ describe("servicio de borradores", () => {
     expect(lista.configurado).toBe(true);
     expect(lista.borradores.map((b) => b.orderCode)).toEqual(["AR2604286"]);
     expect(lista.borradores[0]).not.toHaveProperty("contenido");
-    expect((await servicio.obtener("ar2604286")).contenido).toMatchObject({ order: { orderCode: "AR.26.04286" } });
+    expect((await servicio.obtener("ar2604286"))?.contenido).toMatchObject({ order: { orderCode: "AR.26.04286" } });
   });
 
   it("sin carpeta: no hay borradores y guardar dice que falta configurarla", async () => {
@@ -109,9 +109,9 @@ describe("servicio de borradores", () => {
     expect((await primero).status).toBe(200);
   });
 
-  it("abrir uno que no está es 404; descartar dice si estaba", async () => {
+  it("abrir uno que no está da null (no es un error); descartar dice si estaba", async () => {
     const servicio = montar();
-    await expect(servicio.obtener("AR2604286")).rejects.toMatchObject({ message: MENSAJE_NO_HAY, statusCode: 404 });
+    expect(await servicio.obtener("AR2604286")).toBeNull();
     await servicio.guardar("AR2604286", cuerpoToldos("AR2604286"));
     expect(await servicio.descartar("AR.26.04286")).toEqual({ status: 200, cuerpo: { ok: true, existia: true } });
     expect(await servicio.descartar("AR2604286")).toEqual({ status: 200, cuerpo: { ok: true, existia: false } });
