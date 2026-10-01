@@ -17,7 +17,7 @@ export interface CarpetasRemolques {
 
 type CodigoArchivo =
   | "ESCRITURA_DESACTIVADA" | "SIN_CARPETAS" | "RUTA_NO_VALIDA" | "PEDIDO_NO_VALIDO"
-  | "NO_ES_PDF" | "CARPETA_NO_DISPONIBLE" | "PDF_EXISTENTE";
+  | "NO_ES_PDF" | "CARPETA_NO_DISPONIBLE" | "PDF_EXISTENTE" | "ARCHIVO_INCOMPLETO";
 
 export class ErrorArchivoPdf extends Error {
   statusCode: number;
@@ -161,7 +161,12 @@ export async function archivarPdfRemolques(
       }
     }
     if (fallos.length) {
-      throw new Error(`Archivo incompleto. Revisa ${fallos.join(", ")}; se conservan las copias .bak para recuperar los PDF anteriores.`);
+      // Con su código: quien genera tiene que leer este texto, no el genérico de fallo del servidor.
+      throw new ErrorArchivoPdf(
+        `Archivo incompleto. Revisa ${fallos.join(", ")}; se conservan las copias .bak para recuperar los PDF anteriores.`,
+        500,
+        "ARCHIVO_INCOMPLETO",
+      );
     }
     await Promise.all(copias.map((d) => rm(d, { force: true }).catch(() => {})));
     if ((error as NodeJS.ErrnoException).code === "EEXIST") throw new ErrorArchivoPdf(MENSAJE_PDF_EXISTENTE, 409, "PDF_EXISTENTE");

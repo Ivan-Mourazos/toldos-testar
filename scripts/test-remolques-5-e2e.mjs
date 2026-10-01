@@ -195,7 +195,11 @@ try {
   const sustituido = await api(`/api/remolques/pedidos/${P3.codigo}/generar`, json({ confirmOverwrite: true }));
   assert.equal(sustituido.status, 200, JSON.stringify(sustituido.datos));
   assert.equal((await leerDatosPedido(fs.readFileSync(yaHay))).reviewedBy, 'ÁNGEL');
-  console.log('OK: sin regenerar, sin guardar encima de un generado y sustituir solo confirmando');
+  // Un pedido es de toldos o de remolques: toldos no guarda con el número de uno de remolques.
+  const deToldos = await api('/api/reviews', json({ order: { orderCode: P1.pedido, awnings: [{ model: 'ARTE' }] }, savedBy: 'IVÁN' }));
+  assert.deepEqual([deToldos.status, deToldos.datos?.error],
+    [409, `${P1.codigo} ya está guardado como pedido de remolques: un pedido es de toldos o de remolques. Revisa el número.`]);
+  console.log('OK: sin regenerar, sin guardar encima de un generado, sustituir solo confirmando y toldos no guarda un número de remolques');
 
   // ── 6. Reutilizar datos ──
   await abrir(P1.codigo);

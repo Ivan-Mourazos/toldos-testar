@@ -106,4 +106,17 @@ describe("marcarPedidoGenerado", () => {
     expect(g.elementos.map((e) => e.input.cabecera.revision)).toEqual(["JAIME", "JAIME"]);
     expect(p.status).toBe("PENDING_REVIEW");
   });
+
+  it("sin revisor de CoordinaOT no nombra a nadie: ni el guardado ni el de la web vieja, como la hoja", () => {
+    const p = nuevo();
+    const viejo = {
+      ...p,
+      reviewedBy: "ADRIÁN", reviewedAt: "2026-09-01T08:00:00.000Z",
+      summary: { ...p.summary, reviewer: "ADRIÁN" },
+      elementos: p.elementos.map((e) => ({ ...e, input: { ...e.input, cabecera: { ...e.input.cabecera, revision: "ADRIÁN" } } })),
+    };
+    const g = marcarPedidoGenerado(viejo, { revisor: "", ficheros: [], ahora: "2026-10-03T09:00:00.000Z" });
+    expect(g).toMatchObject({ status: "PRODUCED", reviewedBy: "", reviewedAt: null, summary: { reviewer: "" } });
+    expect(g.elementos.map((e) => e.input.cabecera.revision)).toEqual(["", ""]);
+  });
 });

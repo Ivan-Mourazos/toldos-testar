@@ -11,7 +11,10 @@ import { COORDINA_UNAVAILABLE, PRODUCED_SAVE_ERROR } from "../../../reviewRules.
 import { leerDatosPedido } from "../adjunto.ts";
 import { crearAlmacenPedidosRemolques } from "../almacen.ts";
 import { ErrorPedidoRemolques } from "../pedido.ts";
-import { crearServicioPedidosRemolques, esPedidoDeToldosSegunError, MENSAJE_TOLDOS_SIN_COMPROBAR, paramsDeLaPantalla, type EstadoCoordina } from "../servicio.ts";
+import {
+  comprobadorPedidoToldos, crearServicioPedidosRemolques, esPedidoDeToldosSegunError, MENSAJE_TOLDOS_SIN_COMPROBAR, mensajePedidoDeRemolques,
+  paramsDeLaPantalla, yaEsPedidoDeRemolques, type EstadoCoordina,
+} from "../servicio.ts";
 
 // Para simular una carpeta que da un error de acceso al mirar si el PDF ya está (EACCES, red caída).
 const sinAcceso = vi.hoisted(() => ({ activo: false }));
@@ -109,6 +112,7 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
     pdfOficina: path.join(oficina, "2026", "AR2604286.pdf"),
     averias,
     oficina,
+    interna: path.join(raiz, "interna"),
     cambiarCoordina: (nuevo: EstadoCoordina) => { estadoCoordina = nuevo; },
     /** El próximo PDF se queda esperando hasta soltarlo; `dentro` se cumple al empezar a hacerlo. */
     retenerPdf: () => {
@@ -216,6 +220,37 @@ describe("revisión: casos de error", () => {
     }
   });
 
+  it("mira si un número es de toldos como el servidor: sin carpeta no; leído o no entendible sí; no está no", async () => {
+    const tienda = (reviewDirectory: string, getReview: () => Promise<unknown>) => ({ getSettings: async () => ({ reviewDirectory }), getReview });
+    const enoent = async () => { throw Object.assign(new Error("x"), { code: "ENOENT" }); };
+    expect(await comprobadorPedidoToldos(tienda("", async () => ({})))("AR2604286")).toBe(false);
+    expect(await comprobadorPedidoToldos(tienda("/t/{YYYY}", async () => ({})))("AR2604286")).toBe(true);
+    expect(await comprobadorPedidoToldos(tienda("/t/{YYYY}", async () => { throw new SyntaxError("roto"); }))("AR2604286")).toBe(true);
+    expect(await comprobadorPedidoToldos(tienda("/t/{YYYY}", enoent))("AR2604286")).toBe(false);
+    const caida = comprobadorPedidoToldos(tienda("/t/{YYYY}", async () => { throw Object.assign(new Error("x"), { code: "EIO" }); }));
+    expect(await falla(caida("AR2604286"))).toEqual([503, MENSAJE_TOLDOS_SIN_COMPROBAR]);
+  });
+
+  it("toldos no guarda un número que ya es de remolques; si la carpeta interna falla, toldos sigue", async () => {
+    const m = montar();
+    await guardar(m.servicio);
+    const almacen = crearAlmacenPedidosRemolques({ carpeta: async () => m.interna });
+    const avisos: string[] = [];
+    const registrar = (mensaje: string) => { avisos.push(mensaje); };
+    expect(await yaEsPedidoDeRemolques(almacen, "AR.26.04286", registrar)).toBe(true);
+    expect(await yaEsPedidoDeRemolques(almacen, "AR2604287", registrar)).toBe(false);
+    expect(mensajePedidoDeRemolques("AR2604286")).toBe("AR2604286 ya está guardado como pedido de remolques: un pedido es de toldos o de remolques. Revisa el número.");
+    // Sin carpeta interna en Configuración: no hay pedidos de remolques, sin avisos.
+    const sinCarpeta = crearAlmacenPedidosRemolques({ carpeta: async () => "" });
+    expect(await yaEsPedidoDeRemolques(sinCarpeta, "AR2604286", registrar)).toBe(false);
+    expect(avisos).toEqual([]);
+    // Un fichero roto (o la carpeta caída) no para a toldos: se apunta y se sigue.
+    writeFileSync(path.join(m.interna, "AR2604288.json"), "{ roto");
+    expect(await yaEsPedidoDeRemolques(almacen, "AR2604288", registrar)).toBe(false);
+    expect(avisos).toHaveLength(1);
+    expect(avisos[0]).toContain("AR2604288");
+  });
+
   it("quien guarda tiene que ser un técnico de la lista; params null cuenta como sin params", async () => {
     const { servicio } = montar();
     const aviso = [400, "Elige quién eres en «Soy» antes de guardar."];
@@ -256,6 +291,24 @@ describe("generar archivos", () => {
     // Ya generado: no se vuelve a hacer.
     expect(await servicio.generar("AR2604286", {})).toMatchObject({ status: 200, cuerpo: { ok: true, unchanged: true } });
     expect(llamadas.pdf).toHaveLength(1);
+  });
+
+  it("los datos dentro del PDF llevan los resultados recalculados con los parámetros del pedido, como la hoja", async () => {
+    const { servicio, llamadas, pdfPlan, interna } = montar();
+    const propios: CalcParams = { ...DEFAULT_PARAMS, demasiaAlto: DEFAULT_PARAMS.demasiaAlto + 1 };
+    await guardar(servicio, { params: propios });
+    // Un pedido con resultados y parámetros por elemento que ya no son los del cálculo (p. ej. de la web vieja).
+    const fichero = path.join(interna, "AR2604286.json");
+    const guardado = JSON.parse(readFileSync(fichero, "utf8"));
+    guardado.elementos = guardado.elementos.map((e: Record<string, unknown>) => ({ ...e, result: { viejo: true }, paramsSnapshot: DEFAULT_PARAMS }));
+    writeFileSync(fichero, JSON.stringify(guardado));
+    expect((await servicio.generar("AR2604286", {})).status).toBe(200);
+    const dentro = await leerDatosPedido(readFileSync(pdfPlan));
+    expect(dentro.elementos.map((e) => e.version)).toEqual(["10", "11"]);
+    expect(dentro.elementos.map((e) => e.result)).toEqual(llamadas.pdf[0].elementos.map((e) => e.result));
+    expect(dentro.elementos.map((e) => e.result)).not.toContainEqual({ viejo: true });
+    expect(dentro.elementos.map((e) => e.paramsSnapshot)).toEqual([propios, propios]);
+    expect(await servicio.obtener("AR2604286")).toEqual(dentro);
   });
 
   it("no genera con la generación desactivada, sin aprobar o sin CoordinaOT", async () => {

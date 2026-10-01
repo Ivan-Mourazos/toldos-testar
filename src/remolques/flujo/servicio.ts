@@ -82,6 +82,70 @@ export function esPedidoDeToldosSegunError(error: unknown): boolean {
   throw new ErrorPedidoRemolques(MENSAJE_TOLDOS_SIN_COMPROBAR, 503);
 }
 
+/** Lo que hace falta de workflowStore (src/workflow.js) para mirar si un número es de toldos. */
+export interface TiendaToldos {
+  getSettings(): Promise<{ reviewDirectory?: string }>;
+  getReview(orderCode: string): Promise<unknown>;
+}
+
+/**
+ * true si ese número ya está guardado como pedido de toldos. Lo usan el servidor (no se guarda como
+ * remolques) y el paso desde la web vieja (no se pasa). Sin carpeta de toldos no hay nada que mirar.
+ */
+export function comprobadorPedidoToldos(tienda: TiendaToldos): (orderCode: string) => Promise<boolean> {
+  return async (orderCode) => {
+    if (!(await tienda.getSettings()).reviewDirectory) return false;
+    try {
+      await tienda.getReview(orderCode);
+      return true;
+    } catch (error) {
+      return esPedidoDeToldosSegunError(error);
+    }
+  };
+}
+
+export const mensajePedidoDeRemolques = (orderCode: string) =>
+  `${orderCode} ya está guardado como pedido de remolques: un pedido es de toldos o de remolques. Revisa el número.`;
+
+/**
+ * true si ese número ya está guardado como pedido de remolques (lo pregunta el guardado de toldos).
+ * Si la carpeta interna no está puesta, no hay pedidos de remolques; si falla al leerla, se apunta y
+ * se responde false: toldos tiene que seguir funcionando aunque la carpeta de remolques esté rota.
+ */
+export async function yaEsPedidoDeRemolques(
+  almacen: Pick<AlmacenPedidosRemolques, "obtener">,
+  orderCode: string,
+  registrar: (mensaje: string) => void = (mensaje) => console.error(mensaje),
+): Promise<boolean> {
+  let codigo: string;
+  try {
+    codigo = codigoPedido(orderCode);
+  } catch {
+    return false;
+  }
+  try {
+    return (await almacen.obtener(codigo)) !== null;
+  } catch (error) {
+    registrar(`No se pudo mirar si ${codigo} es un pedido de remolques; se guarda como toldos: ${error instanceof Error ? error.message : String(error)}`);
+    return false;
+  }
+}
+
+/**
+ * El pedido con el resultado de cada elemento tal como lo ha calculado la hoja (por su versión) y los
+ * parámetros del pedido como los de cada elemento: así lo que va dentro del PDF es lo que se imprime.
+ */
+function conResultadosDeLaHoja(pedido: PedidoRemolques, datos: DatosHojaPedido): PedidoRemolques {
+  return {
+    ...pedido,
+    elementos: pedido.elementos.map((elemento) => {
+      const calculado = datos.elementos.find((e) => e.version === elemento.version);
+      if (!calculado) throw new Error(`La hoja no trae el elemento ${elemento.version} del pedido ${pedido.orderCode}.`);
+      return { ...elemento, result: calculado.result, paramsSnapshot: pedido.params };
+    }),
+  };
+}
+
 export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques) {
   const reloj = deps.ahora ?? (() => new Date());
   const ahora = () => reloj().toISOString();
@@ -177,8 +241,10 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       if (yaEstan.length > 0 && !confirmar) return { status: 409, cuerpo: { needsConfirmation: true, existing: yaEstan } };
 
       const ficheros: FicheroGenerado[] = destinos.map((savedPath) => ({ type: "pdf", filename: path.basename(savedPath), savedPath }));
-      const generado = marcarPedidoGenerado(pedido, { revisor, ficheros, ahora: ahora() });
+      // La hoja se recalcula con los parámetros del pedido; los datos que van dentro del PDF (y el
+      // pedido generado) llevan esos mismos resultados, no los de cuando se guardó.
       const datos: DatosHojaPedido = { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: revisor };
+      const generado = marcarPedidoGenerado(conResultadosDeLaHoja(pedido, datos), { revisor, ficheros, ahora: ahora() });
       const pdf = await adjuntarDatosPedido(await deps.hacerPdf(datos), generado);
       try {
         await archivarPdfRemolques(pdf, { numeroPedido: pedido.numeroPedido, fecha: pedido.summary.orderDate }, ajustes, { sustituir: confirmar });

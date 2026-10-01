@@ -115,7 +115,12 @@ export function crearPedidoRemolques({ datos, autoria, existente, ahora }: {
   };
 }
 
-/** Generado: PRODUCED, con sus dos PDF y el revisor de CoordinaOT en el pedido y en cada elemento. */
+/**
+ * Generado: PRODUCED, con sus dos PDF y el revisor de CoordinaOT en el pedido y en cada elemento.
+ * El revisor es solo el de CoordinaOT, el mismo que imprime «REVISADO POR» la hoja: si no da
+ * ninguno, el pedido tampoco nombra a nadie (ni el guardado antes ni el de la web vieja), para que
+ * los datos dentro del PDF y el historial no digan otra cosa que la hoja.
+ */
 export function marcarPedidoGenerado(pedido: PedidoRemolques, { revisor, ficheros, ahora }: {
   revisor: string;
   ficheros: FicheroGenerado[];
@@ -125,10 +130,10 @@ export function marcarPedidoGenerado(pedido: PedidoRemolques, { revisor, fichero
     ...pedido,
     status: "PRODUCED",
     updatedAt: ahora,
-    reviewedAt: revisor ? ahora : pedido.reviewedAt,
-    reviewedBy: revisor || pedido.reviewedBy,
-    summary: { ...pedido.summary, reviewer: revisor || pedido.summary.reviewer },
-    elementos: revisor ? pedido.elementos.map((elemento) => conCabecera(elemento, { revision: revisor })) : pedido.elementos,
+    reviewedAt: revisor ? ahora : null,
+    reviewedBy: revisor,
+    summary: { ...pedido.summary, reviewer: revisor },
+    elementos: pedido.elementos.map((elemento) => conCabecera(elemento, { revision: revisor })),
     production: { createdAt: ahora, createdBy: pedido.summary.technician || pedido.createdBy, files: ficheros },
   };
 }

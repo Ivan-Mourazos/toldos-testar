@@ -163,4 +163,19 @@ describe("archivo del PDF en dos carpetas", () => {
     for (const d of destinos) expect(readFileSync(d)).toEqual(Buffer.from(PDF));
     expect(readdirSync(planteamientos)).toEqual(["AR2603632-10.pdf"]);
   });
+
+  it("si tampoco se puede volver atrás, el error lleva su código 500 y su texto llega a quien genera", async () => {
+    const { carpetas } = preparar();
+    const { destinos } = await archivarPdfRemolques(PDF, PEDIDO, carpetas);
+    const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
+    vi.mocked(rename)
+      .mockImplementationOnce(actual.rename)
+      .mockRejectedValueOnce(new Error("segunda carpeta sin red"))
+      .mockRejectedValueOnce(new Error("primera carpeta sin red"));
+    await expect(archivarPdfRemolques(new Uint8Array([37, 80, 68, 70, 1, 2]), PEDIDO, carpetas, { sustituir: true }))
+      .rejects.toMatchObject({
+        name: "ErrorArchivoPdf", statusCode: 500, codigo: "ARCHIVO_INCOMPLETO",
+        message: `Archivo incompleto. Revisa ${destinos[0]}; se conservan las copias .bak para recuperar los PDF anteriores.`,
+      });
+  });
 });

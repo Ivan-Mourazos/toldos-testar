@@ -29,7 +29,9 @@ import { crearServicioPdf, ErrorSalidaPdf } from './remolques/salida/navegador.t
 import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
 import { crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
 import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
-import { crearServicioPedidosRemolques, esPedidoDeToldosSegunError, paramsDeLaPantalla } from './remolques/flujo/servicio.ts';
+import {
+  comprobadorPedidoToldos, crearServicioPedidosRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
+} from './remolques/flujo/servicio.ts';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
@@ -106,25 +108,19 @@ const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
 const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
 // Pedidos de remolques (fase 5): un JSON por pedido en la carpeta interna de Configuración y el
 // mismo camino que toldos (CoordinaOT aprueba, el autor genera, los dos PDF con sus datos dentro).
+// El almacén va aparte porque también lo mira el guardado de toldos: nunca hay pedidos mixtos.
+const almacenPedidosRemolques = crearAlmacenPedidosRemolques({
+  carpeta: async () => (await workflowStore.getSettings()).remolquesRevisionDirectory
+});
 const pedidosRemolques = crearServicioPedidosRemolques({
-  almacen: crearAlmacenPedidosRemolques({
-    carpeta: async () => (await workflowStore.getSettings()).remolquesRevisionDirectory
-  }),
+  almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
   parametros: () => remolquesParametersStore.get(),
   coordina,
   tecnicos: formOptions.tecnicos,
   hacerPdf: hojaRemolquesPdf,
-  esPedidoDeToldos: async (orderCode) => {
-    // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar.
-    if (!(await workflowStore.getSettings()).reviewDirectory) return false;
-    try {
-      await workflowStore.getReview(orderCode);
-      return true;
-    } catch (error) {
-      return esPedidoDeToldosSegunError(error);
-    }
-  }
+  // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar.
+  esPedidoDeToldos: comprobadorPedidoToldos(workflowStore)
 });
 
 app.use(compression());
@@ -585,6 +581,10 @@ app.post('/api/reviews', async (req, res, next) => {
     const rawOrder = req.body?.order || req.body;
     const normalizedOrder = normalizeOrder(rawOrder);
     const orderCode = sanitizeOrderCode(normalizedOrder.orderCode);
+    // Un pedido es de toldos o de remolques. Si la carpeta interna de remolques falla, toldos sigue.
+    if (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) {
+      throw httpError(409, mensajePedidoDeRemolques(orderCode));
+    }
     let existing = null;
     try {
       existing = await workflowStore.getReview(orderCode);
