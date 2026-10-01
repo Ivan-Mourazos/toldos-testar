@@ -113,7 +113,7 @@
    ni relieve, es la salida discreta. */
 .confirmation-actions .ghost-button {
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   box-shadow: none;
   color: var(--text-muted);
   filter: none;
@@ -150,11 +150,12 @@
   padding: 1rem;
   transition: transform 150ms ease, border-color 150ms ease;
 }
-.who-are-you-option:hover { border-color: var(--color-brand-400); transform: scale(1.03); }
+.who-are-you-option { border-color: var(--control-border); }
+.who-are-you-option:hover { border-color: var(--control-active-border); transform: scale(1.03); }
 /* La persona que ya es este navegador, si se reabre desde «Soy»: el dorado de lo activo. */
 .who-are-you-option.is-current {
   background: var(--tgm-yellow-soft);
-  border-color: var(--color-brand-400);
+  border-color: var(--control-active-border);
 }
 .who-are-you-avatar {
   background: var(--color-brand-500);
@@ -293,7 +294,7 @@
    pestañas y los filtros) y la tinta oscura de sus botones dorados. */
 .workflow-toggle input {
   background: var(--surface-2);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--control-border);
   box-sizing: border-box;
   height: 1.375rem;
   width: 2.5rem;
@@ -306,9 +307,9 @@
   top: 0.1875rem;
   width: 0.875rem;
 }
-.workflow-toggle input:checked { background: var(--color-brand-400); border-color: var(--color-brand-500); }
+.workflow-toggle input:checked { background: var(--color-brand-400); border-color: var(--control-active-border); }
 .workflow-toggle input:checked::after { background: var(--tinta-dorado); left: 1.4375rem; }
-.workflow-toggle input:focus-visible { outline: 2px solid var(--color-brand-400); outline-offset: 2px; }
+.workflow-toggle input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .workflow-toggle strong { color: var(--text-muted); font-size: 11px; font-weight: 600; }
 .workflow-toggle strong.is-on { color: var(--correcto-texto); }
 
