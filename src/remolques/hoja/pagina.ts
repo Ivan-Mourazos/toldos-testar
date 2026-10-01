@@ -17,7 +17,7 @@ const oRaya = (valor: string | undefined) => (valor ?? "").trim() || "—";
 export interface CabeceraHoja {
   cliente: string;
   realizadoPor: string;
-  /** Vacío hasta la fase 5, que pone el revisor de CoordinaOT. */
+  /** Vacío en la vista previa; al generar, el revisor de CoordinaOT (fase 5). */
   revisadoPor: string;
   numeroPedido: string;
   of: string;
@@ -98,12 +98,12 @@ export function tablaGanchos(input: LonaInput | BaquetonInput): TablaPosiciones 
   return { titulo: "GANCHOS · SOBRE EL REMOLQUE, COMO VIENEN EN EL PEDIDO", columnas: columnas(filas), filas };
 }
 
-export function paginaHoja(elemento: ElementoHoja, indice: number, total: number, params: CalcParams): PaginaHojaDatos {
+export function paginaHoja(elemento: ElementoHoja, indice: number, total: number, params: CalcParams, revisadoPor = ""): PaginaHojaDatos {
   return {
     ...datosHoja(elemento, indice, total),
     clave: elemento.version,
     tipo: elemento.tipo,
-    cabecera: cabeceraHoja(elemento.input.cabecera),
+    cabecera: cabeceraHoja(elemento.input.cabecera, revisadoPor),
     ollaos: tablaOllaos(elemento.input, elemento.result.reparto, elemento.input.primerOllao ?? params.primerOllao),
     ganchos: tablaGanchos(elemento.input),
     notasVistas: elemento.tipo === "lona"

@@ -103,4 +103,10 @@ describe("paginaHoja", () => {
     const pagina = paginaHoja({ version: "10", tipo: "lona", input, result: calcLona(input, DEFAULT_PARAMS) }, 0, 1, DEFAULT_PARAMS);
     expect(pagina.ollaos.titulo).toContain(`A ${DEFAULT_PARAMS.primerOllao.toLocaleString("es-ES")} CM DEL BORDE`);
   });
+  it("«REVISADO POR» lleva el revisor que se le pasa (al generar, el de CoordinaOT)", () => {
+    const input = lona();
+    const elemento = { version: "10", tipo: "lona" as const, input, result: calcLona(input, DEFAULT_PARAMS) };
+    expect(paginaHoja(elemento, 0, 1, DEFAULT_PARAMS, "JAIME").cabecera.revisadoPor).toBe("JAIME");
+    expect(paginaHoja(elemento, 0, 1, DEFAULT_PARAMS).cabecera.revisadoPor).toBe("");
+  });
 });

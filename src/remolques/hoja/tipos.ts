@@ -21,4 +21,6 @@ export type ElementoHoja =
 export interface DatosHojaPedido {
   elementos: ElementoHoja[];
   params: CalcParams;
+  /** «REVISADO POR» de la cabecera: quien aprobó en CoordinaOT (fase 5). Vacío en la vista previa. */
+  revisadoPor?: string;
 }

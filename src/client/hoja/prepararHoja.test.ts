@@ -48,4 +48,11 @@ describe('prepararHoja', () => {
     // tres-cuartos, tres-cuartos-detras, delante, detras, lateral de cada elemento: lona, baquetón, lona.
     expect(reservas).toEqual([0, 0, franja, franja, 0, 0, 0, 0, 0, 0, 0, 0, franja, franja, 0]);
   });
+
+  it('pone en cada hoja el revisor que traen los datos, y vacío si no traen', () => {
+    const { capturador } = capturadorFalso();
+    const datos = { ...prepararPedidoHoja(muestras.varios, DEFAULT_PARAMS), revisadoPor: 'JAIME' };
+    expect(prepararHoja(datos, capturador).map((h) => h.pagina.cabecera.revisadoPor)).toEqual(['JAIME', 'JAIME', 'JAIME']);
+    expect(prepararHoja(prepararPedidoHoja(muestras.varios, DEFAULT_PARAMS), capturador)[0].pagina.cabecera.revisadoPor).toBe('');
+  });
 });

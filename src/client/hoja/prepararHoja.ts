@@ -19,7 +19,7 @@ const conNota = (pagina: PaginaHojaDatos, vista: VistaHoja) =>
 export function prepararHoja(datos: DatosHojaPedido, capturador: Capturador): HojaPreparada[] {
   const total = datos.elementos.length;
   return datos.elementos.map((elemento, indice) => {
-    const pagina = paginaHoja(elemento, indice, total, datos.params);
+    const pagina = paginaHoja(elemento, indice, total, datos.params, datos.revisadoPor ?? '');
     const escena = construirEscena({ tipo: elemento.tipo, input: elemento.input, res: elemento.result } as ElementoEscena, datos.params);
     if (!escena) return { pagina, vistas: null };
     const vistas = {} as Record<VistaHoja, CapturaVista>;

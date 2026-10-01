@@ -119,15 +119,20 @@ export function coordinaGroup(awnings, status) {
   return states.every((state) => state === 'aprobada') ? 'aprobado' : 'por_revisar';
 }
 
+// Cómo se llama lo que lleva OF en los avisos de «Generar archivos»: los toldos de un pedido de
+// toldos o los elementos (remolques y baquetones) de uno de remolques (fase 5).
+export const AWNING_NOUNS = { one: 'toldo', many: 'toldos', none: 'El pedido no tiene toldos.' };
+export const ELEMENT_NOUNS = { one: 'elemento', many: 'elementos', none: 'El pedido no tiene elementos.' };
+
 /**
  * Por qué no se puede generar todavía, en castellano llano; null si se puede.
  * La OF que falta va primero: sin ella ni siquiera se puede preguntar a CoordinaOT.
  */
-export function generationBlock(awnings, status) {
-  if (awnings.length === 0) return 'El pedido no tiene toldos.';
+export function generationBlock(awnings, status, nouns = AWNING_NOUNS) {
+  if (awnings.length === 0) return nouns.none;
   const withoutOf = awnings.filter((awning) => !normalizeOf(awning.of)).map((awning) => awning.letter);
-  if (withoutOf.length === 1) return `Falta la OF en el toldo ${withoutOf[0]}.`;
-  if (withoutOf.length > 1) return `Falta la OF en los toldos ${withoutOf.join(', ')}.`;
+  if (withoutOf.length === 1) return `Falta la OF en el ${nouns.one} ${withoutOf[0]}.`;
+  if (withoutOf.length > 1) return `Falta la OF en los ${nouns.many} ${withoutOf.join(', ')}.`;
   if (!status?.disponible) return status?.motivo === COORDINA_NOT_CONFIGURED_MOTIVO ? COORDINA_NOT_CONFIGURED : COORDINA_UNAVAILABLE;
   const notApproved = awnings.filter((awning) => coordinaState(status, awning.of) !== 'aprobada');
   if (notApproved.length === 0) return null;

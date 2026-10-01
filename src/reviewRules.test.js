@@ -13,7 +13,8 @@ import {
   reviewAuthorship,
   reviewerName,
   saveReviewDecision,
-  uniqueOfs
+  uniqueOfs,
+  ELEMENT_NOUNS,
 } from './reviewRules.js';
 
 // server.js arranca Express al importarlo, así que las decisiones de las rutas
@@ -178,6 +179,16 @@ describe('aprobación leída de CoordinaOT', () => {
 
   it('generationBlock: pedido sin toldos', () => {
     expect(generationBlock([], status({}))).toBe('El pedido no tiene toldos.');
+  });
+
+  it('generationBlock: en remolques habla de elementos', () => {
+    expect(generationBlock([], { disponible: true, ofs: {} }, ELEMENT_NOUNS)).toBe('El pedido no tiene elementos.');
+    expect(generationBlock([{ letter: 'A', of: '0230194' }, { letter: 'B', of: '' }], { disponible: false }, ELEMENT_NOUNS))
+      .toBe('Falta la OF en el elemento B.');
+    expect(generationBlock([{ letter: 'A', of: '' }, { letter: 'B', of: ' ' }], { disponible: false }, ELEMENT_NOUNS))
+      .toBe('Falta la OF en los elementos A, B.');
+    // Sin el tercer argumento, lo de siempre.
+    expect(generationBlock([], { disponible: true, ofs: {} })).toBe('El pedido no tiene toldos.');
   });
 });
 
