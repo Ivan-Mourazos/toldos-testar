@@ -29,7 +29,7 @@ import { crearServicioPdf, ErrorSalidaPdf } from './remolques/salida/navegador.t
 import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
 import { crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
 import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
-import { crearServicioPedidosRemolques, paramsDeLaPantalla } from './remolques/flujo/servicio.ts';
+import { crearServicioPedidosRemolques, esPedidoDeToldosSegunError, paramsDeLaPantalla } from './remolques/flujo/servicio.ts';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
@@ -116,11 +116,13 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   tecnicos: formOptions.tecnicos,
   hacerPdf: hojaRemolquesPdf,
   esPedidoDeToldos: async (orderCode) => {
+    // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar.
+    if (!(await workflowStore.getSettings()).reviewDirectory) return false;
     try {
       await workflowStore.getReview(orderCode);
       return true;
-    } catch {
-      return false;
+    } catch (error) {
+      return esPedidoDeToldosSegunError(error);
     }
   }
 });
@@ -421,7 +423,7 @@ app.post('/api/remolques/pdf', async (req, res, next) => {
   });
   try {
     // «Corregir» un pedido guardado manda los parámetros con que se guardó; si no, los comunes.
-    const params = req.body?.params === undefined
+    const params = req.body?.params == null
       ? await remolquesParametersStore.get()
       : paramsDeLaPantalla(req.body.params);
     const datos = prepararPedidoHoja(req.body?.elementos, params);
@@ -460,7 +462,7 @@ function rutaRemolques(manejar) {
     } catch (error) {
       if (error?.statusCode) return next(error);
       console.error('Fallo inesperado en los pedidos de remolques:', error);
-      return next(httpError(500, `No se pudo completar la operación por un fallo del servidor: ${error instanceof Error ? error.message : String(error)}`));
+      return next(httpError(500, 'No se pudo completar la operación por un fallo del servidor. Avisa a informática.'));
     }
   };
 }

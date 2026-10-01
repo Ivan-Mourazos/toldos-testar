@@ -30,6 +30,7 @@ export class ErrorArchivoPdf extends Error {
   }
 }
 
+export const mensajeCarpetaNoDisponible = (raiz: string) => `La carpeta de archivo no está disponible o no permite escribir: ${raiz}`;
 export const MENSAJE_PDF_EXISTENTE = "Ya existe un PDF de este pedido en las carpetas de archivo. Se sustituirán las dos copias.";
 
 /** La parte fija de una plantilla, hasta el primer {YYYY}: tiene que existir (es el montaje de red). */
@@ -123,7 +124,7 @@ export async function archivarPdfRemolques(
       if (!(await stat(raiz)).isDirectory()) throw new Error("No es una carpeta");
       await access(raiz, constants.W_OK);
     } catch {
-      throw new ErrorArchivoPdf(`La carpeta de archivo no está disponible o no permite escribir: ${raiz}`, 503, "CARPETA_NO_DISPONIBLE");
+      throw new ErrorArchivoPdf(mensajeCarpetaNoDisponible(raiz), 503, "CARPETA_NO_DISPONIBLE");
     }
   }
   for (const destino of destinos) await mkdir(path.dirname(destino), { recursive: true });

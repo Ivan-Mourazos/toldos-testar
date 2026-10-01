@@ -7,7 +7,7 @@ import type { CalcParams } from "../calc/params.ts";
 import { validarParams } from "../calc/validar-params.ts";
 import { prepararPedidoHoja } from "../hoja/pedido.ts";
 import type { DatosHojaPedido } from "../hoja/tipos.ts";
-import { archivarPdfRemolques, destinosPdfRemolques, ErrorArchivoPdf, type CarpetasRemolques } from "../salida/archivo.ts";
+import { archivarPdfRemolques, destinosPdfRemolques, ErrorArchivoPdf, mensajeCarpetaNoDisponible, type CarpetasRemolques } from "../salida/archivo.ts";
 import { nombrePdf } from "../salida/nombre-pdf.ts";
 import { adjuntarDatosPedido } from "./adjunto.ts";
 import type { AlmacenPedidosRemolques } from "./almacen.ts";
@@ -64,8 +64,22 @@ async function existeFichero(fichero: string): Promise<boolean> {
     return (await stat(fichero)).isFile();
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
-    throw error;
+    throw new ErrorPedidoRemolques(mensajeCarpetaNoDisponible(path.dirname(fichero)), 503);
   }
+}
+
+export const MENSAJE_TOLDOS_SIN_COMPROBAR = "No se puede comprobar si este número ya es un pedido de toldos; inténtalo en un momento.";
+
+/**
+ * Qué significa un error al leer el pedido de toldos con ese número: no está (ENOENT) → no es de
+ * toldos; el fichero existe pero no se entiende (no editable, datos rotos) → el número está cogido;
+ * cualquier otro fallo (carpeta caída, permisos) → no se sabe, y no se guarda como remolques.
+ */
+export function esPedidoDeToldosSegunError(error: unknown): boolean {
+  const e = error as { code?: string; name?: string } | null;
+  if (e?.code === "ENOENT") return false;
+  if (e?.code === "NOT_EDITABLE_REVIEW_PDF" || error instanceof SyntaxError || e?.name === "InvalidPDFException") return true;
+  throw new ErrorPedidoRemolques(MENSAJE_TOLDOS_SIN_COMPROBAR, 503);
 }
 
 export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques) {
@@ -90,7 +104,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
 
   async function guardar(cuerpo: unknown): Promise<Respuesta> {
     const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; savedBy?: unknown; confirmOverwrite?: unknown };
-    const params = c.params === undefined || c.params === null ? await deps.parametros() : paramsDeLaPantalla(c.params);
+    const salvador = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
+    if (!salvador || !deps.tecnicos.includes(salvador)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de guardar.");
+    const params = c.params == null ? await deps.parametros() : paramsDeLaPantalla(c.params);
     // Completo, del mismo pedido, ordenado y calculado aquí: nunca se guarda un resultado que no salga del cálculo.
     const datos = prepararPedidoHoja(c.elementos, params);
     const orderCode = codigoPedido(datos.elementos[0].input.cabecera.numeroPedido);
@@ -115,7 +131,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         existingTechnician: existente?.summary.technician,
         existingReviewer: existente?.summary.reviewer,
         technician: datos.elementos[0].input.cabecera.realizadoPor,
-        savedBy: typeof c.savedBy === "string" ? c.savedBy : "",
+        savedBy: salvador,
       });
       const pedido = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora() });
       await deps.almacen.guardar(pedido);
@@ -174,7 +190,15 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         throw error;
       }
       // Primero los PDF y después el estado: si el archivo falla, el pedido sigue pendiente y se puede repetir.
-      await deps.almacen.guardar(generado);
+      try {
+        await deps.almacen.guardar(generado);
+      } catch (error) {
+        console.error(`Pedido ${orderCode}: los PDF están archivados (${destinos.join(", ")}) pero no se pudo guardar el estado generado:`, error);
+        throw new ErrorPedidoRemolques(
+          "Los PDF ya están en sus carpetas, pero no se pudo apuntar el pedido como generado. Avisa a informática antes de volver a generarlo.",
+          500,
+        );
+      }
       return { status: 200, cuerpo: { ok: true, review: resumenBandeja(generado), saved: ficheros, nombre } };
     } finally {
       ocupados.delete(orderCode);

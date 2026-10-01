@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import pdfLib from "pdf-lib";
@@ -10,12 +10,27 @@ import type { DatosHojaPedido, ElementoPedidoHoja } from "../../hoja/tipos.ts";
 import { COORDINA_UNAVAILABLE, PRODUCED_SAVE_ERROR } from "../../../reviewRules.js";
 import { leerDatosPedido } from "../adjunto.ts";
 import { crearAlmacenPedidosRemolques } from "../almacen.ts";
-import { crearServicioPedidosRemolques, paramsDeLaPantalla, type EstadoCoordina } from "../servicio.ts";
+import { ErrorPedidoRemolques } from "../pedido.ts";
+import { crearServicioPedidosRemolques, esPedidoDeToldosSegunError, MENSAJE_TOLDOS_SIN_COMPROBAR, paramsDeLaPantalla, type EstadoCoordina } from "../servicio.ts";
+
+// Para simular una carpeta que da un error de acceso al mirar si el PDF ya está (EACCES, red caída).
+const sinAcceso = vi.hoisted(() => ({ activo: false }));
+vi.mock("node:fs/promises", async (importOriginal) => {
+  const original = await importOriginal<typeof import("node:fs/promises")>();
+  return {
+    ...original,
+    stat: (async (ruta: Parameters<typeof original.stat>[0], ...resto: unknown[]) => {
+      if (sinAcceso.activo && String(ruta).endsWith("AR2604286.pdf")) throw Object.assign(new Error("EACCES"), { code: "EACCES" });
+      return (original.stat as (...a: unknown[]) => unknown)(ruta, ...resto);
+    }) as typeof original.stat,
+  };
+});
 
 // Nada fuera de tmp/ del repositorio en las pruebas.
 const TMP = path.join(process.cwd(), "tmp");
 const temporales: string[] = [];
 afterEach(() => {
+  sinAcceso.activo = false;
   for (const dir of temporales.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -44,9 +59,16 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
   const llamadas = { coordina: [] as Array<{ ofs: string[]; fresh?: boolean }>, pdf: [] as DatosHojaPedido[] };
   let estadoCoordina = coordina;
   let retenido: { entrar: () => void; espera: Promise<void> } | null = null;
+  const averias = { toldos: null as Error | null, almacenGuardar: null as Error | null };
   let retenidoToldos: { entrar: () => void; espera: Promise<void> } | null = null;
   const servicio = crearServicioPedidosRemolques({
-    almacen: crearAlmacenPedidosRemolques({ carpeta: async () => path.join(raiz, "interna") }),
+    almacen: (() => {
+      const real = crearAlmacenPedidosRemolques({ carpeta: async () => path.join(raiz, "interna") });
+      return { ...real, guardar: async (pedido: Parameters<typeof real.guardar>[0]) => {
+        if (averias.almacenGuardar) throw averias.almacenGuardar;
+        return real.guardar(pedido);
+      } };
+    })(),
     ajustes: async () => ({
       productionEnabled: generacion,
       remolquesPlanteamientosDirectory: planteamientos,
@@ -75,6 +97,7 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
         retenidoToldos.entrar();
         await retenidoToldos.espera;
       }
+      if (averias.toldos) throw averias.toldos;
       return toldos.includes(codigo);
     },
     ahora: () => new Date("2026-10-01T08:00:00.000Z"),
@@ -84,6 +107,8 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
     llamadas,
     pdfPlan: path.join(planteamientos, "AR2604286-10.pdf"),
     pdfOficina: path.join(oficina, "2026", "AR2604286.pdf"),
+    averias,
+    oficina,
     cambiarCoordina: (nuevo: EstadoCoordina) => { estadoCoordina = nuevo; },
     /** El próximo PDF se queda esperando hasta soltarlo; `dentro` se cumple al empezar a hacerlo. */
     retenerPdf: () => {
@@ -164,6 +189,41 @@ describe("guardar para revisión", () => {
     await guardar(servicio);
     await servicio.generar("AR2604286", {});
     expect(await falla(guardar(servicio, { confirmOverwrite: true }))).toEqual([409, PRODUCED_SAVE_ERROR]);
+  });
+});
+
+describe("revisión: casos de error", () => {
+  it("si no se puede comprobar si es de toldos, falla con 503, no guarda nada y suelta el bloqueo", async () => {
+    const m = montar();
+    m.averias.toldos = new ErrorPedidoRemolques(MENSAJE_TOLDOS_SIN_COMPROBAR, 503);
+    expect(await falla(guardar(m.servicio))).toEqual([503, MENSAJE_TOLDOS_SIN_COMPROBAR]);
+    expect((await m.servicio.listar(2026)).reviews).toEqual([]);
+    m.averias.toldos = null;
+    expect((await guardar(m.servicio)).status).toBe(200);
+  });
+
+  it("clasifica el error de leer el pedido de toldos: no está, fichero no entendible o no se sabe", () => {
+    expect(esPedidoDeToldosSegunError(Object.assign(new Error("x"), { code: "ENOENT" }))).toBe(false);
+    expect(esPedidoDeToldosSegunError(Object.assign(new Error("x"), { code: "NOT_EDITABLE_REVIEW_PDF" }))).toBe(true);
+    expect(esPedidoDeToldosSegunError(new SyntaxError("json roto"))).toBe(true);
+    for (const raro of [Object.assign(new Error("x"), { code: "EACCES" }), Object.assign(new Error("x"), { code: "EIO" }), new Error("otro")]) {
+      try {
+        esPedidoDeToldosSegunError(raro);
+        throw new Error("no ha fallado");
+      } catch (error) {
+        expect([(error as { statusCode?: number }).statusCode, (error as Error).message]).toEqual([503, MENSAJE_TOLDOS_SIN_COMPROBAR]);
+      }
+    }
+  });
+
+  it("quien guarda tiene que ser un técnico de la lista; params null cuenta como sin params", async () => {
+    const { servicio } = montar();
+    const aviso = [400, "Elige quién eres en «Soy» antes de guardar."];
+    expect(await falla(guardar(servicio, { savedBy: "" }))).toEqual(aviso);
+    expect(await falla(guardar(servicio, { savedBy: undefined }))).toEqual(aviso);
+    expect(await falla(guardar(servicio, { savedBy: "NADIE" }))).toEqual(aviso);
+    expect((await guardar(servicio, { params: null })).status).toBe(200);
+    expect((await servicio.obtener("AR2604286")).params).toEqual(DEFAULT_PARAMS);
   });
 });
 
@@ -272,6 +332,27 @@ describe("generar archivos", () => {
     expect((await guardando).status).toBe(200);
     // Terminado el guardado, ya se puede generar.
     expect((await m.servicio.generar("AR2604286", {})).status).toBe(200);
+  });
+});
+
+describe("generar: fallos al archivar", () => {
+  it("si no se puede apuntar el estado generado tras archivar los PDF, falla con 500 y un aviso claro", async () => {
+    const m = montar();
+    await guardar(m.servicio);
+    m.averias.almacenGuardar = new Error("disco lleno");
+    const [estado, mensaje] = await falla(m.servicio.generar("AR2604286", {}));
+    expect(estado).toBe(500);
+    expect(mensaje).toBe("Los PDF ya están en sus carpetas, pero no se pudo apuntar el pedido como generado. Avisa a informática antes de volver a generarlo.");
+    expect(existsSync(m.pdfPlan)).toBe(true);
+  });
+
+  it("si no se puede mirar si el PDF ya está (no es que no exista), responde 503 de carpeta no disponible", async () => {
+    const m = montar();
+    await guardar(m.servicio);
+    sinAcceso.activo = true;
+    const [estado, mensaje] = await falla(m.servicio.generar("AR2604286", {}));
+    expect(estado).toBe(503);
+    expect(mensaje).toContain("La carpeta de archivo no está disponible o no permite escribir");
   });
 });
 
