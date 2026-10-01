@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Eraser,
   Eye,
+  FilePen,
   Save,
   UserRound,
   X, Undo2, Moon, Sun } from 'lucide-react';
@@ -36,6 +37,7 @@ import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
+import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando } from './borradores';
 import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
@@ -63,7 +65,7 @@ export default function App() {
     guardarProducto(next);
     if (next === 'remolques') setRemolquesMontado(true);
   }
-  const [working, setWorking] = useState<'review' | 'preview' | null>(null);
+  const [working, setWorking] = useState<'review' | 'preview' | 'draft' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const previewButtonRef = useRef<HTMLButtonElement>(null);
   const previewDialogRef = useRef<HTMLDivElement>(null);
@@ -239,11 +241,29 @@ export default function App() {
     notify(`Borrador de ${borrador.orderCode} abierto: sigue con él y guárdalo para revisión cuando esté listo.`, { tone: 'info', title: 'Borrador' });
   }
 
+  const buscandoBorrador = useRef(false);
   async function autofillOrder() {
     const orderCode = draft.orderCode.trim();
     if (!orderCode) {
       notify('Indica primero el número de pedido.', { tone: 'warning' });
       return;
+    }
+    // Un doble clic no abre dos preguntas ni lanza dos consultas.
+    if (buscandoBorrador.current) return;
+    buscandoBorrador.current = true;
+    try {
+      // Si este número tiene borrador (diseño 01/10/2026), se pregunta antes de ir a RPS.
+      const conBorrador = await buscarBorradorAlObtener(orderCode, 'toldos', askForConfirmation);
+      if (conBorrador.accion === 'cancelar') return;
+      if (conBorrador.accion === 'abrir') {
+        // Aquí mismo sin volver a preguntar salvo que el formulario tenga datos; si es de remolques,
+        // su pantalla pregunta si tiene datos.
+        const formularioConDatos = Boolean(draft.customer || draft.fabric || draft.notes || draft.awnings.length > 0);
+        await abrirBorrador(conBorrador.borrador, { preguntar: conBorrador.borrador.kind !== 'toldos' || formularioConDatos });
+        return;
+      }
+    } finally {
+      buscandoBorrador.current = false;
     }
     const hasFormData = Boolean(draft.customer || draft.fabric || draft.notes || draft.awnings.length > 0);
     if (hasFormData) {
@@ -481,6 +501,42 @@ export default function App() {
     }
   }
 
+  // «Guardar borrador» (diseño 01/10/2026): el pedido a medias, aunque no tenga toldos ni esté
+  // calculado, queda en el servidor para seguirlo desde cualquier puesto. Pide número y «Soy».
+  async function saveDraftToServer() {
+    const orderCode = draft.orderCode.trim();
+    if (!orderCode) {
+      notify('Indica el número de pedido para guardar el borrador.', { tone: 'warning', title: 'Falta el número' });
+      return;
+    }
+    if (!currentUser) {
+      setChoosingUser(true);
+      notify('Elige quién eres en «Soy» antes de guardar el borrador.', { tone: 'warning' });
+      return;
+    }
+    setWorking('draft');
+    try {
+      const result = await guardarBorradorPreguntando({
+        numero: orderCode,
+        cuerpo: { kind: 'toldos', savedBy: currentUser, contenido: contenidoBorradorToldos(draft) },
+        confirmar: askForConfirmation
+      });
+      if (!result.ok) {
+        if (result.mensaje) notify(result.mensaje, { tone: 'error' });
+        return;
+      }
+      setReviewRefresh((value) => value + 1);
+      setReturnNote(null);
+      draft.resetDraft();
+      setAutofill(null);
+      setPedidoRemolques(null);
+      ruleSettings.restoreParameters();
+      notify(`Borrador guardado: ${result.borrador.orderCode}.`, { tone: 'success', title: 'Borrador guardado' });
+    } finally {
+      setWorking(null);
+    }
+  }
+
   async function openPlanteamientoPreview() {
     if (!calculation || calculation.ofs.length === 0) {
       const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
@@ -604,6 +660,10 @@ export default function App() {
               <button ref={previewButtonRef} className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={openPlanteamientoPreview}>
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
+              </button>
+              <button className="ghost-button" type="button" disabled={Boolean(working) || !draft.orderCode.trim()} title={draft.orderCode.trim() ? undefined : 'Escribe el número de pedido para guardar el borrador.'} onClick={() => void saveDraftToServer()}>
+                <FilePen aria-hidden="true" />
+                {working === 'draft' ? 'Guardando…' : 'Guardar borrador'}
               </button>
               <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={() => void saveForReview()}>
                 <Save aria-hidden="true" />
