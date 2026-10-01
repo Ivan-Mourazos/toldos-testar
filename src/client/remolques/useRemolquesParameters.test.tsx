@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { DEFAULT_PARAMS } from '../../remolques/calc/params';
+import { PARAMS_GENERALES } from '../../remolques/clientes/params-efectivos';
 import { useRemolquesParameters } from './useRemolquesParameters';
 
 // El proyecto prueba sin DOM; la interacción real se comprueba con Playwright.
@@ -80,4 +81,16 @@ it('no guarda valores inválidos ni sustituye el borrador si falla la red', asyn
   act(() => result.current.update({ pasoOllaosDefecto: 40 }));
   await act(async () => { expect((await result.current.saveDraft('IVAN', 'Prueba')).status).toBe('error'); });
   expect(result.current.dirty).toBe(true);
+});
+it('arranca con los generales y cargar una versión antigua con clientes no los mete en el borrador', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ version: 4, parameters: PARAMS_GENERALES }) }));
+  const { result } = renderHook(() => useRemolquesParameters());
+  expect(result.current.parameters.clientesBaqueton.map((c) => c.nombre)).toEqual(['GENERAL']);
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  act(() => result.current.loadVersion({ ...DEFAULT_PARAMS, demasiaAlto: 12 }));
+  expect(result.current.parameters.demasiaAlto).toBe(12);
+  expect(result.current.parameters.clientesBaqueton.map((c) => c.nombre)).toEqual(['GENERAL']);
+  expect(result.current.parameters.recogidas.some((r) => r.nombre === 'PUENTES HIJOS DE PEDRO LOPEZ')).toBe(false);
+  act(() => result.current.reset());
+  expect(result.current.parameters.recogidas).toEqual(PARAMS_GENERALES.recogidas);
 });

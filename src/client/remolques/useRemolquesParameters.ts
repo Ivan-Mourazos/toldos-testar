@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DEFAULT_PARAMS, type CalcParams } from '../../remolques/calc/params';
+import type { CalcParams } from '../../remolques/calc/params';
+import { PARAMS_GENERALES, sinEntradasDeCliente } from '../../remolques/clientes/params-efectivos';
 import { validarParams } from '../../remolques/calc/validar-params';
 import type { SaveDraftResult } from '../hooks/useParameters';
 
@@ -11,7 +12,7 @@ const editableValues = (source: CalcParams, current: CalcParams): CalcParams => 
 
 /** El borrador se conserva en App; los cálculos solo leen lo guardado en el servidor. */
 export function useRemolquesParameters() {
-  const [saved, setSaved] = useState<Snapshot>({ version: 0, parameters: DEFAULT_PARAMS });
+  const [saved, setSaved] = useState<Snapshot>({ version: 0, parameters: PARAMS_GENERALES });
   const [draft, setDraft] = useState<{ baseVersion: number; parameters: CalcParams } | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
@@ -55,9 +56,10 @@ export function useRemolquesParameters() {
   }
   function loadVersion(value: unknown) {
     const validation = validarParams(value);
-    if (validation.ok) update(editableValues(validation.params, savedRef.current.parameters));
+    // Las versiones de antes de la fase 3 traen los clientes: se quedan en sus fichas.
+    if (validation.ok) update(editableValues(sinEntradasDeCliente(validation.params), savedRef.current.parameters));
   }
-  function reset() { update(editableValues(structuredClone(DEFAULT_PARAMS), savedRef.current.parameters)); }
+  function reset() { update(editableValues(structuredClone(PARAMS_GENERALES), savedRef.current.parameters)); }
   async function saveDraft(updatedBy: string, reason: string): Promise<SaveDraftResult> {
     if (!ready || savingRef.current) return { status: 'error', message: 'Espera a que se lean o guarden los parámetros.' };
     if (!draft) return { status: 'saved' };
