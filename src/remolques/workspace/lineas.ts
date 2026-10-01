@@ -2,6 +2,7 @@ import type { LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import type { OrigenRps } from "../rps/types.ts";
 import type { PlanteamientoRecord, TipoPlanteamiento } from "../store/types.ts";
+import type { MarcaDelCliente } from "../clientes/tipos.ts";
 import { nombreElementoPedido, remolquesUnicos } from "../pedidos/agrupar-pedido.ts";
 import { erroresPlanteamiento } from "../pedidos/validar-planteamiento.ts";
 
@@ -24,6 +25,8 @@ export interface LineaPedido {
   snapshotSvg?: string | null;
   /** Línea de RPS de la que se importó, si vino de ahí. */
   origenRps?: OrigenRps | null;
+  /** Campos que puso la ficha del cliente al obtener el pedido (marca «del cliente», fase 3). */
+  delCliente?: MarcaDelCliente;
 }
 
 export interface EstadoLinea {
