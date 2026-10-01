@@ -33,6 +33,9 @@ it). The isolated instance never talks to the real CoordinaOT.
   la configuración (p. ej. activa la generación), para no tocar la de 4310.
 - La carpeta interna de remolques (pedidos de remolques guardados) es `$D/rem-revision`.
 - La carpeta de borradores (toldos y remolques) es `$D/borradores`.
+- Las fichas de cliente de remolques son `$D/remolques-clientes.json` (se crean solas la primera vez;
+  borrarlas las vuelve a crear). La e2e de las fichas usa su propia aislada:
+  `ISOLATED_DIR="$PWD/tmp/clientes" PORT=4313 FAKE_COORDINA_PORT=4323`.
 
 The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflow.mjs`,
 `test-parameter-consultation.mjs`) already start and stop their own fake CoordinaOT on a free port

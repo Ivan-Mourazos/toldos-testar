@@ -71,6 +71,17 @@ compras y se bloquea la generación definitiva. La investigación está document
 `docs/rps-hera-evidence.md` y `docs/modelos/hera.md`. La activación solicitada
 permite este alcance parcial; el despiece completo sigue pendiente.
 
+### Fichas de cliente de remolques
+
+En Parámetros › Remolques › Clientes hay una ficha por cliente real, con sus códigos de RPS y lo
+habitual (perfil, recogidas y su recogida propia, ventana, rotulación, material, sesgo detrás,
+cremallera del 9, extras de baquetón, observaciones fijas y medidas habituales con sus ollaos). Al
+obtener un pedido de RPS de uno de sus códigos, los campos vacíos se rellenan con la ficha y llevan la
+marca «del cliente»; si el largo × ancho coincide con una medida habitual, los ollaos salen a medida.
+«Guardar en la ficha del cliente», en cada elemento, guarda lo que tiene distinto. Las fichas viven en
+`REMOLQUES_CLIENTES_FILE` (por defecto, junto a los parámetros de remolques) con versión e historial;
+la primera vez se crean solas con lo que había por cliente en los parámetros.
+
 ## Configuración de carpetas
 
 Las cuatro rutas se administran desde la pestaña `Configuración` y se guardan en el servidor para todos los usuarios:
@@ -156,6 +167,7 @@ REMOLQUES_REVISION_DIRECTORY=/var/lib/toldos-testar/remolques-pedidos
 DRAFTS_DIRECTORY=/var/lib/toldos-testar/borradores
 WORKFLOW_SETTINGS_FILE=/var/lib/toldos-testar/workflow-settings.json
 RULE_PARAMETERS_FILE=/var/lib/toldos-testar/rule-parameters.json
+REMOLQUES_CLIENTES_FILE=/var/lib/toldos-testar/remolques-clientes.json
 
 DB_SERVER=<SERVIDOR_SQL>
 DB_PORT=1433

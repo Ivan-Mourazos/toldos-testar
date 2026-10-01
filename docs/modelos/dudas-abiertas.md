@@ -30,6 +30,7 @@ Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [c
 
 - **Ganchos corazón: ¿cuánto se añade al paño delantero o trasero y al lateral, y cada cuánto va un gancho a lo alto?** El 30/09 se decidió ofrecerlos como una recogida más. Mientras no se sepa, la web usa las medidas de la goma (27 y 27) y el paso de los ollaos. Importa para calcular el paño. <sub>Q-R01</sub>
 - **Cremallera del 9: ¿qué clientes la piden?** Iván no lo sabe: se busca en RPS (en revisión). Importa para las fichas de cliente. <sub>Q-R04</sub>
+- **AYALA en RPS: ¿es el cliente 036662 «REMOLQUES AYALA», el 048286 «ENGANCHES Y REMOLQUES AYALA S.L.U» o los dos?** Su ficha lleva los dos hasta saberlo. Importa para que sus pedidos tomen la ficha solos. <sub>Q-R06</sub>
 
 Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.
 
