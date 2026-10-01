@@ -1,3 +1,4 @@
+import type { ContenidoRemolques } from '../../borradores/tipos.ts';
 import type { CalcParams } from '../../remolques/calc/params.ts';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
@@ -25,4 +26,18 @@ export function lineasDesdePedidoGuardado(pedido: Pick<PedidoRemolques, 'element
       ? input
       : { ...input, cabecera: { ...input.cabecera, realizadoPor: usuario, revision: '', fecha: hoy } },
   }));
+}
+
+/** Lo que guarda «Guardar borrador» de Remolques: la cabecera, las líneas y, si se corregía, sus parámetros. */
+export function contenidoBorradorRemolques(
+  estado: { numeroPedido: string; cliente: string; fecha: string; lineas: LineaPedido[] },
+  paramsGuardados: CalcParams | null,
+): ContenidoRemolques {
+  return {
+    numeroPedido: estado.numeroPedido.trim(),
+    cliente: estado.cliente,
+    fecha: estado.fecha,
+    lineas: estado.lineas,
+    ...(paramsGuardados ? { paramsGuardados } : {}),
+  };
 }

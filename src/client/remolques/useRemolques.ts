@@ -28,7 +28,9 @@ import type { AskForConfirmation, Notify } from '../components/NotificationCente
 import { todayIso } from '../constants';
 import { describirLineaRps, rotuloElemento } from './rotulo';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
-import { cuerpoGuardar, lineasDesdePedidoGuardado, type ModoCarga } from './guardarPedido';
+import { contenidoBorradorRemolques, cuerpoGuardar, lineasDesdePedidoGuardado, type ModoCarga } from './guardarPedido';
+import type { BorradorRemolques, BorradorToldos } from '../../borradores/tipos.ts';
+import { buscarBorradorAlObtener, guardarBorradorPreguntando } from '../borradores';
 import { faltaParaPdf } from './vistaPrevia';
 import { REMOLQUES_PARAMETERS_SAVED } from './useRemolquesParameters';
 
@@ -210,13 +212,15 @@ function useCatalogos() {
  * guardado van por la API de Pedidos (fase 5); no hay dibujo que capturar ni «completar pedido».
  * `RemolquesView` se limita a pintar lo que devuelve.
  */
-export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }: {
+export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, onAbrirBorradorToldos }: {
   /** El «Soy» de la web: es quien figura como «Realizado por» en las líneas nuevas. */
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
   /** Tras guardar para revisión: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
+  /** «Abrir borrador» al obtener un número cuyo borrador es de toldos: lo abre la aplicación en Toldos. */
+  onAbrirBorradorToldos?: (borrador: BorradorToldos) => void;
 }) {
   const [estado, despachar] = useReducer(
     reducirRemolques,
@@ -236,6 +240,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
   const [paramsGuardados, setParamsGuardados] = useState<CalcParams | null>(null);
   const params = paramsGuardados ?? paramsComunes;
   const [guardando, setGuardando] = useState(false);
+  const [guardandoBorrador, setGuardandoBorrador] = useState(false);
   const bloqueoParams = bloqueoParametros(estadoParams, paramsGuardados !== null);
   // Para los manejadores, que no cambian de identidad con cada lectura de los parámetros.
   const bloqueoParamsRef = useRef(bloqueoParams);
@@ -259,6 +264,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
   );
   const alGuardar = useRef(onGuardado);
   useEffect(() => { alGuardar.current = onGuardado; });
+  const alAbrirBorradorToldos = useRef(onAbrirBorradorToldos);
+  useEffect(() => { alAbrirBorradorToldos.current = onAbrirBorradorToldos; });
 
   // El estado de este momento para lo que corre tras esperar (la consulta a RPS, la pregunta):
   // decidir con el de cuando se lanzó podría crear elementos en un pedido que ya no es el abierto.
@@ -803,12 +810,113 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
       : `Datos de ${pedido.orderCode} cargados como un pedido nuevo, con los parámetros actuales.`);
   }, [almacen, avisar, confirmar, usuario, volcar]);
 
+  /**
+   * «Guardar borrador» (diseño 01/10/2026): deja el pedido a medias en el servidor, aunque esté
+   * incompleto. Con número y «Soy». Guardado, la pantalla queda para un pedido nuevo y se borra el
+   * borrador del navegador de ese pedido, como tras «Guardar para revisión». No espera a los
+   * parámetros comunes: el borrador lleva las líneas, no los resultados.
+   */
+  const guardarBorrador = useCallback(async () => {
+    const actual = estadoRef.current;
+    if (!actual.numeroPedido.trim()) {
+      notificar.current.notify('Indica el número de pedido para guardar el borrador.', { tone: 'warning', title: 'Falta el número' });
+      return;
+    }
+    if (!usuario) {
+      notificar.current.notify('Elige quién eres en «Soy» antes de guardar el borrador.', { tone: 'warning' });
+      return;
+    }
+    setGuardandoBorrador(true);
+    try {
+      const resultado = await guardarBorradorPreguntando({
+        numero: actual.numeroPedido,
+        cuerpo: { kind: 'remolques', savedBy: usuario, contenido: contenidoBorradorRemolques(actual, paramsGuardados) },
+        confirmar,
+      });
+      if (!resultado.ok) {
+        if (resultado.mensaje) avisar('error', resultado.mensaje);
+        return;
+      }
+      alGuardar.current?.();
+      if (!pantallaSigueIgual(estadoRef.current, actual)) {
+        notificar.current.notify(`El borrador de ${resultado.borrador.orderCode} se ha guardado, pero la pantalla ha cambiado mientras tanto y se conserva tal cual.`, { tone: 'info', title: 'Borrador guardado' });
+        return;
+      }
+      consultaEnCurso.current?.abort();
+      consultaEnEspera.current = null;
+      pendienteRef.current = null;
+      limpiarBorradores(almacen, actual.numeroPedido);
+      setParamsGuardados(null);
+      despachar({ tipo: 'PEDIDO_LIMPIADO' });
+      notificar.current.notify(`Borrador guardado: ${resultado.borrador.orderCode}.`, { tone: 'success', title: 'Borrador guardado' });
+    } finally {
+      setGuardandoBorrador(false);
+    }
+  }, [almacen, avisar, confirmar, paramsGuardados, usuario]);
+
+  /**
+   * Abre un borrador del servidor en la pantalla («Seguir con el borrador» o «Abrir borrador»). Si la
+   * pantalla tiene datos y `preguntar`, pregunta antes. Manda lo del servidor: el borrador del
+   * navegador de ese pedido se borra para que no se mezcle; lo de otro pedido en cola se escribe ya.
+   */
+  const cargarBorrador = useCallback(async (borrador: BorradorRemolques, { preguntar = true }: { preguntar?: boolean } = {}) => {
+    const actual = estadoRef.current;
+    const hayDatos = Boolean(actual.numeroPedido.trim() || actual.cliente.trim() || actual.lineas.length > 0);
+    if (preguntar && hayDatos) {
+      const respuesta = await confirmar({
+        title: `Seguir con el borrador de ${borrador.orderCode}`,
+        message: 'Los datos que haya ahora en Remolques se sustituirán por los del borrador. El borrador sigue en Pedidos hasta que lo guardes para revisión o lo descartes.',
+        confirmLabel: 'Seguir con el borrador',
+        cancelLabel: 'Conservar formulario',
+        tone: 'warning',
+      });
+      if (respuesta !== 'confirm') return;
+    }
+    const { contenido } = borrador;
+    consultaEnCurso.current?.abort();
+    consultaEnEspera.current = null;
+    const pendiente = pendienteRef.current;
+    if (pendiente && normalizarNumeroPedidoRps(pendiente.numeroPedido) !== normalizarNumeroPedidoRps(contenido.numeroPedido)) {
+      volcar();
+    }
+    pendienteRef.current = null;
+    limpiarBorradores(almacen, contenido.numeroPedido);
+    setParamsGuardados(contenido.paramsGuardados ?? null);
+    despachar({
+      tipo: 'PEDIDO_CARGADO',
+      numeroPedido: contenido.numeroPedido,
+      cliente: contenido.cliente,
+      fecha: contenido.fecha || hoy(),
+      lineas: contenido.lineas,
+    });
+    avisar('info', `Borrador de ${borrador.orderCode} abierto: sigue con él y guárdalo para revisión cuando esté listo.`);
+  }, [almacen, avisar, confirmar, volcar]);
+
+  /**
+   * El botón «Obtener datos del pedido» (y «Reintentar»): si el número tiene borrador, pregunta
+   * «Abrir borrador» / «Empezar de cero»; si no, obtiene el pedido de RPS como siempre.
+   */
+  const obtenerDatosPulsado = useCallback(async () => {
+    const numero = estadoRef.current.numeroPedido;
+    const respuesta = await buscarBorradorAlObtener(numero, 'remolques', confirmar);
+    if (respuesta.accion === 'cancelar') return;
+    if (respuesta.accion === 'abrir') {
+      // De remolques, aquí mismo y sin volver a preguntar; de toldos, lo abre la aplicación en Toldos.
+      const { borrador } = respuesta;
+      if (borrador.kind === 'remolques') await cargarBorrador(borrador, { preguntar: false });
+      else alAbrirBorradorToldos.current?.(borrador);
+      return;
+    }
+    obtenerDatosPedido(numero);
+  }, [cargarBorrador, confirmar, obtenerDatosPedido]);
+
   return {
     estado,
     materiales,
     origenMateriales,
     params,
     guardando,
+    guardandoBorrador,
     /** Se está corrigiendo un pedido guardado con sus parámetros (no los comunes). */
     conParamsGuardados: paramsGuardados !== null,
     /** Sin los parámetros comunes leídos: por qué no se guarda ni se obtiene el pedido, y el aviso. */
@@ -840,6 +948,9 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     limpiarFormulario,
     guardarParaRevision,
     cargarPedidoGuardado,
+    guardarBorrador,
+    cargarBorrador,
+    obtenerDatosPulsado,
     marcarCampoTocado,
   };
 }

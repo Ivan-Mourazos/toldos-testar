@@ -13,7 +13,7 @@ import '@fontsource/didact-gothic/latin-400.css';
 // Todos los estilos entran por estilos.css: lo de siempre va en `@layer legacy` y la capa
 // de CoordinaOT (coordina/) sin capa, así que esta gana siempre (ver coordina/README.md).
 import './estilos.css';
-import type { ActiveTab, Catalog, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
+import type { ActiveTab, Catalog, DraftState, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
@@ -37,6 +37,7 @@ import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
 import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
+import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
 import { RemolquesView } from './remolques/RemolquesView';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
@@ -78,6 +79,9 @@ export default function App() {
   // Un pedido de remolques guardado que Pedidos manda abrir en Remolques («Corregir» o
   // «Reutilizar datos», fase 5); `id` distingue una petición de la siguiente.
   const [pedidoGuardadoSolicitado, setPedidoGuardadoSolicitado] = useState<{ id: number; pedido: PedidoRemolques; modo: ModoCarga } | null>(null);
+  // Un borrador de remolques que se manda abrir en Remolques (Pedidos o «Obtener datos» de Toldos);
+  // la pantalla de remolques pregunta si tiene datos (`preguntar`).
+  const [borradorRemolquesSolicitado, setBorradorRemolquesSolicitado] = useState<{ id: number; borrador: BorradorRemolques; preguntar: boolean } | null>(null);
   // «Limpiar» de Remolques: cada pulsación sube el contador y la pantalla de remolques, que es
   // quien tiene el pedido, pregunta y limpia.
   const [limpiarRemolques, setLimpiarRemolques] = useState(0);
@@ -199,6 +203,40 @@ export default function App() {
     chooseProducto('remolques');
     setActiveTab('order');
     setPedidoGuardadoSolicitado({ id: Date.now(), pedido, modo });
+  }
+
+  // Abrir un borrador del servidor (diseño 01/10/2026): «Seguir con el borrador» de Pedidos o «Abrir
+  // borrador» al obtener un pedido. Los de remolques los abre su pantalla; los de toldos, el formulario,
+  // con los parámetros actuales (un borrador es siempre de un pedido nuevo).
+  async function abrirBorrador(borrador: Borrador, { preguntar = true }: { preguntar?: boolean } = {}) {
+    if (borrador.kind === 'remolques') {
+      chooseProducto('remolques');
+      setActiveTab('order');
+      setBorradorRemolquesSolicitado({ id: Date.now(), borrador, preguntar });
+      return;
+    }
+    const hasDraftData = Boolean(
+      draft.orderCode || draft.customer || draft.fabric || draft.notes
+      || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection)
+    );
+    if (preguntar && hasDraftData) {
+      const choice = await askForConfirmation({
+        title: `Seguir con el borrador de ${borrador.orderCode}`,
+        message: 'Los datos que haya ahora en Nuevo pedido se sustituirán por los del borrador. El borrador sigue en Pedidos hasta que lo guardes para revisión o lo descartes.',
+        confirmLabel: 'Seguir con el borrador',
+        cancelLabel: 'Conservar formulario',
+        tone: 'warning'
+      });
+      if (choice !== 'confirm') return;
+    }
+    draft.loadOrder(borrador.contenido.order as unknown as DraftState);
+    setAutofill(null);
+    setReturnNote(null);
+    setPedidoRemolques(null);
+    ruleSettings.restoreParameters();
+    chooseProducto('toldos');
+    setActiveTab('order');
+    notify(`Borrador de ${borrador.orderCode} abierto: sigue con él y guárdalo para revisión cuando esté listo.`, { tone: 'info', title: 'Borrador' });
   }
 
   async function autofillOrder() {
@@ -635,6 +673,8 @@ export default function App() {
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
               <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
                 pedidoGuardadoSolicitado={pedidoGuardadoSolicitado}
+                borradorSolicitado={borradorRemolquesSolicitado}
+                onAbrirBorradorToldos={(borrador) => void abrirBorrador(borrador)}
                 onGuardado={() => setReviewRefresh((value) => value + 1)} />
             </div>
           )}

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Save } from 'lucide-react';
+import { FilePen, Save } from 'lucide-react';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
+import type { BorradorRemolques, BorradorToldos } from '../../borradores/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { CabeceraPedido } from './CabeceraPedido';
 import { DibujoElemento } from './DibujoElemento';
@@ -18,7 +19,7 @@ import { useRemolques } from './useRemolques';
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
-export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado }: {
+export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos }: {
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
@@ -30,8 +31,12 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   pedidoGuardadoSolicitado?: { id: number; pedido: PedidoRemolques; modo: ModoCarga } | null;
   /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
+  /** Un borrador que la aplicación manda abrir aquí (Pedidos › «Seguir con el borrador», o desde Toldos). */
+  borradorSolicitado?: { id: number; borrador: BorradorRemolques; preguntar: boolean } | null;
+  /** «Abrir borrador» de un número cuyo borrador es de toldos. */
+  onAbrirBorradorToldos?: (borrador: BorradorToldos) => void;
 }) {
-  const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado });
+  const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado, onAbrirBorradorToldos });
   // Solo se atiende cada petición una vez: repetirla pisaría lo que se escriba después. Abrir
   // el pedido desde Toldos es pedirlo a propósito: crea sus elementos como «Obtener datos del
   // pedido» y, si ya tenía, pregunta.
@@ -58,6 +63,14 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
     ultimoGuardadoSolicitado.current = pedidoGuardadoSolicitado.id;
     void cargarPedidoGuardado(pedidoGuardadoSolicitado.pedido, pedidoGuardadoSolicitado.modo);
   }, [cargarPedidoGuardado, pedidoGuardadoSolicitado]);
+  // Y con los borradores: cada petición, una vez.
+  const ultimoBorradorSolicitado = React.useRef<number | null>(null);
+  const { cargarBorrador } = ws;
+  React.useEffect(() => {
+    if (!borradorSolicitado || ultimoBorradorSolicitado.current === borradorSolicitado.id) return;
+    ultimoBorradorSolicitado.current = borradorSolicitado.id;
+    void cargarBorrador(borradorSolicitado.borrador, { preguntar: borradorSolicitado.preguntar });
+  }, [cargarBorrador, borradorSolicitado]);
   const {
     numeroPedido, cliente, fecha, lineas, versionActiva, cargandoPedido, rps,
   } = ws.estado;
@@ -83,7 +96,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           pedidoRps={ws.pedidoRpsVisible}
           errorRps={rps.error}
           lineas={lineas}
-          onConsultarRps={() => ws.obtenerDatosPedido()}
+          onConsultarRps={() => void ws.obtenerDatosPulsado()}
           bloqueoConsulta={ws.bloqueoParams.motivo}
         />
         {ws.origenMateriales === 'semilla' && (
@@ -112,6 +125,13 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         acciones={lineas.length > 0 ? (
           <>
             <VistaPreviaPdf lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />
+            {/* Un pedido a medias se deja en el servidor (diseño 01/10/2026): sin completar ni calcular. */}
+            <button type="button" className="ghost-button rem-borrador-boton"
+              disabled={ws.guardandoBorrador || ws.guardando} aria-busy={ws.guardandoBorrador}
+              onClick={() => void ws.guardarBorrador()}>
+              <FilePen aria-hidden="true" />
+              {ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
+            </button>
             {/* Sin los parámetros comunes leídos no se guarda: saldría con los del código. */}
             <button type="button" className="primary-button rem-guardar-boton"
               disabled={Boolean(faltaPdf) || ws.guardando || Boolean(ws.bloqueoParams.motivo)}

@@ -3,7 +3,7 @@ import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
 import { emptyBaqueton, emptyLona } from '../../remolques/entradas-vacias.ts';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
-import { cuerpoGuardar, lineasDesdePedidoGuardado } from './guardarPedido';
+import { contenidoBorradorRemolques, cuerpoGuardar, lineasDesdePedidoGuardado } from './guardarPedido';
 import { cuerpoVistaPrevia } from './vistaPrevia';
 
 const lona = emptyLona();
@@ -39,5 +39,15 @@ describe('lineasDesdePedidoGuardado', () => {
     expect(lineas.map((l) => [l.version, l.input.cabecera.realizadoPor, l.input.cabecera.revision, l.input.cabecera.fecha]))
       .toEqual([['10', 'IVÁN', '', '2026-10-01'], ['11', 'IVÁN', '', '2026-10-01']]);
     expect(lineas[0].input.largo).toBe(250);
+  });
+});
+
+describe('contenidoBorradorRemolques', () => {
+  it('la cabecera y las líneas tal cual; los parámetros solo si se estaba corrigiendo', () => {
+    const estado = { numeroPedido: ' AR.26.04286 ', cliente: 'TALLERES CAL', fecha: '2026-10-01', lineas: [linea] };
+    expect(contenidoBorradorRemolques(estado, null)).toEqual({ numeroPedido: 'AR.26.04286', cliente: 'TALLERES CAL', fecha: '2026-10-01', lineas: [linea] });
+    expect(contenidoBorradorRemolques(estado, DEFAULT_PARAMS)).toEqual({
+      numeroPedido: 'AR.26.04286', cliente: 'TALLERES CAL', fecha: '2026-10-01', lineas: [linea], paramsGuardados: DEFAULT_PARAMS,
+    });
   });
 });
