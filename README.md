@@ -103,6 +103,8 @@ Usar rutas Linux montadas; no configurar unidades Windows ni rutas UNC:
 - `/mnt/rps/ventas/planteamientos` para el histórico de PDF de RPS
 - `/var/lib/toldos-testar` para la configuración persistente y los parámetros de
   cálculo comunes a todos los puestos (`rule-parameters.json` y su historial)
+- `/var/lib/toldos-testar/remolques-pedidos` para los pedidos de remolques guardados (carpeta
+  interna: un JSON por pedido, pendiente o generado; incluirla en la copia de seguridad)
 
 El usuario que ejecuta PM2 debe poder leer, crear y renombrar archivos en los
 dos montajes de entrada. En el histórico de planteamientos basta con permiso de
@@ -136,6 +138,8 @@ RPS_PLANTEAMIENTOS_DIRECTORY=/mnt/rps/ventas/planteamientos/{YYYY}
 # del .env de la web vieja de remolques; a la de oficina técnica se le añade /{YYYY}.
 REMOLQUES_PLANTEAMIENTOS_DIRECTORY=
 REMOLQUES_OFICINA_TECNICA_DIRECTORY=
+# Pedidos de remolques guardados (carpeta interna, no la compartida).
+REMOLQUES_REVISION_DIRECTORY=/var/lib/toldos-testar/remolques-pedidos
 WORKFLOW_SETTINGS_FILE=/var/lib/toldos-testar/workflow-settings.json
 RULE_PARAMETERS_FILE=/var/lib/toldos-testar/rule-parameters.json
 

@@ -6,6 +6,7 @@ const originalLegacyExportsFlag = process.env.ENABLE_LEGACY_EXPORTS;
 const originalSettingsFile = process.env.WORKFLOW_SETTINGS_FILE;
 const originalRuleParametersFile = process.env.RULE_PARAMETERS_FILE;
 const originalRemolquesParametersFile = process.env.REMOLQUES_PARAMETERS_FILE;
+const originalRemolquesRevisionDirectory = process.env.REMOLQUES_REVISION_DIRECTORY;
 
 afterEach(() => {
   restoreEnvironment('NODE_ENV', originalNodeEnv);
@@ -14,6 +15,7 @@ afterEach(() => {
   restoreEnvironment('WORKFLOW_SETTINGS_FILE', originalSettingsFile);
   restoreEnvironment('RULE_PARAMETERS_FILE', originalRuleParametersFile);
   restoreEnvironment('REMOLQUES_PARAMETERS_FILE', originalRemolquesParametersFile);
+  restoreEnvironment('REMOLQUES_REVISION_DIRECTORY', originalRemolquesRevisionDirectory);
   vi.resetModules();
 });
 
@@ -56,6 +58,11 @@ describe('configuración por entorno', () => {
     expect((await loadConfig('production', '')).remolquesParametersFile.replace(/\\/g, '/')).toBe('/var/lib/toldos-testar/remolques-parameters.json');
     process.env.REMOLQUES_PARAMETERS_FILE = '/otra/ruta/remolques.json';
     expect((await loadConfig('production', '')).remolquesParametersFile).toBe('/otra/ruta/remolques.json');
+  });
+
+  test('REMOLQUES_REVISION_DIRECTORY es la carpeta interna de los pedidos de remolques', async () => {
+    process.env.REMOLQUES_REVISION_DIRECTORY = '/var/lib/toldos-testar/remolques-pedidos';
+    expect((await loadConfig('production', '')).remolquesRevisionDirectory).toBe('/var/lib/toldos-testar/remolques-pedidos');
   });
 });
 

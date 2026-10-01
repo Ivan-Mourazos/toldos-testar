@@ -627,6 +627,8 @@ export type WorkflowSettings = {
   remolquesPlanteamientosDirectory: string;
   /** Hoja de taller de remolques: <año>/AR….pdf, con {YYYY}. */
   remolquesOficinaTecnicaDirectory: string;
+  /** Pedidos de remolques guardados (fase 5): carpeta interna del servidor, un JSON por pedido. */
+  remolquesRevisionDirectory: string;
 };
 
 export type WorkflowReadiness = {

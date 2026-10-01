@@ -4,8 +4,13 @@
 # y WORKFLOW_SETTINGS_FILE evita heredar .toldos-testar-settings.json.
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
-D="$PWD/tmp/ui-audit"
-mkdir -p "$D"/{review,plan,rps,export,archive,rpsplan,rem-plan,rem-oficina}
+# ISOLATED_DIR: otra carpeta de prueba, siempre dentro de tmp/ del repositorio (la e2e de la fase 5
+# activa la generación en la suya y no debe tocar la configuración de la instancia de 4310).
+D="${ISOLATED_DIR:-$PWD/tmp/ui-audit}"
+case "$D" in /*) ;; *) D="$PWD/$D" ;; esac
+case "$D" in *..*) echo "ISOLATED_DIR no puede llevar «..»: $D" >&2; exit 1 ;; esac
+case "$D" in "$PWD"/tmp/*) ;; *) echo "ISOLATED_DIR tiene que estar dentro de $PWD/tmp: $D" >&2; exit 1 ;; esac
+mkdir -p "$D"/{review,plan,rps,export,archive,rpsplan,rem-plan,rem-oficina,rem-revision}
 export NODE_ENV=development HOST=127.0.0.1 PORT="${PORT:-4310}"
 export ENABLE_FILE_WRITES=false ENABLE_HERA=true ENABLE_LEGACY_EXPORTS=false
 export WORKFLOW_SETTINGS_FILE="$D/settings.json"
@@ -13,6 +18,7 @@ export REVIEW_DIRECTORY="$D/review" PLANTEAMIENTOS_DIRECTORY="$D/plan"
 export RPS_UPLOAD_DIRECTORY="$D/rps" EXPORT_DIRECTORY="$D/export"
 export ORDER_ARCHIVE_ROOT="$D/archive" RPS_PLANTEAMIENTOS_DIRECTORY="$D/rpsplan"
 export REMOLQUES_PLANTEAMIENTOS_DIRECTORY="$D/rem-plan" REMOLQUES_OFICINA_TECNICA_DIRECTORY="$D/rem-oficina/{YYYY}"
+export REMOLQUES_REVISION_DIRECTORY="$D/rem-revision"
 # CoordinaOT simulado (scripts/fake-coordina.mjs): la aislada nunca pregunta al real.
 export FAKE_COORDINA_PORT="${FAKE_COORDINA_PORT:-4320}"
 export COORDINA_URL="http://127.0.0.1:$FAKE_COORDINA_PORT" COORDINA_CLAVE="clave-de-prueba"

@@ -35,7 +35,8 @@ export function SettingsView({
     && form.rpsUploadDirectory === settings.rpsUploadDirectory
     && form.rpsPlanteamientosDirectory === settings.rpsPlanteamientosDirectory
     && form.remolquesPlanteamientosDirectory === settings.remolquesPlanteamientosDirectory
-    && form.remolquesOficinaTecnicaDirectory === settings.remolquesOficinaTecnicaDirectory;
+    && form.remolquesOficinaTecnicaDirectory === settings.remolquesOficinaTecnicaDirectory
+    && form.remolquesRevisionDirectory === settings.remolquesRevisionDirectory;
 
   function updateForm(patch: Partial<WorkflowSettings>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -151,6 +152,14 @@ export function SettingsView({
           value={form.remolquesOficinaTecnicaDirectory}
           onChange={(remolquesOficinaTecnicaDirectory) => updateForm({ remolquesOficinaTecnicaDirectory })}
           placeholder="/mnt/oftecnica/{YYYY}"
+        />
+        <RouteField
+          step="07"
+          title="Remolques · pedidos guardados"
+          description="Carpeta interna del servidor, no la compartida: aquí guarda la web los pedidos de remolques, pendientes y generados, un archivo por pedido. Ponla donde haya copia de seguridad."
+          value={form.remolquesRevisionDirectory}
+          onChange={(remolquesRevisionDirectory) => updateForm({ remolquesRevisionDirectory })}
+          placeholder="/var/lib/toldos-testar/remolques-pedidos"
         />
       </div>
 

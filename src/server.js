@@ -77,7 +77,8 @@ const workflowStore = createWorkflowStore({
     rpsUploadDirectory: config.rpsUploadDirectory,
     rpsPlanteamientosDirectory: config.rpsPlanteamientosDirectory,
     remolquesPlanteamientosDirectory: config.remolquesPlanteamientosDirectory,
-    remolquesOficinaTecnicaDirectory: config.remolquesOficinaTecnicaDirectory
+    remolquesOficinaTecnicaDirectory: config.remolquesOficinaTecnicaDirectory,
+    remolquesRevisionDirectory: config.remolquesRevisionDirectory
   })
 });
 // Parámetros de cálculo comunes a todos los puestos, con versión e historial.

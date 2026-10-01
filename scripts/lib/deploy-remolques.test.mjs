@@ -1,5 +1,6 @@
+import { constants as fsConstants } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { comprobarCarpetasRemolques, comprobarChromium } from './deploy-remolques.mjs';
+import { comprobarCarpetaInternaRemolques, comprobarCarpetasRemolques, comprobarChromium } from './deploy-remolques.mjs';
 
 const paquete = { dependencies: { 'playwright-core': '1.61.1' }, devDependencies: { playwright: '^1.61.1' } };
 const navegadorFalso = (fallo) => ({
@@ -68,5 +69,33 @@ describe('comprobarCarpetasRemolques', () => {
     expect(dev.avisos[0]).toContain('Windows');
     const prod = await comprobarCarpetasRemolques({ planteamientos: 'C:\\x', oficinaTecnica: '/m/{YYYY}', escrituraActiva: false, estricto: true, acceso: existe });
     expect(prod.errores[0]).toContain('Windows');
+  });
+});
+
+describe('comprobarCarpetaInternaRemolques', () => {
+  const existe = async () => {};
+
+  it('avisa, sin fallar, si no está definida', async () => {
+    const r = await comprobarCarpetaInternaRemolques({ carpeta: '', estricto: true, acceso: existe });
+    expect(r.errores).toEqual([]);
+    expect(r.avisos[0]).toContain('REMOLQUES_REVISION_DIRECTORY no está definido');
+  });
+
+  it('falla si lleva {YYYY}', async () => {
+    const r = await comprobarCarpetaInternaRemolques({ carpeta: '/var/lib/x/{YYYY}', estricto: false, acceso: existe });
+    expect(r.errores[0]).toContain('{YYYY}');
+  });
+
+  it('exige una ruta Linux absoluta con permiso de escritura', async () => {
+    const visto = [];
+    const ok = await comprobarCarpetaInternaRemolques({ carpeta: '/var/lib/toldos-testar/remolques-pedidos', estricto: true, acceso: async (ruta, modo) => { visto.push([ruta, modo]); } });
+    expect(ok.exitos).toHaveLength(1);
+    expect(visto).toEqual([['/var/lib/toldos-testar/remolques-pedidos', fsConstants.R_OK | fsConstants.W_OK]]);
+    const sinPermiso = await comprobarCarpetaInternaRemolques({ carpeta: '/var/lib/x', estricto: true, acceso: async () => { throw new Error('EACCES'); } });
+    expect(sinPermiso.errores[0]).toContain('sin permiso de escritura');
+    const ventanas = await comprobarCarpetaInternaRemolques({ carpeta: 'C:\\pedidos', estricto: false, acceso: existe });
+    expect(ventanas.avisos[0]).toContain('Windows');
+    const relativa = await comprobarCarpetaInternaRemolques({ carpeta: 'pedidos', estricto: true, acceso: existe });
+    expect(relativa.errores[0]).toContain('no usa una ruta Linux absoluta');
   });
 });

@@ -85,3 +85,30 @@ export async function comprobarCarpetasRemolques({ planteamientos, oficinaTecnic
   }
   return { errores, avisos, exitos };
 }
+
+// La carpeta interna de remolques (fase 5): los pedidos de remolques pendientes y generados, un JSON
+// por pedido. La web escribe en ella al guardar para revisión, aunque la generación esté apagada.
+export async function comprobarCarpetaInternaRemolques({ carpeta, estricto, acceso = access }) {
+  const clave = 'REMOLQUES_REVISION_DIRECTORY';
+  const errores = [];
+  const avisos = [];
+  const exitos = [];
+  const informa = (mensaje) => (estricto ? errores : avisos).push(mensaje);
+  if (!carpeta) {
+    avisos.push(`${clave} no está definido; no se podrán guardar pedidos de remolques para revisión.`);
+  } else if (carpeta.includes('{YYYY}')) {
+    errores.push(`${clave} no lleva {YYYY}: todos los pedidos de remolques van en la misma carpeta.`);
+  } else if (/^[A-Za-z]:[\\/]/.test(carpeta) || carpeta.startsWith('\\\\') || carpeta.includes('\\')) {
+    informa(`${clave} usa una ruta de Windows/UNC; sustitúyela por una ruta Linux (recomendada /var/lib/toldos-testar/remolques-pedidos).`);
+  } else if (!path.posix.isAbsolute(carpeta)) {
+    informa(`${clave} no usa una ruta Linux absoluta.`);
+  } else {
+    try {
+      await acceso(carpeta, fsConstants.R_OK | fsConstants.W_OK);
+      exitos.push(`${clave} apunta a una carpeta accesible con permiso de escritura.`);
+    } catch {
+      informa(`${clave} apunta a una carpeta inexistente o sin permiso de escritura: créala y da permiso al usuario de PM2.`);
+    }
+  }
+  return { errores, avisos, exitos };
+}

@@ -195,6 +195,28 @@ describe('flujo de revisión y producción', () => {
     expect(defaultWorkflowSettings({ remolquesPlanteamientosDirectory: '/mnt/r/plan' }).remolquesPlanteamientosDirectory).toBe('/mnt/r/plan');
   });
 
+  it('guarda la carpeta interna de remolques: absoluta, sin {YYYY}, y la comprueba si está puesta', async () => {
+    // Nada fuera de tmp/ del repositorio.
+    await fs.mkdir(path.join(process.cwd(), 'tmp'), { recursive: true });
+    const root = await fs.mkdtemp(path.join(process.cwd(), 'tmp', 'workflow-remolques-'));
+    temporaryDirectories.push(root);
+    const interna = path.join(root, 'remolques-pedidos');
+    await fs.mkdir(interna);
+    const settings = normalizeWorkflowSettings({ remolquesRevisionDirectory: `${interna}${path.sep}` });
+    expect(settings.remolquesRevisionDirectory).toBe(interna);
+    expect(() => normalizeWorkflowSettings({ remolquesRevisionDirectory: 'relativa' }))
+      .toThrow('La carpeta interna de remolques debe ser una ruta absoluta válida en el sistema del servidor.');
+    expect(() => normalizeWorkflowSettings({ remolquesRevisionDirectory: path.join(interna, '{YYYY}') }))
+      .toThrow('La carpeta interna de remolques no lleva {YYYY}: todos los pedidos van en la misma carpeta.');
+    expect(defaultWorkflowSettings({ remolquesRevisionDirectory: '/var/lib/x' }).remolquesRevisionDirectory).toBe('/var/lib/x');
+    expect(defaultWorkflowSettings({}).remolquesRevisionDirectory).toBe('');
+    const result = await checkWorkflowDirectories(settings, { year: 2026 });
+    expect(result.directories.find((item) => item.key === 'remolquesRevisionDirectory'))
+      .toMatchObject({ label: 'Remolques · pedidos guardados', ok: true, path: interna });
+    // No cuenta para «Generar archivos» de toldos.
+    expect(workflowReadiness(settings).missing).not.toContain('Remolques · pedidos guardados');
+  });
+
   it('en Linux exige rutas POSIX montadas y rechaza rutas de Windows o UNC', () => {
     expect(isAbsolutePathTemplate('/mnt/toldos/{YYYY}/TOLDOS', 'linux')).toBe(true);
     expect(isAbsolutePathTemplate('C:\\Pedidos\\{YYYY}', 'linux')).toBe(false);

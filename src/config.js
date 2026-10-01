@@ -35,6 +35,9 @@ export const config = {
   // RUTA_OFICINA_TECNICA/<año>), como plantillas con {YYYY}. La configuración guardada prevalece.
   remolquesPlanteamientosDirectory: process.env.REMOLQUES_PLANTEAMIENTOS_DIRECTORY || '',
   remolquesOficinaTecnicaDirectory: process.env.REMOLQUES_OFICINA_TECNICA_DIRECTORY || '',
+  // Pedidos de remolques (fase 5): la carpeta interna donde la web guarda un JSON por pedido,
+  // pendiente o generado. No es la compartida: va junto a la configuración, con copia de seguridad.
+  remolquesRevisionDirectory: process.env.REMOLQUES_REVISION_DIRECTORY || '',
   workflowSettingsFile,
   // Parámetros comunes a todos los puestos: junto a la configuración del flujo,
   // que en producción vive en /var/lib/toldos-testar.
