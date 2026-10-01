@@ -32,12 +32,21 @@ it). The isolated instance never talks to the real CoordinaOT.
   de `tmp/` del repositorio; el script se niega si no). Úsala con otro puerto cuando la prueba cambie
   la configuración (p. ej. activa la generación), para no tocar la de 4310.
 - La carpeta interna de remolques (pedidos de remolques guardados) es `$D/rem-revision`.
-- E2e de la fase 5 de remolques (flujo):
-  `ISOLATED_DIR="$PWD/tmp/remolques-5" PORT=4311 FAKE_COORDINA_PORT=4321 bash .claude/skills/running-toldos-testar/start-isolated.sh`
-  y `TOLDOS_ISOLATED_URL=http://127.0.0.1:4311 FAKE_COORDINA_PORT=4321 node scripts/test-remolques-5-e2e.mjs`.
+
 The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflow.mjs`,
 `test-parameter-consultation.mjs`) already start and stop their own fake CoordinaOT on a free port
 (`startFakeCoordina()`), so they need no extra env.
+
+- Each isolated instance uses its own Vite HMR port (`VITE_HMR_PORT = PORT + 20000`, so 24310 for
+  4310), so several instances can run at once on different `PORT`/`FAKE_COORDINA_PORT` pairs.
+- Scripts that talk to an already running instance take its URL from `TOLDOS_ISOLATED_URL`
+  (default `http://127.0.0.1:4310`). `scripts/test-coordina-approval-e2e.mjs` also needs
+  `FAKE_COORDINA_PORT` when the instance's fake CoordinaOT is not on 4320, e.g.
+  `TOLDOS_ISOLATED_URL=http://127.0.0.1:4311 FAKE_COORDINA_PORT=4321 node scripts/test-coordina-approval-e2e.mjs`.
+- Remolques phase 5 e2e (order flow): it turns file generation on, so it runs on its own isolated
+  instance with its own test folder:
+  `ISOLATED_DIR="$PWD/tmp/remolques-5" PORT=4311 FAKE_COORDINA_PORT=4321 bash .claude/skills/running-toldos-testar/start-isolated.sh`
+  and then `TOLDOS_ISOLATED_URL=http://127.0.0.1:4311 FAKE_COORDINA_PORT=4321 node scripts/test-remolques-5-e2e.mjs`.
 
 ## Drive it with Playwright
 
