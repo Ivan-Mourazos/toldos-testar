@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilePen, Save } from 'lucide-react';
+import { BookUser, FilePen, Save } from 'lucide-react';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { BorradorRemolques, BorradorToldos } from '../../borradores/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
@@ -15,6 +15,9 @@ import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
+import { GuardarEnFicha } from './GuardarEnFicha.tsx';
+import { clienteDeLinea } from './guardarEnFicha';
+import { useGuardarEnFicha } from './useGuardarEnFicha';
 import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
@@ -81,6 +84,9 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   const estadoActivo = lineaActiva ? estadosLinea[lineaActiva.version] : null;
   // La hoja de taller solo sale con todos los elementos completos (fase 4).
   const faltaPdf = faltaParaPdf(lineas, estadosLinea);
+  // «Guardar en la ficha del cliente» (fase 3): solo con un cliente de RPS en el elemento o en pantalla.
+  const fichaCliente = useGuardarEnFicha({ usuario, numeroPedido, pedidoRps: rps.pedido, params, notify });
+  const clienteActivo = lineaActiva ? clienteDeLinea(lineaActiva, numeroPedido, rps.pedido) : null;
 
   return (
     <>
@@ -155,8 +161,19 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
       {lineaActiva ? (
         <section className="panel-vidrio rem-editor" aria-label={`Editor de ${rotuloElemento(lineaActiva, indiceActivo)}`}>
           <header className="rem-editor-cabecera">
-            <p className="rem-editor-etiqueta">Editando dentro de {numeroPedido}</p>
-            <h2>{rotuloElemento(lineaActiva, indiceActivo)}</h2>
+            <div>
+              <p className="rem-editor-etiqueta">Editando dentro de {numeroPedido}</p>
+              <h2>{rotuloElemento(lineaActiva, indiceActivo)}</h2>
+            </div>
+            {clienteActivo && (
+              <button type="button" className="ghost-button rem-ficha-boton"
+                disabled={!usuario || fichaCliente.ocupado} aria-busy={fichaCliente.ocupado}
+                title={usuario ? `Guardar en la ficha de ${clienteActivo.alias || clienteActivo.nombre}` : 'Elige «Soy» para guardar en la ficha del cliente.'}
+                onClick={() => void fichaCliente.abrir(lineaActiva)}>
+                <BookUser aria-hidden="true" />
+                Guardar en la ficha del cliente
+              </button>
+            )}
           </header>
           {ws.origenRpsActivo && <OrigenRpsElemento origen={ws.origenRpsActivo} />}
           {lineaActiva.delCliente && (
@@ -239,6 +256,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               : 'Escribe arriba el número de pedido y pulsa «Obtener datos del pedido»: se crea un elemento por cada línea de remolque.'}
           </p>
         </section>
+      )}
+      {fichaCliente.abierta && (
+        <GuardarEnFicha abierta={fichaCliente.abierta} usuario={usuario} numeroPedido={numeroPedido}
+          ocupado={fichaCliente.ocupado} onGuardar={(claves) => void fichaCliente.guardar(claves)} onCerrar={fichaCliente.cerrar} />
       )}
     </>
   );

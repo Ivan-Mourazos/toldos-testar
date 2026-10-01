@@ -195,7 +195,22 @@
 }
 .rem-editor h2,
 .rem-vacio h2 { color: var(--text); font-size: 15px; margin: 2px 0 0; }
-.rem-editor-cabecera { margin-bottom: 0.5rem; }
+.rem-editor-cabecera {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.rem-ficha-boton { flex: none; }
+/* La ventana de «Guardar en la ficha del cliente»: una casilla por cosa, con antes → después. */
+.rem-ficha-dialogo { max-width: 640px; }
+.rem-ficha-cambios { display: flex; flex-direction: column; gap: 8px; list-style: none; margin: 8px 0; padding: 0; }
+.rem-ficha-cambios label { align-items: flex-start; cursor: pointer; display: flex; gap: 10px; }
+.rem-ficha-cambios label > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rem-ficha-nota { color: var(--aviso-texto); font-size: 11px; font-weight: 700; }
+.rem-ficha-valores { color: var(--text-muted); font-size: 12px; overflow-wrap: anywhere; }
+.rem-ficha-quien { color: var(--text-muted); font-size: 12px; }
 /* «del cliente» (fase 3): el valor lo puso la ficha del cliente. El mismo chip ámbar que
    «Propuesta · compruébala» de la tela en toldos (border-amber-500/30 bg-amber-500/10 de CoordinaOT). */
 .rem-del-cliente {
