@@ -374,6 +374,12 @@ export default function App() {
 
   async function saveForReview(confirmOverwrite = false, confirmIncomplete = false, confirmProposals = false) {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
+    // Sin ningún toldo calculado no se manda a revisar (Iván, 01/10/2026): saldría en «Por
+    // revisar» sin despiece ni reserva. Para dejar un pedido a medias, el borrador.
+    if (!calculation || calculation.ofs.length === 0) {
+      notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
+      return;
+    }
     const proposalMessage = pendingFabricProposalMessage(draft);
     if (proposalMessage && !confirmProposals) {
       const choice = await askForConfirmation({
@@ -384,12 +390,6 @@ export default function App() {
         tone: 'warning'
       });
       if (choice !== 'confirm') return;
-    }
-    // Un pedido incompleto puede no producir bloques de cálculo. Sigue pudiendo
-    // guardarse como borrador tras la confirmación habitual de los datos que faltan.
-    if (draft.awnings.length === 0 || (!incomplete.length && (!calculation || calculation.ofs.length === 0))) {
-      notify(draft.awnings.length ? 'No se pudo calcular el pedido. Revisa los datos antes de guardarlo.' : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
-      return;
     }
     if (incomplete.length && !confirmIncomplete) {
       const choice = await askForConfirmation({
