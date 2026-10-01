@@ -259,6 +259,19 @@ Después, el `pnpm pm2:reload` de siempre. Esa carpeta hay que incluirla en las 
 (son trabajo a medias de la oficina técnica); sin ella la web funciona igual, pero no deja guardar
 borradores.
 
+**Una vez (fichas de cliente de remolques, fase 3)**, también antes del primer `pnpm pm2:reload` con
+esta versión. Las fichas se crean solas con lo que hay en los parámetros de remolques, y el primer
+guardado de parámetros quita de ese fichero lo que era de un cliente. Se guarda antes una copia, por
+si hubiera que volver atrás (si el fichero no existe, no pasa nada):
+
+```bash
+cp /var/lib/toldos-testar/remolques-parameters.json /var/lib/toldos-testar/remolques-parameters.antes-fase-3.json 2>/dev/null || true
+```
+
+Copias de seguridad: además de la carpeta de borradores, `remolques-parameters.json`,
+`remolques-clientes.json` y sus historiales (`remolques-parameters-history.jsonl`,
+`remolques-clientes-history.jsonl`), todos en `/var/lib/toldos-testar`.
+
 Comprobar después `/api/health` y la portada. Para diagnóstico:
 
 ```bash
@@ -269,6 +282,23 @@ pnpm pm2:logs
 El rollback consiste en volver al commit anterior, repetir `pnpm install`,
 `pnpm build`, `pnpm deploy:check` y `pnpm pm2:reload`. No se debe tocar el JSON
 persistente ni los archivos de las carpetas compartidas.
+
+Si se vuelve a una versión anterior a la fase 3 de remolques (fichas de cliente), hay que restaurar
+también `/var/lib/toldos-testar/remolques-parameters.antes-fase-3.json` como
+`remolques-parameters.json`: el primer guardado de parámetros con la fase 3 quita del fichero lo que
+era de cada cliente, y la versión anterior lo necesita.
+
+Después de desplegar la fase 3 de remolques:
+
+```bash
+ls -l /var/lib/toldos-testar/remolques-clientes.json
+pm2 logs toldos-testar --lines 100 --nostream | grep -i "fichas de partida"
+```
+
+El fichero tiene que existir (se crea al primer uso) y en los registros no debe haber avisos de
+«fichas de partida». Después, abrir Parámetros › Remolques › Clientes y comprobar las tres fichas
+(HIJOS DE PEDRO LOPEZ, AYALA y GENERAL WOLDER), sobre todo en HPL la casilla «Paño trasero con el
+ancho de delante» de su recogida propia.
 
 ### 6. Paso de los pedidos de la web vieja de remolques (una vez)
 
