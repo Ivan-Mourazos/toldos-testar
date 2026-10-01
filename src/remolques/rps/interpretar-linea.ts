@@ -49,6 +49,10 @@ export function interpretarLineaRps(fila: FilaLineaRps): LineaPedidoRps | null {
   const detalle = (fila.Comment ?? "").trim();
   const textoOriginal = `${descripcion} ${detalle}`;
   const texto = normalizarTexto(textoOriginal);
+  // Mejora deliberada sobre la web antigua (confirmada por Iván el 30/09/2026, pedido AR.26.04286):
+  // en «RECOGIDA TRASERO Y VENTANA DELANTERA» la recogida es solo detrás; «DELANTERA» califica a
+  // «VENTANA», no es un lado de recogida. Se quita «VENTANA <lado>» antes de buscar la recogida.
+  const textoSinVentanaLado = texto.replace(/VENTANAS?\s+(?:EN\s+)?(?:LA\s+)?(?:PARTE\s+)?(?:DELANTER|TRASER|ATRAS)\w*/g, "VENTANA");
   const codigoArticulo = (fila.CodArticle ?? "").trim().toLocaleUpperCase("es-ES");
   const esRemolque = codigoArticulo === "LONAREMOLQUE"
     || codigoArticulo === "LONAREMGANA"
@@ -90,8 +94,8 @@ export function interpretarLineaRps(fila: FilaLineaRps): LineaPedidoRps | null {
     rotulacion: rotulacionRps ?? (rotulacionNegativa ? false : rotulacionPositiva ? true : null),
     tipoRotulacion: fila.TipoRotulacion?.trim() || null,
     textoRotulacion: fila.TextoRotulacion?.trim() || null,
-    recogidaDelante: /RECOGID[AO][^.;]{0,40}DELANTER|DELANTER[AO][^.;]{0,40}RECOGID/.test(texto),
-    recogidaAtras: /RECOGID[AO][^.;]{0,40}(?:TRASER|ATRAS)|(?:TRASER|ATRAS)[^.;]{0,40}RECOGID|FRUNCIR\s+ATRAS/.test(texto),
+    recogidaDelante: /RECOGID[AO][^.;]{0,40}DELANTER|DELANTER[AO][^.;]{0,40}RECOGID/.test(textoSinVentanaLado),
+    recogidaAtras: /RECOGID[AO][^.;]{0,40}(?:TRASER|ATRAS)|(?:TRASER|ATRAS)[^.;]{0,40}RECOGID|FRUNCIR\s+ATRAS/.test(textoSinVentanaLado),
     materialRps: extraerMaterial(textoOriginal),
     descripcion,
     detalle,

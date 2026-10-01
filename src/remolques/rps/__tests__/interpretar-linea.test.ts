@@ -78,4 +78,29 @@ describe("interpretarLineaRps", () => {
       rotulacion: true, tipoRotulacion: "IMPRESIÓN DIGITAL", textoRotulacion: "LOGO CLIENTE",
     });
   });
+
+  describe("lado de la recogida", () => {
+    const lado = (texto: string) => {
+      const l = interpretarLineaRps(fila(`LONA REMOLQUE DE MEDIDAS 261 X 163 X 88 CM, ${texto}, EN PVC 580 G/M², COLOR GRIS 7037.`));
+      return { delante: l?.recogidaDelante, atras: l?.recogidaAtras, ventana: l?.ventana };
+    };
+
+    it("«DELANTERA» que califica a la ventana no es un lado de recogida (AR.26.04286)", () => {
+      expect(lado("CON SISTEMA DE RECOGIDA TRASERO Y VENTANA DELANTERA"))
+        .toEqual({ delante: false, atras: true, ventana: true });
+    });
+
+    it("la ventana también puede ir detrás sin cambiar la recogida de delante", () => {
+      expect(lado("RECOGIDA DELANTERA Y VENTANA TRASERA"))
+        .toEqual({ delante: true, atras: false, ventana: true });
+    });
+
+    it("recogida delantera y trasera", () => {
+      expect(lado("RECOGIDA DELANTERA Y TRASERA")).toEqual({ delante: true, atras: true, ventana: false });
+    });
+
+    it("solo delantera", () => {
+      expect(lado("RECOGIDA DELANTERA")).toEqual({ delante: true, atras: false, ventana: false });
+    });
+  });
 });
