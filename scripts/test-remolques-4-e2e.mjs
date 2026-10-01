@@ -163,6 +163,10 @@ for (const nombre of NOMBRES_MUESTRAS) {
     page.setDefaultTimeout(20000);
     await page.getByRole('button', { name: /^Remolques/ }).click();
     await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_MIXTO);
+    // Escribir el número no trae nada (Iván, 01/10/2026): los elementos salen al pulsar «Obtener».
+    await page.waitForTimeout(1200);
+    assert.equal(await page.locator('.rem-pestana-abrir').count(), 0, 'escribir el número no crea elementos');
+    await page.locator('.rem-cabecera').getByRole('button', { name: 'Obtener datos del pedido', exact: true }).click();
     await page.waitForFunction(() => document.querySelectorAll('.rem-pestana-abrir').length === 4);
     assert.match((await page.locator('.rem-pestana-abrir').allInnerTexts())[0], /^A · Baquetón 260×160/, 'el primero es el baquetón de la línea 1');
     // Solo el baquetón A: se quitan los demás (del último al segundo, cada uno con su confirmación).

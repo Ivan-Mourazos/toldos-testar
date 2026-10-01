@@ -2,7 +2,7 @@
 // reales de producción (src/remolques/__fixtures__/produccion-2026-09.json) y comprueba en
 // pantalla lo mismo que guarda su `result`; recarga y comprueba que el borrador sigue; borra
 // un elemento con su confirmación; trae pedidos reales de remolques de RPS (solo lectura): al
-// obtenerlos se crea un elemento por línea de una vez y, con elementos en el pedido, pregunta
+// pulsar «Obtener datos del pedido» (escribir el número no hace nada) se crea un elemento por línea de una vez y, con elementos en el pedido, pregunta
 // (añadir solo las que faltan o sustituir) sin duplicar nunca; y, desde Nuevo pedido de Toldos,
 // comprueba el aviso «Este pedido es de remolques» y que «Abrir en Remolques» crea los elementos.
 // Capturas del pedido obtenido en claro y oscuro en tmp/ui-audit/remolques-obtener/.
@@ -23,6 +23,7 @@ import fs from 'node:fs';
 import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { calcLona } from '../src/remolques/calc/lona.ts';
 import { DEFAULT_PARAMS } from '../src/remolques/calc/params.ts';
+import { claveBorradores } from '../src/remolques/workspace/borradores-locales.ts';
 import { comprobarCaso, editor, siNo, teclearCaso } from './lib/remolques-e2e.mjs';
 
 const casos = JSON.parse(fs.readFileSync('src/remolques/__fixtures__/produccion-2026-09.json', 'utf8'));
@@ -258,12 +259,28 @@ if (!hayRps) {
     page.setDefaultTimeout(15000);
     try {
       await page.getByRole('button', { name: /^Remolques/ }).click();
+      // Iván, 01/10/2026: escribir el número no rellena nada ni consulta RPS; solo «Obtener» lo hace.
+      const consultasRps = [];
+      page.on('request', (peticion) => { if (peticion.url().includes('/api/remolques/rps-pedido')) consultasRps.push(peticion.url()); });
       await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_RPS);
-      // Al escribir el pedido completo en un pedido vacío se crean todos, sin pulsar nada más.
-      await tresPestanas(page, 'un elemento por cada línea de RPS');
+      await page.waitForTimeout(1800);
+      assert.equal(await pestanas(page).count(), 0, 'escribir el número completo no crea elementos');
+      assert.deepEqual(consultasRps, [], 'escribir el número no consulta RPS');
+      assert.equal(await page.locator('.rem-rps-estado').count(), 0, 'sin consultar no hay resumen de RPS');
+      assert.equal(await page.locator('.rem-cabecera').getByLabel('Cliente', { exact: true }).inputValue(), '', 'ni se rellena el cliente');
+      await obtener(page).click();
+      await tresPestanas(page, 'un elemento por cada línea de RPS al pulsar «Obtener datos del pedido»');
+      assert.equal(consultasRps.length, 1, 'pulsar Obtener consulta RPS una vez');
+      assert.equal(await page.locator('.rem-rps-lineas, .rem-rps-linea').count(), 0, 'la cabecera ya no lista las líneas de RPS');
+      assert.equal(await page.locator('.rem-cabecera .order-header-group').count(), 1, 'la cabecera tiene un solo grupo de datos');
       assert.equal(await page.getByRole('button', { name: /^(Usar|Volver a aplicar) línea|^Cambiar línea$/ }).count(), 0, 'ya no se aplican las líneas una a una');
       assert.equal(await page.locator('.rem-cabecera').getByLabel('Cliente', { exact: true }).inputValue(), 'TALLERES CAL, C. B.', 'el cliente viene de RPS');
-      assert.match(await page.locator('.rem-rps-resumen').innerText(), /Sus 3 líneas de remolque están en el pedido/, 'la cabecera dice que están todas');
+      assert.match(await page.locator('.rem-rps-estado').innerText(), /3 líneas de remolque/, 'la cabecera resume las líneas');
+      const porRevisar = lineasRps.filter((l) => l.requiereRevision).length;
+      const textoEstado = await page.locator('.rem-rps-estado').innerText();
+      if (porRevisar > 0) assert.match(textoEstado, new RegExp(`${porRevisar} ${porRevisar === 1 ? 'línea' : 'líneas'} por revisar`, 'i'), 'y avisa de las líneas que hay que revisar');
+      else assert.doesNotMatch(textoEstado, /por revisar/i, 'y no avisa de revisión si no la hay');
+      assert.doesNotMatch(await page.locator('.rem-rps-estado').innerText(), /sin elemento/, 'no falta ningún elemento');
       for (const [i, linea] of lineasRps.entries()) {
         await pestanas(page).nth(i).click();
         assert.equal(await ofAbierta(page), linea.ordenFabricacion, `${'ABC'[i]}: la O.F. de la línea ${linea.numeroLinea}`);
@@ -274,7 +291,7 @@ if (!hayRps) {
         assert.match(await editor(page).locator('.rem-editor-estado').innerText(), /^Falta: /, `${'ABC'[i]}: enseña lo que falta`);
       }
       assert.equal(await pestanas(page).first().getAttribute('aria-current'), null, 'se puede cambiar de elemento');
-      console.log(`OK: ${PEDIDO_RPS}: al escribirlo se crean los 3 elementos con su OF, medidas y cliente de RPS`);
+      console.log(`OK: ${PEDIDO_RPS}: escribirlo no hace nada; al pulsar Obtener se crean los 3 elementos con su OF, medidas y cliente de RPS`);
 
       // Volver a obtener lo mismo no duplica ni pregunta: está al día.
       await obtener(page).click();
@@ -302,7 +319,7 @@ if (!hayRps) {
       await dialogo(page).getByRole('button', { name: 'Eliminar', exact: true }).click();
       await dialogo(page).waitFor({ state: 'hidden' });
       assert.equal(await pestanas(page).count(), 2, 'queda sin el C');
-      assert.match(await page.locator('.rem-rps-resumen').innerText(), /1 de 3 líneas sin elemento/, 'la cabecera dice cuál falta');
+      assert.match(await page.locator('.rem-rps-estado').innerText(), /1 de 3 líneas de remolque sin elemento/, 'la cabecera dice cuál falta');
       await obtener(page).click();
       await dialogo(page).waitFor();
       assert.match(await dialogo(page).innerText(), /Línea 3 · Lona · OF 0231782 .*: no está en el pedido/, 'dice qué línea falta');
@@ -332,6 +349,38 @@ if (!hayRps) {
       await page.waitForTimeout(1500);
       assert.equal(await pestanas(page).count(), 3, 'tras recargar, los mismos 3 elementos del borrador');
       console.log('OK: tras recargar el borrador conserva los 3 sin duplicar');
+
+      // «Limpiar» (como en Toldos): pregunta si hay datos; «Volver al pedido» no toca nada; al
+      // confirmar vacía pedido, cliente, fecha, elementos y el borrador del navegador.
+      const limpiar = page.getByRole('button', { name: 'Limpiar', exact: true });
+      const claveBorrador = claveBorradores(PEDIDO_RPS);
+      assert.ok(await page.evaluate((c) => localStorage.getItem(c), claveBorrador), 'hay borrador del pedido antes de limpiar');
+      await limpiar.click();
+      await dialogo(page).waitFor();
+      assert.match(await dialogo(page).innerText(), /Limpiar el formulario/, 'pregunta antes de limpiar');
+      await dialogo(page).getByRole('button', { name: 'Volver al pedido', exact: true }).click();
+      await dialogo(page).waitFor({ state: 'hidden' });
+      assert.equal(await pestanas(page).count(), 3, '«Volver al pedido» no quita nada');
+      assert.equal(await page.locator('.rem-cabecera').getByLabel('Pedido', { exact: true }).inputValue(), PEDIDO_RPS, 'ni el número');
+      await limpiar.click();
+      await dialogo(page).getByRole('button', { name: 'Limpiar formulario', exact: true }).click();
+      await dialogo(page).waitFor({ state: 'hidden' });
+      assert.equal(await page.locator('.rem-cabecera').getByLabel('Pedido', { exact: true }).inputValue(), '', 'limpiar vacía el pedido');
+      assert.equal(await page.locator('.rem-cabecera').getByLabel('Cliente', { exact: true }).inputValue(), '', 'y el cliente');
+      assert.equal(await pestanas(page).count(), 0, 'y los elementos');
+      assert.equal(await page.locator('.rem-rps-estado').count(), 0, 'y el resumen de RPS');
+      assert.equal(await page.locator('.rem-cabecera input[type="date"]').inputValue(), new Date().toLocaleDateString('sv-SE'), 'la fecha vuelve a hoy');
+      await page.waitForTimeout(1200);
+      assert.equal(await page.evaluate((c) => localStorage.getItem(c), claveBorrador), null, 'el borrador del navegador desaparece (y no lo reescribe la cola)');
+      // Sin datos no pregunta.
+      await limpiar.click();
+      await page.waitForTimeout(400);
+      assert.equal(await dialogo(page).count(), 0, 'sin datos, limpiar no pregunta');
+      // Y el borrador no vuelve al teclear el mismo número.
+      await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_RPS);
+      await page.waitForTimeout(1500);
+      assert.equal(await pestanas(page).count(), 0, 'al volver a escribir el número no reaparece nada');
+      console.log('OK: «Limpiar» pregunta con datos, «Volver al pedido» no toca nada y al confirmar vacía todo, también el borrador');
       assert.deepEqual(errors, [], 'sin errores de consola');
     } finally {
       await browser.close();
@@ -358,6 +407,7 @@ if (!hayRps) {
         }
         await page.getByRole('button', { name: /^Remolques/ }).click();
         await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_MIXTO);
+        await obtener(page).click();
         await page.waitForFunction(() => document.querySelectorAll('.rem-pestana-abrir').length === 4);
         const rotulos = await pestanas(page).allInnerTexts();
         assert.deepEqual(rotulos.map((r) => r.match(/^[A-D] · (Remolque|Baquetón)/)?.[1]),
@@ -370,6 +420,7 @@ if (!hayRps) {
         await page.waitForTimeout(600);
         await page.screenshot({ path: `${CAPTURAS_OBTENER}/creados-${tema}.png` });
         await page.locator('.rem-cabecera').screenshot({ path: `${CAPTURAS_OBTENER}/cabecera-${tema}.png` });
+        assert.match(await page.locator('.rem-rps-estado').innerText(), /4 líneas de remolque/, `${tema}: el resumen compacto de RPS`);
 
         // Sin el D, «Obtener» ofrece las tres salidas.
         await page.getByRole('button', { name: /^Eliminar D · .* del pedido/ }).click();

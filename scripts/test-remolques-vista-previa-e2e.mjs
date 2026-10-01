@@ -72,6 +72,10 @@ if (lineasRps.length !== 3) {
   try {
     await page.getByRole('button', { name: /^Remolques/ }).click();
     await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_RPS);
+    // Escribir el número no trae nada (Iván, 01/10/2026): los elementos salen al pulsar «Obtener».
+    await page.waitForTimeout(1200);
+    assert.equal(await page.locator('.rem-pestana-abrir').count(), 0, 'escribir el número no crea elementos');
+    await page.locator('.rem-cabecera').getByRole('button', { name: 'Obtener datos del pedido', exact: true }).click();
     await page.waitForFunction(() => document.querySelectorAll('.rem-pestana-abrir').length === 3);
     const boton = page.getByRole('button', { name: 'Vista previa del PDF' });
     assert.ok(await boton.isDisabled(), 'con lo que RPS no da, el botón está desactivado');
