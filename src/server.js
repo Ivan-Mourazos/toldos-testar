@@ -32,6 +32,8 @@ import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
 import {
   comprobadorPedidoToldos, crearServicioPedidosRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
 } from './remolques/flujo/servicio.ts';
+import { crearAlmacenBorradores } from './borradores/almacen.ts';
+import { crearServicioBorradores } from './borradores/servicio.ts';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
@@ -122,6 +124,15 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   hacerPdf: hojaRemolquesPdf,
   // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar.
   esPedidoDeToldos: comprobadorPedidoToldos(workflowStore)
+});
+
+// Borradores en el servidor (diseño 01/10/2026): un JSON por número de pedido en la carpeta de
+// Configuración (paso 08), de toldos o de remolques. No son pedidos: no cuentan ni van a CoordinaOT.
+const borradores = crearServicioBorradores({
+  almacen: crearAlmacenBorradores({ carpeta: async () => (await workflowStore.getSettings()).draftsDirectory }),
+  tecnicos: formOptions.tecnicos,
+  esPedidoDeToldos: comprobadorPedidoToldos(workflowStore),
+  esPedidoDeRemolques: (orderCode) => yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)
 });
 
 app.use(compression());
@@ -489,6 +500,8 @@ app.get('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
 
 app.post('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.guardar(req.body);
+  // Guardado para revisión: su borrador sobra (diseño 01/10/2026). Nunca falla.
+  if (status === 200) await borradores.borrarTrasRevision(cuerpo.review.orderCode);
   res.status(status).json(cuerpo);
 }));
 
@@ -510,6 +523,37 @@ app.post('/api/remolques/pedidos/:orderCode/generar', rutaRemolques(async (req, 
 app.get('/api/remolques/pedidos/:orderCode/archivo', rutaRemolques(async (req, res) => {
   const { pdf, nombre } = await pedidosRemolques.archivo(req.params.orderCode);
   enviarPdf(res, pdf, nombre);
+}));
+
+// Borradores (diseño 01/10/2026). Un error del borrador llega con su código; uno inesperado es 500.
+function rutaBorradores(manejar) {
+  return async (req, res, next) => {
+    try {
+      await manejar(req, res);
+    } catch (error) {
+      if (error?.statusCode) return next(error);
+      console.error('Fallo inesperado en los borradores:', error);
+      return next(httpError(500, 'No se pudo completar la operación por un fallo del servidor. Avisa a informática.'));
+    }
+  };
+}
+
+app.get('/api/borradores', rutaBorradores(async (_req, res) => {
+  res.set('Cache-Control', 'no-store').json(await borradores.listar());
+}));
+
+app.get('/api/borradores/:orderCode', rutaBorradores(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await borradores.obtener(req.params.orderCode));
+}));
+
+app.put('/api/borradores/:orderCode', rutaBorradores(async (req, res) => {
+  const { status, cuerpo } = await borradores.guardar(req.params.orderCode, req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.delete('/api/borradores/:orderCode', rutaBorradores(async (req, res) => {
+  const { status, cuerpo } = await borradores.descartar(req.params.orderCode);
+  res.status(status).json(cuerpo);
 }));
 
 // Estado de las OF en CoordinaOT para la web (Pedidos y el pedido abierto). La clave
@@ -618,6 +662,9 @@ app.post('/api/reviews', async (req, res, next) => {
     const review = createReviewPackage({ order, calculation, existing });
     const pdf = await buildOrderReviewPdf({ order, calculation, review });
     const savedPath = await workflowStore.saveReview(review, pdf);
+    // Pasado a revisión, su borrador sobra (diseño 01/10/2026). Si no se puede borrar, se apunta
+    // y el pedido queda guardado igual.
+    await borradores.borrarTrasRevision(orderCode);
     res.json({ ok: true, review, savedPath, overwritten: Boolean(existing) });
   } catch (error) {
     next(error);
