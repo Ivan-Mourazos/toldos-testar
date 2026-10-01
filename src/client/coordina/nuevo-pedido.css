@@ -596,11 +596,15 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
    que detrás se sigue viendo, apagado, el pedido con sus tarjetas. */
 .awning-panel::backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 40%, black) 72%, transparent); }
 :root[data-theme="dark"] .awning-panel::backdrop { background: color-mix(in srgb, color-mix(in srgb, var(--bg) 88%, black) 78%, transparent); }
+/* A pantalla completa bajo la barra de arriba (Iván, 01/10/2026): el dibujo y la reserva se
+   leen mejor que en la ficha estrecha de 720 px. Sigue con 1 rem de margen alrededor. */
 .awning-panel {
   height: calc(100vh - var(--topnav-height));
-  padding: 0.5rem 1rem 1rem 0;
-  width: calc(720px + 1rem);
+  padding: 0.5rem 1rem 1rem;
+  width: 100vw;
 }
+/* El visor del dibujo aprovecha la altura: la hoja cabe entera sin bajar. */
+.awning-panel-drawing .pdf-carousel-stage { height: clamp(340px, calc(100vh - 360px), 1100px); }
 .awning-panel-inner {
   animation: drawer-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
   background: var(--glass-bg-strong);
