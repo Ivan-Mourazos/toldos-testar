@@ -23,6 +23,23 @@ describe('Parámetros › Remolques › Clientes', () => {
     expect(html).not.toContain('<select');
   });
 
+  it('los números salen con coma decimal y teclado decimal, no como type=number', () => {
+    const conDecimal = [{ ...fichas[0], sesgoDetras: 244.5, medidas: [{ tipo: 'lona' as const, largo: 610.5, ancho: 250, ollaos: { delante: [12.5], atras: [], laterales: [] } }] }];
+    const html = renderToStaticMarkup(<ClientesRemolquesView fichas={conDecimal} recogidasGenerales={recogidas} onUpdate={() => {}} />);
+    expect(html).toContain('value="244,5"');
+    expect(html).toContain('value="610,5"');
+    expect(html).toContain('inputMode="decimal"');
+    expect(html).not.toContain('type="number"');
+    expect(html).not.toContain('NaN');
+  });
+
+  it('la ayuda de los campos de texto es neutra, no el aviso naranja', () => {
+    const html = renderToStaticMarkup(<ClientesRemolquesView fichas={[{ ...fichas[0], medidas: [{ tipo: 'lona' as const, largo: 600, ancho: 250, ollaos: { delante: [], atras: [], laterales: [] } }] }]} recogidasGenerales={recogidas} onUpdate={() => {}} />);
+    expect(html).toContain('<small class="clientes-remolques-ayuda">Separados por comas</small>');
+    expect(html).toContain('<small class="clientes-remolques-ayuda">Separadas por «·» o espacios</small>');
+    expect(html).not.toContain('field-hint-warn');
+  });
+
   it('sin fichas lo dice', () => {
     const html = renderToStaticMarkup(<ClientesRemolquesView fichas={[]} recogidasGenerales={recogidas} onUpdate={() => {}} />);
     expect(html).toContain('Todavía no hay fichas');

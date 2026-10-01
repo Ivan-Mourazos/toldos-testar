@@ -24,7 +24,7 @@ export function useFichasClientes() {
       setSaved(next);
       setReady(true);
       // El servidor avisa si el fichero de fichas está roto: se enseña y no se deja guardar encima.
-      setError((next as SnapshotFichas & { ilegible?: boolean }).ilegible ? MENSAJE_ILEGIBLE : '');
+      setError(next.ilegible ? MENSAJE_ILEGIBLE : '');
     } catch {
       setError('No se pudieron leer las fichas de cliente. Vuelve a intentar la conexión.');
     }

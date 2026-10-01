@@ -72,6 +72,8 @@ export interface SnapshotFichas {
   updatedBy: string;
   reason: string;
   fichas: FichaCliente[];
+  /** El servidor avisa si el fichero de fichas está roto. */
+  ilegible?: boolean;
 }
 
 /** Qué campos de un elemento puso la ficha (marca «del cliente»); cada uno se quita al cambiarlo. */

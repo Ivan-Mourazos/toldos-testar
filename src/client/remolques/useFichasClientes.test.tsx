@@ -76,3 +76,26 @@ it('si el fichero de fichas está roto, lo enseña', async () => {
   await waitFor(() => expect(result.current.ready).toBe(true));
   expect(result.current.error).toContain('no se pueden leer');
 });
+
+it('un 409 por código repetido (sin versión nueva) enseña el mensaje del servidor y conserva el borrador', async () => {
+  const mensaje = 'El código 001300 ya está en la ficha «HIJOS DE PEDRO LOPEZ».';
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce({ ok: true, json: async () => snapshot() })
+    .mockResolvedValueOnce({ ok: false, status: 409, json: async () => ({ error: mensaje }) }));
+  const { result } = renderHook(() => useFichasClientes());
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  act(() => result.current.update([]));
+  await act(async () => { expect(await result.current.saveDraft('IVÁN', 'Prueba')).toEqual({ status: 'error', message: mensaje }); });
+  expect(result.current.dirty).toBe(true);
+  expect(result.current.saved.version).toBe(1);
+});
+
+it('un 503 enseña el mensaje del servidor', async () => {
+  const mensaje = 'El guardado de ficheros está desactivado en este equipo.';
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce({ ok: true, json: async () => snapshot() })
+    .mockResolvedValueOnce({ ok: false, status: 503, json: async () => ({ error: mensaje }) }));
+  const { result } = renderHook(() => useFichasClientes());
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  act(() => result.current.update([]));
+  await act(async () => { expect(await result.current.saveDraft('IVÁN', 'Prueba')).toEqual({ status: 'error', message: mensaje }); });
+  expect(result.current.dirty).toBe(true);
+});

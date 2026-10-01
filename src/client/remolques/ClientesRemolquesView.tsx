@@ -3,10 +3,10 @@ import { Plus, Trash2 } from 'lucide-react';
 import { PERFILES, type Recogida, type TipoPerfil } from '../../remolques/calc/params.ts';
 import { CAMPOS_EXTRAS, idFicha } from '../../remolques/clientes/reglas.ts';
 import type { ExtrasBaqueton, FichaCliente, MedidaHabitual, PerfilFicha } from '../../remolques/clientes/tipos.ts';
-import { NumberField } from '../components/NumberField';
 import { ParameterBand, ParameterSheet } from '../components/ParameterSheet';
 import { SelectField } from '../components/SelectField';
 import { TextField } from '../components/TextField';
+import { InputDecimal } from './InputDecimal';
 import { escribirPosiciones, leerCodigos, leerPosiciones } from './posicionesTexto';
 
 // Parámetros › Remolques › Clientes (fase 3): una ficha por cliente real, con sus códigos de RPS y lo
@@ -41,17 +41,29 @@ const medidaVacia = (): MedidaHabitual => ({ tipo: 'lona', largo: 0, ancho: 0, o
 const sinVacios = (ficha: FichaCliente): FichaCliente =>
   Object.fromEntries(Object.entries(ficha).filter(([, v]) => v !== undefined && v !== '')) as unknown as FichaCliente;
 
-/** Texto que se escribe libre y se lee al salir del campo; si no se entiende, vuelve a lo que había. */
-function CampoAlSalir<T>({ label, valor, leer, onChange, hint }: {
-  label: string; valor: string; leer: (texto: string) => T | null; onChange: (v: T) => void; hint?: string;
+/** Número con coma decimal (244,5), como los campos del formulario; vacío es «sin valor» (null). */
+function CampoNumFicha({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number | null) => void }) {
+  return <label><span>{label}</span><InputDecimal value={value} onValor={onChange} /></label>;
+}
+
+/** Texto que se escribe libre y se lee al salir del campo; si no se entiende, se queda el texto y se avisa. */
+function CampoAlSalir<T>({ label, valor, leer, onChange, ayuda, errorLectura }: {
+  label: string; valor: string; leer: (texto: string) => T | null; onChange: (v: T) => void; ayuda: string; errorLectura: string;
 }) {
   const [texto, setTexto] = useState(valor);
-  return <TextField label={label} value={texto} hint={hint} onChange={setTexto} onBlur={() => {
-    const leido = leer(texto);
-    if (leido === null) setTexto(valor);
-    else onChange(leido);
-  }} />;
+  const [ilegible, setIlegible] = useState(false);
+  return <label>
+    <span>{label}</span>
+    <input value={texto} aria-invalid={ilegible || undefined} onChange={(e) => { setTexto(e.target.value); setIlegible(false); }} onBlur={() => {
+      const leido = leer(texto);
+      if (leido === null) setIlegible(true);
+      else { setIlegible(false); onChange(leido); }
+    }} />
+    {ilegible ? <small className="field-hint-warn" role="alert">{errorLectura}</small> : <small className="clientes-remolques-ayuda">{ayuda}</small>}
+  </label>;
 }
+const ERROR_POSICIONES = 'No se entiende: usa números mayores que 0 separados por «·» o espacios';
+const ERROR_CODIGOS = 'No se entiende: códigos de RPS separados por comas';
 
 export function ClientesRemolquesView({ fichas, recogidasGenerales, onUpdate, disabled = false }: {
   fichas: FichaCliente[]; recogidasGenerales: string[]; onUpdate: (fichas: FichaCliente[]) => void; disabled?: boolean;
@@ -102,7 +114,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
     <ParameterBand number="01" title="Cliente" description="El nombre que se ve y sus códigos de cliente de RPS. Un código solo puede estar en una ficha.">
       <div className="parameter-grid remolques-parameter-grid">
         <TextField label="Nombre" value={ficha.nombre} onChange={(nombre) => onChange({ nombre })} />
-        <CampoAlSalir key={ficha.codigosRps.join(',')} label="Códigos de RPS" hint="Separados por comas" valor={ficha.codigosRps.join(', ')} leer={leerCodigos} onChange={(codigosRps) => onChange({ codigosRps })} />
+        <CampoAlSalir key={ficha.codigosRps.join(',')} label="Códigos de RPS" ayuda="Separados por comas" errorLectura={ERROR_CODIGOS} valor={ficha.codigosRps.join(', ')} leer={leerCodigos} onChange={(codigosRps) => onChange({ codigosRps })} />
         <SelectField label="Trabajo habitual" value={ficha.trabajo === 'lona' ? 'Lona' : ficha.trabajo === 'baqueton' ? 'Baquetón' : NADA} options={[NADA, 'Lona', 'Baquetón']}
           onChange={(v) => onChange({ trabajo: v === 'Lona' ? 'lona' : v === 'Baquetón' ? 'baqueton' : undefined })} />
       </div>
@@ -113,7 +125,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <SelectField label="Perfil" value={perfil ? PERFILES.find((p) => p.value === perfil.tipoPerfil)?.label ?? NADA : NADA} options={[NADA, ...PERFILES.map((p) => p.label)]}
           onChange={(label) => { const tipo = PERFILES.find((p) => p.label === label)?.value; onChange({ perfil: tipo ? { tipoPerfil: tipo } : undefined }); }} />
         {perfil && CAMPOS_POR_PERFIL[perfil.tipoPerfil].map(([campo, label]) => (
-          <NumberField key={campo} label={label} value={perfil[campo] ?? null} step={0.5} onChange={(v) => onChange({ perfil: { ...perfil, [campo]: numero(v) } })} />
+          <CampoNumFicha key={campo} label={label} value={perfil[campo] ?? null} onChange={(v) => onChange({ perfil: { ...perfil, [campo]: numero(v) } })} />
         ))}
       </div>
     </ParameterBand>
@@ -128,7 +140,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <div className="parameter-grid remolques-parameter-grid">
           <TextField label="Nombre de la recogida" value={propia.nombre} onChange={(nombre) => cambiarPropia({ nombre })} />
           {([['delante', 'Delante (cm)'], ['atras', 'Detrás (cm)'], ['lateralSoloAtras', 'Extra lateral solo detrás (cm)'], ['lateralSoloDelante', 'Extra lateral solo delante (cm)']] as const).map(([campo, label]) => (
-            <NumberField key={campo} label={label} value={propia[campo]} step={0.5} onChange={(v) => cambiarPropia({ [campo]: v ?? Number.NaN })} />
+            <CampoNumFicha key={campo} label={label} value={propia[campo]} onChange={(v) => cambiarPropia({ [campo]: v ?? 0 })} />
           ))}
         </div>
         <label className="remolques-parameter-check"><input type="checkbox" checked={propia.panoTraseroConAnchoDelante ?? false} onChange={(e) => cambiarPropia({ panoTraseroConAnchoDelante: e.target.checked })} /><span>Paño trasero con el ancho de delante</span></label>
@@ -139,12 +151,12 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <SelectField label="Ventana" value={deSiNo(ficha.ventana?.lleva)} options={SI_NO}
           onChange={(v) => { const lleva = aSiNo(v); onChange({ ventana: lleva === undefined ? undefined : lleva ? { ...ficha.ventana, lleva } : { lleva } }); }} />
         {ficha.ventana?.lleva && <>
-          <NumberField label="Ancho ventana (cm)" value={ficha.ventana.ancho ?? null} step={0.5} onChange={(v) => onChange({ ventana: { ...ficha.ventana!, ancho: numero(v) } })} />
-          <NumberField label="Alto ventana (cm)" value={ficha.ventana.alto ?? null} step={0.5} onChange={(v) => onChange({ ventana: { ...ficha.ventana!, alto: numero(v) } })} />
+          <CampoNumFicha label="Ancho ventana (cm)" value={ficha.ventana.ancho ?? null} onChange={(v) => onChange({ ventana: { ...ficha.ventana!, ancho: numero(v) } })} />
+          <CampoNumFicha label="Alto ventana (cm)" value={ficha.ventana.alto ?? null} onChange={(v) => onChange({ ventana: { ...ficha.ventana!, alto: numero(v) } })} />
         </>}
         <SelectField label="Rotulación" value={deSiNo(ficha.rotulacion)} options={SI_NO} onChange={(v) => onChange({ rotulacion: aSiNo(v) })} />
         <TextField label="Material" value={ficha.material ?? ''} onChange={(material) => onChange({ material })} />
-        <NumberField label="Sesgo detrás (cm más ancho atrás)" value={ficha.sesgoDetras ?? null} step={0.5} onChange={(v) => onChange({ sesgoDetras: numero(v) })} />
+        <CampoNumFicha label="Sesgo detrás (cm más ancho atrás)" value={ficha.sesgoDetras ?? null} onChange={(v) => onChange({ sesgoDetras: numero(v) })} />
         <SelectField label="Cremallera del 9" value={deSiNo(ficha.cremallera)} options={SI_NO} onChange={(v) => onChange({ cremallera: aSiNo(v) })} />
       </div>
     </ParameterBand>
@@ -152,7 +164,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
       <label className="remolques-parameter-check"><input type="checkbox" checked={Boolean(extras)} onChange={(e) => onChange({ extrasBaqueton: e.target.checked ? structuredClone(EXTRAS_VACIOS) : undefined })} /><span>Lleva extras de baquetón</span></label>
       {extras && <>
         <div className="parameter-grid remolques-parameter-grid">
-          {CAMPOS_EXTRAS.map((campo) => <NumberField key={campo} label={ETIQUETAS_EXTRAS[campo]} value={extras[campo]} step={0.5} onChange={(v) => onChange({ extrasBaqueton: { ...extras, [campo]: v ?? Number.NaN } })} />)}
+          {CAMPOS_EXTRAS.map((campo) => <CampoNumFicha key={campo} label={ETIQUETAS_EXTRAS[campo]} value={extras[campo]} onChange={(v) => onChange({ extrasBaqueton: { ...extras, [campo]: v ?? 0 } })} />)}
         </div>
         <label><span>Observaciones del baquetón · una por línea</span><textarea rows={Math.max(2, extras.observaciones.length)} value={extras.observaciones.join('\n')} onChange={(e) => onChange({ extrasBaqueton: { ...extras, observaciones: e.target.value.split('\n') } })} /></label>
       </>}
@@ -165,12 +177,12 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         {medidas.map((m, i) => <section key={i} className="remolques-parameter-row bloque-3d-hundido" aria-label={`Medida ${i + 1}`}>
           <div className="parameter-grid remolques-parameter-grid">
             <SelectField label="Elemento" value={m.tipo === 'lona' ? 'Lona' : 'Baquetón'} options={['Lona', 'Baquetón']} onChange={(v) => cambiarMedida(i, { tipo: v === 'Lona' ? 'lona' : 'baqueton' })} />
-            <NumberField label="Largo (cm)" value={m.largo || null} step={0.5} onChange={(v) => cambiarMedida(i, { largo: v ?? 0 })} />
-            <NumberField label="Ancho (cm)" value={m.ancho || null} step={0.5} onChange={(v) => cambiarMedida(i, { ancho: v ?? 0 })} />
+            <CampoNumFicha label="Largo (cm)" value={m.largo || null} onChange={(v) => cambiarMedida(i, { largo: v ?? 0 })} />
+            <CampoNumFicha label="Ancho (cm)" value={m.ancho || null} onChange={(v) => cambiarMedida(i, { ancho: v ?? 0 })} />
           </div>
           <div className="clientes-remolques-ollaos">
             {LADOS.map(([lado, nombre]) => (
-              <CampoAlSalir key={`${lado}-${m.ollaos[lado].join(',')}`} label={`${nombre} · posiciones`} hint="Separadas por «·» o espacios"
+              <CampoAlSalir key={`${lado}-${m.ollaos[lado].join(',')}`} label={`${nombre} · posiciones`} ayuda="Separadas por «·» o espacios" errorLectura={ERROR_POSICIONES}
                 valor={escribirPosiciones(m.ollaos[lado])} leer={leerPosiciones} onChange={(p) => cambiarMedida(i, { ollaos: { ...m.ollaos, [lado]: p } })} />
             ))}
           </div>
