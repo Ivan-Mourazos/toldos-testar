@@ -75,6 +75,10 @@ lo que ya hay en la web vieja pasado a la nueva. Con esto la web vieja se puede 
 
 ## 5. Parámetros › Remolques
 
+> Lo hace Codex aparte (encargo `tmp/codex/tarea-5.md`, 01/10/2026). El plan de esta fase no
+> lo incluye; solo cuenta con que exista `PUT /api/remolques/parametros` y con que los
+> parámetros guardados sean los que lee el cálculo.
+
 - Un apartado «Remolques» en la pestaña Parámetros, con las piezas de las hojas de toldos.
 - Editable: demasías de la lona (alto, contorno normal y de enfundar, lona hecha, bastillas y
   curva), paso y primer ollao por defecto, la tabla de recogidas (con «paño trasero con el
