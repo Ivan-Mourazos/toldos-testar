@@ -103,6 +103,7 @@
    Las fichas de filtro de CoordinaOT (FilterBar.tsx 131: `chip-3d rounded-lg px-2.5 py-1
    text-xs font-semibold`); el aspecto de tecla lo da nuevo-pedido.css. */
 .parameter-section-index { gap: 0.375rem; }
+.parameter-layout-main > .parameter-section-index { padding-block: 4px; }
 .parameter-section-index > span {
   color: var(--text-muted);
   font-size: 10px;
@@ -495,6 +496,7 @@
 }
 .clientes-remolques-lista > button.tecla-3d {
   align-items: flex-start;
+  border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -502,6 +504,22 @@
 }
 .clientes-remolques-lista small,
 .clientes-remolques-vacio { color: var(--text-muted); font-size: 12px; }
+.clientes-remolques-lista > button.tecla-3d.is-active {
+  background: var(--tgm-yellow-soft);
+  border-color: var(--control-active-border);
+  color: var(--accent-text);
+}
+.clientes-remolques-lista > button.is-active small { color: inherit; }
+/* El marco no debe convertirse en el contenedor de desplazamiento de la lista fija. */
+.clientes-remolques-hoja .parameters-page { overflow: visible; }
+.clientes-remolques-lista {
+  top: calc(var(--topnav-height) + 40px);
+  max-height: calc(100vh - var(--topnav-height) - 56px);
+}
+.workspace-content:has(> .parameters-save-bar) .clientes-remolques-lista {
+  top: calc(var(--topnav-height) + 96px);
+  max-height: calc(100vh - var(--topnav-height) - 112px);
+}
 .clientes-remolques-ayuda { color: var(--text-muted); display: block; font-size: 12px; margin-top: 4px; }
 .clientes-remolques-ficha { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .clientes-remolques-ollaos {
