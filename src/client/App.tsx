@@ -732,14 +732,10 @@ export default function App() {
       {previewUrl && (
         <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
           <div className="pdf-preview-window">
-            <header>
-              <div><strong>Vista previa del planteamiento</strong><span>Estructuras A5 y telas A4</span></div>
-              <div className="pdf-preview-actions">
+            <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={<>
                 <button className="ghost-button" type="button" onClick={openPlanteamientoPreview}><Eye aria-hidden="true" />Actualizar</button>
                 <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-              </div>
-            </header>
-            <PdfPreviewViewer key={previewUrl} url={previewUrl} />
+            </>} />
           </div>
         </div>
       )}

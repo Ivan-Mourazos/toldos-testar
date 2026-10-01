@@ -142,7 +142,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
   await page.locator('.rem-pdf-falta').waitFor({ state: 'detached' });
   assert.equal(await boton.isEnabled(), true, 'con el remolque completo se puede pedir');
   await boton.click();
-  await page.locator('.pdf-preview-window').getByText('Página 1 de 1').waitFor({ timeout: 60000 });
+  await page.locator('.pdf-preview-window').getByRole('img', { name: 'Página 1 de 1' }).waitFor({ timeout: 60000 });
   await page.screenshot({ path: `${SALIDA}/pantalla-vista-previa.png` });
   await page.keyboard.press('Escape');
   await page.locator('.pdf-preview-window').waitFor({ state: 'detached' });
@@ -182,7 +182,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
     await page.locator('.rem-pdf-falta').waitFor({ state: 'detached' });
     const boton = page.getByRole('button', { name: 'Vista previa del PDF' });
     await boton.click();
-    await page.locator('.pdf-preview-window').getByText('Página 1 de 1').waitFor({ timeout: 60000 });
+    await page.locator('.pdf-preview-window').getByRole('img', { name: 'Página 1 de 1' }).waitFor({ timeout: 60000 });
     await page.keyboard.press('Escape');
     await page.locator('.pdf-preview-window').waitFor({ state: 'detached' });
     await page.waitForTimeout(900);

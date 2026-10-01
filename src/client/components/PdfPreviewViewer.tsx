@@ -1,19 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { firstWidePage } from '../pdfPages';
+import { PdfPreviewToolbar, type PdfZoom } from './PdfPreviewToolbar';
 
 type PageImage = { url: string; width: number; height: number; scale: number };
-type Zoom = 'height' | 'fit' | number;
 const MAX_RENDER_SCALE = 4;
 
 // startAt="firstWide" abre en la primera página ancha (la hoja de tela, A4 apaisada);
 // por defecto se abre en la 1.
-export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', startAt = 'first' }: {
+export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', startAt = 'first', heading, actions }: {
   url: string;
   ariaLabel?: string;
   startAt?: 'first' | 'firstWide';
+  heading?: React.ReactNode;
+  actions?: React.ReactNode;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -25,7 +27,7 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', star
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [pageCount, setPageCount] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
-  const [zoom, setZoom] = useState<Zoom>('height');
+  const [zoom, setZoom] = useState<PdfZoom>('height');
   const [images, setImages] = useState(new Map<number, PageImage>());
   const [renderError, setRenderError] = useState(false);
 
@@ -227,14 +229,7 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', star
 
   return (
     <div className="pdf-carousel" ref={rootRef} aria-label={ariaLabel} tabIndex={0}>
-      <div className="pdf-carousel-toolbar" role="group" aria-label="Zoom del PDF">
-        <button type="button" className="tecla-3d" onClick={() => setZoom('height')} aria-pressed={zoom === 'height'}>Página entera</button>
-        <button type="button" className="tecla-3d" onClick={() => setZoom('fit')} aria-pressed={zoom === 'fit'}>Ajustar al ancho</button>
-        <span className="pdf-carousel-zoom-value">{zoom === 'height' ? 'Entera' : zoom === 'fit' ? 'Ancho' : `${zoom} %`}</span>
-        <button type="button" onClick={() => changeZoom(-1)} aria-label="Reducir zoom"><Minus aria-hidden="true" /></button>
-        <button type="button" onClick={() => changeZoom(1)} aria-label="Ampliar zoom"><Plus aria-hidden="true" /></button>
-        <span className="pdf-carousel-wheel-hint">Ctrl + rueda</span>
-      </div>
+      <PdfPreviewToolbar heading={heading} actions={actions} zoom={zoom} pageNumber={pageNumber} pageCount={visibleStatus === 'ready' ? pageCount : 0} onZoom={setZoom} onZoomStep={changeZoom} onPage={changePage} />
       <div className="pdf-carousel-stage" ref={stageRef} aria-live="polite">
         {visibleStatus === 'loading' && <div className="pdf-carousel-state">Abriendo el PDF…</div>}
         {visibleStatus === 'error' && <div className="pdf-carousel-state is-error">No se pudo mostrar este PDF.</div>}
@@ -250,16 +245,6 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', star
           <button className="pdf-carousel-arrow is-next" type="button" onClick={() => changePage(pageNumber + 1)} disabled={pageNumber >= pageCount} aria-label="Página siguiente"><ChevronRight aria-hidden="true" /></button>
         </>}
       </div>
-      {visibleStatus === 'ready' && pageCount > 0 && <>
-        <footer className="pdf-carousel-footer">
-          <button type="button" onClick={() => changePage(pageNumber - 1)} disabled={pageNumber <= 1} aria-label="Página anterior"><ChevronLeft aria-hidden="true" /></button>
-          <strong>Página {pageNumber} de {pageCount}</strong>
-          <button type="button" onClick={() => changePage(pageNumber + 1)} disabled={pageNumber >= pageCount} aria-label="Página siguiente"><ChevronRight aria-hidden="true" /></button>
-        </footer>
-        <nav className="pdf-carousel-pages" aria-label="Ir a página del PDF">
-          {Array.from({ length: pageCount }, (_, index) => <button key={index} type="button" aria-current={pageNumber === index + 1 ? 'page' : undefined} onClick={() => changePage(index + 1)} aria-label={`Página ${index + 1}`}>{index + 1}</button>)}
-        </nav>
-      </>}
     </div>
   );
 }

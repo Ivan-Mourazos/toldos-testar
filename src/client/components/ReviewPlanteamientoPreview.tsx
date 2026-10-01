@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Eye, Maximize2, RefreshCw, X } from 'lucide-react';
+import { Maximize2, RefreshCw, X } from 'lucide-react';
 import type { ReviewPackage, RuleParameters } from '../types';
 import { PdfPreviewViewer } from './PdfPreviewViewer';
 
@@ -35,11 +35,12 @@ function GeneratedReviewPreview({ review, pdfIndex, onClose }: { review: ReviewP
   return (
     <PreviewShell
       title="Vista previa de archivos generados"
-      subtitle={`${file.filename} · ${file.type === 'pdf' ? 'planteamiento definitivo' : `reserva de material${file.of ? ` de la OF ${file.of}` : ''}`}`}
       refreshing={false}
       onRefresh={() => setRefreshKey((value) => value + 1)}
       onClose={onClose}
     >
+      {({ heading, actions }) => <>
+      {file.type !== 'pdf' && <header>{heading}{actions}</header>}
       <div className="generated-preview-selector" role="group" aria-label="Archivo que se muestra">
         {files.map((candidate, index) => (
           <button
@@ -55,8 +56,9 @@ function GeneratedReviewPreview({ review, pdfIndex, onClose }: { review: ReviewP
         ))}
       </div>
       {file.type === 'pdf'
-        ? <PdfPreviewViewer key={url} url={url} ariaLabel={`Vista previa de ${file.filename}`} />
+        ? <PdfPreviewViewer key={url} url={url} ariaLabel={`Vista previa de ${file.filename}`} heading={heading} actions={actions} />
         : <ReservationPreview key={url} url={url} filename={file.filename} />}
+      </>}
     </PreviewShell>
   );
 }
@@ -176,27 +178,28 @@ function CalculatedReviewPreview({ order, parameters, onClose }: {
   return (
     <PreviewShell
       title="Vista previa del planteamiento"
-      subtitle="Una página cada vez · usa las flechas para recorrer el documento"
       refreshing={visiblePreview.status === 'loading'}
       retry={visiblePreview.status === 'error'}
       onRefresh={() => setRefreshKey((value) => value + 1)}
       onClose={onClose}
     >
+      {({ heading, actions }) => <>
+      {visiblePreview.status !== 'ready' && <header>{heading}{actions}</header>}
       {visiblePreview.status === 'loading' && <div className="review-preview-placeholder">Preparando la vista previa…</div>}
       {visiblePreview.status === 'error' && <div className="review-preview-placeholder is-error" role="alert">{visiblePreview.error}</div>}
-      {visiblePreview.status === 'ready' && visiblePreview.url && <PdfPreviewViewer key={visiblePreview.url} url={visiblePreview.url} />}
+      {visiblePreview.status === 'ready' && visiblePreview.url && <PdfPreviewViewer key={visiblePreview.url} url={visiblePreview.url} heading={heading} actions={actions} />}
+      </>}
     </PreviewShell>
   );
 }
 
-function PreviewShell({ title, subtitle, refreshing, retry = false, onRefresh, onClose, children }: {
+function PreviewShell({ title, refreshing, retry = false, onRefresh, onClose, children }: {
   title: string;
-  subtitle: string;
   refreshing: boolean;
   retry?: boolean;
   onRefresh: () => void;
   onClose?: () => void;
-  children: React.ReactNode;
+  children: (toolbar: { heading: React.ReactNode; actions: React.ReactNode }) => React.ReactNode;
 }) {
   const [expanded, setExpanded] = useState(Boolean(onClose));
   const collapse = () => (onClose ? onClose() : setExpanded(false));
@@ -226,27 +229,27 @@ function PreviewShell({ title, subtitle, refreshing, retry = false, onRefresh, o
     };
   }, [expanded]);
 
+  // La cabecera pasa al visor al terminar la carga: conserva el foco del diálogo.
+  useLayoutEffect(() => {
+    if (expanded && !refreshing && (document.activeElement === document.body || document.activeElement === dialogRef.current)) {
+      closeRef.current?.focus();
+    }
+  }, [expanded, refreshing]);
+
   return (
     <dialog ref={dialogRef} className="review-inline-preview" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
       onCancel={(event) => { event.preventDefault(); collapse(); }}>
-      <header>
-        <div>
-          <span className="review-preview-icon"><Eye aria-hidden="true" /></span>
-          <div><strong>{title}</strong><small>{subtitle}</small></div>
-        </div>
-        <div className="review-preview-actions">
+      {children({ heading: <strong>{title}</strong>, actions: <div className="review-preview-actions">
         <button className="ghost-button" type="button" disabled={refreshing} onClick={onRefresh}>
           <RefreshCw aria-hidden="true" />{retry ? 'Reintentar' : 'Actualizar'}
         </button>
         <button ref={expandRef} className="ghost-button" type="button" hidden={expanded} onClick={() => setExpanded(true)}>
           <Maximize2 aria-hidden="true" />Pantalla completa
         </button>
-        <button ref={closeRef} className="ghost-button" type="button" hidden={!expanded} onClick={collapse} aria-label={onClose ? "Cerrar vista previa" : "Cerrar pantalla completa"}>
-          <X aria-hidden="true" />Cerrar <kbd>Esc</kbd>
+        <button ref={closeRef} className="icon-button" type="button" hidden={!expanded} onClick={collapse} aria-label={onClose ? "Cerrar vista previa" : "Cerrar pantalla completa"}>
+          <X aria-hidden="true" />
         </button>
-        </div>
-      </header>
-      {children}
+        </div> })}
     </dialog>
   );
 }

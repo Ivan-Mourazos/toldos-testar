@@ -108,16 +108,12 @@ export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify }: {
       {url && createPortal(
         <div ref={dialogo} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa de la hoja de taller">
           <div className="pdf-preview-window">
-            <header>
-              <div><strong>Vista previa de la hoja de taller</strong><span>Una hoja A4 apaisada por elemento · no se guarda en ninguna carpeta</span></div>
-              <div className="pdf-preview-actions">
+            <PdfPreviewViewer key={url} url={url} ariaLabel="Hoja de taller de remolques" heading={<strong>Vista previa de la hoja de taller</strong>} actions={<>
                 <button className="ghost-button" type="button" disabled={preparando} onClick={() => void abrir()}>
                   <Eye aria-hidden="true" />{preparando ? 'Preparando la hoja…' : 'Actualizar'}
                 </button>
                 <button className="icon-button" type="button" onClick={cerrar} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-              </div>
-            </header>
-            <PdfPreviewViewer key={url} url={url} ariaLabel="Hoja de taller de remolques" />
+            </>} />
           </div>
         </div>,
         document.body,
