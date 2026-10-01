@@ -31,6 +31,10 @@ describe('la pregunta y el aviso', () => {
       cancelLabel: 'No',
     });
   });
+  it('un nombre de ficha que acaba en punto no lleva punto doble', () => {
+    const ficha = { ...fichas[1], nombre: 'TALLERES CAL, C. B.' };
+    expect(preguntaSugerencia(ficha, pedido('016573', 'TALLERES CAL')).message).toContain('al de TALLERES CAL, C. B. Si añades');
+  });
   it('el aviso dice de qué ficha viene lo marcado, solo si puso algo', () => {
     expect(notaFicha(fichas[0], [{ version: '10', tipo: 'lona', input: {} as never, delCliente: { ficha: 'HIJOS DE PEDRO LOPEZ', campos: ['material'] } }]))
       .toBe(' Con la ficha de HIJOS DE PEDRO LOPEZ: lo marcado «del cliente» viene de ella.');
