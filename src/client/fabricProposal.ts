@@ -84,8 +84,38 @@ export function appliedProposalSelection(proposal: FabricProposal, order: Fabric
 // o «Correcta»). Si cambia la tela por otra, deja de estar pendiente.
 export function pendingProposalIndexes(proposals: FabricProposal[], order: FabricOrder, confirmed: ReadonlySet<number>): number[] {
   return proposals.flatMap((proposal, index) => (
-    proposal.preselected && !confirmed.has(index) && appliedProposalSelection(proposal, order) === proposal.preselected ? [index] : []
+    proposal.preselected && !confirmed.has(index) && order.awnings.some((awning) => proposal.awningIds.includes(awning.id)
+      && (order.sameFabric ? order.fabric : awning.fabric) === proposal.preselected) ? [index] : []
   ));
+}
+
+export function pendingProposalAwningIds(proposals: FabricProposal[], order: FabricOrder, confirmed: ReadonlySet<number>): Set<string> {
+  const pending = pendingProposalIndexes(proposals, order, confirmed);
+  return new Set(order.awnings.filter((awning) => pending.some((index) => {
+    const proposal = proposals[index];
+    return proposal.awningIds.includes(awning.id) && (order.sameFabric ? order.fabric : awning.fabric) === proposal.preselected;
+  })).map((awning) => awning.id));
+}
+
+export function pendingFabricProposalMessage(order: FabricOrder & { fabricProposals?: FabricProposal[]; confirmedFabricProposals?: number[] }): string | null {
+  const ids = pendingProposalAwningIds(order.fabricProposals ?? [], order, new Set(order.confirmedFabricProposals ?? []));
+  const letters = lettersOf(order.awnings, (awning) => ids.has(awning.id));
+  return letters ? `Hay telas propuestas sin comprobar en ${letters}. ¿Guardar igualmente?` : null;
+}
+
+// El borrador puede venir de otra versión o estar dañado. Se mantienen los índices
+// para que una confirmación no termine asociada a una propuesta distinta.
+export function sanitizeFabricProposals(value: unknown): FabricProposal[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => {
+    const proposal = item && typeof item === 'object' ? item as Record<string, unknown> : {};
+    return {
+      awningIds: Array.isArray(proposal.awningIds) ? proposal.awningIds.filter((id): id is string => typeof id === 'string') : [],
+      phrase: typeof proposal.phrase === 'string' ? proposal.phrase : '',
+      options: Array.isArray(proposal.options) ? proposal.options.filter((option) => option && typeof option.selection === 'string' && typeof option.label === 'string') : [],
+      ...(typeof proposal.preselected === 'string' ? { preselected: proposal.preselected } : {})
+    };
+  });
 }
 
 function lettersOf(awnings: Pick<Awning, 'id'>[], keep: (awning: Pick<Awning, 'id'>) => boolean) {

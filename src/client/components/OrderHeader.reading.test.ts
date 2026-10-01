@@ -28,7 +28,7 @@ const AUTOFILL: OrderAutofill = {
   fabricProposals: [PROPOSAL]
 };
 
-type Overrides = { fabric?: string; sameFabric?: boolean; awnings?: { id: string; fabric: string }[]; pendingProposals?: number[] };
+type Overrides = { fabric?: string; sameFabric?: boolean; awnings?: { id: string; fabric: string }[]; pendingProposals?: number[]; fabricProposals?: FabricProposal[] };
 
 function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as (proposal: FabricProposal, selection: string) => void, readOnly = false, overrides: Overrides = {}) {
   return renderToStaticMarkup(React.createElement(OrderHeader, {
@@ -153,6 +153,17 @@ describe('OrderHeader · la tela que se ve es la que lleva el pedido (informe te
 describe('OrderHeader · tela propuesta ya puesta (informe tela-0930)', () => {
   const [negro] = PROPOSAL.options;
   const preselected = { ...AUTOFILL, fabricProposals: [{ ...PROPOSAL, preselected: negro.selection }] };
+
+  it('restaura los botones y «Correcta» desde el borrador aunque ya no esté el resumen de autofill', () => {
+    const markup = render(null, noop, false, { fabric: negro.selection, fabricProposals: preselected.fabricProposals, pendingProposals: [0] });
+    expect(markup).toContain('Tela propuesta para A, B');
+    expect(markup).toContain('>Correcta</button>');
+    expect(markup).toContain('Propuesta · compruébala');
+    expect(markup).not.toContain('campos recuperados');
+    const confirmed = render(null, noop, false, { fabric: negro.selection, fabricProposals: preselected.fabricProposals, pendingProposals: [] });
+    expect(confirmed).not.toContain('Propuesta · compruébala');
+    expect(confirmed).not.toContain('>Correcta</button>');
+  });
 
   it('marca la opción puesta y pide comprobarla, con «Correcta» y la marca bajo «Referencia»', () => {
     const markup = render(preselected, noop, false, { fabric: negro.selection, pendingProposals: [0] });

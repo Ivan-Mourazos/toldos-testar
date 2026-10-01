@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { applyFabricProposal, appliedProposalSelection, pendingProposalIndexes, type FabricProposalDraft } from './fabricProposal';
+import { applyFabricProposal, appliedProposalSelection, pendingProposalIndexes, pendingFabricProposalMessage, type FabricProposalDraft } from './fabricProposal';
 import type { FabricProposal } from './types';
 
 const SELECTION = 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 NEGRO 2170|||ACRILICA (LONA)';
@@ -153,5 +153,27 @@ describe('pendingProposalIndexes · «Propuesta · compruébala»', () => {
 
   it('una propuesta sin tela puesta de antemano no pide comprobar nada', () => {
     expect(pendingProposalIndexes([{ ...preselected, preselected: undefined }], order, new Set())).toEqual([]);
+  });
+});
+
+describe('aviso antes de guardar telas propuestas', () => {
+  const proposals: FabricProposal[] = [{ awningIds: ['a', 'c'], phrase: 'negro', options: [], preselected: SELECTION }];
+  const order = { fabric: SELECTION, sameFabric: true, awnings: [{ id: 'a', fabric: '' }, { id: 'b', fabric: '' }, { id: 'c', fabric: '' }], fabricProposals: proposals, confirmedFabricProposals: [] };
+
+  it('nombra una vez las letras actuales de los toldos que siguen sin comprobar', () => {
+    expect(pendingFabricProposalMessage(order)).toBe('Hay telas propuestas sin comprobar en A, C. ¿Guardar igualmente?');
+    expect(pendingFabricProposalMessage({ ...order, awnings: [order.awnings[2], order.awnings[1]] })).toBe('Hay telas propuestas sin comprobar en A. ¿Guardar igualmente?');
+  });
+
+  it('no avisa sin propuestas, después de confirmar o al elegir otra tela', () => {
+    expect(pendingFabricProposalMessage({ ...order, fabricProposals: [] })).toBeNull();
+    expect(pendingFabricProposalMessage({ ...order, confirmedFabricProposals: [0] })).toBeNull();
+    expect(pendingFabricProposalMessage({ ...order, fabric: 'OTRA' })).toBeNull();
+  });
+
+  it('cambiar la tela de un toldo no comprueba la de los demás del grupo', () => {
+    const awnings = [{ id: 'a', fabric: SELECTION }, { id: 'b', fabric: '' }, { id: 'c', fabric: 'OTRA' }];
+    expect(pendingFabricProposalMessage({ ...order, sameFabric: false, awnings })).toBe('Hay telas propuestas sin comprobar en A. ¿Guardar igualmente?');
+    expect(pendingProposalIndexes(proposals, { ...order, sameFabric: false, awnings }, new Set())).toEqual([0]);
   });
 });

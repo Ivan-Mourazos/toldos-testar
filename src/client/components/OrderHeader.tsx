@@ -20,6 +20,7 @@ type Props = {
   onAutofill: () => void;
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
+  fabricProposals?: FabricProposal[];
   // Las letras («B, C») de las propuestas de tela y la tela que lleva cada toldo, para
   // marcar la opción que el pedido tiene puesta de verdad.
   awnings: Pick<Awning, 'id' | 'fabric'>[];
@@ -49,7 +50,8 @@ export function OrderHeader(props: Props) {
   const fabricOrder = { fabric: props.fabric, sameFabric: props.sameFabric, awnings: props.awnings };
   const pending = props.pendingProposals ?? [];
   const commonPending = props.sameFabric && Boolean(props.fabric) && pending.length > 0;
-  const proposalStocks = useFabricStocks(props.readOnly ? [] : (props.autofill?.fabricProposals ?? [])
+  const proposals = props.fabricProposals ?? props.autofill?.fabricProposals ?? [];
+  const proposalStocks = useFabricStocks(props.readOnly ? [] : proposals
     .flatMap((proposal) => proposal.options.slice(0, 5).map((option) => fabricCodeOf(option.selection))));
 
   function chooseFabricProposal(proposal: FabricProposal, selection: string) {
@@ -130,20 +132,20 @@ export function OrderHeader(props: Props) {
         </div>
       </div>
 
-      {props.autofill && (
+      {(props.autofill || proposals.length > 0) && (
         <aside className="order-autofill-summary" aria-live="polite">
-          {props.autofill.summary && props.autofill.summary.length > 0 && (
+          {props.autofill?.summary && props.autofill.summary.length > 0 && (
             <ul className="order-autofill-summary-lines">
               {props.autofill.summary.map((line) => <li key={line}>{line}</li>)}
             </ul>
           )}
-          <div>
+          {props.autofill && <div>
             <strong>Datos obtenidos de {props.autofill.source}</strong>
             <span>{props.autofill.recovered.length} campos recuperados · {props.autofill.pending.length} {props.autofill.pending.length === 1 ? 'pendiente' : 'pendientes'} · todos editables</span>
-          </div>
-          {props.autofill.fabricProposals && props.autofill.fabricProposals.length > 0 && (
+          </div>}
+          {proposals.length > 0 && (
             <div className="order-fabric-proposals">
-              {props.autofill.fabricProposals.map((proposal, index) => {
+              {proposals.map((proposal, index) => {
                 const applied = appliedProposalSelection(proposal, fabricOrder);
                 return (
                 <div className="order-fabric-proposal" key={`${proposal.phrase}-${index}`}>
@@ -174,13 +176,13 @@ export function OrderHeader(props: Props) {
               })}
             </div>
           )}
-          {props.autofill.pending.length > 0 && (
+          {props.autofill && props.autofill.pending.length > 0 && (
             <details>
               <summary>Ver pendientes</summary>
               <ul>{props.autofill.pending.map((item) => <li key={item}>{item}</li>)}</ul>
             </details>
           )}
-          {props.autofill.warnings.length > 0 && (
+          {props.autofill && props.autofill.warnings.length > 0 && (
             <details>
               <summary>Ver avisos</summary>
               <ul>{props.autofill.warnings.map((item) => <li key={item}>{item}</li>)}</ul>

@@ -1,7 +1,8 @@
 import { normalizeFabricImage } from '../../domain/fabricImage.js';
 import { normalizeStructureEdit } from '../../domain/structureEdits.js';
-import { useState } from 'react';
-import type { Awning, DraftState } from '../types';
+import { useEffect, useState } from 'react';
+import type { Awning, DraftState, FabricProposal } from '../types';
+import { sanitizeFabricProposals } from '../fabricProposal';
 import { createAwning, storageKey, todayIso, uid } from '../constants';
 import { formOptions, getModelBehavior, getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
@@ -39,7 +40,9 @@ export function defaultDraft(): DraftState {
     rotTela: '',
     rotBamba: '',
     notes: '',
-    awnings: []
+    awnings: [],
+    fabricProposals: [],
+    confirmedFabricProposals: []
   };
 }
 
@@ -233,6 +236,9 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
     rotTela: (saved.rotTela as string) || fallback.rotTela,
     rotBamba: (saved.rotBamba as string) || fallback.rotBamba,
     notes: collectFabricOrderNotes(saved.notes, awnings),
+    fabricProposals: sanitizeFabricProposals(saved.fabricProposals),
+    confirmedFabricProposals: Array.isArray(saved.confirmedFabricProposals)
+      ? saved.confirmedFabricProposals.filter((index): index is number => Number.isInteger(index) && Number(index) >= 0) : [],
     awnings: awnings.length
       ? awnings.map((awning) => {
         const sanitized = sanitizeAwning(awning);
@@ -278,14 +284,31 @@ function sanitizeSupplement(source: Record<string, unknown>) {
 
 function clearStoredDrafts() {
   if (typeof localStorage === 'undefined') return;
-  draftStorageKeys.forEach((key) => localStorage.removeItem(key));
+  try { draftStorageKeys.forEach((key) => localStorage.removeItem(key)); } catch { /* El formulario puede usarse sin almacenamiento. */ }
+}
+
+export function readStoredDraft(): DraftState {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      for (const key of draftStorageKeys) {
+        const saved = localStorage.getItem(key);
+        if (!saved) continue;
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return migrateLegacyDraft(parsed) ?? defaultDraft();
+        } catch { /* Se prueba la siguiente versión si esta está dañada. */ }
+      }
+    }
+  } catch { /* El formulario puede usarse sin almacenamiento. */ }
+  return defaultDraft();
+}
+
+export function writeStoredDraft(draft: DraftState): void {
+  try { if (typeof localStorage !== 'undefined') localStorage.setItem(storageKey, JSON.stringify(draft)); } catch { /* No impide editar ni guardar para revisión. */ }
 }
 
 export function useDraft() {
-  const [initialDraft] = useState(() => {
-    clearStoredDrafts();
-    return defaultDraft();
-  });
+  const [initialDraft] = useState(readStoredDraft);
   const [orderCode, setOrderCode] = useState(initialDraft.orderCode);
   const [customer, setCustomer] = useState(initialDraft.customer);
   const [orderDate, setOrderDate] = useState(initialDraft.orderDate);
@@ -300,6 +323,16 @@ export function useDraft() {
   const [rotBamba, setRotBamba] = useState(initialDraft.rotBamba);
   const [notes, setNotes] = useState(initialDraft.notes);
   const [awnings, setAwnings] = useState<Awning[]>(initialDraft.awnings);
+  const [fabricProposals, setFabricProposals] = useState<FabricProposal[]>(initialDraft.fabricProposals ?? []);
+  const [confirmedFabricProposals, setConfirmedFabricProposals] = useState<number[]>(initialDraft.confirmedFabricProposals ?? []);
+
+  useEffect(() => {
+    writeStoredDraft({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals });
+  }, [orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals]);
+
+  function confirmFabricProposal(index: number) {
+    setConfirmedFabricProposals((current) => current.includes(index) ? current : [...current, index]);
+  }
 
   function updateAwning(id: string, patch: Partial<Awning>) {
     setAwnings((current) =>
@@ -366,6 +399,8 @@ export function useDraft() {
     setRotTela(entry.rotTela || fallback.rotTela);
     setRotBamba(entry.rotBamba || fallback.rotBamba);
     setNotes(collectFabricOrderNotes(entry.notes, entry.awnings));
+    setFabricProposals(sanitizeFabricProposals(entry.fabricProposals));
+    setConfirmedFabricProposals(entry.confirmedFabricProposals ?? []);
     setAwnings(entry.awnings.length
       ? withUniqueIds(entry.awnings.map((awning) => ({ ...sanitizeAwning(awning as unknown as Record<string, unknown>), id: awning.id })))
       : []);
@@ -388,6 +423,8 @@ export function useDraft() {
     setRotBamba(clean.rotBamba);
     setNotes(clean.notes);
     setAwnings(clean.awnings);
+    setFabricProposals([]);
+    setConfirmedFabricProposals([]);
   }
 
   return {
@@ -405,6 +442,9 @@ export function useDraft() {
     rotBamba, setRotBamba,
     notes, setNotes,
     awnings,
+    fabricProposals,
+    confirmedFabricProposals,
+    confirmFabricProposal,
     updateAwning,
     addAwning,
     duplicateAwning,

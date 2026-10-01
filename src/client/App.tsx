@@ -18,6 +18,7 @@ import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { incompleteAwningLines } from './incompleteAwnings';
+import { pendingFabricProposalMessage } from './fabricProposal';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
@@ -221,7 +222,7 @@ export default function App() {
         }
       }
       const currentResult = { ...result, order: { ...result.order, orderDate: todayIso() } };
-      draft.loadOrder(currentResult.order);
+      draft.loadOrder({ ...currentResult.order, fabricProposals: currentResult.fabricProposals ?? [], confirmedFabricProposals: [] });
       setAutofill(currentResult);
       const elements = result.order.awnings.length;
       notify(
@@ -328,6 +329,8 @@ export default function App() {
       rotBamba: draft.rotBamba,
       notes: draft.notes,
       awnings: draft.awnings,
+      fabricProposals: draft.fabricProposals,
+      confirmedFabricProposals: draft.confirmedFabricProposals,
       parameters: ruleSettings.parameters,
       parametersVersion: ruleSettings.parametersVersion
     };
@@ -350,10 +353,23 @@ export default function App() {
     else notify(result.message || 'No se pudieron guardar los parámetros.', { tone: 'error' });
   }
 
-  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false) {
+  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false, confirmProposals = false) {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
-    if (!calculation || calculation.ofs.length === 0) {
-      notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
+    const proposalMessage = pendingFabricProposalMessage(draft);
+    if (proposalMessage && !confirmProposals) {
+      const choice = await askForConfirmation({
+        title: 'Hay telas sin comprobar',
+        message: proposalMessage,
+        confirmLabel: 'Guardar igualmente',
+        cancelLabel: 'Volver al pedido',
+        tone: 'warning'
+      });
+      if (choice !== 'confirm') return;
+    }
+    // Un pedido incompleto puede no producir bloques de cálculo. Sigue pudiendo
+    // guardarse como borrador tras la confirmación habitual de los datos que faltan.
+    if (draft.awnings.length === 0 || (!incomplete.length && (!calculation || calculation.ofs.length === 0))) {
+      notify(draft.awnings.length ? 'No se pudo calcular el pedido. Revisa los datos antes de guardarlo.' : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
       return;
     }
     if (incomplete.length && !confirmIncomplete) {
@@ -388,7 +404,7 @@ export default function App() {
           tone: 'warning',
           details: data.existing
         });
-        if (choice === 'confirm') await saveForReview(true, true);
+        if (choice === 'confirm') await saveForReview(true, true, true);
         return;
       }
       if (!response.ok) {
@@ -398,6 +414,7 @@ export default function App() {
       setReviewRefresh((value) => value + 1);
       setReturnNote(null);
       draft.resetDraft();
+      setAutofill(null);
       ruleSettings.restoreParameters();
       notify(`Guardado en Pedidos para revisión: ${data.review.orderCode}.pdf`, { tone: 'success', title: 'Guardado para revisión' });
     } catch {
@@ -582,6 +599,9 @@ export default function App() {
                 onAutofill={() => void autofillOrder()}
                 autofillLoading={autofillLoading}
                 autofill={autofill}
+                fabricProposals={draft.fabricProposals}
+                confirmedFabricProposals={draft.confirmedFabricProposals}
+                onConfirmFabricProposal={draft.confirmFabricProposal}
                 knownOfs={knownOfs}
                 getPanelOrder={currentOrderPayload}
                 onConfirm={askForConfirmation}

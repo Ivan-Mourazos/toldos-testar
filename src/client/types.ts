@@ -595,6 +595,8 @@ export type DraftState = {
   rotBamba: string;
   notes: string;
   awnings: Awning[];
+  fabricProposals?: FabricProposal[];
+  confirmedFabricProposals?: number[];
 };
 
 export type FabricProposalOption = { selection: string; label: string };
