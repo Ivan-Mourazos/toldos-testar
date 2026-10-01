@@ -196,6 +196,24 @@
 .rem-editor h2,
 .rem-vacio h2 { color: var(--text); font-size: 15px; margin: 2px 0 0; }
 .rem-editor-cabecera { margin-bottom: 0.5rem; }
+/* «del cliente» (fase 3): el valor lo puso la ficha del cliente. El mismo chip ámbar que
+   «Propuesta · compruébala» de la tela en toldos (border-amber-500/30 bg-amber-500/10 de CoordinaOT). */
+.rem-del-cliente {
+  align-self: flex-start;
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 999px;
+  color: var(--aviso-texto);
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1rem;
+  margin-top: 3px;
+  padding: 1px 8px;
+  white-space: nowrap;
+  width: fit-content;
+}
+.rem-nota-ficha { color: var(--text-muted); font-size: 12px; margin: 0 0 0.5rem; }
 .rem-editor-estado {
   background: var(--aviso-fondo);
   border: 1px solid var(--aviso-borde);

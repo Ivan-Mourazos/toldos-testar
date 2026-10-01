@@ -69,6 +69,7 @@ describe("lineasDesdePedidoRps", () => {
     expect(primera.origenRps).toMatchObject({
       numeroPedido: "AR.26.04414", numeroLinea: 1, idLinea: "L1", ordenFabricacion: "0230001",
       importadoEn: "2026-09-30T10:00:00Z", requiereRevision: false,
+      cliente: cuatro.cliente,
     });
     expect(primera.snapshotSvg).toBeNull();
   });

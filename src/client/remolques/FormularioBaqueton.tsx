@@ -2,7 +2,7 @@ import React from 'react';
 import type { BaquetonInput } from '../../remolques/calc/baqueton.ts';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { DEFAULT_PARAMS, type CalcParams } from '../../remolques/calc/params.ts';
-import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, PasoFormulario } from './Campos';
+import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, MarcaDelCliente, PasoFormulario } from './Campos';
 import { ObservationLines } from '../components/ObservationLines';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 
@@ -16,7 +16,7 @@ const MODOS_CAIDA = [
   { value: 'MEDIDA', label: 'Medida diferente' },
 ];
 
-export function FormularioBaqueton({ input, materiales, params, errores = {}, metrosTela = 0, onChange, onCampoTocado }: {
+export function FormularioBaqueton({ input, materiales, params, errores = {}, metrosTela = 0, delCliente = [], onChange, onCampoTocado }: {
   input: BaquetonInput;
   materiales: Material[];
   params?: CalcParams;
@@ -25,7 +25,10 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
   metrosTela?: number;
   onChange: (i: BaquetonInput) => void;
   onCampoTocado?: (campo: string) => void;
+  /** Campos que puso la ficha del cliente (marca «del cliente»). */
+  delCliente?: readonly string[];
 }) {
+  const dc = (campo: string) => delCliente.includes(campo);
   const CLIENTES = opcionesConEtiqueta((params ?? DEFAULT_PARAMS).clientesBaqueton.map((c) => c.nombre));
   const set = <K extends keyof BaquetonInput>(k: K, v: BaquetonInput[K]) => onChange({ ...input, [k]: v });
   const setCab = (k: keyof BaquetonInput['cabecera'], v: string) =>
@@ -66,15 +69,15 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
             ) : null}
           </div>
         ))}
-        <CampoSelect name="clienteEspecifico" label="Cliente específico" span={2} value={input.clienteEspecifico} opciones={CLIENTES}
+        <CampoSelect name="clienteEspecifico" delCliente={dc('clienteEspecifico')} label="Cliente específico" span={2} value={input.clienteEspecifico} opciones={CLIENTES}
           onChange={(v) => set('clienteEspecifico', v)} />
         <span aria-hidden="true" />
-        <CampoSiNo name="rotulacion" label="Rotulación" error={errores.rotulacion}
+        <CampoSiNo name="rotulacion" delCliente={dc('rotulacion')} label="Rotulación" error={errores.rotulacion}
           value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
-        <CampoMaterial span={4} value={input.material} opciones={materiales} error={errores.material}
+        <CampoMaterial span={4} delCliente={dc('material')} value={input.material} opciones={materiales} error={errores.material}
           metrosTela={metrosTela} onChange={(v) => set('material', v)} />
         <div className="rem-banda rem-span-4">
-          <CampoSelect name="modoOllaos" label="Distribución de ollaos" span={2} value={input.modoOllaos} opciones={MODOS_OLLAOS}
+          <CampoSelect name="modoOllaos" delCliente={dc('modoOllaos')} label="Distribución de ollaos" span={2} value={input.modoOllaos} opciones={MODOS_OLLAOS}
             sinElegir="Elige el reparto" error={errores.modoOllaos}
             onChange={(v) => set('modoOllaos', v as BaquetonInput['modoOllaos'])} />
           {input.modoOllaos === 'REPARTIDOS' ? (
@@ -100,6 +103,7 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
             solo texto, una línea por renglón. Solo aquí: el dibujo ya no tiene su propia casilla. */}
         <div className="rem-span-4">
           <ObservationLines label="Observaciones" value={input.observaciones} onChange={(v) => set('observaciones', v)} ajustarTexto />
+          {dc('observaciones') && <MarcaDelCliente />}
         </div>
       </PasoFormulario>
     </div>

@@ -368,3 +368,14 @@ describe("CAMPO_TOCADO", () => {
     expect(reducirWorkspace(uno, { tipo: "CAMPO_TOCADO", campo: "largo" })).toBe(uno);
   });
 });
+
+describe("marcas «del cliente»", () => {
+  it("cambiar un campo que puso la ficha le quita la marca; los demás la conservan", () => {
+    const marcada = linea("10", { delCliente: { ficha: "TALLERES CAL", campos: ["recogeDelante", "material"] } });
+    const estado = reducirWorkspace(conPedido(), { tipo: "LINEA_ANADIDA", linea: marcada });
+    const cambiado = reducirWorkspace(estado, { tipo: "INPUT_CAMBIADO", input: { ...marcada.input, recogeDelante: "NO" } as LonaInput });
+    expect(cambiado.lineas[0].delCliente).toEqual({ ficha: "TALLERES CAL", campos: ["material"] });
+    const sinMarcas = reducirWorkspace(cambiado, { tipo: "INPUT_CAMBIADO", input: { ...cambiado.lineas[0].input, material: "OTRA" } as LonaInput });
+    expect(sinMarcas.lineas[0]).not.toHaveProperty("delCliente");
+  });
+});

@@ -159,17 +159,24 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
             <h2>{rotuloElemento(lineaActiva, indiceActivo)}</h2>
           </header>
           {ws.origenRpsActivo && <OrigenRpsElemento origen={ws.origenRpsActivo} />}
+          {lineaActiva.delCliente && (
+            <p className="rem-nota-ficha" role="note">
+              Con la ficha de {lineaActiva.delCliente.ficha}: lo marcado «del cliente» viene de ella. Lo que cambies, manda.
+            </p>
+          )}
           <div className="rem-editor-cuerpo">
             <div className="rem-editor-izquierda">
               {lineaActiva.tipo === 'lona' ? (
                 // key: los «Sí» pulsados a mano en el formulario son de cada elemento, no pasan al siguiente.
                 <FormularioLona key={lineaActiva.version} input={lona} materiales={ws.materiales} params={params}
                   errores={ws.erroresVisibles} metrosTela={ws.medidasSuficientes ? resLona.metrosTela : 0}
+                  delCliente={lineaActiva.delCliente?.campos}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado}
                   onConfirm={askForConfirmation} />
               ) : (
                 <FormularioBaqueton input={baq} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
                   metrosTela={ws.medidasSuficientes ? resBaq.metrosTela : 0}
+                  delCliente={lineaActiva.delCliente?.campos}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
               )}
               {/* Todavía no se guarda nada: lo que importa es si el elemento está listo. */}

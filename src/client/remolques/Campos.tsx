@@ -25,6 +25,12 @@ function MensajeError({ id, mensaje }: { id: string; mensaje?: string }) {
   return mensaje ? <small id={id} className="rem-error">{mensaje}</small> : null;
 }
 
+/** El valor lo puso la ficha del cliente al obtener el pedido (fase 3); se quita al cambiarlo. Como la
+ *  marca «Propuesta · compruébala» de la tela en toldos. */
+export function MarcaDelCliente() {
+  return <span className="rem-del-cliente" title="Lo puso la ficha del cliente: cámbialo si este pedido es distinto">del cliente</span>;
+}
+
 /** Un paso numerado del formulario, como los grupos de la tarjeta de toldo. */
 /** `recogidas`: dos columnas que se reparten lo que deja un Sí / No a su ancho. */
 export function PasoFormulario({ numero, titulo, children, columnas = 3 }: {
@@ -43,6 +49,7 @@ export function PasoFormulario({ numero, titulo, children, columnas = 3 }: {
 
 export function CampoNum(props: {
   label: string; value: number; onChange: (v: number) => void; span?: Rejilla; name?: string; error?: string;
+  delCliente?: boolean;
 }) {
   const errorId = useId();
   return (
@@ -57,6 +64,7 @@ export function CampoNum(props: {
         onValor={(valor) => props.onChange(valor ?? 0)}
       />
       <MensajeError id={errorId} mensaje={props.error} />
+      {props.delCliente && <MarcaDelCliente />}
     </label>
   );
 }
@@ -90,6 +98,7 @@ export function CampoTexto(props: {
  */
 export function CampoSiNo(props: {
   label: string; value: boolean | null; onChange: (v: boolean) => void; name?: string; error?: string; span?: Rejilla;
+  delCliente?: boolean;
 }) {
   const errorId = useId();
   const opcion = (valor: boolean, texto: string) => (
@@ -117,6 +126,7 @@ export function CampoSiNo(props: {
         {opcion(false, 'No')}
       </div>
       <MensajeError id={errorId} mensaje={props.error} />
+      {props.delCliente && <MarcaDelCliente />}
     </div>
   );
 }
@@ -132,6 +142,7 @@ export function CampoSelect(props: {
   /** Texto mientras no se ha elegido nada. Sin él, un valor vacío se pinta como la primera
    *  opción y el campo aparenta estar decidido. */
   sinElegir?: string;
+  delCliente?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const [indiceActivo, setIndiceActivo] = useState(0);
@@ -233,6 +244,7 @@ export function CampoSelect(props: {
         document.body,
       )}
       <MensajeError id={errorId} mensaje={props.error} />
+      {props.delCliente && <MarcaDelCliente />}
     </div>
   );
 }
@@ -253,6 +265,7 @@ const formatoStock = (n: number) => n.toLocaleString('es-ES', { maximumFractionD
  */
 export function CampoMaterial(props: {
   value: string; opciones: Material[]; onChange: (v: string) => void; span?: Rejilla; error?: string; metrosTela?: number;
+  delCliente?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const [indiceActivo, setIndiceActivo] = useState(0);
@@ -394,6 +407,7 @@ export function CampoMaterial(props: {
         document.body,
       )}
       <MensajeError id={errorId} mensaje={props.error} />
+      {props.delCliente && <MarcaDelCliente />}
       {/* Sin código de RPS (texto manual) no hay stock que enseñar: nada. */}
       <FabricStockCodeLine code={codigo} neededMl={props.metrosTela ?? 0}
         prefix={<><strong className="rem-material-codigo">{codigo}</strong>{' · '}</>} />

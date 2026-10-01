@@ -61,4 +61,6 @@ export interface OrigenRps {
   avisos?: string[];
   /** El texto de la línea en RPS, para contrastarlo. */
   texto?: string;
+  /** El cliente de RPS del pedido: para buscar o crear su ficha («Guardar en la ficha del cliente»). */
+  cliente?: ClienteRps;
 }

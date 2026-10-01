@@ -53,6 +53,7 @@ export function lineasDesdePedidoRps(pedido: PedidoRps, opciones: OpcionesImport
         requiereRevision: lineaRps.requiereRevision,
         avisos: avisosLineaRps(lineaRps, Boolean(creado.input.material)),
         texto: (lineaRps.detalle || lineaRps.descripcion).trim(),
+        cliente: pedido.cliente,
       },
     } satisfies LineaPedido;
   });

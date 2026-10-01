@@ -8,6 +8,7 @@ import {
 } from "./lineas.ts";
 import { lineasTrasImportar, type ModoImportacionRps } from "./importar-rps.ts";
 import { normalizarNumeroPedidoRps } from "../rps/numero-pedido.ts";
+import { marcasTrasCambio } from "../clientes/aplicar.ts";
 
 export interface EstadoRpsWorkspace {
   estado: EstadoConsultaRps;
@@ -216,9 +217,15 @@ export function reducirWorkspace(
       if (!estado.versionActiva) return estado;
       return {
         ...estado,
-        lineas: estado.lineas.map((linea) => (linea.version === estado.versionActiva
-          ? { ...linea, input: accion.input }
-          : linea)),
+        lineas: estado.lineas.map((linea) => {
+          if (linea.version !== estado.versionActiva) return linea;
+          // Lo que el técnico cambia deja de ser «del cliente»: la marca solo se queda en lo que sigue igual.
+          const delCliente = marcasTrasCambio(linea.delCliente, linea.input, accion.input);
+          const siguiente: LineaPedido = { ...linea, input: accion.input };
+          if (delCliente) siguiente.delCliente = delCliente;
+          else delete siguiente.delCliente;
+          return siguiente;
+        }),
       };
     }
 

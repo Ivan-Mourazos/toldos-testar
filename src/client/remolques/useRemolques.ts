@@ -33,6 +33,10 @@ import type { BorradorRemolques, BorradorToldos } from '../../borradores/tipos.t
 import { buscarBorradorAlObtener, guardarBorradorPreguntando } from '../borradores';
 import { faltaParaPdf } from './vistaPrevia';
 import { REMOLQUES_PARAMETERS_SAVED } from './useRemolquesParameters';
+import { aplicarFichaALineas } from '../../remolques/clientes/aplicar.ts';
+import type { FichaCliente } from '../../remolques/clientes/tipos.ts';
+import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
+import { guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -515,6 +519,41 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   }, [confirmar]);
 
   /**
+   * La ficha del cliente del pedido (fase 3). Por su código de RPS; si no está en ninguna y el nombre
+   * se parece al de una, pregunta «¿Es de la ficha …?»: «Añadir el código y aplicar» guarda el código
+   * en esa ficha (con el «Soy») y la aplica. Si no se pueden leer las fichas, se obtiene sin ellas.
+   */
+  const fichaDelPedido = useCallback(async (pedido: PedidoRps): Promise<FichaCliente | null> => {
+    let fichas: FichaCliente[];
+    try {
+      fichas = (await leerFichas()).fichas;
+    } catch {
+      avisar('info', 'No se pudieron leer las fichas de cliente: el pedido se obtiene sin ellas.');
+      return null;
+    }
+    const { ficha, sugerida } = decidirFicha(fichas, pedido.cliente);
+    if (ficha || !sugerida) return ficha;
+    if (await confirmar(preguntaSugerencia(sugerida, pedido)) !== 'confirm') return null;
+    if (!usuario) {
+      avisar('info', `Se aplica la ficha de ${sugerida.nombre}, pero el código no se guarda en ella: elige «Soy» primero.`);
+      return sugerida;
+    }
+    try {
+      await guardarDesdePedido({
+        numeroPedido: pedido.numero,
+        cliente: { codigo: pedido.cliente.codigo, nombre: nombreClienteRps(pedido.cliente) },
+        fichaId: sugerida.id,
+        claves: [],
+        updatedBy: usuario,
+      });
+      avisar('exito', `Código ${pedido.cliente.codigo} añadido a la ficha de ${sugerida.nombre}.`);
+    } catch (error) {
+      avisar('error', `${error instanceof Error ? error.message : 'No se pudo guardar el código en la ficha.'} La ficha se aplica solo a este pedido.`);
+    }
+    return sugerida;
+  }, [avisar, confirmar, usuario]);
+
+  /**
    * El pedido de RPS convertido en elementos, uno por línea y de una vez, como los toldos al
    * obtener el pedido (Iván, 30/09/2026: antes se aplicaba cada línea a mano sobre el elemento
    * abierto). En un pedido vacío se crean sin preguntar: no hay nada que perder. Si ya tiene
@@ -533,12 +572,17 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     // Mientras llegaban las bobinas se pudo cambiar de pedido, cargar uno guardado o empezar a
     // escribir: `abort()` solo corta el fetch, así que se comprueba la consulta a mano.
     if (!vigente() || !esteMismo()) return;
-    const deRps = lineasDesdePedidoRps(pedido, {
+    // La ficha del cliente: solo rellena lo vacío y marca lo que pone «del cliente». Puede preguntar,
+    // así que después se vuelve a comprobar que la consulta sigue siendo la de esta pantalla.
+    const ficha = await fichaDelPedido(pedido);
+    if (!vigente() || !esteMismo()) return;
+    const deRps = aplicarFichaALineas(lineasDesdePedidoRps(pedido, {
       materiales,
       params,
       realizadoPor: usuario,
       importadoEn: new Date().toISOString(),
-    });
+    }), ficha);
+    const conFicha = notaFicha(ficha, deRps);
     const actuales = estadoRef.current.lineas;
     const revisar = pedido.lineas.filter((linea) => linea.requiereRevision).length;
     const notaRevisar = revisar === 0 ? '' : revisar === 1
@@ -546,7 +590,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       : ` ${revisar} líneas de RPS necesitan revisión: están marcadas en sus elementos.`;
     if (actuales.length === 0) {
       despachar({ tipo: 'RPS_IMPORTADO', lineas: deRps, modo: 'sustituir' });
-      avisar(revisar ? 'info' : 'exito', `${deRps.length} ${deRps.length === 1 ? 'elemento creado' : 'elementos creados'} desde RPS, uno por línea del pedido. Completa en cada pestaña lo que falta; todo se puede editar.${notaRevisar}`);
+      avisar(revisar ? 'info' : 'exito', `${deRps.length} ${deRps.length === 1 ? 'elemento creado' : 'elementos creados'} desde RPS, uno por línea del pedido. Completa en cada pestaña lo que falta; todo se puede editar.${notaRevisar}${conFicha}`);
       return;
     }
     const plan = planificarImportacionRps(actuales, deRps);
@@ -558,12 +602,12 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     if (!modo || !vigente() || !esteMismo()) return;
     despachar({ tipo: 'RPS_IMPORTADO', lineas: deRps, modo });
     if (modo === 'sustituir') {
-      avisar('exito', `Elementos sustituidos por ${deRps.length === 1 ? 'la línea' : `las ${deRps.length} líneas`} de RPS.${notaRevisar}`);
+      avisar('exito', `Elementos sustituidos por ${deRps.length === 1 ? 'la línea' : `las ${deRps.length} líneas`} de RPS.${notaRevisar}${conFicha}`);
     } else {
       const n = plan.faltan.length;
-      avisar('exito', `${n} ${n === 1 ? 'línea de RPS añadida' : 'líneas de RPS añadidas'} al pedido; lo que ya había no se ha tocado.`);
+      avisar('exito', `${n} ${n === 1 ? 'línea de RPS añadida' : 'líneas de RPS añadidas'} al pedido; lo que ya había no se ha tocado.${conFicha}`);
     }
-  }, [asegurarMateriales, avisar, params, preguntarModoImportacion, usuario]);
+  }, [asegurarMateriales, avisar, fichaDelPedido, params, preguntarModoImportacion, usuario]);
 
   const pedidoRpsVisible = calcularPedidoRpsVisible(numeroPedido, rps.pedido);
   const origenRpsActivo = calcularOrigenRpsActivo(numeroPedido, activa);
