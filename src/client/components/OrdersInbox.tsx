@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FileSearch, FolderOpen, Search } from 'lucide-react';
 import type { CoordinaStatus, ReviewSummary } from '../types';
-import { formatListDate, groupByDay, inboxSections, pendingGroups } from '../ordersInbox';
+import { collapseAwnings, formatListDate, groupByDay, inboxSections, pendingGroups } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { COORDINA_NOT_CONFIGURED_MOTIVO, normalizeOf, reviewerName } from '../../reviewRules.js';
@@ -111,6 +111,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
   return (
     <li className={`orders-row ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'}${tone ? ` tone-${tone}` : ''}`}>
+      <div className="orders-row-head">
       <button
         type="button"
         className="orders-row-toggle"
@@ -128,9 +129,10 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
           {awnings?.length
-            ? awnings.map((item) => <AwningChip key={item.letter} item={item} coordinaStatus={coordinaStatus} />)
+            ? collapseAwnings(awnings, (item) => `${item.state}|${coordinaOf(item, coordinaStatus) ?? ''}`).map((group) => <AwningChip key={group.items[0].letter} item={group.items[0]} group={group} coordinaStatus={coordinaStatus} />)
             : <span className="orders-models">{review.summary.awnings} {review.summary.awnings === 1 ? 'elemento' : 'elementos'}</span>}
         </span>
+      </div>
       </div>
       {open && (
         <div className="orders-detail" id={detailId}>
@@ -165,16 +167,20 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   );
 }
 
-function AwningChip({ item, coordinaStatus }: { item: AwningItem; coordinaStatus: CoordinaStatus | null }) {
+function coordinaOf(item: AwningItem, coordinaStatus: CoordinaStatus | null) {
+  return coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)]?.estado : undefined;
+}
+
+function AwningChip({ item, group, coordinaStatus }: { item: AwningItem; group?: { label: string; items: AwningItem[] }; coordinaStatus: CoordinaStatus | null }) {
   const label = item.state === 'ok' ? 'correcto' : item.state === 'warn' ? 'con aviso' : 'con errores';
-  const coordina = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)]?.estado : undefined;
+  const coordina = coordinaOf(item, coordinaStatus);
   // Un solo signo claro por toldo: si el cálculo está bien y CoordinaOT tiene marca, solo se
   // enseña la de CoordinaOT (evita «✓ ✓» o «✓ ↩», que parecen contradecirse). Con aviso o
   // error se mantiene el icono del cálculo y se añade la marca de CoordinaOT.
   const showCalcIcon = !(item.state === 'ok' && coordina);
   return (
-    <span className={`orders-chip is-${item.state}${item.state === 'ok' ? ' pildora-plantear' : item.state === 'warn' ? ' pildora-aviso' : ''}`} title={`${item.letter} · ${controlLabel(item.model)} · ${label} · CoordinaOT: ${coordina ?? 'sin datos'}`}>
-      {item.letter}
+    <span className={`orders-chip is-${item.state}${item.state === 'ok' ? ' pildora-plantear' : item.state === 'warn' ? ' pildora-aviso' : ''}`} title={group && group.items.length > 1 ? group.items.map((one) => `${one.letter} · ${controlLabel(one.model)} · OF ${one.of || '—'}`).join('\n') + `\n${label} · CoordinaOT: ${coordina ?? 'sin datos'}` : `${item.letter} · ${controlLabel(item.model)} · ${label} · CoordinaOT: ${coordina ?? 'sin datos'}`}>
+      {group?.label ?? item.letter}
       {showCalcIcon && (item.state === 'ok' ? <Check aria-hidden="true" /> : item.state === 'warn' ? <AlertTriangle aria-hidden="true" /> : <CircleAlert aria-hidden="true" />)}
       {coordina === 'aprobada' && <span className="orders-chip-coordina is-approved" role="img" aria-label="aprobada en CoordinaOT">✓</span>}
       {coordina === 'devuelta' && <span className="orders-chip-coordina is-returned" role="img" aria-label="devuelta en CoordinaOT">↩</span>}

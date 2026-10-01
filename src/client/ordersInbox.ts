@@ -92,3 +92,19 @@ export function groupByDay(reviews: ReviewSummary[]) {
   }
   return groups;
 }
+
+// Etiquetas de toldos de una fila (Iván, 01/10/2026: «no caben si hay varios toldos»).
+// Hasta `limit` toldos se enseña una etiqueta por toldo; con más, los toldos vecinos que
+// tienen el mismo estado se juntan en una sola («A–C»), y el detalle va en el título.
+export function collapseAwnings<T extends { letter: string }>(items: T[], keyOf: (item: T) => string, limit = 6) {
+  const groups: { label: string; items: T[] }[] = [];
+  const crowded = items.length > limit;
+  for (const item of items) {
+    const last = groups[groups.length - 1];
+    if (crowded && last && keyOf(last.items[0]) === keyOf(item)) last.items.push(item);
+    else groups.push({ label: item.letter, items: [item] });
+    const group = groups[groups.length - 1];
+    if (group.items.length > 1) group.label = `${group.items[0].letter}–${item.letter}`;
+  }
+  return groups;
+}

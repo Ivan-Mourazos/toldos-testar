@@ -232,6 +232,7 @@
 }
 /* La fila: `px-3 py-1.5`, abierta `bg-brand-500/10`, con el ratón `bg-surface-2`. El botón que
    la cubre (`.orders-row-toggle`, hermano de las celdas) recibe el clic; las celdas no. */
+.orders-row-head { position: relative; }
 .orders-row-cells {
   align-items: center;
   column-gap: 0.75rem;
@@ -258,7 +259,6 @@
   width: 100%;
   z-index: 2;
 }
-.orders-row.is-open .orders-row-toggle { bottom: auto; height: 2.25rem; }
 /* CoordinaOT saca el anillo de foco hacia dentro (`focus-visible:outline-offset-[-2px]`)
    para que el borde redondeado de la tarjeta no lo recorte. */
 .orders-row-toggle:focus-visible {
@@ -348,7 +348,7 @@
 .orders-awnings {
   align-items: center;
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.25rem;
   justify-content: flex-end;
   min-width: 0;

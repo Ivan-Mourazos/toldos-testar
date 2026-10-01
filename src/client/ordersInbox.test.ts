@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { inboxSections, mergePendingReviews, pendingGroups, pendingYears } from './ordersInbox';
+import { collapseAwnings, inboxSections, mergePendingReviews, pendingGroups, pendingYears } from './ordersInbox';
 import type { ReviewSummary } from './types';
 
 const review = (orderCode: string, status: string, technician: string, extra: Record<string, unknown> = {}) => ({
@@ -111,5 +111,32 @@ describe('historial por días', () => {
     const make = (orderCode: string, updatedAt: string) => ({ orderCode, updatedAt, summary: {} }) as never;
     const groups = groupByDay([make('A', '2026-09-24T10:00:00'), make('B', '2026-09-24T08:00:00'), make('C', '2026-09-23T10:00:00')]);
     expect(groups.map((group) => [group.label, group.reviews.length])).toEqual([['Jueves 24/09/26', 2], ['Miércoles 23/09/26', 1]]);
+  });
+});
+
+describe('collapseAwnings', () => {
+  const items = (states: string[]) => states.map((state, index) => ({ letter: String.fromCharCode(65 + index), state }));
+  const keyOf = (item: { state: string }) => item.state;
+
+  it('con pocos toldos deja una etiqueta por toldo', () => {
+    const groups = collapseAwnings(items(['a', 'a', 'a', 'b']), keyOf, 6);
+    expect(groups.map((g) => g.label)).toEqual(['A', 'B', 'C', 'D']);
+    expect(groups.every((g) => g.items.length === 1)).toBe(true);
+  });
+
+  it('con muchos agrupa los consecutivos del mismo estado: A–C y D', () => {
+    const groups = collapseAwnings(items(['a', 'a', 'a', 'b', 'a', 'a', 'a']), keyOf, 6);
+    expect(groups.map((g) => g.label)).toEqual(['A–C', 'D', 'E–G']);
+    expect(groups[0].items.map((i) => i.letter)).toEqual(['A', 'B', 'C']);
+  });
+
+  it('no junta toldos iguales que no son vecinos', () => {
+    const groups = collapseAwnings(items(['a', 'b', 'a', 'b', 'a', 'b', 'a']), keyOf, 6);
+    expect(groups).toHaveLength(7);
+  });
+
+  it('justo en el límite no agrupa', () => {
+    expect(collapseAwnings(items(['a', 'a', 'a', 'a', 'a', 'a']), keyOf, 6)).toHaveLength(6);
+    expect(collapseAwnings(items(['a', 'a', 'a', 'a', 'a', 'a', 'a']), keyOf, 6)).toHaveLength(1);
   });
 });
