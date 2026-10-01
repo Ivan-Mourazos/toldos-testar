@@ -745,3 +745,32 @@
 }
 .rem-pedido-elemento .orders-detail-approved,
 .rem-pedido-elemento .orders-detail-returned { grid-column: 2 / -1; }
+
+/* Debajo, el pedido en solo lectura (LecturaPedidoRemolques): las pestañas y el formulario de la
+   pantalla de Remolques. El formulario y los resultados van en un fieldset desactivado; se ven como
+   al editar (la caja apagada `bg-surface-2` de CoordinaOT) pero con el texto entero, que es lo que
+   se viene a leer, y sin el cursor de «prohibido». */
+.review-readonly-order.rem-lectura { margin-top: 1rem; }
+.rem-lectura-campos {
+  border: 0;
+  margin: 0;
+  min-inline-size: 0;
+  min-width: 0;
+  padding: 0;
+}
+.rem-lectura-campos :is(input, textarea, .select-control):disabled {
+  color: var(--text);
+  cursor: default;
+  -webkit-text-fill-color: var(--text);
+}
+.rem-lectura-campos button:disabled { cursor: default; }
+/* Sin «×» la pestaña es una sola tecla: el botón la ocupa entera. */
+.rem-pestana.is-lectura .rem-pestana-abrir {
+  border-radius: 0.5rem;
+  padding-right: 0.75rem;
+}
+/* Lo que solo sirve para editar no se enseña: borrar el material, «Usar calculado» y la nota de
+   «Introduce las posiciones…» de los ollaos a medida (las posiciones ya están en los resultados). */
+.rem-lectura .fabric-clear-button,
+.rem-lectura .rem-enlace,
+.rem-lectura .rem-nota { display: none; }

@@ -8,10 +8,11 @@ import { rotuloElemento } from './rotulo';
 // Elementos del pedido de remolques como pestañas (la pieza de pestañas de CoordinaOT:
 // `tira-3d` con la activa `pestana-activa`): «A · Remolque 250×143 ✓» o, si falta algo,
 // «B · Baquetón 200×120 falta 2». A la derecha de cada rótulo, «×» para quitarlo (pregunta
-// antes). Las letras siguen el orden del pedido, como las de los toldos.
+// antes). Las letras siguen el orden del pedido, como las de los toldos. En `soloLectura` (el pedido
+// guardado abierto en Pedidos) solo se cambia de pestaña: sin «+ Remolque», «+ Baquetón» ni «×».
 
 export function PestanasElementos({
-  lineas, estadosLinea, versionActiva, puedeAnadir, onSeleccionar, onEliminar, onNuevo, acciones, pie,
+  lineas, estadosLinea, versionActiva, puedeAnadir, onSeleccionar, onEliminar, onNuevo, acciones, pie, soloLectura = false,
 }: {
   lineas: LineaPedido[];
   estadosLinea: Record<string, EstadoLinea>;
@@ -25,24 +26,29 @@ export function PestanasElementos({
   acciones?: React.ReactNode;
   /** Debajo de las pestañas (qué falta para el PDF). */
   pie?: React.ReactNode;
+  /** Solo para mirar: ni añadir ni quitar elementos. */
+  soloLectura?: boolean;
 }) {
   const listas = lineas.filter((linea) => estadosLinea[linea.version]?.lista).length;
   return (
     <section className="awnings-section order-elements-section rem-elementos">
       <div className="section-header">
         <div>
-          <h2>Elementos del pedido</h2>
+          <h2>{soloLectura ? 'Datos de cada elemento' : 'Elementos del pedido'}</h2>
           <span>
             {lineas.length
               ? `${lineas.length} ${lineas.length === 1 ? 'elemento' : 'elementos'} · ${listas} de ${lineas.length} ${listas === 1 ? 'listo' : 'listos'}`
               : 'Añade el primer remolque o baquetón.'}
+            {soloLectura && lineas.length > 0 && ' · solo lectura'}
           </span>
         </div>
-        <div className="order-add-actions">
-          {acciones}
-          <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('lona')}>+ Remolque</button>
-          <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('baqueton')}>+ Baquetón</button>
-        </div>
+        {!soloLectura && (
+          <div className="order-add-actions">
+            {acciones}
+            <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('lona')}>+ Remolque</button>
+            <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('baqueton')}>+ Baquetón</button>
+          </div>
+        )}
       </div>
 
       {lineas.length > 0 && (
@@ -55,7 +61,7 @@ export function PestanasElementos({
             return (
               // Dos acciones hermanas —abrir y quitar— dentro de la pestaña: un botón dentro
               // de otro no es HTML válido.
-              <div key={linea.version} className={`pestana rem-pestana${activa ? ' pestana-activa' : ''}`}>
+              <div key={linea.version} className={`pestana rem-pestana${activa ? ' pestana-activa' : ''}${soloLectura ? ' is-lectura' : ''}`}>
                 <button
                   type="button"
                   className="rem-pestana-abrir"
@@ -73,14 +79,16 @@ export function PestanasElementos({
                     ? <span className="rem-pestana-estado is-ok" aria-label="listo">✓</span>
                     : <span className="rem-pestana-estado is-falta">falta {faltan}</span>}
                 </button>
-                <button
-                  type="button"
-                  className="rem-pestana-quitar"
-                  aria-label={`Eliminar ${rotulo} del pedido`}
-                  onClick={() => onEliminar(linea.version)}
-                >
-                  <X aria-hidden="true" />
-                </button>
+                {!soloLectura && (
+                  <button
+                    type="button"
+                    className="rem-pestana-quitar"
+                    aria-label={`Eliminar ${rotulo} del pedido`}
+                    onClick={() => onEliminar(linea.version)}
+                  >
+                    <X aria-hidden="true" />
+                  </button>
+                )}
               </div>
             );
           })}

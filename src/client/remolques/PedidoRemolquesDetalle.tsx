@@ -9,12 +9,14 @@ import { controlLabel } from '../components/controlLabels';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import type { CoordinaStatus } from '../types';
 import { estadoGenerarRemolques, ficherosPrevistos } from './generarPedido';
+import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
 
 // Un pedido de remolques abierto desde Pedidos (fase 5), con las acciones del de toldos: ver la
 // hoja, «Corregir», «Generar archivos» (solo el autor, con todo aprobado en CoordinaOT) y, ya
-// generado, abrir su PDF y «Reutilizar datos».
+// generado, abrir su PDF y «Reutilizar datos». Debajo de la lista de elementos, el pedido entero en
+// solo lectura (LecturaPedidoRemolques), como el formulario de lectura de los toldos.
 
 function fechaHora(valor: string) {
   const fecha = new Date(valor);
@@ -44,7 +46,7 @@ function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardad
   );
 }
 
-export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, notify }: {
+export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, notify, elementoInicial }: {
   pedido: PedidoRemolques | null;
   cargando: boolean;
   coordina: CoordinaStatus | null;
@@ -55,6 +57,8 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   onReutilizar: () => void;
   onGenerar: () => void;
   notify: Notify;
+  /** El elemento que se abre primero en la lectura (por su versión); sin él, el primero. */
+  elementoInicial?: string;
 }) {
   const volver = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>← Pedidos</button>;
   if (cargando) {
@@ -126,6 +130,9 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
           <FilaElemento key={elemento.version} elemento={elemento} letra={letras[indice]} coordina={coordina} />
         ))}
       </ul>
+
+      {/* key: otro pedido empieza otra vez por su primer elemento. */}
+      <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
     </section>
   );
 }

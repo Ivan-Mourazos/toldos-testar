@@ -3,8 +3,7 @@ import { Save } from 'lucide-react';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { CabeceraPedido } from './CabeceraPedido';
-import { DibujoRemolque } from './DibujoRemolque';
-import { Escena3D } from './Escena3D';
+import { DibujoElemento } from './DibujoElemento';
 import { FormularioBaqueton } from './FormularioBaqueton';
 import { FormularioLona } from './FormularioLona';
 import { OrigenRpsElemento } from './OrigenRps';
@@ -166,34 +165,11 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                 if (campo) ws.marcarCampoTocado(campo);
               }}
             >
-              {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques, con las mismas
-                  props que en su `Workspace`. Sin `onSnapshotReady`: todavía no hay PDF. Las observaciones
-                  se escriben por líneas en el formulario (Iván, 30/09/2026); `Escena3D` sin
-                  `onObservacionesChange` no pinta su pie. */}
-              {lineaActiva.tipo === 'lona' ? (
-                <DibujoRemolque tipo="lona" input={lona} res={resLona} params={params}
-                  respaldo={(
-                    <Escena3D modo="lona" medidasHechas={resLona.lonaHecha} largo={lona.largo} ancho={lona.ancho} anchoAtras={lona.anchoAtras}
-                      altoDelante={lona.altoDelante} altoAtras={lona.altoAtras}
-                      aguas={lona.aguas} radioCumbrera={lona.radioCumbrera} radioHombro={lona.radioHombro}
-                      radioEsquina={lona.radioEsquina} chaflan={lona.chaflan}
-                      radioChaflanAbajo={lona.radioChaflanAbajo} radioChaflanArriba={lona.radioChaflanArriba}
-                      ollaos={resLona.reparto}
-                      recogeDelante={lona.recogeDelante} recogeAtras={lona.recogeAtras}
-                      bastillaEnfundar={lona.bastillaEnfundar}
-                      tipoPerfil={lona.tipoPerfil} ventana={lona.ventana}
-                      ventanaAncho={lona.ventanaAncho} ventanaAlto={lona.ventanaAlto}
-                      material={lona.material} />
-                  )} />
-              ) : (
-                <DibujoRemolque tipo="baqueton" input={baq} res={resBaq} params={params}
-                  respaldo={(
-                    <Escena3D modo="baqueton" medidasHechas={resBaq.remolqueHecho} largo={baq.largo} ancho={baq.ancho}
-                      altoDelante={0} altoAtras={0} tipoPerfil="TIPO 01"
-                      baqueton={baq.baqueton} baquetonDelantero={resBaq.baquetonDelantero} baquetonTrasero={resBaq.baquetonTrasero}
-                      material={baq.material} ollaos={resBaq.reparto} />
-                  )} />
-              )}
+              {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques (DibujoElemento,
+                  el mismo que el del pedido guardado abierto en Pedidos). */}
+              <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'
+                ? { tipo: 'lona', input: lona, res: resLona }
+                : { tipo: 'baqueton', input: baq, res: resBaq }} />
               {ws.medidasSuficientes && lineaActiva.tipo === 'lona' ? (
                 <ResultadosLona
                   res={resLona}
