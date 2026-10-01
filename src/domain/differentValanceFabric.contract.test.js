@@ -36,7 +36,7 @@ const scenarios = [
   }),
   scenario('CAMBIO TELA', {
     width: 300, projection: 250, valanceHeight: 25
-  }),
+  }, { separatedDrop: ({ projection }) => Number(projection) + 55 }),
   scenario('CORTINA', {
     width: 326.5, projection: 140, valanceHeight: 25,
     device: 'MAQ. EXTERIOR', crankHeight: 120,

@@ -270,7 +270,8 @@ describe('datos del planteamiento de telas', () => {
       fabric: 'ACR NATURAL',
       awnings: [{
         id: 'a', of: '229652', model: 'CAMBIO TELA', units: 2,
-        width: 479.5, projection: 300, valanceHeight: 25
+        width: 479.5, projection: 300, valanceHeight: 25,
+        cambioTelaExtraCm: 40 // Margen del pedido histórico AR2600676.
       }]
     };
     const calculation = calculateOrder(order).ofs[0].calculation;
@@ -1530,8 +1531,9 @@ describe('maqueta única del planteamiento de telas', () => {
     });
 
     expect(text).not.toMatch(/\d \+ \d/);
-    // Cuerpo: 3 paños de 2,67 = 8,01; bamba: 3 paños de 0,30 = 0,9.
-    expect(text).toMatch(/8,9 ML/);
+    // Cuerpo: 3 paños de 2,82 = 8,46; bamba: 3 paños de 0,30 = 0,9.
+    expect(text).toMatch(/SALIDA\s+282,0/);
+    expect(text).toMatch(/9,4 ML/);
   });
 
   test('con telas distintas por toldo, cada fila indica su tela', async () => {

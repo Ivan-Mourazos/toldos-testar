@@ -20,7 +20,7 @@ const byLabel: Record<string, ReadGroupId> = {
   'Hueco escuadrado': 'medidas', 'Frente superior': 'medidas', 'Salida izquierda': 'medidas', 'Frente inferior': 'medidas',
   'Salida derecha': 'medidas', 'Diagonal 1 (a salida izq.)': 'medidas', 'Diagonal 2 (a salida der.)': 'medidas',
   'Salida ventana': 'medidas', Esquina: 'medidas', 'Suelo-ventana': 'medidas', 'Altura ventana': 'medidas',
-  'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas', 'Sumar a la caída (cm)': 'medidas', 'Sumado a la caída': 'medidas',
+  'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas', 'Sumar a la caída (cm)': 'medidas', 'Sumado a la caída': 'medidas', 'Sumar para enrolle y tubo (cm)': 'medidas',
   // Estructura
   Lacado: 'estructura', Variante: 'estructura', 'Configuración de brazos': 'estructura',
   'Terminales · confirmar con taller': 'estructura',

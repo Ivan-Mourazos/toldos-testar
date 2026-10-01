@@ -24,10 +24,6 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-taller.md): son muchas y el Antica es de fabricación propia.
 
-## Trabajos de tela
-
-me dijeron: en un cambio de tela, que sume 40 para el enrrolle y lo necesario para entrada de tubo. con 55 debería valer. poder variar esto es necesario en el formulario.
-
 ## Remolques
 
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
@@ -54,6 +50,12 @@ No son dudas: son PDF de muestra, ya preparados, para que el taller confirme que
 - Cambio Antica (soporte fijo).
 
 Iván (25/09): hay que agrandar la letra de los PDF todo lo que se pueda sin que se salga de los recuadros, y ajustar los recuadros al espaciado. **Hecho en la página de telas** (la de estas muestras): cabecera, tablas, filas, dibujos, total y observaciones más grandes; el título del dibujo ocupa su ancho y las observaciones tienen más alto. Las muestras hay que sacarlas de nuevo.
+
+## Contestadas el 01/10/2026
+
+| Código | Pregunta | Respuesta | En la web |
+| --- | --- | --- | --- |
+| Q-C08 | Margen para enrolle y entrada de tubo del Cambio de tela | El taller pide 40 cm para el enrolle más lo necesario para la entrada de tubo; con 55 cm en total debería valer. Hace falta poder variarlo en el formulario | Hecho: «Sumar para enrolle y tubo (cm)», 55 por defecto, editable por toldo sin candado. La caída y la reserva usan ese valor; vacío o negativo bloquea el cálculo con un mensaje. La ficha de revisión y su PDF muestran la suma junto a las medidas |
 
 ## Contestadas el 30/09/2026
 

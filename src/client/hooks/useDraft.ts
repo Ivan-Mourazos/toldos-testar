@@ -8,6 +8,7 @@ import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRo
 import { inferHeraVariant, normalizeHeraJoin } from '../../domain/heraParameters.js';
 import { electraHasCofre, normalizeElectraMotor, normalizeElectraSupport, normalizeElectraVariant } from '../../domain/electraParameters.js';
 import { normalizeModelName } from '../../domain/modelNames.js';
+import { resolveCambioTelaExtraCm } from '../../domain/fabricJobParameters.js';
 import {
   DROP_ARM_MODE_STANDARD,
   normalizeDropArmMode,
@@ -179,6 +180,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
     : '';
   base.anticaSupportHeight = nullableNumber(old.anticaSupportHeight);
   base.cambioAnticaExtraCm = nullableNumber(old.cambioAnticaExtraCm);
+  base.cambioTelaExtraCm = base.model === 'CAMBIO TELA' ? resolveCambioTelaExtraCm(old) : null;
   base.looseSide = old.looseSide === 'IZQUIERDO' || old.looseSide === 'DERECHO' ? old.looseSide : '';
   base.maxisCableMountKit = old.maxisCableMountKit === true;
   base.structureEdit = normalizeStructureEdit(old.structureEdit) as Awning['structureEdit'];
@@ -547,6 +549,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
       : '',
     anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null,
     cambioAnticaExtraCm: model === 'CAMBIO ANTICA' ? awning.cambioAnticaExtraCm : null,
+    cambioTelaExtraCm: model === 'CAMBIO TELA' ? awning.model === model ? awning.cambioTelaExtraCm : 55 : null,
     looseSide: ['GALICIA', 'MONOBLOCK 350', 'AGATA BOX'].includes(model) ? awning.looseSide : '',
     maxisCableMountKit: model === 'MAXISCREEM' ? awning.maxisCableMountKit : false,
     structureNotesEdited: false,

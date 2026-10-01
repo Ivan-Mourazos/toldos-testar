@@ -21,7 +21,7 @@ import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
 import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.js';
 import { ambarPlacementGroup } from '../../domain/ambarBoxParameters.js';
 import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount } from '../../domain/agataBoxParameters.js';
-import { resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
+import { cambioTelaExtraError, resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemGuide, maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
@@ -644,6 +644,12 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {fields.tubeLoad && !fields.arzua && !fields.galicia && (
             <div className="awning-wide-field"><SegmentedField label="Tubo de carga" missing={isMissing('tubeLoad')} value={awning.tubeLoad} options={fields.tubeOptions} onChange={(tubeLoad) => update({ tubeLoad })} /></div>
           )}
+          {awning.model === 'CAMBIO TELA' && (
+            <div className="awning-wide-field">
+              <NumberField label="Sumar para enrolle y tubo (cm)" value={awning.cambioTelaExtraCm} min={0} step={0.5} missing={isMissing('cambioTelaExtraCm')} onChange={(cambioTelaExtraCm) => update({ cambioTelaExtraCm })} />
+              {cambioTelaExtraError(awning) && <p className="awning-note" role="alert">{cambioTelaExtraError(awning)}</p>}
+            </div>
+          )}
           {isAntica && (
             <div className="awning-wide-field">
               <SelectField
@@ -847,7 +853,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               </>}
               {simpleFabricJob && <>
                 <NumberField label="Ajuste de frente (cm)" value={awning.fabricJobWidthAdjustmentCm} step={0.1} onChange={(fabricJobWidthAdjustmentCm) => update({ fabricJobWidthAdjustmentCm })} />
-                {!standaloneValance && !isCambioAntica && <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />}
+                {!standaloneValance && !isCambioAntica && awning.model !== 'CAMBIO TELA' && <NumberField label="Margen de caída (cm)" value={awning.fabricJobDropAllowanceCm} min={0} step={0.5} onChange={(fabricJobDropAllowanceCm) => update({ fabricJobDropAllowanceCm })} />}
                 {hasValance && <NumberField label="Remate de bamba (cm)" value={awning.fabricJobValanceExtraCm} min={0} step={0.5} onChange={(fabricJobValanceExtraCm) => update({ fabricJobValanceExtraCm })} />}
               </>}
               {(fields.arzua || fields.galicia) && <>

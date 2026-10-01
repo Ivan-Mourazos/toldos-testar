@@ -30,10 +30,10 @@ function calculate(model, overrides = {}) {
 
 describe('trabajos solo de tela', () => {
   test.each([
-    ['CAMBIO TELA', 325],
+    ['CAMBIO TELA', 340],
     ['CAMBIO CORTINA', 325],
     ['ENROLLABLE', 275]
-  ])('%s aplica su fórmula del Excel y no genera estructura', (model, expectedDrop) => {
+  ])('%s aplica su regla de caída y no genera estructura', (model, expectedDrop) => {
     const result = calculate(model);
     expect(result.ofs[0].calculation.fabricDrop).toBe(expectedDrop);
     expect(result.ofs[0].calculation.structureLength).toBe(0);
@@ -100,15 +100,15 @@ describe('trabajos solo de tela', () => {
   test('reserva la bamba por separado cuando lleva otra tela', () => {
     const result = calculate('CAMBIO TELA', { valanceFabric: 'ACR GRANATE' });
     expect(result.ofs[0].calculation).toMatchObject({
-      fabricDrop: 290,
-      mainFabricMl: 8.7,
+      fabricDrop: 305,
+      mainFabricMl: 9.15,
       valanceFabricCode: 'ACRILI2101P120',
       valanceFabricMl: 1.05,
-      fabricMl: 8.7,
-      totalFabricMl: 9.75
+      fabricMl: 9.15,
+      totalFabricMl: 10.2
     });
     expect(result.ofs[0].materials).toEqual([
-      { code: 'ACRILI2170P120', quantity: 8.7, description: 'ACR NEGRO' },
+      { code: 'ACRILI2170P120', quantity: 9.15, description: 'ACR NEGRO' },
       { code: 'ACRILI2101P120', quantity: 1.05, description: 'ACR GRANATE · BAMBA' }
     ]);
   });
@@ -120,7 +120,8 @@ describe('trabajos solo de tela', () => {
       fabric: 'ACRRESNEGROP120',
       awnings: [{
         ...base.awnings[0], id: `ar2603991-${index}`, of: '0231299', model: 'CAMBIO TELA',
-        units: 1, width, projection: 300, valanceHeight: 25, valanceFabric: 'ACRILI2170P120'
+        units: 1, width, projection: 300, valanceHeight: 25, valanceFabric: 'ACRILI2170P120',
+        cambioTelaExtraCm: 40 // Margen del pedido histórico AR2603991.
       }]
     }).ofs[0]);
 

@@ -150,6 +150,7 @@ export type Awning = {
   maxisCableMountKit: boolean;
   /** Cambio Antica: centímetros que el técnico suma a la caída medida de la tela. */
   cambioAnticaExtraCm: number | null;
+  cambioTelaExtraCm: number | null;
   anticaSupportHeight: number | null;
   reglasModificadas: boolean;
   fabric: string;

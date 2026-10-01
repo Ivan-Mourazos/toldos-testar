@@ -3,7 +3,7 @@ import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
-import { normalizeFabricJobParameters, resolveFabricJobAllowance } from './fabricJobParameters.js';
+import { cambioTelaExtraError, normalizeFabricJobParameters, resolveCambioTelaExtraCm, resolveFabricJobAllowance } from './fabricJobParameters.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 
 const supportedModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
@@ -24,14 +24,17 @@ export function calculateFabricOnly({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const anticaVariant = model === 'CAMBIO ANTICA' ? normalizeAnticaVariant(awning.anticaVariant) : '';
   const roundAnticaEntry = resolveAnticaRoundEntry(anticaVariant);
-  // Iván, 25/09/2026: en un cambio de tela el pedido trae la medida de la tela vieja,
+  // Iván, 25/09/2026: en Cambio Antica el pedido trae la medida de la tela vieja,
   // tal cual (se abre y se mide). Solo se suma lo que el técnico ponga en la tarjeta.
   const cambioAnticaExtra = model === 'CAMBIO ANTICA' ? Number(awning.cambioAnticaExtraCm) || 0 : 0;
+  const cambioTelaError = model === 'CAMBIO TELA' ? cambioTelaExtraError(awning) : '';
   const widthAdjustment = modified ? Number(awning.fabricJobWidthAdjustmentCm) || 0 : 0;
   const fabricWidth = round1(Math.max(0, Number(awning.width) + widthAdjustment));
   const bodyAllowance = model === 'CAMBIO ANTICA'
     ? cambioAnticaExtra
-    : modified && awning.fabricJobDropAllowanceCm !== null && awning.fabricJobDropAllowanceCm !== undefined
+    : model === 'CAMBIO TELA'
+      ? Math.max(0, resolveCambioTelaExtraCm(awning) ?? 0)
+      : modified && awning.fabricJobDropAllowanceCm !== null && awning.fabricJobDropAllowanceCm !== undefined
       ? Math.max(0, Number(awning.fabricJobDropAllowanceCm) || 0)
       : resolveFabricJobAllowance(model, hasValance, parameters);
   const valanceExtra = modified && awning.fabricJobValanceExtraCm !== null && awning.fabricJobValanceExtraCm !== undefined
@@ -39,7 +42,7 @@ export function calculateFabricOnly({ order, awning }) {
     : parameters.valanceExtraCm;
   if (modified) {
     noteOverride('fabricJobWidthAdjustmentCm', widthAdjustment, 0);
-    if (model !== 'CAMBIO ANTICA') noteOverride('fabricJobDropAllowanceCm', bodyAllowance, resolveFabricJobAllowance(model, hasValance, parameters));
+    if (model !== 'CAMBIO ANTICA' && model !== 'CAMBIO TELA') noteOverride('fabricJobDropAllowanceCm', bodyAllowance, resolveFabricJobAllowance(model, hasValance, parameters));
     if (hasValance) noteOverride('fabricJobValanceExtraCm', valanceExtra, parameters.valanceExtraCm);
   }
 
@@ -80,7 +83,7 @@ export function calculateFabricOnly({ order, awning }) {
     && anticaVariant === 'TUBO 50X30 SIN BAMBA' && valanceHeight > 0;
   const valid = Boolean(fabric) && (!separateValance || Boolean(valanceFabric))
     && !missingCurtainConfig && missingWindowDimensions.length === 0
-    && !missingAnticaConfig && !invalidAnticaValance;
+    && !missingAnticaConfig && !invalidAnticaValance && !cambioTelaError;
   const totalMl = round2(mainUsage.ml + valanceUsage.ml);
   const calculation = {
     model, valid, minimumLine: 0,
@@ -108,7 +111,7 @@ export function calculateFabricOnly({ order, awning }) {
     despiece: null,
     diagnostics: buildDiagnostics({
       awning, model, fabric, fabricSelection, separateValance, valanceFabric,
-      missingCurtainConfig, missingWindowDimensions, missingAnticaConfig, invalidAnticaValance, modified
+      missingCurtainConfig, missingWindowDimensions, missingAnticaConfig, invalidAnticaValance, cambioTelaError, modified
     }),
     calculation
   };
@@ -144,8 +147,9 @@ function buildMaterials(fabric, mainMl, valanceFabric, valanceMl) {
   return lines;
 }
 
-function buildDiagnostics({ awning, model, fabric, fabricSelection, separateValance, valanceFabric, missingCurtainConfig, missingWindowDimensions, missingAnticaConfig, invalidAnticaValance, modified }) {
+function buildDiagnostics({ awning, model, fabric, fabricSelection, separateValance, valanceFabric, missingCurtainConfig, missingWindowDimensions, missingAnticaConfig, invalidAnticaValance, cambioTelaError, modified }) {
   const diagnostics = [];
+  if (cambioTelaError) diagnostics.push({ level: 'error', awningId: awning.id, message: cambioTelaError });
   if (!fabric) diagnostics.push({ level: 'error', awningId: awning.id, message: fabricSelection ? `Tela no encontrada en el catálogo: "${fabricSelection}".` : `Falta indicar la tela en ${model}, OF ${awning.of}.` });
   if (separateValance && !valanceFabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela de bamba no encontrada en el catálogo: "${awning.valanceFabric}".` });
   if (missingCurtainConfig) diagnostics.push({ level: 'error', awningId: awning.id, message: `CAMBIO CORTINA incompleto en OF ${awning.of}: falta ventana y confección.` });

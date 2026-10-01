@@ -161,6 +161,7 @@ describe('la reserva de un toldo incompleto es la real', () => {
   const cambioTela = (patch) => calculateOrder({
     orderCode: 'AR2602115', sameFabric: true, fabric: 'ACRILI2050P120|||120|||ACR',
     awnings: [{ id: 'a', of: '0227968', model: 'CAMBIO TELA', units: 1, width: 584, projection: 300, valanceHeight: 20,
+      cambioTelaExtraCm: 40, // Margen que tenía el pedido histórico AR2602115.
       valanceCurve: 'RECTA', rotFabric: 'NO', rotValance: 'NO', ...patch }]
   }).ofs[0];
 

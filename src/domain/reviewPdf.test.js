@@ -257,6 +257,19 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
     expect(pdf.text).toContain('Tubo especial · cambiar presupuesto');
   });
 
+  test('Cambio de tela imprime la suma para enrolle y tubo en la revisión', async () => {
+    const base = reviewOrder().awnings[0];
+    const order = reviewOrder({ awnings: [{
+      ...base, model: 'CAMBIO TELA', width: 300, projection: 250, valanceHeight: 0,
+      cambioTelaExtraCm: 67.5
+    }] });
+    const calculation = calculateOrder(order);
+    expect(calculation.ofs[0].calculation.fabricDrop).toBe(317.5);
+    const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation }));
+    expect(pdf.text).toContain('Sumar para enrolle y tubo (cm)');
+    expect(pdf.text).toContain('67,5');
+  });
+
   test('Cambio Antica enseña la medida de la tela y lo sumado a la caída', async () => {
     const base = reviewOrder().awnings[0];
     const order = reviewOrder({ awnings: [{

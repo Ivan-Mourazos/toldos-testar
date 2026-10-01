@@ -1,4 +1,5 @@
 import { formatNumber } from './math.js';
+import { resolveCambioTelaExtraCm } from './fabricJobParameters.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { getFieldVisibility, isFabricOnlyModel, isVerticalAwningModel, normalizeValanceFinish } from './modelBehavior.js';
 import {
@@ -118,6 +119,10 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.submodel && !isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);
     if (cambioAntica && Number(awning.cambioAnticaExtraCm)) addField(cardFields, 'Sumado a la caída', measure(awning.cambioAnticaExtraCm), true);
+    if (awning.model === 'CAMBIO TELA') {
+      const extra = resolveCambioTelaExtraCm(awning);
+      addField(cardFields, 'Sumar para enrolle y tubo (cm)', extra === null ? '' : formatNumber(extra), true);
+    }
     if (awning.model === 'ANTICA' && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || roundAnticaEntry)) {
       addField(cardFields, 'Altura soporte-brazo', measure(awning.anticaSupportHeight), true);
     }

@@ -13,7 +13,7 @@ import { normalizeMonoblock350Parameters } from './monoblock350Parameters.js';
 import { normalizeMaxiscreemParameters } from './maxiscreemParameters.js';
 import { normalizeAmbarBoxParameters } from './ambarBoxParameters.js';
 import { normalizeAgataBoxParameters } from './agataBoxParameters.js';
-import { normalizeFabricJobParameters } from './fabricJobParameters.js';
+import { normalizeFabricJobParameters, resolveCambioTelaExtraCm } from './fabricJobParameters.js';
 import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeElectraMotor, normalizeElectraParameters, normalizeElectraSupport, normalizeElectraVariant } from './electraParameters.js';
 import {
@@ -252,6 +252,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
       : '',
     anticaSupportHeight: numberOrDefault(awning?.anticaSupportHeight, 0),
     cambioAnticaExtraCm: nullableNumber(awning?.cambioAnticaExtraCm),
+    cambioTelaExtraCm: model === 'CAMBIO TELA' ? resolveCambioTelaExtraCm(awning) : null,
     maxisCableMountKit: awning?.maxisCableMountKit === true,
     looseSide: ['IZQUIERDO', 'DERECHO'].includes(String(awning?.looseSide || '').toUpperCase()) ? String(awning.looseSide).toUpperCase() : '',
     valanceHeight,

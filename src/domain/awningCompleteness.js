@@ -10,6 +10,7 @@ import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.j
 import { electraMotors } from './electraParameters.js';
 import { irisAsksBoxShape, normalizeIrisBoxShape } from './irisParameters.js';
 import { resolveFabric } from './fabricCatalog.js';
+import { cambioTelaExtraError } from './fabricJobParameters.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -22,7 +23,7 @@ const windowDimensions = [
 // campos. Antes salía en el orden de las comprobaciones ("OF · tela · dispositivo ·
 // tubo de carga · frente…"). Lo que no está en la lista va al final, en su orden.
 const fillOrder = [
-  'fabric', 'of', 'width', 'projection', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
+  'fabric', 'of', 'width', 'projection', 'cambioTelaExtraCm', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
   'submodel', 'irisFrontTop', 'irisExitLeft', 'irisBoxShape', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
   'heraChainColor', 'height', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace',
   'curtainHasWindow', 'curtainFinish', ...windowDimensions.map(([field]) => field),
@@ -79,6 +80,7 @@ export function getMissingFields(awning, order = null) {
   const hasValance = standaloneValance || Number(awning.valanceHeight) > 0;
 
   if (!awning.of) add('of', 'OF');
+  if (model === 'CAMBIO TELA' && cambioTelaExtraError(awning)) add('cambioTelaExtraCm', 'suma para enrolle y tubo válida');
   // Lo mismo que exigía cada modelo en su cálculo y la tarjeta no decía: la tarjeta
   // ponía "FALTA · rotulación" y el cálculo "falta tela y dispositivo" (pedido 4611).
   if (order && fields.workType === 'FULL_AWNING' && !fabricOwnCheck.has(model)) {

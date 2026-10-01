@@ -10,6 +10,8 @@ function baseAwning(overrides = {}) {
     width: 447.5,
     projection: 250,
     valanceHeight: 30,
+    // Medidas históricas: estos pedidos usaban 40 cm, antes del campo de OT.
+    cambioTelaExtraCm: 40,
     ...overrides
   };
 }
@@ -106,14 +108,14 @@ describe('cambio de tela sin bambalina', () => {
 
 // Los libros de OT llevan a veces un ajuste escrito a mano en la fórmula de la
 // caída de un pedido concreto (CAM. TELA, fila 5). No es la regla: se reproduce
-// con la excepción técnica de la tarjeta. Leído en los libros el 22/09/2026.
-describe('excepciones a mano de los libros, reproducidas con la excepción técnica', () => {
+// indicando el margen de ese pedido en la tarjeta. Leído el 22/09/2026.
+describe('ajustes a mano de los libros, reproducidos con la suma de la tarjeta', () => {
   it('AR2602326: +15 a mano, bamba en otra tela → margen de 55', () => {
     const result = calculateCambioTela({
       order: { orderCode: 'AR2602326', fabric: 'ACR NEGRO' },
       awning: baseAwning({
         of: '0228363', width: 245, projection: 227, valanceHeight: 25, valanceFabric: 'ACR AZUL',
-        reglasModificadas: true, fabricJobDropAllowanceCm: 55
+        cambioTelaExtraCm: 55
       })
     });
     expect(result.calculation.fabricDrop).toBe(282);
@@ -124,7 +126,7 @@ describe('excepciones a mano de los libros, reproducidas con la excepción técn
       order: { orderCode: 'AR2603013', fabric: 'ACR NEGRO' },
       awning: baseAwning({
         of: '0229897', width: 306, projection: 302, valanceHeight: 0,
-        reglasModificadas: true, fabricJobDropAllowanceCm: 4
+        cambioTelaExtraCm: 4
       })
     });
     expect(result.calculation.fabricDrop).toBe(306);

@@ -1,5 +1,5 @@
 const defaultAllowances = Object.freeze({
-  'CAMBIO TELA': 40,
+  'CAMBIO TELA': 55,
   ENROLLABLE: 25,
   BAMBALINA: 0,
   // CAM. ANTICA!I5 del libro antiguo: aumento del cuerpo con bamba integrada.
@@ -30,6 +30,25 @@ export function normalizeFabricJobParameters(input = {}) {
 
 export function resolveFabricJobAllowance(model, _hasValance, parameters = defaultFabricJobParameters) {
   return parameters.dropAllowanceByModel[model] ?? 0;
+}
+
+// Iván, 01/10/2026: 55 cm para enrolle y entrada de tubo, ajustables por toldo.
+// Un borrador con un margen técnico anterior conserva lo que había indicado OT.
+export function resolveCambioTelaExtraCm(awning) {
+  const value = awning.cambioTelaExtraCm === undefined
+    ? awning.reglasModificadas && awning.fabricJobDropAllowanceCm != null
+      ? awning.fabricJobDropAllowanceCm
+      : defaultAllowances['CAMBIO TELA']
+    : awning.cambioTelaExtraCm;
+  if (value === null || (typeof value === 'string' && !value.trim()) || typeof value === 'boolean') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+export function cambioTelaExtraError(awning) {
+  const value = resolveCambioTelaExtraCm(awning);
+  if (value === null) return 'Indica cuánto sumar para enrolle y tubo (cm).';
+  return value < 0 ? 'La suma para enrolle y tubo debe ser mayor o igual que cero.' : '';
 }
 
 function nonNegative(value, fallback) {
