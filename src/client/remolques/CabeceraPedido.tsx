@@ -5,16 +5,13 @@ import type { PedidoRps } from '../../remolques/rps/types.ts';
 import { indiceElementoDeLineaRps } from '../../remolques/workspace/importar-rps.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import type { EstadoConsultaRps } from '../../remolques/workspace/selectores.ts';
-import { awningLetter } from '../../domain/awningCompleteness.js';
 import { enUnRenglon, useAltoAjustado } from '../hooks/useAltoAjustado';
-import { medidasLineaRps } from './rotulo';
 
 // Cabecera del pedido de remolques: la de toldos (`order-header`, mismas clases y mismo
 // marcado de campos) con «Pedido», «Cliente», «Fecha» y «Obtener datos del pedido». A la
-// derecha, en el sitio de «Tela», el pedido tal como está en RPS y en qué elemento ha quedado
-// cada una de sus líneas. Obtener el pedido crea un elemento por línea de una vez, como en
-// toldos (Iván, 30/09/2026); ya no hay que aplicar las líneas una a una. Sin «Realizado por»:
-// lo pone «Soy».
+// resumen de lo que dio RPS, en una línea y sin la lista de sus líneas (Iván, 01/10/2026). Obtener
+// el pedido crea un elemento por línea de una vez, como en toldos (30/09/2026), y solo al
+// pulsar el botón: escribir el número no consulta nada. Sin «Realizado por»: lo pone «Soy».
 
 type Props = {
   numeroPedido: string;
@@ -27,10 +24,8 @@ type Props = {
   estadoRps: EstadoConsultaRps;
   pedidoRps: PedidoRps | null;
   errorRps: string | null;
-  /** Los elementos del pedido, para decir en cuál está cada línea de RPS. */
+  /** Los elementos del pedido, para contar cuántas líneas de RPS tienen ya el suyo. */
   lineas: LineaPedido[];
-  versionActiva: string | null;
-  onAbrirElemento: (version: string) => void;
   onConsultarRps: () => void;
 };
 
@@ -79,14 +74,15 @@ export function CabeceraPedido(props: Props) {
             {consultando ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <DatabaseZap aria-hidden="true" />}
             {consultando ? 'Consultando RPS…' : 'Obtener datos del pedido'}
           </button>
-          <span>Crea un elemento por cada línea de remolque; después todo se puede editar.</span>
+          <span role={consultando ? 'status' : undefined}>
+            {consultando
+              ? 'Consultando el pedido en RPS…'
+              : 'Crea un elemento por cada línea de remolque; después todo se puede editar.'}
+          </span>
         </div>
       </div>
 
-      <div className="order-header-group order-header-rps">
-        <h3>Pedido en RPS</h3>
-        <PedidoEnRps {...props} />
-      </div>
+      <EstadoRps {...props} />
     </section>
   );
 }
@@ -114,22 +110,12 @@ function CampoCliente({ value, disabled, onChange }: { value: string; disabled: 
   );
 }
 
-function PedidoEnRps({
-  estadoRps, pedidoRps, errorRps, lineas, numeroPedido, versionActiva, onAbrirElemento, onConsultarRps,
+/** Lo que RPS ha dado del pedido, en una línea como el resumen de «Obtener datos» de toldos: cuántas
+ *  líneas hay, cuántas tienen ya su elemento y cuántas piden revisión. Sin la lista de líneas: los
+ *  elementos están debajo, en sus pestañas. */
+function EstadoRps({
+  estadoRps, pedidoRps, errorRps, lineas, numeroPedido, onConsultarRps,
 }: Props) {
-  if (estadoRps === 'idle') {
-    return <p className="rem-rps-vacio">Escribe el pedido completo: se crea un elemento por cada línea de remolque de RPS, con cliente, OF, cantidad y medidas.</p>;
-  }
-
-  if (estadoRps === 'buscando') {
-    return (
-      <p className="rem-rps-vacio" role="status">
-        <LoaderCircle className="is-spinning" aria-hidden="true" />
-        Consultando el pedido en RPS…
-      </p>
-    );
-  }
-
   if (estadoRps === 'error' || estadoRps === 'no-encontrado') {
     // Que RPS no conozca el pedido no es un fallo: se puede seguir a mano.
     const noEncontrado = estadoRps === 'no-encontrado';
@@ -141,62 +127,28 @@ function PedidoEnRps({
     );
   }
 
-  if (!pedidoRps) return null;
+  if (estadoRps !== 'encontrado' || !pedidoRps) return null;
 
-  const enPedido = pedidoRps.lineas.map((linea) => indiceElementoDeLineaRps(lineas, numeroPedido, linea));
-  const faltan = enPedido.filter((indice) => indice < 0).length;
   const total = pedidoRps.lineas.length;
+  const faltan = pedidoRps.lineas.filter((linea) => indiceElementoDeLineaRps(lineas, numeroPedido, linea) < 0).length;
+  const revisar = pedidoRps.lineas.filter((linea) => linea.requiereRevision).length;
+  const lineasTexto = `${total} ${total === 1 ? 'línea' : 'líneas'} de remolque`;
 
   return (
-    <div className="rem-rps-pedido">
-      <p className="rem-rps-cliente">
-        <strong>{pedidoRps.cliente.alias || pedidoRps.cliente.nombre}</strong>
-        <span>{pedidoRps.cliente.codigo}</span>
-        <span className="rem-rps-numero">{pedidoRps.numero}</span>
-      </p>
-      {total === 0 ? (
-        <p className="rem-rps-vacio">El pedido existe, pero no contiene líneas de lona de remolque.</p>
-      ) : (
-        <>
-          <p className={`rem-rps-resumen${faltan ? ' is-falta' : ''}`} role="status">
-            {faltan === 0
-              ? `${total === 1 ? 'Su línea de remolque está' : `Sus ${total} líneas de remolque están`} en el pedido.`
-              : `${faltan} de ${total} ${total === 1 ? 'línea' : 'líneas'} sin elemento: pulsa «Obtener datos del pedido» para traerlas.`}
-          </p>
-          <ul className="rem-rps-lineas scroll-thin">
-            {pedidoRps.lineas.map((linea, i) => {
-              const indice = enPedido[i];
-              const elemento = indice >= 0 ? lineas[indice] : null;
-              const activa = Boolean(elemento && elemento.version === versionActiva);
-              return (
-                <li key={linea.idLinea} className={`rem-rps-linea${activa ? ' is-seleccionada' : ''}`}>
-                  <div className="rem-rps-linea-datos">
-                    <p className="rem-rps-linea-titulo">
-                      <strong>Línea {linea.numeroLinea} · {linea.tipoTrabajo === 'lona' ? 'Lona' : 'Baquetón'}</strong>
-                      {linea.requiereRevision && <span className="pildora-aviso rem-etiqueta">Revisar</span>}
-                      {linea.ordenFabricacion && <span className="rem-rps-of">OF {linea.ordenFabricacion}</span>}
-                    </p>
-                    <p className="rem-rps-medidas">{medidasLineaRps(linea)} cm · {linea.cantidad} ud.</p>
-                    <p className="rem-rps-detalle" title={linea.detalle}>{linea.detalle || linea.descripcion}</p>
-                  </div>
-                  {elemento ? (
-                    <button
-                      type="button"
-                      className="ghost-button"
-                      aria-current={activa ? 'true' : undefined}
-                      onClick={() => onAbrirElemento(elemento.version)}
-                    >
-                      {activa ? `Abierto · ${awningLetter(indice)}` : `Abrir ${awningLetter(indice)}`}
-                    </button>
-                  ) : (
-                    <span className="pildora-aviso rem-etiqueta">Sin elemento</span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </>
+    <aside className="order-autofill-summary rem-rps-estado" aria-live="polite">
+      <div>
+        <strong>Datos obtenidos de RPS</strong>
+        {total === 0 ? (
+          <span>El pedido existe, pero no contiene líneas de lona de remolque.</span>
+        ) : faltan > 0 ? (
+          <span className="is-falta">{faltan} de {lineasTexto} sin elemento: pulsa «Obtener datos del pedido» para traerlas.</span>
+        ) : (
+          <span>{lineasTexto} · {total === 1 ? 'su elemento está' : 'sus elementos están'} en las pestañas · todo editable</span>
+        )}
+      </div>
+      {revisar > 0 && (
+        <span className="pildora-aviso rem-etiqueta">{revisar === 1 ? '1 línea por revisar' : `${revisar} líneas por revisar`}</span>
       )}
-    </div>
+    </aside>
   );
 }

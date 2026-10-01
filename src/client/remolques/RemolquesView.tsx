@@ -16,12 +16,14 @@ import { useRemolques } from './useRemolques';
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
-export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado }: {
+export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0 }: {
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
   /** Pedido que Toldos manda abrir aquí («Abrir en Remolques»); `id` distingue una petición de la siguiente. */
   pedidoSolicitado?: { numero: string; id: number } | null;
+  /** Contador de pulsaciones de «Limpiar» (el botón está en la barra de la página): cada subida pide limpiar el formulario. */
+  limpiarSolicitado?: number;
 }) {
   const ws = useRemolques({ usuario, notify, askForConfirmation });
   // Solo se atiende cada petición una vez: repetirla pisaría lo que se escriba después. Abrir
@@ -34,6 +36,14 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
     ultimoPedidoSolicitado.current = pedidoSolicitado.id;
     abrirPedido(pedidoSolicitado.numero);
   }, [abrirPedido, pedidoSolicitado]);
+  // Lo que ya valía al montarse no cuenta: solo las pulsaciones nuevas.
+  const limpiezaAtendida = React.useRef(limpiarSolicitado);
+  const { limpiarFormulario } = ws;
+  React.useEffect(() => {
+    if (limpiezaAtendida.current === limpiarSolicitado) return;
+    limpiezaAtendida.current = limpiarSolicitado;
+    void limpiarFormulario();
+  }, [limpiarFormulario, limpiarSolicitado]);
   const {
     numeroPedido, cliente, fecha, lineas, versionActiva, cargandoPedido, rps,
   } = ws.estado;
@@ -59,8 +69,6 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           pedidoRps={ws.pedidoRpsVisible}
           errorRps={rps.error}
           lineas={lineas}
-          versionActiva={versionActiva}
-          onAbrirElemento={ws.seleccionarLinea}
           onConsultarRps={() => ws.obtenerDatosPedido()}
         />
         {ws.origenMateriales === 'semilla' && (
@@ -184,7 +192,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           <p>
             {hayPedido
               ? 'Usa «+ Remolque» o «+ Baquetón». Cada uno queda dentro de este pedido.'
-              : 'Escribe arriba el número de pedido. Si existe en RPS, se crea un elemento por cada línea de remolque.'}
+              : 'Escribe arriba el número de pedido y pulsa «Obtener datos del pedido»: se crea un elemento por cada línea de remolque.'}
           </p>
         </section>
       )}

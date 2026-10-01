@@ -5,6 +5,7 @@ import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
 import type { LineaPedidoRps, PedidoRps } from '../../remolques/rps/types.ts';
 import { lineasDesdePedidoRps } from '../../remolques/workspace/importar-rps.ts';
 import { estadoLinea } from '../../remolques/workspace/lineas.ts';
+import type { EstadoConsultaRps } from '../../remolques/workspace/selectores.ts';
 import { CabeceraPedido } from './CabeceraPedido';
 import { OrigenRpsElemento } from './OrigenRps';
 import { PestanasElementos } from './PestanasElementos';
@@ -39,12 +40,12 @@ const creadas = lineasDesdePedidoRps(pedido, {
   materiales: [], params: DEFAULT_PARAMS, realizadoPor: 'IVÁN', importadoEn: '2026-09-30T10:00:00Z',
 });
 
-const cabecera = (lineas = creadas, versionActiva: string | null = '10') => renderToStaticMarkup(
+const cabecera = (lineas = creadas, estadoRps: EstadoConsultaRps = 'encontrado', consultando = false) => renderToStaticMarkup(
   <CabeceraPedido
     numeroPedido="AR.26.04286" cliente="TALLERES CAL, C. B." fecha="2026-09-01" cargando={false}
     onNumeroPedidoChange={() => {}} onClienteChange={() => {}} onFechaChange={() => {}}
-    estadoRps="encontrado" pedidoRps={pedido} errorRps={null}
-    lineas={lineas} versionActiva={versionActiva} onAbrirElemento={() => {}} onConsultarRps={() => {}}
+    estadoRps={consultando ? 'buscando' : estadoRps} pedidoRps={pedido} errorRps={null}
+    lineas={lineas} onConsultarRps={() => {}}
   />,
 );
 
@@ -62,25 +63,45 @@ describe('cabecera: el pedido en RPS', () => {
     expect(html).not.toContain('Cambiar línea');
   });
 
-  it('con todas creadas, dice en qué elemento está cada línea y cuál está abierto', () => {
+  // Iván, 01/10/2026: la cabecera no lista las líneas de RPS (quedaba fea); los elementos están
+  // debajo, en sus pestañas, y aquí solo un resumen corto como el de toldos.
+  it('no lista las líneas de RPS ni sus botones', () => {
     const html = cabecera();
-    expect(html).toContain('Sus 3 líneas de remolque están en el pedido.');
-    expect(html).toContain('Abierto · A');
-    expect(html).toContain('Abrir B');
-    expect(html).toContain('Abrir C');
-    expect(html).toContain('OF 0231781');
-    expect(html).toContain('250 × 143 × 88 cm · 1 ud.');
-    expect(html).toContain('— × — × — cm');
+    expect(html).not.toContain('Pedido en RPS');
+    expect(html).not.toContain('rem-rps-lineas');
+    expect(html).not.toContain('Abrir B');
+    expect(html).not.toContain('Abierto ·');
+    expect(html).not.toContain('OF 0231781');
+    expect(html).not.toContain('cm · 1 ud.');
   });
 
-  it('las líneas sin elemento se señalan y se explica cómo traerlas', () => {
-    const html = cabecera([creadas[0]], '10');
-    expect(html).toContain('2 de 3 líneas sin elemento: pulsa «Obtener datos del pedido» para traerlas.');
-    expect(html.match(/Sin elemento/g)).toHaveLength(2);
+  it('con todas creadas, resume cuántas líneas hay y avisa de las que piden revisión', () => {
+    const html = cabecera();
+    expect(html).toContain('Datos obtenidos de RPS');
+    expect(html).toContain('3 líneas de remolque');
+    expect(html).toContain('1 línea por revisar');
+    expect(html).not.toContain('sin elemento');
   });
 
-  it('la línea que RPS marca para revisar lleva «Revisar»', () => {
-    expect(cabecera().match(/>Revisar</g)).toHaveLength(1);
+  it('si falta algún elemento, lo dice y explica cómo traerlo', () => {
+    const html = cabecera([creadas[0]]);
+    expect(html).toContain('2 de 3 líneas de remolque sin elemento: pulsa «Obtener datos del pedido» para traerlas.');
+  });
+
+  it('sin consultar todavía no enseña ningún resumen y el botón sigue ahí', () => {
+    const html = cabecera([], 'idle');
+    expect(html).not.toContain('Datos obtenidos de RPS');
+    expect(html).toContain('Obtener datos del pedido');
+  });
+
+  it('mientras consulta, el botón y una línea compacta lo dicen', () => {
+    const html = cabecera([], 'buscando', true);
+    expect(html).toContain('Consultando RPS…');
+    expect(html).toContain('Consultando el pedido en RPS…');
+  });
+
+  it('el pedido no está en la cabecera como segundo grupo: una sola columna de datos', () => {
+    expect(cabecera().match(/class="order-header-group /g)).toHaveLength(1);
   });
 
   it('los estados de RPS siguen como antes', () => {
@@ -89,11 +110,15 @@ describe('cabecera: el pedido en RPS', () => {
         numeroPedido="AR.26.04286" cliente="" fecha="2026-09-01" cargando={false}
         onNumeroPedidoChange={() => {}} onClienteChange={() => {}} onFechaChange={() => {}}
         estadoRps="error" pedidoRps={null} errorRps="RPS no responde."
-        lineas={[]} versionActiva={null} onAbrirElemento={() => {}} onConsultarRps={() => {}}
+        lineas={[]} onConsultarRps={() => {}}
       />,
     );
     expect(error).toContain('RPS no responde.');
     expect(error).toContain('Reintentar');
+  });
+
+  it('RPS no encontró el pedido: se puede seguir a mano', () => {
+    expect(cabecera([], 'no-encontrado')).toContain('RPS no encontró este pedido; puedes seguir manualmente.');
   });
 });
 

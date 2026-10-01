@@ -85,3 +85,21 @@ describe('reducirRemolques · obtener el pedido de RPS', () => {
     expect(siguiente.lineas.map((l) => [l.version, l.input.cabecera.fecha])).toEqual([['10', '2026-09-15'], ['11', '2026-09-15']]);
   });
 });
+
+describe('reducirRemolques · limpiar el formulario', () => {
+  it('deja pedido, cliente, elementos y consulta de RPS en blanco, con la fecha de hoy', () => {
+    const lleno: EstadoRemolques = {
+      ...estadoInicial(), fecha: '2026-09-20', numeroPedido: 'AR.26.04286', cliente: 'TALLERES X',
+      lineas: [linea('10', 'TALLERES X', '2026-09-20')], versionActiva: '10',
+      rps: { estado: 'encontrado', numeroConsultado: 'AR.26.04286', pedido: null, error: null, reintento: 2 },
+    };
+    const limpio = reducirRemolques(lleno, { tipo: 'PEDIDO_LIMPIADO' });
+    expect(limpio.numeroPedido).toBe('');
+    expect(limpio.cliente).toBe('');
+    expect(limpio.lineas).toEqual([]);
+    expect(limpio.versionActiva).toBeNull();
+    expect(limpio.rps.estado).toBe('idle');
+    expect(limpio.fecha).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(limpio.fecha).not.toBe('2026-09-20');
+  });
+});

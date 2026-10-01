@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type Dispatch, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { calcLona, type LonaInput } from '../../remolques/calc/lona.ts';
 import { calcBaqueton, type BaquetonInput } from '../../remolques/calc/baqueton.ts';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
@@ -11,7 +11,7 @@ import { erroresPlanteamiento } from '../../remolques/pedidos/validar-planteamie
 import {
   estadoInicial, reducirWorkspace, type AccionWorkspace, type EstadoWorkspace,
 } from '../../remolques/workspace/estado.ts';
-import { guardarBorradores, leerBorradores } from '../../remolques/workspace/borradores-locales.ts';
+import { guardarBorradores, leerBorradores, limpiarBorradores } from '../../remolques/workspace/borradores-locales.ts';
 import {
   lineasDesdePedidoRps, planificarImportacionRps, type ModoImportacionRps, type PlanImportacionRps,
 } from '../../remolques/workspace/importar-rps.ts';
@@ -43,7 +43,11 @@ const hoy = todayIso;
 export interface EstadoRemolques extends EstadoWorkspace {
   fecha: string;
 }
-export type AccionRemolques = AccionWorkspace | { tipo: 'FECHA_CAMBIADA'; valor: string };
+export type AccionRemolques =
+  | AccionWorkspace
+  | { tipo: 'FECHA_CAMBIADA'; valor: string }
+  /** «Limpiar formulario»: vuelve al pedido vacío, con la fecha de hoy. */
+  | { tipo: 'PEDIDO_LIMPIADO' };
 
 const conFecha = (linea: LineaPedido, fecha: string): LineaPedido => ({
   ...linea,
@@ -51,6 +55,7 @@ const conFecha = (linea: LineaPedido, fecha: string): LineaPedido => ({
 });
 
 export function reducirRemolques(estado: EstadoRemolques, accion: AccionRemolques): EstadoRemolques {
+  if (accion.tipo === 'PEDIDO_LIMPIADO') return { ...estadoInicial(), fecha: hoy() };
   if (accion.tipo === 'FECHA_CAMBIADA') {
     return { ...estado, fecha: accion.valor, lineas: estado.lineas.map((linea) => conFecha(linea, accion.valor)) };
   }
@@ -115,71 +120,6 @@ function useCatalogos() {
   return { materiales, origenMateriales, params, materialesRef, setMateriales };
 }
 
-// ── Consulta a RPS (equivalente de useConsultaRps) ──────────────────────────
-/**
- * Consulta RPS con debounce de 450 ms y entrega el pedido encontrado, tenga las líneas que tenga
- * (antes solo se entregaba el de una línea, para aplicarla sola). Tres guardas la frenan: un número
- * sin forma de pedido no se consulta, un registro reutilizado no se
- * sobrescribe mientras no cambie de número, y la misma consulta (número +
- * reintento) no se repite. Además aborta la petición en curso si el efecto
- * se vuelve a ejecutar antes de que termine.
- */
-function useConsultaRps({
-  numeroPedido, reintento, despachar, onPedidoEncontrado, reiniciarGuarda: reiniciarGuardaRef,
-}: {
-  numeroPedido: string;
-  reintento: number;
-  despachar: Dispatch<AccionRemolques>;
-  /** `numero` es el consultado, ya normalizado. */
-  onPedidoEncontrado: (pedido: PedidoRps, numero: string) => void | Promise<void>;
-  reiniciarGuarda: RefObject<(() => void) | null>;
-}) {
-  const ultimaConsulta = useRef('');
-
-  useEffect(() => {
-    reiniciarGuardaRef.current = () => { ultimaConsulta.current = ''; };
-  }, [reiniciarGuardaRef]);
-
-  useEffect(() => {
-    const numero = normalizarNumeroPedidoRps(numeroPedido);
-    if (!FORMA_PEDIDO_RPS.test(numero)) {
-      ultimaConsulta.current = '';
-      return;
-    }
-    const clave = `${numero}:${reintento}`;
-    if (ultimaConsulta.current === clave) return;
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => {
-      ultimaConsulta.current = clave;
-      despachar({ tipo: 'RPS_CONSULTA_INICIADA', numero });
-      void fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(numero)}`, {
-        signal: controller.signal,
-        cache: 'no-store',
-      }).then(async (response) => {
-        const payload = await response.json() as { pedido?: PedidoRps | null; error?: string };
-        if (!response.ok) throw new Error(payload.error ?? 'No se pudo consultar RPS.');
-        if (!payload.pedido) {
-          despachar({ tipo: 'RPS_NO_ENCONTRADO' });
-          return;
-        }
-        despachar({ tipo: 'RPS_ENCONTRADO', pedido: payload.pedido });
-        await onPedidoEncontrado(payload.pedido, numero);
-      }).catch((error: unknown) => {
-        if (controller.signal.aborted) return;
-        despachar({
-          tipo: 'RPS_ERROR',
-          mensaje: error instanceof Error ? error.message : 'No se pudo consultar RPS.',
-        });
-      });
-    }, 450);
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [despachar, numeroPedido, onPedidoEncontrado, reintento]);
-}
-
 /**
  * Toda la lógica de la pantalla de remolques: estado, efectos, derivados y manejadores.
  * Es el equivalente de `useWorkspace` de Remolques-TGM sin guardar, revisión ni PDF (llegan
@@ -217,15 +157,12 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     [],
   );
 
-  const reiniciarGuardaRps = useRef<(() => void) | null>(null);
   // El estado de este momento para lo que corre tras esperar (la consulta a RPS, la pregunta):
   // decidir con el de cuando se lanzó podría crear elementos en un pedido que ya no es el abierto.
   const estadoRef = useRef(estado);
   useEffect(() => { estadoRef.current = estado; });
-  // Pedido (normalizado) cuyo resultado de RPS se pidió a propósito —«Obtener datos del pedido»,
-  // «Reintentar» o «Abrir en Remolques»—: ese sí pregunta si el pedido ya tiene elementos. La
-  // consulta que sale sola al teclear el número solo crea los elementos en un pedido vacío.
-  const importarAlLlegar = useRef('');
+  // La consulta a RPS en curso: solo hay una, y se aborta al cambiar o limpiar el pedido.
+  const consultaEnCurso = useRef<AbortController | null>(null);
   const almacen = typeof window === 'undefined' ? null : window.localStorage;
   // Un pedido cuyos borradores ya se recuperaron; evita recuperarlos otra vez
   // por encima de lo que el usuario esté escribiendo.
@@ -467,17 +404,16 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
    * El pedido de RPS convertido en elementos, uno por línea y de una vez, como los toldos al
    * obtener el pedido (Iván, 30/09/2026: antes se aplicaba cada línea a mano sobre el elemento
    * abierto). En un pedido vacío se crean sin preguntar: no hay nada que perder. Si ya tiene
-   * elementos, lo automático no toca nada y lo pedido a propósito pregunta.
+   * elementos, pregunta qué hacer con ellos.
    */
-  const importarPedidoRps = useCallback(async (pedido: PedidoRps, aPeticion: boolean) => {
+  const importarPedidoRps = useCallback(async (pedido: PedidoRps) => {
     const esteMismo = () => normalizarNumeroPedidoRps(estadoRef.current.numeroPedido)
       === normalizarNumeroPedidoRps(pedido.numero);
     if (!esteMismo() || estadoRef.current.cargandoPedido) return;
     if (pedido.lineas.length === 0) {
-      if (aPeticion) avisar('info', 'El pedido existe en RPS, pero no tiene líneas de lona de remolque: añade los elementos a mano.');
+      avisar('info', 'El pedido existe en RPS, pero no tiene líneas de lona de remolque: añade los elementos a mano.');
       return;
     }
-    if (!aPeticion && estadoRef.current.lineas.length > 0) return;
     const deRps = lineasDesdePedidoRps(pedido, {
       materiales: await asegurarMateriales(),
       params,
@@ -496,7 +432,6 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
       avisar(revisar ? 'info' : 'exito', `${deRps.length} ${deRps.length === 1 ? 'elemento creado' : 'elementos creados'} desde RPS, uno por línea del pedido. Completa en cada pestaña lo que falta; todo se puede editar.${notaRevisar}`);
       return;
     }
-    if (!aPeticion) return;
     const plan = planificarImportacionRps(actuales, deRps);
     if (plan.alDia) {
       avisar('info', 'El pedido ya tiene todas las líneas de RPS con sus mismos datos: no hay nada nuevo que traer.');
@@ -521,24 +456,44 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
   // identidad, que cambia con los catálogos y el usuario.
   const importarRef = useRef(importarPedidoRps);
   useEffect(() => { importarRef.current = importarPedidoRps; });
-  const alEncontrarPedido = useCallback((pedido: PedidoRps, numero: string) => {
-    const aPeticion = importarAlLlegar.current === numero;
-    if (aPeticion) importarAlLlegar.current = '';
-    return importarRef.current(pedido, aPeticion);
+
+  /**
+   * Consulta RPS y, al llegar, crea los elementos. Solo se llama a petición («Obtener datos del
+   * pedido», «Reintentar», «Abrir en Remolques»): teclear el número no consulta nada (Iván,
+   * 01/10/2026).
+   */
+  const consultarRps = useCallback(async (numeroEscrito: string) => {
+    const numero = normalizarNumeroPedidoRps(numeroEscrito);
+    if (!FORMA_PEDIDO_RPS.test(numero)) return;
+    consultaEnCurso.current?.abort();
+    const controller = new AbortController();
+    consultaEnCurso.current = controller;
+    despachar({ tipo: 'RPS_CONSULTA_INICIADA', numero });
+    try {
+      const response = await fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(numero)}`, {
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+      const payload = await response.json() as { pedido?: PedidoRps | null; error?: string };
+      if (!response.ok) throw new Error(payload.error ?? 'No se pudo consultar RPS.');
+      if (!payload.pedido) {
+        despachar({ tipo: 'RPS_NO_ENCONTRADO' });
+        return;
+      }
+      despachar({ tipo: 'RPS_ENCONTRADO', pedido: payload.pedido });
+      await importarRef.current(payload.pedido);
+    } catch (error: unknown) {
+      if (controller.signal.aborted) return;
+      despachar({
+        tipo: 'RPS_ERROR',
+        mensaje: error instanceof Error ? error.message : 'No se pudo consultar RPS.',
+      });
+    }
   }, []);
 
-  useConsultaRps({
-    numeroPedido,
-    reintento: rps.reintento,
-    despachar,
-    onPedidoEncontrado: alEncontrarPedido,
-    reiniciarGuarda: reiniciarGuardaRps,
-  });
-
   const cambiarNumeroPedido = (valor: string) => {
-    // Lo pedido a propósito era para el número de antes: al volver a él, lo que salga solo al
-    // teclearlo no debe preguntar como si se hubiera pulsado «Obtener datos del pedido».
-    if (normalizarNumeroPedidoRps(valor) !== importarAlLlegar.current) importarAlLlegar.current = '';
+    // Otro número es otro pedido: la consulta que siguiera en curso ya no le sirve.
+    if (normalizarNumeroPedidoRps(valor) !== clavePedido) consultaEnCurso.current?.abort();
     despachar({ tipo: 'PEDIDO_CAMBIADO', valor });
   };
   const cambiarClientePedido = (valor: string) => despachar({ tipo: 'CLIENTE_CAMBIADO', valor });
@@ -548,20 +503,43 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     despachar({ tipo: 'INPUT_CAMBIADO', input: entrada });
 
   /**
-   * «Obtener datos del pedido» (y «Reintentar»): vuelve a consultar RPS aunque ya se hubiera
-   * consultado y, al llegar, crea los elementos; si el pedido ya tiene, pregunta antes.
+   * «Obtener datos del pedido» (y «Reintentar»): consulta RPS aunque ya se hubiera consultado y,
+   * al llegar, crea los elementos; si el pedido ya tiene, pregunta antes.
    */
   const obtenerDatosPedido = useCallback((numero?: string) => {
-    importarAlLlegar.current = normalizarNumeroPedidoRps(numero ?? estadoRef.current.numeroPedido);
-    reiniciarGuardaRps.current?.();
-    despachar({ tipo: 'RPS_REINTENTADO' });
-  }, []);
+    void consultarRps(numero ?? estadoRef.current.numeroPedido);
+  }, [consultarRps]);
 
   /** «Abrir en Remolques» desde Toldos: abre el pedido y lo obtiene como el botón. */
   const abrirPedido = useCallback((numero: string) => {
     despachar({ tipo: 'PEDIDO_CAMBIADO', valor: numero });
     obtenerDatosPedido(numero);
   }, [obtenerDatosPedido]);
+
+  /**
+   * «Limpiar formulario»: pedido, cliente, fecha y elementos vuelven a vacío y se borra el
+   * borrador del navegador de ese pedido. Con datos, pregunta antes (como en toldos). Primero se
+   * vacía la cola de escritura: si no, el guardado pendiente lo volvería a escribir.
+   */
+  const limpiarFormulario = useCallback(async () => {
+    const actual = estadoRef.current;
+    const hayDatos = Boolean(actual.numeroPedido.trim() || actual.cliente.trim() || actual.lineas.length > 0);
+    if (hayDatos) {
+      const respuesta = await confirmar({
+        title: 'Limpiar el formulario',
+        message: 'Se borrarán todos los datos del pedido actual, con sus elementos y el borrador guardado en este navegador. Esta acción no elimina los archivos que ya estén guardados.',
+        confirmLabel: 'Limpiar formulario',
+        cancelLabel: 'Volver al pedido',
+        tone: 'danger',
+      });
+      if (respuesta !== 'confirm') return;
+    }
+    consultaEnCurso.current?.abort();
+    pendienteRef.current = null;
+    limpiarBorradores(almacen, estadoRef.current.numeroPedido);
+    despachar({ tipo: 'PEDIDO_LIMPIADO' });
+    avisar('exito', 'El formulario está listo para un pedido nuevo.');
+  }, [almacen, avisar, confirmar]);
 
   return {
     estado,
@@ -592,6 +570,7 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     nuevaLinea,
     obtenerDatosPedido,
     abrirPedido,
+    limpiarFormulario,
     marcarCampoTocado,
   };
 }

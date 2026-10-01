@@ -68,6 +68,9 @@ export default function App() {
   // el formulario de toldos y solo vale mientras ese sea el número en pantalla.
   const [pedidoRemolques, setPedidoRemolques] = useState<{ numero: string; lineas: number } | null>(null);
   const [pedidoSolicitado, setPedidoSolicitado] = useState<{ numero: string; id: number } | null>(null);
+  // «Limpiar» de Remolques: cada pulsación sube el contador y la pantalla de remolques, que es
+  // quien tiene el pedido, pregunta y limpia.
+  const [limpiarRemolques, setLimpiarRemolques] = useState(0);
   // Nota del revisor al devolver un pedido: se ve en Pedido mientras se corrige.
   const [returnNote, setReturnNote] = useState<{ by: string; at: string; note: string } | null>(null);
   // OF del pedido según RPS, junto al pedido al que pertenecen. Solo valen si ese
@@ -508,6 +511,14 @@ export default function App() {
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && <ParametersHistory version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />}
           </div>
+          {activeTab === 'order' && producto === 'remolques' && (
+            <div className="topbar-actions">
+              <button className="ghost-button clear-form-button" type="button" onClick={() => setLimpiarRemolques((n) => n + 1)}>
+                <Eraser aria-hidden="true" />
+                Limpiar
+              </button>
+            </div>
+          )}
           {activeTab === 'order' && producto === 'toldos' && (
             <div className="topbar-actions">
               <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={() => void clearForm()}>
@@ -581,7 +592,7 @@ export default function App() {
 
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
-              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} />
+              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques} />
             </div>
           )}
 

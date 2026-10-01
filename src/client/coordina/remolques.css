@@ -33,28 +33,22 @@
   text-transform: none;
 }
 
-/* ── Cabecera: la importación de RPS, en el sitio de «Tela» ── */
-.rem-cabecera .order-header-rps { align-content: start; }
+/* ── Cabecera: la de toldos con un solo grupo («Datos del pedido»): sin la lista de líneas de RPS
+   a la derecha (Iván, 01/10/2026). El resultado de RPS va debajo, como el resumen de toldos. ── */
+.order-header.rem-cabecera { grid-template-columns: minmax(0, 1fr); }
+.rem-cabecera .order-header-group { padding: 0 2px; }
 /* Pedido y fecha a su ancho; el cliente se queda con el resto y, si aun así no cabe, baja a un
    segundo renglón (Iván, 01/10/2026). */
-.rem-cabecera .order-header-grid { align-items: start; grid-template-columns: 8.5rem minmax(0, 1fr) 9.5rem; }
-.rem-rps-vacio,
+.rem-cabecera .order-header-grid { align-items: start; grid-template-columns: 8.5rem minmax(0, 1fr) 9.5rem; max-width: 48rem; }
 .rem-rps-aviso {
   align-items: center;
   border-radius: 0.5rem;
   display: flex;
   font-size: 11px;
   gap: 0.5rem;
-  margin: 0;
+  margin: 8px 0 0;
   padding: 0.5rem 0.625rem;
 }
-/* La caja de la ficha de CoordinaOT: `rounded-lg bg-surface-2/70` con su línea. */
-.rem-rps-vacio {
-  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
-  border: 1px solid var(--border);
-}
-.rem-rps-vacio { color: var(--text-muted); font-weight: 500; }
-.rem-rps-vacio svg { flex: none; height: 14px; width: 14px; }
 /* Avisos: el ámbar de CoordinaOT; el fallo de la consulta, su rojo. */
 .rem-rps-aviso {
   background: var(--aviso-fondo);
@@ -68,55 +62,10 @@
   border-color: var(--error-borde);
   color: var(--error-texto);
 }
-
-.rem-rps-pedido { display: grid; gap: 6px; min-width: 0; }
-.rem-rps-cliente {
-  align-items: baseline;
-  color: var(--text-muted);
-  display: flex;
-  font-size: 11px;
-  gap: 0.5rem;
-  margin: 0;
-}
-.rem-rps-cliente strong { color: var(--text); font-size: 12px; font-weight: 600; }
-.rem-rps-numero {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 0.25rem;
-  color: var(--text);
-  font-family: var(--font-mono), monospace;
-  font-weight: 600;
-  margin-left: auto;
-  padding: 0 0.375rem;
-}
-.rem-rps-lineas {
-  display: grid;
-  gap: 6px;
-  list-style: none;
-  margin: 0;
-  max-height: 11.5rem;
-  overflow-y: auto;
-  padding: 0;
-}
-.rem-rps-linea {
-  align-items: flex-start;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  display: flex;
-  gap: 0.75rem;
-  justify-content: space-between;
-  padding: 0.5rem 0.625rem;
-}
-.rem-rps-linea.is-seleccionada {
-  background: color-mix(in srgb, var(--color-brand-500) 10%, var(--surface));
-  border-color: var(--color-brand-400);
-}
-.rem-rps-linea .ghost-button { flex: none; white-space: nowrap; }
-.rem-rps-linea-datos { display: grid; gap: 2px; min-width: 0; }
-.rem-rps-linea-datos p { margin: 0; }
-.rem-rps-linea-titulo { align-items: center; display: flex; flex-wrap: wrap; gap: 0.375rem; }
-.rem-rps-linea-titulo strong { color: var(--text); font-size: 12px; font-weight: 600; }
+.order-autofill-action .is-spinning { flex: none; }
+/* El resumen de lo que dio RPS es el de toldos; el ámbar si falta algún elemento. */
+.rem-rps-estado span.is-falta { color: var(--aviso-texto); font-weight: 600; }
+.rem-rps-estado .rem-etiqueta { white-space: nowrap; }
 .rem-etiqueta {
   border: 1px solid;
   border-radius: 0.25rem;
@@ -125,8 +74,9 @@
   padding: 0 0.375rem;
   text-transform: uppercase;
 }
+.rem-rps-linea-titulo { align-items: center; display: flex; flex-wrap: wrap; gap: 0.375rem; }
+.rem-rps-linea-titulo strong { color: var(--text); font-size: 12px; font-weight: 600; }
 .rem-rps-of { color: var(--text-muted); font-family: var(--font-mono), monospace; font-size: 10px; font-weight: 600; }
-.rem-rps-medidas { color: var(--text); font-family: var(--font-mono), monospace; font-size: 12px; font-weight: 600; }
 .rem-rps-detalle {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -137,16 +87,6 @@
   overflow: hidden;
 }
 .rem-rps-ok { color: var(--correcto-texto); font-size: 11px; font-weight: 600; }
-/* Cuántas líneas de RPS tienen ya su elemento: el verde de CoordinaOT si están todas, el
-   ámbar si falta alguna. */
-.rem-rps-resumen {
-  color: var(--correcto-texto);
-  font-size: 11px;
-  font-weight: 600;
-  margin: 0;
-}
-.rem-rps-resumen.is-falta { color: var(--aviso-texto); }
-.rem-rps-linea > .pildora-aviso { flex: none; white-space: nowrap; }
 
 /* De qué línea de RPS salió el elemento abierto, encima de su formulario: la caja de la ficha
    de CoordinaOT; ámbar si RPS no da las medidas claras. */
