@@ -195,7 +195,7 @@
 }
 .rem-editor h2,
 .rem-vacio h2 { color: var(--text); font-size: 15px; margin: 2px 0 0; }
-.rem-editor-cabecera { margin-bottom: 0.75rem; }
+.rem-editor-cabecera { margin-bottom: 0.5rem; }
 .rem-editor-estado {
   background: var(--aviso-fondo);
   border: 1px solid var(--aviso-borde);
@@ -203,8 +203,8 @@
   color: var(--aviso-texto);
   font-size: 12px;
   font-weight: 700;
-  margin: 0.625rem 0 0;
-  padding: 0.5rem 0.75rem;
+  margin: 0.375rem 0 0;
+  padding: 0.3125rem 0.625rem;
   text-align: center;
 }
 .rem-editor-estado.is-ok {
@@ -235,12 +235,12 @@
 .rem-editor-cuerpo {
   align-items: start;
   display: grid;
-  gap: 1rem;
-  grid-template-columns: clamp(28rem, 36%, 38rem) minmax(0, 1fr);
+  gap: 0.75rem;
+  grid-template-columns: clamp(28rem, 37%, 39rem) minmax(0, 1fr);
 }
 .rem-editor-izquierda,
 .rem-editor-derecha { min-width: 0; }
-.rem-editor-derecha { display: flex; flex-direction: column; gap: 0.75rem; }
+.rem-editor-derecha { display: flex; flex-direction: column; gap: 0.5rem; }
 
 /* ── El dibujo de siempre (Escena3D): tarjeta con cabecera, lienzo y observaciones ──
    El marco sigue a los tokens (claro y oscuro); el lienzo del SVG no: es una hoja técnica con
@@ -258,8 +258,8 @@
   align-items: center;
   border-bottom: 1px solid var(--border);
   display: flex;
-  height: 3rem;
-  padding: 0 1rem;
+  height: 2.625rem;
+  padding: 0 0.625rem;
 }
 .rem-dibujo-etiqueta {
   color: var(--accent-text);
@@ -358,7 +358,7 @@
   line-height: 1rem;
   padding: 0.25rem 0.625rem;
 }
-.rem-dibujo-cotas { height: 2.25rem; margin-left: 0.75rem; padding: 0 0.875rem; }
+.rem-dibujo-cotas { height: 2rem; margin-left: 0.5rem; padding: 0 0.625rem; }
 .rem-dibujo-cotas.glass-chip-activo { color: var(--color-brand-800); }
 :root[data-theme="dark"] .rem-dibujo-cotas.glass-chip-activo { color: var(--color-brand-300); }
 /* El dibujo técnico de respaldo ya trae su propio marco. */
@@ -385,10 +385,14 @@
 .rem-observaciones input { flex: 1; min-width: 0; }
 
 /* ── Formulario: pasos numerados como los grupos de la tarjeta de toldo ── */
-.rem-form { display: grid; gap: 0.625rem; }
-.rem-paso { border-bottom: 1px solid var(--border); padding-bottom: 0.625rem; }
+.rem-form { display: grid; gap: 0.375rem; }
+.rem-paso { border-bottom: 1px solid var(--border); padding-bottom: 0.375rem; }
 .rem-paso:last-child { border-bottom: 0; padding-bottom: 0; }
-.rem-paso-titulo { align-items: center; display: flex; gap: 0.5rem; margin-bottom: 0.375rem; }
+.rem-paso-titulo { align-items: center; display: flex; gap: 0.375rem; margin-bottom: 0.25rem; }
+/* O.F. y cantidad dejan sitio al título, en vez de abrir un apartado de dos filas. */
+.rem-paso:first-child:not(:has(.rem-paso-numero)) { align-items: end; display: flex; gap: 0.75rem; }
+.rem-paso:first-child:not(:has(.rem-paso-numero)) > .rem-paso-titulo { margin: 0 0 0.5rem; }
+.rem-paso:first-child:not(:has(.rem-paso-numero)) > .rem-rejilla { flex: 1; grid-template-columns: minmax(6rem, 1fr) 5rem; }
 .rem-paso-titulo h3 {
   color: var(--text-muted);
   font-size: 10px;
@@ -406,27 +410,33 @@
   display: inline-flex;
   font-size: 10px;
   font-weight: 700;
-  height: 1.25rem;
+  height: 1.125rem;
   justify-content: center;
-  width: 1.25rem;
+  width: 1.125rem;
 }
-.rem-rejilla { align-items: start; display: grid; gap: 0.5rem; }
+.rem-rejilla { align-items: start; display: grid; gap: 0.375rem; }
 .rem-rejilla-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .rem-rejilla-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 /* Recogidas: las dos se reparten lo que deja el Sí / No de la bastilla, que va a su ancho. */
-.rem-rejilla-recogidas { align-items: stretch; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 8.5rem; }
+.rem-rejilla-recogidas { align-items: stretch; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6.5rem; }
 /* Si una pasa a dos renglones, la otra crece con ella: los dos controles, a la misma altura. */
 .rem-rejilla-recogidas > .select-field { grid-template-rows: auto 1fr; }
 .rem-rejilla-recogidas > .segmented-field { align-self: start; }
 /* Una fila de cuatro sin caja (el Sí / No de «Detrás distinto» cuando está en No). */
-.rem-fila { align-items: start; display: grid; gap: 0.5rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.rem-fila { align-items: start; display: grid; gap: 0.375rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Sin medidas distintas, este interruptor cabe en una línea. Al encenderlo conserva la rejilla. */
+.rem-fila:not(.rem-banda):has(> :only-child) { grid-template-columns: auto; }
+.rem-fila:not(.rem-banda):has(> :only-child) > .rem-campo { align-items: center; display: flex; gap: 0.5rem; }
 .rem-span-2 { grid-column: span 2; }
 .rem-span-3 { grid-column: span 3; }
 .rem-span-4 { grid-column: 1 / -1; }
-.rem-campo { align-content: start; min-width: 0; }
+.rem-campo { align-content: start; gap: 3px; min-width: 0; }
+.app-shell .rem-form .rem-campo > input { height: 1.75rem; min-height: 1.75rem; padding-block: 3px; }
+.app-shell .rem-campo .segmented-control { gap: 3px; justify-self: start; width: auto; }
+.app-shell .rem-campo .segmented-option { flex: none; font-size: 11px; min-height: 26px; min-width: 34px; padding: 0 8px; }
 /* Los desplegables se leen enteros: una opción larga («Puentes Hijos de Pedro López») pasa a un
    segundo renglón dentro del mismo control en vez de cortarse con «…». */
-.app-shell .rem-campo .select-control { height: auto; min-height: 2rem; padding-block: 0.3125rem; }
+.app-shell .rem-campo .select-control { height: auto; min-height: 1.75rem; padding-block: 0.25rem; }
 .rem-campo .select-control > span { line-height: 1.25; overflow-wrap: anywhere; white-space: normal; }
 
 /* Error de validación: solo aparece tras tocar el campo (lo decide `erroresVisibles`). El rojo de
@@ -448,11 +458,11 @@
   align-items: start;
   background: color-mix(in srgb, var(--surface-2) 70%, transparent);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   display: grid;
-  gap: 0.5rem;
+  gap: 0.375rem;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 0.5rem;
+  padding: 0.375rem;
 }
 .rem-nota {
   align-self: end;
@@ -467,7 +477,7 @@
   padding: 0.375rem 0.625rem;
 }
 /* La caída del baquetón: el modo a lo ancho de su mitad y la medida debajo, a la mitad. */
-.rem-par { display: grid; gap: 0.5rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rem-par { display: grid; gap: 0.375rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .rem-contorno { display: grid; gap: 2px; min-width: 0; }
 .rem-aviso-campo { color: var(--aviso-texto); font-size: 10px; font-weight: 600; line-height: 1.3; }
 .rem-enlace {
@@ -505,11 +515,17 @@
 }
 .app-shell .rem-material textarea {
   font-size: 12px;
-  min-height: 2rem;
-  padding: 0.4375rem 2.125rem 0.4375rem 1.8125rem;
+  min-height: 1.75rem;
+  padding: 0.3125rem 2.125rem 0.3125rem 1.8125rem;
   width: 100%;
 }
 .rem-material .fabric-stock-line { overflow-wrap: anywhere; }
+/* Las líneas siguen creciendo con su texto; la caja vacía y su cabecera ocupan lo justo. */
+.rem-form .observation-lines-header { min-height: 26px; padding: 2px 6px 2px 8px; }
+.rem-form .observation-lines-list { gap: 4px; padding: 4px; }
+.rem-form .observation-line { grid-template-columns: 20px minmax(0, 1fr) 24px; min-height: 28px; padding: 1px 3px; }
+.app-shell .rem-form .observation-line-texto { min-height: 24px; padding-block: 4px; }
+.rem-form .read-note { padding: 6px 8px; }
 .rem-material-codigo {
   color: var(--text);
   font-family: var(--font-mono), monospace;
@@ -532,11 +548,11 @@
 }
 
 /* ── Resultados: tarjetas de datos, reparto de ollaos y notas ── */
-.rem-resultados { display: grid; gap: 0.5rem; min-width: 0; }
+.rem-resultados { display: grid; gap: 0.375rem; min-width: 0; }
 .rem-datos {
   display: grid;
-  gap: 6px;
-  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 4px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .rem-dato {
   background: var(--surface);
@@ -545,7 +561,7 @@
   display: grid;
   gap: 2px;
   min-width: 0;
-  padding: 0.375rem 0.5rem;
+  padding: 0.3125rem 0.5rem;
 }
 .rem-dato span {
   color: var(--text-muted);
@@ -579,7 +595,7 @@
   width: 100%;
 }
 .rem-tabla th,
-.rem-tabla td { padding: 0.375rem 0.25rem; text-align: center; }
+.rem-tabla td { padding: 0.25rem; text-align: center; }
 .rem-tabla thead th {
   background: var(--surface-2);
   color: var(--text-muted);
@@ -612,7 +628,7 @@
   flex-wrap: wrap;
   gap: 4px 0.75rem;
   justify-content: space-between;
-  padding: 0.375rem 0.625rem;
+  padding: 0.25rem 0.5rem;
 }
 .rem-ollaos-editor h4 {
   color: var(--text);
@@ -626,9 +642,9 @@
 .rem-ollaos-fila {
   border-top: 1px solid var(--border);
   display: grid;
-  gap: 0.5rem;
-  grid-template-columns: 9.5rem minmax(0, 1fr);
-  padding: 0.5rem 0.625rem;
+  gap: 0.375rem;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  padding: 0.25rem 0.5rem;
 }
 .rem-ollaos-nombre { align-content: center; display: grid; gap: 4px; justify-items: start; }
 .rem-ollaos-nombre p { color: var(--text); font-size: 10px; font-weight: 700; line-height: 1.25; margin: 0; }
@@ -642,11 +658,11 @@
   padding: 0 0.375rem;
 }
 .rem-ollaos-casillas { display: grid; gap: 3px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
-.rem-ollaos-casillas label { gap: 2px; }
+.rem-ollaos-casillas label { gap: 2px; line-height: 1.1; }
 .rem-ollaos-casillas label > span { color: var(--text-muted); font-size: 10px; text-align: center; }
 .app-shell .rem-ollaos-casillas input {
   font-size: 11px;
-  height: 1.75rem;
+  height: 1.625rem;
   min-width: 0;
   padding: 0 2px;
   text-align: center;
@@ -684,7 +700,7 @@
   padding: 0.375rem 0.625rem;
 }
 
-.rem-notas { color: var(--aviso-texto); font-size: 11px; font-weight: 600; margin: 0; padding-left: 1rem; }
+.rem-notas { color: var(--aviso-texto); font-size: 11px; font-weight: 600; line-height: 1.4; margin: 0; padding-left: 1rem; }
 .rem-vacio-resultado {
   border: 1px dashed var(--border-strong);
   border-radius: 0.5rem;
