@@ -7,13 +7,14 @@ import { controlLabel, legacyModelName } from './controlLabels';
 // línea de descripción; secciones numeradas «01 Título» con la explicación a la izquierda
 // y los campos o la tabla a la derecha; y una línea final con el contraste real.
 
-export type SheetKind = 'produccion' | 'nuevo' | 'consulta' | 'tela';
+export type SheetKind = 'produccion' | 'nuevo' | 'consulta' | 'tela' | 'remolques';
 
 const kickers: Record<SheetKind, string> = {
   produccion: 'Modelo en producción',
   nuevo: 'Modelo nuevo',
   consulta: 'Solo consulta',
-  tela: 'Trabajo de tela'
+  tela: 'Trabajo de tela',
+  remolques: 'Lonas y baquetón'
 };
 
 export function parameterModelName(model: string) {

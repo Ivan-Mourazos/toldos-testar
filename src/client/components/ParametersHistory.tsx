@@ -7,7 +7,8 @@ type Entry = {
   updatedBy: string;
   reason: string;
   changedSections: string[];
-  overrides: unknown;
+  overrides?: unknown;
+  parameters?: unknown;
 };
 
 const sectionLabels: Record<string, string> = {
@@ -23,15 +24,17 @@ const formatDate = (value: string) => new Date(value).toLocaleString('es-ES', { 
 // borrador: volver atrás es guardar, y también queda registrado. Va en una línea pequeña
 // junto al título «Parámetros de modelos»; la lista se abre encima de la página, sin
 // empujarla (Iván, 25/09/2026).
-export function ParametersHistory({ version, onLoadVersion }: { version: number; onLoadVersion: (overrides: unknown) => void }) {
+export function ParametersHistory({ version, onLoadVersion, endpoint = '/api/rule-parameters/history', labels = sectionLabels }: { version: number; onLoadVersion: (overrides: unknown) => void; endpoint?: string; labels?: Record<string, string> }) {
   const [entries, setEntries] = useState<Entry[] | null>(null);
 
   useEffect(() => {
-    fetch('/api/rule-parameters/history?limit=20')
+    let active = true;
+    fetch(`${endpoint}?limit=20`)
       .then((response) => (response.ok ? response.json() : { entries: [] }))
-      .then((data) => setEntries(data.entries || []))
-      .catch(() => setEntries([]));
-  }, [version]);
+      .then((data) => { if (active) setEntries(data.entries || []); })
+      .catch(() => { if (active) setEntries([]); });
+    return () => { active = false; };
+  }, [version, endpoint]);
 
   const latest = entries?.[0];
   const summary = version === 0
@@ -52,10 +55,10 @@ export function ParametersHistory({ version, onLoadVersion }: { version: number;
                   <strong>Versión {entry.version}</strong>
                   <span>{formatDate(entry.updatedAt)} · {entry.updatedBy}</span>
                   <span>{entry.reason}</span>
-                  <small>{entry.changedSections.map((key) => sectionLabels[key] || key).join(', ')}</small>
+                  <small>{entry.changedSections.map((key) => labels[key] || key).join(', ')}</small>
                 </div>
                 {entry.version !== version && (
-                  <button className="ghost-button" type="button" onClick={() => onLoadVersion(entry.overrides)}>Cargar esta versión</button>
+                  <button className="ghost-button" type="button" onClick={() => onLoadVersion(entry.parameters ?? entry.overrides)}>Cargar esta versión</button>
                 )}
               </li>
             ))}

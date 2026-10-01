@@ -25,6 +25,9 @@ type DiscountGroup = typeof discountGroups[number];
 type SelectedModel = 'ARZUA PRO' | 'GALICIA' | 'XACOBEO' | 'PUNTO RECTO' | 'MONOBLOCK 350' | 'MAXISCREEM' | 'ELECTRA' | 'CORTINA' | 'SELENA' | 'CAMBIO CORTINA' | FabricJobModel | 'HERA' | 'ANTICA' | 'IRIS' | 'AMBAR BOX' | 'AGATA BOX' | 'PERLA BOX' | 'CORAL BOX' | 'CUARZO BOX';
 
 type Props = {
+  remolques?: React.ReactNode;
+  showRemolques?: boolean;
+  onSelectRemolques?: (selected: boolean) => void;
   parameters: RuleParameters;
   onUpdateArzua: (patch: Partial<ArzuaProParameters>) => void;
   onUpdateGalicia: (patch: Partial<GaliciaParameters>) => void;
@@ -61,7 +64,7 @@ type Props = {
   onUpdateDrawings: (drawings: RuleParameters['drawings']) => void;
 };
 
-export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateElectra, onResetElectra, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs, onUpdateDrawings }: Props) {
+export function ParametersView({ parameters, remolques, showRemolques = false, onSelectRemolques, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateElectra, onResetElectra, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs, onUpdateDrawings }: Props) {
   const [selectedModel, setSelectedModel] = useState<SelectedModel>('ARZUA PRO');
   const clearSelectedDrawings = () => {
     const byModel = { ...parameters.drawings.byModel };
@@ -72,11 +75,16 @@ export function ParametersView({ parameters, onUpdateArzua, onUpdateGalicia, onR
   // Columna de la ficha: el índice «Ir a», la ficha del modelo y, justo debajo y con el
   // mismo ancho, sus dibujos. Igual para los 22 modelos (Iván, 25/09/2026).
   return <div className="parameter-layout">
-    <ParameterModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+    <ParameterModelSelector selectedModel={showRemolques ? 'REMOLQUES' : selectedModel} includeRemolques={Boolean(remolques)} onSelectModel={(model) => {
+      onSelectRemolques?.(model === 'REMOLQUES');
+      if (model !== 'REMOLQUES') setSelectedModel(model);
+    }} />
     <div className="parameter-layout-main">
       <ParameterSectionIndex />
-      {renderSheet()}
-      <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />
+      {showRemolques ? remolques : <>
+        {renderSheet()}
+        <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />
+      </>}
     </div>
   </div>;
 
@@ -365,13 +373,20 @@ function OrderConfiguredModelView({ selectedModel }: {
   </ParameterSheet>;
 }
 
-function ParameterModelSelector({ selectedModel, onSelectModel }: {
-  selectedModel: SelectedModel;
-  onSelectModel: (model: SelectedModel) => void;
+function ParameterModelSelector({ selectedModel, onSelectModel, includeRemolques }: {
+  selectedModel: SelectedModel | 'REMOLQUES';
+  onSelectModel: (model: SelectedModel | 'REMOLQUES') => void;
+  includeRemolques: boolean;
 }) {
   return (
     <nav className="parameter-model-sidebar panel-3d panel-vidrio" aria-label="Modelos de parámetros">
       <strong className="parameter-model-sidebar-title">Modelos</strong>
+      {includeRemolques && <section className="parameter-model-family">
+        <h3>Remolques</h3>
+        <button type="button" data-model="REMOLQUES" className={selectedModel === 'REMOLQUES' ? 'tecla-3d is-active bloque-3d-hundido' : 'tecla-3d'} aria-current={selectedModel === 'REMOLQUES' ? 'true' : undefined} onClick={() => onSelectModel('REMOLQUES')}>
+          <span><strong>Remolques</strong></span>{selectedModel === 'REMOLQUES' && <Check aria-hidden="true" />}
+        </button>
+      </section>}
       {parameterModelGroups.map(({ family, models }) => (
         <section className="parameter-model-family" key={family || 'tela'}>
           <h3>{family || 'TRABAJOS DE TELA'}</h3>

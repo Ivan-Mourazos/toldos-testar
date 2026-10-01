@@ -37,6 +37,8 @@ import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
 import { RemolquesView } from './remolques/RemolquesView';
+import { RemolquesParametersView } from './remolques/RemolquesParametersView';
+import { useRemolquesParameters } from './remolques/useRemolquesParameters';
 import { AvisoPedidoRemolques } from './remolques/AvisoPedidoRemolques';
 import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
 import { SelectorProducto, guardarProducto, leerProducto, type Producto } from './remolques/SelectorProducto';
@@ -44,6 +46,8 @@ import { SelectorProducto, guardarProducto, leerProducto, type Producto } from '
 export default function App() {
   const draft = useDraft();
   const ruleSettings = useParameters();
+  const remolquesSettings = useRemolquesParameters();
+  const [showRemolquesParameters, setShowRemolquesParameters] = useState(false);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
   // Toldos o Remolques en Nuevo pedido (diseño 30/09/2026, fase 2a). Remolques se monta la primera
@@ -344,7 +348,10 @@ export default function App() {
       cancelLabel: 'Seguir editando',
       tone: 'warning'
     });
-    if (choice === 'confirm') ruleSettings.discardDraft();
+    if (choice === 'confirm') {
+      if (showRemolquesParameters) remolquesSettings.discardDraft();
+      else ruleSettings.discardDraft();
+    }
   }
 
   function notifyParameterSave(result: SaveDraftResult) {
@@ -482,7 +489,7 @@ export default function App() {
   const viewTitle = activeTab === 'order'
     ? 'Nuevo pedido'
     : activeTab === 'parameters'
-      ? 'Parámetros de modelos'
+      ? (showRemolquesParameters ? 'Parámetros de remolques' : 'Parámetros de modelos')
       : activeTab === 'reviews'
         ? 'Pedidos'
         : 'Configuración de carpetas';
@@ -526,7 +533,9 @@ export default function App() {
             <h2>{viewTitle}</h2>
             {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
-            {activeTab === 'parameters' && <ParametersHistory version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />}
+            {activeTab === 'parameters' && (showRemolquesParameters
+              ? <ParametersHistory key="remolques" version={remolquesSettings.saved.version} endpoint="/api/remolques/parametros/history" labels={{ lona: 'Lona y contorno', ollaos: 'Ollaos', recogidas: 'Recogidas', baqueton: 'Baquetón', clientesBaqueton: 'Clientes con baquetón' }} onLoadVersion={remolquesSettings.loadVersion} />
+              : <ParametersHistory key="toldos" version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />)}
           </div>
           {activeTab === 'order' && producto === 'remolques' && (
             <div className="topbar-actions">
@@ -620,14 +629,21 @@ export default function App() {
           {activeTab === 'parameters' && (
             <>
             <ParametersSaveBar
-              dirty={ruleSettings.dirty}
-              saving={ruleSettings.saving}
+              dirty={showRemolquesParameters ? remolquesSettings.dirty : ruleSettings.dirty}
+              saving={showRemolquesParameters ? remolquesSettings.saving : ruleSettings.saving}
               technicians={formOptions.tecnicos}
               onDiscard={() => void discardParameterDraft()}
-              onSave={ruleSettings.saveDraft}
+              onSave={showRemolquesParameters ? remolquesSettings.saveDraft : ruleSettings.saveDraft}
               onResult={notifyParameterSave}
             />
             <ParametersView
+              showRemolques={showRemolquesParameters}
+              onSelectRemolques={setShowRemolquesParameters}
+              remolques={<>
+                {remolquesSettings.error && <div role="alert" className="parameter-note">{remolquesSettings.error} <button type="button" className="ghost-button" onClick={() => void remolquesSettings.refresh()}>Reintentar</button></div>}
+                {!remolquesSettings.ready && !remolquesSettings.error && <p role="status">Cargando parámetros de remolques…</p>}
+                <RemolquesParametersView parameters={remolquesSettings.parameters} disabled={!remolquesSettings.ready || remolquesSettings.saving} onUpdate={remolquesSettings.update} onReset={remolquesSettings.reset} />
+              </>}
               parameters={ruleSettings.generalParameters}
               onUpdateArzua={ruleSettings.updateArzua}
               onUpdateGalicia={ruleSettings.updateGalicia}

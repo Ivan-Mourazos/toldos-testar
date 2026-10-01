@@ -30,6 +30,7 @@ import { describirLineaRps, rotuloElemento } from './rotulo';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import { cuerpoGuardar, lineasDesdePedidoGuardado, type ModoCarga } from './guardarPedido';
 import { faltaParaPdf } from './vistaPrevia';
+import { REMOLQUES_PARAMETERS_SAVED } from './useRemolquesParameters';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -145,7 +146,23 @@ function useCatalogos() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/remolques/parametros').then((r) => r.json()).then(setParams).catch(() => { /* quedan los del código */ });
+    let active = true;
+    const refresh = () => {
+      fetch('/api/remolques/parametros', { cache: 'no-store' }).then((r) => {
+        if (!r.ok) throw new Error('No se pudieron leer los parámetros de remolques.');
+        return r.json();
+      }).then((next) => { if (active) setParams(next); }).catch(() => { /* quedan los últimos conocidos */ });
+    };
+    refresh();
+    window.addEventListener(REMOLQUES_PARAMETERS_SAVED, refresh);
+    window.addEventListener('focus', refresh);
+    const timer = window.setInterval(refresh, 5 * 60 * 1000);
+    return () => {
+      active = false;
+      window.removeEventListener(REMOLQUES_PARAMETERS_SAVED, refresh);
+      window.removeEventListener('focus', refresh);
+      window.clearInterval(timer);
+    };
   }, []);
 
   return { materiales, origenMateriales, params, materialesRef, setMateriales };
