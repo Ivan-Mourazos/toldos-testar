@@ -7,7 +7,7 @@ import net from 'node:net';
 import { chromium } from 'playwright';
 import { groupModelsByFamily, models } from '../src/domain/catalog.js';
 import { fullAwningModelNames, fabricOnlyModelNames } from '../src/domain/modelBehavior.js';
-const output = path.resolve('output/playwright/parameters');
+const output = path.resolve('tmp/ui-audit/codex-parametros');
 await mkdir(output, { recursive: true });
 const directory = await mkdtemp(path.join(output, 'run-'));
 const probe = net.createServer();
@@ -78,10 +78,14 @@ try {
   // Desde el 25/09/2026 (Q-CA01) la caída es la medida de la tela más lo que se sume.
   assert.ok((await page.getByRole('table', { name: 'Caída Cambio Antica' }).innerText()).includes('M + A'));
   await page.screenshot({ path: path.join(directory, 'cambio-antica.png'), fullPage: true });
-  await page.setViewportSize({ width: 800, height: 1000 });
-  await selectModel('Antica');
-  await page.screenshot({ path: path.join(directory, 'antica-800.png'), fullPage: true });
-  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false);
+  // La web es de escritorio: comprobar el ancho mínimo y el tamaño habitual.
+  for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 1000 }]) {
+    await page.setViewportSize(viewport);
+    await selectModel('Antica');
+    await page.screenshot({ path: path.join(directory, `antica-${viewport.width}.png`), fullPage: true });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false,
+      `Parámetros desborda a ${viewport.width}×${viewport.height}`);
+  }
   assert.deepEqual(errors, []);
   console.log('OK: ' + names.length + ' fichas, ejemplo Antica, HERA, Iris válida/inválida y Cambio Antica. ' + directory);
 } finally { await browser?.close(); server?.kill(); await coordina?.close(); }
