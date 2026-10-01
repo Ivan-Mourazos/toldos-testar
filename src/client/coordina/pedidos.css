@@ -296,14 +296,14 @@
 .orders-row:is(.tone-review, .tone-returned, .tone-approved) .orders-customer { color: var(--text-muted); }
 /* Modelos: FamiliaTag.tsx `rounded-md px-1.5 py-0.5 text-[10px] font-medium text-text-muted`
    con el tinte `familia-tag`. El color es el de la familia «Toldo nuevo» de CoordinaOT
-   (lib/familia.ts), que es lo que son los modelos de esta web. Una sola línea, sin saltar. */
+   (lib/familia.ts), que es lo que son los modelos de esta web. Si no caben, saltan de línea
+   y la fila crece (más de 4 modelos: los 3 primeros y «+N»). */
 .orders-model-tags {
   align-items: center;
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.25rem;
   min-width: 0;
-  overflow: hidden;
 }
 .orders-model-tag {
   --fam: #c65a11;

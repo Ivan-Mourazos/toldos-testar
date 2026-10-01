@@ -108,3 +108,12 @@ export function collapseAwnings<T extends { letter: string }>(items: T[], keyOf:
   }
   return groups;
 }
+
+// Etiquetas de modelos de una fila (Iván, 01/10/2026: «no caben si el pedido lleva varios»).
+// Una por modelo distinto; con más de `max` se enseñan los `shown` primeros y el resto
+// queda para una etiqueta «+N» cuyo título los lista todos.
+export function limitModels(models: string[] | undefined, max = 4, shown = 3) {
+  const distinct = Array.from(new Set(models || []));
+  if (distinct.length <= max) return { visible: distinct, hidden: [] as string[] };
+  return { visible: distinct.slice(0, shown), hidden: distinct.slice(shown) };
+}

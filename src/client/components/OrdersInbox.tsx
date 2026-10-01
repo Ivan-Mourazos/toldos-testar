@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FileSearch, FolderOpen, Search } from 'lucide-react';
 import type { CoordinaStatus, ReviewSummary } from '../types';
-import { collapseAwnings, formatListDate, groupByDay, inboxSections, pendingGroups } from '../ordersInbox';
+import { collapseAwnings, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { COORDINA_NOT_CONFIGURED_MOTIVO, normalizeOf, reviewerName } from '../../reviewRules.js';
@@ -124,7 +124,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         <ChevronDown className="orders-chevron" aria-hidden="true" />
         <strong className="orders-code">{review.orderCode}</strong>
         <span className="orders-customer">{review.summary.customer || 'Sin cliente'}</span>
-        <span className="orders-model-tags">{Array.from(new Set(review.summary.models || [])).map((model) => <span key={model} className="orders-model-tag familia-tag">{controlLabel(model)}</span>)}</span>
+        <ModelTags models={review.summary.models} />
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
@@ -164,6 +164,16 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         </div>
       )}
     </li>
+  );
+}
+
+function ModelTags({ models }: { models?: string[] }) {
+  const { visible, hidden } = limitModels(models);
+  return (
+    <span className="orders-model-tags">
+      {visible.map((model) => <span key={model} className="orders-model-tag familia-tag">{controlLabel(model)}</span>)}
+      {hidden.length > 0 && <span className="orders-model-tag familia-tag" title={Array.from(new Set(models)).map(controlLabel).join('\n')}>+{hidden.length}</span>}
+    </span>
   );
 }
 

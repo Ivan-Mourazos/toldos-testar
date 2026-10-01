@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collapseAwnings, inboxSections, mergePendingReviews, pendingGroups, pendingYears } from './ordersInbox';
+import { collapseAwnings, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears } from './ordersInbox';
 import type { ReviewSummary } from './types';
 
 const review = (orderCode: string, status: string, technician: string, extra: Record<string, unknown> = {}) => ({
@@ -138,5 +138,19 @@ describe('collapseAwnings', () => {
   it('justo en el límite no agrupa', () => {
     expect(collapseAwnings(items(['a', 'a', 'a', 'a', 'a', 'a']), keyOf, 6)).toHaveLength(6);
     expect(collapseAwnings(items(['a', 'a', 'a', 'a', 'a', 'a', 'a']), keyOf, 6)).toHaveLength(1);
+  });
+});
+
+describe('limitModels', () => {
+  it('quita repetidos y con hasta 4 modelos los enseña todos', () => {
+    expect(limitModels(['A', 'B', 'A', 'C', 'D'])).toEqual({ visible: ['A', 'B', 'C', 'D'], hidden: [] });
+  });
+
+  it('con más de 4 enseña los 3 primeros y deja el resto para el «+N»', () => {
+    expect(limitModels(['A', 'B', 'C', 'D', 'E', 'F', 'G'])).toEqual({ visible: ['A', 'B', 'C'], hidden: ['D', 'E', 'F', 'G'] });
+  });
+
+  it('sin modelos devuelve vacío', () => {
+    expect(limitModels(undefined)).toEqual({ visible: [], hidden: [] });
   });
 });
