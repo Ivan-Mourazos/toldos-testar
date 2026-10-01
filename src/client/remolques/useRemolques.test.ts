@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptyLona } from '../../remolques/entradas-vacias.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import { estadoInicial } from '../../remolques/workspace/estado.ts';
-import { reducirRemolques, type EstadoRemolques } from './useRemolques';
+import { esOtroPedido, pantallaSigueIgual, reducirRemolques, type EstadoRemolques } from './useRemolques';
 
 const linea = (version: string, cliente: string, fecha: string): LineaPedido => {
   const plantilla = emptyLona();
@@ -119,5 +119,26 @@ describe('reducirRemolques · abrir un pedido guardado', () => {
       cargandoPedido: false, validacionIntentada: false,
     });
     expect(siguiente.lineas.map((l) => [l.version, l.input.cabecera.fecha])).toEqual([['10', '2026-09-20'], ['11', '2026-09-20']]);
+  });
+});
+
+describe('esOtroPedido · «Abrir en Remolques» con otro pedido', () => {
+  it('es otro pedido cuando el número normalizado difiere, así se sueltan los parámetros guardados', () => {
+    expect(esOtroPedido('AR.26.04286', 'AR.26.04287')).toBe(true);
+    expect(esOtroPedido('', 'AR.26.04287')).toBe(true);
+  });
+  it('no lo es si solo cambia la forma de escribirlo', () => {
+    expect(esOtroPedido('AR.26.04286', ' ar.26.04286 ')).toBe(false);
+  });
+});
+
+describe('pantallaSigueIgual · limpiar tras guardar', () => {
+  const lineas = [linea('10', 'A', '2026-09-01')];
+  it('sigue igual con el mismo pedido y las mismas líneas', () => {
+    expect(pantallaSigueIgual({ numeroPedido: 'AR.26.04286', lineas }, { numeroPedido: 'AR.26.04286', lineas })).toBe(true);
+  });
+  it('cambia si se cargó otro pedido o se editaron las líneas mientras se guardaba', () => {
+    expect(pantallaSigueIgual({ numeroPedido: 'AR.26.04287', lineas }, { numeroPedido: 'AR.26.04286', lineas })).toBe(false);
+    expect(pantallaSigueIgual({ numeroPedido: 'AR.26.04286', lineas: [...lineas] }, { numeroPedido: 'AR.26.04286', lineas })).toBe(false);
   });
 });

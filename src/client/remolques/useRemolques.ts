@@ -59,6 +59,22 @@ const conFecha = (linea: LineaPedido, fecha: string): LineaPedido => ({
   input: { ...linea.input, cabecera: { ...linea.input.cabecera, fecha } },
 });
 
+/** Abrir otro número de pedido invalida los parámetros guardados del que se estaba corrigiendo. */
+export function esOtroPedido(actual: string, abierto: string): boolean {
+  return normalizarNumeroPedidoRps(abierto) !== normalizarNumeroPedidoRps(actual);
+}
+
+/**
+ * Tras guardar solo se limpia la pantalla si sigue siendo el mismo pedido y las mismas líneas que
+ * cuando empezó el guardado: si no, lo que hay en pantalla es otra cosa y no se toca.
+ */
+export function pantallaSigueIgual(
+  ahora: { numeroPedido: string; lineas: unknown },
+  alEmpezar: { numeroPedido: string; lineas: unknown },
+): boolean {
+  return !esOtroPedido(alEmpezar.numeroPedido, ahora.numeroPedido) && ahora.lineas === alEmpezar.lineas;
+}
+
 export function reducirRemolques(estado: EstadoRemolques, accion: AccionRemolques): EstadoRemolques {
   if (accion.tipo === 'PEDIDO_LIMPIADO') return { ...estadoInicial(), fecha: hoy() };
   if (accion.tipo === 'PEDIDO_CARGADO') {
@@ -430,7 +446,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
    * abierto). En un pedido vacío se crean sin preguntar: no hay nada que perder. Si ya tiene
    * elementos, pregunta qué hacer con ellos.
    */
-  const importarPedidoRps = useCallback(async (pedido: PedidoRps) => {
+  const importarPedidoRps = useCallback(async (pedido: PedidoRps, controller?: AbortController) => {
+    const vigente = () => !controller || (!controller.signal.aborted && consultaEnCurso.current === controller);
     const esteMismo = () => normalizarNumeroPedidoRps(estadoRef.current.numeroPedido)
       === normalizarNumeroPedidoRps(pedido.numero);
     if (!esteMismo() || estadoRef.current.cargandoPedido) return;
@@ -438,14 +455,16 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
       avisar('info', 'El pedido existe en RPS, pero no tiene líneas de lona de remolque: añade los elementos a mano.');
       return;
     }
+    const materiales = await asegurarMateriales();
+    // Mientras llegaban las bobinas se pudo cambiar de pedido, cargar uno guardado o empezar a
+    // escribir: `abort()` solo corta el fetch, así que se comprueba la consulta a mano.
+    if (!vigente() || !esteMismo()) return;
     const deRps = lineasDesdePedidoRps(pedido, {
-      materiales: await asegurarMateriales(),
+      materiales,
       params,
       realizadoPor: usuario,
       importadoEn: new Date().toISOString(),
     });
-    // Mientras llegaban las bobinas se pudo cambiar de pedido o empezar a escribir.
-    if (!esteMismo()) return;
     const actuales = estadoRef.current.lineas;
     const revisar = pedido.lineas.filter((linea) => linea.requiereRevision).length;
     const notaRevisar = revisar === 0 ? '' : revisar === 1
@@ -462,7 +481,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
       return;
     }
     const modo = await preguntarModoImportacion(pedido, plan, actuales);
-    if (!modo || !esteMismo()) return;
+    if (!modo || !vigente() || !esteMismo()) return;
     despachar({ tipo: 'RPS_IMPORTADO', lineas: deRps, modo });
     if (modo === 'sustituir') {
       avisar('exito', `Elementos sustituidos por ${deRps.length === 1 ? 'la línea' : `las ${deRps.length} líneas`} de RPS.${notaRevisar}`);
@@ -505,7 +524,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
         return;
       }
       despachar({ tipo: 'RPS_ENCONTRADO', pedido: payload.pedido });
-      await importarRef.current(payload.pedido);
+      await importarRef.current(payload.pedido, controller);
     } catch (error: unknown) {
       if (controller.signal.aborted) return;
       despachar({
@@ -540,6 +559,10 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
 
   /** «Abrir en Remolques» desde Toldos: abre el pedido y lo obtiene como el botón. */
   const abrirPedido = useCallback((numero: string) => {
+    if (esOtroPedido(estadoRef.current.numeroPedido, numero)) {
+      consultaEnCurso.current?.abort();
+      setParamsGuardados(null);
+    }
     despachar({ tipo: 'PEDIDO_CAMBIADO', valor: numero });
     obtenerDatosPedido(numero);
   }, [obtenerDatosPedido]);
@@ -611,12 +634,17 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
           avisar('error', datos.error || 'No se pudo guardar el pedido para revisión.');
           return;
         }
+        alGuardar.current?.();
+        if (!pantallaSigueIgual(estadoRef.current, actual)) {
+          // Mientras se guardaba se cambió o cargó otro pedido: la pantalla no se toca.
+          notificar.current.notify(`El pedido ${datos.review?.orderCode ?? actual.numeroPedido} se ha guardado para revisión, pero la pantalla ha cambiado mientras tanto y se conserva tal cual.`, { tone: 'info', title: 'Guardado para revisión' });
+          return;
+        }
         consultaEnCurso.current?.abort();
         pendienteRef.current = null;
         limpiarBorradores(almacen, actual.numeroPedido);
         setParamsGuardados(null);
         despachar({ tipo: 'PEDIDO_LIMPIADO' });
-        alGuardar.current?.();
         notificar.current.notify(`Guardado en Pedidos para revisión: ${datos.review?.orderCode ?? actual.numeroPedido}.`, { tone: 'success', title: 'Guardado para revisión' });
         return;
       }
