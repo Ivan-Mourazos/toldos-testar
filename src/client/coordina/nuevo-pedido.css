@@ -328,7 +328,14 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   transform: translateY(1px);
 }
 :is(.app-shell, .confirmation-dialog) .primary-button:disabled { box-shadow: none; }
-:root[data-theme="dark"] :is(.app-shell, .confirmation-dialog) .primary-button:disabled { box-shadow: none; }
+/* Apagado también fuera del formulario: sin dorado ni relieve, como los controles inactivos. */
+:root[data-theme="dark"] .primary-button:disabled {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text-muted);
+  box-shadow: none;
+  transform: none;
+}
 /* Destructivo: `boton-3d` con `bg-red-600 text-white hover:bg-red-700` (ConfirmDialog.tsx 84). */
 .danger-button {
   background: #dc2626;
