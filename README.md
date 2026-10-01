@@ -230,6 +230,23 @@ El rollback consiste en volver al commit anterior, repetir `pnpm install`,
 `pnpm build`, `pnpm deploy:check` y `pnpm pm2:reload`. No se debe tocar el JSON
 persistente ni los archivos de las carpetas compartidas.
 
+### 6. Paso de los pedidos de la web vieja de remolques (una vez)
+
+Con la carpeta interna de remolques ya puesta en `Configuración` (o en
+`REMOLQUES_REVISION_DIRECTORY`), en el .90 y desde `/webs/toldos-testar`:
+
+```bash
+node scripts/migrar-remolques.mjs --origen /webs/remolques-tgm --simular
+node scripts/migrar-remolques.mjs --origen /webs/remolques-tgm
+```
+
+La primera orden solo enseña qué haría: los pedidos que pasan (los ya archivados a «Generados» y los
+pendientes a «Por revisar»), los guardados repetidos de un mismo elemento (pasa el último) y lo que
+deja sin pasar y por qué (sin número o con un número que no es de pedido). Solo lee la web vieja
+(`data/planteamientos.json` y, si existe, `data/pedidos.json`) y mira, sin escribir, si el PDF de
+cada pedido está ya en las carpetas de remolques; solo escribe en la carpeta interna. Repetirla no
+duplica nada: un pedido que ya está no se toca.
+
 ## Prueba de extremo a extremo con RPS
 
 ```bash
