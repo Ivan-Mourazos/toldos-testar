@@ -182,7 +182,9 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
     if (!validacion.ok) throw storeError('INVALID_INPUT', validacion.errores.join('. '));
     const limpia = validacion.fichas.find((f) => f.id === id);
     if (anterior && !resumenCambios(anterior, limpia).length) return { ficha: anterior, snapshot: { fichas } };
-    const ficha = { ...limpia, version: anterior ? versionDe(anterior) + 1 : 1 };
+    // Una ficha nueva con un id que ya tuvo historial (se quitó y se vuelve a crear) sigue su numeración.
+    const ultima = anterior ? versionDe(anterior) : Math.max(0, ...(await history(id)).map((e) => e.version ?? 1));
+    const ficha = { ...limpia, version: ultima + 1 };
     const guardadas = lista.map((f) => (f.id === id ? ficha : f));
     await guardar(guardadas, [entrada({ ficha, antes: anterior, by, motivo })]);
     return { ficha, snapshot: { fichas: guardadas } };

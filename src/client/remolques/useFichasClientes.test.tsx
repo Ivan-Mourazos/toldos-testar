@@ -117,3 +117,17 @@ it('si el fichero de fichas está roto, lo enseña', async () => {
   await waitFor(() => expect(result.current.ready).toBe(true));
   expect(result.current.error).toContain('no se pueden leer');
 });
+
+it('el motivo escrito de cada ficha se queda al cambiar de ficha y se borra al guardar o descartar', async () => {
+  const guardada = { ...AYALA, rotulacion: true, version: 2 };
+  const { result } = await preparado(respuesta({ ficha: guardada, snapshot: { fichas: [HPL, guardada] } }));
+  result.current.update('ayala', { ...AYALA, rotulacion: true });
+  result.current.update('hpl', { ...HPL, cremallera: true });
+  result.current.setMotivo('ayala', 'Pidió rotular');
+  result.current.setMotivo('hpl', 'Cremallera nueva');
+  expect(result.current.motivos).toEqual({ ayala: 'Pidió rotular', hpl: 'Cremallera nueva' });
+  expect((await result.current.guardar('ayala', 'IVÁN', 'Pidió rotular')).status).toBe('saved');
+  expect(result.current.motivos).toEqual({ hpl: 'Cremallera nueva' });
+  result.current.descartar('hpl');
+  expect(result.current.motivos).toEqual({});
+});

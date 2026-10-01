@@ -75,6 +75,8 @@ export interface AccionesFichas {
   onUpdate: (id: string, ficha: FichaCliente) => void;
   onGuardar: (id: string, updatedBy: string, motivo: string) => Promise<SaveDraftResult>;
   onDescartar: (id: string) => void;
+  /** El motivo escrito de cada ficha, para no perderlo al cambiar de ficha (opcional). */
+  onMotivo?: (id: string, motivo: string) => void;
   onCrear: (nombre: string, updatedBy: string) => Promise<ResultadoCrear>;
   onQuitar: (id: string, updatedBy: string) => Promise<SaveDraftResult>;
   onCargarVersion: (id: string, ficha: FichaCliente) => void;
@@ -87,8 +89,8 @@ export interface AccionesFichas {
  * «Soy» y el motivo es opcional; el historial de la ficha cuenta solo qué cambió. Los cambios sin
  * guardar de cada ficha se quedan al pasar a otra (la lista lo marca). Crear y quitar se guardan al momento.
  */
-export function ClientesRemolquesView({ fichas, guardadas = fichas, pendientes = [], recogidasGenerales, usuario = '', disabled = false, guardando = false, acciones }: {
-  fichas: FichaCliente[]; guardadas?: FichaCliente[]; pendientes?: string[]; recogidasGenerales: string[];
+export function ClientesRemolquesView({ fichas, guardadas = fichas, pendientes = [], motivos = {}, recogidasGenerales, usuario = '', disabled = false, guardando = false, acciones }: {
+  fichas: FichaCliente[]; guardadas?: FichaCliente[]; pendientes?: string[]; motivos?: Record<string, string>; recogidasGenerales: string[];
   usuario?: string; disabled?: boolean; guardando?: boolean; acciones: AccionesFichas;
 }) {
   const [elegida, setElegida] = useState<string | null>(null);
@@ -162,7 +164,7 @@ export function ClientesRemolquesView({ fichas, guardadas = fichas, pendientes =
         {ficha
           ? <section key={ficha.id} className="clientes-remolques-ficha" aria-label={`Ficha de ${ficha.nombre || 'cliente nuevo'}`}>
             <BarraFicha ficha={ficha} guardada={guardadas.find((f) => f.id === ficha.id)} pendiente={pendientes.includes(ficha.id)}
-              usuario={usuario} guardando={guardando} onGuardar={(motivo) => guardar(ficha, motivo)} onDescartar={() => void descartar(ficha)}
+              usuario={usuario} guardando={guardando} motivo={motivos[ficha.id] ?? ''} onMotivo={(m) => acciones.onMotivo?.(ficha.id, m)} onGuardar={(motivo) => guardar(ficha, motivo)} onDescartar={() => void descartar(ficha)}
               onCargar={(version) => acciones.onCargarVersion(ficha.id, version)} />
             <FichaEditor ficha={ficha} recogidasGenerales={recogidasGenerales}
               onChange={(patch) => acciones.onUpdate(ficha.id, sinVacios({ ...ficha, ...patch }))} onQuitar={() => void quitar(ficha)} />
@@ -174,21 +176,21 @@ export function ClientesRemolquesView({ fichas, guardadas = fichas, pendientes =
 }
 
 /** Arriba de la ficha: su versión e historial, el motivo (opcional) y sus botones de guardar y descartar. */
-function BarraFicha({ ficha, guardada, pendiente, usuario, guardando, onGuardar, onDescartar, onCargar }: {
+function BarraFicha({ ficha, guardada, pendiente, usuario, guardando, motivo, onMotivo, onGuardar, onDescartar, onCargar }: {
   ficha: FichaCliente; guardada: FichaCliente | undefined; pendiente: boolean; usuario: string; guardando: boolean;
+  motivo: string; onMotivo: (motivo: string) => void;
   onGuardar: (motivo: string) => Promise<boolean>; onDescartar: () => void; onCargar: (ficha: FichaCliente) => void;
 }) {
-  const [motivo, setMotivo] = useState('');
   return <div className={`clientes-remolques-barra panel-3d glass-panel-strong${pendiente ? ' is-pendiente' : ''}`} role="region" aria-label="Guardar la ficha">
     <div className="clientes-remolques-barra-estado">
       <strong>{pendiente ? 'Cambios sin guardar en esta ficha' : 'Ficha guardada'}</strong>
       <HistorialFicha fichaId={ficha.id} version={guardada?.version ?? 1} guardada={guardada} onCargar={onCargar} />
     </div>
     <div className="clientes-remolques-acciones">
-      <TextField label="Motivo (opcional)" value={motivo} placeholder="Por qué cambia, si hace falta" onChange={setMotivo} />
+      <TextField label="Motivo (opcional)" value={motivo} placeholder="Por qué cambia, si hace falta" onChange={onMotivo} />
       <button type="button" className="ghost-button" disabled={!pendiente || guardando} onClick={onDescartar}><Undo2 aria-hidden="true" />Descartar cambios</button>
       <button type="button" className="primary-button" disabled={!pendiente || guardando || !usuario} title={usuario ? `Se guarda como ${usuario}` : 'Elige «Soy» arriba para guardar.'}
-        onClick={() => void onGuardar(motivo.trim()).then((ok) => { if (ok) setMotivo(''); })}>
+        onClick={() => void onGuardar(motivo.trim())}>
         <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar'}
       </button>
     </div>

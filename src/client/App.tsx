@@ -791,9 +791,9 @@ export default function App() {
               remolquesClientes={<>
                 {fichasClientes.error && <div role="alert" className="parameter-note">{fichasClientes.error} <button type="button" className="ghost-button" onClick={() => void fichasClientes.refresh()}>Reintentar</button></div>}
                 {!fichasClientes.ready && !fichasClientes.error && <p role="status">Cargando fichas de cliente…</p>}
-                <ClientesRemolquesView fichas={fichasClientes.fichas} guardadas={fichasClientes.guardadas} pendientes={fichasClientes.pendientes} usuario={currentUser}
+                <ClientesRemolquesView fichas={fichasClientes.fichas} guardadas={fichasClientes.guardadas} pendientes={fichasClientes.pendientes} motivos={fichasClientes.motivos} usuario={currentUser}
                   recogidasGenerales={remolquesSettings.saved.parameters.recogidas.map((r) => r.nombre)} disabled={!fichasClientes.ready || fichasClientes.saving} guardando={fichasClientes.saving}
-                  acciones={{ onUpdate: fichasClientes.update, onGuardar: fichasClientes.guardar, onDescartar: fichasClientes.descartar, onCrear: fichasClientes.crear, onQuitar: fichasClientes.quitar, onCargarVersion: fichasClientes.cargarVersion, notify, askForConfirmation }} />
+                  acciones={{ onUpdate: fichasClientes.update, onGuardar: fichasClientes.guardar, onDescartar: fichasClientes.descartar, onMotivo: fichasClientes.setMotivo, onCrear: fichasClientes.crear, onQuitar: fichasClientes.quitar, onCargarVersion: fichasClientes.cargarVersion, notify, askForConfirmation }} />
               </>}
               remolques={<>
                 {remolquesSettings.error && <div role="alert" className="parameter-note">{remolquesSettings.error} <button type="button" className="ghost-button" onClick={() => void remolquesSettings.refresh()}>Reintentar</button></div>}

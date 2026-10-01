@@ -28,6 +28,7 @@ const rutaFicha = (id: string) => `${RUTA_FICHAS}/${encodeURIComponent(id)}`;
 export function useFichasClientes() {
   const [guardadas, setGuardadas] = useState<FichaCliente[]>([]);
   const [borradores, setBorradores] = useState<Borradores>({});
+  const [motivos, setMotivos] = useState<Record<string, string>>({});
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -86,11 +87,21 @@ export function useFichasClientes() {
       return { ...resto, [id]: { baseVersion: previo?.baseVersion ?? versionDe(guardada), ficha } };
     });
   }
-  const descartar = (id: string) => setBorradores((actuales) => {
+  const sinMotivo = (id: string) => setMotivos((actuales) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [id]: _quitado, ...resto } = actuales;
     return resto;
   });
+  /** El motivo que se va escribiendo en cada ficha se queda al pasar a otra. */
+  const setMotivo = (id: string, motivo: string) => setMotivos((actuales) => ({ ...actuales, [id]: motivo }));
+  const descartar = (id: string) => {
+    setBorradores((actuales) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [id]: _quitado, ...resto } = actuales;
+      return resto;
+    });
+    sinMotivo(id);
+  };
 
   /** Una operación de guardado a la vez (guardar, crear o quitar). */
   async function enGuardado(tarea: () => Promise<SaveDraftResult>): Promise<SaveDraftResult> {
@@ -128,6 +139,7 @@ export function useFichasClientes() {
         const { [id]: actual, ...resto } = actuales;
         return actual === borrador || !actual ? resto : { ...resto, [id]: { ...actual, baseVersion: versionDe(data.ficha) } };
       });
+      sinMotivo(id);
       despuesDeGuardar(data.snapshot.fichas);
       return { status: 'saved' };
     });
@@ -169,7 +181,7 @@ export function useFichasClientes() {
   const huerfanos = Object.entries(borradores).filter(([id]) => !guardadas.some((f) => f.id === id)).map(([, b]) => b.ficha);
   const fichas = [...guardadas.map((f) => borradores[f.id]?.ficha ?? f), ...huerfanos];
   return {
-    fichas, guardadas, pendientes: Object.keys(borradores), ready, error, saving,
+    fichas, guardadas, pendientes: Object.keys(borradores), motivos, setMotivo, ready, error, saving,
     update, guardar, descartar, crear, quitar, cargarVersion, refresh,
   };
 }

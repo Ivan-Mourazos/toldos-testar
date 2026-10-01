@@ -126,6 +126,32 @@ describe('crear y quitar fichas', () => {
     await expect(s.crearFicha({ ficha: { nombre: ' ' }, updatedBy: 'IVÁN' })).rejects.toMatchObject({ code: 'INVALID_INPUT' });
   });
 
+  it('volver a crear una ficha quitada sigue la numeración de su historial, sin repetir versión', async () => {
+    const s = store();
+    await s.crearFicha({ ficha: { nombre: 'Talleres Cal' }, updatedBy: 'IVÁN' });
+    const { ficha: v2 } = await s.guardarFicha({ id: 'talleres-cal', baseVersion: 1, ficha: { id: 'talleres-cal', nombre: 'Talleres Cal', codigosRps: [], rotulacion: true }, updatedBy: 'IVÁN' });
+    await s.quitarFicha({ id: 'talleres-cal', baseVersion: v2.version, updatedBy: 'IVÁN' });
+    const { ficha } = await s.crearFicha({ ficha: { nombre: 'Talleres Cal' }, updatedBy: 'JAIME' });
+    expect(ficha.id).toBe('talleres-cal');
+    expect(ficha.version).toBe(4);
+    expect((await s.history('talleres-cal')).map((e) => e.version)).toEqual([4, 3, 2, 1]);
+  });
+
+  it('dos fichas distintas guardadas a la vez se guardan las dos, cada una con su versión', async () => {
+    const s = store();
+    const ayala = await fichaDe(s, 'ayala');
+    const hpl = await fichaDe(s, 'hijos-de-pedro-lopez');
+    const [a, h] = await Promise.all([
+      s.guardarFicha({ id: 'ayala', baseVersion: 1, ficha: { ...ayala, rotulacion: true }, updatedBy: 'IVÁN' }),
+      s.guardarFicha({ id: 'hijos-de-pedro-lopez', baseVersion: 1, ficha: { ...hpl, rotulacion: true }, updatedBy: 'JAIME' })
+    ]);
+    expect([a.ficha.version, h.ficha.version]).toEqual([2, 2]);
+    expect((await fichaDe(s, 'ayala')).rotulacion).toBe(true);
+    expect((await fichaDe(s, 'hijos-de-pedro-lopez')).rotulacion).toBe(true);
+    expect((await s.history('ayala'))[0]).toMatchObject({ version: 2, updatedBy: 'IVÁN' });
+    expect((await s.history('hijos-de-pedro-lopez'))[0]).toMatchObject({ version: 2, updatedBy: 'JAIME' });
+  });
+
   it('quitar con su versión deja «Ficha quitada» en su historial; con versión vieja, 409', async () => {
     const s = store();
     const ayala = await fichaDe(s, 'ayala');

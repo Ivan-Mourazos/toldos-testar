@@ -290,6 +290,8 @@ El rollback consiste en volver al commit anterior, repetir `pnpm install`,
 `pnpm build`, `pnpm deploy:check` y `pnpm pm2:reload`. No se debe tocar el JSON
 persistente ni los archivos de las carpetas compartidas.
 
+Si se vuelve a una versión anterior al guardado por ficha, la pantalla de historial antigua puede mostrar números de versión repetidos y «Cargar esta versión» no hace nada en los renglones nuevos (solo es estético).
+
 Si se vuelve a una versión anterior a la fase 3 de remolques (fichas de cliente), hay que restaurar
 también `/var/lib/toldos-testar/remolques-parameters.antes-fase-3.json` como
 `remolques-parameters.json`: el primer guardado de parámetros con la fase 3 quita del fichero lo que
