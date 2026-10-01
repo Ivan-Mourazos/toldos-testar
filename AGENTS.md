@@ -21,7 +21,7 @@ Técnica, y habla castellano.
 ## Git
 
 - Codex trabaja en su propia carpeta, un worktree de git: `..\toldos-testar-codex`, rama
-  `codex`. Así no pisa los cambios a medio hacer de otro agente que trabaja en
+  `codex-trabajo`. Así no pisa los cambios a medio hacer de otro agente que trabaja en
   `toldos-testar`. Para subir: `git pull --rebase origin main` y luego
   `git push origin HEAD:main`. Sin worktree se trabaja en `main` y antes de subir se hace
   `git pull --rebase`.
