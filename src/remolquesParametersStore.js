@@ -90,6 +90,10 @@ export function createRemolquesParametersStore({ file, historyFile = file.replac
     }
   }
   /** Lo que era de un cliente en los parámetros guardados (o los del código): para crear las fichas. */
-  async function entradasDeClienteGuardadas() { return entradasDeCliente((await readCurrent()).completos); }
+  function entradasDeClienteGuardadas() {
+    const result = queue.then(async () => entradasDeCliente((await readCurrent()).completos));
+    queue = result.catch(() => {});
+    return result;
+  }
   return { get, getSnapshot, save, history, entradasDeCliente: entradasDeClienteGuardadas };
 }

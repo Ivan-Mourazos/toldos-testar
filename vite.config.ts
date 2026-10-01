@@ -5,7 +5,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 4400
+    port: 4400,
+    // Las instancias aisladas y las capturas escriben en estas carpetas; vigilarlas rompe Vite con EBUSY en Windows.
+    watch: { ignored: ['**/tmp/**', '**/output/**', '**/.claude/**'] }
   },
   build: {
     rollupOptions: {

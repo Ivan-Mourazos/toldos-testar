@@ -17,6 +17,7 @@ const esElemento = (e) => (e?.tipo === 'lona' || e?.tipo === 'baqueton') && e.in
 
 export function createRemolquesClientesStore({ file, historyFile = file.replace(/\.json$/i, '') + '-history.jsonl', technicians, semilla, recogidasGenerales, logger = console }) {
   let queue = Promise.resolve();
+  let avisadoSinGuardar = false;
   const enCola = (tarea) => {
     const resultado = queue.then(tarea);
     queue = resultado.catch(() => {});
@@ -34,8 +35,8 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
       if (error.code === 'ENOENT') return { falta: true };
       logger.warn(`No se pudieron leer las fichas de cliente de remolques (${file}): ${error.message}.`);
     }
-    // Un fichero roto no se vuelve a sembrar: se perdería lo que tuviera.
-    return { snapshot: VACIO() };
+    // Un fichero roto no se vuelve a sembrar ni se sobrescribe: se perdería lo que tuviera.
+    return { roto: true, snapshot: VACIO() };
   }
 
   async function guardar(saved, changedSections) {
@@ -60,7 +61,8 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
       await guardar(saved, validacion.fichas.map((f) => f.nombre));
     } catch (error) {
       // Se calcula con ellas igual; la siguiente lectura lo vuelve a intentar.
-      logger.warn(`No se pudieron guardar las fichas de partida de remolques (${file}): ${error.message}. Se usan sin guardar.`);
+      if (!avisadoSinGuardar) logger.warn(`No se pudieron guardar las fichas de partida de remolques (${file}): ${error.message}. Se usan sin guardar.`);
+      avisadoSinGuardar = true;
     }
     return saved;
   }
@@ -69,11 +71,31 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
   // dos lecturas a la vez no siembren dos veces.
   async function readCurrent({ enLaCola = false } = {}) {
     const leido = await leerFichero();
-    if (!leido.falta) return leido.snapshot;
-    return enLaCola ? sembrarSiFalta() : enCola(sembrarSiFalta);
+    if (!leido.falta) return leido;
+    return { snapshot: await (enLaCola ? sembrarSiFalta() : enCola(sembrarSiFalta)) };
   }
-  async function getSnapshot() { return readCurrent(); }
-  async function get() { return (await readCurrent()).fichas; }
+  // Un fichero ilegible se cuenta (`ilegible`) para que la pantalla pueda avisar; nunca se guarda encima.
+  async function getSnapshot() {
+    const { snapshot, roto } = await readCurrent();
+    return roto ? { ...snapshot, ilegible: true } : snapshot;
+  }
+  async function get() { return (await readCurrent()).snapshot.fichas; }
+  /** 'ok' si las fichas están en su fichero, 'sin-guardar' si solo existe la semilla, 'ilegible' si el fichero está roto. */
+  async function estado() {
+    const { roto } = await readCurrent();
+    if (roto) return 'ilegible';
+    try {
+      await fs.access(file);
+      return 'ok';
+    } catch {
+      return 'sin-guardar';
+    }
+  }
+  async function actual() {
+    const { snapshot, roto } = await readCurrent({ enLaCola: true });
+    if (roto) throw storeError('FICHAS_ILEGIBLES', 'Las fichas de cliente no se pueden leer; revisa el fichero antes de guardar.');
+    return snapshot;
+  }
 
   function autor(updatedBy) {
     const by = typeof updatedBy === 'string' ? updatedBy.trim().toUpperCase() : '';
@@ -97,7 +119,7 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
     if (!why) throw storeError('INVALID_INPUT', 'Indica el motivo del cambio.');
     if (!Number.isInteger(baseVersion) || baseVersion < 0) throw storeError('INVALID_INPUT', 'Indica la versión que estás editando.');
     if (!Array.isArray(fichas)) throw storeError('INVALID_INPUT', 'Indica las fichas del cambio.');
-    const current = await readCurrent({ enLaCola: true });
+    const current = await actual();
     if (baseVersion !== current.version) throw storeError('VERSION_CONFLICT', 'Otro puesto guardó cambios antes.', { current });
     return escribir(current, fichas, by, why);
   }
@@ -123,7 +145,7 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
     if (!codigo || !nombre) throw storeError('INVALID_INPUT', 'Falta el cliente de RPS del pedido.');
     if (!Array.isArray(claves) || claves.some((c) => typeof c !== 'string')) throw storeError('INVALID_INPUT', 'Indica qué se guarda en la ficha.');
     if (claves.length && !esElemento(elemento)) throw storeError('INVALID_INPUT', 'Falta el elemento del pedido.');
-    const current = await readCurrent({ enLaCola: true });
+    const current = await actual();
     const delCodigo = fichaPorCodigo(current.fichas, codigo);
     let ficha;
     if (fichaId) {
@@ -161,6 +183,7 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
   return {
     get,
     getSnapshot,
+    estado,
     save: (input) => enCola(() => write(input)),
     desdePedido: (input) => enCola(() => writeDesdePedido(input)),
     history

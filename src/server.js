@@ -430,6 +430,10 @@ app.get('/api/remolques/parametros', async (req, res, next) => {
 
 app.put('/api/remolques/parametros', async (req, res, next) => {
   try {
+    // Al guardar se quitan de este fichero las entradas de cliente: solo si ya están a salvo en sus fichas.
+    const estadoFichas = await remolquesClientesStore.estado();
+    if (estadoFichas === 'ilegible') return res.status(503).json({ error: MENSAJE_FICHAS_ILEGIBLES });
+    if (estadoFichas !== 'ok') return res.status(503).json({ error: 'Las fichas de cliente aún no se han podido guardar; inténtalo más tarde.' });
     res.json(await remolquesParametersStore.save(req.body));
   } catch (error) {
     if (error.code === 'VERSION_CONFLICT') return res.status(409).json({ error: error.message, current: error.current });
@@ -447,7 +451,9 @@ app.get('/api/remolques/parametros/history', async (req, res, next) => {
 
 // Fichas de cliente de remolques (fase 3): todas a la vez con versión e historial, como los
 // parámetros, y «desde un pedido» para el botón de Remolques (solo una ficha, sin versión).
+const MENSAJE_FICHAS_ILEGIBLES = 'Las fichas de cliente no se pueden leer; revisa el fichero antes de guardar.';
 function errorFichas(error, res, next) {
+  if (error.code === 'FICHAS_ILEGIBLES') return res.status(503).json({ error: MENSAJE_FICHAS_ILEGIBLES });
   if (error.code === 'VERSION_CONFLICT') return res.status(409).json({ error: error.message, current: error.current });
   if (error.code === 'CODE_TAKEN') return res.status(409).json({ error: error.message });
   if (error.code === 'NOT_FOUND') return res.status(404).json({ error: error.message });

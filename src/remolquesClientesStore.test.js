@@ -129,3 +129,41 @@ describe('desde un pedido', () => {
     expect(await s.history()).toHaveLength(1);
   });
 });
+
+describe('fichero ilegible', () => {
+  const roto = [['JSON roto', '{ roto'], ['forma equivocada', JSON.stringify({ version: 3, fichas: 'no' })]];
+  const pedido = { numeroPedido: 'AR.26.04286', updatedBy: 'IVÁN', params: DEFAULT_PARAMS, cliente: { codigo: '036999', nombre: 'X' }, claves: [] };
+
+  it.each(roto)('%s: ni desde un pedido ni al guardar se toca el fichero', async (_n, contenido) => {
+    await writeFile(file(), contenido, 'utf8');
+    const s = store();
+    await expect(s.desdePedido(pedido)).rejects.toMatchObject({ code: 'FICHAS_ILEGIBLES' });
+    await expect(s.save({ baseVersion: 0, fichas: [], updatedBy: 'IVÁN', reason: 'x' })).rejects.toMatchObject({ code: 'FICHAS_ILEGIBLES', message: 'Las fichas de cliente no se pueden leer; revisa el fichero antes de guardar.' });
+    expect(await readFile(file(), 'utf8')).toBe(contenido);
+    expect(await s.get()).toEqual([]);
+    expect(await s.getSnapshot()).toMatchObject({ ilegible: true });
+    expect(await s.estado()).toBe('ilegible');
+    expect(logger.warn).toHaveBeenCalled();
+  });
+
+  it('un error de lectura que no es «no existe» también cuenta como ilegible', async () => {
+    await mkdir(file());
+    expect(await store().estado()).toBe('ilegible');
+  });
+});
+
+describe('estado de las fichas', () => {
+  it('«sin-guardar» mientras la semilla no se pueda guardar, y solo se avisa una vez', async () => {
+    const bloqueo = path.join(dir, 'bloqueo');
+    await writeFile(bloqueo, 'no es una carpeta');
+    const s = store({ historyFile: path.join(bloqueo, 'historial.jsonl') });
+    expect(await s.estado()).toBe('sin-guardar');
+    await s.get();
+    await s.estado();
+    expect(logger.warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('«ok» cuando están en su fichero', async () => {
+    expect(await store().estado()).toBe('ok');
+  });
+});
