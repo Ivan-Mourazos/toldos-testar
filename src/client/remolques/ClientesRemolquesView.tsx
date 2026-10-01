@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Save, Trash2, Undo2 } from 'lucide-react';
 import { PERFILES, type Recogida, type TipoPerfil } from '../../remolques/calc/params.ts';
-import { CAMPOS_EXTRAS, idFicha } from '../../remolques/clientes/reglas.ts';
+import { CAMPOS_EXTRAS } from '../../remolques/clientes/reglas.ts';
 import type { ExtrasBaqueton, FichaCliente, MedidaHabitual, PerfilFicha } from '../../remolques/clientes/tipos.ts';
+import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ParameterBand, ParameterSheet } from '../components/ParameterSheet';
 import { SelectField } from '../components/SelectField';
 import { TextField } from '../components/TextField';
+import type { SaveDraftResult } from '../hooks/useParameters';
+import { HistorialFicha } from './HistorialFicha';
 import { InputDecimal } from './InputDecimal';
 import { escribirPosiciones, leerCodigos, leerPosiciones } from './posicionesTexto';
+import type { ResultadoCrear } from './useFichasClientes';
 
 // Parámetros › Remolques › Clientes (fase 3): una ficha por cliente real, con sus códigos de RPS y lo
 // habitual. Todo es opcional: «—» es «no lo dice la ficha» y al obtener el pedido no se toca.
@@ -66,22 +70,75 @@ function CampoAlSalir<T>({ label, valor, leer, onChange, ayuda, errorLectura }: 
 const ERROR_POSICIONES = 'No se entiende: usa números mayores que 0 separados por «·» o espacios';
 const ERROR_CODIGOS = 'No se entiende: códigos de RPS separados por comas';
 
-export function ClientesRemolquesView({ fichas, recogidasGenerales, onUpdate, disabled = false }: {
-  fichas: FichaCliente[]; recogidasGenerales: string[]; onUpdate: (fichas: FichaCliente[]) => void; disabled?: boolean;
+/** Lo que la hoja puede hacer con las fichas (useFichasClientes) y cómo avisa. */
+export interface AccionesFichas {
+  onUpdate: (id: string, ficha: FichaCliente) => void;
+  onGuardar: (id: string, updatedBy: string, motivo: string) => Promise<SaveDraftResult>;
+  onDescartar: (id: string) => void;
+  onCrear: (nombre: string, updatedBy: string) => Promise<ResultadoCrear>;
+  onQuitar: (id: string, updatedBy: string) => Promise<SaveDraftResult>;
+  onCargarVersion: (id: string, ficha: FichaCliente) => void;
+  notify: Notify;
+  askForConfirmation: AskForConfirmation;
+}
+
+/**
+ * Cada ficha se guarda sola, con su botón (Iván, 01/10/2026: «una versión por ficha»): quién es el
+ * «Soy» y el motivo es opcional; el historial de la ficha cuenta solo qué cambió. Los cambios sin
+ * guardar de cada ficha se quedan al pasar a otra (la lista lo marca). Crear y quitar se guardan al momento.
+ */
+export function ClientesRemolquesView({ fichas, guardadas = fichas, pendientes = [], recogidasGenerales, usuario = '', disabled = false, guardando = false, acciones }: {
+  fichas: FichaCliente[]; guardadas?: FichaCliente[]; pendientes?: string[]; recogidasGenerales: string[];
+  usuario?: string; disabled?: boolean; guardando?: boolean; acciones: AccionesFichas;
 }) {
   const [elegida, setElegida] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
+  const [nueva, setNueva] = useState<string | null>(null);
   const ficha = fichas.find((f) => f.id === elegida) ?? fichas[0] ?? null;
   const consulta = busca.trim().toLocaleUpperCase('es-ES');
   const visibles = fichas.filter((f) => !consulta || `${f.nombre} ${f.codigosRps.join(' ')}`.toLocaleUpperCase('es-ES').includes(consulta));
-  const cambiar = (id: string, patch: Partial<FichaCliente>) => onUpdate(fichas.map((f) => (f.id === id ? sinVacios({ ...f, ...patch }) : f)));
-  const anadir = () => {
-    const id = idFicha(`ficha nueva ${fichas.length + 1}`, new Set(fichas.map((f) => f.id)));
-    onUpdate([...fichas, { id, nombre: '', codigosRps: [] }]);
-    setElegida(id);
-  };
+  const { notify, askForConfirmation } = acciones;
+  const avisarError = (r: SaveDraftResult, porDefecto: string) => notify(r.message || porDefecto, { tone: 'error' });
+
+  async function crear() {
+    const nombre = (nueva ?? '').trim();
+    if (!nombre) return;
+    const r = await acciones.onCrear(nombre, usuario);
+    if (r.status !== 'saved') return avisarError(r, 'No se pudo crear la ficha.');
+    notify(`Ficha de ${nombre} creada. Rellena lo habitual y guárdala.`, { tone: 'success', title: 'Ficha creada' });
+    setNueva(null);
+    if (r.id) setElegida(r.id);
+  }
+  async function guardar(f: FichaCliente, motivo: string) {
+    const r = await acciones.onGuardar(f.id, usuario, motivo);
+    if (r.status === 'saved') notify(`Los pedidos nuevos ya usan la ficha de ${f.nombre}.`, { tone: 'success', title: 'Ficha guardada' });
+    else if (r.status === 'conflict') notify('Otro puesto guardó esta ficha antes. Tus cambios siguen aquí: mira su historial, revísalos y vuelve a guardar.', { tone: 'warning', title: 'Ficha cambiada por otro puesto' });
+    else avisarError(r, 'No se pudo guardar la ficha.');
+    return r.status === 'saved';
+  }
+  async function descartar(f: FichaCliente) {
+    const choice = await askForConfirmation({
+      title: 'Descartar cambios de la ficha', message: `Se pierden los cambios sin guardar de la ficha de ${f.nombre || 'este cliente'}.`,
+      confirmLabel: 'Descartar', cancelLabel: 'Seguir editando', tone: 'warning',
+    });
+    if (choice === 'confirm') acciones.onDescartar(f.id);
+  }
+  async function quitar(f: FichaCliente) {
+    const choice = await askForConfirmation({
+      title: 'Quitar la ficha', message: `Se quita la ficha de ${f.nombre || 'este cliente'} para todos los puestos. Sus pedidos ya no la aplicarán. Queda en su historial.`,
+      confirmLabel: 'Quitar ficha', cancelLabel: 'Cancelar', tone: 'warning',
+    });
+    if (choice !== 'confirm') return;
+    const r = await acciones.onQuitar(f.id, usuario);
+    if (r.status === 'saved') {
+      notify(`Ficha de ${f.nombre} quitada.`, { tone: 'success', title: 'Ficha quitada' });
+      setElegida(null);
+    } else if (r.status === 'conflict') notify('Otro puesto guardó esta ficha antes: revísala antes de quitarla.', { tone: 'warning', title: 'Ficha cambiada por otro puesto' });
+    else avisarError(r, 'No se pudo quitar la ficha.');
+  }
+
   return <fieldset className="remolques-parameters clientes-remolques-hoja" disabled={disabled}>
-    <ParameterSheet model="Clientes de remolques" kind="remolques" description="Lo habitual de cada cliente. Al obtener un pedido de RPS de uno de sus códigos, los campos vacíos se rellenan con su ficha y llevan la marca «del cliente». Lo que no se rellena no se toca.">
+    <ParameterSheet model="Clientes de remolques" kind="remolques" description="Lo habitual de cada cliente. Al obtener un pedido de RPS de uno de sus códigos, los campos vacíos se rellenan con su ficha y llevan la marca «del cliente». Lo que no se rellena no se toca. Cada ficha se guarda con su botón.">
       <div className="clientes-remolques">
         <nav className="clientes-remolques-lista bloque-3d-hundido" aria-label="Fichas de cliente">
           <TextField label="Buscar cliente o código" value={busca} onChange={setBusca} />
@@ -89,16 +146,53 @@ export function ClientesRemolquesView({ fichas, recogidasGenerales, onUpdate, di
             <button key={f.id} type="button" className={f.id === ficha?.id ? 'tecla-3d is-active bloque-3d-hundido' : 'tecla-3d'} aria-current={f.id === ficha?.id ? 'true' : undefined} onClick={() => setElegida(f.id)}>
               <strong>{f.nombre || 'Sin nombre'}</strong>
               <small>{f.codigosRps.length ? f.codigosRps.join(' · ') : 'Sin código de RPS'}</small>
+              {pendientes.includes(f.id) && <small className="clientes-remolques-pendiente">Cambios sin guardar</small>}
             </button>
           ))}
-          <button type="button" className="ghost-button" onClick={anadir}><Plus aria-hidden="true" />Añadir ficha</button>
+          {nueva === null
+            ? <button type="button" className="ghost-button" onClick={() => setNueva('')}><Plus aria-hidden="true" />Añadir ficha</button>
+            : <section className="clientes-remolques-nueva" aria-label="Ficha nueva">
+              <TextField label="Nombre del cliente" value={nueva} onChange={setNueva} />
+              <div className="clientes-remolques-acciones">
+                <button type="button" className="ghost-button" onClick={() => setNueva(null)}>Cancelar</button>
+                <button type="button" className="primary-button" disabled={!nueva.trim() || !usuario} onClick={() => void crear()}><Plus aria-hidden="true" />Crear ficha</button>
+              </div>
+            </section>}
         </nav>
         {ficha
-          ? <FichaEditor key={ficha.id} ficha={ficha} recogidasGenerales={recogidasGenerales} onChange={(patch) => cambiar(ficha.id, patch)} onQuitar={() => { onUpdate(fichas.filter((f) => f.id !== ficha.id)); setElegida(null); }} />
+          ? <section key={ficha.id} className="clientes-remolques-ficha" aria-label={`Ficha de ${ficha.nombre || 'cliente nuevo'}`}>
+            <BarraFicha ficha={ficha} guardada={guardadas.find((f) => f.id === ficha.id)} pendiente={pendientes.includes(ficha.id)}
+              usuario={usuario} guardando={guardando} onGuardar={(motivo) => guardar(ficha, motivo)} onDescartar={() => void descartar(ficha)}
+              onCargar={(version) => acciones.onCargarVersion(ficha.id, version)} />
+            <FichaEditor ficha={ficha} recogidasGenerales={recogidasGenerales}
+              onChange={(patch) => acciones.onUpdate(ficha.id, sinVacios({ ...ficha, ...patch }))} onQuitar={() => void quitar(ficha)} />
+          </section>
           : <p className="clientes-remolques-vacio">Todavía no hay fichas. Se crean aquí o con «Guardar en la ficha del cliente» desde un pedido de Remolques.</p>}
       </div>
     </ParameterSheet>
   </fieldset>;
+}
+
+/** Arriba de la ficha: su versión e historial, el motivo (opcional) y sus botones de guardar y descartar. */
+function BarraFicha({ ficha, guardada, pendiente, usuario, guardando, onGuardar, onDescartar, onCargar }: {
+  ficha: FichaCliente; guardada: FichaCliente | undefined; pendiente: boolean; usuario: string; guardando: boolean;
+  onGuardar: (motivo: string) => Promise<boolean>; onDescartar: () => void; onCargar: (ficha: FichaCliente) => void;
+}) {
+  const [motivo, setMotivo] = useState('');
+  return <div className={`clientes-remolques-barra panel-3d glass-panel-strong${pendiente ? ' is-pendiente' : ''}`} role="region" aria-label="Guardar la ficha">
+    <div className="clientes-remolques-barra-estado">
+      <strong>{pendiente ? 'Cambios sin guardar en esta ficha' : 'Ficha guardada'}</strong>
+      <HistorialFicha fichaId={ficha.id} version={guardada?.version ?? 1} guardada={guardada} onCargar={onCargar} />
+    </div>
+    <div className="clientes-remolques-acciones">
+      <TextField label="Motivo (opcional)" value={motivo} placeholder="Por qué cambia, si hace falta" onChange={setMotivo} />
+      <button type="button" className="ghost-button" disabled={!pendiente || guardando} onClick={onDescartar}><Undo2 aria-hidden="true" />Descartar cambios</button>
+      <button type="button" className="primary-button" disabled={!pendiente || guardando || !usuario} title={usuario ? `Se guarda como ${usuario}` : 'Elige «Soy» arriba para guardar.'}
+        onClick={() => void onGuardar(motivo.trim()).then((ok) => { if (ok) setMotivo(''); })}>
+        <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar'}
+      </button>
+    </div>
+  </div>;
 }
 
 function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
@@ -111,7 +205,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
   const extras = ficha.extrasBaqueton;
   const cambiarPropia = (patch: Partial<Recogida>) => onChange({ recogidaPropia: { ...(propia ?? recogidaVacia('')), ...patch } });
   const cambiarMedida = (i: number, patch: Partial<MedidaHabitual>) => onChange({ medidas: medidas.map((m, j) => (j === i ? { ...m, ...patch } : m)) });
-  return <section className="clientes-remolques-ficha" aria-label={`Ficha de ${ficha.nombre || 'cliente nuevo'}`}>
+  return <>
     <ParameterBand number="01" title="Cliente" description="El nombre que se ve y sus códigos de cliente de RPS. Un código solo puede estar en una ficha.">
       <div className="parameter-grid remolques-parameter-grid">
         <TextField label="Nombre" value={ficha.nombre} onChange={(nombre) => onChange({ nombre })} />
@@ -194,5 +288,5 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <button type="button" className="ghost-button" onClick={() => onChange({ medidas: [...medidas, medidaVacia()] })}><Plus aria-hidden="true" />Añadir medida</button>
       </div>
     </ParameterBand>
-  </section>;
+  </>;
 }

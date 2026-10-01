@@ -458,8 +458,8 @@ app.get('/api/remolques/parametros/history', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-// Fichas de cliente de remolques (fase 3): todas a la vez con versión e historial, como los
-// parámetros, y «desde un pedido» para el botón de Remolques (solo una ficha, sin versión).
+// Fichas de cliente de remolques (fase 3): cada ficha con su versión y su historial (Iván,
+// 01/10/2026), y «desde un pedido» para el botón de Remolques (una ficha, sin versión).
 const MENSAJE_FICHAS_ILEGIBLES = 'Las fichas de cliente no se pueden leer; revisa el fichero antes de guardar.';
 function errorFichas(error, res, next) {
   if (error.code === 'FICHAS_ILEGIBLES') return res.status(503).json({ error: MENSAJE_FICHAS_ILEGIBLES });
@@ -476,16 +476,36 @@ app.get('/api/remolques/clientes', async (_req, res, next) => {
   } catch (error) { next(error); }
 });
 
-app.put('/api/remolques/clientes', async (req, res, next) => {
+// Antes se guardaban todas a la vez: una pestaña abierta con la web de antes lo sabrá al guardar.
+app.put('/api/remolques/clientes', (_req, res) => {
+  res.status(410).json({ error: 'La web se ha actualizado: recarga la página (F5) y guarda la ficha con su botón «Guardar».' });
+});
+
+// Crear una ficha: se guarda al momento con «Ficha creada» en su historial.
+app.post('/api/remolques/clientes', async (req, res, next) => {
   try {
-    res.json(await remolquesClientesStore.save(req.body));
+    res.status(201).json(await remolquesClientesStore.crearFicha(req.body ?? {}));
   } catch (error) { errorFichas(error, res, next); }
 });
 
-app.get('/api/remolques/clientes/historial', async (req, res, next) => {
+// Guardar una ficha: { ficha, baseVersion, updatedBy, motivo? }. 409 solo si esa ficha cambió.
+app.put('/api/remolques/clientes/:id', async (req, res, next) => {
   try {
-    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
-    res.set('Cache-Control', 'no-store').json({ entries: await remolquesClientesStore.history(limit) });
+    res.json(await remolquesClientesStore.guardarFicha({ ...(req.body ?? {}), id: req.params.id }));
+  } catch (error) { errorFichas(error, res, next); }
+});
+
+// Quitar una ficha: { baseVersion, updatedBy }. Queda en su historial como «Ficha quitada».
+app.delete('/api/remolques/clientes/:id', async (req, res, next) => {
+  try {
+    res.json(await remolquesClientesStore.quitarFicha({ ...(req.body ?? {}), id: req.params.id }));
+  } catch (error) { errorFichas(error, res, next); }
+});
+
+app.get('/api/remolques/clientes/:id/historial', async (req, res, next) => {
+  try {
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 30));
+    res.set('Cache-Control', 'no-store').json({ entries: await remolquesClientesStore.history(req.params.id, limit) });
   } catch (error) { next(error); }
 });
 

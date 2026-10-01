@@ -4,7 +4,7 @@ import type { ClienteRps } from '../../remolques/rps/types.ts';
 import { REMOLQUES_PARAMETERS_SAVED } from './useRemolquesParameters';
 
 // Las fichas de cliente de remolques (fase 3) desde la web: leerlas y guardar desde un pedido. La
-// hoja de Parámetros guarda todas a la vez con su propio borrador (useFichasClientes).
+// hoja de Parámetros guarda cada ficha con su propio borrador y su versión (useFichasClientes).
 
 export const RUTA_FICHAS = '/api/remolques/clientes';
 /** Se lanza al guardar fichas: la hoja de Clientes las vuelve a leer. */
@@ -21,7 +21,7 @@ export async function leerFichas(): Promise<SnapshotFichas> {
   const respuesta = await fetch(RUTA_FICHAS, { cache: 'no-store' });
   if (!respuesta.ok) throw new Error('No se pudieron leer las fichas de cliente.');
   const datos = await respuesta.json() as SnapshotFichas;
-  if (!Number.isInteger(datos?.version) || !Array.isArray(datos?.fichas)) throw new Error('Las fichas de cliente recibidas no son válidas.');
+  if (!Array.isArray(datos?.fichas)) throw new Error('Las fichas de cliente recibidas no son válidas.');
   return datos;
 }
 

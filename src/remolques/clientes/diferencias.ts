@@ -4,7 +4,7 @@ import type { RepartoLados } from "../calc/ollaos.ts";
 import { findClienteBaqueton, nombrePerfil, type CalcParams } from "../calc/params.ts";
 import { etiquetaOpcion } from "../etiquetas.ts";
 import { LINEA_CREMALLERA, medidaHabitual } from "./aplicar.ts";
-import { CAMPOS_PERFIL, normalizarNombre } from "./reglas.ts";
+import { CAMPOS_EXTRAS, CAMPOS_PERFIL, normalizarNombre } from "./reglas.ts";
 import type { ExtrasBaqueton, FichaCliente, MedidaHabitual, PerfilFicha, VentanaFicha } from "./tipos.ts";
 
 // «Guardar en la ficha del cliente» (fase 3): qué tiene un elemento distinto de la ficha (la medida
@@ -203,4 +203,83 @@ export function fichaConCambios(ficha: FichaCliente, elemento: ElementoFicha, cl
     }
   }
   return siguiente;
+}
+
+// Historial de cada ficha (Iván, 01/10/2026): qué cambió entre dos versiones, en frases cortas,
+// para no tener que escribir un motivo en cada cambio.
+
+const ETIQUETAS_EXTRAS: Record<(typeof CAMPOS_EXTRAS)[number], string> = {
+  extraLargoCostura: "extra de largo a costura", extraAnchoCostura: "extra de ancho a costura",
+  extraBaquetonLargoDelante: "extra de baquetón delante", extraBaquetonLargoDetras: "extra de baquetón detrás",
+  extraLargoFinal: "extra de largo final", extraAnchoFinal: "extra de ancho final", extraBaquetonTrasero: "extra de baquetón trasero",
+};
+const textoTrabajo = (v: FichaCliente["trabajo"]) => (v === "lona" ? "Lona" : v === "baqueton" ? "Baquetón" : NADA);
+const igual = (a: unknown, b: unknown) => estable(a) === estable(b);
+/** «+ 099991, − 009999»: lo que entra y lo que sale de una lista. */
+function altasYBajas(antes: readonly string[], despues: readonly string[]): string {
+  const altas = despues.filter((x) => !antes.includes(x)).map((x) => `+ ${x}`);
+  const bajas = antes.filter((x) => !despues.includes(x)).map((x) => `− ${x}`);
+  return [...altas, ...bajas].join(", ") || "otro orden";
+}
+const claveMedida = (m: MedidaHabitual) => `${m.tipo}:${m.largo}x${m.ancho}`;
+const nombreMedida = (m: MedidaHabitual) => `Medida ${fmt(m.largo)} × ${fmt(m.ancho)} de ${m.tipo === "lona" ? "lona" : "baquetón"}`;
+
+function resumenMedidas(antes: readonly MedidaHabitual[], despues: readonly MedidaHabitual[]): string[] {
+  const previas = new Map(antes.map((m) => [claveMedida(m), m]));
+  const lineas: string[] = [];
+  for (const m of despues) {
+    const previa = previas.get(claveMedida(m));
+    previas.delete(claveMedida(m));
+    if (!previa) lineas.push(`${nombreMedida(m)} nueva`);
+    else if (!igual(previa.ollaos, m.ollaos)) lineas.push(`${nombreMedida(m)}: ollaos ${textoOllaos(previa.ollaos) || NADA} → ${textoOllaos(m.ollaos) || NADA}`);
+  }
+  for (const quitada of previas.values()) lineas.push(`${nombreMedida(quitada)} quitada`);
+  return lineas;
+}
+
+function resumenExtras(antes: ExtrasBaqueton | undefined, despues: ExtrasBaqueton | undefined): string | null {
+  if (igual(antes, despues)) return null;
+  if (!antes) return "Extras de baquetón: añadidos";
+  if (!despues) return "Extras de baquetón: quitados";
+  const partes = CAMPOS_EXTRAS.filter((c) => antes[c] !== despues[c])
+    .map((c) => `${ETIQUETAS_EXTRAS[c]} ${conSigno(antes[c])} → ${conSigno(despues[c])}`);
+  if (!igual(antes.observaciones, despues.observaciones)) partes.push("observaciones cambiadas");
+  return `Extras de baquetón: ${partes.join("; ")}`;
+}
+
+/**
+ * Qué cambió de una ficha, una frase por cosa: «Ficha creada», «Medida 220 × 130 de lona nueva»,
+ * «Recogida detrás: — → Goma», «Códigos de RPS: + 099991»… Vacío si no cambió nada (la versión no cuenta).
+ */
+export function resumenCambios(antes: FichaCliente | null, despues: FichaCliente | null): string[] {
+  if (!antes) return despues ? ["Ficha creada"] : [];
+  if (!despues) return ["Ficha quitada"];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { version: _va, ...a } = antes;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { version: _vd, ...d } = despues;
+  if (igual(a, d)) return [];
+  const lineas: string[] = [];
+  const valor = (clave: Exclude<ClaveFicha, "medida" | "extrasBaqueton">) => {
+    if (igual(a[clave], d[clave])) return;
+    const nombre = clave === "perfil" ? "Perfil" : ETIQUETAS[clave];
+    lineas.push(`${nombre}: ${texto(clave, a[clave])} → ${texto(clave, d[clave])}`);
+  };
+  if (a.nombre !== d.nombre) lineas.push(`Nombre: ${a.nombre || NADA} → ${d.nombre || NADA}`);
+  if (!igual(a.codigosRps, d.codigosRps)) lineas.push(`Códigos de RPS: ${altasYBajas(a.codigosRps, d.codigosRps)}`);
+  if (a.trabajo !== d.trabajo) lineas.push(`Trabajo habitual: ${textoTrabajo(a.trabajo)} → ${textoTrabajo(d.trabajo)}`);
+  (["perfil", "recogeDelante", "recogeAtras"] as const).forEach(valor);
+  if (!igual(a.recogidaPropia, d.recogidaPropia)) {
+    const [pa, pd] = [a.recogidaPropia, d.recogidaPropia];
+    if (!pa) lineas.push(`Recogida propia: + ${pd!.nombre}`);
+    else if (!pd) lineas.push(`Recogida propia: − ${pa.nombre}`);
+    else if (pa.nombre !== pd.nombre) lineas.push(`Recogida propia: ${pa.nombre} → ${pd.nombre}`);
+    else lineas.push(`Recogida propia ${pd.nombre} cambiada`);
+  }
+  (["bastillaEnfundar", "ventana", "rotulacion", "material", "sesgoDetras", "cremallera"] as const).forEach(valor);
+  const extras = resumenExtras(a.extrasBaqueton, d.extrasBaqueton);
+  if (extras) lineas.push(extras);
+  if (!igual(a.observaciones ?? [], d.observaciones ?? [])) lineas.push(`Observaciones fijas: ${altasYBajas(a.observaciones ?? [], d.observaciones ?? [])}`);
+  lineas.push(...resumenMedidas(a.medidas ?? [], d.medidas ?? []));
+  return lineas.length ? lineas : ["Ficha cambiada"];
 }

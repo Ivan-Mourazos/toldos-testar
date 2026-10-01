@@ -1,0 +1,33 @@
+/* Parámetros › Remolques › Clientes: la barra de cada ficha (Iván, 01/10/2026: «una versión por
+   ficha»). Su versión e historial a la izquierda; motivo opcional, «Descartar cambios» y «Guardar» a
+   la derecha. Es el vidrio de la barra «Cambios sin guardar» de Parámetros, y con cambios lleva su
+   filo de marca. Se queda arriba al bajar por la ficha. */
+.clientes-remolques-barra {
+  align-items: center;
+  border-left: 4px solid transparent;
+  border-radius: 0.75rem;
+  color: var(--text);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  padding: 0.625rem 1rem;
+  position: sticky;
+  top: 8px;
+  z-index: 30;
+}
+.clientes-remolques-barra.is-pendiente { border-left-color: var(--color-brand-400); }
+.clientes-remolques-barra-estado { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.clientes-remolques-barra-estado > strong { color: var(--text); font-size: 0.875rem; font-weight: 600; }
+.clientes-remolques-barra:not(.is-pendiente) .clientes-remolques-barra-estado > strong { color: var(--text-muted); font-weight: 500; }
+.clientes-remolques-acciones { align-items: flex-end; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.clientes-remolques-acciones > label { min-width: 240px; }
+.clientes-remolques-barra .clientes-remolques-historial summary { padding-left: 0; }
+.clientes-remolques-historial summary span { text-decoration: underline dotted; text-underline-offset: 3px; }
+/* Lo que cambió es lo que se busca en el historial: con el color del texto, no apagado. */
+.clientes-remolques-historial li > div small { color: var(--text); font-size: 12px; }
+
+.clientes-remolques-lista small.clientes-remolques-pendiente { color: var(--color-brand-600); font-weight: 600; }
+.clientes-remolques-nueva { display: flex; flex-direction: column; gap: 0.5rem; }
+.clientes-remolques-nueva .clientes-remolques-acciones { justify-content: flex-end; }

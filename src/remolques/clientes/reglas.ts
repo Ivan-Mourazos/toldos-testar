@@ -57,19 +57,6 @@ export function sugerirFicha(fichas: readonly FichaCliente[], cliente: Pick<Clie
   return [...casan].sort((a, b) => normalizarNombre(b.nombre).length - normalizarNombre(a.nombre).length)[0] ?? null;
 }
 
-/** Nombres de las fichas añadidas, cambiadas o quitadas (para el historial). */
-export function fichasCambiadas(antes: readonly FichaCliente[], despues: readonly FichaCliente[]): string[] {
-  const pendientes = new Map(antes.map((f) => [f.id, f]));
-  const nombres: string[] = [];
-  for (const ficha of despues) {
-    const anterior = pendientes.get(ficha.id);
-    if (!anterior || JSON.stringify(anterior) !== JSON.stringify(ficha)) nombres.push(ficha.nombre);
-    pendientes.delete(ficha.id);
-  }
-  for (const quitada of pendientes.values()) nombres.push(quitada.nombre);
-  return nombres;
-}
-
 type Resultado = { ok: true; fichas: FichaCliente[] } | { ok: false; errores: string[] };
 
 /**

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PARAMS } from "../../calc/params.ts";
 import { PARAMS_GENERALES } from "../params-efectivos.ts";
-import { errorPorRecogidasEnUso, fichaPorCodigo, fichasCambiadas, idFicha, normalizarNombre, sugerirFicha, validarFichas } from "../reglas.ts";
+import { errorPorRecogidasEnUso, fichaPorCodigo, idFicha, normalizarNombre, sugerirFicha, validarFichas } from "../reglas.ts";
 import { entradasDeCliente, fichasSemilla } from "../semilla.ts";
 import type { FichaCliente, MedidaHabitual } from "../tipos.ts";
 
@@ -101,15 +101,6 @@ describe("validarFichas", () => {
 
   it("no es una lista: 400", () => {
     expect(validar({})).toEqual({ ok: false, errores: ["Las fichas tienen que ser una lista."] });
-  });
-});
-
-describe("fichasCambiadas", () => {
-  it("dice qué fichas se añaden, cambian o quitan", () => {
-    const [hpl, ayala, wolder] = semilla();
-    expect(fichasCambiadas([hpl, ayala, wolder], [{ ...hpl, sesgoDetras: 1.5 }, wolder, ficha()]))
-      .toEqual(["HIJOS DE PEDRO LOPEZ", "TALLERES CAL", "AYALA"]);
-    expect(fichasCambiadas([hpl], [{ ...hpl }])).toEqual([]);
   });
 });
 

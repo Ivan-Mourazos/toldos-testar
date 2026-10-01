@@ -12,13 +12,13 @@ describe('fichas de cliente en la web', () => {
   });
 
   it('lee las fichas y rechaza una respuesta sin su forma', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(respuesta(200, { version: 3, fichas: [] })).mockResolvedValueOnce(respuesta(200, {})));
-    expect(await leerFichas()).toEqual({ version: 3, fichas: [] });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(respuesta(200, { fichas: [] })).mockResolvedValueOnce(respuesta(200, {})));
+    expect(await leerFichas()).toEqual({ fichas: [] });
     await expect(leerFichas()).rejects.toThrow('Las fichas de cliente recibidas no son válidas.');
   });
 
   it('guardar desde un pedido manda el cuerpo y avisa a Remolques y a Parámetros', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(respuesta(200, { ficha: { id: 'a', nombre: 'A', codigosRps: ['1'] }, snapshot: { version: 2, fichas: [] } }));
+    const fetchMock = vi.fn().mockResolvedValue(respuesta(200, { ficha: { id: 'a', nombre: 'A', codigosRps: ['1'] }, snapshot: { fichas: [] } }));
     const dispatchEvent = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('window', { dispatchEvent });

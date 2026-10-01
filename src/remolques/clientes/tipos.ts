@@ -40,6 +40,8 @@ export interface MedidaHabitual {
 
 export interface FichaCliente {
   id: string;
+  /** La versión de esta ficha (sube cada vez que se guarda): 409 si otro puesto la guardó antes. */
+  version?: number;
   /** El nombre que se ve. */
   nombre: string;
   /** Códigos de cliente de RPS; un código solo puede estar en una ficha. */
@@ -66,11 +68,8 @@ export interface FichaCliente {
   medidas?: MedidaHabitual[];
 }
 
+/** Todas las fichas, cada una con su versión. */
 export interface SnapshotFichas {
-  version: number;
-  updatedAt: string;
-  updatedBy: string;
-  reason: string;
   fichas: FichaCliente[];
   /** El servidor avisa si el fichero de fichas está roto. */
   ilegible?: boolean;
