@@ -1141,8 +1141,11 @@ async function configureFrontend() {
   }
 
   const { createServer } = await import('vite');
+  // VITE_HMR_PORT: cada instancia aislada usa su propio puerto de recarga; con el de
+  // siempre (24678) dos instancias a la vez se estorban y la hoja en PDF falla.
+  const hmrPort = Number(process.env.VITE_HMR_PORT) || undefined;
   const vite = await createServer({
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, ...(hmrPort ? { hmr: { port: hmrPort } } : {}) },
     appType: 'spa'
   });
   app.use(vite.middlewares);

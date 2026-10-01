@@ -12,6 +12,8 @@ case "$D" in *..*) echo "ISOLATED_DIR no puede llevar «..»: $D" >&2; exit 1 ;;
 case "$D" in "$PWD"/tmp/*) ;; *) echo "ISOLATED_DIR tiene que estar dentro de $PWD/tmp: $D" >&2; exit 1 ;; esac
 mkdir -p "$D"/{review,plan,rps,export,archive,rpsplan,rem-plan,rem-oficina,rem-revision}
 export NODE_ENV=development HOST=127.0.0.1 PORT="${PORT:-4310}"
+# Recarga de Vite en un puerto propio (24310 para 4310…): dos aisladas a la vez no chocan.
+export VITE_HMR_PORT="${VITE_HMR_PORT:-$((PORT + 20000))}"
 export ENABLE_FILE_WRITES=false ENABLE_HERA=true ENABLE_LEGACY_EXPORTS=false
 export WORKFLOW_SETTINGS_FILE="$D/settings.json"
 export REVIEW_DIRECTORY="$D/review" PLANTEAMIENTOS_DIRECTORY="$D/plan"
