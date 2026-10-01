@@ -20,7 +20,11 @@ Técnica, y habla castellano.
 
 ## Git
 
-- Se trabaja en `main`. Antes de subir: `git pull --rebase`.
+- Codex trabaja en su propia carpeta, un worktree de git: `..\toldos-testar-codex`, rama
+  `codex`. Así no pisa los cambios a medio hacer de otro agente que trabaja en
+  `toldos-testar`. Para subir: `git pull --rebase origin main` y luego
+  `git push origin HEAD:main`. Sin worktree se trabaja en `main` y antes de subir se hace
+  `git pull --rebase`.
 - Añade los ficheros por su ruta (`git add ruta/fichero`). Nada de `git add -A`, `stash`,
   `reset` ni `checkout` de ficheros que no son tuyos: puede haber otro agente trabajando.
 - Mantén los finales de línea de cada fichero.
