@@ -9,6 +9,9 @@ import type { DraftState } from './types';
 // Borradores en el servidor (diseño 01/10/2026): las llamadas a /api/borradores y las preguntas, las
 // mismas en Toldos y en Remolques. `pedir` es `fetch` salvo en las pruebas.
 
+/** Texto del botón «Guardar borrador» deshabilitado en modo «Corregir». */
+export const TITULO_BORRADOR_EN_CORRECCION = 'Este pedido ya está en Pedidos: guarda con «Guardar para revisión».';
+
 export type Pedir = (url: string, init?: RequestInit) => Promise<Response>;
 const porDefecto: Pedir = (url, init) => fetch(url, init);
 const direccion = (numero: string) => `/api/borradores/${encodeURIComponent(numero.trim())}`;

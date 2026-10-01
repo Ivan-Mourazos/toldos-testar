@@ -158,7 +158,7 @@
 .tone-review .orders-dot { background: #f59e0b; }
 .tone-returned .orders-dot { background: #dc2626; }
 .tone-approved .orders-dot { background: #0891b2; }
-/* Borradores (diseño 01/10/2026): punto gris; no están en ningún estado de CoordinaOT. */
+/* Borradores (diseño 01/10/2026): punto dorado (el color de marca); no están en ningún estado de CoordinaOT. */
 .tone-draft .orders-dot { background: var(--color-brand-500); }
 .orders-group-title .orders-count,
 .orders-day-title span {
@@ -308,7 +308,8 @@
   min-width: 0;
   overflow: hidden;
 }
-.orders-model-tag.is-nombre { flex-shrink: 1; min-width: 2.5rem; overflow: hidden; text-overflow: ellipsis; }
+/* El nombre es lo primero que se encoge: «+N» (flex-shrink: 0) conserva su sitio. */
+.orders-model-tag.is-nombre { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .orders-model-tag {
   --fam: #c65a11;
   background: color-mix(in srgb, var(--fam) 9%, var(--glass-chip));

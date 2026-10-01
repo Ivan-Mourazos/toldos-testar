@@ -37,7 +37,7 @@ import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
-import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando } from './borradores';
+import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando, TITULO_BORRADOR_EN_CORRECCION } from './borradores';
 import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
@@ -73,6 +73,13 @@ export default function App() {
   const [workflowReadiness, setWorkflowReadiness] = useState<WorkflowReadiness | null>(null);
   const [reviewRefresh, setReviewRefresh] = useState(0);
   const [autofillLoading, setAutofillLoading] = useState(false);
+  // Contador de «Obtener datos»: abrir un borrador o guardar uno sube el número y la respuesta de RPS
+  // que llegue después (de una petición anterior) se ignora, para que no pise el formulario.
+  const autofillSeq = useRef(0);
+  // Número del pedido en pantalla, para comprobar tras un await que sigue siendo el mismo.
+  const orderCodeRef = useRef('');
+  // Número del pedido ya guardado que se está corrigiendo (Pedidos › Corregir); null si no hay.
+  const [corrigiendo, setCorrigiendo] = useState<string | null>(null);
   const [autofill, setAutofill] = useState<OrderAutofill | null>(null);
   // Pedido de RPS que resulta ser de remolques (sin toldos): se avisa en lugar de rellenar
   // el formulario de toldos y solo vale mientras ese sea el número en pantalla.
@@ -231,9 +238,12 @@ export default function App() {
       });
       if (choice !== 'confirm') return;
     }
+    autofillSeq.current += 1;
+    setAutofillLoading(false);
     draft.loadOrder(borrador.contenido.order as unknown as DraftState);
     setAutofill(null);
     setReturnNote(null);
+    setCorrigiendo(null);
     setPedidoRemolques(null);
     ruleSettings.restoreParameters();
     chooseProducto('toldos');
@@ -277,11 +287,13 @@ export default function App() {
       if (choice !== 'confirm') return;
     }
 
+    const seq = ++autofillSeq.current;
     setAutofillLoading(true);
     setPedidoRemolques(null);
     try {
       const response = await fetch(`/api/orders/${encodeURIComponent(orderCode)}/autofill`);
       const data = await response.json();
+      if (seq !== autofillSeq.current) return;
       if (!response.ok) throw new Error(data.error || 'No se pudieron obtener los datos del pedido.');
       const result = data as OrderAutofill;
       // Un pedido sin ningún toldo puede ser de remolques: se pregunta a la ruta de RPS de
@@ -289,6 +301,7 @@ export default function App() {
       // pasan por aquí y, si la consulta falla, todo sigue como antes.
       if (result.order.awnings.length === 0) {
         const trailers = await trailerLinesOf(orderCode);
+        if (seq !== autofillSeq.current) return;
         if (trailers > 0) {
           setPedidoRemolques({ numero: orderCode, lineas: trailers });
           setAutofill(null);
@@ -298,15 +311,17 @@ export default function App() {
       const currentResult = { ...result, order: { ...result.order, orderDate: todayIso() } };
       draft.loadOrder({ ...currentResult.order, fabricProposals: currentResult.fabricProposals ?? [], confirmedFabricProposals: [] });
       setAutofill(currentResult);
+      setCorrigiendo(null);
       const elements = result.order.awnings.length;
       notify(
         `${result.recovered.length} campos y ${elements} ${elements === 1 ? 'elemento recuperado' : 'elementos recuperados'}. ${result.pending.length === 1 ? 'Queda 1 dato' : `Quedan ${result.pending.length} datos`} por revisar.`,
         { tone: result.pending.length > 0 ? 'info' : 'success', title: 'Pedido autocompletado' }
       );
     } catch (error) {
+      if (seq !== autofillSeq.current) return;
       notify(error instanceof Error ? error.message : 'No se pudieron obtener los datos del pedido.', { tone: 'error' });
     } finally {
-      setAutofillLoading(false);
+      if (seq === autofillSeq.current) setAutofillLoading(false);
     }
   }
 
@@ -320,6 +335,8 @@ export default function App() {
   // fallo deja el estado en desconocido y en silencio: se puede plantear un pedido
   // sin RPS y eso no cambia.
   const currentOrderCode = draft.orderCode.trim();
+  orderCodeRef.current = currentOrderCode;
+  const enCorreccion = corrigiendo !== null && corrigiendo === currentOrderCode;
   useEffect(() => {
     // Con el pedido vacío no se pregunta: la lista guardada deja de coincidir con él y
     // `knownOfs` queda en null sin tocar el estado.
@@ -358,6 +375,7 @@ export default function App() {
     }
     draft.loadOrder(review.order);
     setAutofill(null);
+    setCorrigiendo(review.orderCode);
     setReturnNote(review.status === 'CHANGES_REQUESTED' && review.reviewNote
       ? { by: review.reviewedBy, at: review.reviewedAt || '', note: review.reviewNote }
       : null);
@@ -381,6 +399,7 @@ export default function App() {
     draft.setTechnician('');
     draft.setReviewer('');
     setAutofill(null);
+    setCorrigiendo(null);
     chooseProducto('toldos');
     setActiveTab('order');
     notify(`Datos de ${review.orderCode} cargados en el formulario.`, { tone: 'success', title: 'Datos reutilizados' });
@@ -490,6 +509,7 @@ export default function App() {
       }
       setReviewRefresh((value) => value + 1);
       setReturnNote(null);
+      setCorrigiendo(null);
       draft.resetDraft();
       setAutofill(null);
       ruleSettings.restoreParameters();
@@ -514,6 +534,8 @@ export default function App() {
       notify('Elige quién eres en «Soy» antes de guardar el borrador.', { tone: 'warning' });
       return;
     }
+    autofillSeq.current += 1;
+    setAutofillLoading(false);
     setWorking('draft');
     try {
       const result = await guardarBorradorPreguntando({
@@ -526,11 +548,15 @@ export default function App() {
         return;
       }
       setReviewRefresh((value) => value + 1);
-      setReturnNote(null);
-      draft.resetDraft();
-      setAutofill(null);
-      setPedidoRemolques(null);
-      ruleSettings.restoreParameters();
+      // Si mientras tanto el técnico ha cambiado de pedido, el formulario no se toca.
+      if (orderCodeRef.current === orderCode) {
+        setReturnNote(null);
+        setCorrigiendo(null);
+        draft.resetDraft();
+        setAutofill(null);
+        setPedidoRemolques(null);
+        ruleSettings.restoreParameters();
+      }
       notify(`Borrador guardado: ${result.borrador.orderCode}.`, { tone: 'success', title: 'Borrador guardado' });
     } finally {
       setWorking(null);
@@ -588,6 +614,7 @@ export default function App() {
     ruleSettings.restoreParameters();
     setAutofill(null);
     setReturnNote(null);
+    setCorrigiendo(null);
     setActiveTab('order');
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
@@ -661,7 +688,7 @@ export default function App() {
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
               </button>
-              <button className="ghost-button" type="button" disabled={Boolean(working) || !draft.orderCode.trim()} title={draft.orderCode.trim() ? undefined : 'Escribe el número de pedido para guardar el borrador.'} onClick={() => void saveDraftToServer()}>
+              <button className="ghost-button" type="button" disabled={Boolean(working) || autofillLoading || !draft.orderCode.trim() || enCorreccion} title={enCorreccion ? TITULO_BORRADOR_EN_CORRECCION : draft.orderCode.trim() ? undefined : 'Escribe el número de pedido para guardar el borrador.'} onClick={() => void saveDraftToServer()}>
                 <FilePen aria-hidden="true" />
                 {working === 'draft' ? 'Guardando…' : 'Guardar borrador'}
               </button>

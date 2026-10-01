@@ -15,6 +15,7 @@ import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
+import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
@@ -122,26 +123,30 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         onSeleccionar={ws.seleccionarLinea}
         onEliminar={(version) => void ws.eliminarLinea(version)}
         onNuevo={ws.nuevaLinea}
-        acciones={lineas.length > 0 ? (
+        acciones={(
           <>
-            <VistaPreviaPdf lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />
-            {/* Un pedido a medias se deja en el servidor (diseño 01/10/2026): sin completar ni calcular. */}
+            {lineas.length > 0 && <VistaPreviaPdf lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />}
+            {/* Un pedido a medias se deja en el servidor (diseño 01/10/2026): sin completar ni calcular,
+                basta el número; no hace falta ninguna línea. En «Corregir» el pedido ya está en Pedidos. */}
             <button type="button" className="ghost-button rem-borrador-boton"
-              disabled={ws.guardandoBorrador || ws.guardando} aria-busy={ws.guardandoBorrador}
+              disabled={!hayPedido || ws.guardandoBorrador || ws.guardando || ws.conParamsGuardados} aria-busy={ws.guardandoBorrador}
+              title={ws.conParamsGuardados ? TITULO_BORRADOR_EN_CORRECCION : undefined}
               onClick={() => void ws.guardarBorrador()}>
               <FilePen aria-hidden="true" />
               {ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
             </button>
             {/* Sin los parámetros comunes leídos no se guarda: saldría con los del código. */}
-            <button type="button" className="primary-button rem-guardar-boton"
-              disabled={Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
-              aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
-              onClick={() => void ws.guardarParaRevision()}>
-              <Save aria-hidden="true" />
-              {ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
-            </button>
+            {lineas.length > 0 && (
+              <button type="button" className="primary-button rem-guardar-boton"
+                disabled={Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
+                aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
+                onClick={() => void ws.guardarParaRevision()}>
+                <Save aria-hidden="true" />
+                {ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
+              </button>
+            )}
           </>
-        ) : null}
+        )}
         pie={lineas.length > 0 && faltaPdf
           ? <p className="rem-pdf-falta" role="status">Para la vista previa del PDF falta: {faltaPdf}</p>
           : null}

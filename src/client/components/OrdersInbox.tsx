@@ -260,8 +260,10 @@ function ModelTags({ models, producto, borrador = false }: { models?: string[]; 
   // primer modelo y «+N» con todos al pasar el ratón; un nombre largo se corta con «…».
   const { visible, hidden } = limitModels(models, 1, 1);
   const tinte = producto === 'remolques' ? ' is-remolques' : '';
+  // Todos los modelos también en el título de la línea entera, por si «+N» queda cortado.
+  const todos = Array.from(new Set(models ?? [])).map(controlLabel).join('\n') || undefined;
   return (
-    <span className="orders-model-tags">
+    <span className="orders-model-tags" title={todos}>
       {borrador && <span className="orders-borrador-tag">Borrador</span>}
       <span className={`orders-kind-tag familia-tag is-${producto}`}>{producto === 'remolques' ? 'Remolque' : 'Toldo'}</span>
       {visible.map((model) => <span key={model} className={`orders-model-tag familia-tag is-nombre${tinte}`} title={controlLabel(model)}>{controlLabel(model)}</span>)}
