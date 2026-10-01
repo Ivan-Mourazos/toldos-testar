@@ -446,7 +446,8 @@
 /* La nota de devolución: NotaDevolucion como la pinta RevisionView.tsx, `rounded
    bg-red-500/10 px-2 py-1.5 text-[11px]`, con el rojo de texto de CoordinaOT (red-700 /
    red-300; el `text-red-600` del original se queda por debajo de 4,5:1 sobre el tinte). */
-.orders-detail-list li > .orders-detail-returned {
+.orders-detail-list li > .orders-detail-returned,
+.rem-pedido-elemento > .orders-detail-returned {
   background: rgb(239 68 68 / 0.10);
   border-radius: 0.25rem;
   color: var(--error-texto);
@@ -460,7 +461,8 @@
 /* «Aprobado por …»: el estado dicho como palabra suelta, con el color de texto de «aprobada»
    (lib/estado.ts `texto`: cian-700 / cian-300) y `font-medium`, como el «✓ Pedido listo…» de
    la fila de Revisiones. */
-.orders-detail-list li > .orders-detail-approved {
+.orders-detail-list li > .orders-detail-approved,
+.rem-pedido-elemento > .orders-detail-approved {
   background: none;
   color: #0e7490;
   flex: 1 1 100%;
@@ -469,7 +471,8 @@
   margin: 0;
   padding: 0;
 }
-:root[data-theme="dark"] .orders-detail-list li > .orders-detail-approved { color: #67e8f9; }
+:root[data-theme="dark"] .orders-detail-list li > .orders-detail-approved,
+:root[data-theme="dark"] .rem-pedido-elemento > .orders-detail-approved { color: #67e8f9; }
 .orders-detail-empty { color: var(--text-muted); font-size: 0.75rem; line-height: 1rem; margin: 0; }
 /* Acciones: `flex flex-wrap items-center gap-2`, el botón `rounded-lg px-2.5 py-1 text-xs
    font-semibold`, a la izquierda como «Empezar revisión». La nota de revisión, detrás. */
