@@ -5,7 +5,7 @@ import { normalizarNumeroPedido } from "../pedidos/numero-pedido.ts";
 import { FORMA_PEDIDO_RPS } from "../rps/numero-pedido.ts";
 import type { PlanteamientoRecord } from "../store/types.ts";
 import type { AlmacenPedidosRemolques } from "./almacen.ts";
-import { resumenPedido } from "./pedido.ts";
+import { anioPedido, resumenPedido } from "./pedido.ts";
 import {
   ESQUEMA_PEDIDO_REMOLQUES, TIPO_PEDIDO_REMOLQUES, type ElementoGuardado, type FicheroGenerado, type PedidoRemolques,
 } from "./tipos.ts";
@@ -38,14 +38,22 @@ export interface PlanMigracion {
   omitidos: OmitidoMigracion[];
   /** Guardados repetidos del mismo elemento en la web vieja: se pasa solo el último. */
   repetidos: { orderCode: string; descartados: number }[];
+  /** Sin carpeta de revisión de toldos no se ha podido mirar si algún número ya es de toldos. */
+  toldosSinComprobar: boolean;
+  /** «Por revisar» solo enseña el año actual y el anterior (pendingYears): los años que se ven. */
+  aniosBandeja: [number, number];
+  /** Pendientes de un año anterior a esos dos: se crean, pero no saldrán en «Por revisar». */
+  pendientesFueraDeBandeja: string[];
 }
+
+export const MOTIVO_PEDIDO_DE_TOLDOS = "ya es un pedido de toldos";
 
 const masReciente = (fechas: string[]) => fechas.reduce((max, fecha) => (fecha > max ? fecha : max), "");
 const masAntigua = (fechas: string[]) => fechas.reduce((min, fecha) => (!min || (fecha && fecha < min) ? fecha : min), "");
 const nombreDe = (ruta: string) => ruta.split(/[\\/]/).pop() ?? ruta;
 const claveDe = (registro: PlanteamientoRecord) => normalizarNumeroPedido(registro.numeroPedido) || `SIN-PEDIDO:${registro.id}`;
 
-export async function planificarMigracion({ registros, estados, existentes, archivados, tecnicos, ahora }: {
+export async function planificarMigracion({ registros, estados, existentes, archivados, tecnicos, ahora, esPedidoDeToldos }: {
   registros: PlanteamientoRecord[];
   estados: EstadoPedidoViejo[];
   /** Los pedidos que ya hay en la carpeta interna (orderCode). */
@@ -55,8 +63,19 @@ export async function planificarMigracion({ registros, estados, existentes, arch
   /** La lista de técnicos de toldos: «IVAN» de la web vieja pasa a «IVÁN». */
   tecnicos: string[];
   ahora: string;
+  /**
+   * Si ese número ya es un pedido de toldos (la misma comprobación que el servidor: nunca hay pedidos
+   * mixtos); null si no hay carpeta de revisión de toldos configurada y no se puede mirar.
+   */
+  esPedidoDeToldos: ((orderCode: string) => Promise<boolean>) | null;
 }): Promise<PlanMigracion> {
-  const plan: PlanMigracion = { crear: [], yaEstan: [], omitidos: [], repetidos: [] };
+  const anio = Number(ahora.slice(0, 4));
+  const plan: PlanMigracion = {
+    crear: [], yaEstan: [], omitidos: [], repetidos: [],
+    toldosSinComprobar: esPedidoDeToldos === null,
+    aniosBandeja: [anio - 1, anio],
+    pendientesFueraDeBandeja: [],
+  };
   for (const grupo of agruparPorPedido(registros)) {
     const todos = registros.filter((registro) => claveDe(registro) === grupo.clave);
     const ids = todos.map((registro) => registro.id);
@@ -70,6 +89,10 @@ export async function planificarMigracion({ registros, estados, existentes, arch
     }
     if (existentes.has(grupo.clave)) {
       plan.yaEstan.push(grupo.clave);
+      continue;
+    }
+    if (esPedidoDeToldos && (await esPedidoDeToldos(grupo.clave))) {
+      plan.omitidos.push({ numeroPedido: grupo.numeroPedido, ids, motivo: MOTIVO_PEDIDO_DE_TOLDOS });
       continue;
     }
     if (todos.length > grupo.remolques.length) {
@@ -117,6 +140,10 @@ export async function planificarMigracion({ registros, estados, existentes, arch
       origen: { web: "remolques-tgm", ids, migradoEn: ahora },
     });
   }
+  plan.pendientesFueraDeBandeja = plan.crear
+    .filter((pedido) => pedido.status !== "PRODUCED" && anioPedido(pedido) < plan.aniosBandeja[0])
+    .map((pedido) => pedido.orderCode)
+    .sort();
   return plan;
 }
 
@@ -137,6 +164,17 @@ export function informeMigracion(plan: PlanMigracion, { simular }: { simular: bo
     `${simular ? "Se crearían" : "Se crean"} ${plan.crear.length} pedidos: ${generados} generados (a «Generados») y ${pendientes} pendientes (a «Por revisar»).`,
     ...plan.crear.map((pedido) => `  ${pedido.orderCode} · ${pedido.status === "PRODUCED" ? "generado" : "pendiente"} · ${pedido.elementos.length} ${pedido.elementos.length === 1 ? "elemento" : "elementos"} · ${pedido.summary.customer || "sin cliente"}`),
   ];
+  if (plan.toldosSinComprobar) {
+    lineas.push("AVISO: no hay carpeta de revisión de toldos configurada: no se ha comprobado si algún número ya es un pedido de toldos.");
+  }
+  const antiguos = plan.pendientesFueraDeBandeja;
+  if (antiguos.length) {
+    const [anterior, actual] = plan.aniosBandeja;
+    const cuantos = antiguos.length === 1
+      ? "1 pedido pendiente es de antes de " + anterior + " y no saldrá"
+      : antiguos.length + " pedidos pendientes son de antes de " + anterior + " y no saldrán";
+    lineas.push("AVISO: " + cuantos + " en «Por revisar», que solo enseña " + anterior + " y " + actual + ": " + antiguos.join(", ") + ".");
+  }
   if (plan.yaEstan.length) lineas.push(`Ya estaban en la web nueva (no se tocan): ${plan.yaEstan.join(", ")}.`);
   for (const r of plan.repetidos) {
     lineas.push(`${r.orderCode}: ${r.descartados} ${r.descartados === 1 ? "guardado repetido" : "guardados repetidos"} del mismo elemento; se pasa el último.`);

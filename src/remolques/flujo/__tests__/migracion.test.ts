@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -55,7 +55,54 @@ function sinCamposNuevosVacios(calculado: Record<string, unknown>, guardado: Rec
 }
 
 const planDe = (extra: Partial<Parameters<typeof planificarMigracion>[0]> = {}) => planificarMigracion({
-  registros: webVieja(), estados: [], existentes: new Set(), archivados: async () => [], tecnicos: TECNICOS, ahora: AHORA, ...extra,
+  registros: webVieja(), estados: [], existentes: new Set(), archivados: async () => [], tecnicos: TECNICOS, ahora: AHORA,
+  esPedidoDeToldos: async () => false, ...extra,
+});
+
+describe("planificarMigracion: lo que no se pasa o no se verá", () => {
+  it("no pasa un número que ya es un pedido de toldos y lo dice en el informe", async () => {
+    const plan = await planDe({ esPedidoDeToldos: async (codigo) => codigo === "AR2690002" });
+    expect(plan.crear.map((p) => p.orderCode)).not.toContain("AR2690002");
+    expect(plan.crear).toHaveLength(20);
+    const ids = webVieja().filter((r) => normalizarNumeroPedido(r.numeroPedido) === "AR2690002").map((r) => r.id);
+    expect(plan.omitidos).toEqual([{ numeroPedido: "AR.26.90002", ids, motivo: "ya es un pedido de toldos" }]);
+    for (const simular of [true, false]) {
+      const informe = informeMigracion(plan, { simular });
+      expect(informe).toContain(`Se deja sin pasar AR.26.90002 (${ids.length} ${ids.length === 1 ? "planteamiento" : "planteamientos"}): ya es un pedido de toldos`);
+      expect(informe.join("\n")).not.toContain("carpeta de revisión de toldos");
+    }
+  });
+
+  it("sin carpeta de toldos configurada no se puede mirar, y el informe lo avisa", async () => {
+    const plan = await planDe({ esPedidoDeToldos: null });
+    expect(plan.crear).toHaveLength(21);
+    for (const simular of [true, false]) {
+      expect(informeMigracion(plan, { simular })).toContain(
+        "AVISO: no hay carpeta de revisión de toldos configurada: no se ha comprobado si algún número ya es un pedido de toldos.",
+      );
+    }
+  });
+
+  it("avisa de los pendientes de antes del año pasado: no salen en «Por revisar»", async () => {
+    const [uno, dos, tres] = webVieja();
+    const conNumero = (registro: PlanteamientoRecord, numeroPedido: string) => ({
+      ...registro, numeroPedido, input: { ...registro.input, cabecera: { ...registro.input.cabecera, numeroPedido } },
+    }) as PlanteamientoRecord;
+    const registros = [conNumero(uno, "AR.24.00011"), conNumero(dos, "AR.25.00012"), conNumero(tres, "AR.23.00013")];
+    const plan = await planDe({ registros });
+    expect(plan.pendientesFueraDeBandeja).toEqual(["AR2300013", "AR2400011"]);
+    for (const simular of [true, false]) {
+      expect(informeMigracion(plan, { simular })).toContain(
+        "AVISO: 2 pedidos pendientes son de antes de 2025 y no saldrán en «Por revisar», que solo enseña 2025 y 2026: AR2300013, AR2400011.",
+      );
+    }
+    const generado = await planDe({
+      registros: [conNumero(uno, "AR.24.00011")],
+      archivados: async () => [{ type: "pdf" as const, filename: "AR2400011.pdf", savedPath: "/mnt/ot/2024/AR2400011.pdf" }],
+    });
+    expect(generado.pendientesFueraDeBandeja).toEqual([]);
+    expect(informeMigracion(generado, { simular: true }).join("\n")).not.toContain("Por revisar», que solo");
+  });
 });
 
 describe("planificarMigracion con los 32 casos reales", () => {
@@ -175,5 +222,46 @@ describe("aplicar e informar", () => {
     expect(otra).toContain("Hecho: 0 pedidos creados");
     expect(readdirSync(destino)).toHaveLength(21);
     expect(huella()).toBe(antes);
+  }, 60_000);
+
+  it("el comando no pasa los números que ya son de toldos y avisa si no puede mirarlo", () => {
+    const raiz = carpetaNueva();
+    const origen = path.join(raiz, "remolques-tgm");
+    mkdirSync(path.join(origen, "data"), { recursive: true });
+    writeFileSync(path.join(origen, "data", "planteamientos.json"), JSON.stringify(webVieja()));
+    // Un pedido de toldos AR2690002 guardado en la carpeta de revisión de toldos (formato JSON antiguo).
+    const toldos = path.join(raiz, "TOLDOS");
+    mkdirSync(path.join(toldos, "2026"), { recursive: true });
+    writeFileSync(path.join(toldos, "2026", "AR2690002.toldos.json"), JSON.stringify({ orderCode: "AR2690002" }));
+    const destino = path.join(raiz, "interna");
+    const correr = (...extra: string[]) => spawnSync(process.execPath, ["scripts/migrar-remolques.mjs", "--origen", origen, "--destino", destino, ...extra], { encoding: "utf8" });
+    const sinToldos = correr("--simular");
+    expect(sinToldos.status).toBe(0);
+    expect(sinToldos.stdout).toContain("AVISO: no hay carpeta de revisión de toldos configurada");
+    const simulado = correr("--simular", "--toldos", path.join(toldos, "{YYYY}"));
+    expect(simulado.stdout).toContain("Se crearían 20 pedidos");
+    expect(simulado.stdout).toMatch(/Se deja sin pasar AR\.26\.90002 \(\d+ planteamientos?\): ya es un pedido de toldos/);
+    const real = correr("--toldos", path.join(toldos, "{YYYY}"));
+    expect(real.status).toBe(0);
+    expect(real.stdout).toMatch(/Se deja sin pasar AR\.26\.90002 \(\d+ planteamientos?\): ya es un pedido de toldos/);
+    expect(real.stdout).toContain("Hecho: 20 pedidos creados");
+    expect(readdirSync(destino)).not.toContain("AR2690002.json");
+  }, 60_000);
+
+  it("el comando corta con un mensaje corto y código 2 ante una opción desconocida o un JSON que no se lee", () => {
+    const raiz = carpetaNueva();
+    const origen = path.join(raiz, "remolques-tgm");
+    mkdirSync(path.join(origen, "data"), { recursive: true });
+    writeFileSync(path.join(origen, "data", "planteamientos.json"), "{ roto");
+    const correr = (...args: string[]) => spawnSync(process.execPath, ["scripts/migrar-remolques.mjs", ...args], { encoding: "utf8" });
+    const desconocida = correr("--origen", origen, "--destino", path.join(raiz, "interna"), "--simualr");
+    expect(desconocida.status).toBe(2);
+    expect(desconocida.stderr).toContain("Opción no válida");
+    expect(desconocida.stderr).toContain("--simualr");
+    const roto = correr("--origen", origen, "--destino", path.join(raiz, "interna"), "--simular");
+    expect(roto.status).toBe(2);
+    expect(roto.stderr).toContain("No se pudo leer");
+    for (const salida of [desconocida.stderr, roto.stderr]) expect(salida).not.toMatch(/^\s+at /m);
+    expect(existsSync(path.join(raiz, "interna"))).toBe(false);
   }, 60_000);
 });

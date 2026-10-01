@@ -242,10 +242,14 @@ node scripts/migrar-remolques.mjs --origen /webs/remolques-tgm
 
 La primera orden solo enseña qué haría: los pedidos que pasan (los ya archivados a «Generados» y los
 pendientes a «Por revisar»), los guardados repetidos de un mismo elemento (pasa el último) y lo que
-deja sin pasar y por qué (sin número o con un número que no es de pedido). Solo lee la web vieja
+deja sin pasar y por qué (sin número, con un número que no es de pedido o que ya es un pedido de
+toldos: un pedido es de toldos o de remolques). También avisa si no hay carpeta de revisión de toldos
+configurada (entonces no ha podido mirar los de toldos) y de los pendientes de antes del año pasado,
+que no saldrán en «Por revisar». Las dos órdenes escriben el mismo informe. Solo lee la web vieja
 (`data/planteamientos.json` y, si existe, `data/pedidos.json`) y mira, sin escribir, si el PDF de
-cada pedido está ya en las carpetas de remolques; solo escribe en la carpeta interna. Repetirla no
-duplica nada: un pedido que ya está no se toca.
+cada pedido está ya en las carpetas de remolques y si su número está en la carpeta de revisión de
+toldos; solo escribe en la carpeta interna. Repetirla no duplica nada: un pedido que ya está no se
+toca. Una opción mal escrita o un JSON que no se lee cortan con un mensaje corto (código 2).
 
 ## Prueba de extremo a extremo con RPS
 
