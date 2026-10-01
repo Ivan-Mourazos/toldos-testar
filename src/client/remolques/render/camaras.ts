@@ -46,6 +46,55 @@ const DIRECCION: Record<VistaCamara, Vec3> = {
 
 const ESQUINAS = [0, 1, 2, 3, 4, 5, 6, 7];
 
+/** Solo para el visor: ajusta la silueta real en píxeles, sin cambiar la cámara de la hoja PDF.
+ * Los puntos extra (ya en ejes del mundo) reservan sitio para cotas y rótulos. El margen deja
+ * aire para sus letras y para la sombra; no depende de lo largo que sea el remolque. */
+export function encuadrarPantalla(camara: THREE.Camera, grupo: THREE.Object3D, ancho: number, alto: number, puntos: THREE.Vector3[] = [], margen = 24): void {
+  if (!(camara instanceof THREE.PerspectiveCamera || camara instanceof THREE.OrthographicCamera)
+    || ancho <= 2 * margen || alto <= 2 * margen) return;
+  camara.clearViewOffset();
+  camara.updateMatrixWorld();
+  grupo.updateMatrixWorld(true);
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  const v = new THREE.Vector3();
+  const incluir = (punto: THREE.Vector3) => {
+    v.copy(punto).project(camara);
+    minX = Math.min(minX, v.x); maxX = Math.max(maxX, v.x);
+    minY = Math.min(minY, v.y); maxY = Math.max(maxY, v.y);
+  };
+  const punto = new THREE.Vector3();
+  const instancia = new THREE.Matrix4();
+  const mundo = new THREE.Matrix4();
+  grupo.traverse((objeto) => {
+    if (!(objeto instanceof THREE.Mesh) || !objeto.visible) return;
+    if (objeto instanceof THREE.InstancedMesh) {
+      // Los ollaos y ganchos comparten geometría: basta su caja por instancia.
+      objeto.geometry.computeBoundingBox();
+      const caja = objeto.geometry.boundingBox;
+      if (!caja) return;
+      for (let n = 0; n < objeto.count; n++) {
+        objeto.getMatrixAt(n, instancia);
+        mundo.multiplyMatrices(objeto.matrixWorld, instancia);
+        for (const i of ESQUINAS) {
+          punto.set(i & 1 ? caja.max.x : caja.min.x, i & 2 ? caja.max.y : caja.min.y, i & 4 ? caja.max.z : caja.min.z).applyMatrix4(mundo);
+          incluir(punto);
+        }
+      }
+    } else {
+      const vertices = objeto.geometry.getAttribute('position');
+      if (!vertices) return;
+      for (let i = 0; i < vertices.count; i++) incluir(punto.fromBufferAttribute(vertices, i).applyMatrix4(objeto.matrixWorld));
+    }
+  });
+  puntos.forEach(incluir);
+  if (!Number.isFinite(minX) || maxX <= minX || maxY <= minY) return;
+  const izquierda = (minX + 1) * ancho / 2, derecha = (maxX + 1) * ancho / 2;
+  const arriba = (1 - maxY) * alto / 2, abajo = (1 - minY) * alto / 2;
+  const escala = Math.max((derecha - izquierda) / (ancho - 2 * margen), (abajo - arriba) / (alto - 2 * margen));
+  const recorteAncho = ancho * escala, recorteAlto = alto * escala;
+  camara.setViewOffset(ancho, alto, (izquierda + derecha - recorteAncho) / 2, (arriba + abajo - recorteAlto) / 2, recorteAncho, recorteAlto);
+}
+
 /**
  * `reservaAbajo` (solo vistas rectas): fracción del alto que se deja libre al pie de la imagen,
  * donde la hoja de taller escribe la recogida. El dibujo se encuadra en lo que queda por encima,

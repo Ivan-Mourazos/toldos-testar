@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { Minus, Plus, Scan } from 'lucide-react';
 import type { EscenaRemolque, Vista } from '../../../remolques/escena/tipos.ts';
-import { crearCamara, encuadre, espejar } from './camaras';
+import { aMundo, crearCamara, encuadre, encuadrarPantalla, espejar } from './camaras';
 import { CapaCotas, CapaRotulos } from './CapaCotas';
 import { colocarSol, montarEscenaBase } from './escenaBase';
 import { construirMallas, liberarGrupo } from './mallas';
@@ -64,6 +65,7 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo, nota 
   const [rotulos, setRotulos] = useState<RotuloPantalla[] | null>(null);
   const [tamano, setTamano] = useState({ ancho: 0, alto: 0 });
   const [movida, setMovida] = useState(false);
+  const [zoom, setZoom] = useState(100);
 
   const pintar = useCallback(() => {
     const m = motor.current;
@@ -86,6 +88,17 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo, nota 
     m.controles?.dispose();
     m.controles = null;
     const camara = crearCamara(d.vista, d.escena.caja, m.ancho / m.alto);
+    if (m.grupo) {
+      const puntos = d.escena.rotulos.filter((r) => r.vistas.includes(d.vista)).map((r) => aMundo(r.punto));
+      if (d.conCotas) {
+        for (const c of d.escena.cotas.filter((c) => c.vistas.includes(d.vista))) {
+          puntos.push(aMundo(c.desde), aMundo(c.hasta));
+          if (c.hueco) puntos.push(aMundo(c.hueco.borde), aMundo(c.hueco.dentro.desde), aMundo(c.hueco.dentro.hasta));
+        }
+        puntos.push(...d.escena.etiquetas.filter((e) => e.vistas.includes(d.vista)).map((e) => aMundo(e.punto)));
+      }
+      encuadrarPantalla(camara, m.grupo, m.ancho, m.alto, puntos, d.conCotas ? 40 : 32);
+    }
     m.renderer.domElement.setAttribute('aria-label', `Render ${d.escena.cuerpo.tipo === 'lona' ? 'de la lona' : 'del baquetón'} sobre el remolque, vista ${NOMBRE_VISTA[d.vista]}`);
     m.camara = camara;
     colocarSol(m.sol, d.escena.caja, d.vista);
@@ -96,13 +109,23 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo, nota 
       const controles = new OrbitControls(camara, m.renderer.domElement);
       controles.target.copy(encuadre(d.escena.caja).centro);
       controles.enablePan = false;
-      // En el editor manda el desplazamiento de la página: la rueda sobre el render no acerca (y,
-      // sin zoom, la distancia a la lona no cambia al girar).
+      // La rueda desplaza la página; el zoom se maneja con los botones del visor.
       controles.enableZoom = false;
       // Girar alrededor sin meterse bajo el suelo.
       controles.minPolarAngle = 0.15;
       controles.maxPolarAngle = Math.PI / 2 - 0.05;
-      controles.addEventListener('change', pintar);
+      controles.addEventListener('change', () => {
+        // Al girar, la nueva silueta sigue dentro del visor. Se encuadra a escala normal y después
+        // se conserva el zoom elegido para inspeccionar un detalle.
+        if (m.girada && m.grupo && camara instanceof THREE.PerspectiveCamera) {
+          const zoomActual = camara.zoom;
+          camara.zoom = 1;
+          encuadrarPantalla(camara, m.grupo, m.ancho, m.alto, [], 32);
+          camara.zoom = zoomActual;
+          camara.updateProjectionMatrix();
+        }
+        pintar();
+      });
       controles.addEventListener('start', () => {
         m.girada = true;
         setMovida(true);
@@ -112,6 +135,19 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo, nota 
     }
     m.girada = false;
     setMovida(false);
+    setZoom(100);
+    pintar();
+  }, [pintar]);
+
+  const cambiarZoom = useCallback((paso: number) => {
+    const m = motor.current;
+    if (!m) return;
+    const camara = m.camara;
+    if (!(camara instanceof THREE.PerspectiveCamera || camara instanceof THREE.OrthographicCamera)) return;
+    const siguiente = Math.min(250, Math.max(50, Math.round(camara.zoom * 100) + paso));
+    camara.zoom = siguiente / 100;
+    camara.updateProjectionMatrix();
+    setZoom(siguiente);
     pintar();
   }, [pintar]);
 
@@ -215,15 +251,21 @@ export default function RenderRemolque({ escena, vista, conCotas, onFallo, nota 
   }, [escena, colocarCamara, pintar]);
 
   useEffect(() => { colocarCamara(); }, [vista, colocarCamara]);
-  useEffect(() => { pintar(); }, [conCotas, pintar]);
+  useEffect(() => { colocarCamara(); }, [conCotas, colocarCamara]);
 
   return (
-    <div className="rem-render">
+    <div className="rem-render" data-vista={vista} data-cotas={conCotas}>
       {/* React no toca los hijos de este div: ahí va el lienzo de three.js. */}
       <div className="rem-render-lienzo" ref={lienzo} />
       {rotulos && <CapaRotulos rotulos={rotulos} ancho={tamano.ancho} alto={tamano.alto} />}
       {cotas && <CapaCotas cotas={cotas} ancho={tamano.ancho} alto={tamano.alto} />}
       {nota && <p className="rem-render-nota">{nota}</p>}
+      <div className="rem-render-zoom" role="group" aria-label="Zoom del dibujo">
+        <button type="button" className="chip-3d" aria-label="Alejar dibujo" title="Alejar dibujo" disabled={zoom <= 50} onClick={() => cambiarZoom(-25)}><Minus aria-hidden="true" /></button>
+        <span className="rem-render-zoom-valor">{zoom.toLocaleString('es-ES')} %</span>
+        <button type="button" className="chip-3d" aria-label="Acercar dibujo" title="Acercar dibujo" disabled={zoom >= 250} onClick={() => cambiarZoom(25)}><Plus aria-hidden="true" /></button>
+        <button type="button" className="chip-3d" aria-label="Encuadrar dibujo" title="Encuadrar dibujo" onClick={colocarCamara}><Scan aria-hidden="true" /></button>
+      </div>
       {vista === 'tres-cuartos' && movida && (
         <button type="button" className="chip-3d rem-render-reiniciar" onClick={colocarCamara}>
           Volver a la vista fija

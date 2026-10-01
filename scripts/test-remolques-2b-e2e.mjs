@@ -269,6 +269,17 @@ if (fs.existsSync('dist/assets')) {
       assert.equal(await page.locator('.rem-render-rotulos').count(), 0, `${c.caso}: la 3/4 no lleva rótulos`);
       const volver = dibujo(page).getByRole('button', { name: 'Volver a la vista fija', exact: true });
       assert.equal(await volver.count(), 0, `${c.caso}: sin girar no hay «Volver a la vista fija»`);
+      // El zoom permite mirar los ollaos en todas las vistas y también en la ficha de lectura.
+      // Los controles no cambian medidas: al encuadrar se recupera la silueta inicial.
+      const zoom = dibujo(page).getByRole('group', { name: 'Zoom del dibujo', exact: true });
+      const areaInicial = await pintado(page);
+      await zoom.getByRole('button', { name: 'Acercar dibujo', exact: true }).click();
+      await zoom.getByRole('button', { name: 'Acercar dibujo', exact: true }).click();
+      assert.equal(await zoom.locator('.rem-render-zoom-valor').innerText(), '150 %');
+      assert.ok(await pintado(page) > areaInicial, `${c.caso}: el zoom aumenta el tamaño visible`);
+      await zoom.getByRole('button', { name: 'Encuadrar dibujo', exact: true }).click();
+      assert.equal(await zoom.locator('.rem-render-zoom-valor').innerText(), '100 %');
+      assert.ok(Math.abs(await pintado(page) - areaInicial) < 0.001, `${c.caso}: encuadrar recupera el dibujo entero`);
       const caja = await page.locator('.rem-render canvas').boundingBox();
       await page.mouse.move(caja.x + caja.width / 2, caja.y + caja.height / 2);
       await page.mouse.down();
