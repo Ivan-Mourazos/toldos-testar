@@ -20,7 +20,9 @@ const AA = String(new Date().getFullYear()).slice(2);
 const T1 = 'AR2603332'; // el pedido de Arzúa que rellena fillArzuaAR2603332
 const R1 = { pedido: `AR.${AA}.99602`, codigo: `AR${AA}99602` };
 const T2 = `AR${AA}99603`;
+const R3 = { pedido: `AR.${AA}99604`, codigo: `AR${AA}99604` }; // remolques con un borrador de toldos del mismo número
 const OF_R1 = '0299602';
+const OF_R3 = '0299604';
 const fixture = JSON.parse(fs.readFileSync('src/remolques/__fixtures__/produccion-2026-09.json', 'utf8'));
 const caso = (id) => fixture.find((c) => c.caso === id);
 const enviar = (method, datos) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos ?? {}) });
@@ -37,14 +39,28 @@ for (const clave of ['draftsDirectory', 'reviewDirectory', 'remolquesRevisionDir
   assert.ok(ajustes[clave] && enTmp(ajustes[clave]), `${clave} tiene que estar dentro de tmp/: «${ajustes[clave]}»`);
 }
 // Empezar de cero: los borradores y pedidos de prueba de una vuelta anterior.
-for (const codigo of [T1, R1.codigo, T2]) fs.rmSync(path.join(ajustes.draftsDirectory, `${codigo}.json`), { force: true });
+for (const codigo of [T1, R1.codigo, T2, R3.codigo]) fs.rmSync(path.join(ajustes.draftsDirectory, `${codigo}.json`), { force: true });
 fs.rmSync(path.join(ajustes.reviewDirectory.replace('{YYYY}', '2026'), `${T1}.pdf`), { force: true });
-fs.rmSync(path.join(ajustes.remolquesRevisionDirectory, `${R1.codigo}.json`), { force: true });
+for (const codigo of [R1.codigo, R3.codigo]) fs.rmSync(path.join(ajustes.remolquesRevisionDirectory, `${codigo}.json`), { force: true });
 
 const ivan = await openApp({ width: 1600, height: 1000 }, { launchArgs: CON_WEBGL });
 const jaime = await openApp({ width: 1600, height: 1000 }, { user: 'JAIME', launchArgs: CON_WEBGL });
 ivan.page.setDefaultTimeout(20000);
 jaime.page.setDefaultTimeout(20000);
+// Respuestas de error del servidor que no se esperan: el navegador las apunta en la consola sin decir
+// la ruta, así que se miran aquí. Se esperan los 409 de las preguntas de confirmar de /api/borradores
+// y lo que falle de RPS y de las OF en la aislada (no hay RPS ni CoordinaOT reales).
+const RUTAS_RPS = /\/api\/(orders\/[^/]+\/(autofill|ofs)|remolques\/rps-pedido|coordina\/ofs)(\?|$)/;
+const respuestasInesperadas = [];
+for (const { page } of [ivan, jaime]) {
+  page.on('response', (r) => {
+    const { pathname, search } = new URL(r.url());
+    if (!pathname.startsWith('/api/') || r.status() < 400) return;
+    if (RUTAS_RPS.test(pathname + search)) return;
+    if (pathname.startsWith('/api/borradores') && r.status() === 409) return;
+    respuestasInesperadas.push(`${r.status()} ${r.request().method()} ${pathname}`);
+  });
+}
 const toldos = (page) => page.locator('.order-form-fieldset');
 const remolques = (page) => page.locator('.remolques-pantalla');
 const pestanaPedidos = (page) => page.getByRole('button', { name: /^Pedidos/ }).first();
@@ -172,12 +188,17 @@ try {
   await page.getByRole('button', { name: 'Obtener datos del pedido' }).click();
   await dialogo(page).getByText(`${T1} tiene un borrador de Jaime del`).waitFor();
   await capturas(page, '5-obtener-con-borrador');
+  // El cálculo llega tras cargar el formulario; con él pendiente, guardar avisa «Faltan datos»: se
+  // espera a su respuesta y a que el botón se habilite.
+  const calculado = page.waitForResponse((r) => r.url().includes('/api/calculate') && r.ok());
   await dialogo(page).getByRole('button', { name: 'Abrir borrador', exact: true }).click();
   await toldos(page).getByLabel('OF', { exact: true }).waitFor();
   assert.equal(await toldos(page).getByLabel('OF', { exact: true }).inputValue(), '0230194');
-  // El cálculo llega tras cargar el formulario; con él pendiente, guardar avisa «Faltan datos».
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(1500);
+  await calculado;
+  await page.waitForFunction(() => {
+    const boton = [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Guardar para revisión');
+    return Boolean(boton) && !boton.disabled;
+  });
   await page.getByRole('button', { name: 'Guardar para revisión' }).click();
   await page.getByText(`Guardado en Pedidos para revisión: ${T1}.pdf`).waitFor();
   assert.equal((await api(`/api/borradores/${T1}`)).datos, null, 'al pasar a revisión, el borrador de toldos desaparece');
@@ -207,6 +228,21 @@ try {
   assert.equal((await api(`/api/borradores/${R1.codigo}`)).datos, null, 'al pasar a revisión, el borrador de remolques desaparece');
   console.log('OK: remolques: «Empezar de cero», «Seguir con el borrador» y pasado a revisión');
 
+  // ── 8b. Un pedido de remolques guardado para revisión no borra un borrador de toldos del mismo número ──
+  assert.equal((await api(`/api/borradores/${R3.codigo}`, enviar('PUT', { kind: 'toldos', savedBy: 'IVÁN', contenido: { order: { orderCode: R3.codigo, customer: 'BORRADOR DE TOLDOS', orderDate: `20${AA}-10-01`, awnings: [] } } }))).status, 200);
+  await page.getByRole('button', { name: /^Remolques/ }).first().click();
+  await remolques(page).getByLabel('Pedido', { exact: true }).fill(R3.pedido);
+  await remolques(page).getByLabel('Cliente', { exact: true }).fill('TALLERES DE PRUEBA');
+  await page.getByRole('button', { name: '+ Remolque', exact: true }).click();
+  await editor(page).waitFor();
+  await teclearCaso(page, caso('lona-02'));
+  await editor(page).locator('input[data-campo="ordenFabricacion"]').fill(OF_R3);
+  await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
+  await page.getByText(`Guardado en Pedidos para revisión: ${R3.codigo}.`).waitFor();
+  const sigueDeToldos = (await api(`/api/borradores/${R3.codigo}`)).datos;
+  assert.equal(sigueDeToldos?.kind, 'toldos', 'guardar remolques para revisión no borra un borrador de toldos del mismo número');
+  console.log('OK: el pedido de remolques pasa a revisión y el borrador de toldos del mismo número se conserva');
+
   // ── 9. Configuración: paso 08 «Borradores» ──
   await page.getByRole('button', { name: 'Configuración', exact: true }).click();
   const paso08 = page.locator('label.workflow-route-card', { has: page.locator('.workflow-step', { hasText: '08' }) });
@@ -219,8 +255,10 @@ try {
   await ivan.browser.close();
   await jaime.browser.close();
 }
-// Las respuestas con error las apunta el navegador como error de red: 409 (preguntas de confirmar) y las de RPS, que en la aislada puede no responder (las OF del pedido
-// de toldos, «Empezar de cero»). Los fallos de la página (pageerror) sí cuentan.
-const errores = [...ivan.errors, ...jaime.errors].filter((e) => !/Failed to load resource: the server responded with a status of \d{3}/.test(e));
+// Las respuestas con error las apunta el navegador en la consola como «Failed to load resource» sin
+// la ruta: esas se comprueban arriba una a una (solo se aceptan los 409 de /api/borradores y las
+// consultas de RPS/OF); aquí no se admite ningún otro error, y los fallos de la página (pageerror) cuentan.
+assert.deepEqual(respuestasInesperadas, [], 'sin respuestas de error inesperadas del servidor (un 500 de /api/borradores falla la prueba)');
+const errores = [...ivan.errors, ...jaime.errors].filter((e) => !/^Failed to load resource: the server responded with a status of (409|4\d\d|5\d\d)/.test(e));
 assert.deepEqual(errores, [], 'sin errores de consola');
 console.log('Borradores: OK');
