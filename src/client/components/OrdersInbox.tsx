@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Check, ChevronDown, CircleAlert, FileSearch, FolderOpen, Search } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
 import type { CoordinaStatus, PedidoBandeja } from '../types';
 import {
-  claveBandeja, collapseAwnings, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups, productoDe,
+  borradoresVisibles, claveBandeja, collapseAwnings, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups, productoDe,
   type FiltroProducto,
 } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
+import type { ResumenBorrador } from '../../borradores/tipos.ts';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { COORDINA_NOT_CONFIGURED_MOTIVO, normalizeOf, reviewerName } from '../../reviewRules.js';
 
@@ -15,7 +16,7 @@ type AwningItem = NonNullable<PedidoBandeja['summary']['awningList']>[number];
 // (punto de color, nombre y cuántos), columnas juntas y filas densas; toda la fila se
 // pulsa y se despliega dentro, con cada toldo y lo que le pasa. Los toldos se ven ya en la
 // fila (A ✓, D aviso) para saber qué hay que revisar sin abrir nada.
-export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus }: {
+export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus, borradores = [], onSeguirBorrador = () => undefined, onDescartarBorrador = () => undefined }: {
   pending: PedidoBandeja[];
   history: PedidoBandeja[];
   currentUser: string;
@@ -25,6 +26,10 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   onYear: (year: number) => void;
   onOpen: (review: PedidoBandeja) => void;
   coordinaStatus: CoordinaStatus | null;
+  /** Borradores del servidor (diseño 01/10/2026): van encima de «Por revisar» y no cuentan. */
+  borradores?: ResumenBorrador[];
+  onSeguirBorrador?: (borrador: ResumenBorrador) => void;
+  onDescartarBorrador?: (borrador: ResumenBorrador) => void;
 }) {
   // Iván, 28/09/2026: al entrar se ve todo, porque lo que toca revisar es de otros.
   const [scope, setScope] = useState<'mine' | 'all'>('all');
@@ -34,6 +39,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   const [openCode, setOpenCode] = useState<string | null>(null);
   const sections = inboxSections({ pending, history }, { me: currentUser, scope, query, producto });
   const groups = pendingGroups(sections.pending, coordinaStatus);
+  const drafts = borradoresVisibles(borradores, { me: currentUser, scope, query, producto });
 
   const columns = (withDate: boolean) => (
     <div className={withDate ? 'orders-columns' : 'orders-columns is-history'} aria-hidden="true">
@@ -82,14 +88,38 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
       {coordinaStatus && !coordinaStatus.disponible && (
         <p className="orders-coordina-down" role="status"><AlertTriangle aria-hidden="true" />{coordinaStatus.motivo === COORDINA_NOT_CONFIGURED_MOTIVO ? 'No se puede consultar CoordinaOT: la conexión no está configurada en el servidor.' : 'No se puede consultar CoordinaOT; los pedidos se muestran como por revisar.'}</p>
       )}
+      {(drafts.length > 0 || (!pendingLoading && groups.length > 0)) && columns(true)}
+      {drafts.length > 0 && (
+        <section className="orders-group" aria-label={`Borradores: ${drafts.length}`}>
+          <h3 className="orders-group-title tone-draft"><span className="orders-dot" aria-hidden="true" />Borradores<span className="orders-count">{drafts.length}</span></h3>
+          <div className="orders-block">
+            <ul className="orders-list">
+              {drafts.map((borrador) => {
+                const clave = `borrador:${borrador.orderCode}`;
+                return (
+                  <DraftRow
+                    key={clave}
+                    borrador={borrador}
+                    mine={borrador.savedBy === currentUser}
+                    open={openCode === clave}
+                    onToggle={() => setOpenCode((current) => (current === clave ? null : clave))}
+                    onSeguir={() => onSeguirBorrador(borrador)}
+                    onDescartar={() => onDescartarBorrador(borrador)}
+                  />
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      )}
       {pendingLoading ? <p className="review-empty">Cargando pedidos…</p>
         : groups.length === 0 ? <p className="review-empty"><FileSearch aria-hidden="true" />{scope === 'mine' ? 'No tienes pedidos pendientes.' : 'No hay pedidos pendientes.'}</p>
-          : <>{columns(true)}{groups.map((group) => (
+          : groups.map((group) => (
             <section key={group.key} className="orders-group" aria-label={`${group.label}: ${group.reviews.length}`}>
               <h3 className={`orders-group-title tone-${group.tone}`}><span className="orders-dot" aria-hidden="true" />{group.label}<span className="orders-count">{group.reviews.length}</span></h3>
               {block(group.reviews, true, group.tone)}
             </section>
-          ))}</>}
+          ))}
       <header className="orders-inbox-bar">
         <h2>Generados</h2>
         <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => onYear(Number(event.target.value))} aria-label="Año" />
@@ -178,11 +208,59 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   );
 }
 
-function ModelTags({ models, producto }: { models?: string[]; producto: 'toldos' | 'remolques' }) {
+// Un borrador (diseño 01/10/2026): las mismas columnas que un pedido, con la etiqueta «Borrador»
+// delante; al desplegarlo, «Descartar borrador» y «Seguir con el borrador».
+function DraftRow({ borrador, mine, open, onToggle, onSeguir, onDescartar }: {
+  borrador: ResumenBorrador;
+  mine: boolean;
+  open: boolean;
+  onToggle: () => void;
+  onSeguir: () => void;
+  onDescartar: () => void;
+}) {
+  const detailId = `orders-detail-borrador-${borrador.orderCode}`;
+  const author = borrador.savedBy ? controlLabel(borrador.savedBy) : '—';
+  const elementos = borrador.summary.elementos;
+  return (
+    <li className={`orders-row is-draft ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'} tone-draft`}>
+      <div className="orders-row-head">
+      <button
+        type="button"
+        className="orders-row-toggle"
+        aria-expanded={open}
+        aria-controls={detailId}
+        aria-label={`${open ? 'Plegar' : 'Desplegar'} el borrador ${borrador.orderCode}`}
+        onClick={onToggle}
+      />
+      <div className="orders-row-cells">
+        <ChevronDown className="orders-chevron" aria-hidden="true" />
+        <strong className="orders-code">{borrador.orderCode}</strong>
+        <span className="orders-customer">{borrador.summary.customer || 'Sin cliente'}</span>
+        <ModelTags models={borrador.summary.models} producto={borrador.kind} borrador />
+        <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
+        <span className="orders-date">{fechaBorrador(borrador.updatedAt)}</span>
+        <span className="orders-awnings"><span className="orders-models">{elementos} {elementos === 1 ? 'elemento' : 'elementos'}</span></span>
+      </div>
+      </div>
+      {open && (
+        <div className="orders-detail" id={detailId}>
+          <p className="orders-detail-empty">Guardado por {author} el {fechaBorrador(borrador.updatedAt)}. Es un borrador: no está en revisión hasta que se guarde para revisión.</p>
+          <div className="orders-detail-actions">
+            <button type="button" className="ghost-button" onClick={onDescartar}><Trash2 aria-hidden="true" />Descartar borrador</button>
+            <button type="button" className="primary-button boton-3d" onClick={onSeguir}><FilePen aria-hidden="true" />Seguir con el borrador</button>
+          </div>
+        </div>
+      )}
+    </li>
+  );
+}
+
+function ModelTags({ models, producto, borrador = false }: { models?: string[]; producto: 'toldos' | 'remolques'; borrador?: boolean }) {
   const { visible, hidden } = limitModels(models);
   const tinte = producto === 'remolques' ? ' is-remolques' : '';
   return (
     <span className="orders-model-tags">
+      {borrador && <span className="orders-borrador-tag">Borrador</span>}
       <span className={`orders-kind-tag familia-tag is-${producto}`}>{producto === 'remolques' ? 'Remolque' : 'Toldo'}</span>
       {visible.map((model) => <span key={model} className={`orders-model-tag familia-tag${tinte}`}>{controlLabel(model)}</span>)}
       {hidden.length > 0 && <span className={`orders-model-tag familia-tag${tinte}`} title={Array.from(new Set(models)).map(controlLabel).join('\n')}>+{hidden.length}</span>}

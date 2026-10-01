@@ -9,11 +9,15 @@ import { generateState } from '../generatePermission';
 import { leerPedidosDelAnio } from '../hooks/listaPedidos';
 import { productoDe } from '../ordersInbox';
 import { PedidoRemolquesDetalle } from '../remolques/PedidoRemolquesDetalle';
+import type { Borrador, ResumenBorrador } from '../../borradores/tipos.ts';
+import { descartarBorrador, leerBorrador } from '../borradores';
+import { useBorradores } from '../hooks/useBorradores';
+import { controlLabel } from '../components/controlLabels';
 
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
 // anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
 // elegido, que no filtra los pendientes.
-export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onToast, onConfirm }: {
+export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onSeguirBorrador, onToast, onConfirm }: {
   refreshKey: number;
   parameters: RuleParameters;
   currentUser: string;
@@ -24,6 +28,8 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   onReuse: (review: ReviewPackage) => void | Promise<void>;
   onEditRemolques: (pedido: PedidoRemolques) => void;
   onReuseRemolques: (pedido: PedidoRemolques) => void;
+  /** «Seguir con el borrador»: lo abre App en Toldos o en Remolques. */
+  onSeguirBorrador: (borrador: Borrador) => void | Promise<void>;
   onToast: Notify;
   onConfirm: AskForConfirmation;
 }) {
@@ -38,6 +44,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   const [generating, setGenerating] = useState(false);
   const listRequestId = useRef(0);
   const pendingOfs = pending.flatMap((review) => (review.summary.awningList || []).map((item) => item.of));
+  const { borradores } = useBorradores(refreshKey, onToast);
   const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '' && selectedRemolques === '');
 
   useEffect(() => {
@@ -105,6 +112,40 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
       onToast(error instanceof Error ? error.message : 'No se pudieron reutilizar los datos del pedido.', { tone: 'error' });
     } finally {
       setWorking(false);
+    }
+  }
+
+  // «Seguir con el borrador»: se lee entero (la lista no trae el contenido) y lo abre App.
+  async function seguirBorrador(resumen: ResumenBorrador) {
+    try {
+      const borrador = await leerBorrador(resumen.orderCode);
+      if (!borrador) {
+        onToast('Este borrador ya no está: puede que otro puesto lo haya guardado para revisión o descartado.', { tone: 'warning' });
+        onChanged();
+        return;
+      }
+      await onSeguirBorrador(borrador);
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudo abrir el borrador.', { tone: 'error' });
+    }
+  }
+
+  // «Descartar borrador»: cualquiera puede, preguntando antes.
+  async function descartar(resumen: ResumenBorrador) {
+    const choice = await onConfirm({
+      title: `Descartar el borrador de ${resumen.orderCode}`,
+      message: `Se borrará el borrador que guardó ${controlLabel(resumen.savedBy)}. No se puede deshacer. Lo que haya en RPS y en Pedidos no cambia.`,
+      confirmLabel: 'Descartar borrador',
+      cancelLabel: 'Conservar borrador',
+      tone: 'danger'
+    });
+    if (choice !== 'confirm') return;
+    try {
+      await descartarBorrador(resumen.orderCode);
+      onToast(`Borrador descartado: ${resumen.orderCode}.`, { tone: 'success', title: 'Borrador descartado' });
+      onChanged();
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudo descartar el borrador.', { tone: 'error' });
     }
   }
 
@@ -218,6 +259,9 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             onYear={(value) => { setHistoryLoading(true); setYear(value); }}
             onOpen={(review) => (productoDe(review) === 'remolques' ? setSelectedRemolques(review.orderCode) : setSelectedCode(review.orderCode))}
             coordinaStatus={coordinaStatus}
+            borradores={borradores}
+            onSeguirBorrador={(borrador) => void seguirBorrador(borrador)}
+            onDescartarBorrador={(borrador) => void descartar(borrador)}
           />
         : (
           <ReviewOrderDetail

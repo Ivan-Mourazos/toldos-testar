@@ -1,4 +1,5 @@
 import type { CoordinaStatus, PedidoBandeja } from './types';
+import type { ResumenBorrador } from '../borradores/tipos.ts';
 import { coordinaGroup, isPendingGeneration } from '../reviewRules.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
@@ -69,6 +70,29 @@ export function inboxSections<T extends PedidoBandeja>(
   const pending = (scope === 'mine' ? pendingMineList : pendingAllList).filter((review) => matches(review, query));
   const history = historySource.filter((review) => review.status === 'PRODUCED' && ofProduct(review) && matches(review, query));
   return { pending, history, pendingMine: pendingMineList.length, pendingAll: pendingAllList.length };
+}
+
+// Borradores (diseño 01/10/2026): todos ven todos, con el mismo filtro de tipo y la misma búsqueda
+// que los pedidos; «Míos» son los que guardé yo. No son pendientes: no cuentan en ningún número.
+export function borradoresVisibles(
+  borradores: ResumenBorrador[],
+  { me, scope, query, producto = 'todos' }: { me: string; scope: 'mine' | 'all'; query: string; producto?: FiltroProducto }
+) {
+  const term = normalize(query.trim());
+  return borradores
+    .filter((borrador) => producto === 'todos' || borrador.kind === producto)
+    .filter((borrador) => scope === 'all' || borrador.savedBy === me)
+    .filter((borrador) => !term || normalize([borrador.orderCode, borrador.numeroPedido, borrador.summary.customer, ...borrador.summary.models].join(' ')).includes(term))
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+// Cuándo se guardó un borrador: día, mes y hora («01/10, 09:30»).
+export function fechaBorrador(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  // A mano: en es-ES el día suelto sale sin cero («1/10») y aquí se quieren dos cifras.
+  const dos = (n: number) => String(n).padStart(2, '0');
+  return `${dos(date.getDate())}/${dos(date.getMonth() + 1)}, ${dos(date.getHours())}:${dos(date.getMinutes())}`;
 }
 
 // Bloques de la bandeja según CoordinaOT (diseño 29/09/2026): el grupo sale de cómo

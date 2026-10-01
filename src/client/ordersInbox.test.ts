@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { claveBandeja, collapseAwnings, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import { borradoresVisibles, claveBandeja, collapseAwnings, fechaBorrador, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import type { ResumenBorrador } from '../borradores/tipos.ts';
 import type { PedidoBandeja, ReviewSummary } from './types';
 
 const review = (orderCode: string, status: string, technician: string, extra: Record<string, unknown> = {}) => ({
@@ -183,5 +184,35 @@ describe('toldos y remolques juntos (fase 5)', () => {
     const fuentes = { pending: [toldo, remolque], history: [] };
     expect(inboxSections(fuentes, { me: 'IVÁN', scope: 'all', query: 'arquillado' }).pending.map(claveBandeja)).toEqual(['remolques:AR2601']);
     expect(inboxSections(fuentes, { me: 'IVÁN', scope: 'all', query: 'AR.26.01' }).pending.map(claveBandeja)).toEqual(['remolques:AR2601']);
+  });
+});
+
+describe('borradoresVisibles', () => {
+  const borrador = (orderCode: string, kind: 'toldos' | 'remolques', savedBy: string, updatedAt: string, extra: Partial<ResumenBorrador> = {}) => ({
+    schemaVersion: 1, kind, orderCode, numeroPedido: orderCode, savedBy, createdAt: updatedAt, updatedAt,
+    summary: { customer: 'Cliente', orderDate: '', elementos: 1, models: ['ARZUA PRO'] }, ...extra,
+  }) as ResumenBorrador;
+  const lista = [
+    borrador('AR2601', 'toldos', 'IVÁN', '2026-10-01T08:00:00Z'),
+    borrador('AR2602', 'remolques', 'JAIME', '2026-10-01T09:00:00Z', { numeroPedido: 'AR.26.02', summary: { customer: 'Talleres', orderDate: '', elementos: 2, models: ['Arquillado'] } }),
+  ];
+  const codigos = (filtro: Parameters<typeof borradoresVisibles>[1]) => borradoresVisibles(lista, filtro).map((b) => b.orderCode);
+
+  it('todos, del más reciente al más antiguo', () => {
+    expect(codigos({ me: 'IVÁN', scope: 'all', query: '' })).toEqual(['AR2602', 'AR2601']);
+  });
+  it('el filtro de tipo y «Míos» (los que guardé yo)', () => {
+    expect(codigos({ me: 'IVÁN', scope: 'all', query: '', producto: 'toldos' })).toEqual(['AR2601']);
+    expect(codigos({ me: 'IVÁN', scope: 'all', query: '', producto: 'remolques' })).toEqual(['AR2602']);
+    expect(codigos({ me: 'IVÁN', scope: 'mine', query: '' })).toEqual(['AR2601']);
+  });
+  it('busca número (también como se escribió), cliente y modelo, sin tildes ni mayúsculas', () => {
+    expect(codigos({ me: 'IVÁN', scope: 'all', query: 'ar.26.02' })).toEqual(['AR2602']);
+    expect(codigos({ me: 'IVÁN', scope: 'all', query: 'talleres' })).toEqual(['AR2602']);
+    expect(codigos({ me: 'IVÁN', scope: 'all', query: 'arzua' })).toEqual(['AR2601']);
+  });
+  it('fechaBorrador: día, mes y hora', () => {
+    expect(fechaBorrador('2026-10-01T09:30:00')).toMatch(/^01\/10,? 09:30$/);
+    expect(fechaBorrador('no')).toBe('—');
   });
 });

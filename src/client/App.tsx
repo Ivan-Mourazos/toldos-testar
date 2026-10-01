@@ -807,6 +807,7 @@ export default function App() {
               onReuse={reuseReview}
               onEditRemolques={(pedido) => abrirPedidoRemolques(pedido, 'corregir')}
               onReuseRemolques={(pedido) => abrirPedidoRemolques(pedido, 'reutilizar')}
+              onSeguirBorrador={(borrador) => abrirBorrador(borrador)}
               onToast={notify}
               onConfirm={askForConfirmation}
             />
