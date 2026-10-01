@@ -89,7 +89,7 @@
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 40%, transparent), transparent 45%),
     var(--glass-chip);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: 0.5rem;
   box-shadow:
     0 0 0 1px var(--edge),
@@ -113,19 +113,20 @@
     0 10px 22px -12px rgba(0, 0, 0, 0.7);
 }
 .app-shell :is(input, select, textarea, .select-control)::placeholder { color: var(--text-muted); }
-.app-shell :is(input, select, textarea, .select-control):hover { border-color: var(--border-strong); }
+.app-shell :is(input, select, textarea, .select-control):hover:not(:disabled):not([readonly]) { border-color: var(--control-border-hover); }
 .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):focus,
 .app-shell .select-field.is-open .select-control {
-  border-color: var(--color-brand-400);
+  border-color: var(--control-active-border);
   outline: none;
 }
 /* Además del borde, el anillo de foco de CoordinaOT (2 px dorado a 1 px, piezas.css): solo el
    borde dorado de 1 px daba unos 1,9:1 en claro y costaba ver qué campo se está rellenando.
+   El token de foco usa una tonalidad más oscura del mismo dorado en claro para llegar a 3:1.
    Con `:focus-visible` no sale al pulsar con el ratón un botón (el desplegable), pero sí al
    entrar en un campo de texto, como en el resto de la app. El aviso «falta» sigue distinto: su
    borde y su sombra son ámbar, y el anillo va por fuera con 1 px de separación. */
 .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):focus-visible {
-  outline: 2px solid var(--color-brand-400);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
 /* Solo lectura y apagado: la caja `bg-surface-2` de CoordinaOT, sin relieve. */
@@ -138,16 +139,20 @@
   color: var(--text-muted);
 }
 .app-shell .fabric-combobox.is-disabled .fabric-input-wrap { background: transparent; }
+.app-shell input[readonly] { border-style: dashed; }
 /* Sin valor elegido todavía: la misma caja, con el texto apagado como un marcador. */
 .app-shell .select-control.is-placeholder { color: var(--text-muted); }
 .select-control > svg,
 .fabric-input-wrap > svg { color: var(--text-muted); }
 /* Falta por rellenar: el aviso de CoordinaOT sobre el borde del campo. */
 .app-shell .is-missing :is(input, .select-control, .segmented-control, .fabric-input-wrap input) {
-  border-color: var(--aviso-marca);
+  border-color: var(--control-active-border);
   box-shadow: 0 0 0 1px var(--aviso-borde);
 }
 .app-shell .is-missing .fabric-input-wrap { border-color: transparent; box-shadow: none; }
+/* El error se diferencia de una ayuda o un aviso también en el propio campo. */
+.app-shell :is(input, textarea)[aria-invalid="true"] { border-color: var(--error-texto); }
+.app-shell label:has([aria-invalid="true"]) .field-hint-warn { color: var(--error-texto); }
 /* La casilla «Por toldo», «Activar» y demás casillas siguen el dorado de marca. */
 input[type="checkbox"],
 input[type="radio"] { accent-color: var(--color-brand-400); }
@@ -209,7 +214,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
     var(--glass-chip);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: 0.5rem;
   box-shadow:
     0 0 0 1px var(--edge),
@@ -231,14 +236,14 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
     0 6px 14px -8px rgba(0, 0, 0, 0.7);
 }
 .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled):hover,
-.app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active):hover,
+.app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not([aria-pressed="true"]):not([aria-current]):not(.active):not(.is-active):hover:not(:disabled),
 .app-shell .order-autofill-button:hover:not(:disabled),
 .app-shell .order-fabric-proposal-option:not(.is-chosen):not(:disabled):hover,
 .app-shell .awning-index-item:not(.is-visible):hover {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
     var(--glass-chip);
-  border-color: var(--glass-border);
+  border-color: var(--control-border-hover);
   box-shadow:
     0 0 0 1px var(--edge),
     0 2px 4px var(--contact),
@@ -249,7 +254,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   transform: translateY(-1px);
 }
 .app-shell :is(.ghost-button, .icon-button, .icon-text-button):not(.sobre-oscuro):not(.active):not(:disabled):active,
-.app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not(.active):not(.is-active):active,
+.app-shell .tecla-3d:not(.sobre-oscuro):not(.parameter-model-family *):not(.active):not(.is-active):active:not(:disabled),
 .app-shell .order-autofill-button:active:not(:disabled) {
   box-shadow:
     inset 0 1px 2px rgba(0, 0, 0, 0.12),
@@ -269,7 +274,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .app-shell .order-fabric-proposal-option.is-chosen,
 .app-shell .order-fabric-per-awning:has(input:checked) {
   background: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
-  border-color: var(--color-brand-400);
+  border-color: var(--control-active-border);
   box-shadow: inset 0 1px 3px rgba(90, 60, 0, 0.25);
   color: var(--accent-text);
   filter: none;
@@ -292,7 +297,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 :is(.app-shell, .confirmation-dialog) .primary-button,
 .app-shell .model-switch-prompt button {
   background: var(--color-brand-400);
-  border: 1px solid var(--color-brand-500);
+  border: 1px solid var(--control-active-border);
   border-radius: 0.5rem;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
@@ -314,7 +319,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 :is(.app-shell, .confirmation-dialog) .primary-button:hover:not(:disabled),
 .app-shell .model-switch-prompt button:hover:not(:disabled) {
   background: var(--color-brand-300);
-  border-color: var(--color-brand-400);
+  border-color: var(--control-active-border);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     0 3px 0 rgba(0, 0, 0, 0.18),
@@ -368,7 +373,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
     var(--glass-chip);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: 0.5rem;
   box-shadow:
     0 0 0 1px var(--edge),
@@ -379,11 +384,11 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   color: var(--text);
 }
 .app-shell .segmented-option { border-radius: 0.5rem; font-weight: 600; }
-.app-shell .segmented-option:hover:not(.active) {
+.app-shell .segmented-option:hover:not(.active):not(:disabled) {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
     var(--glass-chip);
-  border-color: var(--glass-border);
+  border-color: var(--control-border-hover);
   color: var(--text);
 }
 :root[data-theme="dark"] .app-shell .segmented-option:not(.active) {
@@ -638,7 +643,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 40%, transparent), transparent 45%),
     var(--glass-chip);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: 0.5rem;
   box-shadow:
     0 0 0 1px var(--edge),
@@ -672,7 +677,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 }
 .planning-tabs button.active {
   background: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
-  border: 1px solid var(--color-brand-400);
+  border: 1px solid var(--control-active-border);
   box-shadow: inset 0 1px 3px rgba(90, 60, 0, 0.25);
   color: var(--color-brand-800);
   transform: translateY(1px);
@@ -836,7 +841,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),
     var(--glass-chip);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: 0.5rem;
   box-shadow:
     0 0 0 1px var(--edge),
@@ -855,17 +860,17 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
     0 2px 0 -1px rgba(0, 0, 0, 0.5),
     0 6px 14px -8px rgba(0, 0, 0, 0.7);
 }
-.pdf-carousel-toolbar button:hover:not([aria-pressed="true"]),
-.pdf-carousel-pages button:hover:not([aria-current="page"]),
+.pdf-carousel-toolbar button:hover:not(:disabled):not([aria-pressed="true"]),
+.pdf-carousel-pages button:hover:not(:disabled):not([aria-current="page"]),
 .pdf-carousel-footer button:hover:not(:disabled) {
-  border-color: var(--glass-border);
+  border-color: var(--control-border-hover);
   color: var(--text);
   transform: translateY(-1px);
 }
 .pdf-carousel-toolbar button[aria-pressed="true"],
 .pdf-carousel-pages button[aria-current="page"] {
   background: color-mix(in srgb, var(--color-brand-500) 15%, var(--glass-chip));
-  border-color: var(--color-brand-400);
+  border-color: var(--control-active-border);
   box-shadow: inset 0 1px 3px rgba(90, 60, 0, 0.25);
   color: var(--color-brand-800);
   transform: translateY(1px);
@@ -994,7 +999,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   color: var(--text);
 }
 .fabric-image-editor { border-color: var(--border-strong); border-radius: 0.5rem; }
-.fabric-image-editor:focus { outline-color: var(--color-brand-400); }
+.fabric-image-editor:focus { outline-color: var(--focus-ring); }
 .fabric-image-editor button {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 55%, transparent), transparent 55%),

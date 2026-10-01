@@ -9,7 +9,8 @@
    aunque allí se declaren con un selector más específico, y las reglas de siempre que las
    usan toman los valores de CoordinaOT sin reescribirlas. Regla de Iván: «siempre que rediseñes
    cualquier zona de la web, mira en CoordinaOT cómo está y cópialo». No se inventan
-   valores aquí: si CoordinaOT cambia, se vuelve a copiar. */
+   valores de marca aquí: si CoordinaOT cambia, se vuelve a copiar. Los tokens semánticos
+   de controles ajustan su contraste para la revisión de accesibilidad de Iván. */
 
 :root {
   /* ── @theme de CoordinaOT: dorado calibrado a su logo ── */
@@ -40,6 +41,11 @@
   --border-strong: #c8ccd4;
   --text: #17181c;
   --text-muted: #565b65;
+  /* El borde de un campo necesita más contraste que un separador decorativo. */
+  --control-border: color-mix(in srgb, var(--text-muted) 85%, var(--surface));
+  --control-border-hover: var(--text-muted);
+  --control-active-border: var(--color-brand-700);
+  --focus-ring: var(--control-active-border);
 
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-bg-strong: rgba(255, 255, 255, 0.82);
@@ -73,6 +79,8 @@
   --border-strong: #45484f;
   --text: #eef0f2;
   --text-muted: #b3b9c2;
+  --control-border: color-mix(in srgb, var(--text-muted) 75%, var(--surface-2));
+  --control-active-border: var(--color-brand-400);
 
   --glass-bg: rgba(36, 38, 44, 0.92);
   --glass-bg-strong: rgba(40, 42, 48, 0.95);
