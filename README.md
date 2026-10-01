@@ -251,6 +251,12 @@ cada pedido está ya en las carpetas de remolques y si su número está en la ca
 toldos; solo escribe en la carpeta interna. Repetirla no duplica nada: un pedido que ya está no se
 toca. Una opción mal escrita o un JSON que no se lee cortan con un mensaje corto (código 2).
 
+Las carpetas salen de `Configuración` (las mismas que usa la web). Para probar con otras se pasan a
+mano, todas opcionales: `--destino <carpeta interna>`, `--planteamientos <carpeta>`,
+`--oficina <carpeta con {YYYY}>` y `--toldos <carpeta de revisión de toldos con {YYYY}>`. Con
+`--destino` no se lee `Configuración`, así que, si no se da `--toldos`, no mira los números de
+toldos y lo avisa en el informe.
+
 ## Prueba de extremo a extremo con RPS
 
 ```bash

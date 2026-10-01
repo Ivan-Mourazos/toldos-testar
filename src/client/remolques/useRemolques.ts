@@ -635,11 +635,19 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
   }, [avisar, consultarRps]);
 
   useEffect(() => {
-    if (bloqueoParams.motivo || !consultaEnEspera.current) return;
+    if (!consultaEnEspera.current) return;
+    // Si la lectura de parámetros falla con un pedido en espera, se dice y se suelta: si no,
+    // saldría más tarde, por sorpresa, en la siguiente lectura buena.
+    if (bloqueoParams.aviso) {
+      consultaEnEspera.current = null;
+      avisar('error', bloqueoParams.aviso);
+      return;
+    }
+    if (bloqueoParams.motivo) return;
     const pedido = consultaEnEspera.current;
     consultaEnEspera.current = null;
     void consultarRps(pedido);
-  }, [bloqueoParams.motivo, consultarRps]);
+  }, [bloqueoParams.motivo, bloqueoParams.aviso, avisar, consultarRps]);
 
   /** «Abrir en Remolques» desde Toldos: abre el pedido y lo obtiene como el botón. */
   const abrirPedido = useCallback((numero: string) => {
