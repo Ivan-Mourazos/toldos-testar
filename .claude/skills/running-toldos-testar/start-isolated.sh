@@ -10,7 +10,7 @@ D="${ISOLATED_DIR:-$PWD/tmp/ui-audit}"
 case "$D" in /*) ;; *) D="$PWD/$D" ;; esac
 case "$D" in *..*) echo "ISOLATED_DIR no puede llevar «..»: $D" >&2; exit 1 ;; esac
 case "$D" in "$PWD"/tmp/*) ;; *) echo "ISOLATED_DIR tiene que estar dentro de $PWD/tmp: $D" >&2; exit 1 ;; esac
-mkdir -p "$D"/{review,plan,rps,export,archive,rpsplan,rem-plan,rem-oficina,rem-revision}
+mkdir -p "$D"/{review,plan,rps,export,archive,rpsplan,rem-plan,rem-oficina,rem-revision,borradores}
 export NODE_ENV=development HOST=127.0.0.1 PORT="${PORT:-4310}"
 # Recarga de Vite en un puerto propio (24310 para 4310…): dos aisladas a la vez no chocan.
 export VITE_HMR_PORT="${VITE_HMR_PORT:-$((PORT + 20000))}"
@@ -21,6 +21,7 @@ export RPS_UPLOAD_DIRECTORY="$D/rps" EXPORT_DIRECTORY="$D/export"
 export ORDER_ARCHIVE_ROOT="$D/archive" RPS_PLANTEAMIENTOS_DIRECTORY="$D/rpsplan"
 export REMOLQUES_PLANTEAMIENTOS_DIRECTORY="$D/rem-plan" REMOLQUES_OFICINA_TECNICA_DIRECTORY="$D/rem-oficina/{YYYY}"
 export REMOLQUES_REVISION_DIRECTORY="$D/rem-revision"
+export DRAFTS_DIRECTORY="$D/borradores"
 # CoordinaOT simulado (scripts/fake-coordina.mjs): la aislada nunca pregunta al real.
 export FAKE_COORDINA_PORT="${FAKE_COORDINA_PORT:-4320}"
 export COORDINA_URL="http://127.0.0.1:$FAKE_COORDINA_PORT" COORDINA_CLAVE="clave-de-prueba"

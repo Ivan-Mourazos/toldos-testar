@@ -38,6 +38,9 @@ export const config = {
   // Pedidos de remolques (fase 5): la carpeta interna donde la web guarda un JSON por pedido,
   // pendiente o generado. No es la compartida: va junto a la configuración, con copia de seguridad.
   remolquesRevisionDirectory: process.env.REMOLQUES_REVISION_DIRECTORY || '',
+  // Borradores (diseño 01/10/2026): carpeta interna donde la web guarda los pedidos a medias de toldos
+  // y remolques, un JSON por pedido. No es la compartida: va junto a la configuración.
+  draftsDirectory: process.env.DRAFTS_DIRECTORY || '',
   workflowSettingsFile,
   // Parámetros comunes a todos los puestos: junto a la configuración del flujo,
   // que en producción vive en /var/lib/toldos-testar.

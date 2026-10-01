@@ -1,6 +1,6 @@
 import { constants as fsConstants } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { comprobarCarpetaInternaRemolques, comprobarCarpetasRemolques, comprobarChromium } from './deploy-remolques.mjs';
+import { comprobarCarpetaBorradores, comprobarCarpetaInternaRemolques, comprobarCarpetasRemolques, comprobarChromium } from './deploy-remolques.mjs';
 
 const paquete = { dependencies: { 'playwright-core': '1.61.1' }, devDependencies: { playwright: '^1.61.1' } };
 const navegadorFalso = (fallo) => ({
@@ -97,5 +97,33 @@ describe('comprobarCarpetaInternaRemolques', () => {
     expect(ventanas.avisos[0]).toContain('Windows');
     const relativa = await comprobarCarpetaInternaRemolques({ carpeta: 'pedidos', estricto: true, acceso: existe });
     expect(relativa.errores[0]).toContain('no usa una ruta Linux absoluta');
+  });
+});
+
+describe('comprobarCarpetaBorradores', () => {
+  const existe = async () => {};
+
+  it('avisa, sin fallar, si no está definida', async () => {
+    const r = await comprobarCarpetaBorradores({ carpeta: '', estricto: true, acceso: existe });
+    expect(r.errores).toEqual([]);
+    expect(r.avisos).toEqual(['DRAFTS_DIRECTORY no está definido; no se podrán guardar borradores en el servidor.']);
+  });
+
+  it('falla si lleva {YYYY}', async () => {
+    const r = await comprobarCarpetaBorradores({ carpeta: '/var/lib/x/{YYYY}', estricto: false, acceso: existe });
+    expect(r.errores).toEqual(['DRAFTS_DIRECTORY no lleva {YYYY}: todos los borradores van en la misma carpeta.']);
+  });
+
+  it('exige una ruta Linux absoluta con permiso de escritura', async () => {
+    const visto = [];
+    const ok = await comprobarCarpetaBorradores({ carpeta: '/var/lib/toldos-testar/borradores', estricto: true, acceso: async (ruta, modo) => { visto.push([ruta, modo]); } });
+    expect(ok.exitos).toEqual(['DRAFTS_DIRECTORY apunta a una carpeta accesible con permiso de escritura.']);
+    expect(visto).toEqual([['/var/lib/toldos-testar/borradores', fsConstants.R_OK | fsConstants.W_OK]]);
+    const sinPermiso = await comprobarCarpetaBorradores({ carpeta: '/var/lib/x', estricto: true, acceso: async () => { throw new Error('EACCES'); } });
+    expect(sinPermiso.errores[0]).toContain('sin permiso de escritura');
+    const ventanas = await comprobarCarpetaBorradores({ carpeta: 'C:\\borradores', estricto: false, acceso: existe });
+    expect(ventanas.avisos[0]).toContain('recomendada /var/lib/toldos-testar/borradores');
+    const relativa = await comprobarCarpetaBorradores({ carpeta: 'borradores', estricto: true, acceso: existe });
+    expect(relativa.errores[0]).toBe('DRAFTS_DIRECTORY no usa una ruta Linux absoluta.');
   });
 });

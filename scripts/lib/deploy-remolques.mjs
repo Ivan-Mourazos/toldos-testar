@@ -86,20 +86,19 @@ export async function comprobarCarpetasRemolques({ planteamientos, oficinaTecnic
   return { errores, avisos, exitos };
 }
 
-// La carpeta interna de remolques (fase 5): los pedidos de remolques pendientes y generados, un JSON
-// por pedido. La web escribe en ella al guardar para revisión, aunque la generación esté apagada.
-export async function comprobarCarpetaInternaRemolques({ carpeta, estricto, acceso = access }) {
-  const clave = 'REMOLQUES_REVISION_DIRECTORY';
+// Una carpeta interna del servidor (no la compartida): absoluta, Linux, sin {YYYY} y con permiso de
+// escritura para el usuario de PM2. Si no está definida solo se avisa: la web funciona sin ella.
+async function comprobarCarpetaInterna({ clave, carpeta, estricto, acceso, sinDefinir, sinAnio, recomendada }) {
   const errores = [];
   const avisos = [];
   const exitos = [];
   const informa = (mensaje) => (estricto ? errores : avisos).push(mensaje);
   if (!carpeta) {
-    avisos.push(`${clave} no está definido; no se podrán guardar pedidos de remolques para revisión.`);
+    avisos.push(`${clave} no está definido; ${sinDefinir}.`);
   } else if (carpeta.includes('{YYYY}')) {
-    errores.push(`${clave} no lleva {YYYY}: todos los pedidos de remolques van en la misma carpeta.`);
+    errores.push(`${clave} no lleva {YYYY}: ${sinAnio}.`);
   } else if (/^[A-Za-z]:[\\/]/.test(carpeta) || carpeta.startsWith('\\\\') || carpeta.includes('\\')) {
-    informa(`${clave} usa una ruta de Windows/UNC; sustitúyela por una ruta Linux (recomendada /var/lib/toldos-testar/remolques-pedidos).`);
+    informa(`${clave} usa una ruta de Windows/UNC; sustitúyela por una ruta Linux (recomendada ${recomendada}).`);
   } else if (!path.posix.isAbsolute(carpeta)) {
     informa(`${clave} no usa una ruta Linux absoluta.`);
   } else {
@@ -111,4 +110,31 @@ export async function comprobarCarpetaInternaRemolques({ carpeta, estricto, acce
     }
   }
   return { errores, avisos, exitos };
+}
+
+// La carpeta interna de remolques (fase 5): los pedidos de remolques pendientes y generados, un JSON
+// por pedido. La web escribe en ella al guardar para revisión, aunque la generación esté apagada.
+export function comprobarCarpetaInternaRemolques({ carpeta, estricto, acceso = access }) {
+  return comprobarCarpetaInterna({
+    clave: 'REMOLQUES_REVISION_DIRECTORY',
+    carpeta,
+    estricto,
+    acceso,
+    sinDefinir: 'no se podrán guardar pedidos de remolques para revisión',
+    sinAnio: 'todos los pedidos de remolques van en la misma carpeta',
+    recomendada: '/var/lib/toldos-testar/remolques-pedidos'
+  });
+}
+
+// La carpeta de borradores (diseño 01/10/2026): los pedidos a medias de toldos y remolques.
+export function comprobarCarpetaBorradores({ carpeta, estricto, acceso = access }) {
+  return comprobarCarpetaInterna({
+    clave: 'DRAFTS_DIRECTORY',
+    carpeta,
+    estricto,
+    acceso,
+    sinDefinir: 'no se podrán guardar borradores en el servidor',
+    sinAnio: 'todos los borradores van en la misma carpeta',
+    recomendada: '/var/lib/toldos-testar/borradores'
+  });
 }

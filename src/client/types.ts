@@ -633,6 +633,8 @@ export type WorkflowSettings = {
   remolquesOficinaTecnicaDirectory: string;
   /** Pedidos de remolques guardados (fase 5): carpeta interna del servidor, un JSON por pedido. */
   remolquesRevisionDirectory: string;
+  /** Borradores de toldos y remolques: carpeta interna del servidor, un JSON por pedido a medias. */
+  draftsDirectory: string;
 };
 
 export type WorkflowReadiness = {

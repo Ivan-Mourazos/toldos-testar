@@ -217,6 +217,32 @@ describe('flujo de revisión y producción', () => {
     expect(workflowReadiness(settings).missing).not.toContain('Remolques · pedidos guardados');
   });
 
+  it('guarda la carpeta de borradores: absoluta, sin {YYYY}, y la comprueba si está puesta', async () => {
+    // Nada fuera de tmp/ del repositorio.
+    await fs.mkdir(path.join(process.cwd(), 'tmp'), { recursive: true });
+    const root = await fs.mkdtemp(path.join(process.cwd(), 'tmp', 'workflow-borradores-'));
+    temporaryDirectories.push(root);
+    const borradores = path.join(root, 'borradores');
+    await fs.mkdir(borradores);
+    const settings = normalizeWorkflowSettings({ draftsDirectory: `${borradores}${path.sep}` });
+    expect(settings.draftsDirectory).toBe(borradores);
+    expect(() => normalizeWorkflowSettings({ draftsDirectory: 'relativa' }))
+      .toThrow('La carpeta de borradores debe ser una ruta absoluta válida en el sistema del servidor.');
+    expect(() => normalizeWorkflowSettings({ draftsDirectory: path.join(borradores, '{YYYY}') }))
+      .toThrow('La carpeta de borradores no lleva {YYYY}: todos los borradores van en la misma carpeta.');
+    expect(defaultWorkflowSettings({ draftsDirectory: '/var/lib/x' }).draftsDirectory).toBe('/var/lib/x');
+    expect(defaultWorkflowSettings({}).draftsDirectory).toBe('');
+    expect(normalizeWorkflowSettings({}).draftsDirectory).toBe('');
+    const result = await checkWorkflowDirectories(settings, { year: 2026 });
+    expect(result.directories.find((item) => item.key === 'draftsDirectory'))
+      .toMatchObject({ label: 'Borradores', ok: true, path: borradores });
+    // No cuenta para «Generar archivos» de toldos.
+    expect(workflowReadiness(settings).missing).not.toContain('Borradores');
+    // Sin ponerla, no se comprueba.
+    const sinBorradores = await checkWorkflowDirectories(normalizeWorkflowSettings({}), { year: 2026 });
+    expect(sinBorradores.directories.some((item) => item.key === 'draftsDirectory')).toBe(false);
+  });
+
   it('en Linux exige rutas POSIX montadas y rechaza rutas de Windows o UNC', () => {
     expect(isAbsolutePathTemplate('/mnt/toldos/{YYYY}/TOLDOS', 'linux')).toBe(true);
     expect(isAbsolutePathTemplate('C:\\Pedidos\\{YYYY}', 'linux')).toBe(false);

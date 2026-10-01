@@ -105,6 +105,8 @@ Usar rutas Linux montadas; no configurar unidades Windows ni rutas UNC:
   cálculo comunes a todos los puestos (`rule-parameters.json` y su historial)
 - `/var/lib/toldos-testar/remolques-pedidos` para los pedidos de remolques guardados (carpeta
   interna: un JSON por pedido, pendiente o generado; incluirla en la copia de seguridad)
+- `/var/lib/toldos-testar/borradores` para los borradores de toldos y remolques (carpeta interna:
+  un JSON por pedido a medias; incluirla en la copia de seguridad)
 
 El usuario que ejecuta PM2 debe poder leer, crear y renombrar archivos en los
 dos montajes de entrada. En el histórico de planteamientos basta con permiso de
@@ -140,6 +142,8 @@ REMOLQUES_PLANTEAMIENTOS_DIRECTORY=
 REMOLQUES_OFICINA_TECNICA_DIRECTORY=
 # Pedidos de remolques guardados (carpeta interna, no la compartida).
 REMOLQUES_REVISION_DIRECTORY=/var/lib/toldos-testar/remolques-pedidos
+# Borradores de toldos y remolques (carpeta interna, no la compartida).
+DRAFTS_DIRECTORY=/var/lib/toldos-testar/borradores
 WORKFLOW_SETTINGS_FILE=/var/lib/toldos-testar/workflow-settings.json
 RULE_PARAMETERS_FILE=/var/lib/toldos-testar/rule-parameters.json
 

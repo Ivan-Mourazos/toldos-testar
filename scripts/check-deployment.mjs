@@ -3,7 +3,7 @@ import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { comprobarCarpetaInternaRemolques, comprobarCarpetasRemolques, comprobarChromium } from './lib/deploy-remolques.mjs';
+import { comprobarCarpetaBorradores, comprobarCarpetaInternaRemolques, comprobarCarpetasRemolques, comprobarChromium } from './lib/deploy-remolques.mjs';
 
 // 22.18: desde la pantalla de remolques, `node src/server.js` importa ficheros .ts (materiales,
 // pedido-rps...) y solo Node >= 22.18 los ejecuta sin flags (type-stripping activado por
@@ -31,6 +31,7 @@ const EFFECTIVE_ENV_KEYS = [
   'REMOLQUES_PLANTEAMIENTOS_DIRECTORY',
   'REMOLQUES_OFICINA_TECNICA_DIRECTORY',
   'REMOLQUES_REVISION_DIRECTORY',
+  'DRAFTS_DIRECTORY',
   'WORKFLOW_SETTINGS_FILE',
   'COORDINA_URL',
   'COORDINA_CLAVE',
@@ -373,7 +374,8 @@ async function checkWorkflowEnvironment(values) {
     rpsPlanteamientosDirectory: unquote(values.get('RPS_PLANTEAMIENTOS_DIRECTORY')),
     remolquesPlanteamientosDirectory: unquote(values.get('REMOLQUES_PLANTEAMIENTOS_DIRECTORY')),
     remolquesOficinaTecnicaDirectory: unquote(values.get('REMOLQUES_OFICINA_TECNICA_DIRECTORY')),
-    remolquesRevisionDirectory: unquote(values.get('REMOLQUES_REVISION_DIRECTORY'))
+    remolquesRevisionDirectory: unquote(values.get('REMOLQUES_REVISION_DIRECTORY')),
+    draftsDirectory: unquote(values.get('DRAFTS_DIRECTORY'))
   };
   let persistedSettings = null;
 
@@ -402,7 +404,8 @@ async function checkWorkflowEnvironment(values) {
         rpsPlanteamientosDirectory: stringOrFallback(persistedSettings.rpsPlanteamientosDirectory, seedSettings.rpsPlanteamientosDirectory),
         remolquesPlanteamientosDirectory: stringOrFallback(persistedSettings.remolquesPlanteamientosDirectory, seedSettings.remolquesPlanteamientosDirectory),
         remolquesOficinaTecnicaDirectory: stringOrFallback(persistedSettings.remolquesOficinaTecnicaDirectory, seedSettings.remolquesOficinaTecnicaDirectory),
-        remolquesRevisionDirectory: stringOrFallback(persistedSettings.remolquesRevisionDirectory, seedSettings.remolquesRevisionDirectory)
+        remolquesRevisionDirectory: stringOrFallback(persistedSettings.remolquesRevisionDirectory, seedSettings.remolquesRevisionDirectory),
+        draftsDirectory: stringOrFallback(persistedSettings.draftsDirectory, seedSettings.draftsDirectory)
       }
     : seedSettings;
 
@@ -454,6 +457,14 @@ async function checkWorkflowEnvironment(values) {
   interna.errores.forEach(fail);
   interna.avisos.forEach(warn);
   interna.exitos.forEach(pass);
+
+  const borradores = await comprobarCarpetaBorradores({
+    carpeta: effectiveSettings.draftsDirectory,
+    estricto: strictDeployment
+  });
+  borradores.errores.forEach(fail);
+  borradores.avisos.forEach(warn);
+  borradores.exitos.forEach(pass);
 
   if (effectiveSettings.productionEnabled) pass('El interruptor persistido permite el flujo completo de producción.');
   else warn('El envío a producción está desactivado en la configuración efectiva.');

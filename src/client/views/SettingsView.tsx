@@ -36,7 +36,8 @@ export function SettingsView({
     && form.rpsPlanteamientosDirectory === settings.rpsPlanteamientosDirectory
     && form.remolquesPlanteamientosDirectory === settings.remolquesPlanteamientosDirectory
     && form.remolquesOficinaTecnicaDirectory === settings.remolquesOficinaTecnicaDirectory
-    && form.remolquesRevisionDirectory === settings.remolquesRevisionDirectory;
+    && form.remolquesRevisionDirectory === settings.remolquesRevisionDirectory
+    && form.draftsDirectory === settings.draftsDirectory;
 
   function updateForm(patch: Partial<WorkflowSettings>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -160,6 +161,14 @@ export function SettingsView({
           value={form.remolquesRevisionDirectory}
           onChange={(remolquesRevisionDirectory) => updateForm({ remolquesRevisionDirectory })}
           placeholder="/var/lib/toldos-testar/remolques-pedidos"
+        />
+        <RouteField
+          step="08"
+          title="Borradores"
+          description="Carpeta interna del servidor, no la compartida: aquí guarda la web los pedidos a medias de toldos y remolques, un archivo por pedido, hasta que se guardan para revisión o se descartan. Ponla donde haya copia de seguridad."
+          value={form.draftsDirectory}
+          onChange={(draftsDirectory) => updateForm({ draftsDirectory })}
+          placeholder="/var/lib/toldos-testar/borradores"
         />
       </div>
 

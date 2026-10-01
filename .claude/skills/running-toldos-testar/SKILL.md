@@ -32,6 +32,7 @@ it). The isolated instance never talks to the real CoordinaOT.
   de `tmp/` del repositorio; el script se niega si no). Úsala con otro puerto cuando la prueba cambie
   la configuración (p. ej. activa la generación), para no tocar la de 4310.
 - La carpeta interna de remolques (pedidos de remolques guardados) es `$D/rem-revision`.
+- La carpeta de borradores (toldos y remolques) es `$D/borradores`.
 
 The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflow.mjs`,
 `test-parameter-consultation.mjs`) already start and stop their own fake CoordinaOT on a free port
