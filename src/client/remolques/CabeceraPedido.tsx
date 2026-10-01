@@ -27,6 +27,8 @@ type Props = {
   /** Los elementos del pedido, para contar cuántas líneas de RPS tienen ya el suyo. */
   lineas: LineaPedido[];
   onConsultarRps: () => void;
+  /** Por qué no se puede obtener el pedido todavía (sin los parámetros de remolques leídos). */
+  bloqueoConsulta?: string | null;
 };
 
 export function CabeceraPedido(props: Props) {
@@ -70,7 +72,8 @@ export function CabeceraPedido(props: Props) {
           </label>
         </div>
         <div className="order-autofill-action">
-          <button type="button" className="order-autofill-button" disabled={consultando || !numeroValido} onClick={props.onConsultarRps}>
+          <button type="button" className="order-autofill-button" disabled={consultando || !numeroValido || Boolean(props.bloqueoConsulta)}
+            title={props.bloqueoConsulta ?? undefined} onClick={props.onConsultarRps}>
             {consultando ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <DatabaseZap aria-hidden="true" />}
             {consultando ? 'Consultando RPS…' : 'Obtener datos del pedido'}
           </button>

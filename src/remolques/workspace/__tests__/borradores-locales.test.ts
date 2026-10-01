@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_PARAMS } from "../../calc/params.ts";
 import { emptyLona } from "../../entradas-vacias.ts";
 import type { LineaPedido } from "../lineas.ts";
 import {
@@ -223,5 +224,38 @@ describe("limpiarBorradores", () => {
 
   it("sin almacén no revienta", () => {
     expect(() => limpiarBorradores(null, "AR2603583")).not.toThrow();
+  });
+});
+
+describe("parámetros de «Corregir» con el borrador", () => {
+  const propios = { ...DEFAULT_PARAMS, demasiaAlto: DEFAULT_PARAMS.demasiaAlto + 1 };
+
+  it("los parámetros con que se guardó el pedido vuelven con su borrador al recargar", () => {
+    const almacen = almacenFalso();
+    guardarBorradores(almacen, "AR2603583", [linea], "10", AHORA, propios);
+    expect(leerBorradores(almacen, "AR.26.03583")).toEqual({ lineas: [linea], versionActiva: "10", paramsGuardados: propios });
+  });
+
+  it("sin parámetros propios no se apunta nada: se calcula con los comunes", () => {
+    const almacen = almacenFalso();
+    guardarBorradores(almacen, "AR2603583", [linea], null, AHORA, null);
+    expect(leerBorradores(almacen, "AR2603583")).toStrictEqual({ lineas: [linea], versionActiva: null });
+  });
+
+  it("se van con el borrador: al limpiarlo o al guardar el pedido sin líneas", () => {
+    const almacen = almacenFalso();
+    guardarBorradores(almacen, "AR2603583", [linea], null, AHORA, propios);
+    limpiarBorradores(almacen, "AR2603583");
+    expect(leerBorradores(almacen, "AR2603583")).toStrictEqual({ lineas: [], versionActiva: null });
+    guardarBorradores(almacen, "AR2603583", [linea], null, AHORA, propios);
+    guardarBorradores(almacen, "AR2603583", [], null, AHORA, propios);
+    expect(leerBorradores(almacen, "AR2603583")).toStrictEqual({ lineas: [], versionActiva: null });
+  });
+
+  it("unos parámetros que no tienen la forma esperada no se recuperan", () => {
+    const almacen = almacenFalso({
+      [claveBorradores("AR2603583")]: JSON.stringify({ guardadoEn: AHORA, versionActiva: null, lineas: [linea], paramsGuardados: "roto" }),
+    });
+    expect(leerBorradores(almacen, "AR2603583")).toStrictEqual({ lineas: [linea], versionActiva: null });
   });
 });

@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { emptyLona } from '../../remolques/entradas-vacias.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import { estadoInicial } from '../../remolques/workspace/estado.ts';
-import { esOtroPedido, pantallaSigueIgual, reducirRemolques, type EstadoRemolques } from './useRemolques';
+import {
+  bloqueoParametros, esOtroPedido, pantallaSigueIgual, reducirRemolques, siguienteEstadoParametros, type EstadoRemolques,
+} from './useRemolques';
 
 const linea = (version: string, cliente: string, fecha: string): LineaPedido => {
   const plantilla = emptyLona();
@@ -140,5 +142,32 @@ describe('pantallaSigueIgual · limpiar tras guardar', () => {
   it('cambia si se cargó otro pedido o se editaron las líneas mientras se guardaba', () => {
     expect(pantallaSigueIgual({ numeroPedido: 'AR.26.04287', lineas }, { numeroPedido: 'AR.26.04286', lineas })).toBe(false);
     expect(pantallaSigueIgual({ numeroPedido: 'AR.26.04286', lineas: [...lineas] }, { numeroPedido: 'AR.26.04286', lineas })).toBe(false);
+  });
+});
+
+describe('parámetros de remolques sin cargar · no se guarda con los del código', () => {
+  it('hasta la primera carga buena no se guarda ni se obtiene el pedido, y se dice por qué', () => {
+    expect(bloqueoParametros('cargando', false)).toEqual({ motivo: 'Cargando los parámetros de remolques…', aviso: null });
+  });
+
+  it('si la carga falla, además del motivo sale el aviso', () => {
+    const texto = 'No se pudieron leer los parámetros de remolques: no se puede guardar.';
+    expect(bloqueoParametros('error', false)).toEqual({ motivo: texto, aviso: texto });
+  });
+
+  it('con los parámetros leídos, o corrigiendo un pedido con los suyos, no hay bloqueo', () => {
+    expect(bloqueoParametros('listos', false)).toEqual({ motivo: null, aviso: null });
+    expect(bloqueoParametros('cargando', true)).toEqual({ motivo: null, aviso: null });
+    expect(bloqueoParametros('error', true)).toEqual({ motivo: null, aviso: null });
+  });
+
+  it('una carga buena los da por leídos para siempre; un fallo solo cuenta si nunca se leyeron', () => {
+    expect(siguienteEstadoParametros('cargando', 'ok')).toBe('listos');
+    expect(siguienteEstadoParametros('cargando', 'fallo')).toBe('error');
+    // Reintentar (al volver a la ventana, al guardar Parámetros o cada 5 min) quita el aviso.
+    expect(siguienteEstadoParametros('error', 'ok')).toBe('listos');
+    expect(siguienteEstadoParametros('error', 'fallo')).toBe('error');
+    // Leídos una vez, un fallo después deja los últimos conocidos.
+    expect(siguienteEstadoParametros('listos', 'fallo')).toBe('listos');
   });
 });

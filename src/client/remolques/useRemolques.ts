@@ -131,10 +131,39 @@ async function pedirMateriales(): Promise<{ materiales: Material[]; origen: Orig
   return respuesta.json();
 }
 
+/**
+ * Si ya se han leído los parámetros comunes de remolques. Hasta la primera lectura buena la pantalla
+ * solo tiene los del código (DEFAULT_PARAMS), y con ellos no se guarda ni se obtiene un pedido.
+ */
+export type EstadoParametros = 'cargando' | 'listos' | 'error';
+
+/** Una lectura buena los da por leídos para siempre; un fallo solo cuenta si nunca se leyeron. */
+export function siguienteEstadoParametros(actual: EstadoParametros, lectura: 'ok' | 'fallo'): EstadoParametros {
+  if (lectura === 'ok') return 'listos';
+  return actual === 'listos' ? 'listos' : 'error';
+}
+
+const MENSAJE_CARGANDO_PARAMETROS = 'Cargando los parámetros de remolques…';
+const MENSAJE_SIN_PARAMETROS = 'No se pudieron leer los parámetros de remolques: no se puede guardar.';
+
+/**
+ * Por qué no se puede guardar ni obtener el pedido todavía (`motivo`, para el título de los botones)
+ * y el aviso que va en la pantalla si la lectura ha fallado. Al corregir un pedido guardado se
+ * calcula con sus propios parámetros, así que los comunes no hacen falta.
+ */
+export function bloqueoParametros(
+  estado: EstadoParametros, conParamsGuardados: boolean,
+): { motivo: string | null; aviso: string | null } {
+  if (conParamsGuardados || estado === 'listos') return { motivo: null, aviso: null };
+  if (estado === 'error') return { motivo: MENSAJE_SIN_PARAMETROS, aviso: MENSAJE_SIN_PARAMETROS };
+  return { motivo: MENSAJE_CARGANDO_PARAMETROS, aviso: null };
+}
+
 function useCatalogos() {
   const [materiales, setMateriales] = useState<Material[]>([]);
   const [origenMateriales, setOrigenMateriales] = useState<OrigenMateriales | null>(null);
   const [params, setParams] = useState<CalcParams>(DEFAULT_PARAMS);
+  const [estadoParams, setEstadoParams] = useState<EstadoParametros>('cargando');
   const materialesRef = useRef<Material[]>([]);
 
   useEffect(() => {
@@ -151,7 +180,14 @@ function useCatalogos() {
       fetch('/api/remolques/parametros', { cache: 'no-store' }).then((r) => {
         if (!r.ok) throw new Error('No se pudieron leer los parámetros de remolques.');
         return r.json();
-      }).then((next) => { if (active) setParams(next); }).catch(() => { /* quedan los últimos conocidos */ });
+      }).then((next) => {
+        if (!active) return;
+        setParams(next);
+        setEstadoParams((actual) => siguienteEstadoParametros(actual, 'ok'));
+      }).catch(() => {
+        // Quedan los últimos conocidos; si nunca se leyeron, la pantalla avisa y no deja guardar.
+        if (active) setEstadoParams((actual) => siguienteEstadoParametros(actual, 'fallo'));
+      });
     };
     refresh();
     window.addEventListener(REMOLQUES_PARAMETERS_SAVED, refresh);
@@ -165,7 +201,7 @@ function useCatalogos() {
     };
   }, []);
 
-  return { materiales, origenMateriales, params, materialesRef, setMateriales };
+  return { materiales, origenMateriales, params, estadoParams, materialesRef, setMateriales };
 }
 
 /**
@@ -191,12 +227,22 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     numeroPedido, cliente: clientePedido, fecha, lineas, versionActiva,
     validacionIntentada, camposTocados, rps, cargandoPedido,
   } = estado;
-  const { materiales, origenMateriales, params: paramsComunes, materialesRef, setMateriales } = useCatalogos();
+  const {
+    materiales, origenMateriales, params: paramsComunes, estadoParams, materialesRef, setMateriales,
+  } = useCatalogos();
   // «Corregir» un pedido guardado calcula con los parámetros con que se guardó (fase 5); lo demás,
-  // con los comunes. Se vuelve a los comunes al cambiar de pedido, al limpiar y al guardar.
+  // con los comunes. Se vuelve a los comunes al cambiar de pedido, al limpiar y al guardar. Van con
+  // el borrador del navegador de ese pedido: recargar la página los recupera con sus líneas.
   const [paramsGuardados, setParamsGuardados] = useState<CalcParams | null>(null);
   const params = paramsGuardados ?? paramsComunes;
   const [guardando, setGuardando] = useState(false);
+  const bloqueoParams = bloqueoParametros(estadoParams, paramsGuardados !== null);
+  // Para los manejadores, que no cambian de identidad con cada lectura de los parámetros.
+  const bloqueoParamsRef = useRef(bloqueoParams);
+  useEffect(() => { bloqueoParamsRef.current = bloqueoParams; });
+  // «Abrir en Remolques» puede llegar antes que los parámetros (la pantalla se monta en ese
+  // momento): el pedido pedido espera aquí y se obtiene en cuanto llegan.
+  const consultaEnEspera = useRef<string | null>(null);
 
   // Aviso y confirmación llegan de la aplicación. Se guardan en una ref para que los
   // manejadores de abajo no cambien de identidad cuando cambie la de estas funciones:
@@ -237,6 +283,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     numeroPedido: string;
     lineas: LineaPedido[];
     versionActiva: string | null;
+    paramsGuardados: CalcParams | null;
   } | null>(null);
   const clavePedido = normalizarNumeroPedidoRps(numeroPedido);
 
@@ -250,7 +297,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     pendienteRef.current = null;
     guardarBorradores(
       almacen, pendiente.numeroPedido, pendiente.lineas, pendiente.versionActiva,
-      new Date().toISOString(),
+      new Date().toISOString(), pendiente.paramsGuardados,
     );
   }, [almacen]);
 
@@ -273,6 +320,9 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
       }
     }
     setPedidoRecuperado(clavePedido);
+    // Se estaba corrigiendo un pedido guardado: vuelve con sus parámetros, no con los comunes.
+    const paramsRecuperados = guardado.lineas.length > 0 ? guardado.paramsGuardados ?? null : null;
+    setParamsGuardados((actuales) => paramsRecuperados ?? actuales);
   }, [almacen, clavePedido, numeroPedido, versionActiva]);
 
   // Sin guardado en base de datos no hay registros del pedido que esperar: al cambiar de
@@ -296,10 +346,10 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     // `lineas` cambia de identidad en cada tecla: serializarlo entero en cada pulsación
     // bloquea el hilo principal. Una pausa basta, porque lo que importa es que el trabajo
     // esté escrito antes de cerrar la pestaña, no en el mismo instante.
-    pendienteRef.current = { numeroPedido, lineas, versionActiva };
+    pendienteRef.current = { numeroPedido, lineas, versionActiva, paramsGuardados };
     const temporizador = window.setTimeout(() => {
       const guardado = guardarBorradores(
-        almacen, numeroPedido, lineas, versionActiva, new Date().toISOString(),
+        almacen, numeroPedido, lineas, versionActiva, new Date().toISOString(), paramsGuardados,
       );
       pendienteRef.current = null;
       // Si el navegador no deja escribir —ni siquiera haciendo sitio— el trabajo solo vive
@@ -310,7 +360,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
       }
     }, PAUSA_GUARDADO_MS);
     return () => window.clearTimeout(temporizador);
-  }, [almacen, avisar, clavePedido, lineas, numeroPedido, pedidoRecuperado, versionActiva, volcar]);
+  }, [almacen, avisar, clavePedido, lineas, numeroPedido, paramsGuardados, pedidoRecuperado, versionActiva, volcar]);
 
   // Cambiar de pestaña de la web o de producto desmonta la pantalla y con ella el
   // temporizador: sin esto, lo tecleado en los últimos 600 ms se perdería.
@@ -556,6 +606,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     // parámetros del pedido que se estaba corrigiendo.
     if (normalizarNumeroPedidoRps(valor) !== clavePedido) {
       consultaEnCurso.current?.abort();
+      consultaEnEspera.current = null;
       setParamsGuardados(null);
     }
     despachar({ tipo: 'PEDIDO_CAMBIADO', valor });
@@ -571,8 +622,24 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
    * al llegar, crea los elementos; si el pedido ya tiene, pregunta antes.
    */
   const obtenerDatosPedido = useCallback((numero?: string) => {
-    void consultarRps(numero ?? estadoRef.current.numeroPedido);
-  }, [consultarRps]);
+    const pedido = numero ?? estadoRef.current.numeroPedido;
+    // Los elementos de RPS se calculan con los parámetros: sin leerlos, no. Si aún están
+    // llegando, se obtiene al llegar; si fallaron, se dice.
+    const { motivo, aviso } = bloqueoParamsRef.current;
+    if (motivo) {
+      if (aviso) avisar('error', aviso);
+      else consultaEnEspera.current = pedido;
+      return;
+    }
+    void consultarRps(pedido);
+  }, [avisar, consultarRps]);
+
+  useEffect(() => {
+    if (bloqueoParams.motivo || !consultaEnEspera.current) return;
+    const pedido = consultaEnEspera.current;
+    consultaEnEspera.current = null;
+    void consultarRps(pedido);
+  }, [bloqueoParams.motivo, consultarRps]);
 
   /** «Abrir en Remolques» desde Toldos: abre el pedido y lo obtiene como el botón. */
   const abrirPedido = useCallback((numero: string) => {
@@ -603,6 +670,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
       if (respuesta !== 'confirm') return;
     }
     consultaEnCurso.current?.abort();
+    consultaEnEspera.current = null;
     pendienteRef.current = null;
     limpiarBorradores(almacen, estadoRef.current.numeroPedido);
     setParamsGuardados(null);
@@ -621,6 +689,11 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     const falta = faltaParaPdf(actual.lineas, estados);
     if (falta) {
       notificar.current.notify(`Para guardar falta: ${falta}`, { tone: 'warning', title: 'Faltan datos' });
+      return;
+    }
+    // Nunca con los parámetros del código: hasta leer los comunes, no se guarda.
+    if (bloqueoParamsRef.current.motivo) {
+      notificar.current.notify(bloqueoParamsRef.current.motivo, { tone: 'warning', title: 'Sin parámetros' });
       return;
     }
     setGuardando(true);
@@ -699,6 +772,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
       if (respuesta !== 'confirm') return;
     }
     consultaEnCurso.current?.abort();
+    consultaEnEspera.current = null;
     // Lo tecleado en el pedido que había (si es otro) se escribe ya en su borrador, como al cambiar
     // de pedido; lo que quedara en cola del mismo pedido se descarta: manda lo guardado.
     const pendiente = pendienteRef.current;
@@ -729,6 +803,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }
     guardando,
     /** Se está corrigiendo un pedido guardado con sus parámetros (no los comunes). */
     conParamsGuardados: paramsGuardados !== null,
+    /** Sin los parámetros comunes leídos: por qué no se guarda ni se obtiene el pedido, y el aviso. */
+    bloqueoParams,
     // derivados
     lineaActiva: activa,
     estadosLinea,

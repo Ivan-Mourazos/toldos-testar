@@ -85,11 +85,15 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           errorRps={rps.error}
           lineas={lineas}
           onConsultarRps={() => ws.obtenerDatosPedido()}
+          bloqueoConsulta={ws.bloqueoParams.motivo}
         />
         {ws.origenMateriales === 'semilla' && (
           <p className="rem-aviso-materiales" role="status">
             RPS no ha respondido con las bobinas: se usa la lista de lonas incluida en la aplicación.
           </p>
+        )}
+        {ws.bloqueoParams.aviso && (
+          <p className="rem-aviso-materiales" role="alert">{ws.bloqueoParams.aviso}</p>
         )}
         {ws.conParamsGuardados && (
           <p className="rem-aviso-materiales rem-aviso-params" role="status">
@@ -109,8 +113,11 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         acciones={lineas.length > 0 ? (
           <>
             <VistaPreviaPdf lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />
-            <button type="button" className="primary-button rem-guardar-boton" disabled={Boolean(faltaPdf) || ws.guardando}
-              aria-busy={ws.guardando} title={faltaPdf ?? undefined} onClick={() => void ws.guardarParaRevision()}>
+            {/* Sin los parámetros comunes leídos no se guarda: saldría con los del código. */}
+            <button type="button" className="primary-button rem-guardar-boton"
+              disabled={Boolean(faltaPdf) || ws.guardando || Boolean(ws.bloqueoParams.motivo)}
+              aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
+              onClick={() => void ws.guardarParaRevision()}>
               <Save aria-hidden="true" />
               {ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
             </button>

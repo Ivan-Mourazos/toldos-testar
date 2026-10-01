@@ -1,3 +1,5 @@
+import type { CalcParams } from "../calc/params.ts";
+import { validarParams } from "../calc/validar-params.ts";
 import type { LineaPedido } from "./lineas.ts";
 import { normalizarNumeroPedido } from "../pedidos/numero-pedido.ts";
 
@@ -20,6 +22,11 @@ export function claveBorradores(numeroPedido: string): string {
 export interface BorradoresPedido {
   lineas: LineaPedido[];
   versionActiva: string | null;
+  /**
+   * Solo al «Corregir» un pedido guardado: los parámetros con que se guardó. Van con el borrador
+   * para que recargar la página no vuelva en silencio a los comunes; se van cuando se va él.
+   */
+  paramsGuardados?: CalcParams;
 }
 
 /**
@@ -31,6 +38,7 @@ interface ContenidoGuardado {
   guardadoEn: string;
   versionActiva: string | null;
   lineas: LineaPedido[];
+  paramsGuardados?: CalcParams;
 }
 
 const pareceLinea = (valor: unknown): valor is LineaPedido => {
@@ -58,11 +66,16 @@ export function leerBorradores(
       return { lineas: datos.filter(pareceLinea), versionActiva: null };
     }
     if (typeof datos !== "object" || datos === null) return sinBorradores();
-    const { lineas, versionActiva } = datos as Partial<ContenidoGuardado>;
-    return {
+    const { lineas, versionActiva, paramsGuardados } = datos as Partial<ContenidoGuardado>;
+    const recuperados: BorradoresPedido = {
       lineas: Array.isArray(lineas) ? lineas.filter(pareceLinea) : [],
       versionActiva: typeof versionActiva === "string" ? versionActiva : null,
     };
+    // Unos parámetros que no pasarían la comprobación del servidor no se recuperan: mejor los
+    // comunes (sin el aviso de «Corregir») que un guardado que falla.
+    const params = paramsGuardados === undefined ? null : validarParams(paramsGuardados);
+    if (params?.ok) recuperados.paramsGuardados = params.params;
+    return recuperados;
   } catch {
     return sinBorradores();
   }
@@ -75,6 +88,8 @@ export function guardarBorradores(
   lineas: LineaPedido[],
   versionActiva: string | null,
   ahora: string,
+  /** Los de «Corregir»; sin ellos (null) el pedido se calcula con los comunes. */
+  paramsGuardados: CalcParams | null = null,
 ): boolean {
   if (!almacen) return false;
   const clave = claveBorradores(numeroPedido);
@@ -83,7 +98,9 @@ export function guardarBorradores(
       almacen.removeItem(clave);
       return true;
     }
-    const contenido: ContenidoGuardado = { guardadoEn: ahora, versionActiva, lineas };
+    const contenido: ContenidoGuardado = {
+      guardadoEn: ahora, versionActiva, lineas, ...(paramsGuardados ? { paramsGuardados } : {}),
+    };
     return escribirHaciendoSitio(almacen, clave, JSON.stringify(contenido));
   } catch {
     return false;
