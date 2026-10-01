@@ -30,4 +30,10 @@ describe('ventana «Guardar en la ficha del cliente»', () => {
     const html = renderToStaticMarkup(<GuardarEnFicha abierta={abierta(null)} usuario="IVÁN" numeroPedido="AR.26.04286" ocupado={false} onGuardar={() => {}} onCerrar={() => {}} />);
     expect(html).toContain('Crear la ficha de TALLERES CAL');
   });
+
+  it('sin nada que marcar, el motivo es el del servidor: código añadido', () => {
+    const sinNada = { ...abierta({ id: 't', nombre: 'TALLERES CAL', codigosRps: [] }), diferencias: [] };
+    const html = renderToStaticMarkup(<GuardarEnFicha abierta={sinNada} usuario="IVÁN" numeroPedido="AR.26.04286" ocupado={false} onGuardar={() => {}} onCerrar={() => {}} />);
+    expect(html).toContain('con el motivo «Código añadido desde el pedido AR.26.04286»');
+  });
 });

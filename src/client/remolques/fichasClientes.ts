@@ -14,6 +14,9 @@ export const REMOLQUES_CLIENTES_SAVED = 'remolques-clientes-saved';
 export const nombreClienteRps = (cliente: Pick<ClienteRps, 'nombre' | 'alias'>): string =>
   (cliente.alias?.trim() || cliente.nombre).trim();
 
+/** Si el fichero de fichas está roto, el servidor calcula con las de partida y la pantalla lo cuenta. */
+export const AVISO_FICHAS_ILEGIBLES = 'No se pueden leer las fichas de cliente: se usan las de partida. Avisa a informática.';
+
 export async function leerFichas(): Promise<SnapshotFichas> {
   const respuesta = await fetch(RUTA_FICHAS, { cache: 'no-store' });
   if (!respuesta.ok) throw new Error('No se pudieron leer las fichas de cliente.');

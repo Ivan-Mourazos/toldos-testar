@@ -36,7 +36,7 @@ import { REMOLQUES_PARAMETERS_SAVED } from './useRemolquesParameters';
 import { aplicarFichaALineas } from '../../remolques/clientes/aplicar.ts';
 import type { FichaCliente } from '../../remolques/clientes/tipos.ts';
 import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
-import { guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
+import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -523,17 +523,23 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * se parece al de una, pregunta «¿Es de la ficha …?»: «Añadir el código y aplicar» guarda el código
    * en esa ficha (con el «Soy») y la aplica. Si no se pueden leer las fichas, se obtiene sin ellas.
    */
-  const fichaDelPedido = useCallback(async (pedido: PedidoRps): Promise<FichaCliente | null> => {
+  const fichaDelPedido = useCallback(async (pedido: PedidoRps, sigueVigente: () => boolean): Promise<FichaCliente | null> => {
+    // Si ya no es la consulta de esta pantalla, no se pregunta ni se guarda nada.
+    if (!sigueVigente()) return null;
     let fichas: FichaCliente[];
     try {
-      fichas = (await leerFichas()).fichas;
+      const leidas = await leerFichas();
+      fichas = leidas.fichas;
+      if (leidas.ilegible) avisar('info', AVISO_FICHAS_ILEGIBLES);
     } catch {
       avisar('info', 'No se pudieron leer las fichas de cliente: el pedido se obtiene sin ellas.');
       return null;
     }
     const { ficha, sugerida } = decidirFicha(fichas, pedido.cliente);
     if (ficha || !sugerida) return ficha;
+    if (!sigueVigente()) return null;
     if (await confirmar(preguntaSugerencia(sugerida, pedido)) !== 'confirm') return null;
+    if (!sigueVigente()) return null;
     if (!usuario) {
       avisar('info', `Se aplica la ficha de ${sugerida.nombre}, pero el código no se guarda en ella: elige «Soy» primero.`);
       return sugerida;
@@ -574,7 +580,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     if (!vigente() || !esteMismo()) return;
     // La ficha del cliente: solo rellena lo vacío y marca lo que pone «del cliente». Puede preguntar,
     // así que después se vuelve a comprobar que la consulta sigue siendo la de esta pantalla.
-    const ficha = await fichaDelPedido(pedido);
+    const ficha = await fichaDelPedido(pedido, () => vigente() && esteMismo());
     if (!vigente() || !esteMismo()) return;
     const deRps = aplicarFichaALineas(lineasDesdePedidoRps(pedido, {
       materiales,

@@ -86,6 +86,11 @@ describe("calcLona — variantes", () => {
     expect(res.panoDelantero.ancho).toBe(178);
     expect(res.notas.join(" ")).toContain("GOMA");
   });
+  it("una recogida que ya no existe avisa en el elemento y se calcula sin recogida", () => {
+    const res = calcLona({ ...base, recogeDelante: "PUENTES VIEJOS" }, DEFAULT_PARAMS);
+    expect(res.notas).toContain("Falta la recogida «PUENTES VIEJOS» de delante: ya no está en Parámetros ni en las fichas; se calcula sin recogida.");
+    expect(calcLona(base, DEFAULT_PARAMS).notas.join(" ")).not.toContain("Falta");
+  });
   it("sin contorno manual: paño contorno null y metros tela 0", () => {
     const res = calcLona({ ...base, contorno: 0 }, DEFAULT_PARAMS);
     expect(res.panoContorno).toBeNull();

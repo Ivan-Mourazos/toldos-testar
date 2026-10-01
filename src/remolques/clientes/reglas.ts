@@ -197,3 +197,24 @@ function comprobarMedidas(medidas: unknown, mal: (texto: string) => void) {
     }
   });
 }
+
+/**
+ * Si alguna de las recogidas generales que se quitan la usa una ficha (como recogida de delante o de
+ * detrás), el texto del error con las fichas; si no, null. Quitarla dejaría esas fichas sin su recogida.
+ */
+export function errorPorRecogidasEnUso(
+  fichas: readonly FichaCliente[], quitadas: readonly string[],
+): string | null {
+  for (const nombre of quitadas) {
+    const clave = normalizarNombre(nombre);
+    const usan = fichas
+      .filter((f) => [f.recogeDelante, f.recogeAtras].some((r) => typeof r === "string" && normalizarNombre(r) === clave))
+      .map((f) => f.nombre);
+    if (usan.length > 0) {
+      const lista = usan.join(", ");
+      // «TALLERES CAL, C. B.» ya acaba en punto: no se le añade otro.
+      return `La recogida «${nombre}» la usan las fichas: ${lista}${lista.endsWith(".") ? "" : "."} Cámbiala en ellas antes de quitarla.`;
+    }
+  }
+  return null;
+}

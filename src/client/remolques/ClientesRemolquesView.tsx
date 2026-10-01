@@ -34,6 +34,7 @@ const EXTRAS_VACIOS: ExtrasBaqueton = {
   extraLargoCostura: 0, extraAnchoCostura: 0, extraBaquetonLargoDelante: 0, extraBaquetonLargoDetras: 0,
   extraLargoFinal: 0, extraAnchoFinal: 0, extraBaquetonTrasero: 0, observaciones: [],
 };
+const AVISO_RENOMBRAR = 'Si cambias el nombre, los pedidos a medias de este cliente dejan de encontrar sus extras.';
 const recogidaVacia = (nombre: string): Recogida => ({ nombre, delante: 0, atras: 0, lateralSoloAtras: 0, lateralSoloDelante: 0, panoTraseroConAnchoDelante: false });
 const medidaVacia = (): MedidaHabitual => ({ tipo: 'lona', largo: 0, ancho: 0, ollaos: { delante: [], atras: [], laterales: [] } });
 
@@ -118,6 +119,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <SelectField label="Trabajo habitual" value={ficha.trabajo === 'lona' ? 'Lona' : ficha.trabajo === 'baqueton' ? 'Baquetón' : NADA} options={[NADA, 'Lona', 'Baquetón']}
           onChange={(v) => onChange({ trabajo: v === 'Lona' ? 'lona' : v === 'Baquetón' ? 'baqueton' : undefined })} />
       </div>
+      <small className="clientes-remolques-ayuda">{AVISO_RENOMBRAR}</small>
       <button type="button" className="ghost-button" aria-label={`Quitar la ficha ${ficha.nombre}`} onClick={onQuitar}><Trash2 aria-hidden="true" />Quitar ficha</button>
     </ParameterBand>
     <ParameterBand number="02" title="Perfil" description="El perfil habitual de sus lonas y sus medidas.">
@@ -143,6 +145,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
             <CampoNumFicha key={campo} label={label} value={propia[campo]} onChange={(v) => cambiarPropia({ [campo]: v ?? 0 })} />
           ))}
         </div>
+        <small className="clientes-remolques-ayuda">{AVISO_RENOMBRAR}</small>
         <label className="remolques-parameter-check"><input type="checkbox" checked={propia.panoTraseroConAnchoDelante ?? false} onChange={(e) => cambiarPropia({ panoTraseroConAnchoDelante: e.target.checked })} /><span>Paño trasero con el ancho de delante</span></label>
       </section>}
     </ParameterBand>

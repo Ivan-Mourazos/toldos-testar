@@ -8,7 +8,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fichaConCambios } from './remolques/clientes/diferencias.ts';
 import { fichaPorCodigo, fichasCambiadas, idFicha, normalizarNombre, validarFichas } from './remolques/clientes/reglas.ts';
-import { MOTIVO_SEMILLA } from './remolques/clientes/semilla.ts';
+import { DEFAULT_PARAMS } from './remolques/calc/params.ts';
+import { entradasDeCliente, fichasSemilla, MOTIVO_SEMILLA } from './remolques/clientes/semilla.ts';
 import { writeFileAtomic } from './workflow.js';
 
 const storeError = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
@@ -48,13 +49,28 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
     await fs.appendFile(historyFile, `${JSON.stringify({ ...cabecera, changedSections, parameters: { fichas } })}\n`);
   }
 
+  // Las fichas de partida en memoria, sin escribir nada: con ellas se calcula si el fichero está roto o
+  // si la semilla no valida, para no perder en silencio los extras de HPL/AYALA/GENERAL WOLDER ni la
+  // recogida de PUENTES. Si ni así valen, las del código.
+  async function fichasEnMemoria() {
+    const generales = await recogidasGenerales();
+    const candidatas = [semilla, async () => fichasSemilla(entradasDeCliente(DEFAULT_PARAMS))];
+    for (const origen of candidatas) {
+      try {
+        const validacion = validarFichas(await origen(), { recogidasGenerales: generales });
+        if (validacion.ok) return validacion.fichas;
+      } catch { /* se prueba con la siguiente */ }
+    }
+    return [];
+  }
+
   async function sembrarSiFalta() {
     const leido = await leerFichero();
     if (!leido.falta) return leido.snapshot;
     const validacion = validarFichas(await semilla(), { recogidasGenerales: await recogidasGenerales() });
     if (!validacion.ok) {
       logger.warn(`Las fichas de partida de remolques no son válidas: ${validacion.errores.join('. ')}.`);
-      return VACIO();
+      return Object.assign(VACIO(), { sinSemilla: true });
     }
     const saved = { version: 1, updatedAt: new Date().toISOString(), updatedBy: '', reason: MOTIVO_SEMILLA, fichas: validacion.fichas };
     try {
@@ -76,10 +92,16 @@ export function createRemolquesClientesStore({ file, historyFile = file.replace(
   }
   // Un fichero ilegible se cuenta (`ilegible`) para que la pantalla pueda avisar; nunca se guarda encima.
   async function getSnapshot() {
-    const { snapshot, roto } = await readCurrent();
+    const { snapshot: leido, roto } = await readCurrent();
+    const snapshot = { ...leido };
+    delete snapshot.sinSemilla; // marca interna, no es del fichero
     return roto ? { ...snapshot, ilegible: true } : snapshot;
   }
-  async function get() { return (await readCurrent()).snapshot.fichas; }
+  // Con lo que se calcula: las fichas guardadas o, si no se pueden leer, las de partida (sin guardarlas).
+  async function get() {
+    const { snapshot, roto } = await readCurrent();
+    return roto || snapshot.sinSemilla ? fichasEnMemoria() : snapshot.fichas;
+  }
   /** 'ok' si las fichas están en su fichero, 'sin-guardar' si solo existe la semilla, 'ilegible' si el fichero está roto. */
   async function estado() {
     const { roto } = await readCurrent();

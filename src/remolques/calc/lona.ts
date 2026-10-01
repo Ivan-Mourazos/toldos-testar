@@ -205,6 +205,13 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
     : 0;
 
   const notas: string[] = [];
+  // Una recogida que ya no está en los parámetros (ficha renombrada o borrada, fichero roto) se calcula
+  // como «NO»: se dice en el elemento para que no pase en silencio.
+  for (const [lado, nombre] of [["delante", input.recogeDelante], ["detrás", input.recogeAtras]] as const) {
+    if (nombre && !params.recogidas.some((r) => r.nombre === nombre)) {
+      notas.push(`Falta la recogida «${nombre}» de ${lado}: ya no está en Parámetros ni en las fichas; se calcula sin recogida.`);
+    }
+  }
   if (input.recogeDelante === "GOMA" || input.recogeAtras === "GOMA") {
     notas.push("GOMA: preparar orejas por lado.");
   }

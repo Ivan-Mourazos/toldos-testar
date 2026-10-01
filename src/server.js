@@ -22,6 +22,7 @@ import { createRuleParametersStore } from './ruleParametersStore.js';
 import { createRemolquesParametersStore } from './remolquesParametersStore.js';
 import { createRemolquesClientesStore } from './remolquesClientesStore.js';
 import { paramsConFichas } from './remolques/clientes/params-efectivos.ts';
+import { errorPorRecogidasEnUso, normalizarNombre as normalizarNombreFicha } from './remolques/clientes/reglas.ts';
 import { fichasSemilla } from './remolques/clientes/semilla.ts';
 import { getMaterialesConOrigen } from './remolques/materiales.ts';
 import { pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
@@ -434,6 +435,14 @@ app.put('/api/remolques/parametros', async (req, res, next) => {
     const estadoFichas = await remolquesClientesStore.estado();
     if (estadoFichas === 'ilegible') return res.status(503).json({ error: MENSAJE_FICHAS_ILEGIBLES });
     if (estadoFichas !== 'ok') return res.status(503).json({ error: 'Las fichas de cliente aún no se han podido guardar; inténtalo más tarde.' });
+    // No se quita una recogida general que una ficha use: la ficha se quedaría sin ella.
+    const nuevas = req.body?.parameters?.recogidas;
+    if (Array.isArray(nuevas)) {
+      const siguen = new Set(nuevas.map((r) => normalizarNombreFicha(String(r?.nombre ?? ''))));
+      const quitadas = (await remolquesParametersStore.get()).recogidas.map((r) => r.nombre).filter((n) => !siguen.has(normalizarNombreFicha(n)));
+      const enUso = errorPorRecogidasEnUso(await remolquesClientesStore.get(), quitadas);
+      if (enUso) return res.status(400).json({ error: enUso });
+    }
     res.json(await remolquesParametersStore.save(req.body));
   } catch (error) {
     if (error.code === 'VERSION_CONFLICT') return res.status(409).json({ error: error.message, current: error.current });

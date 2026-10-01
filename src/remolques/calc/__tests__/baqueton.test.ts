@@ -16,6 +16,15 @@ const base: BaquetonInput = {
   observaciones: "",
 };
 
+describe("calcBaqueton — cliente que ya no está", () => {
+  it("avisa en el elemento y calcula como GENERAL", () => {
+    const res = calcBaqueton({ ...base, clienteEspecifico: "CLIENTE BORRADO" }, DEFAULT_PARAMS);
+    expect(res.notas[0]).toBe("Falta el cliente «CLIENTE BORRADO»: ya no está en las fichas; se calcula como GENERAL.");
+    expect(res.panoUnico).toEqual(calcBaqueton(base, DEFAULT_PARAMS).panoUnico);
+    expect(calcBaqueton(base, DEFAULT_PARAMS).notas.join(" ")).not.toContain("Falta");
+  });
+});
+
 describe("calcBaqueton — caso real AR2602796", () => {
   const res = calcBaqueton(base, DEFAULT_PARAMS);
 

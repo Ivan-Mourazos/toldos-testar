@@ -48,7 +48,7 @@ export function GuardarEnFicha({ abierta, usuario, numeroPedido, ocupado, onGuar
             ))}
           </ul>
         )}
-        <p className="rem-ficha-quien">Lo guarda {usuario} con el motivo «Desde el pedido {numeroPedido.trim()}».</p>
+        <p className="rem-ficha-quien">Lo guarda {usuario} con el motivo «{marcadas.size > 0 ? 'Desde el pedido' : 'Código añadido desde el pedido'} {numeroPedido.trim()}».</p>
         <div className="parameters-save-actions">
           <button className="ghost-button" type="button" disabled={ocupado} onClick={onCerrar}>Cancelar</button>
           <button className="primary-button" type="button" disabled={!puedeGuardar} onClick={() => onGuardar([...marcadas])}>

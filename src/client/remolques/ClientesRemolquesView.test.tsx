@@ -19,6 +19,8 @@ describe('Parámetros › Remolques › Clientes', () => {
     expect(html).toContain('Paño trasero con el ancho de delante');
     expect(html).toContain('ABIERTO EN LA PARTE TRASERA (REFORZAR)');
     expect(html).toContain('Añadir ficha');
+    // Aviso junto al nombre de la ficha y al de la recogida propia.
+    expect(html.match(/Si cambias el nombre, los pedidos a medias de este cliente dejan de encontrar sus extras./g)).toHaveLength(2);
     expect(html).toContain('Añadir medida');
     expect(html).not.toContain('<select');
   });

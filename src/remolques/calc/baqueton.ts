@@ -92,6 +92,10 @@ export function calcBaqueton(input: BaquetonInput, params: CalcParams): Baqueton
           };
 
   const notas: string[] = [...cli.observaciones];
+  // Un cliente que ya no está (ficha renombrada o borrada, fichero roto) se calcula como GENERAL.
+  if (input.clienteEspecifico && !params.clientesBaqueton.some((c) => c.nombre === input.clienteEspecifico)) {
+    notas.unshift(`Falta el cliente «${input.clienteEspecifico}»: ya no está en las fichas; se calcula como GENERAL.`);
+  }
   if (input.rotulacion) notas.push("Incluye rotulación.");
 
   return {

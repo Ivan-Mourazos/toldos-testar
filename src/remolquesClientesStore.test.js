@@ -51,11 +51,20 @@ describe('fichas de partida', () => {
     expect(existsSync(file())).toBe(false);
   });
 
-  it('un fichero roto no se vuelve a sembrar: no hay fichas y se avisa', async () => {
+  it('un fichero roto no se vuelve a sembrar ni se escribe: se calcula con las de partida en memoria y se avisa', async () => {
     await writeFile(file(), '{ roto', 'utf8');
-    expect(await store().get()).toEqual([]);
+    expect((await store().get()).map((f) => f.nombre)).toEqual(['HIJOS DE PEDRO LOPEZ', 'AYALA', 'GENERAL WOLDER']);
     expect(logger.warn).toHaveBeenCalledTimes(1);
     expect(await readFile(file(), 'utf8')).toBe('{ roto');
+  });
+});
+
+describe('semilla que no valida', () => {
+  it('se calcula con las fichas del código, sin escribir nada', async () => {
+    const s = store({ semilla: async () => [{ id: 'x', nombre: '', codigosRps: [] }] });
+    expect((await s.get()).map((f) => f.nombre)).toEqual(['HIJOS DE PEDRO LOPEZ', 'AYALA', 'GENERAL WOLDER']);
+    expect(existsSync(file())).toBe(false);
+    expect(logger.warn).toHaveBeenCalled();
   });
 });
 
@@ -140,8 +149,8 @@ describe('fichero ilegible', () => {
     await expect(s.desdePedido(pedido)).rejects.toMatchObject({ code: 'FICHAS_ILEGIBLES' });
     await expect(s.save({ baseVersion: 0, fichas: [], updatedBy: 'IVÁN', reason: 'x' })).rejects.toMatchObject({ code: 'FICHAS_ILEGIBLES', message: 'Las fichas de cliente no se pueden leer; revisa el fichero antes de guardar.' });
     expect(await readFile(file(), 'utf8')).toBe(contenido);
-    expect(await s.get()).toEqual([]);
-    expect(await s.getSnapshot()).toMatchObject({ ilegible: true });
+    expect((await s.get()).map((f) => f.nombre)).toEqual(['HIJOS DE PEDRO LOPEZ', 'AYALA', 'GENERAL WOLDER']);
+    expect(await s.getSnapshot()).toMatchObject({ ilegible: true, fichas: [] });
     expect(await s.estado()).toBe('ilegible');
     expect(logger.warn).toHaveBeenCalled();
   });

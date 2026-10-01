@@ -6,7 +6,7 @@ import type { FichaCliente } from '../../remolques/clientes/tipos.ts';
 import type { ClienteRps, PedidoRps } from '../../remolques/rps/types.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import type { Notify } from '../components/NotificationCenter';
-import { guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
+import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
 import { clienteDeLinea, elementoDeLinea } from './guardarEnFicha';
 
 export interface FichaAbierta {
@@ -28,7 +28,12 @@ export function useGuardarEnFicha({ usuario, numeroPedido, pedidoRps, params, no
     if (!cliente) return;
     setOcupado(true);
     try {
-      const { fichas } = await leerFichas();
+      const { fichas, ilegible } = await leerFichas();
+      // Con el fichero roto no se puede guardar nada, ni crear la ficha: se dice por qué.
+      if (ilegible) {
+        notify(AVISO_FICHAS_ILEGIBLES, { tone: 'warning' });
+        return;
+      }
       const ficha = fichaPorCodigo(fichas, cliente.codigo);
       const elemento = elementoDeLinea(linea);
       setAbierta({ elemento, cliente, ficha, diferencias: diferenciasConFicha(elemento, ficha, params) });

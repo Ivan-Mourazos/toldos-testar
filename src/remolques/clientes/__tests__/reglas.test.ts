@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PARAMS } from "../../calc/params.ts";
 import { PARAMS_GENERALES } from "../params-efectivos.ts";
-import { fichaPorCodigo, fichasCambiadas, idFicha, normalizarNombre, sugerirFicha, validarFichas } from "../reglas.ts";
+import { errorPorRecogidasEnUso, fichaPorCodigo, fichasCambiadas, idFicha, normalizarNombre, sugerirFicha, validarFichas } from "../reglas.ts";
 import { entradasDeCliente, fichasSemilla } from "../semilla.ts";
 import type { FichaCliente, MedidaHabitual } from "../tipos.ts";
 
@@ -110,5 +110,19 @@ describe("fichasCambiadas", () => {
     expect(fichasCambiadas([hpl, ayala, wolder], [{ ...hpl, sesgoDetras: 1.5 }, wolder, ficha()]))
       .toEqual(["HIJOS DE PEDRO LOPEZ", "TALLERES CAL", "AYALA"]);
     expect(fichasCambiadas([hpl], [{ ...hpl }])).toEqual([]);
+  });
+});
+
+describe("errorPorRecogidasEnUso", () => {
+  const fichas = [ficha({ recogeDelante: "GOMA" }), ficha({ id: "b", nombre: "B", codigosRps: [], recogeAtras: "goma" }), ficha({ id: "c", nombre: "C", codigosRps: [] })];
+  it("nombra las fichas que usan la recogida que se quita", () => {
+    expect(errorPorRecogidasEnUso(fichas, ["Goma"])).toBe("La recogida «Goma» la usan las fichas: TALLERES CAL, B. Cámbiala en ellas antes de quitarla.");
+  });
+  it("un nombre de ficha que acaba en punto no lleva punto doble", () => {
+    expect(errorPorRecogidasEnUso([ficha({ nombre: "TALLERES CAL, C. B.", recogeDelante: "GOMA" })], ["GOMA"])).toBe("La recogida «GOMA» la usan las fichas: TALLERES CAL, C. B. Cámbiala en ellas antes de quitarla.");
+  });
+  it("sin uso, o sin quitar nada, no hay error", () => {
+    expect(errorPorRecogidasEnUso(fichas, ["OTRA"])).toBeNull();
+    expect(errorPorRecogidasEnUso(fichas, [])).toBeNull();
   });
 });
