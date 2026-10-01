@@ -29,7 +29,7 @@
 - **Marcas «del cliente»** en `LineaPedido.delCliente = { ficha, campos }`: viajan con el borrador del navegador y el del servidor (no con el pedido guardado, que no las necesita). Cambiar un campo quita su marca.
 - **El cliente de RPS del elemento** se guarda al importar en `origenRps.cliente` (campo nuevo, opcional). «Guardar en la ficha del cliente» sale si el elemento lo tiene o si el pedido de RPS en pantalla es este; si no, no sale. Va en la cabecera del editor.
 - **Extras de baquetón en «Guardar en la ficha»:** si el baquetón usa los extras de otro cliente (`clienteEspecifico` distinto de GENERAL y de la ficha), se ofrece copiarlos a la ficha.
-- **Hoja «Clientes»:** entrada propia bajo «Remolques» en la lista de la izquierda de Parámetros («Generales» y «Clientes»); guarda con la barra de siempre («Quién hace el cambio» y «Motivo») y su historial dice qué fichas cambiaron.
+- **Hoja «Clientes»:** entrada propia bajo «Remolques» en la lista de la izquierda de Parámetros («Generales» y «Clientes»); guarda con la barra de siempre («Quién hace el cambio» y «Motivo») y su historial dice qué fichas cambiaron. **Cambiado después (01/10/2026):** una versión por ficha, con su botón «Guardar», motivo opcional e historial automático de cada ficha (diseño, apartado 3).
 - La e2e va en su propia aislada (`tmp/clientes`, puertos 4313/4323): cambia y borra las fichas de esa carpeta.
 
 ## Global Constraints

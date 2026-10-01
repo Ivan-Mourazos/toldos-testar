@@ -79,8 +79,15 @@ cremallera del 9, extras de baquetón, observaciones fijas y medidas habituales 
 obtener un pedido de RPS de uno de sus códigos, los campos vacíos se rellenan con la ficha y llevan la
 marca «del cliente»; si el largo × ancho coincide con una medida habitual, los ollaos salen a medida.
 «Guardar en la ficha del cliente», en cada elemento, guarda lo que tiene distinto. Las fichas viven en
-`REMOLQUES_CLIENTES_FILE` (por defecto, junto a los parámetros de remolques) con versión e historial;
-la primera vez se crean solas con lo que había por cliente en los parámetros.
+`REMOLQUES_CLIENTES_FILE` (por defecto, junto a los parámetros de remolques); la primera vez se crean
+solas con lo que había por cliente en los parámetros.
+
+Cada ficha se guarda sola, con su botón «Guardar»: quién guarda es el «Soy» y el motivo es opcional.
+Cada ficha tiene su versión (solo avisa de conflicto si otro puesto guardó **esa** ficha antes) y su
+historial, que dice solo qué cambió («Medida 220 × 130 de lona nueva», «Recogida detrás: — → Goma»,
+«Códigos de RPS: + 099991»…) y permite «Cargar esta versión». Los cambios sin guardar de una ficha se
+quedan al pasar a otra (la lista los marca). Crear y quitar una ficha se guardan al momento. Los
+parámetros generales de remolques y los de toldos se siguen guardando todos a la vez, con quién y motivo.
 
 ## Configuración de carpetas
 
@@ -299,6 +306,17 @@ El fichero tiene que existir (se crea al primer uso) y en los registros no debe 
 «fichas de partida». Después, abrir Parámetros › Remolques › Clientes y comprobar las tres fichas
 (HIJOS DE PEDRO LOPEZ, AYALA y GENERAL WOLDER), sobre todo en HPL la casilla «Paño trasero con el
 ancho de delante» de su recogida propia.
+
+**Una versión por ficha.** Si en el servidor ya están las fichas de la primera fase 3 (una versión para
+todas), no hay que hacer nada: se leen tal cual (cada ficha empieza en su versión 1 y su historial
+de antes sale en el de cada ficha) y el primer guardado escribe el fichero en el formato nuevo. Ese
+formato nuevo lo sigue leyendo la versión anterior de la web, por si hubiera que volver atrás. Antes
+de desplegar, por si acaso, una copia:
+
+```bash
+cp /var/lib/toldos-testar/remolques-clientes.json /var/lib/toldos-testar/remolques-clientes.antes-por-ficha.json 2>/dev/null || true
+cp /var/lib/toldos-testar/remolques-clientes-history.jsonl /var/lib/toldos-testar/remolques-clientes-history.antes-por-ficha.jsonl 2>/dev/null || true
+```
 
 ### 6. Paso de los pedidos de la web vieja de remolques (una vez)
 

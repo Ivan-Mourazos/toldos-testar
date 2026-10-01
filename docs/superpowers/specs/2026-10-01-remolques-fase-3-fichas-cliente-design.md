@@ -57,11 +57,27 @@ vaya llenando con el trabajo diario.
 
 - Un fichero JSON en el servidor junto a los parámetros de remolques (semilla de entorno
   `REMOLQUES_CLIENTES_FILE`, por defecto junto a `remolques-parameters.json`), común a todos los
-  puestos, con **versión** (409 si otro guardó antes), **historial** («Quién hace el cambio» de la
-  lista de técnicos y «Motivo») y validación.
-- Rutas: `GET /api/remolques/clientes`, `PUT /api/remolques/clientes` (todas las fichas, como los
-  parámetros), `GET /api/remolques/clientes/historial`, y `POST /api/remolques/clientes/desde-pedido`
-  para el botón (añade o actualiza solo lo marcado en una ficha, creándola si hace falta).
+  puestos, con validación de todas las fichas en cada guardado (un código en una sola ficha,
+  recogidas que existen…).
+- **Una versión por ficha** (cambio de Iván del 01/10/2026: «Si cada vez que cambie algo de un
+  cliente tengo que poner una explicación me voy a volver loco»). Cada ficha tiene su versión y su
+  botón «Guardar»: guardar una no choca con quien edita otra; solo hay 409 si **esa misma ficha**
+  cambió desde que se cargó. Quién guarda es el «Soy»; el **motivo es opcional**.
+- **Historial por ficha, automático**: cada cambio queda con quién, cuándo, el motivo si se puso y
+  **qué cambió**, escrito solo («Medida 220 × 130 de lona nueva», «Recogida detrás: — → Goma»,
+  «Códigos de RPS: + 099991», «Ficha creada», «Ficha quitada»). «Cargar esta versión» la pone como
+  cambios sin guardar de esa ficha. Crear y quitar una ficha (con confirmación) se guardan al momento.
+- Rutas: `GET /api/remolques/clientes` (todas, cada una con su `version`), `POST
+  /api/remolques/clientes` (crear), `PUT /api/remolques/clientes/:id` (`{ ficha, baseVersion,
+  updatedBy, motivo? }`), `DELETE /api/remolques/clientes/:id` (`{ baseVersion, updatedBy }`),
+  `GET /api/remolques/clientes/:id/historial`, y `POST /api/remolques/clientes/desde-pedido` para el
+  botón (añade o actualiza solo lo marcado en una ficha, creándola si hace falta; queda en el
+  historial de esa ficha). El `PUT` de todas a la vez responde 410 («recarga la página»).
+- El fichero es `{ formato: 2, version, fichas }`: cada ficha lleva su `version` y `version` de fuera
+  solo cuenta guardados (para que la web de antes aún pueda leerlo). El de antes (sin versión por
+  ficha) se lee tal cual: cada ficha es la versión 1, y su historial (cada renglón con todas las
+  fichas) se reparte por ficha al leerlo, comparando cada renglón con el anterior. Al primer guardado
+  se escribe ya en el formato nuevo.
 
 ## 4. Al obtener un pedido de RPS
 
