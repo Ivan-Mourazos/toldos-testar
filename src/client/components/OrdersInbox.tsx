@@ -256,13 +256,15 @@ function DraftRow({ borrador, mine, open, onToggle, onSeguir, onDescartar }: {
 }
 
 function ModelTags({ models, producto, borrador = false }: { models?: string[]; producto: 'toldos' | 'remolques'; borrador?: boolean }) {
-  const { visible, hidden } = limitModels(models);
+  // Una sola línea (Iván, 01/10/2026: «prefiero abreviaturas o un + que filas más grandes»): el
+  // primer modelo y «+N» con todos al pasar el ratón; un nombre largo se corta con «…».
+  const { visible, hidden } = limitModels(models, 1, 1);
   const tinte = producto === 'remolques' ? ' is-remolques' : '';
   return (
     <span className="orders-model-tags">
       {borrador && <span className="orders-borrador-tag">Borrador</span>}
       <span className={`orders-kind-tag familia-tag is-${producto}`}>{producto === 'remolques' ? 'Remolque' : 'Toldo'}</span>
-      {visible.map((model) => <span key={model} className={`orders-model-tag familia-tag${tinte}`}>{controlLabel(model)}</span>)}
+      {visible.map((model) => <span key={model} className={`orders-model-tag familia-tag is-nombre${tinte}`} title={controlLabel(model)}>{controlLabel(model)}</span>)}
       {hidden.length > 0 && <span className={`orders-model-tag familia-tag${tinte}`} title={Array.from(new Set(models)).map(controlLabel).join('\n')}>+{hidden.length}</span>}
     </span>
   );

@@ -24,8 +24,21 @@ describe('Pedidos con toldos y remolques', () => {
     expect(html).toMatch(/>Todos<\/button>.*>Toldos<\/button>.*>Remolques<\/button>/);
     expect(html).toContain('orders-kind-tag familia-tag is-toldos">Toldo<');
     expect(html).toContain('orders-kind-tag familia-tag is-remolques">Remolque<');
-    expect(html).toContain('orders-model-tag familia-tag is-remolques">Recto<');
+    expect(html).toContain('orders-model-tag familia-tag is-nombre is-remolques" title="Recto">Recto<');
     expect(html).toContain('<span class="is-end">Elementos</span>');
+  });
+
+  it('los modelos van en una línea: el primero y «+N» con todos en el título', () => {
+    const html = renderToStaticMarkup(
+      <OrdersInbox
+        pending={[fila('AR2603', { kind: 'remolques', summary: { customer: 'Talleres', technician: 'IVÁN', ofs: ['0231782'], models: ['Arquillado con aguas', 'Recto', 'Arquillado con aguas', 'Con chaflán'], awnings: 4, reviewer: '', orderDate: '', diagnostics: 0 } })]}
+        history={[]} currentUser="IVÁN" pendingLoading={false} historyLoading={false} year={2026}
+        onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null}
+      />,
+    );
+    expect(html).toContain('title="Arquillado con aguas">Arquillado con aguas<');
+    expect(html).not.toContain('title="Recto">Recto<');
+    expect(html).toMatch(/title="Arquillado con aguas\nRecto\nCon chaflán">\+2</);
   });
 
   it('los borradores van encima de «Por revisar», con su etiqueta, y no cuentan como pendientes', () => {
