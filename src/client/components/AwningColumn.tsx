@@ -52,6 +52,7 @@ type Props = {
   fabricPending?: boolean;
   // Metros que el pedido pide de la tela de este toldo, para compararlos con su stock.
   fabricNeedMl?: number;
+  valanceFabricNeedMl?: number;
   parameters: RuleParameters;
   readOnly?: boolean;
   // Estado del toldo en el pedido abierto, el mismo que enseña el índice de bloques: en
@@ -124,7 +125,7 @@ function ExceptionBlock({ readOnly, exception, message, children }: { readOnly: 
   );
 }
 
-export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', fabricPending = false, fabricNeedMl = 0, readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', fabricPending = false, fabricNeedMl = 0, valanceFabricNeedMl = 0, readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel }: Props) {
   const fields = useVisibleFields(awning);
   // El aviso de la excepción técnica sale en su bloque (motivo y cambios): no se repite abajo.
   const exceptionNotice = awning.reglasModificadas ? diagnostics.find((item) => /^Excepción técnica en OF /.test(item.message || '')) : undefined;
@@ -579,7 +580,10 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {hasValance && (
             <div className="awning-valance-options awning-wide-field">
               <SelectField label="Curva bamba" missing={isMissing('valanceCurve')} value={awning.valanceCurve} options={formOptions.curvasBamba} placeholder="Elegir…" onChange={(valanceCurve) => update({ valanceCurve })} />
-              {!standaloneValance && <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" readEmptyAs="Igual que la tela" disabled={readOnly} onChange={(valanceFabric) => update({ valanceFabric })} />}
+              {!standaloneValance && <div className="awning-valance-fabric">
+                <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" readEmptyAs="Igual que la tela" disabled={readOnly} onChange={(valanceFabric) => update({ valanceFabric })} />
+                {!readOnly && <FabricStockLine selection={awning.valanceFabric} neededMl={valanceFabricNeedMl} />}
+              </div>}
               <SegmentedField label="Remate" missing={isMissing('remate')} value={valanceFinish} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
               {valanceFinish === 'OTRO' && <TextField label="Color remate" missing={isMissing('remateColor')} value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
             </div>

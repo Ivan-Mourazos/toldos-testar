@@ -12,35 +12,57 @@ export type FabricStockState =
 const ttlMs = 60_000;
 const cache = new Map<string, { at: number; promise: Promise<FabricStock> }>();
 
-function loadStock(code: string): Promise<FabricStock> {
-  const cached = cache.get(code);
-  if (cached && Date.now() - cached.at < ttlMs) return cached.promise;
-  const promise = fetch(`/api/catalog/fabrics/stock?codes=${encodeURIComponent(code)}`)
+// Las propuestas consultan sus opciones juntas y comparten la caché por artículo
+// con las líneas de tela elegida, incluida la bamba.
+export async function loadFabricStocks(codes: string[]): Promise<Record<string, FabricStockState>> {
+  const unique = [...new Set(codes.filter(Boolean))];
+  const missing = unique.filter((code) => {
+    const cached = cache.get(code);
+    return !cached || Date.now() - cached.at >= ttlMs;
+  });
+  if (missing.length) {
+    const request = fetch(`/api/catalog/fabrics/stock?codes=${encodeURIComponent(missing.join(','))}`)
     .then(async (response) => {
       const data = await response.json();
-      const stock = response.ok && Array.isArray(data.items) ? data.items[0] : null;
-      if (!stock) throw new Error(data.error || 'Stock no disponible ahora');
-      return stock as FabricStock;
+      if (!response.ok || !Array.isArray(data.items)) throw new Error(data.error || 'Stock no disponible ahora');
+      return new Map<string, FabricStock>(data.items.map((stock: FabricStock) => [stock.code.toUpperCase(), stock]));
     });
-  cache.set(code, { at: Date.now(), promise });
-  // Un fallo no se guarda: la próxima vez se vuelve a preguntar.
-  promise.catch(() => cache.delete(code));
-  return promise;
+    for (const code of missing) {
+      const promise = request.then((stocks) => {
+        const stock = stocks.get(code);
+        if (!stock) throw new Error('Stock no disponible ahora');
+        return stock;
+      });
+      cache.set(code, { at: Date.now(), promise });
+      // Un fallo no se guarda: la próxima vez se vuelve a preguntar.
+      promise.catch(() => { if (cache.get(code)?.promise === promise) cache.delete(code); });
+    }
+  }
+  return Object.fromEntries(await Promise.all(unique.map(async (code) => {
+    try {
+      const stock = await cache.get(code)!.promise;
+      return [code, { status: 'ready', stock } as FabricStockState];
+    } catch {
+      return [code, { status: 'error' } as FabricStockState];
+    }
+  })));
+}
+
+export function useFabricStocks(codes: string[]): Record<string, FabricStockState> {
+  const key = [...new Set(codes.filter(Boolean))].sort().join(',');
+  const [state, setState] = useState<{ key: string; value: Record<string, FabricStockState> }>({ key: '', value: {} });
+
+  useEffect(() => {
+    if (!key) return undefined;
+    let active = true;
+    loadFabricStocks(key.split(',')).then((value) => { if (active) setState({ key, value }); });
+    return () => { active = false; };
+  }, [key]);
+
+  if (!key) return {};
+  return state.key === key ? state.value : Object.fromEntries(key.split(',').map((code) => [code, { status: 'loading' }]));
 }
 
 export function useFabricStock(code: string): FabricStockState {
-  const [state, setState] = useState<{ code: string; value: FabricStockState }>({ code: '', value: { status: 'idle' } });
-
-  useEffect(() => {
-    if (!code) return undefined;
-    let active = true;
-    loadStock(code).then(
-      (stock) => { if (active) setState({ code, value: { status: 'ready', stock } }); },
-      () => { if (active) setState({ code, value: { status: 'error' } }); }
-    );
-    return () => { active = false; };
-  }, [code]);
-
-  if (!code) return { status: 'idle' };
-  return state.code === code ? state.value : { status: 'loading' };
+  return useFabricStocks([code])[code] ?? { status: 'idle' };
 }

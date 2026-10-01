@@ -8,7 +8,9 @@ import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
 import { appliedProposalSelection } from '../fabricProposal';
-import { FabricStockLine } from './FabricStockLine';
+import { FabricStockLine, FabricStockText } from './FabricStockLine';
+import { fabricCodeOf } from '../fabricStock';
+import { useFabricStocks } from '../hooks/useFabricStock';
 
 type Props = {
   orderCode: string; onOrderCodeBlur?: () => void; customer: string; orderDate: string;
@@ -47,6 +49,8 @@ export function OrderHeader(props: Props) {
   const fabricOrder = { fabric: props.fabric, sameFabric: props.sameFabric, awnings: props.awnings };
   const pending = props.pendingProposals ?? [];
   const commonPending = props.sameFabric && Boolean(props.fabric) && pending.length > 0;
+  const proposalStocks = useFabricStocks(props.readOnly ? [] : (props.autofill?.fabricProposals ?? [])
+    .flatMap((proposal) => proposal.options.slice(0, 5).map((option) => fabricCodeOf(option.selection))));
 
   function chooseFabricProposal(proposal: FabricProposal, selection: string) {
     if (props.readOnly) return;
@@ -157,6 +161,7 @@ export function OrderHeader(props: Props) {
                           onClick={() => chooseFabricProposal(proposal, option.selection)}
                         >
                           {option.label}
+                          <FabricStockText state={proposalStocks[fabricCodeOf(option.selection)] ?? { status: 'idle' }} compact />
                         </button>
                       ))}
                       {pending.includes(index) && <>

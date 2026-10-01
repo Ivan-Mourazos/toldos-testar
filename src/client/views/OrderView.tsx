@@ -227,6 +227,7 @@ export function OrderView({
               orderFabric={fabric}
               fabricPending={!sameFabric && pendingProposals.some((pending) => proposals[pending].awningIds.includes(awning.id))}
               fabricNeedMl={needByCode.get(fabricCodeOf(awning.fabric)) ?? 0}
+              valanceFabricNeedMl={needByCode.get(fabricCodeOf(awning.valanceFabric)) ?? 0}
               parameters={parameters}
               readOnly={readOnly}
               readStatus={statuses[index]}
