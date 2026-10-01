@@ -2,7 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { emptyLona } from '../../remolques/entradas-vacias.ts';
-import { GuardarEnFicha } from './GuardarEnFicha.tsx';
+import { GuardarEnFicha } from './VentanaGuardarEnFicha';
 import type { FichaAbierta } from './useGuardarEnFicha';
 
 const abierta = (ficha: FichaAbierta['ficha']): FichaAbierta => ({

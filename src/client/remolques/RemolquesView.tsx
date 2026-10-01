@@ -15,7 +15,7 @@ import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
-import { GuardarEnFicha } from './GuardarEnFicha.tsx';
+import { GuardarEnFicha } from './VentanaGuardarEnFicha';
 import { clienteDeLinea } from './guardarEnFicha';
 import { useGuardarEnFicha } from './useGuardarEnFicha';
 import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
