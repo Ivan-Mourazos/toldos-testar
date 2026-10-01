@@ -1,4 +1,6 @@
 import React from 'react';
+import { Save } from 'lucide-react';
+import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { CabeceraPedido } from './CabeceraPedido';
 import { DibujoRemolque } from './DibujoRemolque';
@@ -11,12 +13,13 @@ import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultado
 import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { faltaParaPdf } from './vistaPrevia';
+import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
-export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0 }: {
+export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado }: {
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
@@ -24,8 +27,12 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   pedidoSolicitado?: { numero: string; id: number } | null;
   /** Contador de pulsaciones de «Limpiar» (el botón está en la barra de la página): cada subida pide limpiar el formulario. */
   limpiarSolicitado?: number;
+  /** Un pedido guardado que Pedidos manda abrir aquí («Corregir» o «Reutilizar datos», fase 5). */
+  pedidoGuardadoSolicitado?: { id: number; pedido: PedidoRemolques; modo: ModoCarga } | null;
+  /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
+  onGuardado?: () => void;
 }) {
-  const ws = useRemolques({ usuario, notify, askForConfirmation });
+  const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado });
   // Solo se atiende cada petición una vez: repetirla pisaría lo que se escriba después. Abrir
   // el pedido desde Toldos es pedirlo a propósito: crea sus elementos como «Obtener datos del
   // pedido» y, si ya tenía, pregunta.
@@ -44,6 +51,14 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
     limpiezaAtendida.current = limpiarSolicitado;
     void limpiarFormulario();
   }, [limpiarFormulario, limpiarSolicitado]);
+  // Igual con los pedidos guardados que manda Pedidos: cada petición, una vez.
+  const ultimoGuardadoSolicitado = React.useRef<number | null>(null);
+  const { cargarPedidoGuardado } = ws;
+  React.useEffect(() => {
+    if (!pedidoGuardadoSolicitado || ultimoGuardadoSolicitado.current === pedidoGuardadoSolicitado.id) return;
+    ultimoGuardadoSolicitado.current = pedidoGuardadoSolicitado.id;
+    void cargarPedidoGuardado(pedidoGuardadoSolicitado.pedido, pedidoGuardadoSolicitado.modo);
+  }, [cargarPedidoGuardado, pedidoGuardadoSolicitado]);
   const {
     numeroPedido, cliente, fecha, lineas, versionActiva, cargandoPedido, rps,
   } = ws.estado;
@@ -76,6 +91,11 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
             RPS no ha respondido con las bobinas: se usa la lista de lonas incluida en la aplicación.
           </p>
         )}
+        {ws.conParamsGuardados && (
+          <p className="rem-aviso-materiales rem-aviso-params" role="status">
+            Corrigiendo un pedido guardado: se calcula con los parámetros con que se guardó, no con los actuales.
+          </p>
+        )}
       </section>
 
       <PestanasElementos
@@ -86,7 +106,16 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         onSeleccionar={ws.seleccionarLinea}
         onEliminar={(version) => void ws.eliminarLinea(version)}
         onNuevo={ws.nuevaLinea}
-        acciones={lineas.length > 0 ? <VistaPreviaPdf lineas={lineas} bloqueo={faltaPdf} notify={notify} /> : null}
+        acciones={lineas.length > 0 ? (
+          <>
+            <VistaPreviaPdf lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />
+            <button type="button" className="primary-button rem-guardar-boton" disabled={Boolean(faltaPdf) || ws.guardando}
+              aria-busy={ws.guardando} title={faltaPdf ?? undefined} onClick={() => void ws.guardarParaRevision()}>
+              <Save aria-hidden="true" />
+              {ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
+            </button>
+          </>
+        ) : null}
         pie={lineas.length > 0 && faltaPdf
           ? <p className="rem-pdf-falta" role="status">Para la vista previa del PDF falta: {faltaPdf}</p>
           : null}

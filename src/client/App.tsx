@@ -612,7 +612,8 @@ export default function App() {
 
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
-              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques} />
+              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
+                onGuardado={() => setReviewRefresh((value) => value + 1)} />
             </div>
           )}
 

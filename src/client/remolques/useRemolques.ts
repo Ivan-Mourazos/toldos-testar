@@ -27,6 +27,9 @@ import {
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { todayIso } from '../constants';
 import { describirLineaRps, rotuloElemento } from './rotulo';
+import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
+import { cuerpoGuardar, lineasDesdePedidoGuardado, type ModoCarga } from './guardarPedido';
+import { faltaParaPdf } from './vistaPrevia';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -47,7 +50,9 @@ export type AccionRemolques =
   | AccionWorkspace
   | { tipo: 'FECHA_CAMBIADA'; valor: string }
   /** «Limpiar formulario»: vuelve al pedido vacío, con la fecha de hoy. */
-  | { tipo: 'PEDIDO_LIMPIADO' };
+  | { tipo: 'PEDIDO_LIMPIADO' }
+  /** Un pedido guardado que se abre para «Corregir» o «Reutilizar» (fase 5): sustituye al abierto. */
+  | { tipo: 'PEDIDO_CARGADO'; numeroPedido: string; cliente: string; fecha: string; lineas: LineaPedido[] };
 
 const conFecha = (linea: LineaPedido, fecha: string): LineaPedido => ({
   ...linea,
@@ -56,6 +61,16 @@ const conFecha = (linea: LineaPedido, fecha: string): LineaPedido => ({
 
 export function reducirRemolques(estado: EstadoRemolques, accion: AccionRemolques): EstadoRemolques {
   if (accion.tipo === 'PEDIDO_LIMPIADO') return { ...estadoInicial(), fecha: hoy() };
+  if (accion.tipo === 'PEDIDO_CARGADO') {
+    return {
+      ...estadoInicial(),
+      numeroPedido: accion.numeroPedido,
+      cliente: accion.cliente,
+      fecha: accion.fecha,
+      lineas: accion.lineas.map((linea) => conFecha(linea, accion.fecha)),
+      versionActiva: accion.lineas[0]?.version ?? null,
+    };
+  }
   if (accion.tipo === 'FECHA_CAMBIADA') {
     return { ...estado, fecha: accion.valor, lineas: estado.lineas.map((linea) => conFecha(linea, accion.valor)) };
   }
@@ -122,15 +137,17 @@ function useCatalogos() {
 
 /**
  * Toda la lógica de la pantalla de remolques: estado, efectos, derivados y manejadores.
- * Es el equivalente de `useWorkspace` de Remolques-TGM sin guardar, revisión ni PDF (llegan
- * en las fases 4 y 5): por eso no hay registros guardados que cargar, ni dibujo que
- * capturar, ni «completar pedido». `RemolquesView` se limita a pintar lo que devuelve.
+ * Es el equivalente de `useWorkspace` de Remolques-TGM: guardar para revisión y abrir un pedido
+ * guardado van por la API de Pedidos (fase 5); no hay dibujo que capturar ni «completar pedido».
+ * `RemolquesView` se limita a pintar lo que devuelve.
  */
-export function useRemolques({ usuario, notify, askForConfirmation }: {
+export function useRemolques({ usuario, notify, askForConfirmation, onGuardado }: {
   /** El «Soy» de la web: es quien figura como «Realizado por» en las líneas nuevas. */
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
+  /** Tras guardar para revisión: Pedidos vuelve a leer sus listas. */
+  onGuardado?: () => void;
 }) {
   const [estado, despachar] = useReducer(
     reducirRemolques,
@@ -141,7 +158,12 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     numeroPedido, cliente: clientePedido, fecha, lineas, versionActiva,
     validacionIntentada, camposTocados, rps, cargandoPedido,
   } = estado;
-  const { materiales, origenMateriales, params, materialesRef, setMateriales } = useCatalogos();
+  const { materiales, origenMateriales, params: paramsComunes, materialesRef, setMateriales } = useCatalogos();
+  // «Corregir» un pedido guardado calcula con los parámetros con que se guardó (fase 5); lo demás,
+  // con los comunes. Se vuelve a los comunes al cambiar de pedido, al limpiar y al guardar.
+  const [paramsGuardados, setParamsGuardados] = useState<CalcParams | null>(null);
+  const params = paramsGuardados ?? paramsComunes;
+  const [guardando, setGuardando] = useState(false);
 
   // Aviso y confirmación llegan de la aplicación. Se guardan en una ref para que los
   // manejadores de abajo no cambien de identidad cuando cambie la de estas funciones:
@@ -156,6 +178,8 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     (opciones: Parameters<AskForConfirmation>[0]) => notificar.current.askForConfirmation(opciones),
     [],
   );
+  const alGuardar = useRef(onGuardado);
+  useEffect(() => { alGuardar.current = onGuardado; });
 
   // El estado de este momento para lo que corre tras esperar (la consulta a RPS, la pregunta):
   // decidir con el de cuando se lanzó podría crear elementos en un pedido que ya no es el abierto.
@@ -492,8 +516,12 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
   }, []);
 
   const cambiarNumeroPedido = (valor: string) => {
-    // Otro número es otro pedido: la consulta que siguiera en curso ya no le sirve.
-    if (normalizarNumeroPedidoRps(valor) !== clavePedido) consultaEnCurso.current?.abort();
+    // Otro número es otro pedido: la consulta que siguiera en curso ya no le sirve, ni los
+    // parámetros del pedido que se estaba corrigiendo.
+    if (normalizarNumeroPedidoRps(valor) !== clavePedido) {
+      consultaEnCurso.current?.abort();
+      setParamsGuardados(null);
+    }
     despachar({ tipo: 'PEDIDO_CAMBIADO', valor });
   };
   const cambiarClientePedido = (valor: string) => despachar({ tipo: 'CLIENTE_CAMBIADO', valor });
@@ -537,15 +565,125 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     consultaEnCurso.current?.abort();
     pendienteRef.current = null;
     limpiarBorradores(almacen, estadoRef.current.numeroPedido);
+    setParamsGuardados(null);
     despachar({ tipo: 'PEDIDO_LIMPIADO' });
     avisar('exito', 'El formulario está listo para un pedido nuevo.');
   }, [almacen, avisar, confirmar]);
+
+  /**
+   * «Guardar para revisión» (fase 5): solo con todos los elementos completos. Si el pedido ya está en
+   * Pedidos, pregunta antes de sustituirlo. Guardado, la pantalla queda para un pedido nuevo y se
+   * borra el borrador del navegador de ese pedido, como en toldos.
+   */
+  const guardarParaRevision = useCallback(async () => {
+    const actual = estadoRef.current;
+    const estados = Object.fromEntries(actual.lineas.map((linea) => [linea.version, estadoLinea(linea)]));
+    const falta = faltaParaPdf(actual.lineas, estados);
+    if (falta) {
+      notificar.current.notify(`Para guardar falta: ${falta}`, { tone: 'warning', title: 'Faltan datos' });
+      return;
+    }
+    setGuardando(true);
+    try {
+      let confirmOverwrite = false;
+      for (;;) {
+        const respuesta = await fetch('/api/remolques/pedidos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cuerpoGuardar(actual.lineas, params, usuario, confirmOverwrite)),
+        });
+        const datos = await respuesta.json().catch(() => ({})) as { needsConfirmation?: boolean; error?: string; review?: { orderCode: string } };
+        // Solo «ya está guardado» pregunta; los demás 409 (se está generando, se está guardando, es
+        // de toldos, ya se produjo) son un aviso de error con el texto del servidor.
+        if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
+          const eleccion = await confirmar({
+            title: `Actualizar ${actual.numeroPedido}`,
+            message: 'Este pedido ya está guardado en Pedidos. Si continúas, se sustituirá por los datos de esta pantalla.',
+            confirmLabel: 'Actualizar pedido',
+            cancelLabel: 'Conservar el actual',
+            tone: 'warning',
+          });
+          if (eleccion !== 'confirm') return;
+          confirmOverwrite = true;
+          continue;
+        }
+        if (!respuesta.ok) {
+          avisar('error', datos.error || 'No se pudo guardar el pedido para revisión.');
+          return;
+        }
+        consultaEnCurso.current?.abort();
+        pendienteRef.current = null;
+        limpiarBorradores(almacen, actual.numeroPedido);
+        setParamsGuardados(null);
+        despachar({ tipo: 'PEDIDO_LIMPIADO' });
+        alGuardar.current?.();
+        notificar.current.notify(`Guardado en Pedidos para revisión: ${datos.review?.orderCode ?? actual.numeroPedido}.`, { tone: 'success', title: 'Guardado para revisión' });
+        return;
+      }
+    } catch {
+      avisar('error', 'No se pudo guardar el pedido para revisión.');
+    } finally {
+      setGuardando(false);
+    }
+  }, [almacen, avisar, confirmar, params, usuario]);
+
+  /**
+   * Abre en la pantalla un pedido guardado (desde Pedidos). «Corregir» lo trae tal cual y con sus
+   * parámetros; «Reutilizar» lo trae como un pedido nuevo con los parámetros actuales. Lo guardado
+   * manda: el borrador del navegador de ese pedido se borra para que no se mezcle con él.
+   */
+  const cargarPedidoGuardado = useCallback(async (pedido: PedidoRemolques, modo: ModoCarga) => {
+    const actual = estadoRef.current;
+    const hayDatos = Boolean(actual.numeroPedido.trim() || actual.cliente.trim() || actual.lineas.length > 0);
+    if (modo === 'reutilizar' || hayDatos) {
+      const respuesta = await confirmar(modo === 'corregir'
+        ? {
+            title: `Corregir ${pedido.orderCode}`,
+            message: 'Los datos que haya ahora en Remolques se sustituirán por los de este pedido, con los parámetros con que se guardó. Lo guardado no cambia hasta que vuelvas a guardar.',
+            confirmLabel: 'Abrir para corregir',
+            cancelLabel: 'Conservar formulario',
+            tone: 'warning',
+          }
+        : {
+            title: `Reutilizar ${pedido.orderCode}`,
+            message: 'Se sustituirá el formulario por los datos de este pedido, incluidos el número de pedido y las OF, y se recalculará con los parámetros actuales. Cámbialos antes de guardar si vas a crear un pedido nuevo.',
+            confirmLabel: 'Reutilizar datos',
+            cancelLabel: 'Conservar formulario',
+            tone: 'warning',
+          });
+      if (respuesta !== 'confirm') return;
+    }
+    consultaEnCurso.current?.abort();
+    // Lo tecleado en el pedido que había (si es otro) se escribe ya en su borrador, como al cambiar
+    // de pedido; lo que quedara en cola del mismo pedido se descarta: manda lo guardado.
+    const pendiente = pendienteRef.current;
+    if (pendiente && normalizarNumeroPedidoRps(pendiente.numeroPedido) !== normalizarNumeroPedidoRps(pedido.numeroPedido)) {
+      volcar();
+    }
+    pendienteRef.current = null;
+    limpiarBorradores(almacen, pedido.numeroPedido);
+    const fecha = modo === 'corregir' ? (pedido.summary.orderDate || hoy()) : hoy();
+    setParamsGuardados(modo === 'corregir' ? pedido.params : null);
+    despachar({
+      tipo: 'PEDIDO_CARGADO',
+      numeroPedido: pedido.numeroPedido,
+      cliente: pedido.summary.customer,
+      fecha,
+      lineas: lineasDesdePedidoGuardado(pedido, modo, usuario, fecha),
+    });
+    avisar(modo === 'corregir' ? 'info' : 'exito', modo === 'corregir'
+      ? `Pedido ${pedido.orderCode} cargado para corregirlo, con los parámetros con que se guardó.`
+      : `Datos de ${pedido.orderCode} cargados como un pedido nuevo, con los parámetros actuales.`);
+  }, [almacen, avisar, confirmar, usuario, volcar]);
 
   return {
     estado,
     materiales,
     origenMateriales,
     params,
+    guardando,
+    /** Se está corrigiendo un pedido guardado con sus parámetros (no los comunes). */
+    conParamsGuardados: paramsGuardados !== null,
     // derivados
     lineaActiva: activa,
     estadosLinea,
@@ -571,6 +709,8 @@ export function useRemolques({ usuario, notify, askForConfirmation }: {
     obtenerDatosPedido,
     abrirPedido,
     limpiarFormulario,
+    guardarParaRevision,
+    cargarPedidoGuardado,
     marcarCampoTocado,
   };
 }

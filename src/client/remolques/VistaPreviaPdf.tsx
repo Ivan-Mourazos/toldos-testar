@@ -3,13 +3,18 @@ import { createPortal } from 'react-dom';
 import { Eye, X } from 'lucide-react';
 import type { Notify } from '../components/NotificationCenter';
 import { PdfPreviewViewer } from '../components/PdfPreviewViewer';
+import type { CalcParams } from '../../remolques/calc/params.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
-import { crearGuardaPeticion, cuerpoVistaPrevia } from './vistaPrevia';
+import { crearGuardaPeticion, peticionVistaPrevia } from './vistaPrevia';
 
 // «Vista previa del PDF» de remolques (fase 4): pide al servidor la hoja de taller del pedido y la
 // abre en el mismo visor que toldos. No guarda nada en ninguna carpeta.
-export function VistaPreviaPdf({ lineas, bloqueo, notify }: {
-  lineas: LineaPedido[];
+export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify }: {
+  lineas?: LineaPedido[];
+  /** Los parámetros con que se calcula si no son los comunes («Corregir» un pedido guardado). */
+  params?: CalcParams;
+  /** Un pedido ya guardado: la hoja se pide a esta dirección con sus datos y parámetros guardados. */
+  origen?: string;
   /** Qué falta, o null si se puede pedir. */
   bloqueo: string | null;
   notify: Notify;
@@ -21,7 +26,8 @@ export function VistaPreviaPdf({ lineas, bloqueo, notify }: {
   const dialogo = useRef<HTMLDivElement>(null);
   const cerrarRef = useRef<() => void>(() => undefined);
   const guarda = useRef(crearGuardaPeticion());
-  const cuerpo = JSON.stringify(cuerpoVistaPrevia(lineas));
+  const peticionPdf = peticionVistaPrevia({ lineas, params, origen });
+  const cuerpo = peticionPdf.clave;
 
   useEffect(() => () => {
     if (url) URL.revokeObjectURL(url);
@@ -63,12 +69,7 @@ export function VistaPreviaPdf({ lineas, bloqueo, notify }: {
     peticion.current = cuerpo;
     setPreparando(true);
     try {
-      const respuesta = await fetch('/api/remolques/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: cuerpo,
-        signal: senal,
-      });
+      const respuesta = await fetch(peticionPdf.url, { ...peticionPdf.init, signal: senal });
       if (!respuesta.ok) {
         const datos = await respuesta.json().catch(() => ({})) as { error?: string };
         if (guarda.current.vigente(numero)) notify(datos.error || 'No se pudo preparar la vista previa del PDF.', { tone: 'error' });

@@ -1,3 +1,4 @@
+import type { CalcParams } from '../../remolques/calc/params.ts';
 import { limpiarObservaciones } from '../../remolques/hoja/observaciones.ts';
 import type { ElementoPedidoHoja } from '../../remolques/hoja/tipos.ts';
 import type { EstadoLinea, LineaPedido } from '../../remolques/workspace/lineas.ts';
@@ -20,6 +21,21 @@ export function cuerpoVistaPrevia(lineas: LineaPedido[]): { elementos: ElementoP
       version, tipo, input: { ...input, observaciones: limpiarObservaciones(input.observaciones) },
     })),
   };
+}
+
+/**
+ * A dónde y con qué se pide la hoja: la de la pantalla (POST con sus elementos y, si no son los
+ * comunes, sus parámetros) o la de un pedido guardado (GET a su dirección). `clave` cambia cuando
+ * cambia lo pedido.
+ */
+export function peticionVistaPrevia({ lineas = [], params, origen }: {
+  lineas?: LineaPedido[];
+  params?: CalcParams;
+  origen?: string;
+}): { url: string; init: RequestInit; clave: string } {
+  if (origen) return { url: origen, init: { cache: 'no-store' }, clave: origen };
+  const cuerpo = JSON.stringify({ ...cuerpoVistaPrevia(lineas), ...(params ? { params } : {}) });
+  return { url: '/api/remolques/pdf', init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: cuerpo }, clave: cuerpo };
 }
 
 /**

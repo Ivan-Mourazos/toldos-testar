@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import casos from '../../remolques/__fixtures__/produccion-2026-09.json';
 import type { LonaInput } from '../../remolques/calc/lona.ts';
 import { estadoLinea, type LineaPedido } from '../../remolques/workspace/lineas.ts';
-import { crearGuardaPeticion, cuerpoVistaPrevia, faltaParaPdf } from './vistaPrevia';
+import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
+import { crearGuardaPeticion, cuerpoVistaPrevia, faltaParaPdf, peticionVistaPrevia } from './vistaPrevia';
 
 const lona02 = (casos as Array<{ caso: string; input: LonaInput }>).find((c) => c.caso === 'lona-02')!.input;
 const linea = (version: string, cambios: Partial<LonaInput> = {}): LineaPedido => ({
@@ -55,5 +56,22 @@ describe('guarda de peticiones de la vista previa', () => {
     expect(guarda.vigente(primera.numero)).toBe(false);
     expect(primera.senal.aborted).toBe(true);
     expect(guarda.vigente(segunda.numero)).toBe(true);
+  });
+});
+
+describe('peticionVistaPrevia', () => {
+  it('de la pantalla: POST con los elementos y, solo si se dan, los parámetros', () => {
+    const sin = peticionVistaPrevia({ lineas: [linea('10')] });
+    expect(sin.url).toBe('/api/remolques/pdf');
+    expect(sin.init.method).toBe('POST');
+    expect(JSON.parse(String(sin.init.body))).toEqual(cuerpoVistaPrevia([linea('10')]));
+    const con = peticionVistaPrevia({ lineas: [linea('10')], params: DEFAULT_PARAMS });
+    expect(JSON.parse(String(con.init.body))).toEqual({ ...cuerpoVistaPrevia([linea('10')]), params: DEFAULT_PARAMS });
+    expect(con.clave).not.toBe(sin.clave);
+  });
+
+  it('de un pedido guardado: GET a su dirección', () => {
+    const ruta = '/api/remolques/pedidos/AR2604286/vista-previa';
+    expect(peticionVistaPrevia({ origen: ruta })).toEqual({ url: ruta, init: { cache: 'no-store' }, clave: ruta });
   });
 });

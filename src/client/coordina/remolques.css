@@ -714,3 +714,6 @@
 .rem-aviso-pedido svg { flex: none; height: 17px; width: 17px; }
 .rem-aviso-pedido span { display: grid; flex: 1; gap: 2px; min-width: 0; }
 .rem-aviso-pedido strong { font-weight: 600; }
+
+/* «Guardar para revisión» de remolques (fase 5): junto a «Vista previa del PDF», sin partirse. */
+.rem-guardar-boton { white-space: nowrap; }

@@ -103,3 +103,21 @@ describe('reducirRemolques · limpiar el formulario', () => {
     expect(limpio.fecha).not.toBe('2026-09-20');
   });
 });
+
+describe('reducirRemolques · abrir un pedido guardado', () => {
+  it('sustituye el pedido abierto por el guardado, con su fecha en cada elemento y el primero abierto', () => {
+    const abierto: EstadoRemolques = {
+      ...vacio(), numeroPedido: 'AR.26.00001', cliente: 'OTRO', lineas: [linea('10', 'OTRO', '2026-09-01')],
+      versionActiva: '10', validacionIntentada: true,
+    };
+    const siguiente = reducirRemolques(abierto, {
+      tipo: 'PEDIDO_CARGADO', numeroPedido: 'AR.26.04286', cliente: 'TALLERES CAL', fecha: '2026-09-20',
+      lineas: [linea('10', 'TALLERES CAL', '2026-09-01'), linea('11', 'TALLERES CAL', '2026-09-01')],
+    });
+    expect(siguiente).toMatchObject({
+      numeroPedido: 'AR.26.04286', cliente: 'TALLERES CAL', fecha: '2026-09-20', versionActiva: '10',
+      cargandoPedido: false, validacionIntentada: false,
+    });
+    expect(siguiente.lineas.map((l) => [l.version, l.input.cabecera.fecha])).toEqual([['10', '2026-09-20'], ['11', '2026-09-20']]);
+  });
+});
