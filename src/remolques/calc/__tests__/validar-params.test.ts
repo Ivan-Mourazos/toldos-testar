@@ -45,6 +45,16 @@ describe("normalizarParams", () => {
 });
 
 describe("validarParams", () => {
+  it("rechaza extras y observaciones de clientes mal formados, pero permite extras negativos", () => {
+    const mal = { ...DEFAULT_PARAMS, clientesBaqueton: [{ ...DEFAULT_PARAMS.clientesBaqueton[0], extraAnchoFinal: null, observaciones: 'texto' }] };
+    expect(validarParams(mal).ok).toBe(false);
+    expect(validarParams(DEFAULT_PARAMS).ok).toBe(true);
+  });
+  it("rechaza nombres vacíos y duplicados en las tablas", () => {
+    expect(validarParams({ ...DEFAULT_PARAMS, recogidas: [...DEFAULT_PARAMS.recogidas, { ...DEFAULT_PARAMS.recogidas[0], nombre: ' no ' }] }).ok).toBe(false);
+    expect(validarParams({ ...DEFAULT_PARAMS, clientesBaqueton: [{ ...DEFAULT_PARAMS.clientesBaqueton[0], nombre: '' }] }).ok).toBe(false);
+    expect(validarParams({ ...DEFAULT_PARAMS, clientesBaqueton: [...DEFAULT_PARAMS.clientesBaqueton, DEFAULT_PARAMS.clientesBaqueton[0]] }).ok).toBe(false);
+  });
   it("acepta los parámetros por defecto", () => {
     expect(validarParams(DEFAULT_PARAMS)).toEqual({ ok: true, params: DEFAULT_PARAMS });
   });

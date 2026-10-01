@@ -90,8 +90,8 @@ const ruleParametersStore = createRuleParametersStore({
   historyFile: config.ruleParametersFile.replace(/\.json$/i, '') + '-history.jsonl',
   technicians: formOptions.tecnicos
 });
-// Parámetros de cálculo de remolques (solo lectura en esta fase).
-const remolquesParametersStore = createRemolquesParametersStore({ file: config.remolquesParametersFile });
+// Remolques usa la misma lista de técnicos que Toldos.
+const remolquesParametersStore = createRemolquesParametersStore({ file: config.remolquesParametersFile, technicians: formOptions.tecnicos });
 const deploymentFeatures = {
   heraEnabled: config.heraEnabled,
   legacyExportsEnabled: config.legacyExportsEnabled
@@ -394,12 +394,29 @@ app.get('/api/remolques/rps-pedido', async (req, res) => {
   }
 });
 
-app.get('/api/remolques/parametros', async (_req, res, next) => {
+app.get('/api/remolques/parametros', async (req, res, next) => {
   try {
-    res.json(await remolquesParametersStore.get());
+    res.set('Cache-Control', 'no-store').json(await (req.query.detalle === '1' ? remolquesParametersStore.getSnapshot() : remolquesParametersStore.get()));
   } catch (error) {
     next(error);
   }
+});
+
+app.put('/api/remolques/parametros', async (req, res, next) => {
+  try {
+    res.json(await remolquesParametersStore.save(req.body));
+  } catch (error) {
+    if (error.code === 'VERSION_CONFLICT') return res.status(409).json({ error: error.message, current: error.current });
+    if (error.code === 'INVALID_INPUT') return res.status(400).json({ error: error.message });
+    next(error);
+  }
+});
+
+app.get('/api/remolques/parametros/history', async (req, res, next) => {
+  try {
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+    res.set('Cache-Control', 'no-store').json({ entries: await remolquesParametersStore.history(limit) });
+  } catch (error) { next(error); }
 });
 
 // La página interna de la hoja pide sus datos con el identificador que le dio el PDF. Un solo uso.

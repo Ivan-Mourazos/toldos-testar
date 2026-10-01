@@ -28,7 +28,7 @@ function conMarcasNuevas(recogida: Recogida): Recogida {
 }
 
 /** Lectura tolerante: completa con DEFAULT_PARAMS lo que falte en datos guardados antiguos. */
-export function normalizarParams(bruto: unknown): CalcParams {
+export function normalizarParams(bruto: unknown, { migrar = true } = {}): CalcParams {
   const p = (typeof bruto === "object" && bruto !== null ? bruto : {}) as Record<string, unknown>;
   const resultado: CalcParams = { ...DEFAULT_PARAMS };
   for (const campo of CAMPOS_NUMERICOS) {
@@ -40,11 +40,11 @@ export function normalizarParams(bruto: unknown): CalcParams {
     // código para que salga en el formulario. Las guardadas no se tocan, y las que no son nuevas
     // tampoco se reponen (si alguien quitó una, fue a propósito).
     const faltan = DEFAULT_PARAMS.recogidas.filter(
-      (r) => RECOGIDAS_NUEVAS.includes(r.nombre) && !guardadas.some((g) => g?.nombre === r.nombre),
+      (r) => migrar && RECOGIDAS_NUEVAS.includes(r.nombre) && !guardadas.some((g) => g?.nombre === r.nombre),
     );
     // Igual con una marca nueva de una recogida que ya estaba (el paño trasero de HPL, 30/09/2026):
     // se le pone la del código solo si no la trae, y sus medidas guardadas no se tocan.
-    resultado.recogidas = [...guardadas.map(conMarcasNuevas), ...faltan];
+    resultado.recogidas = [...guardadas.map((r) => migrar ? conMarcasNuevas(r) : r), ...faltan];
   }
   if (Array.isArray(p.clientesBaqueton) && p.clientesBaqueton.length > 0) {
     resultado.clientesBaqueton = p.clientesBaqueton as ClienteBaqueton[];
@@ -104,10 +104,37 @@ export function validarParams(
     });
   }
   const clientes = p.clientesBaqueton;
+  if (Array.isArray(recogidas)) comprobarNombres(recogidas, "recogidas", errores);
   if (!Array.isArray(clientes) || clientes.length === 0) {
     errores.push("«clientesBaqueton» debe tener al menos una entrada");
-  } else if (!clientes.some((c) => (c as ClienteBaqueton)?.nombre === "GENERAL")) {
-    errores.push("«clientesBaqueton» debe incluir la entrada «GENERAL» (es el fallback)");
+  } else {
+    if (!clientes.some((c) => (c as ClienteBaqueton)?.nombre === "GENERAL")) {
+      errores.push("«clientesBaqueton» debe incluir la entrada «GENERAL» (es el fallback)");
+    }
+    comprobarNombres(clientes, "clientes con baquetón", errores);
+    clientes.forEach((c, i) => {
+      const cliente = c as Partial<ClienteBaqueton> | null;
+      for (const campo of ["extraLargoCostura", "extraAnchoCostura", "extraBaquetonLargoDelante", "extraBaquetonLargoDetras", "extraLargoFinal", "extraAnchoFinal", "extraBaquetonTrasero"] as const) {
+        if (!esNumero(cliente?.[campo])) errores.push(`cliente «${cliente?.nombre ?? i + 1}»: «${campo}» debe ser un número`);
+      }
+      if (!Array.isArray(cliente?.observaciones) || cliente.observaciones.some((o) => typeof o !== "string")) {
+        errores.push(`cliente «${cliente?.nombre ?? i + 1}»: las observaciones deben ser líneas de texto`);
+      }
+    });
   }
   return errores.length > 0 ? { ok: false, errores } : { ok: true, params: bruto as CalcParams };
+}
+
+function comprobarNombres(filas: unknown[], tabla: string, errores: string[]) {
+  const nombres = new Set<string>();
+  filas.forEach((fila, i) => {
+    const nombre = (fila as { nombre?: unknown } | null)?.nombre;
+    if (typeof nombre !== "string" || !nombre.trim()) {
+      errores.push(`${tabla}, fila ${i + 1}: falta el nombre`);
+    } else {
+      const clave = nombre.trim().toUpperCase();
+      if (nombres.has(clave)) errores.push(`${tabla}: el nombre «${nombre}» está repetido`);
+      nombres.add(clave);
+    }
+  });
 }
