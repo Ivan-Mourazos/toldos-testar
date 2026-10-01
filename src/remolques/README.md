@@ -39,3 +39,21 @@ vieja sobre la misma fixture. Añadidos a propósito: la fila «BASTILLA ENFUNDA
 ganchos («Según ganchos»), el paño y el contorno de corte con sus dos medidas cuando el remolque es
 distinto detrás, y las columnas que hagan falta si un lado lleva más de 12 ollaos (la vieja cortaba
 en 12). La hoja no lleva las notas del cálculo: solo las observaciones del técnico.
+
+## Fase 5: el flujo
+
+`flujo/` lleva el camino de un pedido de remolques, con las reglas de toldos de
+`src/reviewRules.js` (no se copian):
+
+- `tipos.ts` y `pedido.ts`: el pedido guardado (`kind: "remolques"`, mismos estados y campos de
+  fuera que toldos) y sus reglas puras (letras y OF por elemento, perfil como modelo, año).
+- `almacen.ts`: un JSON por pedido en la carpeta interna (`REMOLQUES_REVISION_DIRECTORY`).
+- `adjunto.ts`: el pedido dentro del PDF generado (`AR….remolques.json`, con `pdf-lib`).
+- `servicio.ts`: guardar, listar, abrir, vista previa, generar (CoordinaOT en fresco, solo con todo
+  aprobado, un bloqueo por pedido, `archivarPdfRemolques`) y abrir el generado. Las rutas
+  `/api/remolques/pedidos…` de `src/server.js` solo lo llaman.
+- `migracion.ts` y `scripts/migrar-remolques.mjs`: el paso desde la web vieja (una vez, con
+  `--simular` primero).
+
+Diseño: `docs/superpowers/specs/2026-10-01-remolques-fase-5-flujo-design.md`. Los Parámetros de
+remolques (su apartado 5) los hace otra tarea.

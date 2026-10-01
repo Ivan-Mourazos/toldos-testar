@@ -27,6 +27,14 @@ may be used (autofill, catalogue).
 The script also starts a fake CoordinaOT on 4320 (`scripts/fake-coordina.mjs`,
 all OFs approved by default; `POST /__estado`, `/__caido`, `/__reset` to change
 it). The isolated instance never talks to the real CoordinaOT.
+
+- `ISOLATED_DIR="$PWD/tmp/<carpeta>"` arranca la aislada con otra carpeta de prueba (siempre dentro
+  de `tmp/` del repositorio; el script se niega si no). Úsala con otro puerto cuando la prueba cambie
+  la configuración (p. ej. activa la generación), para no tocar la de 4310.
+- La carpeta interna de remolques (pedidos de remolques guardados) es `$D/rem-revision`.
+- E2e de la fase 5 de remolques (flujo):
+  `ISOLATED_DIR="$PWD/tmp/remolques-5" PORT=4311 FAKE_COORDINA_PORT=4321 bash .claude/skills/running-toldos-testar/start-isolated.sh`
+  y `TOLDOS_ISOLATED_URL=http://127.0.0.1:4311 FAKE_COORDINA_PORT=4321 node scripts/test-remolques-5-e2e.mjs`.
 The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflow.mjs`,
 `test-parameter-consultation.mjs`) already start and stop their own fake CoordinaOT on a free port
 (`startFakeCoordina()`), so they need no extra env.
