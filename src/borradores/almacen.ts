@@ -61,8 +61,8 @@ export function crearAlmacenBorradores({ carpeta, registrar = (mensaje: string) 
       await mkdir(dir, { recursive: true });
       const fichero = ficheroBorrador(dir, borrador.orderCode);
       const temporal = temporalDe(fichero);
-      await writeFile(temporal, contenido(borrador), { flag: "wx" });
       try {
+        await writeFile(temporal, contenido(borrador), { flag: "wx" });
         await rename(temporal, fichero);
       } catch (error) {
         await rm(temporal, { force: true });

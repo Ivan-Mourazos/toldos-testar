@@ -233,6 +233,20 @@ pnpm pm2:reload
 pm2 save
 ```
 
+**Una vez (borradores)**, antes del primer `pnpm pm2:reload` con esta versión. En el .90 se es
+root, sin `sudo`. Se crea la carpeta de los borradores con el mismo dueño que la carpeta de datos:
+
+```bash
+mkdir -p /var/lib/toldos-testar/borradores
+chown --reference=/var/lib/toldos-testar /var/lib/toldos-testar/borradores
+grep -q '^DRAFTS_DIRECTORY=' /webs/toldos-testar/.env || echo 'DRAFTS_DIRECTORY=/var/lib/toldos-testar/borradores' >> /webs/toldos-testar/.env
+```
+
+Si se prefiere, en lugar de tocar el `.env` se escribe la misma ruta en `Configuración` › paso 08.
+Después, el `pnpm pm2:reload` de siempre. Esa carpeta hay que incluirla en las copias de seguridad
+(son trabajo a medias de la oficina técnica); sin ella la web funciona igual, pero no deja guardar
+borradores.
+
 Comprobar después `/api/health` y la portada. Para diagnóstico:
 
 ```bash

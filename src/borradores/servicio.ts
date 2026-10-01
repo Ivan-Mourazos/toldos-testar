@@ -84,20 +84,34 @@ export function crearServicioBorradores(deps: DependenciasBorradores) {
   }
 
   /**
-   * Tras guardar un pedido para revisión, su borrador sobra. Nunca falla: el pedido ya está guardado,
-   * y si no se puede borrar se apunta para informática.
+   * Tras guardar un pedido para revisión, su borrador sobra, pero solo si es del mismo tipo: un
+   * borrador de remolques con ese número no se toca al guardar toldos (y al revés). Nunca falla:
+   * el pedido ya está guardado, y si no se puede borrar se apunta para informática.
    */
-  async function borrarTrasRevision(orderCodeBruto: string): Promise<void> {
+  async function borrarTrasRevision(orderCodeBruto: string, kind: Borrador["kind"]): Promise<void> {
     let orderCode: string;
     try {
       orderCode = codigoBorrador(orderCodeBruto);
     } catch {
       return;
     }
+    if (ocupados.has(orderCode)) {
+      registrar(`El pedido ${orderCode} se ha guardado para revisión, pero su borrador estaba ocupado y no se borró.`);
+      return;
+    }
+    ocupados.add(orderCode);
     try {
+      const existente = await deps.almacen.obtener(orderCode);
+      if (!existente) return;
+      if (existente.kind !== kind) {
+        registrar(`El pedido ${orderCode} se ha guardado para revisión (${kind}), pero su borrador es de ${existente.kind}: se conserva.`);
+        return;
+      }
       await deps.almacen.borrar(orderCode);
     } catch (error) {
       registrar(`El pedido ${orderCode} se ha guardado para revisión, pero no se pudo borrar su borrador: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      ocupados.delete(orderCode);
     }
   }
 

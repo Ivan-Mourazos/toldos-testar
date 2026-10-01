@@ -501,7 +501,7 @@ app.get('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
 app.post('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.guardar(req.body);
   // Guardado para revisión: su borrador sobra (diseño 01/10/2026). Nunca falla.
-  if (status === 200) await borradores.borrarTrasRevision(cuerpo.review.orderCode);
+  if (status === 200) await borradores.borrarTrasRevision(cuerpo.review.orderCode, 'remolques');
   res.status(status).json(cuerpo);
 }));
 
@@ -664,7 +664,7 @@ app.post('/api/reviews', async (req, res, next) => {
     const savedPath = await workflowStore.saveReview(review, pdf);
     // Pasado a revisión, su borrador sobra (diseño 01/10/2026). Si no se puede borrar, se apunta
     // y el pedido queda guardado igual.
-    await borradores.borrarTrasRevision(orderCode);
+    await borradores.borrarTrasRevision(orderCode, 'toldos');
     res.json({ ok: true, review, savedPath, overwritten: Boolean(existing) });
   } catch (error) {
     next(error);

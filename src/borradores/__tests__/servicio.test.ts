@@ -117,23 +117,47 @@ describe("servicio de borradores", () => {
     expect(await servicio.descartar("AR2604286")).toEqual({ status: 200, cuerpo: { ok: true, existia: false } });
   });
 
-  it("al pasar a revisión se borra; si falla, se apunta y no se rompe nada", async () => {
+  it("al pasar a revisión se borra el borrador del mismo tipo; si falla, se apunta y no se rompe nada", async () => {
     const servicio = montar();
     await servicio.guardar("AR2604286", cuerpoToldos("AR2604286"));
-    await servicio.borrarTrasRevision("AR.26.04286");
+    await servicio.borrarTrasRevision("AR.26.04286", "toldos");
     expect((await servicio.listar()).borradores).toEqual([]);
-    await expect(servicio.borrarTrasRevision("")).resolves.toBeUndefined();
+    await expect(servicio.borrarTrasRevision("", "toldos")).resolves.toBeUndefined();
 
     const apuntes: string[] = [];
     const roto: AlmacenBorradores = {
-      configurada: async () => true, obtener: async () => null, guardar: async () => "", listar: async () => [],
+      configurada: async () => true, obtener: async () => ({ kind: "toldos" } as never), guardar: async () => "", listar: async () => [],
       borrar: async () => { throw new Error("EACCES"); },
     };
     const conFallo = crearServicioBorradores({
       almacen: roto, tecnicos: ["IVÁN"], esPedidoDeToldos: async () => false, esPedidoDeRemolques: async () => false,
       registrar: (mensaje) => apuntes.push(mensaje),
     });
-    await expect(conFallo.borrarTrasRevision("AR2604286")).resolves.toBeUndefined();
+    await expect(conFallo.borrarTrasRevision("AR2604286", "toldos")).resolves.toBeUndefined();
     expect(apuntes).toEqual(["El pedido AR2604286 se ha guardado para revisión, pero no se pudo borrar su borrador: EACCES"]);
+  });
+
+  it("al pasar a revisión no se borra el borrador del otro tipo", async () => {
+    const apuntes: string[] = [];
+    const servicio = montar({ registrar: (mensaje) => apuntes.push(mensaje) });
+    await servicio.guardar("AR2604286", cuerpoToldos("AR2604286"));
+    await servicio.borrarTrasRevision("AR2604286", "remolques");
+    expect((await servicio.listar()).borradores.map((b) => b.orderCode)).toEqual(["AR2604286"]);
+    expect(apuntes).toHaveLength(1);
+    expect(apuntes[0]).toContain("AR2604286");
+  });
+
+  it("al pasar a revisión, si el número está ocupado se salta y se apunta", async () => {
+    let soltar!: () => void;
+    const espera = new Promise<void>((resolver) => { soltar = resolver; });
+    const apuntes: string[] = [];
+    const servicio = montar({ esPedidoDeToldos: async () => { await espera; return false; }, registrar: (mensaje) => apuntes.push(mensaje) });
+    const primero = servicio.guardar("AR2604286", cuerpoToldos("AR2604286"));
+    await new Promise((resolver) => setTimeout(resolver, 0));
+    await expect(servicio.borrarTrasRevision("AR2604286", "toldos")).resolves.toBeUndefined();
+    expect(apuntes).toHaveLength(1);
+    soltar();
+    await primero;
+    expect((await servicio.listar()).borradores).toHaveLength(1);
   });
 });
