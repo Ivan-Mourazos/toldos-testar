@@ -475,3 +475,37 @@
 }
 .parameters-history li > div span:nth-of-type(2) { color: var(--text); font-weight: 500; }
 .parameters-history small { color: var(--text-muted); font-size: 11px; }
+
+/* Parámetros › Remolques › Clientes (fase 3): la lista de fichas a la izquierda y la ficha elegida. */
+.clientes-remolques {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 240px minmax(0, 1fr);
+  align-items: start;
+}
+.clientes-remolques-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 70vh;
+  overflow: auto;
+  padding: 10px;
+  position: sticky;
+  top: 8px;
+}
+.clientes-remolques-lista > button.tecla-3d {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.clientes-remolques-lista small,
+.clientes-remolques-vacio { color: var(--text-muted); font-size: 12px; }
+.clientes-remolques-ficha { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.clientes-remolques-ollaos {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 8px 0;
+}

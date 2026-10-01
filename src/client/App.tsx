@@ -23,7 +23,7 @@ import { pendingFabricProposalMessage } from './fabricProposal';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
-import { ParametersView } from './views/ParametersView';
+import { ParametersView, type VistaRemolques } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
 import { ParametersSaveBar } from './components/ParametersSaveBar';
 import { ParametersHistory } from './components/ParametersHistory';
@@ -44,6 +44,8 @@ import type { ModoCarga } from './remolques/guardarPedido';
 import { RemolquesView } from './remolques/RemolquesView';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
 import { useRemolquesParameters } from './remolques/useRemolquesParameters';
+import { ClientesRemolquesView } from './remolques/ClientesRemolquesView';
+import { useFichasClientes } from './remolques/useFichasClientes';
 import { AvisoPedidoRemolques } from './remolques/AvisoPedidoRemolques';
 import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
 import { SelectorProducto, guardarProducto, leerProducto, type Producto } from './remolques/SelectorProducto';
@@ -52,7 +54,11 @@ export default function App() {
   const draft = useDraft();
   const ruleSettings = useParameters();
   const remolquesSettings = useRemolquesParameters();
-  const [showRemolquesParameters, setShowRemolquesParameters] = useState(false);
+  const fichasClientes = useFichasClientes();
+  // Parámetros › Remolques: la hoja general o la de clientes (fase 3); null = la de un modelo de toldo.
+  const [remolquesVista, setRemolquesVista] = useState<VistaRemolques | null>(null);
+  const showRemolquesParameters = remolquesVista !== null;
+  const edicionRemolques = remolquesVista === 'clientes' ? fichasClientes : remolquesSettings;
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('order');
   // Toldos o Remolques en Nuevo pedido (diseño 30/09/2026, fase 2a). Remolques se monta la primera
@@ -438,7 +444,7 @@ export default function App() {
       tone: 'warning'
     });
     if (choice === 'confirm') {
-      if (showRemolquesParameters) remolquesSettings.discardDraft();
+      if (showRemolquesParameters) edicionRemolques.discardDraft();
       else ruleSettings.discardDraft();
     }
   }
@@ -622,7 +628,7 @@ export default function App() {
   const viewTitle = activeTab === 'order'
     ? 'Nuevo pedido'
     : activeTab === 'parameters'
-      ? (showRemolquesParameters ? 'Parámetros de remolques' : 'Parámetros de modelos')
+      ? (remolquesVista === 'clientes' ? 'Clientes de remolques' : showRemolquesParameters ? 'Parámetros de remolques' : 'Parámetros de modelos')
       : activeTab === 'reviews'
         ? 'Pedidos'
         : 'Configuración de carpetas';
@@ -666,9 +672,11 @@ export default function App() {
             <h2>{viewTitle}</h2>
             {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
-            {activeTab === 'parameters' && (showRemolquesParameters
-              ? <ParametersHistory key="remolques" version={remolquesSettings.saved.version} endpoint="/api/remolques/parametros/history" labels={{ lona: 'Lona y contorno', ollaos: 'Ollaos', recogidas: 'Recogidas', baqueton: 'Baquetón', clientesBaqueton: 'Clientes con baquetón' }} onLoadVersion={remolquesSettings.loadVersion} />
-              : <ParametersHistory key="toldos" version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />)}
+            {activeTab === 'parameters' && (remolquesVista === 'clientes'
+              ? <ParametersHistory key="remolques-clientes" version={fichasClientes.saved.version} endpoint="/api/remolques/clientes/historial" labels={{}} onLoadVersion={fichasClientes.loadVersion} />
+              : showRemolquesParameters
+                ? <ParametersHistory key="remolques" version={remolquesSettings.saved.version} endpoint="/api/remolques/parametros/history" labels={{ lona: 'Lona y contorno', ollaos: 'Ollaos', recogidas: 'Recogidas', baqueton: 'Baquetón', clientesBaqueton: 'Clientes con baquetón' }} onLoadVersion={remolquesSettings.loadVersion} />
+                : <ParametersHistory key="toldos" version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />)}
           </div>
           {activeTab === 'order' && producto === 'remolques' && (
             <div className="topbar-actions">
@@ -769,16 +777,21 @@ export default function App() {
           {activeTab === 'parameters' && (
             <>
             <ParametersSaveBar
-              dirty={showRemolquesParameters ? remolquesSettings.dirty : ruleSettings.dirty}
-              saving={showRemolquesParameters ? remolquesSettings.saving : ruleSettings.saving}
+              dirty={showRemolquesParameters ? edicionRemolques.dirty : ruleSettings.dirty}
+              saving={showRemolquesParameters ? edicionRemolques.saving : ruleSettings.saving}
               technicians={formOptions.tecnicos}
               onDiscard={() => void discardParameterDraft()}
-              onSave={showRemolquesParameters ? remolquesSettings.saveDraft : ruleSettings.saveDraft}
+              onSave={showRemolquesParameters ? edicionRemolques.saveDraft : ruleSettings.saveDraft}
               onResult={notifyParameterSave}
             />
             <ParametersView
-              showRemolques={showRemolquesParameters}
-              onSelectRemolques={setShowRemolquesParameters}
+              remolquesVista={remolquesVista}
+              onSelectRemolques={setRemolquesVista}
+              remolquesClientes={<>
+                {fichasClientes.error && <div role="alert" className="parameter-note">{fichasClientes.error} <button type="button" className="ghost-button" onClick={() => void fichasClientes.refresh()}>Reintentar</button></div>}
+                {!fichasClientes.ready && !fichasClientes.error && <p role="status">Cargando fichas de cliente…</p>}
+                <ClientesRemolquesView fichas={fichasClientes.fichas} recogidasGenerales={remolquesSettings.saved.parameters.recogidas.map((r) => r.nombre)} disabled={!fichasClientes.ready || fichasClientes.saving} onUpdate={fichasClientes.update} />
+              </>}
               remolques={<>
                 {remolquesSettings.error && <div role="alert" className="parameter-note">{remolquesSettings.error} <button type="button" className="ghost-button" onClick={() => void remolquesSettings.refresh()}>Reintentar</button></div>}
                 {!remolquesSettings.ready && !remolquesSettings.error && <p role="status">Cargando parámetros de remolques…</p>}
