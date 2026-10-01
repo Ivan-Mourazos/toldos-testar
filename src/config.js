@@ -18,6 +18,7 @@ function booleanFromEnv(name, fallback = false) {
 
 const workflowSettingsFile = process.env.WORKFLOW_SETTINGS_FILE || path.resolve('.toldos-testar-settings.json');
 const ruleParametersFile = process.env.RULE_PARAMETERS_FILE || path.join(path.dirname(workflowSettingsFile), 'rule-parameters.json');
+const remolquesParametersFile = process.env.REMOLQUES_PARAMETERS_FILE || path.join(path.dirname(ruleParametersFile), 'remolques-parameters.json');
 
 export const config = {
   host: process.env.HOST || '127.0.0.1',
@@ -47,7 +48,10 @@ export const config = {
   ruleParametersFile,
   // Parámetros de cálculo de remolques (solo lectura en la fase 2a): junto a los comunes.
   // Si el fichero no existe, valen los del código.
-  remolquesParametersFile: process.env.REMOLQUES_PARAMETERS_FILE || path.join(path.dirname(ruleParametersFile), 'remolques-parameters.json'),
+  remolquesParametersFile,
+  // Fichas de cliente de remolques (fase 3): junto a sus parámetros. Si no existe, se crea la
+  // primera vez con lo que había por cliente en los parámetros.
+  remolquesClientesFile: process.env.REMOLQUES_CLIENTES_FILE || path.join(path.dirname(remolquesParametersFile), 'remolques-clientes.json'),
   // Aprobación leída de CoordinaOT (diseño 29/09/2026). Sin las dos, «Generar archivos»
   // queda bloqueado: nunca se genera sin aprobación comprobada.
   coordinaUrl: process.env.COORDINA_URL || '',

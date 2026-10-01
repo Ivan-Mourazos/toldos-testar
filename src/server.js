@@ -20,6 +20,9 @@ import { normalizeOrder, normalizeReservation } from './domain/validation.js';
 import { formOptions } from './domain/modelBehavior.js';
 import { createRuleParametersStore } from './ruleParametersStore.js';
 import { createRemolquesParametersStore } from './remolquesParametersStore.js';
+import { createRemolquesClientesStore } from './remolquesClientesStore.js';
+import { paramsConFichas } from './remolques/clientes/params-efectivos.ts';
+import { fichasSemilla } from './remolques/clientes/semilla.ts';
 import { getMaterialesConOrigen } from './remolques/materiales.ts';
 import { pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
 import { materialPreferidoRps } from './remolques/rps/material-rps.ts';
@@ -97,6 +100,19 @@ const ruleParametersStore = createRuleParametersStore({
 });
 // Remolques usa la misma lista de técnicos que Toldos.
 const remolquesParametersStore = createRemolquesParametersStore({ file: config.remolquesParametersFile, technicians: formOptions.tecnicos });
+// Fichas de cliente de remolques (fase 3): lo que era de cada cliente en los parámetros vive aquí.
+// La primera vez se crean con lo que había en los parámetros guardados.
+const remolquesClientesStore = createRemolquesClientesStore({
+  file: config.remolquesClientesFile,
+  technicians: formOptions.tecnicos,
+  semilla: async () => fichasSemilla(await remolquesParametersStore.entradasDeCliente()),
+  recogidasGenerales: async () => (await remolquesParametersStore.get()).recogidas.map((r) => r.nombre)
+});
+/** Con lo que se calcula: los parámetros generales y lo de cada ficha (extras de baquetón, recogidas propias). */
+async function parametrosRemolques() {
+  const [generales, fichas] = await Promise.all([remolquesParametersStore.get(), remolquesClientesStore.get()]);
+  return paramsConFichas(generales, fichas);
+}
 const deploymentFeatures = {
   heraEnabled: config.heraEnabled,
   legacyExportsEnabled: config.legacyExportsEnabled
@@ -118,7 +134,7 @@ const almacenPedidosRemolques = crearAlmacenPedidosRemolques({
 const pedidosRemolques = crearServicioPedidosRemolques({
   almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
-  parametros: () => remolquesParametersStore.get(),
+  parametros: parametrosRemolques,
   coordina,
   tecnicos: formOptions.tecnicos,
   hacerPdf: hojaRemolquesPdf,
@@ -402,9 +418,11 @@ app.get('/api/remolques/rps-pedido', async (req, res) => {
   }
 });
 
+// Sin `detalle`, los efectivos (con lo de cada ficha): con ellos calcula Remolques. Con `detalle=1`,
+// los generales con su versión, para la hoja de Parámetros.
 app.get('/api/remolques/parametros', async (req, res, next) => {
   try {
-    res.set('Cache-Control', 'no-store').json(await (req.query.detalle === '1' ? remolquesParametersStore.getSnapshot() : remolquesParametersStore.get()));
+    res.set('Cache-Control', 'no-store').json(await (req.query.detalle === '1' ? remolquesParametersStore.getSnapshot() : parametrosRemolques()));
   } catch (error) {
     next(error);
   }
@@ -425,6 +443,42 @@ app.get('/api/remolques/parametros/history', async (req, res, next) => {
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
     res.set('Cache-Control', 'no-store').json({ entries: await remolquesParametersStore.history(limit) });
   } catch (error) { next(error); }
+});
+
+// Fichas de cliente de remolques (fase 3): todas a la vez con versión e historial, como los
+// parámetros, y «desde un pedido» para el botón de Remolques (solo una ficha, sin versión).
+function errorFichas(error, res, next) {
+  if (error.code === 'VERSION_CONFLICT') return res.status(409).json({ error: error.message, current: error.current });
+  if (error.code === 'CODE_TAKEN') return res.status(409).json({ error: error.message });
+  if (error.code === 'NOT_FOUND') return res.status(404).json({ error: error.message });
+  if (error.code === 'INVALID_INPUT') return res.status(400).json({ error: error.message });
+  return next(error);
+}
+
+app.get('/api/remolques/clientes', async (_req, res, next) => {
+  try {
+    res.set('Cache-Control', 'no-store').json(await remolquesClientesStore.getSnapshot());
+  } catch (error) { next(error); }
+});
+
+app.put('/api/remolques/clientes', async (req, res, next) => {
+  try {
+    res.json(await remolquesClientesStore.save(req.body));
+  } catch (error) { errorFichas(error, res, next); }
+});
+
+app.get('/api/remolques/clientes/historial', async (req, res, next) => {
+  try {
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+    res.set('Cache-Control', 'no-store').json({ entries: await remolquesClientesStore.history(limit) });
+  } catch (error) { next(error); }
+});
+
+app.post('/api/remolques/clientes/desde-pedido', async (req, res, next) => {
+  try {
+    // Los extras de otro cliente que se copien salen de los parámetros efectivos de este momento.
+    res.json(await remolquesClientesStore.desdePedido({ ...req.body, params: await parametrosRemolques() }));
+  } catch (error) { errorFichas(error, res, next); }
 });
 
 // La página interna de la hoja pide sus datos con el identificador que le dio el PDF. Un solo uso.
@@ -449,7 +503,7 @@ app.post('/api/remolques/pdf', async (req, res, next) => {
   try {
     // «Corregir» un pedido guardado manda los parámetros con que se guardó; si no, los comunes.
     const params = req.body?.params == null
-      ? await remolquesParametersStore.get()
+      ? await parametrosRemolques()
       : paramsDeLaPantalla(req.body.params);
     const datos = prepararPedidoHoja(req.body?.elementos, params);
     const pdf = await servicioPdfRemolques.generar({
@@ -1002,6 +1056,8 @@ app.use((error, _req, res, _next) => {
 const server = app.listen(config.port, config.host, () => {
   console.log(`Toldos Testar disponible en http://${config.host}:${config.port}`);
   process.send?.('ready');
+  // Las fichas de cliente de remolques se crean al arrancar si aún no existen (fase 3).
+  remolquesClientesStore.get().catch((error) => console.warn('No se pudieron preparar las fichas de cliente de remolques:', error.message));
   // El historial de telas tarda unos segundos: se prepara en segundo plano para que el
   // primer autorrelleno ya lo tenga.
   if (config.db.user && config.db.password) {

@@ -6,6 +6,7 @@ const originalLegacyExportsFlag = process.env.ENABLE_LEGACY_EXPORTS;
 const originalSettingsFile = process.env.WORKFLOW_SETTINGS_FILE;
 const originalRuleParametersFile = process.env.RULE_PARAMETERS_FILE;
 const originalRemolquesParametersFile = process.env.REMOLQUES_PARAMETERS_FILE;
+const originalRemolquesClientesFile = process.env.REMOLQUES_CLIENTES_FILE;
 const originalRemolquesRevisionDirectory = process.env.REMOLQUES_REVISION_DIRECTORY;
 const originalDraftsDirectory = process.env.DRAFTS_DIRECTORY;
 
@@ -16,6 +17,7 @@ afterEach(() => {
   restoreEnvironment('WORKFLOW_SETTINGS_FILE', originalSettingsFile);
   restoreEnvironment('RULE_PARAMETERS_FILE', originalRuleParametersFile);
   restoreEnvironment('REMOLQUES_PARAMETERS_FILE', originalRemolquesParametersFile);
+  restoreEnvironment('REMOLQUES_CLIENTES_FILE', originalRemolquesClientesFile);
   restoreEnvironment('REMOLQUES_REVISION_DIRECTORY', originalRemolquesRevisionDirectory);
   restoreEnvironment('DRAFTS_DIRECTORY', originalDraftsDirectory);
   vi.resetModules();
@@ -60,6 +62,17 @@ describe('configuración por entorno', () => {
     expect((await loadConfig('production', '')).remolquesParametersFile.replace(/\\/g, '/')).toBe('/var/lib/toldos-testar/remolques-parameters.json');
     process.env.REMOLQUES_PARAMETERS_FILE = '/otra/ruta/remolques.json';
     expect((await loadConfig('production', '')).remolquesParametersFile).toBe('/otra/ruta/remolques.json');
+  });
+
+  test('las fichas de cliente de remolques van junto a sus parámetros y REMOLQUES_CLIENTES_FILE manda si se indica', async () => {
+    process.env.RULE_PARAMETERS_FILE = '/var/lib/toldos-testar/rule-parameters.json';
+    delete process.env.REMOLQUES_PARAMETERS_FILE;
+    delete process.env.REMOLQUES_CLIENTES_FILE;
+    expect((await loadConfig('production', '')).remolquesClientesFile.replace(/\\/g, '/')).toBe('/var/lib/toldos-testar/remolques-clientes.json');
+    process.env.REMOLQUES_PARAMETERS_FILE = '/otra/ruta/remolques.json';
+    expect((await loadConfig('production', '')).remolquesClientesFile.replace(/\\/g, '/')).toBe('/otra/ruta/remolques-clientes.json');
+    process.env.REMOLQUES_CLIENTES_FILE = '/fichas/clientes.json';
+    expect((await loadConfig('production', '')).remolquesClientesFile).toBe('/fichas/clientes.json');
   });
 
   test('REMOLQUES_REVISION_DIRECTORY es la carpeta interna de los pedidos de remolques', async () => {

@@ -1,5 +1,7 @@
 /**
- * Parámetros de cálculo de remolques (recogidas, clientes con baquetón, demasías...).
+ * Parámetros de cálculo de remolques (recogidas, demasías, extras generales del baquetón...). Lo que era
+ * de un cliente (sus extras de baquetón y su recogida propia) vive en su ficha
+ * (`remolquesClientesStore.js`): aquí se deja fuera al leer y sale del fichero en el siguiente guardado.
  * Viven en un JSON junto a los parámetros comunes y, si
  * no existe o está roto, valen los del código (los mismos que usaba Remolques-TGM).
  * Se lee en cada petición para que un cambio a mano en el fichero se vea sin reiniciar.
@@ -8,6 +10,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { DEFAULT_PARAMS } from './remolques/calc/params.ts';
 import { normalizarParams, validarParams } from './remolques/calc/validar-params.ts';
+import { sinEntradasDeCliente } from './remolques/clientes/params-efectivos.ts';
+import { entradasDeCliente } from './remolques/clientes/semilla.ts';
 import { writeFileAtomic } from './workflow.js';
 
 const sections = {
@@ -31,9 +35,11 @@ export function createRemolquesParametersStore({ file, historyFile = file.replac
     }
     const modern = stored?.parameters && Number.isInteger(stored.version);
     const raw = modern ? stored.parameters : stored;
-    const parameters = normalizarParams(raw, { migrar: !modern });
+    // Completos (con lo que era de un cliente) solo para crear las fichas la primera vez.
+    const completos = normalizarParams(raw, { migrar: !modern });
+    const parameters = sinEntradasDeCliente(completos);
     if (technicians) parameters.tecnicos = [...technicians];
-    return { raw, snapshot: {
+    return { raw, completos, snapshot: {
       version: modern ? stored.version : 0,
       updatedAt: modern ? String(stored.updatedAt || '') : '',
       updatedBy: modern ? String(stored.updatedBy || '') : '',
@@ -56,16 +62,18 @@ export function createRemolquesParametersStore({ file, historyFile = file.replac
     for (const field of editable) {
       if (Object.hasOwn(parameters, field)) next[field] = parameters[field];
     }
-    const validation = validarParams(next);
+    // Una versión antigua cargada del historial puede traer clientes: se quedan en sus fichas.
+    const limpio = sinEntradasDeCliente(next);
+    const validation = validarParams(limpio);
     if (!validation.ok) throw storeError('INVALID_INPUT', validation.errores.join('. '));
-    const changedSections = Object.entries(sections).filter(([, fields]) => fields.some((field) => JSON.stringify(current.parameters[field]) !== JSON.stringify(next[field]))).map(([name]) => name);
+    const changedSections = Object.entries(sections).filter(([, fields]) => fields.some((field) => JSON.stringify(current.parameters[field]) !== JSON.stringify(limpio[field]))).map(([name]) => name);
     if (!changedSections.length) return current;
-    const saved = { version: current.version + 1, updatedAt: new Date().toISOString(), updatedBy: by, reason: why, parameters: { ...raw, ...next } };
+    const saved = { version: current.version + 1, updatedAt: new Date().toISOString(), updatedBy: by, reason: why, parameters: { ...raw, ...limpio } };
     await fs.mkdir(path.dirname(file), { recursive: true });
     await fs.mkdir(path.dirname(historyFile), { recursive: true });
     await writeFileAtomic(file, `${JSON.stringify(saved, null, 2)}\n`);
     await fs.appendFile(historyFile, `${JSON.stringify({ ...saved, changedSections })}\n`);
-    return { ...saved, parameters: next };
+    return { ...saved, parameters: limpio };
   }
   function save(input) {
     const result = queue.then(() => write(input));
@@ -81,5 +89,7 @@ export function createRemolquesParametersStore({ file, historyFile = file.replac
       throw error;
     }
   }
-  return { get, getSnapshot, save, history };
+  /** Lo que era de un cliente en los parámetros guardados (o los del código): para crear las fichas. */
+  async function entradasDeClienteGuardadas() { return entradasDeCliente((await readCurrent()).completos); }
+  return { get, getSnapshot, save, history, entradasDeCliente: entradasDeClienteGuardadas };
 }
