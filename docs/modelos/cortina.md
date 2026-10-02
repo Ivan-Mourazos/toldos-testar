@@ -100,3 +100,15 @@ Hallazgo transversal: un lacado escrito como "GRIS (R-7012)" no se reconoce y ca
 | Q-CO03 | **Resuelta por Iván el 22/09/2026.** Casos esporádicos, como en los cambios de tela: se ponen con el candado | Ninguno |
 | Q-CO04 | **Para OT** (Iván no lo sabe). ¿Qué motor lleva cada cortina? Se usaron 15/17 (318 × 140), 35/17 (500 × 300, 480 × 460) y 55/17 (963 × 258) | Motor y reserva |
 | Q-CO05 | **Para OT** (Iván no lo sabe). El eje 63 queda resuelto con la regla de Arzúa (exterior). ¿Cuándo se usa tubo Ø70 en vez de Ø78, y casquillo de máquina eje 63 en vez de 50? En los datos no depende del frente | Tubo y casquillos |
+
+### Motores consumidos en RPS (02/10/2026, para Q-CO04)
+
+Consulta de solo lectura a `CPRImputationMaterialMO`: las 774 OF de `CORTINAUNI`/`CORTINAUNIMU` desde 2022. 48 llevan motor. Las medidas salen del texto de la línea de pedido; en las OF de «diferentes medidas» no hay medida.
+
+- **Maestria:** solo 2 OF (`MAESTRIA5025//17`: 0215498 con G650 y 0227485 con Soltis), sin medidas. No hay datos para una tabla de Maestria.
+- **Sunilus 15/17** (`SUNILUSIO15//17`, 23 OF): de 111 × 225 a 720 × 320. Nunca con salida de más de 320. Con PVC y cristal hasta 410 × 300 y 599 × 270.
+- **Sunilus 35/17** (13 OF): salidas grandes (420 × 500, 480 × 460, 500 × 400, 649 × 430) y PVC con cristal desde 387 × 310 y 403 × 340.
+- **Sunilus 55/17** (3 OF): 952 × 258 y lonas pesadas (S2000, NS86 con cristal).
+- **Otros, sueltos:** Somfy Sunea 35 y Atla, Jet, Meteor, Apollo, Orion y Oximo.
+
+Los tamaños se solapan: 410 × 300 con PVC y cristal llevó 15/17, y 387 × 310 igual llevó 35/17. La potencia parece depender de la salida, el frente y el peso de la tela (PVC y cristal), no de una sola medida. **Propuesta para decidir:** 15/17 por defecto; 35/17 con salida de más de 350, o de más de 300 con PVC y ventana de cristal; 55/17 con frente de más de 800. Mientras no se decida, la web sigue con 15/17 y el candado permite 35/17 o 55/17.

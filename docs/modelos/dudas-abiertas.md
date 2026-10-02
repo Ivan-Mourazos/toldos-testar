@@ -16,7 +16,7 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 ### Cortina
 
-- **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño; Iván no sabe la tabla y pide sacarla de RPS (en revisión). La web pone el Sunilus 15/17. Importa para reservar el motor correcto. <sub>Q-CO04</sub>
+- **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño; Iván no sabe la tabla y pide sacarla de RPS. **Sacado de RPS el 02/10/2026:** el Maestria solo aparece en 2 OF, sin medidas. Lo que se usa es el Sunilus 15/17, 35/17 o 55/17, y los tamaños se solapan. Los datos y una propuesta (35/17 con salida de más de 350, o de más de 300 con PVC y cristal; 55/17 con frente de más de 800) están en [Cortina](./cortina.md#motores-consumidos-en-rps-02102026-para-q-co04). La web pone el Sunilus 15/17. Falta que Iván o el taller den por buena la propuesta, o digan cuándo va Maestria. <sub>Q-CO04</sub>
 - **Altura del velcro con las reglas nuevas.** Desde el 02/10/2026 la tela de Cortina no descuenta nada por defecto (se elige −18, −11 o un ajuste en la tarjeta), pero la altura del velcro sigue siendo «salida − 18 + 8», la del Excel: con salida 275 sale 265. ¿Se queda así, o debe seguir al ajuste elegido (sin ajuste: salida + 8)? En Cambio de cortina es salida + 8. <sub>Q-CO06</sub>
 
 ## Telas
