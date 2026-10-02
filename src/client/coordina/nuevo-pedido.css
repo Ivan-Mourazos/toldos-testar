@@ -1124,7 +1124,9 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .pdf-carousel-toolbar .pdf-carousel-footer,
 .pdf-carousel-toolbar .pdf-carousel-pages { border: 0; min-height: 0; padding: 0; gap: 4px; }
 .pdf-carousel-toolbar .pdf-carousel-footer { flex-shrink: 0; }
-.pdf-carousel-toolbar .pdf-carousel-pages { max-width: 150px; }
+/* En la barra, los números de página sin caja con scroll (Iván, 02/10/2026: «hacen scroll y no
+   se ven bien»): se ven todos y su relieve no se recorta. */
+.pdf-carousel-toolbar .pdf-carousel-pages { flex-wrap: nowrap; max-width: none; overflow: visible; }
 .pdf-carousel-toolbar .pdf-carousel-footer strong { min-width: 84px; white-space: nowrap; }
 .pdf-carousel-toolbar .pdf-carousel-zoom-value { min-width: 40px; }
 .pdf-carousel-toolbar .pdf-carousel-actions button { min-height: 30px; }
