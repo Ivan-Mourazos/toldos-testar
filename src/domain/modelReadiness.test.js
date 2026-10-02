@@ -18,9 +18,12 @@ describe('estado de cada modelo en los selectores', () => {
     for (const model of ['GALICIA', 'ELECTRA', 'MAXISCREEM', 'MONOBLOCK 350', 'PUNTO RECTO']) expect(modelReadiness(model).ready).toBe(true);
   });
 
+  // Iván, 02/10/2026: el motor del Ágata (siempre Sunea, Q-AG02) y el de Iris y HERA ya están hechos.
+  test('Ágata, Iris y HERA quedan completos', () => {
+    for (const model of ['AGATA BOX', 'IRIS', 'HERA']) expect(modelReadiness(model).ready).toBe(true);
+  });
+
   test('la explicación dice qué falta', () => {
-    expect(modelReadinessText('AGATA BOX')).toContain('Sunea');
-    expect(modelReadinessText('AGATA BOX')).not.toContain('patines');
     expect(modelReadinessText('CORTINA')).toContain('velcro');
     expect(modelReadinessText('XACOBEO')).toMatch(/^Completo/);
   });
