@@ -199,6 +199,20 @@
   font-size: 11px;
 }
 .parameter-grid { gap: 0.5rem; }
+/* La explicación ocupa las columnas libres de la última fila si quedan al menos dos.
+   Los campos conservan las columnas comunes y las dos filas compartidas de rótulo y control. */
+.parameter-grid-description {
+  align-content: center;
+  border-left: 1px solid var(--border);
+  color: var(--text-muted);
+  display: grid;
+  font-size: 11px;
+  grid-row: span 2;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+}
+.parameter-grid-description > span { max-width: 68ch; }
 /* Con la ficha a todo el ancho (sin lista de modelos a la izquierda), los campos se reparten en
    tantas columnas como quepan, de 9 a 12 rem: de 4 a 6 por fila a 1280 px en vez de 2 o 4. Los
    números no se estiran más de 9,5 rem (basta para «12.345,6»); los textos y las listas llenan su
