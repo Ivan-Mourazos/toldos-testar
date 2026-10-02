@@ -10,7 +10,7 @@ El planteamiento de toldos se dibuja con coordenadas a mano (pdfkit, `src/domain
 
 - **Entra:** la página de telas A4 apaisada de los toldos (`drawFabricPage` y `drawExcelFabricBody`): cabecera, ROTULACIÓN, DATOS BÁSICOS, filas A, B, C… con TELA, SALIDA o CAÍDA, UN., trabajo e instrucción, el total «PAÑO TOTAL NECESARIO» y OBSERVACIONES, con sus páginas de continuación de observaciones.
 - **No entra:** las páginas de estructura (A5), la página de telas del HERA (A5) y los dibujos de confección, que se siguen pintando con el código actual.
-- **Aspecto:** igual que ahora (mismas casillas, orden, textos y datos), con el alineado y el centrado del navegador. Las incongruencias y mejoras se anotan al final como propuestas; no se aplican sin el visto bueno de Iván.
+- **Aspecto:** igual que ahora (mismas casillas, orden, textos y datos), con el alineado y el centrado del navegador, más los seis cambios que Iván decidió (al final). Cualquier otra mejora que se vea se comenta antes de aplicarla.
 
 ## Cómo funciona
 
@@ -37,11 +37,13 @@ Imprimir con Chromium añade alrededor de un segundo por PDF. Se mide en la vist
 - Capturas de la página nueva y la actual, una al lado de la otra, para los mismos casos, en `tmp/ui-audit/pdf-telas-html/`.
 - `pnpm test && pnpm typecheck && pnpm lint && pnpm exec vite build`. La paridad de remolques no se toca.
 
-## Incongruencias vistas en la página actual (propuestas, sin aplicar)
+## Incongruencias de la página actual y lo que decidió Iván (03/10/2026)
 
-1. **Cabeceras distintas entre páginas.** La de estructura dice «OF:» y «Nº PEDIDO:» con el pedido en grande; la de telas dice «PEDIDO» arriba y «OF» abajo, en otro orden y otro tamaño. Propuesta: la misma cabecera en las dos.
-2. **Casillas vacías sin marca.** «REMATE» sale en blanco cuando no hay, y «BAMBA» de ROTULACIÓN sale «-». Propuesta: un criterio único, por ejemplo «—» en todo lo que no aplica.
-3. **Título y trabajo con nombres distintos.** Arriba «CAMBIO DE TELA» y en la fila «CAMB. TELA». Propuesta: el mismo nombre, abreviado solo si no cabe.
-4. **Hueco grande en el centro** con pocas filas (una o dos): la página reserva sitio para muchas. Propuesta: que las filas crezcan un poco o que el total suba.
-5. **El total solo enseña el código de la tela** («NS86BLANP250»), no su nombre. Propuesta: código y nombre corto.
-6. **La instrucción de cada fila** (bamba, altura de velcro…) va en letra pequeña a la derecha de SALIDA y se lee mal. Propuesta: debajo de la fila, a todo el ancho.
+Estas sí se aplican en la fase 1; el resto de la página queda igual que ahora.
+
+1. **Cabeceras distintas entre páginas.** La de estructura dice «OF:» y «Nº PEDIDO:» con el pedido en grande; la de telas dice «PEDIDO» arriba y «OF» abajo, en otro orden y otro tamaño. **Decidido: unificar.** La página de telas usa la misma cabecera que la de estructura (la de estructura sigue en pdfkit en esta fase; la de telas la copia en HTML).
+2. **Casillas vacías sin marca.** «REMATE» sale en blanco cuando no hay y «BAMBA» de ROTULACIÓN sale «-». **Decidido:** «—» en todo lo que no aplica.
+3. **La segunda línea de cada fila repite el trabajo** («CAMB. TELA»), que ya dice el título de arriba. **Decidido:** esa línea pasa a ser la de la instrucción (punto 6). El nombre del trabajo solo sale, delante de la instrucción, si en la misma página hay trabajos distintos («GALICIA · BAMBALINA INCLUIDA…»).
+4. **Hueco grande en el centro** con pocas filas. **Decidido (a criterio):** las filas crecen un poco cuando hay pocas, hasta una altura máxima, y el total se queda abajo.
+5. **El total solo enseña el código de la tela** («NS86BLANP250»). **Decidido:** código y nombre corto.
+6. **La instrucción de cada fila** (bamba, altura de velcro…) iba en letra pequeña a la derecha de SALIDA. **Decidido:** en la segunda línea de la fila (punto 3), a todo el ancho y con letra legible.
