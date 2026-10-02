@@ -5,6 +5,8 @@ import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { squareIrisOpening } from './irisGeometry.js';
+import { resolveMotorRemote } from './motorAccessories.js';
+import { chosenMotor, irisDefaultMotor, irisMotorPowers, sunilusMaterial } from './screenMotors.js';
 import {
   getIrisDiscounts,
   getIrisFabricDropAllowance,
@@ -190,10 +192,10 @@ export function calculateIris({ order, awning }) {
   if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de IRIS modificadas.` });
   }
-  if (device === 'MOTOR') {
-    // Taller, 24/09/2026 (Q-I05): "lo habitual es el Sunilus, pero depende de taller".
-    // Se han usado Sunea y Sunilus de 10 a 35 Nm y Meteor CSI; la tarjeta no lo pide.
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: motor y mando sin reservar. Lo habitual es el Sunilus, pero lo elige taller: añádelos en la reserva.` });
+  // Iván, 02/10/2026 (Q-I05): 110 Sunilus 10/17 y 130 Sunilus 35/17; en la tarjeta se elige otro.
+  const motorPower = device === 'MOTOR' ? chosenMotor(awning, irisMotorPowers, irisDefaultMotor(series)) : '';
+  if (device === 'MOTOR' && !motorPower) {
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS ${series} en OF ${awning.of}: motor sin reservar. Cada pedido ha llevado uno distinto: elige un Sunilus en la tarjeta o añádelo en la reserva.` });
   }
 
   const valid = missingFields.length === 0
@@ -216,6 +218,11 @@ export function calculateIris({ order, awning }) {
     materials.push(...irisCommonPieces({
       series, device, lacado, units, rollTubeLength, loadBarLength, ballastLength, crankHeight: awning.crankHeight
     }));
+    if (device === 'MOTOR') {
+      const remote = resolveMotorRemote(awning.sensor);
+      if (motorPower) materials.push(sunilusMaterial(motorPower, units));
+      materials.push({ code: remote.code, quantity: units, description: remote.description });
+    }
     const box = hasBox
       ? irisBoxPieces({ series, shape: boxShape, lacado, units, boxProfileLength })
       : { lines: [], issues: [] };
@@ -291,7 +298,7 @@ export function calculateIris({ order, awning }) {
       glassCode: glassLine?.code || '',
       glassSize,
       armCount: 0,
-      motorPower: device === 'MOTOR' ? String(awning.motorPower || '') : ''
+      motorPower
     }
   };
 }

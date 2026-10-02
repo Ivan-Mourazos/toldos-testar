@@ -30,7 +30,10 @@ import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupport
 import { maxiscreemGuide, maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
-import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes } from '../../domain/irisParameters.js';
+import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes, irisSeriesOf } from '../../domain/irisParameters.js';
+import { chosenMotor, heraDefaultMotor, heraMotorPowers, irisDefaultMotor, irisMotorPowers } from '../../domain/screenMotors.js';
+
+const sunilusLabel = (power: string) => `Sunilus IO ${power}`;
 import {
   anticaVariants,
   cambioAnticaVariants,
@@ -183,6 +186,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const isAmbarBox = awning.model === 'AMBAR BOX';
   const isAgataBox = awning.model === 'AGATA BOX';
   const isHera = awning.model === 'HERA';
+  // Motor del Iris a la vista (Iván, 02/10/2026): marcado el de la regla y se cambia sin candado.
+  const isIrisMotor = awning.model === 'IRIS' && String(awning.device || '').toUpperCase() === 'MOTOR';
   const isSelena = awning.model === 'SELENA';
   const isAntica = awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA';
   const isFullAntica = awning.model === 'ANTICA';
@@ -588,8 +593,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               )}
             </div>
           )}
-          {isHera && (
-            <SelectField label={awning.submodel === 'HERA 56 MOTOR' ? 'Color mecanismos' : 'Color cadena'} missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
+          {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
+            <SelectField label="Color cadena" missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
+          )}
+          {isHera && awning.submodel === 'HERA 56 MOTOR' && (
+            <div className="awning-installation-row awning-wide-field">
+              <SelectField label="Color mecanismos" missing={isMissing('heraChainColor')} value={awning.heraChainColor} options={['BLANCO', 'NEGRO']} placeholder="Elegir…" onChange={(heraChainColor) => update({ heraChainColor: heraChainColor as Awning['heraChainColor'] })} />
+              <SelectField label="Motor" value={chosenMotor(awning, heraMotorPowers, heraDefaultMotor)} options={heraMotorPowers} optionLabel={sunilusLabel} onChange={(motorPower) => update({ motorPower })} />
+            </div>
           )}
           {isHera && awning.submodel !== 'HERA 56 MOTOR' && (
             <NumberField label="Altura instalación" missing={isMissing('height')} value={awning.height} min={0} step={0.1} onChange={(height) => update({ height })} />
@@ -782,6 +793,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <div className="awning-actuation-row awning-wide-field">
               {fields.device && <SelectField label="Dispositivo" missing={isMissing('device')} value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={updateDevice} />}
               {isElectra && electraDevice === 'MOTOR' && <SelectField label="Motor Electra" missing={isMissing('motorPower')} value={awning.motorPower} options={electraMotors.map(({ value }) => value)} placeholder="Obligatorio · elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
+              {isIrisMotor && <SelectField label="Motor" value={chosenMotor(awning, irisMotorPowers, irisDefaultMotor(irisSeriesOf(awning.submodel)))} options={irisMotorPowers} optionLabel={sunilusLabel} placeholder="Elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
               {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.motorLocation && <SelectField label="Posición motor" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}

@@ -7,12 +7,11 @@
 // no se repiten en cada modelo.
 // Taller, 30/09/2026: salen las dudas de Galicia, Electra, Diana, Monoblock 350 y Punto
 // Recto, y los patines del Ágata (contestadas y ya aplicadas en la web).
+// Iván, 02/10/2026: Iris y HERA ya reservan motor y mando (Q-I05 y Q-H07).
 const pending = {
   'AGATA BOX': ['Si el motor pasa del Sunilus al Sunea (lo decide Oficina Técnica).'],
   CORTINA: ['Si la altura del velcro sigue restando 18 cm con las reglas nuevas de la tela.'],
   SELENA: ['A motor nunca se ha fabricado: confirmar el kit con el taller.'],
-  IRIS: ['El motor y el mando todavía no se reservan: se ponen a mano.'],
-  HERA: ['El motor y el mando todavía no se reservan: se ponen a mano.'],
   ANTICA: [
     'Fabricación propia: la reserva aún no lleva escuadras, kits, tornillería ni cincado.',
     'Quedan 28 preguntas para el encargado de taller.'

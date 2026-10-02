@@ -1,6 +1,7 @@
 import { effectiveOverride, noteOverride } from './ruleOverrides.js';
 import { curtainBottomAllowanceCm, curtainConfigurationError, curtainFabricAdjustmentCm } from './curtainConfiguration.js';
 import { cortinaMotorPower, cortinaMotorPowers } from './curtainMotor.js';
+import { resolveMotorRemote } from './motorAccessories.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -180,7 +181,9 @@ function buildMaterials(context) {
       material('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
       material('CORONALT5078', units, 'CORONA ADAPTADA LT50 TUBO Ø78'),
       material('RUEDAMOT801MEC', units, 'RUEDA MOTRIZ A P-801 MECANIZADA'),
-      material(motorCode(motorPower), units, `MOTOR SOMFY SUNILUS ${motorPower} IO`)
+      material(motorCode(motorPower), units, `MOTOR SOMFY SUNILUS ${motorPower} IO`),
+      // Un mando por motor, como en el resto de modelos (Iván, 02/10/2026).
+      material(resolveMotorRemote(awning.sensor).code, units, resolveMotorRemote(awning.sensor).description)
     );
   } else {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
@@ -242,6 +245,7 @@ function buildDespiece(context) {
     push(7, 'CORONA ADAPTADA LT50 TUBO Ø78', 'CORONALT5078', units);
     push(8, 'RUEDA MOTRIZ A P-801 MECANIZADA', 'RUEDAMOT801MEC', units);
     push(9, `MOTOR SOMFY SUNILUS ${motorPower} IO`, motorCode(motorPower), units);
+    push(10, resolveMotorRemote(awning.sensor).description, resolveMotorRemote(awning.sensor).code, units);
   } else {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
     push(7, `MÁQUINA MB-11 L-120 ${lacado.crank}`, machineCode(lacado), units);

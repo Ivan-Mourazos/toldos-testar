@@ -36,7 +36,7 @@ Fuente: `CPRImputationMaterialMO` de las 24 OF de HERA 56 imputadas desde 2025 (
 
 - **Color:** el kit y el adaptador van en blanco o negro también a motor. La tarjeta pide ahora "Color mecanismos" en el HERA a motor ("Color cadena" en los de cadena, que antes decía "Color del anillo de cadena").
 - **La cadena sigue siendo el anillo cerrado** (criterio de Iván del 18/09, confirmado por taller el 24/09: "sí, se reserva siempre el anillo"). El almacén imputa cadena por metros con uniones (Q-H08, resuelta).
-- **Motor y mando no se reservan:** varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide. Sale un aviso para añadirlos a mano. Taller, 24/09: "depende del tipo de modelo"; Iván da la pregunta por contestada (Q-H07). La web usa por ahora: no reserva motor ni mando y avisa; la propuesta por variante de abajo no está aplicada.
+- **Motor y mando:** desde el 02/10/2026 el HERA 56 a motor reserva Sunilus IO 6/17 y un Situo 1 IO Pure por motor; la tarjeta deja elegir 10/17 o 15/17 (Q-H07, abajo). El solar (RS100) se pone a mano.
 - Después, `validate:reserva HERA` solo echa en falta la cadena por metros (Q-H08) y la tapa tornillo Swift (Q-H05). Referencias rotas: 0 de 23.
 - Tarjeta a 1280×720 y 1600: la variante va en su propia línea (antes se cortaba "HERA 56 …" y no se distinguía máquina de motor). Válida, sin scroll horizontal. Capturas en `tmp/ui-audit/shots/hera-card-*.png`.
 
@@ -124,7 +124,9 @@ Cinco HERA 56 máquina. Las veinte medidas de tubo, frente de tela, caída de te
 
 Iván da por respondidas todas las dudas del HERA a fecha 24/09/2026 (25/09/2026): ya no están en la [lista de dudas abiertas](./dudas-abiertas.md). Las respuestas están en [el documento de taller](./dudas-hera-iris-respuestas-2026-09-24.docx) (24/09/2026, traído por Iván).
 
-### Q-H07: propuesta de motor por variante (sin aplicar; la pregunta está respondida)
+### Q-H07: motor por variante (decidido por Iván el 02/10/2026, hecho en la web)
+
+HERA 56 MOTOR reserva Sunilus IO 6/17 (`SUNILUSIO6//17`) y un mando Situo 1 IO Pure por motor, como el resto de modelos. Con más OF desde 2014: 6/17 en 7, 10/17 en 5 y 15/17 en 2, sin medida que los separe. La tarjeta enseña «Motor» con el 6/17 marcado y se cambia sin candado (6/17, 10/17 o 15/17). El solar (RS100) se sigue poniendo a mano. Lo que sigue es el estudio de entonces.
 
 Consumo desde 2024 (`tmp/iris/respuestas/hera-motor.mjs`, solo lectura): solo 5 OF con motor, todas **HERA 56**. El HERA 43 no se ha motorizado nunca en ese periodo, y el HERA 56 máquina no lleva motor.
 

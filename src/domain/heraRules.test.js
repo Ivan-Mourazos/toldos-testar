@@ -242,9 +242,13 @@ describe('reglas HERA', () => {
     const reservation = normalizeReservation({ orderCode: 'AR26HERA', ofs: calculation.ofs });
 
     expect(calculation.ofs.map((item) => item.calculation.fabricMl)).toEqual([1.26, 1.26]);
-    expect(reservation.ofs[0].materials).toEqual([{
-      code: 'SOLTIS96NUBP267', description: 'SOLTIS 96 NUBE', quantity: 3
-    }]);
+    expect(reservation.ofs[0].materials).toHaveLength(3);
+    expect(reservation.ofs[0].materials).toEqual(expect.arrayContaining([
+      { code: 'SOLTIS96NUBP267', description: 'SOLTIS 96 NUBE', quantity: 3 },
+      // Iván, 02/10/2026: a motor, Sunilus IO 6/17 y un Situo 1 por toldo.
+      expect.objectContaining({ code: 'SUNILUSIO6//17', quantity: 2 }),
+      expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 2 })
+    ]));
   });
 });
 
@@ -273,7 +277,15 @@ describe('HERA: estructura según el consumo real', () => {
     const materials = codes(result);
     expect(materials).toMatchObject({ SCRKITSW4350BLAN: 3, SCRADPSWIFBLAN: 3, RUEDAAPLT5053: 3, SCRTUBO53600C: 2, SCRPECBLAN600C: 2 });
     expect(Object.keys(materials).some((code) => /^SCR(ANIL|ECONTRCAD|UNICAD)/.test(code))).toBe(false);
-    expect(result.diagnostics.map((item) => item.message).join(' ')).toContain('motor y mando sin reservar');
+    // Iván, 02/10/2026: Sunilus IO 6/17 y un Situo 1 por motor, lo mismo que gastó esta OF.
+    expect(materials).toMatchObject({ 'SUNILUSIO6//17': 3, SITUOIO1PURE: 3 });
+    expect(result.diagnostics.map((item) => item.message).join(' ')).not.toContain('sin reservar');
+  });
+
+  test('HERA a motor: en la tarjeta se elige otro Sunilus', () => {
+    const materials = codes(hera({ submodel: 'HERA 56 MOTOR', width: 270, projection: 200, height: 0, motorPower: '10/17' }));
+    expect(materials).toMatchObject({ 'SUNILUSIO10//17': 1, SITUOIO1PURE: 1 });
+    expect(materials['SUNILUSIO6//17']).toBeUndefined();
   });
 
   test('con pletina abajo, pletina 25×4 en negro en vez del perfil de contrapeso', () => {

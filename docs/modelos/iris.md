@@ -1,6 +1,6 @@
 # Iris — expediente
 
-24/09/2026 · **Reserva completa salvo motor y mando** (respuestas de taller del 24/09) · **Sin dudas abiertas:** Iván da por contestadas todas las del Iris a fecha 24/09/2026 (25/09) · [Seguimiento](./README.md) · [Dudas](./dudas-abiertas.md) · [Evidencia](../rps-iris-evidence.md) · [Informe de consumo (Codex)](./informe-iris-hera-consumo.md) · [Respuestas de taller](./dudas-hera-iris-respuestas-2026-09-24.docx)
+02/10/2026 · **Reserva completa, también motor y mando** (el 150 sin motor por defecto) · 24/09/2026: respuestas de taller · **Sin dudas abiertas:** Iván da por contestadas todas las del Iris a fecha 24/09/2026 (25/09) · [Seguimiento](./README.md) · [Dudas](./dudas-abiertas.md) · [Evidencia](../rps-iris-evidence.md) · [Informe de consumo (Codex)](./informe-iris-hera-consumo.md) · [Respuestas de taller](./dudas-hera-iris-respuestas-2026-09-24.docx)
 
 ## 1. Alcance
 
@@ -87,7 +87,7 @@ La cremallera blanca o gris (la negra está de baja desde 2021) se elige por la 
 
 ### No se reserva
 
-- **Motor y mando** (Q-I05): taller dice que lo habitual es el Sunilus, pero lo elige taller. La tarjeta avisa: "Lo habitual es el Sunilus, pero lo elige taller: añádelos en la reserva".
+- **Motor y mando** (Q-I05): taller dice que lo habitual es el Sunilus, pero lo elige taller. **Decidido por Iván el 02/10/2026** con lo gastado en RPS (90 OF de Iris y HERA con motor): el 110 reserva Sunilus IO 10/17 (16 OF; 15/17 en 8, sin medida que los separe) y el 130, Sunilus IO 35/17 (6 OF; Meteor en los grandes y pesados). El 150 ha llevado uno distinto en cada pedido (Helios CSI 30/17, Mariner, Sunilus 35/17): no se reserva motor y la tarjeta avisa. La tarjeta enseña «Motor» con el de la regla marcado y se cambia sin candado (Sunilus IO 10/17, 15/17 o 35/17). Mando: un Situo 1 IO Pure por motor (Situo 5 Variation con sensor de sol), como el resto de modelos (`src/domain/screenMotors.js`).
 - Guía STORM: no es una opción de la tarjeta. La web usa por ahora la guía que se elija y la STORM se añade a mano (Q-I02).
 
 ### `validate:reserva IRIS`

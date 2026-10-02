@@ -294,7 +294,24 @@ describe('IRIS · piezas comunes según el consumo real', () => {
     expect(materials).toMatchObject({ CASNMOSZ78MM: 1, CASADMOSZ78MM: 1, RUEDAMOT801MEC: 1, SOPORTEUNVHIPRO: 1, TAPTERSZ13NEGR: 2, GOMASSCRN700C: 1 });
     expect(Object.keys(materials).some((code) => /^(MAQ|MANIVE|CASCES|TURA70)/.test(code))).toBe(false);
     expect(Object.keys(materials).some((code) => code.startsWith('TURA80HG'))).toBe(true);
-    expect(result.diagnostics.map((item) => item.message).join(' ')).toContain('motor y mando sin reservar');
+    // Iván, 02/10/2026: el 130 lleva Sunilus IO 35/17 y un Situo 1 por motor.
+    expect(materials).toMatchObject({ 'SUNILUSIO35//17': 1, SITUOIO1PURE: 1 });
+    expect(result.diagnostics.map((item) => item.message).join(' ')).not.toContain('sin reservar');
+  });
+
+  test('motor por serie: 110 Sunilus 10/17; 150 sin motor y con aviso; en la tarjeta se elige otro', () => {
+    // OF 0216104 (110, 247 × 217) gastó SUNILUSIO10//17 y SITUOIO1PURE.
+    const iris110 = codes(calculate({ device: 'MOTOR', crankHeight: null, irisFrontTop: 247, irisExitLeft: 217 }));
+    expect(iris110).toMatchObject({ 'SUNILUSIO10//17': 1, SITUOIO1PURE: 1 });
+    const iris150 = calculate({ submodel: 'IRIS 150 CON COFRE', device: 'MOTOR', crankHeight: null });
+    expect(Object.keys(codes(iris150)).some((code) => code.startsWith('SUNILUS'))).toBe(false);
+    expect(codes(iris150)).toMatchObject({ SITUOIO1PURE: 1 });
+    expect(iris150.diagnostics.map((item) => item.message).join(' ')).toContain('motor sin reservar');
+    const elegido = codes(calculate({ device: 'MOTOR', crankHeight: null, motorPower: '15/17' }));
+    expect(elegido).toMatchObject({ 'SUNILUSIO15//17': 1 });
+    expect(elegido['SUNILUSIO10//17']).toBeUndefined();
+    const iris150Elegido = codes(calculate({ submodel: 'IRIS 150 CON COFRE', device: 'MOTOR', crankHeight: null, motorPower: '35/17' }));
+    expect(iris150Elegido).toMatchObject({ 'SUNILUSIO35//17': 1 });
   });
 });
 
@@ -416,9 +433,8 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
     });
   });
 
-  test('a motor avisa de que el motor no se reserva y de que lo habitual es el Sunilus (Q-I05)', () => {
+  test('a motor ya no avisa de motor sin reservar en el 110 (Q-I05, Iván 02/10/2026)', () => {
     const messages = real({ device: 'MOTOR' }).diagnostics.map((item) => item.message).join(' ');
-    expect(messages).toContain('Lo habitual es el Sunilus, pero lo elige taller');
-    expect(messages).not.toContain('guías y cremallera sin reservar');
+    expect(messages).not.toContain('sin reservar');
   });
 });

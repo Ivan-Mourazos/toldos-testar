@@ -1576,6 +1576,8 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
     expect(reservation.ofs).toHaveLength(1);
     expect(reservation.ofs[0].materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 2 }),
+      // Un mando por motor, como en el resto de modelos (Iván, 02/10/2026).
+      expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 2 }),
       expect.objectContaining({ code: 'SOPORTEUNVHIPRO', quantity: 2 }),
       expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 4 }),
       expect.objectContaining({ code: 'ACRILI2170P120', quantity: 11.4 })

@@ -3,6 +3,8 @@ import { formatNumber, roundQuantity } from './math.js';
 import { roundFabricMeters } from './reservationFabrics.js';
 import { resolveHeraChainRing } from './heraChain.js';
 import { heraStructurePieces } from './heraPieces.js';
+import { resolveMotorRemote } from './motorAccessories.js';
+import { chosenMotor, heraDefaultMotor, heraMotorPowers, sunilusMaterial } from './screenMotors.js';
 import {
   HERA_FABRIC_ALLOWANCES,
   HERA_SPECIAL_TUBE_FROM_CM,
@@ -82,10 +84,10 @@ export function calculateHera({ order, awning }) {
       diagnostics.push({ level: 'pending', awningId: awning.id, message: `HERA en OF ${awning.of}: consultar con compras el anillo de cadena ${awning.heraChainColor.toLowerCase()} de ${formatNumber(chainRingLength)} cm cerrado (${formatNumber(chainLength)} cm desarrollado). No hay referencia exacta verificada; no sustituir por otra medida ni empalmar.` });
     }
   }
-  if (rule?.motor) {
-    // El motor y el mando varían (Sunilus 6/17 y 10/17, RS100 solar) y la tarjeta no los pide.
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: `HERA en OF ${awning.of}: motor y mando sin reservar; añádelos en la reserva.` });
-  }
+  // Iván, 02/10/2026 (Q-H07): Sunilus IO 6/17 y un Situo por motor; en la tarjeta se elige
+  // otro Sunilus. El solar (RS100) se sigue poniendo a mano.
+  const motorPower = rule?.motor ? chosenMotor(awning, heraMotorPowers, heraDefaultMotor) : '';
+  const remote = rule?.motor ? resolveMotorRemote(awning.sensor) : null;
   const specialTubeRequired = Number(awning.width) > HERA_SPECIAL_TUBE_FROM_CM;
   if (specialTubeRequired) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `HERA en OF ${awning.of}: pedir tubo especial y cambiar el presupuesto.` });
@@ -106,7 +108,8 @@ export function calculateHera({ order, awning }) {
     materials: valid ? [
       { code: fabric.code, quantity: fabricMl, description: fabric.description },
       ...(chainRing ? [{ ...chainRing, quantity: units }] : []),
-      ...heraStructurePieces({ variant, color: awning.heraChainColor, units, rollTubeLength, fabricWidth, bottomFinish: awning.heraBottomFinish })
+      ...heraStructurePieces({ variant, color: awning.heraChainColor, units, rollTubeLength, fabricWidth, bottomFinish: awning.heraBottomFinish }),
+      ...(motorPower ? [sunilusMaterial(motorPower, units), { code: remote.code, quantity: units, description: remote.description }] : [])
     ] : [],
     despiece: null,
     diagnostics,
