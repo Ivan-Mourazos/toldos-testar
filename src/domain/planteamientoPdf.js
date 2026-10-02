@@ -1296,7 +1296,8 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const frameW = w - 86;
   // Con ventana, y siempre en Cambio de cortina, abajo van las medidas.
   const withDataRows = spec.hasWindow || String(awning.model || '').toUpperCase() === 'CAMBIO CORTINA';
-  const frameH = withDataRows ? 118 : spec.hasValance ? 194 : 226;
+  // Con ventana se reserva sitio para la bamba y las cinco filas, incluido el velcro.
+  const frameH = spec.hasWindow ? 90 : withDataRows ? 118 : spec.hasValance ? 194 : 226;
   doc.rect(frameX, frameY, frameW, frameH).fillAndStroke('#fbfcfc', '#7fa594');
 
   drawDiagramText(
@@ -1314,9 +1315,9 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
 
   if (spec.hasWindow) {
     const windowX = frameX + 17;
-    const windowY = frameY + 39;
+    const windowY = frameY + 31;
     const windowW = Math.max(54, frameW - 60);
-    const windowH = 58;
+    const windowH = 36;
     const measureX = frameX + frameW - 30;
     drawCurtainWindow(doc, windowX, windowY, windowW, windowH);
     drawSmallMeasure(doc, windowX - 1, windowY - 20, 25, awning.curtainWindowCorner);
@@ -1357,13 +1358,14 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   }
 
   if (spec.hasWindow) {
-    const dataY = y + 252;
+    const dataY = y + h - 72;
+    const rowGap = 13;
     drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'SALIDA:', isConfiguredCurtain(awning) ? awning.projection : awning.curtainWindowExit);
-    drawCurtainDataRow(doc, x + 28, dataY + 16, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
-    drawCurtainDataRow(doc, x + 28, dataY + 32, w - 56, isConfiguredCurtain(awning) ? 'H. TUBO-VENT.:' : 'H. SUELO-VENT.:', isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning) : awning.curtainWindowFloorHeight);
-    drawCurtainDataRow(doc, x + 28, dataY + 48, w - 56, 'H. VENTANA:', awning.curtainWindowHeight);
+    drawCurtainDataRow(doc, x + 28, dataY + rowGap, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
+    drawCurtainDataRow(doc, x + 28, dataY + rowGap * 2, w - 56, isConfiguredCurtain(awning) ? 'H. TUBO-VENT.:' : 'H. SUELO-VENT.:', isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning) : awning.curtainWindowFloorHeight);
+    drawCurtainDataRow(doc, x + 28, dataY + rowGap * 3, w - 56, 'H. VENTANA:', awning.curtainWindowHeight);
     if (spec.finish === 'VELCRO') {
-      drawCurtainDataRow(doc, x + 28, dataY + 64, w - 56, 'ALTURA VELCRO:', velcroHeight);
+      drawCurtainDataRow(doc, x + 28, dataY + rowGap * 4, w - 56, 'ALTURA VELCRO:', velcroHeight);
     }
   } else if (String(awning.model || '').toUpperCase() === 'CAMBIO CORTINA') {
     // Sin ventana, el taller sigue necesitando las medidas de la cortina.
