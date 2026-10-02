@@ -1577,66 +1577,61 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
     : 'SIN BAMBA';
-  doc.roundedRect(x + 36, y + 37, w - 72, 15, 4)
+  doc.roundedRect(x + w * 0.12, y + h * 0.035, w * 0.76, h * 0.05, 4)
     .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
-    .text(badge, x + 40, y + 41, { width: w - 80, align: 'center' });
+    .text(badge, x + w * 0.14, y + h * 0.048, { width: w * 0.72, align: 'center' });
 
-  const panelX = x + 64;
-  const panelY = y + 78;
-  const panelW = w - 88;
-  const panelH = 190;
+  // IMAGENES, TOLDO-VELCRO: la imagen original está girada 270° en la plantilla.
+  // Varilla negra arriba, velcro a los lados y la pieza A (bamba) bajo el cuerpo.
+  const panelX = x + w * 0.12;
+  const panelY = y + h * 0.19;
+  const panelW = w * 0.76;
+  const panelH = h * 0.52;
   doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
-  drawHatchedBand(doc, panelX + 5, panelY + 6, panelW - 13, 7);
-  drawHatchedBand(doc, panelX + 5, panelY + panelH - 13, panelW - 13, 7);
-  doc.rect(panelX + panelW - 8, panelY, 8, panelH).fillAndStroke('#edf3f0', '#7fa594');
-  drawDiagramText(doc, 'B.N(4)', panelX, panelY - 12, panelW);
-  drawDiagramText(doc, 'B.N(4)', panelX, panelY + panelH + 3, panelW);
-  drawRotatedDiagramText(doc, 'VARILLA NEGRA (5,09) EN PVC', panelX + panelW + 10, panelY + panelH / 2, panelH - 20);
+  doc.rect(panelX, panelY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#7fa594');
+  doc.rect(panelX, panelY + panelH - h * 0.02, panelW, h * 0.02).fillAndStroke('#edf3f0', '#7fa594');
+  drawCurtainSideFinishes(doc, panelX, panelY, panelW, panelH, { finish: 'VELCRO' });
+  drawDiagramText(doc, 'VARILLA NEGRA (5,09) EN PVC', panelX, panelY - h * 0.045, panelW);
+  drawDiagramText(doc, 'VARILLA BLANCA (5,5)', panelX, panelY + panelH + h * 0.03, panelW);
 
-  const pieceX = x + 22;
-  const pieceW = 24;
-  doc.rect(pieceX, panelY, pieceW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
-  doc.rect(pieceX + pieceW - 6, panelY, 6, panelH).fillAndStroke('#edf3f0', '#7fa594');
-  drawRotatedDiagramText(doc, 'A', pieceX + pieceW / 2 - 2, panelY + panelH / 2, 34);
-  drawRotatedDiagramText(doc, 'B.N(3)', pieceX - 9, panelY + panelH / 2, 54);
-  drawRotatedDiagramText(doc, 'VARILLA BLANCA (5,5)', pieceX + pieceW + 9, panelY + panelH / 2, panelH - 22);
+  const valanceY = panelY + panelH + h * 0.11;
+  const valanceH = h * 0.087;
+  if (valance.hasValance) {
+    drawValancePanel(doc, panelX, valanceY, panelW, valanceH, valance, {
+      bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
+    });
+  } else {
+    doc.rect(panelX, valanceY, panelW, valanceH).fillAndStroke('#fbfcfc', '#7fa594');
+    doc.rect(panelX, valanceY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#7fa594');
+  }
+  drawDiagramText(doc, 'A', panelX + (valance.hasValance ? 4 : (panelW - 18) / 2), valanceY + valanceH * 0.35, 18);
+  drawDiagramText(doc, 'B.N(3)', panelX, valanceY + valanceH + h * 0.01, panelW);
 
   if (valance.hasValance) {
-    const valanceY = y + 294;
     if (!valance.separate) {
       doc.moveTo(panelX + 8, panelY + panelH).lineTo(panelX + 8, valanceY)
         .moveTo(panelX + panelW - 8, panelY + panelH).lineTo(panelX + panelW - 8, valanceY)
         .strokeColor('#7fa594').lineWidth(0.65).stroke();
     }
-    drawValancePanel(doc, panelX, valanceY, panelW, 28, valance, {
-      bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
-    });
   }
-}
-
-function drawHatchedBand(doc, x, y, w, h) {
-  doc.rect(x, y, w, h).fillAndStroke('#f8eeee', '#b8837d');
-  for (let offset = 1; offset < w - 3; offset += 8) {
-    doc.moveTo(x + offset, y + 1).lineTo(x + Math.min(w - 1, offset + 5), y + h - 1);
-  }
-  doc.strokeColor('#d5aaa5').lineWidth(0.45).stroke();
 }
 
 function drawChangeRollerDiagram(doc, x, y, w, h) {
   drawDiagramShell(doc, x, y, w, h);
-  const panelX = x + 42;
-  const panelY = y + 72;
-  const panelW = w - 84;
-  const panelH = 218;
+  // CAMBIO ENROLLABLE también lleva un giro de 270°: pletina abajo, varilla plana arriba.
+  const panelX = x + w * 0.12;
+  const panelY = y + h * 0.205;
+  const panelW = w * 0.76;
+  const panelH = h * 0.665;
   doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
-  doc.rect(panelX, panelY, 10, panelH).fillAndStroke('#d9e5e0', '#7fa594');
-  doc.rect(panelX + panelW - 10, panelY, 10, panelH).fillAndStroke('#edf3f0', '#7fa594');
-  doc.circle(panelX + panelW - 5, panelY + 14, 3).fillAndStroke(colors.paper, '#7fa594');
-  drawDiagramText(doc, 'AL CORTE', panelX, panelY - 15, panelW);
-  drawDiagramText(doc, 'AL CORTE', panelX, panelY + panelH + 6, panelW);
-  drawRotatedDiagramText(doc, 'E. PLETINA 30 × 6 · REFUERZO PVC INTERIOR', panelX - 12, panelY + panelH / 2, panelH - 14);
-  drawRotatedDiagramText(doc, 'VARILLA PLANA POR REVÉS · CONT. SCREEN REDONDA', panelX + panelW + 12, panelY + panelH / 2, panelH - 14);
+  doc.rect(panelX, panelY, panelW, h / 30).fillAndStroke('#edf3f0', '#7fa594');
+  doc.rect(panelX, panelY + panelH - h / 30, panelW, h / 30).fillAndStroke('#d9e5e0', '#7fa594');
+  doc.circle(panelX + 14, panelY + 5, 3).fillAndStroke(colors.paper, '#7fa594');
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX - w * 0.065, panelY + panelH / 2, panelH * 0.8);
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX + panelW + w * 0.065, panelY + panelH / 2, panelH * 0.8);
+  drawDiagramText(doc, 'E. PLETINA 30 × 6 · REFUERZO PVC INTERIOR', panelX, panelY + panelH + h * 0.027, panelW);
+  drawDiagramText(doc, 'VARILLA PLANA POR REVÉS · CONT. SCREEN REDONDA', panelX, y + h * 0.11, panelW);
   doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(6))
     .text('CONFECCIÓN SOBRE TELA EXISTENTE', panelX + 14, panelY + panelH / 2 - 4, { width: panelW - 28, align: 'center' });
 }
@@ -1676,14 +1671,14 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   const supplement = buildSupplementSpec(awning);
   drawDiagramShell(doc, x, y, w, h);
-  doc.roundedRect(x + 36, y + 37, w - 72, 15, 4).fillAndStroke('#fff4cc', '#d2a116');
+  doc.roundedRect(x + w * 0.12, y + h * 0.05, w * 0.76, h * 0.05, 4).fillAndStroke('#fff4cc', '#d2a116');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
-    .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + 40, y + 41, { width: w - 80, align: 'center' });
+    .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + w * 0.14, y + h * 0.064, { width: w * 0.72, align: 'center' });
 
-  const stripX = x + 25;
-  const stripY = y + 91;
-  const stripW = w - 50;
-  const stripH = 153;
+  const stripX = x + w * 0.14;
+  const stripY = y + h * 0.21;
+  const stripW = w * 0.72;
+  const stripH = h * 0.61;
   const broochY = stripY + 34;
   const joinY = broochY + 22;
   // El suplemento va detrás, así que se dibuja primero y la bambalina lo tapa.
@@ -1736,7 +1731,7 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   if (supplement.fastening) notes.push('LOS PUNTOS DE BAMBALINA Y SUPLEMENTO DEBEN COINCIDIR');
   if (notes.length > 0) {
     doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(5.8))
-      .text(notes.join(' · '), x + 20, y + 272, { width: w - 40, align: 'center' });
+      .text(notes.join(' · '), x + w * 0.06, y + h * 0.90, { width: w * 0.88, align: 'center' });
   }
 }
 
@@ -1780,21 +1775,21 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
     doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(8.5)
       .text(medidas, x + 34, y + 40, { width: w - 68, align: 'center' });
   }
-  const panelW = Math.min(112, w - 76);
+  const panelW = w * 0.70;
   const panelX = x + (w - panelW) / 2;
   // El panel baja para dejar sitio a la chapa de medidas sobre la varilla plana.
-  const panelY = y + 76;
+  const panelY = y + h * 0.22;
   // Bajo el panel caben la pletina y el refuerzo; si el hueco es más bajo, el panel cede.
-  const panelH = Math.min(218, h - 126);
+  const panelH = h * 0.62;
   doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#7fa594');
   doc.rect(panelX, panelY, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
   doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
   drawDiagramText(doc, 'VARILLA PLANA', panelX, panelY - 16, panelW);
   drawDiagramText(doc, 'PLETINA 30 × 6', panelX, panelY + panelH + 8, panelW);
-  drawSideLabel(doc, 'AL CORTE', panelX - 46, panelY + 98, 44);
-  drawSideLabel(doc, 'AL CORTE', panelX + panelW + 2, panelY + 98, 44);
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX - w * 0.07, panelY + panelH / 2, panelH * 0.8);
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX + panelW + w * 0.07, panelY + panelH / 2, panelH * 0.8);
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(6))
-    .text('REFUERZO PVC POR DENTRO', x + 28, y + h - 28, { width: w - 56, align: 'center' });
+    .text('REFUERZO PVC POR DENTRO', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
 }
 
 function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
@@ -1803,10 +1798,10 @@ function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   doc.roundedRect(x + 30, y + 35, w - 60, 19, 4).fillAndStroke('#fff4cc', '#d2a116');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(8.5)
     .text(`ALTO TERMINADO ${formatInstructionMeasure(valance.height)} CM`, x + 34, y + 40, { width: w - 68, align: 'center' });
-  const stripX = x + 28;
-  const stripY = y + 118;
-  const stripW = w - 56;
-  const stripH = 92;
+  const stripX = x + w * 0.10;
+  const stripY = y + h * 0.28;
+  const stripW = w * 0.80;
+  const stripH = h * 0.52;
   drawValancePanel(doc, stripX, stripY, stripW, stripH, valance, {
     topLabel: 'VARILLA BLANCA',
     bodyLabel: `TELA · CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM`,
