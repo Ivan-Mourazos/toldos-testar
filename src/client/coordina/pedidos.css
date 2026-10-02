@@ -477,7 +477,7 @@ button.orders-code:focus-visible { outline: 2px solid var(--color-brand-400); ou
 }
 /* Con más de 3 elementos, en columnas de unos 21 rem: 3 a 1280 px y 4 o 5 en pantallas anchas
    (Iván, 02/10/2026). En orden A, B, C… por filas. */
-.orders-detail-list.is-columns { grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr)); }
+.orders-detail-list.is-columns { grid-template-columns: repeat(auto-fill, minmax(23rem, 1fr)); }
 .orders-detail-list li > strong { color: var(--text); font-weight: 600; padding: 0; }
 .orders-detail-list li > span { color: var(--text-muted); padding: 0; }
 .orders-detail-list li > span:nth-child(3) { font-family: var(--mono); }
@@ -515,6 +515,8 @@ button.orders-code:focus-visible { outline: 2px solid var(--color-brand-400); ou
 /* En la lista de Pedidos va en la misma línea que la OF, al final, para ahorrar altura
    (Iván, 02/10/2026). */
 .orders-detail-list li > .orders-detail-approved { flex: 0 0 auto; }
+/* Al final de la línea aunque no haya avisos delante (ya no sale «Sin avisos»). */
+.orders-detail-list li > .orders-detail-approved { margin-left: auto; }
 :root[data-theme="dark"] .orders-detail-list li > .orders-detail-approved,
 :root[data-theme="dark"] .rem-pedido-elemento > .orders-detail-approved { color: #67e8f9; }
 .orders-detail-empty { color: var(--text-muted); font-size: 0.75rem; line-height: 1rem; margin: 0; }

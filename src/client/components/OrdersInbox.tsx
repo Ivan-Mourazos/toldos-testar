@@ -199,7 +199,8 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
                   <AwningChip item={item} coordinaStatus={coordinaStatus} />
                   <strong>{controlLabel(item.model)}</strong>
                   <span>OF {item.of || '—'}</span>
-                  <span className="orders-detail-notes">{item.notes.length ? item.notes.join(' · ') : 'Sin avisos'}</span>
+                  {/* Solo si hay avisos (Iván, 02/10/2026: «Sin avisos» repetido en cada OF sobraba). */}
+                  {item.notes.length > 0 && <span className="orders-detail-notes">{item.notes.join(' · ')}</span>}
                   {approvedBy && <span className="orders-detail-approved">Aprobado por {controlLabel(approvedBy)}</span>}
                   {nota && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {nota}</span>}
                 </li>
