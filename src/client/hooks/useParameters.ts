@@ -290,9 +290,8 @@ export function useParameters() {
     generalParameters: estado.draft ?? estado.shared.parameters,
     parametersVersion: estado.order ? estado.order.version : estado.shared.version,
     version: estado.shared.version,
-    // Los toldos se guardan por modelo con la barra de su ficha (ParametersView), así que la barra
-    // común de arriba (App) no sale con ellos. La tarea 9 del plan de 02/10/2026 lo quita de App.
-    dirty: false,
+    // Cambios sin guardar en cualquier modelo; cada ficha tiene su propia barra.
+    dirty: estado.draft !== null,
     saving: estado.saving,
     refresh: refrescarParametros,
     discardDraft,

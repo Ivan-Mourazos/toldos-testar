@@ -454,8 +454,7 @@ export default function App() {
       tone: 'warning'
     });
     if (choice === 'confirm') {
-      if (showRemolquesParameters) remolquesSettings.discardDraft();
-      else ruleSettings.discardDraft();
+      remolquesSettings.discardDraft();
     }
   }
 
@@ -686,7 +685,7 @@ export default function App() {
               ? null
               : showRemolquesParameters
                 ? <ParametersHistory key="remolques" version={remolquesSettings.saved.version} endpoint="/api/remolques/parametros/history" labels={{ lona: 'Lona y contorno', ollaos: 'Ollaos', recogidas: 'Recogidas', baqueton: 'Baquetón', clientesBaqueton: 'Clientes con baquetón' }} onLoadVersion={remolquesSettings.loadVersion} />
-                : <ParametersHistory key="toldos" version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />)}
+                : <ParametersHistory key="toldos" />)}
           </div>
           <div className="order-actions-host" ref={setAccionesPedido} hidden={activeTab !== 'order' || !editorPedidoAbierto}>
           {activeTab === 'order' && producto === 'toldos' && (
@@ -783,14 +782,14 @@ export default function App() {
 
           {activeTab === 'parameters' && (
             <>
-            <ParametersSaveBar
-              dirty={enFichasClientes ? false : showRemolquesParameters ? remolquesSettings.dirty : ruleSettings.dirty}
-              saving={showRemolquesParameters ? remolquesSettings.saving : ruleSettings.saving}
+            {showRemolquesParameters && !enFichasClientes && <ParametersSaveBar
+              dirty={remolquesSettings.dirty}
+              saving={remolquesSettings.saving}
               technicians={formOptions.tecnicos}
               onDiscard={() => void discardParameterDraft()}
-              onSave={showRemolquesParameters ? remolquesSettings.saveDraft : ruleSettings.saveDraft}
+              onSave={remolquesSettings.saveDraft}
               onResult={notifyParameterSave}
-            />
+            />}
             <ParametersView
               remolquesVista={remolquesVista}
               onSelectRemolques={setRemolquesVista}
