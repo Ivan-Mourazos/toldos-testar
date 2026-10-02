@@ -614,6 +614,12 @@ app.get('/api/remolques/pedidos/:orderCode/archivo', rutaRemolques(async (req, r
   enviarPdf(res, pdf, nombre);
 }));
 
+// Buscador de remolques (diseño 02/10/2026): todos los pedidos guardados, de todos los años, con
+// los filtros en el cuerpo. Unos filtros mal hechos son un 400 que dice cuál.
+app.post('/api/remolques/buscar', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.buscar(req.body));
+}));
+
 // Borradores (diseño 01/10/2026). Un error del borrador llega con su código; uno inesperado es 500.
 function rutaBorradores(manejar) {
   return async (req, res, next) => {

@@ -10,6 +10,7 @@ import type { DatosHojaPedido } from "../hoja/tipos.ts";
 import { archivarPdfRemolques, destinosPdfRemolques, ErrorArchivoPdf, mensajeCarpetaNoDisponible, type CarpetasRemolques } from "../salida/archivo.ts";
 import { nombrePdf } from "../salida/nombre-pdf.ts";
 import { adjuntarDatosPedido } from "./adjunto.ts";
+import { buscarRemolques, validarFiltros, type ResultadoBusqueda } from "./buscar.ts";
 import type { AlmacenPedidosRemolques } from "./almacen.ts";
 import {
   anioPedido, codigoPedido, crearPedidoRemolques, elementosAprobacion, elementosPedidoHoja, ErrorPedidoRemolques,
@@ -166,6 +167,12 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return { year: anio, reviews: pedidos.filter((pedido) => anioPedido(pedido) === anio).map(resumenBandeja) };
   }
 
+  /** El buscador (diseño 02/10/2026): todos los pedidos guardados, de todos los años, elemento a elemento. */
+  async function buscar(cuerpo: unknown): Promise<ResultadoBusqueda> {
+    const filtros = validarFiltros(cuerpo);
+    return buscarRemolques(await deps.almacen.listar(), filtros);
+  }
+
   async function guardar(cuerpo: unknown): Promise<Respuesta> {
     const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; savedBy?: unknown; confirmOverwrite?: unknown };
     const salvador = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
@@ -295,5 +302,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     throw new ErrorPedidoRemolques("El PDF generado ya no está en sus carpetas de archivo.", 404);
   }
 
-  return { listar, obtener, guardar, generar, vistaPrevia, archivo };
+  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar };
 }
