@@ -157,13 +157,18 @@ try {
   // Enrollable es un trabajo de tela: se abre el selector de esa familia.
   if (await page.locator('.order-entry').isVisible()) await page.getByRole('button', { name: 'Toldos', exact: true }).click();
   await page.getByRole('button', { name: 'Añadir trabajo de tela', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Elegir trabajo de tela' }).getByRole('button', { name: /^Cambio de tela/ }).click();
+  await page.getByLabel('OF', { exact: true }).fill('0200001');
+  // El modelo se cambia desde su nombre, conservando la tarjeta y su OF.
+  await page.getByRole('button', { name: /^Cambiar el modelo del trabajo A:/ }).click();
   await page.getByRole('dialog', { name: 'Elegir trabajo de tela' }).getByRole('button', { name: /^Enrollable/ }).click();
+  assert.equal(await page.locator('.awning-column').count(), 1, 'cambiar el modelo no añade una tarjeta');
+  assert.equal(await page.getByLabel('OF', { exact: true }).inputValue(), '0200001', 'se conserva la OF al cambiar el modelo');
   await pick(page, 'Dibujo de confección', new RegExp(`^${PLANO} \\(taller\\)$`));
   const tarjetaToldo = page.locator('.awning-grid');
   assert.ok((await tarjetaToldo.getByRole('combobox', { name: 'Dibujo de confección', exact: true }).innerText()).includes(`${PLANO} (taller)`));
   // Datos mínimos para que el toldo se calcule y el panel pinte su PDF. Si tras el trabajo de Codex la
   // tela del pedido cambia de sitio, ajustar solo este paso.
-  await page.getByLabel('OF', { exact: true }).fill('0200001');
   await page.getByLabel('Frente', { exact: true }).fill('300');
   await page.getByLabel('Salida', { exact: true }).fill('250');
   await chooseFabric(page, 'ACRILI2170');
