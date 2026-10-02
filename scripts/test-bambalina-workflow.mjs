@@ -1,3 +1,4 @@
+import { irAModelo } from './ayudas-modelo.mjs';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { startFakeCoordina } from './fake-coordina.mjs';
@@ -37,7 +38,7 @@ try {
   await page.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
   await page.goto(base);
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
-  await page.getByRole('navigation', { name: 'Modelos de parámetros' }).locator('button').filter({ has: page.getByText('Bambalina', { exact: true }) }).click();
+  await irAModelo(page, 'Bambalina');
   assert.equal(await page.getByLabel(/Bambalina · La caída/).count(), 0);
   assert.equal(await page.getByLabel(/Margen del cuerpo/).count(), 0);
   await page.getByLabel('Remate de bambalina (cm)', { exact: true }).fill('8');
@@ -51,7 +52,7 @@ try {
   await modelBar.getByText('Modelo guardado').waitFor();
   await page.reload();
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
-  await page.getByRole('navigation', { name: 'Modelos de parámetros' }).locator('button').filter({ has: page.getByText('Bambalina', { exact: true }) }).click();
+  await irAModelo(page, 'Bambalina');
   assert.equal(await page.getByLabel('Remate de bambalina (cm)', { exact: true }).inputValue(), '8');
   const { parameters } = await request('/api/rule-parameters', null, 'GET');
   await page.screenshot({ path: path.join(directory, 'parametros-bambalina.png'), fullPage: true });

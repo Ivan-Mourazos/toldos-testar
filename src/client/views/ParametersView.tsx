@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { Check } from 'lucide-react';
+import React from 'react';
 import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, ElectraMatrixSupport, ElectraParameters, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
 import { NumberField } from '../components/NumberField';
 import { SelectField } from '../components/SelectField';
 import { controlLabel } from '../components/controlLabels';
-import { ParameterBand, ParameterNote, ParameterSheet, deviceHeader, parameterModelName } from '../components/ParameterSheet';
+import { ParameterBand, ParameterNote, ParameterSheet, deviceHeader } from '../components/ParameterSheet';
 import { ParameterSectionIndex } from '../components/ParameterSectionIndex';
 import { AnticaRuleReference, HeraRuleReference, IrisRuleReference, CambioAnticaRuleReference } from './RuleReferencePanels';
 import { arzuaProManualSpec } from '../../domain/arzuaProConstants.js';
@@ -14,7 +13,8 @@ import { fullAwningModelNames, fabricOnlyModelNames } from '../../domain/modelBe
 import { groupModelsByFamily } from '../../domain/catalog.js';
 import { ModelSaveBar } from '../components/ModelSaveBar';
 import { useEstadoParametros } from '../hooks/useParameters';
-import { elegirModeloVisible, restaurarAmbitos } from '../parametrosToldos';
+import { ambitosPendientes, elegirModeloVisible, restaurarAmbitos } from '../parametrosToldos';
+import { ParameterModelPicker } from '../components/ParameterModelPicker';
 import { pageScopes } from '../../domain/parameterScopes.js';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
@@ -34,6 +34,8 @@ type Props = {
   /** Clientes de remolques (fase 3): la hoja de fichas, junto a la de parámetros generales. */
   remolquesClientes?: React.ReactNode;
   remolquesVista?: VistaRemolques | null;
+  /** Cambios sin guardar de las hojas de remolques, para el punto del selector de modelo. */
+  remolquesPendientes?: { generales?: boolean; clientes?: boolean };
   onSelectRemolques?: (vista: VistaRemolques | null) => void;
   parameters: RuleParameters;
   onUpdateArzua: (patch: Partial<ArzuaProParameters>) => void;
@@ -71,7 +73,7 @@ type Props = {
   onUpdateDrawings: (drawings: RuleParameters['drawings']) => void;
 };
 
-export function ParametersView({ parameters, remolques, remolquesClientes, remolquesVista = null, onSelectRemolques, onUpdateArzua, onUpdateGalicia, onUpdatePerlaBox, onUpdateCoralBox, onUpdateCuarzoBox, onUpdateCortina, onUpdateSelena, onUpdateCambioCortina, onUpdateXacobeo, onUpdatePuntoRecto, onUpdateMonoblock350, onUpdateMaxiscreem, onUpdateElectra, onUpdateAmbarBox, onUpdateAgataBox, onUpdateFabricJobs, onUpdateDrawings }: Props) {
+export function ParametersView({ parameters, remolques, remolquesClientes, remolquesVista = null, remolquesPendientes, onSelectRemolques, onUpdateArzua, onUpdateGalicia, onUpdatePerlaBox, onUpdateCoralBox, onUpdateCuarzoBox, onUpdateCortina, onUpdateSelena, onUpdateCambioCortina, onUpdateXacobeo, onUpdatePuntoRecto, onUpdateMonoblock350, onUpdateMaxiscreem, onUpdateElectra, onUpdateAmbarBox, onUpdateAgataBox, onUpdateFabricJobs, onUpdateDrawings }: Props) {
   // El modelo elegido vive en el estado compartido: el historial de arriba (App) enseña el suyo.
   const estado = useEstadoParametros();
   const selectedModel = estado.modeloVisible as SelectedModel;
@@ -88,7 +90,8 @@ export function ParametersView({ parameters, remolques, remolquesClientes, remol
   // Columna de la ficha: el índice «Ir a», la barra del modelo (versión, guardar), la ficha y, justo
   // debajo y con el mismo ancho, sus dibujos. Igual para los 22 modelos (Iván, 25/09/2026).
   return <div className="parameter-layout">
-    <ParameterModelSelector selectedModel={remolquesVista === 'clientes' ? 'REMOLQUES-CLIENTES' : remolquesVista ? 'REMOLQUES' : selectedModel} includeRemolques={Boolean(remolques)} onSelectModel={(model) => {
+    <ParameterModelPicker selectedModel={remolquesVista === 'clientes' ? 'REMOLQUES-CLIENTES' : remolquesVista ? 'REMOLQUES' : selectedModel} groups={parameterModelGroups} includeRemolques={Boolean(remolques)}
+      pendientes={ambitosPendientes(estado)} remolquesPendientes={remolquesPendientes} onSelectModel={(model) => {
       onSelectRemolques?.(model === 'REMOLQUES' ? 'generales' : model === 'REMOLQUES-CLIENTES' ? 'clientes' : null);
       if (model !== 'REMOLQUES' && model !== 'REMOLQUES-CLIENTES') setSelectedModel(model);
     }} />
@@ -385,61 +388,6 @@ function OrderConfiguredModelView({ selectedModel }: {
   return <ParameterSheet model={selectedModel} kind="consulta" description="Aumentos, descuentos y condiciones que aplica la web. Consulta sin modificar pedidos ni valores generales.">
     {selectedModel === 'ANTICA' ? <AnticaRuleReference /> : selectedModel === 'HERA' ? <HeraRuleReference /> : <IrisRuleReference />}
   </ParameterSheet>;
-}
-
-function ParameterModelSelector({ selectedModel, onSelectModel, includeRemolques }: {
-  selectedModel: SelectedModel | 'REMOLQUES' | 'REMOLQUES-CLIENTES';
-  onSelectModel: (model: SelectedModel | 'REMOLQUES' | 'REMOLQUES-CLIENTES') => void;
-  includeRemolques: boolean;
-}) {
-  const navRef = useRef<HTMLElement>(null);
-  // El modelo elegido tiene que verse en la lista, aunque quede más abajo de lo que cabe.
-  // Se mueve solo el desplazamiento de la lista, no el de la página.
-  useEffect(() => {
-    const nav = navRef.current;
-    const active = nav?.querySelector<HTMLElement>('button.is-active');
-    if (!nav || !active) return;
-    const navBox = nav.getBoundingClientRect();
-    const box = active.getBoundingClientRect();
-    const margin = 40;
-    if (box.top < navBox.top + margin) nav.scrollTop -= navBox.top + margin - box.top;
-    else if (box.bottom > navBox.bottom - margin) nav.scrollTop += box.bottom - (navBox.bottom - margin);
-  }, [selectedModel]);
-  return (
-    <nav ref={navRef} className="parameter-model-sidebar panel-3d panel-vidrio" aria-label="Modelos de parámetros">
-      <strong className="parameter-model-sidebar-title">Modelos</strong>
-      {includeRemolques && <section className="parameter-model-family">
-        <h3>Remolques</h3>
-        {([['REMOLQUES', 'Generales'], ['REMOLQUES-CLIENTES', 'Clientes']] as const).map(([model, label]) => (
-          <button key={model} type="button" data-model={model} className={selectedModel === model ? 'tecla-3d is-active bloque-3d-hundido' : 'tecla-3d'} aria-current={selectedModel === model ? 'true' : undefined} onClick={() => onSelectModel(model)}>
-            <span><strong>{label}</strong></span>{selectedModel === model && <Check aria-hidden="true" />}
-          </button>
-        ))}
-      </section>}
-      {parameterModelGroups.map(({ family, models }) => (
-        <section className="parameter-model-family" key={family || 'tela'}>
-          <h3>{family || 'TRABAJOS DE TELA'}</h3>
-          {models.map((model) => {
-                const names = parameterModelName(model);
-                const active = model === selectedModel;
-                return (
-                  <button
-                    key={model}
-                    type="button"
-                    data-model={model}
-                    className={active ? 'tecla-3d is-active bloque-3d-hundido' : 'tecla-3d'}
-                    aria-current={active ? 'true' : undefined}
-                    onClick={() => onSelectModel(model)}
-                  >
-                    <span><strong>{names.current}</strong>{names.legacy && <small>{names.legacy}</small>}</span>
-                    {active && <Check aria-hidden="true" />}
-                  </button>
-                );
-          })}
-        </section>
-      ))}
-    </nav>
-  );
 }
 
 type XacobeoProps = {

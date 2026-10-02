@@ -92,6 +92,7 @@ const avisos = () => page.locator('.notification-stack');
 try {
   // ── 2. Parámetros › Remolques › Clientes ──
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
+  await page.locator('[data-group="REMOLQUES"]').click();
   await page.locator('[data-model="REMOLQUES-CLIENTES"]').click();
   const lista = page.getByRole('navigation', { name: 'Fichas de cliente' });
   for (const nombre of ['HIJOS DE PEDRO LOPEZ', 'AYALA', 'GENERAL WOLDER']) await lista.getByRole('button', { name: new RegExp(`^${nombre}`) }).waitFor();

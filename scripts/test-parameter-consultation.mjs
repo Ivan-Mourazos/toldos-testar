@@ -1,3 +1,4 @@
+import { irAModelo } from './ayudas-modelo.mjs';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { startFakeCoordina } from './fake-coordina.mjs';
@@ -38,14 +39,19 @@ try {
   await page.goto(base);
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
   const sidebar = page.getByRole('navigation', { name: 'Modelos de parámetros' });
-  const names = await sidebar.locator('button:not([data-model^="REMOLQUES"]) strong').allTextContents();
-  assert.equal(names.length, models.length);
-  const expectedOrder = groupModelsByFamily([...fullAwningModelNames, ...fabricOnlyModelNames]).flatMap(({ models: group }) => group);
-  assert.deepEqual(await sidebar.locator('button:not([data-model^="REMOLQUES"])').evaluateAll((buttons) => buttons.map((button) => button.dataset.model)), expectedOrder);
-  assert.equal(await page.locator('.parameter-model-trigger').count(), 0);
-  async function selectModel(name) {
-    await sidebar.locator('button').filter({ has: page.getByText(name, { exact: true }) }).click();
+  const expectedGroups = groupModelsByFamily([...fullAwningModelNames, ...fabricOnlyModelNames]);
+  // Un botón por grupo (Remolques primero) y, al elegir cada uno, solo sus modelos y en su orden.
+  assert.equal(await sidebar.locator('[data-group]').count(), expectedGroups.length + 1);
+  const names = [];
+  for (const [index, { models: group }] of expectedGroups.entries()) {
+    await sidebar.locator('[data-group]').nth(index + 1).click();
+    assert.deepEqual(await sidebar.locator('[data-model]').evaluateAll((buttons) => buttons.map((button) => button.dataset.model)), group);
+    assert.equal(await sidebar.locator('[data-model][aria-pressed="true"]').count(), 1);
+    names.push(...await sidebar.locator('[data-model] strong').allTextContents());
   }
+  assert.equal(names.length, models.length);
+  assert.equal(await page.locator('.parameter-model-trigger').count(), 0);
+  const selectModel = (name) => irAModelo(page, name);
   for (const name of names) {
     await selectModel(name);
     assert.ok(await page.locator('.parameter-band').count(), name + ' sin ficha');

@@ -1,3 +1,4 @@
+import { irAModelo } from './ayudas-modelo.mjs';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { startFakeCoordina } from './fake-coordina.mjs';
@@ -67,14 +68,14 @@ try {
   // Usuario del navegador (diseño 24/09/2026): evita que salga «¿Quién eres?» al abrir Parámetros.
   await page.addInitScript(() => localStorage.setItem('toldos-testar-usuario', 'IVÁN'));
   await page.goto(base); await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
-  // Desde el 24/09/2026 los modelos se eligen en la lista fija de la izquierda.
+  // Desde el 02/10/2026 los modelos se eligen en dos filas (grupo y modelo) encima de la ficha.
   const sidebar = page.getByRole('navigation', { name: 'Modelos de parámetros' });
   for (const model of ['HERA', 'Antica']) {
-    await sidebar.locator('button').filter({ has: page.getByText(model, { exact: true }) }).first().click();
+    await irAModelo(page, model);
     assert.ok((await page.locator('.parameters-heading h2').innerText()).includes(model), model + ' no se abre');
-    const last = sidebar.locator('button').last();
+    const last = sidebar.locator('[data-model]').last();
     await last.scrollIntoViewIfNeeded();
-    assert.equal(await last.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); }), true, 'La lista de modelos está recortada');
+    assert.equal(await last.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); }), true, 'El selector de modelos está recortado');
     await page.screenshot({ path: path.join(directory, model + '-selector.png') });
   }
   console.log('OK: 3 variantes, guardar/reabrir/aprobar/generar, bloqueo incompleto, imagen, PDF y selector HERA/Antica. ' + directory);

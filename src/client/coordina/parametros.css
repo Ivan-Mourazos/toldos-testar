@@ -34,124 +34,67 @@
 .workspace-content:has(> .parameters-save-bar) { --param-barra: 58px; }
 .parameter-band, .drawing-parameters { scroll-margin-top: calc(var(--param-pila) + 56px); }
 
-/* ── Lista de modelos ──
-   Fija bajo la pila, con su propio desplazamiento si no cabe. El alto deja 52 px libres abajo
-   (los 44 de margen de la página y 8 de aire): si la lista llegara más abajo, al final de la
-   página el navegador la empujaría hacia arriba, debajo de la cabecera. */
-.parameter-layout > .parameter-model-sidebar,
-.workspace-content:has(> .parameters-save-bar) .parameter-layout > .parameter-model-sidebar {
-  max-height: calc(100vh - var(--param-pila) - 12px - 52px);
-  top: calc(var(--param-pila) + 12px);
-}
-.parameter-model-sidebar {
-  padding: 0.75rem 0.5rem;
-  scroll-padding-block: 2.5rem;
-  scrollbar-color: var(--border-strong) transparent;
-}
-.parameter-model-sidebar-title {
-  color: var(--text);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 0 0.625rem 0.5rem;
-  text-transform: uppercase;
-}
-/* Cada grupo se separa del anterior con una línea y su título va en un rótulo claro, más
-   pequeño que los modelos pero con contraste de texto. */
-.parameter-model-family + .parameter-model-family {
-  border-top: 1px solid var(--border-strong);
-  margin-top: 0.625rem;
-  padding-top: 0.625rem;
-}
-.parameter-model-family h3 {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  line-height: 1rem;
-  margin: 0 0 0.25rem;
-  padding: 0 0.625rem;
-  text-transform: uppercase;
-}
-.parameter-model-family button {
-  border: 1px solid transparent;
-  border-radius: 0.5rem;
-  color: var(--text);
+/* ── Selector de modelo (Iván, 02/10/2026) ──
+   Dos filas encima de la ficha, a todo el ancho y sin desplazamiento propio: «Grupo» con la tira
+   de Pedidos (`tira-3d glass-chip` + `pestana-activa`) y «Modelo» con una tecla por modelo; el
+   abierto lleva el dorado de la marca (`--tgm-yellow-soft`, `--control-active-border`). No va
+   fijo: se va con la página y la pila fija (cabecera, barra del modelo, «Ir a») queda libre. */
+.parameter-model-picker {
+  border-radius: 0.75rem;
+  display: grid;
   gap: 0.5rem;
-  margin: 2px 0;
-  min-height: 0;
-  overflow: hidden;
-  padding: 0.4375rem 0.625rem;
+  padding: 0.625rem 0.875rem;
+}
+.parameter-model-picker-row { align-items: start; display: flex; gap: 0.75rem; }
+.parameter-model-picker-label {
+  color: var(--text-muted);
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.75rem;
+  text-transform: uppercase;
+  width: 3.25rem;
+}
+.parameter-model-picker .orders-scope { flex-wrap: wrap; }
+.parameter-model-options { display: flex; flex-wrap: wrap; gap: 0.375rem; min-width: 0; }
+.parameter-model-options button {
+  align-items: baseline;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  gap: 0.375rem;
+  line-height: 1rem;
+  padding: 0.3125rem 0.625rem;
   position: relative;
 }
-.parameter-model-family button:not(.is-active) {
-  background: transparent;
-  box-shadow: none;
-  transform: none;
-}
-.parameter-model-family button:not(.is-active):hover,
-.parameter-model-family button:not(.is-active):focus-visible {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-/* Línea fina entre modelos, con sangría para que no toque los bordes de la fila. */
-.parameter-model-family button:not(:last-child)::after {
-  background: var(--border);
-  bottom: -2px;
-  content: "";
-  height: 1px;
-  left: 0.625rem;
-  position: absolute;
-  right: 0.625rem;
-}
-.parameter-model-family button.is-active::after,
-.parameter-model-family button:hover::after,
-.parameter-model-family button:focus-visible::after,
-.parameter-model-family button:has(+ button:is(:hover, :focus-visible, .is-active))::after,
-.parameter-model-family button.is-active + button::after { content: none; }
-/* El foco de teclado lleva el anillo dorado general (piezas.css), también en la fila del modelo
-   abierto: al pulsar Intro el foco se queda en ella y, sin anillo, quien usa el teclado
-   no vería dónde está. */
-.parameter-model-family button > span { gap: 2px; }
-.parameter-model-family button strong {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.125rem;
-}
-.parameter-model-family button small {
-  color: var(--text-muted);
-  font-size: 11px;
-  line-height: 1rem;
-}
-/* El modelo abierto: la fila hundida de CoordinaOT con su barra y su tinte dorado. */
-.parameter-model-family button.is-active {
+.parameter-model-options button strong { font-size: 0.8125rem; font-weight: 600; }
+.parameter-model-options button small { color: var(--text-muted); font-size: 11px; }
+.parameter-model-options button small::before { content: "· "; }
+.parameter-model-options button.is-active {
   background: var(--tgm-yellow-soft);
   border-color: var(--control-active-border);
-  transform: none;
 }
-.parameter-model-family button.is-active strong { font-weight: 700; }
-.parameter-model-family button.is-active small { color: var(--text); }
-.parameter-model-family button.is-active::before {
+.parameter-model-options button.is-active strong { font-weight: 700; }
+.parameter-model-options button.is-active small { color: var(--text); }
+/* Punto de «cambios sin guardar», en la esquina de la tecla. */
+.parameter-model-dot {
   background: var(--color-brand-500);
-  bottom: 0;
-  content: "";
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 0.25rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--surface);
+  display: inline-block;
+  height: 0.5rem;
+  width: 0.5rem;
 }
-.parameter-model-family button > svg {
-  color: var(--accent-text);
-  height: 0.875rem;
-  width: 0.875rem;
-}
+.parameter-model-options .parameter-model-dot { position: absolute; right: -0.1875rem; top: -0.1875rem; }
+.orders-scope .parameter-model-dot { margin-left: 0.375rem; vertical-align: 0.0625rem; }
 
 /* ── Índice «Ir a» ──
    Las fichas de filtro de CoordinaOT (FilterBar.tsx 131: `chip-3d rounded-lg px-2.5 py-1
    text-xs font-semibold`); el aspecto de tecla lo da nuevo-pedido.css. */
 .parameter-section-index { gap: 0.375rem; }
 .parameter-layout-main > .parameter-section-index {
-  box-shadow: 0 8px 8px -8px var(--glass-shadow);
   padding-block: 4px;
   z-index: 12;
 }
@@ -219,7 +162,8 @@
 
 /* Secciones numeradas: el título a la izquierda y los campos a la derecha, separadas por la
    línea fina de las filas de CoordinaOT. */
-.parameter-band { gap: 1rem; grid-template-columns: 13.5rem minmax(0, 1fr); padding: 1rem; }
+.parameter-band { gap: 1rem; grid-template-columns: 12rem minmax(0, 1fr); padding: 1rem; }
+.parameter-layout { gap: 8px; }
 .parameter-band + .parameter-band { border-top: 1px solid var(--border); }
 .parameter-band-title { gap: 0.5rem; }
 .parameter-band-title > span {
@@ -255,10 +199,37 @@
   font-size: 11px;
 }
 .parameter-grid { gap: 0.5rem; }
+/* Con la ficha a todo el ancho (sin lista de modelos a la izquierda), los campos se reparten en
+   tantas columnas como quepan, de 9 a 12 rem: de 4 a 6 por fila a 1280 px en vez de 2 o 4. Los
+   números no se estiran más de 9,5 rem (basta para «12.345,6»); los textos y las listas llenan su
+   columna. */
+.parameter-grid.parameter-grid-3,
+.parameter-grid.remolques-parameter-grid { grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+.parameter-grid :is(input[type="number"], input[inputmode="decimal"]) { max-width: 9.5rem; }
+.remolques-parameter-grid > label:has(> input:not([type="number"]):not([type="checkbox"]):not([inputmode="decimal"])) { grid-column: span 2; }
+/* Las tablas de medidas por salida y brazos caben a 1280 px sin barra lateral: números de 5 rem. */
+.parameter-table input[type="number"] { min-width: 0; width: 5rem; }
+.parameter-table-discounts input[type="number"] { width: 5.25rem; }
+.parameter-table td:first-child { min-width: 0; }
+.parameter-band-content > .ghost-button { justify-self: start; }
+/* Campos alineados: cada campo ocupa dos filas de la rejilla (rótulo y control) y las comparte con
+   sus vecinos de la fila, así que los controles empiezan a la misma altura aunque un rótulo ocupe
+   dos líneas, y las columnas son las mismas en todas las secciones. */
+.parameter-grid > :is(label, .field):not(.remolques-parameter-check, :has(> small)) {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 0.25rem;
+}
+/* Con un aviso debajo («Separados por comas») el campo lleva una fila más: no comparte filas. */
+.parameter-grid > label:has(> small) { align-content: start; display: grid; grid-row: span 2; row-gap: 0.25rem; }
+.parameter-grid > :is(label, .field) > span:first-child { align-self: end; }
+/* Listas y botones Sí/No con el alto de los campos de texto. */
+.parameter-grid :is(input:not([type="checkbox"]), .select-control, .segmented-option) { box-sizing: border-box; min-height: 2.25rem; }
 
 /* Filas de remolques: mismas piezas y tokens, con espacio para las medidas y sus nombres. */
 .remolques-parameters { border: 0; margin: 0; min-width: 0; padding: 0; }
-.remolques-parameter-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.remolques-parameter-grid { display: grid; }
 .remolques-parameter-rows { display: grid; gap: 0.75rem; min-width: 0; }
 .remolques-parameter-row { border: 1px solid var(--border); border-radius: 0.5rem; display: grid; gap: 0.75rem; padding: 0.75rem; min-width: 0; }
 .remolques-parameter-row-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }

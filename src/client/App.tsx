@@ -792,6 +792,7 @@ export default function App() {
             />}
             <ParametersView
               remolquesVista={remolquesVista}
+              remolquesPendientes={{ generales: remolquesSettings.dirty, clientes: fichasClientes.pendientes.length > 0 }}
               onSelectRemolques={setRemolquesVista}
               remolquesClientes={<>
                 {fichasClientes.error && <div role="alert" className="parameter-note">{fichasClientes.error} <button type="button" className="ghost-button" onClick={() => void fichasClientes.refresh()}>Reintentar</button></div>}

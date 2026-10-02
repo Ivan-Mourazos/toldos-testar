@@ -1,3 +1,4 @@
+import { irAModelo } from './ayudas-modelo.mjs';
 // Prueba e2e de los dibujos de los modelos y las versiones por modelo (diseño 02/10/2026): en
 // Parámetros › Enrollable se sube un dibujo «Solo a mano» y se guarda sin motivo; su historial lo
 // cuenta solo y no sale en Arzúa Pro; «Lo que sale hoy» enseña las miniaturas; en Nuevo pedido se
@@ -65,8 +66,6 @@ async function capturas(page, nombre, objetivo) {
   await page.setViewportSize({ width: 1600, height: 1000 });
 }
 const irAParametros = (page) => page.getByRole('button', { name: 'Parámetros', exact: true }).click();
-const irAModelo = (page, nombre) => page.getByRole('navigation', { name: 'Modelos de parámetros' }).locator('button')
-  .filter({ has: page.getByText(nombre, { exact: true }) }).click();
 
 const health = (await api('/api/health')).datos;
 assert.equal(health.simulationMode, true);
