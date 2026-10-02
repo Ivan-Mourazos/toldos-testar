@@ -1,7 +1,7 @@
 # Normas para agentes (Codex y otros)
 
 Proyecto: **Planteamientos TGM** (`toldos-testar`). Express 5 + React 19 + TypeScript, vitest,
-Playwright, pnpm 11, Node ≥ 22.18. Toldos (`src/domain`, `src/client`) y remolques
+Playwright, pnpm 12, Node ≥ 22.18. Toldos (`src/domain`, `src/client`) y remolques
 (`src/remolques`, `src/client/remolques`, `src/client/hoja`). El usuario es Iván, de Oficina
 Técnica, y habla castellano.
 

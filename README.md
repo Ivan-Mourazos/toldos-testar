@@ -15,7 +15,7 @@ formularios, parámetros y dibujos con Oficina Técnica. Incluye una
 Requisitos:
 
 - Node.js `>=22.18.0` (el servidor carga ficheros `.ts`); se recomienda Node 24 para nuevas instalaciones.
-- pnpm `11.3.0`.
+- pnpm `12.5.1` (la misma que el servidor; pnpm cambia solo a ella por `packageManager`).
 
 ```bash
 pnpm install --frozen-lockfile

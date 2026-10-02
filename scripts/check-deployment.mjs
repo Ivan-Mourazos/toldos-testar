@@ -88,8 +88,8 @@ async function checkPackageMetadata() {
       pass('package.json fija la versión mínima de Node.');
     }
 
-    if (packageJson.packageManager !== 'pnpm@11.3.0') {
-      fail('package.json no fija packageManager en pnpm@11.3.0.');
+    if (packageJson.packageManager !== 'pnpm@12.5.1') {
+      fail('package.json no fija packageManager en pnpm@12.5.1, la del servidor.');
     } else {
       pass('package.json fija la versión de pnpm.');
     }
