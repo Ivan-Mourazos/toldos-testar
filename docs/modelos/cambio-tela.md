@@ -14,7 +14,7 @@
 | ID | Regla | Fuente | Implementación |
 | --- | --- | --- | --- |
 | R01 | Frente de tela = frente medido, sin descuento | Hoja `CAM. TELA` del maestro | `fabricOnlyRules.js` |
-| R02 | Caída del cuerpo = salida + «Sumar para enrolle y tubo (cm)», 55 cm por defecto, editable por toldo sin candado; vacío, negativo o no numérico no permite calcular | Taller, nota de Iván aplicada el 01/10/2026 (Q-C08): 40 para el enrolle más entrada de tubo | `fabricOnlyRules.js`, `fabricJobParameters.js`, `AwningColumn.tsx` |
+| R02 | Caída del cuerpo = salida + «Sumar para enrolle y tubo (cm)», 40 cm por defecto, editable por toldo sin candado; vacío, negativo o no numérico no permite calcular | Taller, nota de Iván corregida el 02/10/2026 (Q-C08): 40 cm en total para el enrolle y la entrada de tubo | `fabricOnlyRules.js`, `fabricJobParameters.js`, `AwningColumn.tsx` |
 | R03 | Con bamba de la misma tela, + alto de bamba + 5 (remate) | Maestro; **Iván, 14/09/2026: el +5 es el remate de la bamba y solo va si hay bamba** | Ídem (`c4488e4`) |
 | R04 | Con bamba en otra tela, el cuerpo sigue en salida + lo indicado para enrolle y tubo; la bamba se calcula y reserva aparte: alto + 5 | Maestro; mismo criterio que Arzúa (AR2601535-1); Q-C08 para el margen del cuerpo | Ídem |
 | R05 | Reserva de lona: `ESTR.01!Q28`, costuras de 2,2 cm y 7 cm de margen; el planteamiento visible usa 2,5 y 6,5 | Maestro | `legacyRpsFabricMath.js` |
@@ -34,11 +34,11 @@
 
 ## 4. Medidas: diferencias con los libros
 
-### Cambio del 01/10/2026 (Q-C08)
+### Cambio del 01/10/2026, corregido el 02/10/2026 (Q-C08)
 
-Antes se sumaban 40 cm; ahora el valor por defecto es 55 cm en total para enrolle y entrada de tubo, no 55 adicionales al margen antiguo. La caída crece 15 cm y el consumo aumenta `0,15 × paños × pasadas` ml; con tres paños y una unidad pasa de 8,70 a 9,15 ml para una salida de 250 cm sin bamba. La reserva usa la misma caída con sus propios paños. La bamba en otra tela no cambia. Si varias piezas caben juntas en el rollo se cuentan las pasadas que necesitan.
+El 01/10 se leyó mal la nota del taller («40 para el enrolle más entrada de tubo») y se puso 55 por defecto (40 + 15). Iván lo corrigió el 02/10/2026: son 40 cm en total, así que el valor por defecto vuelve a ser 40 cm y la caída y el consumo son los de antes del cambio del 01/10. Se puede ajustar por toldo en el formulario. La reserva usa la misma caída con sus propios paños. La bamba en otra tela no cambia. Si varias piezas caben juntas en el rollo se cuentan las pasadas que necesitan.
 
-Se puede indicar 40 cm para reproducir un pedido anterior, o cualquier valor no negativo. Los casos históricos de las pruebas indican su margen expresamente. Las comprobaciones de 2025 y 2026 descritas debajo corresponden a la regla antigua, no verifican el nuevo valor de 55. El PDF de telas sigue mostrando la medida final de corte y sus metros; la ficha de revisión y su PDF muestran además cuánto se suma.
+Se puede indicar cualquier valor no negativo (por ejemplo 55 si un pedido lo pide). Los casos históricos de las pruebas indican su margen expresamente. Las comprobaciones de 2025 y 2026 descritas debajo usan el mismo valor de 40 cm por defecto. El PDF de telas sigue mostrando la medida final de corte y sus metros; la ficha de revisión y su PDF muestran además cuánto se suma.
 
 Validador `pnpm validate:fabric-jobs` (`RPS_VALIDATION_YEAR=2025|2026`), 22/09/2026.
 
@@ -77,10 +77,10 @@ Cambios en la herramienta hechos para medir esto (22/09/2026): el validador comp
 
 ## 6. Pruebas
 
-- `cambioTelaExtra.test.ts`: 55 por defecto, 0 y valores cambiados, consumo y reserva, bamba integrada/separada, rechazo de valores vacíos, negativos y no finitos, persistencia y migración del margen antiguo.
+- `cambioTelaExtra.test.ts`: 40 por defecto, 0 y valores cambiados, consumo y reserva, bamba integrada/separada, rechazo de valores vacíos, negativos y no finitos, persistencia y migración del margen antiguo.
 - `reviewPdf.test.js`: suma para enrolle y tubo en el PDF de revisión, con coma decimal.
 - Comprobación del 01/10/2026: 2531 tests, TypeScript, lint y compilación del cliente correctos. Auditoría con Playwright en la aislada 4312: valor por defecto, cambio, rechazo de vacío/negativo y capturas en claro/oscuro a 1280×720 y 1600×1000, revisadas en `tmp/ui-audit/codex-cambio-tela/`.
-- `pnpm validate:fabric-jobs` ejecutado en solo lectura el 01/10: 1024 libros, 629 trabajos, 449 de Cambio de tela. Termina correctamente y registra 890 diferencias dimensionales de Cambio de tela respecto a los libros; esta comparación histórica usa el nuevo margen de 55 frente al antiguo de 40 y sus ajustes. No constituye una prueba de paridad del nuevo valor por defecto.
+- `pnpm validate:fabric-jobs` ejecutado en solo lectura el 01/10: 1024 libros, 629 trabajos, 449 de Cambio de tela. Termina correctamente y registra 890 diferencias dimensionales de Cambio de tela respecto a los libros; esta comparación se hizo con el margen de 55 de aquel día, que ya no es el valor por defecto; hay que repetirla con 40.
 
 - `cambioTelaRules.test.js`: pedidos reales AR2603017, AR2603051-1, AR2600676, AR2601479; cuatro sin bamba (AR2600109, AR2601149, AR2601844, AR2601854); excepciones AR2602326 y AR2603013.
 - `awningCompleteness.test.js`: AR2602115, frente 584, reserva 5 paños completo o incompleto.
@@ -91,7 +91,7 @@ Cambios en la herramienta hechos para medir esto (22/09/2026): el validador comp
 | ID | Pregunta | Impacto |
 | --- | --- | --- |
 | Q-C02 | **Resuelta por Iván el 22/09/2026.** Los +15 cm de siete libros eran ajustes de un pedido concreto, no una regla. Desde Q-C08 se indica directamente la suma para enrolle y tubo en la tarjeta | El margen antiguo del borrador se conserva |
-| Q-C08 | **Hecha el 01/10/2026.** El taller pide 40 cm para enrolle más la entrada de tubo: 55 cm en total por defecto, modificables en el formulario | R02 y R06; no hace falta activar el candado |
+| Q-C08 | **Hecha el 01/10/2026, corregida el 02/10/2026.** El taller pide 40 cm en total para el enrolle y la entrada de tubo (el 01/10 se leyó como 40 + 15): 40 cm por defecto, modificables en el formulario | R02 y R06; no hace falta activar el candado |
 | Q-C06 | **Resuelta por Iván el 22/09/2026.** La bamba de PVC no se reserva por ahora; si es acrílica, no reservarla es un error. De las once OF, solo una es de PVC: las otras diez quedaron infrarreservadas | La web ya lo hace: reserva la acrílica y, con PVC, pregunta al generar (R07) |
 | Q-C07 | **Resuelta por Iván el 22/09/2026.** "SALIDA" (largo de corte) y "PAÑO TOTAL NECESARIO" (total del pedido en cada toldo) se quedan como están: el taller está acostumbrado. Con dos telas (bamba en otra tela), el total se da ya sumado ("8,9 ML", no "8,0 + 0,9 ML"), a petición de Iván tras ver la muestra | `planteamientoPdf.js` |
 

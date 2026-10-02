@@ -795,10 +795,10 @@ function FabricJobsParametersView({ parameters, selectedModel, onUpdate, onReset
       description="Comparte los márgenes comunes de confección; cada modelo conserva su caída propia."
       onReset={onReset}
       evidenceLabel="Valores por defecto"
-      evidence="Cambio de tela suma lo indicado en la tarjeta para enrolle y tubo (55 cm por defecto), Enrollable +25 cm y Bambalina +5 cm. Cambio Antica corta la medida de la tela vieja más lo que se sume en la tarjeta. La bamba en otra tela se reserva por separado."
+      evidence="Cambio de tela suma lo indicado en la tarjeta para enrolle y tubo (40 cm por defecto), Enrollable +25 cm y Bambalina +5 cm. Cambio Antica corta la medida de la tela vieja más lo que se sume en la tarjeta. La bamba en otra tela se reserva por separado."
     >
       <ParameterBand number="01" title="Márgenes de confección" description={selectedModel === 'BAMBALINA' ? 'Corte de bambalina: alto terminado + remate. El remate también se comparte con las bambas de los demás trabajos de tela.' : 'Centímetros añadidos a las medidas indicadas. El remate de bambalina se comparte con los demás trabajos de tela.'}>
-        {selectedModel === 'CAMBIO TELA' && <p>La suma para enrolle y entrada de tubo se indica en cada tarjeta: 55 cm por defecto. Con bamba de la misma tela se añaden también su alto y remate.</p>}
+        {selectedModel === 'CAMBIO TELA' && <p>La suma para enrolle y entrada de tubo se indica en cada tarjeta: 40 cm por defecto. Con bamba de la misma tela se añaden también su alto y remate.</p>}
         <div className="parameter-grid parameter-grid-3">
           {jobs.filter((job) => job.model === selectedModel).map((job) => <NumberField key={job.model} label={`${job.label} · ${job.note} (cm)`} value={parameters.dropAllowanceByModel[job.model]} min={0} step={0.5} onChange={(value) => value !== null && updateAllowance(job.model, value)} />)}
           {selectedModel !== 'ENROLLABLE' && <NumberField label="Remate de bambalina (cm)" value={parameters.valanceExtraCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ valanceExtraCm: value })} />}

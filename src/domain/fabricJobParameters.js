@@ -1,5 +1,8 @@
+// Iván, 02/10/2026: 40 cm en total para enrolle y entrada de tubo, ajustables por toldo.
+export const defaultCambioTelaExtraCm = 40;
+
 const defaultAllowances = Object.freeze({
-  'CAMBIO TELA': 55,
+  'CAMBIO TELA': defaultCambioTelaExtraCm,
   ENROLLABLE: 25,
   BAMBALINA: 0,
   // CAM. ANTICA!I5 del libro antiguo: aumento del cuerpo con bamba integrada.
@@ -32,7 +35,7 @@ export function resolveFabricJobAllowance(model, _hasValance, parameters = defau
   return parameters.dropAllowanceByModel[model] ?? 0;
 }
 
-// Iván, 01/10/2026: 55 cm para enrolle y entrada de tubo, ajustables por toldo.
+// Iván, 02/10/2026: 40 cm en total para enrolle y entrada de tubo, ajustables por toldo.
 // Un borrador con un margen técnico anterior conserva lo que había indicado OT.
 export function resolveCambioTelaExtraCm(awning) {
   const value = awning.cambioTelaExtraCm === undefined

@@ -15,12 +15,12 @@ const order = (patch = {}) => ({ fabric: 'ACR NEGRO', awnings: [{ ...awning, ...
 const calculate = (patch = {}) => calculateCambioTela({ order: order(), awning: { ...awning, ...patch } });
 
 describe('suma para enrolle y tubo del Cambio de tela', () => {
-  test('por defecto suma 55 en lugar de 40: tres paños consumen 0,45 ml más', () => {
-    expect(calculate().calculation).toMatchObject({ fabricDrop: 305, fabricMl: 9.15 });
-    expect(calculate({ cambioTelaExtraCm: 40 }).calculation).toMatchObject({ fabricDrop: 290, fabricMl: 8.7 });
+  test('por defecto suma 40 en total: tres paños consumen 8,70 ml', () => {
+    expect(calculate().calculation).toMatchObject({ fabricDrop: 290, fabricMl: 8.7 });
+    expect(calculate({ cambioTelaExtraCm: 55 }).calculation).toMatchObject({ fabricDrop: 305, fabricMl: 9.15 });
     const result = calculateOrder(order()).ofs[0];
-    expect(result.calculation).toMatchObject({ valid: true, fabricDrop: 305, reservedFabricMl: 9.15 });
-    expect(result.materials[0].quantity).toBe(9.15);
+    expect(result.calculation).toMatchObject({ valid: true, fabricDrop: 290, reservedFabricMl: 8.7 });
+    expect(result.materials[0].quantity).toBe(8.7);
   });
 
   test.each([0, 40, 67.5])('aplica %s cm por toldo sin activar una excepción', (cambioTelaExtraCm) => {
@@ -48,12 +48,12 @@ describe('suma para enrolle y tubo del Cambio de tela', () => {
   });
 
   test('conserva el valor y los errores al recuperar un borrador', () => {
-    expect(createAwning('FABRIC_ONLY').cambioTelaExtraCm).toBe(55);
+    expect(createAwning('FABRIC_ONLY').cambioTelaExtraCm).toBe(40);
     expect(sanitizeAwning({ ...awning, cambioTelaExtraCm: 67.5 }).cambioTelaExtraCm).toBe(67.5);
     expect(sanitizeAwning({ ...awning, cambioTelaExtraCm: null }).cambioTelaExtraCm).toBeNull();
     expect(sanitizeAwning({ ...awning, cambioTelaExtraCm: -1 }).cambioTelaExtraCm).toBe(-1);
-    expect(sanitizeAwning(awning).cambioTelaExtraCm).toBe(55);
-    expect(switchAwningModel(createAwning(), 'CAMBIO TELA').cambioTelaExtraCm).toBe(55);
+    expect(sanitizeAwning(awning).cambioTelaExtraCm).toBe(40);
+    expect(switchAwningModel(createAwning(), 'CAMBIO TELA').cambioTelaExtraCm).toBe(40);
   });
 
   test('migra un margen técnico antiguo y da prioridad al nuevo campo', () => {

@@ -56,7 +56,7 @@ Iván (25/09): hay que agrandar la letra de los PDF todo lo que se pueda sin que
 
 | Código | Pregunta | Respuesta | En la web |
 | --- | --- | --- | --- |
-| Q-C08 | Margen para enrolle y entrada de tubo del Cambio de tela | El taller pide 40 cm para el enrolle más lo necesario para la entrada de tubo; con 55 cm en total debería valer. Hace falta poder variarlo en el formulario | Hecho: «Sumar para enrolle y tubo (cm)», 55 por defecto, editable por toldo sin candado. La caída y la reserva usan ese valor; vacío o negativo bloquea el cálculo con un mensaje. La ficha de revisión y su PDF muestran la suma junto a las medidas |
+| Q-C08 | Margen para enrolle y entrada de tubo del Cambio de tela | El taller pide 40 cm en total para el enrolle y la entrada de tubo (corregido el 02/10/2026: el 01/10 se había leído como 55). Hace falta poder variarlo en el formulario | Hecho: «Sumar para enrolle y tubo (cm)», 40 por defecto, editable por toldo sin candado. La caída y la reserva usan ese valor; vacío o negativo bloquea el cálculo con un mensaje. La ficha de revisión y su PDF muestran la suma junto a las medidas |
 
 ## Contestadas el 30/09/2026
 

@@ -246,7 +246,7 @@ describe('calculateOrder — CAMBIO TELA', () => {
     });
 
     expect(result.ofs[0].materials).toEqual([
-      { code: 'ACRILI2101P120', quantity: 13.6, description: 'ACR GRANATE' }
+      { code: 'ACRILI2101P120', quantity: 13, description: 'ACR GRANATE' }
     ]);
   });
 
@@ -263,9 +263,9 @@ describe('calculateOrder — CAMBIO TELA', () => {
       }]
     });
 
-    // Sin bamba no hay remate: caída 300 + 55 para enrolle y tubo.
+    // Sin bamba no hay remate: caída 300 + 40 para enrolle y tubo.
     expect(result.ofs[0].materials).toEqual([
-      { code: 'ALPHANA04P250', quantity: 7.1, description: 'PVC 580 NARANJA' }
+      { code: 'ALPHANA04P250', quantity: 6.8, description: 'PVC 580 NARANJA' }
     ]);
   });
 });

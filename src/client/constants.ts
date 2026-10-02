@@ -1,4 +1,5 @@
 import type { Awning } from './types';
+import { defaultCambioTelaExtraCm } from '../domain/fabricJobParameters.js';
 
 export const storageKey = 'toldos-testar-draft-v6';
 
@@ -141,7 +142,7 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     anticaVariant: '',
     anticaMeasurementMode: '',
     cambioAnticaExtraCm: null,
-    cambioTelaExtraCm: 55,
+    cambioTelaExtraCm: defaultCambioTelaExtraCm,
     looseSide: '',
     maxisCableMountKit: false,
     anticaSupportHeight: null,

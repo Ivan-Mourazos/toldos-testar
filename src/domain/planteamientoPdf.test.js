@@ -1531,9 +1531,9 @@ describe('maqueta única del planteamiento de telas', () => {
     });
 
     expect(text).not.toMatch(/\d \+ \d/);
-    // Cuerpo: 3 paños de 2,82 = 8,46; bamba: 3 paños de 0,30 = 0,9.
-    expect(text).toMatch(/SALIDA\s+282,0/);
-    expect(text).toMatch(/9,4 ML/);
+    // Cuerpo: 3 paños de 2,67 = 8,01; bamba: 3 paños de 0,30 = 0,9.
+    expect(text).toMatch(/SALIDA\s+267,0/);
+    expect(text).toMatch(/8,9 ML/);
   });
 
   test('con telas distintas por toldo, cada fila indica su tela', async () => {
