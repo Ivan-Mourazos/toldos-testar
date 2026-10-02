@@ -26,8 +26,12 @@ try {
   assert.equal(await selected('Remolques').getAttribute('aria-pressed'), 'true');
   console.log('OK: Enter detecta Remolques y trae las cuatro líneas');
   await search.fill('AR.26.04286');
+  const pedidoEncontrado = page.waitForResponse(response => response.url().includes('/api/remolques/rps-pedido') && response.url().includes('04286'));
   await search.press('Enter');
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Conservar formulario', exact: true }).click({ timeout: 5000 });
+  const respuestaEncontrada = await pedidoEncontrado;
+  assert.equal(respuestaEncontrada.status(), 200, 'RPS responde con el pedido de la prueba');
+  assert.equal((await respuestaEncontrada.json()).pedido.lineas.length, 3);
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Conservar formulario', exact: true }).click();
   assert.equal(await page.locator('.rem-cabecera').getByLabel('Pedido', { exact: true }).inputValue(), 'AR.26.04414');
   assert.equal(await page.locator('.rem-pestana-abrir').count(), 4);
   console.log('OK: cancelar otro pedido de Remolques conserva número y elementos');
