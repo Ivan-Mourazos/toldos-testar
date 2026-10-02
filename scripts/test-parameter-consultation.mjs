@@ -68,7 +68,7 @@ try {
   assert.ok(await page.getByRole('table', { name: 'Descuentos Iris seleccionados' }).count());
   await page.getByRole('combobox', { name: 'Guía Iris' }).click();
   await page.getByRole('option', { name: 'Pequeña', exact: true }).click();
-  assert.ok((await page.getByRole('status').innerText()).includes('no tiene tabla'));
+  assert.ok((await page.getByRole('status').filter({ hasText: 'no tiene tabla' }).innerText()).includes('no tiene tabla'));
   assert.equal(await page.getByRole('table', { name: 'Descuentos Iris seleccionados' }).count(), 0);
   await page.getByRole('combobox', { name: 'Dispositivo Iris' }).click();
   await page.getByRole('option', { name: 'Motor', exact: true }).click();
