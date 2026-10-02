@@ -16,7 +16,7 @@ type AwningItem = NonNullable<PedidoBandeja['summary']['awningList']>[number];
 // (punto de color, nombre y cuántos), columnas juntas y filas densas; toda la fila se
 // pulsa y se despliega dentro, con cada toldo y lo que le pasa. Los toldos se ven ya en la
 // fila (A ✓, D aviso) para saber qué hay que revisar sin abrir nada.
-export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus, borradores = [], onSeguirBorrador = () => undefined, onDescartarBorrador = () => undefined }: {
+export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus, borradores = [], onSeguirBorrador = () => undefined, onDescartarBorrador = () => undefined, onBuscarRemolques }: {
   pending: PedidoBandeja[];
   history: PedidoBandeja[];
   currentUser: string;
@@ -30,6 +30,8 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   borradores?: ResumenBorrador[];
   onSeguirBorrador?: (borrador: ResumenBorrador) => void;
   onDescartarBorrador?: (borrador: ResumenBorrador) => void;
+  /** Abre el buscador de remolques (diseño 02/10/2026); sin él no sale el botón. */
+  onBuscarRemolques?: () => void;
 }) {
   // Iván, 28/09/2026: al entrar se ve todo, porque lo que toca revisar es de otros.
   const [scope, setScope] = useState<'mine' | 'all'>('all');
@@ -124,6 +126,11 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
         <h2>Generados</h2>
         <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => onYear(Number(event.target.value))} aria-label="Año" />
         <span className="orders-count">{sections.history.length}</span>
+        {onBuscarRemolques && (
+          <button type="button" className="ghost-button boton-3d orders-buscar-remolques" onClick={onBuscarRemolques}>
+            <Search aria-hidden="true" />Buscar remolques
+          </button>
+        )}
       </header>
       {historyLoading ? <p className="review-empty">Cargando historial…</p>
         : sections.history.length === 0 ? <p className="review-empty">No hay pedidos generados en {year}.</p>

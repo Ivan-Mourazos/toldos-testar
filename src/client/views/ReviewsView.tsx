@@ -9,6 +9,8 @@ import { generateState } from '../generatePermission';
 import { leerPedidosDelAnio } from '../hooks/listaPedidos';
 import { productoDe } from '../ordersInbox';
 import { PedidoRemolquesDetalle } from '../remolques/PedidoRemolquesDetalle';
+import { BuscadorRemolques } from '../remolques/BuscadorRemolques';
+import { estadoBuscadorInicial, type EstadoBuscador } from '../remolques/busquedaRemolques';
 import type { Borrador, ResumenBorrador } from '../../borradores/tipos.ts';
 import { descartarBorrador, leerBorrador } from '../borradores';
 import { useBorradores } from '../hooks/useBorradores';
@@ -38,6 +40,11 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   const [selectedCode, setSelectedCode] = useState('');
   // El pedido de remolques abierto (fase 5); el de toldos sigue en selectedCode.
   const [selectedRemolques, setSelectedRemolques] = useState('');
+  // El buscador de remolques (diseño 02/10/2026): si está abierto, y sus filtros y resultado, que
+  // siguen ahí al abrir un pedido desde él y volver. `elementoRemolques` es el elemento buscado.
+  const [buscadorAbierto, setBuscadorAbierto] = useState(false);
+  const [estadoBuscador, setEstadoBuscador] = useState<EstadoBuscador>(estadoBuscadorInicial);
+  const [elementoRemolques, setElementoRemolques] = useState<string | undefined>(undefined);
   const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [working, setWorking] = useState(false);
@@ -45,7 +52,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   const listRequestId = useRef(0);
   const pendingOfs = pending.flatMap((review) => (review.summary.awningList || []).map((item) => item.of));
   const { borradores } = useBorradores(refreshKey, onToast);
-  const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '' && selectedRemolques === '');
+  const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '' && selectedRemolques === '' && !buscadorAbierto);
 
   useEffect(() => {
     const requestId = ++listRequestId.current;
@@ -240,12 +247,24 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             orderCode={selectedRemolques}
             refreshKey={refreshKey}
             currentUser={currentUser}
-            onBack={() => setSelectedRemolques('')}
+            elementoInicial={elementoRemolques}
+            textoVolver={buscadorAbierto ? '← Buscar remolques' : undefined}
+            onBack={() => { setSelectedRemolques(''); setElementoRemolques(undefined); }}
             onCorregir={onEditRemolques}
             onReutilizar={onReuseRemolques}
             onChanged={onChanged}
             onToast={onToast}
             onConfirm={onConfirm}
+          />
+        )
+        : buscadorAbierto
+        ? (
+          <BuscadorRemolques
+            estado={estadoBuscador}
+            onEstado={setEstadoBuscador}
+            onVolver={() => setBuscadorAbierto(false)}
+            onAbrir={(orderCode, version) => { setElementoRemolques(version); setSelectedRemolques(orderCode); }}
+            onToast={onToast}
           />
         )
         : selectedCode === ''
@@ -262,6 +281,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             borradores={borradores}
             onSeguirBorrador={(borrador) => void seguirBorrador(borrador)}
             onDescartarBorrador={(borrador) => void descartar(borrador)}
+            onBuscarRemolques={() => setBuscadorAbierto(true)}
           />
         : (
           <ReviewOrderDetail

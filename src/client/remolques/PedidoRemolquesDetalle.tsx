@@ -46,7 +46,7 @@ function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardad
   );
 }
 
-export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, notify, elementoInicial }: {
+export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, notify, elementoInicial, textoVolver = '← Pedidos' }: {
   pedido: PedidoRemolques | null;
   cargando: boolean;
   coordina: CoordinaStatus | null;
@@ -59,8 +59,10 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   notify: Notify;
   /** El elemento que se abre primero en la lectura (por su versión); sin él, el primero. */
   elementoInicial?: string;
+  /** El texto del botón de volver: «← Buscar remolques» si se abrió desde el buscador. */
+  textoVolver?: string;
 }) {
-  const volver = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>← Pedidos</button>;
+  const volver = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>{textoVolver}</button>;
   if (cargando) {
     return <section className="review-reader">{volver}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido…</div></section>;
   }
@@ -137,10 +139,13 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   );
 }
 
-export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm }: {
+export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm, elementoInicial, textoVolver }: {
   orderCode: string;
   refreshKey: number;
   currentUser: string;
+  /** El elemento que se abre elegido (por su versión): el de la fila pulsada en el buscador. */
+  elementoInicial?: string;
+  textoVolver?: string;
   onBack: () => void;
   onCorregir: (pedido: PedidoRemolques) => void;
   onReutilizar: (pedido: PedidoRemolques) => void;
@@ -238,6 +243,8 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
       onReutilizar={() => { if (pedido) onReutilizar(pedido); }}
       onGenerar={() => void generar()}
       notify={onToast}
+      elementoInicial={elementoInicial}
+      textoVolver={textoVolver}
     />
   );
 }

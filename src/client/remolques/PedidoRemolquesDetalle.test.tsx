@@ -67,6 +67,14 @@ describe('el pedido de remolques abierto en Pedidos', () => {
   it('mientras carga lo dice', () => {
     expect(pintar({ cargando: true, pedido: null })).toContain('Cargando el pedido…');
   });
+
+  it('abierto desde el buscador: vuelve al buscador y abre el elemento buscado', () => {
+    expect(pintar({})).toContain('← Pedidos');
+    const html = desescapar(pintar({ textoVolver: '← Buscar remolques', elementoInicial: '11' }));
+    expect(html).toContain('← Buscar remolques');
+    expect(html).not.toContain('← Pedidos');
+    expect(html).toMatch(/aria-current="true"[^>]*><span class="rem-pestana-rotulo">B · /);
+  });
 });
 
 // Lo que React escapa en el HTML, de vuelta, para buscar los textos tal cual.

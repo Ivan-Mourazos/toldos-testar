@@ -72,4 +72,15 @@ describe('Pedidos con toldos y remolques', () => {
     );
     expect(html).not.toContain('Borradores');
   });
+
+  it('«Buscar remolques» en la barra de «Generados», solo si Pedidos lo ofrece', () => {
+    const pintar = (onBuscarRemolques?: () => void) => renderToStaticMarkup(
+      <OrdersInbox
+        pending={[]} history={[]} currentUser="IVÁN" pendingLoading={false} historyLoading={false} year={2026}
+        onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null} onBuscarRemolques={onBuscarRemolques}
+      />,
+    );
+    expect(pintar(() => undefined)).toMatch(/<h2>Generados<\/h2>.*orders-buscar-remolques.*Buscar remolques<\/button>/);
+    expect(pintar()).not.toContain('Buscar remolques');
+  });
 });

@@ -1,0 +1,204 @@
+/* Buscador de remolques en Pedidos (diseño 02/10/2026). Mismas piezas que Pedidos (pedidos.css):
+   la búsqueda `orders-search`, las tiras `orders-scope tira-3d glass-chip` con `pestana-activa`,
+   los botones `ghost-button` / `primary-button` con `boton-3d`, el bloque `bloque-3d-hundido` de los
+   filtros y una fila `bloque-3d` por elemento. Aquí solo va la rejilla; colores, relieve y letra
+   salen de tokens.css y piezas.css, igual en claro y oscuro. Solo escritorio (1280 a 1920). */
+
+.app-shell:has(.buscador-remolques) .topbar { margin-inline: 0; max-width: none; }
+
+/* El botón que lo abre, al final de la barra de «Generados». */
+.orders-inbox-bar .orders-buscar-remolques { margin-left: auto; }
+
+.buscador-remolques {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.buscador-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Cabecera: volver, título, texto libre y acciones (como la barra de Pedidos) ── */
+.buscador-cabecera {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+.buscador-cabecera h2 {
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  margin: 0;
+}
+.buscador-cabecera .orders-search {
+  display: block;
+  flex: 1 1 14rem;
+  margin: 0;
+  max-width: 28rem;
+  min-width: 14rem;
+  position: relative;
+}
+.buscador-cabecera .orders-search input {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.375rem 1.75rem 0.375rem 2rem;
+  width: 100%;
+}
+.buscador-acciones {
+  display: inline-flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* ── Filtros: una rejilla de campos con su rótulo encima ── */
+.buscador-filtros {
+  align-items: start;
+  border-radius: 0.75rem;
+  display: grid;
+  gap: 0.75rem 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0.75rem;
+}
+.buscador-campo {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  min-width: 0;
+}
+.buscador-campo > .orders-scope { justify-self: start; }
+.buscador-campo > input {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.375rem 0.625rem;
+  width: 100%;
+}
+/* El rótulo de un filtro, como el de Pedidos (`text-[10px] font-semibold uppercase`). */
+.buscador-rotulo {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+/* Los desplegables traen su propio rótulo (`.field > span`): igual que los demás. */
+.buscador-campo > .select-field > span:first-child {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  line-height: normal;
+  text-transform: uppercase;
+}
+.buscador-fechas {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+
+/* Las ocho medidas a lo ancho, cuatro por fila: «Largo [   ] ± [ 5 ] cm». */
+.buscador-medidas {
+  display: grid;
+  gap: 0.5rem 1rem;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.buscador-medida {
+  align-items: center;
+  column-gap: 0.375rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 3.5rem auto;
+  min-width: 0;
+  row-gap: 0.25rem;
+}
+.buscador-medida > .buscador-rotulo { grid-column: 1 / -1; }
+.buscador-medida > input {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.375rem 0.5rem;
+  width: 100%;
+}
+.buscador-mas-menos,
+.buscador-unidad {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* ── Resultado ── */
+.buscador-contador {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  margin: 0;
+}
+.buscador-aviso {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  margin: 0;
+}
+.buscador-resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+/* Las mismas columnas en la cabecera y en cada fila. */
+.buscador-columnas,
+.buscador-fila {
+  column-gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1.2fr) 84px 150px 150px 190px minmax(0, 1fr) 84px;
+}
+.buscador-columnas {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 0.75rem 0.25rem;
+}
+.buscador-lista {
+  display: grid;
+  gap: 0.375rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.buscador-fila {
+  align-items: center;
+  border: 0;
+  border-radius: 0.75rem;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1rem;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.75rem;
+  text-align: left;
+  width: 100%;
+}
+.buscador-fila:hover { background: var(--surface-2); }
+.buscador-fila > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* El estado, como píldora: los colores los pone `pildora-plantear` / `pildora-revisar`. */
+.buscador-fila > span:last-child {
+  border-radius: 0.375rem;
+  border-style: solid;
+  border-width: 1px;
+  font-weight: 600;
+  justify-self: start;
+  padding: 0.0625rem 0.5rem;
+}
+.buscador-pedido {
+  font-family: var(--mono);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.buscador-pedido span {
+  color: var(--text-muted);
+  font-weight: 400;
+}
