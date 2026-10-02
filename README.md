@@ -94,12 +94,17 @@ parámetros generales de remolques y los de toldos se siguen guardando todos a l
 En Pedidos, junto a «Generados», «Buscar remolques» abre un buscador sobre todos los pedidos de
 remolques guardados en la carpeta interna (todos los años, también los pasados de la web vieja; los
 que solo existen como PDF en las carpetas compartidas no entran). Filtra cada elemento por texto libre
-(pedido, cliente, OF u observaciones), cliente (por nombre o el de su ficha), tipo, perfil, recogida
+(pedido, cliente, OF u observaciones), cliente (por nombre, por el código de cliente de RPS —«001300»
+o «1300»— o por el nombre de su ficha, que saca los pedidos con cualquiera de sus códigos), tipo, perfil, recogida
 (delante, detrás o cualquier lado), medidas con margen (± 5 cm si no se pone otro), radios, aguas,
 chaflán, ventana, rotulación, bastilla de enfundar, detrás distinto, material, estado y fechas. Sale
 una fila por elemento, del pedido más nuevo al más antiguo (500 como mucho, con aviso); al pulsarla se
 abre el pedido con ese elemento elegido, y desde ahí «Corregir» o «Reutilizar datos» como siempre. Por
 debajo es `POST /api/remolques/buscar` con los filtros en JSON.
+
+El código de cliente de RPS va en el pedido (`clienteRps`) cuando sus elementos se traen con «Obtener
+de RPS»; «Corregir» lo conserva. Los pedidos guardados antes del 02/10/2026 lo reciben con el comando
+del paso 7 de «Despliegue Linux con PM2»; los que no lo tienen se siguen encontrando por el nombre escrito.
 
 ## Configuración de carpetas
 
@@ -358,6 +363,26 @@ mano, todas opcionales: `--destino <carpeta interna>`, `--planteamientos <carpet
 `--oficina <carpeta con {YYYY}>` y `--toldos <carpeta de revisión de toldos con {YYYY}>`. Con
 `--destino` no se lee `Configuración`, así que, si no se da `--toldos`, no mira los números de
 toldos y lo avisa en el informe.
+
+### 7. Código de cliente de RPS en los pedidos de remolques ya guardados (una vez)
+
+Los pedidos de remolques guardados antes del 02/10/2026 (también los pasados de la web vieja) no
+llevan el código de cliente de RPS, y el buscador lo usa porque no falla como el nombre escrito.
+Después de desplegar, en el .90, como root (sin sudo) y desde `/webs/toldos-testar`, primero
+simulando:
+
+```bash
+cd /webs/toldos-testar && node scripts/completar-codigo-cliente-remolques.mjs --simular
+cd /webs/toldos-testar && node scripts/completar-codigo-cliente-remolques.mjs
+```
+
+Busca el número de cada pedido sin código en RPS (solo lectura, un `SELECT`) y le añade su cliente
+(código y nombre); nada más del pedido cambia, ni su fecha de guardado. La simulación no escribe nada.
+El informe lista cada pedido con el cliente de RPS y el nombre escrito en el pedido (para comparar a
+ojo), los que RPS no tiene (se quedan sin código y se siguen encontrando por su nombre) y los que no
+se pudieron mirar (entonces sale con código 1: se puede repetir). Repetirlo solo vuelve a mirar los
+que siguen sin código. Una opción mal escrita corta con un mensaje corto (código 2). La carpeta es la
+interna de `Configuración`; para probar con otra, `--destino <carpeta>`.
 
 ## Prueba de extremo a extremo con RPS
 
