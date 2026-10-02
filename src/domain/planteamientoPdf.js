@@ -967,10 +967,10 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(8))
     .text('MAXISCREEM', x + 18, y + 13, { width: w - 36, align: 'center' });
 
-  const panelX = x + 49;
-  const panelY = y + 73;
-  const panelW = w - 98;
-  const panelH = h - 142;
+  const panelX = x + w * 0.13;
+  const panelY = y + h * 0.255;
+  const panelW = w * 0.74;
+  const panelH = h * 0.565;
   if (withBox) {
     doc.roundedRect(panelX - 13, panelY - 27, panelW + 26, 31, 6)
       .fillAndStroke('#e7eeec', '#466e64');
@@ -991,7 +991,7 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
   doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
     .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', panelX + 8, panelY + 52, { width: panelW - 16, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.7))
-    .text('P801 · PERFIL DE CARGA MAXISCREEM', x + 24, y + h - 25, { width: w - 48, align: 'center' });
+    .text('P801 · PERFIL DE CARGA MAXISCREEM', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
 }
 
 function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
@@ -1002,10 +1002,10 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
   const hasBox = irisHasCassette(awning.submodel, awning.irisGuideType);
   drawDiagramShell(doc, x, y, w, h);
 
-  const panelX = x + 52;
-  const panelY = y + 74;
-  const panelW = w - 104;
-  const panelH = h - 150;
+  const panelX = x + w * 0.14;
+  const panelY = y + h * 0.17;
+  const panelW = w * 0.72;
+  const panelH = h * 0.67;
 
   if (hasBox) {
     doc.roundedRect(panelX - 12, panelY - 26, panelW + 24, 30, 5).fillAndStroke('#e7eeec', '#466e64');
@@ -1028,14 +1028,13 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
     .strokeColor('#c9d5d2').lineWidth(0.5).dash(2, { space: 2 }).stroke().undash();
   doc.roundedRect(panelX - 4, panelY + panelH - 7, panelW + 8, 14, 3).fillAndStroke('#e7eeec', '#466e64');
 
-  // drawDiagramShell traza la línea divisoria del título en y+32: bajamos el
-  // texto lo justo (y+38) para que no quede tachado por encima de ella.
+  // La cabecera queda fuera del marco; frente, cofre, cuerpo y guías ocupan bandas distintas.
   drawDiagramText(doc, `FRENTE ${formatNumber(calculation.width ?? awning.irisFrontTop ?? 0)}`, panelX, panelY - 36, panelW);
-  drawSideLabel(doc, `MFI ${formatNumber(calculation.guideLeftLength ?? 0)}`, x + 6, panelY + panelH / 2, 44);
-  drawSideLabel(doc, `MFD ${formatNumber(calculation.guideRightLength ?? 0)}`, x + w - 50, panelY + panelH / 2, 44);
+  drawRotatedDiagramText(doc, `MFI ${formatNumber(calculation.guideLeftLength ?? 0)}`, x + w * 0.055, panelY + panelH / 2, panelH * 0.8);
+  drawRotatedDiagramText(doc, `MFD ${formatNumber(calculation.guideRightLength ?? 0)}`, x + w * 0.945, panelY + panelH / 2, panelH * 0.8);
   drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', panelX, panelY + panelH + 18, panelW);
   doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
-    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + 24, y + h - 26, { width: w - 48, align: 'center' });
+    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {
@@ -1048,11 +1047,11 @@ function drawAgataDiagram(doc, x, y, w, h, awning) {
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(8))
     .text(`ÁGATA BOX · ${variant}`, x + 18, y + 13, { width: w - 36, align: 'center' });
 
-  const wallX = x + 38;
-  const headY = y + 72;
-  const frontX = x + w - 38;
-  const frontY = y + 205;
-  doc.moveTo(wallX, y + 45).lineTo(wallX, y + h - 40)
+  const wallX = x + w * 0.12;
+  const headY = y + h * 0.22;
+  const frontX = x + w * 0.90;
+  const frontY = y + h * 0.67;
+  doc.moveTo(wallX, y + h * 0.15).lineTo(wallX, y + h * 0.94)
     .strokeColor('#9db0ac').lineWidth(1.2).stroke();
 
   if (enclosed) {
@@ -1084,10 +1083,10 @@ function drawAgataDiagram(doc, x, y, w, h, awning) {
     .fillAndStroke('#e7eeec', '#466e64');
   drawDiagramText(doc, enclosed ? (fullBox ? 'COFRE COMPLETO' : 'CIERRE PARCIAL') : 'TUBO VISTO', wallX - 10, headY - 22, 62);
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6))
-    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', wallX + 35, frontY + 57, { width: frontX - wallX - 42, align: 'center' })
+    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', x + w * 0.1, y + h * 0.89, { width: w * 0.8, align: 'center' })
     .text('BRAZOS ONYX SEGÚN TOLDO', wallX + 45, frontY + 3, { width: frontX - wallX - 65, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.7))
-    .text('P801 · MODUL 400 · BAMBA SEGÚN TOLDO', x + 24, y + h - 27, { width: w - 48, align: 'center' });
+    .text('P801 · MODUL 400 · BAMBA SEGÚN TOLDO', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
 }
 
 function drawAmbarDiagram(doc, x, y, w, h) {
@@ -1096,11 +1095,11 @@ function drawAmbarDiagram(doc, x, y, w, h) {
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(8))
     .text('ÁMBAR BOX', x + 18, y + 13, { width: w - 36, align: 'center' });
 
-  const wallX = x + 42;
-  const boxY = y + 74;
-  const armEndX = x + w - 42;
-  const armEndY = y + 205;
-  doc.moveTo(wallX, y + 46).lineTo(wallX, y + h - 42)
+  const wallX = x + w * 0.12;
+  const boxY = y + h * 0.22;
+  const armEndX = x + w * 0.90;
+  const armEndY = y + h * 0.67;
+  doc.moveTo(wallX, y + h * 0.15).lineTo(wallX, y + h * 0.94)
     .strokeColor('#9db0ac').lineWidth(1.2).stroke();
 
   doc.roundedRect(wallX - 6, boxY, 42, 31, 7)
@@ -1121,10 +1120,10 @@ function drawAmbarDiagram(doc, x, y, w, h) {
   doc.roundedRect(armEndX - 8, armEndY - 8, 15, 45, 3)
     .fillAndStroke('#e7eeec', '#466e64');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6))
-    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', wallX + 35, armEndY + 58, { width: armEndX - wallX - 42, align: 'center' })
+    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', x + w * 0.1, y + h * 0.89, { width: w * 0.8, align: 'center' })
     .text('BRAZOS PRT07', wallX + 47, armEndY + 4, { width: armEndX - wallX - 70, align: 'center' });
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.7))
-    .text('TUBO P701 · KIT DE PERFILES ÁMBAR BOX', x + 24, y + h - 27, { width: w - 48, align: 'center' });
+    .text('TUBO P701 · KIT DE PERFILES ÁMBAR BOX', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
 }
 
 function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
