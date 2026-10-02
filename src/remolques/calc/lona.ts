@@ -215,6 +215,11 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   if (input.recogeDelante === "GOMA" || input.recogeAtras === "GOMA") {
     notas.push("GOMA: preparar orejas por lado.");
   }
+  // Q-R01 (Iván, 02/10/2026): el taller aún no ha dado las medidas de los ganchos corazón; la web usa
+  // las de la goma. Se avisa en el elemento para que se pregunten al elegirlos.
+  if (input.recogeDelante === "GANCHOS CORAZON" || input.recogeAtras === "GANCHOS CORAZON") {
+    notas.push("GANCHOS CORAZÓN: medidas provisionales (lona como la goma y ganchos al paso de los ollaos). Confirmar con el taller antes de cortar.");
+  }
   if (input.bastillaEnfundar) notas.push("Bastilla de enfundar: paño contorno con demasía 13.");
   if (input.ventana) {
     const medida = (input.ventanaAncho ?? 0) > 0 && (input.ventanaAlto ?? 0) > 0

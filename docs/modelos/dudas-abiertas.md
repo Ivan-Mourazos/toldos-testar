@@ -22,7 +22,7 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
 
-- **Ganchos corazón: ¿cuánto se añade al paño delantero o trasero y al lateral, y cada cuánto va un gancho a lo alto?** El 30/09 se decidió ofrecerlos como una recogida más. Mientras no se sepa, la web usa las medidas de la goma (27 y 27) y el paso de los ollaos. Importa para calcular el paño. <sub>Q-R01</sub>
+- **Ganchos corazón: ¿cuánto se añade al paño delantero o trasero y al lateral, y cada cuánto va un gancho a lo alto?** El 30/09 se decidió ofrecerlos como una recogida más. Mientras no se sepa, la web usa las medidas de la goma (27 y 27) y el paso de los ollaos. Importa para calcular el paño. Iván (02/10/2026): se preguntará cuando alguien los elija; desde ese día, el elemento que los lleva avisa en sus notas de que las medidas son provisionales y hay que confirmarlas con el taller. <sub>Q-R01</sub>
 
 Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.
 

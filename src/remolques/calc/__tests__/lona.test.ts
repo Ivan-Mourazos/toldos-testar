@@ -86,6 +86,13 @@ describe("calcLona — variantes", () => {
     expect(res.panoDelantero.ancho).toBe(178);
     expect(res.notas.join(" ")).toContain("GOMA");
   });
+  // Iván, 02/10/2026 (Q-R01): las medidas de los ganchos corazón son provisionales; si se elige, avisar.
+  it("GANCHOS CORAZON, delante o detrás: aviso de medidas provisionales; sin ellos, no", () => {
+    const aviso = "GANCHOS CORAZÓN: medidas provisionales (lona como la goma y ganchos al paso de los ollaos). Confirmar con el taller antes de cortar.";
+    expect(calcLona({ ...base, recogeDelante: "GANCHOS CORAZON" }, DEFAULT_PARAMS).notas).toContain(aviso);
+    expect(calcLona({ ...base, recogeAtras: "GANCHOS CORAZON" }, DEFAULT_PARAMS).notas).toContain(aviso);
+    expect(calcLona({ ...base, recogeDelante: "GOMA" }, DEFAULT_PARAMS).notas.join(" ")).not.toContain("CORAZÓN");
+  });
   it("una recogida que ya no existe avisa en el elemento y se calcula sin recogida", () => {
     const res = calcLona({ ...base, recogeDelante: "PUENTES VIEJOS" }, DEFAULT_PARAMS);
     expect(res.notas).toContain("Falta la recogida «PUENTES VIEJOS» de delante: ya no está en Parámetros ni en las fichas; se calcula sin recogida.");
