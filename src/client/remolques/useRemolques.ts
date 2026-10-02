@@ -252,7 +252,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   // «Abrir en Remolques» puede llegar antes que los parámetros (la pantalla se monta en ese
   // momento): el pedido pedido espera aquí y se obtiene en cuanto llegan.
   const consultaEnEspera = useRef<{ numero: string; pedidoRps?: PedidoRps } | null>(null);
-  const [respuestaRpsSolicitada, setRespuestaRpsSolicitada] = useState<PedidoRps | null>(null);
+  const [respuestaRpsSolicitada, setRespuestaRpsSolicitada] = useState<{ pedido: PedidoRps } | null>(null);
+  const respuestaRpsAtendida = useRef<typeof respuestaRpsSolicitada>(null);
 
   // Aviso y confirmación llegan de la aplicación. Se guardan en una ref para que los
   // manejadores de abajo no cambien de identidad cuando cambie la de estas funciones:
@@ -719,16 +720,16 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     despachar({ tipo: 'PEDIDO_CAMBIADO', valor: numero });
     // La respuesta del buscador se importa tras actualizar el número en el estado.
     // Pasa por las mismas protecciones y espera los parámetros antes de crear elementos.
-    if (pedidoLeido) setRespuestaRpsSolicitada(pedidoLeido);
+    if (pedidoLeido) setRespuestaRpsSolicitada({ pedido: pedidoLeido });
     else obtenerDatosPedido(numero);
   }, [obtenerDatosPedido]);
 
   useEffect(() => {
-    if (!respuestaRpsSolicitada) return;
+    if (!respuestaRpsSolicitada || respuestaRpsAtendida.current === respuestaRpsSolicitada) return;
     if (cargandoPedido) return;
-    setRespuestaRpsSolicitada(null);
-    if (esOtroPedido(numeroPedido, respuestaRpsSolicitada.numero)) return;
-    obtenerDatosPedido(numeroPedido, respuestaRpsSolicitada);
+    respuestaRpsAtendida.current = respuestaRpsSolicitada;
+    if (esOtroPedido(numeroPedido, respuestaRpsSolicitada.pedido.numero)) return;
+    obtenerDatosPedido(numeroPedido, respuestaRpsSolicitada.pedido);
   }, [cargandoPedido, numeroPedido, obtenerDatosPedido, respuestaRpsSolicitada]);
 
   /**
