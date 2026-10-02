@@ -596,7 +596,10 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     looseSide: ['GALICIA', 'MONOBLOCK 350', 'AGATA BOX'].includes(model) ? awning.looseSide : '',
     maxisCableMountKit: model === 'MAXISCREEM' ? awning.maxisCableMountKit : false,
     structureNotesEdited: false,
-    structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : ''
+    structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : '',
+    // La tela es del elemento, no del modelo: sigue al cambiarlo desde la tarjeta.
+    fabric: awning.fabric,
+    fabricNotes: awning.fabricNotes
   };
 }
 

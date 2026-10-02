@@ -759,6 +759,30 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .model-picker-legend .is-ready { color: var(--correcto-texto); }
 .model-picker-status.is-pending,
 .model-picker-legend .is-pending { color: var(--aviso-texto); }
+/* Cambiar el modelo de una tarjeta (Iván, 02/10/2026): pestañas Toldo / Trabajo de tela en la
+   cabecera, una línea que explica qué se conserva y el modelo de ahora apagado. */
+.model-picker-header:has(.model-picker-kind) { grid-template-columns: 38px minmax(0, 1fr) auto 32px; }
+.model-picker-kind { margin: 0; }
+.model-picker-note { color: var(--text-muted); font-size: 12px; margin: -4px 0 12px; }
+.model-picker-option.is-current { cursor: default; opacity: 0.6; transform: none; }
+.model-picker-option.is-current small { color: var(--accent-text); font-weight: 700; }
+/* El modelo en la cabecera de la tarjeta es un botón: se pincha para cambiarlo. */
+.awning-column-header button.awning-model-change {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0.375rem;
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-weight: 800;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+}
+.awning-column-header button.awning-model-change svg { color: var(--text-muted); flex: none; height: 0.875rem; width: 0.875rem; }
+.awning-column-header button.awning-model-change:hover { background: var(--surface-2); }
+.awning-column-header button.awning-model-change:hover svg { color: var(--accent-text); }
 /* El globo de ayuda es la `pista` de CoordinaOT (globals.css 617-642). Se coloca encima de
    su tarjeta y con su mismo ancho (Iván, 30/09/2026): colgado del icono y abierto 250 px
    hacia la izquierda, en la primera columna se salía del diálogo, que lo cortaba por el

@@ -256,6 +256,14 @@ describe('migrateLegacyDraft (borrador v3/v4 completo -> DraftState v5)', () => 
 });
 
 describe('switchAwningModel', () => {
+  // Iván, 02/10/2026: cambiar el modelo desde la tarjeta (un cambio de tela que es un cambio de
+  // cortina) deja el elemento en su puesto, con su OF, medidas y tela, y los campos del nuevo.
+  test('al cambiar el modelo de una tarjeta conserva puesto, OF, medidas y tela', () => {
+    const antes = { ...switchAwningModel(createAwning('FABRIC_ONLY'), 'CAMBIO TELA'), of: '0231780', units: 2, width: 300, projection: 250, fabric: 'ACR ADMIRAL', fabricNotes: 'Tela del cliente' };
+    const despues = switchAwningModel(antes, 'CAMBIO CORTINA');
+    expect(despues).toMatchObject({ id: antes.id, model: 'CAMBIO CORTINA', workType: 'FABRIC_ONLY', of: '0231780', units: 2, width: 300, projection: 250, fabric: 'ACR ADMIRAL', fabricNotes: 'Tela del cliente', curtainTopFinish: 'VARILLA', cambioTelaExtraCm: null });
+  });
+
   test.each(modelNames)('%s no preselecciona ningún valor del formulario', (model) => {
     const result = switchAwningModel(createAwning(), model);
 

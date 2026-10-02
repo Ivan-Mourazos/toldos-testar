@@ -16,6 +16,8 @@ import { applyFabricProposal, pendingProposalIndexes, pendingProposalAwningIds }
 import { fabricCodeOf, fabricNeedByCode } from '../fabricStock';
 import { planFabricToggle } from '../orderFabricToggle';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
+import { awningLetter } from '../../domain/awningCompleteness.js';
+import { controlLabel } from '../components/controlLabels';
 import type { FabricProposal } from '../types';
 
 export function OrderView({
@@ -102,6 +104,9 @@ export function OrderView({
   onNotify?: Notify;
 }) {
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
+  // Con un elemento elegido, el selector cambia su modelo en vez de añadir uno nuevo.
+  const [changingAwningId, setChangingAwningId] = useState<string | null>(null);
+  const changingIndex = changingAwningId ? awnings.findIndex((awning) => awning.id === changingAwningId) : -1;
   // Toldo cuyo panel «Despiece y dibujo» está abierto.
   const [panelAwningId, setPanelAwningId] = useState<string | null>(null);
   const panelIndex = panelAwningId ? awnings.findIndex((awning) => awning.id === panelAwningId) : -1;
@@ -120,8 +125,25 @@ export function OrderView({
 
   function chooseModel(model: string) {
     if (!pickerType) return;
-    addAwning(pickerType, model);
+    if (changingIndex >= 0) {
+      updateAwning(awnings[changingIndex].id, { model });
+      onNotify?.(`El elemento ${awningLetter(changingIndex)} ahora es ${controlLabel(model)}: mantiene su OF, unidades, medidas y tela.`, { tone: 'success', title: 'Modelo cambiado' });
+    } else {
+      addAwning(pickerType, model);
+    }
+    closePicker();
+  }
+
+  function openModelChange(id: string) {
+    const awning = awnings.find((item) => item.id === id);
+    if (!awning) return;
+    setChangingAwningId(id);
+    setPickerType(awning.workType);
+  }
+
+  function closePicker() {
     setPickerType(null);
+    setChangingAwningId(null);
   }
 
   function setOrderField(patch: Record<string, string | boolean>) {
@@ -245,6 +267,7 @@ export function OrderView({
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}
               onOpenPanel={setPanelAwningId}
+              onChangeModel={openModelChange}
             />
           )}
         />}
@@ -272,7 +295,8 @@ export function OrderView({
           models={(pickerType === 'FABRIC_ONLY' ? fabricOnlyModelNames : fullAwningModelNames)
             .filter((model) => enabledModels.has(model))}
           onSelect={chooseModel}
-          onClose={() => setPickerType(null)}
+          onClose={closePicker}
+          cambio={changingIndex >= 0 ? { letra: awningLetter(changingIndex), actual: awnings[changingIndex].model, onWorkType: setPickerType } : undefined}
         />
       )}
     </>

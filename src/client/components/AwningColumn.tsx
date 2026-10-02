@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ArrowRight, CircleAlert, Copy, Layers3, Lock, LockOpen, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ChevronDown, CircleAlert, Copy, Layers3, Lock, LockOpen, Trash2 } from 'lucide-react';
 import { withoutAwningPrefix } from '../diagnosticText';
 import type { Awning, BoxDevice, Calculation, CortinaDevice, ElectraSupport, RuleParameters } from '../types';
 import { formOptions, getFabricDiagramOptions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
@@ -67,6 +67,8 @@ type Props = {
   onRemove: (id: string) => void;
   // Abre el panel «Despiece y dibujo» de este toldo (solo al editar).
   onOpenPanel?: (id: string) => void;
+  // Pinchar en el modelo abre el selector para cambiarlo sin mover el elemento de su puesto.
+  onChangeModel?: (id: string) => void;
 };
 
 // Estilo del estado en la cabecera de la ficha de lectura: los mismos colores que al editar.
@@ -129,7 +131,7 @@ function ExceptionBlock({ readOnly, exception, message, children }: { readOnly: 
   );
 }
 
-export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', fabricPending = false, fabricNeedMl = 0, valanceFabricNeedMl = 0, readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', fabricPending = false, fabricNeedMl = 0, valanceFabricNeedMl = 0, readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel, onChangeModel }: Props) {
   const fields = useVisibleFields(awning);
   // El aviso de la excepción técnica sale en su bloque (motivo y cambios): no se repite abajo.
   const exceptionNotice = awning.reglasModificadas ? diagnostics.find((item) => /^Excepción técnica en OF /.test(item.message || '')) : undefined;
@@ -352,7 +354,13 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
       <header className="awning-column-header">
         <span className="awning-column-heading">
           <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
-          <strong className="awning-model-title">{controlLabel(awning.model)}</strong>
+          {!readOnly && onChangeModel
+            ? (
+              <button type="button" className="awning-model-title awning-model-change" title="Cambiar el modelo: sigue en el mismo puesto" aria-label={`Cambiar el modelo del ${fabricOnly ? 'trabajo' : 'toldo'} ${awningLetter(index)}: ${controlLabel(awning.model)}`} onClick={() => onChangeModel(awning.id)}>
+                {controlLabel(awning.model)}<ChevronDown aria-hidden="true" />
+              </button>
+            )
+            : <strong className="awning-model-title">{controlLabel(awning.model)}</strong>}
           {/* El estado también arriba: con varias tarjetas había que bajar para verlo. Todo
               en mayúsculas, como al editar: «VÁLIDO», «FALTA 1», «1 ERROR», «2 AVISOS». */}
           {readOnly
