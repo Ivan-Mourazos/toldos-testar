@@ -1,28 +1,19 @@
-import { ArrowDown, ArrowUp, ClipboardPaste, ImagePlus, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, ClipboardPaste, ImagePlus, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
-import type { DrawingConditionField, DrawingParameters, DrawingVariant } from '../types';
+import type { DrawingCondition, DrawingConditionField, DrawingParameters, DrawingVariant } from '../types';
+import {
+  drawingConditionLabels, drawingConditionNeedsReview, drawingConditionOptions, drawingConditionShownValue, drawingConditionValueLabel
+} from '../../domain/drawingCatalog.js';
+import { controlLabel } from './controlLabels';
+import { LoQueSaleHoy } from './LoQueSaleHoy';
+import { SegmentedField } from './SegmentedField';
 
-const fields: { value: DrawingConditionField; label: string; hint: string }[] = [
-  { value: 'device', label: 'Accionamiento', hint: 'MOTOR, MAQ. INTERIOR…' },
-  { value: 'placement', label: 'Colocación', hint: 'FRONTAL, TECHO…' },
-  { value: 'submodel', label: 'Variante / submodelo', hint: 'COFRE, OPEN…' },
-  { value: 'machineSide', label: 'Lado de mando', hint: 'IZQUIERDA, DERECHA' },
-  { value: 'supportSystem', label: 'Sistema de anclaje', hint: 'Nombre del anclaje' },
-  { value: 'tubeLoad', label: 'Tubo de carga', hint: 'EVO 80, UNIVERS 280…' },
-  { value: 'hasValance', label: 'Lleva bamba', hint: 'SI o NO' },
-  { value: 'valanceCurve', label: 'Curva de bamba', hint: 'RECTA, ONDA…' },
-  { value: 'curtainHasWindow', label: 'Cortina con ventana', hint: 'SI o NO' },
-  { value: 'curtainFinish', label: 'Acabado cortina', hint: 'NORMAL, VELCRO, TUBO' },
-  { value: 'curtainSupport', label: 'Soporte cortina', hint: 'UNIVERSAL 3 AGUJEROS…' },
-  { value: 'electraSupport', label: 'Soporte Electra', hint: 'SOPORTE ELIT VERTICAL…' },
-  { value: 'irisGuideType', label: 'Guía Iris', hint: 'ESTÁNDAR, PEQUEÑA…' },
-  { value: 'irisGuideFixing', label: 'Fijación guía Iris', hint: 'PARED o TECHO' },
-  { value: 'irisWindBlock', label: 'Bloqueo viento Iris', hint: 'SI o NO' },
-  { value: 'anticaVariant', label: 'Variante Antica', hint: 'TUBO 30X10…' },
-  { value: 'anticaMeasurementMode', label: 'Medición Antica', hint: 'BASE o FINISHED' },
-  { value: 'fabricDiagramOverride', label: 'Trabajo especial', hint: 'TOLDO-VELCRO, SUPLEMENTO…' }
-];
+type ConditionOption = { field: DrawingConditionField; label: string; values: string[] };
+const USES = { manual: 'Solo a mano', auto: 'Automático cuando…' } as const;
 
+// Parámetros › un modelo › Dibujos (Iván, 02/10/2026): arriba «Lo que sale hoy»; debajo, los dibujos
+// del taller, cada uno con su imagen y «Cómo se usa»: «Solo a mano» (se elige en la tarjeta) o
+// «Automático cuando…» con condiciones de valores reales del modelo (también se elige a mano).
 export function DrawingParametersPanel({ model, parameters, onChange, onReset }: {
   model: string;
   parameters: DrawingParameters;
@@ -30,6 +21,7 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
   onReset: () => void;
 }) {
   const variants = parameters.byModel[model] || [];
+  const conditionOptions = drawingConditionOptions(model) as ConditionOption[];
 
   function commit(next: DrawingVariant[]) {
     const byModel = { ...parameters.byModel };
@@ -42,11 +34,13 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
     commit(variants.map((variant) => variant.id === id ? { ...variant, ...patch } : variant));
   }
 
+  // Un dibujo nuevo empieza «Solo a mano»: no cambia ningún PDF hasta que se elige o se pasa a automático.
   function add() {
     commit([...variants, {
       id: `${model.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`,
       name: variants.length ? `Dibujo ${variants.length + 1}` : 'Dibujo general',
       enabled: true,
+      usage: 'manual',
       image: null,
       conditions: []
     }]);
@@ -55,9 +49,9 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
   return <section className="drawing-parameters panel-3d panel-vidrio" aria-labelledby="drawing-parameters-title">
     <header className="drawing-parameters-heading">
       <div>
-        <span className="section-kicker">Biblioteca del taller · {model}</span>
-        <h2 id="drawing-parameters-title">Dibujos del taller</h2>
-        <p>Sustituyen al dibujo de la web en el PDF de todos los pedidos de este modelo. Una imagen puesta en un toldo del pedido manda sobre ellos.</p>
+        <span className="section-kicker">Dibujos · {controlLabel(model)}</span>
+        <h2 id="drawing-parameters-title">Dibujos</h2>
+        <p>El dibujo de la web de cada variante y los dibujos del taller que lo sustituyen. Una imagen puesta en un toldo del pedido manda sobre todos.</p>
       </div>
       <div className="drawing-parameters-actions">
         {variants.length > 0 && <button className="ghost-button" type="button" onClick={onReset}><RotateCcw aria-hidden="true" />Vaciar dibujos</button>}
@@ -65,19 +59,24 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
       </div>
     </header>
 
+    <LoQueSaleHoy model={model} drawings={parameters} />
+
+    <h3 className="drawing-workshop-title">Dibujos del taller</h3>
     <ol className="drawing-steps" aria-label="Cómo se usa">
       <li><strong>Añade un dibujo</strong> y ponle su imagen (archivo o pegar).</li>
-      <li><strong>Di cuándo sale</strong> con «Solo cuando…» (por ejemplo, Accionamiento MOTOR). Sin nada, sale siempre.</li>
-      <li><strong>Pulsa «Guardar para todos»</strong> arriba: hasta entonces solo lo ves tú.</li>
+      <li><strong>Elige cómo se usa</strong>: «Solo a mano» sale si se elige en la tarjeta del toldo; «Automático cuando…» sale solo cuando el toldo cumple sus condiciones (sin condiciones, siempre) y también se puede elegir a mano.</li>
+      <li><strong>Pulsa «Guardar»</strong> en la barra del modelo: hasta entonces solo lo ves tú.</li>
     </ol>
 
     {variants.length === 0 ? <button className="drawing-empty" type="button" onClick={add}>
       <ImagePlus aria-hidden="true" />
-      <strong>Añadir el primer dibujo de {model}</strong>
-      <span>Empieza por el dibujo general del modelo; después, si hace falta, otros para casos concretos.</span>
+      <strong>Añadir el primer dibujo de {controlLabel(model)}</strong>
+      <span>Un dibujo propio del taller para elegirlo en la tarjeta o para que salga solo en algunos toldos.</span>
     </button> : <div className="drawing-rule-list">
       {variants.map((variant, index) => <DrawingRuleCard
         key={variant.id}
+        model={model}
+        conditionOptions={conditionOptions}
         variant={variant}
         index={index}
         canMoveDown={index < variants.length - 1}
@@ -95,7 +94,16 @@ export function DrawingParametersPanel({ model, parameters, onChange, onReset }:
   </section>;
 }
 
-function DrawingRuleCard({ variant, index, canMoveDown, onChange, onDelete, onMove }: {
+function usageHint(variant: DrawingVariant) {
+  if (variant.usage === 'manual') return 'Sale solo si se elige en la tarjeta del toldo («Dibujo de confección»).';
+  return variant.conditions.length
+    ? 'Sale solo cuando el toldo cumple todo lo de abajo. También se puede elegir a mano en la tarjeta.'
+    : 'Sin condiciones: sale siempre en este modelo. También se puede elegir a mano en la tarjeta.';
+}
+
+function DrawingRuleCard({ model, conditionOptions, variant, index, canMoveDown, onChange, onDelete, onMove }: {
+  model: string;
+  conditionOptions: ConditionOption[];
   variant: DrawingVariant;
   index: number;
   canMoveDown: boolean;
@@ -151,13 +159,15 @@ function DrawingRuleCard({ variant, index, canMoveDown, onChange, onDelete, onMo
     }
   }
 
+  const setConditions = (conditions: DrawingCondition[]) => onChange({ conditions });
+
   return <article className={`drawing-rule ${variant.enabled ? '' : 'is-disabled'}`} ref={pasteArea} tabIndex={0} onPaste={(event) => {
     const file = Array.from(event.clipboardData.items).find((item) => item.type.startsWith('image/'))?.getAsFile();
     if (file) { event.preventDefault(); void importImage(file); }
   }}>
     <div className="drawing-rule-rank">
       <button type="button" aria-label="Subir en el orden" disabled={index === 0} onClick={() => onMove(-1)}><ArrowUp aria-hidden="true" /></button>
-      <span>{String(index + 1).padStart(2, '0')}</span><small title="Si dos dibujos encajan igual, sale el primero">orden</small>
+      <span>{String(index + 1).padStart(2, '0')}</span><small title="Si dos dibujos automáticos encajan igual, sale el primero">orden</small>
       <button type="button" aria-label="Bajar en el orden" disabled={!canMoveDown} onClick={() => onMove(1)}><ArrowDown aria-hidden="true" /></button>
     </div>
     <div className="drawing-rule-image">
@@ -171,25 +181,63 @@ function DrawingRuleCard({ variant, index, canMoveDown, onChange, onDelete, onMo
     <div className="drawing-rule-content">
       <div className="drawing-rule-title">
         <label>Nombre del dibujo<input value={variant.name} onChange={(event) => onChange({ name: event.target.value })} /></label>
-        <label className="drawing-enabled" title="Si lo desactivas, se guarda pero no sale en ningún PDF"><input type="checkbox" checked={variant.enabled} onChange={(event) => onChange({ enabled: event.target.checked })} />Se usa</label>
+        <label className="drawing-enabled" title="Si lo desactivas, se guarda pero no sale en ningún PDF ni en la tarjeta"><input type="checkbox" checked={variant.enabled} onChange={(event) => onChange({ enabled: event.target.checked })} />Se usa</label>
         <button className="icon-button danger" type="button" aria-label={`Eliminar ${variant.name}`} onClick={onDelete}><Trash2 aria-hidden="true" /></button>
       </div>
-      <div className="drawing-condition-heading"><div><strong>¿Cuándo sale?</strong><span>{variant.conditions.length ? 'Solo cuando el toldo cumple todo lo de abajo.' : 'Siempre: es el dibujo general del modelo.'}</span></div>
-        <button className="ghost-button" type="button" onClick={() => onChange({ conditions: [...variant.conditions, { field: 'device', value: 'MOTOR' }] })}><Plus aria-hidden="true" />Solo cuando…</button>
+      <div className="drawing-usage">
+        <SegmentedField label="Cómo se usa" value={USES[variant.usage]} options={[USES.manual, USES.auto]} onChange={(value) => onChange({ usage: value === USES.manual ? 'manual' : 'auto' })} />
+        <p className="drawing-usage-hint">{usageHint(variant)}</p>
       </div>
-      {variant.conditions.length > 0 && <div className="drawing-conditions">{variant.conditions.map((condition, conditionIndex) => {
-        const meta = fields.find((field) => field.value === condition.field) || fields[0];
-        return <div className="drawing-condition" key={`${conditionIndex}-${condition.field}`}>
-          <select aria-label="Campo de la condición" value={condition.field} onChange={(event) => onChange({ conditions: variant.conditions.map((item, index) => index === conditionIndex ? { ...item, field: event.target.value as DrawingConditionField } : item) })}>
-            {fields.map((field) => <option value={field.value} key={field.value}>{field.label}</option>)}
-          </select>
-          <span>=</span>
-          <input aria-label={`Valor de ${meta.label}`} value={condition.value} placeholder={meta.hint} onChange={(event) => onChange({ conditions: variant.conditions.map((item, index) => index === conditionIndex ? { ...item, value: event.target.value } : item) })} />
-          <button className="icon-button" type="button" aria-label="Quitar condición" onClick={() => onChange({ conditions: variant.conditions.filter((_, index) => index !== conditionIndex) })}><Trash2 aria-hidden="true" /></button>
-        </div>;
-      })}</div>}
+      {variant.usage === 'auto' && <>
+        <div className="drawing-condition-heading">
+          <div><strong>Condiciones</strong><span>{variant.conditions.length ? 'Tiene que cumplirlas todas.' : 'Ninguna: sale siempre.'}</span></div>
+          <button className="ghost-button" type="button" disabled={!conditionOptions.length}
+            onClick={() => setConditions([...variant.conditions, { field: conditionOptions[0].field, value: conditionOptions[0].values[0] }])}>
+            <Plus aria-hidden="true" />Añadir condición
+          </button>
+        </div>
+        {variant.conditions.length > 0 && <div className="drawing-conditions">{variant.conditions.map((condition, conditionIndex) => <ConditionRow
+          key={`${conditionIndex}-${condition.field}`}
+          model={model}
+          options={conditionOptions}
+          condition={condition}
+          onChange={(next) => setConditions(variant.conditions.map((item, i) => i === conditionIndex ? next : item))}
+          onRemove={() => setConditions(variant.conditions.filter((_, i) => i !== conditionIndex))}
+        />)}</div>}
+      </>}
       {busy && <small role="status">Preparando imagen…</small>}
       {error && <small className="drawing-error" role="alert">{error}</small>}
     </div>
   </article>;
+}
+
+// Una condición: campo y valor en desplegables con lo que tiene de verdad este modelo. Lo guardado
+// antes que no case sale con «(revisar)» y un aviso; se sigue usando igual hasta que se cambie.
+function ConditionRow({ model, options, condition, onChange, onRemove }: {
+  model: string;
+  options: ConditionOption[];
+  condition: DrawingCondition;
+  onChange: (condition: DrawingCondition) => void;
+  onRemove: () => void;
+}) {
+  const option = options.find((item) => item.field === condition.field);
+  const review = drawingConditionNeedsReview(model, condition);
+  const shown = drawingConditionShownValue(model, condition);
+  const label = drawingConditionLabels[condition.field as keyof typeof drawingConditionLabels] ?? condition.field;
+  return <div className={`drawing-condition${review ? ' needs-review' : ''}`}>
+    <select aria-label="Campo de la condición" value={condition.field} onChange={(event) => {
+      const field = event.target.value as DrawingConditionField;
+      onChange({ field, value: options.find((item) => item.field === field)?.values[0] ?? '' });
+    }}>
+      {options.map((item) => <option key={item.field} value={item.field}>{item.label}</option>)}
+      {!option && <option value={condition.field}>{label} (revisar)</option>}
+    </select>
+    <span>=</span>
+    <select aria-label={`Valor de ${label}`} value={shown} onChange={(event) => onChange({ field: condition.field, value: event.target.value })}>
+      {(option?.values ?? []).map((value) => <option key={value} value={value}>{controlLabel(drawingConditionValueLabel(value))}</option>)}
+      {review && <option value={shown}>{shown || 'Sin valor'} (revisar)</option>}
+    </select>
+    <button className="icon-button" type="button" aria-label="Quitar condición" onClick={onRemove}><Trash2 aria-hidden="true" /></button>
+    {review && <small className="drawing-condition-review" role="note"><AlertTriangle aria-hidden="true" />Revisar: «{shown || 'sin valor'}» no es un valor de {label} en este modelo. Elige uno de la lista.</small>}
+  </div>;
 }

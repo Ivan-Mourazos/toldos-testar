@@ -584,3 +584,28 @@
 .parametros-modelo-barra small { color: var(--text-muted); font-size: 0.75rem; }
 .parametros-modelo-barra small.parametros-modelo-error { color: var(--danger); font-weight: 600; }
 .parametros-modelo-confirmar { align-self: center; color: var(--text); font-size: 0.8125rem; font-weight: 600; }
+
+/* ── Dibujos (Iván, 02/10/2026) ──
+   «Lo que sale hoy»: una ficha por variante con la miniatura del dibujo de la web y quién lo
+   sustituye. Debajo, los dibujos del taller con «Cómo se usa» y condiciones de valores reales. */
+.drawing-today { border-bottom: 1px solid var(--border); display: grid; gap: 0.75rem; padding: 1.25rem 1.5rem; }
+.drawing-today-heading h3,
+.drawing-workshop-title { color: var(--text); font-size: 1rem; font-weight: 600; margin: 0; }
+.drawing-workshop-title { padding: 1.25rem 1.5rem 0; }
+.drawing-today-heading p { color: var(--text-muted); font-size: 0.8125rem; margin: 0.25rem 0 0; }
+.drawing-today-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); list-style: none; margin: 0; padding: 0; }
+.drawing-today-item { border-radius: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; padding: 0.625rem; }
+.drawing-today-item > strong { color: var(--text); font-size: 0.875rem; font-weight: 600; margin-top: 0.25rem; }
+.drawing-today-item > small { color: var(--text-muted); font-size: 0.75rem; }
+/* El papel del PDF es blanco también en oscuro. */
+.drawing-today-thumb,
+.drawing-today-none { aspect-ratio: 258 / 385; background: #fff; border: 1px solid var(--border); border-radius: 0.5rem; width: 100%; }
+.drawing-today-thumb.is-loading,
+.drawing-today-thumb.is-error,
+.drawing-today-none { align-items: center; color: var(--text-muted); display: flex; font-size: 0.75rem; justify-content: center; padding: 0.75rem; text-align: center; }
+.drawing-today-none { background: var(--surface-muted); }
+.drawing-usage { display: grid; gap: 0.25rem; margin-top: 1rem; }
+.drawing-usage-hint { color: var(--text-muted); font-size: 0.8125rem; margin: 0; }
+.drawing-condition.needs-review select { border-color: var(--danger); }
+.drawing-condition-review { align-items: center; color: var(--danger); display: flex; font-size: 0.75rem; font-weight: 600; gap: 0.375rem; grid-column: 1 / -1; }
+.drawing-condition-review svg { flex: none; height: 14px; width: 14px; }

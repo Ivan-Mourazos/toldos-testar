@@ -402,6 +402,8 @@ export type DrawingCondition = { field: DrawingConditionField; value: string };
 export type DrawingVariant = {
   id: string;
   name: string;
+  /** Los dibujos antiguos son automáticos; los nuevos se eligen a mano por defecto. */
+  usage: 'manual' | 'auto';
   enabled: boolean;
   image: string | null;
   conditions: DrawingCondition[];
