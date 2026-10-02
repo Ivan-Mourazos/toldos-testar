@@ -14,12 +14,12 @@
   margin-bottom: 0.5rem;
   padding: 0.625rem 1rem;
   position: sticky;
-  top: calc(var(--topnav-height) + 40px);
+  top: calc(var(--param-pila) + 40px);
   z-index: 30;
 }
 .clientes-remolques-barra.is-pendiente { border-left-color: var(--color-brand-400); }
 /* «Ir a» debe dejar el título debajo de la barra, incluso cuando sus acciones ocupan dos filas. */
-.clientes-remolques-ficha .parameter-band { scroll-margin-top: calc(var(--topnav-height) + 160px); }
+.clientes-remolques-ficha .parameter-band { scroll-margin-top: calc(var(--param-pila) + 160px); }
 .clientes-remolques-barra-estado { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .clientes-remolques-barra-estado > strong { color: var(--text); font-size: 0.875rem; font-weight: 600; }
 .clientes-remolques-barra:not(.is-pendiente) .clientes-remolques-barra-estado > strong { color: var(--text-muted); font-weight: 500; }

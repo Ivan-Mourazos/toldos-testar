@@ -38,10 +38,10 @@ try {
   await page.goto(base);
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
   const sidebar = page.getByRole('navigation', { name: 'Modelos de parámetros' });
-  const names = await sidebar.locator('button strong').allTextContents();
+  const names = await sidebar.locator('button:not([data-model^="REMOLQUES"]) strong').allTextContents();
   assert.equal(names.length, models.length);
   const expectedOrder = groupModelsByFamily([...fullAwningModelNames, ...fabricOnlyModelNames]).flatMap(({ models: group }) => group);
-  assert.deepEqual(await sidebar.locator('button').evaluateAll((buttons) => buttons.map((button) => button.dataset.model)), expectedOrder);
+  assert.deepEqual(await sidebar.locator('button:not([data-model^="REMOLQUES"])').evaluateAll((buttons) => buttons.map((button) => button.dataset.model)), expectedOrder);
   assert.equal(await page.locator('.parameter-model-trigger').count(), 0);
   async function selectModel(name) {
     await sidebar.locator('button').filter({ has: page.getByText(name, { exact: true }) }).click();

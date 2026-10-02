@@ -22,25 +22,53 @@
    Va sin capa (ver estilos.css): gana a los estilos de siempre sin subir especificidad. Los
    tamaños de columna (190 px de lista, 190 px de título de sección) se conservan de la web. */
 
-/* ── Lista de modelos ── */
+/* ── Pila fija de Parámetros ──
+   Todo lo que se queda fijo cuelga de la cabecera y, si la hay, de la barra «Cambios sin
+   guardar» (58 px de alto real). `--param-pila` es hasta dónde llega esa pila: la lista de
+   modelos, el índice «Ir a» y la barra de la ficha de cliente empiezan ahí, así que nunca
+   se tapan entre sí (Iván, 02/10/2026). */
+.workspace-content {
+  --param-barra: 0px;
+  --param-pila: calc(var(--topnav-height) + var(--param-barra));
+}
+.workspace-content:has(> .parameters-save-bar) { --param-barra: 58px; }
+.parameter-band, .drawing-parameters { scroll-margin-top: calc(var(--param-pila) + 56px); }
+
+/* ── Lista de modelos ──
+   Fija bajo la pila, con su propio desplazamiento si no cabe. El alto deja 52 px libres abajo
+   (los 44 de margen de la página y 8 de aire): si la lista llegara más abajo, al final de la
+   página el navegador la empujaría hacia arriba, debajo de la cabecera. */
+.parameter-layout > .parameter-model-sidebar,
+.workspace-content:has(> .parameters-save-bar) .parameter-layout > .parameter-model-sidebar {
+  max-height: calc(100vh - var(--param-pila) - 12px - 52px);
+  top: calc(var(--param-pila) + 12px);
+}
 .parameter-model-sidebar {
   padding: 0.75rem 0.5rem;
+  scroll-padding-block: 2.5rem;
   scrollbar-color: var(--border-strong) transparent;
 }
 .parameter-model-sidebar-title {
   color: var(--text);
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.025em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   padding: 0 0.625rem 0.5rem;
   text-transform: uppercase;
 }
-.parameter-model-family + .parameter-model-family { margin-top: 0.75rem; }
+/* Cada grupo se separa del anterior con una línea y su título va en un rótulo claro, más
+   pequeño que los modelos pero con contraste de texto. */
+.parameter-model-family + .parameter-model-family {
+  border-top: 1px solid var(--border-strong);
+  margin-top: 0.625rem;
+  padding-top: 0.625rem;
+}
 .parameter-model-family h3 {
   color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.025em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1rem;
   margin: 0 0 0.25rem;
   padding: 0 0.625rem;
   text-transform: uppercase;
@@ -50,10 +78,10 @@
   border-radius: 0.5rem;
   color: var(--text);
   gap: 0.5rem;
-  margin: 1px 0;
+  margin: 2px 0;
   min-height: 0;
   overflow: hidden;
-  padding: 0.375rem 0.625rem;
+  padding: 0.4375rem 0.625rem;
   position: relative;
 }
 .parameter-model-family button:not(.is-active) {
@@ -64,26 +92,45 @@
 .parameter-model-family button:not(.is-active):hover,
 .parameter-model-family button:not(.is-active):focus-visible {
   background: var(--surface-2);
-  border-color: transparent;
+  border-color: var(--border);
 }
+/* Línea fina entre modelos, con sangría para que no toque los bordes de la fila. */
+.parameter-model-family button:not(:last-child)::after {
+  background: var(--border);
+  bottom: -2px;
+  content: "";
+  height: 1px;
+  left: 0.625rem;
+  position: absolute;
+  right: 0.625rem;
+}
+.parameter-model-family button.is-active::after,
+.parameter-model-family button:hover::after,
+.parameter-model-family button:focus-visible::after,
+.parameter-model-family button:has(+ button:is(:hover, :focus-visible, .is-active))::after,
+.parameter-model-family button.is-active + button::after { content: none; }
 /* El foco de teclado lleva el anillo dorado general (piezas.css), también en la fila del modelo
    abierto: al pulsar Intro el foco se queda en ella y, sin anillo, quien usa el teclado
    no vería dónde está. */
+.parameter-model-family button > span { gap: 2px; }
 .parameter-model-family button strong {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  line-height: 1rem;
+  line-height: 1.125rem;
 }
 .parameter-model-family button small {
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1rem;
 }
-/* El modelo abierto: la fila hundida de CoordinaOT con su barra y su tinte de marca. */
+/* El modelo abierto: la fila hundida de CoordinaOT con su barra y su tinte dorado. */
 .parameter-model-family button.is-active {
-  background: color-mix(in srgb, var(--color-brand-500) 10%, var(--glass-chip));
+  background: var(--tgm-yellow-soft);
+  border-color: var(--control-active-border);
   transform: none;
 }
+.parameter-model-family button.is-active strong { font-weight: 700; }
+.parameter-model-family button.is-active small { color: var(--text); }
 .parameter-model-family button.is-active::before {
   background: var(--color-brand-500);
   bottom: 0;
@@ -103,7 +150,11 @@
    Las fichas de filtro de CoordinaOT (FilterBar.tsx 131: `chip-3d rounded-lg px-2.5 py-1
    text-xs font-semibold`); el aspecto de tecla lo da nuevo-pedido.css. */
 .parameter-section-index { gap: 0.375rem; }
-.parameter-layout-main > .parameter-section-index { padding-block: 4px; }
+.parameter-layout-main > .parameter-section-index {
+  box-shadow: 0 8px 8px -8px var(--glass-shadow);
+  padding-block: 4px;
+  z-index: 12;
+}
 .parameter-section-index > span {
   color: var(--text-muted);
   font-size: 10px;
@@ -512,13 +563,10 @@
 .clientes-remolques-lista > button.is-active small { color: inherit; }
 /* El marco no debe convertirse en el contenedor de desplazamiento de la lista fija. */
 .clientes-remolques-hoja .parameters-page { overflow: visible; }
-.clientes-remolques-lista {
-  top: calc(var(--topnav-height) + 40px);
-  max-height: calc(100vh - var(--topnav-height) - 56px);
-}
+.clientes-remolques-lista,
 .workspace-content:has(> .parameters-save-bar) .clientes-remolques-lista {
-  top: calc(var(--topnav-height) + 96px);
-  max-height: calc(100vh - var(--topnav-height) - 112px);
+  max-height: calc(100vh - var(--param-pila) - 40px - 52px);
+  top: calc(var(--param-pila) + 40px);
 }
 .clientes-remolques-ayuda { color: var(--text-muted); display: block; font-size: 12px; margin-top: 4px; }
 .clientes-remolques-ficha { display: flex; flex-direction: column; gap: 4px; min-width: 0; }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, ElectraMatrixSupport, ElectraParameters, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
 import { NumberField } from '../components/NumberField';
@@ -381,8 +381,21 @@ function ParameterModelSelector({ selectedModel, onSelectModel, includeRemolques
   onSelectModel: (model: SelectedModel | 'REMOLQUES' | 'REMOLQUES-CLIENTES') => void;
   includeRemolques: boolean;
 }) {
+  const navRef = useRef<HTMLElement>(null);
+  // El modelo elegido tiene que verse en la lista, aunque quede más abajo de lo que cabe.
+  // Se mueve solo el desplazamiento de la lista, no el de la página.
+  useEffect(() => {
+    const nav = navRef.current;
+    const active = nav?.querySelector<HTMLElement>('button.is-active');
+    if (!nav || !active) return;
+    const navBox = nav.getBoundingClientRect();
+    const box = active.getBoundingClientRect();
+    const margin = 40;
+    if (box.top < navBox.top + margin) nav.scrollTop -= navBox.top + margin - box.top;
+    else if (box.bottom > navBox.bottom - margin) nav.scrollTop += box.bottom - (navBox.bottom - margin);
+  }, [selectedModel]);
   return (
-    <nav className="parameter-model-sidebar panel-3d panel-vidrio" aria-label="Modelos de parámetros">
+    <nav ref={navRef} className="parameter-model-sidebar panel-3d panel-vidrio" aria-label="Modelos de parámetros">
       <strong className="parameter-model-sidebar-title">Modelos</strong>
       {includeRemolques && <section className="parameter-model-family">
         <h3>Remolques</h3>
