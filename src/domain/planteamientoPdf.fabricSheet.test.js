@@ -64,6 +64,8 @@ describe('buildFabricDiagramBoxPdf', () => {
       const page = await doc.getPage(1);
       expect(page.view).toEqual([0, 0, FABRIC_SHEET_DIAGRAM_BOX.width, FABRIC_SHEET_DIAGRAM_BOX.height]);
       expect((await page.getOperatorList()).fnArray.length).toBeGreaterThan(20);
+      const text = (await page.getTextContent()).items.map((item) => item.str).join(' ');
+      expect(text).toMatch(/FRENTE|BASTILLA|VARILLA/);
     } finally { await task.destroy(); }
   });
 });

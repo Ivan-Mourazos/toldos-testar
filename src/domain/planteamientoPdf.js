@@ -1,6 +1,7 @@
 import { normalizeFabricImage } from './fabricImage.js';
 import { curtainFabricAdjustmentCm, curtainWindowDrawingHeight, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
 import PDFDocument from 'pdfkit';
+import pdfLib from 'pdf-lib';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
@@ -11,6 +12,8 @@ import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.j
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
+
+const { PDFDocument: PDFLibDocument } = pdfLib;
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
 
@@ -904,17 +907,26 @@ export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVI
 // página de telas impresa desde HTML (fase 1). Mismo código de dibujo que la página de pdfkit.
 export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation }) {
   const { width, height } = FABRIC_SHEET_DIAGRAM_BOX;
-  return new Promise((resolve, reject) => {
+  // pdfkit añade una página si un texto cae cerca del borde inferior; se dibuja en una página más
+  // alta y luego se recorta a la caja exacta con pdf-lib.
+  const tallHeight = height + 200;
+  const tall = await new Promise((resolve, reject) => {
     const chunks = [];
     const doc = new PDFDocument({ autoFirstPage: false, margin: 0, info: { Title: 'Dibujo de confección', Creator: 'toldos-testar' } });
     registerFonts(doc);
     doc.on('data', (chunk) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
-    doc.addPage({ size: [width, height], margin: 0 });
+    doc.addPage({ size: [width, tallHeight], margin: 0 });
     drawFabricDiagram(doc, 0, 0, width, height, diagram, awning, calculation);
     doc.end();
   });
+  const source = await PDFLibDocument.load(tall);
+  const out = await PDFLibDocument.create();
+  const [embeddedPage] = await out.embedPages([source.getPage(0)], [{ left: 0, right: width, top: tallHeight, bottom: tallHeight - height }]);
+  const page = out.addPage([width, height]);
+  page.drawPage(embeddedPage, { x: 0, y: 0, width, height });
+  return Buffer.from(await out.save());
 }
 
 function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
