@@ -152,7 +152,10 @@ export function webDrawingVariants(model) {
 
 /** El toldo de ejemplo de una variante (400 × 250 cm), para pasarlo por normalizeOrder y dibujarlo. */
 export function exampleAwning(variant) {
-  return { id: 'ejemplo', of: '0200001', units: 1, width: 400, projection: 250, ...variant.awning };
+  const ventana = variant.awning.curtainHasWindow
+    ? { curtainWindowExit: 20, curtainWindowCorner: 60, curtainWindowFloorHeight: 90, curtainWindowHeight: 120 }
+    : {};
+  return { id: 'ejemplo', of: '0200001', units: 1, width: 400, projection: 250, ...ventana, ...variant.awning };
 }
 
 /**

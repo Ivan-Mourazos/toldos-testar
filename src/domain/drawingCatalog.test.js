@@ -54,6 +54,19 @@ describe('variantes del dibujo de la web', () => {
 });
 
 describe('qué dibujo del taller sustituye a cada variante', () => {
+  it('los ejemplos con ventana tienen todas sus medidas', () => {
+    for (const model of modelNames) {
+      for (const variant of webDrawingVariants(model).filter(v => v.awning.curtainHasWindow)) {
+        const awning = exampleAwning(variant);
+        for (const key of ['curtainWindowExit', 'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight']) {
+          expect(awning[key], `${model} · ${variant.id} · ${key}`).toBeGreaterThan(0);
+        }
+      }
+    }
+    const variant = webDrawingVariants('CORTINA').find(v => v.awning.curtainHasWindow);
+    expect(exampleAwning({ ...variant, awning: { ...variant.awning, curtainWindowHeight: 140 } }).curtainWindowHeight).toBe(140);
+  });
+
   const drawings = { byModel: { CORTINA: [
     { id: 'velcro-motor', name: 'Velcro con motor', enabled: true, image, conditions: [{ field: 'curtainFinish', value: 'VELCRO' }, { field: 'device', value: 'MOTOR' }] },
     { id: 'velcro', name: 'Velcro', enabled: true, image, conditions: [{ field: 'curtainFinish', value: 'VELCRO' }] },

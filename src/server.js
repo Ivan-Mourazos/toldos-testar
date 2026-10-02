@@ -18,7 +18,8 @@ import { attachFabricProposals } from './domain/autofillFabricHint.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
-import { formOptions } from './domain/modelBehavior.js';
+import { formOptions, modelNames } from './domain/modelBehavior.js';
+import { normalizeModelName } from './domain/modelNames.js';
 import { createRuleParametersStore } from './ruleParametersStore.js';
 import { createRemolquesParametersStore } from './remolquesParametersStore.js';
 import { createRemolquesClientesStore } from './remolquesClientesStore.js';
@@ -414,9 +415,9 @@ app.get('/api/rule-parameters/history', async (req, res, next) => {
 // toldo de ejemplo, hecho por el mismo código que la hoja de tela del PDF.
 app.get('/api/rule-parameters/drawing-preview', async (req, res, next) => {
   try {
-    const model = typeof req.query.model === 'string' ? req.query.model : '';
+    const model = normalizeModelName(typeof req.query.model === 'string' ? req.query.model : '');
     const id = typeof req.query.variant === 'string' ? req.query.variant : '';
-    const variant = webDrawingVariants(model).find((item) => item.id === id && item.webDrawing);
+    const variant = modelNames.includes(model) && webDrawingVariants(model).find((item) => item.id === id && item.webDrawing);
     if (!variant) {
       res.status(404).json({ error: 'Ese dibujo no existe.' });
       return;
