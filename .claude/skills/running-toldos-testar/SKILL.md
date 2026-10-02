@@ -36,6 +36,9 @@ it). The isolated instance never talks to the real CoordinaOT.
 - Las fichas de cliente de remolques son `$D/remolques-clientes.json` (se crean solas la primera vez;
   borrarlas las vuelve a crear). La e2e de las fichas usa su propia aislada:
   `ISOLATED_DIR="$PWD/tmp/clientes" PORT=4313 FAKE_COORDINA_PORT=4323`.
+- La e2e del buscador de remolques usa su propia aislada, porque vacía la carpeta interna de remolques
+  y siembra sus pedidos: `ISOLATED_DIR="$PWD/tmp/buscador" PORT=4314 FAKE_COORDINA_PORT=4324`, y
+  `TOLDOS_ISOLATED_URL=http://127.0.0.1:4314 node scripts/test-remolques-buscador-e2e.mjs`.
 
 The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflow.mjs`,
 `test-parameter-consultation.mjs`) already start and stop their own fake CoordinaOT on a free port

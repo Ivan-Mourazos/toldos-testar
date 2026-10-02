@@ -89,6 +89,18 @@ historial, que dice solo qué cambió («Medida 220 × 130 de lona nueva», «Re
 quedan al pasar a otra (la lista los marca). Crear y quitar una ficha se guardan al momento. Los
 parámetros generales de remolques y los de toldos se siguen guardando todos a la vez, con quién y motivo.
 
+### Buscador de remolques
+
+En Pedidos, junto a «Generados», «Buscar remolques» abre un buscador sobre todos los pedidos de
+remolques guardados en la carpeta interna (todos los años, también los pasados de la web vieja; los
+que solo existen como PDF en las carpetas compartidas no entran). Filtra cada elemento por texto libre
+(pedido, cliente, OF u observaciones), cliente (por nombre o el de su ficha), tipo, perfil, recogida
+(delante, detrás o cualquier lado), medidas con margen (± 5 cm si no se pone otro), radios, aguas,
+chaflán, ventana, rotulación, bastilla de enfundar, detrás distinto, material, estado y fechas. Sale
+una fila por elemento, del pedido más nuevo al más antiguo (500 como mucho, con aviso); al pulsarla se
+abre el pedido con ese elemento elegido, y desde ahí «Corregir» o «Reutilizar datos» como siempre. Por
+debajo es `POST /api/remolques/buscar` con los filtros en JSON.
+
 ## Configuración de carpetas
 
 Las cuatro rutas se administran desde la pestaña `Configuración` y se guardan en el servidor para todos los usuarios:
