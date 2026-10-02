@@ -14,7 +14,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { BASE_URL, buscarPedido, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { DEFAULT_PARAMS } from '../src/remolques/calc/params.ts';
 import { CLAVES_OLLAOS, editor, elegir, filaOllaos } from './lib/remolques-e2e.mjs';
 
@@ -22,7 +22,7 @@ const FICHERO = path.resolve('tmp/clientes/remolques-clientes.json');
 const SALIDA = 'tmp/ui-audit/remolques-clientes-por-ficha';
 const PEDIDO_RPS = 'AR.26.04286'; // pedido real de remolques (3 líneas de lona), solo lectura
 fs.mkdirSync(SALIDA, { recursive: true });
-assert.equal(new URL(BASE_URL).port, '4313', 'esta prueba va en su aislada de 4313: borra y cambia las fichas');
+assert.ok(['4312', '4313'].includes(new URL(BASE_URL).port), 'esta prueba va en su aislada de 4312 o 4313: borra y cambia las fichas');
 
 const enviar = (method, datos) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos ?? {}) });
 async function api(ruta, init) {
@@ -58,6 +58,11 @@ async function capturas(page, nombre) {
 }
 
 // ── 1. Paso de lo que hay: sin fichero, la primera lectura crea las fichas de partida ──
+const health = (await api('/api/health')).datos;
+assert.equal(health.simulationMode, true);
+assert.equal(health.fileWritesEnabled, false);
+const settings = (await api('/api/workflow/settings')).datos.settings;
+assert.equal(path.resolve(settings.reviewDirectory), path.resolve('tmp/clientes/review'), 'la instancia debe usar tmp/clientes');
 for (const f of [FICHERO, FICHERO.replace(/\.json$/, '-history.jsonl')]) fs.rmSync(f, { force: true });
 const inicio = (await api('/api/remolques/clientes')).datos;
 assert.deepEqual(inicio.fichas.map((f) => f.nombre), ['HIJOS DE PEDRO LOPEZ', 'AYALA', 'GENERAL WOLDER']);
@@ -201,13 +206,13 @@ try {
 
     const obtener = async () => {
       await page.getByRole('button', { name: 'Nuevo pedido', exact: true }).click();
-      await page.getByRole('button', { name: /^Remolques/ }).click();
-      if (await page.locator('.rem-pestana').count()) {
+      // Cada búsqueda vuelve a cargar la ficha: no conservar los elementos de la anterior.
+      if (await page.locator('.rem-pestana').first().isVisible()) {
         await page.getByRole('button', { name: 'Limpiar', exact: true }).click();
         await dialogo().getByRole('button', { name: 'Limpiar formulario' }).click();
+        await editor(page).waitFor({ state: 'hidden' });
       }
-      await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_RPS);
-      await page.locator('.rem-cabecera').getByRole('button', { name: 'Obtener datos del pedido', exact: true }).click();
+      await buscarPedido(page, PEDIDO_RPS);
     };
     await obtener();
     await editor(page).waitFor();
