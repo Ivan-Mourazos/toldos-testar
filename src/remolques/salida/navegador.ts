@@ -43,6 +43,8 @@ export interface TrabajoPdf {
   preparar(): string;
   /** Falso si quien pidió el PDF ya no espera (cerró la conexión): entonces el trabajo se salta. */
   sigueEsperando?(): boolean;
+  /** Qué página imprimir; sin ella, la `urlHoja` del servicio (la hoja de remolques). */
+  url?(id: string): string;
 }
 
 export interface ServicioPdf {
@@ -255,7 +257,7 @@ export function crearServicioPdf({
       throw new ErrorSalidaPdf("Quien pidió la hoja de taller ya no espera: no se hace el PDF.");
     }
     const nav = await abrirNavegador();
-    const url = urlHoja(trabajo.preparar());
+    const url = (trabajo.url ?? urlHoja)(trabajo.preparar());
     let pagina: PaginaHojaPdf;
     try {
       pagina = await conLimite(nav.abrirPagina(new URL(url).origin), tiempoCierreMs, "Chromium no abrió la página a tiempo.",

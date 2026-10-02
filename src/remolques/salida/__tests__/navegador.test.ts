@@ -51,6 +51,19 @@ describe("servicio de PDF con Chromium", () => {
     expect(registro).toEqual([`ir ${urlHoja("abc")}`, "pdf", "cerrar"]);
   });
 
+  it("un trabajo puede decir qué página imprimir; sin ella, la del servicio", async () => {
+    const registro: string[] = [];
+    const { lanzar } = navegadorFalso(() => paginaFalsa(registro));
+    const servicio = crearServicioPdf({ urlHoja, lanzar });
+    await servicio.generar({ preparar: () => "uno", url: (id) => `http://127.0.0.1:4310/hoja-telas.html?id=${id}` });
+    await servicio.generar("dos");
+    expect(registro.filter((r) => r.startsWith("ir "))).toEqual([
+      "ir http://127.0.0.1:4310/hoja-telas.html?id=uno",
+      `ir ${urlHoja("dos")}`,
+    ]);
+    await servicio.cerrar();
+  });
+
   it("abre Chromium una vez y lo reutiliza; si se cae, lo vuelve a abrir", async () => {
     const registro: string[] = [];
     const { estado, lanzar } = navegadorFalso(() => paginaFalsa(registro));
