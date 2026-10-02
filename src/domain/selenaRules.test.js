@@ -250,3 +250,17 @@ describe('SELENA · ventana (Iván, 22/09/2026)', () => {
     expect(getFabricPatternDiagram(selena(ventana))).toBe('CORTINA-VENTANA');
   });
 });
+
+// Iván, 02/10/2026: la Selena a motor lleva los mismos motores que la Cortina (tabla por tamaño, Q-CO04) y su mando.
+describe('SELENA · motor como la Cortina', () => {
+  const motorDe = (overrides) => calculate({ device: 'MOTOR', crankHeight: null, ...overrides }).ofs[0];
+  test('15/17 por defecto y 35/17 con salida de más de 350, con un Situo 1 por motor', () => {
+    const pequena = motorDe({});
+    expect(pequena.calculation.motorPower).toBe('15/17');
+    expect(pequena.materials.map((line) => line.code)).toEqual(expect.arrayContaining(['SUNILUSIO15//17', 'SITUOIO1PURE']));
+    expect(motorDe({ projection: 360 }).calculation.motorPower).toBe('35/17');
+  });
+  test('con el candado se elige otro', () => {
+    expect(motorDe({ projection: 360, reglasModificadas: true, motorPower: '15/17' }).calculation.motorPower).toBe('15/17');
+  });
+});

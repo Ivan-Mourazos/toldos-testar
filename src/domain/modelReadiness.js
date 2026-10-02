@@ -10,7 +10,6 @@
 // Iván, 02/10/2026: Iris y HERA ya reservan motor y mando (Q-I05 y Q-H07), y sale el
 // aviso del motor del Ágata: el taller dijo «siempre Sunea» el 30/09 (Q-AG02) y ya se hace.
 const pending = {
-  SELENA: ['A motor nunca se ha fabricado: confirmar el kit con el taller.'],
   ANTICA: [
     'Fabricación propia: la reserva aún no lleva escuadras, kits, tornillería ni cincado.',
     'Quedan 28 preguntas para el encargado de taller.'

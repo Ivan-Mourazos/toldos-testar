@@ -8,6 +8,7 @@
 - **En los libros está como CORTINA** (y uno como MAXISCREEM, por el soporte que lleva): buscar "SELENA" en los libros no encuentra nada. Se localizan por el código de pedido de RPS. 17 OF con consumo real desde 2025 y 20 toldos en 16 libros.
 - Iván (22/09/2026): Selena comparte muchas piezas con Cortina, y a veces se usa el soporte Maxiscreem; por eso algún libro está hecho en esa hoja.
 - 25/09/2026: la Selena se ofrece también a motor (Iván: «en teoría, sí»), con el kit de la Cortina, que comparte tubo y piezas, y un aviso de que nunca se ha fabricado así. Pendiente solo la muestra con el taller.
+- 02/10/2026: Iván: «igual a la Cortina» (los verticales comparten motores). A motor lleva la misma tabla por tamaño que la Cortina (15/17; 35/17 con salida de más de 350, o de más de 300 con PVC y ventana; 55/17 con frente de más de 800) y un Situo 1 IO Pure por motor; con el candado se elige otro. Deja de salir como pendiente.
 
 ## 2. Reglas
 

@@ -32,9 +32,9 @@ export function calculateCortina({ order, awning }) {
     : awning.reglasModificadas && awning.curtainFabricDeductionCm !== null && awning.curtainFabricDeductionCm !== undefined
     ? Math.max(0, Number(awning.curtainFabricDeductionCm) || 0)
     : awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm;
-  // Cortina: el motor sigue al tamaño (Q-CO04, Iván 02/10/2026); con el candado manda el elegido.
-  // Selena sigue con 15/17.
-  const ruleMotor = awning.model === 'CORTINA'
+  // Cortina y Selena: el motor sigue al tamaño (Q-CO04, Iván 02/10/2026: «los verticales comparten
+  // motores»); con el candado manda el elegido.
+  const ruleMotor = ['CORTINA', 'SELENA'].includes(awning.model)
     ? cortinaMotorPower({ width: awning.width, projection: awning.projection, curtainHasWindow: awning.curtainHasWindow, fabric })
     : '15/17';
   const chosenMotor = String(awning.motorPower || '');

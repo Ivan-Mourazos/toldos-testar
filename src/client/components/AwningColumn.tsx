@@ -173,7 +173,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const supportsValance = fields.dimensions.includes('valanceHeight');
   const cortinaDevice = normalizeCortinaDevice(awning.device);
   // Motor de la Cortina según su tamaño (Q-CO04): de él parte el candado.
-  const cortinaRuleMotor = awning.model === 'CORTINA'
+  const cortinaRuleMotor = (awning.model === 'CORTINA' || awning.model === 'SELENA')
     ? cortinaMotorPower({ ...awning, fabric: resolveFabric(sameFabric !== false ? orderFabric : awning.fabric) })
     : '15/17';
   const cortinaMotor = cortinaMotorPowers.includes(awning.motorPower) ? awning.motorPower : cortinaRuleMotor;
@@ -397,7 +397,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 ? {
                     curtainFabricDeductionCm: awning.curtainFabricDeductionCm
                       ?? (awning.curtainSkipBottomDeduction ? 0 : curtainLikeParameters.bottomDeductionCm ?? 0),
-                    ...(awning.model === 'CORTINA' && cortinaDevice === 'MOTOR'
+                    ...((awning.model === 'CORTINA' || isSelena) && cortinaDevice === 'MOTOR'
                       ? { motorPower: cortinaRuleMotor }
                       : {}),
                     curtainFabricWidthDiscountCm: awning.curtainFabricWidthDiscountCm ?? curtainLikeParameters.fabricWidthDiscounts[cortinaDevice],
@@ -843,7 +843,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <NumberField label="Descuento frente tela (cm)" value={awning.curtainFabricWidthDiscountCm} min={0} step={0.5} onChange={(curtainFabricWidthDiscountCm) => update({ curtainFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.curtainRollTubeDiscountCm} min={0} step={0.5} onChange={(curtainRollTubeDiscountCm) => update({ curtainRollTubeDiscountCm })} />
                 <NumberField label="Descuento Univers 280 (cm)" value={awning.curtainLoadProfileDiscountCm} min={0} step={0.5} onChange={(curtainLoadProfileDiscountCm) => update({ curtainLoadProfileDiscountCm })} />
-                {awning.model === 'CORTINA' && cortinaDevice === 'MOTOR' && <SegmentedField label="Motor" value={cortinaMotor} options={cortinaMotorPowers} onChange={(motorPower) => update({ motorPower })} />}
+                {(awning.model === 'CORTINA' || isSelena) && cortinaDevice === 'MOTOR' && <SegmentedField label="Motor" value={cortinaMotor} options={cortinaMotorPowers} onChange={(motorPower) => update({ motorPower })} />}
               </>}
               {isBox && <>
                 <NumberField label="Frente mínimo (cm)" value={awning.boxMinimumLineCm} min={0} step={0.5} onChange={(boxMinimumLineCm) => update({ boxMinimumLineCm })} />

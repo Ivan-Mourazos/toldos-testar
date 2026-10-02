@@ -19,12 +19,13 @@ describe('estado de cada modelo en los selectores', () => {
   });
 
   // Iván, 02/10/2026: el motor del Ágata (siempre Sunea, Q-AG02) y el de Iris y HERA ya están hechos.
-  test('Ágata, Iris, HERA y Cortina quedan completos', () => {
-    for (const model of ['AGATA BOX', 'IRIS', 'HERA', 'CORTINA']) expect(modelReadiness(model).ready).toBe(true);
+  // Iván, 02/10/2026: la Selena a motor va como la Cortina («los verticales comparten motores»).
+  test('Ágata, Iris, HERA, Cortina y Selena quedan completos', () => {
+    for (const model of ['AGATA BOX', 'IRIS', 'HERA', 'CORTINA', 'SELENA']) expect(modelReadiness(model).ready).toBe(true);
   });
 
   test('la explicación dice qué falta', () => {
-    expect(modelReadinessText('SELENA')).toContain('motor');
+    expect(modelReadinessText('ANTICA')).toContain('encargado');
     expect(modelReadinessText('XACOBEO')).toMatch(/^Completo/);
   });
 });
