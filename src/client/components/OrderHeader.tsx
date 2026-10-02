@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Awning, FabricProposal, OrderAutofill } from '../types';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { TextField } from './TextField';
@@ -51,7 +51,9 @@ export function OrderHeader(props: Props) {
   const pending = props.pendingProposals ?? [];
   const commonPending = props.sameFabric && Boolean(props.fabric) && pending.length > 0;
   const proposals = props.fabricProposals ?? props.autofill?.fabricProposals ?? [];
-  const proposalStocks = useFabricStocks(props.readOnly ? [] : proposals
+  const [proposalsOpen, setProposalsOpen] = useState(false);
+  const needsFabricChoice = proposals.some((proposal) => !appliedProposalSelection(proposal, fabricOrder));
+  const proposalStocks = useFabricStocks(props.readOnly || (!proposalsOpen && !needsFabricChoice) ? [] : proposals
     .flatMap((proposal) => proposal.options.slice(0, 5).map((option) => fabricCodeOf(option.selection))));
 
   function chooseFabricProposal(proposal: FabricProposal, selection: string) {
@@ -76,7 +78,7 @@ export function OrderHeader(props: Props) {
   }
 
   return (
-    <section className={`order-header panel${props.readOnly ? ' is-readonly' : ''}`} aria-readonly={props.readOnly || undefined}>
+    <section className="order-header panel order-header-simple">
       <OrderIdentity
         pedido={<TextField label="Pedido" value={props.orderCode} onChange={v => props.set({ orderCode: v })} onBlur={props.onOrderCodeBlur} placeholder="AR26xxxxx" />}
         cliente={props.customer} fecha={props.orderDate} onClienteChange={v => props.set({ customer: v })} onFechaChange={v => props.set({ orderDate: v })}
@@ -90,7 +92,7 @@ export function OrderHeader(props: Props) {
               {/* Con «Por toldo» la tela común no es la del pedido: enseñarla en gris hacía
                   creer que había una elegida (F4). */}
               {props.sameFabric
-                ? <FabricCombobox label="Referencia" value={props.fabric} disabled={props.readOnly} onChange={(v) => props.set({ fabric: v })} />
+                ? <FabricCombobox label="Referencia" value={props.fabric} onChange={(v) => props.set({ fabric: v })} />
                 : <div className="field order-fabric-per-awning-field"><span>Referencia</span><p className="order-fabric-per-awning-value">Tela por toldo · se elige en cada tarjeta</p></div>}
               {/* En lectura no se puede cambiar: el interruptor sobra y solo se indica si
                   cada toldo lleva su propia tela. */}
@@ -112,16 +114,19 @@ export function OrderHeader(props: Props) {
             {/* La cabecera no está dentro de ReadModeContext (es un fieldset deshabilitado):
                 se provee aquí para que las observaciones lean con el mismo criterio que la
                 ficha (rediseño 3 §3). */}
-            <ReadModeContext.Provider value={!!props.readOnly}>
+            <details className="order-fabric-notes" open={Boolean(props.notes.trim())}>
+              <summary>Observaciones de tela{props.notes.trim() ? ' · con anotaciones' : ''}</summary>
               <ObservationLines label="Observaciones de tela del pedido" value={props.notes} onChange={props.onNotesChange} />
-            </ReadModeContext.Provider>
+            </details>
           </section>
         </div>
       </div>
 
       {(props.autofill || proposals.length > 0) && (
         <aside className="order-autofill-summary" aria-live="polite">
-          {props.autofill?.summary && props.autofill.summary.length > 0 && (
+          {props.autofill && <details className="order-rps-details">
+            <summary>Datos de {props.autofill.source}{props.autofill.pending.length ? ` · ${props.autofill.pending.length} pendientes` : ''}{props.autofill.warnings.length ? ` · ${props.autofill.warnings.length} avisos` : ''}</summary>
+          {props.autofill.summary && props.autofill.summary.length > 0 && (
             <ul className="order-autofill-summary-lines">
               {props.autofill.summary.map((line) => <li key={line}>{line}</li>)}
             </ul>
@@ -130,8 +135,11 @@ export function OrderHeader(props: Props) {
             <strong>Datos obtenidos de {props.autofill.source}</strong>
             <span>{props.autofill.recovered.length} campos recuperados · {props.autofill.pending.length} {props.autofill.pending.length === 1 ? 'pendiente' : 'pendientes'} · todos editables</span>
           </div>}
+          </details>}
           {proposals.length > 0 && (
-            <div className="order-fabric-proposals">
+            <details className="order-fabric-alternatives" open={needsFabricChoice} onToggle={(event) => setProposalsOpen(event.currentTarget.open)}>
+              <summary>{commonPending ? 'Revisar propuesta de tela' : needsFabricChoice ? 'Elegir tela del pedido' : 'Cambiar tela propuesta'}<span>{proposals.reduce((total, proposal) => total + Math.min(5, proposal.options.length), 0)} alternativas</span></summary>
+              <div className="order-fabric-proposals">
               {proposals.map((proposal, index) => {
                 const applied = appliedProposalSelection(proposal, fabricOrder);
                 return (
@@ -162,6 +170,7 @@ export function OrderHeader(props: Props) {
                 );
               })}
             </div>
+            </details>
           )}
           {props.autofill && props.autofill.pending.length > 0 && (
             <details>

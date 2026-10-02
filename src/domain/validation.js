@@ -173,7 +173,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
     anticaCrankColor: model === 'ANTICA' ? cleanText(awning?.anticaCrankColor || 'AUTOMÁTICO').toUpperCase() : '',
     curtainHasWindow: typeof awning?.curtainHasWindow === 'boolean' ? awning.curtainHasWindow : null,
-    curtainFinish: normalizeCurtainFinish(awning?.curtainFinish),
+    ...normalizeCurtainConfiguration({ ...awning, model }),
+    curtainFinish: normalizeCurtainFinish(isConfiguredCurtain({ model }) && awning?.curtainFinish === 'TUBO' ? 'NORMAL' : awning?.curtainFinish),
     curtainSupport: normalizeCurtainSupport(model, awning?.curtainSupport),
     electraSupport: model === 'ELECTRA' ? normalizeElectraFormSupport(awning?.electraSupport, submodel) : '',
     curtainWindowExit: numberOrDefault(awning?.curtainWindowExit, 0),
@@ -389,3 +390,4 @@ function normalizeElectraMotorPower(device, value) {
   return normalizeElectraMotor(value);
 }
 
+import { isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';

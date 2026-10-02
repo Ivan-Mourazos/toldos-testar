@@ -4,8 +4,8 @@ export const defaultCortinaParameters = {
   standardMaxWidth: 500,
   standardMaxDrop: 400,
   fabricDropAllowanceCm: 45,
-  // Iván, 22/09/2026: en Cortina se restan 18 cm por defecto; el técnico puede
-  // no restarlos en la tarjeta. En Cambio de cortina no se restan nunca.
+  // Valor antiguo conservado para compatibilidad y Selena. Cortina elige el ajuste
+  // en su tarjeta y no descuenta por defecto (Iván, 02/10/2026).
   bottomDeductionCm: 18,
   seamAllowanceCm: 2.2,
   seamBaseCm: 7,

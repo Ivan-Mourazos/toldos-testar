@@ -1,5 +1,21 @@
 # Cortina — expediente
 
+## Reglas confirmadas por Iván · 02/10/2026
+
+Esta confirmación sustituye las decisiones anteriores sobre confección y caída:
+
+- Laterales: normales o con velcro. Abajo: tubo de carga o entrada de tubo (ET). Son independientes; velcro con ET es válido.
+- La salida de ventana es la salida del toldo; no se pide una segunda medida.
+- La distancia inferior a ventana se puede introducir desde suelo o desde tubo de carga. A suelo se restan 18 cm solo en la cota del dibujo (70 → 52); a tubo se representa el valor introducido.
+- Tela: salida +40 cm, +10 cm si abajo lleva ET, y bamba +5 cm cuando va en la misma tela. Una bamba en otra tela se calcula aparte con sus 5 cm de remate.
+- No se descuenta nada de la salida de tela por defecto. La tarjeta permite descontar 18 cm por tubo de carga, 11 cm por ET o introducir un ajuste con signo, positivo para sumar y negativo para restar, sin abrir el candado.
+- La referencia de la cota de ventana no modifica el cálculo de salida de tela.
+- Iván confirmó que estas mismas reglas se aplican a Cambio de cortina. Selena y Electra conservan sus reglas.
+
+El parámetro existente `fabricDropAllowanceCm` incluye 5 cm de remate: su valor 45 representa el margen de cuerpo de 40 cm. Se conserva esta representación para los parámetros ya guardados. El antiguo descuento global no se aplica a Cortina; los descuentos se eligen en la tarjeta.
+
+Los pedidos antiguos que indicaban `TUBO` como confección se interpretan como laterales normales y ET abajo. Un descuento inferior antiguo escrito con candado se conserva como ajuste personalizado negativo.
+
 22/09/2026 · **Implementado (22/09): pendiente de la revisión de la muestra por Iván y de dos dudas para OT** · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Evidencia anterior](../rps-cortina-evidence.md)
 
 ## 1. Alcance y punto de reanudación

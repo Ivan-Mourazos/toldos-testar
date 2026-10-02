@@ -12,6 +12,7 @@ export const drawingConditionFields = [
   'valanceCurve',
   'curtainHasWindow',
   'curtainFinish',
+  'curtainBottomFinish',
   'curtainSupport',
   'electraSupport',
   'irisGuideType',

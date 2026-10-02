@@ -43,8 +43,8 @@ const scenarios = [
     curtainHasWindow: false, curtainFinish: 'NORMAL', curtainSupport: 'UNIVERSAL 3 AGUJEROS'
   }, {
     mainSeams: { seamAllowanceCm: 2.2, seamBaseCm: 7 },
-    // Cortina resta 18 cm por defecto (Iván, 22/09/2026).
-    separatedDrop: ({ projection }) => Number(projection) + 40 - 18
+    // Cortina no descuenta por defecto (Iván, 02/10/2026).
+    separatedDrop: ({ projection }) => Number(projection) + 40
   }),
   scenario('GALICIA', {
     width: 596, projection: 300, valanceHeight: 25, armCount: 3,

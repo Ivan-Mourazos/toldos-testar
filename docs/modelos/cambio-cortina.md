@@ -1,5 +1,13 @@
 # Cambio de cortina — expediente
 
+## Reglas confirmadas por Iván · 02/10/2026
+
+Iván confirmó expresamente que Cambio de cortina utiliza las nuevas reglas de Cortina: salida +40 cm, +10 cm para ET abajo y bamba +5 cm si va en la misma tela. No se descuenta salida por defecto; la tarjeta permite −18 cm, −11 cm o un ajuste personalizado con signo, sin candado.
+
+Laterales (normal o velcro) y abajo (tubo de carga o ET) son independientes. La ventana utiliza la salida del toldo y se elimina Salida ventana. La distancia inferior a ventana se introduce a suelo o a tubo de carga: a suelo se restan 18 cm solo en el dibujo, a tubo se muestra el valor tal cual, sin relación con el ajuste de tela. Las reglas detalladas y la compatibilidad de parámetros están en [Cortina](./cortina.md#reglas-confirmadas-por-iván--02102026).
+
+Esta confirmación sustituye las reglas anteriores de este expediente sobre caída, descuento y cotas de ventana. Se conserva la elección de arriba (varilla o remachado).
+
 22/09/2026 · **Terminado** (pendiente solo de que OT corrija el maestro, F-CC01) · [Guía](../guia-revision-modelos.md) · [Seguimiento](./README.md) · [Auditoría](../auditoria-2026-09-21.md) · [Evidencia anterior](../rps-cambio-cortina-evidence.md)
 
 ## 1. Alcance y punto de reanudación

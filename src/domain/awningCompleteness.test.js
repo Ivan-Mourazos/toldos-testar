@@ -73,7 +73,7 @@ describe('getMissingFields', () => {
     const cortina = { model: 'CORTINA', of: '1', width: 300, projection: 200, rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQ. INTERIOR', crankHeight: 150, curtainHasWindow: null, curtainFinish: '' };
     expect(fields(cortina)).toEqual(['curtainHasWindow', 'curtainFinish']);
     expect(fields({ ...cortina, curtainHasWindow: true, curtainFinish: 'NORMAL' })).toEqual([
-      'curtainWindowExit', 'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight'
+      'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight'
     ]);
   });
 

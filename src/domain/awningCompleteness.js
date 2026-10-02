@@ -11,6 +11,7 @@ import { electraMotors } from './electraParameters.js';
 import { irisAsksBoxShape, normalizeIrisBoxShape } from './irisParameters.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { cambioTelaExtraError } from './fabricJobParameters.js';
+import { curtainWindowDrawingHeight, isConfiguredCurtain } from './curtainConfiguration.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -113,11 +114,14 @@ export function getMissingFields(awning, order = null) {
   if ((curtain || isSelena || model === 'IRIS') && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', 'ventana');
   // Redondo o cuadrado cambia el perfil inferior y las tapas del cofre (taller, 24/09/2026).
   if (model === 'IRIS' && irisAsksBoxShape(awning) && !normalizeIrisBoxShape(awning.irisBoxShape)) add('irisBoxShape', 'forma del cofre');
-  if (curtain && !awning.curtainFinish) add('curtainFinish', 'confección');
+  if (curtain && !awning.curtainFinish) add('curtainFinish', isConfiguredCurtain(awning) ? 'laterales' : 'confección');
+  if (isConfiguredCurtain(awning) && awning.curtainFabricAdjustment === 'PERSONALIZADO' && awning.curtainFabricAdjustmentCm == null) add('curtainFabricAdjustmentCm', 'ajuste de salida');
   if ((curtain || isSelena) && awning.curtainHasWindow === true) {
     for (const [field, label] of windowDimensions) {
+      if (field === 'curtainWindowExit' && isConfiguredCurtain(awning)) continue;
       if (!Number(awning[field])) add(field, label);
     }
+    if (isConfiguredCurtain(awning) && Number(awning.curtainWindowFloorHeight) > 0 && curtainWindowDrawingHeight(awning) <= 0) add('curtainWindowFloorHeight', 'distancia a ventana mayor que el descuento de suelo');
   }
   if (isElectra && device === 'MOTOR' && !electraMotors.some(({ value }) => value === awning.motorPower)) add('motorPower', 'motor Electra');
   if (fields.motorLocation && !awning.machineSide) add('machineSide', 'posición del motor');

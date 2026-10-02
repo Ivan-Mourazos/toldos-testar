@@ -312,6 +312,10 @@ export function extractOrderTextData(value, model = '') {
   const withoutWindow = /\bSIN\s+VENTANA(?:S)?\b/.test(text);
   const curtainLike = model.includes('CORTINA') || model === 'ELECTRA';
   const withoutValance = /\bSIN\s+BAMBALINA\b/.test(text);
+  const configuredCurtain = model.includes('CORTINA');
+  const oldCurtainFinish = inferCurtainFinish(text);
+  const lateralVelcro = /LATERALES?\s+(?:CON\s+)?VELCRO/.test(text);
+  const tubeWindowHeight = configuredCurtain ? matchNumber(text, /(?:H(?:\.|ALTURA)?\s*)?TUBO(?:\s+DE\s+CARGA)?\s*-\s*VENT(?:ANA)?\.?\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null;
   return {
     ...dimensions,
     valanceHeight: valanceHeight ?? null,
@@ -328,10 +332,14 @@ export function extractOrderTextData(value, model = '') {
     armCount: matchNumber(text, /(?:CON|DE)\s+([234])\s+BRAZOS?\b/),
     tubeLoad: /EVO\s*80/.test(text) ? 'TUBO DE CARGA EVO 80' : /UNIVERS\s*280/.test(text) ? 'TUBO DE CARGA UNIVERS 280' : '',
     curtainHasWindow: curtainLike ? (hasWindow ? true : withoutWindow ? false : null) : null,
-    curtainFinish: curtainLike ? inferCurtainFinish(text) : '',
+    curtainFinish: configuredCurtain ? lateralVelcro ? 'VELCRO' : oldCurtainFinish === 'TUBO' ? 'NORMAL' : oldCurtainFinish : curtainLike ? oldCurtainFinish : '',
+    curtainBottomFinish: configuredCurtain ? /ENTRADA\s+(?:DE\s+)?TUBO|\bE[.\s]*T\.?(?=\s|[,;:]|$)/.test(text) || oldCurtainFinish === 'TUBO' ? 'ET' : 'TUBO DE CARGA' : '',
+    curtainWindowReference: configuredCurtain ? tubeWindowHeight !== null ? 'TUBO DE CARGA' : 'SUELO' : '',
+    curtainFabricAdjustment: configuredCurtain ? 'NINGUNO' : '',
+    curtainFabricAdjustmentCm: configuredCurtain ? 0 : null,
     curtainWindowExit: curtainLike ? matchNumber(text, /SALIDA(?:\s+DE\s+LA)?\s+VENTANA\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
     curtainWindowCorner: curtainLike ? matchNumber(text, /(?:ESQ(?:UINA)?\.?)\s+(?:DE\s+LA\s+)?VENTANA\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
-    curtainWindowFloorHeight: curtainLike ? matchNumber(text, /(?:H(?:\.|ALTURA)?\s*)?SUELO\s*-\s*VENT(?:ANA)?\.?\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
+    curtainWindowFloorHeight: tubeWindowHeight ?? (curtainLike ? matchNumber(text, /(?:H(?:\.|ALTURA)?\s*)?SUELO\s*-\s*VENT(?:ANA)?\.?\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null),
     curtainWindowHeight: curtainLike ? matchNumber(text, /H(?:\.|ALTURA)?\s*(?:DE\s+)?VENTANA\s*:?\s*(\d{1,4}(?:[.,]\d+)?)/) : null,
     submodel: inferSubmodel(text, model)
   };
@@ -384,6 +392,10 @@ function buildAwningSuggestion(line, model, index) {
     submodel,
     curtainHasWindow: extracted.curtainHasWindow,
     curtainFinish: extracted.curtainFinish,
+    curtainBottomFinish: extracted.curtainBottomFinish,
+    curtainWindowReference: extracted.curtainWindowReference,
+    curtainFabricAdjustment: extracted.curtainFabricAdjustment,
+    curtainFabricAdjustmentCm: extracted.curtainFabricAdjustmentCm,
     curtainSupport: model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '',
     electraSupport,
     curtainWindowExit: extracted.curtainWindowExit,
@@ -465,12 +477,12 @@ function describePendingAwning(awning, index) {
   const curtainLike = awning.model.includes('CORTINA') || awning.model === 'ELECTRA';
   if (curtainLike && awning.curtainHasWindow === null) pending.push('ventana sí/no');
   if (curtainLike && awning.curtainHasWindow === true) {
-    if (!positiveNumber(awning.curtainWindowExit)) pending.push('salida ventana');
+    if (!awning.model.includes('CORTINA') && !positiveNumber(awning.curtainWindowExit)) pending.push('salida ventana');
     if (!positiveNumber(awning.curtainWindowCorner)) pending.push('esquina ventana');
-    if (!positiveNumber(awning.curtainWindowFloorHeight)) pending.push('suelo-ventana');
+    if (!positiveNumber(awning.curtainWindowFloorHeight)) pending.push(awning.curtainWindowReference === 'TUBO DE CARGA' ? 'tubo-ventana' : 'suelo-ventana');
     if (!positiveNumber(awning.curtainWindowHeight)) pending.push('alto ventana');
   }
-  if (curtainLike && !awning.curtainFinish) pending.push('confección inferior');
+  if (curtainLike && !awning.curtainFinish) pending.push(awning.model.includes('CORTINA') ? 'laterales' : 'confección inferior');
   if (awning.model === 'HERA') pending.push('lado respecto a ventana');
   if (!awning.fabric) pending.push('tela');
   return pending.map((field) => `${letter(index)} · ${awning.model}: ${field}`);

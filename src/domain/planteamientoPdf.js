@@ -1,4 +1,5 @@
 import { normalizeFabricImage } from './fabricImage.js';
+import { curtainWindowDrawingHeight, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
 import PDFDocument from 'pdfkit';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -193,6 +194,7 @@ function fabricDiagramGroupKey(diagram, awning) {
   if (!hasWindow) {
     return [
       diagram,
+      isCurtain ? normalizeCurtainConfiguration(awning).curtainBottomFinish : '',
       ['SELENA', 'ELECTRA'].includes(awning.model) ? awning.model : '',
       isCurtain || ['GENERAL', 'TOLDO-VELCRO', 'BAMBALINA', 'SUPLEMENTO'].includes(diagram) ? valance : '',
       diagram === 'CORTINA-VELCRO' ? resolveCurtainVelcroHeight(awning) ?? '' : '',
@@ -202,6 +204,9 @@ function fabricDiagramGroupKey(diagram, awning) {
   }
   return [
     diagram,
+    isConfiguredCurtain(awning) ? normalizeCurtainConfiguration(awning).curtainBottomFinish : '',
+    isConfiguredCurtain(awning) ? normalizeCurtainConfiguration(awning).curtainWindowReference : '',
+    isConfiguredCurtain(awning) ? awning.projection : '',
     awning.curtainWindowExit,
     awning.curtainWindowCorner,
     awning.curtainWindowFloorHeight,
@@ -1313,16 +1318,16 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     drawSmallMeasure(doc, windowX - 1, windowY - 20, 25, awning.curtainWindowCorner);
     drawSmallMeasure(doc, windowX + windowW - 24, windowY - 20, 25, awning.curtainWindowCorner);
     drawSmallMeasure(doc, measureX, windowY + 14, 27, awning.curtainWindowHeight);
-    // Los 18 cm son del toldo cortina completo. Cambio de cortina es solo la tela
-    // de una cortina existente: las medidas de ventana van tal cual (Iván, 22/09/2026).
-    const floorDeduction = curtainBottomDeduction(awning);
-    drawSmallMeasure(doc, measureX, windowY + windowH, 27, Number(awning.curtainWindowFloorHeight) - floorDeduction);
+    // La referencia de esta cota es independiente del ajuste de salida de tela.
+    const windowBase = isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning)
+      : Number(awning.curtainWindowFloorHeight) - curtainBottomDeduction(awning);
+    drawSmallMeasure(doc, measureX, windowY + windowH - (spec.bottomFinish === 'ET' ? 8 : 0), 27, windowBase);
     doc.moveTo(measureX - 4, windowY).lineTo(measureX - 4, windowY + windowH)
       .strokeColor('#879f98').lineWidth(0.6).stroke();
   }
 
   const bottomY = frameY + frameH;
-  if (spec.finish === 'TUBO') {
+  if (spec.bottomFinish === 'ET') {
     doc.rect(frameX, bottomY - 13, frameW, 13).fillAndStroke('#d9e5e0', '#7fa594');
     doc.moveTo(frameX + 8, bottomY - 9).lineTo(frameX + frameW - 8, bottomY - 9)
       .moveTo(frameX + 8, bottomY - 4).lineTo(frameX + frameW - 8, bottomY - 4)
@@ -1349,9 +1354,9 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
 
   if (spec.hasWindow) {
     const dataY = y + 252;
-    drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'SALIDA:', awning.curtainWindowExit);
+    drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'SALIDA:', isConfiguredCurtain(awning) ? awning.projection : awning.curtainWindowExit);
     drawCurtainDataRow(doc, x + 28, dataY + 16, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
-    drawCurtainDataRow(doc, x + 28, dataY + 32, w - 56, 'H. SUELO-VENT.:', awning.curtainWindowFloorHeight);
+    drawCurtainDataRow(doc, x + 28, dataY + 32, w - 56, isConfiguredCurtain(awning) ? 'H. TUBO-VENT.:' : 'H. SUELO-VENT.:', isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning) : awning.curtainWindowFloorHeight);
     drawCurtainDataRow(doc, x + 28, dataY + 48, w - 56, 'H. VENTANA:', awning.curtainWindowHeight);
     if (spec.finish === 'VELCRO') {
       drawCurtainDataRow(doc, x + 28, dataY + 64, w - 56, 'ALTURA VELCRO:', velcroHeight);
@@ -1398,15 +1403,21 @@ export function fabricDiagramHeading(diagram, awnings = []) {
 
 export function buildCurtainDiagramSpec(diagram = '', awning = {}) {
   const hasWindow = diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
-  const finish = diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
+  const finish = isConfiguredCurtain(awning) && awning.curtainFinish
+    ? awning.curtainFinish === 'VELCRO' ? 'VELCRO' : 'NORMAL'
+    : diagram.includes('VELCRO') ? 'VELCRO' : diagram.includes('TUBO') ? 'TUBO' : 'NORMAL';
+  const bottomFinish = isConfiguredCurtain(awning) ? normalizeCurtainConfiguration(awning).curtainBottomFinish
+    : finish === 'TUBO' ? 'ET' : 'TUBO DE CARGA';
   const valance = buildValanceDiagramSpec(awning);
   const model = String(awning.model || '').trim().toUpperCase();
   const titleParts = [model === 'SELENA' ? 'SELENA' : model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : 'CORTINA'];
   if (hasWindow) titleParts.push('VENTANA');
   else if (model === 'CAMBIO CORTINA') titleParts.push('SIN VENTANA');
   if (finish !== 'NORMAL') titleParts.push(finish);
+  if (isConfiguredCurtain(awning) && bottomFinish === 'ET') titleParts.push('ET ABAJO');
   return {
     finish,
+    bottomFinish,
     hasWindow,
     // Cortina y Cambio de cortina siguen los dibujos CORTINA-* del maestro.
     curtainPieces: model === 'CORTINA' || model === 'CAMBIO CORTINA',
@@ -2219,7 +2230,7 @@ export function summarizeFabricPage(lines = []) {
 export function resolveCurtainVelcroHeight(awning = {}) {
   const curtainExit = Number(awning.curtainWindowExit);
   const projection = Number(awning.projection);
-  const base = Number.isFinite(curtainExit) && curtainExit > 0 ? curtainExit : projection;
+  const base = !isConfiguredCurtain(awning) && Number.isFinite(curtainExit) && curtainExit > 0 ? curtainExit : projection;
   // TELA!E36 = salida − 18 + 8: los 18 son el descuento inferior de la tela.
   return Number.isFinite(base) ? Math.max(0, base - curtainBottomDeduction(awning) + 8) : null;
 }

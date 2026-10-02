@@ -2,6 +2,10 @@ import { describe, expect, test } from 'vitest';
 import { buildOrderAutofill, extractOrderTextData, inferOrderModel, isRepairLine, summarizeAutofill } from './orderAutofill.js';
 
 describe('autocompletado de pedidos RPS', () => {
+  test.each(['CORTINA', 'CAMBIO CORTINA'])('%s distingue velcro lateral y ET inferior en RPS', (model) => {
+    expect(extractOrderTextData('CON VENTANA. LATERALES CON VELCRO. ABAJO ENTRADA DE TUBO. H. TUBO DE CARGA-VENTANA: 70.', model)).toMatchObject({ curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainWindowReference: 'TUBO DE CARGA', curtainWindowFloorHeight: 70 });
+    expect(extractOrderTextData('CONFECCION NORMAL. ABAJO ET. H. SUELO-VENTANA: 70.', model)).toMatchObject({ curtainFinish: 'NORMAL', curtainBottomFinish: 'ET', curtainWindowReference: 'SUELO', curtainWindowFloorHeight: 70 });
+  });
   test.each(['ANTRACITA', 'ANTRACITA 7016', 'GRIS ANTRACITA RAL 7016'])(
     'reconoce el lacado de 4541: %s', (color) => {
       expect(extractOrderTextData(`ESTRUCTURA DE ALUMINIO LACADO EN COLOR ${color}`, 'ARZUA PRO').structureColor)

@@ -1,4 +1,5 @@
 import { effectiveOverride, noteOverride } from './ruleOverrides.js';
+import { curtainBottomAllowanceCm, curtainConfigurationError, curtainFabricAdjustmentCm } from './curtainConfiguration.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -24,16 +25,16 @@ export function calculateCortina({ order, awning }) {
   const curtainSupport = normalizeCurtainSupport(awning.curtainSupport);
   const fabricSelection = order.sameFabric !== false ? order.fabric : awning.fabric;
   const fabric = fabricSelection ? resolveFabric(fabricSelection) : null;
-  // Con el candado manda el valor escrito; sin él, 18 cm salvo que el técnico
-  // elija no restarlos (Iván, 22/09/2026).
-  const deduction = awning.reglasModificadas && awning.curtainFabricDeductionCm !== null && awning.curtainFabricDeductionCm !== undefined
+  // Selena conserva sus reglas. En Cortina el ajuste de tela se elige aparte (Iván, 02/10/2026).
+  const deduction = awning.model === 'CORTINA' ? -curtainFabricAdjustmentCm(awning) || 0
+    : awning.reglasModificadas && awning.curtainFabricDeductionCm !== null && awning.curtainFabricDeductionCm !== undefined
     ? Math.max(0, Number(awning.curtainFabricDeductionCm) || 0)
     : awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm;
   const motorPower = device === 'MOTOR'
     ? awning.reglasModificadas && ['35/17', '55/17'].includes(String(awning.motorPower)) ? String(awning.motorPower) : '15/17'
     : '';
   if (awning.reglasModificadas) {
-    noteOverride('curtainFabricDeductionCm', deduction, awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm);
+    if (awning.model !== 'CORTINA') noteOverride('curtainFabricDeductionCm', deduction, awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm);
     if (device === 'MOTOR') noteOverride('motorPower', motorPower, '15/17');
   }
   const missingFields = [];
@@ -45,9 +46,11 @@ export function calculateCortina({ order, awning }) {
   if (device !== 'MOTOR' && !awning.crankHeight) missingFields.push('altura de manivela');
   if (awning.curtainHasWindow === null) missingFields.push('ventana');
   if (!awning.curtainFinish) missingFields.push('confección');
+  const curtainError = awning.model === 'CORTINA' ? curtainConfigurationError(awning) : '';
+  if (curtainError) missingFields.push(curtainError);
 
   const missingWindowDimensions = awning.curtainHasWindow
-    ? ['curtainWindowExit', 'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight']
+    ? [...(awning.model === 'CORTINA' ? [] : ['curtainWindowExit']), 'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight']
       .filter((field) => !Number(awning[field]))
     : [];
   if (missingWindowDimensions.length) missingFields.push('medidas de ventana');
@@ -70,7 +73,8 @@ export function calculateCortina({ order, awning }) {
   const mainDropAllowance = (selena ? !separateValance.requested : integratedValance)
     ? parameters.fabricDropAllowanceCm
     : Math.max(0, parameters.fabricDropAllowanceCm - 5);
-  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance) - deduction);
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance)
+    + (selena ? 0 : curtainBottomAllowanceCm(awning)) - deduction);
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
@@ -87,6 +91,7 @@ export function calculateCortina({ order, awning }) {
   const negativeCuts = missingFields.length === 0
     ? findNegativeCuts([
       { name: 'TELÓN', length: fabricWidth },
+      { name: 'CAÍDA DE TELA', length: fabricDrop },
       { name: 'TUBO DE ENROLLE', length: rollTubeLength },
       { name: 'PERFIL DE CARGA', length: structureLength }
     ])
@@ -97,11 +102,13 @@ export function calculateCortina({ order, awning }) {
     && Boolean(stockLength) && Boolean(profileStockLength)
     && (!selena || Boolean(armCode))
     && negativeCuts.length === 0
+    && fabricDrop > 0
     && (!(overWidth || overDrop) || modified);
 
   if (negativeCuts.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: negativeCutMessage('CORTINA', awning.of, negativeCuts) });
   }
+  if (fabricDrop <= 0) diagnostics.push({ level: 'error', awningId: awning.id, message: 'La salida de tela debe ser mayor que cero después del ajuste.' });
 
   if (fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });

@@ -1,4 +1,5 @@
 import { normalizeFabricImage } from '../../domain/fabricImage.js';
+import { isConfiguredCurtain, normalizeCurtainConfiguration } from '../../domain/curtainConfiguration.js';
 import { normalizeStructureEdit } from '../../domain/structureEdits.js';
 import { useEffect, useState } from 'react';
 import type { Awning, DraftState, FabricProposal } from '../types';
@@ -109,6 +110,8 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.curtainFinish = isCurtainLike && ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish).toUpperCase())
     ? old.curtainFinish as Awning['curtainFinish']
     : '';
+  Object.assign(base, normalizeCurtainConfiguration({ ...old, model: base.model }));
+  if (isConfiguredCurtain(base) && base.curtainFinish === 'TUBO') base.curtainFinish = 'NORMAL';
   base.curtainSupport = old.curtainSupport === 'MAXISCREEM'
     ? 'MAXISCREEM'
     : base.model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '';
@@ -539,6 +542,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     placement: awning.placement,
     curtainHasWindow: hasWindowChoice ? awning.curtainHasWindow : null,
     curtainFinish: isCurtain ? awning.curtainFinish : '',
+    ...normalizeCurtainConfiguration({ ...awning, model }),
     curtainSupport: model === 'CORTINA' ? (awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS') : '',
     electraSupport: '',
     curtainWindowExit: isCurtain ? awning.curtainWindowExit : null,

@@ -7,6 +7,8 @@ import { useVisibleFields } from '../hooks/useVisibleFields';
 import { awningLetter, getMissingFields } from '../../domain/awningCompleteness.js';
 import { TextField } from './TextField';
 import { NumberField } from './NumberField';
+import { CurtainConfigurationFields } from './CurtainConfigurationFields';
+import { isConfiguredCurtain } from '../../domain/curtainConfiguration.js';
 import { SelectField } from './SelectField';
 import { SegmentedField } from './SegmentedField';
 import { FabricCombobox } from './FabricCombobox';
@@ -733,6 +735,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   label="Soporte"
                   value={awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS'}
                   options={['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM']}
+                  optionLabel={(value) => value === 'MAXISCREEM' ? 'Maxiscreen' : controlLabel(value)}
                   onChange={(curtainSupport) => update({ curtainSupport: curtainSupport as Awning['curtainSupport'] })}
                 />
               </div>}
@@ -748,16 +751,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {(fields.curtain || fields.curtainWindow) && <div className="curtain-option">
                 <SegmentedField label="Ventana" missing={isMissing('curtainHasWindow')} value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'} options={['SIN VENTANA', 'CON VENTANA']} onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })} />
               </div>}
-              {fields.curtain && awning.curtainHasWindow !== null && <div className="curtain-option">
+              {isConfiguredCurtain(awning) && awning.curtainHasWindow !== null && <CurtainConfigurationFields awning={awning} update={update} missing={isMissing} bodyAllowanceCm={Math.max(0, (awning.model === 'CAMBIO CORTINA' ? parameters.cambioCortina : parameters.cortina).fabricDropAllowanceCm - 5)} />}
+              {fields.curtain && !isConfiguredCurtain(awning) && awning.curtainHasWindow !== null && <div className="curtain-option">
                 <SegmentedField label="Confección" missing={isMissing('curtainFinish')} value={awning.curtainFinish} options={['NORMAL', 'VELCRO', 'TUBO']} onChange={(curtainFinish) => update({ curtainFinish: curtainFinish as Awning['curtainFinish'] })} />
-              </div>}
-              {awning.model === 'CORTINA' && !awning.reglasModificadas && <div className="curtain-option">
-                <SegmentedField label={`Restar ${parameters.cortina.bottomDeductionCm} cm abajo`} value={awning.curtainSkipBottomDeduction ? 'NO' : 'SI'} options={['SI', 'NO']} onChange={(value) => update({ curtainSkipBottomDeduction: value === 'NO' })} />
               </div>}
               {awning.model === 'CAMBIO CORTINA' && <div className="curtain-option">
                 <SegmentedField label="Arriba" value={awning.curtainTopFinish || 'VARILLA'} options={['VARILLA', 'REMACHADO']} onChange={(curtainTopFinish) => update({ curtainTopFinish: curtainTopFinish as Awning['curtainTopFinish'] })} />
               </div>}
-              {(fields.curtain || fields.curtainWindow) && awning.curtainHasWindow && <div className="curtain-window-measures" role="group" aria-label="Medidas de ventana">
+              {(fields.curtain || fields.curtainWindow) && !isConfiguredCurtain(awning) && awning.curtainHasWindow && <div className="curtain-window-measures" role="group" aria-label="Medidas de ventana">
                 <NumberField label="Salida ventana" missing={isMissing('curtainWindowExit')} value={awning.curtainWindowExit} min={0} onChange={(curtainWindowExit) => update({ curtainWindowExit })} />
                 <NumberField label="Esquina" missing={isMissing('curtainWindowCorner')} value={awning.curtainWindowCorner} min={0} onChange={(curtainWindowCorner) => update({ curtainWindowCorner })} />
                 <NumberField label="Suelo-ventana" missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={0} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
@@ -810,7 +811,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {awning.reglasModificadas && (
             <ExceptionBlock readOnly={readOnly} exception={ofCalculation?.exception} message={exceptionNotice?.message}>
               {!readOnly && <p className="awning-modified-chip">{exceptionNotice ? `Excepción técnica: ${exceptionNotice.message.replace(/^Excepción técnica en OF[^:]*:\s*/, '')}` : 'Excepción técnica activa para este toldo. Cambia solo lo que haga falta: al leer se verá lo que difiere del valor normal.'}</p>}
-              {(awning.model === 'CORTINA' || awning.model === 'CAMBIO CORTINA' || isSelena) && (
+              {isSelena && (
                 <NumberField
                   label="Descuento inferior tela (cm)"
                   value={awning.curtainFabricDeductionCm}

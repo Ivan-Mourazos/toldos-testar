@@ -39,6 +39,7 @@ const preferredLabels: Record<string, string> = {
   'STANDARD': 'Estándar',
   'VERTICAL_170': 'Bajada vertical 170°',
   'SI': 'Sí',
+  'ET': 'ET · entrada de tubo',
   'NO': 'No'
 };
 

@@ -284,19 +284,19 @@ describe('datos del planteamiento de telas', () => {
     ]);
   });
 
-  test('ALTURA VELCRO en Cortina sigue lo que se resta de verdad: sin restar, salida + 8', () => {
-    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(200);
-    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210, curtainSkipBottomDeduction: true })).toBe(218);
+  test('ALTURA VELCRO utiliza la salida del toldo y no una segunda salida de ventana', () => {
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(290);
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210, curtainSkipBottomDeduction: true })).toBe(308);
     expect(resolveCurtainVelcroHeight({
       model: 'CORTINA', projection: 300, curtainWindowExit: 210, reglasModificadas: true, curtainFabricDeductionCm: 10
-    })).toBe(208);
+    })).toBe(298);
   });
 
   test('ALTURA VELCRO replica TELA!E36: salida − 18 + 8 en Cortina y salida + 8 en Cambio de cortina', () => {
     expect(resolveCurtainVelcroHeight({ projection: 300, curtainWindowExit: 210 })).toBe(200);
     expect(resolveCurtainVelcroHeight({ projection: 300 })).toBe(290);
     // Iván, 22/09/2026: sin el descuento de 18 cm, en Cambio de cortina es +8.
-    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(218);
+    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(308);
     expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300 })).toBe(308);
   });
 
@@ -1409,7 +1409,7 @@ describe('maqueta única del planteamiento de telas', () => {
     expect(text).not.toMatch(oldTotalsPattern);
   });
 
-  test('la cota suelo-ventana resta 18 cm en Cortina y no en Cambio de cortina (Iván, 22/09/2026)', async () => {
+  test('la cota a suelo resta 18 en ambas cortinas y no depende del descuento de tela (Iván, 02/10/2026)', async () => {
     const windowAwning = {
       id: 'a', of: '0239002', units: 1, width: 240, projection: 285, valanceHeight: 0,
       rotFabric: 'NO', curtainHasWindow: true, curtainFinish: 'NORMAL',
@@ -1424,13 +1424,13 @@ describe('maqueta única del planteamiento de telas', () => {
       ...windowAwning, model: 'CORTINA', device: 'MOTOR', structureColor: 'BLANCO', placement: 'FRONTAL'
     }));
 
-    expect(change).not.toMatch(/\b72\b/);
+    expect(change).toMatch(/\b72\b/);
     expect(full).toMatch(/\b72\b/);
 
     const fullWithoutDeduction = await fabricPageText(order({
       ...windowAwning, model: 'CORTINA', device: 'MOTOR', structureColor: 'BLANCO', placement: 'FRONTAL', curtainSkipBottomDeduction: true
     }));
-    expect(fullWithoutDeduction).not.toMatch(/\b72\b/);
+    expect(fullWithoutDeduction).toMatch(/\b72\b/);
   });
 
   test('Cambio de cortina sin ventana lo dice en el dibujo y pone sus medidas (Iván, 22/09/2026)', async () => {
@@ -1471,7 +1471,7 @@ describe('maqueta única del planteamiento de telas', () => {
       }]
     });
 
-    expect(text.match(/CORTINA · SIN VENTANA · TUBO/g)).toHaveLength(1);
+    expect(text.match(/CORTINA · SIN VENTANA · ET ABAJO/g)).toHaveLength(1);
     expect(text).not.toContain('CORTINA TUBO');
   });
 

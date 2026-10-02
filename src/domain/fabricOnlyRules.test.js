@@ -159,13 +159,13 @@ describe('trabajos solo de tela', () => {
     expect(modified.diagnostics[0].level).toBe('warn');
   });
 
-  test('CAMBIO CORTINA con ventana exige las cuatro medidas del Excel', () => {
+  test('CAMBIO CORTINA con ventana exige tres cotas; la salida es la del toldo', () => {
     const incomplete = calculate('CAMBIO CORTINA', {
       curtainHasWindow: true,
       curtainFinish: 'NORMAL'
     });
     expect(incomplete.ofs[0].materials).toEqual([]);
-    expect(incomplete.diagnostics[0].message).toContain('falta salida ventana, esquina, suelo-ventana y altura ventana');
+    expect(incomplete.diagnostics[0].message).toContain('falta esquina, suelo-ventana y altura ventana');
 
     const complete = calculate('CAMBIO CORTINA', {
       curtainHasWindow: true,
@@ -184,7 +184,7 @@ describe('trabajos solo de tela', () => {
 
     expect(result.ofs[0].materials).toEqual([]);
     expect(result.ofs[0].calculation.valid).toBe(false);
-    expect(result.diagnostics[0].message).toContain('falta ventana y confección');
+    expect(result.diagnostics[0].message).toContain('falta ventana y laterales');
   });
 
   test('CAMBIO CORTINA sin bamba no descuenta ni suma el remate de 5 (Iván, 22/09/2026)', () => {
@@ -219,7 +219,7 @@ describe('trabajos solo de tela', () => {
     });
   });
 
-  test('CAMBIO CORTINA no descuenta: la salida medida ya es la de la tela; el candado permite un descuento puntual (Iván, 22/09/2026)', () => {
+  test('CAMBIO CORTINA suma margen sin descontar; conserva un descuento antiguo con candado', () => {
     const awning = { projection: 250, valanceHeight: 20, curtainHasWindow: false, curtainFinish: 'NORMAL' };
     const standard = calculate('CAMBIO CORTINA', awning);
     const deducted = calculate('CAMBIO CORTINA', { ...awning, reglasModificadas: true, curtainFabricDeductionCm: 18 });
@@ -257,7 +257,7 @@ describe('trabajos solo de tela', () => {
     });
   });
 
-  test('los parámetros editables controlan margen y descuento de CAMBIO CORTINA', () => {
+  test('el margen de CAMBIO CORTINA es editable y su antiguo descuento global no se aplica', () => {
     const result = calculateOrder({
       ...base,
       parameters: {
@@ -270,7 +270,7 @@ describe('trabajos solo de tela', () => {
       }]
     });
 
-    expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 310, curtainFabricDeductionCm: 10 });
+    expect(result.ofs[0].calculation).toMatchObject({ fabricDrop: 320, curtainFabricDeductionCm: 0 });
   });
 
   test.each([

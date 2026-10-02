@@ -13,7 +13,8 @@ describe('condiciones con valores reales de cada modelo', () => {
     const cortina = drawingConditionOptions('CORTINA');
     expect(cortina.find((o) => o.field === 'device').values).toEqual(['MAQ. INTERIOR', 'MAQ. EXTERIOR', 'MOTOR']);
     expect(cortina.find((o) => o.field === 'curtainHasWindow')).toMatchObject({ label: 'Con ventana', values: ['SÍ', 'NO'] });
-    expect(cortina.find((o) => o.field === 'curtainFinish').values).toEqual(['NORMAL', 'VELCRO', 'TUBO']);
+    expect(cortina.find((o) => o.field === 'curtainFinish').values).toEqual(['NORMAL', 'VELCRO']);
+    expect(cortina.find((o) => o.field === 'curtainBottomFinish').values).toEqual(['TUBO DE CARGA', 'ET']);
     expect(fields('CORTINA')).not.toContain('irisGuideType');
     expect(fields('ENROLLABLE')).toEqual(['fabricDiagramOverride']);
     expect(drawingConditionOptions('IRIS').find((o) => o.field === 'device').values).toEqual(['MAQUINA', 'MOTOR']);
@@ -35,7 +36,7 @@ describe('condiciones con valores reales de cada modelo', () => {
 describe('variantes del dibujo de la web', () => {
   it('Cortina por ventana y confección; Enrollable general y cambio; Hera sin dibujo de la web', () => {
     expect(webDrawingVariants('CORTINA').map((v) => v.id)).toEqual([
-      'con-ventana', 'con-ventana-velcro', 'con-ventana-tubo', 'sin-ventana', 'sin-ventana-velcro', 'sin-ventana-tubo'
+      'con-ventana', 'con-ventana-velcro', 'con-ventana-tubo', 'sin-ventana', 'sin-ventana-velcro', 'sin-ventana-tubo', 'con-ventana-velcro-tubo', 'sin-ventana-velcro-tubo'
     ]);
     expect(webDrawingVariants('ENROLLABLE').map((v) => v.id)).toEqual(['general', 'cambio-enrollable']);
     expect(webDrawingVariants('ARZUA PRO').map((v) => v.label)).toEqual(['General', 'Toldo con velcro']);

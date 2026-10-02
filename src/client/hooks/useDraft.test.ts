@@ -368,3 +368,14 @@ describe('dibujo del taller elegido en la tarjeta (02/10/2026)', () => {
     expect(switchAwningModel(awning, 'BAMBALINA').workshopDrawingId).toBe('');
   });
 });
+describe('Cortina · acabados y ajuste independientes', () => {
+  test('persiste velcro con ET, referencia a tubo y ajuste con signo', () => {
+    const awning = sanitizeAwning({ ...createAwning(), model: 'CORTINA', curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainWindowReference: 'TUBO DE CARGA', curtainFabricAdjustment: 'PERSONALIZADO', curtainFabricAdjustmentCm: -23 });
+    expect(sanitizeAwning(awning as unknown as Record<string, unknown>)).toMatchObject({ curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainWindowReference: 'TUBO DE CARGA', curtainFabricAdjustment: 'PERSONALIZADO', curtainFabricAdjustmentCm: -23 });
+    expect(switchAwningModel(awning, 'CAMBIO CORTINA')).toMatchObject({ curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainWindowReference: 'TUBO DE CARGA', curtainFabricAdjustmentCm: -23 });
+    expect(switchAwningModel(awning, 'IRIS')).toMatchObject({ curtainFinish: '', curtainBottomFinish: '', curtainWindowReference: '', curtainFabricAdjustment: '', curtainFabricAdjustmentCm: null });
+  });
+  test('interpreta Tubo antiguo como ET inferior con laterales normales', () => {
+    expect(sanitizeAwning({ model: 'CORTINA', curtainFinish: 'TUBO' })).toMatchObject({ curtainFinish: 'NORMAL', curtainBottomFinish: 'ET', curtainFabricAdjustment: 'NINGUNO' });
+  });
+});

@@ -1,4 +1,5 @@
 import { noteOverride } from './ruleOverrides.js';
+import { curtainBottomAllowanceCm, curtainConfigurationError, curtainFabricAdjustmentCm } from './curtainConfiguration.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -47,9 +48,7 @@ export function calculateFabricOnly({ order, awning }) {
   }
 
   const curtainDeduction = model === 'CAMBIO CORTINA'
-    ? modified
-      ? Math.max(0, Number(awning.curtainFabricDeductionCm) || 0)
-      : curtainParameters.bottomDeductionCm
+    ? -curtainFabricAdjustmentCm(awning) || 0
     : 0;
   const bodyDrop = calculateBodyDrop({
     model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance, curtainParameters, curtainDeduction
@@ -75,16 +74,20 @@ export function calculateFabricOnly({ order, awning }) {
   }) : { panels: 0, ml: 0 };
 
   const missingWindowDimensions = model === 'CAMBIO CORTINA' && awning.curtainHasWindow
-    ? ['curtainWindowExit', 'curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight'].filter((field) => !Number(awning[field]))
+    ? ['curtainWindowCorner', 'curtainWindowFloorHeight', 'curtainWindowHeight'].filter((field) => !Number(awning[field]))
     : [];
   const missingCurtainConfig = model === 'CAMBIO CORTINA' && (awning.curtainHasWindow === null || !awning.curtainFinish);
   const missingAnticaConfig = model === 'CAMBIO ANTICA' && !anticaVariant;
+  const curtainError = model === 'CAMBIO CORTINA' ? curtainConfigurationError(awning) : '';
   const invalidAnticaValance = model === 'CAMBIO ANTICA'
     && anticaVariant === 'TUBO 50X30 SIN BAMBA' && valanceHeight > 0;
   const valid = Boolean(fabric) && (!separateValance || Boolean(valanceFabric))
     && !missingCurtainConfig && missingWindowDimensions.length === 0
-    && !missingAnticaConfig && !invalidAnticaValance && !cambioTelaError;
+    && !missingAnticaConfig && !invalidAnticaValance && !cambioTelaError && !curtainError && (model !== 'CAMBIO CORTINA' || fabricDrop > 0);
   const totalMl = round2(mainUsage.ml + valanceUsage.ml);
+  const extraErrors = [];
+  if (curtainError) extraErrors.push({ level: 'error', awningId: awning.id, message: `Falta ${curtainError}.` });
+  if (model === 'CAMBIO CORTINA' && fabricDrop <= 0) extraErrors.push({ level: 'error', awningId: awning.id, message: 'La salida de tela debe ser mayor que cero después del ajuste.' });
   const calculation = {
     model, valid, minimumLine: 0,
     width: awning.width, projection: awning.projection,
@@ -109,10 +112,10 @@ export function calculateFabricOnly({ order, awning }) {
     description: buildDescription(awning, calculation),
     materials: valid ? buildMaterials(fabric, mainUsage.ml, valanceFabric, valanceUsage.ml) : [],
     despiece: null,
-    diagnostics: buildDiagnostics({
+    diagnostics: [...buildDiagnostics({
       awning, model, fabric, fabricSelection, separateValance, valanceFabric,
       missingCurtainConfig, missingWindowDimensions, missingAnticaConfig, invalidAnticaValance, cambioTelaError, modified
-    }),
+    }), ...extraErrors],
     calculation
   };
 }
@@ -127,6 +130,7 @@ function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanc
     return Number(awning.projection)
       + (separateValance ? 0 : valanceHeight)
       + Math.max(0, curtainAllowance)
+      + curtainBottomAllowanceCm(awning)
       - curtainDeduction;
   }
   // La medida de la tela vieja ya incluye la entrada de tubo y la bamba de la misma

@@ -74,6 +74,10 @@ export type Awning = {
   anticaCrankColor?: 'AUTOMÁTICO' | 'BLANCA' | 'NEGRA';
   curtainHasWindow: boolean | null;
   curtainFinish: '' | 'NORMAL' | 'VELCRO' | 'TUBO';
+  curtainBottomFinish?: '' | 'TUBO DE CARGA' | 'ET';
+  curtainWindowReference?: '' | 'SUELO' | 'TUBO DE CARGA';
+  curtainFabricAdjustment?: '' | 'NINGUNO' | 'TUBO DE CARGA' | 'ET' | 'PERSONALIZADO';
+  curtainFabricAdjustmentCm?: number | null;
   curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM';
   electraSupport: '' | ElectraSupport;
   curtainWindowExit: number | null;
@@ -81,7 +85,7 @@ export type Awning = {
   curtainWindowFloorHeight: number | null;
   curtainWindowHeight: number | null;
   curtainFabricDeductionCm: number | null;
-  /** Cortina: el técnico elige no restar los 18 cm de abajo (por defecto se restan). */
+  /** Opción antigua de Cortina; el ajuste actual se guarda en curtainFabricAdjustment. */
   curtainSkipBottomDeduction: boolean;
   /** Cambio de cortina: cómo va arriba. Remachado lleva bastilla. */
   curtainTopFinish: '' | 'VARILLA' | 'REMACHADO';
@@ -399,7 +403,7 @@ export type FabricJobParameters = {
   seamBaseCm: number;
 };
 
-export type DrawingConditionField = 'device' | 'placement' | 'submodel' | 'machineSide' | 'supportSystem' | 'tubeLoad' | 'hasValance' | 'valanceCurve' | 'curtainHasWindow' | 'curtainFinish' | 'curtainSupport' | 'electraSupport' | 'irisGuideType' | 'irisGuideFixing' | 'irisWindBlock' | 'anticaVariant' | 'anticaMeasurementMode' | 'fabricDiagramOverride';
+export type DrawingConditionField = 'device' | 'placement' | 'submodel' | 'machineSide' | 'supportSystem' | 'tubeLoad' | 'hasValance' | 'valanceCurve' | 'curtainHasWindow' | 'curtainFinish' | 'curtainBottomFinish' | 'curtainSupport' | 'electraSupport' | 'irisGuideType' | 'irisGuideFixing' | 'irisWindBlock' | 'anticaVariant' | 'anticaMeasurementMode' | 'fabricDiagramOverride';
 export type DrawingCondition = { field: DrawingConditionField; value: string };
 export type DrawingVariant = {
   id: string;

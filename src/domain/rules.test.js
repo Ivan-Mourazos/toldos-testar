@@ -1653,14 +1653,14 @@ describe('CORTINA · decisiones de Iván y consumo real (22/09/2026)', () => {
   const codes = (ofBlock) => ofBlock.materials.map((item) => item.code);
   const qty = (ofBlock, code) => ofBlock.materials.find((item) => item.code === code)?.quantity;
 
-  test('resta 18 cm por defecto y el técnico puede elegir no restarlos', () => {
-    expect(calc({}).calculation).toMatchObject({ valid: true, fabricDrop: 297, curtainFabricDeductionCm: 18 });
-    const skipped = calc({ curtainSkipBottomDeduction: true });
-    expect(skipped.calculation).toMatchObject({ valid: true, fabricDrop: 315, curtainFabricDeductionCm: 0 });
+  test('no descuenta por defecto y permite descontar 18 sin candado (Iván, 02/10/2026)', () => {
+    expect(calc({}).calculation).toMatchObject({ valid: true, fabricDrop: 315, curtainFabricDeductionCm: 0 });
+    const deducted = calc({ curtainFabricAdjustment: 'TUBO DE CARGA' });
+    expect(deducted.calculation).toMatchObject({ valid: true, fabricDrop: 297, curtainFabricDeductionCm: 18 });
   });
 
   test('sin bamba no suma el remate de 5 cm', () => {
-    expect(calc({ valanceHeight: 0 }).calculation.fabricDrop).toBe(272);
+    expect(calc({ valanceHeight: 0 }).calculation.fabricDrop).toBe(290);
     expect(calc({ valanceHeight: 0, curtainSkipBottomDeduction: true }).calculation.fabricDrop).toBe(290);
   });
 

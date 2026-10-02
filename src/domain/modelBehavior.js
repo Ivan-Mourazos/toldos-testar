@@ -125,7 +125,8 @@ export function normalizeFabricDiagramOverride(modelCode, value) {
 export function getAwningDiagram(awning) {
   const model = String(awning?.model || '').toUpperCase();
   if (!model.includes('CORTINA') && model !== 'ELECTRA' && model !== 'SELENA') return getModelDiagram(model);
-  const finish = ['VELCRO', 'TUBO'].includes(awning?.curtainFinish) ? awning.curtainFinish : 'NORMAL';
+  const finish = awning?.curtainFinish === 'VELCRO' ? 'VELCRO'
+    : awning?.curtainBottomFinish === 'ET' || awning?.curtainFinish === 'TUBO' ? 'TUBO' : 'NORMAL';
   if (awning?.curtainHasWindow) {
     if (finish === 'VELCRO') return 'CORTINA-VENTANA-VELCRO';
     if (finish === 'TUBO') return 'CORTINA-TUBO-VENTANA';

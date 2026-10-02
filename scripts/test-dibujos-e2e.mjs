@@ -136,7 +136,7 @@ try {
   await page.reload();
   await irAParametros(page);
   await irAModelo(page, 'Cortina');
-  await page.locator('.drawing-today-item').filter({ hasText: 'Sin ventana · velcro' }).getByText(`«${VELCRO}» lo sustituye siempre.`).waitFor();
+  await page.locator('.drawing-today-item').filter({ has: page.getByText('Sin ventana · velcro', { exact: true }) }).getByText(`«${VELCRO}» lo sustituye siempre.`).waitFor();
   await page.locator('.drawing-today-item').filter({ has: page.getByText('Sin ventana', { exact: true }) }).getByText('Sale el de la web.').waitFor();
   await capturas(page, 'parametros-cortina-lo-que-sale-hoy', '.drawing-today');
   const antigua = page.locator('.drawing-rule').filter({ has: page.locator(`input[value="${ANTIGUO}"]`) });
@@ -185,7 +185,7 @@ try {
   await tarjetaNueva.getByRole('group', { name: 'Cómo se usa' }).getByRole('button', { name: 'Automático cuando…', exact: true }).click();
   await tarjetaNueva.getByRole('button', { name: 'Añadir condición', exact: true }).click();
   const campos = await tarjetaNueva.getByLabel('Campo de la condición').locator('option').allInnerTexts();
-  assert.ok(campos.includes('Confección') && !campos.includes('Tipo de guía'), JSON.stringify(campos));
+  assert.ok(campos.includes('Laterales') && campos.includes('Acabado inferior') && !campos.includes('Tipo de guía'), JSON.stringify(campos));
   await capturas(page, 'parametros-cortina-condiciones', '.drawing-rule:last-child');
   await page.getByRole('region', { name: 'Guardar el modelo' }).getByRole('button', { name: 'Descartar cambios', exact: true }).click();
   await page.getByRole('region', { name: 'Guardar el modelo' }).getByRole('button', { name: 'Descartar', exact: true }).click();

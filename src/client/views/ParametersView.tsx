@@ -781,12 +781,11 @@ function CambioCortinaParametersView({ parameters, selectedModel, onUpdate, onRe
       kind="tela"
       description="Confección de tela sin estructura ni lacado."
       onReset={onReset}
-      evidence="168 cortinas de 2025 y 2026 revisadas: la reserva de RPS coincide con la que calcula la web. En Cambio de cortina la salida medida ya es la de la tela, así que no se descuenta (Iván, 22/09/2026); un descuento puntual se pone con el candado de la tarjeta."
+      evidence="Iván, 02/10/2026: Cambio de cortina suma el mismo margen de cuerpo que Cortina, más 10 cm con ET abajo y bamba + 5 cm si va en la misma tela. El ajuste de salida se elige en la tarjeta, sin candado."
     >
       <ParameterBand number="01" title="Caída y paños" description="Regla estándar aplicada al alto medido y a la bamba.">
         <div className="parameter-grid parameter-grid-3">
-          <NumberField label="Margen inferior tela (cm)" value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
-          <NumberField label="Descuento inferior estándar (cm)" value={parameters.bottomDeductionCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ bottomDeductionCm: value })} />
+          <NumberField label="Margen de cuerpo (cm)" value={Math.max(0, parameters.fabricDropAllowanceCm - 5)} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value + 5 })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
@@ -822,14 +821,13 @@ function CortinaParametersView({ parameters, selectedModel, onUpdate, onReset }:
       model={selectedModel}
       description={selena ? 'Sistema vertical con brazos Stor, confección de tela y reserva RPS.' : 'Reglas de estructura, confección de tela y reserva RPS.'}
       onReset={onReset}
-      evidence={selena ? 'Pedido AR.26.03959 contrastado: frente 290, caída 160 y bamba integrada de 15 producen un corte de 278 × 230 cm y 6,9 ml. La caída suma 50 cm y la bamba integrada añade 5 cm de confección.' : '110 estructuras y 68 PDF de 2026 revisados. La variante Maxiscreem cambia únicamente el soporte y comparte estos descuentos con la Cortina normal; la caída estándar suma 45 cm.'}
+      evidence={selena ? 'Pedido AR.26.03959 contrastado: frente 290, caída 160 y bamba integrada de 15 producen un corte de 278 × 230 cm y 6,9 ml. La caída suma 50 cm y la bamba integrada añade 5 cm de confección.' : 'Iván, 02/10/2026: salida + margen de cuerpo, más 10 cm con ET abajo y bamba + 5 cm si va en la misma tela. Sin descuento por defecto; el ajuste se elige en la tarjeta. El soporte Maxiscreen comparte los descuentos de frente de la Cortina normal.'}
     >
       <ParameterBand number="01" title="Límites y caída" description="Medidas estándar y margen inferior aplicado a la tela.">
         <div className="parameter-grid parameter-grid-3">
           <NumberField label="Frente máximo (cm)" value={parameters.standardMaxWidth} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxWidth: value })} />
           <NumberField label="Altura máxima (cm)" value={parameters.standardMaxDrop} min={1} onChange={(value) => value !== null && onUpdate({ standardMaxDrop: value })} />
-          <NumberField label={selena ? 'Margen para recorrido vertical (cm)' : 'Margen inferior tela (cm)'} value={parameters.fabricDropAllowanceCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: value })} />
-          {!selena && <NumberField label="Descuento inferior tela (cm)" value={parameters.bottomDeductionCm} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ bottomDeductionCm: value })} />}
+          <NumberField label={selena ? 'Margen para recorrido vertical (cm)' : 'Margen de cuerpo (cm)'} value={selena ? parameters.fabricDropAllowanceCm : Math.max(0, parameters.fabricDropAllowanceCm - 5)} min={0} step={0.5} onChange={(value) => value !== null && onUpdate({ fabricDropAllowanceCm: selena ? value : value + 5 })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
           {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}

@@ -1158,3 +1158,9 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .review-inline-preview .pdf-carousel-stage,
 .awning-panel-drawing .pdf-carousel-stage { padding: 4px; }
 .awning-panel-drawing .pdf-carousel-stage { height: clamp(340px, calc(100dvh - 310px), 1100px); }
+/* Cortina: acabados, cota de ventana y ajuste de tela independientes. */
+.curtain-config .curtain-adjustment-row { display: grid; gap: 4px 8px; grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) minmax(96px, 0.6fr); }
+.curtain-adjustment-row:not(:has(> label)) > .field { grid-column: 1 / -1; }
+.curtain-config .curtain-window-measures { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.curtain-window-reference, .curtain-field-hint { grid-column: 1 / -1; }
+.curtain-field-hint { color: var(--text-muted); font-size: 11px; line-height: 1.4; margin: 0; }

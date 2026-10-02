@@ -76,3 +76,28 @@
 .is-new-order .rem-campo .segmented-option { min-height: 26px; }
 .is-new-order :is(.fabric-proposal-pending, .rem-del-cliente) { border-radius: 4px; font-size: 10px; font-weight: 600; padding: 2px 5px; }
 .is-new-order :is(.rem-pdf-falta, .awning-status, .rem-editor-estado) { border-radius: 6px; font-size: 11px; line-height: 1.4; }
+/* Cabecera de Toldos: una fila de identidad y una sola referencia de tela visible. */
+.app-shell .order-header-simple { align-items: start; display: grid; gap: 8px 16px; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); padding: 12px; }
+.app-shell .order-header-simple > .order-header-group { border: 0; padding: 0; }
+.app-shell .order-header-simple .order-header-grid { align-items: start; }
+.app-shell .order-header-simple .order-customer { line-height: 16px; min-height: 28px; padding: 5px 10px; }
+.order-header-simple .order-header-general > h3 { display: none; }
+.app-shell .order-header-simple > .order-header-material { border: 0; padding: 0; }
+.order-header-simple .order-header-material > h3 { display: none; }
+.order-header-simple .order-fabric-row { grid-template-columns: minmax(0, 1fr) auto; }
+.order-header-simple .order-fabric-cluster { gap: 5px; }
+.app-shell .order-header-simple .order-material-cluster { border: 0; padding: 0; }
+.order-header-simple .order-fabric-common-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.app-shell .order-header-simple > .order-autofill-summary { border: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; grid-column: 1 / -1; margin: 0; padding: 0; }
+.order-header-simple :is(.order-rps-details, .order-fabric-alternatives, .order-fabric-notes) { min-width: 0; }
+.order-header-simple summary { color: var(--text-muted); cursor: pointer; font-size: 11px; font-weight: 600; padding-block: 3px; }
+.order-header-simple summary:hover { color: var(--text); }
+.order-header-simple summary:focus-visible { border-radius: 4px; outline: 2px solid var(--control-active-border); outline-offset: 3px; }
+.order-fabric-alternatives summary { color: var(--text); }
+.order-fabric-alternatives summary > span { color: var(--text-muted); font-weight: 400; margin-left: 10px; }
+.order-header-simple :is(.order-rps-details, .order-fabric-alternatives)[open] { flex-basis: 100%; }
+.order-header-simple .order-fabric-proposals { margin-top: 8px; }
+.order-header-simple .order-fabric-proposal-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.order-header-simple .order-fabric-proposal-option { min-width: 0; text-align: left; white-space: normal; }
+.order-header-simple .order-rps-details > div { color: var(--text-muted); font-size: 11px; }
+.order-header-simple .order-rps-details > div > strong { margin-right: 10px; }

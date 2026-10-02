@@ -1,8 +1,7 @@
 export const defaultCambioCortinaParameters = {
   fabricDropAllowanceCm: 45,
-  // En Cambio de cortina la salida medida ya es la que debe llevar la tela: no
-  // se descuenta. Los 18 cm son de Cortina (Iván, 22/09/2026). Queda el candado
-  // de la tarjeta para un descuento puntual.
+  // Parámetro antiguo conservado para compatibilidad. El ajuste actual se elige
+  // en la tarjeta y no se descuenta nada por defecto (Iván, 02/10/2026).
   bottomDeductionCm: 0,
   seamAllowanceCm: 2.2,
   seamBaseCm: 7

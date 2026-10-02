@@ -25,6 +25,7 @@ export const drawingConditionLabels = {
   valanceCurve: 'Curva de la bamba',
   curtainHasWindow: 'Con ventana',
   curtainFinish: 'Confección',
+  curtainBottomFinish: 'Acabado inferior',
   curtainSupport: 'Soporte de la cortina',
   electraSupport: 'Tipo de soporte',
   irisGuideType: 'Tipo de guía',
@@ -57,7 +58,7 @@ export function drawingConditionOptions(model) {
   const curtain = code.includes('CORTINA') || code === 'ELECTRA';
   const options = [];
   const add = (field, values) => {
-    if (values.length) options.push({ field, label: drawingConditionLabels[field], values: [...values] });
+    if (values.length) options.push({ field, label: field === 'curtainFinish' && code.includes('CORTINA') ? 'Laterales' : drawingConditionLabels[field], values: [...values] });
   };
   if (visible.device) add('device', visible.deviceOptions || []);
   if (visible.placement) add('placement', formOptions.colocaciones);
@@ -68,7 +69,8 @@ export function drawingConditionOptions(model) {
   if (supportsValance && code !== 'BAMBALINA') add('hasValance', YES_NO);
   if (supportsValance) add('valanceCurve', formOptions.curvasBamba);
   if (curtain || code === 'SELENA') add('curtainHasWindow', YES_NO);
-  if (curtain) add('curtainFinish', CURTAIN_FINISHES);
+  if (curtain) add('curtainFinish', code.includes('CORTINA') ? ['NORMAL', 'VELCRO'] : CURTAIN_FINISHES);
+  if (code.includes('CORTINA')) add('curtainBottomFinish', ['TUBO DE CARGA', 'ET']);
   if (code === 'CORTINA' || code === 'SELENA') add('curtainSupport', ['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM']);
   if (code === 'ELECTRA') add('electraSupport', electraSupports);
   if (code === 'IRIS') {
@@ -133,7 +135,15 @@ export function webDrawingVariants(model) {
       { id: 'con-ventana', label: 'Con ventana', awning: { curtainHasWindow: true } }
     ];
   } else if (code.includes('CORTINA') || code === 'ELECTRA') {
-    base = CURTAIN_VARIANTS;
+    base = code === 'ELECTRA' ? CURTAIN_VARIANTS : [
+      ...CURTAIN_VARIANTS.map((variant) => ({
+        ...variant,
+        label: variant.label.replace(' · tubo', ' · ET abajo'),
+        awning: { ...variant.awning, curtainFinish: variant.awning.curtainFinish === 'TUBO' ? 'NORMAL' : variant.awning.curtainFinish, curtainBottomFinish: variant.awning.curtainFinish === 'TUBO' ? 'ET' : 'TUBO DE CARGA' }
+      })),
+      { id: 'con-ventana-velcro-tubo', label: 'Con ventana · velcro · ET abajo', awning: { curtainHasWindow: true, curtainFinish: 'VELCRO', curtainBottomFinish: 'ET' } },
+      { id: 'sin-ventana-velcro-tubo', label: 'Sin ventana · velcro · ET abajo', awning: { curtainHasWindow: false, curtainFinish: 'VELCRO', curtainBottomFinish: 'ET' } }
+    ];
   } else if (code === 'ANTICA' || code === 'CAMBIO ANTICA') {
     base = anticaVariants.map((variant) => ({ id: slug(variant), label: variant, awning: { anticaVariant: variant } }));
   } else if (code === 'IRIS') {
