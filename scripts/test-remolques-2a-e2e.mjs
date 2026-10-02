@@ -20,7 +20,7 @@
 // Ejecutar con la aislada en marcha: node scripts/test-remolques-2a-e2e.mjs
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { BASE_URL, openApp, buscarPedido } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { calcLona } from '../src/remolques/calc/lona.ts';
 import { DEFAULT_PARAMS } from '../src/remolques/calc/params.ts';
 import { claveBorradores } from '../src/remolques/workspace/borradores-locales.ts';
@@ -96,6 +96,7 @@ const rpsResponde = async (numero) => {
     // escribir el mismo pedido.
     await page.waitForTimeout(900);
     await page.reload();
+    await page.getByRole('button', { name: 'Remolques', exact: true }).click();
     await page.getByLabel('Pedido', { exact: true }).waitFor();
     assert.ok(await page.getByRole('button', { name: /^Remolques/ }).getAttribute('aria-pressed') === 'true', 'tras recargar sigue en Remolques');
     await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_PRUEBA);
@@ -183,6 +184,7 @@ for (const tema of ['claro', 'oscuro']) {
       // Tras recargar, el borrador trae las medidas de detrás y el interruptor arranca en Sí.
       await page.waitForTimeout(900);
       await page.reload();
+      await page.getByRole('button', { name: 'Remolques', exact: true }).click();
       await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_SESGO);
       await pestanas(page).first().waitFor();
       await pestanas(page).first().click();
@@ -246,7 +248,7 @@ if (!hayRps) {
   const lineasRps = (await (await fetch(`${BASE_URL}/api/remolques/rps-pedido?numero=${PEDIDO_RPS}`)).json()).pedido.lineas;
   assert.equal(lineasRps.length, 3, `${PEDIDO_RPS} trae 3 líneas de lona en RPS`);
   const dialogo = (page) => page.getByRole('alertdialog');
-  const obtener = (page) => page.getByRole('button', { name: 'Buscar', exact: true });
+  const obtener = (page) => ({ click: async () => buscarPedido(page, await page.locator('.rem-cabecera').getByLabel('Pedido', { exact: true }).inputValue()) });
   const largoAbierto = async (page) => editor(page).locator('input[data-campo="largo"]').inputValue();
   const ofAbierta = async (page) => (await editor(page).getByLabel('O.F.', { exact: true }).inputValue()).trim();
   const tresPestanas = async (page, mensaje) => {
@@ -344,6 +346,7 @@ if (!hayRps) {
       // Los borradores siguen: tras recargar vuelven los 3, sin crear otros encima.
       await page.waitForTimeout(900);
       await page.reload();
+      await page.getByRole('button', { name: 'Remolques', exact: true }).click();
       await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_RPS);
       await pestanas(page).first().waitFor();
       await page.waitForTimeout(1500);
@@ -453,9 +456,7 @@ if (!hayRps) {
     try {
       // Con Remolques ya visitada hay dos «Pedido» (el de toldos y el oculto de remolques).
       const orden = page.locator('.order-header:not(.rem-cabecera)').getByLabel('Pedido', { exact: true });
-      const obtenerToldos = page.getByRole('button', { name: 'Buscar', exact: true });
-      await orden.fill(PEDIDO_RPS);
-      await obtenerToldos.click();
+      await buscarPedido(page, PEDIDO_RPS);
       await page.locator('.rem-cabecera').waitFor();
       assert.equal(await page.locator('.order-header:not(.rem-cabecera) .order-autofill-summary').count(), 0, 'el pedido de remolques no rellena el formulario de toldos');
       assert.equal(await page.getByRole('button', { name: /^Remolques/ }).getAttribute('aria-pressed'), 'true', 'el selector pasa a Remolques');
@@ -468,7 +469,7 @@ if (!hayRps) {
 
       // Abrirlo otra vez desde Toldos no duplica: ya está al día.
       await page.getByRole('button', { name: 'Toldos', exact: true }).click();
-      await obtenerToldos.click();
+      await buscarPedido(page, PEDIDO_RPS);
       await page.getByText('no hay nada nuevo que traer').first().waitFor();
       assert.equal(await pestanas(page).count(), 3, 'abrirlo otra vez no duplica');
       console.log('OK: abrirlo otra vez desde Toldos no duplica los elementos');
@@ -476,9 +477,9 @@ if (!hayRps) {
       // Un pedido inexistente conserva el tipo y el formulario.
       await page.getByRole('button', { name: 'Toldos', exact: true }).click();
       await orden.fill('AR.26.99999');
-      await obtenerToldos.click();
+      await buscarPedido(page, 'AR.26.99999');
       await page.waitForTimeout(1500);
-      assert.equal(await page.getByRole('button', { name: 'Toldos', exact: true }).getAttribute('aria-pressed'), 'true', 'un pedido inexistente no cambia el tipo');
+      assert.equal(await page.locator('.order-entry').isVisible(), true, 'un pedido inexistente mantiene la entrada');
       console.log('OK: sin aviso para un pedido que no existe ni al cambiar de número');
       assert.deepEqual(errors.filter((e) => !/404/.test(e)), [], 'sin errores de consola');
     } finally {

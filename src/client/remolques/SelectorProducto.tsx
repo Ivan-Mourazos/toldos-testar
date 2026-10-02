@@ -18,7 +18,7 @@ export function guardarProducto(producto: Producto, storage: Storage | null = wi
 // «en pruebas» el 02/10/2026 (Iván): hace todo lo que hacía la web vieja.
 export type ResumenPedido = { numero: string; elementos: number };
 
-export function SelectorProducto({ producto, onChange, pedidos }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>> }) {
+export function SelectorProducto({ producto, onChange, pedidos, inicio = false, disabled = false }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean }) {
   const detalle = (tipo: Producto) => {
     const pedido = pedidos?.[tipo];
     return pedido?.numero.trim() || pedido?.elementos
@@ -27,16 +27,15 @@ export function SelectorProducto({ producto, onChange, pedidos }: { producto: Pr
   };
   return (
     <div className="producto-contexto">
-    <span className="producto-etiqueta">Empezar a mano</span>
+    {inicio && <span className="producto-etiqueta">Empezar un pedido</span>}
     <div className="tira-3d producto-selector" role="group" aria-label="Producto">
-      <button type="button" aria-label="Toldos" aria-describedby="pedido-toldos-resumen" className={producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'toldos'} onClick={() => onChange('toldos')}>
-        <strong>Toldos</strong><small id="pedido-toldos-resumen">{detalle('toldos')}</small>
+      <button type="button" disabled={disabled} aria-label="Toldos" title={detalle('toldos')} className={!inicio && producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'toldos'} onClick={() => onChange('toldos')}>
+        Toldos
       </button>
-      <button type="button" aria-label="Remolques" aria-describedby="pedido-remolques-resumen" className={producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'remolques'} onClick={() => onChange('remolques')}>
-        <strong>Remolques</strong><small id="pedido-remolques-resumen">{detalle('remolques')}</small>
+      <button type="button" disabled={disabled} aria-label="Remolques" title={detalle('remolques')} className={!inicio && producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'remolques'} onClick={() => onChange('remolques')}>
+        Remolques
       </button>
     </div>
-    <small className="producto-conserva">Cada tipo conserva sus datos al cambiar.</small>
     </div>
   );
 }

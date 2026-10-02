@@ -10,7 +10,7 @@ export function OrderSearch({ number, onChange, loading, onSearch }: {
     <label htmlFor="order-search-number">Buscar pedido</label>
     <div className="order-search-controls">
       <input id="order-search-number" value={number} onChange={event => onChange(event.target.value)}
-        placeholder="AR26xxxxx" autoComplete="off" disabled={loading} aria-describedby="order-search-help"
+        placeholder="Número de pedido · AR26xxxxx" autoComplete="off" disabled={loading}
         onKeyDown={event => lookupOnEnter({ key: event.key, composing: event.nativeEvent.isComposing,
           disabled, preventDefault: () => event.preventDefault(), lookup: onSearch })} />
       <button className="primary-button order-search-button" type="submit" disabled={disabled} aria-busy={loading}>
@@ -18,6 +18,5 @@ export function OrderSearch({ number, onChange, loading, onSearch }: {
         {loading ? 'Buscando…' : 'Buscar'}
       </button>
     </div>
-    <span id="order-search-help">Buscar o Enter: abre el pedido en Toldos o Remolques.</span>
   </form>;
 }

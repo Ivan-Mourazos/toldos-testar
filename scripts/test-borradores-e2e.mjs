@@ -10,7 +10,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { BASE_URL, addAwning, fillArzuaAR2603332, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { BASE_URL, addAwning, fillArzuaAR2603332, openApp, buscarPedido } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { editor, teclearCaso } from './lib/remolques-e2e.mjs';
 
 const SALIDA = 'tmp/ui-audit/borradores';
@@ -185,7 +185,7 @@ try {
   // ── 7. Iván obtiene el pedido: «Abrir borrador», y lo pasa a revisión ──
   await page.getByRole('button', { name: 'Toldos', exact: true }).click();
   await toldos(page).getByLabel('Pedido', { exact: true }).fill(T1);
-  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+  await buscarPedido(page, T1);
   await dialogo(page).getByText(`${T1} tiene un borrador de Jaime del`).waitFor();
   await capturas(page, '5-obtener-con-borrador');
   // El cálculo llega tras cargar el formulario; con él pendiente, guardar avisa «Faltan datos»: se
@@ -210,7 +210,7 @@ try {
   // ── 8. Remolques: «Empezar de cero» deja el borrador; Jaime lo sigue y lo pasa a revisión ──
   await page.getByRole('button', { name: /^Remolques/ }).first().click();
   await remolques(page).getByLabel('Pedido', { exact: true }).fill(R1.pedido);
-  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+  await buscarPedido(page, R1.pedido);
   await dialogo(page).getByText(`${R1.codigo} tiene un borrador de Iván del`).waitFor();
   await dialogo(page).getByRole('button', { name: 'Empezar de cero', exact: true }).click();
   // Sigue con RPS como siempre (en la aislada puede no responder: da igual aquí).

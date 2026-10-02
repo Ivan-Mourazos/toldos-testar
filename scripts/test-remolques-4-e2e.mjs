@@ -21,7 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { BASE_URL, openApp, buscarPedido } from '../.claude/skills/running-toldos-testar/drive.mjs';
 import { muestrasHoja, NOMBRES_MUESTRAS } from '../src/remolques/hoja/muestras.ts';
 import { lineasObservaciones } from '../src/remolques/hoja/observaciones.ts';
 import { paginaHoja } from '../src/remolques/hoja/pagina.ts';
@@ -166,7 +166,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
     // Escribir el número no trae nada (Iván, 01/10/2026): los elementos salen al pulsar «Obtener».
     await page.waitForTimeout(1200);
     assert.equal(await page.locator('.rem-pestana-abrir').count(), 0, 'escribir el número no crea elementos');
-    await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+    await buscarPedido(page, PEDIDO_MIXTO);
     await page.waitForFunction(() => document.querySelectorAll('.rem-pestana-abrir').length === 4);
     assert.match((await page.locator('.rem-pestana-abrir').allInnerTexts())[0], /^A · Baquetón 260×160/, 'el primero es el baquetón de la línea 1');
     // Solo el baquetón A: se quitan los demás (del último al segundo, cada uno con su confirmación).

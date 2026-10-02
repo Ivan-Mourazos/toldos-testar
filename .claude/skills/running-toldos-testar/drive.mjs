@@ -28,8 +28,17 @@ export async function openApp(viewport = { width: 1600, height: 1000 }, { user =
 }
 
 export async function addAwning(page, modelName) {
+  if (await page.locator('.order-entry').isVisible()) await page.getByRole('button', { name: 'Toldos', exact: true }).click();
   await page.getByRole('button', { name: /Añadir toldo/ }).click();
   await page.getByRole('button', { name: new RegExp(`^${modelName}`) }).first().click();
+}
+
+// Buscar empieza en la entrada sencilla; el editor se abre con el tipo que traiga RPS.
+export async function buscarPedido(page, numero) {
+  const volver = page.getByRole('button', { name: 'Buscar otro pedido', exact: true });
+  if (await volver.isVisible()) await volver.click();
+  await page.getByRole('textbox', { name: 'Buscar pedido', exact: true }).fill(numero);
+  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
 }
 
 // SelectField: combobox con nombre de etiqueta; las opciones muestran la

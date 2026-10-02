@@ -7,6 +7,9 @@ const search = page.getByRole('textbox', { name: 'Buscar pedido', exact: true })
 const selected = tipo => page.getByRole('button', { name: tipo, exact: true });
 const toldos = () => page.locator('.order-header:not(.rem-cabecera)');
 try {
+  assert.equal(await page.locator('.order-header:visible').count(), 0, 'al entrar todavía no se muestra el editor');
+  assert.equal(await page.locator('.order-actions:visible').count(), 0, 'al entrar no se muestran acciones de edición');
+  assert.deepEqual((await page.locator('.workspace-content button:visible').allTextContents()).map(text => text.trim()), ['Buscar', 'Toldos', 'Remolques'], 'la entrada solo permite buscar o empezar un pedido');
   // Este escenario prueba RPS; la apertura de borradores tiene su propia prueba completa.
   await page.route('**/api/borradores/AR2603332', route => route.fulfill({ status: 404, json: { error: 'Sin borrador para esta prueba' } }));
   let liberarParametros;
@@ -25,6 +28,7 @@ try {
   await page.unroute('**/api/remolques/parametros');
   assert.equal(await selected('Remolques').getAttribute('aria-pressed'), 'true');
   console.log('OK: Enter detecta Remolques y trae las cuatro líneas');
+  await page.getByRole('button', { name: 'Buscar otro pedido', exact: true }).click();
   await search.fill('AR.26.04286');
   const pedidoEncontrado = page.waitForResponse(response => response.url().includes('/api/remolques/rps-pedido') && response.url().includes('04286'));
   await search.press('Enter');
@@ -39,13 +43,16 @@ try {
   await selected('Toldos').click();
   await toldos().getByLabel('Pedido', { exact: true }).fill('AR.26.99811');
   await addAwning(page, 'Arzúa Pro');
+  await page.getByRole('button', { name: 'Buscar otro pedido', exact: true }).click();
   await search.fill('AR2603332');
   await page.getByRole('button', { name: 'Buscar', exact: true }).click();
   const confirmar = page.getByRole('alertdialog');
   await confirmar.getByRole('button', { name: 'Conservar formulario', exact: true }).click();
+  await selected('Toldos').click();
   assert.equal(await toldos().getByLabel('Pedido', { exact: true }).inputValue(), 'AR.26.99811');
   assert.equal(await page.locator('[data-awning-letter]').count(), 1);
   await selected('Remolques').click();
+  await page.getByRole('button', { name: 'Buscar otro pedido', exact: true }).click();
   await search.fill('AR2603332');
   await page.getByRole('button', { name: 'Buscar', exact: true }).click();
   await confirmar.getByRole('button', { name: 'Obtener y rellenar', exact: true }).click();
@@ -57,11 +64,14 @@ try {
   await selected('Remolques').click();
   assert.equal(await page.locator('.rem-pestana-abrir').count(), 4);
   assert.equal(await page.locator('.rem-cabecera').getByLabel('Pedido', { exact: true }).inputValue(), 'AR.26.04414');
+  await page.getByRole('button', { name: 'Buscar otro pedido', exact: true }).click();
   await search.fill('AR.26.99999');
   const inexistente = page.waitForResponse(response => response.url().includes('/api/orders/AR.26.99999/autofill'));
   await search.press('Enter');
   assert.equal((await inexistente).status(), 404);
   await page.waitForFunction(() => !document.querySelector('.order-search-button').disabled);
+  assert.equal(await page.locator('.order-header:visible').count(), 0, 'un pedido inexistente mantiene la entrada sencilla');
+  await selected('Remolques').click();
   assert.equal(await selected('Remolques').getAttribute('aria-pressed'), 'true');
   assert.equal(await page.locator('.rem-pestana-abrir').count(), 4);
   console.log('OK: cambiar de tipo y buscar un pedido inexistente conserva los datos');

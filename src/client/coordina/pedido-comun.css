@@ -6,7 +6,19 @@
   gap: 8px 12px;
   padding-block: 8px;
 }
-.is-new-order .workspace-heading { display: grid; grid-template-columns: minmax(280px, 1fr) auto; gap: 16px; min-width: 0; }
+.is-new-order .workspace-heading { align-items: center; display: flex; gap: 16px; min-width: 0; }
+.app-workspace > .topbar[hidden] { display: none; }
+.order-entry { display: grid; gap: 24px; margin: 80px auto 0; max-width: 540px; }
+.order-entry .order-search { gap: 12px; }
+.order-entry .order-search > label, .order-entry .producto-etiqueta { color: var(--text); font-size: 20px; font-weight: 600; text-transform: none; }
+.app-shell .order-entry .order-search-controls > input { font-size: 18px; height: 52px; }
+.order-entry .order-search-button { font-size: 14px; min-height: 52px; padding-inline: 18px; }
+.order-entry-or { color: var(--text-muted); font-size: 12px; text-align: center; }
+.order-entry .producto-contexto { gap: 12px; }
+.order-entry .producto-selector { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.order-entry .producto-selector .pestana { font-size: 16px; min-height: 48px; }
+.order-entry-back { font-size: 12px; min-height: 34px; }
+.order-entry-back svg { height: 15px; width: 15px; }
 .order-search { display: grid; gap: 3px; min-width: 0; }
 .order-search > label { color: var(--text); font-size: 12px; font-weight: 600; }
 .order-search-controls { align-items: stretch; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) auto; }
@@ -17,7 +29,7 @@
 .producto-contexto { display: grid; gap: 3px; min-width: 0; }
 .workspace-heading .producto-etiqueta { color: var(--text-muted); font-size: 10px; font-weight: 600; margin: 0; }
 .producto-selector { gap: 6px; }
-.producto-selector .pestana { align-items: start; display: flex; flex-direction: column; gap: 2px; height: auto; min-height: 48px; min-width: 142px; padding: 6px 10px; text-align: left; }
+.producto-selector .pestana { align-items: center; display: flex; font-size: 12px; justify-content: center; min-height: 34px; min-width: 82px; padding: 6px 12px; }
 .producto-selector strong { font-size: 12px; font-weight: 600; }
 .producto-selector small { color: var(--text-muted); font-size: 10px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .producto-selector .pestana-activa small { color: inherit; }

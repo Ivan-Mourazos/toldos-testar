@@ -5,7 +5,7 @@ import {
   FilePen,
   Save,
   UserRound,
-  X, Undo2, Moon, Sun, ArrowUpRight } from 'lucide-react';
+  X, Undo2, Moon, Sun, ArrowUpRight, ArrowLeft } from 'lucide-react';
 // Letra de CoordinaOT (Geist y Geist Mono) servida desde el proyecto; Didact Gothic es la
 // sustituta de Century Gothic para «Planteamientos» en la cabecera (ver coordina/piezas.css).
 import '@fontsource-variable/geist';
@@ -72,7 +72,9 @@ export default function App() {
   const [resumenRemolques, setResumenRemolques] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [accionesPedido, setAccionesPedido] = useState<HTMLDivElement | null>(null);
   const [numeroBusqueda, setNumeroBusqueda] = useState<string | null>(null);
+  const [editorPedidoAbierto, setEditorPedidoAbierto] = useState(false);
   function chooseProducto(next: Producto) {
+    setEditorPedidoAbierto(true);
     setNumeroBusqueda(null);
     setProducto(next);
     guardarProducto(next);
@@ -674,10 +676,10 @@ export default function App() {
       </header>
 
       <section className="app-workspace">
-        <header className="topbar">
+        <header className="topbar" hidden={activeTab === 'order' && !editorPedidoAbierto}>
           <div className="workspace-heading">
             {activeTab !== 'order' && <h2>{viewTitle}</h2>}
-            {activeTab === 'order' && <OrderSearch number={numeroBusqueda ?? (producto === 'toldos' ? draft.orderCode : resumenRemolques.numero)} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? (producto === 'toldos' ? draft.orderCode : resumenRemolques.numero))} />}
+            {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
             {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes
@@ -686,7 +688,7 @@ export default function App() {
                 ? <ParametersHistory key="remolques" version={remolquesSettings.saved.version} endpoint="/api/remolques/parametros/history" labels={{ lona: 'Lona y contorno', ollaos: 'Ollaos', recogidas: 'Recogidas', baqueton: 'Baquetón', clientesBaqueton: 'Clientes con baquetón' }} onLoadVersion={remolquesSettings.loadVersion} />
                 : <ParametersHistory key="toldos" version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />)}
           </div>
-          <div className="order-actions-host" ref={setAccionesPedido} hidden={activeTab !== 'order'}>
+          <div className="order-actions-host" ref={setAccionesPedido} hidden={activeTab !== 'order' || !editorPedidoAbierto}>
           {activeTab === 'order' && producto === 'toldos' && (
             <OrderActions>
               <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={() => void clearForm()}>
@@ -711,7 +713,12 @@ export default function App() {
         </header>
 
         <div className="workspace-content">
-          {activeTab === 'order' && producto === 'toldos' && returnNote && (
+          {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
+            <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
+            <span className="order-entry-or">o</span>
+            <SelectorProducto inicio disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques }} />
+          </section>}
+          {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && returnNote && (
             <div className="review-state-note is-returned order-return-note" role="status">
               <Undo2 aria-hidden="true" />
               <span>
@@ -720,7 +727,7 @@ export default function App() {
               </span>
             </div>
           )}
-          {activeTab === 'order' && producto === 'toldos' && (
+          {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && (
             <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
               <OrderView
                 availableModelNames={catalog?.models.map((model) => model.code) ?? []}
@@ -763,9 +770,9 @@ export default function App() {
           )}
 
           {remolquesMontado && (
-            <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
+            <div className="remolques-pantalla" hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'remolques'}>
               <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
-                accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && producto === 'remolques'} onResumenChange={setResumenRemolques}
+                accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'remolques'} onResumenChange={setResumenRemolques}
                 onLimpiar={() => setLimpiarRemolques((n) => n + 1)}
                 pedidoGuardadoSolicitado={pedidoGuardadoSolicitado}
                 borradorSolicitado={borradorRemolquesSolicitado}
