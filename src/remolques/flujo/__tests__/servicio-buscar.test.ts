@@ -65,3 +65,33 @@ describe("buscar en los pedidos de remolques guardados", () => {
     expect((error as Error).message).toContain("largo");
   });
 });
+
+describe("buscar por las fichas de cliente", () => {
+  it("el nombre de una ficha saca los pedidos con sus códigos de RPS; si las fichas no se leen, busca por el nombre", async () => {
+    const carpeta = carpetaDePrueba();
+    const almacen = crearAlmacenPedidosRemolques({ carpeta: async () => carpeta });
+    for (const pedido of PEDIDOS_BUSQUEDA()) await almacen.guardar(pedido);
+    let fichas: () => Promise<{ nombre: string; codigosRps: string[] }[]> = async () => [{ nombre: "Transportes Lusitânia", codigosRps: ["001300"] }];
+    const registrar = vi.fn();
+    const servicio = crearServicioPedidosRemolques({
+      almacen,
+      ajustes: async () => { throw new Error("El buscador no mira las carpetas compartidas."); },
+      parametros: async () => DEFAULT_PARAMS,
+      coordina: { statusOf: async () => ({ disponible: false }) },
+      tecnicos: ["IVÁN"],
+      hacerPdf: async () => new Uint8Array(),
+      esPedidoDeToldos: async () => false,
+      fichas: () => fichas(),
+      registrar,
+    });
+
+    const porFicha = await servicio.buscar({ cliente: "TRANSPORTES LUSITANIA" });
+    expect(porFicha.filas.map((f) => `${f.orderCode}-${f.letra} ${f.codigoCliente}`)).toEqual(["AR2605000-A 001300"]);
+    expect((await servicio.buscar({ cliente: "transportes" })).total).toBe(0);
+
+    fichas = async () => { throw new Error("fichero roto"); };
+    expect((await servicio.buscar({ cliente: "TRANSPORTES LUSITANIA" })).total).toBe(0);
+    expect((await servicio.buscar({ cliente: "001300" })).total).toBe(1);
+    expect(registrar).toHaveBeenCalledWith(expect.stringContaining("fichero roto"));
+  });
+});

@@ -57,7 +57,10 @@ export function pedidoGuardado(elementos: ElementoGuardado[], cambios: Partial<P
   };
 }
 
-/** AR2604286 (A lona, B baquetón), AR2605000 generado (A lona) y AR2501234 del año pasado (A lona). */
+/**
+ * AR2604286 (A lona, B baquetón; cliente de RPS 000450), AR2605000 generado (A lona; 001300) y
+ * AR2501234 del año pasado (A lona; guardado sin cliente de RPS).
+ */
 export const PEDIDOS_BUSQUEDA = (): PedidoRemolques[] => [
   pedidoGuardado([
     lonaGuardada("AR.26.04286", "10",
@@ -66,7 +69,7 @@ export const PEDIDOS_BUSQUEDA = (): PedidoRemolques[] => [
     baquetonGuardado("AR.26.04286", "11",
       { rotulacion: true },
       { cliente: "TALLERES CAL", fecha: "2026-09-10", ordenFabricacion: "231781" }),
-  ]),
+  ], { clienteRps: { codigo: "000450", nombre: "TALLERES CAL, S.L." } }),
   pedidoGuardado([
     lonaGuardada("AR.26.05000", "10",
       {
@@ -75,7 +78,7 @@ export const PEDIDOS_BUSQUEDA = (): PedidoRemolques[] => [
         material: "LONA NS86 2L 630 g/m² :GRIS CLARO 7038",
       },
       { cliente: "HIJOS DE PEDRO LÓPEZ, S.L.", fecha: "2026-09-20", ordenFabricacion: "240001" }),
-  ], { status: "PRODUCED", updatedAt: "2026-09-21T08:00:00.000Z" }),
+  ], { status: "PRODUCED", updatedAt: "2026-09-21T08:00:00.000Z", clienteRps: { codigo: "001300", nombre: "HIJOS DE PEDRO LOPEZ, S.L." } }),
   pedidoGuardado([
     lonaGuardada("AR.25.01234", "10",
       {

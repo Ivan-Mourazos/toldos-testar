@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FilaBusqueda, ResultadoBusqueda } from '../../remolques/flujo/buscar.ts';
 import {
   buscarRemolques, estadoBuscadorInicial, fechaCorta, filtrosDesdeFormulario, formularioVacio, leerOpcionesBuscador, MENSAJE_SIN_CONEXION, RUTA_BUSCAR,
-  textoContador, textoCorte, textoMedidas, textoRecogidas,
+  textoCliente, textoContador, textoCorte, textoMedidas, textoRecogidas,
 } from './busquedaRemolques';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -10,7 +10,7 @@ const respuesta = (status: number, datos: unknown) => ({ ok: status < 400, statu
 const fila = (cambios: Partial<FilaBusqueda> = {}): FilaBusqueda => ({
   orderCode: 'AR2501234', numeroPedido: 'AR.25.01234', version: '10', letra: 'A', tipo: 'lona', cliente: 'REMOLQUES AYALA',
   fecha: '2025-12-01', modelo: 'Con chaflán', largo: 190, ancho: 136.5, alto: 103, recogeDelante: 'NO', recogeAtras: 'CREMALLERA',
-  material: 'LONA NS86', of: '0199999', estado: 'PENDING_REVIEW', ...cambios,
+  material: 'LONA NS86', of: '0199999', estado: 'PENDING_REVIEW', codigoCliente: '', ...cambios,
 });
 const resultado = (cambios: Partial<ResultadoBusqueda> = {}): ResultadoBusqueda => ({ filas: [], total: 0, pedidos: 0, cortado: false, limite: 500, ...cambios });
 
@@ -67,11 +67,14 @@ describe('llamada al servidor', () => {
     await expect(buscarRemolques({})).rejects.toThrow(MENSAJE_SIN_CONEXION);
   });
 
-  it('opciones: las recogidas de los parámetros y los nombres de las fichas; si algo falla, vacío', async () => {
+  it('opciones: las recogidas de los parámetros y las fichas con sus códigos de RPS; si algo falla, vacío', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) => (url === '/api/remolques/parametros'
       ? respuesta(200, { recogidas: [{ nombre: 'NO' }, { nombre: 'GOMA' }, { nombre: 'PUENTES HIJOS DE PEDRO LOPEZ' }] })
-      : respuesta(200, { fichas: [{ id: 'gw', nombre: 'GENERAL WOLDER', codigosRps: [] }, { id: 'ayala', nombre: 'AYALA', codigosRps: [] }] }))));
-    expect(await leerOpcionesBuscador()).toEqual({ recogidas: ['NO', 'GOMA', 'PUENTES HIJOS DE PEDRO LOPEZ'], clientes: ['AYALA', 'GENERAL WOLDER'] });
+      : respuesta(200, { fichas: [{ id: 'gw', nombre: 'GENERAL WOLDER', codigosRps: [] }, { id: 'ayala', nombre: 'AYALA', codigosRps: [' 000077 ', '000078'] }] }))));
+    expect(await leerOpcionesBuscador()).toEqual({
+      recogidas: ['NO', 'GOMA', 'PUENTES HIJOS DE PEDRO LOPEZ'],
+      clientes: [{ nombre: 'AYALA', codigos: ['000077', '000078'] }, { nombre: 'GENERAL WOLDER', codigos: [] }],
+    });
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('caído')));
     expect(await leerOpcionesBuscador()).toEqual({ recogidas: [], clientes: [] });
   });
@@ -93,5 +96,14 @@ describe('textos de la lista', () => {
     expect(textoRecogidas(fila({ tipo: 'baqueton', recogeDelante: '', recogeAtras: '' }))).toBe('—');
     expect(fechaCorta('2025-12-01')).toBe('01/12/2025');
     expect(fechaCorta('')).toBe('—');
+  });
+});
+
+describe('el cliente de cada fila', () => {
+  it('con el código de RPS al lado si se sabe', () => {
+    expect(textoCliente(fila({ cliente: 'HIJOS DE PEDRO LOPEZ', codigoCliente: '001300' }))).toBe('HIJOS DE PEDRO LOPEZ · 001300');
+    expect(textoCliente(fila())).toBe('REMOLQUES AYALA');
+    expect(textoCliente(fila({ cliente: '', codigoCliente: '001300' }))).toBe('Sin cliente · 001300');
+    expect(textoCliente(fila({ cliente: '' }))).toBe('Sin cliente');
   });
 });

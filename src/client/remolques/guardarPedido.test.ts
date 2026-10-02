@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
 import { emptyBaqueton, emptyLona } from '../../remolques/entradas-vacias.ts';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
-import { contenidoBorradorRemolques, cuerpoGuardar, lineasDesdePedidoGuardado } from './guardarPedido';
+import { clienteRpsDeLineas, contenidoBorradorRemolques, cuerpoGuardar, lineasDesdePedidoGuardado } from './guardarPedido';
 import { cuerpoVistaPrevia } from './vistaPrevia';
 
 const lona = emptyLona();
@@ -18,6 +18,45 @@ describe('cuerpoGuardar', () => {
     expect(cuerpoGuardar([linea], DEFAULT_PARAMS, 'IVÁN', false)).toEqual({
       ...cuerpoVistaPrevia([linea]), params: DEFAULT_PARAMS, savedBy: 'IVÁN', confirmOverwrite: false,
     });
+  });
+
+  it('si los elementos vienen de RPS manda el cliente de RPS (código y nombre)', () => {
+    const cuerpo = cuerpoGuardar([deRps(linea, '001300')], DEFAULT_PARAMS, 'IVÁN', false);
+    expect(cuerpo.clienteRps).toEqual({ codigo: '001300', nombre: 'HIJOS DE PEDRO LOPEZ' });
+    expect(cuerpo.elementos[0]).not.toHaveProperty('origenRps');
+  });
+});
+
+/** La línea como la deja «Obtener de RPS» del pedido AR.26.04286. */
+function deRps(base: LineaPedido, codigo: string, numeroPedido = 'AR.26.04286'): LineaPedido {
+  return {
+    ...base,
+    origenRps: {
+      numeroPedido, numeroLinea: 1, idLinea: 'X', ordenFabricacion: null, importadoEn: '2026-10-02T08:00:00.000Z',
+      cliente: { codigo, nombre: 'HIJOS DE PEDRO LOPEZ', alias: null },
+    },
+  };
+}
+
+describe('clienteRpsDeLineas', () => {
+  const otra: LineaPedido = { ...linea, version: '11' };
+
+  it('toma el de la primera línea que lo trae; sin RPS no hay', () => {
+    expect(clienteRpsDeLineas([linea, deRps(otra, '001300')])).toEqual({ codigo: '001300', nombre: 'HIJOS DE PEDRO LOPEZ' });
+    expect(clienteRpsDeLineas([linea])).toBeNull();
+    expect(clienteRpsDeLineas([])).toBeNull();
+    expect(cuerpoGuardar([linea], DEFAULT_PARAMS, 'IVÁN', false)).not.toHaveProperty('clienteRps');
+  });
+
+  it('si dos líneas traen clientes distintos se queda el primero y lo apunta', () => {
+    const avisar = vi.fn();
+    expect(clienteRpsDeLineas([deRps(linea, '001300'), deRps(otra, '002000')], avisar)).toEqual({ codigo: '001300', nombre: 'HIJOS DE PEDRO LOPEZ' });
+    expect(avisar).toHaveBeenCalledWith(expect.stringContaining('002000'));
+  });
+
+  it('no usa el cliente de una línea traída de otro pedido de RPS', () => {
+    expect(clienteRpsDeLineas([deRps(linea, '001300', 'AR.26.09999')])).toBeNull();
+    expect(clienteRpsDeLineas([deRps(linea, '001300', 'ar2604286')])).toEqual({ codigo: '001300', nombre: 'HIJOS DE PEDRO LOPEZ' });
   });
 });
 

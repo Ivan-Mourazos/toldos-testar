@@ -58,6 +58,16 @@ export interface ResumenPedido {
   awningList?: ResumenElemento[];
 }
 
+/**
+ * El cliente de RPS del pedido (02/10/2026): su código no falla al buscar; el nombre escrito, sí.
+ * Lo manda la pantalla si los elementos se trajeron de RPS, o lo pone el comando que completa los
+ * pedidos guardados antes. Es opcional: los pedidos de antes siguen valiendo sin él.
+ */
+export interface ClienteRpsPedido {
+  codigo: string;
+  nombre: string;
+}
+
 export interface OrigenMigracion {
   web: "remolques-tgm";
   ids: string[];
@@ -85,6 +95,8 @@ export interface PedidoRemolques {
   /** Los parámetros con que se calculó el pedido al guardarlo: «Corregir» vuelve a ellos. */
   params: CalcParams;
   elementos: ElementoGuardado[];
+  /** El cliente de RPS, si se sabe. Va también en lo que lista Pedidos. */
+  clienteRps?: ClienteRpsPedido;
   /** Solo en los que vienen de la web vieja (comando de migración). */
   origen?: OrigenMigracion;
 }

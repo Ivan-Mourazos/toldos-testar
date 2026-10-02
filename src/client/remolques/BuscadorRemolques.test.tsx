@@ -8,12 +8,12 @@ import { estadoBuscadorInicial, type EstadoBuscador } from './busquedaRemolques'
 const fila = (cambios: Partial<FilaBusqueda> = {}): FilaBusqueda => ({
   orderCode: 'AR2501234', numeroPedido: 'AR.25.01234', version: '11', letra: 'B', tipo: 'lona', cliente: 'REMOLQUES AYALA',
   fecha: '2025-12-01', modelo: 'Con chaflán', largo: 190, ancho: 136, alto: 103, recogeDelante: 'CREMALLERA', recogeAtras: 'VELCRO',
-  material: 'LONA NS86 2L 630 :GRIS 7037', of: '0199999', estado: 'PENDING_REVIEW', ...cambios,
+  material: 'LONA NS86 2L 630 :GRIS 7037', of: '0199999', estado: 'PENDING_REVIEW', codigoCliente: '', ...cambios,
 });
 const resultado = (cambios: Partial<ResultadoBusqueda> = {}): ResultadoBusqueda => ({
   filas: [
     fila(),
-    fila({ orderCode: 'AR2605000', numeroPedido: 'AR.26.05000', version: '10', letra: 'A', tipo: 'baqueton', modelo: 'Baquetón', largo: 260.5, ancho: 160, alto: null, recogeDelante: '', recogeAtras: '', estado: 'PRODUCED' }),
+    fila({ orderCode: 'AR2605000', numeroPedido: 'AR.26.05000', version: '10', letra: 'A', tipo: 'baqueton', cliente: 'HIJOS DE PEDRO LOPEZ', codigoCliente: '001300', modelo: 'Baquetón', largo: 260.5, ancho: 160, alto: null, recogeDelante: '', recogeAtras: '', estado: 'PRODUCED' }),
   ],
   total: 2, pedidos: 2, cortado: false, limite: 500, ...cambios,
 });
@@ -32,6 +32,7 @@ describe('el buscador de remolques', () => {
     expect(html).toContain('Quitar filtros');
     expect(html).toContain('aria-label="Buscar en los remolques"');
     expect(html).toContain('>Cliente<');
+    expect(html).toContain('placeholder="Nombre, ficha o código de RPS"');
     for (const grupo of ['Tipo', 'Estado', 'Lado de la recogida', 'Ventana', 'Rotulación', 'Bastilla de enfundar', 'Detrás distinto']) {
       expect(html).toContain(`role="group" aria-label="${grupo}"`);
     }
@@ -59,6 +60,8 @@ describe('el buscador de remolques', () => {
     expect(html).toContain('Cremallera / Velcro');
     expect(html).toContain('>Pendiente<');
     expect(html).toContain('aria-label="Abrir AR.26.05000 · A"');
+    expect(html).toContain('title="HIJOS DE PEDRO LOPEZ · 001300"');
+    expect(html).toContain('<span class="buscador-cliente-codigo">· 001300</span>');
     expect(html).toContain('260,5 × 160 cm');
     expect(html).toContain('>Generado<');
   });

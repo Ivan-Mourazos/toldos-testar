@@ -10,7 +10,7 @@ import { anioDelPlanteamiento } from "../salida/nombre-pdf.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
 import {
   ESQUEMA_PEDIDO_REMOLQUES, TIPO_PEDIDO_REMOLQUES,
-  type ElementoGuardado, type FicheroGenerado, type PedidoRemolques, type ResumenElemento, type ResumenPedido,
+  type ClienteRpsPedido, type ElementoGuardado, type FicheroGenerado, type PedidoRemolques, type ResumenElemento, type ResumenPedido,
   type ResumenPedidoRemolques,
 } from "./tipos.ts";
 
@@ -32,6 +32,21 @@ export function codigoPedido(numeroPedido: string): string {
   const codigo = normalizarNumeroPedido(String(numeroPedido ?? ""));
   if (!codigo) throw new ErrorPedidoRemolques("Falta el número de pedido.");
   return codigo.slice(0, 80);
+}
+
+export const MENSAJE_CLIENTE_RPS_MAL = "El cliente de RPS del pedido no es válido: hace falta su código.";
+
+/**
+ * El cliente de RPS que manda la pantalla, comprobado: un código de texto (recortado) y, si viene, su
+ * nombre. Sin él (undefined o null) da undefined: al volver a guardar se queda el que ya tenía.
+ */
+export function validarClienteRps(bruto: unknown): ClienteRpsPedido | undefined {
+  if (bruto === undefined || bruto === null) return undefined;
+  const c = bruto as { codigo?: unknown; nombre?: unknown };
+  const nombreValido = c.nombre === undefined || c.nombre === null || typeof c.nombre === "string";
+  const codigo = typeof bruto === "object" && !Array.isArray(bruto) && typeof c.codigo === "string" ? c.codigo.trim() : "";
+  if (!codigo || !nombreValido) throw new ErrorPedidoRemolques(MENSAJE_CLIENTE_RPS_MAL);
+  return { codigo: codigo.slice(0, 40), nombre: typeof c.nombre === "string" ? c.nombre.trim().slice(0, 200) : "" };
 }
 
 /** El modelo de un elemento en Pedidos: el perfil de la lona («Recto con aguas») o «Baquetón». */
@@ -85,12 +100,15 @@ const conCabecera = (elemento: ElementoGuardado, cambios: Partial<CabeceraInput>
  * El pedido que se guarda para revisión. `datos` sale de prepararPedidoHoja (completo, ordenado y
  * calculado); `autoria`, de reviewAuthorship. El autor queda como «Realizado por» de cada elemento.
  */
-export function crearPedidoRemolques({ datos, autoria, existente, ahora }: {
+export function crearPedidoRemolques({ datos, autoria, existente, ahora, clienteRps }: {
   datos: DatosHojaPedido;
   autoria: { technician: string; reviewer: string };
   existente: PedidoRemolques | null;
   ahora: string;
+  /** El que manda la pantalla; sin él se queda el del pedido guardado («Corregir» no lo trae). */
+  clienteRps?: ClienteRpsPedido;
 }): PedidoRemolques {
+  const cliente = clienteRps ?? existente?.clienteRps;
   const numeroPedido = datos.elementos[0].input.cabecera.numeroPedido.trim();
   const elementos = datos.elementos.map((e) => conCabecera(
     { version: e.version, tipo: e.tipo, input: e.input, result: e.result, paramsSnapshot: datos.params },
@@ -112,6 +130,7 @@ export function crearPedidoRemolques({ datos, autoria, existente, ahora }: {
     summary: resumenPedido(elementos, autoria),
     params: datos.params,
     elementos,
+    ...(cliente ? { clienteRps: cliente } : {}),
   };
 }
 

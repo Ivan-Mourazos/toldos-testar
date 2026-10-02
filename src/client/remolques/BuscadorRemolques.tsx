@@ -6,7 +6,7 @@ import { CAMPOS_MEDIDA, MARGEN_POR_DEFECTO, type CampoMedida, type FiltrosBusque
 import type { Notify } from '../components/NotificationCenter';
 import { SelectField } from '../components/SelectField';
 import {
-  buscarRemolques, ETIQUETAS_MEDIDA, fechaCorta, filtrosDesdeFormulario, formularioVacio, leerOpcionesBuscador, textoContador,
+  buscarRemolques, ETIQUETAS_MEDIDA, fechaCorta, filtrosDesdeFormulario, formularioVacio, leerOpcionesBuscador, textoCliente, textoContador,
   textoCorte, textoMedidas, textoRecogidas,
   type EstadoBuscador, type FormularioBusqueda, type MedidaFormulario, type OpcionesBuscador,
 } from './busquedaRemolques';
@@ -151,10 +151,12 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
         <div className="buscador-filtros bloque-3d-hundido">
           <label className="buscador-campo">
             <span className="buscador-rotulo">Cliente</span>
-            <input type="text" list="buscador-clientes" value={formulario.cliente} placeholder="Nombre o ficha de cliente"
+            <input type="text" list="buscador-clientes" value={formulario.cliente} placeholder="Nombre, ficha o código de RPS"
               onChange={(evento) => cambiar({ cliente: evento.target.value })} />
             <datalist id="buscador-clientes">
-              {opciones.clientes.map((nombre) => <option key={nombre} value={nombre} />)}
+              {opciones.clientes.map(({ nombre, codigos }) => (
+                <option key={nombre} value={nombre} label={codigos.length ? `${nombre} · RPS ${codigos.join(', ')}` : undefined} />
+              ))}
             </datalist>
           </label>
           <Tira etiqueta="Tipo" valor={formulario.tipo} opciones={TIPOS} onCambio={(tipo) => cambiar({ tipo })} />
@@ -219,7 +221,11 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
                 <button type="button" className="buscador-fila bloque-3d" aria-label={`Abrir ${fila.numeroPedido} · ${fila.letra}`}
                   onClick={() => onAbrir(fila.orderCode, fila.version)}>
                   <strong className="buscador-pedido">{fila.numeroPedido}<span>{` · ${fila.letra}`}</span></strong>
-                  <span title={fila.cliente}>{fila.cliente || 'Sin cliente'}</span>
+                  {/* El código de RPS siempre se ve: si no cabe, se corta el nombre. */}
+                  <span className="buscador-cliente" title={textoCliente(fila)}>
+                    <span>{fila.cliente || 'Sin cliente'}</span>
+                    {fila.codigoCliente && <>{' '}<span className="buscador-cliente-codigo">· {fila.codigoCliente}</span></>}
+                  </span>
                   <span>{fechaCorta(fila.fecha)}</span>
                   <span>{fila.modelo}</span>
                   <span>{textoMedidas(fila)}</span>

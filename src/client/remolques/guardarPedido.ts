@@ -1,6 +1,7 @@
 import type { ContenidoRemolques } from '../../borradores/tipos.ts';
 import type { CalcParams } from '../../remolques/calc/params.ts';
-import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
+import type { ClienteRpsPedido, PedidoRemolques } from '../../remolques/flujo/tipos.ts';
+import { normalizarNumeroPedido } from '../../remolques/pedidos/numero-pedido.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import { cuerpoVistaPrevia } from './vistaPrevia';
 
@@ -8,9 +9,33 @@ import { cuerpoVistaPrevia } from './vistaPrevia';
 
 export type ModoCarga = 'corregir' | 'reutilizar';
 
-/** Lo que manda «Guardar para revisión»: los elementos (el servidor los calcula), los parámetros con que se ven y quién guarda. */
+/**
+ * El cliente de RPS del pedido, sacado de las líneas que se trajeron de RPS (02/10/2026): con su
+ * código el buscador no falla. Solo cuentan las traídas de este mismo pedido. Todas las de un pedido
+ * tienen el mismo cliente; si no, se queda el primero y se apunta.
+ */
+export function clienteRpsDeLineas(
+  lineas: LineaPedido[],
+  avisar: (mensaje: string) => void = (mensaje) => console.warn(mensaje),
+): ClienteRpsPedido | null {
+  const clientes = lineas
+    .filter((linea) => linea.origenRps?.cliente?.codigo?.trim()
+      && normalizarNumeroPedido(linea.origenRps.numeroPedido ?? '') === normalizarNumeroPedido(linea.input.cabecera.numeroPedido ?? ''))
+    .map((linea) => linea.origenRps!.cliente!);
+  if (clientes.length === 0) return null;
+  const [primero] = clientes;
+  const otros = [...new Set(clientes.map((c) => c.codigo.trim()).filter((codigo) => codigo !== primero.codigo.trim()))];
+  if (otros.length) avisar(`Las líneas del pedido traen clientes de RPS distintos (${[primero.codigo.trim(), ...otros].join(', ')}): se guarda el ${primero.codigo.trim()}.`);
+  return { codigo: primero.codigo.trim(), nombre: primero.nombre.trim() };
+}
+
+/**
+ * Lo que manda «Guardar para revisión»: los elementos (el servidor los calcula), los parámetros con
+ * que se ven, quién guarda y, si los elementos vienen de RPS, el cliente de RPS.
+ */
 export function cuerpoGuardar(lineas: LineaPedido[], params: CalcParams, savedBy: string, confirmOverwrite: boolean) {
-  return { ...cuerpoVistaPrevia(lineas), params, savedBy, confirmOverwrite };
+  const clienteRps = clienteRpsDeLineas(lineas);
+  return { ...cuerpoVistaPrevia(lineas), params, savedBy, confirmOverwrite, ...(clienteRps ? { clienteRps } : {}) };
 }
 
 /**

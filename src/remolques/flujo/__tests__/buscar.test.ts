@@ -50,7 +50,7 @@ describe("buscarRemolques", () => {
   });
 
   it("con límite: salen los más nuevos, el total de verdad y el aviso de corte", () => {
-    const r = buscarRemolques(PEDIDOS_BUSQUEDA(), {}, 2);
+    const r = buscarRemolques(PEDIDOS_BUSQUEDA(), {}, { limite: 2 });
     expect(claves(r)).toEqual(["AR2605000-A", "AR2604286-A"]);
     expect(r).toMatchObject({ total: 4, pedidos: 3, cortado: true, limite: 2 });
   });
@@ -62,6 +62,7 @@ describe("buscarRemolques", () => {
       cliente: "HIJOS DE PEDRO LÓPEZ, S.L.", fecha: "2026-09-20", modelo: "Arquillado con aguas",
       largo: 253, ancho: 152, alto: 125, recogeDelante: "NO", recogeAtras: "CREMALLERA",
       material: "LONA NS86 2L 630 g/m² :GRIS CLARO 7038", of: "0240001", estado: "PRODUCED",
+      codigoCliente: "001300",
     });
     expect(filaBusqueda(p1, p1.elementos[1], 1)).toMatchObject({
       version: "11", letra: "B", tipo: "baqueton", modelo: "Baquetón", alto: null, recogeDelante: "", recogeAtras: "", of: "0231781",
@@ -82,6 +83,34 @@ describe("buscarRemolques", () => {
   it("cliente: por nombre o por el de su ficha, sin acentos ni mayúsculas", () => {
     expect(buscar({ cliente: "hijos de pedro lopez" })).toEqual(["AR2605000-A"]);
     expect(buscar({ cliente: "AYALA" })).toEqual(["AR2501234-A"]);
+  });
+
+  it("cliente: por el código de RPS guardado, con o sin ceros delante y aunque venga con el nombre", () => {
+    expect(buscar({ cliente: "001300" })).toEqual(["AR2605000-A"]);
+    expect(buscar({ cliente: "1300" })).toEqual(["AR2605000-A"]);
+    expect(buscar({ cliente: "HIJOS DE PEDRO LOPEZ · 001300" })).toEqual(["AR2605000-A"]);
+    expect(buscar({ cliente: "000450" })).toEqual(["AR2604286-A", "AR2604286-B"]);
+    // Un trozo de código no es el código; el pedido guardado sin código solo sale por su nombre.
+    expect(buscar({ cliente: "13" })).toEqual([]);
+    expect(buscar({ cliente: "199999" })).toEqual([]);
+  });
+
+  it("cliente: el nombre de una ficha saca los pedidos con uno de sus códigos de RPS, aunque se escribieran con otro nombre", () => {
+    const fichas = [
+      { nombre: "Talleres Caldas", codigosRps: ["000450", "000451"] },
+      { nombre: "Otra ficha", codigosRps: ["001300"] },
+    ];
+    const conFichas = (cliente: string) => claves(buscarRemolques(PEDIDOS_BUSQUEDA(), { cliente }, { fichas }));
+    expect(conFichas("talleres caldas")).toEqual(["AR2604286-A", "AR2604286-B"]);
+    expect(conFichas("OTRA FICHA")).toEqual(["AR2605000-A"]);
+    expect(buscar({ cliente: "talleres caldas" })).toEqual([]);
+    // Solo el nombre entero de la ficha: un trozo sigue buscando en el nombre del cliente.
+    expect(conFichas("caldas")).toEqual([]);
+  });
+
+  it("texto libre: también el código de RPS del cliente", () => {
+    expect(buscar({ texto: "001300" })).toEqual(["AR2605000-A"]);
+    expect(buscar({ texto: "000450 reflectante" })).toEqual(["AR2604286-A"]);
   });
 
   it("tipo y perfil", () => {

@@ -61,8 +61,8 @@ export interface EstadoBuscador {
 export interface OpcionesBuscador {
   /** Las recogidas de los parámetros (con las propias de las fichas), por su nombre guardado. */
   recogidas: string[];
-  /** Los nombres de las fichas de cliente, para sugerir en «Cliente». */
-  clientes: string[];
+  /** Las fichas de cliente con sus códigos de RPS, para sugerir en «Cliente». */
+  clientes: { nombre: string; codigos: string[] }[];
 }
 
 export function formularioVacio(): FormularioBusqueda {
@@ -129,13 +129,23 @@ export async function leerOpcionesBuscador(): Promise<OpcionesBuscador> {
       })
       .catch((): string[] => []),
     leerFichas()
-      .then((snapshot) => snapshot.fichas.map((ficha) => ficha.nombre))
-      .catch((): string[] => []),
+      .then((snapshot): OpcionesBuscador['clientes'] => snapshot.fichas.map((ficha) => ({
+        nombre: ficha.nombre,
+        codigos: (ficha.codigosRps ?? []).map((codigo) => codigo.trim()).filter(Boolean),
+      })))
+      .catch((): OpcionesBuscador['clientes'] => []),
   ]);
   return {
     recogidas: [...new Set(recogidas)],
-    clientes: [...new Set(clientes)].sort((a, b) => a.localeCompare(b, 'es')),
+    clientes: clientes.filter((cliente, i) => clientes.findIndex((otro) => otro.nombre === cliente.nombre) === i)
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
   };
+}
+
+/** El cliente de una fila con su código de RPS al lado si se sabe: «HIJOS DE PEDRO LOPEZ · 001300». */
+export function textoCliente(fila: FilaBusqueda): string {
+  const nombre = fila.cliente || 'Sin cliente';
+  return fila.codigoCliente ? `${nombre} · ${fila.codigoCliente}` : nombre;
 }
 
 export function textoContador(r: ResultadoBusqueda): string {

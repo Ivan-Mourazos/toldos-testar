@@ -3,6 +3,7 @@ import { normalizeOf } from "../../reviewRules.js";
 import { detrasDistinto, type LonaInput } from "../calc/lona.ts";
 import { TIPOS_PERFIL, type TipoPerfil } from "../calc/params.ts";
 import { normalizarNombre } from "../clientes/reglas.ts";
+import type { FichaCliente } from "../clientes/tipos.ts";
 import { normalizarNumeroPedido } from "../pedidos/numero-pedido.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
 import { ErrorPedidoRemolques, modeloElemento } from "./pedido.ts";
@@ -36,7 +37,10 @@ export interface MedidaFiltro {
 export interface FiltrosBusqueda {
   /** Número de pedido (como se escribió o normalizado), cliente, OF u observaciones; cada palabra tiene que salir. */
   texto?: string;
-  /** Parte del nombre del cliente (también el de una ficha), sin acentos ni mayúsculas. */
+  /**
+   * Parte del nombre del cliente, sin acentos ni mayúsculas; el código de cliente de RPS guardado
+   * (con o sin ceros delante); o el nombre entero de una ficha, que saca los pedidos con sus códigos.
+   */
   cliente?: string;
   tipo?: TipoPlanteamiento;
   /** Solo lonas. */
@@ -83,6 +87,8 @@ export interface FilaBusqueda {
   material: string;
   of: string;
   estado: EstadoPedidoRemolques;
+  /** El código de cliente de RPS del pedido, o "" si no se guardó. */
+  codigoCliente: string;
 }
 
 export interface ResultadoBusqueda {
@@ -220,6 +226,30 @@ function valorMedida(elemento: ElementoGuardado, campo: CampoMedida): number | n
 const clienteElemento = (pedido: PedidoRemolques, elemento: ElementoGuardado) =>
   elemento.input.cabecera.cliente?.trim() || pedido.summary.customer || "";
 
+/** Un código de cliente de RPS para compararlo: sin espacios, en mayúsculas y sin ceros delante (1300 = 001300). */
+const claveCodigo = (codigo: string | null | undefined) => String(codigo ?? "").trim().toLocaleUpperCase("es-ES").replace(/^0+(?=.)/, "");
+
+/** Lo que basta de una ficha de cliente para buscar por ella: su nombre y sus códigos de RPS. */
+export type FichaBusqueda = Pick<FichaCliente, "nombre" | "codigosRps">;
+
+/** Los códigos de RPS (como claves) de las fichas que se llaman exactamente así, sin acentos ni mayúsculas. */
+function codigosDeFicha(fichas: readonly FichaBusqueda[], nombre: string): Set<string> {
+  const buscado = norm(nombre);
+  return new Set(fichas.filter((ficha) => norm(ficha.nombre) === buscado).flatMap((ficha) => ficha.codigosRps.map(claveCodigo)).filter(Boolean));
+}
+
+/**
+ * El filtro «Cliente»: el nombre escrito del cliente lo contiene; o una de las palabras es el código
+ * de RPS guardado del pedido («001300», «1300», «HIJOS DE PEDRO LOPEZ · 001300»); o es el nombre de
+ * una ficha con ese código entre los suyos. Sin código guardado, solo cuenta el nombre.
+ */
+function cumpleCliente(pedido: PedidoRemolques, elemento: ElementoGuardado, cliente: string, codigosFicha: Set<string>): boolean {
+  if (contiene(clienteElemento(pedido, elemento), cliente)) return true;
+  const codigo = claveCodigo(pedido.clienteRps?.codigo);
+  if (!codigo) return false;
+  return codigosFicha.has(codigo) || cliente.split(/[^0-9A-Za-z]+/).some((palabra) => palabra !== "" && claveCodigo(palabra) === codigo);
+}
+
 /** La fecha del pedido de un elemento (AAAA-MM-DD): la de su cabecera, la del pedido o el día en que se guardó. */
 export function fechaElemento(pedido: PedidoRemolques, elemento: ElementoGuardado): string {
   for (const fecha of [elemento.input.cabecera.fecha, pedido.summary.orderDate, pedido.createdAt]) {
@@ -232,7 +262,8 @@ export function fechaElemento(pedido: PedidoRemolques, elemento: ElementoGuardad
 function cumpleTexto(pedido: PedidoRemolques, elemento: ElementoGuardado, texto: string): boolean {
   const of = elemento.input.cabecera.ordenFabricacion ?? "";
   const donde = norm([
-    pedido.numeroPedido, pedido.orderCode, clienteElemento(pedido, elemento), of, normalizeOf(of), elemento.input.observaciones,
+    pedido.numeroPedido, pedido.orderCode, clienteElemento(pedido, elemento), pedido.clienteRps?.codigo, of, normalizeOf(of),
+    elemento.input.observaciones,
   ].join(" "));
   return texto.split(/\s+/)
     .map((palabra) => ({ palabra: norm(palabra), numero: normalizarNumeroPedido(palabra) }))
@@ -247,11 +278,13 @@ function cumpleRecogida(lona: LonaInput, { nombre, lado }: { nombre: string; lad
   return lado === "delante" ? delante : lado === "detras" ? atras : delante || atras;
 }
 
-/** ¿Cumple este elemento de este pedido todos los filtros? */
-export function elementoCumple(pedido: PedidoRemolques, elemento: ElementoGuardado, filtros: FiltrosBusqueda): boolean {
+/** ¿Cumple este elemento de este pedido todos los filtros? `codigosFicha`: los de la ficha que se llama como lo escrito en «Cliente». */
+export function elementoCumple(
+  pedido: PedidoRemolques, elemento: ElementoGuardado, filtros: FiltrosBusqueda, codigosFicha: Set<string> = new Set(),
+): boolean {
   const f = filtros;
   if (f.texto && !cumpleTexto(pedido, elemento, f.texto)) return false;
-  if (f.cliente && !contiene(clienteElemento(pedido, elemento), f.cliente)) return false;
+  if (f.cliente && !cumpleCliente(pedido, elemento, f.cliente, codigosFicha)) return false;
   if (f.tipo && elemento.tipo !== f.tipo) return false;
   if (f.estado && (pedido.status === "PRODUCED") !== (f.estado === "generados")) return false;
   const fecha = fechaElemento(pedido, elemento);
@@ -294,19 +327,25 @@ export function filaBusqueda(pedido: PedidoRemolques, elemento: ElementoGuardado
     material: elemento.input.material ?? "",
     of: normalizeOf(elemento.input.cabecera.ordenFabricacion ?? ""),
     estado: pedido.status,
+    codigoCliente: pedido.clienteRps?.codigo ?? "",
   };
 }
 
 /**
  * Los elementos que cumplen los filtros, del pedido más nuevo al más antiguo (fecha del pedido; a
  * igual fecha, el guardado más tarde; dentro del pedido, por letra). Como mucho `limite` filas;
- * el total y los pedidos cuentan todos.
+ * el total y los pedidos cuentan todos. `fichas`: las fichas de cliente, para buscar por su nombre.
  */
-export function buscarRemolques(pedidos: readonly PedidoRemolques[], filtros: FiltrosBusqueda, limite = LIMITE_FILAS): ResultadoBusqueda {
+export function buscarRemolques(
+  pedidos: readonly PedidoRemolques[],
+  filtros: FiltrosBusqueda,
+  { limite = LIMITE_FILAS, fichas = [] }: { limite?: number; fichas?: readonly FichaBusqueda[] } = {},
+): ResultadoBusqueda {
+  const codigosFicha = filtros.cliente ? codigosDeFicha(fichas, filtros.cliente) : new Set<string>();
   const encontradas: { fila: FilaBusqueda; updatedAt: string; indice: number }[] = [];
   for (const pedido of pedidos) {
     pedido.elementos.forEach((elemento, indice) => {
-      if (elementoCumple(pedido, elemento, filtros)) encontradas.push({ fila: filaBusqueda(pedido, elemento, indice), updatedAt: pedido.updatedAt, indice });
+      if (elementoCumple(pedido, elemento, filtros, codigosFicha)) encontradas.push({ fila: filaBusqueda(pedido, elemento, indice), updatedAt: pedido.updatedAt, indice });
     });
   }
   encontradas.sort((a, b) => b.fila.fecha.localeCompare(a.fila.fecha)

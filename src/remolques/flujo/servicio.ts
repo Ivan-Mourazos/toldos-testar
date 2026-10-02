@@ -10,11 +10,11 @@ import type { DatosHojaPedido } from "../hoja/tipos.ts";
 import { archivarPdfRemolques, destinosPdfRemolques, ErrorArchivoPdf, mensajeCarpetaNoDisponible, type CarpetasRemolques } from "../salida/archivo.ts";
 import { nombrePdf } from "../salida/nombre-pdf.ts";
 import { adjuntarDatosPedido } from "./adjunto.ts";
-import { buscarRemolques, validarFiltros, type ResultadoBusqueda } from "./buscar.ts";
+import { buscarRemolques, validarFiltros, type FichaBusqueda, type ResultadoBusqueda } from "./buscar.ts";
 import type { AlmacenPedidosRemolques } from "./almacen.ts";
 import {
   anioPedido, codigoPedido, crearPedidoRemolques, elementosAprobacion, elementosPedidoHoja, ErrorPedidoRemolques,
-  marcarPedidoGenerado, resumenBandeja,
+  marcarPedidoGenerado, resumenBandeja, validarClienteRps,
 } from "./pedido.ts";
 import type { FicheroGenerado, PedidoRemolques, ResumenPedidoRemolques } from "./tipos.ts";
 
@@ -43,6 +43,10 @@ export interface DependenciasPedidosRemolques {
   hacerPdf: (datos: DatosHojaPedido) => Promise<Uint8Array>;
   /** true si ese número ya está guardado como pedido de toldos (nunca hay pedidos mixtos). */
   esPedidoDeToldos: (orderCode: string) => Promise<boolean>;
+  /** Las fichas de cliente con que se calcula (remolquesClientesStore.get): el buscador busca por su nombre. */
+  fichas?: () => Promise<readonly FichaBusqueda[]>;
+  /** Dónde se apuntan los fallos que no paran nada (por defecto, console.error). */
+  registrar?: (mensaje: string) => void;
   ahora?: () => Date;
 }
 
@@ -170,14 +174,25 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
   /** El buscador (diseño 02/10/2026): todos los pedidos guardados, de todos los años, elemento a elemento. */
   async function buscar(cuerpo: unknown): Promise<ResultadoBusqueda> {
     const filtros = validarFiltros(cuerpo);
-    return buscarRemolques(await deps.almacen.listar(), filtros);
+    return buscarRemolques(await deps.almacen.listar(), filtros, { fichas: filtros.cliente ? await fichasParaBuscar() : [] });
+  }
+
+  /** Si las fichas no se pueden leer se busca igual, por el nombre y el código: se apunta y sigue. */
+  async function fichasParaBuscar(): Promise<readonly FichaBusqueda[]> {
+    try {
+      return (await deps.fichas?.()) ?? [];
+    } catch (error) {
+      (deps.registrar ?? console.error)(`El buscador de remolques no pudo leer las fichas de cliente: ${error instanceof Error ? error.message : String(error)}`);
+      return [];
+    }
   }
 
   async function guardar(cuerpo: unknown): Promise<Respuesta> {
-    const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; savedBy?: unknown; confirmOverwrite?: unknown };
+    const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; savedBy?: unknown; confirmOverwrite?: unknown; clienteRps?: unknown };
     const salvador = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
     if (!salvador || !deps.tecnicos.includes(salvador)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de guardar.");
     const params = c.params == null ? await deps.parametros() : paramsDeLaPantalla(c.params);
+    const clienteRps = validarClienteRps(c.clienteRps);
     // Completo, del mismo pedido, ordenado y calculado aquí: nunca se guarda un resultado que no salga del cálculo.
     const datos = prepararPedidoHoja(c.elementos, params);
     const orderCode = codigoPedido(datos.elementos[0].input.cabecera.numeroPedido);
@@ -204,7 +219,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         technician: datos.elementos[0].input.cabecera.realizadoPor,
         savedBy: salvador,
       });
-      const pedido = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora() });
+      const pedido = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora(), clienteRps });
       await deps.almacen.guardar(pedido);
       return { status: 200, cuerpo: { ok: true, review: resumenBandeja(pedido), overwritten: Boolean(existente) } };
     } finally {

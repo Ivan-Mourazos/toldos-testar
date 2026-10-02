@@ -171,6 +171,13 @@ describe("guardar para revisión", () => {
     expect(r.cuerpo).toMatchObject({ overwritten: true, review: { summary: { technician: "IVÁN", reviewer: "JAIME" } } });
   });
 
+  it("al generar, el pedido conserva su cliente de RPS", async () => {
+    const { servicio } = montar();
+    await guardar(servicio, { clienteRps: { codigo: "001300", nombre: "TALLERES CAL" } });
+    await servicio.generar("AR2604286", {});
+    expect(await servicio.obtener("AR2604286")).toMatchObject({ status: "PRODUCED", clienteRps: { codigo: "001300", nombre: "TALLERES CAL" } });
+  });
+
   it("guarda con los parámetros que manda la pantalla y, si no manda, con los comunes", async () => {
     const { servicio } = montar();
     const propios: CalcParams = { ...DEFAULT_PARAMS, demasiaAlto: DEFAULT_PARAMS.demasiaAlto + 1 };
@@ -181,6 +188,33 @@ describe("guardar para revisión", () => {
     expect(paramsDeLaPantalla(propios)).toEqual(propios);
     expect(() => paramsDeLaPantalla({ ...DEFAULT_PARAMS, pasoOllaosDefecto: 0 }))
       .toThrow("Los parámetros de remolques del pedido no son válidos: «pasoOllaosDefecto» debe ser mayor que 0.");
+  });
+
+  it("guarda el cliente de RPS que manda la pantalla, sale en Pedidos y «Corregir» sin él no lo pierde", async () => {
+    const { servicio } = montar();
+    const r = await guardar(servicio, { clienteRps: { codigo: " 001300 ", nombre: " HIJOS DE PEDRO LOPEZ " } });
+    expect(r.cuerpo).toMatchObject({ review: { clienteRps: { codigo: "001300", nombre: "HIJOS DE PEDRO LOPEZ" } } });
+    expect((await servicio.obtener("AR2604286")).clienteRps).toEqual({ codigo: "001300", nombre: "HIJOS DE PEDRO LOPEZ" });
+    expect((await servicio.listar(2026)).reviews[0].clienteRps).toEqual({ codigo: "001300", nombre: "HIJOS DE PEDRO LOPEZ" });
+
+    await guardar(servicio, { confirmOverwrite: true });
+    expect((await servicio.obtener("AR2604286")).clienteRps).toEqual({ codigo: "001300", nombre: "HIJOS DE PEDRO LOPEZ" });
+    await guardar(servicio, { confirmOverwrite: true, clienteRps: null });
+    expect((await servicio.obtener("AR2604286")).clienteRps).toEqual({ codigo: "001300", nombre: "HIJOS DE PEDRO LOPEZ" });
+
+    await guardar(servicio, { confirmOverwrite: true, clienteRps: { codigo: "002000" } });
+    expect((await servicio.obtener("AR2604286")).clienteRps).toEqual({ codigo: "002000", nombre: "" });
+  });
+
+  it("sin cliente de RPS el pedido no lleva el campo; uno mal hecho es un 400 y no guarda", async () => {
+    const { servicio } = montar();
+    await guardar(servicio);
+    expect("clienteRps" in (await servicio.obtener("AR2604286"))).toBe(false);
+    for (const malo of [{ codigo: 1300 }, { codigo: "  " }, "001300", { codigo: "001300", nombre: 5 }]) {
+      expect(await falla(guardar(servicio, { confirmOverwrite: true, clienteRps: malo })))
+        .toEqual([400, "El cliente de RPS del pedido no es válido: hace falta su código."]);
+    }
+    expect("clienteRps" in (await servicio.obtener("AR2604286"))).toBe(false);
   });
 
   it("no guarda un elemento incompleto, un número que es de toldos ni encima de uno generado", async () => {

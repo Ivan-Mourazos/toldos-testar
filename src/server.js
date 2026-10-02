@@ -140,7 +140,9 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   tecnicos: formOptions.tecnicos,
   hacerPdf: hojaRemolquesPdf,
   // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar.
-  esPedidoDeToldos: comprobadorPedidoToldos(workflowStore)
+  esPedidoDeToldos: comprobadorPedidoToldos(workflowStore),
+  // El buscador busca también por el nombre de una ficha (sus códigos de RPS).
+  fichas: () => remolquesClientesStore.get()
 });
 
 // Borradores en el servidor (diseño 01/10/2026): un JSON por número de pedido en la carpeta de

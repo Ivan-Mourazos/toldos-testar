@@ -40,7 +40,7 @@ async function capturas(page, nombre) {
 }
 
 // ── 1. Sembrar: tres pedidos con elementos reales de producción ──
-function pedido(numero, cliente, fecha, casos) {
+function pedido(numero, cliente, fecha, casos, clienteRps) {
   const elementos = casos.map(([id, version, of]) => {
     const c = fixture.find((x) => x.caso === id);
     return { version, tipo: c.tipo, input: { ...c.input, cabecera: { ...c.input.cabecera, numeroPedido: numero, version, cliente, fecha, ordenFabricacion: of } } };
@@ -48,12 +48,14 @@ function pedido(numero, cliente, fecha, casos) {
   return crearPedidoRemolques({
     datos: prepararPedidoHoja(elementos, DEFAULT_PARAMS),
     autoria: { technician: 'IVÁN', reviewer: '' }, existente: null, ahora: `${fecha}T08:00:00.000Z`,
+    clienteRps,
   });
 }
 // P1: lona 200 con goma detrás + baquetón; P2 (generado): lona 253 con cremallera detrás;
-// P3: lona 150 con velcro (A) y lona 190 con cremallera detrás (B).
+// P3: lona 150 con velcro (A) y lona 190 con cremallera detrás (B). Solo P2 lleva cliente de RPS (001300).
 const P1 = pedido(`AR.${AA}.99701`, 'TALLERES CAL', `${ANIO}-09-28`, [['lona-02', '10', '0299701'], ['baqueton-01', '11', '0299702']]);
-const P2 = marcarPedidoGenerado(pedido(`AR.${AA}.99702`, 'HIJOS DE PEDRO LOPEZ S.L.', `${ANIO}-09-29`, [['lona-08', '10', '0299703']]),
+const P2 = marcarPedidoGenerado(pedido(`AR.${AA}.99702`, 'HIJOS DE PEDRO LOPEZ S.L.', `${ANIO}-09-29`, [['lona-08', '10', '0299703']],
+  { codigo: '001300', nombre: 'HIJOS DE PEDRO LOPEZ, S.L.' }),
   { revisor: 'JAIME', ficheros: [], ahora: `${ANIO}-09-29T10:00:00.000Z` });
 const P3 = pedido(`AR.${AA}.99703`, 'REMOLQUES AYALA', `${ANIO}-09-30`, [['lona-10', '10', '0299704'], ['lona-32', '11', '0299705']]);
 
@@ -72,6 +74,9 @@ assert.equal(todos.pedidos, 3);
 assert.deepEqual(todos.filas.map(clave), [`${P3.orderCode}-A`, `${P3.orderCode}-B`, `${P2.orderCode}-A`, `${P1.orderCode}-A`, `${P1.orderCode}-B`]);
 const cremallera = (await api('/api/remolques/buscar', json({ recogida: { nombre: 'CREMALLERA', lado: 'detras' } }))).datos;
 assert.deepEqual(cremallera.filas.map(clave), [`${P3.orderCode}-B`, `${P2.orderCode}-A`]);
+const porCodigo = (await api('/api/remolques/buscar', json({ cliente: '1300' }))).datos;
+assert.deepEqual(porCodigo.filas.map(clave), [`${P2.orderCode}-A`]);
+assert.equal(porCodigo.filas[0].codigoCliente, '001300');
 const mal = await api('/api/remolques/buscar', json({ medidas: { largo: { valor: 'x' } } }));
 assert.equal(mal.status, 400);
 assert.match(mal.datos.error, /largo/);
@@ -103,6 +108,12 @@ try {
   await buscar();
   await contador('1 remolque en 1 pedido').waitFor();
   console.log('OK: por cliente');
+
+  await page.getByLabel('Cliente', { exact: true }).fill('001300');
+  await buscar();
+  await contador('1 remolque en 1 pedido').waitFor();
+  await page.locator('.buscador-fila', { hasText: 'HIJOS DE PEDRO LOPEZ S.L. · 001300' }).waitFor();
+  console.log('OK: por código de cliente de RPS, que sale junto al nombre');
 
   await quitar();
   await contador('5 remolques en 3 pedidos').waitFor();
