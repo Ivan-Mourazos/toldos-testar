@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { borradoresVisibles, claveBandeja, collapseAwnings, fechaBorrador, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import { borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
 import type { PedidoBandeja, ReviewSummary } from './types';
 
@@ -214,5 +214,13 @@ describe('borradoresVisibles', () => {
   it('fechaBorrador: día, mes y hora', () => {
     expect(fechaBorrador('2026-10-01T09:30:00')).toMatch(/^01\/10,? 09:30$/);
     expect(fechaBorrador('no')).toBe('—');
+  });
+});
+
+// Iván, 02/10/2026: con muchos elementos, el desplegable en columnas en vez de una fila por OF.
+describe('detalleEnColumnas', () => {
+  it('hasta 3 elementos, una fila por OF; con más, en columnas', () => {
+    expect([0, 1, 3].map(detalleEnColumnas)).toEqual([false, false, false]);
+    expect([4, 11].map(detalleEnColumnas)).toEqual([true, true]);
   });
 });

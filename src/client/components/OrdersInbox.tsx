@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
 import type { CoordinaStatus, PedidoBandeja } from '../types';
 import {
-  borradoresVisibles, claveBandeja, collapseAwnings, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups, productoDe,
+  borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups, productoDe,
   type FiltroProducto,
 } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
@@ -187,7 +187,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
       {open && (
         <div className="orders-detail" id={detailId}>
           {awnings?.length ? (
-            <ul className="orders-detail-list">
+            <ul className={detalleEnColumnas(awnings.length) ? 'orders-detail-list is-columns' : 'orders-detail-list'}>
               {awnings.map((item) => {
                 // La nota de devolución solo se enseña si CoordinaOT la tiene devuelta.
                 const returned = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)] : undefined;

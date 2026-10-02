@@ -154,6 +154,12 @@ export function collapseAwnings<T extends { letter: string }>(items: T[], keyOf:
   return groups;
 }
 
+// Al desplegar un pedido con muchos elementos, sus OF van en columnas (Iván, 02/10/2026: «es una
+// tontería ocupar tanto si apenas salen datos»). Con pocos, una fila por OF, como siempre.
+export function detalleEnColumnas(elementos: number) {
+  return elementos > 3;
+}
+
 // Etiquetas de modelos de una fila (Iván, 01/10/2026: «no caben si el pedido lleva varios»).
 // Una por modelo distinto; con más de `max` se enseñan los `shown` primeros y el resto
 // queda para una etiqueta «+N» cuyo título los lista todos.
