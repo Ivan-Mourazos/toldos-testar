@@ -51,6 +51,9 @@ test.each(['CORTINA', 'CAMBIO CORTINA'].flatMap(model => [false, true].map(longN
       expect(bottom(item), `${label} dentro del recuadro que acaba en 449`).toBeLessThan(449);
       expect(bottom(measure), `${label} no toca las observaciones que empiezan en 456`).toBeLessThan(449);
     }
+    // En el dibujo, la cota de la altura de la ventana y la de la base no se tocan (con ET la base sube).
+    const enDibujo = value => items.find(item => item.str === value && bottom(item) < top(bamba));
+    expect(top(enDibujo('52')) - bottom(enDibujo('137')), 'cotas de la ventana separadas').toBeGreaterThan(12);
     const text = fabricPages.flatMap(({ items }) => items.map(item => item.str)).join(' ');
     if (longNotes) {
       expect(text).toContain('OBSERVACIONES');

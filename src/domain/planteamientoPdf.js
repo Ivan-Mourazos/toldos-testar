@@ -1322,7 +1322,8 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     drawCurtainWindow(doc, windowX, windowY, windowW, windowH);
     drawSmallMeasure(doc, windowX - 1, windowY - 20, 25, awning.curtainWindowCorner);
     drawSmallMeasure(doc, windowX + windowW - 24, windowY - 20, 25, awning.curtainWindowCorner);
-    drawSmallMeasure(doc, measureX, windowY + 14, 27, awning.curtainWindowHeight);
+    // Arriba en su línea: con ET la cota de la base sube 8 y se tocaban (Iván, 02/10/2026).
+    drawSmallMeasure(doc, measureX, windowY + 5, 27, awning.curtainWindowHeight);
     // La referencia de esta cota es independiente del ajuste de salida de tela.
     const windowBase = isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning)
       : Number(awning.curtainWindowFloorHeight) - curtainBottomDeduction(awning);
