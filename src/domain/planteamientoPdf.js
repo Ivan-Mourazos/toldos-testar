@@ -1135,7 +1135,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   const hems = buildGeneralFabricDiagramSpec(awning);
   if (!options.legacy) roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   if (title) doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(10)).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
-  drawHorizontalDimension(doc, x + w * 0.1, x + w * 0.9, y + h * 0.075, 'FRENTE TELA');
+  drawHorizontalDimension(doc, x + w * 0.1, x + w * 0.9, y + h * (options.legacy ? 0.075 : 0.12), 'FRENTE TELA');
 
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
