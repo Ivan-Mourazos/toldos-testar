@@ -10,6 +10,7 @@ import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFa
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
+import { shortFabricName } from './fabricShortName.js';
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
 
@@ -508,16 +509,19 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   const contentX = margin + 270;
   const contentW = pageW - margin - 12 - contentX;
   const gap = 14;
-  const rotW = 188;
-  drawMiniTable(doc, contentX + 64, 123, rotW, 'ROTULACIÓN', [
+  // Rotulación pegada a la izquierda, en línea con las letras A, B…, y solo con el ancho que
+  // pide un SÍ/NO: el hueco que dejaba va a DATOS BÁSICOS, para que la tela se lea con letra
+  // grande (Iván, 02/10/2026).
+  const rotW = 170;
+  drawMiniTable(doc, contentX, 123, rotW, 'ROTULACIÓN', [
     ['TELA', summarizeAwningValue(lines, 'rotFabric', order.rotTela)],
     ['BAMBA', summarizeAwningValue(lines, 'rotValance', order.rotBamba)]
   ], 20, { preserveBlank: true, neutral: true, size: 9.5, barH: 17, barSize: 9.5 });
-  drawMiniTable(doc, contentX + 64 + rotW + gap, 123, contentW - 64 - rotW - gap, 'DATOS BÁSICOS', [
+  drawMiniTable(doc, contentX + rotW + gap, 123, contentW - rotW - gap, 'DATOS BÁSICOS', [
     ['MATERIAL', summarizeFabricMaterial(lines)],
     ['CURVA', summarizeValanceCurve(lines)],
     ['REMATE', summarizeRemate(lines, order)]
-  ], 20, { preserveBlank: true, neutral: true, size: 9.5, barH: 17, barSize: 9.5 });
+  ], 20, { preserveBlank: true, neutral: true, size: 9.5, valueSize: 11.5, barH: 17, barSize: 9.5 });
 
   const rowY = 214;
   const rowH = 62;
@@ -760,7 +764,7 @@ function buildFabricRowInstruction(line, lines, order) {
   const detail = buildFabricLineDetail(line.awning, line.calc, order);
   const parts = [];
   if (summarizeFabricMaterial(lines) === 'VARIAS TELAS') {
-    const description = fabricDescription(line.calc?.fabricCode, line.calc?.fabricDescription) || 'SIN DEFINIR';
+    const description = shortFabricName(fabricDescription(line.calc?.fabricCode, line.calc?.fabricDescription)) || 'SIN DEFINIR';
     const code = String(line.calc?.fabricCode || '').trim();
     parts.push(`TELA ${description}${code ? ` · ${code}` : ''}`);
   }
@@ -1900,7 +1904,7 @@ function drawMiniTable(doc, x, y, w, title, rows, rowH = 13, options = {}) {
     const labelW = Math.min(options.size ? 84 : 70, w * 0.43);
     drawCell(doc, x, rowY, labelW, rowH, label, { fill: options.neutral ? '#dedede' : colors.gray, bold: true, size, minSize: 6, fit: Boolean(options.size), align: 'center' });
     drawCell(doc, x + labelW, rowY, w - labelW, rowH, rowValue, {
-      semibold: true, size, minSize: 6, fit: Boolean(options.size), align: 'center', preserveBlank: options.preserveBlank
+      semibold: true, size: options.valueSize || size, minSize: 6, fit: Boolean(options.size), align: 'center', preserveBlank: options.preserveBlank
     });
   });
 }
@@ -1985,13 +1989,24 @@ function drawCell(doc, x, y, w, h, text, options = {}) {
     }
   }
   doc.fillColor(options.color || colors.ink).font(font).fontSize(size)
-    .text(cellText, x + 3, y + Math.max(2, (h - size) / 2 - 0.6), {
+    .text(cellText, x + 3, centeredTextTop(doc, y, h, size), {
       width: Math.max(0, w - 6),
-      height: Math.max(size + 1, h - 3),
+      height: Math.max(doc.currentLineHeight() + 1, h - 3),
       align: options.align || 'left',
       ellipsis: true,
       lineBreak: false
     });
+}
+
+// Dónde empieza la línea para que las mayúsculas queden en el centro de la casilla (Iván,
+// 02/10/2026: «centrar bien los textos en los cuadrados»). PDFKit pone el texto por arriba de la
+// línea; con las medidas de la fuente se sabe dónde cae la base y cuánto suben las mayúsculas.
+function centeredTextTop(doc, y, h, size) {
+  const font = doc._font;
+  const ascender = Number(font?.ascender) || 1000;
+  const capHeight = Number(font?.capHeight) || 700;
+  const top = y + h / 2 + (capHeight * size) / 2000 - (ascender * size) / 1000;
+  return Math.max(y + 0.5, top);
 }
 
 function roundedBox(doc, x, y, w, h, radius, fill, stroke) {
@@ -2064,10 +2079,10 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
 
   if (height > 0 && !['ENROLLABLE', 'BAMBALINA'].includes(model)) {
     if (separateValance) {
-      const valanceFabric = fabricDescription(
+      const valanceFabric = shortFabricName(fabricDescription(
         calculation.valanceFabricCode || awning.valanceFabric,
         calculation.valanceFabricDescription
-      );
+      ));
       instructionParts.push(
         `BAMBA NO INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM${valanceFabric ? ` - ${valanceFabric}` : ''}`
       );
@@ -2170,7 +2185,7 @@ export function buildHeraMiniPlanDetail(awning = {}, calculation = {}, order = {
     panels: formatHeraCount(calculation.fabricPanels),
     seams: formatHeraCount(calculation.seamCount),
     fabricMl: formatHeraMl(calculation.fabricMl),
-    fabricMaterial: fabricDescription(calculation.fabricCode, calculation.fabricDescription),
+    fabricMaterial: shortFabricName(fabricDescription(calculation.fabricCode, calculation.fabricDescription)),
     interiorFace: ['DERECHO', 'REVES', 'REVÉS'].includes(interiorFace) ? interiorFace.replace('REVES', 'REVÉS') : '',
     notes: String(awning.structureNotes || '').trim(),
     fabricNotes: String(order.notes || '').trim(),
@@ -2262,12 +2277,14 @@ export function summarizeFabricMaterial(lines = []) {
     })
     .filter(Boolean));
   if (fabrics.size === 0) return 'SIN DEFINIR';
-  if (fabrics.size === 1) return Array.from(fabrics)[0];
+  if (fabrics.size === 1) return shortFabricName(Array.from(fabrics)[0]);
   return 'VARIAS TELAS';
 }
 
+// Manda la descripción que trae el cálculo (la de RPS al elegir la tela); el catálogo antiguo de la
+// web, que solo conoce «ACR ADMIRAL», queda para cuando el cálculo no la tiene.
 function fabricDescription(selection, fallback = '') {
-  return resolveFabric(selection)?.description || String(fallback || '').trim() || String(selection || '').split('|||').at(-1).trim();
+  return String(fallback || '').trim() || resolveFabric(selection)?.description || String(selection || '').split('|||').at(-1).trim();
 }
 
 function fabricWorkLabel(model) {

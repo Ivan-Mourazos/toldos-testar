@@ -18,6 +18,10 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 - **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño; Iván no sabe la tabla y pide sacarla de RPS (en revisión). La web pone el Sunilus 15/17. Importa para reservar el motor correcto. <sub>Q-CO04</sub>
 
+## Telas
+
+- **Nombre corto de las lonas técnicas en el PDF.** Desde el 02/10/2026, en la casilla MATERIAL, las lonas de PVC de siempre salen como «LONA PVC 580 BLANCO :250 AN» y las acrílicas como «ACR NEGRO 2170 :120 AN» o «ACR RESINADO ADMIRAL 2449 :153 AN». Esas lonas de PVC son NS86, ALPHA, MONZA, G650, GAMMA, LAC, PANAMA, B6000, VIP-FR y las que llevan «(580)». Las demás salen con el nombre de RPS, porque su gama es lo que las distingue: Soltis, Recscreen, Frontlit, Black out, Mesh, Flexlight, Class, Orion, tejidos… ¿Alguna de estas debe salir también como «LONA PVC»? <sub>Q-T02</sub>
+
 ## Clásicos
 
 ### Antica
