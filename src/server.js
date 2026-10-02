@@ -8,7 +8,8 @@ import { createCoordinaClient } from './coordinaStatus.js';
 import { awningLetter } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
 import { searchStaticFabrics } from './domain/fabricCatalog.js';
-import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
+import { buildFabricDiagramPreviewPdf, buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
+import { exampleAwning, webDrawingVariants } from './domain/drawingCatalog.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { verifyStructureArticles } from './domain/structureEdits.js';
@@ -404,6 +405,25 @@ app.get('/api/rule-parameters/history', async (req, res, next) => {
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
     const scope = typeof req.query.scope === 'string' ? req.query.scope : '';
     res.json({ entries: await ruleParametersStore.history(limit, { scope }) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Miniatura de «Lo que sale hoy» (Parámetros › Dibujos): el dibujo de la web de una variante con su
+// toldo de ejemplo, hecho por el mismo código que la hoja de tela del PDF.
+app.get('/api/rule-parameters/drawing-preview', async (req, res, next) => {
+  try {
+    const model = typeof req.query.model === 'string' ? req.query.model : '';
+    const id = typeof req.query.variant === 'string' ? req.query.variant : '';
+    const variant = webDrawingVariants(model).find((item) => item.id === id && item.webDrawing);
+    if (!variant) {
+      res.status(404).json({ error: 'Ese dibujo no existe.' });
+      return;
+    }
+    const [awning] = normalizeOrder({ orderCode: 'EJEMPLO', awnings: [exampleAwning(variant)] }).awnings;
+    const pdf = await buildFabricDiagramPreviewPdf({ awning });
+    res.status(200).setHeader('Cache-Control', 'no-cache').setHeader('Content-Type', 'application/pdf').send(pdf);
   } catch (error) {
     next(error);
   }

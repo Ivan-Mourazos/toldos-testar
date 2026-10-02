@@ -493,11 +493,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   drawCell(doc, diagramX, 123, diagramW, 21, fabricDiagramHeading(diagram, lines.map(({ awning }) => awning)), {
     bold: true, size: 12, minSize: 9, fit: true, align: 'center', fill: colors.paper
   });
-  if (diagram === 'GENERAL' && !diagramAwning?.fabricImage) {
-    drawGeneralDiagram(doc, diagramX, 149, diagramW, 300, { title: '', legacy: true }, diagramAwning);
-  } else {
-    drawAwningDiagram(doc, diagramX, 149, diagramW, 300, diagram, diagramAwning, diagramCalculation);
-  }
+  drawFabricDiagram(doc, diagramX, 149, diagramW, 300, diagram, diagramAwning, diagramCalculation);
   const pageNotes = fabricPageNotes(order, lines);
   const remainingNotes = pageNotes
     // Con letra de 9 pt, el recuadro sube para que quepan unas siete líneas.
@@ -769,6 +765,41 @@ function buildFabricRowInstruction(line, lines, order) {
   if (summarizeAwningValue(lines, 'rotFabric', order.rotTela) === 'SEGÚN TOLDO') parts.push(`ROT. TELA ${line.awning.rotFabric || order.rotTela || '-'}`);
   if (summarizeAwningValue(lines, 'rotValance', order.rotBamba) === 'SEGÚN TOLDO') parts.push(`ROT. BAMBA ${line.awning.rotValance || order.rotBamba || '-'}`);
   return parts.filter(Boolean).join(' · ');
+}
+
+// El dibujo de la hoja de tela: el general de siempre (sin imagen) o el de su tipo. Lo usan la hoja
+// del planteamiento y las miniaturas de Parámetros («Lo que sale hoy»): se ve lo mismo en los dos.
+function drawFabricDiagram(doc, x, y, w, h, diagram, awning, calculation) {
+  if (diagram === 'GENERAL' && !awning?.fabricImage) return drawGeneralDiagram(doc, x, y, w, h, { title: '', legacy: true }, awning);
+  return drawAwningDiagram(doc, x, y, w, h, diagram, awning, calculation);
+}
+
+/** Medidas del toldo de ejemplo de las miniaturas (frente de tela y caída, en cm). */
+export const PREVIEW_CALCULATION = Object.freeze({ fabricWidth: 400, fabricDrop: 275 });
+
+/**
+ * Una hoja pequeña con el título y el dibujo de la web de un toldo de ejemplo, como en la hoja de
+ * tela. Sin la imagen del toldo ni dibujos del taller: es lo que sale «de la web».
+ */
+export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVIEW_CALCULATION }) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const doc = new PDFDocument({ autoFirstPage: false, margin: 0, info: { Title: 'Dibujo de la web', Creator: 'toldos-testar' } });
+    registerFonts(doc);
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    const web = { ...awning, fabricImage: null };
+    const diagram = getFabricPatternDiagram(web);
+    const width = 242;
+    doc.addPage({ size: [width + 16, 385], margin: 0 });
+    doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.paper);
+    drawCell(doc, 8, 8, width, 21, fabricDiagramHeading(diagram, [web]), {
+      bold: true, size: 12, minSize: 9, fit: true, align: 'center', fill: colors.paper
+    });
+    drawFabricDiagram(doc, 8, 35, width, 300, diagram, web, calculation);
+    doc.end();
+  });
 }
 
 function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
