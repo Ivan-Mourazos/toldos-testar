@@ -135,7 +135,7 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
           <h2>Buscar remolques</h2>
           <label className="orders-search">
             <Search aria-hidden="true" />
-            <input type="search" value={formulario.texto} onChange={(evento) => cambiar({ texto: evento.target.value })}
+            <input type="search" autoComplete="off" value={formulario.texto} onChange={(evento) => cambiar({ texto: evento.target.value })}
               placeholder="Pedido, cliente, OF u observaciones…" aria-label="Buscar en los remolques" />
           </label>
           <div className="buscador-acciones">
@@ -151,7 +151,7 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
         <div className="buscador-filtros bloque-3d-hundido">
           <label className="buscador-campo">
             <span className="buscador-rotulo">Cliente</span>
-            <input type="text" list="buscador-clientes" value={formulario.cliente} placeholder="Nombre, ficha o código de RPS"
+            <input type="text" autoComplete="off" list="buscador-clientes" value={formulario.cliente} placeholder="Nombre, ficha o código de RPS"
               onChange={(evento) => cambiar({ cliente: evento.target.value })} />
             <datalist id="buscador-clientes">
               {opciones.clientes.map(({ nombre, codigos }) => (
@@ -174,7 +174,7 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
             onCambio={(ladoRecogida) => cambiar({ ladoRecogida })} />
           <label className="buscador-campo">
             <span className="buscador-rotulo">Material</span>
-            <input type="text" value={formulario.material} placeholder="ALPHA, 7038…" onChange={(evento) => cambiar({ material: evento.target.value })} />
+            <input type="text" autoComplete="off" value={formulario.material} placeholder="ALPHA, 7038…" onChange={(evento) => cambiar({ material: evento.target.value })} />
           </label>
           <div className="buscador-fechas">
             <label className="buscador-campo">

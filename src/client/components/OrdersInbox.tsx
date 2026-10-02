@@ -74,7 +74,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
     <section className="orders-inbox" aria-label="Pedidos">
       {/* Como CoordinaOT: sin panel de fondo; buscador y filtros en una barra encima de la lista. */}
       <header className="orders-inbox-bar orders-filters">
-        <label className="orders-search"><Search aria-hidden="true" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente, OF o modelo…" aria-label="Buscar pedidos" /></label>
+        <label className="orders-search"><Search aria-hidden="true" /><input type="search" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente, OF o modelo…" aria-label="Buscar pedidos" /></label>
         <span className="orders-filter-label">Pendientes de</span>
         <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué pedidos pendientes">
           <button type="button" className={scope === 'all' ? 'pestana-activa' : undefined} aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todo el equipo {sections.pendingAll}</button>
