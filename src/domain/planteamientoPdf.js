@@ -900,6 +900,23 @@ export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVI
   });
 }
 
+// El dibujo de confección solo, del tamaño exacto de su recuadro: el servidor lo encaja en la
+// página de telas impresa desde HTML (fase 1). Mismo código de dibujo que la página de pdfkit.
+export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation }) {
+  const { width, height } = FABRIC_SHEET_DIAGRAM_BOX;
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const doc = new PDFDocument({ autoFirstPage: false, margin: 0, info: { Title: 'Dibujo de confección', Creator: 'toldos-testar' } });
+    registerFonts(doc);
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    doc.addPage({ size: [width, height], margin: 0 });
+    drawFabricDiagram(doc, 0, 0, width, height, diagram, awning, calculation);
+    doc.end();
+  });
+}
+
 function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, calculation = {}) {
   if (awning.fabricImage) return drawCustomFabricImage(doc, x, y, w, h, awning.fabricImage);
   if (diagram.startsWith('CORTINA')) return drawCurtainDiagram(doc, x, y, w, h, diagram, awning);

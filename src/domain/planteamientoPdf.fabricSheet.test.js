@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { buildFabricSheetPages, FABRIC_SHEET_DIAGRAM_BOX } from './planteamientoPdf.js';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { buildFabricSheetPages, buildFabricDiagramBoxPdf, FABRIC_SHEET_DIAGRAM_BOX } from './planteamientoPdf.js';
 import { normalizeOrder } from './validation.js';
 import { calculateOrder } from './rules.js';
 
@@ -50,5 +51,19 @@ describe('buildFabricSheetPages', () => {
     expect(FABRIC_SHEET_DIAGRAM_BOX).toEqual({ x: 36, y: 149, width: 242, height: 300 });
     const hera = { id: 'h', of: '0231000', model: 'HERA', submodel: 'HERA 56 MAQUINA', heraJoin: 'NINGUNO', heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO', heraChainColor: 'BLANCO', units: 1, width: 163.5, projection: 165, height: 230 };
     expect(pages([hera])).toEqual([]);
+  });
+});
+
+describe('buildFabricDiagramBoxPdf', () => {
+  test('una página del tamaño del recuadro con el dibujo', async () => {
+    const pdf = await buildFabricDiagramBoxPdf({ diagram: 'GENERAL', awning: { model: 'CAMBIO TELA', width: 337, projection: 225 }, calculation: {} });
+    const task = getDocument({ data: new Uint8Array(pdf) });
+    const doc = await task.promise;
+    try {
+      expect(doc.numPages).toBe(1);
+      const page = await doc.getPage(1);
+      expect(page.view).toEqual([0, 0, FABRIC_SHEET_DIAGRAM_BOX.width, FABRIC_SHEET_DIAGRAM_BOX.height]);
+      expect((await page.getOperatorList()).fnArray.length).toBeGreaterThan(20);
+    } finally { await task.destroy(); }
   });
 });
