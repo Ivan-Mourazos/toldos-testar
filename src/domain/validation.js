@@ -260,6 +260,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
     fabricImage: normalizeFabricImage(awning?.fabricImage),
     fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning?.fabricDiagramOverride),
+    workshopDrawingId: cleanText(awning?.workshopDrawingId),
     remate,
     remateColor: remate === 'OTRO' ? cleanText(awning?.remateColor || legacyOrder.remateColor) : '',
     structureColor: cleanText(awning?.structureColor || legacyOrder.structureColor).toUpperCase(),

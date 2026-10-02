@@ -60,6 +60,11 @@ describe('drawing parameters', () => {
 });
 
 describe('la biblioteca de dibujos llega al PDF', () => {
+  it('normalizeOrder conserva el dibujo del taller elegido en la tarjeta', async () => {
+    const { normalizeOrder } = await import('./validation.js');
+    const order = normalizeOrder({ orderCode: 'T', awnings: [{ id: 'a', of: '0200001', model: 'ENROLLABLE', units: 1, width: 300, projection: 250, workshopDrawingId: ' plano ' }] });
+    expect(order.awnings[0].workshopDrawingId).toBe('plano');
+  });
   it('normalizeOrder conserva los dibujos de Parámetros', async () => {
     const { normalizeOrder } = await import('./validation.js');
     const { readFileSync } = await import('node:fs');

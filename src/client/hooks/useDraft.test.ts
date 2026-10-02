@@ -351,3 +351,12 @@ describe('ventana de cristal en IRIS', () => {
     expect(switchAwningModel(cortina, 'IRIS').curtainFinish).toBe('');
   });
 });
+
+describe('dibujo del taller elegido en la tarjeta (02/10/2026)', () => {
+  test('se conserva al leer el borrador y se quita al cambiar de modelo', () => {
+    const awning = { ...createAwning('FABRIC_ONLY'), model: 'ENROLLABLE', workshopDrawingId: 'plano' };
+    expect(sanitizeAwning(awning).workshopDrawingId).toBe('plano');
+    expect(sanitizeAwning({ ...awning, workshopDrawingId: 5 }).workshopDrawingId).toBe('');
+    expect(switchAwningModel(awning, 'BAMBALINA').workshopDrawingId).toBe('');
+  });
+});

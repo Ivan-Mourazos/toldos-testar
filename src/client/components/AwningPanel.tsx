@@ -222,7 +222,7 @@ function drawingSource(awning: Awning, order: PanelOrder): DrawingSource {
   if (awning.fabricImage) return { kind: 'manual' };
   const drawings = (order.parameters as { drawings?: unknown } | undefined)?.drawings;
   const configured = resolveConfiguredDrawing({ ...awning, fabricImage: null }, drawings as never);
-  return configured ? { kind: 'library', name: configured.name } : { kind: 'web' };
+  return configured ? { kind: 'library', name: configured.name, chosen: configured.source === 'chosen' } : { kind: 'web' };
 }
 
 function useShallowStable<T extends Record<string, unknown>>(value: T): T {

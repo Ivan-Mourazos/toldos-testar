@@ -41,6 +41,8 @@ export type Awning = {
   valanceFabric: string;
   fabricImage?: string | null;
   fabricDiagramOverride: '' | 'TOLDO-VELCRO' | 'CAMBIO ENROLLABLE' | 'SUPLEMENTO';
+  // Dibujo del taller elegido a mano en la tarjeta; vacío = automático.
+  workshopDrawingId?: string;
   supplementFastening: string;
   supplementFasteningOther: string;
   supplementFasteningPitchCm: number | null;

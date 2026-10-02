@@ -97,6 +97,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
   base.fabricImage = normalizeFabricImage(old.fabricImage);
   base.fabricDiagramOverride = normalizeFabricDiagramOverride(base.model, old.fabricDiagramOverride) as Awning['fabricDiagramOverride'];
+  base.workshopDrawingId = typeof old.workshopDrawingId === 'string' ? old.workshopDrawingId : '';
   // Los pedidos anteriores al suplemento configurable no traen estos campos.
   Object.assign(base, sanitizeSupplement(base.fabricDiagramOverride === 'SUPLEMENTO' ? old : {}));
   base.remate = normalizeValanceFinish(base, typeof old.remate === 'string' ? old.remate : '');
@@ -526,6 +527,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     valanceCurve: supportsValance ? awning.valanceCurve : '',
     valanceFabric: supportsValance ? awning.valanceFabric : '',
     fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) as Awning['fabricDiagramOverride'],
+    // Un dibujo del taller es de su modelo.
+    workshopDrawingId: '',
     ...sanitizeSupplement(normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) === 'SUPLEMENTO' ? awning : {}),
     remate: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate),
     remateColor: normalizeValanceFinish({ model, valanceHeight: supportsValance ? awning.valanceHeight : 0 }, awning.remate) === 'OTRO' ? awning.remateColor : '',

@@ -39,6 +39,10 @@ import {
   isVerticalDropArmMode,
   normalizeDropArmMode
 } from '../../domain/dropArmMode.js';
+import { chosenDrawingMissing, resolveAutomaticDrawing, selectableDrawings } from '../../domain/drawingParameters.js';
+import type { DrawingVariant } from '../types';
+
+const WORKSHOP_DRAWING = 'taller:';
 
 type Props = {
   awning: Awning;
@@ -136,6 +140,27 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const fabricDiagramOptions = getFabricDiagramOptions(awning.model);
   const [showGaliciaPrompt, setShowGaliciaPrompt] = useState(false);
   const update = (patch: Partial<Awning>) => onUpdate(awning.id, patch);
+  // Dibujo de confección (Iván, 02/10/2026): «Automático (sale: …)», los dibujos del taller de este
+  // modelo (a mano y automáticos) y el trabajo especial. Elegir uno quita el otro: es la misma
+  // elección, qué dibujo sale en el PDF.
+  const workshopDrawings: DrawingVariant[] = selectableDrawings(awning.model, parameters.drawings);
+  const chosenMissing = chosenDrawingMissing(awning, parameters.drawings);
+  const automaticDrawing = resolveAutomaticDrawing({ ...awning, fabricImage: null }, parameters.drawings);
+  const automaticDrawingLabel = automaticDrawing ? `Automático (sale: «${automaticDrawing.name}» del taller)` : 'Automático (sale: el de la web)';
+  const drawingChoices = [
+    ...workshopDrawings.map(({ id }) => `${WORKSHOP_DRAWING}${id}`),
+    ...fabricDiagramOptions.filter(({ value }) => value).map(({ value }) => value)
+  ];
+  const drawingValue = awning.workshopDrawingId && !chosenMissing ? `${WORKSHOP_DRAWING}${awning.workshopDrawingId}` : awning.fabricDiagramOverride;
+  const drawingChoiceLabel = (value: string) => {
+    if (!value) return automaticDrawingLabel;
+    if (!value.startsWith(WORKSHOP_DRAWING)) return controlLabel(value);
+    const drawing = workshopDrawings.find(({ id }) => `${WORKSHOP_DRAWING}${id}` === value);
+    return `${drawing?.name ?? 'Dibujo del taller'} (taller)`;
+  };
+  const chooseDrawing = (value: string) => (value.startsWith(WORKSHOP_DRAWING)
+    ? update({ workshopDrawingId: value.slice(WORKSHOP_DRAWING.length), fabricDiagramOverride: '' })
+    : update({ workshopDrawingId: '', fabricDiagramOverride: value as Awning['fabricDiagramOverride'] }));
   const supportsValance = fields.dimensions.includes('valanceHeight');
   const cortinaDevice = normalizeCortinaDevice(awning.device);
   const isBox = awning.model === 'PERLA BOX' || awning.model === 'CORAL BOX' || awning.model === 'CUARZO BOX';
@@ -589,17 +614,25 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
           {supportsValance && variantField}
-          {fabricDiagramOptions.length > 1 && (
+          {(drawingChoices.length > 0 || chosenMissing) && (
             <div className="awning-wide-field">
               <SelectField
                 label="Dibujo de confección"
-                value={awning.fabricDiagramOverride}
-                options={fabricDiagramOptions.filter(({ value }) => value).map(({ value }) => value)}
-                placeholder="Automático"
+                value={drawingValue}
+                options={drawingChoices}
+                placeholder={automaticDrawingLabel}
                 allowEmpty
                 emptyLabel="Automático"
-                onChange={(fabricDiagramOverride) => update({ fabricDiagramOverride: fabricDiagramOverride as Awning['fabricDiagramOverride'] })}
+                optionLabel={drawingChoiceLabel}
+                onChange={chooseDrawing}
               />
+            </div>
+          )}
+          {chosenMissing && !readOnly && (
+            <div className="awning-wide-field drawing-choice-missing" role="alert">
+              <AlertTriangle aria-hidden="true" />
+              <span>El dibujo del taller que se eligió ya no está en Parámetros o está desactivado. Sale el automático.</span>
+              <button className="ghost-button" type="button" onClick={() => update({ workshopDrawingId: '' })}>Entendido</button>
             </div>
           )}
           {awning.fabricDiagramOverride === 'SUPLEMENTO' && (

@@ -15,9 +15,13 @@ type Props = {
   allowEmpty?: boolean;
   emptyLabel?: string;
   missing?: boolean;
+  /** Texto de cada opción (por defecto, controlLabel); con '' da el de la opción vacía de la lista. */
+  optionLabel?: (value: string) => string;
 };
 
-export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel, missing = false }: Props) {
+export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel, missing = false, optionLabel }: Props) {
+  const labelOf = (option: string) => (optionLabel ? optionLabel(option) : controlLabel(option));
+  const emptyOptionLabel = optionLabel?.('') || emptyLabel || 'No indicado';
   const reading = useReadMode();
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -47,7 +51,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
   // obligatorio que falta, o un select sin opción vacía con nombre, se lee «—».
   if (reading) {
     const emptyRead = allowEmpty && emptyLabel && !missing ? emptyLabel : '';
-    return <ReadPair label={label} value={value ? withUnit(controlLabel(value), readUnitOf(label)) : emptyRead} />;
+    return <ReadPair label={label} value={value ? withUnit(labelOf(value), readUnitOf(label)) : emptyRead} />;
   }
 
   const showOptions = () => {
@@ -101,11 +105,11 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
         aria-haspopup="listbox"
         aria-labelledby={labelId}
         aria-invalid={missing || undefined}
-        title={value ? controlLabel(value) : undefined}
+        title={value ? labelOf(value) : undefined}
         onClick={() => open ? setOpen(false) : showOptions()}
         onKeyDown={handleKeyDown}
       >
-        <span>{value ? controlLabel(value) : placeholder || 'Elegir…'}</span>
+        <span>{value ? labelOf(value) : placeholder || 'Elegir…'}</span>
         <ChevronDown aria-hidden="true" />
       </button>
 
@@ -118,11 +122,11 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
               className={`select-option${option === value ? ' is-selected' : ''}${index === activeIndex ? ' is-active' : ''}`}
               role="option"
               aria-selected={option === value}
-              title={option ? controlLabel(option) : emptyLabel ?? 'No indicado'}
+              title={option ? labelOf(option) : emptyOptionLabel}
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => choose(option)}
             >
-              <span>{option ? controlLabel(option) : emptyLabel ?? 'No indicado'}</span>
+              <span>{option ? labelOf(option) : emptyOptionLabel}</span>
               {option === value && <Check aria-hidden="true" />}
             </button>
           ))}

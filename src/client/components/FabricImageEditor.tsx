@@ -3,7 +3,7 @@ import { ImagePlus, Image as ImageIcon, PencilRuler, RotateCcw, Upload } from 'l
 import type { Awning } from '../types';
 
 // De dónde sale el dibujo de este toldo en el PDF (resolveConfiguredDrawing).
-export type DrawingSource = { kind: 'web' } | { kind: 'library'; name: string } | { kind: 'manual' };
+export type DrawingSource = { kind: 'web' } | { kind: 'library'; name: string; chosen?: boolean } | { kind: 'manual' };
 
 // Iván, 25/09/2026: el flujo de las imágenes tenía que entenderse solo. Encima del dibujo
 // se dice qué sale en el PDF y hay un único sitio para cambiarlo: poner una imagen propia
@@ -53,7 +53,7 @@ export function FabricImageEditor({ awning, source, onUpdate }: {
   const current = source.kind === 'manual'
     ? <><ImageIcon aria-hidden="true" /><span>En el PDF sale <strong>una imagen puesta en este toldo</strong>.</span></>
     : source.kind === 'library'
-      ? <><PencilRuler aria-hidden="true" /><span>En el PDF sale <strong>el dibujo del taller «{source.name}»</strong> (Parámetros).</span></>
+      ? <><PencilRuler aria-hidden="true" /><span>En el PDF sale <strong>el dibujo del taller «{source.name}»</strong> ({source.chosen ? 'elegido en la tarjeta' : 'automático, de Parámetros'}).</span></>
       : <><PencilRuler aria-hidden="true" /><span>En el PDF sale <strong>el dibujo de la web</strong>.</span></>;
 
   return (
