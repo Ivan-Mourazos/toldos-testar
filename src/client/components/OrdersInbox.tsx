@@ -86,6 +86,12 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
             <button key={filtro.key} type="button" className={producto === filtro.key ? 'pestana-activa' : undefined} aria-pressed={producto === filtro.key} onClick={() => setProducto(filtro.key)}>{filtro.label}</button>
           ))}
         </div>
+        {/* Junto al filtro de tipo (Iván, 02/10/2026); con «Toldos» no tiene sentido y no sale. */}
+        {onBuscarRemolques && producto !== 'toldos' && (
+          <button type="button" className="ghost-button boton-3d orders-buscar-remolques" onClick={onBuscarRemolques}>
+            <Search aria-hidden="true" />Buscar remolques
+          </button>
+        )}
       </header>
       {coordinaStatus && !coordinaStatus.disponible && (
         <p className="orders-coordina-down" role="status"><AlertTriangle aria-hidden="true" />{coordinaStatus.motivo === COORDINA_NOT_CONFIGURED_MOTIVO ? 'No se puede consultar CoordinaOT: la conexión no está configurada en el servidor.' : 'No se puede consultar CoordinaOT; los pedidos se muestran como por revisar.'}</p>
@@ -126,11 +132,6 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
         <h2>Generados</h2>
         <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => onYear(Number(event.target.value))} aria-label="Año" />
         <span className="orders-count">{sections.history.length}</span>
-        {onBuscarRemolques && (
-          <button type="button" className="ghost-button boton-3d orders-buscar-remolques" onClick={onBuscarRemolques}>
-            <Search aria-hidden="true" />Buscar remolques
-          </button>
-        )}
       </header>
       {historyLoading ? <p className="review-empty">Cargando historial…</p>
         : sections.history.length === 0 ? <p className="review-empty">No hay pedidos generados en {year}.</p>

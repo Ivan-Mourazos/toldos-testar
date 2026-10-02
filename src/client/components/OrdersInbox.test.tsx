@@ -80,7 +80,8 @@ describe('Pedidos con toldos y remolques', () => {
         onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null} onBuscarRemolques={onBuscarRemolques}
       />,
     );
-    expect(pintar(() => undefined)).toMatch(/<h2>Generados<\/h2>.*orders-buscar-remolques.*Buscar remolques<\/button>/);
+    // Iván, 02/10/2026: en la barra de filtros, detrás de «Pedidos de», no en «Generados».
+    expect(pintar(() => undefined)).toMatch(/aria-label="Qué tipo de pedidos".*orders-buscar-remolques.*Buscar remolques<\/button>.*<h2>Generados<\/h2>/);
     expect(pintar()).not.toContain('Buscar remolques');
   });
 
