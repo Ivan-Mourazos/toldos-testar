@@ -1,0 +1,47 @@
+# PDF de toldos en HTML · Fase 1: la página de telas
+
+03/10/2026 · Aprobado por Iván (enfoque A, «igual que ahora», comentando incongruencias y mejoras).
+
+## Por qué
+
+El planteamiento de toldos se dibuja con coordenadas a mano (pdfkit, `src/domain/planteamientoPdf.js`). Cada ajuste (centrar textos, aprovechar un hueco, agrandar la letra) es lento y frágil. Remolques ya hace su hoja de taller como página web (React y CSS) que el servidor imprime a PDF con Chromium (`src/remolques/salida/navegador.ts`, `hoja-remolques.html`), probado en el .90. Se sigue ese camino por fases, empezando por la página de telas, que es la que más se ha retocado.
+
+## Alcance de la fase 1
+
+- **Entra:** la página de telas A4 apaisada de los toldos (`drawFabricPage` y `drawExcelFabricBody`): cabecera, ROTULACIÓN, DATOS BÁSICOS, filas A, B, C… con TELA, SALIDA o CAÍDA, UN., trabajo e instrucción, el total «PAÑO TOTAL NECESARIO» y OBSERVACIONES, con sus páginas de continuación de observaciones.
+- **No entra:** las páginas de estructura (A5), la página de telas del HERA (A5) y los dibujos de confección, que se siguen pintando con el código actual.
+- **Aspecto:** igual que ahora (mismas casillas, orden, textos y datos), con el alineado y el centrado del navegador. Las incongruencias y mejoras se anotan al final como propuestas; no se aplican sin el visto bueno de Iván.
+
+## Cómo funciona
+
+1. **Datos.** Una función pura del dominio, `fabricSheetData(...)`, prepara todo lo que lleva la página (textos ya formateados, con coma decimal y el nombre corto de la tela) a partir de lo mismo que usa hoy `drawFabricPage`: pedido, entradas de la página, totales de tela y dibujo. La usan la página nueva y las pruebas. Así no hay dos lógicas que se separen.
+2. **Página.** Una entrada web nueva, `hoja-telas.html`, con un componente React que pinta esos datos con los tokens de `src/client/coordina/` (en claro, porque es papel). Tamaño A4 apaisado. Avisa a quien imprime con `window.hojaLista` o `window.hojaError`, como la hoja de remolques.
+3. **Dibujo de confección.** El servidor lo pinta con el código actual (`drawFabricDiagram`) en un PDF aparte del tamaño exacto del recuadro, y lo incrusta en ese recuadro de la página impresa con pdf-lib (`embedPage` y `drawPage`). La página HTML reserva el recuadro con las mismas medidas.
+4. **Impresión.** El mismo servicio de Chromium que remolques: se abre una vez, cola de uno en uno, 30 s como máximo y datos de un solo uso en memoria. Se generaliza lo justo para que sirva a las dos hojas, sin cambiar su comportamiento para remolques.
+5. **Unión.** `buildOrderPlanteamientoPdf` sigue haciendo las páginas de estructura y del HERA con pdfkit. Las de telas se sustituyen por las impresas, en el mismo orden, y se juntan en un solo PDF con pdf-lib. El adjunto `CODIGO.toldos.json` con los datos del pedido se mantiene (pdf-lib `attach`), para que el pedido generado se pueda volver a abrir.
+
+## Si algo falla
+
+Si Chromium no está, no responde, tarda más de lo permitido o la página da error, esa página de telas sale con el código actual (pdfkit) y se escribe el motivo en el registro del servidor. El PDF no se bloquea nunca: ni la vista previa, ni el panel «Despiece y dibujo», ni «Generar archivos». Con `TELAS_HTML=0` en el `.env` del servidor (y reiniciando con PM2) se vuelve a la página de pdfkit sin desplegar de nuevo; por defecto está activa.
+
+## Velocidad
+
+Imprimir con Chromium añade alrededor de un segundo por PDF. Se mide en la vista previa, en el panel y al generar. Si pasa de 2 s en el uso normal, se para y se replantea (por ejemplo, la vista previa en pantalla con el HTML directo y Chromium solo al generar).
+
+## Pruebas
+
+- `fabricSheetData`: pruebas unitarias con casos reales (Cortina con ventana, Arzúa, Cambio de tela, Bambalina, Antica y un pedido con varias telas): cada dato en su casilla y con los mismos textos que el PDF actual.
+- Componente: renderizado estático con esos casos.
+- Unión: el PDF resultante tiene las páginas en orden, el adjunto con los datos y el dibujo dentro de su recuadro.
+- Respaldo: con Chromium caído sale la página de pdfkit.
+- Capturas de la página nueva y la actual, una al lado de la otra, para los mismos casos, en `tmp/ui-audit/pdf-telas-html/`.
+- `pnpm test && pnpm typecheck && pnpm lint && pnpm exec vite build`. La paridad de remolques no se toca.
+
+## Incongruencias vistas en la página actual (propuestas, sin aplicar)
+
+1. **Cabeceras distintas entre páginas.** La de estructura dice «OF:» y «Nº PEDIDO:» con el pedido en grande; la de telas dice «PEDIDO» arriba y «OF» abajo, en otro orden y otro tamaño. Propuesta: la misma cabecera en las dos.
+2. **Casillas vacías sin marca.** «REMATE» sale en blanco cuando no hay, y «BAMBA» de ROTULACIÓN sale «-». Propuesta: un criterio único, por ejemplo «—» en todo lo que no aplica.
+3. **Título y trabajo con nombres distintos.** Arriba «CAMBIO DE TELA» y en la fila «CAMB. TELA». Propuesta: el mismo nombre, abreviado solo si no cabe.
+4. **Hueco grande en el centro** con pocas filas (una o dos): la página reserva sitio para muchas. Propuesta: que las filas crezcan un poco o que el total suba.
+5. **El total solo enseña el código de la tela** («NS86BLANP250»), no su nombre. Propuesta: código y nombre corto.
+6. **La instrucción de cada fila** (bamba, altura de velcro…) va en letra pequeña a la derecha de SALIDA y se lee mal. Propuesta: debajo de la fila, a todo el ancho.
