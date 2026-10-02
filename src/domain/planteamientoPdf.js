@@ -473,6 +473,88 @@ function drawNotesBox(doc, x, y, w, bottom, notes, continuation = false, size = 
 // Tamaño de letra de las observaciones en la página de telas.
 const FABRIC_PAGE_TEXT = 9;
 
+// Recuadro del dibujo de confección en la página de telas A4 apaisada (puntos desde arriba a la
+// izquierda). La página HTML lo deja libre y el servidor encaja ahí el dibujo de pdfkit.
+export const FABRIC_SHEET_DIAGRAM_BOX = Object.freeze({ x: 36, y: 149, width: 242, height: 300 });
+
+// «—» en lo que no aplica (Iván, 03/10/2026): vacío o el «-» de siempre.
+function dash(text) {
+  const clean = String(text ?? '').trim();
+  return clean && clean !== '-' ? clean : '—';
+}
+
+// Datos de cada página de telas A4 para la hoja en HTML (fase 1). Salen de las mismas funciones
+// que la página de pdfkit, con los cambios que decidió Iván el 03/10/2026.
+export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwningId = null }) {
+  const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId });
+  const order = onlyAwningId
+    ? { ...fullOrder, awnings: fullOrder.awnings.filter((awning) => awning.id === onlyAwningId) }
+    : fullOrder;
+  const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
+  const orderOfs = distinctOrderOfs(order);
+  const header = {
+    of: orderOfs.length === 1 ? orderOfs[0] : orderOfs.length > 1 ? 'VER EN CADA TOLDO' : '—',
+    orderCode: dash(order.orderCode),
+    customer: dash(order.customer),
+    technician: dash(order.technician),
+    reviewer: dash(order.reviewer),
+    date: dash(formatDate(order.orderDate)),
+    title: 'PLANTEAMIENTO DE TELAS'
+  };
+  return plan.fabricPages.flatMap(({ entries, diagram }, planIndex) => {
+    if (diagram === 'HERA') return [];
+    const lines = entries.map(toFabricLine);
+    const works = new Set(lines.map(({ awning }) => fabricWorkLabel(String(awning.model || '').trim().toUpperCase())));
+    const showOfInRows = orderOfs.length > 1;
+    const pageCodes = new Set(lines.flatMap(({ calc }) => [calc?.fabricCode, calc?.valanceFabricCode]).filter(Boolean));
+    const visible = fabricTotals.filter(({ code }) => pageCodes.has(code));
+    const totals = visible.length > 0 ? visible : fabricTotals;
+    // summarizeFabricPage solo da código y metros: el nombre sale del cálculo de cada línea.
+    const descriptions = new Map(lines.flatMap(({ calc }) => [
+      [calc?.fabricCode, calc?.fabricDescription],
+      [calc?.valanceFabricCode, calc?.valanceFabricDescription]
+    ]).filter(([code, text]) => code && text));
+    const totalLabel = totals.map(({ code }) => {
+      const name = shortFabricName(fabricDescription(code, descriptions.get(code)));
+      return name && name !== code ? `${code} · ${name}` : code;
+    }).join(' · ');
+    return [{
+      planIndex,
+      header,
+      diagramTitle: fabricDiagramHeading(diagram, lines.map(({ awning }) => awning)),
+      rotulacion: {
+        tela: dash(summarizeAwningValue(lines, 'rotFabric', order.rotTela)),
+        bamba: dash(summarizeAwningValue(lines, 'rotValance', order.rotBamba))
+      },
+      datos: {
+        material: dash(summarizeFabricMaterial(lines)),
+        curva: dash(summarizeValanceCurve(lines)),
+        remate: dash(summarizeRemate(lines, order))
+      },
+      rows: lines.map((line) => {
+        const detail = buildFabricLineDetail(line.awning, line.calc, order);
+        const work = works.size > 1 ? detail.workLabel : '';
+        return {
+          letter: awningLetter(line.index),
+          fabricWidth: dash(detail.fabricWidth),
+          dropLabel: isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA',
+          fabricDrop: dash(detail.fabricDrop),
+          units: dash(detail.units),
+          line: [work, showOfInRows ? `OF ${value(line.awning.of)}` : '', buildFabricRowInstruction(line, lines, order)]
+            .filter(Boolean).join(' · ')
+        };
+      }),
+      total: {
+        label: totalLabel || 'TELA SIN DEFINIR',
+        amount: `${formatFabricMeasure(totals.reduce((sum, { amount }) => sum + (Number(amount) || 0), 0))} ML`
+      },
+      notes: fabricPageNotes(order, lines),
+      footer: 'Planteamiento de telas'
+    }];
+  });
+}
+
+
 function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals }) {
   const pageW = doc.page.width;
   const pageH = doc.page.height;
