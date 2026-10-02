@@ -99,7 +99,7 @@ Hallazgo transversal: un lacado escrito como "GRIS (R-7012)" no se reconoce y ca
 | Q-CO02 | **Resuelta por Iván el 22/09/2026.** Sin bamba no se suma el +5 | Hecho |
 | Q-CO03 | **Resuelta por Iván el 22/09/2026.** Casos esporádicos, como en los cambios de tela: se ponen con el candado | Ninguno |
 | Q-CO04 | **Resuelta por Iván el 02/10/2026** con la tabla sacada de RPS (abajo): el motor sigue a la salida, el frente y el peso de la tela | Hecho |
-| Q-CO05 | **Para OT** (Iván no lo sabe). El eje 63 queda resuelto con la regla de Arzúa (exterior). ¿Cuándo se usa tubo Ø70 en vez de Ø78, y casquillo de máquina eje 63 en vez de 50? En los datos no depende del frente | Tubo y casquillos |
+| Q-CO05 | **Cerrada por el taller el 30/09/2026.** El eje 63 queda resuelto con la regla de Arzúa (exterior). Ø70 o Ø78: no hay medida, lo decide el taller y lo normal es Ø78, que es lo que reserva la web | Ninguno |
 
 ### Motores consumidos en RPS (02/10/2026, para Q-CO04)
 
