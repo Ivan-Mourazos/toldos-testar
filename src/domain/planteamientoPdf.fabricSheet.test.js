@@ -160,4 +160,34 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
     expect(after.at(-1)).toContain('HOJA HTML 1');
     expect(after.some((text) => text.includes('Observaciones (continuación)') && !text.includes('Toldo'))).toBe(false);
   });
+
+  test('si falla la hoja de la primera página de telas, solo esa sale con pdfkit y la otra se sustituye', async () => {
+    const two = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings: ['a', 'b', 'c', 'd', 'e'].map((id) => cambioTela({ id })) });
+    const twoCalculation = calculateOrder(two);
+    const sheets = buildFabricSheetPages({ order: two, calculation: twoCalculation });
+    expect(sheets).toHaveLength(2);
+    const errores = [];
+    let llamadas = 0;
+    const pdf = await buildOrderPlanteamientoPdf({
+      order: two,
+      calculation: twoCalculation,
+      renderFabricSheet: async () => { llamadas += 1; if (llamadas === 1) throw new Error('Chromium caído'); return fakeSheet(); },
+      onFabricSheetError: (error) => errores.push(error.message)
+    });
+    const texts = await pageTexts(pdf);
+    expect(texts.at(-2)).toContain('PLANTEAMIENTO DE TELAS');
+    expect(texts.at(-2)).not.toContain('HOJA HTML');
+    expect(texts.at(-1)).toContain('HOJA HTML 1');
+    expect(errores).toEqual(['Chromium caído']);
+  });
+
+  test('si el aviso de error también falla, el PDF sale igual con pdfkit', async () => {
+    const pdf = await buildOrderPlanteamientoPdf({
+      order,
+      calculation,
+      renderFabricSheet: async () => { throw new Error('Chromium caído'); },
+      onFabricSheetError: () => { throw new Error('el aviso falla'); }
+    });
+    expect((await pageTexts(pdf)).at(-1)).toContain('PLANTEAMIENTO DE TELAS');
+  });
 });

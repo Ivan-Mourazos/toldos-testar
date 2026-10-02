@@ -70,9 +70,28 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
       if (sheet.getPageCount() === 0) throw new Error('La hoja de telas impresa no tiene páginas.');
       sheets.set(page.planIndex, { sheet, drawing });
     } catch (error) {
-      onFabricSheetError?.(error, page);
+      notifyFabricSheetError(onFabricSheetError, error, page);
     }
   }
+  // Si la unión falla por lo que sea, el PDF entero sale con pdfkit como siempre.
+  try {
+    return await mergeFabricSheets({ order, review, base, fabricRanges, sheets });
+  } catch (error) {
+    notifyFabricSheetError(onFabricSheetError, error, null);
+    return (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
+  }
+}
+
+// Un aviso que falla no puede romper el PDF.
+function notifyFabricSheetError(callback, error, page) {
+  try {
+    callback?.(error, page);
+  } catch (callbackError) {
+    console.error('Falló el aviso de error de la hoja de telas:', callbackError);
+  }
+}
+
+async function mergeFabricSheets({ order, review, base, fabricRanges, sheets }) {
   const out = await PDFLibDocument.create();
   out.setTitle(`${order.orderCode || 'Pedido'}-1`);
   out.setSubject('Planteamiento de estructuras y telas');
