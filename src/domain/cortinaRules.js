@@ -1,5 +1,6 @@
 import { effectiveOverride, noteOverride } from './ruleOverrides.js';
 import { curtainBottomAllowanceCm, curtainConfigurationError, curtainFabricAdjustmentCm } from './curtainConfiguration.js';
+import { cortinaMotorPower, cortinaMotorPowers } from './curtainMotor.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -30,12 +31,18 @@ export function calculateCortina({ order, awning }) {
     : awning.reglasModificadas && awning.curtainFabricDeductionCm !== null && awning.curtainFabricDeductionCm !== undefined
     ? Math.max(0, Number(awning.curtainFabricDeductionCm) || 0)
     : awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm;
+  // Cortina: el motor sigue al tamaño (Q-CO04, Iván 02/10/2026); con el candado manda el elegido.
+  // Selena sigue con 15/17.
+  const ruleMotor = awning.model === 'CORTINA'
+    ? cortinaMotorPower({ width: awning.width, projection: awning.projection, curtainHasWindow: awning.curtainHasWindow, fabric })
+    : '15/17';
+  const chosenMotor = String(awning.motorPower || '');
   const motorPower = device === 'MOTOR'
-    ? awning.reglasModificadas && ['35/17', '55/17'].includes(String(awning.motorPower)) ? String(awning.motorPower) : '15/17'
+    ? awning.reglasModificadas && cortinaMotorPowers.includes(chosenMotor) ? chosenMotor : ruleMotor
     : '';
   if (awning.reglasModificadas) {
     if (awning.model !== 'CORTINA') noteOverride('curtainFabricDeductionCm', deduction, awning.curtainSkipBottomDeduction ? 0 : parameters.bottomDeductionCm);
-    if (device === 'MOTOR') noteOverride('motorPower', motorPower, '15/17');
+    if (device === 'MOTOR') noteOverride('motorPower', motorPower, ruleMotor);
   }
   const missingFields = [];
   const diagnostics = [];

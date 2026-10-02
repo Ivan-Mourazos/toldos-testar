@@ -9,7 +9,7 @@
 // Recto, y los patines del Ágata (contestadas y ya aplicadas en la web).
 const pending = {
   'AGATA BOX': ['Si el motor pasa del Sunilus al Sunea (lo decide Oficina Técnica).'],
-  CORTINA: ['Qué motor Maestria lleva según el tamaño.'],
+  CORTINA: ['Si la altura del velcro sigue restando 18 cm con las reglas nuevas de la tela.'],
   SELENA: ['A motor nunca se ha fabricado: confirmar el kit con el taller.'],
   IRIS: ['El motor y el mando todavía no se reservan: se ponen a mano.'],
   HERA: ['El motor y el mando todavía no se reservan: se ponen a mano.'],

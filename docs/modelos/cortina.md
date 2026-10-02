@@ -98,7 +98,7 @@ Hallazgo transversal: un lacado escrito como "GRIS (R-7012)" no se reconoce y ca
 | Q-CO01 | **Resuelta por Iván el 22/09/2026.** Se restan 18 por defecto, con opción de no restarlos | Hecho |
 | Q-CO02 | **Resuelta por Iván el 22/09/2026.** Sin bamba no se suma el +5 | Hecho |
 | Q-CO03 | **Resuelta por Iván el 22/09/2026.** Casos esporádicos, como en los cambios de tela: se ponen con el candado | Ninguno |
-| Q-CO04 | **Para OT** (Iván no lo sabe). ¿Qué motor lleva cada cortina? Se usaron 15/17 (318 × 140), 35/17 (500 × 300, 480 × 460) y 55/17 (963 × 258) | Motor y reserva |
+| Q-CO04 | **Resuelta por Iván el 02/10/2026** con la tabla sacada de RPS (abajo): el motor sigue a la salida, el frente y el peso de la tela | Hecho |
 | Q-CO05 | **Para OT** (Iván no lo sabe). El eje 63 queda resuelto con la regla de Arzúa (exterior). ¿Cuándo se usa tubo Ø70 en vez de Ø78, y casquillo de máquina eje 63 en vez de 50? En los datos no depende del frente | Tubo y casquillos |
 
 ### Motores consumidos en RPS (02/10/2026, para Q-CO04)
@@ -111,4 +111,4 @@ Consulta de solo lectura a `CPRImputationMaterialMO`: las 774 OF de `CORTINAUNI`
 - **Sunilus 55/17** (3 OF): 952 × 258 y lonas pesadas (S2000, NS86 con cristal).
 - **Otros, sueltos:** Somfy Sunea 35 y Atla, Jet, Meteor, Apollo, Orion y Oximo.
 
-Los tamaños se solapan: 410 × 300 con PVC y cristal llevó 15/17, y 387 × 310 igual llevó 35/17. La potencia parece depender de la salida, el frente y el peso de la tela (PVC y cristal), no de una sola medida. **Propuesta para decidir:** 15/17 por defecto; 35/17 con salida de más de 350, o de más de 300 con PVC y ventana de cristal; 55/17 con frente de más de 800. Mientras no se decida, la web sigue con 15/17 y el candado permite 35/17 o 55/17.
+Los tamaños se solapan: 410 × 300 con PVC y cristal llevó 15/17, y 387 × 310 igual llevó 35/17. La potencia parece depender de la salida, el frente y el peso de la tela (PVC y cristal), no de una sola medida. **Decidido por Iván el 02/10/2026 y hecho en la web** (`src/domain/curtainMotor.js`): 15/17 por defecto; 35/17 con salida de más de 350, o de más de 300 con PVC y ventana de cristal; 55/17 con frente de más de 800. Es PVC si la subfamilia de RPS es plástica o si la lona es de las de siempre (NS86, ALPHA, G650…). Con el candado se elige cualquiera de los tres, y el candado parte del que da la regla. Selena sigue con 15/17. Hoy la web no tiene tubo para una Cortina de más de unos 710 cm de frente, así que el 55/17 solo sale con el candado y tubo a mano.

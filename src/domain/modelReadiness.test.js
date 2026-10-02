@@ -21,7 +21,7 @@ describe('estado de cada modelo en los selectores', () => {
   test('la explicación dice qué falta', () => {
     expect(modelReadinessText('AGATA BOX')).toContain('Sunea');
     expect(modelReadinessText('AGATA BOX')).not.toContain('patines');
-    expect(modelReadinessText('CORTINA')).toContain('Maestria');
+    expect(modelReadinessText('CORTINA')).toContain('velcro');
     expect(modelReadinessText('XACOBEO')).toMatch(/^Completo/);
   });
 });

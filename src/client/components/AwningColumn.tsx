@@ -24,6 +24,8 @@ import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.j
 import { ambarPlacementGroup } from '../../domain/ambarBoxParameters.js';
 import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount } from '../../domain/agataBoxParameters.js';
 import { cambioTelaExtraError, resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
+import { cortinaMotorPower, cortinaMotorPowers } from '../../domain/curtainMotor.js';
+import { resolveFabric } from '../../domain/fabricCatalog.js';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemGuide, maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
@@ -167,6 +169,11 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
     : update({ workshopDrawingId: '', fabricDiagramOverride: value as Awning['fabricDiagramOverride'] }));
   const supportsValance = fields.dimensions.includes('valanceHeight');
   const cortinaDevice = normalizeCortinaDevice(awning.device);
+  // Motor de la Cortina según su tamaño (Q-CO04): de él parte el candado.
+  const cortinaRuleMotor = awning.model === 'CORTINA'
+    ? cortinaMotorPower({ ...awning, fabric: resolveFabric(sameFabric !== false ? orderFabric : awning.fabric) })
+    : '15/17';
+  const cortinaMotor = cortinaMotorPowers.includes(awning.motorPower) ? awning.motorPower : cortinaRuleMotor;
   const isBox = awning.model === 'PERLA BOX' || awning.model === 'CORAL BOX' || awning.model === 'CUARZO BOX';
   const isXacobeo = awning.model === 'XACOBEO';
   const isPuntoRecto = awning.model === 'PUNTO RECTO';
@@ -386,7 +393,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                     curtainFabricDeductionCm: awning.curtainFabricDeductionCm
                       ?? (awning.curtainSkipBottomDeduction ? 0 : curtainLikeParameters.bottomDeductionCm ?? 0),
                     ...(awning.model === 'CORTINA' && cortinaDevice === 'MOTOR'
-                      ? { motorPower: ['35/17', '55/17'].includes(awning.motorPower) ? awning.motorPower : '15/17' }
+                      ? { motorPower: cortinaRuleMotor }
                       : {}),
                     curtainFabricWidthDiscountCm: awning.curtainFabricWidthDiscountCm ?? curtainLikeParameters.fabricWidthDiscounts[cortinaDevice],
                     curtainRollTubeDiscountCm: awning.curtainRollTubeDiscountCm ?? curtainLikeParameters.rollTubeDiscounts[cortinaDevice],
@@ -824,7 +831,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <NumberField label="Descuento frente tela (cm)" value={awning.curtainFabricWidthDiscountCm} min={0} step={0.5} onChange={(curtainFabricWidthDiscountCm) => update({ curtainFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.curtainRollTubeDiscountCm} min={0} step={0.5} onChange={(curtainRollTubeDiscountCm) => update({ curtainRollTubeDiscountCm })} />
                 <NumberField label="Descuento Univers 280 (cm)" value={awning.curtainLoadProfileDiscountCm} min={0} step={0.5} onChange={(curtainLoadProfileDiscountCm) => update({ curtainLoadProfileDiscountCm })} />
-                {awning.model === 'CORTINA' && cortinaDevice === 'MOTOR' && <SegmentedField label="Motor" value={['35/17', '55/17'].includes(awning.motorPower) ? awning.motorPower : '15/17'} options={['15/17', '35/17', '55/17']} onChange={(motorPower) => update({ motorPower })} />}
+                {awning.model === 'CORTINA' && cortinaDevice === 'MOTOR' && <SegmentedField label="Motor" value={cortinaMotor} options={cortinaMotorPowers} onChange={(motorPower) => update({ motorPower })} />}
               </>}
               {isBox && <>
                 <NumberField label="Frente mínimo (cm)" value={awning.boxMinimumLineCm} min={0} step={0.5} onChange={(boxMinimumLineCm) => update({ boxMinimumLineCm })} />

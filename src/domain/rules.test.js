@@ -1538,6 +1538,27 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
     });
   });
 
+  test('el motor sigue al tamaño (Q-CO04) y el candado permite cualquiera de los tres', () => {
+    const calcular = (medidas, extra = {}) => calculateOrder(basePayload({
+      orderCode: 'AR26MOTOR', structureColor: 'BLANCO', fabric: 'ACR NEGRO',
+      awnings: [cortina({
+        valanceHeight: 0, device: 'MOTOR', crankHeight: null, curtainHasWindow: false,
+        curtainWindowExit: null, curtainWindowCorner: null, curtainWindowFloorHeight: null, curtainWindowHeight: null,
+        ...medidas, ...extra
+      })]
+    })).ofs[0];
+    const motorDe = (medidas, extra) => calcular(medidas, extra).calculation.motorPower;
+
+    // Como las OF reales de RPS 0220677 (480 × 460, 35/17) y 0222321 (952 × 258, 55/17). Con más de
+    // 800 de frente la web aún no tiene tubo, pero el cálculo ya elige el 55/17.
+    expect(calcular({ width: 480, projection: 380 }).materials.map((line) => line.code)).toContain('SUNILUSIO35//17');
+    expect(motorDe({ width: 820, projection: 258 }, { reglasModificadas: true, motorPower: '' })).toBe('55/17');
+    expect(motorDe({ width: 318, projection: 140 })).toBe('15/17');
+    // Con el candado, el elegido, también el 15/17 aunque la regla diga otro.
+    expect(motorDe({ width: 480, projection: 380 }, { reglasModificadas: true, motorPower: '15/17' })).toBe('15/17');
+    expect(motorDe({ width: 318, projection: 140 }, { reglasModificadas: true, motorPower: '55/17' })).toBe('55/17');
+  });
+
   test('motor usa SUNILUS 15/17 y dos Cortinas de una OF se consolidan', () => {
     const calculated = calculateOrder(basePayload({
       orderCode: 'AR2602972',

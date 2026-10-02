@@ -16,7 +16,6 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 ### Cortina
 
-- **Motor de la cortina: ¿qué Maestria va según el tamaño?** El taller dijo el 30/09 que lleva motor Maestria y que depende del tamaño; Iván no sabe la tabla y pide sacarla de RPS. **Sacado de RPS el 02/10/2026:** el Maestria solo aparece en 2 OF, sin medidas. Lo que se usa es el Sunilus 15/17, 35/17 o 55/17, y los tamaños se solapan. Los datos y una propuesta (35/17 con salida de más de 350, o de más de 300 con PVC y cristal; 55/17 con frente de más de 800) están en [Cortina](./cortina.md#motores-consumidos-en-rps-02102026-para-q-co04). La web pone el Sunilus 15/17. Falta que Iván o el taller den por buena la propuesta, o digan cuándo va Maestria. <sub>Q-CO04</sub>
 - **Altura del velcro con las reglas nuevas.** Desde el 02/10/2026 la tela de Cortina no descuenta nada por defecto (se elige −18, −11 o un ajuste en la tarjeta), pero la altura del velcro sigue siendo «salida − 18 + 8», la del Excel: con salida 275 sale 265. ¿Se queda así, o debe seguir al ajuste elegido (sin ajuste: salida + 8)? En Cambio de cortina es salida + 8. <sub>Q-CO06</sub>
 
 ## Telas
@@ -73,7 +72,7 @@ Respuestas del taller, traídas por Iván. «Pendiente» quiere decir que la web
 | Q-G02 | Motor del Galicia: 55/17 o 70/17 | Depende del número de brazos y de la salida, como en la tarifa del Monoblock | Hecho: la tabla de motores del Monoblock 350 por brazos y salida (55/17 con dos brazos, 70/17 con tres); con el candado, otro |
 | Q-AG01 | Patines, regleta de unión y pasadores del Ágata Box | Patines siempre, de codo y de horquilla. Kit de unión con más de 7 m de frente | Hecho: dos kits de patines de codo (`PABMODUL`) y dos de horquilla (`PASBMODUL`) por toldo; con más de 7 m, `KUNIONMODUL` y `PASADORMODUL`. De paso, el motor de 100 va a 12 rpm (`SUNILUSIO100//12`): el //17 no existe |
 | Q-AG02 | Motor del Ágata Box | Siempre Sunea; la potencia depende del toldo | Hecho el 30/09: motor Sunea en todas las variantes, también en el Open (`SUNEAIO35//17`, `40`, `55`, `70`, `85//17` y `SUNEAIO100//12`, todos activos en RPS), con la misma tabla por brazos y salida. Descripción «MOTOR SOMFY SUNEA … IO» |
-| Q-CO04 | Motor de la cortina | Maestria; depende también del tamaño | A medias: falta la tabla de potencias (ver Cortina). Pendiente: comprobar en RPS los códigos de los Maestria |
+| Q-CO04 | Motor de la cortina | Maestria; depende también del tamaño. En RPS casi no hay Maestria (2 OF): Iván aprobó el 02/10/2026 la tabla sacada de lo gastado | Hecho: 15/17 por defecto; 35/17 con salida de más de 350, o de más de 300 con PVC y ventana; 55/17 con frente de más de 800. Con el candado se elige cualquiera ([Cortina](./cortina.md#motores-consumidos-en-rps-02102026-para-q-co04)) |
 | Q-G03 | Galicia con tres brazos y 3,50 m de salida | Sí se hace | Hecho: sin aviso con tres brazos y 3,50 de salida |
 | Q-M03 | Monoblock de 7,10 a 7,25 m: barra de carga | Una barra; si falta poco, se empata con un resto | Ya lo hace: una barra de 7 m |
 | Q-CO05 | Tubo de Ø70 en la cortina | Con poca salida y según el stock, a criterio del taller; no hay medida. Lo normal es el de Ø78 | Cerrada: Ø78 |
