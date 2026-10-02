@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FilaBusqueda, ResultadoBusqueda } from '../../remolques/flujo/buscar.ts';
 import {
-  buscarRemolques, estadoBuscadorInicial, fechaCorta, filtrosDesdeFormulario, formularioVacio, leerOpcionesBuscador, RUTA_BUSCAR,
+  buscarRemolques, estadoBuscadorInicial, fechaCorta, filtrosDesdeFormulario, formularioVacio, leerOpcionesBuscador, MENSAJE_SIN_CONEXION, RUTA_BUSCAR,
   textoContador, textoCorte, textoMedidas, textoRecogidas,
 } from './busquedaRemolques';
 
@@ -60,6 +60,11 @@ describe('llamada al servidor', () => {
       .mockResolvedValueOnce(respuesta(200, {})));
     await expect(buscarRemolques({})).rejects.toThrow('La medida «largo» no es válida.');
     await expect(buscarRemolques({})).rejects.toThrow('La respuesta de la búsqueda no es válida.');
+  });
+
+  it('sin red, un aviso en castellano y no el «Failed to fetch» del navegador', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    await expect(buscarRemolques({})).rejects.toThrow(MENSAJE_SIN_CONEXION);
   });
 
   it('opciones: las recogidas de los parámetros y los nombres de las fichas; si algo falla, vacío', async () => {

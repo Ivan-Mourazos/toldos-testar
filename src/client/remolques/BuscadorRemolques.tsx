@@ -102,7 +102,10 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
     buscarRemolques(peticion.filtros)
       .then((nuevo) => { if (activo) onEstado((actual) => ({ ...actual, resultado: nuevo })); })
       .catch((error: unknown) => {
-        if (activo) onToast(error instanceof Error ? error.message : 'No se pudo buscar en los pedidos de remolques.', { tone: 'error' });
+        if (!activo) return;
+        // Sin resultado viejo en pantalla: se leería como la respuesta a los filtros nuevos.
+        onEstado((actual) => ({ ...actual, resultado: null }));
+        onToast(error instanceof Error ? error.message : 'No se pudo buscar en los pedidos de remolques.', { tone: 'error' });
       })
       .finally(() => { if (activo) setPeticion((actual) => (actual === peticion ? null : actual)); });
     return () => { activo = false; };

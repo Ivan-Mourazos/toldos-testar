@@ -120,6 +120,8 @@
   padding: 0.375rem 0.5rem;
   width: 100%;
 }
+/* El «5» del margen por defecto es una pista, no un valor escrito: más tenue y en cursiva. */
+.buscador-medida > input::placeholder { color: var(--text-muted); font-style: italic; opacity: 0.7; }
 .buscador-mas-menos,
 .buscador-unidad {
   color: var(--text-muted);

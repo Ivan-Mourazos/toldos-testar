@@ -102,13 +102,16 @@ export function filtrosDesdeFormulario(f: FormularioBusqueda): FiltrosBusqueda {
   return filtros;
 }
 
+export const MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor para buscar. Comprueba la red y vuelve a intentarlo.';
+
 export async function buscarRemolques(filtros: FiltrosBusqueda): Promise<ResultadoBusqueda> {
+  // Sin red, el navegador da «Failed to fetch»: se cambia por un texto en castellano.
   const respuesta = await fetch(RUTA_BUSCAR, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(filtros),
     cache: 'no-store',
-  });
+  }).catch(() => { throw new Error(MENSAJE_SIN_CONEXION); });
   const datos = await respuesta.json().catch(() => ({})) as Partial<ResultadoBusqueda> & { error?: string };
   if (!respuesta.ok) throw new Error(datos.error || 'No se pudo buscar en los pedidos de remolques.');
   if (!Array.isArray(datos.filas)) throw new Error('La respuesta de la búsqueda no es válida.');
