@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import type { RuleParameters } from '../types';
 import { defaultArzuaProParameters, normalizeArzuaProParameters } from '../../domain/arzuaProParameters.js';
 import { defaultGaliciaParameters, normalizeGaliciaParameters } from '../../domain/galiciaParameters.js';
@@ -20,26 +20,22 @@ import { defaultElectraParameters, normalizeElectraParameters } from '../../doma
 import { defaultAmbarBoxParameters, normalizeAmbarBoxParameters } from '../../domain/ambarBoxParameters.js';
 import { defaultAgataBoxParameters, normalizeAgataBoxParameters } from '../../domain/agataBoxParameters.js';
 import { defaultFabricJobParameters, normalizeFabricJobParameters } from '../../domain/fabricJobParameters.js';
-import { changedRuleSections, normalizeRuleParameters } from '../../domain/ruleParameters.js';
+import { normalizeRuleParameters } from '../../domain/ruleParameters.js';
+import {
+  ambitosPendientes, descartarBorrador, editarParametros, guardarAmbitos, leerParametros, ponerPedido,
+  refrescarParametros, suscribirParametros, type SaveDraftResult
+} from '../parametrosToldos';
 
-type SharedParameters = { version: number; parameters: RuleParameters };
-export type SaveDraftResult = { status: 'saved' | 'conflict' | 'error'; message?: string };
+export type { SaveDraftResult } from '../parametrosToldos';
 
 const REFRESH_EVERY_MS = 5 * 60 * 1000;
 // Claves de cuando cada navegador guardaba sus parámetros (hasta el 21/09/2026).
 const LEGACY_STORAGE_KEYS = ['toldos-testar-parameters-v2', 'toldos-testar-parameters-v3'];
 const normalize = (saved?: unknown) => normalizeRuleParameters(saved) as RuleParameters;
 
-async function fetchShared(): Promise<SharedParameters | null> {
-  try {
-    const response = await fetch('/api/rule-parameters');
-    if (!response.ok) return null;
-    const data = await response.json();
-    return { version: Number(data.version) || 0, parameters: normalize(data.parameters) };
-  } catch {
-    // Sin conexión con el servidor: se siguen usando los últimos conocidos.
-    return null;
-  }
+/** El estado de los parámetros de toldos, el mismo en toda la página (App, Parámetros, el historial). */
+export function useEstadoParametros() {
+  return useSyncExternalStore(suscribirParametros, leerParametros, leerParametros);
 }
 
 /**
@@ -49,19 +45,13 @@ async function fetchShared(): Promise<SharedParameters | null> {
  *  - borrador: lo que se edita en Parámetros, solo en este puesto hasta guardar;
  *  - del pedido: los de una revisión abierta para corregirla.
  * Los pedidos se calculan con los del pedido o, si no hay, con los vigentes;
- * nunca con un borrador sin guardar.
+ * nunca con un borrador sin guardar. Desde el 02/10/2026 el estado vive en
+ * parametrosToldos.ts y cada modelo se guarda con su versión desde su ficha.
+ * Solo App llama a este hook (refresca al volver a la ventana y cada 5 minutos).
  */
 export function useParameters() {
-  const [shared, setShared] = useState<SharedParameters>(() => ({ version: 0, parameters: normalize() }));
-  const [draft, setDraft] = useState<RuleParameters | null>(null);
-  const [order, setOrder] = useState<{ parameters: RuleParameters; version: number | null } | null>(null);
-  const [saving, setSaving] = useState(false);
-  const sharedRef = useRef(shared);
-  useEffect(() => { sharedRef.current = shared; }, [shared]);
-
-  const refresh = useCallback(() => fetchShared().then((next) => {
-    if (next) setShared(next);
-  }), []);
+  const estado = useEstadoParametros();
+  const hayBorrador = estado.draft !== null;
 
   useEffect(() => {
     try {
@@ -69,11 +59,7 @@ export function useParameters() {
     } catch {
       // Sin almacenamiento disponible: no hay nada que limpiar.
     }
-    const onFocus = () => {
-      fetchShared().then((next) => {
-        if (next) setShared(next);
-      });
-    };
+    const onFocus = () => { void refrescarParametros(); };
     onFocus();
     window.addEventListener('focus', onFocus);
     const timer = window.setInterval(onFocus, REFRESH_EVERY_MS);
@@ -84,20 +70,15 @@ export function useParameters() {
   }, []);
 
   useEffect(() => {
-    if (!draft) return undefined;
+    if (!hayBorrador) return undefined;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, [draft]);
+  }, [hayBorrador]);
 
   // Cada edición de Parámetros va al borrador. Si deja todo como los vigentes,
   // el borrador desaparece.
-  const edit = (change: (current: RuleParameters) => RuleParameters) => {
-    setDraft((previous) => {
-      const next = change(previous ?? sharedRef.current.parameters);
-      return changedRuleSections(sharedRef.current.parameters, next).length ? next : null;
-    });
-  };
+  const edit = editarParametros;
 
   function updateArzua(patch: Partial<RuleParameters['arzuaPro']>) {
     edit((current) => ({
@@ -280,59 +261,40 @@ export function useParameters() {
   }
 
   function discardDraft() {
-    setDraft(null);
+    descartarBorrador();
   }
 
-  // Pone una versión del historial como borrador: volver atrás es guardar.
+  // Pone una versión entera del historial como borrador: volver atrás es guardar.
   function loadVersion(overrides: unknown) {
     edit(() => normalize(overrides));
   }
 
-  async function saveDraft(updatedBy: string, reason: string): Promise<SaveDraftResult> {
-    if (!draft) return { status: 'saved' };
-    setSaving(true);
-    try {
-      const response = await fetch('/api/rule-parameters', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ baseVersion: shared.version, parameters: draft, updatedBy, reason })
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.status === 409) {
-        // Otro puesto guardó antes: se cargan sus valores y el borrador se conserva.
-        setShared({ version: Number(data.current?.version) || 0, parameters: normalize(data.current?.parameters) });
-        return { status: 'conflict', message: data.error };
-      }
-      if (!response.ok) return { status: 'error', message: data.error || 'No se pudieron guardar los parámetros.' };
-      setShared({ version: Number(data.version) || 0, parameters: normalize(data.parameters) });
-      setDraft(null);
-      return { status: 'saved' };
-    } catch {
-      return { status: 'error', message: 'No se pudo contactar con el servidor.' };
-    } finally {
-      setSaving(false);
-    }
+  // La barra común de App: guarda cada modelo con cambios, uno tras otro, cada uno con su versión.
+  function saveDraft(updatedBy: string, reason: string): Promise<SaveDraftResult> {
+    return guardarAmbitos(ambitosPendientes(), updatedBy, reason);
   }
 
   // Corregir una revisión recalcula con los parámetros con que se guardó, sin
   // tocar los comunes.
   function loadParameters(saved: RuleParameters, version: number | null = null) {
-    setOrder({ parameters: normalize(saved), version });
+    ponerPedido({ parameters: normalize(saved), version });
   }
 
   // Al guardar o limpiar el pedido se vuelve a los comunes.
   function restoreParameters() {
-    setOrder(null);
+    ponerPedido(null);
   }
 
   return {
-    parameters: order?.parameters ?? shared.parameters,
-    generalParameters: draft ?? shared.parameters,
-    parametersVersion: order ? order.version : shared.version,
-    version: shared.version,
-    dirty: draft !== null,
-    saving,
-    refresh,
+    parameters: estado.order?.parameters ?? estado.shared.parameters,
+    generalParameters: estado.draft ?? estado.shared.parameters,
+    parametersVersion: estado.order ? estado.order.version : estado.shared.version,
+    version: estado.shared.version,
+    // Los toldos se guardan por modelo con la barra de su ficha (ParametersView), así que la barra
+    // común de arriba (App) no sale con ellos. La tarea 9 del plan de 02/10/2026 lo quita de App.
+    dirty: false,
+    saving: estado.saving,
+    refresh: refrescarParametros,
     discardDraft,
     loadVersion,
     saveDraft,

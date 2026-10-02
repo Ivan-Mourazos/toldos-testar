@@ -576,3 +576,11 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 8px 0;
 }
+
+/* ── Barra de cada modelo (Iván, 02/10/2026: «versiones por modelo») ──
+   La misma barra que la de las fichas de cliente (clientes-remolques.css): estado y versión a la
+   izquierda; motivo opcional, «Descartar cambios» y «Guardar» a la derecha. */
+.parametros-modelo-version { color: var(--text-muted); font-size: 0.75rem; }
+.parametros-modelo-barra small { color: var(--text-muted); font-size: 0.75rem; }
+.parametros-modelo-barra small.parametros-modelo-error { color: var(--danger); font-weight: 600; }
+.parametros-modelo-confirmar { align-self: center; color: var(--text); font-size: 0.8125rem; font-weight: 600; }

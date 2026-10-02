@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import type { AgataBoxParameters, AgataDevice, AgataPieceDiscounts, AgataRuleVariant, AmbarBoxParameters, AmbarPlacementGroup, ArzuaProParameters, BoxDevice, BoxParameters, CambioCortinaParameters, CortinaDevice, CortinaParameters, Device, ElectraMatrixSupport, ElectraParameters, FabricJobModel, FabricJobParameters, GaliciaParameters, MaxiscreemParameters, MaxiscreemVariantGroup, Monoblock350Device, Monoblock350Parameters, PuntoRectoParameters, RuleParameters, XacobeoParameters } from '../types';
 import { NumberField } from '../components/NumberField';
@@ -12,6 +12,10 @@ import { MONOBLOCK_UNIVERS_LESS_CM } from '../../domain/monoblock350Parameters.j
 import { DrawingParametersPanel } from '../components/DrawingParametersPanel';
 import { fullAwningModelNames, fabricOnlyModelNames } from '../../domain/modelBehavior.js';
 import { groupModelsByFamily } from '../../domain/catalog.js';
+import { ModelSaveBar } from '../components/ModelSaveBar';
+import { useEstadoParametros } from '../hooks/useParameters';
+import { elegirModeloVisible, restaurarAmbitos } from '../parametrosToldos';
+import { pageScopes } from '../../domain/parameterScopes.js';
 
 const tubes = ['TUBO DE CARGA EVO 80', 'TUBO DE CARGA UNIVERS 280'];
 const devices: Device[] = ['MOTOR', 'MAQ. INTERIOR', 'MAQ. EXTERIOR'];
@@ -67,16 +71,22 @@ type Props = {
   onUpdateDrawings: (drawings: RuleParameters['drawings']) => void;
 };
 
-export function ParametersView({ parameters, remolques, remolquesClientes, remolquesVista = null, onSelectRemolques, onUpdateArzua, onUpdateGalicia, onResetArzua, onResetGalicia, onUpdatePerlaBox, onResetPerlaBox, onUpdateCoralBox, onResetCoralBox, onUpdateCuarzoBox, onResetCuarzoBox, onUpdateCortina, onResetCortina, onUpdateSelena, onResetSelena, onUpdateCambioCortina, onResetCambioCortina, onUpdateXacobeo, onResetXacobeo, onUpdatePuntoRecto, onResetPuntoRecto, onUpdateMonoblock350, onResetMonoblock350, onUpdateMaxiscreem, onResetMaxiscreem, onUpdateElectra, onResetElectra, onUpdateAmbarBox, onResetAmbarBox, onUpdateAgataBox, onResetAgataBox, onUpdateFabricJobs, onResetFabricJobs, onUpdateDrawings }: Props) {
-  const [selectedModel, setSelectedModel] = useState<SelectedModel>('ARZUA PRO');
+export function ParametersView({ parameters, remolques, remolquesClientes, remolquesVista = null, onSelectRemolques, onUpdateArzua, onUpdateGalicia, onUpdatePerlaBox, onUpdateCoralBox, onUpdateCuarzoBox, onUpdateCortina, onUpdateSelena, onUpdateCambioCortina, onUpdateXacobeo, onUpdatePuntoRecto, onUpdateMonoblock350, onUpdateMaxiscreem, onUpdateElectra, onUpdateAmbarBox, onUpdateAgataBox, onUpdateFabricJobs, onUpdateDrawings }: Props) {
+  // El modelo elegido vive en el estado compartido: el historial de arriba (App) enseña el suyo.
+  const estado = useEstadoParametros();
+  const selectedModel = estado.modeloVisible as SelectedModel;
+  const setSelectedModel = elegirModeloVisible;
+  // «Restaurar valores por defecto»: lo de esta ficha (el modelo y, en los trabajos de tela, lo
+  // común), sin tocar sus dibujos («Vaciar dibujos» va aparte).
+  const restaurar = () => restaurarAmbitos(pageScopes(selectedModel));
   const clearSelectedDrawings = () => {
     const byModel = { ...parameters.drawings.byModel };
     delete byModel[selectedModel];
     onUpdateDrawings({ byModel });
   };
 
-  // Columna de la ficha: el índice «Ir a», la ficha del modelo y, justo debajo y con el
-  // mismo ancho, sus dibujos. Igual para los 22 modelos (Iván, 25/09/2026).
+  // Columna de la ficha: el índice «Ir a», la barra del modelo (versión, guardar), la ficha y, justo
+  // debajo y con el mismo ancho, sus dibujos. Igual para los 22 modelos (Iván, 25/09/2026).
   return <div className="parameter-layout">
     <ParameterModelSelector selectedModel={remolquesVista === 'clientes' ? 'REMOLQUES-CLIENTES' : remolquesVista ? 'REMOLQUES' : selectedModel} includeRemolques={Boolean(remolques)} onSelectModel={(model) => {
       onSelectRemolques?.(model === 'REMOLQUES' ? 'generales' : model === 'REMOLQUES-CLIENTES' ? 'clientes' : null);
@@ -85,6 +95,7 @@ export function ParametersView({ parameters, remolques, remolquesClientes, remol
     <div className="parameter-layout-main">
       <ParameterSectionIndex />
       {remolquesVista === 'clientes' ? remolquesClientes : remolquesVista ? remolques : <>
+        <ModelSaveBar key={selectedModel} ambitos={pageScopes(selectedModel)} estado={estado} />
         {renderSheet()}
         <DrawingParametersPanel model={selectedModel} parameters={parameters.drawings} onChange={onUpdateDrawings} onReset={clearSelectedDrawings} />
       </>}
@@ -96,43 +107,43 @@ export function ParametersView({ parameters, remolques, remolquesClientes, remol
       return <OrderConfiguredModelView selectedModel={selectedModel} />;
     }
     if (selectedModel === 'ARZUA PRO') {
-      return <ArzuaParametersView parameters={parameters.arzuaPro} selectedModel={selectedModel} onUpdate={onUpdateArzua} onReset={onResetArzua} />;
+      return <ArzuaParametersView parameters={parameters.arzuaPro} selectedModel={selectedModel} onUpdate={onUpdateArzua} onReset={restaurar} />;
     }
     if (selectedModel === 'GALICIA') {
-      return <GaliciaParametersView parameters={parameters.galicia} onUpdate={onUpdateGalicia} onReset={onResetGalicia} />;
+      return <GaliciaParametersView parameters={parameters.galicia} onUpdate={onUpdateGalicia} onReset={restaurar} />;
     }
     if (selectedModel === 'XACOBEO') {
-      return <XacobeoParametersView parameters={parameters.xacobeo} selectedModel={selectedModel} onUpdate={onUpdateXacobeo} onReset={onResetXacobeo} />;
+      return <XacobeoParametersView parameters={parameters.xacobeo} selectedModel={selectedModel} onUpdate={onUpdateXacobeo} onReset={restaurar} />;
     }
     if (selectedModel === 'PUNTO RECTO') {
-      return <PuntoRectoParametersView parameters={parameters.puntoRecto} selectedModel={selectedModel} onUpdate={onUpdatePuntoRecto} onReset={onResetPuntoRecto} />;
+      return <PuntoRectoParametersView parameters={parameters.puntoRecto} selectedModel={selectedModel} onUpdate={onUpdatePuntoRecto} onReset={restaurar} />;
     }
     if (selectedModel === 'MONOBLOCK 350') {
-      return <Monoblock350ParametersView parameters={parameters.monoblock350} selectedModel={selectedModel} onUpdate={onUpdateMonoblock350} onReset={onResetMonoblock350} />;
+      return <Monoblock350ParametersView parameters={parameters.monoblock350} selectedModel={selectedModel} onUpdate={onUpdateMonoblock350} onReset={restaurar} />;
     }
     if (selectedModel === 'MAXISCREEM') {
-      return <MaxiscreemParametersView parameters={parameters.maxiscreem} selectedModel={selectedModel} onUpdate={onUpdateMaxiscreem} onReset={onResetMaxiscreem} />;
+      return <MaxiscreemParametersView parameters={parameters.maxiscreem} selectedModel={selectedModel} onUpdate={onUpdateMaxiscreem} onReset={restaurar} />;
     }
     if (selectedModel === 'ELECTRA') {
-      return <ElectraParametersView parameters={parameters.electra} selectedModel={selectedModel} onUpdate={onUpdateElectra} onReset={onResetElectra} />;
+      return <ElectraParametersView parameters={parameters.electra} selectedModel={selectedModel} onUpdate={onUpdateElectra} onReset={restaurar} />;
     }
     if (selectedModel === 'AMBAR BOX') {
-      return <AmbarBoxParametersView parameters={parameters.ambarBox} selectedModel={selectedModel} onUpdate={onUpdateAmbarBox} onReset={onResetAmbarBox} />;
+      return <AmbarBoxParametersView parameters={parameters.ambarBox} selectedModel={selectedModel} onUpdate={onUpdateAmbarBox} onReset={restaurar} />;
     }
     if (selectedModel === 'AGATA BOX') {
-      return <AgataBoxParametersView parameters={parameters.agataBox} selectedModel={selectedModel} onUpdate={onUpdateAgataBox} onReset={onResetAgataBox} />;
+      return <AgataBoxParametersView parameters={parameters.agataBox} selectedModel={selectedModel} onUpdate={onUpdateAgataBox} onReset={restaurar} />;
     }
     if (selectedModel === 'CORTINA') {
-      return <CortinaParametersView parameters={parameters.cortina} selectedModel={selectedModel} onUpdate={onUpdateCortina} onReset={onResetCortina} />;
+      return <CortinaParametersView parameters={parameters.cortina} selectedModel={selectedModel} onUpdate={onUpdateCortina} onReset={restaurar} />;
     }
     if (selectedModel === 'SELENA') {
-      return <CortinaParametersView parameters={parameters.selena} selectedModel={selectedModel} onUpdate={onUpdateSelena} onReset={onResetSelena} />;
+      return <CortinaParametersView parameters={parameters.selena} selectedModel={selectedModel} onUpdate={onUpdateSelena} onReset={restaurar} />;
     }
     if (selectedModel === 'CAMBIO CORTINA') {
-      return <CambioCortinaParametersView parameters={parameters.cambioCortina} selectedModel={selectedModel} onUpdate={onUpdateCambioCortina} onReset={onResetCambioCortina} />;
+      return <CambioCortinaParametersView parameters={parameters.cambioCortina} selectedModel={selectedModel} onUpdate={onUpdateCambioCortina} onReset={restaurar} />;
     }
     if (fabricParameterModels.has(selectedModel as FabricJobModel)) {
-      return <FabricJobsParametersView parameters={parameters.fabricJobs} selectedModel={selectedModel} onUpdate={onUpdateFabricJobs} onReset={onResetFabricJobs} />;
+      return <FabricJobsParametersView parameters={parameters.fabricJobs} selectedModel={selectedModel} onUpdate={onUpdateFabricJobs} onReset={restaurar} />;
     }
     const isPerla = selectedModel === 'PERLA BOX';
     const isCuarzo = selectedModel === 'CUARZO BOX';
@@ -140,7 +151,7 @@ export function ParametersView({ parameters, remolques, remolquesClientes, remol
       parameters={isPerla ? parameters.perlaBox : isCuarzo ? parameters.cuarzoBox : parameters.coralBox}
       selectedModel={selectedModel}
       onUpdate={isPerla ? onUpdatePerlaBox : isCuarzo ? onUpdateCuarzoBox : onUpdateCoralBox}
-      onReset={isPerla ? onResetPerlaBox : isCuarzo ? onResetCuarzoBox : onResetCoralBox}
+      onReset={restaurar}
     />;
   }
 }
