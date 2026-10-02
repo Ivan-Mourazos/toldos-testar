@@ -284,20 +284,25 @@ describe('datos del planteamiento de telas', () => {
     ]);
   });
 
-  test('ALTURA VELCRO utiliza la salida del toldo y no una segunda salida de ventana', () => {
-    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(290);
-    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210, curtainSkipBottomDeduction: true })).toBe(308);
+  // Iván, 02/10/2026 (Q-CO06): en Cortina y Cambio de cortina la altura del velcro sigue al
+  // ajuste de tela elegido: salida + 8 menos lo que se descuente.
+  test('ALTURA VELCRO utiliza la salida del toldo y sigue al ajuste de la tela', () => {
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(308);
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainFabricAdjustment: 'TUBO DE CARGA' })).toBe(290);
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainFabricAdjustment: 'ET' })).toBe(297);
+    expect(resolveCurtainVelcroHeight({ model: 'CORTINA', projection: 300, curtainFabricAdjustment: 'PERSONALIZADO', curtainFabricAdjustmentCm: -5 })).toBe(303);
+    // Un descuento antiguo puesto con el candado pasa a ajuste negativo.
     expect(resolveCurtainVelcroHeight({
       model: 'CORTINA', projection: 300, curtainWindowExit: 210, reglasModificadas: true, curtainFabricDeductionCm: 10
     })).toBe(298);
+    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300 })).toBe(308);
+    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300, curtainFabricAdjustment: 'ET' })).toBe(297);
   });
 
-  test('ALTURA VELCRO replica TELA!E36: salida − 18 + 8 en Cortina y salida + 8 en Cambio de cortina', () => {
+  test('ALTURA VELCRO de Selena y Electra replica TELA!E36: salida − 18 + 8', () => {
     expect(resolveCurtainVelcroHeight({ projection: 300, curtainWindowExit: 210 })).toBe(200);
     expect(resolveCurtainVelcroHeight({ projection: 300 })).toBe(290);
-    // Iván, 22/09/2026: sin el descuento de 18 cm, en Cambio de cortina es +8.
-    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300, curtainWindowExit: 210 })).toBe(308);
-    expect(resolveCurtainVelcroHeight({ model: 'CAMBIO CORTINA', projection: 300 })).toBe(308);
+    expect(resolveCurtainVelcroHeight({ model: 'SELENA', projection: 300 })).toBe(290);
   });
 
   test('la altura de velcro variable queda en el bloque individual', () => {
@@ -305,7 +310,7 @@ describe('datos del planteamiento de telas', () => {
       model: 'CORTINA', projection: 300, curtainFinish: 'VELCRO'
     }, {});
 
-    expect(detail.instruction).toContain('ALTURA VELCRO 290CM');
+    expect(detail.instruction).toContain('ALTURA VELCRO 308CM');
   });
 
   test('la bamba de Antica conserva su altura en el bloque individual', () => {

@@ -5,7 +5,7 @@ import {
   FilePen,
   Save,
   UserRound,
-  X, Undo2, Moon, Sun, ArrowUpRight, ArrowLeft } from 'lucide-react';
+  X, Undo2, Moon, Sun, ArrowLeft } from 'lucide-react';
 // Letra de CoordinaOT (Geist y Geist Mono) servida desde el proyecto; Didact Gothic es la
 // sustituta de Century Gothic para «Planteamientos» en la cabecera (ver coordina/piezas.css).
 import '@fontsource-variable/geist';
@@ -123,14 +123,6 @@ export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try { return window.localStorage.getItem('toldos-tema') === 'dark' ? 'dark' : 'light'; } catch { return 'light'; }
   });
-  // Enlace a la web de remolques (diseño 29/09/2026, fase 1): se lee una vez; si falla, sin enlace.
-  const [remolquesUrl, setRemolquesUrl] = useState('');
-  useEffect(() => {
-    fetch('/api/app-info')
-      .then((response) => (response.ok ? response.json() : null))
-      .then((info) => { if (info && typeof info.remolquesUrl === 'string') setRemolquesUrl(info.remolquesUrl); })
-      .catch(() => { /* sin datos de la barra: no sale el enlace */ });
-  }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     // La barra del navegador, del --bg de CoordinaOT de cada modo (como la cabecera).
@@ -656,9 +648,7 @@ export default function App() {
           <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} label="Pedidos" count={pendingCount} onClick={() => setActiveTab('reviews')} />
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => setActiveTab('parameters')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => setActiveTab('settings')} />
-          {remolquesUrl && (
-            <a className="pestana" href={remolquesUrl} title="Abrir la aplicación de Remolques">Remolques<ArrowUpRight aria-hidden="true" /></a>
-          )}
+          {/* Iván, 02/10/2026: fuera el enlace a la web vieja de remolques; se hacen en Nuevo pedido. */}
         </nav>
         <div className="cabecera-derecha">
           <button type="button" className="cabecera-modo glass-chip" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>

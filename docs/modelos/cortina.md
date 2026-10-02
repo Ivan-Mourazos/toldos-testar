@@ -10,6 +10,7 @@ Esta confirmación sustituye las decisiones anteriores sobre confección y caíd
 - Tela: salida +40 cm, +10 cm si abajo lleva ET, y bamba +5 cm cuando va en la misma tela. Una bamba en otra tela se calcula aparte con sus 5 cm de remate.
 - No se descuenta nada de la salida de tela por defecto. La tarjeta permite descontar 18 cm por tubo de carga, 11 cm por ET o introducir un ajuste con signo, positivo para sumar y negativo para restar, sin abrir el candado.
 - La referencia de la cota de ventana no modifica el cálculo de salida de tela.
+- Altura del velcro (Q-CO06, Iván 02/10/2026): sigue al ajuste de tela. Salida + 8 sin ajuste, salida − 10 con «Descontar 18», salida − 3 con «Descontar 11», y salida + 8 más el ajuste propio. Selena y Electra siguen con salida − 18 + 8.
 - Iván confirmó que estas mismas reglas se aplican a Cambio de cortina. Selena y Electra conservan sus reglas.
 
 El parámetro existente `fabricDropAllowanceCm` incluye 5 cm de remate: su valor 45 representa el margen de cuerpo de 40 cm. Se conserva esta representación para los parámetros ya guardados. El antiguo descuento global no se aplica a Cortina; los descuentos se eligen en la tarjeta.

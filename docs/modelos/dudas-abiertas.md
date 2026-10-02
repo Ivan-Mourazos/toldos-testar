@@ -12,16 +12,6 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
-## Verticales
-
-### Cortina
-
-- **Altura del velcro con las reglas nuevas.** Desde el 02/10/2026 la tela de Cortina no descuenta nada por defecto (se elige −18, −11 o un ajuste en la tarjeta), pero la altura del velcro sigue siendo «salida − 18 + 8», la del Excel: con salida 275 sale 265. ¿Se queda así, o debe seguir al ajuste elegido (sin ajuste: salida + 8)? En Cambio de cortina es salida + 8. <sub>Q-CO06</sub>
-
-## Telas
-
-- **Nombre corto de las lonas técnicas en el PDF.** Desde el 02/10/2026, en la casilla MATERIAL, las lonas de PVC de siempre salen como «LONA PVC 580 BLANCO :250 AN» y las acrílicas como «ACR NEGRO 2170 :120 AN» o «ACR RESINADO ADMIRAL 2449 :153 AN». Esas lonas de PVC son NS86, ALPHA, MONZA, G650, GAMMA, LAC, PANAMA, B6000, VIP-FR y las que llevan «(580)». Las demás salen con el nombre de RPS, porque su gama es lo que las distingue: Soltis, Recscreen, Frontlit, Black out, Mesh, Flexlight, Class, Orion, tejidos… ¿Alguna de estas debe salir también como «LONA PVC»? <sub>Q-T02</sub>
-
 ## Clásicos
 
 ### Antica
@@ -72,6 +62,8 @@ Respuestas del taller, traídas por Iván. «Pendiente» quiere decir que la web
 | Q-G02 | Motor del Galicia: 55/17 o 70/17 | Depende del número de brazos y de la salida, como en la tarifa del Monoblock | Hecho: la tabla de motores del Monoblock 350 por brazos y salida (55/17 con dos brazos, 70/17 con tres); con el candado, otro |
 | Q-AG01 | Patines, regleta de unión y pasadores del Ágata Box | Patines siempre, de codo y de horquilla. Kit de unión con más de 7 m de frente | Hecho: dos kits de patines de codo (`PABMODUL`) y dos de horquilla (`PASBMODUL`) por toldo; con más de 7 m, `KUNIONMODUL` y `PASADORMODUL`. De paso, el motor de 100 va a 12 rpm (`SUNILUSIO100//12`): el //17 no existe |
 | Q-AG02 | Motor del Ágata Box | Siempre Sunea; la potencia depende del toldo | Hecho el 30/09: motor Sunea en todas las variantes, también en el Open (`SUNEAIO35//17`, `40`, `55`, `70`, `85//17` y `SUNEAIO100//12`, todos activos en RPS), con la misma tabla por brazos y salida. Descripción «MOTOR SOMFY SUNEA … IO» |
+| Q-CO06 | Altura del velcro de Cortina con las reglas nuevas de tela | Iván, 02/10/2026: sigue al ajuste elegido | Hecho: en Cortina y Cambio de cortina, salida + 8 menos el descuento de la tarjeta (sin ajuste, salida + 8; con «Descontar 18», salida − 10). Selena y Electra siguen con salida − 18 + 8 |
+| Q-T02 | Nombre corto de las lonas técnicas en el PDF | Iván, 02/10/2026: no; la gama es lo que las distingue | Ya lo hace: Soltis, Recscreen, Frontlit, Black out, Mesh… salen con el nombre de RPS. Solo las lonas de PVC de siempre y las acrílicas van con nombre corto |
 | Q-CO04 | Motor de la cortina | Maestria; depende también del tamaño. En RPS casi no hay Maestria (2 OF): Iván aprobó el 02/10/2026 la tabla sacada de lo gastado | Hecho: 15/17 por defecto; 35/17 con salida de más de 350, o de más de 300 con PVC y ventana; 55/17 con frente de más de 800. Con el candado se elige cualquiera ([Cortina](./cortina.md#motores-consumidos-en-rps-02102026-para-q-co04)) |
 | Q-G03 | Galicia con tres brazos y 3,50 m de salida | Sí se hace | Hecho: sin aviso con tres brazos y 3,50 de salida |
 | Q-M03 | Monoblock de 7,10 a 7,25 m: barra de carga | Una barra; si falta poco, se empata con un resto | Ya lo hace: una barra de 7 m |
