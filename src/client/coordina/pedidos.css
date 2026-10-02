@@ -288,6 +288,24 @@
   letter-spacing: 0;
   line-height: 1.25rem;
 }
+/* Solo el código abre el pedido (`pointer-events-auto relative z-10 hover:underline`): queda por
+   encima del botón que despliega la fila. */
+button.orders-code {
+  background: transparent;
+  border: 0;
+  border-radius: 0.125rem;
+  cursor: pointer;
+  justify-self: start;
+  padding: 0;
+  pointer-events: auto;
+  position: relative;
+  text-align: left;
+  z-index: 4;
+}
+button.orders-code:hover { text-decoration: underline; }
+button.orders-code:focus-visible { outline: 2px solid var(--color-brand-400); outline-offset: 2px; }
+/* Al desplegar, la fila se ajusta sin quedar bajo la barra de arriba. */
+.orders-row { scroll-margin: 0.75rem 0; }
 /* El cliente: en Revisiones `text-[11px] text-text-muted`, en el Historial `text-text`. */
 .orders-customer {
   color: var(--text);
@@ -491,6 +509,9 @@
   margin: 0;
   padding: 0;
 }
+/* En la lista de Pedidos va en la misma línea que la OF, al final, para ahorrar altura
+   (Iván, 02/10/2026). */
+.orders-detail-list li > .orders-detail-approved { flex: 0 0 auto; }
 :root[data-theme="dark"] .orders-detail-list li > .orders-detail-approved,
 :root[data-theme="dark"] .rem-pedido-elemento > .orders-detail-approved { color: #67e8f9; }
 .orders-detail-empty { color: var(--text-muted); font-size: 0.75rem; line-height: 1rem; margin: 0; }

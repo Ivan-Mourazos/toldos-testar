@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
 import type { CoordinaStatus, PedidoBandeja } from '../types';
 import {
@@ -157,8 +157,9 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   const detailId = `orders-detail-${productoDe(review)}-${review.orderCode}`;
   const awnings = review.summary.awningList;
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
+  const filaRef = useAjustarAlDesplegar(open);
   return (
-    <li className={`orders-row ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'}${tone ? ` tone-${tone}` : ''}`}>
+    <li ref={filaRef} className={`orders-row ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'}${tone ? ` tone-${tone}` : ''}`}>
       <div className="orders-row-head">
       <button
         type="button"
@@ -170,7 +171,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
       />
       <div className="orders-row-cells">
         <ChevronDown className="orders-chevron" aria-hidden="true" />
-        <strong className="orders-code">{review.orderCode}</strong>
+        <CodigoPedido codigo={review.orderCode} titulo="Abrir el pedido" onAbrir={onOpen} />
         <span className="orders-customer">{review.summary.customer || 'Sin cliente'}</span>
         <ModelTags models={review.summary.models} producto={productoDe(review)} />
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
@@ -228,8 +229,9 @@ function DraftRow({ borrador, mine, open, onToggle, onSeguir, onDescartar }: {
   const detailId = `orders-detail-borrador-${borrador.orderCode}`;
   const author = borrador.savedBy ? controlLabel(borrador.savedBy) : '—';
   const elementos = borrador.summary.elementos;
+  const filaRef = useAjustarAlDesplegar(open);
   return (
-    <li className={`orders-row is-draft ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'} tone-draft`}>
+    <li ref={filaRef} className={`orders-row is-draft ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'} tone-draft`}>
       <div className="orders-row-head">
       <button
         type="button"
@@ -241,7 +243,7 @@ function DraftRow({ borrador, mine, open, onToggle, onSeguir, onDescartar }: {
       />
       <div className="orders-row-cells">
         <ChevronDown className="orders-chevron" aria-hidden="true" />
-        <strong className="orders-code">{borrador.orderCode}</strong>
+        <CodigoPedido codigo={borrador.orderCode} titulo="Seguir con el borrador" onAbrir={onSeguir} />
         <span className="orders-customer">{borrador.summary.customer || 'Sin cliente'}</span>
         <ModelTags models={borrador.summary.models} producto={borrador.kind} borrador />
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
@@ -260,6 +262,38 @@ function DraftRow({ borrador, mine, open, onToggle, onSeguir, onDescartar }: {
       )}
     </li>
   );
+}
+
+// Como en CoordinaOT (PedidoCodigo.tsx): en la lista solo el número abre el pedido; el resto de
+// la fila la despliega. Va por encima del botón que cubre la fila.
+function CodigoPedido({ codigo, titulo, onAbrir }: { codigo: string; titulo: string; onAbrir: () => void }) {
+  return (
+    <button
+      type="button"
+      className="orders-code"
+      title={titulo}
+      onClick={(event) => {
+        event.stopPropagation();
+        onAbrir();
+      }}
+    >
+      {codigo}
+    </button>
+  );
+}
+
+// Al desplegar una fila, la página se mueve lo justo para que se vea entera con todas sus OF;
+// si ya se ve, no se mueve.
+function useAjustarAlDesplegar(open: boolean) {
+  const ref = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (!open || !ref.current) return;
+    const fila = ref.current;
+    const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const id = requestAnimationFrame(() => fila.scrollIntoView({ block: 'nearest', behavior: quieto ? 'auto' : 'smooth' }));
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+  return ref;
 }
 
 function ModelTags({ models, producto, borrador = false }: { models?: string[]; producto: 'toldos' | 'remolques'; borrador?: boolean }) {

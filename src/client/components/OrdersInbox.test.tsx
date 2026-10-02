@@ -83,4 +83,21 @@ describe('Pedidos con toldos y remolques', () => {
     expect(pintar(() => undefined)).toMatch(/<h2>Generados<\/h2>.*orders-buscar-remolques.*Buscar remolques<\/button>/);
     expect(pintar()).not.toContain('Buscar remolques');
   });
+
+  it('el número del pedido es un botón que lo abre, como en CoordinaOT; el del borrador lo sigue', () => {
+    const borrador = {
+      schemaVersion: 1, kind: 'toldos', orderCode: 'AR2609', numeroPedido: 'AR.26.09', savedBy: 'JAIME',
+      createdAt: '2026-10-01T08:00:00Z', updatedAt: '2026-10-01T09:00:00Z',
+      summary: { customer: 'Cliente', orderDate: '2026-10-01', elementos: 1, models: ['ARZUA PRO'] },
+    } as ResumenBorrador;
+    const html = renderToStaticMarkup(
+      <OrdersInbox
+        pending={[fila('AR2601')]} history={[]} borradores={[borrador]} currentUser="IVÁN" pendingLoading={false} historyLoading={false} year={2026}
+        onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null}
+        onSeguirBorrador={() => undefined} onDescartarBorrador={() => undefined}
+      />,
+    );
+    expect(html).toContain('<button type="button" class="orders-code" title="Abrir el pedido">AR2601</button>');
+    expect(html).toContain('<button type="button" class="orders-code" title="Seguir con el borrador">AR2609</button>');
+  });
 });
