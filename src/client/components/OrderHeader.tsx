@@ -1,8 +1,8 @@
 import React from 'react';
-import { DatabaseZap, LoaderCircle } from 'lucide-react';
 import type { Awning, FabricProposal, OrderAutofill } from '../types';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { TextField } from './TextField';
+import { OrderIdentity } from './OrderIdentity';
 import { FabricCombobox } from './FabricCombobox';
 import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
@@ -77,23 +77,10 @@ export function OrderHeader(props: Props) {
 
   return (
     <section className={`order-header panel${props.readOnly ? ' is-readonly' : ''}`} aria-readonly={props.readOnly || undefined}>
-      <div className="order-header-group order-header-general">
-        <h3>Datos del pedido</h3>
-        <div className="order-header-grid">
-          <TextField label="Pedido" value={props.orderCode} onChange={(v) => props.set({ orderCode: v })} onBlur={props.onOrderCodeBlur} placeholder="AR26xxxxx" />
-          <TextField label="Cliente" value={props.customer} onChange={(v) => props.set({ customer: v })} />
-          <label className="field"><span>Fecha</span>
-            <input type="date" value={props.orderDate} onChange={(e) => props.set({ orderDate: e.target.value })} />
-          </label>
-        </div>
-        {!props.readOnly && <div className="order-autofill-action">
-          <button type="button" className="order-autofill-button" disabled={props.autofillLoading || !props.orderCode.trim()} onClick={props.onAutofill}>
-            {props.autofillLoading ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <DatabaseZap aria-hidden="true" />}
-            {props.autofillLoading ? 'Consultando RPS…' : 'Obtener datos del pedido'}
-          </button>
-          <span>Rellena lo disponible; después todo se puede editar.</span>
-        </div>}
-      </div>
+      <OrderIdentity
+        pedido={<TextField label="Pedido" value={props.orderCode} onChange={v => props.set({ orderCode: v })} onBlur={props.onOrderCodeBlur} placeholder="AR26xxxxx" />}
+        cliente={props.customer} fecha={props.orderDate} onClienteChange={v => props.set({ customer: v })} onFechaChange={v => props.set({ orderDate: v })}
+        />
 
       <div className="order-header-group order-header-material">
         <h3>Tela</h3>

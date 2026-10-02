@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { OrderProgress } from '../components/OrderProgress';
 import type { TipoPlanteamiento } from '../../remolques/store/types.ts';
 import { erroresPlanteamiento } from '../../remolques/pedidos/validar-planteamiento.ts';
 import type { EstadoLinea, LineaPedido } from '../../remolques/workspace/lineas.ts';
@@ -41,6 +42,7 @@ export function PestanasElementos({
               : 'Añade el primer remolque o baquetón.'}
             {soloLectura && lineas.length > 0 && ' · solo lectura'}
           </span>
+          {!soloLectura && <OrderProgress total={lineas.length} ready={listas} />}
         </div>
         {!soloLectura && (
           <div className="order-add-actions">

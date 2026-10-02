@@ -16,15 +16,27 @@ export function guardarProducto(producto: Producto, storage: Storage | null = wi
 // Selector «Toldos | Remolques» de Nuevo pedido: la tira de pestañas de CoordinaOT
 // (`tira-3d`), con la elegida hundida en dorado (`pestana-activa`). Remolques dejó de estar
 // «en pruebas» el 02/10/2026 (Iván): hace todo lo que hacía la web vieja.
-export function SelectorProducto({ producto, onChange }: { producto: Producto; onChange: (producto: Producto) => void }) {
+export type ResumenPedido = { numero: string; elementos: number };
+
+export function SelectorProducto({ producto, onChange, pedidos }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>> }) {
+  const detalle = (tipo: Producto) => {
+    const pedido = pedidos?.[tipo];
+    return pedido?.numero.trim() || pedido?.elementos
+      ? `${pedido.numero.trim() || 'Sin número'} · ${pedido.elementos} ${pedido.elementos === 1 ? 'elemento' : 'elementos'}`
+      : 'Sin empezar';
+  };
   return (
+    <div className="producto-contexto">
+    <span className="producto-etiqueta">Empezar a mano</span>
     <div className="tira-3d producto-selector" role="group" aria-label="Producto">
-      <button type="button" className={producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'toldos'} onClick={() => onChange('toldos')}>
-        Toldos
+      <button type="button" aria-label="Toldos" aria-describedby="pedido-toldos-resumen" className={producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'toldos'} onClick={() => onChange('toldos')}>
+        <strong>Toldos</strong><small id="pedido-toldos-resumen">{detalle('toldos')}</small>
       </button>
-      <button type="button" className={producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'remolques'} onClick={() => onChange('remolques')}>
-        Remolques
+      <button type="button" aria-label="Remolques" aria-describedby="pedido-remolques-resumen" className={producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'remolques'} onClick={() => onChange('remolques')}>
+        <strong>Remolques</strong><small id="pedido-remolques-resumen">{detalle('remolques')}</small>
       </button>
+    </div>
+    <small className="producto-conserva">Cada tipo conserva sus datos al cambiar.</small>
     </div>
   );
 }

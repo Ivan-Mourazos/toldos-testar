@@ -1,5 +1,10 @@
 import React from 'react';
-import { BookUser, FilePen, Save } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { BookUser, Eraser, FilePen, Save } from 'lucide-react';
+import { OrderActions } from '../components/OrderActions';
+import { OrderEmptyState } from '../components/OrderEmptyState';
+import type { ResumenPedido } from './SelectorProducto';
+import type { PedidoRps } from '../../remolques/rps/types.ts';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { BorradorRemolques, BorradorToldos } from '../../borradores/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
@@ -23,12 +28,12 @@ import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
-export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos }: {
+export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar }: {
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
   /** Pedido que Toldos manda abrir aquí («Abrir en Remolques»); `id` distingue una petición de la siguiente. */
-  pedidoSolicitado?: { numero: string; id: number } | null;
+  pedidoSolicitado?: { numero: string; id: number; pedidoRps?: PedidoRps } | null;
   /** Contador de pulsaciones de «Limpiar» (el botón está en la barra de la página): cada subida pide limpiar el formulario. */
   limpiarSolicitado?: number;
   /** Un pedido guardado que Pedidos manda abrir aquí («Corregir» o «Reutilizar datos», fase 5). */
@@ -39,6 +44,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   borradorSolicitado?: { id: number; borrador: BorradorRemolques; preguntar: boolean } | null;
   /** «Abrir borrador» de un número cuyo borrador es de toldos. */
   onAbrirBorradorToldos?: (borrador: BorradorToldos) => void;
+  accionesDestino?: HTMLElement | null;
+  accionesVisibles?: boolean;
+  onResumenChange?: (resumen: ResumenPedido) => void;
+  onLimpiar?: () => void;
 }) {
   const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado, onAbrirBorradorToldos });
   // Solo se atiende cada petición una vez: repetirla pisaría lo que se escriba después. Abrir
@@ -49,7 +58,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   React.useEffect(() => {
     if (!pedidoSolicitado || ultimoPedidoSolicitado.current === pedidoSolicitado.id) return;
     ultimoPedidoSolicitado.current = pedidoSolicitado.id;
-    abrirPedido(pedidoSolicitado.numero);
+    abrirPedido(pedidoSolicitado.numero, pedidoSolicitado.pedidoRps);
   }, [abrirPedido, pedidoSolicitado]);
   // Lo que ya valía al montarse no cuenta: solo las pulsaciones nuevas.
   const limpiezaAtendida = React.useRef(limpiarSolicitado);
@@ -87,9 +96,32 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   // «Guardar en la ficha del cliente» (fase 3): solo con un cliente de RPS en el elemento o en pantalla.
   const fichaCliente = useGuardarEnFicha({ usuario, numeroPedido, pedidoRps: rps.pedido, params, notify });
   const clienteActivo = lineaActiva ? clienteDeLinea(lineaActiva, numeroPedido, rps.pedido) : null;
+  // Solo comunica los datos del rótulo; el pedido y sus operaciones siguen en este editor.
+  React.useEffect(() => {
+    onResumenChange?.({ numero: numeroPedido, elementos: lineas.length });
+  }, [numeroPedido, lineas.length, onResumenChange]);
+  const acciones = (
+    <OrderActions hidden={!accionesVisibles}>
+      <button className="ghost-button clear-form-button" type="button" onClick={onLimpiar ?? (() => void ws.limpiarFormulario())}><Eraser aria-hidden="true" />Limpiar</button>
+      <VistaPreviaPdf label="Vista previa" lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />
+      <button type="button" className="ghost-button rem-borrador-boton"
+        disabled={!hayPedido || ws.guardandoBorrador || ws.guardando || ws.conParamsGuardados} aria-busy={ws.guardandoBorrador}
+        title={ws.conParamsGuardados ? TITULO_BORRADOR_EN_CORRECCION : undefined}
+        onClick={() => void ws.guardarBorrador()}>
+        <FilePen aria-hidden="true" />{ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
+      </button>
+      <button type="button" className="primary-button rem-guardar-boton"
+        disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
+        aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
+        onClick={() => void ws.guardarParaRevision()}>
+        <Save aria-hidden="true" />{ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
+      </button>
+    </OrderActions>
+  );
 
   return (
     <>
+      {accionesDestino ? createPortal(acciones, accionesDestino) : acciones}
       <section className="workbench">
         <CabeceraPedido
           numeroPedido={numeroPedido}
@@ -129,30 +161,6 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         onSeleccionar={ws.seleccionarLinea}
         onEliminar={(version) => void ws.eliminarLinea(version)}
         onNuevo={ws.nuevaLinea}
-        acciones={(
-          <>
-            {lineas.length > 0 && <VistaPreviaPdf lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />}
-            {/* Un pedido a medias se deja en el servidor (diseño 01/10/2026): sin completar ni calcular,
-                basta el número; no hace falta ninguna línea. En «Corregir» el pedido ya está en Pedidos. */}
-            <button type="button" className="ghost-button rem-borrador-boton"
-              disabled={!hayPedido || ws.guardandoBorrador || ws.guardando || ws.conParamsGuardados} aria-busy={ws.guardandoBorrador}
-              title={ws.conParamsGuardados ? TITULO_BORRADOR_EN_CORRECCION : undefined}
-              onClick={() => void ws.guardarBorrador()}>
-              <FilePen aria-hidden="true" />
-              {ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
-            </button>
-            {/* Sin los parámetros comunes leídos no se guarda: saldría con los del código. */}
-            {lineas.length > 0 && (
-              <button type="button" className="primary-button rem-guardar-boton"
-                disabled={Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
-                aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
-                onClick={() => void ws.guardarParaRevision()}>
-                <Save aria-hidden="true" />
-                {ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
-              </button>
-            )}
-          </>
-        )}
         pie={lineas.length > 0 && faltaPdf
           ? <p className="rem-pdf-falta" role="status">Para la vista previa del PDF falta: {faltaPdf}</p>
           : null}
@@ -248,14 +256,11 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
           </div>
         </section>
       ) : (
-        <section className="panel-vidrio rem-vacio">
-          <h2>{hayPedido ? 'Añade el primer elemento del pedido' : 'Abre un pedido para empezar'}</h2>
-          <p>
+        <OrderEmptyState title={hayPedido ? 'Añade el primer elemento del pedido' : 'Abre un pedido para empezar'}>
             {hayPedido
               ? 'Usa «+ Remolque» o «+ Baquetón». Cada uno queda dentro de este pedido.'
-              : 'Escribe arriba el número de pedido y pulsa «Obtener datos del pedido»: se crea un elemento por cada línea de remolque.'}
-          </p>
-        </section>
+              : 'Busca el pedido arriba para traer sus líneas, o escribe su número en Datos del pedido para empezar a mano.'}
+        </OrderEmptyState>
       )}
       {fichaCliente.abierta && (
         <GuardarEnFicha abierta={fichaCliente.abierta} usuario={usuario} numeroPedido={numeroPedido}

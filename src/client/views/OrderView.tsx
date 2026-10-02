@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Layers3, Scissors } from 'lucide-react';
 import type { Awning, Calculation, CalculationState, OrderAutofill, RuleParameters } from '../types';
 import { OrderHeader } from '../components/OrderHeader';
+import { OrderProgress } from '../components/OrderProgress';
+import { OrderEmptyState } from '../components/OrderEmptyState';
 import { AwningColumn } from '../components/AwningColumn';
 import { AwningBlocks } from '../components/AwningBlocks';
 import { awningStatuses } from '../awningBlocks';
@@ -203,6 +205,7 @@ export function OrderView({
           <div>
             <h2>Elementos del pedido</h2>
             <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…` : 'Añade el primer toldo o trabajo de tela.'}</span>
+            {!readOnly && <OrderProgress total={awnings.length} ready={statuses.filter(status => status.kind === 'ok').length} />}
           </div>
           {/* Antes eran una fila entera en la cabecera del pedido (espaciado, 25/09/2026). */}
           {!readOnly && (
@@ -217,6 +220,7 @@ export function OrderView({
           )}
         </div>
 
+        {!readOnly && awnings.length === 0 && <OrderEmptyState title="Añade el primer elemento del pedido">Busca el pedido arriba, o usa «Añadir toldo» / «Añadir trabajo de tela» para empezar a mano.</OrderEmptyState>}
         {awnings.length > 0 && <AwningBlocks
           awnings={awnings}
           reading={readOnly}

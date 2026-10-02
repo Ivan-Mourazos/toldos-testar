@@ -5,7 +5,7 @@ import {
   FilePen,
   Save,
   UserRound,
-  X, Undo2, Moon, Sun } from 'lucide-react';
+  X, Undo2, Moon, Sun, ArrowUpRight } from 'lucide-react';
 // Letra de CoordinaOT (Geist y Geist Mono) servida desde el proyecto; Didact Gothic es la
 // sustituta de Century Gothic para «Planteamientos» en la cabecera (ver coordina/piezas.css).
 import '@fontsource-variable/geist';
@@ -18,6 +18,10 @@ import type { ActiveTab, Catalog, DraftState, OrderAutofill, ReviewPackage, Work
 import { useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
+import { OrderActions } from './components/OrderActions';
+import { OrderSearch } from './components/OrderSearch';
+import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
+import type { PedidoRps } from '../remolques/rps/types.ts';
 import { incompleteAwningLines } from './incompleteAwnings';
 import { pendingFabricProposalMessage } from './fabricProposal';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
@@ -46,9 +50,7 @@ import { RemolquesParametersView } from './remolques/RemolquesParametersView';
 import { useRemolquesParameters } from './remolques/useRemolquesParameters';
 import { ClientesRemolquesView } from './remolques/ClientesRemolquesView';
 import { useFichasClientes } from './remolques/useFichasClientes';
-import { AvisoPedidoRemolques } from './remolques/AvisoPedidoRemolques';
-import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
-import { SelectorProducto, guardarProducto, leerProducto, type Producto } from './remolques/SelectorProducto';
+import { SelectorProducto, guardarProducto, leerProducto, type Producto, type ResumenPedido } from './remolques/SelectorProducto';
 
 export default function App() {
   const draft = useDraft();
@@ -67,7 +69,11 @@ export default function App() {
   // de producto o de pestaña; los toldos ya viven en `draft`, que es de esta pantalla.
   const [producto, setProducto] = useState<Producto>(() => leerProducto());
   const [remolquesMontado, setRemolquesMontado] = useState(producto === 'remolques');
+  const [resumenRemolques, setResumenRemolques] = useState<ResumenPedido>({ numero: '', elementos: 0 });
+  const [accionesPedido, setAccionesPedido] = useState<HTMLDivElement | null>(null);
+  const [numeroBusqueda, setNumeroBusqueda] = useState<string | null>(null);
   function chooseProducto(next: Producto) {
+    setNumeroBusqueda(null);
     setProducto(next);
     guardarProducto(next);
     if (next === 'remolques') setRemolquesMontado(true);
@@ -88,10 +94,7 @@ export default function App() {
   // Número del pedido ya guardado que se está corrigiendo (Pedidos › Corregir); null si no hay.
   const [corrigiendo, setCorrigiendo] = useState<string | null>(null);
   const [autofill, setAutofill] = useState<OrderAutofill | null>(null);
-  // Pedido de RPS que resulta ser de remolques (sin toldos): se avisa en lugar de rellenar
-  // el formulario de toldos y solo vale mientras ese sea el número en pantalla.
-  const [pedidoRemolques, setPedidoRemolques] = useState<{ numero: string; lineas: number } | null>(null);
-  const [pedidoSolicitado, setPedidoSolicitado] = useState<{ numero: string; id: number } | null>(null);
+  const [pedidoSolicitado, setPedidoSolicitado] = useState<{ numero: string; id: number; pedidoRps?: PedidoRps } | null>(null);
   // Un pedido de remolques guardado que Pedidos manda abrir en Remolques («Corregir» o
   // «Reutilizar datos», fase 5); `id` distingue una petición de la siguiente.
   const [pedidoGuardadoSolicitado, setPedidoGuardadoSolicitado] = useState<{ id: number; pedido: PedidoRemolques; modo: ModoCarga } | null>(null);
@@ -198,20 +201,20 @@ export default function App() {
     };
   }, [previewUrl]);
 
-  async function trailerLinesOf(orderCode: string): Promise<number> {
+  async function trailerPedidoOf(orderCode: string): Promise<PedidoRps | null> {
     try {
       const response = await fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(orderCode)}`);
-      if (!response.ok) return 0;
-      const data = await response.json() as { pedido: { lineas: unknown[] } | null };
-      return data.pedido?.lineas.length ?? 0;
+      if (!response.ok) return null;
+      const data = await response.json() as { pedido: PedidoRps | null };
+      return data.pedido;
     } catch {
-      return 0;
+      return null;
     }
   }
 
-  function openInTrailers(numero: string) {
+  function openInTrailers(numero: string, pedidoRps: PedidoRps) {
     chooseProducto('remolques');
-    setPedidoSolicitado({ numero, id: Date.now() });
+    setPedidoSolicitado({ numero, id: Date.now(), pedidoRps });
   }
 
   // La pregunta de si sustituir lo que haya en Remolques la hace la propia pantalla, que es quien lo sabe.
@@ -251,7 +254,6 @@ export default function App() {
     setAutofill(null);
     setReturnNote(null);
     setCorrigiendo(null);
-    setPedidoRemolques(null);
     ruleSettings.restoreParameters();
     chooseProducto('toldos');
     setActiveTab('order');
@@ -259,18 +261,21 @@ export default function App() {
   }
 
   const buscandoBorrador = useRef(false);
-  async function autofillOrder() {
-    const orderCode = draft.orderCode.trim();
+  async function autofillOrder(numero = draft.orderCode) {
+    const orderCode = numero.trim();
     if (!orderCode) {
       notify('Indica primero el número de pedido.', { tone: 'warning' });
       return;
     }
     // Un doble clic no abre dos preguntas ni lanza dos consultas.
-    if (buscandoBorrador.current) return;
+    if (buscandoBorrador.current || autofillLoading) return;
     buscandoBorrador.current = true;
+    const seq = ++autofillSeq.current;
+    setAutofillLoading(true);
     try {
       // Si este número tiene borrador (diseño 01/10/2026), se pregunta antes de ir a RPS.
-      const conBorrador = await buscarBorradorAlObtener(orderCode, 'toldos', askForConfirmation);
+      const conBorrador = await buscarBorradorAlObtener(orderCode, producto, askForConfirmation);
+      if (seq !== autofillSeq.current) return;
       if (conBorrador.accion === 'cancelar') return;
       if (conBorrador.accion === 'abrir') {
         // Aquí mismo sin volver a preguntar salvo que el formulario tenga datos; si es de remolques,
@@ -279,25 +284,6 @@ export default function App() {
         await abrirBorrador(conBorrador.borrador, { preguntar: conBorrador.borrador.kind !== 'toldos' || formularioConDatos });
         return;
       }
-    } finally {
-      buscandoBorrador.current = false;
-    }
-    const hasFormData = Boolean(draft.customer || draft.fabric || draft.notes || draft.awnings.length > 0);
-    if (hasFormData) {
-      const choice = await askForConfirmation({
-        title: `Obtener datos de ${orderCode}`,
-        message: 'Los datos actuales del formulario se sustituirán por lo disponible en RPS. Después podrás editar libremente todos los campos.',
-        confirmLabel: 'Obtener y rellenar',
-        cancelLabel: 'Conservar formulario',
-        tone: 'warning'
-      });
-      if (choice !== 'confirm') return;
-    }
-
-    const seq = ++autofillSeq.current;
-    setAutofillLoading(true);
-    setPedidoRemolques(null);
-    try {
       const response = await fetch(`/api/orders/${encodeURIComponent(orderCode)}/autofill`);
       const data = await response.json();
       if (seq !== autofillSeq.current) return;
@@ -307,14 +293,34 @@ export default function App() {
       // remolques (la que decide qué es una línea de remolque). Los pedidos con toldos no
       // pasan por aquí y, si la consulta falla, todo sigue como antes.
       if (result.order.awnings.length === 0) {
-        const trailers = await trailerLinesOf(orderCode);
+        const trailers = await trailerPedidoOf(orderCode);
         if (seq !== autofillSeq.current) return;
-        if (trailers > 0) {
-          setPedidoRemolques({ numero: orderCode, lineas: trailers });
-          setAutofill(null);
+        if (trailers && trailers.lineas.length > 0) {
+          if (resumenRemolques.numero.trim() && normalizarNumeroPedidoRps(resumenRemolques.numero) !== normalizarNumeroPedidoRps(orderCode)) {
+            const choice = await askForConfirmation({
+              title: `Abrir ${orderCode} en Remolques`,
+              message: 'Se sustituirá el pedido que tienes abierto en Remolques por el encontrado. El pedido de Toldos conserva sus datos.',
+              confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar formulario', tone: 'warning'
+            });
+            if (choice !== 'confirm' || seq !== autofillSeq.current) return;
+          }
+          openInTrailers(orderCode, trailers);
           return;
         }
       }
+      // Solo se confirma la sustitución del formulario que corresponde al pedido encontrado.
+      const hasFormData = Boolean(draft.customer || draft.fabric || draft.notes || draft.awnings.length > 0);
+      if (hasFormData) {
+        const choice = await askForConfirmation({
+          title: `Obtener datos de ${orderCode}`,
+          message: 'Los datos actuales del formulario se sustituirán por lo disponible en RPS. Después podrás editar libremente todos los campos.',
+          confirmLabel: 'Obtener y rellenar',
+          cancelLabel: 'Conservar formulario',
+          tone: 'warning'
+        });
+        if (choice !== 'confirm' || seq !== autofillSeq.current) return;
+      }
+      chooseProducto('toldos');
       const currentResult = { ...result, order: { ...result.order, orderDate: todayIso() } };
       draft.loadOrder({ ...currentResult.order, fabricProposals: currentResult.fabricProposals ?? [], confirmedFabricProposals: [] });
       setAutofill(currentResult);
@@ -328,6 +334,7 @@ export default function App() {
       if (seq !== autofillSeq.current) return;
       notify(error instanceof Error ? error.message : 'No se pudieron obtener los datos del pedido.', { tone: 'error' });
     } finally {
+      buscandoBorrador.current = false;
       if (seq === autofillSeq.current) setAutofillLoading(false);
     }
   }
@@ -561,7 +568,6 @@ export default function App() {
         setCorrigiendo(null);
         draft.resetDraft();
         setAutofill(null);
-        setPedidoRemolques(null);
         ruleSettings.restoreParameters();
       }
       notify(`Borrador guardado: ${result.borrador.orderCode}.`, { tone: 'success', title: 'Borrador guardado' });
@@ -635,7 +641,7 @@ export default function App() {
         : 'Configuración de carpetas';
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell${activeTab === 'order' ? ' is-new-order' : ''}`}>
       {/* Cabecera como la de CoordinaOT (diseño 29/09/2026, estilo CoordinaOT): del color de
           la página, logo a la izquierda, pestañas como teclas sueltas y, a la derecha, el modo
           y «Soy» como su chip de usuario. Las clases salen de src/client/coordina/. */}
@@ -650,7 +656,7 @@ export default function App() {
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => setActiveTab('parameters')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => setActiveTab('settings')} />
           {remolquesUrl && (
-            <a className="pestana" href={remolquesUrl}>Remolques</a>
+            <a className="pestana" href={remolquesUrl} title="Abrir la aplicación de Remolques">Remolques<ArrowUpRight aria-hidden="true" /></a>
           )}
         </nav>
         <div className="cabecera-derecha">
@@ -670,8 +676,9 @@ export default function App() {
       <section className="app-workspace">
         <header className="topbar">
           <div className="workspace-heading">
-            <h2>{viewTitle}</h2>
-            {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} />}
+            {activeTab !== 'order' && <h2>{viewTitle}</h2>}
+            {activeTab === 'order' && <OrderSearch number={numeroBusqueda ?? (producto === 'toldos' ? draft.orderCode : resumenRemolques.numero)} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? (producto === 'toldos' ? draft.orderCode : resumenRemolques.numero))} />}
+            {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes
               ? null
@@ -679,16 +686,9 @@ export default function App() {
                 ? <ParametersHistory key="remolques" version={remolquesSettings.saved.version} endpoint="/api/remolques/parametros/history" labels={{ lona: 'Lona y contorno', ollaos: 'Ollaos', recogidas: 'Recogidas', baqueton: 'Baquetón', clientesBaqueton: 'Clientes con baquetón' }} onLoadVersion={remolquesSettings.loadVersion} />
                 : <ParametersHistory key="toldos" version={ruleSettings.version} onLoadVersion={ruleSettings.loadVersion} />)}
           </div>
-          {activeTab === 'order' && producto === 'remolques' && (
-            <div className="topbar-actions">
-              <button className="ghost-button clear-form-button" type="button" onClick={() => setLimpiarRemolques((n) => n + 1)}>
-                <Eraser aria-hidden="true" />
-                Limpiar
-              </button>
-            </div>
-          )}
+          <div className="order-actions-host" ref={setAccionesPedido} hidden={activeTab !== 'order'}>
           {activeTab === 'order' && producto === 'toldos' && (
-            <div className="topbar-actions">
+            <OrderActions>
               <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={() => void clearForm()}>
                 <Eraser aria-hidden="true" />
                 Limpiar
@@ -705,8 +705,9 @@ export default function App() {
                 <Save aria-hidden="true" />
                 {working === 'review' ? 'Guardando…' : 'Guardar para revisión'}
               </button>
-            </div>
+            </OrderActions>
           )}
+          </div>
         </header>
 
         <div className="workspace-content">
@@ -718,10 +719,6 @@ export default function App() {
                 {returnNote.note}
               </span>
             </div>
-          )}
-          {activeTab === 'order' && producto === 'toldos' && pedidoRemolques
-            && normalizarNumeroPedidoRps(pedidoRemolques.numero) === normalizarNumeroPedidoRps(draft.orderCode) && (
-            <AvisoPedidoRemolques numero={pedidoRemolques.numero} lineas={pedidoRemolques.lineas} onAbrir={() => openInTrailers(pedidoRemolques.numero)} />
           )}
           {activeTab === 'order' && producto === 'toldos' && (
             <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
@@ -768,6 +765,8 @@ export default function App() {
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || producto !== 'remolques'}>
               <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
+                accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && producto === 'remolques'} onResumenChange={setResumenRemolques}
+                onLimpiar={() => setLimpiarRemolques((n) => n + 1)}
                 pedidoGuardadoSolicitado={pedidoGuardadoSolicitado}
                 borradorSolicitado={borradorRemolquesSolicitado}
                 onAbrirBorradorToldos={(borrador) => void abrirBorrador(borrador)}

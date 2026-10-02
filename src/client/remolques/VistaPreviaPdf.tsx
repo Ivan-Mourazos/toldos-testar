@@ -9,7 +9,8 @@ import { crearGuardaPeticion, peticionVistaPrevia } from './vistaPrevia';
 
 // «Vista previa del PDF» de remolques (fase 4): pide al servidor la hoja de taller del pedido y la
 // abre en el mismo visor que toldos. No guarda nada en ninguna carpeta.
-export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify }: {
+export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, label = 'Vista previa del PDF' }: {
+  label?: string;
   lineas?: LineaPedido[];
   /** Los parámetros con que se calcula si no son los comunes («Corregir» un pedido guardado). */
   params?: CalcParams;
@@ -102,7 +103,7 @@ export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify }: {
       <button ref={boton} type="button" className="ghost-button rem-pdf-boton" disabled={Boolean(bloqueo) || preparando}
         aria-busy={preparando} title={bloqueo ?? undefined} onClick={() => void abrir()}>
         <Eye aria-hidden="true" />
-        {preparando ? 'Preparando la hoja…' : 'Vista previa del PDF'}
+        {preparando ? 'Preparando…' : label}
       </button>
       {/* En el body: dentro del panel, su backdrop-filter recortaría el diálogo a la sección. */}
       {url && createPortal(

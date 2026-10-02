@@ -7,6 +7,7 @@ import { lineasDesdePedidoRps } from '../../remolques/workspace/importar-rps.ts'
 import { estadoLinea } from '../../remolques/workspace/lineas.ts';
 import type { EstadoConsultaRps } from '../../remolques/workspace/selectores.ts';
 import { CabeceraPedido } from './CabeceraPedido';
+import { OrderSearch } from '../components/OrderSearch';
 import { OrigenRpsElemento } from './OrigenRps';
 import { PestanasElementos } from './PestanasElementos';
 
@@ -85,18 +86,23 @@ describe('cabecera: el pedido en RPS', () => {
 
   it('si falta algún elemento, lo dice y explica cómo traerlo', () => {
     const html = cabecera([creadas[0]]);
-    expect(html).toContain('2 de 3 líneas de remolque sin elemento: pulsa «Obtener datos del pedido» para traerlas.');
+    expect(html).toContain('2 de 3 líneas de remolque sin elemento: pulsa «Buscar» para traerlas.');
   });
 
-  it('sin consultar todavía no enseña ningún resumen y el botón sigue ahí', () => {
+  it('sin consultar no enseña resumen ni repite el buscador en la cabecera', () => {
     const html = cabecera([], 'idle');
     expect(html).not.toContain('Datos obtenidos de RPS');
-    expect(html).toContain('Obtener datos del pedido');
+    expect(html).not.toContain('Obtener datos del pedido');
+    const buscador = renderToStaticMarkup(<OrderSearch number="AR.26.04286" onChange={() => {}} loading={false} onSearch={() => {}} />);
+    expect(buscador).toContain('Buscar pedido');
+    expect(buscador).toContain('>Buscar</button>');
   });
 
-  it('mientras consulta, el botón y una línea compacta lo dicen', () => {
+  it('mientras consulta, el buscador y el estado compacto lo dicen', () => {
     const html = cabecera([], 'buscando', true);
-    expect(html).toContain('Consultando RPS…');
+    const buscador = renderToStaticMarkup(<OrderSearch number="AR.26.04286" onChange={() => {}} loading onSearch={() => {}} />);
+    expect(buscador).toContain('Buscando…');
+    expect(buscador).toContain('aria-busy="true"');
     expect(html).toContain('Consultando el pedido en RPS…');
   });
 

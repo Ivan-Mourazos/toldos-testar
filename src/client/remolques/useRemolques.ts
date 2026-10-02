@@ -251,7 +251,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   useEffect(() => { bloqueoParamsRef.current = bloqueoParams; });
   // «Abrir en Remolques» puede llegar antes que los parámetros (la pantalla se monta en ese
   // momento): el pedido pedido espera aquí y se obtiene en cuanto llegan.
-  const consultaEnEspera = useRef<string | null>(null);
+  const consultaEnEspera = useRef<{ numero: string; pedidoRps?: PedidoRps } | null>(null);
+  const [respuestaRpsSolicitada, setRespuestaRpsSolicitada] = useState<PedidoRps | null>(null);
 
   // Aviso y confirmación llegan de la aplicación. Se guardan en una ref para que los
   // manejadores de abajo no cambien de identidad cuando cambie la de estas funciones:
@@ -629,7 +630,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * pedido», «Reintentar», «Abrir en Remolques»): teclear el número no consulta nada (Iván,
    * 01/10/2026).
    */
-  const consultarRps = useCallback(async (numeroEscrito: string) => {
+  const consultarRps = useCallback(async (numeroEscrito: string, pedidoLeido?: PedidoRps) => {
     const numero = normalizarNumeroPedidoRps(numeroEscrito);
     if (!FORMA_PEDIDO_RPS.test(numero)) return;
     consultaEnCurso.current?.abort();
@@ -637,12 +638,15 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     consultaEnCurso.current = controller;
     despachar({ tipo: 'RPS_CONSULTA_INICIADA', numero });
     try {
-      const response = await fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(numero)}`, {
-        signal: controller.signal,
-        cache: 'no-store',
-      });
-      const payload = await response.json() as { pedido?: PedidoRps | null; error?: string };
-      if (!response.ok) throw new Error(payload.error ?? 'No se pudo consultar RPS.');
+      let payload: { pedido?: PedidoRps | null; error?: string } = { pedido: pedidoLeido };
+      if (!pedidoLeido) {
+        const response = await fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(numero)}`, {
+          signal: controller.signal,
+          cache: 'no-store',
+        });
+        payload = await response.json() as typeof payload;
+        if (!response.ok) throw new Error(payload.error ?? 'No se pudo consultar RPS.');
+      }
       if (!payload.pedido) {
         despachar({ tipo: 'RPS_NO_ENCONTRADO' });
         return;
@@ -678,17 +682,17 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * «Obtener datos del pedido» (y «Reintentar»): consulta RPS aunque ya se hubiera consultado y,
    * al llegar, crea los elementos; si el pedido ya tiene, pregunta antes.
    */
-  const obtenerDatosPedido = useCallback((numero?: string) => {
+  const obtenerDatosPedido = useCallback((numero?: string, pedidoLeido?: PedidoRps) => {
     const pedido = numero ?? estadoRef.current.numeroPedido;
     // Los elementos de RPS se calculan con los parámetros: sin leerlos, no. Si aún están
     // llegando, se obtiene al llegar; si fallaron, se dice.
     const { motivo, aviso } = bloqueoParamsRef.current;
     if (motivo) {
       if (aviso) avisar('error', aviso);
-      else consultaEnEspera.current = pedido;
+      else consultaEnEspera.current = { numero: pedido, pedidoRps: pedidoLeido };
       return;
     }
-    void consultarRps(pedido);
+    void consultarRps(pedido, pedidoLeido);
   }, [avisar, consultarRps]);
 
   useEffect(() => {
@@ -703,18 +707,29 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     if (bloqueoParams.motivo) return;
     const pedido = consultaEnEspera.current;
     consultaEnEspera.current = null;
-    void consultarRps(pedido);
+    void consultarRps(pedido.numero, pedido.pedidoRps);
   }, [bloqueoParams.motivo, bloqueoParams.aviso, avisar, consultarRps]);
 
-  /** «Abrir en Remolques» desde Toldos: abre el pedido y lo obtiene como el botón. */
-  const abrirPedido = useCallback((numero: string) => {
+  /** El buscador abre el pedido; si ya leyó RPS, se aprovecha esa respuesta. */
+  const abrirPedido = useCallback((numero: string, pedidoLeido?: PedidoRps) => {
     if (esOtroPedido(estadoRef.current.numeroPedido, numero)) {
       consultaEnCurso.current?.abort();
       setParamsGuardados(null);
     }
     despachar({ tipo: 'PEDIDO_CAMBIADO', valor: numero });
-    obtenerDatosPedido(numero);
+    // La respuesta del buscador se importa tras actualizar el número en el estado.
+    // Pasa por las mismas protecciones y espera los parámetros antes de crear elementos.
+    if (pedidoLeido) setRespuestaRpsSolicitada(pedidoLeido);
+    else obtenerDatosPedido(numero);
   }, [obtenerDatosPedido]);
+
+  useEffect(() => {
+    if (!respuestaRpsSolicitada) return;
+    if (cargandoPedido) return;
+    setRespuestaRpsSolicitada(null);
+    if (esOtroPedido(numeroPedido, respuestaRpsSolicitada.numero)) return;
+    obtenerDatosPedido(numeroPedido, respuestaRpsSolicitada);
+  }, [cargandoPedido, numeroPedido, obtenerDatosPedido, respuestaRpsSolicitada]);
 
   /**
    * «Limpiar formulario»: pedido, cliente, fecha y elementos vuelven a vacío y se borra el

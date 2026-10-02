@@ -1,0 +1,66 @@
+/* Nuevo pedido: la misma jerarquía y las mismas piezas en Toldos y Remolques. */
+.is-new-order .topbar {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  padding-block: 8px;
+}
+.is-new-order .workspace-heading { display: grid; grid-template-columns: minmax(280px, 1fr) auto; gap: 16px; min-width: 0; }
+.order-search { display: grid; gap: 3px; min-width: 0; }
+.order-search > label { color: var(--text); font-size: 12px; font-weight: 600; }
+.order-search-controls { align-items: stretch; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) auto; }
+.app-shell .order-search-controls > input { border-color: var(--control-active-border); font-size: 18px; font-weight: 600; height: 44px; min-width: 0; padding-inline: 12px; }
+.order-search .order-search-button { font-size: 12px; gap: 6px; min-height: 44px; padding-inline: 12px; }
+.order-search-button svg { height: 16px; width: 16px; }
+.app-shell .order-search > span { color: var(--text-muted); font-size: 10px; font-weight: 400; text-transform: none; }
+.producto-contexto { display: grid; gap: 3px; min-width: 0; }
+.workspace-heading .producto-etiqueta { color: var(--text-muted); font-size: 10px; font-weight: 600; margin: 0; }
+.producto-selector { gap: 6px; }
+.producto-selector .pestana { align-items: start; display: flex; flex-direction: column; gap: 2px; height: auto; min-height: 48px; min-width: 142px; padding: 6px 10px; text-align: left; }
+.producto-selector strong { font-size: 12px; font-weight: 600; }
+.producto-selector small { color: var(--text-muted); font-size: 10px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.producto-selector .pestana-activa small { color: inherit; }
+.producto-conserva { color: var(--text-muted); font-size: 10px; font-weight: 400; }
+.order-actions-host { margin-left: auto; }
+.order-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.order-actions[hidden], .order-actions-host[hidden] { display: none; }
+.order-actions .clear-form-button { margin-right: 8px; }
+.order-actions :is(.ghost-button, .primary-button) { font-size: 12px; gap: 6px; min-height: 34px; padding-inline: 10px; white-space: nowrap; }
+.order-actions svg { height: 15px; width: 15px; }
+.cabecera-pestanas a.pestana { gap: 5px; }
+.cabecera-pestanas a.pestana svg { height: 12px; width: 12px; }
+
+/* Pedido y consulta se leen primero; Cliente absorbe el espacio sin cortar el nombre. */
+.is-new-order .order-header-grid,
+.is-new-order .rem-cabecera .order-header-grid { align-items: start; grid-template-columns: 8.5rem minmax(0, 1fr) 8.5rem; max-width: none; }
+.is-new-order .order-header-group { gap: 6px; }
+.is-new-order .order-header-group h3 { margin: 0; }
+.app-shell .order-customer { box-sizing: border-box; font: inherit; font-size: 12px; line-height: 1.25; min-height: 2rem; overflow-y: hidden; padding: 0.4375rem 0.625rem; resize: none; width: 100%; }
+.is-new-order .order-autofill-summary { border-top: 1px solid var(--border); margin-top: 2px; padding-top: 6px; }
+
+.order-progress { align-items: center; color: var(--aviso-texto); display: flex; flex-wrap: wrap; font-size: 11px; gap: 4px 8px; margin-top: 4px; }
+.order-progress svg { flex: none; height: 14px; width: 14px; }
+.order-progress strong { font-weight: 600; }
+.order-progress > span { color: var(--text-muted); font-size: 11px; }
+.order-progress.is-ok { color: var(--correcto-texto); }
+.order-empty { align-items: center; border: 1px dashed var(--control-border); display: flex; gap: 12px; margin: 10px 0 0; padding: 16px; text-align: left; }
+.order-empty > svg { color: var(--text-muted); flex: none; height: 24px; width: 24px; }
+.order-empty h2 { color: var(--text); font-size: 14px; margin: 0; }
+.order-empty p { color: var(--text-muted); font-size: 12px; line-height: 1.4; margin: 4px 0 0; }
+
+/* Ajustes compartidos de densidad; los campos y las reglas mantienen su orden. */
+.is-new-order .order-elements-section .section-header { align-items: center; margin-bottom: 8px; }
+.is-new-order .order-add-actions { align-items: center; gap: 6px; }
+.is-new-order .order-add-actions .ghost-button { font-size: 12px; min-height: 32px; }
+.is-new-order .awning-column-header,
+.is-new-order .rem-editor-cabecera { align-items: center; min-height: 34px; }
+.is-new-order .rem-editor-etiqueta { font-size: 10px; }
+.is-new-order .awning-column { gap: 6px; }
+.is-new-order .awning-form-section { padding-block: 4px; }
+.is-new-order :is(.awning-column, .rem-form) label > span:first-child { font-size: 10px; }
+.is-new-order .rem-form .select-control,
+.is-new-order .rem-form .rem-campo > input { min-height: 28px; }
+.is-new-order .rem-campo .segmented-option { min-height: 26px; }
+.is-new-order :is(.fabric-proposal-pending, .rem-del-cliente) { border-radius: 4px; font-size: 10px; font-weight: 600; padding: 2px 5px; }
+.is-new-order :is(.rem-pdf-falta, .awning-status, .rem-editor-estado) { border-radius: 6px; font-size: 11px; line-height: 1.4; }
