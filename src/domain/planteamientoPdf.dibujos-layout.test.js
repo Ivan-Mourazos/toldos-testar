@@ -15,19 +15,46 @@ async function inspect(awning, check, options = {}) {
     const items = (await page.getTextContent()).items.filter(item => item.str?.trim());
     const top = item => page.view[3] - item.transform[5] - item.height;
     const bottom = item => page.view[3] - item.transform[5];
-    await check({ items, top, bottom, operators: await page.getOperatorList() });
+    const box = item => {
+      const [a, b, c, d, e, f] = item.transform;
+      const along = Math.hypot(a, b);
+      const across = Math.hypot(c, d);
+      const corners = [0, item.width].flatMap(width => [0, item.height].map(height => [
+        e + a / along * width + c / across * height,
+        page.view[3] - (f + b / along * width + d / across * height)
+      ]));
+      return { left: Math.min(...corners.map(point => point[0])), right: Math.max(...corners.map(point => point[0])), top: Math.min(...corners.map(point => point[1])), bottom: Math.max(...corners.map(point => point[1])) };
+    };
+    await check({ items, top, bottom, box, operators: await page.getOperatorList() });
   } finally { await loading.destroy(); }
 }
 
 test.each(variants)('$awning.model / $id: todos los rótulos caben en el recuadro', async variant => {
   const [awning] = normalizeOrder({ awnings: [exampleAwning(variant)] }).awnings;
-  await inspect(awning, ({ items, top, bottom }) => {
-    for (const item of items.filter(item => top(item) > 30 && Math.abs(item.transform[1]) < 0.1)) {
-      expect(item.transform[4], `${item.str}: margen izquierdo`).toBeGreaterThanOrEqual(7);
-      expect(item.transform[4] + item.width, `${item.str}: margen derecho`).toBeLessThanOrEqual(251);
-      expect(bottom(item), `${item.str}: no sale bajo el recuadro`).toBeLessThanOrEqual(335);
+  await inspect(awning, ({ items, box }) => {
+    for (const item of items.filter(item => box(item).top > 30)) {
+      const bounds = box(item);
+      expect(bounds.left, `${item.str}: margen izquierdo`).toBeGreaterThanOrEqual(7);
+      expect(bounds.right, `${item.str}: margen derecho`).toBeLessThanOrEqual(251);
+      expect(bounds.bottom, `${item.str}: no sale bajo el recuadro`).toBeLessThanOrEqual(335);
     }
   });
+});
+
+test.each([[363, 450], [484, 300]])('el recuadro %s × %s conserva la proporción de letras y dibujo', async (width, height) => {
+  const [awning] = normalizeOrder({ awnings: [exampleAwning(webDrawingVariants('CORTINA')[0])] }).awnings;
+  let original;
+  await inspect(awning, ({ items }) => { original = items.find(item => item.str === 'H. VENTANA:'); });
+  await inspect(awning, ({ items, box }) => {
+    const scaled = items.find(item => item.str === 'H. VENTANA:');
+    expect(scaled.height / original.height).toBeCloseTo(Math.min(width / 242, height / 300));
+    expect(Math.hypot(scaled.transform[0], scaled.transform[1]) / scaled.height, 'letras sin estirar').toBeCloseTo(Math.hypot(original.transform[0], original.transform[1]) / original.height);
+    for (const item of items.filter(item => box(item).top > 30)) {
+      expect(box(item).left).toBeGreaterThanOrEqual(7);
+      expect(box(item).right).toBeLessThanOrEqual(width + 9);
+      expect(box(item).bottom).toBeLessThanOrEqual(height + 35);
+    }
+  }, { width, height });
 });
 
 test.each(['CORTINA', 'CAMBIO CORTINA', 'IRIS'])('%s: el cuerpo aprovecha el espacio de la miniatura', async model => {

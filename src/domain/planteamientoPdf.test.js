@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument, OPS, Util } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {
   awningLetter,
   buildFabricLineDetail,
@@ -690,12 +690,23 @@ describe('buildOrderPlanteamientoPdf', () => {
       const operators = await page.getOperatorList();
       const fabricLines = [];
       let strokeColor;
+      let matrix = [1, 0, 0, 1, 0, 0];
+      const matrices = [];
       for (let i = 0; i < operators.fnArray.length; i += 1) {
+        // El encaje normalizado añade una traslación/escala. Comparar texto y trazos
+        // en la página real, no el texto absoluto con las coordenadas locales del croquis.
+        if (operators.fnArray[i] === OPS.save) matrices.push([...matrix]);
+        if (operators.fnArray[i] === OPS.restore) matrix = matrices.pop();
+        if (operators.fnArray[i] === OPS.transform) matrix = Util.transform(matrix, operators.argsArray[i]);
         if (operators.fnArray[i] === OPS.setStrokeRGBColor) strokeColor = operators.argsArray[i][0];
         if (operators.fnArray[i] === OPS.constructPath && ['#7fa594', '#bfd2ca'].includes(strokeColor)) {
           // Solo los trazos largos: el soporte fijo dibuja su eje con el mismo verde.
           const bounds = operators.argsArray[i][2];
-          if (bounds[2] - bounds[0] > 40) fabricLines.push(bounds);
+          if (bounds[2] - bounds[0] > 40) {
+            const corners = [[bounds[0], bounds[1]], [bounds[2], bounds[1]], [bounds[0], bounds[3]], [bounds[2], bounds[3]]]
+              .map(point => { Util.applyTransform(point, matrix); return point; });
+            fabricLines.push([Math.min(...corners.map(point => point[0])), 0, Math.max(...corners.map(point => point[0])), Math.max(...corners.map(point => page.view[3] - point[1]))]);
+          }
         }
       }
       expect(fabricLines).toHaveLength(2);
