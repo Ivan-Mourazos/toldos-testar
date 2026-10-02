@@ -2,18 +2,10 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { OrderHeader } from './OrderHeader';
-import type { FabricProposal, OrderAutofill } from '../types';
+import type { OrderAutofill } from '../types';
 
 const noop = () => undefined;
-
-const PROPOSAL: FabricProposal = {
-  awningIds: ['a', 'b'],
-  phrase: 'tejido acrilico, tintado masa, color negro',
-  options: [
-    { selection: 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 NEGRO 2170|||ACRILICA (LONA)', label: 'ACRILI2170P120 · ACR NEGRO' },
-    { selection: 'ACRILI2018P120|||120|||LONA ACRILICA MASACRIL 300 AZUL 2018|||ACRILICA (LONA)', label: 'ACRILI2018P120 · ACR AZUL' }
-  ]
-};
+const NEGRO = 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 NEGRO 2170|||ACRILICA (LONA)';
 
 const AUTOFILL: OrderAutofill = {
   source: 'RPSNext',
@@ -25,12 +17,12 @@ const AUTOFILL: OrderAutofill = {
   recovered: ['Pedido', 'Cliente'],
   pending: ['A: rotulación tela sí/no'],
   warnings: [],
-  fabricProposals: [PROPOSAL]
+  summary: ['1 Perla Box · lacado negro 9011 · rotulación no indicada']
 };
 
-type Overrides = { fabric?: string; sameFabric?: boolean; awnings?: { id: string; fabric: string }[]; pendingProposals?: number[]; fabricProposals?: FabricProposal[] };
+type Overrides = { fabric?: string; sameFabric?: boolean };
 
-function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as (proposal: FabricProposal, selection: string) => void, readOnly = false, overrides: Overrides = {}) {
+function render(autofill: OrderAutofill | null, readOnly = false, overrides: Overrides = {}) {
   return renderToStaticMarkup(React.createElement(OrderHeader, {
     orderCode: 'AR2604716', customer: 'CLIENTE', orderDate: '',
     fabric: '', sameFabric: true,
@@ -38,148 +30,47 @@ function render(autofill: OrderAutofill | null, onApplyFabricProposal = noop as 
     set: noop,
     onAutofill: noop, autofillLoading: false,
     autofill,
-    awnings: [{ id: 'a', fabric: '' }, { id: 'b', fabric: '' }, { id: 'c', fabric: '' }],
-    onApplyFabricProposal,
     readOnly,
     ...overrides
   }));
 }
 
-describe('OrderHeader · propuestas de tela (rediseño 4, tarea 3)', () => {
-  it('enseña la frase de RPS con las letras de los toldos del grupo y sus opciones', () => {
+// Iván, 02/10/2026: fuera las telas propuestas, los pendientes y el resumen de RPS; cada tarjeta ya
+// dice en vivo lo que le falta. Solo quedan los avisos de RPS, a la vista y solo si los hay.
+describe('OrderHeader · lo que queda de RPS', () => {
+  it('sin avisos no sale nada de RPS: ni resumen, ni pendientes, ni propuestas', () => {
     const markup = render(AUTOFILL);
-    expect(markup).toContain('Tela propuesta para A, B: «tejido acrilico, tintado masa, color negro»');
-    expect(markup).toContain('ACRILI2170P120 · ACR NEGRO');
-    expect(markup).toContain('ACRILI2018P120 · ACR AZUL');
+    expect(markup).not.toContain('Datos de RPSNext');
+    expect(markup).not.toContain('Ver pendientes');
+    expect(markup).not.toContain('Tela propuesta');
+    expect(markup).not.toContain('1 Perla Box');
+    expect(markup).not.toContain('order-autofill-warnings');
   });
 
-  it('sin propuestas, no muestra el bloque', () => {
-    const markup = render({ ...AUTOFILL, fabricProposals: [] });
-    expect(markup).not.toContain('Tela propuesta para');
+  it('los avisos de RPS salen a la vista, sin desplegable', () => {
+    const markup = render({ ...AUTOFILL, warnings: ['OF 0232109: RPS contiene más de una tela; revisa la propuesta.'] });
+    expect(markup).toContain('aria-label="Avisos de RPSNext"');
+    expect(markup).toContain('OF 0232109: RPS contiene más de una tela');
+    expect(markup).not.toContain('Ver avisos');
   });
 
-  it('sin autofill, no muestra nada del resumen', () => {
-    const markup = render(null);
-    expect(markup).not.toContain('order-autofill-summary');
-  });
-
-  it('hasta 5 botones de opción, ninguno marcado antes de elegir', () => {
-    const markup = render(AUTOFILL);
-    const buttons = markup.match(/class="order-fabric-proposal-option"/g) || [];
-    expect(buttons).toHaveLength(PROPOSAL.options.length);
-    // El marcado estático no puede simular el click (no hay evento real), así que se
-    // comprueba que ningún botón sale marcado de entrada: la elección es siempre del
-    // técnico (aplicarla de verdad la prueba applyFabricProposal, ya unitaria).
-    expect(markup).not.toContain('is-chosen');
-  });
-});
-
-describe('OrderHeader · resumen al terminar (rediseño 4, tarea 4)', () => {
-  it('enseña las frases del resumen antes de los contadores', () => {
-    const markup = render({
-      ...AUTOFILL,
-      summary: [
-        '8 cortinas · lacado marrón 8014 · rotulación no indicada · medidas: RPS pone «diferentes medidas»',
-        'tela: elige entre las propuestas'
-      ]
-    });
-    expect(markup).toContain('order-autofill-summary-lines');
-    expect(markup).toContain('8 cortinas · lacado marrón 8014 · rotulación no indicada · medidas: RPS pone «diferentes medidas»');
-    expect(markup).toContain('tela: elige entre las propuestas');
-    // Las frases del resumen van antes de los contadores («campos recuperados»).
-    expect(markup.indexOf('8 cortinas')).toBeLessThan(markup.indexOf('campos recuperados'));
-  });
-
-  it('sin resumen, no muestra la lista de frases', () => {
-    const markup = render({ ...AUTOFILL, summary: [] });
-    expect(markup).not.toContain('order-autofill-summary-lines');
-  });
-});
-
-describe('OrderHeader · propuestas de tela, accesibilidad y lectura (revisión final del plan 4)', () => {
-  it('cada bloque de opciones es un grupo con la frase como nombre, y los botones dicen si están pulsados', () => {
-    const markup = render(AUTOFILL);
-    expect(markup).toContain('role="group" aria-label="tejido acrilico, tintado masa, color negro"');
-    expect((markup.match(/aria-pressed="false"/g) || [])).toHaveLength(PROPOSAL.options.length);
-  });
-
-  // Desde el 25/09/2026 el pedido abierto solo enseña la tela y sus observaciones.
-  it('en modo lectura no salen las propuestas de tela', () => {
-    const markup = render(AUTOFILL, noop, true);
-    expect(markup).not.toContain('order-fabric-proposal-option');
+  it('en modo lectura solo la tela y sus observaciones', () => {
+    const markup = render({ ...AUTOFILL, warnings: ['aviso'] }, true);
     expect(markup).toContain('order-header-read-line');
-  });
-
-  it('fuera del modo lectura los botones de propuesta están activos', () => {
-    const markup = render(AUTOFILL);
-    const buttons = markup.match(/<button[^>]*class="order-fabric-proposal-option"[^>]*>/g) || [];
-    expect(buttons.some((button) => button.includes('disabled'))).toBe(false);
-  });
-
-  it('un grupo sin opciones enseña «sin coincidencias en el catálogo»', () => {
-    const markup = render({ ...AUTOFILL, fabricProposals: [{ ...PROPOSAL, options: [] }] });
-    expect(markup).toContain('Tela propuesta para A, B');
-    expect(markup).toContain('sin coincidencias en el catálogo');
-    expect(markup).not.toContain('order-fabric-proposal-option');
+    expect(markup).not.toContain('order-autofill-warnings');
   });
 });
 
 describe('OrderHeader · la tela que se ve es la que lleva el pedido (informe tela-0930)', () => {
-  const [negro, azul] = PROPOSAL.options;
-
-  it('F3: la opción marcada sale de la tela común, no de un clic recordado', () => {
-    const markup = render(AUTOFILL, noop, false, { fabric: negro.selection });
-    expect((markup.match(/is-chosen/g) || [])).toHaveLength(1);
-    expect(markup).toMatch(/class="order-fabric-proposal-option is-chosen" aria-pressed="true"[^>]*>ACRILI2170P120/);
-    // Vaciada la tela (la «X» del buscador), ya no hay nada marcado.
-    expect(render(AUTOFILL, noop, false, { fabric: '' })).not.toContain('is-chosen');
-  });
-
-  it('F3: por toldo, se marca solo si todos los toldos del grupo la llevan', () => {
-    const awnings = [{ id: 'a', fabric: azul.selection }, { id: 'b', fabric: '' }, { id: 'c', fabric: '' }];
-    expect(render(AUTOFILL, noop, false, { sameFabric: false, awnings })).not.toContain('is-chosen');
-    const both = [{ id: 'a', fabric: azul.selection }, { id: 'b', fabric: azul.selection }, { id: 'c', fabric: '' }];
-    expect(render(AUTOFILL, noop, false, { sameFabric: false, awnings: both })).toMatch(/is-chosen" aria-pressed="true"[^>]*>ACRILI2018P120/);
-  });
-
   it('F4: con «Por toldo», «Referencia» no enseña la tela común guardada', () => {
-    const markup = render(AUTOFILL, noop, false, { fabric: negro.selection, sameFabric: false });
+    const markup = render(AUTOFILL, false, { fabric: NEGRO, sameFabric: false });
     expect(markup).toContain('Tela por toldo · se elige en cada tarjeta');
     expect(markup).not.toContain('fabric-readonly-value');
     expect(markup).not.toMatch(/value="ACRILI2170P120/);
   });
-});
-
-describe('OrderHeader · tela propuesta ya puesta (informe tela-0930)', () => {
-  const [negro] = PROPOSAL.options;
-  const preselected = { ...AUTOFILL, fabricProposals: [{ ...PROPOSAL, preselected: negro.selection }] };
-
-  it('restaura los botones y «Correcta» desde el borrador aunque ya no esté el resumen de autofill', () => {
-    const markup = render(null, noop, false, { fabric: negro.selection, fabricProposals: preselected.fabricProposals, pendingProposals: [0] });
-    expect(markup).toContain('Tela propuesta para A, B');
-    expect(markup).toContain('>Correcta</button>');
-    expect(markup).toContain('Propuesta · compruébala');
-    expect(markup).not.toContain('campos recuperados');
-    const confirmed = render(null, noop, false, { fabric: negro.selection, fabricProposals: preselected.fabricProposals, pendingProposals: [] });
-    expect(confirmed).not.toContain('Propuesta · compruébala');
-    expect(confirmed).not.toContain('>Correcta</button>');
-  });
-
-  it('marca la opción puesta y pide comprobarla, con «Correcta» y la marca bajo «Referencia»', () => {
-    const markup = render(preselected, noop, false, { fabric: negro.selection, pendingProposals: [0] });
-    expect(markup).toMatch(/is-chosen" aria-pressed="true"[^>]*>ACRILI2170P120/);
-    expect((markup.match(/Propuesta · compruébala/g) || [])).toHaveLength(2);
-    expect(markup).toContain('>Correcta</button>');
-  });
-
-  it('comprobada (o cambiada), ya no pide nada', () => {
-    const markup = render(preselected, noop, false, { fabric: negro.selection, pendingProposals: [] });
-    expect(markup).not.toContain('Propuesta · compruébala');
-    expect(markup).not.toContain('Correcta');
-  });
 
   it('con tela común elegida, enseña la línea de stock bajo «Referencia»', () => {
-    expect(render(AUTOFILL, noop, false, { fabric: negro.selection })).toContain('fabric-stock-line');
-    expect(render(AUTOFILL, noop, false, { fabric: '' })).not.toContain('fabric-stock-line');
+    expect(render(AUTOFILL, false, { fabric: NEGRO })).toContain('fabric-stock-line');
+    expect(render(AUTOFILL, false, { fabric: '' })).not.toContain('fabric-stock-line');
   });
 });

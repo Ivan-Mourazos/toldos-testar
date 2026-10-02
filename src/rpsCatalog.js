@@ -249,38 +249,6 @@ export async function findRpsFabric(code) {
   return items.find((item) => item.code.toUpperCase() === wanted) || null;
 }
 
-// Filas para el historial de la frase de tela (domain/fabricHistory.js): la lona de
-// cada OF de los últimos 12 meses junto al texto de su línea de pedido. Solo lectura.
-export async function queryRpsFabricHistoryRows() {
-  const pool = await getPool();
-  const result = await pool.request()
-    .input('company', sql.VarChar(10), config.db.company)
-    .query(`
-    SELECT
-      CONVERT(varchar(40), mo.CodManufacturingOrder) AS [of],
-      l.Comment AS comment,
-      mo.Notes AS notes,
-      a.CodArticle AS code,
-      a.Description AS description,
-      m.Quantity AS quantity
-    FROM dbo.FACOrderSL o
-    JOIN dbo.FACOrderLineSL l
-      ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
-    JOIN dbo.CPRManufacturingOrder mo
-      ON mo.IDManufacturingOrder = l.IDManufacturingOrder AND mo.CodCompany = l.CodCompany
-    JOIN dbo._MaterialesPrevistosOF m
-      ON m.IDManufacturingOrder = mo.IDManufacturingOrder AND m.CodCompany = mo.CodCompany
-    JOIN dbo.STKArticle a
-      ON a.IDArticle = m.IDArticle AND a.CodCompany = m.CodCompany
-    JOIN dbo.GENProductFamily pf
-      ON pf.IDProductFamily = a.IDProductFamily AND pf.CodCompany = a.CodCompany
-    WHERE o.CodCompany = @company
-      AND o.OrderDate >= DATEADD(month, -12, GETDATE())
-      AND pf.Description = 'LONA';
-  `);
-  return result.recordset;
-}
-
 // Stock de todas las lonas, una fila por bobina (Series) y almacén, con lo reservado
 // por OF en STKStockReserve (informe tela-0930, sección c). Solo lectura; lo resume
 // domain/fabricStock.js. Unos 170 ms para las ~1.500 filas.

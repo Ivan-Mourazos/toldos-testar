@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCachedValue, createFabricHistoryService, createFabricStockService, fabricStockHandler } from './fabricRpsServices.js';
+import { createCachedValue, createFabricStockService, fabricStockHandler } from './fabricRpsServices.js';
 
 const ROWS = [
   { code: 'ACRILI2170P120', warehouseCode: '1', warehouseName: 'ARZÚA', roll: 'A', meters: 40, reserved: 8 },
@@ -85,24 +85,3 @@ describe('GET /api/catalog/fabrics/stock', () => {
   });
 });
 
-describe('createFabricHistoryService', () => {
-  const NEGRO = 'FABRICADO EN TEJIDO ACRILICO, TINTADO MASA, COLOR NEGRO.';
-
-  it('construye el historial desde las filas de RPS', async () => {
-    const service = createFabricHistoryService({ loadRows: async () => [{ of: '1', comment: NEGRO, notes: '', code: 'ACRILI2171P120', description: 'x', quantity: 5 }] });
-    const history = await service.getWithin(1000);
-    expect(history.get('ACR NEGRO')).toEqual(new Map([['ACRILI2171P120', 1]]));
-  });
-
-  it('si RPS tarda o falla, el autorrelleno sigue sin historial', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    try {
-      const slow = createFabricHistoryService({ loadRows: () => new Promise(() => undefined) });
-      await expect(slow.getWithin(10)).resolves.toBeNull();
-      const broken = createFabricHistoryService({ loadRows: async () => { throw new Error('RPS caído'); } });
-      await expect(broken.getWithin(1000)).resolves.toBeNull();
-    } finally {
-      consoleError.mockRestore();
-    }
-  });
-});

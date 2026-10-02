@@ -1,4 +1,3 @@
-import { buildFabricHistory } from './domain/fabricHistory.js';
 import { summarizeFabricStock } from './domain/fabricStock.js';
 
 // Lecturas de RPS para la tela (informe tmp/tela-0930) con caché en memoria. La
@@ -44,28 +43,6 @@ export function createFabricStockService({ loadRows, ttlMs = 60_000, now = Date.
       return codes.map((code) => ({ ...summarizeFabricStock(stockRows, code), consultado }));
     },
     reset: rows.reset
-  };
-}
-
-// Historial de la frase de tela: 12 meses de OF, se guarda 24 h. El autorrelleno no
-// espera más de `waitMs` por él: sin historial la propuesta es la 1.ª del buscador.
-export function createFabricHistoryService({ loadRows, ttlMs = 24 * 60 * 60 * 1000, now = Date.now }) {
-  const history = createCachedValue({ load: async () => buildFabricHistory(await loadRows()), ttlMs, now });
-  return {
-    get: history.get,
-    async getWithin(waitMs) {
-      let timer;
-      const timeout = new Promise((resolve) => { timer = setTimeout(() => resolve(null), waitMs); });
-      try {
-        return await Promise.race([history.get().catch((error) => {
-          console.error('No se pudo leer el historial de telas de RPS:', error?.message || error);
-          return null;
-        }), timeout]);
-      } finally {
-        clearTimeout(timer);
-      }
-    },
-    reset: history.reset
   };
 }
 

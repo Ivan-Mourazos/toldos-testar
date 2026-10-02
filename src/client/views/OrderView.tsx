@@ -12,13 +12,11 @@ import { ModelPickerDialog } from '../components/ModelPickerDialog';
 import { AwningPanel, type PanelOrder } from '../components/AwningPanel';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBehavior.js';
-import { applyFabricProposal, pendingProposalIndexes, pendingProposalAwningIds } from '../fabricProposal';
 import { fabricCodeOf, fabricNeedByCode } from '../fabricStock';
 import { planFabricToggle } from '../orderFabricToggle';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { controlLabel } from '../components/controlLabels';
-import type { FabricProposal } from '../types';
 
 export function OrderView({
   availableModelNames,
@@ -49,9 +47,6 @@ export function OrderView({
   onAutofill,
   autofillLoading,
   autofill,
-  fabricProposals,
-  confirmedFabricProposals = [],
-  onConfirmFabricProposal,
   readOnly = false,
   diagnostics,
   getPanelOrder,
@@ -88,9 +83,6 @@ export function OrderView({
   onAutofill: () => void;
   autofillLoading: boolean;
   autofill: OrderAutofill | null;
-  fabricProposals?: FabricProposal[];
-  confirmedFabricProposals?: number[];
-  onConfirmFabricProposal?: (index: number) => void;
   readOnly?: boolean;
   // Solo para el estado de cada toldo en el índice (el pedido abierto no pasa el cálculo
   // completo: las tarjetas de lectura cambiarían sus observaciones con él).
@@ -111,17 +103,8 @@ export function OrderView({
   const [panelAwningId, setPanelAwningId] = useState<string | null>(null);
   const panelIndex = panelAwningId ? awnings.findIndex((awning) => awning.id === panelAwningId) : -1;
   const enabledModels = new Set(availableModelNames);
-  // La comprobación pertenece al borrador y sobrevive al desmontar esta pantalla.
-  const confirmedIndexes = new Set(confirmedFabricProposals);
-  const proposals = fabricProposals ?? autofill?.fabricProposals ?? [];
-  const pendingProposals = readOnly ? [] : pendingProposalIndexes(proposals, { fabric, sameFabric, awnings }, confirmedIndexes);
-  const pendingAwningIds = readOnly ? new Set<string>() : pendingProposalAwningIds(proposals, { fabric, sameFabric, awnings }, confirmedIndexes);
   // Metros que el cálculo pide de cada tela, para compararlos con el stock.
   const needByCode = fabricNeedByCode(calculation);
-
-  function confirmProposal(index: number) {
-    onConfirmFabricProposal?.(index);
-  }
 
   function chooseModel(model: string) {
     if (!pickerType) return;
@@ -182,15 +165,6 @@ export function OrderView({
     setSameFabric(plan.sameFabric);
   }
 
-  // El técnico elige una tela propuesta del catálogo (rediseño 4 §10).
-  function applyProposal(proposal: FabricProposal, selection: string) {
-    const message = applyFabricProposal({ awnings, fabric, sameFabric, setFabric, setSameFabric, updateAwning }, proposal, selection, proposals);
-    if (message) onNotify?.(message, { tone: 'info' });
-    // Elegir una opción, sea la puesta u otra, es comprobarla.
-    const index = proposals.indexOf(proposal);
-    if (index >= 0) confirmProposal(index);
-  }
-
   // Un estado por toldo: lo enseñan el índice de bloques y, en lectura, la cabecera de la ficha.
   const statuses = awningStatuses(awnings, { fabric, sameFabric }, diagnostics ?? calculation?.diagnostics ?? []);
 
@@ -210,11 +184,6 @@ export function OrderView({
             onAutofill={onAutofill}
             autofillLoading={autofillLoading}
             autofill={autofill}
-            fabricProposals={proposals}
-            awnings={awnings}
-            onApplyFabricProposal={applyProposal}
-            pendingProposals={pendingProposals}
-            onConfirmProposal={confirmProposal}
             fabricNeedMl={needByCode.get(fabricCodeOf(fabric)) ?? 0}
             readOnly={readOnly}
             set={setOrderField}
@@ -257,7 +226,6 @@ export function OrderView({
               sameFabric={sameFabric}
               knownOfs={knownOfs}
               orderFabric={fabric}
-              fabricPending={!sameFabric && pendingAwningIds.has(awning.id)}
               fabricNeedMl={needByCode.get(fabricCodeOf(awning.fabric)) ?? 0}
               valanceFabricNeedMl={needByCode.get(fabricCodeOf(awning.valanceFabric)) ?? 0}
               parameters={parameters}

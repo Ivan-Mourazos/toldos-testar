@@ -3,10 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { OrderHeader } from './OrderHeader';
 import { AwningColumn } from './AwningColumn';
-import { useFabricStocks } from '../hooks/useFabricStock';
 import { SAMPLE_FABRIC, sampleAwnings } from '../../../scripts/lib/model-samples.mjs';
 import { normalizeRuleParameters } from '../../domain/ruleParameters.js';
-import type { Awning, OrderAutofill, RuleParameters } from '../types';
+import type { Awning, RuleParameters } from '../types';
 
 const { stocks } = vi.hoisted(() => ({ stocks: {
   ACRILI2170P120: { status: 'ready', stock: { code: 'ACRILI2170P120', metros: 12.5, reservado: 0, disponible: 12.5, bobinasConDisponible: 2, mayorBobinaDisponible: 10, consignacion: 0, almacenes: [] } },
@@ -19,13 +18,10 @@ vi.mock('../hooks/useFabricStock', () => ({
 const noop = () => undefined;
 const blue = 'ACRILI2018P120|||120|||ACR AZUL';
 
-describe('stock en los dos puntos del formulario', () => {
-  it('cada propuesta enseña su disponibilidad y entrega todos los códigos a la consulta conjunta', () => {
-    const autofill = { source: 'RPSNext', recovered: [], pending: [], warnings: [], fabricProposals: [{ phrase: 'tela azul', awningIds: ['a'], options: [{ selection: SAMPLE_FABRIC, label: 'Negro' }, { selection: blue, label: 'Azul' }] }] } as unknown as OrderAutofill;
-    const markup = renderToStaticMarkup(<OrderHeader orderCode="AR2603332" customer="" orderDate="" fabric="" sameFabric notes="" onNotesChange={noop} set={noop} onAutofill={noop} autofillLoading={false} autofill={autofill} awnings={[{ id: 'a', fabric: '' }]} onApplyFabricProposal={noop} />);
-    expect(markup).toMatch(/Negro<span[^>]+>12,5 m disponibles<\/span>/);
-    expect(markup).toMatch(/Azul<span[^>]+>Sin stock en RPS<\/span>/);
-    expect(useFabricStocks).toHaveBeenLastCalledWith(['ACRILI2170P120', 'ACRILI2018P120']);
+describe('stock en el formulario', () => {
+  it('la tela de la cabecera enseña su stock', () => {
+    const markup = renderToStaticMarkup(<OrderHeader orderCode="AR2603332" customer="" orderDate="" fabric={SAMPLE_FABRIC} sameFabric notes="" onNotesChange={noop} set={noop} onAutofill={noop} autofillLoading={false} autofill={null} />);
+    expect(markup).toContain('fabric-stock-line');
   });
 
   it('la tela de bamba tiene su propia línea y desaparece con «Igual que la tela», sin bamba o en lectura', () => {

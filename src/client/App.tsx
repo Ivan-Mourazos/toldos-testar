@@ -23,7 +23,6 @@ import { OrderSearch } from './components/OrderSearch';
 import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
 import type { PedidoRps } from '../remolques/rps/types.ts';
 import { incompleteAwningLines } from './incompleteAwnings';
-import { pendingFabricProposalMessage } from './fabricProposal';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
@@ -321,8 +320,9 @@ export default function App() {
       setCorrigiendo(null);
       const elements = result.order.awnings.length;
       notify(
-        `${result.recovered.length} campos y ${elements} ${elements === 1 ? 'elemento recuperado' : 'elementos recuperados'}. ${result.pending.length === 1 ? 'Queda 1 dato' : `Quedan ${result.pending.length} datos`} por revisar.`,
-        { tone: result.pending.length > 0 ? 'info' : 'success', title: 'Pedido autocompletado' }
+        // Lo que falta lo dice cada tarjeta en vivo; aquí no se cuentan pendientes (Iván, 02/10/2026).
+        `${elements} ${elements === 1 ? 'elemento recuperado' : 'elementos recuperados'} de RPS. Lo que falte lo marca cada tarjeta.`,
+        { tone: 'success', title: 'Pedido autocompletado' }
       );
     } catch (error) {
       if (seq !== autofillSeq.current) return;
@@ -456,24 +456,13 @@ export default function App() {
     else notify(result.message || 'No se pudieron guardar los parámetros.', { tone: 'error' });
   }
 
-  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false, confirmProposals = false) {
+  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false) {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
     // Sin ningún toldo calculado no se manda a revisar (Iván, 01/10/2026): saldría en «Por
     // revisar» sin despiece ni reserva. Para dejar un pedido a medias, el borrador.
     if (!calculation || calculation.ofs.length === 0) {
       notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
       return;
-    }
-    const proposalMessage = pendingFabricProposalMessage(draft);
-    if (proposalMessage && !confirmProposals) {
-      const choice = await askForConfirmation({
-        title: 'Hay telas sin comprobar',
-        message: proposalMessage,
-        confirmLabel: 'Guardar igualmente',
-        cancelLabel: 'Volver al pedido',
-        tone: 'warning'
-      });
-      if (choice !== 'confirm') return;
     }
     if (incomplete.length && !confirmIncomplete) {
       const choice = await askForConfirmation({
@@ -507,7 +496,7 @@ export default function App() {
           tone: 'warning',
           details: data.existing
         });
-        if (choice === 'confirm') await saveForReview(true, true, true);
+        if (choice === 'confirm') await saveForReview(true, true);
         return;
       }
       if (!response.ok) {
@@ -747,9 +736,6 @@ export default function App() {
                 onAutofill={() => void autofillOrder()}
                 autofillLoading={autofillLoading}
                 autofill={autofill}
-                fabricProposals={draft.fabricProposals}
-                confirmedFabricProposals={draft.confirmedFabricProposals}
-                onConfirmFabricProposal={draft.confirmFabricProposal}
                 knownOfs={knownOfs}
                 getPanelOrder={currentOrderPayload}
                 onConfirm={askForConfirmation}

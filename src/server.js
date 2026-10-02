@@ -14,7 +14,6 @@ import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
 import { verifyStructureArticles } from './domain/structureEdits.js';
 import { buildOrderAutofill } from './domain/orderAutofill.js';
-import { attachFabricProposals } from './domain/autofillFabricHint.js';
 import { buildOfWorkbook, buildOrderArchiveWorkbook, buildReservationWorkbook } from './domain/reservationWorkbook.js';
 import { excludeFabricCodes, findNonAcrylicReservationFabrics } from './domain/reservationFabrics.js';
 import { normalizeOrder, normalizeReservation } from './domain/validation.js';
@@ -47,16 +46,13 @@ import {
 } from './deploymentFeatures.js';
 import {
   closeRpsCatalog,
-  findRpsFabric,
   getRpsOrder,
-  queryRpsFabricHistoryRows,
   queryRpsFabricStockRows,
   searchRpsFabrics,
   searchRpsArticles,
   getRpsArticle
 } from './rpsCatalog.js';
-import { createFabricHistoryService, createFabricStockService, fabricStockHandler } from './fabricRpsServices.js';
-import { preferredFabricCode } from './domain/fabricHistory.js';
+import { createFabricStockService, fabricStockHandler } from './fabricRpsServices.js';
 import {
   checkWorkflowDirectories,
   createReviewPackage,
@@ -220,8 +216,6 @@ app.get('/api/catalog/fabrics', async (req, res) => {
 const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows });
 app.get('/api/catalog/fabrics/stock', fabricStockHandler(fabricStock));
 
-// Qué lona se usó antes con la misma frase de RPS, para dejar puesta la más probable.
-const fabricHistory = createFabricHistoryService({ loadRows: queryRpsFabricHistoryRows });
 
 app.get('/api/catalog/articles', async (req, res) => {
   try {
@@ -238,15 +232,9 @@ app.get('/api/orders/:orderCode/autofill', async (req, res, next) => {
     if (!orderCode) return res.status(400).json({ error: 'Indica un número de pedido.' });
     const source = await getRpsOrder(orderCode);
     if (!source) return res.status(404).json({ error: `El pedido ${orderCode} no existe en RPSNext.` });
+    // Iván, 02/10/2026: sin telas adivinadas del texto del pedido. Solo se pone la tela que
+    // RPS tiene reservada para la OF; si no hay, se elige a mano.
     const result = buildOrderAutofill(source);
-    // Si las propuestas de tela fallan, el pedido se devuelve igual, sin ellas. Sin
-    // historial (aún cargando o RPS lento) la tela puesta es la 1.ª del buscador.
-    const history = await fabricHistory.getWithin(4000);
-    await attachFabricProposals(result, {
-      search: async (query, limit) => (await searchCatalogFabrics(query, limit)).items,
-      preferredCode: history ? async (query) => preferredFabricCode(history, query) : null,
-      findFabric: async (code) => findRpsFabric(code).catch(() => null)
-    });
     return res.json(result);
   } catch (error) {
     return next(error);
@@ -1144,11 +1132,6 @@ const server = app.listen(config.port, config.host, () => {
   process.send?.('ready');
   // Las fichas de cliente de remolques se crean al arrancar si aún no existen (fase 3).
   remolquesClientesStore.get().catch((error) => console.warn('No se pudieron preparar las fichas de cliente de remolques:', error.message));
-  // El historial de telas tarda unos segundos: se prepara en segundo plano para que el
-  // primer autorrelleno ya lo tenga.
-  if (config.db.user && config.db.password) {
-    fabricHistory.get().catch((error) => console.error('No se pudo preparar el historial de telas:', error.message));
-  }
 });
 
 server.on('error', (error) => {
