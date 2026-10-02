@@ -8,6 +8,8 @@ Revisión iniciada el 14/09/2026 sobre 3905714, rama codex/antica. Responsable: 
 
 **Actualización 15/09/2026:** revisados 41 históricos y ampliado RPS a 118 OF y 79 líneas de compra. Se incorporan acero de brazos, tubo 50×30, contrapeso y carga de pletina con consumo nominal; escuadras visibles pendientes de detalle. Ver antica-materiales.md. Iván solicita una lista completa para su encargado, sin más preguntas técnicas sueltas: antica-preguntas-taller.md reúne 30 dudas. Ha solicitado actualizar el servidor; pendiente de conocer dirección/usuario SSH. Modelo abierto.
 
+**Actualización 03/10/2026 (Iván):** la base del Antica es un **Punto Recto que TGM modifica**. Se pide muy poco, así que no es prioritario. Cuando se retome, el despiece y la reserva deben partir de los del Punto Recto (`docs/modelos/punto-recto.md`, `src/domain/puntoRectoRules.js`) y preguntar al encargado solo lo que TGM cambia; con eso, buena parte de las 28 preguntas pendientes se pueden contestar o reducir.
+
 Resultado de la primera entrega del 14/09: inventario, contraste de cinco maestros y cuatro históricos recientes, consulta de consumos RPS, correcciones demostrables de casquillos y manivelas, cuatro brazos de fabricación propia y consulta de aumentos. **La revisión detecta pendientes; no acredita despiece ni reserva completos.** Siguiente trabajo: responder el cuestionario con encargado/OT y resolver Q01–Q08 más los casos de compras documentados en antica-materiales.md.
 
 Evidencia copiada a output/modelos/antica/fuentes; originales en la unidad Y:, compartida como \\192.168.0.128\Oftecnica\Oficina Tecnica. Las copias y pruebas están ignoradas por Git. El JSON enlazado conserva rutas originales, SHA-256, fórmulas y consumos seleccionados para reanudar sin depender de la conversación.
@@ -28,7 +30,7 @@ Evidencia copiada a output/modelos/antica/fuentes; originales en la unidad Y:, c
 | Fabricante | TGM, fabricación propia; confirmado por Iván el 14/09/2026 |
 | Soporte habitual | Cortina universal de tres agujeros; confirmado por Iván y RPS |
 | Brazos | Fabricados en taller; no equiparar a juegos especiales BANTICA del catálogo |
-| Alias Excel | Algunos maestros usan PUNTO RECTO para alojar fórmulas de Antica; no implica equivalencia técnica |
+| Alias Excel | Algunos maestros usan PUNTO RECTO para alojar fórmulas de Antica. Iván (03/10/2026): sí hay relación técnica, el Antica es un Punto Recto modificado en TGM |
 | Disponibilidad | Antica está implementado; esta rama no se ha desplegado |
 
 ## 3. Estado por área
