@@ -22,16 +22,6 @@
   display: inline-flex;
   flex-shrink: 0;
 }
-/* La etiqueta «en pruebas»: la píldora de aviso plana de CoordinaOT (`pildora-aviso`). */
-.producto-en-pruebas {
-  border: 1px solid;
-  border-radius: 9999px;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1rem;
-  padding: 0 0.375rem;
-  text-transform: none;
-}
 
 /* ── Cabecera: la de toldos con un solo grupo («Datos del pedido»): sin la lista de líneas de RPS
    a la derecha (Iván, 01/10/2026). El resultado de RPS va debajo, como el resumen de toldos. ── */

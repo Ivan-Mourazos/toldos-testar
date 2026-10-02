@@ -76,7 +76,7 @@ const rpsResponde = async (numero) => {
   page.setDefaultTimeout(10000);
   try {
     await page.getByRole('button', { name: /^Remolques/ }).click();
-    assert.ok(await page.locator('.producto-en-pruebas').isVisible(), 'Remolques lleva la etiqueta «en pruebas»');
+    assert.equal(await page.locator('.producto-en-pruebas').count(), 0, 'Remolques ya no lleva la etiqueta «en pruebas»');
     assert.equal(await page.evaluate(() => localStorage.getItem('planteamientos-producto')), 'remolques', 'el producto elegido se recuerda');
     await page.getByLabel('Pedido', { exact: true }).fill(PEDIDO_PRUEBA);
     const cliente = page.locator('.rem-cabecera').getByLabel('Cliente', { exact: true });

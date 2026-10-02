@@ -14,8 +14,8 @@ export function guardarProducto(producto: Producto, storage: Storage | null = wi
 }
 
 // Selector «Toldos | Remolques» de Nuevo pedido: la tira de pestañas de CoordinaOT
-// (`tira-3d`), con la elegida hundida en dorado (`pestana-activa`). Remolques todavía es una
-// prueba (diseño 30/09/2026): lleva la etiqueta «en pruebas» y se ve para todos.
+// (`tira-3d`), con la elegida hundida en dorado (`pestana-activa`). Remolques dejó de estar
+// «en pruebas» el 02/10/2026 (Iván): hace todo lo que hacía la web vieja.
 export function SelectorProducto({ producto, onChange }: { producto: Producto; onChange: (producto: Producto) => void }) {
   return (
     <div className="tira-3d producto-selector" role="group" aria-label="Producto">
@@ -24,7 +24,6 @@ export function SelectorProducto({ producto, onChange }: { producto: Producto; o
       </button>
       <button type="button" className={producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'remolques'} onClick={() => onChange('remolques')}>
         Remolques
-        <span className="producto-en-pruebas pildora-aviso">en pruebas</span>
       </button>
     </div>
   );
