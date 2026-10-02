@@ -45,7 +45,72 @@ const fonts = hasEmbeddedFonts
 
 // Con `onlyAwningId` sale solo ese toldo (el panel «Despiece y dibujo»), pero con su letra
 // de siempre: el plan se hace con el pedido entero y se filtra después.
-export async function buildOrderPlanteamientoPdf({ order: fullOrder, calculation, review = null, onlyAwningId = null }) {
+//
+// Con `renderFabricSheet(page)` cada página de telas A4 (con sus continuaciones de
+// observaciones) se cambia por la hoja que imprime Chromium, y en su recuadro se encaja el
+// dibujo de pdfkit. Si una hoja falla se avisa con `onFabricSheetError(error, page)` y esa
+// página sale con pdfkit como siempre: el PDF no se queda nunca sin hacer.
+export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderFabricSheet = null, onFabricSheetError = null }) {
+  if (!renderFabricSheet) {
+    return (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
+  }
+  const { pdf: base, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false });
+  const plan = buildPlanteamientoPlan(order, calculation, { onlyAwningId });
+  // Una a una (Chromium imprime de una en una): la que falle se queda con pdfkit.
+  const sheets = new Map();
+  for (const page of buildFabricSheetPages({ order, calculation, onlyAwningId })) {
+    try {
+      const { diagram, diagramAwning, diagramCalculation } = plan.fabricPages[page.planIndex];
+      const [html, drawing] = await Promise.all([
+        renderFabricSheet(page),
+        buildFabricDiagramBoxPdf({ diagram, awning: diagramAwning, calculation: diagramCalculation })
+      ]);
+      // Se abre aquí para que un PDF roto también cuente como fallo de esa hoja.
+      const sheet = await PDFLibDocument.load(html);
+      if (sheet.getPageCount() === 0) throw new Error('La hoja de telas impresa no tiene páginas.');
+      sheets.set(page.planIndex, { sheet, drawing });
+    } catch (error) {
+      onFabricSheetError?.(error, page);
+    }
+  }
+  const out = await PDFLibDocument.create();
+  out.setTitle(`${order.orderCode || 'Pedido'}-1`);
+  out.setSubject('Planteamiento de estructuras y telas');
+  out.setCreator('toldos-testar');
+  const source = await PDFLibDocument.load(base);
+  // Primera página de pdfkit de cada hoja sustituida → su índice en el plan.
+  const replaced = new Map([...sheets.keys()].map((planIndex) => [fabricRanges[planIndex].start, planIndex]));
+  for (let index = 0; index < source.getPageCount(); index += 1) {
+    if (replaced.has(index)) {
+      const planIndex = replaced.get(index);
+      const { sheet, drawing } = sheets.get(planIndex);
+      const pages = await out.copyPages(sheet, sheet.getPageIndices());
+      pages.forEach((page) => out.addPage(page));
+      const [embedded] = await out.embedPdf(drawing);
+      const [first] = pages;
+      const box = FABRIC_SHEET_DIAGRAM_BOX;
+      // El recuadro se mide desde arriba; pdf-lib dibuja desde abajo.
+      first.drawPage(embedded, { x: box.x, y: first.getHeight() - box.y - box.height, width: box.width, height: box.height });
+      // Se saltan también las continuaciones de pdfkit de esa hoja (`end` es exclusivo).
+      index = fabricRanges[planIndex].end - 1;
+      continue;
+    }
+    const [page] = await out.copyPages(source, [index]);
+    out.addPage(page);
+  }
+  if (review) {
+    const code = String(review.orderCode || order.orderCode || 'PEDIDO').replace(/[^A-Z0-9_-]+/gi, '') || 'PEDIDO';
+    await out.attach(Buffer.from(`${JSON.stringify(review, null, 2)}\n`, 'utf8'), `${code}.toldos.json`, {
+      mimeType: 'application/json',
+      description: 'Datos editables del pedido para toldos-testar'
+    });
+  }
+  return Buffer.from(await out.save());
+}
+
+// El PDF entero con pdfkit. `fabricRanges[planIndex] = { start, end }` dice qué páginas
+// (desde 0, `end` exclusivo) ocupa cada página de telas A4 con sus continuaciones.
+function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyAwningId, attachReview }) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     const doc = new PDFDocument({
@@ -58,8 +123,12 @@ export async function buildOrderPlanteamientoPdf({ order: fullOrder, calculation
       }
     });
     registerFonts(doc);
+    // Se cuentan todas las páginas que se añaden (también las de continuación).
+    let pageCount = 0;
+    const fabricRanges = [];
+    doc.on('pageAdded', () => { pageCount += 1; });
     doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('end', () => resolve({ pdf: Buffer.concat(chunks), fabricRanges }));
     doc.on('error', reject);
 
     const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId });
@@ -93,11 +162,12 @@ export async function buildOrderPlanteamientoPdf({ order: fullOrder, calculation
     });
 
     const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
-    plan.fabricPages.forEach(({ entries, diagram, diagramAwning, diagramCalculation }) => {
+    plan.fabricPages.forEach(({ entries, diagram, diagramAwning, diagramCalculation }, planIndex) => {
       if (diagram === 'HERA') {
         doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
         drawHeraFabricPage(doc, { order, entries });
       } else {
+        const start = pageCount;
         doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
         let remaining = drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
         while (remaining) {
@@ -106,12 +176,13 @@ export async function buildOrderPlanteamientoPdf({ order: fullOrder, calculation
           remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true, FABRIC_PAGE_TEXT);
           drawPageFooter(doc, 24, doc.page.width, doc.page.height, 'Planteamiento de telas · Observaciones (continuación)');
         }
+        fabricRanges[planIndex] = { start, end: pageCount };
       }
     });
 
     // Tras producir el pedido, este mismo documento se guarda también en la
     // carpeta anual. El adjunto mantiene la revisión reabrible desde la web.
-    if (review) {
+    if (review && attachReview) {
       const code = String(review.orderCode || order.orderCode || 'PEDIDO')
         .replace(/[^A-Z0-9_-]+/gi, '') || 'PEDIDO';
       doc.file(Buffer.from(`${JSON.stringify(review, null, 2)}\n`, 'utf8'), {

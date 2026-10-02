@@ -1,8 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-import { buildFabricSheetPages, buildFabricDiagramBoxPdf, FABRIC_SHEET_DIAGRAM_BOX } from './planteamientoPdf.js';
+import pdfLib from 'pdf-lib';
+import { buildFabricSheetPages, buildFabricDiagramBoxPdf, buildOrderPlanteamientoPdf, buildPlanteamientoPlan, FABRIC_SHEET_DIAGRAM_BOX } from './planteamientoPdf.js';
 import { normalizeOrder } from './validation.js';
 import { calculateOrder } from './rules.js';
+import { extractReviewPackageFromPdf } from '../workflow.js';
+
+const { PDFDocument } = pdfLib;
 
 const pvc = 'NS86BLANP250|||250|||LONA NS86 2L 630 g/m² :BLANCO :250 AN (580)|||PLASTICA (LONA)';
 const acr = 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN|||ACRÍLICAS';
@@ -67,5 +71,93 @@ describe('buildFabricDiagramBoxPdf', () => {
       const text = (await page.getTextContent()).items.map((item) => item.str).join(' ');
       expect(text).toMatch(/FRENTE|BASTILLA|VARILLA/);
     } finally { await task.destroy(); }
+  });
+});
+
+async function fakeSheet(pageCount = 1) {
+  const doc = await PDFDocument.create();
+  for (let i = 0; i < pageCount; i += 1) doc.addPage([841.89, 595.28]).drawText(`HOJA HTML ${i + 1}`, { x: 400, y: 300, size: 10 });
+  return Buffer.from(await doc.save());
+}
+async function pageTexts(pdf) {
+  const task = getDocument({ data: new Uint8Array(pdf) });
+  const doc = await task.promise;
+  try {
+    const texts = [];
+    for (let n = 1; n <= doc.numPages; n += 1) texts.push((await (await doc.getPage(n)).getTextContent()).items.map((item) => item.str).join(' '));
+    return texts;
+  } finally { await task.destroy(); }
+}
+async function pageSizes(pdf) {
+  const doc = await PDFDocument.load(pdf);
+  return doc.getPages().map((page) => (page.getWidth() > 700 ? 'A4' : 'A5'));
+}
+const heraAwning = { id: 'h', of: '0231000', model: 'HERA', submodel: 'HERA 56 MAQUINA', heraJoin: 'NINGUNO', heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO', heraChainColor: 'BLANCO', units: 1, width: 163.5, projection: 165, height: 230 };
+
+describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
+  const order = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings: [cambioTela({ id: 'a' })] });
+  const calculation = calculateOrder(order);
+
+  test('la página de telas se sustituye por la impresa, con el dibujo encajado', async () => {
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, renderFabricSheet: () => fakeSheet() });
+    const texts = await pageTexts(pdf);
+    expect(texts.at(-1)).toContain('HOJA HTML 1');
+    expect(texts.at(-1)).not.toContain('PLANTEAMIENTO DE TELAS');
+    // El dibujo de pdfkit va dentro de la misma página.
+    expect(texts.at(-1)).toMatch(/FRENTE|BASTILLA|VARILLA/);
+  });
+
+  test('las páginas de continuación de la hoja se conservan en su sitio', async () => {
+    const texts = await pageTexts(await buildOrderPlanteamientoPdf({ order, calculation, renderFabricSheet: () => fakeSheet(2) }));
+    expect(texts.slice(-2).map((t) => t.match(/HOJA HTML \d/)?.[0])).toEqual(['HOJA HTML 1', 'HOJA HTML 2']);
+  });
+
+  test('si la hoja falla, sale la página de pdfkit y se avisa', async () => {
+    const errores = [];
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, renderFabricSheet: async () => { throw new Error('Chromium caído'); }, onFabricSheetError: (error) => errores.push(error.message) });
+    expect((await pageTexts(pdf)).at(-1)).toContain('PLANTEAMIENTO DE TELAS');
+    expect(errores).toEqual(['Chromium caído']);
+  });
+
+  test('con revisión, el PDF unido lleva los datos y se reabre', async () => {
+    const review = { kind: 'toldos-testar-review', orderCode: 'AR2603332', order, status: 'PENDING_REVIEW' };
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, review, renderFabricSheet: () => fakeSheet() });
+    // Devuelve la revisión tal cual se guardó (JSON ida y vuelta).
+    await expect(extractReviewPackageFromPdf(pdf)).resolves.toEqual(JSON.parse(JSON.stringify(review)));
+  });
+
+  test('con un HERA delante, se sustituye la página de telas que toca y la del HERA sigue con pdfkit', async () => {
+    const mixed = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings: [heraAwning, cambioTela({ id: 'a' })] });
+    const mixedCalculation = calculateOrder(mixed);
+    const plan = buildPlanteamientoPlan(mixed, mixedCalculation);
+    expect(plan.fabricPages.map(({ diagram }) => diagram === 'HERA')).toEqual([true, false]);
+    const sheets = buildFabricSheetPages({ order: mixed, calculation: mixedCalculation });
+    expect(sheets.map(({ planIndex }) => planIndex)).toEqual([1]);
+    expect(plan.fabricPages[sheets[0].planIndex].diagram).not.toBe('HERA');
+
+    const pdfkit = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation });
+    const merged = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation, renderFabricSheet: () => fakeSheet() });
+    const [before, after] = [await pageTexts(pdfkit), await pageTexts(merged)];
+    expect(after).toHaveLength(before.length);
+    expect(await pageSizes(merged)).toEqual(await pageSizes(pdfkit));
+    // Todas las páginas menos la última (la de telas del Cambio de tela) siguen iguales, HERA incluido.
+    expect(after.slice(0, -1)).toEqual(before.slice(0, -1));
+    expect(after.at(-2)).not.toContain('HOJA HTML');
+    expect(after.at(-1)).toContain('HOJA HTML 1');
+  });
+
+  test('las páginas de continuación de observaciones de pdfkit no se cuelan junto a la hoja impresa', async () => {
+    const notes = Array.from({ length: 35 }, (_, i) => `OBSERVACIÓN LARGA NÚMERO ${i + 1} DEL PEDIDO`).join('\n');
+    const long = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, notes, awnings: [cambioTela({ id: 'a' })] });
+    const longCalculation = calculateOrder(long);
+    const before = await pageTexts(await buildOrderPlanteamientoPdf({ order: long, calculation: longCalculation }));
+    const continuations = before.filter((text) => text.includes('Planteamiento de telas · Observaciones (continuación)')).length;
+    expect(continuations).toBeGreaterThan(0);
+
+    const after = await pageTexts(await buildOrderPlanteamientoPdf({ order: long, calculation: longCalculation, renderFabricSheet: () => fakeSheet() }));
+    expect(after).toHaveLength(before.length - continuations);
+    expect(after.filter((text) => text.includes('HOJA HTML 1'))).toHaveLength(1);
+    expect(after.at(-1)).toContain('HOJA HTML 1');
+    expect(after.some((text) => text.includes('Observaciones (continuación)') && !text.includes('Toldo'))).toBe(false);
   });
 });
