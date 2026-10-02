@@ -779,8 +779,15 @@ function buildFabricRowInstruction(line, lines, order) {
 // El dibujo de la hoja de tela: el general de siempre (sin imagen) o el de su tipo. Lo usan la hoja
 // del planteamiento y las miniaturas de Parámetros («Lo que sale hoy»): se ve lo mismo en los dos.
 function drawFabricDiagram(doc, x, y, w, h, diagram, awning, calculation) {
-  if (diagram === 'GENERAL' && !awning?.fabricImage) return drawGeneralDiagram(doc, x, y, w, h, { title: '', legacy: true }, awning);
-  return drawAwningDiagram(doc, x, y, w, h, diagram, awning, calculation);
+  // Las imágenes del taller mantienen su encaje propio, sin girarlas ni redibujarlas.
+  if (awning?.fabricImage) return drawCustomFabricImage(doc, x, y, w, h, awning.fabricImage);
+  // Coordenadas normalizadas: el dibujo, las letras y las cotas escalan juntos con el recuadro.
+  // Así las mismas proporciones sirven en la hoja de telas y en cualquier miniatura.
+  doc.save().translate(x, y).scale(w / 242, h / 300);
+  try {
+    if (diagram === 'GENERAL') return drawGeneralDiagram(doc, 0, 0, 242, 300, { title: '', legacy: true }, awning);
+    return drawAwningDiagram(doc, 0, 0, 242, 300, diagram, awning, calculation);
+  } finally { doc.restore(); }
 }
 
 /** Medidas del toldo de ejemplo de las miniaturas (frente de tela y caída, en cm). */
@@ -790,7 +797,7 @@ export const PREVIEW_CALCULATION = Object.freeze({ fabricWidth: 400, fabricDrop:
  * Una hoja pequeña con el título y el dibujo de la web de un toldo de ejemplo, como en la hoja de
  * tela. Sin la imagen del toldo ni dibujos del taller: es lo que sale «de la web».
  */
-export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVIEW_CALCULATION }) {
+export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVIEW_CALCULATION, width = 242, height = 300 }) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     const doc = new PDFDocument({ autoFirstPage: false, margin: 0, info: { Title: 'Dibujo de la web', Creator: 'toldos-testar' } });
@@ -800,13 +807,12 @@ export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVI
     doc.on('error', reject);
     const web = { ...awning, fabricImage: null };
     const diagram = getFabricPatternDiagram(web);
-    const width = 242;
-    doc.addPage({ size: [width + 16, 385], margin: 0 });
+    doc.addPage({ size: [width + 16, height + 85], margin: 0 });
     doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.paper);
     drawCell(doc, 8, 8, width, 21, fabricDiagramHeading(diagram, [web]), {
       bold: true, size: 12, minSize: 9, fit: true, align: 'center', fill: colors.paper
     });
-    drawFabricDiagram(doc, 8, 35, width, 300, diagram, web, calculation);
+    drawFabricDiagram(doc, 8, 35, width, height, diagram, web, calculation);
     doc.end();
   });
 }
@@ -1286,18 +1292,24 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const badge = spec.hasValance
     ? `${spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(spec.valanceHeight)} CM`
     : 'SIN BAMBA';
-  doc.roundedRect(x + 28, y + 32, w - 56, 14, 4)
+  doc.roundedRect(x + w * 0.12, y + h * 0.025, w * 0.76, h * 0.047, 4)
     .fillAndStroke(spec.hasValance ? '#fff4cc' : '#edf2f1', spec.hasValance ? '#d2a116' : '#9db0ac');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.2))
-    .text(badge, x + 32, y + 36, { width: w - 64, align: 'center' });
+    .text(badge, x + w * 0.14, y + h * 0.038, { width: w * 0.72, align: 'center' });
 
-  const frameX = x + 43;
-  const frameY = y + 68;
-  const frameW = w - 86;
+  const frameX = x + w * 0.12;
+  const frameY = y + h * 0.14;
+  const frameW = w * 0.76;
   // Con ventana, y siempre en Cambio de cortina, abajo van las medidas.
   const withDataRows = spec.hasWindow || String(awning.model || '').toUpperCase() === 'CAMBIO CORTINA';
-  // Con ventana se reserva sitio para la bamba y las cinco filas, incluido el velcro.
-  const frameH = spec.hasWindow ? 90 : withDataRows ? 118 : spec.hasValance ? 194 : 226;
+  // Se reparte toda la altura: marco, rótulos del canto, bamba y filas de datos.
+  // La ventana sin bamba ya no hereda el hueco que solo necesita una bamba.
+  const dataY = y + h * (spec.hasWindow ? 0.76 : 0.84);
+  const valanceGap = h * (spec.curtainPieces ? 0.087 : 0.063);
+  const valanceHeight = h / 12;
+  const afterFrame = spec.hasValance ? valanceGap + valanceHeight + h * (spec.curtainPieces ? 0.052 : 0.024) : h * 0.055;
+  const contentBottom = withDataRows ? dataY - h * 0.012 : y + h * (spec.finish === 'VELCRO' ? 0.91 : 0.96);
+  const frameH = contentBottom - afterFrame - frameY;
   doc.rect(frameX, frameY, frameW, frameH).fillAndStroke('#fbfcfc', '#7fa594');
 
   drawDiagramText(
@@ -1314,11 +1326,11 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   drawCurtainSideFinishes(doc, frameX, frameY, frameW, frameH, spec);
 
   if (spec.hasWindow) {
-    const windowX = frameX + 17;
-    const windowY = frameY + 31;
-    const windowW = Math.max(54, frameW - 60);
-    const windowH = 36;
-    const measureX = frameX + frameW - 30;
+    const windowX = frameX + frameW * 0.1;
+    const windowY = frameY + frameH * 0.22;
+    const windowW = frameW * 0.67;
+    const windowH = frameH * 0.57;
+    const measureX = frameX + frameW - w * 0.124;
     drawCurtainWindow(doc, windowX, windowY, windowW, windowH);
     drawSmallMeasure(doc, windowX - 1, windowY - 20, 25, awning.curtainWindowCorner);
     drawSmallMeasure(doc, windowX + windowW - 24, windowY - 20, 25, awning.curtainWindowCorner);
@@ -1347,7 +1359,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   if (spec.hasValance) {
     // En el maestro la bamba es otra pieza: varilla blanca arriba y B.N(3) abajo.
     // Con la letra de la página de telas, las dos varillas necesitan 11 de separación.
-    const valanceY = bottomY + (spec.curtainPieces ? 26 : 19);
+    const valanceY = bottomY + valanceGap;
     if (spec.curtainPieces) drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, bottomY + 14, frameW);
     if (!spec.separateValance) {
       doc.moveTo(frameX + 9, bottomY).lineTo(frameX + 9, valanceY)
@@ -1359,8 +1371,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   }
 
   if (spec.hasWindow) {
-    const dataY = y + h - 72;
-    const rowGap = 13;
+    const rowGap = h * 0.0433;
     drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'SALIDA:', isConfiguredCurtain(awning) ? awning.projection : awning.curtainWindowExit);
     drawCurtainDataRow(doc, x + 28, dataY + rowGap, w - 56, 'ESQ. VENTANA:', awning.curtainWindowCorner);
     drawCurtainDataRow(doc, x + 28, dataY + rowGap * 2, w - 56, isConfiguredCurtain(awning) ? 'H. TUBO-VENT.:' : 'H. SUELO-VENT.:', isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning) : awning.curtainWindowFloorHeight);
@@ -1370,7 +1381,6 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     }
   } else if (String(awning.model || '').toUpperCase() === 'CAMBIO CORTINA') {
     // Sin ventana, el taller sigue necesitando las medidas de la cortina.
-    const dataY = y + 252;
     drawCurtainDataRow(doc, x + 28, dataY, w - 56, 'FRENTE:', awning.width);
     drawCurtainDataRow(doc, x + 28, dataY + 16, w - 56, 'SALIDA:', awning.projection);
     if (spec.finish === 'VELCRO') {
@@ -1378,7 +1388,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     }
   } else if (spec.finish === 'VELCRO') {
     doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
-      .text(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)} CM`, x + 28, y + 331, { width: w - 56, align: 'center' });
+      .text(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)} CM`, x + w * 0.12, y + h * 0.952, { width: w * 0.76, align: 'center' });
   }
 }
 
