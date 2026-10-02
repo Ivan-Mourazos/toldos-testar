@@ -79,7 +79,7 @@ async function capturas(page, nombre, tamanos = [[1280, 720], [1600, 1000]], enf
     if (enfocar) await enfocar.scrollIntoViewIfNeeded();
     for (const tema of ['light', 'dark']) {
       await page.evaluate((t) => { document.documentElement.dataset.theme = t; }, tema);
-      await page.screenshot({ path: `${SALIDA}/${nombre}-${width}-${tema === 'light' ? 'claro' : 'oscuro'}.png` });
+      await page.screenshot({ path: `${SALIDA}/${nombre}-${width}-${tema === 'light' ? 'claro' : 'oscuro'}.png`, animations: 'disabled' });
     }
   }
   await page.evaluate(() => { document.documentElement.dataset.theme = 'light'; });
@@ -185,7 +185,7 @@ try {
   // ── 7. Iván obtiene el pedido: «Abrir borrador», y lo pasa a revisión ──
   await page.getByRole('button', { name: 'Toldos', exact: true }).click();
   await toldos(page).getByLabel('Pedido', { exact: true }).fill(T1);
-  await page.getByRole('button', { name: 'Obtener datos del pedido' }).click();
+  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
   await dialogo(page).getByText(`${T1} tiene un borrador de Jaime del`).waitFor();
   await capturas(page, '5-obtener-con-borrador');
   // El cálculo llega tras cargar el formulario; con él pendiente, guardar avisa «Faltan datos»: se
@@ -196,7 +196,7 @@ try {
   assert.equal(await toldos(page).getByLabel('OF', { exact: true }).inputValue(), '0230194');
   await calculado;
   await page.waitForFunction(() => {
-    const boton = [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Guardar para revisión');
+    const boton = [...document.querySelectorAll('button')].find((b) => b.checkVisibility({ checkVisibilityCSS: true }) && b.textContent.trim() === 'Guardar para revisión');
     return Boolean(boton) && !boton.disabled;
   });
   await page.getByRole('button', { name: 'Guardar para revisión' }).click();
@@ -210,7 +210,7 @@ try {
   // ── 8. Remolques: «Empezar de cero» deja el borrador; Jaime lo sigue y lo pasa a revisión ──
   await page.getByRole('button', { name: /^Remolques/ }).first().click();
   await remolques(page).getByLabel('Pedido', { exact: true }).fill(R1.pedido);
-  await page.getByRole('button', { name: 'Obtener datos del pedido' }).click();
+  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
   await dialogo(page).getByText(`${R1.codigo} tiene un borrador de Iván del`).waitFor();
   await dialogo(page).getByRole('button', { name: 'Empezar de cero', exact: true }).click();
   // Sigue con RPS como siempre (en la aislada puede no responder: da igual aquí).

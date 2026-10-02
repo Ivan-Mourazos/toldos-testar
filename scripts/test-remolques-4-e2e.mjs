@@ -135,7 +135,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
   await page.getByLabel('Pedido', { exact: true }).fill('AR.26.99989');
   await page.getByRole('button', { name: '+ Remolque' }).click();
   await editor(page).waitFor();
-  const boton = page.getByRole('button', { name: 'Vista previa del PDF' });
+  const boton = page.getByRole('button', { name: 'Vista previa', exact: true });
   assert.equal(await boton.isDisabled(), true, 'el botón empieza desactivado');
   assert.match(await page.locator('.rem-pdf-falta').innerText(), /^Para la vista previa del PDF falta: A · Remolque/);
   await teclearCaso(page, fixture.find((c) => c.caso === 'lona-02'));
@@ -166,7 +166,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
     // Escribir el número no trae nada (Iván, 01/10/2026): los elementos salen al pulsar «Obtener».
     await page.waitForTimeout(1200);
     assert.equal(await page.locator('.rem-pestana-abrir').count(), 0, 'escribir el número no crea elementos');
-    await page.locator('.rem-cabecera').getByRole('button', { name: 'Obtener datos del pedido', exact: true }).click();
+    await page.getByRole('button', { name: 'Buscar', exact: true }).click();
     await page.waitForFunction(() => document.querySelectorAll('.rem-pestana-abrir').length === 4);
     assert.match((await page.locator('.rem-pestana-abrir').allInnerTexts())[0], /^A · Baquetón 260×160/, 'el primero es el baquetón de la línea 1');
     // Solo el baquetón A: se quitan los demás (del último al segundo, cada uno con su confirmación).
@@ -180,7 +180,7 @@ for (const nombre of NOMBRES_MUESTRAS) {
     // Lo único que RPS no da de este baquetón es el reparto de ollaos.
     await elegir(page, editor(page), 'modoOllaos', 'Repartidos automáticamente');
     await page.locator('.rem-pdf-falta').waitFor({ state: 'detached' });
-    const boton = page.getByRole('button', { name: 'Vista previa del PDF' });
+    const boton = page.getByRole('button', { name: 'Vista previa', exact: true });
     await boton.click();
     await page.locator('.pdf-preview-window').getByRole('img', { name: 'Página 1 de 1' }).waitFor({ timeout: 60000 });
     await page.keyboard.press('Escape');

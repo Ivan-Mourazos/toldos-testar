@@ -4,7 +4,7 @@
 // un elemento con su confirmación; trae pedidos reales de remolques de RPS (solo lectura): al
 // pulsar «Obtener datos del pedido» (escribir el número no hace nada) se crea un elemento por línea de una vez y, con elementos en el pedido, pregunta
 // (añadir solo las que faltan o sustituir) sin duplicar nunca; y, desde Nuevo pedido de Toldos,
-// comprueba el aviso «Este pedido es de remolques» y que «Abrir en Remolques» crea los elementos.
+// comprueba que el buscador detecta Remolques y abre sus elementos automáticamente.
 // Capturas del pedido obtenido en claro y oscuro en tmp/ui-audit/remolques-obtener/.
 //   · lona-24: TIPO 05 (radio de esquina 8), ventana 50×35, rotulación y ollaos «según se indica».
 //   · baqueton-28: cliente AYALA, baquetón 28, ollaos «según se indica».
@@ -246,7 +246,7 @@ if (!hayRps) {
   const lineasRps = (await (await fetch(`${BASE_URL}/api/remolques/rps-pedido?numero=${PEDIDO_RPS}`)).json()).pedido.lineas;
   assert.equal(lineasRps.length, 3, `${PEDIDO_RPS} trae 3 líneas de lona en RPS`);
   const dialogo = (page) => page.getByRole('alertdialog');
-  const obtener = (page) => page.locator('.rem-cabecera').getByRole('button', { name: 'Obtener datos del pedido', exact: true });
+  const obtener = (page) => page.getByRole('button', { name: 'Buscar', exact: true });
   const largoAbierto = async (page) => editor(page).locator('input[data-campo="largo"]').inputValue();
   const ofAbierta = async (page) => (await editor(page).getByLabel('O.F.', { exact: true }).inputValue()).trim();
   const tresPestanas = async (page, mensaje) => {
@@ -446,45 +446,39 @@ if (!hayRps) {
     }
   }
 
-  // ── Parte 3: el aviso en Nuevo pedido de Toldos ──
+  // ── Parte 3: la búsqueda abre automáticamente Remolques ──
   {
     const { browser, page, errors } = await openApp({ width: 1600, height: 1000 });
     page.setDefaultTimeout(15000);
     try {
       // Con Remolques ya visitada hay dos «Pedido» (el de toldos y el oculto de remolques).
       const orden = page.locator('.order-header:not(.rem-cabecera)').getByLabel('Pedido', { exact: true });
-      const obtenerToldos = page.locator('.order-header:not(.rem-cabecera)').getByRole('button', { name: 'Obtener datos del pedido', exact: true });
+      const obtenerToldos = page.getByRole('button', { name: 'Buscar', exact: true });
       await orden.fill(PEDIDO_RPS);
       await obtenerToldos.click();
-      const aviso = page.locator('.rem-aviso-pedido');
-      await aviso.waitFor();
-      assert.match(await aviso.innerText(), /Este pedido es de remolques/, 'Toldos avisa de que el pedido es de remolques');
-      assert.equal(await page.locator('.order-autofill-summary').count(), 0, 'el pedido de remolques no rellena el formulario de toldos');
-      await aviso.getByRole('button', { name: 'Abrir en Remolques', exact: true }).click();
+      await page.locator('.rem-cabecera').waitFor();
+      assert.equal(await page.locator('.order-header:not(.rem-cabecera) .order-autofill-summary').count(), 0, 'el pedido de remolques no rellena el formulario de toldos');
       assert.equal(await page.getByRole('button', { name: /^Remolques/ }).getAttribute('aria-pressed'), 'true', 'el selector pasa a Remolques');
       const pedidoRemolques = page.locator('.rem-cabecera').getByLabel('Pedido', { exact: true });
       await pedidoRemolques.waitFor();
       assert.equal(await pedidoRemolques.inputValue(), PEDIDO_RPS, 'Remolques trae el número del pedido');
       await tresPestanas(page, '«Abrir en Remolques» crea los 3 elementos');
       assert.equal(await ofAbierta(page), lineasRps[0].ordenFabricacion, 'abre el primero, con su OF');
-      console.log('OK: Toldos avisa «Este pedido es de remolques» y «Abrir en Remolques» crea los elementos del pedido');
+      console.log('OK: Buscar detecta Remolques y abre sus elementos automáticamente');
 
       // Abrirlo otra vez desde Toldos no duplica: ya está al día.
       await page.getByRole('button', { name: 'Toldos', exact: true }).click();
       await obtenerToldos.click();
-      await aviso.waitFor();
-      await aviso.getByRole('button', { name: 'Abrir en Remolques', exact: true }).click();
       await page.getByText('no hay nada nuevo que traer').first().waitFor();
       assert.equal(await pestanas(page).count(), 3, 'abrirlo otra vez no duplica');
       console.log('OK: abrirlo otra vez desde Toldos no duplica los elementos');
 
-      // Vuelta a Toldos: el aviso no se arrastra a otro número ni a un pedido inexistente.
+      // Un pedido inexistente conserva el tipo y el formulario.
       await page.getByRole('button', { name: 'Toldos', exact: true }).click();
       await orden.fill('AR.26.99999');
-      assert.equal(await aviso.count(), 0, 'el aviso desaparece al cambiar de pedido');
       await obtenerToldos.click();
       await page.waitForTimeout(1500);
-      assert.equal(await aviso.count(), 0, 'un pedido inexistente no avisa de remolques (sigue el error de siempre)');
+      assert.equal(await page.getByRole('button', { name: 'Toldos', exact: true }).getAttribute('aria-pressed'), 'true', 'un pedido inexistente no cambia el tipo');
       console.log('OK: sin aviso para un pedido que no existe ni al cambiar de número');
       assert.deepEqual(errors.filter((e) => !/404/.test(e)), [], 'sin errores de consola');
     } finally {
