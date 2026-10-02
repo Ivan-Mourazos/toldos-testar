@@ -362,26 +362,48 @@ app.get('/api/rule-parameters', async (_req, res, next) => {
   }
 });
 
+// Errores del almacén de parámetros de toldos con su código HTTP.
+function sendRuleParametersError(res, error, next) {
+  if (error.code === 'VERSION_CONFLICT') {
+    res.status(409).json({ error: error.message, current: error.current });
+    return;
+  }
+  if (error.code === 'INVALID_INPUT') {
+    res.status(400).json({ error: error.message });
+    return;
+  }
+  if (error.code === 'UNREADABLE') {
+    res.status(503).json({ error: error.message });
+    return;
+  }
+  next(error);
+}
+
+// La de antes: guarda todos los modelos cambiados con la versión de todo el fichero (pestañas que
+// sigan abiertas con la web anterior). La web de ahora guarda cada modelo con la de abajo.
 app.put('/api/rule-parameters', async (req, res, next) => {
   try {
     res.json(await ruleParametersStore.save(req.body || {}));
   } catch (error) {
-    if (error.code === 'VERSION_CONFLICT') {
-      res.status(409).json({ error: error.message, current: error.current });
-      return;
-    }
-    if (error.code === 'INVALID_INPUT') {
-      res.status(400).json({ error: error.message });
-      return;
-    }
-    next(error);
+    sendRuleParametersError(res, error, next);
   }
 });
 
+// Un modelo (o lo común de los trabajos de tela) con su versión: 409 solo si otro guardó ese mismo.
+app.put('/api/rule-parameters/models/:scope', async (req, res, next) => {
+  try {
+    res.json(await ruleParametersStore.saveScope({ ...(req.body || {}), scope: req.params.scope }));
+  } catch (error) {
+    sendRuleParametersError(res, error, next);
+  }
+});
+
+// Con `scope`, el historial de ese modelo (también lo de antes, repartido); sin él, todo como antes.
 app.get('/api/rule-parameters/history', async (req, res, next) => {
   try {
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
-    res.json({ entries: await ruleParametersStore.history(limit) });
+    const scope = typeof req.query.scope === 'string' ? req.query.scope : '';
+    res.json({ entries: await ruleParametersStore.history(limit, { scope }) });
   } catch (error) {
     next(error);
   }
