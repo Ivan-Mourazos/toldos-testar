@@ -22,7 +22,7 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
 
-- **Ganchos corazón: ¿cuánto se añade al paño delantero o trasero y al lateral, y cada cuánto va un gancho a lo alto?** El 30/09 se decidió ofrecerlos como una recogida más. Mientras no se sepa, la web usa las medidas de la goma (27 y 27) y el paso de los ollaos. Importa para calcular el paño. Iván (02/10/2026): se preguntará cuando alguien los elija; desde ese día, el elemento que los lleva avisa en sus notas de que las medidas son provisionales y hay que confirmarlas con el taller. <sub>Q-R01</sub>
+No queda ninguna duda abierta de remolques.
 
 Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.
 
@@ -36,15 +36,9 @@ Contestadas el 30/09 (Iván):
 | Q-R05 | Gancho a 0 cm | No pasa | Ya lo hace: no deja poner 0 |
 | Q-R04 | Cremallera del 9: ¿qué clientes la piden? (02/10) | Sacado de RPS (`CREINY…` y `CREABI…` gastadas en lonas de remolque): REMOLQUES NUÑEZ (001302, 133 pedidos hasta 2021) y J&B AGROMÁQUINAS (000033, 73 hasta 2019). Desde 2022, solo 3 pedidos sueltos de particulares | Ninguna ficha de cliente la necesita hoy; se elige a mano en el pedido cuando haga falta |
 | Q-R06 | AYALA en RPS: 036662, 048286 o los dos (02/10) | Iván dejó en la ficha de AYALA el código que es | Hecho en la ficha del servidor |
+| Q-R01 | Medidas de los ganchos corazón: paño y separación (03/10) | Iván: los ganchos los pone el taller a ojo | El paño lleva lo mismo que con la goma (27 y 27, en Parámetros); el elemento dice en sus notas «el taller coloca los ganchos a ojo» |
 
-## Muestras que tiene que mirar el taller
-
-No son dudas: son PDF de muestra, ya preparados, para que el taller confirme que se leen bien.
-
-- Cambio de tela, Enrollable y Bambalina.
-- Cambio Antica (soporte fijo).
-
-Iván (25/09): hay que agrandar la letra de los PDF todo lo que se pueda sin que se salga de los recuadros, y ajustar los recuadros al espaciado. **Hecho en la página de telas** (la de estas muestras): cabecera, tablas, filas, dibujos, total y observaciones más grandes; el título del dibujo ocupa su ancho y las observaciones tienen más alto. Las muestras hay que sacarlas de nuevo.
+Las muestras de PDF que tenía que mirar el taller (Cambio de tela, Enrollable, Bambalina y Cambio Antica) se quitan: Iván, 03/10/2026, «olvídate».
 
 ## Contestadas el 01/10/2026
 

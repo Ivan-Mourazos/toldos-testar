@@ -86,9 +86,9 @@ describe("calcLona — variantes", () => {
     expect(res.panoDelantero.ancho).toBe(178);
     expect(res.notas.join(" ")).toContain("GOMA");
   });
-  // Iván, 02/10/2026 (Q-R01): las medidas de los ganchos corazón son provisionales; si se elige, avisar.
-  it("GANCHOS CORAZON, delante o detrás: aviso de medidas provisionales; sin ellos, no", () => {
-    const aviso = "GANCHOS CORAZÓN: medidas provisionales (lona como la goma y ganchos al paso de los ollaos). Confirmar con el taller antes de cortar.";
+  // Iván, 03/10/2026 (Q-R01): los ganchos corazón los coloca el taller a ojo; el paño, como la goma.
+  it("GANCHOS CORAZON, delante o detrás: nota de que los ganchos van a ojo; sin ellos, no", () => {
+    const aviso = "GANCHOS CORAZÓN: el taller coloca los ganchos a ojo.";
     expect(calcLona({ ...base, recogeDelante: "GANCHOS CORAZON" }, DEFAULT_PARAMS).notas).toContain(aviso);
     expect(calcLona({ ...base, recogeAtras: "GANCHOS CORAZON" }, DEFAULT_PARAMS).notas).toContain(aviso);
     expect(calcLona({ ...base, recogeDelante: "GOMA" }, DEFAULT_PARAMS).notas.join(" ")).not.toContain("CORAZÓN");
