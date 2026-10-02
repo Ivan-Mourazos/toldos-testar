@@ -881,13 +881,13 @@ function diagramSpec(diagram, awning, calculation) {
 
 function drawArmSystemDiagram(doc, x, y, w, h, spec) {
   drawTechnicalDiagramShell(doc, x, y, w, h, spec.title);
-  const wallX = x + 35;
-  const rollX = wallX + 18;
-  const rollY = y + 79;
-  const frontX = x + w - 36;
-  const frontY = y + 209;
+  const wallX = x + w * 0.12;
+  const rollX = wallX + w * 0.075;
+  const rollY = y + h * 0.24;
+  const frontX = x + w * 0.90;
+  const frontY = y + h * 0.66;
 
-  doc.moveTo(wallX, y + 47).lineTo(wallX, y + 275)
+  doc.moveTo(wallX, y + h * 0.165).lineTo(wallX, y + h * 0.955)
     .strokeColor('#9db0ac').lineWidth(1.2).stroke();
   doc.circle(rollX, rollY, 11).fillAndStroke('#e7eeec', '#466e64');
   doc.circle(rollX, rollY, 4).fillAndStroke(colors.paper, '#466e64');
@@ -897,8 +897,8 @@ function drawArmSystemDiagram(doc, x, y, w, h, spec) {
   const schematicArms = 2;
   for (let index = 0; index < schematicArms; index += 1) {
     const offset = spec.crossed ? (index ? 12 : -12) : (index - 1) * 5;
-    const jointX = wallX + 78 + offset;
-    const jointY = y + 157 + offset;
+    const jointX = wallX + (frontX - wallX) * 0.48 + offset;
+    const jointY = y + h * 0.50 + offset;
     doc.moveTo(rollX + 4, rollY + 22 + offset / 2).lineTo(jointX, jointY).lineTo(frontX - 8, frontY + 29 + (spec.crossed ? -offset : offset) / 2)
       .strokeColor(index % 2 ? '#708e86' : '#466e64').lineWidth(1.15).stroke();
   }
@@ -906,20 +906,20 @@ function drawArmSystemDiagram(doc, x, y, w, h, spec) {
   doc.roundedRect(frontX - 7, frontY - 6, 14, 42, 3)
     .fillAndStroke('#e7eeec', '#466e64');
   drawDiagramText(doc, spec.roll, wallX - 8, rollY - 31, 86);
-  drawDiagramText(doc, spec.load, frontX - 55, frontY + 47, 110);
+  drawDiagramText(doc, spec.load, x + w * 0.46, frontY + h * 0.157, w * 0.52);
   drawDiagramText(doc, spec.crossed ? '2 BRAZOS CRUZADOS' : `${spec.arms} · SEGÚN TOLDO`, wallX + 48, frontY + 5, frontX - wallX - 62);
-  drawDimensionSummary(doc, x, y, w);
+  drawDimensionSummary(doc, x, y, w, h);
   if (spec.extra) drawHardwareFooter(doc, x, y, w, h, [spec.extra]);
 }
 
 function drawBoxSystemDiagram(doc, x, y, w, h, spec) {
   drawTechnicalDiagramShell(doc, x, y, w, h, spec.title);
-  const wallX = x + 38;
-  const boxY = y + 68;
-  const frontX = x + w - 37;
-  const frontY = y + 208;
+  const wallX = x + w * 0.12;
+  const boxY = y + h * 0.20;
+  const frontX = x + w * 0.90;
+  const frontY = y + h * 0.66;
 
-  doc.moveTo(wallX, y + 46).lineTo(wallX, y + 278)
+  doc.moveTo(wallX, y + h * 0.165).lineTo(wallX, y + h * 0.955)
     .strokeColor('#9db0ac').lineWidth(1.2).stroke();
   doc.roundedRect(wallX - 8, boxY, 51, 38, 8).fillAndStroke('#e7eeec', '#466e64');
   doc.circle(wallX + 17, boxY + 18, 9).fillAndStroke(colors.paper, '#466e64');
@@ -929,10 +929,10 @@ function drawBoxSystemDiagram(doc, x, y, w, h, spec) {
   doc.moveTo(wallX + 30, boxY + 35).lineTo(wallX + 94, y + 162).lineTo(frontX - 8, frontY + 29)
     .strokeColor('#466e64').lineWidth(1.3).stroke();
   doc.roundedRect(frontX - 8, frontY - 7, 16, 44, 4).fillAndStroke('#e7eeec', '#466e64');
-  drawDiagramText(doc, spec.box, wallX - 12, boxY - 18, 82);
+  drawDiagramText(doc, spec.box, x + w * 0.06, y + h * 0.11, w * 0.40);
   drawDiagramText(doc, spec.roll, wallX - 10, boxY + 47, 98);
-  drawDiagramText(doc, spec.load, frontX - 62, frontY + 49, 124);
-  drawDimensionSummary(doc, x, y, w);
+  drawDiagramText(doc, spec.load, x + w * 0.46, frontY + h * 0.16, w * 0.52);
+  drawDimensionSummary(doc, x, y, w, h);
 }
 
 function drawTechnicalDiagramShell(doc, x, y, w, h, title) {
@@ -942,15 +942,15 @@ function drawTechnicalDiagramShell(doc, x, y, w, h, title) {
     .text(title, x + 18, y + 13, { width: w - 36, align: 'center' });
 }
 
-function drawDimensionSummary(doc, x, y, w) {
+function drawDimensionSummary(doc, x, y, w, h) {
   doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
-    .text('ESQUEMA ORIENTATIVO', x + 34, y + 42, { width: w - 68, align: 'center' })
-    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', x + 34, y + 244, { width: w - 68, align: 'center' });
+    .text('ESQUEMA ORIENTATIVO', x + w * 0.14, y + h * 0.10, { width: w * 0.72, align: 'center' })
+    .text('MEDIDAS SEGÚN EL BLOQUE DE CADA TOLDO', x + w * 0.10, y + h * 0.91, { width: w * 0.80, align: 'center' });
 }
 
 function drawHardwareFooter(doc, x, y, w, h, labels) {
-  const lineHeight = 10;
-  const startY = y + h - 14 - labels.length * lineHeight;
+  const lineHeight = h / 30;
+  const startY = y + h * 0.99 - labels.length * lineHeight;
   labels.forEach((label, index) => {
     doc.fillColor(index === 0 ? colors.inkSoft : colors.grayDark)
       .font(index === 0 ? fonts.semibold : fonts.regular).fontSize(diagramText(5.4))
@@ -1135,7 +1135,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   const hems = buildGeneralFabricDiagramSpec(awning);
   if (!options.legacy) roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
   if (title) doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(10)).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
-  drawHorizontalDimension(doc, x + 25, x + w - 25, y + 30, 'FRENTE TELA');
+  drawHorizontalDimension(doc, x + w * 0.1, x + w * 0.9, y + h * 0.075, 'FRENTE TELA');
 
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
@@ -1147,13 +1147,13 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
       .text(badge, x + 42, y + 40.5, { width: w - 84, align: 'center' });
   }
 
-  const frameX = x + 38;
-  const frameY = y + (options.legacy ? 52 : 72);
-  const frameW = w - 76;
-  // Cabe en la caja que le den: con bamba, la tela, el hueco de 42 y la bamba de 42.
-  const frameH = valance.hasValance
-    ? Math.min(178, h - (frameY - y) - 84 - 12)
-    : Math.min(232, h - (frameY - y) - 20);
+  const frameX = x + w * 0.145;
+  const frameY = y + h * (options.legacy ? 0.15 : 0.24);
+  const frameW = w * 0.71;
+  const valanceGap = h * 0.10;
+  const valanceH = h * 0.11;
+  // La bamba conserva su canto inferior: se reserva su sitio antes de ampliar el cuerpo.
+  const frameH = h * 0.965 - (frameY - y) - (valance.hasValance ? valanceGap + valanceH : h * 0.025);
   doc.rect(frameX, frameY, frameW, frameH).strokeColor('#202020').lineWidth(1).stroke();
   const topFoldY = frameY + 40;
   const topSeamY = frameY + 5;
@@ -1175,8 +1175,8 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
     .text(rollLabel, frameX, frameY + 13, { width: frameW, align: 'center' });
   drawVerticalArrow(doc, frameX + frameW / 2, frameY - 4, frameY + 1, 'down');
-  drawBastillaCallout(doc, frameX + sideSeamInset, frameY + 120, 'left');
-  drawBastillaCallout(doc, frameX + frameW - sideSeamInset, frameY + 120, 'right');
+  drawBastillaCallout(doc, frameX + sideSeamInset, frameY + frameH * 0.6, 'left');
+  drawBastillaCallout(doc, frameX + frameW - sideSeamInset, frameY + frameH * 0.6, 'right');
   drawRotatedDiagramText(doc, 'CAÍDA', frameX + frameW + 15, frameY + frameH / 2, Math.max(56, frameH - 70));
   drawFabricDimension(doc, frameX - 10, frameY, topSeamY, formatInstructionMeasure(hems.topHemCm), 'left');
   drawFabricDimension(doc, frameX + frameW + 10, frameY, topFoldY, formatInstructionMeasure(hems.topBastillaCm), 'right');
@@ -1187,23 +1187,22 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   }
 
   if (valance.hasValance) {
-    const gap = 42;
-    const valanceY = frameY + frameH + gap;
+    const valanceY = frameY + frameH + valanceGap;
     if (!valance.separate) {
       doc.moveTo(frameX, frameY + frameH).lineTo(frameX, valanceY)
         .moveTo(frameX + frameW, frameY + frameH).lineTo(frameX + frameW, valanceY)
         .strokeColor('#7fa594').lineWidth(0.7).stroke();
     }
-    drawValancePanel(doc, frameX, valanceY, frameW, 42, valance, {
+    drawValancePanel(doc, frameX, valanceY, frameW, valanceH, valance, {
       bodyLabel: `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${valance.curve}`,
       measurement: '',
       topSeamColor: '#e36f69'
     });
     drawDiagramText(doc, loadLabel, frameX + 18, frameY + frameH + 4, frameW - 36);
     drawVerticalArrow(doc, frameX + 9, frameY + frameH + 14, frameY + frameH + 2, 'up');
-    drawDiagramText(doc, loadLabel, frameX + 18, valanceY - 15, frameW - 36);
-    drawVerticalArrow(doc, frameX + frameW - 9, valanceY - 13, valanceY - 2, 'down');
-    drawFabricDimension(doc, frameX - 10, valanceY + 5, valanceY + 42, formatInstructionMeasure(valance.height), 'left');
+    drawDiagramText(doc, loadLabel, frameX + 18, valanceY - 12, frameW - 36);
+    drawVerticalArrow(doc, frameX + frameW - 9, valanceY - 10, valanceY - 2, 'down');
+    drawFabricDimension(doc, frameX - 10, valanceY + 5, valanceY + valanceH, formatInstructionMeasure(valance.height), 'left');
     drawFabricDimension(doc, frameX + frameW + 10, valanceY, valanceY + 5, formatInstructionMeasure(hems.valanceTopHemCm), 'right');
   }
 }
@@ -1278,9 +1277,9 @@ function drawFabricDimension(doc, x, startY, endY, label, side) {
     .moveTo(x - 4, startY).lineTo(x + 4, startY)
     .moveTo(x - 4, endY).lineTo(x + 4, endY)
     .strokeColor('#4f8b68').lineWidth(0.75).stroke();
-  const textX = side === 'left' ? x - 29 : x + 5;
+  const textX = side === 'left' ? x - 23 : x + 5;
   doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(6.2))
-    .text(label, textX, (startY + endY) / 2 - 4, { width: 24, align: 'center' });
+    .text(label, textX, (startY + endY) / 2 - 4, { width: 20, align: 'center' });
 }
 
 function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
