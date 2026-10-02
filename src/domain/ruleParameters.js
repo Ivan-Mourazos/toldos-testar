@@ -73,3 +73,6 @@ export function changedRuleSections(before, after) {
   return Object.keys(normalizeRuleParameters())
     .filter((key) => !sameValue(before?.[key], after?.[key]));
 }
+
+// La misma comparación, para saber qué cambió de cada modelo (parameterScopes.js).
+export { sameValue as sameParameterValue };
