@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2, FolderCheck, FolderCog, LoaderCircle, ShieldCheck, XCircle } from 'lucide-react';
 import type { WorkflowDirectoryCheck, WorkflowReadiness, WorkflowSettings } from '../types';
 import type { Notify } from '../components/NotificationCenter';
+
+const estaConfigurado = (s: WorkflowSettings) =>
+  s.productionEnabled && Boolean(s.reviewDirectory && s.planteamientosDirectory && s.rpsUploadDirectory);
 
 export function SettingsView({
   settings,
@@ -18,7 +21,7 @@ export function SettingsView({
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
   const [directoryCheck, setDirectoryCheck] = useState<WorkflowDirectoryCheck | null>(null);
-  const formIsConfigured = form.productionEnabled && Boolean(form.reviewDirectory && form.planteamientosDirectory && form.rpsUploadDirectory);
+  const formIsConfigured = estaConfigurado(form);
   // El aviso dice solo lo que falta: antes pedía «Completa las rutas y activa la generación»
   // aunque las rutas estuvieran puestas (revisión de interfaz, F4).
   const missingRoutes = [
@@ -56,6 +59,8 @@ export function SettingsView({
       if (!response.ok) throw new Error(data.error || 'No se pudo guardar la configuración.');
       setForm(data.settings);
       onSaved(data.settings, data.readiness);
+      // Al guardar se comprueban solas las carpetas guardadas (Iván, 02/10/2026).
+      if (estaConfigurado(data.settings)) void checkDirectories({ silent: true, settings: data.settings });
       onToast(data.readiness.productionReady
         ? 'Rutas guardadas. El autor ya puede generar los archivos de sus pedidos cuando estén aprobados en CoordinaOT.'
         : 'Rutas guardadas. La generación de archivos sigue deshabilitada.', {
@@ -69,30 +74,44 @@ export function SettingsView({
     }
   }
 
-  async function checkDirectories() {
+  // Comprobación de las carpetas. Automática al abrir Configuración y al guardar (`silent`: solo
+  // avisa si algo falla); el botón la repite a mano y avisa siempre.
+  async function checkDirectories({ silent = false, settings: aComprobar = form }: { silent?: boolean; settings?: WorkflowSettings } = {}) {
     setChecking(true);
     setDirectoryCheck(null);
     try {
       const response = await fetch('/api/workflow/check-directories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ settings: form })
+        body: JSON.stringify({ settings: aComprobar })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudieron comprobar las carpetas.');
       setDirectoryCheck(data);
-      onToast(data.ok
-        ? 'Las carpetas configuradas están disponibles desde el servidor.'
-        : 'Hay carpetas que no están accesibles. Revisa el detalle antes de generar archivos.', {
-        tone: data.ok ? 'success' : 'warning',
-        title: data.ok ? 'Carpetas comprobadas' : 'Revisión de carpetas'
-      });
+      if (!silent || !data.ok) {
+        onToast(data.ok
+          ? 'Las carpetas configuradas están disponibles desde el servidor.'
+          : 'Hay carpetas que no están accesibles. Revisa el detalle antes de generar archivos.', {
+          tone: data.ok ? 'success' : 'warning',
+          title: data.ok ? 'Carpetas comprobadas' : 'Revisión de carpetas'
+        });
+      }
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudieron comprobar las carpetas.', { tone: 'error' });
     } finally {
       setChecking(false);
     }
   }
+
+  // Al abrir Configuración con las rutas guardadas, se comprueban solas una vez.
+  const comprobadaAlAbrir = useRef(false);
+  useEffect(() => {
+    if (comprobadaAlAbrir.current || !estaConfigurado(settings)) return;
+    comprobadaAlAbrir.current = true;
+    void checkDirectories({ silent: true, settings });
+    // Solo al montar: las demás comprobaciones las lanzan «Guardar» y el botón.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section className="settings-panel panel panel-3d panel-vidrio">
@@ -211,20 +230,24 @@ export function SettingsView({
       <div className="workflow-settings-footer">
         <div className={`workflow-ready ${directoryCheck?.ok ? 'is-ready' : ''}`}>
           {directoryCheck?.ok ? <CheckCircle2 aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />}
-          <span>{directoryCheck?.ok
-            ? 'Carpetas comprobadas'
-            : !formIsConfigured
-              ? missingText
-              : !formMatchesSaved
-                ? 'Hay cambios sin guardar ni comprobar'
-                : readiness.productionReady
-                  ? 'Rutas guardadas · falta comprobar el acceso'
-                  : 'La generación sigue desactivada'}</span>
+          <span>{checking
+            ? 'Comprobando las carpetas…'
+            : directoryCheck?.ok
+              ? 'Carpetas comprobadas'
+              : directoryCheck
+                ? 'Hay carpetas que no están accesibles'
+                : !formIsConfigured
+                  ? missingText
+                  : !formMatchesSaved
+                    ? 'Cambios sin guardar · se comprueban al guardar'
+                    : readiness.productionReady
+                      ? 'Rutas guardadas'
+                      : 'La generación sigue desactivada'}</span>
         </div>
         <div className="workflow-settings-actions">
           <button className="ghost-button" type="button" disabled={saving || checking || !formIsConfigured} onClick={() => void checkDirectories()}>
             {checking ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : <FolderCheck aria-hidden="true" />}
-            {checking ? 'Comprobando…' : 'Comprobar carpetas'}
+            {checking ? 'Comprobando…' : 'Volver a comprobar'}
           </button>
           <button className="primary-button" type="button" disabled={saving || checking} onClick={save}>
             {saving ? 'Guardando…' : 'Guardar configuración'}
