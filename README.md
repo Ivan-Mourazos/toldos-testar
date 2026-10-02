@@ -71,6 +71,29 @@ compras y se bloquea la generación definitiva. La investigación está document
 `docs/rps-hera-evidence.md` y `docs/modelos/hera.md`. La activación solicitada
 permite este alcance parcial; el despiece completo sigue pendiente.
 
+### Parámetros de toldos: versiones por modelo y dibujos
+
+Cada modelo de Parámetros (y lo común de los trabajos de tela) tiene su versión e historial. Se guarda
+con la barra de su ficha: quién guarda es el «Soy» y el motivo es opcional; el historial de arriba, el
+del modelo que se ve, dice solo qué cambió («Margen de caída: 45 → 50», «Dibujo «Plano» añadido»).
+Solo hay conflicto si otro puesto guardó ese mismo modelo. Por debajo:
+`PUT /api/rule-parameters/models/:modelo` y `GET /api/rule-parameters/history?scope=:modelo`
+(`PUT /api/rule-parameters` sigue para pestañas abiertas con la web anterior). El fichero
+(`rule-parameters.json`) sigue guardando solo lo que difiere del código y la versión de todo el
+fichero; el de antes se lee tal cual y su historial se reparte por modelo al leerlo; el primer
+guardado escribe el formato nuevo de una vez. Un fichero que no se puede leer no se sobrescribe.
+
+En cada modelo, «Dibujos» enseña «Lo que sale hoy» (el dibujo de la web de cada variante, hecho por el
+mismo código que el PDF con un toldo de ejemplo, y el dibujo del taller que lo sustituye) y los
+dibujos del taller, cada uno «Solo a mano» o «Automático cuando…» con condiciones de valores reales
+del modelo. En la tarjeta del toldo, «Dibujo de confección» deja elegir un dibujo del taller o un
+trabajo especial, y «Automático (sale: …)» dice cuál sale. Precedencia en el PDF: imagen del toldo,
+elegido a mano, automático del taller, dibujo de la web.
+
+Prueba aislada: `TOLDOS_ISOLATED_URL=http://127.0.0.1:4312 node scripts/test-dibujos-e2e.mjs`.
+Usa `ISOLATED_DIR="$PWD/tmp/dibujos-codex" PORT=4312 FAKE_COORDINA_PORT=4322` al arrancar la aislada;
+las capturas quedan en `tmp/ui-audit/codex-dibujos/`.
+
 ### Fichas de cliente de remolques
 
 En Parámetros › Remolques › Clientes hay una ficha por cliente real, con sus códigos de RPS y lo

@@ -39,6 +39,9 @@ it). The isolated instance never talks to the real CoordinaOT.
 - La e2e del buscador de remolques usa su propia aislada, porque vacía la carpeta interna de remolques
   y siembra sus pedidos: `ISOLATED_DIR="$PWD/tmp/buscador" PORT=4314 FAKE_COORDINA_PORT=4324`, y
   `TOLDOS_ISOLATED_URL=http://127.0.0.1:4314 node scripts/test-remolques-buscador-e2e.mjs`.
+- La e2e de los dibujos y las versiones por modelo usa su propia aislada, porque guarda parámetros:
+  `ISOLATED_DIR="$PWD/tmp/dibujos-codex" PORT=4312 FAKE_COORDINA_PORT=4322`, y
+  `TOLDOS_ISOLATED_URL=http://127.0.0.1:4312 node scripts/test-dibujos-e2e.mjs` (se puede repetir).
 
 The e2e scripts that start their own server (`test-rps-e2e.mjs`, `test-*-workflow.mjs`,
 `test-parameter-consultation.mjs`) already start and stop their own fake CoordinaOT on a free port

@@ -6,7 +6,7 @@ import path from 'node:path';
 import net from 'node:net';
 import { chromium } from 'playwright';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-const output = path.resolve('output/bambalina-workflow');
+const output = path.resolve('tmp/bambalina-workflow');
 await mkdir(output, { recursive: true });
 const directory = await mkdtemp(path.join(output, 'run-'));
 const probe = net.createServer(); await new Promise(r => probe.listen(0, '127.0.0.1', r));
@@ -17,7 +17,11 @@ const coordina = await startFakeCoordina();
 const server = spawn(process.execPath, ['src/server.js'], { windowsHide: true, stdio: 'ignore', env: {
   ...process.env, NODE_ENV: 'production', ENABLE_HERA: 'false', HOST: '127.0.0.1', PORT: String(port), ENABLE_FILE_WRITES: 'false', COORDINA_URL: coordina.url, COORDINA_CLAVE: coordina.key,
   WORKFLOW_SETTINGS_FILE: path.join(directory, 'settings.json'), REVIEW_DIRECTORY: path.join(directory, 'reviews'),
-  PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'plans'), RPS_UPLOAD_DIRECTORY: path.join(directory, 'rps'), RPS_PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'archive')
+  PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'plans'), RPS_UPLOAD_DIRECTORY: path.join(directory, 'rps'), RPS_PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'archive'),
+  RULE_PARAMETERS_FILE: path.join(directory, 'rule-parameters.json'), EXPORT_DIRECTORY: path.join(directory, 'export'),
+  ORDER_ARCHIVE_ROOT: path.join(directory, 'order-archive'), REMOLQUES_PLANTEAMIENTOS_DIRECTORY: path.join(directory, 'rem-plan'),
+  REMOLQUES_OFICINA_TECNICA_DIRECTORY: path.join(directory, 'rem-oficina', '{YYYY}'), REMOLQUES_REVISION_DIRECTORY: path.join(directory, 'rem-revision'),
+  DRAFTS_DIRECTORY: path.join(directory, 'borradores')
 } });
 let browser;
 async function request(route, body, method = 'POST', expected = 200) {
@@ -38,14 +42,13 @@ try {
   assert.equal(await page.getByLabel(/Margen del cuerpo/).count(), 0);
   await page.getByLabel('Remate de bambalina (cm)', { exact: true }).fill('8');
   await page.getByLabel('Costura entre paños (cm)', { exact: true }).focus();
-  // Desde la fase 3 los parámetros son comunes: se guardan para todos con técnico y motivo.
-  await page.getByRole('button', { name: 'Guardar para todos' }).first().click();
-  const saveDialog = page.getByRole('dialog', { name: 'Guardar para todos los puestos' });
-  await saveDialog.getByRole('combobox', { name: 'Quién hace el cambio', exact: true }).click();
-  await page.getByRole('option', { name: 'Iván' }).click();
-  await saveDialog.getByLabel('Motivo', { exact: true }).fill('Prueba de extremo a extremo');
-  await saveDialog.getByRole('button', { name: 'Guardar para todos' }).click();
-  await page.getByText('Parámetros guardados').waitFor();
+  // Desde el 02/10/2026 cada modelo se guarda con la barra de su ficha: quién es el «Soy» y el
+  // motivo, opcional. El remate de bambalina es de lo común de los trabajos de tela.
+  const modelBar = page.getByRole('region', { name: 'Guardar el modelo' });
+  await modelBar.getByText(/Cambios sin guardar en/).waitFor();
+  await modelBar.getByLabel('Motivo (opcional)', { exact: true }).fill('Prueba de extremo a extremo');
+  await modelBar.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await modelBar.getByText('Modelo guardado').waitFor();
   await page.reload();
   await page.getByRole('button', { name: 'Parámetros', exact: true }).click();
   await page.getByRole('navigation', { name: 'Modelos de parámetros' }).locator('button').filter({ has: page.getByText('Bambalina', { exact: true }) }).click();

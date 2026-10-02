@@ -613,3 +613,8 @@
 /* El aviso de la tarjeta cuando el dibujo del taller elegido ya no está (02/10/2026). */
 .drawing-choice-missing { align-items: center; color: var(--danger); display: flex; flex-wrap: wrap; font-size: 0.8125rem; gap: 0.5rem; }
 .drawing-choice-missing > svg { flex: none; height: 16px; width: 16px; }
+
+/* El índice deja la sección por debajo de la barra fija del modelo. */
+.parameter-layout-main:has(.parametros-modelo-barra) :is(.parameter-band, .drawing-parameters, .drawing-today, .drawing-rule) {
+  scroll-margin-top: calc(var(--param-pila) + 140px);
+}
