@@ -10,7 +10,7 @@ El HERA sale hoy en una sola página A5 con un bloque propio (`drawHeraFabricPag
 
 1. **Página de estructura (A5) del HERA**, con la misma hoja que el resto: cabecera, DESPIECE, ELEMENTOS ACCESORIOS, SISTEMA DE ANCLAJE, DATOS DE PARTIDA, VÁLIDO o REVISAR, DETALLES, DIMENSIONES TELA y OBSERVACIONES.
 2. **Hoja de telas (A4) del HERA**, la normal: fila con TELA, SALIDA y UN.; en la línea de instrucción lo propio del HERA (empate, cara interior, arriba y abajo, corte de tela y cadena); en el recuadro del dibujo, el de orientación de la cara interior o la imagen de tela si la lleva; las aclaraciones, en OBSERVACIONES.
-3. **La página A5 propia del HERA deja de salir** cuando las hojas en HTML están activas. Se queda en el código solo como respaldo (Chromium caído o interruptores apagados).
+3. **La página A5 propia del HERA desaparece del todo.** El HERA pasa a ser un modelo normal también en el código antiguo de pdfkit: si Chromium falla o los interruptores están apagados, salen esas mismas dos páginas (estructura y telas) hechas con pdfkit, como en cualquier otro modelo. Así no hay nunca un HERA con media página nueva y media vieja.
 
 ## El despiece del HERA
 
@@ -45,9 +45,6 @@ Las cantidades y referencias son las de la reserva: el despiece dice lo que se r
 
 ## Si algo falla
 
-Como en el resto: si Chromium falla, o con `ESTRUCTURA_HTML=0` y `TELAS_HTML=0`, el HERA sale con su página A5 de siempre. El PDF no se bloquea nunca.
+Como en el resto: si Chromium falla, o con `ESTRUCTURA_HTML=0` o `TELAS_HTML=0`, la página afectada del HERA sale hecha con pdfkit, con el mismo contenido. El PDF no se bloquea nunca.
 
-## Pendiente de decidir al planificar
-
-- Qué pasa con el HERA si solo uno de los dos interruptores está apagado (propuesta: con cualquiera de los dos apagado, el HERA sale con su página de siempre, para no mezclar).
-- El dibujo de orientación de la cara interior se encaja desde pdfkit en el recuadro de la hoja de telas, como los demás dibujos de confección.
+El dibujo de orientación de la cara interior se encaja desde pdfkit en el recuadro de la hoja de telas, como los demás dibujos de confección.
