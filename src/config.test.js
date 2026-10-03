@@ -9,6 +9,7 @@ const originalRemolquesParametersFile = process.env.REMOLQUES_PARAMETERS_FILE;
 const originalRemolquesClientesFile = process.env.REMOLQUES_CLIENTES_FILE;
 const originalRemolquesRevisionDirectory = process.env.REMOLQUES_REVISION_DIRECTORY;
 const originalDraftsDirectory = process.env.DRAFTS_DIRECTORY;
+const originalTelasHtml = process.env.TELAS_HTML;
 
 afterEach(() => {
   restoreEnvironment('NODE_ENV', originalNodeEnv);
@@ -20,6 +21,7 @@ afterEach(() => {
   restoreEnvironment('REMOLQUES_CLIENTES_FILE', originalRemolquesClientesFile);
   restoreEnvironment('REMOLQUES_REVISION_DIRECTORY', originalRemolquesRevisionDirectory);
   restoreEnvironment('DRAFTS_DIRECTORY', originalDraftsDirectory);
+  restoreEnvironment('TELAS_HTML', originalTelasHtml);
   vi.resetModules();
 });
 
@@ -83,6 +85,15 @@ describe('configuración por entorno', () => {
   test('DRAFTS_DIRECTORY es la carpeta de los borradores', async () => {
     process.env.DRAFTS_DIRECTORY = '/var/lib/toldos-testar/borradores';
     expect((await loadConfig('production', '')).draftsDirectory).toBe('/var/lib/toldos-testar/borradores');
+  });
+
+  test('la hoja de telas en HTML está activa por defecto y TELAS_HTML=0 la apaga', async () => {
+    delete process.env.TELAS_HTML;
+    expect((await loadConfig('production', '')).telasHtml).toBe(true);
+    process.env.TELAS_HTML = '1';
+    expect((await loadConfig('production', '')).telasHtml).toBe(true);
+    process.env.TELAS_HTML = '0';
+    expect((await loadConfig('production', '')).telasHtml).toBe(false);
   });
 });
 

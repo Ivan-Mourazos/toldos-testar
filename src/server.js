@@ -124,6 +124,8 @@ const generationLocks = new Set();
 // minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
 const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
 const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
+// Hoja de telas de toldos en HTML (fase 1): mismos datos de un solo uso y el mismo Chromium.
+const fichasHojaTelas = crearAlmacenFichas({ duracionMs: 60_000 });
 // Pedidos de remolques (fase 5): un JSON por pedido en la carpeta interna de Configuración y el
 // mismo camino que toldos (CoordinaOT aprueba, el autor genera, los dos PDF con sus datos dentro).
 // El almacén va aparte porque también lo mira el guardado de toldos: nunca hay pedidos mixtos.
@@ -290,7 +292,7 @@ app.post('/api/planteamiento', async (req, res, next) => {
     // El panel «Despiece y dibujo» pide el pedido entero y un solo toldo, para que salga
     // con su letra.
     const onlyAwningId = typeof req.body?.onlyAwningId === 'string' && req.body.onlyAwningId ? req.body.onlyAwningId : null;
-    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, onlyAwningId });
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, onlyAwningId, ...opcionesHojaTelas() });
     const filename = `${order.orderCode ? sanitizeOrderCode(order.orderCode) : 'PLANTEAMIENTO'}-1.pdf`;
 
     res
@@ -554,6 +556,16 @@ app.get('/api/remolques/hoja/:id', (req, res) => {
   const datos = fichasHojaRemolques.tomar(req.params.id);
   if (!datos) {
     res.status(404).json({ error: 'Los datos de esta hoja ya no están disponibles: vuelve a pedir el PDF.' });
+    return;
+  }
+  res.set('Cache-Control', 'no-store').json(datos);
+});
+
+// La página interna de la hoja de telas de toldos pide sus datos igual. Un solo uso.
+app.get('/api/hoja-telas/:id', (req, res) => {
+  const datos = fichasHojaTelas.tomar(req.params.id);
+  if (!datos) {
+    res.status(404).json({ error: 'Los datos de esta hoja de telas ya no están disponibles: vuelve a pedir el PDF.' });
     return;
   }
   res.set('Cache-Control', 'no-store').json(datos);
@@ -946,7 +958,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       updated.reviewedBy = reviewer;
     }
     const pdfTarget = targets.find((target) => target.type === 'pdf');
-    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated });
+    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas() });
 
     await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
     for (const target of targets) await writeFileAtomic(target.savedPath, target.contents);
@@ -1026,7 +1038,7 @@ app.post('/api/export/save', async (req, res, next) => {
       const calculation = await calculateConfiguredOrder(orderPayload);
       planteamientoTarget = {
         savedPath: buildPlanteamientoPath(reservation.orderCode),
-        workbook: await buildOrderPlanteamientoPdf({ order: orderPayload, calculation })
+        workbook: await buildOrderPlanteamientoPdf({ order: orderPayload, calculation, ...opcionesHojaTelas() })
       };
       planteamientoTarget.filename = path.basename(planteamientoTarget.savedPath);
     }
@@ -1223,12 +1235,20 @@ function sanitizeOf(value) {
   return clean.slice(0, 80);
 }
 
-/** Dirección de la página de la hoja para el Chromium del propio servidor. */
-function urlHojaRemolques(id) {
+/** Dirección de una página interna (hoja de remolques o de telas) para el Chromium del propio servidor. */
+function urlPaginaInterna(pagina, id) {
   const { port } = server.address();
   const comodin = ['', '0.0.0.0', '::'].includes(config.host);
   const host = comodin ? '127.0.0.1' : config.host.includes(':') ? `[${config.host}]` : config.host;
-  return `http://${host}:${port}/hoja-remolques.html?id=${encodeURIComponent(id)}`;
+  return `http://${host}:${port}/${pagina}?id=${encodeURIComponent(id)}`;
+}
+
+function urlHojaRemolques(id) {
+  return urlPaginaInterna('hoja-remolques.html', id);
+}
+
+function urlHojaTelas(id) {
+  return urlPaginaInterna('hoja-telas.html', id);
 }
 
 /** La hoja de taller de remolques en PDF con el servicio de Chromium; su ficha se borra siempre. */
@@ -1239,6 +1259,22 @@ async function hojaRemolquesPdf(datos) {
   } finally {
     if (id) fichasHojaRemolques.borrar(id);
   }
+}
+
+/** Opciones para buildOrderPlanteamientoPdf: la página de telas en HTML, o nada si está apagada. */
+function opcionesHojaTelas() {
+  if (!config.telasHtml) return {};
+  return {
+    renderFabricSheet: async (datos) => {
+      const id = fichasHojaTelas.guardar(datos);
+      try {
+        return await servicioPdfRemolques.generar({ preparar: () => id, url: urlHojaTelas });
+      } finally {
+        fichasHojaTelas.borrar(id);
+      }
+    },
+    onFabricSheetError: (error) => console.error(`Hoja de telas en HTML: sale la de pdfkit. ${error?.message || error}`)
+  };
 }
 
 function enviarPdf(res, pdf, nombre) {
