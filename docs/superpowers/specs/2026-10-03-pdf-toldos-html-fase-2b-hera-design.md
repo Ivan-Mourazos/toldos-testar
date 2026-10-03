@@ -29,7 +29,11 @@ El HERA no tenía despiece para el PDF. Sale de la lista de piezas que la web ya
 | Pletina 25×4 | 3 de 24 | en lugar del perfil |
 | Macarrón con lengüeta | 15 de 24 | el ancho de la tela |
 
-Filas del despiece, en este orden: kit Swift; adaptador Swift; tubo de enrolle con su longitud de corte; con cadena, contrapeso y uniones; con motor, rueda LT50 y el motor; abajo, perfil de contrapeso con su longitud y sus dos tapones, o pletina con su longitud; macarrón; varilla vaina si va con varilla blanca. En ELEMENTOS ACCESORIOS: **el anillo de cadena con su referencia exacta** (color y medida, la misma que se reserva; lo pidió Iván expresamente) o, a motor, el mando.
+Filas del despiece, en este orden: kit Swift; adaptador Swift; tubo de enrolle con su longitud de corte; con cadena, contrapeso y uniones; con motor, rueda LT50 y el motor; abajo, perfil de contrapeso con su longitud y sus dos tapones, o pletina con su longitud. En ELEMENTOS ACCESORIOS:
+
+**El material de confección no sale en el despiece** (Iván, 03/10/2026): macarrón, varilla vaina y cremallera se siguen reservando igual, pero no son piezas de estructura y no van en la tabla. Vale para todos los modelos: ya era así con la varilla vaina, y se aplica también al despiece nuevo del Iris.
+
+En ELEMENTOS ACCESORIOS: **el anillo de cadena con su referencia exacta** (color y medida, la misma que se reserva; lo pidió Iván expresamente) o, a motor, el mando.
 
 Las cantidades y referencias son las de la reserva: el despiece dice lo que se reserva y no añade ninguna pieza.
 
