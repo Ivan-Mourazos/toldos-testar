@@ -11,11 +11,13 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      // Dos páginas: la aplicación y la hoja de taller de remolques (fase 4), que Chromium abre
-      // en el servidor para hacer el PDF. `index` mantiene el nombre del bundle principal.
+      // Tres páginas: la aplicación, la hoja de taller de remolques (fase 4) y la página de telas
+      // de toldos, que Chromium abre en el servidor para hacer el PDF. `index` mantiene el nombre
+      // del bundle principal.
       input: {
         index: fileURLToPath(new URL('./index.html', import.meta.url)),
-        hoja: fileURLToPath(new URL('./hoja-remolques.html', import.meta.url))
+        hoja: fileURLToPath(new URL('./hoja-remolques.html', import.meta.url)),
+        telas: fileURLToPath(new URL('./hoja-telas.html', import.meta.url))
       }
     }
   },

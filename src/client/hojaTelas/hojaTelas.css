@@ -1,0 +1,149 @@
+/* Página de telas A4 apaisada del planteamiento de toldos. Es papel: solo colores claros, sin tema
+   oscuro. Todo va colocado en pt desde arriba a la izquierda con las mismas medidas que la página
+   de pdfkit (src/domain/planteamientoPdf.js), y el dibujo lo encaja después el servidor en el
+   recuadro .telas-dibujo: si mueves algo aquí, mira que no pise ese recuadro. */
+@page { size: A4 landscape; margin: 0; }
+
+:root {
+  --tinta: #10282d;
+  --amarillo: #f7bd19;
+  --amarillo-suave: #fff8df;
+  --gris: #dedede;
+  --gris-oscuro: #80908d;
+  --filete: #9aaba8;
+  --negro: #202020;
+  --papel: #fff;
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--papel); margin: 0; padding: 0; }
+body {
+  color: var(--tinta);
+  font-family: 'Geist Variable', Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.telas-pagina {
+  break-after: page;
+  height: 210mm;
+  overflow: hidden;
+  position: relative;
+  width: 297mm;
+}
+.telas-pagina:last-of-type { break-after: auto; }
+.telas-pagina > * { position: absolute; }
+
+/* En pantalla (solo para revisarla) se separan las páginas; al imprimir no cuenta. */
+@media screen {
+  .telas-pagina + .telas-pagina { border-top: 1px dashed var(--filete); }
+}
+
+/* ── Casillas, como drawCell: filete fino y texto centrado en alto ── */
+.telas-celda {
+  align-items: center;
+  background: var(--papel);
+  border: 0.5pt solid var(--filete);
+  display: flex;
+}
+.telas-texto { display: block; line-height: 1.15; overflow: hidden; padding: 0 3pt; white-space: nowrap; width: 100%; }
+.hoja-una-linea { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.telas-negrita { font-weight: 700; }
+.telas-semi { font-weight: 600; }
+.telas-cursiva { font-style: italic; }
+.telas-centro { text-align: center; }
+.telas-derecha { text-align: right; }
+.telas-amarillo { background: var(--amarillo); }
+.telas-gris { background: var(--gris); }
+
+/* ── Cabecera ── */
+.telas-cabecera { border: 1pt solid var(--tinta); border-radius: 4pt; }
+.telas-logo {
+  align-items: center;
+  border: 1pt solid var(--filete);
+  border-radius: 4pt;
+  display: flex;
+  justify-content: center;
+  padding: 4pt;
+}
+.telas-logo img { display: block; height: 100%; object-fit: contain; width: 100%; }
+.telas-cab-rotulo { font-size: 10.5pt; }
+.telas-cab-numero { font-size: 17pt; }
+.telas-cab-etiqueta { font-size: 10pt; }
+.telas-cab-valor { font-size: 11pt; }
+.telas-barra {
+  align-items: center;
+  background: var(--tinta);
+  color: var(--papel);
+  display: flex;
+  font-size: 14pt;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ── Columna izquierda ── */
+.telas-exterior { background: var(--papel); border: 1pt solid var(--negro); }
+.telas-dibujo-titulo { font-size: 12pt; }
+/* Sin borde ni fondo: el dibujo de confección lo pone el servidor encima. */
+.telas-dibujo { background: transparent; border: 0; }
+.telas-notas {
+  background: var(--amarillo-suave);
+  border: 1pt solid var(--amarillo);
+  border-radius: 2pt;
+}
+.telas-notas > * { position: absolute; }
+.telas-notas-titulo { font-size: 9pt; font-weight: 700; left: 4pt; line-height: 1.15; top: 4pt; }
+.telas-notas-texto, .telas-medidor { font-size: 9pt; font-weight: 400; line-height: 11.25pt; }
+.telas-notas-texto { overflow: hidden; }
+.telas-nota { overflow-wrap: anywhere; white-space: pre-wrap; }
+/* Ya partidas por el medidor con este mismo ancho: cada una cabe en su línea. */
+.telas-nota-linea { min-height: 11.25pt; white-space: pre; }
+/* Fuera de la hoja: con él se mide dónde parte el navegador cada línea de observaciones. */
+.telas-medidor {
+  left: -10000px;
+  overflow-wrap: anywhere;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  white-space: pre-wrap;
+}
+
+/* ── Columna derecha: ROTULACIÓN y DATOS BÁSICOS ── */
+.telas-tabla-titulo {
+  align-items: center;
+  background: var(--gris);
+  border: 0.5pt solid var(--negro);
+  color: var(--negro);
+  display: flex;
+  font-size: 9.5pt;
+  font-weight: 700;
+  text-align: center;
+}
+.telas-tabla-etiqueta, .telas-tabla-valor { font-size: 9.5pt; }
+.telas-tabla-valor-grande { font-size: 11.5pt; }
+
+/* ── Filas de cada toldo ── */
+.telas-letra {
+  align-items: center;
+  background: var(--amarillo);
+  border: 0.5pt solid var(--filete);
+  display: flex;
+  font-size: 26pt;
+  font-weight: 700;
+  text-align: center;
+}
+.telas-medida-etiqueta { font-size: 10pt; }
+.telas-medida-valor { font-size: 15.5pt; }
+.telas-instruccion { font-size: 11.5pt; }
+
+/* ── Total ── */
+.telas-total-rotulo { background: var(--papel); border: 1pt solid var(--negro); color: var(--negro); }
+.telas-total-rotulo > * { left: 8pt; line-height: 15pt; position: absolute; text-align: center; width: 234pt; }
+.telas-total-tela { font-size: 11pt; font-weight: 600; top: 4pt; }
+.telas-total-texto { font-size: 11.5pt; font-weight: 700; top: 22pt; }
+.telas-total-cifra { background: var(--gris); font-size: 23pt; }
+
+.telas-pie { color: var(--gris-oscuro); font-size: 5.5pt; line-height: 1; text-align: right; }
+
+.hoja-error { font: 12pt Arial, sans-serif; padding: 10mm; }
