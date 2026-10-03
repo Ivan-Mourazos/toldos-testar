@@ -123,7 +123,7 @@ describe('HojaEstructura', () => {
 describe('altoFilaDespiece', () => {
   it('con observaciones no pasa de 9,7 pt; sin ellas crece hasta 13', () => {
     expect(altoFilaDespiece(11, true)).toBe(9.7);
-    expect(altoFilaDespiece(11, false)).toBe(13);
+    expect(altoFilaDespiece(11, false)).toBe(17);
   });
 
   it('con muchas filas se estrechan para que quepan', () => {
@@ -133,7 +133,7 @@ describe('altoFilaDespiece', () => {
 
   it('menos de seis filas cuentan como seis', () => {
     expect(altoFilaDespiece(1, false, 30)).toBe(altoFilaDespiece(6, false, 30));
-    expect(altoFilaDespiece(6, false, 30)).toBeLessThan(13);
+    expect(altoFilaDespiece(6, false, 30)).toBeLessThan(17);
   });
 });
 

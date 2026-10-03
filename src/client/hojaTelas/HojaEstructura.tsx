@@ -61,17 +61,17 @@ const FILA_TABLA = 13;
 /**
  * Alto (pt) de cada fila del despiece. Reparte el alto que queda hasta el pie entre las filas del
  * despiece (seis como poco) y las `debajo`, que son las de accesorios y anclaje y llevan el mismo
- * alto. Con observaciones no pasa de 9,7 pt, para dejarles sitio; sin ellas crece hasta 13.
+ * alto. Con observaciones no pasa de 9,7 pt, para dejarles sitio; sin ellas crece hasta 17 (Iván, 03/10/2026: con despieces cortos quedaba un tercio de la columna en blanco).
  */
 export function altoFilaDespiece(filas: number, conNotas: boolean, debajo = 4): number {
   const barras = debajo > 0 ? BARRA_H * 2 + HUECO_ANCLAJE : 0;
   const libre = ALTO - PIE_H - CUERPO_Y - CABECERA_TABLA_H - barras;
   // A la centésima, para que cada fila empiece justo donde acaba la anterior.
-  return Math.min(conNotas ? 9.7 : 13, Math.floor((libre / (Math.max(FILAS_MINIMAS, filas) + debajo)) * 100) / 100);
+  return Math.min(conNotas ? 9.7 : 17, Math.floor((libre / (Math.max(FILAS_MINIMAS, filas) + debajo)) * 100) / 100);
 }
 
-/** La letra de las filas crece con su alto, hasta 8 pt. */
-const letraFila = (alto: number) => Math.min(8, alto * 0.68);
+/** La letra de las filas crece con su alto, hasta 9,5 pt. */
+const letraFila = (alto: number) => Math.min(9.5, alto * 0.68);
 
 function Cabecera({ cabecera }: { cabecera: HojaEstructuraDatos['header'] }) {
   const mitad = CAB_W / 2;
