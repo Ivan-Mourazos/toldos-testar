@@ -20,7 +20,10 @@ export function textoEnDosLineas(texto: string, cabe: (texto: string, pt: number
     if (cabe(cortado(medio), min)) bajo = medio;
     else alto = medio - 1;
   }
-  return { pt: min, texto: cortado(bajo) };
+  // Mejor en el último espacio que a media palabra, si queda cerca (15 letras como mucho).
+  const espacio = texto.lastIndexOf(' ', bajo);
+  const corte = /\s/.test(texto[bajo] ?? ' ') || espacio <= 0 || bajo - espacio > 15 ? bajo : espacio;
+  return { pt: min, texto: cortado(corte) };
 }
 
 /** Ajusta cada `.telas-dos-lineas` de `raiz` a dos líneas de su casilla. La letra de partida es la

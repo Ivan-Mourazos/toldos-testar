@@ -22,7 +22,8 @@ describe('HojaTelas', () => {
     const html = pintar(ejemplo);
     expect(html).toMatch(/OF:.*0230194.*Nº PEDIDO:.*AR2603332/s);
     expect(html).toContain('telas-dibujo');
-    expect(html).toMatch(/left:\s*36pt.*top:\s*149pt.*width:\s*242pt.*height:\s*300pt/s);
+    // Un solo elemento: el título del dibujo también va en left 36pt y 242pt de ancho.
+    expect(html).toContain('<div class="telas-dibujo" style="left:36pt;top:149pt;width:242pt;height:300pt"></div>');
     expect(html).toContain('NS86BLANP250 · LONA PVC 580 BLANCO :250 AN');
     expect(html).toContain('PAÑO TOTAL NECESARIO');
   });

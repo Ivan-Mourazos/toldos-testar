@@ -23,4 +23,17 @@ describe('textoEnDosLineas', () => {
     expect(cabe(final, 7)).toBe(true);
     expect(texto.startsWith(final.slice(0, final.indexOf('…')))).toBe(true);
   });
+
+  it('al cortar, mejor en el último espacio que a media palabra', () => {
+    const texto = 'PALABRA '.repeat(20).trim();
+    const { texto: final } = textoEnDosLineas(texto, cabe, 11.5, 7);
+    expect(final).toMatch(/^(PALABRA )*PALABRA… \[NOTA COMPLETA EN EL PEDIDO\]$/);
+  });
+
+  it('si el último espacio queda lejos (más de 15 letras), corta donde llega', () => {
+    const texto = `A ${'X'.repeat(200)}`;
+    const { texto: final } = textoEnDosLineas(texto, cabe, 11.5, 7);
+    expect(final).toMatch(/^A X+… /);
+    expect(cabe(final, 7)).toBe(true);
+  });
 });
