@@ -46,31 +46,42 @@ const fonts = hasEmbeddedFonts
 // Con `onlyAwningId` sale solo ese toldo (el panel «Despiece y dibujo»), pero con su letra
 // de siempre: el plan se hace con el pedido entero y se filtra después.
 //
-// Con `renderFabricSheet(page)` cada página de telas A4 (con sus continuaciones de
-// observaciones) se cambia por la hoja que imprime Chromium, y en su recuadro se encaja el
-// dibujo de pdfkit. Si una hoja falla se avisa con `onFabricSheetError(error, page)` y esa
-// página sale con pdfkit como siempre: el PDF no se queda nunca sin hacer.
-export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderFabricSheet = null, onFabricSheetError = null }) {
-  if (!renderFabricSheet) {
+// Con `renderFabricSheets(pages)` las páginas de telas A4 (con sus continuaciones de
+// observaciones) se cambian por las hojas que imprime Chromium, y en su recuadro se encaja el
+// dibujo de pdfkit. Chromium las imprime todas de una vez, que es mucho más rápido que una a
+// una, y devuelve `{ pdf, pageCounts }`: cuántas páginas ocupa cada hoja, en el mismo orden.
+// Si algo falla se avisa con `onFabricSheetError(error, page)` (page null si no es de una hoja)
+// y esas páginas salen con pdfkit como siempre: el PDF no se queda nunca sin hacer.
+export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderFabricSheets = null, onFabricSheetError = null }) {
+  if (!renderFabricSheets) {
     return (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
   }
   const { pdf: base, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false });
   const plan = buildPlanteamientoPlan(order, calculation, { onlyAwningId });
-  // Una a una (Chromium imprime de una en una): la que falle se queda con pdfkit.
+  const pages = buildFabricSheetPages({ order, calculation, onlyAwningId });
   const sheets = new Map();
-  for (const page of buildFabricSheetPages({ order, calculation, onlyAwningId })) {
-    try {
+  if (pages.length > 0) {
+    // Los dibujos se hacen mientras Chromium imprime; el que falle deja su hoja con pdfkit.
+    const drawings = pages.map((page) => {
       const { diagram, diagramAwning, diagramCalculation } = plan.fabricPages[page.planIndex];
-      const [html, drawing] = await Promise.all([
-        renderFabricSheet(page),
-        buildFabricDiagramBoxPdf({ diagram, awning: diagramAwning, calculation: diagramCalculation })
-      ]);
-      // Se abre aquí para que un PDF roto también cuente como fallo de esa hoja.
-      const sheet = await PDFLibDocument.load(html);
-      if (sheet.getPageCount() === 0) throw new Error('La hoja de telas impresa no tiene páginas.');
-      sheets.set(page.planIndex, { sheet, drawing });
+      return buildFabricDiagramBoxPdf({ diagram, awning: diagramAwning, calculation: diagramCalculation })
+        .then((drawing) => ({ drawing }), (error) => ({ error }));
+    });
+    let printed = null;
+    try {
+      printed = await loadPrintedSheets(await renderFabricSheets(pages), pages.length);
     } catch (error) {
-      notifyFabricSheetError(onFabricSheetError, error, page);
+      notifyFabricSheetError(onFabricSheetError, error, null);
+    }
+    const drawn = await Promise.all(drawings);
+    if (printed) {
+      pages.forEach((page, index) => {
+        if (drawn[index].error) {
+          notifyFabricSheetError(onFabricSheetError, drawn[index].error, page);
+          return;
+        }
+        sheets.set(page.planIndex, { sheet: printed.sheet, indices: printed.indices[index], drawing: drawn[index].drawing });
+      });
     }
   }
   // Si la unión falla por lo que sea, el PDF entero sale con pdfkit como siempre.
@@ -80,6 +91,25 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
     notifyFabricSheetError(onFabricSheetError, error, null);
     return (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
   }
+}
+
+// Abre el PDF de Chromium y dice qué páginas son de cada hoja. Si no cuadra, no se usa nada:
+// mejor todo con pdfkit que una hoja con las páginas de otra.
+async function loadPrintedSheets({ pdf, pageCounts } = {}, expected) {
+  const sheet = await PDFLibDocument.load(pdf);
+  const counts = Array.isArray(pageCounts) ? pageCounts : [];
+  const valid = counts.length === expected && counts.every((count) => Number.isInteger(count) && count > 0);
+  const total = counts.reduce((sum, count) => sum + count, 0);
+  if (!valid || total !== sheet.getPageCount()) {
+    throw new Error(`Las páginas de las hojas de telas impresas no cuadran (${sheet.getPageCount()} en el PDF, ${counts.join(',') || 'ninguna'} según la hoja).`);
+  }
+  let start = 0;
+  const indices = counts.map((count) => {
+    const range = Array.from({ length: count }, (_, offset) => start + offset);
+    start += count;
+    return range;
+  });
+  return { sheet, indices };
 }
 
 // Un aviso que falla no puede romper el PDF.
@@ -102,8 +132,8 @@ async function mergeFabricSheets({ order, review, base, fabricRanges, sheets }) 
   for (let index = 0; index < source.getPageCount(); index += 1) {
     if (replaced.has(index)) {
       const planIndex = replaced.get(index);
-      const { sheet, drawing } = sheets.get(planIndex);
-      const pages = await out.copyPages(sheet, sheet.getPageIndices());
+      const { sheet, indices, drawing } = sheets.get(planIndex);
+      const pages = await out.copyPages(sheet, indices);
       pages.forEach((page) => out.addPage(page));
       const [embedded] = await out.embedPdf(drawing);
       const [first] = pages;

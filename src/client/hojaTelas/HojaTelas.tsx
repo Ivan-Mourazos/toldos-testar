@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, type ReactNode } from 'react';
+import React, { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ajustarUnaLinea } from '../hoja/ajusteTexto';
 import { ajustarDosLineas } from './ajusteDosLineas';
 import { repartirNotas } from './repartirNotas';
@@ -340,10 +340,44 @@ export function HojaTelas({ datos, onLista, onError }: {
   }, [paginasNotas, onLista, onError]);
 
   return (
-    <div ref={raiz}>
+    <div ref={raiz} data-hoja-telas="">
       <PrimeraPagina datos={datos} lineas={paginasNotas?.[0] ?? null} refNotas={cajaNotas} />
       {(paginasNotas ?? []).slice(1).map((lineas, indice) => <PaginaContinuacion key={indice} datos={datos} lineas={lineas} />)}
       <div className="telas-medidor" ref={medidor} aria-hidden="true" />
+    </div>
+  );
+}
+
+/** Cuántas páginas ocupa cada hoja pintada dentro de `raiz`, en orden. */
+export function contarPaginas(raiz: ParentNode): number[] {
+  return Array.from(raiz.querySelectorAll('[data-hoja-telas]'), (hoja) => hoja.querySelectorAll('.telas-pagina').length);
+}
+
+/**
+ * Todas las hojas de telas del PDF seguidas, para que Chromium las imprima de una vez. Cuando
+ * todas están listas avisa con `onLista` y las páginas de cada una (las observaciones largas
+ * añaden páginas), que el servidor necesita para poner cada hoja en su sitio.
+ */
+export function HojasTelas({ hojas, onLista, onError }: {
+  hojas: HojaTelasDatos[];
+  onLista: (paginas: number[]) => void;
+  onError: (mensaje: string) => void;
+}) {
+  const raiz = useRef<HTMLDivElement>(null);
+  // Un aviso fijo por hoja: HojaTelas lo tiene en las dependencias de su efecto.
+  const avisos = useMemo(() => {
+    const listas = new Set<number>();
+    return hojas.map((_, indice) => () => {
+      listas.add(indice);
+      if (listas.size === hojas.length && raiz.current) onLista(contarPaginas(raiz.current));
+    });
+  }, [hojas, onLista]);
+
+  return (
+    <div ref={raiz}>
+      {hojas.map((datos, indice) => (
+        <HojaTelas key={`${datos.planIndex}-${indice}`} datos={datos} onLista={avisos[indice]} onError={onError} />
+      ))}
     </div>
   );
 }

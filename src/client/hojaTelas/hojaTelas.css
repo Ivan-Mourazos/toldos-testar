@@ -32,7 +32,8 @@ body {
   position: relative;
   width: 297mm;
 }
-.telas-pagina:last-of-type { break-after: auto; }
+/* Varias hojas seguidas: solo la última página de la última hoja no salta. */
+[data-hoja-telas]:last-child .telas-pagina:last-of-type { break-after: auto; }
 .telas-pagina > * { position: absolute; }
 
 /* En pantalla (solo para revisarla) se separan las páginas; al imprimir no cuenta. */

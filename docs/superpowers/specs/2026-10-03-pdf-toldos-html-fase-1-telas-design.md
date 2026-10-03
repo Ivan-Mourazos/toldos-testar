@@ -26,6 +26,8 @@ Si Chromium no está, no responde, tarda más de lo permitido o la página da er
 
 ## Velocidad
 
+Todas las hojas de telas de un PDF se imprimen de una vez (una sola página web con todas las hojas; el título de la página dice cuántas páginas ocupa cada una). Una a una, un pedido con cuatro hojas tardaba 2,6 s; juntas, 1,6 s, y con una hoja 0,85 s (medido el 03/10/2026).
+
 Imprimir con Chromium añade alrededor de un segundo por PDF. Se mide en la vista previa, en el panel y al generar. Si pasa de 2 s en el uso normal, se para y se replantea (por ejemplo, la vista previa en pantalla con el HTML directo y Chromium solo al generar).
 
 ## Pruebas

@@ -2,6 +2,10 @@
 // buildOrderPlanteamientoPdf para que Chromium imprima cada página de telas. Si algo falla,
 // esa página sale con pdfkit; aquí se cuida además que un Chromium enfermo no haga esperar.
 
+import pdfLib from 'pdf-lib';
+
+const { PDFDocument } = pdfLib;
+
 /** Cuánto descansa Chromium para las hojas de telas tras un fallo lento. */
 export const PAUSA_TRAS_FALLO_MS = 60_000;
 /** Un fallo que tarda esto o más (tiempo agotado, Chromium que no arranca) pausa Chromium. */
@@ -37,26 +41,24 @@ export function crearImpresoraHojaTelas({
    */
   function opciones({ codigoPedido = '', sigueEsperando } = {}) {
     if (!activa) return {};
-    // Si una hoja de este PDF falla, las demás van directas a pdfkit: Chromium no está bien
-    // y no tiene sentido esperar otra vez por cada página.
-    let fallo = false;
     const seFue = () => Boolean(sigueEsperando && !sigueEsperando());
 
-    async function renderFabricSheet(datos) {
-      if (fallo) throw new Error('Ya falló otra hoja de telas de este PDF.');
+    // Todas las hojas del PDF en una sola impresión: Chromium tarda casi lo mismo con una que
+    // con varias, y una a una se notaba en los pedidos con varios modelos.
+    async function renderFabricSheets(hojas) {
       if (ahora() < pausadoHasta) throw new Error('Chromium falló hace poco: se descansa un minuto.');
       if (seFue()) throw new Error('Quien pidió el PDF ya no espera.');
       let id = null;
       const inicio = ahora();
       try {
-        return await servicio.generar({
+        const pdf = await servicio.generar({
           // La ficha se guarda al salir de la cola: su minuto empieza cuando Chromium va a pedirla.
-          preparar: () => (id = fichas.guardar(datos)),
+          preparar: () => (id = fichas.guardar(hojas)),
           url,
           ...(sigueEsperando ? { sigueEsperando } : {})
         });
+        return { pdf, pageCounts: await paginasDeCadaHoja(pdf) };
       } catch (error) {
-        fallo = true;
         if (!seFue() && ahora() - inicio >= falloLentoMs) pausadoHasta = ahora() + pausaMs;
         throw error;
       } finally {
@@ -65,12 +67,23 @@ export function crearImpresoraHojaTelas({
     }
 
     function onFabricSheetError(error, page) {
-      const hoja = page ? `hoja ${page.planIndex}` : 'unión de las hojas';
+      const hoja = page ? `hoja ${page.planIndex}` : 'hojas de telas';
       registrar(`Hoja de telas en HTML del pedido ${codigoPedido || 'sin código'} (${hoja}): sale la de pdfkit. ${error?.message || error}`);
     }
 
-    return { renderFabricSheet, onFabricSheetError };
+    return { renderFabricSheets, onFabricSheetError };
   }
 
   return { opciones };
+}
+
+/**
+ * Cuántas páginas ocupa cada hoja. La página web lo deja en su título («telas-paginas:1,2,1»,
+ * src/client/hojaTelas/main.tsx) y Chromium copia el título al PDF.
+ */
+export async function paginasDeCadaHoja(pdf) {
+  const titulo = (await PDFDocument.load(pdf, { updateMetadata: false })).getTitle() ?? '';
+  const encontrado = /^telas-paginas:(\d+(?:,\d+)*)$/.exec(titulo.trim());
+  if (!encontrado) throw new Error(`La hoja de telas impresa no dice cuántas páginas ocupa cada hoja (título «${titulo}»).`);
+  return encontrado[1].split(',').map(Number);
 }

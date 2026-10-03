@@ -1,7 +1,21 @@
-import { describe, expect, test, vi } from 'vitest';
-import { crearImpresoraHojaTelas } from './hojaTelasPdf.js';
+import { beforeAll, describe, expect, test, vi } from 'vitest';
+import pdfLib from 'pdf-lib';
+import { crearImpresoraHojaTelas, paginasDeCadaHoja } from './hojaTelasPdf.js';
 
-const PDF = Buffer.from('%PDF-falso');
+const { PDFDocument } = pdfLib;
+
+/** Un PDF como el de Chromium: tantas páginas como diga el título de la hoja. */
+async function pdfConTitulo(titulo, paginas = 1) {
+  const doc = await PDFDocument.create();
+  for (let i = 0; i < paginas; i += 1) doc.addPage();
+  if (titulo !== null) doc.setTitle(titulo);
+  return Buffer.from(await doc.save());
+}
+
+let PDF;
+beforeAll(async () => {
+  PDF = await pdfConTitulo('telas-paginas:1');
+});
 
 /** Un almacén de fichas de mentira que apunta lo que se guarda y se borra. */
 function fichasFalsas() {
@@ -55,12 +69,14 @@ describe('impresora de la hoja de telas en HTML', () => {
     expect(impresora.opciones({ codigoPedido: 'AR1' })).toEqual({});
   });
 
-  test('imprime con la página de telas y borra la ficha al acabar', async () => {
-    const { impresora, fichas, servicio } = crear();
-    const { renderFabricSheet } = impresora.opciones({ codigoPedido: 'AR1' });
-    await expect(renderFabricSheet({ planIndex: 0 })).resolves.toBe(PDF);
+  test('imprime todas las hojas de una vez, dice las páginas de cada una y borra la ficha', async () => {
+    const tres = await pdfConTitulo('telas-paginas:2,1', 3);
+    const { impresora, fichas, servicio } = crear({ servicio: servicioFalso(async () => tres) });
+    const { renderFabricSheets } = impresora.opciones({ codigoPedido: 'AR1' });
+    await expect(renderFabricSheets([{ planIndex: 0 }, { planIndex: 2 }])).resolves.toEqual({ pdf: tres, pageCounts: [2, 1] });
+    expect(servicio.generar).toHaveBeenCalledTimes(1);
     expect(servicio.trabajos[0].url('id-1')).toBe('http://servidor/hoja-telas.html?id=id-1');
-    expect(fichas.guardadas).toEqual([{ planIndex: 0 }]);
+    expect(fichas.guardadas).toEqual([[{ planIndex: 0 }, { planIndex: 2 }]]);
     expect(fichas.borradas).toEqual(['id-1']);
   });
 
@@ -68,42 +84,38 @@ describe('impresora de la hoja de telas en HTML', () => {
     const fichas = fichasFalsas();
     const servicio = { generar: vi.fn(async () => { throw new Error('cola llena'); }) };
     const { impresora } = crear({ fichas, servicio });
-    await expect(impresora.opciones({}).renderFabricSheet({ planIndex: 0 })).rejects.toThrow('cola llena');
+    await expect(impresora.opciones({}).renderFabricSheets([{ planIndex: 0 }])).rejects.toThrow('cola llena');
     expect(fichas.guardadas).toEqual([]);
     expect(fichas.borradas).toEqual([]);
   });
 
-  test('si quien pidió la vista previa se fue, la hoja no entra en la cola de Chromium', async () => {
+  test('si quien pidió la vista previa se fue, las hojas no entran en la cola de Chromium', async () => {
     const { impresora, servicio } = crear();
     let espera = true;
-    const { renderFabricSheet } = impresora.opciones({ sigueEsperando: () => espera });
-    await renderFabricSheet({ planIndex: 0 });
+    const { renderFabricSheets } = impresora.opciones({ sigueEsperando: () => espera });
+    await renderFabricSheets([{ planIndex: 0 }]);
     expect(servicio.trabajos[0].sigueEsperando()).toBe(true);
     espera = false;
-    await expect(renderFabricSheet({ planIndex: 1 })).rejects.toThrow(/ya no espera/);
+    await expect(renderFabricSheets([{ planIndex: 0 }])).rejects.toThrow(/ya no espera/);
     expect(servicio.generar).toHaveBeenCalledTimes(1);
   });
 
   test('«Generar archivos» espera siempre: el trabajo no lleva sigueEsperando', async () => {
     const { impresora, servicio } = crear();
-    await impresora.opciones({ codigoPedido: 'AR1' }).renderFabricSheet({ planIndex: 0 });
+    await impresora.opciones({ codigoPedido: 'AR1' }).renderFabricSheets([{ planIndex: 0 }]);
     expect(servicio.trabajos[0].sigueEsperando).toBeUndefined();
   });
 
-  test('tras el primer fallo de un PDF, el resto de sus hojas va directo a pdfkit', async () => {
+  test('un fallo rápido no pausa: el PDF siguiente vuelve a probar', async () => {
     let fallar = true;
     const servicio = servicioFalso(async () => {
       if (fallar) throw new Error('Chromium roto');
       return PDF;
     });
     const { impresora } = crear({ servicio });
-    const { renderFabricSheet } = impresora.opciones({ codigoPedido: 'AR1' });
-    await expect(renderFabricSheet({ planIndex: 0 })).rejects.toThrow('Chromium roto');
+    await expect(impresora.opciones({}).renderFabricSheets([{ planIndex: 0 }])).rejects.toThrow('Chromium roto');
     fallar = false;
-    await expect(renderFabricSheet({ planIndex: 1 })).rejects.toThrow(/otra hoja de telas de este PDF/);
-    expect(servicio.generar).toHaveBeenCalledTimes(1);
-    // El PDF siguiente vuelve a probar (el fallo fue rápido: no hay pausa).
-    await expect(impresora.opciones({}).renderFabricSheet({ planIndex: 0 })).resolves.toBe(PDF);
+    await expect(impresora.opciones({}).renderFabricSheets([{ planIndex: 0 }])).resolves.toMatchObject({ pageCounts: [1] });
   });
 
   test('un fallo lento (tiempo agotado o Chromium que no arranca) pausa Chromium un minuto para todos', async () => {
@@ -116,12 +128,12 @@ describe('impresora de la hoja de telas en HTML', () => {
     });
     const ctx = crear({ servicio });
     avanzar = ctx.avanzar;
-    await expect(ctx.impresora.opciones({}).renderFabricSheet({ planIndex: 0 })).rejects.toThrow('30 s');
+    await expect(ctx.impresora.opciones({}).renderFabricSheets([{ planIndex: 0 }])).rejects.toThrow('30 s');
     fallar = false;
-    await expect(ctx.impresora.opciones({}).renderFabricSheet({ planIndex: 0 })).rejects.toThrow(/hace poco/);
+    await expect(ctx.impresora.opciones({}).renderFabricSheets([{ planIndex: 0 }])).rejects.toThrow(/hace poco/);
     expect(servicio.generar).toHaveBeenCalledTimes(1);
     ctx.avanzar(60_000);
-    await expect(ctx.impresora.opciones({}).renderFabricSheet({ planIndex: 0 })).resolves.toBe(PDF);
+    await expect(ctx.impresora.opciones({}).renderFabricSheets([{ planIndex: 0 }])).resolves.toMatchObject({ pageCounts: [1] });
   });
 
   test('una espera larga de quien ya se fue no pausa Chromium', async () => {
@@ -135,8 +147,8 @@ describe('impresora de la hoja de telas en HTML', () => {
     });
     const ctx = crear({ servicio });
     avanzar = ctx.avanzar;
-    await expect(ctx.impresora.opciones({ sigueEsperando: () => espera }).renderFabricSheet({ planIndex: 0 })).rejects.toThrow();
-    await expect(ctx.impresora.opciones({}).renderFabricSheet({ planIndex: 0 })).resolves.toBe(PDF);
+    await expect(ctx.impresora.opciones({ sigueEsperando: () => espera }).renderFabricSheets([{ planIndex: 0 }])).rejects.toThrow();
+    await expect(ctx.impresora.opciones({}).renderFabricSheets([{ planIndex: 0 }])).resolves.toMatchObject({ pageCounts: [1] });
   });
 
   test('el registro dice el pedido y la hoja', () => {
@@ -148,6 +160,18 @@ describe('impresora de la hoja de telas en HTML', () => {
     expect(registro[0]).toContain('hoja 2');
     expect(registro[0]).toContain('Chromium roto');
     expect(registro[1]).toContain('AR2604782');
+    expect(registro[1]).toContain('hojas de telas');
     expect(registro[1]).toContain('unión rota');
+  });
+});
+
+describe('paginasDeCadaHoja', () => {
+  test('lee las páginas de cada hoja del título que copia Chromium', async () => {
+    await expect(paginasDeCadaHoja(await pdfConTitulo('telas-paginas:1,3,1', 5))).resolves.toEqual([1, 3, 1]);
+  });
+
+  test('sin ese título (otra página, o la web no llegó a ponerlo) es un fallo: sale pdfkit', async () => {
+    await expect(paginasDeCadaHoja(await pdfConTitulo('Planteamientos TGM'))).rejects.toThrow(/cuántas páginas/);
+    await expect(paginasDeCadaHoja(await pdfConTitulo(null))).rejects.toThrow(/cuántas páginas/);
   });
 });

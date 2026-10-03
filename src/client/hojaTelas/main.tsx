@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/geist';
 import './hojaTelas.css';
 import { cargarHojaTelas } from './cargarHojaTelas';
-import { HojaTelas } from './HojaTelas';
+import { HojasTelas } from './HojaTelas';
 import type { HojaTelasDatos } from './tipos';
 
 // Página de telas del planteamiento de toldos: página interna, sin la aplicación alrededor, que
@@ -26,16 +26,24 @@ raiz = createRoot(document.getElementById('hoja')!, {
 window.addEventListener('error', (evento) => fallar(`Error en la hoja: ${evento.message}`));
 window.addEventListener('unhandledrejection', (evento) => fallar(`Error en la hoja: ${texto(evento.reason)}`));
 
-function cargar(): Promise<HojaTelasDatos> {
+function cargar(): Promise<HojaTelasDatos[]> {
   // Solo con el servidor de desarrollo (MODE y no DEV, como en la hoja de remolques): en un build
   // la rama y su import desaparecen.
   if (import.meta.env.MODE === 'development') {
     const muestra = new URLSearchParams(window.location.search).get('muestra');
-    if (muestra) return import('./muestraDev').then(({ datosMuestra }) => datosMuestra(muestra));
+    // Varias muestras separadas por comas salen seguidas, como un pedido con varias hojas.
+    if (muestra) return import('./muestraDev').then(({ datosMuestra }) => muestra.split(',').map(datosMuestra));
   }
   return cargarHojaTelas(window.location.search);
 }
 
+// Chromium copia el título de la página al PDF: así le llega al servidor cuántas páginas ocupa
+// cada hoja («telas-paginas:1,2,1»), que lee src/hojaTelasPdf.js.
+const listas = (paginas: number[]) => {
+  document.title = `telas-paginas:${paginas.join(',')}`;
+  lista();
+};
+
 cargar()
-  .then((datos) => raiz?.render(<HojaTelas datos={datos} onLista={lista} onError={fallar} />))
+  .then((hojas) => raiz?.render(<HojasTelas hojas={hojas} onLista={listas} onError={fallar} />))
   .catch((error: unknown) => fallar(`No se pudo preparar la hoja: ${texto(error)}`));

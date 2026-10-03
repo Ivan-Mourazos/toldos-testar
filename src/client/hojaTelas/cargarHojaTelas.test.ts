@@ -9,10 +9,15 @@ describe('cargarHojaTelas', () => {
     const pedidas: Array<[string, RequestInit | undefined]> = [];
     const datos = await cargarHojaTelas('?id=abc%20123', (url, init) => {
       pedidas.push([url, init]);
-      return respuesta(200, { planIndex: 0 });
+      return respuesta(200, [{ planIndex: 0 }, { planIndex: 2 }]);
     });
     expect(pedidas).toEqual([['/api/hoja-telas/abc%20123', { cache: 'no-store' }]]);
-    expect(datos).toEqual({ planIndex: 0 });
+    expect(datos).toEqual([{ planIndex: 0 }, { planIndex: 2 }]);
+  });
+
+  it('sin ninguna hoja en la respuesta, falla en vez de imprimir una página vacía', async () => {
+    await expect(cargarHojaTelas('?id=x', () => respuesta(200, []))).rejects.toThrow('El servidor no mandó ninguna hoja de telas.');
+    await expect(cargarHojaTelas('?id=x', () => respuesta(200, { planIndex: 0 }))).rejects.toThrow('El servidor no mandó ninguna hoja de telas.');
   });
 
   it('sin identificador no pide nada', async () => {

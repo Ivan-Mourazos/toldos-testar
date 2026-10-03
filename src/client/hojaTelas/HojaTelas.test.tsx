@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { altoFila, HojaTelas } from './HojaTelas';
+import { altoFila, contarPaginas, HojaTelas, HojasTelas } from './HojaTelas';
 import type { HojaTelasDatos } from './tipos';
 
 const ejemplo: HojaTelasDatos = {
@@ -70,5 +70,21 @@ describe('altoFila', () => {
     expect(altoFila(1)).toBe(90);
     expect(altoFila(4)).toBeCloseTo((512.28 - 214) / 4 - 9, 5);
     expect(altoFila(8)).toBe(62);
+  });
+});
+
+describe('HojasTelas', () => {
+  it('pinta todas las hojas seguidas, cada una con su marca, para imprimirlas de una vez', () => {
+    const html = renderToStaticMarkup(
+      <HojasTelas hojas={[ejemplo, { ...ejemplo, planIndex: 2, diagramTitle: 'CORTINA' }]} onLista={() => {}} onError={() => {}} />
+    );
+    expect(html.match(/data-hoja-telas=""/g)).toHaveLength(2);
+    expect(html.indexOf('CAMBIO DE TELA')).toBeLessThan(html.indexOf('CORTINA'));
+  });
+
+  it('cuenta las páginas de cada hoja en orden', () => {
+    const hoja = (paginas: number) => ({ querySelectorAll: () => ({ length: paginas }) });
+    const raiz = { querySelectorAll: () => [hoja(2), hoja(1), hoja(3)] } as unknown as ParentNode;
+    expect(contarPaginas(raiz)).toEqual([2, 1, 3]);
   });
 });
