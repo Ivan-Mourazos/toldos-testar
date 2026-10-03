@@ -9,7 +9,7 @@
 //   TELAS_HTML=0 ISOLATED_DIR="$PWD/tmp/tarea7/pdfkit" PORT=4314 FAKE_COORDINA_PORT=4324 bash .claude/skills/running-toldos-testar/start-isolated.sh
 //   TOLDOS_ISOLATED_URL=http://127.0.0.1:4314 HOJA_ESPERADA=pdfkit node scripts/test-hoja-telas-e2e.mjs
 // HOJA_ESPERADA=pdfkit también sirve para el respaldo (Chromium que no arranca).
-// CASOS=cortina,antica limita los casos; REPETICIONES (3 por defecto) son las peticiones por caso.
+// SALIDA cambia la carpeta de las capturas. CASOS=cortina,antica limita los casos; REPETICIONES (3 por defecto) son las peticiones por caso.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -20,7 +20,8 @@ const esperada = process.env.HOJA_ESPERADA || 'html';
 assert.ok(['html', 'pdfkit'].includes(esperada), 'HOJA_ESPERADA tiene que ser html o pdfkit');
 const prefijo = process.env.PREFIJO ?? (esperada === 'pdfkit' ? 'antes-' : '');
 const repeticiones = Number(process.env.REPETICIONES || 3);
-const salida = 'tmp/ui-audit/pdf-telas-html';
+const salida = process.env.SALIDA || 'tmp/ui-audit/pdf-telas-html';
+assert.ok(salida.startsWith('tmp/'), 'SALIDA tiene que estar dentro de tmp/');
 fs.mkdirSync(salida, { recursive: true });
 
 const health = await fetch(`${BASE_URL}/api/health`).then((r) => r.json());
@@ -54,6 +55,19 @@ const arzua = {
 const cambio = (id, of, extra = {}) => ({
   id, of, model: 'CAMBIO TELA', units: 1, width: 337, projection: 225, valanceHeight: 0, rotFabric: 'NO', rotValance: '', ...extra
 });
+// HERA 56 máquina (cadena, varilla blanca) y HERA 56 motor (pletina): desde el 03/10/2026 salen
+// como cualquier modelo, con página de estructura y hoja de telas.
+const soltis = 'SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96';
+const heraMaquina = {
+  id: 'a', of: '0231000', model: 'HERA', submodel: 'HERA 56 MAQUINA', units: 1, width: 163.5, projection: 165, height: 250,
+  heraJoin: 'NINGUNO', heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO',
+  heraChainColor: 'BLANCO', structureNotes: 'TELA 6 CM MÁS CORTA EN EL LADO IZQUIERDO MIRANDO DESDE DENTRO'
+};
+const heraMotor = {
+  id: 'b', of: '0231001', model: 'HERA', submodel: 'HERA 56 MOTOR', units: 2, width: 320.5, projection: 160,
+  heraJoin: 'VERTICAL', heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'PLETINA', heraInteriorFace: 'REVÉS',
+  heraChainColor: 'NEGRO'
+};
 
 const casos = {
   cortina: pedido({ orderCode: 'AR2604782', fabric: acrNegro, awnings: [cortina] }),
@@ -78,6 +92,8 @@ const casos = {
   }),
   largas: pedido({ orderCode: 'AR2603337', fabric: acrAzul, notes: notasLargas, awnings: [arzua] })
 };
+// Una hoja de telas por variante y cara interior: aquí, dos (la segunda sale en «hera-pagina-<n>.png»).
+casos.hera = pedido({ orderCode: 'AR2603981', fabric: soltis, structureColor: '', notes: 'ENTREGAR CON EL RESTO DEL PEDIDO', awnings: [heraMaquina, heraMotor] });
 // Varias hojas de telas en un PDF: se imprimen una tras otra, así que es el caso que más tarda.
 casos.cuatro = pedido({
   orderCode: 'AR2603338', fabric: acrNegro,
@@ -141,6 +157,18 @@ for (const nombre of elegidos) {
     const deChromium = (p) => p.fuentes.some((f) => /geist/i.test(f));
     for (const p of telas) {
       assert.equal(deChromium(p) ? 'html' : 'pdfkit', esperada, `${nombre}: la página ${p.n} no sale de ${esperada} (${p.fuentes.join(', ')})`);
+    }
+    if (nombre === 'hera') {
+      assert.ok(!paginas.some((p) => p.texto.includes('Planteamiento HERA')), 'hera: sigue saliendo la página propia del HERA');
+      assert.equal(telas.length, 2, 'hera: una hoja de telas por variante');
+      const [maquina, motor] = telas.map((p) => p.texto);
+      for (const dato of ['HERA 56', 'CARA INTERIOR DERECHO DENTRO', 'ABAJO VARILLA BLANCA', 'CADENA 300', 'TUBO 159,8', 'ACLARACIONES: TELA 6 CM MÁS CORTA', 'ENTREGAR CON EL RESTO DEL PEDIDO']) {
+        assert.ok(maquina.includes(dato), `hera: falta «${dato}» en la hoja de telas de máquina`);
+      }
+      for (const dato of ['EMPATE VERTICAL', 'CARA INTERIOR REVÉS DENTRO', 'ABAJO PLETINA', 'CORTE ', 'TUBO 316']) {
+        assert.ok(motor.includes(dato), `hera: falta «${dato}» en la hoja de telas de motor`);
+      }
+      assert.ok(!motor.includes('CADENA'), 'hera: el de motor no lleva cadena');
     }
     if (nombre === 'largas') {
       const todas = telas.map((p) => p.texto).join(' ');

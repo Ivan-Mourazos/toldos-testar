@@ -46,9 +46,12 @@ try {
     assert.equal(generated.review.status, 'PRODUCED'); assert.equal(generated.saved.length, 2);
     const pdfPath = generated.saved.find(f => f.type === 'pdf').savedPath;
     const doc = await getDocument({ data: new Uint8Array(await readFile(pdfPath)) }).promise;
-    assert.equal(doc.numPages, 1);
-    const text = (await (await doc.getPage(1)).getTextContent()).items.map(i => i.str).join(' ');
-    assert.ok(text.includes('CORTE TELA')); assert.ok(text.includes('REVÉS DENTRO')); assert.ok(text.includes('VERTICAL'));
+    // Como el resto de modelos (03/10/2026): página de estructura con su despiece y hoja de telas.
+    assert.equal(doc.numPages, 2);
+    let text = '';
+    for (let n = 1; n <= doc.numPages; n += 1) text += ' ' + (await (await doc.getPage(n)).getTextContent()).items.map(i => i.str).join(' ');
+    assert.ok(text.includes('DESPIECE')); assert.ok(text.includes('CORTE ')); assert.ok(text.includes('REVÉS DENTRO')); assert.ok(text.includes('VERTICAL'));
+    assert.ok(!text.includes('Planteamiento HERA'));
     const workbook = await readFile(generated.saved.find(f => f.type === 'rps').savedPath, 'latin1');
     assert.ok(workbook.includes('ACRILI2170P120'));
     assert.equal(workbook.includes(chainCode), index !== 2);

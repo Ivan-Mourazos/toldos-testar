@@ -12,11 +12,37 @@ Esta ficha recoge investigación ya realizada. No añade una validación del pro
 - Variantes actuales: HERA 43 máquina, HERA 56 máquina, HERA 56 motor.
 - Fabricante, proveedor y manual técnico aplicable: pendientes de verificar documentalmente.
 - Funcionamiento actual: desarrollo habilitado; configuración PM2 habilitada por petición expresa de Iván el 18/09/2026. Despliegue remoto a cargo del usuario; no verificado desde esta sesión.
-- Alcance de reserva actual (23/09/2026): tejido, anillo de cadena y **la estructura según el consumo real** (ver "Reserva de estructura" más abajo). Sin despiece en el PDF: el planteamiento sigue en CAD.
+- Alcance de reserva actual (23/09/2026): tejido, anillo de cadena y **la estructura según el consumo real** (ver "Reserva de estructura" más abajo). Desde el 03/10/2026 el PDF lleva despiece y sale como el resto de modelos (apartado siguiente).
 - Próximo trabajo independiente: identificar manuales aplicables, inventariar piezas por variante y comprobar correspondencias RPS. No hace falta esperar la respuesta del 3981 para empezar esto.
-- Activación configurada; despliegue remoto pendiente de ejecución por el usuario. Continúa pendiente el despiece completo.
+- Activación configurada; despliegue remoto pendiente de ejecución por el usuario. El despiece del PDF está hecho desde el 03/10/2026 con las piezas que se reservan.
 
 ## Estado por área
+
+### Planteamiento como el resto de modelos — 03/10/2026
+
+Decisión de Iván: «Quiero que sea como todos los modelos». El HERA deja de tener su página A5 propia y sale con las dos páginas de siempre, en HTML (Chromium) y, de respaldo, con pdfkit. Diseño en [la especificación de la fase 2b](../superpowers/specs/2026-10-03-pdf-toldos-html-fase-2b-hera-design.md).
+
+**Página de estructura (A5).** Cabecera con la variante sin el accionamiento («HERA 56») y, a la derecha, MÁQUINA o MOTOR. DATOS DE PARTIDA: frente, caída, unidades y, con cadena, la altura. DETALLES: en lugar del lacado, COLOR CADENA (COLOR MECANISMOS a motor) y el dispositivo; el lado del mando y la colocación solo si el toldo los trae (la tarjeta del HERA no los pide). SISTEMA DE ANCLAJE: «NO INDICADO», porque el HERA no pide tipo de pared.
+
+**Despiece.** Son las piezas que ya se reservan, con sus mismas referencias; no se añade ni se quita nada de la reserva.
+
+| Fila | Referencia | Unidades | Longitud |
+| --- | --- | --- | --- |
+| Kit mecanismo Swift 43-56 (o 43 en el HERA 43) | `SCRKITSW4350…` / `SCRKITSW43…` | 1 por toldo | — |
+| Adaptador Swift (no en el HERA 43) | `SCRADPSWIF…` | 2 por toldo con cadena, 1 con motor | — |
+| Tubo de enrolle | `SCRTUBO53600C` / `SCRTUBO43P600CM` | 1 por toldo (piezas, no barras) | la del tubo |
+| Con cadena: contrapeso y unión de cadena | `SCRECONTRCAD…`, `SCRUNICAD…` | 1 y 2 por toldo | — |
+| Con motor: rueda LT50 y motor Sunilus | `RUEDAAPLT5053`, `SUNILUSIO…` | 1 por toldo | — |
+| Abajo con perfil: perfil de contrapeso y sus dos tapones | `SCRPECBLAN600C`, `SCRTAPINFBLANDCH/IZQ` | 1 por toldo cada uno | el ancho de la tela (perfil) |
+| Abajo con pletina | `PLA4…25MM635C` | 1 por toldo | el ancho de la tela |
+
+- Con «E.T. platanero» no sale nada abajo, igual que en la reserva.
+- En ELEMENTOS ACCESORIOS: **el anillo de cadena con su referencia exacta** (color y medida, la línea que se reserva; lo pidió Iván) o, a motor, el mando. Si el anillo no tiene referencia exacta no hay fila: el aviso de consultar con compras sigue saliendo en la web.
+- El macarrón y la varilla vaina son material de confección: se reservan igual, pero no van en el despiece (Iván, 03/10/2026).
+- La tapa tornillo Swift sigue sin reservarse y sin salir (Q-H05).
+- La tarjeta del HERA tiene ahora la pestaña «Despiece» del panel «Despiece y dibujo», con el mismo editor que los demás modelos.
+
+**Hoja de telas (A4).** La normal: fila con TELA, CAÍDA y UN.; en la línea, lo propio del HERA separado con « · » y solo lo que tiene valor: empate (si lo hay), cara interior, arriba, abajo, corte (si difiere de la tela), cadena (si la lleva) y tubo. El dibujo es el de orientación de la cara interior, o la imagen de tela si el toldo la lleva. Comparten hoja (hasta cuatro) los HERA de la misma variante, cara interior e imagen. Las aclaraciones de cada toldo («A: ACLARACIONES: …») y las observaciones del pedido van enteras en OBSERVACIONES; si no caben, continúan en otra página.
 
 ### Reserva de estructura según el consumo real — 23/09/2026
 
@@ -68,7 +94,7 @@ Consulta de solo lectura reproducible con `node scripts/audit-hera-chain.mjs`; e
 | Variantes | En curso | Hay tres variantes en las guías internas; falta contrastar catálogo del proveedor |
 | Cálculo dimensional | En curso, contraste parcial | Veinte medidas del 3981 coinciden; ver histórico y excepciones en la evidencia |
 | Reserva de tela | Con dudas | 14,5 ml calculados frente a 15 ml previstos en la OF del 3981, bajo hipótesis de ausencia de empate |
-| Despiece y reserva de estructura | Reserva hecha (23/09); despiece no | Reserva según el consumo real (apartado anterior); el despiece sigue en CAD |
+| Despiece y reserva de estructura | Reserva hecha (23/09); despiece en el PDF (03/10) | Reserva según el consumo real; el despiece del PDF son esas mismas piezas (apartado «Planteamiento como el resto de modelos») |
 | Formulario y flujo | En curso | Pruebas aisladas existentes de tres variantes; no certifican fabricación real |
 | Parámetros | Pendiente de auditoría completa | Hay heraParameters.js; comprobar integración y mantenimiento desde la pantalla |
 | Notas y PDF 2D | En curso | Aclaraciones destacadas y continuadas; pendiente revisión de taller de muestras |

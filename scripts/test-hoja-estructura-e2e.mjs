@@ -1,6 +1,6 @@
 // Página de estructura en HTML: comprobación de punta a punta en una instancia aislada ya arrancada.
-// Para cada caso pide el PDF, mide el tiempo, mira con pdfjs las páginas de estructura (las A5
-// que no son del HERA) y quién las imprimió (Chromium o pdfkit), y las captura en la vista
+// Para cada caso pide el PDF, mide el tiempo, mira con pdfjs las páginas de estructura (las A5)
+// y quién las imprimió (Chromium o pdfkit), y las captura en la vista
 // previa de Nuevo pedido.
 //
 // Con la página en HTML (lo normal):
@@ -13,7 +13,7 @@
 // arrancar la instancia): todo sale con pdfkit, también la hoja de telas.
 //   TOLDOS_ISOLATED_URL=http://127.0.0.1:4316 HOJA_ESPERADA=pdfkit TELAS_ESPERADA=pdfkit PREFIJO=respaldo- CAPTURAS=0 node scripts/test-hoja-estructura-e2e.mjs
 //
-// CASOS=arzua,cuatro limita los casos. REPETICIONES (5 por defecto) son las peticiones que se
+// CASOS=arzua,cuatro limita los casos. SALIDA cambia la carpeta de las capturas. REPETICIONES (5 por defecto) son las peticiones que se
 // miden en cada caso; antes va una de calentamiento que no cuenta. CAPTURAS=0 no abre la vista
 // previa. Cada pasada deja «<prefijo><caso>.paginas.json» con el tamaño de sus páginas y lo
 // compara con el de la otra pasada (html ↔ antes-), si está.
@@ -31,7 +31,8 @@ const prefijo = process.env.PREFIJO ?? (esperada === 'pdfkit' ? 'antes-' : '');
 const repeticiones = Number(process.env.REPETICIONES || 5);
 const conCapturas = process.env.CAPTURAS !== '0';
 const LIMITE_MS = 2000;
-const salida = 'tmp/ui-audit/estructura-html';
+const salida = process.env.SALIDA || 'tmp/ui-audit/estructura-html';
+assert.ok(salida.startsWith('tmp/'), 'SALIDA tiene que estar dentro de tmp/');
 fs.mkdirSync(salida, { recursive: true });
 
 const health = await fetch(`${BASE_URL}/api/health`).then((r) => r.json());
@@ -94,6 +95,19 @@ const antica = {
   machineSide: 'M.F.DER', sensor: 'SIN SENSOR', placement: 'FRONTAL', wallType: '', valanceCurve: 'RECTA',
   structureColor: 'BLANCO', rotFabric: 'NO', rotValance: 'NO'
 };
+// HERA 56 máquina (cadena, varilla blanca) y HERA 56 motor (pletina): desde el 03/10/2026 salen
+// como cualquier modelo, con página de estructura y hoja de telas.
+const soltis = 'SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96';
+const heraMaquina = {
+  id: 'a', of: '0231000', model: 'HERA', submodel: 'HERA 56 MAQUINA', units: 1, width: 163.5, projection: 165, height: 250,
+  heraJoin: 'NINGUNO', heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO',
+  heraChainColor: 'BLANCO', structureNotes: 'TELA 6 CM MÁS CORTA EN EL LADO IZQUIERDO MIRANDO DESDE DENTRO'
+};
+const heraMotor = {
+  id: 'b', of: '0231001', model: 'HERA', submodel: 'HERA 56 MOTOR', units: 2, width: 320.5, projection: 160,
+  heraJoin: 'VERTICAL', heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'PLETINA', heraInteriorFace: 'REVÉS',
+  heraChainColor: 'NEGRO'
+};
 
 const casos = {
   arzua: pedido({ orderCode: 'AR2603332', fabric: acrAzul, awnings: [arzua] }),
@@ -107,6 +121,7 @@ const casos = {
   }),
   // Sin tubo de carga el cálculo del Arzúa no es válido: recuadro REVISAR y despiece vacío.
   revisar: pedido({ orderCode: 'AR2603345', fabric: acrAzul, awnings: [{ ...arzua, of: '0230215', tubeLoad: '' }] }),
+  hera: pedido({ orderCode: 'AR2603981', fabric: soltis, structureColor: '', awnings: [heraMaquina, heraMotor] }),
   // El de la prueba de telas: cuatro modelos distintos en un PDF, el caso que más tarda.
   cuatro: pedido({
     orderCode: 'AR2603338', fabric: acrNegro,
@@ -146,7 +161,7 @@ const deChromium = (p) => p.fuentes.some((f) => /geist/i.test(f));
 const dePdfkit = (p) => p.fuentes.some((f) => /segoe|helvetica/i.test(f));
 // A5 apaisado: 595,28 × 419,53 pt con pdfkit y 595 × 420 con Chromium (redondea al píxel).
 const esA5 = (p) => Math.abs(p.ancho - 595.28) < 1.5 && Math.abs(p.alto - 419.53) < 1.5;
-const esDeEstructura = (p) => esA5(p) && !p.texto.includes('Planteamiento HERA');
+const esDeEstructura = (p) => esA5(p);
 const tiempos = {};
 const fallos = [];
 const avisos = [];
@@ -195,6 +210,14 @@ for (const nombre of elegidos) {
     }
     if (nombre === 'revisar') assert.ok(todo.includes('REVISAR'), 'revisar: falta el recuadro REVISAR');
     else assert.ok(!todo.includes('REVISAR'), `${nombre}: sale REVISAR en un pedido válido`);
+    if (nombre === 'hera') {
+      assert.ok(!paginas.some((p) => p.texto.includes('Planteamiento HERA')), 'hera: sigue saliendo la página propia del HERA');
+      for (const dato of ['HERA 56', 'ALTURA', 'COLOR CADENA', 'ELEMENTOS ACCESORIOS', 'SCRANILBLAN150C', 'SITUOIO1PURE', 'SUNILUSIO6//17']) {
+        assert.ok(todo.includes(dato), `hera: falta «${dato}» en la página de estructura`);
+      }
+      assert.ok(!todo.includes('LACADO'), 'hera: la página de estructura no lleva LACADO');
+      assert.ok(!/MACALENGU|VARILLAVAINA/.test(todo), 'hera: el material de confección no va en el despiece');
+    }
     if (nombre === 'electra') {
       for (const fila of ['VARIANTE', 'SOPORTE']) assert.ok(todo.includes(fila), `electra: falta la fila ${fila} en DETALLES`);
     }
