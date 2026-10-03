@@ -1,12 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-import pdfLib from 'pdf-lib';
 import { buildFabricSheetPages, buildFabricDiagramBoxPdf, buildOrderPlanteamientoPdf, buildPlanteamientoPlan, FABRIC_SHEET_DIAGRAM_BOX } from './planteamientoPdf.js';
 import { normalizeOrder } from './validation.js';
 import { calculateOrder } from './rules.js';
 import { extractReviewPackageFromPdf } from '../workflow.js';
-
-const { PDFDocument } = pdfLib;
+import { fakeSheets, heraAwning, pageTexts, pageSizes } from './pdfTestHelpers.js';
 
 const pvc = 'NS86BLANP250|||250|||LONA NS86 2L 630 g/m² :BLANCO :250 AN (580)|||PLASTICA (LONA)';
 const acr = 'ACRILI2170P120|||120|||LONA ACRILICA MASACRIL 300 :NEGRO 2170 :120 AN|||ACRÍLICAS';
@@ -96,41 +94,12 @@ describe('buildFabricDiagramBoxPdf', () => {
   });
 });
 
-// Imita a Chromium: todas las hojas en un solo PDF y cuántas páginas ocupa cada una.
-// Cada página lleva «HOJA HTML n» (n desde 1 dentro de su hoja) y «PLAN i» (su índice en el plan).
-function fakeSheets(counts = []) {
-  return async (sheets) => {
-    const doc = await PDFDocument.create();
-    const pageCounts = sheets.map((_, index) => counts[index] ?? 1);
-    sheets.forEach(({ planIndex }, index) => {
-      for (let i = 0; i < pageCounts[index]; i += 1) {
-        doc.addPage([841.89, 595.28]).drawText(`HOJA HTML ${i + 1} PLAN ${planIndex}`, { x: 400, y: 300, size: 10 });
-      }
-    });
-    return { pdf: Buffer.from(await doc.save()), pageCounts };
-  };
-}
-async function pageTexts(pdf) {
-  const task = getDocument({ data: new Uint8Array(pdf) });
-  const doc = await task.promise;
-  try {
-    const texts = [];
-    for (let n = 1; n <= doc.numPages; n += 1) texts.push((await (await doc.getPage(n)).getTextContent()).items.map((item) => item.str).join(' '));
-    return texts;
-  } finally { await task.destroy(); }
-}
-async function pageSizes(pdf) {
-  const doc = await PDFDocument.load(pdf);
-  return doc.getPages().map((page) => (page.getWidth() > 700 ? 'A4' : 'A5'));
-}
-const heraAwning = { id: 'h', of: '0231000', model: 'HERA', submodel: 'HERA 56 MAQUINA', heraJoin: 'NINGUNO', heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO', heraChainColor: 'BLANCO', units: 1, width: 163.5, projection: 165, height: 230 };
-
 describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
   const order = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings: [cambioTela({ id: 'a' })] });
   const calculation = calculateOrder(order);
 
   test('la página de telas se sustituye por la impresa, con el dibujo encajado', async () => {
-    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, renderFabricSheets: fakeSheets() });
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, htmlStructure: false, renderSheets: fakeSheets() });
     const texts = await pageTexts(pdf);
     expect(texts.at(-1)).toContain('HOJA HTML 1');
     expect(texts.at(-1)).not.toContain('PLANTEAMIENTO DE TELAS');
@@ -139,20 +108,20 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
   });
 
   test('las páginas de continuación de la hoja se conservan en su sitio', async () => {
-    const texts = await pageTexts(await buildOrderPlanteamientoPdf({ order, calculation, renderFabricSheets: fakeSheets([2]) }));
+    const texts = await pageTexts(await buildOrderPlanteamientoPdf({ order, calculation, htmlStructure: false, renderSheets: fakeSheets([2]) }));
     expect(texts.slice(-2).map((t) => t.match(/HOJA HTML \d/)?.[0])).toEqual(['HOJA HTML 1', 'HOJA HTML 2']);
   });
 
   test('si la hoja falla, sale la página de pdfkit y se avisa', async () => {
     const errores = [];
-    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, renderFabricSheets: async () => { throw new Error('Chromium caído'); }, onFabricSheetError: (error) => errores.push(error.message) });
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, htmlStructure: false, renderSheets: async () => { throw new Error('Chromium caído'); }, onSheetError: (error) => errores.push(error.message) });
     expect((await pageTexts(pdf)).at(-1)).toContain('PLANTEAMIENTO DE TELAS');
     expect(errores).toEqual(['Chromium caído']);
   });
 
   test('con revisión, el PDF unido lleva los datos y se reabre', async () => {
     const review = { kind: 'toldos-testar-review', orderCode: 'AR2603332', order, status: 'PENDING_REVIEW' };
-    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, review, renderFabricSheets: fakeSheets() });
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, review, htmlStructure: false, renderSheets: fakeSheets() });
     // Devuelve la revisión tal cual se guardó (JSON ida y vuelta).
     await expect(extractReviewPackageFromPdf(pdf)).resolves.toEqual(JSON.parse(JSON.stringify(review)));
   });
@@ -167,7 +136,7 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
     expect(plan.fabricPages[sheets[0].planIndex].diagram).not.toBe('HERA');
 
     const pdfkit = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation });
-    const merged = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation, renderFabricSheets: fakeSheets() });
+    const merged = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation, htmlStructure: false, renderSheets: fakeSheets() });
     const [before, after] = [await pageTexts(pdfkit), await pageTexts(merged)];
     expect(after).toHaveLength(before.length);
     expect(await pageSizes(merged)).toEqual(await pageSizes(pdfkit));
@@ -185,7 +154,7 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
     const continuations = before.filter((text) => text.includes('Planteamiento de telas · Observaciones (continuación)')).length;
     expect(continuations).toBeGreaterThan(0);
 
-    const after = await pageTexts(await buildOrderPlanteamientoPdf({ order: long, calculation: longCalculation, renderFabricSheets: fakeSheets() }));
+    const after = await pageTexts(await buildOrderPlanteamientoPdf({ order: long, calculation: longCalculation, htmlStructure: false, renderSheets: fakeSheets() }));
     expect(after).toHaveLength(before.length - continuations);
     expect(after.filter((text) => text.includes('HOJA HTML 1'))).toHaveLength(1);
     expect(after.at(-1)).toContain('HOJA HTML 1');
@@ -204,7 +173,7 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
       const pdf = await buildOrderPlanteamientoPdf({
         order: two,
         calculation: twoCalculation,
-        renderFabricSheets: (pages) => { llamadas.push(pages.map(({ planIndex }) => planIndex)); return render(pages); }
+        htmlStructure: false, renderSheets: (pages) => { llamadas.push(pages.map(({ planIndex }) => planIndex)); return render(pages); }
       });
       expect(llamadas).toEqual([sheets.map(({ planIndex }) => planIndex)]);
       const [first, second] = sheets.map(({ planIndex }) => planIndex);
@@ -218,8 +187,8 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
       const pdf = await buildOrderPlanteamientoPdf({
         order: two,
         calculation: twoCalculation,
-        renderFabricSheets: async (pages) => ({ ...(await fakeSheets()(pages)), pageCounts: [1, 2] }),
-        onFabricSheetError: (error) => errores.push(error.message)
+        htmlStructure: false, renderSheets: async (pages) => ({ ...(await fakeSheets()(pages)), pageCounts: [1, 2] }),
+        onSheetError: (error) => errores.push(error.message)
       });
       const texts = await pageTexts(pdf);
       expect(texts.some((t) => t.includes('HOJA HTML'))).toBe(false);
@@ -233,8 +202,8 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
     const pdf = await buildOrderPlanteamientoPdf({
       order,
       calculation,
-      renderFabricSheets: async () => { throw new Error('Chromium caído'); },
-      onFabricSheetError: () => { throw new Error('el aviso falla'); }
+      htmlStructure: false, renderSheets: async () => { throw new Error('Chromium caído'); },
+      onSheetError: () => { throw new Error('el aviso falla'); }
     });
     expect((await pageTexts(pdf)).at(-1)).toContain('PLANTEAMIENTO DE TELAS');
   });

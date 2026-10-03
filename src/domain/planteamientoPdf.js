@@ -46,50 +46,64 @@ const fonts = hasEmbeddedFonts
 // Con `onlyAwningId` sale solo ese toldo (el panel «Despiece y dibujo»), pero con su letra
 // de siempre: el plan se hace con el pedido entero y se filtra después.
 //
-// Con `renderFabricSheets(pages)` las páginas de telas A4 (con sus continuaciones de
-// observaciones) se cambian por las hojas que imprime Chromium, y en su recuadro se encaja el
-// dibujo de pdfkit. Chromium las imprime todas de una vez, que es mucho más rápido que una a
+// Con `renderSheets(hojas)` las páginas de estructura A5 de cada toldo y las de telas A4 (con
+// sus continuaciones de observaciones) se cambian por las hojas que imprime Chromium; en el
+// recuadro de las de telas se encaja además el dibujo de pdfkit. Chromium las imprime todas de
+// una vez (primero las de estructura, luego las de telas), que es mucho más rápido que una a
 // una, y devuelve `{ pdf, pageCounts }`: cuántas páginas ocupa cada hoja, en el mismo orden.
-// Si algo falla se avisa con `onFabricSheetError(error, page)` (page null si no es de una hoja)
+// `htmlStructure` y `htmlFabric` en falso dejan ese tipo de página con pdfkit.
+// Si algo falla se avisa con `onSheetError(error, hoja)` (hoja null si no es de una sola hoja)
 // y esas páginas salen con pdfkit como siempre: el PDF no se queda nunca sin hacer.
-export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderFabricSheets = null, onFabricSheetError = null }) {
-  if (!renderFabricSheets) {
-    return (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
+export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, onSheetError = null }) {
+  const withPdfkit = async () => (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
+  if (!renderSheets || (!htmlStructure && !htmlFabric)) return withPdfkit();
+  let structureSheets;
+  let fabricSheets;
+  try {
+    structureSheets = htmlStructure ? buildStructureSheetPages({ order, calculation, onlyAwningId }) : [];
+    fabricSheets = htmlFabric ? buildFabricSheetPages({ order, calculation, onlyAwningId }) : [];
+  } catch (error) {
+    notifySheetError(onSheetError, error, null);
+    return withPdfkit();
   }
-  const { pdf: base, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false });
+  const sheets = [...structureSheets, ...fabricSheets];
+  if (sheets.length === 0) return withPdfkit();
+
+  const { pdf: base, structureRanges, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false });
   const plan = buildPlanteamientoPlan(order, calculation, { onlyAwningId });
-  const pages = buildFabricSheetPages({ order, calculation, onlyAwningId });
-  const sheets = new Map();
-  if (pages.length > 0) {
-    // Los dibujos se hacen mientras Chromium imprime; el que falle deja su hoja con pdfkit.
-    const drawings = pages.map((page) => {
-      const { diagram, diagramAwning, diagramCalculation } = plan.fabricPages[page.planIndex];
-      return buildFabricDiagramBoxPdf({ diagram, awning: diagramAwning, calculation: diagramCalculation })
-        .then((drawing) => ({ drawing }), (error) => ({ error }));
-    });
-    let printed = null;
-    try {
-      printed = await loadPrintedSheets(await renderFabricSheets(pages), pages.length);
-    } catch (error) {
-      notifyFabricSheetError(onFabricSheetError, error, null);
-    }
-    const drawn = await Promise.all(drawings);
-    if (printed) {
-      pages.forEach((page, index) => {
-        if (drawn[index].error) {
-          notifyFabricSheetError(onFabricSheetError, drawn[index].error, page);
-          return;
-        }
-        sheets.set(page.planIndex, { sheet: printed.sheet, indices: printed.indices[index], drawing: drawn[index].drawing });
-      });
-    }
+  // Los dibujos se hacen mientras Chromium imprime; el que falle deja su hoja con pdfkit.
+  const drawings = fabricSheets.map((sheet) => {
+    const { diagram, diagramAwning, diagramCalculation } = plan.fabricPages[sheet.planIndex];
+    return buildFabricDiagramBoxPdf({ diagram, awning: diagramAwning, calculation: diagramCalculation })
+      .then((drawing) => ({ drawing }), (error) => ({ error }));
+  });
+  let printed = null;
+  try {
+    printed = await loadPrintedSheets(await renderSheets(sheets), sheets.length);
+  } catch (error) {
+    notifySheetError(onSheetError, error, null);
   }
+  const drawn = await Promise.all(drawings);
+  if (!printed) return withPdfkit();
+
+  // Cada hoja impresa con el tramo de páginas de pdfkit que sustituye.
+  const replacements = [];
+  structureSheets.forEach((sheet, index) => {
+    replacements.push({ range: structureRanges[sheet.structureIndex], indices: printed.indices[index], drawing: null });
+  });
+  fabricSheets.forEach((sheet, index) => {
+    if (drawn[index].error) {
+      notifySheetError(onSheetError, drawn[index].error, sheet);
+      return;
+    }
+    replacements.push({ range: fabricRanges[sheet.planIndex], indices: printed.indices[structureSheets.length + index], drawing: drawn[index].drawing });
+  });
   // Si la unión falla por lo que sea, el PDF entero sale con pdfkit como siempre.
   try {
-    return await mergeFabricSheets({ order, review, base, fabricRanges, sheets });
+    return await mergeSheets({ order, review, base, printed: printed.sheet, replacements });
   } catch (error) {
-    notifyFabricSheetError(onFabricSheetError, error, null);
-    return (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
+    notifySheetError(onSheetError, error, null);
+    return withPdfkit();
   }
 }
 
@@ -101,7 +115,7 @@ async function loadPrintedSheets({ pdf, pageCounts } = {}, expected) {
   const valid = counts.length === expected && counts.every((count) => Number.isInteger(count) && count > 0);
   const total = counts.reduce((sum, count) => sum + count, 0);
   if (!valid || total !== sheet.getPageCount()) {
-    throw new Error(`Las páginas de las hojas de telas impresas no cuadran (${sheet.getPageCount()} en el PDF, ${counts.join(',') || 'ninguna'} según la hoja).`);
+    throw new Error(`Las páginas de las hojas impresas no cuadran (${sheet.getPageCount()} en el PDF, ${counts.join(',') || 'ninguna'} según la hoja).`);
   }
   let start = 0;
   const indices = counts.map((count) => {
@@ -113,35 +127,44 @@ async function loadPrintedSheets({ pdf, pageCounts } = {}, expected) {
 }
 
 // Un aviso que falla no puede romper el PDF.
-function notifyFabricSheetError(callback, error, page) {
+function notifySheetError(callback, error, sheet) {
   try {
-    callback?.(error, page);
+    callback?.(error, sheet);
   } catch (callbackError) {
-    console.error('Falló el aviso de error de la hoja de telas:', callbackError);
+    console.error('Falló el aviso de error de la hoja en HTML:', callbackError);
   }
 }
 
-async function mergeFabricSheets({ order, review, base, fabricRanges, sheets }) {
+// Recorre las páginas de pdfkit y, donde empieza un tramo sustituido, pone las páginas impresas
+// de esa hoja y se salta el tramo. `replacements`: { range: { start, end }, indices, drawing }
+// (indices = sus páginas en `printed`; drawing = el dibujo de la hoja de telas, null en las de
+// estructura, que no llevan).
+async function mergeSheets({ order, review, base, printed, replacements }) {
   const out = await PDFLibDocument.create();
   out.setTitle(`${order.orderCode || 'Pedido'}-1`);
   out.setSubject('Planteamiento de estructuras y telas');
   out.setCreator('toldos-testar');
   const source = await PDFLibDocument.load(base);
-  // Primera página de pdfkit de cada hoja sustituida → su índice en el plan.
-  const replaced = new Map([...sheets.keys()].map((planIndex) => [fabricRanges[planIndex].start, planIndex]));
+  // Primera página de pdfkit de cada hoja sustituida → lo que va en su lugar.
+  const replaced = new Map(replacements.map((replacement) => {
+    const { range } = replacement;
+    if (!range || !(range.end > range.start)) throw new Error('Una hoja impresa no tiene páginas de pdfkit que sustituir.');
+    return [range.start, replacement];
+  }));
   for (let index = 0; index < source.getPageCount(); index += 1) {
     if (replaced.has(index)) {
-      const planIndex = replaced.get(index);
-      const { sheet, indices, drawing } = sheets.get(planIndex);
-      const pages = await out.copyPages(sheet, indices);
+      const { range, indices, drawing } = replaced.get(index);
+      const pages = await out.copyPages(printed, indices);
       pages.forEach((page) => out.addPage(page));
-      const [embedded] = await out.embedPdf(drawing);
-      const [first] = pages;
-      const box = FABRIC_SHEET_DIAGRAM_BOX;
-      // El recuadro se mide desde arriba; pdf-lib dibuja desde abajo.
-      first.drawPage(embedded, { x: box.x, y: first.getHeight() - box.y - box.height, width: box.width, height: box.height });
+      if (drawing) {
+        const [embedded] = await out.embedPdf(drawing);
+        const [first] = pages;
+        const box = FABRIC_SHEET_DIAGRAM_BOX;
+        // El recuadro se mide desde arriba; pdf-lib dibuja desde abajo.
+        first.drawPage(embedded, { x: box.x, y: first.getHeight() - box.y - box.height, width: box.width, height: box.height });
+      }
       // Se saltan también las continuaciones de pdfkit de esa hoja (`end` es exclusivo).
-      index = fabricRanges[planIndex].end - 1;
+      index = range.end - 1;
       continue;
     }
     const [page] = await out.copyPages(source, [index]);
@@ -158,7 +181,9 @@ async function mergeFabricSheets({ order, review, base, fabricRanges, sheets }) 
 }
 
 // El PDF entero con pdfkit. `fabricRanges[planIndex] = { start, end }` dice qué páginas
-// (desde 0, `end` exclusivo) ocupa cada página de telas A4 con sus continuaciones.
+// (desde 0, `end` exclusivo) ocupa cada página de telas A4 con sus continuaciones, y
+// `structureRanges[structureIndex]` las de estructura de cada toldo (todas sus páginas de
+// despiece y sus continuaciones de observaciones).
 function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyAwningId, attachReview }) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -174,10 +199,11 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
     registerFonts(doc);
     // Se cuentan todas las páginas que se añaden (también las de continuación).
     let pageCount = 0;
+    const structureRanges = [];
     const fabricRanges = [];
     doc.on('pageAdded', () => { pageCount += 1; });
     doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => resolve({ pdf: Buffer.concat(chunks), fabricRanges }));
+    doc.on('end', () => resolve({ pdf: Buffer.concat(chunks), structureRanges, fabricRanges }));
     doc.on('error', reject);
 
     const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId });
@@ -185,7 +211,8 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
     const order = onlyAwningId
       ? { ...fullOrder, awnings: fullOrder.awnings.filter((awning) => awning.id === onlyAwningId) }
       : fullOrder;
-    plan.structureEntries.forEach(({ awning, index, ofBlock }) => {
+    plan.structureEntries.forEach(({ awning, index, ofBlock }, structureIndex) => {
+      const start = pageCount;
       const split = splitDespiece(ofBlock?.despiece?.rows || []);
       // Hasta DESPIECE_ROWS_PER_PAGE filas por hoja: drawDespieceTable estrecha las filas
       // para que quepan. Por encima, la hoja sigue en otra.
@@ -208,6 +235,7 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
           drawPageFooter(doc, 14, doc.page.width, doc.page.height, `Toldo ${awningLetter(index)} · Observaciones (continuación)`);
         }
       }
+      structureRanges[structureIndex] = { start, end: pageCount };
     });
 
     const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));

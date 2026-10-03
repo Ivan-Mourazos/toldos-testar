@@ -10,6 +10,7 @@ const originalRemolquesClientesFile = process.env.REMOLQUES_CLIENTES_FILE;
 const originalRemolquesRevisionDirectory = process.env.REMOLQUES_REVISION_DIRECTORY;
 const originalDraftsDirectory = process.env.DRAFTS_DIRECTORY;
 const originalTelasHtml = process.env.TELAS_HTML;
+const originalEstructuraHtml = process.env.ESTRUCTURA_HTML;
 
 afterEach(() => {
   restoreEnvironment('NODE_ENV', originalNodeEnv);
@@ -22,6 +23,7 @@ afterEach(() => {
   restoreEnvironment('REMOLQUES_REVISION_DIRECTORY', originalRemolquesRevisionDirectory);
   restoreEnvironment('DRAFTS_DIRECTORY', originalDraftsDirectory);
   restoreEnvironment('TELAS_HTML', originalTelasHtml);
+  restoreEnvironment('ESTRUCTURA_HTML', originalEstructuraHtml);
   vi.resetModules();
 });
 
@@ -94,6 +96,15 @@ describe('configuración por entorno', () => {
     expect((await loadConfig('production', '')).telasHtml).toBe(true);
     process.env.TELAS_HTML = '0';
     expect((await loadConfig('production', '')).telasHtml).toBe(false);
+  });
+
+  test('la página de estructura en HTML está activa por defecto y ESTRUCTURA_HTML=0 la apaga', async () => {
+    delete process.env.ESTRUCTURA_HTML;
+    expect((await loadConfig('production', '')).estructuraHtml).toBe(true);
+    process.env.ESTRUCTURA_HTML = '1';
+    expect((await loadConfig('production', '')).estructuraHtml).toBe(true);
+    process.env.ESTRUCTURA_HTML = '0';
+    expect((await loadConfig('production', '')).estructuraHtml).toBe(false);
   });
 });
 

@@ -62,6 +62,9 @@ export const config = {
   // Página de telas del planteamiento en HTML, impresa con el Chromium de la hoja de
   // remolques. TELAS_HTML=0 vuelve a la de pdfkit. Por defecto, activa.
   telasHtml: process.env.TELAS_HTML !== '0',
+  // Página de estructura de cada toldo en HTML, impresa junto a la de telas.
+  // ESTRUCTURA_HTML=0 vuelve a la de pdfkit. Por defecto, activa.
+  estructuraHtml: process.env.ESTRUCTURA_HTML !== '0',
   db: {
     server: process.env.DB_SERVER || '192.168.0.124',
     port: numberFromEnv('DB_PORT', 1433),

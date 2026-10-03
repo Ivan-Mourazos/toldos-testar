@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { buildFabricSheetPages, buildStructureSheetPages } from './planteamientoPdf.js';
+import { buildFabricSheetPages, buildOrderPlanteamientoPdf, buildStructureSheetPages } from './planteamientoPdf.js';
 import { normalizeOrder } from './validation.js';
 import { calculateOrder } from './rules.js';
+import { extractReviewPackageFromPdf } from '../workflow.js';
+import { fakeSheets, heraAwning, pageTexts, pageSizes } from './pdfTestHelpers.js';
 
 const acr = 'ACRILI2018P120|||120|||LONA ACRILICA MASACRIL 300 :AZUL 2018 :120 AN|||ACRÍLICAS';
 const arzua = (over = {}) => ({
@@ -92,4 +94,119 @@ describe('buildStructureSheetPages', () => {
 test('las hojas de telas dicen su tipo', () => {
   const order = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings: [arzua()] });
   expect(buildFabricSheetPages({ order, calculation: calculateOrder(order) }).map(({ kind }) => kind)).toEqual(['telas']);
+});
+
+describe('buildOrderPlanteamientoPdf con la hoja de estructura en HTML', () => {
+  const pedido = (awnings, extra = {}) => normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings, ...extra });
+  const order = pedido([arzua(), arzua({ id: 'b', of: '0230195' })]);
+  const calculation = calculateOrder(order);
+  // Apunta lo que llega a renderSheets: tipo e índice de cada hoja.
+  const espia = (render = fakeSheets()) => {
+    const llamadas = [];
+    return { llamadas, renderSheets: (hojas) => { llamadas.push(hojas.map(({ kind, structureIndex, planIndex }) => `${kind} ${structureIndex ?? planIndex}`)); return render(hojas); } };
+  };
+  const marcas = (texts) => texts.map((t) => t.match(/HOJA ESTRUCTURA \d TOLDO \d|HOJA HTML \d/)?.[0] ?? 'pdfkit');
+
+  test('estructura y telas se imprimen de una vez y cada página va en su sitio y a su tamaño', async () => {
+    const pdfkit = await buildOrderPlanteamientoPdf({ order, calculation });
+    const { llamadas, renderSheets } = espia();
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, renderSheets });
+    const telas = buildFabricSheetPages({ order, calculation }).map(({ planIndex }) => `telas ${planIndex}`);
+    expect(telas.length).toBeGreaterThan(0);
+    expect(llamadas).toEqual([['estructura 0', 'estructura 1', ...telas]]);
+    const texts = await pageTexts(pdf);
+    expect(texts).toHaveLength((await pageTexts(pdfkit)).length);
+    expect(await pageSizes(pdf)).toEqual(await pageSizes(pdfkit));
+    expect((await pageSizes(pdf)).slice(0, 3)).toEqual(['A5', 'A5', 'A4']);
+    expect(texts[0]).toContain('HOJA ESTRUCTURA 1 TOLDO 0');
+    expect(texts[1]).toContain('HOJA ESTRUCTURA 1 TOLDO 1');
+    expect(texts[0]).not.toContain('DESPIECE');
+    expect(texts[1]).not.toContain('DESPIECE');
+    expect(texts[2]).toContain('HOJA HTML 1');
+  });
+
+  test('una hoja de estructura de dos páginas las deja seguidas y el resto en su sitio', async () => {
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, renderSheets: fakeSheets([2, 1, 1]) });
+    expect(marcas(await pageTexts(pdf))).toEqual(['HOJA ESTRUCTURA 1 TOLDO 0', 'HOJA ESTRUCTURA 2 TOLDO 0', 'HOJA ESTRUCTURA 1 TOLDO 1', 'HOJA HTML 1']);
+    expect(await pageSizes(pdf)).toEqual(['A5', 'A5', 'A5', 'A4']);
+  });
+
+  test('con htmlFabric en falso solo se imprimen las de estructura y la de telas sigue con pdfkit', async () => {
+    const { llamadas, renderSheets } = espia();
+    const texts = await pageTexts(await buildOrderPlanteamientoPdf({ order, calculation, renderSheets, htmlFabric: false }));
+    expect(llamadas).toEqual([['estructura 0', 'estructura 1']]);
+    expect(marcas(texts)).toEqual(['HOJA ESTRUCTURA 1 TOLDO 0', 'HOJA ESTRUCTURA 1 TOLDO 1', 'pdfkit']);
+    expect(texts[2]).toContain('PLANTEAMIENTO DE TELAS');
+  });
+
+  test('con htmlStructure en falso solo se imprimen las de telas y la de estructura sigue con pdfkit', async () => {
+    const { llamadas, renderSheets } = espia();
+    const texts = await pageTexts(await buildOrderPlanteamientoPdf({ order, calculation, renderSheets, htmlStructure: false }));
+    expect(llamadas).toHaveLength(1);
+    expect(llamadas[0].length).toBeGreaterThan(0);
+    expect(llamadas[0].every((hoja) => hoja.startsWith('telas '))).toBe(true);
+    expect(marcas(texts)).toEqual(['pdfkit', 'pdfkit', 'HOJA HTML 1']);
+    expect(texts[0]).toContain('DESPIECE');
+    expect(texts[1]).toContain('DESPIECE');
+  });
+
+  test('con las dos en falso no se imprime nada y el PDF es el de pdfkit de siempre', async () => {
+    const pdfkit = await buildOrderPlanteamientoPdf({ order, calculation });
+    const { llamadas, renderSheets } = espia();
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, renderSheets, htmlStructure: false, htmlFabric: false });
+    expect(llamadas).toEqual([]);
+    expect(await pageTexts(pdf)).toEqual(await pageTexts(pdfkit));
+    expect(await pageSizes(pdf)).toEqual(await pageSizes(pdfkit));
+  });
+
+  test('con un HERA en el pedido, su página sigue siendo la de pdfkit y está en el mismo sitio', async () => {
+    const mixed = pedido([arzua(), heraAwning]);
+    const mixedCalculation = calculateOrder(mixed);
+    const before = await pageTexts(await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation }));
+    const pdf = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation, renderSheets: fakeSheets() });
+    const after = await pageTexts(pdf);
+    expect(after).toHaveLength(before.length);
+    expect(await pageSizes(pdf)).toEqual(['A5', 'A4', 'A5']);
+    const hera = marcas(after).map((marca, n) => (marca === 'pdfkit' ? n : -1)).filter((n) => n >= 0);
+    expect(hera).toHaveLength(1);
+    expect(after[hera[0]]).toBe(before[hera[0]]);
+    expect(after[hera[0]]).toContain('HERA');
+    expect(marcas(after).filter((marca) => marca.startsWith('HOJA ESTRUCTURA'))).toEqual(['HOJA ESTRUCTURA 1 TOLDO 0']);
+  });
+
+  test('las páginas de continuación de observaciones de pdfkit no se cuelan junto a la hoja impresa', async () => {
+    const notas = Array.from({ length: 40 }, (_, i) => `OBSERVACIÓN DE ESTRUCTURA NÚMERO ${i + 1}`).join('\n');
+    const long = pedido([arzua({ structureNotes: notas }), arzua({ id: 'b', of: '0230195' })]);
+    const longCalculation = calculateOrder(long);
+    const before = await pageTexts(await buildOrderPlanteamientoPdf({ order: long, calculation: longCalculation }));
+    const continuations = before.filter((text) => text.includes('Toldo A · Observaciones (continuación)')).length;
+    expect(continuations).toBeGreaterThan(0);
+
+    const after = await pageTexts(await buildOrderPlanteamientoPdf({ order: long, calculation: longCalculation, renderSheets: fakeSheets() }));
+    expect(after).toHaveLength(before.length - continuations);
+    expect(marcas(after)).toEqual(['HOJA ESTRUCTURA 1 TOLDO 0', 'HOJA ESTRUCTURA 1 TOLDO 1', 'HOJA HTML 1']);
+    expect(after.some((text) => text.includes('Observaciones (continuación)'))).toBe(false);
+  });
+
+  test('si la impresión falla, todo sale con pdfkit y se avisa sin hoja', async () => {
+    const avisos = [];
+    const pdf = await buildOrderPlanteamientoPdf({
+      order,
+      calculation,
+      renderSheets: async () => { throw new Error('Chromium caído'); },
+      onSheetError: (error, hoja) => avisos.push([error.message, hoja])
+    });
+    expect(avisos).toEqual([['Chromium caído', null]]);
+    const texts = await pageTexts(pdf);
+    expect(marcas(texts)).toEqual(['pdfkit', 'pdfkit', 'pdfkit']);
+    expect(texts[0]).toContain('DESPIECE');
+    expect(texts[2]).toContain('PLANTEAMIENTO DE TELAS');
+  });
+
+  test('con revisión, el PDF unido lleva los datos y se reabre', async () => {
+    const review = { kind: 'toldos-testar-review', orderCode: 'AR2603332', order, status: 'PENDING_REVIEW' };
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, review, renderSheets: fakeSheets() });
+    expect(marcas(await pageTexts(pdf))[0]).toBe('HOJA ESTRUCTURA 1 TOLDO 0');
+    await expect(extractReviewPackageFromPdf(pdf)).resolves.toEqual(JSON.parse(JSON.stringify(review)));
+  });
 });

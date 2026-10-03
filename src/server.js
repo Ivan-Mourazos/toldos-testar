@@ -125,10 +125,12 @@ const generationLocks = new Set();
 // minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
 const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
 const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
-// Hoja de telas de toldos en HTML (fase 1): mismos datos de un solo uso y el mismo Chromium.
+// Hoja de telas (fase 1) y página de estructura (fase 2) de toldos en HTML: mismos datos de un
+// solo uso y el mismo Chromium.
 const fichasHojaTelas = crearAlmacenFichas({ duracionMs: 60_000 });
 const impresoraHojaTelas = crearImpresoraHojaTelas({
-  activa: config.telasHtml,
+  telas: config.telasHtml,
+  estructura: config.estructuraHtml,
   fichas: fichasHojaTelas,
   servicio: servicioPdfRemolques,
   url: urlHojaTelas
@@ -1281,7 +1283,8 @@ async function hojaRemolquesPdf(datos) {
 }
 
 /**
- * Opciones para buildOrderPlanteamientoPdf: la página de telas en HTML, o nada si está apagada.
+ * Opciones para buildOrderPlanteamientoPdf: las páginas de estructura y de telas en HTML, o
+ * nada si las dos están apagadas.
  * `sigueEsperando` solo en la vista previa: si el cliente la aborta, sus hojas no ocupan Chromium.
  */
 function opcionesHojaTelas({ codigoPedido, sigueEsperando } = {}) {

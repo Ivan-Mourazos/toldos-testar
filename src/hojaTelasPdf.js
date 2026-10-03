@@ -1,25 +1,28 @@
-// Hoja de telas de toldos en HTML (fase 1): lo que le pasa el servidor a
-// buildOrderPlanteamientoPdf para que Chromium imprima cada página de telas. Si algo falla,
-// esa página sale con pdfkit; aquí se cuida además que un Chromium enfermo no haga esperar.
+// Planteamiento de toldos en HTML (fase 1: hoja de telas; fase 2: página de estructura): lo
+// que le pasa el servidor a buildOrderPlanteamientoPdf para que Chromium imprima esas páginas.
+// Si algo falla, salen con pdfkit; aquí se cuida además que un Chromium enfermo no haga esperar.
 
 import pdfLib from 'pdf-lib';
 
 const { PDFDocument } = pdfLib;
 
-/** Cuánto descansa Chromium para las hojas de telas tras un fallo lento. */
+/** Cuánto descansa Chromium para las hojas del planteamiento tras un fallo lento. */
 export const PAUSA_TRAS_FALLO_MS = 60_000;
 /** Un fallo que tarda esto o más (tiempo agotado, Chromium que no arranca) pausa Chromium. */
 export const FALLO_LENTO_MS = 10_000;
 
 /**
  * @param {object} p
- * @param {boolean} p.activa  TELAS_HTML: si es falso, las opciones van vacías (pdfkit).
+ * @param {boolean} p.telas  TELAS_HTML: si es falso, la hoja de telas sale con pdfkit.
+ * @param {boolean} p.estructura  ESTRUCTURA_HTML: si es falso, la página de estructura sale
+ *   con pdfkit. Con las dos en falso las opciones van vacías (todo pdfkit).
  * @param {{ guardar(datos: unknown): string, borrar(id: string): void }} p.fichas
  * @param {{ generar(trabajo: object): Promise<Buffer> }} p.servicio  El Chromium compartido con remolques.
  * @param {(id: string) => string} p.url  Dirección de hoja-telas.html con su identificador.
  */
 export function crearImpresoraHojaTelas({
-  activa,
+  telas,
+  estructura,
   fichas,
   servicio,
   url,
@@ -40,12 +43,12 @@ export function crearImpresoraHojaTelas({
    *   («Generar archivos», reserva) se espera siempre.
    */
   function opciones({ codigoPedido = '', sigueEsperando } = {}) {
-    if (!activa) return {};
+    if (!telas && !estructura) return {};
     const seFue = () => Boolean(sigueEsperando && !sigueEsperando());
 
-    // Todas las hojas del PDF en una sola impresión: Chromium tarda casi lo mismo con una que
-    // con varias, y una a una se notaba en los pedidos con varios modelos.
-    async function renderFabricSheets(hojas) {
+    // Todas las hojas del PDF (estructura y telas) en una sola impresión: Chromium tarda casi
+    // lo mismo con una que con varias, y una a una se notaba en los pedidos con varios modelos.
+    async function renderSheets(hojas) {
       if (ahora() < pausadoHasta) throw new Error('Chromium falló hace poco: se descansa un minuto.');
       if (seFue()) throw new Error('Quien pidió el PDF ya no espera.');
       let id = null;
@@ -66,17 +69,19 @@ export function crearImpresoraHojaTelas({
       }
     }
 
-    function onFabricSheetError(error, page) {
+    function onSheetError(error, hoja) {
       // Una vista previa que el cliente canceló no es un fallo: no se apunta, para que el
       // registro no se llene de líneas que tapan los fallos de verdad.
       if (seFue()) return;
-      const hoja = page ? `hoja ${page.planIndex}` : 'hojas de telas';
+      const cual = hoja?.kind === 'estructura'
+        ? `estructura del toldo ${hoja.header?.letter ?? '?'}`
+        : hoja ? `hoja de telas ${hoja.planIndex}` : 'hojas del planteamiento';
       // El servicio de Chromium es el de remolques y habla de «la hoja de taller».
       const motivo = String(error?.message || error).replaceAll('hoja de taller', 'hoja de telas');
-      registrar(`Hoja de telas en HTML del pedido ${codigoPedido || 'sin código'} (${hoja}): sale la de pdfkit. ${motivo}`);
+      registrar(`Hoja en HTML del pedido ${codigoPedido || 'sin código'} (${cual}): sale la de pdfkit. ${motivo}`);
     }
 
-    return { renderFabricSheets, onFabricSheetError };
+    return { renderSheets, onSheetError, htmlStructure: Boolean(estructura), htmlFabric: Boolean(telas) };
   }
 
   return { opciones };
@@ -89,6 +94,6 @@ export function crearImpresoraHojaTelas({
 export async function paginasDeCadaHoja(pdf) {
   const titulo = (await PDFDocument.load(pdf, { updateMetadata: false })).getTitle() ?? '';
   const encontrado = /^telas-paginas:(\d+(?:,\d+)*)$/.exec(titulo.trim());
-  if (!encontrado) throw new Error(`La hoja de telas impresa no dice cuántas páginas ocupa cada hoja (título «${titulo}»).`);
+  if (!encontrado) throw new Error(`La hoja impresa no dice cuántas páginas ocupa cada hoja (título «${titulo}»).`);
   return encontrado[1].split(',').map(Number);
 }
