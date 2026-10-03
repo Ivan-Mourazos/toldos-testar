@@ -53,6 +53,7 @@ import {
   getRpsArticle
 } from './rpsCatalog.js';
 import { createFabricStockService, fabricStockHandler } from './fabricRpsServices.js';
+import { crearImpresoraHojaTelas } from './hojaTelasPdf.js';
 import {
   checkWorkflowDirectories,
   createReviewPackage,
@@ -126,6 +127,12 @@ const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
 const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
 // Hoja de telas de toldos en HTML (fase 1): mismos datos de un solo uso y el mismo Chromium.
 const fichasHojaTelas = crearAlmacenFichas({ duracionMs: 60_000 });
+const impresoraHojaTelas = crearImpresoraHojaTelas({
+  activa: config.telasHtml,
+  fichas: fichasHojaTelas,
+  servicio: servicioPdfRemolques,
+  url: urlHojaTelas
+});
 // Pedidos de remolques (fase 5): un JSON por pedido en la carpeta interna de Configuración y el
 // mismo camino que toldos (CoordinaOT aprueba, el autor genera, los dos PDF con sus datos dentro).
 // El almacén va aparte porque también lo mira el guardado de toldos: nunca hay pedidos mixtos.
@@ -286,13 +293,25 @@ app.post('/api/export', async (req, res, next) => {
 });
 
 app.post('/api/planteamiento', async (req, res, next) => {
+  // La vista previa se aborta en cada cambio del panel: si el cliente se va, sus hojas de
+  // telas no se encolan en el Chromium que comparte con remolques.
+  let seFue = false;
+  res.on('close', () => {
+    if (!res.writableFinished) seFue = true;
+  });
   try {
     const order = normalizeOrder(req.body?.order || req.body);
     const calculation = await calculateConfiguredOrder(order);
     // El panel «Despiece y dibujo» pide el pedido entero y un solo toldo, para que salga
     // con su letra.
     const onlyAwningId = typeof req.body?.onlyAwningId === 'string' && req.body.onlyAwningId ? req.body.onlyAwningId : null;
-    const pdf = await buildOrderPlanteamientoPdf({ order, calculation, onlyAwningId, ...opcionesHojaTelas() });
+    const pdf = await buildOrderPlanteamientoPdf({
+      order,
+      calculation,
+      onlyAwningId,
+      ...opcionesHojaTelas({ codigoPedido: order.orderCode, sigueEsperando: () => !seFue })
+    });
+    if (seFue) return;
     const filename = `${order.orderCode ? sanitizeOrderCode(order.orderCode) : 'PLANTEAMIENTO'}-1.pdf`;
 
     res
@@ -958,7 +977,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       updated.reviewedBy = reviewer;
     }
     const pdfTarget = targets.find((target) => target.type === 'pdf');
-    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas() });
+    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }) });
 
     await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
     for (const target of targets) await writeFileAtomic(target.savedPath, target.contents);
@@ -1038,7 +1057,7 @@ app.post('/api/export/save', async (req, res, next) => {
       const calculation = await calculateConfiguredOrder(orderPayload);
       planteamientoTarget = {
         savedPath: buildPlanteamientoPath(reservation.orderCode),
-        workbook: await buildOrderPlanteamientoPdf({ order: orderPayload, calculation, ...opcionesHojaTelas() })
+        workbook: await buildOrderPlanteamientoPdf({ order: orderPayload, calculation, ...opcionesHojaTelas({ codigoPedido: orderPayload.orderCode || reservation.orderCode }) })
       };
       planteamientoTarget.filename = path.basename(planteamientoTarget.savedPath);
     }
@@ -1261,20 +1280,12 @@ async function hojaRemolquesPdf(datos) {
   }
 }
 
-/** Opciones para buildOrderPlanteamientoPdf: la página de telas en HTML, o nada si está apagada. */
-function opcionesHojaTelas() {
-  if (!config.telasHtml) return {};
-  return {
-    renderFabricSheet: async (datos) => {
-      const id = fichasHojaTelas.guardar(datos);
-      try {
-        return await servicioPdfRemolques.generar({ preparar: () => id, url: urlHojaTelas });
-      } finally {
-        fichasHojaTelas.borrar(id);
-      }
-    },
-    onFabricSheetError: (error) => console.error(`Hoja de telas en HTML: sale la de pdfkit. ${error?.message || error}`)
-  };
+/**
+ * Opciones para buildOrderPlanteamientoPdf: la página de telas en HTML, o nada si está apagada.
+ * `sigueEsperando` solo en la vista previa: si el cliente la aborta, sus hojas no ocupan Chromium.
+ */
+function opcionesHojaTelas({ codigoPedido, sigueEsperando } = {}) {
+  return impresoraHojaTelas.opciones({ codigoPedido, sigueEsperando });
 }
 
 function enviarPdf(res, pdf, nombre) {
