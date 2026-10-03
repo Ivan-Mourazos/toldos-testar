@@ -901,7 +901,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(text).not.toContain('VARILLA BLANCA (5,5)');
   });
 
-  test('una OF va en el encabezado y varias se señalan arriba y aparecen dentro de cada bloque', async () => {
+  test('el OF va en el encabezado de cada hoja de telas si sus toldos lo comparten, aunque el pedido tenga más', async () => {
     const order = {
       orderCode: 'AR26-OF-TELAS', fabric: 'ACR NEGRO', sameFabric: true,
       awnings: [
@@ -919,10 +919,12 @@ describe('buildOrderPlanteamientoPdf', () => {
     }
 
     expect(pageTexts).toHaveLength(2);
-    expect(pageTexts[0]).toContain('VER EN CADA TOLDO');
-    expect(pageTexts[1]).toContain('VER EN CADA TOLDO');
-    expect(pageTexts[0]).toContain('OF 0231001');
-    expect(pageTexts[1]).toContain('OF 0231002');
+    // Cada toldo va en su hoja de telas (distinta bamba): arriba sale su OF, no «VER EN CADA TOLDO».
+    expect(pageTexts.join(' ')).not.toContain('VER EN CADA TOLDO');
+    expect(pageTexts[0]).toMatch(/OF\s+0231001/);
+    expect(pageTexts[1]).toMatch(/OF\s+0231002/);
+    expect(pageTexts[0]).not.toContain('0231002');
+    expect(pageTexts[1]).not.toContain('0231001');
     expect(pageTexts.join(' ')).not.toContain('0231001 · 0231002');
     expect(pageTexts.join(' ')).not.toContain('FECHA FABRIC.');
 

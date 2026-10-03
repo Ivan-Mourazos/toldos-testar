@@ -221,7 +221,7 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
         let remaining = drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
         while (remaining) {
           doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-          drawFabricHeader(doc, { order, margin: 24, pageW: doc.page.width });
+          drawFabricHeader(doc, { order, lines: entries.map(toFabricLine), margin: 24, pageW: doc.page.width });
           remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true, FABRIC_PAGE_TEXT);
           drawPageFooter(doc, 24, doc.page.width, doc.page.height, 'Planteamiento de telas · Observaciones (continuación)');
         }
@@ -614,9 +614,7 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
     ? { ...fullOrder, awnings: fullOrder.awnings.filter((awning) => awning.id === onlyAwningId) }
     : fullOrder;
   const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
-  const orderOfs = distinctOrderOfs(order);
   const header = {
-    of: orderOfs.length === 1 ? orderOfs[0] : orderOfs.length > 1 ? 'VER EN CADA TOLDO' : '—',
     orderCode: dash(order.orderCode),
     customer: dash(order.customer),
     technician: dash(order.technician),
@@ -628,7 +626,7 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
     if (diagram === 'HERA') return [];
     const lines = entries.map(toFabricLine);
     const works = new Set(lines.map(({ awning }) => fabricWorkLabel(String(awning.model || '').trim().toUpperCase())));
-    const showOfInRows = orderOfs.length > 1;
+    const pageOf = fabricPageOf(lines);
     const pageCodes = new Set(lines.flatMap(({ calc }) => [calc?.fabricCode, calc?.valanceFabricCode]).filter(Boolean));
     const visible = fabricTotals.filter(({ code }) => pageCodes.has(code));
     const totals = visible.length > 0 ? visible : fabricTotals;
@@ -646,7 +644,7 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
       }).join('');
     return [{
       planIndex,
-      header,
+      header: { of: dash(pageOf.header), ...header },
       diagramTitle: fabricDiagramHeading(diagram, lines.map(({ awning }) => awning)),
       rotulacion: {
         tela: dash(summarizeAwningValue(lines, 'rotFabric', order.rotTela)),
@@ -666,7 +664,7 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
           dropLabel: isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA',
           fabricDrop: dash(detail.fabricDrop),
           units: dash(detail.units),
-          line: [work, showOfInRows ? `OF ${value(line.awning.of)}` : '', buildFabricRowInstruction(line, lines, order)]
+          line: [work, pageOf.inRows ? `OF ${dash(line.awning.of)}` : '', buildFabricRowInstruction(line, lines, order)]
             .filter(Boolean).join(' · ')
         };
       }),
@@ -686,7 +684,7 @@ function drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCa
   const pageH = doc.page.height;
   const margin = 24;
   const lines = entries.map(toFabricLine);
-  drawFabricHeader(doc, { order, margin, pageW });
+  drawFabricHeader(doc, { order, lines, margin, pageW });
   const remaining = drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagramCalculation, fabricTotals, margin, pageW, pageH });
   drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento de telas');
   return remaining;
@@ -735,7 +733,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   const rowH = 62;
   const rowGap = 9;
   const letterW = 54;
-  const showOfInRows = distinctOrderOfs(order).length > 1;
+  const showOfInRows = fabricPageOf(lines).inRows;
   lines.forEach((line, localIndex) => {
     const y = rowY + localIndex * (rowH + rowGap);
     const detail = buildFabricLineDetail(line.awning, line.calc, order);
@@ -916,7 +914,7 @@ function drawHeraWindowOrientation(doc, x, y, w, h, interiorFace, letter) {
   doc.restore();
 }
 
-function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE TELAS' }) {
+function drawFabricHeader(doc, { order, lines, margin, pageW, title = 'PLANTEAMIENTO DE TELAS' }) {
   const logoW = 96;
   const orderW = 166;
   const bodyX = margin + logoW;
@@ -932,10 +930,7 @@ function drawFabricHeader(doc, { order, margin, pageW, title = 'PLANTEAMIENTO DE
   drawAuthorReviewerRow(doc, bodyX, 53, orderX - bodyX, 17, order, 76, 10.5, { fit: true, minSize: 7 });
   drawCell(doc, bodyX, 70, 76, 17, 'FECHA:', { italic: true, size: 10 });
   drawCell(doc, bodyX + 76, 70, orderX - bodyX - 76, 17, formatDate(order.orderDate), { semibold: true, size: 11, minSize: 7, fit: true });
-  const orderOfs = distinctOrderOfs(order);
-  const headerOfText = orderOfs.length === 1
-    ? orderOfs[0]
-    : orderOfs.length > 1 ? 'VER EN CADA TOLDO' : '';
+  const headerOfText = fabricPageOf(lines).header;
   drawCell(doc, orderX, 50, 32, 37, headerOfText ? 'OF' : '', {
     bold: true, size: 10.5, align: 'right', preserveBlank: true
   });
@@ -2300,10 +2295,12 @@ function toFabricLine({ awning, index, ofBlock }) {
   return { awning, index, calc: ofBlock?.calculation || {} };
 }
 
-function distinctOrderOfs(order = {}) {
-  return [...new Set((order.awnings || [])
-    .map((awning) => String(awning?.of || '').trim())
-    .filter(Boolean))];
+// El OF de la cabecera de una hoja de telas: si todos sus toldos comparten OF, sale arriba
+// (aunque el pedido tenga más OF en otras hojas); si no, «VER EN CADA TOLDO» y va en cada fila.
+function fabricPageOf(lines = []) {
+  const ofs = new Set(lines.map(({ awning }) => String(awning?.of || '').trim()));
+  if (ofs.size > 1) return { header: 'VER EN CADA TOLDO', inRows: true };
+  return { header: [...ofs][0] || '', inRows: false };
 }
 
 export function buildFabricLineDetail(awning = {}, calculation = {}) {

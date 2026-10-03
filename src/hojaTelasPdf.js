@@ -67,8 +67,13 @@ export function crearImpresoraHojaTelas({
     }
 
     function onFabricSheetError(error, page) {
+      // Una vista previa que el cliente canceló no es un fallo: no se apunta, para que el
+      // registro no se llene de líneas que tapan los fallos de verdad.
+      if (seFue()) return;
       const hoja = page ? `hoja ${page.planIndex}` : 'hojas de telas';
-      registrar(`Hoja de telas en HTML del pedido ${codigoPedido || 'sin código'} (${hoja}): sale la de pdfkit. ${error?.message || error}`);
+      // El servicio de Chromium es el de remolques y habla de «la hoja de taller».
+      const motivo = String(error?.message || error).replaceAll('hoja de taller', 'hoja de telas');
+      registrar(`Hoja de telas en HTML del pedido ${codigoPedido || 'sin código'} (${hoja}): sale la de pdfkit. ${motivo}`);
     }
 
     return { renderFabricSheets, onFabricSheetError };

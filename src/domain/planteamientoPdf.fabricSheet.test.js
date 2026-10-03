@@ -23,6 +23,23 @@ describe('buildFabricSheetPages', () => {
     expect(page.header).toEqual({ of: '0230194', orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', reviewer: '—', date: '02/10/2026', title: 'PLANTEAMIENTO DE TELAS' });
   });
 
+  describe('el OF de arriba se decide en cada hoja', () => {
+    const bambalina = (over = {}) => ({ id: 'z', of: '0230999', model: 'BAMBALINA', units: 1, width: 300, projection: 0, valanceHeight: 30, valanceCurve: 'RECTA', rotValance: 'NO', ...over });
+
+    test('si los toldos de la hoja comparten OF, sale arriba aunque el pedido tenga más OF', () => {
+      const sheets = pages([cambioTela(), cambioTela({ id: 'b' }), bambalina()]);
+      expect(sheets).toHaveLength(2);
+      expect(sheets.map(({ header }) => header.of)).toEqual(['0230194', '0230999']);
+      expect(sheets.flatMap(({ rows }) => rows.map(({ line }) => line)).join(' ')).not.toMatch(/OF /);
+    });
+
+    test('con OF distintos en la misma hoja, «VER EN CADA TOLDO» y el OF en cada fila', () => {
+      const [page] = pages([cambioTela(), cambioTela({ id: 'b', of: '0230195' })]);
+      expect(page.header.of).toBe('VER EN CADA TOLDO');
+      expect(page.rows.map(({ line }) => line.split(' · ')[0])).toEqual(['OF 0230194', 'OF 0230195']);
+    });
+  });
+
   test('«—» en lo que no aplica: bamba de rotulación y remate', () => {
     const [page] = pages([cambioTela()]);
     expect(page.rotulacion).toEqual({ tela: 'NO', bamba: '—' });

@@ -163,6 +163,24 @@ describe('impresora de la hoja de telas en HTML', () => {
     expect(registro[1]).toContain('hojas de telas');
     expect(registro[1]).toContain('unión rota');
   });
+
+  test('el registro habla de la hoja de telas, no de la hoja de taller de remolques', () => {
+    const { impresora, registro } = crear();
+    impresora.opciones({ codigoPedido: 'AR1' }).onFabricSheetError(new Error('La hoja de taller tardó más de 30 s en prepararse.'), null);
+    expect(registro[0]).toContain('La hoja de telas tardó más de 30 s');
+    expect(registro[0]).not.toContain('hoja de taller');
+  });
+
+  test('una vista previa cancelada no escribe nada en el registro', () => {
+    const { impresora, registro } = crear();
+    let espera = true;
+    const { onFabricSheetError } = impresora.opciones({ codigoPedido: 'AR1', sigueEsperando: () => espera });
+    onFabricSheetError(new Error('Chromium roto'), null);
+    expect(registro).toHaveLength(1);
+    espera = false;
+    onFabricSheetError(new Error('Quien pidió el PDF ya no espera.'), null);
+    expect(registro).toHaveLength(1);
+  });
 });
 
 describe('paginasDeCadaHoja', () => {
