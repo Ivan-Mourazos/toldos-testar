@@ -97,7 +97,8 @@ describe('reglas HERA', () => {
       ['SCRPECBLAN600C', 1], ['SCRTAPINFBLANDCH', 1], ['SCRTAPINFBLANIZQ', 1],
       ['MACALENGUSCREN43', 1.59], ['VARILLAVAINARBLA', 1.59]
     ]);
-    expect(ofBlock.despiece).toBeNull();
+    // Desde el 03/10/2026 lleva despiece: lo reservado menos la tela, el macarrón y la varilla.
+    expect(ofBlock.despiece.rows.map((row) => row.reference)).toEqual(ofBlock.materials.slice(1, 9).map((line) => line.code));
     expect(result.diagnostics.some((item) => item.level === 'warn' && item.message.includes('CAD'))).toBe(true);
   });
 
@@ -298,5 +299,81 @@ describe('HERA: estructura según el consumo real', () => {
     const materials = codes(hera({ submodel: 'HERA 43 MAQUINA', height: 220 }));
     expect(materials).toMatchObject({ SCRKITSW43BLAN: 1, SCRTUBO43P600CM: 1 });
     expect(Object.keys(materials).some((code) => code.startsWith('SCRADPSWIF') || code === 'SCRTUBO53600C')).toBe(false);
+  });
+});
+
+// El HERA es un modelo normal desde el 03/10/2026: su página de estructura lleva el despiece
+// de lo que ya se reserva, sin añadir ni quitar nada.
+describe('HERA: despiece del planteamiento', () => {
+  const filas = (result) => result.ofs[0].despiece.rows;
+  const resumen = (result) => filas(result).map(({ name, reference, units, length }) => [name, reference, units, length]);
+  const reservados = (result) => new Set(result.ofs[0].materials.map((line) => line.code));
+
+  test('con cadena y varilla blanca: kit, adaptadores, tubo, contrapeso, uniones, perfil y tapones; el anillo, en accesorios', () => {
+    const result = hera({ width: 348.5, projection: 210, height: 250, units: 2, heraJoin: 'VERTICAL' });
+    expect(result.ofs[0].calculation).toMatchObject({ valid: true, rollTubeLength: 344.8, fabricWidth: 344, chainRingCode: 'SCRANILBLAN150C' });
+    expect(resumen(result)).toEqual([
+      ['KIT MECANISMO SWIFT 43-56MM (MANDO+SOPORTE)', 'SCRKITSW4350BLAN', 2, null],
+      ['ADAPTADOR SWIFT TUBO 56 MM', 'SCRADPSWIFBLAN', 4, null],
+      ['TUBO DE ENROLLE', 'SCRTUBO53600C', 2, 344.8],
+      ['CONTRAPESO CADENA SCREEN', 'SCRECONTRCADBLAN', 2, null],
+      ['UNION CADENA SCREEN', 'SCRUNICADBLAN', 4, null],
+      ['PERFIL DE CONTRAPESO', 'SCRPECBLAN600C', 2, 344],
+      ['TAPON SCREEN TUBO INFERIOR DERECHO', 'SCRTAPINFBLANDCH', 2, null],
+      ['TAPON SCREEN TUBO INFERIOR IZQUIERDO', 'SCRTAPINFBLANIZQ', 2, null],
+      ['ANILLO DE CADENA BLANCO 150 CM', 'SCRANILBLAN150C', 2, null]
+    ]);
+    expect(filas(result).map((row) => row.num)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(filas(result).filter((row) => row.accessory).map((row) => row.reference)).toEqual(['SCRANILBLAN150C']);
+    expect(result.ofs[0].despiece.anchoring).toBeNull();
+    // El tubo sale por piezas (dos toldos), aunque se reserven barras.
+    expect(result.ofs[0].materials.find((line) => line.code === 'SCRTUBO53600C').quantity).toBe(2);
+  });
+
+  test('a motor y con pletina: un adaptador, rueda LT50, el motor y la pletina; el mando, en accesorios', () => {
+    const result = hera({ submodel: 'HERA 56 MOTOR', width: 270, projection: 200, height: 0, heraBottomFinish: 'PLETINA', heraChainColor: 'NEGRO' });
+    expect(resumen(result)).toEqual([
+      ['KIT MECANISMO SWIFT 43-56MM (MANDO+SOPORTE)', 'SCRKITSW4350NEGR', 1, null],
+      ['ADAPTADOR SWIFT TUBO 56 MM', 'SCRADPSWIFNEGR', 1, null],
+      ['TUBO DE ENROLLE', 'SCRTUBO53600C', 1, result.ofs[0].calculation.rollTubeLength],
+      ['RUEDA LT50 PARA TUBO DE 53', 'RUEDAAPLT5053', 1, null],
+      ['MOTOR SOMFY SUNILUS 6/17 IO', 'SUNILUSIO6//17', 1, null],
+      ['PLETINA', 'PLA4NEGR25MM635C', 1, result.ofs[0].calculation.fabricWidth],
+      ['MANDO SITUO 1 IO PURE', 'SITUOIO1PURE', 1, null]
+    ]);
+    expect(filas(result).filter((row) => row.accessory).map((row) => row.reference)).toEqual(['SITUOIO1PURE']);
+  });
+
+  test('HERA 43: su kit y su tubo, sin adaptador', () => {
+    const result = hera({ submodel: 'HERA 43 MAQUINA', height: 220 });
+    expect(resumen(result).slice(0, 2)).toEqual([
+      ['KIT MECANISMO SWIFT 43 (MANDO+SOPORTE)', 'SCRKITSW43BLAN', 1, null],
+      ['TUBO DE ENROLLE', 'SCRTUBO43P600CM', 1, result.ofs[0].calculation.rollTubeLength]
+    ]);
+  });
+
+  test('con E.T. platanero no sale nada abajo, y sin anillo de referencia exacta no hay fila de anillo', () => {
+    const result = hera({ heraBottomFinish: 'E.T. PLATANERO', height: 233 });
+    expect(result.ofs[0].calculation.chainRingCode).toBe('');
+    expect(filas(result).map((row) => row.reference)).toEqual(['SCRKITSW4350BLAN', 'SCRADPSWIFBLAN', 'SCRTUBO53600C', 'SCRECONTRCADBLAN', 'SCRUNICADBLAN']);
+  });
+
+  test.each([
+    ['cadena y varilla', {}],
+    ['cadena y pletina', { heraBottomFinish: 'ENTRADA DE PLETINA' }],
+    ['motor', { submodel: 'HERA 56 MOTOR', height: 0 }]
+  ])('%s: el macarrón y la varilla no van en el despiece, y cada referencia del despiece está reservada', (_caso, overrides) => {
+    const result = hera(overrides);
+    const references = filas(result).map((row) => row.reference);
+    expect(references.some((code) => /^(MACA|VARILLA)/.test(code))).toBe(false);
+    for (const code of references) expect(reservados(result).has(code)).toBe(true);
+    // Y al revés: todo lo reservado menos la tela y el material de confección está en el despiece.
+    const esperado = result.ofs[0].materials.slice(1).map((line) => line.code).filter((code) => !/^(MACA|VARILLA)/.test(code));
+    expect([...references].sort()).toEqual([...esperado].sort());
+    expect(reservados(result).has('MACALENGUSCREN43')).toBe(true);
+  });
+
+  test('sin cálculo válido no hay despiece', () => {
+    expect(hera({ heraInteriorFace: '' }).ofs[0].despiece).toBeNull();
   });
 });

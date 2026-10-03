@@ -2,7 +2,7 @@ import { resolveFabric } from './fabricCatalog.js';
 import { formatNumber, roundQuantity } from './math.js';
 import { roundFabricMeters } from './reservationFabrics.js';
 import { resolveHeraChainRing } from './heraChain.js';
-import { heraStructurePieces } from './heraPieces.js';
+import { heraIsSewingMaterial, heraStructurePieces } from './heraPieces.js';
 import { resolveMotorRemote } from './motorAccessories.js';
 import { chosenMotor, heraDefaultMotor, heraMotorPowers, sunilusMaterial } from './screenMotors.js';
 import {
@@ -101,17 +101,25 @@ export function calculateHera({ order, awning }) {
     && (rule.motor || (height > 0 && chainLength > 0))
     && (join !== 'NINGUNO' || usage.fitsRoll);
   const fabricMl = usage.ml;
+  const structure = valid
+    ? heraStructurePieces({ variant, color: awning.heraChainColor, units, rollTubeLength, fabricWidth, bottomFinish: awning.heraBottomFinish })
+    : [];
+  const ring = valid && chainRing ? { ...chainRing, quantity: units } : null;
+  const motorLine = valid && motorPower ? sunilusMaterial(motorPower, units) : null;
+  const remoteLine = valid && motorPower ? { code: remote.code, quantity: units, description: remote.description } : null;
 
   return {
     of: awning.of,
     description: buildDescription(awning, { variant, fabricWidth, fabricDrop, fabricMl, join }),
     materials: valid ? [
       { code: fabric.code, quantity: fabricMl, description: fabric.description },
-      ...(chainRing ? [{ ...chainRing, quantity: units }] : []),
-      ...heraStructurePieces({ variant, color: awning.heraChainColor, units, rollTubeLength, fabricWidth, bottomFinish: awning.heraBottomFinish }),
-      ...(motorPower ? [sunilusMaterial(motorPower, units), { code: remote.code, quantity: units, description: remote.description }] : [])
+      ...(ring ? [ring] : []),
+      ...structure,
+      ...(motorLine ? [motorLine, remoteLine] : [])
     ] : [],
-    despiece: null,
+    despiece: valid
+      ? buildDespiece({ structure, ring, motorLine, remoteLine, color: awning.heraChainColor, chainRingLength })
+      : null,
     diagnostics,
     calculation: {
       model: 'HERA',
@@ -184,6 +192,33 @@ export function calculateHeraFabricUsage({ fabricWidth, fabricDrop, units = 1, r
     ml: roundQuantity(safeUnits * safeDrop / 100),
     fitsRoll: baseCutWidth <= safeRollWidth + 1e-9
   };
+}
+
+// El despiece dice lo que se reserva (03/10/2026), con las mismas referencias y sin añadir
+// piezas. Las que salen de barra (tubo, perfil de contrapeso, pletina) van por piezas y con
+// su medida de corte. El macarrón y la varilla vaina son de confección y no salen. El anillo
+// de cadena y el mando llevan `accessory`: la hoja los pone en ELEMENTOS ACCESORIOS.
+const cutNames = [
+  [/^TUBO /, 'TUBO DE ENROLLE'],
+  [/^PERFIL ALUMINIO CONTRAPESO/, 'PERFIL DE CONTRAPESO'],
+  [/^PLETINA /, 'PLETINA']
+];
+
+function buildDespiece({ structure, ring, motorLine, remoteLine, color, chainRingLength }) {
+  const rows = [];
+  const push = (name, line, extra = {}) => rows.push({
+    num: rows.length + 1, name, reference: line.code, units: line.pieces ?? line.quantity, length: line.length ?? null, ...extra
+  });
+  for (const line of structure) {
+    if (heraIsSewingMaterial(line.code)) continue;
+    const cut = line.length ? cutNames.find(([pattern]) => pattern.test(line.description)) : null;
+    push(cut ? cut[1] : line.description, line);
+    // El motor va detrás de su rueda, antes del remate de abajo.
+    if (motorLine && line.code === 'RUEDAAPLT5053') push(motorLine.description, motorLine);
+  }
+  if (ring) push(`ANILLO DE CADENA ${color} ${formatNumber(chainRingLength)} CM`, ring, { accessory: true });
+  if (remoteLine) push(remoteLine.description, remoteLine, { accessory: true });
+  return { rows, anchoring: null };
 }
 
 function joinedPanelCount(dimension, rollWidth) {

@@ -118,3 +118,15 @@ test('mantiene el consumo individual cuando brazo y contrapeso usan la misma ple
   const edited = applyStructureEdit({ ...awning, structureEdit: { signature: base.structureEditor.signature, rows: base.structureEditor.rows.slice(1) } }, result);
   expect(edited.materials).toContainEqual(expect.objectContaining({ code: 'PLEAC30MM10', quantity: 0.5 }));
 });
+
+test('al editar el despiece del HERA, el anillo de cadena sigue marcado como accesorio', () => {
+  const order = { orderCode: 'AR26HERA', sameFabric: true, fabric: 'SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96', awnings: [{ id: 'h', of: '0231000', model: 'HERA', submodel: 'HERA 56 MAQUINA', heraJoin: 'NINGUNO', heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO', heraChainColor: 'BLANCO', units: 1, width: 163.5, projection: 165, height: 250 }] };
+  const before = calculateOrder(order).ofs[0];
+  expect(before.despiece.rows.filter((row) => row.accessory).map((row) => row.reference)).toEqual(['SCRANILBLAN150C']);
+  const calc = edit(order, (rows) => { rows[0].units = 2; rows[0].reservationQuantity = 2; });
+  expect(calc.ofs[0].calculation.valid).toBe(true);
+  expect(calc.ofs[0].despiece.rows.filter((row) => row.accessory).map((row) => row.reference)).toEqual(['SCRANILBLAN150C']);
+  // Lo que no se tocó se reserva igual.
+  const cantidades = (block) => Object.fromEntries(block.materials.map((line) => [line.code, line.quantity]));
+  expect(cantidades(calc.ofs[0])).toEqual({ ...cantidades(before), SCRKITSW4350BLAN: 2 });
+});

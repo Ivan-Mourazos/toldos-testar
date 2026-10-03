@@ -9,6 +9,8 @@
 // - abajo, perfil de contrapeso con sus dos tapones o, con pletina, la pletina 25×4;
 // - macarrón y, con varilla blanca, varilla vaina: el ancho de la tela.
 // El HERA 43 lleva su kit ("solamente para el Ø43") y el tubo Ø43, sin adaptador.
+// En las piezas que salen de barra, `quantity` son las barras que se reservan y `pieces`,
+// las piezas cortadas: es lo que enseña el despiece.
 
 import { barsForCuts as barsFor } from './math.js';
 
@@ -20,6 +22,12 @@ const colorSuffix = Object.freeze({ BLANCO: 'BLAN', NEGRO: 'NEGR' });
 
 export function heraUsesPlate(bottomFinish) {
   return /PLETINA/i.test(String(bottomFinish || ''));
+}
+
+// Macarrón y varilla vaina son material de confección: se reservan, pero no van en el
+// despiece de la estructura (Iván, 03/10/2026).
+export function heraIsSewingMaterial(code) {
+  return /^(MACALENGU|VARILLAVAINA)/.test(String(code || ''));
 }
 
 export function heraStructurePieces({ variant, color, units = 1, rollTubeLength, fabricWidth, bottomFinish }) {
@@ -38,7 +46,8 @@ export function heraStructurePieces({ variant, color, units = 1, rollTubeLength,
       code: tube43 ? 'SCRTUBO43P600CM' : 'SCRTUBO53600C',
       quantity: barsFor(rollTubeLength, units, TUBE_STOCK_CM),
       description: tube43 ? 'TUBO ALUMINIO SCREEN Ø43 OJIVA PLANA 600' : 'TUBO ALUMINIO SCREEN Ø56 600',
-      length: rollTubeLength
+      length: rollTubeLength,
+      pieces: units
     },
     ...(motor ? [
       { code: 'RUEDAAPLT5053', quantity: units, description: 'RUEDA LT50 PARA TUBO DE 53' }
@@ -57,11 +66,11 @@ export function heraStructurePieces({ variant, color, units = 1, rollTubeLength,
 // toldos negros, OF 0218353). E.T. platanero no tiene consumo: no se reserva nada abajo.
 function bottomPieces({ finish, suffix, units, fabricWidth }) {
   if (heraUsesPlate(finish)) {
-    return [{ code: `PLA4${suffix}25MM635C`, quantity: barsFor(fabricWidth, units, PLATE_STOCK_CM), description: 'PLETINA ALUMINIO 4MM 25MM 635', length: fabricWidth }];
+    return [{ code: `PLA4${suffix}25MM635C`, quantity: barsFor(fabricWidth, units, PLATE_STOCK_CM), description: 'PLETINA ALUMINIO 4MM 25MM 635', length: fabricWidth, pieces: units }];
   }
   if (finish === 'E.T. PLATANERO' || !finish) return [];
   return [
-    { code: 'SCRPECBLAN600C', quantity: barsFor(fabricWidth, units, PROFILE_STOCK_CM), description: 'PERFIL ALUMINIO CONTRAPESO SCREEN 600', length: fabricWidth },
+    { code: 'SCRPECBLAN600C', quantity: barsFor(fabricWidth, units, PROFILE_STOCK_CM), description: 'PERFIL ALUMINIO CONTRAPESO SCREEN 600', length: fabricWidth, pieces: units },
     { code: 'SCRTAPINFBLANDCH', quantity: units, description: 'TAPON SCREEN TUBO INFERIOR DERECHO' },
     { code: 'SCRTAPINFBLANIZQ', quantity: units, description: 'TAPON SCREEN TUBO INFERIOR IZQUIERDO' }
   ];

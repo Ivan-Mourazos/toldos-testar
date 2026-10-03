@@ -40,4 +40,33 @@ describe('el despiece lleva las referencias que se reservan', () => {
     }
     expect(conMotor).toBeGreaterThan(0);
   });
+
+  test('HERA: el despiece son las piezas reservadas, con el anillo de cadena o el mando en accesorios', () => {
+    const samples = sampleAwnings('HERA');
+    expect(samples.length).toBeGreaterThan(0);
+    let conAnillo = 0;
+    let conMando = 0;
+    for (const { result } of samples) {
+      const block = result.ofs[0];
+      const rows = block.despiece.rows;
+      expect(rows.map((row) => row.num)).toEqual(rows.map((_, index) => index + 1));
+      for (const row of rows) expect(reservados(block).has(row.reference)).toBe(true);
+      // El material de confección se reserva, pero no es una pieza de la estructura.
+      expect(rows.some((row) => /^(MACALENGU|VARILLAVAINA)/.test(row.reference))).toBe(false);
+      expect(reservados(block).has('MACALENGUSCREN43')).toBe(true);
+      const accesorios = rows.filter((row) => row.accessory);
+      const anillo = block.calculation.chainRingCode;
+      if (anillo) {
+        conAnillo += 1;
+        expect(accesorios.map((row) => row.reference)).toEqual([anillo]);
+      }
+      if (block.calculation.heraVariant === 'HERA 56 MOTOR') {
+        conMando += 1;
+        expect(accesorios).toHaveLength(1);
+        expect(accesorios[0].name).toMatch(/MANDO/);
+      }
+    }
+    expect(conAnillo).toBeGreaterThan(0);
+    expect(conMando).toBeGreaterThan(0);
+  });
 });

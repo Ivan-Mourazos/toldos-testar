@@ -12,7 +12,9 @@ export function normalizeStructureEdit(input) {
       reference: code(row.reference) || null, units: Number(row.units),
       length: row.length === null || row.length === undefined || row.length === '' ? null : Number(row.length),
       reservationQuantity: Number(row.reservationQuantity), unitCode: text(row.unitCode),
-      kind: row.kind === 'anchoring' ? 'anchoring' : 'piece'
+      kind: row.kind === 'anchoring' ? 'anchoring' : 'piece',
+      // La hoja pone en ELEMENTOS ACCESORIOS las filas marcadas (el anillo de cadena del HERA).
+      ...(row.accessory === true ? { accessory: true } : {})
     }))
   };
 }
