@@ -9,6 +9,12 @@
 - Hasta el 23/09 reservaba lona, cristal y las piezas comunes. Desde el 24/09, también el cofre, las guías, la cremallera, la varilla y el macarrón.
 - Fuentes, por orden: guía interna de OT (`guía toldos iris.odt`) y manuales de ensamblaje de BAT (`Y:\DIBUJOS\TOLDOS\IRIS\ENVIADOS POR RAMÓN`); maestro de RPS con `InactiveDate`; consumo real (`tmp/iris/respuestas/*.mjs`, solo lectura).
 
+### Despiece del PDF (03/10/2026)
+
+El despiece dice lo que se reserva. Mantiene los cortes de siempre con su medida (cofre, tubo de enrolle, tubo de carga, lastre, compensación, guías, guía interior ZIP y telón) y cada uno lleva la referencia de la pieza reservada de la que sale; el cofre se separa en perfil superior e inferior, que tienen referencias distintas. Debajo van las piezas reservadas que no son un corte: casquillos, placa del eje, tapones terminales, goma de retención, tapa de guía o guía exterior, pies, pernos, tapas del cofre y máquina con manivela, o rueda, soporte y motor. El mando va en ELEMENTOS ACCESORIOS. En las piezas que salen de barra, la columna de unidades dice las piezas cortadas, no las barras.
+
+No salen en el despiece la cremallera, la varilla vaina ni el macarrón: son material de confección (Iván, 03/10/2026) y se siguen reservando igual. El tubo de carga y el terminal compensador SWBS salen sin referencia porque no hay ninguna reservada para ellos (duda Q-DP07).
+
 ## 2. Qué reserva (24/09/2026)
 
 Código en `irisPieces.js`; lo que existe en RPS por color y largo, en `irisStock.js`.

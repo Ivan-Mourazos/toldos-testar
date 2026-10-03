@@ -13,6 +13,8 @@ import { irisCaps, irisProfile } from './irisStock.js';
 // - con motor: casquillo de motor, rueda y soporte Hipro. El motor no se reserva: la
 //   tarjeta no lo pide y se usan varios (Sunea y Sunilus de 10 a 35 Nm).
 // Blanco o negro por el mismo criterio que la manivela (columna de la tabla de lacados).
+// En las piezas que salen de barra, `quantity` son las barras que se reservan y `pieces`,
+// las piezas cortadas: es lo que enseña el despiece.
 
 const bySeries = Object.freeze({
   110: { tube: 'TURA70HG', tubeStocks: [500, 700], tip: 'CASNMOSZ70MM', crankBushing: 'CASCES132070MM', motorBushing: 'CASADMOSZ70MM', wheel: 'RUEDAMOTHI68', rubberStock: 700 },
@@ -34,10 +36,10 @@ export function irisCommonPieces({ series, device, lacado, units = 1, rollTubeLe
   const lines = [
     ...(spec.tip ? [{ code: spec.tip, quantity: units, description: 'CASQUILLO SCREENY CON HUECO Ø14 ZIP' }] : []),
     { code: 'CASPLACASZ', quantity: units, description: 'PLACA H30MM CON EJE REDONDO EXTRAIBLE' },
-    ...(tubeStock ? [{ code: `${spec.tube}${tubeStock}C`, quantity: barsFor(rollTubeLength, units, tubeStock), description: `TUBO DE ENROLLE ${spec.tube}`, length: rollTubeLength }] : []),
-    { code: 'PLETSCR13300C', quantity: barsFor(ballastLength, units, 300), description: 'PLETINA TERMINAL 25X10 SCREENY 300', length: ballastLength },
+    ...(tubeStock ? [{ code: `${spec.tube}${tubeStock}C`, quantity: barsFor(rollTubeLength, units, tubeStock), description: `TUBO DE ENROLLE ${spec.tube}`, length: rollTubeLength, pieces: units }] : []),
+    { code: 'PLETSCR13300C', quantity: barsFor(ballastLength, units, 300), description: 'PLETINA TERMINAL 25X10 SCREENY 300', length: ballastLength, pieces: units },
     { code: `TAPTERSZ13${white ? 'BLAN' : 'NEGR'}`, quantity: units * 2, description: 'TAPON TERMINAL ZIP' },
-    { code: `GOMASSCR${white ? '' : 'N'}${spec.rubberStock}C`, quantity: barsFor(loadBarLength, units, spec.rubberStock), description: 'GOMA RETENCION SCREENY', length: loadBarLength }
+    { code: `GOMASSCR${white ? '' : 'N'}${spec.rubberStock}C`, quantity: barsFor(loadBarLength, units, spec.rubberStock), description: 'GOMA RETENCION SCREENY', length: loadBarLength, pieces: units }
   ];
   if (device === 'MOTOR') {
     if (spec.motorBushing) lines.push({ code: spec.motorBushing, quantity: units, description: 'CASQUILLO SCREENY PARA MOTOR 50 ZIP' });
@@ -91,7 +93,7 @@ export function irisBoxPieces({ series, shape, lacado, units = 1, boxProfileLeng
     const profile = irisProfile(family, lacado, boxProfileLength, units);
     if (profile.reason) result.issues.push({ label, reason: profile.reason, raw: profile.raw });
     if (!profile.code) continue;
-    result.lines.push({ code: profile.code, quantity: barsFor(boxProfileLength, units, profile.stock), description, length: boxProfileLength });
+    result.lines.push({ code: profile.code, quantity: barsFor(boxProfileLength, units, profile.stock), description, length: boxProfileLength, pieces: units });
   }
   const capsPiece = irisCaps(variant.caps, lacado);
   const capsLabel = `tapas del cofre ${shapeName.toLowerCase()}`;
@@ -130,10 +132,10 @@ export function irisGuidePieces({ guideType, hasBox, lacado, units = 1, guideLen
     const found = irisProfile(family, lacado, length, pieces * units);
     if (found.reason) result.issues.push({ label, reason: found.reason, raw: found.raw });
     if (!found.code) return;
-    result.lines.push({ code: found.code, quantity: barsFor(length, pieces * units, found.stock), description, length });
+    result.lines.push({ code: found.code, quantity: barsFor(length, pieces * units, found.stock), description, length, pieces: pieces * units });
   };
   const pvc = (code, length, pieces, description) => result.lines.push({
-    code, quantity: barsFor(length, pieces * units, GUIDE_PVC_STOCK_CM), description, length
+    code, quantity: barsFor(length, pieces * units, GUIDE_PVC_STOCK_CM), description, length, pieces: pieces * units
   });
 
   if (guideType === 'COMPENSADORA') {

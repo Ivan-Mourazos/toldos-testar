@@ -262,16 +262,50 @@ describe('IRIS · diagnósticos', () => {
 });
 
 describe('IRIS · despiece', () => {
-  test('numera las piezas del planteamiento con su medida', () => {
-    expect(calculate().despiece.rows).toEqual([
-      { num: 1, name: 'PERFIL COFRE', reference: null, units: 1, length: 298.6 },
-      { num: 2, name: 'TUBO DE ENROLLE', reference: null, units: 1, length: 284.2 },
-      { num: 3, name: 'TUBO DE CARGA', reference: null, units: 1, length: 286.8 },
-      { num: 4, name: 'LASTRE', reference: null, units: 1, length: 273.8 },
-      { num: 5, name: 'PERFIL GUÍA MFI', reference: null, units: 1, length: 238 },
-      { num: 6, name: 'PERFIL GUÍA MFD', reference: null, units: 1, length: 238 },
-      { num: 7, name: 'TELÓN', reference: 'IRISTESTP120', units: 1, length: 291 }
+  test('numera los cortes del planteamiento con su medida', () => {
+    const rows = calculate().despiece.rows;
+    expect(rows.slice(0, 8).map(({ num, name, units, length }) => ({ num, name, units, length }))).toEqual([
+      { num: 1, name: 'PERFIL COFRE SUPERIOR', units: 1, length: 298.6 },
+      { num: 2, name: 'PERFIL COFRE INFERIOR', units: 1, length: 298.6 },
+      { num: 3, name: 'TUBO DE ENROLLE', units: 1, length: 284.2 },
+      { num: 4, name: 'TUBO DE CARGA', units: 1, length: 286.8 },
+      { num: 5, name: 'LASTRE', units: 1, length: 273.8 },
+      { num: 6, name: 'PERFIL GUÍA MFI', units: 1, length: 238 },
+      { num: 7, name: 'PERFIL GUÍA MFD', units: 1, length: 238 },
+      { num: 8, name: 'TELÓN', units: 1, length: 291 }
     ]);
+    expect(rows[7].reference).toBe('IRISTESTP120');
+    expect(rows.map((row) => row.num)).toEqual(rows.map((_, index) => index + 1));
+  });
+
+  // 03/10/2026: el despiece dice lo que se reserva.
+  test('cada corte lleva la referencia reservada y las piezas sueltas reservadas también salen', () => {
+    for (const overrides of [{}, { device: 'MOTOR' }, { ...skewed, irisGuideType: 'COMPENSADORA' }, { submodel: 'IRIS 130 SIN COFRE' }]) {
+      const result = calculate(overrides);
+      const rows = result.despiece.rows;
+      const reserved = new Set(result.materials.map((line) => line.code));
+      const inDespiece = new Set(rows.map((row) => row.reference));
+      for (const row of rows) if (row.reference) expect(reserved.has(row.reference)).toBe(true);
+      // Sin referencia solo queda lo que no se reserva: el tubo de carga y el terminal SWBS.
+      expect(rows.filter((row) => !row.reference).map((row) => row.name).filter((name) => !['TUBO DE CARGA', 'TERMINAL COMPENSADOR SWBS'].includes(name))).toEqual([]);
+      // Todo lo reservado sale, menos el material de confección (cremallera, varilla, macarrón) y el cristal.
+      const missing = result.materials.filter((line) => !inDespiece.has(line.code) && !/CREMALLERA|VARILLA|MACARRON|CRISTAL/.test(line.description));
+      expect(missing.map((line) => line.description)).toEqual([]);
+      expect(rows.some((row) => /CREMALLERA|VARILLA|MACARRON/.test(row.name))).toBe(false);
+    }
+  });
+
+  test('las piezas que salen de barra dicen cuántas piezas son, no cuántas barras', () => {
+    const rows = calculate().despiece.rows;
+    expect(rows.find((row) => row.name === 'PERFIL CUBIERTA GUIA')).toMatchObject({ units: 2, length: 238 });
+    expect(rows.find((row) => /^PIE PARA GUIA UNICA/.test(row.name))).toMatchObject({ units: 4, length: null });
+    expect(rows.find((row) => row.name === 'TAPON TERMINAL ZIP')).toMatchObject({ units: 2 });
+  });
+
+  test('a motor, el motor sale en el despiece y el mando al final (va en accesorios)', () => {
+    const rows = calculate({ device: 'MOTOR' }).despiece.rows;
+    expect(rows.some((row) => /^MOTOR SOMFY SUNILUS/.test(row.name))).toBe(true);
+    expect(rows.at(-1).name).toMatch(/^MANDO /);
   });
 
   test('añade compensación y ZIP cuando la guía es compensadora', () => {

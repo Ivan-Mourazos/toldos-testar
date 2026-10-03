@@ -24,6 +24,7 @@ Añadidas el 03/10/2026, al comparar en los 17 modelos lo que sale en el despiec
 | Q-DP04 | Cortina | Cadenillas inox | Sale siempre con «—» en la referencia |
 | Q-DP05 | Xacobeo | Rueda motriz LT50, con la referencia `ADAPTADORESTUBO70` | Tiene referencia en el despiece pero no se reserva |
 | Q-DP06 | Arzúa, Galicia, Xacobeo, Punto Recto, cofres y Antica | Kit de tornillos de máquina y taco de nylon | Tornillería menuda: seguramente no se reserva a propósito, falta confirmarlo |
+| Q-DP07 | Iris | Tubo de carga (el perfil terminal de abajo) y el terminal compensador SWBS | Se cortan a medida y salen en el despiece, pero no hay ninguna referencia reservada para ellos: solo la pletina del lastre, los tapones y la goma |
 
 Lo que sí se arregla sin preguntar (03/10/2026): el despiece del Iris y el del HERA salen de las piezas que ya se reservan; el Xacobeo pone en el despiece las referencias de tapones y terminales que ya reserva; y el Ágata Box añade al despiece los dos kits de patines.
 

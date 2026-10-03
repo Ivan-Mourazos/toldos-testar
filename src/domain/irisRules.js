@@ -212,16 +212,25 @@ export function calculateIris({ order, awning }) {
   if (valid && fabric) materials.push({ code: fabric.code, quantity: fabricUsage.ml, description: fabric.description });
   const glassLine = valid ? glassMaterial(glassSize, awning.units) : null;
   if (glassLine) materials.push(glassLine);
+  // Las piezas de estructura que se reservan, para que el despiece lleve sus referencias.
+  const structure = { pieces: [], remote: null };
   if (valid) {
     const lacado = resolveLacado(structureColor);
     const units = Math.max(1, Number(awning.units) || 1);
-    materials.push(...irisCommonPieces({
+    const common = irisCommonPieces({
       series, device, lacado, units, rollTubeLength, loadBarLength, ballastLength, crankHeight: awning.crankHeight
-    }));
+    });
+    materials.push(...common);
+    structure.pieces.push(...common);
     if (device === 'MOTOR') {
       const remote = resolveMotorRemote(awning.sensor);
-      if (motorPower) materials.push(sunilusMaterial(motorPower, units));
+      if (motorPower) {
+        const motor = sunilusMaterial(motorPower, units);
+        materials.push(motor);
+        structure.pieces.push(motor);
+      }
       materials.push({ code: remote.code, quantity: units, description: remote.description });
+      structure.remote = remote;
     }
     const box = hasBox
       ? irisBoxPieces({ series, shape: boxShape, lacado, units, boxProfileLength })
@@ -233,6 +242,7 @@ export function calculateIris({ order, awning }) {
       compensatorLength: Math.max(compensatorLeftLength, compensatorRightLength)
     });
     materials.push(...box.lines, ...guides.lines, ...irisZipAndHemPieces({ lacado, units, front: opening.frontToldo, fabricDrop }));
+    structure.pieces.push(...box.lines, ...guides.lines);
     diagnostics.push(...irisStockWarnings([...box.issues, ...guides.issues], structureColor)
       .map((message) => ({ level: 'warn', awningId: awning.id, message: `IRIS en OF ${awning.of}: ${message}` })));
   }
@@ -248,7 +258,7 @@ export function calculateIris({ order, awning }) {
     materials,
     despiece: valid
       ? buildDespiece({
-        awning, hasBox, hasCompensator, fabric,
+        awning, hasBox, hasCompensator, fabric, structure,
         boxProfileLength, rollTubeLength, loadBarLength, ballastLength,
         guideLeftLength, guideRightLength, zipLeftLength, zipRightLength,
         compensatorLeftLength, compensatorRightLength, windBlockTerminalLength,
@@ -357,7 +367,7 @@ function glassMaterial(glassSize, units) {
 
 function buildDespiece(context) {
   const {
-    awning, hasBox, hasCompensator, fabric,
+    awning, hasBox, hasCompensator, fabric, structure,
     boxProfileLength, rollTubeLength, loadBarLength, ballastLength,
     guideLeftLength, guideRightLength, zipLeftLength, zipRightLength,
     compensatorLeftLength, compensatorRightLength, windBlockTerminalLength,
@@ -365,24 +375,47 @@ function buildDespiece(context) {
   } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const rows = [];
-  const push = (name, reference, length) => rows.push({
-    num: rows.length + 1, name, reference: reference || null, units, length
+  const push = (name, reference, length, rowUnits = units) => rows.push({
+    num: rows.length + 1, name, reference: reference || null, units: rowUnits, length
   });
+  // El despiece dice lo que se reserva (03/10/2026). Primero los cortes de siempre, cada uno
+  // con su medida y la referencia de la pieza reservada de la que sale; después, las piezas
+  // reservadas que no son un corte (casquillos, tapones, pies, tapas, máquina o motor…). El
+  // material de confección (cremallera, varilla y macarrón) no va en el despiece.
+  const used = new Set();
+  const reserved = (pattern) => {
+    const line = structure.pieces.find((item) => pattern.test(item.description));
+    if (line) used.add(line);
+    return line?.code || null;
+  };
 
-  if (hasBox) push('PERFIL COFRE', null, boxProfileLength);
-  push('TUBO DE ENROLLE', null, rollTubeLength);
-  push('TUBO DE CARGA', null, loadBarLength);
-  push('LASTRE', null, ballastLength);
-  if (hasCompensator) {
-    push('GUÍA DE COMPENSACIÓN MFI', null, compensatorLeftLength);
-    push('GUÍA DE COMPENSACIÓN MFD', null, compensatorRightLength);
+  if (hasBox) {
+    push('PERFIL COFRE SUPERIOR', reserved(/^PERFIL COFRE SUPERIOR/), boxProfileLength);
+    push('PERFIL COFRE INFERIOR', reserved(/^PERFIL COFRE INFERIOR/), boxProfileLength);
   }
-  push('PERFIL GUÍA MFI', null, guideLeftLength);
-  push('PERFIL GUÍA MFD', null, guideRightLength);
-  if (zipLeftLength) push('PERFIL GUÍA INTERIOR ZIP MFI', null, zipLeftLength);
-  if (zipRightLength) push('PERFIL GUÍA INTERIOR ZIP MFD', null, zipRightLength);
+  push('TUBO DE ENROLLE', reserved(/^TUBO DE ENROLLE/), rollTubeLength);
+  push('TUBO DE CARGA', null, loadBarLength);
+  push('LASTRE', reserved(/^PLETINA TERMINAL/), ballastLength);
+  if (hasCompensator) {
+    const compensator = reserved(/^PERFIL GUIA COMPENSADORA/);
+    push('GUÍA DE COMPENSACIÓN MFI', compensator, compensatorLeftLength);
+    push('GUÍA DE COMPENSACIÓN MFD', compensator, compensatorRightLength);
+  }
+  const guide = reserved(/^PERFIL GUIA (SCREENY GPZ C|MAQUINA\/MOTOR GPZ UNICA|MOTOR GPZ UNICA)$/);
+  push('PERFIL GUÍA MFI', guide, guideLeftLength);
+  push('PERFIL GUÍA MFD', guide, guideRightLength);
+  if (zipLeftLength || zipRightLength) {
+    const zip = reserved(/^GUIA PVC INTERIOR ZIP/);
+    if (zipLeftLength) push('PERFIL GUÍA INTERIOR ZIP MFI', zip, zipLeftLength);
+    if (zipRightLength) push('PERFIL GUÍA INTERIOR ZIP MFD', zip, zipRightLength);
+  }
   if (windBlockTerminalLength) push('TERMINAL COMPENSADOR SWBS', null, windBlockTerminalLength);
   push('TELÓN', fabric?.code || null, fabricWidth);
+  for (const line of structure.pieces) {
+    if (!used.has(line)) push(line.description, line.code, line.length ?? null, line.pieces ?? line.quantity);
+  }
+  // El mando va al final: la hoja lo pone en ELEMENTOS ACCESORIOS.
+  if (structure.remote) push(structure.remote.description, structure.remote.code, null);
 
   const wall = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wall
