@@ -165,9 +165,10 @@ function buildDespiece({ awning, device, lacado, stockLength, rollTubeLength, lo
   push(3, 'CASQUILLO PUNTA', tipBushing('P701').code, units);
   if (device !== 'MOTOR') push(4, device === 'MAQ. INTERIOR' ? 'CASQUILLO MAQUINA EJE 50MM Ø70' : 'CASQUILLO EJE 63MM Ø70', device === 'MAQ. INTERIOR' ? 'CASMAQEJE5070MM' : 'CASMAQEJE6370MM', units);
   push(5, 'TUBO DE CARGA EVO 70', `PEVO702R${lacado.suffix}${stockLength}C`, units, loadBarLength);
-  push(6, 'KIT TAPONES EVO 70', null, units);
+  // Tapones y terminales llevan la referencia que se reserva (03/10/2026): antes salían sin ella.
+  push(6, 'KIT TAPONES EVO 70', `TAPONEVO7${plasticCapSuffix(lacado)}`, units);
   push(7, 'JUEGO DE BRAZOS ART250', `BART25${lacado.suffix}${awning.projection}C`, units, awning.projection);
-  push(8, 'JUEGO DE TERMINALES', null, units);
+  push(8, 'JUEGO DE TERMINALES', `TERMINEVO${lacado.suffix}`, units);
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
     push(9, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO', units);

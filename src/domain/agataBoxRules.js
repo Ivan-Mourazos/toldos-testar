@@ -269,6 +269,8 @@ function buildDespiece(context) {
   push(5, 'TAPAS ÁGATA BOX', colored(boxCapPrefix(submodel), suffix), units);
   onyxArmLines(suffix, awning.projection, armCount, units, awning.looseSide).forEach((item) => push(7, item.description, item.code, item.quantity, awning.projection));
   push(7, 'JUEGO TERMINAL ÁGATA BOX', colored('TERMIMODUL', suffix), Math.floor(armCount / 2) * units);
+  // Los patines se reservan desde el 30/09/2026 y desde el 03/10 salen también en el despiece.
+  patinLines(suffix, units).forEach((item) => push(8, item.description, item.code, item.quantity));
   if (device === 'MOTOR') {
     push(9, 'RUEDA MOTRIZ Ø78', 'RUEDAMOT78', units);
     push(10, `MOTOR SOMFY SUNEA ${motorLabel(motorPower)} IO`, motorCode(motorPower), units);
@@ -290,6 +292,13 @@ function buildDespiece(context) {
   }
   push(19, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX', colored('SOMPMODUL', suffix), units);
   if (submodel === 'COFRE') pushBars(20, 'PERFIL INFERIOR ÁGATA BOX', bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), 2 * units, lengths.enclosureLength);
+  if (device === 'MOTOR') {
+    // Mando y sensor, como en los demás modelos: la hoja los pone en ELEMENTOS ACCESORIOS.
+    const remote = resolveMotorRemote(awning.sensor);
+    push(21, remote.description, remote.code, units);
+    const sensor = sensorMaterial(awning.sensor);
+    if (sensor) push(22, sensor.description, sensor.code, units);
+  }
   const wallEntry = behaviorData.options.tiposPared.find((item) => item.pared === awning.wallType);
   const anchoring = wallEntry ? { name: wallEntry.tornilleria, reference: wallEntry.referencia || null, units: wallEntry.unidades * units } : null;
   return { rows, anchoring };
@@ -354,8 +363,8 @@ function patinLines(suffix, units) {
 
 // Kit de unión con más de 7 m de frente (Q-AG01): la regleta de unión de los perfiles y
 // una bolsa de pasadores. Es lo que se consume en las 12 OF de más de 700 desde 2024.
-// Patines y kit de unión van a la reserva, no al despiece (como las varillas): la hoja
-// del Ágata ya llega a 26 filas y caben 28.
+// El kit de unión va a la reserva, no al despiece: con los patines la hoja del Ágata ya
+// llega a 26 filas y caben 28.
 function joinKitLines(width, units) {
   if (!(Number(width) > 700)) return [];
   return [

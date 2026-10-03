@@ -79,3 +79,5 @@ A 1280×720 y 1600, Perla de máquina y Ágata cofre con motor y 3 brazos: váli
 | Q-AG03 | Ágata: el libro pone 1 o 2 soportes más que la fórmula en 5 de 18 estructuras. **Retirada de la lista el 25/09/2026** (Iván: fuera las dudas sobre pedidos antiguos y las comprobaciones contra los libros; la referencia es la web). | La fórmula |
 | Q-PR02 | **Resuelta (taller, 30/09/2026):** sin saber si es exterior o interior, eje 50 (Cuarzo: 16 y 9 OF) | Hecho: eje 50 en todos, Ágata incluido (Coral lleva `CASTRAEX80`) |
 | Q-A06 | **Resuelta (taller, 30/09/2026):** la más corta que llegue al corte | Hecho: cada perfil y tubo, el más corto que existe en ese lacado y llega; en el Ágata, empalme por encima de 7 m |
+
+- **03/10/2026 · Ágata Box, despiece igual a la reserva:** los dos kits de patines (codo y horquilla) salen también en el despiece, y a motor el mando y el sensor van en ELEMENTOS ACCESORIOS como en los demás modelos. El kit de unión de más de 7 m sigue solo en la reserva. La hoja llega a 26 filas de despiece (caben 28).

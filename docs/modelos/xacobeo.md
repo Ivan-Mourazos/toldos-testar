@@ -42,3 +42,5 @@ Al revisar los cofres salió que el perfil EVO 70 blanco (`PEVO702R`) solo exist
 | ID | Pregunta | Qué hace la web |
 | --- | --- | --- |
 | Q-X01 | **Resuelta (Iván, 25/09/2026): como el manual.** El manual descuenta 11,9 / 11,6 / 9,9 cm de lona (máquina exterior, interior, motor); la web, 12,5 / 12 / 11 | Hecho: 11,9 / 11,6 / 9,9 |
+
+- **03/10/2026 · despiece igual a la reserva:** el kit de tapones y el juego de terminales salen en el despiece con la referencia que ya se reservaba (`TAPONEVO7…`, `TERMINEVO…`); antes salían sin referencia.
