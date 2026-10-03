@@ -36,6 +36,11 @@ describe('buildFabricSheetPages', () => {
     expect(page.total.amount).toMatch(/^\d+,\d ML$/);
   });
 
+  test('con varias telas el total lleva solo los códigos: los nombres ya salen en las filas', () => {
+    const [page] = pages([cambioTela({ fabric: acr }), cambioTela({ id: 'b', of: '0230195', fabric: pvc })], { sameFabric: false, fabric: acr });
+    expect(page.total.label).toBe('ACRILI2170P120 · NS86BLANP250');
+  });
+
   test('la fila lleva la instrucción, sin repetir el trabajo cuando todos son iguales', () => {
     const [page] = pages([cambioTela(), cambioTela({ id: 'b' })]);
     expect(page.rows.map((row) => row.letter)).toEqual(['A', 'B']);

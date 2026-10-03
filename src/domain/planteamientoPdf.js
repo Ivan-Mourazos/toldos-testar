@@ -607,10 +607,13 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
       [calc?.fabricCode, calc?.fabricDescription],
       [calc?.valanceFabricCode, calc?.valanceFabricDescription]
     ]).filter(([code, text]) => code && text));
-    const totalLabel = totals.map(({ code }) => {
-      const name = shortFabricName(fabricDescription(code, descriptions.get(code)));
-      return name && name !== code ? `${code} · ${name}` : code;
-    }).join(' · ');
+    // Con varias telas no cabe el nombre de cada una y ya sale en sus filas: solo códigos.
+    const totalLabel = totals.length > 1
+      ? totals.map(({ code }) => code).join(' · ')
+      : totals.map(({ code }) => {
+        const name = shortFabricName(fabricDescription(code, descriptions.get(code)));
+        return name && name !== code ? `${code} · ${name}` : code;
+      }).join('');
     return [{
       planIndex,
       header,
