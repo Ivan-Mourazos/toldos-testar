@@ -35,7 +35,8 @@
 /* El filete va a caballo del borde de la casilla, como en pdfkit: dos casillas pegadas comparten
    uno solo en vez de sumar dos. */
 .estructura-pagina .telas-celda { border: 0; outline: 0.5pt solid var(--filete); outline-offset: -0.25pt; }
-.estructura-pagina .telas-texto { padding: 0 2.5pt; }
+/* Línea alta para que no se corten las tildes de las mayúsculas (Ó, Í, Ñ) en las filas bajas. */
+.estructura-pagina .telas-texto { line-height: 1.45; padding: 0 2.5pt; }
 
 /* ── Cabecera ── */
 .estructura-marco { border-radius: 3pt; pointer-events: none; }
