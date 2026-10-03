@@ -764,7 +764,7 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
 function structureLength(length) {
   if (typeof length === 'number') return dash(formatNumber(length));
   const text = String(length ?? '').trim();
-  return /^d+.d+$/.test(text) ? text.replace('.', ',') : dash(text);
+  return /^\d+\.\d+$/.test(text) ? text.replace('.', ',') : dash(text);
 }
 
 

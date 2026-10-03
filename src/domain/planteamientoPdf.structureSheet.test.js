@@ -35,6 +35,17 @@ describe('buildStructureSheetPages', () => {
     expect(JSON.stringify(despiece)).not.toMatch(/\d\.\d/);
   });
 
+  test('una longitud que llega como texto con punto también sale con coma', () => {
+    const order = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings: [arzua()] });
+    const calculation = calculateOrder(order);
+    const rows = calculation.ofs[0].despiece.rows;
+    rows[0].length = '327.2';
+    rows[1].length = '2 TRAMOS';
+    rows[2].length = '';
+    const [{ despiece }] = buildStructureSheetPages({ order, calculation });
+    expect(despiece.slice(0, 3).map(({ length }) => length)).toEqual(['327,2', '2 TRAMOS', '—']);
+  });
+
   test('el mando va en accesorios, no en el despiece; el anclaje sin dato dice NO INDICADO', () => {
     const [sheet] = sheets([arzua()]);
     expect(sheet.accessories).toEqual([{ name: 'MANDO SITUO 1 IO PURE', reference: 'SITUOIO1PURE', units: '1' }]);
