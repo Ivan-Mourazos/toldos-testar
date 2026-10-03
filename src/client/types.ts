@@ -581,7 +581,6 @@ export type Calculation = {
       squaringAllowanceCm?: number;
       acrylicHemAllowanceCm?: number;
       specialTubeRequired?: boolean;
-      requiresCad?: boolean;
     };
   }[];
   diagnostics: { level: 'error' | 'pending' | 'warn'; awningId?: string; awningIndex?: number; missingFields?: MissingField[]; message: string }[];

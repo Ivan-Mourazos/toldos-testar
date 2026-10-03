@@ -87,8 +87,7 @@ describe('reglas HERA', () => {
       chainLength: 260,
       fabricPanels: 1,
       fabricMl: 1.9,
-      reservedFabricMl: 2,
-      requiresCad: true
+      reservedFabricMl: 2
     });
     expect(ofBlock.materials.map(({ code, quantity }) => [code, quantity])).toEqual([
       ['SOLTIS96NUBP267', 1.9],
@@ -99,7 +98,8 @@ describe('reglas HERA', () => {
     ]);
     // Desde el 03/10/2026 lleva despiece: lo reservado menos la tela, el macarrón y la varilla.
     expect(ofBlock.despiece.rows.map((row) => row.reference)).toEqual(ofBlock.materials.slice(1, 9).map((line) => line.code));
-    expect(result.diagnostics.some((item) => item.level === 'warn' && item.message.includes('CAD'))).toBe(true);
+    // El aviso de «completar en CAD» se quitó el 03/10/2026: la web ya hace el planteamiento entero.
+    expect(result.diagnostics.some((item) => item.message.includes('CAD'))).toBe(false);
   });
 
   test('HERA 43 máquina aplica -3,3, -4, +20 y la cadena desde altura -70', () => {

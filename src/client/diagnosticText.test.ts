@@ -3,7 +3,7 @@ import { withoutAwningPrefix } from './diagnosticText';
 
 describe('withoutAwningPrefix', () => {
   it('quita quién da el aviso dentro de su propia tarjeta', () => {
-    expect(withoutAwningPrefix('HERA en OF 0230194: requiere completar el planteamiento en CAD.')).toBe('Requiere completar el planteamiento en CAD.');
+    expect(withoutAwningPrefix('HERA en OF 0230194: tubo especial, cambiar presupuesto.')).toBe('Tubo especial, cambiar presupuesto.');
     expect(withoutAwningPrefix('Toldo A (ARZUA PRO, OF 0230194): falta curva bamba.')).toBe('Falta curva bamba.');
     expect(withoutAwningPrefix('Excepción técnica en OF 0230194: reglas de IRIS modificadas.')).toBe('Reglas de IRIS modificadas.');
   });

@@ -104,7 +104,7 @@ export function HeraRuleReference() {
         ['Tubo especial', 'Aviso cuando el frente supera ' + number(HERA_SPECIAL_TUBE_FROM_CM) + ' cm.']
       ]} />
       <ParameterNote>En el pedido se eligen variante, empate, cara interior, remate inferior y, con máquina, color de cadena.</ParameterNote>
-      <ParameterNote>El planteamiento se completa en CAD; la web reserva tela y anillo de cadena con referencia exacta.</ParameterNote>
+      <ParameterNote>La web hace el planteamiento completo y reserva la tela, el anillo de cadena y las piezas de estructura con su referencia exacta.</ParameterNote>
     </Band>
   </>;
 }

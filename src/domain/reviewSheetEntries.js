@@ -24,7 +24,6 @@ const preferredLabels = {
   'HERA 43 MAQUINA': 'HERA 43 máquina',
   'HERA 56 MAQUINA': 'HERA 56 máquina',
   'HERA 56 MOTOR': 'HERA 56 motor',
-  'PLANTEAMIENTO CAD MANUAL': 'Planteamiento CAD manual',
   'TOLDO-VELCRO': 'Toldo con velcro',
   'CAMBIO ENROLLABLE': 'Cambio de enrollable',
   SUPLEMENTO: 'Suplemento',
@@ -104,7 +103,6 @@ export function buildReviewSheetEntries(order, calculation) {
       addField(cardFields, 'Cara interior', awning.heraInteriorFace ? `${awning.heraInteriorFace} DENTRO` : '', true);
       addField(cardFields, 'Paños', calc.fabricPanels, true);
       addField(cardFields, 'Metros tela', `${formatNumber(calc.fabricMl)} ml`, true);
-      addField(cardFields, 'Proceso', 'PLANTEAMIENTO CAD MANUAL', true);
       if (calc.specialTubeRequired) addField(cardFields, 'Aviso', 'TUBO ESPECIAL · CAMBIAR PRESUPUESTO', true);
     }
     if (fields.dimensions.includes('valanceHeight')) addField(cardFields, standaloneValance ? 'Alto' : 'Bamba (cm)', measure(awning.valanceHeight), true);

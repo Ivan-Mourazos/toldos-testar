@@ -22,6 +22,8 @@ Esta ficha recoge investigación ya realizada. No añade una validación del pro
 
 Decisión de Iván: «Quiero que sea como todos los modelos». El HERA deja de tener su página A5 propia y sale con las dos páginas de siempre, en HTML (Chromium) y, de respaldo, con pdfkit. Diseño en [la especificación de la fase 2b](../superpowers/specs/2026-10-03-pdf-toldos-html-fase-2b-hera-design.md).
 
+**Sin aviso de CAD (Iván, 03/10/2026).** La web ya no dice «CAD manual» en la tarjeta del HERA, ni avisa de «completar el planteamiento en CAD», ni pone «Proceso: planteamiento CAD manual» en la hoja de revisión: lo que se haga en CAD es cosa de Oficina Técnica y la web ya saca el planteamiento completo.
+
 **Página de estructura (A5).** Cabecera con la variante sin el accionamiento («HERA 56») y, a la derecha, MÁQUINA o MOTOR. DATOS DE PARTIDA: frente, caída, unidades y, con cadena, la altura. DETALLES: en lugar del lacado, COLOR CADENA (COLOR MECANISMOS a motor) y el dispositivo; el lado del mando y la colocación solo si el toldo los trae (la tarjeta del HERA no los pide). SISTEMA DE ANCLAJE: «NO INDICADO», porque el HERA no pide tipo de pared.
 
 **Despiece.** Son las piezas que ya se reservan, con sus mismas referencias; no se añade ni se quita nada de la reserva.

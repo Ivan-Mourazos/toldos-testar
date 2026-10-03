@@ -220,8 +220,7 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
       { label: 'Artículo cadena', value: 'Pendiente compras' },
       { label: 'Empate cliente', value: 'Vertical' },
       { label: 'Paños', value: '2' },
-      { label: 'Metros tela', value: '3,4 ml' },
-      { label: 'Proceso', value: 'Planteamiento CAD manual' }
+      { label: 'Metros tela', value: '3,4 ml' }
     ]));
     expect(entry.fields.some(({ label }) => ['Lacado', 'Rotulación tela', 'Rotulación bamba'].includes(label))).toBe(false);
   });
@@ -247,13 +246,12 @@ test('IRIS enseña las medidas del hueco y el escuadrado, que es lo único contr
       { label: 'Empate cliente', value: 'Vertical' },
       { label: 'Paños', value: '2' },
       { label: 'Metros tela', value: '3,5 ml' },
-      { label: 'Proceso', value: 'Planteamiento CAD manual' },
       { label: 'Aviso', value: 'Tubo especial · cambiar presupuesto' }
     ]));
     expect(entry.fields.some(({ label }) => label === 'Altura instalación')).toBe(false);
 
     const pdf = await extractPdf(await buildOrderReviewPdf({ order, calculation }));
-    expect(pdf.text).toContain('Planteamiento CAD manual');
+    expect(pdf.text).not.toContain('CAD manual');
     expect(pdf.text).toContain('Tubo especial · cambiar presupuesto');
   });
 

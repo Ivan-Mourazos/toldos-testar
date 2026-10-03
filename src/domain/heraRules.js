@@ -73,7 +73,6 @@ export function calculateHera({ order, awning }) {
     });
   }
 
-  diagnostics.push({ level: 'warn', awningId: awning.id, message: `HERA en OF ${awning.of}: requiere completar el planteamiento en CAD.` });
   if (rule && !rule.motor) {
     diagnostics.push({
       level: 'warn',
@@ -152,8 +151,7 @@ export function calculateHera({ order, awning }) {
       seamAllowanceCm: usage.seams * HERA_FABRIC_ALLOWANCES.joinCm,
       squaringAllowanceCm: join && join !== 'NINGUNO' ? HERA_FABRIC_ALLOWANCES.squaringEachEndCm * 2 : 0,
       acrylicHemAllowanceCm: acrylic ? HERA_FABRIC_ALLOWANCES.acrylicSideHemCm * 2 : 0,
-      specialTubeRequired,
-      requiresCad: true
+      specialTubeRequired
     }
   };
 }
