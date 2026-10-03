@@ -151,24 +151,40 @@ async function mergeSheets({ order, review, base, printed, replacements }) {
     if (!range || !(range.end > range.start)) throw new Error('Una hoja impresa no tiene páginas de pdfkit que sustituir.');
     return [range.start, replacement];
   }));
+  // Qué va en cada sitio, en orden: una página de pdfkit o las impresas de una hoja.
+  const slots = [];
   for (let index = 0; index < source.getPageCount(); index += 1) {
     if (replaced.has(index)) {
-      const { range, indices, drawing } = replaced.get(index);
-      const pages = await out.copyPages(printed, indices);
-      pages.forEach((page) => out.addPage(page));
-      if (drawing) {
-        const [embedded] = await out.embedPdf(drawing);
-        const [first] = pages;
-        const box = FABRIC_SHEET_DIAGRAM_BOX;
-        // El recuadro se mide desde arriba; pdf-lib dibuja desde abajo.
-        first.drawPage(embedded, { x: box.x, y: first.getHeight() - box.y - box.height, width: box.width, height: box.height });
-      }
+      const replacement = replaced.get(index);
+      slots.push({ replacement });
       // Se saltan también las continuaciones de pdfkit de esa hoja (`end` es exclusivo).
-      index = range.end - 1;
+      index = replacement.range.end - 1;
+    } else {
+      slots.push({ index });
+    }
+  }
+  // Las páginas de cada origen se copian de una sola vez. De una en una, cada copia volvía a
+  // meter las letras incrustadas: el PDF engordaba y la unión tardaba más de un segundo con
+  // siete páginas (medido el 03/10/2026).
+  const kept = slots.filter((slot) => !slot.replacement).map((slot) => slot.index);
+  const keptPages = new Map((await out.copyPages(source, kept)).map((page, position) => [kept[position], page]));
+  const printedIndices = slots.flatMap((slot) => slot.replacement?.indices ?? []);
+  const printedPages = new Map((await out.copyPages(printed, printedIndices)).map((page, position) => [printedIndices[position], page]));
+  for (const slot of slots) {
+    if (!slot.replacement) {
+      out.addPage(keptPages.get(slot.index));
       continue;
     }
-    const [page] = await out.copyPages(source, [index]);
-    out.addPage(page);
+    const { indices, drawing } = slot.replacement;
+    const pages = indices.map((index) => printedPages.get(index));
+    pages.forEach((page) => out.addPage(page));
+    if (drawing) {
+      const [embedded] = await out.embedPdf(drawing);
+      const [first] = pages;
+      const box = FABRIC_SHEET_DIAGRAM_BOX;
+      // El recuadro se mide desde arriba; pdf-lib dibuja desde abajo.
+      first.drawPage(embedded, { x: box.x, y: first.getHeight() - box.y - box.height, width: box.width, height: box.height });
+    }
   }
   if (review) {
     const code = String(review.orderCode || order.orderCode || 'PEDIDO').replace(/[^A-Z0-9_-]+/gi, '') || 'PEDIDO';
