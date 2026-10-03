@@ -78,6 +78,16 @@ const casos = {
   }),
   largas: pedido({ orderCode: 'AR2603337', fabric: acrAzul, notes: notasLargas, awnings: [arzua] })
 };
+// Varias hojas de telas en un PDF: se imprimen una tras otra, así que es el caso que más tarda.
+casos.cuatro = pedido({
+  orderCode: 'AR2603338', fabric: acrNegro,
+  awnings: [
+    { ...cortina, id: 'a', of: '0230201' },
+    { ...arzua, id: 'b', of: '0230202' },
+    { ...casos.bambalina.awnings[0], id: 'c', of: '0230203' },
+    { ...casos.antica.awnings[0], id: 'd', of: '0230204' }
+  ]
+});
 const elegidos = process.env.CASOS ? process.env.CASOS.split(',') : Object.keys(casos);
 
 async function leerPdf(bytes) {

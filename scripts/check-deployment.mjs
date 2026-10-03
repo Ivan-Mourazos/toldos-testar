@@ -134,6 +134,14 @@ async function checkHojaRemolques() {
     fail('Falta dist/hoja-remolques.html (hoja de taller de remolques). Ejecuta pnpm build.');
     return;
   }
+  // Sin la hoja de telas el servidor sirve index.html, que nunca avisa de que está lista:
+  // cada PDF de toldos esperaría 30 s antes de salir con la página de pdfkit.
+  try {
+    await stat(path.join(projectDirectory, 'dist', 'hoja-telas.html'));
+  } catch {
+    fail('Falta dist/hoja-telas.html (hoja de telas de toldos). Ejecuta pnpm build.');
+    return;
+  }
   const carpeta = path.join(projectDirectory, 'dist', 'assets');
   let trozos;
   try {
@@ -149,9 +157,9 @@ async function checkHojaRemolques() {
     }
   }
   if (conMuestra.length > 0) {
-    fail(`El build lleva la muestra de desarrollo de la hoja de remolques (${conMuestra.join(', ')}). Ejecuta pnpm build de nuevo.`);
+    fail(`El build lleva las muestras de desarrollo de las hojas (${conMuestra.join(', ')}). Ejecuta pnpm build de nuevo.`);
   } else {
-    pass('dist/hoja-remolques.html existe y el build no lleva las muestras de desarrollo.');
+    pass('dist/hoja-remolques.html y dist/hoja-telas.html existen y el build no lleva las muestras de desarrollo.');
   }
 }
 
