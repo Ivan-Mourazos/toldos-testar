@@ -643,6 +643,7 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
         return name && name !== code ? `${code} · ${name}` : code;
       }).join('');
     return [{
+      kind: 'telas',
       planIndex,
       header: { of: dash(pageOf.header), ...header },
       diagramTitle: fabricDiagramHeading(diagram, lines.map(({ awning }) => awning)),
@@ -676,6 +677,94 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
       footer: 'Planteamiento de telas'
     }];
   });
+}
+
+// Datos de cada página de estructura A5 para la hoja en HTML (fase 2). Salen de lo mismo que
+// drawStructurePage (cabecera, despiece, columna derecha, accesorios y anclaje), con los cambios
+// que decidió Iván el 03/10/2026: coma decimal, «—» en lo vacío, el modelo con tilde, palabras
+// enteras en DETALLES, el paño con un decimal y accesorios y anclaje sin número de fila.
+export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAwningId = null }) {
+  const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId });
+  const order = onlyAwningId
+    ? { ...fullOrder, awnings: fullOrder.awnings.filter((awning) => awning.id === onlyAwningId) }
+    : fullOrder;
+  return plan.structureEntries.map(({ awning, index, ofBlock }, structureIndex) => {
+    const calc = ofBlock?.calculation;
+    const split = splitDespiece(ofBlock?.despiece?.rows || []);
+    const anchoring = ofBlock?.despiece?.anchoring;
+    const vertical = isVerticalAwningModel(awning.model);
+    const letter = awningLetter(index);
+    const modelName = String(awning.model ?? '').trim().toUpperCase();
+    const model = awning.model === 'ELECTRA'
+      ? 'ELECTRA / ELIT VERTICAL'
+      : awning.model === 'MAXISCREEM'
+        ? 'DIANA VERTICAL / MAXISCREEN'
+        : dash(generalHeadingNames[modelName] || modelName);
+    const motor = String(awning.device || '').toUpperCase() === 'MOTOR';
+    return {
+      kind: 'estructura',
+      structureIndex,
+      header: {
+        of: dash(awning.of),
+        orderCode: dash(order.orderCode),
+        customer: dash(order.customer),
+        technician: dash(order.technician),
+        reviewer: dash(order.reviewer),
+        date: dash(formatDate(order.orderDate)),
+        letter,
+        model,
+        device: dash(awning.device)
+      },
+      despiece: split.main.map((row, position) => ({
+        num: String(row.num || position + 1),
+        name: dash(row.name),
+        reference: dash(row.reference),
+        units: dash(row.units),
+        length: structureLength(row.length),
+        bold: /TUBO|BRAZO|MOTOR|MAQUINA/.test(String(row.name ?? '').toUpperCase())
+      })),
+      rowsPerPage: DESPIECE_ROWS_PER_PAGE,
+      accessories: split.accessories.map((row) => ({
+        name: dash(row.name),
+        reference: dash(row.reference),
+        units: dash(row.units)
+      })),
+      anchoring: {
+        name: anchoring?.name || 'NO INDICADO',
+        reference: dash(anchoring?.reference),
+        units: dash(anchoring?.units)
+      },
+      // IRIS no recibe frente ni caída: los deja el cálculo, como en drawStructureSide.
+      partida: [
+        ['FRENTE', dash(formatNumber(awning.width ?? calc?.width))],
+        [vertical ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', dash(formatNumber(awning.projection ?? calc?.projection))],
+        ['UNIDADES', dash(formatNumber(awning.units))]
+      ],
+      valid: calc?.valid !== false,
+      detalles: [
+        ['LACADO', dash(awning.structureColor || order.structureColor)],
+        ['DISPOSITIVO', dash(awning.device)],
+        [motor ? 'POSICIÓN MOTOR' : 'COLOCACIÓN MÁQUINA', dash(awning.machineSide)],
+        ['COLOCACIÓN TOLDO', dash(awning.placement)],
+        ...(awning.model === 'ELECTRA' ? [['VARIANTE', dash(awning.submodel)], ['SOPORTE', dash(awning.electraSupport)]] : []),
+        ...(calc?.dropArmMode === 'VERTICAL_170' ? [['TRABAJO', 'BAJADA VERTICAL 170°']] : [])
+      ],
+      tela: [
+        ['TELA', calc ? dash(formatNumber(calc.fabricWidth)) : '—'],
+        [vertical ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? dash(formatNumber(calc.fabricDrop)) : '—'],
+        ['PAÑO', calc ? `${formatFabricMeasure(calc.fabricMl)} ML` : '—']
+      ],
+      notes: String(structureNotes(awning, calc) ?? '').trim(),
+      footer: `Toldo ${letter} · Estructura`
+    };
+  });
+}
+
+// La longitud de una pieza llega como número o como texto: siempre con coma decimal.
+function structureLength(length) {
+  if (typeof length === 'number') return dash(formatNumber(length));
+  const text = String(length ?? '').trim();
+  return /^d+.d+$/.test(text) ? text.replace('.', ',') : dash(text);
 }
 
 
