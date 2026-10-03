@@ -12,6 +12,21 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## Piezas del despiece que no se reservan
+
+Añadidas el 03/10/2026, al comparar en los 17 modelos lo que sale en el despiece del PDF con lo que la web reserva (`tmp/revision-modelos/despiece-vs-reserva.mjs`, 2.576 casos de ejemplo). Estas piezas salen en el despiece sin referencia y la web no reserva nada por ellas. La pregunta es la misma en todas: **¿se gasta una pieza aparte que haya que reservar, o viene dentro de otra (un kit, un juego) y está bien así?** Mientras tanto la web sigue como está: las enseña en el despiece y no las reserva.
+
+| Código | Modelo | Pieza del despiece | Por qué importa |
+| --- | --- | --- | --- |
+| Q-DP01 | Cuarzo Box | Barra de carga Storbox 250 | Si no viene con el cofre, falta en la reserva |
+| Q-DP02 | Ámbar, Perla y Coral Box | Juego de terminales | En el Arzúa y el Xacobeo los terminales sí se reservan |
+| Q-DP03 | Electra | Cadenillas inox, puentes abatibles y regleta Zamack | En la Cortina el puente y la regleta sí llevan referencia |
+| Q-DP04 | Cortina | Cadenillas inox | Sale siempre con «—» en la referencia |
+| Q-DP05 | Xacobeo | Rueda motriz LT50, con la referencia `ADAPTADORESTUBO70` | Tiene referencia en el despiece pero no se reserva |
+| Q-DP06 | Arzúa, Galicia, Xacobeo, Punto Recto, cofres y Antica | Kit de tornillos de máquina y taco de nylon | Tornillería menuda: seguramente no se reserva a propósito, falta confirmarlo |
+
+Lo que sí se arregla sin preguntar (03/10/2026): el despiece del Iris y el del HERA salen de las piezas que ya se reservan; el Xacobeo pone en el despiece las referencias de tapones y terminales que ya reserva; y el Ágata Box añade al despiece los dos kits de patines.
+
 ## Clásicos
 
 ### Antica
