@@ -2,13 +2,14 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/geist';
 import './hojaTelas.css';
+import './hojaEstructura.css';
 import { cargarHojaTelas } from './cargarHojaTelas';
 import { HojasTelas } from './HojaTelas';
-import type { HojaTelasDatos } from './tipos';
+import type { HojaPlanteamiento } from './tipos';
 
-// Página de telas del planteamiento de toldos: página interna, sin la aplicación alrededor, que
-// Chromium abre en el servidor para hacer el PDF. Avisa con window.hojaLista cuando todo está
-// pintado, o deja el motivo en window.hojaError. Sin StrictMode: los datos se piden una sola vez.
+// Hojas del planteamiento de toldos (estructura y telas): página interna, sin la aplicación
+// alrededor, que Chromium abre en el servidor para hacer el PDF. Avisa con window.hojaLista cuando
+// todo está pintado, o deja el motivo en window.hojaError. Sin StrictMode: los datos se piden una sola vez.
 const texto = (error: unknown) => (error instanceof Error ? error.message : String(error));
 let raiz: ReturnType<typeof createRoot> | null = null;
 const lista = () => { if (!window.hojaError) window.hojaLista = true; };
@@ -26,7 +27,7 @@ raiz = createRoot(document.getElementById('hoja')!, {
 window.addEventListener('error', (evento) => fallar(`Error en la hoja: ${evento.message}`));
 window.addEventListener('unhandledrejection', (evento) => fallar(`Error en la hoja: ${texto(evento.reason)}`));
 
-function cargar(): Promise<HojaTelasDatos[]> {
+function cargar(): Promise<HojaPlanteamiento[]> {
   // Solo con el servidor de desarrollo (MODE y no DEV, como en la hoja de remolques): en un build
   // la rama y su import desaparecen.
   if (import.meta.env.MODE === 'development') {

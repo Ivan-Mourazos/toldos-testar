@@ -1,8 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ajustarUnaLinea } from '../hoja/ajusteTexto';
 import { ajustarDosLineas } from './ajusteDosLineas';
-import { repartirNotas } from './repartirNotas';
-import type { FilaHojaTelas, HojaTelasDatos } from './tipos';
+import {
+  Celda, Notas, NOTAS_TEXTO_ABAJO, NOTAS_TEXTO_ARRIBA, NOTAS_TEXTO_LADO, PX_POR_PT, esperarImagenes, esperarLetra, pt,
+  repartirObservaciones, sitio, textoError as texto
+} from './ayudasHoja';
+import { HojaEstructura } from './HojaEstructura';
+import type { FilaHojaTelas, HojaPlanteamiento, HojaTelasDatos } from './tipos';
 
 // Página de telas A4 apaisada del planteamiento de toldos, impresa por Chromium en el servidor.
 // Todas las medidas van en pt y son las de la página de pdfkit (src/domain/planteamientoPdf.js,
@@ -45,31 +49,11 @@ const NOTAS_X = 36;
 const NOTAS_W = 242;
 const NOTAS_Y = 456;
 const NOTAS_PIE = EXTERIOR_PIE - 10;
-const NOTAS_TEXTO_ARRIBA = 19.5;
-const NOTAS_TEXTO_ABAJO = 4;
-const NOTAS_TEXTO_LADO = 4;
 const CONTINUACION_W = ANCHO - MARGEN * 2;
-const PX_POR_PT = 4 / 3;
 
 /** Alto de cada fila de toldo: con pocas filas crecen, hasta 90 pt; con muchas no bajan de 62. */
 export function altoFila(filas: number): number {
   return Math.min(90, Math.max(62, (TOTAL_Y - FILAS_Y) / Math.max(1, filas) - HUECO_FILAS));
-}
-
-const pt = (valor: number) => `${Math.round(valor * 100) / 100}pt`;
-const sitio = (x: number, y: number, w: number, h: number) => ({ left: pt(x), top: pt(y), width: pt(w), height: pt(h) });
-
-/** Una casilla con su filete, como drawCell. `minima` (pt) la hace de una línea con letra ajustable. */
-function Celda({ x, y, w, h, clase = '', minima, children }: {
-  x: number; y: number; w: number; h: number; clase?: string; minima?: number; children: ReactNode;
-}) {
-  return (
-    <div className={`telas-celda ${clase}`.trim()} style={sitio(x, y, w, h)}>
-      {minima === undefined
-        ? <span className="telas-texto">{children}</span>
-        : <span className="telas-texto hoja-una-linea" data-letra-minima={String(minima)}>{children}</span>}
-    </div>
-  );
 }
 
 function Cabecera({ cabecera }: { cabecera: HojaTelasDatos['header'] }) {
@@ -147,24 +131,6 @@ function Fila({ fila, y, h }: { fila: FilaHojaTelas; y: number; h: number }) {
   );
 }
 
-/** El recuadro amarillo de observaciones. `lineas` null: aún sin repartir, el texto entero. */
-function Notas({ x, y, w, h, titulo, texto, lineas, refTexto }: {
-  x: number; y: number; w: number; h: number; titulo: string; texto: string; lineas: string[] | null;
-  refTexto?: React.Ref<HTMLDivElement>;
-}) {
-  return (
-    <div className="telas-notas" style={sitio(x, y, w, h)}>
-      <div className="telas-notas-titulo">{titulo}</div>
-      <div className="telas-notas-texto" ref={refTexto}
-        style={sitio(NOTAS_TEXTO_LADO, NOTAS_TEXTO_ARRIBA, w - NOTAS_TEXTO_LADO * 2, h - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO)}>
-        {lineas === null
-          ? texto.split('\n').map((parrafo, indice) => <div key={indice} className="telas-nota">{parrafo}</div>)
-          : lineas.map((linea, indice) => <div key={indice} className="telas-nota-linea">{linea}</div>)}
-      </div>
-    </div>
-  );
-}
-
 function Pie({ texto }: { texto: string }) {
   return <div className="telas-pie" style={{ left: pt(MARGEN), top: pt(ALTO - 15), width: pt(ANCHO - MARGEN * 2) }}>{texto}</div>;
 }
@@ -216,90 +182,6 @@ function PaginaContinuacion({ datos, lineas }: { datos: HojaTelasDatos; lineas: 
   );
 }
 
-// ── Reparto de las observaciones ──
-
-interface LineaVisual { parrafo: number; inicio: number; fin: number }
-
-/** Dónde parte el navegador cada párrafo en líneas con el ancho del medidor. */
-function lineasVisuales(medidor: HTMLElement, parrafos: string[]): LineaVisual[] {
-  const lineas: LineaVisual[] = [];
-  parrafos.forEach((parrafo, indice) => {
-    if (!parrafo) {
-      lineas.push({ parrafo: indice, inicio: 0, fin: 0 });
-      return;
-    }
-    medidor.textContent = parrafo;
-    const nodo = medidor.firstChild as Text;
-    const rango = document.createRange();
-    let inicio = 0;
-    let arriba: number | null = null;
-    // Solo cuentan las letras: el espacio donde se parte la línea puede caer en cualquiera de las dos.
-    for (let i = 0; i < parrafo.length; i += 1) {
-      if (!/\S/.test(parrafo[i])) continue;
-      rango.setStart(nodo, i);
-      rango.setEnd(nodo, i + 1);
-      const caja = rango.getClientRects()[0];
-      if (!caja) continue;
-      if (arriba !== null && caja.top > arriba + 1) {
-        lineas.push({ parrafo: indice, inicio, fin: i });
-        inicio = i;
-      }
-      arriba = caja.top;
-    }
-    lineas.push({ parrafo: indice, inicio, fin: parrafo.length });
-  });
-  medidor.textContent = '';
-  return lineas;
-}
-
-/** Corta las observaciones en páginas: lo que cabe debajo del dibujo y el resto, a página entera. */
-function repartirObservaciones(medidor: HTMLElement, texto: string, cajaPrimera: HTMLElement): string[][] {
-  const medir = (ancho: number, parrafos: string[]) => {
-    medidor.style.width = pt(ancho);
-    const lineas = lineasVisuales(medidor, parrafos);
-    medidor.textContent = 'Ág';
-    const alto = medidor.getBoundingClientRect().height;
-    medidor.textContent = '';
-    return { lineas, altos: lineas.map(() => alto), texto: (l: LineaVisual) => parrafos[l.parrafo].slice(l.inicio, l.fin).trimEnd() };
-  };
-
-  const parrafos = texto.split('\n');
-  const primera = medir(NOTAS_W - NOTAS_TEXTO_LADO * 2, parrafos);
-  const [enPrimera = []] = repartirNotas(primera.altos, cajaPrimera.clientHeight, Infinity);
-  const paginas = [enPrimera.map((i) => primera.texto(primera.lineas[i]))];
-  if (enPrimera.length === primera.lineas.length) return paginas;
-
-  // El resto se vuelve a partir con el ancho de la página de continuación.
-  const siguiente = primera.lineas[enPrimera.length];
-  const resto = [parrafos[siguiente.parrafo].slice(siguiente.inicio).trimStart(), ...parrafos.slice(siguiente.parrafo + 1)];
-  const continuacion = medir(CONTINUACION_W - NOTAS_TEXTO_LADO * 2, resto);
-  const caja = (EXTERIOR_PIE - EXTERIOR_Y - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT;
-  for (const grupo of repartirNotas(continuacion.altos, caja, caja)) {
-    paginas.push(grupo.map((i) => continuacion.texto(continuacion.lineas[i])));
-  }
-  return paginas;
-}
-
-// ── Carga de letra e imágenes ──
-
-const texto = (error: unknown) => (error instanceof Error ? error.message : String(error));
-/** Los pesos de Geist que usa hojaTelas.css, con las letras de la hoja (acentos, Ñ, º, ·). */
-const PESOS = [400, 600, 700];
-const MUESTRA_LETRAS = 'AÁÉÍÓÚÑÜ·º—0123456789,:';
-
-async function esperarLetra(): Promise<void> {
-  // `document.fonts.ready` puede resolverse antes de que empiece a bajar Geist: se pide cada peso.
-  const caras = await Promise.all(PESOS.map((peso) => document.fonts.load(`${peso} 12pt "Geist Variable"`, MUESTRA_LETRAS)));
-  if (caras.some((lista) => lista.length === 0)) throw new Error('No se pudo cargar la letra de la hoja (Geist).');
-  await document.fonts.ready;
-}
-
-async function esperarImagenes(raiz: ParentNode): Promise<void> {
-  await Promise.all(Array.from(raiz.querySelectorAll('img')).map((img) => img.decode().catch(() => {
-    throw new Error(`No se pudo cargar la imagen ${img.getAttribute('src')?.slice(0, 60)}.`);
-  })));
-}
-
 /**
  * La página de telas y, si las observaciones no caben debajo del dibujo, sus páginas de
  * continuación. Con la letra cargada ajusta los textos de una línea, reparte las observaciones
@@ -324,7 +206,9 @@ export function HojaTelas({ datos, onLista, onError }: {
       ajustarDosLineas(raiz.current);
       const notas = datos.notes.trim();
       setPaginasNotas(notas && medidor.current && cajaNotas.current
-        ? repartirObservaciones(medidor.current, notas, cajaNotas.current)
+        ? repartirObservaciones(medidor.current, notas,
+          { ancho: NOTAS_W - NOTAS_TEXTO_LADO * 2, alto: cajaNotas.current.clientHeight },
+          { ancho: CONTINUACION_W - NOTAS_TEXTO_LADO * 2, alto: (EXTERIOR_PIE - EXTERIOR_Y - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT })
         : []);
     }).catch((error: unknown) => { if (vigente) onError(texto(error)); });
     return () => { vigente = false; };
@@ -350,21 +234,22 @@ export function HojaTelas({ datos, onLista, onError }: {
 
 /** Cuántas páginas ocupa cada hoja pintada dentro de `raiz`, en orden. */
 export function contarPaginas(raiz: ParentNode): number[] {
-  return Array.from(raiz.querySelectorAll('[data-hoja-telas]'), (hoja) => hoja.querySelectorAll('.telas-pagina').length);
+  return Array.from(raiz.querySelectorAll('[data-hoja-telas]'), (hoja) => hoja.querySelectorAll('.telas-pagina, .estructura-pagina').length);
 }
 
 /**
- * Todas las hojas de telas del PDF seguidas, para que Chromium las imprima de una vez. Cuando
+ * Todas las hojas del PDF seguidas (las de estructura, A5, y las de telas, A4), para que Chromium
+ * las imprima de una vez. Cuando
  * todas están listas avisa con `onLista` y las páginas de cada una (las observaciones largas
  * añaden páginas), que el servidor necesita para poner cada hoja en su sitio.
  */
 export function HojasTelas({ hojas, onLista, onError }: {
-  hojas: HojaTelasDatos[];
+  hojas: HojaPlanteamiento[];
   onLista: (paginas: number[]) => void;
   onError: (mensaje: string) => void;
 }) {
   const raiz = useRef<HTMLDivElement>(null);
-  // Un aviso fijo por hoja: HojaTelas lo tiene en las dependencias de su efecto.
+  // Un aviso fijo por hoja: cada hoja lo tiene en las dependencias de su efecto.
   const avisos = useMemo(() => {
     const listas = new Set<number>();
     return hojas.map((_, indice) => () => {
@@ -375,8 +260,9 @@ export function HojasTelas({ hojas, onLista, onError }: {
 
   return (
     <div ref={raiz}>
-      {hojas.map((datos, indice) => (
-        <HojaTelas key={`${datos.planIndex}-${indice}`} datos={datos} onLista={avisos[indice]} onError={onError} />
+      {hojas.map((datos, indice) => (datos.kind === 'estructura'
+        ? <HojaEstructura key={`e${datos.structureIndex}-${indice}`} datos={datos} onLista={avisos[indice]} onError={onError} />
+        : <HojaTelas key={`${datos.planIndex}-${indice}`} datos={datos} onLista={avisos[indice]} onError={onError} />
       ))}
     </div>
   );

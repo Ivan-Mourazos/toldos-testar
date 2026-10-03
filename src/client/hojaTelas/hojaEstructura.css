@@ -1,0 +1,103 @@
+/* Página de estructura A5 apaisada de cada toldo. Va en la misma página web que las de telas
+   (hojaTelas.css pone la letra, los colores y las casillas) y Chromium las imprime juntas: cada
+   una con su tamaño de papel, por el nombre de página. Medidas en pt, las de la página de pdfkit
+   (drawStructurePage en src/domain/planteamientoPdf.js). */
+@page estructura { size: A5 landscape; margin: 0; }
+
+:root {
+  --tinta-suave: #29474d;
+  --gris-verde: #dce4e2;
+  --fila-suave: #f5f7f6;
+  --verde: #d9f3df;
+  --verde-texto: #08722c;
+  --rojo: #fae0dc;
+  --rojo-texto: #9f3328;
+}
+
+.estructura-pagina {
+  break-after: page;
+  font-size: 7pt;
+  height: 148mm;
+  overflow: hidden;
+  page: estructura;
+  position: relative;
+  width: 210mm;
+}
+/* Varias hojas seguidas: solo la última página de la última hoja no salta. */
+[data-hoja-telas]:last-child .estructura-pagina:last-of-type { break-after: auto; }
+.estructura-pagina > *, .estructura-pagina .telas-celda, .estructura-barra { position: absolute; }
+
+/* En pantalla (solo para revisarla) se separan las páginas; al imprimir no cuenta. */
+@media screen {
+  .estructura-pagina + .estructura-pagina, [data-hoja-telas] + [data-hoja-telas] > :first-child { border-top: 1px dashed var(--filete); }
+}
+
+/* El filete va a caballo del borde de la casilla, como en pdfkit: dos casillas pegadas comparten
+   uno solo en vez de sumar dos. */
+.estructura-pagina .telas-celda { border: 0; outline: 0.5pt solid var(--filete); outline-offset: -0.25pt; }
+.estructura-pagina .telas-texto { padding: 0 2.5pt; }
+
+/* ── Cabecera ── */
+.estructura-marco { border-radius: 3pt; pointer-events: none; }
+.estructura-logo { background: var(--papel); border-radius: 3pt; }
+.estructura-cab-rotulo { font-size: 7pt; }
+.estructura-cab-numero { font-size: 13pt; }
+.estructura-cab-dato { font-size: 7.2pt; }
+.estructura-barra-modelo { background: var(--tinta); border-radius: 0 0 2.5pt 0; color: var(--papel); font-weight: 700; }
+.estructura-barra-modelo > * { line-height: 13pt; position: absolute; text-align: center; top: 0; }
+.estructura-toldo { color: var(--amarillo); font-size: 6.5pt; text-align: left; white-space: nowrap; }
+.estructura-modelo { font-size: 9pt; }
+.estructura-dispositivo { font-size: 8pt; padding: 0 3pt; }
+
+/* ── Despiece ── */
+.estructura-rotulo {
+  align-items: center;
+  background: var(--gris-oscuro);
+  border: 0.75pt solid var(--tinta);
+  border-radius: 2pt;
+  display: flex;
+  font-size: 10pt;
+  font-weight: 700;
+  justify-content: center;
+  overflow: hidden;
+}
+.estructura-rotulo span { transform: rotate(-90deg); white-space: nowrap; }
+.estructura-filas { left: 0; top: 0; }
+.estructura-fila-suelta { display: contents; }
+.estructura-titulo { background: var(--tinta-suave); color: var(--papel); font-size: 7.2pt; }
+.estructura-titulo .telas-texto { padding: 0 1pt; }
+/* «UNIDADES» y «LONGITUD» enteras en sus columnas estrechas, las dos con la misma letra. */
+.estructura-titulo-estrecho { font-size: 6.2pt; }
+.estructura-suave { background: var(--fila-suave); }
+.estructura-gris { background: var(--gris-verde); }
+
+/* ── Barras de título: accesorios, anclaje y las tablas de la derecha ── */
+.estructura-barra {
+  align-items: center;
+  background: var(--gris-verde);
+  border: 0.75pt solid var(--tinta);
+  display: flex;
+  font-size: 7.2pt;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ── Columna derecha ── */
+.estructura-tabla { font-size: 7pt; }
+.estructura-tabla-etiqueta .telas-texto { padding: 0 2pt; }
+.estructura-valido {
+  align-items: center;
+  border: 0.75pt solid var(--tinta);
+  border-radius: 3pt;
+  display: flex;
+  font-size: 15pt;
+  font-weight: 700;
+  justify-content: center;
+}
+.estructura-valido-si { background: var(--verde); color: var(--verde-texto); }
+.estructura-valido-no { background: var(--rojo); color: var(--rojo-texto); }
+
+/* ── Observaciones: el recuadro de telas con la letra de esta hoja ── */
+.estructura-notas .telas-notas-titulo { font-size: 6.5pt; }
+.estructura-notas .telas-notas-texto, .estructura-medidor { font-size: 6.5pt; line-height: 8.25pt; }
+.estructura-notas .telas-nota-linea { min-height: 8.25pt; }

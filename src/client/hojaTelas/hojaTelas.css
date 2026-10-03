@@ -2,7 +2,10 @@
    oscuro. Todo va colocado en pt desde arriba a la izquierda con las mismas medidas que la página
    de pdfkit (src/domain/planteamientoPdf.js), y el dibujo lo encaja después el servidor en el
    recuadro .telas-dibujo: si mueves algo aquí, mira que no pise ese recuadro. */
-@page { size: A4 landscape; margin: 0; }
+/* Cada hoja pide su papel por el nombre de página: las de telas, A4; las de estructura
+   (hojaEstructura.css), A5. */
+@page { margin: 0; }
+@page telas { size: A4 landscape; margin: 0; }
 
 :root {
   --tinta: #10282d;
@@ -29,6 +32,7 @@ body {
   break-after: page;
   height: 210mm;
   overflow: hidden;
+  page: telas;
   position: relative;
   width: 297mm;
 }
