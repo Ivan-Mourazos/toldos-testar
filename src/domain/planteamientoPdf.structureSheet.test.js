@@ -159,19 +159,21 @@ describe('buildOrderPlanteamientoPdf con la hoja de estructura en HTML', () => {
     expect(await pageSizes(pdf)).toEqual(await pageSizes(pdfkit));
   });
 
-  test('con un HERA en el pedido, su página sigue siendo la de pdfkit y está en el mismo sitio', async () => {
+  test('con un HERA en el pedido, sus páginas se sustituyen como las de cualquier modelo', async () => {
     const mixed = pedido([arzua(), heraAwning]);
     const mixedCalculation = calculateOrder(mixed);
     const before = await pageTexts(await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation }));
-    const pdf = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation, renderSheets: fakeSheets() });
+    const { llamadas, renderSheets } = espia();
+    const pdf = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation, renderSheets });
     const after = await pageTexts(pdf);
+    expect(llamadas).toEqual([['estructura 0', 'estructura 1', 'telas 0', 'telas 1']]);
     expect(after).toHaveLength(before.length);
-    expect(await pageSizes(pdf)).toEqual(['A5', 'A4', 'A5']);
-    const hera = marcas(after).map((marca, n) => (marca === 'pdfkit' ? n : -1)).filter((n) => n >= 0);
-    expect(hera).toHaveLength(1);
-    expect(after[hera[0]]).toBe(before[hera[0]]);
-    expect(after[hera[0]]).toContain('HERA');
-    expect(marcas(after).filter((marca) => marca.startsWith('HOJA ESTRUCTURA'))).toEqual(['HOJA ESTRUCTURA 1 TOLDO 0']);
+    expect(await pageSizes(pdf)).toEqual(['A5', 'A5', 'A4', 'A4']);
+    // Con pdfkit el HERA ya no tiene página propia: estructura y telas, como el Arzúa.
+    expect(before[1]).toContain('DESPIECE');
+    expect(before[1]).toContain('HERA 56');
+    expect(before.join(' ')).not.toContain('Planteamiento HERA');
+    expect(marcas(after)).toEqual(['HOJA ESTRUCTURA 1 TOLDO 0', 'HOJA ESTRUCTURA 1 TOLDO 1', 'HOJA HTML 1', 'HOJA HTML 1']);
   });
 
   test('las páginas de continuación de observaciones de pdfkit no se cuelan junto a la hoja impresa', async () => {

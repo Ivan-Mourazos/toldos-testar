@@ -71,10 +71,13 @@ describe('buildFabricSheetPages', () => {
     expect(page.rows[1].line).toMatch(/^GALICIA · /);
   });
 
-  test('las páginas del HERA no salen (siguen con pdfkit) y el recuadro del dibujo es el de ahora', () => {
+  test('las páginas del HERA salen como las demás y el recuadro del dibujo es el de ahora', () => {
     expect(FABRIC_SHEET_DIAGRAM_BOX).toEqual({ x: 36, y: 149, width: 242, height: 300 });
     const hera = { id: 'h', of: '0231000', model: 'HERA', submodel: 'HERA 56 MAQUINA', heraJoin: 'NINGUNO', heraBottomFinish: 'VARILLA BLANCA', heraInteriorFace: 'DERECHO', heraChainColor: 'BLANCO', units: 1, width: 163.5, projection: 165, height: 230 };
-    expect(pages([hera])).toEqual([]);
+    const [page, ...rest] = pages([hera]);
+    expect(rest).toEqual([]);
+    expect(page).toMatchObject({ kind: 'telas', planIndex: 0, diagramTitle: 'HERA 56' });
+    expect(page.rows.map(({ letter, dropLabel }) => [letter, dropLabel])).toEqual([['A', 'CAÍDA']]);
   });
 });
 
@@ -126,24 +129,26 @@ describe('buildOrderPlanteamientoPdf con la hoja de telas en HTML', () => {
     await expect(extractReviewPackageFromPdf(pdf)).resolves.toEqual(JSON.parse(JSON.stringify(review)));
   });
 
-  test('con un HERA delante, se sustituye la página de telas que toca y la del HERA sigue con pdfkit', async () => {
+  test('con un HERA delante, se sustituyen las dos hojas de telas, la del HERA también', async () => {
     const mixed = normalizeOrder({ orderCode: 'AR2603332', customer: 'CLIENTE', technician: 'IVÁN', fabric: acr, sameFabric: true, awnings: [heraAwning, cambioTela({ id: 'a' })] });
     const mixedCalculation = calculateOrder(mixed);
     const plan = buildPlanteamientoPlan(mixed, mixedCalculation);
     expect(plan.fabricPages.map(({ diagram }) => diagram === 'HERA')).toEqual([true, false]);
     const sheets = buildFabricSheetPages({ order: mixed, calculation: mixedCalculation });
-    expect(sheets.map(({ planIndex }) => planIndex)).toEqual([1]);
-    expect(plan.fabricPages[sheets[0].planIndex].diagram).not.toBe('HERA');
+    expect(sheets.map(({ planIndex }) => planIndex)).toEqual([0, 1]);
 
     const pdfkit = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation });
     const merged = await buildOrderPlanteamientoPdf({ order: mixed, calculation: mixedCalculation, htmlStructure: false, renderSheets: fakeSheets() });
     const [before, after] = [await pageTexts(pdfkit), await pageTexts(merged)];
     expect(after).toHaveLength(before.length);
+    expect(await pageSizes(merged)).toEqual(['A5', 'A4', 'A4']);
     expect(await pageSizes(merged)).toEqual(await pageSizes(pdfkit));
-    // Todas las páginas menos la última (la de telas del Cambio de tela) siguen iguales, HERA incluido.
-    expect(after.slice(0, -1)).toEqual(before.slice(0, -1));
-    expect(after.at(-2)).not.toContain('HOJA HTML');
-    expect(after.at(-1)).toContain('HOJA HTML 1');
+    // La página de estructura del HERA sigue igual (aquí solo se imprimen las de telas).
+    expect(after[0]).toBe(before[0]);
+    expect(after[0]).toContain('DESPIECE');
+    expect(after.slice(1).map((text) => text.match(/HOJA HTML \d PLAN \d/)?.[0])).toEqual(['HOJA HTML 1 PLAN 0', 'HOJA HTML 1 PLAN 1']);
+    // En la del HERA va encajado su dibujo de orientación.
+    expect(after[1]).toContain('DERECHO DENTRO');
   });
 
   test('las páginas de continuación de observaciones de pdfkit no se cuelan junto a la hoja impresa', async () => {

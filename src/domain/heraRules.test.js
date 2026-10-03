@@ -313,14 +313,14 @@ describe('HERA: despiece del planteamiento', () => {
     const result = hera({ width: 348.5, projection: 210, height: 250, units: 2, heraJoin: 'VERTICAL' });
     expect(result.ofs[0].calculation).toMatchObject({ valid: true, rollTubeLength: 344.8, fabricWidth: 344, chainRingCode: 'SCRANILBLAN150C' });
     expect(resumen(result)).toEqual([
-      ['KIT MECANISMO SWIFT 43-56MM (MANDO+SOPORTE)', 'SCRKITSW4350BLAN', 2, null],
-      ['ADAPTADOR SWIFT TUBO 56 MM', 'SCRADPSWIFBLAN', 4, null],
+      ['KIT MECANISMO SWIFT 43-56', 'SCRKITSW4350BLAN', 2, null],
+      ['ADAPTADOR SWIFT', 'SCRADPSWIFBLAN', 4, null],
       ['TUBO DE ENROLLE', 'SCRTUBO53600C', 2, 344.8],
-      ['CONTRAPESO CADENA SCREEN', 'SCRECONTRCADBLAN', 2, null],
-      ['UNION CADENA SCREEN', 'SCRUNICADBLAN', 4, null],
+      ['CONTRAPESO DE CADENA', 'SCRECONTRCADBLAN', 2, null],
+      ['UNIÓN DE CADENA', 'SCRUNICADBLAN', 4, null],
       ['PERFIL DE CONTRAPESO', 'SCRPECBLAN600C', 2, 344],
-      ['TAPON SCREEN TUBO INFERIOR DERECHO', 'SCRTAPINFBLANDCH', 2, null],
-      ['TAPON SCREEN TUBO INFERIOR IZQUIERDO', 'SCRTAPINFBLANIZQ', 2, null],
+      ['TAPÓN INFERIOR DERECHO', 'SCRTAPINFBLANDCH', 2, null],
+      ['TAPÓN INFERIOR IZQUIERDO', 'SCRTAPINFBLANIZQ', 2, null],
       ['ANILLO DE CADENA BLANCO 150 CM', 'SCRANILBLAN150C', 2, null]
     ]);
     expect(filas(result).map((row) => row.num)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
@@ -333,10 +333,10 @@ describe('HERA: despiece del planteamiento', () => {
   test('a motor y con pletina: un adaptador, rueda LT50, el motor y la pletina; el mando, en accesorios', () => {
     const result = hera({ submodel: 'HERA 56 MOTOR', width: 270, projection: 200, height: 0, heraBottomFinish: 'PLETINA', heraChainColor: 'NEGRO' });
     expect(resumen(result)).toEqual([
-      ['KIT MECANISMO SWIFT 43-56MM (MANDO+SOPORTE)', 'SCRKITSW4350NEGR', 1, null],
-      ['ADAPTADOR SWIFT TUBO 56 MM', 'SCRADPSWIFNEGR', 1, null],
+      ['KIT MECANISMO SWIFT 43-56', 'SCRKITSW4350NEGR', 1, null],
+      ['ADAPTADOR SWIFT', 'SCRADPSWIFNEGR', 1, null],
       ['TUBO DE ENROLLE', 'SCRTUBO53600C', 1, result.ofs[0].calculation.rollTubeLength],
-      ['RUEDA LT50 PARA TUBO DE 53', 'RUEDAAPLT5053', 1, null],
+      ['RUEDA LT50', 'RUEDAAPLT5053', 1, null],
       ['MOTOR SOMFY SUNILUS 6/17 IO', 'SUNILUSIO6//17', 1, null],
       ['PLETINA', 'PLA4NEGR25MM635C', 1, result.ofs[0].calculation.fabricWidth],
       ['MANDO SITUO 1 IO PURE', 'SITUOIO1PURE', 1, null]
@@ -347,7 +347,7 @@ describe('HERA: despiece del planteamiento', () => {
   test('HERA 43: su kit y su tubo, sin adaptador', () => {
     const result = hera({ submodel: 'HERA 43 MAQUINA', height: 220 });
     expect(resumen(result).slice(0, 2)).toEqual([
-      ['KIT MECANISMO SWIFT 43 (MANDO+SOPORTE)', 'SCRKITSW43BLAN', 1, null],
+      ['KIT MECANISMO SWIFT 43', 'SCRKITSW43BLAN', 1, null],
       ['TUBO DE ENROLLE', 'SCRTUBO43P600CM', 1, result.ofs[0].calculation.rollTubeLength]
     ]);
   });

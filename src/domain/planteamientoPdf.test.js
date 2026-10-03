@@ -453,7 +453,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     if (structureNotesEdited) expect(text).not.toContain('MEDIDA GUÍAS 246');
   });
 
-  test('HERA no genera estructura vacía y cada toldo conserva su propio mini planteamiento de tela', () => {
+  test('el HERA tiene página de estructura y cada variante su hoja de telas', () => {
     const awnings = [
       { id: 'hera-a', model: 'HERA', submodel: 'HERA 43 MAQUINA' },
       { id: 'hera-b', model: 'HERA', submodel: 'HERA 56 MOTOR' }
@@ -467,14 +467,14 @@ describe('buildOrderPlanteamientoPdf', () => {
     };
     const plan = buildPlanteamientoPlan({ awnings }, calculation);
 
-    expect(plan.structureEntries).toEqual([]);
+    expect(plan.structureEntries.map(({ awning }) => awning.id)).toEqual(['hera-a', 'hera-b']);
     expect(plan.fabricPages).toHaveLength(2);
     expect(plan.fabricPages.map(({ diagram }) => diagram)).toEqual(['HERA', 'HERA']);
     expect(plan.fabricPages.map(({ entries }) => entries.map(({ awning }) => awning.id)))
       .toEqual([['hera-a'], ['hera-b']]);
   });
 
-  test('el PDF HERA incluye el mini planteamiento manual y motor sin usar los ML redondeados de reserva', async () => {
+  test('el PDF HERA lleva estructura y telas como el resto, manual y motor, sin usar los ML redondeados de reserva', async () => {
     const order = {
       orderCode: 'AR26-HERA-PDF',
       customer: 'CLIENTE HERA',
@@ -485,7 +485,7 @@ describe('buildOrderPlanteamientoPdf', () => {
         {
           id: 'hera-manual', of: '0231001', model: 'HERA', submodel: 'HERA 43 MAQUINA',
           units: 1, width: 320, projection: 140, height: 240, heraJoin: 'VERTICAL',
-          machineSide: 'M.F IZQ', placement: 'FRONTAL',
+          machineSide: 'M.F IZQ', placement: 'FRONTAL', heraChainColor: 'BLANCO',
           heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'PLETINA',
           heraInteriorFace: 'REVÉS',
           fabric: heraAcrylic120, structureNotes: 'Confirmar sentido del empate en CAD.'
@@ -493,7 +493,7 @@ describe('buildOrderPlanteamientoPdf', () => {
         {
           id: 'hera-motor', of: '0231002', model: 'HERA', submodel: 'HERA 56 MOTOR',
           units: 1, width: 250, projection: 160, height: 0, heraJoin: 'NINGUNO',
-          machineSide: 'M.F.DER', placement: 'FRONTAL',
+          machineSide: 'M.F.DER', placement: 'FRONTAL', heraChainColor: 'BLANCO',
           heraTopFinish: 'VARILLA PLANA', heraBottomFinish: 'VARILLA BLANCA',
           heraInteriorFace: 'DERECHO',
           fabric: heraSoltis267
@@ -504,49 +504,61 @@ describe('buildOrderPlanteamientoPdf', () => {
     const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
     const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
 
-    expect(document.numPages).toBe(2);
-    const firstPage = await document.getPage(1);
-    const viewport = firstPage.getViewport({ scale: 1 });
-    expect(viewport.width).toBeCloseTo(595.28, 0);
-    expect(viewport.height).toBeCloseTo(419.53, 0);
+    // Dos páginas de estructura A5 y dos hojas de telas A4 (cada variante, la suya).
+    expect(document.numPages).toBe(4);
     const pageTexts = [];
+    const pageWidths = [];
     for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
       const page = await document.getPage(pageNumber);
       const content = await page.getTextContent();
       pageTexts.push(content.items.map((item) => item.str).join(' '));
+      pageWidths.push(Math.round(page.getViewport({ scale: 1 }).width));
     }
+    expect(pageWidths).toEqual([595, 595, 842, 842]);
+    const [structure, structureMotor, fabric, fabricMotor] = pageTexts;
 
     expect(calculation.ofs[0].calculation).toMatchObject({ fabricMl: 5.1, reservedFabricMl: 5.5 });
-    expect(pageTexts[0]).toContain('HERA 43');
-    expect(pageTexts[0]).toContain('Nº DE PEDIDO');
-    expect(pageTexts[0]).toContain('DATOS DADOS');
-    expect(pageTexts[0]).toContain('DATOS PLANTEAMIENTO');
-    expect(pageTexts[0]).toContain('ARRIBA');
-    expect(pageTexts[0]).toContain('VARILLA PLANA');
-    expect(pageTexts[0]).toContain('ABAJO');
-    expect(pageTexts[0]).toContain('PLETINA');
-    expect(pageTexts[0]).toContain('FRENTE TOLDO');
-    expect(pageTexts[0]).toContain('320');
-    expect(pageTexts[0]).toContain('SALIDA TOLDO');
-    expect(pageTexts[0]).toContain('140');
-    expect(pageTexts[0]).toContain('ALTURA TOLDO');
-    expect(pageTexts[0]).toContain('240');
-    expect(pageTexts[0]).toContain('316,7');
-    expect(pageTexts[0]).toContain('TELA');
-    expect(pageTexts[0]).toContain('316');
-    expect(pageTexts[0]).toContain('SALIDA DE TELA');
-    expect(pageTexts[0]).toContain('160');
-    expect(pageTexts[0]).toContain('CADENA');
-    expect(pageTexts[0]).toContain('340');
-    expect(pageTexts[0]).toContain('REVÉS DENTRO');
-    expect(pageTexts[0]).toContain('Confirmar sentido del empate en CAD.');
-    expect(pageTexts[0]).not.toContain('LADO ACCIONAMIENTO');
-    expect(pageTexts[0]).not.toContain('ML CALCULADOS');
-    expect(pageTexts[0]).not.toContain('COMPROBACIÓN CAD REQUERIDA');
-    expect(pageTexts[0]).not.toContain('TUBO ESPECIAL - CAMBIAR PRESUPUESTO');
-    expect(pageTexts[1]).toContain('HERA 56');
-    expect(pageTexts[1]).toContain('DERECHO DENTRO');
-    expect(pageTexts[1]).not.toContain('CADENA');
+    for (const text of pageTexts) {
+      expect(text).not.toContain('Planteamiento HERA');
+      expect(text).not.toContain('DATOS DADOS');
+      expect(text).not.toContain('DATOS PLANTEAMIENTO');
+      expect(text).not.toContain('ML CALCULADOS');
+      expect(text).not.toContain('COMPROBACIÓN CAD REQUERIDA');
+      expect(text).not.toContain('TUBO ESPECIAL - CAMBIAR PRESUPUESTO');
+    }
+    expect(structure).toContain('HERA 43');
+    expect(structure).toContain('DESPIECE');
+    expect(structure).toContain('FRENTE');
+    expect(structure).toContain('320');
+    expect(structure).toContain('CAÍDA TOLDO');
+    expect(structure).toContain('140');
+    expect(structure).toContain('ALTURA');
+    expect(structure).toContain('240');
+    expect(structure).toContain('COLOR CADENA');
+    expect(structure).toContain('LADO MANDO');
+    expect(structure).toContain('M.F IZQ');
+    expect(structure).toContain('TUBO DE ENROLLE');
+    expect(structure).toContain('316.7');
+    expect(structure).toContain('Confirmar sentido del empate en CAD.');
+    expect(structure).toContain('5,1 ML');
+    expect(structureMotor).toContain('HERA 56');
+    expect(structureMotor).toContain('MOTOR');
+    expect(structureMotor).not.toContain('ALTURA');
+
+    expect(fabric).toContain('HERA 43');
+    expect(fabric).toContain('PLANTEAMIENTO DE TELAS');
+    expect(fabric).toContain('316,0');
+    expect(fabric).toContain('160,0');
+    expect(fabric).toContain('EMPATE VERTICAL');
+    expect(fabric).toContain('CARA INTERIOR REVÉS DENTRO');
+    expect(fabric).toContain('ARRIBA VARILLA PLANA');
+    expect(fabric).toContain('ABAJO PLETINA');
+    expect(fabric).toContain('CADENA 340');
+    expect(fabric).toContain('TUBO 316,7');
+    expect(fabric).toContain('A: ACLARACIONES: Confirmar sentido del empate en CAD.');
+    expect(fabricMotor).toContain('HERA 56');
+    expect(fabricMotor).toContain('CARA INTERIOR DERECHO DENTRO');
+    expect(fabricMotor).not.toContain('CADENA');
   });
 
   test('los trabajos textiles no generan estructura y comparten el patrón general cuando corresponde', () => {

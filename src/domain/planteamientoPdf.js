@@ -256,21 +256,16 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
 
     const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
     plan.fabricPages.forEach(({ entries, diagram, diagramAwning, diagramCalculation }, planIndex) => {
-      if (diagram === 'HERA') {
-        doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
-        drawHeraFabricPage(doc, { order, entries });
-      } else {
-        const start = pageCount;
+      const start = pageCount;
+      doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
+      let remaining = drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
+      while (remaining) {
         doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-        let remaining = drawFabricPage(doc, { order, entries, diagram, diagramAwning, diagramCalculation, fabricTotals });
-        while (remaining) {
-          doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
-          drawFabricHeader(doc, { order, lines: entries.map(toFabricLine), margin: 24, pageW: doc.page.width });
-          remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true, FABRIC_PAGE_TEXT);
-          drawPageFooter(doc, 24, doc.page.width, doc.page.height, 'Planteamiento de telas · Observaciones (continuación)');
-        }
-        fabricRanges[planIndex] = { start, end: pageCount };
+        drawFabricHeader(doc, { order, lines: entries.map(toFabricLine), margin: 24, pageW: doc.page.width });
+        remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true, FABRIC_PAGE_TEXT);
+        drawPageFooter(doc, 24, doc.page.width, doc.page.height, 'Planteamiento de telas · Observaciones (continuación)');
       }
+      fabricRanges[planIndex] = { start, end: pageCount };
     });
 
     // Tras producir el pedido, este mismo documento se guarda también en la
@@ -295,9 +290,8 @@ export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null
   const entries = order.awnings
     .map((awning, index) => ({ awning, index, ofBlock: findAwningBlock(calculation, awning, index) }))
     .filter((entry) => entry.ofBlock && (!onlyAwningId || entry.awning.id === onlyAwningId));
-  const structureEntries = entries.filter(({ awning }) => (
-    !isFabricOnlyModel(awning.model) && !isHeraAwning(awning)
-  ));
+  // El HERA entra como cualquier modelo completo (Iván, 03/10/2026).
+  const structureEntries = entries.filter(({ awning }) => !isFabricOnlyModel(awning.model));
   const grouped = new Map();
   entries.forEach((originalEntry) => {
     const configuredDrawing = resolveConfiguredDrawing(originalEntry.awning, order.parameters?.drawings);
@@ -316,7 +310,7 @@ export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null
     grouped.set(groupKey, group);
   });
   const fabricPages = Array.from(grouped.values(), (group) => (
-    chunkItems(group.entries, group.diagram === 'HERA' ? 1 : 4).map((pageEntries) => ({
+    chunkItems(group.entries, 4).map((pageEntries) => ({
       diagram: group.diagram,
       diagramAwning: pageEntries[0].awning,
       diagramCalculation: resolveDiagramCalculation(pageEntries[0]),
@@ -353,7 +347,9 @@ function measuredDiagramKey(diagram, calculation) {
 }
 
 function fabricDiagramGroupKey(diagram, awning) {
-  if (diagram === 'HERA') return 'HERA';
+  // El dibujo del HERA es el de su cara interior y el título, su variante: solo comparten
+  // hoja los que coinciden en las dos.
+  if (diagram === 'HERA') return ['HERA', heraVariantName(awning), heraInteriorFace(awning)].join('|');
   const isCurtain = diagram.startsWith('CORTINA');
   const hasWindow = isCurtain && diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
   const isAntica = diagram === 'ANTICA';
@@ -476,8 +472,8 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
 
   doc.rect(bodyX, 67, bodyW, 13).fill(colors.ink);
   doc.fillColor(colors.paper).font(fonts.bold).fontSize(9)
-    .text(value(awning.model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : awning.model === 'MAXISCREEM' ? 'DIANA VERTICAL / MAXISCREEN' : awning.model), bodyX + 52, 69, { width: bodyW - orderW - 52, align: 'center' });
-  doc.fontSize(8).text(value(awning.device), orderX, 69, { width: orderW, align: 'center' });
+    .text(value(awning.model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : awning.model === 'MAXISCREEM' ? 'DIANA VERTICAL / MAXISCREEN' : isHeraAwning(awning) ? heraHeading(awning) : awning.model), bodyX + 52, 69, { width: bodyW - orderW - 52, align: 'center' });
+  doc.fontSize(8).text(value(isHeraAwning(awning) ? heraDevice(awning) : awning.device), orderX, 69, { width: orderW, align: 'center' });
   doc.fillColor(colors.yellow).font(fonts.bold).fontSize(6.5)
     .text(`TOLDO ${awningLetter(index)}`, bodyX + 7, 69.5, { width: 50 });
 }
@@ -543,10 +539,12 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   // projection, así que el fallback no cambia nada fuera de IRIS.
   const partingWidth = awning.width ?? calc?.width;
   const partingProjection = awning.projection ?? calc?.projection;
+  const hera = isHeraAwning(awning) ? heraStructureData(awning, calc) : null;
   drawMiniTable(doc, x, y, w, 'DATOS DE PARTIDA', [
     ['FRENTE', formatNumber(partingWidth)],
     [isVerticalAwningModel(awning.model) ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', formatNumber(partingProjection)],
-    ['UNIDADES', formatNumber(awning.units)]
+    ['UNIDADES', formatNumber(awning.units)],
+    ...(hera?.chain ? [['ALTURA', formatNumber(hera.height)]] : [])
   ]);
 
   const valid = calc?.valid !== false;
@@ -555,7 +553,16 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
     // Antes "VERDADERO", copiado del Excel; ahora la misma palabra que la tarjeta (Iván, 23/09/2026).
     .text(valid ? 'VÁLIDO' : 'REVISAR', x + 5, y + 84, { width: w - 10, align: 'center' });
 
-  drawMiniTable(doc, x, y + 123, w, 'DETALLES', [
+  // El HERA no pide lacado de estructura: va el color de la cadena o de los mecanismos, y el
+  // lado del mando y la colocación solo si el toldo los trae.
+  if (hera) {
+    drawMiniTable(doc, x, y + 123, w, 'DETALLES', [
+      [hera.chain ? 'COLOR CADENA' : 'COLOR MEC.', hera.color],
+      ['DISPOSIT.', hera.device],
+      ...(hera.side ? [['LADO MANDO', hera.side]] : []),
+      ...(hera.placement ? [['COLOC. TOLD.', hera.placement]] : [])
+    ], 11);
+  } else drawMiniTable(doc, x, y + 123, w, 'DETALLES', [
     ['LACADO', awning.structureColor || order.structureColor],
     ['DISPOSIT.', awning.device],
     [String(awning.device || '').toUpperCase() === 'MOTOR' ? 'POS. MOTOR' : 'COLOC. MAQ.', awning.machineSide],
@@ -667,7 +674,6 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
     title: 'PLANTEAMIENTO DE TELAS'
   };
   return plan.fabricPages.flatMap(({ entries, diagram }, planIndex) => {
-    if (diagram === 'HERA') return [];
     const lines = entries.map(toFabricLine);
     const works = new Set(lines.map(({ awning }) => fabricWorkLabel(String(awning.model || '').trim().toUpperCase())));
     const pageOf = fabricPageOf(lines);
@@ -697,7 +703,7 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
       },
       datos: {
         material: dash(summarizeFabricMaterial(lines)),
-        curva: dash(summarizeValanceCurve(lines)),
+        curva: dash(fabricPageCurve(lines)),
         remate: dash(summarizeRemate(lines, order))
       },
       rows: lines.map((line) => {
@@ -743,8 +749,9 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
       ? 'ELECTRA / ELIT VERTICAL'
       : awning.model === 'MAXISCREEM'
         ? 'DIANA VERTICAL / MAXISCREEN'
-        : dash(generalHeadingNames[modelName] || modelName);
+        : dash(isHeraAwning(awning) ? heraHeading(awning) : generalHeadingNames[modelName] || modelName);
     const motor = String(awning.device || '').toUpperCase() === 'MOTOR';
+    const hera = isHeraAwning(awning) ? heraStructureData(awning, calc) : null;
     return {
       kind: 'estructura',
       structureIndex,
@@ -757,7 +764,7 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
         date: dash(formatDate(order.orderDate)),
         letter,
         model,
-        device: dash(awning.device)
+        device: dash(hera ? hera.device : awning.device)
       },
       despiece: split.main.map((row, position) => ({
         num: String(row.num || position + 1),
@@ -782,10 +789,17 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
       partida: [
         ['FRENTE', dash(formatNumber(awning.width ?? calc?.width))],
         [vertical ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', dash(formatNumber(awning.projection ?? calc?.projection))],
-        ['UNIDADES', dash(formatNumber(awning.units))]
+        ['UNIDADES', dash(formatNumber(awning.units))],
+        ...(hera?.chain ? [['ALTURA', dash(formatNumber(hera.height))]] : [])
       ],
       valid: calc?.valid !== false,
-      detalles: [
+      // El HERA no pide lacado de estructura: va el color de la cadena o de los mecanismos.
+      detalles: hera ? [
+        [hera.chain ? 'COLOR CADENA' : 'COLOR MECANISMOS', dash(hera.color)],
+        ['DISPOSITIVO', dash(hera.device)],
+        ...(hera.side ? [['LADO MANDO', hera.side]] : []),
+        ...(hera.placement ? [['COLOCACIÓN TOLDO', hera.placement]] : [])
+      ] : [
         ['LACADO', dash(awning.structureColor || order.structureColor)],
         ['DISPOSITIVO', dash(awning.device)],
         [motor ? 'POSICIÓN MOTOR' : 'COLOCACIÓN MÁQUINA', dash(awning.machineSide)],
@@ -858,7 +872,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   ], 20, { preserveBlank: true, neutral: true, size: 9.5, barH: 17, barSize: 9.5 });
   drawMiniTable(doc, contentX + rotW + gap, 123, contentW - rotW - gap, 'DATOS BÁSICOS', [
     ['MATERIAL', summarizeFabricMaterial(lines)],
-    ['CURVA', summarizeValanceCurve(lines)],
+    ['CURVA', fabricPageCurve(lines)],
     ['REMATE', summarizeRemate(lines, order)]
   ], 20, { preserveBlank: true, neutral: true, size: 9.5, valueSize: 11.5, barH: 17, barSize: 9.5 });
 
@@ -912,138 +926,27 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   return remainingNotes;
 }
 
-function drawHeraFabricPage(doc, { order, entries }) {
-  const pageW = doc.page.width;
-  const pageH = doc.page.height;
-  const margin = 14;
-  const tableW = pageW - margin * 2;
-  const top = 24;
-  entries.forEach((entry) => {
-    const line = toFabricLine(entry);
-    const detail = buildHeraMiniPlanDetail(line.awning, line.calc, order);
-    drawHeraLegacyBlock(doc, margin, top, tableW, 250, {
-      order,
-      detail,
-      fabricImage: line.awning.fabricImage,
-      letter: awningLetter(line.index)
-    });
-  });
-  drawPageFooter(doc, margin, pageW, pageH, 'Planteamiento HERA');
-}
-
-function drawHeraLegacyBlock(doc, x, y, w, _h, { order, detail, letter, fabricImage }) {
-  const drawingW = 150;
-  const tableW = w - drawingW;
-  const sectionW = 86;
-  const labelW = 150;
-  const valueX = x + sectionW + labelW;
-  const valueW = tableW - sectionW - labelW;
-  const titleH = 25;
-  const orderH = 22;
-  const rowH = 13;
-  const gapH = 6;
-  const rows = [
-    ['MATERIAL', detail.fabricMaterial],
-    ['TUBO DE ENROLLE', legacyHeraValue(detail.rollTube)],
-    ['TELA', legacyHeraValue(detail.fabricWidth)],
-    ['SALIDA DE TELA', legacyHeraValue(detail.fabricDrop)],
-    ...(detail.fabricCut ? [['CORTE TELA (FRENTE × SALIDA)', detail.fabricCut]] : []),
-    ['EMPATE', detail.join],
-    ['CARA INTERIOR', detail.interiorFace ? detail.interiorFace + ' DENTRO' : 'POR DEFINIR'],
-    ...(detail.manual ? [['CADENA', legacyHeraValue(detail.chain)]] : []),
-    ['ARRIBA', detail.topFinish],
-    ['ABAJO', detail.bottomFinish],
-
-  ];
-  const overflowNotes = [];
-  for (const row of rows) {
-    doc.font(fonts.semibold).fontSize(8);
-    if (['MATERIAL', 'ACLARACIONES', 'OBS. TELA'].includes(row[0]) && (doc.widthOfString(row[1]) > valueW - 6 || /[\r\n]/.test(row[1]))) {
-      overflowNotes.push(row[0] + ': ' + row[1]);
-      row[1] = 'VER NOTAS COMPLETAS';
-    }
-  }
-  if (detail.notes && detail.notes !== '-') overflowNotes.push('ACLARACIONES: ' + detail.notes);
-  if (detail.fabricNotes) overflowNotes.push('OBS. TELA: ' + detail.fabricNotes);
-  const totalH = titleH + orderH + rowH * 3 + gapH + rows.length * rowH;
-
-  roundedBox(doc, x, y, tableW, totalH, 5, colors.paper, colors.line);
-
-  roundedBox(doc, x, y, tableW, titleH, 5, colors.ink, colors.ink);
-  drawFittedText(doc, detail.variant.replace(' MAQUINA', '').replace(' MOTOR', ''), x + 8, y + 6, tableW - 16, 14, {
-    font: fonts.bold,
-    maxSize: 12,
-    minSize: 9,
-    align: 'center',
-    color: colors.paper
-  });
-  drawCell(doc, x, y + titleH, sectionW + labelW, orderH, 'Nº DE PEDIDO', {
-    bold: true, size: 8, align: 'center', fill: colors.soft
-  });
-  drawCell(doc, valueX, y + titleH, valueW, orderH, value(order.orderCode), {
-    bold: true, size: 9.5, align: 'center', fill: '#fff5ce'
-  });
-
-  const givenY = y + titleH + orderH;
-  drawCell(doc, x, givenY, sectionW, rowH * 3, 'DATOS DADOS\nEN PEDIDO', {
-    semibold: true, size: 7.6, align: 'center', fill: '#edf2f1'
-  });
-  [
-    ['FRENTE TOLDO', legacyHeraValue(detail.width)],
-    ['SALIDA TOLDO', legacyHeraValue(detail.projection)],
-    ['ALTURA TOLDO', detail.manual ? legacyHeraValue(detail.height) : '-']
-  ].forEach(([label, rowValue], index) => {
-    drawCell(doc, x + sectionW, givenY + index * rowH, labelW, rowH, label, { size: 7.5 });
-    drawCell(doc, valueX, givenY + index * rowH, valueW, rowH, rowValue, { size: 8, align: 'center' });
-  });
-
-  const planY = givenY + rowH * 3 + gapH;
-  drawCell(doc, x, planY, sectionW, rows.length * rowH, 'DATOS\nPLANTEAMIENTO', {
-    semibold: true, size: 7.8, align: 'center', fill: '#edf2f1'
-  });
-  rows.forEach(([label, rowValue], index) => {
-    const rowY = planY + index * rowH;
-    const highlighted = ['TELA', 'SALIDA DE TELA', 'ARRIBA', 'ABAJO'].includes(label);
-    drawCell(doc, x + sectionW, rowY, labelW, rowH, label, {
-      bold: true, size: 7.5, align: 'center', fill: colors.paper
-    });
-    drawCell(doc, valueX, rowY, valueW, rowH, rowValue, {
-      semibold: true, size: 8, align: 'center', fill: highlighted ? '#c9dff1' : colors.paper
-    });
-  });
-
-  if (fabricImage) drawCustomFabricImage(doc, x + tableW + 8, y, drawingW - 8, totalH, fabricImage);
-  else drawHeraWindowOrientation(
-    doc,
-    x + tableW + 8,
-    planY + 4,
-    drawingW - 8,
-    rows.length * rowH - 8,
-    detail.interiorFace || 'POR DEFINIR',
-    letter
-  );
-  doc.roundedRect(x, y, tableW, totalH, 5).strokeColor(colors.ink).lineWidth(0.9).stroke();
-  drawHeraCompleteNotes(doc, x, y + totalH + 10, w, overflowNotes, order.orderCode, letter);
-}
-
-function legacyHeraValue(input) {
-  return String(input || '-').replace(/\s+CM$/i, '');
-}
-
-function drawHeraWindowOrientation(doc, x, y, w, h, interiorFace, letter) {
+// El dibujo de la hoja de telas del HERA: la tela vista de canto junto a la ventana, con la cara
+// que queda hacia dentro. Sin letra de toldo, porque la hoja puede llevar varios.
+function drawHeraDiagram(doc, x, y, w, h, awning = {}) {
   const green = '#079b36';
-  const windowX = x + 8;
-  const fabricX = x + 36;
-  const top = y + 17;
-  const bottom = y + h - 27;
+  const face = heraInteriorFace(awning);
+  drawDiagramShell(doc, x, y, w, h);
+  const windowX = x + w * 0.14;
+  const fabricX = x + w * 0.34;
+  const farX = x + w * 0.84;
+  const top = y + h * 0.16;
+  const bottom = y + h * 0.78;
+  const slant = h * 0.045;
   doc.save();
-  doc.roundedRect(x, y, w, h, 5).fillOpacity(0.95).fill(colors.paper).fillOpacity(1).strokeColor(colors.line).lineWidth(0.7).stroke();
-  doc.strokeColor(colors.grayDark).lineWidth(1).moveTo(windowX, top).lineTo(windowX, bottom).stroke();
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(4.5).text('VENTANA', x + 2, y + 6, { width: 30, align: 'center' });
-  doc.strokeColor(green).lineWidth(1.2).moveTo(fabricX, top + 8).lineTo(x + w - 9, top).lineTo(x + w - 9, bottom - 8).lineTo(fabricX, bottom).stroke();
-  doc.strokeColor('#e45245').lineWidth(0.7).moveTo(fabricX, top + 8).lineTo(fabricX, bottom).stroke();
-  doc.fillColor(green).font(fonts.bold).fontSize(12).text(letter, fabricX + 8, (top + bottom) / 2 - 8, { width: w - 50, align: 'center' });
-  doc.font(fonts.bold).fontSize(5.8).text(`${interiorFace} DENTRO`, x + 5, bottom + 7, { width: w - 10, align: 'center' });
+  doc.strokeColor(colors.grayDark).lineWidth(2).moveTo(windowX, top).lineTo(windowX, bottom).stroke();
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(6))
+    .text('VENTANA', x + 4, y + h * 0.07, { width: (windowX - x) * 2 - 8, align: 'center', lineBreak: false });
+  doc.strokeColor(green).lineWidth(2)
+    .moveTo(fabricX, top + slant).lineTo(farX, top).lineTo(farX, bottom - slant).lineTo(fabricX, bottom).stroke();
+  doc.strokeColor('#e45245').lineWidth(1.2).moveTo(fabricX, top + slant).lineTo(fabricX, bottom).stroke();
+  doc.fillColor(green).font(fonts.bold).fontSize(diagramText(9.5))
+    .text(face ? `${face} DENTRO` : 'CARA INTERIOR POR DEFINIR', x + 8, y + h * 0.85, { width: w - 16, align: 'center' });
   doc.restore();
 }
 
@@ -1081,8 +984,9 @@ function drawFabricHeader(doc, { order, lines, margin, pageW, title = 'PLANTEAMI
 // Observaciones de la página de telas: las del pedido y, de cada bambalina, sus notas
 // con la letra del toldo. Antes iban en la línea y, si no cabían, remitían al pedido.
 export function fabricPageNotes(order = {}, lines = []) {
+  // Del HERA, sus aclaraciones enteras: antes iban en su página propia (hasta el 03/10/2026).
   const awningNotes = lines
-    .filter(({ awning }) => String(awning?.model || '').trim().toUpperCase() === 'BAMBALINA')
+    .filter(({ awning }) => String(awning?.model || '').trim().toUpperCase() === 'BAMBALINA' || isHeraAwning(awning))
     .flatMap(({ awning, index }) => {
       // Con imagen sustituta no se ve el dibujo: la varilla y las bastillas van aquí.
       const hiddenDrawing = awning.fabricImage && normalizeFabricDiagramOverride('BAMBALINA', awning.fabricDiagramOverride) !== 'SUPLEMENTO';
@@ -1193,6 +1097,7 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'AGATA') return drawAgataDiagram(doc, x, y, w, h, awning);
   if (diagram === 'MAXISCREEN') return drawMaxiscreenDiagram(doc, x, y, w, h, awning);
   if (diagram === 'IRIS') return drawIrisDiagram(doc, x, y, w, h, awning, calculation);
+  if (diagram === 'HERA') return drawHeraDiagram(doc, x, y, w, h, awning);
   if (['ARZUA', 'GALICIA', 'XACOBEO', 'MONOBLOCK', 'PUNTO-RECTO'].includes(diagram)) {
     return drawArmSystemDiagram(doc, x, y, w, h, diagramSpec(diagram, awning, calculation));
   }
@@ -1769,6 +1674,7 @@ export function fabricDiagramHeading(diagram, awnings = []) {
   if (diagram === 'BAMBALINA') return `BAMBALINA · ${buildValanceDiagramSpec(first).curve}`;
   if (diagram === 'ANTICA') return String(first.model || '').toUpperCase() === 'ANTICA' ? 'ANTICA' : 'CAMBIO ANTICA';
   if (diagram === 'IRIS') return String(first.submodel || 'IRIS').toUpperCase();
+  if (diagram === 'HERA') return heraHeading(first);
   if (diagram === 'TOLDO-VELCRO') return 'TOLDO · VELCRO';
   if (diagram !== 'GENERAL') return diagram.replaceAll('-', ' ');
   const names = [...new Set(awnings.map((awning) => {
@@ -2399,7 +2305,8 @@ function splitDespiece(rows) {
   const accessories = [];
   const main = [];
   rows.forEach((row) => {
-    if (/MANDO|SENSOR|RECEPTOR/i.test(row.name || '')) accessories.push(row);
+    // Por el nombre, como siempre, o porque el modelo marca la fila (el anillo de cadena del HERA).
+    if (row.accessory === true || /MANDO|SENSOR|RECEPTOR/i.test(row.name || '')) accessories.push(row);
     else main.push(row);
   });
   return { main, accessories };
@@ -2481,6 +2388,8 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
     instructionParts.push('VARILLA BLANCA ATRÁS');
   }
 
+  if (isHeraAwning(awning)) instructionParts.push(...heraInstructionParts(awning, calculation));
+
   return {
     workLabel: fabricWorkLabel(model),
     fabricWidth: formatFabricMeasure(calculation.fabricWidth),
@@ -2561,6 +2470,55 @@ export function buildHeraMiniPlanDetail(awning = {}, calculation = {}, order = {
     notes: String(awning.structureNotes || '').trim(),
     fabricNotes: String(order.notes || '').trim(),
     specialTubeRequired: Boolean(calculation.specialTubeRequired) || (width !== null && width > 300)
+  };
+}
+
+// Lo propio del HERA en la línea de su fila de la hoja de telas, solo lo que tiene valor.
+function heraInstructionParts(awning, calculation) {
+  const detail = buildHeraMiniPlanDetail(awning, calculation);
+  const measure = (text) => String(text || '').replace(/\s+CM$/i, '');
+  const known = (text) => Boolean(text) && text !== '-';
+  return [
+    known(detail.join) && detail.join !== 'SIN EMPATE' && `EMPATE ${detail.join}`,
+    detail.interiorFace ? `CARA INTERIOR ${detail.interiorFace} DENTRO` : 'CARA INTERIOR POR DEFINIR',
+    known(detail.topFinish) && `ARRIBA ${detail.topFinish}`,
+    known(detail.bottomFinish) && `ABAJO ${detail.bottomFinish}`,
+    detail.fabricCut && `CORTE ${measure(detail.fabricCut).replace(' x ', ' × ')}`,
+    detail.manual && known(detail.chain) && `CADENA ${measure(detail.chain)}`,
+    known(detail.rollTube) && `TUBO ${measure(detail.rollTube)}`
+  ].filter(Boolean);
+}
+
+// La variante del HERA tal como se elige («HERA 56 MAQUINA») y sin el accionamiento («HERA 56»),
+// que es como se rotula en las hojas.
+function heraVariantName(awning = {}) {
+  return String(awning.submodel || awning.model || 'HERA').trim().toUpperCase();
+}
+
+function heraHeading(awning = {}) {
+  return heraVariantName(awning).replace(/\s+(MAQUINA|MÁQUINA|MOTOR)$/, '') || 'HERA';
+}
+
+function heraInteriorFace(awning = {}) {
+  const face = String(awning.heraInteriorFace || '').trim().toUpperCase().replace('REVES', 'REVÉS');
+  return ['DERECHO', 'REVÉS'].includes(face) ? face : '';
+}
+
+// El HERA no pide dispositivo: lo dice la variante.
+function heraDevice(awning = {}) {
+  return String(awning.device || '').trim() || (heraVariantName(awning).includes('MOTOR') ? 'MOTOR' : 'MÁQUINA');
+}
+
+// Lo que cambia en la columna derecha de la página de estructura de un HERA.
+function heraStructureData(awning = {}, calc = {}) {
+  const chain = !heraVariantName(awning).includes('MOTOR');
+  return {
+    chain,
+    device: heraDevice(awning),
+    height: calc?.height ?? awning.height,
+    color: String(awning.heraChainColor || '').trim(),
+    side: String(awning.machineSide || '').trim(),
+    placement: String(awning.placement || '').trim()
   };
 }
 
@@ -2702,6 +2660,11 @@ function summarizeValanceCurve(lines) {
   return 'SEGÚN TOLDO';
 }
 
+// El HERA no lleva bambalina: en una hoja solo de HERA la curva no aplica.
+function fabricPageCurve(lines) {
+  return lines.length > 0 && lines.every(({ awning }) => isHeraAwning(awning)) ? '-' : summarizeValanceCurve(lines);
+}
+
 function summarizeAwningValue(lines, field, legacyValue = '') {
   const values = new Set(lines.map((line) => line.awning?.[field] || legacyValue).filter(Boolean));
   if (values.size === 0) return '-';
@@ -2765,58 +2728,5 @@ function drawCustomFabricImage(doc, x, y, w, h, input) {
     doc.image(Buffer.from(image.split(',')[1], 'base64'), x + 4, y + 4, { fit: [w - 8, h - 8], align: 'center', valign: 'center' });
   } catch {
     throw new Error('No se pudo incluir la imagen del planteamiento. Importa una imagen PNG o JPG válida.');
-  }
-}
-
-function drawHeraCompleteNotes(doc, x, startY, width, notes, orderCode, letter) {
-  let cursor = startY;
-  const lineHeight = 12;
-  const headerHeight = 15;
-  const padding = 6;
-  const textWidth = width - padding * 2 - 4;
-  const nextPage = () => {
-    drawPageFooter(doc, x, doc.page.width, doc.page.height, 'Planteamiento HERA · continúa');
-    doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
-    doc.fillColor(colors.ink).font(fonts.bold).fontSize(11).text('HERA · ' + orderCode + ' · Toldo ' + letter + ' · Notas', x, 18);
-    cursor = 42;
-  };
-  for (const note of notes) {
-    const separator = note.indexOf(':');
-    const label = separator >= 0 ? note.slice(0, separator) : 'ACLARACIONES';
-    const content = separator >= 0 ? note.slice(separator + 1).trim() : note;
-    const workshop = label === 'ACLARACIONES';
-    const title = workshop ? 'ACLARACIONES PARA TALLER' : label === 'OBS. TELA' ? 'OBSERVACIONES DE TELA' : label;
-    const font = workshop ? fonts.semibold : fonts.regular;
-    doc.font(font).fontSize(9);
-    const lines = [];
-    for (const paragraph of content.split(/\r?\n/)) {
-      let current = '';
-      for (const word of paragraph.split(/\s+/)) {
-        if (current && doc.widthOfString(current + ' ' + word) > textWidth) { lines.push(current); current = ''; }
-        for (const char of (current ? ' ' : '') + word) {
-          if (doc.widthOfString(current + char) > textWidth) { lines.push(current); current = ''; }
-          current += char;
-        }
-      }
-      if (current) lines.push(current);
-    }
-    let offset = 0;
-    while (offset < lines.length) {
-      const fullHeight = headerHeight + padding * 2 + (lines.length - offset) * lineHeight;
-      const available = doc.page.height - 28 - cursor;
-      // Keep normal cards together; split only notes longer than an entire page.
-      if (fullHeight > available && fullHeight <= doc.page.height - 70) nextPage();
-      let count = Math.floor((doc.page.height - 28 - cursor - headerHeight - padding * 2) / lineHeight);
-      if (count < 1) { nextPage(); count = Math.floor((doc.page.height - 28 - cursor - headerHeight - padding * 2) / lineHeight); }
-      const chunk = lines.slice(offset, offset + count);
-      const height = headerHeight + padding * 2 + chunk.length * lineHeight;
-      doc.rect(x, cursor, width, height).fillAndStroke(workshop ? '#fff9e7' : '#f3f7f6', workshop ? '#b88920' : colors.line);
-      doc.rect(x, cursor, 3, height).fill(workshop ? colors.yellow : colors.inkSoft);
-      doc.rect(x + 3, cursor, width - 3, headerHeight).fill(workshop ? '#f9e5a8' : '#dce8e4');
-      doc.fillColor(colors.ink).font(fonts.bold).fontSize(8).text(title + (offset ? ' · CONTINUACIÓN' : ''), x + padding + 3, cursor + 3, { width: textWidth, lineBreak: false });
-      chunk.forEach((line, index) => doc.fillColor(colors.ink).font(font).fontSize(9).text(line, x + padding + 3, cursor + headerHeight + padding + index * lineHeight, { width: textWidth, lineBreak: false }));
-      cursor += height + 7;
-      offset += chunk.length;
-    }
   }
 }

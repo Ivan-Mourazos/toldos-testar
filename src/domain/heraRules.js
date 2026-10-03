@@ -198,10 +198,20 @@ export function calculateHeraFabricUsage({ fabricWidth, fabricDrop, units = 1, r
 // piezas. Las que salen de barra (tubo, perfil de contrapeso, pletina) van por piezas y con
 // su medida de corte. El macarrón y la varilla vaina son de confección y no salen. El anillo
 // de cadena y el mando llevan `accessory`: la hoja los pone en ELEMENTOS ACCESORIOS.
-const cutNames = [
-  [/^TUBO /, 'TUBO DE ENROLLE'],
-  [/^PERFIL ALUMINIO CONTRAPESO/, 'PERFIL DE CONTRAPESO'],
-  [/^PLETINA /, 'PLETINA']
+// Los nombres son los del taller, cortos: la hoja pone en negrita las filas con «TUBO» o
+// «MOTOR» y manda a accesorios las que dicen «MANDO», así que solo los llevan las que toca.
+const pieceNames = [
+  [/^SCRKITSW4350/, 'KIT MECANISMO SWIFT 43-56'],
+  [/^SCRKITSW43/, 'KIT MECANISMO SWIFT 43'],
+  [/^SCRADPSWIF/, 'ADAPTADOR SWIFT'],
+  [/^SCRTUBO/, 'TUBO DE ENROLLE'],
+  [/^SCRECONTRCAD/, 'CONTRAPESO DE CADENA'],
+  [/^SCRUNICAD/, 'UNIÓN DE CADENA'],
+  [/^RUEDAAPLT50/, 'RUEDA LT50'],
+  [/^SCRPEC/, 'PERFIL DE CONTRAPESO'],
+  [/^SCRTAPINF.*DCH$/, 'TAPÓN INFERIOR DERECHO'],
+  [/^SCRTAPINF.*IZQ$/, 'TAPÓN INFERIOR IZQUIERDO'],
+  [/^PLA4/, 'PLETINA']
 ];
 
 function buildDespiece({ structure, ring, motorLine, remoteLine, color, chainRingLength }) {
@@ -211,8 +221,7 @@ function buildDespiece({ structure, ring, motorLine, remoteLine, color, chainRin
   });
   for (const line of structure) {
     if (heraIsSewingMaterial(line.code)) continue;
-    const cut = line.length ? cutNames.find(([pattern]) => pattern.test(line.description)) : null;
-    push(cut ? cut[1] : line.description, line);
+    push(pieceNames.find(([pattern]) => pattern.test(line.code))?.[1] || line.description, line);
     // El motor va detrás de su rueda, antes del remate de abajo.
     if (motorLine && line.code === 'RUEDAAPLT5053') push(motorLine.description, motorLine);
   }
