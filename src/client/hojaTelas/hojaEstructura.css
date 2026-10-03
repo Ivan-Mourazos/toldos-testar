@@ -84,6 +84,7 @@
 
 /* ── Columna derecha ── */
 .estructura-tabla { font-size: 7pt; }
+.estructura-tabla-etiqueta { font-size: 6.5pt; }
 .estructura-tabla-etiqueta .telas-texto { padding: 0 2pt; }
 .estructura-valido {
   align-items: center;

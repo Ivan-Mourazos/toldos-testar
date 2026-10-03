@@ -109,7 +109,8 @@ function Cabecera({ cabecera }: { cabecera: HojaEstructuraDatos['header'] }) {
 
 /** DATOS DE PARTIDA, DETALLES y DIMENSIONES TELA, como drawMiniTable. */
 function Tabla({ y, titulo, filas, altoFila = FILA_TABLA }: { y: number; titulo: string; filas: Array<[string, string]>; altoFila?: number }) {
-  const etiquetaW = Math.min(70, DERECHA_W * 0.43);
+  // Ancho para que «COLOCACIÓN MÁQUINA» quepa con la misma letra que las etiquetas cortas.
+  const etiquetaW = 80;
   return (
     <>
       {filas.map(([etiqueta, valor], indice) => (
@@ -159,10 +160,12 @@ function Despiece({ filas, alto }: { filas: FilaDespiece[]; alto: number }) {
   const letra = { fontSize: pt(letraFila(alto)) };
   return (
     <>
-      <div className="estructura-rotulo" style={sitio(MARGEN, CUERPO_Y + CABECERA_TABLA_H, ROTULO_W, alto * filas.length)}>
-        {/* En la última página de un despiece largo pueden quedar dos filas: ahí el rótulo no cabe. */}
-        {alto * filas.length >= ROTULO_ALTO_MINIMO && <span>DESPIECE</span>}
-      </div>
+      {/* En la última página de un despiece largo pueden quedar dos filas: ahí el rótulo no cabe y no se pinta. */}
+      {alto * filas.length >= ROTULO_ALTO_MINIMO && (
+        <div className="estructura-rotulo" style={sitio(MARGEN, CUERPO_Y + CABECERA_TABLA_H, ROTULO_W, alto * filas.length)}>
+          <span>DESPIECE</span>
+        </div>
+      )}
       <div className="estructura-filas" style={letra}>
         {filas.map((fila, indice) => {
           const y = CUERPO_Y + CABECERA_TABLA_H + indice * alto;
