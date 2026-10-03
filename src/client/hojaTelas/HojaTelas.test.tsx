@@ -46,10 +46,15 @@ describe('HojaTelas', () => {
     expect(html).toContain('SEGUNDA LÍNEA');
   });
 
-  it('la instrucción y el material van en una línea, con la letra mínima de 7 pt', () => {
+  it('el material va en una línea y la instrucción en hasta dos, las dos con letra mínima de 7 pt', () => {
     const html = pintar({ ...ejemplo, rows: [{ ...ejemplo.rows[0], line: 'BAMBALINA INCLUIDA DE 25CM' }] });
     expect(html).toMatch(/class="[^"]*hoja-una-linea[^"]*" data-letra-minima="7">LONA PVC 580 BLANCO :250 AN</);
-    expect(html).toMatch(/class="[^"]*hoja-una-linea[^"]*" data-letra-minima="7">BAMBALINA INCLUIDA DE 25CM</);
+    expect(html).toMatch(/class="telas-dos-lineas" data-letra-minima="7">BAMBALINA INCLUIDA DE 25CM</);
+  });
+
+  it('sin instrucción, la segunda línea va en blanco: no es un «no aplica»', () => {
+    const html = pintar(ejemplo);
+    expect(html).toMatch(/<span class="telas-dos-lineas" data-letra-minima="7"><\/span>/);
   });
 
   it('una fila por toldo, con su letra y la palabra de la caída', () => {

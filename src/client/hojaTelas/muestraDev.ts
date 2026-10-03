@@ -144,6 +144,8 @@ const LARGAS = [
 const fila = MUESTRAS.cambio.rows[0];
 MUESTRAS.largas = { ...MUESTRAS.cambio, rows: [fila, { ...fila, letter: 'B' }], notes: LARGAS };
 MUESTRAS.cuatro = { ...MUESTRAS.varios, rows: [...MUESTRAS.varios.rows, { ...fila, letter: 'D', line: `TELA LONA PVC 580 BLANCO :250 AN · NS86BLANP250 · BAMBALINA INCLUIDA DE 35CM, HECHA DE 30CM · CURVA ONDA · REMATE COMO TELA · ROT. TELA SÍ · ROT. BAMBA NO` }] };
+// Una instrucción que ni a 7 pt cabe en dos líneas: sale cortada con el aviso del pedido.
+MUESTRAS.nota = { ...MUESTRAS.cambio, rows: [{ ...fila, line: Array.from({ length: 14 }, (_, i) => `INSTRUCCIÓN ${i + 1} PARA EL TALLER`).join(' · ') }] };
 
 export function datosMuestra(nombre: string): HojaTelasDatos {
   const datos = MUESTRAS[nombre];

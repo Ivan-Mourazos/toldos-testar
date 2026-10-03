@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ajustarUnaLinea } from '../hoja/ajusteTexto';
+import { ajustarDosLineas } from './ajusteDosLineas';
 import { repartirNotas } from './repartirNotas';
 import type { FilaHojaTelas, HojaTelasDatos } from './tipos';
 
@@ -138,7 +139,10 @@ function Fila({ fila, y, h }: { fila: FilaHojaTelas; y: number; h: number }) {
       <Medida x={MEDIDAS_X} y={y} w={MEDIDA_W} h={media} etiqueta="TELA" valor={fila.fabricWidth} />
       <Medida x={MEDIDAS_X + MEDIDA_W + HUECO_MEDIDAS} y={y} w={MEDIDA_W} h={media} etiqueta={fila.dropLabel} valor={fila.fabricDrop} />
       <Medida x={MEDIDAS_X + MEDIDA_W * 2 + HUECO_MEDIDAS * 2} y={y} w={UNIDADES_W} h={media} etiqueta="UN." valor={fila.units} />
-      <Celda x={MEDIDAS_X} y={y + media} w={MEDIDAS_W} h={media} clase="telas-semi telas-centro telas-instruccion" minima={7}>{fila.line.trim() || '—'}</Celda>
+      {/* La instrucción no pierde texto: dos líneas, letra hasta 7 pt y, si ni así, el aviso. Vacía, en blanco. */}
+      <div className="telas-celda telas-semi telas-centro telas-instruccion" style={sitio(MEDIDAS_X, y + media, MEDIDAS_W, media)}>
+        <span className="telas-dos-lineas" data-letra-minima="7">{fila.line.trim()}</span>
+      </div>
     </>
   );
 }
@@ -317,6 +321,7 @@ export function HojaTelas({ datos, onLista, onError }: {
     esperarLetra().then(() => {
       if (!vigente || !raiz.current) return;
       ajustarUnaLinea(raiz.current);
+      ajustarDosLineas(raiz.current);
       const notas = datos.notes.trim();
       setPaginasNotas(notas && medidor.current && cajaNotas.current
         ? repartirObservaciones(medidor.current, notas, cajaNotas.current)
