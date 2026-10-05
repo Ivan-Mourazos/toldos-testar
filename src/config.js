@@ -56,9 +56,6 @@ export const config = {
   // queda bloqueado: nunca se genera sin aprobación comprobada.
   coordinaUrl: process.env.COORDINA_URL || '',
   coordinaClave: process.env.COORDINA_CLAVE || '',
-  // Unificación con remolques (diseño 29/09/2026, fase 1): mientras sus pantallas no
-  // estén dentro, la barra enlaza con la web de remolques. Sin valor, no sale el enlace.
-  remolquesUrl: process.env.REMOLQUES_URL || '',
   // Página de telas del planteamiento en HTML, impresa con el Chromium de la hoja de
   // remolques. TELAS_HTML=0 vuelve a la de pdfkit. Por defecto, activa.
   telasHtml: process.env.TELAS_HTML !== '0',

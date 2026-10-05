@@ -360,32 +360,19 @@ cp /var/lib/toldos-testar/remolques-clientes.json /var/lib/toldos-testar/remolqu
 cp /var/lib/toldos-testar/remolques-clientes-history.jsonl /var/lib/toldos-testar/remolques-clientes-history.antes-por-ficha.jsonl 2>/dev/null || true
 ```
 
-### 6. Paso de los pedidos de la web vieja de remolques (una vez)
+### 6. Web vieja de remolques (retirada)
 
-Con la carpeta interna de remolques ya puesta en `Configuración` (o en
-`REMOLQUES_REVISION_DIRECTORY`), en el .90 y desde `/webs/toldos-testar`:
+La web vieja de remolques (PM2 `remolques-tgm`, puerto 4500, `/webs/remolques-tgm`) ya no está en el
+servidor: sus pedidos se pasaron a la carpeta interna el 01/10/2026 y no queda nada que migrar. El
+comando de aquel paso (`scripts/migrar-remolques.mjs`) sigue en el repositorio con sus pruebas, por si
+hubiera que recuperar una copia antigua de sus datos.
+
+En el 4500 no escucha nada. Si algún puesto conserva el favorito viejo, un redirector que solo manda a
+Planteamientos TGM (4400) se arranca así, como root y desde `/webs/toldos-testar`:
 
 ```bash
-node scripts/migrar-remolques.mjs --origen /webs/remolques-tgm --simular
-node scripts/migrar-remolques.mjs --origen /webs/remolques-tgm
+cd /webs/toldos-testar && pm2 start scripts/redireccion-remolques.mjs --name remolques-redireccion && pm2 save
 ```
-
-La primera orden solo enseña qué haría: los pedidos que pasan (los ya archivados a «Generados» y los
-pendientes a «Por revisar»), los guardados repetidos de un mismo elemento (pasa el último) y lo que
-deja sin pasar y por qué (sin número, con un número que no es de pedido o que ya es un pedido de
-toldos: un pedido es de toldos o de remolques). También avisa si no hay carpeta de revisión de toldos
-configurada (entonces no ha podido mirar los de toldos) y de los pendientes de antes del año pasado,
-que no saldrán en «Por revisar». Las dos órdenes escriben el mismo informe. Solo lee la web vieja
-(`data/planteamientos.json` y, si existe, `data/pedidos.json`) y mira, sin escribir, si el PDF de
-cada pedido está ya en las carpetas de remolques y si su número está en la carpeta de revisión de
-toldos; solo escribe en la carpeta interna. Repetirla no duplica nada: un pedido que ya está no se
-toca. Una opción mal escrita o un JSON que no se lee cortan con un mensaje corto (código 2).
-
-Las carpetas salen de `Configuración` (las mismas que usa la web). Para probar con otras se pasan a
-mano, todas opcionales: `--destino <carpeta interna>`, `--planteamientos <carpeta>`,
-`--oficina <carpeta con {YYYY}>` y `--toldos <carpeta de revisión de toldos con {YYYY}>`. Con
-`--destino` no se lee `Configuración`, así que, si no se da `--toldos`, no mira los números de
-toldos y lo avisa en el informe.
 
 ### 7. Código de cliente de RPS en los pedidos de remolques ya guardados (una vez)
 
