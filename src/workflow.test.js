@@ -7,6 +7,7 @@ import {
   createReviewPackage,
   createWorkflowStore,
   defaultWorkflowSettings,
+  directoryTemplateRoot,
   extractReviewPackageFromPdf,
   isPendingGeneration,
   markReviewApproved,
@@ -17,6 +18,7 @@ import {
   resolveGeneratedReviewFiles,
   resolveDirectoryTemplate,
   rpsPlanteamientoFilename,
+  waitForDirectories,
   workflowReadiness
 } from './workflow.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
@@ -162,6 +164,35 @@ describe('flujo de revisión y producción', () => {
       { label: 'Subida de material', ok: true }
     ]);
     expect(result.directories[1].error).toContain('no existe');
+  });
+
+  it('espera a una carpeta de red dormida: el primer acceso falla y el siguiente ya llega', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-carpeta-dormida-'));
+    temporaryDirectories.push(root);
+    const dormida = path.join(root, 'Dormida');
+    const waits = [];
+    // La carpeta «despierta» durante la primera espera, como un montaje de red que se reconecta.
+    const wait = async (ms) => { waits.push(ms); await fs.mkdir(dormida, { recursive: true }); };
+
+    await expect(waitForDirectories([root, dormida, dormida, ''], { delaysMs: [10, 20], wait })).resolves.toEqual([]);
+    expect(waits).toEqual([10]);
+  });
+
+  it('dice qué carpetas siguen sin llegar después de todas las esperas', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-carpeta-dormida-'));
+    temporaryDirectories.push(root);
+    const missing = path.join(root, 'No-existe');
+    const waits = [];
+
+    await expect(waitForDirectories([root, missing], { delaysMs: [10, 20], wait: async (ms) => { waits.push(ms); } }))
+      .resolves.toEqual([missing]);
+    expect(waits).toEqual([10, 20]);
+  });
+
+  it('la raíz de una carpeta con {YYYY} es lo que hay antes del año', () => {
+    expect(directoryTemplateRoot(path.join('/mnt', 'pedidos', '{YYYY}', 'TOLDOS'))).toBe(path.join('/mnt', 'pedidos'));
+    expect(directoryTemplateRoot(path.join('/mnt', 'rps', 'subida'))).toBe(path.join('/mnt', 'rps', 'subida'));
+    expect(directoryTemplateRoot('')).toBe('');
   });
 
   it('guarda las dos carpetas de remolques y las comprueba solo si están puestas', async () => {

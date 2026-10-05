@@ -11,6 +11,8 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 const output = path.resolve('output/modelos/antica/workflow');
 await mkdir(output, { recursive: true });
 const directory = await mkdtemp(path.join(output, 'run-'));
+// Las carpetas de salida existen de antemano, como los montajes del servidor.
+await Promise.all(['plans', 'rps'].map((name) => mkdir(path.join(directory, name))));
 const probe = net.createServer(); await new Promise(r => probe.listen(0, '127.0.0.1', r));
 const port = probe.address().port; await new Promise(r => probe.close(r));
 const base = 'http://127.0.0.1:' + port;

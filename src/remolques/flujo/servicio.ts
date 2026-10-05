@@ -34,6 +34,8 @@ export interface DependenciasPedidosRemolques {
   almacen: AlmacenPedidosRemolques;
   /** Configuración → Rutas de trabajo en este momento. */
   ajustes: () => Promise<CarpetasRemolques>;
+  /** Espera a las carpetas de red dormidas antes de generar (workflow.js, waitForDirectories). */
+  despertarCarpetas?: (carpetas: string[]) => Promise<unknown>;
   /** Los parámetros comunes de remolques, si la pantalla no manda los suyos. */
   parametros: () => Promise<CalcParams>;
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
@@ -247,7 +249,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       if (decision.action === "refuse") throw new ErrorPedidoRemolques(decision.error, decision.statusCode);
 
       // Dónde irá: si faltan las carpetas o el número no vale, se dice antes de preguntar a nadie.
-      const { nombre, destinos } = destinosPdfRemolques(pedido.numeroPedido, pedido.summary.orderDate, ajustes);
+      const { nombre, destinos, raices } = destinosPdfRemolques(pedido.numeroPedido, pedido.summary.orderDate, ajustes);
+      // Las carpetas de red se despiertan aquí, para no tener que pasar antes por Configuración.
+      await deps.despertarCarpetas?.(raices);
 
       // Solo se genera lo que CoordinaOT ha aprobado, OF por OF, preguntando en el momento.
       const aprobacion = elementosAprobacion(pedido);

@@ -136,6 +136,35 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
   };
 }
 
+// Las carpetas compartidas del taller son montajes de red: tras un rato sin uso, el primer acceso
+// puede fallar y el siguiente ya llega. Antes había que entrar en Configuración para que su
+// comprobación las despertara (Iván, 05/10/2026); ahora el servidor las despierta solo antes de
+// generar. Devuelve las que siguen sin llegar después de todas las esperas.
+const DIRECTORY_WAKE_DELAYS_MS = [500, 1000, 2000, 3000];
+
+export async function waitForDirectories(directories, { delaysMs = DIRECTORY_WAKE_DELAYS_MS, wait = sleep } = {}) {
+  const pending = await Promise.all([...new Set(directories.filter(Boolean))].map(async (directory) => {
+    for (let attempt = 0; ; attempt += 1) {
+      const reachable = await fs.stat(directory).then((stat) => stat.isDirectory(), () => false);
+      if (reachable) return '';
+      if (attempt >= delaysMs.length) return directory;
+      await wait(delaysMs[attempt]);
+    }
+  }));
+  return pending.filter(Boolean);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => { setTimeout(resolve, ms); });
+}
+
+/** La parte de la ruta que tiene que existir siempre: lo que hay antes de la carpeta del año. */
+export function directoryTemplateRoot(template) {
+  const clean = String(template || '');
+  const index = clean.indexOf('{YYYY}');
+  return index < 0 ? clean : path.dirname(`${clean.slice(0, index)}x`);
+}
+
 function directoryCheckError(error) {
   if (error?.code === 'ENOENT') return 'La carpeta no existe o no está accesible.';
   if (error?.code === 'EACCES' || error?.code === 'EPERM') return 'El servidor no tiene permiso de escritura.';

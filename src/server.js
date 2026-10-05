@@ -56,6 +56,7 @@ import { createFabricStockService, fabricStockHandler } from './fabricRpsService
 import { crearImpresoraHojaTelas } from './hojaTelasPdf.js';
 import {
   checkWorkflowDirectories,
+  directoryTemplateRoot,
   createReviewPackage,
   createWorkflowStore,
   defaultWorkflowSettings,
@@ -67,6 +68,7 @@ import {
   resolveGeneratedReviewFiles,
   resolveDirectoryTemplate,
   sanitizeOrderCode,
+  waitForDirectories,
   workflowReadiness,
   writeFileAtomic
 } from './workflow.js';
@@ -144,6 +146,7 @@ const almacenPedidosRemolques = crearAlmacenPedidosRemolques({
 const pedidosRemolques = crearServicioPedidosRemolques({
   almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
+  despertarCarpetas: waitForDirectories,
   parametros: parametrosRemolques,
   coordina,
   tecnicos: formOptions.tecnicos,
@@ -179,11 +182,6 @@ app.use('/api', (req, _res, next) => {
 });
 
 app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
-
-// Datos de la web que necesita la barra de arriba (diseño 29/09/2026).
-app.get('/api/app-info', (_req, res) => {
-  res.set('Cache-Control', 'no-store').json({ remolquesUrl: config.remolquesUrl });
-});
 
 app.get('/api/health', async (_req, res, next) => {
   try {
@@ -891,6 +889,9 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
         ? `Las carpetas de salida no están configuradas: ${readiness.missing.join(', ')}.`
         : 'Activa las salidas manuales en Configuración.');
     }
+    // Despierta las carpetas de red antes de leer el pedido y escribir, para no tener que pasar
+    // por Configuración. Si alguna sigue sin llegar, se sigue igual: el fallo lo dirá su paso.
+    await waitForDirectories([settings.reviewDirectory, settings.planteamientosDirectory, settings.rpsUploadDirectory].map(directoryTemplateRoot));
 
     const review = await workflowStore.getReview(req.params.orderCode);
     const decision = generateFilesDecision(review.status);

@@ -59,7 +59,7 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
   const oficina = path.join(raiz, "OFICINA TECNICA");
   mkdirSync(planteamientos);
   mkdirSync(oficina);
-  const llamadas = { coordina: [] as Array<{ ofs: string[]; fresh?: boolean }>, pdf: [] as DatosHojaPedido[] };
+  const llamadas = { coordina: [] as Array<{ ofs: string[]; fresh?: boolean }>, pdf: [] as DatosHojaPedido[], despertar: [] as string[][] };
   let estadoCoordina = coordina;
   let retenido: { entrar: () => void; espera: Promise<void> } | null = null;
   const averias = { toldos: null as Error | null, almacenGuardar: null as Error | null };
@@ -77,6 +77,7 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
       remolquesPlanteamientosDirectory: planteamientos,
       remolquesOficinaTecnicaDirectory: path.join(oficina, "{YYYY}"),
     }),
+    despertarCarpetas: async (carpetas) => { llamadas.despertar.push(carpetas); },
     parametros: async () => DEFAULT_PARAMS,
     coordina: {
       statusOf: async (ofs, opciones) => {
@@ -419,6 +420,15 @@ describe("generar archivos", () => {
     expect((await guardando).status).toBe(200);
     // Terminado el guardado, ya se puede generar.
     expect((await m.servicio.generar("AR2604286", {})).status).toBe(200);
+  });
+});
+
+describe("generar: carpetas de red", () => {
+  it("despierta las dos carpetas de remolques antes de mirar si el PDF ya está, sin pasar por Configuración", async () => {
+    const m = montar();
+    await guardar(m.servicio);
+    await m.servicio.generar("AR2604286", {});
+    expect(m.llamadas.despertar).toEqual([[path.dirname(m.pdfPlan), path.dirname(path.dirname(m.pdfOficina))]]);
   });
 });
 
