@@ -125,7 +125,8 @@ export function hojaBaqueton(i: BaquetonInput, r: BaquetonResult): CuerpoHoja {
         notas: [],
       },
       {
-        titulo: "MEDIDA REMOLQUE",
+        // Como en la lona: es la medida de la lona ya hecha, no la del remolque.
+        titulo: "MEDIDA LONA HECHA",
         lineas: [`${fmt(r.remolqueHecho.largo)} × ${fmt(r.remolqueHecho.ancho)}`],
         notas: [],
       },

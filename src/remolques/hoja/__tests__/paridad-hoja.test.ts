@@ -9,9 +9,11 @@ import type { ElementoHoja } from "../tipos.ts";
 // Paridad con la web vieja (fase 4): los 32 planteamientos reales dan los mismos textos en
 // cada casilla y en la tabla de ollaos. La referencia la generó el código de Remolques-TGM
 // (commit a7ffef0) sobre la misma fixture. Diferencias a propósito, y solo esas: la fila nueva
-// «BASTILLA ENFUNDAR» de los acabados de la lona, que la hoja vieja no tenía, y el texto del PERFIL,
+// «BASTILLA ENFUNDAR» de los acabados de la lona, que la hoja vieja no tenía, el texto del PERFIL,
 // porque Iván cambió el nombre de los tipos el 30/09/2026 (se ve solo el nombre, sin «TIPO 0X»; los
-// códigos guardados no cambian). Todo lo demás tiene que salir idéntico.
+// códigos guardados no cambian), y el título «MEDIDA REMOLQUE» del baquetón, que desde el 05/10/2026
+// es «MEDIDA LONA HECHA» como en la lona: esa medida no es la del remolque. Todo lo demás tiene que
+// salir idéntico.
 type Caso = { caso: string; tipo: "lona" | "baqueton"; input: unknown; result: unknown; paramsSnapshot: unknown };
 type Referencia = { caso: string; hoja: DatosHoja; ollaos: TablaPosiciones };
 
@@ -25,10 +27,11 @@ const PERFIL_RENOMBRADO: Record<string, string> = {
   "TIPO 05 · esquinas curvas": "Arquillado",
 };
 
-/** La referencia de la web vieja con el PERFIL renombrado; nada más cambia. */
+/** La referencia de la web vieja con el PERFIL y el título de la medida renombrados; nada más cambia. */
 function conPerfilRenombrado(hoja: DatosHoja): DatosHoja {
   return {
     ...hoja,
+    banda: hoja.banda.map((celda) => (celda.titulo === "MEDIDA REMOLQUE" ? { ...celda, titulo: "MEDIDA LONA HECHA" } : celda)),
     grupos: hoja.grupos.map((grupo) => ({
       ...grupo,
       datos: grupo.datos.map((dato) => (dato.etiqueta !== "PERFIL" ? dato : {

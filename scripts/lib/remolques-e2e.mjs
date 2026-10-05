@@ -46,7 +46,7 @@ export function esperado(c) {
   }
   return {
     'Paño único': `${fmt(r.panoUnico.largo)} × ${fmt(r.panoUnico.ancho)}`,
-    'Remolque hecho': `${fmt(r.remolqueHecho.largo)} × ${fmt(r.remolqueHecho.ancho)}`,
+    'Lona hecha': `${fmt(r.remolqueHecho.largo)} × ${fmt(r.remolqueHecho.ancho)}`,
     'Baquetón + costura': fmt(r.baquetonCostura),
     'Esquinas del./tras.': `${fmt(r.esquinaDelante)} / ${fmt(r.esquinaDetras)}`,
     'Delante': r.baquetonDelantero != null ? `${fmt(r.baquetonDelantero)} · NO EN LÍNEA` : 'EN LÍNEA',

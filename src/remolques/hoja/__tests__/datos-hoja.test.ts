@@ -137,7 +137,7 @@ describe("datos del baquetón en la hoja", () => {
     const input = entradaBaqueton();
     const hoja = hojaBaqueton(input, calcBaqueton(input, DEFAULT_PARAMS));
     expect(hoja.banda.map((celda) => celda.titulo))
-      .toEqual(["PAÑOS A CORTAR", "MEDIDA REMOLQUE", "BAQUETÓN"]);
+      .toEqual(["PAÑOS A CORTAR", "MEDIDA LONA HECHA", "BAQUETÓN"]);
     expect(hoja.banda[2].notas).toEqual(["EN LÍNEA"]);
     const etiquetas = hoja.grupos.flatMap((grupo) => grupo.datos.map((dato) => dato.etiqueta));
     expect(etiquetas).toEqual(["CLIENTE ESPECÍFICO", "ROTULACIÓN"]);
@@ -156,6 +156,6 @@ describe("reparto por tipo de planteamiento", () => {
     } as PlanteamientoRecord;
     const hoja = datosHoja(registro, 1, 3);
     expect(hoja.titulo).toBe("BAQUETÓN · 2 DE 3");
-    expect(hoja.banda[1].titulo).toBe("MEDIDA REMOLQUE");
+    expect(hoja.banda[1].titulo).toBe("MEDIDA LONA HECHA");
   });
 });

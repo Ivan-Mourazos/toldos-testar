@@ -305,7 +305,7 @@ export function ResultadosBaqueton({ res, modoOllaos, primerOllao, errorOllaos, 
     <div className="rem-resultados" aria-label="Resultados del baquetón" role="group">
       <div className="rem-datos">
         <Dato label="Paño único" valor={`${fmt(res.panoUnico.largo)} × ${fmt(res.panoUnico.ancho)}`} />
-        <Dato label="Remolque hecho" valor={`${fmt(res.remolqueHecho.largo)} × ${fmt(res.remolqueHecho.ancho)}`} />
+        <Dato label="Lona hecha" valor={`${fmt(res.remolqueHecho.largo)} × ${fmt(res.remolqueHecho.ancho)}`} />
         <Dato label="Baquetón + costura" valor={fmt(res.baquetonCostura)} />
         <Dato label="Esquinas del./tras." valor={`${fmt(res.esquinaDelante)} / ${fmt(res.esquinaDetras)}`} />
         <Dato label="Delante" valor={res.baquetonDelantero != null ? `${fmt(res.baquetonDelantero)} · NO EN LÍNEA` : 'EN LÍNEA'} />
