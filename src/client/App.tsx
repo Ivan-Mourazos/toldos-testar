@@ -36,6 +36,7 @@ import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
 import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
+import { pedidoDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
@@ -70,7 +71,9 @@ export default function App() {
   const [remolquesMontado, setRemolquesMontado] = useState(producto === 'remolques');
   const [resumenRemolques, setResumenRemolques] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [accionesPedido, setAccionesPedido] = useState<HTMLDivElement | null>(null);
-  const [numeroBusqueda, setNumeroBusqueda] = useState<string | null>(null);
+  // Si la web se abre con un pedido en la dirección, el buscador ya lo trae escrito (ver el
+  // efecto de `pedidoDeEnlace` más abajo, que es quien lo busca).
+  const [numeroBusqueda, setNumeroBusqueda] = useState<string | null>(() => pedidoDeEnlace(window.location.search));
   const [editorPedidoAbierto, setEditorPedidoAbierto] = useState(false);
   function chooseProducto(next: Producto) {
     setEditorPedidoAbierto(true);
@@ -332,6 +335,23 @@ export default function App() {
       if (seq === autofillSeq.current) setAutofillLoading(false);
     }
   }
+
+  // La web abierta con un pedido en la dirección (`?pedido=AR2604351`, el botón «Plantear» de
+  // CoordinaOT): se busca solo, por el mismo camino que «Buscar pedido», así que pregunta por
+  // el borrador y manda a Remolques si toca. Una vez por carga, y el número se quita de la
+  // barra para que recargar no lo repita.
+  const enlaceAtendido = useRef(false);
+  useEffect(() => {
+    if (enlaceAtendido.current) return;
+    enlaceAtendido.current = true;
+    const numero = pedidoDeEnlace(window.location.search);
+    if (!numero) return;
+    window.history.replaceState(null, '', sinPedidoEnEnlace(window.location.href));
+    // Fuera del efecto: la búsqueda cambia estado nada más empezar («Buscando…»).
+    queueMicrotask(() => void autofillOrder(numero));
+    // Solo al cargar: `autofillOrder` cambia en cada pintado y no debe relanzar la búsqueda.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function updateOrderCode(value: string) {
     draft.setOrderCode(value);
