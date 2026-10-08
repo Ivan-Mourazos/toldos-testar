@@ -95,6 +95,8 @@ describe('lacados poco habituales: la pieza que no existe en su color va en blan
     expect(codes.some((code) => /^PERPRLONBL16\d+C$/.test(code))).toBe(true);
     expect(codes.some((code) => /^(PECARMAX|PERPRLON)GT16/.test(code))).toBe(false);
     expect(of.despiece.rows.filter((row) => /^(PECARMAX|PERPRLON)BL16/.test(row.reference || '')).every((row) => row.name.includes('MANDAR A LACAR'))).toBe(true);
+    // Iván, 08/10/2026: el juego de tapas solo existe en blanco, 7016 liso y negro; en otro color, negras.
+    expect(codes).toContain('TAPASLAMAXSCNE11');
   });
 
   test('en blanco y en negro el Arzúa no lleva aviso de lacado', () => {

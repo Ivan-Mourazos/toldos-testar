@@ -155,8 +155,9 @@ function dianaPieces(context) {
     { code: `TURA70HG${rollStockLength}C`, quantity: units, description: 'TUBO DE ENROLLE P701', length: rollTubeLength },
     { code: tipBushing('P701').code, quantity: units, description: tipBushing('P701').description },
     { code: verticalProfileCode('PECARMAX', suffix, loadStockLength), quantity: units, description: 'PERFIL CARGA MAXISCREEM', length: loadBarLength },
-    // El juego de tapas solo existe en blanco, gris 7016 y negro.
-    ...(['BL16', 'GR16', 'NE11'].includes(suffix) ? [{ code: `TAPASLAMAXSC${suffix}`, quantity: units, description: 'JGO TAPAS PERFIL CARGA MAXISCREEN' }] : []),
+    // El juego de tapas solo existe en blanco, gris 7016 y negro; en cualquier otro lacado van
+    // negras, como en 13 de 14 OF (Iván, 08/10/2026, AR2604956).
+    { code: `TAPASLAMAXSC${['BL16', 'GR16', 'NE11'].includes(suffix) ? suffix : 'NE11'}`, quantity: units, description: 'JGO TAPAS PERFIL CARGA MAXISCREEN' },
     ...(cofre ? [{ code: verticalProfileCode('PERPRLON', suffix, boxStockLength), quantity: units, description: 'PERFIL COFRE MAXISCREEM', length: boxProfileLength }] : []),
     // Terminal de suelo del cable: uno por toldo (OF 0229970 y 0215897).
     ...(guide ? [{ code: `TERSUMAXSCR${suffix}`, quantity: units, description: 'KIT TERMINAL SUELO MAXISCREEN' }] : []),
