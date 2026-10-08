@@ -1,4 +1,4 @@
-import { effectiveOverride } from './ruleOverrides.js';
+import { effectiveOverride, isOverridden } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { P801_TUBE_LENGTHS, PRVMODUL_LENGTHS, barsForCut, profileLengthsOrWhite } from './barLengths.js';
 import { formatNumber } from './math.js';
@@ -62,7 +62,8 @@ export function calculateAgataBox({ order, awning }) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(Number(awning.width) - discounts.fabric);
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
-  const mainDropAllowance = separateValance.requested ? Math.max(0, dropAllowance - 5) : dropAllowance;
+  // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026; como Cambio de tela y Cortina).
+  const mainDropAllowance = separateValance.requested || (valance <= 0 && !isOverridden(awning, 'agataFabricDropAllowanceCm')) ? Math.max(0, dropAllowance - 5) : dropAllowance;
   const fabricDropRaw = Number(awning.projection) + mainDropAllowance + (separateValance.requested ? 0 : valance);
   const fabricDrop = round1(fabricDropRaw);
   const rollTubeLength = round1(Number(awning.width) - discounts.roll);

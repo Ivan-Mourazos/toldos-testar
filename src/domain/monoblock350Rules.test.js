@@ -131,9 +131,9 @@ describe('MONOBLOCK 350 contra hoja MON.350 y RPS', () => {
     expect(lines).toEqual(expect.arrayContaining(['TURA80HG800C', 'PEVO80BL16700C', 'TA3BLAN4X4700C']));
   });
 
-  test('sin bamba conserva los 5 cm de remate de la fórmula MON.350', () => {
+  test('sin bamba no lleva los 5 cm de remate (Iván, 08/10/2026)', () => {
     const ofBlock = order({ width: 520, projection: 150, valanceHeight: 0, armCount: 2, placement: 'FRONTAL' }).ofs[0];
-    expect(ofBlock.calculation).toMatchObject({ valid: true, fabricDrop: 195 });
+    expect(ofBlock.calculation).toMatchObject({ valid: true, fabricDrop: 190 });
   });
 
   test('una bamba de tela distinta se reserva como material separado', () => {

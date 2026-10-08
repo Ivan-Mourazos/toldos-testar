@@ -398,7 +398,8 @@ describe('ARZUA PRO caída de tela con bamba real', () => {
         valanceHeight: 0, device: 'MOTOR', tubeLoad: 'TUBO DE CARGA EVO 80'
       })]
     }));
-    expect(result.ofs[0].calculation.fabricDrop).toBe(295);
+    // Sin bamba, salida + 40: sin los 5 cm de remate (Iván, 08/10/2026).
+    expect(result.ofs[0].calculation.fabricDrop).toBe(290);
     expect(result.ofs[0].description).not.toContain('bambalina');
   });
 
@@ -1182,7 +1183,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(ofBlock.calculation).toMatchObject({
       valid: true, minimumLine: 240,
       structureLength: 279.3, rollTubeLength: 281.9,
-      fabricWidth: 275.8, fabricDrop: 245, fabricMl: 7.35,
+      fabricWidth: 275.8, fabricDrop: 240, fabricMl: 7.2, // sin bamba, sin los 5 cm de remate
       // Q-A06 (30/09/2026): la barra más corta que llega; la OF gastó las de 600.
       stockLength: 400, rollStockLength: 400, armCount: 1
     });
@@ -1199,7 +1200,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       { code: 'VARILLAVAINANEG5', quantity: 2.8 },
       { code: 'VARILLAVAINARBLA', quantity: 2.8 },
       { code: 'GOMAAMORTIG', quantity: 5 },
-      { code: 'ACRILI2038P120', quantity: 7.35 }
+      { code: 'ACRILI2038P120', quantity: 7.2 }
     ]);
     expect(ofBlock.despiece.rows.map((row) => row.num)).toEqual(ofBlock.despiece.rows.map((_, index) => index + 1));
   });
@@ -1219,7 +1220,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(ofBlock.calculation).toMatchObject({
       valid: true, minimumLine: 340, motorPower: '55/17',
       structureLength: 536.3, rollTubeLength: 538.5,
-      fabricWidth: 532.8, fabricDrop: 345, fabricMl: 17.25
+      fabricWidth: 532.8, fabricDrop: 340, fabricMl: 17 // sin bamba, sin los 5 cm de remate
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'BONYXNE11300C', quantity: 1 }),
@@ -1227,7 +1228,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       expect.objectContaining({ code: 'CORONALT60', quantity: 1 }),
       expect.objectContaining({ code: 'SUNEAIO55//17', quantity: 1 }),
       expect.objectContaining({ code: 'SITUOIO1PURE', quantity: 1 }),
-      expect.objectContaining({ code: 'ACRILI1070P120', quantity: 17.25 })
+      expect.objectContaining({ code: 'ACRILI1070P120', quantity: 17 })
     ]));
   });
 
@@ -1248,7 +1249,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(reservation.ofs[0].materials).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'TURA80HG400C', quantity: 2 }),
       expect.objectContaining({ code: 'SOSTORBS300BL16', quantity: 2 }),
-      expect.objectContaining({ code: 'ACRILI2038P120', quantity: 14.7 })
+      expect.objectContaining({ code: 'ACRILI2038P120', quantity: 14.4 })
     ]));
   });
 
@@ -1330,7 +1331,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(false);
   });
 
-  test('AR2603009: tres Coralbox se agrupan en una OF y 49,35 ml', () => {
+  test('AR2603009: tres Coralbox se agrupan en una OF y 48,7 ml (sin bamba, sin remate)', () => {
     const result = calculateOrder(basePayload({
       orderCode: 'AR2603009',
       structureColor: 'BLANCO',
@@ -1344,7 +1345,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
     const reservation = consolidateReservation(result);
     const materials = reservation.ofs[0].materials;
 
-    expect(result.ofs.map((item) => item.calculation.fabricMl)).toEqual([15.8, 19.75, 13.8]);
+    expect(result.ofs.map((item) => item.calculation.fabricMl)).toEqual([15.6, 19.5, 13.6]);
     expect(result.ofs.map((item) => ({
       structureLength: item.calculation.structureLength,
       rollTubeLength: item.calculation.rollTubeLength,
@@ -1356,7 +1357,7 @@ describe('PERLA BOX y CORAL BOX contra planteamientos y RPSNext', () => {
       { structureLength: 388.4, rollTubeLength: 384, fabricWidth: 383, minimumLine: 346 }
     ]);
     expect(materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'ACRILI2226P120', quantity: 49.35 }),
+      expect.objectContaining({ code: 'ACRILI2226P120', quantity: 48.7 }),
       // Q-A06: el tubo más corto que llega, como consumió la OF (dos de 400 y uno de 500).
       expect.objectContaining({ code: 'TURA80HG400C', quantity: 2 }),
       expect.objectContaining({ code: 'TURA80HG500C', quantity: 1 }),

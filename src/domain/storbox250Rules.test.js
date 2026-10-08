@@ -36,7 +36,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
 
     expect(ofBlock.calculation).toMatchObject({
       model: 'CUARZO BOX', valid: true, minimumLine: 159,
-      fabricWidth: 235.5, fabricDrop: 170, fabricMl: 5.1,
+      fabricWidth: 235.5, fabricDrop: 165, fabricMl: 4.95, // sin bamba, sin los 5 cm de remate
       rollTubeLength: 236.5, structureLength: 238.4,
       // Q-A06 (30/09/2026): la barra más corta que llega (la OF 0228312 gastó 450 y 700).
       stockLength: 350, rollStockLength: 500, boxProtectorDiscountCm: 16.6
@@ -53,7 +53,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
       { code: 'CASMAQEJE5070MM', quantity: 1 },
       { code: 'MAQMB11L12BLAN', quantity: 1 },
       { code: 'MANIVEBL16100C', quantity: 1 },
-      { code: 'ACRILI2817P120', quantity: 5.1 },
+      { code: 'ACRILI2817P120', quantity: 4.95 },
       { code: 'ANCLHSTM12145', quantity: 4 }
     ]);
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
@@ -76,7 +76,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
 
     expect(ofBlock.calculation).toMatchObject({
       valid: true, minimumLine: 234, motorPower: '35/17',
-      fabricWidth: 240.8, fabricDrop: 245, fabricMl: 7.35,
+      fabricWidth: 240.8, fabricDrop: 240, fabricMl: 7.2, // sin bamba, sin los 5 cm de remate
       rollTubeLength: 241.8, structureLength: 245.4,
       boxProtectorDiscountCm: 16.6
     });
@@ -93,7 +93,7 @@ describe('CUARZO BOX contra ST250 y RPS final', () => {
       { code: 'CORONACENMEC70', quantity: 1 },
       { code: 'SOPORTEUNVHIPRO', quantity: 1 },
       { code: 'SITUOIO1PURE', quantity: 1 },
-      { code: 'ACRILI2143P120', quantity: 7.35 }
+      { code: 'ACRILI2143P120', quantity: 7.2 }
     ]);
   });
 

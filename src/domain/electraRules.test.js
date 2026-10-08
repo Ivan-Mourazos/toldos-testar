@@ -45,16 +45,17 @@ function calculate(awningOverrides = {}, orderOverrides = {}) {
 }
 
 describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
+  // Sin bamba, la caída no lleva los 5 cm de remate (Iván, 08/10/2026).
   test.each([
-    ['SOPORTE ELIT VERTICAL', 'MAQ. INTERIOR', 290, 292, 290.5, 236, 295],
-    ['SOPORTE ELIT VERTICAL', 'MAQ. EXTERIOR', 290, 292, 290.5, 236, 295],
-    ['SOPORTE ELIT VERTICAL', 'MOTOR', 290, 292, 290.5, 236, 290],
-    ['SOPORTES ALMAGRO', 'MAQ. INTERIOR', 290, 291, 290.5, 235.5, 295],
-    ['SOPORTES ALMAGRO', 'MAQ. EXTERIOR', 290, 291, 290.5, 235.5, 295],
-    ['SOPORTES ALMAGRO', 'MOTOR', 290.5, 291.5, 291, 235.5, 290],
-    ['UNIVERSAL 3 AGUJEROS', 'MAQ. INTERIOR', 288, 289, 289, 236, 295],
-    ['UNIVERSAL 3 AGUJEROS', 'MAQ. EXTERIOR', 287.5, 289, 289, 236, 295],
-    ['UNIVERSAL 3 AGUJEROS', 'MOTOR', 289, 290, 290, 236, 290]
+    ['SOPORTE ELIT VERTICAL', 'MAQ. INTERIOR', 290, 292, 290.5, 236, 290],
+    ['SOPORTE ELIT VERTICAL', 'MAQ. EXTERIOR', 290, 292, 290.5, 236, 290],
+    ['SOPORTE ELIT VERTICAL', 'MOTOR', 290, 292, 290.5, 236, 285],
+    ['SOPORTES ALMAGRO', 'MAQ. INTERIOR', 290, 291, 290.5, 235.5, 290],
+    ['SOPORTES ALMAGRO', 'MAQ. EXTERIOR', 290, 291, 290.5, 235.5, 290],
+    ['SOPORTES ALMAGRO', 'MOTOR', 290.5, 291.5, 291, 235.5, 285],
+    ['UNIVERSAL 3 AGUJEROS', 'MAQ. INTERIOR', 288, 289, 289, 236, 290],
+    ['UNIVERSAL 3 AGUJEROS', 'MAQ. EXTERIOR', 287.5, 289, 289, 236, 290],
+    ['UNIVERSAL 3 AGUJEROS', 'MOTOR', 289, 290, 290, 236, 285]
   ])(
     '%s con %s aplica literalmente la tabla guía',
     (electraSupport, device, fabricWidth, rollTubeLength, loadBarLength, guideLength, fabricDrop) => {

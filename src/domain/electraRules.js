@@ -1,4 +1,4 @@
-import { effectiveOverride } from './ruleOverrides.js';
+import { effectiveOverride, isOverridden } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -90,7 +90,8 @@ export function calculateElectra({ order, awning }) {
 
   const fabricWidth = round1(Number(awning.width) - fabricDiscount);
   const valanceHeight = Math.max(0, Number(awning.valanceHeight) || 0);
-  const fabricDrop = round1(Number(awning.projection) + dropAllowance + valanceHeight);
+  // Los 5 cm de remate solo van con bamba (Iván, 08/10/2026).
+  const fabricDrop = round1(Number(awning.projection) + (valanceHeight > 0 || isOverridden(awning, 'electraFabricDropAllowanceCm') ? dropAllowance : Math.max(0, dropAllowance - 5)) + valanceHeight);
   const rollTubeLength = round1(Number(awning.width) - rollDiscount);
   const loadBarLength = round1(Number(awning.width) - loadBarDiscount);
   const boxProfileLength = hasCofre ? round1(Number(awning.width) - boxProfileDiscount) : 0;

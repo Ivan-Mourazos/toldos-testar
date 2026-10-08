@@ -25,7 +25,7 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
     const ofBlock = order().ofs[0];
     expect(ofBlock.calculation).toMatchObject({
       valid: true, submodel: 'COFRE CON CABLE', guideType: 'CABLE',
-      fabricWidth: 310.4, fabricDrop: 317, fabricPanels: 3, fabricMl: 19.02,
+      fabricWidth: 310.4, fabricDrop: 312, fabricPanels: 3, fabricMl: 18.72, // sin bamba, sin los 5 cm de remate
       rollTubeLength: 313.3, structureLength: 311.4, boxProfileLength: 318,
       guideLength: 321, rollStockLength: 600, profileStockLength: 500,
       motorPower: '15/17'
@@ -44,7 +44,7 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
       expect.objectContaining({ code: 'SUNILUSIO15//17', quantity: 2 }),
       expect.objectContaining({ code: 'RUEDAMOTHI68', quantity: 2 }),
       expect.objectContaining({ code: 'CORONACENMEC70', quantity: 2 }),
-      expect.objectContaining({ code: 'ACRILI1072P120', quantity: 19.02 }),
+      expect.objectContaining({ code: 'ACRILI1072P120', quantity: 18.72 }),
       expect.objectContaining({ code: 'ANCLHSTM12145', quantity: 8 })
     ]));
   });
@@ -56,7 +56,7 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
       placement: 'FRONTAL', structureColor: 'NEGRO (R-09011)', wallType: ''
     }).ofs[0];
     expect(ofBlock.calculation).toMatchObject({
-      valid: true, fabricWidth: 322, fabricDrop: 325,
+      valid: true, fabricWidth: 322, fabricDrop: 320,
       rollTubeLength: 324.9, structureLength: 325, boxProfileLength: 0
     });
     expect(ofBlock.materials).toEqual(expect.arrayContaining([

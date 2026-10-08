@@ -56,7 +56,7 @@ describe('Ágata Box', () => {
     });
     expect(result.calculation).toMatchObject({
       valid: true, submodel: 'COFRE', supportCount: 6, profileSupportCount: 4,
-      fabricWidth: 637, fabricDrop: 245, rollTubeLength: 638,
+      fabricWidth: 637, fabricDrop: 240, rollTubeLength: 638, // sin bamba, sin los 5 cm de remate
       enclosureLength: 642.1, motorPower: '55/17'
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([

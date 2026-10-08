@@ -46,7 +46,8 @@ export function calculateMaxiscreem({ order, awning }) {
   const dropAllowance = effectiveNumber(awning, 'maxisFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
   const fabricWidth = round1(Number(awning.width) - fabricDiscount);
   const rawFabricDrop = Number(awning.projection) + dropAllowance
-    + (valanceFabricSelection ? 0 : valance + parameters.valanceExtraCm);
+    // Los 5 cm de remate solo van con bamba (Iván, 08/10/2026).
+    + (valanceFabricSelection || valance <= 0 ? 0 : valance + parameters.valanceExtraCm);
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(Number(awning.width) - rollDiscount);
   const loadBarLength = round1(Number(awning.width) - loadBarDiscount);

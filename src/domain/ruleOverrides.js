@@ -26,6 +26,12 @@ export function effectiveOverride(awning, field, fallback) {
   return chosen;
 }
 
+/** Si el técnico ha puesto ese valor a mano con el candado (excepción técnica). */
+export function isOverridden(awning, field) {
+  const value = awning?.[field];
+  return Boolean(awning?.reglasModificadas) && value !== null && value !== undefined && Number.isFinite(Number(value));
+}
+
 export function noteOverride(field, value, standard) {
   if (!current) return;
   const differs = typeof value === 'number' && typeof standard === 'number'

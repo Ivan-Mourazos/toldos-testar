@@ -1,4 +1,4 @@
-import { effectiveOverride } from './ruleOverrides.js';
+import { effectiveOverride, isOverridden } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -54,7 +54,8 @@ export function calculateAmbarBox({ order, awning }) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const fabricWidth = round1(Number(awning.width) - discounts.fabric);
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
-  const mainDropAllowance = separateValance.requested ? Math.max(0, dropAllowance - 5) : dropAllowance;
+  // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026; como Cambio de tela y Cortina).
+  const mainDropAllowance = separateValance.requested || (valance <= 0 && !isOverridden(awning, 'ambarFabricDropAllowanceCm')) ? Math.max(0, dropAllowance - 5) : dropAllowance;
   const fabricDropRaw = verticalDrop
     ? calculateVerticalDropArmFabricDrop({
         projection: awning.projection,

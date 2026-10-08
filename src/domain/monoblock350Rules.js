@@ -64,7 +64,8 @@ export function calculateMonoblock350({ order, awning }) {
   );
   const fabricWidth = round1(awning.width - fabricDiscount);
   const rawFabricDrop = awning.projection + dropAllowance
-    + (valanceFabricSelection ? 0 : valance + parameters.valanceExtraCm);
+    // Los 5 cm de remate solo van con bamba (Iván, 08/10/2026).
+    + (valanceFabricSelection || valance <= 0 ? 0 : valance + parameters.valanceExtraCm);
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(awning.width - rollDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);

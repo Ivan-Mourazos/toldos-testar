@@ -85,7 +85,8 @@ export function calculateArzuaPro({ order, awning }) {
   if (!tubeLoad) missingFields.push('tubo de carga válido');
   const fabricWidth = round1(awning.width - lookupDiscount(parameters.fabricWidthDiscounts, tubeLoad, device, 11));
   const valanceExtraCm = 5;
-  const mainDropAllowance = valanceFabricSelection
+  // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026; como Cambio de tela y Cortina).
+  const mainDropAllowance = valanceFabricSelection || valance <= 0
     ? Math.max(0, parameters.fabricDropAllowanceCm - valanceExtraCm)
     : parameters.fabricDropAllowanceCm;
   const fabricDrop = round1(awning.projection + mainDropAllowance + (valanceFabricSelection ? 0 : valance));

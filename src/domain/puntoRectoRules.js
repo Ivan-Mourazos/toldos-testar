@@ -1,4 +1,4 @@
-import { effectiveOverride } from './ruleOverrides.js';
+import { effectiveOverride, isOverridden } from './ruleOverrides.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -66,7 +66,8 @@ export function calculatePuntoRecto({ order, awning }) {
       })
     : separateValance.requested
       ? Number(awning.projection) + 40
-      : Number(awning.projection) * dropMultiplier + dropAllowance + valance;
+      // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026).
+      : Number(awning.projection) * dropMultiplier + (valance > 0 || isOverridden(awning, 'pointFabricDropAllowanceCm') ? dropAllowance : Math.max(0, dropAllowance - 5)) + valance;
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(awning.width - rollDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);

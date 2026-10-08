@@ -26,8 +26,9 @@ describe('Ámbar Box', () => {
       fabricWidth: 249,
       rollTubeLength: 251.7,
       structureLength: 252,
-      fabricDrop: 224.7,
-      fabricMl: 6.741169
+      // Sin bamba, sin los 5 cm de remate (Iván, 08/10/2026).
+      fabricDrop: 219.7,
+      fabricMl: 6.591169
     });
     expect(result.materials.map((line) => line.code)).toEqual(expect.arrayContaining([
       // Q-A06: la barra más corta que llega (252 de corte): tubo P701 de 500 y perfil de 400.

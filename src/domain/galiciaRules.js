@@ -62,7 +62,8 @@ export function calculateGalicia({ order, awning }) {
     seamAllowanceCm: parameters.seamAllowanceCm,
     seamBaseCm: parameters.seamBaseCm
   });
-  const mainDropAllowance = separateValance.requested
+  // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026; como Cambio de tela y Cortina).
+  const mainDropAllowance = separateValance.requested || valance <= 0
     ? Math.max(0, parameters.fabricDropAllowanceCm - 5)
     : parameters.fabricDropAllowanceCm;
   const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance));

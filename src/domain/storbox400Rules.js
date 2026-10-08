@@ -83,7 +83,12 @@ function calculateBox({ order, awning }, config) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
   // STORBOX 400 conserva los 45 cm de margen del cuerpo aunque la bamba vaya aparte.
-  const fabricDrop = round1(awning.projection + parameters.fabricDropAllowanceCm + (separateValance.requested ? 0 : valance));
+  // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026; como Cambio de tela y Cortina).
+  // Con la bamba en otra tela, el Perla y el Coral siguen con salida + 45 (contrato de bamba en otra tela).
+  const mainDropAllowance = !separateValance.requested && valance <= 0
+    ? Math.max(0, parameters.fabricDropAllowanceCm - 5)
+    : parameters.fabricDropAllowanceCm;
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,
