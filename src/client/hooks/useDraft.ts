@@ -190,7 +190,6 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.cambioAnticaExtraCm = nullableNumber(old.cambioAnticaExtraCm);
   base.cambioTelaExtraCm = base.model === 'CAMBIO TELA' ? resolveCambioTelaExtraCm(old) : null;
   base.looseSide = old.looseSide === 'IZQUIERDO' || old.looseSide === 'DERECHO' ? old.looseSide : '';
-  base.maxisCableMountKit = old.maxisCableMountKit === true;
   base.structureEdit = normalizeStructureEdit(old.structureEdit) as Awning['structureEdit'];
   base.structureArmCount = nullableNumber(old.structureArmCount);
   base.structureNotesEdited = old.structureNotesEdited === true;
@@ -599,7 +598,6 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     cambioAnticaExtraCm: model === 'CAMBIO ANTICA' ? awning.cambioAnticaExtraCm : null,
     cambioTelaExtraCm: model === 'CAMBIO TELA' ? awning.model === model ? awning.cambioTelaExtraCm : defaultCambioTelaExtraCm : null,
     looseSide: ['GALICIA', 'MONOBLOCK 350', 'AGATA BOX'].includes(model) ? awning.looseSide : '',
-    maxisCableMountKit: model === 'MAXISCREEM' ? awning.maxisCableMountKit : false,
     structureNotesEdited: false,
     structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : '',
     // La tela es del elemento, no del modelo: sigue al cambiarlo desde la tarjeta.

@@ -150,7 +150,6 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     cambioAnticaExtraCm: null,
     cambioTelaExtraCm: defaultCambioTelaExtraCm,
     looseSide: '',
-    maxisCableMountKit: false,
     anticaSupportHeight: null,
     reglasModificadas: false,
     fabric: '',

@@ -40,7 +40,7 @@ Solo 9 OF, pero todas dicen lo mismo:
 | Máquina | Casquillo de eje 50 Ø70 | Eje 63 Ø78 y `CASPLAS` | Eje 50 Ø70 |
 | Cable | Rollo de 200 m, por metros (unos 2 × la guía) | Rollo de 25 m, que no se consume | Dos veces el largo de guía |
 | Terminal de suelo | Uno por toldo | No se reservaba | Uno por toldo |
-| Kit de montaje del cable | `MONTCABLEMAXSC` en 2 de 6 OF con cable | No se reservaba | Si se marca la casilla de la tarjeta (taller, 30/09/2026, Q-D01) |
+| Kit de montaje del cable | `MONTCABLEMAXSC` en 2 de 6 OF con cable | No se reservaba | Siempre con cable, uno por toldo (taller vía Iván, 08/10/2026: va siempre; en las OF anteriores no se descontaba) |
 | Tapas y varillas | Juego de tapas del perfil; varillas negra y blanca iguales | No se reservaban | Así (tapas solo en blanco, gris 7016 y negro, donde existen) |
 | Lacado especial | Perfiles blancos que se lacan fuera (OF 0229970) | Referencia base sin largo | Perfiles blancos |
 
@@ -59,4 +59,4 @@ Después, `validate:reserva MAXISCREEM` solo echa en falta el mando de 5 canales
 | Q-E01 | **Cerrada (30/09/2026): según se gasta.** Electra sin cofre: juego `TAPASLAMAXSC` o dos `TAPAELITVERT`, en negro aunque la estructura sea blanca | Juego `TAPASLAMAXSC` en negro, que es lo que se gasta en 2026 (RPS) |
 | Q-E02 | **Cerrada (taller, 30/09/2026):** como en la cortina: con poca salida y según el stock, a criterio del taller; lo normal es el Ø78 | Ø78 |
 | Q-E03 | **Resuelta (taller, 30/09/2026):** lo lleva cuando va con tubo Univers sin guías (casi siempre) | Hecho: con cofre y sin guía, dos `ANIACIN`, dos `PLEACIN` y dos `MOSQBOACIN60MM` por toldo |
-| Q-D01 | **Resuelta (taller, 30/09/2026):** se indica en el pedido | Hecho: casilla «Kit de montaje del cable» en la tarjeta (solo con cable); se reserva `MONTCABLEMAXSC`, uno por toldo, solo si se marca. Sale también en la hoja de revisión |
+| Q-D01 | **Resuelta (taller, 30/09/2026 y 08/10/2026):** va siempre con cable; si no salía en las OF era porque no se descontaba | Hecho: `MONTCABLEMAXSC`, uno por toldo, siempre que la Diana lleve cable. Ya no hay casilla en la tarjeta |

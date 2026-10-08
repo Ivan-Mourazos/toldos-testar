@@ -89,7 +89,7 @@ Respuestas del taller, traídas por Iván. «Pendiente» quiere decir que la web
 | Q-E02 | Tubo de Ø70 en la Electra | Como en la cortina | Cerrada: Ø78 |
 | Q-E03 | Puente abatible en la Electra con cofre | Lo lleva cuando va con tubo Univers sin guías (en la práctica, casi siempre) | Hecho: la Electra con cofre y sin guía (con cofre la barra es siempre el Univers) reserva dos anillas `ANIACIN`, dos pletinas `PLEACIN` y dos mosquetones |
 | Q-E01 | Tapas del perfil de carga de la Electra sin cofre | Según lo que se gasta (Iván) | Cerrada: la web reserva el juego `TAPASLAMAXSC` en negro, que es lo que se gasta en 2026 (RPS) |
-| Q-D01 | Kit de montaje del cable de la Diana vertical | Se indica en el pedido | Hecho: casilla «Kit de montaje del cable» en la tarjeta de la Diana con cable; `MONTCABLEMAXSC` solo si se marca |
+| Q-D01 | Kit de montaje del cable de la Diana vertical | Va siempre con cable (taller vía Iván, 08/10/2026); en las OF anteriores no se descontaba | Hecho: `MONTCABLEMAXSC` uno por toldo siempre que lleve cable; fuera la casilla de la tarjeta |
 | Q-PR01 | Kit de motor del Punto Recto | Según el tubo, de 70 o de 80. Con tubo de 70 lleva `CORONACENMEC70` y `RUEDAMOTHI68` | Hecho: con tubo de 70, `CORONACENMEC70` y `RUEDAMOTHI68` |
 | Q-PR03 | Barra de carga del Punto Recto | Solo la Univers 280 | Ya lo hace |
 | Q-PR04 | Punto Recto de 1,60 m de salida | Es una excepción; no hay stock | Hecho: se sigue ofreciendo, con aviso en la tarjeta de que es una excepción sin stock |

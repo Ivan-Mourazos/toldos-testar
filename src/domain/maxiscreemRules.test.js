@@ -79,15 +79,14 @@ describe('MAXISCREEM / Diana vertical contra Excel y RPS', () => {
     expect(ofBlock.materials.some((line) => line.code === 'CABLEMAXIS3MM200')).toBe(false);
   });
 
-  // Taller, 30/09/2026 (Q-D01): el kit de montaje del cable se indica en el pedido. Casilla
-  // en la tarjeta; sin marcar no se reserva.
-  test('el kit de montaje del cable solo se reserva si se marca', () => {
+  // Taller, vía Iván (08/10/2026): el kit de montaje del cable va siempre con cable; que solo
+  // se gastara en 2 de 6 OF fue porque no se descontaba. Sustituye a Q-D01 (casilla).
+  test('con cable el kit de montaje se reserva siempre, uno por toldo', () => {
     const codes = (patch) => order(patch).ofs[0].materials.filter((line) => line.code === 'MONTCABLEMAXSC');
-    expect(codes({})).toEqual([]);
-    expect(codes({ maxisCableMountKit: true })).toEqual([expect.objectContaining({ code: 'MONTCABLEMAXSC', quantity: 2 })]);
+    expect(codes({})).toEqual([expect.objectContaining({ code: 'MONTCABLEMAXSC', quantity: 2 })]);
     // Con varilla no hay cable que montar.
-    expect(codes({ submodel: 'COFRE CON VARILLA', maxisCableMountKit: true })).toEqual([]);
-    const despiece = order({ maxisCableMountKit: true }).ofs[0].despiece.rows.map((row) => row.reference);
+    expect(codes({ submodel: 'COFRE CON VARILLA' })).toEqual([]);
+    const despiece = order({}).ofs[0].despiece.rows.map((row) => row.reference);
     expect(despiece).toContain('MONTCABLEMAXSC');
   });
 
