@@ -77,6 +77,26 @@ describe('lacados poco habituales: la pieza que no existe en su color va en blan
     expect(warning.message).toContain('BONYXBL16200C');
   });
 
+  test('AR2604956: Diana vertical en gris 7016 texturado, perfiles de carga y de cofre en blanco para lacar', () => {
+    const order = normalizeOrder({
+      orderCode: 'AR2604956', customer: 'PRUEBA', technician: 'IVÁN', sameFabric: true,
+      fabric: 'ACRILI2018P120|||120|||LONA ACRILICA MASACRIL 300 :AZUL 2018 :120 AN|||ACRÍLICAS',
+      awnings: [{
+        id: 'a', of: '0232867', model: 'MAXISCREEM', units: 1, width: 184, projection: 255, submodel: 'COFRE CON CABLE',
+        structureColor: 'GRIS 7016 MATE TEXT.', device: 'MOTOR', machineSide: 'M.F.DER', sensor: 'SIN SENSOR',
+        placement: 'FRONTAL', rotFabric: 'NO', hasValance: false, valanceHeight: 0
+      }]
+    });
+    const result = calculateOrder(order);
+    const [of] = result.ofs;
+    expect(of.calculation.valid).toBe(true);
+    const codes = of.materials.map((line) => line.code);
+    expect(codes.some((code) => /^PECARMAXBL16\d+C$/.test(code))).toBe(true);
+    expect(codes.some((code) => /^PERPRLONBL16\d+C$/.test(code))).toBe(true);
+    expect(codes.some((code) => /^(PECARMAX|PERPRLON)GT16/.test(code))).toBe(false);
+    expect(of.despiece.rows.filter((row) => /^(PECARMAX|PERPRLON)BL16/.test(row.reference || '')).every((row) => row.name.includes('MANDAR A LACAR'))).toBe(true);
+  });
+
   test('en blanco y en negro el Arzúa no lleva aviso de lacado', () => {
     for (const lacado of ['BLANCO', 'NEGRO (R-09011)']) {
       const [{ result }] = sampleAwnings('ARZUA PRO', lacado);

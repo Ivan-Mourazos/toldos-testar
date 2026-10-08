@@ -18,6 +18,24 @@ describe('autocompletado de pedidos RPS', () => {
         .toBe('LACADO ESPECIAL');
     }
   );
+  // AR2604956 (Iván, 08/10/2026): la guía de la Diana sale de la descripción del artículo
+  // («… CON CABLES:CON COFRE»); el texto del comercial solo dice «guías».
+  test.each([
+    ['DIANAC/CO', 'TOLDO DIANA VERTICAL (MAXISCREEN) CON CABLES:CON COFRE', 'COFRE CON CABLE'],
+    ['DIANAC/CO', 'TOLDO DIANA VERTICAL (MAXISCREEN) CON VARILLAS:CON COFRE', 'COFRE CON VARILLA'],
+    ['DIANAS/CO', 'TOLDO DIANA VERTICAL (MAXISCREEN) CON CABLES:SIN COFRE', 'CON CABLE'],
+    ['DIANAC/CO', 'TOLDO DIANA VERTICAL (MAXISCREEN)', '']
+  ])('Diana %s «%s» es %s', (articleCode, articleDescription, expected) => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.04956' },
+      lines: [{
+        lineId: 'diana', articleCode, articleDescription, description: articleDescription, quantity: 1, manufacturingOrder: '0232867',
+        comment: 'POR FABRICACION E INSTALACION DE UN TOLDO VERTICALMODELO DIANA, CON COFRE Y GUIAS,MOTORIZADO ACCIOADO CON MANDO A DISTANCIA, DE MEDIDAS 184 CM DE FRENTE X 255 CM DE CAIDA, ESTRUCTURA DE ALUMINIO, LACADO EN COLOR ANTRACITA TXT 7016, TORNILLERIA'
+      }]
+    });
+    expect(result.order.awnings[0]).toMatchObject({ model: 'MAXISCREEM', submodel: expected, width: 184, projection: 255, structureColor: 'GRIS 7016 MATE TEXT.', device: 'MOTOR' });
+  });
+
   // AR2604964 (Iván, 08/10/2026): «gris antracita texturado» es GT16, que RPS llama «GRIS RAL 7016
   // MATE TEXT.» o «GRIS RAL 7016 TEXTURADO»; los Perla y Coral Box con ese texto gastaron GT16.
   test.each([
@@ -26,7 +44,9 @@ describe('autocompletado de pedidos RPS', () => {
     ['GRIS 7016 TEXTURADO', 'GRIS 7016 MATE TEXT.'],
     ['GRIS 7016 MATE TEXT.', 'GRIS 7016 MATE TEXT.'],
     ['ANTRACITA MATE', 'GRIS 7016 MATE'],
-    ['GRIS 7016 MATE', 'GRIS 7016 MATE']
+    ['GRIS 7016 MATE', 'GRIS 7016 MATE'],
+    // AR2604956: «ANTRACITA TXT 7016».
+    ['ANTRACITA TXT 7016', 'GRIS 7016 MATE TEXT.']
   ])('el 7016 texturado o mate: %s es %s', (color, expected) => {
     expect(extractOrderTextData(`ESTRUCTURA DE ALUMINIO LACADO EN COLOR ${color}, TORNILLERIA`, 'PERLA BOX').structureColor)
       .toBe(expected);

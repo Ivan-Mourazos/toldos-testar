@@ -83,13 +83,18 @@ const verticalProfileLengths = Object.freeze({
   }
 });
 
-// Largo del perfil: el habitual si existe y cabe; si no, el más corto que quepa. null
-// si ese lacado no tiene el perfil o ninguno es bastante largo.
+// Largo del perfil: el habitual si existe y cabe; si no, el más corto que quepa. Si el lacado
+// no tiene el perfil o ninguno es bastante largo, el largo del blanco: la reserva lo pide en
+// blanco para mandarlo a lacar (Iván, 08/10/2026, AR2604956; lacadoFallback.js). null si
+// tampoco en blanco hay uno bastante largo.
 export function pickVerticalProfileLength(base, suffix, wanted, needed) {
-  const available = verticalProfileLengths[base]?.[String(suffix || 'BL16')];
-  if (!available) return null;
-  const usual = [...wanted].sort((a, b) => a - b).find((length) => available.includes(length) && length >= needed);
-  return usual || available.find((length) => length >= needed) || null;
+  const pick = (available) => {
+    if (!available) return null;
+    const usual = [...wanted].sort((a, b) => a - b).find((length) => available.includes(length) && length >= needed);
+    return usual || available.find((length) => length >= needed) || null;
+  };
+  const lengths = verticalProfileLengths[base] || {};
+  return pick(lengths[String(suffix || 'BL16')]) || pick(lengths.BL16);
 }
 
 export function verticalProfileCode(base, suffix, length) {

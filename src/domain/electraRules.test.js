@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { calculateElectra } from './electraRules.js';
+import { normalizeOrder } from './validation.js';
+import { calculateOrder } from './rules.js';
 
 const fabric = 'ELECTRATESTP120|||120|||LONA DE PRUEBA ELECTRA';
 
@@ -396,16 +398,19 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     expect(calculate().materials.map((item) => item.code)).not.toContain('ANIACIN');
   });
 
-  test('usa referencia base y avisa cuando no existe perfil terminado activo', () => {
-    const result = calculate({ structureColor: 'MARFIL (R-01015)' }, { structureColor: '' });
-
-    expect(result.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'PECARMAX' })
-    ]));
-    expect(result.materials.some(({ code }) => code === 'PECARMAXMA15500C')).toBe(false);
-    expect(result.diagnostics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ level: 'warn', message: expect.stringContaining('referencia base PECARMAX') })
-    ]));
+  // Iván, 08/10/2026 (AR2604956): sin perfil en su color ya no se reserva la referencia base, sino
+  // el perfil en blanco para mandarlo a lacar (OF 0229970: PECARMAXBL16700C con EXT_LACAR).
+  test('sin perfil terminado en su color, el perfil de carga va en blanco para lacar', () => {
+    const order = normalizeOrder({
+      orderCode: 'AR2609999', customer: 'PRUEBA', technician: 'IVÁN', sameFabric: true, fabric: 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR',
+      awnings: [awning({ structureColor: 'MARFIL (R-01015)', rotFabric: 'NO' })]
+    });
+    const result = calculateOrder(order);
+    const codes = result.ofs[0].materials.map(({ code }) => code);
+    expect(codes).toContain('PECARMAXBL16500C');
+    expect(codes).not.toContain('PECARMAX');
+    expect(codes).not.toContain('PECARMAXMA15500C');
+    expect(result.diagnostics.some((item) => /lacar fuera/.test(item.message) && item.message.includes('PECARMAXBL16500C'))).toBe(true);
   });
 
   test('una ventana completa es estándar; bamba o confección especial requieren excepción técnica', () => {

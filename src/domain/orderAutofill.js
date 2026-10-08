@@ -376,7 +376,9 @@ function buildAwningSuggestion(line, model, index) {
   const extracted = extractOrderTextData(detailText, model);
   const crossed = model === 'ARZUA PRO' && (normalize(line.articleCode) === 'BRACRU' || /BRAZOS?\s+CRUZADOS?/.test(normalize(`${line.description || ''} ${detailText}`)));
   const fabricOnly = fabricOnlyModels.has(model);
-  const submodel = model === 'ELECTRA' ? inferElectraVariant(line.articleCode, detailText) : extracted.submodel;
+  const submodel = model === 'ELECTRA' ? inferElectraVariant(line.articleCode, detailText)
+    : model === 'MAXISCREEM' ? inferDianaVariant(line) || extracted.submodel
+      : extracted.submodel;
   const electraSupport = model === 'ELECTRA'
     ? normalizeElectraSuggestionSupport(inferElectraSupport(detailText), submodel)
     : '';
@@ -664,6 +666,17 @@ function inferCurtainFinish(text) {
   return '';
 }
 
+// Diana vertical: el cofre por el artículo (DIANAC/CO con cofre, DIANAS/CO sin) y la guía por su
+// descripción en RPS («… CON CABLES:CON COFRE»); el comercial suele escribir solo «guías» (AR2604956).
+function inferDianaVariant(line) {
+  const code = normalize(line.articleCode);
+  const description = normalize(`${line.articleDescription || ''} ${line.description || ''}`);
+  const guide = /\bCABLES?\b/.test(description) ? 'CON CABLE' : /\bVARILLAS?\b/.test(description) ? 'CON VARILLA' : '';
+  if (!guide) return '';
+  const withBox = code === 'DIANAC/CO' || (code !== 'DIANAS/CO' && /CON\s+COFRE/.test(description));
+  return withBox ? `COFRE ${guide}` : guide;
+}
+
 function inferSubmodel(text, model) {
   if (model === 'HERA') {
     const size = /HERA\s*43/.test(text) ? '43' : /HERA\s*56/.test(text) ? '56' : '';
@@ -695,7 +708,8 @@ function inferStructureColor(text) {
   const gray7016 = /\bANTRACITA\b|GRIS\s+(?:RAL\s+)?7016/.test(structure);
   const ral = structure.match(/\b\d{4}\b/)?.[0];
   if (gray7016 && (!ral || ral === '7016')) {
-    if (/TEXT/.test(structure)) return 'GRIS 7016 MATE TEXT.';
+    // «TXT» también (AR2604956: «ANTRACITA TXT 7016»).
+    if (/TEXT|\bTXT\b/.test(structure)) return 'GRIS 7016 MATE TEXT.';
     if (/\bMATE\b/.test(structure)) return 'GRIS 7016 MATE';
   }
   // No confundir el antracita GR16 comprado con otro RAL.
