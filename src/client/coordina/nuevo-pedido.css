@@ -1186,3 +1186,23 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .curtain-config .curtain-window-measures { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .curtain-window-reference, .curtain-field-hint { grid-column: 1 / -1; }
 .curtain-field-hint { color: var(--text-muted); font-size: 11px; line-height: 1.4; margin: 0; }
+
+/* Escuadrado del Iris dibujado en la tarjeta (Iván, 08/10/2026): hueco, diagonales, toldo y guías. */
+.iris-squaring { grid-column: 1 / -1; margin: 6px 0 2px; }
+.iris-squaring svg { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); display: block; height: auto; max-height: 360px; width: 100%; }
+.iris-sq-hueco { fill: none; stroke: var(--text); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.iris-sq-diagonal { stroke: var(--text-muted); stroke-dasharray: 5 4; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.iris-sq-toldo { fill: var(--tgm-yellow-soft); stroke: var(--tgm-yellow); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.iris-sq-guia { stroke: var(--accent-text); stroke-linecap: round; stroke-width: 4; vector-effect: non-scaling-stroke; }
+.iris-sq-texto text { fill: var(--text); font-family: var(--font-sans); font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.iris-sq-texto .iris-sq-texto-suave { fill: var(--text-muted); font-weight: 500; }
+.iris-sq-texto .iris-sq-texto-toldo { fill: var(--accent-text); }
+.iris-sq-texto .iris-sq-texto-desfase { fill: var(--aviso-texto); }
+.iris-squaring figcaption { display: grid; gap: 4px; margin-top: 6px; }
+.iris-squaring-note, .iris-squaring-empty { color: var(--text-muted); font-size: 11px; line-height: 1.4; margin: 0; }
+.iris-squaring-empty { grid-column: 1 / -1; }
+.iris-squaring-checks { display: grid; gap: 3px; list-style: none; margin: 0; padding: 0; }
+.iris-squaring-checks li { border-left: 3px solid currentColor; font-size: 11.5px; line-height: 1.4; padding: 2px 0 2px 8px; }
+.iris-squaring-checks li.is-ok { color: var(--ok); }
+.iris-squaring-checks li.is-warn { color: var(--aviso-texto); }
+.iris-squaring-checks li.is-error { color: var(--error-texto); }

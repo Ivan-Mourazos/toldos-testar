@@ -28,6 +28,7 @@ import { cortinaMotorPower, cortinaMotorPowers } from '../../domain/curtainMotor
 import { resolveFabric } from '../../domain/fabricCatalog.js';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
+import { IrisSquaringDiagram } from './IrisSquaringDiagram';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
 import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes, irisSeriesOf } from '../../domain/irisParameters.js';
@@ -536,6 +537,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   <NumberField label="Diagonal 2 (a salida der.)" value={awning.irisDiagonal2} min={0} onChange={(irisDiagonal2) => update({ irisDiagonal2 })} />
                 </>
               )}
+              {/* Iván, 08/10/2026: el escuadrado dibujado según se teclea, en lugar del CAD. */}
+              <IrisSquaringDiagram awning={awning} parameters={(parameters as unknown as { iris?: unknown }).iris} />
+
               <SelectField
                 label="Tipo de guía"
                 value={awning.irisGuideType}
