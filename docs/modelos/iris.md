@@ -124,7 +124,7 @@ AR2604748: con medidas exageradas la web seguía dando válido, porque solo comp
 
 - **Las seis medidas tienen que cuadrar.** Con el frente superior, las salidas y las diagonales sale el frente inferior. Si se aparta del medido más de **2 cm**, el toldo no es válido y la tarjeta dice qué frente inferior darían las demás medidas. En el CAD `EJEMPLO.dwg` la diferencia es de 0,05 cm. Los 2 cm son de la web, no de una guía (Q-I10): la cuenta amplifica el error de cinta de las diagonales; medio centímetro en cada una mueve más de 1 cm el frente inferior.
 - **Sin guía compensadora**, si una guía se sale de escuadra más de **0,5 cm**, avisa de que hay que hablar con comercial: el umbral de Oficina Técnica para la diferencia de frentes. Si pasa de **3 cm**, no es válido: ni la compensadora lo absorbe (`guía toldos iris.odt`: «la guía compensadora solo absorbe aproximadamente 3 cm a cada lado»). La excepción técnica permite seguir.
-- **Frente el menor y salida la mayor** (guía interna, Iván 08/10/2026): el toldo se hace por el frente menor y la tela por la mayor de las dos alturas; antes por la menor, como el libro maestro. Cada guía se corta por su altura.
+- **Frente el menor; la tela por la caída menor** (Iván, 08/10/2026): la tela no puede bajar del suelo en el lado corto, así que va por la menor de las dos alturas aunque la guía interna diga «la salida el de mayor medida». Cada guía se corta por su altura.
 - Con «Hueco escuadrado: sí» no se comprueba nada de esto, porque las medidas se derivan por Pitágoras.
 - Fuentes buscadas el 08/10/2026 en Oficina Técnica (`Y:`): `guía toldos iris.odt`, el protocolo de medición `I-1 06 02 R4` (el apartado de toldos está vacío) y los manuales de montaje Screeny de BAT. Ninguno da una tolerancia en cifras.
 

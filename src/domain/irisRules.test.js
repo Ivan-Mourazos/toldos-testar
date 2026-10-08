@@ -401,10 +401,9 @@ describe('IRIS · las seis medidas del hueco', () => {
     const result = hueco({ irisFrontTop: 355, irisFrontBottom: 350, irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537 }, { submodel: 'IRIS 130 CON COFRE' });
     expect(result.calculation.valid).toBe(true);
     expect(mensajes(result)).toMatch(/warn: .*fuera de escuadra/);
-    // Frente el menor y salida la mayor (guía de OT); cada guía por su altura.
-    expect(result.calculation).toMatchObject({ width: 350.1, projection: 405 });
-    expect(result.calculation.fabricDrop).toBeCloseTo(405 + result.calculation.irisFabricDropAllowanceCm, 1);
-    expect(result.calculation.guideLeftLength).not.toBe(result.calculation.guideRightLength);
+    // La tela, por la caída menor: no baja del suelo en el lado corto. Cada guía, por su altura (Iván, 08/10/2026).
+    expect(result.calculation).toMatchObject({ width: 350.1, projection: 400 });
+    expect(result.calculation.guideLeftLength).toBeLessThan(result.calculation.guideRightLength);
   });
 
   test('más de 3 cm fuera de escuadra sin compensadora no se puede hacer, salvo con excepción técnica', () => {

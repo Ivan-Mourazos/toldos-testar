@@ -48,10 +48,10 @@ export function squareIrisOpening(measures = {}) {
     frontBottom,
     frontBottomFromDiagonals,
     frontToldo: frontTop + negativeDisplacement,
-    // La salida es la mayor de las dos alturas (guía de OT, «guía toldos iris.odt»: «la medida del
-    // frente será el de la menor medida y la salida el de mayor medida»; Iván, 08/10/2026). El libro
-    // maestro usaba la menor. Cada guía se sigue cortando por su altura.
-    dropOpening: Math.max(left.height, right.height),
+    // La tela va por la caída menor: no puede bajar del suelo en el lado corto. Las guías sí
+    // llegan abajo, cada una por su altura (Iván, 08/10/2026; la «salida mayor» de la guía de OT
+    // no es la de la tela).
+    dropOpening: Math.min(left.height, right.height),
     heightLeft: left.height,
     heightRight: right.height,
     slackLeft: left.slack,
