@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { resolveLacadoCode } from './lacadoFallback.js';
 import { sampleAwnings } from '../../scripts/lib/model-samples.mjs';
+import { onyxArmExists } from './arzuaAvailability.js';
+import { galiciaSingleArmExists } from './galiciaSupportPieces.js';
+import { normalizeOrder } from './validation.js';
+import { calculateOrder } from './rules.js';
 
 describe('lacados poco habituales: la pieza que no existe en su color va en blanco para lacar', () => {
   test.each([
@@ -40,6 +44,37 @@ describe('lacados poco habituales: la pieza que no existe en su color va en blan
     const warning = result.diagnostics.find((item) => /lacar fuera/.test(item.message));
     expect(warning?.level).toBe('warn');
     expect(warning.message).toContain('SOPAR350BL16');
+  });
+
+  // Iván, 08/10/2026 (AR2604964): un brazo Onyx que no existe en el lacado no bloquea el toldo:
+  // va en blanco y se manda a lacar, como el resto de piezas (Q-A02).
+  test('el brazo que no existe en el color se reserva en blanco; si tampoco existe en blanco, bloquea', () => {
+    expect(onyxArmExists('GT16', 200)).toBe(true);
+    expect(galiciaSingleArmExists('GT16', 200)).toBe(true);
+    expect(onyxArmExists('GT16', 425)).toBe(false);
+  });
+
+  test('AR2604964: Perla Box en gris 7016 texturado con brazo de 200, el brazo en blanco para mandar a lacar', () => {
+    const order = normalizeOrder({
+      orderCode: 'AR2604964', customer: 'PRUEBA', technician: 'IVÁN', sameFabric: true,
+      fabric: 'ACRILI2018P120|||120|||LONA ACRILICA MASACRIL 300 :AZUL 2018 :120 AN|||ACRÍLICAS',
+      awnings: [{
+        id: 'a', of: '0232902', model: 'PERLA BOX', units: 1, width: 259, projection: 200, armCount: 2,
+        structureColor: 'GRIS 7016 MATE TEXT.', device: 'MAQUINA', machineSide: 'M.F.DER', crankHeight: 150,
+        placement: 'FRONTAL', rotFabric: 'NO', hasValance: false, valanceHeight: 0
+      }]
+    });
+    const result = calculateOrder(order);
+    const [of] = result.ofs;
+    expect(of.calculation.valid).toBe(true);
+    const codes = of.materials.map((line) => line.code);
+    expect(codes).toContain('BONYXBL16200C');
+    expect(codes).not.toContain('BONYXGT16200C');
+    expect(codes.some((code) => code.includes('GT16'))).toBe(true);
+    const arm = of.despiece.rows.find((row) => row.reference === 'BONYXBL16200C');
+    expect(arm.name).toContain('MANDAR A LACAR');
+    const warning = result.diagnostics.find((item) => /lacar fuera/.test(item.message));
+    expect(warning.message).toContain('BONYXBL16200C');
   });
 
   test('en blanco y en negro el Arzúa no lleva aviso de lacado', () => {

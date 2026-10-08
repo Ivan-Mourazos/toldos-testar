@@ -54,8 +54,14 @@ export function withLacadoFallback(result, { awning, order }) {
     return resolved.code;
   };
   const materials = (result.materials || []).map((line) => ({ ...line, code: swap(line.code) }));
+  // En el despiece, la fila de la pieza que va en blanco lo dice para el taller (Iván, 08/10/2026).
+  const despieceRow = (row) => {
+    if (!row.reference) return row;
+    const reference = swap(row.reference);
+    return reference === row.reference ? row : { ...row, reference, name: `${row.name} · MANDAR A LACAR` };
+  };
   const despiece = result.despiece
-    ? { ...result.despiece, rows: (result.despiece.rows || []).map((row) => ({ ...row, reference: row.reference ? swap(row.reference) : row.reference })) }
+    ? { ...result.despiece, rows: (result.despiece.rows || []).map(despieceRow) }
     : result.despiece;
   if (!painted.size) return result;
   const diagnostics = [

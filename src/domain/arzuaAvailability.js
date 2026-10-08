@@ -52,7 +52,10 @@ export function evo80AvailableLengths(colorSuffix) {
   return evo80LengthsBySuffix[String(colorSuffix || '')] || null;
 }
 
+// Iván, 08/10/2026 (AR2604964): si el brazo no existe en el lacado pero sí en blanco, no se
+// bloquea: la reserva lo pide en blanco para mandarlo a lacar (lacadoFallback.js, Q-A02).
 export function onyxArmExists(colorSuffix, projection) {
   const sizes = onyxArmsBySuffix[String(colorSuffix || '')];
-  return sizes ? sizes.includes(Number(projection)) : true;
+  if (!sizes) return true;
+  return sizes.includes(Number(projection)) || onyxArmsBySuffix.BL16.includes(Number(projection));
 }

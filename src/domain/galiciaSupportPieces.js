@@ -53,9 +53,13 @@ function singleArmSide(colorSuffix, projection) {
 
 // Solo se sabe para los lacados de la tabla; uno que no esté no se bloquea y lo
 // detecta `pnpm validate:rps-refs`.
+// Como el juego (onyxArmExists): si en ese color no hay suelto pero en blanco sí, va en blanco
+// para mandar a lacar (Iván, 08/10/2026).
 export function galiciaSingleArmExists(colorSuffix, projection) {
   const sides = singleArmsBySuffix[String(colorSuffix || '')];
-  return sides ? [...sides.D, ...sides.I].includes(Number(projection)) : true;
+  if (!sides) return true;
+  const white = singleArmsBySuffix.BL16;
+  return [...sides.D, ...sides.I, ...white.D, ...white.I].includes(Number(projection));
 }
 
 function singleSupportSide(colorSuffix, chosen = '') {
