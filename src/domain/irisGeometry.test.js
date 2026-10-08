@@ -18,7 +18,8 @@ describe('escuadrado del hueco IRIS', () => {
     expect(result.slackLeft).toBeCloseTo(2.58, 2);
     expect(result.slackRight).toBeCloseTo(2.37, 2);
     expect(result.frontToldo).toBeCloseTo(350.06, 2);
-    expect(result.dropOpening).toBeCloseTo(399.99, 2);
+    // Guía de OT (Iván, 08/10/2026): «la medida del frente será la menor y la salida la mayor».
+    expect(result.dropOpening).toBeCloseTo(404.99, 2);
   });
 
   test('la diagonal 1 va con la salida izquierda: cruzarlas cambia el resultado', () => {

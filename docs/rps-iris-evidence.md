@@ -117,7 +117,7 @@ desplazamiento = ángulo > 90 ? +holgura : −holgura
 Con eso:
 
 - **Frente del toldo** = frente superior + suma de los desplazamientos negativos.
-- **Caída del hueco** = la menor de las dos alturas.
+- **Caída del hueco** = la **mayor** de las dos alturas. El libro maestro usa la menor, pero la guía interna dice «la medida del frente será el de la menor medida y la salida el de mayor medida», y manda la guía (Iván, 08/10/2026).
 - **Guía MFI** = altura del triángulo 1. **Guía MFD** = altura del triángulo 2. Pueden salir distintas, y así se fabrican.
 
 Cuando el toldo viene escuadrado de origen, el libro permite declararlo y deriva el frente inferior, la salida derecha y las diagonales por Pitágoras.
