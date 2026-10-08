@@ -133,19 +133,19 @@ describe('IRIS · medidas de corte', () => {
 
 describe('IRIS · lona y cristal', () => {
   test('el metraje replica la fórmula del libro maestro', () => {
-    // telón 291 sobre rollo de 120 → 3 paños; caída 250 + 40 = 290
-    // ml = techo(3 × 290 / 100 ; 1 decimal) = 8,7
-    expect(calculate().calculation).toMatchObject({ fabricPanels: 3, fabricMl: 8.7, mainFabricMl: 8.7 });
+    // telón 291 sobre rollo de 120 → 3 paños; caída 250 + 25 = 275 (+25 de salida para el tubo
+    // de enrolle, Iván 08/10/2026). ml = techo(3 × 275 / 100 ; 1 decimal) = 8,3
+    expect(calculate().calculation).toMatchObject({ fabricPanels: 3, fabricMl: 8.3, mainFabricMl: 8.3 });
   });
 
   test('la ventana de cristal ahorra 1,4 m por paño', () => {
-    // 8,7 − 1,4 × 3 = 4,5
+    // 8,25 − 1,4 × 3 = 4,05 → 4,1
     expect(calculate({ curtainHasWindow: true }).calculation)
-      .toMatchObject({ fabricMl: 4.5, glassSize: 300, glassCode: 'CRISESTP140300C' });
+      .toMatchObject({ fabricMl: 4.1, glassSize: 300, glassCode: 'CRISESTP140300C' });
   });
 
   test('el metraje escala con las unidades', () => {
-    expect(calculate({ units: 2 }).calculation.fabricMl).toBe(17.4);
+    expect(calculate({ units: 2 }).calculation.fabricMl).toBe(16.6);
   });
 
   test('reserva la lona, las piezas comunes, el cofre, las guías y, con ventana, el cristal estabilizado', () => {
@@ -153,13 +153,13 @@ describe('IRIS · lona y cristal', () => {
     // pletina terminal, tapones, goma, casquillo de eje cuadrado, MB-11 y manivela), el
     // cofre redondo, la guía ÚNICA, la cremallera XL y la varilla y el macarrón.
     expect(calculate().materials.map(({ code, quantity }) => [code, quantity])).toEqual([
-      ['IRISTESTP120', 8.7],
+      ['IRISTESTP120', 8.3],
       ['CASNMOSZ70MM', 1], ['CASPLACASZ', 1], ['TURA70HG500C', 1], ['PLETSCR13300C', 1],
       ['TAPTERSZ13BLAN', 2], ['GOMASSCR700C', 1],
       ['CASCES132070MM', 1], ['MAQMB11L12BLAN', 1], ['MANIVEBL16150C', 1],
       ['PECOSSU1BLAN500C', 1], ['PECORSU1BLAN700C', 1], ['TAPASSUN1BLAN', 1],
       ['PEMMSU13BLAN600C', 1], ['PECGSU13BLAN600C', 1], ['PEGIZS1BLAN600C', 1], ['PIEGMMSUBLAN', 4],
-      ['ZIPXLBLAN', 2.9], ['VARILLAVAINARBLA', 3.1], ['MACARRNEGR8MM', 3.1]
+      ['ZIPXLBLAN', 2.75], ['VARILLAVAINARBLA', 3.1], ['MACARRNEGR8MM', 3.1]
     ]);
     expect(calculate({ curtainHasWindow: true, units: 2 }).materials).toContainEqual({
       code: 'CRISESTP140300C',
@@ -200,10 +200,12 @@ describe('IRIS · diagnósticos', () => {
     expect(result.diagnostics.some((item) => item.message.includes('fuera de medidas'))).toBe(true);
   });
 
-  test('avisa cuando la compensadora pasa de 2,5 cm sin llegar a bloquear', () => {
-    const result = calculate({ ...skewed, irisGuideType: 'COMPENSADORA' });
-    expect(result.calculation.valid).toBe(true);
-    expect(result.diagnostics.some((item) => item.level === 'warn' && item.message.includes('2,5'))).toBe(true);
+  // Iván, 08/10/2026: la compensadora absorbe hasta 2,5 cm; más es error, salvo excepción técnica.
+  test('con compensadora, más de 2,5 cm es error y solo pasa con excepción técnica', () => {
+    const blocked = calculate({ ...skewed, irisGuideType: 'COMPENSADORA', reglasModificadas: false });
+    expect(blocked.calculation.valid).toBe(false);
+    expect(blocked.diagnostics.some((item) => item.level === 'error' && /compensadora/.test(item.message) && item.message.includes('2,5'))).toBe(true);
+    expect(calculate({ ...skewed, irisGuideType: 'COMPENSADORA' }).calculation.valid).toBe(true);
   });
 
   test('avisa a comercial si hay desnivel sin compensadora', () => {
@@ -397,16 +399,37 @@ describe('IRIS · las seis medidas del hueco', () => {
     expect(mensajes(result)).toMatch(/no cuadran/);
   });
 
-  test('el CAD de referencia (2,6 cm fuera de escuadra) sin compensadora: válido, pero avisa de que necesita compensadora', () => {
-    const result = hueco({ irisFrontTop: 355, irisFrontBottom: 350, irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537 }, { submodel: 'IRIS 130 CON COFRE' });
-    expect(result.calculation.valid).toBe(true);
-    expect(mensajes(result)).toMatch(/warn: .*fuera de escuadra/);
-    // La tela, por la caída menor: no baja del suelo en el lado corto. Cada guía, por su altura (Iván, 08/10/2026).
-    expect(result.calculation).toMatchObject({ width: 350.1, projection: 400 });
-    expect(result.calculation.guideLeftLength).toBeLessThan(result.calculation.guideRightLength);
+  // Hueco con la esquina inferior izquierda desplazada `shift` cm hacia dentro.
+  const skew = (shift) => ({ irisFrontTop: 300, irisFrontBottom: 300 - shift, irisExitLeft: Math.hypot(250, shift), irisExitRight: 250,
+    irisDiagonal1: Math.hypot(300 - shift, 250), irisDiagonal2: Math.hypot(300, 250) });
+
+  test('el CAD de referencia (2,58 cm por guía): ni con compensadora, que absorbe hasta 2,5 (Iván, 08/10/2026)', () => {
+    const cad = { irisFrontTop: 355, irisFrontBottom: 350, irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537 };
+    const result = hueco(cad, { submodel: 'IRIS 130 CON COFRE' });
+    expect(result.calculation.valid).toBe(false);
+    expect(mensajes(result)).toMatch(/error: .*fuera de escuadra/);
+    // Con el candado se puede seguir; la tela, por la caída menor: no baja del suelo en el lado corto.
+    // Cada guía, por su altura (Iván, 08/10/2026).
+    const forced = hueco(cad, { submodel: 'IRIS 130 CON COFRE', reglasModificadas: true });
+    expect(forced.calculation).toMatchObject({ valid: true, width: 350.1, projection: 400 });
+    expect(forced.calculation.guideLeftLength).toBeLessThan(forced.calculation.guideRightLength);
   });
 
-  test('más de 3 cm fuera de escuadra sin compensadora no se puede hacer, salvo con excepción técnica', () => {
+  test('sin compensadora: hasta 1,5 cm nada; de 1,5 a 2,5 avisa de que debería llevarla', () => {
+    expect(mensajes(hueco(skew(1), { submodel: 'IRIS 130 CON COFRE' }))).not.toMatch(/escuadra/);
+    const two = hueco(skew(2), { submodel: 'IRIS 130 CON COFRE' });
+    expect(two.calculation.valid).toBe(true);
+    expect(mensajes(two)).toMatch(/warn: .*fuera de escuadra.*compensadora/);
+  });
+
+  test('con compensadora: hasta 2,5 cm vale; más es error', () => {
+    expect(hueco(skew(2), { submodel: 'IRIS 110 CON COFRE', irisGuideType: 'COMPENSADORA' }).calculation.valid).toBe(true);
+    const over = hueco(skew(2.8), { submodel: 'IRIS 110 CON COFRE', irisGuideType: 'COMPENSADORA' });
+    expect(over.calculation.valid).toBe(false);
+    expect(mensajes(over)).toMatch(/error: .*compensadora.*2,5/);
+  });
+
+  test('más de 2,5 cm fuera de escuadra sin compensadora no se puede hacer, salvo con excepción técnica', () => {
     // Desplazamiento de 5 cm en la esquina inferior izquierda.
     const medidas = { irisFrontTop: 300, irisFrontBottom: 295, irisExitLeft: Math.hypot(250, 5), irisExitRight: 250,
       irisDiagonal1: Math.hypot(295, 250), irisDiagonal2: Math.hypot(300, 250) };
@@ -435,7 +458,7 @@ describe('IRIS · telón todo de cristal', () => {
   test('AR2604748 (253,5 × 220): dos piezas de 250, sin lona y sin pedir tela', () => {
     const result = glass({}, { fabric: '' });
     expect(result.calculation.valid).toBe(true);
-    expect(result.calculation).toMatchObject({ fabricWidth: 244.5, fabricDrop: 250, glassSize: 250, fabricMl: 0, irisGlassCurtain: true });
+    expect(result.calculation).toMatchObject({ fabricWidth: 244.5, fabricDrop: 245, glassSize: 250, fabricMl: 0, irisGlassCurtain: true });
     expect(codes(result)).toMatchObject({ CRISESTP140250C: 2 });
     expect(result.materials.some((item) => item.code === 'IRISTESTP120')).toBe(false);
     expect(result.diagnostics.map((item) => item.message).join(' ')).not.toContain('falta');
@@ -484,18 +507,18 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
     expect(reserved(result, 'PECOSSU1GR16400C')).toEqual([
       ['PECOSSU1GR16400C', 1], ['PECOCSU1GR16400C', 1], ['TAPASCOU1GR16', 1],
       ['PEMMSU13GR16500C', 1], ['PECGSU13GR16500C', 1], ['PEGIZS1NEGR600C', 1], ['PIEGMMSUNEGR', 4],
-      ['ZIPXLGRIS', 2.47], ['VARILLAVAINARBLA', 2.57], ['MACARRNEGR8MM', 2.57]
+      ['ZIPXLGRIS', 2.42], ['VARILLAVAINARBLA', 2.57], ['MACARRNEGR8MM', 2.57]
     ]);
   });
 
   test('OF 0221340 (AR2505024): 110 cofre redondo, negro, máquina, 253 × 281,5: negro 9005 de BAT y XL gris', () => {
     // Gastó PECORSU1NE05700C, TAPASSUN1NE05, PECGSU13NEGR600C, PEGIZS1NEGR600C, 4 pies y
-    // 3,3 m de ZIPXLGRIS; la caída de tela es 281,5 + 40 = 321,5.
+    // 3,3 m de ZIPXLGRIS con la caída de entonces (281,5 + 40); hoy + 25 (Iván, 08/10/2026) = 306,5.
     const result = real({ of: '0221340', structureColor: 'NEGRO (R-09011)', irisFrontTop: 253, irisExitLeft: 281.5 });
     expect(reserved(result, 'PECOSSU1NEGR700C')).toEqual([
       ['PECOSSU1NEGR700C', 1], ['PECORSU1NE05400C', 1], ['TAPASSUN1NE05', 1],
       ['PEMMSU13NEGR600C', 1], ['PECGSU13NEGR600C', 1], ['PEGIZS1NEGR600C', 1], ['PIEGMMSUNEGR', 4],
-      ['ZIPXLGRIS', 3.22], ['VARILLAVAINARBLA', 2.63], ['MACARRNEGR8MM', 2.63]
+      ['ZIPXLGRIS', 3.07], ['VARILLAVAINARBLA', 2.63], ['MACARRNEGR8MM', 2.63]
     ]);
   });
 
@@ -507,7 +530,7 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
     expect(reserved(result, 'PECOSSU3BLAN500C')).toEqual([
       ['PECOSSU3BLAN500C', 1], ['PECORSU3BLAN500C', 1], ['TAPASCOR3BLAN', 1],
       ['PEMMSU13BLAN600C', 2], ['PECGSU13BLAN600C', 2], ['PEGIZS1BLAN600C', 2], ['PIEGMMSUBLAN', 4],
-      ['ZIPXLBLAN', 4.98], ['VARILLAVAINARBLA', 4.18], ['MACARRNEGR8MM', 4.18]
+      ['ZIPXLBLAN', 4.83], ['VARILLAVAINARBLA', 4.18], ['MACARRNEGR8MM', 4.18]
     ]);
   });
 
@@ -525,7 +548,7 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
     const result = real({ of: '0205831', irisGuideType: 'COMPENSADORA', irisFrontTop: 247, irisExitLeft: 254 });
     expect(reserved(result, 'PEGSZ13BLAN500C')).toEqual([
       ['PEGSZ13BLAN500C', 1], ['PEGCZ13BLAN600C', 1], ['PEGEZ13BLAN600C', 2], ['PEGIZ13BLAN600C', 1], ['PIEBLAN', 2],
-      ['ZIPXLBLAN', 2.94], ['VARILLAVAINARBLA', 2.57], ['MACARRNEGR8MM', 2.57]
+      ['ZIPXLBLAN', 2.79], ['VARILLAVAINARBLA', 2.57], ['MACARRNEGR8MM', 2.57]
     ]);
     expect(Object.fromEntries(result.materials.map(({ code, quantity }) => [code, quantity]))).toMatchObject({ TAPASSUN1BLAN: 1 });
   });
@@ -535,7 +558,7 @@ describe('IRIS · cofre, guías y cremallera según las respuestas de taller (24
     const result = real({ of: '0218395', submodel: 'IRIS 130 SIN COFRE', irisBoxShape: '', irisFrontTop: 450, irisExitLeft: 252 });
     expect(reserved(result, 'PEMMSU13BLAN600C')).toEqual([
       ['PEMMSU13BLAN600C', 1], ['PECGSU13BLAN600C', 1], ['PEGIZS1BLAN600C', 1], ['PIEGMMSUBLAN', 4], ['PERGUIA', 1],
-      ['ZIPXLBLAN', 2.92], ['VARILLAVAINARBLA', 4.6], ['MACARRNEGR8MM', 4.6]
+      ['ZIPXLBLAN', 2.77], ['VARILLAVAINARBLA', 4.6], ['MACARRNEGR8MM', 4.6]
     ]);
     expect(result.materials.some(({ code }) => /^(PECO|TAPAS)/.test(code))).toBe(false);
   });

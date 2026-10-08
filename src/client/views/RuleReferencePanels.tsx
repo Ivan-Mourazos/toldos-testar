@@ -144,9 +144,8 @@ export function IrisRuleReference() {
       <Table label="Límites Iris" columns={['Concepto', 'Valor actual']} rows={[
         ['Serie seleccionada · frente mínimo / máximo', limits ? number(limits.minWidth) + ' / ' + number(limits.maxWidth) + ' cm' : 'No disponible'],
         ['Serie seleccionada · caída mínima / máxima', limits ? number(limits.minDrop) + ' / ' + number(limits.maxDrop) + ' cm' : 'No disponible'],
-        ['Compensación por guía', 'Aviso desde más de ' + number(params.compensatorWarnCm) + ' cm; máximo OT ' + number(params.compensatorMaxCm) + ' cm.'],
-        ['Diferencia de frentes sin compensadora', 'Aviso si supera ' + number(params.frontDifferenceWarnCm) + ' cm.'],
-        ['Escuadra sin compensadora', 'Aviso si una guía se sale más de ' + number(params.frontDifferenceWarnCm) + ' cm; no válido si pasa de ' + number(params.compensatorMaxCm) + ' cm.'],
+        ['Guía compensadora', 'Hace falta desde ' + number(params.compensatorNeededCm) + ' cm fuera de escuadra o de diferencia entre frentes; absorbe hasta ' + number(params.compensatorMaxCm) + ' cm por guía.'],
+        ['Sin compensadora', 'Desde ' + number(params.compensatorNeededCm) + ' cm avisa de hablar con comercial; más de ' + number(params.compensatorMaxCm) + ' cm no es válido.'],
         ['Las seis medidas del hueco', 'El frente inferior que dan las salidas y las diagonales no puede diferir del medido más de ' + number(params.squaringToleranceCm) + ' cm.'],
         ['Ventana de cristal', 'Descuenta ' + number(params.glassFabricSavingM) + ' ml de tela por paño. Rollos de cristal hasta 450 cm.']
       ]} />

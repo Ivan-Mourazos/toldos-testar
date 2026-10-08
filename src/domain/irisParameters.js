@@ -96,24 +96,24 @@ const discountTable = {
 };
 
 export const defaultIrisParameters = {
-  // Margen que se suma a la altura del hueco para obtener la caída de la lona.
-  // La fila `Caída` de la hoja Descontos está vacía y BAT no lo define: es una
-  // decisión de taller. Estos valores salen de los 55 toldos reales de 2025-2026
-  // y están PENDIENTES DE RATIFICAR por Oficina Técnica.
+  // Margen que se suma a la altura del hueco para obtener la caída de la lona: +25 cm de salida
+  // para el tubo de enrolle (Iván, 08/10/2026). Antes 40, 30 o 49,8 según serie y accionamiento,
+  // sacados de 55 toldos de 2025-2026 y pendientes de ratificar.
   fabricDropAllowanceCm: {
-    110: { MAQUINA: 40, MOTOR: 30 },
-    130: { MAQUINA: 40, MOTOR: 40 },
-    150: { MAQUINA: 49.8, MOTOR: 49.8 }
+    110: { MAQUINA: 25, MOTOR: 25 },
+    130: { MAQUINA: 25, MOTOR: 25 },
+    150: { MAQUINA: 25, MOTOR: 25 }
   },
   // Descuento extra por pieza horizontal cuando el toldo va entre paredes.
   // Acuerdo de la reunión del 09/10/2025 en Raído.
   betweenWallsDiscountCm: 0.6,
-  // Absorción de los perfiles compensadores: BAT fija 2,5 cm por guía como
-  // máximo del perfil; Oficina Técnica tolera hasta 3.
+  // Guía compensadora (Iván, 08/10/2026): se pone a partir de 1,5 o 2 cm fuera de escuadra y
+  // absorbe hasta 2,5 cm por guía, el máximo de BAT; más es error, con ella o sin ella.
   compensatorWarnCm: 2.5,
-  compensatorMaxCm: 3,
-  // Diferencia entre frentes que obliga a avisar a comercial si no hay compensadora.
-  frontDifferenceWarnCm: 0.5,
+  compensatorMaxCm: 2.5,
+  // Desde aquí (fuera de escuadra o diferencia entre frentes) el toldo debería llevar compensadora:
+  // sin ella se avisa a comercial.
+  compensatorNeededCm: 1.5,
   // Diferencia admitida entre el frente inferior medido y el que dan las salidas y las diagonales
   // (Iván, 08/10/2026): más es que alguna de las seis medidas está mal. La cuenta amplifica el error
   // de cinta de las diagonales (medio centímetro en cada una mueve más de 1 cm el frente inferior).
@@ -223,7 +223,7 @@ export function normalizeIrisParameters(value = {}) {
     betweenWallsDiscountCm: nonNegative(value.betweenWallsDiscountCm, defaults.betweenWallsDiscountCm),
     compensatorWarnCm: nonNegative(value.compensatorWarnCm, defaults.compensatorWarnCm),
     compensatorMaxCm: nonNegative(value.compensatorMaxCm, defaults.compensatorMaxCm),
-    frontDifferenceWarnCm: nonNegative(value.frontDifferenceWarnCm, defaults.frontDifferenceWarnCm),
+    compensatorNeededCm: nonNegative(value.compensatorNeededCm, defaults.compensatorNeededCm),
     squaringToleranceCm: nonNegative(value.squaringToleranceCm, defaults.squaringToleranceCm),
     glassFabricSavingM: nonNegative(value.glassFabricSavingM, defaults.glassFabricSavingM)
   };

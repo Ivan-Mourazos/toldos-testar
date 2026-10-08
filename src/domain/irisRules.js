@@ -131,7 +131,7 @@ export function calculateIris({ order, awning }) {
     ? Math.abs(opening.frontBottomFromDiagonals - opening.frontBottom)
     : 0;
   const measuresDontMatch = squaringMismatch > parameters.squaringToleranceCm;
-  const outOfSquare = opening.valid && !hasCompensator && !measuresDontMatch && slack > parameters.frontDifferenceWarnCm;
+  const outOfSquare = opening.valid && !hasCompensator && !measuresDontMatch && slack > parameters.compensatorNeededCm;
   const outOfSquareOverMax = outOfSquare && slack > parameters.compensatorMaxCm;
 
   // Solo comprobamos piezas cuando la geometría y la configuración ya son
@@ -184,7 +184,7 @@ export function calculateIris({ order, awning }) {
   if (outOfSquareOverMax && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS en OF ${awning.of}: el hueco está ${formatNumber(round1(slack))} cm fuera de escuadra por guía; ni la guía compensadora absorbe más de ${formatNumber(parameters.compensatorMaxCm)} cm. Revisa las medidas con comercial, o activa una excepción técnica para continuar.` });
   } else if (outOfSquare) {
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS sin compensadora con el hueco ${formatNumber(round1(slack))} cm fuera de escuadra por guía: avisar a comercial; con más de ${formatNumber(parameters.frontDifferenceWarnCm)} cm debería llevar guía compensadora.` });
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS sin compensadora con el hueco ${formatNumber(round1(slack))} cm fuera de escuadra por guía: avisar a comercial; con más de ${formatNumber(parameters.compensatorNeededCm)} cm debería llevar guía compensadora.` });
   }
   if (compensatorOverMax && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con compensadora: hay que absorber ${formatNumber(round1(slack))} cm por guía y el máximo tolerado son ${formatNumber(parameters.compensatorMaxCm)} cm. Revisa las medidas del hueco.` });
@@ -200,7 +200,7 @@ export function calculateIris({ order, awning }) {
   if (hasCompensator && slack > parameters.compensatorWarnCm && !compensatorOverMax) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS con compensadora: hay que absorber ${formatNumber(round1(slack))} cm por guía y BAT da 2,5 cm como máximo del perfil. Comprueba el ajuste antes de fabricar.` });
   }
-  if (opening.valid && !hasCompensator && frontDifference > parameters.frontDifferenceWarnCm) {
+  if (opening.valid && !hasCompensator && frontDifference > parameters.compensatorNeededCm) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS sin compensadora con ${formatNumber(round1(frontDifference))} cm de diferencia entre frentes: avisar a comercial para que el cliente decida.` });
   }
   if (guideLeftLength && guideRightLength && guideLeftLength !== guideRightLength) {

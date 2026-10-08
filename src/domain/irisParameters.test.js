@@ -134,11 +134,14 @@ describe('parámetros IRIS', () => {
       compensatorMaxCm: -5
     });
 
-    expect(normalized.fabricDropAllowanceCm['110']).toEqual({ MAQUINA: 40, MOTOR: 32 });
-    expect(normalized.fabricDropAllowanceCm['150']).toEqual({ MAQUINA: 49.8, MOTOR: 49.8 });
-    expect(normalized.compensatorMaxCm).toBe(3);
+    // Iván, 08/10/2026: +25 cm de salida para el tubo de enrolle en todas las series, y la
+    // compensadora absorbe hasta 2,5 cm (más es error); hace falta desde 1,5 cm.
+    expect(normalized.fabricDropAllowanceCm['110']).toEqual({ MAQUINA: 25, MOTOR: 32 });
+    expect(normalized.fabricDropAllowanceCm['150']).toEqual({ MAQUINA: 25, MOTOR: 25 });
+    expect(normalized.compensatorMaxCm).toBe(2.5);
+    expect(normalized.compensatorNeededCm).toBe(1.5);
     expect(normalized.glassFabricSavingM).toBe(1.4);
     expect(getIrisFabricDropAllowance(normalized, '110', 'MOTOR')).toBe(32);
-    expect(getIrisFabricDropAllowance(normalized, '110', 'MAQUINA')).toBe(40);
+    expect(getIrisFabricDropAllowance(normalized, '110', 'MAQUINA')).toBe(25);
   });
 });

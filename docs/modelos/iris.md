@@ -118,12 +118,18 @@ Decidido por Iván el 07/10/2026 con el pedido AR2604748 (OF 0232537): Iris 110 
   - Fijación de la guía y lado del motor no salen nunca del texto.
   - Barrido de las 144 líneas de Iris desde 2021 (`tmp/iris-4748/barrido.mjs`): todas con variante y lacado. De los 78 toldos que traen medidas, 66 calculan válidos con lo recuperado. Los otros 12 se salen de las medidas del manual o son un 130 sin cofre a motor.
 
+### Caída de la tela, entre paredes y cremallera (08/10/2026)
+
+- **Caída de la tela = caída del hueco + 25 cm** para el tubo de enrolle, en todas las series y accionamientos (Iván, 08/10/2026). Antes 40, 30 o 49,8, sacados de 55 toldos y pendientes de ratificar. La cremallera, que se reserva por la caída de la tela, baja igual.
+- **Entre paredes:** 3 mm a cada lado, 6 mm al frente, en todas las piezas horizontales (telón, cofre, tubo de enrolle, tubo de carga y lastre); no en las guías. Ya estaba así.
+- **Cremallera:** siempre la XL. Ya estaba así.
+
 ### Escuadra del hueco (08/10/2026)
 
 AR2604748: con medidas exageradas la web seguía dando válido, porque solo comprobaba que cada triángulo existiera. Desde el 08/10/2026:
 
 - **Las seis medidas tienen que cuadrar.** Con el frente superior, las salidas y las diagonales sale el frente inferior. Si se aparta del medido más de **2 cm**, el toldo no es válido y la tarjeta dice qué frente inferior darían las demás medidas. En el CAD `EJEMPLO.dwg` la diferencia es de 0,05 cm. Los 2 cm son de la web, no de una guía (Q-I10): la cuenta amplifica el error de cinta de las diagonales; medio centímetro en cada una mueve más de 1 cm el frente inferior.
-- **Sin guía compensadora**, si una guía se sale de escuadra más de **0,5 cm**, avisa de que hay que hablar con comercial: el umbral de Oficina Técnica para la diferencia de frentes. Si pasa de **3 cm**, no es válido: ni la compensadora lo absorbe (`guía toldos iris.odt`: «la guía compensadora solo absorbe aproximadamente 3 cm a cada lado»). La excepción técnica permite seguir.
+- **Guía compensadora** (Iván, 08/10/2026): se pone a partir de **1,5 o 2 cm** fuera de escuadra (o de diferencia entre frentes) y absorbe **hasta 2,5 cm** por guía. Sin ella, desde 1,5 cm avisa de hablar con comercial; con ella o sin ella, más de 2,5 cm **no es válido** (la excepción técnica permite seguir). Antes: aviso desde 0,5 cm y error desde 3. El CAD `EJEMPLO.dwg` (2,58 cm) ya no entra.
 - **Frente el menor; la tela por la caída menor** (Iván, 08/10/2026): la tela no puede bajar del suelo en el lado corto, así que va por la menor de las dos alturas aunque la guía interna diga «la salida el de mayor medida». Cada guía se corta por su altura.
 - Con «Hueco escuadrado: sí» no se comprueba nada de esto, porque las medidas se derivan por Pitágoras.
 - Fuentes buscadas el 08/10/2026 en Oficina Técnica (`Y:`): `guía toldos iris.odt`, el protocolo de medición `I-1 06 02 R4` (el apartado de toldos está vacío) y los manuales de montaje Screeny de BAT. Ninguno da una tolerancia en cifras.
