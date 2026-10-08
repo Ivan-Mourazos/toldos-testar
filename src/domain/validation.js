@@ -226,6 +226,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     irisGuideFixing: model === 'IRIS' ? normalizeIrisGuideFixing(awning?.irisGuideFixing) : '',
     irisBoxShape: model === 'IRIS' ? normalizeIrisBoxShape(awning?.irisBoxShape) : '',
     irisWindBlock: model === 'IRIS' && awning?.irisWindBlock === true,
+    irisGlassCurtain: model === 'IRIS' && awning?.irisGlassCurtain === true,
     irisAssumeSquare: model === 'IRIS' && awning?.irisAssumeSquare === true,
     irisFrontTop: numberOrDefault(awning?.irisFrontTop, 0),
     irisFrontBottom: numberOrDefault(awning?.irisFrontBottom, 0),

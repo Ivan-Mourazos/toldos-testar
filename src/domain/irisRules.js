@@ -6,7 +6,7 @@ import { resolveFabric } from './fabricCatalog.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { squareIrisOpening } from './irisGeometry.js';
 import { resolveMotorRemote } from './motorAccessories.js';
-import { chosenMotor, irisDefaultMotor, irisMotorPowers, sunilusMaterial } from './screenMotors.js';
+import { chosenMotor, irisDefaultMotor, irisMotorPowers, screenMotorMaterials } from './screenMotors.js';
 import {
   getIrisDiscounts,
   getIrisFabricDropAllowance,
@@ -85,9 +85,13 @@ export function calculateIris({ order, awning }) {
 
   const dropAllowance = getIrisFabricDropAllowance(parameters, series, device);
   const fabricDrop = opening.valid ? round1(opening.dropOpening + dropAllowance) : 0;
-  const hasGlass = awning.curtainHasWindow === true;
-  const glassSize = hasGlass ? resolveIrisGlassSize(fabricWidth) : 0;
-  const fabricUsage = calculateIrisFabricUsage({
+  // Telón todo de cristal (Iván, 07/10/2026, AR2604748): sin lona; piezas de 140 de ancho del
+  // largo que cubre el frente de la tela, tantas como pida la caída.
+  const glassCurtain = awning.irisGlassCurtain === true;
+  const hasGlass = !glassCurtain && awning.curtainHasWindow === true;
+  const glassSize = hasGlass || glassCurtain ? resolveIrisGlassSize(fabricWidth) : 0;
+  const glassPieces = glassCurtain ? Math.max(1, Math.ceil(fabricDrop / irisGlassRollWidth)) : 1;
+  const fabricUsage = glassCurtain ? { panels: 0, ml: 0 } : calculateIrisFabricUsage({
     fabricWidth,
     fabricDrop,
     rollWidth: fabric?.width || 120,
@@ -106,9 +110,9 @@ export function calculateIris({ order, awning }) {
   if (!device) missingFields.push('accionamiento');
   if (!awning.placement) missingFields.push('colocación');
   if (!structureColor) missingFields.push('lacado');
-  if (!fabricSelection) missingFields.push('tela');
+  if (!glassCurtain && !fabricSelection) missingFields.push('tela');
   if (!opening.valid) missingFields.push('medidas del hueco');
-  if (awning.curtainHasWindow === null || awning.curtainHasWindow === undefined) missingFields.push('ventana sí/no');
+  if (!glassCurtain && (awning.curtainHasWindow === null || awning.curtainHasWindow === undefined)) missingFields.push('ventana sí/no');
   if (device && device !== 'MOTOR' && !Number(awning.crankHeight)) missingFields.push('altura de manivela');
   if (device && !awning.machineSide) missingFields.push(device === 'MOTOR' ? 'posición del motor' : 'lado de máquina');
 
@@ -145,9 +149,9 @@ export function calculateIris({ order, awning }) {
     ...(windBlock ? [{ name: 'TERMINAL COMPENSADOR SWBS', length: windBlockTerminalLength }] : [])
   ];
   const negativePieces = hasBasicConfig ? findNegativeCuts(cutPieces) : [];
-  const glassOutOfCatalog = hasBasicConfig && hasGlass && glassSize === 0;
+  const glassOutOfCatalog = hasBasicConfig && (hasGlass || glassCurtain) && glassSize === 0;
 
-  if (fabricSelection && !fabric) {
+  if (!glassCurtain && fabricSelection && !fabric) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   }
   if (missingFields.length) {
@@ -171,7 +175,9 @@ export function calculateIris({ order, awning }) {
   if (negativePieces.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: negativeCutMessage('IRIS', awning.of, negativePieces) });
   }
-  if (glassOutOfCatalog && !modified) {
+  if (glassOutOfCatalog && !modified && glassCurtain) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS de cristal en OF ${awning.of}: el frente de tela (${formatNumber(fabricWidth)} cm) supera los 450 cm, que es la pieza de cristal más larga que se compra. Consúltalo con compras.` });
+  } else if (glassOutOfCatalog && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con ventana en OF ${awning.of}: el frente de tela (${formatNumber(fabricWidth)} cm) supera los 450 cm, que es el rollo de cristal más largo que se compra. Consúltalo con compras, o activa una excepción técnica para continuar sin cristal.` });
   }
   if (hasCompensator && slack > parameters.compensatorWarnCm && !compensatorOverMax) {
@@ -186,8 +192,8 @@ export function calculateIris({ order, awning }) {
   if (cuts.unverified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS ${submodel}: configuración sin tabla del fabricante, respaldada solo por dos pedidos conservados. Comprueba las medidas de guía.` });
   }
-  if (hasGlass && glassSize) {
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: 'IRIS con ventana: el cristal estabilizado tarda alrededor de un mes. Pídelo en cuanto entre el pedido.' });
+  if ((hasGlass || glassCurtain) && glassSize) {
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: glassCurtain ? 'IRIS de cristal: el cristal estabilizado tarda alrededor de un mes. Pídelo en cuanto entre el pedido.' : 'IRIS con ventana: el cristal estabilizado tarda alrededor de un mes. Pídelo en cuanto entre el pedido.' });
   }
   if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de IRIS modificadas.` });
@@ -201,7 +207,7 @@ export function calculateIris({ order, awning }) {
   const valid = missingFields.length === 0
     && opening.valid
     && Boolean(discounts)
-    && Boolean(fabric)
+    && (glassCurtain || Boolean(fabric))
     && !(motorOnly && device === 'MAQUINA')
     && (!outOfRange || modified)
     && (!compensatorOverMax || modified)
@@ -209,8 +215,8 @@ export function calculateIris({ order, awning }) {
     && (!glassOutOfCatalog || modified);
 
   const materials = [];
-  if (valid && fabric) materials.push({ code: fabric.code, quantity: fabricUsage.ml, description: fabric.description });
-  const glassLine = valid ? glassMaterial(glassSize, awning.units) : null;
+  if (valid && fabric && !glassCurtain) materials.push({ code: fabric.code, quantity: fabricUsage.ml, description: fabric.description });
+  const glassLine = valid ? glassMaterial(glassSize, Math.max(1, Number(awning.units) || 1) * glassPieces) : null;
   if (glassLine) materials.push(glassLine);
   // Las piezas de estructura que se reservan, para que el despiece lleve sus referencias.
   const structure = { pieces: [], remote: null };
@@ -225,9 +231,9 @@ export function calculateIris({ order, awning }) {
     if (device === 'MOTOR') {
       const remote = resolveMotorRemote(awning.sensor);
       if (motorPower) {
-        const motor = sunilusMaterial(motorPower, units);
-        materials.push(motor);
-        structure.pieces.push(motor);
+        const motor = screenMotorMaterials(motorPower, units);
+        materials.push(...motor);
+        structure.pieces.push(...motor);
       }
       materials.push({ code: remote.code, quantity: units, description: remote.description });
       structure.remote = remote;
@@ -253,12 +259,15 @@ export function calculateIris({ order, awning }) {
       frontToldo: round1(opening.frontToldo),
       fabricWidth,
       fabricDrop,
-      fabricMl: fabricUsage.ml
+      fabricMl: fabricUsage.ml,
+      glassCurtain,
+      glassPieces,
+      glassSize
     }),
     materials,
     despiece: valid
       ? buildDespiece({
-        awning, hasBox, hasCompensator, fabric, structure,
+        awning, hasBox, hasCompensator, fabric: glassCurtain ? glassLine : fabric, structure,
         boxProfileLength, rollTubeLength, loadBarLength, ballastLength,
         guideLeftLength, guideRightLength, zipLeftLength, zipRightLength,
         compensatorLeftLength, compensatorRightLength, windBlockTerminalLength,
@@ -290,8 +299,9 @@ export function calculateIris({ order, awning }) {
       fabricPanels: fabricUsage.panels,
       mainFabricMl: fabricUsage.ml,
       mainFabricPanels: fabricUsage.panels,
-      fabricCode: fabric?.code || '',
-      fabricDescription: fabric?.description || '',
+      // Con telón de cristal no hay tela: la hoja de telas dice el cristal (AR2604748).
+      fabricCode: glassCurtain ? '' : fabric?.code || '',
+      fabricDescription: glassCurtain ? 'CRISTAL ESTABILIZADO' : fabric?.description || '',
       fabricRollWidth: fabric?.width || 120,
       structureLength: loadBarLength,
       rollTubeLength,
@@ -307,6 +317,8 @@ export function calculateIris({ order, awning }) {
       windBlockTerminalLength,
       glassCode: glassLine?.code || '',
       glassSize,
+      glassPieces: glassLine ? glassPieces : 0,
+      irisGlassCurtain: glassCurtain,
       armCount: 0,
       motorPower
     }
@@ -355,6 +367,9 @@ function calculateIrisFabricUsage({ fabricWidth, fabricDrop, rollWidth, units, h
   const ml = Math.ceil(Math.round(Math.max(0, raw) * 1e6) / 1e5) / 10;
   return { panels, ml: round1(ml * safeUnits) };
 }
+
+// El cristal estabilizado viene en piezas de 140 de ancho (CRISESTP140xxxC).
+const irisGlassRollWidth = 140;
 
 function glassMaterial(glassSize, units) {
   if (!glassSize) return null;
@@ -426,6 +441,11 @@ function buildDespiece(context) {
 
 function buildDescription(submodel, guideType, calculation) {
   const guide = guideType && guideType !== 'ESTÁNDAR' ? ` · GUÍA ${guideType}` : '';
+  if (calculation.glassCurtain) {
+    return `Toldo ${submodel || 'IRIS'}${guide} · ${formatNumber(calculation.frontToldo)}x${formatNumber(calculation.fabricDrop)}`
+      + ` · telón de CRISTAL ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)}`
+      + ` · ${calculation.glassPieces} ${calculation.glassPieces === 1 ? 'pieza' : 'piezas'} de 140x${formatNumber(calculation.glassSize)}`;
+  }
   return `Toldo ${submodel || 'IRIS'}${guide} · ${formatNumber(calculation.frontToldo)}x${formatNumber(calculation.fabricDrop)}`
     + ` · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · ${formatNumber(calculation.fabricMl)} ml`;
 }

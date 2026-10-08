@@ -16,15 +16,41 @@ const table = Object.freeze([
   Object.freeze({ name: 'ANTRACITA (RAL 7016)', suffix: 'GR16', crank: 'NEGRA' }),
   Object.freeze({ name: 'GRIS 7016 MATE TEXT.', suffix: 'GT16', crank: 'NEGRA' }),
   Object.freeze({ name: 'NEGRO MATE 9111', suffix: 'NEM1', crank: 'NEGRA' }),
+  // Iván, 08/10/2026 (AR2604748): el negro 9005 brillo, junto al mate. En el Iris es el negro de
+  // BAT (NEGR, NE05); donde la pieza no existe en NE05 se reserva en blanco para lacar fuera.
+  Object.freeze({ name: 'NEGRO 9005', suffix: 'NE05', crank: 'NEGRA' }),
   Object.freeze({ name: 'NEGRO MATE 9005-9405', suffix: 'NM05', crank: 'NEGRA' }),
-  Object.freeze({ name: 'CORTEN OXIDO 516', suffix: 'O516', crank: 'NEGRA' })
+  Object.freeze({ name: 'CORTEN OXIDO 516', suffix: 'O516', crank: 'NEGRA' }),
+  // Iván, 08/10/2026: los colores con piezas lacadas en RPS que faltaban (familias con color que
+  // compone la web, maestro del 08/10/2026), y el blanco mate 9003, que se pide mucho y solo
+  // tiene piezas del Antica. Donde una pieza no existe en el color, va en blanco para lacar fuera.
+  // Manivela blanca en blancos y marfiles, negra en el resto.
+  Object.freeze({ name: 'AZUL 5004 MATE', suffix: 'AZM4', crank: 'NEGRA' }),
+  Object.freeze({ name: 'BLANCO 9016 MATE TEXT.', suffix: 'B16M', crank: 'BLANCA' }),
+  Object.freeze({ name: 'BLANCO ALUMINIO 9006 TEXT.', suffix: 'BT06', crank: 'NEGRA' }),
+  Object.freeze({ name: 'BLANCO ALUMINIO 99006', suffix: 'BL06', crank: 'NEGRA' }),
+  Object.freeze({ name: 'BLANCO MATE 9003', suffix: 'BL3M', crank: 'BLANCA' }),
+  Object.freeze({ name: 'GRIS 7016 MATE', suffix: 'G16M', crank: 'NEGRA' }),
+  Object.freeze({ name: 'MARFIL BLANCO OSTRA 1013 TEXT.', suffix: 'MATX', crank: 'BLANCA' }),
+  Object.freeze({ name: 'MARFIL MATE 1013', suffix: 'MM13', crank: 'BLANCA' }),
+  Object.freeze({ name: 'MARRON 8002', suffix: 'MR02', crank: 'NEGRA' }),
+  Object.freeze({ name: 'MARRON 8007', suffix: 'MR07', crank: 'NEGRA' }),
+  Object.freeze({ name: 'MARRON 8014 TEXT.', suffix: 'MT14', crank: 'NEGRA' }),
+  Object.freeze({ name: 'MARRON 8017', suffix: 'MR17', crank: 'NEGRA' }),
+  Object.freeze({ name: 'MARRON 8019', suffix: 'MR19', crank: 'NEGRA' }),
+  Object.freeze({ name: 'PARDO 8019', suffix: 'PA19', crank: 'NEGRA' }),
+  Object.freeze({ name: 'PLATA 9006', suffix: 'PL06', crank: 'NEGRA' }),
+  Object.freeze({ name: 'PLATA ANODIZADO 537', suffix: 'P537', crank: 'NEGRA' }),
+  Object.freeze({ name: 'VERDE 6009', suffix: 'VE09', crank: 'NEGRA' })
 ]);
 
 const normalize = (value) => String(value || '').toUpperCase().replace(/\s+/g, '');
 // Nombre sin el codigo "(R-XXXXX)" final, p. ej. "GRIS (R-07022)" -> "GRIS".
 const stripCode = (value) => normalize(value).replace(/\(R-\d+\)$/, '');
 
-export const lacadoNames = table.map((item) => item.name);
+// El desplegable, por orden alfabético (Iván, 08/10/2026). La tabla no se ordena: su primera
+// fila, BLANCO, es el lacado de un nombre desconocido.
+export const lacadoNames = table.map((item) => item.name).sort((a, b) => a.localeCompare(b, 'es'));
 
 export function resolveLacado(name) {
   const clean = normalize(name);

@@ -55,7 +55,7 @@ const byLabel: Record<string, ReadGroupId> = {
   Colocación: 'colocacion', 'Tipo de pared': 'colocacion', Tela: 'colocacion', 'Tela bamba': 'colocacion',
   'Curva bamba': 'colocacion', Remate: 'colocacion', 'Color remate': 'colocacion',
   'Rotulación tela': 'colocacion', 'Rotulación bamba': 'colocacion', Ventana: 'colocacion',
-  'Ventana de cristal': 'colocacion', Confección: 'colocacion'
+  'Ventana de cristal': 'colocacion', Telón: 'colocacion', Confección: 'colocacion'
 };
 
 // Etiquetas con un número dentro: «Nº brazos · mínimo 3», «Restar 10 cm abajo».

@@ -123,6 +123,7 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     irisGuideFixing: '',
     irisBoxShape: '',
     irisWindBlock: false,
+    irisGlassCurtain: false,
     irisAssumeSquare: true,
     irisFrontTop: null,
     irisFrontBottom: null,

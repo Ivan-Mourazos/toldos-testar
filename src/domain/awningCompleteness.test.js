@@ -83,6 +83,12 @@ describe('getMissingFields', () => {
     expect(getMissingFields({ ...iris, irisFrontTop: null })).toContainEqual({ field: 'irisFrontTop', label: 'frente superior' });
   });
 
+  it('Iris con telón de cristal no pide tela ni ventana (AR2604748)', () => {
+    const iris = { model: 'IRIS', of: '1', irisFrontTop: 253.5, irisExitLeft: 220, submodel: 'IRIS 110 CON COFRE', irisBoxShape: 'REDONDO', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, placement: 'FRONTAL', curtainHasWindow: null, irisGlassCurtain: true };
+    expect(getMissingFields(iris, { fabric: '', sameFabric: true })).toEqual([]);
+    expect(fields({ ...iris, irisGlassCurtain: false })).toEqual(['curtainHasWindow']);
+  });
+
   it('Iris con cofre pide la forma del cofre, salvo el 150 (siempre redondo) y sin cofre', () => {
     const iris = { model: 'IRIS', of: '1', irisFrontTop: 300, irisExitLeft: 250, submodel: 'IRIS 130 CON COFRE', irisBoxShape: '', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, placement: 'FRONTAL', curtainHasWindow: false };
     expect(getMissingFields(iris)).toEqual([{ field: 'irisBoxShape', label: 'forma del cofre' }]);

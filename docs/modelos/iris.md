@@ -96,6 +96,28 @@ La cremallera blanca o gris (la negra está de baja desde 2021) se elige por la 
 - **Motor y mando** (Q-I05): taller dice que lo habitual es el Sunilus, pero lo elige taller. **Decidido por Iván el 02/10/2026** con lo gastado en RPS (90 OF de Iris y HERA con motor): el 110 reserva Sunilus IO 10/17 (16 OF; 15/17 en 8, sin medida que los separe) y el 130, Sunilus IO 35/17 (6 OF; Meteor en los grandes y pesados). El 150 ha llevado uno distinto en cada pedido (Helios CSI 30/17, Mariner, Sunilus 35/17): no se reserva motor y la tarjeta avisa. La tarjeta enseña «Motor» con el de la regla marcado y se cambia sin candado (Sunilus IO 10/17, 15/17 o 35/17). Mando: un Situo 1 IO Pure por motor (Situo 5 Variation con sensor de sol), como el resto de modelos (`src/domain/screenMotors.js`).
 - Guía STORM: no es una opción de la tarjeta. La web usa por ahora la guía que se elija y la STORM se añade a mano (Q-I02).
 
+### Pedido AR2604748: telón de cristal, motor solar y autorrelleno (07/10/2026)
+
+Decidido por Iván el 07/10/2026 con el pedido AR2604748 (OF 0232537): Iris 110 con cofre, 253,5 × 220, negro 9005, «confeccionado en cristal transparente estabilizado» y «motor Somfy solar».
+
+- **Telón todo de cristal.** La tarjeta pregunta «Telón»: lona, lona con ventana o todo cristal. Con todo cristal no se pide tela ni ventana y no se reserva lona. El cristal estabilizado se compra en piezas de 140 de ancho (`CRISESTP140xxxC`, familia PLÁSTICOS, por unidad): el largo es la siguiente medida que cubre el frente de la tela, como en la ventana, y se ponen las piezas que pida la caída (caída de tela ÷ 140, hacia arriba). AR2604748: 2 × `CRISESTP140250C`. Apoyo: OF 0215658 (tramo de cortina de 394 × 137 en cristal, una pieza de 450). La hoja de telas dice «CRISTAL ESTABILIZADO» y las piezas.
+- **Motor solar Somfy RS100 Solar IO**, a elegir en «Motor» junto a los Sunilus. Cada motor lleva su batería y su panel, y además:
+  - 10/12: soporte de batería y de antena. Es lo que gastó el HERA de la OF 0213066: `RS10010//12`, `BATERIASOLAR`, `PANELSORS100`, `RS100SOBT`, `RS100SOPAN`.
+  - 15/12: soporte del panel. Es lo que compras pidió para la OF 0232537 (pedidos 091184 y 091223): `RS10015//12`, `BATERIASO16`, `PANELSORS10015`, `RS100SOPA`.
+  - Mando: un Situo 1 IO Pure. Adaptación al tubo de 70: la misma que con el Sunilus (casquillo para motor 50, rueda motriz y soporte Hipro), pendiente de que la confirme el taller (Q-I09).
+- **Autorrelleno.** El Iris entra en el autorrelleno desde RPS:
+  - Variante, por el artículo: `IRIS110C` es con cofre y `S`, sin cofre.
+  - Frente superior y salida izquierda, con el hueco escuadrado.
+  - Lacado, accionamiento («apertura manual» es máquina; «motores» es motor) y colocación entre paredes.
+  - Forma del cofre, si el texto la dice.
+  - Telón de cristal, ventana y motor (solar o Sunilus) por el texto.
+  - Si compras ya pidió un motor para la OF (`PUROrderLine`), manda ese.
+  - Tipo de guía:
+    - `COS/GU` y `COSG` («sin guía», es decir, sin compensadora; Q-I03) y `COCG` («con guía y ZIP»; sus 4 OF con consumo gastaron la guía normal) van con guía estándar.
+    - `C/CO` y `S/CO` han llevado también compensadora (8 OF) y pequeña, y el texto nunca lo dice: queda para el técnico.
+  - Fijación de la guía y lado del motor no salen nunca del texto.
+  - Barrido de las 144 líneas de Iris desde 2021 (`tmp/iris-4748/barrido.mjs`): todas con variante y lacado. De los 78 toldos que traen medidas, 66 calculan válidos con lo recuperado. Los otros 12 se salen de las medidas del manual o son un 130 sin cofre a motor.
+
 ### `validate:reserva IRIS`
 
 | | Antes (23/09) | Después (24/09) |

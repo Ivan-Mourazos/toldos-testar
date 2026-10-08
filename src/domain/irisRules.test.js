@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { calculateIris } from './irisRules.js';
+import { normalizeOrder } from './validation.js';
 
 const fabric = 'IRISTESTP120|||120|||LONA DE PRUEBA IRIS';
 
@@ -346,6 +347,80 @@ describe('IRIS · piezas comunes según el consumo real', () => {
     expect(elegido['SUNILUSIO10//17']).toBeUndefined();
     const iris150Elegido = codes(calculate({ submodel: 'IRIS 150 CON COFRE', device: 'MOTOR', crankHeight: null, motorPower: '35/17' }));
     expect(iris150Elegido).toMatchObject({ 'SUNILUSIO35//17': 1 });
+  });
+
+  test('motor solar 10/12: RS100 Solar IO con batería, panel y soportes, como el HERA de la OF 0213066', () => {
+    const result = calculate({ device: 'MOTOR', crankHeight: null, motorPower: 'SOLAR 10/12' });
+    const materials = codes(result);
+    expect(materials).toMatchObject({
+      'RS10010//12': 1, BATERIASOLAR: 1, PANELSORS100: 1, RS100SOBT: 1, RS100SOPAN: 1, SITUOIO1PURE: 1,
+      // Iván, 07/10/2026: la misma adaptación al tubo de 70 que con el Sunilus.
+      CASADMOSZ70MM: 1, RUEDAMOTHI68: 1, SOPORTEUNVHIPRO: 1
+    });
+    expect(Object.keys(materials).some((code) => code.startsWith('SUNILUS'))).toBe(false);
+    expect(result.calculation.motorPower).toBe('SOLAR 10/12');
+    expect(result.despiece.rows.some((row) => /^MOTOR SOMFY RS100 SOLAR/.test(row.name))).toBe(true);
+  });
+
+  test('negro 9005 reserva el brillo de BAT y negro mate 9005-9405, el mate (Iván, 08/10/2026)', () => {
+    const brillo = codes(calculate({ structureColor: 'NEGRO 9005' }));
+    expect(brillo).toMatchObject({ PECOSSU1NEGR700C: 1, PECORSU1NE05400C: 1, TAPASSUN1NE05: 1, PEMMSU13NEGR600C: 1 });
+    const mate = codes(calculate({ structureColor: 'NEGRO MATE 9005-9405' }));
+    expect(Object.keys(mate).some((code) => /^(PECOSSU1|PECORSU1|TAPASSUN1)NEMA/.test(code))).toBe(true);
+  });
+
+  test('motor solar 15/12: lo que compras pidió para la OF 0232537 (pedidos 091184 y 091223)', () => {
+    const result = calculate({ device: 'MOTOR', crankHeight: null, motorPower: 'SOLAR 15/12', units: 2 });
+    const materials = codes(result);
+    expect(materials).toMatchObject({ 'RS10015//12': 2, BATERIASO16: 2, PANELSORS10015: 2, RS100SOPA: 2, SITUOIO1PURE: 2 });
+    expect(materials.RS100SOBT).toBeUndefined();
+    expect(materials.RS100SOPAN).toBeUndefined();
+    expect(result.diagnostics.map((item) => item.message).join(' ')).not.toContain('motor solar');
+  });
+});
+
+// Iván, 07/10/2026 (pedido AR2604748): telón todo de cristal estabilizado. El cristal se
+// compra en piezas de 140 de ancho; el largo es la siguiente medida que cubre el frente de
+// la tela (como la ventana) y se ponen las piezas que hagan falta para cubrir la caída.
+describe('IRIS · telón todo de cristal', () => {
+  const glass = (overrides = {}, orderOverrides = {}) => calculate({
+    irisGlassCurtain: true, curtainHasWindow: false, irisFrontTop: 253.5, irisExitLeft: 220,
+    device: 'MOTOR', crankHeight: null, ...overrides
+  }, orderOverrides);
+  const codes = (result) => Object.fromEntries(result.materials.map(({ code, quantity }) => [code, quantity]));
+
+  test('AR2604748 (253,5 × 220): dos piezas de 250, sin lona y sin pedir tela', () => {
+    const result = glass({}, { fabric: '' });
+    expect(result.calculation.valid).toBe(true);
+    expect(result.calculation).toMatchObject({ fabricWidth: 244.5, fabricDrop: 250, glassSize: 250, fabricMl: 0, irisGlassCurtain: true });
+    expect(codes(result)).toMatchObject({ CRISESTP140250C: 2 });
+    expect(result.materials.some((item) => item.code === 'IRISTESTP120')).toBe(false);
+    expect(result.diagnostics.map((item) => item.message).join(' ')).not.toContain('falta');
+  });
+
+  test('una caída que cabe en 140 lleva una sola pieza; las unidades multiplican', () => {
+    expect(codes(glass({ irisExitLeft: 100, units: 3 }))).toMatchObject({ CRISESTP140250C: 3 });
+  });
+
+  test('si el frente pasa de 450 no hay cristal que lo cubra y da error', () => {
+    const result = glass({ irisFrontTop: 470, irisExitLeft: 200 });
+    expect(result.calculation.valid).toBe(false);
+    expect(result.diagnostics.map((item) => item.message).join(' ')).toContain('450');
+  });
+
+  test('el servidor conserva el telón de cristal y el motor solar al guardar, y solo en el Iris', () => {
+    const order = (model) => normalizeOrder({
+      orderCode: 'AR2604748', customer: 'PRUEBA', technician: 'IVÁN', fabric: '', structureColor: 'NEGRO (R-09011)',
+      awnings: [{ id: 'a', of: '0232537', model, submodel: 'IRIS 110 CON COFRE', device: 'MOTOR', motorPower: 'SOLAR 10/12', irisGlassCurtain: true }]
+    }).awnings[0];
+    expect(order('IRIS')).toMatchObject({ irisGlassCurtain: true, motorPower: 'SOLAR 10/12' });
+    expect(order('ELECTRA').irisGlassCurtain).toBe(false);
+  });
+
+  test('aunque el pedido tenga tela, un telón de cristal no la reserva', () => {
+    const result = glass();
+    expect(result.materials.some((item) => item.code === 'IRISTESTP120')).toBe(false);
+    expect(result.description).toContain('CRISTAL');
   });
 });
 

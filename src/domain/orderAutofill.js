@@ -1,6 +1,8 @@
 import { serializeFabricSelection } from './fabricCatalog.js';
 import { getFieldVisibility, getModelBehavior } from './modelBehavior.js';
 import { normalizeElectraMotor } from './electraParameters.js';
+import { irisAsksBoxShape, irisSubmodels } from './irisParameters.js';
+import { irisMotorPowers, motorPowerFromCode } from './screenMotors.js';
 
 const fabricOnlyModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE']);
 const electraArticleCodes = new Set(['ELECTR', 'ELECTRCCCG', 'ELECTRCCSG', 'ELECTRSCCG', 'ELECTRSCSG', 'ELITV']);
@@ -8,12 +10,13 @@ const blockedElectraArticleCodes = new Set(['ELECTRA', 'ELECTRAZIP', 'ELECTRS/CO
 
 // Patrones de accionamiento, compartidos entre inferDevice e
 // isManualDeviceUnresolved para no duplicar la detección.
-const motorDevicePattern = /\bMOTOR(?:IZADO|IZADA)?\b|ACCIONAMIENTO\s+(?:POR\s+)?MOTOR/;
+const motorDevicePattern = /\bMOTOR(?:ES|IZADO|IZADA)?\b|ACCIONAMIENTO\s+(?:POR\s+)?MOTOR/;
 const exteriorDevicePattern = /MAQ(?:UINA)?\.?\s+EXTERIOR|MAQUINA\s+FUERA/;
 const interiorDevicePattern = /MAQ(?:UINA)?\.?\s+INTERIOR|MAQUINA\s+DENTRO/;
-const manualDevicePattern = /ACCIONAMIENTO\s+MANUAL|ACCIONAD[OA]\s+MANUAL|\bMANUALMENTE\b/;
+// «APERTURA MANUAL» es como lo escriben 32 de 144 líneas de Iris.
+const manualDevicePattern = /ACCIONAMIENTO\s+MANUAL|ACCIONAD[OA]\s+MANUAL|APERTURA\s+MANUAL|\bMANUALMENTE\b/;
 
-export function buildOrderAutofill({ header = {}, lines = [], materials = [] } = {}) {
+export function buildOrderAutofill({ header = {}, lines = [], materials = [], purchasedMotors = [] } = {}) {
   const recovered = [];
   const warnings = [];
   const mappedLines = [];
@@ -42,6 +45,12 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
   }
   const awnings = editableLines.map(({ line, model }, index) => {
     const awning = buildAwningSuggestion(line, model, index);
+    // Si compras ya pidió el motor para la OF, ese es el motor (Iván, 07/10/2026, AR2604748).
+    const purchasedMotor = awning.model === 'IRIS' && awning.device === 'MOTOR'
+      ? purchasedMotors.filter((item) => cleanOf(item.of) === cleanOf(awning.of))
+        .map((item) => motorPowerFromCode(item.code, irisMotorPowers)).find(Boolean)
+      : '';
+    if (purchasedMotor) awning.motorPower = purchasedMotor;
     const fabricRows = materialsByOf.get(cleanOf(awning.of)) || [];
     const fabricCandidates = rankFabricSelections(fabricRows);
     if (fabricCandidates[0]) awning.fabric = fabricCandidates[0].selection;
@@ -59,6 +68,7 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [] } =
       warnings.push(`OF ${awning.of}: RPS contiene más de una tela, pero falta confirmar la bambalina; solo se ha propuesto la principal y debes revisar la otra referencia.`);
     }
     recovered.push(...describeRecoveredAwning(awning, index));
+    if (purchasedMotor) recovered.push(`${letter(index)} · ${awning.model}: motor (pedido de compra)`);
     return awning;
   });
 
@@ -127,6 +137,7 @@ const summaryModelNames = {
   'CORAL BOX': 'Coral Box',
   'CUARZO BOX': 'Cuarzo Box',
   MAXISCREEM: 'Diana vertical',
+  IRIS: 'Iris',
   ELECTRA: 'Electra',
   SELENA: 'Selena',
   HERA: 'HERA',
@@ -293,6 +304,7 @@ export function inferOrderModel(line = {}) {
   if (code === 'PUNREC' || text.includes('PUNTO RECTO')) return 'PUNTO RECTO';
   if (code === 'XACOBEO' || text.includes('XACOBEO') || text.includes('ART 250')) return 'XACOBEO';
   if (code === 'GALICIA' || text.includes('MODELO GALICIA')) return 'GALICIA';
+  if (code.startsWith('IRIS') || text.includes('MODELO IRIS')) return 'IRIS';
   if (code.includes('HERA') || text.includes('MODELO HERA') || text.includes('ROLL-SYSTEM') || text.includes('ROLLSYS')) return 'HERA';
   if (code === 'ANTICA' || text.includes('MODELO ANTICA')) return 'ANTICA';
   if (code === 'SELENA' || text.includes('MODELO SELENA') || text.includes('TOLDO SELENA')) return 'SELENA';
@@ -311,6 +323,7 @@ export function extractOrderTextData(value, model = '') {
   const hasWindow = /\bCON\s+(?:UNA\s+)?VENTANA(?:S)?\b/.test(text) || /VENTANA(?:S)?\s+(?:EN|DE)\s+PVC/.test(text) || /\bINCLUYEN?\s+VENTANA/.test(text);
   const withoutWindow = /\bSIN\s+VENTANA(?:S)?\b/.test(text);
   const curtainLike = model.includes('CORTINA') || model === 'ELECTRA';
+  const irisGlassCurtain = model === 'IRIS' && /CONFECCIONAD[OA]S?\s+EN\s+CRISTAL|TODO\s+(?:EN\s+)?CRISTAL|TEL[OÓ]N\s+DE\s+CRISTAL/.test(text);
   const withoutValance = /\bSIN\s+BAMBALINA\b/.test(text);
   const configuredCurtain = model.includes('CORTINA');
   const oldCurtainFinish = inferCurtainFinish(text);
@@ -327,11 +340,12 @@ export function extractOrderTextData(value, model = '') {
       : /ROTULACI[OÓ]N\s+EN\s+(?:LA\s+)?BAMBALINA/.test(text) ? 'SI' : '',
     device: inferDevice(text, model),
     deviceManualUnresolved: isManualDeviceUnresolved(text, model),
-    motorPower: model === 'ELECTRA' ? normalizeElectraMotor(text) : '',
+    motorPower: model === 'ELECTRA' ? normalizeElectraMotor(text) : model === 'IRIS' ? inferIrisMotor(text) : '',
     placement: /ENTRE\s+PAREDES/.test(text) ? 'ENTRE PAREDES' : /COLOCACI[OÓ]N\s+(?:A\s+)?TECHO|INSTALACI[OÓ]N\s+(?:A\s+)?TECHO/.test(text) ? 'TECHO' : '',
     armCount: matchNumber(text, /(?:CON|DE)\s+([234])\s+BRAZOS?\b/),
     tubeLoad: /EVO\s*80/.test(text) ? 'TUBO DE CARGA EVO 80' : /UNIVERS\s*280/.test(text) ? 'TUBO DE CARGA UNIVERS 280' : '',
-    curtainHasWindow: curtainLike ? (hasWindow ? true : withoutWindow ? false : null) : null,
+    curtainHasWindow: irisGlassCurtain ? false : curtainLike || model === 'IRIS' ? (hasWindow ? true : withoutWindow ? false : null) : null,
+    irisGlassCurtain,
     curtainFinish: configuredCurtain ? lateralVelcro ? 'VELCRO' : oldCurtainFinish === 'TUBO' ? 'NORMAL' : oldCurtainFinish : curtainLike ? oldCurtainFinish : '',
     curtainBottomFinish: configuredCurtain ? /ENTRADA\s+(?:DE\s+)?TUBO|\bE[.\s]*T\.?(?=\s|[,;:]|$)/.test(text) || oldCurtainFinish === 'TUBO' ? 'ET' : 'TUBO DE CARGA' : '',
     curtainWindowReference: configuredCurtain ? tubeWindowHeight !== null ? 'TUBO DE CARGA' : 'SUELO' : '',
@@ -366,6 +380,7 @@ function buildAwningSuggestion(line, model, index) {
   const electraSupport = model === 'ELECTRA'
     ? normalizeElectraSuggestionSupport(inferElectraSupport(detailText), submodel)
     : '';
+  if (model === 'IRIS') return buildIrisSuggestion(line, index, detailText, extracted);
   return {
     id: `rps-${clean(line.lineId) || 'line'}-${index + 1}`,
     workType: fabricOnly ? 'FABRIC_ONLY' : 'FULL_AWNING',
@@ -412,8 +427,80 @@ function buildAwningSuggestion(line, model, index) {
   };
 }
 
+// El Iris se mide por el hueco (frente superior y salida izquierda) y se plantea escuadrado,
+// como cuando el técnico lo mete a mano.
+function buildIrisSuggestion(line, index, detailText, extracted) {
+  const text = normalize(`${line.description || ''} ${line.articleDescription || ''} ${detailText}`);
+  const submodel = inferIrisSubmodel(normalize(line.articleCode), text);
+  return {
+    id: `rps-${clean(line.lineId) || 'line'}-${index + 1}`,
+    workType: 'FULL_AWNING',
+    of: cleanOf(line.manufacturingOrder),
+    model: 'IRIS',
+    units: positiveNumber(line.quantity) || 1,
+    width: null,
+    projection: null,
+    submodel,
+    irisFrontTop: extracted.width,
+    irisExitLeft: extracted.projection,
+    irisAssumeSquare: true,
+    irisGuideType: inferIrisGuideType(normalize(line.articleCode)),
+    irisGuideFixing: '',
+    irisBoxShape: irisAsksBoxShape({ submodel }) ? inferIrisBoxShape(text) : '',
+    irisWindBlock: false,
+    irisGlassCurtain: extracted.irisGlassCurtain,
+    structureColor: irisStructureColor(extracted.structureColor, detailText),
+    rotFabric: extracted.rotFabric,
+    device: extracted.device,
+    deviceManualUnresolved: extracted.deviceManualUnresolved,
+    motorPower: extracted.device === 'MOTOR' ? extracted.motorPower : '',
+    placement: extracted.placement === 'ENTRE PAREDES' ? 'ENTRE PAREDES' : '',
+    curtainHasWindow: extracted.curtainHasWindow,
+    fabric: '',
+    valanceFabric: '',
+    fabricNotes: '',
+    _sourceText: detailText
+  };
+}
+
+// BAT no tiene 9011: su negro brillo es el 9005, y los Iris en «negro» a secas gastaron NEGR y
+// NE05 (Iván, 08/10/2026). Con «mate» se queda en el mate que diga el texto.
+function irisStructureColor(color, detailText) {
+  return color === 'NEGRO (R-09011)' && !/\bMATE\b/.test(normalize(detailText)) ? 'NEGRO 9005' : color;
+}
+
+function inferIrisSubmodel(code, text) {
+  const fromCode = /^IRIS(110|130|150)([CS])/.exec(code);
+  const series = fromCode?.[1] || /IRIS\s*(110|130|150)\b/.exec(text)?.[1] || '';
+  if (!series) return '';
+  const withBox = fromCode ? fromCode[2] === 'C' : !/SIN\s+COFRE/.test(text);
+  const submodel = `IRIS ${series} ${withBox ? 'CON' : 'SIN'} COFRE`;
+  return irisSubmodels.includes(submodel) ? submodel : '';
+}
+
+// COS/GU y COSG son «sin guía compensadora» y llevan la guía normal (taller, Q-I03); COCG es
+// «con guía y ZIP» y sus OF gastaron la guía normal. C/CO y S/CO han llevado también
+// compensadora o pequeña, y el texto no lo dice: la elige el técnico.
+function inferIrisGuideType(code) {
+  return /(?:COS\/GU|COSG|COCG)$/.test(code) ? 'ESTÁNDAR' : '';
+}
+
+function inferIrisBoxShape(text) {
+  if (/CUADRAD[OA]/.test(text)) return 'CUADRADO';
+  if (/REDOND[OA]/.test(text)) return 'REDONDO';
+  return '';
+}
+
+// «SOMFY, SOLAR» sin par es el 15/12: el que compras pidió para el único Iris solar (OF 0232537).
+function inferIrisMotor(text) {
+  if (/\bSOLAR\b/.test(text)) return /\b10\s*\/\s*12\b/.test(text) ? 'SOLAR 10/12' : 'SOLAR 15/12';
+  const sunilus = /SUNILUS[^0-9]{0,12}(\d{1,2})\s*\/\s*17/.exec(text)?.[1];
+  return sunilus && irisMotorPowers.includes(`${sunilus}/17`) ? `${sunilus}/17` : '';
+}
+
 function extractDimensions(text, model) {
-  const namedWidth = matchNumber(text, /(\d{2,4}(?:[.,]\d+)?)\s*(?:CM\s*)?(?:DE\s+)?FRENTE\b/);
+  // «253,5 CM DE FRENT EX 220 CM DE CAIDA» (AR2604748): FRENT sin la E también es el frente.
+  const namedWidth = matchNumber(text, /(\d{2,4}(?:[.,]\d+)?)\s*(?:CM\s*)?(?:DE\s+)?FRENTE?\b/);
   const namedProjection = matchNumber(text, /(\d{2,4}(?:[.,]\d+)?)\s*(?:CM\s*)?(?:DE\s+)?(?:SALIDA|CA[IÍ]DA)\b/);
   const namedHeight = matchNumber(text, /(\d{2,4}(?:[.,]\d+)?)\s*(?:CM\s*)?(?:DE\s+)?ALTO\b/);
   const pair = /(?:MEDIDAS?\s+)(\d{2,4}(?:[.,]\d+)?)\s*(?:CM\s*)?(?:DE\s+FRENTE\s*)?[X×]\s*(\d{2,4}(?:[.,]\d+)?)\s*(?:CM)?/.exec(text);
@@ -442,7 +529,9 @@ function describeRecoveredAwning(awning, index) {
     [awning.height, 'alto'], [awning.valanceHeight, 'bambalina'], [awning.valanceCurve, 'curva'],
     [awning.structureColor, 'lacado'], [awning.device, 'accionamiento'], [awning.armCount, 'brazos'],
     [awning.electraSupport, 'soporte'], [awning.submodel, 'variante'],
-    [awning.rotFabric, 'rotulación'], [awning.curtainHasWindow === true, 'ventana'], [awning.fabric, 'tela']
+    [awning.rotFabric, 'rotulación'], [awning.curtainHasWindow === true, 'ventana'], [awning.fabric, 'tela'],
+    [awning.irisFrontTop, 'frente superior'], [awning.irisExitLeft, 'salida izquierda'], [awning.irisBoxShape, 'forma del cofre'],
+    [awning.irisGlassCurtain === true, 'telón de cristal'], [awning.model === 'IRIS' ? awning.motorPower : '', 'motor']
   ];
   return [`${prefix} (${inferOrderModelDescription(awning.model)})`, ...fields.filter(([value]) => hasValue(value)).map(([, label]) => `${prefix}: ${label}`)];
 }
@@ -476,6 +565,14 @@ function describePendingAwning(awning, index) {
   if (visibility.placement && !awning.placement) pending.push('colocación');
   const curtainLike = awning.model.includes('CORTINA') || awning.model === 'ELECTRA';
   if (curtainLike && awning.curtainHasWindow === null) pending.push('ventana sí/no');
+  if (awning.model === 'IRIS') {
+    if (!positiveNumber(awning.irisFrontTop)) pending.push('frente superior');
+    if (!positiveNumber(awning.irisExitLeft)) pending.push('salida izquierda');
+    if (!awning.irisGuideType) pending.push('tipo de guía');
+    if (!awning.irisGuideFixing) pending.push('fijación de la guía');
+    if (irisAsksBoxShape(awning) && !awning.irisBoxShape) pending.push('forma del cofre');
+    if (!awning.irisGlassCurtain && awning.curtainHasWindow === null) pending.push('telón: lona, con ventana o cristal');
+  }
   if (curtainLike && awning.curtainHasWindow === true) {
     if (!awning.model.includes('CORTINA') && !positiveNumber(awning.curtainWindowExit)) pending.push('salida ventana');
     if (!positiveNumber(awning.curtainWindowCorner)) pending.push('esquina ventana');
@@ -484,7 +581,7 @@ function describePendingAwning(awning, index) {
   }
   if (curtainLike && !awning.curtainFinish) pending.push(awning.model.includes('CORTINA') ? 'laterales' : 'confección inferior');
   if (awning.model === 'HERA') pending.push('lado respecto a ventana');
-  if (!awning.fabric) pending.push('tela');
+  if (!awning.fabric && !awning.irisGlassCurtain) pending.push('tela');
   return pending.map((field) => `${letter(index)} · ${awning.model}: ${field}`);
 }
 
@@ -599,7 +696,20 @@ function inferStructureColor(text) {
     return !/\bMATE\b|TEXT/.test(structure) && (!ral || ral === '7016')
       ? 'ANTRACITA (RAL 7016)' : 'LACADO ESPECIAL';
   }
-  if (/NEGRO\s+MATE\s+(?:9005|9405)/.test(structure)) return 'NEGRO MATE 9005-9405';
+  // Colores añadidos a la lista el 08/10/2026, antes que los genéricos de cada familia.
+  if (/9003/.test(structure)) return 'BLANCO MATE 9003';
+  if (/OSTRA|MARFIL[\s\S]*1013[\s\S]*TEXT/.test(structure)) return 'MARFIL BLANCO OSTRA 1013 TEXT.';
+  if (/1013/.test(structure)) return 'MARFIL MATE 1013';
+  if (/9006/.test(structure)) return 'PLATA 9006';
+  if (/5004/.test(structure)) return 'AZUL 5004 MATE';
+  if (/6009/.test(structure)) return 'VERDE 6009';
+  if (/8017/.test(structure)) return 'MARRON 8017';
+  if (/8007/.test(structure)) return 'MARRON 8007';
+  if (/8002/.test(structure)) return 'MARRON 8002';
+  if (/8019/.test(structure)) return /PARDO/.test(structure) ? 'PARDO 8019' : 'MARRON 8019';
+  if (/MARR[OÓ]N[\s\S]*8014[\s\S]*TEXT|MARR[OÓ]N\s+TEXT/.test(structure)) return 'MARRON 8014 TEXT.';
+  // También «NEGRO 9005-MATE», con el mate detrás (OF 0214722).
+  if (/NEGRO\s+MATE\s+(?:9005|9405)|NEGRO\s+(?:9005|9405)\s*-?\s*MATE/.test(structure)) return 'NEGRO MATE 9005-9405';
   if (/NEGRO\s+MATE\s+9111/.test(structure)) return 'NEGRO MATE 9111';
   if (/\bBLANC[OA]\b/.test(structure)) return 'BLANCO';
   if (/\bNEGR[OA]\b/.test(structure)) return 'NEGRO (R-09011)';

@@ -532,13 +532,19 @@ function drawDespieceTable(doc, x, y, w, rows, maxBottom = Infinity) {
   return y + headerH + rowCount * rowH;
 }
 
+// La medida de partida del toldo; si no la tiene (el Iris se mide por el hueco y se guarda con
+// frente y caída a 0), la del cálculo.
+function partingMeasure(value, fromCalculation) {
+  return Number(value) > 0 ? value : fromCalculation ?? value;
+}
+
 function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   // IRIS no recibe width/projection: los deriva del escuadrado del hueco y
   // los deja en calc.width/calc.projection. Para el resto de modelos
   // calculation.width/projection son una copia literal de awning.width/
   // projection, así que el fallback no cambia nada fuera de IRIS.
-  const partingWidth = awning.width ?? calc?.width;
-  const partingProjection = awning.projection ?? calc?.projection;
+  const partingWidth = partingMeasure(awning.width, calc?.width);
+  const partingProjection = partingMeasure(awning.projection, calc?.projection);
   const hera = isHeraAwning(awning) ? heraStructureData(awning, calc) : null;
   drawMiniTable(doc, x, y, w, 'DATOS DE PARTIDA', [
     ['FRENTE', formatNumber(partingWidth)],
@@ -575,7 +581,7 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
   drawMiniTable(doc, x, y + 197, w, 'DIMENSIONES TELA', [
     ['TELA', calc ? formatNumber(calc.fabricWidth) : '-'],
     [isVerticalAwningModel(awning.model) ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? formatNumber(calc.fabricDrop) : '-'],
-    ['PAÑO', calc ? `${formatNumber(calc.fabricMl)} ML` : '-']
+    ['PAÑO', calc ? glassPiecesLabel(calc) || `${formatNumber(calc.fabricMl)} ML` : '-']
   ]);
 }
 
@@ -720,8 +726,9 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
         };
       }),
       total: {
-        label: totalLabel || 'TELA SIN DEFINIR',
-        amount: `${formatFabricMeasure(totals.reduce((sum, { amount }) => sum + (Number(amount) || 0), 0))} ML`
+        label: glassCurtainLabel(lines) || totalLabel || 'TELA SIN DEFINIR',
+        amount: glassCurtainTotal(lines)
+          || `${formatFabricMeasure(totals.reduce((sum, { amount }) => sum + (Number(amount) || 0), 0))} ML`
       },
       notes: fabricPageNotes(order, lines),
       footer: 'Planteamiento de telas'
@@ -787,8 +794,8 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
       },
       // IRIS no recibe frente ni caída: los deja el cálculo, como en drawStructureSide.
       partida: [
-        ['FRENTE', dash(formatNumber(awning.width ?? calc?.width))],
-        [vertical ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', dash(formatNumber(awning.projection ?? calc?.projection))],
+        ['FRENTE', dash(formatNumber(partingMeasure(awning.width, calc?.width)))],
+        [vertical ? 'CAÍDA TOLDO' : 'SALIDA TOLDO', dash(formatNumber(partingMeasure(awning.projection, calc?.projection)))],
         ['UNIDADES', dash(formatNumber(awning.units))],
         ...(hera?.chain ? [['ALTURA', dash(formatNumber(hera.height))]] : [])
       ],
@@ -810,7 +817,7 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
       tela: [
         ['TELA', calc ? dash(formatNumber(calc.fabricWidth)) : '—'],
         [vertical ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? dash(formatNumber(calc.fabricDrop)) : '—'],
-        ['PAÑO', calc ? `${formatFabricMeasure(calc.fabricMl)} ML` : '—']
+        ['PAÑO', calc ? glassPiecesLabel(calc) || `${formatFabricMeasure(calc.fabricMl)} ML` : '—']
       ],
       notes: String(structureNotes(awning, calc) ?? '').trim(),
       footer: `Toldo ${letter} · Estructura`
@@ -1000,9 +1007,30 @@ export function fabricPageNotes(order = {}, lines = []) {
   return [String(order.notes || '').trim(), ...awningNotes].filter(Boolean).join('\n');
 }
 
+// Iris con telón todo de cristal (AR2604748): el paño son piezas de cristal, no metros de lona.
+function glassPiecesLabel(calc) {
+  const pieces = calc?.irisGlassCurtain ? Number(calc.glassPieces) || 0 : 0;
+  return pieces ? `${pieces} ${pieces === 1 ? 'PIEZA' : 'PIEZAS'} CRISTAL` : '';
+}
+
+// Iris con telón todo de cristal (AR2604748): el total son piezas de cristal, no metros de lona.
+function glassCurtainTotal(lines) {
+  if (!lines.length || !lines.every(({ calc }) => calc?.irisGlassCurtain)) return '';
+  const pieces = lines.reduce((sum, { awning, calc }) => sum + (Number(calc.glassPieces) || 0) * Math.max(1, Number(awning.units) || 1), 0);
+  return `${pieces} ${pieces === 1 ? 'PIEZA' : 'PIEZAS'}`;
+}
+
+function glassCurtainLabel(lines) {
+  if (!glassCurtainTotal(lines)) return '';
+  return `${[...new Set(lines.map(({ calc }) => calc.glassCode).filter(Boolean))].join(' · ')} · CRISTAL ESTABILIZADO`;
+}
+
 function buildFabricRowInstruction(line, lines, order) {
   const detail = buildFabricLineDetail(line.awning, line.calc, order);
   const parts = [];
+  if (line.calc?.irisGlassCurtain && line.calc.glassPieces) {
+    parts.push(`TELÓN DE CRISTAL: ${line.calc.glassPieces} ${line.calc.glassPieces === 1 ? 'PIEZA' : 'PIEZAS'} DE 140 × ${formatNumber(line.calc.glassSize)}`);
+  }
   if (summarizeFabricMaterial(lines) === 'VARIAS TELAS') {
     const description = shortFabricName(fabricDescription(line.calc?.fabricCode, line.calc?.fabricDescription)) || 'SIN DEFINIR';
     const code = String(line.calc?.fabricCode || '').trim();

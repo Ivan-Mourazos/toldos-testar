@@ -84,7 +84,9 @@ export function getMissingFields(awning, order = null) {
   if (model === 'CAMBIO TELA' && cambioTelaExtraError(awning)) add('cambioTelaExtraCm', 'suma para enrolle y tubo válida');
   // Lo mismo que exigía cada modelo en su cálculo y la tarjeta no decía: la tarjeta
   // ponía "FALTA · rotulación" y el cálculo "falta tela y dispositivo" (pedido 4611).
-  if (order && fields.workType === 'FULL_AWNING' && !fabricOwnCheck.has(model)) {
+  // Un Iris de cristal no lleva lona (Iván, 07/10/2026, AR2604748).
+  const irisGlass = model === 'IRIS' && awning.irisGlassCurtain === true;
+  if (order && fields.workType === 'FULL_AWNING' && !fabricOwnCheck.has(model) && !irisGlass) {
     const fabric = order.sameFabric !== false ? order.fabric : awning.fabric;
     // Un texto que no es una tela del catálogo (escrito sin elegir opción) tampoco vale.
     if (!String(fabric || '').trim() || !resolveFabric(fabric)) add('fabric', 'tela');
@@ -111,7 +113,7 @@ export function getMissingFields(awning, order = null) {
   }
   // Iris también pregunta si lleva ventana de cristal: su cálculo ya lo exigía
   // y la tarjeta no, así que el toldo quedaba sin calcular sin decir por qué.
-  if ((curtain || isSelena || model === 'IRIS') && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', 'ventana');
+  if ((curtain || isSelena || (model === 'IRIS' && !irisGlass)) && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', 'ventana');
   // Redondo o cuadrado cambia el perfil inferior y las tapas del cofre (taller, 24/09/2026).
   if (model === 'IRIS' && irisAsksBoxShape(awning) && !normalizeIrisBoxShape(awning.irisBoxShape)) add('irisBoxShape', 'forma del cofre');
   if (curtain && !awning.curtainFinish) add('curtainFinish', isConfiguredCurtain(awning) ? 'laterales' : 'confección');

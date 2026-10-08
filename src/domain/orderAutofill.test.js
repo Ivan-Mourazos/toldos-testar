@@ -98,7 +98,8 @@ describe('autocompletado de pedidos RPS', () => {
       submodel: 'SIN COFRE / CON GUÍA',
       electraSupport: '',
       device: '',
-      structureColor: 'LACADO ESPECIAL',
+      // «GRIS 9006»: desde el 08/10/2026 el 9006 está en la lista de lacados.
+      structureColor: 'PLATA 9006',
       curtainHasWindow: true
     });
   });
@@ -132,6 +133,29 @@ describe('autocompletado de pedidos RPS', () => {
     });
 
     expect(result.order.awnings[0].electraSupport).toBe('SOPORTE MAXISCREEN');
+  });
+
+  // Iván, 08/10/2026: colores nuevos de la lista de lacados, como los escriben los pedidos.
+  test.each([
+    ['LACADO EN COLOR 9003 BLANCO MATE', 'BLANCO MATE 9003'],
+    ['LACADO EN COLOR BLANCO MATE 9003', 'BLANCO MATE 9003'],
+    ['LACADO EN COLOR MARRON 8017', 'MARRON 8017'],
+    ['LACADO EN COLOR MARRON 8019', 'MARRON 8019'],
+    ['LACADO EN COLOR PARDO 8019', 'PARDO 8019'],
+    ['LACADO EN COLOR MARRON 8007', 'MARRON 8007'],
+    ['LACADO EN COLOR MARRON RAL 8002', 'MARRON 8002'],
+    ['LACADO EN COLOR MARRON 8014 TEXTURADO', 'MARRON 8014 TEXT.'],
+    ['LACADO EN COLOR MARRON 8014', 'MARRON (R-08014)'],
+    ['LACADO EN COLOR PLATA EUROPEO 9006', 'PLATA 9006'],
+    ['LACADO EN COLOR GRIS PLATA 9006', 'PLATA 9006'],
+    ['LACADO EN COLOR VERDE 6009', 'VERDE 6009'],
+    ['LACADO EN COLOR VERDE 6005', 'VERDE (R-06005)'],
+    ['LACADO EN COLOR AZUL MATE 5004', 'AZUL 5004 MATE'],
+    ['LACADO EN COLOR BLANCO OSTRA TEXTURADO', 'MARFIL BLANCO OSTRA 1013 TEXT.'],
+    ['LACADO EN COLOR MARFIL MATE 1013', 'MARFIL MATE 1013'],
+    ['LACADO EN COLOR BLANCO', 'BLANCO']
+  ])('«%s» es %s', (text, expected) => {
+    expect(extractOrderTextData(`ESTRUCTURA DE ALUMINIO, ${text}, TORNILLERIA Y ANCLAJES`, 'ARZUA PRO').structureColor).toBe(expected);
   });
 
   test('extrae medidas decimales, bamba, curva, lacado, motor y rotulación', () => {
@@ -652,5 +676,102 @@ describe('arreglos de la revisión final del plan 4', () => {
       });
       expect(summary).toEqual(['2 cortinas · rotulación no indicada']);
     });
+  });
+});
+
+// Iván, 07/10/2026: el Iris entra en el autorrelleno. Textos reales de RPS.
+describe('autorrelleno del Iris', () => {
+  const pedido4748 = {
+    lineId: '1d32202b',
+    articleCode: 'IRIS110C/COS/GU',
+    articleDescription: 'TOLDO VERTICAL IRIS 110 (BAT SCREENY):CON COFRE:SIN GUIA',
+    description: 'TOLDO VERTICAL IRIS 110 (BAT SCREENY):CON COFRE:SIN GUIA',
+    comment: 'POR FABRICACION  E INSTALACION DE UN TOLDO VERTICAL ENROLLABLE, MODELO IRIS 110 CON COFRE AUTOPORTANTE, DE MEDIDAS 253,5 CM DE FRENT EX 220 CM DE CAIDA, ESTRUCTURA DE ALUMINIO, LACADO EN COLOR NEGRO 9005,  TORNILLERIA Y ANCLAJES EN ACERO INOXIDABLE. CONFECCIONADO EN CRISTAL TRANSPARENTE ESTABILIZADO.  APERTURA AUTOMATICA, MEDIANTE MOTOR,  SOMFY, SOLAR',
+    quantity: 1,
+    manufacturingOrder: '0232537'
+  };
+  const iris = (line) => buildOrderAutofill({ header: { orderCode: 'AR.26.04748' }, lines: [line] });
+
+  test.each([
+    ['IRIS110C/CO', 'IRIS'], ['IRIS110S/CO', 'IRIS'], ['IRIS130C/COS/GU', 'IRIS'], ['IRIS150C/COCG', 'IRIS'], ['IRIS150C/COSG', 'IRIS']
+  ])('%s se reconoce como %s', (articleCode, expected) => {
+    expect(inferOrderModel({ articleCode })).toBe(expected);
+  });
+
+  test('AR2604748: Iris 110 con cofre, 253,5 × 220 escuadrado, negro, motor solar y telón de cristal', () => {
+    const result = iris(pedido4748);
+    expect(result.warnings.join(' ')).not.toContain('no corresponden');
+    expect(result.order.awnings).toHaveLength(1);
+    expect(result.order.awnings[0]).toMatchObject({
+      model: 'IRIS', of: '0232537', submodel: 'IRIS 110 CON COFRE',
+      irisFrontTop: 253.5, irisExitLeft: 220, irisAssumeSquare: true,
+      structureColor: 'NEGRO 9005', device: 'MOTOR', motorPower: 'SOLAR 15/12',
+      irisGlassCurtain: true, curtainHasWindow: false,
+      // COS/GU es «sin guía compensadora»: lleva la guía normal (taller, Q-I03).
+      irisGuideType: 'ESTÁNDAR'
+    });
+    expect(result.pending.join(' ')).not.toMatch(/frente|salida|tipo de guía/);
+    expect(result.pending).not.toContain('A · IRIS: tela');
+    expect(result.summary[0]).toMatch(/^1 Iris/);
+  });
+
+  test.each([
+    ['IRIS150C/COCG', 'ESTÁNDAR'], ['IRIS150C/COSG', 'ESTÁNDAR'], ['IRIS130C/COS/GU', 'ESTÁNDAR'], ['IRIS110C/CO', ''], ['IRIS110S/CO', '']
+  ])('%s: guía %s (C/CO y S/CO han llevado también compensadora o pequeña: la elige el técnico)', (articleCode, guide) => {
+    const result = iris({ ...pedido4748, articleCode, description: '', articleDescription: '' });
+    expect(result.order.awnings[0].irisGuideType).toBe(guide);
+    expect(result.pending.join(' ').includes('tipo de guía')).toBe(guide === '');
+  });
+
+  test('el motor que compras pidió para la OF manda sobre el texto (AR2604748: RS100 Solar 15/12)', () => {
+    const purchasedMotors = [
+      { of: '0232537', code: 'RS10015//12' },
+      { of: '0232537', code: 'BATERIASO16' },
+      { of: '0999999', code: 'SUNILUSIO35//17' }
+    ];
+    const result = buildOrderAutofill({ header: { orderCode: 'AR.26.04748' }, lines: [pedido4748], purchasedMotors });
+    expect(result.order.awnings[0].motorPower).toBe('SOLAR 15/12');
+    expect(result.recovered.join(' ')).toContain('motor (pedido de compra)');
+    const sunilus = buildOrderAutofill({ header: { orderCode: 'AR.26.04748' }, lines: [pedido4748], purchasedMotors: [{ of: '0232537', code: 'SUNILUSIO15//17' }] });
+    expect(sunilus.order.awnings[0].motorPower).toBe('15/17');
+  });
+
+  test('negro 9005 es brillo en el Iris; negro mate, el mate; en los demás toldos, negro 9005 sigue siendo el 9011', () => {
+    const color = (comment, articleCode = 'IRIS110C/CO') => iris({ ...pedido4748, articleCode, comment }).order.awnings[0]?.structureColor;
+    expect(color('MODELO IRIS 110. ESTRUCTURA DE ALUMINIO, LACADO EN COLOR NEGRO 9005, TORNILLERIA')).toBe('NEGRO 9005');
+    expect(color('MODELO IRIS 110. ESTRUCTURA DE ALUMINIO, LACADO EN COLOR NEGRO 9005-MATE, TORNILLERIA')).toBe('NEGRO MATE 9005-9405');
+    expect(color('MODELO IRIS 110. ESTRUCTURA DE ALUMINIO, LACADO EN COLOR NEGRO, TORNILLERIA')).toBe('NEGRO 9005');
+    expect(extractOrderTextData('ESTRUCTURA DE ALUMINIO, LACADO EN COLOR NEGRO 9005, TORNILLERIA', 'ARZUA PRO').structureColor).toBe('NEGRO (R-09011)');
+  });
+
+  test('«apertura automática mediante motores» es motor', () => {
+    const awning = iris({ ...pedido4748, comment: 'MODELO IRIS 110, DE MEDIDAS 200 CM DE FRENTE X 200 CM DE CAIDA. APERTURA AUTOMATICA, MEDIANTE MOTORES, MARCA SOMFY.' }).order.awnings[0];
+    expect(awning.device).toBe('MOTOR');
+  });
+
+  test('sin cofre, manual por «apertura manual», con ventana y lacado blanco', () => {
+    const awning = iris({
+      lineId: 'b', articleCode: 'IRIS110S/CO', quantity: 1, manufacturingOrder: '0182507',
+      comment: 'POR SUMINISTRO E INSTALACION DE UN TOLDO VERTICAL, MODELO IRIS 110, CON GUIAS, SIN COFRE, DE MEDIDAS 265 CM DE FRENTE X 210 CM DE SALIDA, ESTRUCTURA DE ALUMINIO, LACADO EN COLOR BLANCO, TORNILLERIA Y ANCLAJES EN ACERO INOXIDABLE, CONFECCIONADO EN LONA CALIDAD POLIESTER RECUBIERTO DE PVC 580 G/M², COLOR MARRON, CON VENTANA EN PVC TRANSPARENTE. APERTURA MANUAL.'
+    }).order.awnings[0];
+    expect(awning).toMatchObject({ submodel: 'IRIS 110 SIN COFRE', irisFrontTop: 265, irisExitLeft: 210, device: 'MAQUINA', structureColor: 'BLANCO', curtainHasWindow: true, irisGlassCurtain: false, motorPower: '' });
+  });
+
+  test('cofre de forma cuadrada, 130 y motor Sunilus del texto', () => {
+    const awning = iris({
+      lineId: 'c', articleCode: 'IRIS130C/COS/GU', quantity: 1, manufacturingOrder: '0200000',
+      comment: 'TOLDO MODELO IRIS 130 CON COFRE CON FORMA CUADRADA, DE MEDIDAS 420 CM DE FRENTE POR 400 CM DE CAIDA, LACADO EN COLOR BLANCO. MOTOR SOMFY SUNILUS 35/17 IO. SIN VENTANA.'
+    }).order.awnings[0];
+    expect(awning).toMatchObject({ submodel: 'IRIS 130 CON COFRE', irisBoxShape: 'CUADRADO', irisFrontTop: 420, irisExitLeft: 400, device: 'MOTOR', motorPower: '35/17', curtainHasWindow: false });
+  });
+
+  test('«diferentes medidas» con varias unidades crea un Iris por unidad para completar a mano', () => {
+    const result = iris({
+      lineId: 'd', articleCode: 'IRIS110C/CO', quantity: 3, manufacturingOrder: '0190000',
+      comment: 'TOLDOS VERTICALES ENROLLABLES, MODELO IRIS 110, CON COFRES Y GUIAS ZIP, DE DIFERENTES MEDIDAS, ESTRUCTURA DE ALUMINIO, LACADO EN COLOR BLANCO. APERTURA MANUAL.'
+    });
+    expect(result.order.awnings).toHaveLength(3);
+    expect(result.pending.join(' ')).toMatch(/frente superior/);
+    expect(result.pending.join(' ')).toMatch(/salida izquierda/);
   });
 });

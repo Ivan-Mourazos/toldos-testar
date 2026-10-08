@@ -50,6 +50,14 @@ const caps = Object.freeze({
 const lacadoColors = Object.freeze({
   BL16: ['BLAN', 'BL10'],
   NE11: ['NEGR', 'NE05'],
+  NE05: ['NEGR', 'NE05'],
+  // Lacados añadidos el 08/10/2026 que BAT tiene con el mismo código.
+  PL06: ['PL06'],
+  VE09: ['VE09'],
+  MR17: ['MR17'],
+  G16M: ['G16M'],
+  MR02: ['MR02'],
+  BL06: ['BL06'],
   GR16: ['GR16'],
   GT16: ['G16M'],
   GR12: ['GR12'],

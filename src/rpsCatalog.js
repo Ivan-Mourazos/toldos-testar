@@ -119,6 +119,29 @@ export async function getRpsOrder(orderCode) {
     ORDER BY mo.CodManufacturingOrder, m.CreationTimestamp, a.CodArticle;
   `);
 
+  // Los motores que compras ya ha pedido para las OF del pedido (Iván, 07/10/2026, AR2604748).
+  const purchaseRequest = pool.request()
+    .input('company', sql.VarChar(10), config.db.company)
+    .input('orderCode', sql.VarChar(40), normalizedOrderCode);
+  const purchaseResult = await purchaseRequest.query(`
+    SELECT
+      CONVERT(varchar(40), mo.CodManufacturingOrder) AS [of],
+      a.CodArticle AS code
+    FROM dbo.FACOrderSL o
+    JOIN dbo.FACOrderLineSL l
+      ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
+    JOIN dbo.CPRManufacturingOrder mo
+      ON mo.IDManufacturingOrder = l.IDManufacturingOrder AND mo.CodCompany = l.CodCompany
+    JOIN dbo.PUROrderLine pl
+      ON pl.IDManufacturingOrder = mo.IDManufacturingOrder AND pl.CodCompany = mo.CodCompany
+    JOIN dbo.STKArticle a
+      ON a.IDArticle = pl.IDArticle AND a.CodCompany = pl.CodCompany
+    WHERE o.CodCompany = @company
+      AND REPLACE(REPLACE(REPLACE(UPPER(o.CodOrder), '.', ''), '/', ''), '-', '') = @orderCode
+      AND (a.CodArticle LIKE 'RS100%//%' OR a.CodArticle LIKE 'SUNILUSIO%//%')
+    ORDER BY mo.CodManufacturingOrder, a.CodArticle;
+  `);
+
   return {
     header: {
       orderCode: first.orderCode,
@@ -138,7 +161,8 @@ export async function getRpsOrder(orderCode) {
       manufacturingOrder: row.manufacturingOrder,
       manufacturingNotes: row.manufacturingNotes
     })),
-    materials: materialResult.recordset
+    materials: materialResult.recordset,
+    purchasedMotors: purchaseResult.recordset
   };
 }
 

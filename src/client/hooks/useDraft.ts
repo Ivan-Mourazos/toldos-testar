@@ -107,6 +107,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.rotFabric = typeof old.rotFabric === 'string' ? old.rotFabric : '';
   base.rotValance = typeof old.rotValance === 'string' ? old.rotValance : '';
   base.curtainHasWindow = hasWindowChoice && typeof old.curtainHasWindow === 'boolean' ? old.curtainHasWindow : null;
+  base.irisGlassCurtain = base.model === 'IRIS' && old.irisGlassCurtain === true;
   base.curtainFinish = isCurtainLike && ['NORMAL', 'VELCRO', 'TUBO'].includes(String(old.curtainFinish).toUpperCase())
     ? old.curtainFinish as Awning['curtainFinish']
     : '';

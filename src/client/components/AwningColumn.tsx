@@ -31,9 +31,10 @@ import { maxiscreemGuide, maxiscreemVariantGroup } from '../../domain/maxiscreem
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
 import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes, irisSeriesOf } from '../../domain/irisParameters.js';
-import { chosenMotor, heraDefaultMotor, heraMotorPowers, irisDefaultMotor, irisMotorPowers } from '../../domain/screenMotors.js';
+import { chosenMotor, heraDefaultMotor, heraMotorPowers, irisDefaultMotor, irisMotorPowers, screenMotorLabel } from '../../domain/screenMotors.js';
 
 const sunilusLabel = (power: string) => `Sunilus IO ${power}`;
+const irisCurtainOptions = ['LONA', 'LONA CON VENTANA', 'TODO CRISTAL'];
 import {
   anticaVariants,
   cambioAnticaVariants,
@@ -562,11 +563,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={['SÍ', 'NO']}
                 onChange={(value) => update({ irisWindBlock: value === 'SÍ' })}
               />
+              {/* Iván, 07/10/2026 (AR2604748): el telón también puede ser todo de cristal. */}
               <SegmentedField
-                label="Ventana de cristal" missing={isMissing('curtainHasWindow')}
-                value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'}
-                options={['SIN VENTANA', 'CON VENTANA']}
-                onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })}
+                label="Telón" missing={isMissing('curtainHasWindow')}
+                value={awning.irisGlassCurtain ? irisCurtainOptions[2] : awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? irisCurtainOptions[1] : irisCurtainOptions[0]}
+                options={irisCurtainOptions}
+                onChange={(value) => update(value === irisCurtainOptions[2]
+                  ? { irisGlassCurtain: true, curtainHasWindow: false }
+                  : { irisGlassCurtain: false, curtainHasWindow: value === irisCurtainOptions[1] })}
               />
             </div>
           )}
@@ -790,7 +794,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <div className="awning-actuation-row awning-wide-field">
               {fields.device && <SelectField label="Dispositivo" missing={isMissing('device')} value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={updateDevice} />}
               {isElectra && electraDevice === 'MOTOR' && <SelectField label="Motor Electra" missing={isMissing('motorPower')} value={awning.motorPower} options={electraMotors.map(({ value }) => value)} placeholder="Obligatorio · elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
-              {isIrisMotor && <SelectField label="Motor" value={chosenMotor(awning, irisMotorPowers, irisDefaultMotor(irisSeriesOf(awning.submodel)))} options={irisMotorPowers} optionLabel={sunilusLabel} placeholder="Elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
+              {isIrisMotor && <SelectField label="Motor" value={chosenMotor(awning, irisMotorPowers, irisDefaultMotor(irisSeriesOf(awning.submodel)))} options={irisMotorPowers} optionLabel={screenMotorLabel} placeholder="Elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
               {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.motorLocation && <SelectField label="Posición motor" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}

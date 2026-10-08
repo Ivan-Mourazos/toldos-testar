@@ -129,6 +129,7 @@ export type Awning = {
   irisGuideFixing: '' | 'PARED' | 'TECHO';
   irisBoxShape: '' | 'REDONDO' | 'CUADRADO';
   irisWindBlock: boolean;
+  irisGlassCurtain: boolean;
   irisAssumeSquare: boolean;
   irisFrontTop: number | null;
   irisFrontBottom: number | null;

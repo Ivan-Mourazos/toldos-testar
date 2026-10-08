@@ -28,6 +28,14 @@ Añadidas el 03/10/2026, al comparar en los 17 modelos lo que sale en el despiec
 
 Lo que sí se arregla sin preguntar (03/10/2026): el despiece del Iris y el del HERA salen de las piezas que ya se reservan; el Xacobeo pone en el despiece las referencias de tapones y terminales que ya reserva; y el Ágata Box añade al despiece los dos kits de patines.
 
+## Iris: motor solar (07/10/2026)
+
+Del pedido AR2604748, el primer Iris con motor solar (Somfy RS100 Solar IO 15/12, el que pidió compras).
+
+| Código | Pregunta | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-I09 | ¿Qué adaptación lleva el motor solar RS100 en el tubo de 70 del Iris? El único solar anterior fue un HERA, con el kit Swift de 56 | Reserva la misma que con el Sunilus: casquillo para motor 50 ZIP, rueda motriz y soporte Hipro |
+
 ## Clásicos
 
 ### Antica
