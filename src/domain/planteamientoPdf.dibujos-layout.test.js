@@ -57,7 +57,14 @@ test.each([[363, 450], [484, 300]])('el recuadro %s × %s conserva la proporció
   }, { width, height });
 });
 
-test.each(['CORTINA', 'CAMBIO CORTINA', 'IRIS'])('%s: el cuerpo aprovecha el espacio de la miniatura', async model => {
+// El Iris dibuja el escuadrado con las proporciones del hueco (Iván, 08/10/2026): el toldo, en
+// amarillo, llena el ancho o el alto según sea más ancho o más alto.
+const bodies = {
+  CORTINA: { fill: '#fbfcfc', fits: panel => panel.width >= 242 * 0.7 && panel.height >= 300 * 0.53 },
+  'CAMBIO CORTINA': { fill: '#fbfcfc', fits: panel => panel.width >= 242 * 0.7 && panel.height >= 300 * 0.53 },
+  IRIS: { fill: '#fff8df', fits: panel => panel.width >= 242 * 0.6 || panel.height >= 300 * 0.5 }
+};
+test.each(Object.keys(bodies))('%s: el cuerpo aprovecha el espacio de la miniatura', async model => {
   const variant = webDrawingVariants(model).find(item => item.webDrawing);
   const [awning] = normalizeOrder({ awnings: [exampleAwning(variant)] }).awnings;
   await inspect(awning, ({ operators }) => {
@@ -65,12 +72,12 @@ test.each(['CORTINA', 'CAMBIO CORTINA', 'IRIS'])('%s: el cuerpo aprovecha el esp
     const panels = [];
     operators.fnArray.forEach((operation, i) => {
       if (operation === OPS.setFillRGBColor) fill = operators.argsArray[i][0];
-      if (operation === OPS.constructPath && fill === '#fbfcfc') {
+      if (operation === OPS.constructPath && fill === bodies[model].fill) {
         const [left, top, right, bottom] = operators.argsArray[i][2];
         panels.push({ width: right - left, height: bottom - top });
       }
     });
-    expect(panels.some(panel => panel.width >= 242 * 0.7 && panel.height >= 300 * 0.53), 'cuerpo legible, no una franja pequeña sobre una caja vacía').toBe(true);
+    expect(panels.some(bodies[model].fits), 'cuerpo legible, no una franja pequeña sobre una caja vacía').toBe(true);
   });
 });
 

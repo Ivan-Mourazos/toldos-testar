@@ -10,6 +10,7 @@ import { resolveFabric } from './fabricCatalog.js';
 import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
+import { buildIrisSquaringView } from './irisSquaringView.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
 
@@ -1291,45 +1292,77 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
 }
 
 function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
-  // El mismo criterio que usa el despiece, importado y no reescrito aquí: si
-  // los dos divergen, el croquis dibuja un toldo sin cofre al lado de una lista
-  // de piezas que sí corta el cofre.
+  // Dibujo del escuadrado (Iván, 08/10/2026): el mismo que la tarjeta (irisSquaringView.js),
+  // para que el taller vea cómo queda el toldo en el hueco sin dibujarlo en CAD. El criterio del
+  // cofre y la compensadora es el del despiece: si divergieran, el croquis contradiría la lista.
   const hasCompensator = normalizeIrisGuideType(awning.irisGuideType) === 'COMPENSADORA';
   const hasBox = irisHasCassette(awning.submodel, awning.irisGuideType);
   drawDiagramShell(doc, x, y, w, h);
+  const view = buildIrisSquaringView(awning) || buildIrisSquaringView({
+    irisAssumeSquare: true,
+    irisFrontTop: calculation.width || 400,
+    irisExitLeft: calculation.projection || 250
+  });
+  const { topLeft, topRight, bottomLeft, bottomRight } = view.drawCorners;
+  const minX = Math.min(0, bottomLeft.x);
+  const maxX = Math.max(topRight.x, bottomRight.x);
+  const maxY = Math.max(bottomLeft.y, bottomRight.y);
+  const areaX = x + w * 0.16;
+  const areaW = w * 0.68;
+  const areaY = y + h * 0.17;
+  const areaH = h * 0.55;
+  const scale = Math.min(areaW / (maxX - minX), areaH / maxY);
+  const offsetX = areaX + (areaW - (maxX - minX) * scale) / 2 - minX * scale;
+  const offsetY = areaY + (areaH - maxY * scale) / 2;
+  const at = (point) => [offsetX + point.x * scale, offsetY + point.y * scale];
+  const [tlx, tly] = at(topLeft);
+  const [trx] = at(topRight);
+  const [blx, bly] = at(bottomLeft);
+  const [brx, bry] = at(bottomRight);
+  const toldo = view.drawToldo;
+  const [toldoLeft] = at({ x: toldo.left, y: 0 });
+  const [toldoRight, toldoBottom] = at({ x: toldo.right, y: toldo.drop });
 
-  const panelX = x + w * 0.14;
-  const panelY = y + h * 0.17;
-  const panelW = w * 0.72;
-  const panelH = h * 0.67;
+  if (hasBox) doc.roundedRect(tlx - 6, tly - 13, trx - tlx + 12, 10, 3).fillAndStroke('#e7eeec', '#466e64');
+  doc.rect(toldoLeft, tly, toldoRight - toldoLeft, toldoBottom - tly).fillAndStroke(colors.yellowSoft, colors.yellow);
+  doc.polygon([tlx, tly], [trx, tly], [brx, bry], [blx, bly]).lineWidth(1).strokeColor(colors.ink).stroke();
+  doc.moveTo(trx, tly).lineTo(blx, bly).moveTo(tlx, tly).lineTo(brx, bry)
+    .strokeColor(colors.line).lineWidth(0.5).dash(2, { space: 2 }).stroke().undash();
 
-  if (hasBox) {
-    doc.roundedRect(panelX - 12, panelY - 26, panelW + 24, 30, 5).fillAndStroke('#e7eeec', '#466e64');
-  } else {
-    doc.circle(panelX + panelW / 2, panelY - 11, 11).fillAndStroke('#e7eeec', '#466e64');
+  // Cota de cada guía por fuera del hueco: su corte y la altura del hueco en ese lado.
+  const dimLeft = Math.min(tlx, blx) - 7;
+  const dimRight = Math.max(trx, brx) + 7;
+  for (const [dx, bottom] of [[dimLeft, bly], [dimRight, bry]]) {
+    doc.moveTo(dx, tly).lineTo(dx, bottom).moveTo(dx - 2.5, tly).lineTo(dx + 2.5, tly).moveTo(dx - 2.5, bottom).lineTo(dx + 2.5, bottom)
+      .strokeColor(colors.inkSoft).lineWidth(0.6).stroke();
   }
+  const guideText = (side, cut, height) => (Number(cut) > 0
+    ? side + ': CORTE ' + formatNumber(cut) + ' · HUECO ' + formatNumber(height)
+    : side + ': HUECO ' + formatNumber(height));
+  drawRotatedDiagramText(doc, guideText('MFI', calculation.guideLeftLength, view.guides.left), dimLeft - 7, (tly + bly) / 2, bly - tly + 30);
+  drawRotatedDiagramText(doc, guideText('MFD', calculation.guideRightLength, view.guides.right), dimRight + 7, (tly + bry) / 2, bry - tly + 30);
 
-  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#9db0ac');
-  doc.moveTo(panelX + 5, panelY).lineTo(panelX + 5, panelY + panelH)
-    .moveTo(panelX + panelW - 5, panelY).lineTo(panelX + panelW - 5, panelY + panelH)
-    .strokeColor('#466e64').lineWidth(1.4).stroke();
-  if (hasCompensator) {
-    doc.moveTo(panelX + 9, panelY).lineTo(panelX + 9, panelY + panelH)
-      .moveTo(panelX + panelW - 9, panelY).lineTo(panelX + panelW - 9, panelY + panelH)
-      .strokeColor('#d2a116').lineWidth(1).stroke();
+  drawDiagramText(doc, 'FRENTE SUPERIOR ' + formatNumber(view.measures.frontTop), x, tly - (hasBox ? 25 : 14), w);
+  drawDiagramText(doc, 'FRENTE INFERIOR ' + formatNumber(view.measures.frontBottom), x, Math.max(bly, bry) + (view.slack.left > 0 || view.slack.right > 0 ? 17 : 8), w);
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.6));
+  const along = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  const [d1x, d1y] = along([trx, tly], [blx, bly], 0.2);
+  const [d2x, d2y] = along([tlx, tly], [brx, bry], 0.2);
+  doc.text('D1 ' + formatNumber(view.measures.diagonal1), d1x - 40, d1y, { width: 38, align: 'right', lineBreak: false });
+  doc.text('D2 ' + formatNumber(view.measures.diagonal2), d2x + 2, d2y, { width: 40, lineBreak: false });
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(6.8))
+    .text('TOLDO ' + formatNumber(view.toldo.width) + ' × ' + formatNumber(view.toldo.drop), toldoLeft, (tly + toldoBottom) / 2 - 4, { width: toldoRight - toldoLeft, align: 'center', lineBreak: false });
+  doc.fillColor(colors.red).font(fonts.semibold).fontSize(diagramText(5.6));
+  if (view.slack.left > 0) doc.text(formatNumber(view.slack.left) + ' CM', blx - 2, bly + 1.5, { width: 34, lineBreak: false });
+  if (view.slack.right > 0) doc.text(formatNumber(view.slack.right) + ' CM', brx - 32, bry + 1.5, { width: 34, align: 'right', lineBreak: false });
+
+  const footerY = y + h * 0.86;
+  drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', x, footerY, w);
+  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.6));
+  if (view.exaggeration > 1) {
+    doc.text('DESFASES EXAGERADOS ×' + view.exaggeration + ' · LAS COTAS SON LAS REALES', x + w * 0.05, y + h * 0.91, { width: w * 0.9, align: 'center' });
   }
-  // Diagonales: el IRIS se plantea escuadrado y el pedido debe traerlas.
-  doc.moveTo(panelX, panelY).lineTo(panelX + panelW, panelY + panelH)
-    .moveTo(panelX + panelW, panelY).lineTo(panelX, panelY + panelH)
-    .strokeColor('#c9d5d2').lineWidth(0.5).dash(2, { space: 2 }).stroke().undash();
-  doc.roundedRect(panelX - 4, panelY + panelH - 7, panelW + 8, 14, 3).fillAndStroke('#e7eeec', '#466e64');
-
-  // La cabecera queda fuera del marco; frente, cofre, cuerpo y guías ocupan bandas distintas.
-  drawDiagramText(doc, `FRENTE ${formatNumber(calculation.width ?? awning.irisFrontTop ?? 0)}`, panelX, panelY - 36, panelW);
-  drawRotatedDiagramText(doc, `MFI ${formatNumber(calculation.guideLeftLength ?? 0)}`, x + w * 0.055, panelY + panelH / 2, panelH * 0.8);
-  drawRotatedDiagramText(doc, `MFD ${formatNumber(calculation.guideRightLength ?? 0)}`, x + w * 0.945, panelY + panelH / 2, panelH * 0.8);
-  drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', panelX, panelY + panelH + 18, panelW);
-  doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
+  doc.font(fonts.italic).fontSize(diagramText(5.8))
     .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
 }
 

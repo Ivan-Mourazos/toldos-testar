@@ -65,8 +65,8 @@ export function buildIrisSquaringView(awning = {}, parameters = {}) {
       frontBottom: opening.frontBottom,
       exitLeft: Number(awning.irisExitLeft) || 0,
       exitRight: assumeSquare ? Number(awning.irisExitLeft) || 0 : Number(awning.irisExitRight) || 0,
-      diagonal1: assumeSquare ? Math.hypot(front, Number(awning.irisExitLeft) || 0) : Number(awning.irisDiagonal1) || 0,
-      diagonal2: assumeSquare ? Math.hypot(front, Number(awning.irisExitLeft) || 0) : Number(awning.irisDiagonal2) || 0
+      diagonal1: assumeSquare ? round1(Math.hypot(front, Number(awning.irisExitLeft) || 0)) : Number(awning.irisDiagonal1) || 0,
+      diagonal2: assumeSquare ? round1(Math.hypot(front, Number(awning.irisExitLeft) || 0)) : Number(awning.irisDiagonal2) || 0
     },
     toldo: { left: round1(left), width: round1(right - left), drop: round1(baseDrop) },
     guides: { left: round1(opening.heightLeft), right: round1(opening.heightRight) },
