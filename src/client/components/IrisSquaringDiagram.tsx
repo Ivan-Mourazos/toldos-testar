@@ -34,7 +34,11 @@ export function IrisSquaringDiagram({ awning, parameters }: { awning: Awning; pa
   const pad = unit * 5;
   const font = unit * 1.15;
   const toldo = view.drawToldo;
-  const guideGap = unit * 0.9;
+  // Cota de cada guía, por fuera del hueco: línea fina con topes (Iván, 08/10/2026: las rayas
+  // gordas confundían con el toldo).
+  const dimLeft = Math.min(0, bottomLeft.x) - unit * 1.6;
+  const dimRight = Math.max(width, bottomRight.x) + unit * 1.6;
+  const tick = unit * 0.5;
   const polygon = [topLeft, topRight, bottomRight, bottomLeft].map((p) => `${p.x},${p.y}`).join(' ');
   // Cada diagonal se rotula cerca de su extremo de arriba, para que no se pisen en el centro.
   const along = (a: Point, b: Point, t: number) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
@@ -48,14 +52,20 @@ export function IrisSquaringDiagram({ awning, parameters }: { awning: Awning; pa
         <polygon className="iris-sq-hueco" points={polygon} />
         <line className="iris-sq-diagonal" x1={topRight.x} y1={topRight.y} x2={bottomLeft.x} y2={bottomLeft.y} />
         <line className="iris-sq-diagonal" x1={topLeft.x} y1={topLeft.y} x2={bottomRight.x} y2={bottomRight.y} />
-        <line className="iris-sq-guia" x1={toldo.left - guideGap} y1={0} x2={toldo.left - guideGap} y2={bottomLeft.y} />
-        <line className="iris-sq-guia" x1={toldo.right + guideGap} y1={0} x2={toldo.right + guideGap} y2={bottomRight.y} />
+        <g className="iris-sq-cota">
+          <line x1={dimLeft} y1={0} x2={dimLeft} y2={bottomLeft.y} />
+          <line x1={dimLeft - tick} y1={0} x2={dimLeft + tick} y2={0} />
+          <line x1={dimLeft - tick} y1={bottomLeft.y} x2={dimLeft + tick} y2={bottomLeft.y} />
+          <line x1={dimRight} y1={0} x2={dimRight} y2={bottomRight.y} />
+          <line x1={dimRight - tick} y1={0} x2={dimRight + tick} y2={0} />
+          <line x1={dimRight - tick} y1={bottomRight.y} x2={dimRight + tick} y2={bottomRight.y} />
+        </g>
 
         <g className="iris-sq-texto" fontSize={font}>
           <text x={width / 2} y={-unit * 1.6} textAnchor="middle">Frente superior {cm(view.measures.frontTop)}</text>
           <text x={width / 2} y={height + unit * 2.6} textAnchor="middle">Frente inferior {cm(view.measures.frontBottom)}</text>
-          <text transform={`translate(${-unit * 3.2} ${bottomLeft.y / 2}) rotate(-90)`} textAnchor="middle">Salida izq. {cm(view.measures.exitLeft)} · guía MFI {cm(view.guides.left)}</text>
-          <text transform={`translate(${width + unit * 3.2} ${bottomRight.y / 2}) rotate(90)`} textAnchor="middle">Salida der. {cm(view.measures.exitRight)} · guía MFD {cm(view.guides.right)}</text>
+          <text transform={`translate(${dimLeft - unit * 0.9} ${bottomLeft.y / 2}) rotate(-90)`} textAnchor="middle">Guía MFI {cm(view.guides.left)} · salida {cm(view.measures.exitLeft)}</text>
+          <text transform={`translate(${dimRight + unit * 0.9} ${bottomRight.y / 2}) rotate(90)`} textAnchor="middle">Guía MFD {cm(view.guides.right)} · salida {cm(view.measures.exitRight)}</text>
           <text className="iris-sq-texto-suave" x={d1.x} y={d1.y} textAnchor="end">D1 {cm(view.measures.diagonal1)}</text>
           <text className="iris-sq-texto-suave" x={d2.x} y={d2.y}>D2 {cm(view.measures.diagonal2)}</text>
           <text className="iris-sq-texto-toldo" x={(toldo.left + toldo.right) / 2} y={toldo.drop / 2} textAnchor="middle">Toldo {cm(view.toldo.width)} × {cm(view.toldo.drop)} (frente y caída menores)</text>
@@ -64,7 +74,7 @@ export function IrisSquaringDiagram({ awning, parameters }: { awning: Awning; pa
         </g>
       </svg>
       <figcaption>
-        {view.exaggeration > 1 && <p className="iris-squaring-note">Desfases exagerados ×{view.exaggeration} para que se vean; las cotas son las reales.</p>}
+        <p className="iris-squaring-note">En amarillo, el toldo. Línea continua, el hueco medido; discontinuas, las diagonales; a los lados, la altura de cada guía del toldo (la normal, no la compensadora), que se corta por esa medida.{view.exaggeration > 1 ? ` Desfases exagerados ×${view.exaggeration} para que se vean; las cotas son las reales.` : ''}</p>
         <ul className="iris-squaring-checks">
           {view.checks.map((check) => <li key={check.id} className={`is-${check.level}`}>{check.text}</li>)}
         </ul>

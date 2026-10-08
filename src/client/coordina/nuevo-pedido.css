@@ -1193,7 +1193,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .iris-sq-hueco { fill: none; stroke: var(--text); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 .iris-sq-diagonal { stroke: var(--text-muted); stroke-dasharray: 5 4; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .iris-sq-toldo { fill: var(--tgm-yellow-soft); stroke: var(--tgm-yellow); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
-.iris-sq-guia { stroke: var(--accent-text); stroke-linecap: round; stroke-width: 4; vector-effect: non-scaling-stroke; }
+.iris-sq-cota line { stroke: var(--text-muted); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 .iris-sq-texto text { fill: var(--text); font-family: var(--font-sans); font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
 .iris-sq-texto .iris-sq-texto-suave { fill: var(--text-muted); font-weight: 500; }
 .iris-sq-texto .iris-sq-texto-toldo { fill: var(--accent-text); }
