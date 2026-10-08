@@ -12,12 +12,25 @@ describe('autocompletado de pedidos RPS', () => {
         .toBe('ANTRACITA (RAL 7016)');
     }
   );
-  test.each(['ANTRACITA MATE', 'ANTRACITA RAL 7021'])(
-    'no asigna GR16 a otro acabado: %s', (color) => {
+  test.each(['ANTRACITA RAL 7021'])(
+    'no asigna GR16 a otro RAL: %s', (color) => {
       expect(extractOrderTextData(`ESTRUCTURA DE ALUMINIO LACADO EN COLOR ${color}`, 'ARZUA PRO').structureColor)
         .toBe('LACADO ESPECIAL');
     }
   );
+  // AR2604964 (Iván, 08/10/2026): «gris antracita texturado» es GT16, que RPS llama «GRIS RAL 7016
+  // MATE TEXT.» o «GRIS RAL 7016 TEXTURADO»; los Perla y Coral Box con ese texto gastaron GT16.
+  test.each([
+    ['GRIS ANTRACITA TEXTURADO', 'GRIS 7016 MATE TEXT.'],
+    ['ANTRACITA TEXTURADO', 'GRIS 7016 MATE TEXT.'],
+    ['GRIS 7016 TEXTURADO', 'GRIS 7016 MATE TEXT.'],
+    ['GRIS 7016 MATE TEXT.', 'GRIS 7016 MATE TEXT.'],
+    ['ANTRACITA MATE', 'GRIS 7016 MATE'],
+    ['GRIS 7016 MATE', 'GRIS 7016 MATE']
+  ])('el 7016 texturado o mate: %s es %s', (color, expected) => {
+    expect(extractOrderTextData(`ESTRUCTURA DE ALUMINIO LACADO EN COLOR ${color}, TORNILLERIA`, 'PERLA BOX').structureColor)
+      .toBe(expected);
+  });
   test.each([
     ['ARZUA', '', 'ARZUA PRO'],
     ['XACOBEO', '', 'XACOBEO'],

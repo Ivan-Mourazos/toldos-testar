@@ -689,13 +689,17 @@ function inferValanceCurve(text) {
 
 function inferStructureColor(text) {
   const structure = /(?:ESTRUCTURA|ALUMINIO)[\s\S]{0,90}?(?:LACAD[OA]|COLOR)\s+(?:EN\s+COLOR\s+|COLOR\s+)?([A-Z0-9 -]{4,30})/.exec(text)?.[1] || '';
-  if (/GRIS\s+7016\s+MATE/.test(structure)) return 'GRIS 7016 MATE TEXT.';
-  // No confundir el acabado mate/texturado con el antracita GR16 comprado.
-  if (/\bANTRACITA\b/.test(structure)) {
-    const ral = structure.match(/\b\d{4}\b/)?.[0];
-    return !/\bMATE\b|TEXT/.test(structure) && (!ral || ral === '7016')
-      ? 'ANTRACITA (RAL 7016)' : 'LACADO ESPECIAL';
+  // El 7016 texturado es GT16 (RPS: «GRIS RAL 7016 MATE TEXT.» o «… TEXTURADO»), el mate sin
+  // textura G16M y el liso GR16. AR2604964: «gris antracita texturado» salía lacado especial y el
+  // Perla Box no se podía calcular; sus Perla y Coral Box anteriores gastaron GT16.
+  const gray7016 = /\bANTRACITA\b|GRIS\s+(?:RAL\s+)?7016/.test(structure);
+  const ral = structure.match(/\b\d{4}\b/)?.[0];
+  if (gray7016 && (!ral || ral === '7016')) {
+    if (/TEXT/.test(structure)) return 'GRIS 7016 MATE TEXT.';
+    if (/\bMATE\b/.test(structure)) return 'GRIS 7016 MATE';
   }
+  // No confundir el antracita GR16 comprado con otro RAL.
+  if (/\bANTRACITA\b/.test(structure)) return !ral || ral === '7016' ? 'ANTRACITA (RAL 7016)' : 'LACADO ESPECIAL';
   // Colores añadidos a la lista el 08/10/2026, antes que los genéricos de cada familia.
   if (/9003/.test(structure)) return 'BLANCO MATE 9003';
   if (/OSTRA|MARFIL[\s\S]*1013[\s\S]*TEXT/.test(structure)) return 'MARFIL BLANCO OSTRA 1013 TEXT.';
