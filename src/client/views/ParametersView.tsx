@@ -181,6 +181,8 @@ type GaliciaProps = {
 
 // Taller, 30/09/2026 (Q-A06): los largos de barra ya no se configuran; salen de lo que existe en RPS.
 const BAR_LENGTH_NOTE = 'Barras y tubos: la web reserva la más corta que existe en RPS en ese lacado y llega al corte. Si el color no tiene esa pieza, va en blanco para lacar.';
+// Iván, 08/10/2026: el remate de 5 cm que incluye el margen de caída solo va con bamba en la misma tela.
+const NO_VALANCE_NOTE = 'Sin bamba, la caída de tela es 5 cm menor: el margen incluye el remate de la bamba, que solo se suma si la hay en la misma tela.';
 
 function GaliciaParametersView({ parameters, onUpdate, onReset }: GaliciaProps) {
   function updateDiscount(group: DiscountGroup, tube: string, device: Device, value: number) {
@@ -216,6 +218,7 @@ function GaliciaParametersView({ parameters, onUpdate, onReset }: GaliciaProps) 
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(seamAllowanceCm) => seamAllowanceCm !== null && onUpdate({ seamAllowanceCm })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && onUpdate({ seamBaseCm })} />
         </div>
+        <ParameterNote>{NO_VALANCE_NOTE}</ParameterNote>
         <ParameterNote>{BAR_LENGTH_NOTE}</ParameterNote>
       </ParameterBand>
 
@@ -345,7 +348,7 @@ function ArzuaParametersView({ parameters, selectedModel, onUpdate, onReset }: A
           <NumberField label="Margen fijo de confección (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(seamBaseCm) => seamBaseCm !== null && onUpdate({ seamBaseCm })} />
         </div>
         <ParameterNote>{BAR_LENGTH_NOTE}</ParameterNote>
-        <ParameterNote>Caída de tela: salida + {parameters.fabricDropAllowanceCm} + alto de bamba. Con la bamba en otra tela: cuerpo salida + {Math.max(0, parameters.fabricDropAllowanceCm - 5)} y bamba alto + 5.</ParameterNote>
+        <ParameterNote>Caída de tela con bamba en la misma tela: salida + {parameters.fabricDropAllowanceCm} + alto de bamba. Sin bamba, o con la bamba en otra tela, el cuerpo es salida + {Math.max(0, parameters.fabricDropAllowanceCm - 5)}: sin los 5 cm de remate. La bamba en otra tela, alto + 5.</ParameterNote>
         <ParameterNote>El solape se suma por cada unión entre paños y el margen fijo, una vez por paño.</ParameterNote>
       </ParameterBand>
 
@@ -432,6 +435,7 @@ function XacobeoParametersView({ parameters, selectedModel, onUpdate, onReset }:
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
           {parameters.stockLengths.map((length, index) => <NumberField key={index} label={`Barra comercial ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ stockLengths: parameters.stockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
+        <ParameterNote>{NO_VALANCE_NOTE}</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="02" title="Descuentos dimensionales" description="Centímetros descontados al frente según pieza y accionamiento.">
@@ -495,6 +499,7 @@ function MaxiscreemParametersView({ parameters, selectedModel, onUpdate, onReset
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
+        <ParameterNote>El remate de bamba solo se suma cuando hay bamba en la misma tela.</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="02" title="Largos de almacén" description="La web elige automáticamente el primer largo que admite la pieza.">
@@ -580,6 +585,7 @@ function ElectraParametersView({ parameters, selectedModel, onUpdate, onReset }:
           {parameters.profileStockLengths.map((length, index) => <NumberField key={`profile-${index}`} label={`Stock perfiles ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ profileStockLengths: parameters.profileStockLengths.map((item, current) => current === index ? value : item) })} />)}
           {parameters.guideStockLengths.map((length, index) => <NumberField key={`guide-${index}`} label={`Stock guías ${index + 1} (cm)`} value={length} min={1} step={50} onChange={(value) => value !== null && onUpdate({ guideStockLengths: parameters.guideStockLengths.map((item, current) => current === index ? value : item) })} />)}
         </div>
+        <ParameterNote>{NO_VALANCE_NOTE}</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="02" title="Descuentos según soporte" description="Tabla interna de Electra y descuentos de Cortina para el soporte Maxiscreen. Todos los valores se descuentan en centímetros.">
@@ -645,6 +651,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onRes
           <NumberField label="Primer currón desde (cm)" value={parameters.curronStartWidthCm} min={1} onChange={(value) => value !== null && onUpdate({ curronStartWidthCm: value })} />
           <NumberField label="Segundo currón desde (cm)" value={parameters.curronSecondWidthCm} min={1} onChange={(value) => value !== null && onUpdate({ curronSecondWidthCm: value })} />
         </div>
+        <ParameterNote>El remate de bamba solo se suma cuando hay bamba en la misma tela.</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="02" title="Descuentos dimensionales" description="Centímetros descontados al frente por accionamiento.">
@@ -710,7 +717,7 @@ function PuntoRectoParametersView({ parameters, selectedModel, onUpdate, onReset
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-        <ParameterNote>Estándar: salida × multiplicador + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</ParameterNote>
+        <ParameterNote>Estándar: salida × multiplicador + margen fijo + bamba; sin bamba, el margen fijo baja 5 cm (sin remate). Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="03" title="Descuentos y motores" description="Descuentos al frente y potencia automática según brazos.">
@@ -901,7 +908,7 @@ function AmbarBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
           <NumberField label="Margen base de paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
         </div>
-        <ParameterNote>Estándar: salida × factor diagonal + margen fijo + bamba. Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</ParameterNote>
+        <ParameterNote>Estándar: salida × factor diagonal + margen fijo + bamba; sin bamba, el margen fijo baja 5 cm (sin remate). Bajada vertical 170°: salida × 2 + margen vertical + bamba. La bamba de otro tejido se calcula aparte.</ParameterNote>
       </ParameterBand>
 
       <ParameterBand number="03" title="Descuentos dimensionales" description="Varían por colocación y dispositivo.">
@@ -956,6 +963,7 @@ function BoxParametersView({ parameters, selectedModel, onUpdate, onReset }: Box
           <NumberField label="Margen base paño (cm)" value={parameters.seamBaseCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamBaseCm: value })} />
           <NumberField label="Costura entre paños (cm)" value={parameters.seamAllowanceCm} min={0} step={0.1} onChange={(value) => value !== null && onUpdate({ seamAllowanceCm: value })} />
         </div>
+        <ParameterNote>{NO_VALANCE_NOTE}</ParameterNote>
         <ParameterNote>{BAR_LENGTH_NOTE}</ParameterNote>
       </ParameterBand>
 
@@ -1044,6 +1052,7 @@ function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
           <NumberField label="Inicio de soportes (cm)" value={parameters.supportBaseStartWidth} min={1} onChange={(value) => value !== null && onUpdate({ supportBaseStartWidth: value })} />
           <NumberField label="Paso entre soportes (cm)" value={parameters.supportBaseStepWidth} min={1} onChange={(value) => value !== null && onUpdate({ supportBaseStepWidth: value })} />
         </div>
+        <ParameterNote>{NO_VALANCE_NOTE}</ParameterNote>
         <ParameterNote>{BAR_LENGTH_NOTE}</ParameterNote>
       </ParameterBand>
 
