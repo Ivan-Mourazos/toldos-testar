@@ -1196,6 +1196,8 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .iris-sq-cota line { stroke: var(--text-muted); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 .iris-sq-texto text { fill: var(--text); font-family: var(--font-sans); font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
 .iris-sq-texto .iris-sq-texto-suave { fill: var(--text-muted); font-weight: 500; }
+.iris-sq-texto .iris-sq-texto-lado { fill: var(--text-muted); font-weight: 500; }
+.iris-squaring.is-template .iris-sq-texto text { fill: var(--accent-text); }
 .iris-sq-texto .iris-sq-texto-toldo { fill: var(--accent-text); }
 .iris-sq-texto .iris-sq-texto-desfase { fill: var(--aviso-texto); }
 .iris-squaring figcaption { display: grid; gap: 4px; margin-top: 6px; }

@@ -527,6 +527,12 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={['SÍ', 'NO']}
                 onChange={(value) => update({ irisAssumeSquare: value === 'SÍ' })}
               />
+              {/* Iván, 08/10/2026: el escuadrado dibujado según se teclea, en lugar del CAD; antes de las casillas, como plantilla de qué es cada medida. */}
+              <IrisSquaringDiagram
+                awning={awning}
+                parameters={(parameters as unknown as { iris?: unknown }).iris}
+                guideCuts={{ left: Number((ofCalculation as Record<string, unknown> | undefined)?.guideLeftLength) || 0, right: Number((ofCalculation as Record<string, unknown> | undefined)?.guideRightLength) || 0 }}
+              />
               <NumberField label="Frente superior" missing={isMissing('irisFrontTop')} value={awning.irisFrontTop} min={0} onChange={(irisFrontTop) => update({ irisFrontTop })} />
               <NumberField label="Salida izquierda" missing={isMissing('irisExitLeft')} value={awning.irisExitLeft} min={0} onChange={(irisExitLeft) => update({ irisExitLeft })} />
               {!awning.irisAssumeSquare && (
@@ -537,12 +543,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   <NumberField label="Diagonal 2 (a salida der.)" value={awning.irisDiagonal2} min={0} onChange={(irisDiagonal2) => update({ irisDiagonal2 })} />
                 </>
               )}
-              {/* Iván, 08/10/2026: el escuadrado dibujado según se teclea, en lugar del CAD. */}
-              <IrisSquaringDiagram
-                awning={awning}
-                parameters={(parameters as unknown as { iris?: unknown }).iris}
-                guideCuts={{ left: Number((ofCalculation as Record<string, unknown> | undefined)?.guideLeftLength) || 0, right: Number((ofCalculation as Record<string, unknown> | undefined)?.guideRightLength) || 0 }}
-              />
 
               <SelectField
                 label="Tipo de guía"
