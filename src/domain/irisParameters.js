@@ -114,6 +114,10 @@ export const defaultIrisParameters = {
   compensatorMaxCm: 3,
   // Diferencia entre frentes que obliga a avisar a comercial si no hay compensadora.
   frontDifferenceWarnCm: 0.5,
+  // Diferencia admitida entre el frente inferior medido y el que dan las salidas y las diagonales
+  // (Iván, 08/10/2026): más es que alguna de las seis medidas está mal. La cuenta amplifica el error
+  // de cinta de las diagonales (medio centímetro en cada una mueve más de 1 cm el frente inferior).
+  squaringToleranceCm: 2,
   // Metros de lona que ahorra cada paño cuando el toldo lleva ventana de cristal.
   glassFabricSavingM: 1.4
 };
@@ -220,6 +224,7 @@ export function normalizeIrisParameters(value = {}) {
     compensatorWarnCm: nonNegative(value.compensatorWarnCm, defaults.compensatorWarnCm),
     compensatorMaxCm: nonNegative(value.compensatorMaxCm, defaults.compensatorMaxCm),
     frontDifferenceWarnCm: nonNegative(value.frontDifferenceWarnCm, defaults.frontDifferenceWarnCm),
+    squaringToleranceCm: nonNegative(value.squaringToleranceCm, defaults.squaringToleranceCm),
     glassFabricSavingM: nonNegative(value.glassFabricSavingM, defaults.glassFabricSavingM)
   };
 }

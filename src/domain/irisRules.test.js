@@ -379,6 +379,46 @@ describe('IRIS · piezas comunes según el consumo real', () => {
   });
 });
 
+// Iván, 08/10/2026 (AR2604748): la web no comprobaba las diagonales. Medidas exageradas daban válido.
+describe('IRIS · las seis medidas del hueco', () => {
+  const hueco = (medidas, overrides = {}) => calculate({ irisAssumeSquare: false, curtainHasWindow: false, ...medidas, ...overrides });
+  const mensajes = (result) => result.diagnostics.map((item) => `${item.level}: ${item.message}`).join(' | ');
+
+  test('diagonales que no cuadran con los frentes: no válido y dice qué frente inferior darían', () => {
+    const result = hueco({ irisFrontTop: 253.5, irisFrontBottom: 253.5, irisExitLeft: 220, irisExitRight: 220, irisDiagonal1: 400, irisDiagonal2: 300 });
+    expect(result.calculation.valid).toBe(false);
+    expect(mensajes(result)).toMatch(/error: .*no cuadran/);
+  });
+
+  test('un frente inferior exagerado tampoco cuadra', () => {
+    const square = Math.hypot(253.5, 220);
+    const result = hueco({ irisFrontTop: 253.5, irisFrontBottom: 300, irisExitLeft: 220, irisExitRight: 220, irisDiagonal1: square, irisDiagonal2: square });
+    expect(result.calculation.valid).toBe(false);
+    expect(mensajes(result)).toMatch(/no cuadran/);
+  });
+
+  test('el CAD de referencia (2,6 cm fuera de escuadra) sin compensadora: válido, pero avisa de que necesita compensadora', () => {
+    const result = hueco({ irisFrontTop: 355, irisFrontBottom: 350, irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537 }, { submodel: 'IRIS 130 CON COFRE' });
+    expect(result.calculation.valid).toBe(true);
+    expect(mensajes(result)).toMatch(/warn: .*fuera de escuadra/);
+  });
+
+  test('más de 3 cm fuera de escuadra sin compensadora no se puede hacer, salvo con excepción técnica', () => {
+    // Desplazamiento de 5 cm en la esquina inferior izquierda.
+    const medidas = { irisFrontTop: 300, irisFrontBottom: 295, irisExitLeft: Math.hypot(250, 5), irisExitRight: 250,
+      irisDiagonal1: Math.hypot(295, 250), irisDiagonal2: Math.hypot(300, 250) };
+    const blocked = hueco(medidas, { submodel: 'IRIS 130 CON COFRE' });
+    expect(blocked.calculation.valid).toBe(false);
+    expect(mensajes(blocked)).toMatch(/error: .*fuera de escuadra/);
+    expect(hueco(medidas, { submodel: 'IRIS 130 CON COFRE', reglasModificadas: true }).calculation.valid).toBe(true);
+  });
+
+  test('escuadrado: sin avisos de escuadra', () => {
+    const result = calculate({ curtainHasWindow: false });
+    expect(mensajes(result)).not.toMatch(/escuadra|no cuadran/);
+  });
+});
+
 // Iván, 07/10/2026 (pedido AR2604748): telón todo de cristal estabilizado. El cristal se
 // compra en piezas de 140 de ancho; el largo es la siguiente medida que cubre el frente de
 // la tela (como la ventana) y se ponen las piezas que hagan falta para cubrir la caída.

@@ -124,6 +124,15 @@ export function calculateIris({ order, awning }) {
   const slack = Math.max(opening.slackLeft, opening.slackRight);
   const compensatorOverMax = hasCompensator && slack > parameters.compensatorMaxCm;
   const frontDifference = Math.abs(opening.frontTop - opening.frontBottom);
+  // Las seis medidas tienen que cuadrar, y sin compensadora el hueco no puede salirse de escuadra
+  // más de lo que la compensadora absorbería (Iván, 08/10/2026, AR2604748: medidas exageradas
+  // daban válido). Escuadrado por defecto, cuadra siempre.
+  const squaringMismatch = opening.valid && awning.irisAssumeSquare !== true
+    ? Math.abs(opening.frontBottomFromDiagonals - opening.frontBottom)
+    : 0;
+  const measuresDontMatch = squaringMismatch > parameters.squaringToleranceCm;
+  const outOfSquare = opening.valid && !hasCompensator && !measuresDontMatch && slack > parameters.frontDifferenceWarnCm;
+  const outOfSquareOverMax = outOfSquare && slack > parameters.compensatorMaxCm;
 
   // Solo comprobamos piezas cuando la geometría y la configuración ya son
   // válidas: si el hueco está roto o la combinación no existe, ese error ya
@@ -169,6 +178,14 @@ export function calculateIris({ order, awning }) {
   if (outOfRange && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS ${series} fuera de medidas: el manual admite de ${formatNumber(limits.minWidth)}x${formatNumber(limits.minDrop)} a ${formatNumber(limits.maxWidth)}x${formatNumber(limits.maxDrop)} cm. Activa una excepción técnica para continuar.` });
   }
+  if (measuresDontMatch && !modified) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS en OF ${awning.of}: las seis medidas del hueco no cuadran. Con el frente superior, las salidas y las diagonales, el frente inferior sería de ${formatNumber(round1(opening.frontBottomFromDiagonals))} cm y el pedido dice ${formatNumber(opening.frontBottom)}. Revisa las medidas (la diagonal 1 va con la salida izquierda y la 2 con la derecha).` });
+  }
+  if (outOfSquareOverMax && !modified) {
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS en OF ${awning.of}: el hueco está ${formatNumber(round1(slack))} cm fuera de escuadra por guía; ni la guía compensadora absorbe más de ${formatNumber(parameters.compensatorMaxCm)} cm. Revisa las medidas con comercial, o activa una excepción técnica para continuar.` });
+  } else if (outOfSquare) {
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS sin compensadora con el hueco ${formatNumber(round1(slack))} cm fuera de escuadra por guía: avisar a comercial; con más de ${formatNumber(parameters.frontDifferenceWarnCm)} cm debería llevar guía compensadora.` });
+  }
   if (compensatorOverMax && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `IRIS con compensadora: hay que absorber ${formatNumber(round1(slack))} cm por guía y el máximo tolerado son ${formatNumber(parameters.compensatorMaxCm)} cm. Revisa las medidas del hueco.` });
   }
@@ -211,6 +228,8 @@ export function calculateIris({ order, awning }) {
     && !(motorOnly && device === 'MAQUINA')
     && (!outOfRange || modified)
     && (!compensatorOverMax || modified)
+    && (!measuresDontMatch || modified)
+    && (!outOfSquareOverMax || modified)
     && negativePieces.length === 0
     && (!glassOutOfCatalog || modified);
 

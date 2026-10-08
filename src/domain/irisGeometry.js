@@ -34,11 +34,19 @@ export function squareIrisOpening(measures = {}) {
     .filter((value) => value < 0)
     .reduce((total, value) => total + value, 0);
 
+  // El frente inferior que dan las demás medidas: la distancia entre las dos esquinas de abajo,
+  // con la esquina superior izquierda en el origen. Si no se parece al medido, alguna de las
+  // seis medidas está mal (Iván, 08/10/2026, AR2604748).
+  const bottomLeftX = exitLeft * left.cosine;
+  const bottomRightX = frontTop - exitRight * right.cosine;
+  const frontBottomFromDiagonals = Math.hypot(bottomRightX - bottomLeftX, right.height - left.height);
+
   return {
     valid: true,
     error: '',
     frontTop,
     frontBottom,
+    frontBottomFromDiagonals,
     frontToldo: frontTop + negativeDisplacement,
     dropOpening: Math.min(left.height, right.height),
     heightLeft: left.height,
@@ -64,7 +72,7 @@ function solveTriangle(front, diagonal, exit) {
   const cosine = (exit * exit + front * front - diagonal * diagonal) / (2 * exit * front);
   const angle = Math.acos(Math.min(1, Math.max(-1, cosine))) * 180 / Math.PI;
 
-  return { height, slack, angle, displacement: angle > 90 ? slack : -slack };
+  return { height, slack, angle, cosine: Math.min(1, Math.max(-1, cosine)), displacement: angle > 90 ? slack : -slack };
 }
 
 function positive(value) {
@@ -78,6 +86,7 @@ function failure(error) {
     error,
     frontTop: 0,
     frontBottom: 0,
+    frontBottomFromDiagonals: 0,
     frontToldo: 0,
     dropOpening: 0,
     heightLeft: 0,

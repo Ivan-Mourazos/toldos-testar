@@ -146,6 +146,8 @@ export function IrisRuleReference() {
         ['Serie seleccionada · caída mínima / máxima', limits ? number(limits.minDrop) + ' / ' + number(limits.maxDrop) + ' cm' : 'No disponible'],
         ['Compensación por guía', 'Aviso desde más de ' + number(params.compensatorWarnCm) + ' cm; máximo OT ' + number(params.compensatorMaxCm) + ' cm.'],
         ['Diferencia de frentes sin compensadora', 'Aviso si supera ' + number(params.frontDifferenceWarnCm) + ' cm.'],
+        ['Escuadra sin compensadora', 'Aviso si una guía se sale más de ' + number(params.frontDifferenceWarnCm) + ' cm; no válido si pasa de ' + number(params.compensatorMaxCm) + ' cm.'],
+        ['Las seis medidas del hueco', 'El frente inferior que dan las salidas y las diagonales no puede diferir del medido más de ' + number(params.squaringToleranceCm) + ' cm.'],
         ['Ventana de cristal', 'Descuenta ' + number(params.glassFabricSavingM) + ' ml de tela por paño. Rollos de cristal hasta 450 cm.']
       ]} />
       <p>Esta consulta muestra los valores generales actuales. Un pedido con parámetros guardados o una excepción técnica debe revisarse en su propio cálculo.</p>

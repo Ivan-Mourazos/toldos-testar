@@ -118,6 +118,15 @@ Decidido por Iván el 07/10/2026 con el pedido AR2604748 (OF 0232537): Iris 110 
   - Fijación de la guía y lado del motor no salen nunca del texto.
   - Barrido de las 144 líneas de Iris desde 2021 (`tmp/iris-4748/barrido.mjs`): todas con variante y lacado. De los 78 toldos que traen medidas, 66 calculan válidos con lo recuperado. Los otros 12 se salen de las medidas del manual o son un 130 sin cofre a motor.
 
+### Escuadra del hueco (08/10/2026)
+
+AR2604748: con medidas exageradas la web seguía dando válido, porque solo comprobaba que cada triángulo existiera. Desde el 08/10/2026:
+
+- **Las seis medidas tienen que cuadrar.** Con el frente superior, las salidas y las diagonales sale el frente inferior. Si se aparta del medido más de **2 cm**, el toldo no es válido y la tarjeta dice qué frente inferior darían las demás medidas. En el CAD `EJEMPLO.dwg` la diferencia es de 0,05 cm. Los 2 cm son de la web, no de una guía (Q-I10): la cuenta amplifica el error de cinta de las diagonales; medio centímetro en cada una mueve más de 1 cm el frente inferior.
+- **Sin guía compensadora**, si una guía se sale de escuadra más de **0,5 cm**, avisa de que hay que hablar con comercial: el umbral de Oficina Técnica para la diferencia de frentes. Si pasa de **3 cm**, no es válido: ni la compensadora lo absorbe (`guía toldos iris.odt`: «la guía compensadora solo absorbe aproximadamente 3 cm a cada lado»). La excepción técnica permite seguir.
+- Con «Hueco escuadrado: sí» no se comprueba nada de esto, porque las medidas se derivan por Pitágoras.
+- Fuentes buscadas el 08/10/2026 en Oficina Técnica (`Y:`): `guía toldos iris.odt`, el protocolo de medición `I-1 06 02 R4` (el apartado de toldos está vacío) y los manuales de montaje Screeny de BAT. Ninguno da una tolerancia en cifras.
+
 ### `validate:reserva IRIS`
 
 | | Antes (23/09) | Después (24/09) |
