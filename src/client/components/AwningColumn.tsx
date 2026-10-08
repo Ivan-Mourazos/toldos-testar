@@ -538,7 +538,11 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 </>
               )}
               {/* Iván, 08/10/2026: el escuadrado dibujado según se teclea, en lugar del CAD. */}
-              <IrisSquaringDiagram awning={awning} parameters={(parameters as unknown as { iris?: unknown }).iris} />
+              <IrisSquaringDiagram
+                awning={awning}
+                parameters={(parameters as unknown as { iris?: unknown }).iris}
+                guideCuts={{ left: Number((ofCalculation as Record<string, unknown> | undefined)?.guideLeftLength) || 0, right: Number((ofCalculation as Record<string, unknown> | undefined)?.guideRightLength) || 0 }}
+              />
 
               <SelectField
                 label="Tipo de guía"

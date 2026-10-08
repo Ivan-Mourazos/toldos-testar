@@ -22,7 +22,7 @@ const cm = (value: number) => value.toLocaleString('es-ES', { maximumFractionDig
  * rectángulo del toldo y cada guía con su altura, según se teclean las medidas. Sustituye al
  * dibujo en CAD. Los desfases van exagerados para que se vean; las cotas son las reales.
  */
-export function IrisSquaringDiagram({ awning, parameters }: { awning: Awning; parameters?: unknown }) {
+export function IrisSquaringDiagram({ awning, parameters, guideCuts }: { awning: Awning; parameters?: unknown; guideCuts?: { left: number; right: number } }) {
   const view = buildIrisSquaringView(awning, (parameters ?? {}) as object) as View | null;
   if (!view) {
     return <p className="iris-squaring-empty">El dibujo del hueco sale al completar frente, salidas y diagonales.</p>;
@@ -39,6 +39,10 @@ export function IrisSquaringDiagram({ awning, parameters }: { awning: Awning; pa
   const dimLeft = Math.min(0, bottomLeft.x) - unit * 1.6;
   const dimRight = Math.max(width, bottomRight.x) + unit * 1.6;
   const tick = unit * 0.5;
+  // La guía se corta a la altura del hueco menos el descuento del manual: el corte sale del cálculo.
+  const guideText = (side: string, cut: number | undefined, height: number) => cut && cut > 0
+    ? `Guía ${side}: corte ${cm(cut)} · hueco ${cm(height)}`
+    : `Guía ${side}: hueco ${cm(height)}`;
   const polygon = [topLeft, topRight, bottomRight, bottomLeft].map((p) => `${p.x},${p.y}`).join(' ');
   // Cada diagonal se rotula cerca de su extremo de arriba, para que no se pisen en el centro.
   const along = (a: Point, b: Point, t: number) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
@@ -64,8 +68,8 @@ export function IrisSquaringDiagram({ awning, parameters }: { awning: Awning; pa
         <g className="iris-sq-texto" fontSize={font}>
           <text x={width / 2} y={-unit * 1.6} textAnchor="middle">Frente superior {cm(view.measures.frontTop)}</text>
           <text x={width / 2} y={height + unit * 2.6} textAnchor="middle">Frente inferior {cm(view.measures.frontBottom)}</text>
-          <text transform={`translate(${dimLeft - unit * 0.9} ${bottomLeft.y / 2}) rotate(-90)`} textAnchor="middle">Guía MFI {cm(view.guides.left)} · salida {cm(view.measures.exitLeft)}</text>
-          <text transform={`translate(${dimRight + unit * 0.9} ${bottomRight.y / 2}) rotate(90)`} textAnchor="middle">Guía MFD {cm(view.guides.right)} · salida {cm(view.measures.exitRight)}</text>
+          <text transform={`translate(${dimLeft - unit * 0.9} ${bottomLeft.y / 2}) rotate(-90)`} textAnchor="middle">{guideText('MFI', guideCuts?.left, view.guides.left)}</text>
+          <text transform={`translate(${dimRight + unit * 0.9} ${bottomRight.y / 2}) rotate(90)`} textAnchor="middle">{guideText('MFD', guideCuts?.right, view.guides.right)}</text>
           <text className="iris-sq-texto-suave" x={d1.x} y={d1.y} textAnchor="end">D1 {cm(view.measures.diagonal1)}</text>
           <text className="iris-sq-texto-suave" x={d2.x} y={d2.y}>D2 {cm(view.measures.diagonal2)}</text>
           <text className="iris-sq-texto-toldo" x={(toldo.left + toldo.right) / 2} y={toldo.drop / 2} textAnchor="middle">Toldo {cm(view.toldo.width)} × {cm(view.toldo.drop)} (frente y caída menores)</text>
@@ -74,7 +78,7 @@ export function IrisSquaringDiagram({ awning, parameters }: { awning: Awning; pa
         </g>
       </svg>
       <figcaption>
-        <p className="iris-squaring-note">En amarillo, el toldo. Línea continua, el hueco medido; discontinuas, las diagonales; a los lados, la altura de cada guía del toldo (la normal, no la compensadora), que se corta por esa medida.{view.exaggeration > 1 ? ` Desfases exagerados ×${view.exaggeration} para que se vean; las cotas son las reales.` : ''}</p>
+        <p className="iris-squaring-note">En amarillo, el toldo. Línea continua, el hueco medido; discontinuas, las diagonales; a los lados, cada guía del toldo (la normal, no la compensadora): la altura del hueco en ese lado y su corte, que es esa altura menos el descuento del manual.{view.exaggeration > 1 ? ` Desfases exagerados ×${view.exaggeration} para que se vean; las cotas son las reales.` : ''}</p>
         <ul className="iris-squaring-checks">
           {view.checks.map((check) => <li key={check.id} className={`is-${check.level}`}>{check.text}</li>)}
         </ul>
