@@ -177,9 +177,6 @@ export function calculateElectra({ order, awning }) {
   if (!variantIsValidated && modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `ELECTRA ${variant}: variante sin caso reciente de fabricación, autorizada mediante excepción técnica.` });
   }
-  if (hasGuide && lacado.suffix !== 'BL16') {
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: `ELECTRA con guía en ${structureColor}: RPS solo mantiene referencias activas de guía terminada en blanco; revisar referencia/lacado antes de producir.` });
-  }
   if (unvalidatedTextile && modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ELECTRA con confección especial: revisar medidas de ventana/bamba y metraje antes de producir.' });
   }
@@ -352,18 +349,20 @@ function supportMaterial(support, suffix, units) {
   if (support === 'SOPORTE MAXISCREEN') {
     return line(`SOPMAXSCR${suffix}`, units, 'JGO. SOPORTE MAXISCREEN SIN COFRE');
   }
-  const code = suffix === 'BL16' ? 'ELITSOSTBL16' : suffix === 'NE11' ? 'ELITSOSTNE11' : 'ELITSOST';
-  return line(code, units, 'JGO. SOPORTE ELIT VERTICAL');
+  // Solo existe en blanco y en negro: en otro color se pide con su sufijo y la reserva lo cambia
+  // por el blanco para mandarlo a lacar (lacadoFallback.js; Iván, 09/10/2026, AR2604955).
+  return line(`ELITSOST${suffix}`, units, 'JGO. SOPORTE ELIT VERTICAL');
 }
 
+// La guía Elit solo existe en blanco: en otro color va en blanco para lacar, como la gastó el
+// taller (ELITGU12BL16 en los Electra negro y de color; Iván, 09/10/2026).
 function guideCode(suffix, stockLength) {
-  return suffix === 'BL16' ? `ELITGU12BL16${stockLength}C` : 'ELITGU12';
+  return `ELITGU12${suffix}${stockLength}C`;
 }
 
 function retainerCode(suffix) {
-  if (suffix === 'BL16') return 'KITRETENEDORBL16';
-  if (suffix === 'NE11') return 'KITRETENEDORNE11';
-  return 'KITRETENEDOR';
+  // Blanco con la estructura blanca; negro en cualquier otro lacado (2 de 2 OF de color).
+  return suffix === 'BL16' ? 'KITRETENEDORBL16' : 'KITRETENEDORNE11';
 }
 
 // Referencia de PECARMAX o PERPRLON con el largo que existe en ese lacado; si no hay

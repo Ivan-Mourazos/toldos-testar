@@ -99,6 +99,33 @@ describe('lacados poco habituales: la pieza que no existe en su color va en blan
     expect(codes).toContain('TAPASLAMAXSCNE11');
   });
 
+  // Iván, 09/10/2026 (AR2604955): Electra verde 6005. La guía Elit solo existe en blanco y el
+  // soporte en blanco y negro: van en blanco para lacar, como gastó el taller (ELITGU12BL16 en 2
+  // de 2 de color, ELITSOSTBL16 en el negro). El retenedor, negro (2 de 2 de color).
+  test('AR2604955: Electra en verde, guía y soporte en blanco para lacar y retenedor negro', () => {
+    const order = normalizeOrder({
+      orderCode: 'AR2604955', customer: 'PRUEBA', technician: 'IVÁN', sameFabric: true,
+      fabric: 'ACRILI2018P120|||120|||LONA ACRILICA MASACRIL 300 :AZUL 2018 :120 AN|||ACRÍLICAS',
+      awnings: [{
+        id: 'a', of: '0232864', model: 'ELECTRA', units: 1, width: 193, projection: 251, submodel: 'SIN COFRE / CON GUÍA',
+        electraSupport: 'SOPORTE ELIT VERTICAL', device: 'MAQ. INTERIOR', machineSide: 'M.F.DER', crankHeight: 150,
+        structureColor: 'VERDE (R-06005)', placement: 'FRONTAL', rotFabric: 'NO', curtainHasWindow: false, curtainFinish: 'NORMAL',
+        hasValance: false, valanceHeight: 0
+      }]
+    });
+    const result = calculateOrder(order);
+    const [of] = result.ofs;
+    expect(of.calculation.valid).toBe(true);
+    const codes = of.materials.map((line) => line.code);
+    expect(codes).toEqual(expect.arrayContaining(['ELITSOSTBL16', 'ELITGU12BL16500C', 'KITRETENEDORNE11', 'PECARMAXVE05500C']));
+    expect(codes).not.toContain('ELITGU12');
+    expect(codes).not.toContain('ELITSOST');
+    expect(codes).not.toContain('KITRETENEDOR');
+    const marked = of.despiece.rows.filter((row) => row.name.includes('MANDAR A LACAR')).map((row) => row.reference);
+    expect(marked).toEqual(expect.arrayContaining(['ELITSOSTBL16', 'ELITGU12BL16500C']));
+    expect(marked).not.toContain('KITRETENEDORNE11');
+  });
+
   test('en blanco y en negro el Arzúa no lleva aviso de lacado', () => {
     for (const lacado of ['BLANCO', 'NEGRO (R-09011)']) {
       const [{ result }] = sampleAwnings('ARZUA PRO', lacado);
