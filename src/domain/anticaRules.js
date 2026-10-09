@@ -1,4 +1,5 @@
 import { anticaSteelParts, ANTICA_STEEL } from './anticaMaterials.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { resolveAnticaCrank, anticaPointCode } from './anticaComponents.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -70,7 +71,7 @@ export function calculateAntica({ order, awning }) {
   const rollTubeLength = round1(Number(awning.width) - rollDiscount);
   const loadBarLength = round1(Number(awning.width) - loadDiscount);
   const stockLength = stockLengths.find((length) => length >= Math.max(rollTubeLength, loadBarLength)) || null;
-  const bodyDrop = calculateAnticaBodyDrop({ awning, variant, supportHeight, valanceHeight, separateValance });
+  const bodyDrop = calculateAnticaBodyDrop({ awning, variant, supportHeight, valanceHeight, separateValance }) + fabricDropAdjustmentCm(awning);
   const fabricDrop = round1(bodyDrop);
   const mainUsage = calculateFabricUsage({
     width: fabricWidth,

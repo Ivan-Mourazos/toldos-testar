@@ -1,4 +1,5 @@
 import { effectiveOverride } from './ruleOverrides.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -45,9 +46,10 @@ export function calculateMaxiscreem({ order, awning }) {
   const boxProfileDiscount = effectiveNumber(awning, 'maxisBoxProfileDiscountCm', discounts.boxProfile);
   const dropAllowance = effectiveNumber(awning, 'maxisFabricDropAllowanceCm', parameters.fabricDropAllowanceCm);
   const fabricWidth = round1(Number(awning.width) - fabricDiscount);
-  const rawFabricDrop = Number(awning.projection) + dropAllowance
+  const fabricDropUnadjusted = Number(awning.projection) + dropAllowance
     // Los 5 cm de remate solo van con bamba (Iván, 08/10/2026).
     + (valanceFabricSelection || valance <= 0 ? 0 : valance + parameters.valanceExtraCm);
+  const rawFabricDrop = fabricDropUnadjusted + fabricDropAdjustmentCm(awning);
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(Number(awning.width) - rollDiscount);
   const loadBarLength = round1(Number(awning.width) - loadBarDiscount);

@@ -1,4 +1,5 @@
 import { normalizeFabricImage } from '../../domain/fabricImage.js';
+import { supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isConfiguredCurtain, normalizeCurtainConfiguration } from '../../domain/curtainConfiguration.js';
 import { normalizeStructureEdit } from '../../domain/structureEdits.js';
 import { useEffect, useState } from 'react';
@@ -188,6 +189,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
     : '';
   base.anticaSupportHeight = nullableNumber(old.anticaSupportHeight);
   base.cambioAnticaExtraCm = nullableNumber(old.cambioAnticaExtraCm);
+  base.fabricDropAdjustmentCm = supportsFabricDropAdjustment(base.model) ? nullableNumber(old.fabricDropAdjustmentCm) ?? 0 : 0;
   base.cambioTelaExtraCm = base.model === 'CAMBIO TELA' ? resolveCambioTelaExtraCm(old) : null;
   base.looseSide = old.looseSide === 'IZQUIERDO' || old.looseSide === 'DERECHO' ? old.looseSide : '';
   base.structureEdit = normalizeStructureEdit(old.structureEdit) as Awning['structureEdit'];
@@ -596,6 +598,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
       : '',
     anticaSupportHeight: model === 'ANTICA' ? awning.anticaSupportHeight : null,
     cambioAnticaExtraCm: model === 'CAMBIO ANTICA' ? awning.cambioAnticaExtraCm : null,
+    fabricDropAdjustmentCm: supportsFabricDropAdjustment(model) ? awning.fabricDropAdjustmentCm || 0 : 0,
     cambioTelaExtraCm: model === 'CAMBIO TELA' ? awning.model === model ? awning.cambioTelaExtraCm : defaultCambioTelaExtraCm : null,
     looseSide: ['GALICIA', 'MONOBLOCK 350', 'AGATA BOX'].includes(model) ? awning.looseSide : '',
     structureNotesEdited: false,

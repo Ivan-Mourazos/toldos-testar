@@ -29,10 +29,12 @@ export const electraMotors = [
 export const defaultElectraParameters = {
   standardMaxWidth: 500,
   standardMaxDrop: 300,
+  // Con bamba en la misma tela; sin bamba, 5 cm menos (sin remate). A motor, igual que a máquina
+  // (Iván, 09/10/2026; antes 40).
   fabricDropAllowanceCm: {
     'MAQ. INTERIOR': 45,
     'MAQ. EXTERIOR': 45,
-    MOTOR: 40
+    MOTOR: 45
   },
   seamAllowanceCm: 2.2,
   seamBaseCm: 7,

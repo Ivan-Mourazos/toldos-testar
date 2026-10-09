@@ -5,6 +5,7 @@ import pdfLib from 'pdf-lib';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { structureNotes } from './structureNotes.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
@@ -1038,6 +1039,9 @@ function buildFabricRowInstruction(line, lines, order) {
     parts.push(`TELA ${description}${code ? ` · ${code}` : ''}`);
   }
   parts.push(detail.instruction);
+  // El ajuste que el técnico puso en la tarjeta ya va dentro de la caída: se dice para que se vea.
+  const dropAdjustment = fabricDropAdjustmentCm(line.awning);
+  if (dropAdjustment) parts.push(`CAÍDA CON ${dropAdjustment > 0 ? '+' : '−'}${formatNumber(Math.abs(dropAdjustment))} CM DE AJUSTE`);
   if (summarizeValanceCurve(lines) === 'SEGÚN TOLDO' && line.awning.valanceCurve) parts.push(`CURVA ${line.awning.valanceCurve}`);
   if (summarizeRemate(lines, order) === 'SEGÚN TOLDO' && remateValue(line.awning, order)) parts.push(`REMATE ${remateValue(line.awning, order)}`);
   if (summarizeAwningValue(lines, 'rotFabric', order.rotTela) === 'SEGÚN TOLDO') parts.push(`ROT. TELA ${line.awning.rotFabric || order.rotTela || '-'}`);

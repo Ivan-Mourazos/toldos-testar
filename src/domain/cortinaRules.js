@@ -1,4 +1,5 @@
 import { effectiveOverride, noteOverride } from './ruleOverrides.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { curtainBottomAllowanceCm, curtainConfigurationError, curtainFabricAdjustmentCm } from './curtainConfiguration.js';
 import { cortinaMotorPower, cortinaMotorPowers } from './curtainMotor.js';
 import { resolveMotorRemote } from './motorAccessories.js';
@@ -82,7 +83,7 @@ export function calculateCortina({ order, awning }) {
     ? parameters.fabricDropAllowanceCm
     : Math.max(0, parameters.fabricDropAllowanceCm - 5);
   const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance)
-    + (selena ? 0 : curtainBottomAllowanceCm(awning)) - deduction);
+    + (selena ? fabricDropAdjustmentCm(awning) : curtainBottomAllowanceCm(awning)) - deduction);
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,

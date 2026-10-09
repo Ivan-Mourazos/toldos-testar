@@ -1,4 +1,5 @@
 import { formatNumber } from './math.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { resolveLacado } from './lacados.js';
 import { irisBoxPieces, irisCommonPieces, irisGuidePieces, irisZipAndHemPieces } from './irisPieces.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -84,7 +85,7 @@ export function calculateIris({ order, awning }) {
     : 0;
 
   const dropAllowance = getIrisFabricDropAllowance(parameters, series, device);
-  const fabricDrop = opening.valid ? round1(opening.dropOpening + dropAllowance) : 0;
+  const fabricDrop = opening.valid ? round1(opening.dropOpening + dropAllowance + fabricDropAdjustmentCm(awning)) : 0;
   // Telón todo de cristal (Iván, 07/10/2026, AR2604748): sin lona; piezas de 140 de ancho del
   // largo que cubre el frente de la tela, tantas como pida la caída.
   const glassCurtain = awning.irisGlassCurtain === true;

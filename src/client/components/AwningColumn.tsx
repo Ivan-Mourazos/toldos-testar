@@ -29,6 +29,7 @@ import { resolveFabric } from '../../domain/fabricCatalog.js';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { IrisSquaringDiagram } from './IrisSquaringDiagram';
+import { fabricDropSummary, supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
 import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes, irisSeriesOf } from '../../domain/irisParameters.js';
@@ -195,6 +196,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const roundAnticaEntry = resolveAnticaRoundEntry(normalizedAnticaVariant);
   // Cambio Antica: el pedido trae la medida de la tela vieja tal cual (Iván, 25/09/2026).
   const isCambioAntica = awning.model === 'CAMBIO ANTICA';
+  const fabricSummary = fabricDropSummary(awning, ofCalculation || {});
   const isFullAnticaRound = isFullAntica && Boolean(roundAnticaEntry);
   const widthLabel = isCambioAntica ? 'Frente de tela' : 'Frente';
   const projectionLabel = isSelena || isElectra ? 'Caída' : isCambioAntica
@@ -649,6 +651,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               </div>}
               <SegmentedField label="Remate" missing={isMissing('remate')} value={valanceFinish} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
               {valanceFinish === 'OTRO' && <TextField label="Color remate" missing={isMissing('remateColor')} value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
+            </div>
+          )}
+          {fields.implemented && supportsFabricDropAdjustment(awning.model) && (
+            <div className="fabric-drop-adjust awning-wide-field">
+              <NumberField label="Ajuste de tela (cm)" value={awning.fabricDropAdjustmentCm ?? 0} step={0.5} onChange={(value) => update({ fabricDropAdjustmentCm: value ?? 0 })} />
+              {!readOnly && <p className="curtain-field-hint" role="note">
+                {fabricSummary ? <><strong>{fabricSummary.text}.</strong> </> : null}El ajuste suma tela a la caída; en negativo, la quita.
+              </p>}
             </div>
           )}
           {supportsValance && variantField}

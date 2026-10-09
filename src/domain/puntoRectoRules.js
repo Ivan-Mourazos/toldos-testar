@@ -1,4 +1,5 @@
 import { effectiveOverride, isOverridden } from './ruleOverrides.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
@@ -57,7 +58,7 @@ export function calculatePuntoRecto({ order, awning }) {
   const fabricWidth = round1(awning.width - fabricDiscount);
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
   // La hoja PUNTO RECTO del libro antiguo usa salida + 40 cuando la bamba va en otra tela.
-  const rawFabricDrop = verticalDrop
+  const fabricDropUnadjusted = verticalDrop
     ? calculateVerticalDropArmFabricDrop({
         projection: awning.projection,
         allowanceCm: verticalDropAllowance,
@@ -68,6 +69,7 @@ export function calculatePuntoRecto({ order, awning }) {
       ? Number(awning.projection) + 40
       // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026).
       : Number(awning.projection) * dropMultiplier + (valance > 0 || isOverridden(awning, 'pointFabricDropAllowanceCm') ? dropAllowance : Math.max(0, dropAllowance - 5)) + valance;
+  const rawFabricDrop = fabricDropUnadjusted + fabricDropAdjustmentCm(awning);
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(awning.width - rollDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);

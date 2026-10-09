@@ -1,4 +1,5 @@
 import { effectiveOverride } from './ruleOverrides.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -50,7 +51,7 @@ export function calculateCuarzoBox({ order, awning }) {
   const mainDropAllowance = separateValance.requested || valance <= 0
     ? Math.max(0, parameters.fabricDropAllowanceCm - 5)
     : parameters.fabricDropAllowanceCm;
-  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance));
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (separateValance.requested ? 0 : valance) + fabricDropAdjustmentCm(awning));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,

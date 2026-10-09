@@ -1,4 +1,5 @@
 import { effectiveOverride } from './ruleOverrides.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -63,9 +64,10 @@ export function calculateMonoblock350({ order, awning }) {
     resolveMonoblockSupportCount(awning.width, awning.projection, armCount, parameters)
   );
   const fabricWidth = round1(awning.width - fabricDiscount);
-  const rawFabricDrop = awning.projection + dropAllowance
+  const fabricDropUnadjusted = awning.projection + dropAllowance
     // Los 5 cm de remate solo van con bamba (Iván, 08/10/2026).
     + (valanceFabricSelection || valance <= 0 ? 0 : valance + parameters.valanceExtraCm);
+  const rawFabricDrop = fabricDropUnadjusted + fabricDropAdjustmentCm(awning);
   const fabricDrop = round1(rawFabricDrop);
   const rollTubeLength = round1(awning.width - rollDiscount);
   const loadBarLength = round1(awning.width - loadBarDiscount);

@@ -1,4 +1,5 @@
 import { effectiveOverride, isOverridden } from './ruleOverrides.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
@@ -56,7 +57,7 @@ export function calculateAmbarBox({ order, awning }) {
   const separateValance = calculateSeparateValance({ awning, seamAllowanceCm: parameters.seamAllowanceCm, seamBaseCm: parameters.seamBaseCm });
   // Los 5 cm de remate solo van con bamba en la misma tela (Iván, 08/10/2026; como Cambio de tela y Cortina).
   const mainDropAllowance = separateValance.requested || (valance <= 0 && !isOverridden(awning, 'ambarFabricDropAllowanceCm')) ? Math.max(0, dropAllowance - 5) : dropAllowance;
-  const fabricDropRaw = verticalDrop
+  const fabricDropUnadjusted = verticalDrop
     ? calculateVerticalDropArmFabricDrop({
         projection: awning.projection,
         allowanceCm: verticalDropAllowance,
@@ -64,6 +65,7 @@ export function calculateAmbarBox({ order, awning }) {
         separateValance: separateValance.requested
       })
     : Number(awning.projection) * dropMultiplier + mainDropAllowance + (separateValance.requested ? 0 : valance);
+  const fabricDropRaw = fabricDropUnadjusted + fabricDropAdjustmentCm(awning);
   const fabricDrop = round1(fabricDropRaw);
   const rollTubeLength = round1(Number(awning.width) - discounts.roll);
   const structureLength = round1(Number(awning.width) - discounts.profile);

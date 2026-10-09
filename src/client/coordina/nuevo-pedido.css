@@ -1186,6 +1186,10 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .curtain-config .curtain-window-measures { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .curtain-window-reference, .curtain-field-hint { grid-column: 1 / -1; }
 .curtain-field-hint { color: var(--text-muted); font-size: 11px; line-height: 1.4; margin: 0; }
+/* Ajuste de la caída de tela y resumen de aumentos, en todos los toldos completos. */
+.fabric-drop-adjust { align-items: end; display: grid; gap: 4px 12px; grid-template-columns: minmax(96px, 150px) minmax(0, 1fr); }
+.fabric-drop-adjust .curtain-field-hint { grid-column: auto; padding-bottom: 6px; }
+.fabric-drop-adjust .curtain-field-hint strong { color: var(--text); font-weight: 600; }
 
 /* Escuadrado del Iris dibujado en la tarjeta (Iván, 08/10/2026): hueco, diagonales, toldo y guías. */
 .iris-squaring { grid-column: 1 / -1; margin: 6px 0 2px; }

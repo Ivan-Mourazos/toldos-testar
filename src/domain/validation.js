@@ -1,4 +1,5 @@
 import { normalizeDrawingParameters } from './drawingParameters.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { normalizeFabricImage } from './fabricImage.js';
 import { normalizeStructureEdit } from './structureEdits.js';
 import { roundQuantity } from './math.js';
@@ -222,6 +223,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     electraBoxProfileDiscountCm: nullableNumber(awning?.electraBoxProfileDiscountCm),
     electraGuideDiscountCm: nullableNumber(awning?.electraGuideDiscountCm),
     electraFabricDropAllowanceCm: nullableNumber(awning?.electraFabricDropAllowanceCm),
+    // Ajuste de la caída de tela puesto en la tarjeta (Iván, 09/10/2026).
+    fabricDropAdjustmentCm: fabricDropAdjustmentCm({ model, fabricDropAdjustmentCm: nullableNumber(awning?.fabricDropAdjustmentCm) ?? 0 }),
     irisGuideType: model === 'IRIS' ? normalizeIrisGuideType(awning?.irisGuideType) : '',
     irisGuideFixing: model === 'IRIS' ? normalizeIrisGuideFixing(awning?.irisGuideFixing) : '',
     irisBoxShape: model === 'IRIS' ? normalizeIrisBoxShape(awning?.irisBoxShape) : '',

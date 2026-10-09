@@ -25,6 +25,8 @@ import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 import { withRpsCodes } from './rpsIrregularCodes.js';
 import { beginRuleOverrides, finishRuleOverrides } from './ruleOverrides.js';
 import { withLacadoFallback } from './lacadoFallback.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
+import { formatNumber } from './math.js';
 
 const implementedRules = new Map([
   ['ARZUA PRO', calculateArzuaPro],
@@ -151,6 +153,11 @@ export function calculateOrder(payload) {
     const knownDiagnostics = result.diagnostics?.length || 0;
     result = withLacadoFallback(result, { awning, order });
     diagnostics.push(...(result.diagnostics || []).slice(knownDiagnostics));
+    // El ajuste de tela de la tarjeta, a la vista de quien revisa (Iván, 09/10/2026).
+    const dropAdjustment = fabricDropAdjustmentCm(awning);
+    if (dropAdjustment !== 0) {
+      diagnostics.push({ level: 'warn', awningId: awning.id, message: `Ajuste de tela en OF ${awning.of}: ${dropAdjustment > 0 ? 'se suman' : 'se quitan'} ${formatNumber(Math.abs(dropAdjustment))} cm a la caída de tela.` });
+    }
     // Una sola regla para tarjeta, cálculo y generación. Va después de la reserva
     // legada, que solo se aplica a toldos válidos: un toldo incompleto muestra
     // la misma reserva que tendrá al completarlo, y el error basta para

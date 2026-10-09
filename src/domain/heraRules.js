@@ -1,4 +1,5 @@
 import { resolveFabric } from './fabricCatalog.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { formatNumber, roundQuantity } from './math.js';
 import { roundFabricMeters } from './reservationFabrics.js';
 import { resolveHeraChainRing } from './heraChain.js';
@@ -22,7 +23,7 @@ export function calculateHera({ order, awning }) {
   const units = Math.max(1, Number(awning.units) || 1);
   const height = Math.max(0, Number(awning.height) || 0);
   const fabricWidth = round1(Number(awning.width) - (rule?.fabricWidthDiscountCm || 0));
-  const fabricDrop = round1(Number(awning.projection) + (rule?.fabricDropAllowanceCm || 0));
+  const fabricDrop = round1(Number(awning.projection) + (rule?.fabricDropAllowanceCm || 0) + fabricDropAdjustmentCm(awning));
   const rollTubeLength = round1(Number(awning.width) - (rule?.rollTubeDiscountCm || 0));
   const chainLength = rule && !rule.motor
     ? round1((height - rule.chainHeightDiscountCm) * 2)

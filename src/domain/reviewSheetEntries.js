@@ -1,4 +1,5 @@
 import { formatNumber } from './math.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { resolveCambioTelaExtraCm } from './fabricJobParameters.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { getFieldVisibility, isFabricOnlyModel, isVerticalAwningModel, normalizeValanceFinish } from './modelBehavior.js';
@@ -116,6 +117,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (fields.tubeLoad) addField(cardFields, 'Tubo de carga', awning.tubeLoad, true);
     if (fields.submodel && !isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);
+    if (fabricDropAdjustmentCm(awning)) addField(cardFields, 'Ajuste de tela', `${fabricDropAdjustmentCm(awning) > 0 ? '+' : '−'}${measure(Math.abs(fabricDropAdjustmentCm(awning)))}`, true);
     if (cambioAntica && Number(awning.cambioAnticaExtraCm)) addField(cardFields, 'Sumado a la caída', measure(awning.cambioAnticaExtraCm), true);
     if (awning.model === 'CAMBIO TELA') {
       const extra = resolveCambioTelaExtraCm(awning);

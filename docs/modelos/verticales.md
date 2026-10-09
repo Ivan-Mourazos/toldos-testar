@@ -29,6 +29,12 @@ Medidas: `validate:electra` 69 comprobaciones y `validate:maxiscreem` 55, sin di
 
 Después, `validate:reserva ELECTRA` solo echa en falta las piezas del tubo Ø70 (Q-E02: el taller elige; lo normal es el Ø78) y la tapa alternativa (Q-E01: se reserva lo que se gasta). El puente abatible con cofre (Q-E03) se reserva desde el 30/09/2026.
 
+### Caída de tela (Iván, 09/10/2026)
+
+- A motor suma lo mismo que a máquina: salida + 40 sin bamba, y salida + 45 + bamba con bamba en la misma tela (antes, a motor, 5 cm menos).
+- En la tarjeta de todos los toldos completos hay una casilla «Ajuste de tela (cm)»: suma centímetros a la caída (o los quita, en negativo) sin abrir el candado, por ejemplo para una bambalina pisada doble. Al lado sale el resumen de aumentos: de dónde viene cada centímetro de la caída. La Cortina y los trabajos de tela siguen con su propia casilla.
+- Sigue abierta la tela del Electra con bambalina: hoy la web la bloquea si no se abre el candado.
+
 ## 3. Diana vertical: lo que se corrigió
 
 Solo 9 OF, pero todas dicen lo mismo:

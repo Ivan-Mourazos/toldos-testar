@@ -1,4 +1,5 @@
 import { tipBushing } from './tipBushing.js';
+import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { formatNumber } from './math.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { calculateFabricUsage } from './fabricMath.js';
@@ -89,7 +90,7 @@ export function calculateArzuaPro({ order, awning }) {
   const mainDropAllowance = valanceFabricSelection || valance <= 0
     ? Math.max(0, parameters.fabricDropAllowanceCm - valanceExtraCm)
     : parameters.fabricDropAllowanceCm;
-  const fabricDrop = round1(awning.projection + mainDropAllowance + (valanceFabricSelection ? 0 : valance));
+  const fabricDrop = round1(awning.projection + mainDropAllowance + (valanceFabricSelection ? 0 : valance) + fabricDropAdjustmentCm(awning));
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
     drop: fabricDrop,

@@ -22,7 +22,7 @@ const byLabel: Record<string, ReadGroupId> = {
   'Salida ventana': 'medidas', Esquina: 'medidas', 'Suelo-ventana': 'medidas', 'Altura ventana': 'medidas',
   'Tubo-ventana': 'medidas', 'Medida a ventana desde': 'medidas', 'Ajuste de salida de tela': 'medidas', 'Ajuste de salida (cm)': 'medidas',
   Laterales: 'estructura',
-  'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas', 'Sumar a la caída (cm)': 'medidas', 'Sumado a la caída': 'medidas', 'Sumar para enrolle y tubo (cm)': 'medidas',
+  'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas', 'Sumar a la caída (cm)': 'medidas', 'Sumado a la caída': 'medidas', 'Ajuste de tela (cm)': 'medidas', 'Ajuste de tela': 'medidas', 'Sumar para enrolle y tubo (cm)': 'medidas',
   // Estructura
   Lacado: 'estructura', Variante: 'estructura', 'Configuración de brazos': 'estructura',
   'Terminales · confirmar con taller': 'estructura',

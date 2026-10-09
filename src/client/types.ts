@@ -158,6 +158,8 @@ export type Awning = {
   /** Diana vertical con cable: kit de montaje del cable, se indica en el pedido (Q-D01). */
   /** Cambio Antica: centímetros que el técnico suma a la caída medida de la tela. */
   cambioAnticaExtraCm: number | null;
+  /** Toldos completos: centímetros que el técnico suma (o quita, en negativo) a la caída de tela. */
+  fabricDropAdjustmentCm: number;
   cambioTelaExtraCm: number | null;
   anticaSupportHeight: number | null;
   reglasModificadas: boolean;
