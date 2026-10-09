@@ -45,8 +45,9 @@ export function calculateElectra({ order, awning }) {
   const supportIsCompatible = !variant || !support || (hasCofre
     ? support === electraCofreSupport
     : support !== electraCofreSupport);
-  const unvalidatedTextile = ['VELCRO', 'TUBO'].includes(awning.curtainFinish)
-    || Number(awning.valanceHeight) > 0;
+  // La bamba se hace como en el resto de toldos: salida + 45 + bamba (Iván, 09/10/2026). Ya no
+  // pide excepción técnica; el velcro y el tubo, sí.
+  const unvalidatedTextile = ['VELCRO', 'TUBO'].includes(awning.curtainFinish);
   const diagnostics = [];
   const missingFields = [];
 
@@ -169,7 +170,7 @@ export function calculateElectra({ order, awning }) {
   } else if (!variantIsValidated && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `ELECTRA ${variant}: no hay fabricación reciente validada. Activa una excepción técnica y confirma las reglas para continuar.` });
   } else if (unvalidatedTextile && !modified) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: 'ELECTRA con bamba o confección especial: requiere excepción técnica para confirmar medidas y metraje.' });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: 'ELECTRA con confección especial: requiere excepción técnica para confirmar medidas y metraje.' });
   } else if ((overWidth || overDrop) && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `ELECTRA fuera de estándar: ${awning.width}x${awning.projection} cm, máximo ${parameters.standardMaxWidth}x${parameters.standardMaxDrop} cm. Activa una excepción técnica para continuar.` });
   } else if (!rollStockLength || !profileStockLength || (hasGuide && !guideStockLength)) {
@@ -179,7 +180,7 @@ export function calculateElectra({ order, awning }) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `ELECTRA ${variant}: variante sin caso reciente de fabricación, autorizada mediante excepción técnica.` });
   }
   if (unvalidatedTextile && modified) {
-    diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ELECTRA con confección especial: revisar medidas de ventana/bamba y metraje antes de producir.' });
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: 'ELECTRA con confección especial: revisar medidas de ventana y metraje antes de producir.' });
   }
   if (profileStockLength && loadProfileReference?.generic) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `ELECTRA: no hay referencia terminada activa confirmada para el perfil de carga ${structureColor} de ${profileStockLength} cm; se reserva la referencia base ${loadProfileBase}.` });

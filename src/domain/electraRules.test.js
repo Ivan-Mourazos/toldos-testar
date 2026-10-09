@@ -179,15 +179,16 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     ]));
   });
 
-  test('la bamba integrada aumenta la caída de tela y el metraje', () => {
+  // Iván, 09/10/2026: el Electra con bamba es igual que el resto, salida + 45 + bamba, sin candado.
+  test('la bamba integrada aumenta la caída de tela y el metraje, sin excepción técnica', () => {
     const result = calculate({
       width: 345,
       projection: 260,
       valanceHeight: 12,
       electraSupport: 'UNIVERSAL 3 AGUJEROS',
-      structureColor: 'LACADO ESPECIAL',
-      reglasModificadas: true
+      structureColor: 'LACADO ESPECIAL'
     }, { structureColor: '' });
+    expect(result.diagnostics.filter(({ level }) => level === 'error')).toEqual([]);
 
     expect(result.calculation).toMatchObject({
       valid: true,
@@ -415,7 +416,7 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     expect(result.diagnostics.some((item) => /lacar fuera/.test(item.message) && item.message.includes('PECARMAXBL16500C'))).toBe(true);
   });
 
-  test('una ventana completa es estándar; bamba o confección especial requieren excepción técnica', () => {
+  test('una ventana completa es estándar; la confección especial requiere excepción técnica', () => {
     const withWindow = calculate({ curtainHasWindow: true, curtainWindowExit: 20, curtainWindowCorner: 20, curtainWindowFloorHeight: 40, curtainWindowHeight: 80 });
     const blocked = calculate({ curtainFinish: 'VELCRO' });
     const authorized = calculate({ curtainFinish: 'VELCRO', reglasModificadas: true });

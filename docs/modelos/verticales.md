@@ -33,7 +33,7 @@ Después, `validate:reserva ELECTRA` solo echa en falta las piezas del tubo Ø70
 
 - A motor suma lo mismo que a máquina: salida + 40 sin bamba, y salida + 45 + bamba con bamba en la misma tela (antes, a motor, 5 cm menos).
 - En la tarjeta de todos los toldos completos hay una casilla «Ajuste de tela (cm)»: suma centímetros a la caída (o los quita, en negativo) sin abrir el candado, por ejemplo para una bambalina pisada doble. Al lado sale el resumen de aumentos: de dónde viene cada centímetro de la caída. La Cortina y los trabajos de tela siguen con su propia casilla.
-- Sigue abierta la tela del Electra con bambalina: hoy la web la bloquea si no se abre el candado.
+- El Electra con bambalina se hace igual que el resto (Iván, 09/10/2026): salida + 45 + bamba, sin abrir el candado. El velcro y el tubo siguen pidiendo excepción técnica.
 
 ## 3. Diana vertical: lo que se corrigió
 
