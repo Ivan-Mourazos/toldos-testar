@@ -54,6 +54,20 @@ test.each(['CORTINA', 'CAMBIO CORTINA'].flatMap(model => [false, true].map(longN
     // En el dibujo, la cota de la altura de la ventana y la de la base no se tocan (con ET la base sube).
     const enDibujo = value => items.find(item => item.str === value && bottom(item) < top(bamba));
     expect(top(enDibujo('52')) - bottom(enDibujo('137')), 'cotas de la ventana separadas').toBeGreaterThan(12);
+    // Las esquinas van a cada lado de la ventana, a la misma altura y por encima del cristal;
+    // el cristal (137) y la base (52) son una cadena vertical dentro de la ventana (Iván, 13/10/2026).
+    const esquinas = items.filter(item => item.str === '15' && bottom(item) < top(bamba))
+      .sort((a, b) => a.transform[4] - b.transform[4]);
+    expect(esquinas).toHaveLength(2);
+    const [izquierda, derecha] = esquinas;
+    const cristal = enDibujo('137');
+    const base = enDibujo('52');
+    expect(Math.abs(izquierda.transform[5] - derecha.transform[5]), 'esquinas a la misma altura').toBeLessThan(1);
+    expect(bottom(izquierda), 'esquinas por encima del cristal').toBeLessThan(top(cristal));
+    expect(cristal.transform[4], 'el cristal entre las dos esquinas').toBeGreaterThan(izquierda.transform[4]);
+    expect(cristal.transform[4], 'el cristal entre las dos esquinas').toBeLessThan(derecha.transform[4]);
+    expect(Math.abs(cristal.transform[4] - base.transform[4]), 'cristal y base en la misma cadena').toBeLessThan(2);
+    expect(items.some(item => item.str === 'CRISTAL'), 'la ventana se rotula como cristal').toBe(true);
     const text = fabricPages.flatMap(({ items }) => items.map(item => item.str)).join(' ');
     if (longNotes) {
       expect(text).toContain('OBSERVACIONES');

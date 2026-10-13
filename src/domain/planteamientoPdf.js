@@ -1656,26 +1656,39 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   }
   drawCurtainSideFinishes(doc, frameX, frameY, frameW, frameH, spec);
 
+  const bottomY = frameY + frameH;
   if (spec.hasWindow) {
-    const windowX = frameX + frameW * 0.1;
-    const windowY = frameY + frameH * 0.22;
-    const windowW = frameW * 0.67;
-    const windowH = frameH * 0.57;
-    const measureX = frameX + frameW - w * 0.124;
+    // Cotas de verdad (Iván, 13/10/2026): la esquina va del canto de la cortina al lado
+    // de la ventana, y una cadena vertical da el cristal y el trozo de abajo hasta la varilla.
+    const bottomBarH = spec.bottomFinish === 'ET' ? 13 : 6;
+    const sideGap = frameW * 0.17;
+    const windowX = frameX + sideGap;
+    const windowW = frameW - sideGap * 2;
+    const windowY = frameY + 24;
+    const baseH = Math.max(20, frameH * 0.2);
+    const windowH = bottomY - bottomBarH - baseH - windowY;
     drawCurtainWindow(doc, windowX, windowY, windowW, windowH);
-    drawSmallMeasure(doc, windowX - 1, windowY - 20, 25, awning.curtainWindowCorner);
-    drawSmallMeasure(doc, windowX + windowW - 24, windowY - 20, 25, awning.curtainWindowCorner);
-    // Arriba en su línea: con ET la cota de la base sube 8 y se tocaban (Iván, 02/10/2026).
-    drawSmallMeasure(doc, measureX, windowY + 5, 27, awning.curtainWindowHeight);
+    doc.fillColor('#6f8fa6').font(fonts.semibold).fontSize(diagramText(6.2))
+      .text('CRISTAL', windowX, windowY + windowH / 2 - 4, { width: windowW - 50, align: 'center' });
+
+    const cornerY = windowY - 7;
+    // Líneas de referencia de la cota de esquina hasta los lados de la ventana.
+    doc.moveTo(windowX, cornerY).lineTo(windowX, windowY)
+      .moveTo(windowX + windowW, cornerY).lineTo(windowX + windowW, windowY)
+      .strokeColor('#4f8b68').lineWidth(0.5).stroke();
+    drawHorizontalCurtainMeasure(doc, frameX, windowX, cornerY, awning.curtainWindowCorner);
+    drawHorizontalCurtainMeasure(doc, windowX + windowW, frameX + frameW, cornerY, awning.curtainWindowCorner);
+
     // La referencia de esta cota es independiente del ajuste de salida de tela.
     const windowBase = isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning)
       : Number(awning.curtainWindowFloorHeight) - curtainBottomDeduction(awning);
-    drawSmallMeasure(doc, measureX, windowY + windowH - (spec.bottomFinish === 'ET' ? 8 : 0), 27, windowBase);
-    doc.moveTo(measureX - 4, windowY).lineTo(measureX - 4, windowY + windowH)
-      .strokeColor('#879f98').lineWidth(0.6).stroke();
+    // Fuera de las marcas de las esquinas, que miden 15.
+    const chainX = windowX + windowW - 22;
+    const windowBottom = windowY + windowH;
+    drawVerticalCurtainMeasure(doc, chainX, windowY, windowBottom, awning.curtainWindowHeight);
+    drawVerticalCurtainMeasure(doc, chainX, windowBottom, bottomY - bottomBarH, windowBase);
   }
 
-  const bottomY = frameY + frameH;
   if (spec.bottomFinish === 'ET') {
     doc.rect(frameX, bottomY - 13, frameW, 13).fillAndStroke('#d9e5e0', '#7fa594');
     doc.moveTo(frameX + 8, bottomY - 9).lineTo(frameX + frameW - 8, bottomY - 9)
@@ -1816,12 +1829,32 @@ function drawRotatedDiagramText(doc, text, centerX, centerY, width) {
 
 function drawCurtainWindow(doc, x, y, w, h) {
   const corner = Math.min(15, w / 4, h / 4);
+  doc.rect(x, y, w, h).fill('#eef5f9');
   doc.strokeColor('#e3a5a0').lineWidth(0.85)
     .moveTo(x, y + corner).lineTo(x, y).lineTo(x + corner, y)
     .moveTo(x + w - corner, y).lineTo(x + w, y).lineTo(x + w, y + corner)
     .moveTo(x + w, y + h - corner).lineTo(x + w, y + h).lineTo(x + w - corner, y + h)
     .moveTo(x + corner, y + h).lineTo(x, y + h).lineTo(x, y + h - corner)
     .stroke();
+}
+
+// Cota horizontal con topes y la medida encima de la línea.
+function drawHorizontalCurtainMeasure(doc, startX, endX, y, measure) {
+  doc.moveTo(startX, y).lineTo(endX, y)
+    .moveTo(startX, y - 3).lineTo(startX, y + 3)
+    .moveTo(endX, y - 3).lineTo(endX, y + 3)
+    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
+  doc.fillColor(colors.ink).font(fonts.semibold).fontSize(diagramText(6.5))
+    .text(formatNumber(measure), startX, y - 10, { width: endX - startX, align: 'center', lineBreak: false });
+}
+
+// Cota vertical con topes y la medida en una caja a su izquierda, centrada en el tramo.
+function drawVerticalCurtainMeasure(doc, x, startY, endY, measure) {
+  doc.moveTo(x, startY).lineTo(x, endY)
+    .moveTo(x - 3, startY).lineTo(x + 3, startY)
+    .moveTo(x - 3, endY).lineTo(x + 3, endY)
+    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
+  drawSmallMeasure(doc, x - 29, (startY + endY) / 2 - 7, 25, measure);
 }
 
 function drawCurtainValancePiece(doc, x, y, w, spec) {
