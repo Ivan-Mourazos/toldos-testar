@@ -1354,16 +1354,20 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
     irisExitLeft: calculation.projection || 250
   });
   const { topLeft, topRight, bottomLeft, bottomRight } = view.drawCorners;
-  // En la estructura el recuadro es más bajo: se reserva sitio para las tres líneas del pie.
+  // En estructura se reserva solo el alto de las líneas que lleva el pie, sin dejar huecos vacíos.
   // El hueco y el toldo siguen escalando juntos, con la misma proporción y las mismas cotas.
   const compact = h < 220;
+  const exaggerated = view.exaggeration > 1;
+  const withSlack = view.slack.left > 0 || view.slack.right > 0;
+  const footerY = compact ? y + h - (exaggerated ? 28 : 19) : y + h * 0.86;
+  const lowerFrontY = footerY - 12;
   const minX = Math.min(0, bottomLeft.x);
   const maxX = Math.max(topRight.x, bottomRight.x);
   const maxY = Math.max(bottomLeft.y, bottomRight.y);
   const areaX = x + w * 0.16;
   const areaW = w * 0.68;
-  const areaY = y + h * 0.17;
-  const areaH = h * (compact ? 0.43 : 0.55);
+  const areaY = compact ? y + 26 : y + h * 0.17;
+  const areaH = compact ? lowerFrontY - (withSlack ? 10 : 5) - areaY : h * 0.55;
   const scale = Math.min(areaW / (maxX - minX), areaH / maxY);
   const offsetX = areaX + (areaW - (maxX - minX) * scale) / 2 - minX * scale;
   const offsetY = areaY + (areaH - maxY * scale) / 2;
@@ -1397,34 +1401,53 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
   drawRotatedDiagramText(doc, guideText('MFD', calculation.guideRightLength, view.guides.right), dimRight + 7, (tly + bry) / 2, bry - tly + 30, guideOptions);
 
   drawDiagramText(doc, 'FRENTE SUPERIOR ' + formatNumber(view.measures.frontTop), x, tly - (hasBox ? 25 : 14), w);
-  drawDiagramText(doc, 'FRENTE INFERIOR ' + formatNumber(view.measures.frontBottom), x, Math.max(bly, bry) + (view.slack.left > 0 || view.slack.right > 0 ? 17 : 8), w);
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(compact ? 6.5 : diagramText(5.6));
+  drawDiagramText(doc, 'FRENTE INFERIOR ' + formatNumber(view.measures.frontBottom), x, compact ? lowerFrontY : Math.max(bly, bry) + (withSlack ? 17 : 8), w, compact ? 7 : diagramText(6.5));
   const along = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  const [d1x, d1y] = along([trx, tly], [blx, bly], 0.2);
-  const [d2x, d2y] = along([tlx, tly], [brx, bry], 0.2);
   const middle = (toldoLeft + toldoRight) / 2;
-  doc.text('D1 ' + formatNumber(view.measures.diagonal1), compact ? middle + 2 : d1x - 40, d1y, { width: compact ? dimRight - 3 - middle - 2 : 38, align: 'right', lineBreak: false });
-  doc.text('D2 ' + formatNumber(view.measures.diagonal2), compact ? dimLeft + 3 : d2x + 2, d2y, { width: compact ? middle - dimLeft - 5 : 40, lineBreak: false });
+  const panelW = toldoRight - toldoLeft;
+  const panelH = toldoBottom - tly;
+  const diagonalTexts = ['D2 ' + formatNumber(view.measures.diagonal2), 'D1 ' + formatNumber(view.measures.diagonal1)];
+  doc.font(fonts.semibold).fontSize(compact ? 7 : diagramText(6));
+  const widths = diagonalTexts.map(text => doc.widthOfString(text));
+  const sideBySide = widths[0] + widths[1] + 14 <= panelW;
+  diagonalTexts.forEach((text, index) => {
+    // Dentro del paño y con fondo crema: ni el borde ni el trazo de una diagonal tachan la cota.
+    // Si el hueco es estrecho, una va arriba y otra abajo del rótulo TOLDO.
+    const fraction = sideBySide ? 0.27 : index === 0 ? 0.23 : 0.77;
+    const [diagonalX] = index === 0
+      ? along([tlx, tly], [brx, bry], fraction)
+      : along([trx, tly], [blx, bly], fraction);
+    doc.font(fonts.semibold).fontSize(compact ? 7 : diagramText(6));
+    const textW = widths[index];
+    const textH = doc.currentLineHeight();
+    const centerX = sideBySide ? middle + (index === 0 ? -1 : 1) * panelW * 0.25 : diagonalX;
+    const labelX = Math.max(toldoLeft + 5, Math.min(centerX - textW / 2, toldoRight - textW - 5));
+    const labelY = tly + panelH * fraction - textH / 2;
+    doc.roundedRect(labelX - 2, labelY - 1, textW + 4.5, textH + 2, 1).fill(colors.yellowSoft);
+    doc.fillColor(colors.inkSoft).text(text, labelX, labelY, { width: textW + 0.5, lineBreak: false });
+  });
   const measures = formatNumber(view.toldo.width) + ' × ' + formatNumber(view.toldo.drop);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(compact ? 6.8 : diagramText(6.8));
-  const toldoText = compact && doc.widthOfString('TOLDO ' + measures) > toldoRight - toldoLeft
+  const toldoText = compact && doc.widthOfString('TOLDO ' + measures) > panelW - 8
     ? 'TOLDO\n' + measures : 'TOLDO ' + measures;
-  doc.text(toldoText, toldoLeft, (tly + toldoBottom) / 2 - 4, { width: toldoRight - toldoLeft, align: 'center', lineBreak: false });
+  const titleH = doc.heightOfString(toldoText, { width: panelW, lineGap: 0 });
+  const titleY = (tly + toldoBottom - titleH) / 2;
+  doc.rect(toldoLeft + 3, titleY - 1, panelW - 6, titleH + 2).fill(colors.yellowSoft);
+  doc.fillColor(colors.ink).text(toldoText, toldoLeft, titleY, { width: panelW, align: 'center', lineBreak: false });
   doc.fillColor(colors.red).font(fonts.semibold).fontSize(diagramText(5.6));
   if (view.slack.left > 0) doc.text(formatNumber(view.slack.left) + ' CM', blx - 2, bly + 1.5, { width: 34, lineBreak: false });
   if (view.slack.right > 0) doc.text(formatNumber(view.slack.right) + ' CM', brx - 32, bry + 1.5, { width: 34, align: 'right', lineBreak: false });
 
-  const footerY = compact ? y + h - 30 : y + h * 0.86;
-  drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', x, footerY, w);
+  drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', x, footerY, w, compact ? 7 : diagramText(6.5));
   doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.6));
-  if (view.exaggeration > 1) {
+  if (exaggerated) {
     const text = 'DESFASES EXAGERADOS ×' + view.exaggeration + ' · LAS COTAS SON LAS REALES';
     if (compact) {
-      drawFittedText(doc, text, x + 3, y + h - 20, w - 6, 9, { font: fonts.italic, maxSize: 6, minSize: 5, align: 'center', color: colors.grayDark });
+      drawFittedText(doc, text, x + 3, y + h - 18, w - 6, 9, { font: fonts.italic, maxSize: 6, minSize: 5, align: 'center', color: colors.grayDark });
     } else doc.text(text, x + w * 0.05, y + h * 0.91, { width: w * 0.9, align: 'center' });
   }
   doc.font(fonts.italic).fontSize(compact ? 6.2 : diagramText(5.8))
-    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * (compact ? 0.02 : 0.1), compact ? y + h - 10 : y + h * 0.95, { width: w * (compact ? 0.96 : 0.8), align: 'center' });
+    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * (compact ? 0.02 : 0.1), compact ? y + h - 9 : y + h * 0.95, { width: w * (compact ? 0.96 : 0.8), align: 'center' });
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {
@@ -2321,8 +2344,8 @@ function drawDiagramShell(doc, x, y, w, h) {
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
 }
 
-function drawDiagramText(doc, text, x, y, w) {
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(diagramText(6.5)).text(text, x, y, { width: w, align: 'center' });
+function drawDiagramText(doc, text, x, y, w, size = diagramText(6.5)) {
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(size).text(text, x, y, { width: w, align: 'center' });
 }
 
 function drawSideLabel(doc, text, x, y, w) {

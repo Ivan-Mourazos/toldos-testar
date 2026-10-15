@@ -2,15 +2,16 @@ import { expect, test } from 'vitest';
 import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { models } from './catalog.js';
 import { exampleAwning, webDrawingVariants } from './drawingCatalog.js';
-import { buildFabricDiagramPreviewPdf, buildStructureDiagramBoxPdf, IRIS_STRUCTURE_DIAGRAM_BOX } from './planteamientoPdf.js';
+import { buildFabricDiagramBoxPdf, buildFabricDiagramPreviewPdf, buildStructureDiagramBoxPdf, IRIS_STRUCTURE_DIAGRAM_BOX } from './planteamientoPdf.js';
 import { normalizeOrder } from './validation.js';
 
 const variants = models.flatMap(({ code }) => webDrawingVariants(code).filter(variant => variant.webDrawing));
 async function inspect(awning, check, options = {}) {
-  const { structure = false, ...previewOptions } = options;
+  const { structure = false, fabricBox = false, ...previewOptions } = options;
   const buffer = structure
     ? await buildStructureDiagramBoxPdf({ awning, calculation: options.calculation })
-    : await buildFabricDiagramPreviewPdf({ awning, ...previewOptions });
+    : fabricBox ? await buildFabricDiagramBoxPdf({ diagram: 'IRIS', awning, calculation: options.calculation })
+      : await buildFabricDiagramPreviewPdf({ awning, ...previewOptions });
   const loading = getDocument({ data: new Uint8Array(buffer) });
   const pdf = await loading.promise;
   try {
@@ -32,6 +33,43 @@ async function inspect(awning, check, options = {}) {
   } finally { await loading.destroy(); }
 }
 
+const irisMeasures = [
+  { irisAssumeSquare: true, irisFrontTop: 253.5, irisExitLeft: 220 },
+  { irisAssumeSquare: false, irisFrontTop: 355, irisFrontBottom: 350, irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537 }
+];
+test.each([true, false].flatMap(structure => irisMeasures.map(measures => ({ structure, ...measures }))))(
+  'IRIS: diagonales dentro del paño, protegidas de las líneas y separadas del título ($structure / $irisAssumeSquare)', async ({ structure, ...measures }) => {
+    await inspect({ model: 'IRIS', submodel: 'IRIS 110 CON COFRE', irisGuideType: 'ESTÁNDAR', ...measures }, ({ items, box, operators }) => {
+      let fill = '';
+      const panels = [];
+      let darkLabels = 0;
+      operators.fnArray.forEach((operation, index) => {
+        if (operation === OPS.setFillRGBColor) {
+          fill = operators.argsArray[index][0];
+          if (fill === '#29474d') darkLabels += 1;
+        }
+        if (operation === OPS.constructPath && fill === '#fff8df') panels.push(operators.argsArray[index][2]);
+      });
+      const [left, top, right, bottom] = panels[0];
+      const diagonals = items.filter(item => /^D[12] /.test(item.str));
+      expect(diagonals).toHaveLength(2);
+      const intersects = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      for (const diagonal of diagonals) {
+        const bounds = box(diagonal);
+        expect(bounds.left, diagonal.str).toBeGreaterThanOrEqual(left + 3);
+        expect(bounds.right, diagonal.str).toBeLessThanOrEqual(right - 3);
+        expect(bounds.top, diagonal.str).toBeGreaterThanOrEqual(top + 3);
+        expect(bounds.bottom, diagonal.str).toBeLessThanOrEqual(bottom - 3);
+        for (const title of items.filter(item => /^TOLDO|×/.test(item.str))) expect(intersects(bounds, box(title))).toBe(false);
+      }
+      expect(intersects(box(diagonals[0]), box(diagonals[1]))).toBe(false);
+      expect(darkLabels, 'gris oscuro para las dos cotas').toBeGreaterThanOrEqual(2);
+      expect(panels.filter(panel => panel[2] - panel[0] < (right - left) * 0.8).length, 'fondo crema bajo cada cota').toBeGreaterThanOrEqual(2);
+      if (structure) expect(bottom - top, 'el hueco aprovecha el alto del recuadro').toBeGreaterThan(measures.irisAssumeSquare ? 80 : 65);
+    }, { structure, fabricBox: !structure, calculation: { guideLeftLength: 208, guideRightLength: 208 } });
+  }
+);
+
 test.each([
   { irisAssumeSquare: true, irisFrontTop: 253.5, irisExitLeft: 220 },
   { irisAssumeSquare: false, irisFrontTop: 355, irisFrontBottom: 350, irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537 }
@@ -46,7 +84,7 @@ test.each([
     }
     const d1 = box(items.find(item => item.str.startsWith('D1 ')));
     const d2 = box(items.find(item => item.str.startsWith('D2 ')));
-    expect(d2.right).toBeLessThan(d1.left);
+    expect(d2.right < d1.left || d1.right < d2.left || d2.bottom < d1.top || d1.bottom < d2.top).toBe(true);
     expect(items.some(item => item.str === 'COMPROBAR DIAGONALES · CREMALLERA XL')).toBe(true);
   }, { structure: true, calculation: { guideLeftLength: 208, guideRightLength: 208 } });
 });
