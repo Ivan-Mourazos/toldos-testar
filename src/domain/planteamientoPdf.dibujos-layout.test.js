@@ -2,12 +2,15 @@ import { expect, test } from 'vitest';
 import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { models } from './catalog.js';
 import { exampleAwning, webDrawingVariants } from './drawingCatalog.js';
-import { buildFabricDiagramPreviewPdf } from './planteamientoPdf.js';
+import { buildFabricDiagramPreviewPdf, buildStructureDiagramBoxPdf, IRIS_STRUCTURE_DIAGRAM_BOX } from './planteamientoPdf.js';
 import { normalizeOrder } from './validation.js';
 
 const variants = models.flatMap(({ code }) => webDrawingVariants(code).filter(variant => variant.webDrawing));
 async function inspect(awning, check, options = {}) {
-  const buffer = await buildFabricDiagramPreviewPdf({ awning, ...options });
+  const { structure = false, ...previewOptions } = options;
+  const buffer = structure
+    ? await buildStructureDiagramBoxPdf({ awning, calculation: options.calculation })
+    : await buildFabricDiagramPreviewPdf({ awning, ...previewOptions });
   const loading = getDocument({ data: new Uint8Array(buffer) });
   const pdf = await loading.promise;
   try {
@@ -28,6 +31,25 @@ async function inspect(awning, check, options = {}) {
     await check({ items, top, bottom, box, operators: await page.getOperatorList() });
   } finally { await loading.destroy(); }
 }
+
+test.each([
+  { irisAssumeSquare: true, irisFrontTop: 253.5, irisExitLeft: 220 },
+  { irisAssumeSquare: false, irisFrontTop: 355, irisFrontBottom: 350, irisExitLeft: 400, irisExitRight: 405, irisDiagonal1: 533.1, irisDiagonal2: 537 }
+])('IRIS en estructura: las cotas y el pie caben y las diagonales no se pisan ($irisAssumeSquare)', async measures => {
+  await inspect({ model: 'IRIS', submodel: 'IRIS 110 CON COFRE', irisGuideType: 'ESTÁNDAR', ...measures }, ({ items, box }) => {
+    for (const item of items) {
+      const bounds = box(item);
+      expect(bounds.left, item.str).toBeGreaterThanOrEqual(0);
+      expect(bounds.right, item.str).toBeLessThanOrEqual(IRIS_STRUCTURE_DIAGRAM_BOX.width);
+      expect(bounds.top, item.str).toBeGreaterThanOrEqual(0);
+      expect(bounds.bottom, item.str).toBeLessThanOrEqual(IRIS_STRUCTURE_DIAGRAM_BOX.height);
+    }
+    const d1 = box(items.find(item => item.str.startsWith('D1 ')));
+    const d2 = box(items.find(item => item.str.startsWith('D2 ')));
+    expect(d2.right).toBeLessThan(d1.left);
+    expect(items.some(item => item.str === 'COMPROBAR DIAGONALES · CREMALLERA XL')).toBe(true);
+  }, { structure: true, calculation: { guideLeftLength: 208, guideRightLength: 208 } });
+});
 
 test.each(variants)('$awning.model / $id: todos los rótulos caben en el recuadro', async variant => {
   const [awning] = normalizeOrder({ awnings: [exampleAwning(variant)] }).awnings;

@@ -50,7 +50,7 @@ const fonts = hasEmbeddedFonts
 //
 // Con `renderSheets(hojas)` las páginas de estructura A5 de cada toldo y las de telas A4 (con
 // sus continuaciones de observaciones) se cambian por las hojas que imprime Chromium; en el
-// recuadro de las de telas se encaja además el dibujo de pdfkit. Chromium las imprime todas de
+// recuadro de telas y en la estructura del IRIS se encaja el dibujo de pdfkit. Chromium imprime todas de
 // una vez (primero las de estructura, luego las de telas), que es mucho más rápido que una a
 // una, y devuelve `{ pdf, pageCounts }`: cuántas páginas ocupa cada hoja, en el mismo orden.
 // `htmlStructure` y `htmlFabric` en falso dejan ese tipo de página con pdfkit.
@@ -74,6 +74,12 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
   const { pdf: base, structureRanges, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false });
   const plan = buildPlanteamientoPlan(order, calculation, { onlyAwningId });
   // Los dibujos se hacen mientras Chromium imprime; el que falle deja su hoja con pdfkit.
+  const structureDrawings = structureSheets.map((sheet) => {
+    if (!sheet.diagramBox) return Promise.resolve({ drawing: null });
+    const { awning, ofBlock } = plan.structureEntries[sheet.structureIndex];
+    return buildStructureDiagramBoxPdf({ awning, calculation: ofBlock?.calculation })
+      .then((drawing) => ({ drawing }), (error) => ({ error }));
+  });
   const drawings = fabricSheets.map((sheet) => {
     const { diagram, diagramAwning, diagramCalculation } = plan.fabricPages[sheet.planIndex];
     return buildFabricDiagramBoxPdf({ diagram, awning: diagramAwning, calculation: diagramCalculation })
@@ -85,13 +91,20 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
   } catch (error) {
     notifySheetError(onSheetError, error, null);
   }
-  const drawn = await Promise.all(drawings);
+  const [structureDrawn, drawn] = await Promise.all([Promise.all(structureDrawings), Promise.all(drawings)]);
   if (!printed) return withPdfkit();
 
   // Cada hoja impresa con el tramo de páginas de pdfkit que sustituye.
   const replacements = [];
   structureSheets.forEach((sheet, index) => {
-    replacements.push({ range: structureRanges[sheet.structureIndex], indices: printed.indices[index], drawing: null });
+    if (structureDrawn[index].error) {
+      notifySheetError(onSheetError, structureDrawn[index].error, sheet);
+      return;
+    }
+    // El dibujo acompaña a cada página de despiece, nunca a las continuaciones de notas.
+    const drawingPages = Math.max(1, Math.ceil(sheet.despiece.length / sheet.rowsPerPage));
+    replacements.push({ range: structureRanges[sheet.structureIndex], indices: printed.indices[index],
+      drawing: structureDrawn[index].drawing, box: sheet.diagramBox, drawingPages });
   });
   fabricSheets.forEach((sheet, index) => {
     if (drawn[index].error) {
@@ -139,8 +152,7 @@ function notifySheetError(callback, error, sheet) {
 
 // Recorre las páginas de pdfkit y, donde empieza un tramo sustituido, pone las páginas impresas
 // de esa hoja y se salta el tramo. `replacements`: { range: { start, end }, indices, drawing }
-// (indices = sus páginas en `printed`; drawing = el dibujo de la hoja de telas, null en las de
-// estructura, que no llevan).
+// (indices = sus páginas en `printed`; drawing = el dibujo de telas o del escuadrado IRIS).
 async function mergeSheets({ order, review, base, printed, replacements }) {
   const out = await PDFLibDocument.create();
   out.setTitle(`${order.orderCode || 'Pedido'}-1`);
@@ -177,15 +189,15 @@ async function mergeSheets({ order, review, base, printed, replacements }) {
       out.addPage(keptPages.get(slot.index));
       continue;
     }
-    const { indices, drawing } = slot.replacement;
+    const { indices, drawing, box = FABRIC_SHEET_DIAGRAM_BOX, drawingPages = 1 } = slot.replacement;
     const pages = indices.map((index) => printedPages.get(index));
     pages.forEach((page) => out.addPage(page));
     if (drawing) {
       const [embedded] = await out.embedPdf(drawing);
-      const [first] = pages;
-      const box = FABRIC_SHEET_DIAGRAM_BOX;
       // El recuadro se mide desde arriba; pdf-lib dibuja desde abajo.
-      first.drawPage(embedded, { x: box.x, y: first.getHeight() - box.y - box.height, width: box.width, height: box.height });
+      pages.slice(0, drawingPages).forEach((page) => {
+        page.drawPage(embedded, { x: box.x, y: page.getHeight() - box.y - box.height, width: box.width, height: box.height });
+      });
     }
   }
   if (review) {
@@ -424,7 +436,10 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   // de página ocupa los últimos 20 pt.
   const despieceMaxBottom = pageH - 20 - 43 - 9 - 24;
   const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main, despieceMaxBottom);
-  drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
+  const iris = String(awning.model || '').trim().toUpperCase() === 'IRIS';
+  if (iris) {
+    drawIrisStructureSide(doc, { order, awning, ofBlock });
+  } else drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
 
   const accessoriesY = despieceBottom;
   // 43 = alto del bloque de accesorios (barra de 13 + 3 filas de 10); 24 = alto
@@ -442,7 +457,7 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   if (showNotes) {
     remaining = notesBottom - notesTop >= 54
       ? drawNotesBox(doc, margin, notesTop, leftW, notesBottom, notas)
-      : drawNotesBox(doc, rightX, 336, rightW, notesBottom, notas);
+      : iris ? notas : drawNotesBox(doc, rightX, 336, rightW, notesBottom, notas);
   }
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura${continuation}`);
   return remaining;
@@ -659,6 +674,25 @@ const FABRIC_PAGE_TEXT = 9;
 // izquierda). La página HTML lo deja libre y el servidor encaja ahí el dibujo de pdfkit.
 export const FABRIC_SHEET_DIAGRAM_BOX = Object.freeze({ x: 36, y: 149, width: 242, height: 300 });
 
+// IRIS conserva la hoja A5: los datos se compactan y el escuadrado ocupa el pie derecho.
+export const IRIS_STRUCTURE_DIAGRAM_BOX = Object.freeze({ x: 417.28, y: 245, width: 164, height: 150.53 });
+
+function drawIrisStructureSide(doc, { order, awning, ofBlock }) {
+  const x = IRIS_STRUCTURE_DIAGRAM_BOX.x;
+  const w = IRIS_STRUCTURE_DIAGRAM_BOX.width;
+  // Los mismos textos que HTML, para que las medidas y las piezas de cristal coincidan.
+  const [sheet] = buildStructureSheetPages({ order: { ...order, awnings: [awning] },
+    calculation: { ofs: [{ ...ofBlock, awningIndex: 0 }] } });
+  drawMiniTable(doc, x, 86, w, 'DATOS DE PARTIDA', sheet.partida, 10, { barH: 11, size: 6.5 });
+  roundedBox(doc, x, 130, w, 14, 2, sheet.valid ? colors.green : '#fae0dc', colors.ink);
+  doc.fillColor(sheet.valid ? colors.greenText : colors.red).font(fonts.bold).fontSize(8)
+    .text(sheet.valid ? 'VÁLIDO' : 'REVISAR', x, 131, { width: w, align: 'center', lineBreak: false });
+  drawMiniTable(doc, x, 147, w, 'DETALLES', sheet.detalles, 10, { barH: 11, size: 6.5 });
+  drawMiniTable(doc, x, 201, w, 'DIMENSIONES TELA', sheet.tela, 10, { barH: 11, size: 6.5 });
+  const box = IRIS_STRUCTURE_DIAGRAM_BOX;
+  drawIrisDiagram(doc, box.x, box.y, box.width, box.height, awning, ofBlock?.calculation);
+}
+
 // «—» en lo que no aplica (Iván, 03/10/2026): vacío o el «-» de siempre.
 function dash(text) {
   const clean = String(text ?? '').trim();
@@ -764,6 +798,7 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
     return {
       kind: 'estructura',
       structureIndex,
+      ...(modelName === 'IRIS' ? { diagramBox: IRIS_STRUCTURE_DIAGRAM_BOX } : {}),
       header: {
         of: dash(awning.of),
         orderCode: dash(order.orderCode),
@@ -1094,7 +1129,18 @@ export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVI
 // El dibujo de confección solo, del tamaño exacto de su recuadro: el servidor lo encaja en la
 // página de telas impresa desde HTML (fase 1). Mismo código de dibujo que la página de pdfkit.
 export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation }) {
-  const { width, height } = FABRIC_SHEET_DIAGRAM_BOX;
+  return buildDiagramBoxPdf(FABRIC_SHEET_DIAGRAM_BOX, (doc, width, height) => {
+    drawFabricDiagram(doc, 0, 0, width, height, diagram, awning, calculation);
+  });
+}
+
+export async function buildStructureDiagramBoxPdf({ awning, calculation }) {
+  return buildDiagramBoxPdf(IRIS_STRUCTURE_DIAGRAM_BOX, (doc, width, height) => {
+    drawIrisDiagram(doc, 0, 0, width, height, awning, calculation);
+  });
+}
+
+async function buildDiagramBoxPdf({ width, height }, draw) {
   // pdfkit añade una página si un texto cae cerca del borde inferior; se dibuja en una página más
   // alta y luego se recorta a la caja exacta con pdf-lib.
   const tallHeight = height + 200;
@@ -1106,7 +1152,7 @@ export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation })
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
     doc.addPage({ size: [width, tallHeight], margin: 0 });
-    drawFabricDiagram(doc, 0, 0, width, height, diagram, awning, calculation);
+    draw(doc, width, height);
     doc.end();
   });
   const source = await PDFLibDocument.load(tall);
@@ -1308,13 +1354,16 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
     irisExitLeft: calculation.projection || 250
   });
   const { topLeft, topRight, bottomLeft, bottomRight } = view.drawCorners;
+  // En la estructura el recuadro es más bajo: se reserva sitio para las tres líneas del pie.
+  // El hueco y el toldo siguen escalando juntos, con la misma proporción y las mismas cotas.
+  const compact = h < 220;
   const minX = Math.min(0, bottomLeft.x);
   const maxX = Math.max(topRight.x, bottomRight.x);
   const maxY = Math.max(bottomLeft.y, bottomRight.y);
   const areaX = x + w * 0.16;
   const areaW = w * 0.68;
   const areaY = y + h * 0.17;
-  const areaH = h * 0.55;
+  const areaH = h * (compact ? 0.43 : 0.55);
   const scale = Math.min(areaW / (maxX - minX), areaH / maxY);
   const offsetX = areaX + (areaW - (maxX - minX) * scale) / 2 - minX * scale;
   const offsetY = areaY + (areaH - maxY * scale) / 2;
@@ -1343,31 +1392,39 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
   const guideText = (side, cut, height) => (Number(cut) > 0
     ? side + ': CORTE ' + formatNumber(cut) + ' · HUECO ' + formatNumber(height)
     : side + ': HUECO ' + formatNumber(height));
-  drawRotatedDiagramText(doc, guideText('MFI', calculation.guideLeftLength, view.guides.left), dimLeft - 7, (tly + bly) / 2, bly - tly + 30);
-  drawRotatedDiagramText(doc, guideText('MFD', calculation.guideRightLength, view.guides.right), dimRight + 7, (tly + bry) / 2, bry - tly + 30);
+  const guideOptions = compact ? { fit: true, size: 7 } : {};
+  drawRotatedDiagramText(doc, guideText('MFI', calculation.guideLeftLength, view.guides.left), dimLeft - 7, (tly + bly) / 2, bly - tly + 30, guideOptions);
+  drawRotatedDiagramText(doc, guideText('MFD', calculation.guideRightLength, view.guides.right), dimRight + 7, (tly + bry) / 2, bry - tly + 30, guideOptions);
 
   drawDiagramText(doc, 'FRENTE SUPERIOR ' + formatNumber(view.measures.frontTop), x, tly - (hasBox ? 25 : 14), w);
   drawDiagramText(doc, 'FRENTE INFERIOR ' + formatNumber(view.measures.frontBottom), x, Math.max(bly, bry) + (view.slack.left > 0 || view.slack.right > 0 ? 17 : 8), w);
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(5.6));
+  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(compact ? 6.5 : diagramText(5.6));
   const along = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
   const [d1x, d1y] = along([trx, tly], [blx, bly], 0.2);
   const [d2x, d2y] = along([tlx, tly], [brx, bry], 0.2);
-  doc.text('D1 ' + formatNumber(view.measures.diagonal1), d1x - 40, d1y, { width: 38, align: 'right', lineBreak: false });
-  doc.text('D2 ' + formatNumber(view.measures.diagonal2), d2x + 2, d2y, { width: 40, lineBreak: false });
-  doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(6.8))
-    .text('TOLDO ' + formatNumber(view.toldo.width) + ' × ' + formatNumber(view.toldo.drop), toldoLeft, (tly + toldoBottom) / 2 - 4, { width: toldoRight - toldoLeft, align: 'center', lineBreak: false });
+  const middle = (toldoLeft + toldoRight) / 2;
+  doc.text('D1 ' + formatNumber(view.measures.diagonal1), compact ? middle + 2 : d1x - 40, d1y, { width: compact ? dimRight - 3 - middle - 2 : 38, align: 'right', lineBreak: false });
+  doc.text('D2 ' + formatNumber(view.measures.diagonal2), compact ? dimLeft + 3 : d2x + 2, d2y, { width: compact ? middle - dimLeft - 5 : 40, lineBreak: false });
+  const measures = formatNumber(view.toldo.width) + ' × ' + formatNumber(view.toldo.drop);
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(compact ? 6.8 : diagramText(6.8));
+  const toldoText = compact && doc.widthOfString('TOLDO ' + measures) > toldoRight - toldoLeft
+    ? 'TOLDO\n' + measures : 'TOLDO ' + measures;
+  doc.text(toldoText, toldoLeft, (tly + toldoBottom) / 2 - 4, { width: toldoRight - toldoLeft, align: 'center', lineBreak: false });
   doc.fillColor(colors.red).font(fonts.semibold).fontSize(diagramText(5.6));
   if (view.slack.left > 0) doc.text(formatNumber(view.slack.left) + ' CM', blx - 2, bly + 1.5, { width: 34, lineBreak: false });
   if (view.slack.right > 0) doc.text(formatNumber(view.slack.right) + ' CM', brx - 32, bry + 1.5, { width: 34, align: 'right', lineBreak: false });
 
-  const footerY = y + h * 0.86;
+  const footerY = compact ? y + h - 30 : y + h * 0.86;
   drawDiagramText(doc, hasCompensator ? 'CON GUÍA COMPENSADORA' : 'GUÍAS ZIP', x, footerY, w);
   doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.6));
   if (view.exaggeration > 1) {
-    doc.text('DESFASES EXAGERADOS ×' + view.exaggeration + ' · LAS COTAS SON LAS REALES', x + w * 0.05, y + h * 0.91, { width: w * 0.9, align: 'center' });
+    const text = 'DESFASES EXAGERADOS ×' + view.exaggeration + ' · LAS COTAS SON LAS REALES';
+    if (compact) {
+      drawFittedText(doc, text, x + 3, y + h - 20, w - 6, 9, { font: fonts.italic, maxSize: 6, minSize: 5, align: 'center', color: colors.grayDark });
+    } else doc.text(text, x + w * 0.05, y + h * 0.91, { width: w * 0.9, align: 'center' });
   }
-  doc.font(fonts.italic).fontSize(diagramText(5.8))
-    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
+  doc.font(fonts.italic).fontSize(compact ? 6.2 : diagramText(5.8))
+    .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * (compact ? 0.02 : 0.1), compact ? y + h - 10 : y + h * 0.95, { width: w * (compact ? 0.96 : 0.8), align: 'center' });
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {
@@ -1819,11 +1876,15 @@ function drawCurtainSideFinishes(doc, x, y, w, h, spec) {
   drawRotatedDiagramText(doc, label, x + w + 11, y + h / 2, Math.max(48, h - 36));
 }
 
-function drawRotatedDiagramText(doc, text, centerX, centerY, width) {
+function drawRotatedDiagramText(doc, text, centerX, centerY, width, options = {}) {
   doc.save();
   doc.rotate(-90, { origin: [centerX, centerY] });
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(diagramText(6.5))
-    .text(text, centerX - width / 2, centerY - 4, { width, align: 'center', lineBreak: false });
+  let size = options.size || diagramText(6.5);
+  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(size);
+  if (options.fit) {
+    while (doc.widthOfString(text) > width && size > 6) doc.fontSize(size = Math.max(6, size - 0.1));
+  }
+  doc.text(text, centerX - width / 2, centerY - 4, { width, align: 'center', lineBreak: false });
   doc.restore();
 }
 

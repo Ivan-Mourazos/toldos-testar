@@ -45,7 +45,7 @@ const PIE_H = 20;
 const FILAS_MINIMAS = 6;
 const ROTULO_ALTO_MINIMO = 58;
 
-// Observaciones: debajo del anclaje si queda sitio; si no, al pie de la columna derecha.
+// Observaciones: debajo del anclaje; sin sitio, IRIS continúa en otra hoja y el resto usa la derecha.
 const NOTAS_HUECO = 6;
 const NOTAS_PIE = ALTO - 24;
 const NOTAS_ALTO_MINIMO = 54;
@@ -108,31 +108,44 @@ function Cabecera({ cabecera }: { cabecera: HojaEstructuraDatos['header'] }) {
 }
 
 /** DATOS DE PARTIDA, DETALLES y DIMENSIONES TELA, como drawMiniTable. */
-function Tabla({ y, titulo, filas, altoFila = FILA_TABLA }: { y: number; titulo: string; filas: Array<[string, string]>; altoFila?: number }) {
+function Tabla({ y, titulo, filas, altoFila = FILA_TABLA, altoBarra = BARRA_H }: { y: number; titulo: string; filas: Array<[string, string]>; altoFila?: number; altoBarra?: number }) {
   // Ancho para que «COLOCACIÓN MÁQUINA» quepa con la misma letra que las etiquetas cortas.
   const etiquetaW = 80;
   return (
     <>
       {filas.map(([etiqueta, valor], indice) => (
         <React.Fragment key={`${etiqueta}-${indice}`}>
-          <Celda x={DERECHA_X} y={y + BARRA_H + indice * altoFila} w={etiquetaW} h={altoFila} clase="estructura-gris telas-negrita telas-centro estructura-tabla estructura-tabla-etiqueta" minima={5.5}>{etiqueta}</Celda>
-          <Celda x={DERECHA_X + etiquetaW} y={y + BARRA_H + indice * altoFila} w={DERECHA_W - etiquetaW} h={altoFila} clase="telas-semi telas-centro estructura-tabla" minima={5.5}>{valor}</Celda>
+          <Celda x={DERECHA_X} y={y + altoBarra + indice * altoFila} w={etiquetaW} h={altoFila} clase="estructura-gris telas-negrita telas-centro estructura-tabla estructura-tabla-etiqueta" minima={5.5}>{etiqueta}</Celda>
+          <Celda x={DERECHA_X + etiquetaW} y={y + altoBarra + indice * altoFila} w={DERECHA_W - etiquetaW} h={altoFila} clase="telas-semi telas-centro estructura-tabla" minima={5.5}>{valor}</Celda>
         </React.Fragment>
       ))}
-      <Barra x={DERECHA_X} y={y} w={DERECHA_W} texto={titulo} />
+      <Barra x={DERECHA_X} y={y} w={DERECHA_W} texto={titulo} alto={altoBarra} />
     </>
   );
 }
 
-function Barra({ x, y, w, texto }: { x: number; y: number; w: number; texto: string }) {
+function Barra({ x, y, w, texto, alto = BARRA_H }: { x: number; y: number; w: number; texto: string; alto?: number }) {
   return (
-    <div className="estructura-barra" style={sitio(x, y, w, BARRA_H)}>
+    <div className="estructura-barra" style={sitio(x, y, w, alto)}>
       <span className="telas-texto">{texto}</span>
     </div>
   );
 }
 
 function ColumnaDerecha({ datos }: { datos: HojaEstructuraDatos }) {
+  if (datos.diagramBox) {
+    const box = datos.diagramBox;
+    return <>
+      <Tabla y={CUERPO_Y} titulo="DATOS DE PARTIDA" filas={datos.partida} altoFila={10} altoBarra={11} />
+      <div className={`estructura-valido estructura-valido-compacto ${datos.valid ? 'estructura-valido-si' : 'estructura-valido-no'}`} style={sitio(DERECHA_X, 130, DERECHA_W, 14)}>
+        {datos.valid ? 'VÁLIDO' : 'REVISAR'}
+      </div>
+      <Tabla y={147} titulo="DETALLES" filas={datos.detalles} altoFila={10} altoBarra={11} />
+      <Tabla y={201} titulo="DIMENSIONES TELA" filas={datos.tela} altoFila={10} altoBarra={11} />
+      {/* El servidor encaja aquí el mismo escuadrado de pdfkit que lleva la hoja de telas. */}
+      <div data-estructura-escuadrado="" style={sitio(box.x, box.y, box.width, box.height)} />
+    </>;
+  }
   // DETALLES tiene 74 pt hasta la tabla de tela: con más de cuatro filas, se estrechan.
   const altoDetalle = Math.min(11, (TELA_Y - DETALLES_Y - BARRA_H - 4) / Math.max(1, datos.detalles.length));
   return (
@@ -225,9 +238,9 @@ function repartirDespiece(datos: HojaEstructuraDatos) {
     const accesoriosY = CUERPO_Y + CABECERA_TABLA_H + alto * filas.length;
     const anclajeY = accesoriosY + BARRA_H + alto * accesorios.length + HUECO_ANCLAJE;
     const notasY = anclajeY + BARRA_H + alto + NOTAS_HUECO;
-    // Las observaciones van debajo del anclaje si quedan 54 pt; si no, al pie de la columna derecha.
-    const notas = NOTAS_PIE - notasY >= NOTAS_ALTO_MINIMO
-      ? { x: MARGEN, y: notasY, w: IZQUIERDA_W, h: NOTAS_PIE - notasY }
+    // IRIS reserva la derecha al dibujo: sin 54 pt bajo el anclaje, las notas pasan a continuación.
+    const notas = datos.diagramBox || NOTAS_PIE - notasY >= NOTAS_ALTO_MINIMO
+      ? { x: MARGEN, y: Math.min(notasY, NOTAS_PIE), w: IZQUIERDA_W, h: Math.max(0, NOTAS_PIE - notasY) }
       : { x: DERECHA_X, y: NOTAS_DERECHA_Y, w: DERECHA_W, h: NOTAS_PIE - NOTAS_DERECHA_Y };
     const pie = total > 1 ? `${datos.footer} · ${pagina + 1}/${total}` : datos.footer;
     return { filas, alto, ultima, accesorios, accesoriosY, anclajeY, notas, pie };
@@ -254,7 +267,7 @@ function Pagina({ datos, pagina, lineas, refNotas }: {
         </div>
       )}
       <ColumnaDerecha datos={datos} />
-      {ultima && texto && (
+      {ultima && texto && (!datos.diagramBox || notas.h >= NOTAS_ALTO_MINIMO) && (
         <Notas {...notas} titulo="OBSERVACIONES" texto={texto} lineas={lineas} refTexto={refNotas}
           arriba={NOTAS_TEXTO_ARRIBA} clase="estructura-notas" />
       )}
@@ -301,10 +314,16 @@ export function HojaEstructura({ datos, onLista, onError }: {
       ajustarUnaLinea(raiz.current);
       const notas = datos.notes.trim();
       const caja = repartirDespiece(datos).at(-1)!.notas;
-      setPaginasNotas(notas && medidor.current && cajaNotas.current
+      const continuacion = { ancho: ANCHO - MARGEN * 2 - NOTAS_TEXTO_LADO * 2, alto: (CONTINUACION_H - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT };
+      // Sin hueco bajo el anclaje, IRIS empieza las notas en una página de continuación.
+      if (notas && medidor.current && datos.diagramBox && caja.h < NOTAS_ALTO_MINIMO) {
+        setPaginasNotas([[], ...repartirObservaciones(medidor.current, notas, continuacion, continuacion)]);
+        return;
+      }
+      setPaginasNotas(notas && medidor.current
         ? repartirObservaciones(medidor.current, notas,
-          { ancho: caja.w - NOTAS_TEXTO_LADO * 2, alto: cajaNotas.current.clientHeight },
-          { ancho: ANCHO - MARGEN * 2 - NOTAS_TEXTO_LADO * 2, alto: (CONTINUACION_H - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT })
+          { ancho: caja.w - NOTAS_TEXTO_LADO * 2, alto: cajaNotas.current?.clientHeight ?? 0 },
+          continuacion)
         : []);
     }).catch((error: unknown) => { if (vigente) onError(textoError(error)); });
     return () => { vigente = false; };

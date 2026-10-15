@@ -22,6 +22,8 @@ export interface FilaAccesorio { name: string; reference: string; units: string 
 export interface HojaEstructuraDatos {
   kind: 'estructura';
   structureIndex: number;
+  // Solo IRIS: hueco que el servidor completa con el escuadrado de pdfkit.
+  diagramBox?: { x: number; y: number; width: number; height: number };
   header: { of: string; orderCode: string; customer: string; technician: string; reviewer: string; date: string; letter: string; model: string; device: string };
   despiece: FilaDespiece[];
   rowsPerPage: number;

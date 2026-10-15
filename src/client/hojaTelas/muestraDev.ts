@@ -179,6 +179,40 @@ const arzua: HojaEstructuraDatos = {
 };
 const ESTRUCTURAS: Record<string, HojaEstructuraDatos> = {
   estructura: arzua,
+  // Equivalente documentado de AR2604748, sin consultar RPS: cristal y motor solar.
+  'estructura-iris': {
+    ...arzua,
+    header: { ...cabecera, orderCode: 'AR2604748', customer: 'MATO PENAS, JOSE', date: '07/10/2026', of: '0232537', letter: 'A', model: 'IRIS', device: 'MOTOR' },
+    diagramBox: { x: 417.28, y: 245, width: 164, height: 150.53 },
+    despiece: [
+      pieza(1, 'PERFIL COFRE SUPERIOR', 'PECOSSU1NEGR700C', '252,1'),
+      pieza(2, 'PERFIL COFRE INFERIOR', 'PECORSU1NE05400C', '252,1'),
+      pieza(3, 'TUBO DE ENROLLE', 'TURA70HG500C', '238,7', true),
+      pieza(4, 'TUBO DE CARGA', '—', '240,3', true),
+      pieza(5, 'LASTRE', 'PLETSCR13300C', '227,3'),
+      pieza(6, 'PERFIL GUÍA MFI', 'PEMMSU13NEGR600C', '208'),
+      pieza(7, 'PERFIL GUÍA MFD', 'PEMMSU13NEGR600C', '208'),
+      pieza(8, 'TELÓN', 'CRISESTP140250C', '244,5'),
+      pieza(9, 'CASQUILLO SCREENY CON HUECO Ø14 ZIP', 'CASNMOSZ70MM'),
+      pieza(10, 'PLACA H30MM CON EJE REDONDO EXTRAIBLE', 'CASPLACASZ'),
+      pieza(11, 'TAPON TERMINAL ZIP', 'TAPTERSZ13NEGR', '—', false, '2'),
+      pieza(12, 'GOMA RETENCION SCREENY', 'GOMASSCRN700C', '240,3'),
+      pieza(13, 'CASQUILLO SCREENY PARA MOTOR 50 ZIP', 'CASADMOSZ70MM', '—', true),
+      pieza(14, 'RUEDA MOTRIZ', 'RUEDAMOTHI68'),
+      pieza(15, 'SOPORTE UNIVERSAL HIPRO', 'SOPORTEUNVHIPRO'),
+      pieza(16, 'MOTOR SOMFY RS100 SOLAR IO 15/12', 'RS10015//12', '—', true),
+      pieza(17, 'BATERIA 16,8 V MOTOR SOLAR RS100 15/20 NM', 'BATERIASO16', '—', true),
+      pieza(18, 'PANEL SOLAR 5,8 W RS100 15 NM', 'PANELSORS10015'),
+      pieza(19, 'SOPORTE PANEL SOLAR', 'RS100SOPA'),
+      pieza(20, 'JGO TAPAS COFRE REDONDO 110', 'TAPASSUN1NE05'),
+      pieza(21, 'PERFIL CUBIERTA GUIA', 'PECGSU13NEGR600C', '208', false, '2'),
+      pieza(22, 'GUIA PVC INTERIOR ZIP UNICA', 'PEGIZS1NEGR600C', '208', false, '2'),
+      pieza(23, 'PIE PARA GUIA UNICA (MAQUINA/MOTOR)', 'PIEGMMSUNEGR', '—', true, '4')
+    ],
+    partida: [['FRENTE', '253,5'], ['CAÍDA TOLDO', '220'], ['UNIDADES', '1']],
+    detalles: [['LACADO', 'NEGRO (R-09011)'], ['DISPOSITIVO', 'MOTOR'], ['POSICIÓN MOTOR', 'M.F.DER'], ['COLOCACIÓN TOLDO', 'FRONTAL']],
+    tela: [['TELA', '244,5'], ['CAÍDA PAÑO', '245'], ['PAÑO', '2 PIEZAS CRISTAL']]
+  },
   // Con máquina y sin accesorios: la etiqueta más larga de DETALLES y la fila de «—».
   'estructura-cortina': {
     ...arzua,

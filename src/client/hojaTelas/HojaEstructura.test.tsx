@@ -49,6 +49,24 @@ const telas: HojaTelasDatos = {
 const pintar = (datos: HojaEstructuraDatos) => renderToStaticMarkup(<HojaEstructura datos={datos} onLista={() => {}} onError={() => {}} />);
 
 describe('HojaEstructura', () => {
+  it('IRIS deja el dibujo libre a la derecha y mantiene las observaciones a la izquierda', () => {
+    const html = pintar({ ...ejemplo, diagramBox: { x: 417.28, y: 245, width: 164, height: 150.53 },
+      despiece: Array.from({ length: 16 }, (_, i) => pieza(i + 1, 'PIEZA', 'REF')),
+      notes: 'COMPROBAR ESCUADRA' });
+    expect(html.match(/class="estructura-pagina"/g)).toHaveLength(1);
+    expect(html).toContain('data-estructura-escuadrado=""');
+    expect(html).toContain('estructura-valido-compacto');
+    expect(html).toMatch(/left:14pt;top:[^;]+;width:395.28pt;[^>]*.*?OBSERVACIONES/s);
+    expect(pintar(ejemplo)).not.toContain('data-estructura-escuadrado');
+  });
+
+  it('IRIS sin hueco bajo el anclaje deja las observaciones para la continuación', () => {
+    const html = pintar({ ...ejemplo, diagramBox: { x: 417.28, y: 245, width: 164, height: 150.53 },
+      despiece: Array.from({ length: 28 }, (_, i) => pieza(i + 1, 'PIEZA', 'REF')), notes: 'COMPROBAR ESCUADRA' });
+    expect(html).not.toContain('OBSERVACIONES');
+    expect(html).toContain('data-estructura-escuadrado');
+  });
+
   it('cabecera con OF, pedido, la letra del toldo, el modelo y el dispositivo', () => {
     const html = pintar(ejemplo);
     for (const texto of ['OF:', '0230194', 'Nº PEDIDO:', 'AR2603332', 'TOLDO A', 'ARZÚA PRO', 'MOTOR']) expect(html).toContain(texto);

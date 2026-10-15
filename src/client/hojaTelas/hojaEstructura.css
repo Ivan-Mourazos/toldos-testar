@@ -98,6 +98,7 @@
 }
 .estructura-valido-si { background: var(--verde); color: var(--verde-texto); }
 .estructura-valido-no { background: var(--rojo); color: var(--rojo-texto); }
+.estructura-valido-compacto { border-radius: 2pt; font-size: 8pt; }
 
 /* ── Observaciones: el recuadro de telas con la letra de esta hoja ── */
 .estructura-notas .telas-notas-titulo { font-size: 6.5pt; }
