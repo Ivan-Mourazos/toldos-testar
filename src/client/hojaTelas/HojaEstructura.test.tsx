@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { altoFilaDespiece, HojaEstructura } from './HojaEstructura';
+import { altoFilaDespiece, HojaEstructura, repartirDespiece } from './HojaEstructura';
 import { contarPaginas, HojasTelas } from './HojaTelas';
 import type { FilaDespiece, HojaEstructuraDatos, HojaTelasDatos } from './tipos';
 
@@ -49,6 +49,26 @@ const telas: HojaTelasDatos = {
 const pintar = (datos: HojaEstructuraDatos) => renderToStaticMarkup(<HojaEstructura datos={datos} onLista={() => {}} onError={() => {}} />);
 
 describe('HojaEstructura', () => {
+  it.each([null, { name: 'NO INDICADO', reference: '—', units: '—' }, { name: 'QUÍMICO', reference: '', units: '1' }])('omite el anclaje no indicado: %j', (anchoring) => {
+    const html = pintar({ ...ejemplo, anchoring });
+    expect(html).not.toContain('SISTEMA DE ANCLAJE');
+    expect(html).not.toContain('NO INDICADO');
+  });
+
+  it.each([2, 5, 10])('IRIS reserva las %i líneas medidas sin bajar de 8 pt', (lineas) => {
+    const datos = { ...ejemplo, diagramBox: { x: 417.28, y: 245, width: 164, height: 150.53 },
+      despiece: Array.from({ length: 23 }, (_, i) => pieza(i + 1, 'PIEZA', 'REF')), notes: 'COMPROBAR' };
+    const requerido = 19.75 + lineas * 7.8;
+    const [pagina] = repartirDespiece(datos, requerido);
+    expect(pagina.alto).toBeGreaterThanOrEqual(8);
+    expect(pagina.notas.x).toBe(14);
+    if (lineas <= 5) expect(pagina.notas.h).toBeCloseTo(requerido, 1);
+    else expect(pagina.notas.h).toBeLessThan(requerido);
+    const [sinAnclaje] = repartirDespiece({ ...datos, anchoring: null }, requerido);
+    const [conAnclaje] = repartirDespiece({ ...datos, anchoring: { name: 'QUÍMICO', reference: 'ANCLA', units: '1' } }, requerido);
+    expect(conAnclaje.alto).toBeLessThanOrEqual(sinAnclaje.alto);
+    expect(pintar({ ...datos, anchoring: { name: 'QUÍMICO', reference: 'ANCLA', units: '1' } })).toContain('SISTEMA DE ANCLAJE');
+  });
   it('IRIS deja el dibujo libre a la derecha y mantiene las observaciones a la izquierda', () => {
     const html = pintar({ ...ejemplo, diagramBox: { x: 417.28, y: 245, width: 164, height: 150.53 },
       despiece: Array.from({ length: 16 }, (_, i) => pieza(i + 1, 'PIEZA', 'REF')),
@@ -60,10 +80,10 @@ describe('HojaEstructura', () => {
     expect(pintar(ejemplo)).not.toContain('data-estructura-escuadrado');
   });
 
-  it('IRIS sin hueco bajo el anclaje deja las observaciones para la continuación', () => {
+  it('IRIS con 28 piezas aprovecha el hueco liberado por el anclaje sin indicar', () => {
     const html = pintar({ ...ejemplo, diagramBox: { x: 417.28, y: 245, width: 164, height: 150.53 },
       despiece: Array.from({ length: 28 }, (_, i) => pieza(i + 1, 'PIEZA', 'REF')), notes: 'COMPROBAR ESCUADRA' });
-    expect(html).not.toContain('OBSERVACIONES');
+    expect(html).toContain('OBSERVACIONES');
     expect(html).toContain('data-estructura-escuadrado');
   });
 
@@ -85,9 +105,9 @@ describe('HojaEstructura', () => {
   });
 
   it('accesorios y anclaje sin número de fila', () => {
-    const html = pintar(ejemplo);
+    const html = pintar({ ...ejemplo, anchoring: { name: 'QUÍMICO', reference: 'ANCLA', units: '1' } });
     expect(html).toContain('MANDO SITUO 1 IO PURE');
-    expect(html).toContain('NO INDICADO');
+    expect(html).toContain('QUÍMICO');
     for (const numero of ['>21<', '>22<', '>23<', '>25<']) expect(html).not.toContain(numero);
   });
 
@@ -116,7 +136,7 @@ describe('HojaEstructura', () => {
 
   it('un despiece largo sigue en otra página: accesorios y anclaje solo en la última', () => {
     const despiece = Array.from({ length: 30 }, (_, i) => pieza(i + 1, `PIEZA ${i + 1}`, `REF${i + 1}`));
-    const html = pintar({ ...ejemplo, despiece });
+    const html = pintar({ ...ejemplo, despiece, anchoring: { name: 'QUÍMICO', reference: 'ANCLA', units: '1' } });
     const paginas = html.split('class="estructura-pagina"').slice(1);
     expect(paginas).toHaveLength(2);
     expect(paginas[0]).toContain('Estructura · 1/2');

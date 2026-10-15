@@ -432,31 +432,40 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   const rightX = margin + leftW + gap;
   const split = splitDespiece(ofBlock?.despiece?.rows || []);
 
-  // Debajo de la tabla van accesorios (43), el hueco (9) y el anclaje (24), y el pie
-  // de página ocupa los últimos 20 pt.
-  const despieceMaxBottom = pageH - 20 - 43 - 9 - 24;
-  const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main, despieceMaxBottom);
+  // IRIS ajusta las filas a sus notas medidas; el resto conserva su reparto.
   const iris = String(awning.model || '').trim().toUpperCase() === 'IRIS';
+  const anchoring = ofBlock?.despiece?.anchoring;
+  const conAnclaje = anchoringIndicated(anchoring);
+  const notas = structureNotes(awning, ofBlock?.calculation);
+  const dinamicas = iris && showNotes && Boolean(notas.trim());
+  const notesBottom = pageH - 24;
+  doc.font(fonts.regular).fontSize(6.5);
+  const altoNotas = 19.75 + doc.heightOfString(notas, { width: leftW - 8 }) + 1;
+  const accesoriosFilas = dinamicas ? Math.max(1, split.accessories.length) : 3;
+  const barras = 13 + (conAnclaje ? 9 + 13 : 0);
+  const filas = Math.max(6, split.main.length) + accesoriosFilas + Number(conAnclaje);
+  const rowH = dinamicas ? Math.max(8, Math.min(9.7, Math.floor((notesBottom - top - 14 - barras - 6 - altoNotas) / filas * 100) / 100)) : null;
+  const accesoriosH = 13 + accesoriosFilas * (rowH ?? 10);
+  const anclajeH = conAnclaje ? 9 + 13 + (rowH ?? 11) : 0;
+  const despieceMaxBottom = pageH - 20 - accesoriosH - anclajeH;
+  const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main, despieceMaxBottom, rowH);
   if (iris) {
     drawIrisStructureSide(doc, { order, awning, ofBlock });
   } else drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
 
   const accessoriesY = despieceBottom;
-  // 43 = alto del bloque de accesorios (barra de 13 + 3 filas de 10); 24 = alto
-  // del bloque de anclaje; 9 = margen que ya existía entre ambos bloques.
-  const anchoringY = accessoriesY + 43 + 9;
-  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories);
-  drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, ofBlock?.despiece?.anchoring);
+  // El hueco de 9 pt solo se reserva cuando hay anclaje.
+  const anchoringY = accessoriesY + accesoriosH + 9;
+  drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories, accesoriosFilas, rowH ?? 10);
+  drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, anchoring, rowH ?? 11);
 
   // La columna derecha acaba en 335; cuando el despiece ocupa la izquierda,
   // esa zona conserva al menos tres líneas para las observaciones.
-  const notesTop = anchoringY + 24 + 6;
-  const notesBottom = pageH - 24;
-  const notas = structureNotes(awning, ofBlock?.calculation);
+  const notesTop = accessoriesY + accesoriosH + anclajeH + 6;
   let remaining = '';
   if (showNotes) {
-    remaining = notesBottom - notesTop >= 54
-      ? drawNotesBox(doc, margin, notesTop, leftW, notesBottom, notas)
+    remaining = notesBottom - notesTop >= (dinamicas ? 28 : 54)
+      ? drawNotesBox(doc, margin, notesTop, leftW, dinamicas ? Math.min(notesBottom, notesTop + altoNotas) : notesBottom, notas)
       : iris ? notas : drawNotesBox(doc, rightX, 336, rightW, notesBottom, notas);
   }
   drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura${continuation}`);
@@ -495,14 +504,14 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
     .text(`TOLDO ${awningLetter(index)}`, bodyX + 7, 69.5, { width: 50 });
 }
 
-function drawDespieceTable(doc, x, y, w, rows, maxBottom = Infinity) {
+function drawDespieceTable(doc, x, y, w, rows, maxBottom = Infinity, measuredRowH = null) {
   const verticalW = 28;
   const tableX = x + verticalW;
   const tableW = w - verticalW;
   const headerH = 14;
   const rowCountForHeight = Math.max(6, rows.length);
   // 9,7 pt de alto de fila; si no caben todas, se estrechan (el texto es de 6,3-6,6 pt).
-  const rowH = Math.min(9.7, (maxBottom - y - 14) / rowCountForHeight);
+  const rowH = measuredRowH ?? Math.min(9.7, (maxBottom - y - 14) / rowCountForHeight);
   // La tabla imprimía siempre veinte filas y rellenaba de rayas las que sobraban.
   // Ese relleno no lo lee nadie y es el hueco que necesitan las observaciones, así
   // que se dibujan las piezas que hay. El mínimo evita una tabla ridícula cuando
@@ -538,7 +547,7 @@ function drawDespieceTable(doc, x, y, w, rows, maxBottom = Infinity) {
     values.forEach((cellValue, columnIndex) => {
       drawCell(doc, cellX, rowY, columns[columnIndex], rowH, cellValue, {
         fill,
-        size: columnIndex === 1 ? 6.6 : 6.3,
+        size: measuredRowH === null ? (columnIndex === 1 ? 6.6 : 6.3) : Math.min(columnIndex === 1 ? 6.6 : 6.3, rowH * 0.68),
         align: columnIndex === 1 ? 'center' : columnIndex === 0 || columnIndex > 2 ? 'center' : 'left',
         bold: columnIndex === 1 && /TUBO|BRAZO|MOTOR|MAQUINA/.test(String(cellValue).toUpperCase())
       });
@@ -615,24 +624,32 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
 // descripciones reales de Somfy (EOLIS 3D WIREFREE IO, SUNIS II IO, CURRON
 // MONOBLOCK 350) y deja esas filas con hueco de accesorio dentro de
 // split.main. Eso cambia qué imprime el despiece y queda fuera de esta tarea.
-function drawAccessories(doc, x, y, w, rows) {
+function drawAccessories(doc, x, y, w, rows, count = 3, rowH = 10) {
   drawBar(doc, x, y, w, 13, 'ELEMENTOS ACCESORIOS');
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < count; index += 1) {
     const row = rows[index];
-    const rowY = y + 13 + index * 10;
-    drawCell(doc, x, rowY, 24, 10, 21 + index, { size: 6, align: 'center' });
-    drawCell(doc, x + 24, rowY, w - 24 - 91 - 34, 10, row?.name || '', { size: 5.8, align: 'center' });
-    drawCell(doc, x + w - 125, rowY, 91, 10, row?.reference || '', { size: 5.6 });
-    drawCell(doc, x + w - 34, rowY, 34, 10, row?.units || '', { size: 6, align: 'center' });
+    const rowY = y + 13 + index * rowH;
+    const size = (original) => Math.min(original, rowH * 0.68);
+    drawCell(doc, x, rowY, 24, rowH, 21 + index, { size: size(6), align: 'center' });
+    drawCell(doc, x + 24, rowY, w - 24 - 91 - 34, rowH, row?.name || '', { size: size(5.8), align: 'center' });
+    drawCell(doc, x + w - 125, rowY, 91, rowH, row?.reference || '', { size: size(5.6) });
+    drawCell(doc, x + w - 34, rowY, 34, rowH, row?.units || '', { size: size(6), align: 'center' });
   }
 }
 
-function drawAnchoring(doc, x, y, w, anchoring) {
+function anchoringIndicated(anchoring) {
+  return Boolean(anchoring && String(anchoring.name ?? '').trim().toUpperCase() !== 'NO INDICADO'
+    && /[^\s—-]/.test(String(anchoring.reference ?? '')));
+}
+
+function drawAnchoring(doc, x, y, w, anchoring, rowH = 11) {
+  if (!anchoringIndicated(anchoring)) return;
   drawBar(doc, x, y, w, 13, 'SISTEMA DE ANCLAJE');
-  drawCell(doc, x, y + 13, 24, 11, '25', { size: 6, align: 'center' });
-  drawCell(doc, x + 24, y + 13, w - 24 - 91 - 34, 11, anchoring?.name || 'NO INDICADO', { size: 5.8, align: 'center' });
-  drawCell(doc, x + w - 125, y + 13, 91, 11, anchoring?.reference || '', { size: 5.6 });
-  drawCell(doc, x + w - 34, y + 13, 34, 11, anchoring?.units || '', { size: 6, align: 'center' });
+  const size = (original) => Math.min(original, rowH * 0.68);
+  drawCell(doc, x, y + 13, 24, rowH, '25', { size: size(6), align: 'center' });
+  drawCell(doc, x + 24, y + 13, w - 24 - 91 - 34, rowH, anchoring.name, { size: size(5.8), align: 'center' });
+  drawCell(doc, x + w - 125, y + 13, 91, rowH, anchoring.reference, { size: size(5.6) });
+  drawCell(doc, x + w - 34, y + 13, 34, rowH, anchoring.units || '', { size: size(6), align: 'center' });
 }
 
 // Mide el texto con la misma fuente y anchura con las que se imprime. Devuelve
@@ -824,11 +841,11 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
         reference: dash(row.reference),
         units: dash(row.units)
       })),
-      anchoring: {
+      anchoring: anchoringIndicated(anchoring) ? {
         name: anchoring?.name || 'NO INDICADO',
         reference: dash(anchoring?.reference),
         units: dash(anchoring?.units)
-      },
+      } : null,
       // IRIS no recibe frente ni caída: los deja el cálculo, como en drawStructureSide.
       partida: [
         ['FRENTE', dash(formatNumber(partingMeasure(awning.width, calc?.width)))],

@@ -17,12 +17,15 @@ async function pdfText(awning, options = {}) {
   const loading = getDocument({ data: new Uint8Array(buffer) });
   const document = await loading.promise;
   const texts = [];
+  let structureItems = [];
   for (let n = 1; n <= document.numPages; n += 1) {
     const page = await document.getPage(n);
-    texts.push((await page.getTextContent()).items.map((item) => item.str).join(' '));
+    const { items } = await page.getTextContent();
+    if (n === 1) structureItems = items;
+    texts.push(items.map((item) => item.str).join(' '));
   }
   await loading.destroy();
-  return { text: texts.join(' '), pages: texts, calculation: calculation.ofs[0].calculation };
+  return { text: texts.join(' '), pages: texts, structureItems, calculation: calculation.ofs[0].calculation };
 }
 
 const base = {
@@ -67,18 +70,50 @@ describe('dibujo del escuadrado del Iris en el planteamiento', () => {
     expect(pages[1]).toContain('TOLDO 300 × 250');
   });
 
-  test('si falla HTML, la estructura de reserva conserva el dibujo y pasa las notas a continuación', async () => {
+  test('si falla HTML, la estructura de reserva conserva el dibujo y las notas cortas en la misma hoja', async () => {
     const { pages } = await pdfText({ ...base, irisAssumeSquare: true, irisFrontTop: 253.5, irisExitLeft: 220,
       irisGlassCurtain: true, motorPower: 'SOLAR 15/12', structureNotes: 'COMPROBAR ANCLAJE EN OBRA' }, {
       htmlStructure: true, htmlFabric: true,
       renderSheets: async () => { throw new Error('Impresora no disponible'); }
     });
     expect(pages[0]).toContain('TOLDO 253,5 × 220');
-    expect(pages[0]).not.toContain('COMPROBAR ANCLAJE EN OBRA');
-    expect(pages[1]).toContain('Toldo A · Observaciones (continuación)');
-    expect(pages[1]).toContain('COMPROBAR ANCLAJE EN OBRA');
-    expect(pages[1]).not.toContain('FRENTE SUPERIOR');
-    expect(pages[2]).toContain('PLANTEAMIENTO DE TELAS');
+    expect(pages[0]).toContain('COMPROBAR ANCLAJE EN OBRA');
+    expect(pages).toHaveLength(2);
+    expect(pages[1]).toContain('PLANTEAMIENTO DE TELAS');
+  });
+
+  test.each([2, 5, 10])('la reserva reparte %i líneas de notas del pedido AR2604748', async (lineas) => {
+    const notas = Array.from({ length: lineas }, (_, i) => `NOTA DE TALLER ${i + 1}`).join('\n');
+    const { pages, structureItems } = await pdfText({ ...base, submodel: 'IRIS 110 CON COFRE', irisAssumeSquare: true,
+      irisFrontTop: 253.5, irisExitLeft: 220, irisGlassCurtain: true, motorPower: 'SOLAR 15/12', structureNotes: notas });
+    expect(pages[0]).not.toContain('SISTEMA DE ANCLAJE');
+    expect(pages[0]).toContain('NOTA DE TALLER 1');
+    const superior = structureItems.find(item => item.str === 'PERFIL COFRE SUPERIOR');
+    const inferior = structureItems.find(item => item.str === 'PERFIL COFRE INFERIOR');
+    expect(superior.transform[5] - inferior.transform[5]).toBeGreaterThanOrEqual(7.99);
+    expect(superior.height).toBeGreaterThanOrEqual(5.4);
+    for (let i = 1; i <= lineas; i++) expect(pages.join(' ')).toContain(`NOTA DE TALLER ${i}`);
+    if (lineas <= 5) {
+      expect(pages).toHaveLength(2);
+      expect(pages[0]).toContain(`NOTA DE TALLER ${lineas}`);
+    } else {
+      expect(pages).toHaveLength(3);
+      expect(pages[1]).toContain('Observaciones (continuación)');
+      expect(pages[1]).toContain('NOTA DE TALLER 10');
+    }
+  });
+
+  test.each(['IRIS', 'ARZUA PRO'])('%s omite solo los anclajes sin indicar en HTML y reserva', async (model) => {
+    for (const anchoring of [null, { name: 'NO INDICADO', reference: 'ANCLA', units: 1 }, { name: 'QUÍMICO', reference: '', units: 1 }, { name: 'QUÍMICO', reference: 'ANCLA', units: 1 }]) {
+      const order = normalizeOrder({ structureColor: 'BLANCO', sameFabric: true, fabric: 'ACRILI2170P120|||120|||LONA NEGRA|||ACR',
+        awnings: [{ ...base, model, width: 300, projection: 250, armCount: 2, tubeLoad: 'TUBO DE CARGA EVO 80', sensor: 'SIN SENSOR', valanceHeight: 0, valanceCurve: 'RECTA', rotValance: 'NO', irisAssumeSquare: true, irisFrontTop: 300, irisExitLeft: 250 }] });
+      const calculation = calculateOrder(order);
+      calculation.ofs[0].despiece.anchoring = anchoring;
+      const indicado = anchoring?.name === 'QUÍMICO' && Boolean(anchoring.reference);
+      expect(Boolean(buildStructureSheetPages({ order, calculation })[0].anchoring)).toBe(indicado);
+      const pages = await pageTexts(await buildOrderPlanteamientoPdf({ order, calculation, htmlStructure: false, htmlFabric: false }));
+      expect(pages[0].includes('SISTEMA DE ANCLAJE')).toBe(indicado);
+    }
   });
 
   test('el dibujo acompaña las páginas de despiece HTML y respeta las de continuación', async () => {

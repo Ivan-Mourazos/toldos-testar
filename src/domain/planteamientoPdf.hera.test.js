@@ -55,7 +55,7 @@ describe('la hoja de estructura del HERA en HTML', () => {
     expect(hoja.detalles).toEqual([['COLOR CADENA', 'BLANCO'], ['DISPOSITIVO', 'MÁQUINA']]);
     expect(hoja.tela).toEqual([['TELA', '159'], ['CAÍDA PAÑO', '190'], ['PAÑO', '1,9 ML']]);
     expect(hoja.valid).toBe(true);
-    expect(hoja.anchoring).toEqual({ name: 'NO INDICADO', reference: '—', units: '—' });
+    expect(hoja.anchoring).toBeNull();
   });
 
   test('el anillo de cadena va en ELEMENTOS ACCESORIOS con su referencia exacta, y no en el despiece', () => {
@@ -153,10 +153,11 @@ describe('el PDF del HERA', () => {
     }
     for (const dato of ['DESPIECE', 'HERA 56', 'MÁQUINA', 'TOLDO A', 'DATOS DE PARTIDA', 'CAÍDA TOLDO', 'ALTURA', '250', 'VÁLIDO',
       'COLOR CADENA', 'BLANCO', 'DIMENSIONES TELA', 'CAÍDA PAÑO', 'SCRKITSW4350BLAN', 'TUBO DE ENROLLE', '159.8',
-      'ELEMENTOS ACCESORIOS', 'SCRANILBLAN150C', 'SISTEMA DE ANCLAJE', 'NO INDICADO', 'TELA 6 CM MÁS CORTA', 'Toldo A · Estructura']) {
+      'ELEMENTOS ACCESORIOS', 'SCRANILBLAN150C', 'TELA 6 CM MÁS CORTA', 'Toldo A · Estructura']) {
       expect(estructura).toContain(dato);
     }
     expect(estructura).not.toContain('LACADO');
+    expect(estructura).not.toContain('SISTEMA DE ANCLAJE');
     expect(estructura).not.toMatch(/MACALENGU|VARILLAVAINA/);
     // El anillo va detrás del rótulo de accesorios, no en la tabla del despiece.
     expect(estructura.indexOf('SCRANILBLAN150C')).toBeGreaterThan(estructura.indexOf('ELEMENTOS ACCESORIOS'));

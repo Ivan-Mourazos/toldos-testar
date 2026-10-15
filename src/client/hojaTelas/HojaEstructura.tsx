@@ -51,6 +51,7 @@ const NOTAS_PIE = ALTO - 24;
 const NOTAS_ALTO_MINIMO = 54;
 const NOTAS_DERECHA_Y = 336;
 const NOTAS_TEXTO_ARRIBA = 15.75;
+const NOTAS_LINEA_H = 8.25;
 
 // Columna derecha.
 const VALIDO_Y = 155;
@@ -63,8 +64,8 @@ const FILA_TABLA = 13;
  * despiece (seis como poco) y las `debajo`, que son las de accesorios y anclaje y llevan el mismo
  * alto. Con observaciones no pasa de 9,7 pt, para dejarles sitio; sin ellas crece hasta 17 (Iván, 03/10/2026: con despieces cortos quedaba un tercio de la columna en blanco).
  */
-export function altoFilaDespiece(filas: number, conNotas: boolean, debajo = 4): number {
-  const barras = debajo > 0 ? BARRA_H * 2 + HUECO_ANCLAJE : 0;
+export function altoFilaDespiece(filas: number, conNotas: boolean, debajo = 4, conAnclaje = true): number {
+  const barras = debajo > 0 ? BARRA_H + (conAnclaje ? BARRA_H + HUECO_ANCLAJE : 0) : 0;
   const libre = ALTO - PIE_H - CUERPO_Y - CABECERA_TABLA_H - barras;
   // A la centésima, para que cada fila empiece justo donde acaba la anterior.
   return Math.min(conNotas ? 9.7 : 17, Math.floor((libre / (Math.max(FILAS_MINIMAS, filas) + debajo)) * 100) / 100);
@@ -222,10 +223,12 @@ function Pie({ texto }: { texto: string }) {
 }
 
 /** Cómo queda cada página del despiece: sus filas, su alto y, en la última, lo que va debajo. */
-function repartirDespiece(datos: HojaEstructuraDatos) {
+export function repartirDespiece(datos: HojaEstructuraDatos, altoNotas = NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + datos.notes.trim().split('\n').length * NOTAS_LINEA_H) {
   const porPagina = Math.max(1, datos.rowsPerPage);
   const conNotas = Boolean(datos.notes.trim());
   const accesorios = datos.accessories.length > 0 ? datos.accessories : SIN_ACCESORIOS;
+  const anclaje = datos.anchoring && datos.anchoring.name.trim().toUpperCase() !== 'NO INDICADO'
+    && /[^\s—-]/.test(datos.anchoring.reference) ? datos.anchoring : null;
   const total = Math.max(1, Math.ceil(datos.despiece.length / porPagina));
   return Array.from({ length: total }, (_, pagina) => {
     const ultima = pagina === total - 1;
@@ -234,16 +237,21 @@ function repartirDespiece(datos: HojaEstructuraDatos) {
     if (total === 1) {
       filas = [...filas, ...Array.from({ length: Math.max(0, FILAS_MINIMAS - filas.length) }, (_, i) => ({ ...FILA_VACIA, num: String(filas.length + i + 1) }))];
     }
-    const alto = altoFilaDespiece(filas.length, conNotas, ultima ? accesorios.length + 1 : 0);
+    let alto = altoFilaDespiece(filas.length, conNotas, ultima ? accesorios.length + Number(Boolean(anclaje)) : 0, Boolean(anclaje));
+    if (ultima && datos.diagramBox && conNotas) {
+      const barras = BARRA_H + (anclaje ? HUECO_ANCLAJE + BARRA_H : 0);
+      const libre = NOTAS_PIE - CUERPO_Y - CABECERA_TABLA_H - barras - NOTAS_HUECO - altoNotas;
+      alto = Math.max(8, Math.min(alto, Math.floor(libre / (filas.length + accesorios.length + Number(Boolean(anclaje))) * 100) / 100));
+    }
     const accesoriosY = CUERPO_Y + CABECERA_TABLA_H + alto * filas.length;
     const anclajeY = accesoriosY + BARRA_H + alto * accesorios.length + HUECO_ANCLAJE;
-    const notasY = anclajeY + BARRA_H + alto + NOTAS_HUECO;
-    // IRIS reserva la derecha al dibujo: sin 54 pt bajo el anclaje, las notas pasan a continuación.
+    const notasY = (anclaje ? anclajeY + BARRA_H + alto : accesoriosY + BARRA_H + alto * accesorios.length) + NOTAS_HUECO;
+    // IRIS reserva la derecha al dibujo y ajusta el recuadro a las líneas medidas.
     const notas = datos.diagramBox || NOTAS_PIE - notasY >= NOTAS_ALTO_MINIMO
-      ? { x: MARGEN, y: Math.min(notasY, NOTAS_PIE), w: IZQUIERDA_W, h: Math.max(0, NOTAS_PIE - notasY) }
+      ? { x: MARGEN, y: Math.min(notasY, NOTAS_PIE), w: IZQUIERDA_W, h: Math.max(0, Math.min(NOTAS_PIE - notasY, datos.diagramBox && conNotas ? altoNotas : Infinity)) }
       : { x: DERECHA_X, y: NOTAS_DERECHA_Y, w: DERECHA_W, h: NOTAS_PIE - NOTAS_DERECHA_Y };
     const pie = total > 1 ? `${datos.footer} · ${pagina + 1}/${total}` : datos.footer;
-    return { filas, alto, ultima, accesorios, accesoriosY, anclajeY, notas, pie };
+    return { filas, alto, ultima, accesorios, accesoriosY, anclajeY, anclaje, notas, pie };
   });
 }
 
@@ -262,12 +270,14 @@ function Pagina({ datos, pagina, lineas, refNotas }: {
         <div className="estructura-filas" style={{ fontSize: pt(letraFila(alto)) }}>
           {accesorios.map((fila, indice) => <FilaSuelta key={indice} fila={fila} y={accesoriosY + BARRA_H + indice * alto} alto={alto} accesorio />)}
           <Barra x={TABLA_X} y={accesoriosY} w={TABLA_W} texto="ELEMENTOS ACCESORIOS" />
-          <FilaSuelta fila={datos.anchoring} y={anclajeY + BARRA_H} alto={alto} />
-          <Barra x={TABLA_X} y={anclajeY} w={TABLA_W} texto="SISTEMA DE ANCLAJE" />
+          {pagina.anclaje && <>
+            <FilaSuelta fila={pagina.anclaje} y={anclajeY + BARRA_H} alto={alto} />
+            <Barra x={TABLA_X} y={anclajeY} w={TABLA_W} texto="SISTEMA DE ANCLAJE" />
+          </>}
         </div>
       )}
       <ColumnaDerecha datos={datos} />
-      {ultima && texto && (!datos.diagramBox || notas.h >= NOTAS_ALTO_MINIMO) && (
+      {ultima && texto && (!datos.diagramBox || notas.h >= NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + NOTAS_LINEA_H) && (
         <Notas {...notas} titulo="OBSERVACIONES" texto={texto} lineas={lineas} refTexto={refNotas}
           arriba={NOTAS_TEXTO_ARRIBA} clase="estructura-notas" />
       )}
@@ -305,7 +315,8 @@ export function HojaEstructura({ datos, onLista, onError }: {
   const cajaNotas = useRef<HTMLDivElement>(null);
   // null mientras no se han medido; luego, las líneas de cada página (vacío si no hay notas).
   const [paginasNotas, setPaginasNotas] = useState<string[][] | null>(null);
-  const paginas = repartirDespiece(datos);
+  const [altoNotas, setAltoNotas] = useState<number | undefined>(undefined);
+  const paginas = repartirDespiece(datos, altoNotas);
 
   useEffect(() => {
     let vigente = true;
@@ -313,16 +324,24 @@ export function HojaEstructura({ datos, onLista, onError }: {
       if (!vigente || !raiz.current) return;
       ajustarUnaLinea(raiz.current);
       const notas = datos.notes.trim();
-      const caja = repartirDespiece(datos).at(-1)!.notas;
       const continuacion = { ancho: ANCHO - MARGEN * 2 - NOTAS_TEXTO_LADO * 2, alto: (CONTINUACION_H - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT };
-      // Sin hueco bajo el anclaje, IRIS empieza las notas en una página de continuación.
-      if (notas && medidor.current && datos.diagramBox && caja.h < NOTAS_ALTO_MINIMO) {
+      let medido: number | undefined;
+      if (notas && medidor.current && datos.diagramBox) {
+        const todas = repartirObservaciones(medidor.current, notas,
+          { ancho: IZQUIERDA_W - NOTAS_TEXTO_LADO * 2, alto: Infinity }, continuacion)[0];
+        medidor.current.textContent = 'Ág';
+        medido = NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + todas.length * medidor.current.getBoundingClientRect().height / PX_POR_PT;
+        medidor.current.textContent = '';
+      }
+      setAltoNotas(medido);
+      const caja = repartirDespiece(datos, medido).at(-1)!.notas;
+      if (notas && medidor.current && datos.diagramBox && caja.h < NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + NOTAS_LINEA_H) {
         setPaginasNotas([[], ...repartirObservaciones(medidor.current, notas, continuacion, continuacion)]);
         return;
       }
       setPaginasNotas(notas && medidor.current
         ? repartirObservaciones(medidor.current, notas,
-          { ancho: caja.w - NOTAS_TEXTO_LADO * 2, alto: cajaNotas.current?.clientHeight ?? 0 },
+          { ancho: caja.w - NOTAS_TEXTO_LADO * 2, alto: datos.diagramBox ? (caja.h - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT + 0.01 : cajaNotas.current?.clientHeight ?? 0 },
           continuacion)
         : []);
     }).catch((error: unknown) => { if (vigente) onError(textoError(error)); });

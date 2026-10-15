@@ -48,11 +48,11 @@ describe('buildStructureSheetPages', () => {
     expect(despiece.slice(0, 3).map(({ length }) => length)).toEqual(['327,2', '2 TRAMOS', '—']);
   });
 
-  test('el mando va en accesorios, no en el despiece; el anclaje sin dato dice NO INDICADO', () => {
+  test('el mando va en accesorios, no en el despiece; el anclaje sin dato se omite', () => {
     const [sheet] = sheets([arzua()]);
     expect(sheet.accessories).toEqual([{ name: 'MANDO SITUO 1 IO PURE', reference: 'SITUOIO1PURE', units: '1' }]);
     expect(sheet.despiece.some(({ name }) => /MANDO/.test(name))).toBe(false);
-    expect(sheet.anchoring).toEqual({ name: 'NO INDICADO', reference: '—', units: '—' });
+    expect(sheet.anchoring).toBeNull();
   });
 
   test('columna derecha: partida, válido, detalles con palabras enteras y tela con el paño a un decimal', () => {

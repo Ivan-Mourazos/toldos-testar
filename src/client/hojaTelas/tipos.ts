@@ -28,7 +28,7 @@ export interface HojaEstructuraDatos {
   despiece: FilaDespiece[];
   rowsPerPage: number;
   accessories: FilaAccesorio[];
-  anchoring: FilaAccesorio;
+  anchoring: FilaAccesorio | null;
   partida: Array<[string, string]>;
   valid: boolean;
   detalles: Array<[string, string]>;
