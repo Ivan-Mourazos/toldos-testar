@@ -170,7 +170,7 @@ describe('el PDF del HERA', () => {
 
     for (const dato of ['PLANTEAMIENTO DE TELAS', 'HERA 56', 'DATOS BÁSICOS', 'SOLTIS 96 NUBE', '159,0', '190,0', 'CAÍDA',
       'CARA INTERIOR DERECHO DENTRO', 'ARRIBA VARILLA PLANA', 'ABAJO VARILLA BLANCA', 'CADENA 300', 'TUBO 159,8',
-      'PAÑO TOTAL NECESARIO', 'VENTANA', 'A: ACLARACIONES: TELA 6 CM MÁS CORTA', 'Planteamiento de telas']) {
+      'PAÑO TOTAL NECESARIO', 'VENTANA', 'ACLARACIONES: TELA 6 CM MÁS CORTA', 'Planteamiento de telas']) {
       expect(telas).toContain(dato);
     }
     expect(telasMotor).toContain('ABAJO PLETINA');

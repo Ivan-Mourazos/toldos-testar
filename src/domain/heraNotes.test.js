@@ -32,5 +32,5 @@ test('HERA imprime aclaraciones largas completas y pagina sin perder el final', 
   }
   const fabric = pages.filter((page) => page.a4).map((page) => page.text).join(' ');
   expect(fabric).toContain('OBSERVACION DE TELA DEL PEDIDO');
-  expect(fabric).toContain('A: ACLARACIONES: TELA 6cm MÁS CORTA');
+  expect(fabric).toContain('ACLARACIONES: TELA 6cm MÁS CORTA');
 });

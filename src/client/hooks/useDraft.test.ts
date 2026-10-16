@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest';
-import { buildReusableDraft, defaultDraft, sanitizeAwning, migrateLegacyDraft, switchAwningModel } from './useDraft';
-import { createAwning } from '../constants';
+import { describe, expect, test, vi } from 'vitest';
+import { buildReusableDraft, defaultDraft, sanitizeAwning, migrateLegacyDraft, readStoredDraft, switchAwningModel, writeStoredDraft } from './useDraft';
+import { createAwning, storageKey } from '../constants';
 import { modelNames } from '../../domain/modelBehavior.js';
 
 describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
@@ -156,6 +156,21 @@ describe('defaultDraft', () => {
 });
 
 describe('buildReusableDraft', () => {
+  test('guardar y cargar un borrador conserva las notas en su nivel', () => {
+    const almacen = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (key: string) => almacen.get(key) ?? null, setItem: (key: string, value: string) => almacen.set(key, value) });
+    try {
+      const draft = { ...defaultDraft(), notes: 'General', awnings: [{ ...createAwning(), fabricNotes: 'Solo A' }] };
+      writeStoredDraft(draft);
+      expect(almacen.has(storageKey)).toBe(true);
+      const restored = readStoredDraft();
+      expect(restored.notes).toBe('General');
+      expect(restored.awnings[0].fabricNotes).toBe('Solo A');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   test('restaura la foto completa del pedido histórico y sanea los toldos', () => {
     const source = {
       ...defaultDraft(),
@@ -184,7 +199,7 @@ describe('buildReusableDraft', () => {
       orderDate: '2026-01-15',
       technician: 'Ana',
       fabric: 'ACR ADMIRAL',
-      notes: 'Aplicar a toda la tela'
+      notes: ''
     });
     expect(reusable.awnings[0]).toMatchObject({
       id: 'toldo-historico',
@@ -192,7 +207,8 @@ describe('buildReusableDraft', () => {
       model: 'ARZUA PRO',
       width: 400,
       projection: 250,
-      structureNotes: 'Conservar esta configuración'
+      structureNotes: 'Conservar esta configuración',
+      fabricNotes: 'Aplicar a toda la tela'
     });
   });
 
@@ -244,6 +260,17 @@ describe('migrateLegacyDraft (borrador v3/v4 completo -> DraftState v5)', () => 
   test('conserva order.notes al migrar', () => {
     const migrated = migrateLegacyDraft({ orderCode: 'AR-NOTES', notes: 'Observación del pedido', awnings: [{ of: '1' }] });
     expect(migrated!.notes).toBe('Observación del pedido');
+  });
+
+  test('mantiene intactas las notas antiguas y no añade las de los toldos', () => {
+    const notes = ' General antigua \nYa mezclada\nYa mezclada';
+    const awnings = [{ ...createAwning(), fabricNotes: 'Ya mezclada\nSolo del toldo' }];
+    const migrated = migrateLegacyDraft({ orderCode: 'AR-ANTIGUO', notes, awnings });
+    expect(migrated?.notes).toBe(notes);
+    expect(migrated?.awnings[0].fabricNotes).toBe('Ya mezclada\nSolo del toldo');
+    const revision = buildReusableDraft({ ...defaultDraft(), notes, awnings });
+    expect(revision.notes).toBe(notes);
+    expect(revision.awnings[0].fabricNotes).toBe('Ya mezclada\nSolo del toldo');
   });
 
   test('migra curva y tela de bamba globales al toldo correspondiente', () => {

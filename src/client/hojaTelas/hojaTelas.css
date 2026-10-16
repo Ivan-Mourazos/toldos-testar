@@ -154,3 +154,8 @@ body {
 .telas-pie { color: var(--gris-oscuro); font-size: 5.5pt; line-height: 1; text-align: right; }
 
 .hoja-error { font: 12pt Arial, sans-serif; padding: 10mm; }
+/* Filas compactas de tela: el alto crece con los comentarios, sin hueco vacío. */
+.telas-notas-por-toldo .telas-notas-titulo { position: static; padding: 4pt; }
+.telas-notas-por-toldo .telas-comentarios { padding: 0 4pt 4pt; position: static; }
+.telas-comentario { border-top: 0.4pt solid #b6a574; font-size: 9pt; line-height: 1.25; overflow-wrap: anywhere; padding: 2pt 0; white-space: pre-wrap; }
+.telas-comentario strong { font-weight: 700; }

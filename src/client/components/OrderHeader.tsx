@@ -37,7 +37,7 @@ export function OrderHeader(props: Props) {
           <strong>{props.sameFabric ? (props.fabric ? fabricSelectionLabel(props.fabric) : '—') : 'Tela por toldo'}</strong>
         </p>
         <ReadModeContext.Provider value>
-          <ObservationLines label="Observaciones de tela del pedido" value={props.notes} onChange={props.onNotesChange} />
+          <ObservationLines label="Observaciones de tela para todo el pedido" value={props.notes} onChange={props.onNotesChange} />
         </ReadModeContext.Provider>
       </section>
     );
@@ -76,15 +76,12 @@ export function OrderHeader(props: Props) {
             {props.sameFabric && !props.readOnly && props.fabric && <div className="order-fabric-common-meta">
               <FabricStockLine selection={props.fabric} neededMl={props.fabricNeedMl} />
             </div>}
-            {/* La cabecera no está dentro de ReadModeContext (es un fieldset deshabilitado):
-                se provee aquí para que las observaciones lean con el mismo criterio que la
-                ficha (rediseño 3 §3). */}
-            <details className="order-fabric-notes" open={Boolean(props.notes.trim())}>
-              <summary>Observaciones de tela{props.notes.trim() ? ' · con anotaciones' : ''}</summary>
-              <ObservationLines label="Observaciones de tela del pedido" value={props.notes} onChange={props.onNotesChange} />
-            </details>
           </section>
         </div>
+      </div>
+
+      <div className="order-fabric-notes">
+        <ObservationLines label="Observaciones de tela para todo el pedido" value={props.notes} onChange={props.onNotesChange} ajustarTexto />
       </div>
 
       {props.autofill && props.autofill.warnings.length > 0 && (

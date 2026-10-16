@@ -943,6 +943,10 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
 
+          <div className="awning-fabric-notes awning-wide-field">
+            <ObservationLines label="Obs. tela" value={awning.fabricNotes} onChange={(fabricNotes) => update({ fabricNotes })} ajustarTexto />
+          </div>
+
         </ReadSheetBody>
       )}
       </ReadModeContext.Provider>

@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ajustarUnaLinea } from '../hoja/ajusteTexto';
 import { ajustarDosLineas } from './ajusteDosLineas';
 import {
-  Celda, Notas, NOTAS_TEXTO_ABAJO, NOTAS_TEXTO_ARRIBA, NOTAS_TEXTO_LADO, PX_POR_PT, esperarImagenes, esperarLetra, pt,
-  repartirObservaciones, sitio, textoError as texto
+  Celda, NOTAS_TEXTO_ABAJO, NOTAS_TEXTO_ARRIBA, NOTAS_TEXTO_LADO, PX_POR_PT, esperarImagenes, esperarLetra, pt,
+  sitio, textoError as texto
 } from './ayudasHoja';
+import { NotasTela, repartirNotasTela } from './NotasTela';
 import { HojaEstructura } from './HojaEstructura';
 import type { FilaHojaTelas, HojaPlanteamiento, HojaTelasDatos } from './tipos';
 
@@ -135,7 +136,7 @@ function Pie({ texto }: { texto: string }) {
   return <div className="telas-pie" style={{ left: pt(MARGEN), top: pt(ALTO - 15), width: pt(ANCHO - MARGEN * 2) }}>{texto}</div>;
 }
 
-function PrimeraPagina({ datos, lineas, refNotas }: { datos: HojaTelasDatos; lineas: string[] | null; refNotas: React.Ref<HTMLDivElement> }) {
+function PrimeraPagina({ datos, lineas }: { datos: HojaTelasDatos; lineas: string[] | null }) {
   const h = altoFila(datos.rows.length);
   const datosW = CONTENIDO_W - ROTULACION_W - HUECO_TABLAS;
   return (
@@ -147,8 +148,8 @@ function PrimeraPagina({ datos, lineas, refNotas }: { datos: HojaTelasDatos; lin
       {/* Vacío a propósito: el servidor encaja aquí el dibujo de confección de pdfkit. */}
       <div className="telas-dibujo" style={{ left: '36pt', top: '149pt', width: '242pt', height: '300pt' }}></div>
       {datos.notes.trim() && (
-        <Notas x={NOTAS_X} y={NOTAS_Y} w={NOTAS_W} h={NOTAS_PIE - NOTAS_Y} titulo="OBSERVACIONES"
-          texto={datos.notes.trim()} lineas={lineas} refTexto={refNotas} />
+        <NotasTela x={NOTAS_X} y={NOTAS_Y} w={NOTAS_W} h={NOTAS_PIE - NOTAS_Y} titulo="OBSERVACIONES"
+          filas={lineas ?? datos.notes.trim().split('\n')} />
       )}
 
       <Tabla x={CONTENIDO_X} w={ROTULACION_W} titulo="ROTULACIÓN" letraValor="telas-tabla-valor"
@@ -175,8 +176,8 @@ function PaginaContinuacion({ datos, lineas }: { datos: HojaTelasDatos; lineas: 
   return (
     <section className="telas-pagina">
       <Cabecera cabecera={datos.header} />
-      <Notas x={MARGEN} y={EXTERIOR_Y} w={CONTINUACION_W} h={EXTERIOR_PIE - EXTERIOR_Y}
-        titulo="Observaciones (continuación)" texto="" lineas={lineas} />
+      <NotasTela x={MARGEN} y={EXTERIOR_Y} w={CONTINUACION_W} h={EXTERIOR_PIE - EXTERIOR_Y}
+        titulo="Observaciones (continuación)" filas={lineas} />
       <Pie texto={`${datos.footer} · Observaciones (continuación)`} />
     </section>
   );
@@ -194,7 +195,6 @@ export function HojaTelas({ datos, onLista, onError }: {
 }) {
   const raiz = useRef<HTMLDivElement>(null);
   const medidor = useRef<HTMLDivElement>(null);
-  const cajaNotas = useRef<HTMLDivElement>(null);
   // null mientras no se han medido; luego, las líneas de cada página (vacío si no hay notas).
   const [paginasNotas, setPaginasNotas] = useState<string[][] | null>(null);
 
@@ -205,9 +205,9 @@ export function HojaTelas({ datos, onLista, onError }: {
       ajustarUnaLinea(raiz.current);
       ajustarDosLineas(raiz.current);
       const notas = datos.notes.trim();
-      setPaginasNotas(notas && medidor.current && cajaNotas.current
-        ? repartirObservaciones(medidor.current, notas,
-          { ancho: NOTAS_W - NOTAS_TEXTO_LADO * 2, alto: cajaNotas.current.clientHeight },
+      setPaginasNotas(notas && medidor.current
+        ? repartirNotasTela(medidor.current, notas,
+          { ancho: NOTAS_W - NOTAS_TEXTO_LADO * 2, alto: (NOTAS_PIE - NOTAS_Y - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT },
           { ancho: CONTINUACION_W - NOTAS_TEXTO_LADO * 2, alto: (EXTERIOR_PIE - EXTERIOR_Y - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT })
         : []);
     }).catch((error: unknown) => { if (vigente) onError(texto(error)); });
@@ -225,7 +225,7 @@ export function HojaTelas({ datos, onLista, onError }: {
 
   return (
     <div ref={raiz} data-hoja-telas="">
-      <PrimeraPagina datos={datos} lineas={paginasNotas?.[0] ?? null} refNotas={cajaNotas} />
+      <PrimeraPagina datos={datos} lineas={paginasNotas?.[0] ?? null} />
       {(paginasNotas ?? []).slice(1).map((lineas, indice) => <PaginaContinuacion key={indice} datos={datos} lineas={lineas} />)}
       <div className="telas-medidor" ref={medidor} aria-hidden="true" />
     </div>

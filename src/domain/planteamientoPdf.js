@@ -276,7 +276,7 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
       while (remaining) {
         doc.addPage({ size: 'A4', layout: 'landscape', margin: 0 });
         drawFabricHeader(doc, { order, lines: entries.map(toFabricLine), margin: 24, pageW: doc.page.width });
-        remaining = drawNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true, FABRIC_PAGE_TEXT);
+        remaining = drawFabricNotesBox(doc, 24, 114, doc.page.width - 48, doc.page.height - 32, remaining, true);
         drawPageFooter(doc, 24, doc.page.width, doc.page.height, 'Planteamiento de telas · Observaciones (continuación)');
       }
       fabricRanges[planIndex] = { start, end: pageCount };
@@ -687,6 +687,46 @@ function drawNotesBox(doc, x, y, w, bottom, notes, continuation = false, size = 
 // Tamaño de letra de las observaciones en la página de telas.
 const FABRIC_PAGE_TEXT = 9;
 
+// Solo telas: una fila por comentario, filete fino y letra en negrita.
+function drawFabricNotesBox(doc, x, y, w, bottom, notes, continuation = false) {
+  const pendientes = String(notes).split('\n').filter(Boolean);
+  const filas = [];
+  const size = FABRIC_PAGE_TEXT;
+  let alto = 19.5;
+  while (pendientes.length) {
+    const fila = pendientes[0];
+    const partes = /^([A-Z]{1,3}:)\s+([\s\S]*)$/.exec(fila);
+    const letra = partes?.[1] || '';
+    doc.font(fonts.bold).fontSize(size);
+    const sangria = letra ? doc.widthOfString(`${letra} `) : 0;
+    const ancho = w - 8 - sangria;
+    const espacio = bottom - y - alto - 8;
+    if (espacio < 12) break;
+    const [visible, resto] = splitNotesToFit(doc, partes?.[2] ?? fila, ancho, espacio, size);
+    doc.font(fonts.regular).fontSize(size);
+    const h = doc.heightOfString(visible, { width: ancho }) + 4;
+    filas.push({ letra, sangria, texto: visible, ancho, h });
+    alto += h;
+    pendientes.shift();
+    if (resto) {
+      pendientes.unshift(`${letra ? `${letra} ` : ''}${resto}`);
+      break;
+    }
+  }
+  roundedBox(doc, x, y, w, alto + 4, 2, colors.yellowSoft, colors.yellow);
+  doc.fillColor(colors.ink).font(fonts.bold).fontSize(size)
+    .text(continuation ? 'Observaciones (continuación)' : 'OBSERVACIONES', x + 4, y + 4);
+  let arriba = y + 19.5;
+  for (const fila of filas) {
+    doc.save().strokeColor('#b6a574').lineWidth(0.4).moveTo(x + 4, arriba).lineTo(x + w - 4, arriba).stroke().restore();
+    if (fila.letra) doc.fillColor(colors.ink).font(fonts.bold).fontSize(size).text(fila.letra, x + 4, arriba + 2, { lineBreak: false });
+    doc.fillColor(colors.ink).font(fonts.regular).fontSize(size)
+      .text(fila.texto, x + 4 + fila.sangria, arriba + 2, { width: fila.ancho });
+    arriba += fila.h;
+  }
+  return pendientes.join('\n');
+}
+
 // Recuadro del dibujo de confección en la página de telas A4 apaisada (puntos desde arriba a la
 // izquierda). La página HTML lo deja libre y el servidor encaja ahí el dibujo de pdfkit.
 export const FABRIC_SHEET_DIAGRAM_BOX = Object.freeze({ x: 36, y: 149, width: 242, height: 300 });
@@ -917,7 +957,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   const pageNotes = fabricPageNotes(order, lines);
   const remainingNotes = pageNotes
     // Con letra de 9 pt, el recuadro sube para que quepan unas siete líneas.
-    ? drawNotesBox(doc, diagramX, 456, diagramW, outerBottom - 10, pageNotes, false, FABRIC_PAGE_TEXT)
+    ? drawFabricNotesBox(doc, diagramX, 456, diagramW, outerBottom - 10, pageNotes)
     : '';
 
   const contentX = margin + 270;
@@ -1042,23 +1082,21 @@ function drawFabricHeader(doc, { order, lines, margin, pageW, title = 'PLANTEAMI
 
 // Cuando la página mezcla toldos con distinta tela, curva, remate o rotulación,
 // la cabecera dice "SEGÚN TOLDO" y cada fila tiene que decir el suyo.
-// Observaciones de la página de telas: las del pedido y, de cada bambalina, sus notas
-// con la letra del toldo. Antes iban en la línea y, si no cabían, remitían al pedido.
+// Una línea por comentario, solo de los toldos de esta página.
 export function fabricPageNotes(order = {}, lines = []) {
-  // Del HERA, sus aclaraciones enteras: antes iban en su página propia (hasta el 03/10/2026).
-  const awningNotes = lines
-    .filter(({ awning }) => String(awning?.model || '').trim().toUpperCase() === 'BAMBALINA' || isHeraAwning(awning))
-    .flatMap(({ awning, index }) => {
+  const comentarios = (value) => String(value || '').split(/\r\n?|\n/).map((text) => text.trim()).filter(Boolean);
+  const awningNotes = lines.flatMap(({ awning, index }) => {
+      const special = String(awning?.model || '').trim().toUpperCase() === 'BAMBALINA' || isHeraAwning(awning);
       // Con imagen sustituta no se ve el dibujo: la varilla y las bastillas van aquí.
-      const hiddenDrawing = awning.fabricImage && normalizeFabricDiagramOverride('BAMBALINA', awning.fabricDiagramOverride) !== 'SUPLEMENTO';
+      const hiddenDrawing = special && awning.fabricImage && normalizeFabricDiagramOverride('BAMBALINA', awning.fabricDiagramOverride) !== 'SUPLEMENTO';
       const parts = [
         hiddenDrawing && 'VARILLA BLANCA · BASTILLAS LATERALES',
-        String(awning.fabricNotes || '').trim() && 'OBS. TELA: ' + String(awning.fabricNotes).trim(),
-        String(awning.structureNotes || '').trim() && 'ACLARACIONES: ' + String(awning.structureNotes).trim()
+        ...comentarios(awning.fabricNotes),
+        ...(special ? comentarios(awning.structureNotes).map((text) => `ACLARACIONES: ${text}`) : [])
       ].filter(Boolean);
-      return parts.length ? [`${awningLetter(index)}: ${parts.join(' · ')}`] : [];
+      return parts.map((text) => lines.length > 1 ? `${awningLetter(index)}: ${text}` : text);
     });
-  return [String(order.notes || '').trim(), ...awningNotes].filter(Boolean).join('\n');
+  return [...comentarios(order.notes), ...awningNotes].join('\n');
 }
 
 // Iris con telón todo de cristal (AR2604748): el paño son piezas de cristal, no metros de lona.

@@ -231,10 +231,10 @@ describe('datos del planteamiento de telas', () => {
     const notes = fabricPageNotes({ notes: 'NOTA DEL PEDIDO' }, [
       { awning: { model: 'BAMBALINA', fabricNotes: 'OLLAOS CADA 40', structureNotes: 'IGUAL QUE LA ANTERIOR' }, index: 1 },
       { awning: { model: 'BAMBALINA' }, index: 2 },
-      { awning: { model: 'CAMBIO TELA', fabricNotes: 'NO VA AQUÍ' }, index: 0 }
+      { awning: { model: 'CAMBIO TELA', fabricNotes: 'NOTA DE A' }, index: 0 }
     ]);
 
-    expect(notes).toBe('NOTA DEL PEDIDO\nB: OBS. TELA: OLLAOS CADA 40 · ACLARACIONES: IGUAL QUE LA ANTERIOR');
+    expect(notes).toBe('NOTA DEL PEDIDO\nB: OLLAOS CADA 40\nB: ACLARACIONES: IGUAL QUE LA ANTERIOR\nA: NOTA DE A');
   });
 
   test.each(['XACOBEO', 'CUARZO BOX'])('%s conserva la instrucción VARILLA BLANCA ATRÁS', (model) => {
@@ -555,7 +555,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(fabric).toContain('ABAJO PLETINA');
     expect(fabric).toContain('CADENA 340');
     expect(fabric).toContain('TUBO 316,7');
-    expect(fabric).toContain('A: ACLARACIONES: Confirmar sentido del empate en CAD.');
+    expect(fabric).toContain('ACLARACIONES: Confirmar sentido del empate en CAD.');
     expect(fabricMotor).toContain('HERA 56');
     expect(fabricMotor).toContain('CARA INTERIOR DERECHO DENTRO');
     expect(fabricMotor).not.toContain('CADENA');

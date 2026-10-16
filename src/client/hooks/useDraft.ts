@@ -241,7 +241,7 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
     structureColor: (saved.structureColor as string) || fallback.structureColor,
     rotTela: (saved.rotTela as string) || fallback.rotTela,
     rotBamba: (saved.rotBamba as string) || fallback.rotBamba,
-    notes: collectFabricOrderNotes(saved.notes, awnings),
+    notes: collectFabricOrderNotes(saved.notes),
     fabricProposals: sanitizeFabricProposals(saved.fabricProposals),
     confirmedFabricProposals: Array.isArray(saved.confirmedFabricProposals)
       ? saved.confirmedFabricProposals.filter((index): index is number => Number.isInteger(index) && Number(index) >= 0) : [],
@@ -404,7 +404,7 @@ export function useDraft() {
     setStructureColor(entry.structureColor || fallback.structureColor);
     setRotTela(entry.rotTela || fallback.rotTela);
     setRotBamba(entry.rotBamba || fallback.rotBamba);
-    setNotes(collectFabricOrderNotes(entry.notes, entry.awnings));
+    setNotes(collectFabricOrderNotes(entry.notes));
     setFabricProposals(sanitizeFabricProposals(entry.fabricProposals));
     setConfirmedFabricProposals(entry.confirmedFabricProposals ?? []);
     setAwnings(entry.awnings.length
@@ -475,7 +475,7 @@ function withUniqueIds<T extends { id?: string }>(awnings: T[]): T[] {
 export function buildReusableDraft(entry: DraftState): DraftState {
   return {
     ...entry,
-    notes: collectFabricOrderNotes(entry.notes, entry.awnings),
+    notes: collectFabricOrderNotes(entry.notes),
     awnings: withUniqueIds(entry.awnings.map((awning) => ({
       ...sanitizeAwning(awning as unknown as Record<string, unknown>),
       id: awning.id
@@ -483,12 +483,9 @@ export function buildReusableDraft(entry: DraftState): DraftState {
   };
 }
 
-function collectFabricOrderNotes(orderNotes: unknown, awnings: Array<Record<string, unknown> | Awning> = []) {
-  const values = [orderNotes, ...awnings.map((awning) => awning.fabricNotes)]
-    .flatMap((value) => String(value || '').replace(/\r\n?/g, '\n').split('\n'))
-    .map((value) => value.trim())
-    .filter(Boolean);
-  return [...new Set(values)].join('\n');
+function collectFabricOrderNotes(orderNotes: unknown) {
+  // Los pedidos antiguos conservan lo ya mezclado; las notas por toldo siguen en su campo.
+  return typeof orderNotes === 'string' ? orderNotes : '';
 }
 
 export function switchAwningModel(awning: Awning, model: string, armCount?: number | null): Awning {
