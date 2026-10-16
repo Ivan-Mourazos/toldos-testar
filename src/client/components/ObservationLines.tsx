@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { enUnRenglon, useAltoAjustado } from '../hooks/useAltoAjustado';
 import { useReadMode } from './ReadMode';
@@ -17,6 +17,17 @@ export function ObservationLines({ label, value, onChange, ajustarTexto = false 
   const reading = useReadMode();
   const lines = observationLines(value);
   const listRef = useRef<HTMLDivElement>(null);
+  // La línea que acaba de abrir Intro recibe el foco al pintarse, antes de la tecla siguiente:
+  // con requestAnimationFrame, al escribir deprisa la primera letra caía en la línea anterior
+  // («PRIMERAS» / «EGUNDA», revisión del 16/10/2026).
+  const pendingFocus = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    if (pendingFocus.current === null) return;
+    const target = listRef.current?.querySelector<HTMLElement>(`[data-observation-line="${pendingFocus.current}"]`);
+    if (!target) return;
+    pendingFocus.current = null;
+    target.focus();
+  });
   const isEmpty = lines.every((line) => !line.trim());
 
   // Ficha de lectura del toldo (rediseño 3 §1): nota amarilla si hay texto, línea gris si
@@ -41,10 +52,8 @@ export function ObservationLines({ label, value, onChange, ajustarTexto = false 
   function addLine(afterIndex = lines.length - 1) {
     const next = [...lines];
     next.splice(afterIndex + 1, 0, '');
+    pendingFocus.current = afterIndex + 1;
     onChange(next.join('\n'));
-    requestAnimationFrame(() => {
-      listRef.current?.querySelector<HTMLElement>(`[data-observation-line="${afterIndex + 1}"]`)?.focus();
-    });
   }
 
   function removeLine(index: number) {

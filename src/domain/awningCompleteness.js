@@ -113,7 +113,9 @@ export function getMissingFields(awning, order = null) {
   }
   // Iris también pregunta si lleva ventana de cristal: su cálculo ya lo exigía
   // y la tarjeta no, así que el toldo quedaba sin calcular sin decir por qué.
-  if ((curtain || isSelena || (model === 'IRIS' && !irisGlass)) && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', 'ventana');
+  // En el Iris el campo se llama «Telón»: con «ventana», el enlace de FALTA no lo encontraba
+  // y llevaba al OF (revisión del 16/10/2026).
+  if ((curtain || isSelena || (model === 'IRIS' && !irisGlass)) && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', model === 'IRIS' ? 'telón' : 'ventana');
   // Redondo o cuadrado cambia el perfil inferior y las tapas del cofre (taller, 24/09/2026).
   if (model === 'IRIS' && irisAsksBoxShape(awning) && !normalizeIrisBoxShape(awning.irisBoxShape)) add('irisBoxShape', 'forma del cofre');
   if (curtain && !awning.curtainFinish) add('curtainFinish', isConfiguredCurtain(awning) ? 'laterales' : 'confección');

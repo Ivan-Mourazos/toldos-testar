@@ -80,6 +80,8 @@ describe('getMissingFields', () => {
   it('Iris pide si lleva ventana de cristal, pero no confección', () => {
     const iris = { model: 'IRIS', of: '1', irisFrontTop: 300, irisExitLeft: 250, submodel: 'IRIS 110 CON COFRE', irisBoxShape: 'REDONDO', rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQUINA', crankHeight: 150, placement: 'FRONTAL', curtainHasWindow: null };
     expect(fields(iris)).toEqual(['curtainHasWindow']);
+    // Con el nombre del campo de la tarjeta («Telón»), para que el enlace de FALTA lo encuentre.
+    expect(getMissingFields(iris)).toContainEqual({ field: 'curtainHasWindow', label: 'telón' });
     expect(getMissingFields({ ...iris, irisFrontTop: null })).toContainEqual({ field: 'irisFrontTop', label: 'frente superior' });
   });
 
