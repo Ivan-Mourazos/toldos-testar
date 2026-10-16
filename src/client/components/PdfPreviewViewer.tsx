@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { firstWidePage } from '../pdfPages';
+import { printPdf } from '../printPdf';
 import { PdfPreviewToolbar, type PdfZoom } from './PdfPreviewToolbar';
 
 type PageImage = { url: string; width: number; height: number; scale: number };
@@ -180,6 +181,21 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', star
     if (stageRef.current) stageRef.current.scrollTo(0, 0);
   }, [pageNumber]);
 
+  // Abre el diálogo de impresión del navegador con el PDF entero. Si el navegador no deja imprimir
+  // desde el marco, se abre el PDF en otra pestaña para imprimirlo desde allí.
+  const [printing, setPrinting] = useState(false);
+  const print = async () => {
+    setPrinting(true);
+    try {
+      await printPdf(url);
+    } catch (error) {
+      console.error('No se pudo imprimir el PDF:', error);
+      window.open(url, '_blank', 'noopener');
+    } finally {
+      setPrinting(false);
+    }
+  };
+
   const changePage = (number: number) => setPageNumber(Math.max(1, Math.min(pageCount, number)));
   const changeZoom = (direction: number) => {
     const baseWidth = pageWidthsRef.current.get(pageNumber);
@@ -229,7 +245,8 @@ export function PdfPreviewViewer({ url, ariaLabel = 'Vista previa del PDF', star
 
   return (
     <div className="pdf-carousel" ref={rootRef} aria-label={ariaLabel} tabIndex={0}>
-      <PdfPreviewToolbar heading={heading} actions={actions} zoom={zoom} pageNumber={pageNumber} pageCount={visibleStatus === 'ready' ? pageCount : 0} onZoom={setZoom} onZoomStep={changeZoom} onPage={changePage} />
+      <PdfPreviewToolbar heading={heading} actions={actions} zoom={zoom} pageNumber={pageNumber} pageCount={visibleStatus === 'ready' ? pageCount : 0} onZoom={setZoom} onZoomStep={changeZoom} onPage={changePage}
+        onPrint={visibleStatus === 'ready' ? () => void print() : undefined} printing={printing} />
       <div className="pdf-carousel-stage" ref={stageRef} aria-live="polite">
         {visibleStatus === 'loading' && <div className="pdf-carousel-state">Abriendo el PDF…</div>}
         {visibleStatus === 'error' && <div className="pdf-carousel-state is-error">No se pudo mostrar este PDF.</div>}

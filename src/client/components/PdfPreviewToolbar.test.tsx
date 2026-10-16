@@ -14,6 +14,15 @@ it('una sola hoja conserva el zoom y elimina la navegación que ocupa espacio', 
   expect(html).not.toContain('Ir a página del PDF');
   expect(html).not.toContain('Página anterior');
 });
+it('con el PDF abierto ofrece imprimir junto a las acciones; sin abrir, no', () => {
+  const ready = renderToStaticMarkup(<PdfPreviewToolbar {...props} pageCount={2} onPrint={() => {}} actions={<button>Cerrar vista previa</button>} />);
+  expect(ready).toContain('Imprimir');
+  expect(ready.indexOf('Imprimir')).toBeLessThan(ready.indexOf('Cerrar vista previa'));
+  const busy = renderToStaticMarkup(<PdfPreviewToolbar {...props} pageCount={2} onPrint={() => {}} printing />);
+  expect(busy).toContain('Preparando…');
+  expect(busy).toMatch(/<button[^>]*disabled=""[^>]*>.*Preparando…/);
+  expect(renderToStaticMarkup(<PdfPreviewToolbar {...props} pageCount={2} />)).not.toContain('Imprimir');
+});
 it('varias hojas comparten una barra de zoom y navegación con los nombres accesibles existentes', () => {
   const html = renderToStaticMarkup(<PdfPreviewToolbar {...props} pageCount={3} pageNumber={2} zoom={150} />);
   expect(html.match(/class="pdf-carousel-toolbar"/g)).toHaveLength(1);

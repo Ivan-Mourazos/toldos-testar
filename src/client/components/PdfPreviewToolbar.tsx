@@ -1,9 +1,9 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, Printer } from 'lucide-react';
 
 export type PdfZoom = 'height' | 'fit' | number;
 
-export function PdfPreviewToolbar({ heading, actions, zoom, pageNumber, pageCount, onZoom, onZoomStep, onPage }: {
+export function PdfPreviewToolbar({ heading, actions, zoom, pageNumber, pageCount, onZoom, onZoomStep, onPage, onPrint, printing = false }: {
   heading?: React.ReactNode;
   actions?: React.ReactNode;
   zoom: PdfZoom;
@@ -12,6 +12,9 @@ export function PdfPreviewToolbar({ heading, actions, zoom, pageNumber, pageCoun
   onZoom: (zoom: PdfZoom) => void;
   onZoomStep: (direction: number) => void;
   onPage: (page: number) => void;
+  /** Sin él no hay botón de imprimir (el PDF aún no está abierto). */
+  onPrint?: () => void;
+  printing?: boolean;
 }) {
   return <div className="pdf-carousel-toolbar">
     {heading && <div className="pdf-carousel-heading">{heading}</div>}
@@ -32,6 +35,11 @@ export function PdfPreviewToolbar({ heading, actions, zoom, pageNumber, pageCoun
         {Array.from({ length: pageCount }, (_, index) => <button key={index} type="button" aria-current={pageNumber === index + 1 ? 'page' : undefined} aria-label={`Página ${index + 1}`} onClick={() => onPage(index + 1)}>{index + 1}</button>)}
       </nav>
     </div>}
-    {actions && <div className="pdf-carousel-actions">{actions}</div>}
+    {(actions || onPrint) && <div className="pdf-carousel-actions">
+      {onPrint && <button type="button" className="ghost-button" onClick={onPrint} disabled={printing}>
+        <Printer aria-hidden="true" />{printing ? 'Preparando…' : 'Imprimir'}
+      </button>}
+      {actions}
+    </div>}
   </div>;
 }
