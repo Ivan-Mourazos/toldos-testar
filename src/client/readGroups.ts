@@ -1,13 +1,17 @@
-// Ficha de lectura del toldo (rediseño 3, §1): cada dato va a uno de cuatro grupos
+// Edición y lectura del toldo: cada dato va a uno de los ocho grupos comunes
 // por su etiqueta. Lo que no esté declarado cae en «Otros» y la prueba de paridad
 // falla, así que ningún campo nuevo se queda sin sitio sin que nos enteremos.
-export type ReadGroupId = 'medidas' | 'estructura' | 'accionamiento' | 'colocacion' | 'otros';
+export type ReadGroupId = 'medidas' | 'tela' | 'estructura' | 'accionamiento' | 'colocacion' | 'dibujo' | 'observaciones' | 'pie' | 'otros';
 
 export const READ_GROUPS: Array<{ id: ReadGroupId; title: string }> = [
   { id: 'medidas', title: 'Medidas' },
+  { id: 'tela', title: 'Tela y bamba' },
   { id: 'estructura', title: 'Estructura' },
   { id: 'accionamiento', title: 'Accionamiento' },
-  { id: 'colocacion', title: 'Colocación y tela' },
+  { id: 'colocacion', title: 'Colocación' },
+  { id: 'dibujo', title: 'Dibujo de confección' },
+  { id: 'observaciones', title: 'Observaciones y excepción técnica' },
+  { id: 'pie', title: 'Notas' },
   { id: 'otros', title: 'Otros' }
 ];
 
@@ -81,6 +85,12 @@ export function readUnitOf(label: string) {
 
 export function readGroupOf(label: string): ReadGroupId {
   const clean = label.trim();
+  if (['Tela', 'Tela bamba', 'Curva bamba', 'Remate', 'Color remate', 'Rotulación tela', 'Rotulación bamba', 'Empate indicado por cliente', 'Cara hacia el interior (ventana)'].includes(clean)) return 'tela';
+  if (clean === 'Dibujo de confección') return 'dibujo';
+  if (['Sujeción del suplemento', 'Indicar sujeción', 'Distancia entre broches (cm)', 'Solape sobre la onda (cm)', 'Remate inferior', 'Indicar remate', 'Bastilla de unión (cm)', 'Bastilla lateral (cm)', 'Bastilla inferior (cm)'].includes(clean)) return 'tela';
+  if (clean.startsWith('Obs. ')) return 'observaciones';
+  if (['Altura instalación', 'Color cadena', 'Color mecanismos'].includes(clean)) return 'accionamiento';
+  if (['Altura soporte-brazo (cm)', 'Salida ventana', 'Esquina', 'Suelo-ventana', 'Tubo-ventana', 'Altura ventana', 'Medida a ventana desde', 'Ventana', 'Ventana de cristal', 'Telón', 'Confección'].includes(clean)) return 'estructura';
   return byLabel[clean] || byPattern.find(([pattern]) => pattern.test(clean))?.[1] || 'otros';
 }
 

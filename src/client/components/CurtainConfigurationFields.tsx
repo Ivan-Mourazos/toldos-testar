@@ -11,10 +11,16 @@ const adjustmentLabel = (value: string) => ({
   ET: 'Descontar 11 cm · ET', PERSONALIZADO: 'Personalizado'
 }[value] || value);
 
-export function CurtainConfigurationFields({ awning, update, missing, bodyAllowanceCm }: {
+type Props = {
   awning: Awning; update: (patch: Partial<Awning>) => void; missing: (field: string) => boolean; bodyAllowanceCm: number;
-}) {
-  const reading = useReadMode();
+};
+
+export function CurtainConfigurationFields(props: Props) {
+  return curtainConfigurationFields({ ...props, reading: useReadMode() });
+}
+
+// Devuelve los campos para que el formulario pueda colocarlos en sus grupos comunes.
+export function curtainConfigurationFields({ awning, update, missing, bodyAllowanceCm, reading }: Props & { reading: boolean }) {
   const config = normalizeCurtainConfiguration(awning);
   const floor = config.curtainWindowReference === 'SUELO';
   const windowHeight = curtainWindowDrawingHeight(awning);

@@ -610,3 +610,35 @@ describe('excepción técnica en lectura, a partir del aviso', () => {
     expect(read).not.toContain('awning-diagnostics');
   });
 });
+
+describe('orden común de las tarjetas al editar y leer', () => {
+  it('agrupa la tela antes de la estructura y las observaciones antes del pie', () => {
+    const [base] = samplesFor('ARZUA PRO');
+    const awning: Awning = { ...base, structureNotes: 'Nota de estructura', fabricNotes: 'Nota de tela' };
+    for (const reading of [false, true]) {
+      const markup = render(awning, reading, { sameFabric: false });
+      const grupos = [...markup.matchAll(/class="awning-group[^"]*" data-group="([^"]+)"/g)].map(match => match[1]);
+      expect(grupos.slice(0, 5)).toEqual(['medidas', 'tela', 'estructura', 'accionamiento', 'colocacion']);
+      expect(grupos).not.toContain('otros');
+      expect(markup.indexOf('Obs. estructura')).toBeLessThan(markup.indexOf('Obs. tela'));
+      if (!reading) expect(markup.indexOf('Obs. tela')).toBeLessThan(markup.indexOf('El ajuste suma tela'));
+    }
+  });
+
+  it('sitúa el dibujo de Iris después de las medidas y su leyenda al pie', () => {
+    const [base] = samplesFor('IRIS');
+    const markup = render({ ...base, irisAssumeSquare: false }, false);
+    expect(markup.indexOf('Diagonal 2 (a salida der.)')).toBeLessThan(markup.indexOf('<figure'));
+    expect(markup.indexOf('Obs. tela')).toBeLessThan(markup.indexOf('<figcaption'));
+  });
+
+  it('en Hera, los remates siguen a la variante: arriba y abajo', () => {
+    const [base] = samplesFor('HERA');
+    for (const reading of [false, true]) {
+      const markup = render(base, reading);
+      const labels = [...markup.matchAll(/data-field="([^"]+)"/g)].map(match => match[1]);
+      expect(labels.indexOf('Variante')).toBeLessThan(labels.indexOf('Arriba'));
+      expect(labels.indexOf('Arriba')).toBeLessThan(labels.indexOf('Abajo'));
+    }
+  });
+});

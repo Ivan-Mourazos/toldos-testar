@@ -30,7 +30,7 @@ const SQUARE_TEMPLATE: Corners = { topLeft: { x: 0, y: 0 }, topRight: { x: 300, 
  * hueco medido, sus diagonales, el rectángulo del toldo y cada guía con su corte. Sustituye al
  * dibujo en CAD. Los desfases van exagerados para que se vean; las cotas son las reales.
  */
-export function IrisSquaringDiagram({ awning, parameters, guideCuts }: { awning: Awning; parameters?: unknown; guideCuts?: { left: number; right: number } }) {
+export function IrisSquaringDiagram({ awning, parameters, guideCuts, part = 'all' }: { awning: Awning; parameters?: unknown; guideCuts?: { left: number; right: number }; part?: 'all' | 'diagram' | 'legend' }) {
   const view = buildIrisSquaringView(awning, (parameters ?? {}) as object) as View | null;
   const square = awning.irisAssumeSquare === true;
   const corners = view ? view.drawCorners : square ? SQUARE_TEMPLATE : TEMPLATE;
@@ -67,8 +67,8 @@ export function IrisSquaringDiagram({ awning, parameters, guideCuts }: { awning:
   const diagonals = !square;
 
   return (
-    <figure className={`iris-squaring${view ? '' : ' is-template'}`} aria-label="Escuadrado del hueco">
-      <svg viewBox={`${-pad} ${-pad} ${width + pad * 2} ${height + pad * 2}`} role="img"
+    <figure className={`iris-squaring${view ? '' : ' is-template'}`} aria-label={part === 'legend' ? 'Notas del escuadrado' : 'Escuadrado del hueco'}>
+      {part !== 'legend' && <svg viewBox={`${-pad} ${-pad} ${width + pad * 2} ${height + pad * 2}`} role="img"
         aria-label={view ? `Hueco de ${cm(measures.frontTop)} por ${cm(view.guides.left)} y ${cm(view.guides.right)}; toldo de ${cm(view.toldo.width)} por ${cm(view.toldo.drop)}` : 'Plantilla de las medidas del hueco'}>
         {view && <rect className="iris-sq-toldo" x={view.drawToldo.left} y={0} width={view.drawToldo.right - view.drawToldo.left} height={view.drawToldo.drop} />}
         <polygon className="iris-sq-hueco" points={polygon} />
@@ -102,8 +102,8 @@ export function IrisSquaringDiagram({ awning, parameters, guideCuts }: { awning:
             </>
           )}
         </g>
-      </svg>
-      <figcaption>
+      </svg>}
+      {part !== 'diagram' && <figcaption>
         {view ? (
           <>
             <p className="iris-squaring-note">En amarillo, el toldo. Línea continua, el hueco medido; discontinuas, las diagonales; a los lados, cada guía del toldo (la normal, no la compensadora): la altura del hueco en ese lado y su corte, que es esa altura menos el descuento del manual.{view.exaggeration > 1 ? ` Desfases exagerados ×${view.exaggeration} para que se vean; las cotas son las reales.` : ''}</p>
@@ -116,7 +116,7 @@ export function IrisSquaringDiagram({ awning, parameters, guideCuts }: { awning:
             ? 'Hueco escuadrado: basta con el frente superior y la salida izquierda.'
             : 'Qué es cada medida: la diagonal 1 va de la esquina de arriba a la derecha a la de abajo a la izquierda (cierra con la salida izquierda); la diagonal 2, de arriba a la izquierda a abajo a la derecha. Al completar las seis, sale el dibujo del hueco medido con el toldo.'}</p>
         )}
-      </figcaption>
+      </figcaption>}
     </figure>
   );
 }

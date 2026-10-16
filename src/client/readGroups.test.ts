@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { READ_GROUPS, readGroupOf, readGroupOrder, readUnitOf } from './readGroups';
 
 describe('ficha de lectura: grupos (rediseño 3 §1)', () => {
-  it('cuatro grupos en orden y «Otros» al final', () => {
-    expect(READ_GROUPS.map((group) => group.title)).toEqual(['Medidas', 'Estructura', 'Accionamiento', 'Colocación y tela', 'Otros']);
+  it('ocho grupos comunes en orden y «Otros» al final', () => {
+    expect(READ_GROUPS.map((group) => group.title)).toEqual(['Medidas', 'Tela y bamba', 'Estructura', 'Accionamiento', 'Colocación', 'Dibujo de confección', 'Observaciones y excepción técnica', 'Notas', 'Otros']);
     expect(readGroupOrder('medidas')).toBeLessThan(readGroupOrder('estructura'));
     expect(readGroupOrder('colocacion')).toBeLessThan(readGroupOrder('otros'));
   });
@@ -17,7 +17,10 @@ describe('ficha de lectura: grupos (rediseño 3 §1)', () => {
     expect(readGroupOf('Dispositivo')).toBe('accionamiento');
     expect(readGroupOf('Altura manivela')).toBe('accionamiento');
     expect(readGroupOf('Colocación')).toBe('colocacion');
-    expect(readGroupOf('Rotulación tela')).toBe('colocacion');
+    expect(readGroupOf('Rotulación tela')).toBe('tela');
+    expect(readGroupOf('Esquina')).toBe('estructura');
+    expect(readGroupOf('Dibujo de confección')).toBe('dibujo');
+    expect(readGroupOf('Obs. tela')).toBe('observaciones');
     expect(readGroupOf('Etiqueta inventada')).toBe('otros');
   });
 

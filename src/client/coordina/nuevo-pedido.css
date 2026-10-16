@@ -1212,3 +1212,60 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .iris-squaring-checks li.is-ok { color: var(--ok); }
 .iris-squaring-checks li.is-warn { color: var(--aviso-texto); }
 .iris-squaring-checks li.is-error { color: var(--error-texto); }
+
+/* Tarjetas de escritorio: filas completas, en el mismo orden del DOM y del teclado.
+   Los spans se reparten por fila según los campos visibles; no se usa flujo denso. */
+.awning-column .awning-form-grid,
+.awning-column .awning-group,
+.awning-column .awning-inner-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: row;
+  align-items: end;
+  gap: 6px;
+  min-width: 0;
+}
+.awning-column .awning-form-grid { grid-column: 1 / -1; }
+.awning-column .awning-group { grid-column: 1 / -1; }
+.awning-column .awning-cell { min-width: 0; }
+.awning-column .awning-cell:empty { display: none; }
+.awning-column .awning-cell > :is(label, .field) { min-width: 0; width: 100%; }
+.awning-column .awning-cell :is(label, .field) > span:first-child {
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
+}
+.awning-column .awning-cell .segmented-control { flex-wrap: wrap; }
+.awning-column .awning-cell .segmented-option { white-space: normal; }
+.awning-column .awning-cell .select-options { min-width: max(100%, 210px); }
+.awning-column .awning-cell:nth-child(n+3) .select-options { left: auto; right: 0; }
+.awning-column .awning-form-footnotes {
+  align-items: start;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.awning-form-footnotes:not(:has(.awning-cell > *)) { display: none; }
+.awning-form-footnotes .awning-cell > * { margin: 0; }
+.awning-form-footnotes :is(.awning-note, .awning-pending, .curtain-field-hint, .drop-arm-mode-summary) {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+.awning-form-footnotes .iris-squaring figcaption { margin: 0; }
+.awning-column .awning-group .iris-squaring svg { max-height: 240px; }
+.awning-column.is-readonly .awning-group { align-items: start; gap: 2px 18px; }
+.awning-column.is-readonly .awning-group:not(:has(.read-pair, .read-note, .read-exception, .iris-squaring, .awning-cell > p, .awning-cell > ul)) { display: none; }
+.awning-column.is-readonly .awning-cell { display: contents; }
+.awning-column.is-readonly .awning-cell > * { order: 0; }
+.awning-column.is-readonly .awning-cell > .read-pair { grid-column: span 6; }
+.awning-column.is-readonly .awning-cell > :is(.read-note, .read-exception, .iris-squaring) { grid-column: 1 / -1; }
+.awning-column.is-readonly .awning-group > .read-group-title { display: block; }

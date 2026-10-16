@@ -7,7 +7,8 @@ import { useVisibleFields } from '../hooks/useVisibleFields';
 import { awningLetter, getMissingFields } from '../../domain/awningCompleteness.js';
 import { TextField } from './TextField';
 import { NumberField } from './NumberField';
-import { CurtainConfigurationFields } from './CurtainConfigurationFields';
+import { curtainConfigurationFields } from './CurtainConfigurationFields';
+import { AwningFormBody } from './AwningFormBody';
 import { isConfiguredCurtain } from '../../domain/curtainConfiguration.js';
 import { SelectField } from './SelectField';
 import { SegmentedField } from './SegmentedField';
@@ -15,7 +16,6 @@ import { FabricCombobox } from './FabricCombobox';
 import { FabricStockLine } from './FabricStockLine';
 import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
-import { READ_GROUPS, readGroupOrder } from '../readGroups';
 import type { AwningStatus } from '../awningBlocks';
 import { structureNotes as getStructureNotes } from '../../domain/structureNotes.js';
 import { controlLabel } from './controlLabels';
@@ -503,7 +503,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
 
       <ReadModeContext.Provider value={readOnly}>
       {awning.model && (
-        <ReadSheetBody reading={readOnly}>
+        <AwningFormBody reading={readOnly} awning={awning}>
           {/* En su propia línea: dentro del campo alargaba la fila y bajaba Frente y Salida. */}
           {!readOnly && isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
           <TextField label="OF" missing={isMissing('of')} value={awning.of} onChange={(of) => update({ of: of.trim() })} />
@@ -529,12 +529,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={['SÍ', 'NO']}
                 onChange={(value) => update({ irisAssumeSquare: value === 'SÍ' })}
               />
-              {/* Iván, 08/10/2026: el escuadrado dibujado según se teclea, en lugar del CAD; antes de las casillas, como plantilla de qué es cada medida. */}
+              {/* El dibujo sigue a las medidas del hueco; su leyenda se reúne con las notas al pie. */}
               <IrisSquaringDiagram
+                part="diagram"
                 awning={awning}
                 parameters={(parameters as unknown as { iris?: unknown }).iris}
                 guideCuts={{ left: Number((ofCalculation as Record<string, unknown> | undefined)?.guideLeftLength) || 0, right: Number((ofCalculation as Record<string, unknown> | undefined)?.guideRightLength) || 0 }}
               />
+              <IrisSquaringDiagram part="legend" awning={awning} parameters={(parameters as unknown as { iris?: unknown }).iris} />
               <NumberField label="Frente superior" missing={isMissing('irisFrontTop')} value={awning.irisFrontTop} min={0} onChange={(irisFrontTop) => update({ irisFrontTop })} />
               <NumberField label="Salida izquierda" missing={isMissing('irisExitLeft')} value={awning.irisExitLeft} min={0} onChange={(irisExitLeft) => update({ irisExitLeft })} />
               {!awning.irisAssumeSquare && (
@@ -789,7 +791,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {(fields.curtain || fields.curtainWindow) && <div className="curtain-option">
                 <SegmentedField label="Ventana" missing={isMissing('curtainHasWindow')} value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'} options={['SIN VENTANA', 'CON VENTANA']} onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })} />
               </div>}
-              {isConfiguredCurtain(awning) && awning.curtainHasWindow !== null && <CurtainConfigurationFields awning={awning} update={update} missing={isMissing} bodyAllowanceCm={Math.max(0, (awning.model === 'CAMBIO CORTINA' ? parameters.cambioCortina : parameters.cortina).fabricDropAllowanceCm - 5)} />}
+              {isConfiguredCurtain(awning) && awning.curtainHasWindow !== null && curtainConfigurationFields({ awning, update, missing: isMissing, reading: readOnly, bodyAllowanceCm: Math.max(0, (awning.model === 'CAMBIO CORTINA' ? parameters.cambioCortina : parameters.cortina).fabricDropAllowanceCm - 5) })}
               {fields.curtain && !isConfiguredCurtain(awning) && awning.curtainHasWindow !== null && <div className="curtain-option">
                 <SegmentedField label="Confección" missing={isMissing('curtainFinish')} value={awning.curtainFinish} options={['NORMAL', 'VELCRO', 'TUBO']} onChange={(curtainFinish) => update({ curtainFinish: curtainFinish as Awning['curtainFinish'] })} />
               </div>}
@@ -838,7 +840,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
 
           {awning.reglasModificadas && (
-            <ExceptionBlock readOnly={readOnly} exception={ofCalculation?.exception} message={exceptionNotice?.message}>
+            <ExceptionBlock data-form-group="observaciones" readOnly={readOnly} exception={ofCalculation?.exception} message={exceptionNotice?.message}>
               {!readOnly && <p className="awning-modified-chip">{exceptionNotice ? `Excepción técnica: ${exceptionNotice.message.replace(/^Excepción técnica en OF[^:]*:\s*/, '')}` : 'Excepción técnica activa para este toldo. Cambia solo lo que haga falta: al leer se verá lo que difiere del valor normal.'}</p>}
               {isSelena && (
                 <NumberField
@@ -947,7 +949,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             <ObservationLines label="Obs. tela" value={awning.fabricNotes} onChange={(fabricNotes) => update({ fabricNotes })} ajustarTexto />
           </div>
 
-        </ReadSheetBody>
+        </AwningFormBody>
       )}
       </ReadModeContext.Provider>
 
@@ -971,21 +973,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
         </ul>
       )}
     </fieldset>
-  );
-}
-
-// Ficha de lectura (rediseño 3 §1): en lectura los campos van dentro de un cuerpo que se
-// aplana en una rejilla, con los títulos de grupo delante; el orden CSS de cada par los
-// reúne bajo su título. Al editar no hay envoltorio: la tarjeta sigue igual.
-function ReadSheetBody({ reading, children }: { reading: boolean; children: React.ReactNode }) {
-  if (!reading) return <>{children}</>;
-  return (
-    <div className="awning-column-body">
-      {READ_GROUPS.map((group) => (
-        <h5 key={group.id} className="read-group-title" data-group={group.id} style={{ order: readGroupOrder(group.id) }}>{group.title}</h5>
-      ))}
-      {children}
-    </div>
   );
 }
 
