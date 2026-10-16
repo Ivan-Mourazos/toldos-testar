@@ -16,8 +16,8 @@ describe('filas de las tarjetas de toldo', () => {
   });
 
   it('conserva todos los campos, sus mínimos y filas completas en cualquier combinación', () => {
-    for (let caso = 0; caso < 256; caso++) {
-      const anchos = Array.from({ length: caso % 9 }, (_, i) => [3, 4, 6, 12][(caso >> i) % 4]);
+    for (let caso = 0; caso < 512; caso++) {
+      const anchos = Array.from({ length: caso % 9 }, (_, i) => [2, 3, 4, 6, 12][(caso >> i) % 5]);
       const spans = repartirFilas(anchos);
       expect(spans).toHaveLength(anchos.length);
       let usado = 0;

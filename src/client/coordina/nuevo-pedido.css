@@ -1236,8 +1236,18 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   text-overflow: clip;
   white-space: normal;
 }
-.awning-column .awning-cell .segmented-control { flex-wrap: wrap; }
-.awning-column .awning-cell .segmented-option { white-space: normal; }
+.awning-column .awning-cell .segmented-control { flex-wrap: nowrap; }
+.awning-column .awning-cell .segmented-option { overflow: visible; text-overflow: clip; white-space: nowrap; }
+/* Dos pistas compartidas por fila: etiquetas y controles se alinean aunque una
+   etiqueta necesite dos renglones. Las notas y dibujos mantienen su propia caja. */
+.awning-column:not(.is-readonly) :is(.awning-group, .awning-inner-grid) { align-items: start; row-gap: 4px; }
+.awning-column:not(.is-readonly) :is(.awning-group, .awning-inner-grid) > .awning-cell:has(> label, > .field),
+.awning-column:not(.is-readonly) .awning-cell > :is(label, .field) {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  align-items: stretch;
+}
 .awning-column .awning-cell .select-options { min-width: max(100%, 210px); }
 .awning-column .awning-cell:nth-child(n+3) .select-options { left: auto; right: 0; }
 .awning-column .awning-form-footnotes {

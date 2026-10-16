@@ -22,9 +22,9 @@ const orden = [
 ];
 
 const amplios = new Set([
-  'Tela', 'Tela bamba', 'Variante', 'Configuración Antica', 'Altura soporte-brazo (cm)', 'Posición de trabajo', 'Configuración de brazos',
-  'Terminales · confirmar con taller', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Laterales', 'Abajo', 'Arriba', 'Ventana',
-  'Empate indicado por cliente', 'Cara hacia el interior (ventana)', 'Dibujo de confección', 'Ajuste de salida de tela',
+  'Tela', 'Tela bamba', 'Variante', 'Configuración Antica', 'Posición de trabajo', 'Configuración de brazos',
+  'Terminales · confirmar con taller', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Laterales', 'Abajo', 'Arriba', 'Ventana', 'Confección',
+  'Empate indicado por cliente', 'Cara hacia el interior (ventana)', 'Telón', 'Dibujo de confección', 'Ajuste de salida de tela',
   'Sumar para enrolle y tubo (cm)', 'Diagonal 1 (a salida izq.)', 'Diagonal 2 (a salida der.)',
   'Sujeción del suplemento', 'Distancia entre broches (cm)', 'Solape sobre la onda (cm)', 'Remate inferior'
 ]);
@@ -34,6 +34,7 @@ function prioridad(label: string, model: string) {
   if (model === 'IRIS') {
     const iris = ['OF', 'Variante', 'Hueco escuadrado', 'Frente superior', 'Salida izquierda', 'Frente inferior', 'Salida derecha', 'Diagonal 1 (a salida izq.)', 'Diagonal 2 (a salida der.)', 'Ajuste de tela (cm)'];
     if (iris.includes(label)) return iris.indexOf(label) - 100;
+    if (label === 'Rotulación tela') return orden.indexOf('Lacado') + 0.5;
   }
   if (model === 'HERA' && label === 'Variante') return -1;
   if (model === 'HERA' && label === 'Arriba') return 0;
@@ -70,7 +71,7 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
         items.push(...ventana.filter(item => !item.label));
         items.push({ key, label: '', group: 'estructura', minimum: 12, node: (
           <div className="awning-inner-grid" role={props.role} aria-label={props['aria-label']}>
-            {campos.map(item => <div className="awning-cell" key={item.key} style={{ gridColumn: 'span 3' }}>{item.node}</div>)}
+            {campos.map(item => <div className="awning-cell" data-field={item.label} key={item.key} style={{ gridColumn: `span ${campos.some(campo => campo.label === 'Medida a ventana desde') ? item.label === 'Medida a ventana desde' ? 6 : 2 : 3}` }}>{item.node}</div>)}
           </div>
         ) });
       } else if (node.type === Fragment || (node.type === 'div' && !props.role && !props.className?.includes('drawing-choice-missing'))) {
@@ -93,6 +94,19 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
     if (awning.model === 'CAMBIO ANTICA' && ['Configuración Antica', 'Sumar a la caída (cm)'].includes(item.label)) item.group = 'tela';
     if (awning.model === 'HERA' && ['Arriba', 'Abajo'].includes(item.label)) item.minimum = 3;
     if (awning.model === 'IRIS' && item.label.startsWith('Diagonal ')) item.minimum = 4;
+    if (awning.model === 'IRIS') {
+      if (item.label === 'Rotulación tela') item.group = 'estructura';
+      if (item.label === 'Forma del cofre') item.minimum = 4;
+      if (item.label === 'Secur Wind Block') item.minimum = 2;
+    }
+    if (awning.model === 'ELECTRA') {
+      if (item.label === 'Variante') item.minimum = 4;
+      if (item.label === 'Tipo de soporte') item.minimum = 5;
+    }
+    if (awning.model === 'CORTINA' || awning.model === 'SELENA') {
+      if (item.label === 'Soporte') item.minimum = 5;
+      if (item.label === 'Ventana') item.minimum = 4;
+    }
     if (awning.model === 'BAMBALINA') {
       if (item.label === 'Curva bamba') item.group = 'medidas';
       if (item.label === 'Remate') item.minimum = 3;
@@ -100,14 +114,28 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
     }
   }
 
+  const grupos = READ_GROUPS.map(group => ({ ...group,
+    fields: items.filter(item => item.group === group.id).sort((a, b) => prioridad(a.label, awning.model) - prioridad(b.label, awning.model)),
+  })).filter(group => group.fields.length);
+  // Un grupo de un solo campo comparte la rejilla con el siguiente, en el mismo
+  // orden. La lectura conserva sus títulos lógicos y cada campo conserva su grupo.
+  if (!reading) for (let i = 0; i < grupos.length - 1; i++) {
+    const actual = grupos[i], siguiente = grupos[i + 1];
+    if (actual.fields.length === 1 && actual.fields[0].label && actual.fields[0].minimum < 12
+      && !['observaciones', 'pie', 'otros'].includes(actual.id)
+      && !['observaciones', 'pie', 'otros'].includes(siguiente.id)) {
+      actual.fields.push(...siguiente.fields);
+      grupos.splice(i + 1, 1);
+    }
+  }
+
   return <div className={reading ? 'awning-form-grid awning-column-body' : 'awning-form-grid'}>
-    {READ_GROUPS.map(group => {
-      const fields = items.filter(item => item.group === group.id).sort((a, b) => prioridad(a.label, awning.model) - prioridad(b.label, awning.model));
-      if (!fields.length) return null;
+    {grupos.map(group => {
+      const fields = group.fields;
       const spans = repartirFilas(fields.map(item => item.minimum));
       return <div key={group.id} className={`awning-group${group.id === 'pie' ? ' awning-form-footnotes' : ''}`} data-group={group.id}>
         {reading && group.id !== 'pie' && <h5 className="read-group-title" data-group={group.id}>{group.title}</h5>}
-        {fields.map((item, index) => <div className="awning-cell" data-field={item.label || undefined} key={item.key} style={{ gridColumn: `span ${spans[index]}` }}>{item.node}</div>)}
+        {fields.map((item, index) => <div className="awning-cell" data-field={item.label || undefined} data-logical-group={item.group} key={item.key} style={{ gridColumn: `span ${spans[index]}` }}>{item.node}</div>)}
       </div>;
     })}
   </div>;
