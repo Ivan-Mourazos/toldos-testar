@@ -148,8 +148,9 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
   const primerDetalle = estructura?.fields.find(item => detallesVentana.has(item.label));
   if (primerDetalle) primerDetalle.start = true;
   // Si la última fila tiene un solo campo, continúa con el primero del grupo
-  // siguiente. No se recupera ningún campo de las filas ya colocadas.
-  for (let i = 0; i < grupos.length - 1; i++) {
+  // siguiente. No se recupera ningún campo de las filas ya colocadas. En lectura no: cada
+  // grupo lleva su título y sus campos debajo.
+  for (let i = 0; !reading && i < grupos.length - 1; i++) {
     const actual = grupos[i], siguiente = grupos[i + 1];
     let ultima: Item[] = [], usado = 0;
     for (const item of actual.fields) {
@@ -184,6 +185,10 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
     const spans = repartirFilas(group.fields.map(item => item.minimum), group.fields.map(item => !!item.start));
     let columna = 1;
     let avisos: Item[] = [];
+    // Ficha de lectura: el título del grupo («Medidas», «Estructura»…) en su propia fila.
+    if (reading && group.id !== 'pie') {
+      celdas.push(<h5 className="read-group-title" data-group={group.id} key={`titulo-${group.id}`} style={{ gridColumn: '1 / -1', gridRow: fila++ }}>{group.title}</h5>);
+    }
     group.fields.forEach((item, index) => {
       celdas.push(<div className={`awning-cell${group.id === 'pie' ? ' awning-form-footnotes' : ''}`} data-field={item.label || undefined} data-logical-group={item.group} key={item.key} style={{ gridColumn: `${columna} / span ${spans[index]}`, gridRow: `${fila} / span 2` }}>{item.node}</div>);
       avisos.push(...items.filter(aviso => aviso.after === item.label));
