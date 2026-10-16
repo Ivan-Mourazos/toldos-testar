@@ -182,26 +182,44 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
   const celdas: React.ReactNode[] = [];
   let fila = 1;
   for (const group of grupos) {
-    const spans = repartirFilas(group.fields.map(item => item.minimum), group.fields.map(item => !!item.start));
+    // En lectura, cada par etiqueta-valor ocupa media tarjeta: con los anchos de edición la
+    // etiqueta y el valor no cabían y las palabras se partían («Moto / r», 16/10/2026). El
+    // croquis, los avisos y las notas, a todo lo ancho.
+    const spans = reading
+      ? group.fields.map(item => (item.label && group.id !== 'pie' ? 6 : 12))
+      : repartirFilas(group.fields.map(item => item.minimum), group.fields.map(item => !!item.start));
     let columna = 1;
     let avisos: Item[] = [];
+    const cerrarFila = () => {
+      fila += 2;
+      columna = 1;
+      for (const aviso of avisos) {
+        celdas.push(<div className="awning-cell awning-context-warning" key={aviso.key} style={{ gridColumn: '1 / -1', gridRow: fila++ }}>{aviso.node}</div>);
+      }
+      avisos = [];
+    };
     // Ficha de lectura: el título del grupo («Medidas», «Estructura»…) en su propia fila.
     if (reading && group.id !== 'pie') {
       celdas.push(<h5 className="read-group-title" data-group={group.id} key={`titulo-${group.id}`} style={{ gridColumn: '1 / -1', gridRow: fila++ }}>{group.title}</h5>);
     }
     group.fields.forEach((item, index) => {
+      // Lo que no cabe en lo que queda de fila empieza la siguiente (en edición nunca pasa:
+      // repartirFilas ya llena cada fila).
+      if (columna > 1 && columna + spans[index] > 13) cerrarFila();
       celdas.push(<div className={`awning-cell${group.id === 'pie' ? ' awning-form-footnotes' : ''}`} data-field={item.label || undefined} data-logical-group={item.group} key={item.key} style={{ gridColumn: `${columna} / span ${spans[index]}`, gridRow: `${fila} / span 2` }}>{item.node}</div>);
       avisos.push(...items.filter(aviso => aviso.after === item.label));
       columna += spans[index];
-      if (columna > 12) {
-        fila += 2;
-        columna = 1;
-        for (const aviso of avisos) {
-          celdas.push(<div className="awning-cell awning-context-warning" key={aviso.key} style={{ gridColumn: '1 / -1', gridRow: fila++ }}>{aviso.node}</div>);
-        }
-        avisos = [];
-      }
+      if (columna > 12) cerrarFila();
     });
+    // Un grupo que acaba con la fila a medias la cierra: el título del siguiente va debajo.
+    if (columna > 1) cerrarFila();
   }
-  return <div className={reading ? 'awning-form-grid awning-column-body' : 'awning-form-grid'}>{celdas}</div>;
+  // En lectura la rejilla coloca sola: un par oculto (p. ej. «Tela bamba» igual que la tela) no
+  // deja hueco. En edición las coordenadas son fijas para que nada salte al aparecer un campo.
+  if (reading) {
+    return <div className="awning-form-grid awning-column-body">{celdas.map(celda => React.isValidElement<{ style?: React.CSSProperties }>(celda)
+      ? React.cloneElement(celda, { style: { gridColumn: String(celda.props.style?.gridColumn ?? '').replace(/^\d+ \/ (span \d+)$/, '$1') } })
+      : celda)}</div>;
+  }
+  return <div className="awning-form-grid">{celdas}</div>;
 }

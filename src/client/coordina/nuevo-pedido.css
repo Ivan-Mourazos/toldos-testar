@@ -1269,3 +1269,5 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .awning-form-footnotes .iris-squaring figcaption { margin: 0; }
 .awning-column .awning-cell .iris-squaring svg { max-height: 240px; }
 .awning-column.is-readonly .awning-form-grid.awning-column-body { align-items: start; gap: 2px 18px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+/* Un par que no se enseña (valor por defecto) no ocupa sitio en la ficha de lectura. */
+.awning-column.is-readonly .awning-form-grid.awning-column-body > .awning-cell:empty { display: none; }
