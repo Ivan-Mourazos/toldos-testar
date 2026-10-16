@@ -82,7 +82,7 @@ describe('dibujo del escuadrado del Iris en el planteamiento', () => {
     expect(pages[1]).toContain('PLANTEAMIENTO DE TELAS');
   });
 
-  test.each([2, 5, 10])('la reserva reparte %i líneas de notas del pedido AR2604748', async (lineas) => {
+  test.each([2, 3, 5, 10])('la reserva reparte %i líneas de notas del pedido AR2604748', async (lineas) => {
     const notas = Array.from({ length: lineas }, (_, i) => `NOTA DE TALLER ${i + 1}`).join('\n');
     const { pages, structureItems } = await pdfText({ ...base, submodel: 'IRIS 110 CON COFRE', irisAssumeSquare: true,
       irisFrontTop: 253.5, irisExitLeft: 220, irisGlassCurtain: true, motorPower: 'SOLAR 15/12', structureNotes: notas });
@@ -93,13 +93,14 @@ describe('dibujo del escuadrado del Iris en el planteamiento', () => {
     expect(superior.transform[5] - inferior.transform[5]).toBeGreaterThanOrEqual(7.99);
     expect(superior.height).toBeGreaterThanOrEqual(5.4);
     for (let i = 1; i <= lineas; i++) expect(pages.join(' ')).toContain(`NOTA DE TALLER ${i}`);
-    if (lineas <= 5) {
+    // Los comentarios de 9 pt con filetes ocupan más que el antiguo texto corrido de 6,5 pt.
+    if (lineas <= 3) {
       expect(pages).toHaveLength(2);
       expect(pages[0]).toContain(`NOTA DE TALLER ${lineas}`);
     } else {
       expect(pages).toHaveLength(3);
       expect(pages[1]).toContain('Observaciones (continuación)');
-      expect(pages[1]).toContain('NOTA DE TALLER 10');
+      expect(pages[1]).toContain(`NOTA DE TALLER ${lineas}`);
     }
   });
 

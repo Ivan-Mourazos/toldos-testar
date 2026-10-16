@@ -49,6 +49,30 @@ const telas: HojaTelasDatos = {
 const pintar = (datos: HojaEstructuraDatos) => renderToStaticMarkup(<HojaEstructura datos={datos} onLista={() => {}} onError={() => {}} />);
 
 describe('HojaEstructura', () => {
+  it.each([1, 3, 8])('ajusta el recuadro a %i comentarios y deja crecer las filas', (cantidad) => {
+    const notes = Array.from({ length: cantidad }, (_, i) => `COMENTARIO ${i + 1}`).join('\n');
+    const requerido = 20 + cantidad * 15.65;
+    const [pagina] = repartirDespiece({ ...ejemplo, despiece: ejemplo.despiece.slice(0, 6), notes }, requerido);
+    expect(pagina.alto).toBeGreaterThan(9.7);
+    expect(pagina.alto).toBeLessThanOrEqual(17);
+    expect(pagina.notas.x).toBe(14);
+    expect(pagina.notas.h).toBeCloseTo(requerido, 1);
+    expect(pintar({ ...ejemplo, notes }).split('aria-hidden="true"')[0].match(/class="telas-comentario"/g)).toHaveLength(cantidad);
+  });
+
+  it('con 28 piezas mantiene el suelo y continúa las notas que exceden el hueco', () => {
+    const datos = { ...ejemplo, despiece: Array.from({ length: 28 }, (_, i) => pieza(i + 1, 'PIEZA', 'REF')),
+      notes: Array.from({ length: 8 }, (_, i) => `COMENTARIO ${i}`).join('\n') };
+    const [pagina] = repartirDespiece(datos, 150);
+    expect(pagina.alto).toBe(8);
+    expect(pagina.notas.x).toBe(14);
+    expect(pagina.notas.h).toBeLessThan(150);
+    const [iris] = repartirDespiece({ ...datos, diagramBox: { x: 417.28, y: 245, width: 164, height: 150.53 } }, 150);
+    expect(iris.alto).toBe(pagina.alto);
+    expect(iris.notas).toEqual(pagina.notas);
+    expect(repartirDespiece({ ...datos, notes: '' })[0].alto).toBe(altoFilaDespiece(28, false, 1, false));
+  });
+
   it.each([null, { name: 'NO INDICADO', reference: '—', units: '—' }, { name: 'QUÍMICO', reference: '', units: '1' }])('omite el anclaje no indicado: %j', (anchoring) => {
     const html = pintar({ ...ejemplo, anchoring });
     expect(html).not.toContain('SISTEMA DE ANCLAJE');
@@ -159,8 +183,8 @@ describe('HojaEstructura', () => {
 });
 
 describe('altoFilaDespiece', () => {
-  it('con observaciones no pasa de 9,7 pt; sin ellas crece hasta 13', () => {
-    expect(altoFilaDespiece(11, true)).toBe(9.7);
+  it('las filas crecen hasta 17 pt antes de reservar las notas medidas', () => {
+    expect(altoFilaDespiece(11, true)).toBe(17);
     expect(altoFilaDespiece(11, false)).toBe(17);
   });
 

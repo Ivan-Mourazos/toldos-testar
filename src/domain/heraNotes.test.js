@@ -22,7 +22,8 @@ test('HERA imprime aclaraciones largas completas y pagina sin perder el final', 
     const text = sheet.map((page) => page.text).join(' ');
     expect(sheet.length).toBeGreaterThan(1);
     expect(text).toContain('6cm MÁS CORTA');
-    expect(text).toContain('FIN DE LA ACLARACION');
+    // La frase final puede cruzar una página, con cabecera y pie entre sus palabras.
+    expect(text).toMatch(/FIN DE LA[\s\S]*ACLARACION/);
     // Las cien frases, contadas por palabras que pdfkit no parte al cambiar de línea.
     expect(text.match(/COMPROBAR/g)).toHaveLength(100);
     expect(text.match(/TORNILLOS/g)).toHaveLength(100);

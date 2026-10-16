@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ajustarUnaLinea } from '../hoja/ajusteTexto';
 import {
-  Celda, Notas, NOTAS_TEXTO_ABAJO, NOTAS_TEXTO_LADO, PX_POR_PT, esperarImagenes, esperarLetra, pt, repartirObservaciones,
+  Celda, NOTAS_TEXTO_ABAJO, NOTAS_TEXTO_LADO, PX_POR_PT, esperarImagenes, esperarLetra, pt,
   sitio, textoError
 } from './ayudasHoja';
 import type { FilaAccesorio, FilaDespiece, HojaEstructuraDatos } from './tipos';
+import { NotasTela, repartirNotasTela } from './NotasTela';
 
 // Página de estructura A5 apaisada de cada toldo, impresa por Chromium en el servidor junto con las
 // de telas. Las medidas van en pt y son las de la página de pdfkit (src/domain/planteamientoPdf.js,
@@ -45,13 +46,12 @@ const PIE_H = 20;
 const FILAS_MINIMAS = 6;
 const ROTULO_ALTO_MINIMO = 58;
 
-// Observaciones: debajo del anclaje; sin sitio, IRIS continúa en otra hoja y el resto usa la derecha.
+// Observaciones: primero debajo del despiece; la derecha solo si no cabe una fila.
 const NOTAS_HUECO = 6;
 const NOTAS_PIE = ALTO - 24;
-const NOTAS_ALTO_MINIMO = 54;
 const NOTAS_DERECHA_Y = 336;
 const NOTAS_TEXTO_ARRIBA = 15.75;
-const NOTAS_LINEA_H = 8.25;
+const NOTAS_LINEA_H = 15.65;
 
 // Columna derecha.
 const VALIDO_Y = 155;
@@ -62,13 +62,14 @@ const FILA_TABLA = 13;
 /**
  * Alto (pt) de cada fila del despiece. Reparte el alto que queda hasta el pie entre las filas del
  * despiece (seis como poco) y las `debajo`, que son las de accesorios y anclaje y llevan el mismo
- * alto. Con observaciones no pasa de 9,7 pt, para dejarles sitio; sin ellas crece hasta 17 (Iván, 03/10/2026: con despieces cortos quedaba un tercio de la columna en blanco).
+ * alto. Las observaciones reservan aparte su altura medida; las filas crecen hasta 17 pt.
  */
 export function altoFilaDespiece(filas: number, conNotas: boolean, debajo = 4, conAnclaje = true): number {
   const barras = debajo > 0 ? BARRA_H + (conAnclaje ? BARRA_H + HUECO_ANCLAJE : 0) : 0;
   const libre = ALTO - PIE_H - CUERPO_Y - CABECERA_TABLA_H - barras;
   // A la centésima, para que cada fila empiece justo donde acaba la anterior.
-  return Math.min(conNotas ? 9.7 : 17, Math.floor((libre / (Math.max(FILAS_MINIMAS, filas) + debajo)) * 100) / 100);
+  const alto = Math.min(17, Math.floor((libre / (Math.max(FILAS_MINIMAS, filas) + debajo)) * 100) / 100);
+  return conNotas ? Math.max(8, alto) : alto;
 }
 
 /** La letra de las filas crece con su alto, hasta 9,5 pt. */
@@ -238,7 +239,7 @@ export function repartirDespiece(datos: HojaEstructuraDatos, altoNotas = NOTAS_T
       filas = [...filas, ...Array.from({ length: Math.max(0, FILAS_MINIMAS - filas.length) }, (_, i) => ({ ...FILA_VACIA, num: String(filas.length + i + 1) }))];
     }
     let alto = altoFilaDespiece(filas.length, conNotas, ultima ? accesorios.length + Number(Boolean(anclaje)) : 0, Boolean(anclaje));
-    if (ultima && datos.diagramBox && conNotas) {
+    if (ultima && conNotas) {
       const barras = BARRA_H + (anclaje ? HUECO_ANCLAJE + BARRA_H : 0);
       const libre = NOTAS_PIE - CUERPO_Y - CABECERA_TABLA_H - barras - NOTAS_HUECO - altoNotas;
       alto = Math.max(8, Math.min(alto, Math.floor(libre / (filas.length + accesorios.length + Number(Boolean(anclaje))) * 100) / 100));
@@ -246,10 +247,10 @@ export function repartirDespiece(datos: HojaEstructuraDatos, altoNotas = NOTAS_T
     const accesoriosY = CUERPO_Y + CABECERA_TABLA_H + alto * filas.length;
     const anclajeY = accesoriosY + BARRA_H + alto * accesorios.length + HUECO_ANCLAJE;
     const notasY = (anclaje ? anclajeY + BARRA_H + alto : accesoriosY + BARRA_H + alto * accesorios.length) + NOTAS_HUECO;
-    // IRIS reserva la derecha al dibujo y ajusta el recuadro a las líneas medidas.
-    const notas = datos.diagramBox || NOTAS_PIE - notasY >= NOTAS_ALTO_MINIMO
-      ? { x: MARGEN, y: Math.min(notasY, NOTAS_PIE), w: IZQUIERDA_W, h: Math.max(0, Math.min(NOTAS_PIE - notasY, datos.diagramBox && conNotas ? altoNotas : Infinity)) }
-      : { x: DERECHA_X, y: NOTAS_DERECHA_Y, w: DERECHA_W, h: NOTAS_PIE - NOTAS_DERECHA_Y };
+    // Con despiece largo se prefiere continuar a estrechar las piezas por debajo de 8 pt.
+    const notas = datos.diagramBox || NOTAS_PIE - notasY >= NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + NOTAS_LINEA_H
+      ? { x: MARGEN, y: Math.min(notasY, NOTAS_PIE), w: IZQUIERDA_W, h: Math.max(0, Math.min(NOTAS_PIE - notasY, conNotas ? altoNotas : Infinity)) }
+      : { x: DERECHA_X, y: NOTAS_DERECHA_Y, w: DERECHA_W, h: Math.min(altoNotas, NOTAS_PIE - NOTAS_DERECHA_Y) };
     const pie = total > 1 ? `${datos.footer} · ${pagina + 1}/${total}` : datos.footer;
     return { filas, alto, ultima, accesorios, accesoriosY, anclajeY, anclaje, notas, pie };
   });
@@ -257,8 +258,8 @@ export function repartirDespiece(datos: HojaEstructuraDatos, altoNotas = NOTAS_T
 
 type PaginaDespiece = ReturnType<typeof repartirDespiece>[number];
 
-function Pagina({ datos, pagina, lineas, refNotas }: {
-  datos: HojaEstructuraDatos; pagina: PaginaDespiece; lineas: string[] | null; refNotas: React.Ref<HTMLDivElement>;
+function Pagina({ datos, pagina, lineas }: {
+  datos: HojaEstructuraDatos; pagina: PaginaDespiece; lineas: string[] | null;
 }) {
   const { filas, alto, ultima, accesorios, accesoriosY, anclajeY, notas } = pagina;
   const texto = datos.notes.trim();
@@ -277,9 +278,8 @@ function Pagina({ datos, pagina, lineas, refNotas }: {
         </div>
       )}
       <ColumnaDerecha datos={datos} />
-      {ultima && texto && (!datos.diagramBox || notas.h >= NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + NOTAS_LINEA_H) && (
-        <Notas {...notas} titulo="OBSERVACIONES" texto={texto} lineas={lineas} refTexto={refNotas}
-          arriba={NOTAS_TEXTO_ARRIBA} clase="estructura-notas" />
+      {ultima && texto && (lineas === null || lineas.length > 0) && notas.h >= NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + NOTAS_LINEA_H && (
+        <NotasTela {...notas} titulo="OBSERVACIONES" filas={lineas ?? texto.split(/\r\n?|\n/).filter(Boolean)} />
       )}
       <Pie texto={pagina.pie} />
     </section>
@@ -292,8 +292,8 @@ function PaginaContinuacion({ datos, lineas }: { datos: HojaEstructuraDatos; lin
   return (
     <section className="estructura-pagina">
       <Cabecera cabecera={datos.header} />
-      <Notas x={MARGEN} y={CUERPO_Y} w={ANCHO - MARGEN * 2} h={CONTINUACION_H}
-        titulo="Observaciones (continuación)" texto="" lineas={lineas} arriba={NOTAS_TEXTO_ARRIBA} clase="estructura-notas" />
+      <NotasTela x={MARGEN} y={CUERPO_Y} w={ANCHO - MARGEN * 2} h={CONTINUACION_H}
+        titulo="Observaciones (continuación)" filas={lineas} />
       <Pie texto={`Toldo ${datos.header.letter} · Observaciones (continuación)`} />
     </section>
   );
@@ -324,24 +324,22 @@ export function HojaEstructura({ datos, onLista, onError }: {
       if (!vigente || !raiz.current) return;
       ajustarUnaLinea(raiz.current);
       const notas = datos.notes.trim();
-      const continuacion = { ancho: ANCHO - MARGEN * 2 - NOTAS_TEXTO_LADO * 2, alto: (CONTINUACION_H - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT };
-      let medido: number | undefined;
-      if (notas && medidor.current && datos.diagramBox) {
-        const todas = repartirObservaciones(medidor.current, notas,
-          { ancho: IZQUIERDA_W - NOTAS_TEXTO_LADO * 2, alto: Infinity }, continuacion)[0];
-        medidor.current.textContent = 'Ág';
-        medido = NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + todas.length * medidor.current.getBoundingClientRect().height / PX_POR_PT;
-        medidor.current.textContent = '';
-      }
+      // El mismo componente mide el título, los márgenes y los filetes que se imprimirán.
+      const muestra = cajaNotas.current?.firstElementChild;
+      const filas = muestra ? Array.from(muestra.querySelectorAll('.telas-comentario')) : [];
+      const medido = notas && muestra ? muestra.getBoundingClientRect().height / PX_POR_PT : undefined;
+      const margenes = medido === undefined ? NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO
+        : medido - filas.reduce((suma, fila) => suma + fila.getBoundingClientRect().height / PX_POR_PT, 0);
+      const continuacion = { ancho: ANCHO - MARGEN * 2 - NOTAS_TEXTO_LADO * 2, alto: (CONTINUACION_H - margenes) * PX_POR_PT };
       setAltoNotas(medido);
       const caja = repartirDespiece(datos, medido).at(-1)!.notas;
-      if (notas && medidor.current && datos.diagramBox && caja.h < NOTAS_TEXTO_ARRIBA + NOTAS_TEXTO_ABAJO + NOTAS_LINEA_H) {
-        setPaginasNotas([[], ...repartirObservaciones(medidor.current, notas, continuacion, continuacion)]);
+      if (notas && medidor.current && caja.h < margenes + NOTAS_LINEA_H) {
+        setPaginasNotas([[], ...repartirNotasTela(medidor.current, notas, continuacion, continuacion)]);
         return;
       }
       setPaginasNotas(notas && medidor.current
-        ? repartirObservaciones(medidor.current, notas,
-          { ancho: caja.w - NOTAS_TEXTO_LADO * 2, alto: datos.diagramBox ? (caja.h - NOTAS_TEXTO_ARRIBA - NOTAS_TEXTO_ABAJO) * PX_POR_PT + 0.01 : cajaNotas.current?.clientHeight ?? 0 },
+        ? repartirNotasTela(medidor.current, notas,
+          { ancho: caja.w - NOTAS_TEXTO_LADO * 2, alto: (caja.h - margenes) * PX_POR_PT + 0.01 },
           continuacion)
         : []);
     }).catch((error: unknown) => { if (vigente) onError(textoError(error)); });
@@ -360,10 +358,14 @@ export function HojaEstructura({ datos, onLista, onError }: {
   return (
     <div ref={raiz} data-hoja-telas="">
       {paginas.map((pagina, indice) => (
-        <Pagina key={indice} datos={datos} pagina={pagina} lineas={paginasNotas?.[0] ?? null} refNotas={cajaNotas} />
+        <Pagina key={indice} datos={datos} pagina={pagina} lineas={paginasNotas?.[0] ?? null} />
       ))}
       {(paginasNotas ?? []).slice(1).map((lineas, indice) => <PaginaContinuacion key={`n${indice}`} datos={datos} lineas={lineas} />)}
       <div className="telas-medidor estructura-medidor" ref={medidor} aria-hidden="true" />
+      {datos.notes.trim() && <div className="telas-medidor" ref={cajaNotas} aria-hidden="true">
+        <NotasTela x={0} y={0} w={IZQUIERDA_W} h={100000} titulo="OBSERVACIONES"
+          filas={datos.notes.split(/\r\n?|\n/).map((fila) => fila.trim()).filter(Boolean)} />
+      </div>}
     </div>
   );
 }

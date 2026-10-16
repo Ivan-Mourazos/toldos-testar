@@ -1209,7 +1209,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     return operators.argsArray[colorIndex + 2][2];
   }
 
-  test('el recuadro crece con cinco piezas y conserva tres líneas con veinte', async () => {
+  test('el recuadro conserva su altura real con cinco o veinte piezas', async () => {
     async function boundsFor(count) {
       const order = pedidoArzua('Comprobar fijación y color del perfil.');
       const calculation = calculateOrder(order);
@@ -1220,9 +1220,29 @@ describe('buildOrderPlanteamientoPdf', () => {
     }
     const five = await boundsFor(5);
     const twenty = await boundsFor(20);
-    expect(five[3] - five[1]).toBeGreaterThan(140);
-    expect(twenty[3] - twenty[1]).toBeGreaterThan(54);
-    expect(five[3] - five[1]).toBeGreaterThan(twenty[3] - twenty[1]);
+    expect(five[3] - five[1]).toBeGreaterThan(30);
+    expect(five[3] - five[1]).toBeLessThan(45);
+    expect(five[3] - five[1]).toBeCloseTo(twenty[3] - twenty[1], 2);
+    expect(five[0]).toBeCloseTo(14, 1);
+    expect(twenty[0]).toBeCloseTo(14, 1);
+  });
+
+  test.each([1, 3, 8])('PDFKit reserva %i comentarios y amplía las filas de pocas piezas', async (cantidad) => {
+    const notas = Array.from({ length: cantidad }, (_, i) => `COMENTARIO ${i + 1}`).join('\n');
+    const order = pedidoArzua(notas);
+    const calculation = calculateOrder(order);
+    calculation.ofs[0].despiece.rows = Array.from({ length: 6 }, (_, i) => ({
+      num: i + 1, name: `PIEZA ${i + 1}`, reference: `REF${i + 1}`, units: 1, length: 200
+    }));
+    const caja = await notesBox(order, calculation);
+    expect(caja[3] - caja[1]).toBeGreaterThan(23 + cantidad * 14);
+    expect(caja[3] - caja[1]).toBeLessThan(25 + cantidad * 18);
+    expect(caja[0]).toBeCloseTo(14, 1);
+    const items = await paginaUno(order, calculation);
+    const primera = items.find((item) => item.str === 'PIEZA 1');
+    const segunda = items.find((item) => item.str === 'PIEZA 2');
+    expect(primera.transform[5] - segunda.transform[5]).toBeGreaterThan(9.7);
+    for (let i = 1; i <= cantidad; i++) expect(items.some((item) => item.str === `COMENTARIO ${i}`)).toBe(true);
   });
 
   test('las observaciones largas continúan completas en estructura y tela con pedido y OF', async () => {

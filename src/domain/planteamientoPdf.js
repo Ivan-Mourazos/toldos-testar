@@ -432,19 +432,18 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   const rightX = margin + leftW + gap;
   const split = splitDespiece(ofBlock?.despiece?.rows || []);
 
-  // IRIS ajusta las filas a sus notas medidas; el resto conserva su reparto.
+  // Todos los modelos reservan las filas reales de observaciones antes de repartir el despiece.
   const iris = String(awning.model || '').trim().toUpperCase() === 'IRIS';
   const anchoring = ofBlock?.despiece?.anchoring;
   const conAnclaje = anchoringIndicated(anchoring);
   const notas = structureNotes(awning, ofBlock?.calculation);
-  const dinamicas = iris && showNotes && Boolean(notas.trim());
+  const dinamicas = showNotes && Boolean(notas.trim());
   const notesBottom = pageH - 24;
-  doc.font(fonts.regular).fontSize(6.5);
-  const altoNotas = 19.75 + doc.heightOfString(notas, { width: leftW - 8 }) + 1;
+  const altoNotas = measureStructureNotes(doc, notas, leftW);
   const accesoriosFilas = dinamicas ? Math.max(1, split.accessories.length) : 3;
   const barras = 13 + (conAnclaje ? 9 + 13 : 0);
   const filas = Math.max(6, split.main.length) + accesoriosFilas + Number(conAnclaje);
-  const rowH = dinamicas ? Math.max(8, Math.min(9.7, Math.floor((notesBottom - top - 14 - barras - 6 - altoNotas) / filas * 100) / 100)) : null;
+  const rowH = dinamicas ? Math.max(8, Math.min(17, Math.floor((notesBottom - top - 14 - barras - 6 - altoNotas) / filas * 100) / 100)) : null;
   const accesoriosH = 13 + accesoriosFilas * (rowH ?? 10);
   const anclajeH = conAnclaje ? 9 + 13 + (rowH ?? 11) : 0;
   const despieceMaxBottom = pageH - 20 - accesoriosH - anclajeH;
@@ -459,12 +458,11 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   drawAccessories(doc, margin + 28, accessoriesY, leftW - 28, split.accessories, accesoriosFilas, rowH ?? 10);
   drawAnchoring(doc, margin + 28, anchoringY, leftW - 28, anchoring, rowH ?? 11);
 
-  // La columna derecha acaba en 335; cuando el despiece ocupa la izquierda,
-  // esa zona conserva al menos tres líneas para las observaciones.
+  // La derecha solo se usa si ni una fila cabe bajo el despiece. IRIS conserva su dibujo.
   const notesTop = accessoriesY + accesoriosH + anclajeH + 6;
   let remaining = '';
   if (showNotes) {
-    remaining = notesBottom - notesTop >= (dinamicas ? 28 : 54)
+    remaining = notesBottom - notesTop >= (dinamicas ? 36 : 54)
       ? drawNotesBox(doc, margin, notesTop, leftW, dinamicas ? Math.min(notesBottom, notesTop + altoNotas) : notesBottom, notas)
       : iris ? notas : drawNotesBox(doc, rightX, 336, rightW, notesBottom, notas);
   }
@@ -670,18 +668,57 @@ function splitNotesToFit(doc, notes, width, height, size = 6.5) {
   return [notes.slice(0, cut).trimEnd(), notes.slice(cut).trimStart()];
 }
 
-function drawNotesBox(doc, x, y, w, bottom, notes, continuation = false, size = 6.5) {
+function structureNoteRows(notes) {
+  return String(notes ?? '').split(/\r\n?|\n/).map((fila) => fila.trim()).filter(Boolean);
+}
+
+function measureStructureNotes(doc, notes, width, size = 9) {
+  doc.font(fonts.regular).fontSize(size);
+  // Filete y margen de cada comentario, más título y margen inferior.
+  return 25.5 + structureNoteRows(notes).reduce((alto, fila) => alto + doc.heightOfString(fila, { width: width - 8 }) + 4.4, 0);
+}
+
+function drawNotesBox(doc, x, y, w, bottom, notes, continuation = false, size = 9) {
   const text = String(notes ?? '').trim();
-  roundedBox(doc, x, y, w, bottom - y, 2, text ? colors.yellowSoft : colors.paper, text ? colors.yellow : colors.ink);
+  if (!text) {
+    // Sin observaciones conserva la casilla vacía del PDF de reserva.
+    roundedBox(doc, x, y, w, bottom - y, 2, colors.paper, colors.ink);
+    doc.fillColor(colors.ink).font(fonts.bold).fontSize(6.5).text('OBSERVACIONES', x + 4, y + 4);
+    doc.font(fonts.regular).text('-', x + 4, y + 15.75, { width: w - 8 });
+    return '';
+  }
+  const pendientes = structureNoteRows(text);
+  const visibles = [];
+  let alto = 19.5;
+  while (pendientes.length) {
+    const fila = pendientes[0];
+    const disponible = bottom - y - alto - 8.4;
+    doc.font(fonts.regular).fontSize(size);
+    if (disponible < doc.heightOfString('Ág', { width: w - 8 }) + 1) break;
+    const [visible, resto] = splitNotesToFit(doc, fila, w - 8, disponible, size);
+    const h = doc.heightOfString(visible, { width: w - 8 }) + 4.4;
+    visibles.push({ texto: visible, h });
+    alto += h;
+    pendientes.shift();
+    if (resto) {
+      pendientes.unshift(resto);
+      break;
+    }
+  }
+  if (!visibles.length) return text;
+  roundedBox(doc, x, y, w, alto + 4, 2, colors.yellowSoft, colors.yellow);
   doc.fillColor(colors.ink).font(fonts.bold).fontSize(size)
     .text(continuation ? 'Observaciones (continuación)' : 'OBSERVACIONES', x + 4, y + 4);
-  const textTop = 6 + size * 1.5;
-  const textW = w - 8;
-  const textH = bottom - y - textTop - 4;
-  const [visible, remaining] = splitNotesToFit(doc, text || '-', textW, textH, size);
-  doc.fillColor(colors.ink).font(fonts.regular).fontSize(size)
-    .text(visible, x + 4, y + textTop, { width: textW, height: textH });
-  return text ? remaining : '';
+  let arriba = y + 19.5;
+  for (const fila of visibles) {
+    doc.save().strokeColor('#b6a574').lineWidth(0.4).moveTo(x + 4, arriba).lineTo(x + w - 4, arriba).stroke().restore();
+    const partes = /^([A-Z]{1,3}:)\s+([\s\S]*)$/.exec(fila.texto);
+    doc.fillColor(colors.ink).font(partes ? fonts.bold : fonts.regular).fontSize(size);
+    if (partes) doc.text(`${partes[1]} `, x + 4, arriba + 2, { width: w - 8, continued: true });
+    doc.font(fonts.regular).text(partes?.[2] ?? fila.texto, partes ? undefined : x + 4, partes ? undefined : arriba + 2, { width: w - 8 });
+    arriba += fila.h;
+  }
+  return pendientes.join('\n');
 }
 
 // Tamaño de letra de las observaciones en la página de telas.
