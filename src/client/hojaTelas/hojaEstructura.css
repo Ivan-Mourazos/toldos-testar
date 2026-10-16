@@ -9,9 +9,9 @@
   --gris-verde: #dce4e2;
   --fila-suave: #f5f7f6;
   --verde: #d9f3df;
-  --verde-texto: #08722c;
+  --verde-texto: #0a4a1f;
   --rojo: #fae0dc;
-  --rojo-texto: #9f3328;
+  --rojo-texto: #7a1d16;
 }
 
 .estructura-pagina {
@@ -89,7 +89,7 @@
 .estructura-tabla-etiqueta .telas-texto { padding: 0 2pt; }
 .estructura-valido {
   align-items: center;
-  border: 0.75pt solid var(--tinta);
+  border: 1pt solid var(--tinta);
   border-radius: 3pt;
   display: flex;
   font-size: 15pt;

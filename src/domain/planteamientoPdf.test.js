@@ -711,7 +711,7 @@ describe('buildOrderPlanteamientoPdf', () => {
         if (operators.fnArray[i] === OPS.restore) matrix = matrices.pop();
         if (operators.fnArray[i] === OPS.transform) matrix = Util.transform(matrix, operators.argsArray[i]);
         if (operators.fnArray[i] === OPS.setStrokeRGBColor) strokeColor = operators.argsArray[i][0];
-        if (operators.fnArray[i] === OPS.constructPath && ['#7fa594', '#bfd2ca'].includes(strokeColor)) {
+        if (operators.fnArray[i] === OPS.constructPath && ['#4f6e63', '#bfd2ca'].includes(strokeColor)) {
           // Solo los trazos largos: el soporte fijo dibuja su eje con el mismo verde.
           const bounds = operators.argsArray[i][2];
           if (bounds[2] - bounds[0] > 40) {

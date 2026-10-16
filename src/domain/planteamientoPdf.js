@@ -25,13 +25,13 @@ const colors = {
   yellow: '#f7bd19',
   yellowSoft: '#fff8df',
   gray: '#dce4e2',
-  grayDark: '#80908d',
+  grayDark: '#56635f',
   line: '#9aaba8',
   paper: '#ffffff',
   soft: '#f5f7f6',
   green: '#d9f3df',
-  greenText: '#08722c',
-  red: '#9f3328'
+  greenText: '#0a4a1f',
+  red: '#7a1d16'
 };
 
 const windowsFonts = {
@@ -1067,7 +1067,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
 // El dibujo de la hoja de telas del HERA: la tela vista de canto junto a la ventana, con la cara
 // que queda hacia dentro. Sin letra de toldo, porque la hoja puede llevar varios.
 function drawHeraDiagram(doc, x, y, w, h, awning = {}) {
-  const green = '#079b36';
+  const green = '#0b5a26';
   const face = heraInteriorFace(awning);
   drawDiagramShell(doc, x, y, w, h);
   const windowX = x + w * 0.14;
@@ -1082,7 +1082,7 @@ function drawHeraDiagram(doc, x, y, w, h, awning = {}) {
     .text('VENTANA', x + 4, y + h * 0.07, { width: (windowX - x) * 2 - 8, align: 'center', lineBreak: false });
   doc.strokeColor(green).lineWidth(2)
     .moveTo(fabricX, top + slant).lineTo(farX, top).lineTo(farX, bottom - slant).lineTo(fabricX, bottom).stroke();
-  doc.strokeColor('#e45245').lineWidth(1.2).moveTo(fabricX, top + slant).lineTo(fabricX, bottom).stroke();
+  doc.strokeColor('#a3241c').lineWidth(1.2).moveTo(fabricX, top + slant).lineTo(fabricX, bottom).stroke();
   doc.fillColor(green).font(fonts.bold).fontSize(diagramText(9.5))
     .text(face ? `${face} DENTRO` : 'CARA INTERIOR POR DEFINIR', x + 8, y + h * 0.85, { width: w - 16, align: 'center' });
   doc.restore();
@@ -1327,7 +1327,7 @@ function drawArmSystemDiagram(doc, x, y, w, h, spec) {
   const frontY = y + h * 0.66;
 
   doc.moveTo(wallX, y + h * 0.165).lineTo(wallX, y + h * 0.955)
-    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+    .strokeColor('#6d827d').lineWidth(1.2).stroke();
   doc.circle(rollX, rollY, 11).fillAndStroke('#e7eeec', '#466e64');
   doc.circle(rollX, rollY, 4).fillAndStroke(colors.paper, '#466e64');
   doc.moveTo(rollX + 10, rollY + 2).lineTo(frontX, frontY)
@@ -1359,7 +1359,7 @@ function drawBoxSystemDiagram(doc, x, y, w, h, spec) {
   const frontY = y + h * 0.66;
 
   doc.moveTo(wallX, y + h * 0.165).lineTo(wallX, y + h * 0.955)
-    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+    .strokeColor('#6d827d').lineWidth(1.2).stroke();
   doc.roundedRect(wallX - 8, boxY, 51, 38, 8).fillAndStroke('#e7eeec', '#466e64');
   doc.circle(wallX + 17, boxY + 18, 9).fillAndStroke(colors.paper, '#466e64');
   doc.circle(wallX + 17, boxY + 18, 3).fillAndStroke('#e7eeec', '#466e64');
@@ -1417,7 +1417,7 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
   } else {
     doc.circle(panelX + panelW / 2, panelY - 11, 11).fillAndStroke('#e7eeec', '#466e64');
   }
-  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#9db0ac');
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#6d827d');
   doc.moveTo(panelX + 5, panelY + 4).lineTo(panelX + 5, panelY + panelH)
     .moveTo(panelX + panelW - 5, panelY + 4).lineTo(panelX + panelW - 5, panelY + panelH)
     .strokeColor(guide === 'CABLE' ? '#466e64' : guide === 'VARILLA' ? '#d2a116' : '#c9d5d2')
@@ -1557,7 +1557,7 @@ function drawAgataDiagram(doc, x, y, w, h, awning) {
   const frontX = x + w * 0.90;
   const frontY = y + h * 0.67;
   doc.moveTo(wallX, y + h * 0.15).lineTo(wallX, y + h * 0.94)
-    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+    .strokeColor('#6d827d').lineWidth(1.2).stroke();
 
   if (enclosed) {
     const boxH = fullBox ? 38 : 30;
@@ -1605,7 +1605,7 @@ function drawAmbarDiagram(doc, x, y, w, h) {
   const armEndX = x + w * 0.90;
   const armEndY = y + h * 0.67;
   doc.moveTo(wallX, y + h * 0.15).lineTo(wallX, y + h * 0.94)
-    .strokeColor('#9db0ac').lineWidth(1.2).stroke();
+    .strokeColor('#6d827d').lineWidth(1.2).stroke();
 
   doc.roundedRect(wallX - 6, boxY, 42, 31, 7)
     .fillAndStroke('#e7eeec', '#466e64');
@@ -1646,7 +1646,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
     : 'SIN BAMBA';
   if (!options.legacy) {
     doc.roundedRect(x + 38, y + 38, w - 76, 14, 4)
-      .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
+      .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#6d827d');
     doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6.2))
       .text(badge, x + 42, y + 40.5, { width: w - 84, align: 'center' });
   }
@@ -1667,15 +1667,15 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
     .moveTo(frameX + frameW - 48, topFoldY).lineTo(frameX + frameW, topFoldY)
     .moveTo(frameX, bottomSeamY).lineTo(frameX + 48, bottomSeamY)
     .moveTo(frameX + frameW - 48, bottomSeamY).lineTo(frameX + frameW, bottomSeamY)
-    .strokeColor('#e36f69').lineWidth(0.65).stroke();
+    .strokeColor('#a3241c').lineWidth(0.85).stroke();
   doc.moveTo(frameX + sideSeamInset, frameY).lineTo(frameX + sideSeamInset, topFoldY + 18)
     .moveTo(frameX + frameW - sideSeamInset, frameY).lineTo(frameX + frameW - sideSeamInset, topFoldY + 18)
     .moveTo(frameX + sideSeamInset, frameY + frameH - 54).lineTo(frameX + sideSeamInset, frameY + frameH)
     .moveTo(frameX + frameW - sideSeamInset, frameY + frameH - 54).lineTo(frameX + frameW - sideSeamInset, frameY + frameH)
-    .strokeColor('#e36f69').lineWidth(0.55).dash(2, { space: 1 }).stroke().undash();
+    .strokeColor('#a3241c').lineWidth(0.75).dash(2, { space: 1 }).stroke().undash();
   doc.moveTo(frameX + sideSeamInset, topSeamY).lineTo(frameX + frameW - sideSeamInset, topSeamY)
-    .strokeColor('#e36f69').lineWidth(0.55).stroke();
-  doc.fillColor('#4f8b68').fontSize(diagramText(6.4))
+    .strokeColor('#a3241c').lineWidth(0.75).stroke();
+  doc.fillColor('#24513b').fontSize(diagramText(6.4))
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
     .text(rollLabel, frameX, frameY + 13, { width: frameW, align: 'center' });
   drawVerticalArrow(doc, frameX + frameW / 2, frameY - 4, frameY + 1, 'down');
@@ -1687,7 +1687,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   drawHorizontalFabricDimension(doc, frameX, frameX + sideSeamInset, frameY + frameH + 7, formatInstructionMeasure(hems.sideBastillaCm));
   drawFabricDimension(doc, frameX + frameW + 10, bottomSeamY, frameY + frameH, formatInstructionMeasure(hems.bottomHemCm), 'right');
   if (valance.hasValance) {
-    doc.rect(frameX, frameY + frameH - 4, frameW, 4).fillAndStroke(colors.paper, '#7fa594');
+    doc.rect(frameX, frameY + frameH - 4, frameW, 4).fillAndStroke(colors.paper, '#4f6e63');
   }
 
   if (valance.hasValance) {
@@ -1695,12 +1695,12 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
     if (!valance.separate) {
       doc.moveTo(frameX, frameY + frameH).lineTo(frameX, valanceY)
         .moveTo(frameX + frameW, frameY + frameH).lineTo(frameX + frameW, valanceY)
-        .strokeColor('#7fa594').lineWidth(0.7).stroke();
+        .strokeColor('#4f6e63').lineWidth(0.7).stroke();
     }
     drawValancePanel(doc, frameX, valanceY, frameW, valanceH, valance, {
       bodyLabel: `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${valance.curve}`,
       measurement: '',
-      topSeamColor: '#e36f69'
+      topSeamColor: '#a3241c'
     });
     drawDiagramText(doc, loadLabel, frameX + 18, frameY + frameH + 4, frameW - 36);
     drawVerticalArrow(doc, frameX + 9, frameY + frameH + 14, frameY + frameH + 2, 'up');
@@ -1726,7 +1726,7 @@ function drawHorizontalDimension(doc, startX, endX, y, label) {
   const center = (startX + endX) / 2;
   const labelW = Math.min(80, endX - startX - 40);
   const gap = labelW / 2 + 5;
-  doc.strokeColor('#087b32').lineWidth(0.75)
+  doc.strokeColor('#0a4f22').lineWidth(0.75)
     .moveTo(startX, y).lineTo(center - gap, y)
     .moveTo(center + gap, y).lineTo(endX, y)
     .moveTo(startX, y - 4).lineTo(startX, y + 4)
@@ -1734,7 +1734,7 @@ function drawHorizontalDimension(doc, startX, endX, y, label) {
     .stroke();
   drawArrowHead(doc, startX, y, 'left');
   drawArrowHead(doc, endX, y, 'right');
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(6.5))
+  doc.fillColor('#0a4f22').font(fonts.semibold).fontSize(diagramText(6.5))
     .text(label, center - labelW / 2, y - 8.5, { width: labelW, align: 'center' });
 }
 
@@ -1744,14 +1744,14 @@ function drawBastillaCallout(doc, seamX, y, side) {
   const textX = pointingLeft ? seamX + 3 : seamX - 75;
   const arrowStart = pointingLeft ? seamX + 24 : seamX - 24;
   const arrowEnd = pointingLeft ? seamX + 2 : seamX - 2;
-  doc.strokeColor('#087b32').lineWidth(0.7).moveTo(arrowStart, y).lineTo(arrowEnd, y).stroke();
+  doc.strokeColor('#0a4f22').lineWidth(0.7).moveTo(arrowStart, y).lineTo(arrowEnd, y).stroke();
   drawArrowHead(doc, arrowEnd, y, pointingLeft ? 'left' : 'right');
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(5.4))
+  doc.fillColor('#0a4f22').font(fonts.semibold).fontSize(diagramText(5.4))
     .text('BASTILLA\nCOSIDA O SOLDADA', textX, y + 4, { width: 72, align: pointingLeft ? 'left' : 'right' });
 }
 
 function drawVerticalArrow(doc, x, startY, endY, direction) {
-  doc.strokeColor('#087b32').lineWidth(0.75).moveTo(x, startY).lineTo(x, endY).stroke();
+  doc.strokeColor('#0a4f22').lineWidth(0.75).moveTo(x, startY).lineTo(x, endY).stroke();
   drawArrowHead(doc, x, endY, direction);
 }
 
@@ -1764,15 +1764,15 @@ function drawArrowHead(doc, x, y, direction) {
       : direction === 'left'
         ? [[x, y], [x + size, y - size], [x + size, y + size]]
         : [[x, y], [x - size, y - size], [x - size, y + size]];
-  doc.polygon(...points).fill('#087b32');
+  doc.polygon(...points).fill('#0a4f22');
 }
 
 function drawHorizontalFabricDimension(doc, startX, endX, y, label) {
   doc.moveTo(startX, y).lineTo(endX, y)
     .moveTo(startX, y - 4).lineTo(startX, y + 4)
     .moveTo(endX, y - 4).lineTo(endX, y + 4)
-    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(6.2))
+    .strokeColor('#24513b').lineWidth(0.75).stroke();
+  doc.fillColor('#0a4f22').font(fonts.semibold).fontSize(diagramText(6.2))
     .text(label, startX - 27, y + 2, { width: 24, align: 'right' });
 }
 
@@ -1780,9 +1780,9 @@ function drawFabricDimension(doc, x, startY, endY, label, side) {
   doc.moveTo(x, startY).lineTo(x, endY)
     .moveTo(x - 4, startY).lineTo(x + 4, startY)
     .moveTo(x - 4, endY).lineTo(x + 4, endY)
-    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
+    .strokeColor('#24513b').lineWidth(0.75).stroke();
   const textX = side === 'left' ? x - 23 : x + 5;
-  doc.fillColor('#087b32').font(fonts.semibold).fontSize(diagramText(6.2))
+  doc.fillColor('#0a4f22').font(fonts.semibold).fontSize(diagramText(6.2))
     .text(label, textX, (startY + endY) / 2 - 4, { width: 20, align: 'center' });
 }
 
@@ -1796,7 +1796,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     ? `${spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(spec.valanceHeight)} CM`
     : 'SIN BAMBA';
   doc.roundedRect(x + w * 0.12, y + h * 0.025, w * 0.76, h * 0.047, 4)
-    .fillAndStroke(spec.hasValance ? '#fff4cc' : '#edf2f1', spec.hasValance ? '#d2a116' : '#9db0ac');
+    .fillAndStroke(spec.hasValance ? '#fff4cc' : '#edf2f1', spec.hasValance ? '#d2a116' : '#6d827d');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.2))
     .text(badge, x + w * 0.14, y + h * 0.038, { width: w * 0.72, align: 'center' });
 
@@ -1813,7 +1813,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const afterFrame = spec.hasValance ? valanceGap + valanceHeight + h * (spec.curtainPieces ? 0.052 : 0.024) : h * 0.055;
   const contentBottom = withDataRows ? dataY - h * 0.012 : y + h * (spec.finish === 'VELCRO' ? 0.91 : 0.96);
   const frameH = contentBottom - afterFrame - frameY;
-  doc.rect(frameX, frameY, frameW, frameH).fillAndStroke('#fbfcfc', '#7fa594');
+  doc.rect(frameX, frameY, frameW, frameH).fillAndStroke('#fbfcfc', '#4f6e63');
 
   drawDiagramText(
     doc,
@@ -1822,7 +1822,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     frameY - 13,
     frameW + 16
   );
-  doc.rect(frameX, frameY, frameW, 6).fillAndStroke('#edf3f0', '#7fa594');
+  doc.rect(frameX, frameY, frameW, 6).fillAndStroke('#edf3f0', '#4f6e63');
   if (spec.generalCurtain) {
     drawDiagramText(doc, 'PARA ENROLLAR EN TUBO', frameX + 8, frameY + 17, frameW - 16);
   }
@@ -1840,14 +1840,14 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     const baseH = Math.max(20, frameH * 0.2);
     const windowH = bottomY - bottomBarH - baseH - windowY;
     drawCurtainWindow(doc, windowX, windowY, windowW, windowH);
-    doc.fillColor('#6f8fa6').font(fonts.semibold).fontSize(diagramText(6.2))
+    doc.fillColor('#2f4d63').font(fonts.semibold).fontSize(diagramText(6.2))
       .text('CRISTAL', windowX, windowY + windowH / 2 - 4, { width: windowW - 50, align: 'center' });
 
     const cornerY = windowY - 7;
     // Líneas de referencia de la cota de esquina hasta los lados de la ventana.
     doc.moveTo(windowX, cornerY).lineTo(windowX, windowY)
       .moveTo(windowX + windowW, cornerY).lineTo(windowX + windowW, windowY)
-      .strokeColor('#4f8b68').lineWidth(0.5).stroke();
+      .strokeColor('#24513b').lineWidth(0.5).stroke();
     drawHorizontalCurtainMeasure(doc, frameX, windowX, cornerY, awning.curtainWindowCorner);
     drawHorizontalCurtainMeasure(doc, windowX + windowW, frameX + frameW, cornerY, awning.curtainWindowCorner);
 
@@ -1862,13 +1862,13 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   }
 
   if (spec.bottomFinish === 'ET') {
-    doc.rect(frameX, bottomY - 13, frameW, 13).fillAndStroke('#d9e5e0', '#7fa594');
+    doc.rect(frameX, bottomY - 13, frameW, 13).fillAndStroke('#d9e5e0', '#4f6e63');
     doc.moveTo(frameX + 8, bottomY - 9).lineTo(frameX + frameW - 8, bottomY - 9)
       .moveTo(frameX + 8, bottomY - 4).lineTo(frameX + frameW - 8, bottomY - 4)
-      .strokeColor('#91aba2').lineWidth(0.75).stroke();
+      .strokeColor('#5b7f76').lineWidth(0.75).stroke();
     drawDiagramText(doc, 'E.T. Ø40', frameX, bottomY + 3, frameW);
   } else {
-    doc.rect(frameX, bottomY - 6, frameW, 6).fillAndStroke('#edf3f0', '#7fa594');
+    doc.rect(frameX, bottomY - 6, frameW, 6).fillAndStroke('#edf3f0', '#4f6e63');
     drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, bottomY + 3, frameW);
   }
 
@@ -1880,7 +1880,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
     if (!spec.separateValance) {
       doc.moveTo(frameX + 9, bottomY).lineTo(frameX + 9, valanceY)
         .moveTo(frameX + frameW - 9, bottomY).lineTo(frameX + frameW - 9, valanceY)
-        .strokeColor('#7fa594').lineWidth(0.65).stroke();
+        .strokeColor('#4f6e63').lineWidth(0.65).stroke();
     }
     drawCurtainValancePiece(doc, frameX, valanceY, frameW, spec);
     if (spec.curtainPieces) drawDiagramText(doc, 'B.N(3)', frameX, valanceY + 28, frameW);
@@ -1973,10 +1973,10 @@ function drawCurtainSideFinishes(doc, x, y, w, h, spec) {
   const bandW = 7;
   if (spec.finish === 'VELCRO') {
     for (const bandX of [x, x + w - bandW]) {
-      doc.rect(bandX, y + 6, bandW, h - 12).fillAndStroke('#f7eeee', '#b8837d');
+      doc.rect(bandX, y + 6, bandW, h - 12).fillAndStroke('#f7eeee', '#8a4f48');
       for (let offset = 2; offset < h - 12; offset += 8) {
         doc.moveTo(bandX + 1, y + 6 + offset).lineTo(bandX + bandW - 1, y + 10 + offset)
-          .strokeColor('#d5aaa5').lineWidth(0.45).stroke();
+          .strokeColor('#b07a73').lineWidth(0.45).stroke();
       }
     }
   } else {
@@ -1995,7 +1995,7 @@ function drawRotatedDiagramText(doc, text, centerX, centerY, width, options = {}
   doc.save();
   doc.rotate(-90, { origin: [centerX, centerY] });
   let size = options.size || diagramText(6.5);
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(size);
+  doc.fillColor('#24513b').font(fonts.semibold).fontSize(size);
   if (options.fit) {
     while (doc.widthOfString(text) > width && size > 6) doc.fontSize(size = Math.max(6, size - 0.1));
   }
@@ -2006,7 +2006,7 @@ function drawRotatedDiagramText(doc, text, centerX, centerY, width, options = {}
 function drawCurtainWindow(doc, x, y, w, h) {
   const corner = Math.min(15, w / 4, h / 4);
   doc.rect(x, y, w, h).fill('#eef5f9');
-  doc.strokeColor('#e3a5a0').lineWidth(0.85)
+  doc.strokeColor('#b0453c').lineWidth(0.85)
     .moveTo(x, y + corner).lineTo(x, y).lineTo(x + corner, y)
     .moveTo(x + w - corner, y).lineTo(x + w, y).lineTo(x + w, y + corner)
     .moveTo(x + w, y + h - corner).lineTo(x + w, y + h).lineTo(x + w - corner, y + h)
@@ -2019,7 +2019,7 @@ function drawHorizontalCurtainMeasure(doc, startX, endX, y, measure) {
   doc.moveTo(startX, y).lineTo(endX, y)
     .moveTo(startX, y - 3).lineTo(startX, y + 3)
     .moveTo(endX, y - 3).lineTo(endX, y + 3)
-    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
+    .strokeColor('#24513b').lineWidth(0.75).stroke();
   doc.fillColor(colors.ink).font(fonts.semibold).fontSize(diagramText(6.5))
     .text(formatNumber(measure), startX, y - 10, { width: endX - startX, align: 'center', lineBreak: false });
 }
@@ -2029,7 +2029,7 @@ function drawVerticalCurtainMeasure(doc, x, startY, endY, measure) {
   doc.moveTo(x, startY).lineTo(x, endY)
     .moveTo(x - 3, startY).lineTo(x + 3, startY)
     .moveTo(x - 3, endY).lineTo(x + 3, endY)
-    .strokeColor('#4f8b68').lineWidth(0.75).stroke();
+    .strokeColor('#24513b').lineWidth(0.75).stroke();
   drawSmallMeasure(doc, x - 29, (startY + endY) / 2 - 7, 25, measure);
 }
 
@@ -2060,7 +2060,7 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
   const waves = curve === 'NORMAL' ? 6 : curve === 'SUAVE' ? 5 : 4;
 
   doc.rect(x, y, w, h).fill('#fbfcfc');
-  doc.strokeColor('#7fa594').lineWidth(0.8)
+  doc.strokeColor('#4f6e63').lineWidth(0.8)
     .moveTo(x, baselineY).lineTo(x, y).lineTo(x + w, y).lineTo(x + w, baselineY);
   if (isStraight) {
     doc.lineTo(x, y + h);
@@ -2080,7 +2080,7 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
     }
   }
   doc.stroke();
-  doc.rect(x, y, w, Math.min(5, h / 4)).fillAndStroke('#edf3f0', '#7fa594');
+  doc.rect(x, y, w, Math.min(5, h / 4)).fillAndStroke('#edf3f0', '#4f6e63');
   if (options.topSeamColor) {
     doc.moveTo(x + 5, y + Math.min(5, h / 4)).lineTo(x + w - 5, y + Math.min(5, h / 4))
       .strokeColor(options.topSeamColor).lineWidth(0.6).stroke();
@@ -2121,7 +2121,7 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
     : 'SIN BAMBA';
   doc.roundedRect(x + w * 0.12, y + h * 0.035, w * 0.76, h * 0.05, 4)
-    .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#9db0ac');
+    .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#6d827d');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
     .text(badge, x + w * 0.14, y + h * 0.048, { width: w * 0.72, align: 'center' });
 
@@ -2131,9 +2131,9 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   const panelY = y + h * 0.15;
   const panelW = w * 0.76;
   const panelH = h * 0.56;
-  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
-  doc.rect(panelX, panelY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#7fa594');
-  doc.rect(panelX, panelY + panelH - h * 0.02, panelW, h * 0.02).fillAndStroke('#edf3f0', '#7fa594');
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#4f6e63');
+  doc.rect(panelX, panelY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#4f6e63');
+  doc.rect(panelX, panelY + panelH - h * 0.02, panelW, h * 0.02).fillAndStroke('#edf3f0', '#4f6e63');
   drawCurtainSideFinishes(doc, panelX, panelY, panelW, panelH, { finish: 'VELCRO' });
   drawDiagramText(doc, 'VARILLA NEGRA (5,09) EN PVC', panelX, panelY - h * 0.045, panelW);
   drawDiagramText(doc, 'VARILLA BLANCA (5,5)', panelX, panelY + panelH + h * 0.03, panelW);
@@ -2145,8 +2145,8 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
       bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
     });
   } else {
-    doc.rect(panelX, valanceY, panelW, valanceH).fillAndStroke('#fbfcfc', '#7fa594');
-    doc.rect(panelX, valanceY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#7fa594');
+    doc.rect(panelX, valanceY, panelW, valanceH).fillAndStroke('#fbfcfc', '#4f6e63');
+    doc.rect(panelX, valanceY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#4f6e63');
   }
   drawDiagramText(doc, 'A', panelX + (valance.hasValance ? 4 : (panelW - 18) / 2), valanceY + valanceH * 0.35, 18);
   drawDiagramText(doc, 'B.N(3)', panelX, valanceY + valanceH + h * 0.01, panelW);
@@ -2155,7 +2155,7 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
     if (!valance.separate) {
       doc.moveTo(panelX + 8, panelY + panelH).lineTo(panelX + 8, valanceY)
         .moveTo(panelX + panelW - 8, panelY + panelH).lineTo(panelX + panelW - 8, valanceY)
-        .strokeColor('#7fa594').lineWidth(0.65).stroke();
+        .strokeColor('#4f6e63').lineWidth(0.65).stroke();
     }
   }
 }
@@ -2167,10 +2167,10 @@ function drawChangeRollerDiagram(doc, x, y, w, h) {
   const panelY = y + h * 0.13;
   const panelW = w * 0.76;
   const panelH = h * 0.74;
-  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#7fa594');
-  doc.rect(panelX, panelY, panelW, h / 30).fillAndStroke('#edf3f0', '#7fa594');
-  doc.rect(panelX, panelY + panelH - h / 30, panelW, h / 30).fillAndStroke('#d9e5e0', '#7fa594');
-  doc.circle(panelX + 14, panelY + 5, 3).fillAndStroke(colors.paper, '#7fa594');
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#4f6e63');
+  doc.rect(panelX, panelY, panelW, h / 30).fillAndStroke('#edf3f0', '#4f6e63');
+  doc.rect(panelX, panelY + panelH - h / 30, panelW, h / 30).fillAndStroke('#d9e5e0', '#4f6e63');
+  doc.circle(panelX + 14, panelY + 5, 3).fillAndStroke(colors.paper, '#4f6e63');
   drawRotatedDiagramText(doc, 'AL CORTE', panelX - w * 0.065, panelY + panelH / 2, panelH * 0.8);
   drawRotatedDiagramText(doc, 'AL CORTE', panelX + panelW + w * 0.065, panelY + panelH / 2, panelH * 0.8);
   drawDiagramText(doc, 'E. PLETINA 30 × 6 · REFUERZO PVC INTERIOR', panelX, panelY + panelH + h * 0.027, panelW);
@@ -2225,7 +2225,7 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const broochY = stripY + 34;
   const joinY = broochY + 22;
   // El suplemento va detrás, así que se dibuja primero y la bambalina lo tapa.
-  doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#7fa594');
+  doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#4f6e63');
   doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(5.4))
     .text('SUPLEMENTO POR DETRÁS', stripX + 8, stripY + stripH - 16, { width: stripW - 16, align: 'center' });
   drawValanceOverSupplement(doc, stripX, stripY, stripW, joinY, valance.curve);
@@ -2234,11 +2234,11 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   // La línea de sujeción solo existe si hay sujeción: sin ella marcaría un canto
   // sin decir cuál, que es lo que se quiere evitar.
   if (supplement.fastening) {
-    doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#c75d55').lineWidth(0.75).stroke();
+    doc.moveTo(stripX, broochY).lineTo(stripX + stripW, broochY).strokeColor('#9a2a22').lineWidth(0.75).stroke();
   }
   if (supplement.fastening && supplement.withStuds) {
     for (let broochX = stripX + 9; broochX < stripX + stripW - 5; broochX += 16) {
-      doc.circle(broochX, broochY, 1.25).fill('#c75d55');
+      doc.circle(broochX, broochY, 1.25).fill('#9a2a22');
     }
   }
   // Bastilla, sujeción y paso van en un solo rótulo, como «BN(3) + BROCHES» del plano.
@@ -2258,12 +2258,12 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   }
 
   if (supplement.waveOverlapCm !== null) {
-    doc.fillColor('#c75d55').font(fonts.bold).fontSize(diagramText(6.2))
+    doc.fillColor('#9a2a22').font(fonts.bold).fontSize(diagramText(6.2))
       .text(`${formatInstructionMeasure(supplement.waveOverlapCm)} CM`, stripX - 27, broochY + 3, { width: 24, align: 'right' });
     doc.moveTo(stripX - 5, broochY).lineTo(stripX - 5, joinY)
       .moveTo(stripX - 8, broochY).lineTo(stripX - 2, broochY)
       .moveTo(stripX - 8, joinY).lineTo(stripX - 2, joinY)
-      .strokeColor('#c75d55').lineWidth(0.65).stroke();
+      .strokeColor('#9a2a22').lineWidth(0.65).stroke();
   }
   doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(diagramText(9))
     .text('SUPLEMENTO', stripX + 8, joinY + 36, { width: stripW - 16, align: 'center' });
@@ -2301,7 +2301,7 @@ function traceValanceEdge(doc, x, y, w, curve) {
 function drawValanceOverSupplement(doc, x, top, w, bottom, curve) {
   traceValanceEdge(doc, x, bottom, w, curve);
   doc.lineTo(x + w, top).lineTo(x, top).closePath();
-  doc.fillAndStroke('#e3ece7', '#c75d55');
+  doc.fillAndStroke('#e3ece7', '#9a2a22');
 }
 
 // Iván confirma el 14/09/2026 que la varilla plana, la pletina 30 × 6 y el refuerzo
@@ -2324,9 +2324,9 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
   const panelY = y + h * 0.18;
   // Bajo el panel caben la pletina y el refuerzo; si el hueco es más bajo, el panel cede.
   const panelH = h * 0.66;
-  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#7fa594');
-  doc.rect(panelX, panelY, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
-  doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#7fa594');
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#4f6e63');
+  doc.rect(panelX, panelY, panelW, 9).fillAndStroke('#d9e5e0', '#4f6e63');
+  doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#4f6e63');
   drawDiagramText(doc, 'VARILLA PLANA', panelX, panelY - 16, panelW);
   drawDiagramText(doc, 'PLETINA 30 × 6', panelX, panelY + panelH + 8, panelW);
   drawRotatedDiagramText(doc, 'AL CORTE', panelX - w * 0.07, panelY + panelH / 2, panelH * 0.8);
@@ -2370,14 +2370,14 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
 
   doc.strokeColor(colors.ink).lineWidth(1.2)
     .moveTo(wallX, wallY - h * 0.053).lineTo(wallX, y + h * 0.92).stroke();
-  doc.strokeColor('#7fa594').lineWidth(2)
+  doc.strokeColor('#4f6e63').lineWidth(2)
     .moveTo(wallX, wallY).lineTo(endX, endY).stroke();
   doc.strokeColor('#bfd2ca').lineWidth(0.8)
     .moveTo(wallX + 6, wallY + 12).lineTo(endX - 5, endY + 12).stroke();
 
   if (isFixed) {
     doc.circle(wallX + 8, wallY + 5, 13).fillAndStroke(colors.paper, colors.ink);
-    doc.circle(wallX + 8, wallY + 5, 6).fillAndStroke(colors.soft, '#7fa594');
+    doc.circle(wallX + 8, wallY + 5, 6).fillAndStroke(colors.soft, '#4f6e63');
     for (const offset of [-9, 0, 9]) doc.circle(wallX - 6, wallY + 5 + offset, 1.4).fill(colors.ink);
     drawSideLabel(doc, 'SOPORTE FIJO · 3 AGUJEROS', wallX + 20, wallY - 10, 118);
     if (Number(awning.anticaSupportHeight) > 0) {
@@ -2388,7 +2388,7 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     const tubeX = endX;
     const tubeY = endY + 3;
     const fabricBottomY = y + h * 0.84;
-    doc.strokeColor('#7fa594').lineWidth(2)
+    doc.strokeColor('#4f6e63').lineWidth(2)
       .moveTo(wallX, wallY).lineTo(tubeX - radius + 1, tubeY - radius + 2)
       .bezierCurveTo(tubeX - radius - 5, tubeY + 5, tubeX - 4, tubeY + radius + 7, tubeX + 5, tubeY + radius + 4)
       .bezierCurveTo(tubeX + radius + 4, tubeY + radius, tubeX + radius + 3, tubeY + 3, tubeX + radius + 3, tubeY + 1)
@@ -2437,11 +2437,11 @@ function drawDiagramShell(doc, x, y, w, h) {
 }
 
 function drawDiagramText(doc, text, x, y, w, size = diagramText(6.5)) {
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(size).text(text, x, y, { width: w, align: 'center' });
+  doc.fillColor('#24513b').font(fonts.semibold).fontSize(size).text(text, x, y, { width: w, align: 'center' });
 }
 
 function drawSideLabel(doc, text, x, y, w) {
-  doc.fillColor('#4f8b68').font(fonts.semibold).fontSize(diagramText(6.2)).text(text, x, y, { width: w, align: 'center' });
+  doc.fillColor('#24513b').font(fonts.semibold).fontSize(diagramText(6.2)).text(text, x, y, { width: w, align: 'center' });
 }
 
 function drawMiniTable(doc, x, y, w, title, rows, rowH = 13, options = {}) {
