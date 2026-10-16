@@ -26,17 +26,15 @@ export function ReviewPlanteamientoPreview({ review, parameters, onClose }: {
 }
 
 function GeneratedReviewPreview({ review, pdfIndex, onClose }: { review: ReviewPackage; pdfIndex: number; onClose?: () => void }) {
-  const [refreshKey, setRefreshKey] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(pdfIndex);
   const files = review.production!.files;
   const file = files[selectedIndex];
-  const url = `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${selectedIndex}?v=${refreshKey}`;
+  const url = `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${selectedIndex}`;
 
   return (
     <PreviewShell
       title="Vista previa de archivos generados"
       refreshing={false}
-      onRefresh={() => setRefreshKey((value) => value + 1)}
       onClose={onClose}
     >
       {({ heading, actions }) => <>
@@ -197,7 +195,7 @@ function PreviewShell({ title, refreshing, retry = false, onRefresh, onClose, ch
   title: string;
   refreshing: boolean;
   retry?: boolean;
-  onRefresh: () => void;
+  onRefresh?: () => void;
   onClose?: () => void;
   children: (toolbar: { heading: React.ReactNode; actions: React.ReactNode }) => React.ReactNode;
 }) {
@@ -240,9 +238,10 @@ function PreviewShell({ title, refreshing, retry = false, onRefresh, onClose, ch
     <dialog ref={dialogRef} className="review-inline-preview" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
       onCancel={(event) => { event.preventDefault(); collapse(); }}>
       {children({ heading: <strong>{title}</strong>, actions: <div className="review-preview-actions">
-        <button className="ghost-button" type="button" disabled={refreshing} onClick={onRefresh}>
-          <RefreshCw aria-hidden="true" />{retry ? 'Reintentar' : 'Actualizar'}
-        </button>
+        {/* Solo cuando falla: la vista previa ya se rehace sola al cambiar el pedido (Iván, 16/10/2026). */}
+        {retry && onRefresh && <button className="ghost-button" type="button" disabled={refreshing} onClick={onRefresh}>
+          <RefreshCw aria-hidden="true" />Reintentar
+        </button>}
         <button ref={expandRef} className="ghost-button" type="button" hidden={expanded} onClick={() => setExpanded(true)}>
           <Maximize2 aria-hidden="true" />Pantalla completa
         </button>

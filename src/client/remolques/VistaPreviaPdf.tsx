@@ -109,12 +109,10 @@ export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, label 
       {url && createPortal(
         <div ref={dialogo} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa de la hoja de taller">
           <div className="pdf-preview-window">
-            <PdfPreviewViewer key={url} url={url} ariaLabel="Hoja de taller de remolques" heading={<strong>Vista previa de la hoja de taller</strong>} actions={<>
-                <button className="ghost-button" type="button" disabled={preparando} onClick={() => void abrir()}>
-                  <Eye aria-hidden="true" />{preparando ? 'Preparando la hoja…' : 'Actualizar'}
-                </button>
-                <button className="icon-button" type="button" onClick={cerrar} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-            </>} />
+            {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
+            <PdfPreviewViewer key={url} url={url} ariaLabel="Hoja de taller de remolques" heading={<strong>Vista previa de la hoja de taller</strong>} actions={
+              <button className="icon-button" type="button" onClick={cerrar} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+            } />
           </div>
         </div>,
         document.body,

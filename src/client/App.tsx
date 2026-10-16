@@ -878,10 +878,10 @@ export default function App() {
       {previewUrl && (
         <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
           <div className="pdf-preview-window">
-            <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={<>
-                <button className="ghost-button" type="button" onClick={openPlanteamientoPreview}><Eye aria-hidden="true" />Actualizar</button>
-                <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-            </>} />
+            {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
+            <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={
+              <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+            } />
           </div>
         </div>
       )}
