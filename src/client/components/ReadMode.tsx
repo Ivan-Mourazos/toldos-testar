@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import { readGroupOf, readGroupOrder } from '../readGroups';
+import { readGroupOf } from '../readGroups';
 
 // Con la ficha de lectura, cada campo se pinta como «etiqueta · valor» en su grupo.
 export const ReadModeContext = createContext(false);
@@ -25,7 +25,7 @@ export function ReadPair({ label, value }: { label: string; value: React.ReactNo
   if (blank && readEmptyWords[label]) value = readEmptyWords[label];
   const empty = value === null || value === undefined || value === '';
   return (
-    <div className="read-pair" data-group={group} style={{ order: readGroupOrder(group) + 1 }}>
+    <div className="read-pair" data-group={group}>
       <span className="read-label">{label}</span>
       <b className={`read-value${empty ? ' is-empty' : ''}`}>{empty ? '—' : value}</b>
     </div>

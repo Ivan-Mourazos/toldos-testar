@@ -26,7 +26,7 @@ type Props = {
   readEmptyAs?: string;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre aproximado…', disabled = false, missing = false, readEmptyAs = '' }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre…', disabled = false, missing = false, readEmptyAs = '' }: Props) {
   const reading = useReadMode();
   const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));

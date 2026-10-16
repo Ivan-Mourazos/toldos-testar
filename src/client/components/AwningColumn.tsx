@@ -529,7 +529,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={['SÍ', 'NO']}
                 onChange={(value) => update({ irisAssumeSquare: value === 'SÍ' })}
               />
-              {/* El dibujo sigue a las medidas del hueco; su leyenda se reúne con las notas al pie. */}
+              {/* El dibujo y su leyenda siguen a las medidas del hueco. */}
               <IrisSquaringDiagram
                 part="diagram"
                 awning={awning}
@@ -632,8 +632,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
           {isHera && (
             <div className="awning-installation-row awning-wide-field">
-              <SelectField label="Arriba" missing={isMissing('heraTopFinish')} value={awning.heraTopFinish} options={['VARILLA PLANA']} placeholder="Elegir remate…" onChange={(heraTopFinish) => update({ heraTopFinish })} />
-              <SelectField label="Abajo" missing={isMissing('heraBottomFinish')} value={awning.heraBottomFinish} options={['VARILLA BLANCA', 'PLETINA', 'ENTRADA DE PLETINA', 'E.T. PLATANERO']} placeholder="Elegir remate…" onChange={(heraBottomFinish) => update({ heraBottomFinish })} />
+              <SelectField label="Arriba" missing={isMissing('heraTopFinish')} value={awning.heraTopFinish} options={['VARILLA PLANA']} placeholder="Elegir…" onChange={(heraTopFinish) => update({ heraTopFinish })} />
+              <SelectField label="Abajo" missing={isMissing('heraBottomFinish')} value={awning.heraBottomFinish} options={['VARILLA BLANCA', 'PLETINA', 'ENTRADA DE PLETINA', 'E.T. PLATANERO']} placeholder="Elegir…" onChange={(heraBottomFinish) => update({ heraBottomFinish })} />
             </div>
           )}
           {isHera && (
@@ -941,7 +941,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
 
           {!fabricOnly && (
             <div className="awning-structure-notes awning-wide-field">
-              <ObservationLines label="Obs. estructura" value={getStructureNotes(awning, ofCalculation)} onChange={(structureNotes) => update({ structureNotes, ...(isElectra ? { structureNotesEdited: true } : {}) })} />
+              <ObservationLines label="Obs. estructura" value={getStructureNotes(awning, ofCalculation)} onChange={(structureNotes) => update({ structureNotes, ...(isElectra ? { structureNotesEdited: true } : {}) })} ajustarTexto />
             </div>
           )}
 

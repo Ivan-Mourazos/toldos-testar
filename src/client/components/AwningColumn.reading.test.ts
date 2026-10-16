@@ -617,7 +617,7 @@ describe('orden común de las tarjetas al editar y leer', () => {
     const awning: Awning = { ...base, structureNotes: 'Nota de estructura', fabricNotes: 'Nota de tela' };
     for (const reading of [false, true]) {
       const markup = render(awning, reading, { sameFabric: false });
-      const grupos = [...markup.matchAll(/class="awning-group[^"]*" data-group="([^"]+)"/g)].map(match => match[1]);
+      const grupos = [...new Set([...markup.matchAll(/data-logical-group="([^"]+)"/g)].map(match => match[1]))];
       expect(grupos.slice(0, 5)).toEqual(['medidas', 'tela', 'estructura', 'accionamiento', 'colocacion']);
       expect(grupos).not.toContain('otros');
       expect(markup.indexOf('Obs. estructura')).toBeLessThan(markup.indexOf('Obs. tela'));
@@ -625,11 +625,21 @@ describe('orden común de las tarjetas al editar y leer', () => {
     }
   });
 
-  it('sitúa el dibujo de Iris después de las medidas y su leyenda al pie', () => {
+  it('sitúa el dibujo de Iris después de las medidas y su leyenda junto al dibujo', () => {
     const [base] = samplesFor('IRIS');
     const markup = render({ ...base, irisAssumeSquare: false }, false);
     expect(markup.indexOf('Diagonal 2 (a salida der.)')).toBeLessThan(markup.indexOf('<figure'));
-    expect(markup.indexOf('Obs. tela')).toBeLessThan(markup.indexOf('<figcaption'));
+    expect(markup.indexOf('<figure')).toBeLessThan(markup.indexOf('<figcaption'));
+    expect(markup.indexOf('<figcaption')).toBeLessThan(markup.indexOf('Obs. tela'));
+  });
+
+  it.each(['IRIS', 'CAMBIO ANTICA', 'BAMBALINA', 'GALICIA'])('%s conserva el orden de campos al leer', model => {
+    const awning = maxSample(model);
+    const campos = (reading: boolean) => [...render(awning, reading, { sameFabric: false }).matchAll(/data-field="([^"]+)"/g)].map(match => match[1]);
+    expect(campos(true)).toEqual(campos(false));
+    const lectura = render(awning, true, { sameFabric: false });
+    expect(lectura).not.toMatch(/style="[^"]*order:/);
+    expect(lectura.indexOf('Obs. tela')).toBeLessThan(lectura.indexOf('read-exception'));
   });
 
   it('en Hera, los remates siguen a la variante: arriba y abajo', () => {

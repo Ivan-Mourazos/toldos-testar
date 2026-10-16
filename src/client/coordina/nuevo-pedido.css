@@ -1122,7 +1122,6 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .fabric-stock-option { display: block; font-weight: 400; }
 .order-fabric-proposal-option { text-align: left; }
 .order-fabric-proposal-option.is-chosen .fabric-stock-option { color: inherit; }
-.awning-column.is-readonly .awning-valance-fabric { display: contents; }
 /* «Por toldo» va a la altura del buscador aunque debajo salga «Sin elegir…»: alineado
    arriba y bajado lo que ocupa la etiqueta «Referencia» (16 px). */
 .app-shell .order-fabric-row { align-items: start; }
@@ -1215,9 +1214,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 
 /* Tarjetas de escritorio: filas completas, en el mismo orden del DOM y del teclado.
    Los spans se reparten por fila según los campos visibles; no se usa flujo denso. */
-.awning-column .awning-form-grid,
-.awning-column .awning-group,
-.awning-column .awning-inner-grid {
+.awning-column .awning-form-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-auto-flow: row;
@@ -1226,7 +1223,6 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   min-width: 0;
 }
 .awning-column .awning-form-grid { grid-column: 1 / -1; }
-.awning-column .awning-group { grid-column: 1 / -1; }
 .awning-column .awning-cell { min-width: 0; }
 .awning-column .awning-cell:empty { display: none; }
 .awning-column .awning-cell > :is(label, .field) { min-width: 0; width: 100%; }
@@ -1240,14 +1236,15 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 .awning-column .awning-cell .segmented-option { overflow: visible; text-overflow: clip; white-space: nowrap; }
 /* Dos pistas compartidas por fila: etiquetas y controles se alinean aunque una
    etiqueta necesite dos renglones. Las notas y dibujos mantienen su propia caja. */
-.awning-column:not(.is-readonly) :is(.awning-group, .awning-inner-grid) { align-items: start; row-gap: 4px; }
-.awning-column:not(.is-readonly) :is(.awning-group, .awning-inner-grid) > .awning-cell:has(> label, > .field),
+.awning-column:not(.is-readonly) .awning-form-grid { align-items: start; row-gap: 4px; }
+.awning-column:not(.is-readonly) .awning-form-grid > .awning-cell:has(> label, > .field),
 .awning-column:not(.is-readonly) .awning-cell > :is(label, .field) {
   display: grid;
   grid-row: span 2;
   grid-template-rows: subgrid;
   align-items: stretch;
 }
+.awning-column .awning-cell :is(label, .field) > span:first-child { align-self: end; }
 .awning-column .awning-cell .select-options { min-width: max(100%, 210px); }
 .awning-column .awning-cell:nth-child(n+3) .select-options { left: auto; right: 0; }
 .awning-column .awning-form-footnotes {
@@ -1261,8 +1258,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   font-size: 11px;
   line-height: 1.35;
 }
-.awning-form-footnotes:not(:has(.awning-cell > *)) { display: none; }
-.awning-form-footnotes .awning-cell > * { margin: 0; }
+.awning-form-footnotes > * { margin: 0; }
 .awning-form-footnotes :is(.awning-note, .awning-pending, .curtain-field-hint, .drop-arm-mode-summary) {
   background: none;
   border: 0;
@@ -1271,11 +1267,5 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
   line-height: inherit;
 }
 .awning-form-footnotes .iris-squaring figcaption { margin: 0; }
-.awning-column .awning-group .iris-squaring svg { max-height: 240px; }
-.awning-column.is-readonly .awning-group { align-items: start; gap: 2px 18px; }
-.awning-column.is-readonly .awning-group:not(:has(.read-pair, .read-note, .read-exception, .iris-squaring, .awning-cell > p, .awning-cell > ul)) { display: none; }
-.awning-column.is-readonly .awning-cell { display: contents; }
-.awning-column.is-readonly .awning-cell > * { order: 0; }
-.awning-column.is-readonly .awning-cell > .read-pair { grid-column: span 6; }
-.awning-column.is-readonly .awning-cell > :is(.read-note, .read-exception, .iris-squaring) { grid-column: 1 / -1; }
-.awning-column.is-readonly .awning-group > .read-group-title { display: block; }
+.awning-column .awning-cell .iris-squaring svg { max-height: 240px; }
+.awning-column.is-readonly .awning-form-grid.awning-column-body { align-items: start; gap: 2px 18px; grid-template-columns: repeat(12, minmax(0, 1fr)); }

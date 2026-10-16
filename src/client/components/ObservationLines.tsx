@@ -23,7 +23,7 @@ export function ObservationLines({ label, value, onChange, ajustarTexto = false 
   // no. Las observaciones de tela del pedido, en la cabecera, se leen igual (§3).
   if (reading) {
     return (
-      <div className={`read-note${isEmpty ? '' : ' has-text'}`} data-group="notas" style={{ order: 99 }}>
+      <div className={`read-note${isEmpty ? '' : ' has-text'}`} data-group="notas">
         <span className="read-label">{label}</span>
         {isEmpty ? <p className="read-empty">Sin observaciones</p> : (
           <p>{lines.filter((line) => line.trim()).map((line, index) => <React.Fragment key={index}>{index > 0 && <br />}{line}</React.Fragment>)}</p>
