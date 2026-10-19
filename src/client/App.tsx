@@ -36,7 +36,7 @@ import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
 import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
-import { pedidoDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
+import { pedidoDeEnlace, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
@@ -63,7 +63,10 @@ export default function App() {
   // Las fichas de cliente se guardan cada una con su botón: la barra común es solo de los parámetros.
   const enFichasClientes = remolquesVista === 'clientes';
   const [catalog, setCatalog] = useState<Catalog | null>(null);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('order');
+  // Con `?revisar=` (CoordinaOT, pedido ya mandado a revisión) se entra directamente en Pedidos,
+  // y la bandeja abre ese pedido en cuanto lo tiene (ver `abrirAlCargar` en ReviewsView).
+  const [revisarAlCargar, setRevisarAlCargar] = useState<string | null>(() => revisionDeEnlace(window.location.search));
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => (revisarAlCargar ? 'reviews' : 'order'));
   // Toldos o Remolques en Nuevo pedido (diseño 30/09/2026, fase 2a). Remolques se monta la primera
   // vez que se elige y se queda montado (oculto) para no perder el pedido a medias al cambiar
   // de producto o de pestaña; los toldos ya viven en `draft`, que es de esta pantalla.
@@ -345,8 +348,8 @@ export default function App() {
     if (enlaceAtendido.current) return;
     enlaceAtendido.current = true;
     const numero = pedidoDeEnlace(window.location.search);
+    if (numero || revisionDeEnlace(window.location.search)) window.history.replaceState(null, '', sinPedidoEnEnlace(window.location.href));
     if (!numero) return;
-    window.history.replaceState(null, '', sinPedidoEnEnlace(window.location.href));
     // Fuera del efecto: la búsqueda cambia estado nada más empezar («Buscando…»).
     queueMicrotask(() => void autofillOrder(numero));
     // Solo al cargar: `autofillOrder` cambia en cada pintado y no debe relanzar la búsqueda.
@@ -855,6 +858,8 @@ export default function App() {
               onSeguirBorrador={(borrador) => abrirBorrador(borrador)}
               onToast={notify}
               onConfirm={askForConfirmation}
+              abrirAlCargar={revisarAlCargar}
+              onAbiertoAlCargar={() => setRevisarAlCargar(null)}
             />
           )}
           {activeTab === 'settings' && (
