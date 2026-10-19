@@ -85,7 +85,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     };
     conSacos.push(completar(opciones.conSacos));
     if (opciones.trozoSeparado) trozos.push(completar(opciones.trozoSeparado));
-    const geometria = dibujarPlano(grupo, opciones.conSacos);
+    const geometria = dibujarPlano(grupo, opciones.conSacos, opciones.trozoSeparado);
     const datos = Object.fromEntries(Object.entries({ ...cabecera,
       tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${(opciones.conSacos.largo / 1000).toLocaleString('es-ES')} M`,
       subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA' : 'TOLDO DE FACHADA'}`

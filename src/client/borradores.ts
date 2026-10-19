@@ -135,6 +135,7 @@ export async function buscarBorradorAlObtener(
 const CAMPOS_FORMULARIO = [
   'orderCode', 'customer', 'orderDate', 'technician', 'reviewer', 'fabric', 'sameFabric', 'remate', 'remateColor',
   'structureColor', 'rotTela', 'rotBamba', 'notes', 'awnings', 'fabricProposals', 'confirmedFabricProposals',
+  'corteLona',
 ] as const satisfies readonly (keyof DraftState)[];
 
 /**
@@ -142,6 +143,6 @@ const CAMPOS_FORMULARIO = [
  * pedido nuevo y sigue con los actuales) ni el autor sellado (lo decide el servidor al pasar a revisión).
  */
 export function contenidoBorradorToldos(formulario: DraftState): ContenidoToldos {
-  const order = Object.fromEntries(CAMPOS_FORMULARIO.map((campo) => [campo, formulario[campo]])) as DraftState;
+  const order = Object.fromEntries(CAMPOS_FORMULARIO.map((campo) => [campo, formulario[campo]])) as unknown as DraftState;
   return { order };
 }

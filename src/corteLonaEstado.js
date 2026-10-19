@@ -4,6 +4,7 @@ import { calculateOrder } from './domain/rules.js';
 import { corteReadiness } from './domain/corteReadiness.js';
 import { awningLetter } from './domain/awningCompleteness.js';
 import { AJUSTES_POR_DEFECTO } from './domain/corteLona/despiece.js';
+import { resolveFabric } from './domain/fabricCatalog.js';
 
 // Subir esta versión cuando cambien las reglas de corte que invaliden los cortes guardados.
 const VERSION_CORTE = 1;
@@ -39,11 +40,12 @@ export function crearEstadoCorteLona(order, { ajustes = {}, resultado, ofStockSa
     }] : []) };
 }
 
-/** Todavía no bloquea el guardado para revisión: la fase 3 activará esa regla. */
+/** Solo PVC de modelos con corte; las exclusiones de onda o ventana siguen pendientes. */
 export function corteLonaPendiente(order, corteLona) {
   const orden = normalizeOrder(order);
   return orden.awnings.flatMap((t, i) => {
     if (!corteReadiness(t.model).ready) return [];
+    if (resolveFabric(orden.sameFabric ? orden.fabric : t.fabric)?.material?.trim().toUpperCase() !== 'PLASTICA (LONA)') return [];
     const anterior = corteLona?.toldos?.find((p) => p.clave === claveToldo(t, i) && p.letra === awningLetter(i));
     const motivo = !anterior ? 'sinGenerar' : corteLona.version !== VERSION_CORTE ||
       anterior.firma !== firmaToldo(orden, i, ajustesToldo(corteLona.ajustes || {}, t, i)) ? 'viejo' : null;

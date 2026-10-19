@@ -1,107 +1,144 @@
-# Corte de lona: contrato del servidor para la fase 3
+# Corte de lona: contrato del servidor y pantalla
 
-Fase 2, 19/10/2026. No añade pantalla ni activa el bloqueo de revisión sin corte.
-Las medidas de corte y colocación se expresan en **mm**; los ajustes se expresan en **cm**, excepto los campos terminados en `Mm`. La geometría del plano está en **metros**, con la presentación A4 en mm de papel.
+Fases 1–3, 19/10/2026. Corte de PVC de Arzúa Pro, Galicia, Monoblock 350 y Cambio de tela.
+Medidas de piezas, colocación y SVG en **mm**; ajustes en **cm**, salvo campos terminados en `Mm`.
+El plano lleva modelo en **metros** y presentación A4 en mm de papel.
 
-## Rutas
+## Rutas activas
 
 | Método y ruta | Entrada | Resultado |
 | --- | --- | --- |
-| `POST /api/corte-lona` | `{ order, ajustes? }` | JSON de vista previa y estado para guardar |
-| `POST /api/corte-lona/dxf` | `{ order, ajustes?, material?, opcion }` | DXF 2004 del bot, bytes latin1, `AC1018` |
-| `POST /api/corte-lona/plano` | `{ order, ajustes?, material? }` | DWG 2018 con ODA; DXF 2018 UTF-8 si falta ODA, `AC1032` |
-| `GET /api/reviews/:orderCode/corte-lona` | Sin cuerpo | Recalcula el pedido de `getReview`, usando sus ajustes guardados |
-| `GET /api/reviews/:orderCode/corte-lona/dxf` | Query `material?`, `opcion` | Misma descarga del bot desde el paquete guardado |
-| `GET /api/reviews/:orderCode/corte-lona/plano` | Query `material?` | Mismo plano desde el paquete guardado |
+| `POST /api/corte-lona` | `{ order, ajustes? }` | Vista previa, ajustes completos, firmas y pendientes |
+| `POST /api/corte-lona/estado` | `{ order, corteLona }` | `{ pendientes }`, sin generar geometría ni renovar firmas |
+| `GET /api/reviews/:orderCode/corte-lona` | Sin cuerpo | Vista del pedido guardado con sus ajustes y OF de sacos |
+| `POST /api/corte-lona/dxf` | `{ order, ajustes?, material?, opcion }` | Descarga técnica de diagnóstico; sin uso en la interfaz |
+| `POST /api/corte-lona/plano` | `{ order, ajustes?, material? }` | Descarga técnica de diagnóstico; sin uso en la interfaz |
 
-`order` tiene el formato habitual de `/api/calculate`. `ajustes` es un objeto por **id de toldo**, OF o letra; el id tiene prioridad. Solo se altera el reparto si se envían ajustes explícitos. La respuesta devuelve los ajustes por la clave estable `id || of || letra`, que es la que debe conservar la pantalla. Completa los valores por defecto salvo `tiraPartida`: su ausencia conserva la elección automática entre entera y partida en vertical; `false` fija entera y `true` fija partida. El texto opcional `varillaArriba` también se conserva.
+**Eliminadas** las descargas GET del revisor, sufijos `/dxf` y `/plano`: devuelven 404.
+La interfaz del revisor no ofrece descargas del corte, ni siquiera desde el bloque de archivos producidos.
+Las descargas de reservas y PDF existentes siguen su flujo habitual.
 
-`opcion` es obligatoria en DXF: `conSacos` o `trozoSeparado`. Si esa tela no tiene trozo separado, devuelve 400. `material` debe ser preferentemente el `idMaterial` del JSON (`codigoTela|anchoRolloMm`); también se admite el código de tela o su nombre si identifican un único resultado. Puede omitirse cuando solo hay una tela disponible en la opción solicitada. Si hay varias o no coincide, responde 400. Los GET no permiten sustituir el pedido ni los ajustes por query: siempre usan el paquete guardado.
+`order` tiene el formato de `/api/calculate`. Los ajustes se agrupan por id de toldo, OF o letra,
+en ese orden de preferencia. La respuesta completa los valores por defecto y devuelve la clave estable
+`id || of || letra`. La ausencia de `tiraPartida` mantiene la elección automática en vertical;
+`false` fija entera y `true` fija partida. `varillaArriba` permite elegir el texto de la varilla.
 
-Nombres de descarga:
+`opcion` admite `conSacos` o `trozoSeparado`. `material` identifica una tela por
+`idMaterial = codigoTela|anchoRolloMm`; el código o el nombre solo sirven si no son ambiguos.
+Los POST de descarga no escriben en las carpetas de salida. Los DXF del bot son AC1018, latin1;
+el plano alternativo es AC1032, UTF-8. ODA convierte a DWG 2018.
+Un fallo real de conversión no se disimula como un plano correcto; falta de ejecutable permite
+la alternativa DXF con aviso.
 
-- `<pedido> (con sacos).dxf`
-- `<pedido> (trozo separado).dxf`
-- `<pedido> (plano).dwg` o `<pedido> (plano).dxf`
+## Respuesta de vista previa
 
-Todas las descargas llevan `Cache-Control: no-store` y `X-Corte-Lona-Of-Stock`. Sin ODA se añade `X-Corte-Lona-Aviso: ODA_NO_DISPONIBLE: plano en DXF 2018`. Si ODA está instalado pero la conversión falla, hay `.err` o se supera el tiempo máximo, devuelve 502; no oculta el error con una descarga aparentemente correcta. Un pedido guardado inexistente devuelve 404. El resto de errores de entrada devuelve 400.
+Se conserva la forma del dominio, sin campos `dxf` ni bytes de archivos:
 
-## JSON de vista previa
+- `modelos`, `avisos`, `ofStockSacos`.
+- `cortes.conSacos[]` y `cortes.trozoSeparado[] | null`: por tela,
+  `idMaterial`, `codigoTela`, `material`, `anchoRollo`, `largo`,
+  `piezas[]`, `colocadas[]`, `sacos[]`, `dibujo.lineas[]` y `dibujo.textos[]`.
+- `largoRestos` y `colocadas[].aparte` distinguen el grupo separado: **no** se suma
+  al largo del rollo principal como si necesariamente se cortara de lona nueva.
+- `plano[]` con geometría, presentación y encuadre, sin DXF.
+- `corteLona` y `pendientes[]`.
 
-Se conserva la forma del dominio y se retiran los campos `dxf`; no se envían los ficheros completos.
+Las líneas llevan `{ capa, x1, y1, x2, y2 }`; los textos posición, altura, valor, giro y centrado.
+La pantalla dibuja DISCO1 y ROTULADOR sin interpretar DXF.
 
-```json
-{
-  "modelos": ["GALICIA"],
-  "avisos": [],
-  "ofStockSacos": { "of": "0230811", "origen": "dwg", "avisos": [] },
-  "cortes": {
-    "conSacos": [{
-      "idMaterial": "CODIGO_TELA|2500",
-      "codigoTela": "CODIGO_TELA",
-      "material": "PVC 580 VERDE 6026",
-      "anchoRollo": 2500,
-      "largo": 4850,
-      "piezas": [{ "letra": "A", "piezas": [] }],
-      "colocadas": [],
-      "sacos": [],
-      "dibujo": { "lineas": [], "textos": [] }
-    }],
-    "trozoSeparado": null
-  },
-  "plano": [],
-  "corteLona": {},
-  "pendientes": []
-}
-```
+El plano contiene el dibujo de confección de todos los toldos de la tela y **todas sus opciones de corte**:
+«OPCIÓN 1 · CON SACOS · … M» y, si existe, «OPCIÓN 2 · TROZO SEPARADO · … M + RESTOS … M».
+En el modelo se apilan; el reparto A4 sigue probando debajo/al lado y giro de 90° de toda la zona.
+El DXF del bot contiene exclusivamente el corte de la opción correspondiente.
 
-El ejemplo abrevia las listas. Cada `piezas` contiene el despiece por toldo; cada `colocadas` contiene las piezas en el rollo, con posición, giro, letra y OF. `sacos` contiene solo las colocadas marcadas como saco. `dibujo.lineas` lleva `{ capa, x1, y1, x2, y2 }`; `dibujo.textos` lleva posición, altura, valor, giro y centrado. No hace falta interpretar DXF para pintar el corte.
+## Estado y bloqueos
 
-`trozoSeparado`, cuando existe, tiene el mismo formato: `largo` es el rollo principal, `largoRestos` es el largo del grupo separado y `colocadas[].aparte` identifica piezas a cortar de un resto. No sumar ambos largos como si se cortaran necesariamente del rollo nuevo.
+El cliente conserva `corteLona` tal como lo devuelve el servidor y lo manda como campo separado
+en `POST /api/reviews`, junto a `order`, `savedBy` y las confirmaciones habituales.
+Incluye versión, fecha y autor de generación, OF de sacos, ajustes por clave y
+`toldos[] = { clave, id, letra, of, firma }`. No contiene DXF, DWG ni geometría.
+Se conserva también con los borradores locales y del servidor.
 
-`plano` contiene una entrada por tela con `idMaterial`, `codigoTela`, `material`, `anchoRollo`, `geometria` y los datos de presentación calculados por el dominio, sin `dxf`.
+Las firmas SHA-256 se construyen **solo en el servidor**. Incluyen datos normalizados del toldo,
+material efectivo, medidas calculadas, orden/letra y ajustes. Técnico y notas generales no invalidan
+el despiece. Los ajustes explícitos equivalentes al valor por defecto tienen la misma firma.
+La versión debe incrementarse al cambiar reglas que invaliden piezas anteriores.
 
-`ofStockSacos.origen` puede ser `dwg`, `ultimoBueno` o `defecto`. El servicio lee exclusivamente `OFICINA_TECNICA_DIRECTORY/AUTOCAD/MATERIAL PARA STOCK.dwg`, convierte una copia privada con ODA y cachea la OF por fecha y tamaño. El último bueno vive en memoria; tras reiniciar, si la lectura falla, se usa `0230811`. Cualquier alternativa lleva aviso.
+`corteLonaPendiente(order, corteLona)` devuelve `[{ id, letra, of, modelo, motivo }]`,
+con `motivo: 'sinGenerar' | 'viejo'`. Solo pide corte a PVC de modelos marcados con corte;
+los acrílicos y los modelos sin corte no lo necesitan. Onda, ventana o datos incompletos no
+quedan firmados y siguen pendientes, con sus avisos.
 
-En un GET guardado, `ofStockSacos.of` es **la OF usada al generar**, y `ofStockSacos.actual` informa de la OF actual que ha podido resolver el servidor. Si difieren se añade un aviso informativo, sin marcar el corte como viejo ni bloquear la descarga. Confirmado por el coordinador el 19/10/2026: un corte nuevo o regenerado por el técnico vuelve a consultar la OF actual.
+Se comprueba en el servidor tanto al **guardar para revisión** como al **generar producción**:
+un pendiente devuelve 409 y enumera las letras y el motivo. CoordinaOT permanece sin cambios;
+producción sigue exigiendo su aprobación actual por cada OF.
+Omitir `corteLona` al corregir conserva las firmas existentes; nunca las renueva.
+`corteLona: null` solicita borrarlas, sujeto al mismo bloqueo.
+Los pedidos antiguos siguen abriendo y pueden mostrar «falta»; deben regenerar el corte para producir.
 
-## Guardar el corte con el pedido
+La lista de Pedidos añade `corteLonaEstado: 'hecho' | 'falta' | 'viejo'` solamente cuando corresponde.
+La pantalla consulta `/estado` al editar para detectar cambios sin reconstruir firmas.
 
-El POST de vista previa devuelve `corteLona`. La pantalla lo conserva y lo envía junto al pedido al guardar:
+## Cuándo se escribe cada archivo
 
-```json
-{
-  "order": {},
-  "savedBy": "IVÁN",
-  "corteLona": {
-    "version": 1,
-    "generadoEn": "2026-10-19T12:00:00.000Z",
-    "generadoPor": "IVÁN",
-    "ofStockSacos": "0230811",
-    "ajustes": { "id-toldo": { "empate": "horizontal", "empateCm": 2 } },
-    "toldos": [{ "clave": "id-toldo", "id": "id-toldo", "letra": "A", "of": "0232568", "firma": "sha256" }]
-  }
-}
-```
+Con `productionEnabled` activo (el ajuste de escritura que publica `fileWritesEnabled`):
 
-Se usa `POST /api/reviews`, con sus reglas de autoría y confirmación actuales. El ejemplo abrevia los ajustes: enviar el objeto completo recibido. No reconstruir firmas en el cliente. El PDF editable contiene solo estos metadatos del corte; nunca DXF, DWG ni geometría. Los archivos se regeneran al descargarlos. Si la pantalla omite `corteLona` al corregir un pedido, se conserva el estado existente **sin volver a firmarlo**: cambiar medidas debe dejarlo viejo. `corteLona: null` permite borrar el estado. Los paquetes antiguos sin campo siguen abriendo y descargando con los ajustes por defecto.
+1. `POST /api/reviews`: prepara y escribe **solo el plano por tela**, antes de guardar el PDF editable.
+   Guarda en `review.planosCorte = { files: [{ type, material, filename, savedPath, writtenAt }], avisos }`.
+   DWG con ODA; DXF 2018 con aviso si no está disponible. Al volver a guardar se reescribe.
+2. `POST /api/reviews/:orderCode/generate-files`: después de comprobar corte y aprobación,
+   añade los DXF de ambas opciones por tela a los mismos destinos/confirmaciones/escrituras atómicas
+   del resto de producción. Quedan en `review.production.files` con `type: 'corte-lona'`,
+   `filename` y `savedPath`. Se conserva la OF de stock del corte generado por el técnico.
 
-`firmaToldo(order, indice, ajustes)` usa SHA-256 con claves ordenadas, datos normalizados del toldo, tela efectiva, medidas calculadas y ajustes completos. Los valores explícitos iguales al ajuste por defecto producen la misma firma. La versión forma parte de la firma y debe incrementarse al cambiar reglas que invaliden cortes anteriores. Cambiar el técnico o las notas generales no invalida las piezas; sí lo hacen medidas, unidades, material, bamba, OF, orden/letra o ajustes que intervienen.
+En simulación no se escriben planos ni DXF del corte ni se llama a ODA para escribirlos:
+la revisión editable se guarda como hasta ahora y el resultado avisa de que no hay plano físico.
+Producción sigue deshabilitada. En las pruebas integradas solo se activa temporalmente la generación
+después de verificar que todas las rutas están dentro de `tmp/`, y se restaura al terminar.
+**No ha cambiado la reserva de PVC**: las pruebas lo excluyen de la reserva, como en el flujo existente.
 
-`corteLonaPendiente(order, corteLona)` devuelve `[{ id, letra, of, modelo, motivo }]`, con `motivo: 'sinGenerar' | 'viejo'`, solo para modelos con corte. Un toldo excluido por onda, ventana, material no admitido o datos incompletos no queda firmado como generado. Los modelos sin corte no aparecen. En GET, `pendientes` compara el paquete realmente guardado: la descarga no lo renueva ni lo guarda.
+Nombres: `PEDIDO (plano).dwg|dxf`, `PEDIDO (con sacos).dxf`,
+`PEDIDO (trozo separado).dxf`. Con varias telas se añade `(CODIGO-ANCHO_MM)` para evitar colisiones,
+incluso cuando dos telas comparten código y tienen diferente ancho de rollo.
 
-La fase 3 debe usar esta función para activar la regla «sin corte no se manda a revisar», junto con el botón y sus ajustes. **La fase 2 no aplica esa restricción**, y sigue sin reservar PVC. Los casos fuera del alcance de la fase 1 conservan sus avisos y resolución manual.
+## Configuración
+
+Dos semillas en `src/config.js` y `.env.example`, persistidas también desde Configuración:
+
+| Variable | Campo guardado | Momento |
+| --- | --- | --- |
+| `CORTE_LONA_PLANO_DIRECTORY` | `corteLonaPlanoDirectory` | Guardar para revisión |
+| `CORTE_LONA_BOT_DIRECTORY` | `corteLonaBotDirectory` | Generar producción |
+
+Ambas son plantillas absolutas y admiten `{YYYY}` (año del pedido), `{PEDIDO}` y `{TECNICO}`.
+El técnico se limpia para que no pueda introducir subcarpetas. Una ruta vacía impide escribir
+ese tipo de archivo si el pedido tiene corte; no introduce ningún destino implícito del taller.
+
+**Destino documentado de pruebas para ambas:**
+`\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\DXF PRUEBAS WEB`.
+En Linux, su punto de montaje equivalente. Más adelante Iván puede configurar solo estas dos rutas:
+DXF a `maqcorte/BOT/Pendientes/{TECNICO}` y plano a la carpeta del pedido.
+**Nunca se configura BOT/Pendientes automáticamente.**
+
+`start-isolated.sh` fija las dos rutas en `$D/corte-planos` y `$D/corte-bot`,
+la raíz de oficina en `$D/oficina-lectura` y los temporales ODA en `$D/oda-temporales`.
+El fallo de lectura de OF de sacos usa el último bueno en memoria o 0230811 con un aviso legible.
+GET conserva la OF que firmó el técnico e informa de la actual si es distinta, sin marcarlo viejo.
 
 ## Verificación
 
-Pruebas de servidor: `src/corteLonaRoutes.test.js`, `src/corteLonaEstado.test.js`, `src/ofStockSacos.test.js` y `src/odaConverter.test.js`. Usan Express real con dependencias locales e inyectadas, sin arrancar `server.js` con el `.env` real. ODA se prueba con un ejecutable falso y, solo si existe, con el instalado en el PC.
-
-Prueba integrada, contra la instancia aislada de 4312:
+Pruebas de reglas/salidas en `src/corteLonaArchivos.test.js`, estado/rutas en
+`src/corteLonaEstado.test.js` y `src/corteLonaRoutes.test.js`, componente en
+`src/client/components/CorteLona.test.tsx`, plano completo en
+`src/domain/corteLona/planoOpciones.test.js`. ODA y stock mantienen sus pruebas propias.
 
 ```bash
-PORT=4312 FAKE_COORDINA_PORT=4322 ISOLATED_DIR=tmp/corte-lona-fase2 \
+PORT=4312 FAKE_COORDINA_PORT=4322 ISOLATED_DIR=tmp/corte-lona-fase3 \
   bash .claude/skills/running-toldos-testar/start-isolated.sh
-TOLDOS_ISOLATED_URL=http://127.0.0.1:4312 node scripts/test-corte-lona-servidor.mjs
+TOLDOS_ISOLATED_URL=http://127.0.0.1:4312 node scripts/test-corte-lona-fase3.mjs
 ```
 
-La prueba comprueba primero `/api/health` y solo guarda si hay simulación con escrituras de producción desactivadas. El script aislado fija la raíz de oficina y los temporales ODA dentro de `tmp/`. Detener la instancia al terminar. Para instalar ODA en Linux: [despliegue-oda.md](despliegue-oda.md).
+La prueba integrada es repetible: solo limpia sus tres pedidos y las dos carpetas del corte
+de esa aislada, después de comprobar las rutas de `tmp/`. Guarda capturas en
+`tmp/ui-audit/corte-lona/`. Detener la aislada al terminar.
+Instalación de ODA Linux: [despliegue-oda.md](despliegue-oda.md); solo Iván despliega.

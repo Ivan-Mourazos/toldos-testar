@@ -23,7 +23,7 @@ const HUECO_TIRA = 45;      // cm entre el cuerpo y la tira: caben las dos «VAR
 
 const coma = (v) => (Math.round(v * 10) / 10).toString().replace('.', ',');
 
-export function dibujarPlano(datos, corteRollo) {
+export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
   const L = [], P = [], T = [];   // en cm; se pasan a metros al final
   const linea = (capa, x1, y1, x2, y2) => L.push({ capa, x1, y1, x2, y2 });
   const rect = (capa, x0, y0, x1, y1) => P.push({ capa, puntos: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], cerrada: true });
@@ -175,21 +175,36 @@ export function dibujarPlano(datos, corteRollo) {
   // Con sacos de stock en la lona que sobra (Iván): van en el corte del plano y en el DXF.
   const colocadas = [...corteRollo.colocadas];
   const sacosStock = colocadas.filter((p) => p.saco);
-  const corte = dibujo(colocadas, anchoRollo * 10, { of: '', tela: '' });
   // Orillo de abajo del rollo, lejos de los toldos: la ventana del toldo es más alta que su dibujo
   // cuando hay varios toldos, y a 2 m se colaba el corte por abajo.
-  const yRollo = -3000 - anchoRollo;
-  for (const l of corte.lineas) linea(l.capa, l.x1 / 10, yRollo + l.y1 / 10, l.x2 / 10, yRollo + l.y2 / 10);
-  for (const t of corte.textos) {
-    if (t.valor.includes(' · OF ')) continue;
-    T.push({ ...t, capa: 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: Math.min(t.h / 10, 15) });
+  let yRollo = -3000 - anchoRollo;
+  const metros = mm => (mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 3 });
+  for (const [i, opcion] of [corteRollo, trozoSeparado].filter(Boolean).entries()) {
+    const corte = dibujo(opcion.colocadas, anchoRollo * 10, { of: '', tela: '' });
+    const largoTotal = Math.max(...opcion.colocadas.map(p => p.x + p.ancho)) / 10;
+    for (const l of corte.lineas) linea(l.capa, l.x1 / 10, yRollo + l.y1 / 10, l.x2 / 10, yRollo + l.y2 / 10);
+    for (const t of [...corte.textos, ...(opcion.textosExtra || [])]) {
+      if (t.valor.includes(' · OF ')) continue;
+      T.push({ ...t, capa: 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: Math.min(t.h / 10, 15) });
+    }
+    const titulo = i === 0 ? `OPCIÓN 1 · CON SACOS · ${metros(opcion.largo)} M`
+      : `OPCIÓN 2 · TROZO SEPARADO · ${metros(opcion.largo)} M + RESTOS ${metros(opcion.largoRestos)} M`;
+    texto(titulo, largoTotal / 2, yRollo + anchoRollo + 85, 14, 0, 'texto', largoTotal * 0.98);
+    const usadoOpcion = Math.max(...opcion.colocadas.map(p => p.y + p.hueco)) / 10;
+    cota('cotas', -20, yRollo, -20, yRollo + usadoOpcion, usadoOpcion, -10);
+    cota('cotas', 0, yRollo - 20, opcion.largo / 10, yRollo - 20, opcion.largo / 10, 0);
+    yRollo -= anchoRollo + 160;
   }
   const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;
   // Ancho real que ocupan las piezas, no el del rollo (Iván).
   const usado = Math.max(...colocadas.map((p) => p.y + p.hueco)) / 10;
-  cota('cotas', -20, yRollo, -20, yRollo + usado, usado, -10);
-  cota('cotas', 0, yRollo - 20, largoRollo, yRollo - 20, largoRollo, 0);
-  const zonaCorte = { x0: -45, y0: yRollo - 35, x1: largoRollo + 10, y1: yRollo + usado + 10 };
+  const puntosCorte = L.slice(desde.L).flatMap(l => [[l.x1, l.y1], [l.x2, l.y2]]);
+  for (const t of T.slice(desde.T)) {
+    const mitad = anchoArial(t.valor, t.h) / 2;
+    puntosCorte.push([t.x - (t.giro ? t.h : mitad), t.y - (t.giro ? mitad : t.h)], [t.x + (t.giro ? t.h : mitad), t.y + (t.giro ? mitad : t.h)]);
+  }
+  const zonaCorte = { x0: Math.min(...puntosCorte.map(p => p[0])) - 10, x1: Math.max(...puntosCorte.map(p => p[0])) + 10,
+    y0: Math.min(...puntosCorte.map(p => p[1])) - 10, y1: Math.max(...puntosCorte.map(p => p[1])) + 10 };
 
   // A metros y lejos del origen, en diagonal (Iván: no pegado a los ejes X e Y del CAD).
   const m = (v) => v / 100;

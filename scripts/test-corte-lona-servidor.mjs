@@ -52,9 +52,8 @@ const revisionVista = await (await get('/api/reviews/AR2604784/corte-lona')).jso
 assert.deepEqual(revisionVista.pendientes, []);
 assert.equal(revisionVista.cortes.conSacos[0].largo, 4850);
 const revisionDxf = await get(`/api/reviews/AR2604784/corte-lona/dxf?material=${encodeURIComponent(material)}&opcion=conSacos`);
-assert.equal(revisionDxf.status, 200);
-assert.deepEqual(Buffer.from(await revisionDxf.arrayBuffer()), contenidoDxf);
+assert.equal(revisionDxf.status, 404);
 const revisionPlano = await get(`/api/reviews/AR2604784/corte-lona/plano?material=${encodeURIComponent(material)}`);
-assert.equal(revisionPlano.status, 200);
-console.log('GET de revisión: JSON sin pendientes, DXF idéntico y plano descargable');
+assert.equal(revisionPlano.status, 404);
+console.log('GET de revisión: JSON sin pendientes, sin descargas para el revisor');
 console.log(`OF de sacos usada: ${vista.corteLona.ofStockSacos}; avisos: ${JSON.stringify(vista.avisos)}`);

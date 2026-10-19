@@ -173,7 +173,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
       <div className="orders-row-cells">
         <ChevronDown className="orders-chevron" aria-hidden="true" />
         <CodigoPedido codigo={review.orderCode} titulo="Abrir el pedido" onAbrir={onOpen} />
-        <span className="orders-customer">{review.summary.customer || 'Sin cliente'}</span>
+        <span className="orders-customer">{review.summary.customer || 'Sin cliente'}{'corteLonaEstado' in review && review.corteLonaEstado && <small className={`corte-lista is-${review.corteLonaEstado}`}>Corte: {review.corteLonaEstado === 'hecho' ? 'hecho' : review.corteLonaEstado === 'viejo' ? 'viejo' : 'falta'}</small>}</span>
         <ModelTags models={review.summary.models} producto={productoDe(review)} />
         <span className="orders-author">{author}{mine && <em className="orders-me">Tú</em>}</span>
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}

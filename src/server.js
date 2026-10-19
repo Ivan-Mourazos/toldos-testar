@@ -7,6 +7,7 @@ import { config } from './config.js';
 import { crearOdaConverter } from './odaConverter.js';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
+import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
 import { createCoordinaClient } from './coordinaStatus.js';
 import { awningLetter } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
@@ -85,6 +86,8 @@ const workflowStore = createWorkflowStore({
   settingsFile: config.workflowSettingsFile,
   defaults: defaultWorkflowSettings({
     fileWritesEnabled: config.fileWritesEnabled,
+    corteLonaBotDirectory: config.corteLonaBotDirectory,
+    corteLonaPlanoDirectory: config.corteLonaPlanoDirectory,
     exportDirectory: config.exportDirectory,
     orderArchiveRoot: config.orderArchiveRoot,
     reviewDirectory: config.reviewDirectory,
@@ -826,12 +829,15 @@ app.post('/api/reviews', async (req, res, next) => {
     const order = structuredClone({ ...rawOrder, orderCode, ...authorship });
     const calculation = await calculateConfiguredOrder(order);
     const review = createReviewPackage({ order, calculation, existing, corteLona: req.body?.corteLona });
+    exigirCorteAlDia(order, review.corteLona);
+    const planosCorte = await escribirPlanosCorte({ order, corteLona: review.corteLona, settings: await workflowStore.getSettings(), oda });
+    review.planosCorte = planosCorte;
     const pdf = await buildOrderReviewPdf({ order, calculation, review });
     const savedPath = await workflowStore.saveReview(review, pdf);
     // Pasado a revisión, su borrador sobra (diseño 01/10/2026). Si no se puede borrar, se apunta
     // y el pedido queda guardado igual.
     await borradores.borrarTrasRevision(orderCode, 'toldos');
-    res.json({ ok: true, review, savedPath, overwritten: Boolean(existing) });
+    res.json({ ok: true, review, savedPath, planosCorte, overwritten: Boolean(existing) });
   } catch (error) {
     next(error);
   }
@@ -910,6 +916,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
 
     const order = normalizeOrder(review.order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
+    exigirCorteAlDia(order, review.corteLona);
 
     // Solo se genera lo que CoordinaOT ha aprobado, OF por OF, preguntando en el momento.
     // Si CoordinaOT no responde, no se genera (diseño 29/09/2026, opción A).
@@ -957,6 +964,8 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       filename: `${cleanOrder}-1.pdf`,
       savedPath: path.join(pdfDirectory, `${cleanOrder}-1.pdf`)
     });
+    const archivosCorte = await prepararArchivosCorte({ order, corteLona: review.corteLona, settings, oda, tipo: 'bot' });
+    targets.push(...archivosCorte.files);
 
     await Promise.all(targets.map(async (target) => {
       if (target.build) target.contents = await target.build();
@@ -990,7 +999,10 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }) });
 
     await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
-    for (const target of targets) await writeFileAtomic(target.savedPath, target.contents);
+    for (const target of targets) {
+      await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
+      await writeFileAtomic(target.savedPath, target.contents);
+    }
 
     // Se guarda exactamente el mismo PDF en ambos destinos; solo cambia el
     // nombre: PEDIDO-1.pdf en Planteamientos y PEDIDO.pdf en la carpeta anual.

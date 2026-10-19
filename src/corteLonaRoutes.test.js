@@ -79,10 +79,11 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     getReview.mockResolvedValue({ ...revision, order, corteLona: preview.corteLona });
     const body = { order, ajustes, material: preview.cortes.conSacos[0].codigoTela, opcion: 'conSacos' };
     const directo = await post('/api/corte-lona/dxf', body);
-    const guardado = await fetch(url + `/api/reviews/AR2604784/corte-lona/dxf?material=${encodeURIComponent(body.material)}&opcion=conSacos`);
-    expect(await guardado.text()).toBe(await directo.text());
+    const guardado = await fetch(url + '/api/reviews/AR2604784/corte-lona');
+    expect((await guardado.json()).corteLona.ajustes[order.awnings[0].id].varillaArriba).toBe('VARILLA BLANCA PERSONALIZADA');
+    expect((await directo.text()).length).toBeGreaterThan(1000);
     expect(getReview).toHaveBeenCalledWith('AR2604784');
-    const plano = await fetch(url + '/api/reviews/AR2604784/corte-lona/plano');
+    const plano = await post('/api/corte-lona/plano', { order, ajustes });
     expect(await plano.text()).toContain('VARILLA BLANCA PERSONALIZADA');
     const separado = await post('/api/corte-lona/dxf', { order, material: body.material, opcion: 'trozoSeparado' });
     expect(separado.status).toBe(200);
@@ -97,7 +98,7 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     const otro = app.listen(0, '127.0.0.1');
     await new Promise((resolve) => otro.once('listening', resolve));
     try {
-      const respuesta = await fetch(`http://127.0.0.1:${otro.address().port}/api/reviews/AR2604784/corte-lona/plano`);
+      const respuesta = await fetch(`http://127.0.0.1:${otro.address().port}/api/corte-lona/plano`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order: revision.order }) });
       expect(respuesta.status).toBe(200);
       expect(respuesta.headers.get('content-disposition')).toContain('AR2604784 (plano).dwg');
       expect(await respuesta.text()).toBe('AC1032DWG FALSO');
@@ -153,6 +154,14 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     expect(vista.pendientes).toEqual([]);
     expect(vista.cortes.conSacos[0].sacos.every((s) => s.of === '1234567')).toBe(true);
     const dxf = await fetch(url + '/api/reviews/AR2604784/corte-lona/dxf?opcion=conSacos');
-    expect(await dxf.text()).toContain('1234567');
+    expect(dxf.status).toBe(404);
+  });
+  it('el revisor solo consulta la vista y el editor consulta firmas en el servidor', async () => {
+    expect((await fetch(url + '/api/reviews/AR2604784/corte-lona/plano')).status).toBe(404);
+    const vista = await (await post('/api/corte-lona', { order: revision.order })).json();
+    expect((await (await post('/api/corte-lona/estado', { order: revision.order, corteLona: vista.corteLona })).json()).pendientes).toEqual([]);
+    const order = structuredClone(revision.order);
+    order.awnings[0].width += 10;
+    expect((await (await post('/api/corte-lona/estado', { order, corteLona: vista.corteLona })).json()).pendientes[0].motivo).toBe('viejo');
   });
 });

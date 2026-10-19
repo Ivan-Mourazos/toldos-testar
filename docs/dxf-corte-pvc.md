@@ -170,6 +170,12 @@ Los primeros modelos sirven para fijar esa parte común. Los siguientes solo tie
 - **Reserva desde el corte: sí.** Cuando se reserve el PVC, la cantidad saldrá del largo del corte y no de la cuenta del acrílico. **Por ahora el PVC no se reserva**: la web ya deja fuera las telas no acrílicas al generar (`excludedNonAcrylicFabrics` en `src/server.js`), así que de momento la reserva no cambia.
 - **Quién genera el corte:** el técnico que hace el pedido, con un botón en el propio pedido (ajustes de corte incluidos). El corte se guarda con el pedido y el revisor revisa a la vez los datos de la web y el corte, sin pasos aparte.
 - **El corte es obligatorio para mandar a revisar** (Iván, 19/10/2026): si un pedido tiene toldos de modelos con corte, no se puede guardar para revisión sin el corte generado. Los modelos sin corte todavía no lo piden.
+- **Los pedidos pasan a revisión en CoordinaOT.** La regla del corte va en la web en dos puntos: al guardar para revisión y al generar, cuando CoordinaOT ya ha aprobado. En *Pedidos* se ve si el corte está hecho, falta o está viejo. CoordinaOT no se toca.
+- **El revisor no descarga nada** (Iván). Los ficheros se escriben en la carpeta compartida en dos momentos:
+  - **Al guardar para revisión:** solo el **plano DWG**, que es lo que revisa el revisor. **El DWG lleva todo** (Iván): el dibujo de los toldos y las dos opciones de corte de cada tela, una encima de otra y con su título. El DXF lleva solo el corte.
+  - **Al pasar a producción**, después de que CoordinaOT apruebe: los **DXF de corte** de las dos opciones, para el bot.
+
+  Mientras se prueba van a `Oficina Tecnica\DXF PRUEBAS WEB`. Más adelante, cambiando solo la configuración, el DXF irá a `maqcorte\BOT\Pendientes\<técnico>` y el plano a la carpeta del pedido.
 - **ODA File Converter en el servidor: sí.** Iván lo instala en el 192.168.0.90 con los pasos que le dé Claude (versión Linux: AppImage o .deb). Nadie más toca el servidor.
 
 ## Lo que falta

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import { OrderView } from '../views/OrderView';
+import { CorteLona } from './CorteLona';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { controlLabel } from './controlLabels';
 import { generateState } from '../generatePermission';
@@ -177,6 +178,8 @@ export function ReviewOrderDetail({
         />
       </div>
 
+      <CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode} />
+      {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
       {previewOpen && (
         <ReviewPlanteamientoPreview
           review={review}
@@ -203,6 +206,7 @@ function GeneratedFileLink({ review, file, index }: {
   file: NonNullable<ReviewPackage['production']>['files'][number];
   index: number;
 }) {
+  if (file.type === 'corte-lona') return <span className="review-generated-file chip-3d"><span><strong>{file.filename}</strong><small>DXF del corte · {file.savedPath}</small></span></span>;
   const isPdf = file.type === 'pdf';
   const href = `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${index}`;
   return (

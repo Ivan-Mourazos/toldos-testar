@@ -5,7 +5,9 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { calculateOrder } from './domain/rules.js';
 import { normalizeOrder } from './domain/validation.js';
 import { summarizeAwnings } from './domain/awningListSummary.js';
-import { copiarEstadoCorteLona } from './corteLonaEstado.js';
+import { copiarEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
+import { corteReadiness } from './domain/corteReadiness.js';
+import { resolveFabric } from './domain/fabricCatalog.js';
 
 export const REVIEW_FILE_SUFFIX = '.pdf';
 const LEGACY_REVIEW_FILE_SUFFIX = '.toldos.json';
@@ -18,6 +20,8 @@ export function defaultWorkflowSettings(seed = {}) {
   return {
     schemaVersion: 1,
     productionEnabled: Boolean(seed.fileWritesEnabled),
+    corteLonaBotDirectory: seed.corteLonaBotDirectory || '',
+    corteLonaPlanoDirectory: seed.corteLonaPlanoDirectory || '',
     reviewDirectory: seed.reviewDirectory || archiveTemplate,
     planteamientosDirectory: seed.planteamientosDirectory || archiveTemplate,
     rpsUploadDirectory: seed.rpsUploadDirectory || seed.exportDirectory || '',
@@ -33,6 +37,8 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   const settings = {
     schemaVersion: 1,
     productionEnabled: input?.productionEnabled === true,
+    corteLonaBotDirectory: cleanPath(input?.corteLonaBotDirectory ?? current.corteLonaBotDirectory),
+    corteLonaPlanoDirectory: cleanPath(input?.corteLonaPlanoDirectory ?? current.corteLonaPlanoDirectory),
     reviewDirectory: cleanPath(input?.reviewDirectory ?? current.reviewDirectory),
     planteamientosDirectory: cleanPath(input?.planteamientosDirectory ?? current.planteamientosDirectory),
     rpsUploadDirectory: cleanPath(input?.rpsUploadDirectory ?? current.rpsUploadDirectory),
@@ -44,6 +50,8 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   };
 
   for (const [label, value] of [
+    ['carpeta de DXF del corte', settings.corteLonaBotDirectory],
+    ['carpeta de planos del corte', settings.corteLonaPlanoDirectory],
     ['carpeta de revisión', settings.reviewDirectory],
     ['carpeta de planteamientos', settings.planteamientosDirectory],
     ['carpeta de subida de material', settings.rpsUploadDirectory],
@@ -89,6 +97,10 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
     ['planteamientosDirectory', 'Planteamientos generados', settings.planteamientosDirectory, 'write'],
     ['rpsUploadDirectory', 'Subida de material', settings.rpsUploadDirectory, 'write']
   ];
+  if (settings.productionEnabled) {
+    if (settings.corteLonaBotDirectory) definitions.push(['corteLonaBotDirectory', 'Corte de lona · DXF del bot', settings.corteLonaBotDirectory, 'write']);
+    if (settings.corteLonaPlanoDirectory) definitions.push(['corteLonaPlanoDirectory', 'Corte de lona · planos', settings.corteLonaPlanoDirectory, 'write']);
+  }
   if (settings.rpsPlanteamientosDirectory) {
     definitions.push(['rpsPlanteamientosDirectory', 'Histórico de planteamientos RPS', settings.rpsPlanteamientosDirectory, 'read']);
   }
@@ -109,7 +121,7 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
   }
   const directories = await Promise.all(definitions.map(async ([key, label, template, accessMode]) => {
     if (!template) return { key, label, path: '', ok: false, error: 'Falta indicar la ruta.' };
-    const directory = resolveDirectoryTemplate(template, year);
+    const directory = resolveDirectoryTemplate(template, year).replaceAll('{TECNICO}', 'COMPROBACION').replaceAll('{PEDIDO}', `AR${String(year).slice(-2)}00000`);
     const probePath = path.join(directory, `.toldos-write-check-${randomUUID()}.tmp`);
     let probeCreated = false;
     try {
@@ -237,6 +249,11 @@ export function reviewSummary(review) {
   // pedido guardado; si no se puede, la lista enseña solo los modelos.
   try {
     const order = normalizeOrder(review.order);
+    const requiereCorte = order.awnings.some(t => corteReadiness(t.model).ready && resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)');
+    if (requiereCorte) {
+      const pendientes = corteLonaPendiente(order, review.corteLona);
+      summary.corteLonaEstado = pendientes.some(p => p.motivo === 'viejo') ? 'viejo' : pendientes.length ? 'falta' : 'hecho';
+    }
     summary.summary = { ...summary.summary, awningList: summarizeAwnings(order, calculateOrder(order)) };
   } catch {
     // Pedido antiguo o incompleto: sin estados por toldo.

@@ -17,8 +17,9 @@ export function crearOfStockSacos({ oficinaTecnicaDirectory = '', oda }) {
       ultimoBueno = { of, fecha: stat.mtimeMs, tamano: stat.size };
       return { of, origen: 'dwg', avisos: [] };
     } catch (error) {
+      const motivo = error.message.includes('ODA') ? 'no se pudo convertir el dibujo con ODA' : 'el dibujo de stock no está disponible';
       return { of: ultimoBueno?.of || OF_STOCK_POR_DEFECTO, origen: ultimoBueno ? 'ultimoBueno' : 'defecto',
-        avisos: [`No se pudo leer la OF de los sacos (${error.message}). Se usa ${ultimoBueno ? 'la última OF leída' : 'la OF por defecto'}: ${ultimoBueno?.of || OF_STOCK_POR_DEFECTO}.`] };
+        avisos: [`No se pudo leer la OF de los sacos: ${motivo}. Se usa ${ultimoBueno ? 'la última OF leída' : 'la OF por defecto'}: ${ultimoBueno?.of || OF_STOCK_POR_DEFECTO}.`] };
     }
   }
   return () => {

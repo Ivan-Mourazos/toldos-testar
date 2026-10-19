@@ -41,6 +41,7 @@ export function SettingsView({
     && form.remolquesOficinaTecnicaDirectory === settings.remolquesOficinaTecnicaDirectory
     && form.remolquesRevisionDirectory === settings.remolquesRevisionDirectory
     && form.draftsDirectory === settings.draftsDirectory;
+  const cortesCoinciden = form.corteLonaBotDirectory === settings.corteLonaBotDirectory && form.corteLonaPlanoDirectory === settings.corteLonaPlanoDirectory;
 
   function updateForm(patch: Partial<WorkflowSettings>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -125,6 +126,8 @@ export function SettingsView({
       </div>
 
       <div className="workflow-route-grid">
+        <RouteField step="C1" title="Corte de lona · planos" description="Al guardar para revisión: plano DWG (DXF si falta ODA). Durante las pruebas: Oficina Tecnica/DXF PRUEBAS WEB. Admite {YYYY}, {PEDIDO} y {TECNICO}." value={form.corteLonaPlanoDirectory || ''} onChange={(corteLonaPlanoDirectory) => updateForm({ corteLonaPlanoDirectory })} placeholder="/mnt/oftecnica/Oficina Tecnica/DXF PRUEBAS WEB" />
+        <RouteField step="C2" title="Corte de lona · DXF del bot" description="Al generar producción: las dos opciones por tela. Durante las pruebas: Oficina Tecnica/DXF PRUEBAS WEB. El destino BOT/Pendientes/{TECNICO} solo lo configurará Iván." value={form.corteLonaBotDirectory || ''} onChange={(corteLonaBotDirectory) => updateForm({ corteLonaBotDirectory })} placeholder="/mnt/oftecnica/Oficina Tecnica/DXF PRUEBAS WEB" />
         <RouteField
           step="01"
           title="Pedidos para revisión"
@@ -238,7 +241,7 @@ export function SettingsView({
                 ? 'Hay carpetas que no están accesibles'
                 : !formIsConfigured
                   ? missingText
-                  : !formMatchesSaved
+                  : !formMatchesSaved || !cortesCoinciden
                     ? 'Cambios sin guardar · se comprueban al guardar'
                     : readiness.productionReady
                       ? 'Rutas guardadas'

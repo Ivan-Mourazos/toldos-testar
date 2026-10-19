@@ -26,6 +26,7 @@ import { incompleteAwningLines } from './incompleteAwnings';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
+import { CorteLona } from './components/CorteLona';
 import { ParametersView, type VistaRemolques } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
 import { ParametersSaveBar } from './components/ParametersSaveBar';
@@ -404,7 +405,7 @@ export default function App() {
       });
       if (choice !== 'confirm') return;
     }
-    draft.loadOrder(review.order);
+    draft.loadOrder({ ...review.order, corteLona: review.corteLona });
     setAutofill(null);
     setCorrigiendo(review.orderCode);
     setReturnNote(review.status === 'CHANGES_REQUESTED' && review.reviewNote
@@ -507,7 +508,7 @@ export default function App() {
       const response = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: currentOrderPayload(), confirmOverwrite, savedBy: currentUser })
+        body: JSON.stringify({ order: currentOrderPayload(), corteLona: draft.corteLona, confirmOverwrite, savedBy: currentUser })
       });
       const data = await response.json();
       if (response.status === 409 && data.needsConfirmation) {
@@ -532,7 +533,8 @@ export default function App() {
       draft.resetDraft();
       setAutofill(null);
       ruleSettings.restoreParameters();
-      notify(`Guardado en Pedidos para revisión: ${data.review.orderCode}.pdf`, { tone: 'success', title: 'Guardado para revisión' });
+      const planos = data.planosCorte?.files?.map((f: { savedPath: string }) => f.savedPath) || [];
+      notify(`Guardado en Pedidos para revisión: ${data.review.orderCode}.pdf${planos.length ? `. Plano del corte: ${planos.join(' · ')}` : ''}${data.planosCorte?.avisos?.length ? `. ${data.planosCorte.avisos.join(' ')}` : ''}`, { tone: 'success', title: 'Guardado para revisión' });
     } catch {
       notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
     } finally {
@@ -764,6 +766,7 @@ export default function App() {
                 onConfirm={askForConfirmation}
                 onNotify={notify}
               />
+              <CorteLona order={currentOrderPayload()} estado={draft.corteLona} onGenerated={draft.setCorteLona} />
             </fieldset>
           )}
 

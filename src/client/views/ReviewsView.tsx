@@ -250,7 +250,8 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
           return;
         }
         const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
-        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} Excel de reserva.`, {
+        const cortes = (data.saved || []).filter((file: { type: string }) => file.type === 'corte-lona');
+        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} Excel de reserva.${cortes.length ? ` DXF del corte: ${cortes.map((f: { savedPath: string }) => f.savedPath).join(' · ')}` : ''}`, {
           tone: 'success',
           title: 'Archivos generados'
         });

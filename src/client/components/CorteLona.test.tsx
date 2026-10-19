@@ -1,0 +1,40 @@
+import React from 'react';
+import { describe, expect, it } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { CorteLona, CorteLonaVista, DibujoCorte } from './CorteLona';
+import { textoEstadoCorte } from '../corteLona';
+import { defaultDraft } from '../hooks/useDraft';
+import { createAwning } from '../constants';
+import type { CorteRespuesta, VistaCorte } from '../corteLona';
+
+const corte: VistaCorte = { idMaterial: 'PVC|2500', codigoTela: 'PVC', material: 'PVC verde', anchoRollo: 2500, largo: 4875,
+  piezas: [{ letra: 'A', piezas: [{ nombre: 'A', largo: 4875, alto: 1900 }] }], sacos: [],
+  dibujo: { lineas: [{ capa: 'DISCO1', x1: 0, x2: 4875, y1: 0, y2: 0 }, { capa: 'ROTULADOR', x1: 0, x2: 4875, y1: 70, y2: 70 }], textos: [{ x: 40, y: 40, h: 100, valor: 'REVÉS' }] } };
+const vista: CorteRespuesta = { corteLona: null, pendientes: [], avisos: ['Toldo B: bamba con onda.'], cortes: { conSacos: [corte], trozoSeparado: null } };
+describe('Vista compartida del corte de lona', () => {
+  it('solo ofrece la sección para PVC de modelos con corte e informa del estado', () => {
+    const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA' }] };
+    const html = renderToStaticMarkup(<CorteLona order={order} />);
+    expect(html).toContain('Falta generar el corte');
+    expect(html).toContain('Generar corte');
+    expect(renderToStaticMarkup(<CorteLona order={{ ...order, fabric: 'ACRILI2018P120' }} />)).toBe('');
+    expect(renderToStaticMarkup(<CorteLona order={{ ...order, awnings: [{ ...order.awnings[0], model: 'HERA' }] }} />)).toBe('');
+    expect(textoEstadoCorte('hecho')).toBe('Corte al día');
+    expect(textoEstadoCorte('viejo')).toContain('han cambiado las medidas');
+    expect(renderToStaticMarkup(<CorteLona order={order} reviewCode="AR2604784" />)).not.toContain('<button');
+  });
+  it('muestra largos con coma, piezas, sacos y avisos en lectura sin descargas', () => {
+    const html = renderToStaticMarkup(<CorteLonaVista datos={vista} />);
+    for (const texto of ['4,875', 'PVC verde', 'Con sacos', 'Toldo A', 'Sacos', 'bamba con onda', 'REVÉS']) expect(html).toContain(texto);
+    expect(html).not.toMatch(/download|Descargar/);
+  });
+  it('pinta las dos capas y distingue el trozo separado del rollo principal', () => {
+    const html = renderToStaticMarkup(<CorteLonaVista datos={{ ...vista, cortes: { conSacos: [corte], trozoSeparado: [{ ...corte, largoRestos: 1250 }] } }} />);
+    expect(html).toContain('Trozo separado');
+    expect(html).toContain('1,25');
+    expect(html).toContain('aparte');
+    const svg = renderToStaticMarkup(<DibujoCorte corte={corte} />);
+    expect(svg).toContain('DISCO1');
+    expect(svg).toContain('ROTULADOR');
+  });
+});

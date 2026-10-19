@@ -76,8 +76,12 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
   };
   for (const [sufijo, tipo] of [['', 'json'], ['/dxf', 'dxf'], ['/plano', 'plano']]) {
     app.post(`/api/corte-lona${sufijo}`, handler(tipo));
-    app.get(`/api/reviews/:orderCode/corte-lona${sufijo}`, handler(tipo, true));
   }
+  app.get('/api/reviews/:orderCode/corte-lona', handler('json', true));
+  app.post('/api/corte-lona/estado', (req, res, next) => {
+    try { res.json({ pendientes: corteLonaPendiente(req.body?.order, req.body?.corteLona) }); }
+    catch (error) { next(error); }
+  });
 }
 
 function idMaterial(item) { return `${item.codigoTela}|${item.anchoRollo ?? ''}`; }

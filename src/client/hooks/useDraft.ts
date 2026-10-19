@@ -229,6 +229,7 @@ export function migrateLegacyDraft(saved: Record<string, unknown> | null): Draft
   const awnings = Array.isArray(saved.awnings) ? (saved.awnings as Record<string, unknown>[]) : [];
   return {
     ...fallback,
+    corteLona: (saved.corteLona as DraftState['corteLona']) || null,
     orderCode: (saved.orderCode as string) || fallback.orderCode,
     customer: (saved.customer as string) || fallback.customer,
     orderDate: (saved.orderDate as string) || fallback.orderDate,
@@ -328,13 +329,14 @@ export function useDraft() {
   const [rotTela, setRotTela] = useState(initialDraft.rotTela);
   const [rotBamba, setRotBamba] = useState(initialDraft.rotBamba);
   const [notes, setNotes] = useState(initialDraft.notes);
+  const [corteLona, setCorteLona] = useState<DraftState['corteLona']>(initialDraft.corteLona || null);
   const [awnings, setAwnings] = useState<Awning[]>(initialDraft.awnings);
   const [fabricProposals, setFabricProposals] = useState<FabricProposal[]>(initialDraft.fabricProposals ?? []);
   const [confirmedFabricProposals, setConfirmedFabricProposals] = useState<number[]>(initialDraft.confirmedFabricProposals ?? []);
 
   useEffect(() => {
-    writeStoredDraft({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals });
-  }, [orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals]);
+    writeStoredDraft({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona });
+  }, [orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona]);
 
   function confirmFabricProposal(index: number) {
     setConfirmedFabricProposals((current) => current.includes(index) ? current : [...current, index]);
@@ -391,6 +393,7 @@ export function useDraft() {
   }
 
   function loadOrder(entry: DraftState) {
+    setCorteLona(entry.corteLona || null);
     const fallback = defaultDraft();
     setOrderCode(entry.orderCode);
     setCustomer(entry.customer);
@@ -413,6 +416,7 @@ export function useDraft() {
   }
 
   function resetDraft() {
+    setCorteLona(null);
     const clean = defaultDraft();
     clearStoredDrafts();
     setOrderCode(clean.orderCode);
@@ -435,6 +439,7 @@ export function useDraft() {
 
   return {
     orderCode, setOrderCode,
+    corteLona, setCorteLona,
     customer, setCustomer,
     orderDate, setOrderDate,
     technician, setTechnician,
