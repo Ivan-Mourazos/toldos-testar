@@ -169,6 +169,7 @@ Los primeros modelos sirven para fijar esa parte común. Los siguientes solo tie
 
 - **Reserva desde el corte: sí.** Cuando se reserve el PVC, la cantidad saldrá del largo del corte y no de la cuenta del acrílico. **Por ahora el PVC no se reserva**: la web ya deja fuera las telas no acrílicas al generar (`excludedNonAcrylicFabrics` en `src/server.js`), así que de momento la reserva no cambia.
 - **Quién genera el corte:** el técnico que hace el pedido, con un botón en el propio pedido (ajustes de corte incluidos). El corte se guarda con el pedido y el revisor revisa a la vez los datos de la web y el corte, sin pasos aparte.
+- **El corte es obligatorio para mandar a revisar** (Iván, 19/10/2026): si un pedido tiene toldos de modelos con corte, no se puede guardar para revisión sin el corte generado. Los modelos sin corte todavía no lo piden.
 - **ODA File Converter en el servidor: sí.** Iván lo instala en el 192.168.0.90 con los pasos que le dé Claude (versión Linux: AppImage o .deb). Nadie más toca el servidor.
 
 ## Lo que falta

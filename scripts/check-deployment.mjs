@@ -3,6 +3,7 @@ import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { comprobarOda } from '../src/odaConverter.js';
 import { comprobarCarpetaBorradores, comprobarCarpetaInternaRemolques, comprobarCarpetasRemolques, comprobarChromium } from './lib/deploy-remolques.mjs';
 
 // 22.18: desde la pantalla de remolques, `node src/server.js` importa ficheros .ts (materiales,
@@ -35,6 +36,8 @@ const EFFECTIVE_ENV_KEYS = [
   'WORKFLOW_SETTINGS_FILE',
   'COORDINA_URL',
   'COORDINA_CLAVE',
+  'ODA_FILE_CONVERTER',
+  'ODA_TEMP_DIRECTORY',
   ...DATABASE_KEYS
 ];
 
@@ -270,6 +273,10 @@ async function checkEnvironment() {
   checkNetworkEnvironment(effectiveValues);
   checkDatabaseEnvironment(effectiveValues);
   checkCoordinaEnvironment(effectiveValues);
+  const oda = await comprobarOda({ executable: unquote(effectiveValues.get('ODA_FILE_CONVERTER')),
+    tempRoot: unquote(effectiveValues.get('ODA_TEMP_DIRECTORY')) || undefined });
+  if (oda.ok) pass(oda.mensaje);
+  else warn(oda.aviso);
   await checkWorkflowEnvironment(effectiveValues);
   await checkEnvironmentPermissions(environmentFile);
 }

@@ -22,6 +22,9 @@ export ORDER_ARCHIVE_ROOT="$D/archive" RPS_PLANTEAMIENTOS_DIRECTORY="$D/rpsplan"
 export REMOLQUES_PLANTEAMIENTOS_DIRECTORY="$D/rem-plan" REMOLQUES_OFICINA_TECNICA_DIRECTORY="$D/rem-oficina/{YYYY}"
 export REMOLQUES_REVISION_DIRECTORY="$D/rem-revision"
 export DRAFTS_DIRECTORY="$D/borradores"
+# Corte de lona: nunca heredar la carpeta de la oficina desde el .env real.
+export OFICINA_TECNICA_DIRECTORY="$D/oficina-lectura"
+export ODA_TEMP_DIRECTORY="$D/oda-temporales"
 # CoordinaOT simulado (scripts/fake-coordina.mjs): la aislada nunca pregunta al real.
 export FAKE_COORDINA_PORT="${FAKE_COORDINA_PORT:-4320}"
 export COORDINA_URL="http://127.0.0.1:$FAKE_COORDINA_PORT" COORDINA_CLAVE="clave-de-prueba"

@@ -4,6 +4,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
+import { crearOdaConverter } from './odaConverter.js';
+import { crearOfStockSacos } from './ofStockSacos.js';
+import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { createCoordinaClient } from './coordinaStatus.js';
 import { awningLetter } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
@@ -182,6 +185,10 @@ app.use('/api', (req, _res, next) => {
 });
 
 app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
+
+const oda = crearOdaConverter({ executable: config.odaFileConverter });
+registrarRutasCorteLona(app, { workflowStore, oda,
+  ofStockSacos: crearOfStockSacos({ oficinaTecnicaDirectory: config.oficinaTecnicaDirectory, oda }) });
 
 app.get('/api/health', async (_req, res, next) => {
   try {
@@ -818,7 +825,7 @@ app.post('/api/reviews', async (req, res, next) => {
     });
     const order = structuredClone({ ...rawOrder, orderCode, ...authorship });
     const calculation = await calculateConfiguredOrder(order);
-    const review = createReviewPackage({ order, calculation, existing });
+    const review = createReviewPackage({ order, calculation, existing, corteLona: req.body?.corteLona });
     const pdf = await buildOrderReviewPdf({ order, calculation, review });
     const savedPath = await workflowStore.saveReview(review, pdf);
     // Pasado a revisión, su borrador sobra (diseño 01/10/2026). Si no se puede borrar, se apunta

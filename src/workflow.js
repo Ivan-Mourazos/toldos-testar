@@ -5,6 +5,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { calculateOrder } from './domain/rules.js';
 import { normalizeOrder } from './domain/validation.js';
 import { summarizeAwnings } from './domain/awningListSummary.js';
+import { copiarEstadoCorteLona } from './corteLonaEstado.js';
 
 export const REVIEW_FILE_SUFFIX = '.pdf';
 const LEGACY_REVIEW_FILE_SUFFIX = '.toldos.json';
@@ -198,7 +199,7 @@ export function reviewFilename(orderCode) {
   return `${sanitizeOrderCode(orderCode)}${REVIEW_FILE_SUFFIX}`;
 }
 
-export function createReviewPackage({ order, calculation, existing = null, now = new Date().toISOString() }) {
+export function createReviewPackage({ order, calculation, existing = null, corteLona, now = new Date().toISOString() }) {
   const orderCode = sanitizeOrderCode(order.orderCode);
   const ofs = Array.from(new Set(calculation.ofs.map((item) => item.of).filter(Boolean)));
   const models = Array.from(new Set(order.awnings.map((item) => item.model).filter(Boolean)));
@@ -214,6 +215,7 @@ export function createReviewPackage({ order, calculation, existing = null, now =
     reviewedBy: '',
     reviewNote: '',
     production: null,
+    corteLona: copiarEstadoCorteLona(corteLona === undefined ? existing?.corteLona : corteLona),
     summary: {
       customer: order.customer || '',
       orderDate: order.orderDate || '',

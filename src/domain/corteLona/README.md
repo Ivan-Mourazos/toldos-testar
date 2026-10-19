@@ -51,6 +51,8 @@ con aviso; bamba de otra tela permite cortar solo el cuerpo PVC y deja aviso.
 No se inventan curvas, ventanas ni remates especiales. Quedan pendientes las cotas
 nativas de AutoCAD y la numeración de uniones para soldar descritas en el estudio.
 
-La fase 2 añadirá servidor, guardado junto al pedido, descarga, ajustes en pantalla,
-revisión y conversión con ODA. La OF de stock debe venir del servidor; este módulo
-no consulta el DWG de stock, red, Excel, RPS ni ODA.
+La fase 2 añade las rutas del servidor, el estado guardado en la revisión y ODA.
+El contrato está en [corte-lona-servidor.md](../../../docs/corte-lona-servidor.md).
+La pantalla y el bloqueo de revisión sin corte corresponden a la fase 3.
+La OF de stock viene del servidor; este módulo no consulta el DWG de stock,
+red, Excel, RPS ni ODA.

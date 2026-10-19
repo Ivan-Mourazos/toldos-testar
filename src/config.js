@@ -24,6 +24,9 @@ export const config = {
   host: process.env.HOST || '127.0.0.1',
   port: numberFromEnv('PORT', 4400),
   fileWritesEnabled: booleanFromEnv('ENABLE_FILE_WRITES'),
+  odaFileConverter: process.env.ODA_FILE_CONVERTER || '',
+  // Raíz sin año; solo se lee AUTOCAD/MATERIAL PARA STOCK.dwg.
+  oficinaTecnicaDirectory: process.env.OFICINA_TECNICA_DIRECTORY || '',
   heraEnabled: booleanFromEnv('ENABLE_HERA', !isProduction),
   legacyExportsEnabled: booleanFromEnv('ENABLE_LEGACY_EXPORTS', !isProduction),
   exportDirectory: process.env.EXPORT_DIRECTORY || '',
