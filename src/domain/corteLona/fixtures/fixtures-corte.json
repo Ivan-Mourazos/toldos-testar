@@ -1,0 +1,1200 @@
+[
+ {
+  "pedido": "AR2602743",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0229151",
+    "cambioTela": false,
+    "frenteTela": 387,
+    "caidaTela": 220,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 3870,
+       "alto": 1900,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 3910,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 3910,
+   "giradas": [],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2602670",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0229109",
+    "cambioTela": false,
+    "frenteTela": 484,
+    "caidaTela": 245,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 4840,
+       "alto": 2150,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 4880,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 4880,
+   "giradas": [],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2502093",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0216192",
+    "cambioTela": true,
+    "frenteTela": 389,
+    "caidaTela": 420,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 3980,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 3980,
+       "alto": 1420,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 3930,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 7960,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "125X78",
+     "largo": 1250,
+     "ancho": 780
+    },
+    {
+     "medida": "125X78",
+     "largo": 1250,
+     "ancho": 780
+    },
+    {
+     "medida": "125X78",
+     "largo": 1250,
+     "ancho": 780
+    }
+   ]
+  }
+ },
+ {
+  "pedido": "AR2602119",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0228065",
+    "cambioTela": false,
+    "frenteTela": 675,
+    "caidaTela": 370,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 6840,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 6840,
+       "alto": 920,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 6790,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 13680,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "125X225",
+     "largo": 2250,
+     "ancho": 1250
+    },
+    {
+     "medida": "125X225",
+     "largo": 2250,
+     "ancho": 1250
+    },
+    {
+     "medida": "125X225",
+     "largo": 2250,
+     "ancho": 1250
+    }
+   ]
+  }
+ },
+ {
+  "pedido": "AR2505700",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0222604",
+    "cambioTela": false,
+    "frenteTela": 502,
+    "caidaTela": 370,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 2
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 5110,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 5110,
+       "alto": 920,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 5060,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 15330,
+   "giradas": [],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2502068",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0216162",
+    "cambioTela": true,
+    "frenteTela": 659,
+    "caidaTela": 345,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 6680,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 6680,
+       "alto": 670,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 6630,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 13360,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    },
+    {
+     "medida": "125X76",
+     "largo": 1250,
+     "ancho": 760
+    }
+   ]
+  }
+ },
+ {
+  "pedido": "AR2505157",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0221590",
+    "cambioTela": false,
+    "frenteTela": 417,
+    "caidaTela": 320,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 4260,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 4260,
+       "alto": 420,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 4210,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 8520,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "125X165",
+     "largo": 1250,
+     "ancho": 1650
+    },
+    {
+     "medida": "125X165",
+     "largo": 1250,
+     "ancho": 1650
+    },
+    {
+     "medida": "125X165",
+     "largo": 1250,
+     "ancho": 1650
+    }
+   ]
+  }
+ },
+ {
+  "pedido": "AR2505538",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0222304",
+    "cambioTela": false,
+    "frenteTela": 398,
+    "caidaTela": 235,
+    "bamba": 15,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 3980,
+       "alto": 2150,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 4020,
+       "alto": 200,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 4020,
+   "giradas": [],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2602355",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0228468",
+    "cambioTela": true,
+    "frenteTela": 287,
+    "caidaTela": 240,
+    "bamba": 20,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 2870,
+       "alto": 2150,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 2910,
+       "alto": 250,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 2910,
+   "giradas": [],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2501462",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0215102",
+    "cambioTela": false,
+    "frenteTela": 461,
+    "caidaTela": 420,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 4700,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 4700,
+       "alto": 1420,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 4650,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 9400,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "117X78",
+     "largo": 1170,
+     "ancho": 780
+    },
+    {
+     "medida": "117X78",
+     "largo": 1170,
+     "ancho": 780
+    },
+    {
+     "medida": "117X78",
+     "largo": 1170,
+     "ancho": 780
+    },
+    {
+     "medida": "117X78",
+     "largo": 1170,
+     "ancho": 780
+    }
+   ]
+  }
+ },
+ {
+  "pedido": "AR2500851",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0213899",
+    "cambioTela": true,
+    "frenteTela": 385.5,
+    "caidaTela": 420,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 3945,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 3945,
+       "alto": 1420,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 3895,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 7890,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "125X78",
+     "largo": 1250,
+     "ancho": 780
+    },
+    {
+     "medida": "125X78",
+     "largo": 1250,
+     "ancho": 780
+    },
+    {
+     "medida": "125X78",
+     "largo": 1250,
+     "ancho": 780
+    }
+   ]
+  }
+ },
+ {
+  "pedido": "AR2500850",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0213898",
+    "cambioTela": true,
+    "frenteTela": 242.5,
+    "caidaTela": 220,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 2425,
+       "alto": 1900,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 2465,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 2200,
+   "giradas": [
+    "A",
+    "A BAMBA"
+   ],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2505753",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0222702",
+    "cambioTela": true,
+    "frenteTela": 303,
+    "caidaTela": 270,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   },
+   {
+    "letra": "B",
+    "of": "0222702",
+    "cambioTela": true,
+    "frenteTela": 233,
+    "caidaTela": 270,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 3030,
+       "alto": 2400,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 3070,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    },
+    {
+     "letra": "B",
+     "piezas": [
+      {
+       "nombre": "B",
+       "largo": 2330,
+       "alto": 2400,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "B BAMBA",
+       "largo": 2370,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 8430,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "125X165",
+     "largo": 1250,
+     "ancho": 1650
+    },
+    {
+     "medida": "125X165",
+     "largo": 1250,
+     "ancho": 1650
+    }
+   ]
+  }
+ },
+ {
+  "pedido": "AR2405992",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0210344",
+    "cambioTela": false,
+    "frenteTela": 237,
+    "caidaTela": 257,
+    "bamba": 12,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 2370,
+       "alto": 2400,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 2410,
+       "alto": 170,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 2540,
+   "giradas": [
+    "A BAMBA"
+   ],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2604784",
+  "origen": "web",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0232568",
+    "cambioTela": false,
+    "frenteTela": 481,
+    "caidaTela": 205,
+    "bamba": 10,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A",
+       "largo": 4810,
+       "alto": 1900,
+       "marcas": [
+        "abajo",
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 4850,
+       "alto": 150,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 4850,
+   "giradas": [],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2500481",
+  "origen": "excel",
+  "verticales": [
+   "A"
+  ],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0213265",
+    "cambioTela": false,
+    "frenteTela": 705.8,
+    "caidaTela": 420,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 2419.3,
+       "alto": 3900,
+       "marcas": [
+        "arriba",
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 2419.3,
+       "alto": 3900,
+       "marcas": [
+        "arriba",
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A3",
+       "largo": 2419.3,
+       "alto": 3900,
+       "marcas": [
+        "arriba",
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A BAMBA 1",
+       "largo": 2379.3,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      },
+      {
+       "nombre": "A BAMBA 2",
+       "largo": 2379.3,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      },
+      {
+       "nombre": "A BAMBA 3",
+       "largo": 2379.3,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 12600,
+   "giradas": [
+    "A BAMBA 1",
+    "A BAMBA 2",
+    "A BAMBA 3",
+    "A1",
+    "A2",
+    "A3"
+   ],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2604097",
+  "origen": "excel",
+  "verticales": [
+   "A"
+  ],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0231473",
+    "cambioTela": false,
+    "frenteTela": 405,
+    "caidaTela": 295,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 2115,
+       "alto": 2650,
+       "marcas": [
+        "arriba",
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 2115,
+       "alto": 2650,
+       "marcas": [
+        "arriba",
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A BAMBA 1",
+       "largo": 2055,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      },
+      {
+       "nombre": "A BAMBA 2",
+       "largo": 2055,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 5300,
+   "giradas": [
+    "A1",
+    "A2"
+   ],
+   "sacos": []
+  }
+ },
+ {
+  "pedido": "AR2600762",
+  "origen": "excel",
+  "verticales": [],
+  "toldos": [
+   {
+    "letra": "A",
+    "of": "0225534",
+    "cambioTela": false,
+    "frenteTela": 597,
+    "caidaTela": 395,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   },
+   {
+    "letra": "B",
+    "of": "0225534",
+    "cambioTela": false,
+    "frenteTela": 577,
+    "caidaTela": 395,
+    "bamba": 25,
+    "anchoRollo": 250,
+    "unidades": 1
+   }
+  ],
+  "esperado": {
+   "piezas": [
+    {
+     "letra": "A",
+     "piezas": [
+      {
+       "nombre": "A1",
+       "largo": 6060,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "A2",
+       "largo": 6060,
+       "alto": 1170,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "A BAMBA",
+       "largo": 6010,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    },
+    {
+     "letra": "B",
+     "piezas": [
+      {
+       "nombre": "B1",
+       "largo": 5860,
+       "alto": 2500,
+       "marcas": [
+        "abajo"
+       ]
+      },
+      {
+       "nombre": "B2",
+       "largo": 5860,
+       "alto": 1170,
+       "marcas": [
+        "arriba"
+       ]
+      },
+      {
+       "nombre": "B BAMBA",
+       "largo": 5810,
+       "alto": 300,
+       "marcas": [
+        "tira"
+       ]
+      }
+     ]
+    }
+   ],
+   "largoRolloMm": 23840,
+   "giradas": [],
+   "sacos": [
+    {
+     "medida": "125X115",
+     "largo": 1150,
+     "ancho": 1250
+    },
+    {
+     "medida": "125X115",
+     "largo": 1150,
+     "ancho": 1250
+    },
+    {
+     "medida": "125X115",
+     "largo": 1150,
+     "ancho": 1250
+    },
+    {
+     "medida": "125X115",
+     "largo": 1150,
+     "ancho": 1250
+    },
+    {
+     "medida": "125X115",
+     "largo": 1150,
+     "ancho": 1250
+    }
+   ]
+  }
+ }
+]

@@ -69,3 +69,16 @@ A 1280×720 y 1600, con el caso AR2603380 (OF 0230335): válido, sin errores ni 
 | Q-G01 | Máquina MB-11 L-120 (32 OF) o Geiger 1.13 L-140 (17 OF): ¿de qué depende? | MB-11 |
 | Q-G02 | **Resuelta (taller, 30/09/2026):** depende de los brazos y de la salida, como en la tarifa del Monoblock | Hecho: tabla de motores del Monoblock 350 (55/17 con dos brazos, 70/17 con tres); otro con el candado |
 | Q-G03 | La ficha permite 8 m con tres brazos y hay 10 OF con tubo de 800, pero la barra más larga es de 700. **Iván (25/09/2026): sí se empalma** (hecho: hasta 8 m, con empalme como en el Monoblock 350). **Taller (30/09/2026): con tres brazos y 3,50 de salida sí se hace** | Máximo 800 (empalme desde 7 m); tres brazos hasta 3,50 sin aviso |
+
+
+## Corte de lona PVC · fase 1 (19/10/2026)
+
+- Marca de corte en `src/domain/corteReadiness.js`; despiece del modelo en
+  `src/domain/corteLona/despiece.js`. Reglas, medidas y fuentes en
+  [el estudio de corte](../dxf-corte-pvc.md); contrato en
+  [el módulo](../../src/domain/corteLona/README.md).
+- Bamba recta, empates horizontales por defecto y verticales solo por ajuste;
+  colocación y sacos de stock contrastados con 18 pedidos. Sin cambios en reservas.
+- Pendientes: bamba con onda y ventanas (corte manual con aviso), cotas nativas
+  de AutoCAD y numeración de uniones. La bamba de otra tela queda fuera del corte
+  del cuerpo, con aviso. No hay nuevas medidas decididas sin evidencia.

@@ -75,3 +75,16 @@ A 1280×720 y 1600, con AR2603393 (OF 0230266: 695 × 275, 3 brazos, techo, máq
 | Q-M03 | Frentes de 720 a 725: el almacén usó una barra de 700 aunque el corte pasa de 700. ¿Hasta dónde vale una sola? Por encima, ¿cómo se empalma? Iván (25/09/2026): revisar pedidos pasados. Revisados (libros 2025-2026 cruzados con el consumo, `tmp/cofres/anchos.mjs "MONOB"`): en los cuatro de 720 y 725 se imputó una sola barra (700, 700, 600 y 600) y ningún retal; desde 800, dos barras iguales. No se ve cómo se completa el corte de 709-715: pasa al taller | Una hasta 725; después, barras iguales |
 | Q-M04 | **Resuelta (Iván, 25/09/2026):** la barra Univers se descuenta 1 cm menos que la EVO, porque la EVO lleva tapas más grandes | Hecho: descuento de la EVO − 1 cm (también en Parámetros y en la excepción técnica) |
 | Q-A04, Q-A06, Q-G01, Q-PR02 | Lado del suelto, largo de stock, máquina MB-11 o Geiger, casquillo de eje 50 o 63 | Derecho, 600/700, MB-11, eje 50 |
+
+
+## Corte de lona PVC · fase 1 (19/10/2026)
+
+- Marca de corte en `src/domain/corteReadiness.js`; despiece del modelo en
+  `src/domain/corteLona/despiece.js`. Reglas, medidas y fuentes en
+  [el estudio de corte](../dxf-corte-pvc.md); contrato en
+  [el módulo](../../src/domain/corteLona/README.md).
+- Bamba recta, empates horizontales por defecto y verticales solo por ajuste;
+  colocación y sacos de stock contrastados con 18 pedidos. Sin cambios en reservas.
+- Pendientes: bamba con onda y ventanas (corte manual con aviso), cotas nativas
+  de AutoCAD y numeración de uniones. La bamba de otra tela queda fuera del corte
+  del cuerpo, con aviso. No hay nuevas medidas decididas sin evidencia.

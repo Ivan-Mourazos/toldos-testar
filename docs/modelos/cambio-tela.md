@@ -101,3 +101,16 @@ Retirado el 25/09/2026 (Iván: no se tratan pedidos antiguos): avisar a OT de la
 
 - Cerrado para su alcance: medidas, reserva y formulario verificados contra 917 trabajos reales de 2025 y 2026, sin diferencias sin explicar.
 - Terminado: Iván revisó la muestra del PDF el 22/09 (solo pidió el total ya sumado) y las dudas están resueltas.
+
+
+## Corte de lona PVC · fase 1 (19/10/2026)
+
+- Marca de corte en `src/domain/corteReadiness.js`; despiece del modelo en
+  `src/domain/corteLona/despiece.js`. Reglas, medidas y fuentes en
+  [el estudio de corte](../dxf-corte-pvc.md); contrato en
+  [el módulo](../../src/domain/corteLona/README.md).
+- Bamba recta, empates horizontales por defecto y verticales solo por ajuste;
+  colocación y sacos de stock contrastados con 18 pedidos. Sin cambios en reservas.
+- Pendientes: bamba con onda y ventanas (corte manual con aviso), cotas nativas
+  de AutoCAD y numeración de uniones. La bamba de otra tela queda fuera del corte
+  del cuerpo, con aviso. No hay nuevas medidas decididas sin evidencia.

@@ -91,3 +91,16 @@ Revisado a 1280×720 y a 1600 con el caso AR2603332: válido, sin errores y sin 
 - Hecho (25/09/2026): lacados bronce y 7022, en blanco para lacar fuera (Q-A02).
 - Hecho (30/09/2026): la barra más corta que llega y fuera el largo de 650, que no existe (Q-A06).
 - Hecho: la numeración del despiece ahora es correlativa (antes saltaba del 12 al 21 y dejaba el 4 vacío a motor).
+
+
+## Corte de lona PVC · fase 1 (19/10/2026)
+
+- Marca de corte en `src/domain/corteReadiness.js`; despiece del modelo en
+  `src/domain/corteLona/despiece.js`. Reglas, medidas y fuentes en
+  [el estudio de corte](../dxf-corte-pvc.md); contrato en
+  [el módulo](../../src/domain/corteLona/README.md).
+- Bamba recta, empates horizontales por defecto y verticales solo por ajuste;
+  colocación y sacos de stock contrastados con 18 pedidos. Sin cambios en reservas.
+- Pendientes: bamba con onda y ventanas (corte manual con aviso), cotas nativas
+  de AutoCAD y numeración de uniones. La bamba de otra tela queda fuera del corte
+  del cuerpo, con aviso. No hay nuevas medidas decididas sin evidencia.
