@@ -6,12 +6,12 @@ export type AjustesCorte = {
 export type EstadoCorte = {
   version: number; generadoEn: string; generadoPor: string; ofStockSacos: string;
   ajustes: Record<string, AjustesCorte>;
-  toldos: { clave: string; id: string; letra: string; of: string; firma: string }[];
+  toldos: { clave: string; id: string; letra: string; of: string; firma: string; manual?: boolean; motivoManual?: string }[];
 };
 export type PendienteCorte = { letra: string; motivo: 'sinGenerar' | 'viejo' };
 export type VistaCorte = {
   idMaterial: string; codigoTela: string; material: string; anchoRollo: number; largo: number; largoRestos?: number;
-  piezas: { letra: string; piezas: { nombre: string; largo: number; alto: number }[] }[];
+  piezas: { letra: string; unidades?: number; piezas: { nombre: string; largo: number; alto: number }[] }[];
   sacos: { largo: number; alto: number }[];
   dibujo: {
     lineas: { capa: string; x1: number; y1: number; x2: number; y2: number }[];

@@ -37,11 +37,15 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     // girados 90° si la pieza está girada. Con REVÉS, nombre y REVÉS quedan a los dos lados del centro.
     // Los sacos de stock llevan la OF de stock, SACO, su medida y STOCK (como AR2602119).
     let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : Math.min(300, Math.min(p.ancho, p.hueco) / 4);
-    const [cx, cy] = [x0 + p.ancho / 2, y0 + p.hueco / 2];
+    const franja = p.nombre.includes('BAMBA') ? Math.max(1, p.alto - ajustes.varillaTiraMm) : null;
+    const [cx, cy] = franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
+      : p.girada ? [x0 + p.alto - franja / 2, y0 + p.largo / 2] : [x0 + p.largo / 2, y0 + franja / 2];
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']
       : [p.nombre, ...(p.of ? [p.of] : []), ...(p.nombre.includes('BAMBA') ? [] : ['REVÉS'])];
     const espacioTexto = p.girada ? p.hueco : p.ancho;
-    alto = Math.min(alto, Math.min(p.ancho, p.hueco) * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1),
+    const altoLibre = franja === null ? Math.min(p.ancho, p.hueco) * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1)
+      : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + 2);
+    alto = Math.min(alto, altoLibre,
       ...lineasTexto.map((v) => espacioTexto * 0.9 / anchoArial(v, 1)));
     lineasTexto.forEach((valor, i) => {
       const d = (i - (lineasTexto.length - 1) / 2) * alto * 1.6;   // separación desde el centro

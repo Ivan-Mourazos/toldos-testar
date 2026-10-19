@@ -26,13 +26,28 @@ describe('Estado guardado del corte de lona', () => {
     expect(firmaToldo(order, 0, { empateCm: 3 })).not.toBe(firma);
     expect(firmaToldo({ ...order, technician: 'OTRO', notes: 'Nota' }, 0, {})).toBe(firma);
   });
-  it('solo da por generados los toldos que tienen piezas y mantiene sus ajustes por id', () => {
+  it('firma los cortes y marca el toldo manual sin bloquear el resto', () => {
     const otro = structuredClone(order);
     otro.awnings.push({ ...otro.awnings[0], id: 'onda', of: '0232569', valanceCurve: 'SUAVE' });
     const estado = generar(otro, { A: { empate: 'vertical' } });
     expect(estado).toMatchObject({ generadoPor: order.technician, generadoEn: '2026-10-19T12:00:00.000Z' });
     expect(estado.ajustes[order.awnings[0].id].empate).toBe('vertical');
-    expect(corteLonaPendiente(otro, estado)).toEqual([expect.objectContaining({ id: 'onda', motivo: 'sinGenerar' })]);
+    expect(estado.toldos[1]).toMatchObject({ id: 'onda', manual: true, motivoManual: expect.stringContaining('bamba con onda') });
+    expect(corteLonaPendiente(otro, estado)).toEqual([]);
+    expect(createReviewPackage({ order: otro, calculation: calculateOrder(otro), corteLona: estado }).corteLona).toEqual(estado);
+    otro.awnings[1].width += 10;
+    expect(corteLonaPendiente(otro, estado)).toEqual([]);
+    otro.awnings[1].valanceCurve = 'RECTA';
+    expect(corteLonaPendiente(otro, estado)).toEqual([expect.objectContaining({ id: 'onda', motivo: 'viejo' })]);
+  });
+  it('la ventana manual queda firmada y al quitarla exige regenerar', () => {
+    const otro = structuredClone(order);
+    otro.awnings[0].curtainHasWindow = true;
+    const estado = generar(otro);
+    expect(estado.toldos[0]).toMatchObject({ manual: true, motivoManual: expect.stringContaining('ventana') });
+    expect(corteLonaPendiente(otro, estado)).toEqual([]);
+    otro.awnings[0].curtainHasWindow = false;
+    expect(corteLonaPendiente(otro, estado)[0].motivo).toBe('viejo');
   });
   it('detecta ausente, viejo, un toldo nuevo y cambios posteriores en ajustes', () => {
     expect(corteLonaPendiente(order, null)).toEqual([expect.objectContaining({ letra: 'A', motivo: 'sinGenerar' })]);

@@ -7,7 +7,7 @@ import { modelosConCorte } from '../corteReadiness.js';
 describe('Corte de los 18 pedidos contrastados con la oficina', () => {
   it.each(fixtures)('$pedido: piezas, largo, giros y sacos', ({ toldos, verticales, esperado }) => {
     const corte = cortePedido(toldos, verticales);
-    expect(corte.piezas).toEqual(esperado.piezas);
+    expect(corte.piezas).toEqual(esperado.piezas.map((p, i) => ({ ...p, unidades: toldos[i].unidades ?? 1 })));
     expect(corte.largo).toBe(esperado.largoRolloMm);
     expect(corte.colocadas.filter((p) => p.girada).map((p) => p.nombre).sort()).toEqual([...esperado.giradas].sort());
     const sacos = sacosEnHuecos(corte.colocadas, toldos[0].anchoRollo * 10, '0230811');

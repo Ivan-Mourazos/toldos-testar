@@ -40,6 +40,22 @@ describe('Reglas y salidas del corte', () => {
     otro.awnings[0].model = 'HERA';
     expect(() => exigirCorteAlDia(otro, null)).not.toThrow();
   });
+  it.each([{ valanceCurve: 'SUAVE' }, { curtainHasWindow: true }])('permite revisar y producir junto a un toldo manual: %j', async (manual) => {
+    const otro = structuredClone(order);
+    otro.awnings.push({ ...otro.awnings[0], id: 'manual', of: '0232569', ...manual });
+    const estado = crearEstadoCorteLona(otro, { resultado: generarCorteLona(otro, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
+    expect(() => exigirCorteAlDia(otro, estado)).not.toThrow();
+    const review = createReviewPackage({ order: otro, corteLona: estado, calculation: calculateOrder(otro) });
+    expect(reviewSummary(review).corteLonaEstado).toBe('hecho');
+    expect(review.corteLona.toldos[1].manual).toBe(true);
+    const settings = { productionEnabled: true, corteLonaBotDirectory: path.resolve('tmp/bot'), corteLonaPlanoDirectory: path.resolve('tmp/planos') };
+    for (const tipo of ['bot', 'plano']) {
+      const salida = await prepararArchivosCorte({ order: otro, corteLona: estado, settings, oda, tipo });
+      expect(salida.files).toHaveLength(1);
+    }
+    Object.assign(otro.awnings[1], { valanceCurve: 'RECTA', curtainHasWindow: false });
+    expect(() => exigirCorteAlDia(otro, estado)).toThrow(/B.*viejo/);
+  });
   it('sin habilitar escrituras no crea ni convierte nada', async () => {
     const resultado = await escribirPlanosCorte({ order, corteLona, settings: { productionEnabled: false }, oda });
     expect(resultado.files).toEqual([]);

@@ -37,4 +37,16 @@ describe('Vista compartida del corte de lona', () => {
     expect(svg).toContain('DISCO1');
     expect(svg).toContain('ROTULADOR');
   });
+  it('indica las unidades en el desglose', () => {
+    const datos = { ...vista, cortes: { conSacos: [{ ...corte, piezas: [{ ...corte.piezas[0], unidades: 2 }] }], trozoSeparado: null } };
+    expect(renderToStaticMarkup(<CorteLonaVista datos={datos} />)).toContain('Toldo A (2 uds)');
+  });
+  it('conserva el aviso manual guardado tanto en edición como en revisión', () => {
+    const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA' }] };
+    const estado = { version: 2, generadoEn: '', generadoPor: 'IVÁN', ofStockSacos: '0230811', ajustes: {},
+      toldos: [{ clave: 'manual', id: 'manual', letra: 'A', of: '0232568', firma: 'firma', manual: true, motivoManual: 'bamba con onda: el corte se hace a mano por ahora.' }] };
+    for (const reviewCode of [undefined, 'AR2604784']) {
+      expect(renderToStaticMarkup(<CorteLona order={order} estado={estado} reviewCode={reviewCode} />)).toContain('bamba con onda: el corte se hace a mano');
+    }
+  });
 });

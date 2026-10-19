@@ -77,6 +77,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode }: {
     </header>
     {error && <p role="alert" className="corte-aviso">{error}</p>}
     {pendientes && pendientes.length > 0 && <p className="corte-aviso">{pendientes.map(p => `Toldo ${p.letra}: ${p.motivo === 'viejo' ? 'corte viejo' : 'falta generar el corte'}`).join(' · ')}</p>}
+    {!datos && estado?.toldos.some(t => t.manual) && <ul className="corte-avisos">{estado.toldos.filter(t => t.manual).map(t => <li key={t.clave}>Toldo {t.letra}, OF {t.of}: {t.motivoManual}</li>)}</ul>}
     {!reviewCode && <details className="corte-ajustes"><summary>Ajustes por toldo · se regenera al cambiar</summary>
       {toldos.map(({ t, letra }) => {
         const clave = t.id || t.of || letra;
@@ -109,7 +110,7 @@ export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
       return <article className="corte-material" key={corte.idMaterial}>
         <header><h3>{corte.material}</h3><span>Rollo de {numero(corte.anchoRollo / 10)} cm · {corte.codigoTela}</span></header>
         <div className="corte-opciones"><Opcion corte={corte} titulo="Con sacos" />{separado && <Opcion corte={separado} titulo="Trozo separado" />}</div>
-        <details className="corte-desglose"><summary>Piezas por toldo · medidas de corte en cm</summary>{corte.piezas.map((t, i) => <div key={i}><strong>Toldo {t.letra}</strong><ul>{t.piezas.map((p, j) => <li key={j}>{p.nombre}: {numero(p.largo / 10)} × {numero(p.alto / 10)} cm</li>)}</ul></div>)}</details>
+        <details className="corte-desglose"><summary>Piezas por toldo · medidas de corte en cm</summary>{corte.piezas.map((t, i) => <div key={i}><strong>{`Toldo ${t.letra}${(t.unidades ?? 1) > 1 ? ` (${t.unidades} uds)` : ''}`}</strong><ul>{t.piezas.map((p, j) => <li key={j}>{p.nombre}: {numero(p.largo / 10)} × {numero(p.alto / 10)} cm</li>)}</ul></div>)}</details>
       </article>;
     })}
   </>;

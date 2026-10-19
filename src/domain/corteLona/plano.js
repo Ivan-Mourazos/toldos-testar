@@ -60,6 +60,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     const piezas = corteRollo.piezas[i].piezas;
     const cuerpos = piezas.filter((p) => !p.nombre.includes('BAMBA'));
     const tiraCm = t.bamba > 0 ? t.bamba + A.tiraExtraAltoCm : 0;
+    const unidades = t.unidades > 1 ? [[`${t.unidades} UDS`, 15]] : [];
     const F = t.frenteTela;
     // Corte del cuerpo: con empate horizontal, el aumento para escuadrar; con vertical, los laterales.
     const empateH = !vertical && cuerpos.length > 1;
@@ -85,7 +86,8 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
       linea('ROTULADOR', fx0, tiraCm - A.varillaTiraMm / 10, fx1, tiraCm - A.varillaTiraMm / 10);
       // Tira en trozos (empate vertical): la letra en el primero y sus uniones, como las de los paños.
       const trozos = piezas.filter((q) => q.nombre.includes('BAMBA'));
-      texto(t.letra, trozos.length > 1 ? tx0 + trozos[0].largo / 20 : cx, tc, Math.min(12, tiraCm * 0.6));
+      const franja = Math.max(0.1, tiraCm - A.varillaTiraMm / 10);
+      texto(t.letra, trozos.length > 1 ? tx0 + trozos[0].largo / 20 : cx, franja / 2, Math.min(12, franja * 0.4));
       let xt = tx0;
       trozos.slice(0, -1).forEach((q) => {
         xt += q.largo / 10;
@@ -101,12 +103,21 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
       cota('vent-pre-noimpr', xIzq + 15, 0, xIzq + 15, tiraCm, tiraCm, -15);
     }
 
+    if (t.soloBamba) {
+      texto(t.of, cx, tiraCm + 35, 20, 0, 'texto', F * 0.8);
+      if (t.unidades > 1) texto(`${t.unidades} UDS`, cx, tiraCm + 65, 15);
+      cota('cotas', tx0, tiraCm + 90, tx1, tiraCm + 90, tiraLargo, 0);
+      x += ancho + ENTRE_TOLDOS;
+      continue;
+    }
+
     rect('DISCO1', cx0, yc0, cx1, yc1);
     rect('referencias', fx0, yc0 + 3.5, fx1, yc1 - 3.5);
     linea('ROTULADOR', fx0, yc1 - A.varillaArribaMm / 10, fx1, yc1 - A.varillaArribaMm / 10);
-    if (tiraCm) linea('ROTULADOR', fx0, yc0 + A.varillaArribaMm / 10, fx1, yc0 + A.varillaArribaMm / 10);
+    // El cuerpo siempre engancha al tubo de carga con la varilla inferior, incluso sin bamba.
+    linea('ROTULADOR', fx0, yc0 + A.varillaArribaMm / 10, fx1, yc0 + A.varillaArribaMm / 10);
     texto(t.ajustes?.varillaArriba || (t.cambioTela ? VARILLA_CAMBIO : VARILLA_TOLDO), cx, yc1 + 10, 10, 0, 'texto', F * 0.9);
-    if (tiraCm) texto(VARILLA_ABAJO, cx, yc0 - 10, 10, 0, 'texto', F * 0.9);
+    texto(VARILLA_ABAJO, cx, yc0 - 10, 10, 0, 'texto', F * 0.9);
     const lateral = vertical ? 'AUMENTO PARA ESCUADRAR + B.N(3)' : 'AL CORTE';
     texto(lateral, cx0 - 10, cy, 10, 90, 'texto', (yc1 - yc0) * 0.85);
     texto(lateral, cx1 + 10, cy, 10, 90, 'texto', (yc1 - yc0) * 0.85);
@@ -129,7 +140,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
       cuerpos.forEach((p, k) => {
         const alto = p.alto / 10;
         const centro = y + alto / 2;
-        if (k === 0) bloque(cx, centro, [[p.nombre, 15], [t.of, 30], ['TIENE AUMENTO PARA ESCUADRAR', 12]], F * 0.8);
+        if (k === 0) bloque(cx, centro, [[p.nombre, 15], [t.of, 30], ...unidades, ['TIENE AUMENTO PARA ESCUADRAR', 12]], F * 0.8);
         else texto(p.nombre, cx, centro, 15);
         if (k < cuerpos.length - 1) {
           const yu = y + alto;
@@ -145,7 +156,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
       let xp = cx0;
       cuerpos.forEach((p, k) => {
         const anchoP = p.largo / 10;
-        if (k === 0) bloque(xp + anchoP / 2, cy, [[p.nombre, 15], [t.of, 30], ['TIENE AUMENTO PARA ESCUADRAR', 12]], anchoP * 0.75);
+        if (k === 0) bloque(xp + anchoP / 2, cy, [[p.nombre, 15], [t.of, 30], ...unidades, ['TIENE AUMENTO PARA ESCUADRAR', 12]], anchoP * 0.75);
         else texto(p.nombre, xp + anchoP / 2, cy, 15);
         if (k < cuerpos.length - 1) {
           const xu = xp + anchoP;
@@ -156,7 +167,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
         }
       });
     } else {
-      bloque(cx, cy, [[t.letra, 15], [t.of, 30]], F * 0.8);
+      bloque(cx, cy, [[t.letra, 15], [t.of, 30], ...unidades], F * 0.8);
     }
     // Cotas: impresas las de la pieza terminada; las de corte en la capa que no se imprime, solo si
     // cambian (Iván: medidas reales, sin repetir).
@@ -193,7 +204,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     const usadoOpcion = Math.max(...opcion.colocadas.map(p => p.y + p.hueco)) / 10;
     cota('cotas', -20, yRollo, -20, yRollo + usadoOpcion, usadoOpcion, -10);
     cota('cotas', 0, yRollo - 20, opcion.largo / 10, yRollo - 20, opcion.largo / 10, 0);
-    yRollo -= anchoRollo + 160;
+    yRollo -= anchoRollo + 260;
   }
   const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;
   // Ancho real que ocupan las piezas, no el del rollo (Iván).

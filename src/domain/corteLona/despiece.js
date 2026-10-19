@@ -22,7 +22,7 @@ export const AJUSTES_POR_DEFECTO = {
  * Con empates, los paños de ancho de rollo van abajo (A1 es el de la bamba) y el resto arriba,
  * junto al tubo, como en el dibujo de AR2501462.
  * `marcas` son las líneas del rotulador para el doblez de la varilla: 'arriba' junto al borde de
- * arriba, 'abajo' junto al de la bamba y 'tira' junto a la unión con el cuerpo.
+ * arriba, 'abajo' junto al tubo de carga y 'tira' junto al enganche de la tira al tubo.
  * `ajustes` cambia los valores de AJUSTES_POR_DEFECTO para este toldo.
  */
 export function piezasToldo(datos) {
@@ -39,13 +39,14 @@ export const despiecesPorModelo = Object.freeze({
   'CAMBIO TELA': piezasFachada
 });
 
-function piezasFachada({ letra, frenteTela, caidaTela, bamba, anchoRollo, ajustes = {} }) {
+function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false, anchoRollo, ajustes = {} }) {
   const a = validarAjustes({ ...AJUSTES_POR_DEFECTO, ...ajustes }, anchoRollo);
   for (const [nombre, valor] of Object.entries({ frenteTela, caidaTela, anchoRollo })) {
     if (!Number.isFinite(valor) || valor <= 0) throw new Error(`Medida no válida: ${nombre}.`);
   }
   if (!Number.isFinite(bamba) || bamba < 0) throw new Error('Altura de bamba no válida.');
   const tira = bamba > 0 ? bamba + a.tiraExtraAltoCm : 0;
+  if (soloBamba) return [{ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'] }];
   const cuerpo = caidaTela - tira;
   if (cuerpo <= 0) throw new Error('La tira no puede ocupar toda la caída.');
   if (a.empate === 'vertical' && frenteTela > anchoRollo) return piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a });
@@ -64,7 +65,8 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, anchoRollo, ajuste
     nombre: paños.length > 1 ? `${letra}${i + 1}` : letra,
     largo: mm(frenteTela + aumento),
     alto: mm(alto),
-    marcas: [...(i === 0 && tira ? ['abajo'] : []), ...(i === paños.length - 1 ? ['arriba'] : [])]
+    // La varilla inferior engancha el cuerpo al tubo de carga, haya bamba o no (Iván).
+    marcas: [...(i === 0 ? ['abajo'] : []), ...(i === paños.length - 1 ? ['arriba'] : [])]
   }));
   if (tira) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'] });
   return piezas;
@@ -82,7 +84,7 @@ function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a }) {
     return Array(n).fill((total + a.empateCm * (n - 1)) / n);
   };
   const piezas = anchos(frenteTela + 2 * a.lateralVerticalCm).map((ancho, i) => ({
-    nombre: `${letra}${i + 1}`, largo: mm(ancho), alto: mm(cuerpo), marcas: tira ? ['arriba', 'abajo'] : ['arriba']
+    nombre: `${letra}${i + 1}`, largo: mm(ancho), alto: mm(cuerpo), marcas: ['arriba', 'abajo']
   }));
   if (tira && !a.tiraPartida) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'] });
   if (tira && a.tiraPartida) {

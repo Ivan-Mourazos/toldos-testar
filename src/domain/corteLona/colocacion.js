@@ -186,7 +186,7 @@ export function cortePedido(toldos, verticales = []) {
   for (let variante = 0; variante < 2 ** automaticas.length; variante++) {
     const elegidos = ajustes.map((a, i) => ({ ...a,
       ...(automaticas.includes(i) ? { tiraPartida: Math.floor(variante / 2 ** automaticas.indexOf(i)) % 2 === 1 } : {}) }));
-    const porToldo = toldos.map((t, i) => ({ letra: t.letra, piezas: piezasToldo({ ...t, ajustes: elegidos[i] }) }));
+    const porToldo = toldos.map((t, i) => ({ letra: t.letra, unidades: t.unidades ?? 1, piezas: piezasToldo({ ...t, ajustes: elegidos[i] }) }));
     const todas = porToldo.flatMap((p, i) => {
       const unidades = toldos[i].unidades ?? 1;
       if (!Number.isInteger(unidades) || unidades < 1) throw new Error('Las unidades deben ser enteras y positivas.');

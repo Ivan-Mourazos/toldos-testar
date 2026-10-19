@@ -70,7 +70,10 @@ describe('DXF del bot', () => {
     const { colocadas } = cortePedido([t]);
     expect(colocadas[0].girada).toBe(true);
     const marcas = dibujo(colocadas, 2500, { of: '0230000', tela: 'PVC' }).lineas.filter((l) => l.capa === 'ROTULADOR');
-    expect(marcas).toEqual([{ capa: 'ROTULADOR', x1: 100, y1: 15, x2: 100, y2: 1985 }]);
+    expect(marcas).toEqual([
+      { capa: 'ROTULADOR', x1: 2900, y1: 15, x2: 2900, y2: 1985 },
+      { capa: 'ROTULADOR', x1: 100, y1: 15, x2: 100, y2: 1985 }
+    ]);
   });
   it('rechaza capas ajenas al bot', () => {
     expect(() => escribirDxf2004({ lineas: [{ capa: 'referencias' }], textos: [] })).toThrow(/capas/);

@@ -66,8 +66,10 @@ La versión debe incrementarse al cambiar reglas que invaliden piezas anteriores
 
 `corteLonaPendiente(order, corteLona)` devuelve `[{ id, letra, of, modelo, motivo }]`,
 con `motivo: 'sinGenerar' | 'viejo'`. Solo pide corte a PVC de modelos marcados con corte;
-los acrílicos y los modelos sin corte no lo necesitan. Onda, ventana o datos incompletos no
-quedan firmados y siguen pendientes, con sus avisos.
+los acrílicos y los modelos sin corte no lo necesitan. Onda y ventana se firman con
+`manual: true` y `motivoManual`, muestran el aviso al técnico y al revisor y no bloquean
+el pedido mientras sigan siendo manuales. Al dejar de ser manuales deben regenerarse
+y vuelven al corte automático. Los datos incompletos siguen pendientes.
 
 Se comprueba en el servidor tanto al **guardar para revisión** como al **generar producción**:
 un pendiente devuelve 409 y enumera las letras y el motivo. CoordinaOT permanece sin cambios;
