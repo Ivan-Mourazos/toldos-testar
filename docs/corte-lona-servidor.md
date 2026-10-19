@@ -47,7 +47,8 @@ Las líneas llevan `{ capa, x1, y1, x2, y2 }`; los textos posición, altura, val
 La pantalla dibuja DISCO1 y ROTULADOR sin interpretar DXF.
 
 El plano contiene el dibujo de confección de todos los toldos de la tela y **todas sus opciones de corte**:
-«OPCIÓN 1 · CON SACOS · … M» y, si existe, «OPCIÓN 2 · TROZO SEPARADO · … M + RESTOS … M».
+con dos opciones, «OPCIÓN 1 · CON SACOS · … M» (o «TODO SEGUIDO» si no caben sacos) y «OPCIÓN 2 ·
+TROZO SEPARADO · … M + RESTOS … M»; con una sola, «CORTE · … M» o «CORTE · CON SACOS · … M».
 En el modelo se apilan; el reparto A4 sigue probando debajo/al lado y giro de 90° de toda la zona.
 El DXF del bot contiene exclusivamente el corte de la opción correspondiente.
 

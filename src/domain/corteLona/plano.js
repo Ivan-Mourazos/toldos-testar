@@ -198,8 +198,11 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
       if (t.valor.includes(' · OF ')) continue;
       T.push({ ...t, capa: 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: Math.min(t.h / 10, 15) });
     }
-    const titulo = i === 0 ? `OPCIÓN 1 · CON SACOS · ${metros(opcion.largo)} M`
-      : `OPCIÓN 2 · TROZO SEPARADO · ${metros(opcion.largo)} M + RESTOS ${metros(opcion.largoRestos)} M`;
+    // Solo se habla de opciones cuando hay dos; "con sacos" solo si de verdad lleva sacos.
+    const conSacos = sacosStock.length ? ' · CON SACOS' : '';
+    const titulo = !trozoSeparado ? `CORTE${conSacos} · ${metros(opcion.largo)} M`
+      : i === 0 ? `OPCIÓN 1${conSacos || ' · TODO SEGUIDO'} · ${metros(opcion.largo)} M`
+        : `OPCIÓN 2 · TROZO SEPARADO · ${metros(opcion.largo)} M + RESTOS ${metros(opcion.largoRestos)} M`;
     texto(titulo, largoTotal / 2, yRollo + anchoRollo + 85, 14, 0, 'texto', largoTotal * 0.98);
     const usadoOpcion = Math.max(...opcion.colocadas.map(p => p.y + p.hueco)) / 10;
     cota('cotas', -20, yRollo, -20, yRollo + usadoOpcion, usadoOpcion, -10);

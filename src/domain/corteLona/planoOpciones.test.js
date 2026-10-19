@@ -3,10 +3,10 @@ import revision from './fixtures/revision-AR2604784.json' with { type: 'json' };
 import { generarCorteLona } from './index.js';
 
 describe('El plano reúne todas las opciones del corte', () => {
-  it('AR2604784 lleva solo la opción con sacos', () => {
+  it('AR2604784, sin sacos ni trozo aparte, titula un solo corte sin hablar de opciones', () => {
     const plano = generarCorteLona(revision.order, { ofStockSacos: '0230811' }).plano[0];
-    expect(plano.dxf.includes('OPCIÓN 1 · CON SACOS')).toBe(true);
-    expect(plano.dxf.includes('OPCIÓN 2')).toBe(false);
+    const titulos = plano.geometria.corte.textos.filter(t => t.valor.startsWith('CORTE ·') || t.valor.startsWith('OPCIÓN'));
+    expect(titulos.map(t => t.valor)).toEqual([expect.stringMatching(/^CORTE · [\d,]+ M$/)]);
   });
   it('con empate horizontal dibuja las dos opciones sin solaparse y las encuadra enteras', () => {
     const order = structuredClone(revision.order);
