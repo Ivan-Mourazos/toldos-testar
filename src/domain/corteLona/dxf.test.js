@@ -91,7 +91,8 @@ describe('Plano de confección', () => {
     expect(campos).not.toHaveProperty('EMPATE');
     const textos = entidades.filter((e) => e.tipo === 'MTEXT' && valor(e, 330) === '1F');
     expect(textos.every((e) => valor(e, 71) === '5' && valor(e, 1) === valor(e, 1).toUpperCase())).toBe(true);
-    expect(textos.every((e) => numero(e, 10) > 90 && numero(e, 20) > 80)).toBe(true);
+    // Lejos de los ejes del CAD (el corte va 30 m por debajo de los toldos, que empiezan a 100 m).
+    expect(textos.every((e) => numero(e, 10) > 90 && numero(e, 20) > 50)).toBe(true);
     comprobarHandles(dxf);
   });
   it('encuadra las dos ventanas dentro de la A4 sin recortar sus zonas', () => {

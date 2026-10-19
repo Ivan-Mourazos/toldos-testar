@@ -135,7 +135,9 @@ export function dibujarPlano(datos, corteRollo) {
           const yu = y + alto;
           linea('ejes', fx0, yu - A.empateCm, fx1, yu - A.empateCm);
           linea('ejes', fx0, yu, fx1, yu);
-          texto(`EMPATE ${A.empateCm} CM`, cx, yu + 8, 10, 0, 'texto', F * 0.8);
+          // Debajo de la unión, en el paño de ancho de rollo: el de arriba puede ser una tira estrecha
+          // donde ya va su letra.
+          texto(`EMPATE ${A.empateCm} CM`, cx, yu - A.empateCm - 8, 10, 0, 'texto', F * 0.8);
           y = yu - A.empateCm;
         }
       });
@@ -174,7 +176,9 @@ export function dibujarPlano(datos, corteRollo) {
   const colocadas = [...corteRollo.colocadas];
   const sacosStock = colocadas.filter((p) => p.saco);
   const corte = dibujo(colocadas, anchoRollo * 10, { of: '', tela: '' });
-  const yRollo = -200 - anchoRollo;   // orillo de abajo del rollo
+  // Orillo de abajo del rollo, lejos de los toldos: la ventana del toldo es más alta que su dibujo
+  // cuando hay varios toldos, y a 2 m se colaba el corte por abajo.
+  const yRollo = -3000 - anchoRollo;
   for (const l of corte.lineas) linea(l.capa, l.x1 / 10, yRollo + l.y1 / 10, l.x2 / 10, yRollo + l.y2 / 10);
   for (const t of corte.textos) {
     if (t.valor.includes(' · OF ')) continue;
