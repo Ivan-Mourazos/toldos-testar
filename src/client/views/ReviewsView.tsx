@@ -19,7 +19,7 @@ import { controlLabel } from '../components/controlLabels';
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
 // anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
 // elegido, que no filtra los pendientes.
-export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onSeguirBorrador, onToast, onConfirm }: {
+export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onSeguirBorrador, onToast, onConfirm, abrirAlCargar = null, onAbiertoAlCargar }: {
   refreshKey: number;
   parameters: RuleParameters;
   currentUser: string;
@@ -34,6 +34,10 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   onSeguirBorrador: (borrador: Borrador) => void | Promise<void>;
   onToast: Notify;
   onConfirm: AskForConfirmation;
+  /** Pedido que pide abrir CoordinaOT (`?revisar=`), sin puntos. Se abre en cuanto la bandeja
+   *  lo tiene, y se avisa a App para que no se repita al volver a esta pestaña. */
+  abrirAlCargar?: string | null;
+  onAbiertoAlCargar?: () => void;
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [history, setHistory] = useState<PedidoBandeja[]>([]);
@@ -71,6 +75,26 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
       });
     return () => { cancelled = true; };
   }, [year, refreshKey, onToast]);
+
+  const atendidoAlCargar = useRef<string | null>(null);
+  // EL PEDIDO QUE MANDA COORDINAOT. Se espera a que estén las dos listas: si no está en
+  // pendientes puede estar en el Historial (ya generado). Si no está en ninguna, se dice: lo
+  // normal es que aún no se haya guardado para revisión desde aquí.
+  useEffect(() => {
+    if (!abrirAlCargar || pendingLoading || historyLoading || atendidoAlCargar.current === abrirAlCargar) return;
+    atendidoAlCargar.current = abrirAlCargar;
+    const sinPuntos = (codigo: string) => codigo.replace(/[.s-]/g, '').toUpperCase();
+    const encontrado = [...pending, ...history].find((p) => sinPuntos(p.orderCode) === abrirAlCargar);
+    queueMicrotask(() => {
+      onAbiertoAlCargar?.();
+      if (!encontrado) {
+        onToast(`El pedido ${abrirAlCargar} no está guardado para revisión en Planteamientos.`, { tone: 'warning', title: 'No encuentro el pedido' });
+        return;
+      }
+      if (productoDe(encontrado) === 'remolques') setSelectedRemolques(encontrado.orderCode);
+      else setSelectedCode(encontrado.orderCode);
+    });
+  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, onAbiertoAlCargar, onToast]);
 
   const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;
