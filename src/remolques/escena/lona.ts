@@ -52,7 +52,8 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
   const wD = res.lonaHecha.ancho;
   const wA = res.lonaHecha.anchoAtras;
   const hD = input.altoDelante;
-  const hA = input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
+  // Con la trasera a la línea por arriba, el remolque sigue con el alto de delante: solo el paño trasero es más corto.
+  const hA = input.altoAtras > 0 && !input.traseraPorArriba ? input.altoAtras : input.altoDelante;
   const perfiles = perfilesLona(input, wD, wA, hD, hA);
   const cuerpo: CuerpoLona = {
     tipo: "lona", perfilDelante: perfiles.delante, perfilAtras: perfiles.atras, largo,

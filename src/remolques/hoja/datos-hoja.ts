@@ -78,9 +78,11 @@ export function hojaLona(i: LonaInput, r: LonaResult): CuerpoHoja {
         titulo: "MEDIDA LONA HECHA",
         lineas: [
           `${fmt(r.lonaHecha.largo)} × ${fmt(r.lonaHecha.ancho)}`,
-          altoAtras !== i.altoDelante
-            ? `ALTO ${fmt(i.altoDelante)} DEL. / ${fmt(altoAtras)} TRAS.`
-            : `ALTO ${fmt(i.altoDelante)}`,
+          altoAtras === i.altoDelante
+            ? `ALTO ${fmt(i.altoDelante)}`
+            : i.traseraPorArriba
+              ? `ALTO ${fmt(i.altoDelante)} · TRASERA ${fmt(altoAtras)} A LA LÍNEA POR ARRIBA`
+              : `ALTO ${fmt(i.altoDelante)} DEL. / ${fmt(altoAtras)} TRAS.`,
         ],
         notas: sesgado ? [`ANCHO ${fmt(i.ancho)} DEL. / ${fmt(i.anchoAtras!)} TRAS.`] : [],
       },

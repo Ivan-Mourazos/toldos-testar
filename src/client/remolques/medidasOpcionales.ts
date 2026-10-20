@@ -15,7 +15,7 @@ export const hayValoresDetras = (input: LonaInput): boolean =>
 
 /** «Detrás distinto» en No: detrás queda igual que delante (cero = igual). */
 export const sinDetras = (input: LonaInput): LonaInput =>
-  ({ ...input, anchoAtras: 0, altoAtras: 0, contornoAtras: undefined });
+  ({ ...input, anchoAtras: 0, altoAtras: 0, contornoAtras: undefined, traseraPorArriba: undefined });
 
 /**
  * Con «Detrás distinto» en No, cambiar el ancho o el alto de delante deja el de detrás en «igual».

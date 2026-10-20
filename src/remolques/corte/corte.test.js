@@ -107,6 +107,18 @@ describe('generarCorteRemolques', () => {
     expect(radios).toEqual([75, 75, 85, 85, 85, 85]);
   });
 
+  it('con la trasera a la línea por arriba, el paño trasero sale más corto y el plano lo acota (AR2605158)', () => {
+    // Como AR2604412 pero con la trasera 4 cm más corta (lo que da la web con «Trasera a la línea por arriba»).
+    const pedido = structuredClone(AR2604412);
+    const [el] = pedido.elementos;
+    Object.assign(el.input, { altoAtras: el.input.altoDelante - 4, traseraPorArriba: true });
+    el.result.panoTrasero.alto -= 4;
+    const [c] = generarCorteRemolques(pedido).cortes;
+    const cotas = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(cotas).toContain(el.result.panoTrasero.alto);
+    expect(cotas).toContain(el.result.panoDelantero.alto);
+  });
+
   it('coloca los baquetones junto a las lonas altas de la misma lona, como a mano (AR2605088)', () => {
     const { cortes } = generarCorteRemolques(AR2605088);
     const claro = cortes.find((c) => /GRIS CLARO/.test(c.material));

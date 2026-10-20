@@ -1,4 +1,4 @@
-import { detrasDistinto, type LonaInput } from "../calc/lona.ts";
+import { contornoSesgado, type LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { erroresGanchos, medidasRemolque } from "../calc/ganchos.ts";
 import { sinPosiciones } from "../calc/ollaos.ts";
@@ -68,9 +68,10 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput): ErrorPla
       "contorno",
       "Confirma el contorno de corte antes de guardar o generar el PDF.",
     );
-    // Distinto detrás, el paño contorno se corta en trapecio y hace falta la medida de cada punta.
+    // Distinto detrás, el paño contorno se corta en trapecio y hace falta la medida de cada punta (no con
+    // la trasera a la línea por arriba: entonces el contorno no cambia).
     agregar(
-      detrasDistinto(input) && !positivo(input.contornoAtras),
+      contornoSesgado(input) && !positivo(input.contornoAtras),
       "contornoAtras",
       "Confirma el contorno de corte de detrás antes de guardar o generar el PDF.",
     );

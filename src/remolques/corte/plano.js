@@ -91,7 +91,8 @@ function escaleraV(L, yb, x, posiciones) {
 function confeccionLona(L, el, X, Y, letra) {
   const i = el.input, r = el.result, P = piezasLona(el);
   const del = r.panoDelantero, tra = r.panoTrasero, con = r.panoContorno, hecha = r.lonaHecha;
-  const W = del.ancho, H = del.alto, Wt = tra.ancho, A = con.ancho, B = con.alto, o = P.oreja / 10;
+  // Ht: el trasero puede ser más corto (trasera a la línea por arriba, AR2605158).
+  const W = del.ancho, H = del.alto, Wt = tra.ancho, Ht = tra.alto, A = con.ancho, B = con.alto, o = P.oreja / 10;
   const enPlano = (x0, y0) => (u, v) => [x0 + u / 10, y0 + v / 10];
   const xDel = X, xTra = X + W + 60, xCon = xTra + Wt + 80;
   const titulo = `${letra ? `${letra} · ` : ''}LONA ALTA ${i.largo} × ${i.ancho} × ${i.altoDelante}${i.altoAtras && i.altoAtras !== i.altoDelante ? `/${i.altoAtras}` : ''} · ${PERFILES[i.tipoPerfil] ?? i.tipoPerfil} · OF ${el.of}`;
@@ -120,7 +121,7 @@ function confeccionLona(L, el, X, Y, letra) {
 
   // Paño trasero (con orejas si recoge con goma).
   pintar(L, P.t.p, enPlano(xTra, Y));
-  rosaCabeza(L, P.f, P.oreja, W * 10, H * 10, enPlano(xTra, Y));
+  rosaCabeza(L, P.f, P.oreja, W * 10, Ht * 10, enPlano(xTra, Y));
   if (o) {
     for (const xo of [30, Wt * 10 - 30]) { const [a, b] = enPlano(xTra, Y)(xo, 35), [c, d] = enPlano(xTra, Y)(xo, P.t.altoOreja); L.g.polilineas.push({ capa: 'referencias', puntos: [[a, b], [c, d]], cerrada: false }); }
     L.cota('cotas', xTra + 3, Y, xTra + o + 1, Y, o - 2, -12);
@@ -129,7 +130,12 @@ function confeccionLona(L, el, X, Y, letra) {
   }
   L.cota('cotas', xTra + o + 1, Y, xTra + Wt - o - 1, Y, hecha.anchoAtras ?? hecha.ancho, -12);
   L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26);
-  L.texto(`${R}3`, xTra + Wt / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.atras.length - 1, 0) + H) / 2 - 3, 14);
+  if (Ht !== H) {
+    // Trasero de otro alto (p. ej. a la línea por arriba): su alto terminado y de corte, como en el delantero.
+    L.cota('cotas', xTra, Y + 3.5, xTra, Y + Ht - 1, i.altoAtras, -12);
+    L.cota('vent-pre-noimpr', xTra, Y, xTra, Y + Ht, Ht, -26);
+  }
+  L.texto(`${R}3`, xTra + Wt / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.atras.length - 1, 0) + Ht) / 2 - 3, 14);
   escaleraH(L, xTra + o + 1, Y + 4.5, P.ollaos.atras);
 
   // Paño contorno, a lo ancho: x = a lo largo del contorno, y = a lo largo de la lona (atrás arriba).

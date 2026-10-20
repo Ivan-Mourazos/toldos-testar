@@ -40,6 +40,10 @@ export interface LonaInput {
   /** Contorno real en la punta de detrás, solo si el remolque es distinto detrás: el paño
    *  contorno se corta entonces en trapecio (CAD de Iván, 30/09/2026). */
   contornoAtras?: number;
+  /** El alto de detrás es solo el del paño trasero, que va a la línea por arriba y queda más corto
+   *  por abajo; el remolque sigue con el alto de delante y el contorno no se sesga (Iván, 20/10/2026,
+   *  AR2605158: 87 de alto y la trasera de 83). Ausente o false = como siempre. */
+  traseraPorArriba?: boolean;
   /** Campo histórico: contenía directamente la medida final de corte. */
   contornoScad?: number;
   /** Sin elegir hasta que el usuario decide: un perfil recto por defecto pasaría
@@ -105,6 +109,17 @@ export function detrasDistinto(
     || (input.altoAtras > 0 && input.altoAtras !== input.altoDelante);
 }
 
+/**
+ * El paño contorno va en trapecio: el remolque cambia de delante a detrás. Con la trasera a la línea por
+ * arriba, un alto de detrás distinto es solo del paño trasero y no sesga el contorno (sí un ancho distinto).
+ */
+export function contornoSesgado(
+  input: Pick<LonaInput, "ancho" | "anchoAtras" | "altoDelante" | "altoAtras" | "traseraPorArriba">,
+): boolean {
+  if (!input.traseraPorArriba) return detrasDistinto(input);
+  return (input.anchoAtras ?? 0) > 0 && input.anchoAtras !== input.ancho;
+}
+
 export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const recDel = findRecogida(params, input.recogeDelante);
   const recAtr = findRecogida(params, input.recogeAtras);
@@ -133,7 +148,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
       : 0;
   // Distinto detrás, el contorno cambia de una punta a otra y el paño se corta en trapecio: la
   // medida de detrás lleva el mismo ajuste. Si no, no se añade nada y el resultado queda igual.
-  const sesgada = detrasDistinto(input);
+  const sesgada = contornoSesgado(input);
   const contornoAtrasIntroducido = Math.max(input.contornoAtras ?? 0, 0);
   const contornoAtrasAjustado = contornoAtrasIntroducido > 0 ? r1(contornoAtrasIntroducido + ajuste) : 0;
 
@@ -221,6 +236,9 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
     notas.push("GANCHOS CORAZÓN: el taller coloca los ganchos a ojo.");
   }
   if (input.bastillaEnfundar) notas.push("Bastilla de enfundar: paño contorno con demasía 13.");
+  if (input.traseraPorArriba && altoAtras !== input.altoDelante) {
+    notas.push(`Paño trasero de ${r1(altoAtras)} a la línea por arriba: queda ${r1(Math.abs(input.altoDelante - altoAtras))} cm ${altoAtras < input.altoDelante ? "más corto" : "más largo"} por abajo que el remolque.`);
+  }
   if (input.ventana) {
     const medida = (input.ventanaAncho ?? 0) > 0 && (input.ventanaAlto ?? 0) > 0
       ? ` (${r1(input.ventanaAncho!)} × ${r1(input.ventanaAlto!)} cm)`

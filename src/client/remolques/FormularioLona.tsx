@@ -199,11 +199,17 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
             <>
               <CampoNum name="anchoAtras" delCliente={dc('anchoAtras')} label="Ancho detrás" value={input.anchoAtras ?? 0} onChange={(v) => set('anchoAtras', v)} />
               <CampoNum name="altoAtras" label="Alto detrás" value={input.altoAtras} onChange={(v) => set('altoAtras', v)} />
-              <div className="rem-contorno">
-                <CampoNum name="contornoAtras" error={errores.contornoAtras} label="Contorno detrás"
-                  value={input.contornoAtras ?? 0} onChange={(v) => set('contornoAtras', v)} />
-                {botonCalculado(input.contornoAtras ?? 0, contornoAtrasExacto, (v) => set('contornoAtras', v))}
-              </div>
+              {/* El alto de detrás solo del paño trasero, a la línea por arriba (AR2605158, Iván 20/10/2026):
+                  el contorno no cambia y no hace falta su medida de detrás. */}
+              <CampoSiNo name="traseraPorArriba" label="Trasera a la línea por arriba" value={input.traseraPorArriba ?? false}
+                onChange={(v) => onChange({ ...input, traseraPorArriba: v || undefined, ...(v ? { contornoAtras: undefined } : {}) })} />
+              {!input.traseraPorArriba && (
+                <div className="rem-contorno">
+                  <CampoNum name="contornoAtras" error={errores.contornoAtras} label="Contorno detrás"
+                    value={input.contornoAtras ?? 0} onChange={(v) => set('contornoAtras', v)} />
+                  {botonCalculado(input.contornoAtras ?? 0, contornoAtrasExacto, (v) => set('contornoAtras', v))}
+                </div>
+              )}
             </>
           )}
         </div>

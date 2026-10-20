@@ -54,6 +54,8 @@ describe("validación previa al guardado y PDF", () => {
     expect(errorPlanteamientoIncompleto({ ...sesgada, contornoAtras: 621.5 })).toBeNull();
     // Igual delante y detrás no se pide.
     expect(errorPlanteamientoIncompleto({ ...lonaValida(), anchoAtras: 250, altoAtras: 220 })).toBeNull();
+    // Ni con la trasera a la línea por arriba: el contorno no cambia (AR2605158).
+    expect(errorPlanteamientoIncompleto({ ...lonaValida(), altoAtras: 215, traseraPorArriba: true })).toBeNull();
   });
 
   it("exige las dos medidas cuando el remolque lleva ventana", () => {

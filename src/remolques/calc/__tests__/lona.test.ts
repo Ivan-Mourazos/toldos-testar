@@ -239,6 +239,18 @@ describe("calcLona — contorno detrás con el remolque sesgado", () => {
     const alta = calcLona({ ...sesgada, anchoAtras: 0, altoAtras: 45 }, DEFAULT_PARAMS);
     expect(alta.panoContorno?.altoAtras).toBe(170.8);
   });
+  it("con la trasera a la línea por arriba solo cambia el paño trasero: el contorno no se sesga (AR2605158)", () => {
+    // 87 de alto y la trasera de 83 (Iván, 20/10/2026): el remolque sigue a 87; el paño trasero, 4 cm más corto.
+    const recto = calcLona({ ...sesgada, anchoAtras: 0, altoDelante: 87, altoAtras: 87, contornoAtras: undefined }, DEFAULT_PARAMS);
+    const porArriba = calcLona({ ...sesgada, anchoAtras: 0, altoDelante: 87, altoAtras: 83, traseraPorArriba: true }, DEFAULT_PARAMS);
+    expect(porArriba.panoTrasero.alto).toBe(recto.panoTrasero.alto - 4);
+    expect(porArriba.panoDelantero).toEqual(recto.panoDelantero);
+    expect(porArriba.panoContorno).toEqual(recto.panoContorno);
+    expect(porArriba).not.toHaveProperty("contornoAtrasAjustado");
+    expect(porArriba.notas).toContain("Paño trasero de 83 a la línea por arriba: queda 4 cm más corto por abajo que el remolque.");
+    // Un ancho distinto detrás sí sigue sesgando el contorno.
+    expect(calcLona({ ...sesgada, altoAtras: 35, traseraPorArriba: true }, DEFAULT_PARAMS).panoContorno?.altoAtras).toBe(170.8);
+  });
   it("igual delante y detrás el resultado no cambia de forma, aunque haya un contorno detrás guardado", () => {
     const recta = calcLona({ ...sesgada, anchoAtras: 130, altoAtras: 40 }, DEFAULT_PARAMS);
     expect(recta).not.toHaveProperty("contornoAtrasIntroducido");
