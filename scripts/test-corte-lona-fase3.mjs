@@ -166,6 +166,12 @@ try {
   }
   await guardar(one, single.corteLona);
   await guardar(abc, triple.corteLona);
+  // La carpeta del bot no la crea la web (el bot la necesita tal cual): sin ella no se genera nada.
+  const sinCarpeta = await request(`/api/reviews/${one.orderCode}/generate-files`, { includeNonAcrylicFabrics: false, confirmOverwrite: true });
+  assert.equal(sinCarpeta.status, 409, JSON.stringify(sinCarpeta.data));
+  assert.match(sinCarpeta.data.error, /carpeta del bot/);
+  await fs.mkdir(settings.corteLonaBotDirectory, { recursive: true });
+  console.log('SIN CARPETA DEL BOT: 409 y no se crea');
   for (const [order, vista] of [[one, single], [abc, triple]]) {
     const producido = await request(`/api/reviews/${order.orderCode}/generate-files`, { includeNonAcrylicFabrics: false, confirmOverwrite: true });
     assert.equal(producido.status, 200, JSON.stringify(producido.data));

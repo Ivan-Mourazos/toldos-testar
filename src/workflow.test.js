@@ -144,6 +144,26 @@ describe('flujo de revisión y producción', () => {
     await expect(fs.readdir(rpsUploadDirectory)).resolves.toEqual([]);
   });
 
+  it('con una carpeta por técnico (BOT/Pendientes/{TECNICO}) comprueba la de arriba sin escribir en ella', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-directory-check-'));
+    temporaryDirectories.push(root);
+    const pendientes = path.join(root, 'BOT', 'Pendientes');
+    const disponible = path.join(root, 'Disponible');
+    await Promise.all([pendientes, disponible].map((directory) => fs.mkdir(directory, { recursive: true })));
+
+    const result = await checkWorkflowDirectories({
+      productionEnabled: true,
+      reviewDirectory: disponible, planteamientosDirectory: disponible, rpsUploadDirectory: disponible,
+      corteLonaBotDirectory: path.join(pendientes, '{TECNICO}'),
+    }, { year: 2026 });
+
+    const bot = result.directories.find((directory) => directory.key === 'corteLonaBotDirectory');
+    expect(bot).toMatchObject({ ok: true });
+    expect(path.resolve(bot.path)).toBe(path.resolve(pendientes));
+    // Ni carpeta «COMPROBACION» ni ficheros de prueba donde mira el bot.
+    await expect(fs.readdir(pendientes)).resolves.toEqual([]);
+  });
+
   it('indica qué carpeta no existe sin ocultar las que sí están disponibles', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'toldos-directory-check-'));
     temporaryDirectories.push(root);

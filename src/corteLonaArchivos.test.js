@@ -4,7 +4,7 @@ import path from 'node:path';
 import revision from './domain/corteLona/fixtures/revision-AR2604784.json' with { type: 'json' };
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
-import { exigirCorteAlDia, prepararArchivosCorte, escribirPlanosCorte } from './corteLonaArchivos.js';
+import { carpetaCorte, exigirCorteAlDia, prepararArchivosCorte, escribirPlanosCorte } from './corteLonaArchivos.js';
 import { defaultWorkflowSettings, normalizeWorkflowSettings, createReviewPackage, reviewSummary } from './workflow.js';
 import { calculateOrder } from './domain/rules.js';
 
@@ -100,6 +100,12 @@ describe('Reglas y salidas del corte', () => {
     expect(files).toHaveLength(2);
     expect(new Set(files.map(f => f.savedPath)).size).toBe(2);
     expect(files.map(f => f.filename).join()).toMatch(/2500.*3000/);
+  });
+  it('cada autor tiene su carpeta en BOT/Pendientes, con el nombre que tiene allí', () => {
+    const plantilla = path.resolve('tmp/BOT/Pendientes/{TECNICO}');
+    expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'IVÁN' })).toBe(path.resolve('tmp/BOT/Pendientes/Ivan.Sanchez'));
+    expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'ADRIÁN' })).toBe(path.resolve('tmp/BOT/Pendientes/Adrian.Quinteiro'));
+    expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'ÁNGEL' })).toBe(path.resolve('tmp/BOT/Pendientes/Angel'));
   });
   it('evita colisiones entre telas de igual código con distinto ancho y no permite rutas en el técnico', async () => {
     const otro = structuredClone(order);

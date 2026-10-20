@@ -119,9 +119,14 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
   if (settings.draftsDirectory) {
     definitions.push(['draftsDirectory', 'Borradores', settings.draftsDirectory, 'write']);
   }
-  const directories = await Promise.all(definitions.map(async ([key, label, template, accessMode]) => {
+  const directories = await Promise.all(definitions.map(async ([key, label, template, modo]) => {
     if (!template) return { key, label, path: '', ok: false, error: 'Falta indicar la ruta.' };
-    const directory = resolveDirectoryTemplate(template, year).replaceAll('{TECNICO}', 'COMPROBACION').replaceAll('{PEDIDO}', `AR${String(year).slice(-2)}00000`);
+    // Con la carpeta de cada técnico (BOT/Pendientes/{TECNICO}) se comprueba la de arriba, y solo leyendo:
+    // ahí mira el bot y no se deja ni un fichero de prueba (Iván, 20/10/2026).
+    const porTecnico = template.includes('{TECNICO}');
+    const accessMode = porTecnico ? 'read' : modo;
+    const base = porTecnico ? template.slice(0, template.indexOf('{TECNICO}')) : template;
+    const directory = resolveDirectoryTemplate(base, year).replaceAll('{PEDIDO}', `AR${String(year).slice(-2)}00000`);
     const probePath = path.join(directory, `.toldos-write-check-${randomUUID()}.tmp`);
     let probeCreated = false;
     try {

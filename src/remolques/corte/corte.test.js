@@ -121,6 +121,8 @@ describe('generarCorteRemolques', () => {
 
   it('coloca los baquetones junto a las lonas altas de la misma lona, como a mano (AR2605088)', () => {
     const { cortes } = generarCorteRemolques(AR2605088);
+    // Un fichero por lona con el nombre que pide el bot: el número del pedido y, la segunda, con -2.
+    expect(cortes.map((c) => c.nombre)).toEqual(['AR2605088', 'AR2605088-2']);
     const claro = cortes.find((c) => /GRIS CLARO/.test(c.material));
     // A mano, 19,24 m con las cabezas encima de los baquetones; antes, con los baquetones detrás, 20,71.
     expect(claro.largo).toBeLessThanOrEqual(19240);

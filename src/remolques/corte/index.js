@@ -48,9 +48,6 @@ const ofDe = (el) => normalizeOf(el.input?.cabecera?.ordenFabricacion ?? '');
 const descripcion = (e) => (e.tipo === 'baqueton'
   ? `baquetón ${e.input.largo}×${e.input.ancho}×${e.input.baqueton}`
   : `lona alta ${e.input.largo}×${e.input.ancho}×${e.input.altoDelante} ${e.input.tipoPerfil}`);
-// Para el nombre del fichero cuando el pedido lleva más de una lona: «LONA NS86 2L 630 g/m² :GRIS CLARO…» → «LONA NS86 2L 630 gm GRIS CLARO».
-const nombreLona = (material) => material.split(':').slice(0, 2).join(' ').replace(/[^A-Z0-9 ]/gi, '').replace(/\s+/g, ' ').trim();
-
 /**
  * El corte de un pedido de remolques guardado (flujo/tipos.ts, PedidoRemolques), con los resultados con que
  * se va a generar. Devuelve una entrada por lona: las que se cortan, con su DXF del bot y su plano (DXF
@@ -72,8 +69,10 @@ export function generarCorteRemolques(pedido) {
     porLona.set(k, [...(porLona.get(k) ?? []), el]);
   }
   const cortes = [], aMano = [];
-  for (const [material, els] of porLona) {
-    const nombre = porLona.size > 1 ? `${codigo} (${nombreLona(material)})` : codigo;
+  for (const [k, [material, els]] of [...porLona].entries()) {
+    // El nombre que pide el bot (BOT/Pendientes/Instrucions.txt: «formato AR2600000»); la segunda lona del
+    // pedido, con -2, como a mano (AR2505088-2). Iván, 20/10/2026.
+    const nombre = k === 0 ? codigo : `${codigo}-${k + 1}`;
     const lonas = els.filter((e) => e.tipo !== 'baqueton'), baqs = els.filter((e) => e.tipo === 'baqueton');
     const fuera = lonas.map((e) => [e, soportada(e)]).filter(([, motivo]) => motivo);
     if (fuera.length) {

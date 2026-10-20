@@ -15,10 +15,17 @@ export function exigirCorteAlDia(order, corteLona) {
 
 const segmento = value => Array.from(String(value || '')).filter(c => c.charCodeAt(0) >= 32).join('').trim().replace(/\.\./g, '').replace(/[<>:"/\\|?*]/g, '_').replace(/^\.+|\.+$/g, '').replace(/^_+|_+$/g, '') || 'SIN_TECNICO';
 
+// Carpeta de cada técnico en BOT\Pendientes (Iván, 20/10/2026: «el autor que sea tiene su carpeta»), que se
+// llaman distinto que en la web. Un técnico que no esté aquí usa su nombre tal cual.
+export const CARPETA_TECNICO = {
+  'IVÁN': 'Ivan.Sanchez', 'ADRIÁN': 'Adrian.Quinteiro', 'ÁNGEL': 'Angel', 'ALBERTO': 'Alberto', 'JAIME': 'Jaime', 'TAMARA': 'Tamara',
+};
+const carpetaTecnico = (tecnico) => CARPETA_TECNICO[String(tecnico ?? '').trim().toUpperCase()] ?? segmento(tecnico);
+
 export function carpetaCorte(template, order) {
   if (!template) throw new Error('Configura las carpetas del corte de lona antes de escribir sus archivos.');
   return resolveDirectoryTemplate(template, order.orderCode)
-    .replaceAll('{TECNICO}', segmento(order.technician))
+    .replaceAll('{TECNICO}', carpetaTecnico(order.technician))
     .replaceAll('{PEDIDO}', sanitizeOrderCode(order.orderCode));
 }
 

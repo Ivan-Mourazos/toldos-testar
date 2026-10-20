@@ -20,11 +20,15 @@ export function crearCorteRemolques({ ajustes, oda }) {
     const order = { orderCode: pedido.orderCode, technician: pedido.summary?.technician };
     const bot = carpetaCorte(settings.corteLonaBotDirectory, order);
     const planos = carpetaCorte(settings.corteLonaPlanoDirectory, order);
+    // La carpeta del bot no se crea nunca: el bot necesita sus carpetas tal cual (Iván, 20/10/2026). Si la del
+    // autor no está, no se escribe el corte y se avisa; la hoja y el plano salen igual.
+    const hayBot = await fs.stat(bot).then((s) => s.isDirectory(), () => false);
+    if (!hayBot) avisos.push(`No existe la carpeta del bot «${bot}»: no se ha escrito el corte (la web no la crea).`);
     const ficheros = [];
     for (const c of resultado.cortes) {
       avisos.push(...c.avisos);
       const dxf = `${c.nombre}.dxf`;
-      ficheros.push({ type: 'corte-lona', material: c.materialCorto, filename: dxf, savedPath: path.join(bot, dxf), contenido: Buffer.from(c.dxf, 'latin1') });
+      if (hayBot) ficheros.push({ type: 'corte-lona', material: c.materialCorto, filename: dxf, savedPath: path.join(bot, dxf), contenido: Buffer.from(c.dxf, 'latin1') });
       let contenido = Buffer.from(c.plano.dxf, c.plano.codificacion);
       let extension = 'dxf';
       if (oda.disponible) {
@@ -39,8 +43,9 @@ export function crearCorteRemolques({ ajustes, oda }) {
   }
 
   async function escribir(ficheros) {
-    for (const { savedPath, contenido } of ficheros) {
-      await fs.mkdir(path.dirname(savedPath), { recursive: true });
+    for (const { type, savedPath, contenido } of ficheros) {
+      // La del plano se crea si falta (p. ej. la del año); la del bot, nunca.
+      if (type !== 'corte-lona') await fs.mkdir(path.dirname(savedPath), { recursive: true });
       await writeFileAtomic(savedPath, contenido);
     }
   }

@@ -1013,9 +1013,15 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     const pdfTarget = targets.find((target) => target.type === 'pdf');
     pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }) });
 
+    // Las carpetas del bot no se crean nunca: el bot las necesita tal cual (Iván, 20/10/2026). Si la del autor
+    // no está, no se escribe nada y se dice cuál falta.
+    for (const carpeta of new Set(targets.filter((target) => target.type === 'corte-lona').map((target) => path.dirname(target.savedPath)))) {
+      const existe = await fs.stat(carpeta).then((s) => s.isDirectory(), () => false);
+      if (!existe) throw httpError(409, `No existe la carpeta del bot «${carpeta}» y la web no la crea: revisa la carpeta del autor en BOT/Pendientes. No se ha generado nada.`);
+    }
     await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
     for (const target of targets) {
-      await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
+      if (target.type !== 'corte-lona') await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
       await writeFileAtomic(target.savedPath, target.contents);
     }
 
