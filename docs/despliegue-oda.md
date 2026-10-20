@@ -3,6 +3,33 @@
 Estos pasos los ejecuta Iván en Linux (192.168.0.90). La fase 2 no instala nada ni cambia el servidor.
 El corte del bot sigue siendo DXF 2004; ODA se usa para el plano DWG 2018 y para leer la OF de los sacos.
 
+## Lo que se hizo en el servidor (20/10/2026, Debian 12)
+
+Instalación real en 192.168.0.90, que funciona (`deploy:check`: «ODA está configurado y convierte a DWG 2018»):
+
+1. Paquete DEB `ODAFileConverter_QT6_lnxX64_11dll_27.9.deb` de la página de ODA («DWG convertor»), copiado
+   a `/root` e instalado con `apt install /root/ODAFileConverter_QT6_lnxX64_11dll_27.9.deb`. Queda en
+   `/usr/bin/ODAFileConverter_27.9.0.0/`.
+2. `apt install -y libxcb-util1` y el enlace `libxcb-util.so.0 -> libxcb-util.so.1` en
+   `/usr/lib/x86_64-linux-gnu`, como pide ODA.
+3. `apt install -y libopengl0`: sin ella falla con `libOpenGL.so.0: cannot open shared object file`.
+4. El paquete **solo trae el plugin `xcb` de Qt**, no `offscreen` («Could not find the Qt platform plugin
+   "offscreen"»). Se arranca con una pantalla virtual: `apt install -y xvfb xauth` y el lanzador
+   `/usr/local/bin/oda-sin-pantalla` (755):
+
+   ```sh
+   #!/bin/sh
+   # ODA File Converter solo trae el plugin xcb de Qt: se arranca con una pantalla virtual (Xvfb).
+   export QT_QPA_PLATFORM=xcb
+   exec xvfb-run -a -s "-screen 0 1024x768x24" /usr/bin/ODAFileConverter_27.9.0.0/ODAFileConverter "$@"
+   ```
+
+5. En `/webs/toldos-testar/.env`: `ODA_FILE_CONVERTER="/usr/local/bin/oda-sin-pantalla"` y
+   `OFICINA_TECNICA_DIRECTORY="/mnt/oftecnica"`; las dos carpetas del corte a
+   `"/mnt/oftecnica/DXF PRUEBAS WEB"`. `.env` con `chmod 600`. Recarga con `pnpm pm2:reload && pm2 save`.
+
+Al actualizar ODA cambia la carpeta `ODAFileConverter_<versión>`: hay que cambiarla también en el lanzador.
+
 ## Descargar e instalar
 
 Descargar el paquete **Linux x64** de la [página oficial de ODA File Converter](https://www.opendesign.com/guestfiles/oda_file_converter): DEB para Debian/Ubuntu, o AppImage. Revisar antes las condiciones de uso de ODA para empresa y para este uso en servidor. No dar por hecho que la descarga autoriza cualquier uso o redistribución.
