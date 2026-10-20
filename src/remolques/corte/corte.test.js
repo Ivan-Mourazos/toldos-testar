@@ -61,7 +61,7 @@ describe('generarCorteRemolques', () => {
   });
 
   it('los baquetones de PAMILAKAN llevan refuerzos en las esquinas, como a mano (AR2604802)', () => {
-    const [c] = generarCorteRemolques(AR2604802).cortes;
+    const { cortes: [c], archivo } = generarCorteRemolques(AR2604802);
     expect(c.refuerzos).toBe(true);
     expect(c.entidades.textos.some((t) => t.valor === 'REFUERZOS EN ESQUINAS, SIN MARCAR')).toBe(true);
     // Esquina de 9: no caben dentro y van sueltos encima de la pieza, cuatro de 11 × 11 en fila (lado = esquina + 2,
@@ -70,12 +70,12 @@ describe('generarCorteRemolques', () => {
     const xs = encima.flatMap((l) => [l.x1, l.x2]), ys = encima.flatMap((l) => [l.y1, l.y2]);
     expect([Math.max(...xs) - Math.min(...xs), Math.max(...ys)]).toEqual([440, 1840 + 110]);
     // En el dibujo de confección, los cuatro en su esquina (en trazos, sin imprimir).
-    const enPlano = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'vent-pre-noimpr' && numero(r, 90) === 6);
+    const enPlano = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'vent-pre-noimpr' && numero(r, 90) === 6);
     expect(enPlano).toHaveLength(4);
   });
 
   it('la lona alta con bastilla de enfundar lleva las marcas del doblez, como a mano (AR2604990, PAMILAKAN)', () => {
-    const [c] = generarCorteRemolques(AR2604990).cortes;
+    const { cortes: [c], archivo } = generarCorteRemolques(AR2604990);
     const rot = c.entidades.lineas.filter((l) => l.capa === 'ROTULADOR');
     const largo = (l) => Math.round(Math.hypot(l.x2 - l.x1, l.y2 - l.y1));
     // Los extremos del doblez (a 10 cm de cada punta, de 3,5 a 6 cm del borde): dos por punta. Y la trasera recoge
@@ -86,11 +86,11 @@ describe('generarCorteRemolques', () => {
     // contorno en cada punta y el de arriba de cada cabeza.
     expect(rot.filter((l) => largo(l) === 15)).toHaveLength(4);
     // En el plano, el doblez entero de lado a lado (contorno de 267 − 7 cm), en rotulador.
-    const dobleces = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
+    const dobleces = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
       && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 2.6) < 0.001);
     expect(dobleces).toHaveLength(2);
     // Y la cremallera entera en la trasera: de 3,5 cm sobre la base a 4,5 por debajo de las aguas (a 5 cm del lado).
-    const cremallera = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
+    const cremallera = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
       && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 0.5331) < 0.001);
     expect(cremallera).toHaveLength(2);
   });
@@ -113,16 +113,23 @@ describe('generarCorteRemolques', () => {
     const [el] = pedido.elementos;
     Object.assign(el.input, { altoAtras: el.input.altoDelante - 4, traseraPorArriba: true });
     el.result.panoTrasero.alto -= 4;
-    const [c] = generarCorteRemolques(pedido).cortes;
-    const cotas = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    const { archivo } = generarCorteRemolques(pedido);
+    const cotas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
     expect(cotas).toContain(el.result.panoTrasero.alto);
     expect(cotas).toContain(el.result.panoDelantero.alto);
   });
 
   it('coloca los baquetones junto a las lonas altas de la misma lona, como a mano (AR2605088)', () => {
-    const { cortes } = generarCorteRemolques(AR2605088);
-    // Un fichero por lona con el nombre que pide el bot: el número del pedido y, la segunda, con -2.
-    expect(cortes.map((c) => c.nombre)).toEqual(['AR2605088', 'AR2605088-2']);
+    const { cortes, archivo } = generarCorteRemolques(AR2605088);
+    // Siempre un DXF y un plano por pedido (Iván, 20/10/2026): las dos lonas en el mismo DXF, cada una en su
+    // corte (una encima de otra), con su material, y el plano con los dos cortes.
+    expect(cortes).toHaveLength(2);
+    expect(archivo.nombre).toBe('AR2605088');
+    const materiales = registrosDxf(archivo.dxf).filter((r) => ['TEXT', 'MTEXT'].includes(r.tipo)).map((r) => valor(r, 1));
+    expect(materiales).toEqual(expect.arrayContaining(['LONA PVC 580 GRIS CLARO 7038', 'LONA PVC 580 GRIS 7037']));
+    expect(materiales.filter((v) => v === 'DERECHO')).toHaveLength(2);
+    const medidas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(medidas).toEqual(expect.arrayContaining(cortes.map((c) => Math.round(c.largo) / 10)));
     const claro = cortes.find((c) => /GRIS CLARO/.test(c.material));
     // A mano, 19,24 m con las cabezas encima de los baquetones; antes, con los baquetones detrás, 20,71.
     expect(claro.largo).toBeLessThanOrEqual(19240);
@@ -142,43 +149,41 @@ describe('generarCorteRemolques', () => {
   });
 
   it('escribe el DXF del bot en mm y el plano en metros con el rotulador de 0,01', () => {
-    const [c] = generarCorteRemolques(AR2605132).cortes;
-    expect(variable(c.dxf, '$ACADVER')).toBe('AC1018');
-    expect(c.plano.codificacion).toBe('utf8');
-    const alturas = registrosDxf(c.plano.dxf)
+    const { archivo } = generarCorteRemolques(AR2605132);
+    expect(variable(archivo.dxf, '$ACADVER')).toBe('AC1018');
+    expect(archivo.plano.codificacion).toBe('utf8');
+    const alturas = registrosDxf(archivo.plano.dxf)
       .filter((r) => ['TEXT', 'MTEXT'].includes(r.tipo) && valor(r, 8) === 'ROTULADOR')
       .map((r) => numero(r, 40));
     expect(alturas.length).toBeGreaterThan(0);
     expect(new Set(alturas)).toEqual(new Set([0.01]));
     // El corte lleva su largo total y su alto como cotas de verdad (en cm).
-    const medidas = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    const medidas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
     expect(medidas).toContain(803.1);
     expect(medidas).toContain(250);
   });
 
   it('el DXF del bot nunca lleva cotas ni capas que no sean del bot (Iván: «no es capa compatible»)', () => {
     for (const pedido of [AR2605132, AR2605079, AR2605071, AR2604802]) {
-      for (const c of generarCorteRemolques(pedido).cortes) {
-        const entidades = registrosDxf(c.dxf);
-        expect(entidades.some((e) => e.tipo === 'DIMENSION')).toBe(false);
-        // Solo capas del bot (la leyenda del bot las usa todas).
-        expect(entidades.every((e) => CAPAS_BOT.includes(valor(e, 8)))).toBe(true);
-      }
+      const entidades = registrosDxf(generarCorteRemolques(pedido).archivo.dxf);
+      expect(entidades.some((e) => e.tipo === 'DIMENSION')).toBe(false);
+      // Solo capas del bot (la leyenda del bot las usa todas).
+      expect(entidades.every((e) => CAPAS_BOT.includes(valor(e, 8)))).toBe(true);
     }
   });
 
   it('los baquetones llevan su dibujo de confección con las cotas de terminado y de corte (AR2605071)', () => {
-    const [c] = generarCorteRemolques(AR2605071).cortes;
-    expect(c.plano.codificacion).toBe('utf8');
-    expect(variable(c.plano.dxf, '$INSUNITS')).toBe('6');
-    const cotas = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'DIMENSION');
+    const { archivo } = generarCorteRemolques(AR2605071);
+    expect(archivo.plano.codificacion).toBe('utf8');
+    expect(variable(archivo.plano.dxf, '$INSUNITS')).toBe('6');
+    const cotas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION');
     const medidas = (capa) => cotas.filter((r) => valor(r, 8) === capa).map((r) => Math.round(numero(r, 42) * 10) / 10);
     // Terminado: baquetón | hecho | baquetón, a lo largo y a lo ancho; y los ollaos en escalera.
     expect(medidas('cotas')).toEqual(expect.arrayContaining([10, 154, 121, 2.5, 32.5, 62, 92, 121.5, 151.5, 41, 80, 118.5]));
     // Corte: el paño único y las esquinas.
     expect(medidas('vent-pre-noimpr')).toEqual(expect.arrayContaining([180, 147, 12]));
     // Dos unidades iguales: un solo dibujo con las dos piezas.
-    const textos = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'MTEXT').map((r) => valor(r, 1));
+    const textos = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'MTEXT').map((r) => valor(r, 1));
     expect(textos).toContain('A1 · B1');
     expect(textos.some((t) => /BAQUETÓN 153 × 120 × 10 × 2/.test(t))).toBe(true);
   });

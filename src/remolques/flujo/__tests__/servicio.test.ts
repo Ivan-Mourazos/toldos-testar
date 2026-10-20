@@ -445,7 +445,7 @@ describe("generar: corte de lona", () => {
         return {
           ficheros: [
             { type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf", contenido: new Uint8Array([1]) },
-            { type: "plano-corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286 (plano).dwg", savedPath: "/planos/AR2604286 (plano).dwg", contenido: new Uint8Array([2]) },
+            { type: "plano-corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dwg", savedPath: "/planos/AR2604286.dwg", contenido: new Uint8Array([2]) },
           ],
           avisos: ["0231780: revisar la ventana."],
         };
@@ -468,12 +468,12 @@ describe("generar: corte de lona", () => {
     const esperado = {
       files: [
         { type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf" },
-        { type: "plano-corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286 (plano).dwg", savedPath: "/planos/AR2604286 (plano).dwg" },
+        { type: "plano-corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dwg", savedPath: "/planos/AR2604286.dwg" },
       ],
       avisos: ["0231780: revisar la ventana."],
     };
     expect(r.cuerpo).toMatchObject({ ok: true, corte: esperado });
-    expect(llamadas.escritos).toEqual(["/planos/AR2604286 (plano).dwg", "/bot/AR2604286.dxf", "/planos/AR2604286 (plano).dwg"]);
+    expect(llamadas.escritos).toEqual(["/planos/AR2604286.dwg", "/bot/AR2604286.dxf", "/planos/AR2604286.dwg"]);
     // Los resultados recalculados, los mismos que lleva la hoja.
     expect(llamadas.preparar[0]).toEqual(m.llamadas.pdf[0].elementos.map((e) => JSON.stringify(e.result).slice(0, 20)));
     const pedido = await m.servicio.obtener("AR2604286");
@@ -489,7 +489,7 @@ describe("generar: corte de lona", () => {
     expect(vista.ofs).toEqual(["231780", "231781"]);
     await m.servicio.generar("AR2604286", {});
     expect(vista.resultados).toEqual(m.llamadas.pdf[0].elementos.map((e) => e.result));
-    expect(llamadas.escritos).toEqual(["/planos/AR2604286 (plano).dwg", "/bot/AR2604286.dxf", "/planos/AR2604286 (plano).dwg"]);
+    expect(llamadas.escritos).toEqual(["/planos/AR2604286.dwg", "/bot/AR2604286.dxf", "/planos/AR2604286.dwg"]);
     // Sin corte en el servidor, se dice.
     const sin = montar();
     await guardar(sin.servicio);
@@ -513,7 +513,7 @@ describe("generar: corte de lona", () => {
 });
 
 describe("plano del corte para revisar antes de aprobar", () => {
-  const plano = { type: "plano-corte-lona" as const, material: "LONA PVC 580", filename: "AR2604286 (plano).dwg", savedPath: "/planos/AR2604286 (plano).dwg" };
+  const plano = { type: "plano-corte-lona" as const, material: "LONA PVC 580", filename: "AR2604286.dwg", savedPath: "/planos/AR2604286.dwg" };
   function corteDePrueba(fallaEscribir = false) {
     const escritos: string[] = [];
     const corte: CorteRemolques = {

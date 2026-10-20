@@ -260,9 +260,9 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
   return { ancho: W + 40 + (atr.join() !== del.join() ? 4 * atr.length : 0) + 30 + 4 * del.length, alto: H, abajo };
 }
 
-// pedido: el de la web; lonas y baquetones: los elementos de esta lona; corte: entidades del bot (mm);
-// material y largo del rollo para el título.
-export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params = {}, refuerzos = false, letras, corte, material, largoRollo }) {
+// pedido: el de la web; lonas y baquetones: los elementos que se cortan; cortes: uno por lona (color), con sus
+// entidades del bot (mm), su material resumido y su largo de rollo. Siempre un plano por pedido (Iván, 20/10/2026).
+export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params = {}, refuerzos = false, letras, cortes }) {
   const L = lienzo();
   let y = 0, ancho = 0;
   // Los baquetones abajo, en una fila uno al lado de otro, con sitio para sus escaleras de ollaos por debajo.
@@ -283,25 +283,30 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
     y += d.alto + 120;
   }
   const zonaDibujo = { x0: -45, y0: -45, x1: ancho + 20, y1: y - 40 };
-  // Corte debajo, a escala (mm → cm), lejos del dibujo.
-  const C = { lineas: [], polilineas: [], textos: [], arcos: [], circulos: [] };
-  const yc = -900, cm = (v) => v / 10;
-  for (const l of corte.lineas) C.lineas.push({ capa: l.capa, x1: cm(l.x1), y1: yc + cm(l.y1), x2: cm(l.x2), y2: yc + cm(l.y2) });
-  for (const t of corte.textos) C.textos.push({ ...t, valor: String(t.valor), x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
-  for (const c of corte.circulos) C.circulos.push({ capa: c.capa, x: cm(c.x), y: yc + cm(c.y), r: 0.25 });
-  for (const a of corte.arcos) C.arcos.push({ capa: a.capa, x: cm(a.x), y: yc + cm(a.y), r: cm(a.r), desde: a.desde, hasta: a.hasta });
-  // Cotas del corte (Iván, 20/10/2026): el largo total por debajo y el alto que ocupa a la izquierda.
-  const alto = Math.max(...C.lineas.map((l) => Math.max(l.y1, l.y2))) - yc;
-  C.cotas = [
-    { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: cm(largoRollo), y2: yc, giro: 0, d: yc - 25, valor: cm(largoRollo) },
-    { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: 0, y2: yc + alto, giro: 90, d: -25, valor: alto },
-  ];
+  // Los cortes debajo, a escala (mm → cm), lejos del dibujo: uno por lona, uno encima de otro como en el DXF del
+  // bot (el primero abajo), cada uno con su material y sus cotas.
+  const C = { lineas: [], polilineas: [], textos: [], arcos: [], circulos: [], cotas: [] };
+  const cm = (v) => v / 10, FILA = 400;
+  cortes.forEach(({ entidades: corte, largo: largoRollo }, k) => {
+    const yc = -900 - (cortes.length - 1 - k) * FILA;
+    for (const l of corte.lineas) C.lineas.push({ capa: l.capa, x1: cm(l.x1), y1: yc + cm(l.y1), x2: cm(l.x2), y2: yc + cm(l.y2) });
+    for (const t of corte.textos) C.textos.push({ ...t, valor: String(t.valor), x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
+    for (const c of corte.circulos) C.circulos.push({ capa: c.capa, x: cm(c.x), y: yc + cm(c.y), r: 0.25 });
+    for (const a of corte.arcos) C.arcos.push({ capa: a.capa, x: cm(a.x), y: yc + cm(a.y), r: cm(a.r), desde: a.desde, hasta: a.hasta });
+    // Cotas del corte (Iván, 20/10/2026): el largo total por debajo y el alto que ocupa a la izquierda.
+    const alto = Math.max(...corte.lineas.map((l) => cm(Math.max(l.y1, l.y2))));
+    C.cotas.push(
+      { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: cm(largoRollo), y2: yc, giro: 0, d: yc - 25, valor: cm(largoRollo) },
+      { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: 0, y2: yc + alto, giro: 90, d: -25, valor: alto },
+    );
+  });
+  const ycAbajo = -900 - (cortes.length - 1) * FILA;
   // La zona del corte cuenta también lo que ocupan los textos (el material de arriba no va centrado).
   const anchoTexto = (t) => String(t.valor).length * t.h * 0.62;
   const pts = [...C.lineas.flatMap((l) => [[l.x1, l.y1], [l.x2, l.y2]]),
     ...C.textos.flatMap((t) => (t.centrado ? [[t.x - anchoTexto(t) / 2, t.y - t.h], [t.x + anchoTexto(t) / 2, t.y + t.h]] : [[t.x, t.y], [t.x + anchoTexto(t), t.y + t.h]])),
     // Las cotas, con el sitio de su texto.
-    [-25 - 12, yc - 25 - 12]];
+    [-25 - 12, ycAbajo - 25 - 12]];
   const zonaCorte = { x0: Math.min(...pts.map((p) => p[0])) - 10, y0: Math.min(...pts.map((p) => p[1])) - 10, x1: Math.max(...pts.map((p) => p[0])) + 10, y1: Math.max(...pts.map((p) => p[1])) + 10 };
   // A metros, a 100 m del origen.
   const m = (v) => ORIGEN_M + v / 100;
@@ -317,10 +322,14 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
   const plano = { ...aM(L.g), corte: aM(C), zonas: { toldos: zona(zonaDibujo), corte: zona(zonaCorte) }, corteDerecho: true };
   const s = pedido.summary ?? {};
   const fecha = (s.orderDate ?? '').split('-').reverse().map((x, k) => (k === 2 ? x.slice(2) : x)).join('/');
+  const metros = (mm) => `${(mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 })} M`;
+  const material = cortes.map((c) => c.material).join(' / ');
   const cabecera = {
     pedido: pedido.orderCode, of: [...new Set([...lonas, ...baquetones].map((e) => e.of))].join(' / '), cliente: s.customer ?? '', tecnico: s.technician ?? '', revisor: s.reviewer ?? '',
     fecha, pagina: '1/1', material, subtitulo: 'MEDIDAS EN CM · LONA REMOLQUE',
-    tituloCorte: `CORTE · ${material} · ROLLO DE 250 · ${(largoRollo / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 })} M`,
+    tituloCorte: cortes.length === 1
+      ? `CORTE · ${material} · ROLLO DE 250 · ${metros(cortes[0].largo)}`
+      : `CORTE · ${cortes.length} LONAS · ROLLO DE 250 · ${cortes.map((c) => metros(c.largo)).join(' + ')}`,
   };
   return escribirDxfPlano(plano, cabecera).dxf;
 }

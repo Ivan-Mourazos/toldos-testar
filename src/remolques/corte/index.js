@@ -44,14 +44,32 @@ function fusionar(segs) {
   return out;
 }
 
+// Los cortes de un pedido con varias lonas, en el mismo DXF, cada uno en su fila: el primero abajo y los demás
+// encima, con 1 m entre medias (como a mano en AR2605088: dos colores en un DXF, en cortes separados).
+const SEPARACION_CORTES = 1000;
+function apilar(cortes) {
+  const juntas = { lineas: [], textos: [], circulos: [], arcos: [] };
+  let dy = 0;
+  for (const c of cortes) {
+    juntas.lineas.push(...c.lineas.map((l) => ({ ...l, y1: l.y1 + dy, y2: l.y2 + dy })));
+    juntas.textos.push(...c.textos.map((t) => ({ ...t, y: t.y + dy })));
+    juntas.circulos.push(...c.circulos.map((x) => ({ ...x, y: x.y + dy })));
+    juntas.arcos.push(...c.arcos.map((a) => ({ ...a, y: a.y + dy })));
+    const arriba = Math.max(ROLLO, ...c.lineas.flatMap((l) => [l.y1, l.y2]), ...c.textos.map((t) => t.y + t.h));
+    dy += arriba + SEPARACION_CORTES;
+  }
+  return juntas;
+}
+
 const ofDe = (el) => normalizeOf(el.input?.cabecera?.ordenFabricacion ?? '');
 const descripcion = (e) => (e.tipo === 'baqueton'
   ? `baquetón ${e.input.largo}×${e.input.ancho}×${e.input.baqueton}`
   : `lona alta ${e.input.largo}×${e.input.ancho}×${e.input.altoDelante} ${e.input.tipoPerfil}`);
 /**
  * El corte de un pedido de remolques guardado (flujo/tipos.ts, PedidoRemolques), con los resultados con que
- * se va a generar. Devuelve una entrada por lona: las que se cortan, con su DXF del bot y su plano (DXF
- * 2018 en utf8 o DXF 2004 en latin1, para pasar a DWG), y las que se dejan a mano, con el motivo.
+ * se va a generar. Devuelve una entrada por lona (las que se cortan y las que se dejan a mano, con el motivo)
+ * y `archivo`: siempre un solo DXF del bot y un solo plano por pedido (Iván, 20/10/2026: «siempre hay 1 dwg y
+ * solo 1 dxf»); con dos colores, cada uno en su corte dentro del mismo DXF. Null si no hay nada que cortar.
  */
 export function generarCorteRemolques(pedido) {
   const codigo = pedido.orderCode;
@@ -69,10 +87,10 @@ export function generarCorteRemolques(pedido) {
     porLona.set(k, [...(porLona.get(k) ?? []), el]);
   }
   const cortes = [], aMano = [];
-  for (const [k, [material, els]] of [...porLona].entries()) {
-    // El nombre que pide el bot (BOT/Pendientes/Instrucions.txt: «formato AR2600000»); la segunda lona del
-    // pedido, con -2, como a mano (AR2505088-2). Iván, 20/10/2026.
-    const nombre = k === 0 ? codigo : `${codigo}-${k + 1}`;
+  // El nombre que pide el bot (BOT/Pendientes/Instrucions.txt: «formato AR2600000»).
+  const nombre = codigo;
+  const cortadas = { lonas: [], baquetones: [], refuerzos: false };
+  for (const [material, els] of porLona) {
     const lonas = els.filter((e) => e.tipo !== 'baqueton'), baqs = els.filter((e) => e.tipo === 'baqueton');
     const fuera = lonas.map((e) => [e, soportada(e)]).filter(([, motivo]) => motivo);
     if (fuera.length) {
@@ -103,18 +121,26 @@ export function generarCorteRemolques(pedido) {
       circulos: [...la.ollaos, ...cb.marcas.map(([x, y]) => [x + dx, y])].map(([x, y]) => ({ capa: 'ROTULADOR', x, y, r: R_OLLAO })),
       arcos: la.arcos.map((a) => ({ capa: 'DISCO1', ...a })),
     };
-    // Plano para revisar, en metros (Iván, 20/10/2026): el dibujo de confección de cada lona alta y de cada
-    // baquetón, con sus cotas, y el corte, sobre la presentación A4.
-    const plano = {
-      dxf: escribirPlanoRemolques({ pedido, lonas, baquetones: baqs, params, refuerzos, letras: conLetras, corte: entidades, material: corto, largoRollo: largo }),
-      codificacion: 'utf8',
-    };
+    cortadas.lonas.push(...lonas);
+    cortadas.baquetones.push(...baqs);
+    cortadas.refuerzos ||= refuerzos;
     cortes.push({
       nombre, material, materialCorto: corto, largo, refuerzos,
       elementos: els.map((e) => ({ of: e.of, descripcion: descripcion(e), cantidad: e.input.cantidad || 1 })),
       avisos: [...la.avisos, ...cb.avisos],
-      entidades, dxf: escribirDxf2004(entidades), plano,
+      entidades,
     });
   }
-  return { cortes, aMano };
+  if (!cortes.length) return { cortes, aMano, archivo: null };
+  // Plano para revisar, en metros (Iván, 20/10/2026): el dibujo de confección de cada lona alta y de cada
+  // baquetón, con sus cotas, y los cortes, sobre la presentación A4.
+  const plano = {
+    dxf: escribirPlanoRemolques({
+      pedido, lonas: cortadas.lonas, baquetones: cortadas.baquetones, params, refuerzos: cortadas.refuerzos,
+      letras: letras.size ? letras : null,
+      cortes: cortes.map((c) => ({ entidades: c.entidades, material: c.materialCorto, largo: c.largo })),
+    }),
+    codificacion: 'utf8',
+  };
+  return { cortes, aMano, archivo: { nombre, dxf: escribirDxf2004(apilar(cortes.map((c) => c.entidades))), plano } };
 }

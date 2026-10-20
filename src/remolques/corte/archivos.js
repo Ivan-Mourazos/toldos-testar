@@ -24,21 +24,23 @@ export function crearCorteRemolques({ ajustes, oda }) {
     // autor no está, no se escribe el corte y se avisa; la hoja y el plano salen igual.
     const hayBot = await fs.stat(bot).then((s) => s.isDirectory(), () => false);
     if (!hayBot) avisos.push(`No existe la carpeta del bot «${bot}»: no se ha escrito el corte (la web no la crea).`);
+    // Siempre un DXF y un plano por pedido (Iván, 20/10/2026), con todas sus lonas.
+    for (const c of resultado.cortes) avisos.push(...c.avisos);
+    const { archivo } = resultado;
+    const material = resultado.cortes.map((c) => c.materialCorto).join(' / ');
     const ficheros = [];
-    for (const c of resultado.cortes) {
-      avisos.push(...c.avisos);
-      const dxf = `${c.nombre}.dxf`;
-      if (hayBot) ficheros.push({ type: 'corte-lona', material: c.materialCorto, filename: dxf, savedPath: path.join(bot, dxf), contenido: Buffer.from(c.dxf, 'latin1') });
-      let contenido = Buffer.from(c.plano.dxf, c.plano.codificacion);
-      let extension = 'dxf';
-      if (oda.disponible) {
-        try { contenido = await oda.convertir(contenido); extension = 'dwg'; }
-        catch (error) { if (!['ENOENT', 'EACCES'].includes(error.cause?.code)) throw error; }
-      }
-      if (extension === 'dxf') avisos.push(`ODA no disponible: el plano de ${c.nombre} se ha guardado en DXF.`);
-      const plano = `${c.nombre} (plano).${extension}`;
-      ficheros.push({ type: 'plano-corte-lona', material: c.materialCorto, filename: plano, savedPath: path.join(planos, plano), contenido });
+    const dxf = `${archivo.nombre}.dxf`;
+    if (hayBot) ficheros.push({ type: 'corte-lona', material, filename: dxf, savedPath: path.join(bot, dxf), contenido: Buffer.from(archivo.dxf, 'latin1') });
+    let contenido = Buffer.from(archivo.plano.dxf, archivo.plano.codificacion);
+    let extension = 'dxf';
+    if (oda.disponible) {
+      try { contenido = await oda.convertir(contenido); extension = 'dwg'; }
+      catch (error) { if (!['ENOENT', 'EACCES'].includes(error.cause?.code)) throw error; }
     }
+    if (extension === 'dxf') avisos.push(`ODA no disponible: el plano de ${archivo.nombre} se ha guardado en DXF.`);
+    // Con el nombre del pedido, como los DWG de Oficina Tecnica/<año> (AR2605132.dwg junto a AR2605132.pdf).
+    const plano = `${archivo.nombre}.${extension}`;
+    ficheros.push({ type: 'plano-corte-lona', material, filename: plano, savedPath: path.join(planos, plano), contenido });
     return { ficheros, avisos };
   }
 
