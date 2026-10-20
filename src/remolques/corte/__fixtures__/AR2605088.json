@@ -1,0 +1,2324 @@
+{
+  "schemaVersion": 1,
+  "kind": "remolques",
+  "orderCode": "AR2605088",
+  "numeroPedido": "AR2605088",
+  "status": "PRODUCED",
+  "createdAt": "2026-10-19T12:25:08.296Z",
+  "updatedAt": "2026-10-20T08:21:08.571Z",
+  "createdBy": "ADRIÁN",
+  "reviewedAt": "2026-10-20T08:21:08.571Z",
+  "reviewedBy": "IVÁN",
+  "reviewNote": "",
+  "production": {
+    "createdAt": "2026-10-20T08:21:08.571Z",
+    "createdBy": "ADRIÁN",
+    "files": [
+      {
+        "type": "pdf",
+        "filename": "AR2605088-10.pdf",
+        "savedPath": "/mnt/escaner/Planteamientos/AR2605088-10.pdf"
+      },
+      {
+        "type": "pdf",
+        "filename": "AR2605088.pdf",
+        "savedPath": "/mnt/oftecnica/2026/AR2605088.pdf"
+      }
+    ]
+  },
+  "summary": {
+    "customer": "REMOLQUES NUÑEZ",
+    "orderDate": "2026-10-15",
+    "technician": "ADRIÁN",
+    "reviewer": "IVÁN",
+    "awnings": 8,
+    "ofs": [
+      "0233083",
+      "0233084",
+      "0233085",
+      "0233086",
+      "0233087",
+      "0233088",
+      "0233089",
+      "0233090"
+    ],
+    "models": [
+      "Recto con aguas",
+      "Baquetón"
+    ],
+    "diagnostics": 0
+  },
+  "params": {
+    "recogidas": [
+      {
+        "nombre": "NO",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "GOMA",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "GANCHOS CORAZON",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "CREMALLERA",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "VELCRO",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "PUENTES ESVA",
+        "delante": 21,
+        "atras": 21,
+        "lateralSoloAtras": 19,
+        "lateralSoloDelante": 19
+      },
+      {
+        "nombre": "PUENTES LATERALES",
+        "delante": 41,
+        "atras": 21,
+        "lateralSoloAtras": 9,
+        "lateralSoloDelante": 9
+      },
+      {
+        "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+        "delante": 42.5,
+        "atras": 42.5,
+        "lateralSoloAtras": 11.5,
+        "lateralSoloDelante": 9,
+        "panoTraseroConAnchoDelante": true
+      }
+    ],
+    "demasiaAlto": 4.5,
+    "demasiaContornoNormal": 3,
+    "demasiaContornoEnfundar": 13,
+    "demasiaLonaHecha": 1,
+    "ajusteContornoBase": 7,
+    "ajusteContornoCurva": 1.5,
+    "pasoOllaosDefecto": 35,
+    "primerOllao": 2.5,
+    "maxPosicionesOllaos": 12,
+    "baquetonDemasiaLargoCostura": 7,
+    "baquetonDemasiaAnchoCostura": 7,
+    "baquetonDemasiaCostura": 2,
+    "baquetonDemasiaFinal": 1,
+    "tecnicos": [
+      "ÁNGEL",
+      "JAIME",
+      "ALBERTO",
+      "ADRIÁN",
+      "TAMARA",
+      "IVÁN"
+    ],
+    "clientesBaqueton": [
+      {
+        "nombre": "GENERAL",
+        "extraLargoCostura": 0,
+        "extraAnchoCostura": 0,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "HIJOS DE PEDRO LOPEZ",
+        "extraLargoCostura": 11,
+        "extraAnchoCostura": 2,
+        "extraBaquetonLargoDelante": 1,
+        "extraBaquetonLargoDetras": 11,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 10,
+        "observaciones": [
+          "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+        ]
+      },
+      {
+        "nombre": "AYALA",
+        "extraLargoCostura": 1,
+        "extraAnchoCostura": 1,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 1,
+        "extraAnchoFinal": 1,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "GENERAL WOLDER",
+        "extraLargoCostura": -1,
+        "extraAnchoCostura": -1,
+        "extraBaquetonLargoDelante": -0.5,
+        "extraBaquetonLargoDetras": -0.5,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": [
+          "OLLAOS EN ALTA FRECUENCIA",
+          "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+          "MANDAR GOMA SUELTA"
+        ]
+      }
+    ]
+  },
+  "elementos": [
+    {
+      "version": "10",
+      "tipo": "lona",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "10",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233083",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 303,
+        "ancho": 150,
+        "anchoAtras": 0,
+        "altoDelante": 62,
+        "altoAtras": 0,
+        "aguas": 2,
+        "radioCumbrera": 0,
+        "radioHombro": 0,
+        "radioEsquina": 0,
+        "chaflan": 0,
+        "radioChaflanAbajo": 0,
+        "radioChaflanArriba": 0,
+        "contorno": 271.1,
+        "tipoPerfil": "TIPO 02",
+        "recogeDelante": "NO",
+        "recogeAtras": "CREMALLERA",
+        "bastillaEnfundar": false,
+        "ventana": false,
+        "ventanaAncho": 0,
+        "ventanaAlto": 0,
+        "rotulacion": true,
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [
+            2.5,
+            35.7,
+            68.9,
+            102.2,
+            135.4,
+            168.6,
+            201.8,
+            235.1,
+            268.3,
+            301.5
+          ],
+          "atras": [
+            2.5,
+            31.7,
+            60.9,
+            90.1,
+            119.3,
+            148.5
+          ],
+          "delante": [
+            2.5,
+            31.7,
+            60.9,
+            90.1,
+            119.3,
+            148.5
+          ]
+        },
+        "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+        "observaciones": "REF. NT-30"
+      },
+      "result": {
+        "lonaHecha": {
+          "largo": 304,
+          "ancho": 151,
+          "anchoAtras": 151
+        },
+        "contornoIntroducido": 271.1,
+        "ajusteContorno": 7,
+        "contornoAjustado": 278.1,
+        "panoDelantero": {
+          "ancho": 153,
+          "alto": 66.5,
+          "etiqueta": "PAÑO DELANTERO"
+        },
+        "panoTrasero": {
+          "ancho": 153,
+          "alto": 66.5,
+          "etiqueta": "PAÑO TRASERO"
+        },
+        "panoContorno": {
+          "ancho": 306,
+          "alto": 278.1,
+          "etiqueta": "PAÑO CONTORNO"
+        },
+        "ollaos": {
+          "largo": {
+            "n": 10,
+            "dist": 33.2,
+            "posiciones": [
+              2.5,
+              35.7,
+              68.9,
+              102.2,
+              135.4,
+              168.6,
+              201.8,
+              235.1,
+              268.3,
+              301.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            35.7,
+            68.9,
+            102.2,
+            135.4,
+            168.6,
+            201.8,
+            235.1,
+            268.3,
+            301.5
+          ],
+          "atras": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ],
+          "delante": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ]
+        },
+        "metrosTela": 6.12,
+        "recogeDelanteTexto": "NO",
+        "recogeAtrasTexto": "CREMALLERA",
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "11",
+      "tipo": "lona",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "11",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233084",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 273,
+        "ancho": 170,
+        "anchoAtras": 0,
+        "altoDelante": 62,
+        "altoAtras": 0,
+        "aguas": 2,
+        "radioCumbrera": 0,
+        "radioHombro": 0,
+        "radioEsquina": 0,
+        "chaflan": 0,
+        "radioChaflanAbajo": 0,
+        "radioChaflanArriba": 0,
+        "contorno": 291,
+        "tipoPerfil": "TIPO 02",
+        "recogeDelante": "NO",
+        "recogeAtras": "CREMALLERA",
+        "bastillaEnfundar": false,
+        "ventana": false,
+        "ventanaAncho": 0,
+        "ventanaAlto": 0,
+        "rotulacion": true,
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [],
+          "atras": [],
+          "delante": []
+        },
+        "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+        "observaciones": "REF. IRENE"
+      },
+      "result": {
+        "lonaHecha": {
+          "largo": 274,
+          "ancho": 171,
+          "anchoAtras": 171
+        },
+        "contornoIntroducido": 291,
+        "ajusteContorno": 7,
+        "contornoAjustado": 298,
+        "panoDelantero": {
+          "ancho": 173,
+          "alto": 66.5,
+          "etiqueta": "PAÑO DELANTERO"
+        },
+        "panoTrasero": {
+          "ancho": 173,
+          "alto": 66.5,
+          "etiqueta": "PAÑO TRASERO"
+        },
+        "panoContorno": {
+          "ancho": 276,
+          "alto": 298,
+          "etiqueta": "PAÑO CONTORNO"
+        },
+        "ollaos": {
+          "largo": {
+            "n": 9,
+            "dist": 33.6,
+            "posiciones": [
+              2.5,
+              36.1,
+              69.8,
+              103.4,
+              137,
+              170.6,
+              204.3,
+              237.9,
+              271.5
+            ]
+          },
+          "ancho": {
+            "n": 6,
+            "dist": 33.2,
+            "posiciones": [
+              2.5,
+              35.7,
+              68.9,
+              102.1,
+              135.3,
+              168.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 6,
+            "dist": 33.2,
+            "posiciones": [
+              2.5,
+              35.7,
+              68.9,
+              102.1,
+              135.3,
+              168.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            36.1,
+            69.8,
+            103.4,
+            137,
+            170.6,
+            204.3,
+            237.9,
+            271.5
+          ],
+          "atras": [
+            2.5,
+            35.7,
+            68.9,
+            102.1,
+            135.3,
+            168.5
+          ],
+          "delante": [
+            2.5,
+            35.7,
+            68.9,
+            102.1,
+            135.3,
+            168.5
+          ]
+        },
+        "metrosTela": 6.22,
+        "recogeDelanteTexto": "NO",
+        "recogeAtrasTexto": "CREMALLERA",
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "12",
+      "tipo": "baqueton",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "12",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233085",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 253,
+        "ancho": 150,
+        "baqueton": 10,
+        "clienteEspecifico": "GENERAL",
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [],
+          "atras": [],
+          "delante": []
+        },
+        "rotulacion": true,
+        "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+        "observaciones": "REF. EDUARDO"
+      },
+      "result": {
+        "panoUnico": {
+          "largo": 280,
+          "ancho": 177
+        },
+        "remolqueHecho": {
+          "largo": 254,
+          "ancho": 151
+        },
+        "baquetonCostura": 12,
+        "esquinaDelante": 12,
+        "esquinaDetras": 12,
+        "baquetonDelantero": null,
+        "baquetonTrasero": null,
+        "superficieM2": 4.956,
+        "ollaos": {
+          "largo": {
+            "n": 8,
+            "dist": 35.6,
+            "posiciones": [
+              2.5,
+              38.1,
+              73.6,
+              109.2,
+              144.8,
+              180.4,
+              215.9,
+              251.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            38.1,
+            73.6,
+            109.2,
+            144.8,
+            180.4,
+            215.9,
+            251.5
+          ],
+          "atras": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ],
+          "delante": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ]
+        },
+        "metrosTela": 2.8,
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "13",
+      "tipo": "baqueton",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "13",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233086",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 193,
+        "ancho": 120,
+        "baqueton": 10,
+        "clienteEspecifico": "GENERAL",
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [],
+          "atras": [],
+          "delante": []
+        },
+        "rotulacion": true,
+        "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+        "observaciones": "REF. N-19"
+      },
+      "result": {
+        "panoUnico": {
+          "largo": 220,
+          "ancho": 147
+        },
+        "remolqueHecho": {
+          "largo": 194,
+          "ancho": 121
+        },
+        "baquetonCostura": 12,
+        "esquinaDelante": 12,
+        "esquinaDetras": 12,
+        "baquetonDelantero": null,
+        "baquetonTrasero": null,
+        "superficieM2": 3.234,
+        "ollaos": {
+          "largo": {
+            "n": 7,
+            "dist": 31.5,
+            "posiciones": [
+              2.5,
+              34,
+              65.5,
+              97,
+              128.5,
+              160,
+              191.5
+            ]
+          },
+          "ancho": {
+            "n": 4,
+            "dist": 38.7,
+            "posiciones": [
+              2.5,
+              41.2,
+              79.8,
+              118.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 4,
+            "dist": 38.7,
+            "posiciones": [
+              2.5,
+              41.2,
+              79.8,
+              118.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            34,
+            65.5,
+            97,
+            128.5,
+            160,
+            191.5
+          ],
+          "atras": [
+            2.5,
+            41.2,
+            79.8,
+            118.5
+          ],
+          "delante": [
+            2.5,
+            41.2,
+            79.8,
+            118.5
+          ]
+        },
+        "metrosTela": 2.2,
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "14",
+      "tipo": "baqueton",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "14",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233087",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 253,
+        "ancho": 150,
+        "baqueton": 10,
+        "clienteEspecifico": "GENERAL",
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [],
+          "atras": [],
+          "delante": []
+        },
+        "rotulacion": true,
+        "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+        "observaciones": "REF. NT-25"
+      },
+      "result": {
+        "panoUnico": {
+          "largo": 280,
+          "ancho": 177
+        },
+        "remolqueHecho": {
+          "largo": 254,
+          "ancho": 151
+        },
+        "baquetonCostura": 12,
+        "esquinaDelante": 12,
+        "esquinaDetras": 12,
+        "baquetonDelantero": null,
+        "baquetonTrasero": null,
+        "superficieM2": 4.956,
+        "ollaos": {
+          "largo": {
+            "n": 8,
+            "dist": 35.6,
+            "posiciones": [
+              2.5,
+              38.1,
+              73.6,
+              109.2,
+              144.8,
+              180.4,
+              215.9,
+              251.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            38.1,
+            73.6,
+            109.2,
+            144.8,
+            180.4,
+            215.9,
+            251.5
+          ],
+          "atras": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ],
+          "delante": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ]
+        },
+        "metrosTela": 2.8,
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "15",
+      "tipo": "lona",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "15",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233088",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 225,
+        "ancho": 150,
+        "anchoAtras": 0,
+        "altoDelante": 62,
+        "altoAtras": 0,
+        "aguas": 2,
+        "radioCumbrera": 0,
+        "radioHombro": 0,
+        "radioEsquina": 0,
+        "chaflan": 0,
+        "radioChaflanAbajo": 0,
+        "radioChaflanArriba": 0,
+        "contorno": 271.1,
+        "tipoPerfil": "TIPO 02",
+        "recogeDelante": "NO",
+        "recogeAtras": "CREMALLERA",
+        "bastillaEnfundar": false,
+        "ventana": false,
+        "ventanaAncho": 0,
+        "ventanaAlto": 0,
+        "rotulacion": true,
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [],
+          "atras": [],
+          "delante": []
+        },
+        "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+        "observaciones": "REF. RAUL"
+      },
+      "result": {
+        "lonaHecha": {
+          "largo": 226,
+          "ancho": 151,
+          "anchoAtras": 151
+        },
+        "contornoIntroducido": 271.1,
+        "ajusteContorno": 7,
+        "contornoAjustado": 278.1,
+        "panoDelantero": {
+          "ancho": 153,
+          "alto": 66.5,
+          "etiqueta": "PAÑO DELANTERO"
+        },
+        "panoTrasero": {
+          "ancho": 153,
+          "alto": 66.5,
+          "etiqueta": "PAÑO TRASERO"
+        },
+        "panoContorno": {
+          "ancho": 228,
+          "alto": 278.1,
+          "etiqueta": "PAÑO CONTORNO"
+        },
+        "ollaos": {
+          "largo": {
+            "n": 7,
+            "dist": 36.8,
+            "posiciones": [
+              2.5,
+              39.3,
+              76.2,
+              113,
+              149.8,
+              186.7,
+              223.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            39.3,
+            76.2,
+            113,
+            149.8,
+            186.7,
+            223.5
+          ],
+          "atras": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ],
+          "delante": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ]
+        },
+        "metrosTela": 5.34,
+        "recogeDelanteTexto": "NO",
+        "recogeAtrasTexto": "CREMALLERA",
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "16",
+      "tipo": "lona",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "16",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233089",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 235,
+        "ancho": 150,
+        "anchoAtras": 0,
+        "altoDelante": 62,
+        "altoAtras": 0,
+        "aguas": 2,
+        "radioCumbrera": 0,
+        "radioHombro": 0,
+        "radioEsquina": 0,
+        "chaflan": 0,
+        "radioChaflanAbajo": 0,
+        "radioChaflanArriba": 0,
+        "contorno": 271.1,
+        "tipoPerfil": "TIPO 02",
+        "recogeDelante": "NO",
+        "recogeAtras": "CREMALLERA",
+        "bastillaEnfundar": false,
+        "ventana": false,
+        "ventanaAncho": 0,
+        "ventanaAlto": 0,
+        "rotulacion": true,
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [],
+          "atras": [],
+          "delante": []
+        },
+        "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+        "observaciones": "REF. GUADARRAMA"
+      },
+      "result": {
+        "lonaHecha": {
+          "largo": 236,
+          "ancho": 151,
+          "anchoAtras": 151
+        },
+        "contornoIntroducido": 271.1,
+        "ajusteContorno": 7,
+        "contornoAjustado": 278.1,
+        "panoDelantero": {
+          "ancho": 153,
+          "alto": 66.5,
+          "etiqueta": "PAÑO DELANTERO"
+        },
+        "panoTrasero": {
+          "ancho": 153,
+          "alto": 66.5,
+          "etiqueta": "PAÑO TRASERO"
+        },
+        "panoContorno": {
+          "ancho": 238,
+          "alto": 278.1,
+          "etiqueta": "PAÑO CONTORNO"
+        },
+        "ollaos": {
+          "largo": {
+            "n": 8,
+            "dist": 33,
+            "posiciones": [
+              2.5,
+              35.5,
+              68.5,
+              101.5,
+              134.5,
+              167.5,
+              200.5,
+              233.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            35.5,
+            68.5,
+            101.5,
+            134.5,
+            167.5,
+            200.5,
+            233.5
+          ],
+          "atras": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ],
+          "delante": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ]
+        },
+        "metrosTela": 5.44,
+        "recogeDelanteTexto": "NO",
+        "recogeAtrasTexto": "CREMALLERA",
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "version": "17",
+      "tipo": "baqueton",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605088",
+          "version": "17",
+          "cliente": "REMOLQUES NUÑEZ",
+          "revision": "IVÁN",
+          "realizadoPor": "ADRIÁN",
+          "ordenFabricacion": "0233090",
+          "fecha": "2026-10-15",
+          "fechaSalida": "2026-10-22"
+        },
+        "cantidad": 1,
+        "largo": 223,
+        "ancho": 150,
+        "baqueton": 10,
+        "clienteEspecifico": "GENERAL",
+        "modoOllaos": "REPARTIDOS",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [],
+          "atras": [],
+          "delante": []
+        },
+        "rotulacion": true,
+        "material": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+        "observaciones": "REF. NT-22"
+      },
+      "result": {
+        "panoUnico": {
+          "largo": 250,
+          "ancho": 177
+        },
+        "remolqueHecho": {
+          "largo": 224,
+          "ancho": 151
+        },
+        "baquetonCostura": 12,
+        "esquinaDelante": 12,
+        "esquinaDetras": 12,
+        "baquetonDelantero": null,
+        "baquetonTrasero": null,
+        "superficieM2": 4.425,
+        "ollaos": {
+          "largo": {
+            "n": 7,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5,
+              185,
+              221.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 36.5,
+            "posiciones": [
+              2.5,
+              39,
+              75.5,
+              112,
+              148.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5,
+            185,
+            221.5
+          ],
+          "atras": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ],
+          "delante": [
+            2.5,
+            39,
+            75.5,
+            112,
+            148.5
+          ]
+        },
+        "metrosTela": 2.5,
+        "notas": [
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "clienteRps": {
+    "codigo": "001302",
+    "nombre": "REMOLQUES NUÑEZ, S. L."
+  }
+}

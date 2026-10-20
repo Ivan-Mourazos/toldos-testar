@@ -26,7 +26,7 @@ describe('el corte de lona del pedido de remolques', () => {
   it('dice qué lona se corta a mano y por qué', () => {
     const html = pintar(AR2604800);
     expect(html).toContain('se corta a mano');
-    expect(html).toContain('perfil TIPO 03');
+    expect(html).toContain('recogida con puentes');
     expect(html).not.toContain('corte-material');
   });
 });

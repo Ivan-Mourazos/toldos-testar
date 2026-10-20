@@ -1,8 +1,9 @@
 // Corte de lona alta: contorno, paño delantero y paño trasero de cada lona, en mm, con las reglas sacadas
 // de los cortes a mano de 2026 que tienen los datos de la web (docs/dxf-corte-remolques.md):
 // - Las piezas miden lo que da la web (panoContorno, panoDelantero, panoTrasero).
-// - Cabezas con la forma del perfil: TIPO 01 recto, TIPO 02 con pico (los hombros bajan `aguas`), TIPO 05
-//   con esquinas redondeadas de radio = radio de la web + 1.
+// - Cabezas con la forma del perfil: TIPO 01 recto, TIPO 02 con pico (los hombros bajan `aguas`), TIPO 03
+//   con aguas y arcos en hombros y cumbrera (aguasArquilladas), TIPO 05 con esquinas redondeadas de radio =
+//   radio de la web + 1.
 // - Trasero que recoge con goma (o cualquier recogida más ancha que «NO»): el perfil del delantero más una
 //   oreja a cada lado (recto: hasta 5 cm del borde de arriba; arquillado: hasta donde acaba la curva; con
 //   aguas: el hombro − 6).
@@ -12,7 +13,7 @@
 //   vertical de lo que tienen encima; y su tapa (ventana + 3 cm), una por ventana, donde mejor quepa.
 // - Contorno girado si no cabe a lo ancho del rollo; si no cabe de ninguna forma, con empate (ver abajo).
 // - Todas las piezas, colocadas de la forma que menos rollo gaste.
-// Fuera de esta versión (se cortan a mano): TIPO 03 y 04, puentes y remolque más ancho detrás.
+// Fuera de esta versión (se cortan a mano): TIPO 04, puentes y remolque más ancho detrás.
 
 const ROLLO = 2500, BORDE = 45, R_OLLAO = 2.5;
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -20,7 +21,7 @@ const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.f
 
 export function soportada(el) {
   const i = el.input, r = el.result;
-  if (!['TIPO 01', 'TIPO 02', 'TIPO 05'].includes(i.tipoPerfil)) return `perfil ${i.tipoPerfil || 'sin elegir'}`;
+  if (!['TIPO 01', 'TIPO 02', 'TIPO 03', 'TIPO 05'].includes(i.tipoPerfil)) return `perfil ${i.tipoPerfil || 'sin elegir'}`;
   if (/PUENTES/.test(`${i.recogeDelante} ${i.recogeAtras}`)) return 'recogida con puentes';
   if (!r.panoContorno) return 'sin contorno calculado';
   if (r.panoContorno.altoAtras) return 'remolque distinto detrás (contorno en trapecio)';
@@ -42,17 +43,47 @@ const marca = (p, x1, y1, x2, y2) => p.rot.push([x1, y1, x2, y2]);
 function forma(i) {
   const tipo = i.tipoPerfil;
   const r = tipo === 'TIPO 05' ? ((i.radioEsquina ?? 0) + 1) * 10 : 0;
-  const aguas = tipo === 'TIPO 02' ? (i.aguas ?? 0) * 10 : 0;
-  return { tipo, r, aguas };
+  const aguas = ['TIPO 02', 'TIPO 03'].includes(tipo) ? (i.aguas ?? 0) * 10 : 0;
+  // Arquillado con aguas (TIPO 03): hombros de radio el de la web + 1 cm, como el arquillado (85 con 7,5, 92 con
+  // 8,2, 111 con 10,1 en los cortes a mano); la cumbrera, con el radio de la web tal cual (75 con 7,5, AR2604390).
+  const rHombro = tipo === 'TIPO 03' && (i.radioHombro ?? 0) > 0 ? (i.radioHombro + 1) * 10 : 0;
+  const rCumbrera = tipo === 'TIPO 03' ? Math.max(i.radioCumbrera ?? 0, 0) * 10 : 0;
+  return { tipo, r, aguas, rHombro, rCumbrera };
+}
+
+/**
+ * Arquillado con aguas (TIPO 03), como lo dibuja la web (geometry/perfil.ts) y como sale en los cortes a mano
+ * (AR2604412, AR2604501, AR2604602, AR2604390): la pendiente va del hombro virtual (el lado a h − aguas) al pico
+ * del centro, con un arco tangente en cada hombro y, si hay radio, otro en la cumbrera. `dx` es la distancia
+ * al lado más cercano; todo en mm sobre la base de la cabeza.
+ */
+export function aguasArquilladas(f, w, h) {
+  const a = w / 2, theta = Math.atan2(f.aguas, a), lateral = h - f.aguas, tan = Math.tan(theta);
+  const tanHombro = Math.tan((Math.PI / 2 - theta) / 2);
+  const rh = Math.min(f.rHombro, lateral / tanHombro);
+  const t = rh * tanHombro;                                   // del hombro virtual a cada tangencia
+  const cyH = lateral - t;                                    // fin del lado recto y centro del arco del hombro
+  const txH = t * Math.cos(theta), tyH = lateral + t * Math.sin(theta); // tangencia con la pendiente
+  const rc = Math.min(f.rCumbrera, (a - txH) / Math.sin(theta || 1e-9));
+  const cyC = h - rc / Math.cos(theta), txC = a - rc * Math.sin(theta); // centro y tangencia de la cumbrera
+  const alto = (dx) => {
+    if (rh > 0 && dx < txH) return cyH + Math.sqrt(Math.max(rh * rh - (rh - dx) ** 2, 0));
+    if (rc > 0 && dx > txC) return cyC + Math.sqrt(Math.max(rc * rc - (a - dx) ** 2, 0));
+    return lateral + dx * tan;
+  };
+  return { a, theta, lateral, rh, cyH, txH, tyH, rc, cyC, txC, alto };
 }
 
 // Cabeza: perfil de ancho `w` (sin orejas) y alto `h`, con orejas de `oreja` mm a cada lado.
 function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false) {
   const W = w + 2 * oreja, p = pieza(W, h);
-  const hombro = f.tipo === 'TIPO 05' ? h - f.r : h - f.aguas;
+  const ag = f.tipo === 'TIPO 03' ? aguasArquilladas(f, w, h) : null;
+  // Hasta dónde llega el lado recto: el arquillado y el arquillado con aguas, hasta donde empieza la curva.
+  const hombro = f.tipo === 'TIPO 05' ? h - f.r : ag ? ag.cyH : h - f.aguas;
   // Alto de la oreja (Iván, 20/10/2026): en el recto, a 5 cm del borde de arriba; con hombro en curva, hasta
-  // donde acaba la curva. Con aguas, el hombro − 6 cm, como en los cortes a mano (AR2604843, AR2604959).
-  const altoOreja = f.tipo === 'TIPO 05' ? h - f.r : f.tipo === 'TIPO 02' ? hombro - 60 : h - 50;
+  // donde acaba la curva. Con aguas (sin curva), el hombro − 6 cm, como en los cortes a mano (AR2604843, AR2604959).
+  const curva = f.tipo === 'TIPO 05' || (ag && ag.rh > 0);
+  const altoOreja = curva ? hombro : f.tipo === 'TIPO 02' || ag ? hombro - 60 : h - 50;
   const x0 = oreja, x1 = oreja + w;
   seg(p, 0, 0, W, 0);
   // Lados: oreja (si hay) y lado del perfil hasta el hombro.
@@ -66,6 +97,15 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false) {
     seg(p, x0 + f.r, h, x1 - f.r, h);
     p.arcos.push({ x: x1 - f.r, y: h - f.r, r: f.r, desde: 0, hasta: 90 }, { x: x0 + f.r, y: h - f.r, r: f.r, desde: 90, hasta: 180 });
   }
+  if (ag) {
+    // Pendientes de la tangencia del hombro a la de la cumbrera (o al pico); arcos en hombros y cumbrera.
+    const grados = (ag.theta * 180) / Math.PI;
+    const [cx, cy] = ag.rc > 0 ? [ag.txC, ag.alto(ag.txC)] : [ag.a, h];
+    seg(p, x0 + ag.txH, ag.tyH, x0 + cx, cy);
+    seg(p, x1 - cx, cy, x1 - ag.txH, ag.tyH);
+    if (ag.rh > 0) p.arcos.push({ x: x0 + ag.rh, y: ag.cyH, r: ag.rh, desde: 90 + grados, hasta: 180 }, { x: x1 - ag.rh, y: ag.cyH, r: ag.rh, desde: 0, hasta: 90 - grados });
+    if (ag.rc > 0) p.arcos.push({ x: x0 + ag.a, y: ag.cyC, r: ag.rc, desde: 90 - grados, hasta: 90 + grados });
+  }
   // Ollaos sobre la lona hecha, centrada en el perfil; en las orejas, dos más.
   const off = x0 + (w - hecha * 10) / 2;
   for (const pos of ollaos) p.ollaos.push([off + pos * 10, BORDE]);
@@ -74,6 +114,7 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false) {
   marca(p, x0 + w / 2, h - 10, x0 + w / 2, h - 25);
   // Lo que tiene encima cada punto del perfil: el borde de arriba, la pendiente de las aguas o la curva del arquillado.
   const encima = (x) => {
+    if (ag) return ag.alto(Math.max(Math.min(x - x0, x1 - x), 0));
     if (f.tipo === 'TIPO 02') return hombro + (h - hombro) * (1 - Math.abs(x - (x0 + w / 2)) / (w / 2));
     if (f.tipo === 'TIPO 05') {
       const dx = Math.max(x0 + f.r - x, x - (x1 - f.r), 0);
@@ -246,8 +287,9 @@ function colocarTodo(piezas, intentos = 400) {
   return mejor;
 }
 
-// `letras`: Map elemento → letra de cada unidad (solo si el corte lleva más de un remolque).
-export function cortarLonasAltas(elementos, x0 = 0, letras = null) {
+// `letras`: Map elemento → letra de cada unidad (solo si el corte lleva más de un remolque). `extras`: otras
+// piezas de la misma lona para colocarlas a la vez por huecos (los baquetones, baqueton.js piezasBaqueton).
+export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) {
   const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [] };
   const piezas = [], tapas = [];
   let union = 1; // número de la siguiente unión de empate (sin letras)
@@ -281,6 +323,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null) {
       if (ventana) { const tapa = pieza(ventana[0] + 30, ventana[1] + 30); seg(tapa, 0, 0, tapa.w, 0); seg(tapa, tapa.w, 0, tapa.w, tapa.h); seg(tapa, tapa.w, tapa.h, 0, tapa.h); seg(tapa, 0, tapa.h, 0, 0); tapa.deRestos = `TAPA DE VENTANA ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}${L ? ` (${L}6)` : ''}`; tapas.push(rotular(tapa, L && `${L}6`)); }
     }
   }
+  piezas.push(...extras);
   const pack = colocarTodo(piezas);
   if (!pack) { out.avisos.push('Alguna pieza no cabe en el rollo: hacer esta lona a mano.'); return { ...out, largo: x0 }; }
   // Tapas: solo en huecos que no alarguen el corte; si no, se cortan de restos (AR2605023).
@@ -304,6 +347,8 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null) {
     // En grande en el centro: el rótulo de la pieza (si hay varios remolques) y, en el contorno, la OF.
     const grandes = [p.etiqueta, p.contornoDe].filter(Boolean);
     grandes.forEach((v, n) => out.textos.push({ capa: 'texto', x: x0 + sitio.x + pc.ancho / 2, y: sitio.y + pc.alto / 2 + 90 * (grandes.length - 1) - 180 * n, h: 100, valor: v, centrado: true }));
+    // Un aviso para el taller debajo (los refuerzos de un baquetón), ajustado al ancho de la pieza.
+    if (p.textoCentro) out.textos.push({ capa: 'texto', x: x0 + sitio.x + pc.ancho / 2, y: sitio.y + pc.alto / 2 - 300, h: Math.min(100, (pc.ancho - 200) / 20), valor: p.textoCentro, centrado: true });
   }
   return { ...out, largo: x0 + pack.largo };
 }

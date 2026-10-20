@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { CAPAS_BOT } from '../../domain/corteLona/dxfCorte.js';
 import { numero, registrosDxf, valor, variable } from '../../domain/corteLona/dxfTestHelpers.js';
+import AR2604390 from './__fixtures__/AR2604390.json' with { type: 'json' };
+import AR2604412 from './__fixtures__/AR2604412.json' with { type: 'json' };
 import AR2604800 from './__fixtures__/AR2604800.json' with { type: 'json' };
 import AR2604802 from './__fixtures__/AR2604802.json' with { type: 'json' };
 import AR2604990 from './__fixtures__/AR2604990.json' with { type: 'json' };
 import AR2605071 from './__fixtures__/AR2605071.json' with { type: 'json' };
 import AR2605079 from './__fixtures__/AR2605079.json' with { type: 'json' };
+import AR2605088 from './__fixtures__/AR2605088.json' with { type: 'json' };
 import AR2605132 from './__fixtures__/AR2605132.json' with { type: 'json' };
 import { generarCorteRemolques, resumirMaterial } from './index.js';
 
@@ -92,10 +95,30 @@ describe('generarCorteRemolques', () => {
     expect(cremallera).toHaveLength(2);
   });
 
-  it('deja a mano la lona con un perfil que todavía no sabe cortar (AR2604800, TIPO 03)', () => {
+  it('corta el arquillado con aguas con arcos en los hombros y en la cumbrera, como a mano (AR2604412, AR2604390)', () => {
+    // Santaballa, 200 × 121 × 93: aguas de 8 y hombros de 10,1 → arcos de 111 (radio + 1 cm); los mismos metros.
+    const [a] = generarCorteRemolques(AR2604412).cortes;
+    expect(a.largo).toBeLessThanOrEqual(4192);
+    expect(new Set(a.entidades.arcos.map((x) => Math.round(x.r)))).toEqual(new Set([111]));
+    expect(a.entidades.arcos).toHaveLength(2 * 2);
+    // Hombros de 7,5 → 85 y cumbrera de 7,5 → 75 (el radio tal cual).
+    const [b] = generarCorteRemolques(AR2604390).cortes;
+    const radios = b.entidades.arcos.map((x) => Math.round(x.r)).sort();
+    expect(radios).toEqual([75, 75, 85, 85, 85, 85]);
+  });
+
+  it('coloca los baquetones junto a las lonas altas de la misma lona, como a mano (AR2605088)', () => {
+    const { cortes } = generarCorteRemolques(AR2605088);
+    const claro = cortes.find((c) => /GRIS CLARO/.test(c.material));
+    // A mano, 19,24 m con las cabezas encima de los baquetones; antes, con los baquetones detrás, 20,71.
+    expect(claro.largo).toBeLessThanOrEqual(19240);
+    expect(claro.elementos.map((e) => e.of)).toEqual(['0233083', '0233085', '0233086', '0233087', '0233088', '0233089', '0233090']);
+  });
+
+  it('deja a mano la lona con puentes (AR2604800)', () => {
     const { cortes, aMano } = generarCorteRemolques(AR2604800);
     expect(cortes).toEqual([]);
-    expect(aMano).toEqual([expect.objectContaining({ nombre: 'AR2604800', motivo: expect.stringContaining('perfil TIPO 03') })]);
+    expect(aMano).toEqual([expect.objectContaining({ nombre: 'AR2604800', motivo: expect.stringContaining('puentes') })]);
   });
 
   it('no toca el pedido que recibe', () => {

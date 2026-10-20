@@ -4,7 +4,7 @@
 // sabe cortar (TIPO 03/04, puentes, más ancho detrás) se deja entera para hacerla a mano.
 import { escribirDxf2004 } from '../../domain/corteLona/dxfCorte.js';
 import { normalizeOf } from '../../reviewRules.js';
-import { cortarBaquetones } from './baqueton.js';
+import { cabeEnRollo, cortarBaquetones, piezasBaqueton } from './baqueton.js';
 import { cortarLonasAltas, soportada, R_OLLAO } from './lonaAlta.js';
 import { escribirPlanoRemolques } from './plano.js';
 
@@ -82,8 +82,13 @@ export function generarCorteRemolques(pedido) {
     }
     const refuerzos = baqs.length > 0 && (/PAMILAKAN/.test(cliente) || baqs.some((e) => /REFUER|REFORZ/i.test(e.input.observaciones ?? '')));
     const conLetras = letras.size ? letras : null;
-    const la = lonas.length ? cortarLonasAltas(lonas, 0, conLetras) : { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0 };
-    const cb = baqs.length ? cortarBaquetones(codigo, baqs, params, refuerzos, letras) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
+    // Con lonas altas, los baquetones que caben en el rollo se colocan con ellas por huecos (como a mano en
+    // AR2605088: las cabezas encima de los baquetones); los que llevan empate van detrás, como siempre.
+    const juntos = lonas.length ? baqs.filter((e) => cabeEnRollo(e, params)) : [];
+    const aparte = baqs.filter((e) => !juntos.includes(e));
+    const extras = juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], refuerzos));
+    const la = lonas.length ? cortarLonasAltas(lonas, 0, conLetras, extras) : { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0 };
+    const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, refuerzos, letras) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
     const dx = la.largo;
     const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])]);
     const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx }))];

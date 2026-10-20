@@ -66,6 +66,43 @@ export function medidasRefuerzo(pz) {
   return dentro >= 120 ? { enEsquina: true, lado: dentro, brazo: dentro / 2 } : { enEsquina: false, lado: esquina + 20, brazo: 70 };
 }
 
+/** true si el baquetón cabe en el rollo sin empate (por el largo o por el ancho). */
+export const cabeEnRollo = (el, params) => { const pz = piezaBaqueton(el, params); return pz.L <= ROLLO || pz.A <= ROLLO; };
+
+/**
+ * Las unidades de un baquetón que cabe en el rollo, como piezas para colocarlas por huecos junto a las de
+ * las lonas altas de la misma lona (lonaAlta.js, cortarLonasAltas). Como a mano en AR2605088: las cabezas
+ * entran encima de los baquetones. Cada pieza, sin girar (x = largo, delante a la izquierda; y = ancho); los
+ * refuerzos sueltos, una pieza aparte con los cuatro en fila.
+ */
+export function piezasBaqueton(el, params, letras = [], refuerzos = false) {
+  const pz = piezaBaqueton(el, params);
+  const piezas = [];
+  for (let u = 0; u < (el.input.cantidad || 1); u++) {
+    const L = letras[u] ?? '';
+    const p = { w: pz.L, h: pz.A, lineas: [], arcos: [], ollaos: pz.ollaos.map(([x, y]) => [x, y]), rot: [], numeros: [] };
+    for (const [[a, b], [c, d]] of cruz(pz.L, pz.A, pz.eI, pz.eR, pz.eb)) p.lineas.push([a, b, c, d]);
+    // Rótulo de esquina dentro de la solapa de abajo, junto a la esquina de la izquierda (como en cortarBaquetones).
+    if (L) { p.numeros.push([pz.eI + 15, 15, `${L}1`, 0, 'esquina']); p.etiqueta = `${L}1`; }
+    p.contornoDe = el.of;
+    piezas.push(p);
+    if (refuerzos) {
+      p.textoCentro = 'REFUERZOS EN ESQUINAS, SIN MARCAR';
+      const { enEsquina, lado, brazo } = medidasRefuerzo(pz);
+      if (enEsquina) {
+        for (const [cx, cy, sx, sy] of [[pz.eI, pz.eb, -1, -1], [pz.L - pz.eR, pz.eb, 1, -1], [pz.eI, pz.A - pz.eb, -1, 1], [pz.L - pz.eR, pz.A - pz.eb, 1, 1]]) {
+          for (const [[a, b], [c, d]] of refuerzoEnEsquina(cx, cy, sx, sy, lado, brazo)) p.lineas.push([a, b, c, d]);
+        }
+      } else {
+        const r = { w: 4 * lado, h: lado, lineas: [], arcos: [], ollaos: [], rot: [], numeros: [] };
+        for (let k = 0; k < 4; k++) for (const [[a, b], [c, d]] of refuerzoSuelto(k * lado, 0, lado, brazo, k % 2 === 1)) r.lineas.push([a, b, c, d]);
+        piezas.push(r);
+      }
+    }
+  }
+  return piezas;
+}
+
 // Los baquetones de una misma lona, uno al lado de otro. `letras`: Map elemento → letra de cada unidad.
 export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = new Map()) {
   const segs = [], marcas = [], textos = [], avisos = [];

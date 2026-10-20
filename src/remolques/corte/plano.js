@@ -3,12 +3,12 @@
 // contorno, cada uno con la línea de corte, la rosa de terminado, los ollaos y marcas, y sus cotas (verde lo
 // terminado, ocre lo de corte), como en los DWG de los pedidos (AR2605120). Debajo, el corte del rollo.
 import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
-import { DOBLEZ_BASTILLA, piezasLona } from './lonaAlta.js';
+import { aguasArquilladas, DOBLEZ_BASTILLA, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano } from '../../domain/corteLona/presentacion.js';
 
 const ORIGEN_M = 100;   // como en toldos: lejos del origen del CAD
 const coma = (v) => (Math.round(v * 10) / 10).toString().replace('.', ',');
-const PERFILES = { 'TIPO 01': 'RECTO', 'TIPO 02': 'RECTO CON AGUAS', 'TIPO 03': 'CON CUMBRERA', 'TIPO 04': 'CHAFLÁN', 'TIPO 05': 'ARQUILLADO' };
+const PERFILES = { 'TIPO 01': 'RECTO', 'TIPO 02': 'RECTO CON AGUAS', 'TIPO 03': 'ARQUILLADO CON AGUAS', 'TIPO 04': 'CHAFLÁN', 'TIPO 05': 'ARQUILLADO' };
 
 function lienzo() {
   const g = { lineas: [], polilineas: [], textos: [], arcos: [], circulos: [], cotas: [] };
@@ -48,6 +48,24 @@ function rosaCabeza(L, f, x0, w, h, t) {
       const [x, y] = t(cx, h - r);
       L.g.arcos.push({ capa: 'referencias', x, y, r: (r - i) / 10, desde, hasta });
     }
+    return;
+  }
+  if (f.tipo === 'TIPO 03') {
+    // Arquillado con aguas: 1 cm por dentro del corte, con los arcos de verdad (radio − 1 cm, mismo centro) y
+    // las pendientes paralelas. Si un radio es de 1 cm o menos, por dentro queda en esquina viva.
+    const g = aguasArquilladas(f, w, h), sen = Math.sin(g.theta), cos = Math.cos(g.theta), grados = (g.theta * 180) / Math.PI;
+    const tramo = (pts) => L.g.polilineas.push({ capa: 'referencias', puntos: pts.map(([a, b]) => t(a, b)), cerrada: false });
+    const arco = (cx, cy, radio, desde, hasta) => { const [x, y] = t(cx, cy); L.g.arcos.push({ capa: 'referencias', x, y, r: radio / 10, desde, hasta }); };
+    // Hombro: hasta dónde llega el lado y dónde empieza la pendiente (dx desde el lado).
+    const [ladoY, pend] = g.rh > i
+      ? [g.cyH, [g.rh - (g.rh - i) * sen, g.cyH + (g.rh - i) * cos]]
+      : [g.lateral + i * Math.tan(g.theta) - i / cos, [i, g.lateral + i * Math.tan(g.theta) - i / cos]];
+    const cima = g.rc > i ? [g.a - (g.rc - i) * sen, g.cyC + (g.rc - i) * cos] : [g.a, h - i / cos];
+    tramo([[x0 + i, ladoY], [x0 + i, base], [x0 + w - i, base], [x0 + w - i, ladoY]]);
+    tramo([[x0 + pend[0], pend[1]], [x0 + cima[0], cima[1]]]);
+    tramo([[x0 + w - cima[0], cima[1]], [x0 + w - pend[0], pend[1]]]);
+    if (g.rh > i) { arco(x0 + g.rh, g.cyH, g.rh - i, 90 + grados, 180); arco(x0 + w - g.rh, g.cyH, g.rh - i, 0, 90 - grados); }
+    if (g.rc > i) arco(x0 + g.a, g.cyC, g.rc - i, 90 - grados, 90 + grados);
     return;
   }
   const pts = f.tipo === 'TIPO 02'

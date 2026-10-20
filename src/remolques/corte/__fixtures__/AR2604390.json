@@ -1,0 +1,474 @@
+{
+  "schemaVersion": 1,
+  "kind": "remolques",
+  "orderCode": "AR2604390",
+  "numeroPedido": "AR.26.04390",
+  "status": "PRODUCED",
+  "createdAt": "2026-09-09T07:05:50.931Z",
+  "updatedAt": "2026-09-09T09:22:53.347Z",
+  "createdBy": "IVÁN",
+  "reviewedAt": null,
+  "reviewedBy": "",
+  "reviewNote": "",
+  "production": {
+    "createdAt": "2026-09-09T09:22:53.347Z",
+    "createdBy": "JAIME",
+    "files": [
+      {
+        "type": "pdf",
+        "filename": "AR2604390-10.pdf",
+        "savedPath": "/mnt/escaner/Planteamientos/AR2604390-10.pdf"
+      },
+      {
+        "type": "pdf",
+        "filename": "AR2604390.pdf",
+        "savedPath": "/mnt/oftecnica/2026/AR2604390.pdf"
+      }
+    ]
+  },
+  "summary": {
+    "customer": "FERNANDEZ DE LA LLAVE, LUIS MIGUEL",
+    "orderDate": "2026-09-07",
+    "technician": "IVÁN",
+    "reviewer": "",
+    "awnings": 1,
+    "ofs": [
+      "0231936"
+    ],
+    "models": [
+      "Arquillado con aguas"
+    ],
+    "diagnostics": 0
+  },
+  "params": {
+    "recogidas": [
+      {
+        "nombre": "NO",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "GOMA",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "CREMALLERA",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "VELCRO",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "PUENTES ESVA",
+        "delante": 21,
+        "atras": 21,
+        "lateralSoloAtras": 19,
+        "lateralSoloDelante": 19
+      },
+      {
+        "nombre": "PUENTES LATERALES",
+        "delante": 41,
+        "atras": 21,
+        "lateralSoloAtras": 9,
+        "lateralSoloDelante": 9
+      },
+      {
+        "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+        "delante": 42.5,
+        "atras": 42.5,
+        "lateralSoloAtras": 11.5,
+        "lateralSoloDelante": 9,
+        "panoTraseroConAnchoDelante": true
+      },
+      {
+        "nombre": "GANCHOS CORAZON",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      }
+    ],
+    "demasiaAlto": 4.5,
+    "demasiaContornoNormal": 3,
+    "demasiaContornoEnfundar": 13,
+    "demasiaLonaHecha": 1,
+    "ajusteContornoBase": 7,
+    "ajusteContornoCurva": 1.5,
+    "pasoOllaosDefecto": 35,
+    "primerOllao": 2.5,
+    "maxPosicionesOllaos": 12,
+    "baquetonDemasiaLargoCostura": 7,
+    "baquetonDemasiaAnchoCostura": 7,
+    "baquetonDemasiaCostura": 2,
+    "baquetonDemasiaFinal": 1,
+    "tecnicos": [
+      "IVAN",
+      "ADRIAN",
+      "JAIME",
+      "TAMARA",
+      "ALBERTO",
+      "ANGEL"
+    ],
+    "clientesBaqueton": [
+      {
+        "nombre": "GENERAL",
+        "extraLargoCostura": 0,
+        "extraAnchoCostura": 0,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "HIJOS DE PEDRO LOPEZ",
+        "extraLargoCostura": 11,
+        "extraAnchoCostura": 2,
+        "extraBaquetonLargoDelante": 1,
+        "extraBaquetonLargoDetras": 11,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 10,
+        "observaciones": [
+          "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+        ]
+      },
+      {
+        "nombre": "AYALA",
+        "extraLargoCostura": 1,
+        "extraAnchoCostura": 1,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 1,
+        "extraAnchoFinal": 1,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "GENERAL WOLDER",
+        "extraLargoCostura": -1,
+        "extraAnchoCostura": -1,
+        "extraBaquetonLargoDelante": -0.5,
+        "extraBaquetonLargoDetras": -0.5,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": [
+          "OLLAOS EN ALTA FRECUENCIA",
+          "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+          "MANDAR GOMA SUELTA"
+        ]
+      }
+    ]
+  },
+  "elementos": [
+    {
+      "version": "10",
+      "tipo": "lona",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR.26.04390",
+          "version": "10",
+          "cliente": "FERNANDEZ DE LA LLAVE, LUIS MIGUEL",
+          "revision": "",
+          "realizadoPor": "IVAN",
+          "ordenFabricacion": "0231936",
+          "fecha": "2026-09-07",
+          "fechaSalida": "2026-09-14"
+        },
+        "cantidad": 1,
+        "largo": 176,
+        "ancho": 126,
+        "anchoAtras": 0,
+        "altoDelante": 68,
+        "altoAtras": 68,
+        "aguas": 10.5,
+        "radioCumbrera": 7.5,
+        "radioHombro": 7.5,
+        "radioEsquina": 0,
+        "chaflan": 0,
+        "radioChaflanAbajo": 0,
+        "radioChaflanArriba": 0,
+        "contorno": 239.4,
+        "tipoPerfil": "TIPO 03",
+        "recogeDelante": "NO",
+        "recogeAtras": "GOMA",
+        "bastillaEnfundar": false,
+        "ventana": false,
+        "ventanaAncho": 0,
+        "ventanaAlto": 0,
+        "rotulacion": false,
+        "modoOllaos": "SEGUN SE INDICA",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [
+            2.5,
+            28.8,
+            66.4,
+            111,
+            146.3,
+            174.5
+          ],
+          "atras": [
+            2.5,
+            29,
+            60.3,
+            91.3,
+            124.5
+          ],
+          "delante": [
+            2.5,
+            29.8,
+            60.3,
+            90.5,
+            124.5
+          ]
+        },
+        "material": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+        "observaciones": ""
+      },
+      "result": {
+        "lonaHecha": {
+          "largo": 177,
+          "ancho": 127,
+          "anchoAtras": 127
+        },
+        "contornoIntroducido": 239.4,
+        "ajusteContorno": 8.5,
+        "contornoAjustado": 247.9,
+        "panoDelantero": {
+          "ancho": 129,
+          "alto": 72.5,
+          "etiqueta": "PAÑO DELANTERO"
+        },
+        "panoTrasero": {
+          "ancho": 153,
+          "alto": 72.5,
+          "etiqueta": "PAÑO TRASERO"
+        },
+        "panoContorno": {
+          "ancho": 179,
+          "alto": 247.9,
+          "etiqueta": "PAÑO CONTORNO"
+        },
+        "ollaos": {
+          "largo": {
+            "n": 6,
+            "dist": 34.4,
+            "posiciones": [
+              2.5,
+              36.9,
+              71.3,
+              105.7,
+              140.1,
+              174.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 30.5,
+            "posiciones": [
+              2.5,
+              33,
+              63.5,
+              94,
+              124.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 30.5,
+            "posiciones": [
+              2.5,
+              33,
+              63.5,
+              94,
+              124.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            28.8,
+            66.4,
+            111,
+            146.3,
+            174.5
+          ],
+          "atras": [
+            2.5,
+            29,
+            60.3,
+            91.3,
+            124.5
+          ],
+          "delante": [
+            2.5,
+            29.8,
+            60.3,
+            90.5,
+            124.5
+          ]
+        },
+        "metrosTela": 4.61,
+        "recogeDelanteTexto": "NO",
+        "recogeAtrasTexto": "GOMA",
+        "notas": [
+          "GOMA: preparar orejas por lado."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "IVAN",
+          "ADRIAN",
+          "JAIME",
+          "TAMARA",
+          "ALBERTO",
+          "ANGEL"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "origen": {
+    "web": "remolques-tgm",
+    "ids": [
+      "eb36b34c-86ba-46f2-a442-eb1207253eed"
+    ],
+    "migradoEn": "2026-10-01T10:30:06.959Z"
+  },
+  "clienteRps": {
+    "codigo": "054425",
+    "nombre": "FERNANDEZ DE LA LLAVE, LUIS MIGUEL"
+  }
+}
