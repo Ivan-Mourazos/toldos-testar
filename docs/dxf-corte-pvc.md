@@ -44,7 +44,7 @@ Datos de partida, en cm: frente de la tela (`ESTR!Q26`), caída de la tela (`EST
    - **Empates verticales** (excepción para ahorrar material, como AR2500481): iguales que los horizontales pero en el otro sentido. En vez del aumento de 9 se escuadra con bastilla de 3 en cada lateral («B.N(3)/AUMENTO PARA ESCUADRAR»), que son 6 cm por lado. El frente + 12 se reparte en paños de ancho de rollo con los 2 cm y un paño de resto, y cada paño mide la caída del cuerpo. En AR2500481 cuadra al milímetro: 705,8 + 12 + 2 × 2 = 721,8. La tira se reparte igual (frente + 4). Lo normal es siempre horizontal: el vertical es una opción que se elige a mano (`--vertical`), sin aviso de ahorro por ahora (Iván).
      - **Cuándo se ha elegido vertical** (Iván, 19/10/2026): cuando en horizontal el último paño queda en una tira muy estrecha y se pierde mucho material. AR2604097: cuerpo de 265 → 250 + 17 → se hizo vertical. Con tiras de 42 (AR2505157), 67 (AR2502068) o 92 cm (AR2602119) se dejó en horizontal. El límite está entre 17 y 42 cm.
 3. **Aumento para escuadrar:** si hay empates, todos los paños del cuerpo son 9 cm más largos que la tela. Los DWG lo dicen con «TIENE AUMENTO PARA ESCUADRAR». La tira no lo lleva.
-4. **Rotulador** (marcas para soldar las varillas, las bastillas y similares; en el DWG son las líneas rojas):
+4. **Rotulador** (marcas para soldar las varillas, las bastillas y similares; en el DWG son las líneas rojas). **La varilla de abajo del cuerpo es para engancharlo al tubo de carga, no para unirlo a la bamba**: cuerpo y tira se enganchan los dos al tubo. Por eso el cuerpo lleva siempre la marca de abajo, tenga o no bamba (Iván, 20/10/2026).
    - A 7 cm del borde de arriba del toldo.
    - A 7 cm de la unión con la bamba.
    - En la tira, a 6,5 cm de la unión.
@@ -177,6 +177,28 @@ Los primeros modelos sirven para fijar esa parte común. Los siguientes solo tie
 
   Mientras se prueba van a `Oficina Tecnica\DXF PRUEBAS WEB`. Más adelante, cambiando solo la configuración, el DXF irá a `maqcorte\BOT\Pendientes\<técnico>` y el plano a la carpeta del pedido.
 - **ODA File Converter en el servidor: sí.** Iván lo instala en el 192.168.0.90 con los pasos que le dé Claude (versión Linux: AppImage o .deb). Nadie más toca el servidor.
+
+## Siguientes modelos: dónde hay material para estudiarlos (20/10/2026)
+
+Consulta a RPS de pedidos de 2025-2026 con tela consumida, cruzada con los DWG de `Oficina Tecnica\<año>\TOLDOS` y los DXF manuales de la máquina (`tmp/dxf-estudio/rps-otros-modelos.mjs`, `otros-modelos.json`).
+
+| Modelo (artículo RPS) | Pedidos con DWG y corte manual | Ejemplos recientes |
+| --- | --- | --- |
+| Cortina universal (CORTINAUNI) | 76 de 208 | AR2605080, AR2604727, AR2604574, AR2604562; y AR2604890 de Alberto (18 cortinas, DWG con el corte dibujado) |
+| Solapa con velcro para cortinas (SOLAPACONVELCROS) | 5 de 20 | AR2604562, AR2604205 |
+| IRIS 110/130/150 | 9 en total | AR2602774, AR2601994, AR2604561, AR2604202 (2 OF) |
+| Bambalina (BAMBA) | 4 de 60 | AR2602685, AR2602141 |
+| Electra (ELECTRSCCG/ELECTRCCSG) | 5 | AR2603921, AR2602832 |
+| Diana/Maxiscreen (DIANAS/CO) | 3 de 5 | AR2503688, AR2501907 |
+| Punto Recto | 1 de 16 | AR2603932 |
+| Toldos con cajón (Perla, Ámbar, Coral, Cuarzo…) | casi ninguno | Son de acrílico y casi nunca tienen DXF de máquina. |
+
+HERA no aparece con esta búsqueda: su artículo de RPS se llama de otra forma, hay que buscarlo aparte.
+
+**Pedidos de PVC de fachada con varios toldos** comparados con el corte de la oficina (medidas sacadas de las cotas del DWG, porque no hay Excel ni pedido de la web):
+- AR2602565 (2 toldos): 5,58 m, igual que la oficina.
+- AR2600845 (4 toldos de fachada): 20,93 m. La oficina, sin contar las piezas de la pantalla, empareja los paños pequeños igual que la web.
+- AR2601502 (2 toldos): 18,12 m, igual que la parte de los toldos del corte manual.
 
 ## Lo que falta
 
