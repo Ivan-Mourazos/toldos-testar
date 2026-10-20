@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FileDown, Scissors } from 'lucide-react';
-import type { Notify } from '../components/NotificationCenter';
+import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import '../coordina/corte-lona.css';
 
 // El corte de lona de un pedido de remolques (20/10/2026), como saldrá al generar: por lona, el rollo
@@ -26,10 +26,33 @@ export type VistaCorteRemolques = {
   aMano: Array<{ nombre: string; material: string; motivo: string; elementos: string[] }>;
 };
 
+export type PlanoCorte = { files: Array<{ filename: string }>; avisos: string[]; existentes?: string[] } | null;
+
+/**
+ * Escribe el plano del corte del pedido para revisarlo. Si ya está en su carpeta (quizá hecho a mano),
+ * pregunta antes de sustituirlo (Iván, 20/10/2026). `null` si se conserva el que había.
+ */
+export async function escribirPlanoCorte(ruta: string, existentes: string[], preguntar: AskForConfirmation): Promise<PlanoCorte | 'conservado'> {
+  const eleccion = await preguntar({
+    title: 'Plano del corte',
+    message: `El plano ${existentes.join(' · ')} ya está en su carpeta. ¿Sustituirlo por el de la web?`,
+    confirmLabel: 'Sustituir plano',
+    cancelLabel: 'Conservar el actual',
+    tone: 'warning',
+  });
+  if (eleccion !== 'confirm') return 'conservado';
+  const respuesta = await fetch(`${ruta}/plano-corte`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite: true }),
+  });
+  const datos = await respuesta.json().catch(() => ({})) as { error?: string; planoCorte?: PlanoCorte };
+  if (!respuesta.ok) throw new Error(datos.error || 'No se pudo guardar el plano del corte.');
+  return datos.planoCorte ?? null;
+}
+
 const ROLLO = 2500;
 const metros = (mm: number) => (mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 });
 
-export function CorteRemolques({ ruta, version, generado = false, notify }: { ruta: string; version: string; generado?: boolean; notify: Notify }) {
+export function CorteRemolques({ ruta, version, generado = false, notify, onConfirm }: { ruta: string; version: string; generado?: boolean; notify: Notify; onConfirm: AskForConfirmation }) {
   // El resultado lleva para qué pedido y versión es: si cambian, se ve «Calculando…» hasta el nuevo.
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaCorteRemolques; error?: string } | null>(null);
@@ -53,10 +76,15 @@ export function CorteRemolques({ ruta, version, generado = false, notify }: { ru
     setGuardandoPlano(true);
     try {
       const respuesta = await fetch(`${ruta}/plano-corte`, { method: 'POST' });
-      const datos = await respuesta.json().catch(() => ({})) as { error?: string; planoCorte?: { files: Array<{ filename: string }>; avisos: string[] } | null };
-      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo guardar el plano del corte.');
-      const planos = datos.planoCorte?.files.map((fichero) => fichero.filename) ?? [];
-      const avisos = datos.planoCorte?.avisos ?? [];
+      const datos = await respuesta.json().catch(() => ({})) as { error?: string; existing?: string[]; planoCorte?: PlanoCorte };
+      let planoCorte = datos.planoCorte ?? null;
+      if (respuesta.status === 409 && datos.existing?.length) {
+        const sustituido = await escribirPlanoCorte(ruta, datos.existing, onConfirm);
+        if (sustituido === 'conservado') return;
+        planoCorte = sustituido;
+      } else if (!respuesta.ok) throw new Error(datos.error || 'No se pudo guardar el plano del corte.');
+      const planos = planoCorte?.files.map((fichero) => fichero.filename) ?? [];
+      const avisos = planoCorte?.avisos ?? [];
       const mensaje = planos.length
         ? `Plano del corte guardado para revisar: ${planos.join(' · ')}.${avisos.length ? ` ${avisos.join(' ')}` : ''}`
         : avisos.join(' ') || 'Este pedido no tiene corte de lona que guardar.';
@@ -75,7 +103,7 @@ export function CorteRemolques({ ruta, version, generado = false, notify }: { ru
       <header className="corte-cabecera">
         <div>
           <span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Corte de lona</h2></span>
-          <p>{generado ? 'El corte de cada lona, como se generó con los datos del pedido' : 'El plano DWG de cada lona sale al guardar para revisión; el DXF del bot, al generar'}</p>
+          <p>{generado ? 'El corte de cada lona, como se generó con los datos del pedido' : 'El plano DWG del pedido sale al guardar para revisión; el DXF del bot, al generar'}</p>
         </div>
         {!generado && (
           <button className="ghost-button boton-3d" type="button" disabled={guardandoPlano || !datos?.cortes.length} onClick={() => void guardarPlano()}>

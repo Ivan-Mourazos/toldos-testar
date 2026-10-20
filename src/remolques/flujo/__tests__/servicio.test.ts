@@ -459,7 +459,7 @@ describe("generar: corte de lona", () => {
     return { corte, llamadas };
   }
 
-  it("escribe el corte con los resultados con que se genera y lo apunta en el pedido, sin los bytes", async () => {
+  it("al generar escribe solo el DXF del bot (el plano salió al guardar) y lo apunta en el pedido, sin los bytes", async () => {
     const { corte, llamadas } = corteDePrueba();
     const m = montar({ corte });
     await guardar(m.servicio);
@@ -468,12 +468,11 @@ describe("generar: corte de lona", () => {
     const esperado = {
       files: [
         { type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf" },
-        { type: "plano-corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dwg", savedPath: "/planos/AR2604286.dwg" },
       ],
       avisos: ["0231780: revisar la ventana."],
     };
     expect(r.cuerpo).toMatchObject({ ok: true, corte: esperado });
-    expect(llamadas.escritos).toEqual(["/planos/AR2604286.dwg", "/bot/AR2604286.dxf", "/planos/AR2604286.dwg"]);
+    expect(llamadas.escritos).toEqual(["/planos/AR2604286.dwg", "/bot/AR2604286.dxf"]);
     // Los resultados recalculados, los mismos que lleva la hoja.
     expect(llamadas.preparar[0]).toEqual(m.llamadas.pdf[0].elementos.map((e) => JSON.stringify(e.result).slice(0, 20)));
     const pedido = await m.servicio.obtener("AR2604286");
@@ -489,7 +488,7 @@ describe("generar: corte de lona", () => {
     expect(vista.ofs).toEqual(["231780", "231781"]);
     await m.servicio.generar("AR2604286", {});
     expect(vista.resultados).toEqual(m.llamadas.pdf[0].elementos.map((e) => e.result));
-    expect(llamadas.escritos).toEqual(["/planos/AR2604286.dwg", "/bot/AR2604286.dxf", "/planos/AR2604286.dwg"]);
+    expect(llamadas.escritos).toEqual(["/planos/AR2604286.dwg", "/bot/AR2604286.dxf"]);
     // Sin corte en el servidor, se dice.
     const sin = montar();
     await guardar(sin.servicio);
@@ -541,6 +540,29 @@ describe("plano del corte para revisar antes de aprobar", () => {
     expect(await m.servicio.planoCorte("AR2604286")).toMatchObject({ status: 200, cuerpo: { ok: true, planoCorte: { files: [plano] } } });
     expect(escritos).toEqual([plano.savedPath, plano.savedPath]);
     expect(await m.servicio.obtener("AR2604286")).toEqual(antes);
+  });
+
+  it("si el plano ya está en su carpeta, no lo sustituye sin preguntar; el pedido se guarda igual", async () => {
+    mkdirSync(TMP, { recursive: true });
+    const carpeta = mkdtempSync(path.join(TMP, "remolques-plano-"));
+    temporales.push(carpeta);
+    const savedPath = path.join(carpeta, "AR2604286.dwg");
+    writeFileSync(savedPath, "hecho a mano");
+    const escritos: string[] = [];
+    const corte: CorteRemolques = {
+      preparar: async () => ({ ficheros: [{ ...plano, savedPath, contenido: new Uint8Array([2]) }], avisos: [] }),
+      escribir: async (ficheros) => { escritos.push(...ficheros.map((f) => f.savedPath)); },
+      vista: () => null,
+    };
+    const m = montar({ corte });
+    const r = await guardar(m.servicio);
+    expect(r.status).toBe(200);
+    expect(r.cuerpo).toMatchObject({ ok: true, planoCorte: { files: [], existentes: ["AR2604286.dwg"] } });
+    expect(await m.servicio.planoCorte("AR2604286")).toMatchObject({ status: 409, cuerpo: { needsConfirmation: true, existing: ["AR2604286.dwg"] } });
+    expect(escritos).toEqual([]);
+    // Con el «sí», se sustituye.
+    expect(await m.servicio.planoCorte("AR2604286", { confirmOverwrite: true })).toMatchObject({ status: 200, cuerpo: { ok: true, planoCorte: { files: [{ savedPath }] } } });
+    expect(escritos).toEqual([savedPath]);
   });
 
   it("en simulación no escribe y lo avisa; si la carpeta falla, el pedido se guarda igual", async () => {

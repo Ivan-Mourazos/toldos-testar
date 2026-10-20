@@ -299,7 +299,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const calculado = conResultadosDeLaHoja(pedido, datos);
       // El corte de lona, con esos mismos resultados. Lo principal es la hoja: si el corte falla, se avisa
       // para hacerlo a mano y los PDF salen igual.
-      const corte = deps.corte ? await prepararCorte(deps.corte, calculado, registrar) : null;
+      // Al generar solo el DXF del bot: el plano ya se escribió al guardar para revisión (como en toldos).
+      const preparado = deps.corte ? await prepararCorte(deps.corte, calculado, registrar) : null;
+      const corte = preparado && { ...preparado, ficheros: preparado.ficheros.filter((fichero) => fichero.type === "corte-lona") };
       const marcado = marcarPedidoGenerado(calculado, { revisor, ficheros, ahora: ahora() });
       const generado: PedidoRemolques = corte && marcado.production
         ? { ...marcado, production: { ...marcado.production, corte: { files: corte.ficheros.map(sinContenido), avisos: corte.avisos } } }
@@ -341,13 +343,18 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
   /**
    * El plano del corte para revisar antes de aprobar (Iván, 20/10/2026: «para aprobar necesitamos revisar el
    * corte primero»). Solo el plano: el DXF del bot espera a «Generar archivos». Nunca hace fallar a quien lo
-   * llama; lo que pase va en los avisos.
+   * llama; lo que pase va en los avisos. Si el plano ya está en su carpeta (el DWG de Oficina Tecnica/<año>,
+   * quizá hecho a mano), no se sustituye sin `confirmar` (Iván, 20/10/2026): se devuelve en `existentes`.
    */
-  async function escribirPlanoRevision(pedido: PedidoRemolques): Promise<{ files: FicheroCorte[]; avisos: string[] } | null> {
+  async function escribirPlanoRevision(pedido: PedidoRemolques, confirmar = false): Promise<{ files: FicheroCorte[]; avisos: string[]; existentes?: string[] } | null> {
     if (!deps.corte) return null;
     if (!(await deps.ajustes()).productionEnabled) return { files: [], avisos: ["Modo simulación: no se ha escrito el plano del corte."] };
     const { ficheros, avisos } = await prepararCorte(deps.corte, pedido, registrar);
     const planos = ficheros.filter((fichero) => fichero.type === "plano-corte-lona");
+    const yaEstan = (await Promise.all(planos.map((plano) => existeFichero(plano.savedPath))))
+      .map((esta, indice) => (esta ? planos[indice].filename : ""))
+      .filter(Boolean);
+    if (yaEstan.length > 0 && !confirmar) return { files: [], avisos, existentes: yaEstan };
     try {
       await deps.corte.escribir(planos);
     } catch (error) {
@@ -358,13 +365,18 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
   }
 
   /** «Guardar plano para revisar» de la ficha: el plano del corte de un pedido ya guardado, sin tocar el pedido. */
-  async function planoCorte(orderCodeBruto: string): Promise<Respuesta> {
+  async function planoCorte(orderCodeBruto: string, cuerpo?: unknown): Promise<Respuesta> {
     const orderCode = codigoPedido(orderCodeBruto);
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
     if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
     const pedido = await obtener(orderCode);
     const datos: DatosHojaPedido = { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: "" };
-    return { status: 200, cuerpo: { ok: true, planoCorte: await escribirPlanoRevision(conResultadosDeLaHoja(pedido, datos)) } };
+    const confirmar = (cuerpo as { confirmOverwrite?: unknown } | null)?.confirmOverwrite === true;
+    const planoCorte = await escribirPlanoRevision(conResultadosDeLaHoja(pedido, datos), confirmar);
+    if (planoCorte?.existentes?.length) {
+      return { status: 409, cuerpo: { needsConfirmation: true, existing: planoCorte.existentes, error: "El plano de este pedido ya está en su carpeta." } };
+    }
+    return { status: 200, cuerpo: { ok: true, planoCorte } };
   }
 
   /** El corte de lona como saldría al generar (con los resultados recalculados como la hoja), para verlo. */

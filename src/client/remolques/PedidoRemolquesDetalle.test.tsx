@@ -24,7 +24,7 @@ const aprobado: CoordinaStatus = { disponible: true, ofs: { '0231780': { estado:
 const nada = () => undefined;
 const pintar = (props: Partial<React.ComponentProps<typeof FichaPedidoRemolques>>) => renderToStaticMarkup(
   <FichaPedidoRemolques pedido={pendiente()} cargando={false} coordina={aprobado} currentUser="IVÁN" generando={false}
-    onBack={nada} onCorregir={nada} onReutilizar={nada} onGenerar={nada} notify={nada} {...props} />,
+    onBack={nada} onCorregir={nada} onReutilizar={nada} onGenerar={nada} notify={nada} onConfirm={async () => 'cancel'} {...props} />,
 );
 
 describe('el pedido de remolques abierto en Pedidos', () => {

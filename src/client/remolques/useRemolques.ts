@@ -37,6 +37,7 @@ import { aplicarFichaALineas } from '../../remolques/clientes/aplicar.ts';
 import type { FichaCliente } from '../../remolques/clientes/tipos.ts';
 import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
 import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
+import { escribirPlanoCorte, type PlanoCorte } from './CorteRemolques';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -788,7 +789,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         });
         const datos = await respuesta.json().catch(() => ({})) as {
           needsConfirmation?: boolean; error?: string; review?: { orderCode: string };
-          planoCorte?: { files: Array<{ filename: string }>; avisos: string[] } | null;
+          planoCorte?: PlanoCorte;
         };
         // Solo «ya está guardado» pregunta; los demás 409 (se está generando, se está guardando, es
         // de toldos, ya se produjo) son un aviso de error con el texto del servidor.
@@ -819,11 +820,26 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         limpiarBorradores(almacen, actual.numeroPedido);
         setParamsGuardados(null);
         despachar({ tipo: 'PEDIDO_LIMPIADO' });
-        // Como en toldos: se dice qué plano del corte ha quedado para revisar y lo que hay que mirar.
-        const planos = datos.planoCorte?.files.map((fichero) => fichero.filename) ?? [];
-        const avisosCorte = datos.planoCorte?.avisos ?? [];
+        // Como en toldos: se dice qué plano del corte ha quedado para revisar y lo que hay que mirar. Si el
+        // plano ya estaba en su carpeta, el pedido queda guardado igual y se pregunta antes de sustituirlo.
+        let planoCorte = datos.planoCorte ?? null;
+        const codigo = datos.review?.orderCode ?? actual.numeroPedido;
+        const existentes = planoCorte?.existentes ?? [];
+        if (existentes.length) {
+          const avisos = planoCorte?.avisos ?? [];
+          try {
+            const sustituido = await escribirPlanoCorte(`/api/remolques/pedidos/${encodeURIComponent(codigo)}`, existentes, confirmar);
+            planoCorte = sustituido === 'conservado'
+              ? { files: [], avisos: [...avisos, `Se conserva el plano que ya estaba: ${existentes.join(' · ')}.`] }
+              : sustituido;
+          } catch (error) {
+            planoCorte = { files: [], avisos: [...avisos, error instanceof Error ? error.message : 'No se pudo guardar el plano del corte.'] };
+          }
+        }
+        const planos = planoCorte?.files.map((fichero) => fichero.filename) ?? [];
+        const avisosCorte = planoCorte?.avisos ?? [];
         notificar.current.notify(
-          `Guardado en Pedidos para revisión: ${datos.review?.orderCode ?? actual.numeroPedido}.${planos.length ? ` Plano del corte: ${planos.join(' · ')}.` : ''}${avisosCorte.length ? ` ${avisosCorte.join(' ')}` : ''}`,
+          `Guardado en Pedidos para revisión: ${codigo}.${planos.length ? ` Plano del corte: ${planos.join(' · ')}.` : ''}${avisosCorte.length ? ` ${avisosCorte.join(' ')}` : ''}`,
           { tone: 'success', title: 'Guardado para revisión' },
         );
         return;

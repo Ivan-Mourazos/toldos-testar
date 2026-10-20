@@ -1,10 +1,10 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import AR2604800 from '../../remolques/corte/__fixtures__/AR2604800.json';
 import AR2605132 from '../../remolques/corte/__fixtures__/AR2605132.json';
 import { crearCorteRemolques } from '../../remolques/corte/archivos.js';
-import { CorteRemolquesVista, type VistaCorteRemolques } from './CorteRemolques';
+import { CorteRemolquesVista, escribirPlanoCorte, type VistaCorteRemolques } from './CorteRemolques';
 
 // La vista que da el servidor (la misma función que usa la ruta /corte), sin escribir nada.
 const { vista } = crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false } });
@@ -28,5 +28,26 @@ describe('el corte de lona del pedido de remolques', () => {
     expect(html).toContain('se corta a mano');
     expect(html).toContain('recogida con puentes');
     expect(html).not.toContain('corte-material');
+  });
+});
+
+describe('sustituir el plano del corte que ya está', () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it('pregunta antes; con «Conservar» no pide nada al servidor', async () => {
+    const pedir = vi.fn();
+    vi.stubGlobal('fetch', pedir);
+    const preguntar = vi.fn(async () => 'cancel' as const);
+    expect(await escribirPlanoCorte('/api/remolques/pedidos/AR2604286', ['AR2604286.dwg'], preguntar)).toBe('conservado');
+    expect(preguntar).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('AR2604286.dwg ya está en su carpeta') }));
+    expect(pedir).not.toHaveBeenCalled();
+  });
+
+  it('con «Sustituir plano» lo vuelve a pedir confirmado', async () => {
+    const planoCorte = { files: [{ filename: 'AR2604286.dwg' }], avisos: [] };
+    const pedir = vi.fn(async () => new Response(JSON.stringify({ ok: true, planoCorte })));
+    vi.stubGlobal('fetch', pedir);
+    expect(await escribirPlanoCorte('/api/remolques/pedidos/AR2604286', ['AR2604286.dwg'], async () => 'confirm')).toEqual(planoCorte);
+    expect(pedir).toHaveBeenCalledWith('/api/remolques/pedidos/AR2604286/plano-corte', expect.objectContaining({ method: 'POST', body: JSON.stringify({ confirmOverwrite: true }) }));
   });
 });

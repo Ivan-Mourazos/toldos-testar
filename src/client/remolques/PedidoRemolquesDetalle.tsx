@@ -47,7 +47,7 @@ function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardad
   );
 }
 
-export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, notify, elementoInicial, textoVolver = '← Pedidos' }: {
+export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
   pedido: PedidoRemolques | null;
   cargando: boolean;
   coordina: CoordinaStatus | null;
@@ -58,6 +58,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   onReutilizar: () => void;
   onGenerar: () => void;
   notify: Notify;
+  onConfirm: AskForConfirmation;
   /** El elemento que se abre primero en la lectura (por su versión); sin él, el primero. */
   elementoInicial?: string;
   /** El texto del botón de volver: «← Buscar remolques» si se abrió desde el buscador. */
@@ -148,7 +149,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
       <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
-      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} />
+      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} onConfirm={onConfirm} />
     </section>
   );
 }
@@ -257,6 +258,7 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
       onReutilizar={() => { if (pedido) onReutilizar(pedido); }}
       onGenerar={() => void generar()}
       notify={onToast}
+      onConfirm={onConfirm}
       elementoInicial={elementoInicial}
       textoVolver={textoVolver}
     />
