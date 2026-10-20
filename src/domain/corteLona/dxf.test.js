@@ -7,6 +7,7 @@ import { dibujo } from './dibujoCorte.js';
 import { CAPAS_BOT, escribirDxf2004 } from './dxfCorte.js';
 import { anchoArial } from './texto.js';
 import { dibujarPlano } from './plano.js';
+import { escribirDxfPlano } from './presentacion.js';
 import { registrosDxf, valor, numero, variable } from './dxfTestHelpers.js';
 
 const resultado = () => generarCorteLona(revision.order, { ofStockSacos: '0230811' });
@@ -153,6 +154,21 @@ describe('Plano de confección', () => {
     const datos = { toldos: fixtures.find((f) => f.pedido === 'AR2501462').toldos };
     const plano = dibujarPlano(datos, cortePedido(datos.toldos));
     expect(plano.textos.some((t) => t.capa === 'cotas' && t.valor === '383')).toBe(true);
+  });
+  it('admite arcos y círculos en el dibujo y en el corte (planos de remolques)', () => {
+    const vacio = { lineas: [], polilineas: [], textos: [] };
+    const plano = {
+      ...vacio, lineas: [{ capa: 'DISCO1', x1: 100, y1: 100, x2: 102, y2: 100 }],
+      arcos: [{ capa: 'DISCO1', x: 101, y: 101, r: 0.111, desde: 0, hasta: 90 }], circulos: [{ capa: 'ROTULADOR', x: 100.5, y: 100.05, r: 0.003 }],
+      corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 100, y1: 90, x2: 105, y2: 90 }], arcos: [], circulos: [{ capa: 'ROTULADOR', x: 100.04, y: 90.04, r: 0.0025 }] },
+      zonas: { toldos: { x0: 99.9, y0: 99.9, x1: 102.1, y1: 101.2 }, corte: { x0: 99.9, y0: 89.9, x1: 105.1, y1: 92.6 } },
+    };
+    const { dxf } = escribirDxfPlano(plano, { pedido: 'AR2605132', of: '0233152', cliente: 'REMOLCAR', tecnico: 'IVÁN', revisor: '', fecha: '20/10/26', material: 'LONA PVC 580' });
+    const e = registrosDxf(dxf);
+    const arco = e.find((x) => x.tipo === 'ARC' && valor(x, 330) === '1F');
+    expect([numero(arco, 40), numero(arco, 50), numero(arco, 51)]).toEqual([0.111, 0, 90]);
+    expect(e.filter((x) => x.tipo === 'CIRCLE' && valor(x, 330) === '1F' && valor(x, 8) === 'ROTULADOR')).toHaveLength(2);
+    comprobarHandles(dxf);
   });
   it('reduce los campos largos del cajetín hasta que caben, sin heredar campos automáticos', () => {
     const order = structuredClone(revision.order);

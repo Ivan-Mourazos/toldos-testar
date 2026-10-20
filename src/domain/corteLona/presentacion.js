@@ -73,7 +73,10 @@ export function escribirDxfPlano(plano, cabecera) {
   const corte = !reparto.girado ? plano.corte : {
     lineas: plano.corte.lineas.map((l) => { const [a, b] = girar([l.x1, l.y1]), [c, d] = girar([l.x2, l.y2]); return { ...l, x1: a, y1: b, x2: c, y2: d }; }),
     polilineas: plano.corte.polilineas.map((p) => ({ ...p, puntos: p.puntos.map(girar) })),
-    textos: plano.corte.textos.map((t) => { const [x, y] = girar([t.x, t.y]); return { ...t, x, y, giro: legible(((t.giro || 0) + 90) % 360) }; })
+    textos: plano.corte.textos.map((t) => { const [x, y] = girar([t.x, t.y]); return { ...t, x, y, giro: legible(((t.giro || 0) + 90) % 360) }; }),
+    // Remolques: esquinas en arco y ollaos (círculos); girados con el corte.
+    arcos: (plano.corte.arcos ?? []).map((a) => { const [x, y] = girar([a.x, a.y]); return { ...a, x, y, desde: (a.desde + 90) % 360, hasta: (a.hasta + 90) % 360 || 360 }; }),
+    circulos: (plano.corte.circulos ?? []).map((c) => { const [x, y] = girar([c.x, c.y]); return { ...c, x, y }; })
   };
   // La ventana del corte, sin más alto ni ancho del que usa a su escala.
   const ec = escala(zc, reparto.corte);
@@ -130,6 +133,13 @@ export function escribirDxfPlano(plano, cabecera) {
   for (const l of lineas) modelo += ent('LINE', l.capa, 'AcDbLine', ` 10\n${n(l.x1)}\n 20\n${n(l.y1)}\n 30\n0.0\n 11\n${n(l.x2)}\n 21\n${n(l.y2)}\n 31\n0.0\n`);
   for (const p of polilineas) {
     modelo += ent('LWPOLYLINE', p.capa, 'AcDbPolyline', ` 90\n${String(p.puntos.length).padStart(6)}\n 70\n${p.cerrada ? '     1' : '     0'}\n 43\n0.0\n${p.puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`);
+  }
+  // Remolques: arcos (esquinas redondeadas, en grados y antihorario) y círculos (ollaos).
+  for (const a of [...(plano.arcos ?? []), ...(corte.arcos ?? [])]) {
+    modelo += ent('ARC', a.capa, 'AcDbCircle', ` 10\n${n(a.x)}\n 20\n${n(a.y)}\n 30\n0.0\n 40\n${n(a.r)}\n100\nAcDbArc\n 50\n${n(a.desde)}\n 51\n${n(a.hasta)}\n`);
+  }
+  for (const c of [...(plano.circulos ?? []), ...(corte.circulos ?? [])]) {
+    modelo += ent('CIRCLE', c.capa, 'AcDbCircle', ` 10\n${n(c.x)}\n 20\n${n(c.y)}\n 30\n0.0\n 40\n${n(c.r)}\n`);
   }
   // Textos como MTEXT anclado por el centro (71 = 5): AutoCAD lo coloca al mostrarlo. Con TEXT
   // centrado hay que dar también la posición de inicio, y AutoCAD la usa tal cual (salían corridos).
