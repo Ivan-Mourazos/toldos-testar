@@ -120,14 +120,26 @@ function costura(perfil: Perfil2D, z: number): Pieza {
   return { geometria: tuboPoligonal(puntos, 0.18), material: 'lonaOscura' };
 }
 
+/**
+ * El paño trasero a la línea por arriba, más corto que el remolque (AR2605158): la cara de detrás sin lo que
+ * queda por debajo de `desde`. Los lados de los perfiles son verticales, así que basta subir los puntos de abajo.
+ */
+export function perfilTrasero(c: CuerpoLona): Perfil2D {
+  const desde = c.traseraDesde ?? 0;
+  return desde > 0 ? c.perfilAtras.map(([x, y]) => [x, Math.max(y, desde)] as [number, number]) : c.perfilAtras;
+}
+
 export function piezasCuerpo(c: CuerpoLona | CuerpoBaqueton): Pieza[] {
   if (c.tipo === 'baqueton') return piezasBaqueton(c);
+  const trasero = perfilTrasero(c);
   return [
     { geometria: geometriaContorno(c), material: 'lona' },
     { geometria: geometriaPano(c.perfilDelante, c.largo), material: 'lona' },
-    { geometria: geometriaPano(c.perfilAtras, 0), material: 'lona' },
+    { geometria: geometriaPano(trasero, 0), material: 'lona' },
     costura(c.perfilDelante, c.largo),
-    costura(c.perfilAtras, 0),
+    costura(trasero, 0),
+    // El borde de abajo del paño trasero, que queda al aire por encima de la base.
+    ...((c.traseraDesde ?? 0) > 0 ? [costura([trasero[0], trasero[trasero.length - 1]], 0)] : []),
     ...(c.bastilla > 0 ? piezasBastilla(c) : []),
   ];
 }

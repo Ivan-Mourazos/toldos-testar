@@ -15,6 +15,18 @@ describe("escena de la lona", () => {
     expect(e.color).toBe("#b82b2f");
   });
 
+  it("con la trasera a la línea por arriba, el remolque sigue recto y el paño trasero empieza más arriba (AR2605158)", () => {
+    const porArriba = escenaLona({ altoAtras: 96, traseraPorArriba: true })!;
+    if (porArriba.cuerpo.tipo !== "lona") throw new Error("no es lona");
+    expect(porArriba.cuerpo.perfilAtras).toEqual(porArriba.cuerpo.perfilDelante);
+    expect(porArriba.cuerpo.traseraDesde).toBe(4);
+    // Sin marcarla, el alto de detrás sesga el remolque, como siempre, y no hay recorte.
+    const sesgada = escenaLona({ altoAtras: 96 })!;
+    if (sesgada.cuerpo.tipo !== "lona") throw new Error("no es lona");
+    expect(Math.max(...sesgada.cuerpo.perfilAtras.map(([, y]) => y))).toBe(96);
+    expect(sesgada.cuerpo).not.toHaveProperty("traseraDesde");
+  });
+
   it("cada ollao cae en su borde con el convenio de siempre", () => {
     expect(delLado(e, "atras")[0]).toEqual({ lado: "atras", posicion: 2.5, punto: [-98, 2.5, 0], normal: [0, 0, -1] });
     expect(delLado(e, "delante")[0]).toEqual({ lado: "delante", posicion: 2.5, punto: [98, 2.5, 301], normal: [0, 0, 1] });
