@@ -51,7 +51,13 @@ Abierta el 20/10/2026, al revisar los DWG de PAMILAKAN para el corte:
 
 | Código | Pregunta | Lo que se ve en el corte a mano | En la web |
 | --- | --- | --- | --- |
-| Q-R07 | Marcas de rotulador de la bastilla de enfundar en la lona alta: ¿qué marca cada una y van siempre igual? | AR2604990: en el contorno, una raya corta a 10 cm de cada punta junto a los dos bordes de abajo (doblez de la bastilla?); la marca del centro a 6–7,5 cm de la punta y sin marcas de hombro; en las cabezas, una raya a 5 cm de cada lado (de 3 a 7 cm sobre la base) y una T a la altura del hombro | Sin hacer: el corte sale con las marcas de una lona normal |
+| Q-R08 | Marcas de la cremallera en la cabeza: ¿son las rayas a 5 cm de cada lado y van siempre así? | Solo en la cabeza que recoge con cremallera (AR2604990, atrás): una raya a 5 cm de cada lado desde unos 3,5 cm sobre la base, rematada con una T arriba (a 4,5 cm del borde en las rectas, a la altura del hombro en las de aguas). A veces la raya entera (AR2603744), a veces solo los dos extremos | Sin hacer: la cabeza con cremallera sale sin esas marcas |
+
+Contestada el 20/10/2026 (Iván: «Pamilakan las lonas altas son con bastilla de enfundar. Las rayas son las marcas para eso»):
+
+| Código | Pregunta | Respuesta | En la web |
+| --- | --- | --- | --- |
+| Q-R07 | Marcas de rotulador de la bastilla de enfundar en la lona alta | Son las marcas de la bastilla. En sus seis cortes a mano: el doblez a 10 cm de cada punta del contorno (en el corte, sus extremos de 3,5 a 6 cm de cada borde; en el plano, la línea entera), la marca del centro a 6–7,5 cm de la punta y sin marcas de hombro | Hecho el 20/10 en el corte y en el plano |
 
 Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.
 

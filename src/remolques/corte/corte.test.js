@@ -3,6 +3,7 @@ import { CAPAS_BOT } from '../../domain/corteLona/dxfCorte.js';
 import { numero, registrosDxf, valor, variable } from '../../domain/corteLona/dxfTestHelpers.js';
 import AR2604800 from './__fixtures__/AR2604800.json' with { type: 'json' };
 import AR2604802 from './__fixtures__/AR2604802.json' with { type: 'json' };
+import AR2604990 from './__fixtures__/AR2604990.json' with { type: 'json' };
 import AR2605071 from './__fixtures__/AR2605071.json' with { type: 'json' };
 import AR2605079 from './__fixtures__/AR2605079.json' with { type: 'json' };
 import AR2605132 from './__fixtures__/AR2605132.json' with { type: 'json' };
@@ -68,6 +69,21 @@ describe('generarCorteRemolques', () => {
     // En el dibujo de confección, los cuatro en su esquina (en trazos, sin imprimir).
     const enPlano = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'vent-pre-noimpr' && numero(r, 90) === 6);
     expect(enPlano).toHaveLength(4);
+  });
+
+  it('la lona alta con bastilla de enfundar lleva las marcas del doblez, como a mano (AR2604990, PAMILAKAN)', () => {
+    const [c] = generarCorteRemolques(AR2604990).cortes;
+    const rot = c.entidades.lineas.filter((l) => l.capa === 'ROTULADOR');
+    const largo = (l) => Math.round(Math.hypot(l.x2 - l.x1, l.y2 - l.y1));
+    // Los extremos del doblez (a 10 cm de cada punta, de 3,5 a 6 cm del borde): dos por punta.
+    expect(rot.filter((l) => largo(l) === 25)).toHaveLength(4);
+    // En el contorno solo el centro (a 6–7,5 cm de la punta), sin marcas de hombro: las de 15 son el centro del
+    // contorno en cada punta y el de arriba de cada cabeza.
+    expect(rot.filter((l) => largo(l) === 15)).toHaveLength(4);
+    // En el plano, el doblez entero de lado a lado (contorno de 267 − 7 cm), en rotulador.
+    const dobleces = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
+      && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 2.6) < 0.001);
+    expect(dobleces).toHaveLength(2);
   });
 
   it('deja a mano la lona con un perfil que todavía no sabe cortar (AR2604800, TIPO 03)', () => {

@@ -3,7 +3,7 @@
 // contorno, cada uno con la línea de corte, la rosa de terminado, los ollaos y marcas, y sus cotas (verde lo
 // terminado, ocre lo de corte), como en los DWG de los pedidos (AR2605120). Debajo, el corte del rollo.
 import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
-import { piezasLona } from './lonaAlta.js';
+import { DOBLEZ_BASTILLA, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano } from '../../domain/corteLona/presentacion.js';
 
 const ORIGEN_M = 100;   // como en toldos: lejos del origen del CAD
@@ -130,10 +130,17 @@ function confeccionLona(L, el, X, Y, letra) {
   }
   // Laterales: línea base arriba (atrás, donde empieza la lona hecha), escalera hacia dentro del paño.
   escaleraV(L, Y + A - (A - hecha.largo) / 2, xCon + 4.5, P.ollaos.laterales);
-  // Hasta dónde llega la oreja del trasero (las marcas del hombro): cota desde cada borde del corte, arriba.
-  const mh = P.marcasHombro / 10;
-  L.cota('vent-pre-noimpr', xCon, Y + A, xCon + mh, Y + A, mh, 8, 6);
-  L.cota('vent-pre-noimpr', xCon + B - mh, Y + A, xCon + B, Y + A, mh, 8, 6);
+  if (i.bastillaEnfundar) {
+    // Bastilla de enfundar: el doblez entero, de lado a lado a 10 cm de cada punta, como en AR2603438 (en el
+    // corte solo van sus extremos). Sin marcas de hombro, no hay cota de la oreja.
+    for (const u of [DOBLEZ_BASTILLA, A * 10 - DOBLEZ_BASTILLA]) { const [x1, y1] = tc(u, 35), [x2, y2] = tc(u, B * 10 - 35); L.linea('ROTULADOR', x1, y1, x2, y2); }
+    L.cota('vent-pre-noimpr', xCon + B, Y + A - DOBLEZ_BASTILLA / 10, xCon + B, Y + A, DOBLEZ_BASTILLA / 10, 12, 6);
+  } else {
+    // Hasta dónde llega la oreja del trasero (las marcas del hombro): cota desde cada borde del corte, arriba.
+    const mh = P.marcasHombro / 10;
+    L.cota('vent-pre-noimpr', xCon, Y + A, xCon + mh, Y + A, mh, 8, 6);
+    L.cota('vent-pre-noimpr', xCon + B - mh, Y + A, xCon + B, Y + A, mh, 8, 6);
+  }
   return { ancho: xCon + B - X, alto: Math.max(H, A) };
 }
 

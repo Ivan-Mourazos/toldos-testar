@@ -99,9 +99,18 @@ function contorno(el, marcasHombro) {
   // Laterales de atrás a delante; atrás en u = A (junto a las cabezas en el corte).
   const off = (A - r.lonaHecha.largo * 10) / 2;
   for (const pos of lat) p.ollaos.push([A - off - pos * 10, BORDE], [A - off - pos * 10, B - BORDE]);
+  if (i.bastillaEnfundar) {
+    // Bastilla de enfundar (PAMILAKAN; Iván, 20/10/2026, y sus cortes a mano AR2604990, AR2603438…): delante y
+    // detrás se dobla a 10 cm de la punta. En el corte se marcan los dos extremos del doblez junto a los
+    // bordes (de 3,5 a 6 cm) y el centro a 6–7,5 cm de la punta; sin marcas de hombro.
+    for (const u of [DOBLEZ_BASTILLA, A - DOBLEZ_BASTILLA]) { marca(p, u, 35, u, 60); marca(p, u, B - 35, u, B - 60); }
+    marca(p, 60, B / 2, 75, B / 2); marca(p, A - 60, B / 2, A - 75, B / 2);
+    return p;
+  }
   for (const v of [B / 2, marcasHombro, B - marcasHombro]) { marca(p, 10, v, 25, v); marca(p, A - 10, v, A - 25, v); }
   return p;
 }
+export const DOBLEZ_BASTILLA = 100;
 
 // Contorno que no cabe en el rollo por ningún lado (AR2605079): la pieza grande lleva el rollo entero a lo
 // ancho (2500 del largo, desde delante) y el resto del largo sale en una tira con 2 cm de empate, siempre
