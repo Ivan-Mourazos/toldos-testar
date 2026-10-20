@@ -84,6 +84,12 @@ describe('DXF del bot', () => {
     comprobarHandles(dxf);
     expect(() => escribirDxf2004({ lineas: [], textos: [], circulos: [{ capa: 'marca', x: 0, y: 0, r: 2.5 }] })).toThrow(/capas/);
   });
+  it('escribe arcos (esquinas redondeadas de remolque) con centro, radio y ángulos en grados', () => {
+    const dxf = escribirDxf2004({ lineas: [], textos: [], arcos: [{ capa: 'DISCO1', x: 500, y: 600, r: 111, desde: 0, hasta: 90 }] }, { dx: 0, dy: 0 });
+    const arco = registrosDxf(dxf).find((e) => e.tipo === 'ARC' && valor(e, 8) === 'DISCO1' && numero(e, 10) === 500);
+    expect([numero(arco, 20), numero(arco, 40), numero(arco, 50), numero(arco, 51)]).toEqual([600, 111, 0, 90]);
+    comprobarHandles(dxf);
+  });
   it('rechaza capas ajenas al bot', () => {
     expect(() => escribirDxf2004({ lineas: [{ capa: 'referencias' }], textos: [] })).toThrow(/capas/);
   });
