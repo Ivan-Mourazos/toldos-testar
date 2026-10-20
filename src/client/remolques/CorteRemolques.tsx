@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Scissors } from 'lucide-react';
+import { FileDown, Scissors } from 'lucide-react';
+import type { Notify } from '../components/NotificationCenter';
 import '../coordina/corte-lona.css';
 
 // El corte de lona de un pedido de remolques (20/10/2026), como saldrá al generar: por lona, el rollo
@@ -28,7 +29,7 @@ export type VistaCorteRemolques = {
 const ROLLO = 2500;
 const metros = (mm: number) => (mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 });
 
-export function CorteRemolques({ ruta, version, generado = false }: { ruta: string; version: string; generado?: boolean }) {
+export function CorteRemolques({ ruta, version, generado = false, notify }: { ruta: string; version: string; generado?: boolean; notify: Notify }) {
   // El resultado lleva para qué pedido y versión es: si cambian, se ve «Calculando…» hasta el nuevo.
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaCorteRemolques; error?: string } | null>(null);
@@ -46,6 +47,27 @@ export function CorteRemolques({ ruta, version, generado = false }: { ruta: stri
     return () => { cancelado = true; };
   }, [ruta, clave]);
 
+  const [guardandoPlano, setGuardandoPlano] = useState(false);
+  // El plano del corte para revisarlo antes de aprobar (también sale al guardar para revisión).
+  async function guardarPlano() {
+    setGuardandoPlano(true);
+    try {
+      const respuesta = await fetch(`${ruta}/plano-corte`, { method: 'POST' });
+      const datos = await respuesta.json().catch(() => ({})) as { error?: string; planoCorte?: { files: Array<{ filename: string }>; avisos: string[] } | null };
+      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo guardar el plano del corte.');
+      const planos = datos.planoCorte?.files.map((fichero) => fichero.filename) ?? [];
+      const avisos = datos.planoCorte?.avisos ?? [];
+      const mensaje = planos.length
+        ? `Plano del corte guardado para revisar: ${planos.join(' · ')}.${avisos.length ? ` ${avisos.join(' ')}` : ''}`
+        : avisos.join(' ') || 'Este pedido no tiene corte de lona que guardar.';
+      notify(mensaje, { tone: planos.length ? 'success' : 'warning', title: 'Plano del corte' });
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudo guardar el plano del corte.', { tone: 'error' });
+    } finally {
+      setGuardandoPlano(false);
+    }
+  }
+
   const estado = leido?.clave === clave ? leido : null;
   const datos = estado?.datos;
   return (
@@ -53,8 +75,13 @@ export function CorteRemolques({ ruta, version, generado = false }: { ruta: stri
       <header className="corte-cabecera">
         <div>
           <span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Corte de lona</h2></span>
-          <p>{generado ? 'El corte de cada lona, como se generó con los datos del pedido' : 'Lo que se escribe al generar: el DXF del bot y el plano DWG de cada lona'}</p>
+          <p>{generado ? 'El corte de cada lona, como se generó con los datos del pedido' : 'El plano DWG de cada lona sale al guardar para revisión; el DXF del bot, al generar'}</p>
         </div>
+        {!generado && (
+          <button className="ghost-button boton-3d" type="button" disabled={guardandoPlano || !datos?.cortes.length} onClick={() => void guardarPlano()}>
+            <FileDown aria-hidden="true" />{guardandoPlano ? 'Guardando plano…' : 'Guardar plano para revisar'}
+          </button>
+        )}
       </header>
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
@@ -95,6 +122,8 @@ export function DibujoCorteRemolques({ entidades, largo, material }: { entidades
   for (const l of lineas) { maxX = Math.max(maxX, l.x1, l.x2); maxY = Math.max(maxY, l.y1, l.y2); minX = Math.min(minX, l.x1, l.x2); minY = Math.min(minY, l.y1, l.y2); }
   for (const t of textos) { maxY = Math.max(maxY, t.y + t.h); maxX = Math.max(maxX, t.x); minY = Math.min(minY, t.y - t.h); }
   const margen = 120;
+  // Los ollaos (2,5 mm) a su tamaño, salvo en cortes muy largos, donde se dejan en un punto que se vea.
+  const radioOllao = (r: number) => Math.max(r, (maxX - minX + margen * 2) / 1500);
   const punto = (a: Arco, grados: number) => [a.x + a.r * Math.cos((grados * Math.PI) / 180), -(a.y + a.r * Math.sin((grados * Math.PI) / 180))];
   return (
     <svg className="corte-dibujo is-remolques" role="img" aria-label={`Vista del corte ${material}`}
@@ -106,8 +135,7 @@ export function DibujoCorteRemolques({ entidades, largo, material }: { entidades
         const grande = ((a.hasta - a.desde + 360) % 360) > 180 ? 1 : 0;
         return <path key={i} d={`M${x0} ${y0} A${a.r} ${a.r} 0 ${grande} 0 ${x1} ${y1}`} className="corte-linea" vectorEffect="non-scaling-stroke" />;
       })}
-      {/* Los ollaos (2,5 mm) no se verían a esta escala: se pintan algo más grandes. */}
-      {circulos.map((c, i) => <circle key={i} cx={c.x} cy={-c.y} r={Math.max(c.r, 12)} className="corte-marca" vectorEffect="non-scaling-stroke" />)}
+      {circulos.map((c, i) => <circle key={i} cx={c.x} cy={-c.y} r={radioOllao(c.r)} className="corte-marca" vectorEffect="non-scaling-stroke" />)}
       {textos.filter((t) => t.capa !== 'ROTULADOR').map((t, i) => (
         <text key={i} x={t.x} y={-t.y} fontSize={t.h} textAnchor={t.centrado ? 'middle' : 'start'} transform={t.giro ? `rotate(${-t.giro} ${t.x} ${-t.y})` : undefined}>{t.valor}</text>
       ))}

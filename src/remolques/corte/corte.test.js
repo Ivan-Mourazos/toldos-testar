@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CAPAS_BOT } from '../../domain/corteLona/dxfCorte.js';
 import { numero, registrosDxf, valor, variable } from '../../domain/corteLona/dxfTestHelpers.js';
 import AR2604800 from './__fixtures__/AR2604800.json' with { type: 'json' };
 import AR2604802 from './__fixtures__/AR2604802.json' with { type: 'json' };
@@ -86,6 +87,17 @@ describe('generarCorteRemolques', () => {
     const medidas = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
     expect(medidas).toContain(803.1);
     expect(medidas).toContain(250);
+  });
+
+  it('el DXF del bot nunca lleva cotas ni capas que no sean del bot (Iván: «no es capa compatible»)', () => {
+    for (const pedido of [AR2605132, AR2605079, AR2605071, AR2604802]) {
+      for (const c of generarCorteRemolques(pedido).cortes) {
+        const entidades = registrosDxf(c.dxf);
+        expect(entidades.some((e) => e.tipo === 'DIMENSION')).toBe(false);
+        // Solo capas del bot (la leyenda del bot las usa todas).
+        expect(entidades.every((e) => CAPAS_BOT.includes(valor(e, 8)))).toBe(true);
+      }
+    }
   });
 
   it('con solo baquetones, el plano es el corte en metros en DXF 2004', () => {

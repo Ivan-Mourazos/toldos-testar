@@ -247,7 +247,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       });
       const pedido = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora(), clienteRps });
       await deps.almacen.guardar(pedido);
-      return { status: 200, cuerpo: { ok: true, review: resumenBandeja(pedido), overwritten: Boolean(existente) } };
+      // Como en toldos: el plano del corte sale ya al guardar, para revisarlo antes de aprobar.
+      const planoCorte = await escribirPlanoRevision(pedido);
+      return { status: 200, cuerpo: { ok: true, review: resumenBandeja(pedido), overwritten: Boolean(existente), planoCorte } };
     } finally {
       ocupados.delete(orderCode);
     }
@@ -336,6 +338,35 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     }
   }
 
+  /**
+   * El plano del corte para revisar antes de aprobar (Iván, 20/10/2026: «para aprobar necesitamos revisar el
+   * corte primero»). Solo el plano: el DXF del bot espera a «Generar archivos». Nunca hace fallar a quien lo
+   * llama; lo que pase va en los avisos.
+   */
+  async function escribirPlanoRevision(pedido: PedidoRemolques): Promise<{ files: FicheroCorte[]; avisos: string[] } | null> {
+    if (!deps.corte) return null;
+    if (!(await deps.ajustes()).productionEnabled) return { files: [], avisos: ["Modo simulación: no se ha escrito el plano del corte."] };
+    const { ficheros, avisos } = await prepararCorte(deps.corte, pedido, registrar);
+    const planos = ficheros.filter((fichero) => fichero.type === "plano-corte-lona");
+    try {
+      await deps.corte.escribir(planos);
+    } catch (error) {
+      registrar(`Pedido ${pedido.orderCode}: no se pudo escribir el plano del corte: ${(error as Error).message}`);
+      return { files: [], avisos: [...avisos, "No se pudo escribir el plano del corte en su carpeta."] };
+    }
+    return { files: planos.map(sinContenido), avisos };
+  }
+
+  /** «Guardar plano para revisar» de la ficha: el plano del corte de un pedido ya guardado, sin tocar el pedido. */
+  async function planoCorte(orderCodeBruto: string): Promise<Respuesta> {
+    const orderCode = codigoPedido(orderCodeBruto);
+    if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
+    if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
+    const pedido = await obtener(orderCode);
+    const datos: DatosHojaPedido = { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: "" };
+    return { status: 200, cuerpo: { ok: true, planoCorte: await escribirPlanoRevision(conResultadosDeLaHoja(pedido, datos)) } };
+  }
+
   /** El corte de lona como saldría al generar (con los resultados recalculados como la hoja), para verlo. */
   async function corte(orderCode: string): Promise<unknown> {
     if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
@@ -368,5 +399,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     throw new ErrorPedidoRemolques("El PDF generado ya no está en sus carpetas de archivo.", 404);
   }
 
-  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte };
+  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte, planoCorte };
 }

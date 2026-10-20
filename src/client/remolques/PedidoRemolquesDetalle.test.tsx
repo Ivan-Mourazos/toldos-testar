@@ -81,14 +81,18 @@ describe('el pedido de remolques abierto en Pedidos', () => {
 const desescapar = (t: string) => t.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 const fmt = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 /** La parte de solo lectura, sin lo que va dentro de los fieldset desactivados. */
+// La lectura llega hasta el bloque del corte de lona, que va debajo y tiene su propio botón.
 const fueraDeLosCamposApagados = (html: string) => html
-  .slice(html.indexOf('aria-label="Pedido de remolques en solo lectura"'))
+  .slice(html.indexOf('aria-label="Pedido de remolques en solo lectura"'), html.indexOf('aria-label="Corte de lona"'))
   .replace(/<fieldset class="rem-lectura-campos" disabled="">[\s\S]*?<\/fieldset>/g, '');
 
 describe('el pedido de remolques abierto en Pedidos, en solo lectura', () => {
   it('debajo de la lista: las pestañas A y B y el formulario del primer elemento con sus datos, sin poder escribir', () => {
     const html = desescapar(pintar({}));
     expect(html).toContain('aria-label="Pedido de remolques en solo lectura"');
+    // El corte de lona, debajo de los datos (Iván, 20/10/2026), con su botón para guardar el plano.
+    expect(html.indexOf('aria-label="Corte de lona"')).toBeGreaterThan(html.indexOf('aria-label="Pedido de remolques en solo lectura"'));
+    expect(html).toContain('Guardar plano para revisar');
     // Las pestañas de la pantalla de Remolques, para cambiar de elemento y nada más.
     expect(html).toContain('A · Remolque 200×121');
     expect(html).toContain('B · Baquetón 260×160');

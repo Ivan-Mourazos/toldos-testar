@@ -687,6 +687,12 @@ app.get('/api/remolques/pedidos/:orderCode/corte', rutaRemolques(async (req, res
   res.set('Cache-Control', 'no-store').json(await pedidosRemolques.corte(req.params.orderCode));
 }));
 
+// El plano del corte para revisar antes de aprobar (sin DXF del bot ni tocar el pedido).
+app.post('/api/remolques/pedidos/:orderCode/plano-corte', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosRemolques.planoCorte(req.params.orderCode);
+  res.status(status).json(cuerpo);
+}));
+
 app.post('/api/remolques/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.generar(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);

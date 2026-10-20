@@ -443,7 +443,10 @@ describe("generar: corte de lona", () => {
         if (fallaPreparar) throw new Error("geometría rota");
         llamadas.preparar.push(pedido.elementos.map((e) => JSON.stringify(e.result).slice(0, 20)));
         return {
-          ficheros: [{ type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf", contenido: new Uint8Array([1]) }],
+          ficheros: [
+            { type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf", contenido: new Uint8Array([1]) },
+            { type: "plano-corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286 (plano).dwg", savedPath: "/planos/AR2604286 (plano).dwg", contenido: new Uint8Array([2]) },
+          ],
           avisos: ["0231780: revisar la ventana."],
         };
       },
@@ -463,11 +466,14 @@ describe("generar: corte de lona", () => {
     const r = await m.servicio.generar("AR2604286", {});
     expect(r.status).toBe(200);
     const esperado = {
-      files: [{ type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf" }],
+      files: [
+        { type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf" },
+        { type: "plano-corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286 (plano).dwg", savedPath: "/planos/AR2604286 (plano).dwg" },
+      ],
       avisos: ["0231780: revisar la ventana."],
     };
     expect(r.cuerpo).toMatchObject({ ok: true, corte: esperado });
-    expect(llamadas.escritos).toEqual(["/bot/AR2604286.dxf"]);
+    expect(llamadas.escritos).toEqual(["/planos/AR2604286 (plano).dwg", "/bot/AR2604286.dxf", "/planos/AR2604286 (plano).dwg"]);
     // Los resultados recalculados, los mismos que lleva la hoja.
     expect(llamadas.preparar[0]).toEqual(m.llamadas.pdf[0].elementos.map((e) => JSON.stringify(e.result).slice(0, 20)));
     const pedido = await m.servicio.obtener("AR2604286");
@@ -483,7 +489,7 @@ describe("generar: corte de lona", () => {
     expect(vista.ofs).toEqual(["231780", "231781"]);
     await m.servicio.generar("AR2604286", {});
     expect(vista.resultados).toEqual(m.llamadas.pdf[0].elementos.map((e) => e.result));
-    expect(llamadas.escritos).toEqual(["/bot/AR2604286.dxf"]);
+    expect(llamadas.escritos).toEqual(["/planos/AR2604286 (plano).dwg", "/bot/AR2604286.dxf", "/planos/AR2604286 (plano).dwg"]);
     // Sin corte en el servidor, se dice.
     const sin = montar();
     await guardar(sin.servicio);
@@ -503,6 +509,51 @@ describe("generar: corte de lona", () => {
       expect(corte?.avisos.at(-1)).toMatch(/hay que hacerlo a mano/);
       expect(registrados.some((mensaje) => /corte de lona/.test(mensaje))).toBe(true);
     }
+  });
+});
+
+describe("plano del corte para revisar antes de aprobar", () => {
+  const plano = { type: "plano-corte-lona" as const, material: "LONA PVC 580", filename: "AR2604286 (plano).dwg", savedPath: "/planos/AR2604286 (plano).dwg" };
+  function corteDePrueba(fallaEscribir = false) {
+    const escritos: string[] = [];
+    const corte: CorteRemolques = {
+      preparar: async () => ({
+        ficheros: [{ ...plano, type: "corte-lona", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf", contenido: new Uint8Array([1]) }, { ...plano, contenido: new Uint8Array([2]) }],
+        avisos: ["0231780: revisar la ventana."],
+      }),
+      escribir: async (ficheros) => {
+        if (fallaEscribir) throw new Error("carpeta caída");
+        escritos.push(...ficheros.map((f) => f.savedPath));
+      },
+      vista: () => null,
+    };
+    return { corte, escritos };
+  }
+
+  it("al guardar escribe solo el plano (el DXF del bot espera a generar) y lo dice en la respuesta", async () => {
+    const { corte, escritos } = corteDePrueba();
+    const m = montar({ corte });
+    const r = await guardar(m.servicio);
+    expect(r.cuerpo).toMatchObject({ ok: true, planoCorte: { files: [plano], avisos: ["0231780: revisar la ventana."] } });
+    expect(escritos).toEqual([plano.savedPath]);
+    // «Guardar plano para revisar» de la ficha lo vuelve a escribir sin tocar el pedido.
+    const antes = await m.servicio.obtener("AR2604286");
+    expect(await m.servicio.planoCorte("AR2604286")).toMatchObject({ status: 200, cuerpo: { ok: true, planoCorte: { files: [plano] } } });
+    expect(escritos).toEqual([plano.savedPath, plano.savedPath]);
+    expect(await m.servicio.obtener("AR2604286")).toEqual(antes);
+  });
+
+  it("en simulación no escribe y lo avisa; si la carpeta falla, el pedido se guarda igual", async () => {
+    const simulado = corteDePrueba();
+    const m = montar({ corte: simulado.corte, generacion: false });
+    expect((await guardar(m.servicio)).cuerpo).toMatchObject({ ok: true, planoCorte: { files: [], avisos: ["Modo simulación: no se ha escrito el plano del corte."] } });
+    expect(simulado.escritos).toEqual([]);
+    const registrados: string[] = [];
+    const caido = montar({ corte: corteDePrueba(true).corte, registrar: (mensaje) => registrados.push(mensaje) });
+    const r = await guardar(caido.servicio);
+    expect(r.status).toBe(200);
+    expect(r.cuerpo).toMatchObject({ planoCorte: { files: [], avisos: ["0231780: revisar la ventana.", "No se pudo escribir el plano del corte en su carpeta."] } });
+    expect(registrados.some((mensaje) => /plano del corte/.test(mensaje))).toBe(true);
   });
 });
 

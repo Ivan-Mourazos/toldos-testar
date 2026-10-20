@@ -137,8 +137,6 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
         </div>
       )}
 
-      {/* El corte se vuelve a calcular si el pedido cambia (guardado o generado). */}
-      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} />
 
       <ul className="rem-pedido-elementos" aria-label="Elementos del pedido">
         {pedido.elementos.map((elemento, indice) => (
@@ -148,6 +146,9 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
 
       {/* key: otro pedido empieza otra vez por su primer elemento. */}
       <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
+
+      {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
+      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} />
     </section>
   );
 }

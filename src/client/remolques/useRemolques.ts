@@ -786,7 +786,10 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(cuerpoGuardar(actual.lineas, params, usuario, confirmOverwrite)),
         });
-        const datos = await respuesta.json().catch(() => ({})) as { needsConfirmation?: boolean; error?: string; review?: { orderCode: string } };
+        const datos = await respuesta.json().catch(() => ({})) as {
+          needsConfirmation?: boolean; error?: string; review?: { orderCode: string };
+          planoCorte?: { files: Array<{ filename: string }>; avisos: string[] } | null;
+        };
         // Solo «ya está guardado» pregunta; los demás 409 (se está generando, se está guardando, es
         // de toldos, ya se produjo) son un aviso de error con el texto del servidor.
         if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
@@ -816,7 +819,13 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         limpiarBorradores(almacen, actual.numeroPedido);
         setParamsGuardados(null);
         despachar({ tipo: 'PEDIDO_LIMPIADO' });
-        notificar.current.notify(`Guardado en Pedidos para revisión: ${datos.review?.orderCode ?? actual.numeroPedido}.`, { tone: 'success', title: 'Guardado para revisión' });
+        // Como en toldos: se dice qué plano del corte ha quedado para revisar y lo que hay que mirar.
+        const planos = datos.planoCorte?.files.map((fichero) => fichero.filename) ?? [];
+        const avisosCorte = datos.planoCorte?.avisos ?? [];
+        notificar.current.notify(
+          `Guardado en Pedidos para revisión: ${datos.review?.orderCode ?? actual.numeroPedido}.${planos.length ? ` Plano del corte: ${planos.join(' · ')}.` : ''}${avisosCorte.length ? ` ${avisosCorte.join(' ')}` : ''}`,
+          { tone: 'success', title: 'Guardado para revisión' },
+        );
         return;
       }
     } catch {
