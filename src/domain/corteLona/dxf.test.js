@@ -90,6 +90,15 @@ describe('DXF del bot', () => {
     expect([numero(arco, 20), numero(arco, 40), numero(arco, 50), numero(arco, 51)]).toEqual([600, 111, 0, 90]);
     comprobarHandles(dxf);
   });
+  it('respeta las minúsculas de un texto literal (uniones de empate a1, a2) y pasa a mayúsculas los demás', () => {
+    const dxf = escribirDxf2004({ lineas: [], textos: [
+      { capa: 'ROTULADOR', x: 0, y: 0, h: 10, valor: 'a1', literal: true },
+      { capa: 'texto', x: 0, y: 0, h: 100, valor: 'derecho' },
+    ] }, { dx: 0, dy: 0 });
+    const valores = registrosDxf(dxf).filter((e) => e.tipo === 'TEXT').map((e) => valor(e, 1));
+    expect(valores).toContain('a1');
+    expect(valores).toContain('DERECHO');
+  });
   it('rechaza capas ajenas al bot', () => {
     expect(() => escribirDxf2004({ lineas: [{ capa: 'referencias' }], textos: [] })).toThrow(/capas/);
   });

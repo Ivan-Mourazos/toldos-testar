@@ -26,8 +26,9 @@ export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, {
   const linea = (c, x1, y1, x2, y2) => ent('LINE', c, 'AcDbLine', ` 10\n${n(x1)}\n 20\n${n(y1)}\n 30\n0.0\n 11\n${n(x2)}\n 21\n${n(y2)}\n 31\n0.0\n`);
   // Centrado: punto de alineación (11/21) en el centro del texto (72 = 1, 73 = 2). AutoCAD dibuja desde
   // el punto de inicio (10/20) sin recalcularlo, así que también se da, con el ancho aproximado en Arial.
-  const texto = (c, x, y, h, v, giro = 0, centrado = false) => {
-    v = textoLatin1(v);
+  const texto = (c, x, y, h, v, giro = 0, centrado = false, literal = false) => {
+    // Literal: sin pasar a mayúsculas (las uniones de empate de remolque son «a1», «a2», como a mano).
+    v = literal ? String(v ?? '').replace(/[\r\n\t\\{}]+/g, ' ').trim().replace(/[^\x20-\xff]/gu, (ch) => '\\U+' + ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')) : textoLatin1(v);
     let [x0, y0] = [x, y];
     if (centrado) {
       const a = (giro * Math.PI) / 180, w = anchoArial(v, h);
@@ -46,7 +47,7 @@ export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, {
     if (e.t === 'ARC') body += arco(v('8'), v('10'), v('20'), v('40'), v('50'), v('51'));
   }
   for (const l of lineas) body += linea(l.capa, l.x1 + dx, l.y1 + dy, l.x2 + dx, l.y2 + dy);
-  for (const t of textos) body += texto(t.capa, t.x + dx, t.y + dy, t.h, t.valor, t.giro, t.centrado);
+  for (const t of textos) body += texto(t.capa, t.x + dx, t.y + dy, t.h, t.valor, t.giro, t.centrado, t.literal);
   for (const c of circulos) body += circulo(c.capa, c.x + dx, c.y + dy, c.r);
   for (const a of arcos) body += arco(a.capa, a.x + dx, a.y + dy, a.r, a.desde, a.hasta);
   const out = head.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`) + body + tail;
