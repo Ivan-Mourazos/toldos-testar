@@ -17,8 +17,15 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     ...unir(verticales).map(([x, a, b]) => ({ capa: 'DISCO1', x1: x, y1: a, x2: x, y2: b }))
   ];
   const textos = [];
+  // Cuántos paños con empate tiene cada toldo (A1, A2…), para saber con quién se une cada uno.
+  const panos = new Map();
+  for (const p of colocadas) {
+    const m = /^([A-Z]+)(\d+)$/.exec(p.nombre);
+    if (m) panos.set(m[1], Math.max(panos.get(m[1]) ?? 0, Number(m[2])));
+  }
   for (const p of colocadas) {
     const [x0, y0] = [p.x, p.y];
+    textos.push(...numerosDeUnion(p, panos));
     // Marca a `d` del borde de arriba (d > 0) o de abajo (d < 0) de la pieza, metida `m` en los
     // laterales. Girada, el borde de arriba de la pieza queda a la izquierda (como AR2405992).
     const marca = (d, m) => {
@@ -56,6 +63,37 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   }
   textos.push({ capa: 'texto', x: 0, y: anchoRolloMm + 140, h: 100, valor: `${tela} · OF ${of}` });
   return { lineas, textos };
+}
+
+// Números de unión de los empates, como en remolques (Iván, 20/10/2026): el mismo en los dos paños que se
+// sueldan (a1 entre A1 y A2, a2 entre A2 y A3…), en ROTULADOR de 1 cm, a 1 cm del borde (dentro de los 2 cm
+// de empate, para que quede tapado al soldar) y a 4 cm de cada punta. Con empate horizontal los paños se
+// unen por arriba y por abajo (A1 abajo, en la bamba); con empate vertical, por los lados.
+const MEDIO_EMPATE = 10, PUNTA = 40;
+function numerosDeUnion(p, panos) {
+  const m = /^([A-Z]+)(\d+)$/.exec(p.nombre);
+  if (!m || (panos.get(m[1]) ?? 0) < 2) return [];
+  const [letra, i, total] = [m[1], Number(m[2]), panos.get(m[1])];
+  const vertical = p.marcas.includes('arriba') && p.marcas.includes('abajo');
+  // Del sistema de la pieza (u a lo largo, v a lo alto) al rollo; girada, lo de arriba queda a la izquierda.
+  const sitio = (u, v) => (p.girada ? [p.x + p.alto - v, p.y + u] : [p.x + u, p.y + v]);
+  const numero = (u, v, k, aLoLargo) => {
+    const [x, y] = sitio(u, v);
+    return { capa: 'ROTULADOR', x, y, h: 10, valor: `${letra.toLowerCase()}${k}`, giro: aLoLargo === !p.girada ? 0 : 90, centrado: true, literal: true };
+  };
+  const out = [];
+  // Unión con el paño anterior (k = i - 1) y con el siguiente (k = i).
+  for (const [k, conAnterior] of [[i - 1, true], [i, false]]) {
+    if (k < 1 || k >= total) continue;
+    if (vertical) {
+      const u = conAnterior ? MEDIO_EMPATE : p.largo - MEDIO_EMPATE;
+      out.push(numero(u, PUNTA, k, false), numero(u, p.alto - PUNTA, k, false));
+    } else {
+      const v = conAnterior ? MEDIO_EMPATE : p.alto - MEDIO_EMPATE;
+      out.push(numero(PUNTA, v, k, true), numero(p.largo - PUNTA, v, k, true));
+    }
+  }
+  return out;
 }
 
 function unir(segs) {

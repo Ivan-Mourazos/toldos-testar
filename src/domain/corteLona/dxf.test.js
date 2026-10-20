@@ -153,7 +153,7 @@ describe('Plano de confección', () => {
   it('muestra caída terminada sin sumar de nuevo el solape horizontal', () => {
     const datos = { toldos: fixtures.find((f) => f.pedido === 'AR2501462').toldos };
     const plano = dibujarPlano(datos, cortePedido(datos.toldos));
-    expect(plano.textos.some((t) => t.capa === 'cotas' && t.valor === '383')).toBe(true);
+    expect(plano.cotas.some((c) => c.capa === 'cotas' && Math.round(c.valor * 10) / 10 === 383)).toBe(true);
   });
   it('admite arcos y círculos en el dibujo y en el corte (planos de remolques)', () => {
     const vacio = { lineas: [], polilineas: [], textos: [] };

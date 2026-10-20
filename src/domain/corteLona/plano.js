@@ -21,10 +21,8 @@ const ENTRE_TOLDOS = 150;   // cm
 const ORIGEN_M = 100;       // el dibujo empieza a 100 m del origen en X y en Y
 const HUECO_TIRA = 45;      // cm entre el cuerpo y la tira: caben las dos «VARILLA BLANCA»
 
-const coma = (v) => (Math.round(v * 10) / 10).toString().replace('.', ',');
-
 export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
-  const L = [], P = [], T = [];   // en cm; se pasan a metros al final
+  const L = [], P = [], T = [], Q = [];   // en cm; se pasan a metros al final (Q: cotas)
   const linea = (capa, x1, y1, x2, y2) => L.push({ capa, x1, y1, x2, y2 });
   const rect = (capa, x0, y0, x1, y1) => P.push({ capa, puntos: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], cerrada: true });
   // Cada texto se ajusta a su hueco: si a su altura no cabe en `max` cm, se reduce (Iván: en los
@@ -36,20 +34,13 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
   const escalaTexto = Math.min(1.3, Math.max(0.55, Math.max(anchoTotal / 1.82, altoTotal) / 450));
   const ajustar = (valor, h, max) => (max ? Math.min(h * escalaTexto, max / anchoArial(valor, 1)) : h * escalaTexto);
   const texto = (valor, x, y, h = 10, giro = 0, capa = 'texto', max = 0) => T.push({ capa, x, y, h: ajustar(valor, h, max), valor, giro, centrado: true });
-  // Cota con líneas de referencia, trazos a 45° y el valor encima. `lado` separa la cota de la pieza.
+  // Cota de verdad, que se selecciona y se modifica en el CAD (Iván, 20/10/2026), con los estilos de cota
+  // de la oficina: XERAL 15 en los toldos grandes y XERAL en el resto. `lado` separa la línea de cota de la
+  // pieza; con 0 va sobre los puntos.
+  const estiloCota = 12 * escalaTexto >= 12.5 ? 'XERAL 15' : 'XERAL';
   const cota = (capa, x1, y1, x2, y2, valor, lado) => {
     const vertical = x1 === x2;
-    const [dx, dy] = vertical ? [lado, 0] : [0, lado];
-    const [a, b] = [[x1 + dx, y1 + dy], [x2 + dx, y2 + dy]];
-    // Con lado = 0 la línea de cota va sobre los puntos, sin líneas de referencia.
-    if (lado) {
-      linea(capa, x1, y1, a[0] + Math.sign(dx) * 5, a[1] + Math.sign(dy) * 5);
-      linea(capa, x2, y2, b[0] + Math.sign(dx) * 5, b[1] + Math.sign(dy) * 5);
-    }
-    linea(capa, a[0], a[1], b[0], b[1]);
-    for (const [x, y] of [a, b]) linea(capa, x - 3, y - 3, x + 3, y + 3);
-    const [mx, my] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-    texto(coma(valor), mx + (vertical ? (dx < 0 ? -9 : 9) : 0), my + (vertical ? 0 : 9), 12, vertical ? 90 : 0, capa);
+    Q.push({ capa, estilo: estiloCota, x1, y1, x2, y2, giro: vertical ? 90 : 0, d: (vertical ? x1 : y1) + lado, valor });
   };
 
   let x = 0;
@@ -177,11 +168,11 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     cota('vent-pre-noimpr', xIzq + 15, yc0, xIzq + 15, yc1, yc1 - yc0, -15);
     x += ancho + ENTRE_TOLDOS;
   }
-  const toldos = { x0: -60, y0: -30, x1: x - ENTRE_TOLDOS + 60, y1: Math.max(...T.map((t) => t.y)) + 20 };
+  const toldos = { x0: -60, y0: -30, x1: x - ENTRE_TOLDOS + 60, y1: Math.max(...T.map((t) => t.y), ...Q.filter((q) => !q.giro).map((q) => q.d + 9)) + 20 };
 
   // Corte en el rollo, debajo, a tamaño real: lo mismo que va al DXF de corte. Sus entidades se dan
   // aparte (`corte`): la hoja puede ponerlo girado si así se ve más grande (Iván).
-  const desde = { L: L.length, P: P.length, T: T.length };
+  const desde = { L: L.length, P: P.length, T: T.length, Q: Q.length };
   const anchoRollo = datos.toldos[0].anchoRollo;
   // Con sacos de stock en la lona que sobra (Iván): van en el corte del plano y en el DXF.
   const colocadas = [...corteRollo.colocadas];
@@ -196,7 +187,8 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     for (const l of corte.lineas) linea(l.capa, l.x1 / 10, yRollo + l.y1 / 10, l.x2 / 10, yRollo + l.y2 / 10);
     for (const t of [...corte.textos, ...(opcion.textosExtra || [])]) {
       if (t.valor.includes(' · OF ')) continue;
-      T.push({ ...t, capa: 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: Math.min(t.h / 10, 15) });
+      // Los números de unión van en ROTULADOR y de 1 cm, como en el DXF del bot.
+      T.push({ ...t, capa: t.capa === 'ROTULADOR' ? 'ROTULADOR' : 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: Math.min(t.h / 10, 15) });
     }
     // Solo se habla de opciones cuando hay dos; "con sacos" solo si de verdad lleva sacos.
     const conSacos = sacosStock.length ? ' · CON SACOS' : '';
@@ -217,6 +209,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     const mitad = anchoArial(t.valor, t.h) / 2;
     puntosCorte.push([t.x - (t.giro ? t.h : mitad), t.y - (t.giro ? mitad : t.h)], [t.x + (t.giro ? t.h : mitad), t.y + (t.giro ? mitad : t.h)]);
   }
+  // Las cotas del corte, con el sitio de su texto a los dos lados de la línea.
+  for (const q of Q.slice(desde.Q)) {
+    puntosCorte.push(...(q.giro ? [[q.d - 12, q.y1], [q.d + 12, q.y2]] : [[q.x1, q.d - 12], [q.x2, q.d + 12]]));
+  }
   const zonaCorte = { x0: Math.min(...puntosCorte.map(p => p[0])) - 10, x1: Math.max(...puntosCorte.map(p => p[0])) + 10,
     y0: Math.min(...puntosCorte.map(p => p[1])) - 10, y1: Math.max(...puntosCorte.map(p => p[1])) + 10 };
 
@@ -224,15 +220,16 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
   const m = (v) => v / 100;
   const px = (v) => m(v) + ORIGEN_M, py = (v) => m(v) + ORIGEN_M;
   const zona = (z) => ({ x0: px(z.x0), y0: py(z.y0), x1: px(z.x1), y1: py(z.y1) });
-  const convertir = (ls, ps, ts) => ({
+  const convertir = (ls, ps, ts, qs) => ({
     lineas: ls.map((l) => ({ ...l, x1: px(l.x1), y1: py(l.y1), x2: px(l.x2), y2: py(l.y2) })),
     polilineas: ps.map((p) => ({ ...p, puntos: p.puntos.map(([a, b]) => [px(a), py(b)]) })),
-    textos: ts.map((t) => ({ ...t, valor: String(t.valor).toUpperCase(), x: px(t.x), y: py(t.y), h: m(t.h) }))
+    textos: ts.map((t) => ({ ...t, valor: t.literal ? String(t.valor) : String(t.valor).toUpperCase(), x: px(t.x), y: py(t.y), h: m(t.h) })),
+    cotas: qs.map((q) => ({ ...q, x1: px(q.x1), y1: py(q.y1), x2: px(q.x2), y2: py(q.y2), d: q.giro ? px(q.d) : py(q.d) }))
   });
   return {
     capas: CAPAS,
-    ...convertir(L.slice(0, desde.L), P.slice(0, desde.P), T.slice(0, desde.T)),
-    corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T)),
+    ...convertir(L.slice(0, desde.L), P.slice(0, desde.P), T.slice(0, desde.T), Q.slice(0, desde.Q)),
+    corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T), Q.slice(desde.Q)),
     zonas: { toldos: zona(toldos), corte: zona(zonaCorte) },
     anchoRollo, usado,
     largoRollo,

@@ -3,6 +3,7 @@ import revision from './fixtures/revision-AR2604784.json' with { type: 'json' };
 import { generarCorteLona } from './index.js';
 import { calculateOrder } from '../rules.js';
 import { dibujo } from './dibujoCorte.js';
+import { registrosDxf, valor } from './dxfTestHelpers.js';
 
 const generar = (order, ajustes = {}) => generarCorteLona(order, { ofStockSacos: '0230811', ajustes });
 
@@ -28,7 +29,7 @@ describe('Correcciones de confección tras la revisión', () => {
     expect(piezas.every(p => p.alto === caida * 10)).toBe(true);
     const plano = resultado.plano[0].geometria;
     expect(plano.textos.some(t => t.valor === 'VARILLA BLANCA (5,5)' && t.y < 100)).toBe(true);
-    expect(plano.textos.some(t => t.capa === 'cotas' && t.valor === '208')).toBe(true);
+    expect(plano.cotas.some(c => c.capa === 'cotas' && Math.round(c.valor * 10) / 10 === 208)).toBe(true);
     expect(plano.lineas.some(l => l.capa === 'ROTULADOR' && Math.abs(l.y1 - 100.07) < 0.001)).toBe(true);
   });
   it('corta la bamba en su PVC con letra, OF, unidades y las medidas de la tira', () => {
@@ -62,12 +63,14 @@ describe('Correcciones de confección tras la revisión', () => {
     const order = structuredClone(revision.order);
     Object.assign(order.awnings[0], { width: 700, projection: 350 });
     const { plano, cortes } = generar(order);
-    const textos = plano[0].geometria.corte.textos;
+    const { textos, cotas } = plano[0].geometria.corte;
     const titulo2 = textos.find(t => t.valor.startsWith('OPCIÓN 2'));
-    const cota1 = textos.find(t => t.capa === 'cotas' && t.valor === String(cortes.conSacos[0].largo / 10).replace('.', ','));
+    // La cota del largo de la opción 1 (cota de verdad: su texto va centrado en la línea de cota).
+    const cota1 = cotas.find(c => !c.giro && Math.round(c.valor * 10) === Math.round(cortes.conSacos[0].largo));
+    const debajo = cota1.d - (cota1.estilo === 'XERAL 15' ? 0.15 : 0.1) / 2;
     const aviso = textos.find(t => t.valor === 'CORTAR DE RESTOS');
-    expect(cota1.y - cota1.h - titulo2.y - titulo2.h).toBeGreaterThan(1.3);
-    expect(cota1.y - cota1.h - aviso.y - aviso.h).toBeGreaterThan(1.3);
+    expect(debajo - titulo2.y - titulo2.h).toBeGreaterThan(1.3);
+    expect(debajo - aviso.y - aviso.h).toBeGreaterThan(1.3);
   });
   it.each([false, true])('centra los textos de la tira bajo el rotulador (girada: %s)', (girada) => {
     const p = { nombre: 'A BAMBA', largo: 4850, alto: 150, marcas: ['tira'], of: '0232568', x: 0, y: 0,
@@ -79,5 +82,48 @@ describe('Correcciones de confección tras la revisión', () => {
       expect(centros[i] - t.h).toBeGreaterThan(0);
       expect(centros[i] + t.h).toBeLessThan(85);
     }
+  });
+});
+
+describe('Números de unión de los empates (como en remolques)', () => {
+  const pano = (nombre, extra) => ({ nombre, largo: 5000, alto: 2000, of: '0232568', x: 0, y: 0, ancho: 5000, hueco: 2000, girada: false, ...extra });
+  const uniones = (colocadas) => dibujo(colocadas, 2500, { of: '', tela: '' }).textos.filter((t) => t.capa === 'ROTULADOR');
+
+  it('empate horizontal: el mismo número en los dos paños, de 1 cm, a 1 cm del borde y a 4 cm de las puntas', () => {
+    const t = uniones([pano('A1', { marcas: ['abajo'] }), pano('A2', { marcas: [], x: 5000 }), pano('A3', { marcas: ['arriba'], x: 10000 })]);
+    expect(t.every((n) => n.h === 10 && n.literal && n.giro === 0)).toBe(true);
+    // A1 arriba con a1; A2 abajo con a1 y arriba con a2; A3 abajo con a2.
+    expect(t.map((n) => [n.valor, n.x, n.y])).toEqual([
+      ['a1', 40, 1990], ['a1', 4960, 1990],
+      ['a1', 5040, 10], ['a1', 9960, 10], ['a2', 5040, 1990], ['a2', 9960, 1990],
+      ['a2', 10040, 10], ['a2', 14960, 10],
+    ]);
+  });
+
+  it('empate vertical: por los lados, girados; y en una pieza girada, a lo largo de su borde', () => {
+    const t = uniones([pano('B1', { marcas: ['arriba', 'abajo'] }), pano('B2', { marcas: ['arriba', 'abajo'], x: 5000 })]);
+    expect(t.map((n) => [n.valor, n.x, n.y, n.giro])).toEqual([
+      ['b1', 4990, 40, 90], ['b1', 4990, 1960, 90],
+      ['b1', 5010, 40, 90], ['b1', 5010, 1960, 90],
+    ]);
+    // Girada, lo de arriba de la pieza queda a la izquierda: la unión de arriba de A1 sale a 1 cm del borde izquierdo.
+    const g = uniones([pano('A1', { marcas: ['abajo'], girada: true, ancho: 2000, hueco: 5000 }), pano('A2', { marcas: ['arriba'], x: 3000 })]);
+    expect(g.filter((n) => n.x < 2000).map((n) => [n.x, n.y, n.giro])).toEqual([[10, 40, 90], [10, 4960, 90]]);
+  });
+
+  it('van al DXF del bot en ROTULADOR, en minúscula y sin cotas (las cotas solo en el plano)', () => {
+    const order = structuredClone(revision.order);
+    Object.assign(order.awnings[0], { width: 700, projection: 350 });
+    const { cortes, plano } = generar(order);
+    const entidades = registrosDxf(cortes.conSacos[0].dxf);
+    expect(entidades.some((e) => e.tipo === 'DIMENSION')).toBe(false);
+    expect(entidades.some((e) => valor(e, 8) === 'ROTULADOR' && valor(e, 1) === 'a1')).toBe(true);
+    // En el plano sí hay cotas de verdad, y el número de unión sigue en minúscula.
+    expect(registrosDxf(plano[0].dxf).some((e) => e.tipo === 'DIMENSION')).toBe(true);
+    expect(plano[0].geometria.corte.textos.some((t) => t.capa === 'ROTULADOR' && t.valor === 'a1')).toBe(true);
+  });
+
+  it('sin empate no hay números', () => {
+    expect(uniones([pano('A', { marcas: ['abajo', 'arriba'] }), pano('A BAMBA', { marcas: ['tira'], x: 5000 })])).toEqual([]);
   });
 });
