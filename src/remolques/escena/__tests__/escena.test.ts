@@ -20,6 +20,10 @@ describe("escena de la lona", () => {
     if (porArriba.cuerpo.tipo !== "lona") throw new Error("no es lona");
     expect(porArriba.cuerpo.perfilAtras).toEqual(porArriba.cuerpo.perfilDelante);
     expect(porArriba.cuerpo.traseraDesde).toBe(4);
+    // La vista de detrás acota el paño trasero (96, desde 4 cm sobre la base); de lado, el alto del remolque.
+    const detras = porArriba.cotas.filter((c) => c.vistas.includes("detras") && c.desde[0] === c.hasta[0]);
+    expect(detras.map((c) => [c.texto, c.desde[1]])).toContainEqual(["96", 4]);
+    expect(porArriba.cotas.filter((c) => c.vistas.includes("lateral")).map((c) => c.texto)).toContain("100");
     // Sin marcarla, el alto de detrás sesga el remolque, como siempre, y no hay recorte.
     const sesgada = escenaLona({ altoAtras: 96 })!;
     if (sesgada.cuerpo.tipo !== "lona") throw new Error("no es lona");

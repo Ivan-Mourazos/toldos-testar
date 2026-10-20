@@ -19,6 +19,9 @@ export function cotasCuerpo(cuerpo: CuerpoLona | CuerpoBaqueton, suelo: number):
     const hD = Math.max(...cuerpo.perfilDelante.map(([, y]) => y));
     const hA = Math.max(...cuerpo.perfilAtras.map(([, y]) => y));
     const wMax = Math.max(wD, wA);
+    // Con la trasera a la línea por arriba (AR2605158), la vista de detrás acota el paño trasero, que empieza
+    // más arriba; de lado, el remolque sigue con su alto.
+    const desde = cuerpo.traseraDesde ?? 0;
     return [
       { vistas: ["lateral", "tres-cuartos"], desde: [wMax / 2, yAbajo, 0], hasta: [wMax / 2, yAbajo, L], texto: fmt(L) },
       { vistas: ["arriba"], desde: [wMax / 2 + S, 0, 0], hasta: [wMax / 2 + S, 0, L], texto: fmt(L) },
@@ -27,7 +30,7 @@ export function cotasCuerpo(cuerpo: CuerpoLona | CuerpoBaqueton, suelo: number):
       { vistas: ["detras"], desde: [-wA / 2, yAbajo, 0], hasta: [wA / 2, yAbajo, 0], texto: fmt(wA) },
       { vistas: ["delante", "tres-cuartos"], desde: [-wD / 2 - S, 0, L], hasta: [-wD / 2 - S, hD, L], texto: fmt(hD) },
       { vistas: ["lateral"], desde: [wD / 2, 0, L + S], hasta: [wD / 2, hD, L + S], texto: fmt(hD) },
-      { vistas: ["detras"], desde: [wA / 2 + S, 0, 0], hasta: [wA / 2 + S, hA, 0], texto: fmt(hA) },
+      { vistas: ["detras"], desde: [wA / 2 + S, desde, 0], hasta: [wA / 2 + S, hA, 0], texto: fmt(r1(hA - desde)) },
       { vistas: ["lateral"], desde: [wA / 2, 0, -S], hasta: [wA / 2, hA, -S], texto: fmt(hA) },
     ];
   }
