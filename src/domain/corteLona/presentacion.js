@@ -77,7 +77,13 @@ export function escribirDxfPlano(plano, cabecera) {
     textos: plano.corte.textos.map((t) => { const [x, y] = girar([t.x, t.y]); return { ...t, x, y, giro: legible(((t.giro || 0) + 90) % 360) }; }),
     // Remolques: esquinas en arco y ollaos (círculos); girados con el corte.
     arcos: (plano.corte.arcos ?? []).map((a) => { const [x, y] = girar([a.x, a.y]); return { ...a, x, y, desde: (a.desde + 90) % 360, hasta: (a.hasta + 90) % 360 || 360 }; }),
-    circulos: (plano.corte.circulos ?? []).map((c) => { const [x, y] = girar([c.x, c.y]); return { ...c, x, y }; })
+    circulos: (plano.corte.circulos ?? []).map((c) => { const [x, y] = girar([c.x, c.y]); return { ...c, x, y }; }),
+    // Girada, una cota horizontal pasa a vertical y al revés; su línea de cota gira con ella.
+    cotas: (plano.corte.cotas ?? []).map((c) => {
+      const [x1, y1] = girar([c.x1, c.y1]), [x2, y2] = girar([c.x2, c.y2]);
+      const d = c.giro === 90 ? ccy + (c.d - ccx) : ccx - (c.d - ccy) + apartar;
+      return { ...c, x1, y1, x2, y2, d, giro: c.giro === 90 ? 0 : 90 };
+    })
   };
   // La ventana del corte, sin más alto ni ancho del que usa a su escala.
   const ec = escala(zc, reparto.corte);
@@ -152,7 +158,7 @@ export function escribirDxfPlano(plano, cabecera) {
 
   // Cotas de verdad, que se seleccionan y se modifican (Iván, 20/10/2026): DIMENSION con los estilos de
   // cota de la plantilla y su bloque ya dibujado como lo dibuja el CAD.
-  const cotas = (plano.cotas ?? []).map((c, i) => cotaDxf(c, i + 1, nuevo, ent));
+  const cotas = [...(plano.cotas ?? []), ...(corte.cotas ?? [])].map((c, i) => cotaDxf(c, i + 1, nuevo, ent));
   modelo += cotas.map((c) => c.entidad).join('');
 
   src = src.slice(0, ini) + entidades.join('') + insercion + modelo + src.slice(fin);

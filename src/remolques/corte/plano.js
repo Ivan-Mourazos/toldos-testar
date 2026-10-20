@@ -156,10 +156,18 @@ export function escribirPlanoRemolques({ pedido, lonas, letras, corte, material,
   for (const t of corte.textos) C.textos.push({ ...t, valor: String(t.valor), x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
   for (const c of corte.circulos) C.circulos.push({ capa: c.capa, x: cm(c.x), y: yc + cm(c.y), r: 0.25 });
   for (const a of corte.arcos) C.arcos.push({ capa: a.capa, x: cm(a.x), y: yc + cm(a.y), r: cm(a.r), desde: a.desde, hasta: a.hasta });
+  // Cotas del corte (Iván, 20/10/2026): el largo total por debajo y el alto que ocupa a la izquierda.
+  const alto = Math.max(...C.lineas.map((l) => Math.max(l.y1, l.y2))) - yc;
+  C.cotas = [
+    { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: cm(largoRollo), y2: yc, giro: 0, d: yc - 25, valor: cm(largoRollo) },
+    { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: 0, y2: yc + alto, giro: 90, d: -25, valor: alto },
+  ];
   // La zona del corte cuenta también lo que ocupan los textos (el material de arriba no va centrado).
   const anchoTexto = (t) => String(t.valor).length * t.h * 0.62;
   const pts = [...C.lineas.flatMap((l) => [[l.x1, l.y1], [l.x2, l.y2]]),
-    ...C.textos.flatMap((t) => (t.centrado ? [[t.x - anchoTexto(t) / 2, t.y - t.h], [t.x + anchoTexto(t) / 2, t.y + t.h]] : [[t.x, t.y], [t.x + anchoTexto(t), t.y + t.h]]))];
+    ...C.textos.flatMap((t) => (t.centrado ? [[t.x - anchoTexto(t) / 2, t.y - t.h], [t.x + anchoTexto(t) / 2, t.y + t.h]] : [[t.x, t.y], [t.x + anchoTexto(t), t.y + t.h]])),
+    // Las cotas, con el sitio de su texto.
+    [-25 - 12, yc - 25 - 12]];
   const zonaCorte = { x0: Math.min(...pts.map((p) => p[0])) - 10, y0: Math.min(...pts.map((p) => p[1])) - 10, x1: Math.max(...pts.map((p) => p[0])) + 10, y1: Math.max(...pts.map((p) => p[1])) + 10 };
   // A metros, a 100 m del origen.
   const m = (v) => ORIGEN_M + v / 100;

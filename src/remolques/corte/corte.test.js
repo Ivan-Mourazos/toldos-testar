@@ -82,6 +82,10 @@ describe('generarCorteRemolques', () => {
       .map((r) => numero(r, 40));
     expect(alturas.length).toBeGreaterThan(0);
     expect(new Set(alturas)).toEqual(new Set([0.01]));
+    // El corte lleva su largo total y su alto como cotas de verdad (en cm).
+    const medidas = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(medidas).toContain(803.1);
+    expect(medidas).toContain(250);
   });
 
   it('con solo baquetones, el plano es el corte en metros en DXF 2004', () => {
