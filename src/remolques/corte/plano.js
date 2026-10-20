@@ -29,6 +29,8 @@ function lienzo() {
 function pintar(L, p, t) {
   for (const [a, b, c, d] of p.lineas) { const [x1, y1] = t(a, b), [x2, y2] = t(c, d); L.linea('DISCO1', x1, y1, x2, y2); }
   for (const [a, b, c, d] of p.rot) { const [x1, y1] = t(a, b), [x2, y2] = t(c, d); L.linea('ROTULADOR', x1, y1, x2, y2); }
+  // La raya de la cremallera, entera en el plano (en el corte va recortada: el arranque y una T).
+  for (const [a, b, c, d] of p.cremallera ?? []) { const [x1, y1] = t(a, b), [x2, y2] = t(c, d); L.linea('ROTULADOR', x1, y1, x2, y2); }
   for (const [a, b] of p.ollaos) { const [x, y] = t(a, b); L.g.circulos.push({ capa: 'ROTULADOR', x, y, r: 0.25 }); }
   // Arcos del corte (esquinas del arquillado): `t` no gira, así que los ángulos se quedan como están.
   for (const a of p.arcos) { const [x, y] = t(a.x, a.y); L.g.arcos.push({ capa: 'DISCO1', x, y, r: a.r / 10, desde: a.desde, hasta: a.hasta }); }
@@ -115,11 +117,14 @@ function confeccionLona(L, el, X, Y, letra) {
   // Paño contorno, a lo ancho: x = a lo largo del contorno, y = a lo largo de la lona (atrás arriba).
   const tc = (u, v) => [xCon + v / 10, Y + u / 10];
   pintar(L, P.c, tc);
-  L.g.polilineas.push({ capa: 'referencias', puntos: [[xCon + 3.5, Y + 1], [xCon + B - 3.5, Y + 1], [xCon + B - 3.5, Y + A - 1], [xCon + 3.5, Y + A - 1]], cerrada: true });
+  // Terminado: 3,5 cm por dentro en los laterales y, en las puntas, lo que sobra del hecho a cada lado (1 cm en
+  // una lona normal; 6 con bastilla de enfundar, como en AR2603438). Ahí empieza la escalera de los ollaos.
+  const punta = (A - hecha.largo) / 2;
+  L.g.polilineas.push({ capa: 'referencias', puntos: [[xCon + 3.5, Y + punta], [xCon + B - 3.5, Y + punta], [xCon + B - 3.5, Y + A - punta], [xCon + 3.5, Y + A - punta]], cerrada: true });
   L.texto(`${R}1`, xCon + B / 2, Y + A / 2 - 4, 14);
   L.cota('cotas', xCon + 3.5, Y, xCon + B - 3.5, Y, r.contornoAjustado - 7, -12);
   L.cota('vent-pre-noimpr', xCon, Y, xCon + B, Y, B, -26);
-  L.cota('cotas', xCon, Y + 1, xCon, Y + A - 1, hecha.largo, -12);
+  L.cota('cotas', xCon, Y + punta, xCon, Y + A - punta, hecha.largo, -12);
   L.cota('vent-pre-noimpr', xCon, Y, xCon, Y + A, A, -26);
   // Contorno que no cabe en el rollo: dónde va el empate (2 cm) y la tira empatada en dos, en trazos.
   if (A * 10 > 2500 && B * 10 > 2500) {

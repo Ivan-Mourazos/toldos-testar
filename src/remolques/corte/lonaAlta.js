@@ -47,7 +47,7 @@ function forma(i) {
 }
 
 // Cabeza: perfil de ancho `w` (sin orejas) y alto `h`, con orejas de `oreja` mm a cada lado.
-function cabeza(f, w, h, oreja, ollaos, hecha, ventana) {
+function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false) {
   const W = w + 2 * oreja, p = pieza(W, h);
   const hombro = f.tipo === 'TIPO 05' ? h - f.r : h - f.aguas;
   // Alto de la oreja (Iván, 20/10/2026): en el recto, a 5 cm del borde de arriba; con hombro en curva, hasta
@@ -72,18 +72,31 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana) {
   if (oreja) for (const d of [45, 115]) if (d < oreja) p.ollaos.push([d, BORDE], [W - d, BORDE]);
   // Marca del centro arriba.
   marca(p, x0 + w / 2, h - 10, x0 + w / 2, h - 25);
+  // Lo que tiene encima cada punto del perfil: el borde de arriba, la pendiente de las aguas o la curva del arquillado.
+  const encima = (x) => {
+    if (f.tipo === 'TIPO 02') return hombro + (h - hombro) * (1 - Math.abs(x - (x0 + w / 2)) / (w / 2));
+    if (f.tipo === 'TIPO 05') {
+      const dx = Math.max(x0 + f.r - x, x - (x1 - f.r), 0);
+      return dx > 0 ? h - f.r + Math.sqrt(Math.max(f.r * f.r - dx * dx, 0)) : h;
+    }
+    return h;
+  };
+  // Cabeza que recoge con cremallera (Iván, 20/10/2026; AR2604990, AR2603438): una raya a 5 cm de cada lado
+  // del perfil, desde 3,5 cm sobre la base hasta 4,5 cm por debajo de lo que tiene encima. En el plano va
+  // entera (`p.cremallera`); en el corte se recorta: el arranque de abajo y una T arriba.
+  if (cremallera) {
+    p.cremallera = [];
+    for (const x of [x0 + 50, x1 - 50]) {
+      const arriba = encima(x) - 45;
+      p.cremallera.push([x, 35, x, arriba]);
+      marca(p, x, 35, x, 60);
+      marca(p, x, arriba - 25, x, arriba);
+      marca(p, x - 10, arriba, x + 10, arriba);
+    }
+  }
   if (ventana) {
-    // Las esquinas de arriba de la ventana, a 4 cm en vertical de lo que tienen encima (Iván, 20/10/2026):
-    // el borde de arriba, la pendiente de las aguas o la curva del arquillado.
+    // Las esquinas de arriba de la ventana, a 4 cm en vertical de lo que tienen encima (Iván, 20/10/2026).
     const [va, vh] = ventana, xa = x0 + (w - va) / 2;
-    const encima = (x) => {
-      if (f.tipo === 'TIPO 02') return hombro + (h - hombro) * (1 - Math.abs(x - (x0 + w / 2)) / (w / 2));
-      if (f.tipo === 'TIPO 05') {
-        const dx = Math.max(x0 + f.r - x, x - (x1 - f.r), 0);
-        return dx > 0 ? h - f.r + Math.sqrt(Math.max(f.r * f.r - dx * dx, 0)) : h;
-      }
-      return h;
-    };
     const arriba = Math.min(encima(xa), encima(xa + va)) - 40;
     for (const [a, b, c, d] of [[xa, arriba - vh, xa + va, arriba - vh], [xa + va, arriba - vh, xa + va, arriba], [xa + va, arriba, xa, arriba], [xa, arriba, xa, arriba - vh]]) marca(p, a, b, c, d);
   }
@@ -247,8 +260,8 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null) {
     const ollaosDel = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.ancho, r.reparto.delante) : r.reparto.delante;
     const ollaosAtr = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.anchoAtras ?? r.ollaos.ancho, r.reparto.atras) : r.reparto.atras;
     const ventana = i.ventana && i.ventanaAncho > 0 && i.ventanaAlto > 0 ? [i.ventanaAncho * 10, i.ventanaAlto * 10] : null;
-    const d = cabeza(f, anchoPerfil, del.alto * 10, 0, ollaosDel, hecha.ancho, ventana);
-    const t = cabeza(f, anchoPerfil, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null);
+    const d = cabeza(f, anchoPerfil, del.alto * 10, 0, ollaosDel, hecha.ancho, ventana, /CREMALLERA/.test(i.recogeDelante ?? ''));
+    const t = cabeza(f, anchoPerfil, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null, /CREMALLERA/.test(i.recogeAtras ?? ''));
     const marcasHombro = f.tipo === 'TIPO 01' ? null : d.altoOreja;
     if (ventana) out.avisos.push(`${el.of}: ventana marcada con rotulador y su tapa de ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}; revisar la altura de la ventana.`);
     for (let u = 0; u < (i.cantidad || 1); u++) {
@@ -305,8 +318,8 @@ export function piezasLona(el) {
   const ollaosAtr = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.anchoAtras ?? r.ollaos.ancho, r.reparto.atras) : r.reparto.atras;
   const lat = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.largo, r.reparto.laterales) : r.reparto.laterales;
   const ventana = i.ventana && i.ventanaAncho > 0 && i.ventanaAlto > 0 ? [i.ventanaAncho * 10, i.ventanaAlto * 10] : null;
-  const d = cabeza(f, anchoPerfil, del.alto * 10, 0, ollaosDel, hecha.ancho, ventana);
-  const t = cabeza(f, anchoPerfil, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null);
+  const d = cabeza(f, anchoPerfil, del.alto * 10, 0, ollaosDel, hecha.ancho, ventana, /CREMALLERA/.test(i.recogeDelante ?? ''));
+  const t = cabeza(f, anchoPerfil, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null, /CREMALLERA/.test(i.recogeAtras ?? ''));
   const marcasHombro = f.tipo === 'TIPO 01' ? (r.panoContorno.alto * 10) / 2 : d.altoOreja;
   const c = contorno(el, marcasHombro);
   return { f, d, t, c, oreja, ventana, ollaos: { delante: ollaosDel, atras: ollaosAtr, laterales: lat }, marcasHombro };

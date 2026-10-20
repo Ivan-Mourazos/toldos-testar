@@ -47,16 +47,13 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
 
-Abierta el 20/10/2026, al revisar los DWG de PAMILAKAN para el corte:
-
-| Código | Pregunta | Lo que se ve en el corte a mano | En la web |
-| --- | --- | --- | --- |
-| Q-R08 | Marcas de la cremallera en la cabeza: ¿son las rayas a 5 cm de cada lado y van siempre así? | Solo en la cabeza que recoge con cremallera (AR2604990, atrás): una raya a 5 cm de cada lado desde unos 3,5 cm sobre la base, rematada con una T arriba (a 4,5 cm del borde en las rectas, a la altura del hombro en las de aguas). A veces la raya entera (AR2603744), a veces solo los dos extremos | Sin hacer: la cabeza con cremallera sale sin esas marcas |
-
-Contestada el 20/10/2026 (Iván: «Pamilakan las lonas altas son con bastilla de enfundar. Las rayas son las marcas para eso»):
+Contestadas el 20/10/2026, al revisar los DWG de PAMILAKAN para el corte (Iván: «Pamilakan las lonas altas son
+con bastilla de enfundar. Las rayas son las marcas para eso»; «cuando recoge con cremallera, las marcas en el plano
+van enteras y en el corte se recortan y queda el inicio inferior y una T arriba»):
 
 | Código | Pregunta | Respuesta | En la web |
 | --- | --- | --- | --- |
+| Q-R08 | Marcas de la cremallera en la cabeza | En la cabeza que recoge con cremallera, una raya a 5 cm de cada lado, desde 3,5 cm sobre la base hasta 4,5 por debajo de lo que tiene encima: entera en el plano; en el corte, el arranque de abajo y una T arriba | Hecho el 20/10 en el corte y en el plano |
 | Q-R07 | Marcas de rotulador de la bastilla de enfundar en la lona alta | Son las marcas de la bastilla. En sus seis cortes a mano: el doblez a 10 cm de cada punta del contorno (en el corte, sus extremos de 3,5 a 6 cm de cada borde; en el plano, la línea entera), la marca del centro a 6–7,5 cm de la punta y sin marcas de hombro | Hecho el 20/10 en el corte y en el plano |
 
 Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.

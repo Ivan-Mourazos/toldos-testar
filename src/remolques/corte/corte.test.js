@@ -75,8 +75,10 @@ describe('generarCorteRemolques', () => {
     const [c] = generarCorteRemolques(AR2604990).cortes;
     const rot = c.entidades.lineas.filter((l) => l.capa === 'ROTULADOR');
     const largo = (l) => Math.round(Math.hypot(l.x2 - l.x1, l.y2 - l.y1));
-    // Los extremos del doblez (a 10 cm de cada punta, de 3,5 a 6 cm del borde): dos por punta.
-    expect(rot.filter((l) => largo(l) === 25)).toHaveLength(4);
+    // Los extremos del doblez (a 10 cm de cada punta, de 3,5 a 6 cm del borde): dos por punta. Y la trasera recoge
+    // con cremallera: en cada lado, el arranque de abajo y la T de arriba (palo de 2,5 y travesaño de 2).
+    expect(rot.filter((l) => largo(l) === 25)).toHaveLength(4 + 2 + 2);
+    expect(rot.filter((l) => largo(l) === 20)).toHaveLength(2);
     // En el contorno solo el centro (a 6–7,5 cm de la punta), sin marcas de hombro: las de 15 son el centro del
     // contorno en cada punta y el de arriba de cada cabeza.
     expect(rot.filter((l) => largo(l) === 15)).toHaveLength(4);
@@ -84,6 +86,10 @@ describe('generarCorteRemolques', () => {
     const dobleces = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
       && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 2.6) < 0.001);
     expect(dobleces).toHaveLength(2);
+    // Y la cremallera entera en la trasera: de 3,5 cm sobre la base a 4,5 por debajo de las aguas (a 5 cm del lado).
+    const cremallera = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
+      && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 0.5331) < 0.001);
+    expect(cremallera).toHaveLength(2);
   });
 
   it('deja a mano la lona con un perfil que todavía no sabe cortar (AR2604800, TIPO 03)', () => {
