@@ -2,6 +2,7 @@
 // toldos, con su cajetín). Arriba, el dibujo de confección de cada lona alta: paño delantero, trasero y
 // contorno, cada uno con la línea de corte, la rosa de terminado, los ollaos y marcas, y sus cotas (verde lo
 // terminado, ocre lo de corte), como en los DWG de los pedidos (AR2605120). Debajo, el corte del rollo.
+import { cruz, piezaBaqueton } from './baqueton.js';
 import { piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano } from '../../domain/corteLona/presentacion.js';
 
@@ -136,11 +137,91 @@ function confeccionLona(L, el, X, Y, letra) {
   return { ancho: xCon + B - X, alto: Math.max(H, A) };
 }
 
-// pedido: el de la web; lonas: los elementos de lona alta de esta lona; corte: entidades del bot (mm);
+// Dibujo de confección de un baquetón (Iván, 20/10/2026; como AR2605071), en cm, igual que va en el corte:
+// delante a la izquierda y detrás a la derecha. Línea de corte en cruz, rosa de terminado (el remolque hecho
+// con sus cuatro solapas de baquetón), el remolque en trazos, ollaos, cotas verdes de terminado (baquetón |
+// hecho | baquetón) y ocres de corte (paño y esquinas), y los ollaos con línea base en escalera.
+function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
+  const i = el.input, r = el.result, pz = piezaBaqueton(el, params);
+  const t = (u, v) => [X + u / 10, Y + v / 10];
+  const W = pz.L / 10, H = pz.A / 10, b = i.baqueton;
+  // Varias unidades iguales, un solo dibujo con todas sus piezas (A1 · B1), como a mano (AR2605071).
+  const conLetra = letras.filter(Boolean);
+  const titulo = `${conLetra.length ? `${conLetra.join(', ')} · ` : ''}BAQUETÓN ${i.largo} × ${i.ancho} × ${b}${letras.length > 1 ? ` × ${letras.length}` : ''} · OF ${el.of}`;
+  L.texto(titulo, X + W / 2, Y + H + 36, 9);
+
+  // Corte y ollaos, como en el DXF del bot.
+  for (const [[a, c], [d, e]] of cruz(pz.L, pz.A, pz.eI, pz.eR, pz.eb)) { const [x1, y1] = t(a, c), [x2, y2] = t(d, e); L.linea('DISCO1', x1, y1, x2, y2); }
+  for (const [u, v] of pz.ollaos) { const [x, y] = t(u, v); L.g.circulos.push({ capa: 'ROTULADOR', x, y, r: 0.25 }); }
+
+  // Remolque hecho: empieza a 1 cm de la esquina de delante y de la de abajo (piezaBaqueton).
+  const x0 = X + (pz.eI + 10) / 10, y0 = Y + (pz.eb + 10) / 10;
+  const x1 = x0 + r.remolqueHecho.largo, y1 = y0 + r.remolqueHecho.ancho;
+  L.g.polilineas.push({ capa: 'referencias', cerrada: true, puntos: [
+    [x0, y0 - b], [x1, y0 - b], [x1, y0], [x1 + b, y0], [x1 + b, y1], [x1, y1], [x1, y1 + b], [x0, y1 + b], [x0, y1], [x0 - b, y1], [x0 - b, y0], [x0, y0],
+  ] });
+  // El remolque de verdad, en trazos (no se imprime), centrado en el hecho.
+  const [rx, ry] = [(x0 + x1 - i.largo) / 2, (y0 + y1 - i.ancho) / 2];
+  L.g.polilineas.push({ capa: 'vent-pre-noimpr', cerrada: true, puntos: [[rx, ry], [rx + i.largo, ry], [rx + i.largo, ry + i.ancho], [rx, ry + i.ancho]] });
+  L.texto(letras.map((l) => `${l || 'A'}1`).join(' · '), (x0 + x1) / 2, (y0 + y1) / 2 + 4, 14);
+  if (refuerzos) L.texto('REFUERZOS EN ESQUINAS', (x0 + x1) / 2, (y0 + y1) / 2 - 12, 6);
+
+  // Terminado: arriba baquetón | hecho | baquetón; a la izquierda, lo mismo en alto.
+  const arriba = Y + H + 10 - (y1 + b), izquierda = -(x0 - b - X) - 10;
+  L.cota('cotas', x0 - b, y1 + b, x0, y1 + b, b, arriba, 6);
+  L.cota('cotas', x0, y1 + b, x1, y1 + b, r.remolqueHecho.largo, arriba);
+  L.cota('cotas', x1, y1 + b, x1 + b, y1 + b, b, arriba, 6);
+  L.cota('cotas', x0 - b, y0 - b, x0 - b, y0, b, izquierda, 6);
+  L.cota('cotas', x0 - b, y0, x0 - b, y1, r.remolqueHecho.ancho, izquierda);
+  L.cota('cotas', x0 - b, y1, x0 - b, y1 + b, b, izquierda, 6);
+  // Corte: esquinas y paño abajo; esquinas y paño a la derecha.
+  L.cota('vent-pre-noimpr', X, Y, X + pz.eI / 10, Y, pz.eI / 10, -12, 6);
+  L.cota('vent-pre-noimpr', X + W - pz.eR / 10, Y, X + W, Y, pz.eR / 10, -12, 6);
+  L.cota('vent-pre-noimpr', X, Y, X + W, Y, W, -26);
+  L.cota('vent-pre-noimpr', X + W, Y, X + W, Y + pz.eb / 10, pz.eb / 10, 12, 6);
+  L.cota('vent-pre-noimpr', X + W, Y + H - pz.eb / 10, X + W, Y + H, pz.eb / 10, 12, 6);
+  L.cota('vent-pre-noimpr', X + W, Y, X + W, Y + H, H, 26);
+
+  // Ollaos con línea base en escalera, en el mismo sitio que en el corte: laterales desde el final del hecho
+  // (atrás, a la derecha) hacia delante, por debajo; delante desde abajo, a la izquierda; detrás, a la
+  // derecha, solo si no es igual que delante.
+  const marcas = (eje, n) => (eje && eje.n > n.length ? Array.from({ length: eje.n }, (_, k) => Math.round((n[0] + eje.dist * k) * 10) / 10) : n);
+  const repartidos = i.modoOllaos === 'REPARTIDOS';
+  const lat = repartidos ? marcas(r.ollaos.largo, r.reparto.laterales) : r.reparto.laterales;
+  const del = repartidos ? marcas(r.ollaos.ancho, r.reparto.delante) : r.reparto.delante;
+  const atr = repartidos ? marcas(r.ollaos.anchoAtras ?? r.ollaos.ancho, r.reparto.atras) : r.reparto.atras;
+  const yo = Y + 4, xd = X + 4, xa = X + W - 4;
+  [...lat].sort((a, c) => a - c).forEach((p, k) => {
+    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: x1, y1: yo, x2: x1 - p, y2: yo, giro: 0, d: Y - 40 - 4 * k, valor: p });
+  });
+  [...del].sort((a, c) => a - c).forEach((p, k) => {
+    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xd, y1: y0, x2: xd, y2: y0 + p, giro: 90, d: X - 30 - 4 * k, valor: p });
+  });
+  if (atr.join() !== del.join()) {
+    [...atr].sort((a, c) => a - c).forEach((p, k) => {
+      L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xa, y1: y0, x2: xa, y2: y0 + p, giro: 90, d: X + W + 40 + 4 * k, valor: p });
+    });
+  }
+  // Baquetón que no cabe en el rollo: empate de 2 cm, el paño entero desde delante (como en el corte).
+  if (pz.L > 2500 && pz.A > 2500) {
+    for (const xx of [X + 248, X + 250]) L.g.polilineas.push({ capa: 'ejes', puntos: [[xx, Y], [xx, Y + H]], cerrada: false });
+    L.texto('EMPATE 2 CM', X + 249, Y + H + 8, 6, 0, 'cotas');
+  }
+  const abajo = 40 + 4 * Math.max(lat.length - 1, 0) + 10;
+  return { ancho: W + 40 + (atr.join() !== del.join() ? 4 * atr.length : 0) + 30 + 4 * del.length, alto: H, abajo };
+}
+
+// pedido: el de la web; lonas y baquetones: los elementos de esta lona; corte: entidades del bot (mm);
 // material y largo del rollo para el título.
-export function escribirPlanoRemolques({ pedido, lonas, letras, corte, material, largoRollo }) {
+export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params = {}, refuerzos = false, letras, corte, material, largoRollo }) {
   const L = lienzo();
   let y = 0, ancho = 0;
+  // Los baquetones abajo, con sitio para sus escaleras de ollaos por debajo.
+  for (const el of [...baquetones].reverse()) {
+    const d = confeccionBaqueton(L, el, params, 30 + 4 * 6, y + 60, letras?.get(el) ?? [''], refuerzos);
+    ancho = Math.max(ancho, d.ancho + 30 + 4 * 6);
+    y += 60 + d.alto + 120;
+  }
   for (const el of [...lonas].reverse()) {
     for (const letra of letras?.get(el) ?? ['']) {
       const d = confeccionLona(L, el, 0, y, letra);
@@ -184,7 +265,7 @@ export function escribirPlanoRemolques({ pedido, lonas, letras, corte, material,
   const s = pedido.summary ?? {};
   const fecha = (s.orderDate ?? '').split('-').reverse().map((x, k) => (k === 2 ? x.slice(2) : x)).join('/');
   const cabecera = {
-    pedido: pedido.orderCode, of: lonas.map((e) => e.of).join(' / '), cliente: s.customer ?? '', tecnico: s.technician ?? '', revisor: s.reviewer ?? '',
+    pedido: pedido.orderCode, of: [...new Set([...lonas, ...baquetones].map((e) => e.of))].join(' / '), cliente: s.customer ?? '', tecnico: s.technician ?? '', revisor: s.reviewer ?? '',
     fecha, pagina: '1/1', material, subtitulo: 'MEDIDAS EN CM · LONA REMOLQUE',
     tituloCorte: `CORTE · ${material} · ROLLO DE 250 · ${(largoRollo / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 })} M`,
   };

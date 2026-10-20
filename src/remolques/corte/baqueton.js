@@ -17,7 +17,7 @@ const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.f
 
 // Una pieza de baquetón sin girar: x = largo, delante a la izquierda y detrás a la derecha (Iván,
 // 20/10/2026); y = ancho. `eI` y `eR` son las esquinas de la izquierda (delante) y de la derecha (detrás).
-function piezaBaqueton(el, params) {
+export function piezaBaqueton(el, params) {
   const { input, result: r } = el;
   const cli = params.clientesBaqueton?.find((c) => c.nombre === input.clienteEspecifico) ?? { extraAnchoCostura: 0 };
   const L = r.panoUnico.largo * 10, A = r.panoUnico.ancho * 10;
@@ -37,7 +37,7 @@ function piezaBaqueton(el, params) {
 }
 
 // Contorno en cruz como lista de segmentos, con las esquinas dadas.
-function cruz(L, A, eI, eDer, eb) {
+export function cruz(L, A, eI, eDer, eb) {
   const p = [[eI, 0], [L - eDer, 0], [L - eDer, eb], [L, eb], [L, A - eb], [L - eDer, A - eb], [L - eDer, A], [eI, A], [eI, A - eb], [0, A - eb], [0, eb], [eI, eb]];
   return p.map((a, i) => [a, p[(i + 1) % p.length]]);
 }

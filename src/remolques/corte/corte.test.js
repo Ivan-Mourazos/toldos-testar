@@ -100,9 +100,19 @@ describe('generarCorteRemolques', () => {
     }
   });
 
-  it('con solo baquetones, el plano es el corte en metros en DXF 2004', () => {
+  it('los baquetones llevan su dibujo de confección con las cotas de terminado y de corte (AR2605071)', () => {
     const [c] = generarCorteRemolques(AR2605071).cortes;
-    expect(c.plano.codificacion).toBe('latin1');
+    expect(c.plano.codificacion).toBe('utf8');
     expect(variable(c.plano.dxf, '$INSUNITS')).toBe('6');
+    const cotas = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'DIMENSION');
+    const medidas = (capa) => cotas.filter((r) => valor(r, 8) === capa).map((r) => Math.round(numero(r, 42) * 10) / 10);
+    // Terminado: baquetón | hecho | baquetón, a lo largo y a lo ancho; y los ollaos en escalera.
+    expect(medidas('cotas')).toEqual(expect.arrayContaining([10, 154, 121, 2.5, 32.5, 62, 92, 121.5, 151.5, 41, 80, 118.5]));
+    // Corte: el paño único y las esquinas.
+    expect(medidas('vent-pre-noimpr')).toEqual(expect.arrayContaining([180, 147, 12]));
+    // Dos unidades iguales: un solo dibujo con las dos piezas.
+    const textos = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'MTEXT').map((r) => valor(r, 1));
+    expect(textos).toContain('A1 · B1');
+    expect(textos.some((t) => /BAQUETÓN 153 × 120 × 10 × 2/.test(t))).toBe(true);
   });
 });

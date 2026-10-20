@@ -99,11 +99,12 @@ export function generarCorteRemolques(pedido) {
       circulos: [...la.ollaos, ...cb.marcas.map(([x, y]) => [x + dx, y])].map(([x, y]) => ({ capa: 'ROTULADOR', x, y, r: R_OLLAO })),
       arcos: la.arcos.map((a) => ({ capa: 'DISCO1', ...a })),
     };
-    // Plano para revisar, en metros (Iván, 20/10/2026). Con lonas altas, el plano completo: dibujo de
-    // confección de cada lona y el corte, sobre la presentación A4. Solo baquetones, el corte en metros.
-    const plano = lonas.length
-      ? { dxf: escribirPlanoRemolques({ pedido, lonas, letras: conLetras, corte: entidades, material: corto, largoRollo: largo }), codificacion: 'utf8' }
-      : { dxf: escribirDxf2004(entidades, { escala: 0.001, leyenda: false }), codificacion: 'latin1' };
+    // Plano para revisar, en metros (Iván, 20/10/2026): el dibujo de confección de cada lona alta y de cada
+    // baquetón, con sus cotas, y el corte, sobre la presentación A4.
+    const plano = {
+      dxf: escribirPlanoRemolques({ pedido, lonas, baquetones: baqs, params, refuerzos, letras: conLetras, corte: entidades, material: corto, largoRollo: largo }),
+      codificacion: 'utf8',
+    };
     cortes.push({
       nombre, material, materialCorto: corto, largo, refuerzos,
       elementos: els.map((e) => ({ of: e.of, descripcion: descripcion(e), cantidad: e.input.cantidad || 1 })),
