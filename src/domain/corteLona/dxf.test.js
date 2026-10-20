@@ -99,6 +99,18 @@ describe('DXF del bot', () => {
     expect(valores).toContain('a1');
     expect(valores).toContain('DERECHO');
   });
+  it('en metros (plano de revisión de remolques): escala, unidades 6 y sin la leyenda del bot', () => {
+    const dxf = escribirDxf2004({ lineas: [{ capa: 'DISCO1', x1: 0, y1: 0, x2: 2500, y2: 0 }], textos: [{ capa: 'texto', x: 1000, y: 500, h: 100, valor: 'OF' }],
+      circulos: [{ capa: 'ROTULADOR', x: 40, y: 40, r: 2.5 }] }, { dx: 0, dy: 0, escala: 0.001, leyenda: false });
+    expect(variable(dxf, '$INSUNITS')).toBe('6');
+    const e = registrosDxf(dxf);
+    expect(e.some((x) => x.tipo === 'TEXT' && valor(x, 1) === 'DISCO1')).toBe(false);
+    const linea = e.find((x) => x.tipo === 'LINE');
+    expect([numero(linea, 10), numero(linea, 11)]).toEqual([0, 2.5]);
+    expect(numero(e.find((x) => x.tipo === 'CIRCLE'), 40)).toBeCloseTo(0.0025, 6);
+    expect(numero(e.find((x) => x.tipo === 'TEXT'), 40)).toBeCloseTo(0.1, 6);
+    comprobarHandles(dxf);
+  });
   it('rechaza capas ajenas al bot', () => {
     expect(() => escribirDxf2004({ lineas: [{ capa: 'referencias' }], textos: [] })).toThrow(/capas/);
   });

@@ -10,8 +10,9 @@ const MODEL_SPACE = '1F';
 
 /** lineas: { capa, x1, y1, x2, y2 }; textos: { capa, x, y, h, valor, giro? en grados }; circulos (los
  *  ollaos de remolque): { capa, x, y, r }; arcos (esquinas redondeadas): { capa, x, y, r, desde, hasta }
- *  en grados, en sentido antihorario. Desplaza todo a (dx, dy). */
-export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, { dx = 1000, dy = 1000 } = {}) {
+ *  en grados, en sentido antihorario. Desplaza todo a (dx, dy). Con `escala` 0,001 y `leyenda` false sale el
+ *  plano de revisión de remolques en metros (Iván, 20/10/2026), sin la leyenda del bot. */
+export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, { dx = 1000, dy = 1000, escala = 1, leyenda = true } = {}) {
   const src = leerPlantilla('base-corte.dxf');
   if ([...lineas, ...textos, ...circulos, ...arcos].some((e) => !CAPAS_BOT.includes(e.capa))) throw new Error('El DXF de corte solo admite capas del bot.');
   const start = src.indexOf('\nENTITIES\n') + '\nENTITIES\n'.length;
@@ -39,17 +40,20 @@ export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, {
   const circulo = (c, x, y, r) => ent('CIRCLE', c, 'AcDbCircle', ` 10\n${n(x)}\n 20\n${n(y)}\n 30\n0.0\n 40\n${n(r)}\n`);
   const arco = (c, x, y, r, a0, a1) => ent('ARC', c, 'AcDbCircle', ` 10\n${n(x)}\n 20\n${n(y)}\n 30\n0.0\n 40\n${n(r)}\n100\nAcDbArc\n 50\n${n(a0)}\n 51\n${n(a1)}\n`);
   let body = '';
-  for (const e of leyendaBot) {
+  for (const e of leyenda ? leyendaBot : []) {
     const v = (c) => e.g.find((x) => x[0] === c)?.[1];
     if (e.t === 'LINE') body += linea(v('8'), v('10'), v('20'), v('11'), v('21'));
     if (e.t === 'TEXT') body += texto(v('8'), v('10'), v('20'), v('40'), v('1'));
     if (e.t === 'CIRCLE') body += circulo(v('8'), v('10'), v('20'), v('40'));
     if (e.t === 'ARC') body += arco(v('8'), v('10'), v('20'), v('40'), v('50'), v('51'));
   }
-  for (const l of lineas) body += linea(l.capa, l.x1 + dx, l.y1 + dy, l.x2 + dx, l.y2 + dy);
-  for (const t of textos) body += texto(t.capa, t.x + dx, t.y + dy, t.h, t.valor, t.giro, t.centrado, t.literal);
-  for (const c of circulos) body += circulo(c.capa, c.x + dx, c.y + dy, c.r);
-  for (const a of arcos) body += arco(a.capa, a.x + dx, a.y + dy, a.r, a.desde, a.hasta);
-  const out = head.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`) + body + tail;
+  const k = escala;
+  for (const l of lineas) body += linea(l.capa, (l.x1 + dx) * k, (l.y1 + dy) * k, (l.x2 + dx) * k, (l.y2 + dy) * k);
+  for (const t of textos) body += texto(t.capa, (t.x + dx) * k, (t.y + dy) * k, t.h * k, t.valor, t.giro, t.centrado, t.literal);
+  for (const c of circulos) body += circulo(c.capa, (c.x + dx) * k, (c.y + dy) * k, c.r * k);
+  for (const a of arcos) body += arco(a.capa, (a.x + dx) * k, (a.y + dy) * k, a.r * k, a.desde, a.hasta);
+  let cabecera = head;
+  if (k !== 1) cabecera = cabecera.replace(/(\$INSUNITS\n\s*70\n\s*)\d+/, `$1${k === 0.001 ? 6 : 0}`);
+  const out = cabecera.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`) + body + tail;
   return out.replace(/\n/g, '\r\n');
 }
