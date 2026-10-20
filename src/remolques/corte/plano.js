@@ -2,7 +2,7 @@
 // toldos, con su cajetín). Arriba, el dibujo de confección de cada lona alta: paño delantero, trasero y
 // contorno, cada uno con la línea de corte, la rosa de terminado, los ollaos y marcas, y sus cotas (verde lo
 // terminado, ocre lo de corte), como en los DWG de los pedidos (AR2605120). Debajo, el corte del rollo.
-import { cruz, piezaBaqueton } from './baqueton.js';
+import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
 import { piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano } from '../../domain/corteLona/presentacion.js';
 
@@ -164,7 +164,17 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
   const [rx, ry] = [(x0 + x1 - i.largo) / 2, (y0 + y1 - i.ancho) / 2];
   L.g.polilineas.push({ capa: 'vent-pre-noimpr', cerrada: true, puntos: [[rx, ry], [rx + i.largo, ry], [rx + i.largo, ry + i.ancho], [rx, ry + i.ancho]] });
   L.texto(letras.map((l) => `${l || 'A'}1`).join(' · '), (x0 + x1) / 2, (y0 + y1) / 2 + 4, 14);
-  if (refuerzos) L.texto('REFUERZOS EN ESQUINAS', (x0 + x1) / 2, (y0 + y1) / 2 - 12, 6);
+  if (refuerzos) {
+    // Cada refuerzo donde va (AR2604224): la L en trazos en la esquina del terminado, entrando sus brazos en
+    // el hecho y el resto en las solapas; el hueco, en la esquina de fuera, donde no hay solapa.
+    const { lado, brazo } = medidasRefuerzo(pz);
+    const [n, bz] = [(lado - brazo) / 10, brazo / 10];
+    for (const [xc, yc, sx, sy] of [[x0, y0, -1, -1], [x1, y0, 1, -1], [x0, y1, -1, 1], [x1, y1, 1, 1]]) {
+      const puntos = [[0, -n], [bz, -n], [bz, bz], [-n, bz], [-n, 0], [0, 0]].map(([u, v]) => [xc - sx * u, yc - sy * v]);
+      L.g.polilineas.push({ capa: 'vent-pre-noimpr', cerrada: true, puntos });
+    }
+    L.texto('REFUERZOS EN ESQUINAS, SIN MARCAR', (x0 + x1) / 2, (y0 + y1) / 2 - 12, 6);
+  }
 
   // Terminado: arriba baquetón | hecho | baquetón; a la izquierda, lo mismo en alto.
   const arriba = Y + H + 10 - (y1 + b), izquierda = -(x0 - b - X) - 10;

@@ -47,7 +47,11 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
 
-No queda ninguna duda abierta de remolques.
+Abierta el 20/10/2026, al revisar los DWG de PAMILAKAN para el corte:
+
+| Código | Pregunta | Lo que se ve en el corte a mano | En la web |
+| --- | --- | --- | --- |
+| Q-R07 | Marcas de rotulador de la bastilla de enfundar en la lona alta: ¿qué marca cada una y van siempre igual? | AR2604990: en el contorno, una raya corta a 10 cm de cada punta junto a los dos bordes de abajo (doblez de la bastilla?); la marca del centro a 6–7,5 cm de la punta y sin marcas de hombro; en las cabezas, una raya a 5 cm de cada lado (de 3 a 7 cm sobre la base) y una T a la altura del hombro | Sin hacer: el corte sale con las marcas de una lona normal |
 
 Faltan dos fotos de cerca (una cremallera puesta y una bastilla de enfundar); Iván las subirá.
 

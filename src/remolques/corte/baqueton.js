@@ -7,8 +7,7 @@
 //   resto detrás: el empate, siempre en la parte de atrás).
 // - Ollaos: círculo de ROTULADOR r 2,5 a 40 mm del borde, en las posiciones que guardó el técnico
 //   (laterales de atrás a delante; delante y detrás de izquierda a derecha).
-// - Refuerzos de esquina (PAMILAKAN o si la observación lo pide): L de 16 (brazo la mitad), reducida a
-//   la esquina − 2; si no cabe (menos de 12), cuatro L de 12 aparte.
+// - Refuerzos de esquina (PAMILAKAN o si la observación lo pide): ver medidasRefuerzo.
 
 const ROLLO = 2500, BORDE_OLLAO = 40, EMPATE = 20;
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -47,9 +46,24 @@ function refuerzoEnEsquina(cx, cy, sx, sy, lado, brazo) {
   const q = [[0, lado], [brazo, lado], [brazo, brazo], [lado, brazo], [lado, 0]].map(([u, v]) => [cx + sx * u, cy + sy * v]);
   return q.slice(0, -1).map((a, i) => [a, q[i + 1]]);
 }
-function refuerzoSuelto(x0, y0, lado, brazo) {
-  const q = [[0, 0], [lado, 0], [lado, brazo], [brazo, brazo], [brazo, lado], [0, lado]];
+// Refuerzo suelto apoyado por abajo en (x0, y0), con el hueco de la esquina arriba a la derecha (o a la
+// izquierda, `espejo`): así los cuatro van en fila compartiendo cortes, como en AR2604224.
+function refuerzoSuelto(x0, y0, lado, brazo, espejo = false) {
+  const q = [[0, 0], [lado, 0], [lado, brazo], [brazo, brazo], [brazo, lado], [0, lado]].map(([u, v]) => [espejo ? lado - u : u, v]);
   return q.map((a, i) => [[x0 + a[0], y0 + a[1]], [x0 + q[(i + 1) % q.length][0], y0 + q[(i + 1) % q.length][1]]]);
+}
+
+/**
+ * Refuerzos de esquina de PAMILAKAN (docs/dxf-corte-remolques.md y los DWG de AR2604224 y AR2604802): una L,
+ * un cuadrado sin el cuadrado de la esquina de fuera. Si cabe en la esquina cortada, va dentro: L de 16 con
+ * brazos de la mitad, reducida a la esquina − 2 (AR2605082, AR2603086). Si no (esquina de 12 o menos), los
+ * cuatro van sueltos encima de la pieza: de lado la esquina + 2 y brazos de 7 (9 con esquina de 7 en
+ * AR2604224, 11 con esquina de 9 en AR2604802). En mm.
+ */
+export function medidasRefuerzo(pz) {
+  const esquina = Math.min(pz.eI, pz.eR, pz.eb);
+  const dentro = Math.min(160, esquina - 20);
+  return dentro >= 120 ? { enEsquina: true, lado: dentro, brazo: dentro / 2 } : { enEsquina: false, lado: esquina + 20, brazo: 70 };
 }
 
 // Los baquetones de una misma lona, uno al lado de otro. `letras`: Map elemento → letra de cada unidad.
@@ -69,13 +83,18 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
         for (const [a, b] of cruz(pz.L, pz.A, pz.eI, pz.eR, pz.eb)) segs.push([giro(a, girada, x), giro(b, girada, x)]);
         for (const o of pz.ollaos) marcas.push(giro(o, girada, x));
         if (refuerzos) {
-          const lado = Math.min(160, Math.min(pz.eI, pz.eR, pz.eb) - 20);
-          if (lado >= 120) {
-            const brazo = lado / 2;
+          const { enEsquina, lado, brazo } = medidasRefuerzo(pz);
+          if (enEsquina) {
             for (const [cx, cy, sx, sy] of [[pz.eI, pz.eb, -1, -1], [pz.L - pz.eR, pz.eb, 1, -1], [pz.eI, pz.A - pz.eb, -1, 1], [pz.L - pz.eR, pz.A - pz.eb, 1, 1]]) {
               for (const [a, b] of refuerzoEnEsquina(cx, cy, sx, sy, lado, brazo)) segs.push([giro(a, girada, x), giro(b, girada, x)]);
             }
-          } else sueltos.push(4);
+          } else {
+            // Sueltos: en fila encima del borde de arriba de la pieza (sin las esquinas), si caben; si no, aparte.
+            const [desde, hasta, arriba] = girada ? [x + pz.eb, x + pz.A - pz.eb, pz.L] : [x + pz.eI, x + pz.L - pz.eR, pz.A];
+            if (arriba + lado <= ROLLO && 4 * lado <= hasta - desde) {
+              for (let k = 0; k < 4; k++) segs.push(...refuerzoSuelto(desde + k * lado, arriba, lado, brazo, k % 2 === 1));
+            } else sueltos.push({ lado, brazo });
+          }
         }
         const alto = girada ? pz.L : pz.A;
         const centro = [L && `${L}1`, el.of || pedido].filter(Boolean);
@@ -108,13 +127,10 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
       }
     }
   }
-  if (sueltos.length) {
-    // Como a mano (AR2604802): encima de las piezas, en el hueco que deja el rollo; si no cabe, detrás.
-    const lado = 120, brazo = 60, n = 4 * sueltos.length;
-    const alto = Math.max(...segs.flatMap(([a, b]) => [a[1], b[1]]));
-    const encima = ROLLO - alto >= lado + 10 && n * lado <= x;
-    for (let i = 0; i < n; i++) for (const s of refuerzoSuelto((encima ? 0 : x) + i * lado, encima ? alto + 10 : 0, lado, brazo)) segs.push(s);
-    if (!encima) x += n * lado;
+  // Los que no caben encima de su pieza, detrás de todo, de cuatro en cuatro desde el orillo.
+  for (const { lado, brazo } of sueltos) {
+    for (let k = 0; k < 4; k++) segs.push(...refuerzoSuelto(x + k * lado, 0, lado, brazo, k % 2 === 1));
+    x += 4 * lado;
   }
   // Sin cortes repetidos ni por el orillo (y = 0 o y = 2500 a lo largo del rollo).
   const vistos = new Set(), lineas = [];

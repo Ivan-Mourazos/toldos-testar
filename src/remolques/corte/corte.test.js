@@ -56,10 +56,18 @@ describe('generarCorteRemolques', () => {
     expect(rotulador(c).map((t) => t.valor).sort()).toEqual(['A1', 'B1']);
   });
 
-  it('los baquetones de PAMILAKAN llevan refuerzos en las esquinas (AR2604802)', () => {
+  it('los baquetones de PAMILAKAN llevan refuerzos en las esquinas, como a mano (AR2604802)', () => {
     const [c] = generarCorteRemolques(AR2604802).cortes;
     expect(c.refuerzos).toBe(true);
     expect(c.entidades.textos.some((t) => t.valor === 'REFUERZOS EN ESQUINAS, SIN MARCAR')).toBe(true);
+    // Esquina de 9: no caben dentro y van sueltos encima de la pieza, cuatro de 11 × 11 en fila (lado = esquina + 2,
+    // brazos de 7), apoyados en el borde de arriba (largo 184, girada: arriba en y = 1840).
+    const encima = c.entidades.lineas.filter((l) => l.capa === 'DISCO1' && Math.min(l.y1, l.y2) >= 1840 - 0.1 && Math.max(l.y1, l.y2) > 1840 + 0.1);
+    const xs = encima.flatMap((l) => [l.x1, l.x2]), ys = encima.flatMap((l) => [l.y1, l.y2]);
+    expect([Math.max(...xs) - Math.min(...xs), Math.max(...ys)]).toEqual([440, 1840 + 110]);
+    // En el dibujo de confección, los cuatro en su esquina (en trazos, sin imprimir).
+    const enPlano = registrosDxf(c.plano.dxf).filter((r) => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'vent-pre-noimpr' && numero(r, 90) === 6);
+    expect(enPlano).toHaveLength(4);
   });
 
   it('deja a mano la lona con un perfil que todavía no sabe cortar (AR2604800, TIPO 03)', () => {

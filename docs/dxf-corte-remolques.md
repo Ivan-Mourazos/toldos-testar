@@ -104,6 +104,10 @@ En sus 34 baquetones desde 2025 (`refuerzos-pamilakan.mjs`):
   en septiembre y octubre (AR2604490, AR2605082). Con esquina de 14, en AR2603086 la L se queda en 12.
 - Cuando la esquina es pequeña (de 9 a 12 cm: AR2604802, AR2602929, AR2601090…), los cuatro refuerzos
   van aparte, encima de la pieza. En AR2604802 son L de 11 cm con brazos de 7.
+- Revisado con los DWG (20/10/2026): los sueltos son la L de brazos de 7 con lado = esquina + 2 (9 × 9 con
+  esquina de 7 en AR2604224; 11 × 11 con esquina de 9 en AR2604802), los cuatro en fila encima de la pieza,
+  apoyados en su borde y con el hueco hacia fuera. En el dibujo de confección (AR2604224) cada refuerzo va en
+  trazos en su esquina del terminado: los brazos dentro del hecho y el resto en las solapas.
 - El DXF lleva el texto «REFUERZOS EN ESQUINAS, SIN MARCAR».
 - En 12 pedidos no aparece ni el texto ni el refuerzo en la esquina; está sin comprobar si van aparte
   sin rotular o si no llevan.
