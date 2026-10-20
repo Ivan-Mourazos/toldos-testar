@@ -150,11 +150,79 @@ export function escribirDxfPlano(plano, cabecera) {
     modelo += ent('MTEXT', t.capa, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n0.0\n 71\n     ${ancla}\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 11\n${n(Math.cos(a))}\n 21\n${n(Math.sin(a))}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   }
 
+  // Cotas de verdad, que se seleccionan y se modifican (Iván, 20/10/2026): DIMENSION con los estilos de
+  // cota de la plantilla y su bloque ya dibujado como lo dibuja el CAD.
+  const cotas = (plano.cotas ?? []).map((c, i) => cotaDxf(c, i + 1, nuevo, ent));
+  modelo += cotas.map((c) => c.entidad).join('');
+
   src = src.slice(0, ini) + entidades.join('') + insercion + modelo + src.slice(fin);
+  if (cotas.length) {
+    src = insertarEnTabla(src, 'BLOCK_RECORD', cotas.map((c) => c.registro).join(''), cotas.length);
+    const finBlocks = src.indexOf('  0\nENDSEC\n', src.indexOf('\nBLOCKS\n'));
+    src = src.slice(0, finBlocks) + cotas.map((c) => c.bloque).join('') + src.slice(finBlocks);
+  }
   src = src.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`);
 
   // La conversión a DWG queda para el servidor en la fase 2.
   return { dxf: src.replace(/\n/g, '\r\n'), reparto: `${reparto.corte.x0 === A4.x0 ? 'debajo' : 'al lado'}${reparto.girado ? ', girado' : ''}`, ventanas };
+}
+
+// Estilos de cota de la plantilla (los de los DWG de la oficina): dibujo en metros y cota en cm (DIMLFAC
+// 100), con coma. Aquí solo lo que hace falta para dibujar su bloque: texto, flecha, prolongación de la
+// línea de referencia, su largo fijo y el hueco del texto.
+const ESTILOS_COTA = {
+  XERAL: { texto: 0.1, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
+  'XERAL 5': { texto: 0.05, flecha: 0.015, prolonga: 0.0175, largo: 0.06, hueco: 0.003 },
+  'XERAL 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
+};
+const comaCota = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
+
+/**
+ * Una cota horizontal (giro 0) o vertical (giro 90) en metros: de (x1, y1) a (x2, y2), con la línea de cota
+ * en `d` (la y si es horizontal, la x si es vertical). `valor` en cm: si no es lo que mide, va escrito.
+ */
+function cotaDxf(c, numero, nuevo, ent) {
+  const e = ESTILOS_COTA[c.estilo] ?? ESTILOS_COTA.XERAL;
+  const n = (v) => Number(v).toFixed(6);
+  const v = c.giro === 90;
+  // Todo se calcula como si fuera horizontal: a lo largo (s) y a lo ancho (t); `xy` lo devuelve al plano.
+  const xy = (s, t) => (v ? [t, s] : [s, t]);
+  const [s1, t1, s2, t2] = v ? [c.y1, c.x1, c.y2, c.x2] : [c.x1, c.y1, c.x2, c.y2];
+  const mide = Math.abs(s2 - s1) * 100;
+  const texto = c.valor == null || Math.abs(mide - c.valor) < 0.05 ? comaCota(mide) : comaCota(c.valor);
+  const registro = nuevo();
+  const nombre = `*D${numero}`;
+  const dentro = (tipo, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n 62\n     0\n100\n${sub}\n${cuerpo}`;
+  const linea = (a, b) => dentro('LINE', 'AcDbLine', ` 10\n${n(a[0])}\n 20\n${n(a[1])}\n 30\n0.0\n 11\n${n(b[0])}\n 21\n${n(b[1])}\n 31\n0.0\n`);
+  let cuerpo = '';
+  // Líneas de referencia: de largo fijo desde la línea de cota hacia lo acotado, y un poco más allá.
+  for (const [s, t] of [[s1, t1], [s2, t2]]) {
+    const hasta = Math.abs(c.d - t);
+    if (hasta < 1e-6) continue;
+    const signo = Math.sign(c.d - t);
+    cuerpo += linea(xy(s, c.d + signo * e.prolonga), xy(s, c.d - signo * Math.min(e.largo, hasta)));
+  }
+  const [a, b] = [Math.min(s1, s2), Math.max(s1, s2)];
+  for (const [punta, sentido] of [[a, 1], [b, -1]]) {
+    const base = punta + sentido * e.flecha;
+    const [p1, p2, p3] = [xy(base, c.d + e.flecha / 6), xy(base, c.d - e.flecha / 6), xy(punta, c.d)];
+    cuerpo += dentro('SOLID', 'AcDbTrace', ` 10\n${n(p1[0])}\n 20\n${n(p1[1])}\n 30\n0.0\n 11\n${n(p2[0])}\n 21\n${n(p2[1])}\n 31\n0.0\n 12\n${n(p3[0])}\n 22\n${n(p3[1])}\n 32\n0.0\n 13\n${n(p3[0])}\n 23\n${n(p3[1])}\n 33\n0.0\n`);
+  }
+  // Línea de cota cortada por el texto si cabe; si no, entera y el texto encima.
+  const medio = (a + b) / 2, ancho = anchoArial(texto, e.texto) + 2 * e.hueco;
+  const cabe = ancho < b - a - 2 * e.flecha;
+  if (cabe) cuerpo += linea(xy(a + e.flecha, c.d), xy(medio - ancho / 2, c.d)) + linea(xy(medio + ancho / 2, c.d), xy(b - e.flecha, c.d));
+  else cuerpo += linea(xy(a + e.flecha, c.d), xy(b - e.flecha, c.d));
+  const tt = cabe ? c.d : c.d + (v ? -1 : 1) * e.texto * 0.8;
+  const [tx, ty] = xy(medio, tt);
+  cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${v ? '0.0' : '1.0'}\n 21\n${v ? '1.0' : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+  const bloque = `  0\nBLOCK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n  2\n${nombre}\n 70\n     1\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${nombre}\n  1\n\n`
+    + cuerpo + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n`;
+  const [dx, dy] = xy(s2, c.d);
+  const override = texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
+  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    32\n 71\n     5\n 42\n${n(mide)}\n${override}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`);
+  const registroTabla = `  0\nBLOCK_RECORD\n  5\n${registro}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
+  return { entidad, bloque, registro: registroTabla };
 }
 
 // Cambia el primer valor de un código de grupo dentro de una entidad.

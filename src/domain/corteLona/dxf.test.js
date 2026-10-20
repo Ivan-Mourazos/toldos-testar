@@ -174,6 +174,38 @@ describe('Plano de confección', () => {
     expect(escribirDxfPlano(alto, { pedido: 'AR1' }).reparto).toContain('girado');
     expect(escribirDxfPlano({ ...alto, corteDerecho: true }, { pedido: 'AR1' }).reparto).not.toContain('girado');
   });
+  it('escribe cotas de verdad (DIMENSION) con los estilos de la oficina y su bloque dibujado', () => {
+    const vacio = { lineas: [], polilineas: [], textos: [] };
+    const plano = {
+      ...vacio,
+      cotas: [
+        { capa: 'cotas', estilo: 'XERAL', x1: 100, y1: 100, x2: 101.21, y2: 100, giro: 0, d: 99.88, valor: 121 },
+        // Vertical y con un valor que no es lo que mide: se escribe.
+        { capa: 'vent-pre-noimpr', estilo: 'XERAL 5', x1: 100, y1: 100, x2: 100, y2: 100.6, giro: 90, d: 99.74, valor: 60.4 },
+      ],
+      corte: { ...vacio },
+      zonas: { toldos: { x0: 99.5, y0: 99.5, x1: 101.5, y1: 101 }, corte: { x0: 99.9, y0: 89.9, x1: 105.1, y1: 92.6 } },
+    };
+    const { dxf } = escribirDxfPlano(plano, { pedido: 'AR1' });
+    const e = registrosDxf(dxf);
+    const cotas = e.filter((x) => x.tipo === 'DIMENSION');
+    expect(cotas.map((c) => [valor(c, 8), valor(c, 3), numero(c, 42), valor(c, 1) ?? null])).toEqual([
+      ['cotas', 'XERAL', 121, null],
+      ['vent-pre-noimpr', 'XERAL 5', 60, '60,4'],
+    ]);
+    expect(numero(cotas[1], 50)).toBe(90);
+    // Cada una con su bloque anónimo, registrado en la tabla, con el texto de la medida dentro.
+    const bloques = registrosDxf(dxf, 'BLOCKS');
+    for (const c of cotas) {
+      const nombre = valor(c, 2);
+      expect(registrosDxf(dxf, 'TABLES').some((r) => r.tipo === 'BLOCK_RECORD' && valor(r, 2) === nombre)).toBe(true);
+      const inicio = bloques.findIndex((b) => b.tipo === 'BLOCK' && valor(b, 2) === nombre);
+      expect(inicio).toBeGreaterThanOrEqual(0);
+      expect(bloques.slice(inicio).find((b) => b.tipo === 'MTEXT')).toBeTruthy();
+    }
+    expect(valor(bloques.find((b) => b.tipo === 'MTEXT' && valor(b, 1) === '121'), 7)).toBe('XERAL');
+    comprobarHandles(dxf);
+  });
   it('reduce los campos largos del cajetín hasta que caben, sin heredar campos automáticos', () => {
     const order = structuredClone(revision.order);
     order.customer = 'CLIENTE CON UNA RAZÓN SOCIAL MUY LARGA '.repeat(4);
