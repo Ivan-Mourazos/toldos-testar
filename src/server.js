@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { crearOdaConverter } from './odaConverter.js';
+import { crearCorteRemolques } from './remolques/corte/archivos.js';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
@@ -149,6 +150,8 @@ const impresoraHojaTelas = crearImpresoraHojaTelas({
 const almacenPedidosRemolques = crearAlmacenPedidosRemolques({
   carpeta: async () => (await workflowStore.getSettings()).remolquesRevisionDirectory
 });
+// ODA pasa los planos del corte a DWG (toldos y remolques).
+const oda = crearOdaConverter({ executable: config.odaFileConverter });
 const pedidosRemolques = crearServicioPedidosRemolques({
   almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
@@ -160,7 +163,9 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar.
   esPedidoDeToldos: comprobadorPedidoToldos(workflowStore),
   // El buscador busca también por el nombre de una ficha (sus códigos de RPS).
-  fichas: () => remolquesClientesStore.get()
+  fichas: () => remolquesClientesStore.get(),
+  // Al generar, también el corte de lona: DXF del bot y plano, en las carpetas del corte de toldos.
+  corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda })
 });
 
 // Borradores en el servidor (diseño 01/10/2026): un JSON por número de pedido en la carpeta de
@@ -189,7 +194,6 @@ app.use('/api', (req, _res, next) => {
 
 app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 
-const oda = crearOdaConverter({ executable: config.odaFileConverter });
 registrarRutasCorteLona(app, { workflowStore, oda,
   ofStockSacos: crearOfStockSacos({ oficinaTecnicaDirectory: config.oficinaTecnicaDirectory, oda }) });
 

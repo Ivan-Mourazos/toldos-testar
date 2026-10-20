@@ -28,11 +28,22 @@ export interface FicheroGenerado {
   savedPath: string;
 }
 
+/** Un archivo del corte de lona (20/10/2026): el DXF del bot o el plano de revisión, por lona. */
+export interface FicheroCorte {
+  type: "corte-lona" | "plano-corte-lona";
+  /** La lona resumida («LONA PVC 580 GRIS CLARO 7038»). */
+  material: string;
+  filename: string;
+  savedPath: string;
+}
+
 export interface ProduccionRemolques {
   createdAt: string;
   createdBy: string;
   /** Los dos PDF: el de planteamientos (AR…-10.pdf) y el de oficina técnica (<año>/AR….pdf). */
   files: FicheroGenerado[];
+  /** El corte de lona que se escribió al generar y lo que hay que saber de él (lo que va a mano). */
+  corte?: { files: FicheroCorte[]; avisos: string[] };
 }
 
 /** Lo que Pedidos enseña de cada elemento: su letra, su perfil, su OF y si está completo. */

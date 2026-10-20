@@ -1,0 +1,485 @@
+{
+  "schemaVersion": 1,
+  "kind": "remolques",
+  "orderCode": "AR2604800",
+  "numeroPedido": "ar2604800",
+  "status": "PRODUCED",
+  "createdAt": "2026-10-01T10:39:57.622Z",
+  "updatedAt": "2026-10-01T12:14:31.095Z",
+  "createdBy": "IVÁN",
+  "reviewedAt": "2026-10-01T12:14:31.095Z",
+  "reviewedBy": "JAIME",
+  "reviewNote": "",
+  "production": {
+    "createdAt": "2026-10-01T12:14:31.095Z",
+    "createdBy": "IVÁN",
+    "files": [
+      {
+        "type": "pdf",
+        "filename": "AR2604800-10.pdf",
+        "savedPath": "/mnt/escaner/Planteamientos/AR2604800-10.pdf"
+      },
+      {
+        "type": "pdf",
+        "filename": "AR2604800.pdf",
+        "savedPath": "/mnt/oftecnica/2026/AR2604800.pdf"
+      }
+    ]
+  },
+  "summary": {
+    "customer": "HIJOS DE PEDRO LOPEZ GARCIA, S. L.",
+    "orderDate": "2026-09-29",
+    "technician": "IVÁN",
+    "reviewer": "JAIME",
+    "awnings": 1,
+    "ofs": [
+      "0232621"
+    ],
+    "models": [
+      "Arquillado con aguas"
+    ],
+    "diagnostics": 0
+  },
+  "params": {
+    "recogidas": [
+      {
+        "nombre": "NO",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "GOMA",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "GANCHOS CORAZON",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "CREMALLERA",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "VELCRO",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "PUENTES ESVA",
+        "delante": 21,
+        "atras": 21,
+        "lateralSoloAtras": 19,
+        "lateralSoloDelante": 19
+      },
+      {
+        "nombre": "PUENTES LATERALES",
+        "delante": 41,
+        "atras": 21,
+        "lateralSoloAtras": 9,
+        "lateralSoloDelante": 9
+      },
+      {
+        "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+        "delante": 42.5,
+        "atras": 42.5,
+        "lateralSoloAtras": 11.5,
+        "lateralSoloDelante": 9,
+        "panoTraseroConAnchoDelante": true
+      }
+    ],
+    "demasiaAlto": 4.5,
+    "demasiaContornoNormal": 3,
+    "demasiaContornoEnfundar": 13,
+    "demasiaLonaHecha": 1,
+    "ajusteContornoBase": 7,
+    "ajusteContornoCurva": 1.5,
+    "pasoOllaosDefecto": 35,
+    "primerOllao": 2.5,
+    "maxPosicionesOllaos": 12,
+    "baquetonDemasiaLargoCostura": 7,
+    "baquetonDemasiaAnchoCostura": 7,
+    "baquetonDemasiaCostura": 2,
+    "baquetonDemasiaFinal": 1,
+    "tecnicos": [
+      "ÁNGEL",
+      "JAIME",
+      "ALBERTO",
+      "ADRIÁN",
+      "TAMARA",
+      "IVÁN"
+    ],
+    "clientesBaqueton": [
+      {
+        "nombre": "GENERAL",
+        "extraLargoCostura": 0,
+        "extraAnchoCostura": 0,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "HIJOS DE PEDRO LOPEZ",
+        "extraLargoCostura": 11,
+        "extraAnchoCostura": 2,
+        "extraBaquetonLargoDelante": 1,
+        "extraBaquetonLargoDetras": 11,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 10,
+        "observaciones": [
+          "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+        ]
+      },
+      {
+        "nombre": "AYALA",
+        "extraLargoCostura": 1,
+        "extraAnchoCostura": 1,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 1,
+        "extraAnchoFinal": 1,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "GENERAL WOLDER",
+        "extraLargoCostura": -1,
+        "extraAnchoCostura": -1,
+        "extraBaquetonLargoDelante": -0.5,
+        "extraBaquetonLargoDetras": -0.5,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": [
+          "OLLAOS EN ALTA FRECUENCIA",
+          "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+          "MANDAR GOMA SUELTA"
+        ]
+      }
+    ]
+  },
+  "elementos": [
+    {
+      "version": "11",
+      "tipo": "lona",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "ar2604800",
+          "version": "11",
+          "cliente": "HIJOS DE PEDRO LOPEZ GARCIA, S. L.",
+          "revision": "JAIME",
+          "realizadoPor": "IVÁN",
+          "ordenFabricacion": "0232621",
+          "fecha": "2026-09-29",
+          "fechaSalida": ""
+        },
+        "cantidad": 1,
+        "largo": 220,
+        "ancho": 130,
+        "anchoAtras": 131.5,
+        "altoDelante": 25,
+        "altoAtras": 0,
+        "aguas": 8,
+        "radioCumbrera": 0,
+        "radioHombro": 8,
+        "radioEsquina": 0,
+        "chaflan": 0,
+        "radioChaflanAbajo": 0,
+        "radioChaflanArriba": 0,
+        "contorno": 160.8,
+        "tipoPerfil": "TIPO 03",
+        "recogeDelante": "NO",
+        "recogeAtras": "PUENTES HIJOS DE PEDRO LOPEZ",
+        "bastillaEnfundar": false,
+        "ventana": true,
+        "ventanaAncho": 50,
+        "ventanaAlto": 14,
+        "rotulacion": true,
+        "modoOllaos": "SEGUN SE INDICA",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [
+            3.9,
+            32.8,
+            64.4,
+            96,
+            127.6,
+            159.2,
+            190.8,
+            219.6
+          ],
+          "atras": [
+            2.5,
+            34.4,
+            66.3,
+            98.1,
+            130
+          ],
+          "delante": [
+            2.5,
+            34,
+            65.5,
+            97,
+            128.5
+          ]
+        },
+        "material": "LONA G650 2L 650 :GRIS RAL 7038 :250 AN",
+        "observaciones": "REMOLQUE MÁIS ANCHO DETRÁS",
+        "contornoAtras": 162.3
+      },
+      "result": {
+        "lonaHecha": {
+          "largo": 221,
+          "ancho": 131,
+          "anchoAtras": 132.5
+        },
+        "contornoIntroducido": 160.8,
+        "ajusteContorno": 8.5,
+        "contornoAjustado": 169.3,
+        "contornoAtrasIntroducido": 162.3,
+        "contornoAtrasAjustado": 170.8,
+        "panoDelantero": {
+          "ancho": 133,
+          "alto": 29.5,
+          "etiqueta": "PAÑO DELANTERO"
+        },
+        "panoTrasero": {
+          "ancho": 172.5,
+          "alto": 29.5,
+          "etiqueta": "PAÑO TRASERO"
+        },
+        "panoContorno": {
+          "ancho": 234.5,
+          "alto": 169.3,
+          "etiqueta": "PAÑO CONTORNO",
+          "altoAtras": 170.8
+        },
+        "ollaos": {
+          "largo": {
+            "n": 7,
+            "dist": 36,
+            "posiciones": [
+              2.5,
+              38.5,
+              74.5,
+              110.5,
+              146.5,
+              182.5,
+              218.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 31.5,
+            "posiciones": [
+              2.5,
+              34,
+              65.5,
+              97,
+              128.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 31.9,
+            "posiciones": [
+              2.5,
+              34.4,
+              66.3,
+              98.1,
+              130
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            3.9,
+            32.8,
+            64.4,
+            96,
+            127.6,
+            159.2,
+            190.8,
+            219.6
+          ],
+          "atras": [
+            2.5,
+            34.4,
+            66.3,
+            98.1,
+            130
+          ],
+          "delante": [
+            2.5,
+            34,
+            65.5,
+            97,
+            128.5
+          ]
+        },
+        "metrosTela": 5.4,
+        "recogeDelanteTexto": "NO",
+        "recogeAtrasTexto": "PUENTES HIJOS DE PEDRO LOPEZ",
+        "notas": [
+          "Ventana indicada (50 × 14 cm): verificar en taller.",
+          "Incluye rotulación."
+        ]
+      },
+      "paramsSnapshot": {
+        "recogidas": [
+          {
+            "nombre": "NO",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GOMA",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "GANCHOS CORAZON",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "CREMALLERA",
+            "delante": 3,
+            "atras": 3,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "VELCRO",
+            "delante": 27,
+            "atras": 27,
+            "lateralSoloAtras": 0,
+            "lateralSoloDelante": 0
+          },
+          {
+            "nombre": "PUENTES ESVA",
+            "delante": 21,
+            "atras": 21,
+            "lateralSoloAtras": 19,
+            "lateralSoloDelante": 19
+          },
+          {
+            "nombre": "PUENTES LATERALES",
+            "delante": 41,
+            "atras": 21,
+            "lateralSoloAtras": 9,
+            "lateralSoloDelante": 9
+          },
+          {
+            "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+            "delante": 42.5,
+            "atras": 42.5,
+            "lateralSoloAtras": 11.5,
+            "lateralSoloDelante": 9,
+            "panoTraseroConAnchoDelante": true
+          }
+        ],
+        "demasiaAlto": 4.5,
+        "demasiaContornoNormal": 3,
+        "demasiaContornoEnfundar": 13,
+        "demasiaLonaHecha": 1,
+        "ajusteContornoBase": 7,
+        "ajusteContornoCurva": 1.5,
+        "pasoOllaosDefecto": 35,
+        "primerOllao": 2.5,
+        "maxPosicionesOllaos": 12,
+        "baquetonDemasiaLargoCostura": 7,
+        "baquetonDemasiaAnchoCostura": 7,
+        "baquetonDemasiaCostura": 2,
+        "baquetonDemasiaFinal": 1,
+        "tecnicos": [
+          "ÁNGEL",
+          "JAIME",
+          "ALBERTO",
+          "ADRIÁN",
+          "TAMARA",
+          "IVÁN"
+        ],
+        "clientesBaqueton": [
+          {
+            "nombre": "GENERAL",
+            "extraLargoCostura": 0,
+            "extraAnchoCostura": 0,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "HIJOS DE PEDRO LOPEZ",
+            "extraLargoCostura": 11,
+            "extraAnchoCostura": 2,
+            "extraBaquetonLargoDelante": 1,
+            "extraBaquetonLargoDetras": 11,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 10,
+            "observaciones": [
+              "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+            ]
+          },
+          {
+            "nombre": "AYALA",
+            "extraLargoCostura": 1,
+            "extraAnchoCostura": 1,
+            "extraBaquetonLargoDelante": 0,
+            "extraBaquetonLargoDetras": 0,
+            "extraLargoFinal": 1,
+            "extraAnchoFinal": 1,
+            "extraBaquetonTrasero": 0,
+            "observaciones": []
+          },
+          {
+            "nombre": "GENERAL WOLDER",
+            "extraLargoCostura": -1,
+            "extraAnchoCostura": -1,
+            "extraBaquetonLargoDelante": -0.5,
+            "extraBaquetonLargoDetras": -0.5,
+            "extraLargoFinal": 0,
+            "extraAnchoFinal": 0,
+            "extraBaquetonTrasero": 0,
+            "observaciones": [
+              "OLLAOS EN ALTA FRECUENCIA",
+              "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+              "MANDAR GOMA SUELTA"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "clienteRps": {
+    "codigo": "001300",
+    "nombre": "HIJOS DE PEDRO LOPEZ GARCIA, S. L."
+  }
+}

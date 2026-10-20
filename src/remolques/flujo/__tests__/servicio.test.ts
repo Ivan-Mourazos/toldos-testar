@@ -13,7 +13,7 @@ import { crearAlmacenPedidosRemolques } from "../almacen.ts";
 import { ErrorPedidoRemolques } from "../pedido.ts";
 import {
   comprobadorPedidoToldos, crearServicioPedidosRemolques, esPedidoDeToldosSegunError, MENSAJE_TOLDOS_SIN_COMPROBAR, mensajePedidoDeRemolques,
-  paramsDeLaPantalla, yaEsPedidoDeRemolques, type EstadoCoordina,
+  paramsDeLaPantalla, yaEsPedidoDeRemolques, type CorteRemolques, type EstadoCoordina,
 } from "../servicio.ts";
 
 // Para simular una carpeta que da un error de acceso al mirar si el PDF ya está (EACCES, red caída).
@@ -51,7 +51,7 @@ const APROBADAS: EstadoCoordina = {
   ofs: { "0231780": { estado: "aprobada", revisor: "jaime" }, "0231781": { estado: "aprobada", revisor: "jaime" } },
 };
 
-function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string[] } = {}) {
+function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string[], corte = undefined as CorteRemolques | undefined, registrar = undefined as ((mensaje: string) => void) | undefined } = {}) {
   mkdirSync(TMP, { recursive: true });
   const raiz = mkdtempSync(path.join(TMP, "remolques-servicio-"));
   temporales.push(raiz);
@@ -104,6 +104,8 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
       if (averias.toldos) throw averias.toldos;
       return toldos.includes(codigo);
     },
+    corte,
+    registrar,
     ahora: () => new Date("2026-10-01T08:00:00.000Z"),
   });
   return {
@@ -429,6 +431,62 @@ describe("generar: carpetas de red", () => {
     await guardar(m.servicio);
     await m.servicio.generar("AR2604286", {});
     expect(m.llamadas.despertar).toEqual([[path.dirname(m.pdfPlan), path.dirname(path.dirname(m.pdfOficina))]]);
+  });
+});
+
+describe("generar: corte de lona", () => {
+  // Un corte de mentira que apunta lo que le piden; el de verdad tiene sus pruebas en corte/.
+  function corteDePrueba({ fallaPreparar = false, fallaEscribir = false } = {}) {
+    const llamadas = { preparar: [] as string[][], escritos: [] as string[] };
+    const corte: CorteRemolques = {
+      async preparar(pedido) {
+        if (fallaPreparar) throw new Error("geometría rota");
+        llamadas.preparar.push(pedido.elementos.map((e) => JSON.stringify(e.result).slice(0, 20)));
+        return {
+          ficheros: [{ type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf", contenido: new Uint8Array([1]) }],
+          avisos: ["0231780: revisar la ventana."],
+        };
+      },
+      async escribir(ficheros) {
+        if (fallaEscribir) throw new Error("carpeta del bot caída");
+        llamadas.escritos.push(...ficheros.map((f) => f.savedPath));
+      },
+    };
+    return { corte, llamadas };
+  }
+
+  it("escribe el corte con los resultados con que se genera y lo apunta en el pedido, sin los bytes", async () => {
+    const { corte, llamadas } = corteDePrueba();
+    const m = montar({ corte });
+    await guardar(m.servicio);
+    const r = await m.servicio.generar("AR2604286", {});
+    expect(r.status).toBe(200);
+    const esperado = {
+      files: [{ type: "corte-lona", material: "LONA PVC 580 GRIS CLARO 7038", filename: "AR2604286.dxf", savedPath: "/bot/AR2604286.dxf" }],
+      avisos: ["0231780: revisar la ventana."],
+    };
+    expect(r.cuerpo).toMatchObject({ ok: true, corte: esperado });
+    expect(llamadas.escritos).toEqual(["/bot/AR2604286.dxf"]);
+    // Los resultados recalculados, los mismos que lleva la hoja.
+    expect(llamadas.preparar[0]).toEqual(m.llamadas.pdf[0].elementos.map((e) => JSON.stringify(e.result).slice(0, 20)));
+    const pedido = await m.servicio.obtener("AR2604286");
+    expect(pedido.production?.corte).toEqual(esperado);
+    expect(pedido.production?.files.map((f) => f.type)).toEqual(["pdf", "pdf"]);
+  });
+
+  it("si el corte no se puede preparar o escribir, los PDF salen igual y se avisa de hacerlo a mano", async () => {
+    for (const fallo of [{ fallaPreparar: true }, { fallaEscribir: true }]) {
+      const registrados: string[] = [];
+      const m = montar({ corte: corteDePrueba(fallo).corte, registrar: (mensaje) => registrados.push(mensaje) });
+      await guardar(m.servicio);
+      const r = await m.servicio.generar("AR2604286", {});
+      expect(r.status).toBe(200);
+      expect(existsSync(m.pdfPlan)).toBe(true);
+      const corte = (await m.servicio.obtener("AR2604286")).production?.corte;
+      expect(corte?.files).toEqual([]);
+      expect(corte?.avisos.at(-1)).toMatch(/hay que hacerlo a mano/);
+      expect(registrados.some((mensaje) => /corte de lona/.test(mensaje))).toBe(true);
+    }
   });
 });
 

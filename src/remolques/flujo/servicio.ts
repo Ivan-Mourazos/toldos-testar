@@ -16,7 +16,7 @@ import {
   anioPedido, codigoPedido, crearPedidoRemolques, elementosAprobacion, elementosPedidoHoja, ErrorPedidoRemolques,
   marcarPedidoGenerado, resumenBandeja, validarClienteRps,
 } from "./pedido.ts";
-import type { FicheroGenerado, PedidoRemolques, ResumenPedidoRemolques } from "./tipos.ts";
+import type { FicheroCorte, FicheroGenerado, PedidoRemolques, ResumenPedidoRemolques } from "./tipos.ts";
 
 // El flujo de un pedido de remolques en el servidor (fase 5), con las reglas de toldos de
 // src/reviewRules.js. Las rutas de src/server.js solo pasan la petición y devuelven la respuesta.
@@ -47,9 +47,19 @@ export interface DependenciasPedidosRemolques {
   esPedidoDeToldos: (orderCode: string) => Promise<boolean>;
   /** Las fichas de cliente con que se calcula (remolquesClientesStore.get): el buscador busca por su nombre. */
   fichas?: () => Promise<readonly FichaBusqueda[]>;
+  /** El corte de lona (corte/archivos.js): sin él, «Generar archivos» deja solo los PDF. */
+  corte?: CorteRemolques;
   /** Dónde se apuntan los fallos que no paran nada (por defecto, console.error). */
   registrar?: (mensaje: string) => void;
   ahora?: () => Date;
+}
+
+export type ArchivoCorte = FicheroCorte & { contenido: Uint8Array };
+
+export interface CorteRemolques {
+  /** Todos los bytes del corte del pedido (con los resultados con que se genera), sin escribir nada. */
+  preparar(pedido: PedidoRemolques): Promise<{ ficheros: ArchivoCorte[]; avisos: string[] }>;
+  escribir(ficheros: ArchivoCorte[]): Promise<void>;
 }
 
 export interface Respuesta {
@@ -153,8 +163,20 @@ function conResultadosDeLaHoja(pedido: PedidoRemolques, datos: DatosHojaPedido):
   };
 }
 
+const sinContenido = ({ contenido: _contenido, ...fichero }: ArchivoCorte): FicheroCorte => fichero;
+
+async function prepararCorte(corte: CorteRemolques, pedido: PedidoRemolques, registrar: (mensaje: string) => void) {
+  try {
+    return await corte.preparar(pedido);
+  } catch (error) {
+    registrar(`Pedido ${pedido.orderCode}: no se pudo preparar el corte de lona: ${error instanceof Error ? error.stack ?? error.message : String(error)}`);
+    return { ficheros: [], avisos: ["No se pudo preparar el corte de lona: hay que hacerlo a mano."] };
+  }
+}
+
 export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques) {
   const reloj = deps.ahora ?? (() => new Date());
+  const registrar = deps.registrar ?? ((mensaje: string) => console.error(mensaje));
   const ahora = () => reloj().toISOString();
   // Un bloqueo por pedido: dos «Generar archivos» a la vez no escriben dos veces, y «Guardar» y
   // «Generar archivos» del mismo pedido nunca se cruzan (el almacén se queda con lo último que
@@ -270,7 +292,14 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       // La hoja se recalcula con los parámetros del pedido; los datos que van dentro del PDF (y el
       // pedido generado) llevan esos mismos resultados, no los de cuando se guardó.
       const datos: DatosHojaPedido = { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: revisor };
-      const generado = marcarPedidoGenerado(conResultadosDeLaHoja(pedido, datos), { revisor, ficheros, ahora: ahora() });
+      const calculado = conResultadosDeLaHoja(pedido, datos);
+      // El corte de lona, con esos mismos resultados. Lo principal es la hoja: si el corte falla, se avisa
+      // para hacerlo a mano y los PDF salen igual.
+      const corte = deps.corte ? await prepararCorte(deps.corte, calculado, registrar) : null;
+      const marcado = marcarPedidoGenerado(calculado, { revisor, ficheros, ahora: ahora() });
+      const generado: PedidoRemolques = corte && marcado.production
+        ? { ...marcado, production: { ...marcado.production, corte: { files: corte.ficheros.map(sinContenido), avisos: corte.avisos } } }
+        : marcado;
       const pdf = await adjuntarDatosPedido(await deps.hacerPdf(datos), generado);
       try {
         await archivarPdfRemolques(pdf, { numeroPedido: pedido.numeroPedido, fecha: pedido.summary.orderDate }, ajustes, { sustituir: confirmar });
@@ -280,6 +309,14 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
           return { status: 409, cuerpo: { needsConfirmation: true, existing: destinos.map((destino) => path.basename(destino)) } };
         }
         throw error;
+      }
+      if (corte?.ficheros.length && deps.corte && generado.production?.corte) {
+        try {
+          await deps.corte.escribir(corte.ficheros);
+        } catch (error) {
+          registrar(`Pedido ${orderCode}: no se pudo escribir el corte de lona: ${(error as Error).message}`);
+          generado.production.corte = { files: [], avisos: [...corte.avisos, "No se pudo escribir el corte de lona en su carpeta: hay que hacerlo a mano."] };
+        }
       }
       // Primero los PDF y después el estado: si el archivo falla, el pedido sigue pendiente y se puede repetir.
       try {
@@ -291,7 +328,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
           500,
         );
       }
-      return { status: 200, cuerpo: { ok: true, review: resumenBandeja(generado), saved: ficheros, nombre } };
+      return { status: 200, cuerpo: { ok: true, review: resumenBandeja(generado), saved: ficheros, nombre, corte: generado.production?.corte ?? null } };
     } finally {
       ocupados.delete(orderCode);
     }
