@@ -52,7 +52,8 @@ export function escribirDxfPlano(plano, cabecera) {
   const zGirada = { x0: ccx - mh + apartar, x1: ccx + mh + apartar, y0: ccy - mw, y1: ccy + mw };
   const escala = (z, r) => Math.min((r.x1 - r.x0) / (z.x1 - z.x0), (r.y1 - r.y0) / (z.y1 - z.y0));
   const repartos = [];
-  for (const [girado, zcp] of [[false, zNormal], [true, zGirada]]) {
+  // `corteDerecho`: el corte no se gira en la hoja (remolques: el DWG solo se guarda, Iván 20/10/2026).
+  for (const [girado, zcp] of plano.corteDerecho ? [[false, zNormal]] : [[false, zNormal], [true, zGirada]]) {
     for (let h = 25; h <= A4.y1 - A4.y0 - TITULO_CORTE - 60; h += 0.5) {
       const corte = { x0: A4.x0, y0: A4.y0, x1: A4.x1, y1: A4.y0 + h };
       repartos.push({ girado, zc: zcp, corte, toldo: { x0: A4.x0, y0: corte.y1 + TITULO_CORTE, x1: A4.x1, y1: A4.y1 }, raya: [[A4.x0, corte.y1 + 7], [A4.x1, corte.y1 + 7]] });

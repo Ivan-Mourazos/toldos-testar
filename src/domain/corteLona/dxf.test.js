@@ -169,6 +169,10 @@ describe('Plano de confección', () => {
     expect([numero(arco, 40), numero(arco, 50), numero(arco, 51)]).toEqual([0.111, 0, 90]);
     expect(e.filter((x) => x.tipo === 'CIRCLE' && valor(x, 330) === '1F' && valor(x, 8) === 'ROTULADOR')).toHaveLength(2);
     comprobarHandles(dxf);
+    // Un corte alto se giraría en la hoja; con corteDerecho se deja como va en el rollo.
+    const alto = { ...plano, zonas: { ...plano.zonas, corte: { x0: 99.9, y0: 80, x1: 101, y1: 92.6 } } };
+    expect(escribirDxfPlano(alto, { pedido: 'AR1' }).reparto).toContain('girado');
+    expect(escribirDxfPlano({ ...alto, corteDerecho: true }, { pedido: 'AR1' }).reparto).not.toContain('girado');
   });
   it('reduce los campos largos del cajetín hasta que caben, sin heredar campos automáticos', () => {
     const order = structuredClone(revision.order);
