@@ -60,6 +60,8 @@ export interface CorteRemolques {
   /** Todos los bytes del corte del pedido (con los resultados con que se genera), sin escribir nada. */
   preparar(pedido: PedidoRemolques): Promise<{ ficheros: ArchivoCorte[]; avisos: string[] }>;
   escribir(ficheros: ArchivoCorte[]): Promise<void>;
+  /** El corte para verlo en pantalla: piezas, metros de rollo y avisos, sin los archivos. */
+  vista(pedido: PedidoRemolques): unknown;
 }
 
 export interface Respuesta {
@@ -334,6 +336,14 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     }
   }
 
+  /** El corte de lona como saldría al generar (con los resultados recalculados como la hoja), para verlo. */
+  async function corte(orderCode: string): Promise<unknown> {
+    if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
+    const pedido = await obtener(orderCode);
+    const datos: DatosHojaPedido = { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: "" };
+    return deps.corte.vista(conResultadosDeLaHoja(pedido, datos));
+  }
+
   async function vistaPrevia(orderCode: string): Promise<{ pdf: Uint8Array; nombre: string }> {
     const pedido = await obtener(orderCode);
     const datos: DatosHojaPedido = {
@@ -358,5 +368,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     throw new ErrorPedidoRemolques("El PDF generado ya no está en sus carpetas de archivo.", 404);
   }
 
-  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar };
+  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte };
 }

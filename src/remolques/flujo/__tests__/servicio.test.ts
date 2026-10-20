@@ -451,6 +451,7 @@ describe("generar: corte de lona", () => {
         if (fallaEscribir) throw new Error("carpeta del bot caída");
         llamadas.escritos.push(...ficheros.map((f) => f.savedPath));
       },
+      vista: (pedido) => ({ ofs: pedido.elementos.map((e) => e.input.cabecera.ordenFabricacion), resultados: pedido.elementos.map((e) => e.result) }),
     };
     return { corte, llamadas };
   }
@@ -472,6 +473,21 @@ describe("generar: corte de lona", () => {
     const pedido = await m.servicio.obtener("AR2604286");
     expect(pedido.production?.corte).toEqual(esperado);
     expect(pedido.production?.files.map((f) => f.type)).toEqual(["pdf", "pdf"]);
+  });
+
+  it("enseña el corte como saldría al generar, con los resultados recalculados y sin escribir nada", async () => {
+    const { corte, llamadas } = corteDePrueba();
+    const m = montar({ corte });
+    await guardar(m.servicio);
+    const vista = await m.servicio.corte("AR2604286") as { ofs: string[]; resultados: unknown[] };
+    expect(vista.ofs).toEqual(["231780", "231781"]);
+    await m.servicio.generar("AR2604286", {});
+    expect(vista.resultados).toEqual(m.llamadas.pdf[0].elementos.map((e) => e.result));
+    expect(llamadas.escritos).toEqual(["/bot/AR2604286.dxf"]);
+    // Sin corte en el servidor, se dice.
+    const sin = montar();
+    await guardar(sin.servicio);
+    expect(await falla(sin.servicio.corte("AR2604286"))).toEqual([404, "El corte de lona no está disponible en este servidor."]);
   });
 
   it("si el corte no se puede preparar o escribir, los PDF salen igual y se avisa de hacerlo a mano", async () => {

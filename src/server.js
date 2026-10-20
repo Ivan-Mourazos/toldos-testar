@@ -682,6 +682,11 @@ app.get('/api/remolques/pedidos/:orderCode/vista-previa', rutaRemolques(async (r
   enviarPdf(res, pdf, nombre);
 }));
 
+// El corte de lona del pedido, para verlo antes de generar (no escribe nada).
+app.get('/api/remolques/pedidos/:orderCode/corte', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.corte(req.params.orderCode));
+}));
+
 app.post('/api/remolques/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.generar(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);

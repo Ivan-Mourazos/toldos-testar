@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CopyPlus, ExternalLink, Factory, FileSearch, FileText, PencilLine } from 'lucide-react';
+import { CopyPlus, ExternalLink, Factory, FileSearch, FileText, PencilLine, Scissors } from 'lucide-react';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { elementosAprobacion, modeloElemento } from '../../remolques/flujo/pedido.ts';
 import type { ElementoGuardado, PedidoRemolques } from '../../remolques/flujo/tipos.ts';
@@ -8,6 +8,7 @@ import type { AskForConfirmation, Notify } from '../components/NotificationCente
 import { controlLabel } from '../components/controlLabels';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import type { CoordinaStatus } from '../types';
+import { CorteRemolques } from './CorteRemolques';
 import { estadoGenerarRemolques, ficherosPrevistos } from './generarPedido';
 import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
@@ -123,9 +124,21 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
               <span><strong>{pedido.production.files[0]?.filename ?? 'Hoja de taller'}</strong><small>Hoja de taller PDF · planteamientos y oficina técnica</small></span>
               <ExternalLink aria-hidden="true" />
             </a>
+            {pedido.production.corte?.files.map((fichero) => (
+              <span className="review-generated-file chip-3d" key={fichero.savedPath} title={fichero.savedPath}>
+                <span className="review-generated-file-icon"><Scissors aria-hidden="true" /></span>
+                <span><strong>{fichero.filename}</strong><small>{`${fichero.type === 'corte-lona' ? 'Corte del bot' : 'Plano de revisión'} · ${fichero.material}`}</small></span>
+              </span>
+            ))}
           </div>
+          {pedido.production.corte && pedido.production.corte.avisos.length > 0 && (
+            <ul className="corte-avisos">{pedido.production.corte.avisos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>
+          )}
         </div>
       )}
+
+      {/* El corte se vuelve a calcular si el pedido cambia (guardado o generado). */}
+      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} />
 
       <ul className="rem-pedido-elementos" aria-label="Elementos del pedido">
         {pedido.elementos.map((elemento, indice) => (

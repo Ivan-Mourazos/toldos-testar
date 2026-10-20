@@ -36,3 +36,5 @@
 .corte-lista { display: block; color: var(--text-muted); font-size: 10px; margin-top: 3px; }
 .corte-lista.is-hecho { color: var(--tramo-holgado); }
 .corte-lista.is-viejo { color: var(--tramo-ajustado); }
+.corte-dibujo path, .corte-dibujo circle { fill: none; }
+.corte-dibujo.is-remolques { height: auto; max-height: 420px; }
