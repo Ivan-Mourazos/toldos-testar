@@ -88,17 +88,20 @@ function escaleraV(L, yb, x, posiciones) {
   });
 }
 
-function confeccionLona(L, el, X, Y, letra) {
+// `letras`: las de las unidades de este elemento; varias iguales van en un solo dibujo (A1 · B1), como los baquetones.
+function confeccionLona(L, el, X, Y, letras = ['']) {
   const i = el.input, r = el.result, P = piezasLona(el);
   const del = r.panoDelantero, tra = r.panoTrasero, con = r.panoContorno, hecha = r.lonaHecha;
   // Ht: el trasero puede ser más corto (trasera a la línea por arriba, AR2605158).
   const W = del.ancho, H = del.alto, Wt = tra.ancho, Ht = tra.alto, A = con.ancho, B = con.alto, o = P.oreja / 10;
   const enPlano = (x0, y0) => (u, v) => [x0 + u / 10, y0 + v / 10];
   const xDel = X, xTra = X + W + 60, xCon = xTra + Wt + 80;
-  const titulo = `${letra ? `${letra} · ` : ''}LONA ALTA ${i.largo} × ${i.ancho} × ${i.altoDelante}${i.altoAtras && i.altoAtras !== i.altoDelante ? `/${i.altoAtras}` : ''} · ${PERFILES[i.tipoPerfil] ?? i.tipoPerfil} · OF ${el.of}`;
+  const conLetra = letras.filter(Boolean);
+  const titulo = `${conLetra.length ? `${conLetra.join(', ')} · ` : ''}LONA ALTA ${i.largo} × ${i.ancho} × ${i.altoDelante}${i.altoAtras && i.altoAtras !== i.altoDelante ? `/${i.altoAtras}` : ''}${letras.length > 1 ? ` × ${letras.length}` : ''} · ${PERFILES[i.tipoPerfil] ?? i.tipoPerfil} · OF ${el.of}`;
   L.texto(titulo, (X + xCon + B) / 2, Y + Math.max(H, A) + 40, 12);
 
-  const R = letra || 'A';
+  // El rótulo de cada pieza, con todas las unidades: «A2 · B2».
+  const R = (n) => letras.map((l) => `${l || 'A'}${n}`).join(' · ');
 
   // Paño delantero.
   pintar(L, P.d.p, enPlano(xDel, Y));
@@ -116,8 +119,8 @@ function confeccionLona(L, el, X, Y, letra) {
     const vy1 = Math.max(...ys.filter((y) => y < H - 2)), vy0 = vy1 - P.ventana[1] / 10;
     L.cota('cotas', xDel + vx0, Y + vy1 - 5, xDel + vx1, Y + vy1 - 5, P.ventana[0] / 10, 0, 4);
     L.cota('cotas', xDel + vx0 + 5, Y + vy0, xDel + vx0 + 5, Y + vy1, P.ventana[1] / 10, 0, 4);
-    L.texto(`${R}2`, xDel + vx0 / 2 + 0.5, Y + (vy0 + vy1) / 2, 14);
-  } else L.texto(`${R}2`, xDel + W / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.delante.length - 1, 0) + H) / 2 - 3, 14);
+    L.texto(R(2), xDel + vx0 / 2 + 0.5, Y + (vy0 + vy1) / 2, 14);
+  } else L.texto(R(2), xDel + W / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.delante.length - 1, 0) + H) / 2 - 3, 14);
 
   // Paño trasero (con orejas si recoge con goma).
   pintar(L, P.t.p, enPlano(xTra, Y));
@@ -135,7 +138,7 @@ function confeccionLona(L, el, X, Y, letra) {
     L.cota('cotas', xTra, Y + 3.5, xTra, Y + Ht - 1, i.altoAtras, -12);
     L.cota('vent-pre-noimpr', xTra, Y, xTra, Y + Ht, Ht, -26);
   }
-  L.texto(`${R}3`, xTra + Wt / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.atras.length - 1, 0) + Ht) / 2 - 3, 14);
+  L.texto(R(3), xTra + Wt / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.atras.length - 1, 0) + Ht) / 2 - 3, 14);
   escaleraH(L, xTra + o + 1, Y + 4.5, P.ollaos.atras);
 
   // Paño contorno, a lo ancho: x = a lo largo del contorno, y = a lo largo de la lona (atrás arriba).
@@ -145,7 +148,7 @@ function confeccionLona(L, el, X, Y, letra) {
   // una lona normal; 6 con bastilla de enfundar, como en AR2603438). Ahí empieza la escalera de los ollaos.
   const punta = (A - hecha.largo) / 2;
   L.g.polilineas.push({ capa: 'referencias', puntos: [[xCon + 3.5, Y + punta], [xCon + B - 3.5, Y + punta], [xCon + B - 3.5, Y + A - punta], [xCon + 3.5, Y + A - punta]], cerrada: true });
-  L.texto(`${R}1`, xCon + B / 2, Y + A / 2 - 4, 14);
+  L.texto(R(1), xCon + B / 2, Y + A / 2 - 4, 14);
   L.cota('cotas', xCon + 3.5, Y, xCon + B - 3.5, Y, r.contornoAjustado - 7, -12);
   L.cota('vent-pre-noimpr', xCon, Y, xCon + B, Y, B, -26);
   L.cota('cotas', xCon, Y + punta, xCon, Y + A - punta, hecha.largo, -12);
@@ -155,7 +158,7 @@ function confeccionLona(L, el, X, Y, letra) {
     const yE = Y + 248, yE2 = Y + 250, xM = xCon + B / 2;
     for (const yy of [yE, yE2]) L.g.polilineas.push({ capa: 'ejes', puntos: [[xCon, yy], [xCon + B, yy]], cerrada: false });
     L.g.polilineas.push({ capa: 'ejes', puntos: [[xM - 1, yE], [xM - 1, Y + A]], cerrada: false }, { capa: 'ejes', puntos: [[xM + 1, yE], [xM + 1, Y + A]], cerrada: false });
-    L.texto(`EMPATE 2 CM · TIRA DE ${coma(A - 250 + 2)} EN DOS (${R}4 Y ${R}5)`, xCon + B / 2, yE - 7, 6, 0, 'cotas');
+    L.texto(`EMPATE 2 CM · TIRA DE ${coma(A - 250 + 2)} EN DOS (${R(4)} Y ${R(5)})`, xCon + B / 2, yE - 7, 6, 0, 'cotas');
   }
   // Laterales: línea base arriba (atrás, donde empieza la lona hecha), escalera hacia dentro del paño.
   escaleraV(L, Y + A - (A - hecha.largo) / 2, xCon + 4.5, P.ollaos.laterales);
@@ -262,18 +265,22 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
 export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params = {}, refuerzos = false, letras, corte, material, largoRollo }) {
   const L = lienzo();
   let y = 0, ancho = 0;
-  // Los baquetones abajo, con sitio para sus escaleras de ollaos por debajo.
-  for (const el of [...baquetones].reverse()) {
-    const d = confeccionBaqueton(L, el, params, 30 + 4 * 6, y + 60, letras?.get(el) ?? [''], refuerzos);
-    ancho = Math.max(ancho, d.ancho + 30 + 4 * 6);
-    y += 60 + d.alto + 120;
-  }
-  for (const el of [...lonas].reverse()) {
-    for (const letra of letras?.get(el) ?? ['']) {
-      const d = confeccionLona(L, el, 0, y, letra);
-      ancho = Math.max(ancho, d.ancho);
-      y += d.alto + 120;
+  // Los baquetones abajo, en una fila uno al lado de otro, con sitio para sus escaleras de ollaos por debajo.
+  if (baquetones.length) {
+    let x = 30 + 4 * 6, alto = 0;
+    for (const el of baquetones) {
+      const d = confeccionBaqueton(L, el, params, x, y + 60, letras?.get(el) ?? [''], refuerzos);
+      x += d.ancho + 80;
+      alto = Math.max(alto, d.alto);
     }
+    ancho = Math.max(ancho, x - 80);
+    y += 60 + alto + 120;
+  }
+  // Encima, cada lona alta en su fila: varias unidades iguales, un solo dibujo.
+  for (const el of [...lonas].reverse()) {
+    const d = confeccionLona(L, el, 0, y, letras?.get(el) ?? ['']);
+    ancho = Math.max(ancho, d.ancho);
+    y += d.alto + 120;
   }
   const zonaDibujo = { x0: -45, y0: -45, x1: ancho + 20, y1: y - 40 };
   // Corte debajo, a escala (mm → cm), lejos del dibujo.
