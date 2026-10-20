@@ -75,6 +75,15 @@ describe('DXF del bot', () => {
       { capa: 'ROTULADOR', x1: 100, y1: 15, x2: 100, y2: 1985 }
     ]);
   });
+  it('escribe círculos (ollaos de remolque) en su capa, desplazados como el resto', () => {
+    const dxf = escribirDxf2004({ lineas: [], textos: [], circulos: [{ capa: 'ROTULADOR', x: 40, y: 35, r: 2.5 }] }, { dx: 100, dy: 200 });
+    const ollao = registrosDxf(dxf).find((e) => e.tipo === 'CIRCLE' && valor(e, 8) === 'ROTULADOR' && numero(e, 10) > 100);
+    expect(ollao).toBeDefined();
+    expect([numero(ollao, 10), numero(ollao, 20), numero(ollao, 40)]).toEqual([140, 235, 2.5]);
+    expect(valor(ollao, 330)).toBe('1F');
+    comprobarHandles(dxf);
+    expect(() => escribirDxf2004({ lineas: [], textos: [], circulos: [{ capa: 'marca', x: 0, y: 0, r: 2.5 }] })).toThrow(/capas/);
+  });
   it('rechaza capas ajenas al bot', () => {
     expect(() => escribirDxf2004({ lineas: [{ capa: 'referencias' }], textos: [] })).toThrow(/capas/);
   });

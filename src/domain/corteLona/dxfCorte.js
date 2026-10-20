@@ -8,10 +8,11 @@ export const CAPAS_BOT = ['DISCO1', 'DISCO2', 'CUTTER', 'ROTULADOR', 'taladro', 
 
 const MODEL_SPACE = '1F';
 
-/** lineas: { capa, x1, y1, x2, y2 }; textos: { capa, x, y, h, valor, giro? en grados }. Desplaza todo a (dx, dy). */
-export function escribirDxf2004({ lineas, textos }, { dx = 1000, dy = 1000 } = {}) {
+/** lineas: { capa, x1, y1, x2, y2 }; textos: { capa, x, y, h, valor, giro? en grados }; circulos (los
+ *  ollaos de remolque): { capa, x, y, r }. Desplaza todo a (dx, dy). */
+export function escribirDxf2004({ lineas, textos, circulos = [] }, { dx = 1000, dy = 1000 } = {}) {
   const src = leerPlantilla('base-corte.dxf');
-  if ([...lineas, ...textos].some((e) => !CAPAS_BOT.includes(e.capa))) throw new Error('El DXF de corte solo admite capas del bot.');
+  if ([...lineas, ...textos, ...circulos].some((e) => !CAPAS_BOT.includes(e.capa))) throw new Error('El DXF de corte solo admite capas del bot.');
   const start = src.indexOf('\nENTITIES\n') + '\nENTITIES\n'.length;
   const head = src.slice(0, start);
   const tail = src.slice(src.indexOf('  0\nENDSEC\n', start));
@@ -33,16 +34,18 @@ export function escribirDxf2004({ lineas, textos }, { dx = 1000, dy = 1000 } = {
     }
     return ent('TEXT', c, 'AcDbText', ` 10\n${n(x0)}\n 20\n${n(y0)}\n 30\n0.0\n 40\n${n(h)}\n  1\n${v}\n${giro ? ` 50\n${n(giro)}\n` : ''}${centrado ? ` 72\n     1\n 11\n${n(x)}\n 21\n${n(y)}\n 31\n0.0\n` : ''}100\nAcDbText\n${centrado ? ' 73\n     2\n' : ''}`);
   };
+  const circulo = (c, x, y, r) => ent('CIRCLE', c, 'AcDbCircle', ` 10\n${n(x)}\n 20\n${n(y)}\n 30\n0.0\n 40\n${n(r)}\n`);
   let body = '';
   for (const e of leyendaBot) {
     const v = (c) => e.g.find((x) => x[0] === c)?.[1];
     if (e.t === 'LINE') body += linea(v('8'), v('10'), v('20'), v('11'), v('21'));
     if (e.t === 'TEXT') body += texto(v('8'), v('10'), v('20'), v('40'), v('1'));
-    if (e.t === 'CIRCLE') body += ent('CIRCLE', v('8'), 'AcDbCircle', ` 10\n${n(v('10'))}\n 20\n${n(v('20'))}\n 30\n0.0\n 40\n${n(v('40'))}\n`);
+    if (e.t === 'CIRCLE') body += circulo(v('8'), v('10'), v('20'), v('40'));
     if (e.t === 'ARC') body += ent('ARC', v('8'), 'AcDbCircle', ` 10\n${n(v('10'))}\n 20\n${n(v('20'))}\n 30\n0.0\n 40\n${n(v('40'))}\n100\nAcDbArc\n 50\n${n(v('50'))}\n 51\n${n(v('51'))}\n`);
   }
   for (const l of lineas) body += linea(l.capa, l.x1 + dx, l.y1 + dy, l.x2 + dx, l.y2 + dy);
   for (const t of textos) body += texto(t.capa, t.x + dx, t.y + dy, t.h, t.valor, t.giro, t.centrado);
+  for (const c of circulos) body += circulo(c.capa, c.x + dx, c.y + dy, c.r);
   const out = head.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`) + body + tail;
   return out.replace(/\n/g, '\r\n');
 }
