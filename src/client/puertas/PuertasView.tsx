@@ -1,7 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta } from '../../puertas/calcular.ts';
-import type { Entrada, Hueco, ModeloPuerta, PedidoPuertas, Puerta, Ventana } from '../../puertas/tipos.ts';
+import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
+import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
+import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
+import { OrderActions } from '../components/OrderActions';
+import { guardarPuertasParaRevision, pedidoDesdeGuardado, type ModoCargaPuertas, type PedidoPantallaPuertas } from './guardarPuertas';
 import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
@@ -138,12 +143,105 @@ function FilasVentanas({cambiar}:{cambiar:(v:Ventana[])=>void}) {
   const [fila,setFila]=useState({x:0,y:0,ancho:0,alto:0,columnas:1,pilar:0});
   return <fieldset><legend>Añadir una fila de ventanas iguales</legend><div className="puerta-campos">{(Object.keys(fila) as Array<keyof typeof fila>).map(k=><Numero key={k} titulo={`Fila · ${k==='x'?'margen izquierdo':k==='y'?'desde abajo':k}`} valor={fila[k]} cambiar={v=>setFila({...fila,[k]:v??0})}/>)}<button type="button" className="ghost-button" disabled={!Number.isInteger(fila.columnas)||fila.columnas<1||fila.columnas>20} onClick={()=>cambiar(Array.from({length:fila.columnas},(_,i)=>({x:fila.x+i*(fila.ancho+fila.pilar),y:fila.y,ancho:fila.ancho,alto:fila.alto,radio:2,radioCristal:4})))}>Añadir fila</button></div></fieldset>;
 }
-export function PuertasView({activo,onResumenChange}:{activo:boolean;onResumenChange:(r:ResumenPedido)=>void}) {
-  const [pedido,setPedido]=useState<PedidoPuertas>(()=>({schemaVersion:1,kind:'puertas',orderCode:'',elementos:[{id:'puerta-1',input:nuevaPuerta()}]}));
-  const [indice,setIndice]=useState(0);
-  useEffect(()=>{onResumenChange({numero:pedido.orderCode,elementos:pedido.elementos.length});},[pedido.orderCode,pedido.elementos.length,onResumenChange]);
+const hoy = () => new Date().toISOString().slice(0, 10);
+const pedidoVacio = (): PedidoPantallaPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: '', cabecera: { cliente: '', fecha: hoy() }, elementos: [{ id: 'puerta-1', input: nuevaPuerta() }] });
+const tieneDatos = (p: PedidoPantallaPuertas) => Boolean(p.orderCode.trim() || p.cabecera.cliente.trim() || p.elementos.some(e => e.input.frente || e.input.alto || e.input.of));
+
+export function PuertasView({ activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, onGuardado }: {
+  activo: boolean;
+  onResumenChange: (r: ResumenPedido) => void;
+  usuario: string;
+  notify: Notify;
+  askForConfirmation: AskForConfirmation;
+  /** Donde van «Limpiar» y «Guardar para revisión»: la barra de arriba, como en toldos y remolques. */
+  accionesDestino?: HTMLElement | null;
+  accionesVisibles?: boolean;
+  /** «Corregir» o «Reutilizar datos» de un pedido guardado (Pedidos). */
+  pedidoGuardadoSolicitado?: { id: number; pedido: PedidoPuertasGuardado; modo: ModoCargaPuertas } | null;
+  /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
+  onGuardado?: () => void;
+}) {
+  const [pedido, setPedido] = useState<PedidoPantallaPuertas>(pedidoVacio);
+  const [indice, setIndice] = useState(0);
+  const [guardando, setGuardando] = useState(false);
+  const [trayendo, setTrayendo] = useState(false);
+  const ultimoSolicitado = useRef<number | null>(null);
+  useEffect(() => { onResumenChange({ numero: pedido.orderCode, elementos: pedido.elementos.length }); }, [pedido.orderCode, pedido.elementos.length, onResumenChange]);
+
+  useEffect(() => {
+    if (!pedidoGuardadoSolicitado || ultimoSolicitado.current === pedidoGuardadoSolicitado.id) return;
+    ultimoSolicitado.current = pedidoGuardadoSolicitado.id;
+    const { pedido: guardado, modo } = pedidoGuardadoSolicitado;
+    void (async () => {
+      if (tieneDatos(pedido) && await askForConfirmation({ title: `Abrir ${guardado.orderCode} en Puertas`,
+        message: 'Se sustituirá lo que hay ahora en Puertas por el pedido guardado.', confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
+      setPedido(pedidoDesdeGuardado(guardado, modo, hoy()));
+      setIndice(0);
+      notify(modo === 'corregir' ? `Pedido ${guardado.orderCode} cargado para corregirlo.` : `Datos de ${guardado.orderCode} cargados.`,
+        { tone: 'info', title: modo === 'corregir' ? 'Modo de corrección' : 'Datos reutilizados' });
+    })();
+  }, [pedidoGuardadoSolicitado, pedido, askForConfirmation, notify]);
+
+  const cabecera = (cambios: Partial<PedidoPantallaPuertas['cabecera']>) => setPedido({ ...pedido, cabecera: { ...pedido.cabecera, ...cambios } });
+
+  // El cliente y la fecha del pedido en RPS (solo lectura).
+  async function traerDeRps() {
+    setTrayendo(true);
+    try {
+      const respuesta = await fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(pedido.orderCode.trim())}`);
+      const datos = await respuesta.json().catch(() => ({})) as { error?: string; pedido?: { fecha: string | null; cliente: { codigo: string; nombre: string } } | null };
+      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo consultar RPS.');
+      if (!datos.pedido) { notify('No encuentro ese pedido en RPS.', { tone: 'warning' }); return; }
+      const { cliente, fecha } = datos.pedido;
+      cabecera({ cliente: cliente.nombre, fecha: fecha || pedido.cabecera.fecha, clienteRps: { codigo: cliente.codigo, nombre: cliente.nombre } });
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudo consultar RPS.', { tone: 'error' });
+    } finally {
+      setTrayendo(false);
+    }
+  }
+
+  async function guardar() {
+    if (!usuario) { notify('Elige quién eres en «Soy» antes de guardar.', { tone: 'warning' }); return; }
+    setGuardando(true);
+    try {
+      if (await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify })) {
+        onGuardado?.();
+        setPedido(pedidoVacio());
+        setIndice(0);
+      }
+    } catch {
+      notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  async function limpiar() {
+    if (tieneDatos(pedido) && await askForConfirmation({ title: 'Limpiar Puertas', message: 'Se borrarán las puertas y los datos de esta pantalla.',
+      confirmLabel: 'Limpiar', cancelLabel: 'Conservar', tone: 'warning' }) !== 'confirm') return;
+    setPedido(pedidoVacio());
+    setIndice(0);
+  }
+
+  const acciones = (
+    <OrderActions hidden={!accionesVisibles}>
+      <button className="ghost-button clear-form-button" type="button" disabled={guardando} onClick={() => void limpiar()}><Eraser aria-hidden="true" />Limpiar</button>
+      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim()} aria-busy={guardando}
+        title={pedido.orderCode.trim() ? undefined : 'Escribe el número de pedido.'} onClick={() => void guardar()}>
+        <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar para revisión'}
+      </button>
+    </OrderActions>
+  );
+
   return <div className="puertas-pantalla">
-    <section className="puerta-cabecera panel bloque-3d"><div><h1>Puertas</h1><p>Configura la puerta mirando el dibujo del cliente.</p></div><label className="puerta-campo"><span>Número de pedido</span><input aria-label="Número de pedido de puertas" value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label></section>
+    {accionesDestino ? createPortal(acciones, accionesDestino) : acciones}
+    <section className="puerta-cabecera panel bloque-3d"><div><h1>Puertas</h1><p>Configura la puerta mirando el dibujo del cliente.</p></div>
+      <label className="puerta-campo"><span>Número de pedido</span><input aria-label="Número de pedido de puertas" value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
+      <button type="button" className="ghost-button" disabled={trayendo || !pedido.orderCode.trim()} onClick={() => void traerDeRps()}>{trayendo ? 'Consultando…' : 'Cliente de RPS'}</button>
+      <label className="puerta-campo"><span>Cliente</span><input aria-label="Cliente de puertas" value={pedido.cabecera.cliente} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
+      <label className="puerta-campo"><span>Fecha</span><input type="date" aria-label="Fecha del pedido de puertas" value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
+    </section>
     <div className="puerta-selector"><div className="tira-3d" role="group" aria-label="Puertas del pedido">{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>Puerta {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:crypto.randomUUID(),input:nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>Añadir puerta</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(0);}}><Trash2 size={16}/>Quitar puerta</button>}</div>
     <Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})}/>
     <VistaCortePuertas pedido={pedido} activo={activo}/>

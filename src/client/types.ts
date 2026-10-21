@@ -1,4 +1,5 @@
 import type { ResumenPedidoRemolques } from '../remolques/flujo/tipos.ts';
+import type { ResumenPedidoPuertas } from '../puertas/flujo/tipos.ts';
 
 export type Model = {
   code: string;
@@ -713,7 +714,7 @@ export type ReviewSummary = {
 };
 
 /** Una fila de Pedidos: un pedido de toldos o uno de remolques (fase 5). */
-export type PedidoBandeja = ReviewSummary | ResumenPedidoRemolques;
+export type PedidoBandeja = ReviewSummary | ResumenPedidoRemolques | ResumenPedidoPuertas;
 
 export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters; parametersVersion?: number | null } };
 

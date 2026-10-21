@@ -3,7 +3,7 @@ import { AlertTriangle, Check, ChevronDown, CircleAlert, FilePen, FileSearch, Fo
 import type { CoordinaStatus, PedidoBandeja } from '../types';
 import {
   borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, notasDevolucion, pendingGroups, productoDe,
-  type FiltroProducto,
+  type FiltroProducto, type Producto,
 } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
 import type { ResumenBorrador } from '../../borradores/tipos.ts';
@@ -87,7 +87,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
           ))}
         </div>
         {/* Junto al filtro de tipo (Iván, 02/10/2026); con «Toldos» no tiene sentido y no sale. */}
-        {onBuscarRemolques && producto !== 'toldos' && (
+        {onBuscarRemolques && (producto === 'todos' || producto === 'remolques') && (
           <button type="button" className="ghost-button boton-3d orders-buscar-remolques" onClick={onBuscarRemolques}>
             <Search aria-hidden="true" />Buscar remolques
           </button>
@@ -299,17 +299,19 @@ function useAjustarAlDesplegar(open: boolean) {
   return ref;
 }
 
-function ModelTags({ models, producto, borrador = false }: { models?: string[]; producto: 'toldos' | 'remolques'; borrador?: boolean }) {
+const ETIQUETA_PRODUCTO = { toldos: 'Toldo', remolques: 'Remolque', puertas: 'Puerta' } as const;
+
+function ModelTags({ models, producto, borrador = false }: { models?: string[]; producto: Producto; borrador?: boolean }) {
   // Una sola línea (Iván, 01/10/2026: «prefiero abreviaturas o un + que filas más grandes»): el
   // primer modelo y «+N» con todos al pasar el ratón; un nombre largo se corta con «…».
   const { visible, hidden } = limitModels(models, 1, 1);
-  const tinte = producto === 'remolques' ? ' is-remolques' : '';
+  const tinte = producto === 'toldos' ? '' : ` is-${producto}`;
   // Todos los modelos también en el título de la línea entera, por si «+N» queda cortado.
   const todos = Array.from(new Set(models ?? [])).map(controlLabel).join('\n') || undefined;
   return (
     <span className="orders-model-tags" title={todos}>
       {borrador && <span className="orders-borrador-tag">Borrador</span>}
-      <span className={`orders-kind-tag familia-tag is-${producto}`}>{producto === 'remolques' ? 'Remolque' : 'Toldo'}</span>
+      <span className={`orders-kind-tag familia-tag is-${producto}`}>{ETIQUETA_PRODUCTO[producto]}</span>
       {visible.map((model) => <span key={model} className={`orders-model-tag familia-tag is-nombre${tinte}`} title={controlLabel(model)}>{controlLabel(model)}</span>)}
       {hidden.length > 0 && <span className={`orders-model-tag familia-tag${tinte}`} title={Array.from(new Set(models)).map(controlLabel).join('\n')}>+{hidden.length}</span>}
     </span>

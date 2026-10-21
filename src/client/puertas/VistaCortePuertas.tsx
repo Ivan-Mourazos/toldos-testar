@@ -3,7 +3,7 @@ import { Scissors } from 'lucide-react';
 import type { CortePuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
 import '../coordina/corte-lona.css';
 
-function Dibujo({corte:c}:{corte:CortePuertas}) {
+export function DibujoCortePuertas({corte:c}:{corte:CortePuertas}) {
   const alto=c.anchoRollo+430;
   return <svg role="img" aria-label={`Corte ${c.material}`} className="corte-dibujo puerta-corte-dibujo" viewBox={`-100 ${-alto} ${c.largo+200} ${alto+100}`}>
     <rect className="corte-rollo" width={c.largo} height={c.anchoRollo} y={-c.anchoRollo}/>
@@ -43,7 +43,7 @@ export function VistaCortePuertas({pedido,activo}:{pedido:PedidoPuertas;activo:b
       {actual.datos.cortes.map((c,i)=><article className="corte-material" key={i}>
         <header><h3>{c.material}</h3><span>Rollo de {(c.anchoRollo/10).toLocaleString('es-ES')} cm · {(c.largo/1000).toLocaleString('es-ES',{maximumFractionDigits:2})} m</span></header>
         {c.opcion!=='principal'&&<p className="corte-aviso">{c.opcion==='saco-entero'?'Opción saco entero':'Opción saco en dos piezas'} · Alternativas de un mismo saco: elige una.</p>}
-        <Dibujo corte={c}/><small className="corte-leyenda"><span>DISCO1 · corte</span><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></small>
+        <DibujoCortePuertas corte={c}/><small className="corte-leyenda"><span>DISCO1 · corte</span><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></small>
       </article>)}
       {!actual.datos.cortes.length&&<p className="corte-ayuda">Completa las medidas y los anchos de rollo para colocar las piezas.</p>}
     </>}

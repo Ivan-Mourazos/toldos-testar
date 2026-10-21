@@ -12,6 +12,12 @@ const pedido = () => {
   return { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604638', elementos: [{ id: 'puerta-a', input: p }] };
 };
 describe('Corte de puertas', () => {
+  it('con dos puertas, los paños de cada una llevan su letra (A1, B1…), no la de la última', () => {
+    const p = pedido();
+    p.elementos.push({ id: 'puerta-b', input: structuredClone(p.elementos[0].input) });
+    const textos = generarCortePuertas(p).cortes.flatMap(c => c.entidades.textos.map(t => t.valor));
+    for (const codigo of ['A1', 'A2', 'B1', 'B2']) expect(textos.some(t => t.startsWith(`${codigo} `))).toBe(true);
+  });
   it('los cristales iguales se dibujan una vez, aparte, con cuántos son dentro (Iván, 21/10/2026: se cortan de restos)', () => {
     const p = pedido();
     p.elementos[0].input.cantidad = 3;

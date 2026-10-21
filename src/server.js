@@ -8,6 +8,9 @@ import { crearOdaConverter } from './odaConverter.js';
 import { crearCorteRemolques } from './remolques/corte/archivos.js';
 import { registrarRutaVistaPreviaCorte } from './remolques/corte/rutas.js';
 import { registrarRutaPuertas } from './puertas/rutas.js';
+import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
+import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
+import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
@@ -40,7 +43,7 @@ import { ErrorPedidoHoja, prepararPedidoHoja } from './remolques/hoja/pedido.ts'
 import { crearAlmacenFichas } from './remolques/salida/fichas.ts';
 import { crearServicioPdf, ErrorSalidaPdf } from './remolques/salida/navegador.ts';
 import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
-import { crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
+import { crearAlmacenPedidos, crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
 import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
 import {
   comprobadorPedidoToldos, crearServicioPedidosRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
@@ -156,6 +159,22 @@ const almacenPedidosRemolques = crearAlmacenPedidosRemolques({
 });
 // ODA pasa los planos del corte a DWG (toldos y remolques).
 const oda = crearOdaConverter({ executable: config.odaFileConverter });
+// Pedidos de puertas (fase 2, 22/10/2026): como los de remolques, en la subcarpeta «puertas» de su carpeta
+// interna (así no hace falta otra ruta en Configuración). Un número es de un solo producto.
+const almacenPedidosPuertas = crearAlmacenPedidos({
+  carpeta: async () => {
+    const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
+    return carpeta ? path.join(carpeta, SUBCARPETA_PUERTAS) : '';
+  },
+  tipo: TIPO_PEDIDO_PUERTAS,
+  nombre: 'puertas',
+  sinCarpeta: 'Falta la carpeta interna de remolques en Configuración: los pedidos de puertas se guardan en su subcarpeta «puertas».'
+});
+const mensajePedidoDePuertas = (orderCode) => `${orderCode} ya está guardado como pedido de puertas: un pedido es de un solo producto. Revisa el número.`;
+// Si la carpeta de puertas falla, toldos y remolques siguen guardando.
+const yaEsPedidoDePuertas = (orderCode) => yaEsPedidoDeRemolques(almacenPedidosPuertas, orderCode,
+  (mensaje) => console.error(mensaje.replace('de remolques', 'de puertas').replace('como toldos', 'igual')));
+const esPedidoDeToldos = comprobadorPedidoToldos(workflowStore);
 const pedidosRemolques = crearServicioPedidosRemolques({
   almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
@@ -164,12 +183,26 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   coordina,
   tecnicos: formOptions.tecnicos,
   hacerPdf: hojaRemolquesPdf,
-  // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar.
-  esPedidoDeToldos: comprobadorPedidoToldos(workflowStore),
+  // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar. Tampoco puede ser de puertas.
+  esPedidoDeToldos: async (orderCode) => {
+    if (await yaEsPedidoDePuertas(orderCode)) throw new ErrorPedidoRemolques(mensajePedidoDePuertas(orderCode), 409);
+    return esPedidoDeToldos(orderCode);
+  },
   // El buscador busca también por el nombre de una ficha (sus códigos de RPS).
   fichas: () => remolquesClientesStore.get(),
   // Al generar, también el corte de lona: DXF del bot y plano, en las carpetas del corte de toldos.
   corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda })
+});
+const pedidosPuertas = crearServicioPedidosPuertas({
+  almacen: almacenPedidosPuertas,
+  ajustes: () => workflowStore.getSettings(),
+  coordina,
+  tecnicos: formOptions.tecnicos,
+  otroProducto: async (orderCode) => {
+    if (await esPedidoDeToldos(orderCode)) return 'toldos';
+    return (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) ? 'remolques' : null;
+  },
+  plano: crearPlanoPuertas({ ajustes: () => workflowStore.getSettings(), oda })
 });
 
 // Borradores en el servidor (diseño 01/10/2026): un JSON por número de pedido en la carpeta de
@@ -738,6 +771,46 @@ app.get('/api/remolques/pedidos/:orderCode/archivo', rutaRemolques(async (req, r
   enviarPdf(res, pdf, nombre);
 }));
 
+// Pedidos de puertas (fase 2): las mismas rutas que remolques, sin hoja PDF (el documento es el plano).
+app.get('/api/puertas/pedidos', rutaRemolques(async (req, res) => {
+  const year = Number(req.query.year) || new Date().getFullYear();
+  if (year < 2000 || year > 2100) throw httpError(400, 'El año no es válido.');
+  res.set('Cache-Control', 'no-store').json(await pedidosPuertas.listar(year));
+}));
+
+app.post('/api/puertas/pedidos', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosPuertas.guardar(req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.get('/api/puertas/pedidos/:orderCode', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosPuertas.obtener(req.params.orderCode));
+}));
+
+app.get('/api/puertas/pedidos/:orderCode/corte', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosPuertas.corte(req.params.orderCode));
+}));
+
+app.post('/api/puertas/pedidos/:orderCode/corte/enviar', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosPuertas.enviarCorte(req.params.orderCode, req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.get('/api/puertas/pedidos/:orderCode/corte/dxf', rutaRemolques(async (req, res) => {
+  const { filename, contents } = await pedidosPuertas.descargarCorte(req.params.orderCode);
+  res.set('Cache-Control', 'no-store').type('application/dxf').attachment(filename).send(Buffer.from(contents));
+}));
+
+app.post('/api/puertas/pedidos/:orderCode/plano', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosPuertas.planoRevision(req.params.orderCode, req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.post('/api/puertas/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosPuertas.generar(req.params.orderCode, req.body);
+  res.status(status).json(cuerpo);
+}));
+
 // Buscador de remolques (diseño 02/10/2026): todos los pedidos guardados, de todos los años, con
 // los filtros en el cuerpo. Unos filtros mal hechos son un 400 que dice cuál.
 app.post('/api/remolques/buscar', rutaRemolques(async (req, res) => {
@@ -853,6 +926,7 @@ app.post('/api/reviews', async (req, res, next) => {
     if (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) {
       throw httpError(409, mensajePedidoDeRemolques(orderCode));
     }
+    if (await yaEsPedidoDePuertas(orderCode)) throw httpError(409, mensajePedidoDePuertas(orderCode));
     let existing = null;
     try {
       existing = await workflowStore.getReview(orderCode);

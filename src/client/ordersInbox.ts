@@ -17,15 +17,17 @@ export function pendingYears(now = new Date()) {
 
 // Toldos y remolques en la misma bandeja (fase 5): cada fila dice de qué es y un filtro deja ver
 // solo unos. Un número es de toldos o de remolques; aun así la clave lleva el tipo para no confundirlos.
-export type FiltroProducto = 'todos' | 'toldos' | 'remolques';
+export type FiltroProducto = 'todos' | 'toldos' | 'remolques' | 'puertas';
+export type Producto = Exclude<FiltroProducto, 'todos'>;
 export const filtrosProducto = [
   { key: 'todos', label: 'Todos' },
   { key: 'toldos', label: 'Toldos' },
   { key: 'remolques', label: 'Remolques' },
+  { key: 'puertas', label: 'Puertas' },
 ] as const;
 
-export function productoDe(review: Pick<PedidoBandeja, 'kind'>): 'toldos' | 'remolques' {
-  return review.kind === 'remolques' ? 'remolques' : 'toldos';
+export function productoDe(review: Pick<PedidoBandeja, 'kind'>): Producto {
+  return review.kind === 'remolques' || review.kind === 'puertas' ? review.kind : 'toldos';
 }
 
 export function claveBandeja(review: Pick<PedidoBandeja, 'kind' | 'orderCode'>) {

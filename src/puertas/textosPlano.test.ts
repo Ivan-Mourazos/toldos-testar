@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alturasTubos, huecosEntrada, nuevaPuerta } from '../../puertas/calcular.ts';
+import { alturasTubos, huecosEntrada, nuevaPuerta } from './calcular.ts';
 import { colocarTextosPuerta, solapaCaja, type CajaTexto } from './textosPlano.ts';
 
 describe('colocarTextosPuerta', () => {

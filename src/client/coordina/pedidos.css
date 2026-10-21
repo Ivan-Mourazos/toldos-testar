@@ -358,6 +358,8 @@ button.orders-code:focus-visible { outline: 2px solid var(--color-brand-400); ou
 }
 .orders-kind-tag.is-remolques,
 .orders-model-tag.is-remolques { --fam: #5a6472; }
+.orders-kind-tag.is-puertas,
+.orders-model-tag.is-puertas { --fam: #6a5a7c; }
 .review-reader-title h2 .orders-kind-tag { margin-left: 0.5rem; vertical-align: middle; }
 /* «Borrador»: dorado de la marca con borde discontinuo, para que se note a simple vista que no
    es un pedido en revisión (Iván: «que se note que son borradores»). */

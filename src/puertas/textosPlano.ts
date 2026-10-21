@@ -1,5 +1,5 @@
-import { alturasTubos } from '../../puertas/calcular.ts';
-import type { Puerta } from '../../puertas/tipos.ts';
+import { alturasTubos } from './calcular.ts';
+import type { Puerta } from './tipos.ts';
 
 export interface CajaTexto {
   x: number;

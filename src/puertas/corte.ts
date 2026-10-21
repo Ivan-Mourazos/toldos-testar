@@ -252,7 +252,14 @@ function colocar(
 export function generarCortePuertas(
   pedido: PedidoPuertas,
 ): VistaPuertas & { archivo: { nombre: string; dxf: string; entidades: EntidadesPuertas } | null } {
-  const resultados = pedido.elementos.map(e => calcularPuerta(e.input));
+  // El id de una pieza se repite entre puertas (clase-n-nombre): se le pone delante el de su puerta para que
+  // cada paño se rotule con la letra de la suya (con dos puertas salían todos como B).
+  const resultados = pedido.elementos.map(e => {
+    const r = calcularPuerta(e.input);
+    const propia = (x: PiezaPuerta) => ({ ...x, id: `${e.id}:${x.id}` });
+    return { ...r, piezas: r.piezas.map(propia),
+      alternativasSaco: r.alternativasSaco && { entero: r.alternativasSaco.entero.map(propia), partido: r.alternativasSaco.partido.map(propia) } };
+  });
   const codigosPano = new Map<string, string>();
   resultados.forEach((r, idxPuerta) => {
     const letra = String.fromCharCode(65 + (idxPuerta % 26));

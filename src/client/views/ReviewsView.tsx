@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { PedidoBandeja, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
+import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
+import { PedidoPuertasDetalle } from '../puertas/PedidoPuertasDetalle';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
@@ -20,7 +22,7 @@ import { controlLabel } from '../components/controlLabels';
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
 // anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
 // elegido, que no filtra los pendientes.
-export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onSeguirBorrador, onToast, onConfirm, abrirAlCargar = null, onAbiertoAlCargar }: {
+export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onEditPuertas, onReusePuertas, onSeguirBorrador, onToast, onConfirm, abrirAlCargar = null, onAbiertoAlCargar }: {
   refreshKey: number;
   parameters: RuleParameters;
   currentUser: string;
@@ -31,6 +33,8 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   onReuse: (review: ReviewPackage) => void | Promise<void>;
   onEditRemolques: (pedido: PedidoRemolques) => void;
   onReuseRemolques: (pedido: PedidoRemolques) => void;
+  onEditPuertas: (pedido: PedidoPuertasGuardado) => void;
+  onReusePuertas: (pedido: PedidoPuertasGuardado) => void;
   /** «Seguir con el borrador»: lo abre App en Toldos o en Remolques. */
   onSeguirBorrador: (borrador: Borrador) => void | Promise<void>;
   onToast: Notify;
@@ -45,6 +49,8 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   const [selectedCode, setSelectedCode] = useState('');
   // El pedido de remolques abierto (fase 5); el de toldos sigue en selectedCode.
   const [selectedRemolques, setSelectedRemolques] = useState('');
+  // El de puertas (fase 2, 22/10/2026).
+  const [selectedPuertas, setSelectedPuertas] = useState('');
   // El buscador de remolques (diseño 02/10/2026): si está abierto, y sus filtros y resultado, que
   // siguen ahí al abrir un pedido desde él y volver. `elementoRemolques` es el elemento buscado.
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
@@ -57,7 +63,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   const listRequestId = useRef(0);
   const pendingOfs = pending.flatMap((review) => (review.summary.awningList || []).map((item) => item.of));
   const { borradores } = useBorradores(refreshKey, onToast);
-  const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '' && selectedRemolques === '' && !buscadorAbierto);
+  const { status: coordinaStatus } = useCoordinaStatus(pendingOfs, selectedCode === '' && selectedRemolques === '' && selectedPuertas === '' && !buscadorAbierto);
 
   useEffect(() => {
     const requestId = ++listRequestId.current;
@@ -77,6 +83,14 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
     return () => { cancelled = true; };
   }, [year, refreshKey, onToast]);
 
+  // Cada producto abre su ficha.
+  function abrir(review: PedidoBandeja) {
+    const producto = productoDe(review);
+    if (producto === 'remolques') setSelectedRemolques(review.orderCode);
+    else if (producto === 'puertas') setSelectedPuertas(review.orderCode);
+    else setSelectedCode(review.orderCode);
+  }
+
   const atendidoAlCargar = useRef<string | null>(null);
   // EL PEDIDO QUE MANDA COORDINAOT. Se espera a que estén las dos listas: si no está en
   // pendientes puede estar en el Historial (ya generado). Si no está en ninguna, se dice: lo
@@ -92,8 +106,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
         onToast(`El pedido ${abrirAlCargar} no está guardado para revisión en Planteamientos.`, { tone: 'warning', title: 'No encuentro el pedido' });
         return;
       }
-      if (productoDe(encontrado) === 'remolques') setSelectedRemolques(encontrado.orderCode);
-      else setSelectedCode(encontrado.orderCode);
+      abrir(encontrado);
     });
   }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, onAbiertoAlCargar, onToast]);
 
@@ -290,7 +303,21 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
 
   return (
     <section className="reviews-layout">
-      {selectedRemolques
+      {selectedPuertas
+        ? (
+          <PedidoPuertasDetalle
+            orderCode={selectedPuertas}
+            refreshKey={refreshKey}
+            currentUser={currentUser}
+            onBack={() => setSelectedPuertas('')}
+            onCorregir={onEditPuertas}
+            onReutilizar={onReusePuertas}
+            onChanged={onChanged}
+            onToast={onToast}
+            onConfirm={onConfirm}
+          />
+        )
+        : selectedRemolques
         ? (
           <PedidoRemolquesDetalle
             orderCode={selectedRemolques}
@@ -325,7 +352,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             historyLoading={historyLoading}
             year={year}
             onYear={(value) => { setHistoryLoading(true); setYear(value); }}
-            onOpen={(review) => (productoDe(review) === 'remolques' ? setSelectedRemolques(review.orderCode) : setSelectedCode(review.orderCode))}
+            onOpen={abrir}
             coordinaStatus={coordinaStatus}
             borradores={borradores}
             onSeguirBorrador={(borrador) => void seguirBorrador(borrador)}

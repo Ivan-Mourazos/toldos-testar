@@ -46,6 +46,8 @@ import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPregun
 import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
+import type { PedidoPuertasGuardado } from '../puertas/flujo/tipos.ts';
+import type { ModoCargaPuertas } from './puertas/guardarPuertas';
 import { RemolquesView } from './remolques/RemolquesView';
 import { PuertasView } from './puertas/PuertasView';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
@@ -110,6 +112,7 @@ export default function App() {
   // Un pedido de remolques guardado que Pedidos manda abrir en Remolques («Corregir» o
   // «Reutilizar datos», fase 5); `id` distingue una petición de la siguiente.
   const [pedidoGuardadoSolicitado, setPedidoGuardadoSolicitado] = useState<{ id: number; pedido: PedidoRemolques; modo: ModoCarga } | null>(null);
+  const [pedidoPuertasSolicitado, setPedidoPuertasSolicitado] = useState<{ id: number; pedido: PedidoPuertasGuardado; modo: ModoCargaPuertas } | null>(null);
   // Un borrador de remolques que se manda abrir en Remolques (Pedidos o «Obtener datos» de Toldos);
   // la pantalla de remolques pregunta si tiene datos (`preguntar`).
   const [borradorRemolquesSolicitado, setBorradorRemolquesSolicitado] = useState<{ id: number; borrador: BorradorRemolques; preguntar: boolean } | null>(null);
@@ -226,6 +229,12 @@ export default function App() {
     chooseProducto('remolques');
     setActiveTab('order');
     setPedidoGuardadoSolicitado({ id: Date.now(), pedido, modo });
+  }
+
+  function abrirPedidoPuertas(pedido: PedidoPuertasGuardado, modo: ModoCargaPuertas) {
+    chooseProducto('puertas');
+    setActiveTab('order');
+    setPedidoPuertasSolicitado({ id: Date.now(), pedido, modo });
   }
 
   // Abrir un borrador del servidor (diseño 01/10/2026): «Seguir con el borrador» de Pedidos o «Abrir
@@ -789,7 +798,10 @@ export default function App() {
           )}
 
           {puertasMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'puertas'}>
-            <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas} />
+            <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas}
+              usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
+              accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'}
+              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} onGuardado={() => setReviewRefresh((value) => value + 1)} />
           </div>}
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'remolques'}>
@@ -879,6 +891,8 @@ export default function App() {
               onReuse={reuseReview}
               onEditRemolques={(pedido) => abrirPedidoRemolques(pedido, 'corregir')}
               onReuseRemolques={(pedido) => abrirPedidoRemolques(pedido, 'reutilizar')}
+              onEditPuertas={(pedido) => abrirPedidoPuertas(pedido, 'corregir')}
+              onReusePuertas={(pedido) => abrirPedidoPuertas(pedido, 'reutilizar')}
               onSeguirBorrador={(borrador) => abrirBorrador(borrador)}
               onToast={notify}
               onConfirm={askForConfirmation}
