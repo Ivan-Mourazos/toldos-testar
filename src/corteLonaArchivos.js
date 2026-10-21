@@ -35,6 +35,12 @@ export async function prepararArchivosCorte({ order, corteLona, settings, oda, t
   exigirCorteAlDia(order, corteLona);
   if (!corteLona?.toldos?.length) return { files: [], avisos: [] };
   const resultado = generarCorteLona(order, { ajustes: corteLona.ajustes, ofStockSacos: corteLona.ofStockSacos });
+  // La vista previa sin OF lleva «SIN OF» en las piezas: eso nunca va a un archivo.
+  if (resultado.sinOf?.length) {
+    const error = new Error(`Falta la OF del toldo ${resultado.sinOf.join(', ')}: escríbela antes de guardar el corte.`);
+    error.statusCode = 409;
+    throw error;
+  }
   const directory = carpetaCorte(tipo === 'plano' ? settings.corteLonaPlanoDirectory : settings.corteLonaBotDirectory, order);
   const pedido = sanitizeOrderCode(order.orderCode);
   const avisos = [];

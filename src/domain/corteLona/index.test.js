@@ -94,6 +94,29 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(generar(order).cortes.conSacos).toEqual([]);
     expect(generar(order).avisos.length).toBeGreaterThan(0);
   });
+  it('sin la OF del toldo hace la vista previa con «SIN OF» y lo avisa (Iván, 21/10/2026)', () => {
+    // Un pedido inventado en la web, con el toldo válido pero sin OF: «ver una vista previa del corte».
+    const order = structuredClone(revision.order);
+    order.awnings[0].of = '';
+    const resultado = generar(order);
+    expect(resultado.cortes.conSacos).toHaveLength(1);
+    expect(resultado.sinOf).toEqual(['A']);
+    expect(resultado.avisos).toEqual(['Toldo A: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.']);
+    expect(resultado.cortes.conSacos[0].dibujo.textos.map((t) => t.valor)).toContain('SIN OF');
+    // Con OF, nada de eso.
+    expect(generar().sinOf).toEqual([]);
+  });
+
+  it('corta un toldo de PVC azul con la bamba en PVC blanco en dos cortes, uno por tela', () => {
+    const order = structuredClone(revision.order);
+    order.fabric = 'ALPHAAZ5010P250|||250|||LONA ALPHA 1L 580 g/m²:AZUL 5010 :250 AN (580)|||PLASTICA (LONA)';
+    Object.assign(order.awnings[0], { hasValance: true, valanceHeight: 25,
+      valanceFabric: 'ALPHABL9016P250|||250|||LONA ALPHA 1L 580 g/m²:BLANCO 9016 :250 AN (580)|||PLASTICA (LONA)' });
+    const resultado = generar(order);
+    expect(resultado.avisos).toEqual([]);
+    expect(resultado.cortes.conSacos.map((c) => c.material)).toEqual(['PVC 580 AZUL 5010', 'PVC 580 BLANCO 9016']);
+  });
+
   it('rechaza una OF de stock ausente', () => {
     expect(() => generarCorteLona(revision.order)).toThrow(/stock/i);
   });

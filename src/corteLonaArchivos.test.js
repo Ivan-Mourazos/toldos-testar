@@ -87,6 +87,15 @@ describe('Reglas y salidas del corte', () => {
     expect(convertido.files[0].filename).toMatch(/\.dwg$/);
     await expect(prepararArchivosCorte({ order, corteLona, settings, tipo: 'plano', oda: { disponible: true, convertir: async () => { throw new Error('Conversión fallida'); } } })).rejects.toThrow('Conversión fallida');
   });
+  it('nunca escribe el corte de un toldo sin OF, que solo es vista previa', async () => {
+    const sinOf = structuredClone(order);
+    sinOf.awnings[0].of = '';
+    const estado = crearEstadoCorteLona(sinOf, { resultado: generarCorteLona(sinOf, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
+    const settings = { productionEnabled: true, corteLonaBotDirectory: path.resolve('tmp/bot'), corteLonaPlanoDirectory: path.resolve('tmp/planos') };
+    for (const tipo of ['bot', 'plano']) {
+      await expect(prepararArchivosCorte({ order: sinOf, corteLona: estado, settings, oda, tipo })).rejects.toMatchObject({ statusCode: 409, message: expect.stringMatching(/Falta la OF del toldo A/) });
+    }
+  });
   it('escribe nombres distintos por ancho de rollo aunque las telas tengan el mismo código', async () => {
     const otro = structuredClone(order);
     otro.sameFabric = false;

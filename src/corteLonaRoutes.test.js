@@ -56,6 +56,18 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     expect(json.corteLona.toldos.map((t) => t.of)).toEqual(['0232568', '0232569', '0232570']);
     expect(json.cortes.trozoSeparado[0].largo).toBeLessThanOrEqual(json.cortes.conSacos[0].largo);
   });
+  it('sin OF enseña la vista previa, pero no deja descargar sus archivos', async () => {
+    const order = structuredClone(revision.order);
+    order.awnings[0].of = '';
+    const json = await (await post('/api/corte-lona', { order })).json();
+    expect(json.cortes.conSacos[0].dibujo.textos.map((t) => t.valor)).toContain('SIN OF');
+    expect(json.avisos).toContain('Toldo A: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.');
+    for (const [ruta, extra] of [['/api/corte-lona/dxf', { opcion: 'conSacos' }], ['/api/corte-lona/plano', {}]]) {
+      const res = await post(ruta, { order, ...extra });
+      expect(res.status).toBe(409);
+      expect((await res.json()).error).toMatch(/Falta la OF del toldo A/);
+    }
+  });
   it('descarga DXF 2004 latin1 y plano DXF 2018 con aviso sin ODA', async () => {
     const preview = await (await post('/api/corte-lona', { order: revision.order })).json();
     const material = preview.cortes.conSacos[0].idMaterial;

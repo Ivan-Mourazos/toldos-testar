@@ -43,6 +43,12 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
           cortes: { conSacos: resultado.cortes.conSacos.map(resumir), trozoSeparado: resultado.cortes.trozoSeparado?.map(resumir) || null },
           plano: resultado.plano.map(sinArchivo), corteLona, pendientes });
       }
+      // La vista previa sin OF se ve en la web, pero no se descarga: el archivo diría «SIN OF».
+      if (resultado.sinOf.length) {
+        const error = new Error(`Falta la OF del toldo ${resultado.sinOf.join(', ')}: escríbela antes de descargar el corte.`);
+        error.statusCode = 409;
+        throw error;
+      }
       const datos = guardado ? req.query : req.body;
       const pedido = sanitizeOrderCode(order.orderCode);
       res.setHeader('X-Corte-Lona-Of-Stock', stock.of);

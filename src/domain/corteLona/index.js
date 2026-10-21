@@ -11,6 +11,8 @@ import { dibujarPlano } from './plano.js';
 import { escribirDxfPlano } from './presentacion.js';
 import { textoSeguro } from './texto.js';
 
+export const OF_PROVISIONAL = 'SIN OF';
+
 /**
  * Genera, sin escribir archivos, los cortes y planos por tela de un pedido de la web.
  * Ajustes por id de toldo (preferido), OF o letra. Medidas de los ajustes en cm,
@@ -20,9 +22,15 @@ import { textoSeguro } from './texto.js';
  */
 export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
   if (!/^\d{7}$/.test(String(ofStockSacos || ''))) throw new Error('Indica la OF de stock de los sacos con sus siete cifras.');
-  const orden = normalizeOrder(order);
+  // Vista previa sin OF (Iván, 21/10/2026: «ver una vista previa del corte» de un pedido inventado): el cálculo agrupa
+  // por OF, así que el toldo sin OF se calcula con «SIN OF» en sus piezas. Nunca se escriben archivos así
+  // (`sinOf`, ver corteLonaArchivos.js).
+  const sinOf = (order.awnings ?? []).flatMap((t, i) => (String(t.of ?? '').trim() ? [] : [awningLetter(i)]));
+  const orden = normalizeOrder(sinOf.length
+    ? { ...order, awnings: order.awnings.map((t) => (String(t.of ?? '').trim() ? t : { ...t, of: OF_PROVISIONAL })) }
+    : order);
   const calculo = calculateOrder(orden);
-  const avisos = [];
+  const avisos = sinOf.map((letra) => `Toldo ${letra}: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.`);
   const grupos = new Map();
   const modelos = new Set();
   const agregar = (t, tela) => {
@@ -99,7 +107,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     planos.push({ codigoTela: grupo.codigoTela, material: grupo.material, geometria,
       ...escribirDxfPlano(geometria, datos), codificacion: 'utf8' });
   }
-  return { modelos: [...modelos], cortes: { conSacos, trozoSeparado: trozos.length ? trozos : null }, plano: planos, avisos };
+  return { modelos: [...modelos], cortes: { conSacos, trozoSeparado: trozos.length ? trozos : null }, plano: planos, avisos, sinOf };
 }
 
 function fechaCorta(fecha) {
