@@ -85,6 +85,7 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
   }
   app.get('/api/reviews/:orderCode/corte-lona', handler('json', true));
   app.get('/api/reviews/:orderCode/corte-lona/dxf', handler('dxf', true));
+  app.get('/api/reviews/:orderCode/corte-lona/dxf', handler('dxf', true));
   app.post('/api/corte-lona/estado', (req, res, next) => {
     try { res.json({ pendientes: corteLonaPendiente(req.body?.order, req.body?.corteLona) }); }
     catch (error) { next(error); }

@@ -63,7 +63,14 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
         const temporal = path.join(carpeta, `.corte-${randomUUID()}.tmp`);
         try {
           await fs.writeFile(temporal, file.contents, { flag: 'wx' });
-          await fs.link(temporal, file.savedPath);
+          try { await fs.link(temporal, file.savedPath); }
+          catch (error) {
+            // Algunas carpetas de red (CIFS) no admiten enlaces: se vuelve a mirar y se escribe sustituyendo.
+            if (!['EPERM', 'ENOTSUP', 'EOPNOTSUPP', 'ENOSYS', 'EXDEV', 'EINVAL'].includes(error.code)) throw error;
+            const yaEsta = await fs.stat(file.savedPath).then(() => true, (e) => { if (e.code !== 'ENOENT') throw e; return false; });
+            if (yaEsta) throw Object.assign(new Error('ya existe'), { code: 'EEXIST' });
+            await writeFileAtomic(file.savedPath, file.contents);
+          }
         } finally { await fs.unlink(temporal).catch(() => {}); }
       }
       escritos.push(file);

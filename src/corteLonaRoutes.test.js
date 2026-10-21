@@ -56,6 +56,12 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     expect(json.corteLona.toldos.map((t) => t.of)).toEqual(['0232568', '0232569', '0232570']);
     expect(json.cortes.trozoSeparado[0].largo).toBeLessThanOrEqual(json.cortes.conSacos[0].largo);
   });
+  it('descarga el DXF del corte de un pedido guardado, como remolques', async () => {
+    const res = await fetch(url + '/api/reviews/AR2604784/corte-lona/dxf?opcion=conSacos');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-disposition')).toContain('AR2604784 (con sacos).dxf');
+    expect(Buffer.from(await res.arrayBuffer()).toString('latin1')).toContain('AC1018');
+  });
   it('sin OF enseña la vista previa, pero no deja descargar sus archivos', async () => {
     const order = structuredClone(revision.order);
     order.awnings[0].of = '';

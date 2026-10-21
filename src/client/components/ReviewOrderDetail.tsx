@@ -188,7 +188,8 @@ export function ReviewOrderDetail({
       <CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
         acciones={(alDia) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
           permitido={cortePermitido.allowed && alDia} motivo={alDia ? cortePermitido.note : 'El corte tiene que estar al día.'}
-          ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm} />} />
+          ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
+          descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf?opcion=conSacos`} />} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
       {previewOpen && (
         <ReviewPlanteamientoPreview

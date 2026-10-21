@@ -21,6 +21,13 @@ beforeEach(async () => {
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(raiz, { recursive: true, force: true }); });
 
 describe('Envío común del corte, independiente de generar archivos', () => {
+  it('si la carpeta de red no admite enlaces, escribe igual el DXF nuevo (montaje CIFS del servidor)', async () => {
+    vi.spyOn(fs, 'link').mockRejectedValue(Object.assign(new Error('no admitido'), { code: 'EPERM' }));
+    const res = await enviarCorte(entrada);
+    expect(res.status).toBe(200);
+    expect(await fs.readFile(path.join(raiz, '2026/DXFs/AR2604784.dxf'), 'utf8')).toBe('corte nuevo');
+    expect((await fs.readdir(path.join(raiz, '2026/DXFs'))).filter((n) => n.endsWith('.tmp'))).toEqual([]);
+  });
   it('crea DXFs y registra cuándo, quién, destino y archivos en el pedido', async () => {
     const res = await enviarCorte(entrada);
     expect(res.status).toBe(200);
