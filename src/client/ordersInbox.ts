@@ -68,7 +68,10 @@ export function inboxSections<T extends PedidoBandeja>(
   const pendingAllList = pendingSource.filter((review) => isPendingGeneration(review.status) && ofProduct(review));
   const pendingMineList = pendingAllList.filter((review) => review.summary.technician === me);
   const pending = (scope === 'mine' ? pendingMineList : pendingAllList).filter((review) => matches(review, query));
-  const history = historySource.filter((review) => review.status === 'PRODUCED' && ofProduct(review) && matches(review, query));
+  // Toldos y remolques llegan en dos listas seguidas: sin reordenar, los días de remolques que no tienen
+  // toldos (p. ej. el de hoy) quedaban al final del historial (Iván, 21/10/2026).
+  const history = historySource.filter((review) => review.status === 'PRODUCED' && ofProduct(review) && matches(review, query))
+    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   return { pending, history, pendingMine: pendingMineList.length, pendingAll: pendingAllList.length };
 }
 

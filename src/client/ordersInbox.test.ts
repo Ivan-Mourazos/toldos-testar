@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, notasDevolucion, fechaBorrador, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import { borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, notasDevolucion, fechaBorrador, groupByDay, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
 import type { CoordinaStatus, PedidoBandeja, ReviewSummary } from './types';
 
@@ -45,6 +45,15 @@ describe('inboxSections', () => {
     expect(inboxSections(sources, { me: 'IVÁN', scope: 'all', query: '0230194' }).pending).toHaveLength(3);
     expect(inboxSections(sources, { me: 'IVÁN', scope: 'all', query: 'arzua' }).pending).toHaveLength(3);
     expect(inboxSections(sources, { me: 'IVÁN', scope: 'all', query: 'ar2' }).pending.map((r) => r.orderCode)).toEqual(['AR2']);
+  });
+
+  it('el historial va del más reciente al más antiguo aunque mezcle toldos y remolques (Iván, 21/10/2026)', () => {
+    // Llegan primero los toldos y después los remolques: el remolque generado hoy (AR2605158) quedaba al final.
+    const toldos = [review('AR2605104', 'PRODUCED', 'TAMARA', { updatedAt: '2026-10-20T12:00:00Z' }), review('AR2605001', 'PRODUCED', 'IVÁN', { updatedAt: '2026-10-19T12:00:00Z' })];
+    const remolques = [review('AR2605158', 'PRODUCED', 'IVÁN', { kind: 'remolques', updatedAt: '2026-10-21T09:00:00Z' })];
+    const result = inboxSections({ pending: [], history: [...toldos, ...remolques] }, { me: 'IVÁN', scope: 'all', query: '' });
+    expect(result.history.map((r) => r.orderCode)).toEqual(['AR2605158', 'AR2605104', 'AR2605001']);
+    expect(groupByDay(result.history)[0].reviews.map((r) => r.orderCode)).toEqual(['AR2605158']);
   });
 });
 
