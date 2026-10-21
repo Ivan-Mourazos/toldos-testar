@@ -7,11 +7,14 @@ import AR2604800 from './__fixtures__/AR2604800.json' with { type: 'json' };
 import AR2604802 from './__fixtures__/AR2604802.json' with { type: 'json' };
 import AR2604990 from './__fixtures__/AR2604990.json' with { type: 'json' };
 import AR2605078 from './__fixtures__/AR2605078.json' with { type: 'json' };
+import AR2605129 from './__fixtures__/AR2605129.json' with { type: 'json' };
+import AR2605158 from './__fixtures__/AR2605158.json' with { type: 'json' };
 import AR2605071 from './__fixtures__/AR2605071.json' with { type: 'json' };
 import AR2605079 from './__fixtures__/AR2605079.json' with { type: 'json' };
 import AR2605088 from './__fixtures__/AR2605088.json' with { type: 'json' };
 import AR2605132 from './__fixtures__/AR2605132.json' with { type: 'json' };
 import { generarCorteRemolques, resumirMaterial } from './index.js';
+import { piezasLona } from './lonaAlta.js';
 import { escaleraCabeza } from './plano.js';
 
 // Pedidos reales de la web de remolques, con los metros de rollo que dieron por buenos en Oficina Técnica
@@ -119,6 +122,58 @@ describe('generarCorteRemolques', () => {
     const cotas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
     expect(cotas).toContain(el.result.panoTrasero.alto);
     expect(cotas).toContain(el.result.panoDelantero.alto);
+  });
+
+  it('detrás, las marcas del hombro del contorno van a la altura de la oreja del trasero (AR2605158)', () => {
+    // Arquillado de radio 5 (cortes + 1: 60), 87 delante y 83 detrás a la línea por arriba, goma detrás. Iván,
+    // 21/10/2026: las marcas de detrás del contorno, como la oreja del trasero (81,5), no como delante (85,5).
+    const el = { ...AR2605158.elementos[0], of: '0233203' };
+    const P = piezasLona(el);
+    expect(P.t.altoOreja).toBe(875 - 60);
+    expect(P.d.altoOreja).toBe(915 - 60);
+    const marcas = (u) => P.c.rot.filter(([u1]) => u1 === u).map(([, v]) => v).sort((a, b) => a - b);
+    const B = P.c.geo.H;
+    // Delante no cierra (recoge NO): solo la marca del centro (Iván, 21/10/2026).
+    expect(marcas(10)).toEqual([B / 2]);
+    expect(marcas(P.c.w - 10)).toEqual([815, B / 2, B - 815]);
+  });
+
+  it('las marcas del hombro del contorno solo van en la punta que cierra con orejas (AR2605088, AR2605132)', () => {
+    // Iván, 21/10/2026: «solo se hacen si el paño cierra con oreja o similar». AR2605088 recoge detrás con
+    // cremallera, sin orejas: a mano, en las dos puntas, solo la marca del centro.
+    for (const e of AR2605088.elementos.filter((x) => x.tipo !== 'baqueton')) {
+      const P = piezasLona({ ...e, of: 'x' });
+      expect(P.c.rot.filter(([u1]) => u1 === 10 || u1 === P.c.w - 10)).toHaveLength(2);
+    }
+    // Goma detrás: el centro y los dos hombros detrás; delante, solo el centro.
+    const P = piezasLona({ ...AR2605132.elementos.find((x) => x.tipo !== 'baqueton'), of: 'x' });
+    expect(P.c.rot.filter(([u1]) => u1 === 10)).toHaveLength(1);
+    expect(P.c.rot.filter(([u1]) => u1 === P.c.w - 10)).toHaveLength(3);
+  });
+
+  it('en el recto también van las marcas del hombro detrás, a la altura de la oreja (AR2605129)', () => {
+    // Iván, 21/10/2026: «no le hiciste las marcas de las orejas, solo unas cotas al centro». Recto de 45 con goma
+    // detrás: la oreja del trasero llega a 5 cm del borde de arriba (495 − 50).
+    const P = piezasLona({ ...AR2605129.elementos.find((x) => x.tipo === 'lona'), of: 'x' });
+    expect(P.t.altoOreja).toBe(445);
+    const B = P.c.geo.H;
+    const marcas = (u) => P.c.rot.filter(([u1]) => u1 === u).map(([, v]) => v).sort((a, b) => a - b);
+    expect(marcas(10)).toEqual([B / 2]);
+    expect(marcas(P.c.w - 10)).toEqual([445, B / 2, B - 445]);
+    // El plano acota la oreja desde cada borde (44,5), no hasta el centro.
+    const cotas = registrosDxf(generarCorteRemolques(AR2605129).archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(cotas.filter((v) => v === 44.5)).toHaveLength(2 + 1);
+    expect(cotas).not.toContain(Math.round(B / 2) / 10);
+  });
+
+  it('el delantero lleva orejas si recoge con goma delante, como el trasero', () => {
+    const el = structuredClone({ ...AR2605158.elementos[0], of: 'x' });
+    el.input.recogeDelante = 'GOMA';
+    el.result.panoDelantero.ancho = el.input.ancho + 27; // lo que da la web con goma delante
+    const P = piezasLona(el);
+    expect(P.d.p.w).toBe(1470);
+    expect(P.orejaDelante).toBe(120);
+    expect(P.c.rot.filter(([u1]) => u1 === 10)).toHaveLength(3);
   });
 
   it('coloca los baquetones junto a las lonas altas de la misma lona, como a mano (AR2605088)', () => {

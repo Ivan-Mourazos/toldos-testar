@@ -311,3 +311,16 @@ el dibujo de la web (`geometry/chaflan.ts`): la cara entre vértices virtuales y
 ese radio + 1 cm, como el arquillado. La oreja del trasero llega hasta el arco o, con la arista viva, al
 hombro − 6 cm, como con aguas. En el plano, la rosa va 1 cm por dentro con los arcos de radio − 1 cm.
 Todavía no hay pedidos de la web con chaflán y corte a mano: la web avisa de revisarlo hasta que haya uno.
+
+## Marcas del hombro detrás (21/10/2026)
+
+En el contorno, las marcas del hombro de la punta de detrás van a la altura de la oreja del trasero, y las de
+delante a la del hombro del delantero (Iván, AR2605158: con la trasera 4 cm más corta a la línea por arriba,
+la oreja del trasero llega a 81,5 y las marcas de detrás iban a 85,5, como delante, y estaba mal). Con el mismo
+alto delante y detrás no cambia nada.
+
+Más (21/10/2026): **las marcas del hombro solo van en la punta cuya cabeza cierra con orejas** (goma, ganchos,
+velcro…). Si no cierra (recoge NO) o cierra con cremallera, en esa punta solo la marca del centro (Iván; a mano
+así en AR2605088). Vale también para el recto (AR2605129: 44,5 detrás, la oreja del trasero; antes la web solo
+ponía la del centro y el plano acotaba hasta el centro). El perfil de cada cabeza es la lona hecha + 2 (el
+remolque + 3); lo que el paño tenga de más son orejas, también delante si recoge delante.

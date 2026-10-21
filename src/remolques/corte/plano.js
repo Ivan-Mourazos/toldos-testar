@@ -130,15 +130,27 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   // El rótulo de cada pieza, con todas las unidades: «A2 · B2».
   const R = (n) => letras.map((l) => `${l || 'A'}${n}`).join(' · ');
 
-  // Paño delantero.
+  // Las orejas de una cabeza (si cierra con goma, ganchos…): su línea de referencia, su ancho terminado abajo y
+  // su alto de corte al lado.
+  const orejas = (x0, ancho, oreja, alto, bajan) => {
+    if (!oreja) return;
+    for (const xo of [30, ancho * 10 - 30]) { const [a, b] = enPlano(x0, Y)(xo, 35), [c, d] = enPlano(x0, Y)(xo, alto); L.g.polilineas.push({ capa: 'referencias', puntos: [[a, b], [c, d]], cerrada: false }); }
+    L.cota('cotas', x0 + 3, Y, x0 + oreja + 1, Y, oreja - 2, -12 - bajan);
+    L.cota('cotas', x0 + ancho - oreja - 1, Y, x0 + ancho - 3, Y, oreja - 2, -12 - bajan);
+    L.cota('vent-pre-noimpr', x0 + ancho, Y, x0 + ancho, Y + alto / 10, r1(alto / 10), 12);
+  };
+
+  // Paño delantero (con orejas si recoge delante).
+  const oD = P.orejaDelante / 10;
   pintar(L, P.d.p, enPlano(xDel, Y));
-  rosaCabeza(L, P.f, 0, W * 10, H * 10, enPlano(xDel, Y));
+  rosaCabeza(L, P.f, P.orejaDelante, P.anchoPerfil, H * 10, enPlano(xDel, Y));
   const eD = escaleraCabeza(P.ollaos.delante.length);
-  L.cota('cotas', xDel + 1, Y, xDel + W - 1, Y, hecha.ancho, -12 - eD.bajan);
+  orejas(xDel, W, oD, P.d.altoOreja, eD.bajan);
+  L.cota('cotas', xDel + oD + 1, Y, xDel + W - oD - 1, Y, hecha.ancho, -12 - eD.bajan);
   L.cota('vent-pre-noimpr', xDel, Y, xDel + W, Y, W, -26 - eD.bajan);
   L.cota('cotas', xDel, Y + 3.5, xDel, Y + H - 1, i.altoDelante, -12);
   L.cota('vent-pre-noimpr', xDel, Y, xDel, Y + H, H, -26);
-  escaleraH(L, xDel + 1, Y + 4.5, P.ollaos.delante, eD.abajo);
+  escaleraH(L, xDel + oD + 1, Y + 4.5, P.ollaos.delante, eD.abajo);
   if (P.ventana) {
     // Medidas de la ventana por dentro del recuadro.
     const rot = P.d.p.rot.map(([a, b, c, d]) => [a / 10, b / 10, c / 10, d / 10]);
@@ -155,12 +167,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   pintar(L, P.t.p, enPlano(xTra, Y));
   rosaCabeza(L, P.f, P.oreja, P.anchoPerfilTra, Ht * 10, enPlano(xTra, Y));
   const eT = escaleraCabeza(P.ollaos.atras.length);
-  if (o) {
-    for (const xo of [30, Wt * 10 - 30]) { const [a, b] = enPlano(xTra, Y)(xo, 35), [c, d] = enPlano(xTra, Y)(xo, P.t.altoOreja); L.g.polilineas.push({ capa: 'referencias', puntos: [[a, b], [c, d]], cerrada: false }); }
-    L.cota('cotas', xTra + 3, Y, xTra + o + 1, Y, o - 2, -12 - eT.bajan);
-    L.cota('cotas', xTra + Wt - o - 1, Y, xTra + Wt - 3, Y, o - 2, -12 - eT.bajan);
-    L.cota('vent-pre-noimpr', xTra + Wt, Y, xTra + Wt, Y + P.t.altoOreja / 10, P.t.altoOreja / 10, 12);
-  }
+  orejas(xTra, Wt, o, P.t.altoOreja, eT.bajan);
   L.cota('cotas', xTra + o + 1, Y, xTra + Wt - o - 1, Y, hecha.anchoAtras ?? hecha.ancho, -12 - eT.bajan);
   L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26 - eT.bajan);
   if (Ht !== H) {
@@ -211,10 +218,14 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
     L.cota('vent-pre-noimpr', xt(A * 10) - lado, Y + A, xt(A * 10), Y + A, r1(lado), 8, 6);
     L.cota('vent-pre-noimpr', xb(A * 10) + lado, Y + A - fondo, xb(A * 10) + lado, Y + A, fondo, 6, 6);
   } else {
-    // Hasta dónde llega la oreja del trasero (las marcas del hombro): cota desde cada borde del corte, arriba.
-    const mh = P.marcasHombro / 10;
-    L.cota('vent-pre-noimpr', xb(A * 10), Y + A, xb(A * 10) + mh, Y + A, mh, 8, 6);
-    L.cota('vent-pre-noimpr', xt(A * 10) - mh, Y + A, xt(A * 10), Y + A, mh, 8, 6);
+    // Hasta dónde llega la oreja de cada cabeza (las marcas del hombro): cota desde cada borde del corte, en la
+    // punta de detrás (arriba) y en la de delante (abajo), solo si esa cabeza cierra con orejas.
+    for (const [mm, u, lado] of [[P.marcasAtras, A * 10, 8], [P.marcasHombro, 0, -8]]) {
+      if (mm == null) continue;
+      const mh = mm / 10, yy = Y + u / 10;
+      L.cota('vent-pre-noimpr', xb(u), yy, xb(u) + mh, yy, r1(mh), lado, 6);
+      L.cota('vent-pre-noimpr', xt(u) - mh, yy, xt(u), yy, r1(mh), lado, 6);
+    }
   }
   return { ancho: xCon + B - X, alto: Math.max(H, A) };
 }

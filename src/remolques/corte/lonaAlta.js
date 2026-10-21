@@ -203,7 +203,9 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
 // detrás va en trapecio: delante mide `alto` y detrás `altoAtras`, con los lados inclinados por igual y una
 // holgura a cada lado. `rebajeLado` (puentes de HPL): detrás, el techo queda REBAJE_PUENTES más corto que los
 // lados, que miden `rebajeLado` desde cada borde. `p.geo` guarda la forma para el plano.
-function contorno(el, marcasHombro, rebajeLado = 0) {
+// `marcasHombro` y `marcasAtras`: la altura de las marcas del hombro de la punta de delante y de la de detrás (la
+// oreja de cada cabeza), o `null` si esa cabeza no cierra con orejas (solo la marca del centro).
+function contorno(el, marcasHombro, rebajeLado = 0, marcasAtras = marcasHombro) {
   const r = el.result, i = el.input;
   const A = r.panoContorno.ancho * 10, B = r.panoContorno.alto * 10, Bt = (r.panoContorno.altoAtras ?? r.panoContorno.alto) * 10;
   const m = Bt !== B ? HOLGURA_TRAPECIO : 0, H = Math.max(B, Bt) + 2 * m, p = pieza(A, H);
@@ -238,8 +240,9 @@ function contorno(el, marcasHombro, rebajeLado = 0) {
     marca(p, u, yb(u) + 35, u, yb(u) + 55); marca(p, u, y1 - 20, u, y1); marca(p, u, y2, u, y2 + 20); marca(p, u, yt(u) - 55, u, yt(u) - 35);
     return p;
   }
-  for (const [u, de] of [[10, 25], [A - 10, A - 25]]) {
-    for (const v of [centro, yb(u) + marcasHombro, yt(u) - marcasHombro]) marca(p, u, v, de, v);
+  // En cada punta, el centro y, si esa cabeza cierra con orejas, los dos hombros (`null`: no cierra).
+  for (const [u, de, mh] of [[10, 25, marcasHombro], [A - 10, A - 25, marcasAtras]]) {
+    for (const v of mh == null ? [centro] : [centro, yb(u) + mh, yt(u) - mh]) marca(p, u, v, de, v);
   }
   return p;
 }
@@ -374,13 +377,13 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
   let union = 1; // número de la siguiente unión de empate (sin letras)
   for (const el of elementos) {
     const i = el.input;
-    const { d, t, ventana, marcasHombro, rebajeLado, puentes } = cabezasLona(el);
+    const { d, t, ventana, marcasHombro, marcasAtras, rebajeLado, puentes } = cabezasLona(el);
     if (ventana) out.avisos.push(`${el.of}: ventana marcada con rotulador y su tapa de ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}; revisar la altura de la ventana.`);
     if (i.tipoPerfil === 'TIPO 04') out.avisos.push(`${el.of}: perfil con chaflán; aún sin cortes a mano con los que compararlo: revisar el chaflán y sus radios.`);
     if (puentes) out.avisos.push(`${el.of}: puentes de Hijos de Pedro López: rebaje de ${REBAJE_PUENTES / 10} cm detrás en el contorno y orejas sin ollaos; revisarlo.`);
     for (let u = 0; u < (i.cantidad || 1); u++) {
       const L = letras?.get(el)?.[u] ?? '';
-      const c = contorno(el, marcasHombro, rebajeLado);
+      const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
       const conEmpate = c.h > ROLLO && c.w > ROLLO;
       const emp = conEmpate ? contornoConEmpate(c, L ? 1 : union, L.toLowerCase()) : null;
       if (emp && !L) union += 3;
@@ -430,30 +433,37 @@ function cabezasLona(el) {
   const i = el.input, r = el.result, f = forma(i);
   const hecha = r.lonaHecha, del = r.panoDelantero, tra = r.panoTrasero;
   const puentes = PUENTES_HPL.test(i.recogeAtras ?? '');
-  const anchoPerfil = del.ancho * 10;
-  // El trasero lleva el perfil del delantero, tan ancho como el remolque detrás (más ancho detrás en Hijos de
-  // Pedro López: 1345 con 1330 delante en AR2605078); lo que sobra del paño son orejas.
-  const anchoPerfilTra = anchoPerfil + ((hecha.anchoAtras ?? hecha.ancho) - hecha.ancho) * 10;
+  // El perfil de cada cabeza: la lona hecha + 2 (el remolque + 3, lo que da la web sin recoger), con el ancho de
+  // delante o el de detrás (más ancho detrás en Hijos de Pedro López: 1345 con 1330 delante en AR2605078). Lo que
+  // el paño tenga de más son orejas, delante o detrás (goma, ganchos, velcro, puentes…).
+  const anchoPerfil = (hecha.ancho + 2) * 10;
+  const anchoPerfilTra = ((hecha.anchoAtras ?? hecha.ancho) + 2) * 10;
+  const orejaDelante = Math.max((del.ancho * 10 - anchoPerfil) / 2, 0);
   const oreja = Math.max((tra.ancho * 10 - anchoPerfilTra) / 2, 0);
   const ollaosDel = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.ancho, r.reparto.delante) : r.reparto.delante;
   const ollaosAtr = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.anchoAtras ?? r.ollaos.ancho, r.reparto.atras) : r.reparto.atras;
   const ventana = i.ventana && i.ventanaAncho > 0 && i.ventanaAlto > 0 ? [i.ventanaAncho * 10, i.ventanaAlto * 10] : null;
-  const d = cabeza(f, anchoPerfil, del.alto * 10, 0, ollaosDel, hecha.ancho, ventana, /CREMALLERA/.test(i.recogeDelante ?? ''));
+  const d = cabeza(f, anchoPerfil, del.alto * 10, orejaDelante, ollaosDel, hecha.ancho, ventana, /CREMALLERA/.test(i.recogeDelante ?? ''));
   const t = cabeza(f, anchoPerfilTra, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null, /CREMALLERA/.test(i.recogeAtras ?? ''), puentes && oreja > 0);
-  const marcasHombro = f.tipo === 'TIPO 01' ? (r.panoContorno.alto * 10) / 2 : d.altoOreja;
+  // Marcas del hombro en cada punta del contorno, solo si esa cabeza cierra con orejas (Iván, 21/10/2026: «solo
+  // se hacen si el paño cierra con oreja o similar»; si no, solo la del centro, como a mano en AR2605088 con
+  // cremallera), a la altura de su oreja: delante la del delantero y detrás la del trasero (AR2605158: 81,5 con
+  // la trasera 4 cm más corta, no 85,5). También en el recto (AR2605129).
+  const marcasHombro = orejaDelante > 0 ? d.altoOreja : null;
+  const marcasAtras = oreja > 0 ? t.altoOreja : null;
   // Lados del rebaje de los puentes, desde cada borde del contorno: iguales que las orejas del trasero (Iván,
   // 21/10/2026; 535 y 535 en AR2605103). En AR2605078 y AR2604800 a mano no coincidieron y salieron mal.
   const rebajeLado = puentes ? t.altoOreja : 0;
-  return { f, d, t, oreja, anchoPerfilTra, ventana, ollaosDel, ollaosAtr, marcasHombro, rebajeLado, puentes };
+  return { f, d, t, oreja, orejaDelante, anchoPerfil, anchoPerfilTra, ventana, ollaosDel, ollaosAtr, marcasHombro, marcasAtras, rebajeLado, puentes };
 }
 
 // Las tres piezas de una lona alta (en mm, sin colocar) y sus datos, para el dibujo de confección del plano.
 export function piezasLona(el) {
   const i = el.input, r = el.result;
-  const { f, d, t, oreja, anchoPerfilTra, ventana, ollaosDel, ollaosAtr, marcasHombro, rebajeLado, puentes } = cabezasLona(el);
+  const { marcasHombro, marcasAtras, rebajeLado, ollaosDel, ollaosAtr, ...resto } = cabezasLona(el);
   const lat = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.largo, r.reparto.laterales) : r.reparto.laterales;
-  const c = contorno(el, marcasHombro, rebajeLado);
-  return { f, d, t, c, oreja, anchoPerfilTra, ventana, ollaos: { delante: ollaosDel, atras: ollaosAtr, laterales: lat }, marcasHombro, rebajeLado, puentes };
+  const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
+  return { ...resto, c, ollaos: { delante: ollaosDel, atras: ollaosAtr, laterales: lat }, marcasHombro, marcasAtras, rebajeLado };
 }
 
 export { ROLLO, R_OLLAO };
