@@ -1,5 +1,6 @@
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import type { LonaInput } from "../calc/lona.ts";
+import type { RepartoLados } from "../calc/ollaos.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
 import type { LineaPedido } from "../workspace/lineas.ts";
 import { CAMPOS_PERFIL } from "./reglas.ts";
@@ -19,6 +20,21 @@ export function medidaHabitual(ficha: FichaCliente, tipo: TipoPlanteamiento, lar
   return ficha.medidas?.find((m) => m.tipo === tipo && m.largo === largo && m.ancho === ancho) ?? null;
 }
 
+/**
+ * Los ollaos de la ficha para un largo × ancho: la medida exacta si está; si no, cada lado de su medida suelta
+ * (Iván, 21/10/2026: «es lo mismo 200 × 120 que 200 × 150»): los laterales de una medida con el mismo largo y
+ * delante y atrás de una con el mismo ancho. El lado que no se sepa queda vacío para teclearlo.
+ */
+export function ollaosHabituales(ficha: FichaCliente, tipo: TipoPlanteamiento, largo: number, ancho: number): RepartoLados | null {
+  const exacta = medidaHabitual(ficha, tipo, largo, ancho);
+  if (exacta) return exacta.ollaos;
+  const delTipo = (ficha.medidas ?? []).filter((m) => m.tipo === tipo);
+  const lat = delTipo.find((m) => m.largo === largo && m.ollaos.laterales.length > 0);
+  const cab = delTipo.find((m) => m.ancho === ancho && (m.ollaos.delante.length > 0 || m.ollaos.atras.length > 0));
+  if (!lat && !cab) return null;
+  return { laterales: lat?.ollaos.laterales ?? [], atras: cab?.ollaos.atras ?? [], delante: cab?.ollaos.delante ?? [] };
+}
+
 function conObservaciones(actual: string, nuevas: readonly string[], campos: string[]): string {
   const lineas = lineasDe(actual);
   const faltan = nuevas.map((n) => n.trim()).filter((n) => n && !lineas.some((l) => clave(l) === clave(n)));
@@ -27,13 +43,13 @@ function conObservaciones(actual: string, nuevas: readonly string[], campos: str
   return [...lineas, ...faltan].join("\n");
 }
 
-function conOllaos<T extends LonaInput | BaquetonInput>(input: T, medida: MedidaHabitual | null, campos: string[]): T {
-  if (!medida || input.modoOllaos !== "") return input;
+function conOllaos<T extends LonaInput | BaquetonInput>(input: T, ollaos: RepartoLados | null, campos: string[]): T {
+  if (!ollaos || input.modoOllaos !== "") return input;
   campos.push("modoOllaos", "ollaosManuales");
   return {
     ...input,
     modoOllaos: "SEGUN SE INDICA",
-    ollaosManuales: { laterales: [...medida.ollaos.laterales], atras: [...medida.ollaos.atras], delante: [...medida.ollaos.delante] },
+    ollaosManuales: { laterales: [...ollaos.laterales], atras: [...ollaos.atras], delante: [...ollaos.delante] },
   };
 }
 
@@ -94,7 +110,7 @@ function aplicarLona(entrada: LonaInput, ficha: FichaCliente, campos: string[]):
     input.anchoAtras = r1(input.ancho + ficha.sesgoDetras);
     campos.push("anchoAtras");
   }
-  input = conOllaos(input, medidaHabitual(ficha, "lona", input.largo, input.ancho), campos);
+  input = conOllaos(input, ollaosHabituales(ficha, "lona", input.largo, input.ancho), campos);
   const fijas = [...(ficha.cremallera ? [LINEA_CREMALLERA] : []), ...(ficha.observaciones ?? [])];
   return { ...input, observaciones: conObservaciones(input.observaciones, fijas, campos) };
 }
@@ -113,7 +129,7 @@ function aplicarBaqueton(entrada: BaquetonInput, ficha: FichaCliente, campos: st
     input.material = ficha.material;
     campos.push("material");
   }
-  input = conOllaos(input, medidaHabitual(ficha, "baqueton", input.largo, input.ancho), campos);
+  input = conOllaos(input, ollaosHabituales(ficha, "baqueton", input.largo, input.ancho), campos);
   return { ...input, observaciones: conObservaciones(input.observaciones, ficha.observaciones ?? [], campos) };
 }
 

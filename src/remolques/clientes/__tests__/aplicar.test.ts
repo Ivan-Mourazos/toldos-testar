@@ -55,13 +55,28 @@ describe("aplicarFichaAlImportar · lona", () => {
     expect(linea.delCliente?.campos).toContain("ventanaAlto");
   });
 
-  it("medida exacta: ollaos «según se indica» con sus posiciones, en una copia; otra medida no", () => {
+  it("medida exacta: ollaos «según se indica» con sus posiciones, en una copia", () => {
     const linea = aplicarFichaAlImportar(deRps(), FICHA);
     const ollaos = (linea.input as LonaInput).ollaosManuales;
     expect(ollaos).toEqual(MEDIDA.ollaos);
     expect(ollaos.delante).not.toBe(MEDIDA.ollaos.delante);
-    expect((aplicarFichaAlImportar(deRps({ ancho: 121 }), FICHA).input as LonaInput).modoOllaos).toBe("");
     expect((aplicarFichaAlImportar(deRps({ modoOllaos: "REPARTIDOS" }), FICHA).input as LonaInput).modoOllaos).toBe("REPARTIDOS");
+  });
+
+  it("cada lado sale de su medida suelta: laterales por el largo, delante y atrás por el ancho", () => {
+    // Iván, 21/10/2026: «es lo mismo 200 × 120 que 200 × 150; los 200, al tenerlos una vez, deberían valer».
+    const ficha: FichaCliente = {
+      ...FICHA,
+      medidas: [MEDIDA, { tipo: "lona", largo: 250, ancho: 150, ollaos: { delante: [3, 75, 147], atras: [3, 147], laterales: [3, 125, 247] } }],
+    };
+    const mezcla = aplicarFichaAlImportar(deRps({ largo: 200, ancho: 150 }), ficha).input as LonaInput;
+    expect(mezcla.modoOllaos).toBe("SEGUN SE INDICA");
+    expect(mezcla.ollaosManuales).toEqual({ laterales: MEDIDA.ollaos.laterales, delante: [3, 75, 147], atras: [3, 147] });
+    // Solo el largo conocido: los laterales; delante y atrás quedan para teclearlos (la web los pide antes de guardar).
+    const soloLargo = aplicarFichaAlImportar(deRps({ ancho: 121 }), ficha).input as LonaInput;
+    expect(soloLargo.ollaosManuales).toEqual({ laterales: MEDIDA.ollaos.laterales, delante: [], atras: [] });
+    // Ni el largo ni el ancho: nada.
+    expect((aplicarFichaAlImportar(deRps({ largo: 201, ancho: 121 }), ficha).input as LonaInput).modoOllaos).toBe("");
   });
 
   it("el sesgo pone el ancho de detrás", () => {
