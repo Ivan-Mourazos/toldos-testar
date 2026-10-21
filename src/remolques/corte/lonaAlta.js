@@ -19,6 +19,8 @@
 //   del contorno, detrás, y orejas sin ollaos en el trasero (ver `contorno` y `cabeza`).
 // Fuera de esta versión (se cortan a mano): TIPO 04 y los demás puentes.
 
+import { esquinaChaflan } from '../geometry/chaflan.ts';
+
 const ROLLO = 2500, BORDE = 45, R_OLLAO = 2.5;
 const r1 = (v) => Math.round(v * 10) / 10;
 const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.from({ length: eje.n }, (_, i) => r1(guardadas[0] + eje.dist * i)) : guardadas);
@@ -31,7 +33,8 @@ const HOLGURA_TRAPECIO = 10;
 
 export function soportada(el) {
   const i = el.input, r = el.result;
-  if (!['TIPO 01', 'TIPO 02', 'TIPO 03', 'TIPO 05'].includes(i.tipoPerfil)) return `perfil ${i.tipoPerfil || 'sin elegir'}`;
+  if (!['TIPO 01', 'TIPO 02', 'TIPO 03', 'TIPO 04', 'TIPO 05'].includes(i.tipoPerfil)) return `perfil ${i.tipoPerfil || 'sin elegir'}`;
+  if (i.tipoPerfil === 'TIPO 04' && !((i.chaflan ?? 0) > 0)) return 'chaflán sin medida';
   if (/PUENTES/.test(i.recogeDelante ?? '') || (/PUENTES/.test(i.recogeAtras ?? '') && !PUENTES_HPL.test(i.recogeAtras))) return 'recogida con puentes';
   if (!r.panoContorno) return 'sin contorno calculado';
   const c = r.panoContorno;
@@ -59,7 +62,30 @@ function forma(i) {
   // 8,2, 111 con 10,1 en los cortes a mano); la cumbrera, con el radio de la web tal cual (75 con 7,5, AR2604390).
   const rHombro = tipo === 'TIPO 03' && (i.radioHombro ?? 0) > 0 ? (i.radioHombro + 1) * 10 : 0;
   const rCumbrera = tipo === 'TIPO 03' ? Math.max(i.radioCumbrera ?? 0, 0) * 10 : 0;
-  return { tipo, r, aguas, rHombro, rCumbrera };
+  // Con chaflán (TIPO 04; Iván, 21/10/2026: «el chaflán es en el hombro», como el resto): la cara entre
+  // vértices virtuales de la web y, si una arista lleva radio, ese radio + 1 cm, como el arquillado. Sin cortes
+  // a mano con los que contrastarlo todavía.
+  const masUno = (v) => ((v ?? 0) > 0 ? (v + 1) * 10 : 0);
+  const chaflan = tipo === 'TIPO 04' ? { cara: (i.chaflan ?? 0) * 10, rAbajo: masUno(i.radioChaflanAbajo), rArriba: masUno(i.radioChaflanArriba) } : null;
+  return { tipo, r, aguas, rHombro, rCumbrera, chaflan };
+}
+
+/**
+ * Esquinas del chaflán en una cabeza de ancho `w` y alto `h` (mm), con la cuenta de la web (geometry/chaflan.ts):
+ * `pata` lo que baja por el lado y entra por arriba; los arcos, tangentes al lado, al chaflán y al techo.
+ */
+export function esquinasChaflan(f, w, h) {
+  const e = esquinaChaflan({ ancho: w, alto: h, chaflan: f.chaflan.cara, radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba });
+  const s = Math.SQRT1_2;
+  // Lado izquierdo (x desde el lado); el derecho es su reflejo.
+  return {
+    ...e,
+    hombro: h - e.pata - e.tangenteAbajo,                                   // donde acaba el lado recto
+    abajo: { cx: e.radioAbajo, cy: h - e.pata - e.tangenteAbajo },          // centro del arco contra el lado
+    arriba: { cx: e.pata + e.tangenteArriba, cy: h - e.radioArriba },       // centro del arco contra el techo
+    desde: [e.tangenteAbajo * s, h - e.pata + e.tangenteAbajo * s],         // el chaflán recto, de abajo…
+    hasta: [e.pata - e.tangenteArriba * s, h - e.tangenteArriba * s],       // …a arriba
+  };
 }
 
 /**
@@ -90,13 +116,16 @@ export function aguasArquilladas(f, w, h) {
 function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puentes = false) {
   const W = w + 2 * oreja, p = pieza(W, h);
   const ag = f.tipo === 'TIPO 03' ? aguasArquilladas(f, w, h) : null;
-  // Hasta dónde llega el lado recto: el arquillado y el arquillado con aguas, hasta donde empieza la curva.
-  const hombro = f.tipo === 'TIPO 05' ? h - f.r : ag ? ag.cyH : h - f.aguas;
+  const ch = f.tipo === 'TIPO 04' ? esquinasChaflan(f, w, h) : null;
+  // Hasta dónde llega el lado recto: el arquillado y el arquillado con aguas, hasta donde empieza la curva; el
+  // chaflán, hasta donde empieza (o su arco).
+  const hombro = f.tipo === 'TIPO 05' ? h - f.r : ag ? ag.cyH : ch ? ch.hombro : h - f.aguas;
   // Alto de la oreja (Iván, 20/10/2026): en el recto, a 5 cm del borde de arriba; con hombro en curva, hasta
   // donde acaba la curva. Con aguas (sin curva), el hombro − 6 cm, como en los cortes a mano (AR2604843, AR2604959).
   // Con los puentes de HPL, en el recto, a 6 cm (AR2605103: 535 con un paño de 595).
-  const curva = f.tipo === 'TIPO 05' || (ag && ag.rh > 0);
-  const altoOreja = curva ? hombro : f.tipo === 'TIPO 02' || ag ? hombro - 60 : h - (puentes ? 60 : 50);
+  // El chaflán, como las aguas: con arco, hasta el arco; con la arista viva, el hombro − 6 cm.
+  const curva = f.tipo === 'TIPO 05' || (ag && ag.rh > 0) || (ch && ch.radioAbajo > 0);
+  const altoOreja = curva ? hombro : f.tipo === 'TIPO 02' || ag || ch ? hombro - 60 : h - (puentes ? 60 : 50);
   const x0 = oreja, x1 = oreja + w;
   seg(p, 0, 0, W, 0);
   // Lados: oreja (si hay) y lado del perfil hasta el hombro.
@@ -109,6 +138,15 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
   if (f.tipo === 'TIPO 05') {
     seg(p, x0 + f.r, h, x1 - f.r, h);
     p.arcos.push({ x: x1 - f.r, y: h - f.r, r: f.r, desde: 0, hasta: 90 }, { x: x0 + f.r, y: h - f.r, r: f.r, desde: 90, hasta: 180 });
+  }
+  if (ch) {
+    // Chaflán recto en cada hombro, con su arco contra el lado y contra el techo si lleva radio; el derecho, reflejado.
+    for (const [lado, m, abajo, arriba] of [[x0, 1, [135, 180], [90, 135]], [x1, -1, [0, 45], [45, 90]]]) {
+      seg(p, lado + m * ch.desde[0], ch.desde[1], lado + m * ch.hasta[0], ch.hasta[1]);
+      if (ch.radioAbajo > 0) p.arcos.push({ x: lado + m * ch.abajo.cx, y: ch.abajo.cy, r: ch.radioAbajo, desde: abajo[0], hasta: abajo[1] });
+      if (ch.radioArriba > 0) p.arcos.push({ x: lado + m * ch.arriba.cx, y: ch.arriba.cy, r: ch.radioArriba, desde: arriba[0], hasta: arriba[1] });
+    }
+    seg(p, x0 + ch.arriba.cx, h, x1 - ch.arriba.cx, h);
   }
   if (ag) {
     // Pendientes de la tangencia del hombro a la de la cumbrera (o al pico); arcos en hombros y cumbrera.
@@ -131,6 +169,7 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
   // Lo que tiene encima cada punto del perfil: el borde de arriba, la pendiente de las aguas o la curva del arquillado.
   const encima = (x) => {
     if (ag) return ag.alto(Math.max(Math.min(x - x0, x1 - x), 0));
+    if (ch) { const dx = Math.max(Math.min(x - x0, x1 - x), 0); return dx < ch.pata ? h - ch.pata + dx : h; }
     if (f.tipo === 'TIPO 02') return hombro + (h - hombro) * (1 - Math.abs(x - (x0 + w / 2)) / (w / 2));
     if (f.tipo === 'TIPO 05') {
       const dx = Math.max(x0 + f.r - x, x - (x1 - f.r), 0);
@@ -337,6 +376,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
     const i = el.input;
     const { d, t, ventana, marcasHombro, rebajeLado, puentes } = cabezasLona(el);
     if (ventana) out.avisos.push(`${el.of}: ventana marcada con rotulador y su tapa de ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}; revisar la altura de la ventana.`);
+    if (i.tipoPerfil === 'TIPO 04') out.avisos.push(`${el.of}: perfil con chaflán; aún sin cortes a mano con los que compararlo: revisar el chaflán y sus radios.`);
     if (puentes) out.avisos.push(`${el.of}: puentes de Hijos de Pedro López: rebaje de ${REBAJE_PUENTES / 10} cm detrás en el contorno y orejas sin ollaos; revisarlo.`);
     for (let u = 0; u < (i.cantidad || 1); u++) {
       const L = letras?.get(el)?.[u] ?? '';

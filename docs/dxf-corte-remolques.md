@@ -303,3 +303,11 @@ AR2605103, con su corte a mano. Ninguno con chaflán (TIPO 04).
   el histórico de 200 × 130 (26 pedidos) y su baquetón llevan 8. La ficha del cliente guarda esa lona con los
   7: hay que corregirla (pendiente de Iván).
 - Siguen a mano: los demás puentes (ESVA, LATERALES) y el contorno en trapecio que no cabe en el rollo.
+
+## Perfil con chaflán (TIPO 04, 21/10/2026)
+
+Iván: «es lo mismo prácticamente que el resto; el chaflán es en el hombro». El corte usa la misma cuenta que
+el dibujo de la web (`geometry/chaflan.ts`): la cara entre vértices virtuales y, si una arista lleva radio,
+ese radio + 1 cm, como el arquillado. La oreja del trasero llega hasta el arco o, con la arista viva, al
+hombro − 6 cm, como con aguas. En el plano, la rosa va 1 cm por dentro con los arcos de radio − 1 cm.
+Todavía no hay pedidos de la web con chaflán y corte a mano: la web avisa de revisarlo hasta que haya uno.

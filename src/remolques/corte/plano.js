@@ -3,7 +3,7 @@
 // contorno, cada uno con la línea de corte, la rosa de terminado, los ollaos y marcas, y sus cotas (verde lo
 // terminado, ocre lo de corte), como en los DWG de los pedidos (AR2605120). Debajo, el corte del rollo.
 import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
-import { aguasArquilladas, DOBLEZ_BASTILLA, piezasLona } from './lonaAlta.js';
+import { aguasArquilladas, DOBLEZ_BASTILLA, esquinasChaflan, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano } from '../../domain/corteLona/presentacion.js';
 
 const ORIGEN_M = 100;   // como en toldos: lejos del origen del CAD
@@ -67,6 +67,25 @@ function rosaCabeza(L, f, x0, w, h, t) {
     tramo([[x0 + w - cima[0], cima[1]], [x0 + w - pend[0], pend[1]]]);
     if (g.rh > i) { arco(x0 + g.rh, g.cyH, g.rh - i, 90 + grados, 180); arco(x0 + w - g.rh, g.cyH, g.rh - i, 0, 90 - grados); }
     if (g.rc > i) arco(x0 + g.a, g.cyC, g.rc - i, 90 - grados, 90 + grados);
+    return;
+  }
+  if (f.tipo === 'TIPO 04') {
+    // Con chaflán: 1 cm por dentro del corte, el chaflán paralelo y los arcos con el mismo centro (radio − 1 cm);
+    // con una arista viva o de radio de 1 cm o menos, la esquina por dentro queda viva.
+    const e = esquinasChaflan(f, w, h), s = Math.SQRT1_2, k = i * (Math.SQRT2 - 1);
+    const tramo = (pts) => L.g.polilineas.push({ capa: 'referencias', puntos: pts.map(([a, b]) => t(a, b)), cerrada: false });
+    const arco = (cx, cy, radio, desde, hasta) => { const [x, y] = t(cx, cy); L.g.arcos.push({ capa: 'referencias', x, y, r: radio / 10, desde, hasta }); };
+    // Lado izquierdo, en x desde el lado; el derecho se refleja.
+    const ladoY = e.radioAbajo > i ? e.abajo.cy : h - e.pata - k;
+    const ini = e.radioAbajo > i ? [e.abajo.cx - (e.radioAbajo - i) * s, e.abajo.cy + (e.radioAbajo - i) * s] : [i, ladoY];
+    const fin = e.radioArriba > i ? [e.arriba.cx - (e.radioArriba - i) * s, e.arriba.cy + (e.radioArriba - i) * s] : [e.pata + k, h - i];
+    const techo = e.radioArriba > i ? e.arriba.cx : e.pata + k;
+    tramo([[x0 + i, ladoY], [x0 + i, base], [x0 + w - i, base], [x0 + w - i, ladoY]]);
+    tramo([[x0 + ini[0], ini[1]], [x0 + fin[0], fin[1]]]);
+    tramo([[x0 + w - ini[0], ini[1]], [x0 + w - fin[0], fin[1]]]);
+    tramo([[x0 + techo, h - i], [x0 + w - techo, h - i]]);
+    if (e.radioAbajo > i) { arco(x0 + e.abajo.cx, e.abajo.cy, e.radioAbajo - i, 135, 180); arco(x0 + w - e.abajo.cx, e.abajo.cy, e.radioAbajo - i, 0, 45); }
+    if (e.radioArriba > i) { arco(x0 + e.arriba.cx, e.arriba.cy, e.radioArriba - i, 90, 135); arco(x0 + w - e.arriba.cx, e.arriba.cy, e.radioArriba - i, 45, 90); }
     return;
   }
   const pts = f.tipo === 'TIPO 02'

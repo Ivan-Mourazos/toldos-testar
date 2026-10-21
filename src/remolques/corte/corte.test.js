@@ -169,6 +169,30 @@ describe('generarCorteRemolques', () => {
     expect(l2.filter((l) => Math.abs(largo(l) - (1708 - 2 * 135.1)) < 1)).toHaveLength(1);
   });
 
+  it('corta el perfil con chaflán con el chaflán en los hombros, como lo dibuja la web', () => {
+    // Iván, 21/10/2026: «es lo mismo prácticamente que el resto; el chaflán es en el hombro». AR2604412 con un
+    // chaflán de 20 (cara entre vértices virtuales: pata de 14,1) y aristas vivas.
+    const pedido = structuredClone(AR2604412);
+    const [el] = pedido.elementos;
+    Object.assign(el.input, { tipoPerfil: 'TIPO 04', chaflan: 20, radioChaflanAbajo: 0, radioChaflanArriba: 0, radioHombro: 0, aguas: 0 });
+    const { cortes, aMano, archivo } = generarCorteRemolques(pedido);
+    expect(aMano).toEqual([]);
+    const lineas = cortes[0].entidades.lineas.filter((l) => l.capa === 'DISCO1');
+    const largo = (l) => Math.hypot(l.x2 - l.x1, l.y2 - l.y1);
+    const diagonales = lineas.filter((l) => Math.abs(Math.abs(l.x2 - l.x1) - Math.abs(l.y2 - l.y1)) < 0.5 && largo(l) > 1);
+    // Dos chaflanes por cabeza (delantera y trasera).
+    expect(diagonales).toHaveLength(2 * 2);
+    expect(diagonales.every((l) => Math.abs(largo(l) - 200) < 0.5)).toBe(true);
+    expect(cortes[0].entidades.arcos).toHaveLength(0);
+    expect(cortes[0].avisos.some((a) => /chaflán/i.test(a))).toBe(true);
+    expect(archivo.plano.dxf.length).toBeGreaterThan(0);
+    // Con radio en las dos aristas, arcos de radio + 1 cm en cada esquina (como el arquillado).
+    Object.assign(el.input, { radioChaflanAbajo: 5, radioChaflanArriba: 5 });
+    const conRadios = generarCorteRemolques(pedido).cortes[0].entidades.arcos;
+    expect(conRadios).toHaveLength(2 * 2 * 2);
+    expect(new Set(conRadios.map((a) => Math.round(a.r)))).toEqual(new Set([60]));
+  });
+
   it('sigue dejando a mano los puentes que no son de Hijos de Pedro López', () => {
     const pedido = structuredClone(AR2604800);
     pedido.elementos[0].input.recogeAtras = 'PUENTES ESVA';
