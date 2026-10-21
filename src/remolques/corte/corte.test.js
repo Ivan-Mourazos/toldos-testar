@@ -194,12 +194,11 @@ describe('generarCorteRemolques', () => {
     expect(new Set(conRadios.map((a) => Math.round(a.r)))).toEqual(new Set([60]));
   });
 
-  it('en las cabezas bajas las cotas de los ollaos van hacia abajo, para dejar sitio a los textos (AR2604800)', () => {
+  it('las cotas de los ollaos de las cabezas van por debajo, para dejar sitio a los textos (AR2604800)', () => {
     // Iván, 21/10/2026: en AR2604800 (paños de 29,5 con 5 ollaos y una ventana de 14) la escalera tapaba el
-    // rótulo y la ventana. En AR2605078 (87,5 con 4 ollaos) cabe dentro, como siempre.
-    expect(escaleraCabeza(5, 29.5, 14)).toMatchObject({ abajo: true, bajan: 24 });
-    expect(escaleraCabeza(5, 29.5)).toMatchObject({ abajo: true });
-    expect(escaleraCabeza(4, 87.5)).toMatchObject({ abajo: false, bajan: 0 });
+    // rótulo y la ventana; mejor así siempre. Las cotas del ancho bajan lo que ocupa la escalera.
+    expect(escaleraCabeza(5)).toEqual({ abajo: true, bajan: 24, textoDesde: 4.5 });
+    expect(escaleraCabeza(4)).toMatchObject({ abajo: true, bajan: 20 });
   });
 
   it('sigue dejando a mano los puentes que no son de Hijos de Pedro López', () => {
