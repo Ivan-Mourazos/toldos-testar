@@ -6,7 +6,7 @@
 .corte-cabecera p, .corte-ayuda { margin: 6px 0 0; color: var(--text-muted); font-size: 13px; }
 .corte-estado { padding: 7px 10px; border: 1px solid currentColor; border-radius: 8px; font-size: 13px; color: var(--tramo-trabajo); }
 .corte-estado.is-hecho { color: var(--tramo-holgado); }
-.corte-estado.is-viejo { color: var(--tramo-ajustado); }
+.corte-estado.is-viejo, .corte-estado.is-aviso { color: var(--tramo-ajustado); }
 .corte-aviso, .corte-avisos { color: var(--tramo-trabajo); font-size: 13px; line-height: 1.6; }
 .corte-ajustes { margin-top: 16px; }
 .corte-ajustes summary, .corte-desglose summary { cursor: pointer; font-weight: 600; padding-block: 8px; }

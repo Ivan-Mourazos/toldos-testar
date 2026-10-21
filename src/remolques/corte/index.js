@@ -3,7 +3,7 @@
 // junto: primero las lonas altas y, a continuación, los baquetones. Una lona con algo que todavía no se
 // sabe cortar (TIPO 03/04, puentes, más ancho detrás) se deja entera para hacerla a mano.
 import { escribirDxf2004 } from '../../domain/corteLona/dxfCorte.js';
-import { normalizeOf } from '../../reviewRules.js';
+import { ofElemento, OF_PROVISIONAL } from './of.js';
 import { cabeEnRollo, cortarBaquetones, piezasBaqueton } from './baqueton.js';
 import { cortarLonasAltas, soportada, R_OLLAO } from './lonaAlta.js';
 import { escribirPlanoRemolques } from './plano.js';
@@ -61,7 +61,7 @@ function apilar(cortes) {
   return juntas;
 }
 
-const ofDe = (el) => normalizeOf(el.input?.cabecera?.ordenFabricacion ?? '');
+const ofDe = (el) => ofElemento(el) || OF_PROVISIONAL;
 const descripcion = (e) => (e.tipo === 'baqueton'
   ? `baquetón ${e.input.largo}×${e.input.ancho}×${e.input.baqueton}`
   : `lona alta ${e.input.largo}×${e.input.ancho}×${e.input.altoDelante} ${e.input.tipoPerfil}`);

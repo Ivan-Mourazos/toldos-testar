@@ -12,8 +12,17 @@ const corte: VistaCorte = { idMaterial: 'PVC|2500', codigoTela: 'PVC', material:
   dibujo: { lineas: [{ capa: 'DISCO1', x1: 0, x2: 4875, y1: 0, y2: 0 }, { capa: 'ROTULADOR', x1: 0, x2: 4875, y1: 70, y2: 70 }], textos: [{ x: 40, y: 40, h: 100, valor: 'REVÉS' }] } };
 const vista: CorteRespuesta = { corteLona: null, pendientes: [], avisos: ['Toldo B: bamba con onda.'], cortes: { conSacos: [corte], trozoSeparado: null } };
 describe('Vista compartida del corte de lona', () => {
+  it('sin OF muestra una etiqueta de aviso aunque el corte conste al día', () => {
+    const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '' }] };
+    const estado = { version: 2, generadoEn: '', generadoPor: 'IVÁN', ofStockSacos: '0230811', ajustes: {}, toldos: [] };
+    const html = renderToStaticMarkup(<CorteLona order={order} estado={estado} />);
+    expect(html).toContain('Vista previa · falta la OF');
+    expect(html).toContain('corte-estado is-aviso');
+    expect(html).not.toContain('Corte al día');
+  });
   it('solo ofrece la sección para PVC de modelos con corte e informa del estado', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA' }] };
+    order.awnings[0].of = '0232568';
     const html = renderToStaticMarkup(<CorteLona order={order} />);
     expect(html).toContain('Falta generar el corte');
     expect(html).toContain('Generar corte');

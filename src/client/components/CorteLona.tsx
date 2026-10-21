@@ -48,6 +48,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones }: 
 
   if (!requerido) return null;
   const datos = vista?.entrada === entrada ? vista.datos : null;
+  const sinOf = toldos.some(({ t }) => !t.of?.trim());
   const pendientes = comprobacion?.entrada === entrada ? comprobacion.pendientes : estado ? null : toldos.map(({ letra }) => ({ letra, motivo: 'sinGenerar' as const }));
   const estadoVisible = pendientes?.some(p => p.motivo === 'viejo') ? 'viejo' : pendientes?.length || !estado ? 'falta' : 'hecho';
 
@@ -73,7 +74,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones }: 
   return <section className="corte-lona panel bloque-3d" aria-label="Corte de lona" aria-busy={generando}>
     <header className="corte-cabecera">
       <div><span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Corte de lona</h2></span><p>PVC · piezas y marcas de confección, agrupadas por tela</p></div>
-      <span className={`corte-estado is-${estadoVisible}`} role="status">{estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
+      <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
       {!reviewCode && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
     </header>
     {acciones?.(Boolean(datos && pendientes?.length === 0))}

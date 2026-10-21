@@ -3,10 +3,12 @@ import path from 'node:path';
 import { carpetaCorte } from '../../corteLonaArchivos.js';
 import { writeFileAtomic } from '../../workflow.js';
 import { generarCorteRemolques } from './index.js';
+import { elementosSinOf, exigirOfsCorte } from './of.js';
 
 // El plano se guarda para revisar. El DXF se prepara aparte para descargarlo o enviarlo con su botón.
 export function crearCorteRemolques({ ajustes, oda }) {
   async function preparar(pedido) {
+    exigirOfsCorte(pedido);
     const resultado = generarCorteRemolques(pedido);
     const avisos = resultado.aMano.map((a) => `${a.nombre}: esta lona se corta a mano (${a.motivo}).`);
     if (!resultado.cortes.length) return { ficheros: [], avisos };
@@ -47,6 +49,8 @@ export function crearCorteRemolques({ ajustes, oda }) {
   function vista(pedido) {
     const { cortes, aMano } = generarCorteRemolques(pedido);
     return {
+      sinOf: elementosSinOf(pedido),
+      avisos: elementosSinOf(pedido).map((letra) => `Elemento ${letra}: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.`),
       cortes: cortes.map((c) => ({
         nombre: c.nombre, material: c.materialCorto, largo: c.largo, refuerzos: c.refuerzos,
         elementos: c.elementos, avisos: c.avisos, entidades: c.entidades,
@@ -56,9 +60,7 @@ export function crearCorteRemolques({ ajustes, oda }) {
   }
 
   function prepararDxf(pedido) {
-    if (pedido.elementos.some((e) => !String(e.input.cabecera.ordenFabricacion || '').trim())) {
-      throw Object.assign(new Error('Falta la OF: escríbela antes de descargar o enviar el corte.'), { statusCode: 409 });
-    }
+    exigirOfsCorte(pedido);
     const resultado = generarCorteRemolques(pedido);
     if (!resultado.cortes.length || !resultado.archivo) throw Object.assign(new Error('Este pedido no tiene corte disponible.'), { statusCode: 409 });
     return [{ filename: `${resultado.archivo.nombre}.dxf`, contents: Buffer.from(resultado.archivo.dxf, 'latin1') }];

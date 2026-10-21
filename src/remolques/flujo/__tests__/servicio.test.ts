@@ -363,8 +363,13 @@ describe("generar archivos", () => {
   });
 
   it("sin OF en un elemento lo dice como elemento", async () => {
-    const { servicio } = montar();
-    await servicio.guardar({ elementos: [elemento("lona-02", "10", "231780"), elemento("baqueton-01", "11", "")], savedBy: "IVÁN" });
+    const { servicio, interna } = montar();
+    await guardar(servicio);
+    // También se protegen pedidos antiguos guardados antes de exigir la OF al guardar.
+    const ruta = path.join(interna, "AR2604286.json");
+    const antiguo = JSON.parse(readFileSync(ruta, "utf8"));
+    antiguo.elementos[1].input.cabecera.ordenFabricacion = "";
+    writeFileSync(ruta, JSON.stringify(antiguo));
     expect(await falla(servicio.generar("AR2604286", {}))).toEqual([409, "Falta la OF en el elemento B."]);
   });
 

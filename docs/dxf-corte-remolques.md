@@ -5,6 +5,16 @@ comparte las capas del bot (DISCO1, DISCO2, CUTTER, ROTULADOR, taladro, texto) y
 
 ## Flujo en la web desde el 21/10/2026
 
+En Nuevo pedido, debajo del planteo, «Ver vista previa del corte» calcula las piezas sin guardar
+el pedido ni escribir archivos. `POST /api/remolques/corte/vista-previa` recibe `elementos` y los
+`params` del formulario (obligatorios, para no inicializar configuración al leer valores por defecto),
+y el `clienteRps` si lo hay. Devuelve la misma vista que el pedido guardado, sin DXF ni plano.
+Al cambiar los datos se descarta la vista y hay que volver a calcularla.
+
+Sin OF se dibuja «SIN OF» con un aviso por elemento. Guardar para revisión, guardar el plano,
+descargar el DXF y los envíos al bot o a DXFs exigen OF en todos los elementos; devuelven 409
+antes de escribir si falta alguna, también en pedidos antiguos.
+
 Al guardar para revisión se escribe solo el plano (DWG con ODA o plano DXF con su aviso si falta
 ODA); se pregunta antes de sustituirlo. «Generar archivos» guarda los PDF y ya no manda el corte.
 

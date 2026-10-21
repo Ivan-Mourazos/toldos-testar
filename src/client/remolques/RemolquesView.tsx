@@ -17,6 +17,7 @@ import { PestanasElementos } from './PestanasElementos';
 import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
+import { VistaPreviaCorte } from './VistaPreviaCorte';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
@@ -262,6 +263,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               : 'Busca el pedido arriba para traer sus líneas, o escribe su número en Datos del pedido para empezar a mano.'}
         </OrderEmptyState>
       )}
+      {lineas.length > 0 && <VistaPreviaCorte lineas={lineas} params={params} bloqueo={ws.bloqueoParams.motivo ?? faltaPdf} />}
       {fichaCliente.abierta && (
         <GuardarEnFicha abierta={fichaCliente.abierta} usuario={usuario} numeroPedido={numeroPedido}
           ocupado={fichaCliente.ocupado} onGuardar={(claves) => void fichaCliente.guardar(claves)} onCerrar={fichaCliente.cerrar} />

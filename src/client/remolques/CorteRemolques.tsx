@@ -14,6 +14,8 @@ type Arco = { capa: string; x: number; y: number; r: number; desde: number; hast
 export type EntidadesCorte = { lineas: Linea[]; textos: Texto[]; circulos: Circulo[]; arcos: Arco[] };
 
 export type VistaCorteRemolques = {
+  sinOf?: string[];
+  avisos?: string[];
   cortes: Array<{
     nombre: string;
     material: string;
@@ -122,6 +124,7 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
 export function CorteRemolquesVista({ datos }: { datos: VistaCorteRemolques }) {
   return (
     <>
+      {Boolean(datos.avisos?.length) && <ul className="corte-avisos">{datos.avisos!.map((aviso) => <li key={aviso}>{aviso}</li>)}</ul>}
       {datos.cortes.length === 0 && datos.aMano.length === 0 && <p className="corte-ayuda">Este pedido no tiene lona que cortar.</p>}
       {datos.aMano.length > 0 && (
         <ul className="corte-avisos">

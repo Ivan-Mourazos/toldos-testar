@@ -5,6 +5,7 @@ import {
   approvalReviewers, ELEMENT_NOUNS, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
 import type { CalcParams } from "../calc/params.ts";
+import { exigirOfsCorte } from "../corte/of.js";
 import { validarParams } from "../calc/validar-params.ts";
 import { prepararPedidoHoja } from "../hoja/pedido.ts";
 import type { DatosHojaPedido } from "../hoja/tipos.ts";
@@ -223,6 +224,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     const clienteRps = validarClienteRps(c.clienteRps);
     // Completo, del mismo pedido, ordenado y calculado aquí: nunca se guarda un resultado que no salga del cálculo.
     const datos = prepararPedidoHoja(c.elementos, params);
+    exigirOfsCorte(datos);
     const orderCode = codigoPedido(datos.elementos[0].input.cabecera.numeroPedido);
     const ocupado = ocupados.get(orderCode);
     if (ocupado === "generando") {
@@ -334,6 +336,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
    * quizá hecho a mano), no se sustituye sin `confirmar` (Iván, 20/10/2026): se devuelve en `existentes`.
    */
   async function escribirPlanoRevision(pedido: PedidoRemolques, confirmar = false): Promise<{ files: FicheroCorte[]; avisos: string[]; existentes?: string[] } | null> {
+    exigirOfsCorte(pedido);
     if (!deps.corte) return null;
     if (!(await deps.ajustes()).productionEnabled) return { files: [], avisos: ["Modo simulación: no se ha escrito el plano del corte."] };
     const { ficheros, avisos } = await prepararCorte(deps.corte, pedido, registrar);
@@ -383,6 +386,18 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return deps.corte.vista(conResultadosDeLaHoja(pedido, datos));
   }
 
+  /** El planteo del formulario, calculado aquí sin consultar ni tocar el almacén de pedidos. */
+  async function vistaPreviaCorte(cuerpo: unknown): Promise<unknown> {
+    if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
+    const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; clienteRps?: unknown };
+    // La pantalla siempre los manda: leer valores por defecto podría inicializar archivos de configuración.
+    const params = paramsDeLaPantalla(c.params);
+    const datos = prepararPedidoHoja(c.elementos, params);
+    const pedido = crearPedidoRemolques({ datos, autoria: { technician: datos.elementos[0].input.cabecera.realizadoPor || "", reviewer: "" },
+      existente: null, ahora: ahora(), clienteRps: validarClienteRps(c.clienteRps) });
+    return deps.corte.vista(pedido);
+  }
+
   async function vistaPrevia(orderCode: string): Promise<{ pdf: Uint8Array; nombre: string }> {
     const pedido = await obtener(orderCode);
     const datos: DatosHojaPedido = {
@@ -413,7 +428,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
 
   async function descargarCorte(orderCode: string) {
     if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
-    return deps.corte.prepararDxf(pedidoCalculado(await obtener(orderCode)))[0];
+    const pedido = await obtener(orderCode);
+    exigirOfsCorte(pedido);
+    return deps.corte.prepararDxf(pedidoCalculado(pedido))[0];
   }
 
   async function enviarCorte(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
@@ -426,6 +443,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
       const pedido = await obtener(orderCode);
+      exigirOfsCorte(pedido);
       const calculado = pedidoCalculado(pedido);
       return await enviarCorteCompartido({ pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
         usuario, destino: c.destino, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
@@ -435,5 +453,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     } finally { ocupados.delete(orderCode); }
   }
 
-  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte, planoCorte, enviarCorte, descargarCorte };
+  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
 }
