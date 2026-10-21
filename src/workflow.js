@@ -142,6 +142,19 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
     const probePath = path.join(directory, `.toldos-write-check-${randomUUID()}.tmp`);
     let probeCreated = false;
     try {
+      // La carpeta DXFs del año la crea la web al guardar (Iván, 21/10/2026): si aún no está, basta con poder
+      // escribir en la que exista por encima, sin subir más allá de la parte fija de la ruta (antes de {YYYY}).
+      let comprobada = directory;
+      if (key === 'corteLonaDxfDirectory') {
+        const raiz = resolveDirectoryTemplate(directoryTemplateRoot(template), year);
+        while (comprobada.length > raiz.length && !(await fs.stat(comprobada).then(() => true, () => false))) comprobada = path.dirname(comprobada);
+      }
+      if (comprobada !== directory) {
+        const sonda = path.join(comprobada, `.toldos-write-check-${randomUUID()}.tmp`);
+        await fs.writeFile(sonda, '', { flag: 'wx' });
+        await fs.unlink(sonda);
+        return { key, label, path: directory, ok: true, error: '' };
+      }
       const stat = await fs.stat(directory);
       if (!stat.isDirectory()) throw new Error('La ruta no es una carpeta.');
       if (accessMode === 'read') {

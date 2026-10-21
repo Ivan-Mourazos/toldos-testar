@@ -246,6 +246,24 @@ describe('flujo de revisión y producción', () => {
     expect(defaultWorkflowSettings({ remolquesPlanteamientosDirectory: '/mnt/r/plan' }).remolquesPlanteamientosDirectory).toBe('/mnt/r/plan');
   });
 
+  it('la carpeta DXFs del año puede faltar: la web la crea, así que se comprueba la de encima (Iván, 21/10/2026)', async () => {
+    await fs.mkdir(path.join(process.cwd(), 'tmp'), { recursive: true });
+    const root = await fs.mkdtemp(path.join(process.cwd(), 'tmp', 'workflow-dxfs-'));
+    temporaryDirectories.push(root);
+    await fs.mkdir(path.join(root, '2026'), { recursive: true });
+    const settings = normalizeWorkflowSettings({ productionEnabled: true, reviewDirectory: root, planteamientosDirectory: root,
+      rpsUploadDirectory: root, corteLonaDxfDirectory: path.join(root, '{YYYY}', 'DXFs') });
+    const dxfs = async (year) => (await checkWorkflowDirectories(settings, { year })).directories.find((d) => d.key === 'corteLonaDxfDirectory');
+    // Sin «2026/DXFs», pero con «2026»: vale, y no crea nada.
+    expect(await dxfs(2026)).toMatchObject({ ok: true, path: path.join(root, '2026', 'DXFs') });
+    expect(await fs.readdir(path.join(root, '2026'))).toEqual([]);
+    // En enero, sin «2027»: se puede crear desde la raíz.
+    expect((await dxfs(2027)).ok).toBe(true);
+    // Si falta la carpeta de antes de {YYYY} (montaje caído o ruta mal puesta), falla.
+    const sinRaiz = { ...settings, corteLonaDxfDirectory: path.join(root, 'falta', '{YYYY}', 'DXFs') };
+    expect((await checkWorkflowDirectories(sinRaiz, { year: 2026 })).directories.find((d) => d.key === 'corteLonaDxfDirectory').ok).toBe(false);
+  });
+
   it('guarda la carpeta interna de remolques: absoluta, sin {YYYY}, y la comprueba si está puesta', async () => {
     // Nada fuera de tmp/ del repositorio.
     await fs.mkdir(path.join(process.cwd(), 'tmp'), { recursive: true });
