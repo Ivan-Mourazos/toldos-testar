@@ -63,8 +63,8 @@ function forma(i) {
   const rHombro = tipo === 'TIPO 03' && (i.radioHombro ?? 0) > 0 ? (i.radioHombro + 1) * 10 : 0;
   const rCumbrera = tipo === 'TIPO 03' ? Math.max(i.radioCumbrera ?? 0, 0) * 10 : 0;
   // Con chaflán (TIPO 04; Iván, 21/10/2026: «el chaflán es en el hombro», como el resto): la cara entre
-  // vértices virtuales de la web y, si una arista lleva radio, ese radio + 1 cm, como el arquillado. Sin cortes
-  // a mano con los que contrastarlo todavía.
+  // vértices virtuales de la web y, si una arista lleva radio, ese radio + 1 cm, como el arquillado. Contrastado
+  // con los cortes a mano de Euro Remolque (AR2604263 y otros 9: chaflán 14, radios 7 y 7,5 → arcos de 80 y 85).
   const masUno = (v) => ((v ?? 0) > 0 ? (v + 1) * 10 : 0);
   const chaflan = tipo === 'TIPO 04' ? { cara: (i.chaflan ?? 0) * 10, rAbajo: masUno(i.radioChaflanAbajo), rArriba: masUno(i.radioChaflanArriba) } : null;
   return { tipo, r, aguas, rHombro, rCumbrera, chaflan };
@@ -379,7 +379,6 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
     const i = el.input;
     const { d, t, ventana, marcasHombro, marcasAtras, rebajeLado, puentes } = cabezasLona(el);
     if (ventana) out.avisos.push(`${el.of}: ventana marcada con rotulador y su tapa de ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}; revisar la altura de la ventana.`);
-    if (i.tipoPerfil === 'TIPO 04') out.avisos.push(`${el.of}: perfil con chaflán; aún sin cortes a mano con los que compararlo: revisar el chaflán y sus radios.`);
     if (puentes) out.avisos.push(`${el.of}: puentes de Hijos de Pedro López: rebaje de ${REBAJE_PUENTES / 10} cm detrás en el contorno y orejas sin ollaos; revisarlo.`);
     for (let u = 0; u < (i.cantidad || 1); u++) {
       const L = letras?.get(el)?.[u] ?? '';

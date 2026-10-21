@@ -14,6 +14,9 @@ import AR2605079 from './__fixtures__/AR2605079.json' with { type: 'json' };
 import AR2605088 from './__fixtures__/AR2605088.json' with { type: 'json' };
 import AR2605132 from './__fixtures__/AR2605132.json' with { type: 'json' };
 import { generarCorteRemolques, resumirMaterial } from './index.js';
+import { calcLona } from '../calc/lona.ts';
+import { DEFAULT_PARAMS } from '../calc/params.ts';
+import { emptyLona } from '../entradas-vacias.ts';
 import { piezasLona } from './lonaAlta.js';
 import { escaleraCabeza } from './plano.js';
 
@@ -240,7 +243,6 @@ describe('generarCorteRemolques', () => {
     expect(diagonales).toHaveLength(2 * 2);
     expect(diagonales.every((l) => Math.abs(largo(l) - 200) < 0.5)).toBe(true);
     expect(cortes[0].entidades.arcos).toHaveLength(0);
-    expect(cortes[0].avisos.some((a) => /chaflán/i.test(a))).toBe(true);
     expect(archivo.plano.dxf.length).toBeGreaterThan(0);
     // Con radio en las dos aristas, arcos de radio + 1 cm en cada esquina (como el arquillado).
     Object.assign(el.input, { radioChaflanAbajo: 5, radioChaflanArriba: 5 });
@@ -254,6 +256,24 @@ describe('generarCorteRemolques', () => {
     // rótulo y la ventana; mejor así siempre. Las cotas del ancho bajan lo que ocupa la escalera.
     expect(escaleraCabeza(5)).toEqual({ abajo: true, bajan: 24, textoDesde: 4.5 });
     expect(escaleraCabeza(4)).toMatchObject({ abajo: true, bajan: 20 });
+  });
+
+  it('el chaflán con hombros de Euro Remolque sale como a mano (AR2604263)', () => {
+    // 160 × 120 × 70 con goma detrás. En sus 10 cortes a mano con chaflán (2025-2026), cada hombro: arco de 80
+    // contra el lado, tramo recto y arco de 85 contra el techo. En la web: chaflán 14, radios 7 y 7,5 (+1 al cortar).
+    const input = { ...emptyLona(), largo: 160, ancho: 120, altoDelante: 70, altoAtras: 70, tipoPerfil: 'TIPO 04', chaflan: 14, radioChaflanAbajo: 7, radioChaflanArriba: 7.5, recogeDelante: 'NO', recogeAtras: 'GOMA', contorno: 200, modoOllaos: 'REPARTIDOS', cantidad: 1 };
+    const P = piezasLona({ input, result: calcLona(input, DEFAULT_PARAMS), of: 'x' });
+    const cerca = (a, b, mm = 2.5) => Math.abs(a - b) <= mm;
+    // A mano, desde el lado izquierdo del perfil y la base: la oreja (y el lado recto) hasta 611,7; arcos de 80 con
+    // centro en (80, 611,7) y de 85 en (133,5, 660).
+    expect(cerca(P.t.altoOreja, 611.7)).toBe(true);
+    const arcos = P.t.p.arcos.filter((a) => a.x < P.t.p.w / 2).map((a) => ({ x: a.x - P.oreja, y: a.y, r: a.r }));
+    expect(arcos).toHaveLength(2);
+    const [lado, techo] = arcos.sort((a, b) => a.r - b.r);
+    expect(lado.r).toBe(80);
+    expect(cerca(lado.x, 80) && cerca(lado.y, 611.7)).toBe(true);
+    expect(techo.r).toBe(85);
+    expect(cerca(techo.x, 133.5) && cerca(techo.y, 660)).toBe(true);
   });
 
   it('sigue dejando a mano los puentes que no son de Hijos de Pedro López', () => {

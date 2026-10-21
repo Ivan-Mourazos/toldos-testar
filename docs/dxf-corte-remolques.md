@@ -310,7 +310,7 @@ Iván: «es lo mismo prácticamente que el resto; el chaflán es en el hombro».
 el dibujo de la web (`geometry/chaflan.ts`): la cara entre vértices virtuales y, si una arista lleva radio,
 ese radio + 1 cm, como el arquillado. La oreja del trasero llega hasta el arco o, con la arista viva, al
 hombro − 6 cm, como con aguas. En el plano, la rosa va 1 cm por dentro con los arcos de radio − 1 cm.
-Todavía no hay pedidos de la web con chaflán y corte a mano: la web avisa de revisarlo hasta que haya uno.
+Contrastado (21/10/2026) con los 10 cortes a mano con chaflán de Euro Remolque (INCAR, «Tipo 04», 2025-2026): en cada hombro, arco de 80 contra el lado, tramo recto a unos 45° y arco de 85 contra el techo, igual en todas las medidas. Con chaflán 14 y radios 7 (lado) y 7,5 (techo) la web sale igual que a mano a 1-2 mm (AR2604263). AR2600511 lleva el chaflán sin radios.
 
 ## Marcas del hombro detrás (21/10/2026)
 
