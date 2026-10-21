@@ -24,7 +24,10 @@ describe('el corte de lona del pedido de remolques', () => {
   });
 
   it('dice qué lona se corta a mano y por qué', () => {
-    const html = pintar(AR2604800);
+    // Los puentes de ESVA aún no tienen corte (los de Hijos de Pedro López sí).
+    const pedido = structuredClone(AR2604800);
+    pedido.elementos[0].input.recogeAtras = 'PUENTES ESVA';
+    const html = pintar(pedido);
     expect(html).toContain('se corta a mano');
     expect(html).toContain('recogida con puentes');
     expect(html).not.toContain('corte-material');

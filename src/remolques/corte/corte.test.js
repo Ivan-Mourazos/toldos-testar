@@ -6,6 +6,7 @@ import AR2604412 from './__fixtures__/AR2604412.json' with { type: 'json' };
 import AR2604800 from './__fixtures__/AR2604800.json' with { type: 'json' };
 import AR2604802 from './__fixtures__/AR2604802.json' with { type: 'json' };
 import AR2604990 from './__fixtures__/AR2604990.json' with { type: 'json' };
+import AR2605078 from './__fixtures__/AR2605078.json' with { type: 'json' };
 import AR2605071 from './__fixtures__/AR2605071.json' with { type: 'json' };
 import AR2605079 from './__fixtures__/AR2605079.json' with { type: 'json' };
 import AR2605088 from './__fixtures__/AR2605088.json' with { type: 'json' };
@@ -136,10 +137,44 @@ describe('generarCorteRemolques', () => {
     expect(claro.elementos.map((e) => e.of)).toEqual(['0233083', '0233085', '0233086', '0233087', '0233088', '0233089', '0233090']);
   });
 
-  it('deja a mano la lona con puentes (AR2604800)', () => {
-    const { cortes, aMano } = generarCorteRemolques(AR2604800);
+  it('corta los puentes de Hijos de Pedro López como a mano: contorno en trapecio con rebaje detrás (AR2605078, AR2604800)', () => {
+    // 200 × 130 (131,5 detrás) × 83, arquillado con aguas, dos remolques. Como a mano: contorno de 2145 de largo,
+    // 2855 delante y 2870 detrás, con el techo 9 cm más corto detrás; trasero de 1725 con el perfil de 1345 y
+    // orejas de 190 hasta el hombro (715), sin ollaos en las orejas. Los lados del rebaje, iguales que las orejas
+    // (Iván, 21/10/2026: a mano salieron de 752 y estaba mal).
+    const { cortes, aMano } = generarCorteRemolques(AR2605078);
+    expect(aMano).toEqual([]);
+    const [c] = cortes;
+    const lineas = c.entidades.lineas.filter((l) => l.capa === 'DISCO1');
+    const largo = (l) => Math.hypot(l.x2 - l.x1, l.y2 - l.y1);
+    // Lados inclinados del contorno (2145 de largo, 7,5 mm de inclinación a cada lado) y el rebaje de 9 cm.
+    const inclinados = lineas.filter((l) => Math.abs(largo(l) - Math.hypot(2145, 7.5)) < 0.5);
+    expect(inclinados).toHaveLength(2 * 2);
+    expect(lineas.filter((l) => Math.abs(largo(l) - 90) < 0.5)).toHaveLength(2 * 2);
+    expect(lineas.filter((l) => Math.abs(largo(l) - (2870 - 2 * 715.1)) < 1)).toHaveLength(2);
+    // Ollaos: los del pedido en los laterales, delante y detrás, y ninguno en las orejas.
+    const { reparto } = AR2605078.elementos[0].result;
+    expect(c.entidades.circulos).toHaveLength(2 * (2 * reparto.laterales.length + reparto.delante.length + reparto.atras.length));
+    expect(c.avisos.some((a) => /Hijos de Pedro López/i.test(a))).toBe(true);
+    // El plano acota el contorno delante (285,5) y detrás (287), con su terminado (− 7), y el fondo del rebaje.
+    const { archivo } = generarCorteRemolques(AR2605078);
+    const cotas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(cotas).toEqual(expect.arrayContaining([285.5, 278.5, 287, 280, 9]));
+
+    // AR2604800 (220 × 130/131,5 × 25, una ventana): 2345 de largo, como a mano, y lados del rebaje de 135,1.
+    const otro = generarCorteRemolques(AR2604800);
+    expect(otro.aMano).toEqual([]);
+    const l2 = otro.cortes[0].entidades.lineas.filter((l) => l.capa === 'DISCO1');
+    expect(l2.filter((l) => Math.abs(largo(l) - Math.hypot(2345, 7.5)) < 0.5)).toHaveLength(2);
+    expect(l2.filter((l) => Math.abs(largo(l) - (1708 - 2 * 135.1)) < 1)).toHaveLength(1);
+  });
+
+  it('sigue dejando a mano los puentes que no son de Hijos de Pedro López', () => {
+    const pedido = structuredClone(AR2604800);
+    pedido.elementos[0].input.recogeAtras = 'PUENTES ESVA';
+    const { cortes, aMano } = generarCorteRemolques(pedido);
     expect(cortes).toEqual([]);
-    expect(aMano).toEqual([expect.objectContaining({ nombre: 'AR2604800', motivo: expect.stringContaining('puentes') })]);
+    expect(aMano).toEqual([expect.objectContaining({ motivo: expect.stringContaining('puentes') })]);
   });
 
   it('no toca el pedido que recibe', () => {

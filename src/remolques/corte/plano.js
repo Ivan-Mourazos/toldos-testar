@@ -7,7 +7,8 @@ import { aguasArquilladas, DOBLEZ_BASTILLA, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano } from '../../domain/corteLona/presentacion.js';
 
 const ORIGEN_M = 100;   // como en toldos: lejos del origen del CAD
-const coma = (v) => (Math.round(v * 10) / 10).toString().replace('.', ',');
+const r1 = (v) => Math.round(v * 10) / 10;
+const coma = (v) => r1(v).toString().replace('.', ',');
 const PERFILES = { 'TIPO 01': 'RECTO', 'TIPO 02': 'RECTO CON AGUAS', 'TIPO 03': 'ARQUILLADO CON AGUAS', 'TIPO 04': 'CHAFLÁN', 'TIPO 05': 'ARQUILLADO' };
 
 function lienzo() {
@@ -93,7 +94,8 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   const i = el.input, r = el.result, P = piezasLona(el);
   const del = r.panoDelantero, tra = r.panoTrasero, con = r.panoContorno, hecha = r.lonaHecha;
   // Ht: el trasero puede ser más corto (trasera a la línea por arriba, AR2605158).
-  const W = del.ancho, H = del.alto, Wt = tra.ancho, Ht = tra.alto, A = con.ancho, B = con.alto, o = P.oreja / 10;
+  // B: lo que ocupa el contorno a lo ancho (en trapecio, lo de detrás más la holgura de cada lado).
+  const W = del.ancho, H = del.alto, Wt = tra.ancho, Ht = tra.alto, A = con.ancho, B = P.c.geo.H / 10, o = P.oreja / 10;
   const enPlano = (x0, y0) => (u, v) => [x0 + u / 10, y0 + v / 10];
   const xDel = X, xTra = X + W + 60, xCon = xTra + Wt + 80;
   const conLetra = letras.filter(Boolean);
@@ -124,7 +126,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
 
   // Paño trasero (con orejas si recoge con goma).
   pintar(L, P.t.p, enPlano(xTra, Y));
-  rosaCabeza(L, P.f, P.oreja, W * 10, Ht * 10, enPlano(xTra, Y));
+  rosaCabeza(L, P.f, P.oreja, P.anchoPerfilTra, Ht * 10, enPlano(xTra, Y));
   if (o) {
     for (const xo of [30, Wt * 10 - 30]) { const [a, b] = enPlano(xTra, Y)(xo, 35), [c, d] = enPlano(xTra, Y)(xo, P.t.altoOreja); L.g.polilineas.push({ capa: 'referencias', puntos: [[a, b], [c, d]], cerrada: false }); }
     L.cota('cotas', xTra + 3, Y, xTra + o + 1, Y, o - 2, -12);
@@ -144,14 +146,21 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   // Paño contorno, a lo ancho: x = a lo largo del contorno, y = a lo largo de la lona (atrás arriba).
   const tc = (u, v) => [xCon + v / 10, Y + u / 10];
   pintar(L, P.c, tc);
-  // Terminado: 3,5 cm por dentro en los laterales y, en las puntas, lo que sobra del hecho a cada lado (1 cm en
-  // una lona normal; 6 con bastilla de enfundar, como en AR2603438). Ahí empieza la escalera de los ollaos.
-  const punta = (A - hecha.largo) / 2;
-  L.g.polilineas.push({ capa: 'referencias', puntos: [[xCon + 3.5, Y + punta], [xCon + B - 3.5, Y + punta], [xCon + B - 3.5, Y + A - punta], [xCon + 3.5, Y + A - punta]], cerrada: true });
+  // Terminado: 3,5 cm por dentro en los laterales (inclinados si va en trapecio) y, en las puntas, donde empieza
+  // y acaba la lona hecha (1 cm en una lona normal; 6 con bastilla de enfundar, como en AR2603438; con los
+  // puentes de HPL, 3,5 delante y 1 antes del rebaje). Ahí empieza la escalera de los ollaos.
+  const g = P.c.geo, uD = g.uDelante, uA = g.uAtras;
+  L.g.polilineas.push({ capa: 'referencias', puntos: [[uD, g.yb(uD) + 35], [uD, g.yt(uD) - 35], [uA, g.yt(uA) - 35], [uA, g.yb(uA) + 35]].map(([u, v]) => tc(u, v)), cerrada: true });
   L.texto(R(1), xCon + B / 2, Y + A / 2 - 4, 14);
-  L.cota('cotas', xCon + 3.5, Y, xCon + B - 3.5, Y, r.contornoAjustado - 7, -12);
-  L.cota('vent-pre-noimpr', xCon, Y, xCon + B, Y, B, -26);
-  L.cota('cotas', xCon, Y + punta, xCon, Y + A - punta, hecha.largo, -12);
+  // Anchos del contorno: delante y, si va en trapecio, también detrás.
+  const xb = (u) => xCon + g.yb(u) / 10, xt = (u) => xCon + g.yt(u) / 10;
+  L.cota('cotas', xb(0) + 3.5, Y, xt(0) - 3.5, Y, r.contornoAjustado - 7, -12);
+  L.cota('vent-pre-noimpr', xb(0), Y, xt(0), Y, con.alto, -26);
+  if (g.Bt !== g.B) {
+    L.cota('cotas', xb(A * 10) + 3.5, Y + A, xt(A * 10) - 3.5, Y + A, r1(g.Bt / 10 - 7), 20);
+    L.cota('vent-pre-noimpr', xb(A * 10), Y + A, xt(A * 10), Y + A, g.Bt / 10, 34);
+  }
+  L.cota('cotas', xCon, Y + uD / 10, xCon, Y + uA / 10, hecha.largo, -12);
   L.cota('vent-pre-noimpr', xCon, Y, xCon, Y + A, A, -26);
   // Contorno que no cabe en el rollo: dónde va el empate (2 cm) y la tira empatada en dos, en trazos.
   if (A * 10 > 2500 && B * 10 > 2500) {
@@ -161,17 +170,23 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
     L.texto(`EMPATE 2 CM · TIRA DE ${coma(A - 250 + 2)} EN DOS (${R(4)} Y ${R(5)})`, xCon + B / 2, yE - 7, 6, 0, 'cotas');
   }
   // Laterales: línea base arriba (atrás, donde empieza la lona hecha), escalera hacia dentro del paño.
-  escaleraV(L, Y + A - (A - hecha.largo) / 2, xCon + 4.5, P.ollaos.laterales);
+  escaleraV(L, Y + uA / 10, xb(uA) + 4.5, P.ollaos.laterales);
   if (i.bastillaEnfundar) {
     // Bastilla de enfundar: el doblez entero, de lado a lado a 10 cm de cada punta, como en AR2603438 (en el
     // corte solo van sus extremos). Sin marcas de hombro, no hay cota de la oreja.
-    for (const u of [DOBLEZ_BASTILLA, A * 10 - DOBLEZ_BASTILLA]) { const [x1, y1] = tc(u, 35), [x2, y2] = tc(u, B * 10 - 35); L.linea('ROTULADOR', x1, y1, x2, y2); }
+    for (const u of [DOBLEZ_BASTILLA, A * 10 - DOBLEZ_BASTILLA]) { const [x1, y1] = tc(u, g.yb(u) + 35), [x2, y2] = tc(u, g.yt(u) - 35); L.linea('ROTULADOR', x1, y1, x2, y2); }
     L.cota('vent-pre-noimpr', xCon + B, Y + A - DOBLEZ_BASTILLA / 10, xCon + B, Y + A, DOBLEZ_BASTILLA / 10, 12, 6);
+  } else if (P.puentes) {
+    // Rebaje de los puentes de HPL: sus lados desde cada borde y su fondo, detrás.
+    const lado = P.rebajeLado / 10, fondo = g.reb / 10;
+    L.cota('vent-pre-noimpr', xb(A * 10), Y + A, xb(A * 10) + lado, Y + A, r1(lado), 8, 6);
+    L.cota('vent-pre-noimpr', xt(A * 10) - lado, Y + A, xt(A * 10), Y + A, r1(lado), 8, 6);
+    L.cota('vent-pre-noimpr', xb(A * 10) + lado, Y + A - fondo, xb(A * 10) + lado, Y + A, fondo, 6, 6);
   } else {
     // Hasta dónde llega la oreja del trasero (las marcas del hombro): cota desde cada borde del corte, arriba.
     const mh = P.marcasHombro / 10;
-    L.cota('vent-pre-noimpr', xCon, Y + A, xCon + mh, Y + A, mh, 8, 6);
-    L.cota('vent-pre-noimpr', xCon + B - mh, Y + A, xCon + B, Y + A, mh, 8, 6);
+    L.cota('vent-pre-noimpr', xb(A * 10), Y + A, xb(A * 10) + mh, Y + A, mh, 8, 6);
+    L.cota('vent-pre-noimpr', xt(A * 10) - mh, Y + A, xt(A * 10), Y + A, mh, 8, 6);
   }
   return { ancho: xCon + B - X, alto: Math.max(H, A) };
 }

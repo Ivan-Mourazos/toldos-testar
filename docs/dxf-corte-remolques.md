@@ -253,8 +253,8 @@ Reglas:
 - Cabezas de pie o tumbadas, la forma que menos rollo gaste, pegadas al contorno; las piezas pequeñas en los
   huecos (también encima del contorno).
 - Remolques más anchos detrás (contorno en trapecio, Hijos de Pedro López): las cabezas no se pegan del
-  todo al contorno, para que la máquina no corte a menos de 1 cm de una raya ya cortada. Pendiente, con los
-  puentes.
+  todo al contorno, para que la máquina no corte a menos de 1 cm de una raya ya cortada. Hecho el
+  21/10/2026: ver «Hijos de Pedro López: trapecio y puentes» al final.
 
 ### Correcciones de Iván (20/10/2026)
 
@@ -275,3 +275,31 @@ Reglas:
   ventana por dentro, cotas verdes (terminado) y ocres (corte, no se imprimen), el empate en trazos y
   **solo el rótulo A1, A2, A3 dentro de cada paño** (sin títulos de paño ni «recoge con…»). Debajo, el
   corte **derecho**, sin girar.
+
+## Hijos de Pedro López: trapecio y puentes (21/10/2026)
+
+Pedidos de la web con lona alta que cambia detrás o con puentes: solo tres en 2026, los tres de Hijos de
+Pedro López (131,5 detrás con 130 delante y «PUENTES HIJOS DE PEDRO LOPEZ» detrás): AR2604800, AR2605078 y
+AR2605103, con su corte a mano. Ninguno con chaflán (TIPO 04).
+
+- **Contorno en trapecio**: delante mide lo que da la web (`panoContorno.alto`) y detrás `altoAtras`, con los
+  dos lados inclinados por igual (7,5 mm cada uno). Ollaos a 4,5 cm del borde inclinado, que es el pie del
+  lateral. Las piezas de al lado no se pegan: 1 cm de holgura a cada lado (a mano, de 8 a 12 mm).
+- **Rebaje de los puentes**: detrás, el techo del contorno queda 9 cm más corto que los lados (los 11,5 de
+  «lateral solo atrás» de la recogida ya lo incluyen en el largo). La lona hecha empieza a 3,5 cm de la punta
+  de delante y acaba 1 cm antes del rebaje; así cuadran al mm los ollaos de AR2604800 y AR2605078.
+- **Lados del rebaje iguales que las orejas del trasero** (Iván, 21/10/2026). En AR2605103 (recto) los dos
+  son de 535; en AR2605078 y AR2604800 a mano no coincidieron (752 y 172 en el contorno, 717 y 137 en el
+  trasero) y Iván dice que ese pedido salió mal.
+- **Trasero**: el perfil del ancho de detrás (1345 con 1330 delante); el paño, con el ancho de delante más
+  42,5 (`panoTraseroConAnchoDelante`), y lo que sobra son orejas (19 cm). Orejas sin ollaos; en el recto,
+  hasta 6 cm del borde de arriba (535 con 595); con hombro en curva, hasta donde empieza la curva. Marcas a
+  1 cm por dentro de cada lado del perfil: abajo (de 3,5 a 5,5) y bajo el alto de la oreja (2 cm).
+- **Marcas del contorno**: delante, solo el centro; detrás, el centro en el techo y, a 20 cm de la punta de
+  los lados, una raya junto a cada borde y otra junto a cada lado del rebaje.
+- AR2605103 tiene a mano el contorno 2,5 cm más corto que la web de ahora (9 de «lateral solo atrás» en vez
+  de 11,5): se hizo con la medida vieja. Seguimos a la web.
+- Ollaos: los del pedido. En AR2605078 el pedido tiene 7 laterales (falta el de 171 y el último está a 201);
+  el histórico de 200 × 130 (26 pedidos) y su baquetón llevan 8. La ficha del cliente guarda esa lona con los
+  7: hay que corregirla (pendiente de Iván).
+- Siguen a mano: los demás puentes (ESVA, LATERALES) y el contorno en trapecio que no cabe en el rollo.
