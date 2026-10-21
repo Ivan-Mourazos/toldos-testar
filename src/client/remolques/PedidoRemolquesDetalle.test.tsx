@@ -28,6 +28,16 @@ const pintar = (props: Partial<React.ComponentProps<typeof FichaPedidoRemolques>
 );
 
 describe('el pedido de remolques abierto en Pedidos', () => {
+  it.each(['IVÁN', 'JAIME'])('enseña el planteamiento sin pulsar nada y agrupa el corte para %s', (currentUser) => {
+    const html = pintar({ currentUser });
+    expect(html).toContain('aria-label="Planteamiento"');
+    expect(html).toContain('Preparando el planteamiento…');
+    expect(html).toContain('Abrir en grande');
+    expect(html).not.toContain('Vista previa del PDF');
+    const cabecera = html.match(/<header class="corte-cabecera[^"]*">(?:(?!<\/header>)[\s\S])*<h2>Corte<\/h2>([\s\S]*?)<\/header>/)?.[0] ?? '';
+    expect(cabecera).toContain('<h2>Corte</h2>');
+    expect(cabecera).toContain('Guardar plano para revisar');
+  });
   it('pendiente y aprobado: cada elemento con su OF y quién lo aprobó, y «Generar archivos» encendido para el autor; sin «Corregir»', () => {
     const html = pintar({});
     expect(html).toContain('Remolque · Arquillado con aguas');
@@ -87,7 +97,7 @@ const fmt = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 2 
 /** La parte de solo lectura, sin lo que va dentro de los fieldset desactivados. */
 // La lectura llega hasta el bloque del corte de lona, que va debajo y tiene su propio botón.
 const fueraDeLosCamposApagados = (html: string) => html
-  .slice(html.indexOf('aria-label="Pedido de remolques en solo lectura"'), html.indexOf('aria-label="Corte de lona"'))
+  .slice(html.indexOf('aria-label="Pedido de remolques en solo lectura"'), html.indexOf('class="review-documentos"'))
   .replace(/<fieldset class="rem-lectura-campos" disabled="">[\s\S]*?<\/fieldset>/g, '');
 
 describe('el pedido de remolques abierto en Pedidos, en solo lectura', () => {
@@ -95,7 +105,7 @@ describe('el pedido de remolques abierto en Pedidos, en solo lectura', () => {
     const html = desescapar(pintar({}));
     expect(html).toContain('aria-label="Pedido de remolques en solo lectura"');
     // El corte de lona, debajo de los datos (Iván, 20/10/2026), con su botón para guardar el plano.
-    expect(html.indexOf('aria-label="Corte de lona"')).toBeGreaterThan(html.indexOf('aria-label="Pedido de remolques en solo lectura"'));
+    expect(html.indexOf('aria-label="Corte"')).toBeGreaterThan(html.indexOf('aria-label="Pedido de remolques en solo lectura"'));
     expect(html).toContain('Guardar plano para revisar');
     // Las pestañas de la pantalla de Remolques, para cambiar de elemento y nada más.
     expect(html).toContain('A · Remolque 200×121');

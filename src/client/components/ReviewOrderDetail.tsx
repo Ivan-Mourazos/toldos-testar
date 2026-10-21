@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
 import { OrderView } from '../views/OrderView';
 import { CorteLona } from './CorteLona';
-import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
+import { DocumentosPedido } from './DocumentosPedido';
+import { PlanteamientoPedido } from './PlanteamientoPedido';
 import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
 import { awningLetter } from '../../domain/awningCompleteness.js';
@@ -47,8 +48,6 @@ export function ReviewOrderDetail({
   onConfirm?: AskForConfirmation;
   onGuardarCorte?: (estado: EstadoCorte) => void;
 }) {
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const previewButtonRef = useRef<HTMLButtonElement>(null);
   const availableModels = useMemo(
     () => Array.from(new Set(review?.order.awnings.map((awning) => awning.model).filter(Boolean) || [])),
     [review]
@@ -96,6 +95,8 @@ export function ReviewOrderDetail({
   const corregible = puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })),
     order.technician || '', currentUser, coordinaStatus);
   const cortePermitido = generateState({ ...review, status: isProduced ? 'PENDING_REVIEW' : review.status }, currentUser, coordinaStatus);
+  const pdfIndex = review.production?.files.findIndex(file => file.type === 'pdf') ?? -1;
+  const pdfGenerado = isProduced && pdfIndex >= 0;
 
   return (
     <section className="review-reader" aria-label={`Datos de revisión de ${review.orderCode}`}>
@@ -111,9 +112,6 @@ export function ReviewOrderDetail({
           ].filter(Boolean).join(' · ')}</small>
         </div>
         <div className="review-reader-actions">
-          <button ref={previewButtonRef} className="ghost-button boton-3d" type="button" disabled={disabled} onClick={() => setPreviewOpen(true)}>
-            <Eye aria-hidden="true" />Vista previa
-          </button>
           {!isProduced && (
             <>
               {corregible && <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
@@ -192,20 +190,17 @@ export function ReviewOrderDetail({
         />
       </div>
 
-      <CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
+      <DocumentosPedido planteamiento={<PlanteamientoPedido
+        origen={pdfGenerado ? `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${pdfIndex}` : '/api/planteamiento'}
+        cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: review.order.parameters ? review.order : { ...review.order, parameters: reviewParameters } })}
+        version={review.updatedAt} />}
+        corte={<CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
         regenerable={!isProduced && Boolean(onGuardarCorte) && (!order.technician || order.technician === currentUser)} onGenerated={onGuardarCorte}
         acciones={(alDia) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
           permitido={cortePermitido.allowed && alDia} motivo={alDia ? cortePermitido.note : 'El corte tiene que estar al día.'}
           ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
-          descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf?opcion=conSacos`} />} />
+          descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf?opcion=conSacos`} />} />} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
-      {previewOpen && (
-        <ReviewPlanteamientoPreview
-          review={review}
-          parameters={reviewParameters}
-          onClose={() => { setPreviewOpen(false); previewButtonRef.current?.focus(); }}
-        />
-      )}
     </section>
   );
 }

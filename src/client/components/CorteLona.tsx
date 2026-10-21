@@ -7,6 +7,7 @@ import { AJUSTES_POR_DEFECTO } from '../../domain/corteLona/despiece.js';
 import type { DraftState } from '../types';
 import { textoEstadoCorte, type AjustesCorte, type CorteRespuesta, type EstadoCorte, type PendienteCorte, type VistaCorte } from '../corteLona';
 import '../coordina/corte-lona.css';
+import { CabeceraDocumento } from './DocumentosPedido';
 
 const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 3 });
 
@@ -73,13 +74,13 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     void generar({ ...estado?.ajustes, [clave]: { ...estado?.ajustes[clave], ...patch } });
   }
 
-  return <section className="corte-lona panel bloque-3d" aria-label="Corte de lona" aria-busy={generando}>
-    <header className="corte-cabecera">
-      <div><span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Corte de lona</h2></span><p>PVC · piezas y marcas de confección, agrupadas por tela</p></div>
+  return <section className="corte-lona panel bloque-3d" aria-label={reviewCode ? 'Corte' : 'Corte de lona'} aria-busy={generando}>
+    <CabeceraDocumento titulo={reviewCode ? 'Corte' : 'Corte de lona'} icono={<Scissors aria-hidden="true" />}>
       <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
       {(!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
-    </header>
-    {acciones?.(Boolean(datos && pendientes?.length === 0))}
+      {acciones?.(Boolean(datos && pendientes?.length === 0))}
+    </CabeceraDocumento>
+    <p className="corte-ayuda">PVC · piezas y marcas de confección, agrupadas por tela</p>
     {error && <p role="alert" className="corte-aviso">{error}</p>}
     {pendientes && pendientes.length > 0 && <p className="corte-aviso">{pendientes.map(p => `Toldo ${p.letra}: ${p.motivo === 'viejo' ? 'corte viejo' : 'falta generar el corte'}`).join(' · ')}</p>}
     {!datos && estado?.toldos.some(t => t.manual) && <ul className="corte-avisos">{estado.toldos.filter(t => t.manual).map(t => <li key={t.clave}>Toldo {t.letra}, OF {t.of}: {t.motivoManual}</li>)}</ul>}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FileDown, Scissors } from 'lucide-react';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import '../coordina/corte-lona.css';
+import { CabeceraDocumento } from '../components/DocumentosPedido';
 
 // El corte de lona de un pedido de remolques (20/10/2026), como saldrá al generar: por lona, el rollo
 // con las piezas, los ollaos y las marcas, los metros de rollo y lo que hay que revisar. Lo que todavía
@@ -100,20 +101,18 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
 
   const estado = leido?.clave === clave ? leido : null;
   const datos = estado?.datos;
+  if (datos && datos.cortes.length === 0) return null;
   return (
-    <section className="corte-lona panel bloque-3d" aria-label="Corte de lona" aria-busy={!estado}>
-      <header className="corte-cabecera">
-        <div>
-          <span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Corte de lona</h2></span>
-          <p>El plano sale al guardar para revisión. El DXF se manda o guarda con sus botones.</p>
-        </div>
+    <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
+      <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />}>
         {!generado && (
           <button className="ghost-button boton-3d" type="button" disabled={guardandoPlano || !datos?.cortes.length} onClick={() => void guardarPlano()}>
             <FileDown aria-hidden="true" />{guardandoPlano ? 'Guardando plano…' : 'Guardar plano para revisar'}
           </button>
         )}
-      </header>
-      {Boolean(datos?.cortes.length) && acciones}
+        {Boolean(datos?.cortes.length) && acciones}
+      </CabeceraDocumento>
+      <p className="corte-ayuda">El plano sale al guardar para revisión. El DXF se manda o guarda con sus botones.</p>
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
       {datos && <CorteRemolquesVista datos={datos} />}

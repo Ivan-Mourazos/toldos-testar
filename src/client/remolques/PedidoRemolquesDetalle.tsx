@@ -13,7 +13,8 @@ import { estadoGenerarRemolques, ficherosPrevistos } from './generarPedido';
 import { puedeCorregir } from '../generatePermission';
 import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
-import { VistaPreviaPdf } from './VistaPreviaPdf';
+import { DocumentosPedido } from '../components/DocumentosPedido';
+import { PlanteamientoPedido } from '../components/PlanteamientoPedido';
 import { EnviosCorte } from '../components/EnviosCorte';
 
 // Un pedido de remolques abierto desde Pedidos (fase 5), con las acciones del de toldos: ver la
@@ -96,7 +97,6 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
           <small>{datos}</small>
         </div>
         <div className="review-reader-actions">
-          <VistaPreviaPdf origen={`${ruta}/vista-previa`} bloqueo={generando ? 'Generando los archivos…' : null} notify={notify} />
           {!generado && (
             <>
               {corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={onCorregir}>
@@ -154,9 +154,10 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
       <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
-      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} onConfirm={onConfirm}
+      <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}
+        corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} onConfirm={onConfirm}
         acciones={<EnviosCorte key={ruta} ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed}
-          motivo={permisoCorte.note} ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} />} />
+          motivo={permisoCorte.note} ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} />} />} />
     </section>
   );
 }

@@ -1,0 +1,40 @@
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
+import { ReviewOrderDetail } from './ReviewOrderDetail';
+import { defaultDraft } from '../hooks/useDraft';
+import { createAwning } from '../constants';
+import type { ReviewPackage, RuleParameters } from '../types';
+import { normalizeRuleParameters } from '../../domain/ruleParameters.js';
+
+const nada = () => undefined;
+const pedido = (fabric: string, model = 'GALICIA'): ReviewPackage => ({
+  orderCode: 'AR2604784', status: 'PENDING_REVIEW', summary: {},
+  order: { ...defaultDraft(), orderCode: 'AR2604784', technician: 'IVÁN', fabric,
+    awnings: [{ ...createAwning(), model, of: '0232568' }] },
+} as ReviewPackage);
+const pintar = (review: ReviewPackage, currentUser = 'JAIME') => renderToStaticMarkup(
+  <ReviewOrderDetail review={review} parameters={normalizeRuleParameters() as RuleParameters} loading={false} currentUser={currentUser}
+    coordinaStatus={{ disponible: true, ofs: { '0232568': { estado: 'por_revisar' } } }} disabled={false} generating={false}
+    onBack={nada} onEdit={nada} onReuse={nada} onGenerate={nada} onGuardarCorte={nada} />,
+);
+
+describe('los documentos del pedido de toldos', () => {
+  it.each(['IVÁN', 'JAIME'])('muestra planteamiento y corte debajo de los datos para %s', (usuario) => {
+    const html = pintar(pedido('PVC|||250|||LONA PVC|||PLASTICA (LONA)'), usuario);
+    expect(html.indexOf('aria-label="Planteamiento"')).toBeGreaterThan(html.indexOf('Formulario del pedido en solo lectura'));
+    expect(html).toContain('Preparando el planteamiento…');
+    expect(html).toContain('<h2>Corte</h2>');
+    const cabecera = html.match(/<header class="corte-cabecera[^"]*">(?:(?!<\/header>)[\s\S])*<h2>Corte<\/h2>([\s\S]*?)<\/header>/)?.[1] ?? '';
+    for (const texto of ['Mandar corte al bot', 'Guardar DXF en DXFs', 'Descargar DXF']) expect(cabecera).toContain(texto);
+    expect(html.match(/Abrir en grande/g)).toHaveLength(1);
+    expect(html).not.toContain('>Vista previa<');
+    expect(html.includes('>Corregir<')).toBe(usuario === 'IVÁN');
+    expect(html.includes('>Generar corte<')).toBe(usuario === 'IVÁN');
+  });
+  it.each([['ACRILI2018P120', 'GALICIA'], ['PVC|||250|||LONA PVC|||PLASTICA (LONA)', 'HERA']])('sin corte solo enseña el planteamiento (%s, %s)', (tela, modelo) => {
+    const html = pintar(pedido(tela, modelo));
+    expect(html).toContain('aria-label="Planteamiento"');
+    expect(html).not.toContain('aria-label="Corte"');
+  });
+});

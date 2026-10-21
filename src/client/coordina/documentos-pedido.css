@@ -1,0 +1,32 @@
+.review-documentos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; margin-block: 18px; }
+.review-documentos > div { min-width: 0; }
+.documento-corte:empty { display: none; }
+.documento-corte > .corte-lona, .planteamiento-pedido { min-width: 0; margin: 0; padding: 18px; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; }
+.planteamiento-pedido { position: static; width: 100%; max-width: none; box-sizing: border-box; }
+.planteamiento-pedido[open] { display: flex; flex-direction: column; }
+.documento-cabecera { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.documento-cabecera > .corte-titulo { flex: 1 0 auto; display: flex; align-items: center; gap: 10px; }
+.documento-cabecera h2 { margin: 0; font-size: 18px; }
+.documento-acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+.documento-cabecera > .documento-acciones { flex: 0 1 auto; margin-left: auto; }
+.planteamiento-pedido button[hidden] { display: none; }
+.documento-cabecera > .corte-envios { flex: 1 0 100%; margin: 0; }
+.documento-cabecera .corte-envios-historial { max-height: 130px; overflow: auto; }
+.documento-espera { display: grid; place-items: center; min-height: 380px; margin: 0; color: var(--text-muted); }
+.planteamiento-pedido .pdf-carousel { min-width: 0; margin-top: 12px; }
+.planteamiento-pedido .pdf-carousel-toolbar { flex-wrap: wrap; }
+.planteamiento-pedido .pdf-carousel-pagination { flex-wrap: wrap; }
+.planteamiento-pedido .pdf-carousel-pages { flex-wrap: wrap; }
+.planteamiento-pedido .pdf-carousel-stage { height: 460px; }
+.review-documentos .corte-opciones { grid-template-columns: minmax(0, 1fr); }
+.review-documentos .corte-material > header { flex-wrap: wrap; }
+.planteamiento-pedido:modal { position: fixed; inset: 12px; width: calc(100vw - 24px); height: calc(100dvh - 24px); max-height: none; margin: 0; }
+.planteamiento-pedido:modal::backdrop { background: rgb(0 0 0 / 65%); }
+.planteamiento-pedido:modal .pdf-carousel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.planteamiento-pedido:modal .pdf-carousel-stage { flex: 1; min-height: 0; height: auto; }
+@media (min-width: 1600px) {
+  .review-documentos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* Sin corte conserva el ancho de una columna y queda centrado (Iván, 21/10/2026). */
+.review-documentos:not(:has(> .documento-corte:not(:empty))) { grid-template-columns: minmax(0, 1fr); }
+.review-documentos:not(:has(> .documento-corte:not(:empty))) > .documento-planteamiento { width: calc((100% - 18px) / 2); justify-self: center; }
