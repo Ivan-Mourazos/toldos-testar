@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { BASE_URL, openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { pedidoVariasTelas } from '../src/domain/corteLona/fixtures/variasTelas.js';
 
 const salida = path.resolve('tmp/ui-audit/corte-bot');
 await fs.mkdir(salida, { recursive: true });
@@ -19,9 +20,8 @@ for (const [clave, valor] of Object.entries(iniciales)) {
 assert.equal(iniciales.productionEnabled, false, 'La aislada tiene que empezar en simulación.');
 const { browser, page, errors } = await openApp({ width: 1600, height: 1000 });
 page.setDefaultTimeout(25000);
-const revision = JSON.parse(await fs.readFile('src/domain/corteLona/fixtures/revision-AR2604784.json', 'utf8'));
 const remolque = JSON.parse(await fs.readFile('src/remolques/corte/__fixtures__/AR2605132.json', 'utf8'));
-const order = { ...revision.order, orderCode: 'AR2699784', technician: 'IVÁN', customer: 'PRUEBA CORTE TOLDOS' };
+const order = { ...pedidoVariasTelas(), orderCode: 'AR2699784', technician: 'IVÁN', customer: 'PRUEBA CORTE TOLDOS' };
 const carpetaPrueba = path.dirname(iniciales.reviewDirectory);
 // Solo archivos de estos dos pedidos, en las rutas tmp validadas arriba: la prueba se puede repetir.
 for (const [carpeta, nombre] of [[iniciales.reviewDirectory, `${order.orderCode}.pdf`], [iniciales.remolquesRevisionDirectory, 'AR2699732.json']]) {
@@ -104,6 +104,15 @@ try {
     const detalleRuta = producto === 'toldos' ? `/api/reviews/${codigo}` : `/api/remolques/pedidos/${codigo}`;
     const { datos: pedido } = await api(detalleRuta);
     assert.equal(pedido.enviosCorte.length, 3);
+    if (producto === 'toldos') {
+      for (const envio of pedido.enviosCorte) {
+        assert.deepEqual(envio.archivos.map(a => a.filename), [`${codigo} (con sacos).dxf`, `${codigo} (trozo separado).dxf`]);
+        for (const archivo of envio.archivos) {
+          const contenido = await fs.readFile(archivo.savedPath, 'latin1');
+          for (const texto of ['AZUL 5010', 'BLANCO 9016', 'A BAMBA', '0232568', 'REVÉS']) assert.ok(contenido.includes(texto));
+        }
+      }
+    }
     assert.ok(pedido.enviosCorte.every((e) => e.usuario === 'IVÁN' && e.fecha && path.resolve(e.carpeta).startsWith(path.dirname(path.resolve(iniciales.reviewDirectory)))));
     await abrir(codigo);
     await page.locator('.corte-envios-historial').waitFor();
@@ -111,6 +120,12 @@ try {
       const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Descargar DXF', exact: true }).click()]);
       assert.equal(descarga.suggestedFilename(), `${codigo}.dxf`);
       await descarga.saveAs(path.join(salida, descarga.suggestedFilename()));
+    } else {
+      for (const opcion of ['con sacos', 'trozo separado']) {
+        const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: `Descargar DXF · ${opcion}`, exact: true }).click()]);
+        assert.equal(descarga.suggestedFilename(), `${codigo} (${opcion}).dxf`);
+        await descarga.saveAs(path.join(salida, descarga.suggestedFilename()));
+      }
     }
     const generar = producto === 'toldos' ? `/api/reviews/${codigo}/generate-files` : `/api/remolques/pedidos/${codigo}/generar`;
     const generado = await api(generar, json({ includeNonAcrylicFabrics: false, confirmOverwrite: true }));

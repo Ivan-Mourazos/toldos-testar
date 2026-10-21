@@ -2,6 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enviarCorte } from './corteEnvios.js';
+import { prepararArchivosCorte } from './corteLonaArchivos.js';
+import { generarCorteLona } from './domain/corteLona/index.js';
+import { crearEstadoCorteLona } from './corteLonaEstado.js';
+import { pedidoVariasTelas } from './domain/corteLona/fixtures/variasTelas.js';
 
 let raiz, entrada, guardar, preparar;
 beforeEach(async () => {
@@ -21,6 +25,19 @@ beforeEach(async () => {
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(raiz, { recursive: true, force: true }); });
 
 describe('Envío común del corte, independiente de generar archivos', () => {
+  it.each(['bot', 'dxfs'])('envía las dos opciones completas de varias telas a %s', async destino => {
+    const order = { ...pedidoVariasTelas(), technician: 'IVÁN' };
+    const corteLona = crearEstadoCorteLona(order, { resultado: generarCorteLona(order, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
+    const preparar = async () => (await prepararArchivosCorte({ order, corteLona, settings: entrada.settings, tipo: 'bot', soloContenido: true })).files;
+    if (destino === 'bot') await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
+    const res = await enviarCorte({ ...entrada, order, destino, confirmBot: true, preparar });
+    expect(res.status).toBe(200);
+    expect(res.cuerpo.envio.archivos.map(a => a.filename)).toEqual([`${order.orderCode} (con sacos).dxf`, `${order.orderCode} (trozo separado).dxf`]);
+    const previstos = await preparar();
+    for (const [i, archivo] of res.cuerpo.envio.archivos.entries()) {
+      expect(await fs.readFile(archivo.savedPath)).toEqual(previstos[i].contents);
+    }
+  });
   it('si la carpeta de red no admite enlaces, escribe igual el DXF nuevo (montaje CIFS del servidor)', async () => {
     vi.spyOn(fs, 'link').mockRejectedValue(Object.assign(new Error('no admitido'), { code: 'EPERM' }));
     const res = await enviarCorte(entrada);

@@ -15,7 +15,7 @@ const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits:
 // (Iván, 21/10/2026); `onGenerated` lo guarda con el pedido tal cual está.
 export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false }: {
   order: DraftState; estado?: EstadoCorte | null; onGenerated?: (estado: EstadoCorte) => void; reviewCode?: string; regenerable?: boolean;
-  acciones?: (alDia: boolean) => React.ReactNode;
+  acciones?: (alDia: boolean, dosOpciones: boolean) => React.ReactNode;
 }) {
   const toldos = order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
     resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' ? [{ t, letra: awningLetter(i) }] : []);
@@ -78,7 +78,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     <CabeceraDocumento titulo={reviewCode ? 'Corte' : 'Corte de lona'} icono={<Scissors aria-hidden="true" />}>
       <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
       {(!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
-      {acciones?.(Boolean(datos && pendientes?.length === 0))}
+      {acciones?.(Boolean(datos && pendientes?.length === 0), Boolean(datos?.cortes.trozoSeparado?.length))}
     </CabeceraDocumento>
     <p className="corte-ayuda">PVC · piezas y marcas de confección, agrupadas por tela</p>
     {error && <p role="alert" className="corte-aviso">{error}</p>}
@@ -113,21 +113,22 @@ export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
     {datos.avisos.length > 0 && <ul className="corte-avisos">{datos.avisos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>}
     {datos.cortes.conSacos.map(corte => {
       const separado = datos.cortes.trozoSeparado?.find(c => c.idMaterial === corte.idMaterial);
+      const soloBamba = corte.piezas.every(t => t.piezas.every(p => p.nombre.includes('BAMBA')));
       return <article className="corte-material" key={corte.idMaterial}>
         <header><h3>{corte.material}</h3><span>Rollo de {numero(corte.anchoRollo / 10)} cm · {corte.codigoTela}</span></header>
-        <div className="corte-opciones"><Opcion corte={corte} titulo="Con sacos" />{separado && <Opcion corte={separado} titulo="Trozo separado" />}</div>
+        <div className="corte-opciones"><Opcion corte={corte} titulo={soloBamba ? 'Bamba sola · sin sacos' : 'Con sacos'} soloBamba={soloBamba} />{separado && <Opcion corte={separado} titulo="Trozo separado" />}</div>
         <details className="corte-desglose"><summary>Piezas por toldo · medidas de corte en cm</summary>{corte.piezas.map((t, i) => <div key={i}><strong>{`Toldo ${t.letra}${(t.unidades ?? 1) > 1 ? ` (${t.unidades} uds)` : ''}`}</strong><ul>{t.piezas.map((p, j) => <li key={j}>{p.nombre}: {numero(p.largo / 10)} × {numero(p.alto / 10)} cm</li>)}</ul></div>)}</details>
       </article>;
     })}
   </>;
 }
 
-function Opcion({ corte, titulo }: { corte: VistaCorte; titulo: string }) {
+function Opcion({ corte, titulo, soloBamba = false }: { corte: VistaCorte; titulo: string; soloBamba?: boolean }) {
   return <section className="corte-opcion"><header><strong>{titulo}</strong><span><b>{numero(corte.largo / 1000)} m</b> de rollo</span></header>
     {Boolean(corte.largoRestos) && <p>{numero(corte.largoRestos! / 1000)} m aparte, para cortar de un resto</p>}
     <DibujoCorte corte={corte} />
     <small className="corte-leyenda"><span>DISCO1 · corte</span><span>ROTULADOR · marcas</span></small>
-    <p>Sacos: {corte.sacos.length}{corte.sacos.length > 0 ? ` · ${corte.sacos.map(s => `${numero(s.largo / 10)} × ${numero(s.alto / 10)} cm`).join(' · ')}` : ' · sin alargar el rollo'}</p>
+    {!soloBamba && <p>Sacos: {corte.sacos.length}{corte.sacos.length > 0 ? ` · ${corte.sacos.map(s => `${numero(s.largo / 10)} × ${numero(s.alto / 10)} cm`).join(' · ')}` : ' · sin alargar el rollo'}</p>}
   </section>;
 }
 

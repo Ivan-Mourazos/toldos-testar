@@ -5,6 +5,7 @@ import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { crearOdaConverter } from './odaConverter.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { pedidoVariasTelas } from './domain/corteLona/fixtures/variasTelas.js';
 
 let server, url, getReview, convertir, oda;
 const temporal = path.resolve('tmp/oda-rutas-tests');
@@ -28,6 +29,23 @@ afterEach(async () => {
 const post = (ruta, body) => fetch(url + ruta, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 describe('Rutas del corte de lona, sin escribir archivos de producción', () => {
+  it('descarga todas las telas en cada opción, igual desde el editor y el pedido guardado', async () => {
+    const order = pedidoVariasTelas();
+    getReview.mockResolvedValue({ ...revision, order });
+    for (const opcion of ['conSacos', 'trozoSeparado']) {
+      const directo = await post('/api/corte-lona/dxf', { order, opcion });
+      const guardado = await fetch(url + `/api/reviews/${order.orderCode}/corte-lona/dxf?opcion=${opcion}`);
+      expect(directo.status).toBe(200);
+      expect(guardado.status).toBe(200);
+      const contenido = Buffer.from(await directo.arrayBuffer());
+      expect(Buffer.from(await guardado.arrayBuffer())).toEqual(contenido);
+      const texto = contenido.toString('latin1');
+      expect(texto).toContain('AZUL 5010');
+      expect(texto).toContain('BLANCO 9016');
+      expect(texto).toContain('A BAMBA');
+      expect(texto.includes('CORTAR DE RESTOS')).toBe(opcion === 'trozoSeparado');
+    }
+  });
   it('devuelve AR2604784 con largos, piezas, sacos y dibujo, sin DXF enteros', async () => {
     const res = await post('/api/corte-lona', { order: revision.order });
     expect(res.status).toBe(200);
@@ -59,7 +77,7 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
   it('descarga el DXF del corte de un pedido guardado, como remolques', async () => {
     const res = await fetch(url + '/api/reviews/AR2604784/corte-lona/dxf?opcion=conSacos');
     expect(res.status).toBe(200);
-    expect(res.headers.get('content-disposition')).toContain('AR2604784 (con sacos).dxf');
+    expect(res.headers.get('content-disposition')).toContain('AR2604784.dxf');
     expect(Buffer.from(await res.arrayBuffer()).toString('latin1')).toContain('AC1018');
   });
   it('sin OF enseña la vista previa, pero no deja descargar sus archivos', async () => {
@@ -78,7 +96,7 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     const preview = await (await post('/api/corte-lona', { order: revision.order })).json();
     const material = preview.cortes.conSacos[0].idMaterial;
     const dxf = await post('/api/corte-lona/dxf', { order: revision.order, material, opcion: 'conSacos' });
-    expect(dxf.headers.get('content-disposition')).toContain('AR2604784 (con sacos).dxf');
+    expect(dxf.headers.get('content-disposition')).toContain('AR2604784.dxf');
     const contenido = Buffer.from(await dxf.arrayBuffer());
     expect(contenido.toString('latin1')).toContain('AC1018');
     expect(contenido.toString('latin1')).toContain('REVÉS');

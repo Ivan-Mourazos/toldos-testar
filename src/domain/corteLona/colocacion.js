@@ -202,6 +202,8 @@ export function cortePedido(toldos, verticales = []) {
 /** Dos opciones de taller: aprovechar huecos con sacos o reservar el paño pequeño para restos. */
 export function opcionesCorte(toldos, ofStockSacos) {
   const corte = cortePedido(toldos);
+  // La tela reservada solo para bambas no se completa con stock ni tiene alternativa de restos.
+  if (toldos.every(t => t.soloBamba)) return { conSacos: { ...corte, sacos: [] }, trozoSeparado: null };
   const anchoRollo = toldos[0].anchoRollo * 10;
   const sacos = sacosEnHuecos(corte.colocadas, anchoRollo, ofStockSacos);
   const conSacos = { ...corte, colocadas: [...corte.colocadas, ...sacos], sacos };

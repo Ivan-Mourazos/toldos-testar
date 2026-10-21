@@ -12,6 +12,14 @@ const corte: VistaCorte = { idMaterial: 'PVC|2500', codigoTela: 'PVC', material:
   dibujo: { lineas: [{ capa: 'DISCO1', x1: 0, x2: 4875, y1: 0, y2: 0 }, { capa: 'ROTULADOR', x1: 0, x2: 4875, y1: 70, y2: 70 }], textos: [{ x: 40, y: 40, h: 100, valor: 'REVÉS' }] } };
 const vista: CorteRespuesta = { corteLona: null, pendientes: [], avisos: ['Toldo B: bamba con onda.'], cortes: { conSacos: [corte], trozoSeparado: null } };
 describe('Vista compartida del corte de lona', () => {
+  it('la bamba sola tiene un corte único, sin rótulos de sacos ni trozo separado', () => {
+    const bamba = { ...corte, piezas: [{ letra: 'A', piezas: [{ nombre: 'A BAMBA', largo: 4875, alto: 350 }] }] };
+    const html = renderToStaticMarkup(<CorteLonaVista datos={{ ...vista, cortes: { conSacos: [bamba], trozoSeparado: null } }} />);
+    expect(html).toContain('Bamba sola · sin sacos');
+    expect(html).not.toContain('Con sacos');
+    expect(html).not.toContain('Sacos:');
+    expect(html).not.toContain('Trozo separado');
+  });
   it('sin OF muestra una etiqueta de aviso aunque el corte conste al día', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '' }] };
     const estado = { version: 2, generadoEn: '', generadoPor: 'IVÁN', ofStockSacos: '0230811', ajustes: {}, toldos: [] };

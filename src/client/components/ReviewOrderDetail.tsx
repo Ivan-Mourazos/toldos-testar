@@ -196,9 +196,10 @@ export function ReviewOrderDetail({
         version={review.updatedAt} />}
         corte={<CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
         regenerable={!isProduced && Boolean(onGuardarCorte) && (!order.technician || order.technician === currentUser)} onGenerated={onGuardarCorte}
-        acciones={(alDia) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
+        acciones={(alDia, dosOpciones) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
           permitido={cortePermitido.allowed && alDia} motivo={alDia ? cortePermitido.note : 'El corte tiene que estar al día.'}
           ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
+          descargaSeparada={dosOpciones ? `/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf?opcion=trozoSeparado` : undefined}
           descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf?opcion=conSacos`} />} />} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
     </section>

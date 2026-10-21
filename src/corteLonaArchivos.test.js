@@ -7,6 +7,7 @@ import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { carpetaCorte, exigirCorteAlDia, prepararArchivosCorte, escribirPlanosCorte } from './corteLonaArchivos.js';
 import { defaultWorkflowSettings, normalizeWorkflowSettings, createReviewPackage, reviewSummary } from './workflow.js';
 import { calculateOrder } from './domain/rules.js';
+import { pedidoVariasTelas } from './domain/corteLona/fixtures/variasTelas.js';
 
 const order = revision.order;
 const corteLona = crearEstadoCorteLona(order, { resultado: generarCorteLona(order, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
@@ -99,7 +100,7 @@ describe('Reglas y salidas del corte', () => {
       await expect(prepararArchivosCorte({ order: sinOf, corteLona: estado, settings, oda, tipo })).rejects.toMatchObject({ statusCode: 409, message: expect.stringMatching(/Falta la OF del toldo A/) });
     }
   });
-  it('escribe nombres distintos por ancho de rollo aunque las telas tengan el mismo código', async () => {
+  it('reúne los anchos de un código en un DXF y conserva los nombres de sus planos', async () => {
     const otro = structuredClone(order);
     otro.sameFabric = false;
     otro.awnings[0].fabric = order.fabric;
@@ -109,9 +110,24 @@ describe('Reglas y salidas del corte', () => {
     const estado = crearEstadoCorteLona(otro, { resultado: generarCorteLona(otro, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
     const settings = { productionEnabled: true, corteLonaBotDirectory: path.resolve('tmp/bot') };
     const { files } = await prepararArchivosCorte({ order: otro, corteLona: estado, settings, tipo: 'bot', oda });
-    expect(files).toHaveLength(2);
-    expect(new Set(files.map(f => f.savedPath)).size).toBe(2);
-    expect(files.map(f => f.filename).join()).toMatch(/2500.*3000/);
+    expect(files).toHaveLength(1);
+    expect(files[0].filename).toBe(`${order.orderCode}.dxf`);
+    const planos = await prepararArchivosCorte({ order: otro, corteLona: estado,
+      settings: { ...settings, corteLonaPlanoDirectory: path.resolve('tmp/planos') }, tipo: 'plano', oda });
+    expect(planos.files).toHaveLength(2);
+    expect(planos.files.map(f => f.filename).join()).toMatch(/2500.*3000/);
+  });
+  it('prepara un DXF por opción con todas las telas y conserva la bamba sola en ambos', async () => {
+    const otro = pedidoVariasTelas();
+    const estado = crearEstadoCorteLona(otro, { resultado: generarCorteLona(otro, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
+    const { files } = await prepararArchivosCorte({ order: otro, corteLona: estado,
+      settings: { productionEnabled: true }, tipo: 'bot', soloContenido: true });
+    expect(files.map(f => f.filename)).toEqual([`${otro.orderCode} (con sacos).dxf`, `${otro.orderCode} (trozo separado).dxf`]);
+    for (const file of files) {
+      const dxf = file.contents.toString('latin1');
+      for (const texto of ['AZUL 5010', 'BLANCO 9016', '0232568', 'REVÉS', 'A BAMBA']) expect(dxf).toContain(texto);
+      expect(dxf.includes('CORTAR DE RESTOS')).toBe(file.opcion === 'trozoSeparado');
+    }
   });
   it('cada autor tiene su carpeta en BOT/Pendientes, con el nombre que tiene allí', () => {
     const plantilla = path.resolve('tmp/BOT/Pendientes/{TECNICO}');

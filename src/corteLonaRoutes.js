@@ -1,4 +1,5 @@
 import { generarCorteLona } from './domain/corteLona/index.js';
+import { opcionesArchivo } from './domain/corteLona/opcionesArchivo.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { sanitizeOrderCode } from './workflow.js';
 
@@ -55,9 +56,11 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
       res.setHeader('Cache-Control', 'no-store');
       if (tipo === 'dxf') {
         if (!['conSacos', 'trozoSeparado'].includes(datos.opcion)) throw new Error('Indica una opción: conSacos o trozoSeparado.');
-        const corte = elegirMaterial(resultado.cortes[datos.opcion], datos.material);
-        const nombre = datos.opcion === 'conSacos' ? 'con sacos' : 'trozo separado';
-        return descargar(res, Buffer.from(corte.dxf, 'latin1'), `${pedido} (${nombre}).dxf`, 'application/dxf');
+        // Se acepta el material de clientes anteriores, pero el archivo siempre lleva el pedido entero.
+        if (datos.material != null) elegirMaterial(resultado.cortes.conSacos, datos.material);
+        const archivo = opcionesArchivo(resultado.cortes, pedido).find(a => a.opcion === datos.opcion);
+        if (!archivo) throw new Error('No hay corte disponible para esa opción.');
+        return descargar(res, Buffer.from(archivo.dxf, 'latin1'), archivo.filename, 'application/dxf');
       }
       const plano = elegirMaterial(resultado.plano, datos.material);
       const contenido = Buffer.from(plano.dxf, 'utf8');
@@ -84,7 +87,6 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
     app.post(`/api/corte-lona${sufijo}`, handler(tipo));
   }
   app.get('/api/reviews/:orderCode/corte-lona', handler('json', true));
-  app.get('/api/reviews/:orderCode/corte-lona/dxf', handler('dxf', true));
   app.get('/api/reviews/:orderCode/corte-lona/dxf', handler('dxf', true));
   app.post('/api/corte-lona/estado', (req, res, next) => {
     try { res.json({ pendientes: corteLonaPendiente(req.body?.order, req.body?.corteLona) }); }

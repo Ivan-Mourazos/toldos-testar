@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { generarCorteLona } from './domain/corteLona/index.js';
+import { opcionesArchivo } from './domain/corteLona/opcionesArchivo.js';
 import { corteLonaPendiente } from './corteLonaEstado.js';
 import { resolveDirectoryTemplate, sanitizeOrderCode, writeFileAtomic } from './workflow.js';
 
@@ -47,12 +48,8 @@ export async function prepararArchivosCorte({ order, corteLona, settings, oda, t
   const files = [];
   const sufijo = (c, i) => resultado.cortes.conSacos.length > 1 ? ` (${segmento(c.codigoTela)}-${resultado.cortes.conSacos[i].anchoRollo})` : '';
   if (tipo === 'bot') {
-    for (const opcion of ['conSacos', 'trozoSeparado']) {
-      for (const c of resultado.cortes[opcion] || []) {
-        const i = resultado.cortes.conSacos.findIndex(t => t.codigoTela === c.codigoTela && t.anchoRollo === c.anchoRollo);
-        const filename = `${pedido}${sufijo(c, i)} (${opcion === 'conSacos' ? 'con sacos' : 'trozo separado'}).dxf`;
-        files.push({ type: 'corte-lona', opcion, material: c.codigoTela, filename, savedPath: path.join(directory, filename), contents: Buffer.from(c.dxf, 'latin1') });
-      }
+    for (const { opcion, filename, dxf } of opcionesArchivo(resultado.cortes, pedido)) {
+      files.push({ type: 'corte-lona', opcion, filename, savedPath: path.join(directory, filename), contents: Buffer.from(dxf, 'latin1') });
     }
   } else {
     for (const [i, plano] of resultado.plano.entries()) {

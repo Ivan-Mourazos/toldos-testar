@@ -4,9 +4,9 @@ import type { EnvioCorte } from '../../corteEnviosTipos';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 
 /** Las mismas acciones y preguntas para todos los productos que envíen un corte. */
-export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], descarga, notify, preguntar }: {
+export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], descarga, descargaSeparada, notify, preguntar }: {
   ruta: string; usuario: string; permitido: boolean; motivo?: string; ocupado?: boolean; envios?: EnvioCorte[];
-  descarga?: string; notify: Notify; preguntar: AskForConfirmation;
+  descarga?: string; descargaSeparada?: string; notify: Notify; preguntar: AskForConfirmation;
 }) {
   const [trabajando, setTrabajando] = useState(false);
   const [historial, setHistorial] = useState<EnvioCorte[] | null>(null);
@@ -40,8 +40,10 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
     <div className="corte-envios-acciones">
       <button type="button" className="primary-button boton-3d" disabled={!permitido || ocupado || trabajando} title={motivo} onClick={() => void enviar('bot')}><Send size={16} aria-hidden="true" />Mandar corte al bot</button>
       <button type="button" className="ghost-button boton-3d" disabled={!permitido || ocupado || trabajando} title={motivo} onClick={() => void enviar('dxfs')}><FolderDown size={16} aria-hidden="true" />Guardar DXF en DXFs</button>
-      {descarga && <a className="ghost-button boton-3d" href={descarga} download><Download size={16} aria-hidden="true" />Descargar DXF</a>}
+      {descarga && <a className="ghost-button boton-3d" href={descarga} download><Download size={16} aria-hidden="true" />Descargar DXF{descargaSeparada ? ' · con sacos' : ''}</a>}
+      {descargaSeparada && <a className="ghost-button boton-3d" href={descargaSeparada} download><Download size={16} aria-hidden="true" />Descargar DXF · trozo separado</a>}
     </div>
+    {descargaSeparada && <p className="corte-ayuda">Al mandar al bot o guardar en DXFs salen las dos opciones en archivos separados. Cada archivo incluye todas las telas del pedido.</p>}
     {!permitido && motivo && <p className="corte-ayuda">{motivo}</p>}
     {registros.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
       <ul>{registros.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}</span><small>{e.carpeta} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
