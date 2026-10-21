@@ -143,6 +143,8 @@ async function verifyBrowserCase(browserInstance, url) {
   await page.goto(url, { waitUntil: 'networkidle' });
   assert.equal(await page.getByRole('dialog', { name: '¿Quién eres?' }).count(), 0, 'No debería pedir usuario: ya está guardado en localStorage.');
   await page.getByText('Soy: Iván', { exact: true }).waitFor();
+  // Nuevo pedido empieza eligiendo el producto (diseño 30/09/2026).
+  await page.getByRole('button', { name: 'Toldos', exact: true }).click();
 
   await page.getByRole('textbox', { name: 'Pedido', exact: true }).fill('AR2603332');
   await page.getByRole('textbox', { name: 'Cliente' }).fill('LECHE CELTA');
@@ -219,16 +221,18 @@ async function verifyBrowserCase(browserInstance, url) {
   assert.equal(await ofPair.locator('.read-value').innerText(), '0230194');
   assert.equal(await readonlyAwning.locator('input').count(), 0);
 
-  // Desde el 24/09/2026 la vista previa del pedido abierto se abre ya a pantalla completa.
-  await reviewReader.getByRole('button', { name: 'Vista previa', exact: true }).click();
-  const reviewPreviewDialog = page.locator('dialog.review-inline-preview:modal');
-  await reviewPreviewDialog.waitFor({ timeout: 20_000 });
+  // Desde el 21/10/2026 el planteamiento ya sale pintado en su bloque, junto a los datos; «Abrir en grande»
+  // lo pasa a pantalla completa con el mismo visor.
+  const reviewPreviewDialog = reviewReader.getByRole('region', { name: 'Planteamiento' });
+  await reviewPreviewDialog.getByRole('img', { name: 'Página 1 de 2' }).waitFor({ timeout: 20_000 });
+  await reviewPreviewDialog.getByRole('button', { name: 'Abrir en grande' }).click();
+  const planteamientoEnGrande = page.getByRole('dialog', { name: 'Planteamiento' });
   // Desde el 16/09/2026 la bandeja muestra el PDF en un carrusel de una página:
   // se comprueban las dos pasando de la primera a la segunda.
-  await reviewPreviewDialog.getByRole('img', { name: 'Página 1 de 2' }).waitFor({ timeout: 20_000 });
-  await reviewPreviewDialog.getByRole('button', { name: 'Página siguiente' }).first().click();
-  await reviewPreviewDialog.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
-  await reviewPreviewDialog.getByRole('button', { name: 'Cerrar vista previa' }).click();
+  await planteamientoEnGrande.getByRole('img', { name: 'Página 1 de 2' }).waitFor({ timeout: 20_000 });
+  await planteamientoEnGrande.getByRole('button', { name: 'Página siguiente' }).first().click();
+  await planteamientoEnGrande.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
+  await planteamientoEnGrande.getByRole('button', { name: 'Cerrar vista previa' }).click();
 
   const reviewPath = path.join(workflowDirectory, '2026', 'TOLDOS', 'AR2603332.pdf');
   const rpsPath = path.join(workflowDirectory, 'RPS', '0230194.xls');
@@ -247,13 +251,13 @@ async function verifyBrowserCase(browserInstance, url) {
     ['OF', 'ARTICULO', 'CANTIDAD'],
     // Reserva según el consumo real desde el 04/09/2026 (docs/rps-arzua-evidence.md).
     ['0230194', 'SOPAR350BL16', '1'],
-    // Un tubo de enrolle por toldo (consumo real por OF, 23/09/2026).
-    ['0230194', 'TURA80HG600C', '1'],
+    // Un tubo de enrolle por toldo, el más corto que llega al corte (Q-A06, 30/09/2026: la OF gastó 400 y 500).
+    ['0230194', 'TURA80HG400C', '1'],
     ['0230194', 'CASPUNCEJE78MM', '1'],
     ['0230194', 'TERMINEVOBL16', '1'],
     ['0230194', 'VARILLAVAINANEG5', '3,3'],
     ['0230194', 'VARILLAVAINARBLA', '6,6'],
-    ['0230194', 'PEVO80BL16600C', '1'],
+    ['0230194', 'PEVO80BL16500C', '1'],
     ['0230194', 'TAPONEVO8BL16', '1'],
     ['0230194', 'BONYXBL16225C', '1'],
     ['0230194', 'RUEDAMOT801MEC', '1'],
@@ -452,7 +456,7 @@ function apiCases() {
         device: 'MOTOR', sensor: 'SITUO IO 1 PURE'
       }),
       calculation: { fabricWidth: 326.2, fabricDrop: 300, fabricMl: 9, motorPower: '55/17' },
-      materials: { TURA80HG600C: 1, 'SUNILUSIO55//17': 1, ACRILI2018P120: 9, SITUOIO1PURE: 1 },
+      materials: { TURA80HG400C: 1, 'SUNILUSIO55//17': 1, ACRILI2018P120: 9, SITUOIO1PURE: 1 },
       pdfPages: 2
     },
     {
@@ -465,7 +469,7 @@ function apiCases() {
       }),
       calculation: { fabricWidth: 417, fabricDrop: 420, fabricMl: 16.8, armCount: 2 },
       // BONYX y SOPARTGL son juegos de dos: 2 brazos, un juego (consumo real).
-      materials: { SOPARTGLBL16: 1, TURA80HG600C: 1, BONYXBL16350C: 1, ACRILI2170P120: 16.8 },
+      materials: { SOPARTGLBL16: 1, TURA80HG500C: 1, BONYXBL16350C: 1, ACRILI2170P120: 16.8 },
       pdfPages: 2
     },
     {
@@ -504,9 +508,10 @@ function apiCases() {
         curtainWindowCorner: 15, curtainWindowFloorHeight: 70, curtainWindowHeight: 140,
         structureColor: 'NEGRO (R-09011)'
       }),
-      // −18 por defecto en Cortina (Iván, 22/09/2026): 310 + 45 + 20 − 18.
-      calculation: { fabricWidth: 153, fabricDrop: 357, fabricMl: 7.14, rollTubeLength: 154 },
-      materials: { SOPUNI3AGUNE11: 1, CASMAQEJE5078MM: 1, MOSQBOACIN60MM: 2, ACRILI2170P120: 7.14 },
+      // Reglas de Cortina del 02/10/2026 (docs/modelos/cortina.md): salida + 40, bamba en la misma tela + 5,
+      // sin descuento por defecto: 310 + 40 + 20 + 5.
+      calculation: { fabricWidth: 153, fabricDrop: 375, fabricMl: 7.5, rollTubeLength: 154 },
+      materials: { SOPUNI3AGUNE11: 1, CASMAQEJE5078MM: 1, MOSQBOACIN60MM: 2, ACRILI2170P120: 7.5 },
       pdfPages: 2
     }
   ];
