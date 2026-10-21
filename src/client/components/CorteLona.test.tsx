@@ -20,6 +20,11 @@ describe('Vista compartida del corte de lona', () => {
     expect(html).toContain('corte-estado is-aviso');
     expect(html).not.toContain('Corte al día');
   });
+  it('en un pedido guardado, «Generar corte» solo para el autor y si el corte falta (Iván, 21/10/2026)', () => {
+    const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '0232568' }] };
+    expect(renderToStaticMarkup(<CorteLona order={order} reviewCode="AR2604784" regenerable />)).toContain('Generar corte');
+    expect(renderToStaticMarkup(<CorteLona order={order} reviewCode="AR2604784" />)).not.toContain('Generar corte');
+  });
   it('solo ofrece la sección para PVC de modelos con corte e informa del estado', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA' }] };
     order.awnings[0].of = '0232568';
