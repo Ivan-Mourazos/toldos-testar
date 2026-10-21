@@ -1,3 +1,4 @@
+import { contornoCalculado } from "../geometry/contorno.ts";
 import { excelRound } from "./redondeo.ts";
 import { ajusteContorno, findRecogida, type CalcParams, type TipoPerfil } from "./params.ts";
 import { calcOllaos, sinPosiciones, type ModoOllaos, type OllaosResult, type RepartoLados } from "./ollaos.ts";
@@ -120,6 +121,28 @@ export function contornoSesgado(
   return (input.anchoAtras ?? 0) > 0 && input.anchoAtras !== input.ancho;
 }
 
+/**
+ * El contorno que la web calcula sola (Iván, 21/10/2026: «que la web ya coja la medida que calcula de contorno»):
+ * el del perfil sobre la lona hecha (ancho + demasía, validado contra la línea rosa del CAD), delante o, con
+ * `atras`, con el ancho y el alto de detrás (cero = como delante). `null` si al perfil le falta un dato.
+ */
+export function contornoAutomatico(
+  input: Pick<LonaInput, "tipoPerfil" | "ancho" | "anchoAtras" | "altoDelante" | "altoAtras" | "aguas" | "radioCumbrera"
+    | "radioHombro" | "radioEsquina" | "chaflan" | "radioChaflanAbajo" | "radioChaflanArriba">,
+  demasiaLonaHecha: number,
+  atras = false,
+): number | null {
+  const ancho = atras && (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
+  const alto = atras && input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
+  const valor = contornoCalculado(input.tipoPerfil, {
+    ancho: ancho + demasiaLonaHecha, alto,
+    aguas: input.aguas, radioCumbrera: input.radioCumbrera, radioHombro: input.radioHombro,
+    radioEsquina: input.radioEsquina, chaflan: input.chaflan,
+    radioChaflanAbajo: input.radioChaflanAbajo, radioChaflanArriba: input.radioChaflanArriba,
+  });
+  return valor == null ? null : r1(valor);
+}
+
 export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const recDel = findRecogida(params, input.recogeDelante);
   const recAtr = findRecogida(params, input.recogeAtras);
@@ -135,9 +158,12 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const ajuste = ajusteContorno(params, input.tipoPerfil, {
     abajo: input.radioChaflanAbajo, arriba: input.radioChaflanArriba,
   });
-  const contornoNuevo = Math.max(input.contorno ?? 0, 0);
   const contornoLegacy = Math.max(input.contornoScad ?? 0, 0);
   const usaContornoLegacy = input.contorno == null && contornoLegacy > 0;
+  // Sin contorno escrito (vacío o cero), el que calcula la web; el escrito a mano manda.
+  const contornoNuevo = (input.contorno ?? 0) > 0
+    ? input.contorno!
+    : contornoAutomatico(input, params.demasiaLonaHecha) ?? 0;
   const contornoIntroducido = usaContornoLegacy
     ? r1(Math.max(contornoLegacy - ajuste, 0))
     : contornoNuevo;
@@ -149,7 +175,9 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   // Distinto detrás, el contorno cambia de una punta a otra y el paño se corta en trapecio: la
   // medida de detrás lleva el mismo ajuste. Si no, no se añade nada y el resultado queda igual.
   const sesgada = contornoSesgado(input);
-  const contornoAtrasIntroducido = Math.max(input.contornoAtras ?? 0, 0);
+  const contornoAtrasIntroducido = (input.contornoAtras ?? 0) > 0
+    ? input.contornoAtras!
+    : sesgada ? contornoAutomatico(input, params.demasiaLonaHecha, true) ?? 0 : 0;
   const contornoAtrasAjustado = contornoAtrasIntroducido > 0 ? r1(contornoAtrasIntroducido + ajuste) : 0;
 
   const panoDelantero: Pano = {

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import type { AskForConfirmation } from '../components/NotificationCenter';
-import type { LonaInput } from '../../remolques/calc/lona.ts';
+import { contornoAutomatico, type LonaInput } from '../../remolques/calc/lona.ts';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { ajusteContorno, DEFAULT_PARAMS, PERFILES, type CalcParams } from '../../remolques/calc/params.ts';
-import { excelRound } from '../../remolques/calc/redondeo.ts';
-import { contornoCalculado } from '../../remolques/geometry/contorno.ts';
 import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, MarcaDelCliente, PasoFormulario } from './Campos';
 import {
   conMedidaDelante, hayValoresDetras, radiosOpcionales, sinDetras, sinRadios, tieneDetras, tieneRadios,
@@ -44,7 +42,10 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
   const ajuste = ajusteContorno(p, input.tipoPerfil, {
     abajo: input.radioChaflanAbajo, arriba: input.radioChaflanArriba,
   });
-  const contornoVisible = input.contorno ?? Math.max((input.contornoScad ?? 0) - ajuste, 0);
+  // Escrito: el que teclea el técnico (o el SCAD de un pedido viejo). Si no hay, el campo lleva el que calcula la
+  // web, que es el que se usa (Iván, 21/10/2026; calcLona hace lo mismo).
+  const contornoLegacy = input.contorno == null && (input.contornoScad ?? 0) > 0;
+  const contornoEscrito = (input.contorno ?? 0) > 0 || contornoLegacy;
   // Los «Sí» pulsados a mano sin nada escrito todavía; con medidas ya escritas el Sí sale solo.
   // El de los radios se recuerda con el perfil en el que se pulsó: otro perfil tiene otros radios.
   const [detrasPedido, setDetrasPedido] = useState(false);
@@ -52,27 +53,16 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
   const verDetras = tieneDetras(input) || detrasPedido;
   const camposRadio = radiosOpcionales(input.tipoPerfil);
   const verRadios = tieneRadios(input) || (radiosPedidosEn !== '' && radiosPedidosEn === input.tipoPerfil);
-  const medidasContorno = {
-    aguas: input.aguas,
-    radioCumbrera: input.radioCumbrera,
-    radioHombro: input.radioHombro,
-    radioEsquina: input.radioEsquina,
-    chaflan: input.chaflan,
-    radioChaflanAbajo: input.radioChaflanAbajo,
-    radioChaflanArriba: input.radioChaflanArriba,
-  };
   // El contorno se desarrolla sobre la LONA HECHA (ancho + demasía), no sobre el remolque
   // pedido: validado contra la línea rosa del CAD de oficina técnica. El de detrás, igual con el
   // ancho y el alto de detrás (cero = igual que delante).
-  const exacto = (ancho: number, alto: number) => {
-    const valor = contornoCalculado(input.tipoPerfil, { ...medidasContorno, ancho: ancho + p.demasiaLonaHecha, alto });
-    return valor == null ? null : excelRound(valor, 1);
-  };
-  const contornoExacto = exacto(input.ancho, input.altoDelante);
-  const contornoAtrasExacto = exacto(
-    (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho,
-    input.altoAtras > 0 ? input.altoAtras : input.altoDelante,
-  );
+  const contornoExacto = contornoAutomatico(input, p.demasiaLonaHecha);
+  const contornoAtrasExacto = contornoAutomatico(input, p.demasiaLonaHecha, true);
+  const contornoVisible = (input.contorno ?? 0) > 0
+    ? input.contorno!
+    : contornoLegacy ? Math.max((input.contornoScad ?? 0) - ajuste, 0) : contornoExacto ?? 0;
+  const contornoAtrasEscrito = (input.contornoAtras ?? 0) > 0;
+  const contornoAtrasVisible = contornoAtrasEscrito ? input.contornoAtras! : contornoAtrasExacto ?? 0;
   const faltaDato = input.tipoPerfil === 'TIPO 04' && !(input.chaflan ?? 0)
     ? 'chaflán'
     : input.tipoPerfil === 'TIPO 05' && !(input.radioEsquina ?? 0)
@@ -104,13 +94,20 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
       message: 'Se borran los radios y las aristas quedan vivas.',
     }, () => { setRadiosPedidosEn(''); onChange(sinRadios(input)); });
   };
-  const botonCalculado = (visible: number, calculado: number | null, usar: (v: number) => void) => (
+  // Debajo del contorno: si no está escrito, que es el calculado; si está escrito y es otro, volver al calculado
+  // (se vacía el campo y la web vuelve a calcularlo sola).
+  const botonCalculado = (escrito: boolean, visible: number, calculado: number | null, volver: () => void) => (
     faltaDato ? (
       <small className="rem-aviso-campo">Introduce el {faltaDato} para calcularlo</small>
+    ) : !escrito ? (
+      calculado != null ? <small className="rem-nota-campo">Calculado por la web</small> : null
     ) : calculado != null && Math.abs(visible - calculado) > 0.05 ? (
-      <button type="button" className="rem-enlace" onClick={() => usar(calculado)}>
-        Usar calculado: {fmt(calculado)}
-      </button>
+      <>
+        <small className="rem-nota-campo">Escrito a mano</small>
+        <button type="button" className="rem-enlace" onClick={volver}>
+          Usar calculado: {fmt(calculado)}
+        </button>
+      </>
     ) : null
   );
 
@@ -187,8 +184,8 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
         <div className="rem-contorno">
           <CampoNum name="contorno" error={errores.contorno} label="Contorno" value={contornoVisible}
             onChange={(v) => onChange({ ...input, contorno: v, contornoScad: undefined })} />
-          {botonCalculado(contornoVisible, contornoExacto,
-            (v) => onChange({ ...input, contorno: v, contornoScad: undefined }))}
+          {botonCalculado(contornoEscrito, contornoVisible, contornoExacto,
+            () => onChange({ ...input, contorno: undefined, contornoScad: undefined }))}
         </div>
         {/* Remolque más ancho (o más alto) detrás: sus medidas de detrás, con el contorno de esa
             punta, porque el paño contorno se corta en trapecio (CAD de Iván, 30/09/2026). La caja solo
@@ -206,8 +203,8 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
               {!input.traseraPorArriba && (
                 <div className="rem-contorno">
                   <CampoNum name="contornoAtras" error={errores.contornoAtras} label="Contorno detrás"
-                    value={input.contornoAtras ?? 0} onChange={(v) => set('contornoAtras', v)} />
-                  {botonCalculado(input.contornoAtras ?? 0, contornoAtrasExacto, (v) => set('contornoAtras', v))}
+                    value={contornoAtrasVisible} onChange={(v) => set('contornoAtras', v)} />
+                  {botonCalculado(contornoAtrasEscrito, contornoAtrasVisible, contornoAtrasExacto, () => set('contornoAtras', undefined))}
                 </div>
               )}
             </>

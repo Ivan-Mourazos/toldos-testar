@@ -51,8 +51,9 @@ describe("datos de la lona en la hoja", () => {
     expect(sesgado.banda[1].notas).toEqual(["ANCHO 157 DEL. / 150 TRAS."]);
   });
 
-  it("dice PENDIENTE cuando no hay contorno, y entonces no hay paño de contorno", () => {
-    const hoja = hojaDeLona({ contorno: 0 });
+  it("dice PENDIENTE cuando no hay contorno ni se puede calcular, y entonces no hay paño de contorno", () => {
+    // Sin escribir, la web lo calcula; aquí no puede: arquillado sin radio.
+    const hoja = hojaDeLona({ contorno: 0, radioEsquina: 0 });
     expect(hoja.banda[2].lineas).toEqual(["PENDIENTE"]);
     expect(hoja.banda[0].lineas).toHaveLength(2);
   });
@@ -106,10 +107,10 @@ describe("datos de la lona en la hoja", () => {
       expect(hoja.banda[0].lineas[2]).toBe("1 PAÑO DE 234,5 × 169,3 DEL. / 170,8 TRAS.");
       expect(hoja.banda[2].lineas).toEqual(["169,3 DEL. / 170,8 TRAS."]);
     });
-    it("sin el contorno de detrás todavía, la punta trasera sale con raya", () => {
+    it("sin escribir el contorno de detrás, sale el que calcula la web (40 + 132,5 + 40, + 7)", () => {
       const hoja = hojaDeLona({ ...sesgada, contornoAtras: undefined });
-      expect(hoja.banda[0].lineas[2]).toBe("1 PAÑO DE 234,5 × 169,3 DEL. / — TRAS.");
-      expect(hoja.banda[2].lineas).toEqual(["169,3 DEL. / — TRAS."]);
+      expect(hoja.banda[0].lineas[2]).toBe("1 PAÑO DE 234,5 × 169,3 DEL. / 219,5 TRAS.");
+      expect(hoja.banda[2].lineas).toEqual(["169,3 DEL. / 219,5 TRAS."]);
     });
     it("con el remolque igual detrás no cambia nada aunque haya un contorno detrás guardado", () => {
       const hoja = hojaDeLona({ ...sesgada, anchoAtras: 130 });

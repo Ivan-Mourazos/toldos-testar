@@ -1,4 +1,4 @@
-import { contornoSesgado, type LonaInput } from "../calc/lona.ts";
+import { contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { erroresGanchos, medidasRemolque } from "../calc/ganchos.ts";
 import { sinPosiciones } from "../calc/ollaos.ts";
@@ -63,15 +63,17 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput): ErrorPla
       "ventanaAlto",
       "El alto de la ventana debe ser menor que el alto delantero.",
     );
+    // Sin escribir, la web lo calcula (Iván, 21/10/2026): solo se pide si no puede (perfil sin elegir o sin
+    // el dato que lo define). La demasía de la lona hecha no cambia si se puede o no.
     agregar(
-      !positivo(input.contorno) && !positivo(input.contornoScad),
+      !positivo(input.contorno) && !positivo(input.contornoScad) && contornoAutomatico(input, 1) == null,
       "contorno",
       "Confirma el contorno de corte antes de guardar o generar el PDF.",
     );
     // Distinto detrás, el paño contorno se corta en trapecio y hace falta la medida de cada punta (no con
     // la trasera a la línea por arriba: entonces el contorno no cambia).
     agregar(
-      contornoSesgado(input) && !positivo(input.contornoAtras),
+      contornoSesgado(input) && !positivo(input.contornoAtras) && contornoAutomatico(input, 1, true) == null,
       "contornoAtras",
       "Confirma el contorno de corte de detrás antes de guardar o generar el PDF.",
     );

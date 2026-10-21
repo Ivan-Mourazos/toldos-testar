@@ -44,10 +44,11 @@ describe('remolque distinto detrás en los resultados', () => {
     expect(t['Paño contorno']).toBe('234,5 × 169,3 del. / 170,8 tras.');
     expect(t['Contorno corte (+7)']).toBe('169,3 del. / 170,8 tras.');
   });
-  it('sin contorno detrás todavía, la punta de detrás sale con raya', () => {
+  it('sin escribir el contorno de detrás, la punta de detrás lleva el que calcula la web', () => {
+    // Iván, 21/10/2026: la web coge sola el contorno calculado (recto: 40 + 132,5 + 40, + 7).
     const t = tarjetas(hpl({ contornoAtras: undefined }));
-    expect(t['Paño contorno']).toBe('234,5 × 169,3 del. / — tras.');
-    expect(t['Contorno corte (+7)']).toBe('169,3 del. / — tras.');
+    expect(t['Paño contorno']).toBe('234,5 × 169,3 del. / 219,5 tras.');
+    expect(t['Contorno corte (+7)']).toBe('169,3 del. / 219,5 tras.');
   });
   it('igual delante y detrás, las tarjetas son las de siempre', () => {
     const t = tarjetas(hpl({ anchoAtras: 0, altoAtras: 0, contornoAtras: undefined }));
@@ -62,9 +63,17 @@ describe('«Detrás distinto» en el formulario', () => {
     expect(pulsado(html, 'Detrás distinto')).toBe('Sí');
     for (const campo of ['anchoAtras', 'altoAtras', 'contornoAtras']) expect(html).toContain(`data-campo="${campo}"`);
     expect(html).toContain('Contorno detrás');
-    // Calculado con el ancho de detrás más la demasía de la lona hecha (132,5) y el alto de detrás: 2 × 40 + 132,5.
+    // Sin escribir, el campo lleva el que calcula la web (Iván, 21/10/2026): con el ancho de detrás más la
+    // demasía de la lona hecha (132,5) y el alto de detrás: 2 × 40 + 132,5.
     const detras = html.slice(html.indexOf('data-campo="contornoAtras"'));
-    expect(detras).toContain('Usar calculado: 212,5');
+    expect(detras).toMatch(/value="212[.,]5"/);
+    expect(detras).toContain('Calculado por la web');
+    expect(detras).not.toContain('Usar calculado');
+    // Escrito a mano y distinto: manda el suyo y se ofrece volver al calculado.
+    const aMano = formulario(hpl({ contornoAtras: 200 }));
+    const detrasAMano = aMano.slice(aMano.indexOf('data-campo="contornoAtras"'));
+    expect(detrasAMano).toContain('Escrito a mano');
+    expect(detrasAMano).toContain('Usar calculado: 212,5');
   });
   it('arranca en No sin medidas de detrás, o con las mismas que delante (como las trae RPS), y las esconde', () => {
     for (const input of [hpl({ anchoAtras: 0, altoAtras: 0, contornoAtras: undefined }), hpl({ anchoAtras: 130, altoAtras: 40, contornoAtras: undefined })]) {

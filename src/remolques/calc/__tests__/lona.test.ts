@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { emptyLona } from "../../entradas-vacias.ts";
 import { DEFAULT_PARAMS } from "../params.ts";
-import { calcLona, detrasDistinto, type LonaInput } from "../lona.ts";
+import { calcLona, contornoAutomatico, detrasDistinto, type LonaInput } from "../lona.ts";
 
 const base: LonaInput = {
   cabecera: {
@@ -98,10 +98,30 @@ describe("calcLona — variantes", () => {
     expect(res.notas).toContain("Falta la recogida «PUENTES VIEJOS» de delante: ya no está en Parámetros ni en las fichas; se calcula sin recogida.");
     expect(calcLona(base, DEFAULT_PARAMS).notas.join(" ")).not.toContain("Falta");
   });
-  it("sin contorno manual: paño contorno null y metros tela 0", () => {
-    const res = calcLona({ ...base, contorno: 0 }, DEFAULT_PARAMS);
+  it("sin contorno escrito, la web lo calcula sola sobre la lona hecha (Iván, 21/10/2026)", () => {
+    // TIPO 02 de 151 × 62 sin aguas: 62 + 152 + 62 = 276 (el ancho, sobre la lona hecha), + 7 de bastillas.
+    expect(contornoAutomatico(base, DEFAULT_PARAMS.demasiaLonaHecha)).toBe(276);
+    for (const contorno of [undefined, 0]) {
+      const res = calcLona({ ...base, contorno }, DEFAULT_PARAMS);
+      expect(res.contornoIntroducido).toBe(276);
+      expect(res.panoContorno?.alto).toBe(283);
+      expect(res.metrosTela).toBeGreaterThan(0);
+    }
+    // El escrito a mano manda, y el de un pedido viejo (contorno SCAD), también.
+    expect(calcLona({ ...base, contorno: 275 }, DEFAULT_PARAMS).contornoIntroducido).toBe(275);
+    expect(calcLona({ ...base, contorno: undefined, contornoScad: 290 }, DEFAULT_PARAMS).contornoAjustado).toBe(290);
+  });
+  it("si al perfil le falta un dato para calcularlo, no se inventa: sin paño contorno", () => {
+    const sinChaflan = { ...base, tipoPerfil: "TIPO 04" as const, chaflan: 0, contorno: undefined };
+    expect(contornoAutomatico(sinChaflan, DEFAULT_PARAMS.demasiaLonaHecha)).toBeNull();
+    const res = calcLona(sinChaflan, DEFAULT_PARAMS);
     expect(res.panoContorno).toBeNull();
     expect(res.metrosTela).toBe(0);
+  });
+  it("distinto detrás: el contorno de detrás también se calcula solo, con el ancho y el alto de detrás", () => {
+    const res = calcLona({ ...base, tipoPerfil: "TIPO 01", contorno: undefined, anchoAtras: 153, altoAtras: 64 }, DEFAULT_PARAMS);
+    expect(contornoAutomatico({ ...base, tipoPerfil: "TIPO 01", anchoAtras: 153, altoAtras: 64 }, 1, true)).toBe(64 + 154 + 64);
+    expect(res.panoContorno).toMatchObject({ alto: 62 + 152 + 62 + 7, altoAtras: 64 + 154 + 64 + 7 });
   });
   it("remolque sesgado: cada cara usa su ancho (paños y ollaos)", () => {
     const res = calcLona({ ...base, recogeAtras: "NO", anchoAtras: 140 }, DEFAULT_PARAMS);
@@ -230,10 +250,16 @@ describe("calcLona — contorno detrás con el remolque sesgado", () => {
   it("los metros de tela no cambian: salen del largo de los paños", () => {
     expect(res.metrosTela).toBe(5.8);
   });
-  it("sin contorno detrás todavía, sale a cero y el paño no lleva punta trasera", () => {
+  it("sin contorno detrás escrito, la web lo calcula con el ancho y el alto de detrás", () => {
     const sinAtras = calcLona({ ...sesgada, contornoAtras: undefined }, DEFAULT_PARAMS);
-    expect(sinAtras.contornoAtrasAjustado).toBe(0);
-    expect(sinAtras.panoContorno).not.toHaveProperty("altoAtras");
+    const ajuste = sinAtras.contornoAjustado - sinAtras.contornoIntroducido;
+    const calculado = contornoAutomatico(sesgada, DEFAULT_PARAMS.demasiaLonaHecha, true)!;
+    expect(sinAtras.panoContorno?.altoAtras).toBeCloseTo(calculado + ajuste, 1);
+  });
+  it("si no se puede calcular el de detrás, el paño no lleva punta trasera", () => {
+    const sinPerfil = calcLona({ ...sesgada, tipoPerfil: "", contornoAtras: undefined }, DEFAULT_PARAMS);
+    expect(sinPerfil.contornoAtrasAjustado).toBe(0);
+    expect(sinPerfil.panoContorno).not.toHaveProperty("altoAtras");
   });
   it("un alto distinto detrás también cuenta como remolque distinto detrás", () => {
     const alta = calcLona({ ...sesgada, anchoAtras: 0, altoAtras: 45 }, DEFAULT_PARAMS);

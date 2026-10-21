@@ -43,15 +43,26 @@ describe("validación previa al guardado y PDF", () => {
       .toContainEqual(expect.objectContaining({ campo: "radioEsquina" }));
   });
 
-  it("con el remolque distinto detrás exige también el contorno de detrás", () => {
-    const sesgada = { ...lonaValida(), anchoAtras: 251.5 };
-    expect(erroresPlanteamiento(sesgada)).toContainEqual({
+  it("sin contorno escrito no lo pide si la web lo puede calcular (Iván, 21/10/2026)", () => {
+    expect(errorPlanteamientoIncompleto({ ...lonaValida(), contorno: undefined })).toBeNull();
+    expect(errorPlanteamientoIncompleto({ ...lonaValida(), contorno: 0 })).toBeNull();
+    // Sin perfil no hay forma que medir: se pide.
+    expect(erroresPlanteamiento({ ...lonaValida(), contorno: 0, tipoPerfil: "" }))
+      .toContainEqual(expect.objectContaining({ campo: "contorno" }));
+  });
+
+  it("con el remolque distinto detrás pide el contorno de detrás solo si no se puede calcular", () => {
+    // Recto: se calcula solo con el ancho y el alto de detrás.
+    expect(errorPlanteamientoIncompleto({ ...lonaValida(), anchoAtras: 251.5 })).toBeNull();
+    expect(errorPlanteamientoIncompleto({ ...lonaValida(), altoAtras: 225 })).toBeNull();
+    // Con chaflán sin medida no se puede: se pide (el de delante está escrito a mano).
+    const sinChaflan = { ...lonaValida(), anchoAtras: 251.5, tipoPerfil: "TIPO 04" as const, chaflan: 0 };
+    expect(erroresPlanteamiento(sinChaflan)).toContainEqual({
       campo: "contornoAtras",
       mensaje: "Confirma el contorno de corte de detrás antes de guardar o generar el PDF.",
     });
-    expect(erroresPlanteamiento({ ...lonaValida(), altoAtras: 225 }))
-      .toContainEqual(expect.objectContaining({ campo: "contornoAtras" }));
-    expect(errorPlanteamientoIncompleto({ ...sesgada, contornoAtras: 621.5 })).toBeNull();
+    expect(erroresPlanteamiento({ ...sinChaflan, contornoAtras: 621.5 }))
+      .not.toContainEqual(expect.objectContaining({ campo: "contornoAtras" }));
     // Igual delante y detrás no se pide.
     expect(errorPlanteamientoIncompleto({ ...lonaValida(), anchoAtras: 250, altoAtras: 220 })).toBeNull();
     // Ni con la trasera a la línea por arriba: el contorno no cambia (AR2605158).
