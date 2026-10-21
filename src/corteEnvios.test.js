@@ -25,14 +25,14 @@ beforeEach(async () => {
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(raiz, { recursive: true, force: true }); });
 
 describe('Envío común del corte, independiente de generar archivos', () => {
-  it.each(['bot', 'dxfs'])('envía las dos opciones completas de varias telas a %s', async destino => {
+  it.each(['bot', 'dxfs'])('envía un solo DXF con las dos opciones de varias telas a %s (el técnico de la máquina elige)', async destino => {
     const order = { ...pedidoVariasTelas(), technician: 'IVÁN' };
     const corteLona = crearEstadoCorteLona(order, { resultado: generarCorteLona(order, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
     const preparar = async () => (await prepararArchivosCorte({ order, corteLona, settings: entrada.settings, tipo: 'bot', soloContenido: true })).files;
     if (destino === 'bot') await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
     const res = await enviarCorte({ ...entrada, order, destino, confirmBot: true, preparar });
     expect(res.status).toBe(200);
-    expect(res.cuerpo.envio.archivos.map(a => a.filename)).toEqual([`${order.orderCode} (con sacos).dxf`, `${order.orderCode} (trozo separado).dxf`]);
+    expect(res.cuerpo.envio.archivos.map(a => a.filename)).toEqual([`${order.orderCode}.dxf`]);
     const previstos = await preparar();
     for (const [i, archivo] of res.cuerpo.envio.archivos.entries()) {
       expect(await fs.readFile(archivo.savedPath)).toEqual(previstos[i].contents);

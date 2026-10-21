@@ -1,28 +1,34 @@
 import { escribirDxf2004 } from './dxfCorte.js';
 import { anchoArial } from './texto.js';
 
-// Un archivo completo por opción: las telas sin alternativa se repiten en las dos salidas.
-// La clave incluye el ancho porque un mismo código puede venir en rollos distintos.
-export function opcionesArchivo(cortes, pedido) {
-  if (!cortes.conSacos.length) return [];
-  const alternativas = cortes.trozoSeparado?.length > 0;
-  return (alternativas ? ['conSacos', 'trozoSeparado'] : ['conSacos']).map(opcion => {
-    const grupos = cortes.conSacos.map(c => cortes[opcion]?.find(o => o.codigoTela === c.codigoTela && o.anchoRollo === c.anchoRollo) ?? c);
-    const dibujo = { lineas: [], textos: [] };
-    let siguiente = 0;
-    for (const corte of grupos) {
-      const { lineas, textos } = corte.dibujo;
-      // El alto del rótulo girado es su ancho de texto. Se reserva espacio también para cabeceras
-      // y avisos de restos, además de todo el ancho del rollo, con 1 m libre entre telas.
-      const alcance = t => t.giro ? anchoArial(t.valor, t.h) : t.h;
-      const abajo = Math.min(0, ...lineas.flatMap(l => [l.y1, l.y2]), ...textos.map(t => t.y - alcance(t)));
-      const arriba = Math.max(corte.anchoRollo, ...lineas.flatMap(l => [l.y1, l.y2]), ...textos.map(t => t.y + alcance(t)));
-      const dy = siguiente - abajo;
-      dibujo.lineas.push(...lineas.map(l => ({ ...l, y1: l.y1 + dy, y2: l.y2 + dy })));
-      dibujo.textos.push(...textos.map(t => ({ ...t, y: t.y + dy })));
-      siguiente = arriba + dy + 1000;
+// Un solo DXF por pedido con todas las telas, una encima de otra (Iván, 22/10/2026: en la máquina hay un
+// técnico que elige el corte, así que las dos opciones van en el mismo archivo). Una tela con alternativa
+// lleva sus dos opciones seguidas y rotuladas; la bamba sola, una vez. La clave incluye el ancho porque un
+// mismo código puede venir en rollos distintos.
+export function archivoCorte(cortes, pedido) {
+  if (!cortes.conSacos.length) return null;
+  const dibujo = { lineas: [], textos: [] };
+  let siguiente = 0;
+  const alcance = t => t.giro ? anchoArial(t.valor, t.h) : t.h;
+  const apilar = (corte, etiqueta) => {
+    const { lineas, textos } = corte.dibujo;
+    // Se reserva espacio para cabeceras y avisos de restos, además de todo el ancho del rollo.
+    const abajo = Math.min(0, ...lineas.flatMap(l => [l.y1, l.y2]), ...textos.map(t => t.y - alcance(t)));
+    const arriba = Math.max(corte.anchoRollo, ...lineas.flatMap(l => [l.y1, l.y2]), ...textos.map(t => t.y + alcance(t)));
+    const dy = siguiente - abajo;
+    dibujo.lineas.push(...lineas.map(l => ({ ...l, y1: l.y1 + dy, y2: l.y2 + dy })));
+    dibujo.textos.push(...textos.map(t => ({ ...t, y: t.y + dy })));
+    let techo = arriba + dy;
+    if (etiqueta) {
+      dibujo.textos.push({ capa: 'texto', x: 0, y: techo + 250, h: 150, valor: etiqueta });
+      techo += 400;
     }
-    const sufijo = alternativas ? ` (${opcion === 'conSacos' ? 'con sacos' : 'trozo separado'})` : '';
-    return { opcion, filename: `${pedido}${sufijo}.dxf`, dibujo, dxf: escribirDxf2004(dibujo) };
-  });
+    siguiente = techo + 1000;
+  };
+  for (const corte of cortes.conSacos) {
+    const separado = cortes.trozoSeparado?.find(o => o.codigoTela === corte.codigoTela && o.anchoRollo === corte.anchoRollo);
+    apilar(corte, separado ? `${corte.material.toUpperCase()} · OPCIÓN 1 · CON SACOS · ELEGIR SOLO UNA` : null);
+    if (separado) apilar(separado, `${corte.material.toUpperCase()} · OPCIÓN 2 · TROZO SEPARADO · ELEGIR SOLO UNA`);
+  }
+  return { filename: `${pedido}.dxf`, dibujo, dxf: escribirDxf2004(dibujo) };
 }

@@ -15,7 +15,7 @@ const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits:
 // (Iván, 21/10/2026); `onGenerated` lo guarda con el pedido tal cual está.
 export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false }: {
   order: DraftState; estado?: EstadoCorte | null; onGenerated?: (estado: EstadoCorte) => void; reviewCode?: string; regenerable?: boolean;
-  acciones?: (alDia: boolean, dosOpciones: boolean) => React.ReactNode;
+  acciones?: (alDia: boolean) => React.ReactNode;
 }) {
   const toldos = order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
     resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' ? [{ t, letra: awningLetter(i) }] : []);
@@ -78,7 +78,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     <CabeceraDocumento titulo={reviewCode ? 'Corte' : 'Corte de lona'} icono={<Scissors aria-hidden="true" />}>
       <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
       {(!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
-      {acciones?.(Boolean(datos && pendientes?.length === 0), Boolean(datos?.cortes.trozoSeparado?.length))}
+      {acciones?.(Boolean(datos && pendientes?.length === 0))}
     </CabeceraDocumento>
     <p className="corte-ayuda">PVC · piezas y marcas de confección, agrupadas por tela</p>
     {error && <p role="alert" className="corte-aviso">{error}</p>}

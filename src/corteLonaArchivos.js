@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { generarCorteLona } from './domain/corteLona/index.js';
-import { opcionesArchivo } from './domain/corteLona/opcionesArchivo.js';
+import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
 import { corteLonaPendiente } from './corteLonaEstado.js';
 import { resolveDirectoryTemplate, sanitizeOrderCode, writeFileAtomic } from './workflow.js';
 
@@ -48,9 +48,8 @@ export async function prepararArchivosCorte({ order, corteLona, settings, oda, t
   const files = [];
   const sufijo = (c, i) => resultado.cortes.conSacos.length > 1 ? ` (${segmento(c.codigoTela)}-${resultado.cortes.conSacos[i].anchoRollo})` : '';
   if (tipo === 'bot') {
-    for (const { opcion, filename, dxf } of opcionesArchivo(resultado.cortes, pedido)) {
-      files.push({ type: 'corte-lona', opcion, filename, savedPath: path.join(directory, filename), contents: Buffer.from(dxf, 'latin1') });
-    }
+    const archivo = archivoCorte(resultado.cortes, pedido);
+    if (archivo) files.push({ type: 'corte-lona', filename: archivo.filename, savedPath: path.join(directory, archivo.filename), contents: Buffer.from(archivo.dxf, 'latin1') });
   } else {
     for (const [i, plano] of resultado.plano.entries()) {
       let contents = Buffer.from(plano.dxf, 'utf8');

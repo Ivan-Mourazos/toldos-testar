@@ -29,22 +29,21 @@ afterEach(async () => {
 const post = (ruta, body) => fetch(url + ruta, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 describe('Rutas del corte de lona, sin escribir archivos de producción', () => {
-  it('descarga todas las telas en cada opción, igual desde el editor y el pedido guardado', async () => {
+  it('descarga un solo DXF con todas las telas y las dos opciones, igual desde el editor y el pedido guardado', async () => {
     const order = pedidoVariasTelas();
     getReview.mockResolvedValue({ ...revision, order });
-    for (const opcion of ['conSacos', 'trozoSeparado']) {
-      const directo = await post('/api/corte-lona/dxf', { order, opcion });
-      const guardado = await fetch(url + `/api/reviews/${order.orderCode}/corte-lona/dxf?opcion=${opcion}`);
-      expect(directo.status).toBe(200);
-      expect(guardado.status).toBe(200);
-      const contenido = Buffer.from(await directo.arrayBuffer());
-      expect(Buffer.from(await guardado.arrayBuffer())).toEqual(contenido);
-      const texto = contenido.toString('latin1');
-      expect(texto).toContain('AZUL 5010');
-      expect(texto).toContain('BLANCO 9016');
-      expect(texto).toContain('A BAMBA');
-      expect(texto.includes('CORTAR DE RESTOS')).toBe(opcion === 'trozoSeparado');
-    }
+    const directo = await post('/api/corte-lona/dxf', { order });
+    const guardado = await fetch(url + `/api/reviews/${order.orderCode}/corte-lona/dxf`);
+    expect(directo.status).toBe(200);
+    expect(guardado.status).toBe(200);
+    expect(directo.headers.get('content-disposition')).toContain(`${order.orderCode}.dxf`);
+    const contenido = Buffer.from(await directo.arrayBuffer());
+    expect(Buffer.from(await guardado.arrayBuffer())).toEqual(contenido);
+    const texto = contenido.toString('latin1');
+    for (const valor of ['AZUL 5010', 'BLANCO 9016', 'A BAMBA', 'CORTAR DE RESTOS', 'OPCIÓN 1 · CON SACOS', 'OPCIÓN 2 · TROZO SEPARADO']) expect(texto).toContain(valor);
+    // Clientes antiguos que aún mandan «opcion»: el mismo archivo.
+    const antiguo = await post('/api/corte-lona/dxf', { order, opcion: 'trozoSeparado' });
+    expect(Buffer.from(await antiguo.arrayBuffer())).toEqual(contenido);
   });
   it('devuelve AR2604784 con largos, piezas, sacos y dibujo, sin DXF enteros', async () => {
     const res = await post('/api/corte-lona', { order: revision.order });
@@ -106,7 +105,7 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     expect(await plano.text()).toContain('AC1032');
     expect(convertir).not.toHaveBeenCalled();
   });
-  it('descarga la opción de trozo separado y recalcula los ajustes guardados del revisor', async () => {
+  it('descarga el corte con las dos opciones y recalcula los ajustes guardados del revisor', async () => {
     const order = structuredClone(revision.order);
     order.awnings[0].projection = 350;
     order.awnings[0].width = 700;
@@ -121,9 +120,9 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     expect(getReview).toHaveBeenCalledWith('AR2604784');
     const plano = await post('/api/corte-lona/plano', { order, ajustes });
     expect(await plano.text()).toContain('VARILLA BLANCA PERSONALIZADA');
-    const separado = await post('/api/corte-lona/dxf', { order, material: body.material, opcion: 'trozoSeparado' });
+    const separado = await post('/api/corte-lona/dxf', { order, material: body.material });
     expect(separado.status).toBe(200);
-    expect(separado.headers.get('content-disposition')).toContain('(trozo separado).dxf');
+    expect(separado.headers.get('content-disposition')).toContain('AR2604784.dxf');
     expect(await separado.text()).toContain('CORTAR DE RESTOS');
   });
   it('convierte el plano por ODA falso y descarga DWG 2018', async () => {
@@ -144,9 +143,7 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     for (const body of [{}, { order: revision.order, ajustes: [] }]) {
       expect((await post('/api/corte-lona', body)).status).toBe(400);
     }
-    expect((await post('/api/corte-lona/dxf', { order: revision.order, opcion: 'inventada' })).status).toBe(400);
-    expect((await post('/api/corte-lona/dxf', { order: revision.order, opcion: 'conSacos', material: 'OTRA' })).status).toBe(400);
-    expect((await post('/api/corte-lona/dxf', { order: revision.order, opcion: 'trozoSeparado' })).status).toBe(400);
+    expect((await post('/api/corte-lona/dxf', { order: revision.order, material: 'OTRA' })).status).toBe(400);
     getReview.mockRejectedValue(Object.assign(new Error('no existe'), { code: 'ENOENT' }));
     expect((await fetch(url + '/api/reviews/AR2609999/corte-lona')).status).toBe(404);
   });

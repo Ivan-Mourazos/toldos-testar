@@ -1,5 +1,5 @@
 import { generarCorteLona } from './domain/corteLona/index.js';
-import { opcionesArchivo } from './domain/corteLona/opcionesArchivo.js';
+import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { sanitizeOrderCode } from './workflow.js';
 
@@ -55,11 +55,11 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
       res.setHeader('X-Corte-Lona-Of-Stock', stock.of);
       res.setHeader('Cache-Control', 'no-store');
       if (tipo === 'dxf') {
-        if (!['conSacos', 'trozoSeparado'].includes(datos.opcion)) throw new Error('Indica una opción: conSacos o trozoSeparado.');
-        // Se acepta el material de clientes anteriores, pero el archivo siempre lleva el pedido entero.
+        // Un solo DXF con el pedido entero y sus dos opciones; se aceptan «opcion» y «material» de clientes
+        // anteriores, pero ya no cambian el archivo (Iván, 22/10/2026: el técnico de la máquina elige).
         if (datos.material != null) elegirMaterial(resultado.cortes.conSacos, datos.material);
-        const archivo = opcionesArchivo(resultado.cortes, pedido).find(a => a.opcion === datos.opcion);
-        if (!archivo) throw new Error('No hay corte disponible para esa opción.');
+        const archivo = archivoCorte(resultado.cortes, pedido);
+        if (!archivo) throw new Error('No hay corte disponible.');
         return descargar(res, Buffer.from(archivo.dxf, 'latin1'), archivo.filename, 'application/dxf');
       }
       const plano = elegirMaterial(resultado.plano, datos.material);
