@@ -1,12 +1,12 @@
 import React from 'react';
 
-export type Producto = 'toldos' | 'remolques';
+export type Producto = 'toldos' | 'remolques' | 'puertas';
 
 // Lo último que se eligió se recuerda en este navegador (como el modo oscuro).
 export const PRODUCTO_KEY = 'planteamientos-producto';
 
 export function leerProducto(storage: Storage | null = window.localStorage): Producto {
-  try { return storage?.getItem(PRODUCTO_KEY) === 'remolques' ? 'remolques' : 'toldos'; } catch { return 'toldos'; }
+  try { const valor=storage?.getItem(PRODUCTO_KEY); return valor==='remolques'||valor==='puertas'?valor:'toldos'; } catch { return 'toldos'; }
 }
 
 export function guardarProducto(producto: Producto, storage: Storage | null = window.localStorage) {
@@ -34,6 +34,9 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
       </button>
       <button type="button" disabled={disabled} aria-label="Remolques" title={detalle('remolques')} className={!inicio && producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'remolques'} onClick={() => onChange('remolques')}>
         Remolques
+      </button>
+      <button type="button" disabled={disabled} aria-label="Puertas" title={detalle('puertas')} className={!inicio && producto === 'puertas' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'puertas'} onClick={() => onChange('puertas')}>
+        Puertas
       </button>
     </div>
     </div>

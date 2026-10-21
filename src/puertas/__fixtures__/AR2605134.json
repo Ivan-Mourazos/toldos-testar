@@ -1,0 +1,20 @@
+{
+  "pedido":"AR2605134",
+  "of":"0233175",
+  "modelo":"PUERTAENR",
+  "cantidad":3,
+  "frente":212,
+  "alto":360,
+  "color":"AZUL 5002",
+  "T":169,
+  "D":60,
+  "margen":6,
+  "alturasTubos":[60,131,191],
+  "panos":[176.25,123.75],
+  "cristal":[204,56.5],
+  "cachos":[7,56.5],
+  "saco":[218.5,26],
+  "marcasPanos":[[7.5,169.25],[2,45.25,116.25]],
+  "fuentes":"Dibujo del pedido escaneado, página 2; OF y cantidad comprobadas con SELECT en RPS el 21/10/2026.",
+  "contrasteManualDisponible":false
+}

@@ -1,0 +1,13 @@
+{
+  "unidad": "cm",
+  "descripcion": "Esquinas superiores leídas del DXF del bot; no se deduce la altura terminada a partir de la Y de corte.",
+  "casos": [
+    {"pedido":"AR2501936","pano":[478,272],"x":[20,50],"yCorteSuperior":31.5,"brazo":0.5},
+    {"pedido":"AR2503709","pano":[385,254.5],"x":[20,50],"yCorteSuperior":31.5,"brazo":0.5},
+    {"pedido":"AR2600208","pano":[530,69.5],"x":[20,50],"yCorteSuperior":31.5,"brazo":0.5},
+    {"pedido":"AR2600236","pano":[382,252.5],"x":[20,50],"yCorteSuperior":31.5,"brazo":0.5},
+    {"pedido":"AR2601036","pano":[424,281.5],"x":[20,50],"yCorteSuperior":31.5,"brazo":0.5},
+    {"pedido":"AR2604763","pano":[446,268],"x":[21,51],"yCorteSuperior":6.5,"brazo":0.5,"repeticionesObservadas":2},
+    {"pedido":"AR2604662","pano":[311,283.75],"x":[21,51],"yCorteSuperior":7,"brazo":0.5}
+  ]
+}

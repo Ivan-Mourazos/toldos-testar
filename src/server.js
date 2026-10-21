@@ -7,6 +7,7 @@ import { config } from './config.js';
 import { crearOdaConverter } from './odaConverter.js';
 import { crearCorteRemolques } from './remolques/corte/archivos.js';
 import { registrarRutaVistaPreviaCorte } from './remolques/corte/rutas.js';
+import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
@@ -680,6 +681,7 @@ function rutaRemolques(manejar) {
 }
 
 registrarRutaVistaPreviaCorte(app, pedidosRemolques);
+registrarRutaPuertas(app);
 
 app.get('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
   const year = Number(req.query.year) || new Date().getFullYear();

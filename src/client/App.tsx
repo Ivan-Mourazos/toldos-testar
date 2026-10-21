@@ -47,6 +47,7 @@ import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
 import { RemolquesView } from './remolques/RemolquesView';
+import { PuertasView } from './puertas/PuertasView';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
 import { useRemolquesParameters } from './remolques/useRemolquesParameters';
 import { ClientesRemolquesView } from './remolques/ClientesRemolquesView';
@@ -73,6 +74,8 @@ export default function App() {
   // de producto o de pestaña; los toldos ya viven en `draft`, que es de esta pantalla.
   const [producto, setProducto] = useState<Producto>(() => leerProducto());
   const [remolquesMontado, setRemolquesMontado] = useState(producto === 'remolques');
+  const [puertasMontado, setPuertasMontado] = useState(producto === 'puertas');
+  const [resumenPuertas, setResumenPuertas] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [resumenRemolques, setResumenRemolques] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [accionesPedido, setAccionesPedido] = useState<HTMLDivElement | null>(null);
   // Si la web se abre con un pedido en la dirección, el buscador ya lo trae escrito (ver el
@@ -85,6 +88,7 @@ export default function App() {
     setProducto(next);
     guardarProducto(next);
     if (next === 'remolques') setRemolquesMontado(true);
+    if (next === 'puertas') setPuertasMontado(true);
   }
   const [working, setWorking] = useState<'review' | 'preview' | 'draft' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -274,7 +278,7 @@ export default function App() {
     setAutofillLoading(true);
     try {
       // Si este número tiene borrador (diseño 01/10/2026), se pregunta antes de ir a RPS.
-      const conBorrador = await buscarBorradorAlObtener(orderCode, producto, askForConfirmation);
+      const conBorrador = await buscarBorradorAlObtener(orderCode, producto === 'remolques' ? 'remolques' : 'toldos', askForConfirmation);
       if (seq !== autofillSeq.current) return;
       if (conBorrador.accion === 'cancelar') return;
       if (conBorrador.accion === 'abrir') {
@@ -697,7 +701,7 @@ export default function App() {
           <div className="workspace-heading">
             {activeTab !== 'order' && <h2>{viewTitle}</h2>}
             {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
-            {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques }} />}
+            {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes
               ? null
@@ -733,7 +737,7 @@ export default function App() {
           {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
             <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
             <span className="order-entry-or">o</span>
-            <SelectorProducto inicio disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques }} />
+            <SelectorProducto inicio disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />
           </section>}
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && returnNote && (
             <div className="review-state-note is-returned order-return-note" role="status">
@@ -784,6 +788,9 @@ export default function App() {
             </fieldset>
           )}
 
+          {puertasMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'puertas'}>
+            <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas} />
+          </div>}
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'remolques'}>
               <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}

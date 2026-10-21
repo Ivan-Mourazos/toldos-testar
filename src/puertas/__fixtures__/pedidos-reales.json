@@ -1,0 +1,28 @@
+{
+  "fuentes": ["genericas/contraste.json", "plegables/verificacion/verificacion.json", "plegables/configuraciones/configuraciones.json"],
+  "unidad": "cm",
+  "enrollables": [
+    {"pedido":"AR2604858","of":"0232717","frente":397,"alto":400,"T":209,"D":60,"m":11,"panos":[216.25,123.75],"cristal":[379,56.5],"entradas":4,"alturas":[60,131,191,241],"color":"GRIS 7038","margenMarcas":1.5,"marcas":[[7.5,50,209.25],[2,45.25,116.25]]},
+    {"pedido":"AR2604638","of":"0232309","frente":172,"alto":314,"T":123,"D":60,"m":6,"panos":[130.25,123.75],"cristal":[164,56.5],"entradas":3,"alturas":[60,131,191],"color":"BLANCO 9016","margenMarcas":1.5,"marcas":[[7.5,123.25],[2,45.25,116.25]]},
+    {"pedido":"AR2604524","of":"0232189","frente":475,"alto":420,"T":239,"D":60,"m":15,"panos":[246.25,113.75],"cristal":[449,56.5],"entradas":4,"alturas":[50,121,181,231],"color":"GRIS 9006","margenMarcas":1.5,"marcas":[[7.5,50,239.25],[2,35.25,106.25]]},
+    {"pedido":"AR2604434","of":"0231973","frente":150,"alto":264,"T":83,"D":60,"m":4,"panos":[90.25,113.75],"cristal":[146,56.5],"entradas":3,"alturas":[50,121,181],"color":"BLANCO 9016","margenMarcas":1.5},
+    {"pedido":"AR2604349","of":"0231828","frente":282,"alto":375,"T":184,"D":60,"m":6,"panos":[191.25,123.75],"cristal":[274,56.5],"entradas":3,"alturas":[60,131,191],"color":"GRIS 7016","margenMarcas":1.5},
+    {"pedido":"AR2604970","of":"0232882","frente":422,"alto":460,"T":269,"D":60,"m":11,"panos":[276.25,123.75],"cristal":[404,56.5],"entradas":5,"alturas":[60,131,191,241,301],"color":"NEGRO","margenMarcas":0,"marcas":[[7.5,50,110,269.25],[2,45.25,116.25]]},
+    {"pedido":"AR2604069","of":"0231395","frente":315,"alto":494,"T":303,"D":60,"m":8,"panos":[57.5,260.25,123.75],"cristal":[303,56.5],"entradas":5,"alturas":[60,131,191,241,301,351],"color":"ROJO 3002","margenMarcas":0,"empateTubo":4,"marcas":[[7.5],[7.5,60,110,253.25],[2,45.25,116.25]]},
+    {"pedido":"AR2604725","of":"0232504","frente":474,"alto":430,"T":239,"D":60,"m":11,"panos":[246.25,123.75],"cristal":[456,56.5],"entradas":4,"alturas":[60,131,191,241],"color":"GRIS 7038","margenMarcas":1.5,"sacoPartido":true,"articuloRps":"PUERTAPLE","marcas":[[7.5,50,239.25],[2,45.25,116.25]]}
+  ],
+  "autorreparables": [
+    {"pedido":"AR2604904","of":"0232817","frente":426,"alto":515,"panos":[300,208.5],"entrada":[437,21]},
+    {"pedido":"AR2604764","of":"0232528","frente":110,"alto":263,"panos":[254.5],"entrada":[121,21]},
+    {"pedido":"AR2604717","of":"0232471","frente":472,"alto":470,"panos":[300,163.5],"entrada":[483,21]},
+    {"pedido":"AR2604402","of":"0231940","frente":182,"alto":340,"panos":[331.5],"entrada":null},
+    {"pedido":"AR2604013","of":"0231318","frente":249,"alto":385,"panos":[376.5],"entrada":[260,21]}
+  ],
+  "apilables": [
+    {"pedido":"AR2604592","of":"0232279","frente":400,"alto":475,"pie":41,"pasos":[52,52,52,52,52,52,52],"cabecera":70,"empates":[6],"panos":[296,192],"filas":[[53,155,128,32,2,38]],"cristal":[132,36]},
+    {"pedido":"AR2604723","of":"0232494","frente":510,"alto":575,"pie":37,"pasos":[52,52,52,52,52,52,52,52,52],"cabecera":70,"empates":[6],"panos":[292,296],"filas":[[53,99,110,32,3,37],[53,151,110,32,3,37]],"cristal":[114,36]},
+    {"pedido":"AR2604724","of":"0232505","frente":500,"alto":575,"pie":37,"pasos":[52,52,52,52,52,52,52,52,52],"cabecera":70,"empates":[6],"panos":[292,296],"filas":[[53,151,106,32,3,38]],"cristal":[110,36]},
+    {"pedido":"AR2604859","of":"0232718","frente":471,"alto":505,"pie":43,"pasos":[56,56,56,56,56,56,56],"cabecera":70,"empates":[5],"panos":[262,256],"filas":[[54,109,95,36,3,39],[54,389,95,36,3,39]],"cristal":[99,40]},
+    {"pedido":"AR2604906","of":"0232827","frente":530,"alto":500,"pie":45,"pasos":[55,55,55,55,55,55,55],"cabecera":70,"empates":[5],"panos":[260,253],"filas":[[53,110,116,35,3,38],[53,165,116,35,3,38]],"cristal":[120,39]}
+  ]
+}

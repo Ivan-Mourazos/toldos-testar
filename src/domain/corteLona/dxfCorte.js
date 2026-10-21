@@ -12,6 +12,7 @@ const MODEL_SPACE = '1F';
  *  ollaos de remolque): { capa, x, y, r }; arcos (esquinas redondeadas): { capa, x, y, r, desde, hasta }
  *  en grados, en sentido antihorario. Desplaza todo a (dx, dy). Con `escala` 0,001 y `leyenda` false sale el
  *  plano de revisión de remolques en metros (Iván, 20/10/2026), sin la leyenda del bot. */
+/** @param {{lineas: Array<{capa:string,x1:number,y1:number,x2:number,y2:number}>, textos: Array<{capa:string,x:number,y:number,h:number,valor:string,giro?:number,centrado?:boolean,literal?:boolean}>, circulos?: Array<{capa:string,x:number,y:number,r:number}>, arcos?: Array<{capa:string,x:number,y:number,r:number,desde:number,hasta:number}>}} entidades */
 export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, { dx = 1000, dy = 1000, escala = 1, leyenda = true } = {}) {
   const src = leerPlantilla('base-corte.dxf');
   if ([...lineas, ...textos, ...circulos, ...arcos].some((e) => !CAPAS_BOT.includes(e.capa))) throw new Error('El DXF de corte solo admite capas del bot.');
