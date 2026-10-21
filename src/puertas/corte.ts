@@ -86,12 +86,15 @@ function rotulosPieza(
   const of = (pieza.of.trim() || 'SIN OF').toUpperCase();
   const clase = etiquetaClasePieza(pieza, codigoPano);
 
-  const lineasTexto =
-    cortoMm < 130
+  const multiplicador = (pieza.multiplicador ?? 1) > 1 ? [`X${pieza.multiplicador}`] : [];
+  const lineasTexto = [
+    ...(cortoMm < 130
       ? [`${clase} · ${of} · REVÉS`]
       : cortoMm < 280
         ? [`${clase} · ${of}`, 'REVÉS']
-        : [clase, of, 'REVÉS'];
+        : [clase, of, 'REVÉS']),
+    ...multiplicador,
+  ];
 
   const maxPorCorto = (cortoMm * 0.82) / ((lineasTexto.length - 1) * 1.5 + 1);
   const maxPorLargo = Math.min(...lineasTexto.map(v => (largoMm * 0.88) / Math.max(1, anchoArial(v, 1))));
@@ -179,7 +182,18 @@ function colocar(
     g.push(p);
     grupos.set(k, g);
   }
-  return [...grupos.values()].map(grupo => {
+  return [...grupos.values()].map(grupoOriginal => {
+    // Los cristales iguales no se colocan uno a uno: se dibuja uno con cuántos son, porque se cortan de
+    // restos (Iván, 21/10/2026; en los cortes hechos, «X2», «X3»… dentro de la pieza).
+    const grupo: PiezaPuerta[] = [];
+    const cristales = new Map<string, PiezaPuerta>();
+    for (const p of grupoOriginal) {
+      if (p.clase !== 'cristal') { grupo.push(p); continue; }
+      const clave = JSON.stringify([p.ancho, p.alto, p.of, p.radio]);
+      const igual = cristales.get(clave);
+      if (igual) igual.multiplicador = (igual.multiplicador ?? 1) + p.cantidad;
+      else { const una = { ...p, cantidad: 1, multiplicador: p.cantidad }; cristales.set(clave, una); grupo.push(una); }
+    }
     const rollo = mm(grupo[0].rollo);
     const entidades = vacias();
     const colocadas: CortePuertas['colocadas'] = [];

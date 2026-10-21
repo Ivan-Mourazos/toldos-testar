@@ -12,6 +12,19 @@ const pedido = () => {
   return { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604638', elementos: [{ id: 'puerta-a', input: p }] };
 };
 describe('Corte de puertas', () => {
+  it('los cristales iguales se dibujan una vez, aparte, con cuántos son dentro (Iván, 21/10/2026: se cortan de restos)', () => {
+    const p = pedido();
+    p.elementos[0].input.cantidad = 3;
+    const r = generarCortePuertas(p);
+    const cristal = r.cortes.find(c => c.material.includes('TRANSP'));
+    expect(cristal.colocadas).toHaveLength(1);
+    expect(cristal.entidades.textos.some(t => t.valor === 'X3')).toBe(true);
+    // Una puerta sola: un cristal, sin multiplicador.
+    const una = generarCortePuertas(pedido()).cortes.find(c => c.material.includes('TRANSP'));
+    expect(una.colocadas).toHaveLength(1);
+    expect(una.entidades.textos.some(t => /^Xd/.test(t.valor))).toBe(false);
+  });
+
   it('genera un DXF 2004 con capas del bot y materiales apilados', () => {
     const r = generarCortePuertas(pedido());
     expect(r.archivo?.dxf).toContain('AC1018');

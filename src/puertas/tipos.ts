@@ -48,6 +48,8 @@ export interface PiezaPuerta {
   marcas: Segmento[];
   textos: Array<{x:number;y:number;valor:string}>;
   huecos: Hueco[];
+  /** Cristales iguales: se dibujan una vez con «Xn» dentro, porque se cortan de restos. */
+  multiplicador?: number;
 }
 export interface ResultadoPuerta {
   version: 1;
