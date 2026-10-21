@@ -448,12 +448,15 @@ function cabezasLona(el) {
   // se hacen si el paño cierra con oreja o similar»; si no, solo la del centro, como a mano en AR2605088 con
   // cremallera), a la altura de su oreja: delante la del delantero y detrás la del trasero (AR2605158: 81,5 con
   // la trasera 4 cm más corta, no 85,5). También en el recto (AR2605129).
+  // Con la trasera a la línea por arriba el trasero acaba más arriba que el contorno, que llega hasta el fondo: su
+  // oreja cae en el contorno lo que se queda corto más arriba (AR2605158: 81,5 + 4 = 85,5; Iván, 21/10/2026).
+  const bajaTrasera = i.traseraPorArriba ? Math.max((del.alto - tra.alto) * 10, 0) : 0;
   const marcasHombro = orejaDelante > 0 ? d.altoOreja : null;
-  const marcasAtras = oreja > 0 ? t.altoOreja : null;
+  const marcasAtras = oreja > 0 ? t.altoOreja + bajaTrasera : null;
   // Lados del rebaje de los puentes, desde cada borde del contorno: iguales que las orejas del trasero (Iván,
   // 21/10/2026; 535 y 535 en AR2605103). En AR2605078 y AR2604800 a mano no coincidieron y salieron mal.
   const rebajeLado = puentes ? t.altoOreja : 0;
-  return { f, d, t, oreja, orejaDelante, anchoPerfil, anchoPerfilTra, ventana, ollaosDel, ollaosAtr, marcasHombro, marcasAtras, rebajeLado, puentes };
+  return { f, d, t, oreja, orejaDelante, anchoPerfil, anchoPerfilTra, ventana, ollaosDel, ollaosAtr, marcasHombro, marcasAtras, bajaTrasera, rebajeLado, puentes };
 }
 
 // Las tres piezas de una lona alta (en mm, sin colocar) y sus datos, para el dibujo de confección del plano.

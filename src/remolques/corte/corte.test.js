@@ -138,7 +138,15 @@ describe('generarCorteRemolques', () => {
     const B = P.c.geo.H;
     // Delante no cierra (recoge NO): solo la marca del centro (Iván, 21/10/2026).
     expect(marcas(10)).toEqual([B / 2]);
-    expect(marcas(P.c.w - 10)).toEqual([815, B / 2, B - 815]);
+    // El trasero va a la línea por arriba y acaba 4 cm antes por abajo, y el contorno llega hasta el fondo: la oreja
+    // (81,5 desde el borde del trasero) cae en el contorno a 81,5 + 4 = 85,5 del borde (Iván, corregido en el plano).
+    expect(P.bajaTrasera).toBe(40);
+    expect(marcas(P.c.w - 10)).toEqual([855, B / 2, B - 855]);
+    // El plano lo acota: 85,5 desde cada borde y los 4 cm que se queda corto el trasero.
+    const cotas = registrosDxf(generarCorteRemolques(AR2605158).archivo.plano.dxf)
+      .filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(cotas.filter((v) => v === 85.5)).toHaveLength(2);
+    expect(cotas.filter((v) => v === 4)).toHaveLength(2);
   });
 
   it('las marcas del hombro del contorno solo van en la punta que cierra con orejas (AR2605088, AR2605132)', () => {

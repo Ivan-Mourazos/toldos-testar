@@ -226,6 +226,13 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
       L.cota('vent-pre-noimpr', xb(u), yy, xb(u) + mh, yy, r1(mh), lado, 6);
       L.cota('vent-pre-noimpr', xt(u) - mh, yy, xt(u), yy, r1(mh), lado, 6);
     }
+    // Trasera a la línea por arriba: lo que el trasero se queda corto por abajo, desde cada borde del contorno, detrás
+    // (AR2605158: 4 cm; Iván, 21/10/2026).
+    if (P.bajaTrasera > 0 && P.marcasAtras != null) {
+      const b = P.bajaTrasera / 10, yy = Y + A;
+      L.cota('vent-pre-noimpr', xb(A * 10), yy, xb(A * 10) + b, yy, r1(b), 16, 6);
+      L.cota('vent-pre-noimpr', xt(A * 10) - b, yy, xt(A * 10), yy, r1(b), 16, 6);
+    }
   }
   return { ancho: xCon + B - X, alto: Math.max(H, A) };
 }

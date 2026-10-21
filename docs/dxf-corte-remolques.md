@@ -324,3 +324,7 @@ velcro…). Si no cierra (recoge NO) o cierra con cremallera, en esa punta solo 
 así en AR2605088). Vale también para el recto (AR2605129: 44,5 detrás, la oreja del trasero; antes la web solo
 ponía la del centro y el plano acotaba hasta el centro). El perfil de cada cabeza es la lona hecha + 2 (el
 remolque + 3); lo que el paño tenga de más son orejas, también delante si recoge delante.
+
+Corrección (21/10/2026, Iván): con la **trasera a la línea por arriba** el trasero acaba más arriba que el contorno,
+que llega hasta el fondo. Por eso las marcas del hombro de detrás van a la oreja del trasero **más** lo que se queda
+corto por abajo (AR2605158: 81,5 + 4 = 85,5), y el plano acota esos 4 cm desde cada borde del contorno.
