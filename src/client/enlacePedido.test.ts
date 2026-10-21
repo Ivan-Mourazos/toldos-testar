@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pedidoDeEnlace, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
+import { destinoDeEnlace, pedidoDeEnlace, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
 
 describe('pedidoDeEnlace', () => {
   it('saca el número de pedido de la dirección', () => {
@@ -36,5 +36,23 @@ describe('revisionDeEnlace', () => {
 
   it('sinPedidoEnEnlace también lo quita, para que recargar no lo vuelva a abrir', () => {
     expect(sinPedidoEnEnlace('http://x:4400/?revisar=AR2604351')).toBe('/');
+  });
+});
+
+describe('destinoDeEnlace — «Plantear» de CoordinaOT con un pedido ya guardado (Iván, 21/10/2026)', () => {
+  const respuesta = (status: number) => ({ ok: status < 400, status }) as Response;
+  it('si el pedido ya está en Pedidos (toldos o remolques), se abre allí y no se toca Nuevo pedido', async () => {
+    const pedidas: string[] = [];
+    const toldos = async (url: string) => { pedidas.push(url); return respuesta(url.startsWith('/api/reviews/') ? 200 : 404); };
+    expect(await destinoDeEnlace('AR2605158', toldos)).toBe('revisar');
+    expect(pedidas[0]).toBe('/api/reviews/AR2605158');
+    const remolques = async (url: string) => respuesta(url.startsWith('/api/remolques/') ? 200 : 404);
+    expect(await destinoDeEnlace('AR2605158', remolques)).toBe('revisar');
+  });
+  it('si no está guardado en ninguno, se plantea: se busca y se carga en Nuevo pedido, como hasta ahora', async () => {
+    expect(await destinoDeEnlace('AR2605999', async () => respuesta(404))).toBe('plantear');
+  });
+  it('si no se puede comprobar, se plantea como hasta ahora', async () => {
+    expect(await destinoDeEnlace('AR2605999', async () => { throw new Error('sin red'); })).toBe('plantear');
   });
 });

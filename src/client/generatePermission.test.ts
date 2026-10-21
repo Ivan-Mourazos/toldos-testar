@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canGenerateReview, generateState } from './generatePermission';
+import { canGenerateReview, generateState, puedeCorregir } from './generatePermission';
 import { COORDINA_UNAVAILABLE } from '../reviewRules.js';
 
 describe('canGenerateReview — el permiso de generar (autor sí, otros no)', () => {
@@ -60,5 +60,26 @@ describe('generateState', () => {
   });
   it('pedido histórico sin autor: cualquiera genera si está aprobado', () => {
     expect(generateState(review('', ['0230194']), 'ÁNGEL', aprobado)).toEqual({ allowed: true, note: '' });
+  });
+});
+
+describe('puedeCorregir — «Corregir» solo si CoordinaOT lo devolvió y lo abre su autor (Iván, 21/10/2026)', () => {
+  const elementos = [{ letter: 'A', of: '0230194' }, { letter: 'B', of: '0230195' }];
+  const coordina = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado: 'aprobada' }, '0230195': { estado } } });
+  it('devuelto y autor: sí', () => {
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('devuelta'))).toBe(true);
+  });
+  it('devuelto pero lo abre otro: no', () => {
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', coordina('devuelta'))).toBe(false);
+  });
+  it('por revisar, aprobado, generado o sin CoordinaOT: no', () => {
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('en_revision'))).toBe(false);
+    expect(puedeCorregir('APPROVED', elementos, 'IVÁN', 'IVÁN', coordina('aprobada'))).toBe(false);
+    expect(puedeCorregir('PRODUCED', elementos, 'IVÁN', 'IVÁN', coordina('devuelta'))).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', null)).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', { disponible: false })).toBe(false);
+  });
+  it('pedido antiguo sin autor y devuelto: lo puede corregir cualquiera', () => {
+    expect(puedeCorregir('PENDING_REVIEW', elementos, '', 'JAIME', coordina('devuelta'))).toBe(true);
   });
 });

@@ -5,7 +5,8 @@ import { OrderView } from '../views/OrderView';
 import { CorteLona } from './CorteLona';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { controlLabel } from './controlLabels';
-import { generateState } from '../generatePermission';
+import { generateState, puedeCorregir } from '../generatePermission';
+import { awningLetter } from '../../domain/awningCompleteness.js';
 import { EnviosCorte } from './EnviosCorte';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 
@@ -88,6 +89,9 @@ export function ReviewOrderDetail({
   const produced = isProduced && Boolean(review.production);
   // El botón depende del autor y de que CoordinaOT haya aprobado todas las OF.
   const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
+  // «Corregir», como en CoordinaOT: solo devuelto y para su autor (Iván, 21/10/2026).
+  const corregible = puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })),
+    order.technician || '', currentUser, coordinaStatus);
   const cortePermitido = generateState({ ...review, status: isProduced ? 'PENDING_REVIEW' : review.status }, currentUser, coordinaStatus);
 
   return (
@@ -109,9 +113,9 @@ export function ReviewOrderDetail({
           </button>
           {!isProduced && (
             <>
-              <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
+              {corregible && <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
                 <PencilLine aria-hidden="true" />Corregir
-              </button>
+              </button>}
               <button
                 className="primary-button boton-3d review-generate-button"
                 type="button"

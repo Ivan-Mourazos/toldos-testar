@@ -34,3 +34,18 @@ export function sinPedidoEnEnlace(href: string): string {
   url.searchParams.delete('revisar');
   return `${url.pathname}${url.search}${url.hash}`;
 }
+
+/**
+ * Adónde lleva `?pedido=` (Iván, 21/10/2026): CoordinaOT enseña «Plantear» aunque el pedido ya esté guardado
+ * aquí, y entonces se cargaba en Nuevo pedido al revisar y se quedaba allí. Si ya está en Pedidos (toldos o
+ * remolques), se abre allí; si no, se plantea como siempre.
+ */
+export async function destinoDeEnlace(numero: string, pedir: (url: string) => Promise<Response> = (url) => fetch(url)): Promise<'revisar' | 'plantear'> {
+  const codigo = encodeURIComponent(numero);
+  for (const url of [`/api/reviews/${codigo}`, `/api/remolques/pedidos/${codigo}`]) {
+    try {
+      if ((await pedir(url)).ok) return 'revisar';
+    } catch { /* Sin respuesta: se sigue como hasta ahora. */ }
+  }
+  return 'plantear';
+}

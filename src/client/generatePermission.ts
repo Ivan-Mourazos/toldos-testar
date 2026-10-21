@@ -1,4 +1,4 @@
-import { generationBlock, isPendingGeneration } from '../reviewRules.js';
+import { coordinaGroup, generationBlock, isPendingGeneration } from '../reviewRules.js';
 import { awningLetter } from '../domain/awningCompleteness.js';
 import { controlLabel } from './components/controlLabels';
 import type { CoordinaStatus, ReviewPackage } from './types';
@@ -31,4 +31,14 @@ export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, c
   const awnings = (review.order.awnings || []).map((awning, index) => ({ letter: awningLetter(index), of: String(awning.of || '') }));
   const block = generationBlock(awnings, status);
   return block ? { allowed: false, note: block } : { allowed: true, note: '' };
+}
+
+/**
+ * «Corregir», sincronizado con CoordinaOT (Iván, 21/10/2026): solo si CoordinaOT lo ha devuelto y quien lo abre
+ * es su autor. Para mirarlo están el detalle y la vista previa; corregir sin devolución lo sacaría de revisión.
+ */
+export function puedeCorregir(status: string, elementos: { letter: string; of: string }[], autor: string, usuario: string, coordina: CoordinaStatus | null) {
+  if (status === 'PRODUCED' || !coordina?.disponible) return false;
+  if (autor && autor !== usuario) return false;
+  return coordinaGroup(elementos, coordina) === 'devuelto';
 }

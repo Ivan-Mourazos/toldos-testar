@@ -37,7 +37,7 @@ import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
 import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
-import { pedidoDeEnlace, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
+import { destinoDeEnlace, pedidoDeEnlace, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
@@ -351,8 +351,15 @@ export default function App() {
     const numero = pedidoDeEnlace(window.location.search);
     if (numero || revisionDeEnlace(window.location.search)) window.history.replaceState(null, '', sinPedidoEnEnlace(window.location.href));
     if (!numero) return;
-    // Fuera del efecto: la búsqueda cambia estado nada más empezar («Buscando…»).
-    queueMicrotask(() => void autofillOrder(numero));
+    // Si ya está guardado en Pedidos, se abre allí, como con «Revisar», sin cargarlo en Nuevo pedido.
+    // Si no, se busca: fuera del efecto, porque la búsqueda cambia estado nada más empezar («Buscando…»).
+    void destinoDeEnlace(numero).then((destino) => {
+      if (destino === 'revisar') {
+        setNumeroBusqueda(null);
+        setRevisarAlCargar(numero);
+        setActiveTab('reviews');
+      } else void autofillOrder(numero);
+    });
     // Solo al cargar: `autofillOrder` cambia en cada pintado y no debe relanzar la búsqueda.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

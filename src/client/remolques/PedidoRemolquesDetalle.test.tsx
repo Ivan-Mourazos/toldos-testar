@@ -28,13 +28,14 @@ const pintar = (props: Partial<React.ComponentProps<typeof FichaPedidoRemolques>
 );
 
 describe('el pedido de remolques abierto en Pedidos', () => {
-  it('pendiente y aprobado: cada elemento con su OF y quién lo aprobó, «Corregir» y «Generar archivos» encendido para el autor', () => {
+  it('pendiente y aprobado: cada elemento con su OF y quién lo aprobó, y «Generar archivos» encendido para el autor; sin «Corregir»', () => {
     const html = pintar({});
     expect(html).toContain('Remolque · Arquillado con aguas');
     expect(html).toContain('Baquetón');
     expect(html).toContain('OF 0231780');
     expect(html).toContain('Aprobado por Jaime');
-    expect(html).toContain('Corregir');
+    // Aprobado no se corrige: «Corregir» solo si CoordinaOT lo devolvió (Iván, 21/10/2026).
+    expect(html).not.toContain('Corregir');
     expect(html).toContain('Generar archivos');
     expect(html).not.toMatch(/review-generate-button" type="button" disabled=""/);
   });
@@ -49,6 +50,9 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     const html = pintar({ coordina: { disponible: true, ofs: { '0231780': { estado: 'devuelta', nota: 'Falta cota del alto' }, '0231781': { estado: 'aprobada', revisor: 'jaime' } } } });
     expect(html).toContain('Falta cota del alto');
     expect(html).toContain('Sin aprobar en CoordinaOT: A (0231780) devuelta.');
+    expect(html).toContain('Corregir');
+    // Devuelto, pero lo abre otro técnico: no es suyo corregirlo.
+    expect(pintar({ currentUser: 'JAIME', coordina: { disponible: true, ofs: { '0231780': { estado: 'devuelta', nota: 'x' } } } })).not.toContain('Corregir');
   });
 
   it('generado: sin «Generar archivos», con el PDF, quién lo revisó y «Reutilizar datos»', () => {

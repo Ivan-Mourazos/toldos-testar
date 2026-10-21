@@ -10,6 +10,7 @@ import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import type { CoordinaStatus } from '../types';
 import { CorteRemolques } from './CorteRemolques';
 import { estadoGenerarRemolques, ficherosPrevistos } from './generarPedido';
+import { puedeCorregir } from '../generatePermission';
 import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
@@ -74,6 +75,8 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   }
   const generado = pedido.status === 'PRODUCED';
   const { allowed, note } = estadoGenerarRemolques(pedido, currentUser, coordina);
+  // «Corregir», como en CoordinaOT: solo devuelto y para su autor (Iván, 21/10/2026).
+  const corregible = puedeCorregir(pedido.status, elementosAprobacion(pedido), pedido.summary.technician || '', currentUser, coordina);
   const permisoCorte = estadoGenerarRemolques({ ...pedido, status: generado ? 'PENDING_REVIEW' : pedido.status }, currentUser, coordina);
   const ruta = `/api/remolques/pedidos/${encodeURIComponent(pedido.orderCode)}`;
   const letras = elementosAprobacion(pedido).map((item) => item.letter);
@@ -96,9 +99,9 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
           <VistaPreviaPdf origen={`${ruta}/vista-previa`} bloqueo={generando ? 'Generando los archivos…' : null} notify={notify} />
           {!generado && (
             <>
-              <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={onCorregir}>
+              {corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={onCorregir}>
                 <PencilLine aria-hidden="true" />Corregir
-              </button>
+              </button>}
               <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando || !allowed} title={note || undefined} onClick={onGenerar}>
                 <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
               </button>
