@@ -58,3 +58,8 @@
 .puerta-cutter { stroke:var(--tramo-holgado); stroke-width:1.2; fill:none; }
 .puerta-cutter-texto { color:var(--tramo-holgado); }
 .puerta-corte-dibujo { height:auto; max-height:330px; min-height:140px; }
+.puerta-corte-desplazamiento { overflow:auto; max-height:520px; }
+.puerta-corte-desplazamiento:focus-visible { outline:2px solid var(--color-brand-500); outline-offset:2px; }
+.puerta-corte-ampliacion { display:flex; align-items:center; gap:8px; margin-top:10px; }
+.puerta-corte-dibujo text { font-family:Arial,sans-serif; }
+.puerta-corte-dibujo .puerta-texto-rotulador { fill:var(--tramo-ajustado); }

@@ -161,7 +161,7 @@ Tabla generada con `node scripts/contrastar-puertas.mjs` comparando la salida de
 
 #### Diferencias observadas frente al DXF manual del bot
 
-1. **Rótulos dentro de cada pieza**: en los DXF manuales (`AR2604638.dxf` y `AR2604725.dxf`), el técnico solo rotuló `A1`, `A2` y `REVÉS` (y en `AR2604638` la OF `0232309` una sola vez entre ambos paños), dejando las entradas de tubo, los cachos, el cristal y el saco sin texto interior propio. En la web, siguiendo el criterio de toldos (`src/domain/corteLona/dibujoCorte.js`), todas las piezas llevan su rótulo centrado y orientado según el lado largo (`A1 · PAÑO DE ARRIBA`, `A2 · PAÑO DE ABAJO`, `CACHO`, `ENTRADA`, `SACO`, `CRISTAL`, `OF` y `REVÉS`).
+1. **Rótulos dentro de cada pieza, revisados en fase 3**: en los DXF manuales (`AR2604638.dxf` y `AR2604725.dxf`), el técnico rotuló `A1`, `A2` y `REVÉS` (y en `AR2604638` la OF `0232309` una sola vez entre ambos paños). La web usa ahora el código corto del paño, sin «PAÑO DE ARRIBA/ABAJO», y conserva OF y REVÉS en cada pieza para identificarla. Las piezas pequeñas llevan letra de puerta y nombre de pieza. El texto sigue el frente original y gira únicamente cuando gira la pieza al colocarla, sin un giro adicional por su lado largo. Los rótulos largos de las tablas anteriores describen la salida anterior a fase 3.
 2. **Sacos de stock aprovechados en el hueco sobrante de `AR2604725`**: en el DXF manual de `AR2604725`, encima de `A2` (`474 × 123,75 cm`, donde sobran `176,25 cm` de ancho de rollo), el técnico metió a mano 4 sacos de stock de otra OF (`0230811`: tres de `120 × 160` y uno de `114 × 160`). La web calcula exclusivamente las piezas del pedido de puertas.
 3. **Serigrafía en observaciones**: los logos serigrafiados de `AR2604638` (`XPUERTAS`, `21 × 6 cm` en negro) y `AR2605134` (`CAIRENA`, `20 × 6 cm` en blanco) no generan geometría de cuchilla en el bot; en la web quedan recogidos en el apartado separado de observaciones del pedido bajo el alzado.
 
@@ -175,3 +175,80 @@ Hay pruebas de validación, unión compartida, geometría de rollo, curvas, DXF 
 ## Dudas abiertas
 
 No queda ninguna duda de regla de fase 1: Iván cerró bajo, empate de enrollable, demasías de entradas y doble saco durante el encargo. Los datos variables de cada dibujo siguen siendo responsabilidad del técnico; una cota sin introducir permanece pendiente y no se deduce de las frecuencias del catálogo.
+
+## Fase 3 · corte, identificación y varios ventanales (22/10/2026)
+
+El contraste reproducible es `node scripts/contrastar-corte-puertas.mjs <carpeta local del estudio puertas>`.
+Solo lee copias locales y escribe en `tmp/ui-audit/puertas-fase3/`: `contraste.md`, `contraste.json`,
+documentos de muestra y comparaciones del DXF manual y la web. La tabla distingue coincidencia de medidas de
+cantidad nominal: encontrar dos cajas iguales en un fichero con varias puertas no demuestra a cuál pertenece cada una.
+AR2605134 sigue siendo un contraste con su PDF, sin atribuirle un corte manual inexistente.
+
+### Textos y mininúmeros
+
+- `genericas/bot/AR2604638.dxf`: A1, A2, REVÉS y OF con altura 200 mm, giro 0.
+- `plegables/configuraciones/bot/AR2604725.dxf`: A1 y REVÉS de 300 mm, A2 de 200 mm, giro 0.
+  Sus dos textos ROTULADOR «1», de 10 mm, pertenecen al **saco partido**, no a una entrada de tubo incorporada.
+  Este pedido tiene un tubo adicional sobre el ventanal, pero sus dos paños caben sin empate adicional.
+- `genericas/bot/AR2605038.dxf`: los ocho emparejamientos de los laterales de los dos ventanales de la puerta D
+  aparecen como D1…D8, dos veces cada uno, en ROTULADOR de 12 mm. Sirven para comprobar qué piezas se unen.
+
+La web identifica cada paño con su código corto y cada pieza pequeña con letra de puerta y nombre; conserva OF y
+REVÉS por pieza según la petición de Iván. Los textos son centrados y siguen el frente original de la pieza;
+giran al girar la pieza, sin un giro adicional por el lado mayor. Se usan máximos de 200/300 mm en paños,
+reduciéndolos cuando falta espacio. Son rótulos adaptados al hueco disponible; no se copian las posiciones
+arbitrarias del ratón ni las omisiones de identificación de los cortes históricos. Después de Z se continúa AA, AB…
+
+Los números actuales siguen **el criterio expresamente solicitado de toldos y remolques**: letra minúscula de la
+puerta y número (`a1`, `a2`…), en ROTULADOR de **10 mm**, conservando las minúsculas en el DXF AC1018.
+Se colocan a 1 cm del borde dentro del solape y, en un borde entero, a 4 cm de cada punta. Las piezas de ambos
+lados de una soldadura llevan el mismo número. Cada unión nueva de una puerta recibe un número distinto,
+incluidos los grupos superior/inferior y el saco partido. Se aplica también a la E.T. incorporada de solape 7,5
+o 12/13,5: el número permanece a 1 del borde; no se centra fuera del solape ni se escribe «UNIÓN…» en grande.
+En las uniones individuales de cachos, el número va en el extremo correspondiente, a 4 del lateral exterior,
+y se repite junto al mismo extremo del paño o de la E.T. que lo recibe.
+
+### Ventanales consecutivos de enrollable
+
+Las fuentes son el alzado convertido desde el DWG y el DXF del bot de `genericas/planos/AR2605065.dxf`,
+`genericas/bot/AR2605065.dxf`, `genericas/planos/AR2605038.dxf` y `genericas/bot/AR2605038.dxf`.
+Los scripts del estudio ya extrajeron sus cajas y geometría en `genericas/extraccion.json`.
+
+| Pedido y puerta | Frente × alto | T | D, de arriba abajo | Margen | Paños superior / inferior | Cristales | Cachos |
+|---|---|---|---|---|---|---|---|
+| AR2605065, A, OF 0233051 | 214 × 400 | 209 | 60; 71 | 8 | 216,25 / 52,75 | 202 × 56,5; 202 × 67,5 | dos de 9 × 56,5 y dos de 9 × 67,5 |
+| AR2605038, D, OF 0233003 | 321 × 370 | 179 | 60; 71 | 8 | 186,25 / 52,75 | 309 × 56,5; 309 × 67,5 | dos de 9 × 56,5 y dos de 9 × 67,5 |
+
+El configurador conserva T, D y margen del primer ventanal y permite añadir los siguientes **debajo**, con D y
+margen propios, sin medidas propuestas. Comparten el eje intermedio. El inferior pasa a ser
+`H − T − suma(D) − 7,25`; cada cristal y cada cacho conserva las fórmulas del ventanal sencillo.
+Los cachos se separan por lado para poder identificar sus emparejamientos con paños y entradas.
+
+En cada eje compartido se cortan **dos entradas**, delantera y trasera, como pidió Iván el 22/10/2026.
+Si ese eje ya estaba en la lista de tubos, sustituye a su entrada sencilla; no se suman tres tiras.
+Se cortan de **8**, manteniendo la regla vigente de cota 7,5 / corte 8. En AR2605038 se ve una tira de 7,5
+y otra de 8; esa diferencia histórica no modifica la instrucción posterior de Iván de cortarlas de 8.
+
+### Huecos individuales en apilable y autorreparable
+
+Son otro despiece: se conservan los huecos CUTTER del paño y los cristales redondeados, con posiciones y radios
+del dibujo. AR2604906 (`plegables/configuraciones/configuraciones.json` y su DXF del bot) tiene dos filas de tres
+huecos de 116 × 35, cristales de 120 × 39 con X6, y paños de 253 y 260. La regresión comprueba los seis huecos,
+la única geometría de cristal con multiplicador X6 y los empates sin atravesar ventanas. La autorreparable
+conserva sus dos E.T. delantera/trasera de (F + 11) × 21, independientes de la cantidad de huecos.
+
+La autorreparable AR2604526, OF 0232191, de 300 × 331, se contrasta además desde el alzado convertido:
+dos huecos de 113 × 40, a X 25/162 e Y 140, radio 2; cristales 117 × 44, radio 4, X2 en el bot.
+El cuerpo mide 300 × 322,5 y las dos E.T., 311 × 21. El script local mide también las curvas del bot:
+los 36 de sus tramos verticales rectos no son el alto total de 44. Ese contraste evita confundir la
+caja interior entre tangencias con la envolvente completa del cristal redondeado.
+
+Queda consultado con el coordinador si la instrucción «E.T. entre ventanas, una delante y otra detrás» debe
+extenderse a alguna variante de **huecos individuales**. Los ejemplos citados de ventanales continuos sí
+demuestran dos piezas en su eje común; no se duplican por deducción todos los tubos de las apilables.
+Ventanales con un paño opaco intermedio o variantes no representadas requieren su propio dibujo y regla.
+
+La vista previa permite ampliar hasta 8× y desplazar el corte; los mininúmeros usan el color de ROTULADOR.
+`scripts/test-puertas-corte-fase3-e2e.mjs` comprueba la aislada antes de abrirla y toma capturas de AR2604638,
+AR2604725, AR2605134 y AR2605065 en claro y oscuro, a 1280×720 y 1600×1000, además de comparaciones PNG con
+los cortes manuales. El plano DWG y su alzado quedan fuera de este cambio.

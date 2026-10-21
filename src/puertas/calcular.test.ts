@@ -119,7 +119,7 @@ describe('Comprobaciones y reglas confirmadas', () => {
     expect(r.uniones).toHaveLength(1);
     expect(r.uniones[0].solape).toBe(2);
     expect(r.avisos.some(x=>x.codigo==='NO_CABE')).toBe(false);
-    expect(r.piezas.filter(x=>x.clase==='pano').flatMap(x=>x.textos)).toHaveLength(2);
+    expect(r.piezas.filter(x=>x.clase==='pano').flatMap(x=>x.unionesCorte??[])).toHaveLength(4);
   });
   it('AR2604069: al incorporar la entrada suma 7,5 y se corta una tira menos',()=>{
     const p=base('PUERTAENR',315,494);p.enrollable={T:303,D:60,margen:8,empates:[]};

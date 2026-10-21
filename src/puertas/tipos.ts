@@ -28,7 +28,10 @@ export interface Puerta {
   observaciones: string;
   entradas: Entrada[];
   ventanas: Ventana[];
-  enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean; empates: Array<{ pano: 'superior' | 'inferior'; altura: number; solape: number; tubo?:number }> };
+  enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
+    /** Ventanales consecutivos bajo el primero, separados por E.T. a las dos caras. */
+    ventanales?: Array<{ D: number; margen: number }>;
+    empates: Array<{ pano: 'superior' | 'inferior'; altura: number; solape: number; tubo?:number }> };
   apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number; saco: 80 | 120 | null; doble: boolean; empates: number[] | null };
   autorreparable: { empates: number[] };
 }
@@ -50,6 +53,8 @@ export interface PiezaPuerta {
   huecos: Hueco[];
   /** Cristales iguales: se dibujan una vez con «Xn» dentro, porque se cortan de restos. */
   multiplicador?: number;
+  /** Posiciones en cm de los mininúmeros compartidos por las piezas que se sueldan. */
+  unionesCorte?: Array<{ x: number; y: number; numero: number; giro?: number }>;
 }
 export interface ResultadoPuerta {
   version: 1;
@@ -70,7 +75,7 @@ export interface PedidoPuertas {
 }
 export interface EntidadesPuertas {
   lineas: Array<{ capa: string; x1: number; y1: number; x2: number; y2: number }>;
-  textos: Array<{ capa: string; x: number; y: number; h: number; valor: string; giro?: number; centrado?: boolean }>;
+  textos: Array<{ capa: string; x: number; y: number; h: number; valor: string; giro?: number; centrado?: boolean; literal?: boolean }>;
   arcos: Array<{ capa: string; x: number; y: number; r: number; desde: number; hasta: number }>;
   circulos: Array<{ capa: string; x: number; y: number; r: number }>;
 }

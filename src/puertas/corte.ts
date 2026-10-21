@@ -46,15 +46,7 @@ function fusionar(entidades: EntidadesPuertas, rollo: number) {
 
 function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
   if (pieza.clase === 'pano') {
-    const sufijo = /(\d+)\s*$/.exec(pieza.nombre)?.[1];
-    const base = /superior/i.test(pieza.nombre)
-      ? 'PAÑO DE ARRIBA'
-      : /inferior/i.test(pieza.nombre)
-        ? 'PAÑO DE ABAJO'
-        : sufijo === '1'
-          ? 'PAÑO DE ABAJO'
-          : 'PAÑO DE ARRIBA';
-    return codigoPano ? `${codigoPano} · ${base}` : base;
+    return codigoPano || 'PAÑO';
   }
   if (pieza.clase === 'cacho') return 'CACHO';
   if (pieza.clase === 'entrada') {
@@ -78,13 +70,15 @@ function rotulosPieza(
 ) {
   const wMm = girada ? mm(pieza.alto) : mm(pieza.ancho);
   const hMm = girada ? mm(pieza.ancho) : mm(pieza.alto);
-  const vertical = hMm > wMm;
-  const largoMm = Math.max(wMm, hMm);
-  const cortoMm = Math.min(wMm, hMm);
+  // El texto sigue el frente de confección; solo gira cuando gira la pieza en el rollo.
+  const vertical = girada;
+  const largoMm = mm(pieza.ancho);
+  const cortoMm = mm(pieza.alto);
   const cx = x + wMm / 2;
   const cy = y + hMm / 2;
   const of = (pieza.of.trim() || 'SIN OF').toUpperCase();
-  const clase = etiquetaClasePieza(pieza, codigoPano);
+  const clase = pieza.clase === 'pano' ? etiquetaClasePieza(pieza, codigoPano)
+    : `${codigoPano ?? ''} · ${etiquetaClasePieza(pieza)}`;
 
   const multiplicador = (pieza.multiplicador ?? 1) > 1 ? [`X${pieza.multiplicador}`] : [];
   const lineasTexto = [
@@ -98,9 +92,9 @@ function rotulosPieza(
 
   const maxPorCorto = (cortoMm * 0.82) / ((lineasTexto.length - 1) * 1.5 + 1);
   const maxPorLargo = Math.min(...lineasTexto.map(v => (largoMm * 0.88) / Math.max(1, anchoArial(v, 1))));
-  const tope = lineasTexto.length === 1 ? Math.min(120, cortoMm * 0.68) : Math.min(260, cortoMm / 3);
-  const minimoLegible = Math.min(cortoMm * 0.68, 42);
-  const alto = Math.round(Math.max(minimoLegible, Math.min(tope, maxPorCorto, maxPorLargo)) * 10) / 10;
+  // DXF AR2604638: 200 mm; AR2604725: 300 en el paño alto y 200 en el bajo.
+  const tope = pieza.clase === 'pano' && cortoMm >= 2000 ? 300 : 200;
+  const alto = Math.floor(Math.min(tope, maxPorCorto, maxPorLargo) * 10) / 10;
 
   lineasTexto.forEach((valor, i) => {
     const d = (i - (lineasTexto.length - 1) / 2) * alto * 1.5;
@@ -162,6 +156,14 @@ function dibujarPieza(
   for (const texto of pieza.textos) {
     const [tx, ty] = transformar([texto.x, texto.y]);
     entidades.textos.push({ capa: 'ROTULADOR', x: tx, y: ty, h: 32, giro: girada ? 90 : 0, valor: texto.valor, centrado: true });
+  }
+  const letra = codigoPano?.match(/^[A-Z]+/)?.[0].toLowerCase() ?? 'a';
+  for (const u of pieza.unionesCorte ?? []) {
+    if (![u.x,u.y].every(Number.isFinite)||u.x<0||u.x>pieza.ancho||u.y<0||u.y>pieza.alto) continue;
+    const [tx, ty] = transformar([u.x, u.y]);
+    entidades.textos.push({ capa: 'ROTULADOR', x: tx, y: ty, h: 10,
+      giro: ((u.giro ?? 0) + (girada ? 90 : 0)) % 360,
+      valor: `${letra}${u.numero}`, centrado: true, literal: true });
   }
   pieza.huecos.forEach(h => redondeado(h, true));
   rotulosPieza(entidades, pieza, x, y, girada, codigoPano);
@@ -262,13 +264,13 @@ export function generarCortePuertas(
   });
   const codigosPano = new Map<string, string>();
   resultados.forEach((r, idxPuerta) => {
-    const letra = String.fromCharCode(65 + (idxPuerta % 26));
+    let indice=idxPuerta+1,letra='';
+    while(indice>0) { indice--;letra=String.fromCharCode(65+indice%26)+letra;indice=Math.floor(indice/26); }
     let nPano = 1;
     for (const pieza of r.piezas) {
-      if (pieza.clase === 'pano') {
-        codigosPano.set(pieza.id, `${letra}${nPano++}`);
-      }
+      codigosPano.set(pieza.id, pieza.clase === 'pano' ? `${letra}${nPano++}` : letra);
     }
+    for (const pieza of [...r.alternativasSaco?.entero ?? [], ...r.alternativasSaco?.partido ?? []]) codigosPano.set(pieza.id, letra);
   });
   const avisos = resultados.flatMap((r, i) => r.avisos.map(a => ({ ...a, texto: `Puerta ${i + 1}: ${a.texto}` })));
   const sinOf = pedido.elementos

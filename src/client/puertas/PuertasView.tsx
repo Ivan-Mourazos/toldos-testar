@@ -42,7 +42,7 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
     cambiar(nuevo);
   }
   function entrada(i:number,parche:Partial<Entrada>) { set('entradas',p.entradas.map((e,j)=>j===i?{...e,...parche}:e)); }
-  const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-7.25;
+  const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)-7.25;
   return <>
     <div className="puerta-config-alzado">
       <section className="puerta-config panel bloque-3d" aria-label="Configurador de puerta">
@@ -58,11 +58,19 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           <Numero titulo="Rollo de lona (cm)" valor={p.rollo||null} cambiar={v=>set('rollo',v??0)}/>
           <Numero titulo="Rollo transparente (cm)" valor={p.rolloCristal||null} cambiar={v=>set('rolloCristal',v??0)}/>
         </div>
-        {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal sencillo</legend><div className="puerta-campos">
+        {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal superior</legend><div className="puerta-campos">
           <Numero titulo="T · desde arriba al eje (cm)" valor={p.enrollable.T||null} cambiar={v=>set('enrollable',{...p.enrollable,T:v??0})}/>
           <Numero titulo="D · entre ejes (cm)" valor={p.enrollable.D} cambiar={v=>set('enrollable',{...p.enrollable,D:v??0})}/>
           <Numero titulo="Margen lateral m (cm)" valor={p.enrollable.margen||null} cambiar={v=>set('enrollable',{...p.enrollable,margen:v??0})}/>
-        </div><p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} · H − T − D − 7,25. El saco queda a 13 cm.</p><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 2 cm</label></fieldset>}
+        </div>
+          {(p.enrollable.ventanales??[]).map((v,i)=><fieldset key={i}><legend>Ventanal {i+2} · debajo del anterior</legend><div className="puerta-campos">
+            <Numero titulo={`D · entre ejes ventanal ${i+2} (cm)`} valor={v.D} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,D:n??0}:v)})}/>
+            <Numero titulo={`Margen lateral ventanal ${i+2} (cm)`} valor={v.margen} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,margen:n??0}:v)})}/>
+            <button type="button" className="ghost-button" onClick={()=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.filter((_,j)=>j!==i)})}>Quitar ventanal {i+2}</button>
+          </div></fieldset>)}
+          <button type="button" className="ghost-button" disabled={(p.enrollable.ventanales?.length??0)>=99} onClick={()=>set('enrollable',{...p.enrollable,ventanales:[...p.enrollable.ventanales??[],{D:0,margen:0}]})}>Añadir ventanal debajo</button>
+          {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}
+          <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} · H − T − suma de D − 7,25. El saco queda a 13 cm.</p><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 2 cm</label></fieldset>}
         <label className="puerta-casilla"><input type="checkbox" checked={p.bolsillo} onChange={e=>set('bolsillo',e.target.checked)}/>Bolsillo · solo marcas, si lo pide el dibujo</label>
         {p.bolsillo&&<fieldset><legend>Posición del bolsillo según el dibujo · cm</legend><div className="puerta-campos">
           <Numero titulo="Distancia del bolsillo al borde (cm)" valor={p.medidasBolsillo.distancia} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,distancia:v??0})}/>

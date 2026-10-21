@@ -1,6 +1,7 @@
 import type { AvisoPuerta, Entrada, Hueco, ModeloPuerta, PiezaPuerta, Puerta, ResultadoPuerta } from './tipos.ts';
 import { repartirPanos, type RepartoPanos } from './empates.ts';
 import { marcasBolsillo } from './bolsillo.ts';
+import { numerarBorde } from './unionesCorte.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
@@ -64,23 +65,25 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     if (![v.x,v.y,v.ancho,v.alto,v.radio].every(Number.isFinite) || !positivo(v.ancho) || !positivo(v.alto) || v.radio < 0 || 2 * v.radio > Math.min(v.ancho,v.alto) || v.x < 0 || v.y < 0 || v.x + v.ancho > w + 0.01 || v.y + v.alto > h + 0.01) aviso('HUECO', `${nombre}: hueco o radio fuera de la pieza.`);
   }
   const paneles: Array<{ pieza: PiezaPuerta; desde: number; hasta: number }> = [];
+  let numeroUnion = 0;
   function panel(nombre: string, desde: number, hasta: number) {
     const x = agregar(pieza(nombre, 'pano', ancho, hasta - desde));
     paneles.push({ pieza: x, desde, hasta }); return x;
   }
   function reparto(plan:RepartoPanos,nombre:string) {
     if(plan.error) aviso('EMPATE',plan.error);
+    const numeros = plan.uniones.map(() => ++numeroUnion);
     for(const [i,t] of plan.tramos.entries()) {
       const x=panel(`${nombre}${plan.tramos.length>1?` ${i+1}`:''}`,t.desde,t.hasta);
       if(t.unionInferior!==undefined) {
         const u=plan.uniones[t.unionInferior];
         if(u.tubo) marca(x,u.solape,-1); else marca(x,u.solape);
-        x.textos.push({x:ancho/2,y:u.solape+2,valor:`UNIÓN ${nombre} ${t.unionInferior+1}`});
+        numerarBorde(x,numeros[t.unionInferior],'abajo');
       }
       if(t.unionSuperior!==undefined) {
         const u=plan.uniones[t.unionSuperior];
         if(!u.tubo) marca(x,x.alto-u.solape);
-        x.textos.push({x:ancho/2,y:x.alto-u.solape-2,valor:`UNIÓN ${nombre} ${t.unionSuperior+1}`});
+        numerarBorde(x,numeros[t.unionSuperior],'arriba');
         if(u.tubo) x.huecos.push(...(p.entradas[u.tubo-1]?.huecos??[]).map(h=>({...h,y:n(x.alto-u.solape+h.y)})));
       }
     }
@@ -97,8 +100,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     if(p.modelo!=='PUERTAENR') x.marcas.push([pestana,h/2,w+pestana,h/2]); return x;
   }
   if (p.modelo === 'PUERTAENR') {
-    const e = p.enrollable, inferior = n(p.alto - e.T - e.D - 7.25);
-    if (!positivo(e.T) || e.D <= 7.5 || !positivo(e.margen) || 2 * e.margen >= p.frente || e.T + e.D >= p.alto) aviso('VENTANAL', 'Revisa T, distancia entre tubos y márgenes del ventanal.');
+    const e = p.enrollable, ventanales=[{D:e.D,margen:e.margen},...e.ventanales??[]];
+    const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), inferior = n(p.alto - e.T - altoVentanales - 7.25);
+    if (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.D<=7.5||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto) aviso('VENTANAL', 'Revisa T, las distancias entre ejes y los márgenes de cada ventanal.');
     const incorporadas=new Set<number>();
     for (const [nombre,h,origen] of [['superior',e.T+7.25,p.alto-e.T-3.75],['inferior',inferior,11]] as const) {
       const manual=e.empates.filter(u=>u.pano===nombre);
@@ -120,12 +124,46 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         if(y>origen+7.5 && y<origen+h-(nombre==='superior'?7:7.5)-.001)marcarEn(y,1);
       }
     }
-    agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, e.D-3.5, p.materialCristal,p.rolloCristal));
-    agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
+    if(ventanales.length===1) {
+      agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, e.D-3.5, p.materialCristal,p.rolloCristal));
+      agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
+    } else {
+      // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
+      const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
+      let eje=p.alto-e.T;
+      for(let i=0;i<ventanales.length-1;i++) {
+        eje=n(eje-ventanales[i].D);
+        const crear=(cara:string)=>agregar(pieza(`Entrada entre ventanales ${i+1} · ${cara}`,'entrada',p.frente,REGLAS_ENROLLABLE.corteEntrada));
+        const delantera=crear('delantera'),trasera=crear('trasera');
+        separaciones.push({delantera,trasera});
+        p.entradas.forEach((t,j)=>{if(Math.abs(t.altura-eje)<.001)incorporadas.add(j+1);});
+      }
+      const superior=paneles.find(t=>t.desde<=p.alto-e.T-3.75+.001&&t.hasta>p.alto-e.T)!;
+      const abajo=p.alto-e.T-altoVentanales;
+      const inferior=paneles.find(t=>t.desde<abajo&&t.hasta>=abajo+3.75-.001)!;
+      for(const [i,v] of ventanales.entries()) {
+        agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',p.frente-2*v.margen+4,v.D-3.5,p.materialCristal,p.rolloCristal));
+        for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
+          const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.D-3.5));
+          const x=lado===0?4:cacho.ancho-4;
+          const punto=(destino:PiezaPuerta,numero:number,y:number,xc=lado===0?4:destino.ancho-4)=>{
+            destino.unionesCorte=[...destino.unionesCorte??[],{x:xc,y,numero}];
+          };
+          const arriba=++numeroUnion,abajo=++numeroUnion;
+          punto(cacho,arriba,cacho.alto-1,x);punto(cacho,abajo,1,x);
+          if(i===0&&superior)punto(superior.pieza,arriba,1);
+          else if(i>0)punto(separaciones[i-1].trasera,arriba,1);
+          if(i===ventanales.length-1&&inferior)punto(inferior.pieza,abajo,inferior.pieza.alto-1);
+          else if(i<separaciones.length)punto(separaciones[i].delantera,abajo,REGLAS_ENROLLABLE.corteEntrada-1);
+        }
+      }
+    }
     if(e.sacoPartido){
       const mitad=(p.frente+6.5+2)/2;
-      agregar(sacoConPestana(mitad-6.5,26,6.5,11,13,'Saco partido · con pestaña'));
-      agregar(pieza('Saco partido · sin pestaña','saco',mitad,26,p.materialSaco,p.rolloSaco));
+      const izquierda=agregar(sacoConPestana(mitad-6.5,26,6.5,11,13,'Saco partido · con pestaña'));
+      const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,26,p.materialSaco,p.rolloSaco));
+      numerarBorde(izquierda,++numeroUnion,'derecha');
+      numerarBorde(derecha,numeroUnion,'izquierda');
     }else agregar(sacoConPestana(p.frente,26,6.5,11,13));
     p.entradas.forEach((e,i)=>{if(!incorporadas.has(i+1))entrada(e,i);});
   } else if (p.modelo === 'PUERTAPLE') {
@@ -170,6 +208,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     else {
       const izquierdo = sacoConPestana(w/2+1,h,pestana,altoPestana,2,a.doble?'Envoltorio partido · con pestaña':'Saco partido · con pestaña');
       const derecho = pieza(a.doble?'Envoltorio partido · sin pestaña':'Saco partido · sin pestaña','saco',w/2+1,h,p.materialSaco,p.rolloSaco);
+      numerarBorde(izquierdo,++numeroUnion,'derecha');
+      numerarBorde(derecho,numeroUnion,'izquierda');
       r.alternativasSaco = { entero: [entero], partido: [izquierdo,derecho] };
     }
     if (a.doble) aviso('DOBLE_SACO', 'Doble saco: saco normal de 80 integrado en el paño y envoltorio aparte (F − 6) × 37, centrado al ancho, doblado a la mitad y soldado 2 cm. Pestaña 12 × 14; velcro de 5 bravo al revés y suave al derecho. Cerrar E.T. 2 cm máximo.', 'aviso');
@@ -228,6 +268,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     else if (Math.min(x.ancho,x.alto)>x.rollo+0.01) aviso('NO_CABE',`${x.nombre}: no cabe en el rollo de ${numero(x.rollo)} cm.`);
     if (!x.material.trim()) aviso('MATERIAL',`${x.nombre}: falta el material.`);
     if (!Number.isFinite(x.radio) || x.radio<0 || 2*x.radio>Math.min(x.ancho,x.alto)) aviso('RADIO',`${x.nombre}: radio de esquina imposible.`);
+    if (x.unionesCorte?.some(u=>![u.x,u.y].every(Number.isFinite)||u.x<0||u.x>x.ancho||u.y<0||u.y>x.alto)) aviso('UNION_MARCA',`${x.nombre}: no caben las marcas de unión a 4 cm de las puntas. Revisa el despiece.`);
     x.huecos.forEach(h => comprobarHueco(h,x.ancho,x.alto,x.nombre));
   }
   return r;
