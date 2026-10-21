@@ -263,6 +263,9 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
   // El remolque de verdad, en trazos (no se imprime), centrado en el hecho.
   const [rx, ry] = [(x0 + x1 - i.largo) / 2, (y0 + y1 - i.ancho) / 2];
   L.g.polilineas.push({ capa: 'vent-pre-noimpr', cerrada: true, puntos: [[rx, ry], [rx + i.largo, ry], [rx + i.largo, ry + i.ancho], [rx, ry + i.ancho]] });
+  // Y sus medidas por dentro, las del baquetón rematado (taller, 21/10/2026; como a mano en AR2605071).
+  L.cota('vent-pre-noimpr', rx, ry + i.ancho, rx + i.largo, ry + i.ancho, i.largo, -14, 6);
+  L.cota('vent-pre-noimpr', rx, ry, rx, ry + i.ancho, i.ancho, Math.round(i.largo * 0.3), 6);
   L.texto(letras.map((l) => `${l || 'A'}1`).join(' · '), (x0 + x1) / 2, (y0 + y1) / 2 + 4, 14);
   if (refuerzos) {
     // Cada refuerzo donde va (AR2604224): la L en trazos en la esquina del terminado, entrando sus brazos en

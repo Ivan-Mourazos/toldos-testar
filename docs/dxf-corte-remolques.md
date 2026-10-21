@@ -89,6 +89,11 @@ sacar de lo que guardó el técnico, no de una regla fija.
   que sobra va a la esquina de detrás. Con el cliente general da lo mismo que centrarlo (1 cm por lado).
   Con esta regla los ollaos de AR2605017 cuadran.
 
+**AYALA** (AR2605129, taller 21/10/2026): lleva +1 de costura y +1 de hecho a lo ancho. A lo ancho el hecho
+va **centrado en el paño** y la esquina queda 1 cm antes: (paño − hecho) / 2 − 1 = 7, igual que a lo largo.
+Antes se sumaba la mitad del extra de costura (7,5) sin restar la del hecho, y la rosa quedaba a 8,5 del corte
+por abajo y a 7,5 por arriba. Con los demás clientes (sin extra de hecho) da lo mismo que antes.
+
 ## Refuerzos de esquina (PAMILAKAN)
 
 Iván (20/10/2026): los baquetones de PAMILAKAN suelen llevar refuerzos en las esquinas y, si caben, se

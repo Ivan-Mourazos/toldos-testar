@@ -1,7 +1,7 @@
 // Corte de baquetones, en mm (docs/dxf-corte-remolques.md, contrastado con los cortes a mano):
 // - Pieza en cruz: paño único menos las esquinas; delante a la izquierda, detrás a la derecha. Alto de la
-//   esquina = baquetón + 2 + la mitad del ancho extra del cliente. El hecho empieza a 1 cm de la esquina de
-//   delante y de la de abajo.
+//   esquina: el hecho va centrado a lo ancho y la esquina se queda 1 cm antes. El hecho empieza a 1 cm de la
+//   esquina de delante.
 // - Girada si el largo cabe en el rollo (250). Varias unidades una al lado de otra, compartiendo el corte.
 // - Si ni el largo ni el ancho caben: empate horizontal de 2 cm partiendo el largo (250 desde delante y el
 //   resto detrás: el empate, siempre en la parte de atrás).
@@ -16,11 +16,12 @@ const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.f
 
 // Una pieza de baquetón sin girar: x = largo, delante a la izquierda y detrás a la derecha (Iván,
 // 20/10/2026); y = ancho. `eI` y `eR` son las esquinas de la izquierda (delante) y de la derecha (detrás).
-export function piezaBaqueton(el, params) {
+export function piezaBaqueton(el, _params) {
   const { input, result: r } = el;
-  const cli = params.clientesBaqueton?.find((c) => c.nombre === input.clienteEspecifico) ?? { extraAnchoCostura: 0 };
   const L = r.panoUnico.largo * 10, A = r.panoUnico.ancho * 10;
-  const eI = r.esquinaDelante * 10, eR = r.esquinaDetras * 10, eb = (r.baquetonCostura + (cli.extraAnchoCostura ?? 0) / 2) * 10;
+  // A lo ancho el hecho va centrado en el paño y la esquina se queda 1 cm antes (taller, 21/10/2026: con el
+  // +1 de hecho de AYALA, la mitad del extra de costura la descentraba medio centímetro).
+  const eI = r.esquinaDelante * 10, eR = r.esquinaDetras * 10, eb = Math.round((A - r.remolqueHecho.ancho * 10) / 2) - 10;
   // El remolque hecho empieza a 1 cm de la esquina de delante; los laterales se miden de atrás a delante.
   const finHecho = eI + 10 + r.remolqueHecho.largo * 10, my = eb + 10;
   const rep = r.reparto, repartidos = input.modoOllaos === 'REPARTIDOS';

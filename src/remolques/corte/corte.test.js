@@ -18,6 +18,7 @@ import { calcLona } from '../calc/lona.ts';
 import { DEFAULT_PARAMS } from '../calc/params.ts';
 import { emptyLona } from '../entradas-vacias.ts';
 import { piezasLona } from './lonaAlta.js';
+import { piezaBaqueton } from './baqueton.js';
 import { escaleraCabeza } from './plano.js';
 
 // Pedidos reales de la web de remolques, con los metros de rollo que dieron por buenos en Oficina Técnica
@@ -162,6 +163,30 @@ describe('generarCorteRemolques', () => {
     expect(P.c.rot.filter(([u1]) => u1 === P.c.w - 10)).toHaveLength(3);
   });
 
+  it('el hecho del baquetón va centrado en el corte y las cuatro esquinas son iguales, también en AYALA (AR2605129)', () => {
+    // Taller, 21/10/2026: con AYALA (+1 de costura y +1 de hecho a lo ancho) la rosa quedaba a 8,5 del corte por
+    // abajo y a 7,5 por arriba, y las esquinas salían de 7 a lo largo y 7,5 a lo ancho.
+    for (const el of AR2605129.elementos.filter((x) => x.tipo === 'baqueton')) {
+      const pz = piezaBaqueton(el, AR2605129.params);
+      expect(pz.eb).toBe(70);
+      expect(pz.eb).toBe(pz.eI);
+      const margen = (pz.A - el.result.remolqueHecho.ancho * 10) / 2;
+      expect(pz.eb + 10).toBe(margen);
+    }
+    // Los otros clientes, como estaban: HIJOS DE PEDRO LOPEZ, esquina de 8 (7 + 1, la mitad de su +2).
+    const hpl = structuredClone(AR2605129.elementos.find((x) => x.tipo === 'baqueton'));
+    hpl.input.clienteEspecifico = 'HIJOS DE PEDRO LOPEZ';
+    hpl.result = { ...hpl.result, panoUnico: { ...hpl.result.panoUnico, ancho: hpl.input.ancho + 19 }, remolqueHecho: { ...hpl.result.remolqueHecho, ancho: hpl.input.ancho + 1 } };
+    expect(piezaBaqueton(hpl, AR2605129.params).eb).toBe(80);
+  });
+  it('el baquetón rematado lleva por dentro las cotas del remolque, como a mano (AR2605071, AR2605129)', () => {
+    // Taller, 21/10/2026: «faltan las cotas de baquetón rematado, las que lleva por dentro». En AR2605071, a mano:
+    // 153 y 120 sobre el remolque en trazos, en vent-pre-noimpr.
+    const cotas = (p) => registrosDxf(generarCorteRemolques(p).archivo.plano.dxf)
+      .filter((r) => r.tipo === 'DIMENSION' && valor(r, 8) === 'vent-pre-noimpr').map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(cotas(AR2605071)).toEqual(expect.arrayContaining([153, 120]));
+    expect(cotas(AR2605129)).toEqual(expect.arrayContaining([200, 130, 250, 152, 170]));
+  });
   it('en el recto también van las marcas del hombro detrás, a la altura de la oreja (AR2605129)', () => {
     // Iván, 21/10/2026: «no le hiciste las marcas de las orejas, solo unas cotas al centro». Recto de 45 con goma
     // detrás: la oreja del trasero llega a 5 cm del borde de arriba (495 − 50).
