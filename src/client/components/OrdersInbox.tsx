@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
 import type { CoordinaStatus, PedidoBandeja } from '../types';
 import {
-  borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, pendingGroups, productoDe,
+  borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, notasDevolucion, pendingGroups, productoDe,
   type FiltroProducto,
 } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
@@ -157,6 +157,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
 }) {
   const detailId = `orders-detail-${productoDe(review)}-${review.orderCode}`;
   const awnings = review.summary.awningList;
+  const notas = awnings?.length ? notasDevolucion(awnings, coordinaStatus) : {};
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
   const filaRef = useAjustarAlDesplegar(open);
   return (
@@ -189,9 +190,9 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
           {awnings?.length ? (
             <ul className={detalleEnColumnas(awnings.length) ? 'orders-detail-list is-columns' : 'orders-detail-list'}>
               {awnings.map((item) => {
-                // La nota de devolución solo se enseña si CoordinaOT la tiene devuelta.
                 const returned = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)] : undefined;
-                const nota = returned?.estado === 'devuelta' ? returned.nota : '';
+                // La nota de devolución, si CoordinaOT la tiene devuelta: una vez por OF (ver notasDevolucion).
+                const devolucion = notas[item.letter];
                 // Quién aprobó en CoordinaOT; es el que quedará de revisor al generar.
                 const approvedBy = returned?.estado === 'aprobada' && returned.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
                 return (
@@ -202,7 +203,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
                   {/* Solo si hay avisos (Iván, 02/10/2026: «Sin avisos» repetido en cada OF sobraba). */}
                   {item.notes.length > 0 && <span className="orders-detail-notes">{item.notes.join(' · ')}</span>}
                   {approvedBy && <span className="orders-detail-approved">Aprobado por {controlLabel(approvedBy)}</span>}
-                  {nota && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {nota}</span>}
+                  {devolucion && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT{devolucion.letras ? ` (toldos ${devolucion.letras}, misma OF)` : ''}:</strong> {devolucion.nota}</span>}
                 </li>
                 );
               })}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import { borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, notasDevolucion, fechaBorrador, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
-import type { PedidoBandeja, ReviewSummary } from './types';
+import type { CoordinaStatus, PedidoBandeja, ReviewSummary } from './types';
 
 const review = (orderCode: string, status: string, technician: string, extra: Record<string, unknown> = {}) => ({
   orderCode, status, updatedAt: '2026-09-24T09:00:00Z',
@@ -112,6 +112,33 @@ describe('historial por días', () => {
     const make = (orderCode: string, updatedAt: string) => ({ orderCode, updatedAt, summary: {} }) as never;
     const groups = groupByDay([make('A', '2026-09-24T10:00:00'), make('B', '2026-09-24T08:00:00'), make('C', '2026-09-23T10:00:00')]);
     expect(groups.map((group) => [group.label, group.reviews.length])).toEqual([['Jueves 24/09/26', 2], ['Miércoles 23/09/26', 1]]);
+  });
+});
+
+describe('notasDevolucion — la nota de CoordinaOT, una vez por OF', () => {
+  const devuelta = { disponible: true, ofs: { '0232762': { estado: 'devuelta', nota: 'Falta la medida de la solapa' }, '0232764': { estado: 'aprobada' } } } as CoordinaStatus;
+
+  it('18 cortinas con la misma OF (AR2604890): la nota sale en la primera, con los toldos que la comparten', () => {
+    const items = Array.from({ length: 18 }, (_, i) => ({ letter: String.fromCharCode(65 + i), of: '232762' }));
+    const notas = notasDevolucion([...items, { letter: 'S', of: '0232764' }], devuelta);
+    expect(Object.keys(notas)).toEqual(['A']);
+    expect(notas.A).toEqual({ nota: 'Falta la medida de la solapa', letras: 'A–R' });
+  });
+
+  it('con una OF por toldo, cada nota en su toldo y sin letras', () => {
+    const status = { disponible: true, ofs: { '0230001': { estado: 'devuelta', nota: 'uno' }, '0230002': { estado: 'en_revision', nota: '' }, '0230003': { estado: 'devuelta', nota: 'tres' } } } as CoordinaStatus;
+    const notas = notasDevolucion([{ letter: 'A', of: '0230001' }, { letter: 'B', of: '0230002' }, { letter: 'C', of: '0230003' }], status);
+    expect(notas).toEqual({ A: { nota: 'uno', letras: '' }, C: { nota: 'tres', letras: '' } });
+  });
+
+  it('toldos de la misma OF que no son seguidos se nombran uno a uno', () => {
+    const notas = notasDevolucion([{ letter: 'A', of: '0232762' }, { letter: 'B', of: '0232764' }, { letter: 'C', of: '0232762' }], devuelta);
+    expect(notas).toEqual({ A: { nota: 'Falta la medida de la solapa', letras: 'A, C' } });
+  });
+
+  it('sin CoordinaOT no hay notas', () => {
+    expect(notasDevolucion([{ letter: 'A', of: '0232762' }], { disponible: false } as CoordinaStatus)).toEqual({});
+    expect(notasDevolucion([{ letter: 'A', of: '0232762' }], null)).toEqual({});
   });
 });
 

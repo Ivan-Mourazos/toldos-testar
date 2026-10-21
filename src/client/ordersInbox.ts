@@ -1,6 +1,6 @@
 import type { CoordinaStatus, PedidoBandeja } from './types';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
-import { coordinaGroup, isPendingGeneration } from '../reviewRules.js';
+import { coordinaGroup, isPendingGeneration, normalizeOf } from '../reviewRules.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
 // guardado y no generado, venga del estado que venga) e historial (generados).
@@ -152,6 +152,29 @@ export function collapseAwnings<T extends { letter: string }>(items: T[], keyOf:
     if (group.items.length > 1) group.label = `${group.items[0].letter}–${item.letter}`;
   }
   return groups;
+}
+
+// Nota de devolución de CoordinaOT por toldo. CoordinaOT la guarda por OF, y varios toldos pueden
+// compartir OF (AR2604890: 18 cortinas en la 0232762). Iván, 21/10/2026: salía en todos y no debe;
+// va una vez, en el primer toldo de la OF, con las letras de los que la comparten.
+export function notasDevolucion(items: { letter: string; of?: string | null }[], status: CoordinaStatus | null) {
+  const notas: Record<string, { nota: string; letras: string }> = {};
+  if (!status?.disponible) return notas;
+  const porOf = new Map<string, number[]>();
+  items.forEach((item, i) => {
+    const of = normalizeOf(item.of);
+    if (of) porOf.set(of, [...porOf.get(of) ?? [], i]);
+  });
+  for (const [of, indices] of porOf) {
+    const estado = status.ofs?.[of];
+    if (estado?.estado !== 'devuelta' || !estado.nota) continue;
+    const seguidos = indices.every((n, k) => k === 0 || n === indices[k - 1] + 1);
+    const letras = indices.length === 1 ? '' : seguidos && indices.length > 2
+      ? `${items[indices[0]].letter}–${items[indices.at(-1)!].letter}`
+      : indices.map((n) => items[n].letter).join(', ');
+    notas[items[indices[0]].letter] = { nota: estado.nota, letras };
+  }
+  return notas;
 }
 
 // Al desplegar un pedido con muchos elementos, sus OF van en columnas (Iván, 02/10/2026: «es una
