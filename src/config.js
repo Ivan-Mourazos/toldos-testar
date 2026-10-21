@@ -29,6 +29,7 @@ export const config = {
   oficinaTecnicaDirectory: process.env.OFICINA_TECNICA_DIRECTORY || '',
   corteLonaBotDirectory: process.env.CORTE_LONA_BOT_DIRECTORY || '',
   corteLonaPlanoDirectory: process.env.CORTE_LONA_PLANO_DIRECTORY || '',
+  corteLonaDxfDirectory: process.env.CORTE_LONA_DXF_DIRECTORY || '',
   heraEnabled: booleanFromEnv('ENABLE_HERA', !isProduction),
   legacyExportsEnabled: booleanFromEnv('ENABLE_LEGACY_EXPORTS', !isProduction),
   exportDirectory: process.env.EXPORT_DIRECTORY || '',

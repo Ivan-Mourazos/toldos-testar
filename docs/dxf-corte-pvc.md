@@ -2,7 +2,26 @@
 
 Estudio empezado el 19/10/2026. Objetivo: que la web genere, a partir del planteamiento, el DXF de corte de la lona y que el bot lo pase a la máquina. Se empieza por los toldos de fachada en PVC (Arzúa, Galicia, Monoblock y Cambio de tela).
 
-## Cómo funciona hoy
+## Flujo en la web desde el 21/10/2026
+
+«Guardar para revisión» guarda solo el plano: DWG con ODA o plano DXF 2018 con su aviso si falta ODA.
+Pregunta antes de sustituir un plano existente. «Generar archivos» sigue generando PDF y reservas de
+RPS, pero ya no escribe el DXF del corte.
+
+Con todas las OF aprobadas en CoordinaOT y el corte al día, el autor usa «Mandar corte al bot» o
+«Guardar DXF en DXFs». El bot exige confirmar «El corte irá al bot y se cortará. ¿Seguro?» y usa
+`corteLonaBotDirectory` con la carpeta del técnico de `CARPETA_TECNICO`. Si esa carpeta falta, se
+informa de la ruta y no se crea. DXFs usa `corteLonaDxfDirectory` / `CORTE_LONA_DXF_DIRECTORY`, una
+ruta absoluta con `{YYYY}`, y crea la carpeta si falta. Ambos preguntan antes de sustituir un DXF.
+Las descargas al ordenador siguen disponibles sin enviar el corte a ninguna carpeta.
+
+`src/corteEnvios.js` comparte destinos, aprobación fresca, comprobaciones, confirmaciones y registro
+con remolques y los futuros productos. Cada envío queda en `enviosCorte` del pedido, con fecha,
+usuario, destino, carpeta y archivos; también se conserva al corregir o generar. El detalle muestra
+el historial. Un fallo tras escribir parte de los archivos se registra como envío incompleto y se
+avisa antes de repetir. En simulación no se escribe ni registra un envío.
+
+## Cómo funciona el bot
 
 - **Máquina nueva:** OTEMAN SHARP CV con CutPath (`maqcorte`, «MAQCORTE NUEVA»). Es la única que lee DXF. El manual dice que lee DXF, con piezas separadas por capas, una herramienta por capa y unidades en mm.
 - **Bot:** el técnico deja el DXF en `\\192.168.0.128\Oftecnica\maqcorte\BOT\Pendientes\<técnico>\`. El bot lo mueve a `maqcorte\<año>\ARCHIVOS DXF - MAQUINA NUEVA\`, saca un EPS y lo convierte a `.cmt` de Cutmatic en `maqcorte\<año>\`. Cada conversión se apunta en `BOT\Registro\<mes>-<año>-Registro-ConversionArchivosDeCorte.xlsx`.

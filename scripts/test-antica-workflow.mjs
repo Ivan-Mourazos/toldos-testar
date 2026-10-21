@@ -49,7 +49,7 @@ try {
     await page.getByRole('button', { name: /^Pedidos/ }).click();
     // Desde el 28/09/2026 la fila se despliega y el pedido se abre desde dentro.
     void action;
-    const row = page.locator('.orders-row').filter({ hasText: code });
+    const row = page.locator('.orders-row').filter({ hasText: code }).first();
     await row.locator('.orders-row-toggle').click();
     await row.getByRole('button', { name: 'Abrir el pedido' }).click();
     await page.getByRole('heading', { name: code, exact: true }).waitFor();

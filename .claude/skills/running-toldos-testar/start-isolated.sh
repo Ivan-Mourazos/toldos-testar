@@ -26,6 +26,7 @@ export DRAFTS_DIRECTORY="$D/borradores"
 export OFICINA_TECNICA_DIRECTORY="$D/oficina-lectura"
 export ODA_TEMP_DIRECTORY="$D/oda-temporales"
 export CORTE_LONA_BOT_DIRECTORY="$D/corte-bot" CORTE_LONA_PLANO_DIRECTORY="$D/corte-planos"
+export CORTE_LONA_DXF_DIRECTORY="$D/oficina/{YYYY}/DXFs"
 # CoordinaOT simulado (scripts/fake-coordina.mjs): la aislada nunca pregunta al real.
 export FAKE_COORDINA_PORT="${FAKE_COORDINA_PORT:-4320}"
 export COORDINA_URL="http://127.0.0.1:$FAKE_COORDINA_PORT" COORDINA_CLAVE="clave-de-prueba"

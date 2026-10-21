@@ -73,7 +73,10 @@ describe('Reglas y salidas del corte', () => {
       expect(guardado.avisos.join()).toMatch(/ODA/);
       expect(await fs.readFile(guardado.files[0].savedPath, 'utf8')).toContain('AC1032');
       await fs.writeFile(guardado.files[0].savedPath, 'viejo');
-      await escribirPlanosCorte({ order, corteLona, settings, oda });
+      const existente = await escribirPlanosCorte({ order, corteLona, settings, oda });
+      expect(existente.existentes).toEqual([guardado.files[0].filename]);
+      expect(await fs.readFile(guardado.files[0].savedPath, 'utf8')).toBe('viejo');
+      await escribirPlanosCorte({ order, corteLona, settings, oda, confirmOverwrite: true });
       expect(await fs.readFile(guardado.files[0].savedPath, 'utf8')).toContain('AC1032');
       const bot = await prepararArchivosCorte({ order, corteLona, settings, oda, tipo: 'bot' });
       expect(bot.files.map(f => f.opcion)).toEqual(['conSacos']);

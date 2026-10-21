@@ -9,6 +9,7 @@ import { crearCorteRemolques } from './remolques/corte/archivos.js';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
+import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 import { createCoordinaClient } from './coordinaStatus.js';
 import { awningLetter } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
@@ -89,6 +90,7 @@ const workflowStore = createWorkflowStore({
     fileWritesEnabled: config.fileWritesEnabled,
     corteLonaBotDirectory: config.corteLonaBotDirectory,
     corteLonaPlanoDirectory: config.corteLonaPlanoDirectory,
+    corteLonaDxfDirectory: config.corteLonaDxfDirectory,
     exportDirectory: config.exportDirectory,
     orderArchiveRoot: config.orderArchiveRoot,
     reviewDirectory: config.reviewDirectory,
@@ -196,6 +198,23 @@ app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 
 registrarRutasCorteLona(app, { workflowStore, oda,
   ofStockSacos: crearOfStockSacos({ oficinaTecnicaDirectory: config.oficinaTecnicaDirectory, oda }) });
+
+registrarRutasEnviosCorte(app, {
+  ruta: '/api/reviews/:orderCode/corte-lona', obtener: (codigo) => workflowStore.getReview(codigo),
+  ajustes: () => workflowStore.getSettings(), coordina, tecnicos: formOptions.tecnicos, locks: generationLocks,
+  contexto: (review) => ({ order: review.order,
+    elementos: review.order.awnings.map((a, i) => ({ letter: awningLetter(i), of: a.of })),
+    comprobarCorte: () => exigirCorteAlDia(review.order, review.corteLona) }),
+  preparar: async (review) => (await prepararArchivosCorte({ order: review.order, corteLona: review.corteLona,
+    settings: await workflowStore.getSettings(), tipo: 'bot', soloContenido: true })).files,
+  guardar: async (review) => {
+    const calculation = await calculateConfiguredOrder(review.order);
+    const pdf = review.status === 'PRODUCED'
+      ? await buildOrderPlanteamientoPdf({ order: review.order, calculation, review, ...opcionesHojaTelas({ codigoPedido: review.orderCode }) })
+      : await buildOrderReviewPdf({ order: review.order, calculation, review });
+    await workflowStore.saveReview(review, pdf);
+  },
+});
 
 app.get('/api/health', async (_req, res, next) => {
   try {
@@ -687,6 +706,17 @@ app.get('/api/remolques/pedidos/:orderCode/corte', rutaRemolques(async (req, res
   res.set('Cache-Control', 'no-store').json(await pedidosRemolques.corte(req.params.orderCode));
 }));
 
+app.post('/api/remolques/pedidos/:orderCode/corte/enviar', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosRemolques.enviarCorte(req.params.orderCode, req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.get('/api/remolques/pedidos/:orderCode/corte/dxf', rutaRemolques(async (req, res) => {
+  const { filename, contents } = await pedidosRemolques.descargarCorte(req.params.orderCode);
+  res.set('Cache-Control', 'no-store').type('application/dxf')
+    .attachment(filename).send(Buffer.from(contents));
+}));
+
 // El plano del corte para revisar antes de aprobar (sin DXF del bot ni tocar el pedido).
 app.post('/api/remolques/pedidos/:orderCode/plano-corte', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.planoCorte(req.params.orderCode, req.body);
@@ -806,10 +836,14 @@ app.get('/api/reviews/:orderCode/generated-files/:fileIndex', async (req, res, n
 });
 
 app.post('/api/reviews', async (req, res, next) => {
+  let lockKey = '';
   try {
     const rawOrder = req.body?.order || req.body;
     const normalizedOrder = normalizeOrder(rawOrder);
     const orderCode = sanitizeOrderCode(normalizedOrder.orderCode);
+    if (generationLocks.has(orderCode)) throw httpError(409, 'Este pedido está ocupado: espera antes de guardarlo.');
+    generationLocks.add(orderCode);
+    lockKey = orderCode;
     // Un pedido es de toldos o de remolques. Si la carpeta interna de remolques falla, toldos sigue.
     if (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) {
       throw httpError(409, mensajePedidoDeRemolques(orderCode));
@@ -845,7 +879,10 @@ app.post('/api/reviews', async (req, res, next) => {
     const calculation = await calculateConfiguredOrder(order);
     const review = createReviewPackage({ order, calculation, existing, corteLona: req.body?.corteLona });
     exigirCorteAlDia(order, review.corteLona);
-    const planosCorte = await escribirPlanosCorte({ order, corteLona: review.corteLona, settings: await workflowStore.getSettings(), oda });
+    const planosCorte = await escribirPlanosCorte({ order, corteLona: review.corteLona, settings: await workflowStore.getSettings(), oda, confirmOverwrite: req.body?.confirmPlanoOverwrite === true });
+    if (planosCorte.existentes?.length) {
+      return res.status(409).json({ needsPlanoConfirmation: true, existing: planosCorte.existentes, error: 'El plano de este pedido ya existe. ¿Sustituirlo?' });
+    }
     review.planosCorte = planosCorte;
     const pdf = await buildOrderReviewPdf({ order, calculation, review });
     const savedPath = await workflowStore.saveReview(review, pdf);
@@ -855,6 +892,8 @@ app.post('/api/reviews', async (req, res, next) => {
     res.json({ ok: true, review, savedPath, planosCorte, overwritten: Boolean(existing) });
   } catch (error) {
     next(error);
+  } finally {
+    if (lockKey) generationLocks.delete(lockKey);
   }
 });
 
@@ -979,8 +1018,6 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       filename: `${cleanOrder}-1.pdf`,
       savedPath: path.join(pdfDirectory, `${cleanOrder}-1.pdf`)
     });
-    const archivosCorte = await prepararArchivosCorte({ order, corteLona: review.corteLona, settings, oda, tipo: 'bot' });
-    targets.push(...archivosCorte.files);
 
     await Promise.all(targets.map(async (target) => {
       if (target.build) target.contents = await target.build();
@@ -1013,15 +1050,9 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     const pdfTarget = targets.find((target) => target.type === 'pdf');
     pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }) });
 
-    // Las carpetas del bot no se crean nunca: el bot las necesita tal cual (Iván, 20/10/2026). Si la del autor
-    // no está, no se escribe nada y se dice cuál falta.
-    for (const carpeta of new Set(targets.filter((target) => target.type === 'corte-lona').map((target) => path.dirname(target.savedPath)))) {
-      const existe = await fs.stat(carpeta).then((s) => s.isDirectory(), () => false);
-      if (!existe) throw httpError(409, `No existe la carpeta del bot «${carpeta}» y la web no la crea: revisa la carpeta del autor en BOT/Pendientes. No se ha generado nada.`);
-    }
     await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
     for (const target of targets) {
-      if (target.type !== 'corte-lona') await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
+      await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
       await writeFileAtomic(target.savedPath, target.contents);
     }
 

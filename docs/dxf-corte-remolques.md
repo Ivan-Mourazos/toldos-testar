@@ -3,6 +3,25 @@
 Estudio del 20/10/2026 sobre los pedidos reales de baquetón desde 2025. Va aparte de los toldos: solo
 comparte las capas del bot (DISCO1, DISCO2, CUTTER, ROTULADOR, taladro, texto) y el DXF 2004 en mm.
 
+## Flujo en la web desde el 21/10/2026
+
+Al guardar para revisión se escribe solo el plano (DWG con ODA o plano DXF con su aviso si falta
+ODA); se pregunta antes de sustituirlo. «Generar archivos» guarda los PDF y ya no manda el corte.
+
+El autor de un pedido aprobado en CoordinaOT puede usar «Mandar corte al bot», «Guardar DXF en
+DXFs» y «Descargar DXF». El corte se recalcula con los datos y parámetros guardados del pedido,
+igual que la hoja; no se aceptan piezas ni bytes enviados por el navegador. La descarga es
+`GET /api/remolques/pedidos/:orderCode/corte/dxf` y los envíos se piden por
+`POST /api/remolques/pedidos/:orderCode/corte/enviar`.
+
+Los envíos pasan por `src/corteEnvios.js`, el mismo módulo de toldos. Antes de mandar al bot se
+confirma que se va a cortar. La carpeta del técnico nunca se crea y se informa de su ruta si falta;
+la carpeta DXFs (`corteLonaDxfDirectory`, `CORTE_LONA_DXF_DIRECTORY`, con `{YYYY}`) se crea si falta.
+Si hay un DXF se pregunta antes de sustituirlo. El pedido conserva en `enviosCorte` cuándo, quién,
+destino y archivos, incluso después de generar los PDF; el detalle enseña ese historial. En
+simulación no se escribe ni se registra ningún envío. Para un producto nuevo basta aportar su
+cálculo de DXF, sus OF y el almacenamiento del pedido al módulo compartido.
+
 ## De dónde sale
 
 - RPS: 320 líneas de lona de remolque con medidas `L X A X b` y `b ≤ 25` (el mismo criterio que la web

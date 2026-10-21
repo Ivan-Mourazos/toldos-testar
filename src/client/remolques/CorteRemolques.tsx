@@ -52,7 +52,7 @@ export async function escribirPlanoCorte(ruta: string, existentes: string[], pre
 const ROLLO = 2500;
 const metros = (mm: number) => (mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 });
 
-export function CorteRemolques({ ruta, version, generado = false, notify, onConfirm }: { ruta: string; version: string; generado?: boolean; notify: Notify; onConfirm: AskForConfirmation }) {
+export function CorteRemolques({ ruta, version, generado = false, notify, onConfirm, acciones }: { ruta: string; version: string; generado?: boolean; notify: Notify; onConfirm: AskForConfirmation; acciones?: React.ReactNode }) {
   // El resultado lleva para qué pedido y versión es: si cambian, se ve «Calculando…» hasta el nuevo.
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaCorteRemolques; error?: string } | null>(null);
@@ -103,7 +103,7 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
       <header className="corte-cabecera">
         <div>
           <span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Corte de lona</h2></span>
-          <p>{generado ? 'El corte de cada lona, como se generó con los datos del pedido' : 'El plano DWG del pedido sale al guardar para revisión; el DXF del bot, al generar'}</p>
+          <p>El plano sale al guardar para revisión. El DXF se manda o guarda con sus botones.</p>
         </div>
         {!generado && (
           <button className="ghost-button boton-3d" type="button" disabled={guardandoPlano || !datos?.cortes.length} onClick={() => void guardarPlano()}>
@@ -111,6 +111,7 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
           </button>
         )}
       </header>
+      {Boolean(datos?.cortes.length) && acciones}
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
       {datos && <CorteRemolquesVista datos={datos} />}

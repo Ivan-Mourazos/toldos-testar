@@ -101,7 +101,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
   // Segunda consulta a CoordinaOT: la de las OF del pedido abierto (la de la bandeja solo
   // corre en la lista). Un pedido ya generado no necesita preguntar.
   const detailOfs = selectedReview ? (selectedReview.order.awnings || []).map((awning) => String(awning.of || '')) : [];
-  const { status: detailCoordina } = useCoordinaStatus(detailOfs, Boolean(selectedReview) && selectedReview?.status !== 'PRODUCED');
+  const { status: detailCoordina } = useCoordinaStatus(detailOfs, Boolean(selectedReview));
   const detailLoading = Boolean(selectedCode && !detailIsCurrent);
 
   useEffect(() => {
@@ -250,8 +250,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
           return;
         }
         const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
-        const cortes = (data.saved || []).filter((file: { type: string }) => file.type === 'corte-lona');
-        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} Excel de reserva.${cortes.length ? ` DXF del corte: ${cortes.map((f: { savedPath: string }) => f.savedPath).join(' · ')}` : ''}`, {
+        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} reservas de RPS.`, {
           tone: 'success',
           title: 'Archivos generados'
         });
@@ -321,6 +320,8 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             onEdit={() => void openSelected()}
             onReuse={() => void reuseSelected()}
             onGenerate={() => void generateSelected()}
+            notify={onToast}
+            onConfirm={onConfirm}
           />
         )}
     </section>

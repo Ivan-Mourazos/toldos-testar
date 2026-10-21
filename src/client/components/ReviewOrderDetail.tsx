@@ -6,12 +6,14 @@ import { CorteLona } from './CorteLona';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
 import { controlLabel } from './controlLabels';
 import { generateState } from '../generatePermission';
+import { EnviosCorte } from './EnviosCorte';
+import type { AskForConfirmation, Notify } from './NotificationCenter';
 
 const noop = () => undefined;
 
 // Pedido abierto (rediseño 24/09/2026): ya no se aprueba ni se devuelve desde aquí (lo
-// hace CoordinaOT). Un solo desplazamiento, el formulario manda, y las únicas acciones
-// son ver el PDF, corregir el pedido y generar los archivos (solo puede el autor).
+// hace CoordinaOT). Un solo desplazamiento: ver el PDF, corregir, generar archivos y enviar
+// el corte con sus botones propios (solo puede el autor, con aprobación comprobada).
 export function ReviewOrderDetail({
   review,
   parameters,
@@ -23,7 +25,9 @@ export function ReviewOrderDetail({
   onBack,
   onEdit,
   onReuse,
-  onGenerate
+  onGenerate,
+  notify = noop,
+  onConfirm = async () => 'cancel'
 }: {
   review: ReviewPackage | null;
   parameters: RuleParameters;
@@ -36,6 +40,8 @@ export function ReviewOrderDetail({
   onEdit: () => void;
   onReuse: () => void;
   onGenerate: () => void;
+  notify?: Notify;
+  onConfirm?: AskForConfirmation;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewButtonRef = useRef<HTMLButtonElement>(null);
@@ -82,6 +88,7 @@ export function ReviewOrderDetail({
   const produced = isProduced && Boolean(review.production);
   // El botón depende del autor y de que CoordinaOT haya aprobado todas las OF.
   const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
+  const cortePermitido = generateState({ ...review, status: isProduced ? 'PENDING_REVIEW' : review.status }, currentUser, coordinaStatus);
 
   return (
     <section className="review-reader" aria-label={`Datos de revisión de ${review.orderCode}`}>
@@ -178,7 +185,10 @@ export function ReviewOrderDetail({
         />
       </div>
 
-      <CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode} />
+      <CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
+        acciones={(alDia) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
+          permitido={cortePermitido.allowed && alDia} motivo={alDia ? cortePermitido.note : 'El corte tiene que estar al día.'}
+          ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm} />} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
       {previewOpen && (
         <ReviewPlanteamientoPreview

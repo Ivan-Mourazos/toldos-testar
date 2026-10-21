@@ -4,33 +4,24 @@ import { carpetaCorte } from '../../corteLonaArchivos.js';
 import { writeFileAtomic } from '../../workflow.js';
 import { generarCorteRemolques } from './index.js';
 
-// Los archivos del corte de lona de un pedido de remolques, al generar: el DXF del bot en la carpeta del
-// bot y el plano de revisión (DWG en metros; DXF si no hay ODA) en la de planos. Son las mismas carpetas de
-// Configuración que el corte de toldos. Primero se preparan todos los bytes y después se escriben, para
-// que un fallo al preparar no deje nada a medias.
+// El plano se guarda para revisar. El DXF se prepara aparte para descargarlo o enviarlo con su botón.
 export function crearCorteRemolques({ ajustes, oda }) {
   async function preparar(pedido) {
     const resultado = generarCorteRemolques(pedido);
     const avisos = resultado.aMano.map((a) => `${a.nombre}: esta lona se corta a mano (${a.motivo}).`);
     if (!resultado.cortes.length) return { ficheros: [], avisos };
     const settings = await ajustes();
-    if (!settings.corteLonaBotDirectory || !settings.corteLonaPlanoDirectory) {
+    if (!settings.corteLonaPlanoDirectory) {
       return { ficheros: [], avisos: [...avisos, 'Faltan las carpetas del corte de lona en Configuración: no se ha escrito el corte.'] };
     }
     const order = { orderCode: pedido.orderCode, technician: pedido.summary?.technician };
-    const bot = carpetaCorte(settings.corteLonaBotDirectory, order);
     const planos = carpetaCorte(settings.corteLonaPlanoDirectory, order);
-    // La carpeta del bot no se crea nunca: el bot necesita sus carpetas tal cual (Iván, 20/10/2026). Si la del
-    // autor no está, no se escribe el corte y se avisa; la hoja y el plano salen igual.
-    const hayBot = await fs.stat(bot).then((s) => s.isDirectory(), () => false);
-    if (!hayBot) avisos.push(`No existe la carpeta del bot «${bot}»: no se ha escrito el corte (la web no la crea).`);
     // Siempre un DXF y un plano por pedido (Iván, 20/10/2026), con todas sus lonas.
     for (const c of resultado.cortes) avisos.push(...c.avisos);
     const { archivo } = resultado;
     const material = resultado.cortes.map((c) => c.materialCorto).join(' / ');
+    /** @type {import('../flujo/servicio.ts').ArchivoCorte[]} */
     const ficheros = [];
-    const dxf = `${archivo.nombre}.dxf`;
-    if (hayBot) ficheros.push({ type: 'corte-lona', material, filename: dxf, savedPath: path.join(bot, dxf), contenido: Buffer.from(archivo.dxf, 'latin1') });
     let contenido = Buffer.from(archivo.plano.dxf, archivo.plano.codificacion);
     let extension = 'dxf';
     if (oda.disponible) {
@@ -64,5 +55,14 @@ export function crearCorteRemolques({ ajustes, oda }) {
     };
   }
 
-  return { preparar, escribir, vista };
+  function prepararDxf(pedido) {
+    if (pedido.elementos.some((e) => !String(e.input.cabecera.ordenFabricacion || '').trim())) {
+      throw Object.assign(new Error('Falta la OF: escríbela antes de descargar o enviar el corte.'), { statusCode: 409 });
+    }
+    const resultado = generarCorteRemolques(pedido);
+    if (!resultado.cortes.length || !resultado.archivo) throw Object.assign(new Error('Este pedido no tiene corte disponible.'), { statusCode: 409 });
+    return [{ filename: `${resultado.archivo.nombre}.dxf`, contents: Buffer.from(resultado.archivo.dxf, 'latin1') }];
+  }
+
+  return { preparar, prepararDxf, escribir, vista };
 }

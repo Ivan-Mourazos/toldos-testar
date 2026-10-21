@@ -12,7 +12,7 @@ import { config } from '../src/config.js';
 import { normalizeReservation } from '../src/domain/validation.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const artifactDirectory = path.join(root, 'output', 'playwright', 'rps-e2e');
+const artifactDirectory = path.join(root, 'tmp', 'playwright', 'rps-e2e');
 const workflowDirectory = path.join(artifactDirectory, `workflow-${Date.now()}`);
 const reportPath = path.join(artifactDirectory, 'report.json');
 const startedAt = new Date().toISOString();

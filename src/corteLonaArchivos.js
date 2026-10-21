@@ -30,7 +30,7 @@ export function carpetaCorte(template, order) {
 }
 
 /** Prepara todos los bytes antes de escribir; producción los añade a sus demás destinos. */
-export async function prepararArchivosCorte({ order, corteLona, settings, oda, tipo }) {
+export async function prepararArchivosCorte({ order, corteLona, settings, oda, tipo, soloContenido = false }) {
   if (!settings.productionEnabled) return { files: [], avisos: tipo === 'plano' && corteLona ? ['Modo simulación: no se ha escrito el plano del corte.'] : [] };
   exigirCorteAlDia(order, corteLona);
   if (!corteLona?.toldos?.length) return { files: [], avisos: [] };
@@ -41,7 +41,7 @@ export async function prepararArchivosCorte({ order, corteLona, settings, oda, t
     error.statusCode = 409;
     throw error;
   }
-  const directory = carpetaCorte(tipo === 'plano' ? settings.corteLonaPlanoDirectory : settings.corteLonaBotDirectory, order);
+  const directory = soloContenido ? '' : carpetaCorte(tipo === 'plano' ? settings.corteLonaPlanoDirectory : settings.corteLonaBotDirectory, order);
   const pedido = sanitizeOrderCode(order.orderCode);
   const avisos = [];
   const files = [];
@@ -72,6 +72,11 @@ export async function prepararArchivosCorte({ order, corteLona, settings, oda, t
 
 export async function escribirPlanosCorte(input) {
   const salida = await prepararArchivosCorte({ ...input, tipo: 'plano' });
+  const existentes = (await Promise.all(salida.files.map(async (file) => {
+    try { await fs.stat(file.savedPath); return file.filename; }
+    catch (error) { if (error.code !== 'ENOENT') throw error; return ''; }
+  }))).filter(Boolean);
+  if (existentes.length && input.confirmOverwrite !== true) return { files: [], avisos: salida.avisos, existentes };
   const files = [];
   for (const { contents, ...file } of salida.files) {
     await fs.mkdir(path.dirname(file.savedPath), { recursive: true });

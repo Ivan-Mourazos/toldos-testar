@@ -22,6 +22,7 @@ export function defaultWorkflowSettings(seed = {}) {
     productionEnabled: Boolean(seed.fileWritesEnabled),
     corteLonaBotDirectory: seed.corteLonaBotDirectory || '',
     corteLonaPlanoDirectory: seed.corteLonaPlanoDirectory || '',
+    corteLonaDxfDirectory: seed.corteLonaDxfDirectory || '',
     reviewDirectory: seed.reviewDirectory || archiveTemplate,
     planteamientosDirectory: seed.planteamientosDirectory || archiveTemplate,
     rpsUploadDirectory: seed.rpsUploadDirectory || seed.exportDirectory || '',
@@ -39,6 +40,7 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     productionEnabled: input?.productionEnabled === true,
     corteLonaBotDirectory: cleanPath(input?.corteLonaBotDirectory ?? current.corteLonaBotDirectory),
     corteLonaPlanoDirectory: cleanPath(input?.corteLonaPlanoDirectory ?? current.corteLonaPlanoDirectory),
+    corteLonaDxfDirectory: cleanPath(input?.corteLonaDxfDirectory ?? current.corteLonaDxfDirectory),
     reviewDirectory: cleanPath(input?.reviewDirectory ?? current.reviewDirectory),
     planteamientosDirectory: cleanPath(input?.planteamientosDirectory ?? current.planteamientosDirectory),
     rpsUploadDirectory: cleanPath(input?.rpsUploadDirectory ?? current.rpsUploadDirectory),
@@ -52,6 +54,7 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   for (const [label, value] of [
     ['carpeta de DXF del corte', settings.corteLonaBotDirectory],
     ['carpeta de planos del corte', settings.corteLonaPlanoDirectory],
+    ['carpeta de DXFs de oficina técnica', settings.corteLonaDxfDirectory],
     ['carpeta de revisión', settings.reviewDirectory],
     ['carpeta de planteamientos', settings.planteamientosDirectory],
     ['carpeta de subida de material', settings.rpsUploadDirectory],
@@ -67,6 +70,14 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   }
   if (settings.remolquesOficinaTecnicaDirectory && !settings.remolquesOficinaTecnicaDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta de oficina técnica de remolques debe llevar {YYYY}.');
+  }
+  for (const [clave, permitidas] of [['corteLonaBotDirectory', ['YYYY', 'PEDIDO', 'TECNICO']], ['corteLonaPlanoDirectory', ['YYYY', 'PEDIDO', 'TECNICO']], ['corteLonaDxfDirectory', ['YYYY']]]) {
+    if ([...settings[clave].matchAll(/\{([^}]*)\}/g)].some((m) => !permitidas.includes(m[1]))) {
+      throw new Error(`La ruta ${clave} lleva una plantilla no admitida.`);
+    }
+  }
+  if (settings.corteLonaDxfDirectory && !settings.corteLonaDxfDirectory.includes('{YYYY}')) {
+    throw new Error('La carpeta de DXFs de oficina técnica debe llevar {YYYY}.');
   }
   if (settings.remolquesRevisionDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta interna de remolques no lleva {YYYY}: todos los pedidos van en la misma carpeta.');
@@ -100,6 +111,7 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
   if (settings.productionEnabled) {
     if (settings.corteLonaBotDirectory) definitions.push(['corteLonaBotDirectory', 'Corte de lona · DXF del bot', settings.corteLonaBotDirectory, 'write']);
     if (settings.corteLonaPlanoDirectory) definitions.push(['corteLonaPlanoDirectory', 'Corte de lona · planos', settings.corteLonaPlanoDirectory, 'write']);
+    if (settings.corteLonaDxfDirectory) definitions.push(['corteLonaDxfDirectory', 'Corte de lona · DXFs de oficina técnica', settings.corteLonaDxfDirectory, 'write']);
   }
   if (settings.rpsPlanteamientosDirectory) {
     definitions.push(['rpsPlanteamientosDirectory', 'Histórico de planteamientos RPS', settings.rpsPlanteamientosDirectory, 'read']);
@@ -232,6 +244,7 @@ export function createReviewPackage({ order, calculation, existing = null, corte
     reviewedBy: '',
     reviewNote: '',
     production: null,
+    enviosCorte: structuredClone(existing?.enviosCorte || []),
     corteLona: copiarEstadoCorteLona(corteLona === undefined ? existing?.corteLona : corteLona),
     summary: {
       customer: order.customer || '',

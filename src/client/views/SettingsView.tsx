@@ -41,7 +41,7 @@ export function SettingsView({
     && form.remolquesOficinaTecnicaDirectory === settings.remolquesOficinaTecnicaDirectory
     && form.remolquesRevisionDirectory === settings.remolquesRevisionDirectory
     && form.draftsDirectory === settings.draftsDirectory;
-  const cortesCoinciden = form.corteLonaBotDirectory === settings.corteLonaBotDirectory && form.corteLonaPlanoDirectory === settings.corteLonaPlanoDirectory;
+  const cortesCoinciden = form.corteLonaBotDirectory === settings.corteLonaBotDirectory && form.corteLonaPlanoDirectory === settings.corteLonaPlanoDirectory && form.corteLonaDxfDirectory === settings.corteLonaDxfDirectory;
 
   function updateForm(patch: Partial<WorkflowSettings>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -127,7 +127,8 @@ export function SettingsView({
 
       <div className="workflow-route-grid">
         <RouteField step="C1" title="Corte de lona · planos" description="Al guardar para revisión: plano DWG (DXF si falta ODA). Durante las pruebas: Oficina Tecnica/DXF PRUEBAS WEB. Admite {YYYY}, {PEDIDO} y {TECNICO}." value={form.corteLonaPlanoDirectory || ''} onChange={(corteLonaPlanoDirectory) => updateForm({ corteLonaPlanoDirectory })} placeholder="/mnt/oftecnica/Oficina Tecnica/DXF PRUEBAS WEB" />
-        <RouteField step="C2" title="Corte de lona · DXF del bot" description="Al generar archivos, ya aprobado en CoordinaOT. Destino: maqcorte/BOT/Pendientes/{TECNICO}, donde {TECNICO} es la carpeta del autor (Ivan.Sanchez, Adrian.Quinteiro, Angel, Alberto, Jaime, Tamara). La web no crea carpetas aquí: el bot las necesita tal cual. Durante las pruebas: Oficina Tecnica/DXF PRUEBAS WEB." value={form.corteLonaBotDirectory || ''} onChange={(corteLonaBotDirectory) => updateForm({ corteLonaBotDirectory })} placeholder="/mnt/oftecnica/Oficina Tecnica/DXF PRUEBAS WEB" />
+        <RouteField step="C2" title="Corte de lona · DXF del bot" description="Con «Mandar corte al bot», aprobado en CoordinaOT. Admite {YYYY}, {PEDIDO} y {TECNICO}; el técnico se convierte en su carpeta del bot. La web nunca crea esta carpeta y pregunta antes de sustituir un archivo." value={form.corteLonaBotDirectory || ''} onChange={(corteLonaBotDirectory) => updateForm({ corteLonaBotDirectory })} placeholder="/mnt/maqcorte/BOT/Pendientes/{TECNICO}" />
+        <RouteField step="C3" title="Corte de lona · DXFs de oficina técnica" description="Con «Guardar DXF en DXFs», aprobado en CoordinaOT. Ruta con {YYYY}: la web crea la carpeta si falta y pregunta antes de sustituir el DXF." value={form.corteLonaDxfDirectory || ''} onChange={(corteLonaDxfDirectory) => updateForm({ corteLonaDxfDirectory })} placeholder="/mnt/oftecnica/Oficina Tecnica/{YYYY}/DXFs" />
         <RouteField
           step="01"
           title="Pedidos para revisión"

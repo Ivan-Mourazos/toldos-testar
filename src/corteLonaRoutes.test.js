@@ -166,7 +166,8 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     expect(vista.pendientes).toEqual([]);
     expect(vista.cortes.conSacos[0].sacos.every((s) => s.of === '1234567')).toBe(true);
     const dxf = await fetch(url + '/api/reviews/AR2604784/corte-lona/dxf?opcion=conSacos');
-    expect(dxf.status).toBe(404);
+    expect(dxf.status).toBe(200);
+    expect(dxf.headers.get('content-type')).toContain('application/dxf');
   });
   it('el revisor solo consulta la vista y el editor consulta firmas en el servidor', async () => {
     expect((await fetch(url + '/api/reviews/AR2604784/corte-lona/plano')).status).toBe(404);

@@ -38,3 +38,9 @@
 .corte-lista.is-viejo { color: var(--tramo-ajustado); }
 .corte-dibujo path, .corte-dibujo circle { fill: none; }
 .corte-dibujo.is-remolques { height: auto; max-height: 420px; }
+.corte-envios { margin-block: 16px; }
+.corte-envios-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.corte-envios-historial { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 13px; }
+.corte-envios-historial ul { margin: 8px 0 0; padding-left: 18px; }
+.corte-envios-historial li + li { margin-top: 8px; }
+.corte-envios-historial small { display: block; margin-top: 3px; color: var(--text-muted); overflow-wrap: anywhere; }

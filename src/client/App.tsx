@@ -480,7 +480,7 @@ export default function App() {
     else notify(result.message || 'No se pudieron guardar los parámetros.', { tone: 'error' });
   }
 
-  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false) {
+  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false, confirmPlanoOverwrite = false) {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
     // Sin ningún toldo calculado no se manda a revisar (Iván, 01/10/2026): saldría en «Por
     // revisar» sin despiece ni reserva. Para dejar un pedido a medias, el borrador.
@@ -508,9 +508,16 @@ export default function App() {
       const response = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: currentOrderPayload(), corteLona: draft.corteLona, confirmOverwrite, savedBy: currentUser })
+        body: JSON.stringify({ order: currentOrderPayload(), corteLona: draft.corteLona, confirmOverwrite, confirmPlanoOverwrite, savedBy: currentUser })
       });
       const data = await response.json();
+      if (response.status === 409 && data.needsPlanoConfirmation) {
+        const choice = await askForConfirmation({ title: 'El plano del corte ya existe',
+          message: 'El plano de este pedido ya está en su carpeta. ¿Sustituirlo por el de la web?',
+          confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning', details: data.existing });
+        if (choice === 'confirm') await saveForReview(confirmOverwrite, true, true);
+        return;
+      }
       if (response.status === 409 && data.needsConfirmation) {
         const choice = await askForConfirmation({
           title: `Actualizar ${draft.orderCode}`,

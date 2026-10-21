@@ -86,6 +86,7 @@ export interface OrigenMigracion {
 }
 
 export interface PedidoRemolques {
+  enviosCorte?: import('../../corteEnviosTipos.ts').EnvioCorte[];
   schemaVersion: typeof ESQUEMA_PEDIDO_REMOLQUES;
   kind: typeof TIPO_PEDIDO_REMOLQUES;
   /** El número normalizado (AR2604286): nombre del fichero y clave en Pedidos. */

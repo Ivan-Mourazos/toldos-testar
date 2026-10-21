@@ -1,5 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import {
   approvalReviewers, ELEMENT_NOUNS, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
@@ -33,7 +34,7 @@ export type EstadoCoordina = {
 export interface DependenciasPedidosRemolques {
   almacen: AlmacenPedidosRemolques;
   /** Configuración → Rutas de trabajo en este momento. */
-  ajustes: () => Promise<CarpetasRemolques>;
+  ajustes: () => Promise<CarpetasRemolques & { corteLonaBotDirectory?: string; corteLonaDxfDirectory?: string }>;
   /** Espera a las carpetas de red dormidas antes de generar (workflow.js, waitForDirectories). */
   despertarCarpetas?: (carpetas: string[]) => Promise<unknown>;
   /** Los parámetros comunes de remolques, si la pantalla no manda los suyos. */
@@ -62,6 +63,7 @@ export interface CorteRemolques {
   escribir(ficheros: ArchivoCorte[]): Promise<void>;
   /** El corte para verlo en pantalla: piezas, metros de rollo y avisos, sin los archivos. */
   vista(pedido: PedidoRemolques): unknown;
+  prepararDxf?(pedido: PedidoRemolques): { filename: string; contents: Uint8Array }[];
 }
 
 export interface Respuesta {
@@ -297,15 +299,8 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       // pedido generado) llevan esos mismos resultados, no los de cuando se guardó.
       const datos: DatosHojaPedido = { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: revisor };
       const calculado = conResultadosDeLaHoja(pedido, datos);
-      // El corte de lona, con esos mismos resultados. Lo principal es la hoja: si el corte falla, se avisa
-      // para hacerlo a mano y los PDF salen igual.
-      // Al generar solo el DXF del bot: el plano ya se escribió al guardar para revisión (como en toldos).
-      const preparado = deps.corte ? await prepararCorte(deps.corte, calculado, registrar) : null;
-      const corte = preparado && { ...preparado, ficheros: preparado.ficheros.filter((fichero) => fichero.type === "corte-lona") };
-      const marcado = marcarPedidoGenerado(calculado, { revisor, ficheros, ahora: ahora() });
-      const generado: PedidoRemolques = corte && marcado.production
-        ? { ...marcado, production: { ...marcado.production, corte: { files: corte.ficheros.map(sinContenido), avisos: corte.avisos } } }
-        : marcado;
+      // El corte sale solo con sus botones: «Generar archivos» deja los PDF.
+      const generado = marcarPedidoGenerado(calculado, { revisor, ficheros, ahora: ahora() });
       const pdf = await adjuntarDatosPedido(await deps.hacerPdf(datos), generado);
       try {
         await archivarPdfRemolques(pdf, { numeroPedido: pedido.numeroPedido, fecha: pedido.summary.orderDate }, ajustes, { sustituir: confirmar });
@@ -315,14 +310,6 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
           return { status: 409, cuerpo: { needsConfirmation: true, existing: destinos.map((destino) => path.basename(destino)) } };
         }
         throw error;
-      }
-      if (corte?.ficheros.length && deps.corte && generado.production?.corte) {
-        try {
-          await deps.corte.escribir(corte.ficheros);
-        } catch (error) {
-          registrar(`Pedido ${orderCode}: no se pudo escribir el corte de lona: ${(error as Error).message}`);
-          generado.production.corte = { files: [], avisos: [...corte.avisos, "No se pudo escribir el corte de lona en su carpeta: hay que hacerlo a mano."] };
-        }
       }
       // Primero los PDF y después el estado: si el archivo falla, el pedido sigue pendiente y se puede repetir.
       try {
@@ -342,7 +329,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
 
   /**
    * El plano del corte para revisar antes de aprobar (Iván, 20/10/2026: «para aprobar necesitamos revisar el
-   * corte primero»). Solo el plano: el DXF del bot espera a «Generar archivos». Nunca hace fallar a quien lo
+   * corte primero»). Solo el plano: el DXF del bot sale con su botón propio. Nunca hace fallar a quien lo
    * llama; lo que pase va en los avisos. Si el plano ya está en su carpeta (el DWG de Oficina Tecnica/<año>,
    * quizá hecho a mano), no se sustituye sin `confirmar` (Iván, 20/10/2026): se devuelve en `existentes`.
    */
@@ -420,5 +407,33 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     throw new ErrorPedidoRemolques("El PDF generado ya no está en sus carpetas de archivo.", 404);
   }
 
-  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte, planoCorte };
+  function pedidoCalculado(pedido: PedidoRemolques) {
+    return conResultadosDeLaHoja(pedido, { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: pedido.reviewedBy });
+  }
+
+  async function descargarCorte(orderCode: string) {
+    if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
+    return deps.corte.prepararDxf(pedidoCalculado(await obtener(orderCode)))[0];
+  }
+
+  async function enviarCorte(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+    const orderCode = codigoPedido(orderCodeBruto);
+    if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
+    ocupados.set(orderCode, "generando");
+    try {
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown };
+      const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
+      if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
+      if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
+      const pedido = await obtener(orderCode);
+      const calculado = pedidoCalculado(pedido);
+      return await enviarCorteCompartido({ pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
+        usuario, destino: c.destino, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
+        elementos: elementosAprobacion(pedido), coordina: deps.coordina, nombres: ELEMENT_NOUNS,
+        comprobarCorte: () => {}, preparar: () => deps.corte!.prepararDxf!(calculado),
+        guardarRegistro: (actualizado: PedidoRemolques) => deps.almacen.guardar(actualizado), ahora: reloj });
+    } finally { ocupados.delete(orderCode); }
+  }
+
+  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte, planoCorte, enviarCorte, descargarCorte };
 }

@@ -633,6 +633,7 @@ export type OrderAutofill = {
 export type WorkflowSettings = {
   corteLonaBotDirectory?: string;
   corteLonaPlanoDirectory?: string;
+  corteLonaDxfDirectory?: string;
   schemaVersion: number;
   productionEnabled: boolean;
   reviewDirectory: string;
@@ -677,6 +678,7 @@ export type CoordinaStatus = {
 };
 
 export type ReviewSummary = {
+  enviosCorte?: import('../corteEnviosTipos').EnvioCorte[];
   corteLona?: import('./corteLona').EstadoCorte | null;
   corteLonaEstado?: 'hecho' | 'falta' | 'viejo';
   planosCorte?: { files: { filename: string; savedPath: string; writtenAt: string }[]; avisos: string[] };

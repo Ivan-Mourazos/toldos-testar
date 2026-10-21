@@ -10,8 +10,9 @@ import '../coordina/corte-lona.css';
 
 const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 3 });
 
-export function CorteLona({ order, estado, onGenerated, reviewCode }: {
+export function CorteLona({ order, estado, onGenerated, reviewCode, acciones }: {
   order: DraftState; estado?: EstadoCorte | null; onGenerated?: (estado: EstadoCorte) => void; reviewCode?: string;
+  acciones?: (alDia: boolean) => React.ReactNode;
 }) {
   const toldos = order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
     resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' ? [{ t, letra: awningLetter(i) }] : []);
@@ -75,6 +76,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode }: {
       <span className={`corte-estado is-${estadoVisible}`} role="status">{estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
       {!reviewCode && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
     </header>
+    {acciones?.(Boolean(datos && pendientes?.length === 0))}
     {error && <p role="alert" className="corte-aviso">{error}</p>}
     {pendientes && pendientes.length > 0 && <p className="corte-aviso">{pendientes.map(p => `Toldo ${p.letra}: ${p.motivo === 'viejo' ? 'corte viejo' : 'falta generar el corte'}`).join(' · ')}</p>}
     {!datos && estado?.toldos.some(t => t.manual) && <ul className="corte-avisos">{estado.toldos.filter(t => t.manual).map(t => <li key={t.clave}>Toldo {t.letra}, OF {t.of}: {t.motivoManual}</li>)}</ul>}

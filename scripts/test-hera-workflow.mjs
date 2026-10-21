@@ -7,7 +7,7 @@ import path from 'node:path';
 import net from 'node:net';
 import { chromium } from 'playwright';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-const output = path.resolve('output/hera-workflow');
+const output = path.resolve('tmp/hera-workflow');
 await mkdir(output, { recursive: true });
 const directory = await mkdtemp(path.join(output, 'run-'));
 // Las carpetas de salida existen de antemano, como los montajes del servidor.

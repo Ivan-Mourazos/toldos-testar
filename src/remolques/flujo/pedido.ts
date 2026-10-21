@@ -127,6 +127,7 @@ export function crearPedidoRemolques({ datos, autoria, existente, ahora, cliente
     reviewedBy: "",
     reviewNote: "",
     production: null,
+    enviosCorte: structuredClone(existente?.enviosCorte ?? []),
     summary: resumenPedido(elementos, autoria),
     params: datos.params,
     elementos,

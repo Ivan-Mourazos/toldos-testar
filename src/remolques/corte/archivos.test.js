@@ -19,20 +19,22 @@ async function montar() {
 }
 
 describe('archivos del corte de remolques', () => {
-  it('escribe el DXF del bot en la carpeta del autor, con el nombre del pedido', async () => {
+  it('al revisar escribe solo el plano; el DXF se prepara aparte, sin escribirlo', async () => {
     const { pendientes, corte } = await montar();
     await fs.mkdir(path.join(pendientes, 'Ivan.Sanchez'));
     const { ficheros } = await corte.preparar(AR2605132);
     await corte.escribir(ficheros);
-    expect(await fs.readdir(path.join(pendientes, 'Ivan.Sanchez'))).toEqual(['AR2605132.dxf']);
+    expect(await fs.readdir(path.join(pendientes, 'Ivan.Sanchez'))).toEqual([]);
+    expect(ficheros.map((f) => f.type)).toEqual(['plano-corte-lona']);
+    expect(corte.prepararDxf(AR2605132)[0].filename).toBe('AR2605132.dxf');
   });
 
-  it('no crea nunca la carpeta del bot: si la del autor no está, avisa y no escribe el corte', async () => {
+  it('el plano de revisión no depende de que exista la carpeta del bot', async () => {
     const { pendientes, corte } = await montar();
     const { ficheros, avisos } = await corte.preparar(AR2605132);
     await corte.escribir(ficheros);
     expect(ficheros.map((f) => f.type)).toEqual(['plano-corte-lona']);
-    expect(avisos.join(' ')).toMatch(/No existe la carpeta del bot/);
+    expect(avisos.join(' ')).not.toMatch(/carpeta del bot/);
     expect(await fs.readdir(pendientes)).toEqual([]);
   });
 });

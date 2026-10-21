@@ -229,6 +229,8 @@ try {
   await capturas('5-corregir');
   await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Actualizar pedido', exact: true }).click();
+  const sustituirPlano = page.getByRole('alertdialog').getByRole('button', { name: 'Sustituir plano', exact: true });
+  if (await sustituirPlano.waitFor({ timeout: 3000 }).then(() => true, () => false)) await sustituirPlano.click();
   await page.getByText(`Guardado en Pedidos para revisión: ${P2.codigo}.`).waitFor();
   assert.equal((await api(`/api/remolques/pedidos/${P2.codigo}`)).datos.params.demasiaAlto, propios.demasiaAlto, '«Corregir» guarda con los parámetros con que se guardó');
   console.log('OK: «Corregir» abre el pedido con sus datos y sus parámetros, y se vuelve a guardar');

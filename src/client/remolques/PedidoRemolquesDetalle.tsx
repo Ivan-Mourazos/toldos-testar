@@ -13,6 +13,7 @@ import { estadoGenerarRemolques, ficherosPrevistos } from './generarPedido';
 import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
+import { EnviosCorte } from '../components/EnviosCorte';
 
 // Un pedido de remolques abierto desde Pedidos (fase 5), con las acciones del de toldos: ver la
 // hoja, «Corregir», «Generar archivos» (solo el autor, con todo aprobado en CoordinaOT) y, ya
@@ -73,6 +74,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   }
   const generado = pedido.status === 'PRODUCED';
   const { allowed, note } = estadoGenerarRemolques(pedido, currentUser, coordina);
+  const permisoCorte = estadoGenerarRemolques({ ...pedido, status: generado ? 'PENDING_REVIEW' : pedido.status }, currentUser, coordina);
   const ruta = `/api/remolques/pedidos/${encodeURIComponent(pedido.orderCode)}`;
   const letras = elementosAprobacion(pedido).map((item) => item.letter);
   const datos = [
@@ -149,7 +151,9 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
       <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
-      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} onConfirm={onConfirm} />
+      <CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} onConfirm={onConfirm}
+        acciones={<EnviosCorte key={ruta} ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed}
+          motivo={permisoCorte.note} ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} />} />
     </section>
   );
 }
@@ -174,7 +178,7 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
   const pedido = detalle && detalle.orderCode === orderCode ? detalle.pedido : null;
   // Las OF del pedido abierto en CoordinaOT; un pedido generado no necesita preguntar.
   const ofs = pedido ? elementosAprobacion(pedido).map((item) => item.of) : [];
-  const { status: coordina } = useCoordinaStatus(ofs, Boolean(pedido) && pedido?.status !== 'PRODUCED');
+  const { status: coordina } = useCoordinaStatus(ofs, Boolean(pedido));
 
   useEffect(() => {
     let cancelado = false;
