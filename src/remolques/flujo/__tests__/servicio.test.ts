@@ -577,6 +577,25 @@ describe("plano del corte para revisar antes de aprobar", () => {
     expect(r.cuerpo).toMatchObject({ planoCorte: { files: [], avisos: ["0231780: revisar la ventana.", "No se pudo escribir el plano del corte en su carpeta."] } });
     expect(registrados.some((mensaje) => /plano del corte/.test(mensaje))).toBe(true);
   });
+
+  it("si no le dejan sustituir el plano que había (hecho por otra persona o abierto), dice por qué y qué hacer", async () => {
+    // AR2605158 (21/10/2026): el DWG de Iván solo deja leer a la cuenta del servidor y el «Sustituir» no hacía nada.
+    for (const [code, motivo] of [["EACCES", /permiso/], ["EPERM", /permiso/], ["EBUSY", /abierto/]] as const) {
+      const corte: CorteRemolques = {
+        preparar: async () => ({ ficheros: [{ ...plano, contenido: new Uint8Array([2]) }], avisos: [] }),
+        escribir: async () => { throw Object.assign(new Error(`${code}: rename`), { code }); },
+        vista: () => null,
+      };
+      const m = montar({ corte });
+      await guardar(m.servicio);
+      const r = await m.servicio.planoCorte("AR2604286", { confirmOverwrite: true });
+      const avisos = (r.cuerpo as { planoCorte: { avisos: string[] } }).planoCorte.avisos;
+      expect(avisos).toHaveLength(1);
+      expect(avisos[0]).toMatch(/AR2604286\.dwg/);
+      expect(avisos[0]).toMatch(motivo);
+      expect(avisos[0]).toMatch(/vuelve a guardar el plano/);
+    }
+  });
 });
 
 describe("generar: fallos al archivar", () => {

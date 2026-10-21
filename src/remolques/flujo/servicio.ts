@@ -359,7 +359,16 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       await deps.corte.escribir(planos);
     } catch (error) {
       registrar(`Pedido ${pedido.orderCode}: no se pudo escribir el plano del corte: ${(error as Error).message}`);
-      return { files: [], avisos: [...avisos, "No se pudo escribir el plano del corte en su carpeta."] };
+      // Lo que más pasa al sustituir (AR2605158, 21/10/2026): el plano que había lo hizo un técnico y la cuenta
+      // del servidor solo puede leerlo, o está abierto en AutoCAD. Se dice para que no parezca que no hace nada.
+      const nombres = planos.map((plano) => plano.filename).join(" · ");
+      const codigo = (error as NodeJS.ErrnoException).code;
+      const motivo = codigo === "EACCES" || codigo === "EPERM"
+        ? `No se pudo sustituir ${nombres}: el servidor no tiene permiso para cambiar el plano que hay (lo hizo otra persona). Bórralo o cámbiale el nombre y vuelve a guardar el plano.`
+        : codigo === "EBUSY"
+          ? `No se pudo sustituir ${nombres}: está abierto (quizá en AutoCAD). Ciérralo y vuelve a guardar el plano.`
+          : "No se pudo escribir el plano del corte en su carpeta.";
+      return { files: [], avisos: [...avisos, motivo] };
     }
     return { files: planos.map(sinContenido), avisos };
   }
