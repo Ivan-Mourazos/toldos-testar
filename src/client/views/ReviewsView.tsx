@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { PedidoBandeja, ReviewPackage, RuleParameters } from '../types';
+import type { EstadoCorte } from '../corteLona';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
@@ -128,6 +129,30 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
       await onOpen(review);
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo abrir el pedido.', { tone: 'error' });
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  // El autor genera en el detalle el corte que falta o está viejo (Iván, 21/10/2026): se vuelve a guardar el
+  // pedido tal cual, con el corte nuevo y su plano, sin pasar por «Corregir».
+  async function guardarCorte(review: ReviewPackage, corteLona: EstadoCorte, confirmPlanoOverwrite = false): Promise<void> {
+    setWorking(true);
+    try {
+      const response = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: review.order, corteLona, confirmOverwrite: true, confirmPlanoOverwrite, savedBy: currentUser }) });
+      const data = await response.json();
+      if (response.status === 409 && data.needsPlanoConfirmation) {
+        const choice = await onConfirm({ title: 'El plano del corte ya existe', message: 'El plano de este pedido ya está en su carpeta. ¿Sustituirlo por el de la web?',
+          confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning', details: data.existing });
+        if (choice === 'confirm') await guardarCorte(review, corteLona, true);
+        return;
+      }
+      if (!response.ok) throw new Error(data.error || 'No se pudo guardar el corte.');
+      onToast(`Corte guardado en ${review.orderCode}.`, { tone: 'success' });
+      onChanged();
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudo guardar el corte.', { tone: 'error' });
     } finally {
       setWorking(false);
     }
@@ -322,6 +347,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
             onGenerate={() => void generateSelected()}
             notify={onToast}
             onConfirm={onConfirm}
+            onGuardarCorte={(estado) => { if (selectedReview) void guardarCorte(selectedReview, estado); }}
           />
         )}
     </section>

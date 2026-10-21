@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CopyPlus, Download, Eye, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine } from 'lucide-react';
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
+import type { EstadoCorte } from '../corteLona';
 import { OrderView } from '../views/OrderView';
 import { CorteLona } from './CorteLona';
 import { ReviewPlanteamientoPreview } from './ReviewPlanteamientoPreview';
@@ -28,7 +29,8 @@ export function ReviewOrderDetail({
   onReuse,
   onGenerate,
   notify = noop,
-  onConfirm = async () => 'cancel'
+  onConfirm = async () => 'cancel',
+  onGuardarCorte
 }: {
   review: ReviewPackage | null;
   parameters: RuleParameters;
@@ -43,6 +45,7 @@ export function ReviewOrderDetail({
   onGenerate: () => void;
   notify?: Notify;
   onConfirm?: AskForConfirmation;
+  onGuardarCorte?: (estado: EstadoCorte) => void;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewButtonRef = useRef<HTMLButtonElement>(null);
@@ -190,6 +193,7 @@ export function ReviewOrderDetail({
       </div>
 
       <CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
+        regenerable={!isProduced && Boolean(onGuardarCorte) && (!order.technician || order.technician === currentUser)} onGenerated={onGuardarCorte}
         acciones={(alDia) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
           permitido={cortePermitido.allowed && alDia} motivo={alDia ? cortePermitido.note : 'El corte tiene que estar al día.'}
           ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}

@@ -10,8 +10,10 @@ import '../coordina/corte-lona.css';
 
 const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 3 });
 
-export function CorteLona({ order, estado, onGenerated, reviewCode, acciones }: {
-  order: DraftState; estado?: EstadoCorte | null; onGenerated?: (estado: EstadoCorte) => void; reviewCode?: string;
+// `regenerable`: en un pedido guardado, su autor puede generar el corte que falta o está viejo sin «Corregir»
+// (Iván, 21/10/2026); `onGenerated` lo guarda con el pedido tal cual está.
+export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false }: {
+  order: DraftState; estado?: EstadoCorte | null; onGenerated?: (estado: EstadoCorte) => void; reviewCode?: string; regenerable?: boolean;
   acciones?: (alDia: boolean) => React.ReactNode;
 }) {
   const toldos = order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
@@ -75,7 +77,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones }: 
     <header className="corte-cabecera">
       <div><span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Corte de lona</h2></span><p>PVC · piezas y marcas de confección, agrupadas por tela</p></div>
       <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
-      {!reviewCode && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
+      {(!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
     </header>
     {acciones?.(Boolean(datos && pendientes?.length === 0))}
     {error && <p role="alert" className="corte-aviso">{error}</p>}

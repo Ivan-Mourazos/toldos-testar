@@ -63,7 +63,7 @@ describe('generateState', () => {
   });
 });
 
-describe('puedeCorregir — «Corregir» solo si CoordinaOT lo devolvió y lo abre su autor (Iván, 21/10/2026)', () => {
+describe('puedeCorregir — «Corregir» solo para el autor: devuelto o sin empezar a revisar (Iván, 21/10/2026)', () => {
   const elementos = [{ letter: 'A', of: '0230194' }, { letter: 'B', of: '0230195' }];
   const coordina = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado: 'aprobada' }, '0230195': { estado } } });
   it('devuelto y autor: sí', () => {
@@ -72,8 +72,15 @@ describe('puedeCorregir — «Corregir» solo si CoordinaOT lo devolvió y lo ab
   it('devuelto pero lo abre otro: no', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', coordina('devuelta'))).toBe(false);
   });
-  it('por revisar, aprobado, generado o sin CoordinaOT: no', () => {
+  it('nadie lo ha empezado a revisar (sin tarea o por revisar): el autor sí, otro no', () => {
+    const porRevisar = { disponible: true, ofs: { '0230194': { estado: 'por_revisar' } } };
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', porRevisar)).toBe(true);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', { disponible: true, ofs: {} })).toBe(true);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', porRevisar)).toBe(false);
+  });
+  it('en revisión, aprobado (aunque sea en parte), generado o sin CoordinaOT: no', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('en_revision'))).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('por_revisar'))).toBe(false);
     expect(puedeCorregir('APPROVED', elementos, 'IVÁN', 'IVÁN', coordina('aprobada'))).toBe(false);
     expect(puedeCorregir('PRODUCED', elementos, 'IVÁN', 'IVÁN', coordina('devuelta'))).toBe(false);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', null)).toBe(false);

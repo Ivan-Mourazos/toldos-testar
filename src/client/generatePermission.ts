@@ -1,4 +1,4 @@
-import { coordinaGroup, generationBlock, isPendingGeneration } from '../reviewRules.js';
+import { coordinaGroup, generationBlock, isPendingGeneration, normalizeOf } from '../reviewRules.js';
 import { awningLetter } from '../domain/awningCompleteness.js';
 import { controlLabel } from './components/controlLabels';
 import type { CoordinaStatus, ReviewPackage } from './types';
@@ -34,11 +34,14 @@ export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, c
 }
 
 /**
- * «Corregir», sincronizado con CoordinaOT (Iván, 21/10/2026): solo si CoordinaOT lo ha devuelto y quien lo abre
- * es su autor. Para mirarlo están el detalle y la vista previa; corregir sin devolución lo sacaría de revisión.
+ * «Corregir», sincronizado con CoordinaOT y solo para el autor (Iván, 21/10/2026): si CoordinaOT lo ha devuelto,
+ * o si todavía nadie lo ha empezado a revisar (sin tarea o «por revisar»). Con el revisor ya en ello, aprobado o
+ * generado, no: para mirarlo están el detalle y la vista previa.
  */
 export function puedeCorregir(status: string, elementos: { letter: string; of: string }[], autor: string, usuario: string, coordina: CoordinaStatus | null) {
   if (status === 'PRODUCED' || !coordina?.disponible) return false;
   if (autor && autor !== usuario) return false;
-  return coordinaGroup(elementos, coordina) === 'devuelto';
+  if (coordinaGroup(elementos, coordina) === 'devuelto') return true;
+  const estados = elementos.map((e) => coordina.ofs?.[normalizeOf(e.of)]?.estado || 'sin_estado');
+  return estados.length > 0 && estados.every((estado) => estado === 'sin_estado' || estado === 'por_revisar');
 }
