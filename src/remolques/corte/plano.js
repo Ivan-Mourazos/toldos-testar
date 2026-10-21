@@ -95,11 +95,18 @@ function rosaCabeza(L, f, x0, w, h, t) {
 }
 
 // Escalera horizontal (cotas con línea base): todas desde x = xb (borde de la lona hecha) hasta cada ollao, a
-// la altura y; cada cota un escalón (4 cm) más arriba.
-function escaleraH(L, xb, y, posiciones) {
+// la altura y; cada cota un escalón (4 cm) más arriba o, con `abajo`, por debajo de la pieza.
+function escaleraH(L, xb, y, posiciones, abajo = false) {
   [...posiciones].sort((a, b) => a - b).forEach((p, k) => {
-    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xb, y1: y, x2: xb + p, y2: y, giro: 0, d: y + 6 + 4 * k, valor: p });
+    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xb, y1: y, x2: xb + p, y2: y, giro: 0, d: abajo ? y - 10.5 - 4 * k : y + 6 + 4 * k, valor: p });
   });
+}
+// En una cabeza baja la escalera hacia arriba tapa el rótulo y la ventana (Iván, 21/10/2026, AR2604800): si no
+// cabe con sitio para los textos, va hacia abajo y las cotas del ancho bajan con ella (`bajan` cm).
+export function escaleraCabeza(n, alto, ventanaAlto = 0) {
+  const escalones = 4 * Math.max(n - 1, 0);
+  const abajo = alto < 4.5 + 6 + escalones + 25 + (ventanaAlto ? ventanaAlto + 4 : 0);
+  return { abajo, bajan: abajo ? 6 + escalones + 2 : 0, textoDesde: abajo ? 4.5 : 4.5 + 8 + escalones };
 }
 // Escalera vertical (laterales del contorno): línea base en y = yb (arriba), ollaos en x; hacia la derecha.
 function escaleraV(L, yb, x, posiciones) {
@@ -127,11 +134,12 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   // Paño delantero.
   pintar(L, P.d.p, enPlano(xDel, Y));
   rosaCabeza(L, P.f, 0, W * 10, H * 10, enPlano(xDel, Y));
-  L.cota('cotas', xDel + 1, Y, xDel + W - 1, Y, hecha.ancho, -12);
-  L.cota('vent-pre-noimpr', xDel, Y, xDel + W, Y, W, -26);
+  const eD = escaleraCabeza(P.ollaos.delante.length, H, P.ventana ? P.ventana[1] / 10 : 0);
+  L.cota('cotas', xDel + 1, Y, xDel + W - 1, Y, hecha.ancho, -12 - eD.bajan);
+  L.cota('vent-pre-noimpr', xDel, Y, xDel + W, Y, W, -26 - eD.bajan);
   L.cota('cotas', xDel, Y + 3.5, xDel, Y + H - 1, i.altoDelante, -12);
   L.cota('vent-pre-noimpr', xDel, Y, xDel, Y + H, H, -26);
-  escaleraH(L, xDel + 1, Y + 4.5, P.ollaos.delante);
+  escaleraH(L, xDel + 1, Y + 4.5, P.ollaos.delante, eD.abajo);
   if (P.ventana) {
     // Medidas de la ventana por dentro del recuadro.
     const rot = P.d.p.rot.map(([a, b, c, d]) => [a / 10, b / 10, c / 10, d / 10]);
@@ -141,26 +149,27 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
     L.cota('cotas', xDel + vx0, Y + vy1 - 5, xDel + vx1, Y + vy1 - 5, P.ventana[0] / 10, 0, 4);
     L.cota('cotas', xDel + vx0 + 5, Y + vy0, xDel + vx0 + 5, Y + vy1, P.ventana[1] / 10, 0, 4);
     L.texto(R(2), xDel + vx0 / 2 + 0.5, Y + (vy0 + vy1) / 2, 14);
-  } else L.texto(R(2), xDel + W / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.delante.length - 1, 0) + H) / 2 - 3, 14);
+  } else L.texto(R(2), xDel + W / 2, Y + (eD.textoDesde + H) / 2 - 3, 14);
 
   // Paño trasero (con orejas si recoge con goma).
   pintar(L, P.t.p, enPlano(xTra, Y));
   rosaCabeza(L, P.f, P.oreja, P.anchoPerfilTra, Ht * 10, enPlano(xTra, Y));
+  const eT = escaleraCabeza(P.ollaos.atras.length, Ht);
   if (o) {
     for (const xo of [30, Wt * 10 - 30]) { const [a, b] = enPlano(xTra, Y)(xo, 35), [c, d] = enPlano(xTra, Y)(xo, P.t.altoOreja); L.g.polilineas.push({ capa: 'referencias', puntos: [[a, b], [c, d]], cerrada: false }); }
-    L.cota('cotas', xTra + 3, Y, xTra + o + 1, Y, o - 2, -12);
-    L.cota('cotas', xTra + Wt - o - 1, Y, xTra + Wt - 3, Y, o - 2, -12);
+    L.cota('cotas', xTra + 3, Y, xTra + o + 1, Y, o - 2, -12 - eT.bajan);
+    L.cota('cotas', xTra + Wt - o - 1, Y, xTra + Wt - 3, Y, o - 2, -12 - eT.bajan);
     L.cota('vent-pre-noimpr', xTra + Wt, Y, xTra + Wt, Y + P.t.altoOreja / 10, P.t.altoOreja / 10, 12);
   }
-  L.cota('cotas', xTra + o + 1, Y, xTra + Wt - o - 1, Y, hecha.anchoAtras ?? hecha.ancho, -12);
-  L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26);
+  L.cota('cotas', xTra + o + 1, Y, xTra + Wt - o - 1, Y, hecha.anchoAtras ?? hecha.ancho, -12 - eT.bajan);
+  L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26 - eT.bajan);
   if (Ht !== H) {
     // Trasero de otro alto (p. ej. a la línea por arriba): su alto terminado y de corte, como en el delantero.
     L.cota('cotas', xTra, Y + 3.5, xTra, Y + Ht - 1, i.altoAtras, -12);
     L.cota('vent-pre-noimpr', xTra, Y, xTra, Y + Ht, Ht, -26);
   }
-  L.texto(R(3), xTra + Wt / 2, Y + (4.5 + 8 + 4 * Math.max(P.ollaos.atras.length - 1, 0) + Ht) / 2 - 3, 14);
-  escaleraH(L, xTra + o + 1, Y + 4.5, P.ollaos.atras);
+  L.texto(R(3), xTra + Wt / 2, Y + (eT.textoDesde + Ht) / 2 - 3, 14);
+  escaleraH(L, xTra + o + 1, Y + 4.5, P.ollaos.atras, eT.abajo);
 
   // Paño contorno, a lo ancho: x = a lo largo del contorno, y = a lo largo de la lona (atrás arriba).
   const tc = (u, v) => [xCon + v / 10, Y + u / 10];

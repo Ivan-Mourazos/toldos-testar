@@ -12,6 +12,7 @@ import AR2605079 from './__fixtures__/AR2605079.json' with { type: 'json' };
 import AR2605088 from './__fixtures__/AR2605088.json' with { type: 'json' };
 import AR2605132 from './__fixtures__/AR2605132.json' with { type: 'json' };
 import { generarCorteRemolques, resumirMaterial } from './index.js';
+import { escaleraCabeza } from './plano.js';
 
 // Pedidos reales de la web de remolques, con los metros de rollo que dieron por buenos en Oficina Técnica
 // (iguales o mejores que el corte a mano).
@@ -191,6 +192,14 @@ describe('generarCorteRemolques', () => {
     const conRadios = generarCorteRemolques(pedido).cortes[0].entidades.arcos;
     expect(conRadios).toHaveLength(2 * 2 * 2);
     expect(new Set(conRadios.map((a) => Math.round(a.r)))).toEqual(new Set([60]));
+  });
+
+  it('en las cabezas bajas las cotas de los ollaos van hacia abajo, para dejar sitio a los textos (AR2604800)', () => {
+    // Iván, 21/10/2026: en AR2604800 (paños de 29,5 con 5 ollaos y una ventana de 14) la escalera tapaba el
+    // rótulo y la ventana. En AR2605078 (87,5 con 4 ollaos) cabe dentro, como siempre.
+    expect(escaleraCabeza(5, 29.5, 14)).toMatchObject({ abajo: true, bajan: 24 });
+    expect(escaleraCabeza(5, 29.5)).toMatchObject({ abajo: true });
+    expect(escaleraCabeza(4, 87.5)).toMatchObject({ abajo: false, bajan: 0 });
   });
 
   it('sigue dejando a mano los puentes que no son de Hijos de Pedro López', () => {
