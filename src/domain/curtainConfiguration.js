@@ -41,6 +41,13 @@ export function curtainWindowDrawingHeight(awning = {}) {
   return measure - (normalizeCurtainConfiguration(awning).curtainWindowReference === 'SUELO' ? 18 : 0);
 }
 
+// Cortina y Cambio de cortina (Iván, 02/10/2026, Q-CO06): salida + 8 y el ajuste de tela elegido
+// en la tarjeta (−18, −11 o el propio).
+export function configuredCurtainVelcroHeight(awning = {}) {
+  const projection = Number(awning.projection);
+  return Number.isFinite(projection) ? Math.max(0, projection + 8 + curtainFabricAdjustmentCm(awning)) : null;
+}
+
 export function curtainBottomAllowanceCm(awning = {}) {
   return normalizeCurtainConfiguration(awning).curtainBottomFinish === 'ET' ? 10 : 0;
 }

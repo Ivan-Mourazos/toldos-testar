@@ -1,5 +1,5 @@
 import { normalizeFabricImage } from './fabricImage.js';
-import { curtainFabricAdjustmentCm, curtainWindowDrawingHeight, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
+import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
 import PDFDocument from 'pdfkit';
 import pdfLib from 'pdf-lib';
 import { existsSync } from 'node:fs';
@@ -2903,11 +2903,8 @@ export function summarizeFabricPage(lines = []) {
 export function resolveCurtainVelcroHeight(awning = {}) {
   const curtainExit = Number(awning.curtainWindowExit);
   const projection = Number(awning.projection);
-  // Cortina y Cambio de cortina (Iván, 02/10/2026, Q-CO06): salida + 8 y el ajuste de tela elegido
-  // en la tarjeta (−18, −11 o el propio). Selena y Electra siguen el Excel, TELA!E36: salida − 18 + 8.
-  if (isConfiguredCurtain(awning)) {
-    return Number.isFinite(projection) ? Math.max(0, projection + 8 + curtainFabricAdjustmentCm(awning)) : null;
-  }
+  // Cortina y Cambio de cortina: Q-CO06. Selena y Electra siguen el Excel, TELA!E36: salida − 18 + 8.
+  if (isConfiguredCurtain(awning)) return configuredCurtainVelcroHeight(awning);
   const base = Number.isFinite(curtainExit) && curtainExit > 0 ? curtainExit : projection;
   return Number.isFinite(base) ? Math.max(0, base - curtainBottomDeduction(awning) + 8) : null;
 }

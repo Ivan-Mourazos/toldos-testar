@@ -10,6 +10,8 @@ import { escribirDxf2004 } from './dxfCorte.js';
 import { dibujarPlano } from './plano.js';
 import { escribirDxfPlano } from './presentacion.js';
 import { textoSeguro } from './texto.js';
+import { piezasCortina } from './cortina.js';
+import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, normalizeCurtainConfiguration } from '../curtainConfiguration.js';
 
 export const OF_PROVISIONAL = 'SIN OF';
 
@@ -36,7 +38,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
   const agregar = (t, tela) => {
     const clave = `${tela.code}|${t.anchoRollo}`;
     if (!grupos.has(clave)) grupos.set(clave, { codigoTela: tela.code, anchoRollo: t.anchoRollo * 10,
-      material: shortFabricName(tela.description).replace(/^LONA /, '').replace(/\s*:\d+ AN$/, ''), toldos: [] });
+      material: tela.nombreCorte ?? shortFabricName(tela.description).replace(/^LONA /, '').replace(/\s*:\d+ AN$/, ''), toldos: [] });
     grupos.get(clave).toldos.push(t);
   };
   const avisar = (letra, of, mensaje) => avisos.push(`Toldo ${letra}, OF ${of || 'sin indicar'}: ${mensaje}`);
@@ -71,9 +73,23 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       frenteTela: c.fabricWidth, caidaTela: c.fabricDrop, anchoRollo: c.fabricRollWidth,
       bamba: toldo.hasValance && !toldo.valanceFabric ? Number(toldo.valanceHeight) : 0,
       unidades: Number(toldo.units), tela: c.fabricDescription,
-      ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {}
+      ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {},
+      ...(toldo.model === 'CORTINA' ? { cortina: datosCortina(toldo) } : {})
     };
+    let cristal = [];
+    if (t.cortina) {
+      // Lo que no se puede fabricar se avisa y ese toldo queda fuera, sin parar el resto del pedido.
+      try {
+        const piezas = piezasCortina(t);
+        cristal = piezas.cristal;
+        avisos.push(...piezas.avisos.map((a) => `Toldo ${letra}, OF ${t.of}: ${a}`));
+      } catch (error) {
+        avisar(letra, toldo.of, error.message);
+        continue;
+      }
+    }
     agregar(t, { code: c.fabricCode || tela.code, description: c.fabricDescription });
+    if (cristal.length) agregar({ ...t, soloCristal: true, anchoRollo: CRISTAL.ancho, anchoRolloLona: t.anchoRollo }, CRISTAL);
     if (toldo.hasValance && toldo.valanceFabric) {
       const telaBamba = resolveFabric(toldo.valanceFabric);
       if (telaBamba?.material?.trim().toUpperCase() === 'PLASTICA (LONA)') {
@@ -84,8 +100,9 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     modelos.add(toldo.model);
   }
   const conSacos = [], trozos = [], planos = [];
-  for (const grupo of grupos.values()) {
-    const opciones = opcionesCorte(grupo.toldos, String(ofStockSacos));
+  const calculados = [...grupos.values()].map((grupo) => ({ grupo, opciones: opcionesCorte(grupo.toldos, String(ofStockSacos)),
+    cristal: grupo.toldos.every((t) => t.soloCristal) }));
+  for (const { grupo, opciones, cristal } of calculados) {
     const of = [...new Set(grupo.toldos.map((t) => t.of))].join(' / ');
     const cabecera = { pedido: orden.orderCode, of, cliente: orden.customer, tecnico: orden.technician,
       revisor: orden.reviewer, fecha: fechaCorta(orden.orderDate), pagina: '1/1', material: grupo.material };
@@ -99,15 +116,41 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     };
     conSacos.push(completar(opciones.conSacos));
     if (opciones.trozoSeparado) trozos.push(completar(opciones.trozoSeparado));
-    const geometria = dibujarPlano(grupo, opciones.conSacos, opciones.trozoSeparado);
+    // El cristal de las cortinas va en el plano de su lona, como en los de la oficina (AR2605080); su sitio en la
+    // lista se rellena después con ese mismo plano, para que cada corte siga teniendo el suyo.
+    if (cristal) { planos.push(null); continue; }
+    const cristales = calculados.filter((c) => c.cristal && c.grupo.toldos.some((ct) => grupo.toldos.some((t) => !t.soloBamba && t.letra === ct.letra)))
+      .map((c) => ({ material: c.grupo.material, anchoRollo: c.grupo.anchoRollo, corte: c.opciones.conSacos, codigoTela: c.grupo.codigoTela }));
+    const geometria = dibujarPlano(grupo, opciones.conSacos, opciones.trozoSeparado, cristales);
+    const cortinas = grupo.toldos.every((t) => t.cortina);
     const datos = Object.fromEntries(Object.entries({ ...cabecera,
       tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${(opciones.conSacos.largo / 1000).toLocaleString('es-ES')} M`,
-      subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA' : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA'}`
+      subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${cortinas ? 'CORTINA' : grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA' : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA'}`
     }).map(([k, v]) => [k, textoSeguro(v)]));
     planos.push({ codigoTela: grupo.codigoTela, material: grupo.material, geometria,
-      ...escribirDxfPlano(geometria, datos), codificacion: 'utf8' });
+      ...escribirDxfPlano(geometria, datos), codificacion: 'utf8', cristales: cristales.map((c) => c.codigoTela) });
   }
+  calculados.forEach(({ grupo, cristal }, i) => {
+    if (!cristal) return;
+    const suyo = planos.find((p) => p?.cristales?.includes(grupo.codigoTela));
+    planos[i] = { ...suyo, codigoTela: grupo.codigoTela, material: grupo.material, incluidoEn: suyo.codigoTela };
+  });
   return { modelos: [...modelos], cortes: { conSacos, trozoSeparado: trozos.length ? trozos : null }, plano: planos, avisos, sinOf };
+}
+
+// Cristal de la ventana de la cortina: el artículo que ya reserva la web (CRISTATP140650, 140 de ancho).
+const CRISTAL = { code: 'CRISTATP140650', description: 'CRISTAL UV ALTA TRANSPARENCIA 140 AN', nombreCorte: 'TRANSPARENTE 650 MI', ancho: 140 };
+
+/** Lo que la cortina necesita para su corte, sacado de su tarjeta (docs/modelos/cortina-pvc-corte.md). */
+function datosCortina(toldo) {
+  return {
+    abajo: normalizeCurtainConfiguration(toldo).curtainBottomFinish === 'ET' ? 'ET' : 'VARILLA',
+    ventana: toldo.curtainHasWindow ? { alto: Number(toldo.curtainWindowHeight), esquina: Number(toldo.curtainWindowCorner),
+      desdeAbajo: curtainWindowDrawingHeight(toldo) } : null,
+    anchoCristal: CRISTAL.ancho,
+    laterales: toldo.curtainFinish === 'VELCRO' ? 'VELCRO' : 'NORMAL',
+    alturaVelcro: configuredCurtainVelcroHeight(toldo)
+  };
 }
 
 function fechaCorta(fecha) {

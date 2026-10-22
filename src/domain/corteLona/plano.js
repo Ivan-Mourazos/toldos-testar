@@ -5,6 +5,7 @@
 import { AJUSTES_POR_DEFECTO } from './despiece.js';
 import { dibujo } from './dibujoCorte.js';
 import { anchoArial } from './texto.js';
+import { piezasCortina, REGLAS_CORTINA } from './cortina.js';
 
 // Corte y rotulador van en las capas del bot (DISCO1, ROTULADOR, texto), que ya trae la plantilla;
 // «cortes - lona», «MARCA» o «corte» son antiguas (Iván, 19/10/2026). Se añaden las que no cortan:
@@ -21,7 +22,7 @@ const ENTRE_TOLDOS = 150;   // cm
 const ORIGEN_M = 100;       // el dibujo empieza a 100 m del origen en X y en Y
 const HUECO_TIRA = 45;      // cm entre el cuerpo y la tira: caben las dos «VARILLA BLANCA»
 
-export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
+export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales = []) {
   const L = [], P = [], T = [], Q = [];   // en cm; se pasan a metros al final (Q: cotas)
   const linea = (capa, x1, y1, x2, y2) => L.push({ capa, x1, y1, x2, y2 });
   const rect = (capa, x0, y0, x1, y1) => P.push({ capa, puntos: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], cerrada: true });
@@ -56,6 +57,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
   let x = 0;
 
   for (const [i, t] of datos.toldos.entries()) {
+    if (t.cortina) {
+      x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota }) + ENTRE_TOLDOS;
+      continue;
+    }
     const A = { ...AJUSTES_POR_DEFECTO, ...t.ajustes };
     const vertical = A.empate === 'vertical' && t.frenteTela > t.anchoRollo;
     const piezas = corteRollo.piezas[i].piezas;
@@ -193,7 +198,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
   // cuando hay varios toldos, y a 2 m se colaba el corte por abajo.
   let yRollo = -3000 - anchoRollo;
   const metros = mm => (mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 3 });
-  for (const [i, opcion] of [corteRollo, trozoSeparado].filter(Boolean).entries()) {
+  // El cristal de las cortinas, en su rollo, debajo del corte de la lona (como AR2605080).
+  const rollos = [corteRollo, trozoSeparado].filter(Boolean).map((opcion) => ({ opcion, anchoRollo }));
+  rollos.push(...cristales.map((c) => ({ opcion: c.corte, anchoRollo: c.anchoRollo / 10, titulo: `CRISTAL · ${c.material}` })));
+  for (const [i, { opcion, anchoRollo, titulo: tituloCristal }] of rollos.entries()) {
     const corte = dibujo(opcion.colocadas, anchoRollo * 10, { of: '', tela: '' });
     const largoTotal = Math.max(...opcion.colocadas.map(p => p.x + p.ancho)) / 10;
     for (const l of corte.lineas) linea(l.capa, l.x1 / 10, yRollo + l.y1 / 10, l.x2 / 10, yRollo + l.y2 / 10);
@@ -204,7 +212,8 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     }
     // Solo se habla de opciones cuando hay dos; "con sacos" solo si de verdad lleva sacos.
     const conSacos = sacosStock.length ? ' · CON SACOS' : '';
-    const titulo = !trozoSeparado ? `CORTE${conSacos} · ${metros(opcion.largo)} M`
+    const titulo = tituloCristal ? `${tituloCristal} · ${metros(opcion.largo)} M`
+      : !trozoSeparado ? `CORTE${conSacos} · ${metros(opcion.largo)} M`
       : i === 0 ? `OPCIÓN 1${conSacos || ' · TODO SEGUIDO'} · ${metros(opcion.largo)} M`
         : `OPCIÓN 2 · TROZO SEPARADO · ${metros(opcion.largo)} M + RESTOS ${metros(opcion.largoRestos)} M`;
     texto(titulo, largoTotal / 2, yRollo + anchoRollo + 85, 14, 0, 'texto', largoTotal * 0.98);
@@ -249,4 +258,120 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     largoRollo,
     sacos: sacosStock.length
   };
+}
+
+/**
+ * Alzado de una cortina como los ejemplos base de Iván (22/10/2026): corte (DISCO1), terminado (rosa),
+ * rotulador y sus textos; con ventana, las bandas, los laterales y el cristal despiezados; la bamba debajo.
+ * Las cotas impresas son las terminadas; las de corte van en la capa que no se imprime. Devuelve su ancho.
+ */
+function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota }) {
+  const R = REGLAS_CORTINA, c = t.cortina, F = t.frenteTela;
+  const W = F + 2 * R.bastillaLado, et = c.abajo === 'ET';
+  const [cx0, cx1] = [x0, x0 + W], [fx0, fx1] = [x0 + R.bastillaLado, x0 + W - R.bastillaLado], cx = x0 + W / 2;
+  const [xDer, xIzq] = [cx1 + 35, cx0 - 35];
+  const n = (v) => Math.round(v * 10) / 10;
+  const bamba = piezas.find((p) => p.nombre.includes('BAMBA'));
+  const altoBamba = bamba ? bamba.alto / 10 : 0;
+  if (bamba) {
+    const union = et ? R.bambaUnionEt : R.bambaUnionVarilla;
+    const terminada = altoBamba - union - R.bambaBastilla;
+    rect('DISCO1', cx0, 0, cx1, altoBamba);
+    rect('referencias', fx0, R.bambaBastilla, fx1, R.bambaBastilla + terminada);
+    linea('ROTULADOR', fx0, altoBamba - union - R.marcaVarilla, fx1, altoBamba - union - R.marcaVarilla);
+    texto(t.letra, cx, R.bambaBastilla + (terminada - R.marcaVarilla) / 2, 15);
+    texto('B.N(3)', cx, -12, 10, 0, 'texto', F * 0.9);
+    for (const xl of [cx0 - 10, cx1 + 10]) texto('B.N(4)', xl, altoBamba / 2, 10, 90);
+    cota('cotas', xDer - 15, R.bambaBastilla, xDer - 15, R.bambaBastilla + terminada, n(terminada), 15);
+    cota('vent-pre-noimpr', xIzq + 15, 0, xIzq + 15, altoBamba, n(altoBamba), -15);
+    if (t.soloBamba) {
+      texto(t.of, cx, altoBamba + 35, 20, 0, 'texto', F * 0.8);
+      cota('cotas', cx0, altoBamba + 90, cx1, altoBamba + 90, W, 0);
+      return W;
+    }
+    if (!et) texto(VARILLA_ABAJO, cx, altoBamba + 10, 10, 0, 'texto', F * 0.9);
+  }
+
+  // Cuerpo: arriba la varilla negra; abajo la varilla blanca o la E.T. Ø40.
+  const abajo = et ? R.et : R.varillaAbajo;
+  const yc0 = altoBamba ? altoBamba + HUECO_TIRA : 0;
+  const yc1 = yc0 + t.caidaTela - (t.bamba > 0 ? t.bamba + 5 : 0);
+  const [yf0, yf1] = [yc0 + abajo, yc1 - R.varillaArriba];
+  rect('DISCO1', cx0, yc0, cx1, yc1);
+  rect('referencias', fx0, yf0, fx1, yf1);
+  linea('ROTULADOR', fx0, yf1 - R.marcaVarilla, fx1, yf1 - R.marcaVarilla);
+  linea('ROTULADOR', fx0, yf0 + (et ? R.marcaEt : R.marcaVarilla), fx1, yf0 + (et ? R.marcaEt : R.marcaVarilla));
+  texto(VARILLA_TOLDO, cx, yc1 + 10, 10, 0, 'texto', F * 0.9);
+  if (et) {
+    linea('ejes', cx0, yc0 + R.referenciaEt, cx1, yc0 + R.referenciaEt);
+    texto('E.T%%C40', cx, yc0 - 10, 10, 0, 'texto', F * 0.9);
+    texto(`MARCAR ${R.referenciaEt} CM POR EL DERECHO (MEDIDA LONA CORTADA) Y SOLDAR`, cx, yc0 - 24, 7.5, 0, 'texto', W);
+  } else texto(VARILLA_ABAJO, cx, yc0 - 10, 10, 0, 'texto', F * 0.9);
+
+  const cuerpos = piezas.filter((p) => !p.nombre.includes('BAMBA'));
+  const empate = !c.ventana && cuerpos.length > 1;
+  const lateral = empate ? 'AL CORTE' : c.laterales === 'VELCRO'
+    ? `B.N(4) · VELCRO SUAVE (5) POR DERECHO${c.alturaVelcro ? ` HASTA ${n(c.alturaVelcro)}` : ''}` : 'B.N(4)';
+  for (const xl of [cx0 - 10, cx1 + 10]) texto(lateral, xl, (yc0 + yc1) / 2, 10, 90, 'texto', (yc1 - yc0) * 0.85);
+  const unidades = t.unidades > 1 ? [`${t.unidades} UDS`] : [];
+  const rotulos = (lineas, xm, ym, h) => lineas.forEach((v, k) => texto(v, xm, ym + ((lineas.length - 1) / 2 - k) * h * 1.7, h, 0, 'texto', F * 0.8));
+
+  if (c.ventana) {
+    const { alto: V, esquina: e, desdeAbajo: D } = c.ventana;
+    const [yh0, yh1] = [yf0 + D, yf0 + D + V];
+    const s = R.solapeCristal, lado = e + R.bastillaLado;
+    // Las bandas se cortan en el borde del hueco; los laterales y el cristal solapan 2 en ellas.
+    linea('DISCO1', cx0, yh0, cx1, yh0);
+    linea('DISCO1', cx0, yh1, cx1, yh1);
+    rect('DISCO1', cx0, yh0 - s, cx0 + lado, yh1 + s);
+    rect('DISCO1', cx1 - lado, yh0 - s, cx1, yh1 + s);
+    const [gx0, gx1] = [fx0 + e - s, fx1 - e + s];
+    rect('ejes', gx0, yh0 - s, gx1, yh1 + s);
+    const tramos = piezasCortina(t).cristal;
+    let xt = gx0;
+    tramos.slice(0, -1).forEach((p) => {
+      xt += p.largo / 10;
+      linea('ejes', xt - R.empate, yh0 - s, xt - R.empate, yh1 + s);
+      linea('ejes', xt, yh0 - s, xt, yh1 + s);
+      texto(`EMPATE ${R.empate} CM`, xt + 8, (yh0 + yh1) / 2, 10, 90, 'texto', V * 0.85);
+      xt -= R.empate;
+    });
+    const [a1, a2, a3, a4] = cuerpos;
+    rotulos([a2.nombre, t.of, ...unidades], cx, (yh1 + yf1) / 2, 15);
+    texto(a1.nombre, cx, (yf0 + yh0) / 2, 15);
+    texto(a3.nombre, cx0 + lado / 2, (yh0 + yh1) / 2, 8, 90);
+    texto(a4.nombre, cx1 - lado / 2, (yh0 + yh1) / 2, 8, 90);
+    texto(tramos.length > 1 ? 'CRISTAL' : `CRISTAL ${n(gx1 - gx0)} X ${n(V + 2 * s)}`, cx, (yh0 + yh1) / 2, 12, 0, 'texto', (gx1 - gx0) * 0.8);
+    // Impresas: frente, alto y cadena de la derecha; los laterales de la ventana.
+    cota('cotas', xDer - 15, yh1, xDer - 15, yf1, n(yf1 - yh1), 15);
+    cota('cotas', xDer - 15, yh0, xDer - 15, yh1, n(V), 15);
+    cota('cotas', xDer - 15, yf0, xDer - 15, yh0, n(D), 15);
+    cota('cotas', fx0, yh1 + 25, fx0 + e, yh1 + 25, n(e), 0);
+    cota('cotas', fx1 - e, yh1 + 25, fx1, yh1 + 25, n(e), 0);
+    // De corte: las bandas y el cristal.
+    cota('vent-pre-noimpr', xIzq + 30, yh1, xIzq + 30, yc1, n(yc1 - yh1), -15);
+    cota('vent-pre-noimpr', xIzq + 30, yc0, xIzq + 30, yh0, n(yh0 - yc0), -15);
+    cota('vent-pre-noimpr', gx0, yh0 + 12, gx1, yh0 + 12, n(gx1 - gx0), 0);
+  } else if (empate) {
+    // Paño de abajo del ancho del rollo y el resto arriba (Q-CP02), con el empate y el aumento para escuadrar.
+    let y = yc0;
+    cuerpos.forEach((p, k) => {
+      const alto = p.alto / 10;
+      if (k === 0) rotulos([p.nombre, t.of, ...unidades, 'TIENE AUMENTO PARA ESCUADRAR'], cx, y + alto / 2, 15);
+      else texto(p.nombre, cx, y + alto / 2, 15);
+      if (k < cuerpos.length - 1) {
+        const yu = y + alto;
+        linea('ejes', cx0, yu - R.empate, cx1, yu - R.empate);
+        linea('ejes', cx0, yu, cx1, yu);
+        texto(`EMPATE EN HORIZONTAL · ${R.empate} CM`, cx, yu - R.empate - 8, 10, 0, 'texto', F * 0.8);
+        y = yu - R.empate;
+      }
+    });
+  } else rotulos([t.letra, t.of, ...unidades], cx, (yc0 + yc1) / 2, 15);
+
+  cota('cotas', fx0, yc1 + 30, fx1, yc1 + 30, n(F), 0);
+  cota('vent-pre-noimpr', cx0, yc1 + 50, cx1, yc1 + 50, n(W), 0);
+  cota('cotas', xDer, yf0, xDer, yf1, n(yf1 - yf0), 15);
+  cota('vent-pre-noimpr', xIzq + 15, yc0, xIzq + 15, yc1, n(yc1 - yc0), -15);
+  return W;
 }

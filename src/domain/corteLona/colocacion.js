@@ -202,13 +202,15 @@ export function cortePedido(toldos, verticales = []) {
 /** Dos opciones de taller: aprovechar huecos con sacos o reservar el paño pequeño para restos. */
 export function opcionesCorte(toldos, ofStockSacos) {
   const corte = cortePedido(toldos);
-  // La tela reservada solo para bambas no se completa con stock ni tiene alternativa de restos.
-  if (toldos.every(t => t.soloBamba)) return { conSacos: { ...corte, sacos: [] }, trozoSeparado: null };
+  // La tela reservada solo para bambas, y el cristal de las cortinas, no se completan con stock ni tienen
+  // alternativa de restos.
+  if (toldos.every(t => t.soloBamba || t.soloCristal)) return { conSacos: { ...corte, sacos: [] }, trozoSeparado: null };
   const anchoRollo = toldos[0].anchoRollo * 10;
   const sacos = sacosEnHuecos(corte.colocadas, anchoRollo, ofStockSacos);
   const conSacos = { ...corte, colocadas: [...corte.colocadas, ...sacos], sacos };
+  // La cortina no: sus piezas pequeñas son los laterales de la ventana, que se sueldan a las bandas.
   const letras = new Set(corte.piezas.filter((p, i) =>
-    (toldos[i].ajustes?.empate || 'horizontal') === 'horizontal' &&
+    !toldos[i].cortina && (toldos[i].ajustes?.empate || 'horizontal') === 'horizontal' &&
     p.piezas.filter((q) => !q.nombre.includes('BAMBA')).length > 1).map((p) => p.letra));
   const pequena = (p) => letras.has(p.letra) && (p.nombre.includes('BAMBA') || p.alto < anchoRollo);
   const todas = corte.colocadas.map(({ girada: _g, ancho: _a, hueco: _h, x: _x, y: _y, ...p }) => p);

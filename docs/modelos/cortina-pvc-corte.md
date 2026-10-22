@@ -437,3 +437,15 @@ Con F el frente terminado, H el alto terminado y V el alto de la ventana (hueco 
 - **Q-CP01 · Bamba** (contestada): el paño de la bamba cambia según cómo va unido al cuerpo (Iván: «depende de cómo vaya unida la bamba con el toldo, si va varilla o E.T.»). Arriba: varilla blanca +3, E.T. +5; abajo, su bastilla (B.N(3) +3, B.N(2) +2); a los lados, su B.N. Con 20 de bamba: 26 con varilla y 28 con E.T., como en los ejemplos base.
 - **Q-CP02 · Raya «EMPATE EN HORIZONTAL»** (contestada): no es fija. Iván: «va a 2,50 desde abajo, que es el tamaño del paño». El paño de abajo es del ancho del rollo y la raya del empate va a 250 del corte de abajo; el de arriba lleva el resto y el solape. La de los ejemplos (a 34 del terminado de arriba) solo estaba indicada.
 - **Q-CP03 · E.T. Ø40** (contestada): en el DXF de la máquina va el rotulador a **21** del corte (9 por encima del terminado). La raya de 17, con la nota «MARCAR 17 CM POR EL DERECHO (MEDIDA LONA CORTADA) Y SOLDAR», es otra referencia para que por el otro lado de la lona sepan dónde soldar: va solo en el plano, en ejes.
+
+## 13. En la web (22/10/2026, rama cortina-corte)
+
+Primera versión del corte y del plano de la cortina de PVC, con las reglas de las secciones 10 y 12:
+
+- `src/domain/corteLona/cortina.js` saca las piezas. Con ventana: A1 banda de abajo, A2 banda de arriba, A3 y A4 laterales de la ventana (esquina + 4 × ventana + 4) y el cristal (hueco + 2 por lado) en su rollo de 140; si no cabe, en tramos de 140 con empates de 2. Sin ventana: un paño o, si no cabe, el de abajo del ancho del rollo y el resto arriba. La bamba, con su unión (varilla +3, E.T. +5) y B.N(3).
+- El cuerpo es la caída de la web sin la bamba y su remate de 5, como en fachada. Rotulador a 7 del corte arriba y abajo, o a 21 con E.T. Ø40, 4 dentro de cada lateral. Mininúmeros a1–a4 en las esquinas de cada lateral de la ventana y de la banda con la que se suelda.
+- El cristal es otro material del mismo DXF del bot (TRANSPARENTE 650 MI, sin sacos de stock) y va dibujado en el plano de su lona, debajo del corte del PVC: hay un solo plano.
+- El plano dibuja el alzado como los ejemplos base: corte, terminado, bandas, laterales, cristal, rotulador, E.T. y cotas (las terminadas se imprimen; las de corte no).
+- Comprobado con AR2605080 (bandas de 79,5 y 33,5 y laterales de 19 × 166, iguales que su corte real) y con AR2605193.
+
+Queda para después: solapas, varias ventanas, E.T. especiales, Cambio de cortina, laterales al corte en cortinas sin empate y el color y la altura editable del velcro (hoy la web pone la altura de su regla Q-CO06).

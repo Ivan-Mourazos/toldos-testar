@@ -159,6 +159,41 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(minis.filter((r) => numero(r, 20) > 100)).toHaveLength(2);
     expect(minis.filter((r) => numero(r, 20) < 100).length).toBeGreaterThanOrEqual(4);
   });
+  it('corta la cortina de AR2605193 con su ventana: lona y cristal en dos cortes y un solo plano', () => {
+    // Iván, 22/10/2026: a suelo (75 → 57 dibujado), máquina interior, varilla y bamba recta de 15; ventana de 136
+    // con laterales de 20. Tres unidades de 312.
+    const order = {
+      orderCode: 'AR2605193', customer: 'PRUEBA', technician: 'IVÁN', orderDate: '2026-10-22', structureColor: 'BLANCO',
+      fabric: 'PVC580MAR|||250|||LONA PVC 580 MARFIL :250 AN|||PLASTICA (LONA)',
+      awnings: [{
+        id: 'a', of: '0233272', model: 'CORTINA', workType: 'FULL_AWNING', units: 3, width: 312, projection: 250,
+        hasValance: true, valanceHeight: 15, valanceCurve: 'RECTA', device: 'MAQ. INTERIOR', crankHeight: 170,
+        machineSide: 'M.F.IZQ', placement: 'TECHO', rotFabric: 'NO', rotValance: 'NO', remate: 'COMO TELA',
+        curtainHasWindow: true, curtainFinish: 'NORMAL', curtainBottomFinish: 'TUBO DE CARGA', curtainWindowReference: 'SUELO',
+        curtainWindowHeight: 136, curtainWindowCorner: 20, curtainWindowFloorHeight: 75,
+        curtainFabricAdjustment: 'NINGUNO', curtainFabricAdjustmentCm: 0
+      }]
+    };
+    const salida = generar(order);
+    expect(salida.avisos).toEqual([]);
+    expect(salida.modelos).toEqual(['CORTINA']);
+    const [lona, cristal] = salida.cortes.conSacos;
+    expect([lona.material, cristal.material, cristal.anchoRollo]).toEqual(['PVC 580 MARFIL', 'TRANSPARENTE 650 MI', 1400]);
+    expect(lona.piezas[0].piezas.map((p) => [p.nombre, p.largo / 10, p.alto / 10])).toEqual([
+      ['A1', 308, 60.5], ['A2', 308, 93.5], ['A3', 24, 140], ['A4', 24, 140], ['A BAMBA', 308, 21]
+    ]);
+    expect(cristal.piezas[0].piezas.map((p) => [p.nombre, p.largo / 10, p.alto / 10])).toEqual([['A CRISTAL', 264, 140]]);
+    expect(cristal.colocadas).toHaveLength(3);
+    expect(cristal.sacos).toEqual([]);
+    expect(salida.cortes.trozoSeparado).toBeNull();
+    // Los mininúmeros de las esquinas de la ventana, dos de cada uno por cortina (lateral y banda).
+    const minis = lona.dibujo.textos.filter((t) => t.capa === 'ROTULADOR').map((t) => t.valor);
+    for (const n of ['a1', 'a2', 'a3', 'a4']) expect(minis.filter((v) => v === n)).toHaveLength(6);
+    // Un solo plano: el del cristal es el de su lona.
+    expect(salida.plano).toHaveLength(2);
+    expect(salida.plano[1]).toMatchObject({ incluidoEn: salida.plano[0].codigoTela, dxf: salida.plano[0].dxf });
+    expect(salida.plano[0].dxf).toContain('CRISTAL · TRANSPARENTE 650 MI');
+  });
   it('corta el cuerpo cuando la bamba es de otra tela y deja aviso', () => {
     const order = structuredClone(revision.order);
     order.awnings[0].valanceFabric = 'OTRATELA|||120|||TELA ACRILICA|||ACRILICA';

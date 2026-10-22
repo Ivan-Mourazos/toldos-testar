@@ -46,12 +46,15 @@ export async function prepararArchivosCorte({ order, corteLona, settings, oda, t
   const pedido = sanitizeOrderCode(order.orderCode);
   const avisos = [];
   const files = [];
-  const sufijo = (c, i) => resultado.cortes.conSacos.length > 1 ? ` (${segmento(c.codigoTela)}-${resultado.cortes.conSacos[i].anchoRollo})` : '';
+  // El plano del cristal de una cortina es el de su lona (`incluidoEn`): se escribe una vez.
+  const propios = resultado.plano.filter((p) => !p.incluidoEn);
+  const sufijo = (c, i) => propios.length > 1 ? ` (${segmento(c.codigoTela)}-${resultado.cortes.conSacos[i].anchoRollo})` : '';
   if (tipo === 'bot') {
     const archivo = archivoCorte(resultado.cortes, pedido);
     if (archivo) files.push({ type: 'corte-lona', filename: archivo.filename, savedPath: path.join(directory, archivo.filename), contents: Buffer.from(archivo.dxf, 'latin1') });
   } else {
     for (const [i, plano] of resultado.plano.entries()) {
+      if (plano.incluidoEn) continue;
       let contents = Buffer.from(plano.dxf, 'utf8');
       let extension = 'dxf';
       if (oda.disponible) {

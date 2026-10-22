@@ -25,7 +25,8 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   }
   for (const p of colocadas) {
     const [x0, y0] = [p.x, p.y];
-    textos.push(...numerosDeUnion(p, panos));
+    // Las piezas con sus uniones ya puestas (las de la cortina) no siguen la cadena de paños de fachada.
+    textos.push(...(p.uniones ? unionesPropias(p) : numerosDeUnion(p, panos)));
     // Marca a `d` del borde de arriba (d > 0) o de abajo (d < 0) de la pieza, metida `m` en los
     // laterales. Girada, el borde de arriba de la pieza queda a la izquierda (como AR2405992).
     const marca = (d, m) => {
@@ -36,6 +37,8 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     };
     const ajustes = { ...AJUSTES_POR_DEFECTO, ...p.ajustes };
     for (const m of p.marcas) {
+      // Cortina: cada raya dice su borde, su distancia al corte y lo que entra desde los laterales.
+      if (typeof m === 'object') marca(m.lado === 'arriba' ? m.mm : -m.mm, m.retiroMm);
       if (m === 'arriba') marca(ajustes.varillaArribaMm, 15);
       if (m === 'abajo') marca(-ajustes.varillaArribaMm, 15);
       if (m === 'tira') marca(ajustes.varillaTiraMm, 20);
@@ -48,7 +51,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     const [cx, cy] = franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
       : p.girada ? [x0 + p.alto - franja / 2, y0 + p.largo / 2] : [x0 + p.largo / 2, y0 + franja / 2];
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']
-      : [p.nombre, ...(p.of ? [p.of] : []), ...(p.nombre.includes('BAMBA') ? [] : ['REVÉS'])];
+      : [p.nombre, ...(p.of ? [p.of] : []), ...(p.nombre.includes('BAMBA') || p.sinReves ? [] : ['REVÉS'])];
     const espacioTexto = p.girada ? p.hueco : p.ancho;
     const altoLibre = franja === null ? Math.min(p.ancho, p.hueco) * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1)
       : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + 2);
@@ -94,6 +97,14 @@ function numerosDeUnion(p, panos) {
     }
   }
   return out;
+}
+
+/** Uniones dadas por la pieza: `u` a lo largo y `v` a lo alto desde abajo, en mm, como el resto de marcas. */
+function unionesPropias(p) {
+  return p.uniones.map(({ valor, u, v }) => {
+    const [x, y] = p.girada ? [p.x + p.alto - v, p.y + u] : [p.x + u, p.y + v];
+    return { capa: 'ROTULADOR', x, y, h: 10, valor, giro: p.girada ? 90 : 0, centrado: true, literal: true };
+  });
 }
 
 function unir(segs) {
