@@ -193,6 +193,24 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(salida.plano).toHaveLength(2);
     expect(salida.plano[1]).toMatchObject({ incluidoEn: salida.plano[0].codigoTela, dxf: salida.plano[0].dxf });
     expect(salida.plano[0].dxf).toContain('CRISTAL · TRANSPARENTE 650 MI');
+    // Iván, 22/10/2026: las cotas agarradas a las piezas, no en el aire, y los mininúmeros también en el dibujo.
+    const modelo = registrosDxf(salida.plano[0].dxf).filter((r) => valor(r, 67) !== '1');
+    const segmentos = modelo.flatMap((r) => {
+      if (r.tipo === 'LINE') return [[[numero(r, 10), numero(r, 20)], [numero(r, 11), numero(r, 21)]]];
+      if (r.tipo !== 'LWPOLYLINE') return [];
+      const xs = r.pares.filter(([k]) => k === 10).map(([, v]) => Number(v)), ys = r.pares.filter(([k]) => k === 20).map(([, v]) => Number(v));
+      return xs.map((x, i) => [[x, ys[i]], [xs[(i + 1) % xs.length], ys[(i + 1) % ys.length]]]);
+    });
+    const sobre = ([x, y]) => segmentos.some(([[x1, y1], [x2, y2]]) => Math.abs((x2 - x1) * (y - y1) - (y2 - y1) * (x - x1)) < 1e-6
+      && x >= Math.min(x1, x2) - 1e-6 && x <= Math.max(x1, x2) + 1e-6 && y >= Math.min(y1, y2) - 1e-6 && y <= Math.max(y1, y2) + 1e-6);
+    const alzado = modelo.filter((r) => r.tipo === 'DIMENSION' && numero(r, 23) > 100);
+    expect(alzado.length).toBeGreaterThan(8);
+    for (const c of alzado) {
+      expect(sobre([numero(c, 13), numero(c, 23)]), `cota ${numero(c, 42)}`).toBe(true);
+      expect(sobre([numero(c, 14), numero(c, 24)]), `cota ${numero(c, 42)}`).toBe(true);
+    }
+    const minisAlzado = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 20) > 100).map((r) => valor(r, 1));
+    for (const n of ['a1', 'a2', 'a3', 'a4']) expect(minisAlzado.filter((v) => v === n)).toHaveLength(2);
   });
   it('corta el cuerpo cuando la bamba es de otra tela y deja aviso', () => {
     const order = structuredClone(revision.order);

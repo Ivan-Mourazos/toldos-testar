@@ -58,7 +58,9 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
 
   for (const [i, t] of datos.toldos.entries()) {
     if (t.cortina) {
-      x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota }) + ENTRE_TOLDOS;
+      // Los mininúmeros, del mismo tamaño y en el mismo sitio de cada pieza que en el corte (Iván, 22/10/2026).
+      const mini = (valor, xm, ym) => T.push({ capa: 'ROTULADOR', x: xm, y: ym, h: 1, valor, giro: 0, centrado: true, literal: true });
+      x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini }) + ENTRE_TOLDOS;
       continue;
     }
     const A = { ...AJUSTES_POR_DEFECTO, ...t.ajustes };
@@ -265,7 +267,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
  * rotulador y sus textos; con ventana, las bandas, los laterales y el cristal despiezados; la bamba debajo.
  * Las cotas impresas son las terminadas; las de corte van en la capa que no se imprime. Devuelve su ancho.
  */
-function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota }) {
+function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
   const R = REGLAS_CORTINA, c = t.cortina, F = t.frenteTela;
   const W = F + 2 * R.bastillaLado, et = c.abajo === 'ET';
   const [cx0, cx1] = [x0, x0 + W], [fx0, fx1] = [x0 + R.bastillaLado, x0 + W - R.bastillaLado], cx = x0 + W / 2;
@@ -282,11 +284,11 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota }) {
     texto(t.letra, cx, R.bambaBastilla + (terminada - R.marcaVarilla) / 2, 15);
     texto('B.N(3)', cx, -12, 10, 0, 'texto', F * 0.9);
     for (const xl of [cx0 - 10, cx1 + 10]) texto('B.N(4)', xl, altoBamba / 2, 10, 90);
-    cota('cotas', xDer - 15, R.bambaBastilla, xDer - 15, R.bambaBastilla + terminada, n(terminada), 15);
-    cota('vent-pre-noimpr', xIzq + 15, 0, xIzq + 15, altoBamba, n(altoBamba), -15);
+    cota('cotas', fx1, R.bambaBastilla, fx1, R.bambaBastilla + terminada, n(terminada), xDer - fx1);
+    cota('vent-pre-noimpr', cx0, 0, cx0, altoBamba, n(altoBamba), xIzq - cx0);
     if (t.soloBamba) {
       texto(t.of, cx, altoBamba + 35, 20, 0, 'texto', F * 0.8);
-      cota('cotas', cx0, altoBamba + 90, cx1, altoBamba + 90, W, 0);
+      cota('cotas', cx0, altoBamba, cx1, altoBamba, W, 90);
       return W;
     }
     if (!et) texto(VARILLA_ABAJO, cx, altoBamba + 10, 10, 0, 'texto', F * 0.9);
@@ -314,6 +316,8 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota }) {
     ? `B.N(4) · VELCRO SUAVE (5) POR DERECHO${c.alturaVelcro ? ` HASTA ${n(c.alturaVelcro)}` : ''}` : 'B.N(4)';
   for (const xl of [cx0 - 10, cx1 + 10]) texto(lateral, xl, (yc0 + yc1) / 2, 10, 90, 'texto', (yc1 - yc0) * 0.85);
   const unidades = t.unidades > 1 ? [`${t.unidades} UDS`] : [];
+  // Uniones de una pieza (mm desde su esquina de abajo a la izquierda) puestas en el alzado.
+  const uniones = (p, ox, oy) => (p.uniones ?? []).forEach((u) => mini(u.valor, ox + u.u / 10, oy + u.v / 10));
   const rotulos = (lineas, xm, ym, h) => lineas.forEach((v, k) => texto(v, xm, ym + ((lineas.length - 1) / 2 - k) * h * 1.7, h, 0, 'texto', F * 0.8));
 
   if (c.ventana) {
@@ -337,26 +341,28 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota }) {
       xt -= R.empate;
     });
     const [a1, a2, a3, a4] = cuerpos;
+    uniones(a1, cx0, yc0); uniones(a2, cx0, yh1); uniones(a3, cx0, yh0 - s); uniones(a4, cx1 - lado, yh0 - s);
     rotulos([a2.nombre, t.of, ...unidades], cx, (yh1 + yf1) / 2, 15);
     texto(a1.nombre, cx, (yf0 + yh0) / 2, 15);
     texto(a3.nombre, cx0 + lado / 2, (yh0 + yh1) / 2, 8, 90);
     texto(a4.nombre, cx1 - lado / 2, (yh0 + yh1) / 2, 8, 90);
     texto(tramos.length > 1 ? 'CRISTAL' : `CRISTAL ${n(gx1 - gx0)} X ${n(V + 2 * s)}`, cx, (yh0 + yh1) / 2, 12, 0, 'texto', (gx1 - gx0) * 0.8);
     // Impresas: frente, alto y cadena de la derecha; los laterales de la ventana.
-    cota('cotas', xDer - 15, yh1, xDer - 15, yf1, n(yf1 - yh1), 15);
-    cota('cotas', xDer - 15, yh0, xDer - 15, yh1, n(V), 15);
-    cota('cotas', xDer - 15, yf0, xDer - 15, yh0, n(D), 15);
-    cota('cotas', fx0, yh1 + 25, fx0 + e, yh1 + 25, n(e), 0);
-    cota('cotas', fx1 - e, yh1 + 25, fx1, yh1 + 25, n(e), 0);
+    cota('cotas', fx1, yh1, fx1, yf1, n(yf1 - yh1), xDer - fx1);
+    cota('cotas', fx1 - e, yh0, fx1 - e, yh1, n(V), xDer - fx1 + e);
+    cota('cotas', fx1, yf0, fx1, yh0, n(D), xDer - fx1);
+    cota('cotas', fx0, yh1, fx0 + e, yh1, n(e), 25);
+    cota('cotas', fx1 - e, yh1, fx1, yh1, n(e), 25);
     // De corte: las bandas y el cristal.
-    cota('vent-pre-noimpr', xIzq + 30, yh1, xIzq + 30, yc1, n(yc1 - yh1), -15);
-    cota('vent-pre-noimpr', xIzq + 30, yc0, xIzq + 30, yh0, n(yh0 - yc0), -15);
-    cota('vent-pre-noimpr', gx0, yh0 + 12, gx1, yh0 + 12, n(gx1 - gx0), 0);
+    cota('vent-pre-noimpr', cx0, yh1, cx0, yc1, n(yc1 - yh1), xIzq + 15 - cx0);
+    cota('vent-pre-noimpr', cx0, yc0, cx0, yh0, n(yh0 - yc0), xIzq + 15 - cx0);
+    cota('vent-pre-noimpr', gx0, yh0 - s, gx1, yh0 - s, n(gx1 - gx0), 12 + s);
   } else if (empate) {
     // Paño de abajo del ancho del rollo y el resto arriba (Q-CP02), con el empate y el aumento para escuadrar.
     let y = yc0;
     cuerpos.forEach((p, k) => {
       const alto = p.alto / 10;
+      uniones(p, cx0, y);
       if (k === 0) rotulos([p.nombre, t.of, ...unidades, 'TIENE AUMENTO PARA ESCUADRAR'], cx, y + alto / 2, 15);
       else texto(p.nombre, cx, y + alto / 2, 15);
       if (k < cuerpos.length - 1) {
@@ -369,9 +375,9 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota }) {
     });
   } else rotulos([t.letra, t.of, ...unidades], cx, (yc0 + yc1) / 2, 15);
 
-  cota('cotas', fx0, yc1 + 30, fx1, yc1 + 30, n(F), 0);
-  cota('vent-pre-noimpr', cx0, yc1 + 50, cx1, yc1 + 50, n(W), 0);
-  cota('cotas', xDer, yf0, xDer, yf1, n(yf1 - yf0), 15);
-  cota('vent-pre-noimpr', xIzq + 15, yc0, xIzq + 15, yc1, n(yc1 - yc0), -15);
+  cota('cotas', fx0, yf1, fx1, yf1, n(F), yc1 + 30 - yf1);
+  cota('vent-pre-noimpr', cx0, yc1, cx1, yc1, n(W), 50);
+  cota('cotas', fx1, yf0, fx1, yf1, n(yf1 - yf0), xDer + 15 - fx1);
+  cota('vent-pre-noimpr', cx0, yc0, cx0, yc1, n(yc1 - yc0), xIzq - cx0);
   return W;
 }
