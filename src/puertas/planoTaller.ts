@@ -117,7 +117,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
       const y = -H + (tubos[i] ?? e.altura), a = e.alto;
       linea(l, 'ejes', 0, y, F, y);
       if (!r.uniones.some(u => u.tubo === i + 1)) linea(l, 'borrar', 0, y + a / 2, F, y + a / 2);
-      linea(l, 'ROTULADOR', 0, y - a / 2, F, y - a / 2); flecha(l, F / 2, y - a / 2, 180, -1);
+      if (!r.uniones.some(u => u.tubo === i + 1)) linea(l, 'ROTULADOR', 0, y - a / 2, F, y - a / 2);
+      flecha(l, F / 2, y - a / 2, 180, -1);
       texto(l, `E.T Ø${e.diametro} mm`, F / 2, y, Math.min(8, a * .65));
       cota(l, 0, y - a / 2, 0, y + a / 2, -14);
       for (const h of e.huecos) huecoEntrada(l, h, y, a, F);
@@ -178,9 +179,10 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     cota(l, F, -30, F, -H, F + 40);
     obstaculos.push([-30, 0]);
   }
-  for (const u of r.uniones) {
+  for (const [i, u] of r.uniones.entries()) {
     for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0, -H + u.altura + signo * u.solape / 2, F, -H + u.altura + signo * u.solape / 2);
     if (!u.tubo) texto(l, `EMPATE ${num(u.solape)}cm`, F / 2, -H + u.altura + 8, 5, 0, 'referencia-1');
+    if (!ple) texto(l, String(i + 1), 1, -H + u.altura, 1, 0, 'ROTULADOR');
   }
   for (const v of p.ventanas) {
     redondeado(l, 'curv', v.x, -H + v.y, v.ancho, v.alto, v.radio);

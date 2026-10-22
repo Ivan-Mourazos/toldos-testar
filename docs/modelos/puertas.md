@@ -76,6 +76,8 @@ con sus sombreados. Las alturas esquemáticas de refuerzos se anotan en Q-PU04; 
 Textos y llamadas se centran y alinean; los códigos bajan desde A1. Cantidad, REVÉS y OF
 comparten eje en el primer paño y los demás llevan solo su código. Se conservan las cotas
 de cada entrada; se quitan únicamente duplicados exactos de medida y referencias.
+En el tubo que sirve de empate no se superpone una raya ROTULADOR al borde DISCO1;
+se mantiene su flecha, como en las dos referencias manuales.
 
 ## Autorreparable
 
@@ -94,6 +96,9 @@ El plano CAD de autorreparable se contrasta con AR2604904 y la primera puerta de
 referencias, ROTULADOR y los dos bordes del empate en referencia-1. Las marcas laterales
 y central llevan FLECHA2; las indicaciones verticales se leen en espejo a ambos lados.
 Los rótulos se apartan del espaciador central y se centran en el hueco libre del paño.
+El mininúmero del empate del alzado se enlaza a su unión. Se conserva el contorno
+terminado de AR2604904 en todas las autorreparables, también sus verticales superpuestas
+con DISCO1 que AR2604526 omite; el coordinador confirmó este criterio del plano más reciente.
 El saco desplegado mantiene sus cuatro velcros de 3 y sus sombreados, sus cotas y la nota
 «CREMALLERA SOLDADA HASTA MITAD DE SACO». El material del saco procede de `materialSaco`:
 Iván aclaró que AMARILLO/NEGRO en el alzado de AR2604904 indica diagonales impresas

@@ -96,6 +96,9 @@ function motivo(p, sector, puerta) {
   if (p.capa === 'vent-pre-noimpr') return 'Líneas auxiliares del saco alineadas en el despliegue; no se imprimen.';
   if (p.capa === 'referencias' && p.tipo === 'raya' && puerta && Math.max(p.a[1], p.b[1]) < -puerta.alto - 15)
     return 'Despliegue del mismo saco trasladado como grupo para separar las llamadas y las cotas, conservando su contorno y medidas.';
+  if (p.capa === 'referencias' && p.tipo === 'raya' && puerta?.modelo === 'PUERTAUTO' && Math.abs(p.a[0] - p.b[0]) < .05
+    && [0, puerta.frente].some(x => Math.abs(p.a[0] - x) < .05))
+    return 'Contorno terminado conservado según AR2604904 para todas las autorreparables; AR2604526 omite las verticales superpuestas con DISCO1. Criterio confirmado con el coordinador.';
   if (p.capa === 'ROTULADOR' && (p.tipo === 'bloque' || p.tipo === 'raya' && largo(p) < 3))
     return 'La flecha FLECHA2 conserva forma, tamaño y giro; se centra sobre su espaciador, en lugar de la posición de ratón histórica.';
   return 'Diferencia geométrica explícita pendiente de clasificación; no implica equivalencia.';
@@ -180,10 +183,11 @@ try {
     }
     evidencias.push({ id, modelo: p.modelo, manual, bot, informe: path.join(dir, 'comparacion.md'),
       rayas: comparaciones[0].posiciones.coinciden.filter(([p]) => p.tipo === 'raya').length,
-      sinClasificar: comparaciones[0].posiciones.soloMano.filter(q => motivo(q, 'Alzado', p).startsWith('Diferencia geométrica')) });
+      sinClasificar: [['Mano', comparaciones[0].posiciones.soloMano], ['Web', comparaciones[0].posiciones.soloWeb]]
+        .flatMap(([origen, lista]) => lista.filter(q => motivo(q, 'Alzado', p).startsWith('Diferencia geométrica')).map(entidad => ({ origen, entidad }))) });
   }
 } finally { await browser.close(); }
-informe.push('', '## Resultados', '', ...evidencias.map(e => `- [${e.id}](${e.id}/comparacion.md): ${e.rayas} rayas con posición/capa/color iguales; ${e.sinClasificar.length} diferencias de mano pendientes de clasificación.`), '',
+informe.push('', '## Resultados', '', ...evidencias.map(e => `- [${e.id}](${e.id}/comparacion.md): ${e.rayas} rayas con posición/capa/color iguales; ${e.sinClasificar.length} diferencias geométricas de mano o web pendientes de clasificación.`), '',
   'Los inventarios y residuos completos están en cada comparacion.json; las páginas y capas se pintan lado a lado con el mismo lector y la misma proyección. Las tablas se generan, no se transcriben a mano.', '',
   '## Regresión y límites', '', `AR2605134 sin impresión: SHA-256 ${huellaEnrollable}, idéntica al plano de main 7ebe632 (incluye a1b680b: cachos unidos y textos de velcro).`, '',
   `Sin diferencias frente a main en: ${protegidos.join(', ')}. No se ha tocado ningún generador compartido de toldos/remolques ni la plantilla de Portanova. Las pruebas sacoDiagonales.test.ts comparan piezas/materiales/colocaciones/rayas/arcos/círculos con y sin impresión; solo cambia la anotación.`, '',

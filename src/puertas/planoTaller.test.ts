@@ -23,6 +23,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(horizontal(rs, 'DISCO1', 95.61, 6.2)).toBe(true);
     expect(horizontal(rs, 'DISCO1', 98.38, 6.2)).toBe(true);
     expect(horizontal(rs, 'DISCO1', 98.26, 6.2)).toBe(true);
+    expect(horizontal(rs, 'ROTULADOR', 98.26, 6.2)).toBe(false);
     expect(horizontal(rs, 'ROTULADOR', 99.88, 6.2)).toBe(true);
     expect(horizontal(rs, 'ejes', 99.3, 6.2)).toBe(true);
     expect(horizontal(rs, 'borrar', 99.36, 6.2)).toBe(true);
@@ -46,6 +47,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(horizontal(rs, 'referencia-1', 97.97, 4.26)).toBe(true);
     expect(horizontal(rs, 'referencia-1', 97.95, 4.26)).toBe(true);
     expect(rs.filter(r => r.tipo === 'INSERT' && valor(r, 2) === 'FLECHA2')).toHaveLength(3);
+    expect(rs.some(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && valor(r, 1) === '1' && numero(r, 40) === .01)).toBe(true);
     for (const x of [100.1, 102.111, 104.16]) expect(rs.some(r => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
       && Math.abs(numero(r, 10) - x) < 1e-6 && Math.abs(numero(r, 11) - x) < 1e-6)).toBe(true);
   });
