@@ -243,6 +243,8 @@ AR2605080 tiene una ventana visible de 162 y cristal de 166 de alto. El cristal 
 
 **141 +141 +141 +17,25 +17,25 −4 ×2 =449,5**, el ancho total del cristal con sus solapes exteriores. No son cinco ventanas ni cinco huecos en el PVC. Es una sola ventana de cristal compuesto. Estas medidas salen de las líneas 20FE–2105 del DXF, conservadas en `cad.json`.
 
+**Confirmado por Iván (22/10/2026)** con el plano de AR2605080: cuando la ventana es más alta de lo que da el rollo de cristal (cristal de 140, hueco de 136 como mucho), el cristal se empata **en vertical**: los trozos van a lo largo de la altura del cristal (aquí 166) y **en tramos de 140** a lo ancho, con «EMPATE 2 CM» entre ellos y el último tramo con lo que falte. El plano rotula cada empate en vertical dentro de la ventana. La web hará los tramos de 140 (el plano de AR2605080 los dibuja de 141).
+
 El artículo de RPS dice cristal de 140 de ancho, pero esta disposición y las de AR2604574/AR2604312 usan alturas de corte de **141**. Otras usan 137 o 134. Falta decidir el ancho útil que debe recibir el generador; no se puede sustituir siempre el ancho del artículo por 141.
 
 AR2602071 incluye un vano partido en dos cuerpos, y AR2604312 siete cortinas con sus respectivos marcos. No se ha encontrado en esta muestra una prueba inequívoca de **varias ventanas independientes dentro de un único cuerpo**. La web tiene una ventana por cortina; para varias ventanas dentro del mismo paño faltan medidas y un ejemplo aprobado. Los empates del cristal de AR2605080 no justifican inventar montantes adicionales de PVC.
