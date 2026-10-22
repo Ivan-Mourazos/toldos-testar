@@ -360,17 +360,15 @@ Se ha comprobado el código actual, además del estudio de fachada:
 
 La futura entrada de corte deberá conservar separadas la medida del pedido, el contorno terminado, la pieza de corte y la colocación. También hará falta guardar los ajustes de confección, cara del velcro, ancho útil del cristal y relación entre bordes que se sueldan. Hoy algunos solo están en notas o en geometría del DWG.
 
-## 10. Dudas para Iván
+## 10. Dudas para Iván: contestadas el 22/10/2026
 
-Solo se plantean decisiones que afectan al corte que generará la web:
-
-1. **Altura del cuerpo y bamba.** ¿Tomamos como base para las cortinas con ventana el cuerpo de los ejemplos AR2604574/4562/3636, y bamba de alto +6,5 con B.N(3), marca a 7? Hay tiras de +6 y de +7 con otros remates, y AR2604890 sin ventana añade 7 al cuerpo respecto al reparto de la caída calculada. Hace falta decidir qué acabado lleva cada variante; la regla de caída de la web confirmada el 02/10 se conserva.
-2. **Ventana y ancho de cristal.** ¿El técnico introduce siempre el hueco visible definitivo y la web suma 2 cm de solape por lado? ¿Qué ancho útil usamos para cada cristal de RPS: 137, 140 o los 141 que aparecen en algunos cortes? En AR2603636 el pedido pide 140 de alto y el plano hace 133; en AR2604574 pasa de 136 a 137. Si se cambia para que quepa en el rollo, hay que indicarlo antes de generar.
-3. **ET normal.** El formulario suma 10 a la tela con ET, pero la prueba medida es una ET especial Ø45 de 30, con cambios entre DWG y DXF. ¿Qué ancho de vaina, corte inferior y marcas debe hacer la ET ordinaria? Para la especial, ¿se introducirán ancho y piezas de vaina aparte?
-4. **Velcro y solapas.** ¿Qué acabado ponemos por defecto y qué debe poder elegir el técnico: suave/bravo, derecho/revés, ancho, color y altura? Hay caras opuestas entre AR2604562 y AR2604890. Para las solapas necesitamos largo y ancho de ambos extremos, además del vínculo entre cortinas; el frente y la altura de Cortina no bastan.
-5. **Variantes de ventana.** ¿La primera versión admitirá solo una ventana por cortina, dejando las demás para dibujo manual? No hay prueba suficiente de varias ventanas independientes dentro de un mismo cuerpo; sí la hay del cristal compuesto de AR2605080. También queda por decidir si la pequeña diferencia de montantes de algunos planos se guarda como ajuste de corte.
-6. **Escuadrado de Cortina.** ¿Cuándo debe añadirse y con cuántos centímetros, distinguiéndolo de los 4 por lateral de B.N(4)? El caso al corte AR2602071 lleva +10; los datos no justifican aplicar los +9 de fachada a todo empate de cortina.
-7. **AR2605193.** Confirmar si los 75 son a suelo o a tubo, máquina interior o exterior, y el acabado lateral/inferior. La propuesta conserva el 136 que se lee en el croquis; confirmar ese hueco antes de elegir el cristal útil. Con esas respuestas se escoge una de las cuatro variantes de la tabla y se revisa el plano.
+1. **Alto del cuerpo y bamba.** Los ejemplos citados son lo que hay que conseguir: dos cortinas con ventana y velcros a los lados, y otra sin velcro con cadenillas abajo. Hay combinaciones, pero la base es la misma: los paños grandes y los laterales de la ventana. Bamba: **alto + 3,5 + 3, B.N(3) abajo y B.N(4) a los lados, marca a 7**. En AR2604890 se puso B.N(4) abajo sin motivo; lo normal abajo es B.N(3).
+2. **Ventana y cristal.** El técnico da el hueco visible y la web suma 2 cm de solape por lado. El cristal es de **140**; con los 2 + 2 de solape, **el hueco real máximo es 136** (muchos planos ponen 137 «o así»). Si el cristal es de otra altura se indica, igual que la medida desde abajo hasta el cristal.
+3. **E.T.** Depende del tubo; lo normal es el de **Ø40**: la lona baja **12** por debajo del terminado y la marca de rotulador va **9** por encima (ver la sección 12).
+4. **Velcro**: de **5 cm**. En la cortina va el **suave**; el bravo, en las solapas. Se indica la cara (suele ser **por el derecho**), el color y la altura, que suele ser **210 desde abajo**, editable. Las solapas casi siempre se miden con los toldos ya puestos: van aparte.
+5. **Una ventana** por cortina por defecto.
+6. **Escuadrado**: si la cortina va empatada en horizontal, **4 cm más por lado** para escuadrar después. AR2602071 llevó 5 por lado, pero llegan 4. Si los paños salen enteros, no se da aumento («SI SALEN ENTEROS NO DAR PARA ESCUADRAR»).
+7. **AR2605193**: medida **a suelo**, **máquina interior** (salvo caso raro, las cortinas la llevan siempre), varilla y **bamba de 15 recta**. Dan la medida a suelo (o a tubo de carga o E.T.) y la de la ventana, que aquí es el paño entero: 140 − 2 − 2 de las soldaduras = **136**. Los laterales son trozos de lona que solapan con los paños de arriba y abajo y con el cristal, de la medida que indican (aquí 20) más la bastilla (4).
 
 ## 11. Evidencia local y reproducción
 
@@ -396,3 +394,44 @@ Capturas representativas inspeccionadas:
 - [AR2602071: alzado y corte](../../tmp/cortina-pvc/capturas/AR2602071-dwg-general.png), [ET y cotas](../../tmp/cortina-pvc/capturas/AR2602071-dwg-ET-cotas.png), [DXF](../../tmp/cortina-pvc/capturas/AR2602071-dxf-general.png).
 
 Como apoyo: [A4 de las solapas AR2604205](../../tmp/cortina-pvc/capturas/AR2604205-pdf-A4.png), [detalle de sus solapas en DWG](../../tmp/cortina-pvc/capturas/AR2604205-dwg-solapas.png), [montantes girados de AR2603873](../../tmp/cortina-pvc/capturas/AR2603873-dxf-ventana.png) y [croquis de AR2605193](../../tmp/cortina-pvc/capturas/AR2605193-pedido-croquis.png).
+
+## 12. Los tres ejemplos base de Iván (22/10/2026)
+
+Iván dejó en `DXF PRUEBAS WEB` tres cortinas de **300 × 314** terminadas: «Toldo con ET abajo», «Toldo con varilla abajo» y «toldo cortina sin ventana». «Estúdialo bien porque es la base de todos.» Medidas leídas de las copias locales convertidas con ODA (`tmp/cortina-ejemplos/`, `detalle.mjs`), en cm, desde arriba del corte. Las cotas que se imprimen (capa `cotas`) son las **terminadas**: 300, 314, 125 / 137 / 52, 15 y 20. Las de corte están en `vent-pre-noimpr` y no se imprimen.
+
+Dato | Con ventana y E.T. Ø40 | Con ventana y varilla | Sin ventana
+--- | --- | --- | ---
+Corte del cuerpo | 308 × 329,5 | 308 × 321 | 309 × 321
+Laterales | B.N(4): +4 por lado | B.N(4): +4 por lado | AL CORTE, «TIENE AUMENTO PARA ESCUADRAR» (dibujado 5 y 4)
+Arriba | VARILLA NEGRA (4,5): +3,5; rotulador a 7 del corte | igual | igual
+Abajo | E.T. Ø40: +12; rotulador 9 por encima del terminado (21 del corte); raya de `ejes` a 17 del corte con «MARCAR 17 CM POR EL DERECHO (MEDIDA LONA CORTADA) Y SOLDAR» | VARILLA BLANCA (5,5): +3,5; rotulador 3,5 por encima del terminado | igual que con varilla
+Ventana (hueco, rotulador) | 270 × 137: a 15 de cada lateral, 125 desde arriba y 52 desde abajo | igual | —
+Cristal (`ejes`) | 274 × 141 (hueco + 2 por lado) | igual | —
+Banda de arriba (corte) | 128,5 = 125 + 3,5 | igual | —
+Banda de abajo (corte) | 52 + 12 = 64 (la cota de 55 está sin actualizar) | 55,5 = 52 + 3,5 | —
+Raya de `ejes` a lo ancho | a 37,5 del corte (34 bajo el terminado) | igual | igual, con «EMPATE EN HORIZONTAL»
+Bamba terminada → corte | 20 → 28 (+5 arriba, +3 abajo), B.N(4) lados, B.N(3) abajo | 20 → 26 (+3, +3), igual | 20 → 25 (+3 arriba, +2 abajo), B.N(2) en lados y abajo, rotulador a 6,5
+Notas de taller | «LLEVA BASTILLA NORMAL DE 4 CM A LOS LADOS», «BAMBALINA 3 CM DE BASTILLA POR ABAJO», «NO DAR AUMENTO PARA ESCUADRAR» | igual | «TIENE AUMENTO PARA ESCUADRAR», «SI SALEN ENTEROS NO DAR PARA ESCUADRAR»
+
+Las rayas de rotulador (`MARCA`) recorren el frente terminado: empiezan y acaban 4 dentro de cada lateral de corte, como en la sección 4. La letra de la cortina va grande en el cuerpo y en la bamba.
+
+### Reglas que salen de los ejemplos y de las respuestas
+
+Con F el frente terminado, H el alto terminado y V el alto de la ventana (hueco visible):
+
+- **Ancho de corte**: F + 8 con B.N(4). Al corte, F; con empate horizontal, F + 4 + 4 para escuadrar.
+- **Alto de corte**: H + 3,5 (varilla negra arriba) + 3,5 (varilla blanca abajo) o + 12 (E.T. Ø40).
+- **Con ventana** se corta despiezada (sección 3):
+  - banda de arriba: (F + 8) × (lo de encima de la ventana + 3,5);
+  - banda de abajo: (F + 8) × (lo de debajo + 3,5 o + 12);
+  - dos montantes: (lateral + 4) × (V + 4);
+  - cristal: (F − 2 · lateral + 4) × (V + 4).
+  - Cuadra: 128,5 + 141 + 55,5 − 2 − 2 = 321 y 128,5 + 141 + 64 − 2 − 2 = 329,5.
+- **Cristal de 140**: V como mucho 136; si no cabe, aviso antes de generar.
+- **Bamba** (respuesta 1): alto + 3,5 + 3, B.N(3) abajo y B.N(4) a los lados, marca a 7.
+
+### Lo que no cuadra todavía (preguntado a Iván)
+
+- **Q-CP01 · Bamba**: la regla da 26,5 con marca a 7, pero los ejemplos dibujan 26 (varilla), 28 (E.T.) y 25 con B.N(2). Mientras tanto, la web usará 26,5 y B.N(3); el B.N(2) solo si se elige.
+- **Q-CP02 · Raya «EMPATE EN HORIZONTAL»** a 34 cm bajo el terminado de arriba, en los tres ejemplos: ¿es fija o depende del ancho del rollo? Mientras tanto, solo se dibuja si el cuerpo no cabe en el rollo.
+- **Q-CP03 · E.T. Ø40**: el rotulador va a 9 por encima del terminado (21 del corte), pero la nota dice «marcar 17 cm por el derecho» y hay una raya a 17. ¿Cuál va en el DXF de la máquina? Mientras tanto, las dos en el plano y la de 21 en el DXF.

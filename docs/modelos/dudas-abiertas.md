@@ -12,6 +12,16 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## Cortina PVC · corte y plano (22/10/2026)
+
+Iván contestó el 22/10/2026 las siete dudas del estudio ([cortina-pvc-corte.md](./cortina-pvc-corte.md#10-dudas-para-iván-contestadas-el-22102026)) y dejó tres ejemplos base. Quedan tres cosas en las que sus ejemplos no cuadran con la regla:
+
+| Código | Pregunta | Qué hará la web mientras tanto |
+| --- | --- | --- |
+| Q-CP01 | Bamba: la regla es alto + 3,5 + 3 con marca a 7 (26,5 para 20), pero los ejemplos dibujan 26 (varilla), 28 (E.T.) y 25 con B.N(2). ¿Cuál vale? | 26,5 con B.N(3) abajo y B.N(4) a los lados; B.N(2) solo si se elige |
+| Q-CP02 | La raya «EMPATE EN HORIZONTAL» a 34 cm bajo el terminado de arriba, en los tres ejemplos: ¿es fija o depende del ancho del rollo? | Solo se dibuja si el cuerpo no cabe en el rollo |
+| Q-CP03 | E.T. Ø40: el rotulador va a 9 por encima del terminado (21 del corte), pero la nota dice «marcar 17 cm por el derecho» y hay otra raya a 17. ¿Cuál va en el DXF de la máquina? | Las dos en el plano; la de 21 en el DXF |
+
 ## Puertas · contestadas el 22/10/2026
 
 | Código | Respuesta de Iván | Qué hace la web |
