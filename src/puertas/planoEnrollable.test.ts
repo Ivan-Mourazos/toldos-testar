@@ -46,9 +46,9 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
       'NO PONER NUNCA LAS ETIQUETAS EN LA PROPIA LONA', 'AL CORTE', 'COSER VELCRO', '0233175']) expect(dxf.includes(texto), texto).toBe(true);
     for (const texto of ['PUERTA A ·', 'CORTE ·', 'OBSERVACIÓN RPS', 'CERRAR E.T']) expect(dxf.includes(texto), texto).toBe(false);
     const ent = registrosDxf(dxf);
-    // Iván sustituyó el criterio del cajetín web por la plantilla fija de Portanova.
-    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN')).toHaveLength(1);
-    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN TGM')).toHaveLength(0);
+    // Iván, 22/10/2026: también en Portanova el cajetín de la oficina al día (CAJETIN TGM), con las notas de su plantilla.
+    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN')).toHaveLength(0);
+    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN TGM')).toHaveLength(1);
     const alzado = modelo(dxf).filter(r => numero(r, 10) < 105 && numero(r, 20) > 95);
     for (const texto of ['X3', 'A1', 'A2', 'REVÉS', '0233175']) expect(alzado.some(r => valor(r, 1) === texto)).toBe(true);
   });
@@ -66,7 +66,7 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const plantilla = registrosDxf(readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8'));
     for (const id of [3, 5, 6]) expect(vistas.find(r => numero(r, 69) === id)?.pares).toEqual(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)?.pares);
     const atributos = registrosDxf(plano()).filter(r => r.tipo === 'ATTRIB');
-    for (const [tag, dato] of [['PEDIDO', 'AR2605134'], ['OF', '0233175'], ['CLIENTE', 'PORTANOVA'], ['TÉCNICO', 'IVÁN'], ['REV', 'DAVID'], ['20/12/18', '22/10/26']]) {
+    for (const [tag, dato] of [['PEDIDO', 'AR2605134'], ['OF', '0233175'], ['CLIENTE', 'PORTANOVA'], ['TECNICO', 'IVÁN'], ['REVISOR', 'DAVID'], ['FECHA', '22/10/26']]) {
       expect(atributos.find(r => valor(r, 2) === tag) && valor(atributos.find(r => valor(r, 2) === tag)!, 1)).toBe(dato);
     }
   });

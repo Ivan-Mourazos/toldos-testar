@@ -351,8 +351,8 @@ los cortes manuales. El plano DWG y su alzado se revisan en la sección de fase 
 Iván revisó AR2605134 capa por capa y confirmó que las puertas de Portanova usan siempre
 `PORTANOVA (NAVE NOVA).dwg`. La copia local convertida se conserva depurada en
 `src/puertas/plantillas/portanova.dxf`: solo quedan las notas y los detalles del modelo,
-la presentación, sus ventanas, capas, bloques y estilos. **Para las enrollables se usa el
-CAJETIN de esta plantilla**, con los datos del pedido; esta instrucción posterior sustituye
+la presentación, sus ventanas, capas, bloques y estilos. **El cajetín es el de todos los planos de la web
+(CAJETIN TGM), en el sitio del de la plantilla y al 78 %** (Iván, 22/10/2026: «así unificamos diseño»), con los datos del pedido; esta instrucción posterior sustituye
 la de mantener CAJETIN WEB. Iván amplió el uso de esta hoja a **todos los modelos de Portanova**:
 se identifica en `clientePortanova.ts` por RPS `cabecera.clienteRps.codigo = 001336`, o por
 el nombre con PORTANOVA si no hay código. Un código de otro cliente prevalece sobre el nombre.

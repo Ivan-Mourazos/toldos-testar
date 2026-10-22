@@ -54,12 +54,13 @@ export function escribirDxfPlano(plano, cabecera) {
     src = src.slice(0, desde) + entidad + src.slice(hasta);
   }
 
-  // Cajetín nuevo (bloque CAJETIN WEB con todos los datos del pedido, revisor incluido).
-  const { src: conCajetin, insercion: cajetin } = plano.plantilla ? { src, insercion: '' } : anadirCajetin(src, nuevo, PAPEL, {
+  // Cajetín de la oficina al día (CAJETIN TGM) en todos los planos, también en las plantillas propias, como la
+  // de Portanova, que lo ponen a su escala y en su sitio (Iván, 22/10/2026: «así unificamos diseño»).
+  const { src: conCajetin, insercion: cajetin } = anadirCajetin(src, nuevo, PAPEL, {
     PEDIDO: cabecera.pedido, OF: cabecera.of, CLIENTE: cabecera.cliente, MATERIAL: cabecera.material,
     TECNICO: cabecera.tecnico, REVISOR: cabecera.revisor, FECHA: cabecera.fecha,
     HOJA: cabecera.pagina || '1/1', SUBTITULO: cabecera.subtitulo
-  });
+  }, plano.cajetin);
   src = conCajetin;
 
   // Reparto de la A4 (Iván: que el dibujo y el corte se vean lo más grandes posible). Encima del
@@ -152,20 +153,11 @@ export function escribirDxfPlano(plano, cabecera) {
   const viejo = trozos.map((t) => /^ {2}0\nINSERT\n[\s\S]*?\n {2}2\nCAJETIN\n/.test(t) && /\n {2}5\n([0-9A-F]+)\n/.exec(t)[1]).find(Boolean);
   const entidades = trozos.flatMap((t) => {
     const tipo = /^ {2}0\n([^\n]+)/.exec(t)[1];
-    if (plano.plantilla && tipo === 'ATTRIB') {
-      const tag = /\n {2}2\n([^\n]*)/.exec(t)?.[1];
-      const campo = plano.atributos?.[tag];
-      if (campo != null) {
-        let r = poner(t, '1', String(campo));
-        const ancho = plano.anchosAtributos?.[tag];
-        if (ancho && campo) r = poner(r, '40', n(Math.min(Number(/\n 40\n([^\n]*)/.exec(t)?.[1]), ancho / anchoArial(campo, 1))));
-        return [r];
-      }
-    }
+    // El cajetín viejo de la plantilla, con sus atributos, sale siempre: lo sustituye el CAJETIN TGM.
+    if (/\n {2}5\n([0-9A-F]+)\n/.exec(t)[1] === viejo) return [];
+    if (['ATTRIB', 'SEQEND'].includes(tipo) && new RegExp(`\\n330\\n${viejo}\\n`).test(t)) return [];
     if (plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) return [poner(t, '1', plano.materiales)];
     if (tipo === 'ACAD_TABLE') return [];
-    if (!plano.plantilla && /\n {2}5\n([0-9A-F]+)\n/.exec(t)[1] === viejo) return [];
-    if (!plano.plantilla && ['ATTRIB', 'SEQEND'].includes(tipo) && new RegExp(`\\n330\\n${viejo}\\n`).test(t)) return [];
     if (!plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) return [];
     if (tipo === 'TEXT' && /EMPATE:/.test(t)) return [];
     if (tipo === 'VIEWPORT') {

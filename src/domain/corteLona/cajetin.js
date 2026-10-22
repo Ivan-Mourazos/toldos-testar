@@ -22,8 +22,9 @@ const LOGO_MAX_X = 25;                  // en el bloque CAJETIN, el logo queda a
  * Añade a `src` (DXF de la plantilla) los bloques LOGO TGM y CAJETIN TGM y devuelve
  * { src, insercion } con la inserción del cajetín (y sus atributos) para el espacio papel.
  * `nuevo()` da handles; `papel` es el handle de *Paper_Space; `valores` los datos por atributo.
+ * Una plantilla con su hoja propia (Portanova) da su `sitio` y su `escala` para no tapar sus notas.
  */
-export function anadirCajetin(src, nuevo, papel, valores) {
+export function anadirCajetin(src, nuevo, papel, valores, { sitio = SITIO_CAJETIN, escala = 1 } = {}) {
   const n = (v) => Number(v).toFixed(6);
   const regLogo = nuevo(), regCaj = nuevo();
   const registro = (h, nombre) => `  0\nBLOCK_RECORD\n  5\n${h}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
@@ -80,12 +81,13 @@ export function anadirCajetin(src, nuevo, papel, valores) {
   src = src.slice(0, finBlocks) + logo + caj + src.slice(finBlocks);
 
   // Inserción en el papel con los atributos rellenos.
-  const [ix, iy] = SITIO_CAJETIN;
+  const [ix, iy] = sitio;
+  const escalar = escala === 1 ? '' : ` 41\n${n(escala)}\n 42\n${n(escala)}\n 43\n${n(escala)}\n`;
   const hIns = nuevo();
-  let insercion = `  0\nINSERT\n  5\n${hIns}\n330\n${papel}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockReference\n 66\n     1\n  2\nCAJETIN TGM\n 10\n${n(ix)}\n 20\n${n(iy)}\n 30\n0.0\n`;
+  let insercion = `  0\nINSERT\n  5\n${hIns}\n330\n${papel}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockReference\n 66\n     1\n  2\nCAJETIN TGM\n 10\n${n(ix)}\n 20\n${n(iy)}\n 30\n0.0\n${escalar}`;
   for (const fila of atributos.trim().split('\n')) {
     const [ax, ay, ah, tag] = fila.split(',');
-    insercion += `  0\nATTRIB\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n 62\n${String(TEXTO).padStart(6)}\n100\nAcDbText\n 10\n${n(ix + +ax)}\n 20\n${n(iy + +ay)}\n 30\n0.0\n 40\n${n(ah)}\n  1\n${valores[tag] ?? ''}\n  7\narial\n100\nAcDbAttribute\n280\n     0\n  2\n${tag}\n 70\n     0\n280\n     1\n`;
+    insercion += `  0\nATTRIB\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n 62\n${String(TEXTO).padStart(6)}\n100\nAcDbText\n 10\n${n(ix + ax * escala)}\n 20\n${n(iy + ay * escala)}\n 30\n0.0\n 40\n${n(ah * escala)}\n  1\n${valores[tag] ?? ''}\n  7\narial\n100\nAcDbAttribute\n280\n     0\n  2\n${tag}\n 70\n     0\n280\n     1\n`;
   }
   insercion += `  0\nSEQEND\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n`;
   return { src, insercion };
