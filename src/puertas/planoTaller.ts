@@ -46,17 +46,17 @@ function huecoEntrada(l: Lienzo, h: Hueco, eje: number, altoEntrada: number, F: 
 
 /** Rótulos centrados en el mayor espacio libre del paño, evitando entradas, ventanas y empates. */
 function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number, arriba: number, ancho: number,
-  obstaculos: Array<[number, number]>, primero: boolean, cantidad = true, giro = 0) {
+  obstaculos: Array<[number, number]>, primero: boolean, opciones: { cantidad?: boolean; reves?: boolean; of?: boolean } = {}) {
   let huecos: Array<[number, number]> = [[abajo + 4, arriba - 4]];
   for (const [a, b] of obstaculos) huecos = huecos.flatMap(([y0, y1]) => b <= y0 || a >= y1 ? [[y0, y1] as [number, number]]
     : [[y0, Math.min(y1, a - 4)], [Math.max(y0, b + 4), y1]].filter(([u, v]) => v > u) as Array<[number, number]>);
   const libre = huecos.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0] ?? [abajo, arriba];
-  const valores = [...(primero && cantidad && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo, ...(primero ? ['REVÉS'] : []),
-    ...(primero && p.of.trim() ? [p.of.trim()] : [])];
+  const valores = [...(primero && opciones.cantidad !== false && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo,
+    ...((opciones.reves ?? primero) ? ['REVÉS'] : []), ...((opciones.of ?? primero) && p.of.trim() ? [p.of.trim()] : [])];
   const alto = Math.max(1, libre[1] - libre[0]);
   const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, ancho / 10, alto / (valores.length * 1.5 + .5),
     ...valores.map(v => ancho * .85 / anchoArial(v, 1)));
-  valores.forEach((v, i) => texto(l, v, x, (libre[0] + libre[1]) / 2 + ((valores.length - 1) / 2 - i) * h * 1.5, h, giro));
+  valores.forEach((v, i) => texto(l, v, x, (libre[0] + libre[1]) / 2 + ((valores.length - 1) / 2 - i) * h * 1.5, h));
 }
 
 function dibujarSaco(l: Lienzo, p: Puerta) {
@@ -90,7 +90,8 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
     }
     texto(l, 'CREMALLERA SOLDADA HASTA MITAD DE SACO', w / 2, ys - h - 32, Math.min(10, w / 45));
   }
-  texto(l, ple ? 'SACO 900 GR NEGRO' : 'SACO 900 GR AMARILLO/NEGRO', w / 2, ys - h / 2, Math.min(10, w / 40));
+  const material = p.materialSaco.replace(/^LAC\s*900\s*/i, 'SACO 900 GR ');
+  texto(l, material, w / 2, ys - h / 2, Math.min(10, w / 40));
   cota(l, 0, ys - h, w, ys - h, ys - h / 2, 'XERAL 5');
   cota(l, 0, ys - h, 0, ys, -25);
   return ys - h - 48;
@@ -130,7 +131,11 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
       const i = p.entradas.findIndex(e => e.huecos.length > 2), e = p.entradas[i], y = -H + tubos[i];
       const hs = [...e.huecos].sort((a, b) => a.x - b.x), hitos = [0, hs[0].x + hs[0].ancho,
         ...hs.slice(1, -1).flatMap(h => [h.x, h.x + h.ancho]), hs.at(-1)!.x, F];
-      hitos.slice(1).forEach((x, j) => cota(l, hitos[j], y, x, y, y + 15, 'XERAL 5'));
+      hitos.slice(1).forEach((x, j) => {
+        // Los huecos iguales interiores comparten la cota de ancho de los dos extremos.
+        const repetido = hs.slice(2, -2).some(h => h.x === hitos[j] && h.x + h.ancho === x && h.ancho === hs[1].ancho);
+        if (!repetido) cota(l, hitos[j], y, x, y, y + 15, 'XERAL 5');
+      });
       const yNota = -H + tubos[Math.min(tubos.length - 1, i + 4)] + 24;
       texto(l, 'CORTES EN ENTRADA DE TUBO (SOLO POR REVÉS)', F / 2, yNota, Math.min(8, F / 55));
       const destino = p.entradas.map((entrada, j) => ({ entrada, eje: -H + tubos[j] }))
@@ -179,16 +184,25 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   for (const v of p.ventanas) {
     redondeado(l, 'curv', v.x, -H + v.y, v.ancho, v.alto, v.radio);
     redondeado(l, 'corte (vent)', v.x - 2, -H + v.y - 2, v.ancho + 4, v.alto + 4, v.radioCristal);
-    cota(l, v.x + 12, -H + v.y, v.x + 12, -H + v.y + v.alto, v.x + 12, 'XERAL 5');
     obstaculos.push([-H + v.y - 3, -H + v.y + v.alto + 3]);
   }
   for (const y of new Set(p.ventanas.map(v => v.y))) {
     const fila = p.ventanas.filter(v => v.y === y).sort((a, b) => a.x - b.x), ys = -H + y + fila[0].alto / 2;
     const xs = [0, ...fila.flatMap(v => [v.x, v.x + v.ancho]), F];
     xs.slice(1).forEach((x, i) => { if (x > xs[i]) cota(l, xs[i], ys, x, ys, ys, 'XERAL 5'); });
+    for (const [i, v] of fila.entries()) {
+      const extremo = i === fila.length - 1 || ple && i === 0;
+      if (extremo || v.alto !== fila[0].alto) cota(l, v.x + (i ? v.ancho - 12 : 12), -H + v.y,
+        v.x + (i ? v.ancho - 12 : 12), -H + v.y + v.alto, v.x + (i ? v.ancho - 12 : 12), 'XERAL 5');
+    }
+    if (!ple) {
+      const v = fila.at(-1)!, x = v.x + v.ancho - 8;
+      cota(l, x, -H, x, -H + v.y, x, 'XERAL 5');
+    }
   }
   const limites = [arriba, ...r.uniones.map(u => -H + u.altura).sort((a, b) => b - a), -H + hSaco];
-  limites.slice(1).forEach((y, i) => rotulos(l, p, `${letra}${i + 1}`, F / 2, y, limites[i], F, obstaculos, i === 0));
+  const central = !ple && p.autorreparable.espaciadorCentral;
+  limites.slice(1).forEach((y, i) => rotulos(l, p, `${letra}${i + 1}`, central ? F * .75 : F / 2, y, limites[i], central ? F / 2 - 20 : F, obstaculos, i === 0));
   cota(l, 0, arriba, F, arriba, arriba + 25, ple ? 'XERA 15' : 'XERAL');
   cota(l, 0, 0, 0, -H, -40, ple ? 'XERA 15' : 'XERAL');
   cota(l, F, -H, F, -H + (ple ? hSaco : 14), F + 12, 'XERAL 5');
@@ -246,14 +260,18 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
       const P = ([x, y]: Punto): Punto => [t.x / 10 + (t.girada ? p.alto - y : x), yc + t.y / 10 + (t.girada ? x : y)];
       const [x, y] = P([p.ancho / 2, p.alto / 2]);
       if (p.clase === 'pano') {
-        const ids = calcularPuerta(e.input).piezas.filter(p => p.clase === 'pano').map(p => `${e.id}:${p.id}`);
-        const primero = !primeros.has(e.id), valores = [`${letra}${ids.indexOf(p.id) + 1}`,
-          ...(t === panos[0] ? ['REVÉS'] : []), ...(primero && e.input.of.trim() ? [e.input.of.trim()] : [])];
-        const h = Math.min(20, p.alto / (valores.length * 2), p.ancho / 12);
-        valores.forEach((v, i) => {
-          const q = P([p.ancho / 2, p.alto / 2 + ((valores.length - 1) / 2 - i) * h * 1.5]);
-          texto(l, v, ...q, h, t.girada ? 90 : 0);
-        });
+        const piezas = calcularPuerta(e.input).piezas.filter(p => p.clase === 'pano');
+        if (e.input.modelo !== 'PUERTAENR') piezas.reverse();
+        const ids = piezas.map(p => `${e.id}:${p.id}`);
+        const primero = !primeros.has(e.id), local = vacio();
+        const obstaculos: Array<[number, number]> = [...p.huecos.map(h => [h.y, h.y + h.alto] as [number, number]),
+          ...p.marcas.filter(m => m[1] === m[3] && Math.abs(m[2] - m[0]) > p.ancho / 2).map(m => [m[1] - 2, m[1] + 2] as [number, number])];
+        const central = e.input.modelo === 'PUERTAUTO' && e.input.autorreparable.espaciadorCentral;
+        rotulos(local, e.input, `${letra}${ids.indexOf(p.id) + 1}`, central ? p.ancho * .75 : p.ancho / 2, 0, p.alto,
+          central ? p.ancho / 2 - 20 : p.ancho, obstaculos, primero, { cantidad: false, reves: t === panos[0], of: primero });
+        for (const v of local.textos) {
+          const q = P([v.x, v.y]); l.textos.push({ ...v, x: q[0], y: q[1], giro: t.girada ? 90 : 0 });
+        }
         primeros.add(e.id);
       } else texto(l, p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);
     }
@@ -269,7 +287,19 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   for (const [i, e] of pedido.elementos.entries()) {
     const d = dibujarAlzadoTaller(e.input, String.fromCharCode(65 + i)), dx = i ? cursor - d.zona.x0 : 0;
     sumarLienzo(l, d.lienzo, dx); cursor = dx + d.zona.x1 + 60;
-    abajo = Math.min(abajo, d.zona.y0); arriba = Math.max(arriba, d.zona.y1);
+    let suelo = d.zona.y0;
+    if (e.input.modelo !== 'PUERTAENR' && e.input.observaciones.trim()) {
+      let actual = '';
+      const lineas: string[] = [], ancho = d.zona.x1 - d.zona.x0;
+      for (const palabra of textoSeguro(`OBSERVACIONES: ${e.input.observaciones}`).split(/\s+/)) {
+        if (actual && anchoArial(`${actual} ${palabra}`, 6) > ancho) { lineas.push(actual); actual = palabra; }
+        else actual += (actual ? ' ' : '') + palabra;
+      }
+      if (actual) lineas.push(actual);
+      lineas.forEach((v, j) => texto(l, v, dx + (d.zona.x0 + d.zona.x1) / 2, suelo - 12 - j * 10, 6));
+      suelo -= lineas.length * 10 + 20;
+    }
+    abajo = Math.min(abajo, suelo); arriba = Math.max(arriba, d.zona.y1);
   }
   const zonaM = (z: Zona, x: number, y: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: y + z.y0 / 100, y1: y + z.y1 / 100 });
   const za = zonaM({ x0: -65, x1: cursor - 60, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);

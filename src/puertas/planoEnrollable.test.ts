@@ -132,11 +132,11 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
   });
 });
 
-describe('Regresión: resultados completos anteriores al plano específico de enrollables', () => {
-  // Huellas renovadas el 22/10/2026: solo cambian los rótulos del corte, que ya no llevan REVÉS en cada pieza.
+describe('Regresión: planos de oficina y presentación compartida', () => {
+  // Huellas del nuevo plano CAD; la de enrollable de main se comprueba en planoTaller.test.ts.
   it.each([
-    ['apilable', apilable, 'c9e1e24a250c030c6014f7cc63b099e0d2fd83f047a7cbd2cb19c1e33b338ed7'],
-    ['autorreparable', autorreparable, 'aedb2480aad5ff7d490c8fd32a878a404f3ff24a2788b459e45b360a9fe3683b'],
+    ['apilable', apilable, 'ad91a49c737134c61007ff5b2f3f709bc0dd1f63bcdf7a9aac94d489a2bd5560'],
+    ['autorreparable', autorreparable, 'a0befcecbc0e072bffe7bfbbd9780fcae095e535e3d8e30914af72fb47000e6d'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

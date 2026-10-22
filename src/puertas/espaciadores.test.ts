@@ -83,7 +83,8 @@ describe('Espaciadores de la autorreparable según el dibujo', () => {
     expect(dxf.match(/ESPACIADOR ESPECIAL PORTANOVA/g)).toHaveLength(3);
     const textosCad = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT' && valor(r, 1) === 'ESPACIADOR ESPECIAL PORTANOVA');
     expect(textosCad).toHaveLength(3);
-    expect(textosCad.every(t => numero(t, 11) === 0 && numero(t, 21) === 1)).toBe(true);
+    // Las dos caras se leen en espejo, como en el plano de oficina (90° / 270°).
+    expect(textosCad.every(t => numero(t, 11) === 0 && Math.abs(numero(t, 21)) === 1)).toBe(true);
     p.autorreparable.espaciadorCentral = false;
     expect(geometriaAlzado(p, calcularPuerta(p)).formas.filter(f => f.tipo === 'linea' && f.clase === 'puerta-espaciador-central')).toEqual([]);
   });

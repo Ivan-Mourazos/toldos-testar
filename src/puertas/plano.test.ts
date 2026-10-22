@@ -36,14 +36,16 @@ describe('escribirPlanoPuertas', () => {
     const conObs = { ...autorreparable(), cantidad: 2, observaciones: 'Ojo: el cliente quiere la cremallera {a la izquierda}\ny el saco corto' };
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', puerta4638(), apilable(), conObs), cabecera });
     const textos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1) ?? '');
-    expect(textos).toContain('PUERTA B · 0232309 · APILABLE');
-    expect(textos).toContain('PUERTA C · 0232309 · AUTORREPARABLE · X2');
+    expect(textos).toContain('B1');
+    expect(textos).toContain('C1');
+    expect(textos.filter(t => t === 'X2')).toHaveLength(2); // A1 del alzado y muestra del saco; no en el rollo de lona.
     expect(textos.some(t => t.startsWith('OBSERVACIONES: OJO: EL CLIENTE'))).toBe(true);
     // Ni llaves ni saltos de línea dentro de un texto: romperían el MTEXT.
     expect(textos.every(t => !/[{}\n]/.test(t))).toBe(true);
-    // Los títulos de cada puerta, de izquierda a derecha y sin solaparse.
-    const titulos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT' && /^PUERTA [ABC] /.test(valor(r, 1) ?? '')).map(r => numero(r, 10));
-    expect(titulos).toEqual([...titulos].sort((a, b) => a - b));
-    expect(new Set(titulos).size).toBe(2);
+    // Los códigos de cada puerta, de izquierda a derecha y sin solaparse.
+    const codigos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT' && ['A1', 'B1', 'C1'].includes(valor(r, 1) ?? '')
+      && numero(r, 20) > 90).sort((a, b) => (valor(a, 1) ?? '').localeCompare(valor(b, 1) ?? '')).map(r => numero(r, 10));
+    expect(codigos).toEqual([...codigos].sort((a, b) => a - b));
+    expect(new Set(codigos).size).toBe(3);
   });
 });

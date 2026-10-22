@@ -67,6 +67,16 @@ Saco útil 80 → corte de 30, pestaña 10 × 13. Saco útil 120 → corte de 32
 
 Las instrucciones son soldar solapa 2, coser velcro de 5 bravo al revés y de 5 suave al derecho, centrar el envoltorio y cerrar entradas 2 como máximo. Los refuerzos de 10 y 15 a 10 del borde, en lona de 2 mm, son notas de confección del plano: no se inventan longitudes ni se añaden piezas de stock al corte.
 
+El plano CAD de apilable usa `planoTaller.ts`, contrastado con AR2605036 y AR2604906:
+contorno y bordes del empate en DISCO1; cabecera, bajo y huecos de entradas en referencias;
+ejes de tubo en ejes (color 23), borde de entrada suelta en borrar (40) y marcas en ROTULADOR,
+con FLECHA2. Cada ventana conserva el hueco en curv (3) y el cristal con sus solapes en
+corte (vent) (5), con polilíneas curvas. Refuerzos y velcros van en referencia-1 (11),
+con sus sombreados. Las alturas esquemáticas de refuerzos se anotan en Q-PU04; no crean piezas.
+Textos y llamadas se centran y alinean; los códigos bajan desde A1. Cantidad, REVÉS y OF
+comparten eje en el primer paño y los demás llevan solo su código. Se conservan las cotas
+de cada entrada; se quitan únicamente duplicados exactos de medida y referencias.
+
 ## Autorreparable
 
 Saco actual **de 120 fijo**; el saco antiguo de 110 no es una opción.
@@ -78,6 +88,16 @@ Saco actual **de 120 fijo**; el saco antiguo de 110 no es una opción.
 - Ventanas individuales: cristal = hueco + 4 por dimensión; radios y posiciones según dibujo.
 
 No se inventan cremalleras, guías, espaciadores ni refuerzos de stock a partir de estas piezas de lona.
+
+El plano CAD de autorreparable se contrasta con AR2604904 y la primera puerta de AR2604526
+(300 × 331, OF 0232191; el bot de ese pedido contiene otras puertas). Conserva DISCO1,
+referencias, ROTULADOR y los dos bordes del empate en referencia-1. Las marcas laterales
+y central llevan FLECHA2; las indicaciones verticales se leen en espejo a ambos lados.
+Los rótulos se apartan del espaciador central y se centran en el hueco libre del paño.
+El saco desplegado mantiene sus cuatro velcros de 3 y sus sombreados, sus cotas y la nota
+«CREMALLERA SOLDADA HASTA MITAD DE SACO». El material del saco procede de `materialSaco`:
+el coordinador confirmó este criterio al detectar AMARILLO/NEGRO en el alzado de AR2604904
+frente a NEGRO en su corte. Queda Q-PU03 para Iván; pantalla y corte no se modifican.
 
 ### Espaciadores según el pedido (Iván, 22/10/2026)
 
@@ -367,13 +387,15 @@ y de la presentación común de toldos. Con Portanova se comprueba la misma geom
 rótulos, admitiendo solo una traslación del corte en modelo para que una ventana no vea el
 alzado de la otra. Las páginas de AR2605036 y AR2604904 se han revisado en la plantilla fija.
 
-Para apilables y autorreparables, `src/puertas/alzado.ts` conserva una única geometría para la
-pantalla y el plano. Las enrollables usan el dibujo CAD detallado descrito arriba. Los ventanales
+Para apilables y autorreparables, `src/puertas/planoTaller.ts` dibuja el plano de oficina por capas;
+`alzado.ts` conserva el dibujo de pantalla. Las enrollables mantienen `planoEnrollable.ts`
+sin cambios y su DXF completo de AR2605134 queda protegido por SHA-256 de main 0a316e1.
+Los ventanales
 consecutivos tienen sus cachos, cristales, ejes compartidos y cotas propios. El cristal se identifica
 por la cota de corte, sin leyenda dentro. Los paños llevan rótulos grandes separados; «AL CORTE»
 va vertical a ambos lados, y las instrucciones de Portanova se distribuyen según cada modelo.
 Las marcas de entradas y empates aparecen en ROTULADOR, con su triangulito. Las ventanas redondeadas
-conservan los radios también en el DXF mediante arcos.
+conservan los radios también en el DXF mediante curvas de polilínea.
 
 Las cotas son entidades DIMENSION editables, con los estilos XERA 15, XERAL y XERAL 5 de los planos.
 Se mantiene XERAL 15 para los demás modelos que lo usan; el nombre histórico XERA 15 se añade
@@ -385,19 +407,33 @@ empates y saco de 120. Las notas no crean piezas nuevas.
 Cada tramo de corte ocupa solo el ancho usado por sus piezas, con el título de material encima,
 el largo debajo y el ancho usado a la izquierda. Se conservan la colocación, medidas, radios,
 mininúmeros y alternativas que devuelve `generarCortePuertas`. El anidado y la geometría del DXF de máquina se mantienen.
-En el plano se ven también los bordes que la máquina omite al coincidir con el orillo.
+En el corte resumido se conservan exactamente las rayas del bot, sin cerrar los orillos ni
+volver a anidar; saco y cristal de un material separado se dibujan una vez con su cantidad.
+Las alternativas de saco se distinguen como alternativas, sin sumarlas a la cantidad nominal.
+Las cotas del resumen usan XERA 20 y van fuera de las piezas; REVÉS y OF aparecen en el
+primer paño del rollo, sin X en los paños de lona. El resumen conserva las marcas y mininúmeros
+de cada colocación, incluidas las verticales del espaciador y los de la muestra de saco partido.
+En los bots históricos de las cuatro referencias no se observa una regla adicional para
+numerar ventanas recortadas en el propio paño: sus números son de empates. No se cambia
+`calcular.ts` ni la regla de la E.T. delantera de los ventanales separados de enrollable.
 La identificación sí se corrige, con autorización del coordinador: en apilables y autorreparables,
 A1 es el paño superior y la numeración baja hacia el suelo, igual que el alzado. El anidado no cambia.
 La cota del cristal mide su ancho de corte con los solapes de 2 cm, sin sobrescribir el número de una
 cota que mida otra cosa.
 
-Las referencias reproducibles están en `src/puertas/__fixtures__/planosReales.ts`: pedido, archivo
-y zona del espacio modelo. `node scripts/contrastar-plano-puertas.mjs <carpeta local del estudio puertas>`
-crea inventarios de texto/altura/giro y cotas/estilo, DXF y comparaciones PNG en
-`tmp/ui-audit/puertas-fase3-plano/`. Necesita las ayudas de pintado copiadas a `tmp/puertas-plano/`.
-El inventario comprueba presencia de texto y medidas; la semejanza de posiciones requiere mirar las PNG.
+Las referencias reproducibles están en `src/puertas/__fixtures__/planosReales.ts`.
+`node scripts/contrastar-plano-puertas.mjs <carpeta local del estudio puertas>` comprueba por
+script modelo, pedido y OF en RPS local, plano y bot; crea tablas de rayas por capa, longitudes,
+curvas, colores y posiciones, textos/altura/giro, cotas/estilos y bloques/sombreados en
+`tmp/plano-apilables/comparacion.md`, con un informe y JSON completo por pedido.
+Normaliza el alzado por la cabecera y el corte por su cota de largo; pinta páginas y capas
+lado a lado en PNG con `scripts/lib/plano-dxf.mjs`, sin ayudas externas. Cada diferencia
+incluye su motivo y ninguna geometría no clasificada se presenta como equivalente.
+AR2604526 se limita a su primera puerta: la página manual y su corte incluyen también
+otras OF, por lo que no se afirma paridad de todo ese corte. AR2605036 mantiene el
+escuadrado de 1 por lado del cálculo vigente aunque el histórico no lo incluyese.
 El informe conserva las diferencias literales: «HASTA» corrige «ATA» en AR2604904; la OF se identifica
-sin el prefijo «OF.» y la cantidad va en la cabecera cuando es mayor que uno. La nota particular
+sin el prefijo «OF.» y la cantidad va en A1 cuando es mayor que uno. La nota particular
 de 3 cm de AR2605065 es una excepción (Q-PU01 contestada); el espaciador central se configura
 según el dibujo del pedido (Q-PU02 contestada).
 

@@ -73,7 +73,7 @@ function tabla(nombre, a, b, tolerancia = .05) {
   return { filas, medidas, posiciones };
 }
 const num = n => n.toLocaleString('es-ES', { maximumFractionDigits: 3 });
-function motivo(p, sector) {
+function motivo(p, sector, puerta) {
   if (sector === 'Página') return 'Encuadre automático y plantilla fija vigente de Portanova, confirmada por el coordinador; ver diferencias del modelo.';
   if (sector === 'Corte') return 'El resumen conserva el corte vigente; muestras iguales una vez con cantidad, alternativas explícitas, rótulos centrados y cotas XERA 20. Posiciones históricas de anidado no se trasladan al bot.';
   if (p.tipo === 'texto') return /^(X\d+|REVÉS|A\d+|\d{7})$/.test(p.valor)
@@ -83,6 +83,10 @@ function motivo(p, sector) {
   if (p.capa === 'referencia-1' && ['sombreado', 'raya'].includes(p.tipo)) return 'Detalles esquemáticos de refuerzo/velcro regularizados con autorización; alturas redondeadas del DWG, no piezas de corte.';
   if (p.capa === 'texto') return 'Llamada recolocada junto al texto centrado, conservando su destino.';
   if (p.capa === 'vent-pre-noimpr') return 'Líneas auxiliares del saco alineadas en el despliegue; no se imprimen.';
+  if (p.capa === 'referencias' && p.tipo === 'raya' && puerta && Math.max(p.a[1], p.b[1]) < -puerta.alto - 15)
+    return 'Despliegue del mismo saco trasladado como grupo para separar las llamadas y las cotas, conservando su contorno y medidas.';
+  if (p.capa === 'ROTULADOR' && (p.tipo === 'bloque' || p.tipo === 'raya' && largo(p) < 3))
+    return 'La flecha FLECHA2 conserva forma, tamaño y giro; se centra sobre su espaciador, en lugar de la posición de ratón histórica.';
   return 'Diferencia geométrica explícita pendiente de clasificación; no implica equivalencia.';
 }
 const evidencias = [], informe = ['# Contraste de planos apilables y autorreparables', '',
@@ -114,10 +118,14 @@ try {
     const grupos = [{ nombre: 'Alzado', a: a.entidades, b: b.entidades, t: .05 },
       { nombre: 'Página', a: proyectarPagina(mano).filter(p => !p.deCota), b: proyectarPagina(d).filter(p => !p.deCota), t: .1 }];
     const zonaCorte = x => x.ventanas.find(v => v.id === 4).zona;
-    const corteMano = mano.modelo.filter(p => !p.deCota && enZona(p, zonaCorte(mano))), corteWeb = d.modelo.filter(p => !p.deCota && enZona(p, zonaCorte(d)));
-    // Compara medidas independientemente del origen histórico del anidado.
-    grupos.splice(1, 0, { nombre: 'Corte', a: corteMano.map(p => transformarPrimitiva(p, (x, y) => [x * 100, y * 100], 100)),
-      b: corteWeb.map(p => transformarPrimitiva(p, (x, y) => [x * 100, y * 100], 100)), t: .05 });
+    const normalizarCorte = x => {
+      const lista = x.modelo.filter(p => !p.deCota && enZona(p, zonaCorte(x)));
+      const base = lista.filter(p => p.tipo === 'cota' && Math.abs(p.a[1] - p.b[1]) < .01).sort((a, b) => b.medida - a.medida)[0];
+      assert.ok(base, `${id}: falta la cota del largo del corte.`);
+      const origen = [Math.min(base.a[0], base.b[0]), Math.min(base.a[1], base.b[1])];
+      return lista.map(p => transformarPrimitiva(p, (x, y) => [(x - origen[0]) * 100, (y - origen[1]) * 100], 100));
+    };
+    grupos.splice(1, 0, { nombre: 'Corte', a: normalizarCorte(mano), b: normalizarCorte(d), t: .05 });
     const detalle = [`# ${id} · ${p.modelo}`, '', `OF ${p.of}; ${p.frente} × ${p.alto} cm. Identidad comprobada en RPS local, plano y bot.`, ''];
     const comparaciones = grupos.map(g => {
       const t = tabla(g.nombre, g.a, g.b, g.t); detalle.push(...t.filas, '', '#### Diferencias de posición', '', '| Origen | Capa | Tipo | Medida / literal / coordenadas | Motivo |', '|---|---|---|---|---|');
@@ -126,12 +134,18 @@ try {
           : p.tipo === 'texto' ? `${md(p.valor)}; h ${num(p.h)}, giro ${num(p.giro)}, ${p.punto.map(red)}`
           : p.tipo === 'cota' ? `${num(p.medida)}; ${p.estilo}; ${p.a.map(red)} → ${p.b.map(red)}`
           : JSON.stringify(p.puntos ?? p.punto ?? p.nombre);
-        detalle.push(`| ${origen} | ${md(p.capa)} | ${p.tipo} | ${valor} | ${motivo(p, g.nombre)} |`);
+        detalle.push(`| ${origen} | ${md(p.capa)} | ${p.tipo} | ${valor} | ${motivo(p, g.nombre, pedido.elementos[0].input)} |`);
       }
       return { nombre: g.nombre, ...t, filas: undefined };
     });
+    const miniBot = maquina.modelo.filter(t => t.tipo === 'texto' && t.capa === 'ROTULADOR' && t.h <= 10.01 && /^[A-Za-z]?\d*$/.test(t.valor));
+    const miniWeb = cortes.flatMap(c => c.entidades.textos.filter(t => t.capa === 'ROTULADOR'));
     detalle.push('', '## Corte vigente', '', ...cortes.map(c => `- ${c.material}; ${num(c.largo / 10)} × ${num(c.anchoRollo / 10)} cm; ${c.colocadas.length} colocaciones; ${c.opcion}.`), '',
-      'AR2604526 se limita a la primera puerta (300 × 331, OF 0232191); el bot también contiene otras OF y piezas, que no se atribuyen a esta puerta.', '');
+      `Mininúmeros del bot histórico (archivo completo): ${miniBot.length}; ${miniBot.map(t => t.valor).join(', ') || 'ninguno'}. Mininúmeros del corte vigente: ${miniWeb.length}; ${miniWeb.map(t => t.valor).join(', ') || 'ninguno'}.`, '',
+      'Las ventanas de estas apilables/autorreparables se recortan dentro de los paños; no son el ventanal separado con cachos de enrollable. Las referencias históricas no requieren una E.T. delantera/trasera numerada adicional; los números observados son de empates. El plano conserva la numeración actual de los empates y sacos partidos, sin modificar calcular.ts.', '',
+      ...(id === 'AR2604526' ? ['AR2604526 se limita a la primera puerta (300 × 331, OF 0232191); el corte de la página histórica también muestra la segunda puerta B y stock. No se atribuyen sus geometrías ni cantidades a esta puerta.'] : []),
+      ...(id === 'AR2604904' ? ['La nota histórica AMARILLO/NEGRO contradice su corte NEGRO: con autorización del coordinador, el plano usa materialSaco configurado (Q-PU03).'] : []),
+      'En apilables >600, el corte vigente añade 1 cm por lado según el expediente; AR2605036 antiguo no lo incluía. Se muestran las dos alternativas de saco que ofrece el corte actual; el manual solo representaba la elegida.', '');
     fs.writeFileSync(path.join(dir, 'comparacion.md'), detalle.join('\n'));
     fs.writeFileSync(path.join(dir, 'comparacion.json'), JSON.stringify({ id, modelo: p.modelo, of: p.of, origenes: [a.origen, b.origen], comparaciones,
       corteVigenteSha256: createHash('sha256').update(JSON.stringify(cortes)).digest('hex') }, null, 2));
@@ -147,7 +161,7 @@ try {
     }
     evidencias.push({ id, modelo: p.modelo, manual, bot, informe: path.join(dir, 'comparacion.md'),
       rayas: comparaciones[0].posiciones.coinciden.filter(([p]) => p.tipo === 'raya').length,
-      sinClasificar: comparaciones[0].posiciones.soloMano.filter(p => motivo(p, 'Alzado').startsWith('Diferencia geométrica')) });
+      sinClasificar: comparaciones[0].posiciones.soloMano.filter(q => motivo(q, 'Alzado', p).startsWith('Diferencia geométrica')) });
   }
 } finally { await browser.close(); }
 informe.push('', '## Resultados', '', ...evidencias.map(e => `- [${e.id}](${e.id}/comparacion.md): ${e.rayas} rayas con posición/capa/color iguales; ${e.sinClasificar.length} diferencias de mano pendientes de clasificación.`), '',

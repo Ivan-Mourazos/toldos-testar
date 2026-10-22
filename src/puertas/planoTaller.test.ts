@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { numero, registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
+import { anchoArial } from '../domain/corteLona/texto.js';
 import { base, pedidoDe } from './__fixtures__/ejemplos.ts';
 import { puertaPlanoReal } from './__fixtures__/planosReales.ts';
 import { escribirPlanoPuertas } from './plano.ts';
@@ -71,6 +72,32 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     const cotas = rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 110 && numero(r, 13) < 130);
     expect(cotas.length).toBeGreaterThan(0);
     expect(cotas.every(r => valor(r, 3) === 'XERA 20')).toBe(true);
+  });
+
+  it.each(['AR2605036', 'AR2604904'])('%s: el resumen conserva todas las rayas recibidas y A1 sigue siendo el paño superior', id => {
+    const pedido = pedidoDe(id, puertaPlanoReal(id)), rs = plano(id);
+    for (const c of generarCortePuertas(pedido).cortes.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'))) {
+      const dimension = rs.find(r => r.tipo === 'DIMENSION' && numero(r, 13) === 110 && Math.abs(numero(r, 42) - c.largo / 10) < .001)!;
+      expect(dimension).toBeDefined();
+      const yc = numero(dimension, 23);
+      for (const l of c.entidades.lineas) expect(rs.some(r => r.tipo === 'LINE' && valor(r, 8) === l.capa
+        && Math.abs(numero(r, 10) - 110 - l.x1 / 1000) < 1e-6 && Math.abs(numero(r, 20) - yc - l.y1 / 1000) < 1e-6
+        && Math.abs(numero(r, 11) - 110 - l.x2 / 1000) < 1e-6 && Math.abs(numero(r, 21) - yc - l.y2 / 1000) < 1e-6)).toBe(true);
+      const superior = c.colocadas.find(t => t.pieza.clase === 'pano' && Math.abs(t.pieza.alto - (id === 'AR2605036' ? 186 : 208.5)) < .001)!;
+      expect(rs.some(r => r.tipo === 'MTEXT' && valor(r, 1) === 'A1' && numero(r, 10) > 110 + superior.x / 1000
+        && numero(r, 10) < 110 + superior.x / 1000 + (superior.girada ? superior.pieza.alto : superior.pieza.ancho) / 100
+        && numero(r, 20) > yc + superior.y / 1000 && numero(r, 20) < yc + superior.y / 1000 + (superior.girada ? superior.pieza.ancho : superior.pieza.alto) / 100)).toBe(true);
+      for (const t of c.colocadas.filter(t => t.pieza.clase === 'pano')) {
+        for (const r of rs.filter(r => r.tipo === 'MTEXT' && ['A1', 'A2', 'REVÉS', pedido.elementos[0].input.of].includes(valor(r, 1) ?? ''))) {
+          const u = (numero(r, 10) - 110) * 100 - t.x / 10, v = (numero(r, 20) - yc) * 100 - t.y / 10;
+          const [x, y] = t.girada ? [v, t.pieza.alto - u] : [u, v];
+          if (x < 0 || y < 0 || x > t.pieza.ancho || y > t.pieza.alto) continue;
+          const h = numero(r, 40) * 100, w = anchoArial(valor(r, 1) ?? '', h);
+          expect(t.pieza.huecos.some(v => x - w / 2 < v.x + v.ancho && x + w / 2 > v.x
+            && y - h / 2 < v.y + v.alto && y + h / 2 > v.y), `rótulo ${valor(r, 1)} fuera del hueco`).toBe(false);
+        }
+      }
+    }
   });
 
   it('AR2605134 conserva el plano completo de main 0a316e1 byte por byte', () => {
