@@ -137,8 +137,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
   // de referencia de las cotas hasta la pieza); la de
   // enrollable de main se comprueba en planoTaller.test.ts.
   it.each([
-    ['apilable', apilable, '2081d368447d0dca890f9e488a59ce8d847226abc3b2f523acf5e13f3f2c3069'],
-    ['autorreparable', autorreparable, 'a161caa45a94a3748cf9eb57482e8bb380bf771430715f244d6e59d3cafa087c'],
+    // Renovadas por las correcciones de taller: huecos abiertos, marcas, rótulos y anclajes de cotas.
+    ['apilable', apilable, 'a41702883cc2ffc1dea649457250e6ead2695dbbe50026bb3357d50a81a14ad7'],
+    ['autorreparable', autorreparable, 'c79b684150d5ec502eba1d135173766a50fcc14f34c1982f40fb56cd1e01c3f1'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

@@ -86,7 +86,7 @@ Saco actual **de 120 fijo**; el saco antiguo de 110 no es una opción.
 
 - Cuerpo antes de empates: F × (H − 8,5), desde 12 del bajo terminado hasta H + 3,5.
 - Empates normales: 2 de unión por cada uno, con posición indicada desde el borde inferior del cuerpo o propuesta para que quepa.
-- Dos entradas, delantera y trasera: (F + 11) × 21.
+- Dos entradas iguales: (F + 11) × 21, rotuladas «Entrada de tubo» en ambas caras.
 - Saco: F × 32.
 - Ventanas individuales: cristal = hueco + 4 por dimensión; radios y posiciones según dibujo.
 
@@ -106,6 +106,43 @@ El saco desplegado mantiene sus cuatro velcros de 3 y sus sombreados, sus cotas 
 «CREMALLERA SOLDADA HASTA MITAD DE SACO». El material del saco procede de `materialSaco`:
 Iván aclaró que AMARILLO/NEGRO en el alzado de AR2604904 indica diagonales impresas
 después de cortar el saco negro. La casilla descrita debajo conserva esa indicación.
+
+### Correcciones del corte y las anotaciones · 22/10/2026, por la noche
+
+Las entradas y los sacos de apilables y autorreparables no llevan marca central de
+rotulador. Los huecos laterales de las entradas se dejan abiertos hacia fuera, con
+solo los dos radios interiores, tanto en las entradas sueltas como en las incorporadas
+al empate; los huecos interiores de cintas siguen cerrados. Todos van en CUTTER.
+Los orillos no llevan DISCO1 y los cortes colineales compartidos se dibujan una sola vez.
+El resumen de la alternativa de saco partido representa las dos mitades pegadas, con
+el corte común fusionado; conserva las marcas de unión de cada mitad.
+
+La autorreparable conserva en el corte las horizontales a 3,5, 20 y 30 cm por debajo
+de la cabecera terminada, igual que AR2604904 y AR2604526. No se gira un paño si su
+alto cabe en el ancho del rollo; se permite el giro cuando evita tener que partirlo.
+Al colocar las piezas, las que ocupan el ancho entero del rollo van al principio.
+
+En apilables, código, REVÉS y OF se distribuyen en columnas de la misma fila, dentro
+del espacio libre entre entradas o ventanas. En autorreparables se conservan agrupados
+en el hueco libre, apartados del espaciador central. Velcros y refuerzos de apilable
+llevan llamadas cortas y textos en dos líneas junto a lo señalado. Los textos superiores
+y de velcro de autorreparable aumentan según el espacio disponible. El empate se rotula
+en el hueco lateral libre y el espaciador central queda centrado, con su flecha apartada.
+El material se rotula al inicio del conjunto y REVÉS dentro del primer paño del corte.
+
+En todos los modelos, incluidos los enrollables, los puntos 13/14 de DIMENSION se
+anclan a los contornos o referencias reales; la posición de la línea de cota se conserva
+separada. La cota del ancho del rollo de enrollable dispone de una referencia corta del
+orillo superior en la capa `cotas`, aunque las piezas no llenen ese ancho. El escritor
+compartido prolonga las auxiliares desde esos puntos (corrección
+del coordinador en main 8e41bd4). Los mininúmeros de unión del alzado proceden de las
+mismas posiciones locales que los del bot, con la misma letra minúscula, número,
+altura y capa ROTULADOR, también en cachos, entradas y mitades de saco.
+
+El contraste reproducible es `scripts/contrastar-puertas-revision.mjs`, con salida bajo
+`tmp/puertas-revision/`: tabla, DXF y PNG lado a lado de AR2605036 y AR2604904. Se
+documentan las diferencias históricas de escuadrado y despiece; las correcciones de
+anotación no cambian las reglas de medidas del expediente.
 
 ### Saco con diagonales amarillas · todos los modelos (Iván, 22/10/2026)
 

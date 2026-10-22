@@ -60,7 +60,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     const rs = registrosDxf(escribirPlanoPuertas({ pedido, cabecera }));
     const textos = rs.filter(r => r.tipo === 'MTEXT' && numero(r, 10) < 109 && numero(r, 20) > 90);
     for (const t of ['X3', 'REVÉS', p.of, 'A1', 'A2']) expect(textos.filter(r => valor(r, 1) === t), t).toHaveLength(1);
-    expect(new Set(textos.filter(r => ['REVÉS', p.of, 'A1'].includes(valor(r, 1) ?? '')).map(r => numero(r, 20))).size).toBe(1);
+    if (p.modelo === 'PUERTAPLE') expect(new Set(textos.filter(r => ['REVÉS', p.of, 'A1'].includes(valor(r, 1) ?? '')).map(r => numero(r, 20))).size).toBe(1);
     const corte = rs.filter(r => r.tipo === 'MTEXT' && numero(r, 10) >= 110 && valor(r, 8) === 'ROTULADOR');
     const minis = generarCortePuertas(pedido).cortes.flatMap(c => {
       const lista = c.entidades.textos.filter(t => t.capa === 'ROTULADOR');
@@ -134,9 +134,11 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
       enrollable: { T: 169, D: 60, margen: 6, empates: [] } };
     const entidades = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera }))
-      .filter(r => r.tipo !== 'DIMENSION').map(r => ({ tipo: r.tipo,
+      .filter(r => r.tipo !== 'DIMENSION' && !(r.tipo === 'LINE' && valor(r, 8) === 'cotas')).map(r => ({ tipo: r.tipo,
         pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
       .toBe('1944bda646571ee7631e5ef76e97a78499b29e738a8e5016e40daf432d794027');
+    expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
+      .toBe('0d7870164efe2bda9fc4086e0bdd1ad4bc0a5da633b1ef827fc95de5ac05be1a');
   });
 });

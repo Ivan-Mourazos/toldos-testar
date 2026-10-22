@@ -17,6 +17,10 @@ const num = (v: number) => v.toLocaleString('es-ES', { maximumFractionDigits: 2 
 const linea = (l: Lienzo, capa: string, x1: number, y1: number, x2: number, y2: number) => l.lineas.push({ capa, x1, y1, x2, y2 });
 const texto = (l: Lienzo, valor: string, x: number, y: number, h: number, giro = 0, capa = 'texto') =>
   l.textos.push({ capa, valor: capa === 'ROTULADOR' ? valor : textoSeguro(valor), x, y, h, centrado: true, giro });
+function material(l: Lienzo, valor: string, ancho: number, y: number) {
+  texto(l, valor, 0, y, Math.min(10, ancho * .95 / anchoArial(valor, 1)));
+  Object.assign(l.textos.at(-1)!, { centrado: false, ancla: 4 });
+}
 const contorno = (l: Lienzo, capa: string, puntos: Punto[]) => puntos.forEach((a, i) => {
   const b = puntos[(i + 1) % puntos.length]; linea(l, capa, ...a, ...b);
 });
@@ -56,12 +60,12 @@ function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number,
   const valores = [...(primero && opciones.cantidad !== false && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo,
     ...((opciones.reves ?? primero) ? ['REVÉS'] : []), ...((opciones.of ?? primero) && p.of.trim() ? [p.of.trim()] : [])];
   const alto = Math.max(1, libre[1] - libre[0]);
-  const fila = valores.length > 1;
+  const fila = p.modelo === 'PUERTAPLE' && valores.length > 1;
   const columna = ancho / valores.length;
-  const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, alto * .65,
+  const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, fila ? alto * .65 : alto / (valores.length * 1.5 + .5),
     ...valores.map(v => (fila ? columna : ancho) * .82 / anchoArial(v, 1)));
   valores.forEach((v, i) => texto(l, v, fila ? x - ancho / 2 + columna * (i + .5) : x,
-    (libre[0] + libre[1]) / 2, h));
+    (libre[0] + libre[1]) / 2 + (fila ? 0 : ((valores.length - 1) / 2 - i) * h * 1.5), h));
 }
 
 function dibujarSaco(l: Lienzo, p: Puerta) {
@@ -174,6 +178,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     texto(l, 'VARILLA NEGRA (4,5)', F / 2, 14, 7);
     texto(l, 'E.T POR DELANTE Y POR DETRÁS CORTADA DE 21', F / 2, -17, Math.min(7, F / 45));
     texto(l, 'E.T 5,5 cms MAS LARGAS EN CADA LADO', F / 2, -26, Math.min(7, F / 40));
+    texto(l, 'AL CORTE', -7, -60, 8, 90);
+    texto(l, 'AL CORTE', F + 7, -60, 8, 90);
     const d = p.autorreparable.distanciaEspaciador ?? 10, fin = -H + 14, centro = (fin - 30) / 2;
     for (const [x, giro, sx] of [[d, 90, -1], [F - d, 270, 1], ...(p.autorreparable.espaciadorCentral ? [[F / 2 - 1.9, 90, 1]] : [])]) {
       linea(l, 'ROTULADOR', x, -30, x, fin); flecha(l, x, centro, giro, sx);
@@ -273,10 +279,11 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         }
         const anterior = lista[i - 1], siguiente = lista[i + 1];
         const mismaPuerta = (otra: typeof p | undefined) => otra?.id.split(':')[0] === p.id.split(':')[0];
-        if (c.opcion !== 'saco-partido' || !mismaPuerta(anterior)) texto(l,
+        if (c.opcion !== 'saco-partido' || !mismaPuerta(anterior)) material(l,
           (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
-          0, techo + 15, Math.min(10, p.ancho / 40));
-        cota(l, 0, y, p.ancho, y, y - 30, 'XERA 20'); cota(l, 0, y, 0, techo, -35, 'XERA 20');
+          p.ancho, techo + 15);
+        cota(l, 0, y, p.ancho, y, c.opcion === 'saco-partido' && mismaPuerta(siguiente) ? techo + 35 : y - 30, 'XERA 20');
+        cota(l, 0, y, 0, techo, -35, 'XERA 20');
         anchoMax = Math.max(anchoMax, p.ancho); techo = y - (c.opcion === 'saco-partido' && mismaPuerta(siguiente) ? 0 : 95);
       }
       if (c.opcion === 'saco-partido') fusionarCortesPuertas(l);
@@ -319,7 +326,7 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         primeros.add(e.id);
       } else texto(l, p.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);
     }
-    texto(l, c.material, 0, techo + 15, 10);
+    material(l, c.material, c.largo / 10, techo + 15);
     // El ancho acotado es el del rollo: los orillos se representan como referencia, nunca como corte.
     linea(l, 'referencias', 0, yc, c.largo / 10, yc);
     linea(l, 'referencias', 0, techo, c.largo / 10, techo);

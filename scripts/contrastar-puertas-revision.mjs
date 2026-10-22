@@ -26,7 +26,7 @@ const informe = ['# Comparación de puertas · correcciones del 22/10/2026 por l
   '| 2 | Bocas laterales de ET abiertas, solo dos arcos; interiores cerrados; orillos sin DISCO1 y cortes compartidos fusionados | Pruebas geométricas y bot a mano |',
   '| 3 | Saco partido: ambas mitades pegadas, una línea de corte compartida en el resumen | Corregido |',
   '| 4 y 9 | Entradas y sacos sin raya central de ROTULADOR | Comprobado por pieza |',
-  '| 5 | Código, OF y REVÉS en columnas del mismo hueco libre | Alzado, corte del plano y bot |',
+  '| 5 | Apilable: código, OF y REVÉS en columnas del mismo hueco libre | Alzado, corte del plano y bot |',
   '| 6 | Huecos de cintas en CUTTER en alzado y bot | Corregido |',
   '| 7 | Autorreparable: horizontales a 3,5, 20 y 30 del terminado superior | Bot a mano y pruebas de posición |',
   '| 8 | Frente a lo largo del rollo; se permite girar el paño cuando su alto no cabe sin hacerlo | Corregido |',
@@ -96,7 +96,7 @@ try {
   }
 } finally { await browser.close(); }
 informe.push('## Límites y validación', '',
-  'Sin cambios en src/domain/, plantilla de Portanova, cajetín, toldos, remolques ni paridad. AR2605134 se contrasta con main 57bd154 en regresion-enrollable.json: bot idéntico y resto de entidades del plano idéntico al excluir DIMENSION; sus bloques solo prolongan referencias.', '',
+  'Sin cambios propios en src/domain/, plantilla de Portanova, cajetín, toldos, remolques ni paridad. Se incorpora main 8e41bd4 con las auxiliares y el cajetín corregidos por el coordinador; no hay adaptador local del escritor de cotas. AR2605134 se contrasta con las fuentes de 57bd154 y el escritor compartido vigente en regresion-enrollable.json: bot idéntico y resto de entidades del plano idéntico al excluir DIMENSION y la referencia de orillo en la capa cotas. Esa referencia de 12 cm permite agarrar la cota del ancho de rollo cuando las piezas no lo llenan.', '',
   'Las validaciones completas y el resultado de Pedidos se registran en validacion.md. Los PNG son proyecciones del DXF con el lector del proyecto, no una apertura de AutoCAD.');
 fs.writeFileSync(path.join(salida, 'comparacion.md'), informe.join('\n'));
 console.log(`Tabla y cuatro PNG: ${path.relative('.', salida)}/comparacion.md`);

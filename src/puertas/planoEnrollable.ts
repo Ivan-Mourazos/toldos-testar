@@ -250,6 +250,8 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     l.lineas.push(...c.entidades.lineas.filter(a => a.capa === 'CUTTER').map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));
     l.textos.push(...c.entidades.textos.filter(a => a.capa === 'ROTULADOR').map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, h: a.h / 10 })));
     texto(l, c.material, 0, techo + 7.6701, 10);
+    // Referencia del orillo superior para acotar el ancho real del rollo aunque las piezas no lo llenen.
+    linea(l, 'cotas', 0, techo, Math.min(12, c.largo / 10), techo);
     cota(l, 0, yc, c.largo / 10, yc, yc - 25.8375, CORTE_COTAS);
     cota(l, 0, yc, 0, techo, -35.1317, CORTE_COTAS);
     anchoMax = Math.max(anchoMax, c.largo / 10);

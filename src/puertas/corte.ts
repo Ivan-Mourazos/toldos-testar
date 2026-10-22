@@ -350,11 +350,13 @@ function colocar(
         : opcion === 'saco-entero'
           ? 'SACO ENTERO · ALTERNATIVA'
           : 'SACO EN DOS · ALTERNATIVA, ELEGIR SOLO UNA';
+    const enrollable = grupo.every(p => esEnrollable(p.id));
+    const rotuloMaterial = !enrollable && opcion === 'principal' ? grupo[0].material : `${grupo[0].material} · ${titulo}`;
     entidades.textos.push(
-      { capa: 'texto', x: 0, y: rollo + 250, h: 95, valor: `${grupo[0].material} · ${titulo}` },
+      { capa: 'texto', x: 0, y: rollo + 250, h: enrollable ? 95 : Math.min(200, largo * .95 / anchoArial(rotuloMaterial, 1)), valor: rotuloMaterial },
       // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
     );
-    if (grupo.every(p => esEnrollable(p.id))) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
+    if (enrollable) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
     else if (!primerPano) entidades.textos.push({ capa: 'texto', x: 80, y: Math.min(rollo * .35, 800), h: 80, valor: 'REVÉS', giro: 90 });
     fusionarCortesPuertas(entidades, rollo);
     return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };

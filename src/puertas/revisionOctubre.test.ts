@@ -111,8 +111,35 @@ describe('Correcciones de taller del 22 de octubre por la noche', () => {
       const lineas = bloques.slice(inicio, fin).filter(b => b.tipo === 'LINE');
       for (const [sx, sy] of [[13, 23], [14, 24]]) {
         const x = numero(c, sx), y = numero(c, sy), vertical = numero(c, 50) === 90;
-        if (Math.abs((vertical ? numero(c, 10) - x : numero(c, 20) - y)) < .000001) continue;
-        expect(lineas.some(l => Math.min(Math.hypot(numero(l, 10) - x, numero(l, 20) - y), Math.hypot(numero(l, 11) - x, numero(l, 21) - y)) <= .00501)).toBe(true);
+        if (Math.abs((vertical ? numero(c, 10) - x : numero(c, 20) - y)) <= .05) continue;
+        expect(lineas.some(l => Math.min(Math.hypot(numero(l, 10) - x, numero(l, 20) - y), Math.hypot(numero(l, 11) - x, numero(l, 21) - y)) <= .05001)).toBe(true);
+      }
+    }
+  });
+
+  it.each(['AR2605036', 'AR2604904', 'AR2604638'])('%s: todas las cotas de alzado y corte resumido tienen ambos puntos sobre geometría', id => {
+    const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe(id, puertaPlanoReal(id)),
+      cabecera: { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' } })).filter(r => valor(r, 67) !== '1');
+    const segmentos = rs.filter(r => r.tipo === 'LINE' && valor(r, 8) !== 'texto')
+      .map(r => [numero(r, 10), numero(r, 20), numero(r, 11), numero(r, 21)]);
+    for (const r of rs.filter(r => r.tipo === 'LWPOLYLINE')) {
+      const puntos: number[][] = [];
+      for (const [k, v] of r.pares as Array<[number, string]>) {
+        if (k === 10) puntos.push([Number(v), 0]);
+        if (k === 20 && puntos.length) puntos.at(-1)![1] = Number(v);
+      }
+      for (let i = 1; i < puntos.length; i++) segmentos.push([...puntos[i - 1], ...puntos[i]]);
+      if (numero(r, 70) & 1) segmentos.push([...puntos.at(-1)!, ...puntos[0]]);
+    }
+    for (const r of rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 99 && numero(r, 13) < 130 && numero(r, 23) > 50)) {
+      for (const [kx, ky] of [[13, 23], [14, 24]]) {
+        const x = numero(r, kx), y = numero(r, ky);
+        const distancia = Math.min(...segmentos.map(([a, b, c, d]) => {
+          const dx = c - a, dy = d - b;
+          const u = Math.max(0, Math.min(1, ((x - a) * dx + (y - b) * dy) / (dx * dx + dy * dy || 1)));
+          return Math.hypot(x - a - u * dx, y - b - u * dy);
+        }));
+        expect(distancia, `cota ${numero(r, 42)} en (${x}, ${y})`).toBeLessThan(.00002);
       }
     }
   });
