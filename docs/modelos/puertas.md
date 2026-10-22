@@ -15,7 +15,7 @@ Las fuentes están en `tmp/dxf-estudio/puertas/` del repositorio principal, leí
 
 Solo se han copiado identificación y medidas necesarias a las fixtures de `src/puertas/__fixtures__/`, sin rutas empresariales ni datos de red. Para el contraste adicional solicitado por Iván, AR2604662 no estaba en el estudio: se copiaron en solo lectura su DXF y su DWG a `tmp/puertas-bolsillo/AR2604662/` del worktree. ODA convirtió únicamente esa copia local, con todos los temporales dentro de `tmp/`; los originales no se modificaron.
 
-Quedan fuera rejilla, mosquitera, malla, franja corrida, marcos sueltos y recambios. Tampoco entran guardar para revisión, Pedidos, CoordinaOT, reserva RPS, DWG ni envío o escritura del DXF: esas acciones corresponden a fase 2.
+Quedan fuera rejilla, mosquitera, malla, franja corrida, marcos sueltos y recambios. Guardar para revisión, Pedidos, CoordinaOT, el plano DWG y el envío del DXF llegaron en la fase 2 (22/10/2026, ver abajo). No hay reserva en RPS (Iván: «No se reserva el pvc»).
 
 ## Enrollable
 
@@ -167,7 +167,7 @@ Tabla generada con `node scripts/contrastar-puertas.mjs` comparando la salida de
 
 ### Pendiente para más adelante
 
-- **Aprovechamiento del corte en el rollo**: afinar el anidado en columna (por ejemplo, apilar `A2 + A1 + entradas + cachos girados` en una misma columna de `300 cm` de rollo cuando la suma de altos lo permite, como hace el técnico en `AR2604638` y en la primera columna de `AR2604725`).
+- ~~Aprovechamiento del corte en el rollo~~: hecho el 22/10/2026 (`empaquetar` en `src/puertas/corte.ts`). Se prueban columnas estrechas y anchas, por lado corto o largo, eligiendo el hueco que menos tela desperdicia, y se queda la que gasta menos rollo: `AR2604638` gasta 172 cm como su corte a mano (antes 278), `AR2604725` 948 como el real, `AR2605038` 330 (antes 651) y `AR2605134` 848 (antes 972). No mete sacos de stock de otras OF.
 - **Boceto de colocación de enrollables**: incorporar el croquis/boceto específico de colocación en rollo para puertas enrollables.
 
 Hay pruebas de validación, unión compartida, geometría de rollo, curvas, DXF y ruta sin escritura. `scripts/test-puertas-e2e.mjs` usa exclusivamente la instancia aislada, recorre los tres modelos y los tres pedidos contrastados (`AR2605134`, `AR2604638`, `AR2604725`), cambia el tema desde su botón y deja capturas de alzado y corte a 1280×720 y 1600×1000 en `tmp/ui-audit/puertas-fase1/`.
@@ -252,3 +252,21 @@ La vista previa permite ampliar hasta 8× y desplazar el corte; los mininúmeros
 `scripts/test-puertas-corte-fase3-e2e.mjs` comprueba la aislada antes de abrirla y toma capturas de AR2604638,
 AR2604725, AR2605134 y AR2605065 en claro y oscuro, a 1280×720 y 1600×1000, además de comparaciones PNG con
 los cortes manuales. El plano DWG y su alzado quedan fuera de este cambio.
+
+## Fase 2 · guardar, Pedidos, plano y corte (22/10/2026)
+
+- **Guardar para revisión** desde Puertas (cliente y fecha, o «Traer de RPS»): un JSON por pedido en la subcarpeta
+  `puertas` de la carpeta interna de remolques. Un número es de un solo producto (toldos, remolques o puertas).
+  Con comprobaciones en error (modelo sin confirmar, rollo sin poner…) o sin OF no se guarda.
+- **Pedidos**: etiqueta «Puerta», filtro «Puertas» y ficha con los dos bloques (alzado y corte), «Corregir» solo para el
+  autor si se lo devolvieron, «Generar archivos» con todas las OF aprobadas en CoordinaOT.
+- **Plano**: presentación CAD como los toldos (Iván: «Es una presentación de cad. Como toldos»), con el alzado de cada
+  puerta y el corte, en la carpeta de planos del corte. Sale al guardar (para revisar) y, al generar, el definitivo con
+  el revisor en el cajetín; si ya está en la carpeta, se pregunta antes de sustituirlo.
+- **Corte al bot**: un solo DXF por pedido con las opciones de saco dentro (el técnico de la máquina elige), con los
+  botones comunes «Mandar corte al bot», «Guardar DXF en DXFs» y «Descargar DXF».
+- **Buscar pedido**: si en RPS no tiene toldos ni remolques pero sí líneas de puerta (PUERTAENR, PUERTAPLE, PUERTAUTO), se
+  abre en Puertas con una puerta por línea (medidas, color, cantidad y OF del texto del pedido). El modelo nunca queda
+  confirmado: manda el dibujo. Los tramos (PUERTAPLET, PUERTAPLETRAM) se avisan y no se convierten.
+- **E.T. entre ventanas**: dobles (delante y detrás) entre ventanales seguidos de enrollable (AR2605065, AR2605038). En las
+  apilables con filas de huecos (AR2605036: 8 tiras para 8 tubos) van sencillas.
