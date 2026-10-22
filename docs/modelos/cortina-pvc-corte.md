@@ -435,5 +435,5 @@ Con F el frente terminado, H el alto terminado y V el alto de la ventana (hueco 
 ### Lo que no cuadra todavía (preguntado a Iván)
 
 - **Q-CP01 · Bamba** (contestada): el paño de la bamba cambia según cómo va unido al cuerpo (Iván: «depende de cómo vaya unida la bamba con el toldo, si va varilla o E.T.»). Arriba: varilla blanca +3, E.T. +5; abajo, su bastilla (B.N(3) +3, B.N(2) +2); a los lados, su B.N. Con 20 de bamba: 26 con varilla y 28 con E.T., como en los ejemplos base.
-- **Q-CP02 · Raya «EMPATE EN HORIZONTAL»** a 34 cm bajo el terminado de arriba, en los tres ejemplos: ¿es fija o depende del ancho del rollo? Mientras tanto, solo se dibuja si el cuerpo no cabe en el rollo.
+- **Q-CP02 · Raya «EMPATE EN HORIZONTAL»** (contestada): no es fija. Iván: «va a 2,50 desde abajo, que es el tamaño del paño». El paño de abajo es del ancho del rollo y la raya del empate va a 250 del corte de abajo; el de arriba lleva el resto y el solape. La de los ejemplos (a 34 del terminado de arriba) solo estaba indicada.
 - **Q-CP03 · E.T. Ø40**: el rotulador va a 9 por encima del terminado (21 del corte), pero la nota dice «marcar 17 cm por el derecho» y hay una raya a 17. ¿Cuál va en el DXF de la máquina? Mientras tanto, las dos en el plano y la de 21 en el DXF.
