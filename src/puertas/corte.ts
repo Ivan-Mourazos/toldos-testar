@@ -82,14 +82,8 @@ function rotulosPieza(
     : `${codigoPano ?? ''} · ${etiquetaClasePieza(pieza)}`;
 
   const multiplicador = (pieza.multiplicador ?? 1) > 1 ? [`X${pieza.multiplicador}`] : [];
-  const lineasTexto = [
-    ...(cortoMm < 130
-      ? [`${clase} · ${of} · REVÉS`]
-      : cortoMm < 280
-        ? [`${clase} · ${of}`, 'REVÉS']
-        : [clase, of, 'REVÉS']),
-    ...multiplicador,
-  ];
+  // Sin REVÉS: va una vez al principio del material (Iván, 22/10/2026).
+  const lineasTexto = [...(cortoMm < 130 ? [`${clase} · ${of}`] : [clase, of]), ...multiplicador];
 
   const maxPorCorto = (cortoMm * 0.82) / ((lineasTexto.length - 1) * 1.5 + 1);
   const maxPorLargo = Math.min(...lineasTexto.map(v => (largoMm * 0.88) / Math.max(1, anchoArial(v, 1))));
@@ -318,7 +312,8 @@ function colocar(
           : 'SACO EN DOS · ALTERNATIVA, ELEGIR SOLO UNA';
     entidades.textos.push(
       { capa: 'texto', x: 0, y: rollo + 250, h: 95, valor: `${grupo[0].material} · ${titulo}` },
-      { capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'DERECHO' },
+      // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
+      { capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' },
     );
     fusionar(entidades, rollo);
     return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };

@@ -2,7 +2,7 @@ import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
-import { presentacionPortanova } from './plantillaPortanova.ts';
+import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
 
 // Referencia: AR2605134 de Iván, 22/10/2026 (mano3). Dibujo en cm, con el origen en la
@@ -43,12 +43,14 @@ const flecha = (l: Lienzo, x: number, y: number, giro = 0, sx = 1) =>
 export const bloqueFlechaEnrollable = { nombre: 'FLECHA2', capa: 'ROTULADOR',
   puntos: [[0, 0], [0, -.01], [.008, -.01], [0, -.0253205080756884], [-.008, -.01], [0, -.01]] };
 
-function identificar(l: Lienzo, p: Puerta, codigo: string, x: number, y: number, ancho: number, alto: number, giro = 0) {
-  // «Si coge, se pone la OF también» (Iván). La letra se limita al hueco libre, sin invadir las E.T.
+function identificar(l: Lienzo, p: Puerta, codigo: string, x: number, y: number, ancho: number, alto: number,
+  { giro = 0, cantidad = false, reves = false, of = false }: { giro?: number; cantidad?: boolean; reves?: boolean; of?: boolean } = {}) {
+  // Iván, 22/10/2026: la cantidad, REVÉS y la OF van una vez, en el primer paño; los demás, solo su código.
+  // «Si coge, se pone la OF también». La letra se limita al hueco libre, sin invadir las E.T.
   const h = Math.min(20, ancho / 9, alto / 4);
   if (h < 3) return;
-  const conOf = p.of.trim() && alto >= h * 5.5 && anchoArial(p.of.trim(), h) <= ancho * .88;
-  const rotulos = [`X${p.cantidad}`, codigo, 'REVÉS', ...(conOf ? [p.of.trim()] : [])];
+  const conOf = of && p.of.trim() && alto >= h * 5.5 && anchoArial(p.of.trim(), h) <= ancho * .88;
+  const rotulos = [...(cantidad && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo, ...(reves ? ['REVÉS'] : []), ...(conOf ? [p.of.trim()] : [])];
   rotulos.forEach((v, i) => {
     const d = ((rotulos.length - 1) / 2 - i) * h * 1.5;
     texto(l, v, x + (giro ? -d : 0), y + (giro ? 0 : d), h, { centrado: true, giro });
@@ -75,7 +77,7 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   paños.forEach(([abajo, arriba], i) => {
     contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
     const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 18);
-    identificar(l, p, `${letra}${i + 1}`, F / 2, (a + b) / 2, F, b - a);
+    identificar(l, p, `${letra}${i + 1}`, F / 2, (a + b) / 2, F, b - a, { cantidad: i === 0, reves: i === 0, of: i === 0 });
   });
   linea(l, 'referencias', 0, 0, F, 0);
   linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
@@ -170,6 +172,8 @@ export function sumarLienzo(destino: Lienzo, origen: Lienzo, dx = 0, dy = 0) {
 }
 
 const unicos = (v: string[]) => [...new Set(v.filter(Boolean))];
+// Cotas del corte más grandes, para que se lean al imprimir sin pisar las piezas (Iván, 22/10/2026).
+const CORTE_COTAS = 'XERA 20';
 
 /** Resumen del corte recibido: saco/cristal una vez; lona con todas sus colocaciones reales. */
 function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
@@ -184,8 +188,8 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
     texto(l, p.clase === 'saco' ? 'SACO 900 GR NEGRO' : p.material, xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
     texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8), { centrado: true });
-    cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381));
-    cota(l, xMuestra, y, xMuestra, techo, -35.1317);
+    cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
+    cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);
     // Separaciones de presentación medidas en AR2605134; no afectan al corte ni a sus piezas.
     techo = y - (p.clase === 'saco' ? 82.0735 : 92.3202);
     anchoMax = Math.max(anchoMax, p.ancho);
@@ -193,6 +197,9 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
   for (const c of cortes.filter(c => c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase)))) {
     const usadas = c.colocadas.filter(t => !['saco', 'cristal'].includes(t.pieza.clase));
     const alto = c.anchoRollo / 10, yc = techo - alto;
+    // La OF de cada puerta va en su primer paño del rollo y REVÉS solo en el primero de todos (Iván, 22/10/2026).
+    const delante = usadas.filter(t => t.pieza.clase === 'pano').sort((a, b) => a.x - b.x || b.y - a.y);
+    const cabezas = new Set(pedido.elementos.map(e => delante.find(t => t.pieza.id.startsWith(`${e.id}:`))).filter(Boolean));
     for (const t of usadas) {
       const p = t.pieza;
       const P = ([x, y]: Punto): Punto => [t.x / 10 + (t.girada ? p.alto - y : x), yc + t.y / 10 + (t.girada ? x : y)];
@@ -210,7 +217,7 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
           const paños = calcularPuerta(elemento.input).piezas.filter(u => u.clase === 'pano').map(u => `${elemento.id}:${u.id}`);
           const [a, b] = huecoRotulo(0, p.alto, marcas.map(m => m[1]), 8);
           const codigo = `${letra}${paños.indexOf(p.id) + 1}`, q = P([p.ancho / 2, (a + b) / 2]);
-          identificar(l, elemento.input, codigo, q[0], q[1], p.ancho, b - a, t.girada ? 90 : 0);
+          identificar(l, elemento.input, codigo, q[0], q[1], p.ancho, b - a, { giro: t.girada ? 90 : 0, of: cabezas.has(t), reves: t === delante[0] });
         }
       }
     }
@@ -221,12 +228,12 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     l.lineas.push(...c.entidades.lineas.filter(a => a.capa === 'CUTTER').map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));
     l.textos.push(...c.entidades.textos.filter(a => a.capa === 'ROTULADOR').map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, h: a.h / 10 })));
     texto(l, c.material, 0, techo + 7.6701, 10);
-    cota(l, 0, yc, c.largo / 10, yc, yc - 25.8375);
-    cota(l, 0, yc, 0, techo, -35.1317);
+    cota(l, 0, yc, c.largo / 10, yc, yc - 25.8375, CORTE_COTAS);
+    cota(l, 0, yc, 0, techo, -35.1317, CORTE_COTAS);
     anchoMax = Math.max(anchoMax, c.largo / 10);
     techo = yc - 100;
   }
-  return { lienzo: l, zona: { x0: -60, y0: techo + 45, x1: anchoMax + 30, y1: 55 } };
+  return { lienzo: l, zona: { x0: -70, y0: techo + 45, x1: anchoMax + 30, y1: 55 } };
 }
 
 export function lienzoAMetros(l: Lienzo, ox: number, oy: number) {
@@ -256,16 +263,13 @@ export function escribirPlanoEnrollables(pedido: PedidoPuertas, cortes: CortePue
   const za = zonaM({ x0: -65, y0, x1: cursor - 60, y1 }, 100, 100);
   const corte = dibujarCorte(cortes, pedido);
   let zc = zonaM(corte.zona, 110, 90), altoVistaCorte: number | undefined;
-  const rollos = cortes.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'));
   const portanova = esClientePortanova(pedido, cabecera.cliente);
-  if (portanova && rollos.length === 1) {
-    const base = corte.lienzo.cotas.find(c => c.giro === 0 && Math.abs(c.valor - rollos[0].largo / 10) < .01)!;
-    // Encuadre medido de la plantilla, independiente de dónde anide cada pieza la máquina.
-    const cx = 110 + (rollos[0].largo / 20 - 23.4629) / 100;
-    const cy = 90 + (base.y1 + rollos[0].anchoRollo / 20 - 5.5357) / 100;
-    const proporcion = 146.1104593 / 127.4184910;
-    altoVistaCorte = Math.max(10.02372, 2 * Math.max(cx - zc.x0, zc.x1 - cx) * proporcion, 2 * Math.max(cy - zc.y0, zc.y1 - cy));
-    zc = { x0: cx - altoVistaCorte / proporcion / 2, x1: cx + altoVistaCorte / proporcion / 2, y0: cy - altoVistaCorte / 2, y1: cy + altoVistaCorte / 2 };
+  if (portanova) {
+    // El corte, lo más grande que quepa y pegado arriba: debajo queda MATERIALES (Iván, 22/10/2026).
+    const proporcion = VENTANA_CORTE_PORTANOVA.alto / VENTANA_CORTE_PORTANOVA.ancho;
+    altoVistaCorte = Math.max(zc.y1 - zc.y0, (zc.x1 - zc.x0) * proporcion);
+    const cx = (zc.x0 + zc.x1) / 2, ancho = altoVistaCorte / proporcion;
+    zc = { x0: cx - ancho / 2, x1: cx + ancho / 2, y0: zc.y1 - altoVistaCorte, y1: zc.y1 };
   }
   const puertas = pedido.elementos.map(e => e.input);
   const fecha = cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/');

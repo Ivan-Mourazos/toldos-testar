@@ -71,6 +71,38 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     }
   });
 
+  it('X3 y REVÉS una sola vez (Iván, 22/10/2026): en A1 del alzado y en el primer paño del corte, con la OF', () => {
+    const textos = modelo(plano()).filter(r => r.tipo === 'MTEXT');
+    const alzado = textos.filter(r => numero(r, 10) < 105 && numero(r, 20) > 95);
+    const corte = textos.filter(r => numero(r, 10) > 109);
+    const cuenta = (lista: typeof textos, v: string) => lista.filter(r => valor(r, 1) === v).length;
+    for (const [v, n] of [['X3', 1], ['A1', 1], ['REVÉS', 1], ['0233175', 1], ['A2', 1]] as const) expect(cuenta(alzado, v), v).toBe(n);
+    const y = (v: string) => numero(alzado.find(r => valor(r, 1) === v)!, 20);
+    expect(y('X3')).toBeGreaterThan(y('A1'));
+    expect(y('REVÉS')).toBeLessThan(y('A1'));
+    expect(y('A2')).toBeLessThan(y('0233175'));
+    // En la lona ya no va el X3: se corta todo junto. Sí en el saco y el cristal, que se dibujan una vez.
+    for (const [v, n] of [['X3', 2], ['REVÉS', 1], ['0233175', 1], ['A1', 3], ['A2', 3]] as const) expect(cuenta(corte, v), v).toBe(n);
+  });
+
+  it('MATERIALES abajo, junto a las notas, y el corte arriba con cotas que se leen al imprimir (Iván, 22/10/2026)', () => {
+    const ent = registrosDxf(plano());
+    const materiales = ent.find(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES/.test(valor(r, 1) ?? ''))!;
+    expect(numero(materiales, 10)).toBeCloseTo(162.526, 2);
+    expect(numero(materiales, 20)).toBeCloseTo(77.012, 2);
+    const vista = ent.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === 4)!;
+    expect(numero(vista, 20) - numero(vista, 41) / 2).toBeGreaterThanOrEqual(79.9);
+    expect(numero(vista, 20) + numero(vista, 41) / 2).toBeCloseTo(201.882, 2);
+    // El dibujo del corte empieza arriba del todo de su ventana.
+    expect(numero(vista, 22) + numero(vista, 45) / 2).toBeCloseTo(90.55, 2);
+    // Las de la plantilla (detalle del saco, más a la derecha en el modelo) no cambian.
+    const cotas = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) > 109 && numero(r, 13) < 120);
+    expect(cotas).toHaveLength(6);
+    expect(cotas.every(r => valor(r, 3) === 'XERA 20')).toBe(true);
+    const estilo = registrosDxf(plano(), 'TABLES').find(r => r.tipo === 'DIMSTYLE' && valor(r, 2) === 'XERA 20')!;
+    expect(numero(estilo, 140)).toBe(.2);
+  });
+
   it('acota el saco, el cristal y la lona según el corte recibido, sin fijar su colocación', () => {
     const pedido = pedidoDe('AR2605134', puerta());
     const corte = generarCortePuertas(pedido).cortes;
@@ -101,9 +133,10 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
 });
 
 describe('Regresión: resultados completos anteriores al plano específico de enrollables', () => {
+  // Huellas renovadas el 22/10/2026: solo cambian los rótulos del corte, que ya no llevan REVÉS en cada pieza.
   it.each([
-    ['apilable', apilable, 'bb8e4835b0d00e4e35227f0344bd71f1c69d6bc9775ccf98df5f73e066a30262'],
-    ['autorreparable', autorreparable, 'ace51b8a5327add6503ec4c195ce3c2cb12ffced66919332ceda3f424c0a356a'],
+    ['apilable', apilable, 'c9e1e24a250c030c6014f7cc63b099e0d2fd83f047a7cbd2cb19c1e33b338ed7'],
+    ['autorreparable', autorreparable, 'aedb2480aad5ff7d490c8fd32a878a404f3ff24a2788b459e45b360a9fe3683b'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

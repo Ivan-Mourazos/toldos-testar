@@ -90,7 +90,10 @@ describe('Corte de puertas', () => {
       expect(x.y).toBeGreaterThanOrEqual(0);
       expect(x.y + (x.girada ? x.pieza.ancho : x.pieza.alto)*10).toBeLessThanOrEqual(c.anchoRollo+0.01);
     }
-    expect(r.archivo?.entidades.textos.filter(x => x.valor.includes('DERECHO'))).toHaveLength(3);
+    // Iván, 22/10/2026: las puertas se cortan siempre por el revés; va una vez al principio de cada material,
+    // como el DERECHO de remolques, y no en cada pieza.
+    expect(r.archivo?.entidades.textos.filter(x => x.valor === 'REVÉS' && !x.centrado)).toHaveLength(3);
+    expect(r.archivo?.entidades.textos.some(x => x.valor.includes('DERECHO'))).toBe(false);
     expect(r.archivo?.entidades.lineas.some(x => x.y1 > 4000)).toBe(true);
     const textosPieza = r.cortes.flatMap(c => c.entidades.textos).filter(t => t.centrado);
     expect(textosPieza.some(t => t.valor === 'A1' && t.h === 200)).toBe(true);
@@ -98,7 +101,8 @@ describe('Corte de puertas', () => {
     expect(textosPieza.some(t => t.valor.includes('CACHO'))).toBe(true);
     expect(textosPieza.some(t => t.valor.includes('SACO'))).toBe(true);
     expect(textosPieza.some(t => t.valor.includes('CRISTAL'))).toBe(true);
-    expect(textosPieza.some(t => t.valor === 'REVÉS' && t.h > 80)).toBe(true);
+    expect(textosPieza.some(t => t.valor.includes('REVÉS'))).toBe(false);
+    expect(textosPieza.some(t => t.valor === '0232309' && t.h === 200)).toBe(true);
   });
   it('sin OF dibuja SIN OF y no crea archivo ni aun con un pedido identificado', () => {
     const p=pedido(); p.elementos[0].input.of='';

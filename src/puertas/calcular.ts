@@ -152,7 +152,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
           const arriba=++numeroUnion,abajo=++numeroUnion;
           punto(cacho,arriba,cacho.alto-1,x);punto(cacho,abajo,1,x);
           if(i===0&&superior)punto(superior.pieza,arriba,1);
-          else if(i>0)punto(separaciones[i-1].trasera,arriba,1);
+          // En la E.T. del medio solo se numera la delantera; la de detrás no hace falta (Iván, 22/10/2026).
+          else if(i>0)punto(separaciones[i-1].delantera,arriba,1);
           if(i===ventanales.length-1&&inferior)punto(inferior.pieza,abajo,inferior.pieza.alto-1);
           else if(i<separaciones.length)punto(separaciones[i].delantera,abajo,REGLAS_ENROLLABLE.corteEntrada-1);
         }

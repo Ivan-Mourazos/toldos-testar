@@ -228,8 +228,9 @@ AR2605134 sigue siendo un contraste con su PDF, sin atribuirle un corte manual i
 - `genericas/bot/AR2605038.dxf`: los ocho emparejamientos de los laterales de los dos ventanales de la puerta D
   aparecen como D1…D8, dos veces cada uno, en ROTULADOR de 12 mm. Sirven para comprobar qué piezas se unen.
 
-La web identifica cada paño con su código corto y cada pieza pequeña con letra de puerta y nombre; conserva OF y
-REVÉS por pieza según la petición de Iván. Los textos son centrados y siguen el frente original de la pieza;
+La web identifica cada paño con su código corto y cada pieza pequeña con letra de puerta y nombre, con su OF.
+**REVÉS ya no va en cada pieza** (Iván, 22/10/2026): las puertas se cortan siempre por el revés y se avisa una vez
+al principio de cada material, como el DERECHO de remolques. Los textos son centrados y siguen el frente original de la pieza;
 giran al girar la pieza, sin un giro adicional por el lado mayor. Se usan máximos de 200/300 mm en paños,
 reduciéndolos cuando falta espacio. Son rótulos adaptados al hueco disponible; no se copian las posiciones
 arbitrarias del ratón ni las omisiones de identificación de los cortes históricos. Después de Z se continúa AA, AB…
@@ -329,8 +330,11 @@ Las E.T. tienen sus ejes, marcas y la raya de borrar en sus capas; sus tres flec
 inserciones del FLECHA2 de Iván. El saco desplegado y los velcros conservan referencias,
 referencia-1, los sombreados SOLID/ANGLE y las guías que no se imprimen.
 
-Cada paño se identifica con cantidad, código y REVÉS; se añade la OF debajo si queda hueco,
-sin cruzar las entradas. Las notas de taller, el detalle del saco y el aviso magenta **van
+En el alzado, el primer paño lleva la cantidad (X3, solo si hay más de una puerta), el código, REVÉS
+y la OF debajo si queda hueco, sin cruzar las entradas; los demás paños, solo su código (Iván,
+22/10/2026: «llega indicar en el planteamiento que es x3»). En el corte resumido la lona no lleva
+X3 (se corta todo junto): el primer paño de cada puerta lleva su OF y el primero del rollo, REVÉS.
+El saco y el cristal conservan su X3. Las notas de taller, el detalle del saco y el aviso magenta **van
 siempre** y proceden de la plantilla. Solo se corrigen las faltas evidentes. La nota de los
 cachos debe leerse entera dentro de su ventana: Iván confirmó que su recorte era un descuido.
 No se imprimen la cabecera PUERTA…, los metros del corte, las observaciones de RPS ni
@@ -343,6 +347,13 @@ sus marcas y las cotas del rollo. Usa las rayas fusionadas del corte de máquina
 orillos ni repetir aristas compartidas (aclaración posterior de Iván al revisar la comparación).
 En AR2605134 son 708 × 300, seis paños, nueve E.T. de pie y
 seis cachos encima. La colocación y el orden A1/A2 se deciden en el corte, no en el plano.
+Iván movió «MATERIALES» abajo, junto a las notas (copia retocada del plano, 22/10/2026); la ventana
+del corte llega ahora del marco de arriba hasta MATERIALES y el dibujo se pega arriba, tan grande
+como quepa. Sus cotas usan el estilo XERA 20 (texto de 20 cm), que se añade al DXF copiando XERA 15,
+para que se lean al imprimir sin pisar las piezas. Vale para todas las puertas de Portanova.
+
+Con varios ventanales, los mininúmeros van en las esquinas de los cachos y de los paños que los
+reciben; en la E.T. del medio solo en la delantera, la de detrás no los lleva (Iván, 22/10/2026).
 
 `node scripts/contrastar-plano-enrollable.mjs <DXF mano3 local> <pedido JSON local> tmp/plano-enrollable <DXF mano/out local>` escribe
 `tmp/plano-enrollable/comparacion.{md,json}`, el DXF generado, las dos páginas lado a lado y

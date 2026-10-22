@@ -22,6 +22,10 @@ describe('Varios ventanales continuos del corte manual', () => {
     expect(et).toHaveLength(5);
     const mini = generarCortePuertas(pedidoDe('AR2605065',p)).cortes.flatMap(c => c.entidades.textos).filter(t => t.capa === 'ROTULADOR' && /^[a-z]\d+$/.test(t.valor));
     for (let n=1;n<=8;n++) expect(mini.filter(t => t.valor === `a${n}`)).toHaveLength(2);
+    // Iván, 22/10/2026: en la E.T. del medio los mininúmeros van solo en una; la de detrás no los lleva.
+    const entre = calcularPuerta(p).piezas.filter(x => /entre ventanales/.test(x.nombre));
+    expect(entre.find(x => /trasera/.test(x.nombre))!.unionesCorte ?? []).toEqual([]);
+    expect(entre.find(x => /delantera/.test(x.nombre))!.unionesCorte).toHaveLength(4);
   });
 
   it('AR2605038, puerta D: los dos ventanales tienen laterales identificados y cristales distintos', () => {

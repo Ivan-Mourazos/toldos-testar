@@ -30,6 +30,14 @@ export function escribirDxfPlano(plano, cabecera) {
     const grande = src.match(/ {2}0\nDIMSTYLE\n(?:(?! {2}0\n)[\s\S])*? {2}2\nXERAL 15\n(?:(?! {2}0\n)[\s\S])*/)?.[0];
     if (grande) src = insertarEnTabla(src, 'DIMSTYLE', grande.replace(/(105\n)[^\n]+/, `$1${nuevo()}`).replace('XERAL 15\n', 'XERA 15\n'), 1);
   }
+  // Estilos que ninguna plantilla trae (las cotas grandes del corte de puertas): copia del XERA 15 con su texto y flecha.
+  for (const estilo of new Set([...(plano.cotas ?? []), ...(plano.corte.cotas ?? [])].map(c => c.estilo))) {
+    const e = ESTILOS_COTA[estilo];
+    if (!e?.copiaDe || src.includes(`  2\n${estilo}\n`)) continue;
+    const base = src.match(new RegExp(` {2}0\\nDIMSTYLE\\n(?:(?! {2}0\\n)[\\s\\S])*? {2}2\\n${e.copiaDe}\\n(?:(?! {2}0\\n)[\\s\\S])*`))?.[0];
+    if (base) src = insertarEnTabla(src, 'DIMSTYLE', base.replace(/(105\n)[^\n]+/, `$1${nuevo()}`).replace(`  2\n${e.copiaDe}\n`, `  2\n${estilo}\n`)
+      .replace(/(\n140\n)[^\n]+/, `$1${e.texto}`).replace(/(\n 41\n)[^\n]+/, `$1${e.flecha}`), 1);
+  }
 
   const capasNuevas = CAPAS_BOT.filter((c) => !new RegExp(`\\n  2\\n${c.nombre}\\n`).test(src));
   const registros = capasNuevas.map((c) => `  0\nLAYER\n  5\n${nuevo()}\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n  2\n${c.nombre}\n 70\n     0\n 62\n${String(c.color).padStart(6)}\n  6\nContinuous\n370\n    -3\n390\nF\n`).join('');
@@ -229,6 +237,7 @@ const ESTILOS_COTA = {
   'XERAL 5': { texto: 0.05, flecha: 0.015, prolonga: 0.0175, largo: 0.06, hueco: 0.003 },
   'XERAL 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
   'XERA 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
+  'XERA 20': { texto: 0.2, flecha: 0.04, prolonga: 0.0175, largo: 0.1, hueco: 0.005, copiaDe: 'XERA 15' },
 };
 const comaCota = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
 
