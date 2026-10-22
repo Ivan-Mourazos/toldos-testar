@@ -64,6 +64,12 @@ describe('Correcciones de taller del 22 de octubre por la noche', () => {
     expect(new Set(r.piezas.filter(p => p.clase === 'entrada').map(p => p.nombre)).size).toBe(1);
   });
 
+  it('los rótulos se adaptan también al paño estrecho que queda después de un empate', () => {
+    const p = base('PUERTAUTO', 426, 312), r = generarCortePuertas(pedidoDe('AR2600001', p));
+    expect(r.resultados[0].piezas.some(p => p.clase === 'pano' && p.alto < 8)).toBe(true);
+    expect(r.cortes.flatMap(c => c.entidades.textos).every(t => Number.isFinite(t.h) && t.h > 0)).toBe(true);
+  });
+
   it('apilable: OF, código y REVÉS comparten fila en tres columnas', () => {
     const p = puertaPlanoReal('AR2605036'), l = dibujarAlzadoTaller(p, 'A').lienzo;
     const textos = [p.of, 'A1', 'REVÉS'].map(v => l.textos.find(t => t.valor === v)!);

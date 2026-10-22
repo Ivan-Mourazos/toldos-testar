@@ -86,12 +86,14 @@ function rotulosPieza(
     const valores = [of, clase, ...reves ? ['REVÉS'] : []];
     const obstaculos = [...pieza.huecos.map(h => [h.y - 4, h.y + h.alto + 4]),
       ...pieza.marcas.filter(m => m[1] === m[3] && Math.abs(m[2] - m[0]) > pieza.ancho / 2).map(m => [m[1] - 4, m[1] + 4])];
-    let huecos = [[4, pieza.alto - 4]];
+    const margenY = Math.min(4, pieza.alto / 5);
+    let huecos = [[margenY, pieza.alto - margenY]];
     for (const [a, b] of obstaculos) huecos = huecos.flatMap(([u, v]) => b <= u || a >= v ? [[u, v]]
       : [[u, Math.min(v, a)], [Math.max(u, b), v]].filter(([c, d]) => d > c));
-    const libre = huecos.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0] ?? [4, pieza.alto - 4];
+    const libre = huecos.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0] ?? [margenY, pieza.alto - margenY];
     const central = pieza.marcas.some(m => m[0] === m[2] && Math.abs(m[0] - pieza.ancho / 2) < 2 && Math.abs(m[3] - m[1]) > pieza.alto / 2);
-    const inicio = central ? pieza.ancho / 2 + 10 : 10, fin = pieza.ancho - 10, w = (fin - inicio) / valores.length;
+    const margenX = Math.min(10, pieza.ancho / 10);
+    const inicio = central ? pieza.ancho / 2 + margenX : margenX, fin = pieza.ancho - margenX, w = (fin - inicio) / valores.length;
     const h = Math.min(25, (libre[1] - libre[0]) * .65, ...valores.map(v => w * .82 / anchoArial(v, 1)));
     valores.forEach((valor, i) => {
       const a = inicio + w * (i + .5), b = (libre[0] + libre[1]) / 2;
