@@ -100,6 +100,15 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     }
   });
 
+  it('conserva la OF y el aviso de los sacos de stock colocados por el bot', () => {
+    const pedido = pedidoDe('AR2600001', { ...base('PUERTAUTO', 426, 400), autorreparable: { empates: [150] } });
+    const corte = generarCortePuertas(pedido, { ofStockSacos: '0299999' });
+    expect(corte.cortes.some(c => c.colocadas.some(t => t.pieza.of === '0299999'))).toBe(true);
+    const dxf = escribirPlanoPuertas({ pedido, cabecera, ofStockSacos: '0299999' });
+    const textos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1));
+    expect(textos).toContain('0299999'); expect(textos).toContain('STOCK');
+  });
+
   it('AR2605134 sin impresión conserva el plano completo de main 7ebe632 byte por byte', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),

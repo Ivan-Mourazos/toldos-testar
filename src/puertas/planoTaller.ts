@@ -256,9 +256,15 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
     const panos = c.colocadas.filter(t => t.pieza.clase === 'pano').sort((a, b) => a.x - b.x || b.y - a.y);
     for (const t of c.colocadas) {
       const p = t.pieza, e = pedido.elementos.find(e => p.id.startsWith(`${e.id}:`));
-      if (!e) continue;
-      const letra = String.fromCharCode(65 + pedido.elementos.indexOf(e));
       const P = ([x, y]: Punto): Punto => [t.x / 10 + (t.girada ? p.alto - y : x), yc + t.y / 10 + (t.girada ? x : y)];
+      if (!e) {
+        // Los sacos de stock tienen su propia OF y no pertenecen a una puerta del pedido.
+        for (const m of c.entidades.textos.filter(m => m.capa !== 'ROTULADOR' && m.x > t.x && m.y > t.y
+          && m.x < t.x + (t.girada ? p.alto : p.ancho) * 10 && m.y < t.y + (t.girada ? p.ancho : p.alto) * 10))
+          l.textos.push({ ...m, x: m.x / 10, y: yc + m.y / 10, h: m.h / 10 });
+        continue;
+      }
+      const letra = String.fromCharCode(65 + pedido.elementos.indexOf(e));
       const [x, y] = P([p.ancho / 2, p.alto / 2]);
       if (p.clase === 'pano') {
         const piezas = calcularPuerta(e.input).piezas.filter(p => p.clase === 'pano');
