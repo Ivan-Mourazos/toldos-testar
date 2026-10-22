@@ -58,8 +58,6 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
 
   for (const [i, t] of datos.toldos.entries()) {
     if (t.cortina) {
-      // Los mininúmeros, del mismo tamaño y en el mismo sitio de cada pieza que en el corte (Iván, 22/10/2026).
-      const mini = (valor, xm, ym) => T.push({ capa: 'ROTULADOR', x: xm, y: ym, h: 1, valor, giro: 0, centrado: true, literal: true });
       x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini }) + ENTRE_TOLDOS;
       continue;
     }

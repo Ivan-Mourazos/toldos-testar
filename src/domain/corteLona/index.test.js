@@ -210,7 +210,8 @@ describe('Del pedido guardado al corte de lona', () => {
       expect(sobre([numero(c, 14), numero(c, 24)]), `cota ${numero(c, 42)}`).toBe(true);
     }
     const minisAlzado = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 20) > 100).map((r) => valor(r, 1));
-    for (const n of ['a1', 'a2', 'a3', 'a4']) expect(minisAlzado.filter((v) => v === n)).toHaveLength(2);
+    // Lateral y banda llevan el número en el mismo sitio al solaparse: en el dibujo va una vez.
+    for (const n of ['a1', 'a2', 'a3', 'a4']) expect(minisAlzado.filter((v) => v === n)).toHaveLength(1);
   });
   it('corta el cuerpo cuando la bamba es de otra tela y deja aviso', () => {
     const order = structuredClone(revision.order);
