@@ -173,8 +173,8 @@ function dibujarPieza(
 type Columna = { ancho: number; alto: number; piezas: Array<{ pieza: PiezaPuerta; h: number; girada: boolean }> };
 const largoDe = (columnas: Columna[]) => columnas.reduce((suma, c) => suma + c.ancho, 0);
 
-/** Columnas a lo largo del rollo con las piezas una encima de otra; `nueva` dice cómo se pone la que abre columna. */
-function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: 'estrecha' | 'ancha', orden: 'corto' | 'largo'): Columna[] {
+/** Columnas a lo largo del rollo con las piezas una encima de otra; `nueva` dice cómo se pone cada pieza que abre columna. */
+function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta) => 'estrecha' | 'ancha', orden: 'corto' | 'largo'): Columna[] {
   const columnas: Columna[] = [];
   const lado = (p: PiezaPuerta) => (orden === 'corto' ? Math.min(p.ancho, p.alto) : Math.max(p.ancho, p.alto));
   for (const p of [...grupo].sort((a, b) => lado(b) - lado(a))) {
@@ -194,7 +194,7 @@ function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: 'estrecha' | 'an
         .sort((a, b) => a.desperdicio - b.desperdicio || a.resto - b.resto);
       let elegida = viables[0];
       if (!elegida) {
-        opciones.sort((a, b) => (nueva === 'estrecha' ? a.w - b.w || b.h - a.h : b.w - a.w || a.h - b.h));
+        opciones.sort((a, b) => (nueva(p) === 'estrecha' ? a.w - b.w || b.h - a.h : b.w - a.w || a.h - b.h));
         const t = opciones[0];
         elegida = { i: columnas.length, t, resto: rollo - t.h, desperdicio: 0 };
         columnas.push({ ancho: t.w, alto: 0, piezas: [] });
@@ -274,10 +274,18 @@ function colocar(
     // Aprovechamiento del rollo (Iván, 21/10/2026: «no aprovecha bien el corte»). Se colocan las piezas en
     // columnas a lo largo del rollo, una encima de otra a lo ancho, y se prueban varias maneras: columnas
     // estrechas (piezas de pie) o anchas (frente a lo largo, como el corte a mano de AR2604638, que gasta 172 cm
-    // de rollo en vez de 278), ordenando por el lado corto o el largo. Se queda la que gasta menos rollo.
-    const columnas = [
-      ...(['estrecha', 'ancha'] as const).flatMap(nueva => (['corto', 'largo'] as const).map(orden => empaquetar(grupo, rollo, nueva, orden))),
-    ].reduce((mejor, otra) => (largoDe(otra) < largoDe(mejor) - 0.001 ? otra : mejor));
+    // de rollo en vez de 278), ordenando por el lado corto o el largo. También se mezclan: las piezas estrechas de
+    // pie y las grandes tumbadas, como el corte a mano de AR2605134 (Iván, 22/10/2026: paños con el frente a lo
+    // largo y las E.T. de pie una al lado de otra, 708 cm en vez de 848). Se queda la que gasta menos rollo.
+    const umbrales = [...new Set(grupo.map(p => Math.min(p.ancho, p.alto)))].sort((a, b) => a - b);
+    const maneras: Array<(p: PiezaPuerta) => 'estrecha' | 'ancha'> = [
+      () => 'estrecha',
+      () => 'ancha',
+      ...umbrales.map(u => (p: PiezaPuerta) => (Math.min(p.ancho, p.alto) <= u ? 'estrecha' as const : 'ancha' as const)),
+    ];
+    const columnas = maneras
+      .flatMap(nueva => (['corto', 'largo'] as const).map(orden => empaquetar(grupo, rollo, nueva, orden)))
+      .reduce((mejor, otra) => (largoDe(otra) < largoDe(mejor) - 0.001 ? otra : mejor));
     let largo = 0;
     for (const columna of columnas) {
       let y = 0;

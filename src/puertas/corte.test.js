@@ -35,14 +35,17 @@ describe('Corte de puertas', () => {
     const lona = generarCortePuertas(p).cortes.find(c => c.material.includes('BLANCO') || c.material === 'LAC900 AZUL 5002');
     expect(lona.largo).toBe(1720);
   });
-  it('las entradas de tubo no se ponen de pie en una columna ancha (AR2605134: 3 puertas de 212 × 360)', () => {
+  it('AR2605134 (3 puertas de 212 × 360) gasta 708 cm como el corte a mano: paños tumbados y E.T. de pie', () => {
+    // Iván dibujó el corte el 22/10/2026: los tres pares de paños con el frente a lo largo (636 cm) y las nueve
+    // E.T. de 212 × 8 de pie, una al lado de otra (72 cm). La web las tumbaba en otra columna y gastaba 848.
     const p = pedido();
     Object.assign(p.elementos[0].input, { frente: 212, alto: 360, cantidad: 3 });
     p.elementos[0].input.enrollable = { T: 169, D: 60, margen: 6, empates: [] };
     p.elementos[0].input.entradas = [60, 131, 191].map(altura => ({ altura, diametro: 30, largo: 212, alto: 8, huecos: [] }));
     const lona = generarCortePuertas(p).cortes.find(c => c.material === 'LAC900 AZUL 5002');
-    expect(lona.colocadas.filter(k => k.pieza.clase === 'entrada').every(k => !k.girada)).toBe(true);
-    expect(lona.largo).toBe(8480);
+    expect(lona.colocadas.filter(k => k.pieza.clase === 'pano').every(k => !k.girada)).toBe(true);
+    expect(lona.colocadas.filter(k => k.pieza.clase === 'entrada').every(k => k.girada)).toBe(true);
+    expect(lona.largo).toBe(7080);
   });
   it('mantiene códigos únicos a partir de la puerta 27', () => {
     const p=pedido(),input=p.elementos[0].input;
