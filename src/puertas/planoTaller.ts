@@ -2,6 +2,7 @@ import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
+import { rotuloSaco } from './saco.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
@@ -90,7 +91,7 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
     }
     texto(l, 'CREMALLERA SOLDADA HASTA MITAD DE SACO', w / 2, ys - h - 32, Math.min(10, w / 45));
   }
-  const material = p.materialSaco.replace(/^LAC\s*900\s*/i, 'SACO 900 GR ');
+  const material = rotuloSaco(p);
   texto(l, material, w / 2, ys - h / 2, Math.min(10, w / 40));
   cota(l, 0, ys - h, w, ys - h, ys - h / 2, 'XERAL 5');
   cota(l, 0, ys - h, 0, ys, -25);
@@ -238,7 +239,7 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
           if (xLocal >= 0 && xLocal <= p.ancho && yLocal >= 0 && yLocal <= p.alto)
             texto(l, m.valor, xLocal, y + yLocal, m.h / 10, (m.giro ?? 0) - (t.girada ? 90 : 0), 'ROTULADOR');
         }
-        texto(l, c.material + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`), p.ancho / 2, techo + 15, 10);
+        texto(l, (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`), p.ancho / 2, techo + 15, 10);
         cota(l, 0, y, p.ancho, y, y - 30, 'XERA 20'); cota(l, 0, y, 0, techo, -35, 'XERA 20');
         anchoMax = Math.max(anchoMax, p.ancho); techo = y - 95;
       }
@@ -273,7 +274,7 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
           const q = P([v.x, v.y]); l.textos.push({ ...v, x: q[0], y: q[1], giro: t.girada ? 90 : 0 });
         }
         primeros.add(e.id);
-      } else texto(l, p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);
+      } else texto(l, p.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);
     }
     texto(l, c.material, c.largo / 20, techo + 15, 10);
     cota(l, 0, yc, c.largo / 10, yc, yc - 30, 'XERA 20'); cota(l, 0, yc, 0, techo, -35, 'XERA 20');

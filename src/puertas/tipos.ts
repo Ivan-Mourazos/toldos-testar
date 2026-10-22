@@ -22,6 +22,8 @@ export interface Puerta {
   color: string;
   materialCristal: string;
   materialSaco: string;
+  /** Saco negro que recibe diagonales amarillas en impresión digital tras cortarlo. */
+  sacoDiagonalesAmarillas?: boolean;
   rollo: number;
   rolloCristal: number;
   rolloSaco: number;
@@ -46,6 +48,8 @@ export interface PiezaPuerta {
   material: string;
   rollo: number;
   of: string;
+  /** Indicación de impresión del saco; no modifica su material ni su contorno. */
+  sacoDiagonalesAmarillas?: boolean;
   contorno: Punto[];
   radio: number;
   marcas: Segmento[];

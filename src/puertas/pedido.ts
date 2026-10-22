@@ -16,11 +16,12 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)))return error();
     const plantilla=nuevaPuerta();
     for(const k of Object.keys(plantilla) as Array<keyof typeof plantilla>) {
-      if(['entradas','ventanas','enrollable','apilable','autorreparable','medidasBolsillo'].includes(k)) continue;
+      if(['entradas','ventanas','enrollable','apilable','autorreparable','medidasBolsillo','sacoDiagonalesAmarillas'].includes(k)) continue;
       if(typeof p[k]!==typeof plantilla[k]) return error();
       if(typeof p[k]==='number' && (!Number.isFinite(p[k]) || Math.abs(p[k] as number)>3000)) return error();
       if(typeof p[k]==='string' && (p[k] as string).length>2000) return error();
     }
+    if(p.sacoDiagonalesAmarillas!==undefined && typeof p.sacoDiagonalesAmarillas!=='boolean') return error();
     const lista=(x:unknown,max=200): x is unknown[]=>Array.isArray(x) && x.length<=max;
     const numeros=(x:unknown,max=100)=>lista(x,max) && x.every(n=>typeof n==='number' && Number.isFinite(n) && Math.abs(n)<=3000);
     const cotas=(x:unknown,claves:string[])=>objeto(x) && claves.every(k=>typeof x[k]==='number' && Number.isFinite(x[k]) && Math.abs(x[k] as number)<=3000);

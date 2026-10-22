@@ -2,6 +2,7 @@ import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
+import { rotuloSaco } from './saco.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
 
@@ -128,7 +129,8 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   cota(l, 0, ys - 26, 0, ys, -32.47);
   cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
   cota(l, 0, ys - 24, 4.5, ys - 24, ys - 43.25);
-  texto(l, 'SACO 900 GR NEGRO', F / 2 - 71.5081, ys - 11.8793, 10);
+  texto(l, rotuloSaco(p), p.sacoDiagonalesAmarillas ? F / 2 : F / 2 - 71.5081, ys - 11.8793,
+    p.sacoDiagonalesAmarillas ? Math.min(10, F * .9 / anchoArial(rotuloSaco(p), 1)) : 10, p.sacoDiagonalesAmarillas ? { centrado: true } : {});
   // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
   // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
   const hVelcro = 5, xVelcro = 20, dVelcro = 23;
@@ -192,7 +194,8 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     const puntos = p.contorno.map(([x, v]): Punto => [xMuestra + x, y + v]);
     if (p.clase === 'saco') contorno(l, 'DISCO1', puntos);
     else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
-    texto(l, p.clase === 'saco' ? 'SACO 900 GR NEGRO' : p.material, xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
+    texto(l, p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material,
+      xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
     texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8), { centrado: true });
     cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
     cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);

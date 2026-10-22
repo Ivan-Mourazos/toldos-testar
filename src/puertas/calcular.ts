@@ -10,7 +10,7 @@ const positivo = (x: number) => Number.isFinite(x) && x > 0 && x <= 3000;
 const numero = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 export function nuevaPuerta(modelo: ModeloPuerta = 'PUERTAENR'): Puerta {
   return { modelo, articuloOrigen:'', frente: 0, alto: 0, of: '', cantidad: 1, margenMarcas:1.5, confirmada: false, ventanasConfirmadas: false, bolsillo:false, medidasBolsillo:{distancia:20,ancho:30,lado:'izquierdo',altoSuperior:null},
-    material: 'LAC900', color: '', materialCristal: 'TRANSP. 1000MI', materialSaco: 'LAC900 NEGRO',
+    material: 'LAC900', color: '', materialCristal: 'TRANSP. 1000MI', materialSaco: 'LAC900 NEGRO', sacoDiagonalesAmarillas: false,
     rollo: 0, rolloCristal: 0, rolloSaco: 0, observaciones: '', entradas: [], ventanas: [],
     enrollable: { T: 0, D: 60, margen: 0, empates: [] },
     apilable: { pie: 0, pasos: [], cabecera: 0, bolsillo: 24, saco: null, doble: false, empates: null },

@@ -33,7 +33,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
     ventanas: [96, 145].flatMap(y => [53, 237, 421].map(x => ({ x, y, ancho: 146, alto: 29, radio: 2, radioCristal: 4 }))),
   };
   if (pedido === 'AR2604904') return {
-    ...base('PUERTAUTO', 426, 515), of: '0232817', color: 'BLANCO 9016',
+    ...base('PUERTAUTO', 426, 515), of: '0232817', color: 'BLANCO 9016', sacoDiagonalesAmarillas: true,
     autorreparable: { empates: [299], espaciadorCentral: true, distanciaEspaciador: 10 },
   };
   if (pedido === 'AR2604906') return {

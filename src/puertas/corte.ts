@@ -57,7 +57,7 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
     if (/trasera/i.test(pieza.nombre)) return 'ENTRADA TRASERA';
     return 'ENTRADA';
   }
-  if (pieza.clase === 'saco') return 'SACO';
+  if (pieza.clase === 'saco') return pieza.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : 'SACO';
   return 'CRISTAL';
 }
 
@@ -336,7 +336,8 @@ export function generarCortePuertas(
   // cada paño se rotule con la letra de la suya (con dos puertas salían todos como B).
   const resultados = pedido.elementos.map(e => {
     const r = calcularPuerta(e.input);
-    const propia = (x: PiezaPuerta) => ({ ...x, id: `${e.id}:${x.id}` });
+    const propia = (x: PiezaPuerta) => ({ ...x, id: `${e.id}:${x.id}`,
+      ...(x.clase === 'saco' && e.input.sacoDiagonalesAmarillas ? { sacoDiagonalesAmarillas: true } : {}) });
     return { ...r, piezas: r.piezas.map(propia),
       alternativasSaco: r.alternativasSaco && { entero: r.alternativasSaco.entero.map(propia), partido: r.alternativasSaco.partido.map(propia) } };
   });

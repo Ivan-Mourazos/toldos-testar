@@ -96,8 +96,19 @@ y central llevan FLECHA2; las indicaciones verticales se leen en espejo a ambos 
 Los rótulos se apartan del espaciador central y se centran en el hueco libre del paño.
 El saco desplegado mantiene sus cuatro velcros de 3 y sus sombreados, sus cotas y la nota
 «CREMALLERA SOLDADA HASTA MITAD DE SACO». El material del saco procede de `materialSaco`:
-el coordinador confirmó este criterio al detectar AMARILLO/NEGRO en el alzado de AR2604904
-frente a NEGRO en su corte. Queda Q-PU03 para Iván; pantalla y corte no se modifican.
+Iván aclaró que AMARILLO/NEGRO en el alzado de AR2604904 indica diagonales impresas
+después de cortar el saco negro. La casilla descrita debajo conserva esa indicación.
+
+### Saco con diagonales amarillas · todos los modelos (Iván, 22/10/2026)
+
+`sacoDiagonalesAmarillas` se marca solo cuando el pedido indica impresión digital de
+diagonales amarillas sobre saco negro; empieza desmarcado y los pedidos antiguos sin el
+dato siguen siendo válidos. Se rechaza un valor distinto de booleano al leer el pedido.
+Con la casilla, pantalla y plano escriben «SACO 900 GR AMARILLO/NEGRO» y el rótulo del
+saco del DXF del bot y del resumen lo indica para que, después de cortarlo, se lleve a
+impresión digital. Sin ella muestran el material configurado. No se cambia el material
+negro ni las piezas, reservas o colocaciones; no se deduce la casilla por ser autorreparable.
+Un saco de lona amarilla entera sigue siendo otro color de material, según el pedido.
 
 ### Espaciadores según el pedido (Iván, 22/10/2026)
 
@@ -389,7 +400,8 @@ alzado de la otra. Las páginas de AR2605036 y AR2604904 se han revisado en la p
 
 Para apilables y autorreparables, `src/puertas/planoTaller.ts` dibuja el plano de oficina por capas;
 `alzado.ts` conserva el dibujo de pantalla. Las enrollables mantienen `planoEnrollable.ts`
-sin cambios y su DXF completo de AR2605134 queda protegido por SHA-256 de main 0a316e1.
+con sus cambios de main a1b680b y solo el rótulo opcional de impresión autorizado después.
+Su DXF completo de AR2605134 sin impresión queda protegido por SHA-256 de main 7ebe632.
 Los ventanales
 consecutivos tienen sus cachos, cristales, ejes compartidos y cotas propios. El cristal se identifica
 por la cota de corte, sin leyenda dentro. Los paños llevan rótulos grandes separados; «AL CORTE»

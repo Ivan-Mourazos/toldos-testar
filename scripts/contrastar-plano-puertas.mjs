@@ -19,16 +19,15 @@ const leer = f => JSON.parse(fs.readFileSync(path.join(estudio, f), 'utf8'));
 const rps = leer('genericas/rps.json').filas;
 const configuraciones = leer('plegables/configuraciones/configuraciones.json').configuraciones;
 const referencias = ['AR2605036', 'AR2604906', 'AR2604904', 'AR2604526'];
-const protegidos = ['src/puertas/planoEnrollable.ts', 'src/puertas/calcular.ts', 'src/puertas/corte.ts',
-  'src/puertas/plantillaPortanova.ts', 'src/puertas/plantillas/portanova.dxf', 'src/domain/corteLona/presentacion.js', 'src/domain/corteLona/cajetin.js'];
-assert.equal(execFileSync('git', ['diff', '0a316e1', '--', ...protegidos], { encoding: 'utf8' }).trim(), '', 'Se han tocado ficheros protegidos del encargo.');
+const protegidos = ['src/puertas/plantillaPortanova.ts', 'src/puertas/plantillas/portanova.dxf', 'src/domain/corteLona/presentacion.js', 'src/domain/corteLona/cajetin.js'];
+assert.equal(execFileSync('git', ['diff', '7ebe632', '--', ...protegidos], { encoding: 'utf8' }).trim(), '', 'Se han tocado ficheros protegidos del encargo.');
 const f = JSON.parse(fs.readFileSync('src/puertas/__fixtures__/AR2605134.json', 'utf8'));
 const enr = { ...base(f.modelo, f.frente, f.alto), of: f.of, cantidad: f.cantidad, color: f.color,
   enrollable: { T: f.T, D: f.D, margen: f.margen, empates: [] },
   entradas: f.alturasTubos.map(altura => ({ altura, diametro: 30, largo: f.frente, alto: 8, huecos: [] })) };
 const huellaEnrollable = createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe(f.pedido, enr),
   cabecera: { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' } })).digest('hex');
-assert.equal(huellaEnrollable, '7e501938d3684bcc39691f1de19e3d0fbbc3e780c7d9f26fe3dd0d855e44d2a7', 'Ha cambiado AR2605134 frente a main.');
+assert.equal(huellaEnrollable, '22ce91188ac338b16d93ddb43604143ff2b2e5c543159c315d0e75b23efa4648', 'Ha cambiado AR2605134 sin impresión frente a main.');
 const red = n => Number(n.toFixed(3)), largo = p => Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]);
 const literal = s => String(s ?? '').replace(/\s+/g, ' ').replaceAll('∅', 'Ø').trim();
 const cerca = (a, b, t = .05) => Math.abs((a ?? 0) - (b ?? 0)) <= t;
@@ -102,7 +101,7 @@ function motivo(p, sector, puerta) {
   return 'Diferencia geométrica explícita pendiente de clasificación; no implica equivalencia.';
 }
 const evidencias = [], informe = ['# Contraste de planos apilables y autorreparables', '',
-  'Generado por scripts/contrastar-plano-puertas.mjs. Fuentes leídas en solo lectura; toda salida bajo tmp/. No se modifica corte.ts, calcular.ts ni planoEnrollable.ts.', '',
+  'Generado por scripts/contrastar-plano-puertas.mjs. Fuentes leídas en solo lectura; toda salida bajo tmp/. La ampliación de Iván permite el dato y los rótulos de impresión del saco; no se cambia la geometría ni el anidado.', '',
   'El coordinador confirmó conservar íntegra la plantilla vigente de Portanova, alinear textos/cotas y regularizar los detalles esquemáticos. Las diferencias no clasificadas se indican expresamente.', '',
   '| Pedido | Modelo RPS local | OF comprobada en plano y bot | Medidas del alzado | Copia de plano | Copia de bot |', '|---|---|---|---|---|---|'];
 const browser = await chromium.launch();
@@ -164,7 +163,7 @@ try {
       `Mininúmeros del bot histórico (archivo completo): ${miniBot.length}; ${miniBot.map(t => t.valor).join(', ') || 'ninguno'}. Mininúmeros del corte vigente: ${miniWeb.length}; ${miniWeb.map(t => t.valor).join(', ') || 'ninguno'}.`, '',
       'Las ventanas de estas apilables/autorreparables se recortan dentro de los paños; no son el ventanal separado con cachos de enrollable. Las referencias históricas no requieren una E.T. delantera/trasera numerada adicional; los números observados son de empates. El plano conserva la numeración actual de los empates y sacos partidos, sin modificar calcular.ts.', '',
       ...(id === 'AR2604526' ? ['AR2604526 se limita a la primera puerta (300 × 331, OF 0232191); el corte de la página histórica también muestra la segunda puerta B y stock. No se atribuyen sus geometrías ni cantidades a esta puerta.'] : []),
-      ...(id === 'AR2604904' ? ['La nota histórica AMARILLO/NEGRO contradice su corte NEGRO: con autorización del coordinador, el plano usa materialSaco configurado (Q-PU03).'] : []),
+      ...(id === 'AR2604904' ? ['Iván aclaró que AMARILLO/NEGRO significa diagonales impresas después de cortar la lona negra: esta referencia activa la casilla de impresión, conserva material NEGRO y avisa en el rótulo del saco.'] : []),
       'En apilables >600, el corte vigente añade 1 cm por lado según el expediente; AR2605036 antiguo no lo incluía. Se muestran las dos alternativas de saco que ofrece el corte actual; el manual solo representaba la elegida.', '');
     fs.writeFileSync(path.join(dir, 'comparacion.md'), detalle.join('\n'));
     fs.writeFileSync(path.join(dir, 'comparacion.json'), JSON.stringify({ id, modelo: p.modelo, of: p.of, origenes: [a.origen, b.origen], comparaciones,
@@ -186,9 +185,9 @@ try {
 } finally { await browser.close(); }
 informe.push('', '## Resultados', '', ...evidencias.map(e => `- [${e.id}](${e.id}/comparacion.md): ${e.rayas} rayas con posición/capa/color iguales; ${e.sinClasificar.length} diferencias de mano pendientes de clasificación.`), '',
   'Los inventarios y residuos completos están en cada comparacion.json; las páginas y capas se pintan lado a lado con el mismo lector y la misma proyección. Las tablas se generan, no se transcriben a mano.', '',
-  '## Regresión y límites', '', `AR2605134: SHA-256 ${huellaEnrollable}, idéntica al plano de main 0a316e1.`, '',
-  `Sin diferencias frente a main en: ${protegidos.join(', ')}. No se ha tocado ningún generador compartido de toldos/remolques, la plantilla de Portanova ni la geometría/anidado de máquina.`, '',
-  'Q-PU03: material amarillo/negro de autorreparable pendiente de Iván; se usa materialSaco configurado. Q-PU04: alturas esquemáticas de refuerzos conservadas del DWG redondeado, pendientes de confirmar; no intervienen en el despiece.', '',
+  '## Regresión y límites', '', `AR2605134 sin impresión: SHA-256 ${huellaEnrollable}, idéntica al plano de main 7ebe632 (incluye a1b680b: cachos unidos y textos de velcro).`, '',
+  `Sin diferencias frente a main en: ${protegidos.join(', ')}. No se ha tocado ningún generador compartido de toldos/remolques ni la plantilla de Portanova. Las pruebas sacoDiagonales.test.ts comparan piezas/materiales/colocaciones/rayas/arcos/círculos con y sin impresión; solo cambia la anotación.`, '',
+  'Q-PU03 contestada: diagonales amarillas de impresión digital sobre saco negro; casilla para todos los modelos, desmarcada de inicio. Q-PU04: alturas esquemáticas de refuerzos conservadas del DWG redondeado, pendientes de confirmar; no intervienen en el despiece.', '',
   'Validaciones y límites de ejecución: véase validacion.md en esta carpeta. Las diferencias de texto/cotas/corte se listan íntegramente en cada informe; cero geometrías sin clasificar no significa identidad byte a byte con un dibujo histórico.', '');
 fs.writeFileSync(path.join(salida, 'comparacion.md'), informe.join('\n'));
 fs.writeFileSync(path.join(salida, 'referencias-verificadas.json'), JSON.stringify(evidencias, null, 2));

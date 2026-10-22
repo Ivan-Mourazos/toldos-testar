@@ -100,11 +100,11 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     }
   });
 
-  it('AR2605134 conserva el plano completo de main 0a316e1 byte por byte', () => {
+  it('AR2605134 sin impresión conserva el plano completo de main 7ebe632 byte por byte', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
       enrollable: { T: 169, D: 60, margen: 6, empates: [] } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('7e501938d3684bcc39691f1de19e3d0fbbc3e780c7d9f26fe3dd0d855e44d2a7');
+      .toBe('22ce91188ac338b16d93ddb43604143ff2b2e5c543159c315d0e75b23efa4648');
   });
 });

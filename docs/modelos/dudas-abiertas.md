@@ -26,10 +26,6 @@ Iván contestó el 22/10/2026 las siete dudas del estudio ([cortina-pvc-corte.md
 
 Pendientes del contraste de planos del 22/10/2026:
 
-- **Q-PU03. ¿El saco de autorreparable puede ser AMARILLO/NEGRO o siempre NEGRO?**
-  AR2604904 dice amarillo/negro en el alzado y negro en su corte y bot; AR2604526
-  dice negro también en el alzado. Con autorización del coordinador, el nuevo plano
-  muestra `materialSaco` configurado, sin cambiar el alzado de pantalla ni el corte.
 - **Q-PU04. Altos de los refuerzos esquemáticos de apilable.** El expediente confirma
   las notas de 10/15 a 10 del borde, pero no sus longitudes. El plano conserva las
   alturas del detalle de AR2605036/4906 redondeadas a 13,5 y 11,5, con anchuras 15/11/15
@@ -41,6 +37,7 @@ Pendientes del contraste de planos del 22/10/2026:
 | --- | --- | --- |
 | Q-PU01 | «No sé por qué se hizo así, es una excepción.» Los 3 cm de AR2605065 son una excepción, no una regla | Conserva el corte de E.T. de 8 y «CERRAR E.T / 2 CM MÁXIMO», sin cambiar ninguna medida por esa nota |
 | Q-PU02 | «Viene indicado en el pedido con unas líneas verticales en el medio.» El técnico decide mirando el dibujo; también introduce la distancia de las rayas laterales que marca el pedido | Casilla de espaciador central desmarcada; distancia lateral configurable, 10 cm si falta en un pedido antiguo. Alzado y plano con línea doble y nota vertical; corte con marcas en cada paño, sin pieza nueva de stock |
+| Q-PU03 | AMARILLO/NEGRO es el saco negro con diagonales amarillas que se imprimen después de cortarlo; el amarillo entero es otro color de lona | Casilla de impresión para todos los modelos, desmarcada de inicio y validada al leer el pedido; alzado/plano indican AMARILLO/NEGRO y los rótulos del saco avisan al corte. Material, piezas y anidado siguen en negro |
 
 Las posiciones y alturas de los textos de taller proceden de AR2604638, AR2604725, AR2605036,
 AR2604904 y AR2605065. Son anotaciones del alzado, no nuevas fórmulas del corte.

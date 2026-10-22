@@ -1,5 +1,6 @@
 import { alturasTubos } from './calcular.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
+import { rotuloSaco } from './saco.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
 // El alzado de una puerta como dibujo puro, en cm y con la y hacia abajo (como el SVG): lo pinta la pantalla
@@ -328,7 +329,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   const altoVelcro = auto ? 4 : 8;
   nota(enr ? 'COSER VELCRO REVÉS DE 3 BRAVO' : ple ? 'COSER VELCRO REVÉS DE 5 BRAVO' : 'VELCRO BRAVO REVÉS DE 3',
     wSaco / 2, y0 - 16, altoVelcro, [wSaco * 0.2, y0 - 12, 0, y0]);
-  nota(auto ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO', wSaco / 2, y0 + 11, 10);
+  nota(rotuloSaco(p), wSaco / 2, y0 + 11, 10);
   cota({ x1: 0, y1: y1 - 8, x2: wSaco, y2: y1 - 8, linea: y1 - 8, valor: wSaco, estilo: 'XERAL 5', marcas: 0,
     texto: { x: wSaco / 2, y: y1 - 10, ancla: 'middle' } });
   if (enr) cota({ x1: 0, y1, x2: 4.5, y2: y1, linea: y1 + 12, valor: 4.5, estilo: 'XERAL', marcas: 2,
