@@ -87,6 +87,8 @@ const num = n => n.toLocaleString('es-ES', { maximumFractionDigits: 3 });
 function motivo(p, sector, puerta) {
   if (sector === 'Página') return 'Encuadre automático y plantilla fija vigente de Portanova, confirmada por el coordinador; ver diferencias del modelo.';
   if (sector === 'Corte') return 'El resumen conserva el corte vigente; muestras iguales una vez con cantidad, alternativas explícitas, rótulos centrados y cotas XERA 20. Posiciones históricas de anidado no se trasladan al bot.';
+  if (p.tipo === 'texto' && p.capa === 'ROTULADOR' && /^(?:[a-z]+)?\d+$/.test(p.valor))
+    return 'Iván: mininúmero con letra de puerta minúscula y número de unión (a1, b1…), igual que el corte; el 1 histórico se usó al haber una sola puerta.';
   if (p.tipo === 'texto') return /^(X\d+|REVÉS|A\d+|\d{7})$/.test(p.valor)
     ? 'Regla de Iván del 22/10: cantidad/REVÉS/OF en A1; códigos en su paño y eje común.'
     : 'Texto centrado y alineado en su pieza/eje; altura coherente y castellano corregido. Se detallan literal, altura y giro, sin ocultar diferencias.';
@@ -98,7 +100,7 @@ function motivo(p, sector, puerta) {
     return 'Despliegue del mismo saco trasladado como grupo para separar las llamadas y las cotas, conservando su contorno y medidas.';
   if (p.capa === 'referencias' && p.tipo === 'raya' && puerta?.modelo === 'PUERTAUTO' && Math.abs(p.a[0] - p.b[0]) < .05
     && [0, puerta.frente].some(x => Math.abs(p.a[0] - x) < .05))
-    return 'Contorno terminado conservado según AR2604904 para todas las autorreparables; AR2604526 omite las verticales superpuestas con DISCO1. Criterio confirmado con el coordinador.';
+    return 'Iván: las referencias rosas superpuestas a los laterales DISCO1 sobran y se eliminan en todas las autorreparables; AR2604904 las conserva como sobrante histórico. La central opcional no se elimina.';
   if (p.capa === 'ROTULADOR' && (p.tipo === 'bloque' || p.tipo === 'raya' && largo(p) < 3))
     return 'La flecha FLECHA2 conserva forma, tamaño y giro; se centra sobre su espaciador, en lugar de la posición de ratón histórica.';
   return 'Diferencia geométrica explícita pendiente de clasificación; no implica equivalencia.';

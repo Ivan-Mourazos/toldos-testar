@@ -159,7 +159,6 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     linea(l, 'ROTULADOR', 0, -20, F, -20);
     linea(l, 'ROTULADOR', 0, -30, F, -30);
     linea(l, 'ROTULADOR', 0, -H + 14, F, -H + 14);
-    linea(l, 'referencias', 0, 0, 0, -H + 12); linea(l, 'referencias', F, 0, F, -H + 12);
     linea(l, 'referencias', 0, -H, 0, -H + 14); linea(l, 'referencias', F, -H, F, -H + 12);
     texto(l, 'VARILLA NEGRA (4,5)', F / 2, 14, 7);
     texto(l, 'E.T POR DELANTE Y POR DETRÁS CORTADA DE 21', F / 2, -17, Math.min(5, F / 60));
@@ -182,7 +181,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   for (const [i, u] of r.uniones.entries()) {
     for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0, -H + u.altura + signo * u.solape / 2, F, -H + u.altura + signo * u.solape / 2);
     if (!u.tubo) texto(l, `EMPATE ${num(u.solape)}cm`, F / 2, -H + u.altura + 8, 5, 0, 'referencia-1');
-    if (!ple) texto(l, String(i + 1), 1, -H + u.altura, 1, 0, 'ROTULADOR');
+    if (!ple) texto(l, `${letra.toLowerCase()}${i + 1}`, 1, -H + u.altura, 1, 0, 'ROTULADOR');
   }
   for (const v of p.ventanas) {
     redondeado(l, 'curv', v.x, -H + v.y, v.ancho, v.alto, v.radio);

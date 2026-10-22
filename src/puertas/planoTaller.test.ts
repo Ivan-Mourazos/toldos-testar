@@ -47,7 +47,10 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(horizontal(rs, 'referencia-1', 97.97, 4.26)).toBe(true);
     expect(horizontal(rs, 'referencia-1', 97.95, 4.26)).toBe(true);
     expect(rs.filter(r => r.tipo === 'INSERT' && valor(r, 2) === 'FLECHA2')).toHaveLength(3);
-    expect(rs.some(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && valor(r, 1) === '1' && numero(r, 40) === .01)).toBe(true);
+    expect(rs.some(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && valor(r, 1) === 'a1' && numero(r, 40) === .01)).toBe(true);
+    expect(rs.some(r => r.tipo === 'LINE' && valor(r, 8) === 'referencias' && numero(r, 10) === 100 && numero(r, 11) === 100
+      && Math.abs(numero(r, 20) - numero(r, 21)) > 1)).toBe(false);
+    expect(rs.some(r => r.tipo === 'LINE' && valor(r, 8) === 'referencias' && numero(r, 10) === 102.13 && numero(r, 11) === 102.13)).toBe(true);
     for (const x of [100.1, 102.111, 104.16]) expect(rs.some(r => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
       && Math.abs(numero(r, 10) - x) < 1e-6 && Math.abs(numero(r, 11) - x) < 1e-6)).toBe(true);
   });
@@ -100,6 +103,13 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
         }
       }
     }
+  });
+
+  it('las uniones del alzado usan a1/b1, igual que las puertas del corte', () => {
+    const p = base('PUERTAUTO', 350, 400); p.autorreparable.empates = [150];
+    const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', p, p), cabecera }));
+    const minis = rs.filter(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 20) > 90 && numero(r, 40) === .01).map(r => valor(r, 1));
+    expect(minis.sort()).toEqual(['a1', 'b1']);
   });
 
   it('conserva la OF y el aviso de los sacos de stock colocados por el bot', () => {

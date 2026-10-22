@@ -136,7 +136,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
   // Huellas del nuevo plano CAD; la de enrollable de main se comprueba en planoTaller.test.ts.
   it.each([
     ['apilable', apilable, 'ad91a49c737134c61007ff5b2f3f709bc0dd1f63bcdf7a9aac94d489a2bd5560'],
-    ['autorreparable', autorreparable, '973da711c8949b930f8b26a458b6635eb96a039b99b69c10d814b80efac23fb1'],
+    ['autorreparable', autorreparable, '72c66bc31dbd167ddfb619e0ae1b76c815341b2fdddd91639421086faf284e87'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
