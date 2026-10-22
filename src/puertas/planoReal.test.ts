@@ -55,7 +55,8 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
     const { p, textos } = dibujo('AR2605036');
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605036', p), cabecera });
     const cotas = registrosDxf(dxf).filter(r => r.tipo === 'DIMENSION');
-    expect(registrosDxf(dxf).filter(r => r.tipo === 'ARC' && valor(r, 8) === 'referencias' && Math.abs(numero(r, 40) - .02) < 1e-6)).toHaveLength(24);
+    // Cada hueco mantiene sus cuatro radios en la polilínea original, capa curv.
+    expect(registrosDxf(dxf).filter(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'curv')).toHaveLength(6);
     // AR2605036: la cabecera de 70 lleva el estilo grande; las entradas de 12, XERAL.
     expect(cotas.some(r => numero(r, 42) === 70 && valor(r, 3) === 'XERA 15')).toBe(true);
     expect(cotas.some(r => numero(r, 42) === 12 && valor(r, 3) === 'XERAL')).toBe(true);

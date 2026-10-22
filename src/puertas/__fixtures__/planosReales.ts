@@ -40,7 +40,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
     ...base('PUERTAPLE', 530, 500), of: '0232827', color: 'GRIS 7037',
     apilable: { pie: 45, pasos: [55, 55, 55, 55, 55, 55, 55], cabecera: 70, bolsillo: 24, saco: 80, doble: false, empates: [5] },
     entradas: [45, 100, 155, 210, 265, 320, 375, 430].map((altura, i) => ({ altura, largo: 530, alto: 12, diametro: 30,
-      huecos: huecosEntrada(530, 30, i % 2 === 0 ? [29, 249, 469] : []) })),
+      huecos: huecosEntrada(530, 30, i % 2 === 0 ? [29, 182, 336, 489] : []) })),
     ventanas: [110, 165].flatMap(y => [53, 207, 361].map(x => ({ x, y, ancho: 116, alto: 35, radio: 2, radioCristal: 4 }))),
   };
   // Primera puerta del plano: 300 × 331, OF 0232191; no mezclar con los paños de 350 del mismo bot.

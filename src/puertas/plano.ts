@@ -6,6 +6,7 @@ import { generarCortePuertas } from './corte.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, escribirPlanoEnrollables, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { presentacionPortanova } from './plantillaPortanova.ts';
+import { escribirPlanoTaller } from './planoTaller.ts';
 import type { PedidoPuertas, Punto } from './tipos.ts';
 
 // Plano de puertas para revisar (fase 2): la presentación A4 de la oficina con su cajetín, como toldos y
@@ -132,6 +133,7 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
   if (pedido.elementos.length && pedido.elementos.every(e => e.input.modelo === 'PUERTAENR')) {
     return escribirPlanoEnrollables(pedido, generarCortePuertas(pedido, { ofStockSacos }).cortes, cabecera);
   }
+  if (pedido.elementos.length) return escribirPlanoTaller(pedido, generarCortePuertas(pedido, { ofStockSacos }).cortes, cabecera);
   const L = lienzo();
   // Las puertas, una al lado de otra, con la parte de arriba a la misma altura.
   let cursor = 0, arriba = 0, abajo = 0;

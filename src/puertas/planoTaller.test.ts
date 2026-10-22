@@ -8,7 +8,9 @@ import { generarCortePuertas } from './corte.ts';
 
 const cabecera = { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' };
 const plano = (id: string) => registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe(id, puertaPlanoReal(id)), cabecera }));
-const alzado = (id: string) => plano(id).filter(r => valor(r, 67) !== '1' && numero(r, 10) < 109 && numero(r, 20) > 90);
+const alzado = (id: string) => plano(id).filter(r => valor(r, 67) !== '1' && (r.tipo === 'HATCH'
+  ? (r.pares as Array<[number, string]>).some(([k, v]) => k === 20 && Number(v) > 90 && Number(v) < 101)
+  : numero(r, 10) < 109 && numero(r, 20) > 90));
 const horizontal = (rs: ReturnType<typeof registrosDxf>, capa: string, y: number, ancho: number) => rs.some(r => r.tipo === 'LINE' && valor(r, 8) === capa
   && Math.abs(numero(r, 20) - y) < 1e-6 && Math.abs(numero(r, 21) - y) < 1e-6 && Math.abs(Math.abs(numero(r, 11) - numero(r, 10)) - ancho) < 1e-6);
 
@@ -31,7 +33,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     for (const capa of ['curv', 'corte (vent)']) {
       const curvas = rs.filter(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === capa);
       expect(curvas).toHaveLength(p.ventanas.length);
-      expect(curvas.every(r => r.pares.some(([k, v]) => k === 42 && Math.abs(Number(v) - Math.tan(Math.PI / 8)) < 1e-6))).toBe(true);
+      expect(curvas.every(r => (r.pares as Array<[number, string]>).some(([k, v]) => k === 42 && Math.abs(Number(v) - Math.tan(Math.PI / 8)) < 1e-6))).toBe(true);
     }
     expect(rs.filter(r => r.tipo === 'HATCH' && valor(r, 8) === 'referencia-1').length).toBeGreaterThanOrEqual(4);
   });
@@ -54,7 +56,17 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     for (const t of ['X3', 'REVÉS', p.of, 'A1', 'A2']) expect(textos.filter(r => valor(r, 1) === t), t).toHaveLength(1);
     expect(new Set(textos.filter(r => ['X3', 'REVÉS', p.of, 'A1'].includes(valor(r, 1) ?? '')).map(r => numero(r, 10))).size).toBe(1);
     const corte = rs.filter(r => r.tipo === 'MTEXT' && numero(r, 10) >= 110 && valor(r, 8) === 'ROTULADOR');
-    const minis = generarCortePuertas(pedido).cortes.flatMap(c => c.entidades.textos.filter(t => t.capa === 'ROTULADOR'));
+    const minis = generarCortePuertas(pedido).cortes.flatMap(c => {
+      const lista = c.entidades.textos.filter(t => t.capa === 'ROTULADOR');
+      if (c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase))) return lista;
+      const ids = new Set<string>();
+      return c.colocadas.flatMap(t => {
+        if (ids.has(t.pieza.id)) return [];
+        ids.add(t.pieza.id);
+        return lista.filter(m => m.x > t.x && m.y > t.y && m.x < t.x + (t.girada ? t.pieza.alto : t.pieza.ancho) * 10
+          && m.y < t.y + (t.girada ? t.pieza.ancho : t.pieza.alto) * 10);
+      });
+    });
     expect(corte.map(r => valor(r, 1)).sort()).toEqual(minis.map(t => t.valor).sort());
     const cotas = rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 110 && numero(r, 13) < 130);
     expect(cotas.length).toBeGreaterThan(0);
