@@ -53,6 +53,11 @@ describe('Corte de puertas', () => {
     // Las E.T. siguen abajo y los cachos encima, como a mano.
     const entradas = lona.colocadas.filter(k => k.pieza.clase === 'entrada'), cachos = lona.colocadas.filter(k => k.pieza.clase === 'cacho');
     expect(Math.min(...cachos.map(k => k.y))).toBeGreaterThanOrEqual(Math.max(...entradas.map(k => k.y)));
+    // Iván, 22/10/2026: los cachos van unidos, compartiendo el corte, no sueltos con un hueco entre ellos.
+    const ancho = (k) => (k.girada ? k.pieza.alto : k.pieza.ancho) * 10;
+    const fila = [...cachos].sort((a, b) => a.x - b.x);
+    fila.slice(1).forEach((k, i) => expect(k.x).toBeCloseTo(fila[i].x + ancho(fila[i]), 3));
+    expect(new Set(cachos.map(k => k.y)).size).toBe(1);
   });
   it('mantiene códigos únicos a partir de la puerta 27', () => {
     const p=pedido(),input=p.elementos[0].input;

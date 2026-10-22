@@ -206,17 +206,7 @@ function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta)
  * aprovechar el material»; en el corte a mano de AR2604725 van cuatro encima de A2): las mismas medidas y la
  * misma OF de stock (src/domain/corteLona/colocacion.js), rotulados con la OF, SACO, su medida y STOCK.
  */
-function sacosDeStock(columnas: Columna[], rollo: number, ofStock: string, entidades: EntidadesPuertas, material: string, rolloCm: number) {
-  const ocupadas: Array<{ x: number; y: number; ancho: number; hueco: number }> = [];
-  let x = 0;
-  for (const columna of columnas) {
-    let y = 0;
-    for (const t of columna.piezas) {
-      ocupadas.push({ x, y, ancho: mm(t.girada ? t.pieza.alto : t.pieza.ancho), hueco: t.h });
-      y += t.h;
-    }
-    x += columna.ancho;
-  }
+function sacosDeStock(ocupadas: Array<{ x: number; y: number; ancho: number; hueco: number }>, rollo: number, ofStock: string, entidades: EntidadesPuertas, material: string, rolloCm: number) {
   const sacos = sacosEnHuecos(ocupadas, rollo, ofStock) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
   return sacos.map((saco, i) => {
     const [x0, y0, w, h] = [saco.x, saco.y, saco.ancho, saco.hueco];
@@ -291,18 +281,36 @@ function colocar(
       columna.piezas = columna.piezas.map(t => (reordenable(t) ? ordenados.shift()! : t));
     }
     let largo = 0;
-    for (const columna of columnas) {
+    const sitios: Array<{ t: Columna['piezas'][number]; x: number; y: number; c: number; xc: number; anchoColumna: number; junta?: boolean }> = [];
+    columnas.forEach((columna, c) => {
       let y = 0;
-      for (const t of columna.piezas) {
-        colocadas.push({ pieza: t.pieza, x: largo, y, girada: t.girada });
-        dibujarPieza(entidades, t.pieza, largo, y, t.girada, codigosPano.get(t.pieza.id));
-        y += t.h;
-      }
+      for (const t of columna.piezas) { sitios.push({ t, x: largo, y, c, xc: largo, anchoColumna: columna.ancho }); y += t.h; }
       largo += columna.ancho;
+    });
+    // Las piezas iguales en fila que son más estrechas que su columna (los cachos de pie encima de las E.T.) van
+    // pegadas, compartiendo el corte, y no sueltas con un hueco cada una (Iván, 22/10/2026, AR2605134).
+    const ancho = (s: (typeof sitios)[number]) => mm(s.t.girada ? s.t.pieza.alto : s.t.pieza.ancho);
+    for (const s of sitios) {
+      if (s.junta || ancho(s) >= s.anchoColumna - 0.001) continue;
+      const fila = [s];
+      while (true) {
+        const ultima = fila.at(-1)!;
+        const otra = sitios.find(o => o.c === ultima.c + 1 && Math.abs(o.y - s.y) < 0.001 && Math.abs(o.t.h - s.t.h) < 0.001
+          && Math.abs(ancho(o) - ancho(s)) < 0.001 && o.t.pieza.clase === s.t.pieza.clase);
+        if (!otra) break;
+        fila.push(otra);
+      }
+      if (fila.length > 1) fila.forEach((o, i) => { o.x = s.x + i * ancho(s); o.junta = true; });
+    }
+    for (const s of sitios) {
+      colocadas.push({ pieza: s.t.pieza, x: s.x, y: s.y, girada: s.t.girada });
+      dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id));
     }
     // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
+    // Las piezas juntadas cuentan con su columna entera: el sitio que dejan a la derecha no se da por libre.
     if (ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
-      colocadas.push(...sacosDeStock(columnas, rollo, ofStock, entidades, grupo[0].material, grupo[0].rollo));
+      const ocupadas = sitios.map(s => ({ x: s.xc, y: s.y, ancho: s.junta ? s.anchoColumna : ancho(s), hueco: s.t.h }));
+      colocadas.push(...sacosDeStock(ocupadas, rollo, ofStock, entidades, grupo[0].material, grupo[0].rollo));
     }
     const titulo =
       opcion === 'principal'

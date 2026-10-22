@@ -129,10 +129,16 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
   cota(l, 0, ys - 24, 4.5, ys - 24, ys - 43.25);
   texto(l, 'SACO 900 GR NEGRO', F / 2 - 71.5081, ys - 11.8793, 10);
-  texto(l, 'COSER VELCRO REVÉS DE 3 BRAVO', 135.0416 / 212 * F, ys + 31.5066, 8, { ancla: 3, ancho: 116.6267 });
-  texto(l, 'COSER VELCRO DERECHO DE 3 SUAVE', 160.0939 / 212 * F, ys - 37.5559, 8, { ancla: 3, ancho: 141.5619 });
-  linea(l, 'texto', -4.20, ys - 4.70, 14.83, ys + 19.58);
-  linea(l, 'texto', 17.55, ys - 39.40, 5.51, ys - 23.24);
+  // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
+  // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
+  const hVelcro = 5, xVelcro = 20, dVelcro = 23;
+  for (const [valor, y, velcro] of [
+    ['COSER VELCRO REVÉS DE 3 BRAVO', ys - 13 + dVelcro, [-5, ys - 2]],
+    ['COSER VELCRO DERECHO DE 3 SUAVE', ys - 13 - dVelcro, [3, ys - 24]],
+  ] as const) {
+    texto(l, valor, xVelcro, y, hVelcro, { ancla: 4 });
+    linea(l, 'texto', xVelcro - 1.5, y, velcro[0], velcro[1]);
+  }
   const nota = 'LOS CACHOS DE LOS LATERALES DEL CRISTAL VAN 1 CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO';
   // Iván confirmó que el recorte de esta nota en su ventana era un descuido: debe leerse entera.
   const palabras = nota.split(' '), lineas: string[] = []; let actual = '';
