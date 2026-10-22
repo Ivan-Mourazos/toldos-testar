@@ -47,7 +47,7 @@ import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
 import type { PedidoPuertasGuardado } from '../puertas/flujo/tipos.ts';
-import type { ModoCargaPuertas } from './puertas/guardarPuertas';
+import type { ModoCargaPuertas, PuertasRps } from './puertas/guardarPuertas';
 import { RemolquesView } from './remolques/RemolquesView';
 import { PuertasView } from './puertas/PuertasView';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
@@ -113,6 +113,7 @@ export default function App() {
   // «Reutilizar datos», fase 5); `id` distingue una petición de la siguiente.
   const [pedidoGuardadoSolicitado, setPedidoGuardadoSolicitado] = useState<{ id: number; pedido: PedidoRemolques; modo: ModoCarga } | null>(null);
   const [pedidoPuertasSolicitado, setPedidoPuertasSolicitado] = useState<{ id: number; pedido: PedidoPuertasGuardado; modo: ModoCargaPuertas } | null>(null);
+  const [pedidoPuertasRps, setPedidoPuertasRps] = useState<{ id: number; numero: string; rps: PuertasRps } | null>(null);
   // Un borrador de remolques que se manda abrir en Remolques (Pedidos o «Obtener datos» de Toldos);
   // la pantalla de remolques pregunta si tiene datos (`preguntar`).
   const [borradorRemolquesSolicitado, setBorradorRemolquesSolicitado] = useState<{ id: number; borrador: BorradorRemolques; preguntar: boolean } | null>(null);
@@ -219,6 +220,16 @@ export default function App() {
     }
   }
 
+  async function puertasPedidoOf(orderCode: string): Promise<PuertasRps | null> {
+    try {
+      const response = await fetch(`/api/puertas/rps-pedido?numero=${encodeURIComponent(orderCode)}`);
+      if (!response.ok) return null;
+      return (await response.json() as { pedido: PuertasRps | null }).pedido;
+    } catch {
+      return null;
+    }
+  }
+
   function openInTrailers(numero: string, pedidoRps: PedidoRps) {
     chooseProducto('remolques');
     setPedidoSolicitado({ numero, id: Date.now(), pedidoRps });
@@ -318,6 +329,14 @@ export default function App() {
             if (choice !== 'confirm' || seq !== autofillSeq.current) return;
           }
           openInTrailers(orderCode, trailers);
+          return;
+        }
+        // Ni toldos ni remolques: puede ser de puertas (artículos PUERTAENR, PUERTAPLE, PUERTAUTO).
+        const puertas = await puertasPedidoOf(orderCode);
+        if (seq !== autofillSeq.current) return;
+        if (puertas && (puertas.puertas.length || puertas.avisos.length)) {
+          chooseProducto('puertas');
+          setPedidoPuertasRps({ id: Date.now(), numero: orderCode, rps: puertas });
           return;
         }
       }
@@ -801,7 +820,7 @@ export default function App() {
             <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas}
               usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
               accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'}
-              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} onGuardado={() => setReviewRefresh((value) => value + 1)} />
+              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)} />
           </div>}
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'remolques'}>

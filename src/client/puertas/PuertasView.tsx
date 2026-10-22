@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta } from '../../puertas/calcular.ts';
@@ -6,7 +6,7 @@ import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { OrderActions } from '../components/OrderActions';
-import { guardarPuertasParaRevision, pedidoDesdeGuardado, type ModoCargaPuertas, type PedidoPantallaPuertas } from './guardarPuertas';
+import { guardarPuertasParaRevision, pedidoDesdeGuardado, pedidoDesdeRps, type ModoCargaPuertas, type PedidoPantallaPuertas, type PuertasRps } from './guardarPuertas';
 import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
@@ -155,7 +155,7 @@ const hoy = () => new Date().toISOString().slice(0, 10);
 const pedidoVacio = (): PedidoPantallaPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: '', cabecera: { cliente: '', fecha: hoy() }, elementos: [{ id: 'puerta-1', input: nuevaPuerta() }] });
 const tieneDatos = (p: PedidoPantallaPuertas) => Boolean(p.orderCode.trim() || p.cabecera.cliente.trim() || p.elementos.some(e => e.input.frente || e.input.alto || e.input.of));
 
-export function PuertasView({ activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, onGuardado }: {
+export function PuertasView({ activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, pedidoRpsSolicitado, onGuardado }: {
   activo: boolean;
   onResumenChange: (r: ResumenPedido) => void;
   usuario: string;
@@ -166,6 +166,8 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
   accionesVisibles?: boolean;
   /** «Corregir» o «Reutilizar datos» de un pedido guardado (Pedidos). */
   pedidoGuardadoSolicitado?: { id: number; pedido: PedidoPuertasGuardado; modo: ModoCargaPuertas } | null;
+  /** «Buscar pedido» con un pedido de puertas de RPS. */
+  pedidoRpsSolicitado?: { id: number; numero: string; rps: PuertasRps } | null;
   /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
 }) {
@@ -190,17 +192,39 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     })();
   }, [pedidoGuardadoSolicitado, pedido, askForConfirmation, notify]);
 
+  const cargarDeRps = useCallback((rps: PuertasRps, numero: string) => {
+    setPedido(pedidoDesdeRps(rps, numero, hoy()));
+    setIndice(0);
+    const n = rps.puertas.length;
+    notify(`${n} ${n === 1 ? 'puerta traída' : 'puertas traídas'} de RPS con sus medidas, color, cantidad y OF. Confirma el modelo y las medidas con el dibujo del cliente.${rps.avisos.length ? ` ${rps.avisos.join(' ')}` : ''}`,
+      { tone: 'success', title: 'Pedido de puertas' });
+  }, [notify]);
+  const ultimoRps = useRef<number | null>(null);
+  useEffect(() => {
+    if (!pedidoRpsSolicitado || ultimoRps.current === pedidoRpsSolicitado.id) return;
+    ultimoRps.current = pedidoRpsSolicitado.id;
+    const { numero, rps } = pedidoRpsSolicitado;
+    void (async () => {
+      if (tieneDatos(pedido) && await askForConfirmation({ title: `Abrir ${numero} en Puertas`,
+        message: 'Se sustituirá lo que hay ahora en Puertas por lo que dice RPS.', confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
+      cargarDeRps(rps, numero);
+    })();
+  }, [pedidoRpsSolicitado, pedido, askForConfirmation, cargarDeRps]);
+
+
   const cabecera = (cambios: Partial<PedidoPantallaPuertas['cabecera']>) => setPedido({ ...pedido, cabecera: { ...pedido.cabecera, ...cambios } });
 
-  // El cliente y la fecha del pedido en RPS (solo lectura).
+  // El pedido en RPS (solo lectura): el cliente y la fecha y, si la pantalla aún no tiene puertas, las de RPS.
   async function traerDeRps() {
     setTrayendo(true);
     try {
-      const respuesta = await fetch(`/api/remolques/rps-pedido?numero=${encodeURIComponent(pedido.orderCode.trim())}`);
-      const datos = await respuesta.json().catch(() => ({})) as { error?: string; pedido?: { fecha: string | null; cliente: { codigo: string; nombre: string } } | null };
+      const respuesta = await fetch(`/api/puertas/rps-pedido?numero=${encodeURIComponent(pedido.orderCode.trim())}`);
+      const datos = await respuesta.json().catch(() => ({})) as { error?: string; pedido?: PuertasRps | null };
       if (!respuesta.ok) throw new Error(datos.error || 'No se pudo consultar RPS.');
       if (!datos.pedido) { notify('No encuentro ese pedido en RPS.', { tone: 'warning' }); return; }
-      const { cliente, fecha } = datos.pedido;
+      const { cliente, fecha, puertas } = datos.pedido;
+      const sinPuertas = !pedido.elementos.some(e => e.input.frente || e.input.alto || e.input.of);
+      if (puertas.length && sinPuertas) { cargarDeRps(datos.pedido, pedido.orderCode); return; }
       cabecera({ cliente: cliente.nombre, fecha: fecha || pedido.cabecera.fecha, clienteRps: { codigo: cliente.codigo, nombre: cliente.nombre } });
     } catch (error) {
       notify(error instanceof Error ? error.message : 'No se pudo consultar RPS.', { tone: 'error' });
@@ -246,7 +270,7 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     {accionesDestino ? createPortal(acciones, accionesDestino) : acciones}
     <section className="puerta-cabecera panel bloque-3d"><div><h1>Puertas</h1><p>Configura la puerta mirando el dibujo del cliente.</p></div>
       <label className="puerta-campo"><span>Número de pedido</span><input aria-label="Número de pedido de puertas" value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
-      <button type="button" className="ghost-button" disabled={trayendo || !pedido.orderCode.trim()} onClick={() => void traerDeRps()}>{trayendo ? 'Consultando…' : 'Cliente de RPS'}</button>
+      <button type="button" className="ghost-button" disabled={trayendo || !pedido.orderCode.trim()} onClick={() => void traerDeRps()}>{trayendo ? 'Consultando…' : 'Traer de RPS'}</button>
       <label className="puerta-campo"><span>Cliente</span><input aria-label="Cliente de puertas" value={pedido.cabecera.cliente} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
       <label className="puerta-campo"><span>Fecha</span><input type="date" aria-label="Fecha del pedido de puertas" value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </section>

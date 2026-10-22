@@ -1,5 +1,5 @@
 import type { CabeceraPuertas, PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
-import type { PedidoPuertas } from '../../puertas/tipos.ts';
+import type { PedidoPuertas, Puerta } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 
 // «Guardar para revisión» de Puertas y volver a la pantalla un pedido guardado (fase 2, 22/10/2026).
@@ -13,6 +13,25 @@ export function pedidoDesdeGuardado(pedido: PedidoPuertasGuardado, modo: ModoCar
     schemaVersion: 1, kind: 'puertas', orderCode: pedido.numeroPedido,
     cabecera: modo === 'corregir' ? structuredClone(pedido.cabecera) : { ...structuredClone(pedido.cabecera), fecha: hoy },
     elementos: structuredClone(pedido.elementos),
+  };
+}
+
+/** Lo que da /api/puertas/rps-pedido: cliente, fecha y una puerta por línea de puerta de RPS. */
+export interface PuertasRps {
+  numero: string;
+  fecha: string | null;
+  cliente: { codigo: string; nombre: string };
+  puertas: Puerta[];
+  avisos: string[];
+}
+
+/** El pedido de RPS en la pantalla: sin puertas en RPS, una vacía para empezar. */
+export function pedidoDesdeRps(rps: PuertasRps, numero: string, hoy: string): PedidoPantallaPuertas {
+  const puertas = rps.puertas.length ? rps.puertas : [];
+  return {
+    schemaVersion: 1, kind: 'puertas', orderCode: numero,
+    cabecera: { cliente: rps.cliente.nombre, fecha: rps.fecha || hoy, clienteRps: { codigo: rps.cliente.codigo, nombre: rps.cliente.nombre } },
+    elementos: puertas.map((input, i) => ({ id: `puerta-${i + 1}`, input })),
   };
 }
 

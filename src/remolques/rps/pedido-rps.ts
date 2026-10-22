@@ -6,7 +6,11 @@ import type { PedidoRps } from "./types.ts";
 
 const fechaIso = (value: Date | null): string | null => value ? value.toISOString().slice(0, 10) : null;
 
-export async function pedidoRpsPorNumero(numero: string): Promise<PedidoRps | null> {
+/**
+ * La cabecera y todas las líneas del pedido tal como vienen de RPS (solo SELECT). Remolques se queda con las
+ * suyas (pedidoRpsPorNumero); puertas, con las de artículo de puerta (22/10/2026).
+ */
+export async function filasPedidoRps(numero: string): Promise<(Omit<PedidoRps, "lineas"> & { filas: FilaLineaRps[] }) | null> {
   const normalizado = normalizarNumeroPedidoRps(numero);
   if (!/^[A-Z]{2}\d{5,}$/.test(normalizado)) return null;
   const poolPromise = getRpsPool();
@@ -52,10 +56,6 @@ export async function pedidoRpsPorNumero(numero: string): Promise<PedidoRps | nu
         ON tipoRotulacion.IDTipoRotulacion = lineaCustom.IDTipoRotulacion
       WHERE l.IDOrder = @idOrder
       ORDER BY l.NumLine`);
-  const lineas = (lineasResult.recordset as FilaLineaRps[])
-    .map(interpretarLineaRps)
-    .filter((linea): linea is NonNullable<typeof linea> => linea !== null);
-
   return {
     numero: String(cabecera.numero).trim(),
     fecha: fechaIso(cabecera.fecha),
@@ -65,6 +65,14 @@ export async function pedidoRpsPorNumero(numero: string): Promise<PedidoRps | nu
       nombre: String(cabecera.nombre).trim(),
       alias: cabecera.alias?.trim() || null,
     },
-    lineas,
+    filas: lineasResult.recordset as FilaLineaRps[],
   };
+}
+
+export async function pedidoRpsPorNumero(numero: string): Promise<PedidoRps | null> {
+  const pedido = await filasPedidoRps(numero);
+  if (!pedido) return null;
+  const { filas, ...cabecera } = pedido;
+  const lineas = filas.map(interpretarLineaRps).filter((linea): linea is NonNullable<typeof linea> => linea !== null);
+  return { ...cabecera, lineas };
 }

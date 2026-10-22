@@ -37,7 +37,8 @@ import { paramsConFichas } from './remolques/clientes/params-efectivos.ts';
 import { errorPorRecogidasEnUso, normalizarNombre as normalizarNombreFicha } from './remolques/clientes/reglas.ts';
 import { fichasSemilla } from './remolques/clientes/semilla.ts';
 import { getMaterialesConOrigen } from './remolques/materiales.ts';
-import { pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
+import { filasPedidoRps, pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
+import { puertasDesdeRps } from './puertas/rps.ts';
 import { materialPreferidoRps } from './remolques/rps/material-rps.ts';
 import { ErrorPedidoHoja, prepararPedidoHoja } from './remolques/hoja/pedido.ts';
 import { crearAlmacenFichas } from './remolques/salida/fichas.ts';
@@ -770,6 +771,23 @@ app.get('/api/remolques/pedidos/:orderCode/archivo', rutaRemolques(async (req, r
   const { pdf, nombre } = await pedidosRemolques.archivo(req.params.orderCode);
   enviarPdf(res, pdf, nombre);
 }));
+
+// «Buscar pedido» de un pedido de puertas: cliente, fecha y una puerta por línea con artículo de puerta (solo
+// lectura en RPS). Número no válido o pedido inexistente: 200 con pedido null, como el de remolques.
+app.get('/api/puertas/rps-pedido', async (req, res) => {
+  try {
+    const numero = typeof req.query.numero === 'string' ? req.query.numero : '';
+    const leido = await filasPedidoRps(numero);
+    const { puertas, avisos } = puertasDesdeRps((leido?.filas ?? []).map((f) => ({
+      articulo: f.CodArticle ?? '', cantidad: Number(f.Quantity ?? 1), descripcion: f.Description ?? '', comentario: f.Comment ?? '', of: f.CodManufacturingOrder ?? ''
+    })));
+    const pedido = leido ? { numero: leido.numero, fecha: leido.fecha, cliente: leido.cliente, puertas, avisos } : null;
+    res.set('Cache-Control', 'no-store').json({ pedido });
+  } catch (error) {
+    console.error('No se pudo consultar RPS para puertas', error instanceof Error ? error.message : error);
+    res.status(503).json({ error: error instanceof Error ? error.message : 'No se pudo consultar RPS.' });
+  }
+});
 
 // Pedidos de puertas (fase 2): las mismas rutas que remolques, sin hoja PDF (el documento es el plano).
 app.get('/api/puertas/pedidos', rutaRemolques(async (req, res) => {
