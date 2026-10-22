@@ -12,6 +12,7 @@ import { irisAsksBoxShape, normalizeIrisBoxShape } from './irisParameters.js';
 import { resolveFabric } from './fabricCatalog.js';
 import { cambioTelaExtraError } from './fabricJobParameters.js';
 import { curtainWindowDrawingHeight, isConfiguredCurtain } from './curtainConfiguration.js';
+import { getIrisWindow } from './irisWindow.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -118,6 +119,9 @@ export function getMissingFields(awning, order = null) {
   if ((curtain || isSelena || (model === 'IRIS' && !irisGlass)) && typeof awning.curtainHasWindow !== 'boolean') add('curtainHasWindow', model === 'IRIS' ? 'telón' : 'ventana');
   // Redondo o cuadrado cambia el perfil inferior y las tapas del cofre (taller, 24/09/2026).
   if (model === 'IRIS' && irisAsksBoxShape(awning) && !normalizeIrisBoxShape(awning.irisBoxShape)) add('irisBoxShape', 'forma del cofre');
+  if (model === 'IRIS') {
+    for (const { field, label } of getIrisWindow(awning).errors) add(field, label);
+  }
   if (curtain && !awning.curtainFinish) add('curtainFinish', isConfiguredCurtain(awning) ? 'laterales' : 'confección');
   if (isConfiguredCurtain(awning) && awning.curtainFabricAdjustment === 'PERSONALIZADO' && awning.curtainFabricAdjustmentCm == null) add('curtainFabricAdjustmentCm', 'ajuste de salida');
   if ((curtain || isSelena) && awning.curtainHasWindow === true) {

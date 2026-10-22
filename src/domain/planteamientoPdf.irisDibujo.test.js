@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-import { buildOrderPlanteamientoPdf, buildStructureSheetPages } from './planteamientoPdf.js';
+import { buildFabricSheetPages, buildOrderPlanteamientoPdf, buildStructureSheetPages } from './planteamientoPdf.js';
 import { normalizeOrder } from './validation.js';
 import { calculateOrder } from './rules.js';
 import { fakeSheets, pageTexts } from './pdfTestHelpers.js';
@@ -35,6 +35,28 @@ const base = {
 };
 
 describe('dibujo del escuadrado del Iris en el planteamiento', () => {
+  test('ventanas con distinto alto o referencia no comparten un croquis acotado', () => {
+    const awning = { ...base, irisAssumeSquare: true, irisFrontTop: 300, irisExitLeft: 250,
+      curtainHasWindow: true, curtainWindowHeight: 140, curtainWindowFloorHeight: 60 };
+    const order = normalizeOrder({ awnings: [awning, { ...awning, id: 'b', curtainWindowHeight: 100 },
+      { ...awning, id: 'c', curtainWindowReference: 'TUBO DE CARGA' }] });
+    expect(buildFabricSheetPages({ order, calculation: calculateOrder(order) })).toHaveLength(3);
+  });
+
+  test('la ventana ocupa todo el ancho y lleva sus dos cotas en estructura y telas', async () => {
+    const { pages } = await pdfText({ ...base, irisAssumeSquare: true, irisFrontTop: 300, irisExitLeft: 250,
+      curtainHasWindow: true, curtainWindowHeight: 100.5, curtainWindowFloorHeight: 60.5 });
+    expect(pages).toHaveLength(2);
+    for (const page of pages) {
+      expect(page).toContain('VENTANA DE BORDE A BORDE');
+      expect(page).toContain('ALTO VENTANA 100,5');
+      expect(page).toContain('SUELO-VENTANA 60,5');
+      expect(page).toContain('CRISTAL');
+      expect(page).toContain('LONA');
+      expect(page).not.toContain('ESQ. VENTANA');
+    }
+  });
+
   test('el escuadrado también sale en la misma página de estructura, sin añadir páginas', async () => {
     const { pages } = await pdfText({ ...base, irisAssumeSquare: true, irisFrontTop: 300, irisExitLeft: 250 });
     expect(pages).toHaveLength(2);

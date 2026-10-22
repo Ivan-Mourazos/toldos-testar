@@ -12,6 +12,7 @@ import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFa
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 import { buildIrisSquaringView } from './irisSquaringView.js';
+import { getIrisWindow } from './irisWindow.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
 
@@ -361,6 +362,12 @@ function measuredDiagramKey(diagram, calculation) {
 }
 
 function fabricDiagramGroupKey(diagram, awning) {
+  if (diagram === 'IRIS' && getIrisWindow(awning).enabled) {
+    const window = getIrisWindow(awning);
+    return [diagram, 'VENTANA', window.reference, window.measure, window.height, window.drop,
+      awning.irisFrontTop, awning.irisFrontBottom, awning.irisExitLeft, awning.irisExitRight,
+      awning.irisDiagonal1, awning.irisDiagonal2].join('|');
+  }
   // El dibujo del HERA es el de su cara interior y el título, su variante: solo comparten
   // hoja los que coinciden en las dos.
   if (diagram === 'HERA') return ['HERA', heraVariantName(awning), heraInteriorFace(awning)].join('|');
@@ -1434,6 +1441,10 @@ function drawMaxiscreenDiagram(doc, x, y, w, h, awning) {
 }
 
 function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
+  if (getIrisWindow(awning).enabled) {
+    drawIrisWindowDiagram(doc, x, y, w, h, awning, calculation);
+    return;
+  }
   // Dibujo del escuadrado (Iván, 08/10/2026): el mismo que la tarjeta (irisSquaringView.js),
   // para que el taller vea cómo queda el toldo en el hueco sin dibujarlo en CAD. El criterio del
   // cofre y la compensadora es el del despiece: si divergieran, el croquis contradiría la lista.
@@ -1540,6 +1551,50 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
   }
   doc.font(fonts.italic).fontSize(compact ? 6.2 : diagramText(5.8))
     .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * (compact ? 0.02 : 0.1), compact ? y + h - 9 : y + h * 0.95, { width: w * (compact ? 0.96 : 0.8), align: 'center' });
+}
+
+function drawIrisWindowDiagram(doc, x, y, w, h, awning, calculation) {
+  const window = getIrisWindow(awning);
+  const compact = h < 220;
+  drawDiagramShell(doc, x, y, w, h);
+  const frameX = x + w * 0.23;
+  const frameY = y + h * 0.19;
+  const frameW = w * 0.54;
+  const frameH = h * 0.55;
+  const top = window.valid ? window.top / window.drop * frameH : frameH * 0.25;
+  const height = window.valid ? window.height / window.drop * frameH : frameH * 0.45;
+  const windowY = frameY + top;
+  const windowBottom = windowY + height;
+  const floorY = frameY + frameH;
+  const size = compact ? 6.3 : diagramText(6.5);
+  drawDiagramText(doc, 'VENTANA DE BORDE A BORDE', x + 3, y + h * 0.04, w - 6, size);
+  drawDiagramText(doc, `TELÓN ${formatNumber(calculation.fabricWidth || calculation.width)} · HUECO ${formatNumber(window.drop)}`, x + 3, y + h * 0.11, w - 6, compact ? 6 : diagramText(6));
+  doc.rect(frameX, frameY, frameW, frameH).fillAndStroke(colors.yellowSoft, colors.inkSoft);
+  // Sin bandas laterales: el cristal alcanza ambos bordes del telón.
+  doc.rect(frameX, windowY, frameW, height).fillAndStroke('#e7f1f6', colors.inkSoft);
+  if (window.valid && window.height > 140) {
+    for (let part = 1; part < Math.min(20, Math.ceil(window.height / 140)); part++) {
+      const seamY = windowY + part * 140 / window.height * height;
+      doc.moveTo(frameX, seamY).lineTo(frameX + frameW, seamY).dash(2, { space: 2 }).stroke().undash();
+    }
+  }
+  drawDiagramText(doc, 'CRISTAL', frameX, windowY + height / 2 - 3, frameW, size);
+  if (top > 11) drawDiagramText(doc, 'LONA', frameX, frameY + top / 2 - 3, frameW, size);
+  if (floorY - windowBottom > 11) drawDiagramText(doc, 'LONA', frameX, windowBottom + (floorY - windowBottom) / 2 - 3, frameW, size);
+  for (const [dimX, from, to, measure] of [
+    [frameX + frameW + 7, windowY, windowBottom, window.height],
+    [frameX - 7, windowBottom, floorY, window.floor]
+  ]) {
+    doc.moveTo(dimX, from).lineTo(dimX, to)
+      .moveTo(dimX - 2, from).lineTo(dimX + 2, from)
+      .moveTo(dimX - 2, to).lineTo(dimX + 2, to).strokeColor(colors.inkSoft).lineWidth(0.6).stroke();
+    drawRotatedDiagramText(doc, measure ? formatNumber(measure) : '?', dimX + (dimX < frameX ? -6 : 6), (from + to) / 2, frameH, { fit: true, size });
+  }
+  doc.moveTo(frameX - 5, floorY + 3).lineTo(frameX + frameW + 5, floorY + 3)
+    .dash(2, { space: 2 }).strokeColor(colors.inkSoft).stroke().undash();
+  drawDiagramText(doc, 'TUBO DE CARGA', frameX, floorY + 5, frameW, compact ? 5.5 : diagramText(5.8));
+  drawDiagramText(doc, `ALTO VENTANA ${window.height ? formatNumber(window.height) : 'POR INDICAR'}`, x + 3, y + h * 0.87, w - 6, size);
+  drawDiagramText(doc, `${window.reference === 'SUELO' ? 'SUELO' : 'TUBO'}-VENTANA ${window.measure ? formatNumber(window.measure) : 'POR INDICAR'}`, x + 3, y + h * 0.94, w - 6, size);
 }
 
 function drawAgataDiagram(doc, x, y, w, h, awning) {

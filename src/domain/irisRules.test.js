@@ -43,6 +43,8 @@ function awning(overrides = {}) {
     structureColor: 'BLANCO',
     wallType: '',
     curtainHasWindow: false,
+    curtainWindowHeight: 140,
+    curtainWindowFloorHeight: 70,
     reglasModificadas: false,
     ...overrides
   };

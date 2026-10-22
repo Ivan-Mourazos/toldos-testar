@@ -6,6 +6,7 @@ import { findNegativeCuts, negativeCutMessage } from './cutGuards.js';
 import { resolveFabric } from './fabricCatalog.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { squareIrisOpening } from './irisGeometry.js';
+import { getIrisWindow } from './irisWindow.js';
 import { resolveMotorRemote } from './motorAccessories.js';
 import { chosenMotor, irisDefaultMotor, irisMotorPowers, screenMotorMaterials } from './screenMotors.js';
 import {
@@ -90,20 +91,23 @@ export function calculateIris({ order, awning }) {
   // largo que cubre el frente de la tela, tantas como pida la caída.
   const glassCurtain = awning.irisGlassCurtain === true;
   const hasGlass = !glassCurtain && awning.curtainHasWindow === true;
+  const window = getIrisWindow(awning, opening);
   const glassSize = hasGlass || glassCurtain ? resolveIrisGlassSize(fabricWidth) : 0;
-  const glassPieces = glassCurtain ? Math.max(1, Math.ceil(fabricDrop / irisGlassRollWidth)) : 1;
+  const glassPieces = glassCurtain ? Math.max(1, Math.ceil(fabricDrop / irisGlassRollWidth))
+    : Math.max(1, Math.ceil(window.height / irisGlassRollWidth));
   const fabricUsage = glassCurtain ? { panels: 0, ml: 0 } : calculateIrisFabricUsage({
     fabricWidth,
     fabricDrop,
     rollWidth: fabric?.width || 120,
     units: awning.units,
     hasGlass,
-    glassSavingM: parameters.glassFabricSavingM
+    glassSavingM: window.height / 100
   });
 
   const limits = getIrisLimits(series);
   const diagnostics = [];
   const missingFields = [];
+  missingFields.push(...window.errors.map(item => item.label));
   if (!submodel) missingFields.push('submodelo');
   if (!guideType) missingFields.push('tipo de guía');
   if (!guideFixing) missingFields.push('fijación de la guía');
@@ -212,6 +216,9 @@ export function calculateIris({ order, awning }) {
   }
   if ((hasGlass || glassCurtain) && glassSize) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: glassCurtain ? 'IRIS de cristal: el cristal estabilizado tarda alrededor de un mes. Pídelo en cuanto entre el pedido.' : 'IRIS con ventana: el cristal estabilizado tarda alrededor de un mes. Pídelo en cuanto entre el pedido.' });
+  }
+  if (hasGlass && glassPieces > 1) {
+    diagnostics.push({ level: 'warn', awningId: awning.id, message: `IRIS con ventana de ${formatNumber(window.height)} cm: necesita ${glassPieces} piezas de cristal de 140 cm con empate horizontal. Confirma el empate con taller antes de confeccionar.` });
   }
   if (modified) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de IRIS modificadas.` });
@@ -339,6 +346,9 @@ export function calculateIris({ order, awning }) {
       glassSize,
       glassPieces: glassLine ? glassPieces : 0,
       irisGlassCurtain: glassCurtain,
+      irisWindowHeight: window.enabled ? window.height : 0,
+      irisWindowFloorHeight: window.enabled ? window.floor : 0,
+      irisWindowReference: window.enabled ? window.reference : '',
       armCount: 0,
       motorPower
     }
@@ -371,7 +381,8 @@ function irisStockWarnings(issues, structureColor) {
 /**
  * Metraje de lona del libro maestro IRIS.xlsx, hoja `Medidas Toldo N`, celda G9:
  *   paños = ROUNDUP(frente / anchoRollo)
- *   ml    = ROUNDUP(paños × caída / 100 − 1,4 × paños si lleva cristal ; 1 decimal)
+ *   ml    = ROUNDUP(paños × (caída − alto ventana) / 100 ; 1 decimal)
+ * Desde el 22/10/2026 el alto de ventana es editable (140 cm por defecto, Iván).
  * No es la fórmula genérica de fabricMath.js: IRIS no lleva margen de costura
  * porque la medida de la tabla ya es la de la tela confeccionada.
  */

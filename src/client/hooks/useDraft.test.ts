@@ -400,7 +400,8 @@ describe('Cortina · acabados y ajuste independientes', () => {
     const awning = sanitizeAwning({ ...createAwning(), model: 'CORTINA', curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainWindowReference: 'TUBO DE CARGA', curtainFabricAdjustment: 'PERSONALIZADO', curtainFabricAdjustmentCm: -23 });
     expect(sanitizeAwning(awning as unknown as Record<string, unknown>)).toMatchObject({ curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainWindowReference: 'TUBO DE CARGA', curtainFabricAdjustment: 'PERSONALIZADO', curtainFabricAdjustmentCm: -23 });
     expect(switchAwningModel(awning, 'CAMBIO CORTINA')).toMatchObject({ curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainWindowReference: 'TUBO DE CARGA', curtainFabricAdjustmentCm: -23 });
-    expect(switchAwningModel(awning, 'IRIS')).toMatchObject({ curtainFinish: '', curtainBottomFinish: '', curtainWindowReference: '', curtainFabricAdjustment: '', curtainFabricAdjustmentCm: null });
+    // El Iris también permite medir desde tubo; conserva la referencia, sin heredar los acabados.
+    expect(switchAwningModel(awning, 'IRIS')).toMatchObject({ curtainFinish: '', curtainBottomFinish: '', curtainWindowReference: 'TUBO DE CARGA', curtainFabricAdjustment: '', curtainFabricAdjustmentCm: null });
   });
   test('interpreta Tubo antiguo como ET inferior con laterales normales', () => {
     expect(sanitizeAwning({ model: 'CORTINA', curtainFinish: 'TUBO' })).toMatchObject({ curtainFinish: 'NORMAL', curtainBottomFinish: 'ET', curtainFabricAdjustment: 'NINGUNO' });

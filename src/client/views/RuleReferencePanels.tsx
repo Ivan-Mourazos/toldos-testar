@@ -147,7 +147,7 @@ export function IrisRuleReference() {
         ['Guía compensadora', 'Hace falta desde ' + number(params.compensatorNeededCm) + ' cm fuera de escuadra o de diferencia entre frentes; absorbe hasta ' + number(params.compensatorMaxCm) + ' cm por guía.'],
         ['Sin compensadora', 'Desde ' + number(params.compensatorNeededCm) + ' cm avisa de hablar con comercial; más de ' + number(params.compensatorMaxCm) + ' cm no es válido.'],
         ['Las seis medidas del hueco', 'El frente inferior que dan las salidas y las diagonales no puede diferir del medido más de ' + number(params.squaringToleranceCm) + ' cm.'],
-        ['Ventana de cristal', 'Descuenta ' + number(params.glassFabricSavingM) + ' ml de tela por paño. Rollos de cristal hasta 450 cm.']
+        ['Ventana de cristal', 'Alto inicial 140 cm, editable. Descuenta su alto de la lona; por encima de 140 cm se empatan piezas de cristal. Piezas hasta 450 cm de largo.']
       ]} />
       <p>Esta consulta muestra los valores generales actuales. Un pedido con parámetros guardados o una excepción técnica debe revisarse en su propio cálculo.</p>
     </Band>

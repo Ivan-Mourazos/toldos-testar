@@ -118,7 +118,7 @@ export const defaultIrisParameters = {
   // (Iván, 08/10/2026): más es que alguna de las seis medidas está mal. La cuenta amplifica el error
   // de cinta de las diagonales (medio centímetro en cada una mueve más de 1 cm el frente inferior).
   squaringToleranceCm: 2,
-  // Metros de lona que ahorra cada paño cuando el toldo lleva ventana de cristal.
+  // Compatibilidad de parámetros guardados: desde el 22/10/2026 se descuenta el alto indicado.
   glassFabricSavingM: 1.4
 };
 

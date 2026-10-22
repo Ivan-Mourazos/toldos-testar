@@ -46,6 +46,7 @@ Del pedido AR2604748: el primer Iris con motor solar (Somfy RS100 Solar IO 15/12
 | --- | --- | --- |
 | Q-I09 | ¿Qué adaptación lleva el motor solar RS100 en el tubo de 70 del Iris? El único solar anterior fue un HERA, con el kit Swift de 56 | Reserva la misma que con el Sunilus: casquillo para motor 50 ZIP, rueda motriz y soporte Hipro |
 | Q-I10 | ¿Cuánto se admite entre el frente inferior medido y el que dan las salidas y las diagonales? Ninguna guía de Oficina Técnica lo dice en cifras | Más de 2 cm es error («las seis medidas no cuadran»). Se cambia en los parámetros del Iris (`squaringToleranceCm`) |
+| Q-I11 | Ventana del Iris: ¿se mide desde suelo o desde tubo de carga, y se descuentan también 18 cm desde suelo? Iván, 22/10/2026: hay que preguntarlo a taller; de inicio igual que la cortina | Se elige suelo o tubo. Desde suelo descuenta 18 cm para dibujar; desde tubo conserva la medida. La ventana va de borde a borde, con alto inicial 140 cm editable. La lona descuenta ese alto y el cristal reserva tantas piezas de 140 cm como hagan falta, con aviso de empate si supera 140 |
 
 ## Clásicos
 

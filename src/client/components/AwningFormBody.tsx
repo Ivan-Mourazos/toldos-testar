@@ -37,6 +37,7 @@ function prioridad(label: string, model: string) {
   if (model === 'IRIS') {
     const iris = ['OF', 'Variante', 'Hueco escuadrado', 'Frente superior', 'Salida izquierda', 'Frente inferior', 'Salida derecha', 'Diagonal 1 (a salida izq.)', 'Diagonal 2 (a salida der.)', 'Ajuste de tela (cm)'];
     if (iris.includes(label)) return iris.indexOf(label) - 100;
+    if (['Medida a ventana desde', 'Suelo-ventana', 'Tubo-ventana', 'Altura ventana'].includes(label)) return orden.indexOf('Telón') + 0.25;
   }
   if (model === 'HERA' && label === 'Variante') return -1;
   if (model === 'HERA' && label === 'Arriba') return 0;

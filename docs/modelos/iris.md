@@ -4,6 +4,20 @@
 
 ## 1. Alcance
 
+### Lona con ventana (22/10/2026)
+
+Decisiones de Iván comunicadas al coordinador el 22/10/2026:
+
+- Al elegir «Lona con ventana» se propone **140 cm de alto**, editable, y se pide su posición. No hay esquina ni cotas laterales: el cristal ocupa todo el ancho del telón. Con lona o todo cristal no se piden estas medidas.
+- La tarjeta y el cálculo exigen alto y posición válidos. La ventana debe caber en la caída del hueco, dejando lona por encima y por debajo; si falta una medida o no cabe, no se reserva material.
+- **Posición provisional, Q-I11:** igual que en la cortina, a petición de Iván mientras lo confirma taller. Se elige «Suelo» o «Tubo de carga». Suelo-ventana debe superar 18 cm y el dibujo usa la medida menos 18; desde tubo se conserva la medida. El dibujo rotula el tubo y la cota original con su referencia, sin llamar suelo al tubo.
+- La lona descuenta **el alto indicado**, en cada paño, conservando el redondeo a una décima de metro. Ya no descuenta siempre 1,4 m ni usa el antiguo parámetro `glassFabricSavingM`.
+- Cristal estabilizado `CRISESTP140xxxC`: el largo sigue siendo el primero del catálogo que supera el frente de tela. Por toldo se reservan **techo(alto ventana / 140)** piezas. Por encima de 140 cm se avisa del empate horizontal y se confirma con taller antes de confeccionar; no se inventa un solape adicional.
+- La web y el PDF de estructura y telas muestran cristal de borde a borde, lona arriba y abajo, alto y posición acotados. El corte automático del Iris sigue pendiente: `corteReadiness.js` no lo incluye y las ventanas se cortan a mano.
+- Evidencia revisada: expediente y reglas de cortina; copia local de las líneas e imputaciones de RPS en `tmp/iris/respuestas/datos.json` del repo principal (AR.25.05687, OF 0222569: cristal estabilizado de 140 × 200; tres unidades). La hoja real AR.26.03626, página 3, pide los cinco Iris con ventana transparente y deja sus medidas definitivas pendientes de instalar la capota; tampoco define la posición. Los textos de RPS no fijan posición o descuento, por eso se mantiene Q-I11. Se localizaron los DWG AR2505687 y AR2505881 en Oficina Técnica, sin modificarlos; no se pudieron convertir para revisarlos por falta de ODA en esta máquina.
+
+Pruebas: cálculo y tarjeta con medidas ausentes, no positivas y no finitas; posición y persistencia desde suelo/tubo; altura variable y piezas múltiples; regresión de lona y todo cristal; texto del dibujo en las dos hojas del PDF. Capturas y PDF de revisión en `tmp/ui-audit/iris-ventana/`.
+
 - Artículos de RPS: `IRIS110C/CO`, `IRIS110C/COS/GU`, `IRIS110S/CO`, `IRIS130C/CO`, `IRIS130C/COS/GU`, `IRIS130S/CO`, `IRIS150C/COCG`, `IRIS150C/COSG`. 75 OF con consumo desde 2024.
 - Medidas: las del maestro `IRIS.xlsx` ([evidencia](../rps-iris-evidence.md)); no cambian.
 - Hasta el 23/09 reservaba lona, cristal y las piezas comunes. Desde el 24/09, también el cofre, las guías, la cremallera, la varilla y el macarrón.

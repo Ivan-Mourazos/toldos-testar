@@ -29,6 +29,7 @@ import { resolveFabric } from '../../domain/fabricCatalog.js';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { IrisSquaringDiagram } from './IrisSquaringDiagram';
+import { IrisWindowDiagram } from './IrisWindowDiagram';
 import { fabricDropSummary, supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
@@ -582,8 +583,19 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 options={irisCurtainOptions}
                 onChange={(value) => update(value === irisCurtainOptions[2]
                   ? { irisGlassCurtain: true, curtainHasWindow: false }
-                  : { irisGlassCurtain: false, curtainHasWindow: value === irisCurtainOptions[1] })}
+                  : { irisGlassCurtain: false, curtainHasWindow: value === irisCurtainOptions[1],
+                    ...(value === irisCurtainOptions[1] ? { curtainWindowHeight: Number(awning.curtainWindowHeight) > 0 ? awning.curtainWindowHeight : 140 } : {}) })}
               />
+              {awning.curtainHasWindow === true && !awning.irisGlassCurtain && <>
+                <div className="curtain-window-measures" role="region" aria-label="Medidas de ventana">
+                  <SegmentedField label="Medida a ventana desde" value={awning.curtainWindowReference === 'TUBO DE CARGA' ? 'TUBO DE CARGA' : 'SUELO'} options={['SUELO', 'TUBO DE CARGA']} onChange={(curtainWindowReference) => update({ curtainWindowReference: curtainWindowReference as Awning['curtainWindowReference'] })} />
+                  <NumberField label={awning.curtainWindowReference === 'TUBO DE CARGA' ? 'Tubo-ventana' : 'Suelo-ventana'} missing={isMissing('curtainWindowFloorHeight')} value={awning.curtainWindowFloorHeight} min={awning.curtainWindowReference === 'TUBO DE CARGA' ? 0.5 : 18.5} step={0.5} onChange={(curtainWindowFloorHeight) => update({ curtainWindowFloorHeight })} />
+                  <NumberField label="Altura ventana" missing={isMissing('curtainWindowHeight')} value={awning.curtainWindowHeight} min={0.5} step={0.5} onChange={(curtainWindowHeight) => update({ curtainWindowHeight })} />
+                </div>
+                <div data-form-group="estructura">
+                  <IrisWindowDiagram awning={awning} />
+                </div>
+              </>}
             </div>
           )}
           {isDropArmModel && (

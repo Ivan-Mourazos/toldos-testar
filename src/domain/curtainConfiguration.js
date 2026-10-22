@@ -9,7 +9,9 @@ export function isConfiguredCurtain(awning = {}) {
 /** @returns {Required<Pick<import('../client/types').Awning, 'curtainBottomFinish' | 'curtainWindowReference' | 'curtainFabricAdjustment' | 'curtainFabricAdjustmentCm'>>} */
 export function normalizeCurtainConfiguration(awning = {}) {
   if (!isConfiguredCurtain(awning)) return {
-    curtainBottomFinish: '', curtainWindowReference: '', curtainFabricAdjustment: '', curtainFabricAdjustmentCm: null
+    curtainBottomFinish: '',
+    curtainWindowReference: awning.model === 'IRIS' ? awning.curtainWindowReference === 'TUBO DE CARGA' ? 'TUBO DE CARGA' : 'SUELO' : '',
+    curtainFabricAdjustment: '', curtainFabricAdjustmentCm: null
   };
   const oldDeduction = awning.reglasModificadas && awning.curtainFabricDeductionCm != null
     && Number.isFinite(Number(awning.curtainFabricDeductionCm));
