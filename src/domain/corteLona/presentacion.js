@@ -35,6 +35,17 @@ export function escribirDxfPlano(plano, cabecera) {
   const registros = capasNuevas.map((c) => `  0\nLAYER\n  5\n${nuevo()}\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n  2\n${c.nombre}\n 70\n     0\n 62\n${String(c.color).padStart(6)}\n  6\nContinuous\n370\n    -3\n390\nF\n`).join('');
   if (registros) src = insertarEnTabla(src, 'LAYER', registros, capasNuevas.length);
 
+  // Una variante puede aportar un bloque de la oficina sin cambiar la plantilla de otros modelos.
+  for (const b of plano.bloques ?? []) {
+    const ini = src.indexOf(`\n  2\n${b.nombre}\n`, src.indexOf('\nBLOCKS\n'));
+    if (ini < 0) throw new Error(`Falta el bloque ${b.nombre} en la plantilla.`);
+    const desde = src.indexOf('\n  0\n', ini) + 1;
+    const hasta = src.indexOf('  0\nENDBLK\n', desde);
+    const dueno = /\n330\n([^\n]+)/.exec(src.slice(desde, hasta))[1];
+    const entidad = `  0\nLWPOLYLINE\n  5\n${nuevo()}\n330\n${dueno}\n100\nAcDbEntity\n  8\n${b.capa}\n100\nAcDbPolyline\n 90\n${String(b.puntos.length).padStart(6)}\n 70\n     0\n 43\n0.0\n${b.puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`;
+    src = src.slice(0, desde) + entidad + src.slice(hasta);
+  }
+
   // Cajetín nuevo (bloque CAJETIN WEB con todos los datos del pedido, revisor incluido).
   const { src: conCajetin, insercion: cajetin } = anadirCajetin(src, nuevo, PAPEL, {
     PEDIDO: cabecera.pedido, OF: cabecera.of, CLIENTE: cabecera.cliente, MATERIAL: cabecera.material,
@@ -99,7 +110,18 @@ export function escribirDxfPlano(plano, cabecera) {
   else rc.y0 = rc.y1 - (zc.y1 - zc.y0) * ec;
   if (rc.x0 === A4.x0) { reparto.toldo.y0 = rc.y1 + TITULO_CORTE; reparto.raya = [[A4.x0, rc.y1 + 7], [A4.x1, rc.y1 + 7]]; }
   const encuadre = (z, r) => ({ z, centro: [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], ancho: r.x1 - r.x0, alto: r.y1 - r.y0 });
-  const ventanas = { 2: encuadre(zt, reparto.toldo), 3: encuadre(zc, rc) };
+  const ventanas = plano.presentacion?.ventanas ?? { 2: encuadre(zt, reparto.toldo), 3: encuadre(zc, rc) };
+  const encuadrar = (t, v) => {
+    const z = v.z;
+    const altoVista = Math.max(z.y1 - z.y0, (z.x1 - z.x0) * v.alto / v.ancho) * 1.03;
+    let r = poner(t, '10', n(v.centro[0]));
+    r = poner(r, '20', n(v.centro[1]));
+    r = poner(r, '40', n(v.ancho));
+    r = poner(r, '41', n(v.alto));
+    r = poner(r, '12', n((z.x0 + z.x1) / 2));
+    r = poner(r, '22', n((z.y0 + z.y1) / 2));
+    return poner(r, '45', n(altoVista));
+  };
 
   // Entidades de la presentación: fuera el cajetín viejo, MATERIALES, EMPATE y la tabla suelta;
   // las ventanas se recolocan y encuadran.
@@ -118,23 +140,23 @@ export function escribirDxfPlano(plano, cabecera) {
       const id = Number(/\n 69\n\s*(\d+)/.exec(t)?.[1]);
       const v = ventanas[id];
       if (v) {
-        const z = v.z;
-        const altoVista = Math.max(z.y1 - z.y0, (z.x1 - z.x0) * v.alto / v.ancho) * 1.03;
-        let r = poner(t, '10', n(v.centro[0]));
-        r = poner(r, '20', n(v.centro[1]));
-        r = poner(r, '40', n(v.ancho));
-        r = poner(r, '41', n(v.alto));
-        r = poner(r, '12', n((z.x0 + z.x1) / 2));
-        r = poner(r, '22', n((z.y0 + z.y1) / 2));
-        r = poner(r, '45', n(altoVista));
-        return [r];
+        return [encuadrar(t, v)];
       }
     }
     return [t];
   });
+  // Ventanas adicionales de una presentación específica (notas y detalles de taller).
+  const plantillaVentana = trozos.find(t => /^ {2}0\nVIEWPORT\n/.test(t) && /\n 69\n\s*3\n/.test(t));
+  for (const [id, v] of Object.entries(ventanas)) {
+    if (Number(id) <= 3) continue;
+    let t = poner(plantillaVentana, '5', nuevo());
+    t = poner(t, '69', String(id));
+    entidades.push(encuadrar(t, v));
+  }
   // En el papel: título del corte y una raya fina entre el corte y el toldo.
-  const papel = (tipo, color, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${PAPEL}\n100\nAcDbEntity\n 67\n     1\n  8\ntexto\n 62\n${String(color).padStart(6)}\n100\n${sub}\n${cuerpo}`;
-  const insercion = cajetin
+  const papel = (tipo, color, sub, cuerpo, capa = 'texto') => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${PAPEL}\n100\nAcDbEntity\n 67\n     1\n  8\n${capa}\n 62\n${String(color).padStart(6)}\n100\n${sub}\n${cuerpo}`;
+  const insercion = plano.presentacion ? cajetin + plano.presentacion.textos.map(t =>
+    papel('MTEXT', 256, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${n(t.ancho)}\n 71\n     1\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 73\n     1\n 44\n1.0\n`, t.capa ?? 'texto')).join('') : cajetin
     + papel('LWPOLYLINE', 8, 'AcDbPolyline', ` 90\n     2\n 70\n     0\n 43\n0.0\n${reparto.raya.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`)
     + papel('TEXT', 7, 'AcDbText', ` 10\n${n(rc.x0)}\n 20\n${n(rc.y1 + 2)}\n 30\n0.0\n 40\n${n(Math.min(2.2, (rc.x1 - rc.x0) / anchoArial(cabecera.tituloCorte || 'CORTE', 1)))}\n  1\n${cabecera.tituloCorte || 'CORTE'}\n  7\narial\n100\nAcDbText\n`);
 
@@ -146,7 +168,14 @@ export function escribirDxfPlano(plano, cabecera) {
   const textos = [...plano.textos, ...corte.textos];
   for (const l of lineas) modelo += ent('LINE', l.capa, 'AcDbLine', ` 10\n${n(l.x1)}\n 20\n${n(l.y1)}\n 30\n0.0\n 11\n${n(l.x2)}\n 21\n${n(l.y2)}\n 31\n0.0\n`);
   for (const p of polilineas) {
-    modelo += ent('LWPOLYLINE', p.capa, 'AcDbPolyline', ` 90\n${String(p.puntos.length).padStart(6)}\n 70\n${p.cerrada ? '     1' : '     0'}\n 43\n0.0\n${p.puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`);
+    const entidad = ent('LWPOLYLINE', p.capa, 'AcDbPolyline', ` 90\n${String(p.puntos.length).padStart(6)}\n 70\n${p.cerrada ? '     1' : '     0'}\n 43\n0.0\n${p.puntos.map(([x, y], i) => ` 10\n${n(x)}\n 20\n${n(y)}\n${p.curvas ? ` 42\n${n(p.curvas[i] ?? 0)}\n` : ''}`).join('')}`);
+    modelo += p.color == null ? entidad : entidad.replace('100\nAcDbPolyline', ` 62\n${p.color}\n100\nAcDbPolyline`);
+  }
+  for (const b of [...(plano.inserciones ?? []), ...(corte.inserciones ?? [])]) {
+    modelo += ent('INSERT', b.capa, 'AcDbBlockReference', `  2\n${b.nombre}\n 10\n${n(b.x)}\n 20\n${n(b.y)}\n 30\n0.0\n 41\n${n(b.sx ?? 1)}\n 42\n1.0\n 43\n1.0\n 50\n${n(b.giro ?? 0)}\n`);
+  }
+  for (const s of [...(plano.sombreados ?? []), ...(corte.sombreados ?? [])]) {
+    modelo += ent('HATCH', s.capa, 'AcDbHatch', sombreadoDxf(s, n));
   }
   // Remolques: arcos (esquinas redondeadas, en grados y antihorario) y círculos (ollaos).
   for (const a of [...(plano.arcos ?? []), ...(corte.arcos ?? [])]) {
@@ -159,8 +188,8 @@ export function escribirDxfPlano(plano, cabecera) {
   // centrado hay que dar también la posición de inicio, y AutoCAD la usa tal cual (salían corridos).
   for (const t of textos) {
     const a = ((t.giro || 0) * Math.PI) / 180;
-    const ancla = t.centrado ? 5 : 7;   // 5 centro; 7 abajo a la izquierda
-    modelo += ent('MTEXT', t.capa, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n0.0\n 71\n     ${ancla}\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 11\n${n(Math.cos(a))}\n 21\n${n(Math.sin(a))}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+    const ancla = t.ancla ?? (t.centrado ? 5 : 7);   // 5 centro; 7 abajo a la izquierda
+    modelo += ent('MTEXT', t.capa, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${t.ancho == null ? '0.0' : n(t.ancho)}\n 71\n     ${ancla}\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 11\n${n(Math.cos(a))}\n 21\n${n(Math.sin(a))}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   }
 
   // Cotas de verdad, que se seleccionan y se modifican (Iván, 20/10/2026): DIMENSION con los estilos de
@@ -203,7 +232,7 @@ function cotaDxf(c, numero, nuevo, ent) {
   const xy = (s, t) => (v ? [t, s] : [s, t]);
   const [s1, t1, s2, t2] = v ? [c.y1, c.x1, c.y2, c.x2] : [c.x1, c.y1, c.x2, c.y2];
   const mide = Math.abs(s2 - s1) * 100;
-  const texto = c.valor == null || Math.abs(mide - c.valor) < 0.05 ? comaCota(mide) : comaCota(c.valor);
+  const texto = c.rotulo ?? (c.valor == null || Math.abs(mide - c.valor) < 0.05 ? comaCota(mide) : comaCota(c.valor));
   const registro = nuevo();
   const nombre = `*D${numero}`;
   const dentro = (tipo, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n 62\n     0\n100\n${sub}\n${cuerpo}`;
@@ -233,10 +262,19 @@ function cotaDxf(c, numero, nuevo, ent) {
   const bloque = `  0\nBLOCK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n  2\n${nombre}\n 70\n     1\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${nombre}\n  1\n\n`
     + cuerpo + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n`;
   const [dx, dy] = xy(s2, c.d);
-  const override = texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
+  const override = c.rotulo == null && texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
   const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    32\n 71\n     5\n 42\n${n(mide)}\n${override}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`);
   const registroTabla = `  0\nBLOCK_RECORD\n  5\n${registro}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
   return { entidad, bloque, registro: registroTabla };
+}
+
+// Contorno de polilínea independiente, sin referencias a handles de otra copia del DWG.
+// El patrón ANGLE y su paso son los del velcro de la plantilla de puertas de la oficina.
+function sombreadoDxf(s, n) {
+  const patron = s.solido ? '' : ' 52\n0.0\n 41\n0.001\n 77\n     0\n 78\n     2\n'
+    + ' 53\n0.0\n 43\n0.0\n 44\n0.0\n 45\n0.0\n 46\n0.006985\n 79\n     2\n 49\n0.00508\n 49\n-0.001905\n'
+    + ' 53\n90.0\n 43\n0.0\n 44\n0.0\n 45\n-0.006985\n 46\n0.0\n 79\n     2\n 49\n0.00508\n 49\n-0.001905\n';
+  return ` 10\n0.0\n 20\n0.0\n 30\n0.0\n210\n0.0\n220\n0.0\n230\n1.0\n  2\n${s.solido ? 'SOLID' : 'ANGLE'}\n 70\n${s.solido ? '     1' : '     0'}\n 71\n     0\n 91\n     1\n 92\n     2\n 72\n     0\n 73\n     1\n 93\n${s.puntos.length}\n${s.puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')} 97\n     0\n 75\n     0\n 76\n     1\n${patron} 98\n     0\n`;
 }
 
 // Cambia el primer valor de un código de grupo dentro de una entidad.

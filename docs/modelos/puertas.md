@@ -307,6 +307,46 @@ los cortes manuales. El plano DWG y su alzado se revisan en la sección de fase 
   apilables con filas de huecos (AR2605036: 8 tiras para 8 tubos) van sencillas.
 ## Fase 3 · plano de oficina y alzado (22/10/2026)
 
+### Enrollables · plantilla fija de Portanova (22/10/2026)
+
+Iván revisó AR2605134 capa por capa y confirmó que las puertas de Portanova usan siempre
+`PORTANOVA (NAVE NOVA).dwg`. La copia local convertida se conserva depurada en
+`src/puertas/plantillas/portanova.dxf`: solo quedan las notas y los detalles del modelo,
+la presentación, sus ventanas, capas, bloques y estilos. **Para las enrollables se usa el
+CAJETIN de esta plantilla**, con los datos del pedido; esta instrucción posterior sustituye
+la de mantener CAJETIN WEB. Apilables, autorreparables y toldos conservan su plano anterior.
+
+El plano específico se construye en `src/puertas/planoEnrollable.ts`. El alzado lleva los
+contornos de los paños en DISCO1, sin inventar un rectángulo de puerta terminada. Arriba:
+corte a +3,5, referencia a 0 y ROTULADOR a −3,5. Los cristales y sus cachos dibujan el corte
+completo, solapando 2 arriba y abajo; AR2605134 lleva cristal de 204 × 56,5 y cachos de
+7 × 56,5. El cristal conserva el color forzado 5 del DWG actualizado de Iván (mano3).
+Las E.T. tienen sus ejes, marcas y la raya de borrar en sus capas; sus tres flechas son
+inserciones del FLECHA2 de Iván. El saco desplegado y los velcros conservan referencias,
+referencia-1, los sombreados SOLID/ANGLE y las guías que no se imprimen.
+
+Cada paño se identifica con cantidad, código y REVÉS; se añade la OF debajo si queda hueco,
+sin cruzar las entradas. Las notas de taller, el detalle del saco y el aviso magenta **van
+siempre** y proceden de la plantilla. Solo se corrigen las faltas evidentes. La nota de los
+cachos debe leerse entera dentro de su ventana: Iván confirmó que su recorte era un descuido.
+No se imprimen la cabecera PUERTA…, los metros del corte, las observaciones de RPS ni
+CERRAR E.T. 2 CM MÁXIMO en las enrollables. Los otros modelos conservan sus instrucciones.
+
+El corte resumido usa las piezas y las colocaciones devueltas por `generarCortePuertas`:
+no depende de un anidado concreto ni reordena el plano por su cuenta. El saco y el cristal
+se dibujan una vez con su multiplicador y sus cotas totales; la lona lleva todas sus piezas,
+sus marcas y las cotas del rollo. En AR2605134 son 708 × 300, seis paños, nueve E.T. de pie y
+seis cachos encima. La colocación y el orden A1/A2 se deciden en el corte, no en el plano.
+
+`node scripts/contrastar-plano-enrollable.mjs <DXF manual local> <pedido JSON local>` escribe
+`tmp/plano-enrollable/comparacion.{md,json}`, el DXF generado, las dos páginas lado a lado y
+ocho comparaciones de capas. Compara rayas, medidas, colores, posiciones, textos, cotas,
+bloques y sombreados; proyecta también las ventanas a mm de papel. La referencia de dibujo
+es mano3 de AR2605134; las notas que se borraron al limpiar esa copia se contrastan con la
+plantilla fija y la primera copia mano/out. El informe distingue sus fuentes y las
+diferencias de identificación o presentación autorizadas. Las pruebas conservan hashes
+de los DXF completos de apilable, autorreparable y de la presentación común de toldos.
+
 `src/puertas/alzado.ts` conserva una única geometría para la pantalla y el plano. Los ventanales
 consecutivos tienen sus cachos, cristales, ejes compartidos y cotas propios. El cristal se identifica
 por la cota de corte, sin leyenda dentro. Los paños llevan rótulos grandes separados; «AL CORTE»

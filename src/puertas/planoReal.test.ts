@@ -84,20 +84,20 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
     if (pedido === 'AR2605065') expect(ent.some(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && valor(r, 1) === 'a1' && numero(r, 40) === .01)).toBe(true);
   });
 
-  it('El corte solo acota el ancho usado de cada material y lleva su título encima', () => {
+  it('El resumen de enrollable acota cada muestra y la lona completa, con su título encima', () => {
     const p = puertaPlanoReal('AR2604638'), pedido = pedidoDe('AR2604638', p);
     const cortes = generarCortePuertas(pedido).cortes;
     const ent = registrosDxf(escribirPlanoPuertas({ pedido, cabecera }));
     const cotasCorte = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 23) < 95);
     for (const c of cortes) {
-      const alto = Math.max(...c.colocadas.map(t => (t.y + (t.girada ? t.pieza.ancho : t.pieza.alto) * 10) / 10));
-      expect(cotasCorte.some(r => Math.abs(numero(r, 42) - alto) < 0.01)).toBe(true);
+      const muestra = c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
+      const medidas = muestra ? [c.colocadas[0].pieza.ancho, c.colocadas[0].pieza.alto] : [c.anchoRollo / 10, c.largo / 10];
+      for (const m of medidas) expect(cotasCorte.some(r => Math.abs(numero(r, 42) - m) < 0.01), `medida ${m}`).toBe(true);
     }
     expect(ent.some(r => r.tipo === 'MTEXT' && valor(r, 1) === 'TRANSP. 1000MI')).toBe(true);
     const cristal = cotasCorte.find(r => Math.abs(numero(r, 42) - 164) < .01)!;
     expect(cristal).toBeDefined();
-    expect(ent.some(r => r.tipo === 'LINE' && valor(r, 8) === 'referencias'
-      && numero(r, 20) === numero(cristal, 23) && numero(r, 21) === numero(cristal, 23)
-      && Math.abs(numero(r, 11) - numero(r, 10)) === Math.abs(numero(cristal, 14) - numero(cristal, 13)))).toBe(true);
+    expect(ent.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5
+      && Math.abs(numero(r, 20) - numero(cristal, 23)) < 1e-6)).toBe(true);
   });
 });

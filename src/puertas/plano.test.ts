@@ -8,8 +8,8 @@ const cabecera = { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fec
 describe('escribirPlanoPuertas', () => {
   it('AR2604638: cajetín con los datos, alzado con cotas de verdad, textos de taller y el corte', () => {
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2604638', puerta4638()), cabecera });
-    for (const dato of ['AR2604638', '0232309', 'PORTANOVA', 'IVÁN', 'DAVID', '22/10/26', 'LAC900 AZUL 5002', 'MEDIDAS EN CM · PUERTA DE LONA', 'PUERTA A · 0232309 · ENROLLABLE']) {
-      expect(dxf).toContain(dato);
+    for (const dato of ['AR2604638', '0232309', 'PORTANOVA', 'IVÁN', 'DAVID', '22/10/26', 'LAC900 AZUL 5002', 'MEDIDAS EN CM · PUERTA DE LONA']) {
+      expect(dxf.includes(dato), dato).toBe(true);
     }
     const ent = registrosDxf(dxf);
     const cotas = ent.filter(r => r.tipo === 'DIMENSION').map(r => Math.round(numero(r, 42) * 10) / 10);
@@ -26,9 +26,10 @@ describe('escribirPlanoPuertas', () => {
     expect(estilos).toContain('XERA 15');
     expect(estilos).toContain('XERAL 15');
     // El contorno de la puerta y el corte del rollo.
-    expect(ent.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'corte')).toBe(true);
+    expect(ent.some(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1' && numero(r, 20) > 95)).toBe(true);
     expect(ent.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1').length).toBeGreaterThan(4);
-    expect(dxf).toMatch(/CORTE · LAC900/);
+    expect(dxf.includes('PUERTA A ·')).toBe(false);
+    expect(dxf.includes('MATERIALES:')).toBe(true);
   });
 
   it('varias puertas, con observaciones y cantidad, sin pisarse', () => {
