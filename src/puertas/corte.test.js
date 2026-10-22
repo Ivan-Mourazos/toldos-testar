@@ -12,6 +12,21 @@ const pedido = () => {
   return { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604638', elementos: [{ id: 'puerta-a', input: p }] };
 };
 describe('Corte de puertas', () => {
+  it('aprovecha el rollo como el corte a mano: AR2604638 gasta 172 cm de lona (paños con el frente a lo largo)', () => {
+    const p = pedido();
+    p.elementos[0].input.entradas = [{ altura: 60, diametro: 30, largo: 172, alto: 8, huecos: [] }];
+    const lona = generarCortePuertas(p).cortes.find(c => c.material.includes('BLANCO') || c.material === 'LAC900 AZUL 5002');
+    expect(lona.largo).toBe(1720);
+  });
+  it('las entradas de tubo no se ponen de pie en una columna ancha (AR2605134: 3 puertas de 212 × 360)', () => {
+    const p = pedido();
+    Object.assign(p.elementos[0].input, { frente: 212, alto: 360, cantidad: 3 });
+    p.elementos[0].input.enrollable = { T: 169, D: 60, margen: 6, empates: [] };
+    p.elementos[0].input.entradas = [60, 131, 191].map(altura => ({ altura, diametro: 30, largo: 212, alto: 8, huecos: [] }));
+    const lona = generarCortePuertas(p).cortes.find(c => c.material === 'LAC900 AZUL 5002');
+    expect(lona.colocadas.filter(k => k.pieza.clase === 'entrada').every(k => !k.girada)).toBe(true);
+    expect(lona.largo).toBe(8480);
+  });
   it('mantiene códigos únicos a partir de la puerta 27', () => {
     const p=pedido(),input=p.elementos[0].input;
     p.elementos=Array.from({length:27},(_,i)=>({id:`puerta-${i}`,input:structuredClone(input)}));

@@ -169,6 +169,43 @@ function dibujarPieza(
   rotulosPieza(entidades, pieza, x, y, girada, codigoPano);
 }
 
+type Columna = { ancho: number; alto: number; piezas: Array<{ pieza: PiezaPuerta; h: number; girada: boolean }> };
+const largoDe = (columnas: Columna[]) => columnas.reduce((suma, c) => suma + c.ancho, 0);
+
+/** Columnas a lo largo del rollo con las piezas una encima de otra; `nueva` dice cómo se pone la que abre columna. */
+function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: 'estrecha' | 'ancha', orden: 'corto' | 'largo'): Columna[] {
+  const columnas: Columna[] = [];
+  const lado = (p: PiezaPuerta) => (orden === 'corto' ? Math.min(p.ancho, p.alto) : Math.max(p.ancho, p.alto));
+  for (const p of [...grupo].sort((a, b) => lado(b) - lado(a))) {
+    for (let k = 0; k < p.cantidad; k++) {
+      const opciones = [
+        { w: mm(p.ancho), h: mm(p.alto), g: false },
+        { w: mm(p.alto), h: mm(p.ancho), g: true },
+      ].filter(t => t.h <= rollo);
+      const viables = columnas
+        .flatMap((columna, i) =>
+          opciones
+            .filter(t => t.w <= columna.ancho + 0.001 && t.h + columna.alto <= rollo + 0.001)
+            // Lo que queda sin usar a lo largo de la columna junto a la pieza: una E.T. de 212 × 8 tumbada en una
+            // columna de 212 no desperdicia nada; de pie, casi toda la columna.
+            .map(t => ({ i, t, resto: rollo - columna.alto - t.h, desperdicio: (columna.ancho - t.w) * t.h })),
+        )
+        .sort((a, b) => a.desperdicio - b.desperdicio || a.resto - b.resto);
+      let elegida = viables[0];
+      if (!elegida) {
+        opciones.sort((a, b) => (nueva === 'estrecha' ? a.w - b.w || b.h - a.h : b.w - a.w || a.h - b.h));
+        const t = opciones[0];
+        elegida = { i: columnas.length, t, resto: rollo - t.h, desperdicio: 0 };
+        columnas.push({ ancho: t.w, alto: 0, piezas: [] });
+      }
+      const columna = columnas[elegida.i];
+      columna.piezas.push({ pieza: p, h: elegida.t.h, girada: elegida.t.g });
+      columna.alto += elegida.t.h;
+    }
+  }
+  return columnas;
+}
+
 function colocar(
   piezas: PiezaPuerta[],
   opcion: CortePuertas['opcion'],
@@ -199,33 +236,13 @@ function colocar(
     const rollo = mm(grupo[0].rollo);
     const entidades = vacias();
     const colocadas: CortePuertas['colocadas'] = [];
-    const columnas: Array<{ ancho: number; alto: number; piezas: Array<{ pieza: PiezaPuerta; h: number; girada: boolean }> }> = [];
-    const orden = [...grupo].sort((a, b) => Math.min(b.ancho, b.alto) - Math.min(a.ancho, a.alto));
-    for (const p of orden) {
-      for (let k = 0; k < p.cantidad; k++) {
-        const opciones = [
-          { w: mm(p.ancho), h: mm(p.alto), g: false },
-          { w: mm(p.alto), h: mm(p.ancho), g: true },
-        ].filter(t => t.h <= rollo);
-        const viables = columnas
-          .flatMap((columna, i) =>
-            opciones
-              .filter(t => t.w <= columna.ancho + 0.001 && t.h + columna.alto <= rollo + 0.001)
-              .map(t => ({ i, t, resto: rollo - columna.alto - t.h })),
-          )
-          .sort((a, b) => a.resto - b.resto);
-        let elegida = viables[0];
-        if (!elegida) {
-          opciones.sort((a, b) => a.w - b.w || b.h - a.h);
-          const t = opciones[0];
-          elegida = { i: columnas.length, t, resto: rollo - t.h };
-          columnas.push({ ancho: t.w, alto: 0, piezas: [] });
-        }
-        const columna = columnas[elegida.i];
-        columna.piezas.push({ pieza: p, h: elegida.t.h, girada: elegida.t.g });
-        columna.alto += elegida.t.h;
-      }
-    }
+    // Aprovechamiento del rollo (Iván, 21/10/2026: «no aprovecha bien el corte»). Se colocan las piezas en
+    // columnas a lo largo del rollo, una encima de otra a lo ancho, y se prueban varias maneras: columnas
+    // estrechas (piezas de pie) o anchas (frente a lo largo, como el corte a mano de AR2604638, que gasta 172 cm
+    // de rollo en vez de 278), ordenando por el lado corto o el largo. Se queda la que gasta menos rollo.
+    const columnas = [
+      ...(['estrecha', 'ancha'] as const).flatMap(nueva => (['corto', 'largo'] as const).map(orden => empaquetar(grupo, rollo, nueva, orden))),
+    ].reduce((mejor, otra) => (largoDe(otra) < largoDe(mejor) - 0.001 ? otra : mejor));
     let largo = 0;
     for (const columna of columnas) {
       let y = 0;
