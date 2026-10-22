@@ -68,6 +68,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   let numeroUnion = 0;
   function panel(nombre: string, desde: number, hasta: number) {
     const x = agregar(pieza(nombre, 'pano', ancho, hasta - desde));
+    x.origenAlzado = [-lateral, desde];
     paneles.push({ pieza: x, desde, hasta }); return x;
   }
   function reparto(plan:RepartoPanos,nombre:string) {
@@ -92,12 +93,12 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const alto=p.modelo==='PUERTAENR'?REGLAS_ENROLLABLE.corteEntrada:e.alto;
     const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo, alto));
     x.huecos = e.huecos.map(h => ({ ...h }));
-    if(p.modelo!=='PUERTAENR') x.marcas.push([0,alto / 2,e.largo,alto / 2]);
+    x.origenAlzado = [0, e.altura - alto / 2];
   }
   function sacoConPestana(w: number, h: number, pestana: number, altoPestana: number, desde: number, nombre = 'Saco') {
     const x = pieza(nombre, 'saco', w + pestana, h, p.materialSaco, p.rolloSaco);
     x.contorno = [[pestana,0],[w+pestana,0],[w+pestana,h],[pestana,h],[pestana,desde+altoPestana],[0,desde+altoPestana],[0,desde],[pestana,desde]];
-    if(p.modelo!=='PUERTAENR') x.marcas.push([pestana,h/2,w+pestana,h/2]); return x;
+    return x;
   }
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable, ventanales=[{D:e.D,margen:e.margen},...e.ventanales??[]];
@@ -133,7 +134,10 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       let eje=p.alto-e.T;
       for(let i=0;i<ventanales.length-1;i++) {
         eje=n(eje-ventanales[i].D);
-        const crear=(cara:string)=>agregar(pieza(`Entrada entre ventanales ${i+1} · ${cara}`,'entrada',p.frente,REGLAS_ENROLLABLE.corteEntrada));
+        const crear=(cara:string)=>{
+          const x=agregar(pieza(`Entrada entre ventanales ${i+1} · ${cara}`,'entrada',p.frente,REGLAS_ENROLLABLE.corteEntrada));
+          x.origenAlzado=[0,eje-REGLAS_ENROLLABLE.corteEntrada/2]; return x;
+        };
         const delantera=crear('delantera'),trasera=crear('trasera');
         separaciones.push({delantera,trasera});
         p.entradas.forEach((t,j)=>{if(Math.abs(t.altura-eje)<.001)incorporadas.add(j+1);});
@@ -145,6 +149,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',p.frente-2*v.margen+4,v.D-3.5,p.materialCristal,p.rolloCristal));
         for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
           const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.D-3.5));
+          cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,p.alto-e.T-ventanales.slice(0,i+1).reduce((s,v)=>s+v.D,0)+1.75];
           const x=lado===0?4:cacho.ancho-4;
           const punto=(destino:PiezaPuerta,numero:number,y:number,xc=lado===0?4:destino.ancho-4)=>{
             destino.unionesCorte=[...destino.unionesCorte??[],{x:xc,y,numero}];
@@ -218,6 +223,13 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const empates = p.autorreparable.empates;
     const plan=repartirPanos({desde:12,hasta:p.alto+3.5,frente:ancho,rollo:p.rollo,normal:true,indicados:empates.length?empates.map(eje=>({eje:eje+12,solape:2})):undefined});
     reparto(plan,'Paño'); r.uniones.push(...plan.uniones.map(u=>({altura:u.eje,solape:u.solape})));
+    for(const {pieza:x,desde,hasta} of paneles) {
+      for(const distancia of [3.5,20,30]) {
+        const y=p.alto-distancia;
+        if(y>=desde && y<=hasta) marca(x,y-desde);
+      }
+      if(desde===12) marca(x,2);
+    }
     // AR2604904: desde DISCO1, no desde los extremos de la raya horizontal.
     const distancia=p.autorreparable.distanciaEspaciador??10;
     if(!Number.isFinite(distancia)||distancia<=0||distancia*2>=ancho) aviso('ESPACIADOR','Revisa la distancia de las rayas laterales al borde según el pedido.');
@@ -228,10 +240,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       const posiciones=[distancia,ancho-distancia,...(p.autorreparable.espaciadorCentral?[ancho/2-1.9]:[])];
       for(const posicion of posiciones) x.marcas.push([n(posicion),2,n(posicion),fin]);
     }
-    agregar(pieza('Entrada delantera','entrada',p.frente+11,21));
-    agregar(pieza('Entrada trasera','entrada',p.frente+11,21));
-    const saco = agregar(pieza('Saco de 120','saco',p.frente,32,p.materialSaco,p.rolloSaco));
-    saco.marcas.push([0,16,p.frente,16]);
+    agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
+    agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
+    agregar(pieza('Saco de 120','saco',p.frente,32,p.materialSaco,p.rolloSaco));
   }
   for (const [i,v] of p.ventanas.entries()) {
     if (p.modelo === 'PUERTAENR') { aviso('VENTANA_MODELO','El ventanal sencillo ya define el cristal: las ventanas individuales requieren otro perfil.'); break; }

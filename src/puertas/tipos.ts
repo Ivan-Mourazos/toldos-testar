@@ -59,6 +59,8 @@ export interface PiezaPuerta {
   multiplicador?: number;
   /** Posiciones en cm de los mininúmeros compartidos por las piezas que se sueldan. */
   unionesCorte?: Array<{ x: number; y: number; numero: number; giro?: number }>;
+  /** Origen de la pieza en el alzado, en cm desde el bajo terminado. */
+  origenAlzado?: Punto;
 }
 export interface ResultadoPuerta {
   version: 1;

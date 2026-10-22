@@ -39,10 +39,10 @@ function huecoEntrada(l: Lienzo, h: Hueco, eje: number, altoEntrada: number, F: 
   // Los huecos laterales se abren hacia fuera; no se cierra ese lado en el alzado.
   if (h.x <= 1.01 || h.x + h.ancho >= F - 1.01) {
     const izq = h.x <= 1.01, x = izq ? h.x : h.x + h.ancho, signo = izq ? 1 : -1;
-    l.polilineas.push({ capa: 'referencias', cerrada: false,
+    l.polilineas.push({ capa: 'CUTTER', cerrada: false,
       puntos: [[x, y + h.alto], [x + signo * (h.ancho - r), y + h.alto], [x + signo * h.ancho, y + h.alto - r],
         [x + signo * h.ancho, y + r], [x + signo * (h.ancho - r), y], [x, y]], curvas: [0, -signo * b, 0, -signo * b, 0, 0] });
-  } else redondeado(l, 'referencias', h.x, y, h.ancho, h.alto, h.radio);
+  } else redondeado(l, 'CUTTER', h.x, y, h.ancho, h.alto, h.radio);
 }
 
 /** Rótulos centrados en el mayor espacio libre del paño, evitando entradas, ventanas y empates. */
@@ -55,9 +55,12 @@ function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number,
   const valores = [...(primero && opciones.cantidad !== false && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo,
     ...((opciones.reves ?? primero) ? ['REVÉS'] : []), ...((opciones.of ?? primero) && p.of.trim() ? [p.of.trim()] : [])];
   const alto = Math.max(1, libre[1] - libre[0]);
-  const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, ancho / 10, alto / (valores.length * 1.5 + .5),
-    ...valores.map(v => ancho * .85 / anchoArial(v, 1)));
-  valores.forEach((v, i) => texto(l, v, x, (libre[0] + libre[1]) / 2 + ((valores.length - 1) / 2 - i) * h * 1.5, h));
+  const fila = valores.length > 1;
+  const columna = ancho / valores.length;
+  const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, alto * .65,
+    ...valores.map(v => (fila ? columna : ancho) * .82 / anchoArial(v, 1)));
+  valores.forEach((v, i) => texto(l, v, fila ? x - ancho / 2 + columna * (i + .5) : x,
+    (libre[0] + libre[1]) / 2, h));
 }
 
 function dibujarSaco(l: Lienzo, p: Puerta) {
@@ -74,18 +77,24 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
   if (ple) {
     sombrear(-pestaña, ys - 2 - hp, 5, hp, true);
     sombrear(3, ys - h + 2, 5, hp, false);
-    texto(l, 'COSER VELCRO REVÉS DE 5 BRAVO', w / 2, ys + 22, 8);
-    texto(l, 'COSER VELCRO DERECHO DE 5 SUAVE', w / 2, ys - h - 18, 8);
-    linea(l, 'texto', w / 2 - 65, ys + 16, -pestaña / 2, ys - 2);
-    linea(l, 'texto', w / 2 - 65, ys - h - 12, 5.5, ys - h + 3);
+    const tx = 35, ht = Math.min(7, w / 45);
+    for (const [cara, tipo, yc, borde, bx] of [
+      ['REVÉS', 'BRAVO', ys + 17, ys - 2, -pestaña + 5],
+      ['DERECHO', 'SUAVE', ys - h - 17, ys - h + 2, 5.5],
+    ] as const) {
+      texto(l, `COSER VELCRO ${cara}`, tx + 28, yc + ht * .7, ht);
+      texto(l, `DE 5 ${tipo}`, tx + 28, yc - ht * .7, ht);
+      linea(l, 'texto', tx - 2, yc, bx, borde);
+    }
     cota(l, 0, ys - h + 2, 3, ys - h + 2, ys - h - 10);
     if (doble) texto(l, 'CENTRAR EL ENVOLTORIO · DOBLAR A LA MITAD · SOLDAR 2 CM', w / 2, ys + 42, Math.min(8, w / 70));
   } else {
     for (const x of [0, w - 3]) {
       sombrear(x, ys - 16, 3, 16, true); sombrear(x, ys - 32, 3, 16, false);
       const tx = x === 0 ? w * .23 : w * .77;
-      texto(l, 'VELCRO BRAVO REVÉS DE 3', tx, ys + 10, 4);
-      texto(l, 'VELCRO SUAVE REVÉS DE 3', tx, ys - h - 10, 4);
+      const ht = Math.min(7, w / 55);
+      texto(l, 'VELCRO BRAVO REVÉS DE 3', tx, ys + 10, ht);
+      texto(l, 'VELCRO SUAVE REVÉS DE 3', tx, ys - h - 10, ht);
       linea(l, 'texto', tx, ys + 6, x + 1.5, ys - 8);
       linea(l, 'texto', tx, ys - h - 6, x + 1.5, ys - 24);
     }
@@ -150,9 +159,10 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
       const puntos = rect(l, 'referencia-1', x, y, ancho, alto); l.sombreados.push({ capa: 'referencia-1', puntos, solido: false });
     }
     for (const [i, ancho] of [10, 15].entries()) {
-      const x = i ? F * .77 : F * .23, h = Math.min(5, F / 70);
-      texto(l, `REFUERZO DE ${ancho}CM A 10CM DEL BORDE SOLDADO LONA DE 2MM`, x, -H + 27, h);
-      linea(l, 'texto', x, -H + 22, i ? F - 17.5 : 17.5, -H + 8);
+      const x = i ? F - 90 : 90, h = Math.min(6, F / 70);
+      texto(l, `REFUERZO DE ${ancho} CM A 10 CM DEL BORDE`, x, -H + 31, h);
+      texto(l, 'SOLDADO · LONA DE 2 MM', x, -H + 31 - h * 1.4, h);
+      linea(l, 'texto', i ? x + 35 : x - 35, -H + 24 - h, i ? F - 17.5 : 17.5, -H + 13.5);
     }
   } else {
     linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
@@ -161,14 +171,18 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     linea(l, 'ROTULADOR', 0, -H + 14, F, -H + 14);
     linea(l, 'referencias', 0, -H, 0, -H + 14); linea(l, 'referencias', F, -H, F, -H + 12);
     texto(l, 'VARILLA NEGRA (4,5)', F / 2, 14, 7);
-    texto(l, 'E.T POR DELANTE Y POR DETRÁS CORTADA DE 21', F / 2, -17, Math.min(5, F / 60));
-    texto(l, 'E.T 5,5 cms MAS LARGAS EN CADA LADO', F / 2, -26, Math.min(5, F / 60));
+    texto(l, 'E.T POR DELANTE Y POR DETRÁS CORTADA DE 21', F / 2, -17, Math.min(7, F / 45));
+    texto(l, 'E.T 5,5 cms MAS LARGAS EN CADA LADO', F / 2, -26, Math.min(7, F / 40));
     const d = p.autorreparable.distanciaEspaciador ?? 10, fin = -H + 14, centro = (fin - 30) / 2;
     for (const [x, giro, sx] of [[d, 90, -1], [F - d, 270, 1], ...(p.autorreparable.espaciadorCentral ? [[F / 2 - 1.9, 90, 1]] : [])]) {
       linea(l, 'ROTULADOR', x, -30, x, fin); flecha(l, x, centro, giro, sx);
     }
     if (p.autorreparable.espaciadorCentral) linea(l, 'referencias', F / 2, -30, F / 2, fin);
     const h = Math.min(8, (H - 44) / 35);
+    // El texto central se centra entre cabecera y bajo; las flechas se apartan a un lado.
+    if (p.autorreparable.espaciadorCentral) {
+      const f = l.inserciones.at(-1)!; f.y = centro + Math.min(45, (H - 44) / 4);
+    }
     for (const [x, giro] of [[-10, 270], [F + 10, 90]]) texto(l, 'CREMALLERA ESPECIAL PORTANOVA', x, centro, h, giro);
     for (const [x, giro] of [[d + 7, 270], [F - d - 7, 90], ...(p.autorreparable.espaciadorCentral ? [[F / 2 - 8, 90]] : [])])
       texto(l, 'ESPACIADOR ESPECIAL PORTANOVA', x, centro, h, giro);
@@ -180,8 +194,12 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   }
   for (const [i, u] of r.uniones.entries()) {
     for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0, -H + u.altura + signo * u.solape / 2, F, -H + u.altura + signo * u.solape / 2);
-    if (!u.tubo) texto(l, `EMPATE ${num(u.solape)}cm`, F / 2, -H + u.altura + 8, 5, 0, 'referencia-1');
-    if (!ple) texto(l, `${letra.toLowerCase()}${i + 1}`, 1, -H + u.altura, 1, 0, 'ROTULADOR');
+    if (!u.tubo) {
+      const anchoLibre = !ple && p.autorreparable.espaciadorCentral ? F / 2 - 40 : F - 40;
+      const nota = `EMPATE ${num(u.solape)} CM`, h = Math.min(5, anchoLibre * .8 / anchoArial(nota, 1));
+      texto(l, nota, !ple && p.autorreparable.espaciadorCentral ? F / 4 : F / 2, -H + u.altura + 8, h, 0, 'referencia-1');
+    }
+    obstaculos.push([-H + u.altura - 4, -H + u.altura + 15]);
   }
   for (const v of p.ventanas) {
     redondeado(l, 'curv', v.x, -H + v.y, v.ancho, v.alto, v.radio);
@@ -215,6 +233,10 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   }
   if (r.bolsillo) rect(l, 'referencias', r.bolsillo.x, -H + r.bolsillo.y, r.bolsillo.ancho, r.bolsillo.alto);
   const abajo = dibujarSaco(l, p);
+  for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
+    const [x, y] = pieza.origenAlzado!;
+    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, x + m.x, -H + y + m.y, 1, m.giro ?? 0, 'ROTULADOR');
+  }
   return { lienzo: l, zona: { x0: -65, x1: F + 120, y0: abajo, y1: arriba + 50 } };
 }
 

@@ -53,8 +53,6 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
   if (pieza.clase === 'entrada') {
     const n = /(\d+)\s*$/.exec(pieza.nombre)?.[1];
     if (n) return `ENTRADA ${n}`;
-    if (/delantera/i.test(pieza.nombre)) return 'ENTRADA DELANTERA';
-    if (/trasera/i.test(pieza.nombre)) return 'ENTRADA TRASERA';
     return 'ENTRADA';
   }
   if (pieza.clase === 'saco') return pieza.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : 'SACO';
@@ -118,11 +116,15 @@ function dibujarPieza(
   function redondeado(h: Hueco, hueco: boolean) {
     const { x: a, y: b, ancho: w, alto: hg, radio: r } = h;
     const capa = hueco ? 'CUTTER' : 'DISCO1';
+    // Las bocas laterales de E.T. quedan abiertas hacia el borde, igual que el bot a mano.
+    const entrada = pieza.clase === 'entrada' || pieza.clase === 'pano' && pieza.huecos.some(v => v === h && v.ancho === 5);
+    const izquierda = hueco && entrada && a <= 1.01;
+    const derecha = hueco && entrada && a + w >= pieza.ancho - 1.01;
     for (const [p0, p1] of [
-      [[a + r, b], [a + w - r, b]],
-      [[a + w, b + r], [a + w, b + hg - r]],
-      [[a + w - r, b + hg], [a + r, b + hg]],
-      [[a, b + hg - r], [a, b + r]],
+      [[izquierda ? a : a + r, b], [derecha ? a + w : a + w - r, b]],
+      ...derecha ? [] : [[[a + w, b + r], [a + w, b + hg - r]]],
+      [[derecha ? a + w : a + w - r, b + hg], [izquierda ? a : a + r, b + hg]],
+      ...izquierda ? [] : [[[a, b + hg - r], [a, b + r]]],
     ] as [Punto, Punto][]) {
       linea(capa, p0, p1);
     }
@@ -133,6 +135,7 @@ function dibujarPieza(
         [a + w - r, b + hg - r, 0],
         [a + r, b + hg - r, 90],
       ]) {
+        if (izquierda && (desde === 90 || desde === 180) || derecha && (desde === 0 || desde === 270)) continue;
         const [px, py] = transformar([cx, cy]);
         entidades.arcos.push({
           capa: 'CUTTER',
@@ -168,7 +171,7 @@ type Columna = { ancho: number; alto: number; piezas: Array<{ pieza: PiezaPuerta
 const largoDe = (columnas: Columna[]) => columnas.reduce((suma, c) => suma + c.ancho, 0);
 
 /** Columnas a lo largo del rollo con las piezas una encima de otra; `nueva` dice cómo se pone cada pieza que abre columna. */
-function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta) => 'estrecha' | 'ancha', orden: 'corto' | 'largo'): Columna[] {
+function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta) => 'estrecha' | 'ancha', orden: 'corto' | 'largo', conservarFrente: (p: PiezaPuerta) => boolean): Columna[] {
   const columnas: Columna[] = [];
   const lado = (p: PiezaPuerta) => (orden === 'corto' ? Math.min(p.ancho, p.alto) : Math.max(p.ancho, p.alto));
   for (const p of [...grupo].sort((a, b) => lado(b) - lado(a))) {
@@ -176,7 +179,7 @@ function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta)
       const opciones = [
         { w: mm(p.ancho), h: mm(p.alto), g: false },
         { w: mm(p.alto), h: mm(p.ancho), g: true },
-      ].filter(t => t.h <= rollo);
+      ].filter(t => t.h <= rollo && (!t.g || !conservarFrente(p) || mm(p.alto) > rollo));
       const viables = columnas
         .flatMap((columna, i) =>
           opciones
@@ -229,6 +232,7 @@ function colocar(
   opcion: CortePuertas['opcion'],
   codigosPano: Map<string, string>,
   esEnrollable: (idPieza: string) => boolean,
+  esAutorreparable: (idPieza: string) => boolean,
   ofStock?: string,
 ): CortePuertas[] {
   const grupos = new Map<string, PiezaPuerta[]>();
@@ -269,8 +273,12 @@ function colocar(
       ...umbrales.map(u => (p: PiezaPuerta) => (Math.min(p.ancho, p.alto) <= u ? 'estrecha' as const : 'ancha' as const)),
     ];
     const columnas = maneras
-      .flatMap(nueva => (['corto', 'largo'] as const).map(orden => empaquetar(grupo, rollo, nueva, orden)))
+      .flatMap(nueva => (['corto', 'largo'] as const).map(orden => empaquetar(grupo, rollo, nueva, orden,
+        p => p.clase === 'pano' && esAutorreparable(p.id))))
       .reduce((mejor, otra) => (largoDe(otra) < largoDe(mejor) - 0.001 ? otra : mejor));
+    // Al principio del rollo, primero las piezas que ocupan su ancho entero.
+    if (grupo.some(p => !esEnrollable(p.id))) columnas.sort((a, b) =>
+      Number(b.piezas.some(t => Math.abs(t.h - rollo) < .001)) - Number(a.piezas.some(t => Math.abs(t.h - rollo) < .001)));
     // Enrollables: A1 arriba y A2 debajo, como en el alzado (Iván, 22/10/2026, corte a mano de AR2605134). Se
     // apila desde abajo, así que sus paños se reordenan de código mayor a menor en los mismos huecos que ocupaban;
     // lo demás (E.T., cachos, otros modelos, que ya cuadraban con sus cortes a mano) no se mueve.
@@ -321,7 +329,9 @@ function colocar(
     entidades.textos.push(
       { capa: 'texto', x: 0, y: rollo + 250, h: 95, valor: `${grupo[0].material} · ${titulo}` },
       // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
-      { capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' },
+      grupo.every(p => esEnrollable(p.id))
+        ? { capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' }
+        : { capa: 'texto', x: 80, y: Math.min(rollo * .35, 800), h: 80, valor: 'REVÉS', giro: 90 },
     );
     fusionar(entidades, rollo);
     return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
@@ -360,13 +370,15 @@ export function generarCortePuertas(
     .map(e => e.id);
   const enrollables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAENR').map(e => `${e.id}:`);
   const esEnrollable = (idPieza: string) => enrollables.some(prefijo => idPieza.startsWith(prefijo));
+  const autorreparables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAUTO').map(e => `${e.id}:`);
+  const esAutorreparable = (idPieza: string) => autorreparables.some(prefijo => idPieza.startsWith(prefijo));
   const principal = resultados.flatMap(r => r.piezas);
   const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []);
   const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []);
   const cortes = [
-    ...colocar(principal, 'principal', codigosPano, esEnrollable, ofStockSacos),
-    ...colocar(entero, 'saco-entero', codigosPano, esEnrollable),
-    ...colocar(partido, 'saco-partido', codigosPano, esEnrollable),
+    ...colocar(principal, 'principal', codigosPano, esEnrollable, esAutorreparable, ofStockSacos),
+    ...colocar(entero, 'saco-entero', codigosPano, esEnrollable, esAutorreparable),
+    ...colocar(partido, 'saco-partido', codigosPano, esEnrollable, esAutorreparable),
   ];
   let archivo = null;
   if (!sinOf.length && !avisos.some(a => a.nivel === 'error') && pedido.orderCode.trim() && cortes.length) {
