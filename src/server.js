@@ -176,6 +176,8 @@ const mensajePedidoDePuertas = (orderCode) => `${orderCode} ya está guardado co
 const yaEsPedidoDePuertas = (orderCode) => yaEsPedidoDeRemolques(almacenPedidosPuertas, orderCode,
   (mensaje) => console.error(mensaje.replace('de remolques', 'de puertas').replace('como toldos', 'igual')));
 const esPedidoDeToldos = comprobadorPedidoToldos(workflowStore);
+// La OF de los sacos de stock (MATERIAL PARA STOCK.dwg): la usan el corte de toldos y el de puertas.
+const ofStockSacos = crearOfStockSacos({ oficinaTecnicaDirectory: config.oficinaTecnicaDirectory, oda });
 const pedidosRemolques = crearServicioPedidosRemolques({
   almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
@@ -203,7 +205,8 @@ const pedidosPuertas = crearServicioPedidosPuertas({
     if (await esPedidoDeToldos(orderCode)) return 'toldos';
     return (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) ? 'remolques' : null;
   },
-  plano: crearPlanoPuertas({ ajustes: () => workflowStore.getSettings(), oda })
+  ofStockSacos,
+  plano: crearPlanoPuertas({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos })
 });
 
 // Borradores en el servidor (diseño 01/10/2026): un JSON por número de pedido en la carpeta de
@@ -232,8 +235,7 @@ app.use('/api', (req, _res, next) => {
 
 app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 
-registrarRutasCorteLona(app, { workflowStore, oda,
-  ofStockSacos: crearOfStockSacos({ oficinaTecnicaDirectory: config.oficinaTecnicaDirectory, oda }) });
+registrarRutasCorteLona(app, { workflowStore, oda, ofStockSacos });
 
 registrarRutasEnviosCorte(app, {
   ruta: '/api/reviews/:orderCode/corte-lona', obtener: (codigo) => workflowStore.getReview(codigo),
@@ -715,7 +717,7 @@ function rutaRemolques(manejar) {
 }
 
 registrarRutaVistaPreviaCorte(app, pedidosRemolques);
-registrarRutaPuertas(app);
+registrarRutaPuertas(app, { ofStockSacos });
 
 app.get('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
   const year = Number(req.query.year) || new Date().getFullYear();

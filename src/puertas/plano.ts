@@ -116,8 +116,10 @@ const cm = (mm: number) => mm / 10;
 const metros = (mm: number) => `${(mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 })} M`;
 const unicos = (xs: string[]) => [...new Set(xs.map(x => x.trim()).filter(Boolean))];
 
-export function escribirPlanoPuertas({ pedido, cabecera }: {
+export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
   pedido: PedidoPuertas;
+  /** La OF de los sacos de stock: con ella, el corte del plano lleva los mismos sacos que el DXF del bot. */
+  ofStockSacos?: string;
   cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string /* AAAA-MM-DD */ };
 }): string {
   const L = lienzo();
@@ -148,7 +150,7 @@ export function escribirPlanoPuertas({ pedido, cabecera }: {
   const zonaDibujo = { x0: -10, y0: abajo - 10, x1: cursor - SEPARACION + 10, y1: arriba + 10 };
 
   // Debajo, los cortes a escala (mm → cm), uno encima de otro como en el DXF del bot (el primero abajo).
-  const { cortes } = generarCortePuertas(pedido);
+  const { cortes } = generarCortePuertas(pedido, { ofStockSacos });
   const C = lienzo();
   let techo = zonaDibujo.y0 - 60;
   const altoDe = (c: (typeof cortes)[number]) => Math.max(0,

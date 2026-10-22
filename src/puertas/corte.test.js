@@ -12,6 +12,23 @@ const pedido = () => {
   return { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604638', elementos: [{ id: 'puerta-a', input: p }] };
 };
 describe('Corte de puertas', () => {
+  it('aprovecha la lona que sobra con sacos de stock, como toldos (AR2604725: cuatro sacos encima de A2)', () => {
+    const p = pedido();
+    Object.assign(p.elementos[0].input, { frente: 474, alto: 430, of: '0232504', color: 'GRIS 7038' });
+    p.elementos[0].input.enrollable = { T: 239, D: 60, margen: 11, empates: [], sacoPartido: true };
+    p.elementos[0].input.entradas = [60, 131, 191, 241].map(altura => ({ altura, diametro: 30, largo: 474, alto: 8, huecos: [] }));
+    const conStock = generarCortePuertas(p, { ofStockSacos: '0230811' }).cortes;
+    const lona = conStock.find(c => c.material === 'LAC900 GRIS 7038');
+    const sacos = lona.colocadas.filter(k => k.pieza.nombre === 'Saco de stock');
+    expect(sacos).toHaveLength(4);
+    expect(sacos.every(k => k.pieza.of === '0230811')).toBe(true);
+    expect(lona.entidades.textos.filter(t => t.valor === 'STOCK')).toHaveLength(4);
+    // Ni en el transparente ni en el saco, y sin OF de stock no hay sacos.
+    expect(conStock.filter(c => c !== lona).flatMap(c => c.colocadas).some(k => k.pieza.nombre === 'Saco de stock')).toBe(false);
+    expect(generarCortePuertas(p).cortes.flatMap(c => c.colocadas).some(k => k.pieza.nombre === 'Saco de stock')).toBe(false);
+    // El largo de rollo no cambia: los sacos van en lo que sobra.
+    expect(lona.largo).toBe(generarCortePuertas(p).cortes.find(c => c.material === 'LAC900 GRIS 7038').largo);
+  });
   it('aprovecha el rollo como el corte a mano: AR2604638 gasta 172 cm de lona (paños con el frente a lo largo)', () => {
     const p = pedido();
     p.elementos[0].input.entradas = [{ altura: 60, diametro: 30, largo: 172, alto: 8, huecos: [] }];

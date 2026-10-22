@@ -1,5 +1,6 @@
 import { escribirDxf2004 } from '../domain/corteLona/dxfCorte.js';
 import { anchoArial } from '../domain/corteLona/texto.js';
+import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
@@ -206,10 +207,44 @@ function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: 'estrecha' | 'an
   return columnas;
 }
 
+/**
+ * Sacos de stock en la lona que sobra, como en toldos (Iván, 22/10/2026: «en estos casos se ponen sacos para
+ * aprovechar el material»; en el corte a mano de AR2604725 van cuatro encima de A2): las mismas medidas y la
+ * misma OF de stock (src/domain/corteLona/colocacion.js), rotulados con la OF, SACO, su medida y STOCK.
+ */
+function sacosDeStock(columnas: Columna[], rollo: number, ofStock: string, entidades: EntidadesPuertas, material: string, rolloCm: number) {
+  const ocupadas: Array<{ x: number; y: number; ancho: number; hueco: number }> = [];
+  let x = 0;
+  for (const columna of columnas) {
+    let y = 0;
+    for (const t of columna.piezas) {
+      ocupadas.push({ x, y, ancho: mm(t.girada ? t.pieza.alto : t.pieza.ancho), hueco: t.h });
+      y += t.h;
+    }
+    x += columna.ancho;
+  }
+  const sacos = sacosEnHuecos(ocupadas, rollo, ofStock) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
+  return sacos.map((saco, i) => {
+    const [x0, y0, w, h] = [saco.x, saco.y, saco.ancho, saco.hueco];
+    entidades.lineas.push(
+      { capa: 'DISCO1', x1: x0, y1: y0, x2: x0 + w, y2: y0 }, { capa: 'DISCO1', x1: x0 + w, y1: y0, x2: x0 + w, y2: y0 + h },
+      { capa: 'DISCO1', x1: x0 + w, y1: y0 + h, x2: x0, y2: y0 + h }, { capa: 'DISCO1', x1: x0, y1: y0 + h, x2: x0, y2: y0 },
+    );
+    const lineas = [ofStock, 'SACO', saco.medida, 'STOCK'];
+    const alto = Math.min(150, Math.min(w, h) / 8, Math.min(w, h) * 0.9 / ((lineas.length - 1) * 1.6 + 1),
+      ...lineas.map(v => w * 0.9 / anchoArial(v, 1)));
+    lineas.forEach((valor, k) => entidades.textos.push({ capa: 'texto', x: x0 + w / 2, y: y0 + h / 2 - (k - (lineas.length - 1) / 2) * alto * 1.6, h: alto, valor, centrado: true }));
+    const pieza: PiezaPuerta = { id: `stock-${i}`, nombre: 'Saco de stock', clase: 'saco', ancho: w / 10, alto: h / 10, cantidad: 1, material, rollo: rolloCm,
+      of: ofStock, contorno: [[0, 0], [w / 10, 0], [w / 10, h / 10], [0, h / 10]], radio: 0, marcas: [], textos: [], huecos: [] };
+    return { pieza, x: x0, y: y0, girada: false };
+  });
+}
+
 function colocar(
   piezas: PiezaPuerta[],
   opcion: CortePuertas['opcion'],
   codigosPano: Map<string, string>,
+  ofStock?: string,
 ): CortePuertas[] {
   const grupos = new Map<string, PiezaPuerta[]>();
   for (const p of piezas) {
@@ -253,6 +288,10 @@ function colocar(
       }
       largo += columna.ancho;
     }
+    // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
+    if (ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
+      colocadas.push(...sacosDeStock(columnas, rollo, ofStock, entidades, grupo[0].material, grupo[0].rollo));
+    }
     const titulo =
       opcion === 'principal'
         ? 'CORTE'
@@ -270,6 +309,7 @@ function colocar(
 
 export function generarCortePuertas(
   pedido: PedidoPuertas,
+  { ofStockSacos }: { ofStockSacos?: string } = {},
 ): VistaPuertas & { archivo: { nombre: string; dxf: string; entidades: EntidadesPuertas } | null } {
   // El id de una pieza se repite entre puertas (clase-n-nombre): se le pone delante el de su puerta para que
   // cada paño se rotule con la letra de la suya (con dos puertas salían todos como B).
@@ -300,7 +340,7 @@ export function generarCortePuertas(
   const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []);
   const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []);
   const cortes = [
-    ...colocar(principal, 'principal', codigosPano),
+    ...colocar(principal, 'principal', codigosPano, ofStockSacos),
     ...colocar(entero, 'saco-entero', codigosPano),
     ...colocar(partido, 'saco-partido', codigosPano),
   ];

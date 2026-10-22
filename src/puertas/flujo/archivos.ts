@@ -15,9 +15,11 @@ interface Oda {
   convertir(contenido: Uint8Array): Promise<Uint8Array>;
 }
 
-export function crearPlanoPuertas({ ajustes, oda }: {
+export function crearPlanoPuertas({ ajustes, oda, ofStockSacos }: {
   ajustes: () => Promise<{ corteLonaPlanoDirectory?: string }>;
   oda: Oda;
+  /** Los mismos sacos de stock que el DXF del bot. */
+  ofStockSacos?: () => Promise<{ of: string }>;
 }): PlanoPuertas {
   return {
     async preparar(pedido, revisor) {
@@ -30,6 +32,7 @@ export function crearPlanoPuertas({ ajustes, oda }: {
       const dxf = escribirPlanoPuertas({
         pedido: { ...pedido, summary: undefined },
         cabecera: { cliente: s.customer, tecnico: s.technician, revisor, fecha: s.orderDate },
+        ofStockSacos: (await ofStockSacos?.())?.of || undefined,
       });
       const avisos: string[] = [];
       let contenido: Uint8Array = Buffer.from(dxf, "utf8");

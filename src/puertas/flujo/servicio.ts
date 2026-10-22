@@ -32,6 +32,8 @@ export interface DependenciasPedidosPuertas {
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
   /** La lista de técnicos (la de «Soy»). */
   tecnicos: string[];
+  /** La OF de los sacos de stock (src/ofStockSacos.js): sin ella, el corte va sin sacos. */
+  ofStockSacos?: () => Promise<{ of: string }>;
   /** El producto con que ya está guardado ese número, si es otro («toldos», «remolques»): nunca hay pedidos mixtos. */
   otroProducto: (orderCode: string) => Promise<string | null>;
   plano?: PlanoPuertas;
@@ -216,22 +218,24 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
   }
 
   /** El corte como saldría (piezas, rollos y avisos), para verlo: sin archivos ni nada escrito. */
+  const ofStock = async () => (await deps.ofStockSacos?.())?.of || undefined;
+
   async function corte(orderCode: string) {
     const pedido = await obtener(orderCode);
-    const { resultados, cortes, avisos } = generarCortePuertas({ ...pedido, summary: undefined });
+    const { resultados, cortes, avisos } = generarCortePuertas({ ...pedido, summary: undefined }, { ofStockSacos: await ofStock() });
     return { resultados, cortes, avisos, sinOf: puertasSinOf(pedido) };
   }
 
   /** Un solo DXF por pedido, con las opciones de saco dentro (el técnico de la máquina elige). */
-  function prepararDxf(pedido: PedidoPuertasGuardado): { filename: string; contents: Uint8Array }[] {
+  async function prepararDxf(pedido: PedidoPuertasGuardado): Promise<{ filename: string; contents: Uint8Array }[]> {
     exigirOfsPuertas(pedido);
-    const { archivo } = generarCortePuertas({ ...pedido, summary: undefined });
+    const { archivo } = generarCortePuertas({ ...pedido, summary: undefined }, { ofStockSacos: await ofStock() });
     if (!archivo) throw new ErrorPedidoRemolques("Este pedido no tiene corte disponible: revisa las comprobaciones de las puertas.", 409);
     return [{ filename: `${archivo.nombre}.dxf`, contents: Buffer.from(archivo.dxf, "latin1") }];
   }
 
   async function descargarCorte(orderCode: string) {
-    return prepararDxf(await obtener(orderCode))[0];
+    return (await prepararDxf(await obtener(orderCode)))[0];
   }
 
   async function enviarCorte(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
