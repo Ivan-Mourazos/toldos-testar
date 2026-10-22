@@ -20,6 +20,13 @@ describe('Vista compartida del corte de lona', () => {
     expect(html).not.toContain('Sacos:');
     expect(html).not.toContain('Trozo separado');
   });
+  it('el cristal de la cortina va en su rollo, rotulado sin sacos', () => {
+    const cristal = { ...corte, material: 'TRANSPARENTE 650 MI', piezas: [{ letra: 'A', piezas: [{ nombre: 'A CRISTAL', largo: 2640, alto: 1400 }] }] };
+    const html = renderToStaticMarkup(<CorteLonaVista datos={{ ...vista, cortes: { conSacos: [cristal], trozoSeparado: null } }} />);
+    expect(html).toContain('Cristal · sin sacos');
+    expect(html).not.toContain('Con sacos');
+    expect(html).not.toContain('Sacos:');
+  });
   it('sin OF muestra una etiqueta de aviso aunque el corte conste al día', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '' }] };
     const estado = { version: 2, generadoEn: '', generadoPor: 'IVÁN', ofStockSacos: '0230811', ajustes: {}, toldos: [] };

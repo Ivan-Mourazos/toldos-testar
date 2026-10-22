@@ -105,6 +105,18 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     expect(await plano.text()).toContain('AC1032');
     expect(convertir).not.toHaveBeenCalled();
   });
+  it('descarga el plano único de una cortina con ventana, que lleva el corte de la lona y el del cristal', async () => {
+    const order = structuredClone(revision.order);
+    Object.assign(order.awnings[0], { model: 'CORTINA', width: 312, projection: 250, hasValance: true, valanceHeight: 15, valanceFabric: '',
+      device: 'MAQ. INTERIOR', crankHeight: 170, curtainHasWindow: true, curtainFinish: 'NORMAL', curtainBottomFinish: 'TUBO DE CARGA',
+      curtainWindowReference: 'SUELO', curtainWindowHeight: 136, curtainWindowCorner: 20, curtainWindowFloorHeight: 75,
+      curtainFabricAdjustment: 'NINGUNO', curtainFabricAdjustmentCm: 0 });
+    const json = await (await post('/api/corte-lona', { order })).json();
+    expect(json.cortes.conSacos.map((c) => c.material)).toContain('TRANSPARENTE 650 MI');
+    const plano = await post('/api/corte-lona/plano', { order });
+    expect(plano.status).toBe(200);
+    expect(await plano.text()).toContain('CRISTAL · TRANSPARENTE 650 MI');
+  });
   it('descarga el corte con las dos opciones y recalcula los ajustes guardados del revisor', async () => {
     const order = structuredClone(revision.order);
     order.awnings[0].projection = 350;

@@ -62,7 +62,8 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
         if (!archivo) throw new Error('No hay corte disponible.');
         return descargar(res, Buffer.from(archivo.dxf, 'latin1'), archivo.filename, 'application/dxf');
       }
-      const plano = elegirMaterial(resultado.plano, datos.material);
+      // El cristal de la cortina va en el plano de su lona (`incluidoEn`): sin material, ese plano único.
+      const plano = elegirMaterial(datos.material == null ? resultado.plano.filter((p) => !p.incluidoEn) : resultado.plano, datos.material);
       const contenido = Buffer.from(plano.dxf, 'utf8');
       if (oda.disponible) {
         try {

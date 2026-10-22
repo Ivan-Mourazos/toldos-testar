@@ -114,9 +114,11 @@ export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
     {datos.cortes.conSacos.map(corte => {
       const separado = datos.cortes.trozoSeparado?.find(c => c.idMaterial === corte.idMaterial);
       const soloBamba = corte.piezas.every(t => t.piezas.every(p => p.nombre.includes('BAMBA')));
+      // El cristal de las cortinas va en su rollo, sin sacos de stock.
+      const soloCristal = corte.piezas.every(t => t.piezas.every(p => p.nombre.includes('CRISTAL')));
       return <article className="corte-material" key={corte.idMaterial}>
         <header><h3>{corte.material}</h3><span>Rollo de {numero(corte.anchoRollo / 10)} cm · {corte.codigoTela}</span></header>
-        <div className="corte-opciones"><Opcion corte={corte} titulo={soloBamba ? 'Bamba sola · sin sacos' : 'Con sacos'} soloBamba={soloBamba} />{separado && <Opcion corte={separado} titulo="Trozo separado" />}</div>
+        <div className="corte-opciones"><Opcion corte={corte} titulo={soloBamba ? 'Bamba sola · sin sacos' : soloCristal ? 'Cristal · sin sacos' : 'Con sacos'} soloBamba={soloBamba || soloCristal} />{separado && <Opcion corte={separado} titulo="Trozo separado" />}</div>
         <details className="corte-desglose"><summary>Piezas por toldo · medidas de corte en cm</summary>{corte.piezas.map((t, i) => <div key={i}><strong>{`Toldo ${t.letra}${(t.unidades ?? 1) > 1 ? ` (${t.unidades} uds)` : ''}`}</strong><ul>{t.piezas.map((p, j) => <li key={j}>{p.nombre}: {numero(p.largo / 10)} × {numero(p.alto / 10)} cm</li>)}</ul></div>)}</details>
       </article>;
     })}
