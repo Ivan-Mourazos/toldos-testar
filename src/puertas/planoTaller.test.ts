@@ -121,6 +121,13 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(textos).toContain('0299999'); expect(textos).toContain('STOCK');
   });
 
+  it('MATERIALES como AR2604904: sin cristal si la puerta no lo lleva y el saco de impresión como AMARILLO/NEGRO', () => {
+    const p = { ...puertaPlanoReal('AR2604904'), sacoDiagonalesAmarillas: true };
+    const materiales = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2604904', p), cabecera }))
+      .find(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES/.test(valor(r, 1) ?? ''))!;
+    expect(valor(materiales, 1)).toBe('MATERIALES:\\PLAC 900 BLANCO 9016\\PLAC 900 AMARILLO/NEGRO');
+  });
+
   it('AR2605134 sin impresión conserva el plano completo de main 7ebe632 byte por byte', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),

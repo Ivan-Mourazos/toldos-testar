@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { textoSeguro } from '../domain/corteLona/texto.js';
+import { calcularPuerta } from './calcular.ts';
 import type { PedidoPuertas, Punto } from './tipos.ts';
 
 type Zona = { x0: number; y0: number; x1: number; y1: number };
@@ -14,7 +15,13 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   zonas: { toldos: Zona; corte: Zona }, altoVistaCorte?: number) {
   plantilla ??= readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const puertas = pedido.elementos.map(e => e.input);
-  const materiales = unicos(puertas.flatMap(p => [p.materialCristal, `${p.material} ${p.color}`, p.materialSaco]))
+  // Como los planos de la oficina (AR2604904): el cristal solo si la puerta lo lleva, y el saco que va a impresión
+  // digital como AMARILLO/NEGRO (Iván, 22/10/2026).
+  const materiales = unicos(puertas.flatMap(p => [
+    ...(calcularPuerta(p).piezas.some(x => x.clase === 'cristal') ? [p.materialCristal] : []),
+    `${p.material} ${p.color}`,
+    p.sacoDiagonalesAmarillas ? p.materialSaco.replace(/NEGRO\s*$/i, 'AMARILLO/NEGRO') : p.materialSaco,
+  ]))
     .map(v => textoSeguro(v).replace(/LAC\s*900/g, 'LAC 900'));
   const fecha = cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/');
   const ventana = (z: Zona, centro: Punto, ancho: number, alto: number) => ({ z, centro, ancho, alto });
