@@ -438,7 +438,7 @@ Con F el frente terminado, H el alto terminado y V el alto de la ventana (hueco 
 - **Q-CP02 · Raya «EMPATE EN HORIZONTAL»** (contestada): no es fija. Iván: «va a 2,50 desde abajo, que es el tamaño del paño». El paño de abajo es del ancho del rollo y la raya del empate va a 250 del corte de abajo; el de arriba lleva el resto y el solape. La de los ejemplos (a 34 del terminado de arriba) solo estaba indicada.
 - **Q-CP03 · E.T. Ø40** (contestada): en el DXF de la máquina va el rotulador a **21** del corte (9 por encima del terminado). La raya de 17, con la nota «MARCAR 17 CM POR EL DERECHO (MEDIDA LONA CORTADA) Y SOLDAR», es otra referencia para que por el otro lado de la lona sepan dónde soldar: va solo en el plano, en ejes.
 
-## 13. En la web (22/10/2026, rama cortina-corte)
+## 13. En la web (22/10/2026; en main el 23/10/2026, revisada por Iván)
 
 Primera versión del corte y del plano de la cortina de PVC, con las reglas de las secciones 10 y 12:
 
@@ -447,5 +447,7 @@ Primera versión del corte y del plano de la cortina de PVC, con las reglas de l
 - El cristal es otro material del mismo DXF del bot (TRANSPARENTE 650 MI, sin sacos de stock) y va dibujado en el plano de su lona, debajo del corte del PVC: hay un solo plano.
 - El plano dibuja el alzado como los ejemplos base: corte, terminado, bandas, laterales, cristal, rotulador, E.T. y cotas (las terminadas se imprimen; las de corte no).
 - Comprobado con AR2605080 (bandas de 79,5 y 33,5 y laterales de 19 × 166, iguales que su corte real) y con AR2605193.
+
+Revisión de Iván (23/10/2026, «los vi bien»): cotas agarradas a las piezas, mininúmeros también en el dibujo, cotas del corte grandes (XERA 20) y, en las bandas, nombre, OF y REVÉS en fila para que vayan más grandes.
 
 Queda para después: solapas, varias ventanas, E.T. especiales, Cambio de cortina, laterales al corte en cortinas sin empate y el color y la altura editable del velcro (hoy la web pone la altura de su regla Q-CO06).

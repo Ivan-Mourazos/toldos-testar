@@ -34,8 +34,11 @@ export function escribirDxfPlano(plano, cabecera) {
   for (const estilo of new Set([...(plano.cotas ?? []), ...(plano.corte.cotas ?? [])].map(c => c.estilo))) {
     const e = ESTILOS_COTA[estilo];
     if (!e?.copiaDe || src.includes(`  2\n${estilo}\n`)) continue;
-    const base = src.match(new RegExp(` {2}0\\nDIMSTYLE\\n(?:(?! {2}0\\n)[\\s\\S])*? {2}2\\n${e.copiaDe}\\n(?:(?! {2}0\\n)[\\s\\S])*`))?.[0];
-    if (base) src = insertarEnTabla(src, 'DIMSTYLE', base.replace(/(105\n)[^\n]+/, `$1${nuevo()}`).replace(`  2\n${e.copiaDe}\n`, `  2\n${estilo}\n`)
+    const estiloDe = (nombre) => src.match(new RegExp(` {2}0\\nDIMSTYLE\\n(?:(?! {2}0\\n)[\\s\\S])*? {2}2\\n${nombre}\\n(?:(?! {2}0\\n)[\\s\\S])*`))?.[0];
+    // Si la plantilla no trae XERA 15 (la de toldos), se copia su XERAL 15.
+    const origen = estiloDe(e.copiaDe) ? e.copiaDe : 'XERAL 15';
+    const base = estiloDe(origen);
+    if (base) src = insertarEnTabla(src, 'DIMSTYLE', base.replace(/(105\n)[^\n]+/, `$1${nuevo()}`).replace(`  2\n${origen}\n`, `  2\n${estilo}\n`)
       .replace(/(\n140\n)[^\n]+/, `$1${e.texto}`).replace(/(\n 41\n)[^\n]+/, `$1${e.flecha}`), 1);
   }
 

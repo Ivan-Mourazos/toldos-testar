@@ -39,9 +39,9 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   // de la oficina: XERAL 15 en los toldos grandes y XERAL en el resto. `lado` separa la línea de cota de la
   // pieza; con 0 va sobre los puntos.
   const estiloCota = 12 * escalaTexto >= 12.5 ? 'XERAL 15' : 'XERAL';
-  const cota = (capa, x1, y1, x2, y2, valor, lado) => {
+  const cota = (capa, x1, y1, x2, y2, valor, lado, estilo = estiloCota) => {
     const vertical = x1 === x2;
-    Q.push({ capa, estilo: estiloCota, x1, y1, x2, y2, giro: vertical ? 90 : 0, d: (vertical ? x1 : y1) + lado, valor });
+    Q.push({ capa, estilo, x1, y1, x2, y2, giro: vertical ? 90 : 0, d: (vertical ? x1 : y1) + lado, valor });
   };
 
   // Los mininúmeros del corte, del mismo tamaño y en el mismo sitio de cada pieza en el dibujo (Iván, 22/10/2026).
@@ -220,9 +220,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     const usadoOpcion = Math.max(...opcion.colocadas.map(p => p.y + p.hueco)) / 10;
     // Agarrada a la columna de la pieza que llega más arriba, para medir bordes de verdad.
     const alta = opcion.colocadas.reduce((p, q) => (q.y + q.hueco > p.y + p.hueco ? q : p)).x / 10;
-    cota('cotas', alta, yRollo, alta, yRollo + usadoOpcion, usadoOpcion, -30 - alta);
-    cota('cotas', 0, yRollo, opcion.largo / 10, yRollo, opcion.largo / 10, -20);
-    yRollo -= anchoRollo + 260;
+    // Cotas del corte grandes, que se lean al imprimir (Iván, 22/10/2026, como en las puertas).
+    cota('cotas', alta, yRollo, alta, yRollo + usadoOpcion, usadoOpcion, -30 - alta, 'XERA 20');
+    cota('cotas', 0, yRollo, opcion.largo / 10, yRollo, opcion.largo / 10, -25, 'XERA 20');
+    yRollo -= anchoRollo + 280;
   }
   const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;
   // Ancho real que ocupan las piezas, no el del rollo (Iván).
@@ -234,7 +235,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   }
   // Las cotas del corte, con el sitio de su texto a los dos lados de la línea.
   for (const q of Q.slice(desde.Q)) {
-    puntosCorte.push(...(q.giro ? [[q.d - 12, q.y1], [q.d + 12, q.y2]] : [[q.x1, q.d - 12], [q.x2, q.d + 12]]));
+    puntosCorte.push(...(q.giro ? [[q.d - 16, q.y1], [q.d + 16, q.y2]] : [[q.x1, q.d - 16], [q.x2, q.d + 16]]));
   }
   const zonaCorte = { x0: Math.min(...puntosCorte.map(p => p[0])) - 10, x1: Math.max(...puntosCorte.map(p => p[0])) + 10,
     y0: Math.min(...puntosCorte.map(p => p[1])) - 10, y1: Math.max(...puntosCorte.map(p => p[1])) + 10 };

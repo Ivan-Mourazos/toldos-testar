@@ -82,8 +82,8 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
     if (!cabe(inferior) || !cabe(superior)) throw new Error('Una banda de la cortina no cabe en el rollo: el corte se hace a mano por ahora.');
     const lateral = { largo: mm(esquina + R.bastillaLado), alto: mm(V + 2 * R.solapeCristal), marcas: [] };
     const [a1, a2, a3, a4] = [
-      { nombre: `${letra}1`, largo: mm(ancho), alto: mm(inferior), marcas: [marcaAbajo], uniones: [] },
-      { nombre: `${letra}2`, largo: mm(ancho), alto: mm(superior), marcas: [marcaArriba], uniones: [] },
+      { nombre: `${letra}1`, largo: mm(ancho), alto: mm(inferior), marcas: [marcaAbajo], uniones: [], enFila: true },
+      { nombre: `${letra}2`, largo: mm(ancho), alto: mm(superior), marcas: [marcaArriba], uniones: [], enFila: true },
       { nombre: `${letra}3`, ...lateral, uniones: [] },
       { nombre: `${letra}4`, ...lateral, uniones: [] }
     ];

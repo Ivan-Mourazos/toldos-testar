@@ -67,7 +67,7 @@ describe('Correcciones de confección tras la revisión', () => {
     const titulo2 = textos.find(t => t.valor.startsWith('OPCIÓN 2'));
     // La cota del largo de la opción 1 (cota de verdad: su texto va centrado en la línea de cota).
     const cota1 = cotas.find(c => !c.giro && Math.round(c.valor * 10) === Math.round(cortes.conSacos[0].largo));
-    const debajo = cota1.d - (cota1.estilo === 'XERAL 15' ? 0.15 : 0.1) / 2;
+    const debajo = cota1.d - ({ 'XERAL 15': 0.15, 'XERA 20': 0.2 }[cota1.estilo] ?? 0.1) / 2;
     const aviso = textos.find(t => t.valor === 'CORTAR DE RESTOS');
     expect(debajo - titulo2.y - titulo2.h).toBeGreaterThan(1.3);
     expect(debajo - aviso.y - aviso.h).toBeGreaterThan(1.3);

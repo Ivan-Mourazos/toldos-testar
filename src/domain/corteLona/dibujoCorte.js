@@ -57,6 +57,19 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
       : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + 2);
     alto = Math.min(alto, altoLibre,
       ...lineasTexto.map((v) => espacioTexto * 0.9 / anchoArial(v, 1)));
+    // Piezas largas y bajas (las bandas de la cortina): nombre, OF y REVÉS en fila, repartidos a lo largo, para
+    // que vayan más grandes (Iván, 22/10/2026, como en las puertas apilables).
+    if (p.enFila && lineasTexto.length > 1) {
+      const n = lineasTexto.length, largo = p.girada ? p.hueco : p.ancho, corto = p.girada ? p.ancho : p.hueco;
+      const h = Math.min(300, corto * 0.4, ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
+      lineasTexto.forEach((valor, i) => {
+        const u = (largo * (i + 0.5)) / n;
+        textos.push(p.girada
+          ? { capa: 'texto', x: x0 + p.ancho / 2, y: y0 + u, h, valor: valor.toUpperCase(), giro: 90, centrado: true }
+          : { capa: 'texto', x: x0 + u, y: y0 + p.hueco / 2, h, valor: valor.toUpperCase(), centrado: true });
+      });
+      continue;
+    }
     lineasTexto.forEach((valor, i) => {
       const d = (i - (lineasTexto.length - 1) / 2) * alto * 1.6;   // separación desde el centro
       textos.push(p.girada
