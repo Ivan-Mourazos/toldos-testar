@@ -80,7 +80,7 @@ function Forma({ f }: { f: FormaAlzado }) {
 export function AlzadoPuerta({ puerta: p, resultado }: { puerta: Puerta; resultado: ResultadoPuerta }) {
   const { formas, vista, letraBase, F, H } = geometriaAlzado(p, resultado);
   return (
-    <section className="puerta-alzado panel bloque-3d" aria-label="Alzado de la puerta">
+    <section className="puerta-alzado panel panel-vidrio" aria-label="Alzado de la puerta">
       <header>
         <h2>Alzado</h2>
         <span>

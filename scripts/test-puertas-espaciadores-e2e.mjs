@@ -20,7 +20,8 @@ for(const viewport of [{width:1280,height:720},{width:1600,height:1000}]) {
   try {
     await page.getByRole('button',{name:'Puertas',exact:true}).click();
     const llenar=async(t,v)=>{const c=page.getByLabel(t,{exact:true});await c.fill(String(v));await c.blur();};
-    await page.getByLabel('Modelo de puerta',{exact:true}).selectOption('PUERTAUTO');
+    await page.getByRole('combobox',{name:'Modelo de puerta',exact:true}).click();
+    await page.getByRole('option',{name:'Autorreparable',exact:true}).click();
     const casilla=page.getByLabel('Espaciador central (líneas verticales en medio del dibujo)',{exact:true});
     assert.equal(await casilla.isChecked(),false);
     for(const [t,v] of [['Número de pedido de puertas','ESPACIADOR'],['OF de puerta','0232817'],['Frente (cm)',426],['Alto (cm)',515],['Color de puerta','BLANCO 9016'],['Rollo de lona (cm)',300],['Rollo transparente (cm)',140],['Empates desde abajo del cuerpo (cm)',299]]) await llenar(t,v);

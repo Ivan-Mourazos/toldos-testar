@@ -1,7 +1,8 @@
 // Solo contra la instancia aislada; la propia ayuda comprueba /api/health antes de abrirla.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { openApp } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { openApp, pick } from '../.claude/skills/running-toldos-testar/drive.mjs';
+import { MODELOS_PUERTAS } from '../src/puertas/calcular.ts';
 
 const destino='tmp/ui-audit/puertas-fase1';
 await fs.mkdir(destino,{recursive:true});
@@ -14,7 +15,7 @@ for(const viewport of [{width:1280,height:720},{width:1600,height:1000}]) {
     const detalle=async(texto)=>{await page.locator('.puerta-detalles > details > summary').filter({hasText:texto}).click();};
     const cerrarDetalles=async()=>{for(const s of await page.locator('.puerta-detalles > details[open] > summary').all()) await s.click();};
     async function comun(codigo,of,frente,alto,modelo) {
-      await page.getByLabel('Modelo de puerta',{exact:true}).selectOption(modelo);
+      await pick(page,'Modelo de puerta',MODELOS_PUERTAS[modelo],page.locator('.puertas-pantalla'));
       for(const [k,v] of [['Número de pedido de puertas',codigo],['OF de puerta',of],['Frente (cm)',frente],['Alto (cm)',alto],['Color de puerta','AZUL 5002'],['Rollo de lona (cm)',300],['Rollo transparente (cm)',140]]) await llenar(k,v);
       await detalle('Materiales del transparente');await llenar('Rollo de saco (cm)',300);await cerrarDetalles();
       await page.getByLabel('He confirmado el modelo y las medidas con el dibujo',{exact:true}).check();
@@ -72,7 +73,7 @@ for(const viewport of [{width:1280,height:720},{width:1600,height:1000}]) {
     await detalle('Entradas de tubo');
     for(const [i,altura] of [60,131,191,241].entries()) {await page.getByRole('button',{name:'Añadir entrada',exact:true}).click();await llenar(`Eje tubo ${i+1} (cm)`,altura);}
     await cerrarDetalles();await detalle('Texto del pedido');
-    await page.getByLabel('Artículo indicado en RPS',{exact:true}).selectOption('PUERTAPLE');
+    await pick(page,'Artículo indicado en RPS','PUERTAPLE · Apilable',page.locator('.puertas-pantalla'));
     await llenar('Texto del pedido','Puerta enrollable, con varilla superior.');
     await capturar('referencia-AR2604725','AR2604725');
     assert.match(await page.getByRole('region',{name:'Comprobaciones de puerta'}).innerText(),/RPS indica PUERTAPLE/);
@@ -83,7 +84,7 @@ for(const viewport of [{width:1280,height:720},{width:1600,height:1000}]) {
     await comun('AR2604724','0232505',500,575,'PUERTAPLE');
     await llenar('Pie hasta primer eje (cm)',37);await llenar('Cabecera hasta último eje (cm)',70);
     await llenar('Pasos entre tubos (cm)',Array(9).fill('52').join('; '));
-    await page.getByLabel('Saco útil',{exact:true}).selectOption('80');
+    await pick(page,'Saco útil','80 mm · corte 30 cm',page.locator('.puertas-pantalla'));
     await detalle('Ventanas individuales');
     for(const [k,v] of [['Fila · margen izquierdo',53],['Fila · desde abajo',151],['Fila · ancho',106],['Fila · alto',32],['Fila · columnas',3],['Fila · pilar',38]]) await llenar(k,v);
     await page.getByRole('button',{name:'Añadir fila',exact:true}).click();await cerrarDetalles();

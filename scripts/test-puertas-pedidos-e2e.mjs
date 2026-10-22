@@ -47,7 +47,8 @@ try {
   const llenar = async (nombre, valor) => { const campo = page.getByLabel(nombre, { exact: true }); await campo.fill(String(valor)); await campo.blur(); };
   const detalle = async (texto) => { await page.locator('.puerta-detalles > details > summary').filter({ hasText: texto }).click(); };
   const cerrarDetalles = async () => { for (const s of await page.locator('.puerta-detalles > details[open] > summary').all()) await s.click(); };
-  await page.getByLabel('Modelo de puerta', { exact: true }).selectOption('PUERTAENR');
+  await page.getByRole('combobox', { name: 'Modelo de puerta', exact: true }).click();
+  await page.getByRole('option', { name: 'Enrollable', exact: true }).click();
   for (const [k, v] of [['Número de pedido de puertas', CODIGO], ['Cliente de puertas', 'PORTANOVA PRUEBA'], ['OF de puerta', OF], ['Frente (cm)', 212], ['Alto (cm)', 360],
     ['Cantidad de puertas iguales', 3], ['Color de puerta', 'AZUL 5002'], ['Rollo de lona (cm)', 300], ['Rollo transparente (cm)', 140],
     ['T · desde arriba al eje (cm)', 169], ['D · entre ejes (cm)', 60], ['Margen lateral m (cm)', 6]]) await llenar(k, v);
