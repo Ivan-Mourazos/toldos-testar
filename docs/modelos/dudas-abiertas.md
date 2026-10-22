@@ -18,7 +18,7 @@ Iván contestó el 22/10/2026 las siete dudas del estudio ([cortina-pvc-corte.md
 
 | Código | Pregunta | Qué hará la web mientras tanto |
 | --- | --- | --- |
-| Q-CP01 | Bamba: la regla es alto + 3,5 + 3 con marca a 7 (26,5 para 20), pero los ejemplos dibujan 26 (varilla), 28 (E.T.) y 25 con B.N(2). ¿Cuál vale? | 26,5 con B.N(3) abajo y B.N(4) a los lados; B.N(2) solo si se elige |
+| Q-CP01 | Bamba: la regla es alto + 3,5 + 3 con marca a 7 (26,5 para 20), pero los ejemplos dibujan 26 (varilla), 28 (E.T.) y 25 con B.N(2). Iván, 22/10/2026: «depende de cómo vaya unida la bamba con el toldo, si va varilla o E.T.; por eso el paño de la bamba cambia» | **Contestada.** Arriba según la unión con el cuerpo: varilla blanca +3, E.T. +5; abajo, lo de su bastilla: B.N(3) +3, B.N(2) +2; a los lados, su B.N. Como en los ejemplos base: 26 con varilla y 28 con E.T. para 20 |
 | Q-CP02 | La raya «EMPATE EN HORIZONTAL» a 34 cm bajo el terminado de arriba, en los tres ejemplos: ¿es fija o depende del ancho del rollo? | Solo se dibuja si el cuerpo no cabe en el rollo |
 | Q-CP03 | E.T. Ø40: el rotulador va a 9 por encima del terminado (21 del corte), pero la nota dice «marcar 17 cm por el derecho» y hay otra raya a 17. ¿Cuál va en el DXF de la máquina? | Las dos en el plano; la de 21 en el DXF |
 

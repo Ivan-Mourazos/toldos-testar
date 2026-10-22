@@ -428,10 +428,10 @@ Con F el frente terminado, H el alto terminado y V el alto de la ventana (hueco 
   - cristal: (F − 2 · lateral + 4) × (V + 4).
   - Cuadra: 128,5 + 141 + 55,5 − 2 − 2 = 321 y 128,5 + 141 + 64 − 2 − 2 = 329,5.
 - **Cristal de 140**: V como mucho 136; si no cabe, aviso antes de generar.
-- **Bamba** (respuesta 1): alto + 3,5 + 3, B.N(3) abajo y B.N(4) a los lados, marca a 7.
+- **Bamba**: alto + lo de la unión con el cuerpo (varilla +3, E.T. +5) + su bastilla de abajo (B.N(3) +3); B.N(4) a los lados (Q-CP01).
 
 ### Lo que no cuadra todavía (preguntado a Iván)
 
-- **Q-CP01 · Bamba**: la regla da 26,5 con marca a 7, pero los ejemplos dibujan 26 (varilla), 28 (E.T.) y 25 con B.N(2). Mientras tanto, la web usará 26,5 y B.N(3); el B.N(2) solo si se elige.
+- **Q-CP01 · Bamba** (contestada): el paño de la bamba cambia según cómo va unido al cuerpo (Iván: «depende de cómo vaya unida la bamba con el toldo, si va varilla o E.T.»). Arriba: varilla blanca +3, E.T. +5; abajo, su bastilla (B.N(3) +3, B.N(2) +2); a los lados, su B.N. Con 20 de bamba: 26 con varilla y 28 con E.T., como en los ejemplos base.
 - **Q-CP02 · Raya «EMPATE EN HORIZONTAL»** a 34 cm bajo el terminado de arriba, en los tres ejemplos: ¿es fija o depende del ancho del rollo? Mientras tanto, solo se dibuja si el cuerpo no cabe en el rollo.
 - **Q-CP03 · E.T. Ø40**: el rotulador va a 9 por encima del terminado (21 del corte), pero la nota dice «marcar 17 cm por el derecho» y hay una raya a 17. ¿Cuál va en el DXF de la máquina? Mientras tanto, las dos en el plano y la de 21 en el DXF.
