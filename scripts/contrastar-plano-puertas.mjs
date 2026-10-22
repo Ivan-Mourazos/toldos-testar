@@ -3,12 +3,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 import { puertaPlanoReal } from '../src/puertas/__fixtures__/planosReales.ts';
-import { pedidoDe } from '../src/puertas/__fixtures__/ejemplos.ts';
+import { base, pedidoDe } from '../src/puertas/__fixtures__/ejemplos.ts';
 import { escribirPlanoPuertas } from '../src/puertas/plano.ts';
 import { generarCortePuertas } from '../src/puertas/corte.ts';
 import { leerPlanoDxf, enZona, transformarPrimitiva, proyectarPagina, svgPrimitivas } from './lib/plano-dxf.mjs';
+import { leerDxf } from './lib/leer-dxf.mjs';
 
 const estudio = path.resolve(process.argv[2]), salida = path.resolve(process.argv[3] ?? 'tmp/plano-apilables');
 assert.ok(salida.startsWith(path.resolve('tmp') + path.sep), 'Las evidencias deben quedar en tmp/ del repositorio.');
@@ -17,6 +19,16 @@ const leer = f => JSON.parse(fs.readFileSync(path.join(estudio, f), 'utf8'));
 const rps = leer('genericas/rps.json').filas;
 const configuraciones = leer('plegables/configuraciones/configuraciones.json').configuraciones;
 const referencias = ['AR2605036', 'AR2604906', 'AR2604904', 'AR2604526'];
+const protegidos = ['src/puertas/planoEnrollable.ts', 'src/puertas/calcular.ts', 'src/puertas/corte.ts',
+  'src/puertas/plantillaPortanova.ts', 'src/puertas/plantillas/portanova.dxf', 'src/domain/corteLona/presentacion.js', 'src/domain/corteLona/cajetin.js'];
+assert.equal(execFileSync('git', ['diff', '0a316e1', '--', ...protegidos], { encoding: 'utf8' }).trim(), '', 'Se han tocado ficheros protegidos del encargo.');
+const f = JSON.parse(fs.readFileSync('src/puertas/__fixtures__/AR2605134.json', 'utf8'));
+const enr = { ...base(f.modelo, f.frente, f.alto), of: f.of, cantidad: f.cantidad, color: f.color,
+  enrollable: { T: f.T, D: f.D, margen: f.margen, empates: [] },
+  entradas: f.alturasTubos.map(altura => ({ altura, diametro: 30, largo: f.frente, alto: 8, huecos: [] })) };
+const huellaEnrollable = createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe(f.pedido, enr),
+  cabecera: { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' } })).digest('hex');
+assert.equal(huellaEnrollable, '7e501938d3684bcc39691f1de19e3d0fbbc3e780c7d9f26fe3dd0d855e44d2a7', 'Ha cambiado AR2605134 frente a main.');
 const red = n => Number(n.toFixed(3)), largo = p => Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]);
 const literal = s => String(s ?? '').replace(/\s+/g, ' ').replaceAll('∅', 'Ø').trim();
 const cerca = (a, b, t = .05) => Math.abs((a ?? 0) - (b ?? 0)) <= t;
@@ -107,6 +119,13 @@ try {
     const mano = leerPlanoDxf(manual), maquina = leerPlanoDxf(bot), a = normalizar(mano, p.frente);
     assert.ok(mano.modelo.some(t => t.tipo === 'texto' && t.valor.includes(p.of)), `${id}: OF en plano.`);
     assert.ok(maquina.modelo.some(t => t.tipo === 'texto' && t.valor.includes(p.of)), `${id}: OF en bot.`);
+    // Los bots no escriben el código de artículo: se enlazan por la OF de RPS y se
+    // comprueba el largo característico de sus E.T., en mm (F o F + 11 según modelo).
+    const largoEntrada = (ple ? p.frente : p.frente + 11) * 10;
+    const segmentos = leerDxf(bot).entidades.flatMap(e => e.tipo === 'LINE' ? [Math.hypot(e.x2 - e.x1, e.y2 - e.y1)]
+      : e.tipo === 'LWPOLYLINE' ? e.puntos.slice(1).map((q, i) => Math.hypot(q[0] - e.puntos[i][0], q[1] - e.puntos[i][1])) : []);
+    const bordesEntrada = segmentos.filter(n => cerca(n, largoEntrada, .1)).length;
+    assert.ok(bordesEntrada >= 2, `${id}: el bot no contiene los bordes de entrada propios del modelo (${largoEntrada} mm).`);
     assert.ok(a.entidades.some(t => t.tipo === 'cota' && cerca(t.medida, p.frente)), `${id}: frente en plano.`);
     assert.ok(a.entidades.some(t => t.tipo === 'cota' && cerca(t.medida, p.alto)), `${id}: alto en plano.`);
     informe.push(`| ${id} | ${p.modelo} | ${p.of} | ${p.frente} × ${p.alto} | ${carpeta}/planos/${id}.dxf | ${carpeta}/bot/${id}.dxf |`);
@@ -126,7 +145,8 @@ try {
       return lista.map(p => transformarPrimitiva(p, (x, y) => [(x - origen[0]) * 100, (y - origen[1]) * 100], 100));
     };
     grupos.splice(1, 0, { nombre: 'Corte', a: normalizarCorte(mano), b: normalizarCorte(d), t: .05 });
-    const detalle = [`# ${id} · ${p.modelo}`, '', `OF ${p.of}; ${p.frente} × ${p.alto} cm. Identidad comprobada en RPS local, plano y bot.`, ''];
+    const detalle = [`# ${id} · ${p.modelo}`, '', `OF ${p.of}; ${p.frente} × ${p.alto} cm. Identidad comprobada en RPS local, plano y bot.`, '',
+      `El bot no contiene el código de modelo como texto: se comprueba su enlace por OF y ${bordesEntrada} bordes de E.T. de ${largoEntrada} mm (${ple ? 'F' : 'F + 11'}).`, ''];
     const comparaciones = grupos.map(g => {
       const t = tabla(g.nombre, g.a, g.b, g.t); detalle.push(...t.filas, '', '#### Diferencias de posición', '', '| Origen | Capa | Tipo | Medida / literal / coordenadas | Motivo |', '|---|---|---|---|---|');
       for (const [origen, lista] of [['Mano', t.posiciones.soloMano], ['Web', t.posiciones.soloWeb]]) for (const p of lista) {
@@ -165,7 +185,11 @@ try {
   }
 } finally { await browser.close(); }
 informe.push('', '## Resultados', '', ...evidencias.map(e => `- [${e.id}](${e.id}/comparacion.md): ${e.rayas} rayas con posición/capa/color iguales; ${e.sinClasificar.length} diferencias de mano pendientes de clasificación.`), '',
-  'Los inventarios y residuos completos están en cada comparacion.json; las páginas y capas se pintan lado a lado con el mismo lector y la misma proyección. Las tablas se generan, no se transcriben a mano.', '');
+  'Los inventarios y residuos completos están en cada comparacion.json; las páginas y capas se pintan lado a lado con el mismo lector y la misma proyección. Las tablas se generan, no se transcriben a mano.', '',
+  '## Regresión y límites', '', `AR2605134: SHA-256 ${huellaEnrollable}, idéntica al plano de main 0a316e1.`, '',
+  `Sin diferencias frente a main en: ${protegidos.join(', ')}. No se ha tocado ningún generador compartido de toldos/remolques, la plantilla de Portanova ni la geometría/anidado de máquina.`, '',
+  'Q-PU03: material amarillo/negro de autorreparable pendiente de Iván; se usa materialSaco configurado. Q-PU04: alturas esquemáticas de refuerzos conservadas del DWG redondeado, pendientes de confirmar; no intervienen en el despiece.', '',
+  'Validaciones y límites de ejecución: véase validacion.md en esta carpeta. Las diferencias de texto/cotas/corte se listan íntegramente en cada informe; cero geometrías sin clasificar no significa identidad byte a byte con un dibujo histórico.', '');
 fs.writeFileSync(path.join(salida, 'comparacion.md'), informe.join('\n'));
 fs.writeFileSync(path.join(salida, 'referencias-verificadas.json'), JSON.stringify(evidencias, null, 2));
 console.log(JSON.stringify(evidencias.map(e => ({ pedido: e.id, rayasIguales: e.rayas, sinClasificar: e.sinClasificar.length }))));
