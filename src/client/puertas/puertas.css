@@ -25,7 +25,7 @@
 .puerta-casilla input { accent-color:var(--color-brand-600); width:16px; height:16px; flex-shrink:0; }
 .puerta-alzado { position:sticky; top:18px; }
 .puerta-alzado svg { width:100%; height:440px; display:block; margin:10px 0; background:var(--zone); border-radius:6px; }
-.puerta-alzado svg text { fill:var(--text); font-family:var(--font-mono),monospace; font-size:var(--puerta-letra,10px); }
+.puerta-alzado svg text { fill:var(--text); font-family:Arial,sans-serif; font-size:var(--puerta-letra,10px); }
 .puerta-alzado svg .puerta-cota-texto { font-size:calc(var(--puerta-letra,10px) * 0.85); fill:var(--text-muted); }
 .puerta-alzado svg .puerta-texto-cabecera { font-size:calc(var(--puerta-letra,10px) * 0.9); font-weight:600; }
 .puerta-alzado small { font-size:11px; color:var(--text-muted); }
@@ -42,6 +42,7 @@
 .puerta-hueco-alzado { fill:var(--surface); stroke:var(--tramo-holgado); stroke-width:1; }
 .puerta-bolsillo { fill:none; stroke:var(--tramo-trabajo); stroke-width:1.5; stroke-dasharray:2 1; }
 .puerta-bolsillo-marca { fill:none; stroke:var(--tramo-ajustado); stroke-width:2; }
+.puerta-rotulador { fill:none; stroke:var(--tramo-ajustado); stroke-width:.6; }
 .puerta-entrada-alzado { fill:color-mix(in srgb,var(--surface-2) 82%,var(--text-muted)); stroke:var(--text-muted); stroke-width:.7; }
 .puerta-varilla { stroke:var(--text); stroke-width:3; }
 .puerta-alzado svg .puerta-saco-texto { fill:var(--surface); font-weight:600; }

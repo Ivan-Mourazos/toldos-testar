@@ -30,6 +30,7 @@ const CAPAS: Record<string, string> = {
   'puerta-tubo': 'ejes', 'puerta-guia': 'ejes', 'puerta-cota': 'ejes',
   'puerta-hueco-alzado': 'marca', 'puerta-bolsillo-marca': 'marca', 'puerta-empate': 'marca',
   'puerta-linea-guia': 'texto',
+  'puerta-rotulador': 'ROTULADOR',
 };
 const capa = (clase: string) => CAPAS[clase] ?? 'referencias';
 
@@ -60,7 +61,7 @@ function pintarAlzado(L: Lienzo, formas: FormaAlzado[], ox: number, base: number
     if (!v) return;
     const [X, Y] = P(x, y);
     // En el SVG la y del texto es su base; centrado, se sube a la mitad de la letra.
-    if (ancla === 'middle' || giro) L.textos.push({ capa: 'texto', x: X, y: giro ? Y : Y + h / 2, h, valor: v, giro: giro ? 90 : 0, centrado: true });
+    if (ancla === 'middle' || giro) L.textos.push({ capa: 'texto', x: X, y: giro ? Y : Y + h / 2, h, valor: v, giro: -giro, centrado: true });
     else L.textos.push({ capa: 'texto', x: ancla === 'end' ? X - anchoArial(v, h) : X, y: Y, h, valor: v });
   };
   for (const f of formas) {
@@ -68,6 +69,20 @@ function pintarAlzado(L: Lienzo, formas: FormaAlzado[], ox: number, base: number
       case 'rect': {
         if (f.ancho <= 0 || f.alto <= 0) break;
         const { x, y, ancho: w, alto: h } = f;
+        const r = Math.min(f.radio ?? 0, w / 2, h / 2);
+        if (r > 0) {
+          // Conserva las esquinas del mismo rectángulo redondeado que se ve en pantalla.
+          for (const [a, b] of [
+            [[x + r, y], [x + w - r, y]], [[x + w, y + r], [x + w, y + h - r]],
+            [[x + w - r, y + h], [x + r, y + h]], [[x, y + h - r], [x, y + r]],
+          ] as [Punto, Punto][]) L.lineas.push({ capa: capa(f.clase), ...xy(P(...a), P(...b)) });
+          for (const [a, b, desde, hasta] of [[x + r, y + r, 90, 180], [x + w - r, y + r, 0, 90],
+            [x + w - r, y + h - r, 270, 360], [x + r, y + h - r, 180, 270]]) {
+            const [cx, cy] = P(a, b);
+            L.arcos.push({ capa: capa(f.clase), x: cx, y: cy, r, desde, hasta });
+          }
+          break;
+        }
         L.polilineas.push({ capa: capa(f.clase), puntos: [P(x, y), P(x + w, y), P(x + w, y + h), P(x, y + h)], cerrada: true });
         break;
       }
@@ -81,25 +96,20 @@ function pintarAlzado(L: Lienzo, formas: FormaAlzado[], ox: number, base: number
         f.lineas.forEach((l, i) => texto(l, f.x, f.y + i * h * 1.2, h, f.ancla, f.giro));
         break;
       }
-      case 'cota': cota(L, f, P, base); break;
+      case 'cota': cota(L, f, P); break;
     }
   }
 }
 
 const xy = (a: Punto, b: Punto) => ({ x1: a[0], y1: a[1], x2: b[0], y2: b[1] });
 
-/** Cota de verdad (se modifica en el CAD). La letra (D, T) no cabe en la cota: va al lado, como texto. */
-function cota(L: Lienzo, c: CotaAlzado, P: (x: number, y: number) => Punto, base: number) {
+/** Cota editable en CAD. D/T son ayudas del configurador y no se imprimen en el plano de oficina. */
+function cota(L: Lienzo, c: CotaAlzado, P: (x: number, y: number) => Punto) {
   const v = esVertical(c);
   const [a, b] = [P(c.x1, c.y1), P(c.x2, c.y2)];
   const d = v ? P(c.linea, 0)[0] : P(0, c.linea)[1];
   const largo = v ? Math.abs(c.y2 - c.y1) : Math.abs(c.x2 - c.x1);
-  L.cotas.push({ capa: 'cotas', estilo: largo >= 25 ? 'XERAL' : 'XERAL 5', ...xy(a, b), giro: v ? 90 : 0, d, valor: c.valor });
-  if (c.prefijo) {
-    const h = base * 0.85, medio = v ? (a[1] + b[1]) / 2 : (a[0] + b[0]) / 2;
-    if (v) L.textos.push({ capa: 'cotas', x: d + 7, y: medio - h / 2, h, valor: c.prefijo });
-    else L.textos.push({ capa: 'cotas', x: medio, y: d + 7, h, valor: c.prefijo, centrado: true });
-  }
+  L.cotas.push({ capa: 'cotas', estilo: c.estilo ?? (largo >= 25 ? 'XERAL' : 'XERAL 5'), ...xy(a, b), giro: v ? 90 : 0, d, valor: c.valor });
 }
 
 const cm = (mm: number) => mm / 10;
@@ -141,20 +151,26 @@ export function escribirPlanoPuertas({ pedido, cabecera }: {
   const { cortes } = generarCortePuertas(pedido);
   const C = lienzo();
   let techo = zonaDibujo.y0 - 60;
-  const altoDe = (c: (typeof cortes)[number]) =>
-    Math.max(cm(c.anchoRollo), ...c.entidades.lineas.map(l => cm(Math.max(l.y1, l.y2))), ...c.entidades.textos.map(t => cm(t.y + t.h)));
+  const altoDe = (c: (typeof cortes)[number]) => Math.max(0,
+    ...c.colocadas.map(t => cm(t.y) + (t.girada ? t.pieza.ancho : t.pieza.alto)));
   for (const c of [...cortes].reverse()) {
     const alto = altoDe(c);
     const yc = techo - alto;
     const e = c.entidades;
     for (const l of e.lineas) C.lineas.push({ capa: l.capa, x1: cm(l.x1), y1: yc + cm(l.y1), x2: cm(l.x2), y2: yc + cm(l.y2) });
-    for (const t of e.textos) C.textos.push({ ...t, valor: textoSeguro(t.valor), x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
+    // Los títulos del DXF de máquina están sobre el rollo entero; el plano solo enseña la zona usada.
+    for (const t of e.textos.filter(t => t.y <= alto * 10)) C.textos.push({ ...t,
+      valor: t.literal ? t.valor.replace(/[\r\n\t\\{}]+/g, ' ').trim() : textoSeguro(t.valor),
+      x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
+    const material = c.colocadas.every(t => t.pieza.clase === 'saco') && /LAC900 NEGRO/i.test(c.material) ? 'SACO 900 GR NEGRO' : c.material;
+    C.textos.push({ capa: 'texto', x: 0, y: techo + 14, h: 10,
+      valor: textoSeguro(c.opcion === 'principal' ? material : `${material} · ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'} · ALTERNATIVA`) });
     for (const a of e.arcos) C.arcos.push({ ...a, x: cm(a.x), y: yc + cm(a.y), r: cm(a.r) });
     for (const k of e.circulos) C.circulos.push({ ...k, x: cm(k.x), y: yc + cm(k.y), r: cm(k.r) });
     // El largo por debajo y el ancho del rollo a la izquierda (Iván, 20/10/2026, como remolques).
     C.cotas.push(
       { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: cm(c.largo), y2: yc, giro: 0, d: yc - 25, valor: cm(c.largo) },
-      { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: 0, y2: yc + cm(c.anchoRollo), giro: 90, d: -25, valor: cm(c.anchoRollo) },
+      { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: 0, y2: yc + alto, giro: 90, d: -25, valor: alto },
     );
     techo = yc - FILA_CORTE;
   }

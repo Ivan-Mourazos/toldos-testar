@@ -251,7 +251,7 @@ Ventanales con un paño opaco intermedio o variantes no representadas requieren 
 La vista previa permite ampliar hasta 8× y desplazar el corte; los mininúmeros usan el color de ROTULADOR.
 `scripts/test-puertas-corte-fase3-e2e.mjs` comprueba la aislada antes de abrirla y toma capturas de AR2604638,
 AR2604725, AR2605134 y AR2605065 en claro y oscuro, a 1280×720 y 1600×1000, además de comparaciones PNG con
-los cortes manuales. El plano DWG y su alzado quedan fuera de este cambio.
+los cortes manuales. El plano DWG y su alzado se revisan en la sección de fase 3 del plano de oficina.
 
 ## Fase 2 · guardar, Pedidos, plano y corte (22/10/2026)
 
@@ -270,3 +270,35 @@ los cortes manuales. El plano DWG y su alzado quedan fuera de este cambio.
   confirmado: manda el dibujo. Los tramos (PUERTAPLET, PUERTAPLETRAM) se avisan y no se convierten.
 - **E.T. entre ventanas**: dobles (delante y detrás) entre ventanales seguidos de enrollable (AR2605065, AR2605038). En las
   apilables con filas de huecos (AR2605036: 8 tiras para 8 tubos) van sencillas.
+## Fase 3 · plano de oficina y alzado (22/10/2026)
+
+`src/puertas/alzado.ts` conserva una única geometría para la pantalla y el plano. Los ventanales
+consecutivos tienen sus cachos, cristales, ejes compartidos y cotas propios. El cristal se identifica
+por la cota de corte, sin leyenda dentro. Los paños llevan rótulos grandes separados; «AL CORTE»
+va vertical a ambos lados, y las instrucciones de Portanova se distribuyen según cada modelo.
+Las marcas de entradas y empates aparecen en ROTULADOR, con su triangulito. Las ventanas redondeadas
+conservan los radios también en el DXF mediante arcos.
+
+Las cotas son entidades DIMENSION editables, con los estilos XERA 15, XERAL y XERAL 5 de los planos.
+Se mantiene XERAL 15 para los demás modelos que lo usan; el nombre histórico XERA 15 se añade
+solo si el plano lo necesita. D/T siguen como ayuda en pantalla, pero no se imprimen en CAD.
+Apilables: cadenas de cada fila de ventanas, cintas, entradas, bolsillo de cabecera y saco.
+Autorreparables: notas independientes de las E.T., cremalleras y espaciadores verticales,
+empates y saco de 120. Las notas no crean piezas nuevas.
+
+Cada tramo de corte ocupa solo el ancho usado por sus piezas, con el título de material encima,
+el largo debajo y el ancho usado a la izquierda. Se conservan la colocación, medidas, radios,
+mininúmeros y alternativas que devuelve `generarCortePuertas`; no se cambia el DXF de máquina.
+
+Las referencias reproducibles están en `src/puertas/__fixtures__/planosReales.ts`: pedido, archivo
+y zona del espacio modelo. `node scripts/contrastar-plano-puertas.mjs <carpeta local del estudio puertas>`
+crea inventarios de texto/altura/giro y cotas/estilo, DXF y comparaciones PNG en
+`tmp/ui-audit/puertas-fase3-plano/`. Necesita las ayudas de pintado copiadas a `tmp/puertas-plano/`.
+El inventario comprueba presencia de texto y medidas; la semejanza de posiciones requiere mirar las PNG.
+El informe conserva las diferencias literales: «HASTA» corrige «ATA» en AR2604904; la OF se identifica
+sin el prefijo «OF.» y la cantidad va en la cabecera cuando es mayor que uno. La nota particular
+de 3 cm de AR2605065 y el espaciador central están pendientes en Q-PU01 y Q-PU02.
+
+`scripts/test-puertas-plano-fase3-e2e.mjs` siembra los cinco pedidos únicamente en `tmp/` de su
+instancia aislada, comprueba dos cristales en AR2605065 y toma veinte capturas del alzado en claro
+y oscuro a 1280×720 y 1600×1000. Comprueba además que ningún texto sobresalga del encuadre SVG.

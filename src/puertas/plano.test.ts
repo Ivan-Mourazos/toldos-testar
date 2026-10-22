@@ -17,10 +17,14 @@ describe('escribirPlanoPuertas', () => {
     for (const medida of [172, 314, 60, 71, 123]) expect(cotas).toContain(medida);
     // El cristal se acota con su ancho de corte: mide 156 y se escribe 164.
     expect(ent.some(r => r.tipo === 'DIMENSION' && valor(r, 1) === '164')).toBe(true);
-    // La letra del ventanal va al lado de su cota.
+    // D/T quedan en el configurador; el plano de oficina lleva solo las cotas y rótulos separados.
     const textos = ent.filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1));
-    for (const t of ['D', 'T', '3 CM (HUECOS)', 'VARILLA NEGRA (4,5)', 'SACO 900 GR NEGRO']) expect(textos).toContain(t);
-    expect(textos.some(t => t?.includes('A1 · REVÉS · 0232309'))).toBe(true);
+    for (const t of ['A1', 'REVÉS', '0232309', '3 CM (HUECOS)', 'VARILLA NEGRA (4,5)', 'SACO 900 GR NEGRO']) expect(textos).toContain(t);
+    expect(textos).not.toContain('D');
+    expect(textos).not.toContain('T');
+    const estilos = registrosDxf(dxf, 'TABLES').filter(r => r.tipo === 'DIMSTYLE').map(r => valor(r, 2));
+    expect(estilos).toContain('XERA 15');
+    expect(estilos).toContain('XERAL 15');
     // El contorno de la puerta y el corte del rollo.
     expect(ent.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'corte')).toBe(true);
     expect(ent.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1').length).toBeGreaterThan(4);

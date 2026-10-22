@@ -24,6 +24,13 @@ export function escribirDxfPlano(plano, cabecera) {
   const nuevo = () => (handle++).toString(16).toUpperCase();
   const n = (v) => Number(v).toFixed(6);
 
+  // Los planos de puertas llaman XERA 15 al estilo grande. Se conserva el nombre real sin cambiar
+  // XERAL 15, que siguen usando toldos y remolques con la misma plantilla.
+  if ([...(plano.cotas ?? []), ...(plano.corte.cotas ?? [])].some(c => c.estilo === 'XERA 15')) {
+    const grande = src.match(/ {2}0\nDIMSTYLE\n(?:(?! {2}0\n)[\s\S])*? {2}2\nXERAL 15\n(?:(?! {2}0\n)[\s\S])*/)?.[0];
+    if (grande) src = insertarEnTabla(src, 'DIMSTYLE', grande.replace(/(105\n)[^\n]+/, `$1${nuevo()}`).replace('XERAL 15\n', 'XERA 15\n'), 1);
+  }
+
   const capasNuevas = CAPAS_BOT.filter((c) => !new RegExp(`\\n  2\\n${c.nombre}\\n`).test(src));
   const registros = capasNuevas.map((c) => `  0\nLAYER\n  5\n${nuevo()}\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n  2\n${c.nombre}\n 70\n     0\n 62\n${String(c.color).padStart(6)}\n  6\nContinuous\n370\n    -3\n390\nF\n`).join('');
   if (registros) src = insertarEnTabla(src, 'LAYER', registros, capasNuevas.length);
@@ -180,6 +187,7 @@ const ESTILOS_COTA = {
   XERAL: { texto: 0.1, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
   'XERAL 5': { texto: 0.05, flecha: 0.015, prolonga: 0.0175, largo: 0.06, hueco: 0.003 },
   'XERAL 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
+  'XERA 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
 };
 const comaCota = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
 

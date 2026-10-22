@@ -16,7 +16,7 @@ describe('colocarTextosPuerta', () => {
     expect(textos4638.length).toBeGreaterThanOrEqual(7);
     expect(textos4638.some(t => t.lineas.join(' ').includes('0232309'))).toBe(true);
     expect(textos4638.some(t => t.lineas.join(' ').includes('3 CM (HUECOS)'))).toBe(true);
-    expect(textos4638.some(t => t.lineas.join(' ').includes('164 CM'))).toBe(true);
+    expect(textos4638.some(t => t.lineas.join(' ').startsWith('CRISTAL'))).toBe(false);
     for (let i = 0; i < textos4638.length; i++) {
       for (let j = i + 1; j < textos4638.length; j++) {
         expect(solapaCaja(textos4638[i], textos4638[j])).toBe(false);
@@ -35,7 +35,7 @@ describe('colocarTextosPuerta', () => {
       ],
     };
     const textos4725 = colocarTextosPuerta(p4725);
-    expect(textos4725.every(t => !t.guia)).toBe(true);
+    expect(textos4725.some(t => t.lineas[0] === 'AL CORTE' && t.giro === -90)).toBe(true);
     const bandaTuboSup: CajaTexto = { x: 0, y: 430 - 241 - 3.75, ancho: 474, alto: 7.5 };
     for (const t of textos4725) {
       expect(solapaCaja(t, bandaTuboSup)).toBe(false);

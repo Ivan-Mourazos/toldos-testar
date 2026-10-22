@@ -40,6 +40,8 @@ export interface CotaAlzado {
   prefijo?: string;
   sufijo?: string;
   marcas: number;
+  /** Estilo real del plano: las cadenas pequeñas no dependen de la longitud medida. */
+  estilo?: 'XERA 15' | 'XERAL' | 'XERAL 5';
   texto: { x: number; y: number; ancla: 'start' | 'middle' | 'end'; giro?: number; clase?: string };
 }
 export type FormaAlzado = RectAlzado | LineaAlzado | PoligonoAlzado | PolilineaAlzado | TextoAlzado | CotaAlzado;
@@ -76,18 +78,28 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     formas.push({ tipo: 'texto', x, y, lineas: [valor], ancla, ...(clase ? { clase } : {}) });
   const cota = (c: Omit<CotaAlzado, 'tipo' | 'texto'> & { texto: Omit<CotaAlzado['texto'], 'clase'> & { clase?: string | null } }) =>
     formas.push({ ...c, tipo: 'cota', texto: { ...c.texto, clase: c.texto.clase === null ? undefined : c.texto.clase ?? 'puerta-cota-texto' } } as CotaAlzado);
+  const marca = (y: number, sentido = 1, desde = p.margenMarcas, hasta = F - p.margenMarcas) => {
+    linea('puerta-rotulador', desde, y, hasta, y);
+    const x = (desde + hasta) / 2;
+    formas.push({ tipo: 'polilinea', clase: 'puerta-rotulador',
+      puntos: [[x, y], [x, y + sentido], [x - 0.8, y + sentido], [x, y + sentido * 2.53205], [x + 0.8, y + sentido], [x, y + sentido]] });
+  };
+  const nota = (valor: string, x: number, y: number, tamano: number, guia?: [number, number, number, number]) =>
+    formas.push({ tipo: 'texto', x, y, tamano, lineas: [valor], ancla: 'middle', taller: { guia: guia ?? null } });
 
   const tubos = ple ? alturasTubos(p) : p.entradas.map(t => t.altura);
   const T = enr && p.enrollable.T > 0 ? p.enrollable.T : 0;
-  const D = enr && p.enrollable.D > 7.5 ? p.enrollable.D : 60;
-  const m = enr && p.enrollable.margen > 0 ? p.enrollable.margen : 0;
+  const ventanales = enr && T > 0 ? [{ D: p.enrollable.D, margen: p.enrollable.margen }, ...p.enrollable.ventanales ?? []] : [];
+  const ejesVentanal = [T];
+  for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
+  const D = p.enrollable.D;
   const hSaco = enr ? 13 : auto ? 14 : p.apilable.saco === 120 ? 12 : 11;
 
   // Cadena derecha de pasos verticales (suma exactamente H; sin duplicar H).
   const hitosDerecha = ple
     ? [0, ...tubos, H]
     : enr
-      ? [...new Set([0, ...tubos, ...(T > 0 ? [H - T - D, H - T] : []), H])]
+      ? [...new Set([0, ...tubos, ...(ventanales.length ? ejesVentanal.map(y => H - y) : []), H])]
           .filter(y => y >= 0 && y <= H)
           .sort((a, b) => a - b)
       : [...new Set([0, 14, ...p.autorreparable.empates.map(e => e + 12), H])]
@@ -97,12 +109,12 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   const tuboParteT = enr && T > 0 && tubos.some(y => y > H - T + 0.1 && y < H - 0.1);
   const xCadena = F + 34;
   const xCotaT = F + 64;
-  const xAltoTotal = F + (tuboParteT ? 96 : 74);
+  const xAltoTotal = enr ? F + (tuboParteT ? 96 : 74) : -36;
 
   // Bandas de entrada de tubo con sus cotas de alto a la izquierda (sin duplicar ejes del ventanal)
   const bandasIzquierda: Array<{ y: number; alto: number }> = enr
     ? [
-        ...(T > 0 ? [T, T + D] : []),
+        ...(ventanales.length ? ejesVentanal : []),
         ...tubos.map(altura => H - altura),
       ]
         .filter((y, idx, arr) => y > 0 && y < H && arr.findIndex(v => Math.abs(v - y) < 0.5) === idx)
@@ -116,18 +128,17 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
       : [];
 
   // Pieza desplegada del saco debajo del alzado
-  const yDesplegado = H + 28;
+  const yDesplegado = H + 48;
   const hCorteSaco = enr ? 26 : auto ? 32 : p.apilable.doble ? 37 : p.apilable.saco === 120 ? 32 : 30;
   const pestanaSaco = enr ? 6.5 : auto ? 0 : p.apilable.doble ? 12 : 10;
   const altoPestana = enr ? 11 : auto ? 0 : p.apilable.doble ? 14 : p.apilable.saco === 120 ? 14 : 13;
   const wSaco = ple && p.apilable.doble ? Math.max(20, F - 6) : F;
 
-  const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H });
-  const hayTextoFuera = textosTaller.some(t => t.x < 0);
-  const xMin = hayTextoFuera ? -140 : -56;
+  const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado);
+  const xMin = Math.min(-56, ...textosTaller.map(t => t.x - 8));
   const yMin = -62;
-  const anchoVista = xAltoTotal + 34 - xMin;
-  const altoVista = yDesplegado + hCorteSaco + 46 - yMin;
+  const anchoVista = Math.max(F + 110, ...textosTaller.map(t => t.x + t.ancho + 8)) - xMin;
+  const altoVista = yDesplegado + hCorteSaco + (enr ? 80 : 55) - yMin;
   const letraBase = Math.min(10.5, Math.max(7.5, Math.min(F / 24, H / 38)));
 
   // Contorno general de la puerta
@@ -139,8 +150,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     texto('VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
   }
   if (ple) {
-    rect('puerta-entrada-alzado', 0, 0, F, Math.min(H * 0.2, p.apilable.bolsillo / 2));
-    texto(`E.T. Ø30 mm · BOLSILLO SUPERIOR ${numAlzado(p.apilable.bolsillo)}`, F / 2, -10, 'middle', 'puerta-texto-cabecera');
+    rect('puerta-entrada-alzado', 0, 0, F, p.apilable.bolsillo);
+    cota({ x1: F, y1: 0, x2: F, y2: p.apilable.bolsillo, linea: F + 16, valor: p.apilable.bolsillo,
+      estilo: 'XERAL 5', marcas: 3, texto: { x: F + 20, y: p.apilable.bolsillo / 2, ancla: 'start' } });
   }
 
   // Autorreparable: entrada superior con salida de 5,5 cm, cremalleras y espaciador de 10 cm
@@ -151,31 +163,50 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     linea('puerta-cota', 10, 17.5, 10, H - 14, '4 3');
     linea('puerta-cota', F - 10, 17.5, F - 10, H - 14, '4 3');
     cota({ x1: 0, y1: H * 0.62, x2: 10, y2: H * 0.62, linea: H * 0.62, valor: 10, marcas: 0, texto: { x: 5, y: H * 0.62 - 3, ancla: 'middle' } });
+    cota({ x1: F - 10, y1: H * 0.62, x2: F, y2: H * 0.62, linea: H * 0.62, valor: 10, marcas: 0, texto: { x: F - 5, y: H * 0.62 - 3, ancla: 'middle' } });
     cota({ x1: -16, y1: -3.5, x2: -16, y2: 17.5, linea: -16, valor: 21, marcas: 4, texto: { x: -22, y: 8, ancla: 'end' } });
+    cota({ x1: F, y1: 30, x2: F, y2: H, linea: F + 64, valor: H - 30, estilo: 'XERAL', marcas: 4,
+      texto: { x: F + 68, y: (H + 30) / 2, ancla: 'start' } });
   }
 
   // Ventanal enrollable: cachos laterales acotados y cristal acotado con su ancho de corte
-  if (enr && T > 0) {
+  for (const [i, v] of ventanales.entries()) {
+    const { margen: m, D } = v, T = ejesVentanal[i];
     rect('puerta-cacho', 0, T + 3.75, m, Math.max(0, D - 7.5));
     rect('puerta-cacho', Math.max(0, F - m), T + 3.75, m, Math.max(0, D - 7.5));
     rect('puerta-cristal', m, T + 3.75, Math.max(0, F - 2 * m), Math.max(0, D - 7.5));
     if (m > 0) {
-      cota({ x1: 0, y1: T + D / 2, x2: m, y2: T + D / 2, linea: T + D / 2, valor: m, marcas: 0, texto: { x: -6, y: T + D / 2 + 3, ancla: 'end' } });
-      cota({ x1: F - m, y1: T + D / 2, x2: F, y2: T + D / 2, linea: T + D / 2, valor: m, marcas: 0, texto: { x: F + 6, y: T + D / 2 + 3, ancla: 'start' } });
+      cota({ x1: 0, y1: T - 8, x2: m, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: m / 2, y: T - 10, ancla: 'middle' } });
+      cota({ x1: F - m, y1: T - 8, x2: F, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: F - m / 2, y: T - 10, ancla: 'middle' } });
     }
     // El cristal se acota con su ancho de corte (hueco + 4).
     if (F - 2 * m > 12) {
-      cota({ x1: m + 2, y1: T + D - 8, x2: F - m - 2, y2: T + D - 8, linea: T + D - 8, valor: F - 2 * m + 4, marcas: 4, texto: { x: F / 2, y: T + D - 11, ancla: 'middle' } });
+      const y = T + Math.min(18.5, D / 2);
+      cota({ x1: m + 2, y1: y, x2: F - m - 2, y2: y, linea: y, valor: F - 2 * m + 4, marcas: 4, texto: { x: F / 2, y: y - 3, ancla: 'middle' } });
     }
   }
 
   // Ventanas individuales en apilable y autorreparable
   if (!enr) {
+    const filas = new Map<number, typeof p.ventanas>();
     for (const v of p.ventanas) {
+      const fila = filas.get(v.y) ?? [];
+      fila.push(v); filas.set(v.y, fila);
+    }
+    for (const fila of filas.values()) {
+      fila.sort((a, b) => a.x - b.x);
+      const vy = H - fila[0].y - fila[0].alto, yCota = vy + fila[0].alto / 2;
+      const hitos = [0, ...fila.flatMap(v => [v.x, v.x + v.ancho]), F];
+      hitos.slice(1).forEach((x, i) => {
+        if (x <= hitos[i]) return;
+        cota({ x1: hitos[i], y1: yCota, x2: x, y2: yCota, linea: yCota, valor: x - hitos[i], estilo: 'XERAL 5', marcas: 0,
+          texto: { x: (x + hitos[i]) / 2, y: yCota - 3, ancla: 'middle' } });
+      });
+      for (const v of fila) {
       const vy = H - v.y - v.alto;
       rect('puerta-cristal', v.x, vy, v.ancho, v.alto, v.radio);
-      cota({ x1: v.x, y1: vy + v.alto / 2, x2: v.x + v.ancho, y2: vy + v.alto / 2, linea: vy + v.alto / 2, valor: v.ancho, marcas: 0, texto: { x: v.x + v.ancho / 2, y: vy + v.alto / 2 - 3, ancla: 'middle' } });
-      cota({ x1: v.x + v.ancho / 2, y1: vy, x2: v.x + v.ancho / 2, y2: vy + v.alto, linea: v.x + v.ancho / 2, valor: v.alto, marcas: 0, texto: { x: v.x + v.ancho / 2 + 4, y: vy + v.alto / 2 + 10, ancla: 'start' } });
+      cota({ x1: v.x + 12, y1: vy, x2: v.x + 12, y2: vy + v.alto, linea: v.x + 12, valor: v.alto, estilo: 'XERAL 5', marcas: 0, texto: { x: v.x + 15, y: vy + v.alto / 2 + 8, ancla: 'start' } });
+      }
     }
   }
 
@@ -184,7 +215,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     rect('puerta-entrada-alzado', 0, b.y - b.alto / 2, F, b.alto);
     linea('puerta-tubo', 0, b.y, F, b.y);
     cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
+    marca(b.y + b.alto / 2, -1);
   }
+  marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
+  marca(H - hSaco, -1);
 
   // Huecos de cutter en las entradas
   if (!auto) {
@@ -192,6 +226,18 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
       const yEje = H - (ple ? tubos[i] ?? e.altura : e.altura);
       const altoE = enr ? 7.5 : e.alto || (e.diametro === 42 ? 13.5 : 12);
       for (const h of e.huecos) rect('puerta-hueco-alzado', h.x - (ple && F > 600 ? 1 : 0), yEje + altoE / 2 - h.y - h.alto, h.ancho, h.alto, h.radio);
+      // Cadena completa de las cintas: extremos a 6, huecos y separaciones, como AR2605036.
+      if (ple && e.huecos.length > 2 && i === p.entradas.findIndex(t => t.huecos.length > 2)) {
+        const hs = [...e.huecos].sort((a, b) => a.x - b.x);
+        const hitos = [0, hs[0].x + hs[0].ancho, ...hs.slice(1, -1).flatMap(h => [h.x, h.x + h.ancho]), hs.at(-1)!.x, F];
+        const y = yEje - 15;
+        hitos.slice(1).forEach((x, j) => {
+          const desde = hitos[j];
+          if (x <= desde) return;
+          cota({ x1: desde, y1: yEje, x2: x, y2: yEje, linea: y, valor: x - desde, estilo: 'XERAL 5', marcas: 2,
+            texto: { x: (desde + x) / 2, y: y - 3, ancla: 'middle' } });
+        });
+      }
     });
   }
 
@@ -211,21 +257,29 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   // Líneas de empate
   for (const u of resultado.uniones) {
     linea('puerta-empate', 0, H - u.altura, F, H - u.altura);
-    texto(u.tubo ? `EMPATE · TUBO ${u.tubo}` : `EMPATE ${numAlzado(u.solape)} CM`, F - 4, H - u.altura - 4, 'end', 'puerta-cota-texto');
+    if (!u.tubo) nota(`EMPATE ${numAlzado(u.solape)}cm`, 40, H - u.altura - 4, 5);
+    marca(H - u.altura - u.solape / 2);
+    marca(H - u.altura + u.solape / 2, -1);
   }
 
   // Textos de taller colocados en huecos libres
   for (const t of textosTaller) {
     const cx = t.x + t.ancho / 2;
+    if (t.id === 'cortes-et') {
+      const destinos = p.entradas.map((e, i) => ({ e, y: H - tubos[i] }))
+        .filter(e => e.e.huecos.length > 2 && e.y > t.y + t.alto).sort((a, b) => a.y - b.y);
+      const destino = destinos[0];
+      if (destino) for (const h of destino.e.huecos) linea('puerta-linea-guia', cx, t.y + t.alto + 2, h.x + h.ancho / 2, destino.y - 8);
+    }
+    if (t.id.startsWith('refuerzo-')) linea('puerta-linea-guia', cx, t.y + t.alto, t.id === 'refuerzo-10' ? 10 : F - 10, H - hSaco);
     formas.push({
-      tipo: 'texto', x: cx, y: t.y + t.tamano, lineas: t.lineas, ancla: 'middle', tamano: t.tamano,
-      ...(t.id === 'saco' ? { clase: 'puerta-saco-texto' } : {}),
+      tipo: 'texto', x: t.giro ? t.ancla[0] : cx, y: t.giro ? t.ancla[1] : t.y + t.tamano, lineas: t.lineas, ancla: 'middle', tamano: t.tamano, giro: t.giro,
       taller: { guia: t.guia ? [t.x < 0 ? t.x + t.ancho : cx, t.y + t.alto / 2, t.ancla[0], t.ancla[1]] : null },
     });
   }
 
   // Cota superior del frente
-  cota({ x1: 0, y1: 0, x2: F, y2: 0, linea: -34, valor: p.frente || F, sufijo: ' cm', marcas: 6, texto: { x: F / 2, y: -41, ancla: 'middle', clase: null } });
+  cota({ x1: 0, y1: 0, x2: F, y2: 0, linea: -34, valor: p.frente || F, estilo: auto ? 'XERAL' : 'XERA 15', sufijo: ' cm', marcas: 6, texto: { x: F / 2, y: -41, ancla: 'middle', clase: null } });
 
   // Cadena derecha de pasos verticales
   hitosDerecha.slice(1).forEach((y, i) => {
@@ -243,8 +297,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   // Cota T explícita cuando un tubo superior divide T
   if (tuboParteT) cota({ x1: F, y1: 0, x2: F, y2: T, linea: xCotaT, valor: T, prefijo: 'T', marcas: 5, texto: { x: xCotaT + 7, y: T / 2 + 3, ancla: 'start' } });
 
-  // ÚNICA cota de alto total a la derecha
-  cota({ x1: F, y1: 0, x2: F, y2: H, linea: xAltoTotal, valor: p.alto || H, sufijo: ' cm', marcas: 6, texto: { x: xAltoTotal + 14, y: H / 2, ancla: 'middle', giro: -90, clase: null } });
+  // Total a la izquierda en apilables y autorreparables; en enrollables a la derecha, como los originales.
+  cota({ x1: enr ? F : 0, y1: 0, x2: enr ? F : 0, y2: H, linea: xAltoTotal, valor: p.alto || H, estilo: ple ? 'XERA 15' : 'XERAL', sufijo: ' cm', marcas: 6, texto: { x: xAltoTotal + (enr ? 14 : -8), y: H / 2, ancla: 'middle', giro: -90, clase: null } });
+  if (ple) cota({ x1: F, y1: p.apilable.cabecera, x2: F, y2: H, linea: F + 74, valor: H - p.apilable.cabecera, estilo: 'XERA 15', marcas: 4,
+    texto: { x: F + 80, y: (H + p.apilable.cabecera) / 2, ancla: 'start' } });
 
   // Pieza desplegada del saco con su pestaña debajo del alzado
   const y0 = yDesplegado, y1 = yDesplegado + hCorteSaco;
@@ -260,12 +316,23 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     cota({ x1: -pestanaSaco, y1: y0, x2: 0, y2: y0, linea: y0 - 6, valor: pestanaSaco, marcas: 0, texto: { x: -pestanaSaco / 2, y: y0 - 9, ancla: 'middle' } });
   }
   cota({ x1: wSaco, y1: y0, x2: wSaco, y2: y1, linea: wSaco + 12, valor: hCorteSaco, marcas: 4, texto: { x: wSaco + 18, y: y0 + hCorteSaco / 2 + 3, ancla: 'start' } });
-  texto(enr ? 'COSER VELCRO REVÉS DE 3 BRAVO' : ple ? 'COSER VELCRO REVÉS DE 5 BRAVO' : 'VELCRO BRAVO REVÉS DE 3', wSaco / 2, y0 - 7, 'middle', 'puerta-cota-texto');
-  texto(`SACO 900 GR NEGRO · ${numAlzado(wSaco + pestanaSaco)} × ${numAlzado(hCorteSaco)} CM`, wSaco / 2, y0 + hCorteSaco / 2 - 2, 'middle', 'puerta-cota-texto');
-  texto(
-    enr ? 'COSER VELCRO DERECHO DE 3 SUAVE · CACHOS +1 CM PARA ESCUADRAR' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
-    wSaco / 2, y1 + 12, 'middle', 'puerta-cota-texto',
-  );
+  const altoVelcro = auto ? 4 : 8;
+  nota(enr ? 'COSER VELCRO REVÉS DE 3 BRAVO' : ple ? 'COSER VELCRO REVÉS DE 5 BRAVO' : 'VELCRO BRAVO REVÉS DE 3',
+    wSaco / 2, y0 - 16, altoVelcro, [wSaco * 0.2, y0 - 12, 0, y0]);
+  nota(auto ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO', wSaco / 2, y0 + 11, 10);
+  cota({ x1: 0, y1: y1 - 8, x2: wSaco, y2: y1 - 8, linea: y1 - 8, valor: wSaco, estilo: 'XERAL 5', marcas: 0,
+    texto: { x: wSaco / 2, y: y1 - 10, ancla: 'middle' } });
+  if (enr) cota({ x1: 0, y1, x2: 4.5, y2: y1, linea: y1 + 12, valor: 4.5, estilo: 'XERAL', marcas: 2,
+    texto: { x: -10, y: y1 + 16, ancla: 'end' } });
+  if (ple) cota({ x1: 0, y1, x2: 3, y2: y1, linea: y1 + 9, valor: 3, estilo: 'XERAL 5', marcas: 2,
+    texto: { x: -6, y: y1 + 13, ancla: 'end' } });
+  nota(enr ? 'COSER VELCRO DERECHO DE 3 SUAVE' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
+    wSaco / 2, y1 + 25, altoVelcro, [wSaco * 0.2, y1 + 20, 4.5, y1]);
+  if (enr) {
+    formas.push({ tipo: 'texto', x: F / 2, y: y1 + 46, tamano: 7.5, ancla: 'middle',
+      lineas: ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'], taller: { guia: null } });
+  }
+  if (auto) nota('CREMALLERA SOLDADA HASTA MITAD DE SACO', F / 2, y1 + 47, Math.min(10, F / 32));
 
   return { formas, vista: { xMin, yMin, ancho: anchoVista, alto: altoVista }, letraBase, F, H };
 }

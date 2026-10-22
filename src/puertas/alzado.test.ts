@@ -29,7 +29,7 @@ describe('geometriaAlzado', () => {
   it('AR2604638: la cadena es pie, tramo, D y T, y el cristal se acota con su ancho de corte', () => {
     const p = puerta4638();
     expect(cadena(p).map(textoCota)).toEqual(['60', '71', 'D 60', 'T 123']);
-    const cristal = cotas(p).find(c => !esVertical(c) && c.marcas === 4 && c.linea === 123 + 60 - 8);
+    const cristal = cotas(p).find(c => !esVertical(c) && c.marcas === 4 && c.linea === 123 + 18.5);
     expect(cristal?.valor).toBe(172 - 12 + 4);
     const formas = geometriaAlzado(p, calcularPuerta(p)).formas;
     expect(formas.filter(f => f.tipo === 'rect' && f.clase === 'puerta-cacho')).toHaveLength(2);

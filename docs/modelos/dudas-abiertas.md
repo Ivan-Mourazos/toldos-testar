@@ -12,6 +12,16 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## Puertas · notas particulares del plano (22/10/2026)
+
+| Código | Pregunta | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-PU01 | AR2605065 lleva «DEJAR 3 CM MÁS PARA CERRAR DESPUÉS E.T»: ¿es particular de ese pedido o de todos los ventanales consecutivos? | Mantiene el corte de E.T. de 8 y la nota general «CERRAR E.T / 2 CM MÁXIMO». No convierte los 3 cm del plano histórico en una demasía universal ni cambia piezas |
+| Q-PU02 | AR2604904 dibuja un espaciador central además de los laterales: ¿qué frentes o modelos lo llevan y dónde se sitúa? | Dibuja los laterales de 10 cm y sus notas de Portanova; no añade un espaciador central a cualquier autorreparable ni una pieza de stock sin regla |
+
+Las posiciones y alturas de los textos de taller proceden de AR2604638, AR2604725, AR2605036,
+AR2604904 y AR2605065. Son anotaciones del alzado, no nuevas fórmulas del corte.
+
 ## Piezas del despiece que no se reservan
 
 Añadidas el 03/10/2026, al comparar en los 17 modelos lo que sale en el despiece del PDF con lo que la web reserva (`tmp/revision-modelos/despiece-vs-reserva.mjs`, 2.576 casos de ejemplo). Estas piezas salen en el despiece sin referencia y la web no reserva nada por ellas. La pregunta es la misma en todas: **¿se gasta una pieza aparte que haya que reservar, o viene dentro de otra (un kit, un juego) y está bien así?** Mientras tanto la web sigue como está: las enseña en el despiece y no las reserva.
