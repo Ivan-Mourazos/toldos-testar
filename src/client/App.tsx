@@ -47,7 +47,7 @@ import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
 import type { PedidoPuertasGuardado } from '../puertas/flujo/tipos.ts';
-import type { ModoCargaPuertas, PuertasRps } from './puertas/guardarPuertas';
+import { mirarFueraDeToldos, type ModoCargaPuertas, type PuertasRps } from './puertas/guardarPuertas';
 import { RemolquesView } from './remolques/RemolquesView';
 import { PuertasView } from './puertas/PuertasView';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
@@ -331,7 +331,7 @@ export default function App() {
       // Un pedido sin ningún toldo puede ser de remolques: se pregunta a la ruta de RPS de
       // remolques (la que decide qué es una línea de remolque). Los pedidos con toldos no
       // pasan por aquí y, si la consulta falla, todo sigue como antes.
-      if (result.order.awnings.length === 0) {
+      if (mirarFueraDeToldos(result.order.awnings.map((awning) => awning.model), puertasActivas)) {
         const trailers = await trailerPedidoOf(orderCode);
         if (seq !== autofillSeq.current) return;
         if (trailers && trailers.lineas.length > 0) {

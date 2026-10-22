@@ -25,6 +25,16 @@ export interface PuertasRps {
   avisos: string[];
 }
 
+/**
+ * «Buscar pedido»: después de toldos, ¿hay que mirar remolques y puertas? Sí si no salió ningún toldo. Las lonas
+ * de puerta enrollable (PUERTAENR) salen como trabajo de tela «Enrollable» de Toldos, como se hacían antes de
+ * Puertas: con las puertas activas, un pedido que solo tiene enrollables se mira también como puertas.
+ */
+export function mirarFueraDeToldos(modelos: string[], puertasActivas: boolean): boolean {
+  if (!modelos.length) return true;
+  return puertasActivas && modelos.every((modelo) => modelo === 'ENROLLABLE');
+}
+
 /** El pedido de RPS en la pantalla: sin puertas en RPS, una vacía para empezar. */
 export function pedidoDesdeRps(rps: PuertasRps, numero: string, hoy: string): PedidoPantallaPuertas {
   const puertas = rps.puertas.length ? rps.puertas : [];
