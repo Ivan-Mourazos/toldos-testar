@@ -244,6 +244,7 @@ function colocar(
   piezas: PiezaPuerta[],
   opcion: CortePuertas['opcion'],
   codigosPano: Map<string, string>,
+  esEnrollable: (idPieza: string) => boolean,
   ofStock?: string,
 ): CortePuertas[] {
   const grupos = new Map<string, PiezaPuerta[]>();
@@ -286,13 +287,14 @@ function colocar(
     const columnas = maneras
       .flatMap(nueva => (['corto', 'largo'] as const).map(orden => empaquetar(grupo, rollo, nueva, orden)))
       .reduce((mejor, otra) => (largoDe(otra) < largoDe(mejor) - 0.001 ? otra : mejor));
-    // A1 arriba y A2 debajo, como en el alzado (Iván, 22/10/2026). Se apila desde abajo: primero los paños de
-    // código mayor; lo demás (E.T., cachos) queda encima en su orden. El alto de la columna no cambia.
+    // Enrollables: A1 arriba y A2 debajo, como en el alzado (Iván, 22/10/2026, corte a mano de AR2605134). Se
+    // apila desde abajo, así que sus paños se reordenan de código mayor a menor en los mismos huecos que ocupaban;
+    // lo demás (E.T., cachos, otros modelos, que ya cuadraban con sus cortes a mano) no se mueve.
     const codigo = (t: Columna['piezas'][number]) => codigosPano.get(t.pieza.id) ?? '';
+    const reordenable = (t: Columna['piezas'][number]) => t.pieza.clase === 'pano' && esEnrollable(t.pieza.id);
     for (const columna of columnas) {
-      const panos = columna.piezas.filter(t => t.pieza.clase === 'pano')
-        .sort((a, b) => codigo(b).localeCompare(codigo(a), 'es', { numeric: true }));
-      columna.piezas = [...panos, ...columna.piezas.filter(t => t.pieza.clase !== 'pano')];
+      const ordenados = columna.piezas.filter(reordenable).sort((a, b) => codigo(b).localeCompare(codigo(a), 'es', { numeric: true }));
+      columna.piezas = columna.piezas.map(t => (reordenable(t) ? ordenados.shift()! : t));
     }
     let largo = 0;
     for (const columna of columnas) {
@@ -352,13 +354,15 @@ export function generarCortePuertas(
   const sinOf = pedido.elementos
     .filter(e => !e.input.of.trim() || e.input.of.trim().toUpperCase() === 'SIN OF')
     .map(e => e.id);
+  const enrollables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAENR').map(e => `${e.id}:`);
+  const esEnrollable = (idPieza: string) => enrollables.some(prefijo => idPieza.startsWith(prefijo));
   const principal = resultados.flatMap(r => r.piezas);
   const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []);
   const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []);
   const cortes = [
-    ...colocar(principal, 'principal', codigosPano, ofStockSacos),
-    ...colocar(entero, 'saco-entero', codigosPano),
-    ...colocar(partido, 'saco-partido', codigosPano),
+    ...colocar(principal, 'principal', codigosPano, esEnrollable, ofStockSacos),
+    ...colocar(entero, 'saco-entero', codigosPano, esEnrollable),
+    ...colocar(partido, 'saco-partido', codigosPano, esEnrollable),
   ];
   let archivo = null;
   if (!sinOf.length && !avisos.some(a => a.nivel === 'error') && pedido.orderCode.trim() && cortes.length) {
