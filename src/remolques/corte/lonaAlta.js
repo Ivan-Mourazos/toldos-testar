@@ -54,7 +54,12 @@ const numero = (p, x, y, n, giro = 0) => p.numeros.push([x, y, String(n), giro])
 // En rotulador solo cuando el corte lleva más de un remolque (sin letras no hay rótulo), para que en el taller no
 // se confundan los paños (Iván, 22/10/2026), y siempre donde quede tapado: la esquina cae en el dobladillo de la base.
 // `sitio`: otro punto (x, y) de la esquina de abajo del texto, para piezas sin ese dobladillo.
-const rotular = (p, texto, sitio = [15, 15]) => { if (texto) { p.numeros.push([...sitio, texto, 0, 'esquina']); p.etiqueta = texto; } return p; };
+// `marcar`: solo cuando hay paños que se pueden confundir (dos lonas altas o más): con un remolque solo, o una
+// lona alta y un baquetón, «ya se saben» y no se marca (Iván, 22/10/2026). En el centro, en grande, va siempre.
+const rotular = (p, texto, sitio = [15, 15], marcar = true) => {
+  if (texto) { if (marcar) p.numeros.push([...sitio, texto, 0, 'esquina']); p.etiqueta = texto; }
+  return p;
+};
 const seg = (p, x1, y1, x2, y2) => p.lineas.push([x1, y1, x2, y2]);
 const marca = (p, x1, y1, x2, y2) => p.rot.push([x1, y1, x2, y2]);
 
@@ -380,7 +385,8 @@ function colocarTodo(piezas, intentos = 400) {
 
 // `letras`: Map elemento → letra de cada unidad (solo si el corte lleva más de un remolque). `extras`: otras
 // piezas de la misma lona para colocarlas a la vez por huecos (los baquetones, baqueton.js piezasBaqueton).
-export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) {
+// `marcar`: si el nombre de cada pieza va también en rotulador (ver rotular).
+export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], marcar = true) {
   const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [] };
   const piezas = [], tapas = [];
   let union = 1; // número de la siguiente unión de empate (sin letras)
@@ -395,15 +401,15 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
       const conEmpate = c.h > ROLLO && c.w > ROLLO;
       const emp = conEmpate ? contornoConEmpate(c, L ? 1 : union, L.toLowerCase()) : null;
       if (emp && !L) union += 3;
-      const grande = rotular(emp ? emp.grande : c, L && `${L}1`);
+      const grande = rotular(emp ? emp.grande : c, L && `${L}1`, undefined, marcar);
       grande.contornoDe = el.of;
-      piezas.push(grande, rotular(structuredClone(d.p), L && `${L}2`), rotular(structuredClone(t.p), L && `${L}3`));
+      piezas.push(grande, rotular(structuredClone(d.p), L && `${L}2`, undefined, marcar), rotular(structuredClone(t.p), L && `${L}3`, undefined, marcar));
       if (emp) {
         // Las medias tiras no tienen dobladillo: su nombre va en medio de su borde de empate, a 0,5 cm, dentro de los
         // 2 cm que tapa la soldadura y lejos de los números de unión de las puntas. Empatadas son una sola pieza: B4-1 y
         // B4-2, no B4 y B5, que liaban en el taller (Iván, 22/10/2026).
         const enEmpate = [emp.tiras[0].w / 2, 5];
-        piezas.push(rotular(emp.tiras[0], L && `${L}4-1`, enEmpate), rotular(emp.tiras[1], L && `${L}4-2`, enEmpate));
+        piezas.push(rotular(emp.tiras[0], L && `${L}4-1`, enEmpate, marcar), rotular(emp.tiras[1], L && `${L}4-2`, enEmpate, marcar));
         out.avisos.push(`${el.of}: el contorno no cabe en el rollo: empate de 2 cm a lo largo y tira de ${(c.w - ROLLO + EMPATE) / 10} cm empatada en dos.`);
       }
       // Tapa de la ventana: la ventana + 3 cm, una por ventana (Iván, 20/10/2026). Es la pieza siguiente (B4, o B5 si
@@ -413,7 +419,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
         const nombre = L && `${L}${emp ? 5 : 4}`;
         tapa.deRestos = `TAPA DE VENTANA ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}${L ? ` (${nombre})` : ''}`;
         tapa.subtitulo = anchoArial('VENTANA', 100) <= Math.min(tapa.w, tapa.h) * 0.9 ? 'VENTANA' : 'VENT';
-        tapas.push(rotular(tapa, nombre));
+        tapas.push(rotular(tapa, nombre, undefined, marcar));
       }
     }
   }

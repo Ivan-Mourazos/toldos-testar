@@ -81,6 +81,10 @@ export function generarCorteRemolques(pedido) {
   const unidades = elementos.reduce((n, e) => n + (e.input.cantidad || 1), 0);
   const letras = new Map();
   if (unidades > 1) { let k = 0; for (const e of elementos) letras.set(e, Array.from({ length: e.input.cantidad || 1 }, () => String.fromCharCode(65 + k++))); }
+  // El nombre de pieza en rotulador solo si hay paños que se pueden confundir: dos lonas altas o más, o dos
+  // baquetones o más (Iván, 22/10/2026). Los números de los empates van siempre.
+  const cuantos = (baq) => elementos.filter((e) => (e.tipo === 'baqueton') === baq).reduce((n, e) => n + (e.input.cantidad || 1), 0);
+  const marcarLonas = cuantos(false) > 1, marcarBaquetones = cuantos(true) > 1;
   const porLona = new Map();
   for (const el of elementos) {
     const k = el.input.material || 'SIN MATERIAL';
@@ -103,9 +107,9 @@ export function generarCorteRemolques(pedido) {
     // AR2605088: las cabezas encima de los baquetones); los que llevan empate van detrás, como siempre.
     const juntos = lonas.length ? baqs.filter((e) => cabeEnRollo(e, params)) : [];
     const aparte = baqs.filter((e) => !juntos.includes(e));
-    const extras = juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], refuerzos));
-    const la = lonas.length ? cortarLonasAltas(lonas, 0, conLetras, extras) : { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0 };
-    const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, refuerzos, letras) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
+    const extras = juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], refuerzos, marcarBaquetones));
+    const la = lonas.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0 };
+    const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, refuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
     const dx = la.largo;
     const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])]);
     const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx }))];

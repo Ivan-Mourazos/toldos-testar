@@ -76,7 +76,8 @@ export const cabeEnRollo = (el, params) => { const pz = piezaBaqueton(el, params
  * entran encima de los baquetones. Cada pieza, sin girar (x = largo, delante a la izquierda; y = ancho); los
  * refuerzos sueltos, una pieza aparte con los cuatro en fila.
  */
-export function piezasBaqueton(el, params, letras = [], refuerzos = false) {
+// `marcar`: si el nombre de la pieza va también en rotulador (solo con dos baquetones o más; ver lonaAlta.js rotular).
+export function piezasBaqueton(el, params, letras = [], refuerzos = false, marcar = true) {
   const pz = piezaBaqueton(el, params);
   const piezas = [];
   for (let u = 0; u < (el.input.cantidad || 1); u++) {
@@ -84,7 +85,7 @@ export function piezasBaqueton(el, params, letras = [], refuerzos = false) {
     const p = { w: pz.L, h: pz.A, lineas: [], arcos: [], ollaos: pz.ollaos.map(([x, y]) => [x, y]), rot: [], numeros: [] };
     for (const [[a, b], [c, d]] of cruz(pz.L, pz.A, pz.eI, pz.eR, pz.eb)) p.lineas.push([a, b, c, d]);
     // Rótulo de esquina dentro de la solapa de abajo, junto a la esquina de la izquierda (como en cortarBaquetones).
-    if (L) { p.numeros.push([pz.eI + 15, 15, `${L}1`, 0, 'esquina']); p.etiqueta = `${L}1`; }
+    if (L) { if (marcar) p.numeros.push([pz.eI + 15, 15, `${L}1`, 0, 'esquina']); p.etiqueta = `${L}1`; }
     p.contornoDe = el.of;
     piezas.push(p);
     if (refuerzos) {
@@ -105,7 +106,7 @@ export function piezasBaqueton(el, params, letras = [], refuerzos = false) {
 }
 
 // Los baquetones de una misma lona, uno al lado de otro. `letras`: Map elemento → letra de cada unidad.
-export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = new Map()) {
+export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = new Map(), marcar = true) {
   const segs = [], marcas = [], textos = [], avisos = [];
   const giro = (pt, girada, dx) => (girada ? [dx + pt[1], pt[0]] : [dx + pt[0], pt[1]]);
   let x = 0;
@@ -138,7 +139,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
         const centro = [L && `${L}1`, el.of || pedido].filter(Boolean);
         centro.forEach((v, n) => textos.push({ capa: 'texto', x: x + ancho / 2, y: alto / 2 + 90 * (centro.length - 1) - 180 * n, h: 100, valor: v, centrado: true }));
         // Rótulo de esquina: dentro de la solapa de abajo, a 1,5 cm del borde, junto a la esquina de la izquierda.
-        if (L) textos.push({ capa: 'ROTULADOR', ...(girada ? { x: x + pz.eb + 15, y: 15 } : { x: x + pz.eI + 15, y: 15 }), h: 10, valor: `${L}1` });
+        if (L && marcar) textos.push({ capa: 'ROTULADOR', ...(girada ? { x: x + pz.eb + 15, y: 15 } : { x: x + pz.eI + 15, y: 15 }), h: 10, valor: `${L}1` });
         if (refuerzos) textos.push({ capa: 'texto', x: x + ancho / 2, y: alto / 2 - 300, h: Math.min(100, (ancho - 200) / 20), valor: 'REFUERZOS EN ESQUINAS, SIN MARCAR', centrado: true });
         x += ancho;
       } else {
@@ -160,7 +161,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
           // Número de unión en las dos puntas, de 1 cm, dentro de los 2 cm de empate (se une por y = 0) y a 1 cm de la
           // punta (Iván, 22/10/2026: «no a 4 cm, ponlas a 1 cm»).
           for (const nx of [x + 10, x + pz.A - 10]) textos.push({ capa: 'ROTULADOR', x: nx, y: EMPATE / 2, h: 10, valor: `${L.toLowerCase()}1`, centrado: true, literal: true });
-          if (L) textos.push({ capa: 'ROTULADOR', x: x + pz.eb + 15, y: EMPATE + 15, h: 10, valor: `${L}${tramo === 'delante' ? 1 : 2}` });
+          if (L && marcar) textos.push({ capa: 'ROTULADOR', x: x + pz.eb + 15, y: EMPATE + 15, h: 10, valor: `${L}${tramo === 'delante' ? 1 : 2}` });
           x += pz.A;
         }
       }

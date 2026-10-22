@@ -101,6 +101,15 @@ describe('generarCorteRemolques', () => {
     }
   });
 
+  it('una lona alta y un baquetón (como AR2605192) no llevan el nombre de pieza en rotulador; los empates, sí', () => {
+    const mixto = structuredClone(AR2605079);
+    mixto.elementos.push({ ...structuredClone(AR2605071.elementos[0]), version: 'baqueton-1' });
+    mixto.elementos[1].input.cantidad = 1;
+    const rot = generarCorteRemolques(mixto).cortes.flatMap((c) => rotulador(c));
+    expect(rot.filter((t) => !t.literal).map((t) => t.valor)).toEqual([]);
+    for (const n of ['a1', 'a2', 'a3']) expect(rot.some((t) => t.literal && t.valor === n)).toBe(true);
+  });
+
   it('pone una letra a cada baquetón cuando hay más de uno (AR2605071)', () => {
     const [c] = generarCorteRemolques(AR2605071).cortes;
     expect(c.largo).toBe(2940);
