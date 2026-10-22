@@ -5,7 +5,7 @@ import {
   FilePen,
   Save,
   UserRound,
-  X, Undo2, Moon, Sun, ArrowLeft } from 'lucide-react';
+  X, Undo2, Moon, Sun, ArrowLeft, History } from 'lucide-react';
 // Letra de CoordinaOT (Geist y Geist Mono) servida desde el proyecto; Didact Gothic es la
 // sustituta de Century Gothic para «Planteamientos» en la cabecera (ver coordina/piezas.css).
 import '@fontsource-variable/geist';
@@ -15,7 +15,7 @@ import '@fontsource/didact-gothic/latin-400.css';
 // de CoordinaOT (coordina/) sin capa, así que esta gana siempre (ver coordina/README.md).
 import './estilos.css';
 import type { ActiveTab, Catalog, DraftState, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
-import { useDraft } from './hooks/useDraft';
+import { formularioDeOtroDia, leerUltimoCambio, useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { OrderActions } from './components/OrderActions';
@@ -58,6 +58,12 @@ import { SelectorProducto, guardarProducto, leerProducto, type Producto, type Re
 
 export default function App() {
   const draft = useDraft();
+  // Un pedido de otro día en el formulario al abrir la web (Iván, 22/10/2026: «entro, le doy a toldo y ya me salen
+  // datos» que no eran suyos): se pregunta si seguir con él. El aviso se va al cargar otro pedido o al contestar.
+  const [formularioAntiguo, setFormularioAntiguo] = useState(() => {
+    const ultimo = leerUltimoCambio();
+    return formularioDeOtroDia(draft, ultimo, todayIso()) ? { orderCode: draft.orderCode, customer: draft.customer, ultimo } : null;
+  });
   const ruleSettings = useParameters();
   const remolquesSettings = useRemolquesParameters();
   const fichasClientes = useFichasClientes();
@@ -767,6 +773,26 @@ export default function App() {
             <span className="order-entry-or">o</span>
             <SelectorProducto inicio disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />
           </section>}
+          {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && formularioAntiguo && draft.orderCode === formularioAntiguo.orderCode && !corrigiendo && (
+            <div className="review-state-note order-return-note formulario-antiguo" role="status">
+              <History aria-hidden="true" />
+              <span>
+                <strong>En el formulario hay un pedido de otro día: {[formularioAntiguo.orderCode, formularioAntiguo.customer].filter(Boolean).join(' · ') || 'sin número'}{formularioAntiguo.ultimo ? ` (último cambio ${new Date(formularioAntiguo.ultimo).toLocaleDateString('es-ES')})` : ''}.</strong>
+                Si no es tuyo o ya no lo necesitas, empieza de cero.
+              </span>
+              <span className="formulario-antiguo-acciones">
+                <button type="button" className="ghost-button" onClick={() => setFormularioAntiguo(null)}>Seguir con él</button>
+                <button type="button" className="primary-button" onClick={() => {
+                  draft.resetDraft();
+                  ruleSettings.restoreParameters();
+                  setAutofill(null);
+                  setReturnNote(null);
+                  setCorrigiendo(null);
+                  setFormularioAntiguo(null);
+                }}>Empezar de cero</button>
+              </span>
+            </div>
+          )}
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && returnNote && (
             <div className="review-state-note is-returned order-return-note" role="status">
               <Undo2 aria-hidden="true" />

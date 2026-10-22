@@ -2,7 +2,7 @@ import { normalizeFabricImage } from '../../domain/fabricImage.js';
 import { supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isConfiguredCurtain, normalizeCurtainConfiguration } from '../../domain/curtainConfiguration.js';
 import { normalizeStructureEdit } from '../../domain/structureEdits.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Awning, DraftState, FabricProposal } from '../types';
 import { sanitizeFabricProposals } from '../fabricProposal';
 import { createAwning, storageKey, todayIso, uid } from '../constants';
@@ -310,8 +310,34 @@ export function readStoredDraft(): DraftState {
   return defaultDraft();
 }
 
-export function writeStoredDraft(draft: DraftState): void {
-  try { if (typeof localStorage !== 'undefined') localStorage.setItem(storageKey, JSON.stringify(draft)); } catch { /* No impide editar ni guardar para revisión. */ }
+// Cuándo cambió por última vez el formulario guardado en este navegador (Iván, 22/10/2026: al entrar le salía un
+// pedido de un compañero del 02/10 que había abierto un día para mirarlo). Solo se apunta si el formulario cambia de
+// verdad: al abrir la web se vuelve a escribir (ya normalizado) y eso no es tocarlo (`alAbrir`).
+const claveUltimoCambio = `${storageKey}:ultimo-cambio`;
+
+export function leerUltimoCambio(): string | null {
+  try { return typeof localStorage === 'undefined' ? null : localStorage.getItem(claveUltimoCambio); } catch { return null; }
+}
+
+/** true si el formulario tiene un pedido que no se ha tocado hoy (o no se sabe cuándo): hay que preguntar. */
+export function formularioDeOtroDia(draft: Pick<DraftState, 'orderCode' | 'customer' | 'fabric' | 'awnings'>, ultimoCambio: string | null, hoy: string): boolean {
+  const conDatos = Boolean(draft.orderCode.trim() || draft.customer.trim() || draft.fabric
+    || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection));
+  if (!conDatos) return false;
+  if (!ultimoCambio) return true;
+  const d = new Date(ultimoCambio);
+  const dia = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return dia !== hoy;
+}
+
+export function writeStoredDraft(draft: DraftState, { alAbrir = false }: { alAbrir?: boolean } = {}): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    const texto = JSON.stringify(draft);
+    if (localStorage.getItem(storageKey) === texto) return;
+    localStorage.setItem(storageKey, texto);
+    if (!alAbrir) localStorage.setItem(claveUltimoCambio, new Date().toISOString());
+  } catch { /* No impide editar ni guardar para revisión. */ }
 }
 
 export function useDraft() {
@@ -334,8 +360,10 @@ export function useDraft() {
   const [fabricProposals, setFabricProposals] = useState<FabricProposal[]>(initialDraft.fabricProposals ?? []);
   const [confirmedFabricProposals, setConfirmedFabricProposals] = useState<number[]>(initialDraft.confirmedFabricProposals ?? []);
 
+  const abierto = useRef(false);
   useEffect(() => {
-    writeStoredDraft({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona });
+    writeStoredDraft({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona }, { alAbrir: !abierto.current });
+    abierto.current = true;
   }, [orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona]);
 
   function confirmFabricProposal(index: number) {

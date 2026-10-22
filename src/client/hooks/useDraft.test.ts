@@ -1,7 +1,31 @@
 import { describe, expect, test, vi } from 'vitest';
-import { buildReusableDraft, defaultDraft, sanitizeAwning, migrateLegacyDraft, readStoredDraft, switchAwningModel, writeStoredDraft } from './useDraft';
+import { buildReusableDraft, defaultDraft, formularioDeOtroDia, leerUltimoCambio, sanitizeAwning, migrateLegacyDraft, readStoredDraft, switchAwningModel, writeStoredDraft } from './useDraft';
 import { createAwning, storageKey } from '../constants';
 import { modelNames } from '../../domain/modelBehavior.js';
+
+describe('formulario de otro día (Iván, 22/10/2026: «entro, le doy a toldo y ya me salen datos»)', () => {
+  test('la fecha del último cambio solo se apunta cuando el formulario cambia de verdad', () => {
+    const almacen = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (key: string) => almacen.get(key) ?? null, setItem: (key: string, value: string) => almacen.set(key, value), removeItem: (key: string) => almacen.delete(key) });
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-02T10:00:00'));
+    const draft = { ...defaultDraft(), orderCode: 'AR2604441', customer: "O'TABERNEIRO" };
+    writeStoredDraft(draft);
+    expect(leerUltimoCambio()).toBe(new Date('2026-10-02T10:00:00').toISOString());
+    // Al abrir la web se vuelve a escribir, igual o normalizado: la fecha no cambia.
+    vi.setSystemTime(new Date('2026-10-22T09:00:00'));
+    writeStoredDraft(draft);
+    writeStoredDraft({ ...draft, notes: '' }, { alAbrir: true });
+    expect(leerUltimoCambio()).toBe(new Date('2026-10-02T10:00:00').toISOString());
+    expect(formularioDeOtroDia(draft, leerUltimoCambio(), '2026-10-22')).toBe(true);
+    // Hoy, vacío o sin fecha conocida.
+    expect(formularioDeOtroDia(draft, new Date('2026-10-22T08:00:00').toISOString(), '2026-10-22')).toBe(false);
+    expect(formularioDeOtroDia(defaultDraft(), leerUltimoCambio(), '2026-10-22')).toBe(false);
+    expect(formularioDeOtroDia(draft, null, '2026-10-22')).toBe(true);
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+});
 
 describe('sanitizeAwning (migración v3/v4 -> v5)', () => {
   test('elimina los 4 campos de override y el valance obsoleto', () => {

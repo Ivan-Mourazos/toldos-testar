@@ -3202,6 +3202,9 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 .review-state-note svg { flex: 0 0 auto; height: 17px; margin-top: 1px; width: 17px; }
 .review-state-note.is-returned { background: #fdecea; border: 1px solid #f1c3bb; color: #7f2c21; }
 .order-return-note { margin: 0 0 12px; }
+/* Pedido de otro día en el formulario al abrir la web (22/10/2026): aviso dorado de la marca con sus dos botones. */
+.formulario-antiguo { align-items: center; background: color-mix(in srgb, var(--color-brand-400) 18%, transparent); border: 1px solid color-mix(in srgb, var(--color-brand-500) 55%, transparent); color: var(--text); }
+.formulario-antiguo-acciones { display: flex !important; gap: 8px !important; margin-left: auto; }
 
 .awning-column.is-flash { box-shadow: 0 0 0 3px #efb51b; transition: box-shadow 0.3s; }
 /* Al saltar a un toldo (Qué revisar, avisos), la barra superior fija no tapa su cabecera. */
