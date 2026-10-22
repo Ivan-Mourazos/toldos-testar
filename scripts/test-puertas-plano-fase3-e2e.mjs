@@ -19,6 +19,22 @@ await fs.mkdir(carpeta, { recursive: true }); await fs.mkdir(destino, { recursiv
 for (const { pedido } of referenciasPlano) {
   const p = puertaPlanoReal(pedido);
   assert.deepEqual(calcularPuerta(p).avisos.filter(a => a.nivel === 'error'), [], `${pedido}: datos de muestra válidos`);
+  // Comprueba también el servidor: Vite recarga el alzado, pero el proceso de Node puede seguir con un módulo antiguo.
+  const respuesta = await fetch(`${BASE_URL}/api/puertas/corte/vista-previa`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pedidoDe(pedido, p)),
+  });
+  assert.equal(respuesta.status, 200);
+  const vista = await respuesta.json();
+  assert.deepEqual(vista.avisos.filter(a => a.nivel === 'error'), []);
+  const altoA1 = pedido === 'AR2605036' ? 186 : pedido === 'AR2604904' ? 208.5 : null;
+  if (altoA1 !== null) {
+    const lona = vista.cortes.find(c => c.colocadas.some(t => t.pieza.clase === 'pano'));
+    const a1 = lona.entidades.textos.find(t => t.valor === 'A1');
+    const paño = lona.colocadas.find(t => t.pieza.clase === 'pano' && a1.x > t.x && a1.y > t.y
+      && a1.x < t.x + (t.girada ? t.pieza.alto : t.pieza.ancho) * 10
+      && a1.y < t.y + (t.girada ? t.pieza.ancho : t.pieza.alto) * 10);
+    assert.equal(paño?.pieza.alto, altoA1, `${pedido}: A1 del servidor identifica el paño superior`);
+  }
   const doc = crearPedidoPuertas({ pedido: pedidoDe(pedido, p), cabecera: { cliente: 'PORTANOVA PRUEBA PLANO', fecha: '2026-10-22' },
     autoria: { technician: 'IVÁN', reviewer: '' }, existente: null, ahora: new Date().toISOString() });
   await fs.writeFile(path.join(carpeta, `${pedido}.json`), JSON.stringify(doc));
