@@ -1,24 +1,25 @@
-// Cajetín nuevo de los planos de la web (Iván, 19/10/2026: «reconstruye un cajetín moderno», que coja
-// también el revisor, sin el empate, que ya va en el dibujo, y que estorbe poco). Es un bloque
-// «CAJETIN WEB» con atributos (se pueden editar en AutoCAD): una franja fina a lo ancho del pie de la
-// A4, con el logo y el título y una fila de casillas. El logo de TGM se saca del bloque CAJETIN de la
-// plantilla (bloque «LOGO TGM»). Medidas en mm de papel.
+// Cajetín de los planos de la web. Iván, 22/10/2026: los planteamientos con el cajetín de siempre de la
+// oficina (abajo a la derecha: logo, pedido y OF, cliente, técnico, revisión, fecha y página), «adaptado un
+// poco a este siglo». Es un bloque «CAJETIN TGM» con atributos (se editan en AutoCAD). El logo de TGM se
+// saca del bloque CAJETIN de la plantilla (bloque «LOGO TGM»). Medidas en mm de papel.
 import { anchoArial } from './texto.js';
 
-export const ANCHO_CAJETIN = 281.1, ALTO_CAJETIN = 15;   // dentro del marco de la A4 (x 8–289,1)
-export const SITIO_CAJETIN = [8.0, 8.0];
+export const ANCHO_CAJETIN = 100, ALTO_CAJETIN = 27;   // en la esquina de abajo a la derecha del marco
+export const SITIO_CAJETIN = [289.1 - ANCHO_CAJETIN, 8.0];
 const ANCHO = ANCHO_CAJETIN, ALTO = ALTO_CAJETIN;
-const TITULO = 64;                       // casilla del logo y el título
-const CASILLAS = [                       // [etiqueta, atributo, ancho en mm]
-  ['PEDIDO', 'PEDIDO', 25], ['OF', 'OF', 21], ['CLIENTE', 'CLIENTE', 56], ['MATERIAL', 'MATERIAL', 46],
-  ['TÉCNICO', 'TECNICO', 21], ['REVISOR', 'REVISOR', 21], ['FECHA', 'FECHA', 16.1], ['HOJA', 'HOJA', 11]
+const X0 = 24;                           // a la izquierda, el logo; los datos, desde aquí
+// [etiqueta, atributo, x, y de la etiqueta, ancho, alto del dato]: pedido y OF en grande, como el de siempre.
+const CASILLAS = [
+  ['Nº PEDIDO', 'PEDIDO', X0, 24.8, 40, 3.6], ['OF', 'OF', X0 + 44, 24.8, 32, 3.6],
+  ['CLIENTE', 'CLIENTE', X0, 16.6, ANCHO - X0 - 2, 2.8],
+  ['TÉCNICO', 'TECNICO', X0, 10.0, 19, 2.4], ['REVISIÓN', 'REVISOR', X0 + 20, 10.0, 19, 2.4],
+  ['FECHA', 'FECHA', X0 + 40, 10.0, 17, 2.4], ['PÁG.', 'HOJA', X0 + 58, 10.0, 16, 2.4]
 ];
-const ALTO_DATO = 3.0;                   // altura del dato; se reduce si no cabe en su casilla
 const GRIS = 8, NARANJA = 40, TEXTO = 7;
 const LOGO_MAX_X = 25;                  // en el bloque CAJETIN, el logo queda a la izquierda de x = 25
 
 /**
- * Añade a `src` (DXF de la plantilla) los bloques LOGO TGM y CAJETIN WEB y devuelve
+ * Añade a `src` (DXF de la plantilla) los bloques LOGO TGM y CAJETIN TGM y devuelve
  * { src, insercion } con la inserción del cajetín (y sus atributos) para el espacio papel.
  * `nuevo()` da handles; `papel` es el handle de *Paper_Space; `valores` los datos por atributo.
  */
@@ -26,7 +27,7 @@ export function anadirCajetin(src, nuevo, papel, valores) {
   const n = (v) => Number(v).toFixed(6);
   const regLogo = nuevo(), regCaj = nuevo();
   const registro = (h, nombre) => `  0\nBLOCK_RECORD\n  5\n${h}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
-  src = insertarEnTabla(src, 'BLOCK_RECORD', registro(regLogo, 'LOGO TGM') + registro(regCaj, 'CAJETIN WEB'), 2);
+  src = insertarEnTabla(src, 'BLOCK_RECORD', registro(regLogo, 'LOGO TGM') + registro(regCaj, 'CAJETIN TGM'), 2);
 
   const ent = (dueno, tipo, color, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${dueno}\n100\nAcDbEntity\n  8\n0\n 62\n${String(color).padStart(6)}\n100\n${sub}\n${cuerpo}`;
   const linea = (dueno, color, x1, y1, x2, y2, grosor = 0) => ent(dueno, 'LWPOLYLINE', color, 'AcDbPolyline', ` 90\n     2\n 70\n     0\n 43\n${n(grosor)}\n 10\n${n(x1)}\n 20\n${n(y1)}\n 10\n${n(x2)}\n 20\n${n(y2)}\n`);
@@ -50,31 +51,27 @@ export function anadirCajetin(src, nuevo, papel, valores) {
   }
   logo += finBloque(regLogo);
 
-  // CAJETIN WEB: franja con raya naranja arriba, logo y título a la izquierda y una fila de casillas.
-  let caj = inicioBloque(regCaj, 'CAJETIN WEB', true);
+  // CAJETIN TGM: raya naranja arriba; el logo a la izquierda; pedido y OF en grande; cliente; técnico,
+  // revisión, fecha y página; y abajo, en pequeño, las medidas, el trabajo y el material.
+  let caj = inicioBloque(regCaj, 'CAJETIN TGM', true);
   caj += linea(regCaj, NARANJA, 0, ALTO, ANCHO, ALTO, 0.7);
   caj += linea(regCaj, GRIS, 0, 0, ANCHO, 0, 0.25);
-  // Logo: 17 mm de alto en el bloque viejo → 11 mm.
-  const escalaLogo = 11 / 17;
-  caj += `  0\nINSERT\n  5\n${nuevo()}\n330\n${regCaj}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockReference\n  2\nLOGO TGM\n 10\n${n(1 - 7.1 * escalaLogo)}\n 20\n${n(2 - 4.0 * escalaLogo)}\n 30\n0.0\n 41\n${n(escalaLogo)}\n 42\n${n(escalaLogo)}\n 43\n${n(escalaLogo)}\n`;
-  // Título y subtítulo, ajustados al ancho de su casilla.
-  const cabe = (valor, h) => Math.min(h, (TITULO - 16) / anchoArial(valor, 1));
-  const subtitulo = valores.SUBTITULO || 'LONA DE PVC';
-  caj += texto(regCaj, TEXTO, 14, 7.4, cabe('PLANO DE CONFECCIÓN', 3.2), 'PLANO DE CONFECCIÓN');
-  caj += texto(regCaj, GRIS, 14, 3.4, cabe(subtitulo, 1.7), subtitulo);
-  // Casillas: separadas por rayas grises cortas; etiqueta pequeña en gris arriba y el dato debajo.
+  caj += linea(regCaj, GRIS, 0, 0, 0, ALTO, 0.25);
+  caj += linea(regCaj, GRIS, X0 - 2, 19.0, ANCHO - 2, 19.0, 0.13);
+  caj += linea(regCaj, GRIS, X0 - 2, 4.6, ANCHO - 2, 4.6, 0.13);
+  // Logo a su tamaño del bloque viejo (17 mm), centrado en su franja.
+  caj += `  0\nINSERT\n  5\n${nuevo()}\n330\n${regCaj}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockReference\n  2\nLOGO TGM\n 10\n${n(2 - 7.1)}\n 20\n${n(5 - 4.0)}\n 30\n0.0\n`;
+  const pie = ['MEDIDAS EN CM', String(valores.SUBTITULO || '').replace(/^MEDIDAS EN CM · /, ''), valores.MATERIAL].filter(Boolean).join(' · ');
+  caj += texto(regCaj, GRIS, X0, 1.8, Math.min(1.6, (ANCHO - X0 - 2) / anchoArial(pie, 1)), pie);
+  // Cada dato con su etiqueta pequeña en gris encima; se reduce si no cabe en su sitio.
   let atributos = '';
-  let x = TITULO;
-  for (const [etiqueta, tag, w] of CASILLAS) {
-    caj += linea(regCaj, GRIS, x, 2, x, ALTO - 2);
-    caj += texto(regCaj, GRIS, x + 2, ALTO - 4.6, 1.5, etiqueta);
-    const [ax, ay] = [x + 2, 3.2];
-    caj += `  0\nATTDEF\n  5\n${nuevo()}\n330\n${regCaj}\n100\nAcDbEntity\n  8\n0\n 62\n${String(TEXTO).padStart(6)}\n100\nAcDbText\n 10\n${n(ax)}\n 20\n${n(ay)}\n 30\n0.0\n 40\n${n(ALTO_DATO)}\n  1\n\n  7\narial\n100\nAcDbAttributeDefinition\n280\n     0\n  3\n${etiqueta}\n  2\n${tag}\n 70\n     0\n280\n     1\n`;
-    // El dato se reduce si no cabe en la casilla.
+  for (const [etiqueta, tag, x, y, w, alto] of CASILLAS) {
+    caj += texto(regCaj, GRIS, x, y, 1.4, etiqueta);
+    const [ax, ay] = [x, y - alto - 1.0];
+    caj += `  0\nATTDEF\n  5\n${nuevo()}\n330\n${regCaj}\n100\nAcDbEntity\n  8\n0\n 62\n${String(TEXTO).padStart(6)}\n100\nAcDbText\n 10\n${n(ax)}\n 20\n${n(ay)}\n 30\n0.0\n 40\n${n(alto)}\n  1\n\n  7\narial\n100\nAcDbAttributeDefinition\n280\n     0\n  3\n${etiqueta}\n  2\n${tag}\n 70\n     0\n280\n     1\n`;
     const valor = valores[tag] ?? '';
-    const h = valor ? Math.min(ALTO_DATO, (w - 3.5) / anchoArial(valor, 1)) : ALTO_DATO;
+    const h = valor ? Math.min(alto, (w - 1) / anchoArial(valor, 1)) : alto;
     atributos += `${ax},${ay},${h},${tag}\n`;
-    x += w;
   }
   caj += finBloque(regCaj);
 
@@ -85,7 +82,7 @@ export function anadirCajetin(src, nuevo, papel, valores) {
   // Inserción en el papel con los atributos rellenos.
   const [ix, iy] = SITIO_CAJETIN;
   const hIns = nuevo();
-  let insercion = `  0\nINSERT\n  5\n${hIns}\n330\n${papel}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockReference\n 66\n     1\n  2\nCAJETIN WEB\n 10\n${n(ix)}\n 20\n${n(iy)}\n 30\n0.0\n`;
+  let insercion = `  0\nINSERT\n  5\n${hIns}\n330\n${papel}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockReference\n 66\n     1\n  2\nCAJETIN TGM\n 10\n${n(ix)}\n 20\n${n(iy)}\n 30\n0.0\n`;
   for (const fila of atributos.trim().split('\n')) {
     const [ax, ay, ah, tag] = fila.split(',');
     insercion += `  0\nATTRIB\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n 62\n${String(TEXTO).padStart(6)}\n100\nAcDbText\n 10\n${n(ix + +ax)}\n 20\n${n(iy + +ay)}\n 30\n0.0\n 40\n${n(ah)}\n  1\n${valores[tag] ?? ''}\n  7\narial\n100\nAcDbAttribute\n280\n     0\n  2\n${tag}\n 70\n     0\n280\n     1\n`;

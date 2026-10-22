@@ -8,6 +8,7 @@ import { CAPAS_BOT, escribirDxf2004 } from './dxfCorte.js';
 import { anchoArial } from './texto.js';
 import { dibujarPlano } from './plano.js';
 import { escribirDxfPlano } from './presentacion.js';
+import { ALTO_CAJETIN, ANCHO_CAJETIN, SITIO_CAJETIN } from './cajetin.js';
 import { registrosDxf, valor, numero, variable } from './dxfTestHelpers.js';
 
 const resultado = () => generarCorteLona(revision.order, { ofStockSacos: '0230811' });
@@ -123,8 +124,19 @@ describe('Plano de confección', () => {
     expect(variable(dxf, '$ACADVER')).toBe('AC1032');
     expect(variable(dxf, '$INSUNITS')).toBe('6');
     const entidades = registrosDxf(dxf);
-    expect(entidades.some((e) => e.tipo === 'INSERT' && valor(e, 2) === 'CAJETIN WEB')).toBe(true);
-    expect(entidades.some((e) => e.tipo === 'INSERT' && valor(e, 2) === 'CAJETIN')).toBe(false);
+    // Iván, 22/10/2026: el cajetín de siempre de la oficina, abajo a la derecha, «adaptado a este siglo».
+    const cajetin = entidades.find((e) => e.tipo === 'INSERT' && valor(e, 2) === 'CAJETIN TGM');
+    expect(cajetin).toBeTruthy();
+    expect(numero(cajetin, 10)).toBeCloseTo(SITIO_CAJETIN[0], 6);
+    expect(numero(cajetin, 20)).toBeCloseTo(SITIO_CAJETIN[1], 6);
+    expect(SITIO_CAJETIN[0] + ANCHO_CAJETIN).toBeCloseTo(289.1, 3);
+    expect(entidades.some((e) => e.tipo === 'INSERT' && ['CAJETIN', 'CAJETIN WEB'].includes(valor(e, 2)))).toBe(false);
+    // Ninguna ventana del dibujo tapa el cajetín.
+    for (const v of entidades.filter((e) => e.tipo === 'VIEWPORT' && numero(e, 69) > 1)) {
+      const [cx, cy, w, h] = [numero(v, 10), numero(v, 20), numero(v, 40), numero(v, 41)];
+      const tapa = cx + w / 2 > SITIO_CAJETIN[0] && cy - h / 2 < SITIO_CAJETIN[1] + ALTO_CAJETIN;
+      expect(tapa).toBe(false);
+    }
     expect(entidades.some((e) => e.tipo === 'ACAD_TABLE')).toBe(false);
     const campos = Object.fromEntries(entidades.filter((e) => e.tipo === 'ATTRIB').map((e) => [valor(e, 2), valor(e, 1)]));
     expect(campos).toMatchObject({ PEDIDO: 'AR2604784', OF: '0232568', CLIENTE: 'OTILIA VAZQUEZ', TECNICO: 'ALBERTO', REVISOR: 'JAIME', FECHA: '29/09/26', HOJA: '1/1' });
@@ -211,7 +223,8 @@ describe('Plano de confección', () => {
     order.customer = 'CLIENTE CON UNA RAZÓN SOCIAL MUY LARGA '.repeat(4);
     const { dxf } = generarCorteLona(order, { ofStockSacos: '0230811' }).plano[0];
     const cliente = registrosDxf(dxf).find((e) => e.tipo === 'ATTRIB' && valor(e, 2) === 'CLIENTE');
-    expect(anchoArial(valor(cliente, 1), numero(cliente, 40))).toBeLessThanOrEqual(52.5 + 0.001);
+    // El cliente tiene todo el ancho del cajetín a la derecha del logo (73 mm).
+    expect(anchoArial(valor(cliente, 1), numero(cliente, 40))).toBeLessThanOrEqual(73 + 0.001);
     expect(valor(cliente, 1)).not.toContain('%<');
     const capa = registrosDxf(dxf, 'TABLES').find((e) => e.tipo === 'LAYER' && valor(e, 2) === 'vent-pre-noimpr');
     expect(valor(capa, 290)).toBe('0');

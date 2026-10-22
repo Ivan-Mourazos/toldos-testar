@@ -66,7 +66,11 @@ export function escribirDxfPlano(plano, cabecera) {
   // cajetín se prueba el corte debajo del toldo (a todo el ancho) o al lado (a la derecha), con todos
   // los tamaños, y se queda el que deja el toldo más grande sin que el corte quede a menos de 2/3 de
   // su escala (escala = mm de papel por metro de dibujo).
-  const A4 = { x0: 10, x1: 287.1, y0: SITIO_CAJETIN[1] + ALTO_CAJETIN + 3, y1: 199.9 };
+  // El cajetín va en la esquina de abajo a la derecha (Iván, 22/10/2026): el dibujo baja hasta el marco y solo
+  // se aparta de esa esquina.
+  const A4 = { x0: 10, x1: 287.1, y0: 11, y1: 199.9 };
+  const esquina = { x0: SITIO_CAJETIN[0] - 3, y1: SITIO_CAJETIN[1] + ALTO_CAJETIN + 3 };
+  const libre = (r) => (r.x1 > esquina.x0 && r.y0 < esquina.y1 ? { ...r, y0: esquina.y1 } : r);
   const TITULO_CORTE = 9;   // sitio para el título del corte y la raya
   // El corte se puede poner girado 90° si así se ve más grande (Iván, 19/10/2026): se prueban las dos.
   const zt = plano.zonas.toldos;
@@ -80,13 +84,19 @@ export function escribirDxfPlano(plano, cabecera) {
   const repartos = [];
   // `corteDerecho`: el corte no se gira en la hoja (remolques: el DWG solo se guarda, Iván 20/10/2026).
   for (const [girado, zcp] of plano.corteDerecho ? [[false, zNormal]] : [[false, zNormal], [true, zGirada]]) {
+    // Debajo: el corte a la izquierda del cajetín; el toldo encima de los dos.
     for (let h = 25; h <= A4.y1 - A4.y0 - TITULO_CORTE - 60; h += 0.5) {
-      const corte = { x0: A4.x0, y0: A4.y0, x1: A4.x1, y1: A4.y0 + h };
-      repartos.push({ girado, zc: zcp, corte, toldo: { x0: A4.x0, y0: corte.y1 + TITULO_CORTE, x1: A4.x1, y1: A4.y1 }, raya: [[A4.x0, corte.y1 + 7], [A4.x1, corte.y1 + 7]] });
+      const corte = { x0: A4.x0, y0: A4.y0, x1: esquina.x0, y1: A4.y0 + h };
+      const y0 = Math.max(corte.y1 + TITULO_CORTE, esquina.y1);
+      repartos.push({ girado, zc: zcp, corte, toldo: { x0: A4.x0, y0, x1: A4.x1, y1: A4.y1 }, raya: [[A4.x0, y0 - 2], [A4.x1, y0 - 2]] });
     }
+    // Al lado: el corte a la derecha, encima del cajetín; el toldo a la izquierda, hasta abajo si no lo pisa.
     for (let w = 60; w <= A4.x1 - A4.x0 - 100; w += 0.5) {
-      const corte = { x0: A4.x1 - w, y0: A4.y0, x1: A4.x1, y1: A4.y1 - TITULO_CORTE };
-      repartos.push({ girado, zc: zcp, corte, toldo: { x0: A4.x0, y0: A4.y0, x1: corte.x0 - 4, y1: A4.y1 }, raya: [[corte.x0 - 2, A4.y0], [corte.x0 - 2, A4.y1]] });
+      const corte = { x0: A4.x1 - w, y0: esquina.y1, x1: A4.x1, y1: A4.y1 - TITULO_CORTE };
+      const toldo = libre({ x0: A4.x0, y0: A4.y0, x1: corte.x0 - 4, y1: A4.y1 });
+      // La raya de separación no cruza el cajetín.
+      const desde = corte.x0 - 2 > esquina.x0 ? esquina.y1 : A4.y0;
+      repartos.push({ girado, zc: zcp, corte, toldo, raya: [[corte.x0 - 2, desde], [corte.x0 - 2, A4.y1]] });
     }
   }
   // A igual nota se prefiere el corte sin girar, como va en el rollo.
@@ -116,7 +126,10 @@ export function escribirDxfPlano(plano, cabecera) {
   const rc = reparto.corte;
   if (rc.x0 === A4.x0) rc.y1 = rc.y0 + Math.max(25, (zc.y1 - zc.y0) * ec);
   else rc.y0 = rc.y1 - (zc.y1 - zc.y0) * ec;
-  if (rc.x0 === A4.x0) { reparto.toldo.y0 = rc.y1 + TITULO_CORTE; reparto.raya = [[A4.x0, rc.y1 + 7], [A4.x1, rc.y1 + 7]]; }
+  if (rc.x0 === A4.x0) {
+    reparto.toldo.y0 = Math.max(rc.y1 + TITULO_CORTE, esquina.y1);
+    reparto.raya = [[A4.x0, reparto.toldo.y0 - 2], [A4.x1, reparto.toldo.y0 - 2]];
+  }
   const encuadre = (z, r) => ({ z, centro: [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], ancho: r.x1 - r.x0, alto: r.y1 - r.y0 });
   const ventanas = plano.presentacion?.ventanas ?? { 2: encuadre(zt, reparto.toldo), 3: encuadre(zc, rc) };
   const encuadrar = (t, v) => {

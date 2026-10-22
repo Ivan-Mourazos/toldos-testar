@@ -48,7 +48,7 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const ent = registrosDxf(dxf);
     // Iván sustituyó el criterio del cajetín web por la plantilla fija de Portanova.
     expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN')).toHaveLength(1);
-    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN WEB')).toHaveLength(0);
+    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN TGM')).toHaveLength(0);
     const alzado = modelo(dxf).filter(r => numero(r, 10) < 105 && numero(r, 20) > 95);
     for (const texto of ['X3', 'A1', 'A2', 'REVÉS', '0233175']) expect(alzado.some(r => valor(r, 1) === texto)).toBe(true);
   });
@@ -133,10 +133,11 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
 });
 
 describe('Regresión: planos de oficina y presentación compartida', () => {
-  // Huellas del nuevo plano CAD; la de enrollable de main se comprueba en planoTaller.test.ts.
+  // Huellas del nuevo plano CAD (renovadas el 22/10/2026 por el cajetín de la oficina, CAJETIN TGM); la de
+  // enrollable de main se comprueba en planoTaller.test.ts.
   it.each([
-    ['apilable', apilable, 'ad91a49c737134c61007ff5b2f3f709bc0dd1f63bcdf7a9aac94d489a2bd5560'],
-    ['autorreparable', autorreparable, '72c66bc31dbd167ddfb619e0ae1b76c815341b2fdddd91639421086faf284e87'],
+    ['apilable', apilable, 'd40457cbf5329d2190e8fa398d5b8c612106d485da1b1f3b62c1e838214385ab'],
+    ['autorreparable', autorreparable, '3942b9e49c48d921cf5123365c1fc50b489901591f72d6c876c01929629380bb'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -151,9 +152,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     expect(geometria(propio)).toEqual(geometria(anterior));
     expect(registrosDxf(propio).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1)).toHaveLength(5);
   });
-  it('AR2605134 de otro cliente conserva la hoja web y usa el nuevo dibujo de enrollable', () => {
+  it('AR2605134 de otro cliente lleva la hoja web con el cajetín de la oficina y el nuevo dibujo de enrollable', () => {
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', puerta()), cabecera: { ...cabecera, cliente: 'OTRO CLIENTE' } });
-    expect(registrosDxf(dxf).some(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN WEB')).toBe(true);
+    expect(registrosDxf(dxf).some(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN TGM')).toBe(true);
     expect(registrosDxf(dxf).some(r => r.tipo === 'INSERT' && valor(r, 67) !== '1' && valor(r, 2) === 'FLECHA2')).toBe(true);
   });
   it('la presentación de toldos conserva su resultado byte por byte', () => {
@@ -162,6 +163,6 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('8526b3281469e689cb379271c33fe6edcb9c370b62543ba809bf5c898bdb27b6');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('c5392ed6fc061ba650b349d905f3838cd7e2dfa567d88870f6e4945348964379');
   });
 });
