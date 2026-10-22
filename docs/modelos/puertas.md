@@ -72,9 +72,10 @@ contorno y bordes del empate en DISCO1; cabecera, bajo y huecos de entradas en r
 ejes de tubo en ejes (color 23), borde de entrada suelta en borrar (40) y marcas en ROTULADOR,
 con FLECHA2. Cada ventana conserva el hueco en curv (3) y el cristal con sus solapes en
 corte (vent) (5), con polilíneas curvas. Refuerzos y velcros van en referencia-1 (11),
-con sus sombreados. Las alturas esquemáticas de refuerzos se anotan en Q-PU04; no crean piezas.
+con sus sombreados. Q-PU04 cerrada por Iván el 22/10/2026, por la noche: los refuerzos
+son solo dibujo; no cambian el corte ni crean piezas.
 Textos y llamadas se centran y alinean; los códigos bajan desde A1. Cantidad, REVÉS y OF
-comparten eje en el primer paño y los demás llevan solo su código. Se conservan las cotas
+comparten fila en columnas en el primer paño y los demás llevan su código. Se conservan las cotas
 de cada entrada; se quitan únicamente duplicados exactos de medida y referencias.
 En el tubo que sirve de empate no se superpone una raya ROTULADOR al borde DISCO1;
 se mantiene su flecha, como en las dos referencias manuales.

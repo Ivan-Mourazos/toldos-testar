@@ -2,7 +2,7 @@
 export type ModeloPuerta = 'PUERTAENR' | 'PUERTAPLE' | 'PUERTAUTO';
 export type Punto = [number, number];
 export type Segmento = [number, number, number, number];
-export interface Hueco { x: number; y: number; ancho: number; alto: number; radio: number }
+export interface Hueco { x: number; y: number; ancho: number; alto: number; radio: number; abierto?: 'izquierda' | 'derecha' }
 export interface Ventana extends Hueco { radioCristal: number }
 export interface Entrada { altura: number; diametro: 30 | 42; largo: number; alto: number; huecos: Hueco[] }
 export interface MedidasBolsillo { distancia:number; ancho:number; lado:'izquierdo'|'derecho'; altoSuperior:number|null }

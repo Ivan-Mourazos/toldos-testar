@@ -4,6 +4,10 @@ import { generarCortePuertas } from './corte.ts';
 import { dibujarAlzadoTaller } from './planoTaller.ts';
 import { base, pedidoDe } from './__fixtures__/ejemplos.ts';
 import { puertaPlanoReal } from './__fixtures__/planosReales.ts';
+import { anclarCotas } from './cotasPuertas.ts';
+import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
+import { escribirPlanoPuertas } from './plano.ts';
+import { numero, registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
 
 describe('Correcciones de taller del 22 de octubre por la noche', () => {
   it.each(['AR2605036', 'AR2604904'])('%s: entradas y sacos sin raya central de rotulador', id => {
@@ -65,5 +69,51 @@ describe('Correcciones de taller del 22 de octubre por la noche', () => {
     const textos = [p.of, 'A1', 'REVÉS'].map(v => l.textos.find(t => t.valor === v)!);
     expect(new Set(textos.map(t => t.y)).size).toBe(1);
     expect(new Set(textos.map(t => t.x)).size).toBe(3);
+  });
+
+  it.each(['AR2605036', 'AR2604904', 'AR2605065'])('%s: los mininúmeros conservan texto, tamaño y posición dentro de cada pieza en el alzado', id => {
+    const p = puertaPlanoReal(id), r = calcularPuerta(p);
+    const l = p.modelo === 'PUERTAENR' ? dibujarAlzadoEnrollable(p, 'C').lienzo : dibujarAlzadoTaller(p, 'C').lienzo;
+    for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
+      for (const m of pieza.unionesCorte ?? []) expect(l.textos.some(t => t.capa === 'ROTULADOR' && t.valor === `c${m.numero}`
+        && t.h === 1 && Math.abs(t.x - pieza.origenAlzado![0] - m.x) < .001
+        && Math.abs(t.y + p.alto - pieza.origenAlzado![1] - m.y) < .001 && t.giro === (m.giro ?? 0))).toBe(true);
+    }
+  });
+
+  it.each(['AR2605036', 'AR2604904', 'AR2604638'])('%s: los puntos medidos están sobre la geometría y conservan la medida', id => {
+    const p = puertaPlanoReal(id), l = dibujarAlzadoTaller(p, 'A').lienzo;
+    const segmentos = [...l.lineas.filter(v => v.capa !== 'texto').map(v => [v.x1, v.y1, v.x2, v.y2]),
+      ...l.polilineas.flatMap(p => p.puntos.slice(0, p.cerrada ? undefined : -1).flatMap((a, i) => p.curvas?.[i] ? [] : [[...a, ...p.puntos[(i + 1) % p.puntos.length]]]))];
+    const sobre = (x: number, y: number) => segmentos.some(([a, b, c, d]) => {
+      const dx = c - a, dy = d - b, largo = dx * dx + dy * dy;
+      const u = largo ? ((x - a) * dx + (y - b) * dy) / largo : 0;
+      return u >= -.00001 && u <= 1.00001 && Math.hypot(x - a - u * dx, y - b - u * dy) < .001;
+    });
+    const cotas = anclarCotas(l);
+    cotas.forEach((c, i) => {
+      expect(sobre(c.x1, c.y1), `inicio ${i}`).toBe(true);
+      expect(sobre(c.x2, c.y2), `fin ${i}`).toBe(true);
+      expect(c.valor).toBe(l.cotas[i].valor);
+      expect(c.d).toBe(l.cotas[i].d);
+    });
+  });
+
+  it('las líneas auxiliares DIMENSION llegan a sus puntos y no quedan de largo fijo junto a la cota', () => {
+    const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2604904', puertaPlanoReal('AR2604904')),
+      cabecera: { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' } });
+    const bloques = registrosDxf(dxf, 'BLOCKS');
+    const cotas = registrosDxf(dxf).filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 100 && numero(r, 13) < 109 && valor(r, 67) !== '1');
+    expect(cotas.length).toBeGreaterThan(0);
+    for (const c of cotas) {
+      const inicio = bloques.findIndex(b => b.tipo === 'BLOCK' && valor(b, 2) === valor(c, 2));
+      const fin = bloques.findIndex((b, i) => i > inicio && b.tipo === 'ENDBLK');
+      const lineas = bloques.slice(inicio, fin).filter(b => b.tipo === 'LINE');
+      for (const [sx, sy] of [[13, 23], [14, 24]]) {
+        const x = numero(c, sx), y = numero(c, sy), vertical = numero(c, 50) === 90;
+        if (Math.abs((vertical ? numero(c, 10) - x : numero(c, 20) - y)) < .000001) continue;
+        expect(lineas.some(l => Math.min(Math.hypot(numero(l, 10) - x, numero(l, 20) - y), Math.hypot(numero(l, 11) - x, numero(l, 21) - y)) <= .00501)).toBe(true);
+      }
+    }
   });
 });

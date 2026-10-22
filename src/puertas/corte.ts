@@ -8,7 +8,7 @@ const vacias = (): EntidadesPuertas => ({ lineas: [], textos: [], arcos: [], cir
 const mm = (x: number) => Math.round(x * 10000) / 1000;
 
 /** Une tramos colineales y elimina cortes sobre los orillos, como remolques/corte. */
-function fusionar(entidades: EntidadesPuertas, rollo: number) {
+export function fusionarCortesPuertas(entidades: EntidadesPuertas, rollo?: number) {
   const grupos = new Map<string, number[][]>();
   const resto: EntidadesPuertas['lineas'] = [];
   for (const l of entidades.lineas) {
@@ -18,7 +18,7 @@ function fusionar(entidades: EntidadesPuertas, rollo: number) {
     }
     if (Math.abs(l.x1 - l.x2) < 0.001 && Math.abs(l.y1 - l.y2) < 0.001) continue;
     const horizontal = Math.abs(l.y1 - l.y2) < 0.001;
-    if (horizontal && (Math.abs(l.y1) < 0.001 || Math.abs(l.y1 - rollo) < 0.001)) continue;
+    if (rollo !== undefined && horizontal && (Math.abs(l.y1) < 0.001 || Math.abs(l.y1 - rollo) < 0.001)) continue;
     if (!horizontal && Math.abs(l.x1 - l.x2) > 0.001) {
       resto.push(l);
       continue;
@@ -53,6 +53,8 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
   if (pieza.clase === 'entrada') {
     const n = /(\d+)\s*$/.exec(pieza.nombre)?.[1];
     if (n) return `ENTRADA ${n}`;
+    if (/delantera/i.test(pieza.nombre)) return 'ENTRADA DELANTERA';
+    if (/trasera/i.test(pieza.nombre)) return 'ENTRADA TRASERA';
     return 'ENTRADA';
   }
   if (pieza.clase === 'saco') return pieza.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : 'SACO';
@@ -66,6 +68,8 @@ function rotulosPieza(
   y: number,
   girada: boolean,
   codigoPano?: string,
+  columnas = false,
+  reves = false,
 ) {
   const wMm = girada ? mm(pieza.alto) : mm(pieza.ancho);
   const hMm = girada ? mm(pieza.ancho) : mm(pieza.alto);
@@ -78,6 +82,24 @@ function rotulosPieza(
   const of = (pieza.of.trim() || 'SIN OF').toUpperCase();
   const clase = pieza.clase === 'pano' ? etiquetaClasePieza(pieza, codigoPano)
     : `${codigoPano ?? ''} · ${etiquetaClasePieza(pieza)}`;
+  if (columnas && pieza.clase === 'pano') {
+    const valores = [of, clase, ...reves ? ['REVÉS'] : []];
+    const obstaculos = [...pieza.huecos.map(h => [h.y - 4, h.y + h.alto + 4]),
+      ...pieza.marcas.filter(m => m[1] === m[3] && Math.abs(m[2] - m[0]) > pieza.ancho / 2).map(m => [m[1] - 4, m[1] + 4])];
+    let huecos = [[4, pieza.alto - 4]];
+    for (const [a, b] of obstaculos) huecos = huecos.flatMap(([u, v]) => b <= u || a >= v ? [[u, v]]
+      : [[u, Math.min(v, a)], [Math.max(u, b), v]].filter(([c, d]) => d > c));
+    const libre = huecos.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0] ?? [4, pieza.alto - 4];
+    const central = pieza.marcas.some(m => m[0] === m[2] && Math.abs(m[0] - pieza.ancho / 2) < 2 && Math.abs(m[3] - m[1]) > pieza.alto / 2);
+    const inicio = central ? pieza.ancho / 2 + 10 : 10, fin = pieza.ancho - 10, w = (fin - inicio) / valores.length;
+    const h = Math.min(25, (libre[1] - libre[0]) * .65, ...valores.map(v => w * .82 / anchoArial(v, 1)));
+    valores.forEach((valor, i) => {
+      const a = inicio + w * (i + .5), b = (libre[0] + libre[1]) / 2;
+      entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - b : a), y: y + mm(girada ? a : b),
+        h: mm(h), valor, giro: girada ? 90 : 0, centrado: true });
+    });
+    return;
+  }
 
   const multiplicador = (pieza.multiplicador ?? 1) > 1 ? [`X${pieza.multiplicador}`] : [];
   // Sin REVÉS: va una vez al principio del material (Iván, 22/10/2026).
@@ -106,6 +128,8 @@ function dibujarPieza(
   y: number,
   girada: boolean,
   codigoPano?: string,
+  columnas = false,
+  reves = false,
 ) {
   const transformar = ([a, b]: Punto): Punto => (girada ? [x + mm(pieza.alto - b), y + mm(a)] : [x + mm(a), y + mm(b)]);
   const linea = (capa: string, a: Punto, b: Punto) => {
@@ -117,9 +141,8 @@ function dibujarPieza(
     const { x: a, y: b, ancho: w, alto: hg, radio: r } = h;
     const capa = hueco ? 'CUTTER' : 'DISCO1';
     // Las bocas laterales de E.T. quedan abiertas hacia el borde, igual que el bot a mano.
-    const entrada = pieza.clase === 'entrada' || pieza.clase === 'pano' && pieza.huecos.some(v => v === h && v.ancho === 5);
-    const izquierda = hueco && entrada && a <= 1.01;
-    const derecha = hueco && entrada && a + w >= pieza.ancho - 1.01;
+    const izquierda = hueco && h.abierto === 'izquierda';
+    const derecha = hueco && h.abierto === 'derecha';
     for (const [p0, p1] of [
       [[izquierda ? a : a + r, b], [derecha ? a + w : a + w - r, b]],
       ...derecha ? [] : [[[a + w, b + r], [a + w, b + hg - r]]],
@@ -164,7 +187,7 @@ function dibujarPieza(
       valor: `${letra}${u.numero}`, centrado: true, literal: true });
   }
   pieza.huecos.forEach(h => redondeado(h, true));
-  rotulosPieza(entidades, pieza, x, y, girada, codigoPano);
+  rotulosPieza(entidades, pieza, x, y, girada, codigoPano, columnas, reves);
 }
 
 type Columna = { ancho: number; alto: number; piezas: Array<{ pieza: PiezaPuerta; h: number; girada: boolean }> };
@@ -310,9 +333,10 @@ function colocar(
       }
       if (fila.length > 1) fila.forEach((o, i) => { o.x = s.x + i * ancho(s); o.junta = true; });
     }
+    const primerPano = sitios.find(s => s.t.pieza.clase === 'pano');
     for (const s of sitios) {
       colocadas.push({ pieza: s.t.pieza, x: s.x, y: s.y, girada: s.t.girada });
-      dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id));
+      dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id), !esEnrollable(s.t.pieza.id), s === primerPano);
     }
     // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
     // Las piezas juntadas cuentan con su columna entera: el sitio que dejan a la derecha no se da por libre.
@@ -329,11 +353,10 @@ function colocar(
     entidades.textos.push(
       { capa: 'texto', x: 0, y: rollo + 250, h: 95, valor: `${grupo[0].material} · ${titulo}` },
       // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
-      grupo.every(p => esEnrollable(p.id))
-        ? { capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' }
-        : { capa: 'texto', x: 80, y: Math.min(rollo * .35, 800), h: 80, valor: 'REVÉS', giro: 90 },
     );
-    fusionar(entidades, rollo);
+    if (grupo.every(p => esEnrollable(p.id))) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
+    else if (!primerPano) entidades.textos.push({ capa: 'texto', x: 80, y: Math.min(rollo * .35, 800), h: 80, valor: 'REVÉS', giro: 90 });
+    fusionarCortesPuertas(entidades, rollo);
     return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
   });
 }

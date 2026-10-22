@@ -3,6 +3,7 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco } from './saco.ts';
+import { anclarCotas } from './cotasPuertas.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
 
@@ -24,7 +25,7 @@ type Lienzo = LienzoEnrollable;
 const vacio = (): Lienzo => ({ lineas: [], polilineas: [], textos: [], cotas: [], inserciones: [], sombreados: [], arcos: [], circulos: [] });
 const linea = (l: Lienzo, capa: string, x1: number, y1: number, x2: number, y2: number) => l.lineas.push({ capa, x1, y1, x2, y2 });
 const texto = (l: Lienzo, valor: string, x: number, y: number, h: number, opciones: Partial<Texto> = {}) =>
-  l.textos.push({ capa: 'texto', valor: textoSeguro(valor), x, y, h, ...opciones });
+  l.textos.push({ capa: 'texto', valor: opciones.capa === 'ROTULADOR' ? valor : textoSeguro(valor), x, y, h, ...opciones });
 const rectangulo = (l: Lienzo, capa: string, x: number, y: number, w: number, h: number, color?: number) => {
   const puntos: Punto[] = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
   l.polilineas.push({ capa, puntos, cerrada: true, ...(color == null ? {} : { color }) });
@@ -100,7 +101,7 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
     linea(l, 'ROTULADOR', 0, yMarca, F, yMarca);
     flecha(l, F / 2, yMarca, superior ? 0 : 180, i === 1 ? -1 : 1);
     if (!ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + 3.75, F, -b + 3.75);
-    cota(l, -9.15 + i, -b - 3.75, -9.15 + i, -b + 3.75, -9.15 + i, 'XERAL 5');
+    cota(l, 0, -b - 3.75, 0, -b + 3.75, -9.15 + i, 'XERAL 5');
     texto(l, '3 CM (HUECOS)', F / 2 - (i === 0 ? 34.6534 : i === 1 ? 34.2446 : 33.6842), -b + (superior ? 14.7311 : i === 1 ? -7.59 : 14.187), 7, { ancla: 1 });
   });
   linea(l, 'ROTULADOR', 0, -H + 13, F, -H + 13);
@@ -116,7 +117,7 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   const hitos = [0, ...bandas, H];
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));
   cota(l, F, 0, F, -H, F + 37.91);
-  cota(l, F + 5, -H, F + 5, -H + 13, F + 9.79, 'XERAL 5');
+  cota(l, F, -H, F, -H + 13, F + 9.79, 'XERAL 5');
 
   // Saco desplegado, con escalón y los dos velcros en su capa original.
   const ys = -H - 47.6767;
@@ -164,6 +165,18 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   if (r.bolsillo) {
     const b = r.bolsillo;
     rectangulo(l, 'referencias', b.x, -H + b.y, b.ancho, b.alto);
+  }
+  for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
+    const [x, y] = pieza.origenAlzado!;
+    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, x + m.x, -H + y + m.y, 1,
+      { capa: 'ROTULADOR', centrado: true, giro: m.giro ?? 0 });
+  }
+  const sacos = r.piezas.filter(p => p.clase === 'saco');
+  let sx = -6.5;
+  for (const pieza of sacos) {
+    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, sx + m.x, ys - 26 + m.y, 1,
+      { capa: 'ROTULADOR', centrado: true, giro: m.giro ?? 0 });
+    sx += pieza.ancho - 2;
   }
   return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: ys - 86 - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
 }
@@ -252,7 +265,7 @@ export function lienzoAMetros(l: Lienzo, ox: number, oy: number) {
     lineas: l.lineas.map(a => ({ ...a, x1: ox + a.x1 / 100, x2: ox + a.x2 / 100, y1: oy + a.y1 / 100, y2: oy + a.y2 / 100 })),
     polilineas: l.polilineas.map(a => ({ ...a, puntos: a.puntos.map(m) })),
     textos: l.textos.map(a => ({ ...a, x: ox + a.x / 100, y: oy + a.y / 100, h: a.h / 100, ...(a.ancho == null ? {} : { ancho: a.ancho / 100 }) })),
-    cotas: l.cotas.map(a => ({ ...a, x1: ox + a.x1 / 100, x2: ox + a.x2 / 100, y1: oy + a.y1 / 100, y2: oy + a.y2 / 100, d: (a.giro ? ox : oy) + a.d / 100 })),
+    cotas: anclarCotas(l).map(a => ({ ...a, x1: ox + a.x1 / 100, x2: ox + a.x2 / 100, y1: oy + a.y1 / 100, y2: oy + a.y2 / 100, d: (a.giro ? ox : oy) + a.d / 100 })),
     inserciones: l.inserciones.map(a => ({ ...a, x: ox + a.x / 100, y: oy + a.y / 100 })),
     sombreados: l.sombreados.map(a => ({ ...a, puntos: a.puntos.map(m) })),
     arcos: l.arcos.map(a => ({ ...a, x: ox + a.x / 100, y: oy + a.y / 100, r: a.r / 100 })),

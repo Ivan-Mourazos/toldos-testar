@@ -24,14 +24,10 @@ Iván contestó el 22/10/2026 las siete dudas del estudio ([cortina-pvc-corte.md
 
 ## Puertas · contestadas el 22/10/2026
 
-Pendientes del contraste de planos del 22/10/2026:
-
-- **Q-PU04. Altos de los refuerzos esquemáticos de apilable.** El expediente confirma
-  las notas de 10/15 a 10 del borde, pero no sus longitudes. El plano conserva las
-  alturas del detalle de AR2605036/4906 redondeadas a 13,5 y 11,5, con anchuras 15/11/15
-  tal como están dibujadas; son símbolos de confección, nunca piezas ni cotas de corte.
-  El coordinador autorizó rectangularizar y registrar estas medidas; falta confirmar
-  si el taller quiere otro esquema. No se deduce de ellas una regla de despiece.
+**Q-PU04 contestada por Iván el 22/10/2026, por la noche:** «sí, los refuerzos son
+solo dibujo, no cambia el corte ni nada». Se conservan los símbolos de confección
+de AR2605036/4906 (alturas esquemáticas de 13,5 y 11,5), sin crear piezas, medidas
+de fabricación ni consumos a partir de ellos. Duda cerrada.
 
 | Código | Respuesta de Iván | Qué hace la web |
 | --- | --- | --- |

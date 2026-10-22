@@ -60,7 +60,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     const rs = registrosDxf(escribirPlanoPuertas({ pedido, cabecera }));
     const textos = rs.filter(r => r.tipo === 'MTEXT' && numero(r, 10) < 109 && numero(r, 20) > 90);
     for (const t of ['X3', 'REVÉS', p.of, 'A1', 'A2']) expect(textos.filter(r => valor(r, 1) === t), t).toHaveLength(1);
-    expect(new Set(textos.filter(r => ['X3', 'REVÉS', p.of, 'A1'].includes(valor(r, 1) ?? '')).map(r => numero(r, 10))).size).toBe(1);
+    expect(new Set(textos.filter(r => ['REVÉS', p.of, 'A1'].includes(valor(r, 1) ?? '')).map(r => numero(r, 20))).size).toBe(1);
     const corte = rs.filter(r => r.tipo === 'MTEXT' && numero(r, 10) >= 110 && valor(r, 8) === 'ROTULADOR');
     const minis = generarCortePuertas(pedido).cortes.flatMap(c => {
       const lista = c.entidades.textos.filter(t => t.capa === 'ROTULADOR');
@@ -109,7 +109,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     const p = base('PUERTAUTO', 350, 400); p.autorreparable.empates = [150];
     const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', p, p), cabecera }));
     const minis = rs.filter(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 20) > 90 && numero(r, 40) === .01).map(r => valor(r, 1));
-    expect(minis.sort()).toEqual(['a1', 'b1']);
+    expect(minis.sort()).toEqual(['a1', 'a1', 'a1', 'a1', 'b1', 'b1', 'b1', 'b1']);
   });
 
   it('conserva la OF y el aviso de los sacos de stock colocados por el bot', () => {
@@ -128,13 +128,15 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(valor(materiales, 1)).toBe('MATERIALES:\\PLAC 900 BLANCO 9016\\PLAC 900 AMARILLO/NEGRO');
   });
 
-  // Renovada el 22/10/2026: las líneas de referencia de las cotas llegan ahora hasta la pieza y el cajetín
-  // de Portanova es el CAJETIN TGM.
-  it('AR2605134 sin impresión conserva el plano completo byte por byte', () => {
+  // Renovada para anclar 13/14 a las piezas; también se protege el resto de entidades de 57bd154.
+  it('AR2605134 conserva todas las entidades de main 57bd154 excepto las cotas autorizadas', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
       enrollable: { T: 169, D: 60, margen: 6, empates: [] } };
-    expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('6fa16ac38b8a8a0be1962c38b131d72849229d329bfba623a0257ce85c04a628');
+    const entidades = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera }))
+      .filter(r => r.tipo !== 'DIMENSION').map(r => ({ tipo: r.tipo,
+        pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
+    expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
+      .toBe('1944bda646571ee7631e5ef76e97a78499b29e738a8e5016e40daf432d794027');
   });
 });

@@ -52,6 +52,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       of: p.of.trim() || 'SIN OF', radio: 0, contorno: [[0,0],[n(w),0],[n(w),n(h)],[0,n(h)]], marcas: [], textos: [], huecos: [] };
   }
   const agregar = (x: PiezaPuerta) => { piezas.push(x); return x; };
+  const huecosET = (e: Entrada): Hueco[] => e.huecos.map(h => ({ ...h,
+    ...(h.x <= 1.01 ? { abierto: 'izquierda' as const }
+      : h.x + h.ancho >= e.largo - 1.01 ? { abierto: 'derecha' as const } : {}) }));
   function marca(x:PiezaPuerta,y:number,direccion?:1|-1) {
     y=n(y); const m=p.margenMarcas;
     if(y<0||y>x.alto) return;
@@ -85,14 +88,14 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         const u=plan.uniones[t.unionSuperior];
         if(!u.tubo) marca(x,x.alto-u.solape);
         numerarBorde(x,numeros[t.unionSuperior],'arriba');
-        if(u.tubo) x.huecos.push(...(p.entradas[u.tubo-1]?.huecos??[]).map(h=>({...h,y:n(x.alto-u.solape+h.y)})));
+        if(u.tubo && p.entradas[u.tubo-1]) x.huecos.push(...huecosET(p.entradas[u.tubo-1]).map(h=>({...h,y:n(x.alto-u.solape+h.y)})));
       }
     }
   }
   function entrada(e: Entrada, i: number) {
     const alto=p.modelo==='PUERTAENR'?REGLAS_ENROLLABLE.corteEntrada:e.alto;
     const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo, alto));
-    x.huecos = e.huecos.map(h => ({ ...h }));
+    x.huecos = huecosET(e);
     x.origenAlzado = [0, e.altura - alto / 2];
   }
   function sacoConPestana(w: number, h: number, pestana: number, altoPestana: number, desde: number, nombre = 'Saco') {

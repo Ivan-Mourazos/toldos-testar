@@ -1,6 +1,7 @@
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta } from './calcular.ts';
+import { fusionarCortesPuertas } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco } from './saco.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
@@ -192,7 +193,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     cota(l, F, -30, F, -H, F + 40);
     obstaculos.push([-30, 0]);
   }
-  for (const [i, u] of r.uniones.entries()) {
+  for (const u of r.uniones) {
     for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0, -H + u.altura + signo * u.solape / 2, F, -H + u.altura + signo * u.solape / 2);
     if (!u.tubo) {
       const anchoLibre = !ple && p.autorreparable.espaciadorCentral ? F / 2 - 40 : F - 40;
@@ -237,6 +238,13 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     const [x, y] = pieza.origenAlzado!;
     for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, x + m.x, -H + y + m.y, 1, m.giro ?? 0, 'ROTULADOR');
   }
+  let sx = ple ? -(p.apilable.doble ? 12 : 10) : 0;
+  const sacos = r.alternativasSaco?.partido ?? r.piezas.filter(p => p.clase === 'saco');
+  const ys = -H - (ple ? 49.0879644349 : 40);
+  for (const pieza of sacos) {
+    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, sx + m.x, ys - m.y, 1, m.giro ?? 0, 'ROTULADOR');
+    sx += pieza.ancho - 2;
+  }
   return { lienzo: l, zona: { x0: -65, x1: F + 120, y0: abajo, y1: arriba + 50 } };
 }
 
@@ -248,7 +256,8 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
     const muestra = c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
     if (muestra) {
       const unicas = new Map(c.colocadas.map(t => [t.pieza.id, t.pieza]));
-      for (const p of unicas.values()) {
+      const lista = [...unicas.values()];
+      for (const [i, p] of lista.entries()) {
         const y = techo - p.alto;
         if (p.radio) redondeado(l, 'DISCO1', 0, y, p.ancho, p.alto, p.radio);
         else contorno(l, 'DISCO1', p.contorno.map(([x, v]): Punto => [x, y + v]));
@@ -262,10 +271,15 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
           if (xLocal >= 0 && xLocal <= p.ancho && yLocal >= 0 && yLocal <= p.alto)
             texto(l, m.valor, xLocal, y + yLocal, m.h / 10, (m.giro ?? 0) - (t.girada ? 90 : 0), 'ROTULADOR');
         }
-        texto(l, (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`), p.ancho / 2, techo + 15, 10);
+        const anterior = lista[i - 1], siguiente = lista[i + 1];
+        const mismaPuerta = (otra: typeof p | undefined) => otra?.id.split(':')[0] === p.id.split(':')[0];
+        if (c.opcion !== 'saco-partido' || !mismaPuerta(anterior)) texto(l,
+          (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
+          0, techo + 15, Math.min(10, p.ancho / 40));
         cota(l, 0, y, p.ancho, y, y - 30, 'XERA 20'); cota(l, 0, y, 0, techo, -35, 'XERA 20');
-        anchoMax = Math.max(anchoMax, p.ancho); techo = y - 95;
+        anchoMax = Math.max(anchoMax, p.ancho); techo = y - (c.opcion === 'saco-partido' && mismaPuerta(siguiente) ? 0 : 95);
       }
+      if (c.opcion === 'saco-partido') fusionarCortesPuertas(l);
       continue;
     }
     const yc = techo - c.anchoRollo / 10;
@@ -305,7 +319,10 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         primeros.add(e.id);
       } else texto(l, p.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);
     }
-    texto(l, c.material, c.largo / 20, techo + 15, 10);
+    texto(l, c.material, 0, techo + 15, 10);
+    // El ancho acotado es el del rollo: los orillos se representan como referencia, nunca como corte.
+    linea(l, 'referencias', 0, yc, c.largo / 10, yc);
+    linea(l, 'referencias', 0, techo, c.largo / 10, techo);
     cota(l, 0, yc, c.largo / 10, yc, yc - 30, 'XERA 20'); cota(l, 0, yc, 0, techo, -35, 'XERA 20');
     anchoMax = Math.max(anchoMax, c.largo / 10); techo = yc - 100;
   }
