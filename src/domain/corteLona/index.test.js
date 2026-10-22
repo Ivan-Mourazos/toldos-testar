@@ -134,6 +134,31 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(salida.cortes.conSacos[0].piezas).toHaveLength(1);
     expect(salida.avisos).toEqual([expect.stringContaining('ventana')]);
   });
+  it('el plano agarra las cotas a las piezas y lleva los mininúmeros de los empates (Iván, 22/10/2026)', () => {
+    const order = structuredClone(revision.order);
+    order.awnings[0].projection = 250;
+    const salida = generar(order);
+    expect(salida.cortes.conSacos[0].piezas[0].piezas.map((p) => p.nombre)).toEqual(['A1', 'A2', 'A BAMBA']);
+    const modelo = registrosDxf(salida.plano[0].dxf).filter((r) => valor(r, 67) !== '1');
+    const segmentos = modelo.flatMap((r) => {
+      if (r.tipo === 'LINE') return [[[numero(r, 10), numero(r, 20)], [numero(r, 11), numero(r, 21)]]];
+      if (r.tipo !== 'LWPOLYLINE') return [];
+      const xs = r.pares.filter(([k]) => k === 10).map(([, v]) => Number(v)), ys = r.pares.filter(([k]) => k === 20).map(([, v]) => Number(v));
+      return xs.map((x, i) => [[x, ys[i]], [xs[(i + 1) % xs.length], ys[(i + 1) % ys.length]]]);
+    });
+    const sobre = ([x, y]) => segmentos.some(([[x1, y1], [x2, y2]]) => Math.abs((x2 - x1) * (y - y1) - (y2 - y1) * (x - x1)) < 1e-6
+      && x >= Math.min(x1, x2) - 1e-6 && x <= Math.max(x1, x2) + 1e-6 && y >= Math.min(y1, y2) - 1e-6 && y <= Math.max(y1, y2) + 1e-6);
+    const cotas = modelo.filter((r) => r.tipo === 'DIMENSION');
+    expect(cotas.length).toBeGreaterThan(4);
+    for (const c of cotas) {
+      expect(sobre([numero(c, 13), numero(c, 23)]), `cota ${numero(c, 42)}`).toBe(true);
+      expect(sobre([numero(c, 14), numero(c, 24)]), `cota ${numero(c, 42)}`).toBe(true);
+    }
+    // En el dibujo, a1 en cada punta del empate; los dos paños lo llevan en el mismo sitio, así que va una vez.
+    const minis = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && valor(r, 1) === 'a1');
+    expect(minis.filter((r) => numero(r, 20) > 100)).toHaveLength(2);
+    expect(minis.filter((r) => numero(r, 20) < 100).length).toBeGreaterThanOrEqual(4);
+  });
   it('corta el cuerpo cuando la bamba es de otra tela y deja aviso', () => {
     const order = structuredClone(revision.order);
     order.awnings[0].valanceFabric = 'OTRATELA|||120|||TELA ACRILICA|||ACRILICA';

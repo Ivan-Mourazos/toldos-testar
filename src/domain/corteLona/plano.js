@@ -43,6 +43,16 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     Q.push({ capa, estilo: estiloCota, x1, y1, x2, y2, giro: vertical ? 90 : 0, d: (vertical ? x1 : y1) + lado, valor });
   };
 
+  // Los mininúmeros del corte, del mismo tamaño y en el mismo sitio de cada pieza en el dibujo (Iván, 22/10/2026).
+  // Los dos paños de una unión llevan el mismo número; en el dibujo, solapados, caen en el mismo sitio: va una vez.
+  const puestos = new Set();
+  const mini = (valor, xm, ym, giro = 0) => {
+    const clave = `${valor}|${xm.toFixed(3)}|${ym.toFixed(3)}`;
+    if (puestos.has(clave)) return;
+    puestos.add(clave);
+    T.push({ capa: 'ROTULADOR', x: xm, y: ym, h: 1, valor, giro, centrado: true, literal: true });
+  };
+
   let x = 0;
 
   for (const [i, t] of datos.toldos.entries()) {
@@ -90,14 +100,14 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
       texto('B.N(2)', cx, -12, 10, 0, 'texto', F * 0.9);
       texto('B.N(2)', tx0 - 10, tc, 10, 90);
       texto('B.N(2)', tx1 + 10, tc, 10, 90);
-      cota('cotas', xDer - 15, tc - t.bamba / 2, xDer - 15, tc + t.bamba / 2, t.bamba, 15);
-      cota('vent-pre-noimpr', xIzq + 15, 0, xIzq + 15, tiraCm, tiraCm, -15);
+      cota('cotas', fx1, tc - t.bamba / 2, fx1, tc + t.bamba / 2, t.bamba, xDer - fx1);
+      cota('vent-pre-noimpr', tx0, 0, tx0, tiraCm, tiraCm, xIzq - tx0);
     }
 
     if (t.soloBamba) {
       texto(t.of, cx, tiraCm + 35, 20, 0, 'texto', F * 0.8);
       if (t.unidades > 1) texto(`${t.unidades} UDS`, cx, tiraCm + 65, 15);
-      cota('cotas', tx0, tiraCm + 90, tx1, tiraCm + 90, tiraLargo, 0);
+      cota('cotas', tx0, tiraCm, tx1, tiraCm, tiraLargo, 90);
       x += ancho + ENTRE_TOLDOS;
       continue;
     }
@@ -135,6 +145,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
         else texto(p.nombre, cx, centro, 15);
         if (k < cuerpos.length - 1) {
           const yu = y + alto;
+          for (const xm of [cx0 + 1, cx1 - 1]) { mini(`${t.letra.toLowerCase()}${k + 1}`, xm, yu - 1, 0); mini(`${t.letra.toLowerCase()}${k + 1}`, xm, yu - A.empateCm + 1, 0); }
           linea('ejes', fx0, yu - A.empateCm, fx1, yu - A.empateCm);
           linea('ejes', fx0, yu, fx1, yu);
           // Debajo de la unión, en el paño de ancho de rollo: el de arriba puede ser una tira estrecha
@@ -151,6 +162,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
         else texto(p.nombre, xp + anchoP / 2, cy, 15);
         if (k < cuerpos.length - 1) {
           const xu = xp + anchoP;
+          for (const ym of [yc0 + 1, yc1 - 1]) { mini(`${t.letra.toLowerCase()}${k + 1}`, xu - 1, ym, 90); mini(`${t.letra.toLowerCase()}${k + 1}`, xu - A.empateCm + 1, ym, 90); }
           linea('ejes', xu - A.empateCm, yc0, xu - A.empateCm, yc1);
           linea('ejes', xu, yc0, xu, yc1);
           texto('EMPATE VERTICAL', xu + 8, cy, 10, 90, 'texto', (yc1 - yc0) * 0.8);
@@ -162,10 +174,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
     }
     // Cotas: impresas las de la pieza terminada; las de corte en la capa que no se imprime, solo si
     // cambian (Iván: medidas reales, sin repetir).
-    cota('cotas', fx0, yc1 + 30, fx1, yc1 + 30, F, 0);
-    if (anchoCorte !== F) cota('vent-pre-noimpr', cx0, yc1 + 50, cx1, yc1 + 50, anchoCorte, 0);
-    cota('cotas', xDer - 15, yc0 + 3.5, xDer - 15, yc1 - 3.5, yc1 - yc0 - 7, 15);
-    cota('vent-pre-noimpr', xIzq + 15, yc0, xIzq + 15, yc1, yc1 - yc0, -15);
+    cota('cotas', fx0, yc1 - 3.5, fx1, yc1 - 3.5, F, 33.5);
+    if (anchoCorte !== F) cota('vent-pre-noimpr', cx0, yc1, cx1, yc1, anchoCorte, 50);
+    cota('cotas', fx1, yc0 + 3.5, fx1, yc1 - 3.5, yc1 - yc0 - 7, xDer - fx1);
+    cota('vent-pre-noimpr', cx0, yc0, cx0, yc1, yc1 - yc0, xIzq - cx0);
     x += ancho + ENTRE_TOLDOS;
   }
   const toldos = { x0: -60, y0: -30, x1: x - ENTRE_TOLDOS + 60, y1: Math.max(...T.map((t) => t.y), ...Q.filter((q) => !q.giro).map((q) => q.d + 9)) + 20 };
@@ -197,8 +209,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null) {
         : `OPCIÓN 2 · TROZO SEPARADO · ${metros(opcion.largo)} M + RESTOS ${metros(opcion.largoRestos)} M`;
     texto(titulo, largoTotal / 2, yRollo + anchoRollo + 85, 14, 0, 'texto', largoTotal * 0.98);
     const usadoOpcion = Math.max(...opcion.colocadas.map(p => p.y + p.hueco)) / 10;
-    cota('cotas', -20, yRollo, -20, yRollo + usadoOpcion, usadoOpcion, -10);
-    cota('cotas', 0, yRollo - 20, opcion.largo / 10, yRollo - 20, opcion.largo / 10, 0);
+    // Agarrada a la columna de la pieza que llega más arriba, para medir bordes de verdad.
+    const alta = opcion.colocadas.reduce((p, q) => (q.y + q.hueco > p.y + p.hueco ? q : p)).x / 10;
+    cota('cotas', alta, yRollo, alta, yRollo + usadoOpcion, usadoOpcion, -30 - alta);
+    cota('cotas', 0, yRollo, opcion.largo / 10, yRollo, opcion.largo / 10, -20);
     yRollo -= anchoRollo + 260;
   }
   const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;

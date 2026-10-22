@@ -133,11 +133,12 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
 });
 
 describe('Regresión: planos de oficina y presentación compartida', () => {
-  // Huellas del nuevo plano CAD (renovadas el 22/10/2026 por el cajetín de la oficina, CAJETIN TGM); la de
+  // Huellas del nuevo plano CAD (renovadas el 22/10/2026 por el cajetín de la oficina, CAJETIN TGM, y las líneas
+  // de referencia de las cotas hasta la pieza); la de
   // enrollable de main se comprueba en planoTaller.test.ts.
   it.each([
-    ['apilable', apilable, 'd40457cbf5329d2190e8fa398d5b8c612106d485da1b1f3b62c1e838214385ab'],
-    ['autorreparable', autorreparable, '3942b9e49c48d921cf5123365c1fc50b489901591f72d6c876c01929629380bb'],
+    ['apilable', apilable, '2081d368447d0dca890f9e488a59ce8d847226abc3b2f523acf5e13f3f2c3069'],
+    ['autorreparable', autorreparable, 'a161caa45a94a3748cf9eb57482e8bb380bf771430715f244d6e59d3cafa087c'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -163,6 +164,6 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('c5392ed6fc061ba650b349d905f3838cd7e2dfa567d88870f6e4945348964379');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('c92ae9dbd86213c7fd769c2461bf13b10fbed39febc8e0a22b45aae25b93d012');
   });
 });

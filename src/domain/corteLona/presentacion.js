@@ -244,13 +244,14 @@ export function escribirDxfPlano(plano, cabecera) {
 
 // Estilos de cota de la plantilla (los de los DWG de la oficina): dibujo en metros y cota en cm (DIMLFAC
 // 100), con coma. Aquí solo lo que hace falta para dibujar su bloque: texto, flecha, prolongación de la
-// línea de referencia, su largo fijo y el hueco del texto.
+// línea de referencia y el hueco del texto. Las líneas de referencia arrancan a DIMEXO de lo acotado.
+const SEPARA_COTA = 0.05;
 const ESTILOS_COTA = {
-  XERAL: { texto: 0.1, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
-  'XERAL 5': { texto: 0.05, flecha: 0.015, prolonga: 0.0175, largo: 0.06, hueco: 0.003 },
-  'XERAL 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
-  'XERA 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, largo: 0.1, hueco: 0.003 },
-  'XERA 20': { texto: 0.2, flecha: 0.04, prolonga: 0.0175, largo: 0.1, hueco: 0.005, copiaDe: 'XERA 15' },
+  XERAL: { texto: 0.1, flecha: 0.025, prolonga: 0.0175, hueco: 0.003 },
+  'XERAL 5': { texto: 0.05, flecha: 0.015, prolonga: 0.0175, hueco: 0.003 },
+  'XERAL 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, hueco: 0.003 },
+  'XERA 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, hueco: 0.003 },
+  'XERA 20': { texto: 0.2, flecha: 0.04, prolonga: 0.0175, hueco: 0.005, copiaDe: 'XERA 15' },
 };
 const comaCota = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
 
@@ -272,12 +273,13 @@ function cotaDxf(c, numero, nuevo, ent) {
   const dentro = (tipo, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n 62\n     0\n100\n${sub}\n${cuerpo}`;
   const linea = (a, b) => dentro('LINE', 'AcDbLine', ` 10\n${n(a[0])}\n 20\n${n(a[1])}\n 30\n0.0\n 11\n${n(b[0])}\n 21\n${n(b[1])}\n 31\n0.0\n`);
   let cuerpo = '';
-  // Líneas de referencia: de largo fijo desde la línea de cota hacia lo acotado, y un poco más allá.
+  // Líneas de referencia desde lo acotado (con el hueco DIMEXO del estilo) hasta pasar un poco la línea de cota.
+  // Antes eran de largo fijo y, con la línea de cota lejos, quedaban en el aire (Iván, 22/10/2026).
   for (const [s, t] of [[s1, t1], [s2, t2]]) {
     const hasta = Math.abs(c.d - t);
-    if (hasta < 1e-6) continue;
+    if (hasta <= SEPARA_COTA) continue;
     const signo = Math.sign(c.d - t);
-    cuerpo += linea(xy(s, c.d + signo * e.prolonga), xy(s, c.d - signo * Math.min(e.largo, hasta)));
+    cuerpo += linea(xy(s, c.d + signo * e.prolonga), xy(s, t + signo * SEPARA_COTA));
   }
   const [a, b] = [Math.min(s1, s2), Math.max(s1, s2)];
   for (const [punta, sentido] of [[a, 1], [b, -1]]) {

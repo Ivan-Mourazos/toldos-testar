@@ -128,11 +128,12 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(valor(materiales, 1)).toBe('MATERIALES:\\PLAC 900 BLANCO 9016\\PLAC 900 AMARILLO/NEGRO');
   });
 
-  it('AR2605134 sin impresión conserva el plano completo de main 7ebe632 byte por byte', () => {
+  // Renovada el 22/10/2026: las líneas de referencia de las cotas llegan ahora hasta la pieza.
+  it('AR2605134 sin impresión conserva el plano completo byte por byte', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
       enrollable: { T: 169, D: 60, margen: 6, empates: [] } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('22ce91188ac338b16d93ddb43604143ff2b2e5c543159c315d0e75b23efa4648');
+      .toBe('17c41fc49f051667fc8bfd780d4dbfba8b68501cef3906c879a73d20f906fd43');
   });
 });
