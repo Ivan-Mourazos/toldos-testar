@@ -73,6 +73,8 @@ export default function App() {
   // Las fichas de cliente se guardan cada una con su botón: la barra común es solo de los parámetros.
   const enFichasClientes = remolquesVista === 'clientes';
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  // Puertas en pausa en el servidor (ENABLE_PUERTAS, 22/10/2026): sin pestaña, sin buscarlas en RPS ni en Pedidos.
+  const puertasActivas = catalog?.features.puertasEnabled === true;
   // Con `?revisar=` (CoordinaOT, pedido ya mandado a revisión) se entra directamente en Pedidos,
   // y la bandeja abre ese pedido en cuanto lo tiene (ver `abrirAlCargar` en ReviewsView).
   const [revisarAlCargar, setRevisarAlCargar] = useState<string | null>(() => revisionDeEnlace(window.location.search));
@@ -177,7 +179,14 @@ export default function App() {
   useEffect(() => {
     fetch('/api/catalog')
       .then((response) => response.json())
-      .then(setCatalog)
+      .then((datos: Catalog) => {
+        setCatalog(datos);
+        // Si este navegador se quedó en Puertas y están en pausa, vuelve a Toldos.
+        if (!datos.features?.puertasEnabled && leerProducto() === 'puertas') {
+          setProducto('toldos');
+          guardarProducto('toldos');
+        }
+      })
       .catch(() => notify('No se pudo cargar el catálogo.', { tone: 'error' }));
   }, [notify]);
 
@@ -338,7 +347,7 @@ export default function App() {
           return;
         }
         // Ni toldos ni remolques: puede ser de puertas (artículos PUERTAENR, PUERTAPLE, PUERTAUTO).
-        const puertas = await puertasPedidoOf(orderCode);
+        const puertas = puertasActivas ? await puertasPedidoOf(orderCode) : null;
         if (seq !== autofillSeq.current) return;
         if (puertas && (puertas.puertas.length || puertas.avisos.length)) {
           chooseProducto('puertas');
@@ -735,7 +744,7 @@ export default function App() {
           <div className="workspace-heading">
             {activeTab !== 'order' && <h2>{viewTitle}</h2>}
             {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
-            {activeTab === 'order' && <SelectorProducto producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />}
+            {activeTab === 'order' && <SelectorProducto puertas={puertasActivas} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes
               ? null
@@ -771,7 +780,7 @@ export default function App() {
           {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
             <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
             <span className="order-entry-or">o</span>
-            <SelectorProducto inicio disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />
+            <SelectorProducto inicio puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />
           </section>}
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && formularioAntiguo && draft.orderCode === formularioAntiguo.orderCode && !corrigiendo && (
             <div className="review-state-note order-return-note formulario-antiguo" role="status">
@@ -842,7 +851,7 @@ export default function App() {
             </fieldset>
           )}
 
-          {puertasMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'puertas'}>
+          {puertasActivas && puertasMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'puertas'}>
             <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas}
               usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
               accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'}
@@ -926,6 +935,7 @@ export default function App() {
 
           {activeTab === 'reviews' && (
             <ReviewsView
+              puertas={puertasActivas}
               refreshKey={reviewRefresh}
               parameters={ruleSettings.parameters}
               currentUser={currentUser}

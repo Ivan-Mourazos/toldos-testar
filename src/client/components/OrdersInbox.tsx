@@ -16,7 +16,7 @@ type AwningItem = NonNullable<PedidoBandeja['summary']['awningList']>[number];
 // (punto de color, nombre y cuántos), columnas juntas y filas densas; toda la fila se
 // pulsa y se despliega dentro, con cada toldo y lo que le pasa. Los toldos se ven ya en la
 // fila (A ✓, D aviso) para saber qué hay que revisar sin abrir nada.
-export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus, borradores = [], onSeguirBorrador = () => undefined, onDescartarBorrador = () => undefined, onBuscarRemolques }: {
+export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus, borradores = [], onSeguirBorrador = () => undefined, onDescartarBorrador = () => undefined, onBuscarRemolques, puertas = true }: {
   pending: PedidoBandeja[];
   history: PedidoBandeja[];
   currentUser: string;
@@ -32,6 +32,8 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   onDescartarBorrador?: (borrador: ResumenBorrador) => void;
   /** Abre el buscador de remolques (diseño 02/10/2026); sin él no sale el botón. */
   onBuscarRemolques?: () => void;
+  /** false: puertas en pausa en el servidor, sin filtro de puertas. */
+  puertas?: boolean;
 }) {
   // Iván, 28/09/2026: al entrar se ve todo, porque lo que toca revisar es de otros.
   const [scope, setScope] = useState<'mine' | 'all'>('all');
@@ -82,7 +84,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
         </div>
         <span className="orders-filter-label">Pedidos de</span>
         <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué tipo de pedidos">
-          {filtrosProducto.map((filtro) => (
+          {filtrosProducto.filter((filtro) => puertas || filtro.key !== 'puertas').map((filtro) => (
             <button key={filtro.key} type="button" className={producto === filtro.key ? 'pestana-activa' : undefined} aria-pressed={producto === filtro.key} onClick={() => setProducto(filtro.key)}>{filtro.label}</button>
           ))}
         </div>

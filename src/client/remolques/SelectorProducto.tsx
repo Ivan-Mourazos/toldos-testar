@@ -18,7 +18,8 @@ export function guardarProducto(producto: Producto, storage: Storage | null = wi
 // «en pruebas» el 02/10/2026 (Iván): hace todo lo que hacía la web vieja.
 export type ResumenPedido = { numero: string; elementos: number };
 
-export function SelectorProducto({ producto, onChange, pedidos, inicio = false, disabled = false }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean }) {
+// `puertas` false: puertas en pausa en el servidor (ENABLE_PUERTAS), sin pestaña.
+export function SelectorProducto({ producto, onChange, pedidos, inicio = false, disabled = false, puertas = true }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean; puertas?: boolean }) {
   const detalle = (tipo: Producto) => {
     const pedido = pedidos?.[tipo];
     return pedido?.numero.trim() || pedido?.elementos
@@ -35,9 +36,9 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
       <button type="button" disabled={disabled} aria-label="Remolques" title={detalle('remolques')} className={!inicio && producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'remolques'} onClick={() => onChange('remolques')}>
         Remolques
       </button>
-      <button type="button" disabled={disabled} aria-label="Puertas" title={detalle('puertas')} className={!inicio && producto === 'puertas' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'puertas'} onClick={() => onChange('puertas')}>
+      {puertas && <button type="button" disabled={disabled} aria-label="Puertas" title={detalle('puertas')} className={!inicio && producto === 'puertas' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'puertas'} onClick={() => onChange('puertas')}>
         Puertas
-      </button>
+      </button>}
     </div>
     </div>
   );

@@ -28,6 +28,16 @@ describe('Pedidos con toldos y remolques', () => {
     expect(html).toContain('<span class="is-end">Elementos</span>');
   });
 
+  it('con las puertas en pausa no sale el filtro de puertas', () => {
+    const pintar = (puertas?: boolean) => renderToStaticMarkup(
+      <OrdersInbox pending={[fila('AR2601')]} history={[]} currentUser="IVÁN" pendingLoading={false} historyLoading={false} year={2026}
+        onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null} puertas={puertas} />,
+    );
+    expect(pintar()).toContain('>Puertas</button>');
+    expect(pintar(false)).not.toContain('>Puertas</button>');
+    expect(pintar(false)).toMatch(/>Todos<\/button>.*>Toldos<\/button>.*>Remolques<\/button>/);
+  });
+
   it('los modelos van en una línea: el primero y «+N» con todos en el título', () => {
     const html = renderToStaticMarkup(
       <OrdersInbox

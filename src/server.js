@@ -54,7 +54,8 @@ import { crearServicioBorradores } from './borradores/servicio.ts';
 import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
-  assertLegacyExportsEnabled
+  assertLegacyExportsEnabled,
+  respuestaPuertasEnPausa
 } from './deploymentFeatures.js';
 import {
   closeRpsCatalog,
@@ -132,6 +133,7 @@ async function parametrosRemolques() {
 }
 const deploymentFeatures = {
   heraEnabled: config.heraEnabled,
+  puertasEnabled: config.puertasEnabled,
   legacyExportsEnabled: config.legacyExportsEnabled
 };
 
@@ -231,6 +233,13 @@ app.use('/api', (req, _res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+// Puertas en pausa (ENABLE_PUERTAS): se cierran todas sus rutas antes de registrarlas.
+app.use('/api/puertas', (req, res, next) => {
+  const pausa = respuestaPuertasEnPausa(deploymentFeatures, req);
+  if (!pausa) return next();
+  res.status(pausa.status).json(pausa.body);
 });
 
 app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));

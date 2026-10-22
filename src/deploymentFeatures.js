@@ -2,14 +2,26 @@ import { normalizeModelName } from './domain/modelNames.js';
 
 const TEMPORARILY_DISABLED_MODEL = 'HERA';
 
-export function applyDeploymentFeaturesToCatalog(catalog, { heraEnabled }) {
+export function applyDeploymentFeaturesToCatalog(catalog, { heraEnabled, puertasEnabled = false }) {
   return {
     ...catalog,
     models: heraEnabled
       ? catalog.models
       : catalog.models.filter((model) => normalizeModelName(model.code) !== TEMPORARILY_DISABLED_MODEL),
-    features: { heraEnabled }
+    features: { heraEnabled, puertasEnabled }
   };
+}
+
+export const PUERTAS_EN_PAUSA = 'Las puertas están en pausa: todavía se están preparando.';
+
+/**
+ * Con las puertas en pausa no se atiende ninguna ruta de puertas. La lista de pedidos responde vacía
+ * para que Pedidos no enseñe un aviso de error; lo demás, 404 con el motivo.
+ */
+export function respuestaPuertasEnPausa({ puertasEnabled }, { method, path }) {
+  if (puertasEnabled) return null;
+  if (method === 'GET' && path.replace(/\/+$/, '') === '/pedidos') return { status: 200, body: { reviews: [] } };
+  return { status: 404, body: { error: PUERTAS_EN_PAUSA } };
 }
 
 export function findDisabledModel(payload, { heraEnabled }) {

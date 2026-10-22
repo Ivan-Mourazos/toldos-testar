@@ -22,8 +22,10 @@ import { controlLabel } from '../components/controlLabels';
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
 // anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
 // elegido, que no filtra los pendientes.
-export function ReviewsView({ refreshKey, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onEditPuertas, onReusePuertas, onSeguirBorrador, onToast, onConfirm, abrirAlCargar = null, onAbiertoAlCargar }: {
+export function ReviewsView({ refreshKey, puertas = true, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onEditPuertas, onReusePuertas, onSeguirBorrador, onToast, onConfirm, abrirAlCargar = null, onAbiertoAlCargar }: {
   refreshKey: number;
+  /** false: puertas en pausa en el servidor, sin filtro de puertas. */
+  puertas?: boolean;
   parameters: RuleParameters;
   currentUser: string;
   pending: PedidoBandeja[];
@@ -345,6 +347,7 @@ export function ReviewsView({ refreshKey, parameters, currentUser, pending, pend
         )
         : selectedCode === ''
         ? <OrdersInbox
+            puertas={puertas}
             pending={pending}
             history={history}
             currentUser={currentUser}

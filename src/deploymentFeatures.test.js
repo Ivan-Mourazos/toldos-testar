@@ -3,7 +3,9 @@ import {
   applyDeploymentFeaturesToCatalog,
   assertDeploymentModelsEnabled,
   assertLegacyExportsEnabled,
-  findDisabledModel
+  findDisabledModel,
+  PUERTAS_EN_PAUSA,
+  respuestaPuertasEnPausa
 } from './deploymentFeatures.js';
 
 describe('funciones habilitadas por entorno', () => {
@@ -12,19 +14,28 @@ describe('funciones habilitadas por entorno', () => {
   test('desarrollo conserva HERA en el catálogo y en los cálculos', () => {
     const result = applyDeploymentFeaturesToCatalog(catalog, { heraEnabled: true });
     expect(result.models.map((model) => model.code)).toEqual(['ARZUA PRO', 'HERA']);
-    expect(result.features).toEqual({ heraEnabled: true });
+    expect(result.features).toEqual({ heraEnabled: true, puertasEnabled: false });
     expect(() => assertDeploymentModelsEnabled({ awnings: [{ model: 'HERA' }] }, { heraEnabled: true })).not.toThrow();
   });
 
   test('producción oculta HERA y rechaza también sus alias', () => {
     const result = applyDeploymentFeaturesToCatalog(catalog, { heraEnabled: false });
     expect(result.models.map((model) => model.code)).toEqual(['ARZUA PRO']);
-    expect(result.features).toEqual({ heraEnabled: false });
+    expect(result.features).toEqual({ heraEnabled: false, puertasEnabled: false });
     expect(findDisabledModel({ order: { awnings: [{ model: 'HERA56' }] } }, { heraEnabled: false })).toBe('HERA');
     expect(() => assertDeploymentModelsEnabled(
       { order: { awnings: [{ model: 'ROLL-SYSTEM' }] } },
       { heraEnabled: false }
     )).toThrow(/desactivado temporalmente/);
+  });
+
+  test('puertas en pausa: el catálogo lo dice, la lista sale vacía y lo demás no se atiende', () => {
+    expect(applyDeploymentFeaturesToCatalog(catalog, { heraEnabled: true, puertasEnabled: true }).features).toEqual({ heraEnabled: true, puertasEnabled: true });
+    expect(respuestaPuertasEnPausa({ puertasEnabled: true }, { method: 'POST', path: '/pedidos' })).toBeNull();
+    expect(respuestaPuertasEnPausa({ puertasEnabled: false }, { method: 'GET', path: '/pedidos' })).toEqual({ status: 200, body: { reviews: [] } });
+    for (const [method, path] of [['POST', '/pedidos'], ['GET', '/pedidos/AR2699601'], ['GET', '/rps-pedido'], ['POST', '/corte/vista-previa']]) {
+      expect(respuestaPuertasEnPausa({ puertasEnabled: false }, { method, path })).toEqual({ status: 404, body: { error: PUERTAS_EN_PAUSA } });
+    }
   });
 
   test('producción permite el resto de modelos', () => {

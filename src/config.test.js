@@ -11,6 +11,7 @@ const originalRemolquesRevisionDirectory = process.env.REMOLQUES_REVISION_DIRECT
 const originalDraftsDirectory = process.env.DRAFTS_DIRECTORY;
 const originalTelasHtml = process.env.TELAS_HTML;
 const originalEstructuraHtml = process.env.ESTRUCTURA_HTML;
+const originalPuertasFlag = process.env.ENABLE_PUERTAS;
 
 afterEach(() => {
   restoreEnvironment('NODE_ENV', originalNodeEnv);
@@ -24,6 +25,7 @@ afterEach(() => {
   restoreEnvironment('DRAFTS_DIRECTORY', originalDraftsDirectory);
   restoreEnvironment('TELAS_HTML', originalTelasHtml);
   restoreEnvironment('ESTRUCTURA_HTML', originalEstructuraHtml);
+  restoreEnvironment('ENABLE_PUERTAS', originalPuertasFlag);
   vi.resetModules();
 });
 
@@ -96,6 +98,14 @@ describe('configuración por entorno', () => {
     expect((await loadConfig('production', '')).telasHtml).toBe(true);
     process.env.TELAS_HTML = '0';
     expect((await loadConfig('production', '')).telasHtml).toBe(false);
+  });
+
+  test('las puertas están en pausa en producción y ENABLE_PUERTAS=1 las enciende', async () => {
+    delete process.env.ENABLE_PUERTAS;
+    expect((await loadConfig('production', '')).puertasEnabled).toBe(false);
+    expect((await loadConfig('development', '')).puertasEnabled).toBe(true);
+    process.env.ENABLE_PUERTAS = '1';
+    expect((await loadConfig('production', '')).puertasEnabled).toBe(true);
   });
 
   test('la página de estructura en HTML está activa por defecto y ESTRUCTURA_HTML=0 la apaga', async () => {

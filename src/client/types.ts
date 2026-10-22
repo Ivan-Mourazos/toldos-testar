@@ -17,7 +17,7 @@ export type Catalog = {
   models: Model[];
   fabricStats: { total: number; widths: number[]; materials: string[] };
   referenceStats: { total: number; groups: string[] };
-  features: { heraEnabled: boolean };
+  features: { heraEnabled: boolean; puertasEnabled?: boolean };
 };
 
 export type Awning = {
