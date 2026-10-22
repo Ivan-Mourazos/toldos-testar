@@ -71,10 +71,11 @@ describe('Correcciones de taller del 22 de octubre por la noche', () => {
   });
 
   it('apilable: OF, código y REVÉS comparten fila en tres columnas', () => {
-    const p = puertaPlanoReal('AR2605036'), l = dibujarAlzadoTaller(p, 'A').lienzo;
+    const p = { ...puertaPlanoReal('AR2605036'), cantidad: 3 }, l = dibujarAlzadoTaller(p, 'A').lienzo;
     const textos = [p.of, 'A1', 'REVÉS'].map(v => l.textos.find(t => t.valor === v)!);
     expect(new Set(textos.map(t => t.y)).size).toBe(1);
     expect(new Set(textos.map(t => t.x)).size).toBe(3);
+    expect(l.textos.find(t => t.valor === 'X3')!.y).not.toBe(textos[0].y);
   });
 
   it.each(['AR2605036', 'AR2604904', 'AR2605065'])('%s: los mininúmeros conservan texto, tamaño y posición dentro de cada pieza en el alzado', id => {

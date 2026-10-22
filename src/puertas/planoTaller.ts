@@ -57,15 +57,18 @@ function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number,
   for (const [a, b] of obstaculos) huecos = huecos.flatMap(([y0, y1]) => b <= y0 || a >= y1 ? [[y0, y1] as [number, number]]
     : [[y0, Math.min(y1, a - 4)], [Math.max(y0, b + 4), y1]].filter(([u, v]) => v > u) as Array<[number, number]>);
   const libre = huecos.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0] ?? [abajo, arriba];
-  const valores = [...(primero && opciones.cantidad !== false && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo,
+  const cantidad = primero && opciones.cantidad !== false && p.cantidad > 1;
+  const cantidadSeparada = cantidad && p.modelo === 'PUERTAPLE';
+  const valores = [...(cantidad && !cantidadSeparada ? [`X${p.cantidad}`] : []), codigo,
     ...((opciones.reves ?? primero) ? ['REVÉS'] : []), ...((opciones.of ?? primero) && p.of.trim() ? [p.of.trim()] : [])];
   const alto = Math.max(1, libre[1] - libre[0]);
   const fila = p.modelo === 'PUERTAPLE' && valores.length > 1;
   const columna = ancho / valores.length;
-  const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, fila ? alto * .65 : alto / (valores.length * 1.5 + .5),
+  const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, fila ? alto * (cantidadSeparada ? .3 : .65) : alto / (valores.length * 1.5 + .5),
     ...valores.map(v => (fila ? columna : ancho) * .82 / anchoArial(v, 1)));
   valores.forEach((v, i) => texto(l, v, fila ? x - ancho / 2 + columna * (i + .5) : x,
-    (libre[0] + libre[1]) / 2 + (fila ? 0 : ((valores.length - 1) / 2 - i) * h * 1.5), h));
+    (libre[0] + libre[1]) / 2 + (fila ? cantidadSeparada ? -h * .65 : 0 : ((valores.length - 1) / 2 - i) * h * 1.5), h));
+  if (cantidadSeparada) texto(l, `X${p.cantidad}`, x, (libre[0] + libre[1]) / 2 + h * .8, h * .8);
 }
 
 function dibujarSaco(l: Lienzo, p: Puerta) {
