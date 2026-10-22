@@ -112,7 +112,7 @@ try {
   await page.locator('.orders-row, li, tr').filter({ hasText: CODIGO }).first().getByText(CODIGO).first().click();
   await page.locator('.documento-corte .corte-material').first().waitFor();
   await page.getByRole('button', { name: /Guardar DXF en DXFs/ }).click();
-  await page.getByText('DXF guardado en DXFs.').waitFor();
+  await page.getByText(/^DXF guardado en/).waitFor();
   const dxf = path.resolve(ajustes.corteLonaDxfDirectory.replace('{YYYY}', ANIO), `${CODIGO}.dxf`);
   assert.ok(fs.existsSync(dxf), `Tiene que estar el DXF en ${dxf}`);
   comprobado.push(`DXF en ${path.relative('.', dxf)}`);

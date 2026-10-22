@@ -87,9 +87,9 @@ try {
     await page.getByRole('alertdialog').getByRole('button', { name: 'Cancelar', exact: true }).click();
     await botonBot.click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Mandar corte al bot', exact: true }).click();
-    await page.getByText('Corte mandado al bot.', { exact: true }).waitFor();
+    await page.getByText(/^Corte (mandado al bot|guardado en)/).waitFor();
     await page.getByRole('button', { name: 'Guardar DXF en DXFs', exact: true }).click();
-    await page.getByText('DXF guardado en DXFs.', { exact: true }).waitFor();
+    await page.getByText(/^DXF guardado en/).waitFor();
     await page.getByRole('button', { name: 'Guardar DXF en DXFs', exact: true }).click();
     await page.getByRole('alertdialog', { name: 'El DXF ya existe' }).waitFor();
     await capturar(`${producto}-ya-existe`, true);
@@ -100,13 +100,14 @@ try {
     const sustituido = page.waitForResponse((r) => r.url().endsWith(`${ruta}/enviar`) && r.status() === 200);
     await page.getByRole('alertdialog').getByRole('button', { name: 'Sustituir DXF', exact: true }).click();
     await sustituido;
-    await page.getByText('Corte mandado al bot.', { exact: true }).first().waitFor();
+    await page.getByText(/^Corte (mandado al bot|guardado en)/).first().waitFor();
     const detalleRuta = producto === 'toldos' ? `/api/reviews/${codigo}` : `/api/remolques/pedidos/${codigo}`;
     const { datos: pedido } = await api(detalleRuta);
     assert.equal(pedido.enviosCorte.length, 3);
     if (producto === 'toldos') {
       for (const envio of pedido.enviosCorte) {
-        assert.deepEqual(envio.archivos.map(a => a.filename), [`${codigo} (con sacos).dxf`, `${codigo} (trozo separado).dxf`]);
+        // Un solo DXF por pedido con las dos opciones dentro (el técnico de la máquina elige, 22/10/2026).
+        assert.deepEqual(envio.archivos.map(a => a.filename), [`${codigo}.dxf`]);
         for (const archivo of envio.archivos) {
           const contenido = await fs.readFile(archivo.savedPath, 'latin1');
           for (const texto of ['AZUL 5010', 'BLANCO 9016', 'A BAMBA', '0232568', 'REVÉS']) assert.ok(contenido.includes(texto));
@@ -116,17 +117,10 @@ try {
     assert.ok(pedido.enviosCorte.every((e) => e.usuario === 'IVÁN' && e.fecha && path.resolve(e.carpeta).startsWith(path.dirname(path.resolve(iniciales.reviewDirectory)))));
     await abrir(codigo);
     await page.locator('.corte-envios-historial').waitFor();
-    if (producto === 'remolques') {
-      const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Descargar DXF', exact: true }).click()]);
-      assert.equal(descarga.suggestedFilename(), `${codigo}.dxf`);
-      await descarga.saveAs(path.join(salida, descarga.suggestedFilename()));
-    } else {
-      for (const opcion of ['con sacos', 'trozo separado']) {
-        const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: `Descargar DXF · ${opcion}`, exact: true }).click()]);
-        assert.equal(descarga.suggestedFilename(), `${codigo} (${opcion}).dxf`);
-        await descarga.saveAs(path.join(salida, descarga.suggestedFilename()));
-      }
-    }
+    // Toldos y remolques: un solo DXF por pedido, con las opciones dentro.
+    const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Descargar DXF', exact: true }).click()]);
+    assert.equal(descarga.suggestedFilename(), `${codigo}.dxf`);
+    await descarga.saveAs(path.join(salida, descarga.suggestedFilename()));
     const generar = producto === 'toldos' ? `/api/reviews/${codigo}/generate-files` : `/api/remolques/pedidos/${codigo}/generar`;
     const generado = await api(generar, json({ includeNonAcrylicFabrics: false, confirmOverwrite: true }));
     assert.equal(generado.status, 200, JSON.stringify(generado.datos));

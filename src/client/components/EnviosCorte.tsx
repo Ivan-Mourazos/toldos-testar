@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Download, FolderDown, Send } from 'lucide-react';
 import type { EnvioCorte } from '../../corteEnviosTipos';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
+import { carpetaLegible, mensajeEnvio } from './enviosCorteTexto';
 
 /** Las mismas acciones y preguntas para todos los productos que envíen un corte. */
 export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], descarga, notify, preguntar }: {
@@ -29,7 +30,8 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
         }
         if (!res.ok) throw new Error(datos.error || 'No se pudo guardar el corte.');
         setHistorial(datos.enviosCorte);
-        notify(destino === 'bot' ? 'Corte mandado al bot.' : 'DXF guardado en DXFs.', { tone: 'success' });
+        const ultimo = (datos.enviosCorte as EnvioCorte[] | undefined)?.at(-1);
+        notify(ultimo ? mensajeEnvio(destino, ultimo.carpeta, ultimo.archivos.map((a) => a.filename)) : destino === 'bot' ? 'Corte mandado al bot.' : 'DXF guardado en DXFs.', { tone: 'success' });
         return;
       }
     } catch (error) { notify(error instanceof Error ? error.message : 'No se pudo guardar el corte.', { tone: 'error' }); }
@@ -44,7 +46,7 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
     </div>
     {!permitido && motivo && <p className="corte-ayuda">{motivo}</p>}
     {registros.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{registros.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}</span><small>{e.carpeta} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
+      <ul>{registros.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
     </div>}
   </div>;
 }
