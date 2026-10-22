@@ -83,6 +83,19 @@ describe('generarCorteRemolques', () => {
     expect(todos.find(([n]) => n === 'b2').slice(1)).toEqual([B - 10, 2490]);
   });
 
+  it('con dos remolques, el nombre de cada media tira va en medio de su empate, lejos de los números de unión', () => {
+    const doble = structuredClone(AR2605079);
+    doble.elementos[0].input.cantidad = 2;
+    const rot = generarCorteRemolques(doble).cortes.flatMap((c) => rotulador(c));
+    for (const [nombre, union] of [['A4', 'a1'], ['A5', 'a2']]) {
+      const rotulo = rot.find((t) => t.valor === nombre);
+      expect(rotulo).toBeDefined();
+      // A más de 50 cm de cualquier número de unión: no se confunde con ellos.
+      expect(Math.min(...rot.filter((t) => /^a[0-9]$/.test(t.valor)).map((t) => Math.hypot(t.x - rotulo.x, t.y - rotulo.y)))).toBeGreaterThan(500);
+      expect(rot.some((t) => t.valor === union)).toBe(true);
+    }
+  });
+
   it('pone una letra a cada baquetón cuando hay más de uno (AR2605071)', () => {
     const [c] = generarCorteRemolques(AR2605071).cortes;
     expect(c.largo).toBe(2940);

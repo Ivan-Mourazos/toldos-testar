@@ -50,7 +50,10 @@ const numero = (p, x, y, n, giro = 0) => p.numeros.push([x, y, String(n), giro])
 // Rótulo de pieza cuando el corte lleva varios remolques (Iván, 20/10/2026): letra del remolque y número de
 // pieza (A1, A2…), en ROTULADOR de 1 cm cerca de la esquina de abajo a la izquierda, como a mano (AR2603340).
 // Va en la esquina, a 1,5 cm de los dos bordes, y además en grande en el centro de la pieza (como la OF).
-const rotular = (p, texto) => { if (texto) { p.numeros.push([15, 15, texto, 0, 'esquina']); p.etiqueta = texto; } return p; };
+// En rotulador solo cuando el corte lleva más de un remolque (sin letras no hay rótulo), para que en el taller no
+// se confundan los paños (Iván, 22/10/2026), y siempre donde quede tapado: la esquina cae en el dobladillo de la base.
+// `sitio`: otro punto (x, y) de la esquina de abajo del texto, para piezas sin ese dobladillo.
+const rotular = (p, texto, sitio = [15, 15]) => { if (texto) { p.numeros.push([...sitio, texto, 0, 'esquina']); p.etiqueta = texto; } return p; };
 const seg = (p, x1, y1, x2, y2) => p.lineas.push([x1, y1, x2, y2]);
 const marca = (p, x1, y1, x2, y2) => p.rot.push([x1, y1, x2, y2]);
 
@@ -395,7 +398,10 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
       grande.contornoDe = el.of;
       piezas.push(grande, rotular(structuredClone(d.p), L && `${L}2`), rotular(structuredClone(t.p), L && `${L}3`));
       if (emp) {
-        piezas.push(rotular(emp.tiras[0], L && `${L}4`), rotular(emp.tiras[1], L && `${L}5`));
+        // Las medias tiras no tienen dobladillo: su nombre va en medio de su borde de empate, a 0,5 cm, dentro de los
+        // 2 cm que tapa la soldadura y lejos de los números de unión de las puntas.
+        const enEmpate = [emp.tiras[0].w / 2, 5];
+        piezas.push(rotular(emp.tiras[0], L && `${L}4`, enEmpate), rotular(emp.tiras[1], L && `${L}5`, enEmpate));
         out.avisos.push(`${el.of}: el contorno no cabe en el rollo: empate de 2 cm a lo largo y tira de ${(c.w - ROLLO + EMPATE) / 10} cm empatada en dos.`);
       }
       // Tapa de la ventana: la ventana + 3 cm, una por ventana (Iván, 20/10/2026).
