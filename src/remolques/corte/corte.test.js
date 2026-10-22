@@ -40,9 +40,13 @@ describe('generarCorteRemolques', () => {
     const [c] = cortes;
     expect(c.nombre).toBe('AR2605132');
     expect(c.largo).toBeLessThanOrEqual(8031);
-    // Piezas A1…A3 y B1…B3 en la esquina, y la tapa de la ventana de cada una (A6, B6) si cabe.
+    // Piezas A1…A3 y B1…B3 en la esquina, y la tapa de la ventana de cada una (A4, B4, la pieza siguiente) si cabe,
+    // con «VENTANA» (o «VENT» si no cabe) debajo de su nombre.
     const esquinas = rotulador(c).filter((t) => !t.literal).map((t) => t.valor);
     for (const pieza of ['A1', 'A2', 'A3', 'B1', 'B2', 'B3']) expect(esquinas).toContain(pieza);
+    expect(esquinas.some((v) => /[AB]6/.test(v))).toBe(false);
+    const centro = c.entidades.textos.filter((t) => t.capa === 'texto').map((t) => t.valor);
+    expect(centro.some((v) => v === 'VENTANA' || v === 'VENT') || c.entidades.textos.some((t) => /TAPA DE VENTANA .* [(][AB]4[)]/.test(t.valor))).toBe(true);
     // El rotulador, siempre de 1 cm.
     expect(new Set(rotulador(c).map((t) => t.h))).toEqual(new Set([10]));
     // Material resumido y «DERECHO» una sola vez, encima del corte.
@@ -87,7 +91,8 @@ describe('generarCorteRemolques', () => {
     const doble = structuredClone(AR2605079);
     doble.elementos[0].input.cantidad = 2;
     const rot = generarCorteRemolques(doble).cortes.flatMap((c) => rotulador(c));
-    for (const [nombre, union] of [['A4', 'a1'], ['A5', 'a2']]) {
+    // Empatadas son una sola pieza: A4-1 y A4-2 (Iván, 22/10/2026).
+    for (const [nombre, union] of [['A4-1', 'a1'], ['A4-2', 'a2']]) {
       const rotulo = rot.find((t) => t.valor === nombre);
       expect(rotulo).toBeDefined();
       // A más de 50 cm de cualquier número de unión: no se confunde con ellos.

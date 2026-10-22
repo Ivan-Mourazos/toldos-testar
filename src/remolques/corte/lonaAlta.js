@@ -20,6 +20,7 @@
 // Fuera de esta versión (se cortan a mano): TIPO 04 y los demás puentes.
 
 import { esquinaChaflan } from '../geometry/chaflan.ts';
+import { anchoArial } from '../../domain/corteLona/texto.js';
 
 const ROLLO = 2500, BORDE = 45, R_OLLAO = 2.5;
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -399,13 +400,21 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
       piezas.push(grande, rotular(structuredClone(d.p), L && `${L}2`), rotular(structuredClone(t.p), L && `${L}3`));
       if (emp) {
         // Las medias tiras no tienen dobladillo: su nombre va en medio de su borde de empate, a 0,5 cm, dentro de los
-        // 2 cm que tapa la soldadura y lejos de los números de unión de las puntas.
+        // 2 cm que tapa la soldadura y lejos de los números de unión de las puntas. Empatadas son una sola pieza: B4-1 y
+        // B4-2, no B4 y B5, que liaban en el taller (Iván, 22/10/2026).
         const enEmpate = [emp.tiras[0].w / 2, 5];
-        piezas.push(rotular(emp.tiras[0], L && `${L}4`, enEmpate), rotular(emp.tiras[1], L && `${L}5`, enEmpate));
+        piezas.push(rotular(emp.tiras[0], L && `${L}4-1`, enEmpate), rotular(emp.tiras[1], L && `${L}4-2`, enEmpate));
         out.avisos.push(`${el.of}: el contorno no cabe en el rollo: empate de 2 cm a lo largo y tira de ${(c.w - ROLLO + EMPATE) / 10} cm empatada en dos.`);
       }
-      // Tapa de la ventana: la ventana + 3 cm, una por ventana (Iván, 20/10/2026).
-      if (ventana) { const tapa = pieza(ventana[0] + 30, ventana[1] + 30); seg(tapa, 0, 0, tapa.w, 0); seg(tapa, tapa.w, 0, tapa.w, tapa.h); seg(tapa, tapa.w, tapa.h, 0, tapa.h); seg(tapa, 0, tapa.h, 0, 0); tapa.deRestos = `TAPA DE VENTANA ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}${L ? ` (${L}6)` : ''}`; tapas.push(rotular(tapa, L && `${L}6`)); }
+      // Tapa de la ventana: la ventana + 3 cm, una por ventana (Iván, 20/10/2026). Es la pieza siguiente (B4, o B5 si
+      // hay tira empatada) y lleva «VENTANA» debajo de su nombre, o «VENT» si no cabe (Iván, 22/10/2026).
+      if (ventana) {
+        const tapa = pieza(ventana[0] + 30, ventana[1] + 30); seg(tapa, 0, 0, tapa.w, 0); seg(tapa, tapa.w, 0, tapa.w, tapa.h); seg(tapa, tapa.w, tapa.h, 0, tapa.h); seg(tapa, 0, tapa.h, 0, 0);
+        const nombre = L && `${L}${emp ? 5 : 4}`;
+        tapa.deRestos = `TAPA DE VENTANA ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}${L ? ` (${nombre})` : ''}`;
+        tapa.subtitulo = anchoArial('VENTANA', 100) <= Math.min(tapa.w, tapa.h) * 0.9 ? 'VENTANA' : 'VENT';
+        tapas.push(rotular(tapa, nombre));
+      }
     }
   }
   piezas.push(...extras);
@@ -430,7 +439,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = []) 
     for (const k of ['lineas', 'rot', 'ollaos', 'arcos']) out[k].push(...pc[k]);
     out.textos.push(...pc.numeros);
     // En grande en el centro: el rótulo de la pieza (si hay varios remolques) y, en el contorno, la OF.
-    const grandes = [p.etiqueta, p.contornoDe].filter(Boolean);
+    const grandes = [p.etiqueta, p.subtitulo, p.contornoDe].filter(Boolean);
     grandes.forEach((v, n) => out.textos.push({ capa: 'texto', x: x0 + sitio.x + pc.ancho / 2, y: sitio.y + pc.alto / 2 + 90 * (grandes.length - 1) - 180 * n, h: 100, valor: v, centrado: true }));
     // Un aviso para el taller debajo (los refuerzos de un baquetón), ajustado al ancho de la pieza.
     if (p.textoCentro) out.textos.push({ capa: 'texto', x: x0 + sitio.x + pc.ancho / 2, y: sitio.y + pc.alto / 2 - 300, h: Math.min(100, (pc.ancho - 200) / 20), valor: p.textoCentro, centrado: true });
