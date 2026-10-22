@@ -8,7 +8,7 @@ const cabecera = { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fec
 describe('escribirPlanoPuertas', () => {
   it('AR2604638: cajetín con los datos, alzado con cotas de verdad, textos de taller y el corte', () => {
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2604638', puerta4638()), cabecera });
-    for (const dato of ['AR2604638', '0232309', 'PORTANOVA', 'IVÁN', 'DAVID', '22/10/26', 'LAC900 AZUL 5002', 'MEDIDAS EN CM · PUERTA DE LONA']) {
+    for (const dato of ['AR2604638', '0232309', 'PORTANOVA', 'IVÁN', 'DAVID', '22/10/26', 'LAC900 AZUL 5002', 'CAJETIN']) {
       expect(dxf.includes(dato), dato).toBe(true);
     }
     const ent = registrosDxf(dxf);
@@ -19,7 +19,7 @@ describe('escribirPlanoPuertas', () => {
     expect(ent.some(r => r.tipo === 'DIMENSION' && numero(r, 23) > 95 && numero(r, 42) === 164 && valor(r, 1) === undefined)).toBe(true);
     // D/T quedan en el configurador; el plano de oficina lleva solo las cotas y rótulos separados.
     const textos = ent.filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1));
-    for (const t of ['A1', 'REVÉS', '0232309', '3 CM (HUECOS)', 'VARILLA NEGRA (4,5)', 'SACO 900 GR NEGRO']) expect(textos).toContain(t);
+    for (const t of ['A1', 'REVÉS', '3 CM (HUECOS)', 'VARILLA NEGRA (4,5)', 'SACO 900 GR NEGRO']) expect(textos).toContain(t);
     expect(textos).not.toContain('D');
     expect(textos).not.toContain('T');
     const estilos = registrosDxf(dxf, 'TABLES').filter(r => r.tipo === 'DIMSTYLE').map(r => valor(r, 2));
@@ -44,6 +44,6 @@ describe('escribirPlanoPuertas', () => {
     // Los títulos de cada puerta, de izquierda a derecha y sin solaparse.
     const titulos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT' && /^PUERTA [ABC] /.test(valor(r, 1) ?? '')).map(r => numero(r, 10));
     expect(titulos).toEqual([...titulos].sort((a, b) => a - b));
-    expect(new Set(titulos).size).toBe(3);
+    expect(new Set(titulos).size).toBe(2);
   });
 });

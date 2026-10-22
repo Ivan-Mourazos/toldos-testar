@@ -1,13 +1,15 @@
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
+import { esClientePortanova } from './clientePortanova.ts';
+import { presentacionPortanova } from './plantillaPortanova.ts';
 import type { CortePuertas, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
 
 // Referencia: AR2605134 de Iván, 22/10/2026 (mano3). Dibujo en cm, con el origen en la
 // esquina superior izquierda terminada; la presentación y el cajetín web siguen en mm.
 type Zona = { x0: number; y0: number; x1: number; y1: number };
 interface Texto { capa: string; x: number; y: number; h: number; valor: string; giro?: number; centrado?: boolean; ancla?: number; ancho?: number }
-interface Lienzo {
+export interface LienzoEnrollable {
   lineas: Array<{ capa: string; x1: number; y1: number; x2: number; y2: number }>;
   polilineas: Array<{ capa: string; puntos: Punto[]; cerrada: boolean; curvas?: number[]; color?: number }>;
   textos: Texto[];
@@ -17,6 +19,7 @@ interface Lienzo {
   arcos: Array<{ capa: string; x: number; y: number; r: number; desde: number; hasta: number }>;
   circulos: Array<{ capa: string; x: number; y: number; r: number }>;
 }
+type Lienzo = LienzoEnrollable;
 const vacio = (): Lienzo => ({ lineas: [], polilineas: [], textos: [], cotas: [], inserciones: [], sombreados: [], arcos: [], circulos: [] });
 const linea = (l: Lienzo, capa: string, x1: number, y1: number, x2: number, y2: number) => l.lineas.push({ capa, x1, y1, x2, y2 });
 const texto = (l: Lienzo, valor: string, x: number, y: number, h: number, opciones: Partial<Texto> = {}) =>
@@ -155,7 +158,7 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: ys - 86 - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
 }
 
-function sumar(destino: Lienzo, origen: Lienzo, dx = 0, dy = 0) {
+export function sumarLienzo(destino: Lienzo, origen: Lienzo, dx = 0, dy = 0) {
   destino.lineas.push(...origen.lineas.map(t => ({ ...t, x1: t.x1 + dx, y1: t.y1 + dy, x2: t.x2 + dx, y2: t.y2 + dy })));
   destino.polilineas.push(...origen.polilineas.map(t => ({ ...t, puntos: t.puntos.map(([x, y]): Punto => [x + dx, y + dy]) })));
   destino.textos.push(...origen.textos.map(t => ({ ...t, x: t.x + dx, y: t.y + dy })));
@@ -167,31 +170,6 @@ function sumar(destino: Lienzo, origen: Lienzo, dx = 0, dy = 0) {
 }
 
 const unicos = (v: string[]) => [...new Set(v.filter(Boolean))];
-const materialPlano = (v: string) => v.replace(/LAC\s*900/g, 'LAC 900');
-export const NOTAS_ENROLLABLE = [
-  '- ABAJO SACO NEGRO (900 gr). SOLDADO ENCIMA DE LA SOLDADURA DE LA ENTRADA DE TUBO',
-  '* PARA SOLDAR EL SACO INFERIOR SUBIR LA TEMPERATURA DE REFRIGERACIÓN DE SOLDAR',
-  '* UTILIZAR EN TODO EL ELECTRODO DE 2 (LAS VENTANAS INTERIORES CON CURVA LLEVAN 2 DE AUMENTO ALREDEDOR)',
-  '- BOLSILLO CORTADO DE 30 X 17 CM (900 GR) SOLDADO CON SOPLETE EN SACO NEGRO A 1 CM DESDE ABAJO DE LA E.T INTERIOR',
-  '- NO PONER NUNCA LAS ETIQUETAS EN LA PROPIA LONA',
-];
-export const AVISO_ENROLLABLE = 'LAS ENTRADAS DE TUBO INTERIORES DE LAS PUERTAS ENROLLABLES TIENEN QUE IR DE 5 CM. NUNCA INFERIOR A ESA MEDIDA. Y COMO MUCHO DE 5,5 CM. SOLDAR CON ELECTRODO DE 2 CM';
-
-function detalleSaco(): Lienzo {
-  const l = vacio();
-  // Detalle esquemático de la oficina: se conserva su curva, no se convierte en una medida de corte.
-  linea(l, 'borrar', 0, 53.3098, 0, 0);
-  linea(l, 'referencias', .5, 30.8981, .5, 1.9971);
-  linea(l, 'referencias', -.5, 30.8981, -.5, 1.9971);
-  l.polilineas.push({ capa: 'referencias', puntos: [[0, 0], [-10.7762, -61.4421]], curvas: [1.539237, .55732], cerrada: true },
-    { capa: 'referencias', puntos: [[-.5, 1.9971], [-43.8302, -84.4049], [.5291, 1.9967], [.5, 1.9971]], curvas: [.932283, .696034, .000168, .000168], cerrada: false });
-  linea(l, 'texto', 16.9238, -5.7866, 27.5019, 5.6687);
-  texto(l, 'BOLSILLO NEGRO', 30.7789, 15.8142, 5, { ancla: 1 });
-  texto(l, 'SOLDAR SACO Y E.T EN LA MISMA SOLDADURA', -96.1409, 36.7458, 5, { ancla: 1, ancho: 101.9561 });
-  // La leyenda de 1 cm es la llamada del detalle, que no está dibujado a escala de corte.
-  l.cotas.push({ capa: 'texto', estilo: 'XERAL 5', x1: 10.6399, y1: -63.2909, x2: 13.1477, y2: -51.1859, giro: 90, d: 19.8350, valor: 12.105, rotulo: '1 CM' });
-  return l;
-}
 
 /** Resumen del corte recibido: saco/cristal una vez; lona con todas sus colocaciones reales. */
 function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
@@ -200,15 +178,16 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
   for (const c of cortes) for (const t of c.colocadas) if (['saco', 'cristal'].includes(t.pieza.clase)) muestras.set(`${c.opcion}:${t.pieza.id}`, t.pieza);
   // El saco encima del transparente, como en la referencia, sin repetir las copias físicas.
   for (const p of [...muestras.values()].sort((a, b) => (a.clase === 'saco' ? -1 : 1) - (b.clase === 'saco' ? -1 : 1))) {
-    const y = techo - p.alto;
-    const puntos = p.contorno.map(([x, v]): Punto => [x, y + v]);
+    const y = techo - p.alto, xMuestra = -.8974;
+    const puntos = p.contorno.map(([x, v]): Punto => [xMuestra + x, y + v]);
     if (p.clase === 'saco') contorno(l, 'DISCO1', puntos);
     else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
-    texto(l, p.clase === 'saco' ? 'SACO 900 GR NEGRO' : p.material, 0, techo + 10, 10);
-    texto(l, `X${p.multiplicador ?? p.cantidad}`, p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8), { centrado: true });
-    cota(l, 0, y, p.ancho, y, y - 25);
-    cota(l, 0, y, 0, techo, -34);
-    techo = y - 100;
+    texto(l, p.clase === 'saco' ? 'SACO 900 GR NEGRO' : p.material, xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
+    texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8), { centrado: true });
+    cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381));
+    cota(l, xMuestra, y, xMuestra, techo, -35.1317);
+    // Separaciones de presentación medidas en AR2605134; no afectan al corte ni a sus piezas.
+    techo = y - (p.clase === 'saco' ? 82.0735 : 92.3202);
     anchoMax = Math.max(anchoMax, p.ancho);
   }
   for (const c of cortes.filter(c => c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase)))) {
@@ -229,7 +208,7 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
         const elemento = pedido.elementos.find(e => p.id.startsWith(`${e.id}:`));
         if (elemento) {
           const letra = String.fromCharCode(65 + pedido.elementos.indexOf(elemento));
-          const paños = [...new Map(usadas.filter(u => u.pieza.clase === 'pano' && u.pieza.id.startsWith(`${elemento.id}:`)).map(u => [u.pieza.id, u.pieza])).keys()];
+          const paños = calcularPuerta(elemento.input).piezas.filter(u => u.clase === 'pano').map(u => `${elemento.id}:${u.id}`);
           const [a, b] = huecoRotulo(0, p.alto, marcas.map(m => m[1]), 8);
           const codigo = `${letra}${paños.indexOf(p.id) + 1}`, q = P([p.ancho / 2, (a + b) / 2]);
           identificar(l, elemento.input, codigo, q[0], q[1], p.ancho, b - a, t.girada ? 90 : 0);
@@ -241,16 +220,16 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     l.circulos.push(...c.entidades.circulos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })));
     l.lineas.push(...c.entidades.lineas.filter(a => a.capa === 'CUTTER').map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));
     l.textos.push(...c.entidades.textos.filter(a => a.capa === 'ROTULADOR').map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, h: a.h / 10 })));
-    texto(l, c.material, 0, techo + 10, 10);
-    cota(l, 0, yc, c.largo / 10, yc, yc - 25);
-    cota(l, 0, yc, 0, techo, -34);
+    texto(l, c.material, 0, techo + 7.6701, 10);
+    cota(l, 0, yc, c.largo / 10, yc, yc - 25.8375);
+    cota(l, 0, yc, 0, techo, -35.1317);
     anchoMax = Math.max(anchoMax, c.largo / 10);
     techo = yc - 100;
   }
   return { lienzo: l, zona: { x0: -60, y0: techo + 45, x1: anchoMax + 30, y1: 55 } };
 }
 
-function aMetros(l: Lienzo, ox: number, oy: number) {
+export function lienzoAMetros(l: Lienzo, ox: number, oy: number) {
   const m = (p: Punto): Punto => [ox + p[0] / 100, oy + p[1] / 100];
   return {
     ...l,
@@ -271,31 +250,32 @@ export function escribirPlanoEnrollables(pedido: PedidoPuertas, cortes: CortePue
   for (const [i, e] of pedido.elementos.entries()) {
     const { lienzo, zona } = dibujarAlzadoEnrollable(e.input, String.fromCharCode(65 + i));
     const dx = i ? cursor - zona.x0 : 0;
-    sumar(l, lienzo, dx); cursor = dx + zona.x1 + 60;
+    sumarLienzo(l, lienzo, dx); cursor = dx + zona.x1 + 60;
     y0 = Math.min(y0, zona.y0); y1 = Math.max(y1, zona.y1);
   }
   const za = zonaM({ x0: -65, y0, x1: cursor - 60, y1 }, 100, 100);
-  const corte = dibujarCorte(cortes, pedido), zc = zonaM(corte.zona, 110, 90);
-  const detalle = detalleSaco(); sumar(l, detalle, 0, -2000);
-  const zd = zonaM({ x0: -118, y0: -2100, x1: 103, y1: -1940 }, 100, 100);
+  const corte = dibujarCorte(cortes, pedido);
+  let zc = zonaM(corte.zona, 110, 90), altoVistaCorte: number | undefined;
+  const rollos = cortes.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'));
+  const portanova = esClientePortanova(pedido, cabecera.cliente);
+  if (portanova && rollos.length === 1) {
+    const base = corte.lienzo.cotas.find(c => c.giro === 0 && Math.abs(c.valor - rollos[0].largo / 10) < .01)!;
+    // Encuadre medido de la plantilla, independiente de dónde anide cada pieza la máquina.
+    const cx = 110 + (rollos[0].largo / 20 - 23.4629) / 100;
+    const cy = 90 + (base.y1 + rollos[0].anchoRollo / 20 - 5.5357) / 100;
+    const proporcion = 146.1104593 / 127.4184910;
+    altoVistaCorte = Math.max(10.02372, 2 * Math.max(cx - zc.x0, zc.x1 - cx) * proporcion, 2 * Math.max(cy - zc.y0, zc.y1 - cy));
+    zc = { x0: cx - altoVistaCorte / proporcion / 2, x1: cx + altoVistaCorte / proporcion / 2, y0: cy - altoVistaCorte / 2, y1: cy + altoVistaCorte / 2 };
+  }
   const puertas = pedido.elementos.map(e => e.input);
-  const materiales = unicos(puertas.flatMap(p => [p.materialCristal, `${p.material} ${p.color}`, p.materialSaco])).map(materialPlano);
-  const material = `MATERIALES: ${materiales.join(' · ')}`;
-  const ventana = (z: Zona, x0: number, y0: number, x1: number, y1: number) => ({ z, centro: [(x0 + x1) / 2, (y0 + y1) / 2], ancho: x1 - x0, alto: y1 - y0 });
-  return escribirDxfPlano({ ...aMetros(l, 100, 100), corte: aMetros(corte.lienzo, 110, 90), zonas: { toldos: za, corte: zc }, corteDerecho: true,
+  const fecha = cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/');
+  return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, 110, 90), zonas: { toldos: za, corte: zc }, corteDerecho: true,
     bloques: [bloqueFlechaEnrollable],
-    presentacion: {
-      ventanas: { 2: ventana(za, 8, 25, 161, 202), 3: ventana(zc, 163, 96, 289, 202), 4: ventana(zd, 163, 25, 208, 55) },
-      textos: [
-        { capa: 'texto', x: 163, y: 89, h: Math.min(2.1, 126 / anchoArial(material, 1)), ancho: 126, valor: material },
-        ...NOTAS_ENROLLABLE.map((v, i) => ({ capa: 'texto', x: 163, y: 77 - i * 4.1, h: 1.35, ancho: 126, valor: v })),
-        { capa: 'referencias', x: 211, y: 54, h: 1.6, ancho: 78, valor: AVISO_ENROLLABLE },
-      ],
-    },
+    ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVistaCorte) : {}),
   }, {
     pedido: pedido.orderCode, of: unicos(puertas.map(p => p.of)).join(' / '), cliente: textoSeguro(cabecera.cliente),
     tecnico: textoSeguro(cabecera.tecnico), revisor: textoSeguro(cabecera.revisor),
-    fecha: cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/'), pagina: '1/1',
+    fecha, pagina: '1/1',
     material: textoSeguro(unicos(puertas.map(p => `${p.material} ${p.color}`)).join(' / ')), subtitulo: 'MEDIDAS EN CM · PUERTA DE LONA',
   }).dxf;
 }

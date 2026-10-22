@@ -314,7 +314,11 @@ Iván revisó AR2605134 capa por capa y confirmó que las puertas de Portanova u
 `src/puertas/plantillas/portanova.dxf`: solo quedan las notas y los detalles del modelo,
 la presentación, sus ventanas, capas, bloques y estilos. **Para las enrollables se usa el
 CAJETIN de esta plantilla**, con los datos del pedido; esta instrucción posterior sustituye
-la de mantener CAJETIN WEB. Apilables, autorreparables y toldos conservan su plano anterior.
+la de mantener CAJETIN WEB. Iván amplió el uso de esta hoja a **todos los modelos de Portanova**:
+se identifica en `clientePortanova.ts` por RPS `cabecera.clienteRps.codigo = 001336`, o por
+el nombre con PORTANOVA si no hay código. Un código de otro cliente prevalece sobre el nombre.
+Los demás clientes conservan la hoja web. El nuevo dibujo de enrollables se aplica a cualquier
+cliente; el dibujo de apilables y autorreparables y los planos de toldos se conservan.
 
 El plano específico se construye en `src/puertas/planoEnrollable.ts`. El alzado lleva los
 contornos de los paños en DISCO1, sin inventar un rectángulo de puerta terminada. Arriba:

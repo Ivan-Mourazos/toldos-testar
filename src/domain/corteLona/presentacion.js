@@ -8,7 +8,6 @@ import { ALTO_CAJETIN, SITIO_CAJETIN, anadirCajetin } from './cajetin.js';
 import { anchoArial } from './texto.js';
 
 const MODELO = '1F';   // *Model_Space en la plantilla
-const PAPEL = 'E4D4';  // *Paper_Space (presentación A4) en la plantilla
 // Capas del bot que no trae la plantilla.
 const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'ROTULADOR', color: 1 }];
 
@@ -17,7 +16,8 @@ const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'ROTULADOR', color:
  * cabecera: { pedido, of, cliente, tecnico, revisor, fecha, pagina, material }.
  */
 export function escribirDxfPlano(plano, cabecera) {
-  let src = leerPlantilla('presentacion-a4.dxf');
+  let src = plano.plantilla ?? leerPlantilla('presentacion-a4.dxf');
+  const PAPEL = plano.papel ?? 'E4D4';  // *Paper_Space de la plantilla elegida
   // Modelo en metros; la presentación conserva sus medidas en mm de papel.
   src = src.replace(/(\$INSUNITS\n 70\n)\s*\d+/, '$1     6');
   let handle = parseInt(/\$HANDSEED\n\s*5\n([0-9A-F]+)/.exec(src)[1], 16);
@@ -26,7 +26,7 @@ export function escribirDxfPlano(plano, cabecera) {
 
   // Los planos de puertas llaman XERA 15 al estilo grande. Se conserva el nombre real sin cambiar
   // XERAL 15, que siguen usando toldos y remolques con la misma plantilla.
-  if ([...(plano.cotas ?? []), ...(plano.corte.cotas ?? [])].some(c => c.estilo === 'XERA 15')) {
+  if ([...(plano.cotas ?? []), ...(plano.corte.cotas ?? [])].some(c => c.estilo === 'XERA 15') && !src.includes('  2\nXERA 15\n')) {
     const grande = src.match(/ {2}0\nDIMSTYLE\n(?:(?! {2}0\n)[\s\S])*? {2}2\nXERAL 15\n(?:(?! {2}0\n)[\s\S])*/)?.[0];
     if (grande) src = insertarEnTabla(src, 'DIMSTYLE', grande.replace(/(105\n)[^\n]+/, `$1${nuevo()}`).replace('XERAL 15\n', 'XERA 15\n'), 1);
   }
@@ -47,7 +47,7 @@ export function escribirDxfPlano(plano, cabecera) {
   }
 
   // Cajetín nuevo (bloque CAJETIN WEB con todos los datos del pedido, revisor incluido).
-  const { src: conCajetin, insercion: cajetin } = anadirCajetin(src, nuevo, PAPEL, {
+  const { src: conCajetin, insercion: cajetin } = plano.plantilla ? { src, insercion: '' } : anadirCajetin(src, nuevo, PAPEL, {
     PEDIDO: cabecera.pedido, OF: cabecera.of, CLIENTE: cabecera.cliente, MATERIAL: cabecera.material,
     TECNICO: cabecera.tecnico, REVISOR: cabecera.revisor, FECHA: cabecera.fecha,
     HOJA: cabecera.pagina || '1/1', SUBTITULO: cabecera.subtitulo
@@ -113,7 +113,7 @@ export function escribirDxfPlano(plano, cabecera) {
   const ventanas = plano.presentacion?.ventanas ?? { 2: encuadre(zt, reparto.toldo), 3: encuadre(zc, rc) };
   const encuadrar = (t, v) => {
     const z = v.z;
-    const altoVista = Math.max(z.y1 - z.y0, (z.x1 - z.x0) * v.alto / v.ancho) * 1.03;
+    const altoVista = v.altoVista ?? Math.max(z.y1 - z.y0, (z.x1 - z.x0) * v.alto / v.ancho) * 1.03;
     let r = poner(t, '10', n(v.centro[0]));
     r = poner(r, '20', n(v.centro[1]));
     r = poner(r, '40', n(v.ancho));
@@ -131,10 +131,21 @@ export function escribirDxfPlano(plano, cabecera) {
   const viejo = trozos.map((t) => /^ {2}0\nINSERT\n[\s\S]*?\n {2}2\nCAJETIN\n/.test(t) && /\n {2}5\n([0-9A-F]+)\n/.exec(t)[1]).find(Boolean);
   const entidades = trozos.flatMap((t) => {
     const tipo = /^ {2}0\n([^\n]+)/.exec(t)[1];
+    if (plano.plantilla && tipo === 'ATTRIB') {
+      const tag = /\n {2}2\n([^\n]*)/.exec(t)?.[1];
+      const campo = plano.atributos?.[tag];
+      if (campo != null) {
+        let r = poner(t, '1', String(campo));
+        const ancho = plano.anchosAtributos?.[tag];
+        if (ancho && campo) r = poner(r, '40', n(Math.min(Number(/\n 40\n([^\n]*)/.exec(t)?.[1]), ancho / anchoArial(campo, 1))));
+        return [r];
+      }
+    }
+    if (plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) return [poner(t, '1', plano.materiales)];
     if (tipo === 'ACAD_TABLE') return [];
-    if (/\n {2}5\n([0-9A-F]+)\n/.exec(t)[1] === viejo) return [];
-    if (['ATTRIB', 'SEQEND'].includes(tipo) && new RegExp(`\\n330\\n${viejo}\\n`).test(t)) return [];
-    if (tipo === 'MTEXT' && /MATERIALES/.test(t)) return [];
+    if (!plano.plantilla && /\n {2}5\n([0-9A-F]+)\n/.exec(t)[1] === viejo) return [];
+    if (!plano.plantilla && ['ATTRIB', 'SEQEND'].includes(tipo) && new RegExp(`\\n330\\n${viejo}\\n`).test(t)) return [];
+    if (!plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) return [];
     if (tipo === 'TEXT' && /EMPATE:/.test(t)) return [];
     if (tipo === 'VIEWPORT') {
       const id = Number(/\n 69\n\s*(\d+)/.exec(t)?.[1]);
@@ -148,7 +159,7 @@ export function escribirDxfPlano(plano, cabecera) {
   // Ventanas adicionales de una presentación específica (notas y detalles de taller).
   const plantillaVentana = trozos.find(t => /^ {2}0\nVIEWPORT\n/.test(t) && /\n 69\n\s*3\n/.test(t));
   for (const [id, v] of Object.entries(ventanas)) {
-    if (Number(id) <= 3) continue;
+    if (Number(id) <= 3 || trozos.some(t => /^ {2}0\nVIEWPORT\n/.test(t) && Number(/\n 69\n\s*(\d+)/.exec(t)?.[1]) === Number(id))) continue;
     let t = poner(plantillaVentana, '5', nuevo());
     t = poner(t, '69', String(id));
     entidades.push(encuadrar(t, v));
@@ -161,7 +172,7 @@ export function escribirDxfPlano(plano, cabecera) {
     + papel('TEXT', 7, 'AcDbText', ` 10\n${n(rc.x0)}\n 20\n${n(rc.y1 + 2)}\n 30\n0.0\n 40\n${n(Math.min(2.2, (rc.x1 - rc.x0) / anchoArial(cabecera.tituloCorte || 'CORTE', 1)))}\n  1\n${cabecera.tituloCorte || 'CORTE'}\n  7\narial\n100\nAcDbText\n`);
 
   // Dibujo en el modelo.
-  const ent = (tipo, capa, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${MODELO}\n100\nAcDbEntity\n  8\n${capa}\n100\n${sub}\n${cuerpo}`;
+  const ent = (tipo, capa, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${MODELO}\n100\nAcDbEntity\n  8\n${capa}\n${plano.coloresModelo?.[capa] == null ? '' : ` 62\n${plano.coloresModelo[capa]}\n`}100\n${sub}\n${cuerpo}`;
   let modelo = '';
   const lineas = [...plano.lineas, ...corte.lineas];
   const polilineas = [...plano.polilineas, ...corte.polilineas];
@@ -194,7 +205,8 @@ export function escribirDxfPlano(plano, cabecera) {
 
   // Cotas de verdad, que se seleccionan y se modifican (Iván, 20/10/2026): DIMENSION con los estilos de
   // cota de la plantilla y su bloque ya dibujado como lo dibuja el CAD.
-  const cotas = [...(plano.cotas ?? []), ...(corte.cotas ?? [])].map((c, i) => cotaDxf(c, i + 1, nuevo, ent));
+  const baseCotas = plano.plantilla ? Math.max(0, ...[...src.matchAll(/\n {2}2\n\*D(\d+)\n/g)].map(m => Number(m[1]))) : 0;
+  const cotas = [...(plano.cotas ?? []), ...(corte.cotas ?? [])].map((c, i) => cotaDxf(c, baseCotas + i + 1, nuevo, ent));
   modelo += cotas.map((c) => c.entidad).join('');
 
   src = src.slice(0, ini) + entidades.join('') + insercion + modelo + src.slice(fin);

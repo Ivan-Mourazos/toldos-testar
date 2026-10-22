@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { numero, registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
@@ -45,21 +46,29 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
       'NO PONER NUNCA LAS ETIQUETAS EN LA PROPIA LONA', 'AL CORTE', 'COSER VELCRO', '0233175']) expect(dxf.includes(texto), texto).toBe(true);
     for (const texto of ['PUERTA A ·', 'CORTE ·', 'OBSERVACIÓN RPS', 'CERRAR E.T']) expect(dxf.includes(texto), texto).toBe(false);
     const ent = registrosDxf(dxf);
-    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN WEB')).toHaveLength(1);
-    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN')).toHaveLength(0);
+    // Iván sustituyó el criterio del cajetín web por la plantilla fija de Portanova.
+    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN')).toHaveLength(1);
+    expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN WEB')).toHaveLength(0);
     const alzado = modelo(dxf).filter(r => numero(r, 10) < 105 && numero(r, 20) > 95);
     for (const texto of ['X3', 'A1', 'A2', 'REVÉS', '0233175']) expect(alzado.some(r => valor(r, 1) === texto)).toBe(true);
   });
 
-  it('encuadra el alzado a toda la izquierda y el corte arriba a la derecha, por encima del cajetín web', () => {
+  it('conserva las cinco ventanas de Portanova, con el alzado a la izquierda y el corte a la derecha', () => {
     const vistas = registrosDxf(plano()).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1);
     const izquierda = vistas.find(r => numero(r, 69) === 2)!;
-    const derecha = vistas.find(r => numero(r, 69) === 3)!;
+    const derecha = vistas.find(r => numero(r, 69) === 4)!;
+    expect(vistas).toHaveLength(5);
     expect(numero(izquierda, 40)).toBeGreaterThan(140);
     expect(numero(izquierda, 41)).toBeGreaterThan(170);
     expect(numero(izquierda, 10)).toBeLessThan(100);
     expect(numero(derecha, 10)).toBeGreaterThan(210);
-    expect(numero(derecha, 20) - numero(derecha, 41) / 2).toBeGreaterThan(90);
+    expect(numero(derecha, 20) - numero(derecha, 41) / 2).toBeGreaterThan(55);
+    const plantilla = registrosDxf(readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8'));
+    for (const id of [3, 5, 6]) expect(vistas.find(r => numero(r, 69) === id)?.pares).toEqual(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)?.pares);
+    const atributos = registrosDxf(plano()).filter(r => r.tipo === 'ATTRIB');
+    for (const [tag, dato] of [['PEDIDO', 'AR2605134'], ['OF', '0233175'], ['CLIENTE', 'PORTANOVA'], ['TÉCNICO', 'IVÁN'], ['REV', 'DAVID'], ['20/12/18', '22/10/26']]) {
+      expect(atributos.find(r => valor(r, 2) === tag) && valor(atributos.find(r => valor(r, 2) === tag)!, 1)).toBe(dato);
+    }
   });
 
   it('acota el saco, el cristal y la lona según el corte recibido, sin fijar su colocación', () => {
@@ -70,7 +79,7 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     for (const medida of [218.5, 26, 204, 56.5, 300]) expect(medidas).toContain(medida);
     for (const c of corte.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'))) expect(medidas).toContain(c.largo / 10);
     // El transparente conserva el multiplicador del bot aunque solo se anide una muestra.
-    const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) >= 110 && numero(r, 20) > 87);
+    const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) >= 110 && numero(r, 20) > 88);
     expect(muestras.filter(r => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toHaveLength(2);
     expect(muestras.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5)).toBe(true);
   });
@@ -81,7 +90,22 @@ describe('Regresión: resultados completos anteriores al plano específico de en
     ['apilable', apilable, 'bb8e4835b0d00e4e35227f0344bd71f1c69d6bc9775ccf98df5f73e066a30262'],
     ['autorreparable', autorreparable, 'ace51b8a5327add6503ec4c195ce3c2cb12ffced66919332ceda3f424c0a356a'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
-    expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', crear()), cabecera })).digest('hex')).toBe(hash);
+    const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
+    expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
+  });
+  it.each([apilable, autorreparable])('Portanova cambia la hoja, manteniendo el dibujo del otro modelo', crear => {
+    const p = crear(), pedido = pedidoDe('AR2600001', p);
+    const propio = escribirPlanoPuertas({ pedido, cabecera });
+    const anterior = escribirPlanoPuertas({ pedido: { ...pedido, cabecera: { clienteRps: { codigo: '009999' } } }, cabecera });
+    const geometria = (dxf: string) => registrosDxf(dxf).filter(r => valor(r, 67) !== '1' && numero(r, 20) > 50 && numero(r, 10) > 99)
+      .map(r => ({ tipo: r.tipo, pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330, 62].includes(k) && !(k === 2 && r.tipo === 'DIMENSION')) }));
+    expect(geometria(propio)).toEqual(geometria(anterior));
+    expect(registrosDxf(propio).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1)).toHaveLength(5);
+  });
+  it('AR2605134 de otro cliente conserva la hoja web y usa el nuevo dibujo de enrollable', () => {
+    const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', puerta()), cabecera: { ...cabecera, cliente: 'OTRO CLIENTE' } });
+    expect(registrosDxf(dxf).some(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN WEB')).toBe(true);
+    expect(registrosDxf(dxf).some(r => r.tipo === 'INSERT' && valor(r, 67) !== '1' && valor(r, 2) === 'FLECHA2')).toBe(true);
   });
   it('la presentación de toldos conserva su resultado byte por byte', () => {
     const vacio = { lineas: [], polilineas: [], textos: [], cotas: [] };

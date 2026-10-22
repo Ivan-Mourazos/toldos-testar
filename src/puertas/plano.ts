@@ -3,7 +3,9 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { esVertical, geometriaAlzado, type CotaAlzado, type FormaAlzado } from './alzado.ts';
 import { calcularPuerta, MODELOS_PUERTAS } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
-import { escribirPlanoEnrollables } from './planoEnrollable.ts';
+import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, escribirPlanoEnrollables, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
+import { esClientePortanova } from './clientePortanova.ts';
+import { presentacionPortanova } from './plantillaPortanova.ts';
 import type { PedidoPuertas, Punto } from './tipos.ts';
 
 // Plano de puertas para revisar (fase 2): la presentación A4 de la oficina con su cajetín, como toldos y
@@ -21,8 +23,9 @@ type Texto = { capa: string; x: number; y: number; h: number; valor: string; gir
 type Arco = { capa: string; x: number; y: number; r: number; desde: number; hasta: number };
 type Circulo = { capa: string; x: number; y: number; r: number };
 type Cota = { capa: string; estilo: string; x1: number; y1: number; x2: number; y2: number; giro: number; d: number; valor: number };
-interface Lienzo { lineas: Linea[]; polilineas: Polilinea[]; textos: Texto[]; arcos: Arco[]; circulos: Circulo[]; cotas: Cota[] }
-const lienzo = (): Lienzo => ({ lineas: [], polilineas: [], textos: [], arcos: [], circulos: [], cotas: [] });
+interface Lienzo { lineas: Linea[]; polilineas: Polilinea[]; textos: Texto[]; arcos: Arco[]; circulos: Circulo[]; cotas: Cota[];
+  inserciones: LienzoEnrollable['inserciones']; sombreados: LienzoEnrollable['sombreados'] }
+const lienzo = (): Lienzo => ({ lineas: [], polilineas: [], textos: [], arcos: [], circulos: [], cotas: [], inserciones: [], sombreados: [] });
 
 // Cada clase del alzado, en una capa de la plantilla.
 const CAPAS: Record<string, string> = {
@@ -133,6 +136,14 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
   // Las puertas, una al lado de otra, con la parte de arriba a la misma altura.
   let cursor = 0, arriba = 0, abajo = 0;
   pedido.elementos.forEach(({ input: p }, i) => {
+    if (p.modelo === 'PUERTAENR') {
+      const d = dibujarAlzadoEnrollable(p, String.fromCharCode(65 + (i % 26)));
+      const ox = cursor - d.zona.x0;
+      sumarLienzo(L, d.lienzo, ox);
+      arriba = Math.max(arriba, d.zona.y1); abajo = Math.min(abajo, d.zona.y0);
+      cursor += d.zona.x1 - d.zona.x0 + SEPARACION;
+      return;
+    }
     const g = geometriaAlzado(p, calcularPuerta(p));
     const ox = cursor - g.vista.xMin;
     pintarAlzado(L, g.formas, ox, g.letraBase);
@@ -214,14 +225,7 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
 
   // A metros, a 100 m del origen.
   const m = (v: number) => ORIGEN_M + v / 100;
-  const aM = (G: Lienzo) => ({
-    lineas: G.lineas.map(l => ({ ...l, x1: m(l.x1), y1: m(l.y1), x2: m(l.x2), y2: m(l.y2) })),
-    polilineas: G.polilineas.map(q => ({ ...q, puntos: q.puntos.map(([a, b]) => [m(a), m(b)]) })),
-    textos: G.textos.map(t => ({ ...t, x: m(t.x), y: m(t.y), h: t.h / 100 })),
-    arcos: G.arcos.map(a => ({ ...a, x: m(a.x), y: m(a.y), r: a.r / 100 })),
-    circulos: G.circulos.map(k => ({ ...k, x: m(k.x), y: m(k.y), r: k.r / 100 })),
-    cotas: G.cotas.map(k => ({ ...k, x1: m(k.x1), y1: m(k.y1), x2: m(k.x2), y2: m(k.y2), d: m(k.d) })),
-  });
+  const aM = (G: Lienzo) => lienzoAMetros(G, ORIGEN_M, ORIGEN_M);
   const zona = (z: typeof zonaCorte) => ({ x0: m(z.x0), y0: m(z.y0), x1: m(z.x1), y1: m(z.y1) });
   const plano = { ...aM(L), corte: aM(C), zonas: { toldos: zona(zonaDibujo), corte: zona(zonaCorte) }, corteDerecho: true };
 
@@ -231,7 +235,10 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
   const tituloCorte = cortes.length === 1
     ? `CORTE · ${cortes[0].material} · ROLLO DE ${cm(cortes[0].anchoRollo).toLocaleString('es-ES')} · ${metros(cortes[0].largo)}`
     : `CORTE · ${cortes.map(c => `${c.material} ${metros(c.largo)}`).join(' + ') || 'SIN CORTE'}`;
-  return escribirDxfPlano(plano, {
+  return escribirDxfPlano({ ...plano,
+    ...(pedido.elementos.some(e => e.input.modelo === 'PUERTAENR') ? { bloques: [bloqueFlechaEnrollable] } : {}),
+    ...(esClientePortanova(pedido, cabecera.cliente) ? { ...presentacionPortanova(pedido, cabecera, plano.zonas), coloresModelo: { corte: 7 } } : {}),
+  }, {
     pedido: pedido.orderCode, of: unicos(puertas.map(p => p.of)).join(' / '), cliente: textoSeguro(cabecera.cliente),
     tecnico: textoSeguro(cabecera.tecnico), revisor: textoSeguro(cabecera.revisor), fecha, pagina: '1/1',
     material: textoSeguro(material), subtitulo: 'MEDIDAS EN CM · PUERTA DE LONA', tituloCorte: textoSeguro(tituloCorte),

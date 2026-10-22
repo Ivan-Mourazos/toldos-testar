@@ -53,7 +53,7 @@ export function leerPlanoDxf(ruta) {
         const h = Math.hypot(q[0] - origen[0], q[1] - origen[1]);
         const giro = r.tipo === 'MTEXT' ? Math.atan2(n(r, 21), n(r, 11, 1)) * 180 / Math.PI : n(r, 50);
         salida.push({ ...comun, tipo: 'texto', punto, h, ancho: n(r, 41), giro, ancla: r.tipo === 'MTEXT' ? n(r, 71, 1) : alineado ? 5 : 7,
-          valor: limpiarTextoDxf(todos(r, 3).join('') + (valor(r, 1) ?? '')) });
+          valor: limpiarTextoDxf((r.tipo === 'MTEXT' ? todos(r, 3).join('') : '') + (valor(r, 1) ?? '')) });
       } else if (r.tipo === 'INSERT') {
         const bloque = bloques.get(valor(r, 2)); if (!bloque) continue;
         const a = n(r, 50) * Math.PI / 180, sx = n(r, 41, 1), sy = n(r, 42, 1);

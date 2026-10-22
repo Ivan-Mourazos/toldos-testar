@@ -70,6 +70,8 @@ export interface PedidoPuertas {
   schemaVersion: 1;
   kind: 'puertas';
   orderCode: string;
+  /** Identificación del cliente conservada al guardar para revisión. */
+  cabecera?: { cliente?: string; clienteRps?: { codigo?: string } };
   elementos: Array<{ id: string; input: Puerta }>;
   summary?: { customer: string; technician: string; reviewer: string; orderDate: string; ofs: string[]; models: string[]; awnings: number; diagnostics: number };
 }
