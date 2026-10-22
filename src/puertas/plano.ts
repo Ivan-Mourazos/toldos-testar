@@ -9,9 +9,9 @@ import { presentacionPortanova } from './plantillaPortanova.ts';
 import type { PedidoPuertas, Punto } from './tipos.ts';
 
 // Plano de puertas para revisar (fase 2): la presentación A4 de la oficina con su cajetín, como toldos y
-// remolques (Iván, 22/10/2026: «es una presentación de CAD, como toldos»). Arriba, el alzado de cada puerta
-// tal como lo enseña la web (src/puertas/alzado.ts), una al lado de otra, con cotas de verdad; debajo, el
-// corte del rollo. Se dibuja en cm y se pasa a metros, lejos del origen, como remolques.
+// remolques (Iván, 22/10/2026: «es una presentación de CAD, como toldos»). Las enrollables tienen el
+// dibujo de taller de planoEnrollable.ts; los otros alzados conservan alzado.ts. Portanova usa su hoja
+// fija y los otros clientes la hoja web. Se dibuja en cm y se pasa a metros, lejos del origen.
 
 const ORIGEN_M = 100;
 const SEPARACION = 60;   // entre puertas
@@ -227,7 +227,13 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
   const m = (v: number) => ORIGEN_M + v / 100;
   const aM = (G: Lienzo) => lienzoAMetros(G, ORIGEN_M, ORIGEN_M);
   const zona = (z: typeof zonaCorte) => ({ x0: m(z.x0), y0: m(z.y0), x1: m(z.x1), y1: m(z.y1) });
-  const plano = { ...aM(L), corte: aM(C), zonas: { toldos: zona(zonaDibujo), corte: zona(zonaCorte) }, corteDerecho: true };
+  const portanova = esClientePortanova(pedido, cabecera.cliente);
+  // La ventana fija de Portanova es alta: el corte se aparta en modelo para que su margen
+  // de encuadre nunca enseñe parte del alzado. Solo cambia esta traslación, no las piezas.
+  const dxCorte = portanova ? 100 : 0;
+  const zc = zona(zonaCorte);
+  const plano = { ...aM(L), corte: lienzoAMetros(C, ORIGEN_M + dxCorte, ORIGEN_M),
+    zonas: { toldos: zona(zonaDibujo), corte: { ...zc, x0: zc.x0 + dxCorte, x1: zc.x1 + dxCorte } }, corteDerecho: true };
 
   const puertas = pedido.elementos.map(e => e.input);
   const fecha = (cabecera.fecha ?? '').split('-').reverse().map((x, k) => (k === 2 ? x.slice(2) : x)).join('/');
@@ -237,7 +243,7 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
     : `CORTE · ${cortes.map(c => `${c.material} ${metros(c.largo)}`).join(' + ') || 'SIN CORTE'}`;
   return escribirDxfPlano({ ...plano,
     ...(pedido.elementos.some(e => e.input.modelo === 'PUERTAENR') ? { bloques: [bloqueFlechaEnrollable] } : {}),
-    ...(esClientePortanova(pedido, cabecera.cliente) ? { ...presentacionPortanova(pedido, cabecera, plano.zonas), coloresModelo: { corte: 7 } } : {}),
+    ...(portanova ? { ...presentacionPortanova(pedido, cabecera, plano.zonas), coloresModelo: { corte: 7 } } : {}),
   }, {
     pedido: pedido.orderCode, of: unicos(puertas.map(p => p.of)).join(' / '), cliente: textoSeguro(cabecera.cliente),
     tecnico: textoSeguro(cabecera.tecnico), revisor: textoSeguro(cabecera.revisor), fecha, pagina: '1/1',

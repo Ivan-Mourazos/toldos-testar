@@ -79,9 +79,24 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     for (const medida of [218.5, 26, 204, 56.5, 300]) expect(medidas).toContain(medida);
     for (const c of corte.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'))) expect(medidas).toContain(c.largo / 10);
     // El transparente conserva el multiplicador del bot aunque solo se anide una muestra.
-    const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) >= 110 && numero(r, 20) > 88);
+    const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) > 109.8 && numero(r, 20) > 88);
     expect(muestras.filter(r => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toHaveLength(2);
     expect(muestras.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5)).toBe(true);
+  });
+  it('el rollo usa las rayas DISCO1 ya fusionadas del corte, sin cerrar los orillos', () => {
+    const pedido = pedidoDe('AR2605134', puerta());
+    const corte = generarCortePuertas(pedido).cortes.find(c => c.colocadas.some(t => t.pieza.clase === 'pano'))!;
+    const ent = modelo(escribirPlanoPuertas({ pedido, cabecera }));
+    const largo = ent.find(r => r.tipo === 'DIMENSION' && numero(r, 42) === corte.largo / 10)!;
+    const y0 = numero(largo, 23), y1 = y0 + corte.anchoRollo / 1000;
+    const lineas = ent.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1' && numero(r, 10) >= 110
+      && numero(r, 20) >= y0 - 1e-6 && numero(r, 20) <= y1 + 1e-6);
+    const maquina = corte.entidades.lineas.filter(r => r.capa === 'DISCO1');
+    expect(lineas).toHaveLength(maquina.length);
+    for (const l of maquina) expect(lineas.some(r => Math.abs(numero(r, 10) - (110 + l.x1 / 1000)) < 1e-6
+      && Math.abs(numero(r, 11) - (110 + l.x2 / 1000)) < 1e-6
+      && Math.abs(numero(r, 20) - (y0 + l.y1 / 1000)) < 1e-6
+      && Math.abs(numero(r, 21) - (y0 + l.y2 / 1000)) < 1e-6)).toBe(true);
   });
 });
 
@@ -98,7 +113,8 @@ describe('Regresión: resultados completos anteriores al plano específico de en
     const propio = escribirPlanoPuertas({ pedido, cabecera });
     const anterior = escribirPlanoPuertas({ pedido: { ...pedido, cabecera: { clienteRps: { codigo: '009999' } } }, cabecera });
     const geometria = (dxf: string) => registrosDxf(dxf).filter(r => valor(r, 67) !== '1' && numero(r, 20) > 50 && numero(r, 10) > 99)
-      .map(r => ({ tipo: r.tipo, pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330, 62].includes(k) && !(k === 2 && r.tipo === 'DIMENSION')) }));
+      .map(r => ({ tipo: r.tipo, pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330, 62].includes(k) && !(k === 2 && r.tipo === 'DIMENSION'))
+        .map(([k, v]) => [k, numero(r, 10) > 150 && [10, 11, 12, 13, 14].includes(k) && !(k === 11 && r.tipo === 'MTEXT') ? (Number(v) - 100).toFixed(6) : v]) }));
     expect(geometria(propio)).toEqual(geometria(anterior));
     expect(registrosDxf(propio).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1)).toHaveLength(5);
   });

@@ -71,7 +71,7 @@ export interface PedidoPuertas {
   kind: 'puertas';
   orderCode: string;
   /** Identificación del cliente conservada al guardar para revisión. */
-  cabecera?: { cliente?: string; clienteRps?: { codigo?: string } };
+  cabecera?: { cliente?: string; fecha?: string; clienteRps?: { codigo?: string; nombre?: string } };
   elementos: Array<{ id: string; input: Puerta }>;
   summary?: { customer: string; technician: string; reviewer: string; orderDate: string; ofs: string[]; models: string[]; awnings: number; diagnostics: number };
 }

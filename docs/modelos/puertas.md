@@ -339,19 +339,25 @@ CERRAR E.T. 2 CM MÁXIMO en las enrollables. Los otros modelos conservan sus ins
 El corte resumido usa las piezas y las colocaciones devueltas por `generarCortePuertas`:
 no depende de un anidado concreto ni reordena el plano por su cuenta. El saco y el cristal
 se dibujan una vez con su multiplicador y sus cotas totales; la lona lleva todas sus piezas,
-sus marcas y las cotas del rollo. En AR2605134 son 708 × 300, seis paños, nueve E.T. de pie y
+sus marcas y las cotas del rollo. Usa las rayas fusionadas del corte de máquina, sin cerrar
+orillos ni repetir aristas compartidas (aclaración posterior de Iván al revisar la comparación).
+En AR2605134 son 708 × 300, seis paños, nueve E.T. de pie y
 seis cachos encima. La colocación y el orden A1/A2 se deciden en el corte, no en el plano.
 
-`node scripts/contrastar-plano-enrollable.mjs <DXF manual local> <pedido JSON local>` escribe
+`node scripts/contrastar-plano-enrollable.mjs <DXF mano3 local> <pedido JSON local> tmp/plano-enrollable <DXF mano/out local>` escribe
 `tmp/plano-enrollable/comparacion.{md,json}`, el DXF generado, las dos páginas lado a lado y
 ocho comparaciones de capas. Compara rayas, medidas, colores, posiciones, textos, cotas,
 bloques y sombreados; proyecta también las ventanas a mm de papel. La referencia de dibujo
 es mano3 de AR2605134; las notas que se borraron al limpiar esa copia se contrastan con la
 plantilla fija y la primera copia mano/out. El informe distingue sus fuentes y las
 diferencias de identificación o presentación autorizadas. Las pruebas conservan hashes
-de los DXF completos de apilable, autorreparable y de la presentación común de toldos.
+de los DXF completos de apilable y autorreparable para clientes que mantienen la hoja web,
+y de la presentación común de toldos. Con Portanova se comprueba la misma geometría y sus
+rótulos, admitiendo solo una traslación del corte en modelo para que una ventana no vea el
+alzado de la otra. Las páginas de AR2605036 y AR2604904 se han revisado en la plantilla fija.
 
-`src/puertas/alzado.ts` conserva una única geometría para la pantalla y el plano. Los ventanales
+Para apilables y autorreparables, `src/puertas/alzado.ts` conserva una única geometría para la
+pantalla y el plano. Las enrollables usan el dibujo CAD detallado descrito arriba. Los ventanales
 consecutivos tienen sus cachos, cristales, ejes compartidos y cotas propios. El cristal se identifica
 por la cota de corte, sin leyenda dentro. Los paños llevan rótulos grandes separados; «AL CORTE»
 va vertical a ambos lados, y las instrucciones de Portanova se distribuyen según cada modelo.

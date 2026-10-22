@@ -74,7 +74,7 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
     ? [[-T - 3.75, 3.5], [-H + 11, -ejes.at(-1)! + 3.75]] : [[-H + 11, 3.5]];
   paños.forEach(([abajo, arriba], i) => {
     contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
-    const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 15);
+    const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 18);
     identificar(l, p, `${letra}${i + 1}`, F / 2, (a + b) / 2, F, b - a);
   });
   linea(l, 'referencias', 0, 0, F, 0);
@@ -98,7 +98,7 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
     flecha(l, F / 2, yMarca, superior ? 0 : 180, i === 1 ? -1 : 1);
     if (!ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + 3.75, F, -b + 3.75);
     cota(l, -9.15 + i, -b - 3.75, -9.15 + i, -b + 3.75, -9.15 + i, 'XERAL 5');
-    texto(l, '3 CM (HUECOS)', F / 2 - 34.6534, -b + (superior ? 14.7311 : i === 1 ? -7.59 : 14.187), 7, { ancla: 1 });
+    texto(l, '3 CM (HUECOS)', F / 2 - (i === 0 ? 34.6534 : i === 1 ? 34.2446 : 33.6842), -b + (superior ? 14.7311 : i === 1 ? -7.59 : 14.187), 7, { ancla: 1 });
   });
   linea(l, 'ROTULADOR', 0, -H + 13, F, -H + 13);
   linea(l, 'referencias', 0, -H, F, -H);
@@ -196,7 +196,6 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     for (const t of usadas) {
       const p = t.pieza;
       const P = ([x, y]: Punto): Punto => [t.x / 10 + (t.girada ? p.alto - y : x), yc + t.y / 10 + (t.girada ? x : y)];
-      contorno(l, 'DISCO1', p.contorno.map(P));
       // Las marcas largas y las flechas de cada pieza vienen del corte, sin reconstruir su anidado.
       const marcas = p.marcas.filter(([x1, y1, x2, y2]) => Math.abs(x2 - x1) > p.ancho / 2 && y1 === y2);
       for (const [x1, y1, x2, y2] of marcas) {
@@ -216,6 +215,7 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
       }
     }
     // Los huecos, radios y mininúmeros conservan las coordenadas de las entidades de máquina.
+    l.lineas.push(...c.entidades.lineas.filter(a => a.capa === 'DISCO1').map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));
     l.arcos.push(...c.entidades.arcos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })));
     l.circulos.push(...c.entidades.circulos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })));
     l.lineas.push(...c.entidades.lineas.filter(a => a.capa === 'CUTTER').map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));

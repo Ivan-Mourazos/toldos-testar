@@ -24,7 +24,7 @@ describe('escribirPlanoPuertas', () => {
     expect(textos).not.toContain('T');
     const estilos = registrosDxf(dxf, 'TABLES').filter(r => r.tipo === 'DIMSTYLE').map(r => valor(r, 2));
     expect(estilos).toContain('XERA 15');
-    expect(estilos).toContain('XERAL 15');
+    expect(estilos).toContain('XERAL 5');
     // El contorno de la puerta y el corte del rollo.
     expect(ent.some(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1' && numero(r, 20) > 95)).toBe(true);
     expect(ent.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1').length).toBeGreaterThan(4);
