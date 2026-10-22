@@ -128,8 +128,9 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(valor(materiales, 1)).toBe('MATERIALES:\\PLAC 900 BLANCO 9016\\PLAC 900 AMARILLO/NEGRO');
   });
 
-  // Renovada para anclar 13/14 a las piezas; también se protege el resto de entidades de 57bd154.
-  it('AR2605134 conserva todas las entidades de main 57bd154 excepto las cotas autorizadas', () => {
+  // Renovada para anclar 13/14 a las piezas (con la raya corta del orillo para la cota del rollo) y por el
+  // CAJETIN TGM de Portanova (7816500); el resto de entidades no cambia.
+  it('AR2605134 conserva todas sus entidades salvo las cotas autorizadas', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
       enrollable: { T: 169, D: 60, margen: 6, empates: [] } };
@@ -137,8 +138,8 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       .filter(r => r.tipo !== 'DIMENSION' && !(r.tipo === 'LINE' && valor(r, 8) === 'cotas')).map(r => ({ tipo: r.tipo,
         pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
-      .toBe('1944bda646571ee7631e5ef76e97a78499b29e738a8e5016e40daf432d794027');
+      .toBe('875991cb473902b1612f8b26c90a4881adfcbfb58366dae6fef501ea729d018e');
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('0d7870164efe2bda9fc4086e0bdd1ad4bc0a5da633b1ef827fc95de5ac05be1a');
+      .toBe('1b34f010225beef11cabe604847c5531f3a78e76979a120728ed4aa2c7ad76ba');
   });
 });
