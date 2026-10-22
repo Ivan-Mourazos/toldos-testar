@@ -43,6 +43,9 @@
 .puerta-bolsillo { fill:none; stroke:var(--tramo-trabajo); stroke-width:1.5; stroke-dasharray:2 1; }
 .puerta-bolsillo-marca { fill:none; stroke:var(--tramo-ajustado); stroke-width:2; }
 .puerta-rotulador { fill:none; stroke:var(--tramo-ajustado); stroke-width:.6; }
+.puerta-espaciador-central { fill:none; stroke:var(--text-muted); stroke-width:.6; }
+.puerta-espaciador-central-marca { fill:none; stroke:var(--tramo-ajustado); stroke-width:.6; }
+.puerta-empate-autorreparable { fill:none; stroke:var(--text-muted); stroke-width:.6; }
 .puerta-entrada-alzado { fill:color-mix(in srgb,var(--surface-2) 82%,var(--text-muted)); stroke:var(--text-muted); stroke-width:.7; }
 .puerta-varilla { stroke:var(--text); stroke-width:3; }
 .puerta-alzado svg .puerta-saco-texto { fill:var(--surface); font-weight:600; }

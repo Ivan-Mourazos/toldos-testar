@@ -217,6 +217,16 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const empates = p.autorreparable.empates;
     const plan=repartirPanos({desde:12,hasta:p.alto+3.5,frente:ancho,rollo:p.rollo,normal:true,indicados:empates.length?empates.map(eje=>({eje:eje+12,solape:2})):undefined});
     reparto(plan,'Paño'); r.uniones.push(...plan.uniones.map(u=>({altura:u.eje,solape:u.solape})));
+    // AR2604904: desde DISCO1, no desde los extremos de la raya horizontal.
+    const distancia=p.autorreparable.distanciaEspaciador??10;
+    if(!Number.isFinite(distancia)||distancia<=0||distancia*2>=ancho) aviso('ESPACIADOR','Revisa la distancia de las rayas laterales al borde según el pedido.');
+    else for(const {pieza:x,desde} of paneles) {
+      // Las rayas paran 2 cm antes de cada borde y a 30 cm de la cabecera terminada.
+      const fin=n(Math.min(x.alto-2,p.alto-30-desde));
+      if(fin<=2) continue;
+      const posiciones=[distancia,ancho-distancia,...(p.autorreparable.espaciadorCentral?[ancho/2-1.9]:[])];
+      for(const posicion of posiciones) x.marcas.push([n(posicion),2,n(posicion),fin]);
+    }
     agregar(pieza('Entrada delantera','entrada',p.frente+11,21));
     agregar(pieza('Entrada trasera','entrada',p.frente+11,21));
     const saco = agregar(pieza('Saco de 120','saco',p.frente,32,p.materialSaco,p.rolloSaco));

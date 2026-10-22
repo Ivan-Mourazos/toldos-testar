@@ -31,6 +31,9 @@ const CAPAS: Record<string, string> = {
   'puerta-hueco-alzado': 'marca', 'puerta-bolsillo-marca': 'marca', 'puerta-empate': 'marca',
   'puerta-linea-guia': 'texto',
   'puerta-rotulador': 'ROTULADOR',
+  'puerta-espaciador-central': 'referencias',
+  'puerta-espaciador-central-marca': 'ROTULADOR',
+  'puerta-empate-autorreparable': 'referencias',
 };
 const capa = (clase: string) => CAPAS[clase] ?? 'referencias';
 

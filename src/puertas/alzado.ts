@@ -157,13 +157,18 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
 
   // Autorreparable: entrada superior con salida de 5,5 cm, cremalleras y espaciador de 10 cm
   if (auto) {
+    const distancia = p.autorreparable.distanciaEspaciador ?? 10;
     rect('puerta-entrada-alzado', -5.5, -3.5, F + 11, 21);
     linea('puerta-guia', 0, 0, 0, H);
     linea('puerta-guia', F, 0, F, H);
-    linea('puerta-cota', 10, 17.5, 10, H - 14, '4 3');
-    linea('puerta-cota', F - 10, 17.5, F - 10, H - 14, '4 3');
-    cota({ x1: 0, y1: H * 0.62, x2: 10, y2: H * 0.62, linea: H * 0.62, valor: 10, marcas: 0, texto: { x: 5, y: H * 0.62 - 3, ancla: 'middle' } });
-    cota({ x1: F - 10, y1: H * 0.62, x2: F, y2: H * 0.62, linea: H * 0.62, valor: 10, marcas: 0, texto: { x: F - 5, y: H * 0.62 - 3, ancla: 'middle' } });
+    linea('puerta-cota', distancia, 17.5, distancia, H - 14, '4 3');
+    linea('puerta-cota', F - distancia, 17.5, F - distancia, H - 14, '4 3');
+    cota({ x1: 0, y1: H * 0.62, x2: distancia, y2: H * 0.62, linea: H * 0.62, valor: distancia, marcas: 0, texto: { x: distancia / 2, y: H * 0.62 - 3, ancla: 'middle' } });
+    cota({ x1: F - distancia, y1: H * 0.62, x2: F, y2: H * 0.62, linea: H * 0.62, valor: distancia, marcas: 0, texto: { x: F - distancia / 2, y: H * 0.62 - 3, ancla: 'middle' } });
+    if (p.autorreparable.espaciadorCentral) {
+      linea('puerta-espaciador-central', F / 2, 30, F / 2, H - 14);
+      linea('puerta-espaciador-central-marca', F / 2 - 1.9, 30, F / 2 - 1.9, H - 14);
+    }
     cota({ x1: -16, y1: -3.5, x2: -16, y2: 17.5, linea: -16, valor: 21, marcas: 4, texto: { x: -22, y: 8, ancla: 'end' } });
     cota({ x1: F, y1: 30, x2: F, y2: H, linea: F + 64, valor: H - 30, estilo: 'XERAL', marcas: 4,
       texto: { x: F + 68, y: (H + 30) / 2, ancla: 'start' } });
@@ -256,7 +261,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
 
   // Líneas de empate
   for (const u of resultado.uniones) {
-    linea('puerta-empate', 0, H - u.altura, F, H - u.altura);
+    if (auto) {
+      linea('puerta-empate-autorreparable', 0, H - u.altura - u.solape / 2, F, H - u.altura - u.solape / 2);
+      linea('puerta-empate-autorreparable', 0, H - u.altura + u.solape / 2, F, H - u.altura + u.solape / 2);
+    } else linea('puerta-empate', 0, H - u.altura, F, H - u.altura);
     if (!u.tubo) nota(`EMPATE ${numAlzado(u.solape)}cm`, 40, H - u.altura - 4, 5);
     marca(H - u.altura - u.solape / 2);
     marca(H - u.altura + u.solape / 2, -1);

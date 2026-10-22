@@ -198,9 +198,11 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     const limites = [30, ...resultado.uniones.map(u => H - u.altura).sort((a, b) => a - b), H - 14];
     limites.slice(1).forEach((y, i) => add(`pano-${i}`, `A${i + 1}`, F * 0.65, i === 0 ? 45 : (limites[i] + y) / 2 + 40, grande));
     lateral('cremallera-izq', 'CREMALLERA ESPECIAL PORTANOVA', -9, H * 0.7, 8);
-    lateral('espaciador-izq', 'ESPACIADOR ESPECIAL PORTANOVA', 17, H * 0.7, 8);
+    const distancia = p.autorreparable.distanciaEspaciador ?? 10;
+    lateral('espaciador-izq', 'ESPACIADOR ESPECIAL PORTANOVA', distancia + 7, H * 0.7, 8);
     lateral('cremallera-der', 'CREMALLERA ESPECIAL PORTANOVA', F + 17, H * 0.7, 8);
-    lateral('espaciador-der', 'ESPACIADOR ESPECIAL PORTANOVA', F - 17, H * 0.7, 8);
+    lateral('espaciador-der', 'ESPACIADOR ESPECIAL PORTANOVA', F - distancia - 7, H * 0.7, 8);
+    if (p.autorreparable.espaciadorCentral) lateral('espaciador-central', 'ESPACIADOR ESPECIAL PORTANOVA', F / 2 - 8, H * 0.7, 8);
     add('saco', 'SACO DE 120', F / 2, H + 10, 10, { x: 0, y: H + 1, ancho: F, alto: 18 });
   }
 
@@ -262,6 +264,8 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
 
   const margenLateral = p.modelo === 'PUERTAUTO' ? 27 : 4;
   const obstaculos: CajaTexto[] = [
+    ...(p.modelo === 'PUERTAUTO' && p.autorreparable.espaciadorCentral
+      ? [{ x: F / 2 - 15, y: 30, ancho: 17, alto: Math.max(0, H - 44) }] : []),
     ...ventanas,
     ...bandasTubos,
     ...cajaBolsillo,

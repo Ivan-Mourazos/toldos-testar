@@ -34,7 +34,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
   };
   if (pedido === 'AR2604904') return {
     ...base('PUERTAUTO', 426, 515), of: '0232817', color: 'BLANCO 9016',
-    autorreparable: { empates: [299] },
+    autorreparable: { empates: [299], espaciadorCentral: true, distanciaEspaciador: 10 },
   };
   throw new Error(`Pedido sin referencia de plano: ${pedido}`);
 }

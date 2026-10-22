@@ -33,7 +33,7 @@ export interface Puerta {
     ventanales?: Array<{ D: number; margen: number }>;
     empates: Array<{ pano: 'superior' | 'inferior'; altura: number; solape: number; tubo?:number }> };
   apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number; saco: 80 | 120 | null; doble: boolean; empates: number[] | null };
-  autorreparable: { empates: number[] };
+  autorreparable: { empates: number[]; espaciadorCentral?: boolean; distanciaEspaciador?: number };
 }
 export interface AvisoPuerta { codigo: string; nivel: 'error' | 'aviso'; texto: string }
 export interface PiezaPuerta {

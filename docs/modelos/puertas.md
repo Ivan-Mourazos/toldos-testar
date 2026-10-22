@@ -79,6 +79,41 @@ Saco actual **de 120 fijo**; el saco antiguo de 110 no es una opción.
 
 No se inventan cremalleras, guías, espaciadores ni refuerzos de stock a partir de estas piezas de lona.
 
+### Espaciadores según el pedido (Iván, 22/10/2026)
+
+`autorreparable.espaciadorCentral` es opcional y empieza desmarcado. El técnico lo activa si el
+pedido dibuja líneas verticales en el medio; no depende del frente. Iván confirmó una puerta
+400 × 461 con central (ventanas 156 × 40; cadena 30 / 156 / 28 / 156 / 30) y otra 220 × 371 sin
+central (X2; ventanas 74 × 40; 25 / 74 / 22 / 74 / 25), ambas a 141 del bajo. AR2604904,
+426 × 515, también la lleva. `autorreparable.distanciaEspaciador` permite introducir en cm la
+distancia de las rayas laterales al borde según el pedido; si falta, conserva los 10 cm del
+alzado anterior. Debe ser positiva y menor que medio frente. El pedido de AR2604904 indica
+100 mm; su plano lo acota como 10 cm.
+
+El alzado y el plano comparten la geometría: central continua a F/2 y F/2 − 1,9, desde 30 de
+cabecera hasta 14 del bajo, con «ESPACIADOR ESPECIAL PORTANOVA» vertical. La segunda línea
+va a ROTULADOR. Los empates de 2 cm se ven con sus dos bordes y «EMPATE 2cm»; la central los
+cruza y el corte conserva el mismo mininúmero de unión en los dos paños. Fuente: copia local
+`genericas/planos/AR2604904.dxf`, zona 496,8 / −69 / 502,3 / −62,3, y las capturas de Iván
+transmitidas por el coordinador. Se mantienen siempre las dos E.T. de (F + 11) × 21.
+
+En el corte se marcan los dos laterales a `distanciaEspaciador` y F − `distanciaEspaciador`
+desde DISCO1 y, solo con la casilla, la central a F/2 − 1,9. El ancho del cuerpo sigue siendo
+F: en AR2604904 son 426, nunca 423. La raya horizontal de rotulador está retranqueada
+1,5 cm; por eso medir desde ella daba erróneamente 8,5 cm para el lateral. Cada paño lleva
+sus verticales, con 2 cm de retranqueo en sus extremos y parando a 30 de la cabecera terminada
+(33,5 del borde superior de corte). En A2 de AR2604904: X 10 / 211,1 / 416, Y 2–298;
+en A1: las mismas X, Y 2–175. Se trasladan y giran junto con el paño a la capa ROTULADOR.
+
+`scripts/contrastar-espaciadores-puertas.mjs <estudio local>` lee 20 cortes y 27 paños,
+comprueba bordes DISCO1 y las seis referencias de `__fixtures__/espaciadores-reales.json`
+y produce la tabla y datos en `tmp/ui-audit/puertas-espaciador/contraste-espaciadores.{md,json}`.
+Incluye paños girados de AR2604402 y AR2604013. Se conservan las diferencias históricas de
+extremos (0, 1 y 1,5 cm), orientación y ancho en la tabla; la referencia aplicada es
+AR2604904. En AR2604526 hay central en los dos paños de 350 (X 173,1), aunque no aparezca en
+el alzado revisado: no se usa esa discrepancia para activar la casilla. Las verticales
+115,2 / 402,2 / 412,2 / 428,7 pertenecen a otras piezas, no a esos dos paños.
+
 ## Comprobaciones y corte
 
 ### Bolsillo opcional común: solo marcas
@@ -302,7 +337,8 @@ crea inventarios de texto/altura/giro y cotas/estilo, DXF y comparaciones PNG en
 El inventario comprueba presencia de texto y medidas; la semejanza de posiciones requiere mirar las PNG.
 El informe conserva las diferencias literales: «HASTA» corrige «ATA» en AR2604904; la OF se identifica
 sin el prefijo «OF.» y la cantidad va en la cabecera cuando es mayor que uno. La nota particular
-de 3 cm de AR2605065 y el espaciador central están pendientes en Q-PU01 y Q-PU02.
+de 3 cm de AR2605065 es una excepción (Q-PU01 contestada); el espaciador central se configura
+según el dibujo del pedido (Q-PU02 contestada).
 
 `scripts/test-puertas-plano-fase3-e2e.mjs` siembra los cinco pedidos únicamente en `tmp/` de su
 instancia aislada, comprueba dos cristales en AR2605065 y toma veinte capturas del alzado en claro

@@ -1,0 +1,8 @@
+[
+  {"pedido":"AR2604904","frente":426,"alto":515,"centralEnCorte":true,"panos":[300,208.5],"xDesdeDisco":[10,211.1,416],"fuente":"genericas/bot/AR2604904.dxf"},
+  {"pedido":"AR2604717","frente":472,"alto":470,"centralEnCorte":true,"panos":[300,163.5],"xDesdeDisco":[10,234.1,462],"fuente":"genericas/bot/AR2604717.dxf"},
+  {"pedido":"AR2604764","frente":110,"alto":263,"centralEnCorte":false,"panos":[254.5],"xDesdeDisco":[10,100],"fuente":"genericas/bot/AR2604764.dxf"},
+  {"pedido":"AR2604402","frente":182,"alto":340,"centralEnCorte":false,"panos":[331.5],"xDesdeDisco":[10,172],"fuente":"genericas/bot/AR2604402.dxf","girado":true},
+  {"pedido":"AR2604013","frente":249,"alto":385,"centralEnCorte":false,"panos":[376.5],"xDesdeDisco":[10,239],"fuente":"genericas/bot/AR2604013.dxf","girado":true},
+  {"pedido":"AR2604526","frente":350,"alto":420,"centralEnCorte":true,"panos":[300,113.5],"xDesdeDisco":[10,173.1,340],"fuente":"genericas/bot/AR2604526.dxf","observacion":"El corte contiene central aunque el alzado revisado no la muestra; no deducir la opción del ancho."}
+]

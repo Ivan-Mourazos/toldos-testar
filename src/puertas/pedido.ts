@@ -33,6 +33,9 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(p.enrollable.sacoPartido!==undefined && typeof p.enrollable.sacoPartido!=='boolean')return error();
     if(p.enrollable.ventanales!==undefined && (!lista(p.enrollable.ventanales,99) || !p.enrollable.ventanales.every(v=>cotas(v,['D','margen']))))return error();
     if(!objeto(p.autorreparable) || !numeros(p.autorreparable.empates)) return error();
+    if(p.autorreparable.espaciadorCentral!==undefined && typeof p.autorreparable.espaciadorCentral!=='boolean') return error();
+    const distancia=p.autorreparable.distanciaEspaciador;
+    if(distancia!==undefined && (typeof distancia!=='number' || !Number.isFinite(distancia) || distancia<=0 || distancia*2>=(p.frente as number))) return error();
     unidades+=p.cantidad as number;
     if(unidades>100) return error();
   }
