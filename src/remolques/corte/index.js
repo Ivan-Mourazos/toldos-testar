@@ -108,32 +108,44 @@ export function generarCorteRemolques(pedido) {
     const juntos = lonas.length ? baqs.filter((e) => cabeEnRollo(e, params)) : [];
     const aparte = baqs.filter((e) => !juntos.includes(e));
     const extras = juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], refuerzos, marcarBaquetones));
-    const la = lonas.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0 };
     const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, refuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
-    const dx = la.largo;
-    const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])]);
-    const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx }))];
-    const largo = la.largo + cb.largo;
-    // Encima del corte: el material resumido y, debajo, «DERECHO» (por dónde se corta), una sola vez.
-    const corto = resumirMaterial(material);
-    const arriba = Math.max(...lineas.flatMap((l) => [l.y1, l.y2]));
-    textos.push({ capa: 'texto', x: 0, y: arriba + 300, h: 100, valor: corto });
-    textos.push({ capa: 'texto', x: 0, y: arriba + 120, h: 100, valor: 'DERECHO' });
-    const entidades = {
-      lineas: [...lineas, ...la.rot.map(([x1, y1, x2, y2]) => ({ capa: 'ROTULADOR', x1, y1, x2, y2 }))],
-      textos,
-      circulos: [...la.ollaos, ...cb.marcas.map(([x, y]) => [x + dx, y])].map(([x, y]) => ({ capa: 'ROTULADOR', x, y, r: R_OLLAO })),
-      arcos: la.arcos.map((a) => ({ capa: 'DISCO1', ...a })),
-    };
+    const sinLonas = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0, conTira: false, apartes: [] };
+    const conTira = lonas.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : sinLonas;
+    // Con un contorno que no cabe en el rollo, dos opciones en el mismo DXF, y el técnico de la máquina elige (Iván,
+    // 22/10/2026: «un corte con la tira puesta en el corte y otro con la tira entera»).
+    const opciones = conTira.conTira
+      ? [[conTira, 'OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA'],
+        [cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas, 'entera'), 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']]
+      : [[conTira, null]];
+    for (const [la, opcion] of opciones) {
+      const dx = la.largo;
+      const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])]);
+      const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx }))];
+      const largo = la.largo + cb.largo;
+      // Encima del corte: el material resumido y, debajo, «DERECHO» (por dónde se corta), una sola vez; con dos
+      // opciones, la de cada corte encima de todo.
+      const corto = resumirMaterial(material);
+      const arriba = Math.max(...lineas.flatMap((l) => [l.y1, l.y2]));
+      textos.push({ capa: 'texto', x: 0, y: arriba + 300, h: 100, valor: corto });
+      textos.push({ capa: 'texto', x: 0, y: arriba + 120, h: 100, valor: 'DERECHO' });
+      if (opcion) textos.push({ capa: 'texto', x: 0, y: arriba + 500, h: 120, valor: opcion });
+      const entidades = {
+        lineas: [...lineas, ...la.rot.map(([x1, y1, x2, y2]) => ({ capa: 'ROTULADOR', x1, y1, x2, y2 }))],
+        textos,
+        circulos: [...la.ollaos, ...cb.marcas.map(([x, y]) => [x + dx, y])].map(([x, y]) => ({ capa: 'ROTULADOR', x, y, r: R_OLLAO })),
+        arcos: la.arcos.map((a) => ({ capa: 'DISCO1', ...a })),
+      };
+      cortes.push({
+        nombre, material, materialCorto: corto, largo, refuerzos, ...(opcion ? { opcion } : {}),
+        elementos: els.map((e) => ({ of: e.of, descripcion: descripcion(e), cantidad: e.input.cantidad || 1 })),
+        avisos: [...la.avisos, ...cb.avisos],
+        apartes: la.apartes,
+        entidades,
+      });
+    }
     cortadas.lonas.push(...lonas);
     cortadas.baquetones.push(...baqs);
     cortadas.refuerzos ||= refuerzos;
-    cortes.push({
-      nombre, material, materialCorto: corto, largo, refuerzos,
-      elementos: els.map((e) => ({ of: e.of, descripcion: descripcion(e), cantidad: e.input.cantidad || 1 })),
-      avisos: [...la.avisos, ...cb.avisos],
-      entidades,
-    });
   }
   if (!cortes.length) return { cortes, aMano, archivo: null };
   // Plano para revisar, en metros (Iván, 20/10/2026): el dibujo de confección de cada lona alta y de cada
@@ -142,7 +154,7 @@ export function generarCorteRemolques(pedido) {
     dxf: escribirPlanoRemolques({
       pedido, lonas: cortadas.lonas, baquetones: cortadas.baquetones, params, refuerzos: cortadas.refuerzos,
       letras: letras.size ? letras : null,
-      cortes: cortes.map((c) => ({ entidades: c.entidades, material: c.materialCorto, largo: c.largo })),
+      cortes: cortes.map((c) => ({ entidades: c.entidades, material: c.materialCorto, largo: c.largo, opcion: c.opcion, apartes: c.apartes })),
     }),
     codificacion: 'utf8',
   };

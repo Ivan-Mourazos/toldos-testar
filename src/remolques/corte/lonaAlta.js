@@ -298,6 +298,30 @@ export function contornoConEmpate(c, n = 1, pre = '') {
   return { grande, tiras };
 }
 
+// La otra opción del contorno que no cabe (Iván, 22/10/2026: «un corte con la tira puesta en el corte y otro con la
+// tira entera»): la tira de una pieza, tan larga como el contorno, unida a la grande por un solo empate con el mismo
+// número en las dos puntas. Las dos piezas en el mismo sentido que en contornoConEmpate.
+export function contornoConTiraEntera(c, n = 1, pre = '') {
+  const A = c.w, B = c.h;
+  const s = A - ROLLO + EMPATE, desde = A - s;
+  const grande = pieza(B, ROLLO);
+  seg(grande, 0, 0, B, 0); seg(grande, B, 0, B, ROLLO); seg(grande, B, ROLLO, 0, ROLLO); seg(grande, 0, ROLLO, 0, 0);
+  const tira = pieza(B, s); // x = v, y = u − desde
+  seg(tira, 0, 0, B, 0); seg(tira, B, 0, B, s); seg(tira, B, s, 0, s); seg(tira, 0, s, 0, 0);
+  for (const [u, v] of c.ollaos) {
+    if (u <= ROLLO - 10) grande.ollaos.push([v, u]);
+    else tira.ollaos.push([v, u - desde]);
+  }
+  for (const [u1, v1, u2, v2] of c.rot) {
+    if (u1 <= ROLLO) marca(grande, v1, u1, v2, u2);
+    else marca(tira, v1, u1 - desde, v2, u2 - desde);
+  }
+  const m = EMPATE / 2, punta = 10, union = `${pre}${n}`;
+  numero(grande, punta, ROLLO - m, union); numero(grande, B - punta, ROLLO - m, union);
+  numero(tira, punta, m, union); numero(tira, B - punta, m, union);
+  return { grande, tira };
+}
+
 // Coloca una pieza: `giro` 0 (tal cual) o -90 (la base pasa a la izquierda, como en AR2605120).
 function colocar(p, x, y, giro) {
   const t = giro ? (u, v) => [x + v, y + p.w - u] : (u, v) => [x + u, y + v];
@@ -385,10 +409,12 @@ function colocarTodo(piezas, intentos = 400) {
 
 // `letras`: Map elemento → letra de cada unidad (solo si el corte lleva más de un remolque). `extras`: otras
 // piezas de la misma lona para colocarlas a la vez por huecos (los baquetones, baqueton.js piezasBaqueton).
-// `marcar`: si el nombre de cada pieza va también en rotulador (ver rotular).
-export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], marcar = true) {
-  const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [] };
-  const piezas = [], tapas = [];
+// `marcar`: si el nombre de cada pieza va también en rotulador (ver rotular). `tira`: con un contorno que no cabe
+// en el rollo, la tira de atrás «empatada» en dos (la opción 1) o «entera» (la opción 2; Iván, 22/10/2026). Devuelve
+// también si algún contorno lleva tira (`conTira`) y las piezas que van aparte para cortar de restos (`apartes`).
+export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], marcar = true, tira = 'empatada') {
+  const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], conTira: false, apartes: [] };
+  const piezas = [], tapas = [], tirasEnteras = [];
   let union = 1; // número de la siguiente unión de empate (sin letras)
   for (const el of elementos) {
     const i = el.input;
@@ -399,9 +425,12 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
       const L = letras?.get(el)?.[u] ?? '';
       const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
       const conEmpate = c.h > ROLLO && c.w > ROLLO;
-      const emp = conEmpate ? contornoConEmpate(c, L ? 1 : union, L.toLowerCase()) : null;
+      if (conEmpate) out.conTira = true;
+      const entera = conEmpate && tira === 'entera' ? contornoConTiraEntera(c, L ? 1 : union, L.toLowerCase()) : null;
+      const emp = conEmpate && !entera ? contornoConEmpate(c, L ? 1 : union, L.toLowerCase()) : null;
       if (emp && !L) union += 3;
-      const grande = rotular(emp ? emp.grande : c, L && `${L}1`, undefined, marcar);
+      if (entera && !L) union += 1;
+      const grande = rotular(entera ? entera.grande : emp ? emp.grande : c, L && `${L}1`, undefined, marcar);
       grande.contornoDe = el.of;
       piezas.push(grande, rotular(structuredClone(d.p), L && `${L}2`, undefined, marcar), rotular(structuredClone(t.p), L && `${L}3`, undefined, marcar));
       if (emp) {
@@ -412,11 +441,17 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
         piezas.push(rotular(emp.tiras[0], L && `${L}4-1`, enEmpate, marcar), rotular(emp.tiras[1], L && `${L}4-2`, enEmpate, marcar));
         out.avisos.push(`${el.of}: el contorno no cabe en el rollo: empate de 2 cm a lo largo y tira de ${(c.w - ROLLO + EMPATE) / 10} cm empatada en dos.`);
       }
+      if (entera) {
+        const t = rotular(entera.tira, L && `${L}4`, [entera.tira.w / 2, 5], marcar);
+        t.deRestos = `TIRA ENTERA ${L ? `${L}4 ` : ''}${entera.tira.w / 10} × ${entera.tira.h / 10} CM`;
+        tirasEnteras.push(t);
+        out.avisos.push(`${el.of}: el contorno no cabe en el rollo: empate de 2 cm a lo largo y tira entera de ${entera.tira.w / 10} × ${entera.tira.h / 10} cm.`);
+      }
       // Tapa de la ventana: la ventana + 3 cm, una por ventana (Iván, 20/10/2026). Es la pieza siguiente (B4, o B5 si
       // hay tira empatada) y lleva «VENTANA» debajo de su nombre, o «VENT» si no cabe (Iván, 22/10/2026).
       if (ventana) {
         const tapa = pieza(ventana[0] + 30, ventana[1] + 30); seg(tapa, 0, 0, tapa.w, 0); seg(tapa, tapa.w, 0, tapa.w, tapa.h); seg(tapa, tapa.w, tapa.h, 0, tapa.h); seg(tapa, 0, tapa.h, 0, 0);
-        const nombre = L && `${L}${emp ? 5 : 4}`;
+        const nombre = L && `${L}${emp || entera ? 5 : 4}`;
         tapa.deRestos = `TAPA DE VENTANA ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}${L ? ` (${nombre})` : ''}`;
         tapa.subtitulo = anchoArial('VENTANA', 100) <= Math.min(tapa.w, tapa.h) * 0.9 ? 'VENTANA' : 'VENT';
         tapas.push(rotular(tapa, nombre, undefined, marcar));
@@ -440,6 +475,28 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
     out.textos.push({ capa: 'texto', x: x0 + 100, y: -200 - 150 * n, h: 100, valor: `${tapa.deRestos}: CORTAR DE RESTOS` });
     out.avisos.push(`${tapa.deRestos}: no cabe sin alargar el corte; se deja para cortar de restos.`);
   });
+  // La tira entera: en un hueco que no alargue el corte o, si no cabe, aparte a la derecha para cortar de restos, con
+  // sus medidas (como el trozo separado de toldos).
+  let xAparte = pack.largo + 1500;
+  for (const t of tirasEnteras) {
+    let sitio = null;
+    for (const giro of [0, -90]) {
+      const w = giro ? t.h : t.w, h = giro ? t.w : t.h;
+      const l = h <= ROLLO && libres.find((q) => w <= q.w + 0.01 && h <= q.h + 0.01 && q.x + w <= pack.largo + 0.01);
+      if (l && !sitio) sitio = { x: l.x, y: l.y, w, h, giro };
+    }
+    if (sitio) { libres = partir(libres, sitio); puestas.push([t, sitio]); continue; }
+    const giro = t.w > ROLLO ? 0 : -90, w = giro ? t.h : t.w, h = giro ? t.w : t.h;
+    puestas.push([t, { x: xAparte, y: 0, w, h, giro }]);
+    out.apartes.push({ x: x0 + xAparte, y: 0, w, h, nombre: t.deRestos });
+    out.textos.push(
+      { capa: 'texto', x: x0 + xAparte + w / 2, y: Math.max(h, 600) + 500, h: 150, valor: 'CORTAR DE RESTOS', centrado: true },
+      { capa: 'texto', x: x0 + xAparte + w / 2, y: Math.max(h, 600) + 300, h: 100, valor: 'SI NO HAY RESTO, CORTAR DEL ROLLO', centrado: true },
+      { capa: 'texto', x: x0 + xAparte + w / 2, y: Math.max(h, 600) + 120, h: 80, valor: t.deRestos, centrado: true },
+    );
+    out.avisos.push(`${t.deRestos}: no cabe sin alargar el corte; va aparte para cortar de restos.`);
+    xAparte += w + 1500;
+  }
   for (const [p, sitio] of [...piezas.map((p, k) => [p, pack.sitios[k]]), ...puestas]) {
     const pc = colocar(p, x0 + sitio.x, sitio.y, sitio.giro);
     for (const k of ['lineas', 'rot', 'ollaos', 'arcos']) out[k].push(...pc[k]);

@@ -351,7 +351,7 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
   // bot (el primero abajo), cada uno con su material y sus cotas.
   const C = { lineas: [], polilineas: [], textos: [], arcos: [], circulos: [], cotas: [] };
   const cm = (v) => v / 10, FILA = 400;
-  cortes.forEach(({ entidades: corte, largo: largoRollo }, k) => {
+  cortes.forEach(({ entidades: corte, largo: largoRollo, apartes = [] }, k) => {
     const yc = -900 - (cortes.length - 1 - k) * FILA;
     for (const l of corte.lineas) C.lineas.push({ capa: l.capa, x1: cm(l.x1), y1: yc + cm(l.y1), x2: cm(l.x2), y2: yc + cm(l.y2) });
     for (const t of corte.textos) C.textos.push({ ...t, valor: String(t.valor), x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
@@ -363,6 +363,14 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
       { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: cm(largoRollo), y2: yc, giro: 0, d: yc - 25, valor: cm(largoRollo) },
       { capa: 'cotas', estilo: 'XERAL', x1: 0, y1: yc, x2: 0, y2: yc + alto, giro: 90, d: -25, valor: alto },
     );
+    // Lo que va aparte para cortar de restos (la tira entera; Iván, 22/10/2026: «se pone individual con las cotas»).
+    for (const a of apartes) {
+      const [x1, x2, y2] = [cm(a.x), cm(a.x + a.w), yc + cm(a.h)];
+      C.cotas.push(
+        { capa: 'cotas', estilo: 'XERAL', x1, y1: yc, x2, y2: yc, giro: 0, d: yc - 25, valor: cm(a.w) },
+        { capa: 'cotas', estilo: cm(a.h) < 25 ? 'XERAL 5' : 'XERAL', x1: x2, y1: yc, x2, y2, giro: 90, d: x2 + 15, valor: cm(a.h) },
+      );
+    }
   });
   const ycAbajo = -900 - (cortes.length - 1) * FILA;
   // La zona del corte cuenta también lo que ocupan los textos (el material de arriba no va centrado).
@@ -387,13 +395,15 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
   const s = pedido.summary ?? {};
   const fecha = (s.orderDate ?? '').split('-').reverse().map((x, k) => (k === 2 ? x.slice(2) : x)).join('/');
   const metros = (mm) => `${(mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 })} M`;
-  const material = cortes.map((c) => c.material).join(' / ');
+  const material = [...new Set(cortes.map((c) => c.material))].join(' / ');
   const cabecera = {
     pedido: pedido.orderCode, of: [...new Set([...lonas, ...baquetones].map((e) => e.of))].join(' / '), cliente: s.customer ?? '', tecnico: s.technician ?? '', revisor: s.reviewer ?? '',
     fecha, pagina: '1/1', material, subtitulo: 'MEDIDAS EN CM · LONA REMOLQUE',
     tituloCorte: cortes.length === 1
       ? `CORTE · ${material} · ROLLO DE 250 · ${metros(cortes[0].largo)}`
-      : `CORTE · ${cortes.length} LONAS · ROLLO DE 250 · ${cortes.map((c) => metros(c.largo)).join(' + ')}`,
+      : cortes.some((c) => c.opcion) && new Set(cortes.map((c) => c.material)).size === 1
+        ? `CORTE · ${material} · ROLLO DE 250 · DOS OPCIONES: ${cortes.map((c) => metros(c.largo)).join(' / ')}`
+        : `CORTE · ${cortes.length} ${cortes.some((c) => c.opcion) ? 'CORTES' : 'LONAS'} · ROLLO DE 250 · ${cortes.map((c) => metros(c.largo)).join(' + ')}`,
   };
   return escribirDxfPlano(plano, cabecera).dxf;
 }

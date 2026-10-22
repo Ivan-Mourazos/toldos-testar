@@ -22,6 +22,8 @@ export type VistaCorteRemolques = {
     material: string;
     largo: number;
     refuerzos: boolean;
+    /** Con un contorno que no cabe en el rollo, cada una de las dos opciones (tira empatada o entera). */
+    opcion?: string;
     elementos: Array<{ of: string; descripcion: string; cantidad: number }>;
     avisos: string[];
     entidades: EntidadesCorte;
@@ -130,9 +132,10 @@ export function CorteRemolquesVista({ datos }: { datos: VistaCorteRemolques }) {
           {datos.aMano.map((a) => <li key={a.nombre}>{`${a.material}: se corta a mano (${a.motivo}).`}</li>)}
         </ul>
       )}
-      {datos.cortes.map((corte) => (
-        <article className="corte-material" key={corte.nombre}>
+      {datos.cortes.map((corte, i) => (
+        <article className="corte-material" key={`${corte.nombre}-${i}`}>
           <header><h3>{corte.material}</h3><span>{`Rollo de 250 cm · ${corte.nombre}.dxf`}</span></header>
+          {corte.opcion && <p className="corte-aviso">{corte.opcion.replace(' · ELEGIR SOLO UNA', '')} · las dos van en el mismo DXF y el técnico de la máquina elige una.</p>}
           {corte.avisos.length > 0 && <ul className="corte-avisos">{corte.avisos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>}
           <section className="corte-opcion">
             <header><strong>{corte.refuerzos ? 'Con refuerzos en las esquinas' : 'Corte'}</strong><span><b>{metros(corte.largo)} m</b> de rollo</span></header>

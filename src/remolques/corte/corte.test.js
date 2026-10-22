@@ -36,7 +36,8 @@ describe('generarCorteRemolques', () => {
   it('corta dos lonas altas de la misma lona juntas, con letras por remolque (AR2605132)', () => {
     const { cortes, aMano } = generarCorteRemolques(AR2605132);
     expect(aMano).toEqual([]);
-    expect(cortes).toHaveLength(1);
+    // El contorno de A no cabe en el rollo: dos opciones, la tira empatada en dos y la tira entera (Iván, 22/10/2026).
+    expect(cortes.map((x) => x.opcion)).toEqual(['OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA', 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']);
     const [c] = cortes;
     expect(c.nombre).toBe('AR2605132');
     expect(c.largo).toBeLessThanOrEqual(8031);
@@ -108,6 +109,25 @@ describe('generarCorteRemolques', () => {
     const rot = generarCorteRemolques(mixto).cortes.flatMap((c) => rotulador(c));
     expect(rot.filter((t) => !t.literal).map((t) => t.valor)).toEqual([]);
     for (const n of ['a1', 'a2', 'a3']) expect(rot.some((t) => t.literal && t.valor === n)).toBe(true);
+  });
+
+  it('con un contorno que no cabe, dos opciones en el mismo DXF: tira empatada en dos o tira entera (AR2605079)', () => {
+    const { cortes, archivo } = generarCorteRemolques(AR2605079);
+    expect(cortes.map((c) => c.opcion)).toEqual(['OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA', 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']);
+    const [empatada, entera] = cortes;
+    // Opción 1: tres uniones (1, 2 y 3). Opción 2: una sola, con el mismo número en las dos puntas de las dos piezas.
+    expect(rotulador(empatada).filter((t) => t.literal).map((t) => t.valor).sort()).toEqual(['1', '1', '2', '2', '3', '3']);
+    expect(rotulador(entera).filter((t) => t.literal).map((t) => t.valor)).toEqual(['1', '1', '1', '1']);
+    // La tira entera, en el corte si cabe sin alargarlo; si no, aparte para cortar de restos, con sus medidas.
+    const textos = entera.entidades.textos.map((t) => t.valor);
+    if (entera.apartes.length) {
+      expect(textos).toEqual(expect.arrayContaining(['CORTAR DE RESTOS', 'SI NO HAY RESTO, CORTAR DEL ROLLO']));
+      expect(textos.some((v) => /^TIRA ENTERA [0-9]/.test(v))).toBe(true);
+      expect(entera.largo).toBeLessThanOrEqual(empatada.largo);
+    }
+    // Los dos en el mismo DXF del bot, cada uno con su rótulo.
+    const enDxf = registrosDxf(archivo.dxf).filter((r) => ['TEXT', 'MTEXT'].includes(r.tipo)).map((r) => valor(r, 1));
+    expect(enDxf.filter((v) => /ELEGIR SOLO UNA/.test(v))).toHaveLength(2);
   });
 
   it('pone una letra a cada baquetón cuando hay más de uno (AR2605071)', () => {
@@ -263,11 +283,11 @@ describe('generarCorteRemolques', () => {
     const { cortes, archivo } = generarCorteRemolques(AR2605088);
     // Siempre un DXF y un plano por pedido (Iván, 20/10/2026): las dos lonas en el mismo DXF, cada una en su
     // corte (una encima de otra), con su material, y el plano con los dos cortes.
-    expect(cortes).toHaveLength(2);
+    expect(new Set(cortes.map((c) => c.material)).size).toBe(2);
     expect(archivo.nombre).toBe('AR2605088');
     const materiales = registrosDxf(archivo.dxf).filter((r) => ['TEXT', 'MTEXT'].includes(r.tipo)).map((r) => valor(r, 1));
     expect(materiales).toEqual(expect.arrayContaining(['LONA PVC 580 GRIS CLARO 7038', 'LONA PVC 580 GRIS 7037']));
-    expect(materiales.filter((v) => v === 'DERECHO')).toHaveLength(2);
+    expect(materiales.filter((v) => v === 'DERECHO')).toHaveLength(cortes.length);
     const medidas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
     expect(medidas).toEqual(expect.arrayContaining(cortes.map((c) => Math.round(c.largo) / 10)));
     const claro = cortes.find((c) => /GRIS CLARO/.test(c.material));
