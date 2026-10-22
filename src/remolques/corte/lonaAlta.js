@@ -255,32 +255,37 @@ export const DOBLEZ_BASTILLA = 100;
 // el otro sentido y meterlo ya en el corte»).
 const EMPATE = 20;
 // Uniones numeradas desde `n`: n, la pieza grande con la primera media tira; n + 1, con la segunda; n + 2, las
-// dos medias tiras entre sí.
-function contornoConEmpate(c, n = 1, pre = '') {
-  const A = c.w, B = c.h; // u: a lo largo de la lona, delante en 0 y atrás en A
+// dos medias tiras entre sí. Las tres piezas van en el mismo sentido (x a lo ancho del contorno, v; y a lo largo
+// de la lona, u, hacia atrás): para soldarlas basta con moverlas. Antes las tiras iban en espejo y, para soldarlas
+// sin darles la vuelta, su b1 caía donde la grande tiene el b2 (Iván, AR2605192, 22/10/2026).
+export function contornoConEmpate(c, n = 1, pre = '') {
+  const A = c.w, B = c.h; // u: a lo largo de la lona, delante en 0 y atrás en A; v: a lo ancho del contorno
   const s = A - ROLLO + EMPATE, mitad = (B + EMPATE) / 2, desde = A - s; // la tira va de u = desde a u = A
   const grande = pieza(B, ROLLO); // x = v (contorno), y = u (de 0 a 2500, desde delante)
   seg(grande, 0, 0, B, 0); seg(grande, B, 0, B, ROLLO); seg(grande, B, ROLLO, 0, ROLLO); seg(grande, 0, ROLLO, 0, 0);
-  const tiras = [pieza(s, mitad), pieza(s, mitad)]; // x = u - desde, y = v (cada una media tira)
-  for (const t of tiras) { seg(t, 0, 0, s, 0); seg(t, s, 0, s, mitad); seg(t, s, mitad, 0, mitad); seg(t, 0, mitad, 0, 0); }
+  // Cada media tira: x = v (desde 0 la primera y desde (B − 2 cm) / 2 la segunda), y = u − desde.
+  const tiras = [pieza(mitad, s), pieza(mitad, s)];
+  const dv = [0, (B - EMPATE) / 2];
+  for (const t of tiras) { seg(t, 0, 0, mitad, 0); seg(t, mitad, 0, mitad, s); seg(t, mitad, s, 0, s); seg(t, 0, s, 0, 0); }
   for (const [u, v] of c.ollaos) {
     if (u <= ROLLO - 10) grande.ollaos.push([v, u]);
-    else if (v < B / 2) tiras[0].ollaos.push([u - desde, v]);
-    else tiras[1].ollaos.push([u - desde, v - (B - EMPATE) / 2]);
+    else if (v < B / 2) tiras[0].ollaos.push([v, u - desde]);
+    else tiras[1].ollaos.push([v - dv[1], u - desde]);
   }
   // Las marcas de atrás caen en las tiras; la del centro coincide con su unión y no hace falta.
   for (const [u1, v1, u2, v2] of c.rot) {
     if (u1 <= ROLLO) marca(grande, v1, u1, v2, u2);
-    else if (v1 < B / 2) marca(tiras[0], u1 - desde, v1, u2 - desde, v2);
-    else if (v1 > B / 2) marca(tiras[1], u1 - desde, v1 - (B - EMPATE) / 2, u2 - desde, v2 - (B - EMPATE) / 2);
+    else if (v1 < B / 2) marca(tiras[0], v1, u1 - desde, v2, u2 - desde);
+    else if (v1 > B / 2) marca(tiras[1], v1 - dv[1], u1 - desde, v2 - dv[1], u2 - desde);
   }
-  // La grande se une a las tiras por arriba (y = 2500); las tiras, a la grande por x = 0, y entre sí por su
-  // lado corto. Cada número, a 1 cm del borde (en medio de los 2 cm de empate) y a 4 cm de la punta.
-  const m = EMPATE / 2;
+  // La grande se une a las tiras por arriba (y = 2500) y ellas a la grande por abajo (y = 0, que es u = desde);
+  // las tiras, entre sí por su lado corto. Cada número, el mismo en las dos piezas: a 1 cm del borde (en medio de
+  // los 2 cm de empate) y a 1 cm de la punta (Iván, 22/10/2026: «no a 4 cm, ponlas a 1 cm»).
+  const m = EMPATE / 2, punta = 10;
   const u = (k) => `${pre}${n + k}`;
-  numero(grande, 40, ROLLO - m, u(0)); numero(grande, B - 40, ROLLO - m, u(1));
-  numero(tiras[0], m, 40, u(0), 90); numero(tiras[0], s / 2, mitad - m, u(2));
-  numero(tiras[1], m, mitad - 40, u(1), 90); numero(tiras[1], s / 2, m, u(2));
+  numero(grande, punta, ROLLO - m, u(0)); numero(grande, B - punta, ROLLO - m, u(1));
+  numero(tiras[0], punta, m, u(0)); numero(tiras[0], mitad - m, s / 2, u(2), 90);
+  numero(tiras[1], mitad - punta, m, u(1)); numero(tiras[1], m, s / 2, u(2), 90);
   return { grande, tiras };
 }
 

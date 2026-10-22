@@ -157,8 +157,9 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
           }
           const centro = [L && `${L}${tramo === 'delante' ? 1 : 2}`, el.of || pedido, tramo.toUpperCase()].filter(Boolean);
           centro.forEach((v, n) => textos.push({ capa: 'texto', x: x + pz.A / 2, y: alto / 2 + 90 * (centro.length - 1) - 180 * n, h: 100, valor: v, centrado: true }));
-          // Número de unión en las dos puntas, de 1 cm y dentro de los 2 cm de empate (se une por y = 0).
-          for (const nx of [x + 40, x + pz.A - 40]) textos.push({ capa: 'ROTULADOR', x: nx, y: EMPATE / 2, h: 10, valor: `${L.toLowerCase()}1`, centrado: true, literal: true });
+          // Número de unión en las dos puntas, de 1 cm, dentro de los 2 cm de empate (se une por y = 0) y a 1 cm de la
+          // punta (Iván, 22/10/2026: «no a 4 cm, ponlas a 1 cm»).
+          for (const nx of [x + 10, x + pz.A - 10]) textos.push({ capa: 'ROTULADOR', x: nx, y: EMPATE / 2, h: 10, valor: `${L.toLowerCase()}1`, centrado: true, literal: true });
           if (L) textos.push({ capa: 'ROTULADOR', x: x + pz.eb + 15, y: EMPATE + 15, h: 10, valor: `${L}${tramo === 'delante' ? 1 : 2}` });
           x += pz.A;
         }

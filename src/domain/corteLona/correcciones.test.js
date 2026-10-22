@@ -89,26 +89,26 @@ describe('Números de unión de los empates (como en remolques)', () => {
   const pano = (nombre, extra) => ({ nombre, largo: 5000, alto: 2000, of: '0232568', x: 0, y: 0, ancho: 5000, hueco: 2000, girada: false, ...extra });
   const uniones = (colocadas) => dibujo(colocadas, 2500, { of: '', tela: '' }).textos.filter((t) => t.capa === 'ROTULADOR');
 
-  it('empate horizontal: el mismo número en los dos paños, de 1 cm, a 1 cm del borde y a 4 cm de las puntas', () => {
+  it('empate horizontal: el mismo número en los dos paños, de 1 cm, a 1 cm del borde y a 1 cm de las puntas', () => {
     const t = uniones([pano('A1', { marcas: ['abajo'] }), pano('A2', { marcas: [], x: 5000 }), pano('A3', { marcas: ['arriba'], x: 10000 })]);
     expect(t.every((n) => n.h === 10 && n.literal && n.giro === 0)).toBe(true);
     // A1 arriba con a1; A2 abajo con a1 y arriba con a2; A3 abajo con a2.
     expect(t.map((n) => [n.valor, n.x, n.y])).toEqual([
-      ['a1', 40, 1990], ['a1', 4960, 1990],
-      ['a1', 5040, 10], ['a1', 9960, 10], ['a2', 5040, 1990], ['a2', 9960, 1990],
-      ['a2', 10040, 10], ['a2', 14960, 10],
+      ['a1', 10, 1990], ['a1', 4990, 1990],
+      ['a1', 5010, 10], ['a1', 9990, 10], ['a2', 5010, 1990], ['a2', 9990, 1990],
+      ['a2', 10010, 10], ['a2', 14990, 10],
     ]);
   });
 
   it('empate vertical: por los lados, girados; y en una pieza girada, a lo largo de su borde', () => {
     const t = uniones([pano('B1', { marcas: ['arriba', 'abajo'] }), pano('B2', { marcas: ['arriba', 'abajo'], x: 5000 })]);
     expect(t.map((n) => [n.valor, n.x, n.y, n.giro])).toEqual([
-      ['b1', 4990, 40, 90], ['b1', 4990, 1960, 90],
-      ['b1', 5010, 40, 90], ['b1', 5010, 1960, 90],
+      ['b1', 4990, 10, 90], ['b1', 4990, 1990, 90],
+      ['b1', 5010, 10, 90], ['b1', 5010, 1990, 90],
     ]);
     // Girada, lo de arriba de la pieza queda a la izquierda: la unión de arriba de A1 sale a 1 cm del borde izquierdo.
     const g = uniones([pano('A1', { marcas: ['abajo'], girada: true, ancho: 2000, hueco: 5000 }), pano('A2', { marcas: ['arriba'], x: 3000 })]);
-    expect(g.filter((n) => n.x < 2000).map((n) => [n.x, n.y, n.giro])).toEqual([[10, 40, 90], [10, 4960, 90]]);
+    expect(g.filter((n) => n.x < 2000).map((n) => [n.x, n.y, n.giro])).toEqual([[10, 10, 90], [10, 4990, 90]]);
   });
 
   it('van al DXF del bot en ROTULADOR, en minúscula y sin cotas (las cotas solo en el plano)', () => {

@@ -17,7 +17,7 @@ import { generarCorteRemolques, resumirMaterial } from './index.js';
 import { calcLona } from '../calc/lona.ts';
 import { DEFAULT_PARAMS } from '../calc/params.ts';
 import { emptyLona } from '../entradas-vacias.ts';
-import { piezasLona } from './lonaAlta.js';
+import { piezasLona, contornoConEmpate } from './lonaAlta.js';
 import { piezaBaqueton } from './baqueton.js';
 import { escaleraCabeza } from './plano.js';
 
@@ -61,6 +61,26 @@ describe('generarCorteRemolques', () => {
     expect(uniones.filter((t) => t.y === 2490).map((t) => t.valor).sort()).toEqual(['1', '2']);
     // Las medias tiras: el mismo número de la grande y el 3 entre ellas.
     expect(rotulador(c).filter((t) => t.valor === '3')).toHaveLength(2);
+  });
+
+  it('las medias tiras del empate van como la pieza grande, sin espejo, y cada número cae en el mismo punto al soldar (AR2605192)', () => {
+    // Contorno de 254 × 300 cm (la lona alta 253 × 152 × 75 de AR2605192): la tira de atrás sale empatada.
+    const A = 2540, B = 3000, EMPATE = 20, desde = 2500 - EMPATE, mitad = (B + EMPATE) / 2;
+    const { grande, tiras } = contornoConEmpate({ w: A, h: B, ollaos: [], rot: [] }, 1, 'b');
+    // Todas con x a lo ancho del contorno (v) e y a lo largo de la lona (u), hacia atrás: así, para soldarlas, basta
+    // con moverlas, sin girarlas ni darles la vuelta (con la tira en espejo, b1 caía donde la grande tiene b2).
+    expect([tiras[0].w, tiras[0].h]).toEqual([mitad, A - desde]);
+    // Cada número, en coordenadas de la lona (v, u), en el mismo sitio en las dos piezas que se sueldan.
+    const enLona = (p, dv, du) => p.numeros.filter(([, , n]) => /^b[0-9]$/.test(n)).map(([x, y, n]) => [n, x + dv, y + du]);
+    const todos = [...enLona(grande, 0, 0), ...enLona(tiras[0], 0, desde), ...enLona(tiras[1], (B - EMPATE) / 2, desde)];
+    for (const n of ['b1', 'b2', 'b3']) {
+      const sitios = todos.filter(([m]) => m === n).map(([, v, u]) => [v, u]);
+      expect(sitios).toHaveLength(2);
+      expect(sitios[0]).toEqual(sitios[1]);
+    }
+    // A 1 cm del borde (en medio de los 2 cm de empate) y a 1 cm de la punta (Iván, 22/10/2026).
+    expect(todos.find(([n]) => n === 'b1').slice(1)).toEqual([10, 2490]);
+    expect(todos.find(([n]) => n === 'b2').slice(1)).toEqual([B - 10, 2490]);
   });
 
   it('pone una letra a cada baquetón cuando hay más de uno (AR2605071)', () => {

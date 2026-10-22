@@ -67,9 +67,9 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
 
 // Números de unión de los empates, como en remolques (Iván, 20/10/2026): el mismo en los dos paños que se
 // sueldan (a1 entre A1 y A2, a2 entre A2 y A3…), en ROTULADOR de 1 cm, a 1 cm del borde (dentro de los 2 cm
-// de empate, para que quede tapado al soldar) y a 4 cm de cada punta. Con empate horizontal los paños se
+// de empate, para que quede tapado al soldar) y a 1 cm de cada punta (Iván, 22/10/2026: «no a 4 cm, ponlas a 1 cm»). Con empate horizontal los paños se
 // unen por arriba y por abajo (A1 abajo, en la bamba); con empate vertical, por los lados.
-const MEDIO_EMPATE = 10, PUNTA = 40;
+const MEDIO_EMPATE = 10, PUNTA = 10;
 function numerosDeUnion(p, panos) {
   const m = /^([A-Z]+)(\d+)$/.exec(p.nombre);
   if (!m || (panos.get(m[1]) ?? 0) < 2) return [];
