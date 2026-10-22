@@ -286,6 +286,14 @@ function colocar(
     const columnas = maneras
       .flatMap(nueva => (['corto', 'largo'] as const).map(orden => empaquetar(grupo, rollo, nueva, orden)))
       .reduce((mejor, otra) => (largoDe(otra) < largoDe(mejor) - 0.001 ? otra : mejor));
+    // A1 arriba y A2 debajo, como en el alzado (Iván, 22/10/2026). Se apila desde abajo: primero los paños de
+    // código mayor; lo demás (E.T., cachos) queda encima en su orden. El alto de la columna no cambia.
+    const codigo = (t: Columna['piezas'][number]) => codigosPano.get(t.pieza.id) ?? '';
+    for (const columna of columnas) {
+      const panos = columna.piezas.filter(t => t.pieza.clase === 'pano')
+        .sort((a, b) => codigo(b).localeCompare(codigo(a), 'es', { numeric: true }));
+      columna.piezas = [...panos, ...columna.piezas.filter(t => t.pieza.clase !== 'pano')];
+    }
     let largo = 0;
     for (const columna of columnas) {
       let y = 0;

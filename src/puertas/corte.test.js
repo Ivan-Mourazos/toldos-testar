@@ -46,6 +46,13 @@ describe('Corte de puertas', () => {
     expect(lona.colocadas.filter(k => k.pieza.clase === 'pano').every(k => !k.girada)).toBe(true);
     expect(lona.colocadas.filter(k => k.pieza.clase === 'entrada').every(k => k.girada)).toBe(true);
     expect(lona.largo).toBe(7080);
+    // Iván, 22/10/2026: en el corte, A1 arriba y A2 debajo, como en el alzado (y es Y hacia arriba).
+    const textos = lona.entidades.textos;
+    const alturaDe = (codigo) => textos.filter(t => t.valor === codigo).map(t => t.y);
+    expect(Math.min(...alturaDe('A1'))).toBeGreaterThan(Math.max(...alturaDe('A2')));
+    // Las E.T. siguen abajo y los cachos encima, como a mano.
+    const entradas = lona.colocadas.filter(k => k.pieza.clase === 'entrada'), cachos = lona.colocadas.filter(k => k.pieza.clase === 'cacho');
+    expect(Math.min(...cachos.map(k => k.y))).toBeGreaterThanOrEqual(Math.max(...entradas.map(k => k.y)));
   });
   it('mantiene códigos únicos a partir de la puerta 27', () => {
     const p=pedido(),input=p.elementos[0].input;
