@@ -283,9 +283,12 @@ export function generarCortePuertas(
   resultados.forEach((r, idxPuerta) => {
     let indice=idxPuerta+1,letra='';
     while(indice>0) { indice--;letra=String.fromCharCode(65+indice%26)+letra;indice=Math.floor(indice/26); }
-    let nPano = 1;
+    const panos = r.piezas.filter(p => p.clase === 'pano');
+    // El cálculo recorre apilables y autorreparables desde abajo; en el plano de taller A1 va arriba.
+    if (pedido.elementos[idxPuerta].input.modelo !== 'PUERTAENR') panos.reverse();
+    panos.forEach((p, i) => codigosPano.set(p.id, `${letra}${i + 1}`));
     for (const pieza of r.piezas) {
-      codigosPano.set(pieza.id, pieza.clase === 'pano' ? `${letra}${nPano++}` : letra);
+      if (pieza.clase !== 'pano') codigosPano.set(pieza.id, letra);
     }
     for (const pieza of [...r.alternativasSaco?.entero ?? [], ...r.alternativasSaco?.partido ?? []]) codigosPano.set(pieza.id, letra);
   });

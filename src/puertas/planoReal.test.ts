@@ -15,6 +15,21 @@ const dibujo = (pedido: string) => {
 };
 
 describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', () => {
+  it.each([
+    ['AR2605036', 186, 277],
+    ['AR2604904', 208.5, 300],
+  ] as const)('%s: A1 identifica arriba y A2 abajo también en el corte, como en el plano real', (pedido, altoArriba, altoAbajo) => {
+    const p = puertaPlanoReal(pedido), cortes = generarCortePuertas(pedidoDe(pedido, p)).cortes;
+    const lona = cortes.find(c => c.colocadas.some(t => t.pieza.clase === 'pano'))!;
+    for (const [codigo, alto] of [['A1', altoArriba], ['A2', altoAbajo]] as const) {
+      const rotulo = lona.entidades.textos.find(t => t.valor === codigo)!;
+      expect(rotulo).toBeDefined();
+      const pieza = lona.colocadas.find(t => t.pieza.clase === 'pano' && rotulo.x > t.x && rotulo.y > t.y
+        && rotulo.x < t.x + (t.girada ? t.pieza.alto : t.pieza.ancho) * 10
+        && rotulo.y < t.y + (t.girada ? t.pieza.ancho : t.pieza.alto) * 10);
+      expect(pieza?.pieza.alto).toBe(alto);
+    }
+  });
   it.each(['AR2604638', 'AR2604725'])('%s: rótulos separados grandes, dos AL CORTE verticales y cristal sin leyenda', pedido => {
     const { textos } = dibujo(pedido);
     for (const t of ['A1', 'REVÉS', puertaPlanoReal(pedido).of]) {
@@ -41,6 +56,9 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605036', p), cabecera });
     const cotas = registrosDxf(dxf).filter(r => r.tipo === 'DIMENSION');
     expect(registrosDxf(dxf).filter(r => r.tipo === 'ARC' && valor(r, 8) === 'referencias' && Math.abs(numero(r, 40) - .02) < 1e-6)).toHaveLength(24);
+    // AR2605036: la cabecera de 70 lleva el estilo grande; las entradas de 12, XERAL.
+    expect(cotas.some(r => numero(r, 42) === 70 && valor(r, 3) === 'XERA 15')).toBe(true);
+    expect(cotas.some(r => numero(r, 42) === 12 && valor(r, 3) === 'XERAL')).toBe(true);
     for (const medida of [53, 146, 38, 29, 6, 23, 12, 171, 172, 24]) {
       expect(cotas.some(r => Math.abs(numero(r, 42) - medida) < 0.01 && valor(r, 3) === 'XERAL 5'), `cota ${medida}`).toBe(true);
     }
@@ -76,5 +94,10 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
       expect(cotasCorte.some(r => Math.abs(numero(r, 42) - alto) < 0.01)).toBe(true);
     }
     expect(ent.some(r => r.tipo === 'MTEXT' && valor(r, 1) === 'TRANSP. 1000MI')).toBe(true);
+    const cristal = cotasCorte.find(r => Math.abs(numero(r, 42) - 164) < .01)!;
+    expect(cristal).toBeDefined();
+    expect(ent.some(r => r.tipo === 'LINE' && valor(r, 8) === 'referencias'
+      && numero(r, 20) === numero(cristal, 23) && numero(r, 21) === numero(cristal, 23)
+      && Math.abs(numero(r, 11) - numero(r, 10)) === Math.abs(numero(cristal, 14) - numero(cristal, 13)))).toBe(true);
   });
 });

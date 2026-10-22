@@ -18,6 +18,7 @@ interface Anclaje {
   fuera?: boolean;
   tamano?: number;
   giro?: number;
+  destino?: [number, number];
 }
 
 export interface TextoPlano extends CajaTexto {
@@ -145,12 +146,17 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     const vs = [{ D: e.D, margen: e.margen }, ...e.ventanales ?? []];
     const fin = T + vs.reduce((s, v) => s + v.D, 0);
     const bajo = Math.min(H - 13, ...tubos.map(y => H - y).filter(y => y > fin + 4));
-    add('pano-inf', 'A2', F / 2, (fin + bajo) / 2, 20);
+    add('pano-inf', 'A2', F / 2, bajo - fin < 70 ? bajo - 15 : (fin + bajo) / 2, 20);
     const ejes = [T];
     for (const v of vs) ejes.push(ejes.at(-1)! + v.D);
     for (const y of tubos.map(y => H - y)) if (!ejes.some(eje => Math.abs(eje - y) < 0.1)) ejes.push(y);
-    ejes.filter(y => y > 0 && y < H - 13).forEach((y, i) =>
-      add(`et-${i}`, '3 CM (HUECOS)', F / 2, y === fin ? y + 12 : y - 14, 7));
+    ejes.filter(y => y > 0 && y < H - 13).forEach((y, i) => {
+      if (ejes.slice(1, vs.length).includes(y)) {
+        // Entre dos cristales no hay hueco para una leyenda: llamada por fuera al borde de la E.T.
+        anclas.push({ id: `et-${i}`, texto: '3 CM (HUECOS)', x: -85, y: y - 6, tamano: 7,
+          caja: { x: -135, y: y - 18, ancho: 100, alto: 24 }, destino: [0, y - 3.75] });
+      } else add(`et-${i}`, '3 CM (HUECOS)', F / 2, y === fin ? y + 11 : y - 14, 7);
+    });
     lateral('pisar-et', 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 105, H / 2 + 20, 10);
     add('soldar-saco', 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, H - 6.5, 7,
       { x: 3, y: H - 12, ancho: F - 6, alto: 11 });
@@ -304,8 +310,8 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
         y: elegido.y,
         ancho: elegido.ancho,
         alto: elegido.alto,
-        ancla: [a.x, a.y],
-        guia: !a.caja && elegido.distancia > 42,
+        ancla: a.destino ?? [a.x, a.y],
+        guia: Boolean(a.destino) || (!a.caja && elegido.distancia > 42),
       };
     } else {
       const cajaFuera: CajaTexto = { x: -128, y: Math.max(0, a.y - 14), ancho: 82, alto: 80 };
@@ -324,7 +330,7 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
         x: cajaFuera.x,
         y,
         id: a.id,
-        ancla: [a.x, a.y],
+        ancla: a.destino ?? [a.x, a.y],
         guia: true,
       };
     }

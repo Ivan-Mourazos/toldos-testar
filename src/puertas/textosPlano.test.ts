@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { alturasTubos, huecosEntrada, nuevaPuerta } from './calcular.ts';
 import { colocarTextosPuerta, solapaCaja, type CajaTexto } from './textosPlano.ts';
+import { puertaPlanoReal, referenciasPlano } from './__fixtures__/planosReales.ts';
 
 describe('colocarTextosPuerta', () => {
+  it.each(referenciasPlano)('$pedido: las cajas de texto no se pisan ni invaden un cristal', ({ pedido }) => {
+    const p = puertaPlanoReal(pedido), textos = colocarTextosPuerta(p);
+    const cristales: CajaTexto[] = p.ventanas.map(v => ({ x: v.x, y: p.alto - v.y - v.alto, ancho: v.ancho, alto: v.alto }));
+    let eje = p.enrollable.T;
+    if (p.modelo === 'PUERTAENR') for (const v of [{ D: p.enrollable.D, margen: p.enrollable.margen }, ...p.enrollable.ventanales ?? []]) {
+      cristales.push({ x: v.margen, y: eje + 3.75, ancho: p.frente - 2 * v.margen, alto: v.D - 7.5 }); eje += v.D;
+    }
+    textos.forEach((t, i) => {
+      for (const otro of textos.slice(i + 1)) expect(solapaCaja(t, otro), `${t.id} con ${otro.id}`).toBe(false);
+      for (const cristal of cristales) expect(solapaCaja(t, cristal), t.id).toBe(false);
+    });
+  });
   it('encaja los textos de taller en enrollables (AR2604638 y AR2604725) sin solapar tubos, cristal ni textos', () => {
     const p4638 = {
       ...nuevaPuerta('PUERTAENR'),

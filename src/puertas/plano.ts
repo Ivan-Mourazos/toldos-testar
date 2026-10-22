@@ -158,6 +158,22 @@ export function escribirPlanoPuertas({ pedido, cabecera }: {
     const yc = techo - alto;
     const e = c.entidades;
     for (const l of e.lineas) C.lineas.push({ capa: l.capa, x1: cm(l.x1), y1: yc + cm(l.y1), x2: cm(l.x2), y2: yc + cm(l.y2) });
+    // La máquina omite el corte sobre el orillo; el plano debe enseñar ese borde de la pieza.
+    for (const t of c.colocadas) {
+      const p = t.pieza;
+      const P = ([x, y]: Punto): Punto => [cm(t.x) + (t.girada ? p.alto - y : x), cm(t.y) + (t.girada ? x : y)];
+      const r = p.radio;
+      const lados: [Punto, Punto][] = r > 0 ? [
+        [[r, 0], [p.ancho - r, 0]], [[p.ancho, r], [p.ancho, p.alto - r]],
+        [[p.ancho - r, p.alto], [r, p.alto]], [[0, p.alto - r], [0, r]],
+      ] : p.contorno.map((a, i) => [a, p.contorno[(i + 1) % p.contorno.length]]);
+      for (const lado of lados) {
+        const [a, b] = lado.map(P);
+        if (Math.abs(a[1] - b[1]) < .001 && (Math.abs(a[1]) < .001 || Math.abs(a[1] - cm(c.anchoRollo)) < .001)) {
+          C.lineas.push({ capa: 'referencias', x1: a[0], y1: yc + a[1], x2: b[0], y2: yc + b[1] });
+        }
+      }
+    }
     // Los títulos del DXF de máquina están sobre el rollo entero; el plano solo enseña la zona usada.
     for (const t of e.textos.filter(t => t.y <= alto * 10)) C.textos.push({ ...t,
       valor: t.literal ? t.valor.replace(/[\r\n\t\\{}]+/g, ' ').trim() : textoSeguro(t.valor),

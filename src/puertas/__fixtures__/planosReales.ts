@@ -14,12 +14,12 @@ export const referenciasPlano = [
 export function puertaPlanoReal(pedido: string): Puerta {
   if (pedido === 'AR2604638') return { ...puerta4638(), color: 'BLANCO 9016' };
   if (pedido === 'AR2604725') return {
-    ...base('PUERTAENR', 474, 430), of: '0232504', color: 'GRIS 7038', rollo: 650,
+    ...base('PUERTAENR', 474, 430), of: '0232504', color: 'GRIS 7038',
     enrollable: { T: 239, D: 60, margen: 11, empates: [], sacoPartido: true },
     entradas: [60, 131, 191, 241].map(altura => ({ altura, largo: 474, alto: 8, diametro: 30, huecos: [] })),
   };
   if (pedido === 'AR2605065') return {
-    ...base('PUERTAENR', 214, 400), of: '0233051', color: 'BLANCO 9016',
+    ...base('PUERTAENR', 214, 400), of: '0233051', color: 'AZUL 5002',
     enrollable: { T: 209, D: 60, margen: 8, empates: [], ventanales: [{ D: 71, margen: 8 }] },
     entradas: [60, 131, 191, 241].map(altura => ({ altura, largo: 214, alto: 8, diametro: 30, huecos: [] })),
   };
@@ -34,7 +34,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
   };
   if (pedido === 'AR2604904') return {
     ...base('PUERTAUTO', 426, 515), of: '0232817', color: 'BLANCO 9016',
-    autorreparable: { empates: [287] },
+    autorreparable: { empates: [299] },
   };
   throw new Error(`Pedido sin referencia de plano: ${pedido}`);
 }

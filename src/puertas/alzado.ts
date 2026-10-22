@@ -182,7 +182,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     // El cristal se acota con su ancho de corte (hueco + 4).
     if (F - 2 * m > 12) {
       const y = T + Math.min(18.5, D / 2);
-      cota({ x1: m + 2, y1: y, x2: F - m - 2, y2: y, linea: y, valor: F - 2 * m + 4, marcas: 4, texto: { x: F / 2, y: y - 3, ancla: 'middle' } });
+      cota({ x1: m - 2, y1: y, x2: F - m + 2, y2: y, linea: y, valor: F - 2 * m + 4, marcas: 4, texto: { x: F / 2, y: y - 3, ancla: 'middle' } });
     }
   }
 
@@ -214,7 +214,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   for (const b of bandasIzquierda) {
     rect('puerta-entrada-alzado', 0, b.y - b.alto / 2, F, b.alto);
     linea('puerta-tubo', 0, b.y, F, b.y);
-    cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
+    cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, estilo: enr ? 'XERAL 5' : 'XERAL', marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
     marca(b.y + b.alto / 2, -1);
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
@@ -289,6 +289,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     const esT = enr && T > 0 && !tuboParteT && Math.abs(desde - (H - T)) < 0.05 && Math.abs(y - H) < 0.05;
     cota({
       x1: F, y1: H - desde, x2: F, y2: H - y, linea: xCadena, valor: tramo, marcas: 5,
+      estilo: ple && y === H ? 'XERA 15' : 'XERAL',
       ...(esD ? { prefijo: 'D' } : esT ? { prefijo: 'T' } : {}),
       texto: { x: xCadena + 7, y: H - (y + desde) / 2 + 3, ancla: 'start' },
     });
@@ -313,7 +314,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   linea('puerta-cota', 0, y0 + hCorteSaco / 2, wSaco, y0 + hCorteSaco / 2, '5 3');
   if (enr && p.enrollable.sacoPartido) linea('puerta-empate', wSaco / 2, y0, wSaco / 2, y1);
   if (pestanaSaco > 0) {
-    cota({ x1: -pestanaSaco, y1: y0, x2: 0, y2: y0, linea: y0 - 6, valor: pestanaSaco, marcas: 0, texto: { x: -pestanaSaco / 2, y: y0 - 9, ancla: 'middle' } });
+    cota({ x1: -pestanaSaco, y1: y0, x2: 0, y2: y0, linea: y0 - 6, valor: pestanaSaco, estilo: 'XERAL', marcas: 0, texto: { x: -pestanaSaco / 2, y: y0 - 9, ancla: 'middle' } });
   }
   cota({ x1: wSaco, y1: y0, x2: wSaco, y2: y1, linea: wSaco + 12, valor: hCorteSaco, marcas: 4, texto: { x: wSaco + 18, y: y0 + hCorteSaco / 2 + 3, ancla: 'start' } });
   const altoVelcro = auto ? 4 : 8;

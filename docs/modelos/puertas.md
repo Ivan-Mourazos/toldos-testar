@@ -288,7 +288,12 @@ empates y saco de 120. Las notas no crean piezas nuevas.
 
 Cada tramo de corte ocupa solo el ancho usado por sus piezas, con el título de material encima,
 el largo debajo y el ancho usado a la izquierda. Se conservan la colocación, medidas, radios,
-mininúmeros y alternativas que devuelve `generarCortePuertas`; no se cambia el DXF de máquina.
+mininúmeros y alternativas que devuelve `generarCortePuertas`. El anidado y la geometría del DXF de máquina se mantienen.
+En el plano se ven también los bordes que la máquina omite al coincidir con el orillo.
+La identificación sí se corrige, con autorización del coordinador: en apilables y autorreparables,
+A1 es el paño superior y la numeración baja hacia el suelo, igual que el alzado. El anidado no cambia.
+La cota del cristal mide su ancho de corte con los solapes de 2 cm, sin sobrescribir el número de una
+cota que mida otra cosa.
 
 Las referencias reproducibles están en `src/puertas/__fixtures__/planosReales.ts`: pedido, archivo
 y zona del espacio modelo. `node scripts/contrastar-plano-puertas.mjs <carpeta local del estudio puertas>`

@@ -15,8 +15,8 @@ describe('escribirPlanoPuertas', () => {
     const cotas = ent.filter(r => r.tipo === 'DIMENSION').map(r => Math.round(numero(r, 42) * 10) / 10);
     // Frente, alto total y la cadena 60 + 71 + 60 + 123 = 314.
     for (const medida of [172, 314, 60, 71, 123]) expect(cotas).toContain(medida);
-    // El cristal se acota con su ancho de corte: mide 156 y se escribe 164.
-    expect(ent.some(r => r.tipo === 'DIMENSION' && valor(r, 1) === '164')).toBe(true);
+    // El cristal acota su corte real (hueco + 2 cm de solape a cada lado), sin falsear el valor de la cota.
+    expect(ent.some(r => r.tipo === 'DIMENSION' && numero(r, 23) > 95 && numero(r, 42) === 164 && valor(r, 1) === undefined)).toBe(true);
     // D/T quedan en el configurador; el plano de oficina lleva solo las cotas y rótulos separados.
     const textos = ent.filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1));
     for (const t of ['A1', 'REVÉS', '0232309', '3 CM (HUECOS)', 'VARILLA NEGRA (4,5)', 'SACO 900 GR NEGRO']) expect(textos).toContain(t);

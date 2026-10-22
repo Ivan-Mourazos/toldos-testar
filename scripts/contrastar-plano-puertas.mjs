@@ -21,6 +21,12 @@ const leer = archivo => {
   const b = fs.readFileSync(archivo), utf = b.toString('utf8');
   return utf.includes('\ufffd') ? b.toString('latin1') : utf;
 };
+const zonaVentana = (dxf, id) => {
+  const r = registrosDxf(dxf).find(r => r.tipo === 'VIEWPORT' && n(r, 69) === id);
+  if (!r) throw new Error(`Falta la ventana de corte ${id}`);
+  const alto = n(r, 45), ancho = alto * n(r, 40) / n(r, 41), x = n(r, 12), y = n(r, 22);
+  return [x - ancho / 2, y - alto / 2, x + ancho / 2, y + alto / 2];
+};
 
 /** Inventario del modelo, incluyendo textos insertados y cotas; sin tomar las cotas como simples líneas. */
 export function inventarioPlano(dxf, zona) {
@@ -78,13 +84,18 @@ export async function contrastarPlano(carpeta) {
         presente: generado.cotas.some(c => Math.abs(c.medida - medida) < .01 || Math.abs(Number(c.escrito.replace(',', '.')) - medida) < .01) }));
       filas.push({ pedido: ref.pedido, archivo: ref.archivo, zona: ref.zona, textos, cotas, real, generado });
       fs.writeFileSync(`${salidaPlano}/${ref.pedido}-inventario.json`, JSON.stringify(filas.at(-1), null, 2));
-      for (const [fuente, nombre, zona] of [[archivo, 'real', ref.zona], [web, 'web', zonaWeb]]) {
+      const zonas = [[archivo, 'real', ref.zona], [web, 'web', zonaWeb],
+        [archivo, 'corte-real', zonaVentana(dxfReal, 4)], [web, 'corte-web', zonaVentana(dxf, 3)]];
+      for (const [fuente, nombre, zona] of zonas) {
         execFileSync(process.execPath, ['tmp/puertas-plano/pintar-dxf.mjs', fuente, `${salidaPlano}/${ref.pedido}-${nombre}.png`, ...zona.map(String)], { stdio: 'pipe' });
       }
       const foto = nombre => `data:image/png;base64,${fs.readFileSync(`${salidaPlano}/${ref.pedido}-${nombre}.png`).toString('base64')}`;
       const html = `<html lang="es"><meta charset="utf-8"><style>body{margin:0;font:16px Arial;background:white}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}img{width:100%}h1,h2{margin:12px}</style><h1>${ref.pedido} · ${p.frente} × ${p.alto} cm</h1><main><section><h2>Plano real</h2><img src="${foto('real')}"></section><section><h2>Plano generado</h2><img src="${foto('web')}"></section></main></html>`;
       fs.writeFileSync(`${salidaPlano}/${ref.pedido}-comparacion.html`, html);
       await pagina.setContent(html); await pagina.screenshot({ path: `${salidaPlano}/${ref.pedido}-comparacion.png`, fullPage: true });
+      const htmlCorte = html.replace(foto('real'), foto('corte-real')).replace(foto('web'), foto('corte-web')).replace('cm</h1>', 'cm · corte del plano</h1>');
+      fs.writeFileSync(`${salidaPlano}/${ref.pedido}-corte-comparacion.html`, htmlCorte);
+      await pagina.setContent(htmlCorte); await pagina.screenshot({ path: `${salidaPlano}/${ref.pedido}-corte-comparacion.png`, fullPage: true });
       console.log(`${ref.pedido}: ${textos.filter(t => t.presente).length}/${textos.length} textos; ${cotas.filter(c => c.presente).length}/${cotas.length} medidas distintas del alzado real`);
     }
   } finally { await navegador.close(); }
@@ -93,7 +104,7 @@ export async function contrastarPlano(carpeta) {
     ...filas.flatMap(f => [`## ${f.pedido}`, '', `Fuente: ${f.archivo}; zona: ${f.zona.join(' ')}.`, '',
       `Textos sin coincidencia literal: ${f.textos.filter(t => !t.presente).map(t => t.texto).join('; ') || 'ninguno'}.`,
       `Medidas sin coincidencia: ${f.cotas.filter(c => !c.presente).map(c => c.medida).join('; ') || 'ninguna'}.`, '',
-      `Comparación visual: ${f.pedido}-comparacion.png.`, ''])].join('\n');
+      `Comparaciones visuales: ${f.pedido}-comparacion.png y ${f.pedido}-corte-comparacion.png.`, ''])].join('\n');
   fs.writeFileSync(`${salidaPlano}/contraste.md`, informe);
 }
 
