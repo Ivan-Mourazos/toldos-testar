@@ -34,7 +34,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
   };
   if (pedido === 'AR2604904') return {
     ...base('PUERTAUTO', 426, 515), of: '0232817', color: 'BLANCO 9016', sacoDiagonalesAmarillas: true,
-    autorreparable: { empates: [299], espaciadorCentral: true, distanciaEspaciador: 10 },
+    autorreparable: { saco: 110, empates: [299], espaciadorCentral: true, distanciaEspaciador: 10 },
   };
   if (pedido === 'AR2604906') return {
     ...base('PUERTAPLE', 530, 500), of: '0232827', color: 'GRIS 7037',
@@ -45,7 +45,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
   };
   // Primera puerta del plano: 300 × 331, OF 0232191; no mezclar con los paños de 350 del mismo bot.
   if (pedido === 'AR2604526') return {
-    ...base('PUERTAUTO', 300, 331), of: '0232191', color: 'GRIS 7037', autorreparable: { empates: [], espaciadorCentral: false },
+    ...base('PUERTAUTO', 300, 331), of: '0232191', color: 'GRIS 7037', autorreparable: { saco: 110, empates: [], espaciadorCentral: false },
     ventanas: [25, 162].map(x => ({ x, y: 140, ancho: 113, alto: 40, radio: 2, radioCristal: 4 })),
   };
   throw new Error(`Pedido sin referencia de plano: ${pedido}`);

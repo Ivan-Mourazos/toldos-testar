@@ -69,7 +69,7 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
 
   it('AR2604904: instrucciones de entrada, guías verticales, empate y saco', () => {
     const { textos } = dibujo('AR2604904');
-    for (const t of ['E.T POR DELANTE Y POR DETRÁS CORTADA DE 21', 'E.T 5,5 cms MAS LARGAS EN CADA LADO', 'EMPATE 2cm', 'SACO DE 120', 'SACO 900 GR AMARILLO/NEGRO', 'CREMALLERA SOLDADA HASTA MITAD DE SACO']) {
+    for (const t of ['E.T POR DELANTE Y POR DETRÁS CORTADA DE 21', 'E.T 5,5 cms MAS LARGAS EN CADA LADO', 'EMPATE 2cm', 'SACO DE 110' /* el 120 cortado de 32 de AR2604904, con la regla del 23/10/2026 */, 'SACO 900 GR AMARILLO/NEGRO', 'CREMALLERA SOLDADA HASTA MITAD DE SACO']) {
       expect(textos.some(f => f.lineas.join(' ') === t), t).toBe(true);
     }
     expect(textos.some(t => t.lineas[0] === 'CREMALLERA ESPECIAL PORTANOVA' && Math.abs(t.giro ?? 0) === 90 && t.tamano === 8)).toBe(true);

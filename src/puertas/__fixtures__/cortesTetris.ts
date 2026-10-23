@@ -42,7 +42,7 @@ export function pedidosTetris() {
   for (const id of ['AR2605036', 'AR2605065', 'AR2604526']) pedidos.push(pedidoDe(id, puertaPlanoReal(id)));
   // La otra referencia de espaciadores de AR2604526 mide 350 × 420, no 300 × 331.
   const espaciador = base('PUERTAUTO', 350, 420);
-  espaciador.autorreparable = { empates: [299], espaciadorCentral: true };
+  espaciador.autorreparable = { saco: 110, empates: [299], espaciadorCentral: true };
   pedidos.push(pedidoDe('AR2604526-350', espaciador));
   pedidos.push(pedidoDe('AR2604638-1ET', puerta4638()));
   pedidos.push(pedidoDe('EJEMPLO-APILABLE', apilable()));

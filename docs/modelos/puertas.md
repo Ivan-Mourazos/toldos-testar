@@ -28,7 +28,7 @@ F = frente; H = alto terminado; T = desde arriba hasta el eje superior del venta
 | Cristal | (F − 2m + 4) × (D − 3,5) |
 | Cachos laterales, dos piezas | (m + 1) × (D − 3,5) |
 | Entrada suelta | Largo indicado × 8 |
-| Saco | Envolvente (F + 6,5) × 26, con pestaña de 6,5 × 11 entre las cotas 13 y 24 |
+| Saco | Envolvente (F + 6,5) × 26, con pestaña de 6,5 × 11 entre las cotas 13 y 24 (saco de 120). Con otro saco del pedido: rematado = útil + 1 cm, corte 2 × rematado, pestaña y velcros de rematado − 2, y el paño inferior arranca 2 por debajo del rematado (Iván, 23/10/2026) |
 | Bolsillo, solo si lo piden | Solo dos marcas de posición; no se corta ninguna pieza |
 
 El saco conserva su contorno de ocho vértices; la envolvente no lo sustituye. La cota del bajo es **13**. Iván confirmó durante el encargo que los 125,75 de AR2603284 y AR2603277 fueron errores: debían ser 123,75. El paño inferior se calcula, sin un campo para alterar su medida.
@@ -61,7 +61,7 @@ Las ventanas se pueden introducir una a una o por filas de columnas iguales. Tie
 
 ### Saco sencillo y doble saco
 
-**Saco del pedido (Iván, 23/10/2026):** se pone el saco útil que indica el pedido, en mm, y rematado queda 1 cm más grande: 80 → 9 cm, 110 → 12 cm, 120 → 13 cm. Corte = 2 × rematado + 8 y pestaña 10 × (rematado + 2): 80 → corte 26, pestaña 10 × 11; 110 → 32 y 10 × 14; 120 → 34 y 10 × 15. Antes el de 80 se cortaba de 30 y quedaba de 11 (se daba de más); el paño de abajo crece lo que encoge el saco. En el plano se rotula el saco del pedido («SACO DE 110»), no el rematado. Las pruebas que copian cortes reales anteriores usan el saco de 100, que es el rematado de 11 de entonces. La pestaña queda a 2 de un borde y **va al lado que pinte el pedido**, mirando por el revés (izquierda por defecto): con la derecha, el saco entero, el partido (la mitad con pestaña pasa a la derecha), el plano y el alzado se dan la vuelta, también con suelo inclinado. El doble saco no cambia. Si el cuerpo es negro, se coloca el saco en el corte de ese material. Con otro color se muestran entero y partido como **alternativas del mismo saco**, sin sumarlas a la cantidad nominal. Al partir, cada mitad incorpora 1 para la unión de 2; solo una lleva la pestaña.
+**Saco del pedido (Iván, 23/10/2026):** se pone el saco útil que indica el pedido, en mm, y rematado queda 1 cm más grande: 80 → 9 cm, 110 → 12 cm, 120 → 13 cm. Corte = 2 × rematado + 8 y pestaña 10 × (rematado + 2): 80 → corte 26, pestaña 10 × 11; 110 → 32 y 10 × 14; 120 → 34 y 10 × 15. Antes el de 80 se cortaba de 30 y quedaba de 11 (se daba de más); el paño de abajo crece lo que encoge el saco. En el plano se rotula el saco del pedido («SACO DE 110»), no el rematado. Las pruebas que copian cortes reales anteriores usan el saco de 100, que es el rematado de 11 de entonces. La pestaña queda a 2 de un borde y **va al lado que pinte el pedido**, mirando por el revés (izquierda por defecto): con la derecha, el saco entero, el partido (la mitad con pestaña pasa a la derecha), el plano y el alzado se dan la vuelta, también con suelo inclinado. En el doble saco, el de 80 integrado también queda de 9: el paño arranca 11,5 por debajo del bajo (antes 13,5) y sale 2 cm más corto; el envoltorio (F − 6) × 37 no cambia. Si el cuerpo es negro, se coloca el saco en el corte de ese material. Con otro color se muestran entero y partido como **alternativas del mismo saco**, sin sumarlas a la cantidad nominal. Al partir, cada mitad incorpora 1 para la unión de 2; solo una lleva la pestaña.
 
 **Doble saco, corrección definitiva de Iván, punto 15:** el saco normal de 80 queda incorporado al paño. Aparte se corta un **envoltorio** negro de (F − 6) × 37, con pestaña 12 × 14. Se centra al ancho de la puerta, se dobla a la mitad y se suelda 2 para envolver el saco normal. No hay una tira de 12 ni un saco de 120 añadido. Los ejemplos AR2601036, AR2600520 y AR2600236 tienen un empate de 12: suman H + 37,5, que ya incluye esa entrada.
 
@@ -82,12 +82,12 @@ se mantiene su flecha, como en las dos referencias manuales.
 
 ## Autorreparable
 
-Saco actual **de 120 fijo**; el saco antiguo de 110 no es una opción.
+Saco **del pedido** (Iván, 23/10/2026; antes, 120 fijo): rematado = útil + 1 cm y corte = 2 × rematado + 8, como la apilable. Con el de 120: rematado 13, corte 34 y el cuerpo desde 13 (antes 12 y 32). Las autorreparables guardadas antes sin el campo se leen con el de 120. Las pruebas que copian cortes reales anteriores usan el de 110, que es el rematado de 12 de entonces.
 
-- Cuerpo antes de empates: F × (H − 8,5), desde 12 del bajo terminado hasta H + 3,5.
+- Cuerpo antes de empates: desde el rematado del saco hasta H + 3,5 (con el de 120, F × (H − 9,5)).
 - Empates normales: 2 de unión por cada uno, con posición indicada desde el borde inferior del cuerpo o propuesta para que quepa.
 - Dos entradas iguales: (F + 11) × 21, rotuladas «Entrada de tubo» en ambas caras.
-- Saco: F × 32.
+- Saco: F × corte (34 con el de 120).
 - Ventanas individuales: cristal = hueco + 4 por dimensión; radios y posiciones según dibujo.
 
 No se inventan cremalleras, guías, espaciadores ni refuerzos de stock a partir de estas piezas de lona.

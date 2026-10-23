@@ -3,7 +3,7 @@ import { repartirPanos, type RepartoPanos } from './empates.ts';
 import { marcasBolsillo } from './bolsillo.ts';
 import { numerarBorde } from './unionesCorte.ts';
 import { calcularSystemDock } from './systemDock.ts';
-import { desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
@@ -14,9 +14,9 @@ export function nuevaPuerta(modelo: ModeloPuerta = 'PUERTAENR'): Puerta {
   return { modelo, articuloOrigen:'', frente: 0, alto: 0, of: '', cantidad: 1, margenMarcas:1.5, confirmada: false, ventanasConfirmadas: false, bolsillo:false, medidasBolsillo:{distancia:20,ancho:30,lado:'izquierdo',altoSuperior:null},
     material: 'LAC900', color: '', materialCristal: 'TRANSP. 1000MI', materialSaco: 'LAC900 NEGRO', sacoDiagonalesAmarillas: false,
     rollo: 0, rolloCristal: 0, rolloSaco: 0, observaciones: '', entradas: [], ventanas: [],
-    enrollable: { T: 0, D: 60, margen: 0, empates: [] },
+    enrollable: { T: 0, D: 60, margen: 0, empates: [], saco: 120 },
     apilable: { pie: 0, pasos: [], cabecera: 0, bolsillo: 24, saco: null, doble: false, empates: null },
-    autorreparable: { empates: [] } };
+    autorreparable: { empates: [], saco: 120 } };
 }
 export function alturasTubos(p: Puerta): number[] {
   let y = p.apilable.pie;
@@ -36,6 +36,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   const aviso = (codigo: string, texto: string, nivel: 'error' | 'aviso' = 'error') => { if (!avisos.some(a => a.codigo === codigo && a.texto === texto)) avisos.push({ codigo, texto, nivel }); };
   const r: ResultadoPuerta = { version: 1, piezas, alternativasSaco: null, empates: [], uniones:[], bolsillo:null, avisos };
   if (!p.confirmada) aviso('MODELO', 'Confirma el modelo mirando el dibujo del cliente.');
+  if ((p.modelo==='PUERTAENR'||p.modelo==='PUERTAUTO') && sacoUtil(p)===null) aviso('SACO', 'Pon el saco útil del pedido, en mm (80, 110, 120…).');
   if(p.articuloOrigen && p.articuloOrigen!==p.modelo)aviso('ARTICULO_MODELO',`RPS indica ${p.articuloOrigen} y has elegido ${MODELOS_PUERTAS[p.modelo].toLowerCase()}. Manda el dibujo del cliente; confirma el modelo.`, 'aviso');
   if (!positivo(p.frente) || !positivo(p.alto)) aviso('MEDIDAS', 'Introduce frente y alto positivos, en centímetros.');
   if (!Number.isInteger(p.cantidad) || p.cantidad < 1 || p.cantidad > 50) aviso('CANTIDAD', 'La cantidad debe ser un entero entre 1 y 50.');
@@ -108,10 +109,12 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   }
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable, ventanales=[{D:e.D,margen:e.margen},...e.ventanales??[]];
-    const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), inferior = n(p.alto - e.T - altoVentanales - 7.25);
+    const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado - 2;
+    // El paño inferior arranca 2 por debajo del rematado del saco (11 con el de 120) y acaba donde siempre.
+    const inferior = n(p.alto - e.T - altoVentanales + 3.75 - origenInferior);
     if (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.D<=7.5||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto) aviso('VENTANAL', 'Revisa T, las distancias entre ejes y los márgenes de cada ventanal.');
     const incorporadas=new Set<number>();
-    for (const [nombre,h,origen] of [['superior',e.T+7.25,p.alto-e.T-3.75],['inferior',inferior,11]] as const) {
+    for (const [nombre,h,origen] of [['superior',e.T+7.25,p.alto-e.T-3.75],['inferior',inferior,origenInferior]] as const) {
       const manual=e.empates.filter(u=>u.pano===nombre);
       const tubos=p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1}));
       const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:manual.length?manual.map(u=>({eje:u.altura,solape:u.solape,tubo:u.tubo})):undefined});
@@ -172,11 +175,11 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
     if(e.sacoPartido){
       const mitad=(p.frente+6.5+2)/2;
-      const izquierda=agregar(sacoConPestana(mitad-6.5,26,6.5,11,13,'Saco partido · con pestaña'));
-      const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,26,p.materialSaco,p.rolloSaco));
+      const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.rematado,'Saco partido · con pestaña'));
+      const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco));
       numerarBorde(izquierda,++numeroUnion,'derecha');
       numerarBorde(derecha,numeroUnion,'izquierda');
-    }else agregar(sacoConPestana(p.frente,26,6.5,11,13));
+    }else agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.rematado));
     p.entradas.forEach((e,i)=>{if(!incorporadas.has(i+1))entrada(e,i);});
   } else if (p.modelo === 'PUERTAPLE') {
     const a = p.apilable, alturas = alturasTubos(p);
@@ -192,7 +195,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     if(a.doble && a.saco!==80) aviso('SACO_DOBLE','El doble saco lleva el saco normal de 80 integrado y un envoltorio aparte.');
     if (p.entradas.length !== alturas.length) aviso('ENTRADAS', 'Introduce una entrada por cada tubo de la cadena.');
     if (!positivo(a.bolsillo)) aviso('BOLSILLO', 'Confirma el bolsillo superior del dibujo.');
-    const bajo = a.doble ? -13.5 : sacoApilable(p).rematado;
+    const bajo = a.doble ? bajoDobleSaco(p) : sacoApilable(p).rematado;
     const arriba = p.alto + a.bolsillo / 2;
     const entradaEn = (i: number) => p.entradas[i-1]?.alto ?? 12;
     let empates = a.empates===null?null:[...a.empates];
@@ -258,14 +261,16 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     if (a.doble) aviso('DOBLE_SACO', 'Doble saco: saco normal de 80 integrado en el paño y envoltorio aparte (F − 6) × 37, centrado al ancho, doblado a la mitad y soldado 2 cm. Pestaña 12 × 14; velcro de 5 bravo al revés y suave al derecho. Cerrar E.T. 2 cm máximo.', 'aviso');
   } else {
     const empates = p.autorreparable.empates;
-    const plan=repartirPanos({desde:12,hasta:p.alto+3.5,frente:ancho,rollo:p.rollo,normal:true,indicados:empates.length?empates.map(eje=>({eje:eje+12,solape:2})):undefined});
+    // El cuerpo arranca en el rematado del saco (12 con el de 120 antes del 23/10/2026); los empates, desde ahí.
+    const s = sacoPuerta(p), r0 = s.rematado;
+    const plan=repartirPanos({desde:r0,hasta:p.alto+3.5,frente:ancho,rollo:p.rollo,normal:true,indicados:empates.length?empates.map(eje=>({eje:eje+r0,solape:2})):undefined});
     reparto(plan,'Paño'); r.uniones.push(...plan.uniones.map(u=>({altura:u.eje,solape:u.solape})));
     for(const {pieza:x,desde,hasta} of paneles) {
       for(const distancia of [3.5,20,30]) {
         const y=p.alto-distancia;
         if(y>=desde && y<=hasta) marca(x,y-desde);
       }
-      if(desde===12) marca(x,2);
+      if(desde===r0) marca(x,2);
     }
     // AR2604904: desde DISCO1, no desde los extremos de la raya horizontal.
     const distancia=p.autorreparable.distanciaEspaciador??10;
@@ -279,7 +284,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
     agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
     agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
-    agregar(pieza('Saco de 120','saco',p.frente,32,p.materialSaco,p.rolloSaco));
+    agregar(pieza(`Saco de ${sacoUtil(p) ?? 120}`,'saco',p.frente,s.corte,p.materialSaco,p.rolloSaco));
   }
   for (const [i,v] of p.ventanas.entries()) {
     if (p.modelo === 'PUERTAENR') { aviso('VENTANA_MODELO','El ventanal sencillo ya define el cristal: las ventanas individuales requieren otro perfil.'); break; }

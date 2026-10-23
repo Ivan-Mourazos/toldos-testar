@@ -165,7 +165,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // Solo cambia el rótulo: «SACO DE 100» (saco del pedido, 23/10/2026) en vez de «SACO DE 80».
     ['apilable', apilable, '476d26443cfa7e5cf81dda34cc54c608be392b4a85ea6a07bfdab0934f22dcff'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '74251e7412de81b3344bd83eaedfff0637a1f93cd6645f7f251375ed01736f5f'],
+    ['autorreparable', autorreparable, '673e0823a7084bbd9dfaf4ee7d5f5e1bb93e1664195e6cf08965937885e6d549'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

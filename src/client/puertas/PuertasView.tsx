@@ -4,7 +4,7 @@ import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta } from '../../puertas/calcular.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
-import { medidasSaco } from '../../puertas/saco.ts';
+import { medidasSaco, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { OrderActions } from '../components/OrderActions';
@@ -20,6 +20,13 @@ import './puertas.css';
 const num=(x:number)=>x.toLocaleString('es-ES',{maximumFractionDigits:2});
 function Numero({titulo,valor,cambiar}:{titulo:string;valor:number|null;cambiar:(n:number|null)=>void}) {
   return <label className="field puerta-campo"><span>{titulo}</span><InputDecimal aria-label={titulo} value={valor} onValor={cambiar}/></label>;
+}
+/** Medidas del saco con la regla del 23/10/2026: el del pedido, rematado 1 cm más grande. */
+function AyudaSaco({p}:{p:Puerta}) {
+  const util=sacoUtil(p);
+  if(util===null) return <p className="puerta-ayuda">Pon el saco que dice el pedido, en mm (80, 110, 120…).</p>;
+  const s=medidasSaco(util,p.modelo);
+  return <p className="puerta-ayuda">Rematado {num(s.rematado)} cm (1 cm más que el pedido) · corte {num(s.corte)} cm{s.altoPestana>0?` · pestaña ${p.modelo==='PUERTAENR'?'6,5':'10'} × ${num(s.altoPestana)}`:''}. En el plano pone «SACO DE {util}».</p>;
 }
 function Lista({titulo,valores,cambiar,ayuda}:{titulo:string;valores:number[];cambiar:(n:number[])=>void;ayuda?:string}) {
   const [texto,setTexto]=useState(valores.map(num).join('; ')),[error,setError]=useState(false);
@@ -49,7 +56,8 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
     cambiar(nuevo);
   }
   function entrada(i:number,parche:Partial<Entrada>) { set('entradas',p.entradas.map((e,j)=>j===i?{...e,...parche}:e)); }
-  const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)-7.25;
+  // El paño inferior arranca 2 por debajo del rematado del saco (11 con el de 120).
+  const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)+3.75-(sacoPuerta(p).rematado-2);
   return <>
     <div className="puerta-config-alzado">
       <section className="puerta-config panel panel-vidrio" aria-label="Configurador de puerta">
@@ -79,7 +87,7 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           </div></fieldset>)}
           <button type="button" className="ghost-button" disabled={(p.enrollable.ventanales?.length??0)>=99} onClick={()=>set('enrollable',{...p.enrollable,ventanales:[...p.enrollable.ventanales??[],{D:0,margen:0}]})}>Añadir ventanal debajo</button>
           {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}
-          <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} · H − T − suma de D − 7,25. El saco queda a 13 cm.</p><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 2 cm</label></fieldset>}
+          <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} </p><div className="puerta-campos"><Numero titulo="Saco útil del pedido (mm)" valor={sacoUtil(p)} cambiar={v=>set('enrollable',{...p.enrollable,saco:v})}/></div><AyudaSaco p={p}/><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 2 cm</label></fieldset>}
         {!sd&&<><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>set('sacoDiagonalesAmarillas',e.target.checked)}/>Saco con diagonales amarillas (impresión digital)</label>
         <label className="puerta-casilla"><input type="checkbox" checked={p.bolsillo} onChange={e=>set('bolsillo',e.target.checked)}/>Bolsillo · solo marcas, si lo pide el dibujo</label></>}
         {p.bolsillo&&<fieldset><legend>Posición del bolsillo según el dibujo · cm</legend><div className="puerta-campos">
@@ -105,9 +113,10 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           </fieldset>
           <SegmentedField label="Pestaña del saco por el revés" value={p.apilable.ladoPestana==='derecha'?'Derecha':'Izquierda'} options={['Izquierda','Derecha']} onChange={v=>cadena({ladoPestana:v==='Derecha'?'derecha':'izquierda'})}/>
           <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked,...(e.target.checked?{saco:80}:{})})}/>Doble saco</label>
-          {p.apilable.saco!==null&&!p.apilable.doble&&(()=>{const s=medidasSaco(p.apilable.saco);return <p className="puerta-ayuda">Rematado {num(s.rematado)} cm (1 cm más que el pedido) · corte {num(s.corte)} cm · pestaña 10 × {num(s.altoPestana)}. En el plano pone «SACO DE {p.apilable.saco}».</p>;})()}
+          {p.apilable.doble?<p className="puerta-ayuda">El saco de 80 integrado queda rematado de 9 cm: el paño empieza 11,5 cm por debajo del bajo.</p>:<AyudaSaco p={p}/>}
         </div></fieldset>}
-        {p.modelo==='PUERTAUTO'&&<fieldset><legend>Autorreparable</legend><p className="puerta-ayuda">Saco fijo de 120 · corte 32 cm. Dos entradas (F + 11) × 21. Cuerpo H − 8,5; se añaden 2 cm por empate.</p>
+        {p.modelo==='PUERTAUTO'&&<fieldset><legend>Autorreparable</legend><p className="puerta-ayuda">Dos entradas (F + 11) × 21. El cuerpo arranca en el rematado del saco y acaba 3,5 cm por encima del alto; se añaden 2 cm por empate.</p>
+          <div className="puerta-campos"><Numero titulo="Saco útil del pedido (mm)" valor={sacoUtil(p)} cambiar={v=>set('autorreparable',{...p.autorreparable,saco:v})}/></div><AyudaSaco p={p}/>
           <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.autorreparable.espaciadorCentral)} onChange={e=>set('autorreparable',{...p.autorreparable,espaciadorCentral:e.target.checked})}/>Espaciador central (líneas verticales en medio del dibujo)</label>
           <div className="puerta-campos"><Numero titulo="Rayas laterales a (cm del borde, según el pedido)" valor={p.autorreparable.distanciaEspaciador??10} cambiar={v=>set('autorreparable',{...p.autorreparable,distanciaEspaciador:v??0})}/>
           <Lista titulo="Empates desde abajo del cuerpo (cm)" valores={p.autorreparable.empates} cambiar={v=>set('autorreparable',{...p.autorreparable,empates:v})}/></div></fieldset>}

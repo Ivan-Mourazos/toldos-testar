@@ -11,13 +11,30 @@ export function desnivelSuelo(p: Puerta): number {
  * Antes el de 80 se cortaba de 30 y quedaba de 11. El corte es dos veces el rematado más 8 y la pestaña, el
  * rematado más 2, como los de 30/13 (rematado 11) y 32/14 (rematado 12) de siempre. El plano rotula el del pedido.
  */
-export function medidasSaco(utilMm: number) {
+export function medidasSaco(utilMm: number, modelo: Puerta['modelo'] = 'PUERTAPLE') {
   const rematado = utilMm / 10 + 1;
-  return { rematado, corte: 2 * rematado + 8, altoPestana: rematado + 2 };
+  // La enrollable no se suelda doblada: el corte es el doble del rematado y la pestaña de velcro queda a 2 de
+  // cada lado (120: corte 26, pestaña 11 entre 13 y 24). La autorreparable no lleva pestaña.
+  if (modelo === 'PUERTAENR') return { rematado, corte: 2 * rematado, altoPestana: rematado - 2 };
+  return { rematado, corte: 2 * rematado + 8, altoPestana: modelo === 'PUERTAUTO' ? 0 : rematado + 2 };
 }
 
 /** Saco simple de la apilable; sin elegir, el de 80, que es el habitual. */
 export const sacoApilable = (p: Puerta) => medidasSaco(p.apilable.saco ?? 80);
+
+/** Saco útil en mm de cualquier puerta. Las enrollables y autorreparables guardadas antes del campo eran de 120. */
+export function sacoUtil(p: Puerta): number | null {
+  if (p.modelo === 'PUERTAPLE') return p.apilable.saco;
+  const saco = p.modelo === 'PUERTAENR' ? p.enrollable.saco : p.autorreparable.saco;
+  return saco === undefined ? 120 : saco;
+}
+
+/** Medidas del saco de la puerta; sin saco puesto se dibuja el habitual de su modelo y el cálculo avisa. */
+export const sacoPuerta = (p: Puerta) => medidasSaco(sacoUtil(p) ?? (p.modelo === 'PUERTAPLE' ? 80 : 120), p.modelo);
+
+/** Doble saco: el de 80 integrado sale del propio paño, que empieza 2,5 más abajo que su rematado
+ * (antes −13,5 con el rematado de 11; con el de 9, −11,5). */
+export const bajoDobleSaco = (p: Puerta) => -(sacoApilable(p).rematado + 2.5);
 
 /** Pestaña del saco a la derecha mirando por el revés, como la pinte el pedido (Iván, 23/10/2026). */
 export const pestanaDerecha = (p: Puerta) => p.modelo === 'PUERTAPLE' && p.apilable.ladoPestana === 'derecha';

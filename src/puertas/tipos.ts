@@ -32,6 +32,8 @@ export interface Puerta {
   entradas: Entrada[];
   ventanas: Ventana[];
   enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
+    /** Saco útil del pedido en mm; sin el campo (guardadas antes del 23/10/2026), 120. */
+    saco?: number | null;
     /** Ventanales consecutivos bajo el primero, separados por E.T. a las dos caras. */
     ventanales?: Array<{ D: number; margen: number }>;
     empates: Array<{ pano: 'superior' | 'inferior'; altura: number; solape: number; tubo?:number }> };
@@ -42,7 +44,9 @@ export interface Puerta {
     ladoPestana?: 'izquierda' | 'derecha';
     /** Altos terminados mirando por el revés, como el alzado y la hoja de Portanova. La cadena común toma el bajo izquierdo como origen. */
     sueloInclinado?: { altoIzquierdo: number; altoDerecho: number } };
-  autorreparable: { empates: number[]; espaciadorCentral?: boolean; distanciaEspaciador?: number };
+  autorreparable: { empates: number[]; espaciadorCentral?: boolean; distanciaEspaciador?: number;
+    /** Saco útil del pedido en mm; sin el campo (guardadas antes del 23/10/2026), 120. */
+    saco?: number | null };
 }
 export interface AvisoPuerta { codigo: string; nivel: 'error' | 'aviso'; texto: string }
 export interface PiezaPuerta {

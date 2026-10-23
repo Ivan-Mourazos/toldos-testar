@@ -5,6 +5,8 @@ import { MODELOS_PUERTAS, nuevaPuerta } from './calcular.ts';
 export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
   const error = () => { throw new Error('Revisa el pedido de puertas: hay campos inválidos o demasiados elementos.'); };
   const objeto=(x:unknown): x is Record<string,unknown>=>Boolean(x) && typeof x==='object' && !Array.isArray(x);
+  // Saco útil en mm del pedido (Iván, 23/10/2026); null sin poner todavía.
+  const saco=(x:unknown)=>x===null || typeof x==='number' && x>=40 && x<=300;
   if(!objeto(valor) || valor.kind!=='puertas' || valor.schemaVersion!==1 || typeof valor.orderCode!=='string' || valor.orderCode.length>40 || !Array.isArray(valor.elementos) || !valor.elementos.length || valor.elementos.length>50) return error();
   const ids=new Set();
   let unidades=0;
@@ -29,13 +31,15 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(!objeto(p.medidasBolsillo)||!cotas(p.medidasBolsillo,['distancia','ancho'])||!['izquierdo','derecho'].includes(p.medidasBolsillo.lado as string)||(p.medidasBolsillo.altoSuperior!==null&&!cotas(p.medidasBolsillo,['altoSuperior']))) return error();
     if(!lista(p.entradas,100) || !lista(p.ventanas) || !p.ventanas.every(v=>hueco(v) && cotas(v,['radioCristal']))) return error();
     if(!p.entradas.every(t=>objeto(t) && cotas(t,['altura','largo','alto','diametro']) && (t.diametro===30||t.diametro===42) && lista(t.huecos,100) && t.huecos.every(hueco))) return error();
-    if(!objeto(p.apilable) || !cotas(p.apilable,['pie','cabecera','bolsillo']) || !numeros(p.apilable.pasos) || !(p.apilable.saco===null || typeof p.apilable.saco==='number' && p.apilable.saco>=40 && p.apilable.saco<=300) || typeof p.apilable.doble!=='boolean' || (p.apilable.empates!==null && !numeros(p.apilable.empates))) return error();
+    if(!objeto(p.apilable) || !cotas(p.apilable,['pie','cabecera','bolsillo']) || !numeros(p.apilable.pasos) || !saco(p.apilable.saco) || typeof p.apilable.doble!=='boolean' || (p.apilable.empates!==null && !numeros(p.apilable.empates))) return error();
     if(p.apilable.ladoPestana!==undefined && !['izquierda','derecha'].includes(p.apilable.ladoPestana as string)) return error();
     if(p.apilable.sueloInclinado!==undefined && !cotas(p.apilable.sueloInclinado,['altoIzquierdo','altoDerecho'])) return error();
     if(!objeto(p.enrollable) || !cotas(p.enrollable,['T','D','margen']) || !lista(p.enrollable.empates,100) || !p.enrollable.empates.every(u=>objeto(u) && ['superior','inferior'].includes(u.pano as string) && cotas(u,['altura','solape']) && (u.tubo===undefined || (typeof u.tubo==='number'&&Number.isInteger(u.tubo)&&u.tubo>0&&u.tubo<=(p.entradas as unknown[]).length)))) return error();
     if(p.enrollable.sacoPartido!==undefined && typeof p.enrollable.sacoPartido!=='boolean')return error();
+    if(p.enrollable.saco!==undefined && !saco(p.enrollable.saco))return error();
     if(p.enrollable.ventanales!==undefined && (!lista(p.enrollable.ventanales,99) || !p.enrollable.ventanales.every(v=>cotas(v,['D','margen']))))return error();
     if(!objeto(p.autorreparable) || !numeros(p.autorreparable.empates)) return error();
+    if(p.autorreparable.saco!==undefined && !saco(p.autorreparable.saco)) return error();
     if(p.autorreparable.espaciadorCentral!==undefined && typeof p.autorreparable.espaciadorCentral!=='boolean') return error();
     const distancia=p.autorreparable.distanciaEspaciador;
     if(distancia!==undefined && (typeof distancia!=='number' || !Number.isFinite(distancia) || distancia<=0 || distancia*2>=(p.frente as number))) return error();

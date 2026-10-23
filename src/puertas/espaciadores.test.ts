@@ -9,25 +9,25 @@ import type { Puerta } from './tipos.ts';
 import reales from './__fixtures__/espaciadores-reales.json';
 import { numero, registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
 
-const auto = (): Puerta => ({ ...base('PUERTAUTO', 426, 515), autorreparable: { empates: [299] } });
+const auto = (): Puerta => ({ ...base('PUERTAUTO', 426, 515), autorreparable: { saco: 110, empates: [299] } });
 const verticales = (p: Puerta) => calcularPuerta(p).piezas.filter(x => x.clase === 'pano')
   .map(x => x.marcas.filter(s => s[0] === s[2] && Math.abs(s[3] - s[1]) > 5));
 
 describe('Espaciadores de la autorreparable según el dibujo', () => {
   for (const f of reales) it(`${f.pedido}: posiciones medidas desde DISCO1, también con el paño girado`, () => {
-    const p = { ...base('PUERTAUTO', f.frente, f.alto), autorreparable: { empates: [], espaciadorCentral: f.centralEnCorte } };
+    const p = { ...base('PUERTAUTO', f.frente, f.alto), autorreparable: { saco: 110, empates: [], espaciadorCentral: f.centralEnCorte } };
     const r = calcularPuerta(p);
     expect(r.piezas.filter(x => x.clase === 'pano').map(x => x.alto)).toEqual(f.panos);
     expect(verticales(p).map(ms => ms.map(s => s[0]).sort((a,b) => a-b))).toEqual(f.panos.map(() => f.xDesdeDisco));
   });
 
   it.each([[400, 461, true], [220, 371, false]] as const)('los dibujos confirmados de %s por %s llevan central: %s', (frente, alto, espaciadorCentral) => {
-    const p = { ...base('PUERTAUTO', frente, alto), autorreparable: { empates: [], espaciadorCentral } };
+    const p = { ...base('PUERTAUTO', frente, alto), autorreparable: { saco: 110, empates: [], espaciadorCentral } };
     expect(verticales(p).every(ms => ms.length === (espaciadorCentral ? 3 : 2))).toBe(true);
   });
   it('conserva los pedidos antiguos y empieza sin espaciador central', () => {
     expect(nuevaPuerta('PUERTAUTO').autorreparable.espaciadorCentral).toBeFalsy();
-    expect(leerPedidoPuertas(pedidoDe('PRUEBA', auto())).elementos[0].input.autorreparable).toEqual({ empates: [299] });
+    expect(leerPedidoPuertas(pedidoDe('PRUEBA', auto())).elementos[0].input.autorreparable).toEqual({ saco: 110, empates: [299] });
     expect(verticales(auto()).map(ms => ms.map(s => s[0]))).toEqual([[10, 416], [10, 416]]);
   });
 

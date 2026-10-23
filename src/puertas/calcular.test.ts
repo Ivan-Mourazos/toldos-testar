@@ -5,7 +5,9 @@ import { calcularPuerta, alturasTubos, nuevaPuerta } from './calcular.ts';
 import type { Puerta } from './tipos.ts';
 
 function base(modelo: Puerta['modelo'], frente: number, alto: number): Puerta {
-  return { ...nuevaPuerta(modelo), frente, alto, of: '0230001', rollo: 300, rolloCristal: 140, rolloSaco: 300,
+  // Los cortes reales de autorreparable llevaban el saco de 120 cortado de 32 (rematado 12): ahora, el de 110.
+  const nueva = nuevaPuerta(modelo);
+  return { ...nueva, autorreparable: { ...nueva.autorreparable, saco: 110 }, frente, alto, of: '0230001', rollo: 300, rolloCristal: 140, rolloSaco: 300,
     material: 'LAC900', color: 'AZUL 5002', confirmada: true, ventanasConfirmadas: true };
 }
 describe('Despiece de puertas contrastado con medidas del bot (cm)', () => {
@@ -91,11 +93,13 @@ describe('Comprobaciones y reglas confirmadas', () => {
     p.medidasBolsillo.altoSuperior=44;
     expect(calcularPuerta(p).bolsillo).toEqual({x:20,y:27,ancho:30,alto:17});
   });
+  // Iván, 23/10/2026: el 80 integrado queda rematado de 9 y no de 11, así que el paño inferior sale 2 cm más corto
+  // que en estos cortes reales (281,5 → 279,5…): H + 35,5 con la entrada incorporada.
   it.each([
-    ['AR2601036',424,500,42,[58,52,58,52,58,52,58],281.5,256],
-    ['AR2600520',430,475,41,[52,52,52,52,52,52,52],268.5,244],
-    ['AR2600236',382,450,37,[49,49,49,49,49,49,49],252.5,235],
-  ] as const)('doble saco %s: la entrada incorporada ya cuenta en H + 37,5', (_pedido,F,H,pie,pasos,inferior,superior) => {
+    ['AR2601036',424,500,42,[58,52,58,52,58,52,58],279.5,256],
+    ['AR2600520',430,475,41,[52,52,52,52,52,52,52],266.5,244],
+    ['AR2600236',382,450,37,[49,49,49,49,49,49,49],250.5,235],
+  ] as const)('doble saco %s: la entrada incorporada ya cuenta en H + 35,5', (_pedido,F,H,pie,pasos,inferior,superior) => {
     const p=base('PUERTAPLE',F,H);
     p.apilable={...p.apilable,pie,pasos:[...pasos],cabecera:70,saco:80,doble:true,empates:[5]};
     p.entradas=alturasTubos(p).map(altura=>({altura,diametro:30,largo:F,alto:12,huecos:[]}));
@@ -167,5 +171,31 @@ describe('Comprobaciones y reglas confirmadas', () => {
     p.entradas = [{ altura: 30, diametro: 30, largo: -1, alto: 8, huecos: [] }];
     p.ventanas = [{ x: 10, y: 20, ancho: 40, alto: 20, radio: 12, radioCristal: 4 }];
     expect(calcularPuerta(p).avisos.some(x => x.nivel === 'error')).toBe(true);
+  });
+});
+
+describe('Saco del pedido en todas las puertas (Iván, 23/10/2026)', () => {
+  it.each([[120,13,26,11],[110,12,24,10]])('enrollable con saco %s: rematado %s, corte %s y velcro de %s', (saco,rematado,corte,velcro) => {
+    const p = base('PUERTAENR', 172, 314); p.enrollable = { T: 123, D: 60, margen: 6, empates: [], saco };
+    const r = calcularPuerta(p), s = r.piezas.find(x => x.clase === 'saco')!;
+    expect(s.alto).toBe(corte);
+    expect(s.contorno.slice(4)).toEqual([[6.5,rematado+velcro],[0,rematado+velcro],[0,rematado],[6.5,rematado]]);
+    // El paño inferior arranca 2 por debajo del rematado: con el de 120, los 123,75 de siempre.
+    expect(r.piezas.find(x => x.nombre === 'Paño inferior')!.alto).toBe(123.75 + 13 - rematado);
+  });
+  it('enrollable guardada sin saco: el de 120 de antes', () => {
+    const p = base('PUERTAENR', 172, 314); p.enrollable = { T: 123, D: 60, margen: 6, empates: [] };
+    expect(calcularPuerta(p).piezas.find(x => x.clase === 'saco')!.alto).toBe(26);
+  });
+  it('autorreparable con saco de 120: rematado 13, corte 34 y cuerpo desde 13', () => {
+    const p = base('PUERTAUTO', 300, 331); p.autorreparable = { empates: [], saco: 120 };
+    const r = calcularPuerta(p);
+    expect(r.piezas.find(x => x.clase === 'saco')).toMatchObject({ nombre: 'Saco de 120', alto: 34 });
+    expect(r.piezas.find(x => x.clase === 'pano')!.alto).toBe(331 + 3.5 - 13);
+  });
+  it.each(['PUERTAENR','PUERTAUTO'] as const)('%s sin saco puesto avisa', modelo => {
+    const p = base(modelo, 300, 331);
+    if (modelo === 'PUERTAENR') p.enrollable.saco = null; else p.autorreparable.saco = null;
+    expect(calcularPuerta(p).avisos.some(a => a.codigo === 'SACO' && a.nivel === 'error')).toBe(true);
   });
 });

@@ -1,7 +1,7 @@
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
-import { sacoApilable } from './saco.ts';
+import { sacoPuerta, sacoUtil } from './saco.ts';
 
 export interface CajaTexto {
   x: number;
@@ -204,7 +204,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     lateral('cremallera-der', 'CREMALLERA ESPECIAL PORTANOVA', F + 17, H * 0.7, 8);
     lateral('espaciador-der', 'ESPACIADOR ESPECIAL PORTANOVA', F - distancia - 7, H * 0.7, 8);
     if (p.autorreparable.espaciadorCentral) lateral('espaciador-central', 'ESPACIADOR ESPECIAL PORTANOVA', F / 2 - 8, H * 0.7, 8);
-    add('saco', 'SACO DE 120', F / 2, H + 10, 10, { x: 0, y: H + 1, ancho: F, alto: 18 });
+    add('saco', `SACO DE ${sacoUtil(p) ?? 120}`, F / 2, H + 10, 10, { x: 0, y: H + 1, ancho: F, alto: 18 });
   }
 
   if (p.bolsillo) {
@@ -248,7 +248,7 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
           return { x: 0, y: H - t - alto / 2 - 1, ancho: F, alto: alto + 2 };
         });
 
-  const hSaco = p.modelo === 'PUERTAENR' ? 13 : p.modelo === 'PUERTAUTO' ? 14 : sacoApilable(p).rematado;
+  const hSaco = sacoPuerta(p).rematado + (p.modelo === 'PUERTAUTO' ? 2 : 0);
   const cajaBolsillo: CajaTexto[] = p.bolsillo
     ? [
         {

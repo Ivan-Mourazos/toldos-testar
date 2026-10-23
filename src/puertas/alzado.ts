@@ -1,6 +1,6 @@
 import { alturasTubos } from './calcular.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
-import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable } from './saco.ts';
+import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
@@ -97,7 +97,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   const ejesVentanal = [T];
   for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
   const D = p.enrollable.D;
-  const hSaco = enr ? 13 : auto ? 14 : sacoApilable(p).rematado;
+  // La autorreparable acota el saco con sus 2 de soldadura encima (14 con el de 120 de antes).
+  const saco = sacoPuerta(p), hSaco = auto ? saco.rematado + 2 : saco.rematado;
 
   // Cadena derecha de pasos verticales (suma exactamente H; sin duplicar H).
   const hitosDerecha = ple
@@ -133,9 +134,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
 
   // Pieza desplegada del saco debajo del alzado
   const yDesplegado = Math.max(H,altoDerecho) + 48;
-  const hCorteSaco = enr ? 26 : auto ? 32 : p.apilable.doble ? 37 : sacoApilable(p).corte;
+  const hCorteSaco = ple && p.apilable.doble ? 37 : saco.corte;
   const pestanaSaco = enr ? 6.5 : auto ? 0 : p.apilable.doble ? 12 : 10;
-  const altoPestana = enr ? 11 : auto ? 0 : p.apilable.doble ? 14 : sacoApilable(p).altoPestana;
+  const altoPestana = ple && p.apilable.doble ? 14 : saco.altoPestana;
   const wSaco = ple && p.apilable.doble ? Math.max(20, F - 6) : F;
 
   const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado);

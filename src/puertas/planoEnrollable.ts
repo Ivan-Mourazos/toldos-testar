@@ -2,7 +2,7 @@ import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
-import { rotuloSaco } from './saco.ts';
+import { rotuloSaco, sacoPuerta } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
@@ -68,14 +68,14 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
 
 export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(), F = p.frente, H = p.alto, T = p.enrollable.T;
-  const r = calcularPuerta(p);
+  const r = calcularPuerta(p), saco = sacoPuerta(p), bajo = saco.rematado, hs = saco.corte, hp = saco.altoPestana;
   const ventanales = T > 0 ? [{ D: p.enrollable.D, margen: p.enrollable.margen }, ...p.enrollable.ventanales ?? []] : [];
   const ejes: number[] = ventanales.length ? [T] : [];
   for (const v of ventanales) ejes.push(ejes.at(-1)! + v.D);
   const bandas = [...new Set([...ejes, ...p.entradas.map(e => H - e.altura)])].filter(y => y > 0 && y < H).sort((a, b) => a - b);
-  // Los contornos son los paños cortados: 3,5 sobre la cabecera y 11 sobre el bajo.
+  // Los contornos son los paños cortados: 3,5 sobre la cabecera y 2 por debajo del rematado del saco (11 con el de 120).
   const paños: Array<[number, number]> = ventanales.length
-    ? [[-T - 3.75, 3.5], [-H + 11, -ejes.at(-1)! + 3.75]] : [[-H + 11, 3.5]];
+    ? [[-T - 3.75, 3.5], [-H + bajo - 2, -ejes.at(-1)! + 3.75]] : [[-H + bajo - 2, 3.5]];
   paños.forEach(([abajo, arriba], i) => {
     contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
     const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 18);
@@ -108,10 +108,10 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
     cota(l, 0, -b - 3.75, 0, -b + 3.75, -9.15 + i, 'XERAL 5');
     texto(l, '3 CM (HUECOS)', F / 2 - (superior ? 34.6534 : segundo ? 34.2446 : 33.6842), -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187), 7, { ancla: 1 });
   });
-  linea(l, 'ROTULADOR', 0, -H + 13, F, -H + 13);
+  linea(l, 'ROTULADOR', 0, -H + bajo, F, -H + bajo);
   linea(l, 'referencias', 0, -H, F, -H);
-  linea(l, 'referencias', 0, -H, 0, -H + 13);
-  linea(l, 'referencias', F, -H, F, -H + 11);
+  linea(l, 'referencias', 0, -H, 0, -H + bajo);
+  linea(l, 'referencias', F, -H, F, -H + bajo - 2);
   texto(l, 'SOLDAR SACO NEGRO 2 CM MÁXIMO', 14.3553, -H + 1.6012, Math.min(7, F / 28));
   texto(l, 'AL CORTE', -9.54, -T * .626, 7, { giro: 90, ancla: 1 });
   texto(l, 'AL CORTE', F + 1.96, -T * .6386, 7, { giro: 90, ancla: 1 });
@@ -121,27 +121,28 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   const hitos = [0, ...bandas, H];
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));
   cota(l, F, 0, F, -H, F + 37.91);
-  cota(l, F, -H, F, -H + 13, F + 9.79, 'XERAL 5');
+  cota(l, F, -H, F, -H + bajo, F + 9.79, 'XERAL 5');
 
-  // Saco desplegado, con escalón y los dos velcros en su capa original.
+  // Saco desplegado, con escalón y los dos velcros en su capa original. Con el de 120: corte 26, pestaña y velcros
+  // de 11 a 2 de cada lado; con otro saco, sus medidas (Iván, 23/10/2026).
   const ys = -H - 47.6767;
-  contorno(l, 'referencias', [[0, ys], [F, ys], [F, ys - 26], [0, ys - 26], [0, ys - 13], [-6.5, ys - 13], [-6.5, ys - 2], [0, ys - 2]]);
-  for (const y of [ys - 2, ys - 13, ys - 24]) linea(l, 'vent-pre-noimpr', 0, y, F, y);
-  const bravo = rectangulo(l, 'referencia-1', -6.5, ys - 13, 3, 11);
-  const suave = rectangulo(l, 'referencia-1', 1.5, ys - 24, 3, 11);
+  contorno(l, 'referencias', [[0, ys], [F, ys], [F, ys - hs], [0, ys - hs], [0, ys - 2 - hp], [-6.5, ys - 2 - hp], [-6.5, ys - 2], [0, ys - 2]]);
+  for (const y of [ys - 2, ys - hs / 2, ys - hs + 2]) linea(l, 'vent-pre-noimpr', 0, y, F, y);
+  const bravo = rectangulo(l, 'referencia-1', -6.5, ys - 2 - hp, 3, hp);
+  const suave = rectangulo(l, 'referencia-1', 1.5, ys - hs + 2, 3, hp);
   l.sombreados.push({ capa: 'referencia-1', puntos: bravo, solido: true }, { capa: 'referencia-1', puntos: suave, solido: false });
-  cota(l, 0, ys - 26, F, ys - 26, ys - 16.51, 'XERAL 5');
-  cota(l, 0, ys - 26, 0, ys, -32.47);
+  cota(l, 0, ys - hs, F, ys - hs, ys - hs + 9.49, 'XERAL 5');
+  cota(l, 0, ys - hs, 0, ys, -32.47);
   cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
-  cota(l, 0, ys - 24, 4.5, ys - 24, ys - 43.25);
-  texto(l, rotuloSaco(p), p.sacoDiagonalesAmarillas ? F / 2 : F / 2 - 71.5081, ys - 11.8793,
+  cota(l, 0, ys - hs + 2, 4.5, ys - hs + 2, ys - hs - 17.25);
+  texto(l, rotuloSaco(p), p.sacoDiagonalesAmarillas ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
     p.sacoDiagonalesAmarillas ? Math.min(10, F * .9 / anchoArial(rotuloSaco(p), 1)) : 10, p.sacoDiagonalesAmarillas ? { centrado: true } : {});
   // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
   // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
   const hVelcro = 5, xVelcro = 20, dVelcro = 23;
   for (const [valor, y, velcro] of [
-    ['COSER VELCRO REVÉS DE 3 BRAVO', ys - 13 + dVelcro, [-5, ys - 2]],
-    ['COSER VELCRO DERECHO DE 3 SUAVE', ys - 13 - dVelcro, [3, ys - 24]],
+    ['COSER VELCRO REVÉS DE 3 BRAVO', ys - hs / 2 + dVelcro, [-5, ys - 2]],
+    ['COSER VELCRO DERECHO DE 3 SUAVE', ys - hs / 2 - dVelcro, [3, ys - hs + 2]],
   ] as const) {
     texto(l, valor, xVelcro, y, hVelcro, { ancla: 4 });
     linea(l, 'texto', xVelcro - 1.5, y, velcro[0], velcro[1]);
@@ -155,7 +156,7 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
     else actual += (actual ? ' ' : '') + palabra;
   }
   if (actual) lineas.push(actual);
-  lineas.forEach((v, i) => texto(l, v, F / 2, ys - 74 - i * hNota * 1.4, hNota, { centrado: true }));
+  lineas.forEach((v, i) => texto(l, v, F / 2, ys - hs - 48 - i * hNota * 1.4, hNota, { centrado: true }));
 
   // Los empates y bolsillos configurados conservan sus marcas; nunca crean una pieza nueva.
   for (const u of r.uniones) {
@@ -178,11 +179,11 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   const sacos = r.piezas.filter(p => p.clase === 'saco');
   let sx = -6.5;
   for (const pieza of sacos) {
-    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, sx + m.x, ys - 26 + m.y, 1,
+    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, sx + m.x, ys - hs + m.y, 1,
       { capa: 'ROTULADOR', centrado: true, giro: m.giro ?? 0 });
     sx += pieza.ancho - 2;
   }
-  return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: ys - 86 - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
+  return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: ys - hs - 60 - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
 }
 
 export function sumarLienzo(destino: Lienzo, origen: Lienzo, dx = 0, dy = 0) {

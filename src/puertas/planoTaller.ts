@@ -3,7 +3,7 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { fusionarCortesPuertas } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
-import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
@@ -75,7 +75,7 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
   const destino = l, desnivel = desnivelSuelo(p), derecha = pestanaDerecha(p);
   if (desnivel || derecha) l = vacio();
   const ple = p.modelo === 'PUERTAPLE', doble = ple && p.apilable.doble;
-  const w = doble ? p.frente - 6 : p.frente, h = ple ? doble ? 37 : sacoApilable(p).corte : 32;
+  const w = doble ? p.frente - 6 : p.frente, h = doble ? 37 : sacoPuerta(p).corte;
   const pestaña = ple ? doble ? 12 : 10 : 0, hp = ple ? doble ? 14 : sacoApilable(p).altoPestana : 0;
   const ys = -p.alto - (ple ? 49.0879644349 : 40);
   contorno(l, 'referencias', pestaña ? [[0, ys], [w, ys], [w, ys - h], [0, ys - h], [0, ys - 2 - hp],
@@ -100,13 +100,13 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
     if (doble) texto(l, 'CENTRAR EL ENVOLTORIO · DOBLAR A LA MITAD · SOLDAR 2 CM', w / 2, ys + 42, Math.min(8, w / 70));
   } else {
     for (const x of [0, w - 3]) {
-      sombrear(x, ys - 16, 3, 16, true); sombrear(x, ys - 32, 3, 16, false);
+      sombrear(x, ys - h / 2, 3, h / 2, true); sombrear(x, ys - h, 3, h / 2, false);
       const tx = x === 0 ? w * .23 : w * .77;
       const ht = Math.min(7, w / 55);
       texto(l, 'VELCRO BRAVO REVÉS DE 3', tx, ys + 10, ht);
       texto(l, 'VELCRO SUAVE REVÉS DE 3', tx, ys - h - 10, ht);
-      linea(l, 'texto', tx, ys + 6, x + 1.5, ys - 8);
-      linea(l, 'texto', tx, ys - h - 6, x + 1.5, ys - 24);
+      linea(l, 'texto', tx, ys + 6, x + 1.5, ys - h / 4);
+      linea(l, 'texto', tx, ys - h - 6, x + 1.5, ys - h * 3 / 4);
     }
     texto(l, 'CREMALLERA SOLDADA HASTA MITAD DE SACO', w / 2, ys - h - 32, Math.min(10, w / 45));
   }
@@ -144,14 +144,15 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra);
   const l = vacio(), F = p.frente, H = p.alto, ple = p.modelo === 'PUERTAPLE', r = calcularPuerta(p);
   const desnivel = desnivelSuelo(p), altoDerecho = H-desnivel;
-  const hSaco = ple ? sacoApilable(p).rematado : 12;
+  // El paño arranca en el rematado del saco; el doble saco, más abajo, porque el de 80 sale del propio paño.
+  const hSaco = sacoPuerta(p).rematado, bajoDoble = ple && p.apilable.doble ? bajoDobleSaco(p) : 0;
   const arriba = ple ? p.apilable.bolsillo / 2 : 3.5;
-  rect(l, 'DISCO1', 0, -H + (ple && p.apilable.doble ? -13.5 : hSaco), F, H - hSaco + arriba + (ple && p.apilable.doble ? hSaco + 13.5 : 0));
+  rect(l, 'DISCO1', 0, -H + (ple && p.apilable.doble ? bajoDoble : hSaco), F, H - hSaco + arriba + (ple && p.apilable.doble ? hSaco - bajoDoble : 0));
   for (const y of [0, -H]) linea(l, 'referencias', 0, y, F, y);
   const tubos = ple ? alturasTubos(p) : [], obstaculos: Array<[number, number]> = [];
   if (ple) {
     linea(l, 'ROTULADOR', 0, -arriba, F, -arriba);
-    linea(l, 'ROTULADOR', 0, -H + (p.apilable.doble ? -11.5 : hSaco + 2), F, -H + (p.apilable.doble ? -11.5 : hSaco + 2));
+    linea(l, 'ROTULADOR', 0, -H + (p.apilable.doble ? bajoDoble + 2 : hSaco + 2), F, -H + (p.apilable.doble ? bajoDoble + 2 : hSaco + 2));
     linea(l, 'referencias', 0, -H, 0, -H + hSaco + 2);
     linea(l, 'referencias', F, -H, F, -H + hSaco);
     texto(l, 'E.T Ø30 mm', F / 2, arriba + 7, 8);
@@ -261,8 +262,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   limites.slice(1).forEach((y, i) => rotulos(l, p, `${letra}${i + 1}`, central ? F * .75 : F / 2, y, limites[i], central ? F / 2 - 20 : F, obstaculos, i === 0));
   cota(l, 0, arriba, F, arriba, arriba + 25, ple ? 'XERA 15' : 'XERAL');
   cota(l, 0, 0, 0, -H, -40, ple ? 'XERA 15' : 'XERAL');
-  cota(l, F, -H, F, -H + (ple ? hSaco : 14), F + 12, 'XERAL 5');
-  texto(l, ple && p.apilable.doble ? 'DOBLE SACO · SACO 80 INTEGRADO' : `SACO DE ${ple ? p.apilable.saco ?? 80 : 120}`, F / 2, -H - 12, Math.min(10, F / 25));
+  cota(l, F, -H, F, -H + (ple ? hSaco : hSaco + 2), F + 12, 'XERAL 5');
+  texto(l, ple && p.apilable.doble ? 'DOBLE SACO · SACO 80 INTEGRADO' : `SACO DE ${sacoUtil(p) ?? (ple ? 80 : 120)}`, F / 2, -H - 12, Math.min(10, F / 25));
   if (ple) {
     texto(l, 'CERRAR E.T', F + 55, -H - 16, 8); texto(l, '2 CM MÁXIMO', F + 55, -H - 28, 8);
     linea(l, 'texto', F + 20, -H - 12, F, -H + hSaco);
@@ -270,8 +271,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   if (r.bolsillo) rect(l, 'referencias', r.bolsillo.x, -H + r.bolsillo.y, r.bolsillo.ancho, r.bolsillo.alto);
   // El alzado conserva horizontales todas las entradas y solo desplaza el bajo.
   if (desnivel) {
-    const bajoCorte = -H+(p.apilable.doble?-13.5:hSaco);
-    const soldadura = -H+(p.apilable.doble?-11.5:hSaco+2);
+    const bajoCorte = -H+(p.apilable.doble?bajoDoble:hSaco);
+    const soldadura = -H+(p.apilable.doble?bajoDoble+2:hSaco+2);
     for (const a of l.lineas) {
       const inferior = a.capa==='DISCO1' && (Math.abs(a.y1-bajoCorte)<.001||Math.abs(a.y2-bajoCorte)<.001);
       const referencia = a.capa==='referencias' && (a.y1===-H||a.y2===-H);

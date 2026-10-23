@@ -4,7 +4,10 @@ import type { PedidoPuertas, Puerta } from '../tipos.ts';
 // Puertas de ejemplo para las pruebas del alzado y del plano.
 
 export function base(modelo: Puerta['modelo'], frente: number, alto: number): Puerta {
-  return { ...nuevaPuerta(modelo), frente, alto, of: '0232309', rollo: 300, rolloCristal: 140, rolloSaco: 300,
+  const nueva = nuevaPuerta(modelo);
+  // Las autorreparables reales de las pruebas llevaban el saco de 120 cortado de 32 (rematado 12): con la regla
+  // del 23/10/2026, el de 110.
+  return { ...nueva, autorreparable: { ...nueva.autorreparable, saco: 110 }, frente, alto, of: '0232309', rollo: 300, rolloCristal: 140, rolloSaco: 300,
     material: 'LAC900', color: 'AZUL 5002', confirmada: true, ventanasConfirmadas: true };
 }
 
@@ -22,7 +25,7 @@ export function apilable(): Puerta {
   return p;
 }
 export function autorreparable(): Puerta {
-  return { ...base('PUERTAUTO', 350, 400), autorreparable: { empates: [150] } };
+  return { ...base('PUERTAUTO', 350, 400), autorreparable: { saco: 110, empates: [150] } };
 }
 
 /** Un pedido con las puertas dadas, una por elemento. */
