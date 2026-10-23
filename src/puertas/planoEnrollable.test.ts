@@ -10,6 +10,8 @@ import { escribirPlanoPuertas } from './plano.ts';
 import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
 
 const cabecera = { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' };
+/** Dónde empieza el corte en el modelo: la cota grande (XERA 20) más a la izquierda. */
+const inicioCorte = (rs: ReturnType<typeof registrosDxf>) => Math.min(...rs.filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20').map(r => numero(r, 13)));
 const puerta = () => ({ ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
   observaciones: 'OBSERVACIÓN RPS QUE NO SE IMPRIME',
   entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
@@ -82,7 +84,7 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
   it('X3 y REVÉS una sola vez (Iván, 22/10/2026): en A1 del alzado y en el primer paño del corte, con la OF', () => {
     const textos = modelo(plano()).filter(r => r.tipo === 'MTEXT');
     const alzado = textos.filter(r => numero(r, 10) < 105 && numero(r, 20) > 95);
-    const corte = textos.filter(r => numero(r, 10) > 109);
+    const corte = textos.filter(r => numero(r, 10) > inicioCorte(registrosDxf(plano())) - 1);
     const cuenta = (lista: typeof textos, v: string) => lista.filter(r => valor(r, 1) === v).length;
     for (const [v, n] of [['X3', 1], ['A1', 1], ['REVÉS', 1], ['0233175', 1], ['A2', 1]] as const) expect(cuenta(alzado, v), v).toBe(n);
     const y = (v: string) => numero(alzado.find(r => valor(r, 1) === v)!, 20);
@@ -120,7 +122,7 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     for (const medida of [218.5, 26, 204, 56.5, 300]) expect(medidas).toContain(medida);
     for (const c of corte.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'))) expect(medidas).toContain(c.largo / 10);
     // El transparente conserva el multiplicador del bot aunque solo se anide una muestra.
-    const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) > 109.8 && numero(r, 20) > 88);
+    const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) > inicioCorte(ent) - 0.2 && numero(r, 20) > 88);
     expect(muestras.filter(r => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toHaveLength(2);
     expect(muestras.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5)).toBe(true);
   });
@@ -172,10 +174,10 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // 23/10/2026: «SACO DE 100», sin la DIN A3 vacía, la cota del corte hasta la pieza más alta sin rayas del rollo
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
-    // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a 150 m a la derecha y los recuadros DIBUJO y CORTE.
-    ['apilable', apilable, '7b76b85af8d80a87e9be171301025320be7030e7891cf328034b1865bb673038'],
+    // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
+    ['apilable', apilable, '3180c7dcc226e2ab08c593dbaa4fb6f53bc56c5c95dee2b56a6a49c0ab46b213'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '0d9742b14ac5251f69545b267c3bd69fca17a5eb40df77f60f7db168ca38d6ef'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, 'a510dad3ac5394d7bec6b2ed5eb5d68d3ce908f6296ba4a22cf3a3e9b74709f0'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -186,7 +188,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     const anterior = escribirPlanoPuertas({ pedido: { ...pedido, cabecera: { clienteRps: { codigo: '009999' } } }, cabecera });
     // Sin el detalle del saco de la plantilla de Portanova, que es de su hoja.
     const detalle = new Set(registrosDxf(readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8')).filter(r => valor(r, 330) === '1F').map(r => valor(r, 5)));
-    const geometria = (dxf: string) => registrosDxf(dxf).filter(r => valor(r, 67) !== '1' && !detalle.has(valor(r, 5)) && numero(r, 20) > 50 && numero(r, 10) > 99)
+    const geometria = (dxf: string) => registrosDxf(dxf).filter(r => valor(r, 67) !== '1' && !detalle.has(valor(r, 5)) && valor(r, 8) !== 'RECUADROS' && numero(r, 20) > 50 && numero(r, 10) > 99)
       // El sentido de los textos (11/21 del MTEXT, 53 de la cota) puede cambiar si la hoja gira la vista del corte.
       .map(r => ({ tipo: r.tipo, pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330, 62, 53].includes(k) && !(k === 2 && r.tipo === 'DIMENSION')
         && !([11, 21].includes(k) && r.tipo === 'MTEXT'))
@@ -205,6 +207,6 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('09cdea873553b0563a1887f6471945ff39463fdacdad35baaa62a6d45ea3594e');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('6383dcfb81e796a03e5ad233215521ac7944ad261b93c88c39dac25c2f8ca6c6');
   });
 });

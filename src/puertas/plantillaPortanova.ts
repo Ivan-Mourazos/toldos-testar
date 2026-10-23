@@ -13,6 +13,8 @@ export const VENTANA_CORTE_PORTANOVA = { centro: [225.3602038, 140.9411701] as P
 
 /** Lo que la plantilla trae en el modelo: el detalle del saco, que enseñan las ventanas 3 y 5. */
 const DETALLE = { x0: 133, y0: 3, x1: 136, y1: 7 };
+/** Lo que ocupa el detalle (sus puntos más extremos, con sitio para los textos). */
+const CAJA_DETALLE = { x0: 133.3368022, y0: 3.5978769, x1: 135.2, y1: 6.2 };
 const en = (x: number, y: number, z: Zona) => x >= z.x0 && x <= z.x1 && y >= z.y0 && y <= z.y1;
 /**
  * Mueve el detalle del saco dentro del recuadro DIBUJO, debajo de las puertas, con las ventanas que lo enseñan y el
@@ -68,9 +70,11 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   ]))
     .map(v => textoSeguro(v).replace(/LAC\s*900/g, 'LAC 900'));
   const ventana = (z: Zona, centro: Punto, ancho: number, alto: number) => ({ z, centro, ancho, alto });
+  // El detalle, 3 m por debajo de las puertas y alineado a su izquierda; el recuadro DIBUJO lo encierra también.
+  const [dx, dy] = [zonas.toldos.x0 - CAJA_DETALLE.x0, zonas.toldos.y0 - 3 - CAJA_DETALLE.y1];
   return {
-    // El detalle, 15 m por debajo de las puertas y alineado a su izquierda.
-    plantilla: moverDetalle(plantilla, zonas.toldos.x0 - 133.3368022, zonas.toldos.y0 - 15 - 3.5978769).replaceAll('ENRROLLABLES', 'ENROLLABLES').replace('TIENES QUE IR', 'TIENEN QUE IR').replace('CM.SOLDAR', 'CM. SOLDAR')
+    detalle: { x0: CAJA_DETALLE.x0 + dx, x1: CAJA_DETALLE.x1 + dx, y0: CAJA_DETALLE.y0 + dy, y1: CAJA_DETALLE.y1 + dy },
+    plantilla: moverDetalle(plantilla, dx, dy).replaceAll('ENRROLLABLES', 'ENROLLABLES').replace('TIENES QUE IR', 'TIENEN QUE IR').replace('CM.SOLDAR', 'CM. SOLDAR')
       // Iván, 23/10/2026: el cajetín se comía texto. La nota del bolsillo, un poco más estrecha para que quepa en
       // el marco, y el aviso de las E.T. 1 mm más arriba, separado del cajetín.
       .replace('E.T INTERIOR\n  7\n10 cm\n', 'E.T INTERIOR\n 41\n0.92\n  7\n10 cm\n')

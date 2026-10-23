@@ -11,10 +11,13 @@ const MODELO = '1F';   // *Model_Space en la plantilla
 // Capas del bot que no trae la plantilla.
 const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'ROTULADOR', color: 1 }, { nombre: 'RECUADROS', color: 30, imprimir: false }];
 // Mismo orden en todos los planos (Iván, 23/10/2026): el dibujo a la izquierda, lejos de los ejes, y el corte a su
-// derecha, alineado arriba y bien separado; cada uno en un recuadro con su nombre en gigante, para saber qué es cada
-// cosa al abrir el DWG. El recuadro no se imprime ni va al bot.
-export const MARGEN_RECUADRO_M = 50;
-export const SEPARACION_CORTE_M = 3 * MARGEN_RECUADRO_M;   // del dibujo al corte: los dos márgenes y 50 m libres
+// derecha, alineado arriba; cada uno en su recuadro, pegados, con su nombre en grande encima, por fuera, para saber
+// qué es cada cosa al abrir el DWG. Los dos recuadros iguales: el mismo alto y el mismo margen, el 20 % del más ancho
+// a los lados y el 20 % del más alto arriba y abajo (Iván, 23/10/2026). El recuadro no se imprime ni va al bot.
+export const margenRecuadro = (dibujo, corte) => [Math.max(1, 0.2 * Math.max(dibujo.x1 - dibujo.x0, corte.x1 - corte.x0)),
+  Math.max(1, 0.2 * Math.max(dibujo.y1 - dibujo.y0, corte.y1 - corte.y0))];
+/** Metros del dibujo al corte: los dos márgenes, con los recuadros pegados. */
+export const separacionCorte = (dibujo, corte) => 2 * margenRecuadro(dibujo, corte)[0];
 
 /**
  * plano: { lineas, polilineas, textos, zonas: { toldos, corte } } en metros (de dibujarPlano).
@@ -274,10 +277,16 @@ export function escribirDxfPlano(plano, cabecera) {
   const baseCotas = plano.plantilla ? Math.max(0, ...[...src.matchAll(/\n {2}2\n\*D(\d+)\n/g)].map(m => Number(m[1]))) : 0;
   const cotas = [...(plano.cotas ?? []), ...(corte.cotas ?? [])].map((c, i) => cotaDxf(c, baseCotas + i + 1, nuevo, ent));
   modelo += cotas.map((c) => c.entidad).join('');
-  for (const [nombre, z] of [['DIBUJO', plano.zonas.toldos], ['CORTE', plano.zonas.corteReal ?? plano.zonas.corte]]) {
-    const [x0, y0, x1, y1] = [z.x0 - MARGEN_RECUADRO_M, z.y0 - MARGEN_RECUADRO_M, z.x1 + MARGEN_RECUADRO_M, z.y1 + MARGEN_RECUADRO_M];
-    modelo += ent('LWPOLYLINE', 'RECUADROS', 'AcDbPolyline', ` 90\n     4\n 70\n     1\n 43\n1.0\n${[[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`);
-    modelo += ent('MTEXT', 'RECUADROS', 'AcDbMText', ` 10\n${n(x0 + 5)}\n 20\n${n(y1 - 5)}\n 30\n0.0\n 40\n${n(Math.min(30, (x1 - x0 - 10) / anchoArial(nombre, 1)))}\n 41\n0.0\n 71\n     1\n 72\n     1\n  1\n${nombre}\n  7\narial\n 11\n1.0\n 21\n0.0\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+  // El recuadro DIBUJO encierra también lo que la plantilla trae en el modelo (el detalle del saco de Portanova).
+  const zt = plano.zonas.toldos, d = plano.detalle;
+  const zd = d ? { x0: Math.min(zt.x0, d.x0), y0: Math.min(zt.y0, d.y0), x1: Math.max(zt.x1, d.x1), y1: Math.max(zt.y1, d.y1) } : zt;
+  const zc = plano.zonas.corteReal ?? plano.zonas.corte;
+  const [mx, my] = margenRecuadro(zd, zc), [ya, yb] = [Math.min(zd.y0, zc.y0) - my, Math.max(zd.y1, zc.y1) + my];
+  for (const [nombre, z] of [['DIBUJO', zd], ['CORTE', zc]]) {
+    const [x0, y0, x1, y1] = [z.x0 - mx, ya, z.x1 + mx, yb];
+    modelo += ent('LWPOLYLINE', 'RECUADROS', 'AcDbPolyline', ` 90\n     4\n 70\n     1\n 43\n${n(Math.min(mx, my) / 50)}\n${[[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`);
+    // El nombre, encima y por fuera; tan alto como el margen de arriba, sin pasar del ancho del recuadro.
+    modelo += ent('MTEXT', 'RECUADROS', 'AcDbMText', ` 10\n${n(x0)}\n 20\n${n(y1 + my / 5)}\n 30\n0.0\n 40\n${n(Math.min(my, (x1 - x0) / anchoArial(nombre, 1)))}\n 41\n0.0\n 71\n     7\n 72\n     1\n  1\n${nombre}\n  7\narial\n 11\n1.0\n 21\n0.0\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   }
 
   src = src.slice(0, ini) + entidades.join('') + insercion + modelo + src.slice(fin);

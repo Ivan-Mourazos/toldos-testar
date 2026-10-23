@@ -72,15 +72,19 @@ describe('Correcciones de confección tras la revisión', () => {
     expect(debajo - titulo2.y - titulo2.h).toBeGreaterThan(1.3);
     expect(debajo - aviso.y - aviso.h).toBeGreaterThan(1.3);
   });
-  it.each([false, true])('centra los textos de la tira bajo el rotulador (girada: %s)', (girada) => {
+  // Iván, 23/10/2026: más grandes, aunque pisen el rotulador, sin salirse de la pieza; la OF al lado del nombre.
+  it.each([false, true])('rotula la tira a lo largo, con la OF al lado y dentro de la pieza (girada: %s)', (girada) => {
     const p = { nombre: 'A BAMBA', largo: 4850, alto: 150, marcas: ['tira'], of: '0232568', x: 0, y: 0,
       ancho: girada ? 150 : 4850, hueco: girada ? 4850 : 150, girada };
     const textos = dibujo([p], 5000, { of: '', tela: '' }).textos.filter(t => ['A BAMBA', p.of].includes(t.valor));
-    const centros = textos.map(t => girada ? 150 - t.x : t.y);
-    expect((centros[0] + centros[1]) / 2).toBeCloseTo(42.5);
+    const centros = textos.map(t => girada ? 150 - t.x : t.y), aLoLargo = textos.map(t => girada ? t.y : t.x);
+    expect(textos).toHaveLength(2);
+    expect(aLoLargo[1]).toBeGreaterThan(aLoLargo[0] + 1000);
     for (const [i, t] of textos.entries()) {
-      expect(centros[i] - t.h).toBeGreaterThan(0);
-      expect(centros[i] + t.h).toBeLessThan(85);
+      expect(centros[i]).toBeCloseTo(75);
+      expect(t.h).toBeGreaterThan(60);
+      expect(centros[i] - t.h * 0.75).toBeGreaterThan(0);
+      expect(centros[i] + t.h * 0.75).toBeLessThan(150);
     }
   });
 });

@@ -59,9 +59,9 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     // Cortina: todos los rótulos de 15 cm, también en la bamba, como el corte a mano de AR2605193 (Iván, 23/10/2026).
     let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : p.rotuloCortina ? Math.min(150, Math.min(p.ancho, p.hueco) * 0.7)
       : Math.min(300, Math.min(p.ancho, p.hueco) / 4);
-    // La bamba rotula por debajo de su raya: la de toldo, la de la tira; la de cortina, la de la varilla.
-    const franja = !p.nombre.includes('BAMBA') ? null
-      : Math.max(1, p.alto - (p.rotuloCortina ? p.marcas[0].mm : ajustes.varillaTiraMm));
+    // La bamba de cortina rotula por debajo de la raya de la varilla. La de toldo, como el resto: en toda la pieza,
+    // aunque pise el rotulador, sin llegar a las líneas de corte (Iván, 23/10/2026: «pueden ir más grandes»).
+    const franja = !p.nombre.includes('BAMBA') || !p.rotuloCortina ? null : Math.max(1, p.alto - p.marcas[0].mm);
     const [cx, cy] = franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
       : p.girada ? [x0 + p.alto - franja / 2, y0 + p.largo / 2] : [x0 + p.largo / 2, y0 + franja / 2];
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']
@@ -72,11 +72,13 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
       : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + (p.rotuloCortina ? 1 : 2));
     alto = Math.min(alto, altoLibre,
       ...lineasTexto.map((v) => espacioTexto * 0.9 / anchoArial(v, 1)));
-    // Piezas largas y bajas (las bandas de la cortina): nombre, OF y REVÉS en fila, repartidos a lo largo, para
-    // que vayan más grandes (Iván, 22/10/2026, como en las puertas apilables).
-    if (p.enFila && lineasTexto.length > 1) {
-      const n = lineasTexto.length, largo = p.girada ? p.hueco : p.ancho, corto = p.girada ? p.ancho : p.hueco;
-      const h = Math.min(p.rotuloCortina ? 150 : 300, corto * (p.rotuloCortina ? 0.7 : 0.4), ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
+    // Piezas largas y bajas (las bandas de la cortina, las bambas): nombre, OF y REVÉS en fila, repartidos a lo largo,
+    // para que vayan más grandes (Iván, 22/10/2026, como en las puertas apilables). En las de toldo, en fila siempre
+    // que así salgan más grandes que uno encima de otro (Iván, 23/10/2026: «la OF la pones de lado si ves que tal»).
+    const n = lineasTexto.length, largo = p.girada ? p.hueco : p.ancho, corto = p.girada ? p.ancho : p.hueco;
+    const enFila = Math.min(p.rotuloCortina ? 150 : 300, corto * (p.rotuloCortina ? 0.7 : 0.6), ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
+    if (n > 1 && (p.enFila || (!p.saco && !p.rotuloCortina && enFila > alto * 1.05))) {
+      const h = p.enFila && !p.rotuloCortina ? Math.min(enFila, corto * 0.4) : enFila;
       lineasTexto.forEach((valor, i) => {
         const u = (largo * (i + 0.5)) / n;
         textos.push(p.girada

@@ -4,7 +4,7 @@
 // terminado, ocre lo de corte), como en los DWG de los pedidos (AR2605120). Debajo, el corte del rollo.
 import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
 import { aguasArquilladas, DOBLEZ_BASTILLA, esquinasChaflan, piezasLona } from './lonaAlta.js';
-import { escribirDxfPlano, SEPARACION_CORTE_M } from '../../domain/corteLona/presentacion.js';
+import { escribirDxfPlano, separacionCorte } from '../../domain/corteLona/presentacion.js';
 
 const ORIGEN_M = 100;   // como en toldos: lejos del origen del CAD
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -382,8 +382,9 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
   const zonaCorte = { x0: Math.min(...pts.map((p) => p[0])) - 10, y0: Math.min(...pts.map((p) => p[1])) - 10, x1: Math.max(...pts.map((p) => p[0])) + 10, y1: Math.max(...pts.map((p) => p[1])) + 10 };
   // A metros, a 100 m del origen.
   const m = (v) => ORIGEN_M + v / 100;
-  // El corte, a la derecha del dibujo y alineado arriba (SEPARACION_CORTE_M): al abrir el DWG está todo ordenado.
-  const [dx, dy] = [zonaDibujo.x1 + SEPARACION_CORTE_M * 100 - zonaCorte.x0, zonaDibujo.y1 - zonaCorte.y1];
+  // El corte, a la derecha del dibujo y alineado arriba, con los recuadros pegados: al abrir el DWG está todo ordenado.
+  const enM = (z) => ({ x0: z.x0 / 100, x1: z.x1 / 100, y0: z.y0 / 100, y1: z.y1 / 100 });
+  const [dx, dy] = [zonaDibujo.x1 + separacionCorte(enM(zonaDibujo), enM(zonaCorte)) * 100 - zonaCorte.x0, zonaDibujo.y1 - zonaCorte.y1];
   const aM = (G, ox = 0, oy = 0) => ({
     lineas: G.lineas.map((l) => ({ ...l, x1: m(l.x1 + ox), y1: m(l.y1 + oy), x2: m(l.x2 + ox), y2: m(l.y2 + oy) })),
     polilineas: G.polilineas.map((p) => ({ ...p, puntos: p.puntos.map(([a, b]) => [m(a + ox), m(b + oy)]) })),
