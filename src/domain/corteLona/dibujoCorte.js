@@ -76,7 +76,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     // para que vayan más grandes (Iván, 22/10/2026, como en las puertas apilables). En las de toldo, en fila siempre
     // que así salgan más grandes que uno encima de otro (Iván, 23/10/2026: «la OF la pones de lado si ves que tal»).
     const n = lineasTexto.length, largo = p.girada ? p.hueco : p.ancho, corto = p.girada ? p.ancho : p.hueco;
-    const enFila = Math.min(p.rotuloCortina ? 150 : 300, corto * (p.rotuloCortina ? 0.7 : 0.6), ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
+    const enFila = Math.min(p.rotuloCortina ? 150 : 300, corto * 0.7, ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
     if (n > 1 && (p.enFila || (!p.saco && !p.rotuloCortina && enFila > alto * 1.05))) {
       const h = p.enFila && !p.rotuloCortina ? Math.min(enFila, corto * 0.4) : enFila;
       lineasTexto.forEach((valor, i) => {

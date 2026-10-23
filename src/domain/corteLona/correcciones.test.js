@@ -82,9 +82,9 @@ describe('Correcciones de confección tras la revisión', () => {
     expect(aLoLargo[1]).toBeGreaterThan(aLoLargo[0] + 1000);
     for (const [i, t] of textos.entries()) {
       expect(centros[i]).toBeCloseTo(75);
-      expect(t.h).toBeGreaterThan(60);
-      expect(centros[i] - t.h * 0.75).toBeGreaterThan(0);
-      expect(centros[i] + t.h * 0.75).toBeLessThan(150);
+      expect(t.h).toBeCloseTo(105);
+      expect(centros[i] - t.h / 2).toBeGreaterThan(0);
+      expect(centros[i] + t.h / 2).toBeLessThan(150);
     }
   });
 });

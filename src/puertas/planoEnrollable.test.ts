@@ -175,7 +175,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, '3180c7dcc226e2ab08c593dbaa4fb6f53bc56c5c95dee2b56a6a49c0ab46b213'],
+    ['apilable', apilable, '575877d6839f444d115d364ee889f017b741b12da64d53af134fd1ecf58ed1cb'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     ['autorreparable', autorreparable, 'a510dad3ac5394d7bec6b2ed5eb5d68d3ce908f6296ba4a22cf3a3e9b74709f0'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {

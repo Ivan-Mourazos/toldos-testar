@@ -74,7 +74,7 @@ function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number,
   if (cantidadSeparada) texto(l, `X${p.cantidad}`, x, (libre[0] + libre[1]) / 2 + h * .8, h * .8);
 }
 
-function dibujarSaco(l: Lienzo, p: Puerta, conOfPuerta = false) {
+function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
   const destino = l, desnivel = desnivelSuelo(p), derecha = pestanaDerecha(p);
   if (desnivel || derecha) l = vacio();
   const ple = p.modelo === 'PUERTAPLE', doble = ple && p.apilable.doble;
@@ -113,8 +113,8 @@ function dibujarSaco(l: Lienzo, p: Puerta, conOfPuerta = false) {
     }
     texto(l, 'CREMALLERA SOLDADA HASTA MITAD DE SACO', w / 2, ys - h - 32, Math.min(10, w / 45));
   }
-  // Con varias puertas, el saco dice de cuál es (Iván, 24/10/2026, AR2605035).
-  const material = conOfPuerta && p.of.trim() ? `${rotuloSaco(p)} · ${p.of.trim()}` : rotuloSaco(p);
+  // Con varias puertas, el saco dice de cuál es, con su letra (Iván, 24/10/2026, AR2605035).
+  const material = letraPuerta ? `${rotuloSaco(p)} · ${letraPuerta}` : rotuloSaco(p);
   if (desnivel) {
     // Iván, 23/10/2026 (AR2605035): sin cota del largo y el material entre la raya de arriba
     // y la del medio, paralelo a ellas.
@@ -161,9 +161,9 @@ function dibujarSaco(l: Lienzo, p: Puerta, conOfPuerta = false) {
   return ys - h - 48 - Math.abs(desnivel);
 }
 
-/** `conOfPuerta`: con varias puertas en el pedido, el saco y los cristales llevan la OF de su puerta. */
-export function dibujarAlzadoTaller(p: Puerta, letra: string, conOfPuerta = false): { lienzo: Lienzo; zona: Zona } {
-  if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra, conOfPuerta);
+/** `identificar`: con varias puertas, el saco y los cristales llevan la letra de su puerta. */
+export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = false): { lienzo: Lienzo; zona: Zona } {
+  if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra, identificar);
   const l = vacio(), F = p.frente, H = p.alto, ple = p.modelo === 'PUERTAPLE', r = calcularPuerta(p);
   const desnivel = desnivelSuelo(p), altoDerecho = H-desnivel;
   // El paño arranca en el rematado del saco; el doble saco, más abajo, porque el de 80 sale del propio paño.
@@ -284,8 +284,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, conOfPuerta = fals
     redondeado(l, 'curv', v.x, -H + v.y, v.ancho, v.alto, v.radio);
     redondeado(l, 'corte (vent)', v.x - 2, -H + v.y - 2, v.ancho + 4, v.alto + 4, v.radioCristal);
     obstaculos.push([-H + v.y - 3, -H + v.y + v.alto + 3]);
-    // La OF de su puerta en el cristal, arriba, lejos de las cotas que cruzan la ventana por el medio.
-    if (conOfPuerta && p.of.trim()) texto(l, p.of.trim(), v.x + v.ancho / 2, -H + v.y + v.alto * .78, Math.min(6, v.alto * .22, v.ancho * .7 / anchoArial(p.of.trim(), 1)));
+    // La letra de su puerta en el cristal, arriba, lejos de las cotas que cruzan la ventana por el medio.
+    if (identificar) texto(l, letra, v.x + v.ancho / 2, -H + v.y + v.alto * .78, Math.min(8, v.alto * .25));
   }
   for (const y of new Set(p.ventanas.map(v => v.y))) {
     const fila = p.ventanas.filter(v => v.y === y).sort((a, b) => a.x - b.x), ys = -H + y + fila[0].alto / 2;
@@ -351,7 +351,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, conOfPuerta = fals
     cota(l,0,-H,0,-H+tubos[0],-34,'XERA 15');
     cota(l,F,0,F,-altoDerecho,F+78,'XERA 15');
   }
-  const abajo = dibujarSaco(l, p, conOfPuerta);
+  const abajo = dibujarSaco(l, p, identificar ? letra : '');
   for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
     const [x, y] = pieza.origenAlzado!;
     for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, x + m.x, -H + y + m.y, 1, m.giro ?? 0, 'ROTULADOR');
@@ -383,6 +383,9 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
       let xo = 0, fondo = techo;
       for (const g of grupos) {
         const dibujo = vacio(); let arriba = techo;
+        // Saco partido: las dos mitades se acotan como un saco, con su alto y el largo ya empatado, el del saco entero
+        // de esa puerta (Iván, 24/10/2026, AR2605035); el rótulo, en una sola mitad.
+        const entero = g.length > 1 ? cortes.find(x => x.opcion === 'saco-entero')?.colocadas.find(t => puertaDe(t.pieza) === puertaDe(g[0]))?.pieza.ancho : undefined;
         for (const [i, p] of g.entries()) {
           const y = arriba - p.alto;
           if (p.radio) {
@@ -392,11 +395,10 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
             for (const [cx, cy, desde] of [[r, r, 180], [w - r, r, 270], [w - r, h - r, 0], [r, h - r, 90]]) dibujo.arcos.push({ capa: 'CUTTER', x: cx, y: y + cy, r, desde, hasta: desde + 90 });
           }
           else contorno(dibujo, 'DISCO1', p.contorno.map(([x, v]): Punto => [x, y + v]));
-          // Con varias puertas, al lado del X, la OF de su puerta (Iván, 24/10/2026, AR2605035): en fila, más grandes.
-          const of = pedido.elementos.length > 1 ? pedido.elementos.find(e => e.id === puertaDe(p))?.input.of.trim() ?? '' : '';
-          const hx = of ? Math.min(20, p.alto * .55, p.ancho * .3 / anchoArial(of, 1)) : Math.min(20, p.alto / 2);
-          texto(dibujo, `X${p.multiplicador ?? p.cantidad}`, p.ancho * (of ? .3 : .5), y + p.alto / 2, hx);
-          if (of) texto(dibujo, of, p.ancho * .65, y + p.alto / 2, hx);
+          // Con varias puertas, la letra de su puerta y la cantidad (Iván, 24/10/2026, AR2605035).
+          const iPuerta = pedido.elementos.findIndex(e => e.id === puertaDe(p));
+          const rotulo = `${pedido.elementos.length > 1 && iPuerta >= 0 ? `${String.fromCharCode(65 + iPuerta)}  ` : ''}X${p.multiplicador ?? p.cantidad}`;
+          if (!entero || !i) texto(dibujo, rotulo, p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto / 2, ...(iPuerta >= 0 && pedido.elementos.length > 1 ? [p.ancho * .6 / anchoArial(rotulo, 1)] : [])));
           for (const [x1, y1, x2, y2] of p.marcas) linea(dibujo, 'ROTULADOR', x1, y + y1, x2, y + y2);
           // Los nombres a1/a2… los asigna corte.ts por material: no sustituirlos por el número interno.
           const t = c.colocadas.find(t => t.pieza.id === p.id)!;
@@ -411,6 +413,15 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
           if (!xo && !i) material(dibujo,
             (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
             p.ancho, techo + 15);
+          if (entero) {
+            if (!i) cota(dibujo, 0, y, 0, techo, -35, 'XERA 20');
+            if (!siguiente) {
+              const largo = Math.max(...g.map(q => q.ancho));
+              dibujo.cotas.push({ capa: 'cotas', estilo: 'XERA 20', x1: 0, y1: y, x2: largo, y2: y, d: y - 30, giro: 0, valor: entero });
+            }
+            arriba = y;
+            continue;
+          }
           cota(dibujo, 0, y, p.ancho, y, siguiente ? techo + 35 : y - 30, 'XERA 20');
           // Las dos mitades pegadas: la cota de la segunda, a su derecha, para que no se pisen (AR2605035).
           if (anterior) cota(dibujo, p.ancho, y, p.ancho, arriba, p.ancho + 40, 'XERA 20');

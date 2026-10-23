@@ -68,7 +68,7 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
     .reduce((a, b) => b[1] - b[0] > a[1] - a[0] ? b : a);
 }
 
-export function dibujarAlzadoEnrollable(p: Puerta, letra: string, conOfPuerta = false): { lienzo: Lienzo; zona: Zona } {
+export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(), F = p.frente, H = p.alto, T = p.enrollable.T;
   const r = calcularPuerta(p), saco = sacoPuerta(p), bajo = saco.rematado, hs = saco.corte, hp = saco.altoPestana;
   const ventanales = T > 0 ? [{ D: p.enrollable.D, margen: p.enrollable.margen }, ...p.enrollable.ventanales ?? []] : [];
@@ -137,8 +137,8 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, conOfPuerta = 
   cota(l, 0, ys - hs, 0, ys, -32.47);
   cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
   cota(l, 0, ys - hs + 2, 4.5, ys - hs + 2, ys - hs - 17.25);
-  // Con varias puertas, el saco dice de cuál es (Iván, 24/10/2026): centrado y a su ancho.
-  const rotulo = conOfPuerta && p.of.trim() ? `${rotuloSaco(p)} · ${p.of.trim()}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas || rotulo !== rotuloSaco(p);
+  // Con varias puertas, el saco dice de cuál es, con su letra (Iván, 24/10/2026): centrado y a su ancho.
+  const rotulo = identificarSaco ? `${rotuloSaco(p)} · ${letra}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas || rotulo !== rotuloSaco(p);
   texto(l, rotulo, centrado ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
     centrado ? Math.min(10, F * .9 / anchoArial(rotulo, 1)) : 10, centrado ? { centrado: true } : {});
   // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
@@ -232,11 +232,10 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
       else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
       if (!xo) texto(l, p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material,
         xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
-      // Con varias puertas, al lado del X, la OF de su puerta (Iván, 24/10/2026): en fila, más grandes.
-      const of = pedido.elementos.length > 1 ? pedido.elementos.find(e => e.id === p.id.split(':')[0])?.input.of.trim() ?? '' : '';
-      const hx = of ? Math.min(20, p.alto * .55, p.ancho * .3 / anchoArial(of, 1)) : Math.min(20, p.alto * .8);
-      texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho * (of ? .3 : .5), y + p.alto / 2, hx, { centrado: true });
-      if (of) texto(l, of, xMuestra + p.ancho * .65, y + p.alto / 2, hx, { centrado: true });
+      // Con varias puertas, la letra de su puerta y la cantidad (Iván, 24/10/2026).
+      const iPuerta = pedido.elementos.findIndex(e => e.id === p.id.split(':')[0]);
+      const rotulo = `${pedido.elementos.length > 1 && iPuerta >= 0 ? `${String.fromCharCode(65 + iPuerta)}  ` : ''}X${p.multiplicador ?? p.cantidad}`;
+      texto(l, rotulo, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8, ...(iPuerta >= 0 && pedido.elementos.length > 1 ? [p.ancho * .6 / anchoArial(rotulo, 1)] : [])), { centrado: true });
       cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
       if (!xo) cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);
       fondo = Math.min(fondo, y); xo += p.ancho + 80;
