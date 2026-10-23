@@ -28,16 +28,27 @@ describe('Colocación como el Tetris', () => {
     const inicial = [sitio('a', 0, 0, 10, 2), sitio('b', 0, 2, 4, 2), sitio('c', 4, 2, 4, 2)];
     // Un saco de 6 × 4 cabe al apilar las pequeñas; el retal de 10 × 2 no sirve para ese stock.
     const stock = (hs: ReturnType<typeof huecosLibres>) => hs.some(h => h.w >= 6 && h.h >= 4) ? 24 : 0;
-    const r = buscarColocacion(piezas, 6, inicial, { restantes: 100000 }, () => true, stock);
+    const r = buscarColocacion(piezas, 6, inicial, { restantes: 100000 }, () => true, hs => ({ area: stock(hs), ancho: 0 }));
     expect(largo(r)).toBe(10);
     expect(ancho(r)).toBe(6);
     expect(stock(huecosLibres(r, 10, 6))).toBe(24);
+  });
+  it('a igual largo y stock reduce el ancho total aunque las piezas del pedido ocupen más', () => {
+    const piezas = [pieza('a', 10, 2), pieza('b', 4, 2), pieza('c', 4, 2)];
+    const inicial = [sitio('a', 0, 0, 10, 2), sitio('b', 0, 2, 4, 2), sitio('c', 4, 2, 4, 2)];
+    // La primera disposición tiene pedido de ancho 4, pero stock hasta 8; apilar las pequeñas deja stock hasta 6.
+    const stock = (hs: ReturnType<typeof huecosLibres>) => ({ area: 24,
+      ancho: hs.some(h => h.x >= 4 && h.y <= 2 && h.w >= 6 && h.h >= 4) ? 6 : 8 });
+    const r = buscarColocacion(piezas, 8, inicial, { restantes: 100000 }, () => true, stock);
+    expect(largo(r)).toBe(10);
+    expect(ancho(r)).toBe(6);
+    expect(Math.max(ancho(r), stock(huecosLibres(r, 10, 8)).ancho)).toBe(6);
   });
   it('ahorrar largo precede al área de stock y no obliga a meter sacos', () => {
     const piezas = [pieza('a', 4, 2), pieza('b', 1, 2)];
     const inicial = [sitio('a', 0, 0, 4, 2), sitio('b', 6, 0, 1, 2)];
     const area = (hs: ReturnType<typeof huecosLibres>) => hs.reduce((s, h) => s + h.w * h.h, 0);
-    const r = buscarColocacion(piezas, 4, inicial, { restantes: 100000 }, () => true, area);
+    const r = buscarColocacion(piezas, 4, inicial, { restantes: 100000 }, () => true, hs => ({ area: area(hs), ancho: 0 }));
     expect(largo(r)).toBe(4);
     expect(area(huecosLibres(r, 4, 4))).toBeLessThan(area(huecosLibres(inicial, 7, 4)));
   });

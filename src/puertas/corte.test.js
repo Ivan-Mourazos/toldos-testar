@@ -131,9 +131,9 @@ describe('Corte de puertas', () => {
     expect(cachos[0].y).toBe(cachos[1].y);
     expect(cachos[1].x).toBe(cachos[0].x + 10 * (cachos[0].girada ? cachos[0].pieza.alto : cachos[0].pieza.ancho));
     expect(Math.max(...lona.colocadas.filter(k => !k.pieza.id.startsWith('stock-'))
-      .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2612.5);
+      .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2772.5);
     const ocupado = Math.max(...lona.colocadas.map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)));
-    expect(ocupado).toBe(2947.5);
+    expect(ocupado).toBe(2787.5);
   });
   it('sin OF dibuja SIN OF y no crea archivo ni aun con un pedido identificado', () => {
     const p=pedido(); p.elementos[0].input.of='';

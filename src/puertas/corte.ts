@@ -383,9 +383,12 @@ function colocar(
       const ca = codigosPano.get(pa.id)!, cb = codigosPano.get(pb.id)!;
       return ca === cb || (ca.localeCompare(cb, 'es', { numeric: true }) < 0 ? a.y > b.y : b.y > a.y);
     }));
-    const aprovechamiento = (libres: ReturnType<typeof huecosLibres>) => libres.reduce((area, h) => area
-      + sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock)
-        .reduce((suma: number, s: { ancho: number; hueco: number }) => suma + s.ancho * s.hueco, 0), 0);
+    const aprovechamiento = (libres: ReturnType<typeof huecosLibres>) => {
+      const sacos = libres.flatMap(h => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock)) as Array<{ y: number; ancho: number; hueco: number }>;
+      // Se valora el mismo ancho total que acota el plano, incluidos los sacos que irán al corte.
+      return { area: sacos.reduce((suma, s) => suma + s.ancho * s.hueco, 0),
+        ancho: Math.max(0, ...sacos.map(s => s.y + s.hueco)) };
+    };
     const conStock = Boolean(ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano'));
     const elegidas = buscarColocacion(piezasBusqueda, rollo, inicial, presupuesto, valida, conStock ? aprovechamiento : undefined);
     // Las franjas que llenan el rollo separan el anidado: trasladarlas al inicio no altera su consumo.

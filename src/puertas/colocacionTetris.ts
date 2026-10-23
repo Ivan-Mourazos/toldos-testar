@@ -3,6 +3,7 @@ export type FormaCorte = { w: number; h: number; girada: boolean };
 export type RectanguloCorte = FormaCorte & { id: string; x: number; y: number };
 export type PiezaCorte = { id: string; formas: FormaCorte[]; simetria?: string };
 export type PresupuestoCorte = { restantes: number };
+export type AprovechamientoStock = { area: number; ancho: number };
 type Hueco = { x: number; y: number; w: number; h: number };
 const EPS = .001;
 const derecha = (r: Hueco) => r.x + r.w;
@@ -55,7 +56,7 @@ export function huecosLibres(ocupadas: Hueco[], largo: number, rollo: number): H
 export function buscarColocacion(
   piezas: PiezaCorte[], rollo: number, inicial: RectanguloCorte[], presupuesto: PresupuestoCorte,
   valida: (r: RectanguloCorte[]) => boolean = () => true,
-  aprovechamiento?: (huecos: Hueco[]) => number,
+  aprovechamiento?: (huecos: Hueco[]) => AprovechamientoStock,
 ): RectanguloCorte[] {
   if (!piezas.length || presupuesto.restantes <= 0) return inicial;
   let mejor = inicial;
@@ -89,27 +90,33 @@ export function buscarColocacion(
       if (presupuesto.restantes < trabajo) { presupuesto.restantes = 0; return; }
       presupuesto.restantes -= trabajo;
       let nuevoStock = 0;
+      let anchoTotal = ancho;
       if (aprovechamiento) {
-        if (stock < 0) stock = aprovechamiento(huecosLibres(mejor, coste.largo, rollo));
-        nuevoStock = aprovechamiento(huecosLibres(puestas, largo, rollo));
+        if (stock < 0) {
+          const anterior = aprovechamiento(huecosLibres(mejor, coste.largo, rollo));
+          stock = anterior.area;
+          coste.ancho = Math.max(coste.ancho, anterior.ancho);
+        }
+        const nuevo = aprovechamiento(huecosLibres(puestas, largo, rollo));
+        nuevoStock = nuevo.area;
+        anchoTotal = Math.max(ancho, nuevo.ancho);
         if (nuevoStock < stock - EPS) return;
       }
       const mejoraStock = aprovechamiento && nuevoStock > stock + EPS;
-      if (!mejoraStock && ancho > coste.ancho + EPS) return;
-      if (mejoraStock || ancho < coste.ancho - EPS) {
+      if (!mejoraStock && anchoTotal > coste.ancho + EPS) return;
+      if (mejoraStock || anchoTotal < coste.ancho - EPS) {
         mejor = puestas.map(p => ({ ...p }));
-        coste = { largo, ancho };
+        coste = { largo, ancho: anchoTotal };
         stock = nuevoStock; retal = -1;
         return;
       }
       const sobrante = () => Math.max(0, ...huecosMaximos(puestas, largo, rollo).map(h => h.w * h.h));
       if (retal < 0) retal = Math.max(0, ...huecosMaximos(mejor, coste.largo, rollo).map(h => h.w * h.h));
       const nuevo = sobrante();
-      if (nuevo < retal - EPS) return;
       if (nuevo <= retal + EPS) return; // A igualdad completa conserva el primero: desempate estable.
       retal = nuevo;
       mejor = puestas.map(p => ({ ...p }));
-      coste = { largo, ancho };
+      coste = { largo, ancho: anchoTotal };
       return;
     }
     // Cotas inferiores de superficie: con este largo no puede ocupar menos que área/largo.

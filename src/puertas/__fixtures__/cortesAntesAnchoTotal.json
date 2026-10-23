@@ -1,0 +1,33 @@
+{
+  "commit": "d35e8bd",
+  "unidad": "cm",
+  "pedidos": [
+    {"pedido":"AR2604858","largos":[794,379,403.5],"areaStock":85125,"anchoStock":299.75},
+    {"pedido":"AR2604638","largos":[172,164,26],"areaStock":0,"anchoStock":285},
+    {"pedido":"AR2604524","largos":[950,449,481.5],"areaStock":77880,"anchoStock":294.75},
+    {"pedido":"AR2604434","largos":[118.75,146,26],"areaStock":0,"anchoStock":300},
+    {"pedido":"AR2604349","largos":[330,274,26],"areaStock":0,"anchoStock":298},
+    {"pedido":"AR2604970","largos":[850.5,404],"areaStock":51875,"anchoStock":298.75},
+    {"pedido":"AR2604069","largos":[630,303,321.5],"areaStock":21250,"anchoStock":298.25},
+    {"pedido":"AR2604725","largos":[948,456,52],"areaStock":77880,"anchoStock":290.25},
+    {"pedido":"AR2604904","largos":[863,426],"areaStock":0,"anchoStock":300},
+    {"pedido":"AR2604764","largos":[121,32],"areaStock":0,"anchoStock":296.5},
+    {"pedido":"AR2604717","largos":[955,472],"areaStock":40800,"anchoStock":300},
+    {"pedido":"AR2604402","largos":[331.5,32],"areaStock":19000,"anchoStock":300},
+    {"pedido":"AR2604013","largos":[376.5,32],"areaStock":0,"anchoStock":291},
+    {"pedido":"AR2604592","largos":[800,36,410,60],"areaStock":0,"anchoStock":296},
+    {"pedido":"AR2604723","largos":[1530,36,520,60],"areaStock":82500,"anchoStock":296},
+    {"pedido":"AR2604724","largos":[1500,36,510,60],"areaStock":82500,"anchoStock":296},
+    {"pedido":"AR2604859","largos":[1413,40,481,60],"areaStock":117750,"anchoStock":286},
+    {"pedido":"AR2604906","largos":[1590,39,540,60],"areaStock":132500,"anchoStock":286},
+    {"pedido":"AR2605134","largos":[708,204,78],"areaStock":0,"anchoStock":300},
+    {"pedido":"AR2605220","largos":[732,354,372.5],"areaStock":60390,"anchoStock":294.75},
+    {"pedido":"AR2605036","largos":[1244,150,632,322],"areaStock":0,"anchoStock":277},
+    {"pedido":"AR2605065","largos":[233.25,202,26],"areaStock":0,"anchoStock":298.75},
+    {"pedido":"AR2604526","largos":[633.5,32,44],"areaStock":77500,"anchoStock":300},
+    {"pedido":"AR2604526-350","largos":[711,350],"areaStock":41250,"anchoStock":300},
+    {"pedido":"AR2604638-1ET","largos":[172,164,26],"areaStock":0,"anchoStock":269},
+    {"pedido":"EJEMPLO-APILABLE","largos":[411,54,310,60],"areaStock":0,"anchoStock":300},
+    {"pedido":"EJEMPLO-AUTORREPARABLE","largos":[700,350],"areaStock":41250,"anchoStock":284.5}
+  ]
+}

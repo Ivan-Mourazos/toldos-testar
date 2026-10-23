@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import antes from '../src/puertas/__fixtures__/cortesAntesTetris.json' with { type: 'json' };
+import revision from '../src/puertas/__fixtures__/cortesAntesAnchoTotal.json' with { type: 'json' };
 import { pedidosTetris } from '../src/puertas/__fixtures__/cortesTetris.ts';
 import { generarCortePuertas } from '../src/puertas/corte.ts';
 
@@ -35,11 +36,17 @@ for (const p of pedidosTetris()) {
   }
   tiempos.sort((a, b) => a - b);
   const previo = antes.pedidos.find(f => f.pedido === p.orderCode);
+  const rebasado = revision.pedidos.find(f => f.pedido === p.orderCode);
   assert.equal(r.cortes.length, previo.largos.length);
   r.cortes.forEach((c, i) => assert.ok(c.largo / 10 <= previo.largos[i], `${p.orderCode}: crece ${c.material}`));
+  r.cortes.forEach((c, i) => assert.ok(c.largo / 10 <= rebasado.largos[i], `${p.orderCode}: crece respecto a d35e8bd ${c.material}`));
   const c = r.cortes.find(c => c.colocadas.some(s => s.pieza.clase === 'pano'));
   const sacos = c.colocadas.filter(s => s.pieza.id.startsWith('stock-'));
   const areaStock = sacos.reduce((area, s) => area + s.pieza.ancho * s.pieza.alto, 0);
+  if (c.largo / 10 === rebasado.largos[0]) {
+    assert.ok(areaStock >= rebasado.areaStock, `${p.orderCode}: pierde área de stock respecto a d35e8bd`);
+    if (areaStock === rebasado.areaStock) assert.ok(ancho(c) <= rebasado.anchoStock, `${p.orderCode}: crece el ancho total al mismo largo y área`);
+  }
   if (c.largo / 10 === previo.largos[0]) {
     assert.ok(areaStock >= previo.areaStock, `${p.orderCode}: pierde área de stock al mismo largo`);
     assert.ok(sacos.length >= previo.sacos, `${p.orderCode}: pierde sacos al mismo largo`);

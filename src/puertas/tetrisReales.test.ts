@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import antes from './__fixtures__/cortesAntesTetris.json';
+import revision from './__fixtures__/cortesAntesAnchoTotal.json';
 import { pedidosTetris } from './__fixtures__/cortesTetris.ts';
 import { generarCortePuertas } from './corte.ts';
 
@@ -8,9 +9,11 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
     const original = structuredClone(p);
     const r = generarCortePuertas(p, { ofStockSacos: '0230811' });
     const previo = antes.pedidos.find(f => f.pedido === p.orderCode)!;
+    const rebasado = revision.pedidos.find(f => f.pedido === p.orderCode)!;
     expect(r.cortes).toHaveLength(previo.largos.length);
     r.cortes.forEach((c, i) => {
       expect(c.largo / 10).toBeLessThanOrEqual(previo.largos[i]);
+      expect(c.largo / 10).toBeLessThanOrEqual(rebasado.largos[i]);
       const rects = c.colocadas.map(s => ({ x: s.x, y: s.y, w: 10 * (s.girada ? s.pieza.alto : s.pieza.ancho), h: 10 * (s.girada ? s.pieza.ancho : s.pieza.alto) }));
       rects.forEach((a, j) => {
         expect(a.x).toBeGreaterThanOrEqual(0);
@@ -28,14 +31,20 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
       for (const pieza of originales.filter(p => p.clase !== 'cristal')) {
         expect(piezasPedido.filter(s => s.pieza.id === pieza.id)).toHaveLength(pieza.cantidad);
       }
-      // Con el mismo largo, el área de stock precede al ancho del pedido.
-      if (originales.some(p => p.clase === 'pano') && c.largo / 10 === previo.largos[i]) {
+      // Con el mismo largo y área, manda el ancho total que se acota, contando stock.
+      if (originales.some(p => p.clase === 'pano')) {
         const stock = c.colocadas.filter(s => s.pieza.id.startsWith('stock-'));
         const areaStock = stock.reduce((area, s) => area + s.pieza.ancho * s.pieza.alto, 0);
-        expect(stock.length).toBeGreaterThanOrEqual(previo.sacos);
-        expect(areaStock).toBeGreaterThanOrEqual(previo.areaStock);
-        if (areaStock === previo.areaStock) expect(Math.max(...piezasPedido
-          .map(s => s.y / 10 + (s.girada ? s.pieza.ancho : s.pieza.alto)))).toBeLessThanOrEqual(previo.anchoPedido);
+        const anchoTotal = Math.max(...c.colocadas.map(s => s.y / 10 + (s.girada ? s.pieza.ancho : s.pieza.alto)));
+        if (c.largo / 10 === previo.largos[i]) {
+          expect(stock.length).toBeGreaterThanOrEqual(previo.sacos);
+          expect(areaStock).toBeGreaterThanOrEqual(previo.areaStock);
+          if (areaStock === previo.areaStock) expect(anchoTotal).toBeLessThanOrEqual(previo.anchoStock);
+        }
+        if (c.largo / 10 === rebasado.largos[i]) {
+          expect(areaStock).toBeGreaterThanOrEqual(rebasado.areaStock);
+          if (areaStock === rebasado.areaStock) expect(anchoTotal).toBeLessThanOrEqual(rebasado.anchoStock);
+        }
       }
     });
     expect(generarCortePuertas(p, { ofStockSacos: '0230811' })).toEqual(r);
