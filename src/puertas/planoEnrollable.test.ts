@@ -162,10 +162,10 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
   it.each([
     // Renovadas por las correcciones de taller: huecos abiertos, marcas, rótulos y anclajes de cotas; la
     // autorreparable, también porque ahora sí se crea el estilo XERA 20 en la plantilla de toldos.
-    // Solo cambia el rótulo: «SACO DE 100» (saco del pedido, 23/10/2026) en vez de «SACO DE 80».
-    ['apilable', apilable, '476d26443cfa7e5cf81dda34cc54c608be392b4a85ea6a07bfdab0934f22dcff'],
+    // 23/10/2026: «SACO DE 100» (saco del pedido) y la plantilla sin la presentación DIN A3 vacía; nada más.
+    ['apilable', apilable, 'd1282ca20f3fa1611c0ac316efb96ebb0a3f36ea2f09d0bb5760f0aa544eb365'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '673e0823a7084bbd9dfaf4ee7d5f5e1bb93e1664195e6cf08965937885e6d549'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, '67cc1543c7b854e0ea2318fc0851eb0b66a68ce62c9b81cb992570628a592dae'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -191,6 +191,6 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('c92ae9dbd86213c7fd769c2461bf13b10fbed39febc8e0a22b45aae25b93d012');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('d71669f2147b67ccdd4e50e77b0fad36f3badd14bd7fcc77da4a668084c88327');
   });
 });
