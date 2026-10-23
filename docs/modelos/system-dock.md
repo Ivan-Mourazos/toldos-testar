@@ -269,3 +269,23 @@ Las mismas preguntas quedan en [dudas-abiertas.md](./dudas-abiertas.md). No se p
 Queda documentado el catálogo completo localizado en RPS, la forma real de ocho pedidos, los ocho planteamientos publicados, la plantilla específica y las dimensiones y cantidades de sus cortes de oficina. Las comprobaciones sostienen una lona rectangular por unidad, las demasías +1 y +6,6, el reparto habitual de cuatro paños de 61,6 y las repeticiones de serie. También queda acreditada una variante de 85 cm nominales, sin convertir las dos piezas discrepantes del mismo pedido en una regla.
 
 Faltan las tres confirmaciones anteriores y un fichero real de salida del bot para comprobar capas, marcas, tratamiento de orillos y repeticiones antes de programar esa salida. No se ha certificado una bobina ni una calidad consumida concreta, ni la fabricación física final de las piezas: el contraste alcanza los documentos y trazados archivados que se han podido leer.
+
+## 9. En la web (23/10/2026)
+
+Modelo «System Dock» dentro de Puertas, con las respuestas de Iván a Q-SD01, Q-SD02 y Q-SD03.
+
+- **Buscar pedido / Traer de RPS**: las líneas «LONA PERIMETRAL …» del cliente 032286 salen como lonas System Dock. El largo y el ancho se toman del texto de la línea, en mm, o en cm si lo dice; el código del artículo no vale para esto. La cantidad y la OF también vienen de la línea, con PVC G650 negro en rollo de 250. Los PORTES no se toman.
+- **Pantalla**: largo y ancho de la lona, OF, cantidad (hasta 500), material, color y rollo. No hay apartados de cristal, saco, tubos ni ventanas.
+- **Cálculo** (`src/puertas/systemDock.ts`): una pieza por lona, de (largo + 1) × (ancho + 6,6).
+- **Corte del bot**:
+  - Las lonas van **por tandas** a lo ancho del rollo, de la más larga a la más corta. Las tandas iguales seguidas se dibujan **una vez con «TANDA ×N · CORTAR N VECES»**: 41 iguales dan una tanda de 4 ×10 y una suelta (Iván: «ponérselo fácil al técnico de corte»).
+  - Arriba van **«UNIDADES TOTALES»** y los metros en total.
+  - Solo DISCO1. Cada lona lleva su medida («1040 CM X 55 CM») y su OF, sin rotulador ni REVÉS. Los orillos no se cortan.
+- **Plano**:
+  - Un alzado por línea, con el corte en DISCO1 y la lona terminada en rosa (referencias).
+  - Cota del largo y del ancho, «VARILLA NEGRA 4,5 mm» arriba y abajo, y «AL CORTE» en los extremos.
+  - Dentro de cada alzado, la medida, «xN» y la OF.
+  - Arriba, las unidades totales, y debajo, el corte.
+  - En el cajetín, OF «VARIAS» si hay varias.
+- Comprobado en la instancia aislada con AR2604615 (3 de 1040 y 1 de 1270): sale una tanda de 1271 × 246,4, como su planteamiento a mano. También con 100 de 1040 (AR2600937): una tanda de 4 ×25, 260,25 m en total.
+

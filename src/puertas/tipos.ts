@@ -1,5 +1,6 @@
 /** Medidas de confección en centímetros; diámetro de tubos en milímetros. */
-export type ModeloPuerta = 'PUERTAENR' | 'PUERTAPLE' | 'PUERTAUTO';
+/** SYSTEMDOCK: lona perimetral de SYSTEM DOCK (frente = largo y alto = ancho de la lona; ver systemDock.ts). */
+export type ModeloPuerta = 'PUERTAENR' | 'PUERTAPLE' | 'PUERTAUTO' | 'SYSTEMDOCK';
 export type Punto = [number, number];
 export type Segmento = [number, number, number, number];
 export interface Hueco { x: number; y: number; ancho: number; alto: number; radio: number; abierto?: 'izquierda' | 'derecha' }

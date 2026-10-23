@@ -1,6 +1,7 @@
 import { alturasTubos } from './calcular.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { rotuloSaco } from './saco.ts';
+import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
 // El alzado de una puerta como dibujo puro, en cm y con la y hacia abajo (como el SVG): lo pinta la pantalla
@@ -65,6 +66,7 @@ export const textoCota = (c: CotaAlzado) => `${c.prefijo ? `${c.prefijo} ` : ''}
 export const esVertical = (c: Pick<CotaAlzado, 'x1' | 'x2' | 'y1' | 'y2'>) => Math.abs(c.x1 - c.x2) < 1e-9 && Math.abs(c.y1 - c.y2) > 1e-9;
 
 export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): GeometriaAlzado {
+  if (p.modelo === 'SYSTEMDOCK') return alzadoSystemDock(p);
   const F = p.frente > 0 ? p.frente : 400;
   const H = p.alto > 0 ? p.alto : 400;
   const enr = p.modelo === 'PUERTAENR';
@@ -347,3 +349,25 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   return { formas, vista: { xMin, yMin, ancho: anchoVista, alto: altoVista }, letraBase, F, H };
 }
 
+/** SYSTEM DOCK: la lona terminada, su corte (+1 de largo, +6,6 de ancho), las varillas y la medida, cuántas y la OF. */
+function alzadoSystemDock(p: Puerta): GeometriaAlzado {
+  const F = p.frente > 0 ? p.frente : 1040, H = p.alto > 0 ? p.alto : 55;
+  const w = F + REGLAS_SYSTEM_DOCK.largo, h = H + REGLAS_SYSTEM_DOCK.ancho, dx = REGLAS_SYSTEM_DOCK.largo / 2, dy = REGLAS_SYSTEM_DOCK.ancho / 2;
+  const letraBase = Math.min(14, Math.max(8, w / 70));
+  const formas: FormaAlzado[] = [
+    { tipo: 'rect', clase: 'puerta-lona', x: dx, y: dy, ancho: F, alto: H },
+    ...([[0, 0, w, 0], [w, 0, w, h], [w, h, 0, h], [0, h, 0, 0]] as const).map(([x1, y1, x2, y2]) =>
+      ({ tipo: 'linea' as const, clase: 'puerta-cota', x1, y1, x2, y2, trazos: '5 3' })),
+    { tipo: 'linea', clase: 'puerta-varilla', x1: dx, y1: dy, x2: dx + F, y2: dy },
+    { tipo: 'linea', clase: 'puerta-varilla', x1: dx, y1: dy + H, x2: dx + F, y2: dy + H },
+    { tipo: 'texto', x: w / 2, y: -8, lineas: ['VARILLA NEGRA 4,5 MM'], ancla: 'middle' },
+    { tipo: 'texto', x: w / 2, y: h + letraBase * 1.6, lineas: ['VARILLA NEGRA 4,5 MM'], ancla: 'middle' },
+    { tipo: 'texto', x: -6, y: h / 2, lineas: ['AL CORTE'], ancla: 'middle', giro: -90 },
+    { tipo: 'texto', x: w + 6, y: h / 2, lineas: ['AL CORTE'], ancla: 'middle', giro: -90 },
+    { tipo: 'texto', x: w / 2, y: h / 2 + letraBase / 3, ancla: 'middle',
+      lineas: [[medidaSystemDock({ frente: F, alto: H }), ...(p.cantidad > 1 ? [`X${p.cantidad}`] : []), p.of.trim() || 'SIN OF'].join('   ·   ')] },
+    { tipo: 'cota', x1: dx, y1: 0, x2: dx + F, y2: 0, linea: -26, valor: F, marcas: 4, texto: { x: w / 2, y: -30, ancla: 'middle' } },
+    { tipo: 'cota', x1: w, y1: dy, x2: w, y2: dy + H, linea: w + 20, valor: H, marcas: 4, texto: { x: w + 26, y: h / 2 + 3, ancla: 'start' } },
+  ];
+  return { formas, vista: { xMin: -40, yMin: -50, ancho: w + 110, alto: h + 80 }, letraBase, F, H };
+}

@@ -2,6 +2,7 @@ import { escribirDxf2004 } from '../domain/corteLona/dxfCorte.js';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
+import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
 import { buscarColocacion, huecosLibres, type PresupuestoCorte, type RectanguloCorte } from './colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
@@ -467,8 +468,13 @@ export function generarCortePuertas(
   const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []);
   const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []);
   const presupuesto: PresupuestoCorte = { restantes: 60000 };
+  // SYSTEM DOCK: lonas rectangulares por tandas, sin las reglas de las puertas (systemDock.ts).
+  const systemDock = pedido.elementos.flatMap((e, i) => e.input.modelo === 'SYSTEMDOCK'
+    ? resultados[i].piezas.map(pieza => ({ pieza, medida: medidaSystemDock(e.input) })) : []);
+  const deSystemDock = new Set(systemDock.map(l => l.pieza.id));
   const cortes = [
-    ...colocar(principal, 'principal', codigosPano, esEnrollable, esAutorreparable, presupuesto, ofStockSacos),
+    ...cortarSystemDock(systemDock).map(c => { fusionarCortesPuertas(c.entidades, c.anchoRollo); return c; }),
+    ...colocar(principal.filter(p => !deSystemDock.has(p.id)), 'principal', codigosPano, esEnrollable, esAutorreparable, presupuesto, ofStockSacos),
     ...colocar(entero, 'saco-entero', codigosPano, esEnrollable, esAutorreparable, presupuesto),
     ...colocar(partido, 'saco-partido', codigosPano, esEnrollable, esAutorreparable, presupuesto),
   ];
