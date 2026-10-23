@@ -645,7 +645,7 @@ Cuatro apilables de Portanova (FINSA + Montaxes Arca, gris 7038) con el suelo in
 ### Aplicación en la web
 
 En apilable, la casilla «Suelo inclinado» guarda `apilable.sueloInclinado` con
-`altoIzquierdo` y `altoDerecho`, vistos desde fuera. Sin marcar, el campo no existe y
+`altoIzquierdo` y `altoDerecho`, mirando por el revés, como el alzado y la hoja de pedido de Portanova (nota del DWG de Iván: «LA HOJA DE PEDIDO DE PORTANOVA ES POR EL REVÉS»). Sin marcar, el campo no existe y
 se conservan el cálculo y los planos anteriores. Dos altos iguales producen también
 el resultado anterior. El alto común y la cadena (pie, pasos y cabecera) se refieren
 al lado izquierdo; la pantalla sustituye el alto común por los dos altos al marcarla.

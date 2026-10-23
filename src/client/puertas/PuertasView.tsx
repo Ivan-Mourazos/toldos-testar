@@ -93,7 +93,7 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           {p.apilable.sueloInclinado&&<><div className="puerta-campos">
             <Numero titulo="Alto del lado izquierdo (cm)" valor={p.apilable.sueloInclinado.altoIzquierdo||null} cambiar={v=>cambiar({...p,alto:v??0,apilable:{...p.apilable,sueloInclinado:{...p.apilable.sueloInclinado!,altoIzquierdo:v??0}}})}/>
             <Numero titulo="Alto del lado derecho (cm)" valor={p.apilable.sueloInclinado.altoDerecho||null} cambiar={v=>cadena({sueloInclinado:{...p.apilable.sueloInclinado!,altoDerecho:v??0}})}/>
-          </div><p className="puerta-ayuda">Vistos desde fuera, como el alzado. Pie y cadena desde el bajo izquierdo; los tubos y la cabecera siguen horizontales. Solo se inclinan el bajo del primer paño y el saco.</p></>}
+          </div><p className="puerta-ayuda">Mirando por el revés, como el alzado y la hoja de pedido de Portanova. Pie y cadena desde el bajo izquierdo; los tubos y la cabecera siguen horizontales. Solo se inclinan el bajo del primer paño y el saco.</p></>}
           <div className="puerta-campos">
           <Numero titulo={p.apilable.sueloInclinado?'Pie izquierdo hasta primer eje (cm)':'Pie hasta primer eje (cm)'} valor={p.apilable.pie||null} cambiar={v=>cadena({pie:v??0})}/>
           <Numero titulo="Cabecera hasta último eje (cm)" valor={p.apilable.cabecera||null} cambiar={v=>cadena({cabecera:v??0})}/>
