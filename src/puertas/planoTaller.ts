@@ -20,8 +20,9 @@ const texto = (l: Lienzo, valor: string, x: number, y: number, h: number, giro =
   l.textos.push({ capa, valor: capa === 'ROTULADOR' ? valor : textoSeguro(valor), x, y, h, centrado: true, giro });
 /** Cm entre sacos o cristales de la misma fila del corte: sitio para la cota de la derecha del saco partido. */
 const ENTRE_MUESTRAS = 80;
+// El material de cada fila del corte, grande (Iván, 24/10/2026): hasta 20 cm, a lo ancho de la fila.
 function material(l: Lienzo, valor: string, ancho: number, y: number) {
-  texto(l, valor, 0, y, Math.min(10, ancho * .95 / anchoArial(valor, 1)));
+  texto(l, valor, 0, y, Math.min(20, ancho * .95 / anchoArial(valor, 1)));
   Object.assign(l.textos.at(-1)!, { centrado: false, ancla: 4 });
 }
 const contorno = (l: Lienzo, capa: string, puntos: Punto[]) => puntos.forEach((a, i) => {
@@ -381,6 +382,7 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         if (c.opcion === 'saco-partido' && g && puertaDe(g[0]) === puertaDe(p)) g.push(p); else grupos.push([p]);
       }
       let xo = 0, fondo = techo;
+      const anchoFila = grupos.reduce((suma, g) => suma + Math.max(...g.map(p => p.ancho)), 0) + ENTRE_MUESTRAS * (grupos.length - 1);
       for (const g of grupos) {
         const dibujo = vacio(); let arriba = techo;
         // Saco partido: las dos mitades se acotan como un saco, con su alto y el largo ya empatado, el del saco entero
@@ -412,11 +414,12 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
           // El material, una vez al principio de la fila.
           if (!xo && !i) material(dibujo,
             (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
-            p.ancho, techo + 15);
+            anchoFila, techo + 15);
           if (entero) {
-            if (!i) cota(dibujo, 0, y, 0, techo, -35, 'XERA 20');
+            // El alto, de las dos mitades juntas (Iván, 24/10/2026).
             if (!siguiente) {
               const largo = Math.max(...g.map(q => q.ancho));
+              cota(dibujo, 0, y, 0, techo, -35, 'XERA 20');
               dibujo.cotas.push({ capa: 'cotas', estilo: 'XERA 20', x1: 0, y1: y, x2: largo, y2: y, d: y - 30, giro: 0, valor: entero });
             }
             arriba = y;

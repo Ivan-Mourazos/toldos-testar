@@ -137,10 +137,11 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   cota(l, 0, ys - hs, 0, ys, -32.47);
   cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
   cota(l, 0, ys - hs + 2, 4.5, ys - hs + 2, ys - hs - 17.25);
-  // Con varias puertas, el saco dice de cuál es, con su letra (Iván, 24/10/2026): centrado y a su ancho.
-  const rotulo = identificarSaco ? `${rotuloSaco(p)} · ${letra}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas || rotulo !== rotuloSaco(p);
+  // Con varias puertas, el saco dice de cuál es, con su letra (Iván, 24/10/2026), en su sitio: a la izquierda de la cota.
+  const rotulo = identificarSaco ? `${rotuloSaco(p)} · ${letra}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas;
   texto(l, rotulo, centrado ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
-    centrado ? Math.min(10, F * .9 / anchoArial(rotulo, 1)) : 10, centrado ? { centrado: true } : {});
+    centrado ? Math.min(10, F * .9 / anchoArial(rotulo, 1)) : identificarSaco ? Math.min(10, (F / 2 + 71.5081 - 3) / anchoArial(rotulo, 1)) : 10,
+    centrado ? { centrado: true } : {});
   // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
   // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
   const hVelcro = 5, xVelcro = 20, dVelcro = 23;
@@ -230,8 +231,10 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
       const puntos = p.contorno.map(([x, v]): Punto => [xMuestra + x, y + v]);
       if (p.clase === 'saco') contorno(l, 'DISCO1', puntos);
       else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
-      if (!xo) texto(l, p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material,
-        xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
+      // El material de la fila, grande (Iván, 24/10/2026): hasta 20 cm, a lo ancho de la fila.
+      const nombre = p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material;
+      const anchoFila = fila.reduce((suma, q) => suma + q.ancho, 0) + 80 * (fila.length - 1);
+      if (!xo) texto(l, nombre, xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), Math.min(20, anchoFila * .95 / anchoArial(nombre, 1)));
       // Con varias puertas, la letra de su puerta y la cantidad (Iván, 24/10/2026).
       const iPuerta = pedido.elementos.findIndex(e => e.id === p.id.split(':')[0]);
       const rotulo = `${pedido.elementos.length > 1 && iPuerta >= 0 ? `${String.fromCharCode(65 + iPuerta)}  ` : ''}X${p.multiplicador ?? p.cantidad}`;
@@ -281,7 +284,8 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     const stock = c.colocadas.filter(t => t.pieza.id.startsWith('stock-'));
     const enStock = (a: { x: number; y: number }) => stock.some(t => a.x > t.x && a.x < t.x + t.pieza.ancho * 10 && a.y > t.y && a.y < t.y + t.pieza.alto * 10);
     for (const a of c.entidades.textos.filter(a => a.capa === 'texto' && enStock(a))) texto(l, a.valor, a.x / 10, yc + a.y / 10, a.h / 10, { centrado: true });
-    texto(l, c.material, 0, techo + 7.6701, 10);
+    // El material del rollo, grande (Iván, 24/10/2026): hasta 20 cm.
+    texto(l, c.material, 0, techo + 7.6701, Math.min(20, c.largo / 10 * .95 / anchoArial(c.material, 1)));
     // Se acota el ancho que ocupan las piezas, hasta el último corte, y no el del rollo (Iván, 23/10/2026, AR2605220:
     // 278,8 de un rollo de 300). Con una referencia en ese borde aunque no haya pieza en la esquina.
     const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
