@@ -791,7 +791,7 @@ app.get('/api/puertas/rps-pedido', async (req, res) => {
     const leido = await filasPedidoRps(numero);
     const { puertas, avisos } = puertasDesdeRps((leido?.filas ?? []).map((f) => ({
       articulo: f.CodArticle ?? '', cantidad: Number(f.Quantity ?? 1), descripcion: f.Description ?? '', comentario: f.Comment ?? '', of: f.CodManufacturingOrder ?? ''
-    })));
+    })), { clienteCodigo: leido?.cliente?.codigo ?? '' });
     const pedido = leido ? { numero: leido.numero, fecha: leido.fecha, cliente: leido.cliente, puertas, avisos } : null;
     res.set('Cache-Control', 'no-store').json({ pedido });
   } catch (error) {

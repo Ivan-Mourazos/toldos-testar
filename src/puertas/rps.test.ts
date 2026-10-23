@@ -22,6 +22,14 @@ describe('puertasDesdeRps', () => {
     expect(puertas.map((p) => [p.frente, p.alto, p.cantidad, p.of, p.color])).toEqual([[730, 575, 1, '0233101', 'ROJO 3002'], [530.5, 575, 6, '0233102', 'ROJO 3002']]);
   });
 
+  it('en Portanova los rollos salen puestos: lona y saco de 300, cristal de 140 (Iván, 23/10/2026, AR2605220)', () => {
+    const lineas = [linea('PUERTAENR', 'POR CONFECCION DE LONA PARA PUERTA ENROLLABLE , DE MEDIDAS 366  X 410 CM , COLOR AZUL 5010.', 1, '0233291')];
+    const rollos = (p: { rollo: number; rolloCristal: number; rolloSaco: number }) => [p.rollo, p.rolloCristal, p.rolloSaco];
+    expect(rollos(puertasDesdeRps(lineas, { clienteCodigo: '001336' }).puertas[0])).toEqual([300, 140, 300]);
+    expect(rollos(puertasDesdeRps(lineas, { clienteCodigo: '000777' }).puertas[0])).toEqual([0, 0, 0]);
+    expect(rollos(puertasDesdeRps(lineas).puertas[0])).toEqual([0, 0, 0]);
+  });
+
   it('enrollable y autorreparable por su artículo; sin medidas ni color se quedan vacíos', () => {
     const { puertas } = puertasDesdeRps([linea('PUERTAENR', 'PUERTA ENROLLABLE'), linea('PUERTAUTO', '')]);
     expect(puertas.map((p) => [p.modelo, p.frente, p.alto, p.color])).toEqual([['PUERTAENR', 0, 0, ''], ['PUERTAUTO', 0, 0, '']]);
