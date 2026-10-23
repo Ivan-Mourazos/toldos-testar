@@ -77,7 +77,18 @@ describe('Del pedido guardado al corte de lona', () => {
         numero(e, 11) >= p.x + 1000 && numero(e, 11) <= p.x + p.ancho + 1000 &&
         numero(e, 21) >= p.y + 1000 && numero(e, 21) <= p.y + p.hueco + 1000)).toBe(true);
     }
-    expect(salida.plano[0].dxf).toContain('0232568 / 0232569 / 0232570');
+    // A y B se leen bien juntos; C, que es grande, va en su presentación. Cada una con sus OF y su hoja.
+    expect(salida.plano[0].geometria.hojas.map((h) => [h.nombre, h.cajetin.OF, h.cajetin.HOJA])).toEqual([
+      ['TOLDOS A + B', '0232568 / 0232569', '1/2'], ['TOLDO C', '0232570', '2/2']
+    ]);
+    const plano = salida.plano[0].dxf.replace(/\r\n/g, '\n');
+    for (const nombre of ['TOLDOS A + B', 'TOLDO C']) expect(plano).toContain(`AcDbLayout\n  1\n${nombre}\n`);
+    for (const of of ['0232568 / 0232569', '0232570']) expect(plano).toContain(of);
+  });
+  it('nombra la presentación de un solo toldo «TOLDO A»', () => {
+    const plano = generar().plano[0];
+    expect(plano.geometria.hojas.map((h) => h.nombre)).toEqual(['TOLDO A']);
+    expect(plano.dxf.replace(/\r\n/g, '\n')).toContain('AcDbLayout\n  1\nTOLDO A\n');
   });
   it.each(['HERA', 'IRIS', 'ANTICA', '', undefined])('no anuncia corte para %s', (modelo) => {
     expect(corteReadiness(modelo).ready).toBe(false);

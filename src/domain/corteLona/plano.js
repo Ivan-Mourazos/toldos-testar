@@ -21,6 +21,8 @@ const VARILLA_ABAJO = 'VARILLA BLANCA (5,5)';
 const ENTRE_TOLDOS = 150;   // cm
 const ORIGEN_M = 100;       // el dibujo empieza a 100 m del origen en X y en Y
 const HUECO_TIRA = 45;      // cm entre el cuerpo y la tira: caben las dos «VARILLA BLANCA»
+const TAMANO_HOJA = 585;    // tamaño de dibujo a partir del cual los textos ya no crecen: más, en otra presentación
+const ENTRE_HOJAS = 300;    // cm entre toldos de presentaciones distintas, para que no asome uno en la del otro
 
 export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales = []) {
   const L = [], P = [], T = [], Q = [];   // en cm; se pasan a metros al final (Q: cotas)
@@ -30,16 +32,21 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   // toldos pequeños hay que adaptar los textos).
   // La ventana de la hoja amplía más los toldos pequeños: el tamaño base de los textos va con el del
   // dibujo para que en papel se lean parecidos (referencia: un toldo de unos 6,5 × 3,5 m).
-  const anchoTotal = datos.toldos.reduce((s, t) => s + t.frenteTela + 30, 0) + ENTRE_TOLDOS * (datos.toldos.length - 1);
-  const altoTotal = Math.max(...datos.toldos.map((t) => t.caidaTela)) + 150;
-  const escalaTexto = Math.min(1.3, Math.max(0.55, Math.max(anchoTotal / 1.82, altoTotal) / 450));
+  // Una presentación por toldo; los seguidos van juntos solo si se leen bien, como un toldo grande (Iván, 23/10/2026).
+  const tamano = (ts) => Math.max((ts.reduce((s, t) => s + t.frenteTela + 30, 0) + ENTRE_TOLDOS * (ts.length - 1)) / 1.82,
+    Math.max(...ts.map((t) => t.caidaTela)) + 150);
+  const grupos = [];
+  for (const t of datos.toldos) {
+    const g = grupos.at(-1);
+    if (g && tamano([...g, t]) <= TAMANO_HOJA) g.push(t); else grupos.push([t]);
+  }
+  let escalaTexto = 1;
   const ajustar = (valor, h, max) => (max ? Math.min(h * escalaTexto, max / anchoArial(valor, 1)) : h * escalaTexto);
   const texto = (valor, x, y, h = 10, giro = 0, capa = 'texto', max = 0) => T.push({ capa, x, y, h: ajustar(valor, h, max), valor, giro, centrado: true });
   // Cota de verdad, que se selecciona y se modifica en el CAD (Iván, 20/10/2026), con los estilos de cota
   // de la oficina: XERAL 15 en los toldos grandes y XERAL en el resto. `lado` separa la línea de cota de la
   // pieza; con 0 va sobre los puntos.
-  const estiloCota = 12 * escalaTexto >= 12.5 ? 'XERAL 15' : 'XERAL';
-  const cota = (capa, x1, y1, x2, y2, valor, lado, estilo = estiloCota) => {
+  const cota = (capa, x1, y1, x2, y2, valor, lado, estilo = 12 * escalaTexto >= 12.5 ? 'XERAL 15' : 'XERAL') => {
     const vertical = x1 === x2;
     Q.push({ capa, estilo, x1, y1, x2, y2, giro: vertical ? 90 : 0, d: (vertical ? x1 : y1) + lado, valor });
   };
@@ -55,8 +62,20 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   };
 
   let x = 0;
+  const hojas = [];
+  const cerrarHoja = () => {
+    const h = hojas.at(-1);
+    if (h) Object.assign(h, { x1: x - ENTRE_TOLDOS, T: T.slice(h.T), Q: Q.slice(h.Q) });
+  };
 
   for (const [i, t] of datos.toldos.entries()) {
+    const g = grupos.find((ts) => ts[0] === t);
+    if (g) {
+      cerrarHoja();
+      if (hojas.length) x += ENTRE_HOJAS - ENTRE_TOLDOS;
+      escalaTexto = Math.min(1.3, Math.max(0.55, tamano(g) / 450));
+      hojas.push({ toldos: g, x0: x, T: T.length, Q: Q.length });
+    }
     if (t.cortina) {
       x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini }) + ENTRE_TOLDOS;
       continue;
@@ -185,7 +204,11 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     cota('vent-pre-noimpr', cx0, yc0, cx0, yc1, yc1 - yc0, xIzq - cx0);
     x += ancho + ENTRE_TOLDOS;
   }
-  const toldos = { x0: -60, y0: -30, x1: x - ENTRE_TOLDOS + 60, y1: Math.max(...T.map((t) => t.y), ...Q.filter((q) => !q.giro).map((q) => q.d + 9)) + 20 };
+  cerrarHoja();
+  const arriba = (ts, qs) => Math.max(...ts.map((t) => t.y), ...qs.filter((q) => !q.giro).map((q) => q.d + 9)) + 20;
+  const toldos = { x0: -60, y0: -30, x1: x - ENTRE_TOLDOS + 60, y1: arriba(T, Q) };
+  // El corte, con los textos al tamaño de todo el pedido, como antes de las presentaciones por toldo.
+  escalaTexto = Math.min(1.3, Math.max(0.55, tamano(datos.toldos) / 450));
 
   // Corte en el rollo, debajo, a tamaño real: lo mismo que va al DXF de corte. Sus entidades se dan
   // aparte (`corte`): la hoja puede ponerlo girado si así se ve más grande (Iván).
@@ -257,6 +280,16 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     ...convertir(L.slice(0, desde.L), P.slice(0, desde.P), T.slice(0, desde.T), Q.slice(0, desde.Q)),
     corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T), Q.slice(desde.Q), dx, dy),
     zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }) },
+    // Cada presentación con su nombre («TOLDO A», «TOLDOS C, D + E») y sus OF en el cajetín; el corte, en todas.
+    hojas: hojas.map((h, i) => {
+      const letras = [...new Set(h.toldos.map((t) => t.letra))];
+      const tipo = h.toldos.every((t) => t.cortina) ? 'CORTINA' : 'TOLDO';
+      return {
+        nombre: letras.length === 1 ? `${tipo} ${letras[0]}` : `${tipo}S ${letras.slice(0, -1).join(', ')} + ${letras.at(-1)}`,
+        zona: zona({ x0: h.x0 - 60, x1: h.x1 + 60, y0: -30, y1: arriba(h.T, h.Q) }),
+        cajetin: { OF: [...new Set(h.toldos.map((t) => t.of))].join(' / '), HOJA: `${i + 1}/${hojas.length}` }
+      };
+    }),
     anchoRollo, usado,
     largoRollo,
     sacos: sacosStock.length

@@ -129,6 +129,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${(opciones.conSacos.largo / 1000).toLocaleString('es-ES')} M`,
       subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${cortinas ? 'CORTINA' : grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA' : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA'}`
     }).map(([k, v]) => [k, textoSeguro(v)]));
+    for (const h of geometria.hojas) h.cajetin.OF = textoSeguro(h.cajetin.OF);
     planos.push({ codigoTela: grupo.codigoTela, material: grupo.material, geometria,
       ...escribirDxfPlano(geometria, datos), codificacion: 'utf8', cristales: cristales.map((c) => c.codigoTela) });
   }
