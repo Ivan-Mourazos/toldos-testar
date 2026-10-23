@@ -56,10 +56,11 @@ export function escribirPlanoSystemDock(pedido: PedidoPuertas, cortes: CortePuer
   }
   // Arriba del todo, las unidades totales del pedido (Iván, 23/10/2026).
   const unidades = pedido.elementos.reduce((s, e) => s + e.input.cantidad, 0);
-  texto(l, `UNIDADES TOTALES: ${unidades}`, ancho / 2, 25, 16);
+  // Por encima de la cota del frente de la primera lona, que queda a 22.
+  texto(l, `UNIDADES TOTALES: ${unidades}`, ancho / 2, 50, 16);
   const alzados = vacio(); sumarLienzo(alzados, l);
   const zonaM = (z: Zona, x: number, yy: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: yy + z.y0 / 100, y1: yy + z.y1 / 100 });
-  const za = zonaM({ x0: -40, x1: ancho + 45, y0: y + 40, y1: 45 }, 100, 100);
+  const za = zonaM({ x0: -40, x1: ancho + 45, y0: y + 40, y1: 75 }, 100, 100);
   const corte = dibujarCorte(cortes), zc = zonaM(corte.zona, 110, 90);
   const ofs = [...new Set(pedido.elementos.map(e => e.input.of.trim()).filter(Boolean))];
   const material = [...new Set(pedido.elementos.map(e => `${e.input.material} ${e.input.color}`.trim()))].join(' / ');
