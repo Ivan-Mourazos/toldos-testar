@@ -16,6 +16,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const p=e.input;
     if(typeof p.modelo!=='string' || !Object.hasOwn(MODELOS_PUERTAS,p.modelo)) return error();
     if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)))return error();
+    if(p.notaPlano!==undefined && (typeof p.notaPlano!=='string' || p.notaPlano.length>1000)) return error();
     const plantilla=nuevaPuerta();
     for(const k of Object.keys(plantilla) as Array<keyof typeof plantilla>) {
       if(['entradas','ventanas','enrollable','apilable','autorreparable','medidasBolsillo','sacoDiagonalesAmarillas'].includes(k)) continue;

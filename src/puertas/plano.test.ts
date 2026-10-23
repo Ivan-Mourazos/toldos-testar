@@ -32,14 +32,17 @@ describe('escribirPlanoPuertas', () => {
     expect(dxf.includes('MATERIALES:')).toBe(true);
   });
 
-  it('varias puertas, con observaciones y cantidad, sin pisarse', () => {
-    const conObs = { ...autorreparable(), cantidad: 2, observaciones: 'Ojo: el cliente quiere la cremallera {a la izquierda}\ny el saco corto' };
+  it('varias puertas, con nota en el plano y cantidad, sin pisarse', () => {
+    // Solo sale la nota del plano; el texto de RPS ya no se imprime (Iván, 23/10/2026).
+    const conObs = { ...autorreparable(), cantidad: 2, observaciones: 'TEXTO DE RPS QUE NO SALE',
+      notaPlano: 'Ojo: el cliente quiere la cremallera {a la izquierda}\ny el saco corto' };
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', puerta4638(), apilable(), conObs), cabecera });
     const textos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1) ?? '');
     expect(textos).toContain('B1');
     expect(textos).toContain('C1');
     expect(textos.filter(t => t === 'X2')).toHaveLength(2); // A1 del alzado y muestra del saco; no en el rollo de lona.
     expect(textos.some(t => t.startsWith('OBSERVACIONES: OJO: EL CLIENTE'))).toBe(true);
+    expect(textos.some(t => t.includes('TEXTO DE RPS'))).toBe(false);
     // Ni llaves ni saltos de línea dentro de un texto: romperían el MTEXT.
     expect(textos.every(t => !/[{}\n]/.test(t))).toBe(true);
     // Los códigos de cada puerta, de izquierda a derecha y sin solaparse.

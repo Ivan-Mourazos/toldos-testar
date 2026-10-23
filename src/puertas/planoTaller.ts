@@ -187,8 +187,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
       obstaculos.push([y - a / 2, y + a / 2]);
     }
     const hitos = [0, ...tubos, H];
-    hitos.slice(1).forEach((v, i) => cota(l, F, -H + hitos[i], F, -H + v, F + 34, i === hitos.length - 2 ? 'XERA 15' : 'XERAL'));
-    cota(l, F, -p.apilable.cabecera, F, -H, F + 74, 'XERA 15');
+    hitos.slice(1).forEach((v, i) => cota(l, F, -H + hitos[i], F, -H + v, F + 30, i === hitos.length - 2 ? 'XERA 15' : 'XERAL'));
+    cota(l, F, -p.apilable.cabecera, F, -H, F + 54, 'XERA 15');
     texto(l, 'AL CORTE', -7, -p.apilable.cabecera / 2, 8, 90);
     texto(l, 'AL CORTE', F + 7, -p.apilable.cabecera / 2, 8, 90);
     if (p.entradas.some(e => e.huecos.length > 2)) {
@@ -215,8 +215,11 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     }
     for (const [i, ancho] of [10, 15].entries()) {
       // Cada uno en su mitad, sin pisarse en las puertas estrechas (Iván, 23/10/2026: «adaptarlos mejor al hueco»).
-      const borde = Math.min(90, F / 4), x = i ? F - borde : borde, lineas = [`REFUERZO DE ${ancho} CM A 10 CM DEL BORDE`, 'SOLDADO · LONA DE 2 MM'];
-      let h = Math.min(6, F / 70, (2 * borde - 10) / anchoArial(lineas[0], 1)), yc = 31 - h * .7;
+      const borde = Math.min(90, F / 4), lineas = [`REFUERZO DE ${ancho} CM A 10 CM DEL BORDE`, 'SOLDADO · LONA DE 2 MM'];
+      let x = i ? F - borde : borde, h = Math.min(6, F / 70, (2 * borde - 10) / anchoArial(lineas[0], 1)), yc = 31 - h * .7;
+      // Si el bolsillo cae en este lado, el texto se aparta para no pisarlo (AR2605035).
+      const b = r.bolsillo, m = anchoArial(lineas[0], h) / 2;
+      if (b && (i ? b.x > F / 2 : b.x + b.ancho < F / 2)) x = i ? Math.min(x, b.x - 3 - m) : Math.max(x, b.x + b.ancho + 3 + m);
       {
         // Iván, 23/10/2026 (AR2605035): en el hueco entre la raya de soldar el saco (inclinada si el suelo lo está) y
         // la primera E.T.; más pequeños si no caben, sin pisar la raya en ningún punto del texto.
@@ -305,7 +308,13 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     texto(l, 'CERRAR E.T', F + 55, -H - 16, 8); texto(l, '2 CM MÁXIMO', F + 55, -H - 28, 8);
     linea(l, 'texto', F + 20, -H - 12, F, -H + hSaco);
   }
-  if (r.bolsillo) rect(l, 'referencias', r.bolsillo.x, -H + r.bolsillo.y, r.bolsillo.ancho, r.bolsillo.alto);
+  if (r.bolsillo) {
+    rect(l, 'referencias', r.bolsillo.x, -H + r.bolsillo.y, r.bolsillo.ancho, r.bolsillo.alto);
+    // Una nota corta con su raya para que se vea que lleva bolsillo (Iván, 23/10/2026), justo bajo el bajo.
+    const xb = r.bolsillo.x + r.bolsillo.ancho / 2, yb = -H + desnivel * xb / F;
+    texto(l, 'BOLSILLO', xb, yb - 8, 5);
+    linea(l, 'texto', xb, yb - 5.5, xb, -H + r.bolsillo.y);
+  }
   // El alzado conserva horizontales todas las entradas y solo desplaza el bajo.
   if (desnivel) {
     const bajoCorte = -H+(p.apilable.doble?bajoDoble:hSaco);
@@ -327,12 +336,12 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
         if(a.d===F+12) {a.y1=-altoDerecho;a.y2=-altoDerecho+hSaco;}
         a.valor=Math.abs(a.y2-a.y1);
       }
-      if(a.x1===0&&a.x2===0&&a.d===-40) a.d=-92;
+      if(a.x1===0&&a.x2===0&&a.d===-40) a.d=-56;
     }
     // A la izquierda solo se añade el pie, que es lo que cambia con el fondo en caída; los tramos van en la cadena de
     // la derecha, como en la apilable sin desnivel (Iván, 23/10/2026, AR2605035).
-    cota(l,0,-H,0,-H+tubos[0],-60,'XERA 15');
-    cota(l,F,0,F,-altoDerecho,F+112,'XERA 15');
+    cota(l,0,-H,0,-H+tubos[0],-34,'XERA 15');
+    cota(l,F,0,F,-altoDerecho,F+78,'XERA 15');
   }
   const abajo = dibujarSaco(l, p);
   for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
@@ -341,7 +350,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   }
   // El dibujo del saco es el saco entero: las marcas de unión del saco partido («a2») solo van en su corte
   // (Iván, 23/10/2026: «unas marcas de rotulador que no tienen sentido»).
-  return { lienzo: l, zona: { x0: desnivel ? -116 : -65, x1: F + (desnivel ? 150 : 120), y0: abajo, y1: arriba + 50 } };
+  // Cotas verticales más juntas para que la puerta salga más grande en la hoja (Iván, 23/10/2026).
+  return { lienzo: l, zona: { x0: desnivel ? -72 : -60, x1: F + (desnivel ? 100 : 82), y0: abajo, y1: arriba + 50 } };
 }
 
 function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
@@ -446,10 +456,11 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     sumarLienzo(l, d.lienzo, dx); cursor = dx + d.zona.x1 + 60;
     izquierda = Math.min(izquierda,dx+d.zona.x0);
     let suelo = d.zona.y0;
-    if (e.input.modelo !== 'PUERTAENR' && e.input.observaciones.trim()) {
+    // Solo la nota que el técnico quiera ver en el plano; el texto de RPS sobraba (Iván, 23/10/2026).
+    if (e.input.notaPlano?.trim()) {
       let actual = '';
       const lineas: string[] = [], ancho = d.zona.x1 - d.zona.x0;
-      for (const palabra of textoSeguro(`OBSERVACIONES: ${e.input.observaciones}`).split(/\s+/)) {
+      for (const palabra of textoSeguro(`OBSERVACIONES: ${e.input.notaPlano}`).split(/\s+/)) {
         if (actual && anchoArial(`${actual} ${palabra}`, 6) > ancho) { lineas.push(actual); actual = palabra; }
         else actual += (actual ? ' ' : '') + palabra;
       }

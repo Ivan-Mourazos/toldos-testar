@@ -152,7 +152,7 @@ describe('Correcciones de Iván sobre AR2605035 (23/10/2026)', () => {
   });
   it('a la izquierda solo la cota del pie; el saco sin cota del largo y su texto paralelo a la raya', () => {
     const l = dibujarAlzadoTaller(p(), 'A').lienzo;
-    const izquierda = l.cotas.filter(c => c.x1 === 0 && c.x2 === 0 && c.d === -60);
+    const izquierda = l.cotas.filter(c => c.x1 === 0 && c.x2 === 0 && c.d === -34);
     expect(izquierda.map(c => Math.round(c.valor))).toEqual([46]);
     expect(l.cotas.some(c => Math.abs(c.valor - Math.hypot(432, 15)) < .05 || Math.abs(c.valor - 432) < .05 && c.y1 < -400)).toBe(false);
     expect(l.textos.find(t => t.valor === 'SACO 900 GR NEGRO')!.giro).toBeCloseTo(Math.atan(15 / 432) * 180 / Math.PI);

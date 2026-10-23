@@ -172,6 +172,9 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   if (r.bolsillo) {
     const b = r.bolsillo;
     rectangulo(l, 'referencias', b.x, -H + b.y, b.ancho, b.alto);
+    // Una nota corta con su raya para que se vea que lleva bolsillo (Iván, 23/10/2026), justo bajo el bajo.
+    texto(l, 'BOLSILLO', b.x + b.ancho / 2, -H - 8, 5, { centrado: true });
+    linea(l, 'texto', b.x + b.ancho / 2, -H - 5.5, b.x + b.ancho / 2, -H + b.y);
   }
   for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
     const [x, y] = pieza.origenAlzado!;

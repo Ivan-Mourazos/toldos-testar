@@ -29,6 +29,8 @@ export interface Puerta {
   rolloCristal: number;
   rolloSaco: number;
   observaciones: string;
+  /** Nota que se quiere ver en el plano; opcional (Iván, 23/10/2026). Las observaciones de RPS ya no se imprimen. */
+  notaPlano?: string;
   entradas: Entrada[];
   ventanas: Ventana[];
   enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
