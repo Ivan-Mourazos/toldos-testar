@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { numero, registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { apilable, autorreparable, base, pedidoDe } from './__fixtures__/ejemplos.ts';
+import { calcularPuerta } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
 import { escribirPlanoPuertas } from './plano.ts';
+import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
 
 const cabecera = { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' };
 const puerta = () => ({ ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
@@ -114,6 +116,27 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) > 109.8 && numero(r, 20) > 88);
     expect(muestras.filter(r => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toHaveLength(2);
     expect(muestras.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5)).toBe(true);
+  });
+  it('las rayas de rotulador del alzado son las del corte, también con una E.T. encima del ventanal (AR2605220)', () => {
+    const ar5220 = { ...base('PUERTAENR', 366, 410), of: '0233291',
+      entradas: [50, 121, 181, 231].map(altura => ({ altura, diametro: 30 as const, largo: 366, alto: 8, huecos: [] })),
+      enrollable: { T: 229, D: 60, margen: 8, empates: [] } };
+    for (const p of [puerta(), ar5220]) {
+      const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
+      const rayas = lienzo.lineas.filter(t => t.capa === 'ROTULADOR' && t.y1 === t.y2 && t.x1 === 0 && t.x2 === p.frente).map(t => t.y1);
+      const { piezas } = calcularPuerta(p);
+      // Cada paño en el alzado: A1 desde su borde de abajo (-T - 3,75) y A2 desde el suyo (-H + 11).
+      for (const [nombre, abajo] of [['Paño superior', -p.enrollable.T - 3.75], ['Paño inferior', -p.alto + 11]] as const) {
+        const marcas = piezas.find(x => x.nombre === nombre)!.marcas.filter(([x1, y1, x2, y2]) => y1 === y2 && x2 - x1 > p.frente / 2);
+        for (const [, y] of marcas) expect(rayas.some(r => Math.abs(r - (abajo + y)) < 1e-6), `${p.frente}: ${nombre} a ${y}`).toBe(true);
+      }
+    }
+    // Los sacos de stock que rellenan el rollo no salen como piezas sueltas de la puerta.
+    const pedido = pedidoDe('AR2605220', ar5220);
+    const conStock = generarCortePuertas(pedido, { ofStockSacos: '0230811' }).cortes;
+    expect(conStock.some(c => c.colocadas.some(t => t.pieza.id.startsWith('stock-')))).toBe(true);
+    const textos = modelo(escribirPlanoPuertas({ pedido, cabecera, ofStockSacos: '0230811' })).filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1));
+    expect(textos.filter(t => t === 'X1')).toHaveLength(2);
   });
   it('el rollo usa las rayas DISCO1 ya fusionadas del corte, sin cerrar los orillos', () => {
     const pedido = pedidoDe('AR2605134', puerta());

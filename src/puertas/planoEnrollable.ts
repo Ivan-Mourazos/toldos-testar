@@ -94,15 +94,19 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
     cota(l, F - m, -t - 5.89, F, -t - 5.89, -t + 13.22);
     cota(l, m - 2, -t - 26.48, F - m + 2, -t - 26.48, -t - 18.56);
   }
+  // Cada eje por su papel, no por su orden: con una E.T. encima del ventanal (AR2604725, AR2605220) el primero
+  // ya no es el eje de arriba del ventanal. Ese marca hacia arriba y el siguiente eje del ventanal, hacia abajo.
+  const esEje = (b: number, k: number) => ejes.length > k && Math.abs(ejes[k] - b) < .01;
   bandas.forEach((b, i) => {
-    const superior = ventanales.length > 0 && i === 0;
+    const superior = ventanales.length > 0 && esEje(b, 0);
+    const segundo = ventanales.length > 0 ? esEje(b, 1) : i === 1;
     const yMarca = -b + (superior ? 3.75 : -3.75);
     linea(l, 'ejes', 0, -b, F, -b);
     linea(l, 'ROTULADOR', 0, yMarca, F, yMarca);
-    flecha(l, F / 2, yMarca, superior ? 0 : 180, i === 1 ? -1 : 1);
+    flecha(l, F / 2, yMarca, superior ? 0 : 180, segundo ? -1 : 1);
     if (!ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + 3.75, F, -b + 3.75);
     cota(l, 0, -b - 3.75, 0, -b + 3.75, -9.15 + i, 'XERAL 5');
-    texto(l, '3 CM (HUECOS)', F / 2 - (i === 0 ? 34.6534 : i === 1 ? 34.2446 : 33.6842), -b + (superior ? 14.7311 : i === 1 ? -7.59 : 14.187), 7, { ancla: 1 });
+    texto(l, '3 CM (HUECOS)', F / 2 - (superior ? 34.6534 : segundo ? 34.2446 : 33.6842), -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187), 7, { ancla: 1 });
   });
   linea(l, 'ROTULADOR', 0, -H + 13, F, -H + 13);
   linea(l, 'referencias', 0, -H, F, -H);
@@ -200,7 +204,10 @@ const CORTE_COTAS = 'XERA 20';
 function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(); let techo = 0, anchoMax = 250;
   const muestras = new Map<string, PiezaPuerta>();
-  for (const c of cortes) for (const t of c.colocadas) if (['saco', 'cristal'].includes(t.pieza.clase)) muestras.set(`${c.opcion}:${t.pieza.id}`, t.pieza);
+  // Los sacos de stock que rellenan la lona sobrante no son piezas de la puerta: se ven solo dentro de su rollo.
+  for (const c of cortes) for (const t of c.colocadas) {
+    if (['saco', 'cristal'].includes(t.pieza.clase) && !t.pieza.id.startsWith('stock-')) muestras.set(`${c.opcion}:${t.pieza.id}`, t.pieza);
+  }
   // El saco encima del transparente, como en la referencia, sin repetir las copias físicas.
   for (const p of [...muestras.values()].sort((a, b) => (a.clase === 'saco' ? -1 : 1) - (b.clase === 'saco' ? -1 : 1))) {
     const y = techo - p.alto, xMuestra = -.8974;
