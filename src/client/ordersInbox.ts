@@ -1,6 +1,6 @@
 import type { CoordinaStatus, PedidoBandeja } from './types';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
-import { coordinaGroup, isPendingGeneration, normalizeOf } from '../reviewRules.js';
+import { authorNames, coordinaGroup, isPendingGeneration, normalizeOf } from '../reviewRules.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
 // guardado y no generado, venga del estado que venga) e historial (generados).
@@ -68,11 +68,12 @@ export function inboxSections<T extends PedidoBandeja>(
 ) {
   const ofProduct = (review: T) => producto === 'todos' || productoDe(review) === producto;
   const pendingAllList = pendingSource.filter((review) => isPendingGeneration(review.status) && ofProduct(review));
-  const pendingMineList = pendingAllList.filter((review) => review.summary.technician === me);
+  // Con «ANA / LUIS» (lo cogió Luis en CoordinaOT) es de quien lo lleva ahora.
+  const pendingMineList = pendingAllList.filter((review) => authorNames(review.summary.technician).at(-1) === me);
   const pending = (scope === 'mine' ? pendingMineList : pendingAllList).filter((review) => matches(review, query));
   // Toldos y remolques llegan en dos listas seguidas: sin reordenar, los días de remolques que no tienen
-  // toldos (p. ej. el de hoy) quedaban al final del historial (Iván, 21/10/2026).
-  const history = historySource.filter((review) => review.status === 'PRODUCED' && ofProduct(review) && matches(review, query))
+  // toldos (p. ej. el de hoy) quedaban al final del historial (Iván, 21/10/2026).
+  const history = historySource.filter((review) => review.status === 'PRODUCED' && ofProduct(review) && matches(review, query))
     .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   return { pending, history, pendingMine: pendingMineList.length, pendingAll: pendingAllList.length };
 }

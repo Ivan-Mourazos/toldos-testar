@@ -1,4 +1,4 @@
-import { ELEMENT_NOUNS, generationBlock, isPendingGeneration } from '../../reviewRules.js';
+import { currentAuthorName, ELEMENT_NOUNS, generationBlock, isCurrentAuthor, isPendingGeneration } from '../../reviewRules.js';
 import { anioPedido, elementosAprobacion } from '../../remolques/flujo/pedido.ts';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import { nombrePdf } from '../../remolques/salida/nombre-pdf.ts';
@@ -14,8 +14,9 @@ export function estadoGenerarRemolques(
   estado: CoordinaStatus | null,
 ): { allowed: boolean; note: string } {
   if (!isPendingGeneration(pedido.status)) return { allowed: false, note: '' };
-  const autor = pedido.summary.technician;
-  if (autor && autor !== usuario) return { allowed: false, note: `Lo genera el autor (${controlLabel(autor)})` };
+  // El autor que manda es el de CoordinaOT si un compañero lo ha cogido (Iván, 23/10/2026).
+  const autor = pedido.summary.technician, elementos = elementosAprobacion(pedido);
+  if (!isCurrentAuthor(usuario, autor, elementos, estado)) return { allowed: false, note: `Lo genera el autor (${controlLabel(currentAuthorName(autor, elementos, estado, []))})` };
   if (!estado) return { allowed: false, note: 'Comprobando la aprobación en CoordinaOT…' };
   const bloqueo = generationBlock(elementosAprobacion(pedido), estado, ELEMENT_NOUNS);
   return bloqueo ? { allowed: false, note: bloqueo } : { allowed: true, note: '' };

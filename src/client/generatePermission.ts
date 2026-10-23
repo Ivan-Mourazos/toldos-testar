@@ -1,4 +1,4 @@
-import { coordinaGroup, generationBlock, isPendingGeneration, normalizeOf } from '../reviewRules.js';
+import { coordinaGroup, currentAuthorName, generationBlock, isCurrentAuthor, isPendingGeneration, normalizeOf } from '../reviewRules.js';
 import { awningLetter } from '../domain/awningCompleteness.js';
 import { controlLabel } from './components/controlLabels';
 import type { CoordinaStatus, ReviewPackage } from './types';
@@ -24,23 +24,25 @@ export function canGenerateReview(status: string, technician: string, currentUse
 // que el autor no tenga que adivinar ni confirmar a mano que está aprobado.
 export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, currentUser: string, status: CoordinaStatus | null) {
   if (review.status === 'PRODUCED' || !isPendingGeneration(review.status)) return { allowed: false, note: '' };
-  if (review.order.technician && review.order.technician !== currentUser) {
-    return { allowed: false, note: `Lo genera el autor (${controlLabel(review.order.technician)})` };
+  const awnings = (review.order.awnings || []).map((awning, index) => ({ letter: awningLetter(index), of: String(awning.of || '') }));
+  // El autor que manda es el de CoordinaOT si un compañero lo ha cogido (Iván, 23/10/2026).
+  if (!isCurrentAuthor(currentUser, review.order.technician, awnings, status)) {
+    return { allowed: false, note: `Lo genera el autor (${controlLabel(currentAuthorName(review.order.technician, awnings, status, []))})` };
   }
   if (!status) return { allowed: false, note: 'Comprobando la aprobación en CoordinaOT…' };
-  const awnings = (review.order.awnings || []).map((awning, index) => ({ letter: awningLetter(index), of: String(awning.of || '') }));
   const block = generationBlock(awnings, status);
   return block ? { allowed: false, note: block } : { allowed: true, note: '' };
 }
 
 /**
- * «Corregir», sincronizado con CoordinaOT y solo para el autor (Iván, 21/10/2026): si CoordinaOT lo ha devuelto,
+ * «Corregir», sincronizado con CoordinaOT y solo para el autor (Iván, 21/10/2026), que es quien lo lleva en CoordinaOT
+ * si un compañero lo ha cogido (23/10/2026): si CoordinaOT lo ha devuelto,
  * o si todavía nadie lo ha empezado a revisar (sin tarea o «por revisar»). Con el revisor ya en ello, aprobado o
  * generado, no: para mirarlo están el detalle y la vista previa.
  */
 export function puedeCorregir(status: string, elementos: { letter: string; of: string }[], autor: string, usuario: string, coordina: CoordinaStatus | null) {
   if (status === 'PRODUCED' || !coordina?.disponible) return false;
-  if (autor && autor !== usuario) return false;
+  if (!isCurrentAuthor(usuario, autor, elementos, coordina)) return false;
   if (coordinaGroup(elementos, coordina) === 'devuelto') return true;
   const estados = elementos.map((e) => coordina.ofs?.[normalizeOf(e.of)]?.estado || 'sin_estado');
   return estados.length > 0 && estados.every((estado) => estado === 'sin_estado' || estado === 'por_revisar');

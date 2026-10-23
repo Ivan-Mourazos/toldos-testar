@@ -8,6 +8,7 @@ import {
 import { controlLabel } from './controlLabels';
 import type { ResumenBorrador } from '../../borradores/tipos.ts';
 import { formOptions } from '../../domain/modelBehavior.js';
+import { authorNames } from '../../reviewRules.js';
 import { COORDINA_NOT_CONFIGURED_MOTIVO, normalizeOf, reviewerName } from '../../reviewRules.js';
 
 type AwningItem = NonNullable<PedidoBandeja['summary']['awningList']>[number];
@@ -59,7 +60,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
           <OrderRow
             key={claveBandeja(review)}
             review={review}
-            mine={review.summary.technician === currentUser}
+            mine={authorNames(review.summary.technician).at(-1) === currentUser}
             open={openCode === claveBandeja(review)}
             onToggle={() => setOpenCode((current) => (current === claveBandeja(review) ? null : claveBandeja(review)))}
             onOpen={() => onOpen(review)}

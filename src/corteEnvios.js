@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { carpetaCorte } from './corteLonaArchivos.js';
-import { AWNING_NOUNS, generationBlock, uniqueOfs } from './reviewRules.js';
+import { AWNING_NOUNS, currentAuthorName, generationBlock, isCurrentAuthor, uniqueOfs } from './reviewRules.js';
 import { writeFileAtomic } from './workflow.js';
 
 const fallo = (codigo, mensaje) => Object.assign(new Error(mensaje), { statusCode: codigo });
@@ -12,10 +12,13 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   elementos, coordina, comprobarCorte, preparar, guardarRegistro, ahora = () => new Date(), nombres = AWNING_NOUNS }) {
   if (!settings.productionEnabled) throw fallo(403, 'Modo simulación: no se ha escrito ni enviado el corte.');
   if (!usuario) throw fallo(400, 'Elige quién eres en «Soy» antes de mandar o guardar el corte.');
-  if (order.technician && usuario !== order.technician) throw fallo(403, `El corte lo manda o guarda el autor (${order.technician}).`);
   if (!['bot', 'dxfs'].includes(destino)) throw fallo(400, 'Indica un destino del corte: bot o dxfs.');
-  await comprobarCorte();
   const estado = await coordina.statusOf(uniqueOfs(elementos), { fresh: true });
+  // El autor que manda es el de CoordinaOT si un compañero lo ha cogido (Iván, 23/10/2026).
+  if (!isCurrentAuthor(usuario, order.technician, elementos, estado)) {
+    throw fallo(403, `El corte lo manda o guarda el autor (${currentAuthorName(order.technician, elementos, estado, [])}).`);
+  }
+  await comprobarCorte();
   const bloqueo = generationBlock(elementos, estado, nombres);
   if (bloqueo) throw fallo(estado.disponible ? 409 : 503, bloqueo);
   if (destino === 'bot' && !confirmBot) {

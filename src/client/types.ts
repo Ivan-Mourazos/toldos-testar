@@ -674,7 +674,8 @@ export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' |
 // Estado de las OF en CoordinaOT (respuesta de /api/coordina/ofs).
 export type CoordinaStatus = {
   disponible: boolean;
-  ofs?: Record<string, { estado: string; nota?: string; actualizado?: string | null; revisor?: string }>;
+  /** `autor`: quien lleva la OF en CoordinaOT, también si la ha cogido otro técnico (23/10/2026). */
+  ofs?: Record<string, { estado: string; nota?: string; actualizado?: string | null; revisor?: string; autor?: string }>;
   motivo?: string;
 };
 

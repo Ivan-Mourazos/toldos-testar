@@ -85,7 +85,7 @@ import {
   workflowReadiness,
   writeFileAtomic
 } from './workflow.js';
-import { generateFilesDecision, generationBlock, approvalReviewers, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
+import { coordinaAuthor, generateFilesDecision, generationBlock, approvalReviewers, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -975,13 +975,17 @@ app.post('/api/reviews', async (req, res, next) => {
     }
 
     // El autor no cambia al corregir (diseño 24/09/2026, apartado 2): se decide aquí
-    // con el pedido guardado delante, no solo con lo que mande el navegador.
+    // con el pedido guardado delante, no solo con lo que mande el navegador. Si un compañero lo ha cogido en
+    // CoordinaOT, el autor que lleva sus OF (Iván, 23/10/2026).
+    const ofsGuardadas = (existing?.order?.awnings || []).map((awning) => ({ of: String(awning?.of || '') }));
+    const currentAuthor = existing ? coordinaAuthor(ofsGuardadas, await coordina.statusOf(uniqueOfs(ofsGuardadas))) : '';
     const authorship = reviewAuthorship({
       existingTechnician: existing?.order?.technician,
       existingReviewer: existing?.order?.reviewer,
       technician: rawOrder?.technician,
       reviewer: rawOrder?.reviewer,
-      savedBy: req.body?.savedBy
+      savedBy: req.body?.savedBy,
+      currentAuthor
     });
     const order = structuredClone({ ...rawOrder, orderCode, ...authorship });
     const calculation = await calculateConfiguredOrder(order);

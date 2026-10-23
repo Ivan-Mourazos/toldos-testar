@@ -210,3 +210,17 @@ describe('revisor desde CoordinaOT', () => {
     expect(approvalReviewers(awnings, { disponible: false }, tecnicos)).toBe('');
   });
 });
+
+describe('«Coger» en CoordinaOT al guardar (Iván, 23/10/2026)', () => {
+  it('quien lo coge se apunta detrás del autor original y no queda de revisor', () => {
+    expect(reviewAuthorship({ existingTechnician: 'ANA', savedBy: 'LUIS', currentAuthor: 'luis' })).toEqual({ technician: 'ANA / LUIS', reviewer: '' });
+    expect(reviewAuthorship({ existingTechnician: 'ANA / LUIS', existingReviewer: 'JAIME', savedBy: 'LUIS', currentAuthor: 'LUIS' }))
+      .toEqual({ technician: 'ANA / LUIS', reviewer: 'JAIME' });
+    // Si lo coge un tercero, quedan el original y el que lo lleva ahora.
+    expect(reviewAuthorship({ existingTechnician: 'ANA / LUIS', savedBy: 'PEDRO', currentAuthor: 'pedro' })).toEqual({ technician: 'ANA / PEDRO', reviewer: '' });
+  });
+  it('sin cogerlo, quien corrige sigue quedando de revisor', () => {
+    expect(reviewAuthorship({ existingTechnician: 'ANA', savedBy: 'LUIS', currentAuthor: 'ana' })).toEqual({ technician: 'ANA', reviewer: 'LUIS' });
+    expect(reviewAuthorship({ existingTechnician: 'ANA', savedBy: 'LUIS' })).toEqual({ technician: 'ANA', reviewer: 'LUIS' });
+  });
+});

@@ -9,6 +9,7 @@ import { PlanteamientoPedido } from './PlanteamientoPedido';
 import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
 import { awningLetter } from '../../domain/awningCompleteness.js';
+import { isCurrentAuthor } from '../../reviewRules.js';
 import { EnviosCorte } from './EnviosCorte';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 
@@ -195,7 +196,8 @@ export function ReviewOrderDetail({
         cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: review.order.parameters ? review.order : { ...review.order, parameters: reviewParameters } })}
         version={review.updatedAt} />}
         corte={<CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
-        regenerable={!isProduced && Boolean(onGuardarCorte) && (!order.technician || order.technician === currentUser)} onGenerated={onGuardarCorte}
+        regenerable={!isProduced && Boolean(onGuardarCorte) && isCurrentAuthor(currentUser, order.technician || '',
+          (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })), coordinaStatus)} onGenerated={onGuardarCorte}
         acciones={(alDia) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
           permitido={cortePermitido.allowed && alDia} motivo={alDia ? cortePermitido.note : 'El corte tiene que estar al día.'}
           ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}

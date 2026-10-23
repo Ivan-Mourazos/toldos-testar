@@ -2,7 +2,7 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import {
-  approvalReviewers, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
+  approvalReviewers, coordinaAuthor, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
 import type { AlmacenPedidos } from "../../remolques/flujo/almacen.ts";
 import { codigoPedido, ErrorPedidoRemolques } from "../../remolques/flujo/pedido.ts";
@@ -138,11 +138,15 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       if (decision.action === "confirm") {
         return { status: 409, cuerpo: { needsConfirmation: true, existing: [orderCode], error: "Este pedido ya está guardado en Pedidos." } };
       }
+      // Si un compañero lo ha cogido en CoordinaOT, pasa a ser el autor (Iván, 23/10/2026).
+      const ofsGuardadas = existente ? elementosAprobacion(existente) : [];
+      const currentAuthor = existente ? coordinaAuthor(ofsGuardadas, await deps.coordina.statusOf(uniqueOfs(ofsGuardadas))) : "";
       const autoria = reviewAuthorship({
         existingTechnician: existente?.summary.technician,
         existingReviewer: existente?.summary.reviewer,
         technician: salvador,
         savedBy: salvador,
+        currentAuthor,
       });
       const pedido = crearPedidoPuertas({ pedido: enviado, cabecera, autoria, existente, ahora: ahora() });
       await deps.almacen.guardar(pedido);

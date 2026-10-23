@@ -90,3 +90,19 @@ describe('puedeCorregir — «Corregir» solo para el autor: devuelto o sin empe
     expect(puedeCorregir('PENDING_REVIEW', elementos, '', 'JAIME', coordina('devuelta'))).toBe(true);
   });
 });
+
+describe('«Coger» en CoordinaOT: manda el autor que lleva las OF (Iván, 23/10/2026)', () => {
+  const elementos = [{ letter: 'A', of: '0230194' }];
+  const cogido = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado, autor: 'luis' } } });
+  it('quien lo coge corrige y genera; el autor original ya no', () => {
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'ANA', 'LUIS', cogido('devuelta'))).toBe(true);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'ANA', 'ANA', cogido('devuelta'))).toBe(false);
+    expect(generateState(review('ANA', ['0230194']), 'LUIS', cogido('aprobada'))).toEqual({ allowed: true, note: '' });
+    expect(generateState(review('ANA', ['0230194']), 'ANA', cogido('aprobada')).note).toBe('Lo genera el autor (Luis)');
+  });
+  it('sin CoordinaOT manda el último técnico guardado («ANA / LUIS»)', () => {
+    const sin = { disponible: false };
+    expect(generateState(review('ANA / LUIS', ['0230194']), 'LUIS', sin).allowed).toBe(false); // falta la aprobación
+    expect(generateState(review('ANA / LUIS', ['0230194']), 'ANA', sin).note).toBe('Lo genera el autor (Luis)');
+  });
+});

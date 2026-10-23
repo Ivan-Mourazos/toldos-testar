@@ -2,7 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import {
-  approvalReviewers, ELEMENT_NOUNS, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
+  approvalReviewers, coordinaAuthor, ELEMENT_NOUNS, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
 import type { CalcParams } from "../calc/params.ts";
 import { exigirOfsCorte } from "../corte/of.js";
@@ -29,7 +29,7 @@ import type { FicheroCorte, FicheroGenerado, PedidoRemolques, ResumenPedidoRemol
 export type EstadoCoordina = {
   disponible: boolean;
   motivo?: string;
-  ofs?: Record<string, { estado?: string; nota?: string; revisor?: string; actualizado?: string | null }>;
+  ofs?: Record<string, { estado?: string; nota?: string; revisor?: string; actualizado?: string | null; autor?: string }>;
 };
 
 export interface DependenciasPedidosRemolques {
@@ -243,11 +243,15 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       if (decision.action === "confirm") {
         return { status: 409, cuerpo: { needsConfirmation: true, existing: [orderCode], error: "Este pedido ya está guardado en Pedidos." } };
       }
+      // Si un compañero lo ha cogido en CoordinaOT, pasa a ser el autor (Iván, 23/10/2026).
+      const ofsGuardadas = existente ? elementosAprobacion(existente) : [];
+      const currentAuthor = existente ? coordinaAuthor(ofsGuardadas, await deps.coordina.statusOf(uniqueOfs(ofsGuardadas))) : "";
       const autoria = reviewAuthorship({
         existingTechnician: existente?.summary.technician,
         existingReviewer: existente?.summary.reviewer,
         technician: datos.elementos[0].input.cabecera.realizadoPor,
         savedBy: salvador,
+        currentAuthor,
       });
       const pedido = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora(), clienteRps });
       await deps.almacen.guardar(pedido);

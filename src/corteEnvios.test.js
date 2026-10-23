@@ -86,6 +86,9 @@ describe('Envío común del corte, independiente de generar archivos', () => {
     await expect(enviarCorte({ ...entrada, comprobarCorte: () => { throw new Error('El corte está viejo'); } })).rejects.toThrow(/viejo/);
     await expect(enviarCorte({ ...entrada, usuario: '' })).rejects.toThrow(/Soy/);
     await expect(enviarCorte({ ...entrada, usuario: 'JAIME' })).rejects.toThrow(/autor/);
+    // Si Jaime lo ha cogido en CoordinaOT es él quien manda el corte, y no el autor original (Iván, 23/10/2026).
+    const cogido = { statusOf: vi.fn(async () => ({ disponible: true, ofs: { '0232568': { estado: 'aprobada', autor: 'jaime' } } })) };
+    await expect(enviarCorte({ ...entrada, coordina: cogido })).rejects.toThrow('autor (JAIME)');
     await expect(enviarCorte({ ...entrada, settings: { productionEnabled: false } })).rejects.toThrow(/simulación/);
     expect(guardar).not.toHaveBeenCalled();
     expect(await fs.readdir(raiz)).toEqual([]);

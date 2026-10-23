@@ -47,11 +47,22 @@ export function saveReviewDecision(existing, confirmOverwrite) {
  *
  * `savedBy` es quien pulsa Guardar («Soy: …»). Si no llega (llamadas antiguas a la API),
  * se deduce del técnico recibido cuando no coincide con el autor guardado.
- * @param {{ existingTechnician?: string, existingReviewer?: string, technician?: string, reviewer?: string, savedBy?: string }} input
+ * @param {{ existingTechnician?: string, existingReviewer?: string, technician?: string, reviewer?: string, savedBy?: string, currentAuthor?: string }} input
  */
-export function reviewAuthorship({ existingTechnician = '', existingReviewer = '', technician = '', reviewer = '', savedBy = '' }) {
+export function reviewAuthorship({ existingTechnician = '', existingReviewer = '', technician = '', reviewer = '', savedBy = '', currentAuthor = '' }) {
   const incomingTechnician = clean(technician);
   const saver = clean(savedBy);
+  // Iván, 23/10/2026: quien coge el pedido en CoordinaOT («Coger») pasa a ser su autor. Al guardar no queda
+  // como revisor: se apunta detrás del autor original y el cajetín lleva los dos («ANA / LUIS»).
+  // `currentAuthor` es el autor de CoordinaOT (coordinaAuthor).
+  const original = authorNames(existingTechnician);
+  if (original.length && saver && plain(currentAuthor) && plain(saver) === plain(currentAuthor)) {
+    const technicianNow = original.some((nombre) => plain(nombre) === plain(saver)) ? clean(existingTechnician)
+      : `${original[0]} / ${saver}`;
+    const previous = clean(reviewer) || clean(existingReviewer);
+    const keep = previous && !authorNames(technicianNow).some((nombre) => plain(nombre) === plain(previous));
+    return { technician: technicianNow, reviewer: keep ? previous : '' };
+  }
   // En un pedido nuevo manda quien guarda: un borrador antiguo o un «Corregir» con otro
   // número pueden traer un técnico que no es quien lo está guardando.
   const author = clean(existingTechnician) || saver || incomingTechnician;
@@ -170,4 +181,41 @@ export function approvalReviewers(awnings, status, technicians) {
     .filter((item) => item?.estado === 'aprobada' && plain(item.revisor))
     .map((item) => reviewerName(item.revisor, technicians));
   return [...new Set(names)].join(', ');
+}
+
+/**
+ * Quién lleva el pedido según CoordinaOT (Iván, 23/10/2026): si un compañero lo coge con «Coger»,
+ * pasa a ser el autor de sus OF y aquí puede corregirlo, guardarlo, generarlo y mandar el corte.
+ * Es el autor común de las OF del pedido; vacío si CoordinaOT no responde, nadie lo lleva o
+ * sus OF las llevan personas distintas (entonces manda quien lo guardó).
+ * @param {{ of: string }[]} awnings
+ * @param {{ disponible?: boolean, ofs?: Record<string, { estado?: string, autor?: string }> } | null} status
+ */
+export function coordinaAuthor(awnings, status) {
+  if (!status?.disponible) return '';
+  const autores = [...new Set(awnings.map((awning) => plain(status.ofs?.[normalizeOf(awning.of)]?.autor)).filter(Boolean))];
+  return autores.length === 1 ? autores[0] : '';
+}
+
+/**
+ * ¿Es `user` el autor que manda? El de CoordinaOT si lo hay; si no, quien lo guardó.
+ * Un pedido histórico sin autor y sin nadie en CoordinaOT lo puede llevar cualquiera.
+ */
+export function isCurrentAuthor(user, savedTechnician, awnings, status) {
+  const actual = coordinaAuthor(awnings, status);
+  if (actual) return plain(user) === actual;
+  // Sin CoordinaOT manda el último técnico guardado: el que lo cogió, si alguien lo cogió.
+  const nombres = authorNames(savedTechnician);
+  return nombres.length === 0 || clean(user) === nombres.at(-1);
+}
+
+/** Los técnicos de un pedido cogido por otro se guardan juntos para el cajetín: «ANA / LUIS». */
+export function authorNames(technician) {
+  return String(technician || '').split(' / ').map(clean).filter(Boolean);
+}
+
+/** Nombre del autor que manda, como en la lista de técnicos, para avisos y el cajetín. */
+export function currentAuthorName(savedTechnician, awnings, status, technicians) {
+  const actual = coordinaAuthor(awnings, status);
+  return actual ? reviewerName(actual, technicians) : authorNames(savedTechnician).at(-1) || '';
 }
