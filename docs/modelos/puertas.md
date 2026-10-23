@@ -283,6 +283,128 @@ Tabla generada con `node scripts/contrastar-puertas.mjs` comparando la salida de
 
 Hay pruebas de validación, unión compartida, geometría de rollo, curvas, DXF y ruta sin escritura. `scripts/test-puertas-e2e.mjs` usa exclusivamente la instancia aislada, recorre los tres modelos y los tres pedidos contrastados (`AR2605134`, `AR2604638`, `AR2604725`), cambia el tema desde su botón y deja capturas de alzado y corte a 1280×720 y 1600×1000 en `tmp/ui-audit/puertas-fase1/`.
 
+## Colocación como el Tetris · 23/10/2026
+
+`generarCortePuertas` ejecuta ahora una búsqueda con poda de órdenes, giros permitidos y posiciones en los
+cruces de bordes de las piezas. Las piezas pueden atravesar los límites de las columnas iniciales; también
+se comprueba un molinillo de cinco rectángulos que no admite guillotina. No se usa una rejilla que redondee
+las medidas. Las columnas anteriores se conservan como solución inicial completa: si se agota la búsqueda,
+ningún rollo puede gastar más largo que esa solución. No se asegura el óptimo global cuando se alcanza el límite.
+
+El orden de elección es: menor largo; con ese largo, menor ancho de **las piezas del pedido**; después,
+mayor retal rectangular libre y, si sigue habiendo empate, mayor superficie aprovechable con los sacos de
+stock de toldos. Un empate completo conserva la primera solución. Los tipos equivalentes evitan repetir
+permutaciones; los paños con distinto código de enrollable se distinguen para conservar A1 sobre A2 cuando
+comparten columna. El presupuesto es de **60.000 unidades por pedido**, compartido entre todos los materiales
+y alternativas: cuenta cada posición intentada, incluso las rechazadas, y también cobra la valoración de
+retales en función del número de piezas. No intervienen el reloj ni el azar, por lo que una máquina más lenta
+obtiene las mismas posiciones. El mismo generador sigue sirviendo la vista previa, guardado, plano y DXF del bot.
+
+La prioridad del frente en enrollables es una preferencia cuando no cuesta largo, según la aclaración del
+coordinador del 23/10: AR2604434 ya giraba sus paños y gastaba 129,75; imponer frente fijo lo subiría a 150.
+Se conservan sus giros permitidos y ahora baja a 118,75. Autorreparable mantiene la prohibición de girar un
+paño cuyo alto cabe en el rollo. Las franjas que llenan el ancho entero se trasladan al principio sin cambiar
+el consumo. No se cambian medidas, contornos, textos, marcas, capas, cristales ni multiplicadores.
+
+Después de elegir las piezas del pedido, los sacos aprovechan **todo el ancho real del rollo**, como en
+toldos (aclaración del coordinador del 23/10). Por eso el ancho con stock puede crecer aunque el ancho del
+pedido baje; la cota del plano sigue midiendo el total con stock. Los huecos se calculan contra todas las
+piezas, sin suponer columnas, y se separan sin solapes, empezando por el mayor retal. Se reutilizan las
+medidas y márgenes de `sacosEnHuecos`. La fusión de cortes compartidos y la eliminación de orillos siguen
+en `fusionarCortesPuertas`.
+
+### Comparación y tiempos
+
+Base anterior: commit `c0e5abb`, incluidas las mejoras de cachos en fila del 23/10. Todos los valores de
+largo y ancho son **cm**; el rollo principal mide 300. Se prueban los largos de **cada material y cada
+alternativa**, no solo los que aparecen resumidos aquí. `cortesAntesTetris.json` conserva la medición anterior
+y `cortesTetris.ts` reconstruye todas las configuraciones completas disponibles en las fixtures.
+
+Medición reproducible: `node scripts/medir-tetris-puertas.mjs`, Node 24.17.0, Intel Core i5-8500 a 3 GHz,
+Windows x64; tres calentamientos y nueve mediciones por pedido. Se incluyen despiece, todos los rollos,
+stock, fusión y DXF en memoria; se excluyen arranque de Node, red y renderizado. La comparación histórica
+se apoya en `genericas/extraccion.json` y `plegables/verificacion/verificacion.json` de las copias locales
+del estudio: envolvente de DISCO1 en la banda de rollo de los paños, incluidos huecos de separación y stock.
+Los cortes combinados o separados no se presentan como un único pedido equivalente. AR2605134 usa el
+croquis de Iván del 22/10, posterior a su fixture original que todavía dice «sin corte manual».
+
+<!-- tabla-tetris-inicio -->
+| Pedido | Largo antes → después | Ancho pedido antes → después | Ancho con stock antes → después | Sacos después | A mano: largo × ancho ocupado | Mediana / máx. (ms) |
+|---|---:|---:|---:|---:|---|---:|
+| AR2604858 | 794 → 794 | 260,25 → 216,25 | 288,75 → 299,25 | 6 | 794 × 300 | 17,4 / 24,05 |
+| AR2604638 | 172 → 172 | 285 → 285 | 285 → 285 | 0 | 172 × 285 | 10,55 / 13,87 |
+| AR2604524 | 950 → 950 | 294,25 → 246,25 | 294,25 → 270,75 | 2 | 950 × 294,25 | 7,01 / 10,82 |
+| AR2604434 | 129,75 → 118,75 | 300 → 300 | 300 → 300 | 0 | 150 × 233 | 7,29 / 8,73 |
+| AR2604349 | 339 → 330 | 289 → 298 | 289 → 298 | 0 | 331 × 297 | 5,71 / 8,11 |
+| AR2604970 | 850,5 → 850,5 | 292,25 → 276,25 | 299,75 → 299,75 | 3 | Dos cortes separados; uno de restos | 7,91 / 8,94 |
+| AR2604069 | 630 → 630 | 293,25 → 260,25 | 293,25 → 260,25 | 0 | 630 × 292,25¹ | 11,12 / 14 |
+| AR2604725 | 948 → 948 | 290,25 → 246,25 | 290,25 → 280,75 | 2 | 948 × 290,25 (4 sacos) | 6,48 / 9,55 |
+| AR2604904 | 863 → 863 | 300 → 300 | 300 → 300 | 0 | 863 × 300 | 1,4 / 4,65 |
+| AR2604764 | 131 → 121 | 254,5 → 296,5 | 254,5 → 296,5 | 0 | 121 × 296,5¹ | 1,18 / 1,23 |
+| AR2604717 | 955 → 955 | 300 → 300 | 300 → 300 | 4 | 955 × 300 | 1,51 / 6,15 |
+| AR2604402 | 331,5 → 331,5 | 224 → 224 | 300 → 300 | 2 | 331,5 × 262¹ | 1,28 / 1,5 |
+| AR2604013 | 376,5 → 376,5 | 291 → 291 | 291 → 291 | 0 | Corte combinado; no atribuible | 1,19 / 5,42 |
+| AR2604592 | 800 → 800 | 296 → 296 | 296 → 296 | 0 | 800 × 296 | 8,47 / 10,51 |
+| AR2604723 | 1530 → 1530 | 296 → 296 | 296 → 296 | 4 | 1446,46 × 300² | 7,7 / 10,22 |
+| AR2604724 | 1500 → 1500 | 296 → 296 | 296 → 296 | 4 | 1500 × 300 | 7,33 / 10,17 |
+| AR2604859 | 1413 → 1413 | 298 → 262 | 298 → 300 | 4 | 1532,87 × 298² | 9,51 / 12,35 |
+| AR2604906 | 1590 → 1590 | 296 → 260 | 296 → 300 | 4 | 1084 × 296² | 10,16 / 12,04 |
+| AR2605134 | 708 → 708 | 300 → 300 | 300 → 300 | 0 | 708 × 300 (croquis de Iván) | 4,87 / 7,52 |
+| AR2605220 | 732 → 732 | 277,25 → 236,25 | 278,75 → 299,75 | 6 | 732 × 278,75 (3 sacos) | 6,18 / 9,16 |
+| AR2605036 | 1244 → 1244 | 289 → 277 | 289 → 277 | 0 | 1240 × 289¹ | 7,5 / 10,96 |
+| AR2605065 | 233,25 → 233,25 | 298,75 → 298,75 | 298,75 → 298,75 | 0 | Varias puertas; no atribuible | 4,51 / 8,21 |
+| AR2604526 | 633,5 → 633,5 | 300 → 300 | 300 → 300 | 4 | Varias puertas; no atribuible | 1,43 / 1,51 |
+| AR2604526-350 | 711 → 711 | 300 → 300 | 300 → 300 | 2 | Sin referencia de rollo | 1,39 / 6,38 |
+| AR2604638-1ET | 172 → 172 | 269 → 269 | 269 → 269 | 0 | Sin referencia de rollo | 5,74 / 8,5 |
+| EJEMPLO-APILABLE | 411 → 411 | 300 → 300 | 300 → 300 | 0 | Sin referencia de rollo | 0,64 / 0,66 |
+| EJEMPLO-AUTORREPARABLE | 711 → 700 | 242,5 → 284,5 | 300 → 284,5 | 2 | Sin referencia de rollo | 1,34 / 5,49 |
+
+| Puertas distintas en el pedido | Mediana / máx. (ms) |
+|---|---:|
+| 1 | 7,14 / 14,75 |
+| 2 | 9,17 / 10,41 |
+| 3 | 5,95 / 6,8 |
+| 4 | 10,48 / 11,15 |
+| 5 | 9,77 / 10,96 |
+<!-- tabla-tetris-fin -->
+
+¹ Referencias históricas de despiece: AR2605036 corta frente 620 frente a los 622 actuales por escuadrado;
+AR2604069 conserva diferencias históricas de 1 cm en los paños; AR2604764 incluye ventanas que la muestra
+ciega no reconstruye; AR2604402 no permite comprobar sus E.T. y sí incluye un saco de stock de 120 × 80.
+Se compara ocupación literal, sin afirmar igualdad completa del inventario.
+
+² AR2604723 y AR2604906 tienen E.T. partidas en dos mitades de 256 y 266, respectivamente; AR2604859
+incluye entradas enteras y alternativas partidas con separaciones. La web conserva las entradas enteras
+configuradas y sus marcas; este encargo no introduce empates nuevos para imitar esas referencias.
+
+AR2605220 conserva 732 de largo, reduce el ancho del pedido de 277,25 a 236,25 y produce seis sacos
+de stock de 116 × 77, con ancho total 299,75. A mano: 732 × 278,75, A1 con cuatro E.T. y los dos cachos
+de 56,5 × 9 juntos; sobre A2, tres sacos de 122 × 165. La nueva solución lleva E.T. y cachos junto a A2,
+sin rebasar el ancho de A1; los cachos siguen pegados y comparten corte. Se actualiza la prueba de la
+posición antigua porque la nueva mejora la segunda prioridad con el mismo largo. AR2604725 también
+cambia de cuatro sacos a dos tras reducir el ancho del pedido a 246,25. El ejemplo de autorreparable
+de `ejemplos.ts` baja de 711 a 700: cambia su huella del plano, conservando el alzado y las piezas.
+
+`marcas-bolsillo.json` solo tiene fragmentos medidos: AR2501936 (478 × 272), AR2503709 (385 × 254,5),
+AR2600208 (530 × 69,5), AR2600236 (382 × 252,5), AR2601036 (424 × 281,5), AR2604763 (446 × 268)
+y AR2604662 (311 × 283,75). No hay configuraciones completas de esas puertas en las fixtures: faltan sus
+otros paños, entradas y/o modelo confirmado. No se inventan pedidos ni un consumo global a partir de esos
+fragmentos. Las referencias repetidas de espaciadores usan las mismas piezas; se añade aparte la variante
+350 × 420 de AR2604526 para no confundirla con la de 300 × 331 de `planosReales.ts`.
+
+Validación: TDD con casos de huecos entre columnas, giro, segundo y tercer criterio, presupuesto agotado,
+molinillo sin guillotina y un oráculo independiente que enumera todas las casillas de seis problemas pequeños.
+Las configuraciones reales comprueban conservación de cantidades, límites, ausencia de solapes incluso con
+stock, determinismo, ausencia de mutaciones y que ningún material ni alternativa aumenta su largo.
+La vista previa real se comprueba en la aislada 4316 (`simulationMode: true`, `fileWritesEnabled: false`):
+capturas revisadas de AR2604349 y AR2605220, claro/oscuro, 1280 × 720 y 1600 × 1000, en
+`tmp/ui-audit/corte-tetris/`. Sin cambios en los componentes ni estilos del cliente.
+
+La batería completa pasa con 3.950 pruebas en 285 archivos, además de `pnpm typecheck` y `pnpm lint`.
+Una repetición con el paralelismo automático agotó los 5 segundos en dos pruebas ajenas a puertas
+(`bambaRemate/ELECTRA` y `model-samples`); la ejecución completa final con `pnpm test --maxWorkers=2`
+pasa las 3.950 sin ampliar sus límites. Las 230 pruebas de puertas pasan también por separado.
+
 ## Dudas abiertas
 
 No queda ninguna duda de regla de fase 1: Iván cerró bajo, empate de enrollable, demasías de entradas y doble saco durante el encargo. Los datos variables de cada dibujo siguen siendo responsabilidad del técnico; una cota sin introducir permanece pendiente y no se deduce de las frecuencias del catálogo.

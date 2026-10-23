@@ -2,6 +2,7 @@ import { escribirDxf2004 } from '../domain/corteLona/dxfCorte.js';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
+import { buscarColocacion, huecosLibres, type PresupuestoCorte, type RectanguloCorte } from './colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
 const vacias = (): EntidadesPuertas => ({ lineas: [], textos: [], arcos: [], circulos: [] });
@@ -254,7 +255,10 @@ function filaFinal(columna: Columna) {
  * misma OF de stock (src/domain/corteLona/colocacion.js), rotulados con la OF, SACO, su medida y STOCK.
  */
 function sacosDeStock(ocupadas: Array<{ x: number; y: number; ancho: number; hueco: number }>, rollo: number, ofStock: string, entidades: EntidadesPuertas, material: string, rolloCm: number) {
-  const sacos = sacosEnHuecos(ocupadas, rollo, ofStock) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
+  const largo = Math.max(0, ...ocupadas.map(p => p.x + p.ancho));
+  const libres = huecosLibres(ocupadas.map(p => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, rollo);
+  // Reutiliza las medidas y márgenes de toldos en cada retal real, ya separado de los demás.
+  const sacos = libres.flatMap(h => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock)) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
   return sacos.map((saco, i) => {
     const [x0, y0, w, h] = [saco.x, saco.y, saco.ancho, saco.hueco];
     entidades.lineas.push(
@@ -277,6 +281,7 @@ function colocar(
   codigosPano: Map<string, string>,
   esEnrollable: (idPieza: string) => boolean,
   esAutorreparable: (idPieza: string) => boolean,
+  presupuesto: PresupuestoCorte,
   ofStock?: string,
 ): CortePuertas[] {
   const grupos = new Map<string, PiezaPuerta[]>();
@@ -364,15 +369,41 @@ function colocar(
       }
       if (fila.length > 1) fila.forEach((o, i) => { o.x = s.x + i * ancho(s); o.junta = true; });
     }
-    const primerPano = sitios.find(s => s.t.pieza.clase === 'pano');
-    for (const s of sitios) {
+    const inicial = sitios.map((s, i) => ({ id: String(i), x: s.x, y: s.y, w: ancho(s), h: s.t.h, girada: s.t.girada }));
+    const piezasBusqueda = sitios.map((s, i) => ({ id: String(i), simetria: s.t.pieza.clase === 'pano' && esEnrollable(s.t.pieza.id) ? s.t.pieza.id : '', formas: [
+      { w: mm(s.t.pieza.ancho), h: mm(s.t.pieza.alto), girada: false },
+      { w: mm(s.t.pieza.alto), h: mm(s.t.pieza.ancho), girada: true },
+    ].filter(f => f.h <= rollo && (!f.girada || s.t.pieza.clase !== 'pano' || !esAutorreparable(s.t.pieza.id) || mm(s.t.pieza.alto) > rollo)) }));
+    const valida = (rs: RectanguloCorte[]) => rs.every((a, i) => rs.slice(i + 1).every(b => {
+      const pa = sitios[Number(a.id)].t.pieza, pb = sitios[Number(b.id)].t.pieza;
+      // Los paños que comparten columna conservan el orden del alzado, con Y hacia arriba.
+      if (pa.clase !== 'pano' || pb.clase !== 'pano' || !esEnrollable(pa.id) || !esEnrollable(pb.id)
+        || a.girada || b.girada || pa.id.split(':')[0] !== pb.id.split(':')[0]
+        || a.x >= b.x + b.w - .001 || b.x >= a.x + a.w - .001) return true;
+      const ca = codigosPano.get(pa.id)!, cb = codigosPano.get(pb.id)!;
+      return ca === cb || (ca.localeCompare(cb, 'es', { numeric: true }) < 0 ? a.y > b.y : b.y > a.y);
+    }));
+    const aprovechamiento = (libres: ReturnType<typeof huecosLibres>) => libres.reduce((area, h) => area
+      + sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock)
+        .reduce((suma: number, s: { ancho: number; hueco: number }) => suma + s.ancho * s.hueco, 0), 0);
+    const elegidas = buscarColocacion(piezasBusqueda, rollo, inicial, presupuesto, valida, aprovechamiento);
+    // Las franjas que llenan el rollo separan el anidado: trasladarlas al inicio no altera su consumo.
+    const completas = elegidas.filter(s => Math.abs(s.h - rollo) < .001).sort((a, b) => a.x - b.x);
+    const seleccionadas = elegidas.map(s => {
+      const completa = completas.includes(s);
+      const antes = completas.filter(t => t.x < s.x).reduce((n, t) => n + t.w, 0);
+      const x = completa ? antes : s.x - antes + completas.reduce((n, t) => n + t.w, 0);
+      return { t: { pieza: sitios[Number(s.id)].t.pieza, h: s.h, girada: s.girada }, x, y: s.y };
+    });
+    largo = Math.max(0, ...seleccionadas.map(s => s.x + mm(s.t.girada ? s.t.pieza.alto : s.t.pieza.ancho)));
+    const primerPano = seleccionadas.find(s => s.t.pieza.clase === 'pano');
+    for (const s of seleccionadas) {
       colocadas.push({ pieza: s.t.pieza, x: s.x, y: s.y, girada: s.t.girada });
       dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id), !esEnrollable(s.t.pieza.id), s === primerPano);
     }
     // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
-    // Las piezas juntadas cuentan con su columna entera: el sitio que dejan a la derecha no se da por libre.
     if (ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
-      const ocupadas = sitios.map(s => ({ x: s.junta ? s.xc : s.x, y: s.y, ancho: s.junta ? s.anchoColumna : ancho(s), hueco: s.t.h }));
+      const ocupadas = seleccionadas.map(s => ({ x: s.x, y: s.y, ancho: mm(s.t.girada ? s.t.pieza.alto : s.t.pieza.ancho), hueco: s.t.h }));
       colocadas.push(...sacosDeStock(ocupadas, rollo, ofStock, entidades, grupo[0].material, grupo[0].rollo));
     }
     const titulo =
@@ -431,10 +462,11 @@ export function generarCortePuertas(
   const principal = resultados.flatMap(r => r.piezas);
   const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []);
   const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []);
+  const presupuesto: PresupuestoCorte = { restantes: 60000 };
   const cortes = [
-    ...colocar(principal, 'principal', codigosPano, esEnrollable, esAutorreparable, ofStockSacos),
-    ...colocar(entero, 'saco-entero', codigosPano, esEnrollable, esAutorreparable),
-    ...colocar(partido, 'saco-partido', codigosPano, esEnrollable, esAutorreparable),
+    ...colocar(principal, 'principal', codigosPano, esEnrollable, esAutorreparable, presupuesto, ofStockSacos),
+    ...colocar(entero, 'saco-entero', codigosPano, esEnrollable, esAutorreparable, presupuesto),
+    ...colocar(partido, 'saco-partido', codigosPano, esEnrollable, esAutorreparable, presupuesto),
   ];
   let archivo = null;
   if (!sinOf.length && !avisos.some(a => a.nivel === 'error') && pedido.orderCode.trim() && cortes.length) {

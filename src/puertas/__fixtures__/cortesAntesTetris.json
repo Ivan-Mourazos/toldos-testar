@@ -1,0 +1,33 @@
+{
+  "commit": "c0e5abb",
+  "unidad": "cm",
+  "pedidos": [
+    { "pedido": "AR2604858", "largos": [794, 379, 403.5], "anchoPedido": 260.25, "anchoStock": 288.75 },
+    { "pedido": "AR2604638", "largos": [172, 164, 26], "anchoPedido": 285, "anchoStock": 285 },
+    { "pedido": "AR2604524", "largos": [950, 449, 481.5], "anchoPedido": 294.25, "anchoStock": 294.25 },
+    { "pedido": "AR2604434", "largos": [129.75, 146, 26], "anchoPedido": 300, "anchoStock": 300 },
+    { "pedido": "AR2604349", "largos": [339, 274, 26], "anchoPedido": 289, "anchoStock": 289 },
+    { "pedido": "AR2604970", "largos": [850.5, 404], "anchoPedido": 292.25, "anchoStock": 299.75 },
+    { "pedido": "AR2604069", "largos": [630, 303, 321.5], "anchoPedido": 293.25, "anchoStock": 293.25 },
+    { "pedido": "AR2604725", "largos": [948, 456, 52], "anchoPedido": 290.25, "anchoStock": 290.25 },
+    { "pedido": "AR2604904", "largos": [863, 426], "anchoPedido": 300, "anchoStock": 300 },
+    { "pedido": "AR2604764", "largos": [131, 32], "anchoPedido": 254.5, "anchoStock": 254.5 },
+    { "pedido": "AR2604717", "largos": [955, 472], "anchoPedido": 300, "anchoStock": 300 },
+    { "pedido": "AR2604402", "largos": [331.5, 32], "anchoPedido": 224, "anchoStock": 300 },
+    { "pedido": "AR2604013", "largos": [376.5, 32], "anchoPedido": 291, "anchoStock": 291 },
+    { "pedido": "AR2604592", "largos": [800, 36, 410, 60], "anchoPedido": 296, "anchoStock": 296 },
+    { "pedido": "AR2604723", "largos": [1530, 36, 520, 60], "anchoPedido": 296, "anchoStock": 296 },
+    { "pedido": "AR2604724", "largos": [1500, 36, 510, 60], "anchoPedido": 296, "anchoStock": 296 },
+    { "pedido": "AR2604859", "largos": [1413, 40, 481, 60], "anchoPedido": 298, "anchoStock": 298 },
+    { "pedido": "AR2604906", "largos": [1590, 39, 540, 60], "anchoPedido": 296, "anchoStock": 296 },
+    { "pedido": "AR2605134", "largos": [708, 204, 78], "anchoPedido": 300, "anchoStock": 300 },
+    { "pedido": "AR2605220", "largos": [732, 354, 372.5], "anchoPedido": 277.25, "anchoStock": 278.75 },
+    { "pedido": "AR2605036", "largos": [1244, 150, 632, 322], "anchoPedido": 289, "anchoStock": 289 },
+    { "pedido": "AR2605065", "largos": [233.25, 202, 26], "anchoPedido": 298.75, "anchoStock": 298.75 },
+    { "pedido": "AR2604526", "largos": [633.5, 32, 44], "anchoPedido": 300, "anchoStock": 300 },
+    { "pedido": "AR2604526-350", "largos": [711, 350], "anchoPedido": 300, "anchoStock": 300 },
+    { "pedido": "AR2604638-1ET", "largos": [172, 164, 26], "anchoPedido": 269, "anchoStock": 269 },
+    { "pedido": "EJEMPLO-APILABLE", "largos": [411, 54, 310, 60], "anchoPedido": 300, "anchoStock": 300 },
+    { "pedido": "EJEMPLO-AUTORREPARABLE", "largos": [711, 350], "anchoPedido": 242.5, "anchoStock": 300 }
+  ]
+}
