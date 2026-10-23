@@ -15,7 +15,9 @@ export interface LienzoEnrollable {
   lineas: Array<{ capa: string; x1: number; y1: number; x2: number; y2: number }>;
   polilineas: Array<{ capa: string; puntos: Punto[]; cerrada: boolean; curvas?: number[]; color?: number }>;
   textos: Texto[];
-  cotas: Array<{ capa: string; estilo: string; x1: number; y1: number; x2: number; y2: number; giro: number; d: number; valor: number; rotulo?: string }>;
+  /** `alineada`: paralela a sus dos puntos, con la línea a `desvio` (a la izquierda de 1 → 2), como el saco inclinado. */
+  cotas: Array<{ capa: string; estilo: string; x1: number; y1: number; x2: number; y2: number; giro: number; d: number; valor: number; rotulo?: string;
+    alineada?: boolean; desvio?: number }>;
   inserciones: Array<{ capa: string; nombre: string; x: number; y: number; giro?: number; sx?: number }>;
   sombreados: Array<{ capa: string; puntos: Punto[]; solido: boolean }>;
   arcos: Array<{ capa: string; x: number; y: number; r: number; desde: number; hasta: number }>;
@@ -282,7 +284,7 @@ export function lienzoAMetros(l: Lienzo, ox: number, oy: number) {
     lineas: l.lineas.map(a => ({ ...a, x1: ox + a.x1 / 100, x2: ox + a.x2 / 100, y1: oy + a.y1 / 100, y2: oy + a.y2 / 100 })),
     polilineas: l.polilineas.map(a => ({ ...a, puntos: a.puntos.map(m) })),
     textos: l.textos.map(a => ({ ...a, x: ox + a.x / 100, y: oy + a.y / 100, h: a.h / 100, ...(a.ancho == null ? {} : { ancho: a.ancho / 100 }) })),
-    cotas: anclarCotas(l).map(a => ({ ...a, x1: ox + a.x1 / 100, x2: ox + a.x2 / 100, y1: oy + a.y1 / 100, y2: oy + a.y2 / 100, d: (a.giro ? ox : oy) + a.d / 100 })),
+    cotas: anclarCotas(l).map(a => ({ ...a, x1: ox + a.x1 / 100, x2: ox + a.x2 / 100, y1: oy + a.y1 / 100, y2: oy + a.y2 / 100, d: (a.giro ? ox : oy) + a.d / 100, ...(a.alineada ? { desvio: a.desvio! / 100 } : {}) })),
     inserciones: l.inserciones.map(a => ({ ...a, x: ox + a.x / 100, y: oy + a.y / 100 })),
     sombreados: l.sombreados.map(a => ({ ...a, puntos: a.puntos.map(m) })),
     arcos: l.arcos.map(a => ({ ...a, x: ox + a.x / 100, y: oy + a.y / 100, r: a.r / 100 })),

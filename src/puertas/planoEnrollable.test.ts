@@ -162,10 +162,11 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
   it.each([
     // Renovadas por las correcciones de taller: huecos abiertos, marcas, rótulos y anclajes de cotas; la
     // autorreparable, también porque ahora sí se crea el estilo XERA 20 en la plantilla de toldos.
-    // 23/10/2026: «SACO DE 100» (saco del pedido) y la plantilla sin la presentación DIN A3 vacía; nada más.
-    ['apilable', apilable, 'd1282ca20f3fa1611c0ac316efb96ebb0a3f36ea2f09d0bb5760f0aa544eb365'],
+    // 23/10/2026: «SACO DE 100», sin la DIN A3 vacía, la cota del corte hasta la pieza más alta sin rayas del rollo
+    // y los refuerzos centrados en su hueco (correcciones de Iván sobre AR2605035).
+    ['apilable', apilable, '4c8534a2afb676aaf4062388d499486c88c031a33d46a3de5fe9e3184841215b'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '67cc1543c7b854e0ea2318fc0851eb0b66a68ce62c9b81cb992570628a592dae'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, 'c9f06a09b3f3dc354bbadcb7aaeebb958bfced1b990cdb687bd377f8cfd946ad'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

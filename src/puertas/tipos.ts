@@ -70,6 +70,8 @@ export interface PiezaPuerta {
   multiplicador?: number;
   /** Posiciones en cm de los mininúmeros compartidos por las piezas que se sueldan. */
   unionesCorte?: Array<{ x: number; y: number; numero: number; giro?: number }>;
+  /** E.T. que van dentro del paño (apilable con empate en un tubo): su número y el centro de su franja (Iván, 23/10/2026). */
+  entradasIncorporadas?: Array<{ tubo: number; y: number; alto: number }>;
   /** Origen de la pieza en el alzado, en cm desde el bajo terminado. */
   origenAlzado?: Punto;
 }

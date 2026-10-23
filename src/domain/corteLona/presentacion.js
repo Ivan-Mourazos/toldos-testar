@@ -253,14 +253,18 @@ const comaCota = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
 /**
  * Una cota horizontal (giro 0) o vertical (giro 90) en metros: de (x1, y1) a (x2, y2), con la línea de cota
  * en `d` (la y si es horizontal, la x si es vertical). `valor` en cm: si no es lo que mide, va escrito.
+ * Con `alineada`, la cota va paralela a los dos puntos y mide su distancia real (el lado diagonal del saco con
+ * suelo inclinado; Iván, 23/10/2026); su línea va a `desvio` metros, a la izquierda de 1 → 2.
  */
 function cotaDxf(c, numero, nuevo, ent) {
   const e = ESTILOS_COTA[c.estilo] ?? ESTILOS_COTA.XERAL;
   const n = (v) => Number(v).toFixed(6);
   const v = c.giro === 90;
+  const largo = Math.hypot(c.x2 - c.x1, c.y2 - c.y1), ux = (c.x2 - c.x1) / largo, uy = (c.y2 - c.y1) / largo;
   // Todo se calcula como si fuera horizontal: a lo largo (s) y a lo ancho (t); `xy` lo devuelve al plano.
-  const xy = (s, t) => (v ? [t, s] : [s, t]);
-  const [s1, t1, s2, t2] = v ? [c.y1, c.x1, c.y2, c.x2] : [c.x1, c.y1, c.x2, c.y2];
+  const xy = c.alineada ? (s, t) => [c.x1 + s * ux - t * uy, c.y1 + s * uy + t * ux] : (s, t) => (v ? [t, s] : [s, t]);
+  const [s1, t1, s2, t2] = c.alineada ? [0, 0, largo, 0] : v ? [c.y1, c.x1, c.y2, c.x2] : [c.x1, c.y1, c.x2, c.y2];
+  if (c.alineada) c = { ...c, d: c.desvio };
   const mide = Math.abs(s2 - s1) * 100;
   const texto = c.rotulo ?? (c.valor == null || Math.abs(mide - c.valor) < 0.05 ? comaCota(mide) : comaCota(c.valor));
   const registro = nuevo();
@@ -289,12 +293,12 @@ function cotaDxf(c, numero, nuevo, ent) {
   else cuerpo += linea(xy(a + e.flecha, c.d), xy(b - e.flecha, c.d));
   const tt = cabe ? c.d : c.d + (v ? -1 : 1) * e.texto * 0.8;
   const [tx, ty] = xy(medio, tt);
-  cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${v ? '0.0' : '1.0'}\n 21\n${v ? '1.0' : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+  cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${c.alineada ? n(ux) : v ? '0.0' : '1.0'}\n 21\n${c.alineada ? n(uy) : v ? '1.0' : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   const bloque = `  0\nBLOCK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n  2\n${nombre}\n 70\n     1\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${nombre}\n  1\n\n`
     + cuerpo + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n`;
   const [dx, dy] = xy(s2, c.d);
   const override = c.rotulo == null && texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
-  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    32\n 71\n     5\n 42\n${n(mide)}\n${override}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`);
+  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${c.alineada ? 33 : 32}\n 71\n     5\n 42\n${n(mide)}\n${override}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
   const registroTabla = `  0\nBLOCK_RECORD\n  5\n${registro}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
   return { entidad, bloque, registro: registroTabla };
 }

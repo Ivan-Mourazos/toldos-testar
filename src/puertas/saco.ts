@@ -70,3 +70,30 @@ export function inclinarSaco(pieza: PiezaPuerta, pendiente: number, origen = 0):
 export function rotuloSaco(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas'>): string {
   return p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : p.materialSaco.replace(/^LAC\s*900\s*/i, 'SACO 900 GR ');
 }
+
+/**
+ * En el corte, el saco inclinado se gira para que su lado largo de abajo quede recto con el rollo: así se ajusta
+ * al inicio del rollo y las mitades del saco partido van pegadas. La forma no cambia (Iván, 23/10/2026, AR2605035).
+ */
+export function enderezarSaco(pieza: PiezaPuerta): PiezaPuerta {
+  if (pieza.clase !== 'saco') return pieza;
+  const c = pieza.contorno;
+  const lados = c.map((a, i) => [a, c[(i + 1) % c.length]] as const).filter(([a, b]) => Math.abs(b[0] - a[0]) > pieza.ancho / 2);
+  if (!lados.length) return pieza;
+  const abajo = lados.reduce((m, l) => l[0][1] + l[1][1] < m[0][1] + m[1][1] ? l : m);
+  const [a, b] = abajo[0][0] < abajo[1][0] ? abajo : [abajo[1], abajo[0]];
+  const giro = -Math.atan2(b[1] - a[1], b[0] - a[0]);
+  if (Math.abs(giro) < 1e-9) return pieza;
+  const [cos, sin] = [Math.cos(giro), Math.sin(giro)];
+  const girar = (x: number, y: number): [number, number] => [x * cos - y * sin, x * sin + y * cos];
+  const puntos = c.map(([x, y]) => girar(x, y));
+  const x0 = Math.min(...puntos.map(p => p[0])), y0 = Math.min(...puntos.map(p => p[1]));
+  const red = (v: number) => Math.round(v * 1e4) / 1e4;
+  const mover = (x: number, y: number): [number, number] => { const [u, v] = girar(x, y); return [red(u - x0), red(v - y0)]; };
+  const contorno = c.map(([x, y]) => mover(x, y));
+  return { ...pieza, contorno,
+    ancho: Math.max(...contorno.map(p => p[0])), alto: Math.max(...contorno.map(p => p[1])),
+    marcas: pieza.marcas.map(([x1, y1, x2, y2]) => [...mover(x1, y1), ...mover(x2, y2)] as [number, number, number, number]),
+    textos: pieza.textos.map(t => { const [x, y] = mover(t.x, t.y); return { ...t, x, y }; }),
+    unionesCorte: pieza.unionesCorte?.map(t => { const [x, y] = mover(t.x, t.y); return { ...t, x, y }; }) };
+}

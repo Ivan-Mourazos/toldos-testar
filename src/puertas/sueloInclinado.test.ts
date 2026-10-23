@@ -131,3 +131,29 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
     }
   });
 });
+
+describe('Correcciones de Iván sobre AR2605035 (23/10/2026)', () => {
+  const p = () => { const x = puerta5035(0); x.apilable.empates = null; x.apilable.ladoPestana = 'derecha'; return x; };
+  it('el empate en un tubo no lleva mininúmeros y la E.T. que va dentro se rotula en el paño', () => {
+    const r = calcularPuerta(p()), panos = r.piezas.filter(x => x.clase === 'pano');
+    expect(r.uniones.some(u => u.tubo)).toBe(true);
+    expect(panos.flatMap(x => x.unionesCorte ?? [])).toEqual([]);
+    expect(panos.flatMap(x => x.entradasIncorporadas ?? []).map(e => e.tubo)).toEqual([r.uniones.find(u => u.tubo)!.tubo]);
+    const textos = generarCortePuertas(pedidoDe('AR2605035', p())).archivo!.entidades.textos.map(t => t.valor);
+    expect(textos.some(v => /ENTRADA 5$/.test(v))).toBe(true);
+  });
+  it('en el corte, el saco va con su lado largo recto con el rollo y las mitades pegadas', () => {
+    const corte = generarCortePuertas(pedidoDe('AR2605035', p()));
+    for (const c of corte.cortes.filter(c => c.opcion !== 'principal')) for (const t of c.colocadas) {
+      const ys = t.pieza.contorno.map(q => q[1]);
+      expect(t.pieza.contorno.filter(q => Math.abs(q[1]) < .01).length).toBeGreaterThanOrEqual(2);
+      expect(Math.max(...ys)).toBeCloseTo(32, 0);
+    }
+  });
+  it('a la izquierda solo la cota del pie y la del saco alineada con su diagonal', () => {
+    const l = dibujarAlzadoTaller(p(), 'A').lienzo;
+    const izquierda = l.cotas.filter(c => c.x1 === 0 && c.x2 === 0 && c.d === -60);
+    expect(izquierda.map(c => Math.round(c.valor))).toEqual([46]);
+    expect(l.cotas.some(c => c.alineada && Math.abs(c.valor - Math.hypot(432, 15)) < .05)).toBe(true);
+  });
+});

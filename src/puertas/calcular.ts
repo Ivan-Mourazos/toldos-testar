@@ -86,13 +86,16 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       if(t.unionInferior!==undefined) {
         const u=plan.uniones[t.unionInferior];
         if(u.tubo) marca(x,u.solape,-1); else marca(x,u.solape);
-        numerarBorde(x,numeros[t.unionInferior],'abajo');
+        // Apilable: en un tubo la E.T. ya une los dos paños y no lleva mininúmeros (Iván, 23/10/2026, AR2605035).
+        if(!(u.tubo && p.modelo==='PUERTAPLE')) numerarBorde(x,numeros[t.unionInferior],'abajo');
       }
       if(t.unionSuperior!==undefined) {
         const u=plan.uniones[t.unionSuperior];
         if(!u.tubo) marca(x,x.alto-u.solape);
-        numerarBorde(x,numeros[t.unionSuperior],'arriba');
+        if(!(u.tubo && p.modelo==='PUERTAPLE')) numerarBorde(x,numeros[t.unionSuperior],'arriba');
         if(u.tubo && p.entradas[u.tubo-1]) x.huecos.push(...huecosET(p.entradas[u.tubo-1]).map(h=>({...h,y:n(x.alto-u.solape+h.y)})));
+        // Apilable: la E.T. que va dentro del paño se rotula en él, para que no parezca que falta (Iván, 23/10/2026).
+        if(u.tubo && p.modelo==='PUERTAPLE') (x.entradasIncorporadas??=[]).push({tubo:u.tubo,y:n(x.alto-u.solape/2),alto:u.solape});
       }
     }
   }

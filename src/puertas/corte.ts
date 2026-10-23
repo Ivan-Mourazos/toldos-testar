@@ -3,6 +3,7 @@ import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
+import { enderezarSaco } from './saco.ts';
 import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
@@ -84,6 +85,13 @@ function rotulosPieza(
   const of = (pieza.of.trim() || 'SIN OF').toUpperCase();
   const clase = pieza.clase === 'pano' ? etiquetaClasePieza(pieza, codigoPano)
     : `${codigoPano ?? ''} · ${etiquetaClasePieza(pieza)}`;
+  // La E.T. que va dentro del paño, rotulada en su franja como las sueltas (Iván, 23/10/2026).
+  for (const e of pieza.entradasIncorporadas ?? []) {
+    const valor = `${/^[A-Z]+/.exec(codigoPano ?? '')?.[0] ?? ''} · ENTRADA ${e.tubo}`.replace(/^ · /, '');
+    const h = Math.min(mm(e.alto) * .55, mm(pieza.ancho) * .5 / anchoArial(valor, 1));
+    entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - e.y : pieza.ancho / 2), y: y + mm(girada ? pieza.ancho / 2 : e.y),
+      h, valor, giro: girada ? 90 : 0, centrado: true });
+  }
   if (columnas && pieza.clase === 'pano') {
     const valores = [of, clase, ...reves ? ['REVÉS'] : []];
     const obstaculos = [...pieza.huecos.map(h => [h.y - 4, h.y + h.alto + 4]),
@@ -464,9 +472,10 @@ export function generarCortePuertas(
   const esEnrollable = (idPieza: string) => enrollables.some(prefijo => idPieza.startsWith(prefijo));
   const autorreparables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAUTO').map(e => `${e.id}:`);
   const esAutorreparable = (idPieza: string) => autorreparables.some(prefijo => idPieza.startsWith(prefijo));
-  const principal = resultados.flatMap(r => r.piezas);
-  const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []);
-  const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []);
+  // El saco inclinado se corta con su lado largo recto con el rollo (Iván, 23/10/2026, AR2605035).
+  const principal = resultados.flatMap(r => r.piezas).map(enderezarSaco);
+  const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []).map(enderezarSaco);
+  const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []).map(enderezarSaco);
   const presupuesto: PresupuestoCorte = { restantes: PRESUPUESTO_TETRIS };
   // SYSTEM DOCK: lonas rectangulares por tandas, sin las reglas de las puertas (systemDock.ts).
   const systemDock = pedido.elementos.flatMap((e, i) => e.input.modelo === 'SYSTEMDOCK'

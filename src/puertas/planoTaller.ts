@@ -119,6 +119,9 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
     const x = (v: number) => w - v;
     for (const a of l.lineas) { a.x1 = x(a.x1); a.x2 = x(a.x2); }
     for (const a of l.textos) a.x = x(a.x);
+    // Las notas de los velcros, 20 más hacia dentro para no chocar con la cota de la pestaña (AR2605035).
+    for (const a of l.textos) if (/^(COSER VELCRO|DE 5 )/.test(a.valor)) a.x -= 20;
+    for (const a of l.lineas) if (a.capa === 'texto') a.x1 -= 20;
     for (const a of l.sombreados) a.puntos = a.puntos.map(([u, v]): Punto => [x(u), v]);
     for (const a of l.cotas) {
       if (a.giro === 90) { a.x1 = x(a.x1); a.x2 = x(a.x2); a.d = x(a.d); }
@@ -128,9 +131,16 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
   if (desnivel) {
     const mover = (x:number,y:number) => y + desnivel*x/p.frente-Math.max(0,desnivel);
     for (const a of l.lineas) { a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2); }
-    for (const a of l.textos) a.y=mover(a.x,a.y);
+    // Los de fuera del saco, con la punta del texto que más se acerca a él: con la pendiente, el centro no basta y
+    // los velcros pisaban la raya (Iván, 23/10/2026, AR2605035).
+    for (const a of l.textos) {
+      const m = anchoArial(a.valor, a.h) / 2, puntas = [mover(a.x - m, a.y), mover(a.x + m, a.y)];
+      a.y = a.y > ys ? Math.max(...puntas) : a.y < ys - h ? Math.min(...puntas) : mover(a.x, a.y);
+    }
     for (const a of l.sombreados) a.puntos=a.puntos.map(([x,y])=>[x,mover(x,y)]);
     for (const a of l.cotas) {
+      // La del largo, alineada con el lado diagonal: mide lo que de verdad se corta (Iván, 23/10/2026, AR2605035).
+      if (a.giro === 0) Object.assign(a, { alineada: true, desvio: a.d - a.y1 });
       a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2);
       a.valor=Math.hypot(a.x2-a.x1,a.y2-a.y1);
     }
@@ -191,13 +201,28 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     // Detalles esquemáticos de AR2605036/4906: alturas de 13,5 y 11,5, redondeadas del DWG.
     for (const [x, ancho, alto, y] of [[10, 15, 13.5, -H + p.apilable.pie - 6.75], [10, 11, 13.5, -H],
       [F - 25, 15, 11.5, -H + p.apilable.pie - 5.75], [F - 25, 15, 13.5, -H]]) {
-      const puntos = rect(l, 'referencia-1', x, y, ancho, alto); l.sombreados.push({ capa: 'referencia-1', puntos, solido: false });
+      // Con el bajo inclinado, los del bajo suben con él para no salirse de la lona (AR2605035).
+      const sube = y === -H ? Math.max(desnivel * x / F, desnivel * (x + ancho) / F) : 0;
+      const puntos = rect(l, 'referencia-1', x, y + sube, ancho, alto); l.sombreados.push({ capa: 'referencia-1', puntos, solido: false });
     }
     for (const [i, ancho] of [10, 15].entries()) {
-      const x = i ? F - 90 : 90, h = Math.min(6, F / 70);
-      texto(l, `REFUERZO DE ${ancho} CM A 10 CM DEL BORDE`, x, -H + 31, h);
-      texto(l, 'SOLDADO · LONA DE 2 MM', x, -H + 31 - h * 1.4, h);
-      linea(l, 'texto', i ? x + 35 : x - 35, -H + 24 - h, i ? F - 17.5 : 17.5, -H + 13.5);
+      // Cada uno en su mitad, sin pisarse en las puertas estrechas (Iván, 23/10/2026: «adaptarlos mejor al hueco»).
+      const borde = Math.min(90, F / 4), x = i ? F - borde : borde, lineas = [`REFUERZO DE ${ancho} CM A 10 CM DEL BORDE`, 'SOLDADO · LONA DE 2 MM'];
+      let h = Math.min(6, F / 70, (2 * borde - 10) / anchoArial(lineas[0], 1)), yc = 31 - h * .7;
+      {
+        // Iván, 23/10/2026 (AR2605035): en el hueco entre la raya de soldar el saco (inclinada si el suelo lo está) y
+        // la primera E.T.; más pequeños si no caben, sin pisar la raya en ningún punto del texto.
+        const techo = tubos[0] - (p.entradas[0]?.alto ?? 12) / 2 - 1.5;
+        const suelo = (hh: number) => { const m = anchoArial(lineas[0], hh) / 2;
+          return hSaco + 2 + 1.5 + Math.max(desnivel * (x - m) / F, desnivel * (x + m) / F); };
+        while (h > 2.5 && techo - suelo(h) < h * 2.6) h -= .25;
+        yc = (techo + suelo(h)) / 2;
+      }
+      texto(l, lineas[0], x, -H + yc + h * .7, h);
+      texto(l, lineas[1], x, -H + yc - h * .7, h);
+      // La guía, del texto al recuadro del bajo (que sube con el desnivel); sin desnivel, como siempre (24 − h).
+      const [x0, x1] = i ? [F - 25, F - 10] : [10, 21];
+      linea(l, 'texto', i ? x + 35 : x - 35, -H + yc - h * .3 - 7, i ? F - 17.5 : 17.5, -H + 13.5 + Math.max(desnivel * x0 / F, desnivel * x1 / F));
     }
   } else {
     linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
@@ -292,8 +317,9 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
       }
       if(a.x1===0&&a.x2===0&&a.d===-40) a.d=-92;
     }
-    const hitos=[0,...tubos,H];
-    hitos.slice(1).forEach((v,i)=>cota(l,0,-H+hitos[i],0,-H+v,-60,i===hitos.length-2?'XERA 15':'XERAL'));
+    // A la izquierda solo se añade el pie, que es lo que cambia con el fondo en caída; los tramos van en la cadena de
+    // la derecha, como en la apilable sin desnivel (Iván, 23/10/2026, AR2605035).
+    cota(l,0,-H,0,-H+tubos[0],-60,'XERA 15');
     cota(l,F,0,F,-altoDerecho,F+112,'XERA 15');
   }
   const abajo = dibujarSaco(l, p);
@@ -322,7 +348,12 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
       const lista = [...unicas.values()];
       for (const [i, p] of lista.entries()) {
         const y = techo - p.alto;
-        if (p.radio) redondeado(l, 'DISCO1', 0, y, p.ancho, p.alto, p.radio);
+        if (p.radio) {
+          // Como en el corte del bot: los tramos rectos en DISCO1 y los radios de las esquinas en CUTTER (Iván, 23/10/2026).
+          const r = Math.min(p.radio, p.ancho / 2, p.alto / 2), [w, h] = [p.ancho, p.alto];
+          for (const [x1, y1, x2, y2] of [[r, 0, w - r, 0], [w, r, w, h - r], [w - r, h, r, h], [0, h - r, 0, r]]) linea(l, 'DISCO1', x1, y + y1, x2, y + y2);
+          for (const [cx, cy, desde] of [[r, r, 180], [w - r, r, 270], [w - r, h - r, 0], [r, h - r, 90]]) l.arcos.push({ capa: 'CUTTER', x: cx, y: y + cy, r, desde, hasta: desde + 90 });
+        }
         else contorno(l, 'DISCO1', p.contorno.map(([x, v]): Punto => [x, y + v]));
         texto(l, `X${p.multiplicador ?? p.cantidad}`, p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto / 2));
         for (const [x1, y1, x2, y2] of p.marcas) linea(l, 'ROTULADOR', x1, y + y1, x2, y + y2);
@@ -340,7 +371,9 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
           (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
           p.ancho, techo + 15);
         cota(l, 0, y, p.ancho, y, c.opcion === 'saco-partido' && mismaPuerta(siguiente) ? techo + 35 : y - 30, 'XERA 20');
-        cota(l, 0, y, 0, techo, -35, 'XERA 20');
+        // Las dos mitades pegadas: la cota de la segunda, a su derecha, para que no se pisen (AR2605035).
+        if (c.opcion === 'saco-partido' && mismaPuerta(anterior)) cota(l, p.ancho, y, p.ancho, techo, p.ancho + 40, 'XERA 20');
+        else cota(l, 0, y, 0, techo, -35, 'XERA 20');
         anchoMax = Math.max(anchoMax, p.ancho); techo = y - (c.opcion === 'saco-partido' && mismaPuerta(siguiente) ? 0 : 95);
       }
       if (c.opcion === 'saco-partido') fusionarCortesPuertas(l);
@@ -380,14 +413,18 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         for (const v of local.textos) {
           const q = P([v.x, v.y]); l.textos.push({ ...v, x: q[0], y: q[1], giro: t.girada ? 90 : 0 });
         }
+        // La E.T. que va dentro del paño, con el mismo rótulo que las sueltas (Iván, 23/10/2026).
+        for (const et of p.entradasIncorporadas ?? []) {
+          const q = P([p.ancho / 2, et.y]); texto(l, `ENTRADA DE TUBO ${et.tubo}`, q[0], q[1], Math.min(8, et.alto / 2), t.girada ? 90 : 0);
+        }
         primeros.add(e.id);
       } else texto(l, p.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);
     }
     material(l, c.material, c.largo / 10, techo + 15);
-    // El ancho acotado es el del rollo: los orillos se representan como referencia, nunca como corte.
-    linea(l, 'referencias', 0, yc, c.largo / 10, yc);
-    linea(l, 'referencias', 0, techo, c.largo / 10, techo);
-    cota(l, 0, yc, c.largo / 10, yc, yc - 30, 'XERA 20'); cota(l, 0, yc, 0, techo, -35, 'XERA 20');
+    // Iván, 23/10/2026 (AR2605035): la cota, hasta la altura máxima de las piezas, y sin rayas del rollo, que no
+    // son corte; como en las enrollables (planos a mano 4638 y 5220).
+    const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
+    cota(l, 0, yc, c.largo / 10, yc, yc - 30, 'XERA 20'); cota(l, 0, yc, 0, yc + ocupado, -35, 'XERA 20');
     anchoMax = Math.max(anchoMax, c.largo / 10); techo = yc - 100;
   }
   return { lienzo: l, zona: { x0: -70, x1: anchoMax + 35, y0: techo + 45, y1: 45 } };
