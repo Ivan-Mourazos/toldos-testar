@@ -167,9 +167,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a 150 m a la derecha y los recuadros DIBUJO y CORTE.
-    ['apilable', apilable, '8635acab90fc11c0fb37fb8e2b3e846225ed174bcf703b7b473b2b9b70aaa4ad'],
+    ['apilable', apilable, '7b76b85af8d80a87e9be171301025320be7030e7891cf328034b1865bb673038'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '9f8086d82455543c155c71cc1ba20e2611c714280713f95ed75f4bfff0e8d981'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, '0d9742b14ac5251f69545b267c3bd69fca17a5eb40df77f60f7db168ca38d6ef'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -197,6 +197,6 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('f54586ececcd292f833ced0a8c6b64525134df9ef9e7e4cc2ab12a22281b87bd');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('09cdea873553b0563a1887f6471945ff39463fdacdad35baaa62a6d45ea3594e');
   });
 });
