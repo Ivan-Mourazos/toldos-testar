@@ -1,4 +1,7 @@
 import { AJUSTES_POR_DEFECTO, piezasToldo } from './despiece.js';
+import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS } from './colocacionTetris.ts';
+
+export { PRESUPUESTO_TETRIS };
 
 // Sacos de stock para aprovechar la lona que sobra (Iván, 19/10/2026; AUTOCADMATERIAL PARA STOCK.dwg):
 // de cualquier PVC y gramaje, alto × ancho en cm, con ±5 cm de margen en cada medida.
@@ -55,6 +58,24 @@ export function sacosEnHuecos(colocadas, anchoRolloMm, ofStock) {
   return sacos;
 }
 
+/**
+ * Sacos en los retales libres de verdad: con el colocador «Tetris» las piezas ya no van siempre en columnas,
+ * así que se buscan en todos los huecos libres (los más grandes primero), con las mismas medidas y márgenes.
+ */
+export function sacosEnRetales(colocadas, anchoRolloMm, ofStock) {
+  const largo = Math.max(0, ...colocadas.map((p) => p.x + p.ancho));
+  return huecosLibres(colocadas.map((p) => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, anchoRolloMm)
+    .flatMap((h) => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock));
+}
+
+/** Cuánta lona aprovechan los sacos de stock en unos retales: el Tetris lo usa para desempatar a igual largo. */
+function aprovechamientoSacos(anchoRolloMm, ofStock) {
+  return (libres) => {
+    const sacos = libres.flatMap((h) => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock));
+    return { area: sacos.reduce((s, q) => s + q.ancho * q.hueco, 0), ancho: Math.max(0, ...sacos.map((q) => q.y + q.hueco)) };
+  };
+}
+
 // Hasta este número de piezas se prueban todos los repartos en columnas (3^n combinaciones);
 // con más, se prueban varios órdenes de colocación y se queda el más corto.
 const MAX_PIEZAS_EXACTO = 13;
@@ -66,8 +87,23 @@ const MAX_PIEZAS_EXACTO = 13;
  * cabe, como hace la oficina (cuerpo de AR2405992, tira de AR2505753). A igual largo se prefieren
  * menos piezas giradas y menos columnas.
  * Cada pieza colocada lleva su hueco en el rollo: x, y, ancho (a lo largo), hueco (a lo ancho) y `girada`.
+ *
+ * Después, el colocador «Tetris» de puertas parte de ese reparto en columnas y solo lo cambia si gasta menos
+ * largo o, con el mismo, aprovecha más lona para sacos (`aprovechamiento`) o deja menos ancho ocupado.
+ * Nunca sale peor que por columnas. `presupuesto` se comparte entre todas las colocaciones del pedido.
  */
-export function colocar(piezas, anchoRolloMm) {
+export function colocar(piezas, anchoRolloMm, { presupuesto = { restantes: PRESUPUESTO_TETRIS }, aprovechamiento } = {}) {
+  const porColumnas = colocarEnColumnas(piezas, anchoRolloMm);
+  if (!porColumnas.length || presupuesto.restantes <= 0) return porColumnas;
+  const inicial = porColumnas.map((p, i) => ({ id: String(i), x: p.x, y: p.y, w: p.ancho, h: p.hueco, girada: p.girada }));
+  const busqueda = porColumnas.map((p, i) => ({ id: String(i), formas: [
+    { w: p.largo, h: p.alto, girada: false }, { w: p.alto, h: p.largo, girada: true }].filter((f) => f.h <= anchoRolloMm) }));
+  const elegidas = buscarColocacion(busqueda, anchoRolloMm, inicial, presupuesto, undefined, aprovechamiento);
+  return elegidas.map((r) => ({ ...porColumnas[Number(r.id)], girada: r.girada, ancho: r.w, hueco: r.h, x: r.x, y: r.y }))
+    .sort((a, b) => a.x - b.x || a.y - b.y);
+}
+
+function colocarEnColumnas(piezas, anchoRolloMm) {
   if (!Number.isFinite(anchoRolloMm) || anchoRolloMm <= 0) throw new Error('Ancho de rollo no válido.');
   if (!piezas.length) return [];
   if (piezas.some((p) => !Number.isFinite(p.largo) || !Number.isFinite(p.alto) || p.largo <= 0 || p.alto <= 0)) throw new Error('Las piezas deben tener medidas positivas.');
@@ -174,7 +210,7 @@ function repartoPorOrden(formas, anchoRolloMm) {
  * Despiece y colocación de una sola tela. Medidas de entrada en cm; salida en mm.
  * En vertical prueba tira entera y partida, salvo que el ajuste la fije expresamente.
  */
-export function cortePedido(toldos, verticales = []) {
+export function cortePedido(toldos, verticales = [], { presupuesto = { restantes: PRESUPUESTO_TETRIS }, aprovechamiento } = {}) {
   if (!toldos.length) throw new Error('No hay toldos para colocar.');
   const anchoRollo = toldos[0].anchoRollo;
   if (toldos.some((t) => t.anchoRollo !== anchoRollo)) throw new Error('Cada corte debe usar un solo ancho de rollo.');
@@ -192,7 +228,7 @@ export function cortePedido(toldos, verticales = []) {
       if (!Number.isInteger(unidades) || unidades < 1) throw new Error('Las unidades deben ser enteras y positivas.');
       return Array.from({ length: unidades }, () => p.piezas.map((q) => ({ ...q, letra: p.letra, of: toldos[i].of, ajustes: elegidos[i] }))).flat();
     });
-    const colocadas = colocar(todas, anchoRollo * 10);
+    const colocadas = colocar(todas, anchoRollo * 10, { presupuesto, aprovechamiento });
     const largo = Math.max(...colocadas.map((p) => p.x + p.ancho));
     if (!mejor || largo < mejor.largo) mejor = { piezas: porToldo, colocadas, largo };
   }
@@ -200,13 +236,14 @@ export function cortePedido(toldos, verticales = []) {
 }
 
 /** Dos opciones de taller: aprovechar huecos con sacos o reservar el paño pequeño para restos. */
-export function opcionesCorte(toldos, ofStockSacos) {
-  const corte = cortePedido(toldos);
+export function opcionesCorte(toldos, ofStockSacos, presupuesto = { restantes: PRESUPUESTO_TETRIS }) {
   // La tela reservada solo para bambas, y el cristal de las cortinas, no se completan con stock ni tienen
   // alternativa de restos.
-  if (toldos.every(t => t.soloBamba || t.soloCristal)) return { conSacos: { ...corte, sacos: [] }, trozoSeparado: null };
+  const sinStock = toldos.every(t => t.soloBamba || t.soloCristal);
   const anchoRollo = toldos[0].anchoRollo * 10;
-  const sacos = sacosEnHuecos(corte.colocadas, anchoRollo, ofStockSacos);
+  const corte = cortePedido(toldos, [], { presupuesto, aprovechamiento: sinStock ? undefined : aprovechamientoSacos(anchoRollo, ofStockSacos) });
+  if (sinStock) return { conSacos: { ...corte, sacos: [] }, trozoSeparado: null };
+  const sacos = sacosEnRetales(corte.colocadas, anchoRollo, ofStockSacos);
   const conSacos = { ...corte, colocadas: [...corte.colocadas, ...sacos], sacos };
   // La cortina no: sus piezas pequeñas son los laterales de la ventana, que se sueldan a las bandas.
   const letras = new Set(corte.piezas.filter((p, i) =>
@@ -215,9 +252,9 @@ export function opcionesCorte(toldos, ofStockSacos) {
   const pequena = (p) => letras.has(p.letra) && (p.nombre.includes('BAMBA') || p.alto < anchoRollo);
   const todas = corte.colocadas.map(({ girada: _g, ancho: _a, hueco: _h, x: _x, y: _y, ...p }) => p);
   if (!todas.some(pequena)) return { conSacos, trozoSeparado: null };
-  const principal = colocar(todas.filter((p) => !pequena(p)), anchoRollo);
+  const principal = colocar(todas.filter((p) => !pequena(p)), anchoRollo, { presupuesto });
   const largoPrincipal = Math.max(...principal.map((p) => p.x + p.ancho));
-  const restos = colocar(todas.filter(pequena), anchoRollo);
+  const restos = colocar(todas.filter(pequena), anchoRollo, { presupuesto });
   const largoRestos = Math.max(...restos.map((p) => p.x + p.ancho));
   const xRestos = largoPrincipal + 1500;
   const aparte = restos.map((p) => ({ ...p, x: p.x + xRestos, aparte: true }));

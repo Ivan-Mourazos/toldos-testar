@@ -21,6 +21,7 @@
 
 import { esquinaChaflan } from '../geometry/chaflan.ts';
 import { anchoArial } from '../../domain/corteLona/texto.js';
+import { buscarColocacion, PRESUPUESTO_TETRIS } from '../../domain/corteLona/colocacionTetris.ts';
 
 const ROLLO = 2500, BORDE = 45, R_OLLAO = 2.5;
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -404,7 +405,18 @@ function colocarTodo(piezas, intentos = 400) {
     const r = maxrects(piezas, o, giros);
     if (r && (!mejor || r.largo < mejor.largo - 0.01)) mejor = r;
   }
-  return mejor;
+  if (!mejor) return null;
+  // Encima, el colocador «Tetris» de puertas y toldos (Iván, 23/10/2026: «el tetris hay que aplicarlo a todo»): parte
+  // de la mejor colocación por huecos y solo la cambia si gasta menos largo o deja menos ancho ocupado.
+  const busqueda = piezas.map((p, k) => ({ id: String(k), formas: [{ w: p.w, h: p.h, girada: false }, { w: p.h, h: p.w, girada: true }]
+    .filter((f) => f.h <= ROLLO + 0.01) }));
+  const inicial = mejor.sitios.map((s, k) => ({ id: String(k), x: s.x, y: s.y, w: s.w, h: s.h, girada: s.giro !== 0 }));
+  const sitios = new Array(piezas.length);
+  for (const r of buscarColocacion(busqueda, ROLLO, inicial, { restantes: PRESUPUESTO_TETRIS })) {
+    sitios[Number(r.id)] = { x: r.x, y: r.y, w: r.w, h: r.h, giro: r.girada ? -90 : 0, derecha: r.x + r.w };
+  }
+  const libres = sitios.reduce((l, s) => partir(l, s), [{ x: 0, y: 0, w: 1e9, h: ROLLO }]);
+  return { sitios, largo: Math.max(...sitios.map((s) => s.x + s.w)), libres };
 }
 
 // `letras`: Map elemento → letra de cada unidad (solo si el corte lleva más de un remolque). `extras`: otras
@@ -464,12 +476,18 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
     }
   }
   piezas.push(...extras);
-  const pack = colocarTodo(piezas);
+  let pack = colocarTodo(piezas);
   if (!pack) { out.avisos.push('Alguna pieza no cabe en el rollo: hacer esta lona a mano.'); return { ...out, largo: x0 }; }
+  // Las tapas, colocadas con las demás piezas si así no se alarga el corte: el Tetris las encaja mejor que los
+  // huecos que sobran después (AR2605132, Iván 23/10/2026).
+  const conTapas = tapas.length ? colocarTodo([...piezas, ...tapas]) : null;
+  const sitiosTapas = conTapas && conTapas.largo <= pack.largo + 0.01 ? conTapas.sitios.slice(piezas.length) : null;
+  if (sitiosTapas) pack = { ...conTapas, sitios: conTapas.sitios.slice(0, piezas.length) };
   // Tapas: solo en huecos que no alarguen el corte; si no, se cortan de restos (AR2605023).
   let libres = pack.libres;
   const puestas = [];
   tapas.forEach((tapa, n) => {
+    if (sitiosTapas) { puestas.push([tapa, sitiosTapas[n]]); return; }
     let sitio = null;
     for (const giro of [0, -90]) {
       const w = giro ? tapa.h : tapa.w, h = giro ? tapa.w : tapa.h;

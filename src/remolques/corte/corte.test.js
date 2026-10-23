@@ -52,11 +52,14 @@ describe('generarCorteRemolques', () => {
   it('corta dos lonas altas de la misma lona juntas, con letras por remolque (AR2605132)', () => {
     const { cortes, aMano } = generarCorteRemolques(AR2605132);
     expect(aMano).toEqual([]);
-    // El contorno de A no cabe en el rollo: dos opciones, la tira empatada en dos y la tira entera (Iván, 22/10/2026).
-    expect(cortes.map((x) => x.opcion)).toEqual(['OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA', 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']);
+    // El contorno de A no cabe en el rollo. Antes salían dos opciones (tira empatada en dos o entera); con el Tetris
+    // (Iván, 23/10/2026) la tira entera cabe sin alargar el corte, así que va entera y sin opciones (regla de AR2605192).
+    expect(cortes.map((x) => x.opcion)).toEqual([undefined]);
     const [c] = cortes;
     expect(c.nombre).toBe('AR2605132');
     expect(c.largo).toBeLessThanOrEqual(8031);
+    // Sin empate y sin la tira aparte; la tapa pequeña que no cabe sin alargar va de restos, como en AR2605023.
+    expect(c.entidades.textos.some((t) => /[AB]4-[12]|^CORTAR DE RESTOS$|TIRA ENTERA/.test(t.valor))).toBe(false);
     // Piezas A1…A3 y B1…B3 en la esquina, y la tapa de la ventana de cada una (A4, B4, la pieza siguiente) si cabe,
     // con «VENTANA» (o «VENT» si no cabe) debajo de su nombre.
     const esquinas = rotulador(c).filter((t) => !t.literal).map((t) => t.valor);

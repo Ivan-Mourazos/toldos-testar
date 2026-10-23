@@ -4,6 +4,9 @@ export type RectanguloCorte = FormaCorte & { id: string; x: number; y: number };
 export type PiezaCorte = { id: string; formas: FormaCorte[]; simetria?: string };
 export type PresupuestoCorte = { restantes: number };
 export type AprovechamientoStock = { area: number; ancho: number };
+/** Intentos para todo un pedido, en puertas, toldos y remolques (Iván, 23/10/2026: «el tetris hay que aplicarlo a
+ * todo»). Se cuentan nodos, no tiempo: el resultado no depende de la máquina. */
+export const PRESUPUESTO_TETRIS = 60000;
 type Hueco = { x: number; y: number; w: number; h: number };
 const EPS = .001;
 const derecha = (r: Hueco) => r.x + r.w;

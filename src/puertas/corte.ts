@@ -3,7 +3,7 @@ import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
-import { buscarColocacion, huecosLibres, type PresupuestoCorte, type RectanguloCorte } from './colocacionTetris.ts';
+import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
 const vacias = (): EntidadesPuertas => ({ lineas: [], textos: [], arcos: [], circulos: [] });
@@ -467,7 +467,7 @@ export function generarCortePuertas(
   const principal = resultados.flatMap(r => r.piezas);
   const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []);
   const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []);
-  const presupuesto: PresupuestoCorte = { restantes: 60000 };
+  const presupuesto: PresupuestoCorte = { restantes: PRESUPUESTO_TETRIS };
   // SYSTEM DOCK: lonas rectangulares por tandas, sin las reglas de las puertas (systemDock.ts).
   const systemDock = pedido.elementos.flatMap((e, i) => e.input.modelo === 'SYSTEMDOCK'
     ? resultados[i].piezas.map(pieza => ({ pieza, medida: medidaSystemDock(e.input) })) : []);

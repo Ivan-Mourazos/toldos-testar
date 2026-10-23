@@ -4,7 +4,7 @@ import { resolveFabric } from '../fabricCatalog.js';
 import { shortFabricName } from '../fabricShortName.js';
 import { awningLetter } from '../awningCompleteness.js';
 import { corteReadiness, motivoCorteManual } from '../corteReadiness.js';
-import { opcionesCorte } from './colocacion.js';
+import { opcionesCorte, PRESUPUESTO_TETRIS } from './colocacion.js';
 import { dibujo } from './dibujoCorte.js';
 import { escribirDxf2004 } from './dxfCorte.js';
 import { dibujarPlano } from './plano.js';
@@ -100,7 +100,9 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     modelos.add(toldo.model);
   }
   const conSacos = [], trozos = [], planos = [];
-  const calculados = [...grupos.values()].map((grupo) => ({ grupo, opciones: opcionesCorte(grupo.toldos, String(ofStockSacos)),
+  // Un solo presupuesto de intentos del Tetris para todas las telas del pedido, como en puertas.
+  const presupuesto = { restantes: PRESUPUESTO_TETRIS };
+  const calculados = [...grupos.values()].map((grupo) => ({ grupo, opciones: opcionesCorte(grupo.toldos, String(ofStockSacos), presupuesto),
     cristal: grupo.toldos.every((t) => t.soloCristal) }));
   for (const { grupo, opciones, cristal } of calculados) {
     const of = [...new Set(grupo.toldos.map((t) => t.of))].join(' / ');
