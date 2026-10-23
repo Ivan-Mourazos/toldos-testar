@@ -192,7 +192,8 @@ function dibujarPieza(
   rotulosPieza(entidades, pieza, x, y, girada, codigoPano, columnas, reves);
 }
 
-type Columna = { ancho: number; alto: number; piezas: Array<{ pieza: PiezaPuerta; h: number; girada: boolean }> };
+// `alLado`: la pieza va a la derecha de la anterior, en su misma fila, sin subir la columna.
+type Columna = { ancho: number; alto: number; piezas: Array<{ pieza: PiezaPuerta; h: number; girada: boolean; alLado?: boolean }> };
 const largoDe = (columnas: Columna[]) => columnas.reduce((suma, c) => suma + c.ancho, 0);
 
 /** Columnas a lo largo del rollo con las piezas una encima de otra; `nueva` dice cómo se pone cada pieza que abre columna. */
@@ -211,22 +212,40 @@ function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta)
             .filter(t => t.w <= columna.ancho + 0.001 && t.h + columna.alto <= rollo + 0.001)
             // Lo que queda sin usar a lo largo de la columna junto a la pieza: una E.T. de 212 × 8 tumbada en una
             // columna de 212 no desperdicia nada; de pie, casi toda la columna.
-            .map(t => ({ i, t, resto: rollo - columna.alto - t.h, desperdicio: (columna.ancho - t.w) * t.h })),
+            .map(t => ({ i, t, resto: rollo - columna.alto - t.h, desperdicio: (columna.ancho - t.w) * t.h, alLado: false })),
         )
+        // Al lado de la última pieza si es igual y aún cabe en su fila: los dos cachos del cristal de AR2605220 en
+        // una fila de 9 encima de las E.T., no uno encima de otro (Iván, 23/10/2026).
+        .concat(columnas.flatMap((columna, i) => {
+          const fila = filaFinal(columna);
+          const ultima = fila.at(-1);
+          if (!ultima || ultima.pieza.id !== p.id) return [];
+          const usado = fila.reduce((s, f) => s + anchoEnFila(f), 0);
+          return opciones.filter(t => t.g === ultima.girada && usado + t.w <= columna.ancho + 0.001)
+            .map(t => ({ i, t, resto: rollo - columna.alto, desperdicio: 0, alLado: true }));
+        }))
         .sort((a, b) => a.desperdicio - b.desperdicio || a.resto - b.resto);
       let elegida = viables[0];
       if (!elegida) {
         opciones.sort((a, b) => (nueva(p) === 'estrecha' ? a.w - b.w || b.h - a.h : b.w - a.w || a.h - b.h));
         const t = opciones[0];
-        elegida = { i: columnas.length, t, resto: rollo - t.h, desperdicio: 0 };
+        elegida = { i: columnas.length, t, resto: rollo - t.h, desperdicio: 0, alLado: false };
         columnas.push({ ancho: t.w, alto: 0, piezas: [] });
       }
       const columna = columnas[elegida.i];
-      columna.piezas.push({ pieza: p, h: elegida.t.h, girada: elegida.t.g });
-      columna.alto += elegida.t.h;
+      columna.piezas.push({ pieza: p, h: elegida.t.h, girada: elegida.t.g, ...(elegida.alLado ? { alLado: true } : {}) });
+      if (!elegida.alLado) columna.alto += elegida.t.h;
     }
   }
   return columnas;
+}
+
+const anchoEnFila = (f: Columna['piezas'][number]) => mm(f.girada ? f.pieza.alto : f.pieza.ancho);
+/** La última fila de la columna: la última pieza apilada y las que tiene al lado. */
+function filaFinal(columna: Columna) {
+  let inicio = columna.piezas.length - 1;
+  while (inicio >= 0 && columna.piezas[inicio].alLado) inicio--;
+  return inicio < 0 ? [] : columna.piezas.slice(inicio);
 }
 
 /**
@@ -312,19 +331,29 @@ function colocar(
     for (const columna of columnas) {
       const ordenados = columna.piezas.filter(reordenable).sort((a, b) => codigo(b).localeCompare(codigo(a), 'es', { numeric: true }));
       columna.piezas = columna.piezas.map(t => (reordenable(t) ? ordenados.shift()! : t));
+      // Las filas de piezas juntas que no llenan la columna, arriba del todo, junto al orillo (como el corte a mano
+      // de AR2605220: los cachos encima de las E.T.). Lo que sobra queda seguido con el resto del rollo.
+      const filas: Array<Columna['piezas']> = [];
+      for (const t of columna.piezas) { if (t.alLado) filas.at(-1)!.push(t); else filas.push([t]); }
+      const incompleta = (f: Columna['piezas']) => f.length > 1 && f.reduce((s, t) => s + anchoEnFila(t), 0) < columna.ancho - 0.001;
+      columna.piezas = [...filas.filter(f => !incompleta(f)), ...filas.filter(incompleta)].flat();
     }
     let largo = 0;
     const sitios: Array<{ t: Columna['piezas'][number]; x: number; y: number; c: number; xc: number; anchoColumna: number; junta?: boolean }> = [];
     columnas.forEach((columna, c) => {
-      let y = 0;
-      for (const t of columna.piezas) { sitios.push({ t, x: largo, y, c, xc: largo, anchoColumna: columna.ancho }); y += t.h; }
+      let y = 0, x = largo, alto = 0;
+      for (const t of columna.piezas) {
+        if (t.alLado) x += anchoEnFila(sitios.at(-1)!.t);
+        else { y += alto; x = largo; alto = t.h; }
+        sitios.push({ t, x, y, c, xc: largo, anchoColumna: columna.ancho });
+      }
       largo += columna.ancho;
     });
     // Las piezas iguales en fila que son más estrechas que su columna (los cachos de pie encima de las E.T.) van
     // pegadas, compartiendo el corte, y no sueltas con un hueco cada una (Iván, 22/10/2026, AR2605134).
     const ancho = (s: (typeof sitios)[number]) => mm(s.t.girada ? s.t.pieza.alto : s.t.pieza.ancho);
     for (const s of sitios) {
-      if (s.junta || ancho(s) >= s.anchoColumna - 0.001) continue;
+      if (s.junta || s.t.alLado || ancho(s) >= s.anchoColumna - 0.001) continue;
       const fila = [s];
       while (true) {
         const ultima = fila.at(-1)!;
@@ -343,7 +372,7 @@ function colocar(
     // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
     // Las piezas juntadas cuentan con su columna entera: el sitio que dejan a la derecha no se da por libre.
     if (ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
-      const ocupadas = sitios.map(s => ({ x: s.xc, y: s.y, ancho: s.junta ? s.anchoColumna : ancho(s), hueco: s.t.h }));
+      const ocupadas = sitios.map(s => ({ x: s.junta ? s.xc : s.x, y: s.y, ancho: s.junta ? s.anchoColumna : ancho(s), hueco: s.t.h }));
       colocadas.push(...sacosDeStock(ocupadas, rollo, ofStock, entidades, grupo[0].material, grupo[0].rollo));
     }
     const titulo =

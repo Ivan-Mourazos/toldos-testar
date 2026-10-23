@@ -92,7 +92,11 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
     const cotasCorte = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 23) < 95);
     for (const c of cortes) {
       const muestra = c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
-      const medidas = muestra ? [c.colocadas[0].pieza.ancho, c.colocadas[0].pieza.alto] : [c.anchoRollo / 10, c.largo / 10];
+      // La lona se acota por lo que ocupan sus piezas, no por el rollo, como en el plano a mano de AR2604638 (285 de
+      // un rollo de 300) y en el de AR2605220 (278,8).
+      const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
+      const medidas = muestra ? [c.colocadas[0].pieza.ancho, c.colocadas[0].pieza.alto] : [ocupado, c.largo / 10];
+      if (!muestra) expect(ocupado).toBeLessThan(c.anchoRollo / 10);
       for (const m of medidas) expect(cotasCorte.some(r => Math.abs(numero(r, 42) - m) < 0.01), `medida ${m}`).toBe(true);
     }
     expect(ent.some(r => r.tipo === 'MTEXT' && valor(r, 1) === 'TRANSP. 1000MI')).toBe(true);

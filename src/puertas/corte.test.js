@@ -109,6 +109,21 @@ describe('Corte de puertas', () => {
     expect(textosPieza.some(t => t.valor.includes('REVÉS'))).toBe(false);
     expect(textosPieza.some(t => t.valor === '0232309' && t.h === 200)).toBe(true);
   });
+  it('los cachos iguales van en fila encima de las E.T. y no uno encima de otro (Iván, 23/10/2026, AR2605220)', () => {
+    const p = pedido();
+    Object.assign(p.elementos[0].input, { frente: 366, alto: 410, of: '0233291', color: 'AZUL 5010' });
+    p.elementos[0].input.enrollable = { T: 229, D: 60, margen: 8, empates: [] };
+    p.elementos[0].input.entradas = [50, 121, 181, 231].map(altura => ({ altura, diametro: 30, largo: 366, alto: 8, huecos: [] }));
+    const lona = generarCortePuertas(p, { ofStockSacos: '0230811' }).cortes.find(c => c.material === 'LAC900 AZUL 5010');
+    expect(lona.largo).toBe(7320);
+    const cachos = lona.colocadas.filter(k => k.pieza.clase === 'cacho');
+    // De abajo arriba: A1 (236,25), cuatro E.T. de 8 y los dos cachos de 56,5 × 9 juntos, hasta 277,25.
+    expect(cachos.map(k => [k.x, k.y])).toEqual([[0, 2682.5], [565, 2682.5]]);
+    const entradas = lona.colocadas.filter(k => k.pieza.clase === 'entrada').map(k => k.y).sort((a, b) => a - b);
+    expect(entradas).toEqual([2362.5, 2442.5, 2522.5, 2602.5]);
+    const ocupado = Math.max(...lona.colocadas.map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)));
+    expect(ocupado).toBe(2787.5);
+  });
   it('sin OF dibuja SIN OF y no crea archivo ni aun con un pedido identificado', () => {
     const p=pedido(); p.elementos[0].input.of='';
     const r=generarCortePuertas(p);
