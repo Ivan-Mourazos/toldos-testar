@@ -7,7 +7,8 @@ describe('Filas de huecos individuales del pedido AR2604906', () => {
   // plegables/configuraciones/configuraciones.json: alzado, seis cristales X6 y dos paños.
   it('conserva las seis ventanas 116 × 35, cristales 120 × 39 y dos paños 253 / 260', () => {
     const p = base('PUERTAPLE',530,500);
-    p.apilable = {pie:45,pasos:Array(7).fill(55),cabecera:70,bolsillo:24,saco:80,doble:false,empates:[5]};
+    // El saco de 80 de entonces se cortaba de 30 y quedaba de 11: con la regla del 23/10/2026 es el de 100.
+    p.apilable = {pie:45,pasos:Array(7).fill(55),cabecera:70,bolsillo:24,saco:100,doble:false,empates:[5]};
     p.entradas = [45,100,155,210,265,320,375,430].map(altura => ({altura,largo:530,alto:12,diametro:30,huecos:[]}));
     p.ventanas = [110,165].flatMap(y => [53,207,361].map(x => ({x,y,ancho:116,alto:35,radio:2,radioCristal:4})));
     const r = calcularPuerta(p);

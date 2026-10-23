@@ -4,6 +4,7 @@ import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta } from '../../puertas/calcular.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
+import { medidasSaco } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { OrderActions } from '../components/OrderActions';
@@ -100,9 +101,11 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           <Numero titulo="Bolsillo superior (cm)" valor={p.apilable.bolsillo} cambiar={v=>cadena({bolsillo:v??0})}/>
           <Lista titulo="Pasos entre tubos (cm)" valores={p.apilable.pasos} cambiar={v=>cadena({pasos:v})} ayuda="Un valor por tramo, de abajo arriba, separado con ;"/>
           <fieldset className="puerta-control" disabled={p.apilable.doble}>
-            <SelectField label="Saco útil" value={p.apilable.saco?.toString()??''} options={['80','120']} allowEmpty emptyLabel="Según dibujo…" placeholder="Según dibujo…" optionLabel={v=>v==='80'?'80 mm · corte 30 cm':v==='120'?'120 mm · corte 32 cm':'Según dibujo…'} onChange={v=>cadena({saco:v?Number(v) as 80|120:null})}/>
+            <Numero titulo="Saco útil del pedido (mm)" valor={p.apilable.saco} cambiar={v=>cadena({saco:v})}/>
           </fieldset>
-          <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked,...(e.target.checked?{saco:80 as const}:{})})}/>Doble saco</label>
+          <SegmentedField label="Pestaña del saco por el revés" value={p.apilable.ladoPestana==='derecha'?'Derecha':'Izquierda'} options={['Izquierda','Derecha']} onChange={v=>cadena({ladoPestana:v==='Derecha'?'derecha':'izquierda'})}/>
+          <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked,...(e.target.checked?{saco:80}:{})})}/>Doble saco</label>
+          {p.apilable.saco!==null&&!p.apilable.doble&&(()=>{const s=medidasSaco(p.apilable.saco);return <p className="puerta-ayuda">Rematado {num(s.rematado)} cm (1 cm más que el pedido) · corte {num(s.corte)} cm · pestaña 10 × {num(s.altoPestana)}. En el plano pone «SACO DE {p.apilable.saco}».</p>;})()}
         </div></fieldset>}
         {p.modelo==='PUERTAUTO'&&<fieldset><legend>Autorreparable</legend><p className="puerta-ayuda">Saco fijo de 120 · corte 32 cm. Dos entradas (F + 11) × 21. Cuerpo H − 8,5; se añaden 2 cm por empate.</p>
           <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.autorreparable.espaciadorCentral)} onChange={e=>set('autorreparable',{...p.autorreparable,espaciadorCentral:e.target.checked})}/>Espaciador central (líneas verticales en medio del dibujo)</label>

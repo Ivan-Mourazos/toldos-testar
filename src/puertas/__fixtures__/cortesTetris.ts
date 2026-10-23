@@ -23,7 +23,8 @@ export function pedidosTetris() {
   for (const f of reales.apilables) {
     const p = base('PUERTAPLE', f.frente, f.alto);
     p.of = f.of;
-    p.apilable = { ...p.apilable, pie: f.pie, pasos: f.pasos, cabecera: f.cabecera, empates: f.empates, saco: 80 };
+    // El saco de 80 de entonces se cortaba de 30 y quedaba de 11: con la regla del 23/10/2026 es el de 100.
+    p.apilable = { ...p.apilable, pie: f.pie, pasos: f.pasos, cabecera: f.cabecera, empates: f.empates, saco: 100 };
     p.entradas = alturasTubos(p).map(altura => ({ altura, diametro: 30, largo: f.frente, alto: 12, huecos: [] }));
     p.ventanas = f.filas.flatMap(([x, y, ancho, alto, n, pilar]) => Array.from({ length: n }, (_, i) => ({ x: x + i * (ancho + pilar), y, ancho, alto, radio: 2, radioCristal: 4 })));
     pedidos.push(pedidoDe(f.pedido, p));

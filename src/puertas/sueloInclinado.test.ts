@@ -6,13 +6,14 @@ import { geometriaAlzado } from './alzado.ts';
 import { dibujarAlzadoTaller } from './planoTaller.ts';
 import { generarCortePuertas } from './corte.ts';
 import { leerPedidoPuertas } from './pedido.ts';
+import { medidasSaco } from './saco.ts';
 import type { Punto } from './tipos.ts';
 
 function puerta5035(i = 0) {
   const f = fixture.puertas[i], p = base('PUERTAPLE', f.frente, f.altoIzquierdo);
   p.of = f.of; p.color = 'GRIS 7038';
-  // Saco 80 del dibujo de Iván; la discrepancia con el 110 del pedido queda documentada.
-  p.apilable = { pie:f.pieIzquierdo, pasos:f.pasos, cabecera:f.cabecera, bolsillo:24, saco:80, doble:false, empates:[1,4],
+  // Saco útil 110 del pedido (Iván, 23/10/2026): rematado 12, corte 32.
+  p.apilable = { pie:f.pieIzquierdo, pasos:f.pasos, cabecera:f.cabecera, bolsillo:24, saco:fixture.sacoUtilPedidoMm, doble:false, empates:[1,4],
     sueloInclinado:{altoIzquierdo:f.altoIzquierdo, altoDerecho:f.altoDerecho} };
   p.entradas = alturasTubos(p).map(altura=>({altura,diametro:30,largo:p.frente,alto:12,huecos:huecosEntrada(p.frente,30)}));
   return p;
@@ -25,8 +26,8 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
     expect(r.avisos.filter(a=>a.nivel==='error')).toEqual([]);
     const [a,b,c,d]=panos[0].contorno;
     expect(b[1]-a[1]).toBeCloseTo(f.altoIzquierdo-f.altoDerecho);
-    expect(d[1]-a[1]).toBeCloseTo(f.pieIzquierdo+6-11);
-    expect(c[1]-b[1]).toBeCloseTo(f.pieDerecho+6-11);
+    expect(d[1]-a[1]).toBeCloseTo(f.pieIzquierdo+6-12);
+    expect(c[1]-b[1]).toBeCloseTo(f.pieDerecho+6-12);
     for(const x of panos.slice(1)) expect(x.contorno).toEqual([[0,0],[x.ancho,0],[x.ancho,x.alto],[0,x.alto]]);
     const soldadura=panos[0].marcas.find(m=>Math.abs(m[2]-m[0])>p.frente/2&&Math.abs(m[1]-m[3])>0.01);
     if(f.altoIzquierdo!==f.altoDerecho) {
@@ -40,7 +41,7 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
     expect(largo(a,b)).toBeCloseTo(Math.hypot(p.frente,diferencia),3);
     expect(b[1]-a[1]).toBeCloseTo(diferencia);
     expect(b[0]).toBe(c[0]); expect(a[0]).toBe(d[0]);
-    expect(c[1]-b[1]).toBe(30); expect(d[1]-a[1]).toBe(30);
+    expect(c[1]-b[1]).toBe(32); expect(d[1]-a[1]).toBe(32);
     expect(r.alternativasSaco!.partido).toHaveLength(2);
     for(const mitad of r.alternativasSaco!.partido) {
       const [a,b,c]=mitad.contorno;
@@ -48,7 +49,7 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
       expect((b[1]-a[1])/(b[0]-a[0])).toBeCloseTo(diferencia/p.frente,3);
     }
   });
-  it.each([80,120] as const)('admite saco %s y doble sin perder la pestaña',saco=>{
+  it.each([80,110,120])('admite saco %s y doble sin perder la pestaña',saco=>{
     const p=puerta5035(); p.apilable.saco=saco;
     for(const doble of [false,...saco===80?[true]:[]]) {
       p.apilable.doble=doble;
@@ -56,6 +57,35 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
       expect(s.contorno).toHaveLength(8); expect(b[0]).toBe(c[0]);
       expect((b[1]-a[1])/(b[0]-a[0])).toBeCloseTo(15/432,3);
     }
+  });
+  it.each([[80,9,26,11],[110,12,32,14],[120,13,34,15]])('el saco %s queda rematado de %s, cortado de %s y pestaña de %s',(util,rematado,corte,altoPestana)=>{
+    expect(medidasSaco(util)).toEqual({rematado,corte,altoPestana});
+    const p=puerta5035(3); p.apilable.saco=util;
+    const r=calcularPuerta(p), [a,,,d]=r.piezas.filter(x=>x.clase==='pano')[0].contorno;
+    expect(d[1]-a[1]).toBeCloseTo(fixture.puertas[3].pieIzquierdo+6-rematado);
+    expect(r.alternativasSaco!.entero[0].alto).toBe(corte);
+    expect(dibujarAlzadoTaller(p,'A').lienzo.textos.some(t=>t.valor===`SACO DE ${util}`)).toBe(true);
+  });
+  it.each([0,3])('la pestaña a la derecha da la vuelta al saco entero y al partido (puerta %s)',i=>{
+    const izquierda=calcularPuerta(puerta5035(i)), p=puerta5035(i); p.apilable.ladoPestana='derecha';
+    const r=calcularPuerta(p), s=r.alternativasSaco!.entero[0], ancho=s.ancho;
+    const pestana=(x:typeof s)=>x.contorno.filter(([u])=>u!==0&&u!==x.ancho).map(([u])=>u);
+    expect(Math.min(...pestana(izquierda.alternativasSaco!.entero[0]))).toBeGreaterThan(0);
+    expect(Math.max(...pestana(s))).toBeLessThan(ancho);
+    expect(s.contorno.some(([u])=>u===ancho)).toBe(true);
+    expect(pestana(s).every(u=>u>=ancho-10)).toBe(true);
+    // Mismo bajo inclinado: la cabeza izquierda del cuerpo sigue más abajo que la derecha si baja el suelo.
+    const [mitadIzquierda,mitadDerecha]=r.alternativasSaco!.partido;
+    expect(mitadIzquierda.nombre).toContain('sin pestaña'); expect(mitadDerecha.nombre).toContain('con pestaña');
+    expect(mitadDerecha.unionesCorte!.every(u=>u.x<mitadDerecha.ancho/2)).toBe(true);
+    expect(mitadIzquierda.unionesCorte!.every(u=>u.x>mitadIzquierda.ancho/2)).toBe(true);
+    const pendiente=(x:typeof s)=>{const largos=x.contorno.map((q,k)=>[q,x.contorno[(k+1)%x.contorno.length]] as const).filter(([u,v])=>Math.abs(v[0]-u[0])>x.ancho/2);const [u,v]=largos.reduce((m,t)=>t[0][1]+t[1][1]<m[0][1]+m[1][1]?t:m);return (v[1]-u[1])/(v[0]-u[0]);};
+    const esperada=(p.apilable.sueloInclinado!.altoIzquierdo-p.apilable.sueloInclinado!.altoDerecho)/p.frente;
+    for(const x of [s,mitadIzquierda,mitadDerecha]) expect(pendiente(x)).toBeCloseTo(esperada,3);
+    const l=dibujarAlzadoTaller(p,'A').lienzo;
+    expect(l.lineas.some(t=>t.capa==='referencias'&&(t.x1>p.frente||t.x2>p.frente))).toBe(true);
+    expect(l.lineas.some(t=>t.capa==='referencias'&&(t.x1<0||t.x2<0)&&t.y1<-p.alto-40)).toBe(false);
+    expect(leerPedidoPuertas(pedidoDe('AR2605035',p)).elementos[0].input.apilable.ladoPestana).toBe('derecha');
   });
   it('rechaza la diferencia que consume el pie o impide soldar el saco',()=>{
     const p=puerta5035(); p.apilable.sueloInclinado!.altoDerecho=350;

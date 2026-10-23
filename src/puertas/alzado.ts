@@ -1,6 +1,6 @@
 import { alturasTubos } from './calcular.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
-import { desnivelSuelo, rotuloSaco } from './saco.ts';
+import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
@@ -97,7 +97,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   const ejesVentanal = [T];
   for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
   const D = p.enrollable.D;
-  const hSaco = enr ? 13 : auto ? 14 : p.apilable.saco === 120 ? 12 : 11;
+  const hSaco = enr ? 13 : auto ? 14 : sacoApilable(p).rematado;
 
   // Cadena derecha de pasos verticales (suma exactamente H; sin duplicar H).
   const hitosDerecha = ple
@@ -133,9 +133,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
 
   // Pieza desplegada del saco debajo del alzado
   const yDesplegado = Math.max(H,altoDerecho) + 48;
-  const hCorteSaco = enr ? 26 : auto ? 32 : p.apilable.doble ? 37 : p.apilable.saco === 120 ? 32 : 30;
+  const hCorteSaco = enr ? 26 : auto ? 32 : p.apilable.doble ? 37 : sacoApilable(p).corte;
   const pestanaSaco = enr ? 6.5 : auto ? 0 : p.apilable.doble ? 12 : 10;
-  const altoPestana = enr ? 11 : auto ? 0 : p.apilable.doble ? 14 : p.apilable.saco === 120 ? 14 : 13;
+  const altoPestana = enr ? 11 : auto ? 0 : p.apilable.doble ? 14 : sacoApilable(p).altoPestana;
   const wSaco = ple && p.apilable.doble ? Math.max(20, F - 6) : F;
 
   const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado);
@@ -361,12 +361,31 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   }
   if (auto) nota('CREMALLERA SOLDADA HASTA MITAD DE SACO', F / 2, y1 + 47, Math.min(10, F / 32));
 
+  const derecha = pestanaDerecha(p);
+  if (derecha) {
+    // Pestaña a la derecha: la pieza desplegada dada la vuelta; las letras no se espejan.
+    const x = (v: number) => wSaco - v;
+    const ancla = (a: TextoAlzado['ancla']) => a === 'start' ? 'end' : a === 'end' ? 'start' : a;
+    for (const f of formas.slice(inicioDesplegado)) {
+      if (f.tipo === 'poligono' || f.tipo === 'polilinea') f.puntos = f.puntos.map(([u, v]) => [x(u), v]);
+      else if (f.tipo === 'linea') { f.x1 = x(f.x1); f.x2 = x(f.x2); }
+      else if (f.tipo === 'texto') {
+        f.x = x(f.x); f.ancla = ancla(f.ancla);
+        const g = f.taller?.guia; if (g) { g[0] = x(g[0]); g[2] = x(g[2]); }
+      } else if (f.tipo === 'cota') {
+        if (esVertical(f)) { f.x1 = x(f.x1); f.x2 = x(f.x2); f.linea = x(f.linea); }
+        else [f.x1, f.x2] = [x(f.x2), x(f.x1)];
+        f.texto.x = x(f.texto.x); f.texto.ancla = ancla(f.texto.ancla);
+      } else if (f.tipo === 'rect') f.x = x(f.x + f.ancho);
+    }
+  }
+
   if (desnivel) {
     const mover = (x:number,y:number) => y + Math.max(0,desnivel) - desnivel*x/F;
     for (const f of formas.slice(inicioDesplegado)) {
       if (f.tipo==='poligono' && f.clase==='puerta-saco-pieza') {
         const saco = resultado.alternativasSaco?.entero[0] ?? resultado.piezas.find(x=>x.clase==='saco');
-        if(saco) f.puntos=saco.contorno.map(([x,y])=>[x-pestanaSaco,yDesplegado+saco.alto-y]);
+        if(saco) f.puntos=saco.contorno.map(([x,y])=>[x-(derecha?0:pestanaSaco),yDesplegado+saco.alto-y]);
       } else if (f.tipo==='poligono'||f.tipo==='polilinea') f.puntos=f.puntos.map(([x,y])=>[x,mover(x,y)]);
       else if (f.tipo==='linea') { f.y1=mover(f.x1,f.y1); f.y2=mover(f.x2,f.y2); }
       else if (f.tipo==='texto') {

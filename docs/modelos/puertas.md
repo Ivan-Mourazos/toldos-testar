@@ -61,7 +61,7 @@ Las ventanas se pueden introducir una a una o por filas de columnas iguales. Tie
 
 ### Saco sencillo y doble saco
 
-Saco útil 80 → corte de 30, pestaña 10 × 13. Saco útil 120 → corte de 32, pestaña 10 × 14. La pestaña queda a 2 de un borde. Si el cuerpo es negro, se coloca el saco en el corte de ese material. Con otro color se muestran entero y partido como **alternativas del mismo saco**, sin sumarlas a la cantidad nominal. Al partir, cada mitad incorpora 1 para la unión de 2; solo una lleva la pestaña.
+**Saco del pedido (Iván, 23/10/2026):** se pone el saco útil que indica el pedido, en mm, y rematado queda 1 cm más grande: 80 → 9 cm, 110 → 12 cm, 120 → 13 cm. Corte = 2 × rematado + 8 y pestaña 10 × (rematado + 2): 80 → corte 26, pestaña 10 × 11; 110 → 32 y 10 × 14; 120 → 34 y 10 × 15. Antes el de 80 se cortaba de 30 y quedaba de 11 (se daba de más); el paño de abajo crece lo que encoge el saco. En el plano se rotula el saco del pedido («SACO DE 110»), no el rematado. Las pruebas que copian cortes reales anteriores usan el saco de 100, que es el rematado de 11 de entonces. La pestaña queda a 2 de un borde y **va al lado que pinte el pedido**, mirando por el revés (izquierda por defecto): con la derecha, el saco entero, el partido (la mitad con pestaña pasa a la derecha), el plano y el alzado se dan la vuelta, también con suelo inclinado. El doble saco no cambia. Si el cuerpo es negro, se coloca el saco en el corte de ese material. Con otro color se muestran entero y partido como **alternativas del mismo saco**, sin sumarlas a la cantidad nominal. Al partir, cada mitad incorpora 1 para la unión de 2; solo una lleva la pestaña.
 
 **Doble saco, corrección definitiva de Iván, punto 15:** el saco normal de 80 queda incorporado al paño. Aparte se corta un **envoltorio** negro de (F − 6) × 37, con pestaña 12 × 14. Se centra al ancho de la puerta, se dobla a la mitad y se suelda 2 para envolver el saco normal. No hay una tira de 12 ni un saco de 120 añadido. Los ejemplos AR2601036, AR2600520 y AR2600236 tienen un empate de 12: suman H + 37,5, que ya incluye esa entrada.
 
@@ -704,10 +704,7 @@ cabezas verticales de 30 y desnivel de 15; su caja con pestaña es **442 × 45 c
 Con empate manual en el primer tubo, el paño inferior mide 41 / 26, que incorpora
 6 cm de la entrada y descuenta los 11 del saco a los pies terminados 46 / 31.
 
-**Q-PU05, pendiente de Iván:** las cuatro páginas del pedido dicen «SACO NEGRO ÚTIL
-110 mm», pero el dibujo empezado por Iván indica «SACO DE 80» y corte 30. El
-coordinador indica usar el saco de 80 para este contraste y consultar la discrepancia
-con Iván. No se crea una regla ni una opción de saco 110.
+**Q-PU05, contestada por Iván (23/10/2026):** se hace el saco del pedido. AR2605035 lleva el saco útil 110 («SACO NEGRO ÚTIL 110 mm»): rematado 12, corte 32, pestaña 10 × 14, y la pestaña a la derecha como en la hoja. Con el saco de 110 el paño inferior de la OF 0233015 descuenta 12 en vez de 11.
 
 Capturas revisadas del configurador y del alzado, claro y oscuro a 1280×720 y
 1600×1000, junto con las medidas y los DXF de prueba, en

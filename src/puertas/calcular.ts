@@ -3,7 +3,7 @@ import { repartirPanos, type RepartoPanos } from './empates.ts';
 import { marcasBolsillo } from './bolsillo.ts';
 import { numerarBorde } from './unionesCorte.ts';
 import { calcularSystemDock } from './systemDock.ts';
-import { desnivelSuelo, inclinarSaco } from './saco.ts';
+import { desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
@@ -185,14 +185,14 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       aviso('SUELO_ALTOS', 'Revisa los altos izquierdo y derecho; el alto de la cadena debe coincidir con el izquierdo.');
     if (suelo && Math.min(a.pie,a.pie-desnivel)<=0)
       aviso('SUELO_PANO', 'La diferencia de altos se come el paño de abajo: revisa las dos cadenas del pedido.');
-    else if (suelo && Math.min(a.pie,a.pie-desnivel)-(p.entradas[0]?.alto??12)/2 <= (a.saco===120?12:11)+2)
+    else if (suelo && Math.min(a.pie,a.pie-desnivel)-(p.entradas[0]?.alto??12)/2 <= sacoApilable(p).rematado+2)
       aviso('SUELO_SACO', 'No queda sitio para el saco y su soldadura bajo la primera entrada: revisa los altos.');
     if (!positivo(a.pie) || !positivo(a.cabecera) || a.pasos.some(x => !positivo(x)) || Math.abs(alturas.at(-1)!+a.cabecera-p.alto) > 0.05) aviso('CADENA', `Pie, pasos y cabecera suman ${numero(alturas.at(-1)!+a.cabecera)} cm; deben sumar ${numero(p.alto)} cm.`);
-    if (!a.saco) aviso('SACO', 'Elige saco útil de 80 o 120 según el dibujo.');
+    if (!a.saco) aviso('SACO', 'Pon el saco útil del pedido, en mm (80, 110, 120…).');
     if(a.doble && a.saco!==80) aviso('SACO_DOBLE','El doble saco lleva el saco normal de 80 integrado y un envoltorio aparte.');
     if (p.entradas.length !== alturas.length) aviso('ENTRADAS', 'Introduce una entrada por cada tubo de la cadena.');
     if (!positivo(a.bolsillo)) aviso('BOLSILLO', 'Confirma el bolsillo superior del dibujo.');
-    const bajo = a.doble ? -13.5 : a.saco === 120 ? 12 : 11;
+    const bajo = a.doble ? -13.5 : sacoApilable(p).rematado;
     const arriba = p.alto + a.bolsillo / 2;
     const entradaEn = (i: number) => p.entradas[i-1]?.alto ?? 12;
     let empates = a.empates===null?null:[...a.empates];
@@ -225,9 +225,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       const m = p.margenMarcas;
       x.marcas.push([m,bajoEn(m)+2,ancho-m,bajoEn(ancho-m)+2]);
     }
-    const h = a.doble ? 37 : a.saco === 120 ? 32 : 30;
+    const s = sacoApilable(p), h = a.doble ? 37 : s.corte;
     const w = a.doble ? p.frente-6 : ancho;
-    const pestana = a.doble ? 12 : 10, altoPestana = a.doble ? 14 : a.saco === 120 ? 14 : 13;
+    const pestana = a.doble ? 12 : 10, altoPestana = a.doble ? 14 : s.altoPestana;
     const entero = sacoConPestana(w,h,pestana,altoPestana,2,a.doble?'Envoltorio del doble saco':'Saco');
     if(a.doble) {
       entero.textos.push({x:pestana+2,y:5,valor:'CENTRAR EL SACO · DOBLAR A LA MITAD · SOLDAR 2 CM'});
@@ -240,6 +240,12 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       numerarBorde(izquierdo,++numeroUnion,'derecha');
       numerarBorde(derecho,numeroUnion,'izquierda');
       r.alternativasSaco = { entero: [entero], partido: [izquierdo,derecho] };
+    }
+    if (pestanaDerecha(p)) {
+      espejarPieza(entero);
+      const mitades = r.alternativasSaco?.partido;
+      // La mitad con pestaña pasa a la derecha; la lista sigue de izquierda a derecha.
+      if (mitades) { mitades.forEach(espejarPieza); mitades.reverse(); }
     }
     if (desnivel) {
       inclinarSaco(entero,pendiente);

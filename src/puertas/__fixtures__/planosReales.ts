@@ -25,7 +25,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
   };
   if (pedido === 'AR2605036') return {
     ...base('PUERTAPLE', 620, 450), of: '0233008', color: 'BLANCO 9016', rollo: 300,
-    apilable: { pie: 37, pasos: [49, 49, 49, 49, 49, 49, 49], cabecera: 70, bolsillo: 24, saco: 80, doble: false, empates: [6] },
+    apilable: { pie: 37, pasos: [49, 49, 49, 49, 49, 49, 49], cabecera: 70, bolsillo: 24, saco: 100, doble: false, empates: [6] }, // El saco de 80 de entonces se cortaba de 30 y quedaba de 11: con la regla del 23/10/2026 es el de 100.
     entradas: [37, 86, 135, 184, 233, 282, 331, 380].map((altura, i) => ({
       altura, largo: 620, alto: 12, diametro: 30,
       huecos: huecosEntrada(620, 30, i % 2 === 0 ? [29, 212, 396, 579] : []),
@@ -38,7 +38,7 @@ export function puertaPlanoReal(pedido: string): Puerta {
   };
   if (pedido === 'AR2604906') return {
     ...base('PUERTAPLE', 530, 500), of: '0232827', color: 'GRIS 7037',
-    apilable: { pie: 45, pasos: [55, 55, 55, 55, 55, 55, 55], cabecera: 70, bolsillo: 24, saco: 80, doble: false, empates: [5] },
+    apilable: { pie: 45, pasos: [55, 55, 55, 55, 55, 55, 55], cabecera: 70, bolsillo: 24, saco: 100, doble: false, empates: [5] }, // El saco de 80 de entonces se cortaba de 30 y quedaba de 11: con la regla del 23/10/2026 es el de 100.
     entradas: [45, 100, 155, 210, 265, 320, 375, 430].map((altura, i) => ({ altura, largo: 530, alto: 12, diametro: 30,
       huecos: huecosEntrada(530, 30, i % 2 === 0 ? [29, 182, 336, 489] : []) })),
     ventanas: [110, 165].flatMap(y => [53, 207, 361].map(x => ({ x, y, ancho: 116, alto: 35, radio: 2, radioCristal: 4 }))),

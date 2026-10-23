@@ -35,7 +35,11 @@ export interface Puerta {
     /** Ventanales consecutivos bajo el primero, separados por E.T. a las dos caras. */
     ventanales?: Array<{ D: number; margen: number }>;
     empates: Array<{ pano: 'superior' | 'inferior'; altura: number; solape: number; tubo?:number }> };
-  apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number; saco: 80 | 120 | null; doble: boolean; empates: number[] | null;
+  apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number;
+    /** Saco útil del pedido en mm (80, 110, 120…); se remata 1 cm más grande. */
+    saco: number | null; doble: boolean; empates: number[] | null;
+    /** Lado de la pestaña del saco mirando por el revés, como el pedido; sin poner, izquierda. */
+    ladoPestana?: 'izquierda' | 'derecha';
     /** Altos terminados mirando por el revés, como el alzado y la hoja de Portanova. La cadena común toma el bajo izquierdo como origen. */
     sueloInclinado?: { altoIzquierdo: number; altoDerecho: number } };
   autorreparable: { empates: number[]; espaciadorCentral?: boolean; distanciaEspaciador?: number };

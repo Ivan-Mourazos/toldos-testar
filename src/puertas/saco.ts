@@ -7,6 +7,32 @@ export function desnivelSuelo(p: Puerta): number {
     ? s.altoIzquierdo - s.altoDerecho : 0;
 }
 
+/** Iván, 23/10/2026: el saco útil del pedido (mm) queda rematado con 1 cm de margen (80 → 9 cm, 110 → 12 cm).
+ * Antes el de 80 se cortaba de 30 y quedaba de 11. El corte es dos veces el rematado más 8 y la pestaña, el
+ * rematado más 2, como los de 30/13 (rematado 11) y 32/14 (rematado 12) de siempre. El plano rotula el del pedido.
+ */
+export function medidasSaco(utilMm: number) {
+  const rematado = utilMm / 10 + 1;
+  return { rematado, corte: 2 * rematado + 8, altoPestana: rematado + 2 };
+}
+
+/** Saco simple de la apilable; sin elegir, el de 80, que es el habitual. */
+export const sacoApilable = (p: Puerta) => medidasSaco(p.apilable.saco ?? 80);
+
+/** Pestaña del saco a la derecha mirando por el revés, como la pinte el pedido (Iván, 23/10/2026). */
+export const pestanaDerecha = (p: Puerta) => p.modelo === 'PUERTAPLE' && p.apilable.ladoPestana === 'derecha';
+
+/** Da la vuelta a la pieza de izquierda a derecha, sin moverla de su caja. */
+export function espejarPieza(pieza: PiezaPuerta): void {
+  const x = (v: number) => pieza.ancho - v;
+  pieza.contorno = pieza.contorno.map(([a, b]) => [x(a), b] as [number, number]).reverse();
+  pieza.marcas = pieza.marcas.map(([x1, y1, x2, y2]) => [x(x1), y1, x(x2), y2]);
+  pieza.textos = pieza.textos.map(t => ({ ...t, x: x(t.x) }));
+  pieza.unionesCorte = pieza.unionesCorte?.map(t => ({ ...t, x: x(t.x) }));
+  pieza.huecos = pieza.huecos.map(h => ({ ...h, x: pieza.ancho - h.x - h.ancho,
+    abierto: h.abierto === 'izquierda' ? 'derecha' : h.abierto === 'derecha' ? 'izquierda' : undefined }));
+}
+
 /** Cizalla vertical: conserva cabezas verticales, pestaña y ancho proyectado.
  * El lado largo mide hypot(ancho, desnivel); nunca se suma otra diagonal al ancho.
  * El origen sirve para continuar la misma pendiente en las mitades con solape.

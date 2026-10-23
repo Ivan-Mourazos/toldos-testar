@@ -162,7 +162,8 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
   it.each([
     // Renovadas por las correcciones de taller: huecos abiertos, marcas, rótulos y anclajes de cotas; la
     // autorreparable, también porque ahora sí se crea el estilo XERA 20 en la plantilla de toldos.
-    ['apilable', apilable, 'a41702883cc2ffc1dea649457250e6ead2695dbbe50026bb3357d50a81a14ad7'],
+    // Solo cambia el rótulo: «SACO DE 100» (saco del pedido, 23/10/2026) en vez de «SACO DE 80».
+    ['apilable', apilable, '476d26443cfa7e5cf81dda34cc54c608be392b4a85ea6a07bfdab0934f22dcff'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     ['autorreparable', autorreparable, '74251e7412de81b3344bd83eaedfff0637a1f93cd6645f7f251375ed01736f5f'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {

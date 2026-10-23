@@ -15,7 +15,8 @@ export function puerta4638(): Puerta {
 }
 export function apilable(): Puerta {
   const p = base('PUERTAPLE', 300, 350);
-  p.apilable = { pie: 40, pasos: [60, 60, 60, 60], cabecera: 70, bolsillo: 24, saco: 80, doble: false, empates: null };
+  // Saco de 100: el rematado de 11 de las huellas guardadas (antes, el de 80 cortado de 30).
+  p.apilable = { pie: 40, pasos: [60, 60, 60, 60], cabecera: 70, bolsillo: 24, saco: 100, doble: false, empates: null };
   p.entradas = [40, 100, 160, 220, 280].map(altura => ({ altura, diametro: 30, largo: 300, alto: 12, huecos: huecosEntrada(300, 30) }));
   p.ventanas = [{ x: 50, y: 120, ancho: 80, alto: 50, radio: 2, radioCristal: 4 }];
   return p;

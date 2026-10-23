@@ -1,6 +1,7 @@
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
+import { sacoApilable } from './saco.ts';
 
 export interface CajaTexto {
   x: number;
@@ -247,7 +248,7 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
           return { x: 0, y: H - t - alto / 2 - 1, ancho: F, alto: alto + 2 };
         });
 
-  const hSaco = p.modelo === 'PUERTAENR' ? 13 : p.modelo === 'PUERTAUTO' ? 14 : p.apilable.saco === 120 ? 12 : 11;
+  const hSaco = p.modelo === 'PUERTAENR' ? 13 : p.modelo === 'PUERTAUTO' ? 14 : sacoApilable(p).rematado;
   const cajaBolsillo: CajaTexto[] = p.bolsillo
     ? [
         {

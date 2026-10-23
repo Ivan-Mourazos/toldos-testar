@@ -61,7 +61,8 @@ describe('Despiece de puertas contrastado con medidas del bot (cm)', () => {
   });
   for (const f of reales.apilables) it(`apilable ${f.pedido}: paños, tubos y cristales`, () => {
     const p = base('PUERTAPLE', f.frente, f.alto);
-    p.apilable = { ...p.apilable, pie: f.pie, pasos: f.pasos, cabecera: f.cabecera, empates: f.empates, saco: 80 };
+    // El saco de 80 de entonces se cortaba de 30 y quedaba de 11: con la regla del 23/10/2026 es el de 100.
+    p.apilable = { ...p.apilable, pie: f.pie, pasos: f.pasos, cabecera: f.cabecera, empates: f.empates, saco: 100 };
     p.entradas = alturasTubos(p).map(altura => ({ altura, diametro: 30, largo: f.frente, alto: 12, huecos: [] }));
     p.ventanas = f.filas.flatMap(([x, y, ancho, alto, n, pilar]) => Array.from({ length: n }, (_, i) => ({ x: x + i * (ancho + pilar), y, ancho, alto, radio: 2, radioCristal: 4 })));
     const r = calcularPuerta(p);
@@ -158,7 +159,7 @@ describe('Comprobaciones y reglas confirmadas', () => {
     expect(r.piezas.filter(x => x.clase === 'saco')).toHaveLength(0);
     p.color = 'NEGRO 9005';
     expect(calcularPuerta(p).alternativasSaco).toBeNull();
-    expect(calcularPuerta(p).piezas.find(x => x.clase === 'saco')!.alto).toBe(32);
+    expect(calcularPuerta(p).piezas.find(x => x.clase === 'saco')!.alto).toBe(34); // Saco de 120: rematado 13, corte 34 (Iván, 23/10/2026).
   });
   it('rechaza huecos solapados, radios imposibles y entradas no positivas', () => {
     const p = base('PUERTAENR', 172, 314);

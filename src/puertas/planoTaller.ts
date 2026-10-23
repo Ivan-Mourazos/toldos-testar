@@ -3,7 +3,7 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { fusionarCortesPuertas } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
-import { desnivelSuelo, rotuloSaco } from './saco.ts';
+import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable } from './saco.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
@@ -72,11 +72,11 @@ function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number,
 }
 
 function dibujarSaco(l: Lienzo, p: Puerta) {
-  const destino = l, desnivel = desnivelSuelo(p);
-  if (desnivel) l = vacio();
+  const destino = l, desnivel = desnivelSuelo(p), derecha = pestanaDerecha(p);
+  if (desnivel || derecha) l = vacio();
   const ple = p.modelo === 'PUERTAPLE', doble = ple && p.apilable.doble;
-  const w = doble ? p.frente - 6 : p.frente, h = ple ? doble ? 37 : p.apilable.saco === 120 ? 32 : 30 : 32;
-  const pestaña = ple ? doble ? 12 : 10 : 0, hp = ple ? doble || p.apilable.saco === 120 ? 14 : 13 : 0;
+  const w = doble ? p.frente - 6 : p.frente, h = ple ? doble ? 37 : sacoApilable(p).corte : 32;
+  const pestaña = ple ? doble ? 12 : 10 : 0, hp = ple ? doble ? 14 : sacoApilable(p).altoPestana : 0;
   const ys = -p.alto - (ple ? 49.0879644349 : 40);
   contorno(l, 'referencias', pestaña ? [[0, ys], [w, ys], [w, ys - h], [0, ys - h], [0, ys - 2 - hp],
     [-pestaña, ys - 2 - hp], [-pestaña, ys - 2], [0, ys - 2]] : [[0, ys], [w, ys], [w, ys - h], [0, ys - h]]);
@@ -114,6 +114,17 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
   texto(l, material, w / 2, ys - h / 2, Math.min(10, w / 40));
   cota(l, 0, ys - h, w, ys - h, ys - h / 2, 'XERAL 5');
   cota(l, 0, ys - h, 0, ys, -25);
+  if (derecha) {
+    // Pestaña a la derecha: el mismo dibujo dado la vuelta; los textos van centrados y no se espejan.
+    const x = (v: number) => w - v;
+    for (const a of l.lineas) { a.x1 = x(a.x1); a.x2 = x(a.x2); }
+    for (const a of l.textos) a.x = x(a.x);
+    for (const a of l.sombreados) a.puntos = a.puntos.map(([u, v]): Punto => [x(u), v]);
+    for (const a of l.cotas) {
+      if (a.giro === 90) { a.x1 = x(a.x1); a.x2 = x(a.x2); a.d = x(a.d); }
+      else { [a.x1, a.x2] = [x(a.x2), x(a.x1)]; [a.y1, a.y2] = [a.y2, a.y1]; }
+    }
+  }
   if (desnivel) {
     const mover = (x:number,y:number) => y + desnivel*x/p.frente-Math.max(0,desnivel);
     for (const a of l.lineas) { a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2); }
@@ -124,8 +135,8 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
       a.valor=Math.hypot(a.x2-a.x1,a.y2-a.y1);
     }
     texto(l, `LARGO DIAGONAL ${num(Math.hypot(w,desnivel*w/p.frente))} CM · CABEZAS VERTICALES`, w/2,ys-h-Math.abs(desnivel)-35,7);
-    sumarLienzo(destino,l,0);
   }
+  if (l !== destino) sumarLienzo(destino,l,0);
   return ys - h - 48 - Math.abs(desnivel);
 }
 
@@ -133,7 +144,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra);
   const l = vacio(), F = p.frente, H = p.alto, ple = p.modelo === 'PUERTAPLE', r = calcularPuerta(p);
   const desnivel = desnivelSuelo(p), altoDerecho = H-desnivel;
-  const hSaco = ple ? p.apilable.saco === 120 ? 12 : 11 : 12;
+  const hSaco = ple ? sacoApilable(p).rematado : 12;
   const arriba = ple ? p.apilable.bolsillo / 2 : 3.5;
   rect(l, 'DISCO1', 0, -H + (ple && p.apilable.doble ? -13.5 : hSaco), F, H - hSaco + arriba + (ple && p.apilable.doble ? hSaco + 13.5 : 0));
   for (const y of [0, -H]) linea(l, 'referencias', 0, y, F, y);
