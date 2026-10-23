@@ -231,8 +231,9 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     for (const l of corte.lineas) linea(l.capa, l.x1 / 10, yRollo + l.y1 / 10, l.x2 / 10, yRollo + l.y2 / 10);
     for (const t of [...corte.textos, ...(opcion.textosExtra || [])]) {
       if (t.valor.includes(' · OF ')) continue;
-      // Los números de unión van en ROTULADOR y de 1 cm, como en el DXF del bot.
-      T.push({ ...t, capa: t.capa === 'ROTULADOR' ? 'ROTULADOR' : 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: Math.min(t.h / 10, 15) });
+      // Los números de unión van en ROTULADOR y de 1 cm, como en el DXF del bot. Los rótulos, del tamaño del bot,
+      // que ya los ajusta a su pieza (Iván, 24/10/2026: más grandes).
+      T.push({ ...t, capa: t.capa === 'ROTULADOR' ? 'ROTULADOR' : 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: t.h / 10 });
     }
     // Solo se habla de opciones cuando hay dos; "con sacos" solo si de verdad lleva sacos.
     const conSacos = sacosStock.length ? ' · CON SACOS' : '';
