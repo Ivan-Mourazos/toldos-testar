@@ -18,6 +18,8 @@ const num = (v: number) => v.toLocaleString('es-ES', { maximumFractionDigits: 2 
 const linea = (l: Lienzo, capa: string, x1: number, y1: number, x2: number, y2: number) => l.lineas.push({ capa, x1, y1, x2, y2 });
 const texto = (l: Lienzo, valor: string, x: number, y: number, h: number, giro = 0, capa = 'texto') =>
   l.textos.push({ capa, valor: capa === 'ROTULADOR' ? valor : textoSeguro(valor), x, y, h, centrado: true, giro });
+/** Cm entre sacos o cristales de la misma fila del corte: sitio para la cota de la derecha del saco partido. */
+const ENTRE_MUESTRAS = 80;
 function material(l: Lienzo, valor: string, ancho: number, y: number) {
   texto(l, valor, 0, y, Math.min(10, ancho * .95 / anchoArial(valor, 1)));
   Object.assign(l.textos.at(-1)!, { centrado: false, ancla: 4 });
@@ -366,37 +368,52 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
     if (muestra) {
       const unicas = new Map(c.colocadas.map(t => [t.pieza.id, t.pieza]));
       const lista = [...unicas.values()];
-      for (const [i, p] of lista.entries()) {
-        const y = techo - p.alto;
-        if (p.radio) {
-          // Como en el corte del bot: los tramos rectos en DISCO1 y los radios de las esquinas en CUTTER (Iván, 23/10/2026).
-          const r = Math.min(p.radio, p.ancho / 2, p.alto / 2), [w, h] = [p.ancho, p.alto];
-          for (const [x1, y1, x2, y2] of [[r, 0, w - r, 0], [w, r, w, h - r], [w - r, h, r, h], [0, h - r, 0, r]]) linea(l, 'DISCO1', x1, y + y1, x2, y + y2);
-          for (const [cx, cy, desde] of [[r, r, 180], [w - r, r, 270], [w - r, h - r, 0], [r, h - r, 90]]) l.arcos.push({ capa: 'CUTTER', x: cx, y: y + cy, r, desde, hasta: desde + 90 });
+      // Con varias puertas, los sacos y los cristales en la misma fila, hacia la derecha (Iván, 23/10/2026, AR2605035);
+      // las dos mitades de un saco partido, juntas una encima de otra.
+      const puertaDe = (p: (typeof lista)[number]) => p.id.split(':')[0];
+      const grupos: Array<typeof lista> = [];
+      for (const p of lista) {
+        const g = grupos.at(-1);
+        if (c.opcion === 'saco-partido' && g && puertaDe(g[0]) === puertaDe(p)) g.push(p); else grupos.push([p]);
+      }
+      let xo = 0, fondo = techo;
+      for (const g of grupos) {
+        const dibujo = vacio(); let arriba = techo;
+        for (const [i, p] of g.entries()) {
+          const y = arriba - p.alto;
+          if (p.radio) {
+            // Como en el corte del bot: los tramos rectos en DISCO1 y los radios de las esquinas en CUTTER (Iván, 23/10/2026).
+            const r = Math.min(p.radio, p.ancho / 2, p.alto / 2), [w, h] = [p.ancho, p.alto];
+            for (const [x1, y1, x2, y2] of [[r, 0, w - r, 0], [w, r, w, h - r], [w - r, h, r, h], [0, h - r, 0, r]]) linea(dibujo, 'DISCO1', x1, y + y1, x2, y + y2);
+            for (const [cx, cy, desde] of [[r, r, 180], [w - r, r, 270], [w - r, h - r, 0], [r, h - r, 90]]) dibujo.arcos.push({ capa: 'CUTTER', x: cx, y: y + cy, r, desde, hasta: desde + 90 });
+          }
+          else contorno(dibujo, 'DISCO1', p.contorno.map(([x, v]): Punto => [x, y + v]));
+          texto(dibujo, `X${p.multiplicador ?? p.cantidad}`, p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto / 2));
+          for (const [x1, y1, x2, y2] of p.marcas) linea(dibujo, 'ROTULADOR', x1, y + y1, x2, y + y2);
+          // Los nombres a1/a2… los asigna corte.ts por material: no sustituirlos por el número interno.
+          const t = c.colocadas.find(t => t.pieza.id === p.id)!;
+          for (const m of c.entidades.textos.filter(m => m.capa === 'ROTULADOR')) {
+            const u = (m.x - t.x) / 10, v = (m.y - t.y) / 10;
+            const [xLocal, yLocal] = t.girada ? [v, p.alto - u] : [u, v];
+            if (xLocal >= 0 && xLocal <= p.ancho && yLocal >= 0 && yLocal <= p.alto)
+              texto(dibujo, m.valor, xLocal, y + yLocal, m.h / 10, (m.giro ?? 0) - (t.girada ? 90 : 0), 'ROTULADOR');
+          }
+          const anterior = g[i - 1], siguiente = g[i + 1];
+          // El material, una vez al principio de la fila.
+          if (!xo && !i) material(dibujo,
+            (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
+            p.ancho, techo + 15);
+          cota(dibujo, 0, y, p.ancho, y, siguiente ? techo + 35 : y - 30, 'XERA 20');
+          // Las dos mitades pegadas: la cota de la segunda, a su derecha, para que no se pisen (AR2605035).
+          if (anterior) cota(dibujo, p.ancho, y, p.ancho, arriba, p.ancho + 40, 'XERA 20');
+          else if (!xo) cota(dibujo, 0, y, 0, techo, -35, 'XERA 20');
+          arriba = y;
         }
-        else contorno(l, 'DISCO1', p.contorno.map(([x, v]): Punto => [x, y + v]));
-        texto(l, `X${p.multiplicador ?? p.cantidad}`, p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto / 2));
-        for (const [x1, y1, x2, y2] of p.marcas) linea(l, 'ROTULADOR', x1, y + y1, x2, y + y2);
-        // Los nombres a1/a2… los asigna corte.ts por material: no sustituirlos por el número interno.
-        const t = c.colocadas.find(t => t.pieza.id === p.id)!;
-        for (const m of c.entidades.textos.filter(m => m.capa === 'ROTULADOR')) {
-          const u = (m.x - t.x) / 10, v = (m.y - t.y) / 10;
-          const [xLocal, yLocal] = t.girada ? [v, p.alto - u] : [u, v];
-          if (xLocal >= 0 && xLocal <= p.ancho && yLocal >= 0 && yLocal <= p.alto)
-            texto(l, m.valor, xLocal, y + yLocal, m.h / 10, (m.giro ?? 0) - (t.girada ? 90 : 0), 'ROTULADOR');
-        }
-        const anterior = lista[i - 1], siguiente = lista[i + 1];
-        const mismaPuerta = (otra: typeof p | undefined) => otra?.id.split(':')[0] === p.id.split(':')[0];
-        if (c.opcion !== 'saco-partido' || !mismaPuerta(anterior)) material(l,
-          (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
-          p.ancho, techo + 15);
-        cota(l, 0, y, p.ancho, y, c.opcion === 'saco-partido' && mismaPuerta(siguiente) ? techo + 35 : y - 30, 'XERA 20');
-        // Las dos mitades pegadas: la cota de la segunda, a su derecha, para que no se pisen (AR2605035).
-        if (c.opcion === 'saco-partido' && mismaPuerta(anterior)) cota(l, p.ancho, y, p.ancho, techo, p.ancho + 40, 'XERA 20');
-        else cota(l, 0, y, 0, techo, -35, 'XERA 20');
-        anchoMax = Math.max(anchoMax, p.ancho); techo = y - (c.opcion === 'saco-partido' && mismaPuerta(siguiente) ? 0 : 95);
+        sumarLienzo(l, dibujo, xo);
+        xo += Math.max(...g.map(p => p.ancho)) + ENTRE_MUESTRAS; fondo = Math.min(fondo, arriba);
       }
       if (c.opcion === 'saco-partido') fusionarCortesPuertas(l);
+      anchoMax = Math.max(anchoMax, xo - ENTRE_MUESTRAS); techo = fondo - 95;
       continue;
     }
     const yc = techo - c.anchoRollo / 10;
