@@ -98,7 +98,8 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     // El dibujo del corte empieza arriba del todo de su ventana; en el modelo, alineado arriba con la puerta (23/10/2026).
     expect(numero(vista, 22) + numero(vista, 45) / 2).toBeCloseTo(100.4, 2);
     // Las de la plantilla (detalle del saco, más a la derecha en el modelo) no cambian.
-    const cotas = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) > 109 && numero(r, 13) < 120);
+    const x0 = Math.min(...ent.filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20').map(r => numero(r, 13)));
+    const cotas = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= x0 && numero(r, 13) < x0 + 10);
     expect(cotas).toHaveLength(6);
     expect(cotas.every(r => valor(r, 3) === 'XERA 20')).toBe(true);
     const estilo = registrosDxf(plano(), 'TABLES').find(r => r.tipo === 'DIMSTYLE' && valor(r, 2) === 'XERA 20')!;
@@ -143,13 +144,13 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const corte = generarCortePuertas(pedido).cortes.find(c => c.colocadas.some(t => t.pieza.clase === 'pano'))!;
     const ent = modelo(escribirPlanoPuertas({ pedido, cabecera }));
     const largo = ent.find(r => r.tipo === 'DIMENSION' && numero(r, 42) === corte.largo / 10)!;
-    const y0 = numero(largo, 23), y1 = y0 + corte.anchoRollo / 1000;
-    const lineas = ent.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1' && numero(r, 10) >= 110
+    const x0 = numero(largo, 13), y0 = numero(largo, 23), y1 = y0 + corte.anchoRollo / 1000;
+    const lineas = ent.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1' && numero(r, 10) >= x0
       && numero(r, 20) >= y0 - 1e-6 && numero(r, 20) <= y1 + 1e-6);
     const maquina = corte.entidades.lineas.filter(r => r.capa === 'DISCO1');
     expect(lineas).toHaveLength(maquina.length);
-    for (const l of maquina) expect(lineas.some(r => Math.abs(numero(r, 10) - (110 + l.x1 / 1000)) < 1e-6
-      && Math.abs(numero(r, 11) - (110 + l.x2 / 1000)) < 1e-6
+    for (const l of maquina) expect(lineas.some(r => Math.abs(numero(r, 10) - (x0 + l.x1 / 1000)) < 1e-6
+      && Math.abs(numero(r, 11) - (x0 + l.x2 / 1000)) < 1e-6
       && Math.abs(numero(r, 20) - (y0 + l.y1 / 1000)) < 1e-6
       && Math.abs(numero(r, 21) - (y0 + l.y2 / 1000)) < 1e-6)).toBe(true);
   });
@@ -165,10 +166,10 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // 23/10/2026: «SACO DE 100», sin la DIN A3 vacía, la cota del corte hasta la pieza más alta sin rayas del rollo
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
-    // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa.
-    ['apilable', apilable, '77ed0c31da6c7a0bc39eb28caf61e4f46aed35b2eba9bbd149bea7d3df284cff'],
+    // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a 150 m a la derecha y los recuadros DIBUJO y CORTE.
+    ['apilable', apilable, '8635acab90fc11c0fb37fb8e2b3e846225ed174bcf703b7b473b2b9b70aaa4ad'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '74cadf7f905539e95e4ad8e046a0d2ad0bba3c75ce9984b992a67db5a9fd52c1'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, '9f8086d82455543c155c71cc1ba20e2611c714280713f95ed75f4bfff0e8d981'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -196,6 +197,6 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('0ae3a0d625af5bae6d8db935c9fa26390f9770ea5d327f70e6f05a5fcecf8435');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('f54586ececcd292f833ced0a8c6b64525134df9ef9e7e4cc2ab12a22281b87bd');
   });
 });

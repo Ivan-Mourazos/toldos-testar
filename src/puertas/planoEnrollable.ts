@@ -1,4 +1,4 @@
-import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
+import { escribirDxfPlano, SEPARACION_CORTE_M } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
@@ -307,11 +307,11 @@ export function lienzoAMetros(l: Lienzo, ox: number, oy: number) {
 const zonaM = (z: Zona, ox: number, oy: number): Zona => ({ x0: ox + z.x0 / 100, x1: ox + z.x1 / 100, y0: oy + z.y0 / 100, y1: oy + z.y1 / 100 });
 
 /**
- * Origen del corte en el modelo (m): en fila con las puertas, a su derecha con 3 m libres y alineado arriba con ellas,
- * para que al abrir el DWG esté todo ordenado (Iván, 23/10/2026). Nunca antes de x = 110, donde va desde siempre.
+ * Origen del corte en el modelo (m): a la derecha de las puertas, alineado arriba con ellas y a SEPARACION_CORTE_M,
+ * como en todos los planos, para que al abrir el DWG esté todo ordenado (Iván, 23/10/2026).
  */
 export function origenCorte(puertas: Zona, corte: Zona): [number, number] {
-  return [Math.max(110, puertas.x1 + 3 - corte.x0 / 100), puertas.y1 - corte.y1 / 100];
+  return [puertas.x1 + SEPARACION_CORTE_M - corte.x0 / 100, puertas.y1 - corte.y1 / 100];
 }
 /** Cm de modelo entre puertas: cada presentación encuadra la suya sin asomar la vecina. */
 export const ENTRE_PUERTAS = 300;

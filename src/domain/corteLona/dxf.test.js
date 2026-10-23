@@ -141,9 +141,9 @@ describe('Plano de confección', () => {
     const campos = Object.fromEntries(entidades.filter((e) => e.tipo === 'ATTRIB').map((e) => [valor(e, 2), valor(e, 1)]));
     expect(campos).toMatchObject({ PEDIDO: 'AR2604784', OF: '0232568', CLIENTE: 'OTILIA VAZQUEZ', TECNICO: 'ALBERTO', REVISOR: 'JAIME', FECHA: '29/09/26', HOJA: '1/1' });
     expect(campos).not.toHaveProperty('EMPATE');
-    const textos = entidades.filter((e) => e.tipo === 'MTEXT' && valor(e, 330) === '1F');
+    const textos = entidades.filter((e) => e.tipo === 'MTEXT' && valor(e, 330) === '1F' && valor(e, 8) !== 'RECUADROS');
     expect(textos.every((e) => valor(e, 71) === '5' && valor(e, 1) === valor(e, 1).toUpperCase())).toBe(true);
-    // Lejos de los ejes del CAD (el corte va 30 m por debajo de los toldos, que empiezan a 100 m).
+    // Lejos de los ejes del CAD: los toldos empiezan a 100 m y el corte va a su derecha.
     expect(textos.every((e) => numero(e, 10) > 90 && numero(e, 20) > 50)).toBe(true);
     comprobarHandles(dxf);
   });

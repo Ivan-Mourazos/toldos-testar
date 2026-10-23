@@ -6,6 +6,7 @@ import { AJUSTES_POR_DEFECTO } from './despiece.js';
 import { dibujo } from './dibujoCorte.js';
 import { anchoArial } from './texto.js';
 import { piezasCortina, REGLAS_CORTINA } from './cortina.js';
+import { SEPARACION_CORTE_M } from './presentacion.js';
 
 // Corte y rotulador van en las capas del bot (DISCO1, ROTULADOR, texto), que ya trae la plantilla;
 // «cortes - lona», «MARCA» o «corte» son antiguas (Iván, 19/10/2026). Se añaden las que no cortan:
@@ -267,8 +268,8 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   const m = (v) => v / 100;
   const px = (v) => m(v) + ORIGEN_M, py = (v) => m(v) + ORIGEN_M;
   const zona = (z) => ({ x0: px(z.x0), y0: py(z.y0), x1: px(z.x1), y1: py(z.y1) });
-  // El corte, debajo del toldo, alineado a su izquierda y a 1,5 m: al abrir el DWG está todo ordenado (Iván, 23/10/2026).
-  const [dx, dy] = [toldos.x0 - zonaCorte.x0, toldos.y0 - 150 - zonaCorte.y1];
+  // El corte, a la derecha del toldo y alineado arriba (SEPARACION_CORTE_M): al abrir el DWG está todo ordenado.
+  const [dx, dy] = [toldos.x1 + SEPARACION_CORTE_M * 100 - zonaCorte.x0, toldos.y1 - zonaCorte.y1];
   const convertir = (ls, ps, ts, qs, ox = 0, oy = 0) => ({
     lineas: ls.map((l) => ({ ...l, x1: px(l.x1 + ox), y1: py(l.y1 + oy), x2: px(l.x2 + ox), y2: py(l.y2 + oy) })),
     polilineas: ps.map((p) => ({ ...p, puntos: p.puntos.map(([a, b]) => [px(a + ox), py(b + oy)]) })),

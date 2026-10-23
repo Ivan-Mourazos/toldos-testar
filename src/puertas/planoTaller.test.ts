@@ -76,7 +76,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       });
     });
     expect(corte.map(r => valor(r, 1)).sort()).toEqual(minis.map(t => t.valor).sort());
-    const cotas = rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 110 && numero(r, 13) < 130);
+    const cotas = rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= inicioCorte(rs) && numero(r, 13) < inicioCorte(rs) + 20);
     expect(cotas.length).toBeGreaterThan(0);
     expect(cotas.every(r => valor(r, 3) === 'XERA 20')).toBe(true);
   });
@@ -131,7 +131,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
   });
 
   // Renovada para anclar 13/14 a las piezas (con la raya corta del orillo para la cota del rollo) y por el
-  // CAJETIN TGM de Portanova (7816500, a escala 0,74 desde el 23/10/2026; el corte, en fila con la puerta); el resto de entidades no cambia.
+  // CAJETIN TGM de Portanova (7816500, a escala 0,74 desde el 23/10/2026; el corte, en fila con la puerta y luego a 150 m con los recuadros DIBUJO y CORTE); el resto de entidades no cambia.
   it('AR2605134 conserva todas sus entidades salvo las cotas autorizadas', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
@@ -140,8 +140,8 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       .filter(r => r.tipo !== 'DIMENSION' && !(r.tipo === 'LINE' && valor(r, 8) === 'cotas')).map(r => ({ tipo: r.tipo,
         pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
-      .toBe('7c8d0936fe6f2738f58b3cd640c4e67df8b9da9da00d3695640edc279fd456c6');
+      .toBe('ffcbb7f0ae662cb2e3fec4c815cff9cb630bfc57d29964980440342ff7801aa0');
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('a82aba162d36a354bebe9728f6b27b159d452f3ed59f2ac1788eb9d08988cd05');
+      .toBe('f4822854559077a35a3ee52be1a3d31c31ba9dfcc9b09d21b65e736e4a934be3');
   });
 });

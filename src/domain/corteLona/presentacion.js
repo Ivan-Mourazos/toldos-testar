@@ -9,7 +9,12 @@ import { anchoArial } from './texto.js';
 
 const MODELO = '1F';   // *Model_Space en la plantilla
 // Capas del bot que no trae la plantilla.
-const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'ROTULADOR', color: 1 }];
+const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'ROTULADOR', color: 1 }, { nombre: 'RECUADROS', color: 30, imprimir: false }];
+// Mismo orden en todos los planos (Iván, 23/10/2026): el dibujo a la izquierda, lejos de los ejes, y el corte a su
+// derecha, alineado arriba y bien separado; cada uno en un recuadro con su nombre en gigante, para saber qué es cada
+// cosa al abrir el DWG. El recuadro no se imprime ni va al bot.
+export const MARGEN_RECUADRO_M = 50;
+export const SEPARACION_CORTE_M = 3 * MARGEN_RECUADRO_M;   // del dibujo al corte: los dos márgenes y 50 m libres
 
 /**
  * plano: { lineas, polilineas, textos, zonas: { toldos, corte } } en metros (de dibujarPlano).
@@ -43,7 +48,7 @@ export function escribirDxfPlano(plano, cabecera) {
   }
 
   const capasNuevas = CAPAS_BOT.filter((c) => !new RegExp(`\\n  2\\n${c.nombre}\\n`).test(src));
-  const registros = capasNuevas.map((c) => `  0\nLAYER\n  5\n${nuevo()}\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n  2\n${c.nombre}\n 70\n     0\n 62\n${String(c.color).padStart(6)}\n  6\nContinuous\n370\n    -3\n390\nF\n`).join('');
+  const registros = capasNuevas.map((c) => `  0\nLAYER\n  5\n${nuevo()}\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n  2\n${c.nombre}\n 70\n     0\n 62\n${String(c.color).padStart(6)}\n  6\nContinuous\n${c.imprimir === false ? '290\n     0\n' : ''}370\n    -3\n390\nF\n`).join('');
   if (registros) src = insertarEnTabla(src, 'LAYER', registros, capasNuevas.length);
 
   // Una variante puede aportar un bloque de la oficina sin cambiar la plantilla de otros modelos.
@@ -269,6 +274,11 @@ export function escribirDxfPlano(plano, cabecera) {
   const baseCotas = plano.plantilla ? Math.max(0, ...[...src.matchAll(/\n {2}2\n\*D(\d+)\n/g)].map(m => Number(m[1]))) : 0;
   const cotas = [...(plano.cotas ?? []), ...(corte.cotas ?? [])].map((c, i) => cotaDxf(c, baseCotas + i + 1, nuevo, ent));
   modelo += cotas.map((c) => c.entidad).join('');
+  for (const [nombre, z] of [['DIBUJO', plano.zonas.toldos], ['CORTE', plano.zonas.corteReal ?? plano.zonas.corte]]) {
+    const [x0, y0, x1, y1] = [z.x0 - MARGEN_RECUADRO_M, z.y0 - MARGEN_RECUADRO_M, z.x1 + MARGEN_RECUADRO_M, z.y1 + MARGEN_RECUADRO_M];
+    modelo += ent('LWPOLYLINE', 'RECUADROS', 'AcDbPolyline', ` 90\n     4\n 70\n     1\n 43\n1.0\n${[[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`);
+    modelo += ent('MTEXT', 'RECUADROS', 'AcDbMText', ` 10\n${n(x0 + 5)}\n 20\n${n(y1 - 5)}\n 30\n0.0\n 40\n${n(Math.min(30, (x1 - x0 - 10) / anchoArial(nombre, 1)))}\n 41\n0.0\n 71\n     1\n 72\n     1\n  1\n${nombre}\n  7\narial\n 11\n1.0\n 21\n0.0\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+  }
 
   src = src.slice(0, ini) + entidades.join('') + insercion + modelo + src.slice(fin);
   if (cotas.length) {

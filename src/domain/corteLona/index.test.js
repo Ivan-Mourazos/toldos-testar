@@ -151,6 +151,8 @@ describe('Del pedido guardado al corte de lona', () => {
     const salida = generar(order);
     expect(salida.cortes.conSacos[0].piezas[0].piezas.map((p) => p.nombre)).toEqual(['A1', 'A2', 'A BAMBA']);
     const modelo = registrosDxf(salida.plano[0].dxf).filter((r) => valor(r, 67) !== '1');
+    // El dibujo, a la izquierda del corte.
+    const finDibujo = salida.plano[0].geometria.zonas.toldos.x1;
     const segmentos = modelo.flatMap((r) => {
       if (r.tipo === 'LINE') return [[[numero(r, 10), numero(r, 20)], [numero(r, 11), numero(r, 21)]]];
       if (r.tipo !== 'LWPOLYLINE') return [];
@@ -167,8 +169,8 @@ describe('Del pedido guardado al corte de lona', () => {
     }
     // En el dibujo, a1 en cada punta del empate; los dos paños lo llevan en el mismo sitio, así que va una vez.
     const minis = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && valor(r, 1) === 'a1');
-    expect(minis.filter((r) => numero(r, 20) > 100)).toHaveLength(2);
-    expect(minis.filter((r) => numero(r, 20) < 100).length).toBeGreaterThanOrEqual(4);
+    expect(minis.filter((r) => numero(r, 10) < finDibujo)).toHaveLength(2);
+    expect(minis.filter((r) => numero(r, 10) > finDibujo).length).toBeGreaterThanOrEqual(4);
   });
   it('corta la cortina de AR2605193 con su ventana: lona y cristal en dos cortes y un solo plano', () => {
     // Iván, 22/10/2026: a suelo (75 → 57 dibujado), máquina interior, varilla y bamba recta de 15; ventana de 136
@@ -210,6 +212,8 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(salida.plano[0].dxf).toContain('CRISTAL · TRANSPARENTE 650 MI');
     // Iván, 22/10/2026: las cotas agarradas a las piezas, no en el aire, y los mininúmeros también en el dibujo.
     const modelo = registrosDxf(salida.plano[0].dxf).filter((r) => valor(r, 67) !== '1');
+    // El dibujo, a la izquierda del corte.
+    const finDibujo = salida.plano[0].geometria.zonas.toldos.x1;
     const segmentos = modelo.flatMap((r) => {
       if (r.tipo === 'LINE') return [[[numero(r, 10), numero(r, 20)], [numero(r, 11), numero(r, 21)]]];
       if (r.tipo !== 'LWPOLYLINE') return [];
@@ -218,13 +222,13 @@ describe('Del pedido guardado al corte de lona', () => {
     });
     const sobre = ([x, y]) => segmentos.some(([[x1, y1], [x2, y2]]) => Math.abs((x2 - x1) * (y - y1) - (y2 - y1) * (x - x1)) < 1e-6
       && x >= Math.min(x1, x2) - 1e-6 && x <= Math.max(x1, x2) + 1e-6 && y >= Math.min(y1, y2) - 1e-6 && y <= Math.max(y1, y2) + 1e-6);
-    const alzado = modelo.filter((r) => r.tipo === 'DIMENSION' && numero(r, 23) > 100);
+    const alzado = modelo.filter((r) => r.tipo === 'DIMENSION' && numero(r, 13) < finDibujo);
     expect(alzado.length).toBeGreaterThan(8);
     for (const c of alzado) {
       expect(sobre([numero(c, 13), numero(c, 23)]), `cota ${numero(c, 42)}`).toBe(true);
       expect(sobre([numero(c, 14), numero(c, 24)]), `cota ${numero(c, 42)}`).toBe(true);
     }
-    const minisAlzado = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 20) > 100).map((r) => valor(r, 1));
+    const minisAlzado = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 10) < finDibujo).map((r) => valor(r, 1));
     expect(minisAlzado.sort()).toEqual(['A1', 'A2']);
     expect(modelo.some((r) => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toBe(true);
   });

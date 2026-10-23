@@ -1,6 +1,6 @@
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
-import { lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
+import { lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import type { CortePuertas, PedidoPuertas, Puerta } from './tipos.ts';
 
@@ -61,10 +61,10 @@ export function escribirPlanoSystemDock(pedido: PedidoPuertas, cortes: CortePuer
   const alzados = vacio(); sumarLienzo(alzados, l);
   const zonaM = (z: Zona, x: number, yy: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: yy + z.y0 / 100, y1: yy + z.y1 / 100 });
   const za = zonaM({ x0: -40, x1: ancho + 45, y0: y + 40, y1: 75 }, 100, 100);
-  const corte = dibujarCorte(cortes), zc = zonaM(corte.zona, 110, 90);
+  const corte = dibujarCorte(cortes), [ox, oy] = origenCorte(za, corte.zona), zc = zonaM(corte.zona, ox, oy);
   const ofs = [...new Set(pedido.elementos.map(e => e.input.of.trim()).filter(Boolean))];
   const material = [...new Set(pedido.elementos.map(e => `${e.input.material} ${e.input.color}`.trim()))].join(' / ');
-  return escribirDxfPlano({ ...lienzoAMetros(alzados, 100, 100), corte: lienzoAMetros(corte.lienzo, 110, 90), zonas: { toldos: za, corte: zc } },
+  return escribirDxfPlano({ ...lienzoAMetros(alzados, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc } },
     { pedido: pedido.orderCode, of: ofs.length > 1 ? 'VARIAS' : ofs[0] ?? '', cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),
       revisor: textoSeguro(cabecera.revisor), fecha: cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/'), pagina: '1/1',
       material: textoSeguro(material), subtitulo: 'MEDIDAS EN CM · LONA PERIMETRAL' }).dxf;
