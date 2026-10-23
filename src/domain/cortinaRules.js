@@ -135,6 +135,13 @@ export function calculateCortina({ order, awning }) {
   } else if (overWidth || overDrop || hasDimensionalOverrides(awning) || (modified && deduction !== parameters.bottomDeductionCm)) {
     diagnostics.push({ level: 'warn', awningId: awning.id, message: `Excepción técnica en OF ${awning.of}: reglas de Cortina modificadas.` });
   }
+  // Iván, 23/10/2026 (AR2605193): el cristal es el hueco + 2 por lado y su rollo es de 140. Con más de 136 de
+  // ventana no cabe y el corte lo parte; se avisa y se propone la ventana que va entera. Decide el técnico.
+  if (awning.model === 'CORTINA' && awning.curtainHasWindow) {
+    const alto = Number(awning.curtainWindowHeight), ancho = fabricWidth - 2 * Number(awning.curtainWindowCorner || 0);
+    if (alto > 0 && Math.min(alto, ancho) + 4 > ROLLO_CRISTAL_CM) diagnostics.push({ level: 'warn', awningId: awning.id,
+      message: `Ventana de ${alto} en OF ${awning.of}: el cristal de ${alto + 4} no cabe en el rollo de ${ROLLO_CRISTAL_CM} y saldrá partido. Con la ventana en ${ROLLO_CRISTAL_CM - 4} va entero.` });
+  }
 
   const context = { awning, lacado, device, curtainSupport, fabric, separateValance, stockLength, profileStockLength, structureLength, rollTubeLength, fabricWidth, valance, motorPower, selena, armCode, fabricMl: fabricUsage.ml };
   return {
@@ -163,6 +170,9 @@ export function calculateCortina({ order, awning }) {
 }
 
 // Reserva contrastada con el consumo real de 184 OF desde 2025 (CPRImputationMaterialMO),
+/** Rollo del cristal de las cortinas (CRISTATP140650). */
+const ROLLO_CRISTAL_CM = 140;
+
 // 22/09/2026: puente abatible, regleta, máquina, casquillo de punta, varillas y cristal
 // se consumían y no se reservaban; el taco de nailon se reservaba y no se consume.
 function buildMaterials(context) {
