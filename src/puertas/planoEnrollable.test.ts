@@ -66,7 +66,13 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     expect(numero(derecha, 10)).toBeGreaterThan(210);
     expect(numero(derecha, 20) - numero(derecha, 41) / 2).toBeGreaterThan(55);
     const plantilla = registrosDxf(readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8'));
-    for (const id of [3, 5, 6]) expect(vistas.find(r => numero(r, 69) === id)?.pares).toEqual(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)?.pares);
+    // Las ventanas del detalle del saco siguen al detalle, que va dentro del recuadro DIBUJO (23/10/2026): solo cambia su vista.
+    const sinVista = (r?: { pares: unknown }) => (r?.pares as Array<[number, string]>).filter(([k]) => ![12, 22].includes(k));
+    for (const id of [3, 5, 6]) expect(sinVista(vistas.find(r => numero(r, 69) === id))).toEqual(sinVista(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)));
+    const desplazamiento = (id: number) => [12, 22].map(k => numero(vistas.find(r => numero(r, 69) === id)!, k) - numero(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)!, k));
+    expect(desplazamiento(3)[0]).toBeCloseTo(desplazamiento(5)[0], 6);
+    expect(desplazamiento(3)[1]).toBeCloseTo(desplazamiento(5)[1], 6);
+    expect(desplazamiento(6)).toEqual([0, 0]);
     const atributos = registrosDxf(plano()).filter(r => r.tipo === 'ATTRIB');
     for (const [tag, dato] of [['PEDIDO', 'AR2605134'], ['OF', '0233175'], ['CLIENTE', 'PORTANOVA'], ['TECNICO', 'IVÁN'], ['REVISOR', 'DAVID'], ['FECHA', '22/10/26']]) {
       expect(atributos.find(r => valor(r, 2) === tag) && valor(atributos.find(r => valor(r, 2) === tag)!, 1)).toBe(dato);
@@ -178,7 +184,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     const p = crear(), pedido = pedidoDe('AR2600001', p);
     const propio = escribirPlanoPuertas({ pedido, cabecera });
     const anterior = escribirPlanoPuertas({ pedido: { ...pedido, cabecera: { clienteRps: { codigo: '009999' } } }, cabecera });
-    const geometria = (dxf: string) => registrosDxf(dxf).filter(r => valor(r, 67) !== '1' && numero(r, 20) > 50 && numero(r, 10) > 99)
+    // Sin el detalle del saco de la plantilla de Portanova, que es de su hoja.
+    const detalle = new Set(registrosDxf(readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8')).filter(r => valor(r, 330) === '1F').map(r => valor(r, 5)));
+    const geometria = (dxf: string) => registrosDxf(dxf).filter(r => valor(r, 67) !== '1' && !detalle.has(valor(r, 5)) && numero(r, 20) > 50 && numero(r, 10) > 99)
       // El sentido de los textos (11/21 del MTEXT, 53 de la cota) puede cambiar si la hoja gira la vista del corte.
       .map(r => ({ tipo: r.tipo, pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330, 62, 53].includes(k) && !(k === 2 && r.tipo === 'DIMENSION')
         && !([11, 21].includes(k) && r.tipo === 'MTEXT'))

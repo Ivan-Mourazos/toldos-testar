@@ -131,7 +131,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
   });
 
   // Renovada para anclar 13/14 a las piezas (con la raya corta del orillo para la cota del rollo) y por el
-  // CAJETIN TGM de Portanova (7816500, a escala 0,74 desde el 23/10/2026; el corte, en fila con la puerta y luego a 150 m con los recuadros DIBUJO y CORTE); el resto de entidades no cambia.
+  // CAJETIN TGM de Portanova (7816500, a escala 0,74 desde el 23/10/2026; el corte, en fila con la puerta y luego a 150 m con los recuadros DIBUJO y CORTE y el detalle del saco dentro del DIBUJO); el resto de entidades no cambia.
   it('AR2605134 conserva todas sus entidades salvo las cotas autorizadas', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
@@ -140,8 +140,8 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       .filter(r => r.tipo !== 'DIMENSION' && !(r.tipo === 'LINE' && valor(r, 8) === 'cotas')).map(r => ({ tipo: r.tipo,
         pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
-      .toBe('05871d5f98b244d30a7f1a3f160a6e70a0f54f94065c1c9536f40b82a5031514');
+      .toBe('d0e02b874de21db683d6ab217f767c1a9ec24dea3791d458936b7c8b08e81c77');
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('25df16613824b8f9b8f8f27daed40acb2643a56ae38a1b3595df139c53871fe2');
+      .toBe('c275341cd48fd111c9cedbd322fe978d356ee99bf939793c73a8a6d50236eba5');
   });
 });

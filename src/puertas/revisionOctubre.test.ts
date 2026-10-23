@@ -138,7 +138,7 @@ describe('Correcciones de taller del 22 de octubre por la noche', () => {
       for (let i = 1; i < puntos.length; i++) segmentos.push([...puntos[i - 1], ...puntos[i]]);
       if (numero(r, 70) & 1) segmentos.push([...puntos.at(-1)!, ...puntos[0]]);
     }
-    for (const r of rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 99 && numero(r, 13) < 130 && numero(r, 23) > 50)) {
+    for (const r of rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 99 && numero(r, 23) > 50 && valor(r, 1) !== '1 CM')) {
       for (const [kx, ky] of [[13, 23], [14, 24]]) {
         const x = numero(r, kx), y = numero(r, ky);
         const distancia = Math.min(...segmentos.map(([a, b, c, d]) => {
