@@ -12,7 +12,7 @@ const pedido = () => {
   return { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604638', elementos: [{ id: 'puerta-a', input: p }] };
 };
 describe('Corte de puertas', () => {
-  it('aprovecha el sobrante con stock después de reducir el ancho del pedido (AR2604725)', () => {
+  it('AR2604725: con OF prioriza cuatro sacos; sin OF reduce el ancho del pedido', () => {
     const p = pedido();
     Object.assign(p.elementos[0].input, { frente: 474, alto: 430, of: '0232504', color: 'GRIS 7038' });
     p.elementos[0].input.enrollable = { T: 239, D: 60, margen: 11, empates: [], sacoPartido: true };
@@ -20,13 +20,15 @@ describe('Corte de puertas', () => {
     const conStock = generarCortePuertas(p, { ofStockSacos: '0230811' }).cortes;
     const lona = conStock.find(c => c.material === 'LAC900 GRIS 7038');
     const sacos = lona.colocadas.filter(k => k.pieza.nombre === 'Saco de stock');
-    // Tetris: el mismo largo de 948, pero ancho del pedido 246,25 en vez de 290,25.
-    // El nuevo retal admite dos sacos grandes; la colocación antigua daba cuatro.
-    expect(sacos).toHaveLength(2);
+    // Los cuatro sacos recuperan 77.880 cm²: prima esa área frente a un pedido de ancho 246,25.
+    expect(sacos).toHaveLength(4);
+    expect(sacos.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(77880);
     expect(sacos.every(k => k.pieza.of === '0230811')).toBe(true);
-    expect(lona.entidades.textos.filter(t => t.valor === 'STOCK')).toHaveLength(2);
+    expect(lona.entidades.textos.filter(t => t.valor === 'STOCK')).toHaveLength(4);
     expect(Math.max(...lona.colocadas.filter(k => k.pieza.nombre !== 'Saco de stock')
-      .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2462.5);
+      .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2902.5);
+    const sinStock = generarCortePuertas(p).cortes.find(c => c.material === lona.material);
+    expect(Math.max(...sinStock.colocadas.map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2462.5);
     // Ni en el transparente ni en el saco, y sin OF de stock no hay sacos.
     expect(conStock.filter(c => c !== lona).flatMap(c => c.colocadas).some(k => k.pieza.nombre === 'Saco de stock')).toBe(false);
     expect(generarCortePuertas(p).cortes.flatMap(c => c.colocadas).some(k => k.pieza.nombre === 'Saco de stock')).toBe(false);
@@ -113,7 +115,7 @@ describe('Corte de puertas', () => {
     expect(textosPieza.some(t => t.valor.includes('REVÉS'))).toBe(false);
     expect(textosPieza.some(t => t.valor === '0232309' && t.h === 200)).toBe(true);
   });
-  it('AR2605220: lleva E.T. y cachos juntos a A2 y reduce ancho sin gastar más largo', () => {
+  it('AR2605220: prima el área de los tres sacos grandes y conserva los cachos pegados', () => {
     const p = pedido();
     Object.assign(p.elementos[0].input, { frente: 366, alto: 410, of: '0233291', color: 'AZUL 5010' });
     p.elementos[0].input.enrollable = { T: 229, D: 60, margen: 8, empates: [] };
@@ -121,16 +123,17 @@ describe('Corte de puertas', () => {
     const lona = generarCortePuertas(p, { ofStockSacos: '0230811' }).cortes.find(c => c.material === 'LAC900 AZUL 5010');
     expect(lona.largo).toBe(7320);
     const cachos = lona.colocadas.filter(k => k.pieza.clase === 'cacho');
-    // Antes: E.T. y cachos sobre A1, hasta 277,25. Ahora caben sobre A2 sin rebasar los 236,25 de A1.
-    expect(cachos.map(k => [k.x, k.y])).toEqual([[3660, 1457.5], [3750, 1457.5]]);
-    expect(cachos.every(k => !k.girada)).toBe(true);
-    const entradas = lona.colocadas.filter(k => k.pieza.clase === 'entrada').map(k => k.y).sort((a, b) => a - b);
-    expect(entradas).toEqual([1137.5, 1217.5, 1297.5, 1377.5]);
+    // Los seis pequeños de e90b84f sumaban 53.592 cm²; tres de 122 × 165 recuperan 60.390.
+    const stock = lona.colocadas.filter(k => k.pieza.id.startsWith('stock-'));
+    expect(stock).toHaveLength(3);
+    expect(stock.map(k => [k.pieza.ancho, k.pieza.alto])).toEqual([[122, 165], [122, 165], [122, 165]]);
+    expect(stock.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(60390);
+    expect(cachos[0].y).toBe(cachos[1].y);
+    expect(cachos[1].x).toBe(cachos[0].x + 10 * (cachos[0].girada ? cachos[0].pieza.alto : cachos[0].pieza.ancho));
     expect(Math.max(...lona.colocadas.filter(k => !k.pieza.id.startsWith('stock-'))
-      .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2362.5);
-    expect(lona.colocadas.filter(k => k.pieza.id.startsWith('stock-'))).toHaveLength(6);
+      .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2612.5);
     const ocupado = Math.max(...lona.colocadas.map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)));
-    expect(ocupado).toBe(2997.5);
+    expect(ocupado).toBe(2947.5);
   });
   it('sin OF dibuja SIN OF y no crea archivo ni aun con un pedido identificado', () => {
     const p=pedido(); p.elementos[0].input.of='';

@@ -16,12 +16,30 @@ describe('Colocación como el Tetris', () => {
     expect(largo(r)).toBe(6);
     expect(r).toHaveLength(3);
   });
-  it('a igual largo reduce el ancho ocupado antes de aprovechar los sobrantes', () => {
+  it('a igual largo y área de stock reduce el ancho ocupado', () => {
     const piezas = [pieza('a', 10, 2), pieza('b', 4, 2), pieza('c', 4, 2)];
     const inicial = [sitio('a', 0, 0, 10, 2), sitio('b', 0, 2, 4, 2), sitio('c', 0, 4, 4, 2)];
     const r = buscarColocacion(piezas, 6, inicial, { restantes: 100000 });
     expect(largo(r)).toBe(10);
     expect(ancho(r)).toBe(4);
+  });
+  it('a igual largo gana más área de stock aunque ocupe más ancho', () => {
+    const piezas = [pieza('a', 10, 2), pieza('b', 4, 2), pieza('c', 4, 2)];
+    const inicial = [sitio('a', 0, 0, 10, 2), sitio('b', 0, 2, 4, 2), sitio('c', 4, 2, 4, 2)];
+    // Un saco de 6 × 4 cabe al apilar las pequeñas; el retal de 10 × 2 no sirve para ese stock.
+    const stock = (hs: ReturnType<typeof huecosLibres>) => hs.some(h => h.w >= 6 && h.h >= 4) ? 24 : 0;
+    const r = buscarColocacion(piezas, 6, inicial, { restantes: 100000 }, () => true, stock);
+    expect(largo(r)).toBe(10);
+    expect(ancho(r)).toBe(6);
+    expect(stock(huecosLibres(r, 10, 6))).toBe(24);
+  });
+  it('ahorrar largo precede al área de stock y no obliga a meter sacos', () => {
+    const piezas = [pieza('a', 4, 2), pieza('b', 1, 2)];
+    const inicial = [sitio('a', 0, 0, 4, 2), sitio('b', 6, 0, 1, 2)];
+    const area = (hs: ReturnType<typeof huecosLibres>) => hs.reduce((s, h) => s + h.w * h.h, 0);
+    const r = buscarColocacion(piezas, 4, inicial, { restantes: 100000 }, () => true, area);
+    expect(largo(r)).toBe(4);
+    expect(area(huecosLibres(r, 4, 4))).toBeLessThan(area(huecosLibres(inicial, 7, 4)));
   });
   it('explora los dos giros y distintos órdenes sin imponer guillotina', () => {
     const piezas = [pieza('a', 6, 2, true), pieza('b', 4, 3, true), pieza('c', 4, 3, true)];

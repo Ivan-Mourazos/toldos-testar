@@ -291,9 +291,13 @@ se comprueba un molinillo de cinco rectángulos que no admite guillotina. No se 
 las medidas. Las columnas anteriores se conservan como solución inicial completa: si se agota la búsqueda,
 ningún rollo puede gastar más largo que esa solución. No se asegura el óptimo global cuando se alcanza el límite.
 
-El orden de elección es: menor largo; con ese largo, menor ancho de **las piezas del pedido**; después,
-mayor retal rectangular libre y, si sigue habiendo empate, mayor superficie aprovechable con los sacos de
-stock de toldos. Un empate completo conserva la primera solución. Los tipos equivalentes evitan repetir
+El orden de elección, revisado con el coordinador e Iván el 23/10, es: menor largo; con ese largo,
+**mayor área de sacos de stock cuando hay OF de stock**; después, menor ancho de las piezas del pedido,
+mayor retal rectangular libre y desempate estable. Sin OF de stock se omite el segundo paso; también se
+omite en el transparente y en las alternativas de saco entero/partido, donde no se añade stock. No se
+obliga a meter sacos ni se aumenta largo para conseguirlos: primero se ahorran ML. Con el mismo largo no
+se poda por ancho antes de evaluar el stock, porque se podría descartar una solución que aprovecha más.
+Un empate completo conserva la primera solución. Los tipos equivalentes evitan repetir
 permutaciones; los paños con distinto código de enrollable se distinguen para conservar A1 sobre A2 cuando
 comparten columna. El presupuesto es de **60.000 unidades por pedido**, compartido entre todos los materiales
 y alternativas: cuenta cada posición intentada, incluso las rechazadas, y también cobra la valoración de
@@ -329,43 +333,43 @@ Los cortes combinados o separados no se presentan como un único pedido equivale
 croquis de Iván del 22/10, posterior a su fixture original que todavía dice «sin corte manual».
 
 <!-- tabla-tetris-inicio -->
-| Pedido | Largo antes → después | Ancho pedido antes → después | Ancho con stock antes → después | Sacos después | A mano: largo × ancho ocupado | Mediana / máx. (ms) |
-|---|---:|---:|---:|---:|---|---:|
-| AR2604858 | 794 → 794 | 260,25 → 216,25 | 288,75 → 299,25 | 6 | 794 × 300 | 17,4 / 24,05 |
-| AR2604638 | 172 → 172 | 285 → 285 | 285 → 285 | 0 | 172 × 285 | 10,55 / 13,87 |
-| AR2604524 | 950 → 950 | 294,25 → 246,25 | 294,25 → 270,75 | 2 | 950 × 294,25 | 7,01 / 10,82 |
-| AR2604434 | 129,75 → 118,75 | 300 → 300 | 300 → 300 | 0 | 150 × 233 | 7,29 / 8,73 |
-| AR2604349 | 339 → 330 | 289 → 298 | 289 → 298 | 0 | 331 × 297 | 5,71 / 8,11 |
-| AR2604970 | 850,5 → 850,5 | 292,25 → 276,25 | 299,75 → 299,75 | 3 | Dos cortes separados; uno de restos | 7,91 / 8,94 |
-| AR2604069 | 630 → 630 | 293,25 → 260,25 | 293,25 → 260,25 | 0 | 630 × 292,25¹ | 11,12 / 14 |
-| AR2604725 | 948 → 948 | 290,25 → 246,25 | 290,25 → 280,75 | 2 | 948 × 290,25 (4 sacos) | 6,48 / 9,55 |
-| AR2604904 | 863 → 863 | 300 → 300 | 300 → 300 | 0 | 863 × 300 | 1,4 / 4,65 |
-| AR2604764 | 131 → 121 | 254,5 → 296,5 | 254,5 → 296,5 | 0 | 121 × 296,5¹ | 1,18 / 1,23 |
-| AR2604717 | 955 → 955 | 300 → 300 | 300 → 300 | 4 | 955 × 300 | 1,51 / 6,15 |
-| AR2604402 | 331,5 → 331,5 | 224 → 224 | 300 → 300 | 2 | 331,5 × 262¹ | 1,28 / 1,5 |
-| AR2604013 | 376,5 → 376,5 | 291 → 291 | 291 → 291 | 0 | Corte combinado; no atribuible | 1,19 / 5,42 |
-| AR2604592 | 800 → 800 | 296 → 296 | 296 → 296 | 0 | 800 × 296 | 8,47 / 10,51 |
-| AR2604723 | 1530 → 1530 | 296 → 296 | 296 → 296 | 4 | 1446,46 × 300² | 7,7 / 10,22 |
-| AR2604724 | 1500 → 1500 | 296 → 296 | 296 → 296 | 4 | 1500 × 300 | 7,33 / 10,17 |
-| AR2604859 | 1413 → 1413 | 298 → 262 | 298 → 300 | 4 | 1532,87 × 298² | 9,51 / 12,35 |
-| AR2604906 | 1590 → 1590 | 296 → 260 | 296 → 300 | 4 | 1084 × 296² | 10,16 / 12,04 |
-| AR2605134 | 708 → 708 | 300 → 300 | 300 → 300 | 0 | 708 × 300 (croquis de Iván) | 4,87 / 7,52 |
-| AR2605220 | 732 → 732 | 277,25 → 236,25 | 278,75 → 299,75 | 6 | 732 × 278,75 (3 sacos) | 6,18 / 9,16 |
-| AR2605036 | 1244 → 1244 | 289 → 277 | 289 → 277 | 0 | 1240 × 289¹ | 7,5 / 10,96 |
-| AR2605065 | 233,25 → 233,25 | 298,75 → 298,75 | 298,75 → 298,75 | 0 | Varias puertas; no atribuible | 4,51 / 8,21 |
-| AR2604526 | 633,5 → 633,5 | 300 → 300 | 300 → 300 | 4 | Varias puertas; no atribuible | 1,43 / 1,51 |
-| AR2604526-350 | 711 → 711 | 300 → 300 | 300 → 300 | 2 | Sin referencia de rollo | 1,39 / 6,38 |
-| AR2604638-1ET | 172 → 172 | 269 → 269 | 269 → 269 | 0 | Sin referencia de rollo | 5,74 / 8,5 |
-| EJEMPLO-APILABLE | 411 → 411 | 300 → 300 | 300 → 300 | 0 | Sin referencia de rollo | 0,64 / 0,66 |
-| EJEMPLO-AUTORREPARABLE | 711 → 700 | 242,5 → 284,5 | 300 → 284,5 | 2 | Sin referencia de rollo | 1,34 / 5,49 |
+| Pedido | Largo antes → después | Ancho pedido antes → después | Ancho con stock antes → después | Sacos antes | Sacos después | Área stock antes → después (cm²) | A mano: largo × ancho ocupado | Mediana / máx. (ms) |
+|---|---:|---:|---:|---:|---:|---:|---|---:|
+| AR2604858 | 794 → 794 | 260,25 → 260,75 | 288,75 → 299,75 | 3 | 9 | 61.875 → 85.125 | 794 × 300 | 18,03 / 21,24 |
+| AR2604638 | 172 → 172 | 285 → 285 | 285 → 285 | 0 | 0 | 0 → 0 | 172 × 285 | 11,49 / 24,27 |
+| AR2604524 | 950 → 950 | 294,25 → 278,25 | 294,25 → 294,75 | 4 | 4 | 77.880 → 77.880 | 950 × 294,25 | 15,49 / 19,04 |
+| AR2604434 | 129,75 → 118,75 | 300 → 300 | 300 → 300 | 0 | 0 | 0 → 0 | 150 × 233 | 7,57 / 12,48 |
+| AR2604349 | 339 → 330 | 289 → 298 | 289 → 298 | 0 | 0 | 0 → 0 | 331 × 297 | 5,53 / 9,42 |
+| AR2604970 | 850,5 → 850,5 | 292,25 → 292,25 | 299,75 → 298,75 | 3 | 5 | 42.750 → 51.875 | Dos cortes separados; uno de restos | 11,61 / 14,85 |
+| AR2604069 | 630 → 630 | 293,25 → 268,25 | 293,25 → 298,25 | 2 | 2 | 21.250 → 21.250 | 630 × 292,25¹ | 14,37 / 17,84 |
+| AR2604725 | 948 → 948 | 290,25 → 290,25 | 290,25 → 290,25 | 4 | 4 | 77.880 → 77.880 | 948 × 290,25 (4 sacos) | 12,62 / 13,68 |
+| AR2604904 | 863 → 863 | 300 → 300 | 300 → 300 | 0 | 0 | 0 → 0 | 863 × 300 | 1,46 / 5,24 |
+| AR2604764 | 131 → 121 | 254,5 → 296,5 | 254,5 → 296,5 | 0 | 0 | 0 → 0 | 121 × 296,5¹ | 1,19 / 1,22 |
+| AR2604717 | 955 → 955 | 300 → 300 | 300 → 300 | 4 | 4 | 40.800 → 40.800 | 955 × 300 | 1,5 / 4,43 |
+| AR2604402 | 331,5 → 331,5 | 224 → 224 | 300 → 300 | 2 | 2 | 19.000 → 19.000 | 331,5 × 262¹ | 1,18 / 1,24 |
+| AR2604013 | 376,5 → 376,5 | 291 → 291 | 291 → 291 | 0 | 0 | 0 → 0 | Corte combinado; no atribuible | 1,15 / 3,8 |
+| AR2604592 | 800 → 800 | 296 → 296 | 296 → 296 | 0 | 0 | 0 → 0 | 800 × 296 | 8,1 / 11,95 |
+| AR2604723 | 1530 → 1530 | 296 → 296 | 296 → 296 | 4 | 4 | 82.500 → 82.500 | 1446,46 × 300² | 7,66 / 9,88 |
+| AR2604724 | 1500 → 1500 | 296 → 296 | 296 → 296 | 4 | 4 | 82.500 → 82.500 | 1500 × 300 | 7,31 / 10,25 |
+| AR2604859 | 1413 → 1413 | 298 → 286 | 298 → 286 | 6 | 6 | 117.750 → 117.750 | 1532,87 × 298² | 9,88 / 12,25 |
+| AR2604906 | 1590 → 1590 | 296 → 284 | 296 → 286 | 10 | 10 | 132.500 → 132.500 | 1084 × 296² | 10,38 / 12,57 |
+| AR2605134 | 708 → 708 | 300 → 300 | 300 → 300 | 0 | 0 | 0 → 0 | 708 × 300 (croquis de Iván) | 5,55 / 8,78 |
+| AR2605220 | 732 → 732 | 277,25 → 261,25 | 278,75 → 294,75 | 3 | 3 | 60.390 → 60.390 | 732 × 278,75 (3 sacos) | 11,55 / 14,04 |
+| AR2605036 | 1244 → 1244 | 289 → 277 | 289 → 277 | 0 | 0 | 0 → 0 | 1240 × 289¹ | 9,74 / 11,87 |
+| AR2605065 | 233,25 → 233,25 | 298,75 → 298,75 | 298,75 → 298,75 | 0 | 0 | 0 → 0 | Varias puertas; no atribuible | 4,61 / 6,63 |
+| AR2604526 | 633,5 → 633,5 | 300 → 300 | 300 → 300 | 4 | 4 | 77.500 → 77.500 | Varias puertas; no atribuible | 1,32 / 1,58 |
+| AR2604526-350 | 711 → 711 | 300 → 300 | 300 → 300 | 2 | 2 | 41.250 → 41.250 | Sin referencia de rollo | 1,37 / 1,67 |
+| AR2604638-1ET | 172 → 172 | 269 → 269 | 269 → 269 | 0 | 0 | 0 → 0 | Sin referencia de rollo | 6,82 / 9,17 |
+| EJEMPLO-APILABLE | 411 → 411 | 300 → 300 | 300 → 300 | 0 | 0 | 0 → 0 | Sin referencia de rollo | 0,64 / 0,77 |
+| EJEMPLO-AUTORREPARABLE | 711 → 700 | 242,5 → 284,5 | 300 → 284,5 | 3 | 2 | 38.520 → 41.250 | Sin referencia de rollo | 1,36 / 1,9 |
 
 | Puertas distintas en el pedido | Mediana / máx. (ms) |
 |---|---:|
-| 1 | 7,14 / 14,75 |
-| 2 | 9,17 / 10,41 |
-| 3 | 5,95 / 6,8 |
-| 4 | 10,48 / 11,15 |
-| 5 | 9,77 / 10,96 |
+| 1 | 11,26 / 11,51 |
+| 2 | 9,64 / 10,37 |
+| 3 | 5,73 / 6,44 |
+| 4 | 10,16 / 11,39 |
+| 5 | 9,93 / 10,7 |
 <!-- tabla-tetris-fin -->
 
 ¹ Referencias históricas de despiece: AR2605036 corta frente 620 frente a los 622 actuales por escuadrado;
@@ -377,13 +381,16 @@ Se compara ocupación literal, sin afirmar igualdad completa del inventario.
 incluye entradas enteras y alternativas partidas con separaciones. La web conserva las entradas enteras
 configuradas y sus marcas; este encargo no introduce empates nuevos para imitar esas referencias.
 
-AR2605220 conserva 732 de largo, reduce el ancho del pedido de 277,25 a 236,25 y produce seis sacos
-de stock de 116 × 77, con ancho total 299,75. A mano: 732 × 278,75, A1 con cuatro E.T. y los dos cachos
-de 56,5 × 9 juntos; sobre A2, tres sacos de 122 × 165. La nueva solución lleva E.T. y cachos junto a A2,
-sin rebasar el ancho de A1; los cachos siguen pegados y comparten corte. Se actualiza la prueba de la
-posición antigua porque la nueva mejora la segunda prioridad con el mismo largo. AR2604725 también
-cambia de cuatro sacos a dos tras reducir el ancho del pedido a 246,25. El ejemplo de autorreparable
-de `ejemplos.ts` baja de 711 a 700: cambia su huella del plano, conservando el alzado y las piezas.
+AR2605220 conserva 732 de largo y tres sacos de 122 × 165, como a mano: recuperan **60.390 cm²**,
+frente a los 53.592 de seis sacos de 116 × 77. Iván y el coordinador confirmaron que prima el área,
+no la cantidad. El ancho del pedido baja de 277,25 a 261,25; con stock mide 294,75. A mano: 732 × 278,75,
+A1 con cuatro E.T. y los dos cachos de 56,5 × 9 juntos, y A2 con los tres sacos encima. La nueva solución
+reparte E.T. entre ambos paños y mantiene los cachos pegados con corte compartido. La prueba actualiza
+las posiciones porque se prioriza el stock y, con esa área y largo, se reduce el ancho del pedido.
+AR2604725 conserva los cuatro sacos de antes de Tetris y sus 77.880 cm², con ancho del pedido 290,25;
+sin OF de stock, el ancho baja a 246,25. Ninguna configuración de la tabla pierde área ni cantidad de
+stock respecto a la base con el mismo largo. El ejemplo autorreparable baja de 711 a 700 aunque pase
+de tres sacos a dos: manda el ahorro de largo, conservando el alzado y las piezas.
 
 `marcas-bolsillo.json` solo tiene fragmentos medidos: AR2501936 (478 × 272), AR2503709 (385 × 254,5),
 AR2600208 (530 × 69,5), AR2600236 (382 × 252,5), AR2601036 (424 × 281,5), AR2604763 (446 × 268)
@@ -400,10 +407,10 @@ La vista previa real se comprueba en la aislada 4316 (`simulationMode: true`, `f
 capturas revisadas de AR2604349 y AR2605220, claro/oscuro, 1280 × 720 y 1600 × 1000, en
 `tmp/ui-audit/corte-tetris/`. Sin cambios en los componentes ni estilos del cliente.
 
-La batería completa pasa con 3.950 pruebas en 285 archivos, además de `pnpm typecheck` y `pnpm lint`.
+La batería completa pasa con 3.952 pruebas en 285 archivos, además de `pnpm typecheck` y `pnpm lint`.
 Una repetición con el paralelismo automático agotó los 5 segundos en dos pruebas ajenas a puertas
 (`bambaRemate/ELECTRA` y `model-samples`); la ejecución completa final con `pnpm test --maxWorkers=2`
-pasa las 3.950 sin ampliar sus límites. Las 230 pruebas de puertas pasan también por separado.
+pasa las 3.952 sin ampliar sus límites. Las 232 pruebas de puertas pasan también por separado.
 
 ## Dudas abiertas
 

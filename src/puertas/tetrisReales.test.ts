@@ -28,9 +28,14 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
       for (const pieza of originales.filter(p => p.clase !== 'cristal')) {
         expect(piezasPedido.filter(s => s.pieza.id === pieza.id)).toHaveLength(pieza.cantidad);
       }
-      // El segundo objetivo excluye stock, que después aprovecha el ancho real del rollo.
+      // Con el mismo largo, el área de stock precede al ancho del pedido.
       if (originales.some(p => p.clase === 'pano') && c.largo / 10 === previo.largos[i]) {
-        expect(Math.max(...piezasPedido.map(s => s.y / 10 + (s.girada ? s.pieza.ancho : s.pieza.alto)))).toBeLessThanOrEqual(previo.anchoPedido);
+        const stock = c.colocadas.filter(s => s.pieza.id.startsWith('stock-'));
+        const areaStock = stock.reduce((area, s) => area + s.pieza.ancho * s.pieza.alto, 0);
+        expect(stock.length).toBeGreaterThanOrEqual(previo.sacos);
+        expect(areaStock).toBeGreaterThanOrEqual(previo.areaStock);
+        if (areaStock === previo.areaStock) expect(Math.max(...piezasPedido
+          .map(s => s.y / 10 + (s.girada ? s.pieza.ancho : s.pieza.alto)))).toBeLessThanOrEqual(previo.anchoPedido);
       }
     });
     expect(generarCortePuertas(p, { ofStockSacos: '0230811' })).toEqual(r);

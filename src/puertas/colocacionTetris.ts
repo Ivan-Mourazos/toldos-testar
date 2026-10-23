@@ -55,7 +55,7 @@ export function huecosLibres(ocupadas: Hueco[], largo: number, rollo: number): H
 export function buscarColocacion(
   piezas: PiezaCorte[], rollo: number, inicial: RectanguloCorte[], presupuesto: PresupuestoCorte,
   valida: (r: RectanguloCorte[]) => boolean = () => true,
-  aprovechamiento: (huecos: Hueco[]) => number = () => 0,
+  aprovechamiento?: (huecos: Hueco[]) => number,
 ): RectanguloCorte[] {
   if (!piezas.length || presupuesto.restantes <= 0) return inicial;
   let mejor = inicial;
@@ -75,30 +75,38 @@ export function buscarColocacion(
     if (presupuesto.restantes <= 0) return;
     if (puestas.length === piezas.length) {
       if (!valida(puestas)) return;
-      const mejora = largo < coste.largo - EPS || Math.abs(largo - coste.largo) < EPS && ancho < coste.ancho - EPS;
-      if (!mejora && (Math.abs(largo - coste.largo) > EPS || Math.abs(ancho - coste.ancho) > EPS)) return;
-      // Una mejora de los dos primeros objetivos ya gana a la anterior: no exige valorar retales.
-      if (mejora) {
+      // Ahorrar largo siempre gana, incluso si después caben menos sacos.
+      if (largo < coste.largo - EPS) {
         mejor = puestas.map(p => ({ ...p }));
         coste = { largo, ancho };
         retal = -1; stock = -1;
         return;
       }
+      if (largo > coste.largo + EPS || !aprovechamiento && ancho > coste.ancho + EPS) return;
       // Valorar un retal exige restar cada pieza a los huecos: ese trabajo también gasta presupuesto.
       // Así los empates de un pedido grande no pueden multiplicar el coste fuera del límite de nodos.
       const trabajo = puestas.length * puestas.length;
       if (presupuesto.restantes < trabajo) { presupuesto.restantes = 0; return; }
       presupuesto.restantes -= trabajo;
+      let nuevoStock = 0;
+      if (aprovechamiento) {
+        if (stock < 0) stock = aprovechamiento(huecosLibres(mejor, coste.largo, rollo));
+        nuevoStock = aprovechamiento(huecosLibres(puestas, largo, rollo));
+        if (nuevoStock < stock - EPS) return;
+      }
+      const mejoraStock = aprovechamiento && nuevoStock > stock + EPS;
+      if (!mejoraStock && ancho > coste.ancho + EPS) return;
+      if (mejoraStock || ancho < coste.ancho - EPS) {
+        mejor = puestas.map(p => ({ ...p }));
+        coste = { largo, ancho };
+        stock = nuevoStock; retal = -1;
+        return;
+      }
       const sobrante = () => Math.max(0, ...huecosMaximos(puestas, largo, rollo).map(h => h.w * h.h));
       if (retal < 0) retal = Math.max(0, ...huecosMaximos(mejor, coste.largo, rollo).map(h => h.w * h.h));
       const nuevo = sobrante();
       if (nuevo < retal - EPS) return;
-      if (Math.abs(nuevo - retal) < EPS) {
-        if (stock < 0) stock = aprovechamiento(huecosLibres(mejor, coste.largo, rollo));
-        const nuevoStock = aprovechamiento(huecosLibres(puestas, largo, rollo));
-        if (nuevoStock <= stock + EPS) return; // A igualdad completa conserva el primero: desempate estable.
-        stock = nuevoStock;
-      } else stock = -1;
+      if (nuevo <= retal + EPS) return; // A igualdad completa conserva el primero: desempate estable.
       retal = nuevo;
       mejor = puestas.map(p => ({ ...p }));
       coste = { largo, ancho };
@@ -106,7 +114,7 @@ export function buscarColocacion(
     }
     // Cotas inferiores de superficie: con este largo no puede ocupar menos que área/largo.
     if (area > coste.largo * rollo + EPS) return;
-    if (largo >= coste.largo - EPS && Math.max(ancho, area / coste.largo) > coste.ancho + EPS) return;
+    if (!aprovechamiento && largo >= coste.largo - EPS && Math.max(ancho, area / coste.largo) > coste.ancho + EPS) return;
     const xs = [...new Set([0, ...puestas.map(derecha)])].sort((a, b) => a - b);
     const ys = [...new Set([0, ...puestas.map(arriba)])].sort((a, b) => a - b);
     const vistos = new Set<string>();
@@ -119,7 +127,7 @@ export function buscarColocacion(
         if (presupuesto.restantes <= 0) return;
         presupuesto.restantes--;
         const l = Math.max(largo, x + f.w), a = Math.max(ancho, y + f.h);
-        if (y + f.h > rollo + EPS || l > coste.largo + EPS || Math.abs(l - coste.largo) < EPS && a > coste.ancho + EPS) continue;
+        if (y + f.h > rollo + EPS || l > coste.largo + EPS || !aprovechamiento && Math.abs(l - coste.largo) < EPS && a > coste.ancho + EPS) continue;
         const r = { ...f, id: p.id, x, y };
         if (puestas.some(q => solapan(r, q))) continue;
         opciones.push({ i, r, largo: l, ancho: a });
@@ -130,7 +138,7 @@ export function buscarColocacion(
       || a.r.y - b.r.y || a.r.x - b.r.x || Number(a.r.girada) - Number(b.r.girada));
     for (const o of opciones) {
       if (presupuesto.restantes <= 0) return;
-      if (o.largo > coste.largo + EPS || Math.abs(o.largo - coste.largo) < EPS && o.ancho > coste.ancho + EPS) continue;
+      if (o.largo > coste.largo + EPS || !aprovechamiento && Math.abs(o.largo - coste.largo) < EPS && o.ancho > coste.ancho + EPS) continue;
       usadas.add(o.r.id); puestas.push(o.r);
       visitar(o.largo, o.ancho);
       puestas.pop(); usadas.delete(o.r.id);

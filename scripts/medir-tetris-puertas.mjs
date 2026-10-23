@@ -22,8 +22,8 @@ const manual = {
 };
 console.log(`Node ${process.version}; ${os.cpus()[0].model}; ${os.platform()} ${os.arch()}.`);
 console.log('Cada tiempo incluye despiece, todos los rollos, stock, fusión y DXF en memoria; 3 calentamientos y 9 mediciones por pedido.');
-console.log('| Pedido | Largo antes → después | Ancho pedido antes → después | Ancho con stock antes → después | Sacos después | A mano: largo × ancho ocupado | Mediana / máx. (ms) |');
-console.log('|---|---:|---:|---:|---:|---|---:|');
+console.log('| Pedido | Largo antes → después | Ancho pedido antes → después | Ancho con stock antes → después | Sacos antes | Sacos después | Área stock antes → después (cm²) | A mano: largo × ancho ocupado | Mediana / máx. (ms) |');
+console.log('|---|---:|---:|---:|---:|---:|---:|---|---:|');
 for (const p of pedidosTetris()) {
   for (let i = 0; i < 3; i++) generarCortePuertas(p, { ofStockSacos: '0230811' });
   const tiempos = [];
@@ -38,8 +38,14 @@ for (const p of pedidosTetris()) {
   assert.equal(r.cortes.length, previo.largos.length);
   r.cortes.forEach((c, i) => assert.ok(c.largo / 10 <= previo.largos[i], `${p.orderCode}: crece ${c.material}`));
   const c = r.cortes.find(c => c.colocadas.some(s => s.pieza.clase === 'pano'));
+  const sacos = c.colocadas.filter(s => s.pieza.id.startsWith('stock-'));
+  const areaStock = sacos.reduce((area, s) => area + s.pieza.ancho * s.pieza.alto, 0);
+  if (c.largo / 10 === previo.largos[0]) {
+    assert.ok(areaStock >= previo.areaStock, `${p.orderCode}: pierde área de stock al mismo largo`);
+    assert.ok(sacos.length >= previo.sacos, `${p.orderCode}: pierde sacos al mismo largo`);
+  }
   const anchoPedido = ancho({ colocadas: c.colocadas.filter(s => !s.pieza.id.startsWith('stock-')) });
-  console.log(`| ${p.orderCode} | ${numero(previo.largos[0])} → ${numero(c.largo / 10)} | ${numero(previo.anchoPedido)} → ${numero(anchoPedido)} | ${numero(previo.anchoStock)} → ${numero(ancho(c))} | ${c.colocadas.filter(s => s.pieza.id.startsWith('stock-')).length} | ${manual[p.orderCode] ?? 'Sin referencia de rollo'} | ${numero(tiempos[4])} / ${numero(tiempos[8])} |`);
+  console.log(`| ${p.orderCode} | ${numero(previo.largos[0])} → ${numero(c.largo / 10)} | ${numero(previo.anchoPedido)} → ${numero(anchoPedido)} | ${numero(previo.anchoStock)} → ${numero(ancho(c))} | ${previo.sacos} | ${sacos.length} | ${numero(previo.areaStock)} → ${numero(areaStock)} | ${manual[p.orderCode] ?? 'Sin referencia de rollo'} | ${numero(tiempos[4])} / ${numero(tiempos[8])} |`);
 }
 console.log('\n| Puertas distintas en el pedido | Mediana / máx. (ms) |');
 console.log('|---|---:|');

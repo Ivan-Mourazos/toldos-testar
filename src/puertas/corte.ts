@@ -386,7 +386,8 @@ function colocar(
     const aprovechamiento = (libres: ReturnType<typeof huecosLibres>) => libres.reduce((area, h) => area
       + sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock)
         .reduce((suma: number, s: { ancho: number; hueco: number }) => suma + s.ancho * s.hueco, 0), 0);
-    const elegidas = buscarColocacion(piezasBusqueda, rollo, inicial, presupuesto, valida, aprovechamiento);
+    const conStock = Boolean(ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano'));
+    const elegidas = buscarColocacion(piezasBusqueda, rollo, inicial, presupuesto, valida, conStock ? aprovechamiento : undefined);
     // Las franjas que llenan el rollo separan el anidado: trasladarlas al inicio no altera su consumo.
     const completas = elegidas.filter(s => Math.abs(s.h - rollo) < .001).sort((a, b) => a.x - b.x);
     const seleccionadas = elegidas.map(s => {
