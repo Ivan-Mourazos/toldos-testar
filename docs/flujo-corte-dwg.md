@@ -16,7 +16,7 @@ Los pedidos **sin corte** siguen exactamente igual que ahora.
 4. **Confirmar el corte.** Cuando el autor lo tiene listo, vuelve a la web de Planteamientos y confirma el corte. A partir de ahí la web **sí deja guardar para revisión**.
 5. **Guardar para revisión.** El DWG se **mueve** de la carpeta de borradores a la del año (`Oficina Tecnica\<año>`). Si es un toldo, a la carpeta de toldos dentro del año (`Oficina Tecnica\<año>\TOLDOS`). Ahí lo revisa el revisor cuando pueda.
 6. **Aprobación en CoordinaOT.** Si el revisor lo aprueba, al autor del pedido se le habilita en Planteamientos el botón **«Mandar corte al bot»**.
-7. **Mandar corte al bot.** Se manda **el corte del DWG revisado**, con los cambios del autor si los hizo (siempre el archivo actualizado), **sin las cotas**. A la vez se imprimen las presentaciones del DWG en un PDF, según el producto:
+7. **Mandar corte al bot.** Se manda **el corte del DWG revisado**, con los cambios del autor si los hizo (siempre el archivo actualizado), **sin las cotas**. A la vez se guardan en PDF las presentaciones del DWG y los planteamientos (los imprime CoordinaOT), según el producto:
 
 | Producto | Presentaciones del DWG | Otros PDF |
 | --- | --- | --- |
@@ -24,13 +24,23 @@ Los pedidos **sin corte** siguen exactamente igual que ahora.
 | Remolques | No | Solo el PDF de la web, como ahora |
 | Toldos | Sí | Además, la estructura del planteamiento de la web; **no** si es solo cambio de tela |
 
+## Decisiones y aclaraciones (23/10/2026)
+
+- **Abrir el DWG desde la web:** con el protocolo `tgm-pedidos:` que ya usa historial de pedidos (`tools/install-tgm-open-protocol.ps1` de ese proyecto, instalado en cada PC). La web da la ruta de red del DWG y el PC lo abre en ZWCAD. No hace falta instalar nada nuevo.
+- **Recuadros en el DWG:** el plano lleva dos recuadros en el modelo, en una capa que no se imprime: uno marca dónde va **el dibujo** y otro dónde va **el corte**. Así la web sabe qué es cada cosa aunque el autor mueva o cambie piezas: **el corte es lo que queda dentro del recuadro del corte**, en las capas del bot, sin cotas.
+- **Siempre el corte del autor:** al mandar al bot, la web lee el DWG tal como está en ese momento (ODA lo pasa a DXF en el servidor) y saca el corte de su recuadro. Nunca reutiliza el corte generado al principio.
+- **Detectar cambios:** al guardar para revisión, la web guarda una huella del corte: sus piezas y rayas, sin depender del orden ni del sentido de las líneas. Al mandar al bot, la compara con la del DWG actual. Si el corte ha cambiado, avisa y el autor elige:
+  - **Continuar con el aprobado:** se manda el corte cambiado y queda registrado quién y cuándo.
+  - **Volver a revisión:** el pedido vuelve al revisor.
+  Si sigue aprobado, se habilita «Mandar corte al bot».
+- **Imprimir lo hace CoordinaOT.** Esta web solo **guarda en PDF** las presentaciones del DWG y los planteamientos. Si hay varios PDF, van con **números consecutivos**, salvo que sean la misma cosa.
+
 ## Lo que habrá que resolver al programarlo
 
-- **Abrir ZWCAD desde la web.** La web corre en el servidor y un navegador no abre programas del equipo por sí solo, ni enlaces `file://`. Opciones: un protocolo propio registrado en cada equipo de la oficina (por ejemplo `abrir-dwg:`) que lance ZWCAD con la ruta, o mostrar la ruta con un botón de copiar. Hay que ver qué permite IT.
-- **Leer el DWG revisado.** El servidor ya tiene ODA para pasar el DWG a DXF. Falta fijar qué cuenta como corte dentro del DWG: las capas del bot (DISCO1, DISCO2, CUTTER, ROTULADOR, taladro, texto) dentro de la zona del corte, sin las DIMENSION ni las capas de plano. Si el autor mueve o añade piezas, tienen que seguir en esa zona y en esas capas.
-- **Imprimir las presentaciones a PDF.** ODA File Converter no imprime. Opciones: imprimir con ZWCAD o AutoCAD por lotes en un equipo, o dibujar nosotros las presentaciones a PDF desde el DXF (ya hay un visor propio del plano en `scripts/lib/plano-dxf.mjs`).
-- **Cambios después de guardar para revisión o de aprobar.** Decidir si el DWG queda bloqueado o si un cambio posterior vuelve el pedido a revisión.
+- **Guardar las presentaciones en PDF.** ODA File Converter no imprime. Lo más directo es dibujarlas nosotros a PDF desde el DXF: ya hay un visor propio del plano (`scripts/lib/plano-dxf.mjs`) que pinta la presentación activa; habría que ampliarlo a todas las presentaciones y a las ventanas giradas.
+- **Números consecutivos.** Confirmar desde qué número empiezan (los de PVC van con `-10`) y qué se considera «la misma cosa»: por ejemplo, todas las presentaciones de un DWG en un solo PDF de varias páginas.
 - **Nombre de la carpeta de borradores** y si es una por año o una sola.
-- **Confirmar el corte** debería quedar registrado: quién, cuándo y la fecha del DWG que se confirmó, para detectar si se tocó después.
+- **Confirmar el corte** debería quedar registrado: quién, cuándo y la huella del corte confirmado.
+- **Si el autor mueve algo fuera del recuadro del corte**, la web debe avisar de que no lo encuentra en vez de mandar un corte incompleto.
 
 Relacionado: el flujo actual de Pedidos con CoordinaOT (corregir, revisar, mandar al bot) y las carpetas definitivas del corte.
