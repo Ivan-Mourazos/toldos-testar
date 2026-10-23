@@ -1646,7 +1646,8 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       rollTubeLength: 306,
       structureLength: 306
     });
-    expect(result.diagnostics.some((item) => item.level === 'warn')).toBe(false);
+    // Ningún aviso de excepción técnica; el de la ventana de 140 (cristal de 144 en rollo de 140) es otro asunto.
+    expect(result.diagnostics.some((item) => item.level === 'warn' && !/cristal/.test(item.message))).toBe(false);
   });
 
   test('fuera de 500x400 exige activar una excepción técnica', () => {

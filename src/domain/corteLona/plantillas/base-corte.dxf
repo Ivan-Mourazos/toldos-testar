@@ -2545,20 +2545,6 @@ AcDbBlockTableRecord
 340
 1E4
   0
-BLOCK_RECORD
-  5
-1DF
-330
-1
-100
-AcDbSymbolTableRecord
-100
-AcDbBlockTableRecord
-  2
-*Paper_Space0
-340
-1E0
-  0
 ENDTAB
   0
 ENDSEC
@@ -2642,44 +2628,6 @@ ENDBLK
 AcDbEntity
  67
      1
-  8
-0
-100
-AcDbBlockEnd
-  0
-BLOCK
-  5
-1E1
-330
-1DF
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockBegin
-  2
-*Paper_Space0
- 70
-     0
- 10
-0.0
- 20
-0.0
- 30
-0.0
-  3
-*Paper_Space0
-  1
-
-  0
-ENDBLK
-  5
-1E2
-330
-1DF
-100
-AcDbEntity
   8
 0
 100
@@ -4057,10 +4005,6 @@ Model
   3
 Presentación1
 350
-1E0
-  3
-Presentación2
-350
 1E4
   0
 DICTIONARY
@@ -5083,138 +5027,6 @@ Seleccione un nuevo nombre de configuración de trazado para trazar la presentac
   0
 LAYOUT
   5
-1E0
-102
-{ACAD_REACTORS
-330
-1A
-102
-}
-330
-1A
-100
-AcDbPlotSettings
-  1
-
-  2
-None
-  4
-ISO_A4_(210.00_x_297.00_MM)
-  6
-
- 40
-0.0
- 41
-0.0
- 42
-0.0
- 43
-0.0
- 44
-0.0
- 45
-0.0
- 46
-0.0
- 47
-0.0
- 48
-0.0
- 49
-0.0
-140
-0.0
-141
-0.0
-142
-1.0
-143
-1.0
- 70
-   688
- 72
-     1
- 73
-     1
- 74
-     5
-  7
-
- 75
-    16
- 76
-     0
- 77
-     2
- 78
-   300
-147
-1.0
-148
-0.0
-149
-0.0
-100
-AcDbLayout
-  1
-Presentación1
- 70
-     1
- 71
-     1
- 10
--20.0
- 20
--7.5
- 11
-277.0
- 21
-202.5
- 12
-0.0
- 22
-0.0
- 32
-0.0
- 14
-25.69999999999999
- 24
-19.5
- 34
-0.0
- 15
-231.3
- 25
-175.5
- 35
-0.0
-146
-0.0
- 13
-0.0
- 23
-0.0
- 33
-0.0
- 16
-1.0
- 26
-0.0
- 36
-0.0
- 17
-0.0
- 27
-1.0
- 37
-0.0
- 76
-     0
-330
-1DF
-  0
-LAYOUT
-  5
 1E4
 102
 {ACAD_REACTORS
@@ -5289,7 +5101,7 @@ ISO_A4_(210.00_x_297.00_MM)
 100
 AcDbLayout
   1
-Presentación2
+Presentación1
  70
      1
  71
