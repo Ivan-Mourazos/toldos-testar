@@ -196,6 +196,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     if (!positivo(a.pie) || !positivo(a.cabecera) || a.pasos.some(x => !positivo(x)) || Math.abs(alturas.at(-1)!+a.cabecera-p.alto) > 0.05) aviso('CADENA', `Pie, pasos y cabecera suman ${numero(alturas.at(-1)!+a.cabecera)} cm; deben sumar ${numero(p.alto)} cm.`);
     if (!a.saco) aviso('SACO', 'Pon el saco útil del pedido, en mm (80, 110, 120…).');
     if(a.doble && a.saco!==80) aviso('SACO_DOBLE','El doble saco lleva el saco normal de 80 integrado y un envoltorio aparte.');
+    // Iván, 23/10/2026 (AR2605035): olvidar los recortes de las cintas es grave; si ninguna E.T. los lleva, se avisa.
+    const cintas = (e: Entrada) => e.huecos.some(h => h.x > 1.01 && h.x + h.ancho < e.largo - 1.01);
+    if(p.entradas.length && !p.entradas.some(cintas)) aviso('CINTAS','Ninguna E.T. lleva recortes de cinta: mira el dibujo y ponlos en «Recortes de cintas».','aviso');
     if (p.entradas.length !== alturas.length) aviso('ENTRADAS', 'Introduce una entrada por cada tubo de la cadena.');
     if (!positivo(a.bolsillo)) aviso('BOLSILLO', 'Confirma el bolsillo superior del dibujo.');
     const bajo = a.doble ? bajoDobleSaco(p) : sacoApilable(p).rematado;
@@ -315,14 +318,15 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
   }
   if(p.bolsillo) {
-    const b=p.medidasBolsillo,arriba=b.altoSuperior??18;
+    const b=p.medidasBolsillo, x=b.lado==='izquierdo'?b.distancia:p.frente-b.distancia-b.ancho;
+    // Con el suelo inclinado, la altura cuenta desde el bajo en el sitio del bolsillo, que sube con él (AR2605035).
+    const arriba=(b.altoSuperior??18)+desnivelSuelo(p)*(x+b.ancho/2)/p.frente;
     if(!Number.isFinite(arriba)) aviso('BOLSILLO_COTA','Revisa la altura del bolsillo desde el bajo terminado.');
     else {
       const destino=paneles.find(t=>arriba>=t.desde && arriba<=t.hasta);
-      const x=b.lado==='izquierdo'?b.distancia:p.frente-b.distancia-b.ancho;
       if(!positivo(b.ancho)||!Number.isFinite(b.distancia)||b.distancia<0||x<0||x+b.ancho>p.frente || arriba<17 || arriba>p.alto || !destino || arriba-destino.desde<.5) aviso('BOLSILLO_COTA','El bolsillo no cabe en esa posición: revisa distancia, ancho y altura del dibujo.');
       else {
-        destino.pieza.marcas.push(...marcasBolsillo(b,p.frente,destino.desde,lateral));
+        destino.pieza.marcas.push(...marcasBolsillo({...b,altoSuperior:arriba},p.frente,destino.desde,lateral));
         r.bolsillo={x,y:arriba-17,ancho:b.ancho,alto:17};
       }
     }

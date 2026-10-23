@@ -4,6 +4,7 @@ import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
 import { enderezarSaco } from './saco.ts';
+import { centroLibre } from './unionesCorte.ts';
 import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
@@ -80,16 +81,19 @@ function rotulosPieza(
   const vertical = girada;
   const largoMm = mm(pieza.ancho);
   const cortoMm = mm(pieza.alto);
-  const cx = x + wMm / 2;
-  const cy = y + hMm / 2;
+  // Las E.T., en su tramo libre más largo, no encima del recorte de la cinta del centro (AR2605035).
+  const aLo = pieza.clase === 'entrada' ? mm(centroLibre(pieza.huecos, pieza.ancho)) : largoMm / 2;
+  const cx = x + (girada ? wMm / 2 : aLo);
+  const cy = y + (girada ? aLo : hMm / 2);
   const of = (pieza.of.trim() || 'SIN OF').toUpperCase();
   const clase = pieza.clase === 'pano' ? etiquetaClasePieza(pieza, codigoPano)
     : `${codigoPano ?? ''} · ${etiquetaClasePieza(pieza)}`;
   // La E.T. que va dentro del paño, rotulada en su franja como las sueltas (Iván, 23/10/2026).
   for (const e of pieza.entradasIncorporadas ?? []) {
     const valor = `${/^[A-Z]+/.exec(codigoPano ?? '')?.[0] ?? ''} · ENTRADA ${e.tubo}`.replace(/^ · /, '');
-    const h = Math.min(mm(e.alto) * .55, mm(pieza.ancho) * .5 / anchoArial(valor, 1));
-    entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - e.y : pieza.ancho / 2), y: y + mm(girada ? pieza.ancho / 2 : e.y),
+    const h = Math.min(mm(e.alto) * .55, mm(pieza.ancho) * .3 / anchoArial(valor, 1));
+    const u = centroLibre(pieza.huecos.filter(q => q.y < e.y + e.alto / 2 && q.y + q.alto > e.y - e.alto / 2), pieza.ancho);
+    entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - e.y : u), y: y + mm(girada ? u : e.y),
       h, valor, giro: girada ? 90 : 0, centrado: true });
   }
   if (columnas && pieza.clase === 'pano') {

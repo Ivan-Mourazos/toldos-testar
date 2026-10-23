@@ -7,6 +7,7 @@ import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable,
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
+import { centroLibre } from './unionesCorte.ts';
 
 // Alzados de oficina, separados del SVG del configurador. Referencias locales:
 // AR2605036/4906 (apilables), AR2604904/4526 (autorreparables).
@@ -111,8 +112,15 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
     texto(l, 'CREMALLERA SOLDADA HASTA MITAD DE SACO', w / 2, ys - h - 32, Math.min(10, w / 45));
   }
   const material = rotuloSaco(p);
-  texto(l, material, w / 2, ys - h / 2, Math.min(10, w / 40));
-  cota(l, 0, ys - h, w, ys - h, ys - h / 2, 'XERAL 5');
+  if (desnivel) {
+    // Iván, 23/10/2026 (AR2605035): sin cota del largo (ya va «LARGO DIAGONAL») y el material entre la raya de arriba
+    // y la del medio, paralelo a ellas.
+    const banda = h / 2 - 2;
+    texto(l, material, w / 2, ys - 2 - banda / 2, Math.min(10, w / 40, banda * .6), Math.atan(desnivel / p.frente) * 180 / Math.PI);
+  } else {
+    texto(l, material, w / 2, ys - h / 2, Math.min(10, w / 40));
+    cota(l, 0, ys - h, w, ys - h, ys - h / 2, 'XERAL 5');
+  }
   cota(l, 0, ys - h, 0, ys, -25);
   if (derecha) {
     // Pestaña a la derecha: el mismo dibujo dado la vuelta; los textos van centrados y no se espejan.
@@ -220,9 +228,11 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
       }
       texto(l, lineas[0], x, -H + yc + h * .7, h);
       texto(l, lineas[1], x, -H + yc - h * .7, h);
-      // La guía, del texto al recuadro del bajo (que sube con el desnivel); sin desnivel, como siempre (24 − h).
-      const [x0, x1] = i ? [F - 25, F - 10] : [10, 21];
-      linea(l, 'texto', i ? x + 35 : x - 35, -H + yc - h * .3 - 7, i ? F - 17.5 : 17.5, -H + 13.5 + Math.max(desnivel * x0 / F, desnivel * x1 / F));
+      // Dos rayas desde la esquina de fuera del texto, una a cada refuerzo: el de la primera E.T. y el del bajo, que
+      // sube con el desnivel (Iván, 23/10/2026: «faltan las rayas que indican a los refuerzos»).
+      const [x0, x1] = i ? [F - 25, F - 10] : [10, 21], fuera = x + (i ? 1 : -1) * anchoArial(lineas[0], h) / 2, cx = i ? F - 17.5 : 17.5;
+      linea(l, 'texto', fuera, -H + yc - h * 1.3, cx, -H + 13.5 + Math.max(desnivel * x0 / F, desnivel * x1 / F));
+      linea(l, 'texto', fuera, -H + yc + h * 1.3, cx, -H + p.apilable.pie - (i ? 5.75 : 6.75));
     }
   } else {
     linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
@@ -288,7 +298,9 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   cota(l, 0, arriba, F, arriba, arriba + 25, ple ? 'XERA 15' : 'XERAL');
   cota(l, 0, 0, 0, -H, -40, ple ? 'XERA 15' : 'XERAL');
   cota(l, F, -H, F, -H + (ple ? hSaco : hSaco + 2), F + 12, 'XERAL 5');
-  texto(l, ple && p.apilable.doble ? 'DOBLE SACO · SACO 80 INTEGRADO' : `SACO DE ${sacoUtil(p) ?? (ple ? 80 : 120)}`, F / 2, -H - 12, Math.min(10, F / 25));
+  // Con el suelo inclinado, paralelo al bajo de la puerta (Iván, 23/10/2026, AR2605035).
+  texto(l, ple && p.apilable.doble ? 'DOBLE SACO · SACO 80 INTEGRADO' : `SACO DE ${sacoUtil(p) ?? (ple ? 80 : 120)}`, F / 2, -H - 12 + desnivel / 2,
+    Math.min(10, F / 25), Math.atan(desnivel / F) * 180 / Math.PI);
   if (ple) {
     texto(l, 'CERRAR E.T', F + 55, -H - 16, 8); texto(l, '2 CM MÁXIMO', F + 55, -H - 28, 8);
     linea(l, 'texto', F + 20, -H - 12, F, -H + hSaco);
@@ -327,13 +339,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     const [x, y] = pieza.origenAlzado!;
     for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, x + m.x, -H + y + m.y, 1, m.giro ?? 0, 'ROTULADOR');
   }
-  let sx = ple ? -(p.apilable.doble ? 12 : 10) : 0;
-  const sacos = r.alternativasSaco?.partido ?? r.piezas.filter(p => p.clase === 'saco');
-  const ys = -H - (ple ? 49.0879644349 : 40);
-  for (const pieza of sacos) {
-    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, sx + m.x, ys - m.y, 1, m.giro ?? 0, 'ROTULADOR');
-    sx += pieza.ancho - 2;
-  }
+  // El dibujo del saco es el saco entero: las marcas de unión del saco partido («a2») solo van en su corte
+  // (Iván, 23/10/2026: «unas marcas de rotulador que no tienen sentido»).
   return { lienzo: l, zona: { x0: desnivel ? -116 : -65, x1: F + (desnivel ? 150 : 120), y0: abajo, y1: arriba + 50 } };
 }
 
@@ -399,7 +406,8 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         continue;
       }
       const letra = String.fromCharCode(65 + pedido.elementos.indexOf(e));
-      const [x, y] = P([p.ancho / 2, p.alto / 2]);
+      // Las E.T., rotuladas en su tramo libre más largo, no encima del recorte de la cinta del centro.
+      const [x, y] = P([p.clase === 'entrada' ? centroLibre(p.huecos, p.ancho) : p.ancho / 2, p.alto / 2]);
       if (p.clase === 'pano') {
         const piezas = calcularPuerta(e.input).piezas.filter(p => p.clase === 'pano');
         if (e.input.modelo !== 'PUERTAENR') piezas.reverse();
@@ -415,7 +423,8 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         }
         // La E.T. que va dentro del paño, con el mismo rótulo que las sueltas (Iván, 23/10/2026).
         for (const et of p.entradasIncorporadas ?? []) {
-          const q = P([p.ancho / 2, et.y]); texto(l, `ENTRADA DE TUBO ${et.tubo}`, q[0], q[1], Math.min(8, et.alto / 2), t.girada ? 90 : 0);
+          const enFranja = p.huecos.filter(h => h.y < et.y + et.alto / 2 && h.y + h.alto > et.y - et.alto / 2);
+          const q = P([centroLibre(enFranja, p.ancho), et.y]); texto(l, `ENTRADA DE TUBO ${et.tubo}`, q[0], q[1], Math.min(8, et.alto / 2), t.girada ? 90 : 0);
         }
         primeros.add(e.id);
       } else texto(l, p.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);

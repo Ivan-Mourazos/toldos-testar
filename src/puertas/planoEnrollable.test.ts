@@ -163,8 +163,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // Renovadas por las correcciones de taller: huecos abiertos, marcas, rótulos y anclajes de cotas; la
     // autorreparable, también porque ahora sí se crea el estilo XERA 20 en la plantilla de toldos.
     // 23/10/2026: «SACO DE 100», sin la DIN A3 vacía, la cota del corte hasta la pieza más alta sin rayas del rollo
-    // y los refuerzos centrados en su hueco (correcciones de Iván sobre AR2605035).
-    ['apilable', apilable, '4c8534a2afb676aaf4062388d499486c88c031a33d46a3de5fe9e3184841215b'],
+    // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
+    // del saco (correcciones de Iván sobre AR2605035).
+    ['apilable', apilable, 'aa0dcef703c1a5c57e767b0ba710750e2bfdf3a9cb36f5eb77e9d9c4a367e851'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     ['autorreparable', autorreparable, 'c9f06a09b3f3dc354bbadcb7aaeebb958bfced1b990cdb687bd377f8cfd946ad'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {

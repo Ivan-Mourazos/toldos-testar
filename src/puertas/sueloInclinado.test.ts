@@ -150,10 +150,26 @@ describe('Correcciones de Iván sobre AR2605035 (23/10/2026)', () => {
       expect(Math.max(...ys)).toBeCloseTo(32, 0);
     }
   });
-  it('a la izquierda solo la cota del pie y la del saco alineada con su diagonal', () => {
+  it('a la izquierda solo la cota del pie; el saco sin cota del largo y su texto paralelo a la raya', () => {
     const l = dibujarAlzadoTaller(p(), 'A').lienzo;
     const izquierda = l.cotas.filter(c => c.x1 === 0 && c.x2 === 0 && c.d === -60);
     expect(izquierda.map(c => Math.round(c.valor))).toEqual([46]);
-    expect(l.cotas.some(c => c.alineada && Math.abs(c.valor - Math.hypot(432, 15)) < .05)).toBe(true);
+    expect(l.cotas.some(c => Math.abs(c.valor - Math.hypot(432, 15)) < .05 || Math.abs(c.valor - 432) < .05 && c.y1 < -400)).toBe(false);
+    expect(l.textos.find(t => t.valor === 'SACO 900 GR NEGRO')!.giro).toBeCloseTo(Math.atan(15 / 432) * 180 / Math.PI);
+  });
+});
+
+describe('Cintas y bolsillo (Iván, 23/10/2026, AR2605035)', () => {
+  it('avisa si ninguna E.T. lleva recortes de cinta, y no si alguna los lleva', () => {
+    const p = puerta5035(0), cinta = (r: ReturnType<typeof calcularPuerta>) => r.avisos.some(a => a.codigo === 'CINTAS');
+    expect(cinta(calcularPuerta(p))).toBe(true);
+    p.entradas = p.entradas.map((e, i) => ({ ...e, huecos: huecosEntrada(e.largo, 30, i % 2 === 0 ? [44, 210, 376] : []) }));
+    expect(cinta(calcularPuerta(p))).toBe(false);
+  });
+  it('con el suelo inclinado, el bolsillo sube con el bajo en su sitio', () => {
+    const p = puerta5035(0); p.bolsillo = true;
+    p.medidasBolsillo = { distancia: 20, ancho: 30, lado: 'derecho', altoSuperior: null };
+    const b = calcularPuerta(p).bolsillo!;
+    expect(b.y + b.alto).toBeCloseTo(18 + 15 * (382 + 15) / 432, 3);
   });
 });

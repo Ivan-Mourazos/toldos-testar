@@ -114,7 +114,7 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           <SegmentedField label="Pestaña del saco por el revés" value={p.apilable.ladoPestana==='derecha'?'Derecha':'Izquierda'} options={['Izquierda','Derecha']} onChange={v=>cadena({ladoPestana:v==='Derecha'?'derecha':'izquierda'})}/>
           <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked,...(e.target.checked?{saco:80}:{})})}/>Doble saco</label>
           {p.apilable.doble?<p className="puerta-ayuda">El saco de 80 integrado queda rematado de 9 cm: el paño empieza 11,5 cm por debajo del bajo.</p>:<AyudaSaco p={p}/>}
-        </div></fieldset>}
+        </div><RecortesCintas p={p} cambiar={cambiar}/></fieldset>}
         {p.modelo==='PUERTAUTO'&&<fieldset><legend>Autorreparable</legend><p className="puerta-ayuda">Dos entradas (F + 11) × 21. El cuerpo arranca en el rematado del saco y acaba 3,5 cm por encima del alto; se añaden 2 cm por empate.</p>
           <div className="puerta-campos"><Numero titulo="Saco útil del pedido (mm)" valor={sacoUtil(p)} cambiar={v=>set('autorreparable',{...p.autorreparable,saco:v})}/></div><AyudaSaco p={p}/>
           <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.autorreparable.espaciadorCentral)} onChange={e=>set('autorreparable',{...p.autorreparable,espaciadorCentral:e.target.checked})}/>Espaciador central (líneas verticales en medio del dibujo)</label>
@@ -145,7 +145,6 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           {p.modelo!=='PUERTAPLE'&&<button type="button" className="ghost-button" onClick={()=>set('entradas',p.entradas.filter((_,j)=>j!==i))}>Quitar entrada</button>}
         </div><details><summary>Huecos de cutter · {e.huecos.length}</summary><Huecos huecos={e.huecos} cambiar={h=>entrada(i,{huecos:h})}/></details></fieldset>)}
         {p.modelo!=='PUERTAPLE'&&<button type="button" className="ghost-button" onClick={()=>set('entradas',[...p.entradas,{altura:0,diametro:30,largo:p.frente,alto:8,huecos:[]}])}>Añadir entrada</button>}
-        {p.modelo==='PUERTAPLE'&&<ProponerCintas p={p} cambiar={cambiar}/>}
       </details>}
       {p.modelo==='PUERTAPLE'&&<details><summary>Empates · {resultado.empates.length?`tubos ${resultado.empates.join(', ')}`:'sin empate'}</summary><p className="puerta-ayuda">La propuesta usa el tubo más alto que cabe en el rollo y deja su entrada incorporada al paño inferior.</p><label className="puerta-casilla"><input type="checkbox" checked={p.apilable.empates===null} onChange={e=>cadena({empates:e.target.checked?null:resultado.empates})}/>Proponer según el rollo</label>{p.apilable.empates!==null&&<Lista titulo="Números de tubo para empate" valores={p.apilable.empates} cambiar={v=>cadena({empates:v})}/>}</details>}
       {p.modelo==='PUERTAENR'&&<EmpatesEnrollable p={p} cambiar={cambiar}/>}
@@ -175,9 +174,28 @@ function EmpatesEnrollable({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
     {valores.length>0&&<button type="button" className="ghost-button" onClick={()=>set([])}>Usar propuesta del rollo</button>}
   </details>;
 }
-function ProponerCintas({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
-  const [xs,setXs]=useState<number[]>([]),[tubos,setTubos]=useState<number[]>([]);
-  return <fieldset><legend>Propuesta editable de cintas</legend><div className="puerta-campos"><Lista titulo="Cintas · posiciones X (cm)" valores={xs} cambiar={setXs}/><Lista titulo="Tubos con cintas" valores={tubos} cambiar={setTubos}/><button type="button" className="ghost-button" onClick={()=>setTubos(p.entradas.map((_,i)=>i+1).filter(n=>n%2===1))}>Proponer tubos impares desde abajo</button><button type="button" className="ghost-button" onClick={()=>cambiar({...p,entradas:p.entradas.map((e,i)=>({...e,huecos:huecosEntrada(e.largo,e.diametro,tubos.includes(i+1)?xs:[])}))})}>Aplicar huecos de la propuesta</button></div></fieldset>;
+/** Recortes de las cintas de las E.T. (Iván, 23/10/2026): a la vista, porque olvidarlos es grave y cada puerta lleva
+ * los suyos. Parte de lo que ya tiene la puerta; «Repartir» los separa por igual entre el primero y el último. */
+function RecortesCintas({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
+  const ANCHO=12, centrales=(e:Entrada)=>e.huecos.filter(h=>h.x>1.01&&h.x+h.ancho<e.largo-1.01).map(h=>h.x);
+  const conCintas=p.entradas.flatMap((e,i)=>centrales(e).length?[i+1]:[]);
+  const actuales=centrales(p.entradas.find(e=>centrales(e).length)??{altura:0,diametro:30,largo:0,alto:0,huecos:[]});
+  const [xs,setXs]=useState<number[]>(actuales),[tubos,setTubos]=useState<number[]>(conCintas);
+  const [n,setN]=useState<number|null>(actuales.length||3),[borde,setBorde]=useState<number|null>(actuales[0]??44);
+  const redondear=(v:number)=>Math.round(v*10)/10;
+  const repartir=()=>{ if(!n||n<1||borde===null)return;
+    setXs(n===1?[redondear((p.frente-ANCHO)/2)]:Array.from({length:n},(_,i)=>redondear(borde+i*(p.frente-2*borde-ANCHO)/(n-1)))); };
+  return <fieldset><legend>Recortes de cintas</legend>
+    <p className="puerta-ayuda">{conCintas.length?`Ahora: tubos ${conCintas.join(', ')} · X ${actuales.map(num).join(', ')} cm.`:'Ninguna E.T. lleva recortes de cinta todavía.'} Recortes de {ANCHO} cm; X desde la izquierda, como en el dibujo.</p>
+    <div className="puerta-campos">
+      <Numero titulo="Recortes por E.T." valor={n} cambiar={setN}/>
+      <Numero titulo="Primer recorte desde el borde (cm)" valor={borde} cambiar={setBorde}/>
+      <button type="button" className="ghost-button" onClick={repartir}>Repartir</button>
+      <Lista titulo="Cintas · posiciones X (cm)" valores={xs} cambiar={setXs}/>
+      <Lista titulo="Tubos con cintas" valores={tubos} cambiar={setTubos}/>
+      <button type="button" className="ghost-button" onClick={()=>setTubos(p.entradas.map((_,i)=>i+1).filter(n=>n%2===1))}>Proponer tubos impares desde abajo</button>
+      <button type="button" className="ghost-button" onClick={()=>cambiar({...p,entradas:p.entradas.map((e,i)=>({...e,huecos:huecosEntrada(e.largo,e.diametro,tubos.includes(i+1)?xs:[])}))})}>Aplicar a las E.T.</button>
+    </div></fieldset>;
 }
 function FilasVentanas({cambiar}:{cambiar:(v:Ventana[])=>void}) {
   const [fila,setFila]=useState({x:0,y:0,ancho:0,alto:0,columnas:1,pilar:0});
