@@ -59,11 +59,15 @@ export function escribirDxfPlano(plano, cabecera) {
 
   // Cajetín de la oficina al día (CAJETIN TGM) en todos los planos, también en las plantillas propias, como la
   // de Portanova, que lo ponen a su escala y en su sitio (Iván, 22/10/2026: «así unificamos diseño»).
-  const { src: conCajetin, insercion: cajetin } = anadirCajetin(src, nuevo, PAPEL, {
+  // Una presentación por hoja (puertas: una por puerta, Iván 23/10/2026); cada una encuadra su zona y lleva su
+  // cajetín. Sin `hojas`, la única de la plantilla con todo el dibujo, como siempre.
+  const valoresCajetin = (h) => ({
     PEDIDO: cabecera.pedido, OF: cabecera.of, CLIENTE: cabecera.cliente, MATERIAL: cabecera.material,
     TECNICO: cabecera.tecnico, REVISOR: cabecera.revisor, FECHA: cabecera.fecha,
-    HOJA: cabecera.pagina || '1/1', SUBTITULO: cabecera.subtitulo
-  }, plano.cajetin);
+    HOJA: cabecera.pagina || '1/1', SUBTITULO: cabecera.subtitulo, ...h.cajetin
+  });
+  const hojas = plano.hojas ?? [{ zona: plano.zonas.toldos }];
+  const { src: conCajetin, insercion: cajetin, insertar: insertarCajetin } = anadirCajetin(src, nuevo, PAPEL, valoresCajetin(hojas[0]), plano.cajetin);
   src = conCajetin;
 
   // Reparto de la A4 (Iván: que el dibujo y el corte se vean lo más grandes posible). Encima del
@@ -77,36 +81,49 @@ export function escribirDxfPlano(plano, cabecera) {
   const libre = (r) => (r.x1 > esquina.x0 && r.y0 < esquina.y1 ? { ...r, y0: esquina.y1 } : r);
   const TITULO_CORTE = 9;   // sitio para el título del corte y la raya
   // El corte se puede poner girado 90° si así se ve más grande (Iván, 19/10/2026): se prueban las dos.
-  const zt = plano.zonas.toldos;
   const zNormal = plano.zonas.corte;
   const [ccx, ccy] = [(zNormal.x0 + zNormal.x1) / 2, (zNormal.y0 + zNormal.y1) / 2];
   const [mw, mh] = [(zNormal.x1 - zNormal.x0) / 2, (zNormal.y1 - zNormal.y0) / 2];
-  // Girado, el corte se aparta a la derecha de los toldos para que ninguna ventana vea la otra zona.
-  const apartar = Math.max(0, zt.x1 + 10 - (ccx - mh));
-  const zGirada = { x0: ccx - mh + apartar, x1: ccx + mh + apartar, y0: ccy - mw, y1: ccy + mw };
   const escala = (z, r) => Math.min((r.x1 - r.x0) / (z.x1 - z.x0), (r.y1 - r.y0) / (z.y1 - z.y0));
-  const repartos = [];
-  // `corteDerecho`: el corte no se gira en la hoja (remolques: el DWG solo se guarda, Iván 20/10/2026).
-  for (const [girado, zcp] of plano.corteDerecho ? [[false, zNormal]] : [[false, zNormal], [true, zGirada]]) {
-    // Debajo: el corte a la izquierda del cajetín; el toldo encima de los dos.
-    for (let h = 25; h <= A4.y1 - A4.y0 - TITULO_CORTE - 60; h += 0.5) {
-      const corte = { x0: A4.x0, y0: A4.y0, x1: esquina.x0, y1: A4.y0 + h };
-      const y0 = Math.max(corte.y1 + TITULO_CORTE, esquina.y1);
-      repartos.push({ girado, zc: zcp, corte, toldo: { x0: A4.x0, y0, x1: A4.x1, y1: A4.y1 }, raya: [[A4.x0, y0 - 2], [A4.x1, y0 - 2]] });
+  const repartir = (zt) => {
+    // Girado, el corte se aparta a la derecha de los toldos para que ninguna ventana vea la otra zona.
+    const apartar = Math.max(0, zt.x1 + 10 - (ccx - mh));
+    const zGirada = { x0: ccx - mh + apartar, x1: ccx + mh + apartar, y0: ccy - mw, y1: ccy + mw };
+    const repartos = [];
+    // `corteDerecho`: el corte no se gira en la hoja (remolques: el DWG solo se guarda, Iván 20/10/2026).
+    for (const [girado, zcp] of plano.corteDerecho ? [[false, zNormal]] : [[false, zNormal], [true, zGirada]]) {
+      // Debajo: el corte a la izquierda del cajetín; el toldo encima de los dos.
+      for (let h = 25; h <= A4.y1 - A4.y0 - TITULO_CORTE - 60; h += 0.5) {
+        const corte = { x0: A4.x0, y0: A4.y0, x1: esquina.x0, y1: A4.y0 + h };
+        const y0 = Math.max(corte.y1 + TITULO_CORTE, esquina.y1);
+        repartos.push({ girado, zc: zcp, corte, toldo: { x0: A4.x0, y0, x1: A4.x1, y1: A4.y1 }, raya: [[A4.x0, y0 - 2], [A4.x1, y0 - 2]] });
+      }
+      // Al lado: el corte a la derecha, encima del cajetín; el toldo a la izquierda, hasta abajo si no lo pisa.
+      for (let w = 60; w <= A4.x1 - A4.x0 - 100; w += 0.5) {
+        const corte = { x0: A4.x1 - w, y0: esquina.y1, x1: A4.x1, y1: A4.y1 - TITULO_CORTE };
+        const toldo = libre({ x0: A4.x0, y0: A4.y0, x1: corte.x0 - 4, y1: A4.y1 });
+        // La raya de separación no cruza el cajetín.
+        const desde = corte.x0 - 2 > esquina.x0 ? esquina.y1 : A4.y0;
+        repartos.push({ girado, zc: zcp, corte, toldo, raya: [[corte.x0 - 2, desde], [corte.x0 - 2, A4.y1]] });
+      }
     }
-    // Al lado: el corte a la derecha, encima del cajetín; el toldo a la izquierda, hasta abajo si no lo pisa.
-    for (let w = 60; w <= A4.x1 - A4.x0 - 100; w += 0.5) {
-      const corte = { x0: A4.x1 - w, y0: esquina.y1, x1: A4.x1, y1: A4.y1 - TITULO_CORTE };
-      const toldo = libre({ x0: A4.x0, y0: A4.y0, x1: corte.x0 - 4, y1: A4.y1 });
-      // La raya de separación no cruza el cajetín.
-      const desde = corte.x0 - 2 > esquina.x0 ? esquina.y1 : A4.y0;
-      repartos.push({ girado, zc: zcp, corte, toldo, raya: [[corte.x0 - 2, desde], [corte.x0 - 2, A4.y1]] });
+    // A igual nota se prefiere el corte sin girar, como va en el rollo.
+    const nota = (r) => Math.min(escala(zt, r.toldo), 1.5 * escala(r.zc, r.corte)) * (r.girado ? 0.98 : 1);
+    const reparto = repartos.reduce((a, b) => (nota(b) > nota(a) + 1e-9 ? b : a));
+    const zc = reparto.zc;
+    // La ventana del corte, sin más alto ni ancho del que usa a su escala.
+    const ec = escala(zc, reparto.corte);
+    const rc = reparto.corte;
+    if (rc.x0 === A4.x0) rc.y1 = rc.y0 + Math.max(25, (zc.y1 - zc.y0) * ec);
+    else rc.y0 = rc.y1 - (zc.y1 - zc.y0) * ec;
+    if (rc.x0 === A4.x0) {
+      reparto.toldo.y0 = Math.max(rc.y1 + TITULO_CORTE, esquina.y1);
+      reparto.raya = [[A4.x0, reparto.toldo.y0 - 2], [A4.x1, reparto.toldo.y0 - 2]];
     }
-  }
-  // A igual nota se prefiere el corte sin girar, como va en el rollo.
-  const nota = (r) => Math.min(escala(zt, r.toldo), 1.5 * escala(r.zc, r.corte)) * (r.girado ? 0.98 : 1);
-  const reparto = repartos.reduce((a, b) => (nota(b) > nota(a) + 1e-9 ? b : a));
-  const zc = reparto.zc;
+    return { reparto, zc, rc, apartar };
+  };
+  const repartos = hojas.map((h) => repartir(h.zona));
+  const { reparto, apartar } = repartos[0];
   // Corte girado 90° alrededor del centro de su zona (solo en el plano; el DXF del bot va sin girar).
   const girar = ([x, y]) => [ccx - (y - ccy) + apartar, ccy + (x - ccx)];
   // Los textos nunca cabeza abajo: horizontales o verticales leyendo de abajo arriba (van centrados).
@@ -125,19 +142,34 @@ export function escribirDxfPlano(plano, cabecera) {
       return { ...c, x1, y1, x2, y2, d, giro: c.giro === 90 ? 0 : 90 };
     })
   };
-  // La ventana del corte, sin más alto ni ancho del que usa a su escala.
-  const ec = escala(zc, reparto.corte);
-  const rc = reparto.corte;
-  if (rc.x0 === A4.x0) rc.y1 = rc.y0 + Math.max(25, (zc.y1 - zc.y0) * ec);
-  else rc.y0 = rc.y1 - (zc.y1 - zc.y0) * ec;
-  if (rc.x0 === A4.x0) {
-    reparto.toldo.y0 = Math.max(rc.y1 + TITULO_CORTE, esquina.y1);
-    reparto.raya = [[A4.x0, reparto.toldo.y0 - 2], [A4.x1, reparto.toldo.y0 - 2]];
-  }
   const encuadre = (z, r) => ({ z, centro: [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], ancho: r.x1 - r.x0, alto: r.y1 - r.y0 });
-  const ventanas = plano.presentacion?.ventanas ?? { 2: encuadre(zt, reparto.toldo), 3: encuadre(zc, rc) };
+  // En una presentación propia (Portanova) la ventana 2 encuadra la zona de la hoja. `corteGirable` deja girar la
+  // vista del corte 90° si así se ve más grande, sin girar el corte en el modelo (Iván, 23/10/2026).
+  const ventanasDe = (h, { reparto: r, zc, rc }) => {
+    const pv = plano.presentacion?.ventanas;
+    const v = pv ? { ...pv, 2: { ...pv[2], z: h.zona } } : { 2: encuadre(h.zona, r.toldo), 3: encuadre(zc, rc) };
+    if (plano.corteGirable) for (const id of Object.keys(v)) if (v[id].z === zNormal || v[id].z === zc) v[id] = { ...v[id], girable: true };
+    return v;
+  };
+  const ventanas = ventanasDe(hojas[0], repartos[0]);
   const encuadrar = (t, v) => {
     const z = v.z;
+    if (v.girable) {
+      const zr = plano.zonas.corteReal ?? z, w = zr.x1 - zr.x0, alto = zr.y1 - zr.y0;
+      if (Math.min(v.ancho / alto, v.alto / w) > 1.02 * Math.min(v.ancho / w, v.alto / alto)) {
+        // Vista girada: centrada en el corte con su objetivo (17/27) y la vista en su origen.
+        let r = poner(t, '10', n(v.centro[0]));
+        r = poner(r, '20', n(v.centro[1]));
+        r = poner(r, '40', n(v.ancho));
+        r = poner(r, '41', n(v.alto));
+        r = poner(r, '12', n(0));
+        r = poner(r, '22', n(0));
+        r = poner(r, '17', n((zr.x0 + zr.x1) / 2));
+        r = poner(r, '27', n((zr.y0 + zr.y1) / 2));
+        r = poner(r, '51', n(90));
+        return poner(r, '45', n(Math.max(w, alto * v.alto / v.ancho) * 1.03));
+      }
+    }
     const altoVista = v.altoVista ?? Math.max(z.y1 - z.y0, (z.x1 - z.x0) * v.alto / v.ancho) * 1.03;
     let r = poner(t, '10', n(v.centro[0]));
     r = poner(r, '20', n(v.centro[1]));
@@ -154,7 +186,7 @@ export function escribirDxfPlano(plano, cabecera) {
   const fin = src.indexOf('  0\nENDSEC\n', ini);
   const trozos = src.slice(ini, fin).split(/(?=^ {2}0\n)/m).filter(Boolean);
   const viejo = trozos.map((t) => /^ {2}0\nINSERT\n[\s\S]*?\n {2}2\nCAJETIN\n/.test(t) && /\n {2}5\n([0-9A-F]+)\n/.exec(t)[1]).find(Boolean);
-  const entidades = trozos.flatMap((t) => {
+  const procesar = (lista, vs) => lista.flatMap((t) => {
     const tipo = /^ {2}0\n([^\n]+)/.exec(t)[1];
     // El cajetín viejo de la plantilla, con sus atributos, sale siempre: lo sustituye el CAJETIN TGM.
     if (/\n {2}5\n([0-9A-F]+)\n/.exec(t)[1] === viejo) return [];
@@ -165,7 +197,7 @@ export function escribirDxfPlano(plano, cabecera) {
     if (tipo === 'TEXT' && /EMPATE:/.test(t)) return [];
     if (tipo === 'VIEWPORT') {
       const id = Number(/\n 69\n\s*(\d+)/.exec(t)?.[1]);
-      const v = ventanas[id];
+      const v = vs[id];
       if (v) {
         return [encuadrar(t, v)];
       }
@@ -174,18 +206,30 @@ export function escribirDxfPlano(plano, cabecera) {
   });
   // Ventanas adicionales de una presentación específica (notas y detalles de taller).
   const plantillaVentana = trozos.find(t => /^ {2}0\nVIEWPORT\n/.test(t) && /\n 69\n\s*3\n/.test(t));
-  for (const [id, v] of Object.entries(ventanas)) {
-    if (Number(id) <= 3 || trozos.some(t => /^ {2}0\nVIEWPORT\n/.test(t) && Number(/\n 69\n\s*(\d+)/.exec(t)?.[1]) === Number(id))) continue;
+  const ventanasExtra = (vs) => Object.entries(vs).flatMap(([id, v]) => {
+    if (Number(id) <= 3 || trozos.some(t => /^ {2}0\nVIEWPORT\n/.test(t) && Number(/\n 69\n\s*(\d+)/.exec(t)?.[1]) === Number(id))) return [];
     let t = poner(plantillaVentana, '5', nuevo());
     t = poner(t, '69', String(id));
-    entidades.push(encuadrar(t, v));
-  }
+    return [encuadrar(t, v)];
+  });
+  const entidades = [...procesar(trozos, ventanas), ...ventanasExtra(ventanas)];
   // En el papel: título del corte y una raya fina entre el corte y el toldo.
   const papel = (tipo, color, sub, cuerpo, capa = 'texto') => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${PAPEL}\n100\nAcDbEntity\n 67\n     1\n  8\n${capa}\n 62\n${String(color).padStart(6)}\n100\n${sub}\n${cuerpo}`;
-  const insercion = plano.presentacion ? cajetin + plano.presentacion.textos.map(t =>
-    papel('MTEXT', 256, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${n(t.ancho)}\n 71\n     1\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 73\n     1\n 44\n1.0\n`, t.capa ?? 'texto')).join('') : cajetin
-    + papel('LWPOLYLINE', 8, 'AcDbPolyline', ` 90\n     2\n 70\n     0\n 43\n0.0\n${reparto.raya.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`)
+  const textosPapel = (caj, { reparto: r, rc }) => plano.presentacion ? caj + plano.presentacion.textos.map(t =>
+    papel('MTEXT', 256, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${n(t.ancho)}\n 71\n     1\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 73\n     1\n 44\n1.0\n`, t.capa ?? 'texto')).join('') : caj
+    + papel('LWPOLYLINE', 8, 'AcDbPolyline', ` 90\n     2\n 70\n     0\n 43\n0.0\n${r.raya.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`)
     + papel('TEXT', 7, 'AcDbText', ` 10\n${n(rc.x0)}\n 20\n${n(rc.y1 + 2)}\n 30\n0.0\n 40\n${n(Math.min(2.2, (rc.x1 - rc.x0) / anchoArial(cabecera.tituloCorte || 'CORTE', 1)))}\n  1\n${cabecera.tituloCorte || 'CORTE'}\n  7\narial\n100\nAcDbText\n`);
+  const insercion = textosPapel(cajetin, repartos[0]);
+  // Las demás hojas: solo lo del papel de la plantilla, con sus ventanas y su cajetín.
+  const sinReactores = (t) => t.replace(/102\n\{ACAD_[A-Z]+\n(?:3[36]0\n[0-9A-F]+\n)*102\n\}\n/g, '').replace(/\n360\n[0-9A-F]+\n/g, '\n');
+  const handleDe = (t) => /\n {2}5\n([0-9A-F]+)\n/.exec(t)?.[1];
+  const delPapel = new Set();
+  for (const t of trozos) if ([PAPEL, ...delPapel].includes(/\n330\n([0-9A-F]+)\n/.exec(sinReactores(t))?.[1])) delPapel.add(handleDe(t));
+  const papelHojas = hojas.slice(1).map((h, i) => {
+    const vs = ventanasDe(h, repartos[i + 1]);
+    return procesar(trozos.filter(t => delPapel.has(handleDe(t))), vs).join('') + ventanasExtra(vs).join('')
+      + textosPapel(insertarCajetin(PAPEL, valoresCajetin(h)), repartos[i + 1]);
+  });
 
   // Dibujo en el modelo.
   const ent = (tipo, capa, sub, cuerpo) => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${MODELO}\n100\nAcDbEntity\n  8\n${capa}\n${plano.coloresModelo?.[capa] == null ? '' : ` 62\n${plano.coloresModelo[capa]}\n`}100\n${sub}\n${cuerpo}`;
@@ -231,10 +275,55 @@ export function escribirDxfPlano(plano, cabecera) {
     const finBlocks = src.indexOf('  0\nENDSEC\n', src.indexOf('\nBLOCKS\n'));
     src = src.slice(0, finBlocks) + cotas.map((c) => c.bloque).join('') + src.slice(finBlocks);
   }
+  if (plano.hojas) src = anadirHojas(src, hojas, papelHojas, PAPEL, nuevo);
   src = src.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`);
 
   // La conversión a DWG queda para el servidor en la fase 2.
   return { dxf: src.replace(/\n/g, '\r\n'), reparto: `${reparto.corte.x0 === A4.x0 ? 'debajo' : 'al lado'}${reparto.girado ? ', girado' : ''}`, ventanas };
+}
+
+/**
+ * Nombra la presentación de la plantilla como la primera hoja y añade una presentación por cada hoja más:
+ * su registro *Paper_SpaceN, su bloque con el papel (handles nuevos, ventanas con número propio), su LAYOUT
+ * copiado del de la plantilla y su entrada en el diccionario de presentaciones.
+ */
+function anadirHojas(src, hojas, papelHojas, PAPEL, nuevo) {
+  const trozosDe = (texto) => texto.split(/(?=^ {2}0\n)/m).filter(Boolean);
+  const handleDe = (t) => /\n {2}5\n([0-9A-F]+)\n/.exec(t)?.[1];
+  const todos = trozosDe(src);
+  const layout = todos.find((t) => /^ {2}0\nLAYOUT\n/.test(t) && new RegExp(`\\n330\\n${PAPEL}\\n`).test(t));
+  const hLayout = handleDe(layout);
+  const nombre = (t, valor, orden) => t.replace(/(AcDbLayout\n {2}1\n)[^\n]*/, `$1${valor}`).replace(/(AcDbLayout\n {2}1\n[^\n]*\n 70\n[^\n]*\n 71\n)[^\n]*/, `$1${orden}`);
+  const viejoNombre = /AcDbLayout\n {2}1\n([^\n]*)/.exec(layout)[1];
+  let layouts = nombre(layout, hojas[0].nombre, 1), entradas = '', registros = '', bloques = '';
+  const usados = Math.max(0, ...[...src.matchAll(/\n 69\n\s*(\d+)\n/g)].map((m) => Number(m[1])));
+  papelHojas.forEach((papel, i) => {
+    const br = nuevo(), hl = nuevo(), base = usados + 10 * i;
+    // Handles nuevos; el dueño pasa del papel de la plantilla al de esta hoja.
+    const mapa = new Map(trozosDe(papel).map((t) => [handleDe(t), nuevo()]));
+    const copia = trozosDe(papel).map((t) => t
+      .replace(/102\n\{ACAD_[A-Z]+\n(?:3[36]0\n[0-9A-F]+\n)*102\n\}\n/g, '').replace(/\n360\n[0-9A-F]+\n/g, '\n')
+      .replace(/\n {2}5\n([0-9A-F]+)\n/, (_, h) => `\n  5\n${mapa.get(h)}\n`)
+      .replace(/\n330\n([0-9A-F]+)\n/, (_, h) => `\n330\n${h === PAPEL ? br : mapa.get(h) ?? h}\n`)
+      .replace(/\n 69\n\s*(\d+)\n/, (_, id) => `\n 69\n${base + Number(id)}\n`)).join('');
+    const general = trozosDe(copia).find((t) => /^ {2}0\nVIEWPORT\n/.test(t) && new RegExp(`\\n 69\\n${base + 1}\\n`).test(t));
+    const pagina = `*Paper_Space${i}`;
+    registros += `  0\nBLOCK_RECORD\n  5\n${br}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${pagina}\n340\n${hl}\n 70\n     0\n280\n     1\n281\n     0\n`;
+    bloques += `  0\nBLOCK\n  5\n${nuevo()}\n330\n${br}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockBegin\n  2\n${pagina}\n 70\n     0\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${pagina}\n  1\n\n`
+      + copia + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${br}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockEnd\n`;
+    layouts += nombre(layout, hojas[i + 1].nombre, i + 2).replace(/\n {2}5\n[0-9A-F]+\n/, `\n  5\n${hl}\n`)
+      .replace(/102\n\{ACAD_[A-Z]+\n(?:3[36]0\n[0-9A-F]+\n)*102\n\}\n/g, '').replace(/\n360\n[0-9A-F]+\n/g, '\n')
+      .replace(new RegExp(`\\n330\\n${PAPEL}\\n(331\\n[0-9A-F]+\\n)?`), `\n330\n${br}\n${general ? `331\n${handleDe(general)}\n` : ''}`);
+    entradas += `  3\n${hojas[i + 1].nombre}\n350\n${hl}\n`;
+  });
+  src = src.replace(layout, layouts);
+  src = src.replace(new RegExp(`( {2}3\\n)${viejoNombre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\n350\\n${hLayout}\\n)`), `$1${hojas[0].nombre}$2${entradas}`);
+  if (registros) {
+    src = insertarEnTabla(src, 'BLOCK_RECORD', registros, papelHojas.length);
+    const finBlocks = src.indexOf('  0\nENDSEC\n', src.indexOf('\nBLOCKS\n'));
+    src = src.slice(0, finBlocks) + bloques + src.slice(finBlocks);
+  }
+  return src;
 }
 
 // Estilos de cota de la plantilla (los de los DWG de la oficina): dibujo en metros y cota en cm (DIMLFAC

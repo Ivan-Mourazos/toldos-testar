@@ -4,7 +4,7 @@ import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { fusionarCortesPuertas } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
-import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
+import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, ENTRE_PUERTAS, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
 import { centroLibre } from './unionesCorte.ts';
@@ -454,9 +454,10 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
 
 export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[], cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string }) {
   const l = vacio(); let cursor = 0, abajo = 0, arriba = 0, izquierda = -65;
+  const zonasPuertas: Zona[] = [];
   for (const [i, e] of pedido.elementos.entries()) {
     const d = dibujarAlzadoTaller(e.input, String.fromCharCode(65 + i)), dx = i ? cursor - d.zona.x0 : 0;
-    sumarLienzo(l, d.lienzo, dx); cursor = dx + d.zona.x1 + 60;
+    sumarLienzo(l, d.lienzo, dx); cursor = dx + d.zona.x1 + ENTRE_PUERTAS;
     izquierda = Math.min(izquierda,dx+d.zona.x0);
     let suelo = d.zona.y0;
     // Solo la nota que el técnico quiera ver en el plano; el texto de RPS sobraba (Iván, 23/10/2026).
@@ -472,10 +473,13 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
       suelo -= lineas.length * 10 + 20;
     }
     abajo = Math.min(abajo, suelo); arriba = Math.max(arriba, d.zona.y1);
+    zonasPuertas.push({ x0: dx + d.zona.x0, x1: dx + d.zona.x1, y0: suelo, y1: d.zona.y1 });
   }
   const zonaM = (z: Zona, x: number, y: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: y + z.y0 / 100, y1: y + z.y1 / 100 });
-  const za = zonaM({ x0: izquierda, x1: cursor - 60, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);
-  let zc = zonaM(corte.zona, 110, 90), altoVista: number | undefined;
+  const za = zonaM({ x0: izquierda, x1: cursor - ENTRE_PUERTAS, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);
+  const [ox, oy] = origenCorte(za, corte.zona);
+  let zc = zonaM(corte.zona, ox, oy), altoVista: number | undefined;
+  const corteReal = zc;
   const portanova = esClientePortanova(pedido, cabecera.cliente);
   if (portanova) {
     const proporcion = VENTANA_CORTE_PORTANOVA.alto / VENTANA_CORTE_PORTANOVA.ancho;
@@ -484,7 +488,8 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     zc = { x0: cx - altoVista / proporcion / 2, x1: cx + altoVista / proporcion / 2, y0: zc.y1 - altoVista, y1: zc.y1 };
   }
   const unicos = (xs: string[]) => [...new Set(xs.filter(Boolean))].join(' / '), ps = pedido.elementos.map(e => e.input);
-  return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, 110, 90), zonas: { toldos: za, corte: zc }, corteDerecho: true,
+  return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
+    corteGirable: true, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },
     ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVista) : {}),
   }, { pedido: pedido.orderCode, of: unicos(ps.map(p => p.of)), cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),

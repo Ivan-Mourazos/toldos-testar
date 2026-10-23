@@ -95,8 +95,8 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const vista = ent.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === 4)!;
     expect(numero(vista, 20) - numero(vista, 41) / 2).toBeGreaterThanOrEqual(79.9);
     expect(numero(vista, 20) + numero(vista, 41) / 2).toBeCloseTo(201.882, 2);
-    // El dibujo del corte empieza arriba del todo de su ventana.
-    expect(numero(vista, 22) + numero(vista, 45) / 2).toBeCloseTo(90.55, 2);
+    // El dibujo del corte empieza arriba del todo de su ventana; en el modelo, alineado arriba con la puerta (23/10/2026).
+    expect(numero(vista, 22) + numero(vista, 45) / 2).toBeCloseTo(100.4, 2);
     // Las de la plantilla (detalle del saco, más a la derecha en el modelo) no cambian.
     const cotas = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) > 109 && numero(r, 13) < 120);
     expect(cotas).toHaveLength(6);
@@ -165,10 +165,10 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // 23/10/2026: «SACO DE 100», sin la DIN A3 vacía, la cota del corte hasta la pieza más alta sin rayas del rollo
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
-    // cajetín algo más pequeño (23/10/2026).
-    ['apilable', apilable, 'b40664a259e437a9414d878faf59e4dedb129bed45d354b37488ebf0fba05019'],
+    // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A» y el corte en fila con la puerta.
+    ['apilable', apilable, 'fc2f47ccbd322f96fef80981433379c730f7faa7687974249bafb54727f66374'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, 'd92583f21588bbb7cd71c8477ce02c589cab0df1a837658985a1b0c44324eece'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, 'efb2e1f3f4e11fede0d68beb82514bba343477635037fe52e969cbad41df57d2'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

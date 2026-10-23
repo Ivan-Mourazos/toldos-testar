@@ -80,17 +80,22 @@ export function anadirCajetin(src, nuevo, papel, valores, { sitio = SITIO_CAJETI
   const finBlocks = src.indexOf('  0\nENDSEC\n', src.indexOf('\nBLOCKS\n'));
   src = src.slice(0, finBlocks) + logo + caj + src.slice(finBlocks);
 
-  // Inserción en el papel con los atributos rellenos.
+  // Inserción en el papel con los atributos rellenos; `insertar` sirve para otras presentaciones del mismo DXF.
   const [ix, iy] = sitio;
   const escalar = escala === 1 ? '' : ` 41\n${n(escala)}\n 42\n${n(escala)}\n 43\n${n(escala)}\n`;
-  const hIns = nuevo();
-  let insercion = `  0\nINSERT\n  5\n${hIns}\n330\n${papel}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockReference\n 66\n     1\n  2\nCAJETIN TGM\n 10\n${n(ix)}\n 20\n${n(iy)}\n 30\n0.0\n${escalar}`;
-  for (const fila of atributos.trim().split('\n')) {
-    const [ax, ay, ah, tag] = fila.split(',');
-    insercion += `  0\nATTRIB\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n 62\n${String(TEXTO).padStart(6)}\n100\nAcDbText\n 10\n${n(ix + ax * escala)}\n 20\n${n(iy + ay * escala)}\n 30\n0.0\n 40\n${n(ah * escala)}\n  1\n${valores[tag] ?? ''}\n  7\narial\n100\nAcDbAttribute\n280\n     0\n  2\n${tag}\n 70\n     0\n280\n     1\n`;
-  }
-  insercion += `  0\nSEQEND\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n`;
-  return { src, insercion };
+  const insertar = (papelHoja, valoresHoja) => {
+    const hIns = nuevo();
+    let insercion = `  0\nINSERT\n  5\n${hIns}\n330\n${papelHoja}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n100\nAcDbBlockReference\n 66\n     1\n  2\nCAJETIN TGM\n 10\n${n(ix)}\n 20\n${n(iy)}\n 30\n0.0\n${escalar}`;
+    for (const fila of atributos.trim().split('\n')) {
+      const [ax, ay, , tag] = fila.split(',');
+      const [, , w, alto] = CASILLAS.find(c => c[1] === tag).slice(2);
+      const valor = valoresHoja[tag] ?? '';
+      const ah = valor ? Math.min(alto, (w - 1) / anchoArial(valor, 1)) : alto;
+      insercion += `  0\nATTRIB\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n 62\n${String(TEXTO).padStart(6)}\n100\nAcDbText\n 10\n${n(ix + ax * escala)}\n 20\n${n(iy + ay * escala)}\n 30\n0.0\n 40\n${n(ah * escala)}\n  1\n${valor}\n  7\narial\n100\nAcDbAttribute\n280\n     0\n  2\n${tag}\n 70\n     0\n280\n     1\n`;
+    }
+    return insercion + `  0\nSEQEND\n  5\n${nuevo()}\n330\n${hIns}\n100\nAcDbEntity\n 67\n     1\n  8\n0\n`;
+  };
+  return { src, insercion: insertar(papel, valores), insertar };
 }
 
 // Entidades (texto DXF) de un bloque de la sección BLOCKS.

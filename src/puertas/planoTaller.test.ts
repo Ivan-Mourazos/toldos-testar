@@ -7,6 +7,8 @@ import { puertaPlanoReal } from './__fixtures__/planosReales.ts';
 import { escribirPlanoPuertas } from './plano.ts';
 import { generarCortePuertas } from './corte.ts';
 
+/** Donde empieza el corte en el modelo: su cota más a la izquierda (las del corte van en XERA 20). */
+const inicioCorte = (rs: ReturnType<typeof registrosDxf>) => Math.min(...rs.filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20').map(r => numero(r, 13)));
 const cabecera = { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' };
 const plano = (id: string) => registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe(id, puertaPlanoReal(id)), cabecera }));
 const alzado = (id: string) => plano(id).filter(r => valor(r, 67) !== '1' && (r.tipo === 'HATCH'
@@ -82,19 +84,19 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
   it.each(['AR2605036', 'AR2604904'])('%s: el resumen conserva todas las rayas recibidas y A1 sigue siendo el paño superior', id => {
     const pedido = pedidoDe(id, puertaPlanoReal(id)), rs = plano(id);
     for (const c of generarCortePuertas(pedido).cortes.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'))) {
-      const dimension = rs.find(r => r.tipo === 'DIMENSION' && numero(r, 13) === 110 && Math.abs(numero(r, 42) - c.largo / 10) < .001)!;
+      const xc = inicioCorte(rs), dimension = rs.find(r => r.tipo === 'DIMENSION' && numero(r, 13) === xc && Math.abs(numero(r, 42) - c.largo / 10) < .001)!;
       expect(dimension).toBeDefined();
       const yc = numero(dimension, 23);
       for (const l of c.entidades.lineas) expect(rs.some(r => r.tipo === 'LINE' && valor(r, 8) === l.capa
-        && Math.abs(numero(r, 10) - 110 - l.x1 / 1000) < 1e-6 && Math.abs(numero(r, 20) - yc - l.y1 / 1000) < 1e-6
-        && Math.abs(numero(r, 11) - 110 - l.x2 / 1000) < 1e-6 && Math.abs(numero(r, 21) - yc - l.y2 / 1000) < 1e-6)).toBe(true);
+        && Math.abs(numero(r, 10) - xc - l.x1 / 1000) < 1e-6 && Math.abs(numero(r, 20) - yc - l.y1 / 1000) < 1e-6
+        && Math.abs(numero(r, 11) - xc - l.x2 / 1000) < 1e-6 && Math.abs(numero(r, 21) - yc - l.y2 / 1000) < 1e-6)).toBe(true);
       const superior = c.colocadas.find(t => t.pieza.clase === 'pano' && Math.abs(t.pieza.alto - (id === 'AR2605036' ? 186 : 208.5)) < .001)!;
-      expect(rs.some(r => r.tipo === 'MTEXT' && valor(r, 1) === 'A1' && numero(r, 10) > 110 + superior.x / 1000
-        && numero(r, 10) < 110 + superior.x / 1000 + (superior.girada ? superior.pieza.alto : superior.pieza.ancho) / 100
+      expect(rs.some(r => r.tipo === 'MTEXT' && valor(r, 1) === 'A1' && numero(r, 10) > xc + superior.x / 1000
+        && numero(r, 10) < xc + superior.x / 1000 + (superior.girada ? superior.pieza.alto : superior.pieza.ancho) / 100
         && numero(r, 20) > yc + superior.y / 1000 && numero(r, 20) < yc + superior.y / 1000 + (superior.girada ? superior.pieza.ancho : superior.pieza.alto) / 100)).toBe(true);
       for (const t of c.colocadas.filter(t => t.pieza.clase === 'pano')) {
         for (const r of rs.filter(r => r.tipo === 'MTEXT' && ['A1', 'A2', 'REVÉS', pedido.elementos[0].input.of].includes(valor(r, 1) ?? ''))) {
-          const u = (numero(r, 10) - 110) * 100 - t.x / 10, v = (numero(r, 20) - yc) * 100 - t.y / 10;
+          const u = (numero(r, 10) - xc) * 100 - t.x / 10, v = (numero(r, 20) - yc) * 100 - t.y / 10;
           const [x, y] = t.girada ? [v, t.pieza.alto - u] : [u, v];
           if (x < 0 || y < 0 || x > t.pieza.ancho || y > t.pieza.alto) continue;
           const h = numero(r, 40) * 100, w = anchoArial(valor(r, 1) ?? '', h);
@@ -108,7 +110,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
   it('las uniones del alzado usan a1/b1, igual que las puertas del corte', () => {
     const p = base('PUERTAUTO', 350, 400); p.autorreparable.empates = [150];
     const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', p, p), cabecera }));
-    const minis = rs.filter(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 20) > 90 && numero(r, 40) === .01).map(r => valor(r, 1));
+    const minis = rs.filter(r => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 10) < inicioCorte(rs) && numero(r, 40) === .01).map(r => valor(r, 1));
     expect(minis.sort()).toEqual(['a1', 'a1', 'a1', 'a1', 'b1', 'b1', 'b1', 'b1']);
   });
 
@@ -129,7 +131,7 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
   });
 
   // Renovada para anclar 13/14 a las piezas (con la raya corta del orillo para la cota del rollo) y por el
-  // CAJETIN TGM de Portanova (7816500, a escala 0,74 desde el 23/10/2026); el resto de entidades no cambia.
+  // CAJETIN TGM de Portanova (7816500, a escala 0,74 desde el 23/10/2026; el corte, en fila con la puerta); el resto de entidades no cambia.
   it('AR2605134 conserva todas sus entidades salvo las cotas autorizadas', () => {
     const p = { ...base('PUERTAENR', 212, 360), of: '0233175', cantidad: 3,
       entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 212, alto: 8, huecos: [] })),
@@ -138,8 +140,8 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       .filter(r => r.tipo !== 'DIMENSION' && !(r.tipo === 'LINE' && valor(r, 8) === 'cotas')).map(r => ({ tipo: r.tipo,
         pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
-      .toBe('22f8a7c4857fbc704ba8135e0c833550b7c6ccfd97bdef7296d06de89d1d25bc');
+      .toBe('7c8d0936fe6f2738f58b3cd640c4e67df8b9da9da00d3695640edc279fd456c6');
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('b0fc7748f8844a17eead07700ec0bac29bc1d0dce6a23818ba22942c415cc2e0');
+      .toBe('a82aba162d36a354bebe9728f6b27b159d452f3ed59f2ac1788eb9d08988cd05');
   });
 });

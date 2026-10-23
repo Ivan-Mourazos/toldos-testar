@@ -5,6 +5,9 @@ import { escribirPlanoPuertas } from './plano.ts';
 
 const cabecera = { cliente: 'PORTANOVA', tecnico: 'IVÁN', revisor: 'DAVID', fecha: '2026-10-22' };
 
+/** Donde empieza el corte en el modelo: su cota más a la izquierda (las del corte van en XERA 20). */
+const inicioCorte = (rs: ReturnType<typeof registrosDxf>) => Math.min(...rs.filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20').map(r => numero(r, 13)));
+
 describe('escribirPlanoPuertas', () => {
   it('AR2604638: cajetín con los datos, alzado con cotas de verdad, textos de taller y el corte', () => {
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2604638', puerta4638()), cabecera });
@@ -47,8 +50,26 @@ describe('escribirPlanoPuertas', () => {
     expect(textos.every(t => !/[{}\n]/.test(t))).toBe(true);
     // Los códigos de cada puerta, de izquierda a derecha y sin solaparse.
     const codigos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT' && ['A1', 'B1', 'C1'].includes(valor(r, 1) ?? '')
-      && numero(r, 20) > 90).sort((a, b) => (valor(a, 1) ?? '').localeCompare(valor(b, 1) ?? '')).map(r => numero(r, 10));
+      && numero(r, 20) > 90 && numero(r, 10) < inicioCorte(registrosDxf(dxf))).sort((a, b) => (valor(a, 1) ?? '').localeCompare(valor(b, 1) ?? '')).map(r => numero(r, 10));
     expect(codigos).toEqual([...codigos].sort((a, b) => a - b));
     expect(new Set(codigos).size).toBe(3);
+  });
+
+  it('una presentación por puerta, «PUERTA A»…, con su OF y su página; el corte en fila a la derecha', () => {
+    const puertas = [puerta4638(), apilable(), { ...autorreparable(), of: '0239999' }];
+    const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', ...puertas), cabecera });
+    const rs = registrosDxf(dxf, 'OBJECTS');
+    const layouts = rs.filter(r => r.tipo === 'LAYOUT').map(r => (r.pares as Array<[number, string]>).filter(([k]) => k === 1).pop()![1]);
+    expect(layouts.filter(n => n !== 'Model').sort()).toEqual(['PUERTA A', 'PUERTA B', 'PUERTA C']);
+    // Cada cajetín con la OF de su puerta y su página: uno en el papel activo y los demás en sus bloques.
+    const todos = [...registrosDxf(dxf), ...registrosDxf(dxf, 'BLOCKS')];
+    const atributo = (tag: string) => todos.filter(r => r.tipo === 'ATTRIB' && valor(r, 2) === tag).map(r => valor(r, 1)).sort();
+    expect(atributo('OF')).toEqual(puertas.map(p => p.of).sort());
+    expect(atributo('HOJA')).toEqual(['1/3', '2/3', '3/3']);
+    // Las puertas, en fila; el corte, a su derecha.
+    const modelo = registrosDxf(dxf).filter(r => valor(r, 67) !== '1');
+    const codigos = ['A1', 'B1', 'C1'].map(c => Math.min(...modelo.filter(r => r.tipo === 'MTEXT' && valor(r, 1) === c).map(r => numero(r, 10))));
+    expect(codigos).toEqual([...codigos].sort((a, b) => a - b));
+    expect(Math.max(...codigos)).toBeLessThan(inicioCorte(registrosDxf(dxf)));
   });
 });

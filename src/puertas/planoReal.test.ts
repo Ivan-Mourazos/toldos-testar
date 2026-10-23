@@ -14,6 +14,9 @@ const dibujo = (pedido: string) => {
   return { p, g, textos: g.formas.filter((f): f is TextoAlzado => f.tipo === 'texto') };
 };
 
+/** Donde empieza el corte en el modelo: su cota más a la izquierda (las del corte van en XERA 20). */
+const inicioCorte = (rs: ReturnType<typeof registrosDxf>) => Math.min(...rs.filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20').map(r => numero(r, 13)));
+
 describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', () => {
   it.each([
     ['AR2605036', 186, 277],
@@ -89,7 +92,7 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
     const p = puertaPlanoReal('AR2604638'), pedido = pedidoDe('AR2604638', p);
     const cortes = generarCortePuertas(pedido).cortes;
     const ent = registrosDxf(escribirPlanoPuertas({ pedido, cabecera }));
-    const cotasCorte = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 23) < 95);
+    const cotasCorte = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= inicioCorte(ent));
     for (const c of cortes) {
       const muestra = c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
       // La lona se acota por lo que ocupan sus piezas, no por el rollo, como en el plano a mano de AR2604638 (285 de

@@ -296,17 +296,39 @@ export function lienzoAMetros(l: Lienzo, ox: number, oy: number) {
 }
 const zonaM = (z: Zona, ox: number, oy: number): Zona => ({ x0: ox + z.x0 / 100, x1: ox + z.x1 / 100, y0: oy + z.y0 / 100, y1: oy + z.y1 / 100 });
 
+/**
+ * Origen del corte en el modelo (m): en fila con las puertas, a su derecha con 3 m libres y alineado arriba con ellas,
+ * para que al abrir el DWG esté todo ordenado (Iván, 23/10/2026). Nunca antes de x = 110, donde va desde siempre.
+ */
+export function origenCorte(puertas: Zona, corte: Zona): [number, number] {
+  return [Math.max(110, puertas.x1 + 3 - corte.x0 / 100), puertas.y1 - corte.y1 / 100];
+}
+/** Cm de modelo entre puertas: cada presentación encuadra la suya sin asomar la vecina. */
+export const ENTRE_PUERTAS = 300;
+
+/** Una presentación por puerta, «PUERTA A»…, con su OF y su material en el cajetín (Iván, 23/10/2026). */
+export function hojasPuertas(pedido: PedidoPuertas, zonas: Zona[]) {
+  return pedido.elementos.map((e, i) => ({
+    nombre: `PUERTA ${String.fromCharCode(65 + i)}`, zona: zonas[i],
+    cajetin: { OF: e.input.of, MATERIAL: textoSeguro(`${e.input.material} ${e.input.color}`), HOJA: `${i + 1}/${pedido.elementos.length}` },
+  }));
+}
+
 export function escribirPlanoEnrollables(pedido: PedidoPuertas, cortes: CortePuertas[], cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string }): string {
   const l = vacio(); let cursor = 0, y0 = 0, y1 = 0;
+  const zonasPuertas: Zona[] = [];
   for (const [i, e] of pedido.elementos.entries()) {
     const { lienzo, zona } = dibujarAlzadoEnrollable(e.input, String.fromCharCode(65 + i));
     const dx = i ? cursor - zona.x0 : 0;
-    sumarLienzo(l, lienzo, dx); cursor = dx + zona.x1 + 60;
+    sumarLienzo(l, lienzo, dx); cursor = dx + zona.x1 + ENTRE_PUERTAS;
     y0 = Math.min(y0, zona.y0); y1 = Math.max(y1, zona.y1);
+    zonasPuertas.push({ x0: i ? dx + zona.x0 : -65, x1: dx + zona.x1, y0: zona.y0, y1: zona.y1 });
   }
-  const za = zonaM({ x0: -65, y0, x1: cursor - 60, y1 }, 100, 100);
+  const za = zonaM({ x0: -65, y0, x1: cursor - ENTRE_PUERTAS, y1 }, 100, 100);
   const corte = dibujarCorte(cortes, pedido);
-  let zc = zonaM(corte.zona, 110, 90), altoVistaCorte: number | undefined;
+  const [ox, oy] = origenCorte(za, corte.zona);
+  let zc = zonaM(corte.zona, ox, oy), altoVistaCorte: number | undefined;
+  const corteReal = zc;
   const portanova = esClientePortanova(pedido, cabecera.cliente);
   if (portanova) {
     // El corte, lo más grande que quepa y pegado arriba: debajo queda MATERIALES (Iván, 22/10/2026).
@@ -317,7 +339,8 @@ export function escribirPlanoEnrollables(pedido: PedidoPuertas, cortes: CortePue
   }
   const puertas = pedido.elementos.map(e => e.input);
   const fecha = cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/');
-  return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, 110, 90), zonas: { toldos: za, corte: zc }, corteDerecho: true,
+  return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
+    corteGirable: true, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
     bloques: [bloqueFlechaEnrollable],
     ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVistaCorte) : {}),
   }, {
