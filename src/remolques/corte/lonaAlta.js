@@ -410,7 +410,8 @@ function colocarTodo(piezas, intentos = 400) {
 // `letras`: Map elemento → letra de cada unidad (solo si el corte lleva más de un remolque). `extras`: otras
 // piezas de la misma lona para colocarlas a la vez por huecos (los baquetones, baqueton.js piezasBaqueton).
 // `marcar`: si el nombre de cada pieza va también en rotulador (ver rotular). `tira`: con un contorno que no cabe
-// en el rollo, la tira de atrás «empatada» en dos (la opción 1) o «entera» (la opción 2; Iván, 22/10/2026). Devuelve
+// en el rollo, la tira de atrás «empatada» en dos (la opción 1), «entera» (la opción 2, en un hueco o aparte; Iván,
+// 22/10/2026) o «dentro» (entera y colocada con las demás piezas, para ver si cabe sin alargar el corte). Devuelve
 // también si algún contorno lleva tira (`conTira`) y las piezas que van aparte para cortar de restos (`apartes`).
 export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], marcar = true, tira = 'empatada') {
   const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], conTira: false, apartes: [] };
@@ -426,7 +427,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
       const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
       const conEmpate = c.h > ROLLO && c.w > ROLLO;
       if (conEmpate) out.conTira = true;
-      const entera = conEmpate && tira === 'entera' ? contornoConTiraEntera(c, L ? 1 : union, L.toLowerCase()) : null;
+      const entera = conEmpate && tira !== 'empatada' ? contornoConTiraEntera(c, L ? 1 : union, L.toLowerCase()) : null;
       const emp = conEmpate && !entera ? contornoConEmpate(c, L ? 1 : union, L.toLowerCase()) : null;
       if (emp && !L) union += 3;
       if (entera && !L) union += 1;
@@ -443,8 +444,12 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
       }
       if (entera) {
         const t = rotular(entera.tira, L && `${L}4`, [entera.tira.w / 2, 5], marcar);
-        t.deRestos = `TIRA ENTERA ${L ? `${L}4 ` : ''}${entera.tira.w / 10} × ${entera.tira.h / 10} CM`;
-        tirasEnteras.push(t);
+        // «dentro»: la tira entera es una pieza más del corte, colocada con las demás.
+        if (tira === 'dentro') piezas.push(t);
+        else {
+          t.deRestos = `TIRA ENTERA ${L ? `${L}4 ` : ''}${entera.tira.w / 10} × ${entera.tira.h / 10} CM`;
+          tirasEnteras.push(t);
+        }
         out.avisos.push(`${el.of}: el contorno no cabe en el rollo: empate de 2 cm a lo largo y tira entera de ${entera.tira.w / 10} × ${entera.tira.h / 10} cm.`);
       }
       // Tapa de la ventana: la ventana + 3 cm, una por ventana (Iván, 20/10/2026). Es la pieza siguiente (B4, o B5 si

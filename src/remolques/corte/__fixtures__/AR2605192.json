@@ -1,0 +1,466 @@
+{
+  "schemaVersion": 1,
+  "kind": "remolques",
+  "orderCode": "AR2605192",
+  "numeroPedido": "AR2605192",
+  "status": "PENDING_REVIEW",
+  "createdAt": "2026-10-19T12:25:08.296Z",
+  "updatedAt": "2026-10-20T08:21:08.571Z",
+  "createdBy": "ADRIÁN",
+  "reviewedAt": "2026-10-20T08:21:08.571Z",
+  "reviewedBy": "IVÁN",
+  "reviewNote": "",
+  "summary": {
+    "customer": "CANO MUÑOZ S.L.U.",
+    "orderDate": "2026-10-15",
+    "technician": "ADRIÁN",
+    "reviewer": "IVÁN",
+    "awnings": 8,
+    "ofs": [
+      "0233261",
+      "0233262"
+    ],
+    "models": [
+      "Recto con aguas",
+      "Baquetón"
+    ],
+    "diagnostics": 0
+  },
+  "params": {
+    "recogidas": [
+      {
+        "nombre": "NO",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "GOMA",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "GANCHOS CORAZON",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "CREMALLERA",
+        "delante": 3,
+        "atras": 3,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "VELCRO",
+        "delante": 27,
+        "atras": 27,
+        "lateralSoloAtras": 0,
+        "lateralSoloDelante": 0
+      },
+      {
+        "nombre": "PUENTES ESVA",
+        "delante": 21,
+        "atras": 21,
+        "lateralSoloAtras": 19,
+        "lateralSoloDelante": 19
+      },
+      {
+        "nombre": "PUENTES LATERALES",
+        "delante": 41,
+        "atras": 21,
+        "lateralSoloAtras": 9,
+        "lateralSoloDelante": 9
+      },
+      {
+        "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+        "delante": 42.5,
+        "atras": 42.5,
+        "lateralSoloAtras": 11.5,
+        "lateralSoloDelante": 9,
+        "panoTraseroConAnchoDelante": true
+      }
+    ],
+    "demasiaAlto": 4.5,
+    "demasiaContornoNormal": 3,
+    "demasiaContornoEnfundar": 13,
+    "demasiaLonaHecha": 1,
+    "ajusteContornoBase": 7,
+    "ajusteContornoCurva": 1.5,
+    "pasoOllaosDefecto": 35,
+    "primerOllao": 2.5,
+    "maxPosicionesOllaos": 12,
+    "baquetonDemasiaLargoCostura": 7,
+    "baquetonDemasiaAnchoCostura": 7,
+    "baquetonDemasiaCostura": 2,
+    "baquetonDemasiaFinal": 1,
+    "tecnicos": [
+      "ÁNGEL",
+      "JAIME",
+      "ALBERTO",
+      "ADRIÁN",
+      "TAMARA",
+      "IVÁN"
+    ],
+    "clientesBaqueton": [
+      {
+        "nombre": "GENERAL",
+        "extraLargoCostura": 0,
+        "extraAnchoCostura": 0,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "HIJOS DE PEDRO LOPEZ",
+        "extraLargoCostura": 11,
+        "extraAnchoCostura": 2,
+        "extraBaquetonLargoDelante": 1,
+        "extraBaquetonLargoDetras": 11,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 10,
+        "observaciones": [
+          "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+        ]
+      },
+      {
+        "nombre": "AYALA",
+        "extraLargoCostura": 1,
+        "extraAnchoCostura": 1,
+        "extraBaquetonLargoDelante": 0,
+        "extraBaquetonLargoDetras": 0,
+        "extraLargoFinal": 1,
+        "extraAnchoFinal": 1,
+        "extraBaquetonTrasero": 0,
+        "observaciones": []
+      },
+      {
+        "nombre": "GENERAL WOLDER",
+        "extraLargoCostura": -1,
+        "extraAnchoCostura": -1,
+        "extraBaquetonLargoDelante": -0.5,
+        "extraBaquetonLargoDetras": -0.5,
+        "extraLargoFinal": 0,
+        "extraAnchoFinal": 0,
+        "extraBaquetonTrasero": 0,
+        "observaciones": [
+          "OLLAOS EN ALTA FRECUENCIA",
+          "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+          "MANDAR GOMA SUELTA"
+        ]
+      }
+    ]
+  },
+  "elementos": [
+    {
+      "version": "10",
+      "tipo": "baqueton",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605192",
+          "version": "10",
+          "cliente": "CANO MUÑOZ S.L.U.",
+          "revision": "JAIME",
+          "realizadoPor": "IVÁN",
+          "ordenFabricacion": "0233261",
+          "fecha": "2026-10-21",
+          "fechaSalida": "2026-10-28"
+        },
+        "cantidad": 1,
+        "largo": 186,
+        "ancho": 121,
+        "baqueton": 10,
+        "clienteEspecifico": "GENERAL",
+        "modoOllaos": "SEGUN SE INDICA",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [
+            2.5,
+            32.8,
+            63.2,
+            93.5,
+            123.8,
+            154.2,
+            184.5
+          ],
+          "atras": [
+            2.5,
+            31.8,
+            61,
+            90.3,
+            119.5
+          ],
+          "delante": [
+            2.5,
+            31.8,
+            61,
+            90.3,
+            119.5
+          ]
+        },
+        "rotulacion": true,
+        "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+        "observaciones": ""
+      },
+      "result": {
+        "panoUnico": {
+          "largo": 213,
+          "ancho": 148
+        },
+        "remolqueHecho": {
+          "largo": 187,
+          "ancho": 122
+        },
+        "baquetonCostura": 12,
+        "esquinaDelante": 12,
+        "esquinaDetras": 12,
+        "baquetonDelantero": null,
+        "baquetonTrasero": null,
+        "superficieM2": 3.1524,
+        "ollaos": {
+          "largo": {
+            "n": 6,
+            "dist": 36.4,
+            "posiciones": [
+              2.5,
+              38.9,
+              75.3,
+              111.7,
+              148.1,
+              184.5
+            ]
+          },
+          "ancho": {
+            "n": 4,
+            "dist": 39,
+            "posiciones": [
+              2.5,
+              41.5,
+              80.5,
+              119.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 4,
+            "dist": 39,
+            "posiciones": [
+              2.5,
+              41.5,
+              80.5,
+              119.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            32.8,
+            63.2,
+            93.5,
+            123.8,
+            154.2,
+            184.5
+          ],
+          "atras": [
+            2.5,
+            31.8,
+            61,
+            90.3,
+            119.5
+          ],
+          "delante": [
+            2.5,
+            31.8,
+            61,
+            90.3,
+            119.5
+          ]
+        },
+        "metrosTela": 2.13,
+        "notas": [
+          "Incluye rotulación."
+        ]
+      }
+    },
+    {
+      "version": "11",
+      "tipo": "lona",
+      "input": {
+        "cabecera": {
+          "numeroPedido": "AR2605192",
+          "version": "11",
+          "cliente": "CANO MUÑOZ S.L.U.",
+          "revision": "JAIME",
+          "realizadoPor": "IVÁN",
+          "ordenFabricacion": "0233262",
+          "fecha": "2026-10-21",
+          "fechaSalida": "2026-10-28"
+        },
+        "cantidad": 1,
+        "largo": 253,
+        "ancho": 152,
+        "anchoAtras": 0,
+        "altoDelante": 75,
+        "altoAtras": 0,
+        "aguas": 16,
+        "radioCumbrera": 11,
+        "radioHombro": 9.2,
+        "radioEsquina": 0,
+        "chaflan": 0,
+        "radioChaflanAbajo": 0,
+        "radioChaflanArriba": 0,
+        "contorno": 269.5,
+        "tipoPerfil": "TIPO 03",
+        "recogeDelante": "NO",
+        "recogeAtras": "CREMALLERA",
+        "bastillaEnfundar": false,
+        "ventana": false,
+        "ventanaAncho": 0,
+        "ventanaAlto": 0,
+        "rotulacion": true,
+        "modoOllaos": "SEGUN SE INDICA",
+        "pasoOllaos": 35,
+        "primerOllao": 2.5,
+        "ollaosManuales": {
+          "laterales": [
+            2.5,
+            33.6,
+            64.8,
+            95.9,
+            127,
+            158.1,
+            189.3,
+            220.4,
+            251.5
+          ],
+          "atras": [
+            2.5,
+            39.5,
+            76.5,
+            113.5,
+            150.5
+          ],
+          "delante": [
+            2.5,
+            39.5,
+            76.5,
+            113.5,
+            150.5
+          ]
+        },
+        "material": "LONA ALPHA 1L 580 g/m² :AZUL 5015 :250 AN (580)",
+        "observaciones": "1. CREMALLERA DE 9 DE SOLDAR"
+      },
+      "result": {
+        "lonaHecha": {
+          "largo": 254,
+          "ancho": 153,
+          "anchoAtras": 153
+        },
+        "contornoIntroducido": 269.5,
+        "ajusteContorno": 8.5,
+        "contornoAjustado": 278,
+        "panoDelantero": {
+          "ancho": 155,
+          "alto": 79.5,
+          "etiqueta": "PAÑO DELANTERO"
+        },
+        "panoTrasero": {
+          "ancho": 155,
+          "alto": 79.5,
+          "etiqueta": "PAÑO TRASERO"
+        },
+        "panoContorno": {
+          "ancho": 256,
+          "alto": 278,
+          "etiqueta": "PAÑO CONTORNO"
+        },
+        "ollaos": {
+          "largo": {
+            "n": 8,
+            "dist": 35.6,
+            "posiciones": [
+              2.5,
+              38.1,
+              73.6,
+              109.2,
+              144.8,
+              180.4,
+              215.9,
+              251.5
+            ]
+          },
+          "ancho": {
+            "n": 5,
+            "dist": 37,
+            "posiciones": [
+              2.5,
+              39.5,
+              76.5,
+              113.5,
+              150.5
+            ]
+          },
+          "anchoAtras": {
+            "n": 5,
+            "dist": 37,
+            "posiciones": [
+              2.5,
+              39.5,
+              76.5,
+              113.5,
+              150.5
+            ]
+          }
+        },
+        "reparto": {
+          "laterales": [
+            2.5,
+            33.6,
+            64.8,
+            95.9,
+            127,
+            158.1,
+            189.3,
+            220.4,
+            251.5
+          ],
+          "atras": [
+            2.5,
+            39.5,
+            76.5,
+            113.5,
+            150.5
+          ],
+          "delante": [
+            2.5,
+            39.5,
+            76.5,
+            113.5,
+            150.5
+          ]
+        },
+        "metrosTela": 5.66,
+        "recogeDelanteTexto": "NO",
+        "recogeAtrasTexto": "CREMALLERA",
+        "notas": [
+          "Incluye rotulación."
+        ]
+      }
+    }
+  ],
+  "clienteRps": {
+    "codigo": "030179",
+    "nombre": "CANO MUÑOZ S.L.U."
+  }
+}

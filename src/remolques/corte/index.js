@@ -113,10 +113,16 @@ export function generarCorteRemolques(pedido) {
     const conTira = lonas.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : sinLonas;
     // Con un contorno que no cabe en el rollo, dos opciones en el mismo DXF, y el técnico de la máquina elige (Iván,
     // 22/10/2026: «un corte con la tira puesta en el corte y otro con la tira entera»).
-    const opciones = conTira.conTira
-      ? [[conTira, 'OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA'],
-        [cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas, 'entera'), 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']]
-      : [[conTira, null]];
+    // Pero si la tira entera entra en el corte sin alargarlo más que el de la tira empatada, se corta así y no hay
+    // más opciones: no se empata lo que cabe entero (Iván, 23/10/2026, AR2605192).
+    const entera = conTira.conTira ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas, 'entera') : null;
+    const dentro = conTira.conTira ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas, 'dentro') : null;
+    const cabeEntera = (c) => c && !c.avisos.some((a) => /Alguna pieza no cabe/.test(a)) && !c.apartes.some((a) => /^TIRA ENTERA/.test(a.nombre))
+      && c.largo <= conTira.largo + 0.01;
+    const sinOpciones = [entera, dentro].filter(cabeEntera).sort((a, b) => a.largo - b.largo)[0];
+    const opciones = !conTira.conTira ? [[conTira, null]]
+      : sinOpciones ? [[sinOpciones, null]]
+        : [[conTira, 'OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA'], [entera, 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']];
     for (const [la, opcion] of opciones) {
       const dx = la.largo;
       const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])]);

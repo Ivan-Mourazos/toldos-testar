@@ -13,6 +13,9 @@ import AR2605071 from './__fixtures__/AR2605071.json' with { type: 'json' };
 import AR2605079 from './__fixtures__/AR2605079.json' with { type: 'json' };
 import AR2605088 from './__fixtures__/AR2605088.json' with { type: 'json' };
 import AR2605132 from './__fixtures__/AR2605132.json' with { type: 'json' };
+// Reconstruido de su hoja (CANO MUÑOZ, 21/10/2026) con las calculadoras de la web: baquetón 186 × 121 y lona alta
+// TIPO 03 de 253 × 152 × 75; da los mismos paños que la hoja (155 × 79,5, 256 × 278 y 213 × 148).
+import AR2605192 from './__fixtures__/AR2605192.json' with { type: 'json' };
 import { generarCorteRemolques, resumirMaterial } from './index.js';
 import { calcLona } from '../calc/lona.ts';
 import { DEFAULT_PARAMS } from '../calc/params.ts';
@@ -33,6 +36,19 @@ describe('resumirMaterial', () => {
 });
 
 describe('generarCorteRemolques', () => {
+  it('si la tira entera entra en el corte sin alargarlo, no se empata ni hay opciones (Iván, 23/10/2026, AR2605192)', () => {
+    const { cortes } = generarCorteRemolques(AR2605192);
+    expect(cortes).toHaveLength(1);
+    const [c] = cortes;
+    expect(c.opcion).toBeUndefined();
+    // El corte a mano de Iván: 570,5, con la tira B4 entera encima de las demás piezas.
+    expect(c.largo).toBe(5705);
+    expect(c.apartes).toEqual([]);
+    const textos = c.entidades.textos.map((t) => t.valor);
+    expect(textos.some((v) => /B4-[12]|CORTAR DE RESTOS|OPCIÓN/.test(v))).toBe(false);
+    expect(textos).toContain('B4');
+  });
+
   it('corta dos lonas altas de la misma lona juntas, con letras por remolque (AR2605132)', () => {
     const { cortes, aMano } = generarCorteRemolques(AR2605132);
     expect(aMano).toEqual([]);
