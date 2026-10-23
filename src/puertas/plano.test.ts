@@ -65,6 +65,24 @@ describe('escribirPlanoPuertas', () => {
     expect([...filas.values()].some(xs => xs.length >= 2)).toBe(true);
   });
 
+  // Iván, 24/10/2026 (AR2605035): con varias puertas, cada saco y cada cristal dice de qué puerta es, en el corte y en el dibujo.
+  it.each([['enrollables', puerta4638], ['apilables', apilable]] as const)('%s: con varias puertas, sacos y cristales con la OF de su puerta', (_, crear) => {
+    const puertas = [crear(), { ...crear(), of: '0239999', frente: crear().frente - 40 }];
+    const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', ...puertas), cabecera })).filter(r => valor(r, 67) !== '1');
+    const x0 = inicioCorte(rs), textos = rs.filter(r => r.tipo === 'MTEXT');
+    // En el corte, cada X de una muestra con la OF de su puerta a su lado, a la misma altura.
+    const muestras = textos.filter(r => /^X\d+$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0);
+    expect(muestras.length).toBeGreaterThan(0);
+    for (const m of muestras) expect(textos.some(r => puertas.some(p => valor(r, 1) === p.of) && Math.abs(numero(r, 20) - numero(m, 20)) < 1e-6
+      && numero(r, 10) > numero(m, 10))).toBe(true);
+    // En el dibujo, el rótulo del saco de cada puerta lleva su OF.
+    for (const p of puertas) expect(textos.some(r => numero(r, 10) < x0 && (valor(r, 1) ?? '').startsWith('SACO') && (valor(r, 1) ?? '').endsWith(p.of))).toBe(true);
+  });
+  it('con una sola puerta, el saco y las muestras no repiten la OF', () => {
+    const p = apilable(), rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', p), cabecera }));
+    expect(rs.some(r => r.tipo === 'MTEXT' && (valor(r, 1) ?? '').startsWith('SACO') && (valor(r, 1) ?? '').includes(p.of))).toBe(false);
+  });
+
   it('una presentación por puerta, «PUERTA A»…, con su OF y su página; el corte en fila a la derecha', () => {
     const puertas = [puerta4638(), apilable(), { ...autorreparable(), of: '0239999' }];
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', ...puertas), cabecera });

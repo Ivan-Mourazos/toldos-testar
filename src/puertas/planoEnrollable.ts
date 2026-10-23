@@ -68,7 +68,7 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
     .reduce((a, b) => b[1] - b[0] > a[1] - a[0] ? b : a);
 }
 
-export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lienzo; zona: Zona } {
+export function dibujarAlzadoEnrollable(p: Puerta, letra: string, conOfPuerta = false): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(), F = p.frente, H = p.alto, T = p.enrollable.T;
   const r = calcularPuerta(p), saco = sacoPuerta(p), bajo = saco.rematado, hs = saco.corte, hp = saco.altoPestana;
   const ventanales = T > 0 ? [{ D: p.enrollable.D, margen: p.enrollable.margen }, ...p.enrollable.ventanales ?? []] : [];
@@ -137,8 +137,10 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string): { lienzo: Lie
   cota(l, 0, ys - hs, 0, ys, -32.47);
   cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
   cota(l, 0, ys - hs + 2, 4.5, ys - hs + 2, ys - hs - 17.25);
-  texto(l, rotuloSaco(p), p.sacoDiagonalesAmarillas ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
-    p.sacoDiagonalesAmarillas ? Math.min(10, F * .9 / anchoArial(rotuloSaco(p), 1)) : 10, p.sacoDiagonalesAmarillas ? { centrado: true } : {});
+  // Con varias puertas, el saco dice de cuál es (Iván, 24/10/2026): centrado y a su ancho.
+  const rotulo = conOfPuerta && p.of.trim() ? `${rotuloSaco(p)} · ${p.of.trim()}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas || rotulo !== rotuloSaco(p);
+  texto(l, rotulo, centrado ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
+    centrado ? Math.min(10, F * .9 / anchoArial(rotulo, 1)) : 10, centrado ? { centrado: true } : {});
   // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
   // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
   const hVelcro = 5, xVelcro = 20, dVelcro = 23;
@@ -230,7 +232,11 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
       else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
       if (!xo) texto(l, p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material,
         xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
-      texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8), { centrado: true });
+      // Con varias puertas, al lado del X, la OF de su puerta (Iván, 24/10/2026): en fila, más grandes.
+      const of = pedido.elementos.length > 1 ? pedido.elementos.find(e => e.id === p.id.split(':')[0])?.input.of.trim() ?? '' : '';
+      const hx = of ? Math.min(20, p.alto * .55, p.ancho * .3 / anchoArial(of, 1)) : Math.min(20, p.alto * .8);
+      texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho * (of ? .3 : .5), y + p.alto / 2, hx, { centrado: true });
+      if (of) texto(l, of, xMuestra + p.ancho * .65, y + p.alto / 2, hx, { centrado: true });
       cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
       if (!xo) cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);
       fondo = Math.min(fondo, y); xo += p.ancho + 80;
@@ -329,7 +335,7 @@ export function escribirPlanoEnrollables(pedido: PedidoPuertas, cortes: CortePue
   const l = vacio(); let cursor = 0, y0 = 0, y1 = 0;
   const zonasPuertas: Zona[] = [];
   for (const [i, e] of pedido.elementos.entries()) {
-    const { lienzo, zona } = dibujarAlzadoEnrollable(e.input, String.fromCharCode(65 + i));
+    const { lienzo, zona } = dibujarAlzadoEnrollable(e.input, String.fromCharCode(65 + i), pedido.elementos.length > 1);
     const dx = i ? cursor - zona.x0 : 0;
     sumarLienzo(l, lienzo, dx); cursor = dx + zona.x1 + ENTRE_PUERTAS;
     y0 = Math.min(y0, zona.y0); y1 = Math.max(y1, zona.y1);
