@@ -113,7 +113,7 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
   }
   const material = rotuloSaco(p);
   if (desnivel) {
-    // Iván, 23/10/2026 (AR2605035): sin cota del largo (ya va «LARGO DIAGONAL») y el material entre la raya de arriba
+    // Iván, 23/10/2026 (AR2605035): sin cota del largo y el material entre la raya de arriba
     // y la del medio, paralelo a ellas.
     const banda = h / 2 - 2;
     texto(l, material, w / 2, ys - 2 - banda / 2, Math.min(10, w / 40, banda * .6), Math.atan(desnivel / p.frente) * 180 / Math.PI);
@@ -152,7 +152,7 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
       a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2);
       a.valor=Math.hypot(a.x2-a.x1,a.y2-a.y1);
     }
-    texto(l, `LARGO DIAGONAL ${num(Math.hypot(w,desnivel*w/p.frente))} CM · CABEZAS VERTICALES`, w/2,ys-h-Math.abs(desnivel)-35,7);
+    // Sin el texto «LARGO DIAGONAL … · CABEZAS VERTICALES»: sobraba (Iván, 23/10/2026, AR2605035).
   }
   if (l !== destino) sumarLienzo(destino,l,0);
   return ys - h - 48 - Math.abs(desnivel);
@@ -305,8 +305,10 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   texto(l, ple && p.apilable.doble ? 'DOBLE SACO · SACO 80 INTEGRADO' : `SACO DE ${sacoUtil(p) ?? (ple ? 80 : 120)}`, F / 2, -H - 12 + desnivel / 2,
     Math.min(10, F / 25), Math.atan(desnivel / F) * 180 / Math.PI);
   if (ple) {
-    texto(l, 'CERRAR E.T', F + 55, -H - 16, 8); texto(l, '2 CM MÁXIMO', F + 55, -H - 28, 8);
-    linea(l, 'texto', F + 20, -H - 12, F, -H + hSaco);
+    // Del lado contrario a la pestaña: con la pestaña a la derecha, a la izquierda (Iván, 23/10/2026, AR2605035).
+    const xc = pestanaDerecha(p) ? -55 : F + 55, xr = pestanaDerecha(p) ? -20 : F + 20;
+    texto(l, 'CERRAR E.T', xc, -H - 16, 8); texto(l, '2 CM MÁXIMO', xc, -H - 28, 8);
+    linea(l, 'texto', xr, -H - 12, pestanaDerecha(p) ? 0 : F, -H + hSaco);
   }
   if (r.bolsillo) {
     rect(l, 'referencias', r.bolsillo.x, -H + r.bolsillo.y, r.bolsillo.ancho, r.bolsillo.alto);
@@ -351,7 +353,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
   // El dibujo del saco es el saco entero: las marcas de unión del saco partido («a2») solo van en su corte
   // (Iván, 23/10/2026: «unas marcas de rotulador que no tienen sentido»).
   // Cotas verticales más juntas para que la puerta salga más grande en la hoja (Iván, 23/10/2026).
-  return { lienzo: l, zona: { x0: desnivel ? -72 : -60, x1: F + (desnivel ? 100 : 82), y0: abajo, y1: arriba + 50 } };
+  const izquierdaZona = Math.min(desnivel ? -72 : -60, ple && pestanaDerecha(p) ? -60 - anchoArial('2 CM MÁXIMO', 8) / 2 : 0);
+  return { lienzo: l, zona: { x0: izquierdaZona, x1: F + (desnivel ? 100 : 82), y0: abajo, y1: arriba + 50 } };
 }
 
 function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {

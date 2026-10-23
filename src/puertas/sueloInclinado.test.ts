@@ -8,6 +8,7 @@ import { generarCortePuertas } from './corte.ts';
 import { leerPedidoPuertas } from './pedido.ts';
 import { medidasSaco } from './saco.ts';
 import type { Punto } from './tipos.ts';
+import { anchoArial } from '../domain/corteLona/texto.js';
 
 function puerta5035(i = 0) {
   const f = fixture.puertas[i], p = base('PUERTAPLE', f.frente, f.altoIzquierdo);
@@ -156,6 +157,15 @@ describe('Correcciones de Iván sobre AR2605035 (23/10/2026)', () => {
     expect(izquierda.map(c => Math.round(c.valor))).toEqual([46]);
     expect(l.cotas.some(c => Math.abs(c.valor - Math.hypot(432, 15)) < .05 || Math.abs(c.valor - 432) < .05 && c.y1 < -400)).toBe(false);
     expect(l.textos.find(t => t.valor === 'SACO 900 GR NEGRO')!.giro).toBeCloseTo(Math.atan(15 / 432) * 180 / Math.PI);
+  });
+  it('sin «LARGO DIAGONAL» y «CERRAR E.T» del lado contrario a la pestaña', () => {
+    const cerrar = (x: ReturnType<typeof p>) => dibujarAlzadoTaller(x, 'A').lienzo.textos.find(t => t.valor === 'CERRAR E.T')!.x;
+    const derecha = dibujarAlzadoTaller(p(), 'A');
+    expect(derecha.lienzo.textos.some(t => t.valor.includes('LARGO DIAGONAL'))).toBe(false);
+    expect(cerrar(p())).toBeLessThan(0);
+    expect(derecha.zona.x0).toBeLessThan(cerrar(p()) - anchoArial('2 CM MÁXIMO', 8) / 2);
+    const izquierda = p(); izquierda.apilable.ladoPestana = 'izquierda';
+    expect(cerrar(izquierda)).toBeGreaterThan(izquierda.frente);
   });
 });
 

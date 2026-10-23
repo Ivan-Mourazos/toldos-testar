@@ -396,7 +396,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
         f.y1=mover(f.x1,f.y1); f.y2=mover(f.x2,f.y2); f.texto.y=mover(f.x1,f.texto.y);
       }
     }
-    nota(`LARGO DIAGONAL ${numAlzado(Math.hypot(wSaco,desnivel*wSaco/F))} cm · CABEZAS VERTICALES`, F/2,y1+Math.abs(desnivel)+45,7);
+    // Sin el texto «LARGO DIAGONAL … · CABEZAS VERTICALES»: sobraba (Iván, 23/10/2026, AR2605035).
   }
 
   return { formas, vista: { xMin, yMin, ancho: anchoVista, alto: altoVista }, letraBase, F, H };
