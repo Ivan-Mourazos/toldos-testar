@@ -86,9 +86,8 @@ export function escribirDxfPlano(plano, cabecera) {
   const [mw, mh] = [(zNormal.x1 - zNormal.x0) / 2, (zNormal.y1 - zNormal.y0) / 2];
   const escala = (z, r) => Math.min((r.x1 - r.x0) / (z.x1 - z.x0), (r.y1 - r.y0) / (z.y1 - z.y0));
   const repartir = (zt) => {
-    // Girado, el corte se aparta a la derecha de los toldos para que ninguna ventana vea la otra zona.
-    const apartar = Math.max(0, zt.x1 + 10 - (ccx - mh));
-    const zGirada = { x0: ccx - mh + apartar, x1: ccx + mh + apartar, y0: ccy - mw, y1: ccy + mw };
+    // Girado solo cuenta para medir: en el modelo el corte va siempre horizontal y se gira la vista (Iván, 23/10/2026).
+    const zGirada = { x0: ccx - mh, x1: ccx + mh, y0: ccy - mw, y1: ccy + mw };
     const repartos = [];
     // `corteDerecho`: el corte no se gira en la hoja (remolques: el DWG solo se guarda, Iván 20/10/2026).
     for (const [girado, zcp] of plano.corteDerecho ? [[false, zNormal]] : [[false, zNormal], [true, zGirada]]) {
@@ -120,43 +119,45 @@ export function escribirDxfPlano(plano, cabecera) {
       reparto.toldo.y0 = Math.max(rc.y1 + TITULO_CORTE, esquina.y1);
       reparto.raya = [[A4.x0, reparto.toldo.y0 - 2], [A4.x1, reparto.toldo.y0 - 2]];
     }
-    return { reparto, zc, rc, apartar };
+    return { reparto, zc, rc };
   };
   const repartos = hojas.map((h) => repartir(h.zona));
-  const { reparto, apartar } = repartos[0];
-  // Corte girado 90° alrededor del centro de su zona (solo en el plano; el DXF del bot va sin girar).
-  const girar = ([x, y]) => [ccx - (y - ccy) + apartar, ccy + (x - ccx)];
-  // Los textos nunca cabeza abajo: horizontales o verticales leyendo de abajo arriba (van centrados).
-  const legible = (g) => ({ 180: 0, 270: 90 })[g] ?? g;
-  const corte = !reparto.girado ? plano.corte : {
-    lineas: plano.corte.lineas.map((l) => { const [a, b] = girar([l.x1, l.y1]), [c, d] = girar([l.x2, l.y2]); return { ...l, x1: a, y1: b, x2: c, y2: d }; }),
-    polilineas: plano.corte.polilineas.map((p) => ({ ...p, puntos: p.puntos.map(girar) })),
-    textos: plano.corte.textos.map((t) => { const [x, y] = girar([t.x, t.y]); return { ...t, x, y, giro: legible(((t.giro || 0) + 90) % 360) }; }),
-    // Remolques: esquinas en arco y ollaos (círculos); girados con el corte.
-    arcos: (plano.corte.arcos ?? []).map((a) => { const [x, y] = girar([a.x, a.y]); return { ...a, x, y, desde: (a.desde + 90) % 360, hasta: (a.hasta + 90) % 360 || 360 }; }),
-    circulos: (plano.corte.circulos ?? []).map((c) => { const [x, y] = girar([c.x, c.y]); return { ...c, x, y }; }),
-    // Girada, una cota horizontal pasa a vertical y al revés; su línea de cota gira con ella.
-    cotas: (plano.corte.cotas ?? []).map((c) => {
-      const [x1, y1] = girar([c.x1, c.y1]), [x2, y2] = girar([c.x2, c.y2]);
-      const d = c.giro === 90 ? ccy + (c.d - ccx) : ccx - (c.d - ccy) + apartar;
-      return { ...c, x1, y1, x2, y2, d, giro: c.giro === 90 ? 0 : 90 };
-    })
+  const { reparto } = repartos[0];
+  // La ventana, con la proporción justa de lo que enseña, para que no asome nada vecino del modelo; el corte, arriba a
+  // la izquierda de su sitio (su título va encima) y, si va girado, con la vista girada.
+  const encuadre = (z, r, arriba = false, girada = false) => {
+    const [zw, zh] = girada ? [z.y1 - z.y0, z.x1 - z.x0] : [z.x1 - z.x0, z.y1 - z.y0];
+    const s = Math.min((r.x1 - r.x0) / zw, (r.y1 - r.y0) / zh), [w, h] = [zw * s, zh * s];
+    return { z, centro: arriba ? [r.x0 + w / 2, r.y1 - h / 2] : [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], ancho: w, alto: h, girada };
   };
-  const encuadre = (z, r) => ({ z, centro: [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2], ancho: r.x1 - r.x0, alto: r.y1 - r.y0 });
   // En una presentación propia (Portanova) la ventana 2 encuadra la zona de la hoja. `corteGirable` deja girar la
   // vista del corte 90° si así se ve más grande, sin girar el corte en el modelo (Iván, 23/10/2026).
   const ventanasDe = (h, { reparto: r, zc, rc }) => {
     const pv = plano.presentacion?.ventanas;
-    const v = pv ? { ...pv, 2: { ...pv[2], z: h.zona } } : { 2: encuadre(h.zona, r.toldo), 3: encuadre(zc, rc) };
+    const v = pv ? { ...pv, 2: { ...pv[2], z: h.zona } } : { 2: encuadre(h.zona, r.toldo), 3: encuadre(zNormal, rc, true, r.girado) };
     if (plano.corteGirable) for (const id of Object.keys(v)) if (v[id].z === zNormal || v[id].z === zc) v[id] = { ...v[id], girable: true };
     return v;
   };
   const ventanas = ventanasDe(hojas[0], repartos[0]);
+  // Vista del corte girada 90°: la elegida en el reparto o, si se deja girar, la que lo enseña más grande.
+  const vaGirada = (v) => {
+    if (v.girada) return true;
+    if (!v.girable) return false;
+    const zr = plano.zonas.corteReal ?? v.z, w = zr.x1 - zr.x0, alto = zr.y1 - zr.y0;
+    return Math.min(v.ancho / alto, v.alto / w) > 1.02 * Math.min(v.ancho / w, v.alto / alto);
+  };
+  // Con la vista girada, lo que en el modelo se lee de abajo arriba saldría cabeza abajo en la hoja: esos textos y
+  // cotas del corte se escriben leyendo de arriba abajo, y en la hoja quedan derechos.
+  const corte = !Object.values(ventanas).some(vaGirada) ? plano.corte : {
+    ...plano.corte,
+    textos: plano.corte.textos.map((t) => (t.giro === 90 ? { ...t, giro: 270 } : t)),
+    cotas: (plano.corte.cotas ?? []).map((c) => (c.giro === 90 ? { ...c, textoGirado: true } : c)),
+  };
   const encuadrar = (t, v) => {
     const z = v.z;
-    if (v.girable) {
+    if (vaGirada(v)) {
       const zr = plano.zonas.corteReal ?? z, w = zr.x1 - zr.x0, alto = zr.y1 - zr.y0;
-      if (Math.min(v.ancho / alto, v.alto / w) > 1.02 * Math.min(v.ancho / w, v.alto / alto)) {
+      {
         // Vista girada: centrada en el corte con su objetivo (17/27) y la vista en su origen.
         let r = poner(t, '10', n(v.centro[0]));
         r = poner(r, '20', n(v.centro[1]));
@@ -260,7 +261,7 @@ export function escribirDxfPlano(plano, cabecera) {
   for (const t of textos) {
     const a = ((t.giro || 0) * Math.PI) / 180;
     const ancla = t.ancla ?? (t.centrado ? 5 : 7);   // 5 centro; 7 abajo a la izquierda
-    modelo += ent('MTEXT', t.capa, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${t.ancho == null ? '0.0' : n(t.ancho)}\n 71\n     ${ancla}\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 11\n${n(Math.cos(a))}\n 21\n${n(Math.sin(a))}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+    modelo += ent('MTEXT', t.capa, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${t.ancho == null ? '0.0' : n(t.ancho)}\n 71\n     ${ancla}\n 72\n     1\n  1\n${t.valor}\n  7\narial\n 11\n${n(Math.round(Math.cos(a) * 1e9) / 1e9 || 0)}\n 21\n${n(Math.round(Math.sin(a) * 1e9) / 1e9 || 0)}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   }
 
   // Cotas de verdad, que se seleccionan y se modifican (Iván, 20/10/2026): DIMENSION con los estilos de
@@ -382,12 +383,12 @@ function cotaDxf(c, numero, nuevo, ent) {
   else cuerpo += linea(xy(a + e.flecha, c.d), xy(b - e.flecha, c.d));
   const tt = cabe ? c.d : c.d + (v ? -1 : 1) * e.texto * 0.8;
   const [tx, ty] = xy(medio, tt);
-  cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${c.alineada ? n(ux) : v ? '0.0' : '1.0'}\n 21\n${c.alineada ? n(uy) : v ? '1.0' : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+  cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${c.alineada ? n(ux) : v ? '0.0' : '1.0'}\n 21\n${c.alineada ? n(uy) : v ? (c.textoGirado ? '-1.0' : '1.0') : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   const bloque = `  0\nBLOCK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n  2\n${nombre}\n 70\n     1\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${nombre}\n  1\n\n`
     + cuerpo + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n`;
   const [dx, dy] = xy(s2, c.d);
   const override = c.rotulo == null && texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
-  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${c.alineada ? 33 : 32}\n 71\n     5\n 42\n${n(mide)}\n${override}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
+  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${c.alineada ? 33 : 32}\n 71\n     5\n 42\n${n(mide)}\n${override}${c.textoGirado ? ' 53\n180.0\n' : ''}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
   const registroTabla = `  0\nBLOCK_RECORD\n  5\n${registro}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
   return { entidad, bloque, registro: registroTabla };
 }

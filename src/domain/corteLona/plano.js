@@ -244,17 +244,19 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   const m = (v) => v / 100;
   const px = (v) => m(v) + ORIGEN_M, py = (v) => m(v) + ORIGEN_M;
   const zona = (z) => ({ x0: px(z.x0), y0: py(z.y0), x1: px(z.x1), y1: py(z.y1) });
-  const convertir = (ls, ps, ts, qs) => ({
-    lineas: ls.map((l) => ({ ...l, x1: px(l.x1), y1: py(l.y1), x2: px(l.x2), y2: py(l.y2) })),
-    polilineas: ps.map((p) => ({ ...p, puntos: p.puntos.map(([a, b]) => [px(a), py(b)]) })),
-    textos: ts.map((t) => ({ ...t, valor: t.literal ? String(t.valor) : String(t.valor).toUpperCase(), x: px(t.x), y: py(t.y), h: m(t.h) })),
-    cotas: qs.map((q) => ({ ...q, x1: px(q.x1), y1: py(q.y1), x2: px(q.x2), y2: py(q.y2), d: q.giro ? px(q.d) : py(q.d) }))
+  // El corte, debajo del toldo, alineado a su izquierda y a 1,5 m: al abrir el DWG está todo ordenado (Iván, 23/10/2026).
+  const [dx, dy] = [toldos.x0 - zonaCorte.x0, toldos.y0 - 150 - zonaCorte.y1];
+  const convertir = (ls, ps, ts, qs, ox = 0, oy = 0) => ({
+    lineas: ls.map((l) => ({ ...l, x1: px(l.x1 + ox), y1: py(l.y1 + oy), x2: px(l.x2 + ox), y2: py(l.y2 + oy) })),
+    polilineas: ps.map((p) => ({ ...p, puntos: p.puntos.map(([a, b]) => [px(a + ox), py(b + oy)]) })),
+    textos: ts.map((t) => ({ ...t, valor: t.literal ? String(t.valor) : String(t.valor).toUpperCase(), x: px(t.x + ox), y: py(t.y + oy), h: m(t.h) })),
+    cotas: qs.map((q) => ({ ...q, x1: px(q.x1 + ox), y1: py(q.y1 + oy), x2: px(q.x2 + ox), y2: py(q.y2 + oy), d: q.giro ? px(q.d + ox) : py(q.d + oy) }))
   });
   return {
     capas: CAPAS,
     ...convertir(L.slice(0, desde.L), P.slice(0, desde.P), T.slice(0, desde.T), Q.slice(0, desde.Q)),
-    corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T), Q.slice(desde.Q)),
-    zonas: { toldos: zona(toldos), corte: zona(zonaCorte) },
+    corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T), Q.slice(desde.Q), dx, dy),
+    zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }) },
     anchoRollo, usado,
     largoRollo,
     sacos: sacosStock.length

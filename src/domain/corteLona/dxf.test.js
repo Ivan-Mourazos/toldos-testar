@@ -158,8 +158,10 @@ describe('Plano de confección', () => {
       expect(numero(ventana, 10) + ancho / 2).toBeLessThanOrEqual(289.1);
       expect(numero(ventana, 20) - alto / 2).toBeGreaterThanOrEqual(26 - 0.000001);
       expect(numero(ventana, 20) + alto / 2).toBeLessThanOrEqual(199.9 + 0.000001);
-      expect(numero(ventana, 45)).toBeGreaterThanOrEqual(z.y1 - z.y0);
-      expect(numero(ventana, 45) * ancho / alto).toBeGreaterThanOrEqual(z.x1 - z.x0);
+      // Con la vista girada 90° (el corte sigue horizontal en el modelo), el alto de la ventana cubre el largo.
+      const [zw, zh] = numero(ventana, 51) === 90 ? [z.y1 - z.y0, z.x1 - z.x0] : [z.x1 - z.x0, z.y1 - z.y0];
+      expect(numero(ventana, 45)).toBeGreaterThanOrEqual(zh);
+      expect(numero(ventana, 45) * ancho / alto).toBeGreaterThanOrEqual(zw);
     }
   });
   it('muestra caída terminada sin sumar de nuevo el solape horizontal', () => {

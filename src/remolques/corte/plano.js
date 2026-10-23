@@ -382,16 +382,18 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
   const zonaCorte = { x0: Math.min(...pts.map((p) => p[0])) - 10, y0: Math.min(...pts.map((p) => p[1])) - 10, x1: Math.max(...pts.map((p) => p[0])) + 10, y1: Math.max(...pts.map((p) => p[1])) + 10 };
   // A metros, a 100 m del origen.
   const m = (v) => ORIGEN_M + v / 100;
-  const aM = (G) => ({
-    lineas: G.lineas.map((l) => ({ ...l, x1: m(l.x1), y1: m(l.y1), x2: m(l.x2), y2: m(l.y2) })),
-    polilineas: G.polilineas.map((p) => ({ ...p, puntos: p.puntos.map(([a, b]) => [m(a), m(b)]) })),
-    textos: G.textos.map((t) => ({ ...t, x: m(t.x), y: m(t.y), h: t.h / 100 })),
-    arcos: G.arcos.map((a) => ({ ...a, x: m(a.x), y: m(a.y), r: a.r / 100 })),
-    circulos: G.circulos.map((c) => ({ ...c, x: m(c.x), y: m(c.y), r: c.r / 100 })),
-    cotas: (G.cotas ?? []).map((c) => ({ ...c, x1: m(c.x1), y1: m(c.y1), x2: m(c.x2), y2: m(c.y2), d: m(c.d) })),
+  // El corte, debajo del dibujo, alineado a su izquierda y a 1,5 m: al abrir el DWG está todo ordenado (Iván, 23/10/2026).
+  const [dx, dy] = [zonaDibujo.x0 - zonaCorte.x0, zonaDibujo.y0 - 150 - zonaCorte.y1];
+  const aM = (G, ox = 0, oy = 0) => ({
+    lineas: G.lineas.map((l) => ({ ...l, x1: m(l.x1 + ox), y1: m(l.y1 + oy), x2: m(l.x2 + ox), y2: m(l.y2 + oy) })),
+    polilineas: G.polilineas.map((p) => ({ ...p, puntos: p.puntos.map(([a, b]) => [m(a + ox), m(b + oy)]) })),
+    textos: G.textos.map((t) => ({ ...t, x: m(t.x + ox), y: m(t.y + oy), h: t.h / 100 })),
+    arcos: G.arcos.map((a) => ({ ...a, x: m(a.x + ox), y: m(a.y + oy), r: a.r / 100 })),
+    circulos: G.circulos.map((c) => ({ ...c, x: m(c.x + ox), y: m(c.y + oy), r: c.r / 100 })),
+    cotas: (G.cotas ?? []).map((c) => ({ ...c, x1: m(c.x1 + ox), y1: m(c.y1 + oy), x2: m(c.x2 + ox), y2: m(c.y2 + oy), d: m(c.d + (c.giro ? ox : oy)) })),
   });
-  const zona = (z) => ({ x0: m(z.x0), y0: m(z.y0), x1: m(z.x1), y1: m(z.y1) });
-  const plano = { ...aM(L.g), corte: aM(C), zonas: { toldos: zona(zonaDibujo), corte: zona(zonaCorte) }, corteDerecho: true };
+  const zona = (z, ox = 0, oy = 0) => ({ x0: m(z.x0 + ox), y0: m(z.y0 + oy), x1: m(z.x1 + ox), y1: m(z.y1 + oy) });
+  const plano = { ...aM(L.g), corte: aM(C, dx, dy), zonas: { toldos: zona(zonaDibujo), corte: zona(zonaCorte, dx, dy) }, corteDerecho: true };
   const s = pedido.summary ?? {};
   const fecha = (s.orderDate ?? '').split('-').reverse().map((x, k) => (k === 2 ? x.slice(2) : x)).join('/');
   const metros = (mm) => `${(mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 })} M`;

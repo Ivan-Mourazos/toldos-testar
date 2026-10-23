@@ -82,9 +82,13 @@ export function leerPlanoDxf(ruta) {
   const modelo = primitivas(entidades.filter(r => valor(r, 67) !== '1'));
   const papel = primitivas(entidades.filter(r => valor(r, 67) === '1' && r.tipo !== 'VIEWPORT'));
   const ventanas = entidades.filter(r => r.tipo === 'VIEWPORT' && n(r, 69) > 1).map(r => {
-    const escala = n(r, 41) / n(r, 45), centro = [n(r, 10), n(r, 20)], modelo = [n(r, 12), n(r, 22)], ancho = n(r, 40), alto = n(r, 41);
-    return { id: n(r, 69), escala, centro, modelo, ancho, alto, congeladas: todos(r, 341).map(h => [...capas].find(([, c]) => c.handle === h)?.[0]),
-      zona: { x0: modelo[0] - ancho / escala / 2, x1: modelo[0] + ancho / escala / 2, y0: modelo[1] - alto / escala / 2, y1: modelo[1] + alto / escala / 2 } };
+    const escala = n(r, 41) / n(r, 45), centro = [n(r, 10), n(r, 20)], ancho = n(r, 40), alto = n(r, 41);
+    // Vista girada (51, en grados, antihorario): centrada en su objetivo (17/27) más el centro de la vista.
+    const giro = n(r, 51), a = giro * Math.PI / 180, [c, s] = [Math.cos(a), Math.sin(a)], [vx, vy] = [n(r, 12), n(r, 22)];
+    const modelo = [n(r, 17) + vx * c + vy * s, n(r, 27) - vx * s + vy * c];
+    const [mx, my] = [ancho / escala / 2, alto / escala / 2], [ex, ey] = [Math.abs(mx * c) + Math.abs(my * s), Math.abs(mx * s) + Math.abs(my * c)];
+    return { id: n(r, 69), escala, centro, modelo, ancho, alto, giro, congeladas: todos(r, 341).map(h => [...capas].find(([, c]) => c.handle === h)?.[0]),
+      zona: { x0: modelo[0] - ex, x1: modelo[0] + ex, y0: modelo[1] - ey, y1: modelo[1] + ey } };
   });
   const imprime = p => capas.get(p.capa)?.imprime !== false && capas.get(p.capa)?.visible !== false;
   return { src, entidades, bloques, capas, modelo, papel, ventanas, imprime };
@@ -102,9 +106,10 @@ export function transformarPrimitiva(p, T, escala = 1) {
 export function proyectarPagina(dxf) {
   const pagina = dxf.papel.filter(dxf.imprime).map(p => ({ ...p, espacio: 'papel' }));
   for (const v of dxf.ventanas) {
-    const T = (x, y) => [v.centro[0] + (x - v.modelo[0]) * v.escala, v.centro[1] + (y - v.modelo[1]) * v.escala];
+    const a = (v.giro ?? 0) * Math.PI / 180, [c, s] = [Math.cos(a), Math.sin(a)];
+    const T = (x, y) => { const [u, w] = [x - v.modelo[0], y - v.modelo[1]]; return [v.centro[0] + (u * c - w * s) * v.escala, v.centro[1] + (u * s + w * c) * v.escala]; };
     pagina.push(...dxf.modelo.filter(p => dxf.imprime(p) && !v.congeladas.includes(p.capa) && enZona(p, v.zona))
-      .map(p => ({ ...transformarPrimitiva(p, T, v.escala), espacio: `ventana ${v.id}`, recorte: v })));
+      .map(p => ({ ...transformarPrimitiva(p, T, v.escala), ...(p.giro == null || !v.giro ? {} : { giro: p.giro + v.giro }), espacio: `ventana ${v.id}`, recorte: v })));
   }
   return pagina;
 }

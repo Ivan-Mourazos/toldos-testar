@@ -165,10 +165,10 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // 23/10/2026: «SACO DE 100», sin la DIN A3 vacía, la cota del corte hasta la pieza más alta sin rayas del rollo
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
-    // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A» y el corte en fila con la puerta.
-    ['apilable', apilable, 'fc2f47ccbd322f96fef80981433379c730f7faa7687974249bafb54727f66374'],
+    // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa.
+    ['apilable', apilable, '77ed0c31da6c7a0bc39eb28caf61e4f46aed35b2eba9bbd149bea7d3df284cff'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, 'efb2e1f3f4e11fede0d68beb82514bba343477635037fe52e969cbad41df57d2'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, '74cadf7f905539e95e4ad8e046a0d2ad0bba3c75ce9984b992a67db5a9fd52c1'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -178,7 +178,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     const propio = escribirPlanoPuertas({ pedido, cabecera });
     const anterior = escribirPlanoPuertas({ pedido: { ...pedido, cabecera: { clienteRps: { codigo: '009999' } } }, cabecera });
     const geometria = (dxf: string) => registrosDxf(dxf).filter(r => valor(r, 67) !== '1' && numero(r, 20) > 50 && numero(r, 10) > 99)
-      .map(r => ({ tipo: r.tipo, pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330, 62].includes(k) && !(k === 2 && r.tipo === 'DIMENSION'))
+      // El sentido de los textos (11/21 del MTEXT, 53 de la cota) puede cambiar si la hoja gira la vista del corte.
+      .map(r => ({ tipo: r.tipo, pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330, 62, 53].includes(k) && !(k === 2 && r.tipo === 'DIMENSION')
+        && !([11, 21].includes(k) && r.tipo === 'MTEXT'))
         .map(([k, v]) => [k, numero(r, 10) > 150 && [10, 11, 12, 13, 14].includes(k) && !(k === 11 && r.tipo === 'MTEXT') ? (Number(v) - 100).toFixed(6) : v]) }));
     expect(geometria(propio)).toEqual(geometria(anterior));
     expect(registrosDxf(propio).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1)).toHaveLength(5);
@@ -194,6 +196,6 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('d71669f2147b67ccdd4e50e77b0fad36f3badd14bd7fcc77da4a668084c88327');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('0ae3a0d625af5bae6d8db935c9fa26390f9770ea5d327f70e6f05a5fcecf8435');
   });
 });
