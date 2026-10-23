@@ -341,11 +341,13 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
     });
     const [a1, a2, a3, a4] = cuerpos;
     uniones(a1, cx0, yc0); uniones(a2, cx0, yh1); uniones(a3, cx0, yh0 - s); uniones(a4, cx1 - lado, yh0 - s);
-    rotulos([a2.nombre, t.of, ...unidades], cx, (yh1 + yf1) / 2, 15);
+    // Como el alzado a mano de AR2605193 (Iván, 23/10/2026): las bandas solo con su nombre y en el cristal cuántas
+    // cortinas iguales son, en grande; la OF va en el cajetín.
+    texto(a2.nombre, cx, (yh1 + yf1) / 2, 15);
     texto(a1.nombre, cx, (yf0 + yh0) / 2, 15);
     texto(a3.nombre, cx0 + lado / 2, (yh0 + yh1) / 2, 8, 90);
     texto(a4.nombre, cx1 - lado / 2, (yh0 + yh1) / 2, 8, 90);
-    texto(tramos.length > 1 ? 'CRISTAL' : `CRISTAL ${n(gx1 - gx0)} X ${n(V + 2 * s)}`, cx, (yh0 + yh1) / 2, 12, 0, 'texto', (gx1 - gx0) * 0.8);
+    texto(`X${t.unidades ?? 1}`, cx, (yh0 + yh1) / 2, 25, 0, 'texto', (gx1 - gx0) * 0.8);
     // Impresas: frente, alto y cadena de la derecha; los laterales de la ventana.
     cota('cotas', fx1, yh1, fx1, yf1, n(yf1 - yh1), xDer - fx1);
     cota('cotas', fx1 - e, yh0, fx1 - e, yh1, n(V), xDer - fx1 + e);

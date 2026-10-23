@@ -180,15 +180,19 @@ describe('Del pedido guardado al corte de lona', () => {
     const [lona, cristal] = salida.cortes.conSacos;
     expect([lona.material, cristal.material, cristal.anchoRollo]).toEqual(['PVC 580 MARFIL', 'TRANSPARENTE 650 MI', 1400]);
     expect(lona.piezas[0].piezas.map((p) => [p.nombre, p.largo / 10, p.alto / 10])).toEqual([
-      ['A1', 308, 60.5], ['A2', 308, 93.5], ['A3', 24, 140], ['A4', 24, 140], ['A BAMBA', 308, 21]
+      ['A1', 308, 60.5], ['A2', 308, 93.5], ['A3', 24, 140], ['A4', 24, 140], ['A BAMBA', 308, 21.5]
     ]);
     expect(cristal.piezas[0].piezas.map((p) => [p.nombre, p.largo / 10, p.alto / 10])).toEqual([['A CRISTAL', 264, 140]]);
     expect(cristal.colocadas).toHaveLength(3);
     expect(cristal.sacos).toEqual([]);
     expect(salida.cortes.trozoSeparado).toBeNull();
-    // Los mininúmeros de las esquinas de la ventana, dos de cada uno por cortina (lateral y banda).
+    // Como el corte a mano (Iván, 23/10/2026): el nombre de cada banda de mininúmero en su esquina del lado de la
+    // ventana, una vez por cortina; solo el nombre en las piezas, y REVÉS y la OF una vez; laterales y cristal sin rótulo.
     const minis = lona.dibujo.textos.filter((t) => t.capa === 'ROTULADOR').map((t) => t.valor);
-    for (const n of ['a1', 'a2', 'a3', 'a4']) expect(minis.filter((v) => v === n)).toHaveLength(6);
+    expect(['A1', 'A2'].map((n) => minis.filter((v) => v === n).length)).toEqual([3, 3]);
+    const rotulos = lona.dibujo.textos.filter((t) => t.capa === 'texto').map((t) => t.valor);
+    expect(['REVÉS', '0233272', 'A1', 'A2', 'A', 'A3', 'A4'].map((v) => rotulos.filter((r) => r === v).length)).toEqual([1, 1, 3, 3, 3, 0, 0]);
+    expect(cristal.dibujo.textos.filter((t) => t.capa === 'texto' && t.valor !== cristal.dibujo.textos.at(-1).valor)).toEqual([]);
     // Un solo plano: el del cristal es el de su lona.
     expect(salida.plano).toHaveLength(2);
     expect(salida.plano[1]).toMatchObject({ incluidoEn: salida.plano[0].codigoTela, dxf: salida.plano[0].dxf });
@@ -210,8 +214,8 @@ describe('Del pedido guardado al corte de lona', () => {
       expect(sobre([numero(c, 14), numero(c, 24)]), `cota ${numero(c, 42)}`).toBe(true);
     }
     const minisAlzado = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 20) > 100).map((r) => valor(r, 1));
-    // Lateral y banda llevan el número en el mismo sitio al solaparse: en el dibujo va una vez.
-    for (const n of ['a1', 'a2', 'a3', 'a4']) expect(minisAlzado.filter((v) => v === n)).toHaveLength(1);
+    expect(minisAlzado.sort()).toEqual(['A1', 'A2']);
+    expect(modelo.some((r) => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toBe(true);
   });
   it('corta el cuerpo cuando la bamba es de otra tela y deja aviso', () => {
     const order = structuredClone(revision.order);

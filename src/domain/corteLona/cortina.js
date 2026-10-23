@@ -13,12 +13,16 @@ export const REGLAS_CORTINA = {
   retiroMarca: 4,        // las rayas de rotulador empiezan y acaban 4 dentro de cada lateral
   solapeCristal: 2,      // el cristal pisa 2 por cada lado del hueco
   empate: 2,             // «EMPATE 2 CM»
-  bambaUnionVarilla: 3,  // la bamba se une al cuerpo con varilla (+3) o con E.T. (+5); Q-CP01
+  // La bamba se une al cuerpo con varilla (+3,5, raya a 7) o con E.T. (+5); Q-CP01. Iván, 23/10/2026, con el
+  // corte a mano de AR2605193: 15 → 21,5, como dijo en la sección 10 del estudio (no el +3 del ejemplo base).
+  bambaUnionVarilla: 3.5,
   bambaUnionEt: 5,
   bambaBastilla: 3       // B.N(3) abajo
 };
 const ACABADOS = ['VARILLA', 'ET'];
-// Mininúmeros de las uniones, como en toldos y remolques: a 1 cm del borde y de la punta.
+// Mininúmeros: a 1 cm del borde y de la punta. Con ventana, el nombre de cada banda en su esquina del lado de la
+// ventana, a la derecha, igual en el corte y en el alzado: así se sabe cómo va la pieza (Iván, 23/10/2026,
+// AR2605193 a mano). Sin ventana, los números de empate como en toldos y remolques.
 const BORDE = 10;
 
 /**
@@ -38,9 +42,11 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
   const minus = letra.toLowerCase();
   const ancho = frenteTela + 2 * R.bastillaLado;
   const avisos = [];
+  // Rótulos del corte (Iván, 23/10/2026): cada pieza solo con su nombre (la bamba, la letra); la OF y REVÉS
+  // una vez, en la primera (dibujoCorte.js). Los laterales y el cristal, sin rótulo.
   const piezaBamba = () => ({
-    nombre: `${letra} BAMBA`, largo: mm(ancho), marcas: [marca('arriba', unionBamba + R.marcaVarilla)], uniones: [],
-    alto: mm(bamba + unionBamba + R.bambaBastilla)
+    nombre: `${letra} BAMBA`, rotulo: letra, letra, rotuloCortina: true, enFila: true, largo: mm(ancho),
+    marcas: [marca('arriba', unionBamba + R.marcaVarilla)], uniones: [], alto: mm(bamba + unionBamba + R.bambaBastilla)
   });
   const unionBamba = cortina.abajo === 'ET' ? R.bambaUnionEt : R.bambaUnionVarilla;
   if (soloBamba) return { pvc: [piezaBamba()], cristal: [], avisos };
@@ -61,7 +67,7 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
     while (!cabe(resto)) { paños.push(anchoRollo); resto -= anchoRollo - R.empate; }
     paños.push(resto);
     paños.forEach((alto, i) => pvc.push({
-      nombre: paños.length > 1 ? `${letra}${i + 1}` : letra, largo: mm(ancho), alto: mm(alto), uniones: [],
+      nombre: paños.length > 1 ? `${letra}${i + 1}` : letra, letra, rotuloCortina: true, largo: mm(ancho), alto: mm(alto), uniones: [],
       marcas: [...(i === 0 ? [marcaAbajo] : []), ...(i === paños.length - 1 ? [marcaArriba] : [])]
     }));
     // Cada empate, con el mismo número en los dos paños, a 1 de cada punta.
@@ -80,37 +86,29 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
     const superior = cuerpo - inferior - V;
     if (superior <= R.varillaArriba + R.solapeCristal) throw new Error('La ventana no cabe en la cortina: revisa su alto y la distancia desde abajo.');
     if (!cabe(inferior) || !cabe(superior)) throw new Error('Una banda de la cortina no cabe en el rollo: el corte se hace a mano por ahora.');
-    const lateral = { largo: mm(esquina + R.bastillaLado), alto: mm(V + 2 * R.solapeCristal), marcas: [] };
-    const [a1, a2, a3, a4] = [
-      { nombre: `${letra}1`, largo: mm(ancho), alto: mm(inferior), marcas: [marcaAbajo], uniones: [], enFila: true },
-      { nombre: `${letra}2`, largo: mm(ancho), alto: mm(superior), marcas: [marcaArriba], uniones: [], enFila: true },
-      { nombre: `${letra}3`, ...lateral, uniones: [] },
-      { nombre: `${letra}4`, ...lateral, uniones: [] }
-    ];
-    // Esquinas que se sueldan: cada lateral con la banda de arriba y la de abajo, por su lado de fuera.
-    const unir = (valor, lado, banda, arriba) => {
-      const ul = lado.nombre.endsWith('3') ? BORDE : lado.largo - BORDE;
-      const ub = lado.nombre.endsWith('3') ? BORDE : banda.largo - BORDE;
-      lado.uniones.push({ valor, u: ul, v: arriba ? lado.alto - BORDE : BORDE });
-      banda.uniones.push({ valor, u: ub, v: arriba ? BORDE : banda.alto - BORDE });
-    };
-    unir(`${minus}1`, a3, a2, true); unir(`${minus}2`, a3, a1, false);
-    unir(`${minus}3`, a4, a2, true); unir(`${minus}4`, a4, a1, false);
-    for (const p of [a1, a2, a3, a4]) p.uniones.sort((a, b) => a.valor.localeCompare(b.valor));
-    pvc.push(a1, a2, a3, a4);
+    const lateral = { largo: mm(esquina + R.bastillaLado), alto: mm(V + 2 * R.solapeCristal), marcas: [], uniones: [], sinRotulo: true };
+    const inf = mm(inferior), sup = mm(superior);
+    pvc.push(
+      { nombre: `${letra}1`, letra, rotuloCortina: true, largo: mm(ancho), alto: inf, marcas: [marcaAbajo], enFila: true,
+        uniones: [{ valor: `${letra}1`, u: mm(ancho) - BORDE, v: inf - BORDE }] },
+      { nombre: `${letra}2`, letra, rotuloCortina: true, largo: mm(ancho), alto: sup, marcas: [marcaArriba], enFila: true,
+        uniones: [{ valor: `${letra}2`, u: mm(ancho) - BORDE, v: BORDE }] },
+      { nombre: `${letra}3`, ...lateral },
+      { nombre: `${letra}4`, ...lateral }
+    );
 
     // Cristal: el hueco + 2 por lado. Si no cabe en su rollo, se empata en vertical en tramos (Iván, AR2605080).
     const anchoCristal = frenteTela - 2 * esquina + 2 * R.solapeCristal;
     const altoCristal = V + 2 * R.solapeCristal;
     const rollo = cortina.anchoCristal;
     if (Math.min(anchoCristal, altoCristal) <= rollo) {
-      cristal.push({ nombre: `${letra} CRISTAL`, largo: mm(anchoCristal), alto: mm(altoCristal), marcas: [], uniones: [], sinReves: true });
+      cristal.push({ nombre: `${letra} CRISTAL`, largo: mm(anchoCristal), alto: mm(altoCristal), marcas: [], uniones: [], sinRotulo: true });
     } else {
       avisos.push(`Ventana de ${coma(V)}: el cristal de ${coma(rollo)} no llega con ${R.solapeCristal} cm de solape por lado (hueco máximo ${coma(rollo - 2 * R.solapeCristal)}); va empatado en vertical en tramos de ${coma(rollo)}.`);
       const tramos = Math.ceil((anchoCristal - R.empate) / (rollo - R.empate));
       const ultimo = round1(anchoCristal - (tramos - 1) * (rollo - R.empate));
       for (let i = 0; i < tramos; i++) {
-        cristal.push({ nombre: `${letra} CRISTAL ${i + 1}`, largo: mm(i < tramos - 1 ? rollo : ultimo), alto: mm(altoCristal), marcas: [], uniones: [], sinReves: true });
+        cristal.push({ nombre: `${letra} CRISTAL ${i + 1}`, largo: mm(i < tramos - 1 ? rollo : ultimo), alto: mm(altoCristal), marcas: [], uniones: [], sinRotulo: true });
       }
     }
   }

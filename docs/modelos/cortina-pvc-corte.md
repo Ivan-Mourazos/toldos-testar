@@ -442,12 +442,20 @@ Con F el frente terminado, H el alto terminado y V el alto de la ventana (hueco 
 
 Primera versión del corte y del plano de la cortina de PVC, con las reglas de las secciones 10 y 12:
 
-- `src/domain/corteLona/cortina.js` saca las piezas. Con ventana: A1 banda de abajo, A2 banda de arriba, A3 y A4 laterales de la ventana (esquina + 4 × ventana + 4) y el cristal (hueco + 2 por lado) en su rollo de 140; si no cabe, en tramos de 140 con empates de 2. Sin ventana: un paño o, si no cabe, el de abajo del ancho del rollo y el resto arriba. La bamba, con su unión (varilla +3, E.T. +5) y B.N(3).
+- `src/domain/corteLona/cortina.js` saca las piezas. Con ventana: A1 banda de abajo, A2 banda de arriba, A3 y A4 laterales de la ventana (esquina + 4 × ventana + 4) y el cristal (hueco + 2 por lado) en su rollo de 140; si no cabe, en tramos de 140 con empates de 2. Sin ventana: un paño o, si no cabe, el de abajo del ancho del rollo y el resto arriba. La bamba, con su unión (varilla +3,5, E.T. +5) y B.N(3).
 - El cuerpo es la caída de la web sin la bamba y su remate de 5, como en fachada. Rotulador a 7 del corte arriba y abajo, o a 21 con E.T. Ø40, 4 dentro de cada lateral. Mininúmeros a1–a4 en las esquinas de cada lateral de la ventana y de la banda con la que se suelda.
 - El cristal es otro material del mismo DXF del bot (TRANSPARENTE 650 MI, sin sacos de stock) y va dibujado en el plano de su lona, debajo del corte del PVC: hay un solo plano.
 - El plano dibuja el alzado como los ejemplos base: corte, terminado, bandas, laterales, cristal, rotulador, E.T. y cotas (las terminadas se imprimen; las de corte no).
 - Comprobado con AR2605080 (bandas de 79,5 y 33,5 y laterales de 19 × 166, iguales que su corte real) y con AR2605193.
 
 Revisión de Iván (23/10/2026, «los vi bien»): cotas agarradas a las piezas, mininúmeros también en el dibujo, cotas del corte grandes (XERA 20) y, en las bandas, nombre, OF y REVÉS en fila para que vayan más grandes.
+
+Contraste con el corte a mano de AR2605193 (un compañero de Iván lo dibujó junto al de la web, 23/10/2026). Coinciden el largo (924 de PVC y 792 de cristal), las columnas de 308, A1 60,5, A2 93,5, laterales 140 × 24 y las rayas a 7 del borde de varilla, 4 dentro de las puntas. Su cristal de 141 se lee como el de 140 con hueco de 136 (Iván). Cambios aplicados por decisión de Iván:
+
+- **Bamba con varilla: +3,5**, raya a 7 del borde de arriba (15 → 21,5; 20 → 26,5), como su respuesta de la sección 10. El ejemplo base de 20 → 26 queda como excepción. Con E.T., +5 sin cambios.
+- **Rótulos del corte**: cada pieza solo con su nombre (A1, A2; la bamba, «A»), de 15 cm. REVÉS una vez, en la primera banda del material, y la OF en la primera de cada cortina, como en puertas. Laterales y cristal, sin rótulo.
+- **Mininúmeros**: el nombre de cada banda, de 1 cm, en su esquina del lado de la ventana, a la derecha; el mismo en el alzado. Sustituyen a los a1–a4 de las uniones. Sin ventana siguen los números de empate.
+- **Alzado**: «X3» (las cortinas iguales) grande en la ventana, en vez de «CRISTAL 264 X 140», la OF y «3 UDS». Las bandas, solo su nombre; la OF va en el cajetín.
+- Su colocación en el rollo es otra con el mismo largo; la elegirá el colocador nuevo, que prueba todas las colocaciones.
 
 Queda para después: solapas, varias ventanas, E.T. especiales, Cambio de cortina, laterales al corte en cortinas sin empate y el color y la altura editable del velcro (hoy la web pone la altura de su regla Q-CO06).

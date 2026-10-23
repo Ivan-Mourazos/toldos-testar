@@ -23,6 +23,15 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     const m = /^([A-Z]+)(\d+)$/.exec(p.nombre);
     if (m) panos.set(m[1], Math.max(panos.get(m[1]) ?? 0, Number(m[2])));
   }
+  // Cortina (Iván, 23/10/2026, AR2605193 a mano): cada pieza solo con su nombre; REVÉS una vez, en la primera del
+  // material, y la OF en la primera de cada cortina, como en las puertas. Primera: al principio del rollo, arriba,
+  // y antes un paño que la bamba, que es estrecha (en el corte a mano van en el A1).
+  const esBamba = (p) => p.nombre.includes('BAMBA');
+  const deCortina = colocadas.filter((p) => p.rotuloCortina)
+    .sort((a, b) => esBamba(a) - esBamba(b) || a.x - b.x || (b.y + b.hueco) - (a.y + a.hueco));
+  const primeraDe = new Map();
+  for (const p of deCortina) if (!primeraDe.has(p.letra)) primeraDe.set(p.letra, p);
+  const conOf = new Set(primeraDe.values());
   for (const p of colocadas) {
     const [x0, y0] = [p.x, p.y];
     // Las piezas con sus uniones ya puestas (las de la cortina) no siguen la cadena de paños de fachada.
@@ -43,25 +52,31 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
       if (m === 'abajo') marca(-ajustes.varillaArribaMm, 15);
       if (m === 'tira') marca(ajustes.varillaTiraMm, 20);
     }
+    if (p.sinRotulo) continue;
     // Textos centrados en la pieza y en mayúsculas (Iván, 19/10/2026); a lo largo de la pieza,
     // girados 90° si la pieza está girada. Con REVÉS, nombre y REVÉS quedan a los dos lados del centro.
     // Los sacos de stock llevan la OF de stock, SACO, su medida y STOCK (como AR2602119).
-    let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : Math.min(300, Math.min(p.ancho, p.hueco) / 4);
-    const franja = p.nombre.includes('BAMBA') ? Math.max(1, p.alto - ajustes.varillaTiraMm) : null;
+    // Cortina: todos los rótulos de 15 cm, también en la bamba, como el corte a mano de AR2605193 (Iván, 23/10/2026).
+    let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : p.rotuloCortina ? Math.min(150, Math.min(p.ancho, p.hueco) * 0.7)
+      : Math.min(300, Math.min(p.ancho, p.hueco) / 4);
+    // La bamba rotula por debajo de su raya: la de toldo, la de la tira; la de cortina, la de la varilla.
+    const franja = !p.nombre.includes('BAMBA') ? null
+      : Math.max(1, p.alto - (p.rotuloCortina ? p.marcas[0].mm : ajustes.varillaTiraMm));
     const [cx, cy] = franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
       : p.girada ? [x0 + p.alto - franja / 2, y0 + p.largo / 2] : [x0 + p.largo / 2, y0 + franja / 2];
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']
+      : p.rotuloCortina ? [p.rotulo ?? p.nombre, ...(conOf.has(p) && p.of ? [p.of] : []), ...(p === deCortina[0] ? ['REVÉS'] : [])]
       : [p.nombre, ...(p.of ? [p.of] : []), ...(p.nombre.includes('BAMBA') || p.sinReves ? [] : ['REVÉS'])];
     const espacioTexto = p.girada ? p.hueco : p.ancho;
     const altoLibre = franja === null ? Math.min(p.ancho, p.hueco) * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1)
-      : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + 2);
+      : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + (p.rotuloCortina ? 1 : 2));
     alto = Math.min(alto, altoLibre,
       ...lineasTexto.map((v) => espacioTexto * 0.9 / anchoArial(v, 1)));
     // Piezas largas y bajas (las bandas de la cortina): nombre, OF y REVÉS en fila, repartidos a lo largo, para
     // que vayan más grandes (Iván, 22/10/2026, como en las puertas apilables).
     if (p.enFila && lineasTexto.length > 1) {
       const n = lineasTexto.length, largo = p.girada ? p.hueco : p.ancho, corto = p.girada ? p.ancho : p.hueco;
-      const h = Math.min(300, corto * 0.4, ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
+      const h = Math.min(p.rotuloCortina ? 150 : 300, corto * (p.rotuloCortina ? 0.7 : 0.4), ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
       lineasTexto.forEach((valor, i) => {
         const u = (largo * (i + 0.5)) / n;
         textos.push(p.girada
