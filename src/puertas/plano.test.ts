@@ -55,6 +55,16 @@ describe('escribirPlanoPuertas', () => {
     expect(new Set(codigos).size).toBe(3);
   });
 
+  it.each([['enrollables', puerta4638], ['apilables', apilable]] as const)('%s: con varias puertas, sacos y cristales en la misma fila', (_, crear) => {
+    const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', crear(), { ...crear(), frente: crear().frente - 40 }), cabecera });
+    const rs = registrosDxf(dxf), x0 = inicioCorte(rs);
+    // Los rótulos de cantidad de las muestras (X1, X2…) de cada fila comparten altura y van hacia la derecha.
+    const muestras = rs.filter(r => r.tipo === 'MTEXT' && /^X\d+$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0);
+    const filas = new Map<number, number[]>();
+    for (const r of muestras) filas.set(Math.round(numero(r, 20) * 1000), [...filas.get(Math.round(numero(r, 20) * 1000)) ?? [], numero(r, 10)]);
+    expect([...filas.values()].some(xs => xs.length >= 2)).toBe(true);
+  });
+
   it('una presentación por puerta, «PUERTA A»…, con su OF y su página; el corte en fila a la derecha', () => {
     const puertas = [puerta4638(), apilable(), { ...autorreparable(), of: '0239999' }];
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', ...puertas), cabecera });

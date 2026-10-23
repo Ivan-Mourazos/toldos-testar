@@ -214,20 +214,30 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
   for (const c of cortes) for (const t of c.colocadas) {
     if (['saco', 'cristal'].includes(t.pieza.clase) && !t.pieza.id.startsWith('stock-')) muestras.set(`${c.opcion}:${t.pieza.id}`, t.pieza);
   }
-  // El saco encima del transparente, como en la referencia, sin repetir las copias físicas.
+  // El saco encima del transparente, como en la referencia, sin repetir las copias físicas. Con varias puertas, los
+  // sacos y los cristales en la misma fila, hacia la derecha (Iván, 23/10/2026, AR2605035).
+  const filas: PiezaPuerta[][] = [];
   for (const p of [...muestras.values()].sort((a, b) => (a.clase === 'saco' ? -1 : 1) - (b.clase === 'saco' ? -1 : 1))) {
-    const y = techo - p.alto, xMuestra = -.8974;
-    const puntos = p.contorno.map(([x, v]): Punto => [xMuestra + x, y + v]);
-    if (p.clase === 'saco') contorno(l, 'DISCO1', puntos);
-    else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
-    texto(l, p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material,
-      xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
-    texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8), { centrado: true });
-    cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
-    cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);
+    const fila = filas.at(-1);
+    if (fila?.[0].clase === p.clase) fila.push(p); else filas.push([p]);
+  }
+  for (const fila of filas) {
+    let fondo = techo, xo = 0;
+    for (const p of fila) {
+      const y = techo - p.alto, xMuestra = -.8974 + xo;
+      const puntos = p.contorno.map(([x, v]): Punto => [xMuestra + x, y + v]);
+      if (p.clase === 'saco') contorno(l, 'DISCO1', puntos);
+      else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
+      if (!xo) texto(l, p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material,
+        xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), 10);
+      texto(l, `X${p.multiplicador ?? p.cantidad}`, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8), { centrado: true });
+      cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
+      if (!xo) cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);
+      fondo = Math.min(fondo, y); xo += p.ancho + 80;
+      anchoMax = Math.max(anchoMax, xo - 80);
+    }
     // Separaciones de presentación medidas en AR2605134; no afectan al corte ni a sus piezas.
-    techo = y - (p.clase === 'saco' ? 82.0735 : 92.3202);
-    anchoMax = Math.max(anchoMax, p.ancho);
+    techo = fondo - (fila[0].clase === 'saco' ? 82.0735 : 92.3202);
   }
   for (const c of cortes.filter(c => c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase)))) {
     const usadas = c.colocadas.filter(t => !['saco', 'cristal'].includes(t.pieza.clase));
