@@ -497,3 +497,14 @@ según el dibujo del pedido (Q-PU02 contestada).
 `scripts/test-puertas-plano-fase3-e2e.mjs` siembra los cinco pedidos únicamente en `tmp/` de su
 instancia aislada, comprueba dos cristales en AR2605065 y toma veinte capturas del alzado en claro
 y oscuro a 1280×720 y 1600×1000. Comprueba además que ningún texto sobresalga del encuadre SVG.
+
+## Suelo inclinado (AR2605035, 23/10/2026; sin programar)
+
+Cuatro apilables de Portanova (FINSA + Montaxes Arca, gris 7038) con el suelo inclinado: cada puerta tiene un alto en cada lado y el cliente los acota con dos cadenas, una por lado (432 × 400/385, 440 × 410/400, 442 × 385/395…; el lado alto no siempre es el mismo). RPS solo da un alto. Decidido por Iván:
+
+- **Datos**: las medidas del cliente, alto en el lado izquierdo y en el derecho. Solo cambia el **paño de abajo del todo**, donde va el saco; E.T., ventanas y cabecera siguen horizontales.
+- **Paño de abajo**: trapecio, con un alto en cada lado.
+- **Saco**: se corta en **paralelogramo**: los lados largos paralelos al bajo inclinado, con el largo de la diagonal del bajo, y las **cabezas verticales**. Así, al doblarlo y confeccionarlo, las cabezas quedan verticales y no en diagonal. «Es muy importante que la web lo haga bien». Pestaña y velcro, como siempre.
+- La raya de soldar el saco, paralela al bajo, como en el dibujo de Iván.
+- Los logos (FINSA en color sobre varios paños y Montaxes Arca de 22 × 9 en el paño de abajo) van impresos («4 lonas rotuladas I.D.U.V.»): observación del plano, no corte.
+
