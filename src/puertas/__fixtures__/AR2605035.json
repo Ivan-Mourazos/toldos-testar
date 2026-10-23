@@ -1,0 +1,12 @@
+{
+  "pedido": "AR2605035",
+  "clienteRps": "001336",
+  "fuente": "Pedido escaneado, páginas 2 a 5; cotas originales en mm convertidas a cm",
+  "sacoUtilPedidoMm": 110,
+  "puertas": [
+    { "of": "0233015", "pagina": 2, "frente": 432, "altoIzquierdo": 400, "altoDerecho": 385, "pieIzquierdo": 46, "pieDerecho": 31, "pasos": [58,55,58,55,58], "cabecera": 70 },
+    { "of": "0233016", "pagina": 3, "frente": 440, "altoIzquierdo": 410, "altoDerecho": 400, "pieIzquierdo": 56, "pieDerecho": 46, "pasos": [58,55,58,55,58], "cabecera": 70 },
+    { "of": "0233017", "pagina": 4, "frente": 442, "altoIzquierdo": 385, "altoDerecho": 395, "pieIzquierdo": 40, "pieDerecho": 50, "pasos": [55,55,55,55,55], "cabecera": 70 },
+    { "of": "0233018", "pagina": 5, "frente": 452, "altoIzquierdo": 405, "altoDerecho": 405, "pieIzquierdo": 51, "pieDerecho": 51, "pasos": [58,55,58,55,58], "cabecera": 70 }
+  ]
+}

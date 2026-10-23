@@ -1,6 +1,6 @@
 import { alturasTubos } from './calcular.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
-import { rotuloSaco } from './saco.ts';
+import { desnivelSuelo, rotuloSaco } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
@@ -69,6 +69,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   if (p.modelo === 'SYSTEMDOCK') return alzadoSystemDock(p);
   const F = p.frente > 0 ? p.frente : 400;
   const H = p.alto > 0 ? p.alto : 400;
+  const desnivel = desnivelSuelo(p), altoDerecho = H - desnivel;
   const enr = p.modelo === 'PUERTAENR';
   const ple = p.modelo === 'PUERTAPLE';
   const auto = p.modelo === 'PUERTAUTO';
@@ -131,21 +132,22 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
       : [];
 
   // Pieza desplegada del saco debajo del alzado
-  const yDesplegado = H + 48;
+  const yDesplegado = Math.max(H,altoDerecho) + 48;
   const hCorteSaco = enr ? 26 : auto ? 32 : p.apilable.doble ? 37 : p.apilable.saco === 120 ? 32 : 30;
   const pestanaSaco = enr ? 6.5 : auto ? 0 : p.apilable.doble ? 12 : 10;
   const altoPestana = enr ? 11 : auto ? 0 : p.apilable.doble ? 14 : p.apilable.saco === 120 ? 14 : 13;
   const wSaco = ple && p.apilable.doble ? Math.max(20, F - 6) : F;
 
   const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado);
-  const xMin = Math.min(-56, ...textosTaller.map(t => t.x - 8));
+  const xMin = Math.min(desnivel ? -116 : -56, ...textosTaller.map(t => t.x - 8));
   const yMin = -62;
-  const anchoVista = Math.max(F + 110, ...textosTaller.map(t => t.x + t.ancho + 8)) - xMin;
-  const altoVista = yDesplegado + hCorteSaco + (enr ? 80 : 55) - yMin;
+  const anchoVista = Math.max(F + (desnivel ? 150 : 110), ...textosTaller.map(t => t.x + t.ancho + 8)) - xMin;
+  const altoVista = yDesplegado + hCorteSaco + Math.abs(desnivel) + (enr ? 80 : 55) - yMin;
   const letraBase = Math.min(10.5, Math.max(7.5, Math.min(F / 24, H / 38)));
 
   // Contorno general de la puerta
-  rect('puerta-lona', 0, 0, F, H);
+  if (desnivel) formas.push({tipo:'poligono',clase:'puerta-lona',puntos:[[0,0],[F,0],[F,altoDerecho],[0,H]]});
+  else rect('puerta-lona', 0, 0, F, H);
 
   // Cabecera según modelo
   if (enr || auto) {
@@ -226,7 +228,12 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     marca(b.y + b.alto / 2, -1);
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
+  const inicioMarcaSaco = formas.length;
   marca(H - hSaco, -1);
+  if (desnivel) for (const f of formas.slice(inicioMarcaSaco)) {
+    if (f.tipo==='linea') { f.y1-=desnivel*f.x1/F; f.y2-=desnivel*f.x2/F; }
+    if (f.tipo==='polilinea') f.puntos=f.puntos.map(([x,y])=>[x,y-desnivel*x/F]);
+  }
 
   // Huecos de cutter en las entradas
   if (!auto) {
@@ -250,8 +257,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   }
 
   // Saco en el bajo de la puerta terminada y su cota
-  rect('puerta-saco', 0, H - hSaco, F, hSaco);
-  cota({ x1: F + 12, y1: H - hSaco, x2: F + 12, y2: H, linea: F + 12, valor: hSaco, marcas: 4, texto: { x: F + 18, y: H - hSaco / 2 + 3, ancla: 'start' } });
+  if (desnivel) formas.push({tipo:'poligono',clase:'puerta-saco',puntos:[[0,H-hSaco],[F,altoDerecho-hSaco],[F,altoDerecho],[0,H]]});
+  else rect('puerta-saco', 0, H - hSaco, F, hSaco);
+  cota({ x1: F + 12, y1: altoDerecho - hSaco, x2: F + 12, y2: altoDerecho, linea: F + 12, valor: hSaco, marcas: 4, texto: { x: F + 18, y: altoDerecho - hSaco / 2 + 3, ancla: 'start' } });
 
   // Bolsillo opcional: solo dos esquinas en L
   if (resultado.bolsillo) {
@@ -294,7 +302,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
 
   // Cadena derecha de pasos verticales
   hitosDerecha.slice(1).forEach((y, i) => {
-    const desde = hitosDerecha[i];
+    const desde = i===0 ? desnivel : hitosDerecha[i];
     const tramo = y - desde;
     const esD = enr && T > 0 && Math.abs(desde - (H - T - D)) < 0.05 && Math.abs(y - (H - T)) < 0.05;
     const esT = enr && T > 0 && !tuboParteT && Math.abs(desde - (H - T)) < 0.05 && Math.abs(y - H) < 0.05;
@@ -310,11 +318,18 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   if (tuboParteT) cota({ x1: F, y1: 0, x2: F, y2: T, linea: xCotaT, valor: T, prefijo: 'T', marcas: 5, texto: { x: xCotaT + 7, y: T / 2 + 3, ancla: 'start' } });
 
   // Total a la izquierda en apilables y autorreparables; en enrollables a la derecha, como los originales.
-  cota({ x1: enr ? F : 0, y1: 0, x2: enr ? F : 0, y2: H, linea: xAltoTotal, valor: p.alto || H, estilo: ple ? 'XERA 15' : 'XERAL', sufijo: ' cm', marcas: 6, texto: { x: xAltoTotal + (enr ? 14 : -8), y: H / 2, ancla: 'middle', giro: -90, clase: null } });
-  if (ple) cota({ x1: F, y1: p.apilable.cabecera, x2: F, y2: H, linea: F + 74, valor: H - p.apilable.cabecera, estilo: 'XERA 15', marcas: 4,
-    texto: { x: F + 80, y: (H + p.apilable.cabecera) / 2, ancla: 'start' } });
+  const xTotal = desnivel ? -92 : xAltoTotal;
+  cota({ x1: enr ? F : 0, y1: 0, x2: enr ? F : 0, y2: H, linea: xTotal, valor: p.alto || H, estilo: ple ? 'XERA 15' : 'XERAL', sufijo: ' cm', marcas: 6, texto: { x: xTotal + (enr ? 14 : -8), y: H / 2, ancla: 'middle', giro: -90, clase: null } });
+  if (ple) cota({ x1: F, y1: p.apilable.cabecera, x2: F, y2: altoDerecho, linea: F + 74, valor: altoDerecho - p.apilable.cabecera, estilo: 'XERA 15', marcas: 4,
+    texto: { x: F + 80, y: (altoDerecho + p.apilable.cabecera) / 2, ancla: 'start' } });
+  if (desnivel) {
+    const hitos = [0,...tubos,H];
+    hitos.slice(1).forEach((y,i)=>cota({x1:0,y1:H-hitos[i],x2:0,y2:H-y,linea:-60,valor:y-hitos[i],marcas:4,estilo:'XERAL',texto:{x:-65,y:H-(y+hitos[i])/2,ancla:'end'}}));
+    cota({x1:F,y1:0,x2:F,y2:altoDerecho,linea:F+115,valor:altoDerecho,sufijo:' cm',marcas:5,estilo:'XERA 15',texto:{x:F+125,y:altoDerecho/2,ancla:'middle',giro:-90}});
+  }
 
   // Pieza desplegada del saco con su pestaña debajo del alzado
+  const inicioDesplegado = formas.length;
   const y0 = yDesplegado, y1 = yDesplegado + hCorteSaco;
   formas.push({
     tipo: 'poligono', clase: 'puerta-saco-pieza',
@@ -345,6 +360,24 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
       lineas: ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'], taller: { guia: null } });
   }
   if (auto) nota('CREMALLERA SOLDADA HASTA MITAD DE SACO', F / 2, y1 + 47, Math.min(10, F / 32));
+
+  if (desnivel) {
+    const mover = (x:number,y:number) => y + Math.max(0,desnivel) - desnivel*x/F;
+    for (const f of formas.slice(inicioDesplegado)) {
+      if (f.tipo==='poligono' && f.clase==='puerta-saco-pieza') {
+        const saco = resultado.alternativasSaco?.entero[0] ?? resultado.piezas.find(x=>x.clase==='saco');
+        if(saco) f.puntos=saco.contorno.map(([x,y])=>[x-pestanaSaco,yDesplegado+saco.alto-y]);
+      } else if (f.tipo==='poligono'||f.tipo==='polilinea') f.puntos=f.puntos.map(([x,y])=>[x,mover(x,y)]);
+      else if (f.tipo==='linea') { f.y1=mover(f.x1,f.y1); f.y2=mover(f.x2,f.y2); }
+      else if (f.tipo==='texto') {
+        f.y=mover(f.x,f.y);
+        const g=f.taller?.guia; if(g) {g[1]=mover(g[0],g[1]);g[3]=mover(g[2],g[3]);}
+      } else if (f.tipo==='cota' && f.x1===f.x2) {
+        f.y1=mover(f.x1,f.y1); f.y2=mover(f.x2,f.y2); f.texto.y=mover(f.x1,f.texto.y);
+      }
+    }
+    nota(`LARGO DIAGONAL ${numAlzado(Math.hypot(wSaco,desnivel*wSaco/F))} cm · CABEZAS VERTICALES`, F/2,y1+Math.abs(desnivel)+45,7);
+  }
 
   return { formas, vista: { xMin, yMin, ancho: anchoVista, alto: altoVista }, letraBase, F, H };
 }

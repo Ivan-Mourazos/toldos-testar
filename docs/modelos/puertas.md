@@ -632,7 +632,7 @@ según el dibujo del pedido (Q-PU02 contestada).
 instancia aislada, comprueba dos cristales en AR2605065 y toma veinte capturas del alzado en claro
 y oscuro a 1280×720 y 1600×1000. Comprueba además que ningún texto sobresalga del encuadre SVG.
 
-## Suelo inclinado (AR2605035, 23/10/2026; sin programar)
+## Suelo inclinado (AR2605035, 23/10/2026)
 
 Cuatro apilables de Portanova (FINSA + Montaxes Arca, gris 7038) con el suelo inclinado: cada puerta tiene un alto en cada lado y el cliente los acota con dos cadenas, una por lado (432 × 400/385, 440 × 410/400, 442 × 385/395…; el lado alto no siempre es el mismo). RPS solo da un alto. Decidido por Iván:
 
@@ -641,4 +641,76 @@ Cuatro apilables de Portanova (FINSA + Montaxes Arca, gris 7038) con el suelo in
 - **Saco**: se corta en **paralelogramo**: los lados largos paralelos al bajo inclinado, con el largo de la diagonal del bajo, y las **cabezas verticales**. Así, al doblarlo y confeccionarlo, las cabezas quedan verticales y no en diagonal. «Es muy importante que la web lo haga bien». Pestaña y velcro, como siempre.
 - La raya de soldar el saco, paralela al bajo, como en el dibujo de Iván.
 - Los logos (FINSA en color sobre varios paños y Montaxes Arca de 22 × 9 en el paño de abajo) van impresos («4 lonas rotuladas I.D.U.V.»): observación del plano, no corte.
+
+### Aplicación en la web
+
+En apilable, la casilla «Suelo inclinado» guarda `apilable.sueloInclinado` con
+`altoIzquierdo` y `altoDerecho`, vistos desde fuera. Sin marcar, el campo no existe y
+se conservan el cálculo y los planos anteriores. Dos altos iguales producen también
+el resultado anterior. El alto común y la cadena (pie, pasos y cabecera) se refieren
+al lado izquierdo; la pantalla sustituye el alto común por los dos altos al marcarla.
+La primera cota derecha es `pie − (altoIzquierdo − altoDerecho)`; los demás pasos,
+las entradas, ventanas y la cabecera conservan sus posiciones horizontales.
+
+El bajo del primer paño se recorta con la diferencia firmada de los altos, sin asumir
+qué lado es más alto. Su borde superior sigue horizontal. El origen y la caja incluyen
+el extremo más bajo, también cuando el derecho es más alto; solo ese paño lleva el
+contorno de trapecio. Se conserva el reparto por entradas y la colocación Tetris, por
+la caja de cada pieza; no se contrapearon trapecios. La marca de soldadura queda a
+2 cm del borde de corte y paralela al bajo. Se bloquea el cálculo si la diferencia
+consume el pie o no queda sitio entre el saco y la primera entrada para soldar.
+
+El saco se transforma por una cizalla vertical: se mantiene el ancho proyectado F y
+el extremo derecho se desplaza `altoIzquierdo − altoDerecho`. Sus dos lados largos
+miden `hypot(F, diferencia)`, sus cabezas conservan la misma X en ambos extremos y
+su altura de corte sigue siendo 30 o 32. **No se usa la diagonal como ancho horizontal**,
+porque se sumaría dos veces el efecto de la pendiente. La pestaña conserva sus
+medidas y su retranqueo. Las mitades incorporan el centímetro habitual de unión y
+mantienen la misma pendiente; el envoltorio de doble saco conserva F − 6, alto 37 y
+pestaña 12 × 14, con el desnivel proporcional a ese ancho para quedar paralelo al bajo.
+La caja del saco suma el desnivel a su altura; la pestaña forma parte del contorno.
+
+El alzado de pantalla y el plano de taller muestran el bajo y el saco inclinados,
+los dos altos totales y las dos cadenas. Se amplía el encuadre del plano para que
+quepa la cadena izquierda. Las huellas de los planos sin suelo inclinado se mantienen.
+
+### Contraste con AR2605035
+
+Se copiaron el PDF y el DWG, en solo lectura, a `tmp/suelo-inclinado/fuentes/` de este
+worktree. ODA convirtió únicamente la copia del DWG a DXF, en `tmp/suelo-inclinado/dxf/`.
+En la versión superior del dibujo de Iván, el bajo terminado, el borde DISCO1 y la
+soldadura ROTULADOR suben 15 cm en 432 cm; las dos últimas líneas distan 2 cm entre sí.
+El detalle del saco está rotulado «SACO DE 80», con alto de corte 30.
+
+La fixture `src/puertas/__fixtures__/AR2605035.json` transcribe las páginas 2 a 5 del PDF
+(de mm a cm); las páginas 1, 6 y 7 son el correo y los logos, no otras puertas:
+
+| OF | Página | Frente | Alto izquierdo / derecho | Pie izquierdo / derecho | Pasos desde abajo | Cabecera |
+|---|---|---|---|---|---|---|
+| 0233015 | 2 | 432 | 400 / 385 | 46 / 31 | 58; 55; 58; 55; 58 | 70 |
+| 0233016 | 3 | 440 | 410 / 400 | 56 / 46 | 58; 55; 58; 55; 58 | 70 |
+| 0233017 | 4 | 442 | 385 / 395 | 40 / 50 | 55; 55; 55; 55; 55 | 70 |
+| 0233018 | 5 | 452 | 405 / 405 | 51 / 51 | 58; 55; 58; 55; 58 | 70 |
+
+La OF 0233018 **va sin suelo inclinado**: no se deduce una pendiente por pertenecer
+al mismo pedido. Las primeras tres puertas prueban los dos sentidos de pendiente.
+Las pruebas cubren trapecio, soldadura paralela, diagonal y cabezas verticales del
+saco, mitades, doble saco, avisos, lectura del pedido, Tetris y ambos alzados.
+
+Con rollo de 300, saco de 80 y reparto propuesto, la OF 0233015 empata en el tubo 5:
+el paño inferior mide 267 cm a la izquierda y 252 a la derecha, con frente 432; el
+superior es rectangular de 432 × 146. El saco tiene lados largos de **432,2603 cm**,
+cabezas verticales de 30 y desnivel de 15; su caja con pestaña es **442 × 45 cm**.
+Con empate manual en el primer tubo, el paño inferior mide 41 / 26, que incorpora
+6 cm de la entrada y descuenta los 11 del saco a los pies terminados 46 / 31.
+
+**Q-PU05, pendiente de Iván:** las cuatro páginas del pedido dicen «SACO NEGRO ÚTIL
+110 mm», pero el dibujo empezado por Iván indica «SACO DE 80» y corte 30. El
+coordinador indica usar el saco de 80 para este contraste y consultar la discrepancia
+con Iván. No se crea una regla ni una opción de saco 110.
+
+Capturas revisadas del configurador y del alzado, claro y oscuro a 1280×720 y
+1600×1000, junto con las medidas y los DXF de prueba, en
+`tmp/ui-audit/suelo-inclinado/`. La instancia propia 4316/4326 conserva simulación
+activa y escrituras desactivadas; todos sus datos de prueba están dentro de `tmp/`.
 

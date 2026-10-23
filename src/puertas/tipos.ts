@@ -35,7 +35,9 @@ export interface Puerta {
     /** Ventanales consecutivos bajo el primero, separados por E.T. a las dos caras. */
     ventanales?: Array<{ D: number; margen: number }>;
     empates: Array<{ pano: 'superior' | 'inferior'; altura: number; solape: number; tubo?:number }> };
-  apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number; saco: 80 | 120 | null; doble: boolean; empates: number[] | null };
+  apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number; saco: 80 | 120 | null; doble: boolean; empates: number[] | null;
+    /** Altos terminados vistos desde fuera. La cadena común toma el bajo izquierdo como origen. */
+    sueloInclinado?: { altoIzquierdo: number; altoDerecho: number } };
   autorreparable: { empates: number[]; espaciadorCentral?: boolean; distanciaEspaciador?: number };
 }
 export interface AvisoPuerta { codigo: string; nivel: 'error' | 'aviso'; texto: string }

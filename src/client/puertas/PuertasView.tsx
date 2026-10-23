@@ -57,7 +57,7 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           <SelectField label="Modelo de puerta" value={p.modelo} options={Object.keys(MODELOS_PUERTAS)} optionLabel={v=>MODELOS_PUERTAS[v as ModeloPuerta]} onChange={v=>cambiar({...p,modelo:v as ModeloPuerta,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:v==='SYSTEMDOCK',
             ...(v==='SYSTEMDOCK'?{material:REGLAS_SYSTEM_DOCK.material,color:REGLAS_SYSTEM_DOCK.color,rollo:REGLAS_SYSTEM_DOCK.rollo}:{})})}/>
           <Numero titulo={sd?'Largo de la lona (cm)':'Frente (cm)'} valor={p.frente||null} cambiar={v=>set('frente',v??0)}/>
-          <Numero titulo={sd?'Ancho de la lona (cm)':'Alto (cm)'} valor={p.alto||null} cambiar={v=>set('alto',v??0)}/>
+          {!(p.modelo==='PUERTAPLE'&&p.apilable.sueloInclinado)&&<Numero titulo={sd?'Ancho de la lona (cm)':'Alto (cm)'} valor={p.alto||null} cambiar={v=>set('alto',v??0)}/>}
           <label className="puerta-campo"><span>OF</span><input aria-label="OF de puerta" value={p.of} placeholder="SIN OF" onChange={e=>set('of',e.target.value)}/></label>
           <Numero titulo={sd?'Cantidad de lonas iguales':'Cantidad de puertas iguales'} valor={p.cantidad} cambiar={v=>set('cantidad',v??0)}/>
           <label className="puerta-campo"><span>Color / RAL</span><input aria-label="Color de puerta" value={p.color} placeholder="Azul 5002" onChange={e=>set('color',e.target.value)}/></label>
@@ -88,8 +88,14 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           <Numero titulo="Altura superior del bolsillo desde el bajo terminado (cm)" valor={p.medidasBolsillo.altoSuperior??18} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,altoSuperior:v})}/>
           <button type="button" className="ghost-button" onClick={()=>set('medidasBolsillo',{...p.medidasBolsillo,altoSuperior:null})}>Usar altura propuesta</button>
         </div><p className="puerta-ayuda">Propuesta: 1 cm sobre el saco doblado + 17 cm de bolsillo = 18 cm. Puedes corregirla. Solo se marcan dos esquinas en L de 0,5 cm.</p></fieldset>}
-        {p.modelo==='PUERTAPLE'&&<fieldset><legend>Tubos y saco</legend><div className="puerta-campos">
-          <Numero titulo="Pie hasta primer eje (cm)" valor={p.apilable.pie||null} cambiar={v=>cadena({pie:v??0})}/>
+        {p.modelo==='PUERTAPLE'&&<fieldset><legend>Tubos y saco</legend>
+          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.apilable.sueloInclinado)} onChange={e=>cadena({sueloInclinado:e.target.checked?{altoIzquierdo:p.alto,altoDerecho:p.alto}:undefined})}/>Suelo inclinado</label>
+          {p.apilable.sueloInclinado&&<><div className="puerta-campos">
+            <Numero titulo="Alto del lado izquierdo (cm)" valor={p.apilable.sueloInclinado.altoIzquierdo||null} cambiar={v=>cambiar({...p,alto:v??0,apilable:{...p.apilable,sueloInclinado:{...p.apilable.sueloInclinado!,altoIzquierdo:v??0}}})}/>
+            <Numero titulo="Alto del lado derecho (cm)" valor={p.apilable.sueloInclinado.altoDerecho||null} cambiar={v=>cadena({sueloInclinado:{...p.apilable.sueloInclinado!,altoDerecho:v??0}})}/>
+          </div><p className="puerta-ayuda">Vistos desde fuera, como el alzado. Pie y cadena desde el bajo izquierdo; los tubos y la cabecera siguen horizontales. Solo se inclinan el bajo del primer paño y el saco.</p></>}
+          <div className="puerta-campos">
+          <Numero titulo={p.apilable.sueloInclinado?'Pie izquierdo hasta primer eje (cm)':'Pie hasta primer eje (cm)'} valor={p.apilable.pie||null} cambiar={v=>cadena({pie:v??0})}/>
           <Numero titulo="Cabecera hasta último eje (cm)" valor={p.apilable.cabecera||null} cambiar={v=>cadena({cabecera:v??0})}/>
           <Numero titulo="Bolsillo superior (cm)" valor={p.apilable.bolsillo} cambiar={v=>cadena({bolsillo:v??0})}/>
           <Lista titulo="Pasos entre tubos (cm)" valores={p.apilable.pasos} cambiar={v=>cadena({pasos:v})} ayuda="Un valor por tramo, de abajo arriba, separado con ;"/>

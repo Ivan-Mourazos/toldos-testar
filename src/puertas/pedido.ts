@@ -30,6 +30,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(!lista(p.entradas,100) || !lista(p.ventanas) || !p.ventanas.every(v=>hueco(v) && cotas(v,['radioCristal']))) return error();
     if(!p.entradas.every(t=>objeto(t) && cotas(t,['altura','largo','alto','diametro']) && (t.diametro===30||t.diametro===42) && lista(t.huecos,100) && t.huecos.every(hueco))) return error();
     if(!objeto(p.apilable) || !cotas(p.apilable,['pie','cabecera','bolsillo']) || !numeros(p.apilable.pasos) || ![null,80,120].includes(p.apilable.saco as number|null) || typeof p.apilable.doble!=='boolean' || (p.apilable.empates!==null && !numeros(p.apilable.empates))) return error();
+    if(p.apilable.sueloInclinado!==undefined && !cotas(p.apilable.sueloInclinado,['altoIzquierdo','altoDerecho'])) return error();
     if(!objeto(p.enrollable) || !cotas(p.enrollable,['T','D','margen']) || !lista(p.enrollable.empates,100) || !p.enrollable.empates.every(u=>objeto(u) && ['superior','inferior'].includes(u.pano as string) && cotas(u,['altura','solape']) && (u.tubo===undefined || (typeof u.tubo==='number'&&Number.isInteger(u.tubo)&&u.tubo>0&&u.tubo<=(p.entradas as unknown[]).length)))) return error();
     if(p.enrollable.sacoPartido!==undefined && typeof p.enrollable.sacoPartido!=='boolean')return error();
     if(p.enrollable.ventanales!==undefined && (!lista(p.enrollable.ventanales,99) || !p.enrollable.ventanales.every(v=>cotas(v,['D','margen']))))return error();

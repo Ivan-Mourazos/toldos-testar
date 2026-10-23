@@ -3,7 +3,7 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { fusionarCortesPuertas } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
-import { rotuloSaco } from './saco.ts';
+import { desnivelSuelo, rotuloSaco } from './saco.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, lienzoAMetros, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import type { CortePuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
@@ -72,6 +72,8 @@ function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number,
 }
 
 function dibujarSaco(l: Lienzo, p: Puerta) {
+  const destino = l, desnivel = desnivelSuelo(p);
+  if (desnivel) l = vacio();
   const ple = p.modelo === 'PUERTAPLE', doble = ple && p.apilable.doble;
   const w = doble ? p.frente - 6 : p.frente, h = ple ? doble ? 37 : p.apilable.saco === 120 ? 32 : 30 : 32;
   const pestaña = ple ? doble ? 12 : 10 : 0, hp = ple ? doble || p.apilable.saco === 120 ? 14 : 13 : 0;
@@ -112,12 +114,25 @@ function dibujarSaco(l: Lienzo, p: Puerta) {
   texto(l, material, w / 2, ys - h / 2, Math.min(10, w / 40));
   cota(l, 0, ys - h, w, ys - h, ys - h / 2, 'XERAL 5');
   cota(l, 0, ys - h, 0, ys, -25);
-  return ys - h - 48;
+  if (desnivel) {
+    const mover = (x:number,y:number) => y + desnivel*x/p.frente-Math.max(0,desnivel);
+    for (const a of l.lineas) { a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2); }
+    for (const a of l.textos) a.y=mover(a.x,a.y);
+    for (const a of l.sombreados) a.puntos=a.puntos.map(([x,y])=>[x,mover(x,y)]);
+    for (const a of l.cotas) {
+      a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2);
+      a.valor=Math.hypot(a.x2-a.x1,a.y2-a.y1);
+    }
+    texto(l, `LARGO DIAGONAL ${num(Math.hypot(w,desnivel*w/p.frente))} CM · CABEZAS VERTICALES`, w/2,ys-h-Math.abs(desnivel)-35,7);
+    sumarLienzo(destino,l,0);
+  }
+  return ys - h - 48 - Math.abs(desnivel);
 }
 
 export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo; zona: Zona } {
   if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra);
   const l = vacio(), F = p.frente, H = p.alto, ple = p.modelo === 'PUERTAPLE', r = calcularPuerta(p);
+  const desnivel = desnivelSuelo(p), altoDerecho = H-desnivel;
   const hSaco = ple ? p.apilable.saco === 120 ? 12 : 11 : 12;
   const arriba = ple ? p.apilable.bolsillo / 2 : 3.5;
   rect(l, 'DISCO1', 0, -H + (ple && p.apilable.doble ? -13.5 : hSaco), F, H - hSaco + arriba + (ple && p.apilable.doble ? hSaco + 13.5 : 0));
@@ -242,6 +257,33 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     linea(l, 'texto', F + 20, -H - 12, F, -H + hSaco);
   }
   if (r.bolsillo) rect(l, 'referencias', r.bolsillo.x, -H + r.bolsillo.y, r.bolsillo.ancho, r.bolsillo.alto);
+  // El alzado conserva horizontales todas las entradas y solo desplaza el bajo.
+  if (desnivel) {
+    const bajoCorte = -H+(p.apilable.doble?-13.5:hSaco);
+    const soldadura = -H+(p.apilable.doble?-11.5:hSaco+2);
+    for (const a of l.lineas) {
+      const inferior = a.capa==='DISCO1' && (Math.abs(a.y1-bajoCorte)<.001||Math.abs(a.y2-bajoCorte)<.001);
+      const referencia = a.capa==='referencias' && (a.y1===-H||a.y2===-H);
+      const marca = a.capa==='ROTULADOR' && Math.abs(a.y1-soldadura)<.001 && Math.abs(a.y2-soldadura)<.001;
+      if(inferior) {
+        if(Math.abs(a.y1-bajoCorte)<.001) a.y1+=desnivel*a.x1/F;
+        if(Math.abs(a.y2-bajoCorte)<.001) a.y2+=desnivel*a.x2/F;
+      } else if(referencia||marca) { a.y1+=desnivel*a.x1/F; a.y2+=desnivel*a.x2/F; }
+    }
+    // La primera cota derecha empieza en su bajo; el resto de la cadena no cambia.
+    for (const a of l.cotas) {
+      if(a.x1===F&&a.x2===F) {
+        if(a.y1===-H) a.y1=-altoDerecho;
+        if(a.y2===-H) a.y2=-altoDerecho;
+        if(a.d===F+12) {a.y1=-altoDerecho;a.y2=-altoDerecho+hSaco;}
+        a.valor=Math.abs(a.y2-a.y1);
+      }
+      if(a.x1===0&&a.x2===0&&a.d===-40) a.d=-92;
+    }
+    const hitos=[0,...tubos,H];
+    hitos.slice(1).forEach((v,i)=>cota(l,0,-H+hitos[i],0,-H+v,-60,i===hitos.length-2?'XERA 15':'XERAL'));
+    cota(l,F,0,F,-altoDerecho,F+112,'XERA 15');
+  }
   const abajo = dibujarSaco(l, p);
   for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
     const [x, y] = pieza.origenAlzado!;
@@ -254,7 +296,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string): { lienzo: Lienzo;
     for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, sx + m.x, ys - m.y, 1, m.giro ?? 0, 'ROTULADOR');
     sx += pieza.ancho - 2;
   }
-  return { lienzo: l, zona: { x0: -65, x1: F + 120, y0: abajo, y1: arriba + 50 } };
+  return { lienzo: l, zona: { x0: desnivel ? -116 : -65, x1: F + (desnivel ? 150 : 120), y0: abajo, y1: arriba + 50 } };
 }
 
 function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
@@ -340,10 +382,11 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
 }
 
 export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[], cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string }) {
-  const l = vacio(); let cursor = 0, abajo = 0, arriba = 0;
+  const l = vacio(); let cursor = 0, abajo = 0, arriba = 0, izquierda = -65;
   for (const [i, e] of pedido.elementos.entries()) {
     const d = dibujarAlzadoTaller(e.input, String.fromCharCode(65 + i)), dx = i ? cursor - d.zona.x0 : 0;
     sumarLienzo(l, d.lienzo, dx); cursor = dx + d.zona.x1 + 60;
+    izquierda = Math.min(izquierda,dx+d.zona.x0);
     let suelo = d.zona.y0;
     if (e.input.modelo !== 'PUERTAENR' && e.input.observaciones.trim()) {
       let actual = '';
@@ -359,7 +402,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     abajo = Math.min(abajo, suelo); arriba = Math.max(arriba, d.zona.y1);
   }
   const zonaM = (z: Zona, x: number, y: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: y + z.y0 / 100, y1: y + z.y1 / 100 });
-  const za = zonaM({ x0: -65, x1: cursor - 60, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);
+  const za = zonaM({ x0: izquierda, x1: cursor - 60, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);
   let zc = zonaM(corte.zona, 110, 90), altoVista: number | undefined;
   const portanova = esClientePortanova(pedido, cabecera.cliente);
   if (portanova) {
