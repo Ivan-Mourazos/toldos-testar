@@ -12,6 +12,16 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## SYSTEM DOCK · lonas perimetrales (23/10/2026)
+
+Estudio de 44 pedidos de lonas; ocho pedidos escaneados y sus planteamientos y DWG revisados. Todavía no hay modelo implementado. Evidencia y discrepancias en [system-dock.md](./system-dock.md).
+
+| Código | Pregunta | Situación mientras no se conteste |
+| --- | --- | --- |
+| Q-SD01 | Los pedidos anotan PVC/LAC 640 negro y los planos dicen G650 negro. ¿Qué lona y qué ancho de rollo debe proponer la web para SYSTEM DOCK? ¿Se elige por pedido o hay una referencia fija? | No fijar una sustitución 640/650 ni un rollo de 250 por deducción del reparto. El técnico tendrá que confirmar material y ancho |
+| Q-SD02 | En los ocho planos el corte suma 1 cm al largo y 6,6 cm al ancho. ¿Es la regla que debemos mantener para la lona perimetral, también en ancho 85? ¿Ese añadido se reparte en 0,5 por extremo y 3,3 por cada lado con varilla negra de 4,5, dejando los extremos «AL CORTE»? | Conservar la fórmula como comprobación histórica, sin convertir el reparto de las demasías ni los remates en una norma aprobada |
+| Q-SD03 | En el trazado de oficina no aparecen marcas de rotulador y faltan algunos bordes exteriores. Para el bot, ¿qué rayas de doblado/soldadura y qué textos quieres en cada lona: OF, medida, REVÉS u otra identificación? ¿El borde que falta se toma del orillo o hay que cortarlo? | La geometría medida sirve para la vista previa; falta cerrar las operaciones del fichero de máquina. No inventar marcas ni dar por válido como DXF final el dibujo abierto de oficina |
+
 ## Cortina PVC · corte y plano (22/10/2026)
 
 Iván contestó el 22/10/2026 las siete dudas del estudio ([cortina-pvc-corte.md](./cortina-pvc-corte.md#10-dudas-para-iván-contestadas-el-22102026)) y dejó tres ejemplos base. Quedan tres cosas en las que sus ejemplos no cuadran con la regla:
