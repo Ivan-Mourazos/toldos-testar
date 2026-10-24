@@ -13,20 +13,22 @@ export function desnivelSuelo(p: Puerta): number {
  */
 export function medidasSaco(utilMm: number, modelo: Puerta['modelo'] = 'PUERTAPLE') {
   const rematado = utilMm / 10 + 1;
-  // La enrollable no se suelda doblada: el corte es el doble del rematado y la pestaña de velcro queda a 2 de
-  // cada lado (120: corte 26, pestaña 11 entre 13 y 24). La autorreparable no lleva pestaña.
-  if (modelo === 'PUERTAENR') return { rematado, corte: 2 * rematado, altoPestana: rematado - 2 };
+  // La enrollable no se suelda doblada. El rematado es lo que queda libre bajo el paño y los 2 cm de soldar van
+  // encima (Iván, 24/10/2026, AR2605220: con el de 80 quedaba de 7): el corte es el doble de rematado + 2 y la
+  // pestaña de velcro queda a 2 de cada lado (120: corte 30, pestaña 13 entre 15 y 28). La autorreparable no lleva pestaña.
+  if (modelo === 'PUERTAENR') return { rematado, corte: 2 * (rematado + 2), altoPestana: rematado };
   return { rematado, corte: 2 * rematado + 8, altoPestana: modelo === 'PUERTAUTO' ? 0 : rematado + 2 };
 }
 
 /** Saco simple de la apilable; sin elegir, el de 80, que es el habitual. */
 export const sacoApilable = (p: Puerta) => medidasSaco(p.apilable.saco ?? 80);
 
-/** Saco útil en mm de cualquier puerta. Las enrollables y autorreparables guardadas antes del campo eran de 120. */
+/** Saco útil en mm de cualquier puerta. Las autorreparables guardadas antes del campo eran de 120; las enrollables
+ * se cortaban de 26 con el paño desde 11, que con la regla del 24/10/2026 es el de 100 (como los cortes reales). */
 export function sacoUtil(p: Puerta): number | null {
   if (p.modelo === 'PUERTAPLE') return p.apilable.saco;
   const saco = p.modelo === 'PUERTAENR' ? p.enrollable.saco : p.autorreparable.saco;
-  return saco === undefined ? 120 : saco;
+  return saco === undefined ? (p.modelo === 'PUERTAENR' ? 100 : 120) : saco;
 }
 
 /** Medidas del saco de la puerta; sin saco puesto se dibuja el habitual de su modelo y el cálculo avisa. */

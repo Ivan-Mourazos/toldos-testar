@@ -26,7 +26,7 @@ function AyudaSaco({p}:{p:Puerta}) {
   const util=sacoUtil(p);
   if(util===null) return <p className="puerta-ayuda">Pon el saco que dice el pedido, en mm (80, 110, 120…).</p>;
   const s=medidasSaco(util,p.modelo);
-  return <p className="puerta-ayuda">Rematado {num(s.rematado)} cm (1 cm más que el pedido) · corte {num(s.corte)} cm{s.altoPestana>0?` · pestaña ${p.modelo==='PUERTAENR'?'6,5':'10'} × ${num(s.altoPestana)}`:''}. En el plano pone «SACO DE {util}».</p>;
+  return <p className="puerta-ayuda">Rematado {num(s.rematado)} cm (1 cm más que el pedido){p.modelo==='PUERTAENR'?', libre bajo el paño, + 2 de soldar':''} · corte {num(s.corte)} cm{s.altoPestana>0?` · pestaña ${p.modelo==='PUERTAENR'?'6,5':'10'} × ${num(s.altoPestana)}`:''}. En el plano pone «SACO DE {util}».</p>;
 }
 function Lista({titulo,valores,cambiar,ayuda}:{titulo:string;valores:number[];cambiar:(n:number[])=>void;ayuda?:string}) {
   const [texto,setTexto]=useState(valores.map(num).join('; ')),[error,setError]=useState(false);
@@ -56,8 +56,8 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
     cambiar(nuevo);
   }
   function entrada(i:number,parche:Partial<Entrada>) { set('entradas',p.entradas.map((e,j)=>j===i?{...e,...parche}:e)); }
-  // El paño inferior arranca 2 por debajo del rematado del saco (11 con el de 120).
-  const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)+3.75-(sacoPuerta(p).rematado-2);
+  // El paño inferior arranca en el rematado del saco, lo libre (13 con el de 120).
+  const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)+3.75-sacoPuerta(p).rematado;
   return <>
     <div className="puerta-config-alzado">
       <section className="puerta-config panel panel-vidrio" aria-label="Configurador de puerta">

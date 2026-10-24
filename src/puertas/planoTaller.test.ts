@@ -142,6 +142,6 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
       .toBe('3d8aafc9c720a92e15dac7ff642686404dc978723e64ab78e874d44a7c231def');
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('3b37a8f38a5f023a1214c8a97b51d11f4b98e5dc91c3caac8e5cc015f0064160');
+      .toBe('1d6c1412381e79737a3552dbcd9a6e15e115eef7c082e5ba1e2dffc2ae18aca8');
   });
 });

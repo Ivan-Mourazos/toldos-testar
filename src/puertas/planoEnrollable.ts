@@ -75,9 +75,10 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   const ejes: number[] = ventanales.length ? [T] : [];
   for (const v of ventanales) ejes.push(ejes.at(-1)! + v.D);
   const bandas = [...new Set([...ejes, ...p.entradas.map(e => H - e.altura)])].filter(y => y > 0 && y < H).sort((a, b) => a - b);
-  // Los contornos son los paños cortados: 3,5 sobre la cabecera y 2 por debajo del rematado del saco (11 con el de 120).
+  // Los contornos son los paños cortados: 3,5 sobre la cabecera y, abajo, en el rematado del saco (13 con el de 120);
+  // el saco sube 2 más para soldar (Iván, 24/10/2026, AR2605220).
   const paños: Array<[number, number]> = ventanales.length
-    ? [[-T - 3.75, 3.5], [-H + bajo - 2, -ejes.at(-1)! + 3.75]] : [[-H + bajo - 2, 3.5]];
+    ? [[-T - 3.75, 3.5], [-H + bajo, -ejes.at(-1)! + 3.75]] : [[-H + bajo, 3.5]];
   paños.forEach(([abajo, arriba], i) => {
     contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
     const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 18);
@@ -110,10 +111,10 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     cota(l, 0, -b - 3.75, 0, -b + 3.75, -9.15 + i, 'XERAL 5');
     texto(l, '3 CM (HUECOS)', F / 2 - (superior ? 34.6534 : segundo ? 34.2446 : 33.6842), -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187), 7, { ancla: 1 });
   });
-  linea(l, 'ROTULADOR', 0, -H + bajo, F, -H + bajo);
+  linea(l, 'ROTULADOR', 0, -H + bajo + 2, F, -H + bajo + 2);
   linea(l, 'referencias', 0, -H, F, -H);
-  linea(l, 'referencias', 0, -H, 0, -H + bajo);
-  linea(l, 'referencias', F, -H, F, -H + bajo - 2);
+  linea(l, 'referencias', 0, -H, 0, -H + bajo + 2);
+  linea(l, 'referencias', F, -H, F, -H + bajo);
   texto(l, 'SOLDAR SACO NEGRO 2 CM MÁXIMO', 14.3553, -H + 1.6012, Math.min(7, F / 28));
   texto(l, 'AL CORTE', -9.54, -T * .626, 7, { giro: 90, ancla: 1 });
   texto(l, 'AL CORTE', F + 1.96, -T * .6386, 7, { giro: 90, ancla: 1 });

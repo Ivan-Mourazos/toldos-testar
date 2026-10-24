@@ -112,8 +112,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   }
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable, ventanales=[{D:e.D,margen:e.margen},...e.ventanales??[]];
-    const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado - 2;
-    // El paño inferior arranca 2 por debajo del rematado del saco (11 con el de 120) y acaba donde siempre.
+    const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado;
+    // El paño inferior arranca en el rematado del saco, lo libre (13 con el de 120), y acaba donde siempre; el saco
+    // sube 2 más para la soldadura (Iván, 24/10/2026).
     const inferior = n(p.alto - e.T - altoVentanales + 3.75 - origenInferior);
     if (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.D<=7.5||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto) aviso('VENTANAL', 'Revisa T, las distancias entre ejes y los márgenes de cada ventanal.');
     const incorporadas=new Set<number>();
@@ -178,11 +179,11 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
     if(e.sacoPartido){
       const mitad=(p.frente+6.5+2)/2;
-      const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.rematado,'Saco partido · con pestaña'));
+      const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña'));
       const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco));
       numerarBorde(izquierda,++numeroUnion,'derecha');
       numerarBorde(derecha,numeroUnion,'izquierda');
-    }else agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.rematado));
+    }else agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
     p.entradas.forEach((e,i)=>{if(!incorporadas.has(i+1))entrada(e,i);});
   } else if (p.modelo === 'PUERTAPLE') {
     const a = p.apilable, alturas = alturasTubos(p);

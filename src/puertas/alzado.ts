@@ -97,8 +97,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   const ejesVentanal = [T];
   for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
   const D = p.enrollable.D;
-  // La autorreparable acota el saco con sus 2 de soldadura encima (14 con el de 120 de antes).
-  const saco = sacoPuerta(p), hSaco = auto ? saco.rematado + 2 : saco.rematado;
+  // La autorreparable acota el saco con sus 2 de soldadura encima (14 con el de 120 de antes). La enrollable dibuja
+  // también los 2 de soldar, pero acota lo libre bajo el paño (Iván, 24/10/2026).
+  const saco = sacoPuerta(p), hSaco = auto || enr ? saco.rematado + 2 : saco.rematado, hCota = enr ? saco.rematado : hSaco;
 
   // Cadena derecha de pasos verticales (suma exactamente H; sin duplicar H).
   const hitosDerecha = ple
@@ -260,7 +261,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   // Saco en el bajo de la puerta terminada y su cota
   if (desnivel) formas.push({tipo:'poligono',clase:'puerta-saco',puntos:[[0,H-hSaco],[F,altoDerecho-hSaco],[F,altoDerecho],[0,H]]});
   else rect('puerta-saco', 0, H - hSaco, F, hSaco);
-  cota({ x1: F + 12, y1: altoDerecho - hSaco, x2: F + 12, y2: altoDerecho, linea: F + 12, valor: hSaco, marcas: 4, texto: { x: F + 18, y: altoDerecho - hSaco / 2 + 3, ancla: 'start' } });
+  cota({ x1: F + 12, y1: altoDerecho - hCota, x2: F + 12, y2: altoDerecho, linea: F + 12, valor: hCota, marcas: 4, texto: { x: F + 18, y: altoDerecho - hCota / 2 + 3, ancla: 'start' } });
 
   // Bolsillo opcional: solo dos esquinas en L
   if (resultado.bolsillo) {

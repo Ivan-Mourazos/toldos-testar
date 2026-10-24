@@ -175,15 +175,17 @@ describe('Comprobaciones y reglas confirmadas', () => {
 });
 
 describe('Saco del pedido en todas las puertas (Iván, 23/10/2026)', () => {
-  it.each([[120,13,26,11],[110,12,24,10]])('enrollable con saco %s: rematado %s, corte %s y velcro de %s', (saco,rematado,corte,velcro) => {
+  // Iván, 24/10/2026 (AR2605220): el rematado queda libre bajo el paño y los 2 de soldar van encima; con el de 80,
+  // libre 9, corte 22. El velcro, a 2 de cada lado, desde la mitad del corte.
+  it.each([[120,13,30,13],[110,12,28,12],[100,11,26,11],[80,9,22,9]])('enrollable con saco %s: libre %s, corte %s y velcro de %s', (saco,rematado,corte,velcro) => {
     const p = base('PUERTAENR', 172, 314); p.enrollable = { T: 123, D: 60, margen: 6, empates: [], saco };
-    const r = calcularPuerta(p), s = r.piezas.find(x => x.clase === 'saco')!;
+    const r = calcularPuerta(p), s = r.piezas.find(x => x.clase === 'saco')!, mitad = corte / 2;
     expect(s.alto).toBe(corte);
-    expect(s.contorno.slice(4)).toEqual([[6.5,rematado+velcro],[0,rematado+velcro],[0,rematado],[6.5,rematado]]);
-    // El paño inferior arranca 2 por debajo del rematado: con el de 120, los 123,75 de siempre.
-    expect(r.piezas.find(x => x.nombre === 'Paño inferior')!.alto).toBe(123.75 + 13 - rematado);
+    expect(s.contorno.slice(4)).toEqual([[6.5,mitad+velcro],[0,mitad+velcro],[0,mitad],[6.5,mitad]]);
+    // El paño inferior arranca en el rematado: con el de 100, los 123,75 de los cortes reales.
+    expect(r.piezas.find(x => x.nombre === 'Paño inferior')!.alto).toBe(123.75 + 11 - rematado);
   });
-  it('enrollable guardada sin saco: el de 120 de antes', () => {
+  it('enrollable guardada sin saco: el de 100, como se cortaban (26 y paño desde 11)', () => {
     const p = base('PUERTAENR', 172, 314); p.enrollable = { T: 123, D: 60, margen: 6, empates: [] };
     expect(calcularPuerta(p).piezas.find(x => x.clase === 'saco')!.alto).toBe(26);
   });
