@@ -15,7 +15,7 @@ function servidor(existente: boolean) {
 }
 const abrir = (eleccion: DialogResult, usuario = 'IVÁN') => {
   const abiertas: string[] = [], avisos: string[] = [];
-  const hecho = abrirCorteDwg({ ruta: '/api/puertas/borrador-corte', pedido: { orderCode: 'AR2605134' }, usuario,
+  const hecho = abrirCorteDwg({ ruta: '/api/puertas/borrador-corte', orderCode: 'AR2605134', cuerpo: {}, usuario,
     preguntar: async () => eleccion, notify: (m) => avisos.push(m), abrir: (u) => abiertas.push(u) });
   return { hecho, abiertas, avisos };
 };

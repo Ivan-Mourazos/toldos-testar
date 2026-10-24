@@ -7,17 +7,18 @@ import { elementosSinOf, exigirOfsCorte } from './of.js';
 
 // El plano se guarda para revisar. El DXF se prepara aparte para descargarlo o enviarlo con su botón.
 export function crearCorteRemolques({ ajustes, oda }) {
-  async function preparar(pedido) {
+  // Con `carpetaBorradores`, el borrador del flujo del DWG: en esa carpeta, sin año ni técnico.
+  async function preparar(pedido, carpetaBorradores) {
     exigirOfsCorte(pedido);
     const resultado = generarCorteRemolques(pedido);
     const avisos = resultado.aMano.map((a) => `${a.nombre}: esta lona se corta a mano (${a.motivo}).`);
     if (!resultado.cortes.length) return { ficheros: [], avisos };
-    const settings = await ajustes();
-    if (!settings.corteLonaPlanoDirectory) {
+    const settings = carpetaBorradores ? {} : await ajustes();
+    if (!carpetaBorradores && !settings.corteLonaPlanoDirectory) {
       return { ficheros: [], avisos: [...avisos, 'Faltan las carpetas del corte de lona en Configuración: no se ha escrito el corte.'] };
     }
     const order = { orderCode: pedido.orderCode, technician: pedido.summary?.technician };
-    const planos = carpetaCorte(settings.corteLonaPlanoDirectory, order);
+    const planos = carpetaBorradores ?? carpetaCorte(settings.corteLonaPlanoDirectory, order);
     // Siempre un DXF y un plano por pedido (Iván, 20/10/2026), con todas sus lonas.
     for (const c of resultado.cortes) avisos.push(...c.avisos);
     const { archivo } = resultado;
@@ -35,6 +36,14 @@ export function crearCorteRemolques({ ajustes, oda }) {
     const plano = `${archivo.nombre}.${extension}`;
     ficheros.push({ type: 'plano-corte-lona', material, filename: plano, savedPath: path.join(planos, plano), contenido });
     return { ficheros, avisos };
+  }
+
+  // Flujo del DWG: el plano tal como está en su carpeta (quizá cambiado en ZWCAD), en DXF para leer su corte.
+  async function leer(ruta) {
+    const contenido = await fs.readFile(ruta);
+    if (!ruta.toLowerCase().endsWith('.dwg')) return contenido.toString('utf8');
+    if (!oda.disponible) throw new Error('ODA no está disponible: no se puede leer el DWG del corte.');
+    return Buffer.from(await oda.convertir(contenido, { desde: 'dwg', hasta: 'dxf' })).toString('utf8');
   }
 
   async function escribir(ficheros) {
@@ -66,5 +75,5 @@ export function crearCorteRemolques({ ajustes, oda }) {
     return [{ filename: `${resultado.archivo.nombre}.dxf`, contents: Buffer.from(resultado.archivo.dxf, 'latin1') }];
   }
 
-  return { preparar, prepararDxf, escribir, vista };
+  return { preparar, prepararDxf, escribir, vista, leer };
 }

@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Scissors } from 'lucide-react';
+import { CheckCircle2, FolderOpen, Scissors } from 'lucide-react';
+import { abrirCorteDwg, confirmarCorteDwg } from '../abrirCorte';
+import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import type { CalcParams } from '../../remolques/calc/params.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import { CorteRemolquesVista, type VistaCorteRemolques } from './CorteRemolques';
 import { cuerpoVistaPrevia } from './vistaPrevia';
 import { clienteRpsDeLineas } from './guardarPedido';
 
-export function VistaPreviaCorte({ lineas, params, bloqueo }: { lineas: LineaPedido[]; params: CalcParams; bloqueo: string | null }) {
+export function VistaPreviaCorte({ lineas, params, bloqueo, numeroPedido, usuario, notify, preguntar }: {
+  lineas: LineaPedido[]; params: CalcParams; bloqueo: string | null; numeroPedido: string; usuario: string; notify: Notify; preguntar: AskForConfirmation;
+}) {
   const clienteRps = clienteRpsDeLineas(lineas);
   const entrada = JSON.stringify({ ...cuerpoVistaPrevia(lineas), params, ...(clienteRps ? { clienteRps } : {}) });
   const clave = JSON.stringify([entrada, bloqueo]);
@@ -16,6 +20,20 @@ export function VistaPreviaCorte({ lineas, params, bloqueo }: { lineas: LineaPed
   const peticion = useRef<AbortController | null>(null);
   useEffect(() => () => { peticion.current?.abort(); }, [clave]);
   const actual = vista?.clave === clave && !bloqueo ? vista : null;
+
+  // Flujo del DWG (fase 1): el plano en la carpeta de borradores, abierto en ZWCAD para perfilarlo; (fase 2) su corte, confirmado
+  // para poder guardar para revisión. Como en puertas.
+  const [abriendo, setAbriendo] = useState(false);
+  async function abrirCorte() {
+    setAbriendo(true);
+    try { await abrirCorteDwg({ ruta: '/api/remolques/borrador-corte', orderCode: numeroPedido, cuerpo: JSON.parse(entrada), usuario, preguntar, notify }); }
+    finally { setAbriendo(false); }
+  }
+  async function confirmarCorte() {
+    setAbriendo(true);
+    try { await confirmarCorteDwg({ ruta: '/api/remolques/borrador-corte/confirmar', orderCode: numeroPedido, usuario, notify }); }
+    finally { setAbriendo(false); }
+  }
 
   async function calcular() {
     peticion.current?.abort();
@@ -38,8 +56,14 @@ export function VistaPreviaCorte({ lineas, params, bloqueo }: { lineas: LineaPed
     <header className="corte-cabecera">
       <div><span className="corte-titulo"><Scissors aria-hidden="true" /><h2>Vista previa del corte</h2></span>
         <p>Revisa las piezas del pedido antes de guardarlo.</p></div>
-      <button className="primary-button boton-3d" type="button" disabled={Boolean(bloqueo) || actual?.cargando}
-        onClick={() => void calcular()}>{actual?.cargando ? 'Calculando el corte…' : 'Ver vista previa del corte'}</button>
+      <div className="corte-acciones">
+        <button type="button" className="ghost-button boton-3d" onClick={() => void abrirCorte()} disabled={Boolean(bloqueo) || abriendo}
+          title="Deja el plano en la carpeta de borradores y lo abre en ZWCAD"><FolderOpen size={16} aria-hidden="true" />{abriendo ? 'Un momento…' : 'Abrir corte'}</button>
+        <button type="button" className="ghost-button boton-3d" onClick={() => void confirmarCorte()} disabled={Boolean(bloqueo) || abriendo}
+          title="Lee el borrador tal como quedó en ZWCAD y lo da por bueno para guardar para revisión"><CheckCircle2 size={16} aria-hidden="true" />Confirmar corte</button>
+        <button className="primary-button boton-3d" type="button" disabled={Boolean(bloqueo) || actual?.cargando}
+          onClick={() => void calcular()}>{actual?.cargando ? 'Calculando el corte…' : 'Ver vista previa del corte'}</button>
+      </div>
     </header>
     {bloqueo && <p className="corte-ayuda">Para ver el corte falta: {bloqueo}</p>}
     {vista && (!actual || actual.vieja) && <p className="corte-aviso" role="status">Han cambiado los datos: vuelve a calcular la vista previa del corte.</p>}

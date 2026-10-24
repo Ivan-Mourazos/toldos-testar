@@ -789,12 +789,19 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         });
         const datos = await respuesta.json().catch(() => ({})) as {
           needsConfirmation?: boolean; error?: string; review?: { orderCode: string };
-          planoCorte?: PlanoCorte;
+          planoCorte?: PlanoCorte; motivo?: string;
         };
         // Solo «ya está guardado» pregunta; los demás 409 (se está generando, se está guardando, es
         // de toldos, ya se produjo) son un aviso de error con el texto del servidor.
         if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
-          const eleccion = await confirmar({
+          // Flujo del DWG: el plano ya está en su carpeta del año y se sustituiría por el borrador confirmado.
+          const eleccion = await confirmar(datos.motivo === 'plano' ? {
+            title: 'Plano del corte',
+            message: datos.error || 'El plano ya está en su carpeta del año: se sustituirá por el borrador con el corte confirmado.',
+            confirmLabel: 'Sustituir plano y guardar',
+            cancelLabel: 'Cancelar',
+            tone: 'warning',
+          } : {
             title: `Actualizar ${actual.numeroPedido}`,
             message: 'Este pedido ya está guardado en Pedidos. Si continúas, se sustituirá por los datos de esta pantalla.',
             confirmLabel: 'Actualizar pedido',

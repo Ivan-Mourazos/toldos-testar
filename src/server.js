@@ -211,7 +211,12 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   // El buscador busca también por el nombre de una ficha (sus códigos de RPS).
   fichas: () => remolquesClientesStore.get(),
   // Al generar, también el corte de lona: DXF del bot y plano, en las carpetas del corte de toldos.
-  corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda })
+  corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda }),
+  // Flujo del DWG: los cortes confirmados, junto a los pedidos de remolques (carpeta interna, no la que ven los PC).
+  confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {
+    const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
+    return carpeta ? path.join(carpeta, 'cortes-confirmados') : '';
+  } })
 });
 const pedidosPuertas = crearServicioPedidosPuertas({
   almacen: almacenPedidosPuertas,
@@ -769,6 +774,17 @@ app.post('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.guardar(req.body);
   // Guardado para revisión: su borrador sobra (diseño 01/10/2026). Nunca falla.
   if (status === 200) await borradores.borrarTrasRevision(cuerpo.review.orderCode, 'remolques');
+  res.status(status).json(cuerpo);
+}));
+
+// Flujo del DWG, fase 1: el borrador del plano en su carpeta y el enlace para abrirlo en ZWCAD (tgm-pedidos).
+app.post('/api/remolques/borrador-corte', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosRemolques.borradorCorte(req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.post('/api/remolques/borrador-corte/confirmar', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosRemolques.confirmarCorte(req.body);
   res.status(status).json(cuerpo);
 }));
 

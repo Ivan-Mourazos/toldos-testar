@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
+import { crearFlujoDwg, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
 import {
   approvalReviewers, coordinaAuthor, ELEMENT_NOUNS, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
@@ -35,7 +36,7 @@ export type EstadoCoordina = {
 export interface DependenciasPedidosRemolques {
   almacen: AlmacenPedidosRemolques;
   /** Configuración → Rutas de trabajo en este momento. */
-  ajustes: () => Promise<CarpetasRemolques & { corteLonaBotDirectory?: string; corteLonaDxfDirectory?: string }>;
+  ajustes: () => Promise<CarpetasRemolques & AjustesFlujoDwg & { corteLonaBotDirectory?: string; corteLonaDxfDirectory?: string }>;
   /** Espera a las carpetas de red dormidas antes de generar (workflow.js, waitForDirectories). */
   despertarCarpetas?: (carpetas: string[]) => Promise<unknown>;
   /** Los parámetros comunes de remolques, si la pantalla no manda los suyos. */
@@ -51,6 +52,8 @@ export interface DependenciasPedidosRemolques {
   fichas?: () => Promise<readonly FichaBusqueda[]>;
   /** El corte de lona (corte/archivos.js): sin él, «Generar archivos» deja solo los PDF. */
   corte?: CorteRemolques;
+  /** Flujo del DWG: lo confirmado con «Confirmar corte» (src/flujoDwg/confirmaciones.js). Sin él, todo como antes. */
+  confirmaciones?: ConfirmacionesCorte;
   /** Dónde se apuntan los fallos que no paran nada (por defecto, console.error). */
   registrar?: (mensaje: string) => void;
   ahora?: () => Date;
@@ -60,11 +63,13 @@ export type ArchivoCorte = FicheroCorte & { contenido: Uint8Array };
 
 export interface CorteRemolques {
   /** Todos los bytes del corte del pedido (con los resultados con que se genera), sin escribir nada. */
-  preparar(pedido: PedidoRemolques): Promise<{ ficheros: ArchivoCorte[]; avisos: string[] }>;
+  preparar(pedido: PedidoRemolques, carpetaBorradores?: string): Promise<{ ficheros: ArchivoCorte[]; avisos: string[] }>;
   escribir(ficheros: ArchivoCorte[]): Promise<void>;
   /** El corte para verlo en pantalla: piezas, metros de rollo y avisos, sin los archivos. */
   vista(pedido: PedidoRemolques): unknown;
   prepararDxf?(pedido: PedidoRemolques): { filename: string; contents: Uint8Array }[];
+  /** Flujo del DWG: el plano de una carpeta en DXF (el DWG pasado por ODA). */
+  leer?(ruta: string): Promise<string>;
 }
 
 export interface Respuesta {
@@ -189,6 +194,54 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
   const ocupados = new Map<string, "guardando" | "generando">();
   const MENSAJE_GUARDANDO = "Se está guardando este pedido: vuelve a intentarlo en un momento.";
 
+  // Flujo del DWG (plan del 24/10/2026, src/flujoDwg/flujo.ts), como en puertas. Los remolques no imprimen el plano: sin PDF
+  // de presentaciones.
+  const flujo = crearFlujoDwg({ ajustes: deps.ajustes, leer: deps.corte?.leer, confirmaciones: deps.confirmaciones, registrar, ahora: reloj,
+    escribir: (fichero) => deps.corte!.escribir([{ type: "plano-corte-lona", material: "", ...fichero }]) });
+
+  /** Los elementos de la pantalla, completos y calculados aquí: nunca se guarda un resultado que no salga del cálculo. */
+  async function deLaPantalla(c: { elementos?: unknown; params?: unknown }) {
+    const params = c.params == null ? await deps.parametros() : paramsDeLaPantalla(c.params);
+    const datos = prepararPedidoHoja(c.elementos, params);
+    exigirOfsCorte(datos);
+    return { datos, orderCode: codigoPedido(datos.elementos[0].input.cabecera.numeroPedido) };
+  }
+
+  /**
+   * Flujo del DWG, fase 1: el plano del corte tal como está en pantalla, en la carpeta de borradores, para abrirlo en ZWCAD.
+   * Si ya hay uno, se abre el que hay, salvo que el autor pida generarlo de nuevo (`regenerar`).
+   */
+  async function borradorCorte(cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; savedBy?: unknown; clienteRps?: unknown; regenerar?: unknown };
+    const autor = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
+    if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de abrir el corte.");
+    if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
+    const { datos, orderCode } = await deLaPantalla(c);
+    if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
+    ocupados.set(orderCode, "guardando");
+    try {
+      const existente = await deps.almacen.obtener(orderCode);
+      const pedido = crearPedidoRemolques({ datos, autoria: { technician: datos.elementos[0].input.cabecera.realizadoPor || autor, reviewer: "" },
+        existente, ahora: ahora(), clienteRps: validarClienteRps(c.clienteRps) });
+      return await flujo.borrador({ orderCode, regenerar: c.regenerar === true, revisado: existente?.corteConfirmado?.plano,
+        preparar: async (carpeta) => {
+          const { ficheros, avisos } = await deps.corte!.preparar(pedido, carpeta);
+          const plano = ficheros.find((fichero) => fichero.type === "plano-corte-lona") ?? null;
+          return { fichero: plano, avisos: plano || avisos.length ? avisos : ["Este pedido no tiene corte de lona."] };
+        } });
+    } finally {
+      ocupados.delete(orderCode);
+    }
+  }
+
+  /** «Confirmar corte» (fase 2): el corte del borrador, tal como quedó en ZWCAD, apuntado para guardar para revisión. */
+  async function confirmarCorte(cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { orderCode?: unknown; savedBy?: unknown };
+    const autor = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
+    if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de confirmar el corte.");
+    return flujo.confirmar(codigoPedido(typeof c.orderCode === "string" ? c.orderCode : ""), autor);
+  }
+
   async function obtener(orderCode: string): Promise<PedidoRemolques> {
     const pedido = await deps.almacen.obtener(codigoPedido(orderCode));
     if (!pedido) throw new ErrorPedidoRemolques("No se encontró el pedido de remolques.", 404);
@@ -220,12 +273,8 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; savedBy?: unknown; confirmOverwrite?: unknown; clienteRps?: unknown };
     const salvador = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
     if (!salvador || !deps.tecnicos.includes(salvador)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de guardar.");
-    const params = c.params == null ? await deps.parametros() : paramsDeLaPantalla(c.params);
     const clienteRps = validarClienteRps(c.clienteRps);
-    // Completo, del mismo pedido, ordenado y calculado aquí: nunca se guarda un resultado que no salga del cálculo.
-    const datos = prepararPedidoHoja(c.elementos, params);
-    exigirOfsCorte(datos);
-    const orderCode = codigoPedido(datos.elementos[0].input.cabecera.numeroPedido);
+    const { datos, orderCode } = await deLaPantalla(c);
     const ocupado = ocupados.get(orderCode);
     if (ocupado === "generando") {
       return { status: 409, cuerpo: { error: "Se están generando los archivos de este pedido: espera a que terminen antes de volver a guardarlo." } };
@@ -254,6 +303,20 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         currentAuthor,
       });
       const pedido = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora(), clienteRps });
+      // Flujo del DWG (fase 2): solo con el corte confirmado y sin cambios; el borrador pasa a la carpeta del año, donde lo abre
+      // el revisor, y la web ya no genera el plano.
+      const desdeBorrador = deps.corte ? await flujo.alGuardar({ orderCode, technician: autoria.technician, confirmOverwrite: c.confirmOverwrite === true }) : null;
+      if (desdeBorrador && "respuesta" in desdeBorrador) return desdeBorrador.respuesta;
+      if (desdeBorrador) {
+        await desdeBorrador.escribir();
+        const conCorte = { ...pedido, corteConfirmado: desdeBorrador.corteConfirmado };
+        await deps.almacen.guardar(conCorte);
+        const avisos = await desdeBorrador.limpiar();
+        const { filename, plano: savedPath } = desdeBorrador.corteConfirmado;
+        const material = [...new Set(pedido.elementos.map((e) => e.input.material).filter(Boolean))].join(" / ");
+        return { status: 200, cuerpo: { ok: true, review: resumenBandeja(conCorte), overwritten: Boolean(existente),
+          planoCorte: { files: [{ type: "plano-corte-lona", material, filename, savedPath }], avisos } } };
+      }
       await deps.almacen.guardar(pedido);
       // Como en toldos: el plano del corte sale ya al guardar, para revisarlo antes de aprobar.
       const planoCorte = await escribirPlanoRevision(pedido);
@@ -373,6 +436,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
     if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
     const pedido = await obtener(orderCode);
+    if (pedido.corteConfirmado) {
+      throw new ErrorPedidoRemolques("Este pedido tiene el corte confirmado: su plano es el DWG revisado y se cambia en ZWCAD, la web no lo vuelve a hacer.", 409);
+    }
     const datos: DatosHojaPedido = { ...prepararPedidoHoja(elementosPedidoHoja(pedido), pedido.params), revisadoPor: "" };
     const confirmar = (cuerpo as { confirmOverwrite?: unknown } | null)?.confirmOverwrite === true;
     const planoCorte = await escribirPlanoRevision(conResultadosDeLaHoja(pedido, datos), confirmar);
@@ -434,6 +500,8 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
     const pedido = await obtener(orderCode);
     exigirOfsCorte(pedido);
+    // Fase 3: con el corte confirmado, el DXF del bot sale del DWG revisado tal como está ahora.
+    if (pedido.corteConfirmado) return { filename: `${orderCode}.dxf`, contents: Buffer.from((await flujo.corteDelDwg(pedido.corteConfirmado)).dxf, "latin1") };
     return deps.corte.prepararDxf(pedidoCalculado(pedido))[0];
   }
 
@@ -442,20 +510,30 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
     ocupados.set(orderCode, "generando");
     try {
-      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown };
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown };
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
       const pedido = await obtener(orderCode);
       exigirOfsCorte(pedido);
       const calculado = pedidoCalculado(pedido);
-      return await enviarCorteCompartido({ pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
+      // Si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta antes de mandarlo.
+      let nota = "";
+      let preparar = () => deps.corte!.prepararDxf!(calculado);
+      if (pedido.corteConfirmado) {
+        const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario);
+        if ("respuesta" in comprobado) return comprobado.respuesta;
+        nota = comprobado.nota;
+        const contents = Buffer.from(comprobado.dwg.dxf, "latin1");
+        preparar = () => [{ filename: `${orderCode}.dxf`, contents }];
+      }
+      return await enviarCorteCompartido({ nota, pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
         usuario, destino: c.destino, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
         elementos: elementosAprobacion(pedido), coordina: deps.coordina, nombres: ELEMENT_NOUNS,
-        comprobarCorte: () => {}, preparar: () => deps.corte!.prepararDxf!(calculado),
+        comprobarCorte: () => {}, preparar,
         guardarRegistro: (actualizado: PedidoRemolques) => deps.almacen.guardar(actualizado), ahora: reloj });
     } finally { ocupados.delete(orderCode); }
   }
 
-  return { listar, obtener, guardar, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
+  return { listar, obtener, guardar, borradorCorte, confirmarCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
 }

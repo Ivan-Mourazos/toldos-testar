@@ -40,9 +40,11 @@ export async function confirmarCorteDwg({ ruta, orderCode, usuario, notify }: {
   }
 }
 
-export async function abrirCorteDwg({ ruta, pedido, usuario, preguntar, notify, abrir = (url) => window.location.assign(url) }: {
+export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, preguntar, notify, abrir = (url) => window.location.assign(url) }: {
   ruta: string;
-  pedido: { orderCode: string };
+  orderCode: string;
+  /** Lo que pide el servidor de cada producto para hacer el plano (el pedido de puertas, los elementos de remolques…). */
+  cuerpo: Record<string, unknown>;
   usuario: string;
   preguntar: AskForConfirmation;
   notify: Notify;
@@ -55,7 +57,7 @@ export async function abrirCorteDwg({ ruta, pedido, usuario, preguntar, notify, 
   const pedir = async (regenerar: boolean) => {
     const respuesta = await fetch(ruta, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pedido, savedBy: usuario, regenerar }),
+      body: JSON.stringify({ ...cuerpo, savedBy: usuario, regenerar }),
     });
     const datos = await respuesta.json().catch(() => ({})) as RespuestaBorrador;
     if (!respuesta.ok) throw new Error(datos.error || 'No se pudo preparar el borrador del corte.');
@@ -66,7 +68,7 @@ export async function abrirCorteDwg({ ruta, pedido, usuario, preguntar, notify, 
     // Si ya hay un borrador, puede llevar cambios hechos en ZWCAD: no se pisa sin preguntar.
     if (datos.existente) {
       const eleccion = await preguntar({
-        title: `Corte de ${pedido.orderCode}`,
+        title: `Corte de ${orderCode}`,
         message: `Ya hay un borrador del corte (${datos.filename}) y puede tener cambios hechos en ZWCAD. ¿Abres ese o lo generas de nuevo con los datos de la pantalla?`,
         confirmLabel: 'Abrir el que hay', alternativeLabel: 'Generar de nuevo', cancelLabel: 'Cancelar', tone: 'warning',
       });

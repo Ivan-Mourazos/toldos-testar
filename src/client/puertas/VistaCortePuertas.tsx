@@ -40,7 +40,7 @@ export function VistaCortePuertas({pedido,activo,usuario,notify,askForConfirmati
   // Flujo del DWG, fase 1: el plano en la carpeta de borradores, abierto en ZWCAD para perfilarlo.
   async function abrirCorte() {
     setAbriendo(true);
-    try { await abrirCorteDwg({ruta:'/api/puertas/borrador-corte',pedido,usuario,preguntar:askForConfirmation,notify}); }
+    try { await abrirCorteDwg({ruta:'/api/puertas/borrador-corte',orderCode:pedido.orderCode,cuerpo:{pedido},usuario,preguntar:askForConfirmation,notify}); }
     finally { setAbriendo(false); }
   }
   // Fase 2: el corte del borrador, tal como quedó en ZWCAD, confirmado para poder guardar para revisión.

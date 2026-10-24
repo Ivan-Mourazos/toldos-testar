@@ -1,6 +1,9 @@
 .corte-lona { padding: 20px; margin-block: 18px; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; scroll-margin-top: 78px; }
 .corte-cabecera, .corte-titulo, .corte-estado, .corte-material > header, .corte-opcion > header { display: flex; align-items: center; gap: 12px; }
 .corte-cabecera { flex-wrap: wrap; }
+/* «Abrir corte», «Confirmar corte» y la vista previa (flujo del DWG), en puertas y remolques. */
+.corte-acciones { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.corte-acciones .ghost-button { display: inline-flex; gap: 6px; align-items: center; }
 .corte-cabecera > div { flex: 1; }
 .corte-titulo h2 { font-size: 18px; margin: 0; }
 .corte-cabecera p, .corte-ayuda { margin: 6px 0 0; color: var(--text-muted); font-size: 13px; }

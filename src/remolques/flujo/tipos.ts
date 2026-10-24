@@ -111,6 +111,8 @@ export interface PedidoRemolques {
   clienteRps?: ClienteRpsPedido;
   /** Solo en los que vienen de la web vieja (comando de migración). */
   origen?: OrigenMigracion;
+  /** Flujo del DWG: el corte que confirmó el autor en su borrador y dónde quedó el DWG al guardar para revisión. */
+  corteConfirmado?: import("../../flujoDwg/flujo.ts").CorteConfirmado;
 }
 
 /** Lo que lista Pedidos: el pedido sin los elementos ni los parámetros. */

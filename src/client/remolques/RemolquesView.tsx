@@ -263,7 +263,8 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               : 'Busca el pedido arriba para traer sus líneas, o escribe su número en Datos del pedido para empezar a mano.'}
         </OrderEmptyState>
       )}
-      {lineas.length > 0 && <VistaPreviaCorte lineas={lineas} params={params} bloqueo={ws.bloqueoParams.motivo ?? faltaPdf} />}
+      {lineas.length > 0 && <VistaPreviaCorte lineas={lineas} params={params} bloqueo={ws.bloqueoParams.motivo ?? faltaPdf}
+        numeroPedido={numeroPedido} usuario={usuario} notify={notify} preguntar={askForConfirmation} />}
       {fichaCliente.abierta && (
         <GuardarEnFicha abierta={fichaCliente.abierta} usuario={usuario} numeroPedido={numeroPedido}
           ocupado={fichaCliente.ocupado} onGuardar={(claves) => void fichaCliente.guardar(claves)} onCerrar={fichaCliente.cerrar} />

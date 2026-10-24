@@ -10,9 +10,12 @@ import { corteDelPlano, entidadesBot } from "./corteDwg.js";
 
 /** Un fallo con su código HTTP, como los de los pedidos. */
 export class ErrorFlujoDwg extends Error {
-  constructor(mensaje: string, public statusCode = 400) {
+  statusCode: number;
+  // Sin «public statusCode» en el constructor: los scripts cargan este fichero con Node, que solo quita los tipos.
+  constructor(mensaje: string, statusCode = 400) {
     super(mensaje);
     this.name = "ErrorFlujoDwg";
+    this.statusCode = statusCode;
   }
 }
 
