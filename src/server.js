@@ -98,6 +98,8 @@ const workflowStore = createWorkflowStore({
     corteLonaBotDirectory: config.corteLonaBotDirectory,
     corteLonaPlanoDirectory: config.corteLonaPlanoDirectory,
     corteLonaDxfDirectory: config.corteLonaDxfDirectory,
+    corteBorradoresDirectory: config.corteBorradoresDirectory,
+    corteBorradoresRed: config.corteBorradoresRed,
     exportDirectory: config.exportDirectory,
     orderArchiveRoot: config.orderArchiveRoot,
     reviewDirectory: config.reviewDirectory,
@@ -809,6 +811,12 @@ app.get('/api/puertas/pedidos', rutaRemolques(async (req, res) => {
 
 app.post('/api/puertas/pedidos', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosPuertas.guardar(req.body);
+  res.status(status).json(cuerpo);
+}));
+
+// Flujo del DWG, fase 1: el borrador del plano en su carpeta y el enlace para abrirlo en ZWCAD (tgm-pedidos).
+app.post('/api/puertas/borrador-corte', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosPuertas.borradorCorte(req.body);
   res.status(status).json(cuerpo);
 }));
 

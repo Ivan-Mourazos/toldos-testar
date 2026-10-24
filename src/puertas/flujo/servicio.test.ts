@@ -28,6 +28,7 @@ let activa: boolean;
 let aprobada: boolean;
 let otro: string | null;
 let escritos: string[];
+let borradores: boolean;
 let servicio: ReturnType<typeof crearServicioPedidosPuertas>;
 beforeEach(async () => {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
@@ -36,11 +37,12 @@ beforeEach(async () => {
   aprobada = true;
   otro = null;
   escritos = [];
+  borradores = true;
   const almacen = crearAlmacenPedidos<PedidoPuertasGuardado>({ carpeta: async () => path.join(raiz, 'pedidos/puertas'),
     tipo: TIPO_PEDIDO_PUERTAS, nombre: 'puertas', sinCarpeta: 'Sin carpeta' });
   const plano: PlanoPuertas = {
-    async preparar(pedido, revisor) {
-      return { fichero: { type: 'plano-puertas', filename: `${pedido.orderCode}.dwg`, savedPath: path.join(raiz, 'planos', `${pedido.orderCode}.dwg`),
+    async preparar(pedido, revisor, carpetaBorradores) {
+      return { fichero: { type: 'plano-puertas', filename: `${pedido.orderCode}.dwg`, savedPath: path.join(carpetaBorradores ?? path.join(raiz, 'planos'), `${pedido.orderCode}.dwg`),
         contenido: Buffer.from(`PLANO ${pedido.orderCode} REVISOR ${revisor}`) }, avisos: [] };
     },
     async escribir(fichero) {
@@ -52,7 +54,8 @@ beforeEach(async () => {
   servicio = crearServicioPedidosPuertas({
     almacen, plano, tecnicos: ['IVÁN', 'DAVID'], otroProducto: async () => otro,
     ajustes: async () => ({ productionEnabled: activa, corteLonaBotDirectory: path.join(raiz, 'bot/{TECNICO}'),
-      corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs') }),
+      corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
+      corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\stinkor\oftecnica\BORRADORES CORTE` : '' }),
     coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, aprobada ? { estado: 'aprobada', revisor: 'DAVID' } : { estado: 'en_revision' }])) }) },
     ahora: () => new Date('2026-10-22T08:00:00Z'),
   });
@@ -158,4 +161,35 @@ it('«Corregir» vuelve a la pantalla con lo guardado (número tal cual, cliente
   const editable = pedidoParaEditar(await servicio.obtener('AR2605134'));
   expect(editable).toMatchObject({ kind: 'puertas', orderCode: 'AR.26.05134', cabecera: { cliente: 'PORTANOVA', fecha: '2026-10-21' } });
   expect(editable.elementos[0].input).toEqual(puertaHabitual());
+});
+
+// Flujo del DWG, fase 1 (plan del 24/10/2026): el borrador del plano en su carpeta y el enlace para abrirlo en ZWCAD.
+describe('borrador del corte', () => {
+  const red = String.raw`\\stinkor\oftecnica\BORRADORES CORTE\AR2605134.dwg`;
+  it('escribe el plano en la carpeta de borradores y da el enlace tgm-pedidos con su ruta de red', async () => {
+    const { status, cuerpo } = await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' });
+    expect(status).toBe(200);
+    expect(cuerpo).toMatchObject({ ok: true, existente: false, filename: 'AR2605134.dwg', ruta: red,
+      url: `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(red)}` });
+    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'utf8')).toBe('PLANO AR2605134 REVISOR ');
+  });
+  it('si ya hay un borrador no lo pisa: lo abre, salvo que se pida generarlo de nuevo', async () => {
+    await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' });
+    await fs.writeFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'CAMBIADO EN ZWCAD');
+    expect((await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' })).cuerpo).toMatchObject({ existente: true, ruta: red });
+    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'utf8')).toBe('CAMBIADO EN ZWCAD');
+    expect((await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN', regenerar: true })).cuerpo).toMatchObject({ existente: false, sustituido: true });
+    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'utf8')).toBe('PLANO AR2605134 REVISOR ');
+  });
+  it('no escribe nada sin «Soy», en simulación, sin las carpetas o con comprobaciones pendientes', async () => {
+    await expect(servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: '' })).rejects.toMatchObject({ message: expect.stringContaining('Soy') });
+    activa = false;
+    await expect(servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' })).rejects.toMatchObject({ message: expect.stringContaining('simulación') });
+    activa = true;
+    borradores = false;
+    await expect(servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' })).rejects.toMatchObject({ message: expect.stringContaining('borradores') });
+    borradores = true;
+    await expect(servicio.borradorCorte({ pedido: pedidoPantalla({ alto: 0 }), savedBy: 'IVÁN' })).rejects.toMatchObject({ message: expect.stringContaining('comprobaciones') });
+    expect(escritos).toEqual([]);
+  });
 });

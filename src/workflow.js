@@ -23,6 +23,8 @@ export function defaultWorkflowSettings(seed = {}) {
     corteLonaBotDirectory: seed.corteLonaBotDirectory || '',
     corteLonaPlanoDirectory: seed.corteLonaPlanoDirectory || '',
     corteLonaDxfDirectory: seed.corteLonaDxfDirectory || '',
+    corteBorradoresDirectory: seed.corteBorradoresDirectory || '',
+    corteBorradoresRed: seed.corteBorradoresRed || '',
     reviewDirectory: seed.reviewDirectory || archiveTemplate,
     planteamientosDirectory: seed.planteamientosDirectory || archiveTemplate,
     rpsUploadDirectory: seed.rpsUploadDirectory || seed.exportDirectory || '',
@@ -41,6 +43,9 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     corteLonaBotDirectory: cleanPath(input?.corteLonaBotDirectory ?? current.corteLonaBotDirectory),
     corteLonaPlanoDirectory: cleanPath(input?.corteLonaPlanoDirectory ?? current.corteLonaPlanoDirectory),
     corteLonaDxfDirectory: cleanPath(input?.corteLonaDxfDirectory ?? current.corteLonaDxfDirectory),
+    // Borradores del corte (flujo del DWG, fase 1): la carpeta en el servidor y la misma vista desde los PC, para abrirla en ZWCAD.
+    corteBorradoresDirectory: cleanPath(input?.corteBorradoresDirectory ?? current.corteBorradoresDirectory),
+    corteBorradoresRed: String(input?.corteBorradoresRed ?? current.corteBorradoresRed ?? '').trim(),
     reviewDirectory: cleanPath(input?.reviewDirectory ?? current.reviewDirectory),
     planteamientosDirectory: cleanPath(input?.planteamientosDirectory ?? current.planteamientosDirectory),
     rpsUploadDirectory: cleanPath(input?.rpsUploadDirectory ?? current.rpsUploadDirectory),
@@ -55,6 +60,7 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     ['carpeta de DXF del corte', settings.corteLonaBotDirectory],
     ['carpeta de planos del corte', settings.corteLonaPlanoDirectory],
     ['carpeta de DXFs de oficina técnica', settings.corteLonaDxfDirectory],
+    ['carpeta de borradores del corte', settings.corteBorradoresDirectory],
     ['carpeta de revisión', settings.reviewDirectory],
     ['carpeta de planteamientos', settings.planteamientosDirectory],
     ['carpeta de subida de material', settings.rpsUploadDirectory],
@@ -81,6 +87,12 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   }
   if (settings.remolquesRevisionDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta interna de remolques no lleva {YYYY}: todos los pedidos van en la misma carpeta.');
+  }
+  if (/{[^}]*}/.test(settings.corteBorradoresDirectory) || /{[^}]*}/.test(settings.corteBorradoresRed)) {
+    throw new Error('La carpeta de borradores del corte no lleva plantillas: todos los borradores van en la misma carpeta.');
+  }
+  if (settings.corteBorradoresRed && !/^\\\\[^\\]+\\[^\\]+/.test(settings.corteBorradoresRed)) {
+    throw new Error('La carpeta de borradores del corte vista desde los PC debe ser una ruta de red, como \\\\stinkor\\oftecnica\\BORRADORES CORTE.');
   }
   if (settings.draftsDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta de borradores no lleva {YYYY}: todos los borradores van en la misma carpeta.');
@@ -112,6 +124,7 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
     if (settings.corteLonaBotDirectory) definitions.push(['corteLonaBotDirectory', 'Corte de lona · DXF del bot', settings.corteLonaBotDirectory, 'write']);
     if (settings.corteLonaPlanoDirectory) definitions.push(['corteLonaPlanoDirectory', 'Corte de lona · planos', settings.corteLonaPlanoDirectory, 'write']);
     if (settings.corteLonaDxfDirectory) definitions.push(['corteLonaDxfDirectory', 'Corte de lona · DXFs de oficina técnica', settings.corteLonaDxfDirectory, 'write']);
+    if (settings.corteBorradoresDirectory) definitions.push(['corteBorradoresDirectory', 'Corte · borradores del DWG', settings.corteBorradoresDirectory, 'write']);
   }
   if (settings.rpsPlanteamientosDirectory) {
     definitions.push(['rpsPlanteamientosDirectory', 'Histórico de planteamientos RPS', settings.rpsPlanteamientosDirectory, 'read']);

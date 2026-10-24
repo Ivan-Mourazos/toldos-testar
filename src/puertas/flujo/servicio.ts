@@ -22,13 +22,14 @@ import type { FicheroPlanoPuertas, PedidoPuertasGuardado, ResumenPedidoPuertas }
 
 /** El plano del pedido (archivos.ts): bytes y dónde va, sin escribir nada hasta `escribir`. */
 export interface PlanoPuertas {
-  preparar(pedido: PedidoPuertasGuardado, revisor: string): Promise<{ fichero: (FicheroPlanoPuertas & { contenido: Uint8Array }) | null; avisos: string[] }>;
+  preparar(pedido: PedidoPuertasGuardado, revisor: string, carpetaBorradores?: string): Promise<{ fichero: (FicheroPlanoPuertas & { contenido: Uint8Array }) | null; avisos: string[] }>;
   escribir(fichero: FicheroPlanoPuertas & { contenido: Uint8Array }): Promise<void>;
 }
 
 export interface DependenciasPedidosPuertas {
   almacen: AlmacenPedidos<PedidoPuertasGuardado>;
-  ajustes: () => Promise<{ productionEnabled?: boolean; corteLonaBotDirectory?: string; corteLonaPlanoDirectory?: string; corteLonaDxfDirectory?: string }>;
+  ajustes: () => Promise<{ productionEnabled?: boolean; corteLonaBotDirectory?: string; corteLonaPlanoDirectory?: string; corteLonaDxfDirectory?: string;
+    corteBorradoresDirectory?: string; corteBorradoresRed?: string }>;
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
   /** La lista de técnicos (la de «Soy»). */
   tecnicos: string[];
@@ -158,6 +159,57 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     }
   }
 
+  /**
+   * Flujo del DWG, fase 1 (plan del 24/10/2026): el plano del pedido tal como está en pantalla, en la carpeta de
+   * borradores, para abrirlo en ZWCAD y perfilarlo. Si ya hay uno, no se pisa: se abre el que hay, salvo que el autor
+   * pida generarlo de nuevo (`regenerar`). Devuelve el enlace `tgm-pedidos:` con su ruta de red.
+   */
+  async function borradorCorte(cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { pedido?: unknown; savedBy?: unknown; regenerar?: unknown };
+    const autor = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
+    if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de abrir el corte.");
+    let enviado;
+    try {
+      enviado = leerPedidoPuertas(c.pedido);
+    } catch (error) {
+      throw new ErrorPedidoRemolques((error as Error).message);
+    }
+    const orderCode = codigoPedido(enviado.orderCode);
+    exigirOfsPuertas(enviado);
+    const errores = generarCortePuertas(enviado).avisos.filter((aviso) => aviso.nivel === "error");
+    if (errores.length) {
+      throw new ErrorPedidoRemolques(`Antes de abrir el corte, resuelve las comprobaciones: ${errores.slice(0, 3).map((aviso) => aviso.texto).join(" · ")}${errores.length > 3 ? ` (y ${errores.length - 3} más)` : ""}.`);
+    }
+    const ajustes = await deps.ajustes();
+    if (!ajustes.productionEnabled) throw new ErrorPedidoRemolques("Modo simulación: no se ha escrito el borrador del corte.", 403);
+    if (!ajustes.corteBorradoresDirectory || !ajustes.corteBorradoresRed) {
+      throw new ErrorPedidoRemolques("Falta la carpeta de borradores del corte en Configuración (la del servidor y la de red).", 409);
+    }
+    if (!deps.plano) throw new ErrorPedidoRemolques("El plano de puertas no está disponible en este servidor.", 404);
+    if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
+    ocupados.set(orderCode, "guardando");
+    try {
+      const cabecera = validarCabeceraPuertas((c.pedido as { cabecera?: unknown }).cabecera ?? {}, ahora().slice(0, 10));
+      const borrador = { ...enviado, orderCode, summary: { customer: cabecera.cliente || cabecera.clienteRps?.nombre || "", technician: autor,
+        orderDate: cabecera.fecha } } as unknown as PedidoPuertasGuardado;
+      const { fichero, avisos } = await deps.plano.preparar(borrador, "", ajustes.corteBorradoresDirectory);
+      if (!fichero) throw new ErrorPedidoRemolques(avisos.at(-1) ?? "No se pudo preparar el borrador del corte.", 500);
+      const red = `${ajustes.corteBorradoresRed.replace(/[\\/]+$/, "")}\\${fichero.filename}`;
+      const url = `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(red)}`;
+      const existe = await existeFichero(fichero.savedPath);
+      if (existe && c.regenerar !== true) return { status: 200, cuerpo: { ok: true, existente: true, filename: fichero.filename, ruta: red, url, avisos } };
+      try {
+        await deps.plano.escribir(fichero);
+      } catch (error) {
+        registrar(`Pedido ${orderCode}: no se pudo escribir el borrador del corte: ${(error as Error).message}`);
+        throw new ErrorPedidoRemolques(motivoPlano(error, fichero.filename), 500);
+      }
+      return { status: 200, cuerpo: { ok: true, existente: false, sustituido: existe, filename: fichero.filename, ruta: red, url, avisos } };
+    } finally {
+      ocupados.delete(orderCode);
+    }
+  }
+
   /** «Guardar plano para revisar» de la ficha: el plano de un pedido ya guardado, sin tocar el pedido. */
   async function planoRevision(orderCodeBruto: string, cuerpo?: unknown): Promise<Respuesta> {
     const orderCode = codigoPedido(orderCodeBruto);
@@ -262,5 +314,5 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     }
   }
 
-  return { listar, obtener, guardar, planoRevision, generar, corte, descargarCorte, enviarCorte };
+  return { listar, obtener, guardar, borradorCorte, planoRevision, generar, corte, descargarCorte, enviarCorte };
 }

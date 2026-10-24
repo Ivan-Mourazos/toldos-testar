@@ -635,6 +635,9 @@ export type WorkflowSettings = {
   corteLonaBotDirectory?: string;
   corteLonaPlanoDirectory?: string;
   corteLonaDxfDirectory?: string;
+  /** Borradores del corte (flujo del DWG): la carpeta en el servidor y la misma vista desde los PC. */
+  corteBorradoresDirectory?: string;
+  corteBorradoresRed?: string;
   schemaVersion: number;
   productionEnabled: boolean;
   reviewDirectory: string;

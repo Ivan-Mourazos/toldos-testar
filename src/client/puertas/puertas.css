@@ -86,3 +86,6 @@
 .puerta-corte-dibujo text { font-family:Arial,sans-serif; }
 .puerta-corte-dibujo .puerta-texto-rotulador { fill:var(--tramo-ajustado); }
 @media (prefers-reduced-motion:reduce) { .puertas-pantalla summary::before { transition:none; } }
+/* «Abrir corte» junto a la vista previa (flujo del DWG, fase 1). */
+.corte-acciones { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.corte-acciones .ghost-button { display:inline-flex; gap:6px; align-items:center; }

@@ -328,6 +328,6 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     </section>
     <div className="puerta-selector"><div className="tira-3d" role="group" aria-label="Puertas del pedido">{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:crypto.randomUUID(),input:nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>Añadir puerta</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(0);}}><Trash2 size={16}/>Quitar puerta</button>}</div>
     <Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})}/>
-    <VistaCortePuertas pedido={pedido} activo={activo}/>
+    <VistaCortePuertas pedido={pedido} activo={activo} usuario={usuario} notify={notify} askForConfirmation={askForConfirmation}/>
   </div>;
 }

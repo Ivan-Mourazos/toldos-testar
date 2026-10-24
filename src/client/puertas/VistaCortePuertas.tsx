@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Scissors } from 'lucide-react';
+import { FolderOpen, Scissors } from 'lucide-react';
 import type { CortePuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
+import { abrirCorteDwg } from '../abrirCorte';
+import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import '../coordina/corte-lona.css';
 
 export function DibujoCortePuertas({corte:c,zoom=1}:{corte:CortePuertas;zoom?:number}) {
@@ -33,7 +35,14 @@ function MaterialCorte({c}:{c:CortePuertas}) {
     <small className="corte-leyenda"><span>DISCO1 · corte</span><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas y mininúmeros de 1 cm</span></small>
   </article>;
 }
-export function VistaCortePuertas({pedido,activo}:{pedido:PedidoPuertas;activo:boolean}) {
+export function VistaCortePuertas({pedido,activo,usuario,notify,askForConfirmation}:{pedido:PedidoPuertas;activo:boolean;usuario:string;notify:Notify;askForConfirmation:AskForConfirmation}) {
+  const [abriendo,setAbriendo]=useState(false);
+  // Flujo del DWG, fase 1: el plano en la carpeta de borradores, abierto en ZWCAD para perfilarlo.
+  async function abrirCorte() {
+    setAbriendo(true);
+    try { await abrirCorteDwg({ruta:'/api/puertas/borrador-corte',pedido,usuario,preguntar:askForConfirmation,notify}); }
+    finally { setAbriendo(false); }
+  }
   const entrada=JSON.stringify(pedido), solicitud=useRef<AbortController|null>(null);
   const [vista,setVista]=useState<{entrada:string;datos?:VistaPuertas;error?:string;cargando?:boolean}|null>(null);
   useEffect(()=>()=>{solicitud.current?.abort();},[entrada,activo]);
@@ -50,7 +59,8 @@ export function VistaCortePuertas({pedido,activo}:{pedido:PedidoPuertas;activo:b
   }
   return <section className="corte-lona panel bloque-3d" aria-label="Vista previa del corte de puertas" aria-busy={Boolean(actual?.cargando)}>
     <header className="corte-cabecera"><div><span className="corte-titulo"><Scissors aria-hidden="true"/><h2>Vista previa del corte</h2></span><p>{pedido.orderCode||'Sin número de pedido'} · Revisa las piezas y el material antes de preparar la puerta.</p></div>
-      <button type="button" className="primary-button boton-3d" onClick={()=>void calcular()} disabled={Boolean(actual?.cargando)}>{actual?.cargando?'Calculando…':'Ver vista previa del corte'}</button></header>
+      <div className="corte-acciones"><button type="button" className="ghost-button boton-3d" onClick={()=>void abrirCorte()} disabled={abriendo} title="Deja el plano en la carpeta de borradores y lo abre en ZWCAD"><FolderOpen size={16} aria-hidden="true"/>{abriendo?'Preparando…':'Abrir corte'}</button>
+      <button type="button" className="primary-button boton-3d" onClick={()=>void calcular()} disabled={Boolean(actual?.cargando)}>{actual?.cargando?'Calculando…':'Ver vista previa del corte'}</button></div></header>
     {vista&&!actual&&<p role="status" className="corte-aviso">Han cambiado los datos. Vuelve a calcular el corte.</p>}
     {actual?.error&&<p role="alert" className="corte-aviso">{actual.error}</p>}
     {actual?.datos&&<>

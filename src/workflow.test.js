@@ -233,6 +233,12 @@ describe('flujo de revisión y producción', () => {
       .toThrow('La carpeta de oficina técnica de remolques debe llevar {YYYY}.');
     expect(() => normalizeWorkflowSettings({ remolquesPlanteamientosDirectory: 'relativa' }))
       .toThrow('La carpeta de planteamientos de remolques debe ser una ruta absoluta válida en el sistema del servidor.');
+    // Borradores del corte (flujo del DWG): la del servidor, absoluta; la de los PC, de red; ninguna con plantillas.
+    const red = String.raw`\\stinkor\oftecnica\BORRADORES CORTE`;
+    expect(normalizeWorkflowSettings({ corteBorradoresDirectory: available, corteBorradoresRed: ` ${red} ` }))
+      .toMatchObject({ corteBorradoresDirectory: available, corteBorradoresRed: red });
+    expect(() => normalizeWorkflowSettings({ corteBorradoresRed: 'Z:/BORRADORES CORTE' })).toThrow('ruta de red');
+    expect(() => normalizeWorkflowSettings({ corteBorradoresDirectory: path.join(available, '{YYYY}') })).toThrow('no lleva plantillas');
     const result = await checkWorkflowDirectories(settings, { year: 2026 });
     expect(result.directories.map(({ label, ok }) => ({ label, ok }))).toEqual([
       { label: 'Pedidos para revisión', ok: true },

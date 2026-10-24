@@ -30,6 +30,8 @@ export const config = {
   corteLonaBotDirectory: process.env.CORTE_LONA_BOT_DIRECTORY || '',
   corteLonaPlanoDirectory: process.env.CORTE_LONA_PLANO_DIRECTORY || '',
   corteLonaDxfDirectory: process.env.CORTE_LONA_DXF_DIRECTORY || '',
+  corteBorradoresDirectory: process.env.CORTE_BORRADORES_DIRECTORY || '',
+  corteBorradoresRed: process.env.CORTE_BORRADORES_RED || '',
   heraEnabled: booleanFromEnv('ENABLE_HERA', !isProduction),
   // Puertas activas también en el servidor (Iván, 24/10/2026: «habilita las puertas»); ENABLE_PUERTAS=0 las vuelve a pausar.
   puertasEnabled: booleanFromEnv('ENABLE_PUERTAS', true),

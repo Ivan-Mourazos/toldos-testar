@@ -22,9 +22,10 @@ export function crearPlanoPuertas({ ajustes, oda, ofStockSacos }: {
   ofStockSacos?: () => Promise<{ of: string }>;
 }): PlanoPuertas {
   return {
-    async preparar(pedido, revisor) {
+    async preparar(pedido, revisor, carpetaBorradores) {
       exigirOfsPuertas(pedido);
-      const { corteLonaPlanoDirectory } = await ajustes();
+      // El borrador del flujo del DWG va a su carpeta, sin año ni técnico; el plano de revisión, a la de planos.
+      const corteLonaPlanoDirectory = carpetaBorradores ?? (await ajustes()).corteLonaPlanoDirectory;
       if (!corteLonaPlanoDirectory) {
         return { fichero: null, avisos: ["Falta la carpeta de planos del corte en Configuración: no se ha escrito el plano."] };
       }
@@ -48,7 +49,7 @@ export function crearPlanoPuertas({ ajustes, oda, ofStockSacos }: {
       }
       if (extension === "dxf") avisos.push(`ODA no disponible: el plano de ${pedido.orderCode} se ha guardado en DXF.`);
       const filename = `${pedido.orderCode}.${extension}`;
-      const carpeta = carpetaCorte(corteLonaPlanoDirectory, { orderCode: pedido.orderCode, technician: s.technician });
+      const carpeta = carpetaBorradores ?? carpetaCorte(corteLonaPlanoDirectory, { orderCode: pedido.orderCode, technician: s.technician });
       return { fichero: { type: "plano-puertas", filename, savedPath: path.join(carpeta, filename), contenido }, avisos };
     },
 
