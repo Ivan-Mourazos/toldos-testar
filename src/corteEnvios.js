@@ -9,7 +9,7 @@ const fallo = (codigo, mensaje) => Object.assign(new Error(mensaje), { statusCod
 
 /** Destinos y registro comunes a cualquier producto. Los adaptadores solo calculan el DXF y guardan el pedido. */
 export async function enviarCorte({ pedido, order, settings, usuario, destino, confirmBot = false, confirmOverwrite = false,
-  elementos, coordina, comprobarCorte, preparar, guardarRegistro, ahora = () => new Date(), nombres = AWNING_NOUNS }) {
+  elementos, coordina, comprobarCorte, preparar, guardarRegistro, ahora = () => new Date(), nombres = AWNING_NOUNS, nota = '' }) {
   if (!settings.productionEnabled) throw fallo(403, 'Modo simulación: no se ha escrito ni enviado el corte.');
   if (!usuario) throw fallo(400, 'Elige quién eres en «Soy» antes de mandar o guardar el corte.');
   if (!['bot', 'dxfs'].includes(destino)) throw fallo(400, 'Indica un destino del corte: bot o dxfs.');
@@ -48,7 +48,8 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   const escritos = [];
   async function registrarSalida(parcial = false) {
     const fecha = ahora().toISOString();
-    const envio = { id: randomUUID(), fecha, usuario, destino, carpeta, ...(parcial ? { parcial: true } : {}),
+    // `nota`: lo que hay que recordar del envío, p. ej. que el corte del DWG cambió después de revisarlo.
+    const envio = { id: randomUUID(), fecha, usuario, destino, carpeta, ...(parcial ? { parcial: true } : {}), ...(nota ? { nota } : {}),
       archivos: escritos.map(({ filename, savedPath }) => ({ filename, savedPath })) };
     const actualizado = { ...pedido, updatedAt: fecha, enviosCorte: [...(pedido.enviosCorte || []), envio] };
     try { await guardarRegistro(actualizado); }

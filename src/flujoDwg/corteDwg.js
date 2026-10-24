@@ -12,12 +12,14 @@ const CAPAS_FUERA_DEL_CORTE = new Set(['RECUADROS', 'cotas', 'vent-pre-noimpr'])
 const PRECISION = 1e4;   // el modelo va en metros: 0,1 mm
 const r = (v) => Math.round(v * PRECISION) / PRECISION || 0;
 
-/** Pares (código, valor) del DXF y sus entidades del modelo (sin las del papel, 67 = 1). */
-export function entidadesModelo(dxf) {
+function paresDxf(dxf) {
   const lineas = String(dxf).replace(/\r\n?/g, '\n').split('\n');
   const pares = [];
   for (let i = 0; i + 1 < lineas.length; i += 2) pares.push([Number(lineas[i].trim()), lineas[i + 1]]);
-  const inicio = pares.findIndex(([c, v], i) => c === 2 && v.trim() === 'ENTITIES' && pares[i - 1]?.[1].trim() === 'SECTION');
+  return pares;
+}
+function registros(pares, seccion) {
+  const inicio = pares.findIndex(([c, v], i) => c === 2 && v.trim() === seccion && pares[i - 1]?.[1].trim() === 'SECTION');
   if (inicio < 0) return [];
   const salida = [];
   for (const [c, v] of pares.slice(inicio + 1)) {
@@ -26,7 +28,63 @@ export function entidadesModelo(dxf) {
       salida.push({ tipo: v.trim(), pares: [] });
     } else salida.at(-1)?.pares.push([c, v]);
   }
-  return salida.filter((e) => valor(e, 67)?.trim() !== '1').map(interpretar).filter(Boolean);
+  return salida;
+}
+
+/** Las entidades del modelo (sin las del papel, 67 = 1), con los bloques insertados ya explotados en sus líneas. */
+export function entidadesModelo(dxf) {
+  const pares = paresDxf(dxf);
+  const bloques = new Map();
+  let actual = null;
+  for (const r of registros(pares, 'BLOCKS')) {
+    if (r.tipo === 'BLOCK') { actual = { base: [numero(r, 10), numero(r, 20)], entidades: [] }; bloques.set(valor(r, 2)?.trim(), actual); }
+    else if (r.tipo === 'ENDBLK') actual = null;
+    else actual?.entidades.push(r);
+  }
+  const salida = [];
+  for (const r of registros(pares, 'ENTITIES')) {
+    if (valor(r, 67)?.trim() === '1') continue;
+    const e = interpretar(r);
+    if (!e) continue;
+    const bloque = e.insercion && !e.insercion.nombre.startsWith('*') ? bloques.get(e.insercion.nombre) : null;
+    if (bloque) salida.push(...explotar(e, bloque, bloques));
+    else salida.push(e);
+  }
+  return salida;
+}
+
+/** Un bloque insertado, en las líneas, arcos y textos de su definición, movidos, girados y escalados como la inserción. */
+function explotar(insercion, bloque, bloques, profundidad = 0) {
+  const { x, y, giro, sx } = insercion.insercion, sy = insercion.insercion.sy ?? sx;
+  const a = giro * Math.PI / 180, [c, s] = [Math.cos(a), Math.sin(a)];
+  const P = ([px, py]) => { const u = (px - bloque.base[0]) * sx, v = (py - bloque.base[1]) * sy; return [x + u * c - v * s, y + u * s + v * c]; };
+  const salida = [];
+  for (const r of bloque.entidades) {
+    const e = interpretar(r);
+    if (!e) continue;
+    // Lo dibujado en la capa 0 toma la de la inserción, como en el CAD.
+    const capa = e.capa === '0' ? insercion.capa : e.capa;
+    if (e.insercion) {
+      const interior = bloques.get(e.insercion.nombre);
+      if (interior && profundidad < 5) {
+        const [ix, iy] = P([e.insercion.x, e.insercion.y]);
+        salida.push(...explotar({ capa, insercion: { ...e.insercion, x: ix, y: iy, giro: e.insercion.giro + giro, sx: e.insercion.sx * sx, sy: (e.insercion.sy ?? e.insercion.sx) * sy } }, interior, bloques, profundidad + 1));
+      } else salida.push({ ...e, capa, puntos: e.puntos.map(P) });
+      continue;
+    }
+    const espejo = sx * sy < 0;
+    const arcos = (e.arcos ?? []).map((q) => {
+      // El arco por sus extremos y su centro, que siguen bien aunque haya espejo.
+      const [cx, cy] = P([q.x, q.y]), [p1, p2] = puntosArco(q).map(P);
+      let [desde, hasta] = [Math.atan2(p1[1] - cy, p1[0] - cx), Math.atan2(p2[1] - cy, p2[0] - cx)].map((g) => g * 180 / Math.PI);
+      if (espejo) [desde, hasta] = [hasta, desde];
+      return { x: cx, y: cy, r: q.r * Math.abs(sx), desde, hasta };
+    });
+    salida.push({ ...e, capa, segmentos: e.segmentos?.map((sg) => sg.map(P)), arcos, puntos: e.puntos.map(P),
+      circulos: e.circulos?.map((q) => { const [cx, cy] = P([q.x, q.y]); return { x: cx, y: cy, r: q.r * Math.abs(sx) }; }),
+      texto: e.texto && { ...e.texto, ...Object.fromEntries(['x', 'y'].map((k, i) => [k, P([e.texto.x, e.texto.y])[i]])), h: e.texto.h * Math.abs(sy), giro: e.texto.giro + giro } });
+  }
+  return salida;
 }
 const valor = (e, codigo) => e.pares.find(([c]) => c === codigo)?.[1];
 const numero = (e, codigo, porDefecto = 0) => {
@@ -74,13 +132,19 @@ function interpretar(e) {
     }
     case 'MTEXT':
     case 'TEXT': {
-      const texto = e.pares.filter(([c]) => c === 3 || c === 1).map(([, v]) => v).join('');
-      const p = [numero(e, 10), numero(e, 20)];
-      return { ...base, texto: { valor: texto.trim(), x: p[0], y: p[1], h: numero(e, 40) }, puntos: [p] };
+      // Sin los códigos de formato del MTEXT: letras codificadas (\U+00C9), saltos de línea (\P) y llaves.
+      const texto = e.pares.filter(([c]) => c === 3 || c === 1).map(([, v]) => v).join('')
+        .replace(/\\U\+([0-9A-F]{4})/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+        .replace(/\\P/g, ' ').replace(/\\[A-Za-z][^;\\{}]*;/g, '').replace(/[{}]/g, '');
+      // El MTEXT va anclado por su punto (71 = 5, centro) con la dirección en 11/21; el TEXT centrado, en 11/21.
+      const centrado = e.tipo === 'MTEXT' ? numero(e, 71, 1) === 5 : numero(e, 72) === 1;
+      const p = e.tipo === 'TEXT' && centrado ? [numero(e, 11), numero(e, 21)] : [numero(e, 10), numero(e, 20)];
+      const giro = e.tipo === 'MTEXT' ? Math.atan2(numero(e, 21), numero(e, 11, 1)) * 180 / Math.PI : numero(e, 50);
+      return { ...base, texto: { valor: texto.trim(), x: p[0], y: p[1], h: numero(e, 40), giro: r(giro) || 0, centrado }, puntos: [p] };
     }
     case 'INSERT': {
       const p = [numero(e, 10), numero(e, 20)];
-      return { ...base, insercion: { nombre: valor(e, 2)?.trim() ?? '', x: p[0], y: p[1], giro: numero(e, 50), sx: numero(e, 41, 1) }, puntos: [p] };
+      return { ...base, insercion: { nombre: valor(e, 2)?.trim() ?? '', x: p[0], y: p[1], giro: numero(e, 50), sx: numero(e, 41, 1), sy: numero(e, 42, 1) }, puntos: [p] };
     }
     case 'DIMENSION':
       return { ...base, cota: true, puntos: [[numero(e, 13), numero(e, 23)], [numero(e, 14), numero(e, 24)]] };
@@ -139,6 +203,35 @@ export function corteDelPlano(dxf) {
     ? 'El recuadro CORTE está vacío: no hay nada que cortar.'
     : fuera.length ? `Hay ${fuera.length} ${fuera.length === 1 ? 'línea' : 'líneas'} de corte o rotulador fuera de los recuadros: mételas en el recuadro CORTE o bórralas.` : null;
   return { error, entidades: corte, fuera, recuadro: marcos.CORTE, huella: huellaCorte(corte) };
+}
+
+/** Capas que van al bot: las de la máquina y los textos. Nada más (ni cotas, ni recuadros, ni referencias). */
+export const CAPAS_BOT = [...CAPAS_MAQUINA, 'texto'];
+
+/**
+ * Fase 3: el corte del plano, listo para el DXF del bot (src/domain/corteLona/dxfCorte.js): solo las capas del bot, en mm
+ * y con la esquina de abajo a la izquierda en el origen. Lo que no se sabe pasar al bot (un bloque, un sombreado…) no se
+ * manda: se devuelve en `noConvertibles` para avisar.
+ */
+export function entidadesBot(entidades) {
+  const delBot = entidades.filter((e) => CAPAS_BOT.includes(e.capa));
+  const puntos = delBot.flatMap((e) => e.puntos);
+  const salida = { lineas: [], textos: [], arcos: [], circulos: [] };
+  if (!puntos.length) return { ...salida, noConvertibles: [] };
+  const [ox, oy] = [Math.min(...puntos.map((p) => p[0])), Math.min(...puntos.map((p) => p[1]))];
+  const mm = (v, o) => Math.round((v - o) * 1e6) / 1e3;   // metros a mm, al micrómetro
+  const noConvertibles = [];
+  for (const e of delBot) {
+    if (e.insercion || e.otro) { noConvertibles.push(e); continue; }
+    for (const [[x1, y1], [x2, y2]] of e.segmentos ?? []) salida.lineas.push({ capa: e.capa, x1: mm(x1, ox), y1: mm(y1, oy), x2: mm(x2, ox), y2: mm(y2, oy) });
+    for (const a of e.arcos ?? []) salida.arcos.push({ capa: e.capa, x: mm(a.x, ox), y: mm(a.y, oy), r: Math.round(a.r * 1e6) / 1e3, desde: a.desde, hasta: a.hasta });
+    for (const c of e.circulos ?? []) salida.circulos.push({ capa: e.capa, x: mm(c.x, ox), y: mm(c.y, oy), r: Math.round(c.r * 1e6) / 1e3 });
+    if (e.texto && e.texto.valor) {
+      salida.textos.push({ capa: e.capa, x: mm(e.texto.x, ox), y: mm(e.texto.y, oy), h: Math.round(e.texto.h * 1e6) / 1e3, valor: e.texto.valor,
+        giro: e.texto.giro, centrado: e.texto.centrado, literal: e.capa === 'ROTULADOR' });
+    }
+  }
+  return { ...salida, noConvertibles };
 }
 
 /** La huella del corte: piezas y rayas normalizadas, sin orden, sentido ni posición. */

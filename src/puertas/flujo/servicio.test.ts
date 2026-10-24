@@ -205,7 +205,7 @@ describe('corte confirmado desde el borrador', () => {
   beforeEach(async () => {
     const almacen = crearAlmacenPedidos<PedidoPuertasGuardado>({ carpeta: async () => path.join(raiz, 'pedidos/puertas'),
       tipo: TIPO_PEDIDO_PUERTAS, nombre: 'puertas', sinCarpeta: 'Sin carpeta' });
-    const ajustes = async () => ({ productionEnabled: true, corteLonaPlanoDirectory: path.join(raiz, 'planos'),
+    const ajustes = async () => ({ productionEnabled: true, corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
       corteBorradoresDirectory: path.join(raiz, 'borradores'), corteBorradoresRed: String.raw`\\stinkor\oftecnica\BORRADORES CORTE` });
     flujo = crearServicioPedidosPuertas({
       almacen, tecnicos: ['IVÁN', 'DAVID'], otroProducto: async () => null, ajustes,
@@ -220,12 +220,12 @@ describe('corte confirmado desde el borrador', () => {
   const confirmar = () => flujo.confirmarCorte({ orderCode: 'AR2605134', savedBy: 'IVÁN' });
   const guardar = (extra = {}) => flujo.guardar({ pedido: pedidoPantalla(), savedBy: 'IVÁN', ...extra });
   /** Una línea de corte más en el borrador, dentro (o fuera) del recuadro CORTE, como si se dibujara en ZWCAD. */
-  async function dibujarEnBorrador(fuera: boolean) {
-    const dxf = (await fs.readFile(borrador(), 'utf8')).replace(/\r\n/g, '\n');
+  async function dibujarEnBorrador(fuera: boolean, fichero = borrador()) {
+    const dxf = (await fs.readFile(fichero, 'utf8')).replace(/\r\n/g, '\n');
     const { recuadro } = corteDelPlano(dxf);
     const x = fuera ? recuadro.x1 + 50 : (recuadro.x0 + recuadro.x1) / 2, y = (recuadro.y0 + recuadro.y1) / 2;
     const fin = dxf.indexOf('  0\nENDSEC\n', dxf.indexOf('\nENTITIES\n'));
-    await fs.writeFile(borrador(), `${dxf.slice(0, fin)}  0\nLINE\n  8\nDISCO1\n 10\n${x}\n 20\n${y}\n 11\n${x + 0.5}\n 21\n${y}\n${dxf.slice(fin)}`);
+    await fs.writeFile(fichero, `${dxf.slice(0, fin)}  0\nLINE\n  8\nDISCO1\n 10\n${x}\n 20\n${y}\n 11\n${x + 0.5}\n 21\n${y}\n${dxf.slice(fin)}`);
   }
 
   it('sin confirmar el corte no se guarda para revisión', async () => {
@@ -293,5 +293,29 @@ describe('corte confirmado desde el borrador', () => {
     const revisado = await fs.readFile(enAnio(), 'utf8');
     expect((await abrir()).cuerpo).toMatchObject({ existente: true, avisos: expect.arrayContaining([expect.stringContaining('revisión')]) });
     expect(await fs.readFile(borrador(), 'utf8')).toBe(revisado);
+  });
+
+  // Fase 3: el DXF del bot sale del DWG revisado, tal como está al mandarlo.
+  it('el corte que sale es el del DWG, sin recuadros ni cotas, y si cambió después de revisarlo se pregunta', async () => {
+    await abrir();
+    await confirmar();
+    await guardar();
+    const enviar = (extra = {}) => flujo.enviarCorte('AR2605134', { usuario: 'IVÁN', destino: 'dxfs', confirmOverwrite: true, ...extra });
+    expect((await enviar()).status).toBe(200);
+    const dxf = await fs.readFile(path.join(raiz, '2026/DXFs/AR2605134.dxf'), 'latin1');
+    const capas = new Set([...dxf.matchAll(/\r?\n {2}8\r?\n([^\r\n]+)/g)].map((m) => m[1]));
+    expect(dxf).toContain('AC1018');
+    expect(capas.has('DISCO1')).toBe(true);
+    expect(['RECUADROS', 'cotas', 'referencias'].some((c) => capas.has(c))).toBe(false);
+    expect(dxf).not.toContain('DIMENSION');
+    // Alguien cambia el corte en ZWCAD después de confirmarlo y revisarlo.
+    await dibujarEnBorrador(false, enAnio());
+    expect(await enviar()).toMatchObject({ status: 409, cuerpo: { cambioCorte: true } });
+    const conCambios = await enviar({ aceptarCambioCorte: true });
+    expect(conCambios.status).toBe(200);
+    expect((conCambios.cuerpo as { envio: { nota?: string } }).envio.nota).toContain('cambiado');
+    const nuevo = await fs.readFile(path.join(raiz, '2026/DXFs/AR2605134.dxf'), 'latin1');
+    const lineas = (t: string) => (t.match(/\nLINE\r?\n/g) ?? []).length;
+    expect(lineas(nuevo)).toBe(lineas(dxf) + 1);
   });
 });

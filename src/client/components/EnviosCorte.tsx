@@ -17,11 +17,18 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
     try {
       if (destino === 'bot' && await preguntar({ title: 'Mandar corte al bot', message: 'El corte irá al bot y se cortará. ¿Seguro?',
         confirmLabel: 'Mandar corte al bot', cancelLabel: 'Cancelar', tone: 'danger' }) !== 'confirm') return;
-      let confirmOverwrite = false;
+      let confirmOverwrite = false, aceptarCambioCorte = false;
       for (;;) {
         const res = await fetch(`${ruta}/enviar`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite }) });
+          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte }) });
         const datos = await res.json();
+        // Flujo del DWG: el corte del DWG cambió después de confirmarlo y revisarlo.
+        if (res.status === 409 && datos.cambioCorte && !aceptarCambioCorte) {
+          if (await preguntar({ title: 'El corte ha cambiado', message: datos.error || 'El corte del DWG ha cambiado desde que se revisó.',
+            confirmLabel: 'Mandarlo con los cambios', cancelLabel: 'Cancelar', tone: 'warning' }) !== 'confirm') return;
+          aceptarCambioCorte = true;
+          continue;
+        }
         if (res.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
           if (await preguntar({ title: 'El DXF ya existe', message: 'Ya hay un DXF de este pedido. ¿Quieres sustituirlo?',
             details: [datos.carpeta, ...(datos.existing || [])].filter(Boolean), confirmLabel: 'Sustituir DXF', cancelLabel: 'Conservar el actual', tone: 'warning' }) !== 'confirm') return;
@@ -46,7 +53,7 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
     </div>
     {!permitido && motivo && <p className="corte-ayuda">{motivo}</p>}
     {registros.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{registros.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
+      <ul>{registros.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
     </div>}
   </div>;
 }

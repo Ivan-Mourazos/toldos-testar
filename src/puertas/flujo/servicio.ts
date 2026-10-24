@@ -2,7 +2,8 @@ import { readFile, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import { carpetaCorte } from "../../corteLonaArchivos.js";
-import { corteDelPlano } from "../../flujoDwg/corteDwg.js";
+import { corteDelPlano, entidadesBot } from "../../flujoDwg/corteDwg.js";
+import { escribirDxf2004 } from "../../domain/corteLona/dxfCorte.js";
 import {
   approvalReviewers, coordinaAuthor, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
@@ -398,9 +399,29 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     return { resultados, cortes, avisos, sinOf: puertasSinOf(pedido) };
   }
 
+  /**
+   * Fase 3 del flujo del DWG: con el corte confirmado, el DXF del bot sale del DWG revisado tal como está ahora (con lo que
+   * se haya cambiado en ZWCAD): lo de dentro del recuadro CORTE, en las capas del bot, sin cotas ni recuadro.
+   */
+  async function corteDelDwg(pedido: PedidoPuertasGuardado) {
+    const confirmado = pedido.corteConfirmado!;
+    if (!deps.plano?.leer) throw new ErrorPedidoRemolques("Este servidor no puede leer el plano del corte.", 503);
+    if (!(await existeFichero(confirmado.plano))) {
+      throw new ErrorPedidoRemolques(`No está el plano revisado ${confirmado.filename} en su carpeta: no se puede sacar el corte.`, 409);
+    }
+    const corte = await corteDeBorrador(confirmado.plano);
+    if (corte.error) throw new ErrorPedidoRemolques(corte.error, 409);
+    const bot = entidadesBot(corte.entidades);
+    if (bot.noConvertibles.length) {
+      throw new ErrorPedidoRemolques(`En el recuadro CORTE hay ${bot.noConvertibles.length} ${bot.noConvertibles.length === 1 ? "objeto" : "objetos"} que no se pueden mandar al bot (bloques, sombreados…): explótalos o bórralos en ZWCAD.`, 409);
+    }
+    return { huella: corte.huella ?? "", dxf: escribirDxf2004(bot) as string };
+  }
+
   /** Un solo DXF por pedido, con las opciones de saco dentro (el técnico de la máquina elige). */
   async function prepararDxf(pedido: PedidoPuertasGuardado): Promise<{ filename: string; contents: Uint8Array }[]> {
     exigirOfsPuertas(pedido);
+    if (pedido.corteConfirmado) return [{ filename: `${pedido.orderCode}.dxf`, contents: Buffer.from((await corteDelDwg(pedido)).dxf, "latin1") }];
     const { archivo } = generarCortePuertas({ ...pedido, summary: undefined }, { ofStockSacos: await ofStock() });
     if (!archivo) throw new ErrorPedidoRemolques("Este pedido no tiene corte disponible: revisa las comprobaciones de las puertas.", 409);
     return [{ filename: `${archivo.nombre}.dxf`, contents: Buffer.from(archivo.dxf, "latin1") }];
@@ -415,12 +436,24 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
     ocupados.set(orderCode, "generando");
     try {
-      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown };
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown };
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       const pedido = await obtener(orderCode);
       exigirOfsPuertas(pedido);
-      return await enviarCorteCompartido({ pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
+      // Si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta antes de mandarlo.
+      let nota = "";
+      if (pedido.corteConfirmado) {
+        const { huella } = await corteDelDwg(pedido);
+        if (huella !== pedido.corteConfirmado.huella) {
+          if (c.aceptarCambioCorte !== true) {
+            return { status: 409, cuerpo: { cambioCorte: true,
+              error: "El corte del DWG ha cambiado desde que se confirmó y se revisó. Si lo mandas, irá con esos cambios y quedará apuntado." } };
+          }
+          nota = `Corte cambiado en el DWG después de confirmarlo; lo mandó ${usuario} con los cambios.`;
+        }
+      }
+      return await enviarCorteCompartido({ nota, pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
         usuario, destino: c.destino, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
         elementos: elementosAprobacion(pedido), coordina: deps.coordina, nombres: PUERTA_NOUNS,
         comprobarCorte: () => {}, preparar: () => prepararDxf(pedido),
