@@ -15,6 +15,8 @@ import type { PedidoRemolques } from '../tipos.ts';
 
 let raiz: string;
 let borradores: boolean;
+/** Cuándo aprobó CoordinaOT por última vez (sin fecha, como antes). */
+let aprobadoEn: string | null;
 let servicio: ReturnType<typeof crearServicioPedidosRemolques>;
 const pedido = structuredClone(fixture) as PedidoRemolques;
 const pantalla = (extra = {}) => ({ elementos: pedido.elementos, params: pedido.params, savedBy: 'IVÁN', ...extra });
@@ -25,13 +27,14 @@ beforeEach(async () => {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
   raiz = await fs.mkdtemp(path.resolve('tmp/remolques-flujo-dwg-'));
   borradores = true;
+  aprobadoEn = null;
   const almacen = crearAlmacenPedidosRemolques({ carpeta: async () => path.join(raiz, 'pedidos') });
   const ajustes = async () => ({ productionEnabled: true, corteLonaBotDirectory: path.join(raiz, 'bot/{TECNICO}'),
     corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
     remolquesPlanteamientosDirectory: path.join(raiz, 'pdf'), remolquesOficinaTecnicaDirectory: path.join(raiz, '{YYYY}/oficina'),
     corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\stinkor\oftecnica\BORRADORES CORTE` : '' });
   servicio = crearServicioPedidosRemolques({ almacen, ajustes, parametros: async () => fixture.params,
-    coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, { estado: 'aprobada', revisor: 'DAVID' }])) }) },
+    coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, { estado: 'aprobada', revisor: 'DAVID', actualizado: aprobadoEn }])) }) },
     tecnicos: ['IVÁN', 'DAVID'], hacerPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
     esPedidoDeToldos: async () => false,
     // Sin ODA el plano va en DXF: se lee tal cual.
@@ -146,5 +149,12 @@ describe('corte confirmado desde el borrador', () => {
     expect(conCambios.status).toBe(200);
     expect((conCambios.cuerpo as { envio: { nota?: string } }).envio.nota).toContain('cambiado');
     expect(lineas(await fs.readFile(path.join(raiz, '2026/DXFs/AR2605132.dxf'), 'latin1'))).toBe(lineas(web) + 1);
+    // Pasado a revisión en CoordinaOT y aprobado otra vez: antes del último cambio del DWG, se pregunta; después, sale solo.
+    aprobadoEn = new Date(Date.now() - 3_600_000).toISOString();
+    expect(await enviar()).toMatchObject({ status: 409, cuerpo: { cambioCorte: true, error: expect.stringContaining('CoordinaOT') } });
+    aprobadoEn = new Date(Date.now() + 60_000).toISOString();
+    const reaprobado = await enviar();
+    expect(reaprobado.status).toBe(200);
+    expect((reaprobado.cuerpo as { envio: { nota?: string } }).envio.nota).toContain('aprobado de nuevo en CoordinaOT');
   });
 });

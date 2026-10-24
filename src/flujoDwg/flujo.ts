@@ -87,6 +87,19 @@ export function motivoPlano(error: unknown, nombre: string): string {
 const huellaJunta = (huellas: string[]) => huellas.length === 1 ? huellas[0]
   : createHash("sha256").update([...huellas].sort().join("|")).digest("hex");
 
+/** Cuándo se guardó por última vez alguno de los DWG revisados (ms). */
+async function ultimoCambio(confirmado: CorteConfirmado) {
+  let ultimo = 0;
+  for (const p of planosDe(confirmado)) ultimo = Math.max(ultimo, (await stat(p.plano)).mtimeMs);
+  return ultimo;
+}
+
+/** La última aprobación de las OF del pedido en CoordinaOT (`actualizado` de las aprobadas), o null. */
+export function ultimaAprobacion(estado: { ofs?: Record<string, { estado?: string; actualizado?: string | null }> } | null | undefined, ofs: string[]) {
+  const fechas = ofs.map((of) => estado?.ofs?.[of]).filter((e) => e?.estado === "aprobada" && e.actualizado).map((e) => e!.actualizado!);
+  return fechas.sort().at(-1) ?? null;
+}
+
 /** Todos los planos de un corte confirmado. */
 export const planosDe = (c: CorteConfirmado) => c.planos?.length ? c.planos : [{ filename: c.filename, plano: c.plano }];
 
@@ -314,14 +327,22 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     return planos;
   }
 
-  /** Fase 3, al mandar: si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta; si se acepta, queda la nota. */
-  async function antesDeMandar(confirmado: CorteConfirmado, aceptarCambio: boolean, usuario: string):
+  /**
+   * Fase 3, al mandar: si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta; si se acepta, queda la nota.
+   * Si hay que revisarlo, se pasa a revisión en CoordinaOT (Iván, 25/10/2026): aprobado otra vez después del último cambio
+   * del DWG (`aprobadoEn`, la última aprobación de sus OF), sale sin preguntar.
+   */
+  async function antesDeMandar(confirmado: CorteConfirmado, aceptarCambio: boolean, usuario: string, aprobadoEn?: string | null):
     Promise<{ respuesta: Respuesta } | { dwg: Awaited<ReturnType<typeof corteDelDwg>>; nota: string }> {
     const dwg = await corteDelDwg(confirmado);
     if (dwg.huella === confirmado.huella) return { dwg, nota: "" };
+    const aprobado = aprobadoEn ? Date.parse(aprobadoEn) : NaN;
+    if (Number.isFinite(aprobado) && aprobado > await ultimoCambio(confirmado)) {
+      return { dwg, nota: "Corte cambiado en el DWG y aprobado de nuevo en CoordinaOT." };
+    }
     if (!aceptarCambio) {
       return { respuesta: { status: 409, cuerpo: { cambioCorte: true,
-        error: "El corte del DWG ha cambiado desde que se confirmó y se revisó. Si lo mandas, irá con esos cambios y quedará apuntado." } } };
+        error: "El corte del DWG ha cambiado desde que se confirmó y se revisó. Si lo mandas, irá con esos cambios y quedará apuntado. Si hay que revisarlo, pásalo a revisión en CoordinaOT: cuando lo aprueben otra vez, saldrá sin preguntar." } } };
     }
     return { dwg, nota: `Corte cambiado en el DWG después de confirmarlo; lo mandó ${usuario} con los cambios.` };
   }

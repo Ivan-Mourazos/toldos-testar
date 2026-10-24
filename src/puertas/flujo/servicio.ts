@@ -1,7 +1,7 @@
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
-import { crearFlujoDwg } from "../../flujoDwg/flujo.ts";
+import { crearFlujoDwg, ultimaAprobacion } from "../../flujoDwg/flujo.ts";
 import { conRevisor, htmlPresentaciones } from "../../flujoDwg/planoDxf.js";
 import { writeFileAtomic } from "../../workflow.js";
 import { normalizarNumeroPedido } from "../../remolques/pedidos/numero-pedido.ts";
@@ -346,7 +346,10 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       let nota = "";
       let dwg: Awaited<ReturnType<typeof corteDelDwg>> | null = null;
       if (pedido.corteConfirmado) {
-        const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario);
+        // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
+        const ofs = uniqueOfs(elementosAprobacion(pedido));
+        const aprobadoEn = ultimaAprobacion(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
+        const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario, aprobadoEn);
         if ("respuesta" in comprobado) return comprobado.respuesta;
         ({ dwg, nota } = comprobado);
       }

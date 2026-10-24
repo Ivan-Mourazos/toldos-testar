@@ -11,7 +11,7 @@ import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
-import { crearFlujoDwg, planosDe } from './flujoDwg/flujo.ts';
+import { crearFlujoDwg, planosDe, ultimaAprobacion } from './flujoDwg/flujo.ts';
 import { conRevisor, htmlPresentaciones } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
@@ -357,7 +357,10 @@ registrarRutasEnviosCorte(app, {
   // Flujo del DWG, fase 3: con el corte confirmado, el DXF sale del DWG revisado; si cambió después, se pregunta.
   desdeDwg: async (review, cuerpo, usuario) => {
     if (!review.corteConfirmado) return null;
-    const comprobado = await flujoToldos.antesDeMandar(review.corteConfirmado, cuerpo.aceptarCambioCorte === true, usuario);
+    // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
+    const ofs = uniqueOfs(review.order.awnings.map((a) => ({ of: String(a?.of || '') })));
+    const aprobadoEn = ultimaAprobacion(await coordina.statusOf(ofs, { fresh: true }), ofs);
+    const comprobado = await flujoToldos.antesDeMandar(review.corteConfirmado, cuerpo.aceptarCambioCorte === true, usuario, aprobadoEn);
     if ('respuesta' in comprobado) return comprobado;
     return { nota: comprobado.nota, archivos: [{ type: 'corte-lona', filename: `${review.orderCode}.dxf`, savedPath: '', contents: Buffer.from(comprobado.dwg.dxf, 'latin1') }] };
   },

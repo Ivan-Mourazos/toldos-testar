@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
-import { crearFlujoDwg, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
+import { crearFlujoDwg, ultimaAprobacion, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
 import {
   approvalReviewers, coordinaAuthor, ELEMENT_NOUNS, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
@@ -523,7 +523,10 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       let nota = "";
       let preparar = () => deps.corte!.prepararDxf!(calculado);
       if (pedido.corteConfirmado) {
-        const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario);
+        // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
+        const ofs = uniqueOfs(elementosAprobacion(pedido));
+        const aprobadoEn = ultimaAprobacion(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
+        const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario, aprobadoEn);
         if ("respuesta" in comprobado) return comprobado.respuesta;
         nota = comprobado.nota;
         const contents = Buffer.from(comprobado.dwg.dxf, "latin1");
