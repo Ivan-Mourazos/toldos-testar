@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FolderOpen, Scissors } from 'lucide-react';
+import { CheckCircle2, FolderOpen, Scissors } from 'lucide-react';
 import type { CortePuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
-import { abrirCorteDwg } from '../abrirCorte';
+import { abrirCorteDwg, confirmarCorteDwg } from '../abrirCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import '../coordina/corte-lona.css';
 
@@ -43,6 +43,12 @@ export function VistaCortePuertas({pedido,activo,usuario,notify,askForConfirmati
     try { await abrirCorteDwg({ruta:'/api/puertas/borrador-corte',pedido,usuario,preguntar:askForConfirmation,notify}); }
     finally { setAbriendo(false); }
   }
+  // Fase 2: el corte del borrador, tal como quedó en ZWCAD, confirmado para poder guardar para revisión.
+  async function confirmarCorte() {
+    setAbriendo(true);
+    try { await confirmarCorteDwg({ruta:'/api/puertas/borrador-corte/confirmar',orderCode:pedido.orderCode,usuario,notify}); }
+    finally { setAbriendo(false); }
+  }
   const entrada=JSON.stringify(pedido), solicitud=useRef<AbortController|null>(null);
   const [vista,setVista]=useState<{entrada:string;datos?:VistaPuertas;error?:string;cargando?:boolean}|null>(null);
   useEffect(()=>()=>{solicitud.current?.abort();},[entrada,activo]);
@@ -59,7 +65,8 @@ export function VistaCortePuertas({pedido,activo,usuario,notify,askForConfirmati
   }
   return <section className="corte-lona panel bloque-3d" aria-label="Vista previa del corte de puertas" aria-busy={Boolean(actual?.cargando)}>
     <header className="corte-cabecera"><div><span className="corte-titulo"><Scissors aria-hidden="true"/><h2>Vista previa del corte</h2></span><p>{pedido.orderCode||'Sin número de pedido'} · Revisa las piezas y el material antes de preparar la puerta.</p></div>
-      <div className="corte-acciones"><button type="button" className="ghost-button boton-3d" onClick={()=>void abrirCorte()} disabled={abriendo} title="Deja el plano en la carpeta de borradores y lo abre en ZWCAD"><FolderOpen size={16} aria-hidden="true"/>{abriendo?'Preparando…':'Abrir corte'}</button>
+      <div className="corte-acciones"><button type="button" className="ghost-button boton-3d" onClick={()=>void abrirCorte()} disabled={abriendo} title="Deja el plano en la carpeta de borradores y lo abre en ZWCAD"><FolderOpen size={16} aria-hidden="true"/>{abriendo?'Un momento…':'Abrir corte'}</button>
+      <button type="button" className="ghost-button boton-3d" onClick={()=>void confirmarCorte()} disabled={abriendo} title="Lee el borrador tal como quedó en ZWCAD y lo da por bueno para guardar para revisión"><CheckCircle2 size={16} aria-hidden="true"/>Confirmar corte</button>
       <button type="button" className="primary-button boton-3d" onClick={()=>void calcular()} disabled={Boolean(actual?.cargando)}>{actual?.cargando?'Calculando…':'Ver vista previa del corte'}</button></div></header>
     {vista&&!actual&&<p role="status" className="corte-aviso">Han cambiado los datos. Vuelve a calcular el corte.</p>}
     {actual?.error&&<p role="alert" className="corte-aviso">{actual.error}</p>}

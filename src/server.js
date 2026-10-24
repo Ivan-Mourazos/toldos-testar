@@ -10,6 +10,7 @@ import { registrarRutaVistaPreviaCorte } from './remolques/corte/rutas.js';
 import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
+import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
@@ -210,7 +211,12 @@ const pedidosPuertas = crearServicioPedidosPuertas({
     return (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) ? 'remolques' : null;
   },
   ofStockSacos,
-  plano: crearPlanoPuertas({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos })
+  plano: crearPlanoPuertas({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos }),
+  // Flujo del DWG: los cortes confirmados, junto a los pedidos de puertas (carpeta interna, no la que ven los PC).
+  confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {
+    const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
+    return carpeta ? path.join(carpeta, SUBCARPETA_PUERTAS, 'cortes-confirmados') : '';
+  } })
 });
 
 // Borradores en el servidor (diseño 01/10/2026): un JSON por número de pedido en la carpeta de
@@ -817,6 +823,11 @@ app.post('/api/puertas/pedidos', rutaRemolques(async (req, res) => {
 // Flujo del DWG, fase 1: el borrador del plano en su carpeta y el enlace para abrirlo en ZWCAD (tgm-pedidos).
 app.post('/api/puertas/borrador-corte', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosPuertas.borradorCorte(req.body);
+  res.status(status).json(cuerpo);
+}));
+
+app.post('/api/puertas/borrador-corte/confirmar', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosPuertas.confirmarCorte(req.body);
   res.status(status).json(cuerpo);
 }));
 

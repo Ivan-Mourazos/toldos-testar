@@ -1,6 +1,8 @@
-import { stat } from "node:fs/promises";
+import { readFile, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
+import { carpetaCorte } from "../../corteLonaArchivos.js";
+import { corteDelPlano } from "../../flujoDwg/corteDwg.js";
 import {
   approvalReviewers, coordinaAuthor, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
@@ -13,7 +15,7 @@ import {
   anioPedido, crearPedidoPuertas, PUERTA_NOUNS, elementosAprobacion, exigirOfsPuertas, marcarPedidoGenerado, puertasSinOf, resumenBandeja,
   validarCabeceraPuertas,
 } from "./pedido.ts";
-import type { FicheroPlanoPuertas, PedidoPuertasGuardado, ResumenPedidoPuertas } from "./tipos.ts";
+import type { CorteConfirmado, FicheroPlanoPuertas, PedidoPuertasGuardado, ResumenPedidoPuertas } from "./tipos.ts";
 
 // El flujo de un pedido de puertas en el servidor (fase 2, 22/10/2026), con las reglas de toldos y remolques
 // (src/reviewRules.js): guardar para revisión (y el plano DWG para revisarlo), CoordinaOT aprueba por OF, el
@@ -24,6 +26,15 @@ import type { FicheroPlanoPuertas, PedidoPuertasGuardado, ResumenPedidoPuertas }
 export interface PlanoPuertas {
   preparar(pedido: PedidoPuertasGuardado, revisor: string, carpetaBorradores?: string): Promise<{ fichero: (FicheroPlanoPuertas & { contenido: Uint8Array }) | null; avisos: string[] }>;
   escribir(fichero: FicheroPlanoPuertas & { contenido: Uint8Array }): Promise<void>;
+  /** El plano de una carpeta en DXF (el DWG pasado por ODA), para leer su corte. */
+  leer?(ruta: string): Promise<string>;
+}
+
+/** Lo confirmado con «Confirmar corte», antes de guardar el pedido (src/flujoDwg/confirmaciones.js). */
+export interface ConfirmacionesCorte {
+  leer(orderCode: string): Promise<{ huella: string; por: string; fecha: string; filename: string } | null>;
+  guardar(orderCode: string, datos: { huella: string; por: string; fecha: string; filename: string }): Promise<void>;
+  borrar(orderCode: string): Promise<void>;
 }
 
 export interface DependenciasPedidosPuertas {
@@ -38,6 +49,7 @@ export interface DependenciasPedidosPuertas {
   /** El producto con que ya está guardado ese número, si es otro («toldos», «remolques»): nunca hay pedidos mixtos. */
   otroProducto: (orderCode: string) => Promise<string | null>;
   plano?: PlanoPuertas;
+  confirmaciones?: ConfirmacionesCorte;
   registrar?: (mensaje: string) => void;
   ahora?: () => Date;
 }
@@ -106,6 +118,51 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     return { files: [{ type: fichero.type, filename: fichero.filename, savedPath: fichero.savedPath }], avisos };
   }
 
+  // Flujo del DWG (plan del 24/10/2026): en marcha cuando la carpeta de borradores está en Configuración y el servidor
+  // sabe leer el plano y apuntar las confirmaciones. Sin ella, todo como antes.
+  type Ajustes = Awaited<ReturnType<DependenciasPedidosPuertas["ajustes"]>>;
+  const conFlujoDwg = (a: Ajustes) => Boolean(a.corteBorradoresDirectory && a.corteBorradoresRed && deps.plano?.leer && deps.confirmaciones);
+
+  /** El borrador del pedido en su carpeta: DWG o, si faltaba ODA al crearlo, DXF. */
+  async function borradorDe(carpeta: string, orderCode: string) {
+    for (const extension of ["dwg", "dxf"]) {
+      const filename = `${orderCode}.${extension}`, ruta = path.join(carpeta, filename);
+      if (await existeFichero(ruta)) return { ruta, filename };
+    }
+    return null;
+  }
+
+  async function corteDeBorrador(ruta: string) {
+    let dxf: string;
+    try {
+      dxf = await deps.plano!.leer!(ruta);
+    } catch (error) {
+      registrar(`No se pudo leer el borrador del corte ${ruta}: ${(error as Error).message}`);
+      throw new ErrorPedidoRemolques(`No se pudo leer el borrador del corte: ${(error as Error).message}`, 503);
+    }
+    return corteDelPlano(dxf) as { error: string | null; huella?: string; fuera: unknown[]; entidades: Array<{ capa: string }> };
+  }
+
+  /**
+   * «Confirmar corte» (fase 2): lee el borrador tal como lo dejó el autor en ZWCAD, comprueba que el corte está dentro de su
+   * recuadro y apunta quién, cuándo y su huella. «Guardar para revisión» exige esta confirmación y que no haya cambiado.
+   */
+  async function confirmarCorte(cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { orderCode?: unknown; savedBy?: unknown };
+    const autor = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
+    if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de confirmar el corte.");
+    const orderCode = codigoPedido(typeof c.orderCode === "string" ? c.orderCode : "");
+    const ajustes = await deps.ajustes();
+    if (!conFlujoDwg(ajustes)) throw new ErrorPedidoRemolques("Falta la carpeta de borradores del corte en Configuración.", 409);
+    const borrador = await borradorDe(ajustes.corteBorradoresDirectory!, orderCode);
+    if (!borrador) throw new ErrorPedidoRemolques(`No hay borrador del corte de ${orderCode}: pulsa «Abrir corte» para crearlo.`, 409);
+    const corte = await corteDeBorrador(borrador.ruta);
+    if (corte.error) return { status: 409, cuerpo: { error: corte.error, fuera: corte.fuera.length } };
+    const datos = { huella: corte.huella!, por: autor, fecha: ahora(), filename: borrador.filename };
+    await deps.confirmaciones!.guardar(orderCode, datos);
+    return { status: 200, cuerpo: { ok: true, confirmado: datos, entidades: corte.entidades.length } };
+  }
+
   async function guardar(cuerpo: unknown): Promise<Respuesta> {
     const c = (cuerpo ?? {}) as { pedido?: unknown; savedBy?: unknown; confirmOverwrite?: unknown };
     const salvador = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
@@ -150,6 +207,47 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         currentAuthor,
       });
       const pedido = crearPedidoPuertas({ pedido: enviado, cabecera, autoria, existente, ahora: ahora() });
+      const ajustes = await deps.ajustes();
+      if (conFlujoDwg(ajustes)) {
+        // Flujo del DWG (fase 2): solo con el corte confirmado y sin cambios desde entonces; el borrador pasa a la carpeta del
+        // año, donde lo abre el revisor, y la web ya no genera el plano.
+        const borrador = await borradorDe(ajustes.corteBorradoresDirectory!, orderCode);
+        const confirmacion = await deps.confirmaciones!.leer(orderCode);
+        if (!borrador || !confirmacion) {
+          throw new ErrorPedidoRemolques("Antes de guardar para revisión, abre el corte («Abrir corte»), revísalo en ZWCAD y pulsa «Confirmar corte».", 409);
+        }
+        const corte = await corteDeBorrador(borrador.ruta);
+        if (corte.error) throw new ErrorPedidoRemolques(corte.error, 409);
+        if (corte.huella !== confirmacion.huella) {
+          throw new ErrorPedidoRemolques("El borrador del corte ha cambiado desde que lo confirmaste: revísalo y vuelve a pulsar «Confirmar corte».", 409);
+        }
+        if (!ajustes.corteLonaPlanoDirectory) throw new ErrorPedidoRemolques("Falta la carpeta de planos del corte en Configuración.", 409);
+        const destino = path.join(carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician: autoria.technician }), borrador.filename);
+        if (c.confirmOverwrite !== true && await existeFichero(destino)) {
+          return { status: 409, cuerpo: { needsConfirmation: true, existing: [borrador.filename], motivo: "plano",
+            error: `El plano ${borrador.filename} ya está en su carpeta del año: se sustituirá por el borrador con el corte confirmado.` } };
+        }
+        try {
+          await deps.plano!.escribir({ type: "plano-puertas", filename: borrador.filename, savedPath: destino, contenido: await readFile(borrador.ruta) });
+        } catch (error) {
+          registrar(`Pedido ${orderCode}: no se pudo pasar el borrador a su carpeta: ${(error as Error).message}`);
+          throw new ErrorPedidoRemolques(motivoPlano(error, borrador.filename), 500);
+        }
+        const corteConfirmado: CorteConfirmado = { huella: confirmacion.huella, por: confirmacion.por, fecha: confirmacion.fecha, filename: borrador.filename, plano: destino };
+        const conCorte = { ...pedido, corteConfirmado };
+        await deps.almacen.guardar(conCorte);
+        // El borrador ya está en la carpeta del año: se quita de borradores, con su confirmación.
+        const avisos: string[] = [];
+        try {
+          await rm(borrador.ruta, { force: true });
+          await deps.confirmaciones!.borrar(orderCode);
+        } catch (error) {
+          registrar(`Pedido ${orderCode}: no se pudo quitar el borrador ${borrador.ruta}: ${(error as Error).message}`);
+          avisos.push(`El plano ya está en su carpeta, pero no se pudo quitar el borrador ${borrador.filename}: bórralo a mano.`);
+        }
+        const plano = { files: [{ type: "plano-puertas", filename: borrador.filename, savedPath: destino }], avisos };
+        return { status: 200, cuerpo: { ok: true, review: resumenBandeja(conCorte), overwritten: Boolean(existente), plano } };
+      }
       await deps.almacen.guardar(pedido);
       // El plano sale ya al guardar, para revisarlo antes de aprobar (como el corte de toldos y remolques).
       const plano = await escribirPlano(pedido, "", false);
@@ -196,7 +294,16 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       if (!fichero) throw new ErrorPedidoRemolques(avisos.at(-1) ?? "No se pudo preparar el borrador del corte.", 500);
       const red = `${ajustes.corteBorradoresRed.replace(/[\\/]+$/, "")}\\${fichero.filename}`;
       const url = `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(red)}`;
-      const existe = await existeFichero(fichero.savedPath);
+      let existe = await existeFichero(fichero.savedPath);
+      // Al corregir un pedido guardado con el corte confirmado, se sigue desde el DWG revisado: vuelve a borradores.
+      if (!existe && c.regenerar !== true) {
+        const revisado = (await deps.almacen.obtener(orderCode))?.corteConfirmado?.plano;
+        if (revisado && path.extname(revisado).toLowerCase() === path.extname(fichero.filename).toLowerCase() && await existeFichero(revisado)) {
+          await deps.plano.escribir({ ...fichero, contenido: await readFile(revisado) });
+          avisos.push("Es el DWG que se guardó para revisión.");
+          existe = true;
+        }
+      }
       if (existe && c.regenerar !== true) return { status: 200, cuerpo: { ok: true, existente: true, filename: fichero.filename, ruta: red, url, avisos } };
       try {
         await deps.plano.escribir(fichero);
@@ -216,6 +323,9 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
     if (!deps.plano) throw new ErrorPedidoRemolques("El plano de puertas no está disponible en este servidor.", 404);
     const pedido = await obtener(orderCode);
+    if (pedido.corteConfirmado) {
+      throw new ErrorPedidoRemolques("Este pedido tiene el corte confirmado: su plano es el DWG revisado y se cambia en ZWCAD, la web no lo vuelve a hacer.", 409);
+    }
     const confirmar = (cuerpo as { confirmOverwrite?: unknown } | null)?.confirmOverwrite === true;
     const plano = await escribirPlano(pedido, pedido.status === "PRODUCED" ? pedido.reviewedBy : "", confirmar);
     if (plano?.existentes?.length) {
@@ -252,7 +362,13 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const bloqueo = generationBlock(aprobacion, estado, PUERTA_NOUNS);
       if (bloqueo) throw new ErrorPedidoRemolques(bloqueo, estado.disponible ? 409 : 503);
       const revisor = approvalReviewers(aprobacion, estado, deps.tecnicos);
-      const plano = await escribirPlano(pedido, revisor, confirmar);
+      // Con el corte confirmado, el plano es el DWG revisado: no se rehace (perdería los cambios hechos en ZWCAD).
+      const confirmado = pedido.corteConfirmado;
+      const plano: { files: FicheroPlanoPuertas[]; avisos: string[]; existentes?: string[] } | null = confirmado
+        ? (await existeFichero(confirmado.plano)
+          ? { files: [{ type: "plano-puertas", filename: confirmado.filename, savedPath: confirmado.plano }], avisos: [] }
+          : { files: [], avisos: [`No está el plano revisado ${confirmado.filename} en su carpeta: no se ha generado nada.`] })
+        : await escribirPlano(pedido, revisor, confirmar);
       if (plano?.existentes?.length) {
         return { status: 409, cuerpo: { needsConfirmation: true, existing: plano.existentes,
           error: "El plano de revisión de este pedido ya está en su carpeta: se sustituye por el definitivo, con el revisor." } };
@@ -314,5 +430,5 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     }
   }
 
-  return { listar, obtener, guardar, borradorCorte, planoRevision, generar, corte, descargarCorte, enviarCorte };
+  return { listar, obtener, guardar, borradorCorte, confirmarCorte, planoRevision, generar, corte, descargarCorte, enviarCorte };
 }

@@ -46,6 +46,17 @@ export interface PedidoPuertasGuardado extends Omit<PedidoPuertas, "summary"> {
   production: ProduccionPuertas | null;
   summary: ResumenPedido;
   enviosCorte?: EnvioCorte[];
+  /** Flujo del DWG: el corte que confirmó el autor en su borrador y dónde quedó el DWG al guardar para revisión. */
+  corteConfirmado?: CorteConfirmado;
+}
+
+export interface CorteConfirmado {
+  huella: string;
+  por: string;
+  fecha: string;
+  filename: string;
+  /** El DWG en la carpeta del año, el que abre el revisor. */
+  plano: string;
 }
 
 /** Lo que lista Pedidos: el pedido sin las puertas. */

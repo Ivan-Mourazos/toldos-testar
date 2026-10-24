@@ -12,7 +12,7 @@ import type { PlanoPuertas } from "./servicio.ts";
 
 interface Oda {
   disponible: boolean;
-  convertir(contenido: Uint8Array): Promise<Uint8Array>;
+  convertir(contenido: Uint8Array, opciones?: { desde?: "dxf" | "dwg"; hasta?: "dxf" | "dwg" }): Promise<Uint8Array>;
 }
 
 export function crearPlanoPuertas({ ajustes, oda, ofStockSacos }: {
@@ -51,6 +51,14 @@ export function crearPlanoPuertas({ ajustes, oda, ofStockSacos }: {
       const filename = `${pedido.orderCode}.${extension}`;
       const carpeta = carpetaBorradores ?? carpetaCorte(corteLonaPlanoDirectory, { orderCode: pedido.orderCode, technician: s.technician });
       return { fichero: { type: "plano-puertas", filename, savedPath: path.join(carpeta, filename), contenido }, avisos };
+    },
+
+    // Flujo del DWG: el plano tal como está en su carpeta (quizá cambiado en ZWCAD), en DXF para leer su corte.
+    async leer(ruta) {
+      const contenido = await fs.readFile(ruta);
+      if (!ruta.toLowerCase().endsWith(".dwg")) return contenido.toString("utf8");
+      if (!oda.disponible) throw new Error("ODA no está disponible: no se puede leer el DWG del corte.");
+      return Buffer.from(await oda.convertir(contenido, { desde: "dwg", hasta: "dxf" })).toString("utf8");
     },
 
     async escribir(fichero) {

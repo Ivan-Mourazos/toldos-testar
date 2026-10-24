@@ -61,9 +61,14 @@ export async function guardarPuertasParaRevision({ pedido, usuario, preguntar, n
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pedido, savedBy: usuario, confirmOverwrite }),
     });
-    const datos = await respuesta.json().catch(() => ({})) as { needsConfirmation?: boolean; error?: string; review?: { orderCode: string }; plano?: Plano };
+    const datos = await respuesta.json().catch(() => ({})) as { needsConfirmation?: boolean; motivo?: string; error?: string; review?: { orderCode: string }; plano?: Plano };
     if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
-      const eleccion = await preguntar({
+      // Flujo del DWG: el plano de la carpeta del año se sustituye por el borrador con el corte confirmado.
+      const eleccion = await preguntar(datos.motivo === 'plano' ? {
+        title: `Plano de ${pedido.orderCode}`,
+        message: datos.error || 'El plano de este pedido ya está en su carpeta del año.',
+        confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning',
+      } : {
         title: `Actualizar ${pedido.orderCode}`,
         message: 'Este pedido ya está guardado en Pedidos. Si continúas, se sustituirá por los datos de esta pantalla.',
         confirmLabel: 'Actualizar pedido', cancelLabel: 'Conservar el actual', tone: 'warning',

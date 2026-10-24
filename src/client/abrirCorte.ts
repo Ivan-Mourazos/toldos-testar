@@ -14,6 +14,32 @@ interface RespuestaBorrador {
   avisos?: string[];
 }
 
+/**
+ * «Confirmar corte» (fase 2): el servidor lee el borrador tal como quedó en ZWCAD y apunta su corte. Hasta entonces no se
+ * puede guardar para revisión.
+ */
+export async function confirmarCorteDwg({ ruta, orderCode, usuario, notify }: {
+  ruta: string;
+  orderCode: string;
+  usuario: string;
+  notify: Notify;
+}): Promise<boolean> {
+  if (!usuario) {
+    notify('Elige quién eres en «Soy» antes de confirmar el corte.', { tone: 'warning' });
+    return false;
+  }
+  try {
+    const respuesta = await fetch(ruta, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderCode, savedBy: usuario }) });
+    const datos = await respuesta.json().catch(() => ({})) as { error?: string };
+    if (!respuesta.ok) throw new Error(datos.error || 'No se pudo confirmar el corte.');
+    notify('Ya puedes guardar para revisión. Si vuelves a cambiar el borrador en ZWCAD, confírmalo otra vez.', { tone: 'success', title: 'Corte confirmado' });
+    return true;
+  } catch (error) {
+    notify(error instanceof Error ? error.message : 'No se pudo confirmar el corte.', { tone: 'error', title: 'Corte sin confirmar' });
+    return false;
+  }
+}
+
 export async function abrirCorteDwg({ ruta, pedido, usuario, preguntar, notify, abrir = (url) => window.location.assign(url) }: {
   ruta: string;
   pedido: { orderCode: string };
