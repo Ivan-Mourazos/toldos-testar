@@ -104,29 +104,35 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
   const presupuesto = { restantes: PRESUPUESTO_TETRIS };
   const calculados = [...grupos.values()].map((grupo) => ({ grupo, opciones: opcionesCorte(grupo.toldos, String(ofStockSacos), presupuesto),
     cristal: grupo.toldos.every((t) => t.soloCristal) }));
-  for (const { grupo, opciones, cristal } of calculados) {
-    const of = [...new Set(grupo.toldos.map((t) => t.of))].join(' / ');
-    const cabecera = { pedido: orden.orderCode, of, cliente: orden.customer, tecnico: orden.technician,
-      revisor: orden.reviewer, fecha: fechaCorta(orden.orderDate), pagina: '1/1', material: grupo.material };
+  // Cada corte con su dibujo del bot, antes de los planos: el recuadro CORTE de cada plano lleva ese mismo dibujo.
+  for (const c of calculados) {
+    const { grupo, opciones } = c;
+    c.of = [...new Set(grupo.toldos.map((t) => t.of))].join(' / ');
     const completar = (corte) => {
-      const dib = dibujo(corte.colocadas, grupo.anchoRollo, { of, tela: grupo.material });
+      const dib = dibujo(corte.colocadas, grupo.anchoRollo, { of: c.of, tela: grupo.material });
       dib.textos.push(...(corte.textosExtra || []));
       if (corte.largoRestos) dib.textos.push({ capa: 'texto', valor: grupo.material.toUpperCase(),
         x: corte.largo + 1500 + corte.largoRestos / 2, y: grupo.anchoRollo + 140, h: 100, centrado: true });
       return { codigoTela: grupo.codigoTela, material: grupo.material, anchoRollo: grupo.anchoRollo,
         ...corte, dibujo: dib, dxf: escribirDxf2004(dib), codificacion: 'latin1' };
     };
-    conSacos.push(completar(opciones.conSacos));
-    if (opciones.trozoSeparado) trozos.push(completar(opciones.trozoSeparado));
+    c.conSacos = completar(opciones.conSacos);
+    c.trozoSeparado = opciones.trozoSeparado ? completar(opciones.trozoSeparado) : null;
+  }
+  for (const { grupo, cristal, of, conSacos: corte, trozoSeparado } of calculados) {
+    const cabecera = { pedido: orden.orderCode, of, cliente: orden.customer, tecnico: orden.technician,
+      revisor: orden.reviewer, fecha: fechaCorta(orden.orderDate), pagina: '1/1', material: grupo.material };
+    conSacos.push(corte);
+    if (trozoSeparado) trozos.push(trozoSeparado);
     // El cristal de las cortinas va en el plano de su lona, como en los de la oficina (AR2605080); su sitio en la
     // lista se rellena después con ese mismo plano, para que cada corte siga teniendo el suyo.
     if (cristal) { planos.push(null); continue; }
     const cristales = calculados.filter((c) => c.cristal && c.grupo.toldos.some((ct) => grupo.toldos.some((t) => !t.soloBamba && t.letra === ct.letra)))
-      .map((c) => ({ material: c.grupo.material, anchoRollo: c.grupo.anchoRollo, corte: c.opciones.conSacos, codigoTela: c.grupo.codigoTela }));
-    const geometria = dibujarPlano(grupo, opciones.conSacos, opciones.trozoSeparado, cristales);
+      .map((c) => ({ material: c.grupo.material, anchoRollo: c.grupo.anchoRollo, corte: c.conSacos, codigoTela: c.grupo.codigoTela }));
+    const geometria = dibujarPlano(grupo, corte, trozoSeparado, cristales);
     const cortinas = grupo.toldos.every((t) => t.cortina);
     const datos = Object.fromEntries(Object.entries({ ...cabecera,
-      tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${(opciones.conSacos.largo / 1000).toLocaleString('es-ES')} M`,
+      tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${(corte.largo / 1000).toLocaleString('es-ES')} M`,
       subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${cortinas ? 'CORTINA' : grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA' : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA'}`
     }).map(([k, v]) => [k, textoSeguro(v)]));
     for (const h of geometria.hojas) h.cajetin.OF = textoSeguro(h.cajetin.OF);

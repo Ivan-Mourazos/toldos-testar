@@ -226,11 +226,25 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   const rollos = [corteRollo, trozoSeparado].filter(Boolean).map((opcion) => ({ opcion, anchoRollo }));
   rollos.push(...cristales.map((c) => ({ opcion: c.corte, anchoRollo: c.anchoRollo / 10, titulo: `CRISTAL · ${c.material}` })));
   for (const [i, { opcion, anchoRollo, titulo: tituloCristal }] of rollos.entries()) {
-    const corte = dibujo(opcion.colocadas, anchoRollo * 10, { of: '', tela: '' });
+    // El corte del bot tal cual (flujo del DWG, 25/10/2026): lo que hay en el recuadro CORTE es lo que se manda, con su
+    // rótulo de tela y OF, los restos y, si hay dos opciones, el «ELEGIR SOLO UNA». Sin él (pruebas), el de las piezas.
+    const corte = opcion.dibujo ?? { ...dibujo(opcion.colocadas, anchoRollo * 10, { of: '', tela: '' }), textos: [] };
     const largoTotal = Math.max(...opcion.colocadas.map(p => p.x + p.ancho)) / 10;
+    const textosCorte = opcion.dibujo ? [...corte.textos] : [...dibujo(opcion.colocadas, anchoRollo * 10, { of: '', tela: '' }).textos.filter((t) => !t.valor.includes(' · OF ')), ...(opcion.textosExtra || [])];
+    let altoTitulo = anchoRollo + 85;
+    if (trozoSeparado && !tituloCristal && opcion.dibujo) {
+      // Como lo apila el DXF del bot (opcionesArchivo.js): encima de todo lo del rollo.
+      const alcance = (t) => t.giro ? anchoArial(t.valor, t.h) : t.h;
+      const techo = Math.max(anchoRollo * 10, ...corte.lineas.flatMap(l => [l.y1, l.y2]), ...corte.textos.map(t => t.y + alcance(t)));
+      textosCorte.push({ capa: 'texto', x: 0, y: techo + 250, h: 150,
+        valor: `${String(opcion.material ?? '').toUpperCase()} · OPCIÓN ${i + 1} · ${i === 0 ? 'CON SACOS' : 'TROZO SEPARADO'} · ELEGIR SOLO UNA` });
+      // El título del plano, por encima de ese rótulo.
+      altoTitulo = Math.max(altoTitulo, (techo + 400) / 10 + 30);
+    }
+    // Lo que sube el título, más hueco con el rollo de encima: el mismo aire hasta su cota que sin rótulo.
+    yRollo -= altoTitulo - (anchoRollo + 85);
     for (const l of corte.lineas) linea(l.capa, l.x1 / 10, yRollo + l.y1 / 10, l.x2 / 10, yRollo + l.y2 / 10);
-    for (const t of [...corte.textos, ...(opcion.textosExtra || [])]) {
-      if (t.valor.includes(' · OF ')) continue;
+    for (const t of textosCorte) {
       // Los números de unión van en ROTULADOR y de 1 cm, como en el DXF del bot. Los rótulos, del tamaño del bot,
       // que ya los ajusta a su pieza (Iván, 24/10/2026: más grandes).
       T.push({ ...t, capa: t.capa === 'ROTULADOR' ? 'ROTULADOR' : 'texto', x: t.x / 10, y: yRollo + t.y / 10, h: t.h / 10 });
@@ -241,7 +255,8 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
       : !trozoSeparado ? `CORTE${conSacos} · ${metros(opcion.largo)} M`
       : i === 0 ? `OPCIÓN 1${conSacos || ' · TODO SEGUIDO'} · ${metros(opcion.largo)} M`
         : `OPCIÓN 2 · TROZO SEPARADO · ${metros(opcion.largo)} M + RESTOS ${metros(opcion.largoRestos)} M`;
-    texto(titulo, largoTotal / 2, yRollo + anchoRollo + 85, 14, 0, 'texto', largoTotal * 0.98);
+    // En «cotas»: se imprime, pero no va al bot.
+    texto(titulo, largoTotal / 2, yRollo + altoTitulo, 14, 0, 'cotas', largoTotal * 0.98);
     const usadoOpcion = Math.max(...opcion.colocadas.map(p => p.y + p.hueco)) / 10;
     // Agarrada a la columna de la pieza que llega más arriba, para medir bordes de verdad.
     const alta = opcion.colocadas.reduce((p, q) => (q.y + q.hueco > p.y + p.hueco ? q : p)).x / 10;
