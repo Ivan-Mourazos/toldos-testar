@@ -12,6 +12,8 @@ import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
 import { crearFlujoDwg, planosDe } from './flujoDwg/flujo.ts';
+import { conRevisor, htmlPresentaciones } from './flujoDwg/planoDxf.js';
+import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
@@ -1314,7 +1316,28 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       updated.reviewedBy = reviewer;
     }
     const pdfTarget = targets.find((target) => target.type === 'pdf');
-    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }) });
+    // Flujo del DWG, fase 4 (Iván, 25/10/2026): con el corte confirmado, el -1.pdf lleva delante las presentaciones de los DWG
+    // revisados, con el revisor en el cajetín, y del planteamiento solo lo que se imprime: los toldos que van en el CAD (PVC con
+    // corte, no los de corte a mano) sin su hoja de telas, que ya son los CAD; su estructura sí (A5, en la OT). Si las
+    // presentaciones fallan, el planteamiento sale entero, como siempre, y se avisa.
+    const avisos = [];
+    let cad = [];
+    if (updated.corteConfirmado) {
+      try {
+        for (const plano of await flujoToldos.planosDelDwg(updated.corteConfirmado)) {
+          cad.push(await presentacionesPdf(htmlPresentaciones(conRevisor(plano, reviewer || ''), cleanOrder)));
+        }
+      } catch (error) {
+        cad = [];
+        console.error(`Pedido ${cleanOrder}: no se pudieron sacar las presentaciones del CAD:`, error);
+        avisos.push(`${cleanOrder}-1.pdf se ha guardado sin las presentaciones del CAD (con la hoja de telas de la web): ${error.message}`);
+      }
+    }
+    const enElCad = new Set((updated.corteLona?.toldos ?? []).filter((t) => !t.manual).map((t) => t.letra));
+    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }),
+      ...(cad.length ? { sinHojaTelas: (_toldo, indice) => enElCad.has(awningLetter(indice)) } : {}) });
+    if (cad.length) pdfTarget.contents = await conHojasDelante(pdfTarget.contents, cad);
+    const conCad = cad.length > 0;
 
     await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
     for (const target of targets) {
@@ -1325,7 +1348,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     // Se guarda exactamente el mismo PDF en ambos destinos; solo cambia el
     // nombre: PEDIDO-1.pdf en Planteamientos y PEDIDO.pdf en la carpeta anual.
     await workflowStore.saveReview(updated, pdfTarget.contents);
-    res.json({ ok: true, review: updated, saved, excludedNonAcrylicFabrics });
+    res.json({ ok: true, review: updated, saved, excludedNonAcrylicFabrics, conCad, avisos });
   } catch (error) {
     if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
     next(error);

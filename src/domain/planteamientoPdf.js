@@ -57,14 +57,14 @@ const fonts = hasEmbeddedFonts
 // `htmlStructure` y `htmlFabric` en falso dejan ese tipo de página con pdfkit.
 // Si algo falla se avisa con `onSheetError(error, hoja)` (hoja null si no es de una sola hoja)
 // y esas páginas salen con pdfkit como siempre: el PDF no se queda nunca sin hacer.
-export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, onSheetError = null }) {
-  const withPdfkit = async () => (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true })).pdf;
+export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, onSheetError = null, sinHojaTelas = null }) {
+  const withPdfkit = async () => (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true, sinHojaTelas })).pdf;
   if (!renderSheets || (!htmlStructure && !htmlFabric)) return withPdfkit();
   let structureSheets;
   let fabricSheets;
   try {
     structureSheets = htmlStructure ? buildStructureSheetPages({ order, calculation, onlyAwningId }) : [];
-    fabricSheets = htmlFabric ? buildFabricSheetPages({ order, calculation, onlyAwningId }) : [];
+    fabricSheets = htmlFabric ? buildFabricSheetPages({ order, calculation, onlyAwningId, sinHojaTelas }) : [];
   } catch (error) {
     notifySheetError(onSheetError, error, null);
     return withPdfkit();
@@ -72,8 +72,8 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
   const sheets = [...structureSheets, ...fabricSheets];
   if (sheets.length === 0) return withPdfkit();
 
-  const { pdf: base, structureRanges, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false });
-  const plan = buildPlanteamientoPlan(order, calculation, { onlyAwningId });
+  const { pdf: base, structureRanges, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false, sinHojaTelas });
+  const plan = buildPlanteamientoPlan(order, calculation, { onlyAwningId, sinHojaTelas });
   // Los dibujos se hacen mientras Chromium imprime; el que falle deja su hoja con pdfkit.
   const structureDrawings = structureSheets.map((sheet) => {
     if (!sheet.diagramBox) return Promise.resolve({ drawing: null });
@@ -215,7 +215,7 @@ async function mergeSheets({ order, review, base, printed, replacements }) {
 // (desde 0, `end` exclusivo) ocupa cada página de telas A4 con sus continuaciones, y
 // `structureRanges[structureIndex]` las de estructura de cada toldo (todas sus páginas de
 // despiece y sus continuaciones de observaciones).
-function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyAwningId, attachReview }) {
+function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyAwningId, attachReview, sinHojaTelas = null }) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     const doc = new PDFDocument({
@@ -237,7 +237,7 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
     doc.on('end', () => resolve({ pdf: Buffer.concat(chunks), structureRanges, fabricRanges }));
     doc.on('error', reject);
 
-    const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId });
+    const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId, sinHojaTelas });
     // Las cabeceras (OF del pedido, observaciones…) hablan solo del toldo que sale.
     const order = onlyAwningId
       ? { ...fullOrder, awnings: fullOrder.awnings.filter((awning) => awning.id === onlyAwningId) }
@@ -300,7 +300,7 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
   });
 }
 
-export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null } = {}) {
+export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null, sinHojaTelas = null } = {}) {
   // Se filtra tras numerar: cada toldo conserva su índice y, con él, su letra.
   const entries = order.awnings
     .map((awning, index) => ({ awning, index, ofBlock: findAwningBlock(calculation, awning, index) }))
@@ -308,7 +308,9 @@ export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null
   // El HERA entra como cualquier modelo completo (Iván, 03/10/2026).
   const structureEntries = entries.filter(({ awning }) => !isFabricOnlyModel(awning.model));
   const grouped = new Map();
-  entries.forEach((originalEntry) => {
+  // `sinHojaTelas(toldo, índice)`: toldos sin hoja de telas, porque sus telas van en los CAD del corte (PVC con el corte
+  // confirmado, Iván, 25/10/2026). Su estructura sí sale.
+  entries.filter(({ awning, index }) => !sinHojaTelas?.(awning, index)).forEach((originalEntry) => {
     const configuredDrawing = resolveConfiguredDrawing(originalEntry.awning, order.parameters?.drawings);
     const entry = configuredDrawing
       ? { ...originalEntry, awning: { ...originalEntry.awning, fabricImage: configuredDrawing.image } }
@@ -802,8 +804,8 @@ function dash(text) {
 
 // Datos de cada página de telas A4 para la hoja en HTML (fase 1). Salen de las mismas funciones
 // que la página de pdfkit, con los cambios que decidió Iván el 03/10/2026.
-export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwningId = null }) {
-  const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId });
+export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwningId = null, sinHojaTelas = null }) {
+  const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId, sinHojaTelas });
   const order = onlyAwningId
     ? { ...fullOrder, awnings: fullOrder.awnings.filter((awning) => awning.id === onlyAwningId) }
     : fullOrder;

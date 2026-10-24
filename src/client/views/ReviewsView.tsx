@@ -290,10 +290,11 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
           return;
         }
         const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
-        onToast(`Guardado ${targetCode}-1.pdf y ${rpsCount} reservas de RPS.`, {
+        onToast(`Guardado ${targetCode}-1.pdf${data.conCad ? ' (con las presentaciones del CAD)' : ''} y ${rpsCount} reservas de RPS.`, {
           tone: 'success',
           title: 'Archivos generados'
         });
+        for (const aviso of (data.avisos as string[] | undefined) ?? []) onToast(aviso, { tone: 'warning' });
         return;
       }
     } catch (error) {

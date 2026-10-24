@@ -303,6 +303,17 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     return { huella: leido.huella, dxf: escribirDxf2004(juntos) as string, plano: leido.cortes[0].dxf, planos: leido.cortes.map((c) => c.dxf) };
   }
 
+  /** Fase 4: los DWG revisados tal como están, en DXF, para imprimir sus presentaciones. */
+  async function planosDelDwg(confirmado: CorteConfirmado) {
+    if (!deps.leer) throw new ErrorFlujoDwg("Este servidor no puede leer el plano del corte.", 503);
+    const planos = [];
+    for (const p of planosDe(confirmado)) {
+      if (!(await existeFichero(p.plano))) throw new ErrorFlujoDwg(`No está el plano revisado ${p.filename} en su carpeta.`, 409);
+      planos.push(await deps.leer(p.plano));
+    }
+    return planos;
+  }
+
   /** Fase 3, al mandar: si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta; si se acepta, queda la nota. */
   async function antesDeMandar(confirmado: CorteConfirmado, aceptarCambio: boolean, usuario: string):
     Promise<{ respuesta: Respuesta } | { dwg: Awaited<ReturnType<typeof corteDelDwg>>; nota: string }> {
@@ -315,7 +326,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     return { dwg, nota: `Corte cambiado en el DWG después de confirmarlo; lo mandó ${usuario} con los cambios.` };
   }
 
-  return { activo, borrador, confirmar, alGuardar, corteDelDwg, antesDeMandar };
+  return { activo, borrador, confirmar, alGuardar, corteDelDwg, planosDelDwg, antesDeMandar };
 }
 
 type Linea = { capa: string; x1: number; y1: number; x2: number; y2: number };
