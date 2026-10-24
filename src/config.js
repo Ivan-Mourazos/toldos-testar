@@ -31,8 +31,8 @@ export const config = {
   corteLonaPlanoDirectory: process.env.CORTE_LONA_PLANO_DIRECTORY || '',
   corteLonaDxfDirectory: process.env.CORTE_LONA_DXF_DIRECTORY || '',
   heraEnabled: booleanFromEnv('ENABLE_HERA', !isProduction),
-  // Puertas en pausa en el servidor (Iván, 22/10/2026: «aún le faltan bastante»); en pruebas siguen.
-  puertasEnabled: booleanFromEnv('ENABLE_PUERTAS', !isProduction),
+  // Puertas activas también en el servidor (Iván, 24/10/2026: «habilita las puertas»); ENABLE_PUERTAS=0 las vuelve a pausar.
+  puertasEnabled: booleanFromEnv('ENABLE_PUERTAS', true),
   legacyExportsEnabled: booleanFromEnv('ENABLE_LEGACY_EXPORTS', !isProduction),
   exportDirectory: process.env.EXPORT_DIRECTORY || '',
   orderArchiveRoot: process.env.ORDER_ARCHIVE_ROOT || '',

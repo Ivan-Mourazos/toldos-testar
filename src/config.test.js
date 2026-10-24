@@ -100,12 +100,12 @@ describe('configuración por entorno', () => {
     expect((await loadConfig('production', '')).telasHtml).toBe(false);
   });
 
-  test('las puertas están en pausa en producción y ENABLE_PUERTAS=1 las enciende', async () => {
+  test('las puertas están activas también en producción y ENABLE_PUERTAS=0 las pausa', async () => {
     delete process.env.ENABLE_PUERTAS;
-    expect((await loadConfig('production', '')).puertasEnabled).toBe(false);
-    expect((await loadConfig('development', '')).puertasEnabled).toBe(true);
-    process.env.ENABLE_PUERTAS = '1';
     expect((await loadConfig('production', '')).puertasEnabled).toBe(true);
+    expect((await loadConfig('development', '')).puertasEnabled).toBe(true);
+    process.env.ENABLE_PUERTAS = '0';
+    expect((await loadConfig('production', '')).puertasEnabled).toBe(false);
   });
 
   test('la página de estructura en HTML está activa por defecto y ESTRUCTURA_HTML=0 la apaga', async () => {

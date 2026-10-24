@@ -20,6 +20,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         ENABLE_HERA: 'true',
+        // Puertas activas (Iván, 24/10/2026); manda sobre el .env del servidor.
+        ENABLE_PUERTAS: 'true',
         ENABLE_LEGACY_EXPORTS: 'false'
       }
     }

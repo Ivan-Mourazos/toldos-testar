@@ -29,9 +29,9 @@ HERA está habilitado con `pnpm dev` y en la configuración PM2 de producción
 (`ENABLE_HERA=true`). Fuera de PM2, producción requiere definir explícitamente
 esta variable. Se conservan la revisión y los bloqueos por datos pendientes.
 
-Las puertas están en pausa en producción hasta que estén listas (22/10/2026):
-sin `ENABLE_PUERTAS=true` no sale su pestaña ni su filtro en Pedidos y el
-servidor no atiende `/api/puertas`. Con `pnpm dev` y en las aisladas sí salen.
+Las puertas están activas también en producción desde el 24/10/2026 (PM2 define
+`ENABLE_PUERTAS=true`). Con `ENABLE_PUERTAS=false` se pausan: no sale su pestaña
+ni su filtro en Pedidos y el servidor no atiende `/api/puertas`.
 
 Las rutas antiguas `/api/export` y `/api/export/save` se conservan para pruebas
 de desarrollo, pero PM2 las desactiva. La aprobación de una revisión no genera
