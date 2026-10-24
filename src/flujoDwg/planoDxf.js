@@ -186,16 +186,33 @@ export function svgPrimitivas(primitivas, { zona = { x0: 0, y0: 0, x1: 297, y1: 
       const base = fila === 0 ? h : fila === 1 ? -(lineas.length - 1) * h * .7 + h * .36 : -(lineas.length - 1) * h * 1.4;
       cuerpo = `<g transform="translate(${p.punto[0]} ${-p.punto[1]}) rotate(${-p.giro})"><text fill="${c}" font-family="Arial" font-size="${h / .716}" text-anchor="${['start', 'middle', 'end'][columna]}">${lineas.map((t, j) => `<tspan x="0" y="${base + j * h * 1.4}">${esc(t)}</tspan>`).join('')}</text></g>`;
     } else if (['relleno', 'sombreado'].includes(p.tipo)) {
-      let fill = c;
-      if (p.tipo === 'sombreado' && !p.solido) { defs.push(`<pattern id="s${i}" width="${trazo * 5}" height="${trazo * 5}" patternUnits="userSpaceOnUse"><path d="M0 0L${trazo * 5} ${trazo * 5}" stroke="${c}" stroke-width="${trazo / 2}"/></pattern>`); fill = `url(#s${i})`; }
-      cuerpo = `<polygon points="${p.puntos.map(([x, y]) => `${x},${-y}`).join(' ')}" fill="${fill}"/>`;
+      const puntos = p.puntos.map(([x, y]) => `${x},${-y}`).join(' ');
+      if (p.tipo === 'sombreado' && !p.solido) {
+        // Rayado con líneas de verdad recortadas a la forma: un <pattern> lo trocea Chromium en el PDF (1,4 MB por hoja).
+        const xs = p.puntos.map((q) => q[0]), ys = p.puntos.map((q) => -q[1]), paso = trazo * 5;
+        const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+        let d = '';
+        for (let k = Math.floor((x0 - y1) / paso) * paso; k <= x1 - y0; k += paso) d += `M${k + y0} ${y0}L${k + y1} ${y1}`;
+        defs.push(`<clipPath id="s${i}"><polygon points="${puntos}"/></clipPath>`);
+        cuerpo = `<path d="${d}" clip-path="url(#s${i})" fill="none" stroke="${c}" stroke-width="${trazo / 2}"/>`;
+      } else cuerpo = `<polygon points="${puntos}" fill="${c}"/>`;
     } else if (p.tipo === 'arco') {
       const [x, y] = p.punto;
       if (p.hasta - p.desde >= 359.999) cuerpo = `<circle cx="${x}" cy="${-y}" r="${p.r}" fill="none" stroke="${c}"/>`;
       else { const a = p.desde * Math.PI / 180, b = p.hasta * Math.PI / 180; cuerpo = `<path d="M ${x + p.r * Math.cos(a)} ${-y - p.r * Math.sin(a)} A ${p.r} ${p.r} 0 ${(p.hasta - p.desde + 360) % 360 > 180 ? 1 : 0} 0 ${x + p.r * Math.cos(b)} ${-y - p.r * Math.sin(b)}" fill="none" stroke="${c}"/>`; }
     }
-    if (p.recorte) { const v = p.recorte, id = `v${v.id}`; if (!defs.some(s => s.includes(`id="${id}"`))) defs.push(`<clipPath id="${id}"><rect x="${v.centro[0] - v.ancho / 2}" y="${-v.centro[1] - v.alto / 2}" width="${v.ancho}" height="${v.alto}"/></clipPath>`); cuerpo = `<g clip-path="url(#${id})">${cuerpo}</g>`; }
-    partes.push(cuerpo);
+    let recorte = '';
+    if (p.recorte) { const v = p.recorte; recorte = `v${v.id}`; if (!defs.some(s => s.includes(`id="${recorte}"`))) defs.push(`<clipPath id="${recorte}"><rect x="${v.centro[0] - v.ancho / 2}" y="${-v.centro[1] - v.alto / 2}" width="${v.ancho}" height="${v.alto}"/></clipPath>`); }
+    partes.push({ recorte, cuerpo });
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="${alto}" viewBox="${zona.x0} ${-zona.y1} ${zona.x1 - zona.x0} ${zona.y1 - zona.y0}" style="stroke-width:${trazo}"><defs>${defs.join('')}</defs>${partes.join('')}</svg>`;
+  // Lo de una misma ventana, en un solo grupo recortado: un recorte por elemento multiplicaba el tamaño del PDF (5,9 MB en 4 hojas).
+  let cuerpo = '';
+  for (let i = 0; i < partes.length;) {
+    let j = i;
+    while (j < partes.length && partes[j].recorte === partes[i].recorte) j++;
+    const grupo = partes.slice(i, j).map((q) => q.cuerpo).join('');
+    cuerpo += partes[i].recorte ? `<g clip-path="url(#${partes[i].recorte})">${grupo}</g>` : grupo;
+    i = j;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="${alto}" viewBox="${zona.x0} ${-zona.y1} ${zona.x1 - zona.x0} ${zona.y1 - zona.y0}" style="stroke-width:${trazo}"><defs>${defs.join('')}</defs>${cuerpo}</svg>`;
 }
