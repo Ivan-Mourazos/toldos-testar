@@ -147,6 +147,18 @@ const generationLocks = new Set();
 // minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
 const fichasHojaRemolques = crearAlmacenFichas({ duracionMs: 60_000 });
 const servicioPdfRemolques = crearServicioPdf({ urlHoja: urlHojaRemolques });
+// Flujo del DWG, fase 4: las presentaciones del DWG revisado en PDF, con el mismo Chromium. La página se guarda un minuto y se
+// pide una sola vez.
+const fichasPresentaciones = crearAlmacenFichas({ duracionMs: 60_000 });
+async function presentacionesPdf(html) {
+  let id = null;
+  try {
+    return await servicioPdfRemolques.generar({ preparar: () => (id = fichasPresentaciones.guardar(html)),
+      url: (clave) => urlPaginaInterna('presentaciones-pdf.html', clave) });
+  } finally {
+    if (id) fichasPresentaciones.borrar(id);
+  }
+}
 // Hoja de telas (fase 1) y página de estructura (fase 2) de toldos en HTML: mismos datos de un
 // solo uso y el mismo Chromium.
 const fichasHojaTelas = crearAlmacenFichas({ duracionMs: 60_000 });
@@ -213,6 +225,7 @@ const pedidosPuertas = crearServicioPedidosPuertas({
   ofStockSacos,
   plano: crearPlanoPuertas({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos }),
   // Flujo del DWG: los cortes confirmados, junto a los pedidos de puertas (carpeta interna, no la que ven los PC).
+  presentacionesPdf,
   confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {
     const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
     return carpeta ? path.join(carpeta, SUBCARPETA_PUERTAS, 'cortes-confirmados') : '';
@@ -666,6 +679,16 @@ app.get('/api/remolques/hoja/:id', (req, res) => {
     return;
   }
   res.set('Cache-Control', 'no-store').json(datos);
+});
+
+// La página interna con las presentaciones de un plano, ya pintadas (fase 4 del flujo del DWG). Un solo uso.
+app.get('/presentaciones-pdf.html', (req, res) => {
+  const html = fichasPresentaciones.tomar(String(req.query.id ?? ''));
+  if (!html) {
+    res.status(404).type('text/plain').send('Estas presentaciones ya no están disponibles.');
+    return;
+  }
+  res.set('Cache-Control', 'no-store').type('html').send(html);
 });
 
 // La página interna de la hoja de telas de toldos pide sus datos igual. Un solo uso.

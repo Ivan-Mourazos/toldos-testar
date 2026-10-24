@@ -200,18 +200,25 @@ describe('borrador del corte', () => {
 // Flujo del DWG, fase 2 (plan del 24/10/2026): confirmar el corte del borrador y guardarlo para revisión desde él.
 describe('corte confirmado desde el borrador', () => {
   let flujo: ReturnType<typeof crearServicioPedidosPuertas>;
+  let paginas: string[] = [], pdfFalla = false;
   const borrador = () => path.join(raiz, 'borradores', 'AR2605134.dxf');
   const enAnio = () => path.join(raiz, 'planos', 'AR2605134.dxf');
   beforeEach(async () => {
+    paginas = [];
+    pdfFalla = false;
+    await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
     const almacen = crearAlmacenPedidos<PedidoPuertasGuardado>({ carpeta: async () => path.join(raiz, 'pedidos/puertas'),
       tipo: TIPO_PEDIDO_PUERTAS, nombre: 'puertas', sinCarpeta: 'Sin carpeta' });
     const ajustes = async () => ({ productionEnabled: true, corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
+      corteLonaBotDirectory: path.join(raiz, 'bot/{TECNICO}'), remolquesPlanteamientosDirectory: path.join(raiz, 'planteamientos/{YYYY}'),
       corteBorradoresDirectory: path.join(raiz, 'borradores'), corteBorradoresRed: String.raw`\\stinkor\oftecnica\BORRADORES CORTE` });
     flujo = crearServicioPedidosPuertas({
       almacen, tecnicos: ['IVÁN', 'DAVID'], otroProducto: async () => null, ajustes,
       // Sin ODA el plano va en DXF: se lee tal cual.
       plano: crearPlanoPuertas({ ajustes, oda: { disponible: false, convertir: async (c) => c } }),
       confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => path.join(raiz, 'confirmados') }),
+      // El PDF de las presentaciones: aquí, la página que se imprimiría.
+      presentacionesPdf: async (html) => { if (pdfFalla) throw new Error('Chromium no está'); paginas.push(html); return Buffer.from(`%PDF ${paginas.length}`); },
       coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, { estado: 'aprobada', revisor: 'DAVID' }])) }) },
       ahora: () => new Date('2026-10-24T08:00:00Z'),
     });
@@ -317,5 +324,44 @@ describe('corte confirmado desde el borrador', () => {
     const nuevo = await fs.readFile(path.join(raiz, '2026/DXFs/AR2605134.dxf'), 'latin1');
     const lineas = (t: string) => (t.match(/\nLINE\r?\n/g) ?? []).length;
     expect(lineas(nuevo)).toBe(lineas(dxf) + 1);
+  });
+
+  // Fase 4: al mandar al bot, las presentaciones del DWG revisado en PDF, en planteamientos como AR…-10.pdf.
+  const alBot = (extra = {}) => flujo.enviarCorte('AR2605134', { usuario: 'IVÁN', destino: 'bot', confirmBot: true, confirmOverwrite: true, ...extra });
+  const pdf = (n: number) => path.join(raiz, 'planteamientos/2026', `AR2605134-${n}.pdf`);
+  it('al mandar al bot guarda las presentaciones en AR…-10.pdf, con el revisor; rehecho, lo sustituye sin preguntar', async () => {
+    await abrir(); await confirmar(); await guardar();
+    const { status, cuerpo } = await alBot();
+    expect(status).toBe(200);
+    expect(cuerpo).toMatchObject({ presentaciones: { filename: 'AR2605134-10.pdf' } });
+    expect(await fs.readFile(pdf(10), 'utf8')).toBe('%PDF 1');
+    // Una hoja por presentación, con el revisor de CoordinaOT en el cajetín.
+    expect(paginas[0]).toContain('aria-label="PUERTA A"');
+    expect(paginas[0]).toContain('DAVID');
+    expect((await flujo.obtener('AR2605134')).presentacionesPdf).toMatchObject({ numero: 10, ruta: pdf(10) });
+    expect((await alBot()).status).toBe(200);
+    expect(await fs.readFile(pdf(10), 'utf8')).toBe('%PDF 2');
+    // Guardar el DXF en DXFs no hace PDF.
+    await flujo.enviarCorte('AR2605134', { usuario: 'IVÁN', destino: 'dxfs', confirmOverwrite: true });
+    expect(paginas).toHaveLength(2);
+  });
+  it('si ya hay un AR…-10.pdf que no hizo la web, pregunta: otra parte del pedido (-11) o sustituirlo', async () => {
+    await abrir(); await confirmar(); await guardar();
+    await fs.mkdir(path.dirname(pdf(10)), { recursive: true });
+    await fs.writeFile(pdf(10), 'DE LOS TOLDOS CORTINA');
+    expect(await alBot()).toMatchObject({ status: 409, cuerpo: { pdfExiste: true, existente: 'AR2605134-10.pdf', siguiente: 'AR2605134-11.pdf' } });
+    expect(paginas).toHaveLength(0);
+    expect((await alBot({ pdfModo: 'siguiente' })).cuerpo).toMatchObject({ presentaciones: { filename: 'AR2605134-11.pdf' } });
+    expect(await fs.readFile(pdf(10), 'utf8')).toBe('DE LOS TOLDOS CORTINA');
+    // Ya es suyo el -11: la siguiente vez lo sustituye sin preguntar.
+    expect((await alBot()).cuerpo).toMatchObject({ presentaciones: { filename: 'AR2605134-11.pdf' } });
+  });
+  it('si el PDF falla, el corte ya está en el bot: se avisa', async () => {
+    await abrir(); await confirmar(); await guardar();
+    pdfFalla = true;
+    const { status, cuerpo } = await alBot();
+    expect(status).toBe(200);
+    expect(cuerpo).toMatchObject({ avisos: [expect.stringContaining('ya está en el bot')] });
+    expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual(['AR2605134.dxf']);
   });
 });

@@ -17,11 +17,21 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
     try {
       if (destino === 'bot' && await preguntar({ title: 'Mandar corte al bot', message: 'El corte irá al bot y se cortará. ¿Seguro?',
         confirmLabel: 'Mandar corte al bot', cancelLabel: 'Cancelar', tone: 'danger' }) !== 'confirm') return;
-      let confirmOverwrite = false, aceptarCambioCorte = false;
+      let confirmOverwrite = false, aceptarCambioCorte = false, pdfModo: 'sustituir' | 'siguiente' | undefined;
       for (;;) {
         const res = await fetch(`${ruta}/enviar`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte }) });
+          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte, pdfModo }) });
         const datos = await res.json();
+        // Flujo del DWG, fase 4: ya hay un PDF de presentaciones de este pedido que no hizo la web.
+        if (res.status === 409 && datos.pdfExiste && !pdfModo) {
+          const eleccion = await preguntar({ title: 'PDF de las presentaciones', message: datos.error || 'Ya hay un PDF de este pedido.',
+            confirmLabel: `Otra parte: guardar como ${datos.siguiente}`, alternativeLabel: `Es lo mismo: sustituir ${datos.existente}`,
+            alternativeTone: 'neutral', cancelLabel: 'Cancelar', tone: 'warning' });
+          if (eleccion === 'confirm') pdfModo = 'siguiente';
+          else if (eleccion === 'alternative') pdfModo = 'sustituir';
+          else return;
+          continue;
+        }
         // Flujo del DWG: el corte del DWG cambió después de confirmarlo y revisarlo.
         if (res.status === 409 && datos.cambioCorte && !aceptarCambioCorte) {
           if (await preguntar({ title: 'El corte ha cambiado', message: datos.error || 'El corte del DWG ha cambiado desde que se revisó.',
@@ -39,6 +49,8 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
         setHistorial(datos.enviosCorte);
         const ultimo = (datos.enviosCorte as EnvioCorte[] | undefined)?.at(-1);
         notify(ultimo ? mensajeEnvio(destino, ultimo.carpeta, ultimo.archivos.map((a) => a.filename)) : destino === 'bot' ? 'Corte mandado al bot.' : 'DXF guardado en DXFs.', { tone: 'success' });
+        if (datos.presentaciones?.filename) notify(`Presentaciones guardadas en PDF: ${datos.presentaciones.filename}.`, { tone: 'success', title: 'Presentaciones' });
+        for (const aviso of (datos.avisos as string[] | undefined) ?? []) notify(aviso, { tone: 'warning' });
         return;
       }
     } catch (error) { notify(error instanceof Error ? error.message : 'No se pudo guardar el corte.', { tone: 'error' }); }

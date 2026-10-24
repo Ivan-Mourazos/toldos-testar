@@ -1,8 +1,12 @@
-import { readFile, rm, stat } from "node:fs/promises";
+import { mkdir, readFile, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import { carpetaCorte } from "../../corteLonaArchivos.js";
 import { corteDelPlano, entidadesBot } from "../../flujoDwg/corteDwg.js";
+import { conRevisor, htmlPresentaciones } from "../../flujoDwg/planoDxf.js";
+import { writeFileAtomic } from "../../workflow.js";
+import { normalizarNumeroPedido } from "../../remolques/pedidos/numero-pedido.ts";
+import { anioDelPlanteamiento } from "../../remolques/salida/nombre-pdf.ts";
 import { escribirDxf2004 } from "../../domain/corteLona/dxfCorte.js";
 import {
   approvalReviewers, coordinaAuthor, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
@@ -41,7 +45,7 @@ export interface ConfirmacionesCorte {
 export interface DependenciasPedidosPuertas {
   almacen: AlmacenPedidos<PedidoPuertasGuardado>;
   ajustes: () => Promise<{ productionEnabled?: boolean; corteLonaBotDirectory?: string; corteLonaPlanoDirectory?: string; corteLonaDxfDirectory?: string;
-    corteBorradoresDirectory?: string; corteBorradoresRed?: string }>;
+    corteBorradoresDirectory?: string; corteBorradoresRed?: string; remolquesPlanteamientosDirectory?: string }>;
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
   /** La lista de técnicos (la de «Soy»). */
   tecnicos: string[];
@@ -51,6 +55,8 @@ export interface DependenciasPedidosPuertas {
   otroProducto: (orderCode: string) => Promise<string | null>;
   plano?: PlanoPuertas;
   confirmaciones?: ConfirmacionesCorte;
+  /** Fase 4 del flujo del DWG: una página HTML de presentaciones, en PDF (el Chromium del servidor). */
+  presentacionesPdf?: (html: string) => Promise<Uint8Array>;
   registrar?: (mensaje: string) => void;
   ahora?: () => Date;
 }
@@ -141,7 +147,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       registrar(`No se pudo leer el borrador del corte ${ruta}: ${(error as Error).message}`);
       throw new ErrorPedidoRemolques(`No se pudo leer el borrador del corte: ${(error as Error).message}`, 503);
     }
-    return corteDelPlano(dxf) as { error: string | null; huella?: string; fuera: unknown[]; entidades: Array<{ capa: string }> };
+    return { ...(corteDelPlano(dxf) as { error: string | null; huella?: string; fuera: unknown[]; entidades: Array<{ capa: string }> }), dxf };
   }
 
   /**
@@ -415,7 +421,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (bot.noConvertibles.length) {
       throw new ErrorPedidoRemolques(`En el recuadro CORTE hay ${bot.noConvertibles.length} ${bot.noConvertibles.length === 1 ? "objeto" : "objetos"} que no se pueden mandar al bot (bloques, sombreados…): explótalos o bórralos en ZWCAD.`, 409);
     }
-    return { huella: corte.huella ?? "", dxf: escribirDxf2004(bot) as string };
+    return { huella: corte.huella ?? "", dxf: escribirDxf2004(bot) as string, plano: corte.dxf };
   }
 
   /** Un solo DXF por pedido, con las opciones de saco dentro (el técnico de la máquina elige). */
@@ -436,15 +442,17 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
     ocupados.set(orderCode, "generando");
     try {
-      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown };
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; pdfModo?: unknown };
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       const pedido = await obtener(orderCode);
       exigirOfsPuertas(pedido);
       // Si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta antes de mandarlo.
       let nota = "";
+      let dwg: Awaited<ReturnType<typeof corteDelDwg>> | null = null;
       if (pedido.corteConfirmado) {
-        const { huella } = await corteDelDwg(pedido);
+        dwg = await corteDelDwg(pedido);
+        const { huella } = dwg;
         if (huella !== pedido.corteConfirmado.huella) {
           if (c.aceptarCambioCorte !== true) {
             return { status: 409, cuerpo: { cambioCorte: true,
@@ -453,14 +461,60 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
           nota = `Corte cambiado en el DWG después de confirmarlo; lo mandó ${usuario} con los cambios.`;
         }
       }
-      return await enviarCorteCompartido({ nota, pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
+      // Fase 4: al mandar al bot, las presentaciones del DWG revisado en PDF, en planteamientos como AR…-10.pdf (Iván,
+      // 24/10/2026). Se mira antes de mandar nada: si ya hay uno que no hizo la web, se pregunta si es otra parte del pedido.
+      let pdf: { ruta: string; numero: number } | null = null;
+      if (c.destino === "bot" && dwg && deps.presentacionesPdf) {
+        const destino = await destinoPresentaciones(pedido, c.pdfModo);
+        if ("respuesta" in destino) return destino.respuesta;
+        pdf = destino;
+      }
+      const respuesta = await enviarCorteCompartido({ nota, pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
         usuario, destino: c.destino, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
         elementos: elementosAprobacion(pedido), coordina: deps.coordina, nombres: PUERTA_NOUNS,
         comprobarCorte: () => {}, preparar: () => prepararDxf(pedido),
         guardarRegistro: (actualizado: PedidoPuertasGuardado) => deps.almacen.guardar(actualizado), ahora: reloj });
+      if (respuesta.status !== 200 || !pdf || !dwg) return respuesta;
+      // El corte ya está en el bot: un fallo del PDF solo se avisa.
+      try {
+        const aprobacion = elementosAprobacion(pedido);
+        const revisor = approvalReviewers(aprobacion, await deps.coordina.statusOf(uniqueOfs(aprobacion)), deps.tecnicos);
+        const contenido = await deps.presentacionesPdf!(htmlPresentaciones(conRevisor(dwg.plano, revisor), pedido.numeroPedido));
+        await mkdir(path.dirname(pdf.ruta), { recursive: true });
+        await writeFileAtomic(pdf.ruta, contenido);
+        const presentacionesPdf = { numero: pdf.numero, ruta: pdf.ruta, fecha: ahora() };
+        await deps.almacen.guardar({ ...(await obtener(orderCode)), presentacionesPdf });
+        return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), presentaciones: { filename: path.basename(pdf.ruta), ruta: pdf.ruta } } };
+      } catch (error) {
+        registrar(`Pedido ${orderCode}: el corte salió al bot, pero no se pudo guardar el PDF de las presentaciones: ${(error as Error).stack ?? (error as Error).message}`);
+        return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), avisos: [`El corte ya está en el bot, pero no se pudo guardar el PDF de las presentaciones: ${(error as Error).message}`] } };
+      }
     } finally {
       ocupados.delete(orderCode);
     }
+  }
+
+  /**
+   * Dónde va el PDF de las presentaciones: el número que ya usó este pedido (lo mismo rehecho sustituye) o el -10; si ese ya
+   * existe y no es suyo, se pregunta: sustituirlo o pasar al siguiente libre (otra parte del pedido).
+   */
+  async function destinoPresentaciones(pedido: PedidoPuertasGuardado, modo: unknown): Promise<{ ruta: string; numero: number } | { respuesta: Respuesta }> {
+    const carpeta = (await deps.ajustes()).remolquesPlanteamientosDirectory?.trim();
+    if (!carpeta) {
+      throw new ErrorPedidoRemolques("Falta la carpeta de planteamientos de remolques en Configuración: allí va el PDF de las presentaciones (AR…-10.pdf). No se ha mandado nada.", 409);
+    }
+    const base = carpeta.replaceAll("{YYYY}", String(anioDelPlanteamiento(pedido.numeroPedido, pedido.summary.orderDate)));
+    const codigo = normalizarNumeroPedido(pedido.numeroPedido) || pedido.orderCode;
+    const ruta = (n: number) => path.join(base, `${codigo}-${n}.pdf`);
+    const suyo = pedido.presentacionesPdf?.numero;
+    if (suyo != null) return { ruta: ruta(suyo), numero: suyo };
+    if (!(await existeFichero(ruta(10)))) return { ruta: ruta(10), numero: 10 };
+    let siguiente = 11;
+    while (await existeFichero(ruta(siguiente))) siguiente += 1;
+    if (modo === "siguiente") return { ruta: ruta(siguiente), numero: siguiente };
+    if (modo === "sustituir") return { ruta: ruta(10), numero: 10 };
+    return { respuesta: { status: 409, cuerpo: { pdfExiste: true, existente: path.basename(ruta(10)), siguiente: path.basename(ruta(siguiente)),
+      error: `Ya hay ${path.basename(ruta(10))} de este pedido. Si es de otra parte del pedido, las presentaciones irán en ${path.basename(ruta(siguiente))}; si es lo mismo, se sustituye.` } } };
   }
 
   return { listar, obtener, guardar, borradorCorte, confirmarCorte, planoRevision, generar, corte, descargarCorte, enviarCorte };

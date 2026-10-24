@@ -48,6 +48,8 @@ export interface PedidoPuertasGuardado extends Omit<PedidoPuertas, "summary"> {
   enviosCorte?: EnvioCorte[];
   /** Flujo del DWG: el corte que confirmó el autor en su borrador y dónde quedó el DWG al guardar para revisión. */
   corteConfirmado?: CorteConfirmado;
+  /** Fase 4: el PDF de las presentaciones que guardó la web (AR…-10.pdf o el siguiente): al rehacerlo, se sustituye. */
+  presentacionesPdf?: { numero: number; ruta: string; fecha: string };
 }
 
 export interface CorteConfirmado {
