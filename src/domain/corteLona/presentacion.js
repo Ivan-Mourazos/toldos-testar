@@ -246,7 +246,11 @@ export function escribirDxfPlano(plano, cabecera) {
   const lineas = [...plano.lineas, ...corte.lineas];
   const polilineas = [...plano.polilineas, ...corte.polilineas];
   const textos = [...plano.textos, ...corte.textos];
-  for (const l of lineas) modelo += ent('LINE', l.capa, 'AcDbLine', ` 10\n${n(l.x1)}\n 20\n${n(l.y1)}\n 30\n0.0\n 11\n${n(l.x2)}\n 21\n${n(l.y2)}\n 31\n0.0\n`);
+  // Una línea puede llevar su color (el cristal del corte de puertas, en azul); si no, el de su capa.
+  for (const l of lineas) {
+    const linea = ent('LINE', l.capa, 'AcDbLine', ` 10\n${n(l.x1)}\n 20\n${n(l.y1)}\n 30\n0.0\n 11\n${n(l.x2)}\n 21\n${n(l.y2)}\n 31\n0.0\n`);
+    modelo += l.color == null ? linea : linea.replace('100\nAcDbLine', ` 62\n${l.color}\n100\nAcDbLine`);
+  }
   for (const p of polilineas) {
     const entidad = ent('LWPOLYLINE', p.capa, 'AcDbPolyline', ` 90\n${String(p.puntos.length).padStart(6)}\n 70\n${p.cerrada ? '     1' : '     0'}\n 43\n0.0\n${p.puntos.map(([x, y], i) => ` 10\n${n(x)}\n 20\n${n(y)}\n${p.curvas ? ` 42\n${n(p.curvas[i] ?? 0)}\n` : ''}`).join('')}`);
     modelo += p.color == null ? entidad : entidad.replace('100\nAcDbPolyline', ` 62\n${p.color}\n100\nAcDbPolyline`);

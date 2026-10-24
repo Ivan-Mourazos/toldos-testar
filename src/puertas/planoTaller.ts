@@ -4,10 +4,10 @@ import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { fusionarCortesPuertas } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
+import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, ENTRE_PUERTAS, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
-import type { CortePuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
-import { centroLibre } from './unionesCorte.ts';
+import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
 
 // Alzados de oficina, separados del SVG del configurador. Referencias locales:
 // AR2605036/4906 (apilables), AR2604904/4526 (autorreparables).
@@ -21,9 +21,21 @@ const texto = (l: Lienzo, valor: string, x: number, y: number, h: number, giro =
 /** Cm entre sacos o cristales de la misma fila del corte: sitio para la cota de la derecha del saco partido. */
 const ENTRE_MUESTRAS = 80;
 // El material de cada fila del corte, grande (Iván, 24/10/2026): hasta 20 cm, a lo ancho de la fila.
-function material(l: Lienzo, valor: string, ancho: number, y: number) {
-  texto(l, valor, 0, y, Math.min(20, ancho * .95 / anchoArial(valor, 1)));
-  Object.assign(l.textos.at(-1)!, { centrado: false, ancla: 4 });
+function sumarEntidades(l: Lienzo, e: EntidadesPuertas, dx = 0, dy = 0) {
+  l.lineas.push(...e.lineas.map(a => ({ ...a, x1: a.x1 + dx, x2: a.x2 + dx, y1: a.y1 + dy, y2: a.y2 + dy })));
+  l.arcos.push(...e.arcos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
+  l.circulos.push(...e.circulos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
+  l.textos.push(...e.textos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
+}
+/** Los textos del bot de fuera de las piezas, en una línea encima de la fila, grandes y sin pasarse de su ancho. */
+function rotuloFila(l: Lienzo, textos: EntidadesPuertas['textos'], ancho: number, y: number) {
+  const alto = Math.min(20, ancho * .95 / anchoArial(textos.map(a => a.valor).join('    '), 1));
+  let x = 0;
+  for (const a of textos) {
+    l.textos.push({ capa: a.capa, valor: a.valor, x, y, h: alto, centrado: false, giro: 0, ...(a.literal ? { literal: true } : {}) });
+    Object.assign(l.textos.at(-1)!, { ancla: 4 });
+    x += anchoArial(`${a.valor}    `, alto);
+  }
 }
 const contorno = (l: Lienzo, capa: string, puntos: Punto[]) => puntos.forEach((a, i) => {
   const b = puntos[(i + 1) % puntos.length]; linea(l, capa, ...a, ...b);
@@ -364,7 +376,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   return { lienzo: l, zona: { x0: izquierdaZona, x1: F + (desnivel ? 100 : 82), y0: abajo, y1: arriba + 50 } };
 }
 
-function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
+function dibujarCorteTaller(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(); let techo = 0, anchoMax = 250;
   const prioridad = (c: CortePuertas) => c.colocadas.every(t => t.pieza.clase === 'saco') ? 0
     : c.colocadas.every(t => t.pieza.clase === 'cristal') ? 1 : 2;
@@ -390,31 +402,12 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         const entero = g.length > 1 ? cortes.find(x => x.opcion === 'saco-entero')?.colocadas.find(t => puertaDe(t.pieza) === puertaDe(g[0]))?.pieza.ancho : undefined;
         for (const [i, p] of g.entries()) {
           const y = arriba - p.alto;
-          if (p.radio) {
-            // Como en el corte del bot: los tramos rectos en DISCO1 y los radios de las esquinas en CUTTER (Iván, 23/10/2026).
-            const r = Math.min(p.radio, p.ancho / 2, p.alto / 2), [w, h] = [p.ancho, p.alto];
-            for (const [x1, y1, x2, y2] of [[r, 0, w - r, 0], [w, r, w, h - r], [w - r, h, r, h], [0, h - r, 0, r]]) linea(dibujo, 'DISCO1', x1, y + y1, x2, y + y2);
-            for (const [cx, cy, desde] of [[r, r, 180], [w - r, r, 270], [w - r, h - r, 0], [r, h - r, 90]]) dibujo.arcos.push({ capa: 'CUTTER', x: cx, y: y + cy, r, desde, hasta: desde + 90 });
-          }
-          else contorno(dibujo, 'DISCO1', p.contorno.map(([x, v]): Punto => [x, y + v]));
-          // Con varias puertas, la letra de su puerta y la cantidad (Iván, 24/10/2026, AR2605035).
-          const iPuerta = pedido.elementos.findIndex(e => e.id === puertaDe(p));
-          const rotulo = `${pedido.elementos.length > 1 && iPuerta >= 0 ? `${String.fromCharCode(65 + iPuerta)}  ` : ''}X${p.multiplicador ?? p.cantidad}`;
-          if (!entero || !i) texto(dibujo, rotulo, p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto / 2, ...(iPuerta >= 0 && pedido.elementos.length > 1 ? [p.ancho * .6 / anchoArial(rotulo, 1)] : [])));
-          for (const [x1, y1, x2, y2] of p.marcas) linea(dibujo, 'ROTULADOR', x1, y + y1, x2, y + y2);
-          // Los nombres a1/a2… los asigna corte.ts por material: no sustituirlos por el número interno.
-          const t = c.colocadas.find(t => t.pieza.id === p.id)!;
-          for (const m of c.entidades.textos.filter(m => m.capa === 'ROTULADOR')) {
-            const u = (m.x - t.x) / 10, v = (m.y - t.y) / 10;
-            const [xLocal, yLocal] = t.girada ? [v, p.alto - u] : [u, v];
-            if (xLocal >= 0 && xLocal <= p.ancho && yLocal >= 0 && yLocal <= p.alto)
-              texto(dibujo, m.valor, xLocal, y + yLocal, m.h / 10, (m.giro ?? 0) - (t.girada ? 90 : 0), 'ROTULADOR');
-          }
+          // Lo del bot dentro de la pieza (Iván, 24/10/2026, flujo del DWG: el corte del plano es el que se manda): rayas,
+          // radios, marcas, mininúmeros y sus textos.
+          sumarEntidades(dibujo, entidadesDePieza(c, c.colocadas.find(t => t.pieza.id === p.id)!), 0, y);
           const anterior = g[i - 1], siguiente = g[i + 1];
-          // El material, una vez al principio de la fila.
-          if (!xo && !i) material(dibujo,
-            (p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : c.material) + (c.opcion === 'principal' ? '' : ` · ALTERNATIVA ${c.opcion === 'saco-entero' ? 'SACO ENTERO' : 'SACO PARTIDO'}`),
-            anchoFila, techo + 15);
+          // Encima de la fila, grandes, los textos del bot que no son de ninguna pieza (el título del material, REVÉS…).
+          if (!xo && !i) rotuloFila(dibujo, textosFuera(c), anchoFila, techo + 15);
           if (entero) {
             // El alto, de las dos mitades juntas (Iván, 24/10/2026).
             if (!siguiente) {
@@ -439,49 +432,9 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
       continue;
     }
     const yc = techo - c.anchoRollo / 10;
-    // Coordenadas y geometría exactamente como las entrega el bot: incluido el giro,
-    // espaciadores, huecos, flechas y mininúmeros. El plano no vuelve a anidar.
-    l.lineas.push(...c.entidades.lineas.map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));
-    l.arcos.push(...c.entidades.arcos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })));
-    l.circulos.push(...c.entidades.circulos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })));
-    l.textos.push(...c.entidades.textos.filter(a => a.capa === 'ROTULADOR').map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, h: a.h / 10 })));
-    const primeros = new Set<string>();
-    const panos = c.colocadas.filter(t => t.pieza.clase === 'pano').sort((a, b) => a.x - b.x || b.y - a.y);
-    for (const t of c.colocadas) {
-      const p = t.pieza, e = pedido.elementos.find(e => p.id.startsWith(`${e.id}:`));
-      const P = ([x, y]: Punto): Punto => [t.x / 10 + (t.girada ? p.alto - y : x), yc + t.y / 10 + (t.girada ? x : y)];
-      if (!e) {
-        // Los sacos de stock tienen su propia OF y no pertenecen a una puerta del pedido.
-        for (const m of c.entidades.textos.filter(m => m.capa !== 'ROTULADOR' && m.x > t.x && m.y > t.y
-          && m.x < t.x + (t.girada ? p.alto : p.ancho) * 10 && m.y < t.y + (t.girada ? p.ancho : p.alto) * 10))
-          l.textos.push({ ...m, x: m.x / 10, y: yc + m.y / 10, h: m.h / 10 });
-        continue;
-      }
-      const letra = String.fromCharCode(65 + pedido.elementos.indexOf(e));
-      // Las E.T., rotuladas en su tramo libre más largo, no encima del recorte de la cinta del centro.
-      const [x, y] = P([p.clase === 'entrada' ? centroLibre(p.huecos, p.ancho) : p.ancho / 2, p.alto / 2]);
-      if (p.clase === 'pano') {
-        const piezas = calcularPuerta(e.input).piezas.filter(p => p.clase === 'pano');
-        if (e.input.modelo !== 'PUERTAENR') piezas.reverse();
-        const ids = piezas.map(p => `${e.id}:${p.id}`);
-        const primero = !primeros.has(e.id), local = vacio();
-        const obstaculos: Array<[number, number]> = [...p.huecos.map(h => [h.y, h.y + h.alto] as [number, number]),
-          ...p.marcas.filter(m => m[1] === m[3] && Math.abs(m[2] - m[0]) > p.ancho / 2).map(m => [m[1] - 2, m[1] + 2] as [number, number])];
-        const central = e.input.modelo === 'PUERTAUTO' && e.input.autorreparable.espaciadorCentral;
-        rotulos(local, e.input, `${letra}${ids.indexOf(p.id) + 1}`, central ? p.ancho * .75 : p.ancho / 2, 0, p.alto,
-          central ? p.ancho / 2 - 20 : p.ancho, obstaculos, primero, { cantidad: false, reves: t === panos[0], of: primero });
-        for (const v of local.textos) {
-          const q = P([v.x, v.y]); l.textos.push({ ...v, x: q[0], y: q[1], giro: t.girada ? 90 : 0 });
-        }
-        // La E.T. que va dentro del paño, con el mismo rótulo que las sueltas (Iván, 23/10/2026).
-        for (const et of p.entradasIncorporadas ?? []) {
-          const enFranja = p.huecos.filter(h => h.y < et.y + et.alto / 2 && h.y + h.alto > et.y - et.alto / 2);
-          const q = P([centroLibre(enFranja, p.ancho), et.y]); texto(l, `ENTRADA DE TUBO ${et.tubo}`, q[0], q[1], Math.min(8, et.alto / 2), t.girada ? 90 : 0);
-        }
-        primeros.add(e.id);
-      } else texto(l, p.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : p.nombre.toUpperCase(), x, y, Math.min(8, p.alto / 2), t.girada ? 90 : 0);
-    }
-    material(l, c.material, c.largo / 10, techo + 15);
+    // Todo lo del bot en su sitio (Iván, 24/10/2026, flujo del DWG): rayas, giros, espaciadores, huecos, flechas,
+    // mininúmeros y textos, también los de los sacos de stock. El plano no vuelve a anidar ni a rotular.
+    sumarEntidades(l, corteEnPlano(c, yc));
     // Iván, 23/10/2026 (AR2605035): la cota, hasta la altura máxima de las piezas, y sin rayas del rollo, que no
     // son corte; como en las enrollables (planos a mano 4638 y 5220).
     const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
@@ -515,7 +468,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     zonasPuertas.push({ x0: dx + d.zona.x0, x1: dx + d.zona.x1, y0: suelo, y1: d.zona.y1 });
   }
   const zonaM = (z: Zona, x: number, y: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: y + z.y0 / 100, y1: y + z.y1 / 100 });
-  const za = zonaM({ x0: izquierda, x1: cursor - ENTRE_PUERTAS, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);
+  const za = zonaM({ x0: izquierda, x1: cursor - ENTRE_PUERTAS, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes);
   const [ox, oy] = origenCorte(za, corte.zona);
   let zc = zonaM(corte.zona, ox, oy), altoVista: number | undefined;
   const corteReal = zc;

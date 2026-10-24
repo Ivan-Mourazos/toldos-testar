@@ -93,8 +93,8 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     expect(y('X3')).toBeGreaterThan(y('A1'));
     expect(y('REVÉS')).toBeLessThan(y('A1'));
     expect(y('A2')).toBeLessThan(y('0233175'));
-    // En la lona ya no va el X3: se corta todo junto. Sí en el saco y el cristal, que se dibujan una vez.
-    for (const [v, n] of [['X3', 2], ['REVÉS', 1], ['0233175', 1], ['A1', 3], ['A2', 3]] as const) expect(cuenta(corte, v), v).toBe(n);
+    // El corte lleva los textos del bot, uno a uno (corteEnPlano.test.ts): es el corte que se manda (Iván, 24/10/2026).
+    expect(cuenta(corte, 'REVÉS')).toBeGreaterThan(0);
   });
 
   it('MATERIALES abajo, junto a las notas, y el corte arriba con cotas que se leen al imprimir (Iván, 22/10/2026)', () => {
@@ -123,10 +123,10 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const medidas = ent.filter(r => r.tipo === 'DIMENSION').map(r => numero(r, 42));
     for (const medida of [218.5, 26, 204, 56.5, 300]) expect(medidas).toContain(medida);
     for (const c of corte.filter(c => c.colocadas.some(t => t.pieza.clase === 'pano'))) expect(medidas).toContain(c.largo / 10);
-    // El transparente conserva el multiplicador del bot aunque solo se anide una muestra.
+    // El transparente conserva el multiplicador del bot aunque solo se anide una muestra: va en sus textos, que son los del
+    // bot (corteEnPlano.test.ts).
     const muestras = modelo(escribirPlanoPuertas({ pedido, cabecera })).filter(r => numero(r, 10) > inicioCorte(ent) - 0.2 && numero(r, 20) > 88);
-    expect(muestras.filter(r => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toHaveLength(2);
-    expect(muestras.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5)).toBe(true);
+    expect(muestras.some(r => r.tipo === 'MTEXT' && /X3/.test(valor(r, 1) ?? ''))).toBe(true);
   });
   it('las rayas de rotulador del alzado son las del corte, también con una E.T. encima del ventanal (AR2605220)', () => {
     const ar5220 = { ...base('PUERTAENR', 366, 410), of: '0233291',
@@ -146,8 +146,9 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const pedido = pedidoDe('AR2605220', ar5220);
     const conStock = generarCortePuertas(pedido, { ofStockSacos: '0230811' }).cortes;
     expect(conStock.some(c => c.colocadas.some(t => t.pieza.id.startsWith('stock-')))).toBe(true);
-    const textos = modelo(escribirPlanoPuertas({ pedido, cabecera, ofStockSacos: '0230811' })).filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1));
-    expect(textos.filter(t => t === 'X1')).toHaveLength(2);
+    // En el plano, una vez cada uno: lo comprueba corteEnPlano.test.ts contra los textos del bot.
+    const textos = modelo(escribirPlanoPuertas({ pedido, cabecera, ofStockSacos: '0230811' })).filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1) ?? '');
+    expect(textos.filter(t => t.includes('STOCK')).length).toBe(generarCortePuertas(pedido, { ofStockSacos: '0230811' }).archivo!.entidades.textos.filter(t => t.valor.includes('STOCK')).length);
   });
   it('el rollo usa las rayas DISCO1 ya fusionadas del corte, sin cerrar los orillos', () => {
     const pedido = pedidoDe('AR2605134', puerta());
@@ -177,9 +178,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, 'e26673d2b15906e5dbe09ca1767a962b62995f7951c931b730f93ef252817256'],
+    ['apilable', apilable, '3aea832c0994923f67da83e86cb22fb15214615e2dd19bd3a8a1ea002d4b4fcb'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '4e2bf22d1e2fd6475c4c6c5de7972b502bb0636033657b6448cdf155db72e0f0'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, '52c9b3d2d552277abee161523d7b78491bcbbb39c4c932292a34376a1282ed6f'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

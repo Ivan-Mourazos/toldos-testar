@@ -43,7 +43,8 @@ describe('escribirPlanoPuertas', () => {
     const textos = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT').map(r => valor(r, 1) ?? '');
     expect(textos).toContain('B1');
     expect(textos).toContain('C1');
-    expect(textos.filter(t => /^(C {2})?X2$/.test(t ?? ''))).toHaveLength(2); // A1 del alzado y muestra del saco (con su letra); no en el rollo de lona.
+    // El X2 en el A1 del alzado; el corte lleva los textos del bot, uno a uno (corteEnPlano.test.ts).
+    expect(textos).toContain('X2');
     expect(textos.some(t => t.startsWith('OBSERVACIONES: OJO: EL CLIENTE'))).toBe(true);
     expect(textos.some(t => t.includes('TEXTO DE RPS'))).toBe(false);
     // Ni llaves ni saltos de línea dentro de un texto: romperían el MTEXT.
@@ -58,22 +59,22 @@ describe('escribirPlanoPuertas', () => {
   it.each([['enrollables', puerta4638], ['apilables', apilable]] as const)('%s: con varias puertas, sacos y cristales en la misma fila', (_, crear) => {
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', crear(), { ...crear(), frente: crear().frente - 40 }), cabecera });
     const rs = registrosDxf(dxf), x0 = inicioCorte(rs);
-    // Los rótulos de cantidad de las muestras (X1, X2…) de cada fila comparten altura y van hacia la derecha.
-    const muestras = rs.filter(r => r.tipo === 'MTEXT' && /^([A-Z] {2})?X\d+$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0);
+    // Los rótulos del bot de las muestras («A · SACO», «B · CRISTAL»…) de cada fila comparten altura y van hacia la derecha.
+    const muestras = rs.filter(r => r.tipo === 'MTEXT' && /^[A-Z] · (SACO|CRISTAL)$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0);
     const filas = new Map<number, number[]>();
     for (const r of muestras) filas.set(Math.round(numero(r, 20) * 1000), [...filas.get(Math.round(numero(r, 20) * 1000)) ?? [], numero(r, 10)]);
     expect([...filas.values()].some(xs => xs.length >= 2)).toBe(true);
   });
 
-  // Iván, 24/10/2026 (AR2605035): con varias puertas, cada saco y cada cristal dice de qué puerta es, con su letra y
-  // la cantidad, en el corte y en el dibujo.
+  // Iván, 24/10/2026 (AR2605035): con varias puertas, cada saco y cada cristal dice de qué puerta es, en el corte (con
+  // el rótulo del bot, que es el corte que se manda) y en el dibujo.
   it.each([['enrollables', puerta4638], ['apilables', apilable]] as const)('%s: con varias puertas, sacos y cristales con la letra de su puerta', (_, crear) => {
     const puertas = [crear(), { ...crear(), of: '0239999', frente: crear().frente - 40 }];
     const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', ...puertas), cabecera })).filter(r => valor(r, 67) !== '1');
     const x0 = inicioCorte(rs), textos = rs.filter(r => r.tipo === 'MTEXT');
-    const muestras = textos.filter(r => /X\d+$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0).map(r => valor(r, 1) ?? '');
+    const muestras = textos.filter(r => /· (SACO|CRISTAL)$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0).map(r => valor(r, 1) ?? '');
     expect(muestras.length).toBeGreaterThan(0);
-    expect(muestras.every(v => /^[AB] {2}X\d+$/.test(v))).toBe(true);
+    expect(muestras.every(v => /^[AB] · (SACO|CRISTAL)$/.test(v))).toBe(true);
     expect(new Set(muestras.map(v => v[0]))).toEqual(new Set(['A', 'B']));
     // En el dibujo, el rótulo del saco de cada puerta lleva su letra.
     for (const letra of ['A', 'B']) expect(textos.some(r => numero(r, 10) < x0 && /^SACO/.test(valor(r, 1) ?? '') && (valor(r, 1) ?? '').endsWith(` · ${letra}`))).toBe(true);

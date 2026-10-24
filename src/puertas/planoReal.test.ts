@@ -102,10 +102,12 @@ describe('Plano de oficina: referencias de pedido y zona en planosReales.ts', ()
       if (!muestra) expect(ocupado).toBeLessThan(c.anchoRollo / 10);
       for (const m of medidas) expect(cotasCorte.some(r => Math.abs(numero(r, 42) - m) < 0.01), `medida ${m}`).toBe(true);
     }
-    expect(ent.some(r => r.tipo === 'MTEXT' && valor(r, 1) === 'TRANSP. 1000MI')).toBe(true);
+    // El título de la fila del transparente es el del bot (Iván, 24/10/2026: el corte del plano es el que se manda).
+    expect(ent.some(r => r.tipo === 'MTEXT' && (valor(r, 1) ?? '').startsWith('TRANSP. 1000MI'))).toBe(true);
     const cristal = cotasCorte.find(r => Math.abs(numero(r, 42) - 164) < .01)!;
     expect(cristal).toBeDefined();
-    expect(ent.some(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5
+    // El cristal, en azul: sus rayas son las del bot (Iván, 24/10/2026), con el color del plano.
+    expect(ent.some(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1' && numero(r, 62) === 5
       && Math.abs(numero(r, 20) - numero(cristal, 23)) < 1e-6)).toBe(true);
   });
 });

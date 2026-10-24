@@ -5,7 +5,8 @@ import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco, sacoPuerta } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
-import type { CortePuertas, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
+import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
+import type { CortePuertas, EntidadesPuertas, PedidoPuertas, Puerta, Punto } from './tipos.ts';
 
 // Referencia: AR2605134 de Iván, 22/10/2026 (mano3). Dibujo en cm, con el origen en la
 // esquina superior izquierda terminada; la presentación y el cajetín web siguen en mm.
@@ -213,83 +214,64 @@ const unicos = (v: string[]) => [...new Set(v.filter(Boolean))];
 // Cotas del corte más grandes, para que se lean al imprimir sin pisar las piezas (Iván, 22/10/2026).
 const CORTE_COTAS = 'XERA 20';
 
-/** Resumen del corte recibido: saco/cristal una vez; lona con todas sus colocaciones reales. */
-function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
+/**
+ * El corte del plano es el del bot (Iván, 24/10/2026, flujo del DWG: lo que se toque en ZWCAD es lo que se corta): el rollo
+ * con todo lo suyo (rayas, marcas, flechas, mininúmeros y textos) y cada saco o cristal suelto, una vez, con lo que el bot
+ * tiene dentro de esa pieza. Las cotas y los rótulos de material de las muestras son del plano.
+ */
+function sumar(l: Lienzo, e: EntidadesPuertas, dx = 0, dy = 0) {
+  l.lineas.push(...e.lineas.map(a => ({ ...a, x1: a.x1 + dx, x2: a.x2 + dx, y1: a.y1 + dy, y2: a.y2 + dy })));
+  l.arcos.push(...e.arcos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
+  l.circulos.push(...e.circulos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
+  l.textos.push(...e.textos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
+}
+function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(); let techo = 0, anchoMax = 250;
-  const muestras = new Map<string, PiezaPuerta>();
+  const muestras = new Map<string, { c: CortePuertas; t: CortePuertas['colocadas'][number] }>();
   // Los sacos de stock que rellenan la lona sobrante no son piezas de la puerta: se ven solo dentro de su rollo.
   for (const c of cortes) for (const t of c.colocadas) {
-    if (['saco', 'cristal'].includes(t.pieza.clase) && !t.pieza.id.startsWith('stock-')) muestras.set(`${c.opcion}:${t.pieza.id}`, t.pieza);
+    const clave = `${c.opcion}:${t.pieza.id}`;
+    if (['saco', 'cristal'].includes(t.pieza.clase) && !t.pieza.id.startsWith('stock-') && !muestras.has(clave)) muestras.set(clave, { c, t });
   }
   // El saco encima del transparente, como en la referencia, sin repetir las copias físicas. Con varias puertas, los
   // sacos y los cristales en la misma fila, hacia la derecha (Iván, 23/10/2026, AR2605035).
-  const filas: PiezaPuerta[][] = [];
-  for (const p of [...muestras.values()].sort((a, b) => (a.clase === 'saco' ? -1 : 1) - (b.clase === 'saco' ? -1 : 1))) {
+  const filas: Array<Array<{ c: CortePuertas; t: CortePuertas['colocadas'][number] }>> = [];
+  for (const m of [...muestras.values()].sort((a, b) => (a.t.pieza.clase === 'saco' ? -1 : 1) - (b.t.pieza.clase === 'saco' ? -1 : 1))) {
     const fila = filas.at(-1);
-    if (fila?.[0].clase === p.clase) fila.push(p); else filas.push([p]);
+    if (fila?.[0].t.pieza.clase === m.t.pieza.clase) fila.push(m); else filas.push([m]);
   }
   for (const fila of filas) {
     let fondo = techo, xo = 0;
-    for (const p of fila) {
-      const y = techo - p.alto, xMuestra = -.8974 + xo;
-      const puntos = p.contorno.map(([x, v]): Punto => [xMuestra + x, y + v]);
-      if (p.clase === 'saco') contorno(l, 'DISCO1', puntos);
-      else l.polilineas.push({ capa: 'DISCO1', color: 5, puntos, cerrada: true });
-      // El material de la fila, grande (Iván, 24/10/2026): hasta 20 cm, a lo ancho de la fila.
-      const nombre = p.clase === 'saco' ? p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : 'SACO 900 GR NEGRO' : p.material;
-      const anchoFila = fila.reduce((suma, q) => suma + q.ancho, 0) + 80 * (fila.length - 1);
-      if (!xo) texto(l, nombre, xMuestra, techo + (p.clase === 'saco' ? 11.6223 : 5.5194), Math.min(20, anchoFila * .95 / anchoArial(nombre, 1)));
-      // Con varias puertas, la letra de su puerta y la cantidad (Iván, 24/10/2026).
-      const iPuerta = pedido.elementos.findIndex(e => e.id === p.id.split(':')[0]);
-      const rotulo = `${pedido.elementos.length > 1 && iPuerta >= 0 ? `${String.fromCharCode(65 + iPuerta)}  ` : ''}X${p.multiplicador ?? p.cantidad}`;
-      texto(l, rotulo, xMuestra + p.ancho / 2, y + p.alto / 2, Math.min(20, p.alto * .8, ...(iPuerta >= 0 && pedido.elementos.length > 1 ? [p.ancho * .6 / anchoArial(rotulo, 1)] : [])), { centrado: true });
+    for (const { c, t } of fila) {
+      const p = t.pieza, y = techo - p.alto, xMuestra = -.8974 + xo;
+      // El cristal, en azul, como en el plano a mano de AR2605134 (el color no va al bot: solo cuenta la capa).
+      const pieza = entidadesDePieza(c, t);
+      if (p.clase === 'cristal') pieza.lineas = pieza.lineas.map(a => (a.capa === 'DISCO1' ? { ...a, color: 5 } : a));
+      sumar(l, pieza, xMuestra, y);
+      // Encima de la fila, grandes (Iván, 24/10/2026: hasta 20 cm), los textos del bot que no son de ninguna pieza: el título
+      // «MATERIAL · CORTE» y REVÉS, uno detrás de otro. Son los mismos que van al bot.
+      if (!xo) {
+        const anchoFila = fila.reduce((suma, q) => suma + q.t.pieza.ancho, 0) + 80 * (fila.length - 1);
+        const fuera = [...new Set(fila.map(m => m.c))].flatMap(textosFuera);
+        const alto = Math.min(20, anchoFila * .95 / anchoArial(fuera.map(a => a.valor).join('    '), 1));
+        let x = xMuestra;
+        for (const a of fuera) {
+          l.textos.push({ capa: a.capa, valor: a.valor, x, y: techo + (p.clase === 'saco' ? 11.6223 : 5.5194), h: alto, ...(a.literal ? { literal: true } : {}) });
+          x += anchoArial(`${a.valor}    `, alto);
+        }
+      }
       cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
       if (!xo) cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);
       fondo = Math.min(fondo, y); xo += p.ancho + 80;
       anchoMax = Math.max(anchoMax, xo - 80);
     }
     // Separaciones de presentación medidas en AR2605134; no afectan al corte ni a sus piezas.
-    techo = fondo - (fila[0].clase === 'saco' ? 82.0735 : 92.3202);
+    techo = fondo - (fila[0].t.pieza.clase === 'saco' ? 82.0735 : 92.3202);
   }
   for (const c of cortes.filter(c => c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase)))) {
-    const usadas = c.colocadas.filter(t => !['saco', 'cristal'].includes(t.pieza.clase));
     const alto = c.anchoRollo / 10, yc = techo - alto;
-    // La OF de cada puerta va en su primer paño del rollo y REVÉS solo en el primero de todos (Iván, 22/10/2026).
-    const delante = usadas.filter(t => t.pieza.clase === 'pano').sort((a, b) => a.x - b.x || b.y - a.y);
-    const cabezas = new Set(pedido.elementos.map(e => delante.find(t => t.pieza.id.startsWith(`${e.id}:`))).filter(Boolean));
-    for (const t of usadas) {
-      const p = t.pieza;
-      const P = ([x, y]: Punto): Punto => [t.x / 10 + (t.girada ? p.alto - y : x), yc + t.y / 10 + (t.girada ? x : y)];
-      // Las marcas largas y las flechas de cada pieza vienen del corte, sin reconstruir su anidado.
-      const marcas = p.marcas.filter(([x1, y1, x2, y2]) => Math.abs(x2 - x1) > p.ancho / 2 && y1 === y2);
-      for (const [x1, y1, x2, y2] of marcas) {
-        const a = P([x1, y1]), b = P([x2, y2]); linea(l, 'ROTULADOR', a[0], a[1], b[0], b[1]);
-        const tallo = p.marcas.find(([a, b, d, e]) => a === d && Math.abs(a - p.ancho / 2) < .01 && Math.abs(b - y1) < .01 && Math.abs(e - b) > .9);
-        if (tallo) { const q = P([p.ancho / 2, y1]); flecha(l, q[0], q[1], (tallo[3] > tallo[1] ? 180 : 0) + (t.girada ? 90 : 0)); }
-      }
-      if (p.clase === 'pano') {
-        const elemento = pedido.elementos.find(e => p.id.startsWith(`${e.id}:`));
-        if (elemento) {
-          const letra = String.fromCharCode(65 + pedido.elementos.indexOf(elemento));
-          const paños = calcularPuerta(elemento.input).piezas.filter(u => u.clase === 'pano').map(u => `${elemento.id}:${u.id}`);
-          const [a, b] = huecoRotulo(0, p.alto, marcas.map(m => m[1]), 8);
-          const codigo = `${letra}${paños.indexOf(p.id) + 1}`, q = P([p.ancho / 2, (a + b) / 2]);
-          identificar(l, elemento.input, codigo, q[0], q[1], p.ancho, b - a, { giro: t.girada ? 90 : 0, of: cabezas.has(t), reves: t === delante[0] });
-        }
-      }
-    }
-    // Los huecos, radios y mininúmeros conservan las coordenadas de las entidades de máquina.
-    l.lineas.push(...c.entidades.lineas.filter(a => a.capa === 'DISCO1').map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));
-    l.arcos.push(...c.entidades.arcos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })));
-    l.circulos.push(...c.entidades.circulos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })));
-    l.lineas.push(...c.entidades.lineas.filter(a => a.capa === 'CUTTER').map(a => ({ ...a, x1: a.x1 / 10, x2: a.x2 / 10, y1: yc + a.y1 / 10, y2: yc + a.y2 / 10 })));
-    l.textos.push(...c.entidades.textos.filter(a => a.capa === 'ROTULADOR').map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, h: a.h / 10 })));
-    // Los sacos de stock con sus textos del corte (OF de stock, SACO, medida y STOCK), en el mismo sitio (Iván, 23/10/2026).
-    const stock = c.colocadas.filter(t => t.pieza.id.startsWith('stock-'));
-    const enStock = (a: { x: number; y: number }) => stock.some(t => a.x > t.x && a.x < t.x + t.pieza.ancho * 10 && a.y > t.y && a.y < t.y + t.pieza.alto * 10);
-    for (const a of c.entidades.textos.filter(a => a.capa === 'texto' && enStock(a))) texto(l, a.valor, a.x / 10, yc + a.y / 10, a.h / 10, { centrado: true });
-    // El material del rollo, grande (Iván, 24/10/2026): hasta 20 cm.
-    texto(l, c.material, 0, techo + 7.6701, Math.min(20, c.largo / 10 * .95 / anchoArial(c.material, 1)));
+    // Todo lo del bot en su sitio: rayas, marcas, flechas, mininúmeros, textos y los sacos de stock con los suyos.
+    sumar(l, corteEnPlano(c, yc));
     // Se acota el ancho que ocupan las piezas, hasta el último corte, y no el del rollo (Iván, 23/10/2026, AR2605220:
     // 278,8 de un rollo de 300). Con una referencia en ese borde aunque no haya pieza en la esquina.
     const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
@@ -298,6 +280,7 @@ function dibujarCorte(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: 
     cota(l, 0, yc, c.largo / 10, yc, yc - 25.8375, CORTE_COTAS);
     cota(l, 0, yc, 0, borde, -35.1317, CORTE_COTAS);
     anchoMax = Math.max(anchoMax, c.largo / 10);
+    // Sitio para el título del bot («MATERIAL · CORTE»), que va encima del rollo.
     techo = yc - 100;
   }
   return { lienzo: l, zona: { x0: -70, y0: techo + 45, x1: anchoMax + 30, y1: 55 } };

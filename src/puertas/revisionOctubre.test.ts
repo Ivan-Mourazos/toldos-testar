@@ -138,7 +138,10 @@ describe('Correcciones de taller del 22 de octubre por la noche', () => {
       for (let i = 1; i < puntos.length; i++) segmentos.push([...puntos[i - 1], ...puntos[i]]);
       if (numero(r, 70) & 1) segmentos.push([...puntos.at(-1)!, ...puntos[0]]);
     }
-    for (const r of rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 99 && numero(r, 23) > 50 && valor(r, 1) !== '1 CM')) {
+    // Las del alzado. Las del corte acotan sus piezas (planoReal.test.ts): sus muestras son las del bot, que no corta
+    // el borde que cae en el orillo del rollo, y su cota no tiene raya donde apoyarse (Iván, 24/10/2026).
+    const inicioCorte = Math.min(...rs.filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20').map(r => numero(r, 13)));
+    for (const r of rs.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= 99 && numero(r, 13) < inicioCorte - 0.5 && numero(r, 23) > 50 && valor(r, 1) !== '1 CM')) {
       for (const [kx, ky] of [[13, 23], [14, 24]]) {
         const x = numero(r, kx), y = numero(r, ky);
         const distancia = Math.min(...segmentos.map(([a, b, c, d]) => {
