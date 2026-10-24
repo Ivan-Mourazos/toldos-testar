@@ -567,7 +567,8 @@ export default function App() {
       const data = await response.json();
       if (response.status === 409 && data.needsPlanoConfirmation) {
         const choice = await askForConfirmation({ title: 'El plano del corte ya existe',
-          message: 'El plano de este pedido ya está en su carpeta. ¿Sustituirlo por el de la web?',
+          // Flujo del DWG: se sustituye por el borrador con el corte confirmado (el servidor lo explica).
+          message: data.motivo === 'plano' ? data.error : 'El plano de este pedido ya está en su carpeta. ¿Sustituirlo por el de la web?',
           confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning', details: data.existing });
         if (choice === 'confirm') await saveForReview(confirmOverwrite, true, true);
         return;
@@ -847,7 +848,8 @@ export default function App() {
                 onConfirm={askForConfirmation}
                 onNotify={notify}
               />
-              <CorteLona order={currentOrderPayload()} estado={draft.corteLona} onGenerated={draft.setCorteLona} />
+              <CorteLona order={currentOrderPayload()} estado={draft.corteLona} onGenerated={draft.setCorteLona}
+                dwg={{ usuario: currentUser, notify, preguntar: askForConfirmation }} />
             </fieldset>
           )}
 

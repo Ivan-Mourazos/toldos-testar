@@ -8,8 +8,9 @@ import { generarCorteLona } from './domain/corteLona/index.js';
 import { exigirCorteAlDia, prepararArchivosCorte } from './corteLonaArchivos.js';
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 
-let server, url, raiz, pedido, settings, aprobada, guardar;
+let server, url, raiz, pedido, settings, aprobada, guardar, dwg;
 beforeEach(async () => {
+  dwg = null;
   raiz = await fs.mkdtemp(path.resolve('tmp/rutas-envios-'));
   pedido = structuredClone(revision);
   pedido.order.technician = 'IVÁN';
@@ -23,6 +24,7 @@ beforeEach(async () => {
     ruta: '/api/reviews/:orderCode/corte-lona', obtener: async () => pedido, ajustes: async () => settings,
     contexto: (p) => ({ order: p.order, elementos: p.order.awnings.map((a) => ({ letter: 'A', of: a.of })), comprobarCorte: () => exigirCorteAlDia(p.order, p.corteLona) }),
     preparar: async (p) => (await prepararArchivosCorte({ order: p.order, corteLona: p.corteLona, settings, tipo: 'bot' })).files,
+    desdeDwg: async (p, cuerpo, usuario) => dwg?.(p, cuerpo, usuario) ?? null,
     guardar, tecnicos: ['IVÁN'], coordina: { statusOf: async () => ({ disponible: true, ofs: { '0232568': { estado: aprobada ? 'aprobada' : 'pendiente' } } }) },
   });
   app.use((e, _req, res, _next) => res.status(e.statusCode || 500).json({ error: e.message }));
@@ -41,6 +43,19 @@ it('el pedido aprobado escribe por su acción propia y persiste el registro; rep
   expect((await res.json()).needsConfirmation).toBe(true);
   expect(guardar).toHaveBeenCalledTimes(1);
   expect((await enviar({ confirmOverwrite: true })).status).toBe(200);
+});
+// Flujo del DWG: con el corte confirmado, lo que se manda sale del DWG; si cambió, se pregunta y, aceptado, queda la nota.
+it('con el corte del DWG, pregunta si cambió y manda sus archivos con la nota', async () => {
+  dwg = (_p, cuerpo, usuario) => cuerpo.aceptarCambioCorte
+    ? { nota: `Cambiado; lo mandó ${usuario}.`, archivos: [{ type: 'corte-lona', filename: 'AR2604784.dxf', savedPath: '', contents: Buffer.from('DEL DWG') }] }
+    : { respuesta: { status: 409, cuerpo: { cambioCorte: true, error: 'Ha cambiado.' } } };
+  const res = await enviar();
+  expect(res.status).toBe(409);
+  expect(await res.json()).toMatchObject({ cambioCorte: true });
+  expect(guardar).not.toHaveBeenCalled();
+  expect((await enviar({ aceptarCambioCorte: true })).status).toBe(200);
+  expect(pedido.enviosCorte[0]).toMatchObject({ nota: 'Cambiado; lo mandó IVÁN.' });
+  expect(await fs.readFile(path.join(raiz, `${new Date().getFullYear()}/DXFs/AR2604784.dxf`), 'utf8')).toBe('DEL DWG');
 });
 it('rechaza sin aprobación, corte viejo, sin OF, usuario inventado y simulación sin archivos', async () => {
   aprobada = false;

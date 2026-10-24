@@ -4,7 +4,8 @@ import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { sanitizeOrderCode } from './workflow.js';
 
 /** Las mismas rutas se prueban con Express sin arrancar el servidor ni cargar su .env. */
-export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda }) {
+// `dxfDesdeDwg` (flujo del DWG): el DXF de un pedido con el corte confirmado, sacado del DWG revisado.
+export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda, dxfDesdeDwg }) {
   async function preparar(req, guardado) {
     let order, ajustes, corteLona;
     if (guardado) {
@@ -36,6 +37,13 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda 
   }
   const handler = (tipo, guardado = false) => async (req, res, next) => {
     try {
+      if (tipo === 'dxf' && guardado && dxfDesdeDwg) {
+        const review = await workflowStore.getReview(req.params.orderCode);
+        if (review.corteConfirmado) {
+          res.setHeader('Cache-Control', 'no-store');
+          return descargar(res, Buffer.from(await dxfDesdeDwg(review), 'latin1'), `${sanitizeOrderCode(review.orderCode)}.dxf`, 'application/dxf');
+        }
+      }
       const { order, resultado, corteLona, stock, pendientes } = await preparar(req, guardado);
       if (tipo === 'json') {
         const sinArchivo = ({ dxf: _dxf, ...item }) => ({ ...item, idMaterial: idMaterial(item) });

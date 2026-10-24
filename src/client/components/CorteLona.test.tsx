@@ -35,6 +35,17 @@ describe('Vista compartida del corte de lona', () => {
     expect(html).toContain('corte-estado is-aviso');
     expect(html).not.toContain('Corte al día');
   });
+  // Flujo del DWG (24/10/2026): en el formulario, como en puertas; solo con el corte generado (y su OF) se puede abrir.
+  it('en el formulario ofrece «Abrir corte» y «Confirmar corte», desactivados hasta generar el corte', () => {
+    const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '0232568' }] };
+    const dwg = { usuario: 'IVÁN', notify: () => {}, preguntar: async () => 'cancel' as const };
+    const html = renderToStaticMarkup(<CorteLona order={order} dwg={dwg} />);
+    expect(html).toContain('Abrir corte');
+    expect(html).toContain('Confirmar corte');
+    expect(html.match(/<button[^>]*disabled=""[^>]*title="Genera el corte antes de abrirlo"/)).not.toBeNull();
+    expect(renderToStaticMarkup(<CorteLona order={order} />)).not.toContain('Abrir corte');
+    expect(renderToStaticMarkup(<CorteLona order={order} reviewCode="AR2604784" dwg={dwg} />)).not.toContain('Abrir corte');
+  });
   it('en un pedido guardado, «Generar corte» solo para el autor y si el corte falta (Iván, 21/10/2026)', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '0232568' }] };
     expect(renderToStaticMarkup(<CorteLona order={order} reviewCode="AR2604784" regenerable />)).toContain('Generar corte');

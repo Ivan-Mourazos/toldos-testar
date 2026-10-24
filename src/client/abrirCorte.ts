@@ -11,6 +11,8 @@ interface RespuestaBorrador {
   filename?: string;
   ruta?: string;
   url?: string;
+  /** Con varios planos (toldos de varias telas), cada uno. */
+  ficheros?: Array<{ filename: string; ruta: string; url: string }>;
   avisos?: string[];
 }
 
@@ -76,9 +78,14 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
       else if (eleccion !== 'confirm') return false;
     }
     if (!datos.url) throw new Error('El servidor no ha dado la ruta del borrador.');
-    abrir(datos.url);
+    const ficheros = datos.ficheros?.length ? datos.ficheros : [{ filename: datos.filename ?? '', ruta: datos.ruta ?? '', url: datos.url }];
+    // Uno detrás de otro, con un respiro: el navegador no lanza dos enlaces tgm-pedidos a la vez.
+    for (const [i, fichero] of ficheros.entries()) {
+      if (i > 0) await new Promise((resolver) => setTimeout(resolver, 1000));
+      abrir(fichero.url);
+    }
     const avisos = datos.avisos?.length ? ` ${datos.avisos.join(' ')}` : '';
-    notify(`Abriendo en ZWCAD: ${datos.ruta}.${avisos}`, { tone: 'success', title: datos.existente ? 'Borrador del corte' : datos.sustituido ? 'Borrador generado de nuevo' : 'Borrador del corte creado' });
+    notify(`Abriendo en ZWCAD: ${ficheros.map((f) => f.ruta).join(' · ')}.${avisos}`, { tone: 'success', title: datos.existente ? 'Borrador del corte' : datos.sustituido ? 'Borrador generado de nuevo' : 'Borrador del corte creado' });
     return true;
   } catch (error) {
     notify(error instanceof Error ? error.message : 'No se pudo abrir el corte.', { tone: 'error' });

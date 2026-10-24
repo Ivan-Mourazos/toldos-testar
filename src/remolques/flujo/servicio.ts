@@ -305,7 +305,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const pedido = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora(), clienteRps });
       // Flujo del DWG (fase 2): solo con el corte confirmado y sin cambios; el borrador pasa a la carpeta del año, donde lo abre
       // el revisor, y la web ya no genera el plano.
-      const desdeBorrador = deps.corte ? await flujo.alGuardar({ orderCode, technician: autoria.technician, confirmOverwrite: c.confirmOverwrite === true }) : null;
+      // Sin corte de lona (todo a mano), no hay plano que confirmar.
+      const conCorteLona = Boolean(deps.corte && (deps.corte.vista(pedido) as { cortes?: unknown[] } | null)?.cortes?.length);
+      const desdeBorrador = conCorteLona ? await flujo.alGuardar({ orderCode, technician: autoria.technician, confirmOverwrite: c.confirmOverwrite === true }) : null;
       if (desdeBorrador && "respuesta" in desdeBorrador) return desdeBorrador.respuesta;
       if (desdeBorrador) {
         await desdeBorrador.escribir();
