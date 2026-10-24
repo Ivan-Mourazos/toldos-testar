@@ -120,6 +120,9 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   texto(l, 'AL CORTE', F + 1.96, -T * .6386, 7, { giro: 90, ancla: 1 });
   texto(l, 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 51.63, -H + 51.78, 10, { giro: 90, ancla: 1 });
   linea(l, 'texto', F + 12.17, -H - 5.32, F - .79, -H + 7.90);
+  // La nota de la raya, que faltaba (Iván, 24/10/2026, AR2605220), como en las apilables.
+  texto(l, 'CERRAR E.T', F + 38, -H - 11, 7, { centrado: true });
+  texto(l, '2 CM MÁXIMO', F + 38, -H - 21, 7, { centrado: true });
   cota(l, 0, 0, F, 0, 23.01, 'XERA 15');
   const hitos = [0, ...bandas, H];
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));

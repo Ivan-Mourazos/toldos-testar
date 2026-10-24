@@ -48,7 +48,9 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
       'SOLDAR SACO Y E.T EN LA MISMA SOLDADURA', 'BOLSILLO NEGRO', '1 CM',
       'LAS ENTRADAS DE TUBO INTERIORES DE LAS PUERTAS ENROLLABLES TIENEN QUE IR DE 5 CM.',
       'NO PONER NUNCA LAS ETIQUETAS EN LA PROPIA LONA', 'AL CORTE', 'COSER VELCRO', '0233175']) expect(dxf.includes(texto), texto).toBe(true);
-    for (const texto of ['PUERTA A ·', 'CORTE ·', 'OBSERVACIÓN RPS', 'CERRAR E.T']) expect(dxf.includes(texto), texto).toBe(false);
+    for (const texto of ['PUERTA A ·', 'CORTE ·', 'OBSERVACIÓN RPS']) expect(dxf.includes(texto), texto).toBe(false);
+    // La nota de la raya del pie, que faltaba (Iván, 24/10/2026).
+    for (const texto of ['CERRAR E.T', '2 CM MÁXIMO']) expect(dxf.includes(texto), texto).toBe(true);
     const ent = registrosDxf(dxf);
     // Iván, 22/10/2026: también en Portanova el cajetín de la oficina al día (CAJETIN TGM), con las notas de su plantilla.
     expect(ent.filter(r => r.tipo === 'INSERT' && valor(r, 67) === '1' && valor(r, 2) === 'CAJETIN')).toHaveLength(0);

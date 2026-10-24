@@ -547,8 +547,9 @@ X3 (se corta todo junto): el primer paño de cada puerta lleva su OF y el primer
 El saco y el cristal conservan su X3. Las notas de taller, el detalle del saco y el aviso magenta **van
 siempre** y proceden de la plantilla. Solo se corrigen las faltas evidentes. La nota de los
 cachos debe leerse entera dentro de su ventana: Iván confirmó que su recorte era un descuido.
-No se imprimen la cabecera PUERTA…, los metros del corte, las observaciones de RPS ni
-CERRAR E.T. 2 CM MÁXIMO en las enrollables. Los otros modelos conservan sus instrucciones.
+No se imprimen la cabecera PUERTA…, los metros del corte ni las observaciones de RPS. CERRAR E.T. /
+2 CM MÁXIMO sí va en las enrollables, al final de su raya (Iván, 24/10/2026, AR2605220: «faltaba»).
+Los otros modelos conservan sus instrucciones.
 
 El corte resumido usa las piezas y las colocaciones devueltas por `generarCortePuertas`:
 no depende de un anidado concreto ni reordena el plano por su cuenta. El saco y el cristal
