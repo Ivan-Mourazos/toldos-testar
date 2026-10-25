@@ -41,7 +41,7 @@
   --border: #d3dbe8;
   --border-strong: #98a9c4;
   --text: #111522;
-  --text-muted: #536684;
+  --text-muted: #4a5a76; /* entre #303d59 y #536684: 5,1:1 también sobre --recuadro */
   /* El borde de un campo necesita más contraste que un separador decorativo. */
   --control-border: color-mix(in srgb, var(--text-muted) 85%, var(--surface));
   --control-border-hover: var(--text-muted);
