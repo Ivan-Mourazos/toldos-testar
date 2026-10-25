@@ -291,10 +291,28 @@ function sanitizeSupplement(source: Record<string, unknown>) {
 
 function clearStoredDrafts() {
   if (typeof localStorage === 'undefined') return;
-  try { draftStorageKeys.forEach((key) => localStorage.removeItem(key)); } catch { /* El formulario puede usarse sin almacenamiento. */ }
+  try { [...draftStorageKeys, claveBorradorAbierto].forEach((key) => localStorage.removeItem(key)); } catch { /* El formulario puede usarse sin almacenamiento. */ }
+}
+
+// Borrador abierto desde Pedidos (Iván, 26/10/2026: abría el borrador de un compañero para mirarlo y luego le salía en
+// su Nuevo pedido). Se apunta el formulario tal como quedó al abrirlo; si nadie lo toca, no se queda en este navegador:
+// el borrador sigue en Pedidos. Con cualquier cambio deja de coincidir y se conserva como siempre.
+const claveBorradorAbierto = `${storageKey}:borrador-abierto`;
+
+/** true si el formulario es un borrador abierto desde Pedidos y nadie lo ha tocado. */
+export function borradorSinTocar(): boolean {
+  try {
+    if (typeof localStorage === 'undefined') return false;
+    const huella = localStorage.getItem(claveBorradorAbierto);
+    return Boolean(huella) && huella === localStorage.getItem(storageKey);
+  } catch { return false; }
 }
 
 export function readStoredDraft(): DraftState {
+  if (borradorSinTocar()) {
+    clearStoredDrafts();
+    return defaultDraft();
+  }
   try {
     if (typeof localStorage !== 'undefined') {
       for (const key of draftStorageKeys) {
@@ -361,9 +379,14 @@ export function useDraft() {
   const [confirmedFabricProposals, setConfirmedFabricProposals] = useState<number[]>(initialDraft.confirmedFabricProposals ?? []);
 
   const abierto = useRef(false);
+  const desdeBorrador = useRef(false);
   useEffect(() => {
     writeStoredDraft({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona }, { alAbrir: !abierto.current });
     abierto.current = true;
+    if (desdeBorrador.current) {
+      desdeBorrador.current = false;
+      try { localStorage.setItem(claveBorradorAbierto, localStorage.getItem(storageKey) ?? ''); } catch { /* Sin almacenamiento no hay nada que se quede. */ }
+    }
   }, [orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona]);
 
   function confirmFabricProposal(index: number) {
@@ -420,7 +443,9 @@ export function useDraft() {
     loadOrder(buildReusableDraft(entry));
   }
 
-  function loadOrder(entry: DraftState) {
+  function loadOrder(entry: DraftState, { borrador = false }: { borrador?: boolean } = {}) {
+    desdeBorrador.current = borrador;
+    if (!borrador) { try { localStorage.removeItem(claveBorradorAbierto); } catch { /* Sin almacenamiento. */ } }
     setCorteLona(entry.corteLona || null);
     const fallback = defaultDraft();
     setOrderCode(entry.orderCode);

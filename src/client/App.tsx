@@ -15,7 +15,7 @@ import '@fontsource/didact-gothic/latin-400.css';
 // de CoordinaOT (coordina/) sin capa, así que esta gana siempre (ver coordina/README.md).
 import './estilos.css';
 import type { ActiveTab, Catalog, DraftState, OrderAutofill, ReviewPackage, WorkflowReadiness, WorkflowSettings } from './types';
-import { formularioDeOtroDia, leerUltimoCambio, useDraft } from './hooks/useDraft';
+import { borradorSinTocar, formularioDeOtroDia, leerUltimoCambio, useDraft } from './hooks/useDraft';
 import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { OrderActions } from './components/OrderActions';
@@ -289,7 +289,7 @@ export default function App() {
     }
     autofillSeq.current += 1;
     setAutofillLoading(false);
-    draft.loadOrder(borrador.contenido.order as unknown as DraftState);
+    draft.loadOrder(borrador.contenido.order as unknown as DraftState, { borrador: true });
     setAutofill(null);
     setReturnNote(null);
     setCorrigiendo(null);
@@ -297,6 +297,16 @@ export default function App() {
     chooseProducto('toldos');
     setActiveTab('order');
     notify(`Borrador de ${borrador.orderCode} abierto: sigue con él y guárdalo para revisión cuando esté listo.`, { tone: 'info', title: 'Borrador' });
+  }
+
+  // Un borrador abierto desde Pedidos solo para mirarlo no se queda en Nuevo pedido al irse a otra pestaña: si nadie lo
+  // ha tocado, se vacía el formulario y el borrador sigue en Pedidos (Iván, 26/10/2026).
+  function irAPestana(tab: ActiveTab) {
+    if (tab !== 'order' && borradorSinTocar()) {
+      draft.resetDraft();
+      setAutofill(null);
+    }
+    setActiveTab(tab);
   }
 
   const buscandoBorrador = useRef(false);
@@ -720,10 +730,10 @@ export default function App() {
           <h1>Planteamientos</h1>
         </div>
         <nav className="cabecera-pestanas tira-3d glass-chip" aria-label="Vistas">
-          <TabButton active={activeTab === 'order'} disabled={working === 'review'} label="Nuevo pedido" onClick={() => setActiveTab('order')} />
-          <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} label="Pedidos" count={pendingCount} onClick={() => setActiveTab('reviews')} />
-          <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => setActiveTab('parameters')} />
-          <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => setActiveTab('settings')} />
+          <TabButton active={activeTab === 'order'} disabled={working === 'review'} label="Nuevo pedido" onClick={() => irAPestana('order')} />
+          <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} label="Pedidos" count={pendingCount} onClick={() => irAPestana('reviews')} />
+          <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => irAPestana('parameters')} />
+          <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => irAPestana('settings')} />
           {/* Iván, 02/10/2026: fuera el enlace a la web vieja de remolques; se hacen en Nuevo pedido. */}
         </nav>
         <div className="cabecera-derecha">
