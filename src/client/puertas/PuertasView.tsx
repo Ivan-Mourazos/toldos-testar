@@ -15,7 +15,7 @@ import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { VistaCortePuertas } from './VistaCortePuertas';
-import { cintasSimetricas, leerCadena } from './cadenaDibujo';
+import { cintasDesdeCotas, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import './puertas.css';
 
@@ -218,17 +218,15 @@ function CintasDelDibujo({frente,poner}:{frente:number;poner:(xs:number[])=>void
   const [texto,setTexto]=useState(''),[aviso,setAviso]=useState('');
   const aplicar=()=>{
     if(!texto.trim()) { setAviso(''); return; }
-    const mm=texto.trim().split(/[\s;]+/).map(x=>Number(x.replace(',','.')));
-    if(mm.some(v=>!Number.isFinite(v)||v<0)) { setAviso('Escribe las cotas separadas por espacios.'); return; }
-    if(!(frente>0)) { setAviso('Pon antes el frente: hace falta para la parte derecha.'); return; }
-    const xs=cintasSimetricas(mm.map(v=>v/10),frente);
-    poner(xs);
-    setAviso(`Cintas en ${xs.map(num).join(', ')} cm. Revisa y pulsa «Aplicar a las E.T.».`);
+    const leido=cintasDesdeCotas(texto.trim().split(/[\s;]+/).map(x=>Number(x.replace(',','.'))),frente);
+    if('error' in leido) { setAviso(leido.error); return; }
+    poner(leido.xs);
+    setAviso(`Cintas en ${leido.xs.map(num).join(', ')} cm. Revisa los tubos y pulsa «Aplicar a las E.T.».`);
   };
-  return <label className="field puerta-campo puerta-campo-ancho"><span>Cintas del dibujo, de la izquierda hasta el centro (mm)</span>
-    <input aria-label="Cintas del dibujo" value={texto} placeholder="440 2100" onChange={e=>setTexto(e.target.value)}
+  return <label className="field puerta-campo puerta-campo-ancho"><span>Cotas de las cintas del dibujo, de la izquierda hasta el centro (mm)</span>
+    <input aria-label="Cintas del dibujo" value={texto} placeholder="60 380 120 1540" onChange={e=>setTexto(e.target.value)}
       onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
-    <small>{aviso||'La parte derecha es simétrica: la web la pone sola.'}</small></label>;
+    <small>{aviso||'Como vienen: hasta cada recorte y el recorte (120). La parte derecha es simétrica: la web la pone sola.'}</small></label>;
 }
 /** Saco útil con los habituales a un clic (Iván, 25/10/2026); se puede escribir otro. */
 function SacoUtil({valor,cambiar}:{valor:number|null;cambiar:(n:number|null)=>void}) {

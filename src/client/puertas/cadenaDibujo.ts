@@ -21,3 +21,24 @@ export function cintasSimetricas(izquierda: number[], frente: number, ancho = 12
   }
   return todas.sort((a, b) => a - b);
 }
+
+/** Cotas de las cintas tal como vienen en el dibujo (Iván, 25/10/2026; AR2605035: «60 380 120 1540»), en mm y de
+ * la izquierda hacia el centro: distancias hasta cada recorte y el recorte (120). Cada cota igual al recorte es un
+ * recorte; las demás se suman como distancia (el 60 y el 380 son dos cotas antes del primero). La última llega al
+ * inicio del recorte del centro o, si no lo hay, al centro de la puerta; la web lo distingue con el frente.
+ * La derecha es simétrica. Devuelve las X (borde izquierdo de cada recorte) de toda la entrada, en cm. */
+export function cintasDesdeCotas(mm: number[], frente: number, ancho = 12): { xs: number[] } | { error: string } {
+  if (!mm.length || mm.some((v) => !Number.isFinite(v) || v <= 0)) return { error: 'Escribe las cotas en mm separadas por espacios.' };
+  if (!(frente > 0)) return { error: 'Pon antes el frente: hace falta para la parte derecha.' };
+  const esRecorte = (v: number) => Math.abs(v / 10 - ancho) < 0.05;
+  if (esRecorte(mm[mm.length - 1])) return { error: 'La fila acaba en un recorte: falta la cota hasta el centro o hasta el recorte del centro.' };
+  const izquierda: number[] = [];
+  let x = 0;
+  for (const v of mm) { if (esRecorte(v)) izquierda.push(x); x += v / 10; }
+  const tolerancia = 1;
+  if (Math.abs(x - (frente - ancho) / 2) <= tolerancia) izquierda.push((frente - ancho) / 2);
+  else if (Math.abs(x - frente / 2) > tolerancia) {
+    return { error: `Las cotas llegan a ${Math.round(x * 10) / 10} cm y el centro está en ${frente / 2} cm: revisa la fila.` };
+  }
+  return { xs: cintasSimetricas(izquierda, frente, ancho) };
+}
