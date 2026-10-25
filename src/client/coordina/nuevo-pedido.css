@@ -116,18 +116,19 @@
 .app-shell :is(input, select, textarea, .select-control):hover:not(:disabled):not([readonly]) { border-color: var(--control-border-hover); }
 .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):focus,
 .app-shell .select-field.is-open .select-control {
-  border-color: var(--control-active-border);
+  border-color: var(--text-muted);
   outline: none;
 }
-/* Además del borde, el anillo de foco de CoordinaOT (2 px dorado a 1 px, piezas.css): solo el
+/* Sin dorado al pinchar en un campo (Iván, 26/10/2026, también en CoordinaOT): borde y anillo suaves del gris
+   azulado de la paleta. Antes: además del borde, el anillo de foco de CoordinaOT (2 px dorado a 1 px, piezas.css): solo el
    borde dorado de 1 px daba unos 1,9:1 en claro y costaba ver qué campo se está rellenando.
    El token de foco usa una tonalidad más oscura del mismo dorado en claro para llegar a 3:1.
    Con `:focus-visible` no sale al pulsar con el ratón un botón (el desplegable), pero sí al
    entrar en un campo de texto, como en el resto de la app. El aviso «falta» sigue distinto: su
    borde y su sombra son ámbar, y el anillo va por fuera con 1 px de separación. */
 .app-shell :is(input[type="text"], input[type="number"], input[type="search"], input[type="date"], input:not([type]), select, textarea, .select-control):focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 1px;
+  outline: 2px solid color-mix(in srgb, var(--text-muted) 40%, transparent);
+  outline-offset: 0;
 }
 /* Solo lectura y apagado: la caja `bg-surface-2` de CoordinaOT, sin relieve. */
 .app-shell :is(input, select, textarea, .select-control):disabled,
