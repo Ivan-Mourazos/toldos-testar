@@ -1,0 +1,114 @@
+/* ── Metal y aluminio: resaltos y hundidos ──
+   Copiado de coordina-ot/src/app/globals.css, bloque «Metal y aluminio» (Iván lo eligió con
+   capturas el 15/10/2026): en oscuro, metal cepillado; en claro, aluminio. Las MISMAS reglas
+   para los dos temas; lo que cambia son las variables (`--veta`, `--relieve`… en tokens.css).
+   Aquí solo van las clases que existen en esta web.
+   - En resalto, lo que está encima: paneles, bloques, botones, menús. La capa de resalto es
+     TRANSLÚCIDA sobre el color que ya tiene cada cosa.
+   - Hundido, lo pulsado: filtro activo, pestaña actual, bloque abierto.
+   `:root` delante de cada selector sube la especificidad para ganar a las reglas
+   `:root[data-theme="dark"] …` de los otros ficheros, y se importa el último. */
+body {
+  background-color: var(--fondo-pagina, var(--bg));
+  background-image: var(--veta-fondo), var(--fondo-metal);
+  background-attachment: fixed;
+}
+/* El marco de la web pintaba el fondo liso encima del metal. */
+:root .app-shell {
+  background: transparent;
+}
+
+:root .glass-panel,
+:root .glass-panel-strong,
+:root .glass-chip,
+:root .chip-3d,
+:root .glass-pop,
+:root .bloque-3d,
+:root .tira-3d > :not(.pestana-activa),
+:root .panel-solido,
+:root .pildora-plantear,
+:root .pildora-revisar,
+:root .pildora-aviso {
+  background-image: var(--veta), var(--relieve);
+  border-top-color: var(--relieve-canto);
+  box-shadow: var(--relieve-sombra);
+}
+
+/* Los botones suben un poco al pasar por encima y se hunden al pulsarlos. */
+:root .glass-chip:hover:not(:disabled),
+:root .chip-3d:hover:not(:disabled),
+:root .tira-3d > :not(.pestana-activa):hover,
+:root .pildora-plantear:hover,
+:root .pildora-revisar:hover,
+:root .pildora-aviso:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--relieve-sombra-alto);
+}
+:root .glass-chip:active:not(:disabled),
+:root .chip-3d:active:not(:disabled),
+:root .tira-3d > :not(.pestana-activa):active,
+:root .pildora-plantear:active,
+:root .pildora-revisar:active,
+:root .pildora-aviso:active {
+  background-image: var(--veta), var(--hundir);
+  border-top-color: transparent;
+  transform: translateY(1px);
+  box-shadow: var(--pulsado-sombra);
+}
+/* Desactivado: ni sube ni baja; ya lo dice su opacidad. */
+:root .glass-chip:disabled,
+:root .chip-3d:disabled {
+  transform: none;
+}
+
+/* Lo que se queda pulsado (un filtro puesto, la pestaña en la que estás, el bloque abierto)
+   está hundido y sin canto de luz. */
+:root .glass-chip-activo,
+:root .glass-chip-activo:hover,
+:root .pestana-activa,
+:root .pestana-activa:hover,
+:root .bloque-3d-hundido {
+  background-image: var(--veta), var(--hundir);
+  border-top-color: transparent;
+  transform: translateY(1px);
+  box-shadow: var(--pulsado-sombra);
+}
+:root .bloque-3d-hundido {
+  transform: none;
+}
+
+/* La tira de pestañas lleva `glass-chip`, pero es solo el hueco que las agrupa: sin placa
+   detrás (Iván, 25/10/2026: «que los botones de la cabecera no tengan un panel detrás»).
+   `.glass-chip` repetido para igualar la especificidad de `:root .glass-chip:hover…`. */
+:root .tira-3d.glass-chip,
+:root .tira-3d.glass-chip:hover:not(:disabled),
+:root .tira-3d.glass-chip:active:not(:disabled) {
+  background-image: none;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+/* La cabecera fija lleva el mismo fondo que la página, fijo a la ventana, para que no se vea
+   como una banda lisa encima del metal (Iván, 25/10/2026: «la cabecera igualala al resto»). */
+:root .glass-header {
+  background-color: var(--fondo-pagina, var(--bg));
+  background-image: var(--veta-fondo), var(--fondo-metal);
+  background-attachment: fixed;
+}
+
+/* Lo pulsado, sin borde amarillo: la tecla se queda hundida en el metal y el dorado va en la
+   letra, que dice cuál es (CoordinaOT, Iván 15/10/2026). */
+:root .glass-chip-activo,
+:root .glass-chip-activo:hover,
+:root .pestana-activa,
+:root .pestana-activa:hover {
+  background-color: var(--recuadro);
+  border-color: transparent;
+  color: var(--color-brand-800);
+  font-weight: 600;
+}
+:root[data-theme="dark"] :is(.glass-chip-activo, .glass-chip-activo:hover, .pestana-activa, .pestana-activa:hover) {
+  color: var(--color-brand-300);
+}

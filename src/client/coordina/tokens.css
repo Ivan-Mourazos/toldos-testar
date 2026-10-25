@@ -30,17 +30,18 @@
   --font-sans: 'Geist Variable';
   --font-mono: 'Geist Mono Variable';
 
-  /* ── :root de CoordinaOT: claro «plata glass» ── */
+  /* ── :root de CoordinaOT: claro «plata glass», teñido con la paleta azul de Iván
+     (25/10/2026: #111522 #1E263B #303D59 #536684 #98A9C4 #DCE3EF) ── */
   color-scheme: light;
-  --bg: #d6dbe2;
-  --bg-glow: #e2e6eb;
+  --bg: #dce3ef;
+  --bg-glow: #e6ebf4;
   --surface: #ffffff;
-  --surface-2: #f4f5f7;
-  --zone: #f7f8fa;
-  --border: #e2e4e9;
-  --border-strong: #c8ccd4;
-  --text: #17181c;
-  --text-muted: #565b65;
+  --surface-2: #eef2f8;
+  --zone: #f3f6fa;
+  --border: #d3dbe8;
+  --border-strong: #98a9c4;
+  --text: #111522;
+  --text-muted: #536684;
   /* El borde de un campo necesita más contraste que un separador decorativo. */
   --control-border: color-mix(in srgb, var(--text-muted) 85%, var(--surface));
   --control-border-hover: var(--text-muted);
@@ -52,13 +53,33 @@
   --glass-bg-pop: rgba(255, 255, 255, 0.99);
   --glass-border: rgba(255, 255, 255, 0.72);
   --glass-highlight: rgba(255, 255, 255, 0.95);
-  --glass-shadow: rgba(24, 32, 48, 0.24);
+  --glass-shadow: rgba(17, 21, 34, 0.24);
   --glass-chip: rgba(255, 255, 255, 0.85);
 
-  --edge: rgba(15, 23, 42, 0.08);
-  --contact: rgba(15, 23, 42, 0.12);
+  --edge: rgba(17, 21, 34, 0.08);
+  --contact: rgba(17, 21, 34, 0.12);
 
-  --hoy: #3f444c;
+  /* Aluminio (metal.css): vetas de cepillado, relieve y hundido de CoordinaOT, hacia el azul. */
+  --veta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.9' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.19 0 0 0 0 0.24 0 0 0 0 0.35 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --veta-fondo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.9' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.19 0 0 0 0 0.24 0 0 0 0 0.35 0 0 0 0.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --fondo-metal: linear-gradient(180deg, #e3e9f3, #d2dae7);
+  --relieve: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(220, 227, 239, 0.35));
+  --relieve-canto: #ffffff;
+  --relieve-sombra:
+    inset 0 1px 0 #ffffff,
+    0 1px 0 rgba(83, 102, 132, 0.35),
+    0 2px 0 -1px rgba(152, 169, 196, 0.5),
+    0 8px 16px -10px rgba(17, 21, 34, 0.35);
+  --relieve-sombra-alto:
+    inset 0 1px 0 #ffffff,
+    0 2px 0 rgba(83, 102, 132, 0.35),
+    0 3px 0 -1px rgba(152, 169, 196, 0.5),
+    0 12px 20px -10px rgba(17, 21, 34, 0.4);
+  --hundir: linear-gradient(180deg, rgba(30, 38, 59, 0.12), rgba(255, 255, 255, 0.3));
+  --pulsado-sombra: inset 0 3px 6px rgba(30, 38, 59, 0.35), inset 0 1px 2px rgba(30, 38, 59, 0.35), 0 1px 0 #ffffff;
+  --recuadro: #d5ddea;
+
+  --hoy: #303d59;
   --tramo-holgado: #04785a;
   --tramo-trabajo: #a15c07;
   --tramo-ajustado: #c2143c;
@@ -91,6 +112,23 @@
   --glass-chip: rgba(44, 47, 54, 0.95);
   --edge: transparent;
   --contact: transparent;
+
+  /* Metal cepillado de CoordinaOT sobre los paneles grises de siempre. El fondo de la
+     página es el negro azulado de la foto de Iván (25/10/2026): luz arriba a la
+     izquierda, esquinas más oscuras y grano fino sin estirar. */
+  --fondo-pagina: #0e1422;
+  --veta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.9' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --veta-fondo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.75 0 0 0 0 0.82 0 0 0 0 0.95 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --fondo-metal:
+    radial-gradient(ellipse 50% 45% at 0% 0%, rgb(122 143 170 / 0.28), transparent 72%),
+    radial-gradient(ellipse 120% 95% at 40% 30%, #172133 0%, #0e1422 55%, #070d19 100%);
+  --relieve: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.14));
+  --relieve-canto: #4a4d55;
+  --relieve-sombra: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 2px 0 rgba(0, 0, 0, 0.55), 0 8px 16px -8px rgba(0, 0, 0, 0.8);
+  --relieve-sombra-alto: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 3px 0 rgba(0, 0, 0, 0.55), 0 12px 20px -8px rgba(0, 0, 0, 0.85);
+  --hundir: linear-gradient(180deg, rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.02));
+  --pulsado-sombra: inset 0 3px 7px rgba(0, 0, 0, 0.85), inset 0 1px 2px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.06);
+  --recuadro: #141518;
 
   --tramo-holgado: #34d399;
   --tramo-trabajo: #fbbf24;
